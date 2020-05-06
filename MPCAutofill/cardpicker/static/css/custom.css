@@ -1,0 +1,39 @@
+.rounded-lg {
+  border-radius: 0.45rem !important;
+}
+
+.shadow-lg {
+  box-shadow: 0 1rem 2rem rgba(0, 0, 0, 0.4) !important;
+}
+
+.next {
+  position:absolute;
+  bottom:10px;
+  right:10px;
+}
+
+.prev {
+  position:absolute;
+  bottom:10px;
+  left:10px;
+}
+
+.swapToBack {
+  position:absolute;
+  top:0px;
+  right:-10px;
+}
+
+.swapToFront {
+  position:absolute;
+  top:0px;
+  left:-10px;
+}
+
+.sticky-offset {
+  top: 56px;
+}
+
+.asteriskField {
+    display: none;
+}

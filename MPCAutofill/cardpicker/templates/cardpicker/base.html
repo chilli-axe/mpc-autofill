@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+  <title>{% block title %} MPC Autofill {% endblock %}</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+  <link rel="stylesheet" type="text/css" href="{% static 'css/custom.css' %}">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+  <script src="{% static 'js/custom.js' %}"></script>
+
+</head>
+
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-sm navbar-light bg-light">
+  <a class="navbar-brand" href="/"><b>MPC Autofill</b></a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+          aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  <div class="collapse navbar-collapse" id="navbarSupportedContent">
+    <ul class="navbar-nav mr-auto">
+      <li class="nav-item">
+        <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/guide">Guide</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/credits">Credits</a>
+      </li>
+    </ul>
+  </div>
+</nav>
+
+  <div class="container">
+      {% block content %}
+
+      {% endblock %}
+
+  </div>
+
+  <!-- Footer -->
+  <footer class="page-footer font-small blue">
+    <div class="footer-copyright text-center py-3">
+      MPC Autofill is unofficial Fan Content permitted under the Fan Content Policy.
+      Not approved/endorsed by Wizards.
+      Portions of the materials used are property of Wizards of the Coast.
+      <a href="https://company.wizards.com/">©Wizards of the Coast LLC.</a>
+      <br>
+      Custom card images displayed in MPC Autofill are subject to the license terms under which they were uploaded to
+      their hosts (Google Drive). MPC Autofill is not responsible for the content of custom card images.
+      <br>
+      MPC Autofill is not affiliated with, produced by, or endorsed by
+      <a href="https://www.makeplayingcards.com/">MakePlayingCards.com</a>.
+    </div>
+  </footer>
+</body>
+
+</html>

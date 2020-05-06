@@ -1,0 +1,165 @@
+{% extends 'cardpicker/base.html' %}
+{% load static %}
+
+{% block content %}
+
+<div class="row">
+  <div class="col-8">
+    <!-- Insert each card into the template -->
+    <div class="row row-cols-4">  <!---->
+    {% for card in cards %}
+      {% if forloop.counter0|divisibleby:4 and forloop.counter0 > 0 %}
+        </div>
+        <div class="row row-cols-4">
+      {% endif %}
+
+      {% if card == '' %}
+        <!--Trivial case where there are no versions of this card in the database-->
+        {% with "cardpicker/blank.png" as img_src %}
+        <div class="col-3">
+          <div>
+            <img src="{% static img_src %}" class="img-fluid rounded-lg shadow-lg mb-4" >
+          </div>
+        </div>
+        {% endwith %}
+      {% else %}
+        <!--Normal case - add each version of the card found in a version picker-->
+        <div class="col-3">
+        {% with forloop.counter0|stringformat:"s" as y %}
+        <div class="row">
+        <div class="col" style="margin-right: -35%; z-index: 1;">
+          <!--Set up this card's div ID to allow the version picker JS to work properly-->
+            {% with "card"|add:y|add:"-front" as curr_id %}
+            <div id={{ curr_id }}>
+              <!--For each version of the card fetched from the db-->
+              {% for card_img in card.0 %}
+                <!--Format the URL to the card properly-->
+                {% with "cardpicker/"|add:card_img.source|add:"/"|add:card_img.id|add:".png" as img_src %}
+                  <!--Set all images beyond the first to invisible-->
+                  {% if forloop.counter0 > 0 %}
+                    <img class="img-fluid rounded-lg shadow-lg mb-4 card-img card-front"
+                      src="{% static img_src %}" style="display:none" >
+                  {% else %}
+                    <img class="img-fluid rounded-lg shadow-lg mb-4 card-img card-front"
+                      src="{% static img_src %}">
+                  {% endif %}
+                {% endwith %}
+              {% endfor %}
+
+              <!--Add prev / next buttons to this card if there's more than one version to choose from-->
+              <div class="prevNextBtns">
+                {% if card.0.count > 1 %}
+                <button class="prev btn btn-outline-light" onclick="plusDivs(this, -1)">&#10094;</button>
+                <button class="next btn btn-outline-light" onclick="plusDivs(this, +1)">&#10095;</button>
+                {% endif %}
+                {% if card|length > 1 %}
+                <button class="swapToBack btn btn-outline-light" onclick="toggleFrontBack(this)">⤺</button>
+                {% endif %}
+              </div>
+          {% endwith %}
+
+        </div>
+        </div>
+
+        <!--Double faced card case-->
+        {% if card|length > 1%}
+        <div class="col" style="margin-left: -35%; z-index: 0;">
+          <!--Set up this card's div ID to allow the version picker JS to work properly-->
+            {% with "card"|add:y|add:"-back" as curr_id %}
+            <div id={{ curr_id }}>
+              <!--For each version of the card fetched from the db-->
+              {% for card_img in card.1 %}
+                <!--Format the URL to the card properly-->
+                {% with "cardpicker/"|add:card_img.source|add:"/"|add:card_img.id|add:".png" as img_src %}
+                  <!--Set all images beyond the first to invisible-->
+                  {% if forloop.counter0 > 0 %}
+                    <img class="img-fluid rounded-lg shadow-lg mb-4 card-img card-back"
+                      src="{% static img_src %}" style="display:none">
+                  {% else %}
+                    <img class="img-fluid rounded-lg shadow-lg mb-4 card-img card-back"
+                      src="{% static img_src %}">
+                  {% endif %}
+
+                {% endwith %}
+              {% endfor %}
+
+              <!--Add prev / next buttons to this card if there's more than one version to choose from-->
+              <div class="prevNextBtns" style="display:none">
+                {% if card.1.count > 1 %}
+                <button class="prev btn btn-outline-light" onclick="plusDivs(this, -1)">&#10094;</button>
+                <button class="next btn btn-outline-light" onclick="plusDivs(this, +1)">&#10095;</button>
+                {% endif %}
+                <button class="swapToFront btn btn-outline-light" onclick="toggleFrontBack(this)">⤻</button>
+              </div>
+          {% endwith %}
+        </div>
+        </div>
+        {% endif %}
+        </div>
+        {% endwith %}
+        </div>
+      {% endif %}
+    {% endfor %}
+
+    </div>
+  </div>
+
+  <div class="col-4">
+    <div class="sticky-top sticky-offset">
+      <h1>Review Your Order</h1>
+      <p>Your order has a total of <b>{{ qty }}</b> cards,<br>in the MPC bracket of up to <b>{{ bracket }}</b> cards.</p>
+
+      <!--For javascript access-->
+      <script type="text/javascript">
+        var qty = "{{ qty }}";
+        var bracket = "{{ bracket }}";
+      </script>
+
+      <div class="form-group">
+        <label for="cardstockSelect">Cardstock:</label>
+        <select class="form-control" id="cardstockSelect">
+          <option selected="selected">(S30) Standard Smooth</option>
+          <option>(S33) Superior Smooth</option>
+          <option>(M31) Linen</option>
+          <option>(P10) Plastic</option>
+        </select>
+      </div>
+
+      <!--Cardback selector-->
+      <label for="cardback-row">Select your cardback:</label>
+      <div class="row" id="cardback-row">
+        <div class="col-md-8 offset-md-2" style="margin-right: -35%; z-index: 1;">
+          <!--Set up this card's div ID to allow the version picker JS to work properly-->
+          <div id="cardback">
+            <!--For each version of the card fetched from the db-->
+            {% for card_img in cardbacks %}
+              <!--Format the URL to the card properly-->
+              {% with "cardpicker/"|add:card_img.source|add:"/"|add:card_img.id|add:".png" as img_src %}
+                <!--Set all images beyond the first to invisible-->
+                {% if forloop.counter0 > 0 %}
+                  <img class="img-fluid rounded-lg shadow-lg mb-4 card-img card-back-default"
+                    src="{% static img_src %}" style="display:none" >
+                {% else %}
+                  <img class="img-fluid rounded-lg shadow-lg mb-4 card-img card-back-default"
+                    src="{% static img_src %}">
+                {% endif %}
+              {% endwith %}
+            {% endfor %}
+
+            <!--Add prev / next buttons to this card if there's more than one version to choose from-->
+            <div class="prevNextBtns">
+              {% if cardbacks.count > 1 %}
+              <button class="prev btn btn-outline-light" onclick="plusDivs(this, -1)">&#10094;</button>
+              <button class="next btn btn-outline-light" onclick="plusDivs(this, +1)">&#10095;</button>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button type="button" class="btn btn-primary" onclick="generateXml()">Generate Order</button>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

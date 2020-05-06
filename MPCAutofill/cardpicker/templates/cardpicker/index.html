@@ -1,0 +1,14 @@
+{% extends 'cardpicker/base.html' %}
+
+{% block content %}
+
+{% load crispy_forms_tags %}
+
+    <h1>MPC Autofill</h1>
+    <form method="post" action="{% url 'review' %}" id="cardinput">
+      {% csrf_token %}
+      {{ form|crispy }}
+      <input type="submit" class="btn btn-primary" value="Submit">
+    </form>
+
+{% endblock %}
