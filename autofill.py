@@ -7,9 +7,20 @@ import os
 import xml.etree.ElementTree as ET
 from google_drive_downloader import GoogleDriveDownloader as gdd
 
+"""
+TODO:
+- Handle the popup "your internet connection is slow so this'll take a while
+- Redownload images if they happen to corrupt while downloading, which currently stops the script
+- Download google drive images in a separate process while cards are being uploaded and inserted into their correct slots
+- Improve the speed of dragging and dropping while keeping its current reliability
+- Pause for only as long as is necessary on the various menus that currently have 10 second delays
+- Would be nice to have a way of deselecting text bc sometimes the script selects a bunch of content on the page and it's slightly ugly
+"""
+
 
 def fill_cards():
     with webdriver.Chrome() as driver:
+        driver.set_window_size(1200, 900)
         # Read given xml file
         tree = ET.parse("cards.xml")
         root = tree.getroot()
@@ -40,8 +51,6 @@ def fill_cards():
         # Select "different images" for front
         driver.execute_script("javascript:setMode('ImageText', 0);")
         driver.switch_to.default_content()
-
-        # TODO: handle unexpected alert open: {Alert text : Uploading, please wait...}
 
         # Insert card fronts
         for card in root[1]:
@@ -84,7 +93,7 @@ def fill_cards():
             # Cards that need cardbacks are in range(0, total_cards) - card indexes that already have backs
             cards_with_backs = {int(x) for x in cards_with_backs}
             cards_needing_backs = [x for x in range(0, total_cards) if x not in cards_with_backs]
-            upload_and_insert_card(driver, root[3][0].text, cards_needing_backs)
+            upload_and_insert_card(driver, root[3].text, cards_needing_backs)
 
         # Page through to finalise project
         driver.execute_script("javascript:oDesign.setNextStep();")
@@ -105,7 +114,7 @@ def upload_and_insert_card(driver, drive_id, slots):
                                         dest_path=filepath)
 
     num_elems = len(driver.find_elements_by_xpath("//*[contains(@id, 'upload_')]"))
-    driver.find_element_by_xpath('//*[@id="uploadId"]').send_keys(filepath)  # os.getcwd() + "\cards\image.png"
+    driver.find_element_by_xpath('//*[@id="uploadId"]').send_keys(filepath)  
 
     while True:
         # Wait until the image has finished uploading
@@ -122,11 +131,16 @@ def upload_and_insert_card(driver, drive_id, slots):
 
 def drag_drop_card(driver, cardElement, slotNumber):
     elem_slot = driver.find_element_by_id("fmItem{}_0".format(slotNumber))
+    elem_visible = driver.find_element_by_id("bnbox{}_0_0".format(slotNumber))
     current_y = elem_slot.location['y']
     driver.execute_script("arguments[0].scrollIntoView();", elem_slot)
     ActionChains(driver).click_and_hold(cardElement).move_to_element(elem_slot).release(elem_slot).perform()
-    driver.find_element_by_id("dnImg{}_0_0".format(slotNumber))
-    time.sleep(0.6)
+    while driver.find_element_by_id("dnImg{}_0_0".format(slotNumber)) is None:
+        time.sleep(0.5)
+    while elem_visible.value_of_css_property("display") == "none":
+        ActionChains(driver).click_and_hold(cardElement).move_to_element(elem_slot).release(elem_slot).perform()
+        time.sleep(0.5)
+    time.sleep(0.3)
 
 
 if __name__ == "__main__":
