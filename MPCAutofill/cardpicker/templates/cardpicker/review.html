@@ -7,43 +7,43 @@
   <div class="col-8">
     <!-- Insert each card into the template -->
     <div class="row row-cols-4">  <!---->
-    {% for card in cards %}
+      {% for card in cards %}
       {% if forloop.counter0|divisibleby:4 and forloop.counter0 > 0 %}
-        </div>
-        <div class="row row-cols-4">
+    </div>
+    <div class="row row-cols-4">
       {% endif %}
 
       {% if card == '' %}
-        <!--Trivial case where there are no versions of this card in the database-->
-        {% with "cardpicker/blank.png" as img_src %}
-        <div class="col-3">
-          <div>
-            <img src="{% static img_src %}" class="img-fluid rounded-lg shadow-lg mb-4" >
-          </div>
+      <!--Trivial case where there are no versions of this card in the database-->
+      {% with "cardpicker/blank.png" as img_src %}
+      <div class="col-3">
+        <div>
+          <img src="{% static img_src %}" class="img-fluid rounded-lg shadow-lg mb-4">
         </div>
-        {% endwith %}
+      </div>
+      {% endwith %}
       {% else %}
-        <!--Normal case - add each version of the card found in a version picker-->
-        <div class="col-3">
+      <!--Normal case - add each version of the card found in a version picker-->
+      <div class="col-3">
         {% with forloop.counter0|stringformat:"s" as y %}
         <div class="row">
-        <div class="col" style="margin-right: -35%; z-index: 1;">
-          <!--Set up this card's div ID to allow the version picker JS to work properly-->
+          <div class="col" style="margin-right: -35%; z-index: 1;">
+            <!--Set up this card's div ID to allow the version picker JS to work properly-->
             {% with "card"|add:y|add:"-front" as curr_id %}
             <div id={{ curr_id }}>
               <!--For each version of the card fetched from the db-->
               {% for card_img in card.0 %}
-                <!--Format the URL to the card properly-->
-                {% with "cardpicker/"|add:card_img.source|add:"/"|add:card_img.id|add:".png" as img_src %}
-                  <!--Set all images beyond the first to invisible-->
-                  {% if forloop.counter0 > 0 %}
-                    <img class="img-fluid rounded-lg shadow-lg mb-4 card-img card-front"
-                      src="{% static img_src %}" style="display:none" >
-                  {% else %}
-                    <img class="img-fluid rounded-lg shadow-lg mb-4 card-img card-front"
-                      src="{% static img_src %}">
-                  {% endif %}
-                {% endwith %}
+              <!--Format the URL to the card properly-->
+              {% with "cardpicker/"|add:card_img.source|add:"/"|add:card_img.id|add:".png" as img_src %}
+              <!--Set all images beyond the first to invisible-->
+              {% if forloop.counter0 > 0 %}
+              <img class="img-fluid rounded-lg shadow-lg mb-4 card-img card-front"
+                   src="{% static img_src %}" style="display:none">
+              {% else %}
+              <img class="img-fluid rounded-lg shadow-lg mb-4 card-img card-front"
+                   src="{% static img_src %}">
+              {% endif %}
+              {% endwith %}
               {% endfor %}
 
               <!--Add prev / next buttons to this card if there's more than one version to choose from-->
@@ -56,31 +56,31 @@
                 <button class="swapToBack btn btn-outline-light" onclick="toggleFrontBack(this)">⤺</button>
                 {% endif %}
               </div>
-          {% endwith %}
+              {% endwith %}
 
-        </div>
-        </div>
+            </div>
+          </div>
 
-        <!--Double faced card case-->
-        {% if card|length > 1%}
-        <div class="col" style="margin-left: -35%; z-index: 0;">
-          <!--Set up this card's div ID to allow the version picker JS to work properly-->
+          <!--Double faced card case-->
+          {% if card|length > 1%}
+          <div class="col" style="margin-left: -35%; z-index: 0;">
+            <!--Set up this card's div ID to allow the version picker JS to work properly-->
             {% with "card"|add:y|add:"-back" as curr_id %}
             <div id={{ curr_id }}>
               <!--For each version of the card fetched from the db-->
               {% for card_img in card.1 %}
-                <!--Format the URL to the card properly-->
-                {% with "cardpicker/"|add:card_img.source|add:"/"|add:card_img.id|add:".png" as img_src %}
-                  <!--Set all images beyond the first to invisible-->
-                  {% if forloop.counter0 > 0 %}
-                    <img class="img-fluid rounded-lg shadow-lg mb-4 card-img card-back"
-                      src="{% static img_src %}" style="display:none">
-                  {% else %}
-                    <img class="img-fluid rounded-lg shadow-lg mb-4 card-img card-back"
-                      src="{% static img_src %}">
-                  {% endif %}
+              <!--Format the URL to the card properly-->
+              {% with "cardpicker/"|add:card_img.source|add:"/"|add:card_img.id|add:".png" as img_src %}
+              <!--Set all images beyond the first to invisible-->
+              {% if forloop.counter0 > 0 %}
+              <img class="img-fluid rounded-lg shadow-lg mb-4 card-img card-back"
+                   src="{% static img_src %}" style="display:none">
+              {% else %}
+              <img class="img-fluid rounded-lg shadow-lg mb-4 card-img card-back"
+                   src="{% static img_src %}">
+              {% endif %}
 
-                {% endwith %}
+              {% endwith %}
               {% endfor %}
 
               <!--Add prev / next buttons to this card if there's more than one version to choose from-->
@@ -91,15 +91,15 @@
                 {% endif %}
                 <button class="swapToFront btn btn-outline-light" onclick="toggleFrontBack(this)">⤻</button>
               </div>
-          {% endwith %}
-        </div>
-        </div>
-        {% endif %}
+              {% endwith %}
+            </div>
+          </div>
+          {% endif %}
         </div>
         {% endwith %}
-        </div>
+      </div>
       {% endif %}
-    {% endfor %}
+      {% endfor %}
 
     </div>
   </div>
@@ -107,12 +107,13 @@
   <div class="col-4">
     <div class="sticky-top sticky-offset">
       <h1>Review Your Order</h1>
-      <p>Your order has a total of <b>{{ qty }}</b> cards,<br>in the MPC bracket of up to <b>{{ bracket }}</b> cards.</p>
+      <p>Your order has a total of <b>{{ qty }}</b> cards,<br>in the MPC bracket of up to <b>{{ bracket }}</b> cards.
+      </p>
 
       <!--For javascript access-->
       <script type="text/javascript">
-        var qty = "{{ qty }}";
-        var bracket = "{{ bracket }}";
+          var qty = "{{ qty }}";
+          var bracket = "{{ bracket }}";
       </script>
 
       <div class="form-group">
@@ -133,17 +134,17 @@
           <div id="cardback">
             <!--For each version of the card fetched from the db-->
             {% for card_img in cardbacks %}
-              <!--Format the URL to the card properly-->
-              {% with "cardpicker/"|add:card_img.source|add:"/"|add:card_img.id|add:".png" as img_src %}
-                <!--Set all images beyond the first to invisible-->
-                {% if forloop.counter0 > 0 %}
-                  <img class="img-fluid rounded-lg shadow-lg mb-4 card-img card-back-default"
-                    src="{% static img_src %}" style="display:none" >
-                {% else %}
-                  <img class="img-fluid rounded-lg shadow-lg mb-4 card-img card-back-default"
-                    src="{% static img_src %}">
-                {% endif %}
-              {% endwith %}
+            <!--Format the URL to the card properly-->
+            {% with "cardpicker/"|add:card_img.source|add:"/"|add:card_img.id|add:".png" as img_src %}
+            <!--Set all images beyond the first to invisible-->
+            {% if forloop.counter0 > 0 %}
+            <img class="img-fluid rounded-lg shadow-lg mb-4 card-img card-back-default"
+                 src="{% static img_src %}" style="display:none">
+            {% else %}
+            <img class="img-fluid rounded-lg shadow-lg mb-4 card-img card-back-default"
+                 src="{% static img_src %}">
+            {% endif %}
+            {% endwith %}
             {% endfor %}
 
             <!--Add prev / next buttons to this card if there's more than one version to choose from-->
