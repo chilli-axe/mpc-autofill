@@ -51,123 +51,135 @@ def fill_tables(conn):
     # Call to google drive API
     service = login()
     # driveId = "1CUaOPDZM84dk85Kvp6fGrqZVPDo4jQJo"  # "0AMFwuQwhIgJcUk9PVA"  # "1CUaOPDZM84dk85Kvp6fGrqZVPDo4jQJo"
+    # results = service.files().list(
+    #
+    #     # TODO: Specify a drive? Can't seem to specify a drive ID without causing an error
+    #     # includeItemsFromAllDrives=True,
+    #     # corpora="drive",
+    #     # supportsAllDrives=True,
+    #     # driveId=driveId,
+    #
+    #     q="mimeType='application/vnd.google-apps.folder'",
+    #     fields="files(id, name, parents, driveId)")\
+    #     .execute()
+
     results = service.files().list(
-
-        # TODO: Specify a drive? Can't seem to specify a drive ID without causing an error
-        # includeItemsFromAllDrives=True,
-        # corpora="drive",
-        # supportsAllDrives=True,
-        # driveId=driveId,
-
         q="mimeType='application/vnd.google-apps.folder'",
-        fields="files(id, name, parents, driveId)")\
-        .execute()
+        fields="files(id, name, parents, driveId)",
+        pageSize=1000
+    ).execute()
+
     folders = results.get('files', [])
-
-    # Locate cards folder-by-folder
+    print("Folders found: {}".format(len(folders)))
     for folder in folders:
-        # Ignore tokens and planechase cards
-        if folder['name'] in "9. Tokens, 11. Planechase":
-            continue
+        search_folder(c, folder)
 
-        # Get the current folder's parent, to assign priority properly
-        if 'parents' in folder.keys():
-            parent = service.files().get(
-                fileId=folder['parents'][0], fields='id, name'
-            ).execute()
 
-        else:
-            parent = folder
+def search_folder(c, folder):
+    # Locate cards folder-by-folder
+    # for folder in folders:
+    # Ignore tokens and planechase cards
+    if folder['name'] in "9. Tokens, 11. Planechase":
+        return
 
-        # service.files.get() defaults to a page of 100 results
-        # while loop to retrieve information from all pages
-        page_token = None
-        top_parent = get_top_parent(service, folder['id'])
-        print(folder['name'])
-        print(top_parent)
-        while True:
-            time.sleep(0.1)
-            items = service.files().list(
-                q="mimeType='image/png' and '{}' in parents".format(folder['id']),
-                fields="nextPageToken, files(id, name, trashed, driveId, properties)",
-                pageToken=page_token
-            ).execute()
+    # Get the current folder's parent, to assign priority properly
+    if 'parents' in folder.keys():
+        parent = service.files().get(
+            fileId=folder['parents'][0], fields='id, name'
+        ).execute()
 
-            if len(items['files']) <= 0:
-                break
+    else:
+        parent = folder
 
-            # print(items)
-            for item in items['files']:
-                if not item['trashed']:
+    # service.files.get() defaults to a page of 100 results
+    # while loop to retrieve information from all pages
+    page_token = None
+    top_parent = get_top_parent(service, folder['id'])
+    print(folder['name'])
+    print(top_parent)
+    while True:
+        time.sleep(0.1)
+        items = service.files().list(
+            q="mimeType='image/png' and '{}' in parents".format(folder['id']),
+            fields="nextPageToken, files(id, name, trashed, driveId, properties)",
+            pageToken=page_token
+        ).execute()
 
-                    # Determine card priority
-                    priority = 2
-                    if "Retro Cube" in parent['name']:
-                        priority = 0
-                    if ")" in item['name']:
-                        priority = 1
+        if len(items['files']) <= 0:
+            break
 
-                    # Download thumbnail
-                    source = "Unknown"
-                    if top_parent == "Chilli_Axe's MPC Proxies":
-                        source = "Chilli_Axe"
-                        if folder['name'] == "12. Cardbacks":
-                            if "Black Lotus" in item['name']:
-                                priority += 10
-                            source += "_cardbacks"
-                        priority += 30
+        # print(items)
+        for item in items['files']:
+            if not item['trashed']:
 
-                    elif folder['name'] == "nofacej MPC Card Backs":
-                        source = "nofacej_cardbacks"
-                        priority += 20
+                # Determine card priority
+                priority = 2
+                if "Retro Cube" in parent['name']:
+                    priority = 0
+                if ")" in item['name']:
+                    priority = 1
 
-                    elif top_parent == "Bazukii's Proxies/Alters":
-                        source = "Bazukii"
-                        priority += 20
+                # Download thumbnail
+                source = "Unknown"
+                if top_parent == "Chilli_Axe's MPC Proxies":
+                    source = "Chilli_Axe"
+                    if folder['name'] == "12. Cardbacks":
+                        if "Black Lotus" in item['name']:
+                            priority += 10
+                        source += "_cardbacks"
+                    priority += 30
 
-                    if "Basic" in folder['name']:
-                        priority += 5
+                elif folder['name'] == "nofacej MPC Card Backs":
+                    source = "nofacej_cardbacks"
+                    priority += 20
 
-                    elif top_parent == "MPC Scryfall Scans":
-                        source = folder['name']
+                elif top_parent == "Bazukii's Proxies/Alters":
+                    source = "Bazukii"
+                    priority += 20
 
-                    folder_path = "./cardpicker/static/cardpicker/" + source
-                    thumbnail_path = folder_path + "/" + item['id'] + ".png"
+                if "Basic" in folder['name']:
+                    priority += 5
 
-                    # if the folder to save into doesn't exist, create it
-                    if not os.path.exists(folder_path):
-                        os.makedirs(folder_path)
+                elif top_parent == "MPC Scryfall Scans":
+                    source = folder['name']
 
-                    if not os.path.isfile(thumbnail_path):
-                        print("Downloading: " + item['name'])
-                        counter = 0
-                        while counter < 3:
-                            try:
-                                # Read thumbnail
-                                thumbnail = imageio.imread(
-                                    "https://drive.google.com/thumbnail?sz=w400-h400&id=" + item['id']
-                                )
+                folder_path = "./cardpicker/static/cardpicker/" + source
+                thumbnail_path = folder_path + "/" + item['id'] + ".png"
 
-                                # Trim off 11 pixels around the edges, which should remove the print bleed edge,
-                                # assuming the image is 293 x 400 in resolution, before writing to disk
-                                imageio.imwrite(thumbnail_path, thumbnail[13:-13, 13:-13, :])
-                                break
-                            except:  # TODO: Not bare except
-                                counter += 1
+                # if the folder to save into doesn't exist, create it
+                if not os.path.exists(folder_path):
+                    os.makedirs(folder_path)
 
-                        if counter >= 3:
-                            print(item['name'])
+                if not os.path.isfile(thumbnail_path):
+                    print("Downloading: " + item['name'])
+                    counter = 0
+                    while counter < 3:
+                        try:
+                            # Read thumbnail
+                            thumbnail = imageio.imread(
+                                "https://drive.google.com/thumbnail?sz=w400-h400&id=" + item['id']
+                            )
 
-                    # Insert into database
-                    sql_insert = """INSERT OR REPLACE INTO cardpicker_card VALUES (?,?,?,?)"""
-                    c.execute(sql_insert, (item['id'], item['name'], source, priority))
+                            # Trim off 11 pixels around the edges, which should remove the print bleed edge,
+                            # assuming the image is 293 x 400 in resolution, before writing to disk
+                            imageio.imwrite(thumbnail_path, thumbnail[13:-13, 13:-13, :])
+                            break
+                        except:  # TODO: Not bare except
+                            counter += 1
 
-            conn.commit()
-            page_token = items.get('nextPageToken', None)
-            if page_token is None:
-                break
+                    if counter >= 3:
+                        print(item['name'])
 
-        print("")
+                # Insert into database
+                sql_insert = """INSERT OR REPLACE INTO cardpicker_card VALUES (?,?,?,?)"""
+                c.execute(sql_insert, (item['id'], item['name'], source, priority))
+
+        conn.commit()
+        page_token = items.get('nextPageToken', None)
+        if page_token is None:
+            break
+
+    print("")
 
 
 def login():
@@ -196,5 +208,7 @@ def login():
 if __name__ == "__main__":
     conn = create_connection("./card_db.db")
     service = login()
+    t = time.time()
     fill_tables(conn)
     print("Finished.")
+    print("Elapsed time: {}".format(time.time() - t))
