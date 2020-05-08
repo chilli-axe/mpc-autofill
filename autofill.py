@@ -9,23 +9,22 @@ import xml.etree.ElementTree as ET
 from selenium.webdriver.support.expected_conditions import invisibility_of_element
 from selenium.webdriver.support.ui import WebDriverWait
 from google_drive_downloader import GoogleDriveDownloader as gdd
+import filetype
+import threading
+from requests.exceptions import ConnectionError
 
 """
 TODO:
+- Downloading too fast from Google Drive - how can we get around this?
 - Handle the popup "your internet connection is slow so this'll take a while
-- Redownload images if they happen to corrupt while downloading, which currently stops the script
-- Download google drive images in a separate process while cards are being uploaded and inserted into their correct slots
-- Would be nice to have a way of deselecting text bc sometimes the script selects a bunch of content on the page and it's slightly ugly
+- Would be nice to have a way of deselecting text bc sometimes the script selects a bunch of content on the page and
+  it's slightly ugly
 """
 
 
-def fill_cards():
+def fill_cards(root):
     with webdriver.Chrome() as driver:
         driver.set_window_size(1200, 900)
-        # Read given xml file
-        tree = ET.parse("cards.xml")
-        root = tree.getroot()
-
         # Set implicit wait for driver
         driver.implicitly_wait(5)
 
@@ -138,25 +137,53 @@ def wait(driver):
         return
 
 
-def upload_card(driver, drive_id):
-    filepath = os.getcwd() + "\cards\{}.png".format(drive_id)
-    gdd.download_file_from_google_drive(file_id=drive_id,
-                                        dest_path=filepath)
-
-    num_elems = len(driver.find_elements_by_xpath("//*[contains(@id, 'upload_')]"))
-    driver.find_element_by_xpath('//*[@id="uploadId"]').send_keys(filepath)
-
+def download_card(driveID):
+    filepath = os.getcwd() + "\cards\{}.png".format(driveID)
     while True:
-        # Wait until the image has finished uploading
-        elem = driver.find_elements_by_xpath("//*[contains(@id, 'upload_')]")
-        if len(elem) > num_elems:
-            print("New card uploaded")
-            time.sleep(1)
-            return elem[-1]
+        if os.path.exists(filepath):
+            return
+        try:
+            gdd.download_file_from_google_drive(file_id=driveID,
+                                                dest_path=filepath)
+            guessed_filetype = filetype.guess(filepath)
+            while not guessed_filetype:
+                print("Downloading too fast - retrying")
+                os.remove(filepath)
+                time.sleep(60)
+                gdd.download_file_from_google_drive(file_id=driveID,
+                                                    dest_path=filepath,
+                                                    overwrite=True)
+                guessed_filetype = filetype.guess(filepath)
+            return
+        except ConnectionError:
+            pass
 
 
-def upload_and_insert_card(driver, drive_id, slots):
-    elem = upload_card(driver, drive_id)
+def upload_card(driver, driveID):
+    filepath = os.getcwd() + "\cards\{}.png".format(driveID)
+    while not os.path.exists(filepath):
+        time.sleep(1)
+
+    if os.path.isfile(filepath):
+
+        # filepath = download_card(driveID)
+        num_elems = len(driver.find_elements_by_xpath("//*[contains(@id, 'upload_')]"))
+        driver.find_element_by_xpath('//*[@id="uploadId"]').send_keys(filepath)
+
+        while True:
+            # Wait until the image has finished uploading
+            elem = driver.find_elements_by_xpath("//*[contains(@id, 'upload_')]")
+            if len(elem) > num_elems:
+                print("New card uploaded")
+                time.sleep(1)
+                return elem[-1]
+
+    else:
+        return ValueError("Yo something broke")
+
+
+def upload_and_insert_card(driver, driveID, slots):
+    elem = upload_card(driver, driveID)
     if type(elem) != list:
         elem = [elem]
 
@@ -179,5 +206,46 @@ def drag_drop_card(driver, cardElement, slotNumber):
         wait(driver)
 
 
+class CardDownloadThread(threading.Thread):
+    def __init__(self, driveIDs):
+        threading.Thread.__init__(self)
+        self.driveIDs = driveIDs
+
+    def run(self):
+        print("Kicking off Google Drive downloader thread")
+        for driveID in self.driveIDs:
+            download_card(driveID)
+        print("Downloaded all cards in the order")
+
+
+class WebDriverThread(threading.Thread):
+    def __init__(self, root):
+        threading.Thread.__init__(self)
+        self.root = root
+
+    def run(self):
+        print("Kicking off webdriver thread")
+        fill_cards(self.root)
+
+
 if __name__ == "__main__":
-    fill_cards()
+    # parse XML doc
+    tree = ET.parse("cards.xml")
+    root = tree.getroot()
+
+    # retrieve google drive IDs for downloader thread
+    driveIDs = [x[0].text for x in root[1]]
+    driveIDs.extend([x[0].text for x in root[2]])
+    driveIDs.extend([root[-1].text])
+
+    # create each thread
+    download_thread = CardDownloadThread(driveIDs=driveIDs)
+    webdriver_thread = WebDriverThread(root)
+
+    # start each thread
+    download_thread.start()
+    webdriver_thread.start()
+
+    # join threads
+    download_thread.join()
+    webdriver_thread.join()
