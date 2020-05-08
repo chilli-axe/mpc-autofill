@@ -1,4 +1,4 @@
-from selenium.common.exceptions import NoAlertPresentException
+from selenium.common.exceptions import NoAlertPresentException, UnexpectedAlertPresentException
 from selenium.common.exceptions import NoSuchElementException
 from selenium import webdriver
 from selenium.webdriver import ActionChains
@@ -8,14 +8,28 @@ import os
 import xml.etree.ElementTree as ET
 from selenium.webdriver.support.expected_conditions import invisibility_of_element
 from selenium.webdriver.support.ui import WebDriverWait
-from google_drive_downloader import GoogleDriveDownloader as gdd
-import filetype
 import threading
-from requests.exceptions import ConnectionError
+from googleapiclient.discovery import build
+from google_auth_oauthlib.flow import InstalledAppFlow
+from google.auth.transport.requests import Request
+from googleapiclient.http import MediaIoBaseDownload
+import pickle
+import io
+
+credentials = {"installed":
+                   {"client_id": "768699692145-8dlgu2tmfunlds97qrdjfgr8rhjlv5ea.apps.googleusercontent.com",
+                    "project_id": "quickstart-1586139074859",
+                    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                    "token_uri": "https://oauth2.googleapis.com/token",
+                    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+                    "client_secret": "qMuWaix3AyCBy-pjwhRTSyPq",
+                    "redirect_uris": ["urn:ietf:wg:oauth:2.0:oob","http://localhost"]}}
+
+# If modifying these scopes, delete the file token.pickle.
+SCOPES = ['https://www.googleapis.com/auth/drive.readonly']
 
 """
 TODO:
-- Downloading too fast from Google Drive - how can we get around this?
 - Handle the popup "your internet connection is slow so this'll take a while
 - Would be nice to have a way of deselecting text bc sometimes the script selects a bunch of content on the page and
   it's slightly ugly
@@ -95,7 +109,7 @@ def fill_cards(root):
             driver.execute_script("javascript:setMode('ImageText', 1);")
             driver.switch_to.default_content()
             autofillBtn = driver.find_element_by_class_name("autoFill")
-            upload_card(driver, root[3].text)
+            upload_card(driver, root[-1].text)
             autofillBtn.click()
         else:
             # Different cardbacks
@@ -124,6 +138,7 @@ def fill_cards(root):
             pass
 
         wait(driver)
+        time.sleep(1)
         driver.execute_script("javascript:oDesign.setNextStep();")
 
         input("Press enter to finish up.")
@@ -137,26 +152,24 @@ def wait(driver):
         return
 
 
-def download_card(driveID):
-    filepath = os.getcwd() + "\cards\{}.png".format(driveID)
-    while True:
-        if os.path.exists(filepath):
-            return
-        try:
-            gdd.download_file_from_google_drive(file_id=driveID,
-                                                dest_path=filepath)
-            guessed_filetype = filetype.guess(filepath)
-            while not guessed_filetype:
-                print("Downloading too fast - retrying")
-                os.remove(filepath)
-                time.sleep(60)
-                gdd.download_file_from_google_drive(file_id=driveID,
-                                                    dest_path=filepath,
-                                                    overwrite=True)
-                guessed_filetype = filetype.guess(filepath)
-            return
-        except ConnectionError:
-            pass
+def download_card(driveID, service):
+    # create the cards folder if it doesn't exist
+    if not os.path.exists(os.getcwd() + r"\cards"):
+        os.mkdir(os.getcwd() + r"\cards")
+    filepath = os.getcwd() + r"\cards\{}.png".format(driveID)
+    if os.path.exists(filepath):
+        return
+    request = service.files().get_media(fileId=driveID)
+    fh = io.BytesIO()
+    downloader = MediaIoBaseDownload(fh, request)
+    done = False
+    while done is False:
+        status, done = downloader.next_chunk()
+
+    with open(filepath, 'wb') as f:
+        f.write(fh.getvalue())
+
+    print("Finished downloading: {}".format(driveID))
 
 
 def upload_card(driver, driveID):
@@ -165,18 +178,23 @@ def upload_card(driver, driveID):
         time.sleep(1)
 
     if os.path.isfile(filepath):
-
-        # filepath = download_card(driveID)
         num_elems = len(driver.find_elements_by_xpath("//*[contains(@id, 'upload_')]"))
         driver.find_element_by_xpath('//*[@id="uploadId"]').send_keys(filepath)
 
         while True:
-            # Wait until the image has finished uploading
-            elem = driver.find_elements_by_xpath("//*[contains(@id, 'upload_')]")
-            if len(elem) > num_elems:
-                print("New card uploaded")
-                time.sleep(1)
-                return elem[-1]
+            try:
+                # Wait until the image has finished uploading
+                elem = driver.find_elements_by_xpath("//*[contains(@id, 'upload_')]")
+                if len(elem) > num_elems:
+                    print("New card uploaded: {}".format(driveID))
+                    time.sleep(1)
+                    return elem[-1]
+            except UnexpectedAlertPresentException:
+                try:
+                    alert = driver.switch_to.alert
+                    alert.accept()
+                except NoAlertPresentException:
+                    pass
 
     else:
         return ValueError("Yo something broke")
@@ -206,6 +224,28 @@ def drag_drop_card(driver, cardElement, slotNumber):
         wait(driver)
 
 
+def login():
+    creds = None
+    # The file token.pickle stores the user's access and refresh tokens, and is
+    # created automatically when the authorization flow completes for the first
+    # time.
+    if os.path.exists('token.pickle'):
+        with open('token.pickle', 'rb') as token:
+            creds = pickle.load(token)
+    # If there are no (valid) credentials available, let the user log in.
+    if not creds or not creds.valid:
+        if creds and creds.expired and creds.refresh_token:
+            creds.refresh(Request())
+        else:
+            flow = InstalledAppFlow.from_client_config(credentials, SCOPES)
+            creds = flow.run_local_server(port=0)
+        # Save the credentials for the next run
+        with open('token.pickle', 'wb') as token:
+            pickle.dump(creds, token)
+
+    return build('drive', 'v3', credentials=creds)
+
+
 class CardDownloadThread(threading.Thread):
     def __init__(self, driveIDs):
         threading.Thread.__init__(self)
@@ -213,8 +253,9 @@ class CardDownloadThread(threading.Thread):
 
     def run(self):
         print("Kicking off Google Drive downloader thread")
+        service = login()
         for driveID in self.driveIDs:
-            download_card(driveID)
+            download_card(driveID, service)
         print("Downloaded all cards in the order")
 
 

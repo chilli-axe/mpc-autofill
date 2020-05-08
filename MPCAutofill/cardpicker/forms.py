@@ -15,4 +15,5 @@ class SubmitCardListForm(forms.Form):
                                 required=True)
     scryfall_priority = forms.BooleanField(widget=forms.CheckboxInput(),
                                            required=False,
-                                           label="Prioritise Scryfall scans over Photoshop-rendered cards")
+                                           label="Prioritise Scryfall scans over Photoshop-rendered cards "
+                                                 "(lower quality, but wider range of images)")
