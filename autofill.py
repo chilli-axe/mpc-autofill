@@ -1,33 +1,41 @@
-from selenium.common.exceptions import NoAlertPresentException, UnexpectedAlertPresentException
-from selenium.common.exceptions import NoSuchElementException
-from selenium import webdriver
-from selenium.webdriver import ActionChains
-from selenium.webdriver.support.ui import Select
-import time
-import os
-import xml.etree.ElementTree as ET
-from selenium.webdriver.support.expected_conditions import invisibility_of_element
-from selenium.webdriver.support.ui import WebDriverWait
-import threading
-from googleapiclient.discovery import build
-from google_auth_oauthlib.flow import InstalledAppFlow
-from google.auth.transport.requests import Request
-from googleapiclient.http import MediaIoBaseDownload
-import pickle
 import io
+import os
+import pickle
+import threading
+import time
+import xml.etree.ElementTree as ET
 
-credentials = {"installed":
-                   {"client_id": "768699692145-8dlgu2tmfunlds97qrdjfgr8rhjlv5ea.apps.googleusercontent.com",
-                    "project_id": "quickstart-1586139074859",
-                    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-                    "token_uri": "https://oauth2.googleapis.com/token",
-                    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-                    "client_secret": "qMuWaix3AyCBy-pjwhRTSyPq",
-                    "redirect_uris": ["urn:ietf:wg:oauth:2.0:oob","http://localhost"]}}
+from google.auth.transport.requests import Request
+from google_auth_oauthlib.flow import InstalledAppFlow
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaIoBaseDownload
+from selenium import webdriver
+from selenium.common.exceptions import (NoAlertPresentException,
+                                        NoSuchElementException,
+                                        TimeoutException,
+                                        UnexpectedAlertPresentException)
+from selenium.webdriver import ActionChains
+from selenium.webdriver.support.expected_conditions import \
+    invisibility_of_element
+from selenium.webdriver.support.ui import Select, WebDriverWait
+from tqdm import tqdm
+
+credentials = {
+    "installed": {
+        "client_id":
+        "768699692145-8dlgu2tmfunlds97qrdjfgr8rhjlv5ea.apps.googleusercontent.com",
+        "project_id": "quickstart-1586139074859",
+        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+        "token_uri": "https://oauth2.googleapis.com/token",
+        "auth_provider_x509_cert_url":
+        "https://www.googleapis.com/oauth2/v1/certs",
+        "client_secret": "qMuWaix3AyCBy-pjwhRTSyPq",
+        "redirect_uris": ["urn:ietf:wg:oauth:2.0:oob", "http://localhost"]
+    }
+}
 
 # If modifying these scopes, delete the file token.pickle.
 SCOPES = ['https://www.googleapis.com/auth/drive.readonly']
-
 """
 TODO:
 - Handle the popup "your internet connection is slow so this'll take a while
@@ -43,7 +51,9 @@ def fill_cards(root):
         driver.implicitly_wait(5)
 
         # Load Custom Game Cards (63mm x 88mm) page
-        driver.get("https://www.makeplayingcards.com/design/custom-blank-card.html")
+        print('Configuring MPC For Upload...')
+        driver.get(
+            "https://www.makeplayingcards.com/design/custom-blank-card.html")
 
         # Select card stock
         stock_dropdown = Select(driver.find_element_by_id("dro_paper_type"))
@@ -55,7 +65,8 @@ def fill_cards(root):
 
         # Accept current settings and move to next step
         driver.execute_script(
-            "javascript:doPersonalize('https://www.makeplayingcards.com/products/pro_item_process_flow.aspx')")
+            "javascript:doPersonalize('https://www.makeplayingcards.com/products/pro_item_process_flow.aspx')"
+        )
 
         # Key in the desired number of cards, then move to the next step
         driver.switch_to.frame("sysifm_loginFrame")
@@ -67,26 +78,39 @@ def fill_cards(root):
         driver.execute_script("javascript:setMode('ImageText', 0);")
         driver.switch_to.default_content()
 
-        # Insert card fronts
-        fronts_slot = [x[1].text.strip("][").replace(" ", "").split(",") for x in root[1]]
+        # Create list of cards slots
+        # slots may contain one or more elements
+        fronts_slot = [
+            x[1].text.strip("][").replace(" ", "").split(",") for x in root[1]
+        ]
+
+        print('Uploading artwork...')
         autofillBtn = driver.find_element_by_class_name("autoFill")
-        for i in range(0, len(root[1])):
-            elem = upload_card(driver, root[1][i][0].text)
-            try:
-                if len(fronts_slot[i]) > 1:
-                    for slot in fronts_slot[i]:
-                        # drag and drop card into each slot
-                        drag_drop_card(driver, elem, slot)
-                elif len(fronts_slot[i+1]) > 1:
-                    # click autofill button
-                    autofillBtn.click()
-                    wait(driver)
-            except IndexError:
-                # click autofill button
+
+        t = tqdm(range(0, len(root[1])), leave=True)
+        for i in t:
+            driveID = root[1][i][0].text
+            t.set_description("Uploading: {}".format(driveID))
+            elem = upload_card(driver, driveID)
+
+            # try:
+            # check if current slot is multi slot
+            if len(fronts_slot[i]) > 1:
+                for slot in fronts_slot[i]:
+                    # drag and drop card into each slot (multi)
+                    drag_drop_card(driver, elem, slot)
+            # check if next slot is multi slot
+            elif i + 1 < len(root[1]) and len(fronts_slot[i + 1]) > 1:
+                # click autofill button to prepare for drag and drop
                 autofillBtn.click()
                 wait(driver)
 
             time.sleep(0.3)
+
+        print('All card fronts uploaded!!')
+        print('Auto filling remaining slots...')
+        autofillBtn.click()
+        wait(driver)
 
         # Page through to backs
         driver.execute_script("javascript:oDesign.setNextStep();")
@@ -105,6 +129,7 @@ def fill_cards(root):
         driver.switch_to.frame("sysifm_loginFrame")
 
         if len(root[2]) == 0:
+            print('Uploading Card Backs...')
             # Same cardback for every card
             driver.execute_script("javascript:setMode('ImageText', 1);")
             driver.switch_to.default_content()
@@ -117,19 +142,27 @@ def fill_cards(root):
             driver.switch_to.default_content()
 
             # Insert specified cardbacks
+            print('Uploading Double Sided Card Backs...')
             cards_with_backs = []
             total_cards = int(root[0][0].text)
             for card in root[2]:
                 # Append current cardbacks
-                cards_with_backs.extend(card[1].text.strip('][').replace(" ", "").split(','))
-                upload_and_insert_card(driver, card[0].text, card[1].text.strip('][').replace(" ", "").split(','))
+                cards_with_backs.extend(card[1].text.strip('][').replace(
+                    " ", "").split(','))
+                upload_and_insert_card(
+                    driver, card[0].text,
+                    card[1].text.strip('][').replace(" ", "").split(','))
 
             # Cards that need cardbacks are in range(0, total_cards) - card indexes that already have backs
+            print('Uploading Remaining Card Backs...')
             cards_with_backs = {int(x) for x in cards_with_backs}
-            cards_needing_backs = [x for x in range(0, total_cards) if x not in cards_with_backs]
+            cards_needing_backs = [
+                x for x in range(0, total_cards) if x not in cards_with_backs
+            ]
             upload_and_insert_card(driver, root[3].text, cards_needing_backs)
 
         # Page through to finalise project
+        print('Finalizing Project...')
         driver.execute_script("javascript:oDesign.setNextStep();")
         try:
             alert = driver.switch_to.alert
@@ -141,14 +174,31 @@ def fill_cards(root):
         time.sleep(1)
         driver.execute_script("javascript:oDesign.setNextStep();")
 
-        input("Press enter to finish up.")
+        print('AutoFill Complete!')
+        input(
+            "Please continue with purchase in browser and press enter to finish up once complete."
+        )
 
 
 def wait(driver):
     try:
         wait_elem = driver.find_element_by_id("sysimg_wait")
-        WebDriverWait(driver, 100).until(invisibility_of_element(wait_elem))
+        # wait for drag/drop upload. Modified as was breaking on large quantities
+        while True:
+            try:
+                WebDriverWait(driver,
+                              100).until(invisibility_of_element(wait_elem))
+            except TimeoutException:
+                print('Drag/Drop wait timed out.')
+                print(
+                    'If this repeats for several minutes you may want to check browser for issues.'
+                )
+                print('Restarting wait period...')
+                continue
+            break
+
     except NoSuchElementException:
+        # wait was likely oo fast to catch so continue
         return
 
 
@@ -178,15 +228,16 @@ def upload_card(driver, driveID):
         time.sleep(1)
 
     if os.path.isfile(filepath):
-        num_elems = len(driver.find_elements_by_xpath("//*[contains(@id, 'upload_')]"))
+        num_elems = len(
+            driver.find_elements_by_xpath("//*[contains(@id, 'upload_')]"))
         driver.find_element_by_xpath('//*[@id="uploadId"]').send_keys(filepath)
 
         while True:
             try:
                 # Wait until the image has finished uploading
-                elem = driver.find_elements_by_xpath("//*[contains(@id, 'upload_')]")
+                elem = driver.find_elements_by_xpath(
+                    "//*[contains(@id, 'upload_')]")
                 if len(elem) > num_elems:
-                    print("New card uploaded: {}".format(driveID))
                     time.sleep(1)
                     return elem[-1]
             except UnexpectedAlertPresentException:
@@ -216,11 +267,13 @@ def drag_drop_card(driver, cardElement, slotNumber):
     elem_visible = driver.find_element_by_id("bnbox{}_0_0".format(slotNumber))
     current_y = elem_slot.location['y']
     driver.execute_script("arguments[0].scrollIntoView();", elem_slot)
-    ActionChains(driver).click_and_hold(cardElement).move_to_element(elem_slot).release(elem_slot).perform()
+    ActionChains(driver).click_and_hold(cardElement).move_to_element(
+        elem_slot).release(elem_slot).perform()
     wait(driver)
     while driver.find_element_by_id("dnImg{}_0_0".format(slotNumber)) is None:
         time.sleep(0.3)
-        ActionChains(driver).click_and_hold(cardElement).move_to_element(elem_slot).release(elem_slot).perform()
+        ActionChains(driver).click_and_hold(cardElement).move_to_element(
+            elem_slot).release(elem_slot).perform()
         wait(driver)
 
 
