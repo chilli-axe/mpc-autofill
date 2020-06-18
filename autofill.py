@@ -1,32 +1,17 @@
-from selenium.common.exceptions import NoAlertPresentException, UnexpectedAlertPresentException
-from selenium.common.exceptions import NoSuchElementException
-from selenium import webdriver
+from selenium.common.exceptions import NoAlertPresentException, UnexpectedAlertPresentException, NoSuchElementException
+from selenium.webdriver.support.expected_conditions import invisibility_of_element
+from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver import ActionChains
 from selenium.webdriver.support.ui import Select
+from selenium import webdriver
 import time
 import os
 import xml.etree.ElementTree as ET
-from selenium.webdriver.support.expected_conditions import invisibility_of_element
-from selenium.webdriver.support.ui import WebDriverWait
 import threading
-from googleapiclient.discovery import build
-from google_auth_oauthlib.flow import InstalledAppFlow
-from google.auth.transport.requests import Request
-from googleapiclient.http import MediaIoBaseDownload
-import pickle
-import io
-
-credentials = {"installed":
-                   {"client_id": "768699692145-8dlgu2tmfunlds97qrdjfgr8rhjlv5ea.apps.googleusercontent.com",
-                    "project_id": "quickstart-1586139074859",
-                    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-                    "token_uri": "https://oauth2.googleapis.com/token",
-                    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-                    "client_secret": "qMuWaix3AyCBy-pjwhRTSyPq",
-                    "redirect_uris": ["urn:ietf:wg:oauth:2.0:oob","http://localhost"]}}
-
-# If modifying these scopes, delete the file token.pickle.
-SCOPES = ['https://www.googleapis.com/auth/drive.readonly']
+import numpy as np
+import requests
+from multiprocessing import Pool
+# pyinstaller autofill.py --onefile
 
 """
 TODO:
@@ -37,111 +22,114 @@ TODO:
 
 
 def fill_cards(root):
-    with webdriver.Chrome() as driver:
-        driver.set_window_size(1200, 900)
-        # Set implicit wait for driver
-        driver.implicitly_wait(5)
+    # with webdriver.Chrome() as driver:
+    driver = webdriver.Chrome()
+    driver.set_window_size(1200, 900)
+    # Set implicit wait for driver
+    driver.implicitly_wait(5)
 
-        # Load Custom Game Cards (63mm x 88mm) page
-        driver.get("https://www.makeplayingcards.com/design/custom-blank-card.html")
+    # Load Custom Game Cards (63mm x 88mm) page
+    driver.get("https://www.makeplayingcards.com/design/custom-blank-card.html")
 
-        # Select card stock
-        stock_dropdown = Select(driver.find_element_by_id("dro_paper_type"))
-        stock_dropdown.select_by_visible_text(root[0][2].text)
+    # Select card stock
+    stock_dropdown = Select(driver.find_element_by_id("dro_paper_type"))
+    stock_dropdown.select_by_visible_text(root[0][2].text)
 
-        # Select number of cards
-        qty_dropdown = Select(driver.find_element_by_id("dro_choosesize"))
-        qty_dropdown.select_by_value(root[0][1].text)
+    # Select number of cards
+    qty_dropdown = Select(driver.find_element_by_id("dro_choosesize"))
+    qty_dropdown.select_by_value(root[0][1].text)
 
-        # Accept current settings and move to next step
-        driver.execute_script(
-            "javascript:doPersonalize('https://www.makeplayingcards.com/products/pro_item_process_flow.aspx')")
+    # Accept current settings and move to next step
+    driver.execute_script(
+        "javascript:doPersonalize('https://www.makeplayingcards.com/products/pro_item_process_flow.aspx')")
 
-        # Key in the desired number of cards, then move to the next step
-        driver.switch_to.frame("sysifm_loginFrame")
-        qtyField = driver.find_element_by_id("txt_card_number")
-        qtyField.clear()
-        qtyField.send_keys(root[0][0].text)
+    # Key in the desired number of cards, then move to the next step
+    driver.switch_to.frame("sysifm_loginFrame")
+    qtyField = driver.find_element_by_id("txt_card_number")
+    qtyField.clear()
+    qtyField.send_keys(root[0][0].text)
 
-        # Select "different images" for front
+    # Select "different images" for front
+    driver.execute_script("javascript:setMode('ImageText', 0);")
+    driver.switch_to.default_content()
+
+    # Insert card fronts
+    fronts_slot = [x[1].text.strip("][").replace(" ", "").split(",") for x in root[1]]
+    autofillBtn = driver.find_element_by_class_name("autoFill")
+    for i in range(0, len(root[1])):
+        elem = upload_card(driver, root[1][i][0].text)
+        try:
+            if len(fronts_slot[i]) > 1:
+                for slot in fronts_slot[i]:
+                    # Drag and drop card into each slot
+                    drag_drop_card(driver, elem, slot)
+            elif len(fronts_slot[i + 1]) > 1:
+                # Click autofill button
+                autofillBtn.click()
+                wait(driver)
+        except IndexError:
+            # Click autofill button
+            autofillBtn.click()
+            wait(driver)
+
+        time.sleep(0.3)
+
+    # Page through to backs
+    driver.execute_script("javascript:oDesign.setNextStep();")
+    try:
+        alert = driver.switch_to.alert
+        alert.accept()
+    except NoAlertPresentException:
+        pass
+
+    # Page over to the next step from "add text to fronts"
+    wait(driver)
+    driver.execute_script("javascript:oDesign.setNextStep();")
+
+    # Select "different images" for backs
+    wait(driver)
+    driver.switch_to.frame("sysifm_loginFrame")
+
+    if len(root[2]) == 0:
+        # Same cardback for every card
+        driver.execute_script("javascript:setMode('ImageText', 1);")
+        driver.switch_to.default_content()
+        autofillBtn = driver.find_element_by_class_name("autoFill")
+        upload_card(driver, root[-1].text)
+        autofillBtn.click()
+    else:
+        # Different cardbacks
         driver.execute_script("javascript:setMode('ImageText', 0);")
         driver.switch_to.default_content()
 
-        # Insert card fronts
-        fronts_slot = [x[1].text.strip("][").replace(" ", "").split(",") for x in root[1]]
-        autofillBtn = driver.find_element_by_class_name("autoFill")
-        for i in range(0, len(root[1])):
-            elem = upload_card(driver, root[1][i][0].text)
-            try:
-                if len(fronts_slot[i]) > 1:
-                    for slot in fronts_slot[i]:
-                        # drag and drop card into each slot
-                        drag_drop_card(driver, elem, slot)
-                elif len(fronts_slot[i+1]) > 1:
-                    # click autofill button
-                    autofillBtn.click()
-                    wait(driver)
-            except IndexError:
-                # click autofill button
-                autofillBtn.click()
-                wait(driver)
+        # Insert specified cardbacks
+        cards_with_backs = []
+        total_cards = int(root[0][0].text)
+        for card in root[2]:
+            # Append current cardbacks
+            cards_with_backs.extend(card[1].text.strip('][').replace(" ", "").split(','))
+            upload_and_insert_card(driver, card[0].text, card[1].text.strip('][').replace(" ", "").split(','))
 
-            time.sleep(0.3)
+        # Cards that need cardbacks are in range(0, total_cards) - card indexes that already have backs
+        cards_with_backs = {int(x) for x in cards_with_backs}
+        cards_needing_backs = [x for x in range(0, total_cards) if x not in cards_with_backs]
+        upload_and_insert_card(driver, root[3].text, cards_needing_backs)
 
-        # Page through to backs
-        driver.execute_script("javascript:oDesign.setNextStep();")
-        try:
-            alert = driver.switch_to.alert
-            alert.accept()
-        except NoAlertPresentException:
-            pass
+    # Page through to finalise project
+    driver.execute_script("javascript:oDesign.setNextStep();")
+    try:
+        alert = driver.switch_to.alert
+        alert.accept()
+    except NoAlertPresentException:
+        pass
 
-        # Page over to the next step from "add text to fronts"
-        wait(driver)
-        driver.execute_script("javascript:oDesign.setNextStep();")
-
-        # Select "different images" for backs
-        wait(driver)
-        driver.switch_to.frame("sysifm_loginFrame")
-
-        if len(root[2]) == 0:
-            # Same cardback for every card
-            driver.execute_script("javascript:setMode('ImageText', 1);")
-            driver.switch_to.default_content()
-            autofillBtn = driver.find_element_by_class_name("autoFill")
-            upload_card(driver, root[-1].text)
-            autofillBtn.click()
-        else:
-            # Different cardbacks
-            driver.execute_script("javascript:setMode('ImageText', 0);")
-            driver.switch_to.default_content()
-
-            # Insert specified cardbacks
-            cards_with_backs = []
-            total_cards = int(root[0][0].text)
-            for card in root[2]:
-                # Append current cardbacks
-                cards_with_backs.extend(card[1].text.strip('][').replace(" ", "").split(','))
-                upload_and_insert_card(driver, card[0].text, card[1].text.strip('][').replace(" ", "").split(','))
-
-            # Cards that need cardbacks are in range(0, total_cards) - card indexes that already have backs
-            cards_with_backs = {int(x) for x in cards_with_backs}
-            cards_needing_backs = [x for x in range(0, total_cards) if x not in cards_with_backs]
-            upload_and_insert_card(driver, root[3].text, cards_needing_backs)
-
-        # Page through to finalise project
-        driver.execute_script("javascript:oDesign.setNextStep();")
-        try:
-            alert = driver.switch_to.alert
-            alert.accept()
-        except NoAlertPresentException:
-            pass
-
-        wait(driver)
-        time.sleep(1)
-        driver.execute_script("javascript:oDesign.setNextStep();")
-
-        input("Press enter to finish up.")
+    wait(driver)
+    time.sleep(1)
+    driver.execute_script("javascript:oDesign.setNextStep();")
+    print("Autofill complete!")
+    print("Cards are occasionally not uploaded properly with this tool. "
+          "Please review the order and ensure everything is as you desired before continuing.")
+    input("Continue with saving or purchasing your order in-browser, and press enter to finish up once complete.\n")
 
 
 def wait(driver):
@@ -152,24 +140,32 @@ def wait(driver):
         return
 
 
-def download_card(driveID, service):
-    # create the cards folder if it doesn't exist
-    if not os.path.exists(os.getcwd() + r"\cards"):
-        os.mkdir(os.getcwd() + r"\cards")
-    filepath = os.getcwd() + r"\cards\{}.png".format(driveID)
-    if os.path.exists(filepath):
+# def download_card(driveID, service):
+def download_card(driveID):
+    # Return early if the file already exists
+    pngpath = os.getcwd() + r"\cards\\" + driveID + ".png"
+    jpgpath = os.getcwd() + r"\cards\\" + driveID + ".png"
+    if (os.path.exists(pngpath) and os.path.getsize(pngpath) > 0) and \
+        (os.path.exists(jpgpath) and os.path.getsize(jpgpath) > 0):
         return
-    request = service.files().get_media(fileId=driveID)
-    fh = io.BytesIO()
-    downloader = MediaIoBaseDownload(fh, request)
-    done = False
-    while done is False:
-        status, done = downloader.next_chunk()
 
-    with open(filepath, 'wb') as f:
-        f.write(fh.getvalue())
+    # Query google app to retrieve the card image with the specified drive ID
+    # Credit to https://tanaikech.github.io/2017/03/20/download-files-without-authorization-from-google-drive/
+    # for this fantastic technique
+    r = requests.post(
+        "https://script.google.com/macros/s/AKfycbyIkEI44WXjaeKUKZGe0gb-YicCARr79l6zfJBFWh8dxVnsdP0/exec",
+        data={"id": driveID}
+    )
 
-    print("Finished downloading: {}".format(driveID))
+    # Define the card's filename and filepath
+    filename = driveID + r.json()["name"][-4:]  # include extension from file name
+    filepath = os.getcwd() + r"\cards\\" + filename
+
+    # Download the image
+    f = open(filepath, "bw")
+    f.write(np.array(r.json()["result"], dtype=np.uint8))
+    f.close()
+    print("Finished downloading: {}, as {}".format(r.json()["name"][0:-4], filename))
 
 
 def upload_card(driver, driveID):
@@ -195,7 +191,6 @@ def upload_card(driver, driveID):
                     alert.accept()
                 except NoAlertPresentException:
                     pass
-
     else:
         return ValueError("Yo something broke")
 
@@ -224,28 +219,6 @@ def drag_drop_card(driver, cardElement, slotNumber):
         wait(driver)
 
 
-def login():
-    creds = None
-    # The file token.pickle stores the user's access and refresh tokens, and is
-    # created automatically when the authorization flow completes for the first
-    # time.
-    if os.path.exists('token.pickle'):
-        with open('token.pickle', 'rb') as token:
-            creds = pickle.load(token)
-    # If there are no (valid) credentials available, let the user log in.
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
-            flow = InstalledAppFlow.from_client_config(credentials, SCOPES)
-            creds = flow.run_local_server(port=0)
-        # Save the credentials for the next run
-        with open('token.pickle', 'wb') as token:
-            pickle.dump(creds, token)
-
-    return build('drive', 'v3', credentials=creds)
-
-
 class CardDownloadThread(threading.Thread):
     def __init__(self, driveIDs):
         threading.Thread.__init__(self)
@@ -253,9 +226,13 @@ class CardDownloadThread(threading.Thread):
 
     def run(self):
         print("Kicking off Google Drive downloader thread")
-        service = login()
-        for driveID in self.driveIDs:
-            download_card(driveID, service)
+        # Create the cards folder if it doesn't exist
+        if not os.path.exists(os.getcwd() + r"\cards"):
+            os.mkdir(os.getcwd() + r"\cards")
+
+        # Parallelise downloading of card images by 5 because it's horribly slow otherwise
+        p = Pool(5)
+        p.map(download_card, self.driveIDs)
         print("Downloaded all cards in the order")
 
 
@@ -266,7 +243,13 @@ class WebDriverThread(threading.Thread):
 
     def run(self):
         print("Kicking off webdriver thread")
-        fill_cards(self.root)
+        try:
+            fill_cards(self.root)
+        except Exception as e:
+            print("Error encountered:")
+            print(e)
+            input("Press enter to finish up. (The script will continue to download your card images until you exit.)\n")
+            exit()
 
 
 if __name__ == "__main__":
@@ -280,13 +263,13 @@ if __name__ == "__main__":
     driveIDs.extend([root[-1].text])
 
     # create each thread
-    download_thread = CardDownloadThread(driveIDs=driveIDs)
     webdriver_thread = WebDriverThread(root)
+    download_thread = CardDownloadThread(driveIDs=driveIDs)
 
     # start each thread
-    download_thread.start()
     webdriver_thread.start()
+    download_thread.start()
 
     # join threads
-    download_thread.join()
     webdriver_thread.join()
+    download_thread.join()
