@@ -145,6 +145,7 @@ def fill_cards(root):
 
     # Page through to finalise project
     print("Finalizing Project...")
+    
     driver.execute_script("javascript:oDesign.setNextStep();")
     try:
         alert = driver.switch_to.alert
@@ -156,6 +157,7 @@ def fill_cards(root):
     time.sleep(1)
     driver.execute_script("javascript:oDesign.setNextStep();")
     print("Autofill complete!")
+
     print(
         "Cards are occasionally not uploaded properly with this tool. "
         "Please review the order and ensure everything is as you desired before continuing."
@@ -201,19 +203,19 @@ def download_card(driveID):
     # for this fantastic technique
     r = requests.post(
         "https://script.google.com/macros/s/AKfycbyIkEI44WXjaeKUKZGe0gb-YicCARr79l6zfJBFWh8dxVnsdP0/exec",
-        data={"id": driveID})
+        data={"id": driveID}
+    )
 
     # Define the card's filename and filepath
-    filename = driveID + r.json()["name"][
-        -4:]  # include extension from file name
+    filename = driveID + r.json()["name"][-4:]  # include extension from file name
     filepath = os.getcwd() + r"\cards\\" + filename
 
     # Download the image
     f = open(filepath, "bw")
     f.write(np.array(r.json()["result"], dtype=np.uint8))
     f.close()
-    print("Finished downloading: {}, as {}".format(r.json()["name"][0:-4],
-                                                   filename))
+
+    print("Finished downloading: {}, as {}".format(r.json()["name"][0:-4], filename))
 
 
 def upload_card(driver, driveID):
@@ -303,7 +305,6 @@ class WebDriverThread(threading.Thread):
             input(
                 "Press enter to finish up. (The script will continue to download your card images until you exit.)\n"
             )
-            exit()
 
 
 if __name__ == "__main__":
