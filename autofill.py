@@ -1,29 +1,45 @@
-from selenium.common.exceptions import NoAlertPresentException, UnexpectedAlertPresentException, NoSuchElementException
+# To package up as executable, run this in command prompt: pyinstaller autofill.py --onefile --hidden-import=colorama
+import colorama
+from selenium.common.exceptions import (
+    NoAlertPresentException,
+    UnexpectedAlertPresentException,
+    NoSuchElementException,
+    TimeoutException)
 from selenium.webdriver.support.expected_conditions import invisibility_of_element
-from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support.ui import WebDriverWait, Select
 from selenium.webdriver import ActionChains
-from selenium.webdriver.support.ui import Select
+from selenium.webdriver.chrome.options import Options
 from selenium import webdriver
 import time
 import os
+import sys
 import xml.etree.ElementTree as ET
-import threading
 import numpy as np
 import requests
-from multiprocessing import Pool
-# pyinstaller autofill.py --onefile
+import glob
+from tqdm import tqdm
+from concurrent.futures import ThreadPoolExecutor
+from functools import partial
+
+# On macOS, os.getcwd() doesn't work as expected - retrieve the executable's directory another way instead
+if getattr(sys, 'frozen', False):
+    currdir = os.path.dirname(os.path.realpath(sys.executable))
+else:
+    currdir = os.getcwd()
 
 """
 TODO:
-- Handle the popup "your internet connection is slow so this'll take a while
+- Handle the popup "your internet connection is slow so this'll take a while"
 - Would be nice to have a way of deselecting text bc sometimes the script selects a bunch of content on the page and
   it's slightly ugly
 """
 
 
-def fill_cards(root):
-    # with webdriver.Chrome() as driver:
-    driver = webdriver.Chrome()
+def fill_cards(bar: tqdm, root):
+    chrome_options = Options()
+    chrome_options.add_argument('--log-level=3')
+    chrome_options.add_experimental_option('excludeSwitches', ['enable-logging'])
+    driver = webdriver.Chrome(options=chrome_options)
     driver.set_window_size(1200, 900)
     # Set implicit wait for driver
     driver.implicitly_wait(5)
@@ -57,7 +73,9 @@ def fill_cards(root):
     fronts_slot = [x[1].text.strip("][").replace(" ", "").split(",") for x in root[1]]
     autofillBtn = driver.find_element_by_class_name("autoFill")
     for i in range(0, len(root[1])):
-        elem = upload_card(driver, root[1][i][0].text)
+        driveID = root[1][i][0].text
+        elem = upload_card(driver, driveID)
+        # TODO: Is this try/catch block strong enough / not causing issues?
         try:
             if len(fronts_slot[i]) > 1:
                 for slot in fronts_slot[i]:
@@ -73,6 +91,7 @@ def fill_cards(root):
             wait(driver)
 
         time.sleep(0.3)
+        bar.update(1)
 
     # Page through to backs
     driver.execute_script("javascript:oDesign.setNextStep();")
@@ -97,6 +116,7 @@ def fill_cards(root):
         autofillBtn = driver.find_element_by_class_name("autoFill")
         upload_card(driver, root[-1].text)
         autofillBtn.click()
+        bar.update(1)
     else:
         # Different cardbacks
         driver.execute_script("javascript:setMode('ImageText', 0);")
@@ -109,11 +129,13 @@ def fill_cards(root):
             # Append current cardbacks
             cards_with_backs.extend(card[1].text.strip('][').replace(" ", "").split(','))
             upload_and_insert_card(driver, card[0].text, card[1].text.strip('][').replace(" ", "").split(','))
+            bar.update(1)
 
         # Cards that need cardbacks are in range(0, total_cards) - card indexes that already have backs
         cards_with_backs = {int(x) for x in cards_with_backs}
         cards_needing_backs = [x for x in range(0, total_cards) if x not in cards_with_backs]
         upload_and_insert_card(driver, root[3].text, cards_needing_backs)
+        bar.update(1)
 
     # Page through to finalise project
     driver.execute_script("javascript:oDesign.setNextStep();")
@@ -122,36 +144,45 @@ def fill_cards(root):
         alert.accept()
     except NoAlertPresentException:
         pass
-
     wait(driver)
     time.sleep(1)
     driver.execute_script("javascript:oDesign.setNextStep();")
-    print("Autofill complete!")
-    print("Cards are occasionally not uploaded properly with this tool. "
-          "Please review the order and ensure everything is as you desired before continuing.")
-    input("Continue with saving or purchasing your order in-browser, and press enter to finish up once complete.\n")
+
+    # Page over to the next step from "add text to backs"
+    wait(driver)
+    driver.execute_script("javascript:oDesign.setNextStep();")
 
 
 def wait(driver):
+    # Wait until the loading circle on MPC disappears before exiting from this function
     try:
         wait_elem = driver.find_element_by_id("sysimg_wait")
-        WebDriverWait(driver, 100).until(invisibility_of_element(wait_elem))
+        while True:
+            try:
+                WebDriverWait(driver, 100).until(invisibility_of_element(wait_elem))
+            except TimeoutException:
+                continue
+            break
     except NoSuchElementException:
         return
 
 
-# def download_card(driveID, service):
-def download_card(driveID):
+def download_card(bar: tqdm, driveID):
+    cards_folder = currdir + "/cards"
+    if not os.path.exists(cards_folder):
+        os.mkdir(cards_folder)
+
     # Return early if the file already exists
-    pngpath = os.getcwd() + r"\cards\\" + driveID + ".png"
-    jpgpath = os.getcwd() + r"\cards\\" + driveID + ".png"
-    if (os.path.exists(pngpath) and os.path.getsize(pngpath) > 0) and \
-        (os.path.exists(jpgpath) and os.path.getsize(jpgpath) > 0):
+    # (looks for any file with the drive ID as the filename, regardless of extension)
+    if glob.glob(cards_folder + "/{}.*".format(driveID)):
+        # Card has already been downloaded - increment progress bar and return
+        time.sleep(0.1)
+        bar.update(1)
+        time.sleep(0.1)
         return
 
     # Query google app to retrieve the card image with the specified drive ID
     # Credit to https://tanaikech.github.io/2017/03/20/download-files-without-authorization-from-google-drive/
-    # for this fantastic technique
     r = requests.post(
         "https://script.google.com/macros/s/AKfycbyIkEI44WXjaeKUKZGe0gb-YicCARr79l6zfJBFWh8dxVnsdP0/exec",
         data={"id": driveID}
@@ -159,30 +190,34 @@ def download_card(driveID):
 
     # Define the card's filename and filepath
     filename = driveID + r.json()["name"][-4:]  # include extension from file name
-    filepath = os.getcwd() + r"\cards\\" + filename
+    filepath = cards_folder + "/" + filename
 
     # Download the image
     f = open(filepath, "bw")
     f.write(np.array(r.json()["result"], dtype=np.uint8))
     f.close()
-    print("Finished downloading: {}, as {}".format(r.json()["name"][0:-4], filename))
+
+    # Increment progress bar
+    bar.update(1)
 
 
 def upload_card(driver, driveID):
-    filepath = os.getcwd() + "\cards\{}.png".format(driveID)
-    while not os.path.exists(filepath):
+    cards_folder = currdir + "/cards"
+    # Wait until any file with the drive ID as the filename, regardless of extension, is found
+    while not glob.glob(cards_folder + "/{}.*".format(driveID)):
         time.sleep(1)
+    # The filepath for this card is the first file found with the drive ID as filename,
+    # regardless of extension
+    filepath = glob.glob(cards_folder + "/{}.*".format(driveID))[0]
 
     if os.path.isfile(filepath):
         num_elems = len(driver.find_elements_by_xpath("//*[contains(@id, 'upload_')]"))
         driver.find_element_by_xpath('//*[@id="uploadId"]').send_keys(filepath)
-
         while True:
             try:
                 # Wait until the image has finished uploading
                 elem = driver.find_elements_by_xpath("//*[contains(@id, 'upload_')]")
                 if len(elem) > num_elems:
-                    print("New card uploaded: {}".format(driveID))
                     time.sleep(1)
                     return elem[-1]
             except UnexpectedAlertPresentException:
@@ -196,6 +231,7 @@ def upload_card(driver, driveID):
 
 
 def upload_and_insert_card(driver, driveID, slots):
+    # Upload card
     elem = upload_card(driver, driveID)
     if type(elem) != list:
         elem = [elem]
@@ -219,57 +255,33 @@ def drag_drop_card(driver, cardElement, slotNumber):
         wait(driver)
 
 
-class CardDownloadThread(threading.Thread):
-    def __init__(self, driveIDs):
-        threading.Thread.__init__(self)
-        self.driveIDs = driveIDs
-
-    def run(self):
-        print("Kicking off Google Drive downloader thread")
-        # Create the cards folder if it doesn't exist
-        if not os.path.exists(os.getcwd() + r"\cards"):
-            os.mkdir(os.getcwd() + r"\cards")
-
-        # Parallelise downloading of card images by 5 because it's horribly slow otherwise
-        p = Pool(5)
-        p.map(download_card, self.driveIDs)
-        print("Downloaded all cards in the order")
-
-
-class WebDriverThread(threading.Thread):
-    def __init__(self, root):
-        threading.Thread.__init__(self)
-        self.root = root
-
-    def run(self):
-        print("Kicking off webdriver thread")
-        try:
-            fill_cards(self.root)
-        except Exception as e:
-            print("Error encountered:")
-            print(e)
-            input("Press enter to finish up. (The script will continue to download your card images until you exit.)\n")
-            exit()
-
-
 if __name__ == "__main__":
-    # parse XML doc
-    tree = ET.parse("cards.xml")
+    print("Welcome to MPC Autofill!")
+    # Parse XML doc
+    tree = ET.parse(currdir + "/cards.xml")
     root = tree.getroot()
 
-    # retrieve google drive IDs for downloader thread
+    # Retrieve google drive IDs
     driveIDs = [x[0].text for x in root[1]]
     driveIDs.extend([x[0].text for x in root[2]])
     driveIDs.extend([root[-1].text])
+    print("Successfully read XML file. Starting card downloader and webdriver processes.")
 
-    # create each thread
-    webdriver_thread = WebDriverThread(root)
-    download_thread = CardDownloadThread(driveIDs=driveIDs)
-
-    # start each thread
-    webdriver_thread.start()
-    download_thread.start()
-
-    # join threads
-    webdriver_thread.join()
-    download_thread.join()
+    # Create ThreadPoolExecutor to download card images with, and progress bars for downloading and uploading
+    with ThreadPoolExecutor(max_workers=5) as pool, \
+        tqdm(position=0, total=len(driveIDs), desc="DL", leave=True) as dl_progress, \
+        tqdm(position=1, total=len(driveIDs), desc="UL", leave=False) as ul_progress:
+        # Download each card image in parallel, with the same progress bar input each time
+        pool.map(partial(download_card, dl_progress), driveIDs)
+        # Launch the main webdriver automation function
+        fill_cards(ul_progress, root)
+        dl_progress.close()
+        ul_progress.close()
+        print("")
+    input("Autofill complete!\n"
+          "Cards are occasionally not uploaded properly with this tool.\n"
+          "Please review the order and ensure everything is as you desired before closing \n"
+          "closing MPC Autofill. If you need to make any changes to your order, you can \n"
+          "do so by first adding it to your Saved Projects.\n"
+          "Continue with saving or purchasing your order in-browser, and press enter to \n"
+          "finish up once complete.\n")
