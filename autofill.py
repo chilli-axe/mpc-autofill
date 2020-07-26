@@ -265,23 +265,43 @@ if __name__ == "__main__":
     driveIDs = [x[0].text for x in root[1]]
     driveIDs.extend([x[0].text for x in root[2]])
     driveIDs.extend([root[-1].text])
-    print("Successfully read XML file. Starting card downloader and webdriver processes.")
 
-    # Create ThreadPoolExecutor to download card images with, and progress bars for downloading and uploading
-    with ThreadPoolExecutor(max_workers=5) as pool, \
-        tqdm(position=0, total=len(driveIDs), desc="DL", leave=True) as dl_progress, \
-        tqdm(position=1, total=len(driveIDs), desc="UL", leave=False) as ul_progress:
-        # Download each card image in parallel, with the same progress bar input each time
-        pool.map(partial(download_card, dl_progress), driveIDs)
-        # Launch the main webdriver automation function
-        fill_cards(ul_progress, root)
-        dl_progress.close()
-        ul_progress.close()
+    # Ensure compatibility with cards.xml's generated with previous versions of the site
+    try:
+        download_only = root[0][3].text == "true"
+    except IndexError:
+        download_only = False
+
+    # On mpcautofill.com, the user can opt to not upload images to MPC, but rather to only download them
+    if download_only:
+        print("Successfully read XML file. Starting card downloader process.")
+        # Create ThreadPoolExecutor to download card images with, and a progress bar for downloading
+        with ThreadPoolExecutor(max_workers=5) as pool, \
+            tqdm(position=0, total=len(driveIDs), desc="DL", leave=True) as dl_progress:
+            # TODO: Not sure why this progress bar doesn't update like it does in the default autofill behaviour
+            # TODO: Also not sure why the progress bar disappears
+            for _ in pool.map(partial(download_card, dl_progress), driveIDs):
+                dl_progress.update(1)
+            dl_progress.close()
         print("")
-    input("Autofill complete!\n"
-          "Cards are occasionally not uploaded properly with this tool.\n"
-          "Please review the order and ensure everything is as you desired before closing \n"
-          "closing MPC Autofill. If you need to make any changes to your order, you can \n"
-          "do so by first adding it to your Saved Projects.\n"
-          "Continue with saving or purchasing your order in-browser, and press enter to \n"
-          "finish up once complete.\n")
+        input("All specified card images downloaded! Press enter to finish up.")
+    else:
+        print("Successfully read XML file. Starting card downloader and webdriver processes.")
+        # Create ThreadPoolExecutor to download card images with, and progress bars for downloading and uploading
+        with ThreadPoolExecutor(max_workers=5) as pool, \
+            tqdm(position=0, total=len(driveIDs), desc="DL", leave=True) as dl_progress, \
+            tqdm(position=1, total=len(driveIDs), desc="UL", leave=False) as ul_progress:
+            # Download each card image in parallel, with the same progress bar input each time
+            pool.map(partial(download_card, dl_progress), driveIDs)
+            # Launch the main webdriver automation function
+            fill_cards(ul_progress, root)
+            dl_progress.close()
+            ul_progress.close()
+        print("")
+        input("Autofill complete!\n" 
+              "Cards are occasionally not uploaded properly with this tool.\n" 
+              "Please review the order and ensure everything is as you desired before closing \n" 
+              "closing MPC Autofill. If you need to make any changes to your order, you can \n" 
+              "do so by first adding it to your Saved Projects.\n" 
+              "Continue with saving or purchasing your order in-browser, and press enter to \n" 
+              "finish up once complete.\n")
