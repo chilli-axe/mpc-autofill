@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 
 import os
+# from cardpicker.search_backends import CustomElasticSearchEngine
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -27,6 +28,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+# SESSION_COOKIE_SECURE = True
+# CSRF_COOKIE_SECURE = True
 
 # Application definition
 
@@ -38,7 +41,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'haystack',
     'crispy_forms',
+    'django_user_agents',
 ]
 
 MIDDLEWARE = [
@@ -49,6 +54,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django_user_agents.middleware.UserAgentMiddleware',
 ]
 
 ROOT_URLCONF = 'MPCAutofill.urls'
@@ -122,9 +128,18 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "static"),
-    '/cardpicker/static',
+    os.path.normpath(os.path.join(BASE_DIR, "static")),
+    os.path.normpath(os.path.join(BASE_DIR, '/cardpicker/static')),
 ]
 
 STATIC_ROOT = os.path.join(os.path.dirname(BASE_DIR), "staticroot")
 
+# Haystack search
+ELASTICSEARCH_DEFAULT_ANALYZER = 'standard'
+HAYSTACK_CONNECTIONS = {
+    'default': {
+        'ENGINE': 'cardpicker.search_backends.CustomElasticsearchEngine',
+        'URL': 'http://127.0.0.1:9200/',
+        'INDEX_NAME': 'haystack',
+    },
+}
