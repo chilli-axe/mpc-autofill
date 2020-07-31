@@ -16,7 +16,7 @@ Other:
 * A Google account with the desired Google Drives to index with the site added as shared Drives
 
 # Setup
-1. Clone this repo somewhere on your computer
+1. Clone this repo somewhere on your server
 2. In the same directory as the repo, create a folder called `staticroot` - by default, the database updater stores card images here
 3. Deploy the Django project (I'm using AWS Lightsail for Ubuntu) with a webserver (I'm using Apache) and serve static files with another webserver (I'm using nginx)
 4. Run Elasticsearch, preferably as a service to ensure it always runs in the background
