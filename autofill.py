@@ -1,5 +1,7 @@
-# To package up as executable, run this in command prompt: pyinstaller autofill.py --onefile --hidden-import=colorama
+# To package up as executable, run this in command prompt:
+# pyinstaller --onefile --hidden-import=colorama --icon=favicon.ico autofill.py
 import colorama
+from webdriver_manager.chrome import ChromeDriverManager
 from selenium.common.exceptions import (
     NoAlertPresentException,
     UnexpectedAlertPresentException,
@@ -7,19 +9,25 @@ from selenium.common.exceptions import (
     TimeoutException)
 from selenium.webdriver.support.expected_conditions import invisibility_of_element
 from selenium.webdriver.support.ui import WebDriverWait, Select
-from selenium.webdriver import ActionChains
-from selenium.webdriver.chrome.options import Options
 from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 import time
 import os
 import sys
 import xml.etree.ElementTree as ET
 import numpy as np
 import requests
-import glob
 from tqdm import tqdm
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial
+import queue
+
+# Disable logging messages for webdriver_manager
+os.environ['WDM_LOG_LEVEL'] = '0'
+
+q_front = queue.Queue()
+q_back = queue.Queue()
+q_cardback = queue.Queue()
 
 # On macOS, os.getcwd() doesn't work as expected - retrieve the executable's directory another way instead
 if getattr(sys, 'frozen', False):
@@ -27,23 +35,19 @@ if getattr(sys, 'frozen', False):
 else:
     currdir = os.getcwd()
 
-"""
-TODO:
-- Handle the popup "your internet connection is slow so this'll take a while"
-- Would be nice to have a way of deselecting text bc sometimes the script selects a bunch of content on the page and
-  it's slightly ugly
-"""
+cards_folder = currdir + "/cards"
+if not os.path.exists(cards_folder):
+    os.mkdir(cards_folder)
 
 
-def fill_cards(bar: tqdm, root):
-    chrome_options = Options()
-    chrome_options.add_argument('--log-level=3')
-    chrome_options.add_experimental_option('excludeSwitches', ['enable-logging'])
-    driver = webdriver.Chrome(options=chrome_options)
-    driver.set_window_size(1200, 900)
-    # Set implicit wait for driver
-    driver.implicitly_wait(5)
+def text_to_list(input_text):
+    # Helper function to translate strings like "[2, 4, 5, 6]" into lists
+    if input_text == "":
+        return []
+    return [int(x) for x in input_text.strip('][').replace(" ", "").split(',')]
 
+
+def fill_cards(bar: tqdm, driver, root):
     # Load Custom Game Cards (63mm x 88mm) page
     driver.get("https://www.makeplayingcards.com/design/custom-blank-card.html")
 
@@ -55,42 +59,31 @@ def fill_cards(bar: tqdm, root):
     qty_dropdown = Select(driver.find_element_by_id("dro_choosesize"))
     qty_dropdown.select_by_value(root[0][1].text)
 
+    # Switch the finish to foil if the user ordered foil cards
+    if root[0][3].text == "foil":
+        foil_dropdown = Select(driver.find_element_by_id("dro_product_effect"))
+        foil_dropdown.select_by_value("Holographic (card front)")
+
     # Accept current settings and move to next step
     driver.execute_script(
         "javascript:doPersonalize('https://www.makeplayingcards.com/products/pro_item_process_flow.aspx')")
 
     # Key in the desired number of cards, then move to the next step
+    # TODO: can we do this with javascript / another way? currently it can be interrupted
     driver.switch_to.frame("sysifm_loginFrame")
-    qtyField = driver.find_element_by_id("txt_card_number")
-    qtyField.clear()
-    qtyField.send_keys(root[0][0].text)
+    qtyfield = driver.find_element_by_id("txt_card_number")
+    qtyfield.clear()
+    qtyfield.send_keys(root[0][0].text)
 
     # Select "different images" for front
     driver.execute_script("javascript:setMode('ImageText', 0);")
     driver.switch_to.default_content()
 
     # Insert card fronts
-    fronts_slot = [x[1].text.strip("][").replace(" ", "").split(",") for x in root[1]]
-    autofillBtn = driver.find_element_by_class_name("autoFill")
-    for i in range(0, len(root[1])):
-        driveID = root[1][i][0].text
-        elem = upload_card(driver, driveID)
-        # TODO: Is this try/catch block strong enough / not causing issues?
-        try:
-            if len(fronts_slot[i]) > 1:
-                for slot in fronts_slot[i]:
-                    # Drag and drop card into each slot
-                    drag_drop_card(driver, elem, slot)
-            elif len(fronts_slot[i + 1]) > 1:
-                # Click autofill button
-                autofillBtn.click()
-                wait(driver)
-        except IndexError:
-            # Click autofill button
-            autofillBtn.click()
-            wait(driver)
-
-        time.sleep(0.3)
+    for i in range(0, len(cardsinfo_front)):
+        curr_card = q_front.get()
+        pid = upload_card(driver, curr_card[0])
+        insert_card(driver, pid, curr_card[1])
         bar.update(1)
 
     # Page through to backs
@@ -113,10 +106,13 @@ def fill_cards(bar: tqdm, root):
         # Same cardback for every card
         driver.execute_script("javascript:setMode('ImageText', 1);")
         driver.switch_to.default_content()
-        autofillBtn = driver.find_element_by_class_name("autoFill")
-        upload_card(driver, root[-1].text)
-        autofillBtn.click()
+
+        # Pull the common cardback card info off the queue, then upload and insert it
+        curr_card = q_cardback.get()
+        pid = upload_card(driver, curr_card[0])
+        insert_card(driver, pid, [0])
         bar.update(1)
+
     else:
         # Different cardbacks
         driver.execute_script("javascript:setMode('ImageText', 0);")
@@ -124,17 +120,24 @@ def fill_cards(bar: tqdm, root):
 
         # Insert specified cardbacks
         cards_with_backs = []
-        total_cards = int(root[0][0].text)
-        for card in root[2]:
-            # Append current cardbacks
-            cards_with_backs.extend(card[1].text.strip('][').replace(" ", "").split(','))
-            upload_and_insert_card(driver, card[0].text, card[1].text.strip('][').replace(" ", "").split(','))
+        for i in range(0, len(cardsinfo_back)):
+            curr_card = q_back.get()
+            pid = upload_card(driver, curr_card[0])
+            insert_card(driver, pid, curr_card[1])
+
+            # Keep track of the back slots we've filled
+            cards_with_backs.extend(curr_card[1])
             bar.update(1)
 
-        # Cards that need cardbacks are in range(0, total_cards) - card indexes that already have backs
-        cards_with_backs = {int(x) for x in cards_with_backs}
+        # Determine which slots require the common cardback
+        # TODO: Is there a more efficient way to do this? Look at DOM instead?
+        total_cards = int(root[0][0].text)
         cards_needing_backs = [x for x in range(0, total_cards) if x not in cards_with_backs]
-        upload_and_insert_card(driver, root[3].text, cards_needing_backs)
+
+        # Upload and insert the common cardback
+        curr_card = q_cardback.get()
+        pid = upload_card(driver, curr_card[0])
+        insert_card(driver, pid, cards_needing_backs)
         bar.update(1)
 
     # Page through to finalise project
@@ -167,59 +170,69 @@ def wait(driver):
         return
 
 
-def download_card(bar: tqdm, driveID):
-    cards_folder = currdir + "/cards"
-    if not os.path.exists(cards_folder):
-        os.mkdir(cards_folder)
-
-    # Return early if the file already exists
-    # (looks for any file with the drive ID as the filename, regardless of extension)
-    if glob.glob(cards_folder + "/{}.*".format(driveID)):
-        # Card has already been downloaded - increment progress bar and return
-        time.sleep(0.1)
-        bar.update(1)
-        time.sleep(0.1)
-        return
-
+def download_card(bar: tqdm, cardinfo):
     # Query google app to retrieve the card image with the specified drive ID
     # Credit to https://tanaikech.github.io/2017/03/20/download-files-without-authorization-from-google-drive/
-    r = requests.post(
-        "https://script.google.com/macros/s/AKfycbyIkEI44WXjaeKUKZGe0gb-YicCARr79l6zfJBFWh8dxVnsdP0/exec",
-        data={"id": driveID}
+    # The first request retrieves the file's name, so we can determine if it's been downloaded or not
+    r_info = requests.post(
+        "https://script.google.com/macros/s/AKfycbw90rkocSdppkEuyVdsTuZNslrhd5zNT3XMgfucNMM1JjhLl-Q/exec",
+        data={"id": cardinfo[0]}
     )
 
-    # Define the card's filename and filepath
-    filename = driveID + r.json()["name"][-4:]  # include extension from file name
+    filename_split = r_info.json()["name"].rsplit(".", 1)
+    filename = filename_split[0] + " (" + cardinfo[0] + ")." + filename_split[1]
     filepath = cards_folder + "/" + filename
 
-    # Download the image
-    f = open(filepath, "bw")
-    f.write(np.array(r.json()["result"], dtype=np.uint8))
-    f.close()
+    # Download the image if it doesn't exist, or if it does exist but it's empty
+    if not os.path.isfile(filepath) or os.path.getsize(filepath) <= 0:
+        # The second request for file contents
+        # This is in a while loop so it'll request multiple times if the first request(/s) don't return valid data
+        filecontents = []
+        while len(filecontents) <= 0:
+            r_contents = requests.post(
+                "https://script.google.com/macros/s/AKfycbzJxEePf99FQYbnLhWQZXOayIRBg_ayoX5mrA4eA49F1PFDdJY/exec",
+                data={"id": cardinfo[0]}
+            )
+            filecontents = r_contents.json()["result"]
+
+        # Download the image
+        f = open(filepath, "bw")
+        f.write(np.array(filecontents, dtype=np.uint8))
+        f.close()
+
+    # Add to the appropriate queue
+    card_item = (cards_folder + "/" + filename, text_to_list(cardinfo[1]))
+    if cardinfo[2] == "front":
+        q_front.put(card_item)
+    elif cardinfo[2] == "back":
+        q_back.put(card_item)
+    elif cardinfo[2] == "cardback":
+        q_cardback.put(card_item)
 
     # Increment progress bar
     bar.update(1)
 
 
-def upload_card(driver, driveID):
-    cards_folder = currdir + "/cards"
-    # Wait until any file with the drive ID as the filename, regardless of extension, is found
-    while not glob.glob(cards_folder + "/{}.*".format(driveID)):
-        time.sleep(1)
-    # The filepath for this card is the first file found with the drive ID as filename,
-    # regardless of extension
-    filepath = glob.glob(cards_folder + "/{}.*".format(driveID))[0]
-
+def upload_card(driver, filepath):
     if os.path.isfile(filepath):
         num_elems = len(driver.find_elements_by_xpath("//*[contains(@id, 'upload_')]"))
-        driver.find_element_by_xpath('//*[@id="uploadId"]').send_keys(filepath)
+
+        progress_container = driver.find_element_by_id("divFileProgressContainer")
+        while progress_container.value_of_css_property("display") == "none":
+            # Attempt to upload card until the upload progress bar appears
+            driver.find_element_by_xpath('//*[@id="uploadId"]').send_keys(filepath)
+            time.sleep(1)
+            progress_container = driver.find_element_by_id("divFileProgressContainer")
+
         while True:
             try:
                 # Wait until the image has finished uploading
                 elem = driver.find_elements_by_xpath("//*[contains(@id, 'upload_')]")
                 if len(elem) > num_elems:
-                    time.sleep(1)
-                    return elem[-1]
+                    # Return the uploaded card's PID so we can easily insert it into slots
+                    return elem[-1].get_attribute("pid")
+
+                time.sleep(1)
             except UnexpectedAlertPresentException:
                 try:
                     alert = driver.switch_to.alert
@@ -227,81 +240,79 @@ def upload_card(driver, driveID):
                 except NoAlertPresentException:
                     pass
     else:
-        return ValueError("Yo something broke")
+        return ValueError("Card image file not found.")
 
 
-def upload_and_insert_card(driver, driveID, slots):
-    # Upload card
-    elem = upload_card(driver, driveID)
-    if type(elem) != list:
-        elem = [elem]
-
-    # Insert card into the appropriate slots
-    time.sleep(1)
+def insert_card(driver, pid, slots):
+    # Use mpc's JS functions to insert cards without dragging/dropping
+    driver.execute_script("javascript: l = PageLayout.prototype")
     for slot in slots:
-        drag_drop_card(driver, elem[-1], slot)
-
-
-def drag_drop_card(driver, cardElement, slotNumber):
-    elem_slot = driver.find_element_by_id("fmItem{}_0".format(slotNumber))
-    elem_visible = driver.find_element_by_id("bnbox{}_0_0".format(slotNumber))
-    current_y = elem_slot.location['y']
-    driver.execute_script("arguments[0].scrollIntoView();", elem_slot)
-    ActionChains(driver).click_and_hold(cardElement).move_to_element(elem_slot).release(elem_slot).perform()
-    wait(driver)
-    while driver.find_element_by_id("dnImg{}_0_0".format(slotNumber)) is None:
-        time.sleep(0.3)
-        ActionChains(driver).click_and_hold(cardElement).move_to_element(elem_slot).release(elem_slot).perform()
+        # Insert the card into each slot and wait for the page to load before continuing
+        cmd = "javascript:l.applyDragPhoto(l.getElement3(\"dnImg\", {}), 0, \"{}\")".format(slot, pid)
+        driver.execute_script(cmd)
         wait(driver)
 
 
 if __name__ == "__main__":
-    print("Welcome to MPC Autofill!")
+    print("MPC Autofill initialising.")
+
     # Parse XML doc
-    tree = ET.parse(currdir + "/cards.xml")
+    try:
+        tree = ET.parse(currdir + "/cards.xml")
+    except FileNotFoundError:
+        try:
+            tree = ET.parse(currdir + "/cards.xml.txt")
+        except FileNotFoundError:
+            input("cards.xml not found in this directory. Press enter to exit.")
+            sys.exit(0)
     root = tree.getroot()
 
     # Retrieve google drive IDs
-    driveIDs = [x[0].text for x in root[1]]
-    driveIDs.extend([x[0].text for x in root[2]])
-    driveIDs.extend([root[-1].text])
-
-    # Ensure compatibility with cards.xml's generated with previous versions of the site
-    try:
-        download_only = root[0][3].text == "true"
-    except IndexError:
-        download_only = False
+    cardsinfo_front = [(x[0].text, x[1].text, "front") for x in root[1]]
+    cardsinfo_back = [(x[0].text, x[1].text, "back") for x in root[2]]
+    cardsinfo_cardback = [(root[-1].text, "", "cardback")]
+    cardsinfo = cardsinfo_front + cardsinfo_back + cardsinfo_cardback
 
     # On mpcautofill.com, the user can opt to not upload images to MPC, but rather to only download them
-    if download_only:
+    if root[0][3].text == "true":
         print("Successfully read XML file. Starting card downloader process.")
         # Create ThreadPoolExecutor to download card images with, and a progress bar for downloading
         with ThreadPoolExecutor(max_workers=5) as pool, \
-            tqdm(position=0, total=len(driveIDs), desc="DL", leave=True) as dl_progress:
+            tqdm(position=0, total=len(cardsinfo), desc="DL", leave=True) as dl_progress:
             # TODO: Not sure why this progress bar doesn't update like it does in the default autofill behaviour
             # TODO: Also not sure why the progress bar disappears
-            for _ in pool.map(partial(download_card, dl_progress), driveIDs):
+            for _ in pool.map(partial(download_card, dl_progress), cardsinfo):
                 dl_progress.update(1)
             dl_progress.close()
         print("")
         input("All specified card images downloaded! Press enter to finish up.")
     else:
         print("Successfully read XML file. Starting card downloader and webdriver processes.")
+
+        # Set up chrome driver window here to avoid tqdm issues
+        chrome_options = Options()
+        chrome_options.add_argument('--log-level=3')
+        chrome_options.add_experimental_option('excludeSwitches', ['enable-logging'])
+        driver = webdriver.Chrome(ChromeDriverManager().install(), options=chrome_options)
+        driver.set_window_size(1200, 900)
+        driver.implicitly_wait(5)
+
         # Create ThreadPoolExecutor to download card images with, and progress bars for downloading and uploading
         with ThreadPoolExecutor(max_workers=5) as pool, \
-            tqdm(position=0, total=len(driveIDs), desc="DL", leave=True) as dl_progress, \
-            tqdm(position=1, total=len(driveIDs), desc="UL", leave=False) as ul_progress:
+            tqdm(position=0, total=len(cardsinfo), desc="DL", leave=True) as dl_progress, \
+            tqdm(position=1, total=len(cardsinfo), desc="UL", leave=False) as ul_progress:
             # Download each card image in parallel, with the same progress bar input each time
-            pool.map(partial(download_card, dl_progress), driveIDs)
+            pool.map(partial(download_card, dl_progress), cardsinfo)
             # Launch the main webdriver automation function
-            fill_cards(ul_progress, root)
+            fill_cards(ul_progress, driver, root)
             dl_progress.close()
             ul_progress.close()
         print("")
-        input("Autofill complete!\n" 
-              "Cards are occasionally not uploaded properly with this tool.\n" 
-              "Please review the order and ensure everything is as you desired before closing \n" 
-              "closing MPC Autofill. If you need to make any changes to your order, you can \n" 
-              "do so by first adding it to your Saved Projects.\n" 
-              "Continue with saving or purchasing your order in-browser, and press enter to \n" 
+        input("Autofill complete!\n"
+              "Cards are occasionally not uploaded properly with this tool.\n"
+              "Please review the order and ensure everything is as you desired before closing \n"
+              "closing MPC Autofill. If you need to make any changes to your order, you can \n"
+              "do so by first adding it to your Saved Projects.\n"
+              "Continue with saving or purchasing your order in-browser, and press enter to \n"
               "finish up once complete.\n")
+        sys.exit(1)
