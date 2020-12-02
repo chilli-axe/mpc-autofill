@@ -10,6 +10,12 @@ Python modules:
 * `elasticsearch`, version between 5 and 6
 * `django-haystack` 3.0b2
 * `google-api-python-client`, `google-auth-httplib2` and `google-auth-oauthlib`
+* `django-crispy-forms`
+* `colorama`
+* `webdriver_manager`
+* `selenium`
+* `numpy`
+* `tqdm`
 
 Other:
 * Elasticsearch 5.6.10 - `django-haystack` only supports up to V5 of Elasticsearch unfortunately
