@@ -11,6 +11,17 @@
             to run the executable that fills your order into MPC.
         </div>
     {% endif %}
+    <div class="alert alert-secondary" role="alert">
+        You might notice image thumbnails loading in a bit more slowly than usual. 
+        <a href="https://mpcautofill.com/static/cardpicker/awscosts.png">My AWS costs have been through the roof recently 
+        ($150 USD last month)</a>, so for the time being, I'm switching from storing thumbnails on the server to sourcing 
+        them from Google Drive. I'm working on a solution to restore the site to its previous speed. Thank you for bearing 
+        with me! <3 
+    </div>
+
+    <!-- <div class="alert alert-danger" role="alert"></div>
+        I'm in the middle of updating the site & working through a few technical difficulties - please stand by! <3 
+    </div> -->
     <div class="row">
         <div class="col-lg-6 col-md-6 col-md-12">
             <h2>MPC Autofill <em class="orpheus" style="font-size: 1rem;">by
@@ -80,6 +91,23 @@
             // convert to string when outputting
             return drives.toString();
         }
+
+        function toggleCheckboxes() {
+            // get checkbox elements from dom, in order
+            let driveElements = document.getElementsByClassName("drivesource");
+            var enableDrives = true;
+            // for each drive, check if it's enabled, and if it is, we'll be disabling drives here
+            for (let i = 0; i < driveElements.length; i++) {
+                if (driveElements[i].checked) {
+                    enableDrives = false;
+                    break;
+                }
+            }
+            // for each drive, set its checkedness
+            for (let i = 0; i < driveElements.length; i++) {
+                driveElements[i].checked = enableDrives;
+            }
+        }
     </script>
 
     <div class="modal fade" id="selectDrivesModal" tabindex="-1" role="dialog" aria-labelledby="selectDrivesLabel"
@@ -94,11 +122,13 @@
                 </div>
                 <div class="modal-body">
                     Select the drives you'd like to search, and drag & drop them to change the order cards are shown in.
-                    Check the <a href='/credits'>Credits</a> for an overview of what each drive contains.
+                    Check the <a href='/credits'>Credits</a> for an overview of what each drive contains. 
+                    <br>
+                    Click the table header to enable or disable all drives.
                     <br><br>
                     <table class="table table-hover" id="drivePicker">
                         <thead>
-                        <tr>
+                        <tr onclick="toggleCheckboxes()" style="cursor: pointer; user-select: none;">
                             <th scope="col" class="text-center">Enabled</th>
                             <th scope="col">Content Creator</th>
                             <th scope="col" class="text-center">Drive Link</th>
@@ -106,7 +136,7 @@
                         </thead>
                         <tbody>
                         {% for sourcename,sourceinfo in sources.items %}
-                            <tr>
+                            <tr style="cursor: grab">
                                 <td>
                                     <div class="active" style="text-align:center;">
                                         <input class="form-check-input drivesource" type="checkbox" value=""

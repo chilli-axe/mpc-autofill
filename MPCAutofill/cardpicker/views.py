@@ -84,7 +84,7 @@ def review(request):
         curr_bracket = BRACKETS[[x for x, val in enumerate(BRACKETS) if val >= len(card_list)][0]]
 
         # For donation modal, approximate how many cards I've rendered
-        my_cards = 1000*math.floor(Source.objects.filter(id="Chilli_Axe")[0].quantity/1000)
+        my_cards = 100*math.floor(Source.objects.filter(id="Chilli_Axe")[0].quantity/100)
 
         # Return cards, qty of cards in order, current bracket, and all cardbacks found
         return {"cards": card_list,

@@ -43,6 +43,9 @@ function updateCard(curr_id, x, idx, slideshow) {
     // set the desired image in slideshow to visible,
     // then set all other images to invisible
     x[idx - 1].style.display = "inline-block";
+    // TODO: The below two lines allow for a smooth slideshow but commented out for now bc I'm fucking with things
+    // var a = new Image();
+    // a.src = x[idx-1].url;
     for (let i = 0; i < x.length; i++) {
         if (i !== (idx-1)) {
             x[i].style.display = "none";
@@ -131,7 +134,7 @@ function generateXml() {
             if (visibleImages[i].style.display !== "none") {
                 // retrieve the visible face's google drive ID
                 let src = visibleImages[i].src;
-                src = src.slice(src.lastIndexOf("/") + 1, src.length - 4);
+                src = src.slice(src.lastIndexOf("=") + 1);
                 // retrieve the card's slot number from the element ID
                 // var parentId = visibleImages[i].parentElement.id;
                 let parentId = visibleImages[i].parentElement.parentElement.id;
@@ -173,7 +176,7 @@ function generateXml() {
         if (defaultBacks[i].style.display !== "none") {
             let src = defaultBacks[i].src;
             // trim off the excess filepath garbage to just retrieve the drive ID
-            src = src.slice(src.lastIndexOf("/") + 1, src.length - 4);
+            src = src.slice(src.lastIndexOf("=") + 1);
             defaultBackElem.appendChild(doc.createTextNode(src));
             orderElem.appendChild(defaultBackElem);
             break;

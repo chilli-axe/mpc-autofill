@@ -2,8 +2,8 @@
 {% load static %}
 
 {% block content %}
-    <h1>MPC Autofill Guide</h1>
-    <h2>Introduction to MPC Proxies</h2>
+    <h2>MPC Autofill Guide</h2>
+    <h3>Introduction to MPC Proxies</h3>
     <p>
         <img class="img-fluid float-md-right" style="width: 32rem; padding: 10px 10px 10px 10px;"
              src="{% static 'cardpicker/autofill-cardshand.png' %}">
@@ -36,10 +36,10 @@
                target="_blank">u/Frydog42's primer</a>
     </p>
     <br>
-    <h2>How This Tool Can Help You</h2>
+    <h3>How This Tool Can Help You</h3>
     <p>
     <div class="embed-responsive embed-responsive-4by3 float-md-right mpc-vid">
-        <video controls loop autoplay muted class="embed-responsive-item">
+        <video controls loop autoplay muted playsinline class="embed-responsive-item">
             <source src="https://thumbs.gfycat.com/HotGracefulJaguar-mobile.mp4" type="video/mp4">
         </video>
     </div>
@@ -66,7 +66,7 @@
         given this file, a small program will download every card from Google Drive for you, and automatically fill
         your order into MPC.
     </p>
-    <h2>Usage Guide</h2>
+    <h3>Usage Guide</h3>
     <b>Note</b>: This guide was recorded with an earlier version of this site. As such, some visual elements are
     different and some features are missing. The video also shows authentication with Google Drive to download Drive
     images, which is no longer required.
@@ -76,24 +76,29 @@
     <p>
         Using MPC Autofill can be broken down into three easy steps:
     </p>
-    <h3>1. Download the Tool</h3>
+    <h4>1. Download the Tool</h4>
     <p>
         First things first, you'll want to download the most recent version of the tool from
         <a href="https://github.com/ndepaola/mpc-autofill/releases">GitHub</a>. You only need to download
         <em>autofill.exe</em>, not the rest of the source code. Put <em>autofill.exe</em> in a new folder somewhere on
-        your computer.
+        your computer. If you're on a Mac, download the other file in the release (without the .exe extension).
+        There's one extra step you need to take here to run the macOS version - check out the release notes on GitHub
+        for details.
     </p>
     <p>
+        Also make sure you have Google Chrome installed on your computer.
+    </p>
+    <!-- <p>
         Next up, you'll need the version of <a href="https://chromedriver.chromium.org/downloads">ChromeDriver</a> that
         matches your installed version of Google Chrome. Make sure you check your installed version of Chrome first,
         because it won't work if you download the wrong version. Put this file in the same folder as you put
         <em>autofill.exe</em> into. If you're on macOS, see the GitHub release page for ChromeDriver instructions.
-    </p>
+    </p> -->
 
-    <h3>2. Customise Your Order</h3>
+    <h4>2. Customise Your Order</h4>
     <p>
     <div class="embed-responsive embed-responsive-16by9 float-md-right mpc-vid">
-        <video controls loop autoplay muted class="embed-responsive-item">
+        <video controls loop autoplay muted playsinline class="embed-responsive-item">
             <source src="https://thumbs.gfycat.com/PersonalComplexBichonfrise-mobile.mp4" type="video/mp4">
         </video>
     </div>
@@ -124,7 +129,7 @@
     </p>
     <p>
     <div class="embed-responsive embed-responsive-16by9 float-md-right mpc-vid">
-        <video controls loop autoplay muted class="embed-responsive-item">
+        <video controls loop autoplay muted playsinline class="embed-responsive-item">
             <source src="https://thumbs.gfycat.com/PeriodicWarlikeAllensbigearedbat-mobile.mp4" type="video/mp4">
         </video>
     </div>
@@ -143,7 +148,7 @@
         may not work properly.
     </p>
 
-    <h3>3. Run the Tool</h3>
+    <h4>3. Run the Tool</h4>
     <p>
         At this point, you should be ready to automatically fill your order into MPC! Double click <em>autofill.exe</em>
         to get started.

@@ -1,20 +1,28 @@
 {% extends 'cardpicker/base.html' %}
 
 {% block content %}
-    <h1>Community Contributions</h1>
+    <h2>Community Contributions</h2>
     <p>
         This website is only possible because of the contributions of hard-working members of the
         <a target="_blank" href="https://www.reddit.com/r/mpcproxies/">MPC Reddit community</a>.
         <br>
-        Currently, there are <b>{{ total_count }}</b> images in the database. The database is automatically synced
-        with all Drives every Sunday to ensure all changes are recorded.
+        Currently, there are <b>{{ total_count }}</b> images in the database, from <b>{{ sources.items|length }}</b>
+        contributors. The database is automatically synced with all Drives every Sunday (at midnight in Sydney, 
+        Australia) to ensure all changes are recorded.
         <br>
         The community Google Drives hooked up to this website, and an overview of their contributions, are included
         below.
         <br>
         If you'd like to have your drive added to the site, shoot me a message on
         <a target="_blank" href="https://www.reddit.com/user/Chilli_Axe/">Reddit</a>! I'd love to make this website's
-        card database as comprehensive as possible.
+        card database as comprehensive as possible. When preparing a drive to be linked with MPC Autofill, please follow 
+        these guidelines:
+        <ul>
+            <li>Ensure each image's name matches the card's Oracle name,</li>
+            <li>When you have multiple versions of a card, use parentheses to differentiate them - 
+                e.g. "Black Lotus.png" and "Black Lotus (Masterpiece).png",</li>
+            <li>Name split cards with an ampersand between the card's names - e.g. "Fire & Ice.png".</li>
+        </ul>
     </p>
     <table class="table table-hover">
         <thead>

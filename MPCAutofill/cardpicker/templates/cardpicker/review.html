@@ -69,13 +69,16 @@
                                              src="{% static "cardpicker/blank.png" %}">
                                     {% else %}
                                         {% for card_img in card.0 %}
-                                            {% with card_img.thumbpath as img_src %}
+                                            {# {% with card_img.thumbpath as img_src %} #}
+                                            {% with "https://drive.google.com/thumbnail?sz=w400-h400&id="|add:card_img.id as img_src %}
                                                 {% if forloop.counter0 > 0 %}
                                                     <img class="card-img-top embed-responsive-item card-img card-img-front"
-                                                         src="{% static img_src %}" style="display: none">
+                                                         {# src="{% static img_src %}" style="display: none"> #}
+                                                         src="{{ img_src }}" style="display: none">
                                                 {% else %}
                                                     <img class="card-img-top embed-responsive-item card-img card-img-front"
-                                                         src="{% static img_src %}">
+                                                         {# src="{% static img_src %}"> #}
+                                                         src="{{ img_src }}">
                                                 {% endif %}
                                             {% endwith %}
                                         {% endfor %}
@@ -127,13 +130,16 @@
                                     {% elif card|length > 1 or card.0|length == 0 %}
                                         {% if card.1|length > 0 %}
                                             {% for card_img in card.1 %}
-                                                {% with card_img.thumbpath as img_src %}
+                                                {# {% with card_img.thumbpath as img_src %} #}
+                                                {% with "https://drive.google.com/thumbnail?sz=w400-h400&id="|add:card_img.id as img_src %}
                                                     {% if forloop.counter0 > 0 %}
                                                         <img class="card-img-top embed-responsive-item card-img card-img-back"
-                                                             src="{% static img_src %}" style="display: none">
+                                                             {# src="{% static img_src %}" style="display: none"> #}
+                                                             src="{{ img_src }}" style="display: none">
                                                     {% else %}
                                                         <img class="card-img-top embed-responsive-item card-img card-img-back"
-                                                             src="{% static img_src %}">
+                                                             {# src="{% static img_src %}"> #}
+                                                             src="{{ img_src }}">
                                                     {% endif %}
                                                 {% endwith %}
                                             {% endfor %}
@@ -143,9 +149,11 @@
                                         {% endif %}
                                     {% else %}
                                         <!-- Default cardback -->
-                                        {% with cardbacks.0.thumbpath as img_src %}
+                                        {# {% with cardbacks.0.thumbpath as img_src %} #}
+                                        {% with "https://drive.google.com/thumbnail?sz=w400-h400&id="|add:cardbacks.0.id as img_src %}
                                             <img class="card-img-top embed-responsive-item card-img card-img-back-defaulted"
-                                                 src="{% static img_src %}">
+                                                 {# src="{% static img_src %}"> #}
+                                                 src="{{ img_src }}">
                                         {% endwith %}
                                     {% endif %}
                                 </div>
@@ -222,13 +230,16 @@
                         <div class="card card-back-common text-center" id="cardbackselector">
                             <div class="embed-responsive embed-responsive-7by5 rounded-lg shadow-lg">
                                 {% for card_img in cardbacks %}
-                                    {% with card_img.thumbpath as img_src %}
+                                    {# {% with card_img.thumbpath as img_src %} #}
+                                    {% with "https://drive.google.com/thumbnail?sz=w400-h400&id="|add:card_img.id as img_src %}
                                         {% if forloop.counter0 > 0 %}
                                             <img class="card-img-top embed-responsive-item card-img card-img-back-common"
-                                                 src="{% static img_src %}" style="display: none">
+                                                 {# src="{% static img_src %}" style="display: none"> #}
+                                                 src="{{ img_src }}" style="display: none">
                                         {% else %}
                                             <img class="card-img-top embed-responsive-item card-img card-img-back-common"
-                                                 src="{% static img_src %}">
+                                                 {# src="{% static img_src %}"> #}
+                                                 src="{{ img_src }}">
                                         {% endif %}
                                     {% endwith %}
                                 {% endfor %}
@@ -297,8 +308,9 @@
                         tools I built from scratch.
                     </p>
                     <p>
-                        However, I'm also a full-time uni student, and in line with Wizards of the Coast's Fan Content
-                        Policy, I can't charge anything for access to the work I produce.
+                        However, in line with Wizards of the Coast's Fan Content Policy, I can't charge anything for 
+                        access to the work I produce. The costs associated with maintaining and improving MPC Autofill 
+                        are coming out of my pocket; I'm a one-man operation.
                     </p>
                     <p>
                         That's why I'm humbly asking that if you found this website and/or my images helpful, please

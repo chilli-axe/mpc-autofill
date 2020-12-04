@@ -112,8 +112,44 @@ transforms = {'Aberrant Researcher': 'Perfected Form',
               'Hanweir Battlements': 'Hanweir, the Writhing Township Top',
               'Hanweir Garrison': 'Hanweir, the Writhing Township Bottom',
               'Graf Rats': 'Chittering Host Top',
-              'Midnight Scavengers': 'Chittering Host Bottom'}
-
+              'Midnight Scavengers': 'Chittering Host Bottom',
+              "Agadeem's Awakening": 'Agadeem, the Undercrypt',
+              'Akoum Warrior': 'Akoum Teeth',
+              'Bala Ged Recovery': 'Bala Ged Sanctuary',
+              'Beyeen Veil': 'Beyeen Coast',
+              'Blackbloom Rogue': 'Blackbloom Bog',
+              'Branchloft Pathway': 'Boulderloft Pathway',
+              'Brightclimb Pathway': 'Grimclimb Pathway',
+              'Clearwater Pathway': 'Murkwater Pathway',
+              'Cragcrown Pathway': 'Timbercrown Pathway',
+              "Emeria's Call": 'Emeria, Shattered Skyclave',
+              'Glasspool Mimic': 'Glasspool Shore',
+              'Hagra Mauling': 'Hagra Broodpit',
+              'Jwari Disruption': 'Jwari Ruins',
+              'Kabira Takedown': 'Kabira Plateau',
+              'Kazandu Mammoth': 'Kazandu Valley',
+              "Kazuul's Fury": "Kazuul's Cliffs",
+              'Khalni Ambush': 'Khalni Territory',
+              'Makindi Stampede': 'Makindi Mesas',
+              'Malakir Rebirth': 'Malakir Mire',
+              'Needleverge Pathway': 'Pillarverge Pathway',
+              'Ondu Inversion': 'Ondu Skyruins',
+              'Pelakka Predation': 'Pelakka Caverns',
+              'Riverglide Pathway': 'Lavaglide Pathway',
+              'Sea Gate Restoration': 'Sea Gate, Reborn',
+              'Sejiri Shelter': 'Sejiri Glacier',
+              'Shatterskull Smashing': 'Shatterskull, the Hammer Pass',
+              'Silundi Vision': 'Silundi Isle',
+              'Skyclave Cleric': 'Skyclave Basilica',
+              'Song-Mad Treachery': 'Song-Mad Ruins',
+              'Spikefield Hazard': 'Spikefield Cave',
+              'Tangled Florahedron': 'Tangled Vale',
+              'Turntimber Symbiosis': 'Turntimber, Serpentine Wood',
+              'Umara Wizard': 'Umara Skyfalls',
+              'Valakut Awakening': 'Valakut Stoneforge',
+              'Vastwood Fortification': 'Vastwood Thicket',
+              'Zof Consumption': 'Zof Bloodbog',
+}
 
 transforms = dict((to_searchable(x), to_searchable(y)) for x, y in transforms.items())
 
@@ -121,7 +157,7 @@ transforms = dict((to_searchable(x), to_searchable(y)) for x, y in transforms.it
 def search_card_face(cardname, drive_order, grouping=0):
     # Search for a card, given its name and the drives to search
     # Return a tuple of dictionaries (returning as a dict rather than Card for Javascript access purposes)
-    results = SearchQuerySet().filter(content=cardname)
+    results = SearchQuerySet().filter(content=cardname).load_all()
     # Retrieve Card objects from search results while filtering out cardbacks
     card_objs = [x.object for x in results if "_cardback" not in x.object.source]
     cards_found = []

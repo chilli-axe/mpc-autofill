@@ -1,5 +1,5 @@
 # mpc-autofill
-Automating MakePlayingCards's online ordering system for Magic: The Gathering casual proxies.
+Automating MakePlayingCards's online ordering system.
 
 The below guide describes the procedure for setting up the web component. If you're here to download the clientside program, check the Releases tab.
 
