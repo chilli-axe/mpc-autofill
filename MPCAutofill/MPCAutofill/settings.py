@@ -55,6 +55,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django_user_agents.middleware.UserAgentMiddleware',
+    "django.middleware.gzip.GZipMiddleware"
 ]
 
 ROOT_URLCONF = 'MPCAutofill.urls'

@@ -1,0 +1,2 @@
+# helper script to crawl drives and rebuild index with ez command
+cd ~/MPCAutofill && ~/MPCAutofill/env/bin/python ~/MPCAutofill/update_database.py && ~/MPCAutofill/env/bin/python ~/MPCAutofill/manage.py rebuild_index --noinput
