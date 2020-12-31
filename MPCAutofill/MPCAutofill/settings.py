@@ -41,9 +41,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'haystack',
     'crispy_forms',
     'django_user_agents',
+    'django_elasticsearch_dsl',
 ]
 
 MIDDLEWARE = [
@@ -134,12 +134,9 @@ STATICFILES_DIRS = [
 
 STATIC_ROOT = os.path.join(os.path.dirname(BASE_DIR), "staticroot")
 
-# Haystack search
-ELASTICSEARCH_DEFAULT_ANALYZER = 'standard'
-HAYSTACK_CONNECTIONS = {
+# elasticsearch DSL settings
+ELASTICSEARCH_DSL = {
     'default': {
-        'ENGINE': 'cardpicker.search_backends.CustomElasticsearchEngine',
-        'URL': 'http://127.0.0.1:9200/',
-        'INDEX_NAME': 'haystack',
+        'hosts': 'localhost:9200'
     },
 }

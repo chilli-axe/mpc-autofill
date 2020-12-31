@@ -2,7 +2,22 @@ from django.db import models
 
 
 # Create your models here.
-class Card(models.Model):
+class Source(models.Model):
+    id = models.CharField(max_length=50, primary_key=True)
+    qty_cards = models.IntegerField(default=0)
+    qty_cardbacks = models.IntegerField(default=0)
+    qty_tokens = models.IntegerField(default=0)
+    username = models.CharField(max_length=50)
+    reddit = models.CharField(max_length=100)
+    drivelink = models.CharField(max_length=200)
+    description = models.CharField(max_length=400)
+    avgdpi = models.IntegerField(default=0)
+
+    def __str__(self):
+        return "{}: {} {}".format(self.id, str(self.qty_cards), self.description)
+
+
+class CardBase(models.Model):
     id = models.CharField(max_length=50, primary_key=True)
     name = models.CharField(max_length=200)
     priority = models.IntegerField(default=0)
@@ -22,14 +37,17 @@ class Card(models.Model):
                 "dpi": self.dpi,
                 "thumbpath": self.thumbpath}
 
+    class Meta:
+        abstract = True
 
-class Source(models.Model):
-    id = models.CharField(max_length=50, primary_key=True)
-    quantity = models.IntegerField(default=0)
-    username = models.CharField(max_length=50)
-    reddit = models.CharField(max_length=100)
-    drivelink = models.CharField(max_length=200)
-    description = models.CharField(max_length=400)
 
-    def __str__(self):
-        return "{}: {} {}".format(self.id, str(self.quantity), self.description)
+class Card(CardBase):
+    pass
+
+
+class Cardback(CardBase):
+    pass
+
+
+class Token(CardBase):
+    pass

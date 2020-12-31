@@ -1,26 +1,46 @@
 {% extends 'cardpicker/base.html' %}
 
 {% block content %}
-    <h1>Community Contributions</h1>
+    <h2>Community Contributions</h2>
     <p>
         This website is only possible because of the contributions of hard-working members of the
         <a target="_blank" href="https://www.reddit.com/r/mpcproxies/">MPC Reddit community</a>.
         <br>
-        Currently, there are <b>{{ total_count }}</b> images in the database. The database is automatically synced
-        with all Drives every Sunday to ensure all changes are recorded.
+        Currently, there are <b>{{ total_count.3 }}</b> images in the database &#8212 comprised of
+        <b>{{ total_count.0 }}</b> cards, <b>{{ total_count.1 }}</b> card backs, and <b>{{ total_count.2 }}</b> tokens
+        &#8212 from <b>{{ sources.items|length }}</b> contributors. The database is automatically synced with all Drives
+        every Sunday (starting at midnight in NYC) to ensure all changes are recorded.
         <br>
         The community Google Drives hooked up to this website, and an overview of their contributions, are included
         below.
         <br>
+    <div class="alert alert-secondary" role="alert">
+        <h3>Contribution Guidelines</h3>
         If you'd like to have your drive added to the site, shoot me a message on
         <a target="_blank" href="https://www.reddit.com/user/Chilli_Axe/">Reddit</a>! I'd love to make this website's
-        card database as comprehensive as possible.
+        card database as comprehensive as possible. When preparing a drive to be linked with MPC Autofill, please follow
+        these guidelines:
+        <ul>
+            <li>Ensure each image's name matches the card's Oracle name,</li>
+            <li>When you have multiple versions of a card, use parentheses to differentiate them &#8212
+                e.g. <code>Black Lotus.png</code> and <code>Black Lotus (Masterpiece).png</code>,
+            </li>
+            <li>Name split cards with an ampersand between the card's names &#8212 e.g. <code>Fire & Ice.png</code>,
+            </li>
+            <li>Store your token images in a folder called <code>Tokens</code> (anywhere on your drive),</li>
+            <li>Limit your files to less than 30 MB per image &#8212 this seems to be the maximum that Google
+                Scripts can return in one request, which means that <code>autofill.exe</code> won't work with images
+                larger than this. Due to this limitation, images greater than 30 MB in size will not be indexed.
+            </li>
+        </ul>
+    </div>
     </p>
     <table class="table table-hover">
         <thead>
         <tr>
             <th scope="col">Reddit Handle</th>
             <th scope="col">Drive</th>
+            <th scope="col">Mean DPI</th>
             <th scope="col">Contribution</th>
         </tr>
         </thead>
@@ -28,8 +48,10 @@
         {% for sourcename,sourceinfo in sources.items %}
             <tr>
                 <td><a target="_blank" href={{ sourceinfo.reddit }}>{{ sourceinfo.username }}</a></td>
-                <td><a target="_blank" href={{ sourceinfo.drivelink }}>Link</a></td>
-                <td><b>{{ sourceinfo.quantity }}</b> {{ sourceinfo.description }}</td>
+                <td style="text-align: center"><a target="_blank" href={{ sourceinfo.drivelink }}>Link</a></td>
+                <td><b>{{ sourceinfo.avgdpi }}</b> DPI</td>
+                <td><b>{{ sourceinfo.qty_cards }}</b> cards, <b>{{ sourceinfo.qty_cardbacks }}</b> cardbacks,
+                    and <b>{{ sourceinfo.qty_tokens }}</b> tokens &#8212 {{ sourceinfo.description }}</td>
             </tr>
         {% endfor %}
         </tbody>

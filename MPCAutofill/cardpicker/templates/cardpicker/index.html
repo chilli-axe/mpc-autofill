@@ -3,6 +3,8 @@
 
 {% block content %}
 
+    <script src="{% static 'js/index.js' %}"></script>
+
     {% load crispy_forms_tags %}
 
     {% if mobile %}
@@ -14,73 +16,71 @@
     <div class="row">
         <div class="col-lg-6 col-md-6 col-md-12">
             <h2>MPC Autofill <em class="orpheus" style="font-size: 1rem;">by
-                <a target="_blank" href="https://www.reddit.com/user/Chilli_Axe/">u/Chilli_Axe</a></em> </h2>
+                <a target="_blank" href="https://www.reddit.com/user/Chilli_Axe/">u/Chilli_Axe</a></em></h2>
             <p>
-                Welcome to MPC Autofill!
-            </p>
-            <p>
-                This website automates the process of searching Google Drives to produce proxy cards with
-                <a href="https://www.makeplayingcards.com/" target="_blank">MakePlayingCards.com</a>.
+                MPC Autofill automates the process of printing playtest trading cards (colloquially called "proxies")
+                through <a href="https://www.makeplayingcards.com/" target="_blank">MakePlayingCards.com</a>
+                with images hosted on Google Drive.
             </p>
             <p>
                 Type your desired proxy list into the text box and hit <b>Submit</b>. One card per line.
                 Click <b>Select Drives</b> to change which drives are searched, and the order in which cards are shown.
+                Search for tokens by prepending the query with <code>t:</code>, e.g. <code>t:goblin</code>.
             </p>
             <p>
-                Try uploading a CSV of your proxy list! This lets you specify exactly which images should be on the fronts
-                and backs of each individual card. Download the CSV template
-                <b><a href="{% static 'cardpicker/template.csv' %}">here</a></b>.
+                You can upload your order as a CSV, specifying quantities and the queries for card fronts and backs.
+                Download the CSV template <b><a href="{% static 'cardpicker/template.csv' %}">here</a></b>.
+                Or, you can re-upload an order XML for further editing. Please note that order XML files generated
+                before January 2021 cannot be re-uploaded.
             </p>
             <p>
                 Are you seeing all this for the first time, or you're not quite sure what to do? Check out the Guide!
             </p>
-            <div style="text-align: center">
-                <a class="btn btn-block btn-info" style="border-radius: 200px" href="/guide">Guide</a>
-            </div>
         </div>
-        <div class="col-lg-6 col-md-6 col-md-12" style="padding-top: 3px">
-            <form method="post" action="{% url 'review' %}" id="cardinput" style="display: inline">
+        <div class="col-lg-6 col-md-6 col-md-12"> {# style="padding-bottom: 30px" #}
+            <form method="post" action="{% url 'review' %}" id="cardinput" style="display: inline; height: 100%;">
                 {% csrf_token %}
                 {{ form|crispy }}
-
-                <input type="submit" class="btn btn-success" value="Submit">
-            </form>
-            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#selectDrivesModal">
-                Select Drives
-            </button>
-            <form method="post" action="{% url 'csvupload' %}" id="csvuploadform"
-                  enctype="multipart/form-data" style="display: inline">
-                {% csrf_token %}
-                <label class="btn btn-outline-success" onchange="$('#csvuploadform').submit()" style="margin-top: 8px">
-                    Upload CSV<input type="file" accept=".csv" hidden name="file" id="file">
-                </label>
             </form>
         </div>
     </div>
 
-    <script type="text/javascript">
-        $('#cardinput, #csvuploadform').submit(function (eventObj) {
-            // user is submitting card input form - grab the order of selected drives and attach it to the form as a
-            // hidden input
-            let input = $("<input>", {type: "hidden", name: "drive_order", value: driveOrder()});
-            $(this).append(input)
-            return true;
-        });
+    <div class="row">
+        <div class="col-lg-6 col-md-6 col-md-12">
+            <div style="text-align: center">
+                <a class="btn btn-block btn-info mt-2" style="border-radius: 200px" href="/guide">Guide</a>
+            </div>
+        </div>
+        <div class="col-lg-6 col-md-6 col-md-12">
+            <input form="cardinput" type="submit" class="btn btn-success mt-2" value="Submit">
 
-        function driveOrder() {
-            // get checkbox elements from dom, in order
-            let driveElements = document.getElementsByClassName("drivesource");
-            let drives = []
-            // for each drive, if it's enabled, add its id to the output list
-            for (let i = 0; i < driveElements.length; i++) {
-                if (driveElements[i].checked) {
-                    drives.push(driveElements[i].id)
-                }
-            }
-            // convert to string when outputting
-            return drives.toString();
-        }
-    </script>
+            <button type="button" class="btn btn-primary mt-2" data-toggle="modal" data-target="#selectDrivesModal">
+                Select Drives
+            </button>
+
+            <button type="button" class="btn btn-secondary dropdown-toggle mt-2" id="uploadCardsBtn"
+                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                Upload List
+            </button>
+            <div class="dropdown-menu" aria-labelledby="uploadCardsBtn">
+                {# csv upload form #}
+                <form method="post" action="{% url 'input_csv' %}" id="input_csv" enctype="multipart/form-data">
+                {% csrf_token %}
+                    <label class="dropdown-item" onchange="$('#input_csv').submit()">
+                        CSV File<input type="file" accept=".csv" hidden name="file" id="csvfile">
+                    </label>
+                </form>
+
+                {# xml upload form #}
+                <form method="post" action="{% url 'input_xml' %}" id="input_xml" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <label class="dropdown-item" onchange="$('#input_xml').submit()">
+                        XML Order<input type="file" accept=".xml" hidden name="file" id="xmlfile">
+                </label>
+            </form>
+        </div>
+    </div>
+    </div>
 
     <div class="modal fade" id="selectDrivesModal" tabindex="-1" role="dialog" aria-labelledby="selectDrivesLabel"
          aria-hidden="true">
@@ -95,10 +95,12 @@
                 <div class="modal-body">
                     Select the drives you'd like to search, and drag & drop them to change the order cards are shown in.
                     Check the <a href='/credits'>Credits</a> for an overview of what each drive contains.
+                    <br>
+                    Click the table header to enable or disable all drives.
                     <br><br>
                     <table class="table table-hover" id="drivePicker">
                         <thead>
-                        <tr>
+                        <tr onclick="toggleCheckboxes()" style="cursor: pointer; user-select: none;">
                             <th scope="col" class="text-center">Enabled</th>
                             <th scope="col">Content Creator</th>
                             <th scope="col" class="text-center">Drive Link</th>
@@ -106,7 +108,7 @@
                         </thead>
                         <tbody>
                         {% for sourcename,sourceinfo in sources.items %}
-                            <tr>
+                            <tr style="cursor: grab">
                                 <td>
                                     <div class="active" style="text-align:center;">
                                         <input class="form-check-input drivesource" type="checkbox" value=""

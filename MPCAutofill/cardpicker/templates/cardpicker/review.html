@@ -2,275 +2,164 @@
 {% load static %}
 
 {% block content %}
-    {{ cards|json_script:"cards-data" }}
-    {{ cardbacks|json_script:"cardbacks-data" }}
+
+    <script src="{% static 'js/review.js' %}"></script>
+    <script src="{% static 'js/card.js' %}"></script>
+    <script src="{% static 'js/search.js' %}"></script>
+
+    {% load crispy_forms_tags %}
+
+    {# code to run on page load #}
     <script type="text/javascript">
-        cardfronts = []
-        cardbacks = []
+        // TODO: loading circle on in-progress cards and a retry button?
+        // TODO: also seems inconsistent depending on internet quality? load in top/bottom, more controlled?
+        let groups = {};
+        let max_group = 2;
+        let drive_order =
+        {{ drive_order|safe }}.toString();
+        let qty = {{ qty }};
+        let front_visible = true;
 
-        var cards = JSON.parse(document.getElementById('cards-data').textContent);
-        var cardbacks_common = JSON.parse(document.getElementById('cardbacks-data').textContent);
+        document.getElementById("id_body").onload = function () {
+            let order = {{ order|safe }};
 
-        let cardfront;
-        let cardback;
-        for (let i = 0; i < cards.length; i++) {
-            cardfronts[i] = []
-            cardfront = cards[i][0];
-            if (cardfront !== undefined) {
-                for (let j = 0; j < cardfront.length; j++) {
-                    cardfronts[i].push({
-                        "name": cardfront[j].name,
-                        "source": cardfront[j].source,
-                        "dpi": cardfront[j].dpi,
-                        "url": cardfront[j].thumbpath
-                    });
+            for (let face in order) {
+                for (let key in order[face]) {
+                    search_api_multiple(
+                        drive_order,
+                        key,
+                        order[face][key]["slots"],
+                        face,
+                        order[face][key]["req_type"]);
                 }
             }
 
-            cardbacks[i] = []
-            if (cards[i].length > 1) {
-                cardback = cards[i][1];
-                if (cardback !== undefined) {
-                    for (let j = 0; j < cardback.length; j++) {
-                        cardbacks[i].push({
-                            "name": cardback[j].name,
-                            "source": cardback[j].source,
-                            "dpi": cardback[j].dpi,
-                            "url": cardback[j].thumbpath
-                        });
-                    }
-                }
-            }
+            update_qty(qty);
         }
-
     </script>
+
     <div class="row">
+        {# left panel #}
         <div class="col-lg-8 col-md-8 col-sm-6 col-6">
-            <!-- Insert each card into the template -->
-            <div class="row row-cols-lg-4 row-cols-md-3 row-cols-sm-1 row-cols-1">
-                {% for card in cards %}
-                    {% with forloop.counter0|stringformat:"s" as y %}
-                        <!-- Card front -->
-                        {% with "card"|add:y|add:"-front" as curr_id %}
-                            <div class="card card-front text-center" id="{{ curr_id }}">
-                                <div class="card-header pb-0">
-                                    <p class="mpccard-slot"><i>Slot {{ y|add:1 }}</i></p>
-                                    {% if card.0.0.grouping > 0 and not card.0.query and card.0|length > 1 %}
-                                        <button class="padlock group{{ card.0.0.grouping }}"
-                                                onclick=toggleLock({{ card.0.0.grouping }})>&#128275
-                                        </button>
-                                    {% endif %}
-                                </div>
-                                <div class="embed-responsive embed-responsive-7by5 rounded-lg shadow-lg">
-{#                                    {% if card.0|length > 0 %}#}
-                                    {% if card.0.query %}
-                                        <!-- No search results -->
-                                        <img class="card-img-top embed-responsive-item card-img"
-                                             src="{% static "cardpicker/blank.png" %}">
-                                    {% else %}
-                                        {% for card_img in card.0 %}
-                                            {% with card_img.thumbpath as img_src %}
-                                                {% if forloop.counter0 > 0 %}
-                                                    <img class="card-img-top embed-responsive-item card-img card-img-front"
-                                                         src="{% static img_src %}" style="display: none">
-                                                {% else %}
-                                                    <img class="card-img-top embed-responsive-item card-img card-img-front"
-                                                         src="{% static img_src %}">
-                                                {% endif %}
-                                            {% endwith %}
-                                        {% endfor %}
-                                    {% endif %}
-                                </div>
-                                <div class="card-body mb-0">
-                                    {% if card.0.query %}
-                                        <!-- No search results -->
-                                        <h5 class="card-subtitle mpccard-name">{{ card.0.query }}</h5>
-                                        <div class="mpccard-spacing">
-                                            <p class="card-text mpccard-source">Your Search Query</p>
-                                            <p class="card-text mpccard-counter">0/0</p>
-                                        </div>
-                                    {% else %}
-                                        <!-- Initialise to first card in search results' name and source -->
-                                        <h5 class="card-subtitle mpccard-name">{{ card.0.0.name }}</h5>
-                                        <div class="mpccard-spacing">
-                                            <p class="card-text mpccard-source">{{ card.0.0.source }}
-                                                [{{ card.0.0.dpi }} DPI]</p>
-                                            <p class="card-text mpccard-counter"> 1/{{ card.0|length }}</p>
-                                        </div>
-                                    {% endif %}
-                                </div>
-                                <!-- If more than one search result is found, add left/right buttons -->
-                                {% if card.0|length > 1 %}
-                                    <button class="prev btn btn-outline-primary" onclick="plusDivs(this, -1)">&#10094;
-                                    </button>
-                                    <button class="next btn btn-outline-primary" onclick="plusDivs(this, +1)">&#10095;
-                                    </button>
-                                {% endif %}
-                            </div>
-                        {% endwith %}
-                        <!-- Card back -->
-                        {% with "card"|add:y|add:"-back" as curr_id %}
-                            <div class="card card-back text-center" style="display: none" id="{{ curr_id }}">
-                                <div class="card-header pb-0">
-                                    <p><i>Slot {{ y|add:1 }}</i></p>
-                                    {% if card.1.0.grouping > 0 and not card.1.query and card.1|length > 1 %}
-                                        <button class="padlock group{{ card.1.0.grouping }}"
-                                                onclick=toggleLock({{ card.1.0.grouping }})>&#128275
-                                        </button>
-                                    {% endif %}
-                                </div>
-                                <div class="embed-responsive embed-responsive-7by5 rounded-lg shadow-lg">
-                                    {% if card.1.query %}
-                                        <!-- No search results -->
-                                        <img class="card-img-top embed-responsive-item card-img"
-                                             src="{% static "cardpicker/blank.png" %}">
-                                    {% elif card|length > 1 or card.0|length == 0 %}
-                                        {% if card.1|length > 0 %}
-                                            {% for card_img in card.1 %}
-                                                {% with card_img.thumbpath as img_src %}
-                                                    {% if forloop.counter0 > 0 %}
-                                                        <img class="card-img-top embed-responsive-item card-img card-img-back"
-                                                             src="{% static img_src %}" style="display: none">
-                                                    {% else %}
-                                                        <img class="card-img-top embed-responsive-item card-img card-img-back"
-                                                             src="{% static img_src %}">
-                                                    {% endif %}
-                                                {% endwith %}
-                                            {% endfor %}
-                                        {% else %}
-                                            <img class="card-img-top embed-responsive-item card-img"
-                                                 src="{% static "cardpicker/blank.png" %}">
-                                        {% endif %}
-                                    {% else %}
-                                        <!-- Default cardback -->
-                                        {% with cardbacks.0.thumbpath as img_src %}
-                                            <img class="card-img-top embed-responsive-item card-img card-img-back-defaulted"
-                                                 src="{% static img_src %}">
-                                        {% endwith %}
-                                    {% endif %}
-                                </div>
-                                {% if card.1.query %}
-                                    <!-- No search results -->
-                                    <div class="card-body mb-0">
-                                        <h5 class="card-subtitle mpccard-name">{{ card.1.query }}</h5>
-                                        <div class="mpccard-spacing">
-                                            <p class="card-text mpccard-source">Your Search Query</p>
-                                            <p class="card-text mpccard-counter">0/0</p>
-                                        </div>
-                                    </div>
-                                {% elif card|length > 1 %}
-                                    <div class="card-body mb-0">
-                                        <!-- Initialise to first card in search results' name and source -->
-                                        <h5 class="card-subtitle mpccard-name">{{ card.1.0.name }}</h5>
-                                        <div class="mpccard-spacing">
-                                            <p class="card-text mpccard-source">{{ card.1.0.source }}
-                                            [{{ card.1.0.dpi }} DPI]</p>
-                                            <p class="card-text mpccard-counter"> 1/{{ card.1|length }}</p>
-                                        </div>
-                                    </div>
-                                    <!-- If more than one search result is found, add left/right buttons -->
-                                    {% if card.1|length > 1 %}
-                                        <button class="prev btn btn-outline-primary" onclick="plusDivs(this, -1)">
-                                            &#10094;
-                                        </button>
-                                        <button class="next btn btn-outline-primary" onclick="plusDivs(this, +1)">
-                                            &#10095;
-                                        </button>
-                                    {% endif %}
-                                {% else %}
-                                    <div class="card-body mb-0" style="visibility: hidden;">
-                                        <h5 class="card-subtitle mpccard-name">Words</h5>
-                                        <div class="mpccard-spacing">
-                                            <p class="card-text mpccard-source">Words</p>
-                                            <p class="card-text mpccard-counter">0/0</p>
-                                        </div>
-                                    </div>
-                                {% endif %}
-                            </div>
-                        {% endwith %}
-                    {% endwith %}
-                {% endfor %}
-            </div>
+            <div id="card-container" class="row row-cols-lg-4 row-cols-md-3 row-cols-sm-1 row-cols-1"></div>
         </div>
-        <div class="col-lg-4 col-md-4 col-sm-6 col-6">
+
+        {# right panel #}
+        <div class="col-lg-4 col-md-4 col-sm-6 col-6 "> {#  overflow-auto   #}
             <div class="sticky-top sticky-offset">
-                <h1>Review Your Order</h1>
-                <p style="font-size: 1rem">Your order has a total of <b>{{ qty }}</b> cards,<br>in the MPC bracket of
-                    up to <b>{{ bracket }}</b> cards.
+                {# TODO: make the left and right panels individually scrollable #}
+                <h2>Review Your Order</h2>
+                {# info on order size and mpc bracket #}
+                <p style="font-size: 1rem">Your order has a total of <b id="order_qty"></b> cards,
+                    <br>
+                    in the MPC bracket of up to <b id="order_bracket"></b> cards.
                 </p>
-                <button type="button" class="btn btn-primary btn-block" id="switchFacesBtn" onclick="switchFaces()">
-                    Switch to Backs
-                </button>
-                <!-- For javascript access -->
-                <script type="text/javascript">
-                    var qty = "{{ qty }}";
-                    var bracket = "{{ bracket }}";
-                </script>
-                <div class="form-group">
+
+                <div class="row no-gutters">
+                    {# button to toggle between fronts and backs of cards #}
+                    <div class="col-lg-6 col-md-12 col-sm-12 col-12">
+                        <button type="button" class="btn btn-primary btn-block" id="switchFacesBtn"
+                                onclick="switchFaces()">
+                            Switch to Backs
+                        </button>
+                    </div>
+
+                    {# insert cards dropdown #}
+                    <div class="col-lg-6 col-md-12 col-sm-12 col-12 dropdown">
+                        <button type="button" class="btn btn-secondary btn-block dropdown-toggle" id="addCardsBtn"
+                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Add Cards
+                        </button>
+                        <div class="dropdown-menu" aria-labelledby="addCardsBtn">
+                            <a class="dropdown-item" data-toggle="modal" data-target="#textModal"
+                               onclick="clearText();">
+                                Text Input
+                            </a>
+                            {# TODO: fix for safari #}
+                            <label class="dropdown-item" onchange="insert_xml()">
+                                XML Order<input type="file" accept=".xml" hidden name="file" id="xmlfile">
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                {# cardstock dropdown label and foil selector #}
+                <div class="float-left">
                     <label for="cardstockSelect" style="font-size: 1rem">Cardstock:</label>
-                    <select class="form-control" id="cardstockSelect">
+                </div>
+                <div class="float-right">
+                    <input type="checkbox" class="form-check-input" id="foilSelect">
+                    <label class="form-check-label" for="foilSelect" style="font-size: 1rem; user-select: none">Foil
+                        Cards</label>
+                </div>
+
+                {# dropdown to select cardstock #}
+                <div class="form-group">
+                    <select class="custom-select" id="cardstockSelect">
                         <option selected="selected">(S30) Standard Smooth</option>
                         <option>(S33) Superior Smooth</option>
                         <option>(M31) Linen</option>
                         <option>(P10) Plastic</option>
                     </select>
                 </div>
-                <!-- Cardback selector-->
-                <label for="cardback-row" style="font-size: 1rem">Select your cardback:</label>
+
+                {# common cardback #}
                 <div class="row" id="cardback-row">
                     <div class="col-lg-8 offset-lg-2 col-md-12" style="z-index: 1;">
-                        <div class="card card-back-common text-center" id="cardbackselector">
-                            <div class="embed-responsive embed-responsive-7by5 rounded-lg shadow-lg">
-                                {% for card_img in cardbacks %}
-                                    {% with card_img.thumbpath as img_src %}
-                                        {% if forloop.counter0 > 0 %}
-                                            <img class="card-img-top embed-responsive-item card-img card-img-back-common"
-                                                 src="{% static img_src %}" style="display: none">
-                                        {% else %}
-                                            <img class="card-img-top embed-responsive-item card-img card-img-back-common"
-                                                 src="{% static img_src %}">
-                                        {% endif %}
-                                    {% endwith %}
-                                {% endfor %}
-                            </div>
-                            <div class="card-body mb-0" style="min-width: 0;">
-                                <!-- Initialise to first card in search results' name and source -->
-                                <h5 class="card-subtitle mpccard-name">{{ cardbacks.0.name }}</h5>
-                                <p class="card-text mpccard-source">{{ cardbacks.0.source }}
-                                        [{{ cardbacks.0.dpi }} DPI]</p>
-                                <p class="card-text mpccard-counter"> 1/{{ cardbacks|length }}</p>
-                            </div>
-                            <!-- If more than one search result is found, add left/right buttons -->
-                            {% if cardbacks|length > 1 %}
-                                <button class="prev btn btn-outline-primary" onclick="plusDivs(this, -1)">&#10094;
-                                </button>
-                                <button class="next btn btn-outline-primary" onclick="plusDivs(this, +1)">&#10095;
-                                </button>
-                            {% endif %}
-                        </div>
+                        <div class="card mpccard card-back-common" id="slot--back" style="opacity: 0"></div>
                     </div>
                 </div>
 
-                <div class="form-check form-check-inline">
-
-                <input class="form-check-input" type="checkbox" id="downloadOnly">
-                    <label class="form-check-label" for="downloadOnly">
-                        Download all images in the order from Google Drive, but don't fill the order into MPC
-                    </label>
-                    </div>
+                {# download images, generate order, and what's next buttons #}
                 <div class="row no-gutters">
+                    <button type="button" class="btn btn-success btn-block" onclick="downloadAll();">
+                        Download All Images
+                    </button>
                     <div class="col-lg-6 col-md-12 col-sm-12 col-12">
                         <button type="button" class="btn btn-primary btn-block" data-toggle="modal"
-                                onclick="generateXml();" data-target="#donationModal">Generate Order
+                                onclick="generateXml();" data-target="#donationModal">
+                            Generate Order
                         </button>
                     </div>
                     <div class="col-lg-6 col-md-12 col-sm-12 col-12">
-                        <a href="/guide" target="_blank" class="btn btn-info btn-block" role="button">What's Next?</a>
+                        <a href="/guide" target="_blank" class="btn btn-info btn-block" role="button">
+                            What's Next?
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
+
     </div>
+
+    {# card text input modal #}
+    <div class="modal fade" id="textModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Insert Cards</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form method="post" onsubmit="return insert_text();" id="insert_text" style="display: inline">
+                    <div class="modal-body">
+                        <p>Type the names of the cards you'd like to add to your order and hit <b>Submit</b>. One card
+                            per line.</p>
+                        {% csrf_token %}
+                        {{ form|crispy }}
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <input type="submit" class="btn btn-success" value="Submit">
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    {# donation modal #}
     <div class="modal fade" id="donationModal" tabindex="-1" role="dialog" aria-labelledby="donationLabel"
          aria-hidden="true">
         <div class="modal-dialog" role="document">
@@ -297,8 +186,9 @@
                         tools I built from scratch.
                     </p>
                     <p>
-                        However, I'm also a full-time uni student, and in line with Wizards of the Coast's Fan Content
-                        Policy, I can't charge anything for access to the work I produce.
+                        However, in line with Wizards of the Coast's Fan Content Policy, I can't charge anything for
+                        access to the work I produce. The costs associated with maintaining and improving MPC Autofill
+                        are coming out of my pocket; I'm a one-man operation.
                     </p>
                     <p>
                         That's why I'm humbly asking that if you found this website and/or my images helpful, please
@@ -337,4 +227,7 @@
             </div>
         </div>
     </div>
+
 {% endblock %}
+
+

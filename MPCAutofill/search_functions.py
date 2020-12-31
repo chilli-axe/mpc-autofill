@@ -1,6 +1,39 @@
-from haystack.query import SearchQuerySet
-from to_searchable import to_searchable
 import csv
+import math
+
+import chardet
+import defusedxml.ElementTree as ET
+from elasticsearch_dsl.query import Match
+
+from cardpicker.documents import CardSearch, CardbackSearch, TokenSearch
+from cardpicker.forms import InputText
+from cardpicker.models import Source
+from to_searchable import to_searchable
+
+
+def build_context(drive_order, order, qty):
+    # I found myself copy/pasting this between the three input methods so I figured it belonged in its own function
+
+    # For donation modal, approximate how many cards I've rendered
+    my_cards = 100 * math.floor(Source.objects.filter(id="Chilli_Axe")[0].qty_cards / 100)
+
+    context = {
+        "form": InputText,
+        "drive_order": drive_order,
+        "order": order,
+        "qty": qty,
+        "my_cards": f"{my_cards:,d}",
+    }
+
+    return context
+
+
+def text_to_list(input_text):
+    # Helper function to translate strings like "[2, 4, 5, 6]" into lists
+    if input_text == "":
+        return []
+    return [int(x) for x in input_text.strip('][').replace(" ", "").split(',')]
+
 
 # Hardcode transform card front/back pairs
 transforms = {'Aberrant Researcher': 'Perfected Form',
@@ -112,62 +145,89 @@ transforms = {'Aberrant Researcher': 'Perfected Form',
               'Hanweir Battlements': 'Hanweir, the Writhing Township Top',
               'Hanweir Garrison': 'Hanweir, the Writhing Township Bottom',
               'Graf Rats': 'Chittering Host Top',
-              'Midnight Scavengers': 'Chittering Host Bottom'}
-
+              'Midnight Scavengers': 'Chittering Host Bottom',
+              "Agadeem's Awakening": 'Agadeem, the Undercrypt',
+              'Akoum Warrior': 'Akoum Teeth',
+              'Bala Ged Recovery': 'Bala Ged Sanctuary',
+              'Beyeen Veil': 'Beyeen Coast',
+              'Blackbloom Rogue': 'Blackbloom Bog',
+              'Branchloft Pathway': 'Boulderloft Pathway',
+              'Brightclimb Pathway': 'Grimclimb Pathway',
+              'Clearwater Pathway': 'Murkwater Pathway',
+              'Cragcrown Pathway': 'Timbercrown Pathway',
+              "Emeria's Call": 'Emeria, Shattered Skyclave',
+              'Glasspool Mimic': 'Glasspool Shore',
+              'Hagra Mauling': 'Hagra Broodpit',
+              'Jwari Disruption': 'Jwari Ruins',
+              'Kabira Takedown': 'Kabira Plateau',
+              'Kazandu Mammoth': 'Kazandu Valley',
+              "Kazuul's Fury": "Kazuul's Cliffs",
+              'Khalni Ambush': 'Khalni Territory',
+              'Makindi Stampede': 'Makindi Mesas',
+              'Malakir Rebirth': 'Malakir Mire',
+              'Needleverge Pathway': 'Pillarverge Pathway',
+              'Ondu Inversion': 'Ondu Skyruins',
+              'Pelakka Predation': 'Pelakka Caverns',
+              'Riverglide Pathway': 'Lavaglide Pathway',
+              'Sea Gate Restoration': 'Sea Gate, Reborn',
+              'Sejiri Shelter': 'Sejiri Glacier',
+              'Shatterskull Smashing': 'Shatterskull, the Hammer Pass',
+              'Silundi Vision': 'Silundi Isle',
+              'Skyclave Cleric': 'Skyclave Basilica',
+              'Song-Mad Treachery': 'Song-Mad Ruins',
+              'Spikefield Hazard': 'Spikefield Cave',
+              'Tangled Florahedron': 'Tangled Vale',
+              'Turntimber Symbiosis': 'Turntimber, Serpentine Wood',
+              'Umara Wizard': 'Umara Skyfalls',
+              'Valakut Awakening': 'Valakut Stoneforge',
+              'Vastwood Fortification': 'Vastwood Thicket',
+              'Zof Consumption': 'Zof Bloodbog',
+              }
 
 transforms = dict((to_searchable(x), to_searchable(y)) for x, y in transforms.items())
 
 
-def search_card_face(cardname, drive_order, grouping=0):
-    # Search for a card, given its name and the drives to search
-    # Return a tuple of dictionaries (returning as a dict rather than Card for Javascript access purposes)
-    results = SearchQuerySet().filter(content=cardname)
-    # Retrieve Card objects from search results while filtering out cardbacks
-    card_objs = [x.object for x in results if "_cardback" not in x.object.source]
-    cards_found = []
-    for source in drive_order:
-        cards_this_source = [x for x in card_objs if source in x.source]
-        if cards_this_source:
-            # Sort cards from this source by priority and convert them all to dicts
-            priorities = [int(x.priority) for x in cards_this_source]
-            cards_this_source = [x.to_dict() for _, x in sorted(zip(priorities, cards_this_source),
-                                                                key=lambda pair: pair[0],
-                                                                reverse=True)]
-            for x in cards_this_source:
-                x['grouping'] = grouping
-
-            # Attach the search results for this source to cards_found
-            cards_found.extend(cards_this_source)
-    return tuple(cards_found)
+def query_es_card(drive_order, query):
+    return search_database(drive_order, query, CardSearch.search())
 
 
-def search_card(cardname, drive_order, grouping=0):
-    # Search for card front and attach it to results
-    cardname_split = None
-    if "&" in cardname:
-        cardname_split = cardname.split("&")[0]
+def query_es_cardback():
+    # return all cardbacks in the search index
+    s = CardbackSearch.search()
+    hits = s \
+        .sort({'priority': {'order': 'desc'}}) \
+        .params(preserve_order=True) \
+        .scan()
+    results = [x.to_dict() for x in hits]
+    return results
 
-    results_front = search_card_face(to_searchable(cardname), drive_order, grouping)
-    results = (results_front,)
 
-    if not results_front and cardname_split:
-        # Search again but only consider text before the &
-        return search_card(cardname_split, drive_order, grouping)
+def query_es_token(drive_order, query):
+    return search_database(drive_order, query, TokenSearch.search())
 
-    # Determine if this card is a double-faced card
-    # TODO: Not naive string contains for determining if a card is a double faced card?
-    tf_result = [x for x in transforms.keys() if to_searchable(cardname) in x]
-    if tf_result:
-        # Search for the back face, and attach it to results
-        cardname_back = transforms[tf_result[0]]
-        if grouping > 0:
-            results_back = search_card_face(to_searchable(cardname_back), drive_order, grouping+1)
-        else:
-            results_back = search_card_face(to_searchable(cardname_back), drive_order)
-        if results_back:
-            results = (results_front, results_back)
-    if not results_front:
-        results = ({"query": cardname},)
+
+def search_database(drive_order, query, s):
+    # TODO: elasticsearch_dsl.serializer.serializer ?
+    # search through the database for a given query, over the drives specified in drive_orders,
+    # using the search index specified in s (this enables reuse of code between Card and Token search functions)
+
+    results = []
+
+    # set up search - match the query and use the AND operator
+    match = Match(searchq={"query": to_searchable(query), "operator": "AND"})
+
+    # iterate over drives, filtering on the current drive, ordering by priority in descending order,
+    # then add the returned hits to the results list
+    for drive in drive_order:
+        hits = s \
+            .query(match) \
+            .filter('match', source=drive) \
+            .sort({'priority': {'order': 'desc'}}) \
+            .params(preserve_order=True) \
+            .scan()
+        results += [x.to_dict() for x in hits]
+
+    print(results)
     return results
 
 
@@ -199,8 +259,210 @@ def process_line(input_str):
             return name, qty
 
 
-def uploaded_file_to_csv(csv_bytes):
-    csv_string_split = csv_bytes.decode('utf-8').splitlines()
+class OrderDict:
+    # small wrapper for a dictionary so it's easy to insert stuff into the order
+    def __init__(self):
+        # initialise the dictionary and set up the cardback's entry
+        # self.order = {"": {
+        self.order = {"front": {}, "back": {
+            "": {
+                "slots": [["-", ""]],
+                "req_type": "back",
+            }
+        }}
+
+    def insert(self, query, slots, face, req_type, selected_img):
+        # stick a thing into the order dict
+        slots_with_id = [[x, selected_img] for x in slots]
+        if query not in self.order[face].keys():
+            self.order[face][query] = {
+                "slots": slots_with_id,
+                "req_type": req_type,
+            }
+        else:
+            self.order[face][query]["slots"] += slots_with_id
+
+    def insert_back(self, slots):
+        # add onto the common cardback's slots
+        slots_with_id = [[x, ""] for x in slots]
+        self.order["back"][""]["slots"] += slots_with_id
+
+
+def parse_text(input_lines, offset=0):
+    cards_dict = OrderDict()
+
+    curr_slot = offset
+
+    # loop over lines in the input text, and for each, parse it into usable information
+    for line in input_lines.splitlines():
+        # extract the query and quantity from the current line of the input text
+        (query, qty) = process_line(line)
+
+        if query:
+            # cap at 612
+            over_cap = False
+            if qty + curr_slot >= 612:
+                qty = 612 - curr_slot
+                over_cap = True
+
+            req_type = ""
+            curr_slots = list(range(curr_slot, curr_slot + qty))
+
+            # first, determine if this card is a DFC by virtue of it having its two faces separated by an ampersand
+            query_faces = [query, ""]
+            if '&' in query_faces[0]:
+                query_split = [to_searchable(x) for x in query.split(" & ")]
+                if query_split[0] in transforms.keys() and query_split[1] in transforms.values():
+                    query_faces = query_split
+            elif query[0:2].lower() == "t:":
+                query_faces[0] = to_searchable(query[2:])
+                req_type = "token"
+            else:
+                query_faces[0] = to_searchable(query)
+                # gotta check if query is the front of a DFC here as well
+                if query_faces[0] in transforms.keys():
+                    query_faces = [query, transforms[query_faces[0]]]
+
+            # stick the front face into the dictionary
+            cards_dict.insert(query_faces[0], curr_slots, "front", req_type, "")
+
+            if query_faces[1]:
+                # is a DFC, gotta add the back face to the correct slots
+                cards_dict.insert(query_faces[1], curr_slots, "back", req_type, "")
+
+            else:
+                # is not a DFC, so add this card's slots onto the common cardback's slots
+                cards_dict.insert_back(curr_slots)
+
+            curr_slot += qty
+
+            if over_cap:
+                break
+
+    return cards_dict.order, curr_slot - offset
+
+
+def parse_csv(csv_bytes):
+    # TODO: I'm sure this can be optimised
+    cards_dict = OrderDict()
+    curr_slot = 0
+
+    # support for different types of encoding - detect the encoding type then decode the given bytes according to that
+    csv_format = chardet.detect(csv_bytes)
+    csv_string_split = csv_bytes.decode(csv_format['encoding']).splitlines()
+
+    # handle case where csv doesn't have correct headers
+    headers = 'Quantity,Front,Back'
+    if csv_string_split[0] != headers:
+        # this CSV doesn't appear to have the correct column headers, so we'll attach them here
+        csv_string_split = [headers] + csv_string_split
     csv_dictreader = csv.DictReader(csv_string_split)
+
+    for line in csv_dictreader:
+        qty = line['Quantity']
+        if qty:
+            # try to parse qty as int
+            try:
+                qty = int(qty)
+            except ValueError:
+                # invalid qty
+                continue
+        else:
+            # for empty quantities, assume qty=1
+            qty = 1
+
+        # only care about lines with a front specified
+        if line['Front']:
+            # the slots for this line in the CSV
+            curr_slots = list(range(curr_slot, curr_slot + qty))
+
+            # insert front image
+            # if the front is a transform card, its back should be the reverse side of that transform card
+            back_query = line['Back']
+
+            # if a back is specified, insert the back
+            # otherwise, add these slots to the common cardback
+
+            query_faces = [line['Front'], line['Back']]
+            req_type = "normal"
+
+            if not line['Back']:
+                # potentially doing transform things, because a back wasn't specified
+                # first, determine if this card is a DFC by virtue of it having its two faces separated by an ampersand
+                if '&' in query_faces[0]:
+                    query_split = [to_searchable(x) for x in query.split(" & ")]
+                    if query_split[0] in transforms.keys() and query_split[1] in transforms.values():
+                        query_faces = query_split
+                elif query_faces[0][0:2].lower() == "t:":
+                    query_faces[0] = to_searchable(query_faces[0][2:])
+                    req_type = "token"
+                else:
+                    # gotta check if query is the front of a DFC here as well
+                    query_faces[0] = to_searchable(query_faces[0])
+                    if query_faces[0] in transforms.keys():
+                        query_faces = [query_faces[0], transforms[query_faces[0]]]
+
+            # ensure everything has been converted to searchable
+            query_faces = [to_searchable(x) for x in query_faces]
+
+            # stick the front face into the dictionary
+            cards_dict.insert(query_faces[0], curr_slots, "front", req_type, "")
+
+            if query_faces[1]:
+                # is a DFC, gotta add the back face to the correct slots
+                cards_dict.insert(query_faces[1], curr_slots, "back", req_type, "")
+
+            else:
+                # is not a DFC, so add this card's slots onto the common cardback's slots
+                cards_dict.insert_back(curr_slots)
+
+            curr_slot += qty
+
+    print(cards_dict.order)
+
     # TODO: Read in chunks if big?
-    return csv_dictreader
+    return cards_dict.order, curr_slot
+
+
+def parse_xml(input_text, offset=0):
+    # TODO: gotta set up cardback IDs for cards which use the default cardback
+    # TODO: don't include the right panel cardabck in this dict, bc it'll overwrite the cardback they had?
+
+    # note: this raises an IndexError if you upload an old xml (which doesn't include the search query), and this
+    # exception is handled in the view that calls parse_xml
+    # TODO: handle the exception here and return nothing
+    cards_dict = OrderDict()
+
+    qty = 0  # should be qty = 0 but was qty = offset?
+    root = ET.fromstring(input_text)
+
+    # TODO this might be kinda shit, idk, come back to it later
+
+    def xml_parse_face(elem, face):
+        print(elem)
+        all_slots = []
+        for child in elem:
+            # structure: id, slots, name, query
+            card_id = child[0].text
+            slots = [x + offset for x in text_to_list(child[1].text)]
+            # filter out slot numbers greater than or equal to 612
+            slots = [x for x in slots if x < 612]
+            if slots:
+                all_slots += slots
+                query = child[3].text
+                cards_dict.insert(query, slots, face, "", card_id)
+
+        return set(all_slots)
+
+    # parse the fronts first to get a list of slots in the order
+    all_slots = xml_parse_face(root[1], "front")
+    # count how many slots we have for qty
+    qty = len(all_slots)
+    if root[2].tag == "backs":
+        # remove the back slots from all_slots, leaving us with just slots with the common cardback
+        all_slots -= xml_parse_face(root[2], "back")
+
+    cards_dict.insert_back(list(all_slots))
+
+    print(cards_dict.order)
+    return cards_dict.order, qty

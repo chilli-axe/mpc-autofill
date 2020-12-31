@@ -2,23 +2,25 @@
 {% load static %}
 <html lang="en">
 <head>
-    <link rel="shortcut icon" href="{% static 'cardpicker/favicon.ico' %}" />
+    <link rel="shortcut icon" href="{% static 'cardpicker/favicon.ico' %}"/>
 
     <title>{% block title %} MPC Autofill {% endblock %}</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description"
+          content="The easiest way to print kitchen-table playtest cards for trading card games with MakePlayingCards (MPC).
+    No prior knowledge required.">
     <link rel="stylesheet" type="text/css" href="{% static "css/bootstrap.min.css" %}">
-    <link rel="stylesheet" type="text/css" href="{% static 'css/custom.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/custom.css' %}?1506">
     <script src="http://code.jquery.com/jquery.min.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
     <script src="{% static 'js/jquery.ui.touch-punch.js' %}"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
-    <script src="{% static 'js/custom.js' %}"></script>
 </head>
-<body>
+<body id="id_body" style="touch-action: manipulation;">
 <!-- Navbar-->
-<nav class="navbar navbar-expand-sm navbar-light bg-primary fixed-top">
+<nav class="navbar navbar-expand-md navbar-light bg-primary fixed-top">
     <div class="container-fluid">
         <a class="navbar-brand" href="/">
             <img src="{% static 'cardpicker/logolowres.png' %}" width="30" height="30">
@@ -45,6 +47,9 @@
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="https://github.com/ndepaola/mpc-autofill" target="_blank">GitHub</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="https://discord.gg/VRScmDMeSw" target="_blank">Join the Discord!</a>
                 </li>
                 {% with 'cardpicker/donate.png' as img_src %}
                     <li class="nav-item" style="margin-top: 4px;">

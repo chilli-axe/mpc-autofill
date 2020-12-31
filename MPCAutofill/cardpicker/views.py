@@ -1,27 +1,32 @@
-from django.shortcuts import render
-from .models import Card, Source
-from .forms import SubmitCardListForm, CSVUploadForm
-from search_functions import process_line, search_card, uploaded_file_to_csv
-import os
-import math
+from django.http import JsonResponse
+from django.shortcuts import render, redirect
+
+from search_functions import \
+    build_context, \
+    parse_text, \
+    parse_xml, \
+    parse_csv, \
+    query_es_cardback, \
+    query_es_card, \
+    query_es_token
+from to_searchable import to_searchable
+from .forms import InputText, InputXML, InputCSV
+from .models import Card, Cardback, Token, Source
 
 
-BRACKETS = [18, 36, 55, 72, 90, 108, 126, 144, 162, 180, 198, 216, 234, 396, 504, 612]
-
-
-# Create your views here.
-def index(request):
-    sources = Source.objects.all()
-    context = {}
-    for source in sources:
-        if "_cardback" not in source.id:
-            context[source.id] = {'username': source.username,
+def index(request, error=False):
+    sources = {}
+    for source in Source.objects.all():
+        if "sources" not in source.id:
+            sources[source.id] = {'username': source.username,
                                   'reddit': source.reddit,
                                   'drivelink': source.drivelink}
 
-    return render(request, 'cardpicker/index.html', {'form': SubmitCardListForm,
-                                                     'mobile': not request.user_agent.is_pc,
-                                                     'sources': context})
+    context = {'form': InputText,
+               'mobile': not request.user_agent.is_pc,
+               'sources': sources}
+
+    return render(request, 'cardpicker/index.html', context)
 
 
 def guide(request):
@@ -33,163 +38,184 @@ def legal(request):
 
 
 def credits(request):
-    total_count = f"{Card.objects.all().count():,d}"
+    # count how many cards are in the database and format with commas
+    total_count = [x.objects.all().count() for x in [Card, Cardback, Token]]
+    total_count.append(sum(total_count))
+    total_count_f = [f"{x:,d}" for x in total_count]
+
+    # retrieve all source objects and build context
     sources = Source.objects.all()
-    context = {}
+    context = {x.id: x for x in sources}
+
+    # but also format quantities with commas
     for source in sources:
-        context[source.id] = {'username': source.username,
-                              'reddit': source.reddit,
-                              'drivelink': source.drivelink,
-                              'quantity': f"{source.quantity:,d}",
-                              'description': source.description}
+        context[source.id].qty_cards = f"{context[source.id].qty_cards :,d}"
+        context[source.id].qty_cardbacks = f"{context[source.id].qty_cardbacks :,d}"
+        context[source.id].qty_tokens = f"{context[source.id].qty_tokens :,d}"
 
     return render(request, 'cardpicker/credits.html', {"sources": context,
-                                                       "total_count": total_count})
+                                                       "total_count": total_count_f})
+
+
+def search(request):
+    # search endpoint function - the frontend requests card HTML info from this url
+    # pull info out of request
+    drive_order = request.POST.get('drive_order').split(",")
+    query = request.POST.get('query').rstrip("\n")
+    slots = request.POST.get('slots')
+    dom_id = request.POST.get('dom_id')
+    face = request.POST.get('face')
+    req_type = request.POST.get('req_type')
+    group = request.POST.get('group')
+    selected_img = request.POST.get('selected_img')
+
+    # this function can either receive a request with "normal" type with query like "t:goblin",
+    # or a request with "token" type with query like "goblin", so handle both of those cases here
+    if query.lower()[0:2] == "t:":
+        query = query[2:]
+        req_type = "token"
+
+    # now that we've potentially trimmed the query for tokens, convert the query to a searchable string
+    query = to_searchable(query)
+
+    # search for tokens if this request is for a token
+    if req_type == "token":
+        results = query_es_token(drive_order, query)
+
+    # search for cardbacks if request is for cardbacks
+    elif req_type == "back":
+        results = query_es_cardback()
+
+    # otherwise, search normally
+    else:
+        results = query_es_card(drive_order, query)
+
+    context = {
+        "data": results,
+        "query": query,
+        "slots": slots,
+        "dom_id": dom_id,
+        "face": face,
+        "req_type": req_type,
+        "group": group,
+        "selected_img": selected_img
+    }
+
+    return render(request, 'cardpicker/card.html', {"card": context})
 
 
 def review(request):
+    # return the review page with the order dict and quantity from parsing the given text input as context
+    # used for rendering the review page
 
-    def search_model(lines_raw, drive_order):
-        card_list = []
-        cardbacks = Card.objects.filter(source__icontains="_cardback").order_by("-priority")
-        cardbacks = [x.to_dict() for x in cardbacks]
-
-        grouping = 1
-
-        # Iterate over lines in the input list
-        for line in lines_raw.splitlines():
-            (cardname, qty) = process_line(line)
-            if cardname:
-                # If order would overflow past maximum MPC bracket, reduce this qty
-                if qty > BRACKETS[-1] - len(card_list):
-                    qty = BRACKETS[-1] - len(card_list)
-
-                this_group = 0
-                if qty > 1:
-                    this_group = grouping
-                    grouping += 2
-
-                # Search for card results
-                results = search_card(cardname, drive_order, this_group)
-
-                # Append results to card_list
-                for _ in range(0, qty):
-                    card_list.append(results)
-
-            if len(card_list) >= BRACKETS[-1]:
-                # This order already has 612 cards in it - stop here
-                break
-
-        # Figure out which bracket this order lands in
-        curr_bracket = BRACKETS[[x for x, val in enumerate(BRACKETS) if val >= len(card_list)][0]]
-
-        # For donation modal, approximate how many cards I've rendered
-        my_cards = 1000*math.floor(Source.objects.filter(id="Chilli_Axe")[0].quantity/1000)
-
-        # Return cards, qty of cards in order, current bracket, and all cardbacks found
-        return {"cards": card_list,
-                "qty": len(card_list),
-                "bracket": curr_bracket,
-                "cardbacks": cardbacks,
-                "my_cards": f"{my_cards:,d}"}
-
+    # TODO: rename this to input_text?
     if request.method == "POST":
-        form = SubmitCardListForm(request.POST)
+        form = InputText(request.POST)
         if form.is_valid():
-            print("Request is valid")
-            # Retrieve drive order and raw user input from POST request
+            print("Request is valid for text uploader")
+            # retrieve drive order and raw user input from request
             drive_order = list(request.POST.get("drive_order").split(","))
             lines_raw = form['card_list'].value()
-            # Search the model with the user's input and drive order, then return review page
-            context = search_model(lines_raw, drive_order)
+
+            # parse the text input to obtain the order dict and quantity in this order
+            (order, qty) = parse_text(lines_raw)
+
+            # build context
+            context = build_context(drive_order, order, qty)
+
             return render(request, 'cardpicker/review.html', context)
-        else:
-            return render(request, 'cardpicker/index.html')
-    else:
-        return render(request, 'cardpicker/index.html')
+
+    return redirect('index')
 
 
-def csvupload(request):
+def insert_text(request):
+    # return a JSON response with the order dict and quantity from parsing the given input
+    # used for inserting new cards into an existing order on the review page
+    text = request.POST.get('text')
+    offset = int(request.POST.get('offset'))
 
-    def search_model_csv(csv_order):
+    # parse the text input to obtain the order dict and quantity in this addition to the order
+    (order, qty) = parse_text(text, offset)
 
-        card_list = []
-        cardbacks = Card.objects.filter(source__icontains="_cardback").order_by("-priority")
-        cardbacks = [x.to_dict() for x in cardbacks]
+    # remove the "-" element from the common cardback slot list so the selected common cardback doesn't reset on us
+    order["back"][""]["slots"].pop(0)
 
-        grouping = 1
+    # build context
+    context = {
+        "order": order,
+        "qty": qty,
+    }
 
-        # Iterate over lines in the input list
-        for line in csv_order:
-            qty = line['Quantity']
-            if qty:
-                # try to parse qty as int
-                try:
-                    qty = int(qty)
-                except ValueError:
-                    # invalid qty
-                    continue
-            else:
-                # for empty quantities, assume qty=1
-                qty = 1
-            if line['Front']:
-                # If order would overflow past maximum MPC bracket, reduce this qty
-                if qty > BRACKETS[-1] - len(card_list):
-                    qty = BRACKETS[-1] - len(card_list)
+    return JsonResponse(context)
 
-                this_group = 0
-                if qty > 1:
-                    this_group = grouping
-                    grouping += 2
 
-                # Search for front card results
-                results = search_card(line['Front'], drive_order, this_group)
-
-                # If a back is specified, search for the back and append it too
-                if line['Back']:
-                    if qty > 1:
-                        results_back = search_card(line['Back'], drive_order, this_group+1)
-                    else:
-                        results_back = search_card(line['Back'], drive_order)
-                    results = (results[0], results_back[0])
-
-                # Append results to card_list
-                for _ in range(0, qty):
-                    card_list.append(results)
-
-            if len(card_list) >= BRACKETS[-1]:
-                # This order already has 612 cards in it - stop here
-                break
-
-        # Figure out which bracket this order lands in
-        curr_bracket = BRACKETS[[x for x, val in enumerate(BRACKETS) if val >= len(card_list)][0]]
-
-        # For donation modal, approximate how many cards I've rendered
-        my_cards = 1000 * math.floor(Source.objects.filter(id="Chilli_Axe")[0].quantity / 1000)
-
-        # Return cards, qty of cards in order, current bracket, and all cardbacks found
-        return {"cards": card_list,
-                "qty": len(card_list),
-                "bracket": curr_bracket,
-                "cardbacks": cardbacks,
-                "my_cards": f"{my_cards:,d}"}
-
+def input_csv(request):
+    # return the review page with the order dict and quantity from parsing the given CSV input as context
+    # used for rendering the review page
     if request.method == "POST":
-        form = CSVUploadForm(request.POST, request.FILES)
+        form = InputCSV(request.POST, request.FILES)
         if form.is_valid():
             print("Request is valid for CSV uploader")
 
-            print(request.FILES['file'].size)
-
-            if request.FILES['file'].size > 2000000:
-                print("file 2 big")
-
-            csv_order = uploaded_file_to_csv(request.FILES['file'].read())
-            print(type(request.FILES['file']))
+            # retrieve drive order and csv file from request
             drive_order = list(request.POST.get("drive_order").split(","))
-            context = search_model_csv(csv_order)
+            csvfile = request.FILES['file'].read()
+
+            # parse the csv file to obtain the order dict and quantity in this order
+            (order, qty) = parse_csv(csvfile)
+
+            # build context
+            context = build_context(drive_order, order, qty)
+
             return render(request, 'cardpicker/review.html', context)
-        else:
-            return render(request, 'cardpicker/index.html')
-    else:
-        return render(request, 'cardpicker/index.html')
+
+    return redirect('index')
+
+
+def input_xml(request):
+    # return the review page with the order dict and quantity from parsing the given XML input as context
+    # used for rendering the review page
+    if request.method == "POST":
+        form = InputXML(request.POST, request.FILES)
+        if form.is_valid():
+            try:
+                print("Request is valid for XML uploader")
+
+                # retrieve drive order and XML file from request
+                drive_order = list(request.POST.get("drive_order").split(","))
+                xmlfile = request.FILES['file'].read()
+
+                # parse the XML file to obtain the order dict and quantity in this order
+                (order, qty) = parse_xml(xmlfile, 0)
+
+                # build context
+                context = build_context(drive_order, order, qty)
+
+                return render(request, 'cardpicker/review.html', context)
+
+            except IndexError:
+                # IndexErrors can occur when trying to parse old XMLs that don't include the search query
+                return redirect('index')
+
+    return redirect('index')
+
+
+def insert_xml(request):
+    # return a JSON response with the order dict and quantity from parsing the given XML input
+    # used for inserting new cards into an existing order on the review page
+    xml = request.POST.get('xml')
+    offset = int(request.POST.get('offset'))
+
+    # parse the XML input to obtain the order dict and quantity in this addition to the order
+    (order, qty) = parse_xml(xml, offset)
+
+    # remove the - element from the common cardback slot list so the selected common cardback doesn't reset on us
+    order["back"][""]["slots"].pop(0)
+
+    # build context
+    context = {
+        "order": order,
+        "qty": qty,
+    }
+
+    return JsonResponse(context)
