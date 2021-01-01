@@ -67,7 +67,7 @@ SOURCES["Unknown"] = {
 global OWNERS
 OWNERS = {SOURCES[x]["drivename"]: x for x in SOURCES.keys()}
 
-DPI_HEIGHT_RATIO = 300/1100  # 300 DPI for image of vertical resolution 1100 pixels
+DPI_HEIGHT_RATIO = 300/1122  # 300 DPI for image of vertical resolution 1122 pixels
 
 
 def fill_tables(service):
