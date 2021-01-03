@@ -25,8 +25,6 @@ function generateXml() {
     let qtyElem = doc.createElement("quantity");
     let bracketElem = doc.createElement("bracket");
     let stockElem = doc.createElement("stock");
-    // let downloadOnly = document.getElementById("downloadOnly");
-    // let downloadOnlyElem = doc.createElement("downloadOnly");
     let foil = document.getElementById("foilSelect");
     let foilElem = doc.createElement("foil");
 
@@ -54,26 +52,31 @@ function generateXml() {
     for (let i = 0; i < card_elems.length; i++) {
         // retrieve information about the current card object
         let curr_obj = $('#' + card_elems[i].id).data("obj");
-        let curr_id = curr_obj.get_curr_img().id;
-        if (curr_id !== cardback_id) {
-            // the card we're looking at isn't the common cardback, so we care about it
-            let curr_face = curr_obj.face;
-            if (order_map[curr_face][curr_id] === undefined) {
-                // this image doesn't exist in the order map yet, so add it
-                let curr_img = curr_obj.get_curr_img();
-                let curr_name = curr_img.name + "." + curr_img.thumbpath;
-                order_map[curr_face][curr_id] = {
-                    "id": curr_id, // image ID
-                    "slots": [curr_obj.slot], // slot number
-                    "name": curr_name,
-                    "query": curr_obj.get_query() // search query
-                };
-                // we found an image in this face
-                num_imgs[curr_face] = 1;
+        
+        // only proceed if the card obj has any search results
+        if (curr_obj.cards.length > 0) {
+            let curr_id = curr_obj.get_curr_img().id;
+        
+            if (curr_id !== cardback_id) {
+                // the card we're looking at isn't the common cardback, so we care about it
+                let curr_face = curr_obj.face;
+                if (order_map[curr_face][curr_id] === undefined) {
+                    // this image doesn't exist in the order map yet, so add it
+                    let curr_img = curr_obj.get_curr_img();
+                    let curr_name = curr_img.name + "." + curr_img.thumbpath;
+                    order_map[curr_face][curr_id] = {
+                        "id": curr_id, // image ID
+                        "slots": [curr_obj.slot], // slot number
+                        "name": curr_name,
+                        "query": curr_obj.get_query() // search query
+                    };
+                    // we found an image in this face
+                    num_imgs[curr_face] = 1;
 
-            } else {
-                // add this image's slot number to the existing info about this card
-                order_map[curr_face][curr_id]["slots"].push(curr_obj.slot);
+                } else {
+                    // add this image's slot number to the existing info about this card
+                    order_map[curr_face][curr_id]["slots"].push(curr_obj.slot);
+                }
             }
         }
     }

@@ -156,3 +156,13 @@
 .card.mpccard > .embed-responsive > img {
     transform: scale(1.088, 1.065);
 }
+
+.container.addmargin > .row > .col-lg-4 > .sticky-top.sticky-offset {
+  scrollbar-width: none;
+  max-height: calc(100vh - 60px);
+  overflow-y: scroll;
+  overflow-x: hidden;
+}
+.container.addmargin > .row > .col-lg-4 > .sticky-top.sticky-offset::-webkit-scrollbar {
+  display: none;
+}

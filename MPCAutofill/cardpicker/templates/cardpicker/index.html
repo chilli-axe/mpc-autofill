@@ -13,13 +13,13 @@
             to run the executable that fills your order into MPC.
         </div>
     {% endif %}
-    <div class="alert alert-secondary" role="alert">
+    {% comment %} <div class="alert alert-secondary" role="alert">
         You might notice image thumbnails loading in a bit more slowly than usual. 
         <a href="https://mpcautofill.com/static/cardpicker/awscosts.png">My AWS costs have been through the roof recently 
         ($150 USD last month)</a>, so for the time being, I'm switching from storing thumbnails on the server to sourcing 
         them from Google Drive. I'm working on a solution to restore the site to its previous speed. Thank you for bearing 
         with me! <3 
-    </div>
+    </div> {% endcomment %}
 
     <!-- <div class="alert alert-danger" role="alert"></div>
         I'm in the middle of updating the site & working through a few technical difficulties - please stand by! <3 
@@ -144,5 +144,12 @@
             </div>
         </div>
     </div>
+
+    <!-- Footer -->
+<footer class="page-footer font-small blue">
+    <div class="footer-copyright text-center py-3">
+        <a href="legal">MPC Autofill Legal Disclaimer</a>
+    </div>
+</footer>
 
 {% endblock %}
