@@ -4,23 +4,29 @@ Automating MakePlayingCards's online ordering system.
 The below guide describes the procedure for setting up the web component. If you're here to download the clientside program, check the Releases tab.
 
 # Requirements
-Python modules:
+## Web application:
+The following Python modules:
 * `Django`
 * `django-user-agents`
 * `elasticsearch`
 * `django-elasticsearch-dsl` and `elasticsearch-dsl`
 * `google-api-python-client`, `google-auth-httplib2` and `google-auth-oauthlib`
 * `django-crispy-forms`
+* `defusedxml`
+
+Other:
+* [Bootstrap Superhero](https://bootswatch.com/superhero/)
+* Elasticsearch - I'm using `7.10.1`
+* A Google account with the desired Google Drives to index with the site added as shared Drives
+
+## Local tool:
+The following Python modules:
 * `colorama`
 * `webdriver_manager`
 * `selenium`
 * `numpy`
 * `tqdm`
 * `pyinstaller` for generating executables
-
-Other:
-* Elasticsearch - I'm using `7.10.1`
-* A Google account with the desired Google Drives to index with the site added as shared Drives
 
 # Setup
 1. Clone this repo somewhere on your server
