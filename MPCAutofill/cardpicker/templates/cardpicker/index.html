@@ -13,14 +13,6 @@
             to run the executable that fills your order into MPC.
         </div>
     {% endif %}
-    {% comment %} <div class="alert alert-secondary" role="alert">
-        You might notice image thumbnails loading in a bit more slowly than usual. 
-        <a href="https://mpcautofill.com/static/cardpicker/awscosts.png">My AWS costs have been through the roof recently 
-        ($150 USD last month)</a>, so for the time being, I'm switching from storing thumbnails on the server to sourcing 
-        them from Google Drive. I'm working on a solution to restore the site to its previous speed. Thank you for bearing 
-        with me! <3 
-    </div> {% endcomment %}
-
     <!-- <div class="alert alert-danger" role="alert"></div>
         I'm in the middle of updating the site & working through a few technical difficulties - please stand by! <3 
     </div> -->
@@ -57,12 +49,12 @@
     </div>
 
     <div class="row">
-        <div class="col-lg-6 col-md-6 col-md-12">
+        <div class="col-lg-6">
             <div style="text-align: center">
                 <a class="btn btn-block btn-info mt-2" style="border-radius: 200px" href="/guide">Guide</a>
             </div>
         </div>
-        <div class="col-lg-6 col-md-6 col-md-12">
+        <div class="col-lg-6">
             <input form="cardinput" type="submit" class="btn btn-success mt-2" value="Submit">
 
             <button type="button" class="btn btn-primary mt-2" data-toggle="modal" data-target="#selectDrivesModal">
@@ -76,7 +68,7 @@
             <div class="dropdown-menu" aria-labelledby="uploadCardsBtn">
                 {# csv upload form #}
                 <form method="post" action="{% url 'input_csv' %}" id="input_csv" enctype="multipart/form-data">
-                {% csrf_token %}
+                    {% csrf_token %}
                     <label class="dropdown-item" onchange="$('#input_csv').submit()">
                         CSV File<input type="file" accept=".csv" hidden name="file" id="csvfile">
                     </label>
@@ -87,10 +79,10 @@
                     {% csrf_token %}
                     <label class="dropdown-item" onchange="$('#input_xml').submit()">
                         XML Order<input type="file" accept=".xml" hidden name="file" id="xmlfile">
-                </label>
-            </form>
+                    </label>
+                </form>
+            </div>
         </div>
-    </div>
     </div>
 
     <div class="modal fade" id="selectDrivesModal" tabindex="-1" role="dialog" aria-labelledby="selectDrivesLabel"
@@ -146,10 +138,10 @@
     </div>
 
     <!-- Footer -->
-<footer class="page-footer font-small blue">
-    <div class="footer-copyright text-center py-3">
-        <a href="legal">MPC Autofill Legal Disclaimer</a>
-    </div>
-</footer>
+    <footer class="page-footer font-small blue">
+        <div class="footer-copyright text-center py-3">
+            <a href="legal">MPC Autofill Legal Disclaimer</a>
+        </div>
+    </footer>
 
 {% endblock %}

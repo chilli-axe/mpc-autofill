@@ -28,9 +28,8 @@
 <button id="{{ card.dom_id }}-next" class="next btn btn-outline-primary">&#10095;</button>
 
 <script type="text/javascript">
-
-    // instantiate a Card object for this card from django context
-    // retrieve info from django context variables
+    {# instantiate a Card object for this card from django context #}
+    {# retrieve info from django context variables #}
     let card_data = JSON.parse(document.getElementById('card-data').textContent);
     let card_query = "{{ card.query }}";
     let dom_id = "{{ card.dom_id }}";
@@ -40,11 +39,9 @@
     let group = parseInt("{{ card.group }}");
     let selected_img = "{{ card.selected_img }}";
 
-    {#alert(selected_img)#}
-
-    // instantiate a new Card
-    // as soon as we instantiate a Card, it attaches itself to its corresponding element in the dom,
-    // so we don't need to keep track of the object as a variable here
+    {# instantiate a new Card #}
+    {# as soon as we instantiate a Card, it attaches itself to its corresponding element in the dom, #}
+    {# so we don't need to keep track of the object as a variable here #}
     let new_card = new Card(
         card_data,
         card_query,
@@ -56,7 +53,7 @@
         selected_img
     );
 
-    // remove json element so we don't get id clashes as multiple cards are added
+    {# remove json element so we don't get id clashes as multiple cards are added #}
     document.getElementById('card-data').remove();
 </script>
 </body>
