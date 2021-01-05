@@ -55,7 +55,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django_user_agents.middleware.UserAgentMiddleware',
-    "django.middleware.gzip.GZipMiddleware"
+    'django.middleware.gzip.GZipMiddleware',
 ]
 
 ROOT_URLCONF = 'MPCAutofill.urls'
@@ -125,15 +125,13 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
-
 STATIC_URL = '/static/'
 
 STATICFILES_DIRS = [
-    os.path.normpath(os.path.join(BASE_DIR, "static")),
-    os.path.normpath(os.path.join(BASE_DIR, '/cardpicker/static')),
+    os.path.normpath(os.path.join(BASE_DIR, 'cardpicker/static')),
 ]
 
-STATIC_ROOT = os.path.join(os.path.dirname(BASE_DIR), "staticroot")
+STATIC_ROOT = os.path.join(os.path.dirname(BASE_DIR), "static")
 
 # elasticsearch DSL settings
 ELASTICSEARCH_DSL = {
@@ -141,3 +139,6 @@ ELASTICSEARCH_DSL = {
         'hosts': 'localhost:9200'
     },
 }
+
+# redirect non-www traffic to the www address
+PREPEND_WWW = True
