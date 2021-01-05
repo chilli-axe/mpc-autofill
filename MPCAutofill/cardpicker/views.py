@@ -58,16 +58,10 @@ def credits(request):
 
 
 def search(request):
-    # search endpoint function - the frontend requests card HTML info from this url
-    # pull info out of request
+    # search endpoint function - the frontend requests the search results for this query as JSON
     drive_order = request.POST.get('drive_order').split(",")
     query = request.POST.get('query').rstrip("\n")
-    slots = request.POST.get('slots')
-    dom_id = request.POST.get('dom_id')
-    face = request.POST.get('face')
     req_type = request.POST.get('req_type')
-    group = request.POST.get('group')
-    selected_img = request.POST.get('selected_img')
 
     # this function can either receive a request with "normal" type with query like "t:goblin",
     # or a request with "token" type with query like "goblin", so handle both of those cases here
@@ -92,16 +86,10 @@ def search(request):
 
     context = {
         "data": results,
-        "query": query,
-        "slots": slots,
-        "dom_id": dom_id,
-        "face": face,
         "req_type": req_type,
-        "group": group,
-        "selected_img": selected_img
     }
 
-    return render(request, 'cardpicker/card.html', {"card": context})
+    return JsonResponse(context)
 
 
 def review(request):

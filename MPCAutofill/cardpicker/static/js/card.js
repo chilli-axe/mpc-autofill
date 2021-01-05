@@ -217,8 +217,10 @@ class Card {
                 // if this card isn't part of the common cardback lock group (it shouldn't be), add it!
                 if (groups[1].indexOf(this.dom_id) === -1) {
                     groups[1].push(this.dom_id);
-                    this.img_idx = $("#slot--back").data("obj").img_idx;
                 }
+
+                // set this cardback's idx to the common cardback's id
+                this.img_idx = $("#slot--back").data("obj").img_idx;
             }
         }
 
@@ -291,6 +293,7 @@ class Card {
             let parent_elem = this.parentElement.parentElement;
             if (parent_elem.style.opacity === "0") {
                 // animating the opacity instead of using fadeIn so things stay in place
+                // TODO: unfocus the name/search query box?
                 $(parent_elem).animate({opacity: 1}, 250)
             }
         })

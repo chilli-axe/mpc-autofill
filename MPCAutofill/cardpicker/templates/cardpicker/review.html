@@ -105,9 +105,7 @@
 
                 {# common cardback #}
                 <div class="row" id="cardback-row">
-                    <div class="col-lg-8 offset-lg-2 col-md-12" style="z-index: 1;">
-                        <div class="card mpccard card-back-common" id="slot--back" style="opacity: 0"></div>
-                    </div>
+                    <div id="cardback-container" class="col-lg-8 offset-lg-2 col-md-12" style="z-index: 1;"></div>
                 </div>
 
                 {# download images, generate order, and what's next buttons #}
@@ -226,6 +224,30 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <div id="basecard" style="display: none">
+        <div class="card-header pb-0 text-center">
+            <p class="mpccard-slot"></p>
+            <button class="dl-button">&#8595</button>
+            <button class="padlock">&#128275</button>
+            <div class="spinner-border dl-loading" role="status" style="display: none">
+            <span class="sr-only">Loading...</span>
+            </div>
+        </div>
+        <div class="rounded-lg shadow-lg embed-responsive embed-responsive-7by5">
+            <img class="embed-responsive-item card-img">
+        </div>
+        <div class="card-body mb-0 text-center">
+            <h5 class="card-subtitle mpccard-name" contentEditable="true"
+                spellcheck="false" onfocus="selectElementContents(this)"></h5>
+            <div class="mpccard-spacing">
+                <p class="card-text mpccard-source"></p>
+                <p class="card-text mpccard-counter"></p>
+            </div>
+        </div>
+        <button class="prev btn btn-outline-primary">&#10094;</button>
+        <button class="next btn btn-outline-primary">&#10095;</button>
     </div>
 
 {% endblock %}

@@ -83,25 +83,37 @@ function search_api(drive_order, query, slot_id, face, req_type = "normal", grou
         {
             'drive_order': drive_order,
             'query': query,
-            'slots': slot_id[0].toString(),
-            'dom_id': dom_id,
-            'face': face,
             'req_type': req_type,
-            'group': group,
-            'selected_img': slot_id[1]
         },
         function (data) {
-            // TODO clean up bc this is a bit shit atm - don't use a jquery identifier here?
             if ($('#' + dom_id).length < 1) {
                 // create div element for this card to occupy with the appropriate classes
-                let card_elem = document.createElement("div");
+                // let card_elem = document.createElement("div");
+                let card_elem = document.getElementById("basecard").cloneNode(true);
                 card_elem.id = dom_id;
                 card_elem.className = "card mpccard card-" + face;
 
+                // set up IDs for this man
+                let class_ids = [
+                    "mpccard-slot",
+                    "dl-button",
+                    "padlock",
+                    "dl-loading",
+                    "card-img",
+                    "mpccard-name",
+                    "mpccard-source",
+                    "mpccard-counter",
+                    "prev",
+                    "next",
+                ];
+                for (let i=0; i<class_ids.length; i++) {
+                    card_elem.getElementsByClassName(class_ids[i])[0].id = dom_id + "-" + class_ids[i];
+                }
+
                 // because jquery is asynchronous, there's no guarantee that these will be created in the correct order
-                // ensure they're ordered by slot number
+                // so, ensure they're ordered by slot number
+                card_elem.style = "";
                 card_elem.style.order = slot_id[0];
-                document.getElementById("card-container").appendChild(card_elem);
 
                 // if this is a cardback elem, set it to display: none
                 if (face === "back") {
@@ -110,12 +122,34 @@ function search_api(drive_order, query, slot_id, face, req_type = "normal", grou
 
                 // start at opacity 0 so cards can fade in
                 card_elem.style.opacity = "0";
+
+                // stick new card element into dom
+                if (slot_id[0] === "-") {
+                    // handle common cardback slightly differently
+                    // we need to adjust its classes, make sure it's visible, and insert it in a different spot
+                    card_elem.className = "card mpccard card-back-common";
+                    card_elem.style.display = "";
+                    document.getElementById("cardback-container").appendChild(card_elem);
+                }
+                else {
+                    document.getElementById("card-container").appendChild(card_elem);
+                }
             }
 
-            // insert the returned data into this card's element
-            $('#' + dom_id).html(data);
+            // insert the returned data into this card's dom element
+            let new_card = new Card(
+                data.data,
+                query,
+                dom_id,
+                slot_id[0],
+                face,
+                data.req_type,
+                group,
+                slot_id[1]
+            );
+
         },
-        'html'
+        'json'
     );
     return dom_id
 }
