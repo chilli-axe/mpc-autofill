@@ -49,7 +49,7 @@ function search_api_multiple(drive_order, query, slot_ids, face, req_type = "nor
 }
 
 
-function search_api(drive_order, query, slot_ids, face, req_type = "normal", group) {
+function search_api(drive_order, query, slot_ids, face, req_type = "normal", group = 0) {
     $.ajax({
         type: 'POST',
         url: '/ajax/search/',

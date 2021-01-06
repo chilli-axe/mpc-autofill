@@ -221,6 +221,8 @@ class Card {
             this.elem_prev.style.visibility = "visible";
             this.elem_next.style.visibility = "visible";
             this.elem_counter.style.visibility = "visible";
+
+            this.elem_name.setAttribute("contentEditable", "true");
         }
 
         // set slot number - the common cardback (right panel) is handled slightly differently
@@ -250,7 +252,7 @@ class Card {
                 // no results found, and this card is a back face, meaning we should use the common cardback
                 // only search again if this Card isn't being instantiated by a search for a cardback
                 // i.e. when no cardbacks are found, this will recursively trigger ajax queries
-                search_api(drive_order, "", [this.slot, ""], "back", "back")
+                search_api(drive_order, "", [[this.slot, ""]], "back", "back")
 
                 groups[1].push(this.dom_id);
             }
@@ -269,6 +271,7 @@ class Card {
         $(this.pe).data("obj", this);
 
         // event listener on cardname edit to research
+        $(this.elem_name).unbind("keydown"); // to remove previously added keydown event listeners, otherwise they can stack
         $(this.elem_name).keydown(function (e) {
             if (e.keyCode === 13) {
                 let search_query = this.innerText;
@@ -284,12 +287,15 @@ class Card {
                             groups[card_obj.group].splice(id_idx, 1);
                         }
                     }
-                    // TODO: something majorly fucky going on with searching in place but it's almost 3am
-                    search_api(drive_order, search_query, [parseInt(card_obj.slot), ""], card_obj.face);
+                    search_api(drive_order, search_query, [[parseInt(card_obj.slot), ""]], card_obj.face, "normal", card_obj.group)
                 });
                 return false;
             }
         });
+
+        // de-focus the query div
+        $(this.elem_name).blur();
+        window.getSelection().removeAllRanges();
 
         this.update_card();
 
@@ -298,7 +304,6 @@ class Card {
             let parent_elem = this.parentElement.parentElement;
             if (parent_elem.style.opacity === "0") {
                 // animating the opacity instead of using fadeIn so things stay in place
-                // TODO: unfocus the name/search query box?
                 $(parent_elem).animate({opacity: 1}, 250)
             }
         })
