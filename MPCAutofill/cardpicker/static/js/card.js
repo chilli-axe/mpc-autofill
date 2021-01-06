@@ -214,14 +214,13 @@ class Card {
                 this.elem_next.style.visibility = "hidden";
                 this.elem_counter.style.visibility = "hidden";
 
-                // if this card isn't part of the common cardback lock group (it shouldn't be), add it!
-                if (groups[1].indexOf(this.dom_id) === -1) {
-                    groups[1].push(this.dom_id);
-                }
-
                 // set this cardback's idx to the common cardback's id
                 this.img_idx = $("#slot--back").data("obj").img_idx;
             }
+        } else {
+            this.elem_prev.style.visibility = "visible";
+            this.elem_next.style.visibility = "visible";
+            this.elem_counter.style.visibility = "visible";
         }
 
         // set slot number - the common cardback (right panel) is handled slightly differently
@@ -251,7 +250,9 @@ class Card {
                 // no results found, and this card is a back face, meaning we should use the common cardback
                 // only search again if this Card isn't being instantiated by a search for a cardback
                 // i.e. when no cardbacks are found, this will recursively trigger ajax queries
-                search_api(drive_order, "", [this.slot, ""], "back", "back", 0, null)
+                search_api(drive_order, "", [this.slot, ""], "back", "back")
+
+                groups[1].push(this.dom_id);
             }
         }
 
@@ -259,6 +260,9 @@ class Card {
         if (this.img_count <= 1) {
             this.elem_prev.style.display = "none";
             this.elem_next.style.display = "none";
+        } else {
+            this.elem_prev.style.display = "inline";
+            this.elem_next.style.display = "inline";
         }
 
         // attach this object to the parent element
@@ -280,6 +284,7 @@ class Card {
                             groups[card_obj.group].splice(id_idx, 1);
                         }
                     }
+                    // TODO: something majorly fucky going on with searching in place but it's almost 3am
                     search_api(drive_order, search_query, [parseInt(card_obj.slot), ""], card_obj.face);
                 });
                 return false;
