@@ -11,8 +11,6 @@
 
     {# code to run on page load #}
     <script type="text/javascript">
-        {# TODO: loading circle on in-progress cards and a retry button? #}
-        {# TODO: also seems inconsistent depending on internet quality? load in top/bottom, more controlled? #}
         let groups = {};
         let max_group = 2;
         let drive_order =
@@ -22,19 +20,7 @@
 
         document.getElementById("id_body").onload = function () {
             let order = {{ order|safe }};
-
-            for (let face in order) {
-                for (let key in order[face]) {
-                    search_api_multiple(
-                        drive_order,
-                        key,
-                        order[face][key]["slots"],
-                        face,
-                        order[face][key]["req_type"]);
-                }
-            }
-
-            update_qty(qty);
+            insert_data(drive_order, order);
         }
     </script>
 
@@ -157,6 +143,26 @@
         </div>
     </div>
 
+    {# loading modal #}
+    <div class="modal fade" id="loadModal" data-backdrop="static" tabindex="-1" role="dialog" 
+        aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header text-center">
+                        <h5 class="modal-title w-100" id="exampleModalLongTitle">Loading your cards...</h5>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="text-center">
+                        <div class="spinner-border" style="width: 4em; height: 4em;" role="status">
+                            <span class="sr-only">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     {# donation modal #}
     <div class="modal fade" id="donationModal" tabindex="-1" role="dialog" aria-labelledby="donationLabel"
          aria-hidden="true">
@@ -226,6 +232,7 @@
         </div>
     </div>
 
+    {# base card template #}
     <div id="basecard" style="display: none">
         <div class="card-header pb-0 text-center">
             <p class="mpccard-slot"></p>
@@ -236,7 +243,9 @@
             </div>
         </div>
         <div class="rounded-lg shadow-lg embed-responsive embed-responsive-7by5">
-            <img class="embed-responsive-item card-img">
+            <img class="embed-responsive-item card-img" style="z-index: 1">
+            <img class="embed-responsive-item card-img-prev" style="z-index: 0">
+            <img class="embed-responsive-item card-img-next" style="z-index: 0">
         </div>
         <div class="card-body mb-0 text-center">
             <h5 class="card-subtitle mpccard-name" contentEditable="true"

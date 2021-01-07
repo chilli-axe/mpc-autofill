@@ -247,15 +247,13 @@ class Card {
             // left/right buttons, as well as dl button and padlock, should be invisible
             this.elem_padlock.style.display = "none";
             this.elem_dl_button.style.display = "none";
-            this.img_idx = -1;
-            if (this.face === "back" && this.query !== "") {
+            if (this.face === "back") {
                 // no results found, and this card is a back face, meaning we should use the common cardback
                 // only search again if this Card isn't being instantiated by a search for a cardback
-                // i.e. when no cardbacks are found, this will recursively trigger ajax queries
-                search_api(drive_order, "", [[this.slot, ""]], "back", "back")
-
+                // i.e. when no cardbacks are found, this check will avoid recursively triggering ajax queries
+                search_api(drive_order, "", [this.slot, ""], "back", this.dom_id, "back")
                 groups[1].push(this.dom_id);
-            }
+            } 
         }
 
         // hide left/right buttons if no results or only one result
@@ -275,8 +273,10 @@ class Card {
         $(this.elem_name).keydown(function (e) {
             if (e.keyCode === 13) {
                 let search_query = this.innerText;
+                let parent_elem = this.parentElement.parentElement;
                 // animating the opacity instead of using fadeOut so things stay in place
-                $(this.parentElement.parentElement).animate({opacity: 0}, 250, function () {
+                $(parent_elem).css("pointer-events", "none");
+                $(parent_elem).animate({opacity: 0}, 250, function () {
                     // first, if this card is in a lock group, remove it from the group
                     let card_obj = $(this).data("obj");
                     if (card_obj.group > 0) {
@@ -287,7 +287,7 @@ class Card {
                             groups[card_obj.group].splice(id_idx, 1);
                         }
                     }
-                    search_api(drive_order, search_query, [[parseInt(card_obj.slot), ""]], card_obj.face, "normal", card_obj.group)
+                    search_api(drive_order, search_query, [parseInt(card_obj.slot), ""], card_obj.face, card_obj.dom_id, "normal", 0);
                 });
                 return false;
             }
@@ -304,6 +304,7 @@ class Card {
             let parent_elem = this.parentElement.parentElement;
             if (parent_elem.style.opacity === "0") {
                 // animating the opacity instead of using fadeIn so things stay in place
+                $(parent_elem).css("pointer-events", "auto");
                 $(parent_elem).animate({opacity: 1}, 250)
             }
         })
@@ -311,33 +312,37 @@ class Card {
 
     update_card() {
         // update visual elements that change between image variants
-        // start by assuming the card has no search results
-        let img_url = "https://mpcautofill.com/static/cardpicker/blank.png";
         let curr_title = this.query;
         let curr_source = "Your Search Query";
 
         if (!this.empty) {
             // some search results were found - use info from currently selected image variant
-            img_url = driveURL(this.get_curr_img().id);
             curr_title = this.get_curr_img().name;
             curr_source = this.get_curr_img().source + " [" + this.get_curr_img().dpi.toString() + " DPI]";
 
-            // load the previous and next images for a smooth slideshow: +/- 1
-            // TODO: respect the length of the returned results
-            // TODO: also find a way to keep these images loaded, after a while it seems like they unload?
-            for (let i = -1; i < 2; i++) {
-                let buffer_img = new Image();
-                let buffer_id = this.cards[wrap0(this.img_idx + i, this.img_count)].id;
-                buffer_img.src = driveURL(buffer_id);
+            let elem_img_prev = document.getElementById(this.dom_id + "-card-img-prev");
+            let elem_img_next = document.getElementById(this.dom_id + "-card-img-next");
+
+            // load the previous and next images for a smooth slideshow
+            // keep them loaded by changing the src of visible img elements, but they sit behind the main
+            // element due to z-index
+            let buffer_id = this.cards[wrap0(this.img_idx, this.img_count)].id;
+            this.elem_img.src = driveURL(buffer_id);
+
+            // respect the length of the returned results
+            if (this.img_count > 1) {
+                buffer_id = this.cards[wrap0(this.img_idx - 1, this.img_count)].id;
+                elem_img_prev.src = driveURL(buffer_id);
+
+                if (this.img_count > 2) {
+                    buffer_id = this.cards[wrap0(this.img_idx + 1, this.img_count)].id;
+                    elem_img_next.src = driveURL(buffer_id);
+                }
             }
+        } else {
+            // no search results - update image src to blank image
+            this.elem_img.src = "https://mpcautofill.com/static/cardpicker/blank.png";
         }
-
-        // update image src
-        this.elem_img.src = img_url;
-
-        // load image before continuing
-        let curr_img = new Image();
-        curr_img.src = img_url;
 
         // update image name
         this.elem_name.innerHTML = curr_title;
@@ -346,7 +351,6 @@ class Card {
         this.elem_source.innerHTML = curr_source;
 
         // update selected image/total
-        this.elem_counter.innerHTML =
-            (this.img_idx + 1).toString() + "/" + this.img_count.toString();
+        this.elem_counter.innerHTML = (this.img_idx + 1).toString() + "/" + this.img_count.toString();
     }
 }

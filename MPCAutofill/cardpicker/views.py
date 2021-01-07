@@ -13,6 +13,8 @@ from to_searchable import to_searchable
 from .forms import InputText, InputXML, InputCSV
 from .models import Card, Cardback, Token, Source
 
+import json
+
 
 def index(request, error=False):
     sources = {}
@@ -57,12 +59,31 @@ def credits(request):
                                                        "total_count": total_count_f})
 
 
-def search(request):
+def search_multiple(request):
+    # search endpoint function - the frontend requests the search results for this query as JSON
+    drive_order = request.POST.get('drive_order').split(",")
+    order = json.loads(request.POST.get('order'))
+
+    for face in order.keys():
+        for key in order[face].keys():
+            result = search(drive_order, key, order[face][key]['req_type'])
+            order[face][key]["data"] = result
+
+    return JsonResponse(order)
+    
+
+
+def search_individual(request):
     # search endpoint function - the frontend requests the search results for this query as JSON
     drive_order = request.POST.get('drive_order').split(",")
     query = request.POST.get('query').rstrip("\n")
     req_type = request.POST.get('req_type')
 
+    return JsonResponse(search(drive_order, query, req_type))
+
+
+
+def search(drive_order, query, req_type):
     # this function can either receive a request with "normal" type with query like "t:goblin",
     # or a request with "token" type with query like "goblin", so handle both of those cases here
     if query.lower()[0:2] == "t:":
@@ -84,12 +105,10 @@ def search(request):
     else:
         results = query_es_card(drive_order, query)
 
-    context = {
+    return {
         "data": results,
         "req_type": req_type,
     }
-
-    return JsonResponse(context)
 
 
 def review(request):

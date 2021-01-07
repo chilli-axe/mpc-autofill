@@ -227,7 +227,6 @@ def search_database(drive_order, query, s):
             .scan()
         results += [x.to_dict() for x in hits]
 
-    print(results)
     return results
 
 
@@ -464,5 +463,4 @@ def parse_xml(input_text, offset=0):
 
     cards_dict.insert_back(list(all_slots))
 
-    print(cards_dict.order)
     return cards_dict.order, qty
