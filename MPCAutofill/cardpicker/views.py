@@ -108,6 +108,7 @@ def search(drive_order, query, req_type):
     return {
         "data": results,
         "req_type": req_type,
+        "query": query,
     }
 
 

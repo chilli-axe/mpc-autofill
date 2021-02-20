@@ -182,6 +182,22 @@ transforms = {'Aberrant Researcher': 'Perfected Form',
               'Valakut Awakening': 'Valakut Stoneforge',
               'Vastwood Fortification': 'Vastwood Thicket',
               'Zof Consumption': 'Zof Bloodbog',
+              'Alrund, God of the Cosmos': 'Hakka, Whispering Raven',
+              'Barkchannel Pathway': 'Tidechannel Pathway',
+              'Birgi, God of Storytelling': 'Harnfel, Horn of Bounty',
+              'Blightstep Pathway': 'Searstep Pathway',
+              'Cosima, God of the Voyage': 'The Omenkeel',
+              'Darkbore Pathway': 'Slitherbore Pathway',
+              'Egon, God of Death': 'Throne of Death',
+              'Esika, God of the Tree': 'The Prismatic Bridge',
+              'Halvar, God of Battle': 'Sword of the Realms',
+              'Hengegate Pathway': 'Mistgate Pathway',
+              'Jorn, God of Winter': 'Kaldring, the Rimestaff',
+              'Kolvori, God of Kinship': 'The Ringhart Crest',
+              'Reidane, God of the Worthy': "Valkmira, Protector's Shield",
+              'Tergrid, God of Fright': "Tergrid's Lantern",
+              'Toralf, God of Fury': "Toralf's Hammer",
+              'Valki, God of Lies': 'Tibalt, Cosmic Impostor',
               }
 
 transforms = dict((to_searchable(x), to_searchable(y)) for x, y in transforms.items())
@@ -216,16 +232,16 @@ def search_database(drive_order, query, s):
     # set up search - match the query and use the AND operator
     match = Match(searchq={"query": to_searchable(query), "operator": "AND"})
 
+    # match the cardname once instead of for every drive to save on search time
+    s_query = s.query(match)
+
     # iterate over drives, filtering on the current drive, ordering by priority in descending order,
     # then add the returned hits to the results list
+    hits = s_query.sort({'priority': {'order': 'desc'}}).params(preserve_order=True).scan()
+    
+    results0 = [x.to_dict() for x in hits]
     for drive in drive_order:
-        hits = s \
-            .query(match) \
-            .filter('match', source=drive) \
-            .sort({'priority': {'order': 'desc'}}) \
-            .params(preserve_order=True) \
-            .scan()
-        results += [x.to_dict() for x in hits]
+        results += [x for x in results0 if x['source'].startswith(drive)]
 
     return results
 
@@ -342,7 +358,7 @@ def parse_text(input_lines, offset=0):
 
 
 def parse_csv(csv_bytes):
-    # TODO: I'm sure this can be optimised
+    # TODO: I'm sure this can be cleaned up a lot, the logic here is confusing and unintuitive
     cards_dict = OrderDict()
     curr_slot = 0
 
@@ -375,49 +391,50 @@ def parse_csv(csv_bytes):
             # the slots for this line in the CSV
             curr_slots = list(range(curr_slot, curr_slot + qty))
 
-            # insert front image
-            # if the front is a transform card, its back should be the reverse side of that transform card
-            back_query = line['Back']
-
-            # if a back is specified, insert the back
-            # otherwise, add these slots to the common cardback
-
             query_faces = [line['Front'], line['Back']]
-            req_type = "normal"
+            req_type_front = "normal"
+            req_type_back = "normal"
+
+            # process the front face as a token if necessary
+            if query_faces[0][0:2].lower() == "t:":
+                query_faces[0] = query_faces[0][2:]
+                req_type_front = "token"
 
             if not line['Back']:
+                # back face not specified
                 # potentially doing transform things, because a back wasn't specified
                 # first, determine if this card is a DFC by virtue of it having its two faces separated by an ampersand
                 if '&' in query_faces[0]:
                     query_split = [to_searchable(x) for x in query.split(" & ")]
                     if query_split[0] in transforms.keys() and query_split[1] in transforms.values():
                         query_faces = query_split
-                elif query_faces[0][0:2].lower() == "t:":
-                    query_faces[0] = to_searchable(query_faces[0][2:])
-                    req_type = "token"
                 else:
                     # gotta check if query is the front of a DFC here as well
                     query_faces[0] = to_searchable(query_faces[0])
                     if query_faces[0] in transforms.keys():
                         query_faces = [query_faces[0], transforms[query_faces[0]]]
 
+            else:
+                # both sides specified - process the back face as a token if necessary
+                if query_faces[1][0:2].lower() == "t:":
+                    query_faces[1] = query_faces[1][2:]
+                    req_type_back = "token"
+
             # ensure everything has been converted to searchable
             query_faces = [to_searchable(x) for x in query_faces]
 
             # stick the front face into the dictionary
-            cards_dict.insert(query_faces[0], curr_slots, "front", req_type, "")
+            cards_dict.insert(query_faces[0], curr_slots, "front", req_type_front, "")
 
             if query_faces[1]:
                 # is a DFC, gotta add the back face to the correct slots
-                cards_dict.insert(query_faces[1], curr_slots, "back", req_type, "")
+                cards_dict.insert(query_faces[1], curr_slots, "back", req_type_back, "")
 
             else:
                 # is not a DFC, so add this card's slots onto the common cardback's slots
                 cards_dict.insert_back(curr_slots)
 
             curr_slot += qty
-
-    print(cards_dict.order)
 
     # TODO: Read in chunks if big?
     return cards_dict.order, curr_slot

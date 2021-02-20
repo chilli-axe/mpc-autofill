@@ -4,6 +4,9 @@ import unicodedata
 
 
 def to_searchable(input_str):
+    if not input_str:
+        return ""
+    
     # Convert a card name to a search-friendly string
     # First, convert to unicode to ignore accents and other unusual characters, and convert to lowercase
     input_str = unicodedata.normalize('NFD', input_str).encode('ascii', 'ignore').decode('utf8').lower()
@@ -12,7 +15,7 @@ def to_searchable(input_str):
     input_str = re.sub("[\(\[].*?[\)\]]", "", input_str)
 
     # Remove hyphens and the word "the"
-    input_str = input_str.replace("-", " ").replace(" the ", " ")
+    input_str = input_str.replace("-", " ").replace(" the ", " ").replace("the ", "")
 
     # Remove punctuation
     input_str = input_str.translate(str.maketrans('', '', string.punctuation))

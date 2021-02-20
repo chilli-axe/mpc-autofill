@@ -84,7 +84,7 @@ function search_api(drive_order, query, slot_id, face, dom_id, req_type = "norma
             'req_type': req_type,
         },
         success: function(data) {
-            build_card(data, dom_id, query, slot_id, face, group);
+            build_card(data, dom_id, data['query'], slot_id, face, group);
         },
         error: function () {
             // callback here in 5 seconds

@@ -3,9 +3,10 @@
 
 {% block content %}
 
-    <script src="{% static 'js/review.js' %}"></script>
-    <script src="{% static 'js/card.js' %}"></script>
-    <script src="{% static 'js/search.js' %}"></script>
+    <script src="{% static 'js/review.js' %}?2"></script>
+    <script src="{% static 'js/card.js' %}?5"></script>
+    <script src="{% static 'js/search.js' %}?4"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css">
 
     {% load crispy_forms_tags %}
 
@@ -13,8 +14,7 @@
     <script type="text/javascript">
         let groups = {};
         let max_group = 2;
-        let drive_order =
-        {{ drive_order|safe }}.toString();
+        let drive_order = {{ drive_order|safe }}.toString();
         let qty = {{ qty }};
         let front_visible = true;
 
@@ -22,6 +22,10 @@
             let order = {{ order|safe }};
             insert_data(drive_order, order);
         }
+        // enable tooltips
+        $(function () {
+            $('[data-toggle="tooltip"]').tooltip()
+        })
     </script>
 
     <div class="row">
@@ -31,15 +35,17 @@
         </div>
 
         {# right panel #}
-        <div class="col-lg-4 col-md-4 col-sm-6 col-6 "> {#  overflow-auto   #}
+        <div class="col-lg-4 col-md-4 col-sm-6 col-6 ">
             <div class="sticky-top sticky-offset">
-                {# TODO: make the left and right panels individually scrollable #}
                 <h2>Review Your Order</h2>
                 {# info on order size and mpc bracket #}
                 <p style="font-size: 1rem">Your order has a total of <b id="order_qty"></b> cards,
                     <br>
                     in the MPC bracket of up to <b id="order_bracket"></b> cards.
+                    <br>
+                    On smaller screens, you may need to scroll down on this panel to generate your order.
                 </p>
+                
 
                 <div class="row no-gutters">
                     {# button to toggle between fronts and backs of cards #}
@@ -75,8 +81,7 @@
                 </div>
                 <div class="float-right">
                     <input type="checkbox" class="form-check-input" id="foilSelect">
-                    <label class="form-check-label" for="foilSelect" style="font-size: 1rem; user-select: none">Foil
-                        Cards</label>
+                    <label class="form-check-label" for="foilSelect" style="font-size: 1rem; user-select: none">Foil</label>
                 </div>
 
                 {# dropdown to select cardstock #}
@@ -90,13 +95,14 @@
                 </div>
 
                 {# common cardback #}
-                <div class="row" id="cardback-row">
+                <div class="row no-gutters" id="cardback-row">
                     <div id="cardback-container" class="col-lg-8 offset-lg-2 col-md-12" style="z-index: 1;"></div>
                 </div>
 
                 {# download images, generate order, and what's next buttons #}
                 <div class="row no-gutters">
-                    <button type="button" class="btn btn-success btn-block" onclick="downloadAll();">
+                    <button type="button" class="btn btn-success btn-block" onclick="downloadAll();" data-toggle="tooltip"
+                        data-placement="top" title="Popups need to be enabled for this to function properly. Beware &#8212 this can open lots of tabs!">
                         Download All Images
                     </button>
                     <div class="col-lg-6 col-md-12 col-sm-12 col-12">
@@ -236,8 +242,8 @@
     <div id="basecard" style="display: none">
         <div class="card-header pb-0 text-center">
             <p class="mpccard-slot"></p>
-            <button class="dl-button">&#8595</button>
-            <button class="padlock">&#128275</button>
+            <button class="dl-button bi bi-cloud-arrow-down"></button>
+            <button class="padlock"><i class="bi bi-unlock"></i></button>
             <div class="spinner-border dl-loading" role="status" style="display: none">
             <span class="sr-only">Loading...</span>
             </div>

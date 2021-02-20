@@ -162,7 +162,11 @@ function downloadAll() {
     // get all Card objects using a set to avoid duplicates
     let card_set = new Set();
     $(".mpccard").each(function () {
-        card_set = card_set.add($(this).data("obj").get_curr_img().id);
+        let curr_obj = $(this).data("obj");
+        // check if the Card is empty before trying to retrieve its current img ID
+        if (!curr_obj.empty) {
+            card_set = card_set.add(curr_obj.get_curr_img().id);
+        }
     })
 
     // convert to array, then iterate over array and trigger download on each drive id

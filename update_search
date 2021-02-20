@@ -1,2 +1,0 @@
-# helper script to rebuild index with ez command
-cd ~/MPCAutofill && ~/MPCAutofill/env/bin/python ~/MPCAutofill/manage.py rebuild_index --noinput

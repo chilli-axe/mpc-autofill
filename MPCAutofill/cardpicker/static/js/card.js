@@ -47,6 +47,10 @@ class Card {
 
         // other info
         this.query = query;
+        if (query.length > 0 && query.toLowerCase().slice(0, 2) === "t:") {
+            this.query = query.slice(2); 
+            // TODO: req_type = token?
+        }
         this.slot = slot;
         this.face = face;
         this.group = group;
@@ -171,14 +175,14 @@ class Card {
     set_lock(new_state) {
         // toggle this card between locked and unlocked
         this.locked = new_state;
-        let unicode_locked = '\u{1F512}';
-        let unicode_unlocked = '\u{1F513}';
+        let unicode_locked = '<i class="bi bi-lock"></i>';
+        let unicode_unlocked = '<i class="bi bi-unlock"></i>';
         if (this.locked) {
             this.elem_padlock.innerHTML = unicode_locked;
-            this.elem_padlock.style.outline = "2px inset black";
+            this.elem_padlock.style.textShadow = "0px 0px 5px black, 0px 0px 5px black, 0px 0px 5px black";
         } else {
             this.elem_padlock.innerHTML = unicode_unlocked;
-            this.elem_padlock.style.outline = "none";
+            this.elem_padlock.style.textShadow = "none";
         }
     }
 
@@ -243,6 +247,9 @@ class Card {
             } else {
                 this.elem_padlock.style.display = "none";
             }
+
+            // enable the dl button in case it was previously disabled
+            this.elem_dl_button.style.display = "";
         } else {
             // left/right buttons, as well as dl button and padlock, should be invisible
             this.elem_padlock.style.display = "none";

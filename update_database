@@ -1,2 +1,11 @@
-# helper script to crawl drives and rebuild index with ez command
-cd ~/MPCAutofill && ~/MPCAutofill/env/bin/python ~/MPCAutofill/update_database.py && ~/MPCAutofill/env/bin/python ~/MPCAutofill/manage.py rebuild_index --noinput
+# helper script to crawl drives and rebuild index with ez command    
+
+cd ~/mpc-autofill/MPCAutofill
+if [[ "$1" == "" ]]
+  then
+    # echo "No arguments supplied"
+    ~/mpc-autofill/MPCAutofill/env/bin/python ~/mpc-autofill/MPCAutofill/manage.py update_database
+  else
+    # echo "Argument $1"
+    ~/mpc-autofill/MPCAutofill/env/bin/python ~/mpc-autofill/MPCAutofill/manage.py update_database -d $1
+fi
