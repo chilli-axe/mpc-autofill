@@ -25,7 +25,6 @@ function csrfSafeMethod(method) {
     return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
 }
 
-
 $.ajaxSetup({
     beforeSend: function (xhr, settings) {
         if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
@@ -35,21 +34,46 @@ $.ajaxSetup({
 });
 
 
-function search_api_multiple(drive_order, query, slot_ids, face, req_type = "normal") {
-    // takes in a cardname and an array of slot numbers, queries elasticsearch for info on that
-    // cardname, and returns the result - this wrapper function also handles grouping
-    let group = 0;
-    if (req_type === "back") {
-        group = 1;
-    } else if (slot_ids.length > 1) {
-        group = max_group;
-        max_group++;
+function insert_data(drive_order, order) {
+    // switch to fronts if necessary
+    if (!front_visible) {
+        switchFaces();
     }
-    search_api(drive_order, query, slot_ids, face, req_type, group);
+    $('#loadModal').modal('show')
+    
+    // query Django for info on this order
+    // expected to return the order dict (from function parameter) but with card info filled in under the
+    // ['data'] property for each card
+    $.ajax({
+        type: 'POST',
+        url: '/ajax/msearch/',
+        dataType: 'JSON',
+        data: {
+            'drive_order': drive_order,
+            'order': JSON.stringify(order),
+        },
+        success: function(data) {
+            // insert cards with this data into the dom
+            build_cards(data);
+        },
+        error: function () {
+            alert("Error");
+            // TODO: not shit?
+        },
+        complete: function() {
+            // pause for a moment so the modal can catch up in case our results return too quickly
+            setTimeout(function(){ $('#loadModal').modal('hide'); }, 700);
+            
+        }
+   })
+   
+   // update quantity and bracket variables and html
+   update_qty(qty);
 }
 
 
-function search_api(drive_order, query, slot_ids, face, req_type = "normal", group = 0) {
+function search_api(drive_order, query, slot_id, face, dom_id, req_type = "normal", group = 0) {
+    // used for individual searches when modifying a card in-place
     $.ajax({
         type: 'POST',
         url: '/ajax/search/',
@@ -60,10 +84,39 @@ function search_api(drive_order, query, slot_ids, face, req_type = "normal", gro
             'req_type': req_type,
         },
         success: function(data) {
+            build_card(data, dom_id, data['query'], slot_id, face, group);
+        },
+        error: function () {
+            // callback here in 5 seconds
+            setTimeout(function () {
+                search_api(drive_order, query, slot_ids, dom_id, face, req_type, group);
+            }, 5000)
+        }
+   })
+}
+
+
+function build_cards(data) {
+    // call build_card on multiple cards by interpreting an order dict, and handle grouping 
+    for (let face in data) {
+        for (let key in data[face]) {
+
+            let req_type = data[face][key]["req_type"];
+            let slot_ids = data[face][key]["slots"]
+
+            let group = 0;
+            if (req_type === "back") {
+                group = 1;
+            } else if (slot_ids.length > 1) {
+                group = max_group;
+                max_group++;
+            }
+
+            // build the cards and keep track of constructed dom IDs
             let dom_ids = [];
             for (let i=0; i<slot_ids.length; i++) {
                 let dom_id = "slot" + slot_ids[i][0].toString() + "-" + face;
-                build_card(data, dom_id, query, slot_ids[i], face, req_type, group);
+                build_card(data[face][key].data, dom_id, key, slot_ids[i], face, group);
                 dom_ids.push(dom_id);
             }
 
@@ -77,24 +130,16 @@ function search_api(drive_order, query, slot_ids, face, req_type = "normal", gro
                 } else {
                     groups[group] = dom_ids;
                 }
-                
             }
-        },
-        error: function () {
-            // callback here in 5 seconds
-            setTimeout(function () {
-                search_api(drive_order, query, slot_ids, face, req_type, group);
-            }, 5000)
         }
-   })
+    }
 }
 
 
-function build_card(data, dom_id, query, slot_id, face, req_type = "normal", group = 0) {
+function build_card(card, dom_id, query, slot_id, face, group) {
     // accepts search result data and information about one specific card slot, and builds it
     // first creates the dom element if it doesn't exist, then instantiates the Card which will attach itself
     // to that element
-    // principle is to search once per query rather than once per card to reduce the number of requests to server
     if ($('#' + dom_id).length < 1) {
         // create div element for this card to occupy with the appropriate classes
         // let card_elem = document.createElement("div");
@@ -109,6 +154,8 @@ function build_card(data, dom_id, query, slot_id, face, req_type = "normal", gro
             "padlock",
             "dl-loading",
             "card-img",
+            "card-img-prev",
+            "card-img-next",
             "mpccard-name",
             "mpccard-source",
             "mpccard-counter",
@@ -146,19 +193,20 @@ function build_card(data, dom_id, query, slot_id, face, req_type = "normal", gro
     }
 
     // insert the returned data into this card's dom element
+    // since the Card will attach itself to the relevant dom element as soon as it's instantiated, 
+    // we don't need to keep track of it as a variable here
     let new_card = new Card(
-        data.data,
+        card.data,
         query,
         dom_id,
         slot_id[0],
         face,
-        data.req_type,
+        card.req_type,
         group,
         slot_id[1]
     );
     return dom_id;
 }
-
 
 function insert_text() {
     let text = document.getElementById("id_card_list").value;
@@ -170,7 +218,8 @@ function insert_text() {
             'offset': qty
         },
         function (data) {
-            insert_data(data);
+            qty += data.qty;
+            insert_data(drive_order, data.order);
         },
         'json'
     );
@@ -181,8 +230,6 @@ function insert_text() {
 
 
 function insert_xml() {
-    // TODO: ajax running off the hook?
-
     // read the XML file as text, then do a POST request with the contents
     let xmlfiles = document.getElementById("xmlfile").files;
     if (xmlfiles.length > 0) {
@@ -193,32 +240,10 @@ function insert_xml() {
                 'offset': qty
             },
             function (data) {
-                insert_data(data);
+                qty += data.qty;
+                insert_data(drive_order, data.order);
             },
             'json'
         ));
     }
-}
-
-function insert_data(data) {
-    // switch to fronts if necessary
-    if (!front_visible) {
-        switchFaces();
-    }
-    // insert each card in the returned results into the DOM, and update qty & bracket
-    for (let face in data.order) {
-        for (let key in data.order[face]) {
-            search_api_multiple(
-                drive_order,
-                key,
-                data.order[face][key]["slots"],
-                face,
-                data.order[face][key]["req_type"]
-            );
-        }
-    }
-
-    // update qty and bracket
-    qty += data.qty;
-    update_qty(qty);
 }

@@ -1,4 +1,5 @@
 from django.db import models
+from datetime import datetime
 
 
 # Create your models here.
@@ -12,9 +13,13 @@ class Source(models.Model):
     drivelink = models.CharField(max_length=200)
     description = models.CharField(max_length=400)
     avgdpi = models.IntegerField(default=0)
+    order = models.IntegerField(default=0)
 
     def __str__(self):
         return "{}: {} {}".format(self.id, str(self.qty_cards), self.description)
+
+    class Meta:
+        ordering = ['order']
 
 
 class CardBase(models.Model):
@@ -25,6 +30,7 @@ class CardBase(models.Model):
     dpi = models.IntegerField(default=0)
     searchq = models.CharField(max_length=200)
     thumbpath = models.CharField(max_length=200)
+    date = models.DateTimeField(default=datetime.now)
 
     def __str__(self):
         return "[{}] {}: {}, SQ: {}".format(self.source, self.name, self.id, self.searchq)

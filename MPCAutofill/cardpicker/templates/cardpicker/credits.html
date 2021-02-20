@@ -22,15 +22,22 @@
         these guidelines:
         <ul>
             <li>Ensure each image's name matches the card's Oracle name,</li>
-            <li>When you have multiple versions of a card, use parentheses to differentiate them &#8212
-                e.g. <code>Black Lotus.png</code> and <code>Black Lotus (Masterpiece).png</code>,
+            <li>Ensure each image has a file extension,</li>
+            <li>When you have multiple versions of a card in the same folder, use parentheses to differentiate them 
+                &#8212 e.g. <code>Black Lotus.png</code> and <code>Black Lotus (Masterpiece).png</code>,
             </li>
             <li>Name split cards with an ampersand between the card's names &#8212 e.g. <code>Fire & Ice.png</code>,
             </li>
             <li>Store your token images in a folder called <code>Tokens</code> (anywhere on your drive),</li>
+            <li>Store your cardback images in a folder called <code>Cardbacks</code> (anywhere on your drive),</li>
+            <li>Prepend the names of any folders you don't want to be indexed by MPC Autofill with <code>!</code> 
+                &#8212 e.g. <code>!Misc and Art</code>,</li>
             <li>Limit your files to less than 30 MB per image &#8212 this is the maximum that Google Scripts can return
                 in one request, which means that <code>autofill.exe</code> won't work with images larger than this. Due
-                to this limitation, images larger than 30 MB will not be indexed.
+                to this limitation, images larger than 30 MB will not be indexed,
+            </li>
+            <li>Please include a link to your Reddit (or other social media) account to list on the site when you request 
+                that your Drive is indexed.
             </li>
         </ul>
     </div>
@@ -38,9 +45,8 @@
     <table class="table table-hover">
         <thead>
         <tr>
-            <th scope="col">Reddit Handle</th>
+            <th scope="col">Social Media</th>
             <th scope="col">Drive</th>
-            <th scope="col">Mean DPI</th>
             <th scope="col">Contribution</th>
         </tr>
         </thead>
@@ -49,11 +55,17 @@
             <tr>
                 <td><a target="_blank" href={{ sourceinfo.reddit }}>{{ sourceinfo.username }}</a></td>
                 <td style="text-align: center"><a target="_blank" href={{ sourceinfo.drivelink }}>Link</a></td>
-                <td><b>{{ sourceinfo.avgdpi }}</b> DPI</td>
                 <td><b>{{ sourceinfo.qty_cards }}</b> cards, <b>{{ sourceinfo.qty_cardbacks }}</b> cardbacks,
-                    and <b>{{ sourceinfo.qty_tokens }}</b> tokens &#8212 {{ sourceinfo.description }}</td>
+                    and <b>{{ sourceinfo.qty_tokens }}</b> tokens, at <b>{{ sourceinfo.avgdpi }}</b> DPI on average 
+                    &#8212 {{ sourceinfo.description }}</td>
             </tr>
         {% endfor %}
         </tbody>
     </table>
+    <!-- Footer -->
+    <footer class="page-footer font-small blue">
+        <div class="footer-copyright text-center py-3">
+            <a href="legal">MPC Autofill Legal Disclaimer</a>
+        </div>
+    </footer>
 {% endblock %}

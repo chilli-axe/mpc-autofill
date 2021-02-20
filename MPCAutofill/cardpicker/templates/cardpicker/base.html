@@ -2,16 +2,26 @@
 {% load static %}
 <html lang="en">
 <head>
-    <link rel="shortcut icon" href="{% static 'cardpicker/favicon.ico' %}"/>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-179792482-1"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'UA-179792482-1');
+    </script>
+
+    <link rel="shortcut icon" href="{% static 'cardpicker/favicon.ico' %}?10"/>
 
     <title>{% block title %} MPC Autofill {% endblock %}</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description"
-          content="The easiest way to print kitchen-table playtest cards for trading card games with MakePlayingCards (MPC).
+          content="The easiest way to print kitchen-table proxy cards for Magic: The Gathering (MTG) with MakePlayingCards (MPC).
     No prior knowledge required.">
     <link rel="stylesheet" type="text/css" href="{% static "css/bootstrap.min.css" %}">
-    <link rel="stylesheet" type="text/css" href="{% static 'css/custom.css' %}?1507">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/custom.css' %}?1516">
     <script src="http://code.jquery.com/jquery.min.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
     <script src="{% static 'js/jquery.ui.touch-punch.js' %}"></script>
@@ -23,7 +33,7 @@
 <nav class="navbar navbar-expand-md navbar-light bg-primary fixed-top">
     <div class="container-fluid">
         <a class="navbar-brand" href="/">
-            <img src="{% static 'cardpicker/logolowres.png' %}" width="30" height="30">
+            <img src="{% static 'cardpicker/logolowres.png' %}?10" width="30" height="30">
             <b>MPC Autofill</b></a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
                 aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">

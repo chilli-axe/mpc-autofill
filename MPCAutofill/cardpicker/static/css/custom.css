@@ -73,26 +73,30 @@
 
 .padlock {
   position:absolute;
-  top:15px;
-  right:10px;
+  top:10px;
+  right:5px;
   background-color:transparent;
   background-repeat:no-repeat;
   border: none;
   cursor: pointer;
   overflow: hidden;
   outline:none;
+  color: white;
+  font-size: 1.3em; 
 }
 
 .dl-button {
-  position:absolute;
-  top:15px;
-  left:10px;
+  position: absolute;
+  top:8px;
+  left:5px;
   background-color:transparent;
   background-repeat:no-repeat;
   border: none;
   cursor: pointer;
   overflow: hidden;
   outline:none;
+  color: white;
+  font-size: 1.5em; 
 }
 
 .dl-loading {
