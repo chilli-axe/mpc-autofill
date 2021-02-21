@@ -1,0 +1,63 @@
+{% extends 'cardpicker/base.html' %}
+{% load static %}
+
+{% block content %}
+
+    <script src="{% static 'js/search.js' %}?6"></script>
+
+    <script type="text/javascript">
+        let pages = {};
+        document.getElementById("id_body").onload = function () {
+            let context = {{ sources|safe }};
+            for (const [source, info] of Object.entries(context)) {
+                pages[source] = 0;
+                build_new_cards(source, info.hits, info.more);
+            }
+        }
+    </script>
+
+    <h2>What's New?</h2>
+    <p>Check out the new cards added to MPC Autofill by the community in the last two weeks.</p>    
+
+    {% for source, info in sources.items %}
+        <h3 style="display: inline" class="orpheus"> <em>{{ source }}</em> </h3>
+        {% if info.qty > 1%}
+            <div style="display: inline" class="text-primary">{{ info.qty }} new cards</div>
+        {% else %}
+            <div style="display: inline" class="text-primary">{{ info.qty }} new card</div>
+        {% endif %}
+        
+        <div id="{{ source }}-container" class="row row-cols-xl-6 row-cols-lg-4 row-cols-md-3 row-cols-sm-2 row-cols-2"></div>
+        
+        <div id="{{ source }}-more" style="text-align: center; display: none;">
+            <br>
+            <button type="button" class="btn btn-primary" style="min-width: 20%" onclick="load_new_cards('{{ source }}')">
+                Load More
+            </button>
+        </div>
+        <hr>
+    {% endfor %}
+
+    {# base card template #}
+    <div id="basecard" style="display: none; opacity: 0;" class="card mpccard">
+        <div class="card-header pb-0 text-center">
+            <p class="mpccard-slot"></p>
+        </div>
+        <div class="rounded-lg shadow-lg embed-responsive embed-responsive-7by5">
+            <img class="embed-responsive-item card-img">
+        </div>
+        <div class="card-body mb-0 text-center">
+            <h5 class="card-subtitle mpccard-name"></h5>
+            <div class="mpccard-spacing">
+                <p class="card-text mpccard-source"></p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <footer class="page-footer font-small blue">
+        <div class="footer-copyright text-center py-3">
+            <a href="legal">MPC Autofill Legal Disclaimer</a>
+        </div>
+    </footer>
+{% endblock %}

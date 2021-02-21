@@ -1,5 +1,7 @@
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
+from datetime import datetime, timedelta
+from cardpicker.documents import CardSearch, CardbackSearch, TokenSearch
 
 from search_functions import \
     build_context, \
@@ -8,7 +10,8 @@ from search_functions import \
     parse_csv, \
     query_es_cardback, \
     query_es_card, \
-    query_es_token
+    query_es_token, \
+    search_new
 from to_searchable import to_searchable
 from .forms import InputText, InputXML, InputCSV
 from .models import Card, Cardback, Token, Source
@@ -33,6 +36,50 @@ def index(request, error=False):
 
 def guide(request):
     return render(request, 'cardpicker/guide.html')
+
+
+def new_cards(request):
+    # serves the What's New page - this function returns the first page of results for all sources for 
+    # cards uploaded in the last two weeks
+
+    # initialise results dict, 2 weeks time delta, and the dsl search
+    results = {}
+    days = 14
+    s = CardSearch \
+        .search() \
+        .filter('range', date={'from': datetime.now() - timedelta(days=days), 'to': datetime.now()}) \
+        .sort({'date': {'order': 'desc'}})
+
+    # for each source, query elasticsearch for the requested cards, and attach it to the results dict if we have any hits
+    for source in Source.objects.all():
+        result = search_new(s, source.id)
+        if result['qty'] > 0:
+            results[source.id] = result
+    
+    return render(request, 'cardpicker/new.html', {"sources": results})
+
+
+def search_new_page(request):
+    # triggers when the user clicks 'load more' on the What's New page
+    # this function takes the current page number and source from the frontend and returns the next page
+    # extract specified source and page from post request
+    source = request.POST.get('source')
+    page = int(request.POST.get('page'))
+
+    # initialise results dict, 2 weeks time delta, and the dsl search
+    results = {}
+    days = 14
+    s = CardSearch \
+        .search() \
+        .filter('range', date={'from': datetime.now() - timedelta(days=days), 'to': datetime.now()}) \
+        .sort({'date': {'order': 'desc'}})
+
+    # query elasticsearch for the requested cards and attach it to the results dict if we have any hits
+    result = search_new(s, source, page)
+    if result['qty'] > 0:
+        results[source] = result
+
+    return JsonResponse({"sources": results}, safe=False)
 
 
 def legal(request):

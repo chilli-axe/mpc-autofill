@@ -247,3 +247,73 @@ function insert_xml() {
         ));
     }
 }
+
+function driveURL(driveID) {
+    // small helper function to insert a drive ID into a thumbnail URL and return it
+    return "https://drive.google.com/thumbnail?sz=w400-h400&id=" + driveID
+    // return "https://lh3.googleusercontent.com/d/" + driveID + "=w400-h400";
+}
+
+function build_new_cards(source, data, more) {
+    // parse the given json and iterate over the search results
+    let data_parsed = JSON.parse(data);
+
+    for (let i=0; i<data_parsed.length; i++) {
+        let card_item = data_parsed[i];
+
+        // copy the base card sitting in the dom, adjust it, then stick it into this artist's card container
+        let card_elem = document.getElementById("basecard").cloneNode(true);
+        card_elem.style.display = "inline";
+
+        card_elem.id = card_item['pk'];
+
+        // set up card's image source, name, and dpi
+        card_elem.getElementsByClassName("card-img")[0].src = driveURL(card_item['pk']);
+        card_elem.getElementsByClassName("mpccard-name")[0].innerHTML = card_item['fields']['name'];
+        card_elem.getElementsByClassName("mpccard-source")[0].innerHTML = 
+            source + " [" + card_item['fields']['dpi'] + " DPI]";
+
+        // do some date handling: format like "20 February 2021"
+        let d = new Date(Date.parse(card_item['fields']['date']));
+        const options = {year: 'numeric', month: 'long', day: 'numeric' };
+        card_elem.getElementsByClassName("mpccard-slot")[0].innerHTML = d.toLocaleDateString('en-AU', options)
+
+        // stick into dom under the source's card container
+        document.getElementById(source + "-container").appendChild(card_elem);
+        
+        // fade in when the thumbnail loads
+        var img = new Image();
+        img.onload = function() { $(card_elem).animate({opacity: 1}, 250); }
+        img.src = driveURL(card_item['pk']);
+
+        // hide/show the 'load more' button
+        if (more == "true") {
+            document.getElementById(source + "-more").style.display = "";
+        } else {
+            document.getElementById(source + "-more").style.display = "none";
+        }
+    }
+
+    // increment page counter whenever a page is inserted
+    pages[source] = pages[source] + 1;
+}
+
+function load_new_cards(source) {
+    // ajax function to ask the server for a page on the What's New page (kek) and stick it into the dom
+    $.ajax({
+        type: 'POST',
+        url: '/ajax/getnew/',
+        data: {
+            'source': source,
+            'page': pages[source],
+        },
+        success: function(data) {
+            // use the search results to stick the new page into the dom
+            build_new_cards(source, data.sources[source].hits, data.sources[source].more);            
+        },
+        error: function () {
+            // callback here in 5 seconds
+            // alert("fucked up");
+        }
+    })
+}

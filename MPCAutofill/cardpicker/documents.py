@@ -11,6 +11,7 @@ common_fields = [
     'dpi',
     'thumbpath',
     'searchq',
+    'date',
 ]
 
 common_settings = {

@@ -16,7 +16,10 @@ class Source(models.Model):
     order = models.IntegerField(default=0)
 
     def __str__(self):
-        return "{}: {} {}".format(self.id, str(self.qty_cards), self.description)
+        # return "{}: {} {}".format(self.id, str(self.qty_cards), self.description)
+        return "[{}] {} cards, {} cardbacks, {} tokens: {}".format(
+            self.id, self.qty_cards, self.qty_cardbacks, self.qty_tokens, self.description
+        )
 
     class Meta:
         ordering = ['order']
@@ -41,7 +44,10 @@ class CardBase(models.Model):
                 "priority": self.priority,
                 "source": self.source,
                 "dpi": self.dpi,
-                "thumbpath": self.thumbpath}
+                "searchq": self.searchq,
+                "thumbpath": self.thumbpath,
+                # "date": self.date,
+                }
 
     class Meta:
         abstract = True

@@ -10,6 +10,8 @@ from cardpicker.forms import InputText
 from cardpicker.models import Source
 from to_searchable import to_searchable
 
+from django.core import serializers
+
 
 def build_context(drive_order, order, qty):
     # I found myself copy/pasting this between the three input methods so I figured it belonged in its own function
@@ -481,3 +483,28 @@ def parse_xml(input_text, offset=0):
     cards_dict.insert_back(list(all_slots))
 
     return cards_dict.order, qty
+
+def search_new(s, source, page=0):
+
+    # define page size and the range to paginate with
+    page_size = 6
+    start_idx = page_size*page
+    end_idx = page_size*(page+1)
+    
+    # match the given source
+    match = Match(source={"query": source})
+    s_query = s.query(match)
+
+    # quantity related things
+    qty = s_query.count()
+    results = {"qty": qty}
+    if qty > 0:
+        results["hits"] = serializers.serialize('json', s_query[start_idx:end_idx].to_queryset())
+
+    # let the frontend know whether to continue to show the load more button
+    # TODO: I couldn't be fucked to solve true vs True for json serialisation but this works fine so eh?
+    results["more"] = "false"
+    if qty > end_idx:
+        results["more"] = "true"
+
+    return results
