@@ -1,4 +1,4 @@
-# To package up as executable, run this in command prompt: 
+`# To package up as executable, run this in command prompt: 
 # pyinstaller --onefile --hidden-import=colorama --icon=favicon.ico autofill.py
 import colorama
 from webdriver_manager.chrome import ChromeDriverManager
@@ -108,7 +108,7 @@ def fill_cards(bar: tqdm, driver, root):
     # Switch the finish to foil if the user ordered foil cards
     if root[0][3].text == "true":
         foil_dropdown = Select(driver.find_element_by_id("dro_product_effect"))
-        foil_dropdown.select_by_visible_text("Holographic (card front)")
+        foil_dropdown.select_by_value("EF_055")
 
     # Accept current settings and move to next step
     driver.execute_script(
@@ -140,7 +140,10 @@ def fill_cards(bar: tqdm, driver, root):
 
     # Page over to the next step from "add text to fronts"
     wait(driver)
-    driver.find_element_by_id("closeBtn").click()
+    try:
+        driver.find_element_by_id("closeBtn").click()
+    except NoSuchElementException:
+        pass
     driver.execute_script("javascript:oDesign.setNextStep();")
 
     # Select "different images" for backs
@@ -305,7 +308,6 @@ def download_card(bar: tqdm, cardinfo):
 
                 except requests.exceptions.Timeout:
                     # Failed to download image because of a timeout error - add it to error queue
-                    # print("timeout error")
                     q_error.put("{}:\n  {}".format(filename, "https://drive.google.com/uc?id=" + file_id + "&export=download"))
 
         # Same check as before - if, after we've tried to download the image, the file doesn't exist or is empty,
@@ -388,15 +390,21 @@ if __name__ == "__main__":
     print("MPC Autofill initialising.")
     t = time.time()
 
-    # Parse XML doc
-    try:
-        tree = ET.parse(currdir + "/cards.xml")
-    except FileNotFoundError:
+    # people sometimes name the file different things - so the script will try all of these filenames
+    # before whinging that it can't find an order file in the directory
+    tree = None
+    filenames = ["cards.xml", "cards.xml.txt", "cards.txt.xml", "cards.xml.xml"]
+    for filename in filenames:
         try:
-            tree = ET.parse(currdir + "/cards.xml.txt")
+            tree = ET.parse(currdir + "/" + filename)
+            break
         except FileNotFoundError:
-            input("cards.xml not found in this directory. Press enter to exit.")
-            sys.exit(0)
+            pass
+
+    if not tree:
+        input("cards.xml not found in this directory. Press enter to exit.")
+        sys.exit(0)
+
     root = tree.getroot()
 
     # Extract information out of XML doc
