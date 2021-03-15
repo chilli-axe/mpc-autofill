@@ -35,6 +35,9 @@ $.ajaxSetup({
 
 
 function insert_data(drive_order, order) {
+    // clear out the list of cards with specific versions that don't exist anymore
+    cards_not_found = [];
+
     // switch to fronts if necessary
     if (!front_visible) {
         switchFaces();
@@ -62,13 +65,66 @@ function insert_data(drive_order, order) {
         },
         complete: function() {
             // pause for a moment so the modal can catch up in case our results return too quickly
-            setTimeout(function(){ $('#loadModal').modal('hide'); }, 700);
-            
+            setTimeout(function(){ $('#loadModal').modal('hide'); alert_missing_versions(cards_not_found)}, 700);
         }
    })
    
    // update quantity and bracket variables and html
    update_qty(qty);
+}
+
+
+function alert_missing_versions(cards_not_found) {
+    // alert the user if versions of cards they requested couldn't be found
+    if (cards_not_found.length > 0) {
+        // locate the cards not found modal table in the dom
+        let not_found_table = document.getElementById("missingCardsTable");
+
+        // clear out any existing rows from the table ("destroy all children" lmao)
+        not_found_table.innerHTML = "";
+
+        // also sort the list of cards not found by slot number
+        if (cards_not_found.length > 1) {
+            cards_not_found.sort((a, b) => a.slot - b.slot);
+        }
+
+        // add each missing card to the table
+        for (let i=0; i<cards_not_found.length; i++) {
+            // stick this not found image into the table
+            let row_element = document.createElement("tr");
+
+            // formatting for drive ID field
+            let id_element = document.createElement("td");
+            id_element.style.textAlign = "center";
+            // id_element.innerText = cards_not_found[i].id;
+            
+            let id_text_element = document.createElement("code");
+            id_text_element.innerText = cards_not_found[i].id;
+            id_element.appendChild(id_text_element);
+
+            // formatting for slot field
+            let slot_element = document.createElement("td");
+            slot_element.style.textAlign = "center";
+            slot_element.innerText = cards_not_found[i].slot;
+
+            // formatting for search query field
+            let query_element = document.createElement("td");
+            if (!cards_not_found[i].query || cards_not_found[i].query === "None") {
+                query_element.innerText = "Not given"
+            } else {
+                query_element.innerText = cards_not_found[i].query;
+            }
+            
+            // attach all three to the row element, then append row element to the table
+            row_element.appendChild(id_element);
+            row_element.appendChild(slot_element);
+            row_element.appendChild(query_element);
+            not_found_table.appendChild(row_element);
+        }
+
+        // show the modal
+        $('#missingCardsModal').modal('show');
+    }
 }
 
 

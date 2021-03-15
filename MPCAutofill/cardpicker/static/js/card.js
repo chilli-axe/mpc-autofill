@@ -197,6 +197,12 @@ class Card {
             }
         }
 
+        // if we didn't return from the function by this point, the version wasn't found
+        cards_not_found.push({
+            id: driveID,
+            query: this.query,
+            slot: this.slot + 1
+        })
     }
 
     setup_card() {
