@@ -7,24 +7,28 @@ from elasticsearch_dsl.query import Match
 
 from cardpicker.documents import CardSearch, CardbackSearch, TokenSearch
 from cardpicker.forms import InputText
-from cardpicker.models import Source
+from cardpicker.models import Card, Source, DFCPair
 from to_searchable import to_searchable
 
 from django.core import serializers
+
+
+# Retrieve DFC pairs from database
+transforms = dict((x.front, x.back) for x in DFCPair.objects.all())
 
 
 def build_context(drive_order, order, qty):
     # I found myself copy/pasting this between the three input methods so I figured it belonged in its own function
 
     # For donation modal, approximate how many cards I've rendered
-    my_cards = 100 * math.floor(Source.objects.filter(id="Chilli_Axe")[0].qty_cards / 100)
+    my_cards = Source.objects.get(id="Chilli_Axe").count()[0]
 
     context = {
         "form": InputText,
         "drive_order": drive_order,
         "order": order,
         "qty": qty,
-        "my_cards": f"{my_cards:,d}",
+        "my_cards": my_cards,
     }
 
     return context
@@ -35,174 +39,6 @@ def text_to_list(input_text):
     if input_text == "":
         return []
     return [int(x) for x in input_text.strip('][').replace(" ", "").split(',')]
-
-
-# Hardcode transform card front/back pairs
-transforms = {'Aberrant Researcher': 'Perfected Form',
-              'Accursed Witch': 'Infectious Curse',
-              'Afflicted Deserter': 'Werewolf Ransacker',
-              'Archangel Avacyn': 'Avacyn, the Purifier',
-              "Arguel's Blood Fast": 'Temple of Aclazotz',
-              'Arlinn Kord': 'Arlinn, Embraced by the Moon',
-              'Autumnal Gloom': 'Ancient of the Equinox',
-              'Avacynian Missionaries': 'Lunarch Inquisitors',
-              "Azor's Gateway": 'Sanctum of the Sun',
-              'Bloodline Keeper': 'Lord of Lineage',
-              'Breakneck Rider': 'Neck Breaker',
-              'Chalice of Life': 'Chalice of Death',
-              'Chandra, Fire of Kaladesh': 'Chandra, Roaring Flame',
-              'Chosen of Markov': "Markov's Servant",
-              'Civilized Scholar': 'Homicidal Brute',
-              'Cloistered Youth': 'Unholy Fiend',
-              'Conduit of Storms': 'Conduit of Emrakul',
-              "Conqueror's Galleon": "Conqueror's Foothold",
-              'Convicted Killer': 'Branded Howler',
-              'Cryptolith Fragment': 'Aurora of Emrakul',
-              'Curious Homunculus': 'Voracious Reader',
-              'Daring Sleuth': 'Bearer of Overwhelming Truths',
-              'Daybreak Ranger': 'Nightfall Predator',
-              'Delver of Secrets': 'Insectile Aberration',
-              'Docent of Perfection': 'Final Iteration',
-              'Dowsing Dagger': 'Lost Vale',
-              'Duskwatch Recruiter': 'Krallenhorde Howler',
-              'Elbrus, the Binding Blade': 'Withengar Unbound',
-              'Elusive Tormentor': 'Insidious Mist',
-              'Extricator of Sin': 'Extricator of Flesh',
-              'Garruk Relentless': 'Garruk, the Veil-Cursed',
-              'Gatstaf Arsonists': 'Gatstaf Ravagers',
-              'Gatstaf Shepherd': 'Gatstaf Howler',
-              'Geier Reach Bandit': 'Vildin-Pack Alpha',
-              'Golden Guardian': 'Gold-Forge Garrison',
-              'Grizzled Angler': 'Grisly Anglerfish',
-              'Grizzled Outcasts': 'Krallenhorde Wantons',
-              'Growing Rites of Itlimoc': 'Itlimoc, Cradle of the Sun',
-              "Hadana's Climb": 'Winged Temple of Orazca',
-              'Hanweir Militia Captain': 'Westvale Cult Leader',
-              'Hanweir Watchkeep': 'Bane of Hanweir',
-              'Harvest Hand': 'Scrounged Scythe',
-              'Heir of Falkenrath': 'Heir to the Night',
-              'Hermit of the Natterknolls': 'Lone Wolf of the Natterknolls',
-              'Hinterland Hermit': 'Hinterland Scourge',
-              'Hinterland Logger': 'Timber Shredder',
-              'Huntmaster of the Fells': 'Ravager of the Fells',
-              'Instigator Gang': 'Wildblood Pack',
-              "Jace, Vryn's Prodigy": 'Jace, Telepath Unbound',
-              'Journey to Eternity': 'Atzal, Cave of Eternity',
-              'Kessig Forgemaster': 'Flameheart Werewolf',
-              'Kessig Prowler': 'Sinuous Predator',
-              'Kindly Stranger': 'Demon-Possessed Witch',
-              'Kruin Outlaw': 'Terror of Kruin Pass',
-              'Kytheon, Hero of Akros': 'Gideon, Battle-Forged',
-              'Lambholt Elder': 'Silverpelt Werewolf',
-              'Lambholt Pacifist': 'Lambholt Butcher',
-              "Legion's Landing": 'Adanto, the First Fort',
-              'Liliana, Heretical Healer': 'Liliana, Defiant Necromancer',
-              'Lone Rider': 'It That Rides as One',
-              'Loyal Cathar': 'Unhallowed Cathar',
-              "Ludevic's Test Subject": "Ludevic's Abomination",
-              'Mayor of Avabruck': 'Howlpack Alpha',
-              'Mondronen Shaman': "Tovolar's Magehunter",
-              'Neglected Heirloom': 'Ashmouth Blade',
-              'Nicol Bolas, the Ravager': 'Nicol Bolas, the Arisen',
-              'Nissa, Vastwood Seer': 'Nissa, Sage Animist',
-              'Path of Mettle': 'Metzali, Tower of Triumph',
-              'Pious Evangel': 'Wayward Disciple',
-              'Primal Amulet': 'Primal Wellspring',
-              'Profane Procession': 'Tomb of the Dusk Rose',
-              'Ravenous Demon': 'Archdemon of Greed',
-              'Reckless Waif': 'Merciless Predator',
-              'Sage of Ancient Lore': 'Werewolf of Ancient Hunger',
-              'Scorned Villager': 'Moonscarred Werewolf',
-              'Screeching Bat': 'Stalking Vampire',
-              'Search for Azcanta': 'Azcanta, the Sunken Ruin',
-              'Shrill Howler': 'Howling Chorus',
-              'Skin Invasion': 'Skin Shedder',
-              'Smoldering Werewolf': 'Erupting Dreadwolf',
-              'Solitary Hunter': 'One of the Pack',
-              'Soul Seizer': 'Ghastly Haunting',
-              'Startled Awake': 'Persistent Nightmare',
-              'Storm the Vault': 'Vault of Catlacan',
-              'Tangleclaw Werewolf': 'Fibrous Entangler',
-              'Thaumatic Compass': 'Spires of Orazca',
-              'Thing in the Ice': 'Awoken Horror',
-              'Thraben Gargoyle': 'Stonewing Antagonizer',
-              'Thraben Sentry': 'Thraben Militia',
-              'Tormented Pariah': 'Rampaging Werewolf',
-              'Town Gossipmonger': 'Incited Rabble',
-              'Treasure Map': 'Treasure Cove',
-              'Ulrich of the Krallenhorde': 'Ulrich, Uncontested Alpha',
-              'Ulvenwald Captive': 'Ulvenwald Abomination',
-              'Ulvenwald Mystics': 'Ulvenwald Primordials',
-              'Uninvited Geist': 'Unimpeded Trespasser',
-              "Vance's Blasting Cannons": 'Spitfire Bastion',
-              'Vildin-Pack Outcast': 'Dronepack Kindred',
-              'Village Ironsmith': 'Ironfang',
-              'Village Messenger': 'Moonrise Intruder',
-              'Villagers of Estwald': 'Howlpack of Estwald',
-              'Voldaren Pariah': 'Abolisher of Bloodlines',
-              'Westvale Abbey': 'Ormendahl, Profane Prince',
-              'Wolfbitten Captive': 'Krallenhorde Killer',
-              'Gisela, the Broken Blade': 'Brisela, Voice of Nightmares Top',
-              'Bruna, the Fading Light': 'Brisela, Voice of Nightmares Bottom',
-              'Hanweir Battlements': 'Hanweir, the Writhing Township Top',
-              'Hanweir Garrison': 'Hanweir, the Writhing Township Bottom',
-              'Graf Rats': 'Chittering Host Top',
-              'Midnight Scavengers': 'Chittering Host Bottom',
-              "Agadeem's Awakening": 'Agadeem, the Undercrypt',
-              'Akoum Warrior': 'Akoum Teeth',
-              'Bala Ged Recovery': 'Bala Ged Sanctuary',
-              'Beyeen Veil': 'Beyeen Coast',
-              'Blackbloom Rogue': 'Blackbloom Bog',
-              'Branchloft Pathway': 'Boulderloft Pathway',
-              'Brightclimb Pathway': 'Grimclimb Pathway',
-              'Clearwater Pathway': 'Murkwater Pathway',
-              'Cragcrown Pathway': 'Timbercrown Pathway',
-              "Emeria's Call": 'Emeria, Shattered Skyclave',
-              'Glasspool Mimic': 'Glasspool Shore',
-              'Hagra Mauling': 'Hagra Broodpit',
-              'Jwari Disruption': 'Jwari Ruins',
-              'Kabira Takedown': 'Kabira Plateau',
-              'Kazandu Mammoth': 'Kazandu Valley',
-              "Kazuul's Fury": "Kazuul's Cliffs",
-              'Khalni Ambush': 'Khalni Territory',
-              'Makindi Stampede': 'Makindi Mesas',
-              'Malakir Rebirth': 'Malakir Mire',
-              'Needleverge Pathway': 'Pillarverge Pathway',
-              'Ondu Inversion': 'Ondu Skyruins',
-              'Pelakka Predation': 'Pelakka Caverns',
-              'Riverglide Pathway': 'Lavaglide Pathway',
-              'Sea Gate Restoration': 'Sea Gate, Reborn',
-              'Sejiri Shelter': 'Sejiri Glacier',
-              'Shatterskull Smashing': 'Shatterskull, the Hammer Pass',
-              'Silundi Vision': 'Silundi Isle',
-              'Skyclave Cleric': 'Skyclave Basilica',
-              'Song-Mad Treachery': 'Song-Mad Ruins',
-              'Spikefield Hazard': 'Spikefield Cave',
-              'Tangled Florahedron': 'Tangled Vale',
-              'Turntimber Symbiosis': 'Turntimber, Serpentine Wood',
-              'Umara Wizard': 'Umara Skyfalls',
-              'Valakut Awakening': 'Valakut Stoneforge',
-              'Vastwood Fortification': 'Vastwood Thicket',
-              'Zof Consumption': 'Zof Bloodbog',
-              'Alrund, God of the Cosmos': 'Hakka, Whispering Raven',
-              'Barkchannel Pathway': 'Tidechannel Pathway',
-              'Birgi, God of Storytelling': 'Harnfel, Horn of Bounty',
-              'Blightstep Pathway': 'Searstep Pathway',
-              'Cosima, God of the Voyage': 'The Omenkeel',
-              'Darkbore Pathway': 'Slitherbore Pathway',
-              'Egon, God of Death': 'Throne of Death',
-              'Esika, God of the Tree': 'The Prismatic Bridge',
-              'Halvar, God of Battle': 'Sword of the Realms',
-              'Hengegate Pathway': 'Mistgate Pathway',
-              'Jorn, God of Winter': 'Kaldring, the Rimestaff',
-              'Kolvori, God of Kinship': 'The Ringhart Crest',
-              'Reidane, God of the Worthy': "Valkmira, Protector's Shield",
-              'Tergrid, God of Fright': "Tergrid's Lantern",
-              'Toralf, God of Fury': "Toralf's Hammer",
-              'Valki, God of Lies': 'Tibalt, Cosmic Impostor',
-              }
-
-transforms = dict((to_searchable(x), to_searchable(y)) for x, y in transforms.items())
 
 
 def query_es_card(drive_order, query):
@@ -499,7 +335,11 @@ def search_new(s, source, page=0):
     qty = s_query.count()
     results = {"qty": qty}
     if qty > 0:
-        results["hits"] = serializers.serialize('json', s_query[start_idx:end_idx].to_queryset())
+        # results["hits"] = serializers.serialize('json', s_query[start_idx:end_idx].to_queryset())
+        # retrieve a page's worth of hits, and convert the results to dict for ez parsing in frontend
+        hits = s_query[start_idx:end_idx]
+        results0 = [x.to_dict() for x in hits]
+        results["hits"] = [x for x in results0]
 
     # let the frontend know whether to continue to show the load more button
     # TODO: I couldn't be fucked to solve true vs True for json serialisation but this works fine so eh?

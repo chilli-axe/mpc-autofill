@@ -96,11 +96,13 @@ def credits(request):
     sources = Source.objects.all()
     context = {x.id: x for x in sources}
 
-    # but also format quantities with commas
     for source in sources:
-        context[source.id].qty_cards = f"{context[source.id].qty_cards :,d}"
-        context[source.id].qty_cardbacks = f"{context[source.id].qty_cardbacks :,d}"
-        context[source.id].qty_tokens = f"{context[source.id].qty_tokens :,d}"
+        # get average dpi and number of cards, cardbacks and tokens this Source created from model
+        (_, qty_cards, qty_cardbacks, qty_tokens, avgdpi) = source.count()
+        context[source.id].qty_cards = qty_cards
+        context[source.id].qty_cardbacks = qty_cardbacks
+        context[source.id].qty_tokens = qty_tokens
+        context[source.id].avgdpi = avgdpi
 
     return render(request, 'cardpicker/credits.html', {"sources": context,
                                                        "total_count": total_count_f})

@@ -16,17 +16,21 @@ import os
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+# Production-specific settings kept in local_settings.py
+try:
+    from MPCAutofill.local_settings import *
+except ImportError:
+    # SECURITY WARNING: keep the secret key used in production secret!
+    SECRET_KEY = 'a=jl+kf*^v%4x!qjm8)kzfr9l(2hg)&^wfdjnlqg9^p(fph5c4'
+
+    # SECURITY WARNING: don't run with debug turned on in production!
+    DEBUG = True
+
+    ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'a=jl+kf*^v%4x!qjm8)kzfr9l(2hg)&^wfdjnlqg9^p(fph5c4'
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = []
 
 # SESSION_COOKIE_SECURE = True
 # CSRF_COOKIE_SECURE = True
@@ -140,5 +144,4 @@ ELASTICSEARCH_DSL = {
     },
 }
 
-# redirect non-www traffic to the www address
-PREPEND_WWW = True
+ELASTICSEARCH_DSL_AUTOSYNC = False

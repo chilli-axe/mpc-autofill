@@ -65,7 +65,15 @@ function insert_data(drive_order, order) {
         },
         complete: function() {
             // pause for a moment so the modal can catch up in case our results return too quickly
-            setTimeout(function(){ $('#loadModal').modal('hide'); alert_missing_versions(cards_not_found)}, 700);
+            setTimeout(function(){ 
+                $('#loadModal').modal('hide'); 
+                // alert the user if specific card versions they requested no longer exist
+                alert_missing_versions(cards_not_found);
+                // alert the user if they've reached the cap of 612 cards
+                if (qty >= 612) {
+                    $('#maxCardsToast').toast('show');
+                }
+            }, 700);
         }
    })
    
@@ -201,20 +209,20 @@ function build_card(card, dom_id, query, slot_id, face, group) {
         // let card_elem = document.createElement("div");
         let card_elem = document.getElementById("basecard").cloneNode(true);
         card_elem.id = dom_id;
-        card_elem.className = "card mpccard card-" + face;
+        card_elem.className = "card mpc-order mpccard card-" + face;
 
         // set up IDs for this man
         let class_ids = [
             "mpccard-slot",
-            "dl-button",
             "padlock",
-            "dl-loading",
+            "remove",
             "card-img",
             "card-img-prev",
             "card-img-next",
             "mpccard-name",
             "mpccard-source",
             "mpccard-counter",
+            "mpccard-counter-btn",
             "prev",
             "next",
         ];
@@ -264,6 +272,7 @@ function build_card(card, dom_id, query, slot_id, face, group) {
     return dom_id;
 }
 
+
 function insert_text() {
     let text = document.getElementById("id_card_list").value;
 
@@ -304,43 +313,33 @@ function insert_xml() {
     }
 }
 
-function driveURL(driveID) {
-    // small helper function to insert a drive ID into a thumbnail URL and return it
-    return "https://drive.google.com/thumbnail?sz=w400-h400&id=" + driveID
-    // return "https://lh3.googleusercontent.com/d/" + driveID + "=w400-h400";
-}
 
 function build_new_cards(source, data, more) {
-    // parse the given json and iterate over the search results
-    let data_parsed = JSON.parse(data);
-
-    for (let i=0; i<data_parsed.length; i++) {
-        let card_item = data_parsed[i];
-
+    // iterate over the search results
+    for (let i=0; i<data.length; i++) {
+        
+        let card_item = data[i];
+        let dom_id = card_item.id;
+        
         // copy the base card sitting in the dom, adjust it, then stick it into this artist's card container
         let card_elem = document.getElementById("basecard").cloneNode(true);
-        card_elem.style.display = "inline";
+        card_elem.style.display = "";
+        card_elem.id = dom_id;
 
-        card_elem.id = card_item['pk'];
+        // set up element IDs for this man
+        let class_ids = [
+            "mpccard-slot",
+            "card-img",
+            "mpccard-name",
+            "mpccard-source",
+        ];
+        for (let i=0; i<class_ids.length; i++) {
+            card_elem.getElementsByClassName(class_ids[i])[0].id = dom_id + "-" + class_ids[i];
+        }
 
-        // set up card's image source, name, and dpi
-        card_elem.getElementsByClassName("card-img")[0].src = driveURL(card_item['pk']);
-        card_elem.getElementsByClassName("mpccard-name")[0].innerHTML = card_item['fields']['name'];
-        card_elem.getElementsByClassName("mpccard-source")[0].innerHTML = 
-            source + " [" + card_item['fields']['dpi'] + " DPI]";
-
-        // do some date handling: format like "20 February 2021"
-        let d = new Date(Date.parse(card_item['fields']['date']));
-        const options = {year: 'numeric', month: 'long', day: 'numeric' };
-        card_elem.getElementsByClassName("mpccard-slot")[0].innerHTML = d.toLocaleDateString('en-AU', options)
-
-        // stick into dom under the source's card container
+        // stick into dom under the source's card container, and instantiate the Card
         document.getElementById(source + "-container").appendChild(card_elem);
-        
-        // fade in when the thumbnail loads
-        var img = new Image();
-        img.onload = function() { $(card_elem).animate({opacity: 1}, 250); }
-        img.src = driveURL(card_item['pk']);
+        let new_card = new CardRecent(card_item, dom_id);
 
         // hide/show the 'load more' button
         if (more == "true") {
@@ -353,6 +352,7 @@ function build_new_cards(source, data, more) {
     // increment page counter whenever a page is inserted
     pages[source] = pages[source] + 1;
 }
+
 
 function load_new_cards(source) {
     // ajax function to ask the server for a page on the What's New page (kek) and stick it into the dom

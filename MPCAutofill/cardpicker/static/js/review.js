@@ -48,7 +48,7 @@ function generateXml() {
     let num_imgs = {'front': 0, 'back': 0};
 
     // iterate over all cards in the order - fronts and backs, including common cardback on right panel
-    let card_elems = document.getElementsByClassName("mpccard");
+    let card_elems = document.getElementsByClassName("mpc-order");
     for (let i = 0; i < card_elems.length; i++) {
         // retrieve information about the current card object
         let curr_obj = $('#' + card_elems[i].id).data("obj");
@@ -79,7 +79,7 @@ function generateXml() {
                 }
             }
         }
-    }
+    }   
 
     // insert everything from the order map into XML elements
     for (let face in order_map) {
@@ -137,10 +137,10 @@ function switchFaces() {
 
     // decide what styles the front and back cards should take on, as well as the switch face button text
     let front_style = "none";
-    let back_style = "inline-block";
+    let back_style = "";
     let button_text = "Switch to Fronts";
     if (front_visible) {
-        front_style = "inline-block";
+        front_style = "";
         back_style = "none";
         button_text = "Switch to Backs";
     }
@@ -161,7 +161,7 @@ function downloadAll() {
     // TODO: or download individually without opening one billion windows?
     // get all Card objects using a set to avoid duplicates
     let card_set = new Set();
-    $(".mpccard").each(function () {
+    $(".mpc-order").each(function () {
         let curr_obj = $(this).data("obj");
         // check if the Card is empty before trying to retrieve its current img ID
         if (!curr_obj.empty) {
@@ -189,13 +189,48 @@ function bracket(qty) {
     return brackets[brackets.length - 1].toString();
 }
 
-function update_qty(qty) {
-    document.getElementById("order_qty").innerHTML = qty;
-    document.getElementById("order_bracket").innerHTML = bracket(qty);
+function update_qty(new_qty) {
+    qty = new_qty;
+    document.getElementById("order_qty").innerHTML = new_qty;
+    document.getElementById("order_bracket").innerHTML = bracket(new_qty);
 }
 
 function clearText() {
     let textarea_elem = document.getElementById("id_card_list");
     textarea_elem.value = "";
     // textarea_elem.blur();
+}
+
+function remove_card() {
+    let slot_to_remove = document.getElementById("removeCardId").slot_num;
+    if (qty > 1) {
+
+        // remove the Card from its lock group/s (if it's part of any) and delete its elements
+        let faces = ["-front", "-back"];
+        for (let i=0; i<faces.length; i++) {
+            let this_elem = $("#slot" + slot_to_remove.toString() + faces[i]);
+            let this_obj = this_elem.data("obj");
+
+            // if the Card object is in a group, remove it from that group
+            if (this_obj.group > 0) {
+                // the Card's dom ID will be sitting in the array groups[this_obj.group],
+                // at index groups[this_obj.group].indexOf(this_obj.dom_id)
+                groups[this_obj.group].splice(groups[this_obj.group].indexOf(this_obj.dom_id), 1);
+            }
+
+            // delete the dom element
+            this_elem.remove();
+        }
+
+        update_qty(qty-1);
+
+        if (slot_to_remove !== qty) {
+            // update the card slots on all cards after the one we just deleted
+            for (let i=slot_to_remove; i<qty; i++) {
+                $("#slot" + (i+1).toString() + "-front").data("obj").update_slot(i);
+                $("#slot" + (i+1).toString() + "-back").data("obj").update_slot(i);
+            }
+        }
+    }
+    $('#removeCardModal').modal('hide');
 }

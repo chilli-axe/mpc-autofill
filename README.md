@@ -13,6 +13,7 @@ The following Python modules:
 * `google-api-python-client`, `google-auth-httplib2` and `google-auth-oauthlib`
 * `django-crispy-forms`
 * `defusedxml`
+* `django-bulk-sync`
 
 Other:
 * [Bootstrap Superhero](https://bootswatch.com/superhero/)
@@ -30,7 +31,7 @@ The following Python modules:
 
 # Setup
 1. Clone this repo somewhere on your server
-2. In the same directory as the repo, create a folder called `staticroot` - by default, the database updater stores card images here
+2. In the same directory as the repo, create a folder called `staticroot` for static assets
 3. Deploy the Django project (I'm using DigitalOcean for Ubuntu) with a webserver (I'm using Apache) and serve static files with another webserver if you want (I was previously using nginx but now I just serve static files with Apache as well)
 4. Run Elasticsearch, preferably as a service to ensure it always runs in the background
 5. Set up your Google Drive credentials in the `MPCAutofill` directory - you should end up with a `credentials.json` file and a `token.pickle` file
