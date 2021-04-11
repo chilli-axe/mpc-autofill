@@ -36,5 +36,7 @@ The following Python modules:
 4. Run Elasticsearch, preferably as a service to ensure it always runs in the background
 5. Set up your Google Drive credentials in the `MPCAutofill` directory - you should end up with a `credentials.json` file and a `token.pickle` file
 6. Run the database update command `python manage.py update_database`, to populate the database and search engine index based on the state of linked Drives
-7. Create a cronjob to periodically run this command, to ensure MPC Autofill reflects the current state of the linked Drives
+7. Create a cronjob to periodically run this command, to ensure MPC Autofill reflects the current state of the linked Drives, and another cronjob to periodically synchronise the double-faced cards table with Scryfall:
+* `0 0 * * * bash /root/mpc-autofill/update_database >> /root/db_update.txt 2>&1`
+* `0 0 * * SUN bash /root/mpc-autofill/sync_dfcs`
 8. Deploy two Google Script according to the code specified in `autofill.py` and adjust the URLs in that script to point to your GS endpoints
