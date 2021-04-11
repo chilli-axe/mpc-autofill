@@ -525,7 +525,7 @@ class Card extends CardBase {
             if (this.group > 0) {
                 // attempt to yeet this id out of the group
                 // using the top rated javascript answer of all time on stackoverflow haha
-                let id_idx = groups[this.group].indexOf(this.id);
+                let id_idx = groups[this.group].indexOf(this.dom_id);
                 if (id_idx > -1) {
                     groups[this.group].splice(id_idx, 1);
                 }
