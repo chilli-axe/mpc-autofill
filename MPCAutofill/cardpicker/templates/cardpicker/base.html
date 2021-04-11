@@ -4,6 +4,15 @@
 <head>
     <link rel="shortcut icon" href="{% static 'cardpicker/favicon.ico' %}"/>
 
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id={{ GTAG }}"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', '{{ GTAG }}');
+    </script>
+
     <title>{% block title %} MPC Autofill {% endblock %}</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
