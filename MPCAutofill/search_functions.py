@@ -79,7 +79,7 @@ def search_database(drive_order, query, s):
     
     results0 = [x.to_dict() for x in hits]
     for drive in drive_order:
-        results += [x for x in results0 if x['source'].startswith(drive)]
+        results += [x for x in results0 if x['source'] == drive]
 
     return results
 
