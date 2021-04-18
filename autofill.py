@@ -1,4 +1,4 @@
-`# To package up as executable, run this in command prompt: 
+# To package up as executable, run this in command prompt:
 # pyinstaller --onefile --hidden-import=colorama --icon=favicon.ico autofill.py
 import colorama
 from webdriver_manager.chrome import ChromeDriverManager
@@ -22,6 +22,8 @@ from concurrent.futures import ThreadPoolExecutor
 from functools import partial
 import queue
 import math
+
+from mpc_utils import currdir, XML_Order
 
 """
 Drive File Info API
@@ -71,12 +73,8 @@ q_cardback = queue.Queue()
 q_error = queue.Queue()
 
 # On macOS, os.getcwd() doesn't work as expected - retrieve the executable's directory another way instead
-if getattr(sys, 'frozen', False):
-    currdir = os.path.dirname(os.path.realpath(sys.executable))
-else:
-    currdir = os.getcwd()
 
-cards_folder = currdir + "/cards"
+cards_folder = currdir() + "/cards"
 if not os.path.exists(cards_folder):
     os.mkdir(cards_folder)
 
@@ -99,14 +97,14 @@ def fill_cards(bar: tqdm, driver, root):
 
     # Select card stock
     stock_dropdown = Select(driver.find_element_by_id("dro_paper_type"))
-    stock_dropdown.select_by_visible_text(root[0][2].text)
+    stock_dropdown.select_by_visible_text(order.details.raw_element[2].text)
 
     # Select number of cards
     qty_dropdown = Select(driver.find_element_by_id("dro_choosesize"))
-    qty_dropdown.select_by_value(root[0][1].text)
+    qty_dropdown.select_by_value(order.details.raw_element[1].text)
 
     # Switch the finish to foil if the user ordered foil cards
-    if root[0][3].text == "true":
+    if order.details.raw_element[3].text == "true":
         foil_dropdown = Select(driver.find_element_by_id("dro_product_effect"))
         foil_dropdown.select_by_value("EF_055")
 
@@ -116,7 +114,7 @@ def fill_cards(bar: tqdm, driver, root):
 
     # Set the desired number of cards, then move to the next step
     driver.switch_to.frame("sysifm_loginFrame")
-    driver.execute_script("javascript:document.getElementById('txt_card_number').value=" + str(root[0][0].text) + ";")
+    driver.execute_script("javascript:document.getElementById('txt_card_number').value=" + str(order.details.raw_element[0].text) + ";")
 
     # Select "different images" for front
     driver.execute_script("javascript:setMode('ImageText', 0);")
@@ -181,7 +179,7 @@ def fill_cards(bar: tqdm, driver, root):
 
         # Determine which slots require the common cardback
         # TODO: Is there a more efficient way to do this? Look at DOM instead?
-        total_cards = int(root[0][0].text)
+        total_cards = int(order.details.raw_element[0].text)
         cards_needing_backs = [x for x in range(0, total_cards) if x not in cards_with_backs]
 
         # Upload and insert the common cardback
@@ -236,7 +234,7 @@ def download_card(bar: tqdm, cardinfo):
             # this is pretty fucking stupid but if it works it works
             if filename == "":
                 raise IndexError
-        
+
         except IndexError:
             # Can't retrieve filename from argument (XML) - retrieve it from a google app query instead
             # Credit to https://tanaikech.github.io/2017/03/20/download-files-without-authorization-from-google-drive/
@@ -252,14 +250,14 @@ def download_card(bar: tqdm, cardinfo):
                 # Failed to retrieve image name - add it to error queue
                 print("cant get filename so gonna exih")
                 q_error.put("Failed to retrieve filename for image with ID < {} >".format(file_id))
-        
+
         # in the case of file name request failing, filepath will be referenced before assignment unless we do this
-        filepath = ""  
+        filepath = ""
         if filename:
             # Split the filename on extension and add in the ID as well
             # The filename with and without the ID in parentheses is checked for, so if the user downloads the image from
             # Google Drive without modifying the filename, it should work as expected
-            # However, looking for the file with the ID in parentheses is preferred because it eliminates the possibility 
+            # However, looking for the file with the ID in parentheses is preferred because it eliminates the possibility
             # of filename clashes between different images
             filename_split = filename.rsplit(".", 1)
             filename_id = filename_split[0] + " (" + file_id + ")." + filename_split[1]
@@ -275,7 +273,7 @@ def download_card(bar: tqdm, cardinfo):
             # Download the image if it doesn't exist, or if it does exist but it's empty
             if (not os.path.isfile(filepath)) or os.path.getsize(filepath) <= 0:
                 # Google script request for file contents
-                # Set the request's timeout to 30 seconds, so if the server decides to not respond, we can 
+                # Set the request's timeout to 30 seconds, so if the server decides to not respond, we can
                 # move on without stopping the whole autofill process    )) > 0 and text_to_list(cardinfo[1])[0] > 10:
                 try:
 
@@ -283,7 +281,7 @@ def download_card(bar: tqdm, cardinfo):
                     attempt_counter = 0
                     image_downloaded = False
                     while attempt_counter < 5 and not image_downloaded:
-                        
+
                         with requests.post(
                             "https://script.google.com/macros/s/AKfycbzzCWc2x3tfQU1Zp45LB1P19FNZE-4njwzfKT5_Rx399h-5dELZWyvf/exec",
                             data={"id": file_id},
@@ -300,7 +298,7 @@ def download_card(bar: tqdm, cardinfo):
                                 image_downloaded = True
                             else:
                                 attempt_counter += 1
-                    
+
                     if not image_downloaded:
                         # Tried to download image three times and never got any data, add to error queue
                         # print("file contents empty error")
@@ -317,7 +315,7 @@ def download_card(bar: tqdm, cardinfo):
         if os.path.isfile(filepath) and os.path.getsize(filepath) > 0 and filename:
             # Cards are normally put onto the queue as tuples of the image filepath and slots
             card_item = (filepath, text_to_list(cardinfo[1]))
-        
+
     except Exception as e:
         # Really wanna put the nail in the coffin of stalling when an error occurs during image downloads
         # Any uncaught exceptions just get ignored and the card is skipped, adding the empty entry onto the appropriate queue
@@ -396,7 +394,7 @@ if __name__ == "__main__":
     filenames = ["cards.xml", "cards.xml.txt", "cards.txt.xml", "cards.xml.xml"]
     for filename in filenames:
         try:
-            tree = ET.parse(currdir + "/" + filename)
+            tree = ET.parse(currdir() + "/" + filename)
             break
         except FileNotFoundError:
             pass
@@ -406,6 +404,7 @@ if __name__ == "__main__":
         sys.exit(0)
 
     root = tree.getroot()
+    order = XML_Order(root)
 
     # Extract information out of XML doc
     # Determine if this XML file is pre-3.0 (does not include search queries or filenames)
@@ -459,7 +458,7 @@ if __name__ == "__main__":
 
     print("Elapsed time: ", end='')
     if hours > 0:
-        print("{} hours, ".format(hours), end='')    
+        print("{} hours, ".format(hours), end='')
     print("{} minutes and {} seconds.".format(mins, secs))
 
     input("Please review the order and ensure everything is correct before placing \n"
