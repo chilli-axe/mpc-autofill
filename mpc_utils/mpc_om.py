@@ -7,7 +7,16 @@ class Element:
         self.raw_element = elem
 
 class Details(Element):
-    pass
+    def __init__(self, elem):
+        super().__init__(elem)
+
+        q, b, s, f = map(lambda x: x.text, elem)
+
+        self.quantity = int(q)
+        self.bracket = b
+        self.stock = s
+        self.foil = f == "true"
+
 class Fronts(Element):
     pass
 class Cardbacks(Element):

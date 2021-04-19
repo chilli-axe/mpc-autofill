@@ -97,14 +97,14 @@ def fill_cards(bar: tqdm, driver, root):
 
     # Select card stock
     stock_dropdown = Select(driver.find_element_by_id("dro_paper_type"))
-    stock_dropdown.select_by_visible_text(order.details.raw_element[2].text)
+    stock_dropdown.select_by_visible_text(order.details.stock)
 
     # Select number of cards
     qty_dropdown = Select(driver.find_element_by_id("dro_choosesize"))
-    qty_dropdown.select_by_value(order.details.raw_element[1].text)
+    qty_dropdown.select_by_value(order.details.bracket)
 
     # Switch the finish to foil if the user ordered foil cards
-    if order.details.raw_element[3].text == "true":
+    if order.details.foil:
         foil_dropdown = Select(driver.find_element_by_id("dro_product_effect"))
         foil_dropdown.select_by_value("EF_055")
 
@@ -114,7 +114,7 @@ def fill_cards(bar: tqdm, driver, root):
 
     # Set the desired number of cards, then move to the next step
     driver.switch_to.frame("sysifm_loginFrame")
-    driver.execute_script("javascript:document.getElementById('txt_card_number').value=" + str(order.details.raw_element[0].text) + ";")
+    driver.execute_script("javascript:document.getElementById('txt_card_number').value=" + str(order.details.quantity) + ";")
 
     # Select "different images" for front
     driver.execute_script("javascript:setMode('ImageText', 0);")
@@ -179,7 +179,7 @@ def fill_cards(bar: tqdm, driver, root):
 
         # Determine which slots require the common cardback
         # TODO: Is there a more efficient way to do this? Look at DOM instead?
-        total_cards = int(order.details.raw_element[0].text)
+        total_cards = order.details.quantity
         cards_needing_backs = [x for x in range(0, total_cards) if x not in cards_with_backs]
 
         # Upload and insert the common cardback
