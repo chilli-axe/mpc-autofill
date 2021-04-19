@@ -31,7 +31,19 @@ class TestOM:
             assert(isinstance(getattr(xml_order.details, k), t))
 
     def test_fronts(self, xml_order):
-        assert(xml_order.fronts)
+        assert(xml_order.fronts is not None)
+        assert(len(xml_order.fronts)) > 0
 
-    def test_cardbacks(self, xml_order):
-        assert(xml_order.cardbacks)
+        assert(xml_order.fronts[0])
+        assert(xml_order.fronts[0].id)
+        assert(xml_order.fronts[0].slots)
+        assert(xml_order.fronts[0].name)
+
+    def test_backs(self, xml_order):
+        assert(xml_order.backs is not None)
+        assert(len(xml_order.backs) == 0)
+
+        # TODO: Add better sample data
+        assert([i for i in xml_order.backs] == [])
+
+        assert(xml_order.backs.text)

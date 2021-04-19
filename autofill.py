@@ -148,7 +148,7 @@ def fill_cards(bar: tqdm, driver, root):
     wait(driver)
     driver.switch_to.frame("sysifm_loginFrame")
 
-    if len(root[2]) == 0:
+    if len(order.backs) == 0:
         # Same cardback for every card
         driver.execute_script("javascript:setMode('ImageText', 1);")
         driver.switch_to.default_content()
@@ -408,16 +408,16 @@ if __name__ == "__main__":
 
     # Extract information out of XML doc
     # Determine if this XML file is pre-3.0 (does not include search queries or filenames)
-    if len(root[1][0]) > 2:
+    if len(order.fronts[0]) > 2:
         # XML is 3.0-onwards, and filename can be retrieved
-        cardsinfo_front = [(x[0].text, x[1].text, x[2].text, "front") for x in root[1]]
-        cardsinfo_back = [(x[0].text, x[1].text, x[2].text, "back") for x in root[2]]
+        cardsinfo_front = [(x.id, x.slots, x.name, "front") for x in order.fronts]
+        cardsinfo_back = [(x.id, x.slots, x.name, "back") for x in order.backs]
     else:
         # XML is pre-3.0, and filename must be retrieved from google API request
-        cardsinfo_front = [(x[0].text, x[1].text, "", "front") for x in root[1]]
-        cardsinfo_back = [(x[0].text, x[1].text, "", "back") for x in root[2]]
+        cardsinfo_front = [(x[0].text, x[1].text, "", "front") for x in order.fronts]
+        cardsinfo_back = [(x[0].text, x[1].text, "", "back") for x in order.backs]
 
-    cardsinfo_cardback = [(root[-1].text, "", "", "cardback")]
+    cardsinfo_cardback = [(order.backs.text, "", "", "cardback")]
     cardsinfo = cardsinfo_front + cardsinfo_back + cardsinfo_cardback
 
     print("Successfully read XML file. Starting card downloader and webdriver processes.")
