@@ -1,6 +1,6 @@
 import os, sys
 
-from .mpc_om import XML_Order
+from .xml_om import XML_Order
 
 class CURRDIR:
     """

@@ -33,6 +33,9 @@ class Details(Element):
         self.stock = s
         self.foil = f == "true"
 
+class Cardback(Element):
+    pass
+
 class Card(Element):
     def __init__(self, elem):
         super().__init__(elem)
@@ -65,9 +68,20 @@ class CardCollection(Element):
 
 class XML_Order:
     def __init__(self, root):
-        de, fe, be = root
-
-        self.details = Details(de)
-        self.fronts = CardCollection(fe)
-        self.backs = CardCollection(be)
+        attribs = {
+            "details": Details,
+            "fronts": CardCollection,
+            "backs": CardCollection,
+            "cardback": Cardback
+        }
+        for child in root:
+            # Set an attribute with name == tag and value == Model Class
+            setattr(
+                self,
+                child.tag,
+                attribs.get(
+                    child.tag,
+                    lambda *_: None #  Missing tag
+                )(child)
+            )
 

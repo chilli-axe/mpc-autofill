@@ -2,19 +2,18 @@ import pytest
 
 import xml.etree.ElementTree as ET
 
-from mpc_utils import currdir, XML_Order
+from autofill_utils import currdir, XML_Order
 
 
-TEST_XML = "cards.xml"
+TEST_XML = "sample.xml"
 
 @pytest.fixture
 def root():
-    yield ET.parse(f"{currdir()}/{TEST_XML}").getroot()
+    yield ET.parse(f"{currdir()}/tests/{TEST_XML}").getroot()
 
 @pytest.fixture
 def xml_order(root):
     yield XML_Order(root)
-
 
 
 class TestOM:
@@ -41,9 +40,7 @@ class TestOM:
 
     def test_backs(self, xml_order):
         assert(xml_order.backs is not None)
-        assert(len(xml_order.backs) == 0)
+        assert(len(xml_order.backs) == 1)
 
-        # TODO: Add better sample data
-        assert([i for i in xml_order.backs] == [])
-
-        assert(xml_order.backs.text)
+    def test_cardback(self, xml_order):
+        assert(xml_order.cardback.text)

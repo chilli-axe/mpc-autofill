@@ -23,7 +23,7 @@ from functools import partial
 import queue
 import math
 
-from mpc_utils import currdir, XML_Order
+from autofill_utils import currdir, XML_Order
 
 """
 Drive File Info API
@@ -417,7 +417,7 @@ if __name__ == "__main__":
         cardsinfo_front = [(x[0].text, x[1].text, "", "front") for x in order.fronts]
         cardsinfo_back = [(x[0].text, x[1].text, "", "back") for x in order.backs]
 
-    cardsinfo_cardback = [(order.backs.text, "", "", "cardback")]
+    cardsinfo_cardback = [(order.cardback.text, "", "", "cardback")]
     cardsinfo = cardsinfo_front + cardsinfo_back + cardsinfo_cardback
 
     print("Successfully read XML file. Starting card downloader and webdriver processes.")
