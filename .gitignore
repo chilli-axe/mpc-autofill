@@ -1,4 +1,12 @@
+# Ignore XML files we might use for debugging
 cards.xml
 cards/*
 
+# Ignore pyinstaller stuff
+__pycache__/*
+autofill.spec
+build/*
+dist/*
+
+# Ignore Pipenv files
 Pipfile*
