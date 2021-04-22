@@ -197,7 +197,7 @@ def add_card(folder, source, item, q_cards, q_cardbacks, q_tokens):
         # file is valid when it's not trashed and filesize does not exceed 30 MB
         valid = not item['trashed'] and int(item['size']) < 30000000
         if not valid:
-            print("Can't index this card: {}".format(item))
+            print("Can't index this card: <{}> {}, size: {} bytes".format(item['id'], item['name'], item['size']))
     except KeyError:
         valid = True
 

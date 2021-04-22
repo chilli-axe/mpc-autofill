@@ -115,9 +115,13 @@ def process_line(input_str):
 class OrderDict:
     # small wrapper for a dictionary so it's easy to insert stuff into the order
     def __init__(self):
-        # initialise the dictionary and set up the cardback's entry
-        # self.order = {"": {
-        self.order = {"front": {}, "back": {
+        # initialise the dictionary and set up empty entries for front and back faces
+        self.order = {"front": {
+            "": {
+                "slots": [],
+                "req_type": "",
+            }
+        }, "back": {
             "": {
                 "slots": [["-", ""]],
                 "req_type": "back",
@@ -135,10 +139,25 @@ class OrderDict:
         else:
             self.order[face][query]["slots"] += slots_with_id
 
-    def insert_back(self, slots):
-        # add onto the common cardback's slots
+    def insert_empty(self, slots, face):
+        # insert empty slots in the requested face
+        # for back face, this will add onto the common cardback's slots
         slots_with_id = [[x, ""] for x in slots]
-        self.order["back"][""]["slots"] += slots_with_id
+        self.order[face][""]["slots"] += slots_with_id
+
+    # handy for debugging purposes
+    def __str__(self):
+        return_str = "printing orderdict:\n"
+        for face in ["front", "back"]:
+            return_str += face + "s:\n"
+            for key in self.order[face].keys():
+                return_str += "<{}>: slots <{}>, req_type <{}>\n".format(
+                    key,
+                    self.order[face][key]["slots"], 
+                    self.order[face][key]["req_type"]
+                )
+        return_str += "over and out!"
+        return return_str
 
 
 def parse_text(input_lines, offset=0):
@@ -185,7 +204,7 @@ def parse_text(input_lines, offset=0):
 
             else:
                 # is not a DFC, so add this card's slots onto the common cardback's slots
-                cards_dict.insert_back(curr_slots)
+                cards_dict.insert_empty(curr_slots, "back")
 
             curr_slot += qty
 
@@ -270,7 +289,7 @@ def parse_csv(csv_bytes):
 
             else:
                 # is not a DFC, so add this card's slots onto the common cardback's slots
-                cards_dict.insert_back(curr_slots)
+                cards_dict.insert_empty(curr_slots, "back")
 
             curr_slot += qty
 
@@ -286,15 +305,12 @@ def parse_xml(input_text, offset=0):
     # exception is handled in the view that calls parse_xml
     # TODO: handle the exception here and return nothing
     cards_dict = OrderDict()
-
-    qty = 0  # should be qty = 0 but was qty = offset?
     root = ET.fromstring(input_text)
 
-    # TODO this might be kinda shit, idk, come back to it later
-
-    def xml_parse_face(elem, face):
-        print(elem)
-        all_slots = []
+    def xml_parse_face(elem, face, offset):
+        # parse a given face of the uploaded xml and add its cards to the orderdict, returning the slot
+        # numbers found for this face in the xml
+        used_slots = []
         for child in elem:
             # structure: id, slots, name, query
             card_id = child[0].text
@@ -302,21 +318,33 @@ def parse_xml(input_text, offset=0):
             # filter out slot numbers greater than or equal to 612
             slots = [x for x in slots if x < 612]
             if slots:
-                all_slots += slots
+                used_slots += slots
                 query = child[3].text
                 cards_dict.insert(query, slots, face, "", card_id)
 
-        return set(all_slots)
+        return set(used_slots)
 
-    # parse the fronts first to get a list of slots in the order
-    all_slots = xml_parse_face(root[1], "front")
-    # count how many slots we have for qty
-    qty = len(all_slots)
+    # parse the fronts first to get a list of slots that are specifically filled in the order
+    used_slots = xml_parse_face(root[1], "front", offset)
+
+    # figure out which slots are empty in the order
+    # calculate qty with the maximum and minimum slot numbers in the order, because there might be 
+    # missing cards we need to account for - and calculate the range of all slots in the order
+    qty = max(used_slots) - min(used_slots) + 1
+    all_slots = set(range(min(used_slots), max(used_slots)))
+    cards_dict.insert_empty(list(all_slots - used_slots), "front")
+
+    # for cardbacks, start by assuming all back slots are empty, then if the xml has any back cards, remove those
+    # from the set of empty cardback slots
+    empty_back_slots = all_slots
+    # cardback_id = ""  # comments left here in case we eventually wanna pass cardback info to the frontend
     if root[2].tag == "backs":
-        # remove the back slots from all_slots, leaving us with just slots with the common cardback
-        all_slots -= xml_parse_face(root[2], "back")
-
-    cards_dict.insert_back(list(all_slots))
+        # remove the back slots from used_slots, leaving us with just slots with the common cardback
+        empty_back_slots -= xml_parse_face(root[2], "back", offset)
+        # cardback_id = root[3].text 
+    # else:
+        # cardback_id = root[2].text 
+    cards_dict.insert_empty(list(empty_back_slots), "back")
 
     return cards_dict.order, qty
 
