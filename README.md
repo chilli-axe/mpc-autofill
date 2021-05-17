@@ -4,16 +4,19 @@ Automating MakePlayingCards's online ordering system.
 The below guide describes the procedure for setting up the web component. If you're here to download the clientside program, check the Releases tab.
 
 # Requirements
+`requirements.txt` for the web application and local tool combined exists in the repo as well.
+
 ## Web application:
 The following Python modules:
 * `Django`
 * `django-user-agents`
-* `elasticsearch`
-* `django-elasticsearch-dsl` and `elasticsearch-dsl`
+* `psycopg2`
+* `python-Levenshtein`
 * `google-api-python-client`, `google-auth-httplib2` and `google-auth-oauthlib`
 * `django-crispy-forms`
 * `defusedxml`
 * `django-bulk-sync`
+* `django-user-agents`
 
 Other:
 * [Bootstrap Superhero](https://bootswatch.com/superhero/)

@@ -357,7 +357,3 @@ class Command(BaseCommand):
         mins = floor((t_final - t) / 60)
         secs = int((t_final - t) - mins * 60)
         print("Total elapsed time: {} minutes and {} seconds.\n".format(mins, secs))
-
-        # TODO: figure out why bulk_sync doesn't play nice with elasticsearch dsl django auto syncing
-        print("Rebuilding search index.")
-        management.call_command('search_index', '--rebuild', '-f')

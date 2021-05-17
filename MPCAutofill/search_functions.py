@@ -1,34 +1,28 @@
 import csv
-import math
 
 import chardet
 import defusedxml.ElementTree as ET
-from elasticsearch_dsl.query import Match
 
-from cardpicker.documents import CardSearch, CardbackSearch, TokenSearch
 from cardpicker.forms import InputText
-from cardpicker.models import Card, Source, DFCPair
+from cardpicker.models import Card, Cardback, Token, Source, DFCPair
 from to_searchable import to_searchable
 
-from django.core import serializers
-
-
-# Retrieve DFC pairs from database
-transforms = dict((x.front, x.back) for x in DFCPair.objects.all())
+from math import floor
+from Levenshtein import distance
 
 
 def build_context(drive_order, order, qty):
     # I found myself copy/pasting this between the three input methods so I figured it belonged in its own function
 
     # For donation modal, approximate how many cards I've rendered
-    my_cards = Source.objects.get(id="Chilli_Axe").count()[0]
+    my_cards = 100 * floor(int(Source.objects.get(id="Chilli_Axe").count()[0].replace(',', '')) / 100)
 
     context = {
         "form": InputText,
         "drive_order": drive_order,
         "order": order,
         "qty": qty,
-        "my_cards": my_cards,
+        "my_cards": f"{my_cards :,d}",
     }
 
     return context
@@ -42,44 +36,32 @@ def text_to_list(input_text):
 
 
 def query_es_card(drive_order, query):
-    return search_database(drive_order, query, CardSearch.search())
+    return search_database(drive_order, query, Card)
 
 
 def query_es_cardback():
     # return all cardbacks in the search index
-    s = CardbackSearch.search()
-    hits = s \
-        .sort({'priority': {'order': 'desc'}}) \
-        .params(preserve_order=True) \
-        .scan()
-    results = [x.to_dict() for x in hits]
-    return results
+    return [x.to_dict() for x in Cardback.objects.all()]
 
 
 def query_es_token(drive_order, query):
-    return search_database(drive_order, query, TokenSearch.search())
+    return search_database(drive_order, query, Token)
 
 
-def search_database(drive_order, query, s):
-    # TODO: elasticsearch_dsl.serializer.serializer ?
+def search_database(drive_order, query, model):
+    if query == "":
+        return []
     # search through the database for a given query, over the drives specified in drive_orders,
     # using the search index specified in s (this enables reuse of code between Card and Token search functions)
-
     results = []
 
-    # set up search - match the query and use the AND operator
-    match = Match(searchq={"query": to_searchable(query), "operator": "AND"})
+    query_parsed = to_searchable(query)
 
-    # match the cardname once instead of for every drive to save on search time
-    s_query = s.query(match)
+    hits = [x.to_dict() for x in model.objects.filter(searchq__search=query_parsed)]
+    hits.sort(key=lambda x: distance(x['searchq'], query_parsed))
 
-    # iterate over drives, filtering on the current drive, ordering by priority in descending order,
-    # then add the returned hits to the results list
-    hits = s_query.sort({'priority': {'order': 'desc'}}).params(preserve_order=True).scan()
-    
-    results0 = [x.to_dict() for x in hits]
     for drive in drive_order:
-        results += [x for x in results0 if x['source'] == drive]
+        results += [x for x in hits if x['source'] == drive]
 
     return results
 
@@ -161,6 +143,7 @@ class OrderDict:
 
 
 def parse_text(input_lines, offset=0):
+    transforms = dict((x.front, x.back) for x in DFCPair.objects.all())
     cards_dict = OrderDict()
 
     curr_slot = offset
@@ -215,6 +198,7 @@ def parse_text(input_lines, offset=0):
 
 
 def parse_csv(csv_bytes):
+    transforms = dict((x.front, x.back) for x in DFCPair.objects.all())
     # TODO: I'm sure this can be cleaned up a lot, the logic here is confusing and unintuitive
     cards_dict = OrderDict()
     curr_slot = 0
@@ -331,7 +315,7 @@ def parse_xml(input_text, offset=0):
     # calculate qty with the maximum and minimum slot numbers in the order, because there might be 
     # missing cards we need to account for - and calculate the range of all slots in the order
     qty = max(used_slots) - min(used_slots) + 1
-    all_slots = set(range(min(used_slots), max(used_slots)))
+    all_slots = set(range(min(used_slots), max(used_slots) + 1))
     cards_dict.insert_empty(list(all_slots - used_slots), "front")
 
     # for cardbacks, start by assuming all back slots are empty, then if the xml has any back cards, remove those
@@ -348,6 +332,7 @@ def parse_xml(input_text, offset=0):
 
     return cards_dict.order, qty
 
+
 def search_new(s, source, page=0):
 
     # define page size and the range to paginate with
@@ -356,16 +341,14 @@ def search_new(s, source, page=0):
     end_idx = page_size*(page+1)
     
     # match the given source
-    match = Match(source={"query": source})
-    s_query = s.query(match)
+    query = s.filter(source=source)
 
     # quantity related things
-    qty = s_query.count()
+    qty = query.count()
     results = {"qty": qty}
     if qty > 0:
-        # results["hits"] = serializers.serialize('json', s_query[start_idx:end_idx].to_queryset())
         # retrieve a page's worth of hits, and convert the results to dict for ez parsing in frontend
-        hits = s_query[start_idx:end_idx]
+        hits = query[start_idx:end_idx]
         results0 = [x.to_dict() for x in hits]
         results["hits"] = [x for x in results0]
 

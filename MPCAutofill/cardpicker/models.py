@@ -16,7 +16,10 @@ class Source(models.Model):
     drivename = models.CharField(max_length=100, unique=True)
 
     def __str__(self):
-        return "{}. {}: {}".format(self.order, self.id, self.description)
+        (qty_total, qty_cards, qty_cardbacks, qty_tokens, _) = self.count()
+        return "{}. {}: {} ({} total: {} cards, {} cardbacks, {} tokens)".format(
+            self.order, self.id, self.description, qty_total, qty_cards, qty_cardbacks, qty_tokens
+        )
     
     def count(self):
         # return the number of cards that this Source created, and the Source's average DPI
@@ -40,6 +43,15 @@ class Source(models.Model):
     class Meta:
         ordering = ['order']
 
+    def __to_dict__(self):
+        return {
+            "id": self.id,
+            "username": self.username,
+            "reddit": self.reddit,
+            "drivelink": self.drivelink,
+            "description": self.description,
+        }
+
 
 class CardBase(models.Model):
     id = models.CharField(max_length=50, primary_key=True)
@@ -59,7 +71,7 @@ class CardBase(models.Model):
         return {"id": self.id,
                 "name": self.name,
                 "priority": self.priority,
-                "source": self.source,
+                "source": self.source.id,
                 "source_verbose": self.source_verbose,
                 "dpi": self.dpi,
                 "searchq": self.searchq,
@@ -72,6 +84,7 @@ class CardBase(models.Model):
 
     class Meta:
         abstract = True
+        ordering = ['-priority']
 
 
 class Card(CardBase):

@@ -13,6 +13,7 @@ common_fields = [
     'dpi',
     'thumbpath',
     'date',
+    'searchq',
 ]
 
 common_settings = {
@@ -24,7 +25,7 @@ common_settings = {
 @registry.register_document
 class CardSearch(Document):
     source = fields.TextField(attr="source_to_str")
-    searchq = fields.TextField(analyzer='keyword')
+    # searchq_exact = fields.TextField(analyzer='keyword')
     class Index:
         # name of the elasticsearch index
         name = 'cards'
@@ -51,7 +52,7 @@ class CardSearch(Document):
 @registry.register_document
 class CardbackSearch(Document):
     source = fields.TextField(attr="source_to_str")
-    searchq = fields.TextField(analyzer='keyword')
+    # searchq_exact = fields.TextField(analyzer='keyword')
     class Index:
         # name of the elasticsearch index
         name = 'cardbacks'
@@ -78,7 +79,7 @@ class CardbackSearch(Document):
 @registry.register_document
 class TokenSearch(Document):
     source = fields.TextField(attr="source_to_str")
-    searchq = fields.TextField(analyzer='keyword')
+    # searchq_exact = fields.TextField(analyzer='keyword')
     class Index:
         # name of the elasticsearch index
         name = 'tokens'
