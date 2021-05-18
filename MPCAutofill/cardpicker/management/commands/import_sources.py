@@ -18,10 +18,10 @@ def read_sources_csv():
                     id=row["key"],
                     username=row["username"],
                     reddit=row["reddit"],
-                    drivelink=row["drivelink"],
+                    drive_id=row["drive_id"],
+                    drive_link="https://drive.google.com/open?id=" + row["drive_id"] if row["drive_public"] != "FALSE" else "",
                     description=row["description"],
                     order=i,
-                    drivename=row["drivename"]
                 )
             )
             i += 1

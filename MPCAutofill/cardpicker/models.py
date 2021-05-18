@@ -10,10 +10,10 @@ class Source(models.Model):
     id = models.CharField(max_length=50, primary_key=True)
     username = models.CharField(max_length=50)
     reddit = models.CharField(max_length=100)
-    drivelink = models.CharField(max_length=200)
+    drive_id = models.CharField(max_length=100, unique=True)
+    drive_link = models.CharField(max_length=200)
     description = models.CharField(max_length=400)
     order = models.IntegerField(default=0)
-    drivename = models.CharField(max_length=100, unique=True)
 
     def __str__(self):
         (qty_total, qty_cards, qty_cardbacks, qty_tokens, _) = self.count()
@@ -48,7 +48,7 @@ class Source(models.Model):
             "id": self.id,
             "username": self.username,
             "reddit": self.reddit,
-            "drivelink": self.drivelink,
+            "drive_link": self.drive_link,
             "description": self.description,
         }
 

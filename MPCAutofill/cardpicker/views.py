@@ -25,7 +25,7 @@ def index(request, error=False):
         if "sources" not in source.id:
             sources[source.id] = {'username': source.username,
                                   'reddit': source.reddit,
-                                  'drivelink': source.drivelink}
+                                  'drive_link': source.drive_link}
 
     context = {'form': InputText,
                'mobile': not request.user_agent.is_pc,
