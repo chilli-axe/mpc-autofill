@@ -12,6 +12,7 @@ import time
 import os
 from to_searchable import to_searchable
 from math import floor
+from tqdm import tqdm
 
 # cron job to run this cmd daily: 0 0 * * * bash /root/mpc-autofill/update_database >> /root/db_update.txt 2>&1
 
@@ -22,34 +23,20 @@ SCOPES = ['https://www.googleapis.com/auth/drive.metadata.readonly',
 DPI_HEIGHT_RATIO = 300/1122  # 300 DPI for image of vertical resolution 1122 pixels
 
 
-def locate_drives(service):
-    # Call to google drive API
-    results = service.files().list(
-        q="mimeType='application/vnd.google-apps.folder' and sharedWithMe=true",
-        fields="files(id, name, parents, driveId, owners)",
-        pageSize=1000
-    ).execute()
+def locate_drives(service, sources):
+    def get_folder_from_id(drive_id, bar: tqdm):
+        folder = service.files().get(
+            fileId=drive_id
+        ).execute()
+        time.sleep(0.1)
+        bar.update(1)
+        return folder
 
-    folders = results.get('files', [])
-    print("Folders found: {}".format(len(folders)))
-
+    print("Retrieving Google Drive folders...")
+    bar = tqdm(total=len(sources))
+    folders = {x.id: get_folder_from_id(x.drive_id, bar) for x in sources}
+    print("...and done!")
     return folders
-
-
-def map_drives(folders):
-    # correlate the folders retrieved by gdrive api with Source objects in database
-    print("Mapping Sources to Drives.")
-    sources = {}
-    for x in folders:
-        try:
-            folder_name = x['owners'][0]['displayName']
-            curr_source = Source.objects.get(drivename=folder_name)
-            sources[curr_source.id] = x
-        except Source.DoesNotExist:
-            print("Failed to find Source for drive owned by < {} >".format(folder_name))
-
-    print("")
-    return sources
 
 
 def crawl_drive(service, folder):
@@ -75,7 +62,7 @@ def crawl_drive(service, folder):
     images = []
     while len(unexplored_folders) > 0:
         # explore the first folder in the list - retrieve all images in the folder, add any folders inside it
-        # to the unexplored folder list, then remove the current folder from that list, then repeat untill all
+        # to the unexplored folder list, then remove the current folder from that list, then repeat until all
         # folders have been explored
         time.sleep(0.1)
         curr_folder = unexplored_folders[0]
@@ -197,7 +184,7 @@ def add_card(folder, source, item, q_cards, q_cardbacks, q_tokens):
         # file is valid when it's not trashed and filesize does not exceed 30 MB
         valid = not item['trashed'] and int(item['size']) < 30000000
         if not valid:
-            print("Can't index this card: {}".format(item))
+            print("Can't index this card: <{}> {}, size: {} bytes".format(item['id'], item['name'], item['size']))
     except KeyError:
         valid = True
 
@@ -215,10 +202,8 @@ def add_card(folder, source, item, q_cards, q_cardbacks, q_tokens):
         folder_name = item['folder_name']
         parent_name = item['parent_name']
 
-        # Skip this file if it doesn't belong to this Source, or if it doesn't have a name
-        owner = item['owners'][0]['displayName']
-        if owner != source.drivename or not cardname:
-            print("whoops")
+        # Skip this file if it doesn't have a name after splitting name & extension
+        if not cardname:
             return
 
         scryfall = False
@@ -333,22 +318,20 @@ class Command(BaseCommand):
         service = login()
         t = time.time()
 
-        # locate all folders this gdrive account has access to, then correlate them with Source objects
-        folders = locate_drives(service)
-        sources = map_drives(folders)
-
         # If a valid drive was specified, search only that drive - otherwise, search all drives
         if drive:
             # Try/except to see if the given drive name maps to a Source
             try:
-                drive_source = sources[drive]
-                print("Rebuilding database for specific drive: {}.".format(drive))
-                search_folder(service, Source.objects.get(id=drive), sources[drive])
+                source = Source.objects.get(id=drive)
+                folder = locate_drives(service, [source])[source.id]
+                print("Rebuilding database for specific drive: {}.".format(source.id))
+                search_folder(service, source, folder)
             except KeyError:
                 print("Invalid drive specified: {}\nYou may specify one of the following drives:".format(drive))
                 [print(x.id) for x in Source.objects.all()]
                 return
         else:
+            sources = locate_drives(service, Source.objects.all())
             print("Rebuilding database with all drives.")
             for x in sources:
                 search_folder(service, Source.objects.get(id=x), sources[x])
@@ -357,7 +340,3 @@ class Command(BaseCommand):
         mins = floor((t_final - t) / 60)
         secs = int((t_final - t) - mins * 60)
         print("Total elapsed time: {} minutes and {} seconds.\n".format(mins, secs))
-
-        # TODO: figure out why bulk_sync doesn't play nice with elasticsearch dsl django auto syncing
-        print("Rebuilding search index.")
-        management.call_command('search_index', '--rebuild', '-f')

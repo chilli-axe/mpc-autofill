@@ -10,13 +10,13 @@ import requests
 
 
 def sync_dfcs():
-    scryfall_query = "https://api.scryfall.com/cards/search?q=is:dfc%20-layout:art_series%20-layout:double_faced_token"
-    response = json.loads(requests.get(scryfall_query).content)
+    scryfall_query_dfc = "https://api.scryfall.com/cards/search?q=is:dfc%20-layout:art_series%20-layout:double_faced_token"
+    response_dfc = json.loads(requests.get(scryfall_query_dfc).content)
 
     # maintain list of all dfcs found so far
     q_dfcpairs = []
     
-    for x in response['data']:
+    for x in response_dfc['data']:
         # retrieve front and back names for this card, then create a DFCPair for it and append to list
         front_name = x['card_faces'][0]['name']
         back_name = x['card_faces'][1]['name']
@@ -26,7 +26,25 @@ def sync_dfcs():
                 back=to_searchable(back_name)
             )
         )
-    
+
+    # also retrieve meld pairs and save them as DFCPairs
+    time.sleep(0.1)
+    scryfall_query_meld = "https://api.scryfall.com/cards/search?q=is:meld%"
+    response_meld = json.loads(requests.get(scryfall_query_meld).content)
+
+    for x in response_meld['data']:
+        card_part = [y for y in x['all_parts'] if y['name'] == x['name']][0]
+        meld_result = [y for y in x['all_parts'] if y['component'] == "meld_result"][0]['name']
+        if card_part['component'] == "meld_part":
+            is_top = "\n(Melds with " not in x['oracle_text']
+            card_bit = "Top" if is_top else "Bottom"
+            q_dfcpairs.append(
+                DFCPair(
+                    front=to_searchable(x['name']),
+                    back=to_searchable(f"{meld_result} {card_bit}")
+                )
+            )
+
     # synchronise the located DFCPairs to database
     t0 = time.time()
     key_fields = ('front', )

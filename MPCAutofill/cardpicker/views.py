@@ -1,7 +1,7 @@
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from datetime import datetime, timedelta
-from cardpicker.documents import CardSearch, CardbackSearch, TokenSearch
+from django.utils import timezone
 
 from search_functions import \
     build_context, \
@@ -25,7 +25,7 @@ def index(request, error=False):
         if "sources" not in source.id:
             sources[source.id] = {'username': source.username,
                                   'reddit': source.reddit,
-                                  'drivelink': source.drivelink}
+                                  'drive_link': source.drive_link}
 
     context = {'form': InputText,
                'mobile': not request.user_agent.is_pc,
@@ -45,10 +45,10 @@ def new_cards(request):
     # initialise results dict, 2 weeks time delta, and the dsl search
     results = {}
     days = 14
-    s = CardSearch \
-        .search() \
-        .filter('range', date={'from': datetime.now() - timedelta(days=days), 'to': datetime.now()}) \
-        .sort({'date': {'order': 'desc'}})
+    s = Card.objects.filter(date__range=[
+        timezone.now() - timedelta(days=days),
+        timezone.now()
+    ]).order_by('-date',)
 
     # for each source, query elasticsearch for the requested cards, and attach it to the results dict if we have any hits
     for source in Source.objects.all():
@@ -69,10 +69,10 @@ def search_new_page(request):
     # initialise results dict, 2 weeks time delta, and the dsl search
     results = {}
     days = 14
-    s = CardSearch \
-        .search() \
-        .filter('range', date={'from': datetime.now() - timedelta(days=days), 'to': datetime.now()}) \
-        .sort({'date': {'order': 'desc'}})
+    s = Card.objects.filter(date__range=[
+        timezone.now() - timedelta(days=days),
+        timezone.now()
+    ]).order_by('-date',)
 
     # query elasticsearch for the requested cards and attach it to the results dict if we have any hits
     result = search_new(s, source, page)
@@ -117,7 +117,6 @@ def search_multiple(request):
         for key in order[face].keys():
             result = search(drive_order, key, order[face][key]['req_type'])
             order[face][key]["data"] = result
-
     return JsonResponse(order)
     
 
