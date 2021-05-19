@@ -6,7 +6,8 @@ from selenium.common.exceptions import (
     NoAlertPresentException,
     UnexpectedAlertPresentException,
     NoSuchElementException,
-    TimeoutException)
+    TimeoutException,
+    NoSuchFrameException)
 from selenium.webdriver.support.expected_conditions import invisibility_of_element
 from selenium.webdriver.support.ui import WebDriverWait, Select
 from selenium import webdriver
@@ -78,6 +79,12 @@ cards_folder = currdir() + "/cards"
 if not os.path.exists(cards_folder):
     os.mkdir(cards_folder)
 
+def switch_to_frame(driver, frame):
+    try:
+        driver.switch_to.frame(frame)
+    except (NoSuchFrameException, NoSuchElementException):
+        pass
+
 def text_to_list(input_text):
     # Helper function to translate strings like "[2, 4, 5, 6]" into lists
     if input_text == "":
@@ -113,7 +120,7 @@ def fill_cards(bar: tqdm, driver, root):
         "javascript:doPersonalize('https://www.makeplayingcards.com/products/pro_item_process_flow.aspx')")
 
     # Set the desired number of cards, then move to the next step
-    driver.switch_to.frame("sysifm_loginFrame")
+    switch_to_frame(driver, "sysifm_loginFrame")
     driver.execute_script("javascript:document.getElementById('txt_card_number').value=" + str(order.details.quantity) + ";")
 
     # Select "different images" for front
@@ -146,7 +153,7 @@ def fill_cards(bar: tqdm, driver, root):
 
     # Select "different images" for backs
     wait(driver)
-    driver.switch_to.frame("sysifm_loginFrame")
+    switch_to_frame(driver, "sysifm_loginFrame")
 
     if len(order.backs) == 0:
         # Same cardback for every card
@@ -338,15 +345,19 @@ def upload_card(driver, filepath):
     if filepath != "" and os.path.isfile(filepath) and os.path.getsize(filepath) > 0:
         num_elems = len(driver.find_elements_by_xpath("//*[contains(@id, 'upload_')]"))
 
+        # if an image is uploading already, wait for it to finish uploading before continuing
         progress_container = driver.find_element_by_id("divFileProgressContainer")
+
+        while progress_container.value_of_css_property("display") != "none":
+            time.sleep(3)
+
         while progress_container.value_of_css_property("display") == "none":
             # Attempt to upload card until the upload progress bar appears
             driver.find_element_by_xpath('//*[@id="uploadId"]').send_keys(filepath)
             time.sleep(1)
             progress_container = driver.find_element_by_id("divFileProgressContainer")
 
-        # Maximum 3 minute wait per image
-        timeout_counter = 0
+        # Wait as long as necessary for the image to finish uploading
         while True:
             try:
                 # Wait until the image has finished uploading
@@ -355,12 +366,8 @@ def upload_card(driver, filepath):
                     # Return the uploaded card's PID so we can easily insert it into slots
                     return elem[-1].get_attribute("pid")
 
-                time.sleep(1)
-                timeout_counter += 1
-                if timeout_counter > 180:
-                    # Failed to upload image - add it to error queue
-                    q_error.put("Failed to upload image to MPC at path < {} >".format(filepath))
-                    return ""
+                time.sleep(2)
+
             except UnexpectedAlertPresentException:
                 # If the user clicks on the window, alerts can pop up - we just want to dismiss these and move on
                 try:
@@ -370,6 +377,7 @@ def upload_card(driver, filepath):
                     pass
     else:
         # Returns an empty string if the file does not exist
+        q_error.put("Failed to upload image to MPC at path < {} >".format(filepath))
         return ""
 
 
