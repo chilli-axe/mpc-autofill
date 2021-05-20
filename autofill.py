@@ -23,6 +23,8 @@ from concurrent.futures import ThreadPoolExecutor
 from functools import partial
 import queue
 import math
+import glob
+import enquiries
 
 from autofill_utils import currdir, XML_Order
 
@@ -396,21 +398,20 @@ if __name__ == "__main__":
     print("MPC Autofill initialising.")
     t = time.time()
 
-    # people sometimes name the file different things - so the script will try all of these filenames
-    # before whinging that it can't find an order file in the directory
-    tree = None
-    filenames = ["cards.xml", "cards.xml.txt", "cards.txt.xml", "cards.xml.xml"]
-    for filename in filenames:
-        try:
-            tree = ET.parse(currdir() + "/" + filename)
-            break
-        except FileNotFoundError:
-            pass
-
-    if not tree:
-        input("cards.xml not found in this directory. Press enter to exit.")
+    xml_glob = glob.glob("*.xml")
+    filename = ""
+    if len(xml_glob) <= 0:
+        input("No XML files found in this directory. Press enter to exit.")
         sys.exit(0)
+    elif len(xml_glob) == 1:
+        filename = xml_glob
+    else:
+        # interactively let user choose file
+        options = list(xml_glob)
+        filename = enquiries.choose("Multiple XML files found. Please select one for this order: ", options)
 
+    # parse xml
+    tree = ET.parse(currdir() + "/" + filename)
     root = tree.getroot()
     order = XML_Order(root)
 
@@ -428,7 +429,7 @@ if __name__ == "__main__":
     cardsinfo_cardback = [(order.cardback.text, "", "", "cardback")]
     cardsinfo = cardsinfo_front + cardsinfo_back + cardsinfo_cardback
 
-    print("Successfully read XML file. Starting card downloader and webdriver processes.")
+    print(f"Successfully read XML file: < {filename} >. Starting card downloader and webdriver processes.")
 
     # Set up chrome driver window here to avoid tqdm issues
     chrome_options = Options()
@@ -437,6 +438,11 @@ if __name__ == "__main__":
     driver = webdriver.Chrome(ChromeDriverManager().install(), options=chrome_options)
     driver.set_window_size(1200, 900)
     driver.implicitly_wait(5)
+    driver.set_network_conditions(
+        offline=False,
+        latency=5,
+        throughput=5*125000
+    )
 
     # Create ThreadPoolExecutor to download card images with, and progress bars for downloading and uploading
     with ThreadPoolExecutor(max_workers=5) as pool, \
