@@ -6,17 +6,17 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('cardpicker', '0001_initial'),
+        ("cardpicker", "0001_initial"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='source',
-            options={'ordering': ['order']},
+            name="source",
+            options={"ordering": ["order"]},
         ),
         migrations.AddField(
-            model_name='source',
-            name='order',
+            model_name="source",
+            name="order",
             field=models.IntegerField(default=0),
         ),
     ]

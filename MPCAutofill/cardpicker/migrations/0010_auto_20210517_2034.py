@@ -6,20 +6,20 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('cardpicker', '0009_remove_source_avgdpi'),
+        ("cardpicker", "0009_remove_source_avgdpi"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='card',
-            options={'ordering': ['-priority']},
+            name="card",
+            options={"ordering": ["-priority"]},
         ),
         migrations.AlterModelOptions(
-            name='cardback',
-            options={'ordering': ['-priority']},
+            name="cardback",
+            options={"ordering": ["-priority"]},
         ),
         migrations.AlterModelOptions(
-            name='token',
-            options={'ordering': ['-priority']},
+            name="token",
+            options={"ordering": ["-priority"]},
         ),
     ]

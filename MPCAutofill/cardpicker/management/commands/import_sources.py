@@ -8,7 +8,7 @@ def read_sources_csv():
     sources = []
 
     # read CSV file for drive data
-    with open("drives.csv", newline='') as csvfile:
+    with open("drives.csv", newline="") as csvfile:
         drivesreader = csv.DictReader(csvfile, delimiter=",")
         # order the sources by row number in CSV
         i = 0
@@ -19,7 +19,9 @@ def read_sources_csv():
                     username=row["username"],
                     reddit=row["reddit"],
                     drive_id=row["drive_id"],
-                    drive_link="https://drive.google.com/open?id=" + row["drive_id"] if row["drive_public"] != "FALSE" else "",
+                    drive_link="https://drive.google.com/open?id=" + row["drive_id"]
+                    if row["drive_public"] != "FALSE"
+                    else "",
                     description=row["description"],
                     order=i,
                 )
@@ -31,12 +33,9 @@ def read_sources_csv():
 
 
 def sync_sources(sources):
-    key_fields = ('id', )
+    key_fields = ("id",)
     ret = bulk_sync(
-        new_models=sources,
-        key_fields=key_fields,
-        filters=None,
-        db_class=Source
+        new_models=sources, key_fields=key_fields, filters=None, db_class=Source
     )
 
 

@@ -3,15 +3,16 @@ from django.shortcuts import render, redirect
 from datetime import datetime, timedelta
 from django.utils import timezone
 
-from search_functions import \
-    build_context, \
-    parse_text, \
-    parse_xml, \
-    parse_csv, \
-    query_es_cardback, \
-    query_es_card, \
-    query_es_token, \
-    search_new
+from search_functions import (
+    build_context,
+    parse_text,
+    parse_xml,
+    parse_csv,
+    query_es_cardback,
+    query_es_card,
+    query_es_token,
+    search_new,
+)
 from to_searchable import to_searchable
 from .forms import InputText, InputXML, InputCSV
 from .models import Card, Cardback, Token, Source
@@ -23,67 +24,73 @@ def index(request, error=False):
     sources = {}
     for source in Source.objects.all():
         if "sources" not in source.id:
-            sources[source.id] = {'username': source.username,
-                                  'reddit': source.reddit,
-                                  'drive_link': source.drive_link}
+            sources[source.id] = {
+                "username": source.username,
+                "reddit": source.reddit,
+                "drive_link": source.drive_link,
+            }
 
-    context = {'form': InputText,
-               'mobile': not request.user_agent.is_pc,
-               'sources': sources}
+    context = {
+        "form": InputText,
+        "mobile": not request.user_agent.is_pc,
+        "sources": sources,
+    }
 
-    return render(request, 'cardpicker/index.html', context)
+    return render(request, "cardpicker/index.html", context)
 
 
 def guide(request):
-    return render(request, 'cardpicker/guide.html')
+    return render(request, "cardpicker/guide.html")
 
 
 def new_cards(request):
-    # serves the What's New page - this function returns the first page of results for all sources for 
+    # serves the What's New page - this function returns the first page of results for all sources for
     # cards uploaded in the last two weeks
 
     # initialise results dict, 2 weeks time delta, and the dsl search
     results = {}
     days = 14
-    s = Card.objects.filter(date__range=[
-        timezone.now() - timedelta(days=days),
-        timezone.now()
-    ]).order_by('-date',)
+    s = Card.objects.filter(
+        date__range=[timezone.now() - timedelta(days=days), timezone.now()]
+    ).order_by(
+        "-date",
+    )
 
     # for each source, query elasticsearch for the requested cards, and attach it to the results dict if we have any hits
     for source in Source.objects.all():
         result = search_new(s, source.id)
-        if result['qty'] > 0:
+        if result["qty"] > 0:
             results[source.id] = result
-    
-    return render(request, 'cardpicker/new.html', {"sources": results})
+
+    return render(request, "cardpicker/new.html", {"sources": results})
 
 
 def search_new_page(request):
     # triggers when the user clicks 'load more' on the What's New page
     # this function takes the current page number and source from the frontend and returns the next page
     # extract specified source and page from post request
-    source = request.POST.get('source')
-    page = int(request.POST.get('page'))
+    source = request.POST.get("source")
+    page = int(request.POST.get("page"))
 
     # initialise results dict, 2 weeks time delta, and the dsl search
     results = {}
     days = 14
-    s = Card.objects.filter(date__range=[
-        timezone.now() - timedelta(days=days),
-        timezone.now()
-    ]).order_by('-date',)
+    s = Card.objects.filter(
+        date__range=[timezone.now() - timedelta(days=days), timezone.now()]
+    ).order_by(
+        "-date",
+    )
 
     # query elasticsearch for the requested cards and attach it to the results dict if we have any hits
     result = search_new(s, source, page)
-    if result['qty'] > 0:
+    if result["qty"] > 0:
         results[source] = result
 
     return JsonResponse({"sources": results}, safe=False)
 
 
 def legal(request):
-    return render(request, 'cardpicker/legal.html')
+    return render(request, "cardpicker/legal.html")
 
 
 def credits(request):
@@ -104,31 +111,32 @@ def credits(request):
         context[source.id].qty_tokens = qty_tokens
         context[source.id].avgdpi = avgdpi
 
-    return render(request, 'cardpicker/credits.html', {"sources": context,
-                                                       "total_count": total_count_f})
+    return render(
+        request,
+        "cardpicker/credits.html",
+        {"sources": context, "total_count": total_count_f},
+    )
 
 
 def search_multiple(request):
     # search endpoint function - the frontend requests the search results for this query as JSON
-    drive_order = request.POST.get('drive_order').split(",")
-    order = json.loads(request.POST.get('order'))
+    drive_order = request.POST.get("drive_order").split(",")
+    order = json.loads(request.POST.get("order"))
 
     for face in order.keys():
         for key in order[face].keys():
-            result = search(drive_order, key, order[face][key]['req_type'])
+            result = search(drive_order, key, order[face][key]["req_type"])
             order[face][key]["data"] = result
     return JsonResponse(order)
-    
 
 
 def search_individual(request):
     # search endpoint function - the frontend requests the search results for this query as JSON
-    drive_order = request.POST.get('drive_order').split(",")
-    query = request.POST.get('query').rstrip("\n")
-    req_type = request.POST.get('req_type')
+    drive_order = request.POST.get("drive_order").split(",")
+    query = request.POST.get("query").rstrip("\n")
+    req_type = request.POST.get("req_type")
 
     return JsonResponse(search(drive_order, query, req_type))
-
 
 
 def search(drive_order, query, req_type):
@@ -171,7 +179,7 @@ def review(request):
             print("Request is valid for text uploader")
             # retrieve drive order and raw user input from request
             drive_order = list(request.POST.get("drive_order").split(","))
-            lines_raw = form['card_list'].value()
+            lines_raw = form["card_list"].value()
 
             # parse the text input to obtain the order dict and quantity in this order
             (order, qty) = parse_text(lines_raw)
@@ -179,16 +187,16 @@ def review(request):
             # build context
             context = build_context(drive_order, order, qty)
 
-            return render(request, 'cardpicker/review.html', context)
+            return render(request, "cardpicker/review.html", context)
 
-    return redirect('index')
+    return redirect("index")
 
 
 def insert_text(request):
     # return a JSON response with the order dict and quantity from parsing the given input
     # used for inserting new cards into an existing order on the review page
-    text = request.POST.get('text')
-    offset = int(request.POST.get('offset'))
+    text = request.POST.get("text")
+    offset = int(request.POST.get("offset"))
 
     # parse the text input to obtain the order dict and quantity in this addition to the order
     (order, qty) = parse_text(text, offset)
@@ -215,7 +223,7 @@ def input_csv(request):
 
             # retrieve drive order and csv file from request
             drive_order = list(request.POST.get("drive_order").split(","))
-            csvfile = request.FILES['file'].read()
+            csvfile = request.FILES["file"].read()
 
             # parse the csv file to obtain the order dict and quantity in this order
             (order, qty) = parse_csv(csvfile)
@@ -223,9 +231,9 @@ def input_csv(request):
             # build context
             context = build_context(drive_order, order, qty)
 
-            return render(request, 'cardpicker/review.html', context)
+            return render(request, "cardpicker/review.html", context)
 
-    return redirect('index')
+    return redirect("index")
 
 
 def input_xml(request):
@@ -239,7 +247,7 @@ def input_xml(request):
 
                 # retrieve drive order and XML file from request
                 drive_order = list(request.POST.get("drive_order").split(","))
-                xmlfile = request.FILES['file'].read()
+                xmlfile = request.FILES["file"].read()
 
                 # parse the XML file to obtain the order dict and quantity in this order
                 (order, qty) = parse_xml(xmlfile, 0)
@@ -247,20 +255,20 @@ def input_xml(request):
                 # build context
                 context = build_context(drive_order, order, qty)
 
-                return render(request, 'cardpicker/review.html', context)
+                return render(request, "cardpicker/review.html", context)
 
             except IndexError:
                 # IndexErrors can occur when trying to parse old XMLs that don't include the search query
-                return redirect('index')
+                return redirect("index")
 
-    return redirect('index')
+    return redirect("index")
 
 
 def insert_xml(request):
     # return a JSON response with the order dict and quantity from parsing the given XML input
     # used for inserting new cards into an existing order on the review page
-    xml = request.POST.get('xml')
-    offset = int(request.POST.get('offset'))
+    xml = request.POST.get("xml")
+    offset = int(request.POST.get("offset"))
 
     # parse the XML input to obtain the order dict and quantity in this addition to the order
     (order, qty) = parse_xml(xml, offset)

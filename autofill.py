@@ -7,7 +7,8 @@ from selenium.common.exceptions import (
     UnexpectedAlertPresentException,
     NoSuchElementException,
     TimeoutException,
-    NoSuchFrameException)
+    NoSuchFrameException,
+)
 from selenium.webdriver.support.expected_conditions import invisibility_of_element
 from selenium.webdriver.support.ui import WebDriverWait, Select
 from selenium import webdriver
@@ -16,15 +17,16 @@ import time
 import os
 import sys
 import xml.etree.ElementTree as ET
-import numpy as np
-import requests
+from numpy import array as np_array, uint8 as np_uint8
+from requests import post as requests_post
+from requests.exceptions import Timeout as requests_Timeout
 from tqdm import tqdm
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial
 import queue
-import math
-import glob
-import enquiries
+from math import floor
+from glob import glob
+from enquiries import choose
 
 from autofill_utils import currdir, XML_Order
 
@@ -68,12 +70,15 @@ function doPost(e) {
 """
 
 # Disable logging messages for webdriver_manager
-os.environ['WDM_LOG_LEVEL'] = '0'
+os.environ["WDM_LOG_LEVEL"] = "0"
 
 q_front = queue.Queue()
 q_back = queue.Queue()
 q_cardback = queue.Queue()
 q_error = queue.Queue()
+
+TEXT_BOLD = "\033[1m"
+TEXT_END = "\033[0m"
 
 # On macOS, os.getcwd() doesn't work as expected - retrieve the executable's directory another way instead
 
@@ -81,23 +86,26 @@ cards_folder = currdir() + "/cards"
 if not os.path.exists(cards_folder):
     os.mkdir(cards_folder)
 
+
 def switch_to_frame(driver, frame):
     try:
         driver.switch_to.frame(frame)
     except (NoSuchFrameException, NoSuchElementException):
         pass
 
-def text_to_list(input_text):
-    # Helper function to translate strings like "[2, 4, 5, 6]" into lists
-    if input_text == "":
-        return []
-    return [int(x) for x in input_text.strip('][').replace(" ", "").split(',')]
 
 def text_to_list(input_text):
     # Helper function to translate strings like "[2, 4, 5, 6]" into lists
     if input_text == "":
         return []
-    return [int(x) for x in input_text.strip('][').replace(" ", "").split(',')]
+    return [int(x) for x in input_text.strip("][").replace(" ", "").split(",")]
+
+
+def text_to_list(input_text):
+    # Helper function to translate strings like "[2, 4, 5, 6]" into lists
+    if input_text == "":
+        return []
+    return [int(x) for x in input_text.strip("][").replace(" ", "").split(",")]
 
 
 def fill_cards(bar: tqdm, driver, root):
@@ -119,11 +127,16 @@ def fill_cards(bar: tqdm, driver, root):
 
     # Accept current settings and move to next step
     driver.execute_script(
-        "javascript:doPersonalize('https://www.makeplayingcards.com/products/pro_item_process_flow.aspx')")
+        "javascript:doPersonalize('https://www.makeplayingcards.com/products/pro_item_process_flow.aspx')"
+    )
 
     # Set the desired number of cards, then move to the next step
     switch_to_frame(driver, "sysifm_loginFrame")
-    driver.execute_script("javascript:document.getElementById('txt_card_number').value=" + str(order.details.quantity) + ";")
+    driver.execute_script(
+        "javascript:document.getElementById('txt_card_number').value="
+        + str(order.details.quantity)
+        + ";"
+    )
 
     # Select "different images" for front
     driver.execute_script("javascript:setMode('ImageText', 0);")
@@ -189,7 +202,9 @@ def fill_cards(bar: tqdm, driver, root):
         # Determine which slots require the common cardback
         # TODO: Is there a more efficient way to do this? Look at DOM instead?
         total_cards = order.details.quantity
-        cards_needing_backs = [x for x in range(0, total_cards) if x not in cards_with_backs]
+        cards_needing_backs = [
+            x for x in range(0, total_cards) if x not in cards_with_backs
+        ]
 
         # Upload and insert the common cardback
         curr_card = q_cardback.get()
@@ -249,16 +264,18 @@ def download_card(bar: tqdm, cardinfo):
             # Credit to https://tanaikech.github.io/2017/03/20/download-files-without-authorization-from-google-drive/
             # use the results with a 'with' statement to avoid issues w/ connection broken
             try:
-                with requests.post(
+                with requests_post(
                     "https://script.google.com/macros/s/AKfycbw90rkocSdppkEuyVdsTuZNslrhd5zNT3XMgfucNMM1JjhLl-Q/exec",
                     data={"id": file_id},
-                    timeout=30
+                    timeout=30,
                 ) as r_info:
                     filename = r_info.json()["name"]
-            except requests.exceptions.Timeout:
+            except requests_Timeout:
                 # Failed to retrieve image name - add it to error queue
                 print("cant get filename so gonna exih")
-                q_error.put("Failed to retrieve filename for image with ID < {} >".format(file_id))
+                q_error.put(
+                    f"Failed to retrieve filename for image with ID {TEXT_BOLD}{file_id}{TEXT_END} >"
+                )
 
         # in the case of file name request failing, filepath will be referenced before assignment unless we do this
         filepath = ""
@@ -291,10 +308,10 @@ def download_card(bar: tqdm, cardinfo):
                     image_downloaded = False
                     while attempt_counter < 5 and not image_downloaded:
 
-                        with requests.post(
+                        with requests_post(
                             "https://script.google.com/macros/s/AKfycbzzCWc2x3tfQU1Zp45LB1P19FNZE-4njwzfKT5_Rx399h-5dELZWyvf/exec",
                             data={"id": file_id},
-                            timeout=120
+                            timeout=120,
                         ) as r_contents:
 
                             # Check if the response returned any data
@@ -302,7 +319,7 @@ def download_card(bar: tqdm, cardinfo):
                             if len(filecontents) > 0:
                                 # Download the image
                                 f = open(filepath, "bw")
-                                f.write(np.array(filecontents, dtype=np.uint8))
+                                f.write(np_array(filecontents, dtype=np_uint8))
                                 f.close()
                                 image_downloaded = True
                             else:
@@ -310,12 +327,15 @@ def download_card(bar: tqdm, cardinfo):
 
                     if not image_downloaded:
                         # Tried to download image three times and never got any data, add to error queue
-                        # print("file contents empty error")
-                        q_error.put("{}:\n  {}".format(filename, "https://drive.google.com/uc?id=" + file_id + "&export=download"))
+                        q_error.put(
+                            f"{TEXT_BOLD}{filename}{TEXT_END}:\n  https://drive.google.com/uc?id={file_id}&export=download"
+                        )
 
-                except requests.exceptions.Timeout:
+                except requests_Timeout:
                     # Failed to download image because of a timeout error - add it to error queue
-                    q_error.put("{}:\n  {}".format(filename, "https://drive.google.com/uc?id=" + file_id + "&export=download"))
+                    q_error.put(
+                        f"{TEXT_BOLD}{filename}{TEXT_END}:\n  https://drive.google.com/uc?id={file_id}&export=download"
+                    )
 
         # Same check as before - if, after we've tried to download the image, the file doesn't exist or is empty,
         # or we couldn't retrieve the filename, we'll add it to an error queue and move on
@@ -329,7 +349,7 @@ def download_card(bar: tqdm, cardinfo):
         # Really wanna put the nail in the coffin of stalling when an error occurs during image downloads
         # Any uncaught exceptions just get ignored and the card is skipped, adding the empty entry onto the appropriate queue
         # print("encountered an unexpected error <{}>".format(e))
-        q_error.put("https://drive.google.com/uc?id=" + file_id + "&export=download")
+        q_error.put(f"https://drive.google.com/uc?id={file_id}&export=download")
 
     # Add to the appropriate queue
     if file_face == "front":
@@ -379,7 +399,9 @@ def upload_card(driver, filepath):
                     pass
     else:
         # Returns an empty string if the file does not exist
-        q_error.put("Failed to upload image to MPC at path < {} >".format(filepath))
+        q_error.put(
+            f"Failed to upload image to MPC at path {TEXT_BOLD}{filepath}{TEXT_END}"
+        )
         return ""
 
 
@@ -389,7 +411,9 @@ def insert_card(driver, pid, slots):
         driver.execute_script("javascript: l = PageLayout.prototype")
         for slot in slots:
             # Insert the card into each slot and wait for the page to load before continuing
-            cmd = "javascript:l.applyDragPhoto(l.getElement3(\"dnImg\", {}), 0, \"{}\")".format(slot, pid)
+            cmd = 'javascript:l.applyDragPhoto(l.getElement3("dnImg", {}), 0, "{}")'.format(
+                slot, pid
+            )
             driver.execute_script(cmd)
             wait(driver)
 
@@ -398,7 +422,7 @@ if __name__ == "__main__":
     print("MPC Autofill initialising.")
     t = time.time()
 
-    xml_glob = glob.glob("*.xml")
+    xml_glob = glob("*.xml")
     filename = ""
     if len(xml_glob) <= 0:
         input("No XML files found in this directory. Press enter to exit.")
@@ -408,7 +432,9 @@ if __name__ == "__main__":
     else:
         # interactively let user choose file
         options = list(xml_glob)
-        filename = enquiries.choose("Multiple XML files found. Please select one for this order: ", options)
+        filename = choose(
+            "Multiple XML files found. Please select one for this order: ", options
+        )
 
     # parse xml
     tree = ET.parse(currdir() + "/" + filename)
@@ -429,25 +455,25 @@ if __name__ == "__main__":
     cardsinfo_cardback = [(order.cardback.text, "", "", "cardback")]
     cardsinfo = cardsinfo_front + cardsinfo_back + cardsinfo_cardback
 
-    print(f"Successfully read XML file: < {filename} >. Starting card downloader and webdriver processes.")
+    print(
+        f"Successfully read XML file: {TEXT_BOLD}{filename}{TEXT_END}. Starting card downloader and webdriver processes."
+    )
 
     # Set up chrome driver window here to avoid tqdm issues
     chrome_options = Options()
-    chrome_options.add_argument('--log-level=3')
-    chrome_options.add_experimental_option('excludeSwitches', ['enable-logging'])
+    chrome_options.add_argument("--log-level=3")
+    chrome_options.add_experimental_option("excludeSwitches", ["enable-logging"])
     driver = webdriver.Chrome(ChromeDriverManager().install(), options=chrome_options)
     driver.set_window_size(1200, 900)
     driver.implicitly_wait(5)
-    driver.set_network_conditions(
-        offline=False,
-        latency=5,
-        throughput=5*125000
-    )
+    driver.set_network_conditions(offline=False, latency=5, throughput=5 * 125000)
 
     # Create ThreadPoolExecutor to download card images with, and progress bars for downloading and uploading
-    with ThreadPoolExecutor(max_workers=5) as pool, \
-        tqdm(position=0, total=len(cardsinfo), desc="DL", leave=True) as dl_progress, \
-        tqdm(position=1, total=len(cardsinfo), desc="UL", leave=False) as ul_progress:
+    with ThreadPoolExecutor(max_workers=5) as pool, tqdm(
+        position=0, total=len(cardsinfo), desc="DL", leave=True
+    ) as dl_progress, tqdm(
+        position=1, total=len(cardsinfo), desc="UL", leave=False
+    ) as ul_progress:
         # Download each card image in parallel, with the same progress bar input each time
         pool.map(partial(download_card, dl_progress), cardsinfo)
         # Launch the main webdriver automation function
@@ -459,25 +485,29 @@ if __name__ == "__main__":
 
     # If any card images couldn't be downloaded, mention it here
     if not q_error.empty():
-        print("\nThe following card images couldn't be downloaded automatically. Sorry about that!\n"
-                "Please download the images and insert them into your order manually.\n")
+        print(
+            "\nThe following card images couldn't be downloaded automatically. Sorry about that!\n"
+            "Please download the images and insert them into your order manually.\n"
+        )
         while not q_error.empty():
             print(q_error.get() + "\n")
 
     # Stopwatch for total autofill time
     t_total = time.time() - t
-    hours = math.floor(t_total / 3600)
-    mins = math.floor(t_total / 60) - hours * 60
+    hours = floor(t_total / 3600)
+    mins = floor(t_total / 60) - hours * 60
     secs = int(t_total - (mins * 60) - (hours * 3600))
 
-    print("Elapsed time: ", end='')
+    print("Elapsed time: ", end="")
     if hours > 0:
-        print("{} hours, ".format(hours), end='')
+        print("{} hours, ".format(hours), end="")
     print("{} minutes and {} seconds.".format(mins, secs))
 
-    input("Please review the order and ensure everything is correct before placing \n"
-          "your order. If you need to make any changes to your order, you can do so \n"
-          "by adding it to your Saved Projects.\n"
-          "Continue with saving or purchasing your order in-browser, and press Enter here \n"
-          "to finish up when you're done.\n".format(mins, secs))
+    input(
+        "Please review the order and ensure everything is correct before placing \n"
+        "your order. If you need to make any changes to your order, you can do so \n"
+        "by adding it to your Saved Projects.\n"
+        "Continue with saving or purchasing your order in-browser, and press Enter here \n"
+        "to finish up when you're done.\n".format(mins, secs)
+    )
     sys.exit(1)

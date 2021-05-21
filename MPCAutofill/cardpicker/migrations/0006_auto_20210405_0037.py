@@ -6,32 +6,32 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('cardpicker', '0005_auto_20210405_0019'),
+        ("cardpicker", "0005_auto_20210405_0019"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='card',
-            name='source_verbose',
-            field=models.CharField(default='sneed', max_length=50),
+            model_name="card",
+            name="source_verbose",
+            field=models.CharField(default="sneed", max_length=50),
             preserve_default=False,
         ),
         migrations.AddField(
-            model_name='cardback',
-            name='source_verbose',
+            model_name="cardback",
+            name="source_verbose",
             field=models.CharField(default=1, max_length=50),
             preserve_default=False,
         ),
         migrations.AddField(
-            model_name='source',
-            name='drivename',
-            field=models.CharField(default='Temporary', max_length=100),
+            model_name="source",
+            name="drivename",
+            field=models.CharField(default="Temporary", max_length=100),
             preserve_default=False,
         ),
         migrations.AddField(
-            model_name='token',
-            name='source_verbose',
-            field=models.CharField(default='Deez', max_length=50),
+            model_name="token",
+            name="source_verbose",
+            field=models.CharField(default="Deez", max_length=50),
             preserve_default=False,
         ),
     ]

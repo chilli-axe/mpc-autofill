@@ -2,6 +2,7 @@
 Object Model for interacting with XML file structure
 """
 
+
 class Element:
     def __iter__(self):
         return iter(self.raw_element)
@@ -22,6 +23,7 @@ class Element:
         self.raw_element = elem
         self.text = elem.text
 
+
 class Details(Element):
     def __init__(self, elem):
         super().__init__(elem)
@@ -33,8 +35,10 @@ class Details(Element):
         self.stock = s
         self.foil = f == "true"
 
+
 class Cardback(Element):
     pass
+
 
 class Card(Element):
     def __init__(self, elem):
@@ -50,6 +54,7 @@ class Card(Element):
             # Pre 3.0 XML
             return elem
 
+
 class CardCollection(Element):
     cards = []
 
@@ -61,9 +66,7 @@ class CardCollection(Element):
 
     def __init__(self, elem):
         super().__init__(elem)
-        self.cards = [
-            Card(c) for c in elem
-        ]
+        self.cards = [Card(c) for c in elem]
 
 
 class XML_Order:
@@ -72,16 +75,12 @@ class XML_Order:
             "details": Details,
             "fronts": CardCollection,
             "backs": CardCollection,
-            "cardback": Cardback
+            "cardback": Cardback,
         }
         for child in root:
             # Set an attribute with name == tag and value == Model Class
             setattr(
                 self,
                 child.tag,
-                attribs.get(
-                    child.tag,
-                    lambda *_: None #  Missing tag
-                )(child)
+                attribs.get(child.tag, lambda *_: None)(child),  #  Missing tag
             )
-

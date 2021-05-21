@@ -3,7 +3,6 @@ try:
 except ImportError:
     GTAG = ""
 
+
 def add_gtag(request):
-    return {
-        'GTAG': GTAG
-    }
+    return {"GTAG": GTAG}

@@ -6,19 +6,19 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('cardpicker', '0011_auto_20210518_2306'),
+        ("cardpicker", "0011_auto_20210518_2306"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='source',
-            name='drive_link',
-            field=models.CharField(default='', max_length=200),
+            model_name="source",
+            name="drive_link",
+            field=models.CharField(default="", max_length=200),
             preserve_default=False,
         ),
         migrations.AlterField(
-            model_name='source',
-            name='drive_id',
+            model_name="source",
+            name="drive_id",
             field=models.CharField(max_length=100, unique=True),
         ),
     ]

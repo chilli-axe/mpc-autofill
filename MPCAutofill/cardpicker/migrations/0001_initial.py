@@ -7,67 +7,78 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Card',
+            name="Card",
             fields=[
-                ('id', models.CharField(max_length=50, primary_key=True, serialize=False)),
-                ('name', models.CharField(max_length=200)),
-                ('priority', models.IntegerField(default=0)),
-                ('source', models.CharField(max_length=50)),
-                ('dpi', models.IntegerField(default=0)),
-                ('searchq', models.CharField(max_length=200)),
-                ('thumbpath', models.CharField(max_length=200)),
+                (
+                    "id",
+                    models.CharField(max_length=50, primary_key=True, serialize=False),
+                ),
+                ("name", models.CharField(max_length=200)),
+                ("priority", models.IntegerField(default=0)),
+                ("source", models.CharField(max_length=50)),
+                ("dpi", models.IntegerField(default=0)),
+                ("searchq", models.CharField(max_length=200)),
+                ("thumbpath", models.CharField(max_length=200)),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='Cardback',
+            name="Cardback",
             fields=[
-                ('id', models.CharField(max_length=50, primary_key=True, serialize=False)),
-                ('name', models.CharField(max_length=200)),
-                ('priority', models.IntegerField(default=0)),
-                ('source', models.CharField(max_length=50)),
-                ('dpi', models.IntegerField(default=0)),
-                ('searchq', models.CharField(max_length=200)),
-                ('thumbpath', models.CharField(max_length=200)),
+                (
+                    "id",
+                    models.CharField(max_length=50, primary_key=True, serialize=False),
+                ),
+                ("name", models.CharField(max_length=200)),
+                ("priority", models.IntegerField(default=0)),
+                ("source", models.CharField(max_length=50)),
+                ("dpi", models.IntegerField(default=0)),
+                ("searchq", models.CharField(max_length=200)),
+                ("thumbpath", models.CharField(max_length=200)),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='Source',
+            name="Source",
             fields=[
-                ('id', models.CharField(max_length=50, primary_key=True, serialize=False)),
-                ('qty_cards', models.IntegerField(default=0)),
-                ('qty_cardbacks', models.IntegerField(default=0)),
-                ('qty_tokens', models.IntegerField(default=0)),
-                ('username', models.CharField(max_length=50)),
-                ('reddit', models.CharField(max_length=100)),
-                ('drivelink', models.CharField(max_length=200)),
-                ('description', models.CharField(max_length=400)),
-                ('avgdpi', models.IntegerField(default=0)),
+                (
+                    "id",
+                    models.CharField(max_length=50, primary_key=True, serialize=False),
+                ),
+                ("qty_cards", models.IntegerField(default=0)),
+                ("qty_cardbacks", models.IntegerField(default=0)),
+                ("qty_tokens", models.IntegerField(default=0)),
+                ("username", models.CharField(max_length=50)),
+                ("reddit", models.CharField(max_length=100)),
+                ("drivelink", models.CharField(max_length=200)),
+                ("description", models.CharField(max_length=400)),
+                ("avgdpi", models.IntegerField(default=0)),
             ],
         ),
         migrations.CreateModel(
-            name='Token',
+            name="Token",
             fields=[
-                ('id', models.CharField(max_length=50, primary_key=True, serialize=False)),
-                ('name', models.CharField(max_length=200)),
-                ('priority', models.IntegerField(default=0)),
-                ('source', models.CharField(max_length=50)),
-                ('dpi', models.IntegerField(default=0)),
-                ('searchq', models.CharField(max_length=200)),
-                ('thumbpath', models.CharField(max_length=200)),
+                (
+                    "id",
+                    models.CharField(max_length=50, primary_key=True, serialize=False),
+                ),
+                ("name", models.CharField(max_length=200)),
+                ("priority", models.IntegerField(default=0)),
+                ("source", models.CharField(max_length=50)),
+                ("dpi", models.IntegerField(default=0)),
+                ("searchq", models.CharField(max_length=200)),
+                ("thumbpath", models.CharField(max_length=200)),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
     ]

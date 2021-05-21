@@ -15,7 +15,9 @@ def build_context(drive_order, order, qty):
     # I found myself copy/pasting this between the three input methods so I figured it belonged in its own function
 
     # For donation modal, approximate how many cards I've rendered
-    my_cards = 100 * floor(int(Source.objects.get(id="Chilli_Axe").count()[0].replace(',', '')) / 100)
+    my_cards = 100 * floor(
+        int(Source.objects.get(id="Chilli_Axe").count()[0].replace(",", "")) / 100
+    )
 
     context = {
         "form": InputText,
@@ -32,7 +34,7 @@ def text_to_list(input_text):
     # Helper function to translate strings like "[2, 4, 5, 6]" into lists
     if input_text == "":
         return []
-    return [int(x) for x in input_text.strip('][').replace(" ", "").split(',')]
+    return [int(x) for x in input_text.strip("][").replace(" ", "").split(",")]
 
 
 def query_es_card(drive_order, query):
@@ -58,10 +60,10 @@ def search_database(drive_order, query, model):
     query_parsed = to_searchable(query)
 
     hits = [x.to_dict() for x in model.objects.filter(searchq__search=query_parsed)]
-    hits.sort(key=lambda x: distance(x['searchq'], query_parsed))
+    hits.sort(key=lambda x: distance(x["searchq"], query_parsed))
 
     for drive in drive_order:
-        results += [x for x in hits if x['source'] == drive]
+        results += [x for x in hits if x["source"] == drive]
 
     return results
 
@@ -87,10 +89,10 @@ def process_line(input_str):
             else:
                 # located the break between qty and name
                 try:
-                    qty = int(input_str[0:num_idx + 1].lower().replace("x", ""))
+                    qty = int(input_str[0 : num_idx + 1].lower().replace("x", ""))
                 except ValueError:
                     return None, None
-                name = " ".join(x for x in input_str[num_idx + 1:].split(" ") if x)
+                name = " ".join(x for x in input_str[num_idx + 1 :].split(" ") if x)
             return name, qty
 
 
@@ -98,17 +100,20 @@ class OrderDict:
     # small wrapper for a dictionary so it's easy to insert stuff into the order
     def __init__(self):
         # initialise the dictionary and set up empty entries for front and back faces
-        self.order = {"front": {
-            "": {
-                "slots": [],
-                "req_type": "",
-            }
-        }, "back": {
-            "": {
-                "slots": [["-", ""]],
-                "req_type": "back",
-            }
-        }}
+        self.order = {
+            "front": {
+                "": {
+                    "slots": [],
+                    "req_type": "",
+                }
+            },
+            "back": {
+                "": {
+                    "slots": [["-", ""]],
+                    "req_type": "back",
+                }
+            },
+        }
 
     def insert(self, query, slots, face, req_type, selected_img):
         # stick a thing into the order dict
@@ -135,8 +140,8 @@ class OrderDict:
             for key in self.order[face].keys():
                 return_str += "<{}>: slots <{}>, req_type <{}>\n".format(
                     key,
-                    self.order[face][key]["slots"], 
-                    self.order[face][key]["req_type"]
+                    self.order[face][key]["slots"],
+                    self.order[face][key]["req_type"],
                 )
         return_str += "over and out!"
         return return_str
@@ -165,9 +170,12 @@ def parse_text(input_lines, offset=0):
 
             # first, determine if this card is a DFC by virtue of it having its two faces separated by an ampersand
             query_faces = [query, ""]
-            if '&' in query_faces[0]:
+            if "&" in query_faces[0]:
                 query_split = [to_searchable(x) for x in query.split(" & ")]
-                if query_split[0] in transforms.keys() and query_split[1] in transforms.values():
+                if (
+                    query_split[0] in transforms.keys()
+                    and query_split[1] in transforms.values()
+                ):
                     query_faces = query_split
             elif query[0:2].lower() == "t:":
                 query_faces[0] = to_searchable(query[2:])
@@ -205,17 +213,17 @@ def parse_csv(csv_bytes):
 
     # support for different types of encoding - detect the encoding type then decode the given bytes according to that
     csv_format = chardet.detect(csv_bytes)
-    csv_string_split = csv_bytes.decode(csv_format['encoding']).splitlines()
+    csv_string_split = csv_bytes.decode(csv_format["encoding"]).splitlines()
 
     # handle case where csv doesn't have correct headers
-    headers = 'Quantity,Front,Back'
+    headers = "Quantity,Front,Back"
     if csv_string_split[0] != headers:
         # this CSV doesn't appear to have the correct column headers, so we'll attach them here
         csv_string_split = [headers] + csv_string_split
     csv_dictreader = csv.DictReader(csv_string_split)
 
     for line in csv_dictreader:
-        qty = line['Quantity']
+        qty = line["Quantity"]
         if qty:
             # try to parse qty as int
             try:
@@ -228,11 +236,11 @@ def parse_csv(csv_bytes):
             qty = 1
 
         # only care about lines with a front specified
-        if line['Front']:
+        if line["Front"]:
             # the slots for this line in the CSV
             curr_slots = list(range(curr_slot, curr_slot + qty))
 
-            query_faces = [line['Front'], line['Back']]
+            query_faces = [line["Front"], line["Back"]]
             req_type_front = "normal"
             req_type_back = "normal"
 
@@ -241,13 +249,16 @@ def parse_csv(csv_bytes):
                 query_faces[0] = query_faces[0][2:]
                 req_type_front = "token"
 
-            if not line['Back']:
+            if not line["Back"]:
                 # back face not specified
                 # potentially doing transform things, because a back wasn't specified
                 # first, determine if this card is a DFC by virtue of it having its two faces separated by an ampersand
-                if '&' in query_faces[0]:
+                if "&" in query_faces[0]:
                     query_split = [to_searchable(x) for x in query.split(" & ")]
-                    if query_split[0] in transforms.keys() and query_split[1] in transforms.values():
+                    if (
+                        query_split[0] in transforms.keys()
+                        and query_split[1] in transforms.values()
+                    ):
                         query_faces = query_split
                 else:
                     # gotta check if query is the front of a DFC here as well
@@ -312,7 +323,7 @@ def parse_xml(input_text, offset=0):
     used_slots = xml_parse_face(root[1], "front", offset)
 
     # figure out which slots are empty in the order
-    # calculate qty with the maximum and minimum slot numbers in the order, because there might be 
+    # calculate qty with the maximum and minimum slot numbers in the order, because there might be
     # missing cards we need to account for - and calculate the range of all slots in the order
     qty = max(used_slots) - min(used_slots) + 1
     all_slots = set(range(min(used_slots), max(used_slots) + 1))
@@ -325,9 +336,9 @@ def parse_xml(input_text, offset=0):
     if root[2].tag == "backs":
         # remove the back slots from used_slots, leaving us with just slots with the common cardback
         empty_back_slots -= xml_parse_face(root[2], "back", offset)
-        # cardback_id = root[3].text 
+        # cardback_id = root[3].text
     # else:
-        # cardback_id = root[2].text 
+    # cardback_id = root[2].text
     cards_dict.insert_empty(list(empty_back_slots), "back")
 
     return cards_dict.order, qty
@@ -337,9 +348,9 @@ def search_new(s, source, page=0):
 
     # define page size and the range to paginate with
     page_size = 6
-    start_idx = page_size*page
-    end_idx = page_size*(page+1)
-    
+    start_idx = page_size * page
+    end_idx = page_size * (page + 1)
+
     # match the given source
     query = s.filter(source=source)
 

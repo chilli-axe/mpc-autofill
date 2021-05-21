@@ -18,9 +18,15 @@ class Source(models.Model):
     def __str__(self):
         (qty_total, qty_cards, qty_cardbacks, qty_tokens, _) = self.count()
         return "{}. {}: {} ({} total: {} cards, {} cardbacks, {} tokens)".format(
-            self.order, self.id, self.description, qty_total, qty_cards, qty_cardbacks, qty_tokens
+            self.order,
+            self.id,
+            self.description,
+            qty_total,
+            qty_cards,
+            qty_cardbacks,
+            qty_tokens,
         )
-    
+
     def count(self):
         # return the number of cards that this Source created, and the Source's average DPI
         qty_cards = Card.objects.filter(source=self).count()
@@ -31,17 +37,41 @@ class Source(models.Model):
         # if this source has any cards/cardbacks/tokens, average the dpi of all of their things
         if qty_all > 0:
             total_dpi = 0
-            total_dpi += Card.objects.filter(source=self).aggregate(models.Sum('dpi'))['dpi__sum'] if qty_cards > 0 else 0
-            total_dpi += Cardback.objects.filter(source=self).aggregate(models.Sum('dpi'))['dpi__sum'] if qty_cardbacks > 0 else 0
-            total_dpi += Token.objects.filter(source=self).aggregate(models.Sum('dpi'))['dpi__sum'] if qty_tokens > 0 else 0
+            total_dpi += (
+                Card.objects.filter(source=self).aggregate(models.Sum("dpi"))[
+                    "dpi__sum"
+                ]
+                if qty_cards > 0
+                else 0
+            )
+            total_dpi += (
+                Cardback.objects.filter(source=self).aggregate(models.Sum("dpi"))[
+                    "dpi__sum"
+                ]
+                if qty_cardbacks > 0
+                else 0
+            )
+            total_dpi += (
+                Token.objects.filter(source=self).aggregate(models.Sum("dpi"))[
+                    "dpi__sum"
+                ]
+                if qty_tokens > 0
+                else 0
+            )
             avgdpi = int(total_dpi / qty_all)
         else:
             avgdpi = 0
 
-        return f"{qty_all :,d}", f"{qty_cards :,d}", f"{qty_cardbacks :,d}", f"{qty_tokens :,d}", avgdpi
+        return (
+            f"{qty_all :,d}",
+            f"{qty_cards :,d}",
+            f"{qty_cardbacks :,d}",
+            f"{qty_tokens :,d}",
+            avgdpi,
+        )
 
     class Meta:
-        ordering = ['order']
+        ordering = ["order"]
 
     def __to_dict__(self):
         return {
@@ -65,26 +95,29 @@ class CardBase(models.Model):
     date = models.DateTimeField(default=datetime.now)
 
     def __str__(self):
-        return "[{}] {}: {}, uploaded: {}".format(self.source, self.name, self.id, self.date)
+        return "[{}] {}: {}, uploaded: {}".format(
+            self.source, self.name, self.id, self.date
+        )
 
     def to_dict(self):
-        return {"id": self.id,
-                "name": self.name,
-                "priority": self.priority,
-                "source": self.source.id,
-                "source_verbose": self.source_verbose,
-                "dpi": self.dpi,
-                "searchq": self.searchq,
-                "thumbpath": self.thumbpath,
-                "date": dateformat.format(self.date, datestring),
-                }
+        return {
+            "id": self.id,
+            "name": self.name,
+            "priority": self.priority,
+            "source": self.source.id,
+            "source_verbose": self.source_verbose,
+            "dpi": self.dpi,
+            "searchq": self.searchq,
+            "thumbpath": self.thumbpath,
+            "date": dateformat.format(self.date, datestring),
+        }
 
     def source_to_str(self):
         return self.source.id
 
     class Meta:
         abstract = True
-        ordering = ['-priority']
+        ordering = ["-priority"]
 
 
 class Card(CardBase):

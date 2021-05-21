@@ -7,27 +7,27 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('cardpicker', '0003_source_date'),
+        ("cardpicker", "0003_source_date"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='source',
-            name='date',
+            model_name="source",
+            name="date",
         ),
         migrations.AddField(
-            model_name='card',
-            name='date',
+            model_name="card",
+            name="date",
             field=models.DateTimeField(default=datetime.datetime.now),
         ),
         migrations.AddField(
-            model_name='cardback',
-            name='date',
+            model_name="cardback",
+            name="date",
             field=models.DateTimeField(default=datetime.datetime.now),
         ),
         migrations.AddField(
-            model_name='token',
-            name='date',
+            model_name="token",
+            name="date",
             field=models.DateTimeField(default=datetime.datetime.now),
         ),
     ]

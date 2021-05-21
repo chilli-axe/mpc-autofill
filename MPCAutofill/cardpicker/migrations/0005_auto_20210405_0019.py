@@ -7,23 +7,29 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('cardpicker', '0004_auto_20210214_1126'),
+        ("cardpicker", "0004_auto_20210214_1126"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='card',
-            name='source',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='cardpicker.Source'),
+            model_name="card",
+            name="source",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, to="cardpicker.Source"
+            ),
         ),
         migrations.AlterField(
-            model_name='cardback',
-            name='source',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='cardpicker.Source'),
+            model_name="cardback",
+            name="source",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, to="cardpicker.Source"
+            ),
         ),
         migrations.AlterField(
-            model_name='token',
-            name='source',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='cardpicker.Source'),
+            model_name="token",
+            name="source",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, to="cardpicker.Source"
+            ),
         ),
     ]
