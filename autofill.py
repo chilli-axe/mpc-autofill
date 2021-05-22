@@ -26,10 +26,16 @@ from functools import partial
 from queue import Queue
 from math import floor
 from glob import glob
-from inquirer import List as inquirer_List, prompt as inquirer_prompt
+
 
 from autofill_utils import currdir, XML_Order
 
+from platform import system
+IS_WINDOWS = system() == "Windows"
+if IS_WINDOWS:
+    from inquirer import List as inquirer_List, prompt as inquirer_prompt
+else:
+    from enquiries import choose as enquiries_choose
 """
 Drive File Info API
 https://script.google.com/macros/s/AKfycbw90rkocSdppkEuyVdsTuZNslrhd5zNT3XMgfucNMM1JjhLl-Q/exec
@@ -422,7 +428,8 @@ if __name__ == "__main__":
     print("MPC Autofill initialising.")
     t = time.time()
 
-    xml_glob = list(glob("*.xml"))
+    # xml_glob = list(glob(currdir()+"*.xml"))
+    xml_glob = list(glob(os.path.join(currdir(), "*.xml")))
     filename = ""
     if len(xml_glob) <= 0:
         input("No XML files found in this directory. Press enter to exit.")
@@ -431,18 +438,22 @@ if __name__ == "__main__":
         filename = xml_glob[0]
     else:
         # let user select XML file interactively
-        questions = [
-            inquirer_List(
-                "xml_choice",
-                message="Multiple XML files found. Please select one for this order: ",
-                choices=xml_glob,
-                carousel=True,
-            )
-        ]
-        filename = inquirer_prompt(questions)["xml_choice"]
+        xml_select_string = "Multiple XML files found. Please select one for this order: "
+        if IS_WINDOWS:
+            questions = [
+                inquirer_List(
+                    "xml_choice",
+                    message=xml_select_string,
+                    choices=xml_glob,
+                    carousel=True,
+                )
+            ]
+            filename = inquirer_prompt(questions)["xml_choice"]
+        else:
+            filename = enquiries_choose(xml_select_string, xml_glob)
 
     # parse xml
-    tree = ET.parse(currdir() + "/" + filename)
+    tree = ET.parse(filename)
     root = tree.getroot()
     order = XML_Order(root)
 
