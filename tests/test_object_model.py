@@ -10,7 +10,7 @@ TEST_XML = "sample.xml"
 
 @pytest.fixture
 def root():
-    yield ET.parse(f"{currdir()}/tests/{TEST_XML}").getroot()
+    yield ET.parse(f"{currdir()}/{TEST_XML}").getroot()
 
 
 @pytest.fixture

@@ -1,6 +1,7 @@
 """
 Object Model for interacting with XML file structure
 """
+from _elementtree import Element as et_Element
 
 
 class Element:
@@ -52,7 +53,10 @@ class Card(Element):
 
         except ValueError as e:
             # Pre 3.0 XML
-            return elem
+            # return elem
+            self.id = elem[0].text
+            self.slots = elem[1].text
+            self.name = ""
 
 
 class CardCollection(Element):
@@ -64,9 +68,13 @@ class CardCollection(Element):
     def __getitem__(self, key):
         return self.cards.__getitem__(key)
 
-    def __init__(self, elem):
-        super().__init__(elem)
-        self.cards = [Card(c) for c in elem]
+    def __init__(self, elem=None):
+        if elem:
+            super().__init__(elem)
+            self.cards = [Card(c) for c in elem]
+        else:
+            self.cards = []
+            self.raw_element = et_Element("")
 
 
 class XML_Order:
@@ -82,5 +90,13 @@ class XML_Order:
             setattr(
                 self,
                 child.tag,
-                attribs.get(child.tag, lambda *_: None)(child),  #  Missing tag
+                attribs.get(child.tag, lambda *_: None)(child),  # Missing tag
+            )
+
+        if len(root) == 3:
+            # single sided XML - manually create the backs property
+            setattr(
+                self,
+                "backs",
+                CardCollection(),
             )

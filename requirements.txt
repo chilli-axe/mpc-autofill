@@ -1,6 +1,7 @@
 attrs==20.3.0
 altgraph==0.17
 asgiref==3.3.4
+black==21.5b1
 cachetools==4.2.2
 certifi==2020.12.5
 chardet==4.0.0
@@ -22,6 +23,7 @@ httplib2==0.19.1
 idna==2.10
 importlib-metadata==4.0.1
 iniconfig==1.1.1
+inquirer==2.7.0
 macholib==1.14
 numpy==1.20.3
 oauthlib==3.1.0
@@ -34,7 +36,7 @@ protobuf==3.17.0
 psycopg2-binary==2.8.6
 pyasn1==0.4.8
 pyasn1-modules==0.2.8
-pyinstaller==4.3
+pyinstaller==3.6
 pyinstaller-hooks-contrib==2021.1
 pyparsing==2.4.7
 python-Levenshtein==0.12.2

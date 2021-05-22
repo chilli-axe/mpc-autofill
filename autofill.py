@@ -1,5 +1,5 @@
 # To package up as executable, run this in command prompt:
-# pyinstaller --onefile --hidden-import=colorama --icon=favicon.ico autofill.py
+# pyinstaller --onefile --hidden-import=colorama --hidden-import=jinxed.terminfo.vtwin10 --icon=favicon.ico autofill.py
 import colorama
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.common.exceptions import (
@@ -23,10 +23,10 @@ from requests.exceptions import Timeout as requests_Timeout
 from tqdm import tqdm
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial
-import queue
+from queue import Queue
 from math import floor
 from glob import glob
-from enquiries import choose
+from inquirer import List as inquirer_List, prompt as inquirer_prompt
 
 from autofill_utils import currdir, XML_Order
 
@@ -72,10 +72,10 @@ function doPost(e) {
 # Disable logging messages for webdriver_manager
 os.environ["WDM_LOG_LEVEL"] = "0"
 
-q_front = queue.Queue()
-q_back = queue.Queue()
-q_cardback = queue.Queue()
-q_error = queue.Queue()
+q_front = Queue()
+q_back = Queue()
+q_cardback = Queue()
+q_error = Queue()
 
 TEXT_BOLD = "\033[1m"
 TEXT_END = "\033[0m"
@@ -422,24 +422,38 @@ if __name__ == "__main__":
     print("MPC Autofill initialising.")
     t = time.time()
 
-    xml_glob = glob("*.xml")
+    xml_glob = list(glob("*.xml"))
     filename = ""
     if len(xml_glob) <= 0:
         input("No XML files found in this directory. Press enter to exit.")
         sys.exit(0)
     elif len(xml_glob) == 1:
-        filename = xml_glob
+        filename = xml_glob[0]
     else:
-        # interactively let user choose file
-        options = list(xml_glob)
-        filename = choose(
-            "Multiple XML files found. Please select one for this order: ", options
-        )
+        # let user select XML file interactively
+        questions = [
+            inquirer_List(
+                "xml_choice",
+                message="Multiple XML files found. Please select one for this order: ",
+                choices=xml_glob,
+                carousel=True,
+            )
+        ]
+        filename = inquirer_prompt(questions)["xml_choice"]
 
     # parse xml
     tree = ET.parse(currdir() + "/" + filename)
     root = tree.getroot()
     order = XML_Order(root)
+
+    # print order details to user
+    print(
+        f"Successfully read XML file: {TEXT_BOLD}{filename}{TEXT_END}\n"
+        f"Your order has a total of {TEXT_BOLD}{order.details.quantity}{TEXT_END} cards, in the MPC bracket of up to "
+        f"{TEXT_BOLD}{order.details.bracket}{TEXT_END} cards.\n{TEXT_BOLD}{order.details.stock}{TEXT_END} cardstock "
+        f"({TEXT_BOLD}{'foil' if order.details.foil else 'nonfoil'}{TEXT_END}).\n\n"
+        f"Starting card downloader and webdriver processes."
+    )
 
     # Extract information out of XML doc
     # Determine if this XML file is pre-3.0 (does not include search queries or filenames)
@@ -454,10 +468,6 @@ if __name__ == "__main__":
 
     cardsinfo_cardback = [(order.cardback.text, "", "", "cardback")]
     cardsinfo = cardsinfo_front + cardsinfo_back + cardsinfo_cardback
-
-    print(
-        f"Successfully read XML file: {TEXT_BOLD}{filename}{TEXT_END}. Starting card downloader and webdriver processes."
-    )
 
     # Set up chrome driver window here to avoid tqdm issues
     chrome_options = Options()
@@ -508,6 +518,6 @@ if __name__ == "__main__":
         "your order. If you need to make any changes to your order, you can do so \n"
         "by adding it to your Saved Projects.\n"
         "Continue with saving or purchasing your order in-browser, and press Enter here \n"
-        "to finish up when you're done.\n".format(mins, secs)
+        "to finish up when you're done.\n"
     )
-    sys.exit(1)
+    sys.exit()
