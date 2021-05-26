@@ -1,5 +1,7 @@
 # To package up as executable, run this in command prompt:
-# pyinstaller --onefile --hidden-import=colorama --hidden-import=jinxed.terminfo.vtwin10 --icon=favicon.ico autofill.py
+# (windows) pyinstaller --onefile --hidden-import=colorama --hidden-import=jinxed.terminfo.vtwin10 --icon=favicon.ico autofill.py
+# (macos) pyinstaller --onefile --hidden-import=colorama --hidden-import=inquirer --icon=favicon.ico autofill.py
+
 import colorama
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.common.exceptions import (
@@ -31,6 +33,7 @@ from glob import glob
 from autofill_utils import currdir, XML_Order
 
 from platform import system
+
 IS_WINDOWS = system() == "Windows"
 if IS_WINDOWS:
     from inquirer import List as inquirer_List, prompt as inquirer_prompt
@@ -438,7 +441,9 @@ if __name__ == "__main__":
         filename = xml_glob[0]
     else:
         # let user select XML file interactively
-        xml_select_string = "Multiple XML files found. Please select one for this order: "
+        xml_select_string = (
+            "Multiple XML files found. Please select one for this order: "
+        )
         if IS_WINDOWS:
             questions = [
                 inquirer_List(

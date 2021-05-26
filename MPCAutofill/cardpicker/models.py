@@ -1,6 +1,8 @@
 from django.db import models
 from datetime import datetime
 from django.utils import dateformat
+from django.contrib.postgres.indexes import GinIndex
+from django.contrib.postgres import search as pg_search
 
 datestring = "jS F, Y"
 
@@ -90,7 +92,8 @@ class CardBase(models.Model):
     source = models.ForeignKey(Source, on_delete=models.CASCADE)
     source_verbose = models.CharField(max_length=50)
     dpi = models.IntegerField(default=0)
-    searchq = models.CharField(max_length=200)
+    searchq = pg_search.SearchVectorField(null=True)
+    searchq_text = models.CharField(max_length=200)
     thumbpath = models.CharField(max_length=200)
     date = models.DateTimeField(default=datetime.now)
 
@@ -107,7 +110,7 @@ class CardBase(models.Model):
             "source": self.source.id,
             "source_verbose": self.source_verbose,
             "dpi": self.dpi,
-            "searchq": self.searchq,
+            "searchq": self.searchq_text,
             "thumbpath": self.thumbpath,
             "date": dateformat.format(self.date, datestring),
         }
@@ -118,6 +121,7 @@ class CardBase(models.Model):
     class Meta:
         abstract = True
         ordering = ["-priority"]
+        indexes = [GinIndex(fields=["searchq"])]
 
 
 class Card(CardBase):

@@ -9,6 +9,7 @@ from to_searchable import to_searchable
 
 from math import floor
 from Levenshtein import distance
+from django.contrib.postgres.search import SearchQuery
 
 
 def build_context(drive_order, order, qty):
@@ -59,9 +60,14 @@ def search_database(drive_order, query, model):
 
     query_parsed = to_searchable(query)
 
-    hits = [x.to_dict() for x in model.objects.filter(searchq__search=query_parsed)]
-    hits.sort(key=lambda x: distance(x["searchq"], query_parsed))
+    hits = [
+        x.to_dict() for x in model.objects.filter(searchq=SearchQuery(query_parsed))
+    ]
+    if not hits:
+        return results
 
+    # order the results by best match within priority tiers, grouped by drive_order
+    hits.sort(key=lambda x: distance(x["searchq"], query_parsed))
     for drive in drive_order:
         results += [x for x in hits if x["source"] == drive]
 

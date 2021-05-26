@@ -1,8 +1,6 @@
 from django.core.management.base import BaseCommand
-from django.db.models import Q
-from django.core import management
+from django.db import transaction
 from cardpicker.models import Card, Cardback, Token, Source
-from bulk_sync import bulk_sync
 import pickle
 from googleapiclient.errors import HttpError
 from googleapiclient.discovery import build
@@ -13,6 +11,7 @@ import os
 from to_searchable import to_searchable
 from math import floor
 from tqdm import tqdm
+from django.contrib.postgres.search import SearchQuery, SearchVector
 
 # cron job to run this cmd daily: 0 0 * * * bash /root/mpc-autofill/update_database >> /root/db_update.txt 2>&1
 
@@ -40,7 +39,7 @@ def locate_drives(service, sources):
 
 
 def crawl_drive(service, folder):
-    print("Beginning crawling drive: {}".format(folder["name"]))
+    print(f"Beginning crawling drive: {folder['name']}")
     # maintain a list of images found in this folder so far, and also maintain a list of
     # unexplored folders in this drive
     unexplored_folders = [folder]
@@ -73,7 +72,7 @@ def crawl_drive(service, folder):
             and curr_folder["name"][0] != "!"
         )
         if acceptable:
-            print("Searching: {}".format(curr_folder["name"]))
+            print(f"Searching: {curr_folder['name']}")
 
             # Store this folder's name in a dict with gdrive ID as keys for tracking parent folder names for cards
             folder_dict[curr_folder["id"]] = curr_folder["name"]
@@ -85,7 +84,7 @@ def crawl_drive(service, folder):
                         service.files()
                         .list(
                             q="mimeType='application/vnd.google-apps.folder' and "
-                            "'{}' in parents".format(curr_folder["id"]),
+                            f"'{curr_folder['id']}' in parents",
                             fields="files(id, name, parents)",
                             pageSize=500,
                         )
@@ -108,7 +107,7 @@ def crawl_drive(service, folder):
                             q="(mimeType contains 'image/png' or "
                             "mimeType contains 'image/jpg' or "
                             "mimeType contains 'image/jpeg') and "
-                            "'{}' in parents".format(curr_folder["id"]),
+                            f"'{curr_folder['id']}' in parents",
                             fields="nextPageToken, files("
                             "id, name, trashed, size, properties, parents, createdTime, imageMediaMetadata, owners"
                             ")",
@@ -124,7 +123,7 @@ def crawl_drive(service, folder):
                 if len(results["files"]) <= 0:
                     break
 
-                print("Found {} image(s)".format(len(results.get("files", []))))
+                print(f"Found {len(results.get('files', []))} image(s)")
 
                 # Append the retrieved images to the image list
                 located_images = results.get("files", [])
@@ -149,7 +148,7 @@ def crawl_drive(service, folder):
 
 
 def search_folder(service, source, folder):
-    print("Searching drive: {}\n".format(source.id))
+    print(f"Searching drive: {source.id}\n")
 
     # maintain list of cards, cardbacks, and tokens found for this Source
     q_cards = []
@@ -158,32 +157,37 @@ def search_folder(service, source, folder):
 
     # crawl the drive to retrieve a complete list of images it contains
     images = crawl_drive(service, folder)
-    print("Number of images found: {}".format(len(images)))
+    print(f"Number of images found: {len(images)}")
 
     # add the retrieved cards to the database
     for x in images:
         add_card(folder, source, x, q_cards, q_cardbacks, q_tokens)
 
-    print("\nFinished crawling {}.\nSynchronising to database.".format(folder["name"]))
+    print(
+        f"\nFinished crawling {folder['name']}.\nSynchronising to database...", end=""
+    )
 
-    # set up key fields and filter for bulk_sync on this Source, then synchronise the located cards
     t0 = time.time()
-    key_fields = ("id",)
-    source_filter = Q(source=source.id)
 
     # Synchronise q_cards with Cards, q_cardbacks with Cardbacks, and q_tokens with Tokens
     queue_object_map = [(q_cardbacks, Cardback), (q_tokens, Token), (q_cards, Card)]
 
+    # django-bulk-sync is kinda super broken and this is way better
     for x in queue_object_map:
-        ret1 = bulk_sync(
-            new_models=x[0], key_fields=key_fields, filters=source_filter, db_class=x[1]
-        )
+        with transaction.atomic():
+            x[1].objects.filter(source=source).delete()
+            x[1].objects.bulk_create(x[0])
 
-    print(
-        "Finished synchronising to database, which took {} seconds.\n".format(
-            time.time() - t0
-        )
-    )
+    print(f" and done! That took {time.time() - t0} seconds.")
+
+    # build postgres indexes for these objects - I couldn't seem to correctly build the index when
+    # objects were instantiated but this is good enough
+    t0 = time.time()
+    print("Building postgres indexes...", end="")
+    Card.objects.filter(source=source).update(searchq=SearchVector("searchq_text"))
+    Cardback.objects.filter(source=source).update(searchq=SearchVector("searchq_text"))
+    Token.objects.filter(source=source).update(searchq=SearchVector("searchq_text"))
+    print(f" and done! That took {time.time() - t0} seconds.\n")
 
 
 # def add_card(folderDict, parentDict, folder, source, item, q_cards, q_cardbacks, q_tokens):
@@ -193,9 +197,7 @@ def add_card(folder, source, item, q_cards, q_cardbacks, q_tokens):
         valid = not item["trashed"] and int(item["size"]) < 30000000
         if not valid:
             print(
-                "Can't index this card: <{}> {}, size: {} bytes".format(
-                    item["id"], item["name"], item["size"]
-                )
+                f"Can't index this card: <{item['id']}> {item['name']}, size: {item['size']} bytes"
             )
     except KeyError:
         valid = True
@@ -205,7 +207,7 @@ def add_card(folder, source, item, q_cards, q_cardbacks, q_tokens):
         try:
             [cardname, extension] = item["name"].rsplit(".", 1)
         except ValueError:
-            print("Issue with parsing image: {}".format(item["name"]))
+            print(f"Issue with parsing image: {item['name']}")
             return
 
         source_verbose = "Unknown"
@@ -285,7 +287,8 @@ def add_card(folder, source, item, q_cards, q_cardbacks, q_tokens):
                 source=source,
                 source_verbose=source_verbose,
                 dpi=dpi,
-                searchq=to_searchable(cardname),
+                searchq_text=to_searchable(cardname),  # search-friendly card name
+                searchq=None,  # postgres search index, will be populated later
                 thumbpath=extension,
                 date=item["createdTime"],
             )
@@ -318,7 +321,7 @@ class Command(BaseCommand):
     # set up help line to print the available drive options
     help = "You may specify one of the following drives: "
     for source in Source.objects.all():
-        help += "{}, ".format(source.id)
+        help += f"{source.id}, "
     help = help[:-2]
 
     def add_arguments(self, parser):
@@ -342,13 +345,11 @@ class Command(BaseCommand):
             try:
                 source = Source.objects.get(id=drive)
                 folder = locate_drives(service, [source])[source.id]
-                print("Rebuilding database for specific drive: {}.".format(source.id))
+                print(f"Rebuilding database for specific drive: {source.id}.")
                 search_folder(service, source, folder)
             except KeyError:
                 print(
-                    "Invalid drive specified: {}\nYou may specify one of the following drives:".format(
-                        drive
-                    )
+                    f"Invalid drive specified: {drive}\nYou may specify one of the following drives:"
                 )
                 [print(x.id) for x in Source.objects.all()]
                 return
@@ -361,4 +362,4 @@ class Command(BaseCommand):
         t_final = time.time()
         mins = floor((t_final - t) / 60)
         secs = int((t_final - t) - mins * 60)
-        print("Total elapsed time: {} minutes and {} seconds.\n".format(mins, secs))
+        print(f"Total elapsed time: {mins} minutes and {secs} seconds.\n")
