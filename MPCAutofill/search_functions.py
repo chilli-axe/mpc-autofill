@@ -57,20 +57,28 @@ def search_database(drive_order, query, model):
     # search through the database for a given query, over the drives specified in drive_orders,
     # using the search index specified in s (this enables reuse of code between Card and Token search functions)
     results = []
-
+    is_emblem_search = model == Token and "emblem" in query
     query_parsed = to_searchable(query)
 
     hits = [
-        x.to_dict() for x in model.objects.filter(searchq=SearchQuery(query_parsed))
+        x.to_dict()
+        for x in model.objects.filter(
+            searchq=SearchQuery(query_parsed, search_type="phrase")
+        )
     ]
     if not hits:
         return results
 
     # order the results by best match within priority tiers, grouped by drive_order
-    hits.sort(key=lambda x: distance(x["searchq"], query_parsed))
-    for drive in drive_order:
-        results += [x for x in hits if x["source"] == drive]
-
+    for x in hits:
+        x["dist"] = distance(x["searchq"], query_parsed)
+    hits.sort(key=lambda x: x["dist"])
+    if is_emblem_search:
+        for drive in drive_order:
+            results += [x for x in hits if x["source"] == drive]
+    else:
+        for drive in drive_order:
+            results += [x for x in hits if x["source"] == drive and x["dist"] < 3]
     return results
 
 
