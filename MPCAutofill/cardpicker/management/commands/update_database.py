@@ -11,7 +11,8 @@ import os
 from to_searchable import to_searchable
 from math import floor
 from tqdm import tqdm
-from django.contrib.postgres.search import SearchQuery, SearchVector
+from django.core import management
+
 
 # cron job to run this cmd daily: 0 0 * * * bash /root/mpc-autofill/update_database >> /root/db_update.txt 2>&1
 
@@ -182,12 +183,6 @@ def search_folder(service, source, folder):
 
     # build postgres indexes for these objects - I couldn't seem to correctly build the index when
     # objects were instantiated but this is good enough
-    t0 = time.time()
-    print("Building postgres indexes...", end="")
-    Card.objects.filter(source=source).update(searchq=SearchVector("searchq_text"))
-    Cardback.objects.filter(source=source).update(searchq=SearchVector("searchq_text"))
-    Token.objects.filter(source=source).update(searchq=SearchVector("searchq_text"))
-    print(f" and done! That took {time.time() - t0} seconds.\n")
 
 
 # def add_card(folderDict, parentDict, folder, source, item, q_cards, q_cardbacks, q_tokens):
@@ -287,8 +282,7 @@ def add_card(folder, source, item, q_cards, q_cardbacks, q_tokens):
                 source=source,
                 source_verbose=source_verbose,
                 dpi=dpi,
-                searchq_text=to_searchable(cardname),  # search-friendly card name
-                searchq=None,  # postgres search index, will be populated later
+                searchq=to_searchable(cardname),  # search-friendly card name
                 thumbpath=extension,
                 date=item["createdTime"],
             )
@@ -358,6 +352,11 @@ class Command(BaseCommand):
             print("Rebuilding database with all drives.")
             for x in sources:
                 search_folder(service, Source.objects.get(id=x), sources[x])
+
+        t0 = time.time()
+        print("Rebuilding Elasticsearch indexes...")
+        management.call_command("search_index", "--rebuild", "-f")
+        print(f"and done! That took {time.time() - t0} seconds.\n")
 
         t_final = time.time()
         mins = floor((t_final - t) / 60)

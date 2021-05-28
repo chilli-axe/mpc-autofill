@@ -3,13 +3,15 @@ import csv
 import chardet
 import defusedxml.ElementTree as ET
 
+from cardpicker.documents import CardSearch, CardbackSearch, TokenSearch
 from cardpicker.forms import InputText
 from cardpicker.models import Card, Cardback, Token, Source, DFCPair
 from to_searchable import to_searchable
 
+from elasticsearch_dsl.query import Match
+
 from math import floor
 from Levenshtein import distance
-from django.contrib.postgres.search import SearchQuery
 
 
 def build_context(drive_order, order, qty):
@@ -39,46 +41,47 @@ def text_to_list(input_text):
 
 
 def query_es_card(drive_order, query):
-    return search_database(drive_order, query, Card)
+    return search_database(drive_order, query, CardSearch.search())
 
 
 def query_es_cardback():
     # return all cardbacks in the search index
-    return [x.to_dict() for x in Cardback.objects.all()]
+    s = CardbackSearch.search()
+    hits = s.sort({"priority": {"order": "desc"}}).params(preserve_order=True).scan()
+    results = [x.to_dict() for x in hits]
+    return results
 
 
 def query_es_token(drive_order, query):
-    return search_database(drive_order, query, Token)
+    return search_database(drive_order, query, TokenSearch.search())
 
 
-def search_database(drive_order, query, model):
-    if query == "":
-        return []
+def search_database(drive_order, query, s):
     # search through the database for a given query, over the drives specified in drive_orders,
     # using the search index specified in s (this enables reuse of code between Card and Token search functions)
     results = []
-    is_emblem_search = model == Token and "emblem" in query
+
     query_parsed = to_searchable(query)
 
-    hits = [
-        x.to_dict()
-        for x in model.objects.filter(
-            searchq=SearchQuery(query_parsed, search_type="phrase")
-        )
-    ]
-    if not hits:
-        return results
+    # set up search - match the query and use the AND operator
+    match = Match(searchq={"query": query_parsed, "operator": "AND"})
 
-    # order the results by best match within priority tiers, grouped by drive_order
-    for x in hits:
-        x["dist"] = distance(x["searchq"], query_parsed)
-    hits.sort(key=lambda x: x["dist"])
-    if is_emblem_search:
-        for drive in drive_order:
-            results += [x for x in hits if x["source"] == drive]
-    else:
-        for drive in drive_order:
-            results += [x for x in hits if x["source"] == drive and x["dist"] < 3]
+    # match the cardname once instead of for every drive to save on search time
+    s_query = s.query(match)
+
+    # iterate over drives, filtering on the current drive, ordering by priority in descending order,
+    # then add the returned hits to the results list
+    hits = (
+        s_query.sort({"priority": {"order": "desc"}}).params(preserve_order=True).scan()
+    )
+
+    hits_dict = [x.to_dict() for x in hits]
+    hits_dict.sort(key=lambda x: distance(x["searchq"], query_parsed))
+
+    # hits.sort(key=lambda x: )
+    for drive in drive_order:
+        results += [x for x in hits_dict if x["source"] == drive]
+
     return results
 
 

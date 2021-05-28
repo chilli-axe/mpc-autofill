@@ -46,7 +46,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "django.contrib.postgres",
+    "django_elasticsearch_dsl",
     "crispy_forms",
     "django_user_agents",
 ]
@@ -90,12 +90,8 @@ WSGI_APPLICATION = "MPCAutofill.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": "postgres",
-        "USER": "postgres",
-        "PASSWORD": "postgres",
-        "HOST": "127.0.0.1",
-        "PORT": "5432",
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": os.path.join(BASE_DIR, "card_db.db"),
     }
 }
 
@@ -142,3 +138,10 @@ STATICFILES_DIRS = [
 ]
 
 STATIC_ROOT = os.path.join(os.path.dirname(BASE_DIR), "static")
+
+# elasticsearch DSL settings
+ELASTICSEARCH_DSL = {
+    "default": {"hosts": "localhost:9200"},
+}
+
+ELASTICSEARCH_DSL_AUTOSYNC = False

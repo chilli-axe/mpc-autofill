@@ -17,10 +17,11 @@ The following Python modules:
 * `defusedxml`
 * `django-bulk-sync`
 * `django-user-agents`
+* `django-elasticsearch-dsl` and `elasticsearch-dsl`
 
 Other:
 * [Bootstrap Superhero](https://bootswatch.com/superhero/)
-* PostgreSQL (easiest with Docker)
+* Elasticsearch (probably easiest with Docker)
 * A Google account
 
 ## Local tool:
@@ -36,7 +37,7 @@ The following Python modules:
 1. Clone this repo somewhere on your server
 2. In the same directory as the repo, create a folder called `staticroot` for static assets
 3. Deploy the Django project (I'm using DigitalOcean for Ubuntu) with a webserver (I'm using Apache) and serve static files with another webserver if you want (I was previously using nginx but now I just serve static files with Apache as well)
-4. Run Postgres, preferably with Docker
+4. Run Elasticsearch
 5. Set up your Google Drive credentials in the `MPCAutofill` directory - you should end up with a `credentials.json` file and a `token.pickle` file
 6. Run the command `manage.py import_sources` to sync sources in `drives.csv` to database, and `manage.py update_database` to populate the database (optionally specifying a particular drive to sync with `-d <drivename>`)
 7. Create a cronjob to periodically run the database updater command, to ensure MPC Autofill reflects the current state of the linked Drives, and another cronjob to periodically synchronise the double-faced cards table with Scryfall:
