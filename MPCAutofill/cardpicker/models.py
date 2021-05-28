@@ -13,16 +13,14 @@ class Source(models.Model):
     username = models.CharField(max_length=50)
     reddit = models.CharField(max_length=100)
     drive_id = models.CharField(max_length=100, unique=True)
-    drive_link = models.CharField(max_length=200)
     description = models.CharField(max_length=400)
     order = models.IntegerField(default=0)
 
     def __str__(self):
         (qty_total, qty_cards, qty_cardbacks, qty_tokens, _) = self.count()
-        return "{}. {}: {} ({} total: {} cards, {} cardbacks, {} tokens)".format(
+        return "[{}.] {} ({} total: {} cards, {} cardbacks, {} tokens)".format(
             self.order,
             self.id,
-            self.description,
             qty_total,
             qty_cards,
             qty_cardbacks,
@@ -120,7 +118,6 @@ class CardBase(models.Model):
     class Meta:
         abstract = True
         ordering = ["-priority"]
-        indexes = [GinIndex(fields=["searchq"])]
 
 
 class Card(CardBase):

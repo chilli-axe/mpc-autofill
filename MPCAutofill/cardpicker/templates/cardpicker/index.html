@@ -111,16 +111,17 @@
                         </tr>
                         </thead>
                         <tbody>
-                        {% for sourcename,sourceinfo in sources.items %}
+                        {% for source in sources %}
                             <tr style="cursor: grab">
                                 <td>
                                     <div class="active text-center">
-                                        <input class="form-check-input drivesource" type="checkbox" value=""
-                                               id={{ sourcename }} checked="checked" style="transform: scale(1.5)">
+                                        <input class="form-check-input drivesource" type="checkbox"
+                                               checked style="transform: scale(1.5)" id="{{ source.id }}">
                                     </div>
                                 </td>
-                                <td><a target="_blank" href={{ sourceinfo.reddit }}>{{ sourceinfo.username }}</a></td>
-                                <td class="text-center"><a target="_blank" href={{ sourceinfo.drive_link }}>Link</a></td>
+                                <td><a target="_blank" href={{ source.reddit }}>{{ source.username }}</a></td>
+                                <td class="text-center"><a target="_blank"
+                                    href=https://drive.google.com/drive/folders/{{ source.drive_id }}>Link</a></td>
                             </tr>
                         {% endfor %}
                         </tbody>

@@ -1,7 +1,5 @@
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
-from datetime import datetime, timedelta
-from django.utils import timezone
 
 from search_functions import (
     build_context,
@@ -12,31 +10,25 @@ from search_functions import (
     query_es_card,
     query_es_token,
     search_new,
+    search_new_elasticsearch_definition,
 )
 from to_searchable import to_searchable
-from .forms import InputText, InputXML, InputCSV
-from .models import Card, Cardback, Token, Source
+from cardpicker.forms import InputText, InputXML, InputCSV
+from cardpicker.models import Card, Cardback, Token, Source
 
 import json
 
 
 def index(request, error=False):
-    sources = {}
-    for source in Source.objects.all():
-        if "sources" not in source.id:
-            sources[source.id] = {
-                "username": source.username,
-                "reddit": source.reddit,
-                "drive_link": source.drive_link,
-            }
-
-    context = {
-        "form": InputText,
-        "mobile": not request.user_agent.is_pc,
-        "sources": sources,
-    }
-
-    return render(request, "cardpicker/index.html", context)
+    return render(
+        request,
+        "cardpicker/index.html",
+        {
+            "form": InputText,
+            "mobile": not request.user_agent.is_pc,
+            "sources": Source.objects.all(),
+        },
+    )
 
 
 def guide(request):
@@ -47,16 +39,8 @@ def new_cards(request):
     # serves the What's New page - this function returns the first page of results for all sources for
     # cards uploaded in the last two weeks
 
-    # initialise results dict, 2 weeks time delta, and the dsl search
+    s = search_new_elasticsearch_definition()
     results = {}
-    days = 14
-    s = Card.objects.filter(
-        date__range=[timezone.now() - timedelta(days=days), timezone.now()]
-    ).order_by(
-        "-date",
-    )
-
-    # for each source, query elasticsearch for the requested cards, and attach it to the results dict if we have any hits
     for source in Source.objects.all():
         result = search_new(s, source.id)
         if result["qty"] > 0:
@@ -72,16 +56,8 @@ def search_new_page(request):
     source = request.POST.get("source")
     page = int(request.POST.get("page"))
 
-    # initialise results dict, 2 weeks time delta, and the dsl search
+    s = search_new_elasticsearch_definition()
     results = {}
-    days = 14
-    s = Card.objects.filter(
-        date__range=[timezone.now() - timedelta(days=days), timezone.now()]
-    ).order_by(
-        "-date",
-    )
-
-    # query elasticsearch for the requested cards and attach it to the results dict if we have any hits
     result = search_new(s, source, page)
     if result["qty"] > 0:
         results[source] = result
