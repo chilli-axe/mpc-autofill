@@ -8,7 +8,7 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 import time
 import os
-from to_searchable import to_searchable
+from cardpicker.utils.to_searchable import to_searchable
 from math import floor
 from tqdm import tqdm
 from django.core import management

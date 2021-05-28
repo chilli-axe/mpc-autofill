@@ -6,7 +6,7 @@ import defusedxml.ElementTree as ET
 from cardpicker.documents import CardSearch, CardbackSearch, TokenSearch
 from cardpicker.forms import InputText
 from cardpicker.models import Source, DFCPair
-from to_searchable import to_searchable
+from cardpicker.utils.to_searchable import to_searchable
 
 from elasticsearch_dsl.query import Match
 

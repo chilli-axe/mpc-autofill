@@ -1,7 +1,7 @@
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
 
-from search_functions import (
+from cardpicker.utils.search_functions import (
     build_context,
     parse_text,
     parse_xml,
@@ -12,7 +12,7 @@ from search_functions import (
     search_new,
     search_new_elasticsearch_definition,
 )
-from to_searchable import to_searchable
+from cardpicker.utils.to_searchable import to_searchable
 from cardpicker.forms import InputText, InputXML, InputCSV
 from cardpicker.models import Card, Cardback, Token, Source
 

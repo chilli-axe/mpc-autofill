@@ -1,8 +1,6 @@
-import requests
 from cardpicker.models import DFCPair
 import time
-import os
-from to_searchable import to_searchable
+from cardpicker.utils.to_searchable import to_searchable
 from django.core.management.base import BaseCommand
 from bulk_sync import bulk_sync
 import json
