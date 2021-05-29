@@ -73,13 +73,20 @@ class Source(models.Model):
     class Meta:
         ordering = ["order"]
 
-    def __to_dict__(self):
+    def to_dict(self):
+        qty_all, qty_cards, qty_cardbacks, qty_tokens, avgdpi = self.count()
         return {
             "id": self.id,
             "username": self.username,
             "reddit": self.reddit,
-            "drive_link": self.drive_link,
+            "drive_id": self.drive_id,
+            "drive_link": f"https://drive.google.com/drive/folders/{self.drive_id}",
             "description": self.description,
+            "qty_all": qty_all,
+            "qty_cards": qty_cards,
+            "qty_cardbacks": qty_cardbacks,
+            "qty_tokens": qty_tokens,
+            "avgdpi": avgdpi,
         }
 
 

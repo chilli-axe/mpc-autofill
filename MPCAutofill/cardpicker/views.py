@@ -26,7 +26,7 @@ def index(request, error=False):
         {
             "form": InputText,
             "mobile": not request.user_agent.is_pc,
-            "sources": Source.objects.all(),
+            "sources": [x.to_dict() for x in Source.objects.all()],
         },
     )
 
@@ -70,27 +70,15 @@ def legal(request):
 
 
 def credits(request):
-    # count how many cards are in the database and format with commas
+    sources = [x.to_dict() for x in Source.objects.all()]
     total_count = [x.objects.all().count() for x in [Card, Cardback, Token]]
     total_count.append(sum(total_count))
     total_count_f = [f"{x:,d}" for x in total_count]
 
-    # retrieve all source objects and build context
-    sources = Source.objects.all()
-    context = {x.id: x for x in sources}
-
-    for source in sources:
-        # get average dpi and number of cards, cardbacks and tokens this Source created from model
-        (_, qty_cards, qty_cardbacks, qty_tokens, avgdpi) = source.count()
-        context[source.id].qty_cards = qty_cards
-        context[source.id].qty_cardbacks = qty_cardbacks
-        context[source.id].qty_tokens = qty_tokens
-        context[source.id].avgdpi = avgdpi
-
     return render(
         request,
         "cardpicker/credits.html",
-        {"sources": context, "total_count": total_count_f},
+        {"sources": sources, "total_count": total_count_f},
     )
 
 

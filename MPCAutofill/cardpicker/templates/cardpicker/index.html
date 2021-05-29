@@ -119,9 +119,9 @@
                                                checked style="transform: scale(1.5)" id="{{ source.id }}">
                                     </div>
                                 </td>
-                                <td><a target="_blank" href={{ source.reddit }}>{{ source.username }}</a></td>
+                                <td><a target="_blank" href="{{ source.reddit }}">{{ source.username }}</a></td>
                                 <td class="text-center"><a target="_blank"
-                                    href=https://drive.google.com/drive/folders/{{ source.drive_id }}>Link</a></td>
+                                    href="{{ source.drive_link }}">Link</a></td>
                             </tr>
                         {% endfor %}
                         </tbody>

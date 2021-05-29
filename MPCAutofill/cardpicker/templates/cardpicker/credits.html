@@ -51,13 +51,14 @@
         </tr>
         </thead>
         <tbody>
-        {% for sourcename,sourceinfo in sources.items %}
+        {% for source in sources %}
             <tr>
-                <td><a target="_blank" href={{ sourceinfo.reddit }}>{{ sourceinfo.username }}</a></td>
-                <td style="text-align: center"><a target="_blank" href={{ sourceinfo.drive_link }}>Link</a></td>
-                <td><b>{{ sourceinfo.qty_cards }}</b> cards, <b>{{ sourceinfo.qty_cardbacks }}</b> cardbacks,
-                    and <b>{{ sourceinfo.qty_tokens }}</b> tokens, at <b>{{ sourceinfo.avgdpi }}</b> DPI on average 
-                    &#8212 {{ sourceinfo.description }}</td>
+                <td><a target="_blank" href="{{ source.reddit }}">{{ source.username }}</a></td>
+                <td style="text-align: center"><a target="_blank"
+                    href="https://drive.google.com/drive/folders/{{ source.drive_id }}">Link</a></td>
+                <td><b>{{ source.qty_cards }}</b> cards, <b>{{ source.qty_cardbacks }}</b> cardbacks,
+                    and <b>{{ source.qty_tokens }}</b> tokens, at <b>{{ source.avgdpi }}</b> DPI on average
+                    &#8212 {{ source.description }}</td>
             </tr>
         {% endfor %}
         </tbody>
