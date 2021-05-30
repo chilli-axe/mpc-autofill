@@ -148,7 +148,7 @@ function search_api(drive_order, query, slot_id, face, dom_id, req_type = "norma
             'req_type': req_type,
         },
         success: function(data) {
-            build_card(data, dom_id, data['query'], slot_id, face, group);
+            build_card(data, dom_id, data['query'], slot_id, face, group, true);
         },
         error: function () {
             // callback here in 5 seconds
@@ -186,13 +186,12 @@ function build_cards(data) {
 
             if (slot_ids.length > 0) {
                 if (group === 1 && groups[group] !== undefined) {
-                    // this code should run when the common back group already exists but we have new cards to add to it
-                    // remove the first element (the right panel common cardback) from dom_ids, then smush the existing
-                    // ids and the new ids together
-                    // dom_ids = dom_ids.slice(1);
-                    groups[group] = groups[group].concat(dom_ids);
+                    // add new backs to common cardback group
+                    dom_ids.forEach(groups[group].add, groups[group]);
                 } else {
-                    groups[group] = dom_ids;
+                    // assuming that the group number being used here hasn't already been allocated
+                    let yaboi_set = new Set(dom_ids);
+                    groups[group] = yaboi_set;
                 }
             }
         }
@@ -200,7 +199,7 @@ function build_cards(data) {
 }
 
 
-function build_card(card, dom_id, query, slot_id, face, group) {
+function build_card(card, dom_id, query, slot_id, face, group, loaded = false) {
     // accepts search result data and information about one specific card slot, and builds it
     // first creates the dom element if it doesn't exist, then instantiates the Card which will attach itself
     // to that element
@@ -267,7 +266,8 @@ function build_card(card, dom_id, query, slot_id, face, group) {
         face,
         card.req_type,
         group,
-        slot_id[1]
+        slot_id[1],
+        loaded
     );
     return dom_id;
 }

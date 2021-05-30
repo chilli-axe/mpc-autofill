@@ -12,7 +12,6 @@ function format_source(source, dpi) {
 function get_thumbnail(driveID) {
     // small helper function to insert a drive ID into a thumbnail URL and return it
     return "https://drive.google.com/thumbnail?sz=w400-h400&id=" + driveID
-    // return "https://lh3.googleusercontent.com/d/" + driveID + "=w400-h400";
 }
 
 function get_thumbnail_med(driveID) {
@@ -47,8 +46,8 @@ function trigger_download(img_id, new_tab = true) {
 }
 
 class CardBase {
-    constructor(cards, query, dom_id, slot, face, req_type, group, selected_img = null) {
-        this.setup_card(cards, query, dom_id, slot, face, req_type, group, selected_img);
+    constructor(cards, query, dom_id, slot, face, req_type, group, selected_img = null, loaded = false) {
+        this.setup_card(cards, query, dom_id, slot, face, req_type, group, selected_img, loaded);
     }
 
     get_curr_img() {
@@ -129,8 +128,37 @@ class CardBase {
 // Card class - one for each face of each card slot
 // contains logic to page between results, search again with new query, display correct stuff depending on results, etc.
 class Card extends CardBase {
-    constructor(cards, query, dom_id, slot, face, req_type, group, selected_img = null) {
-        super(cards, query, dom_id, slot, face, req_type, group, selected_img);
+    constructor(cards, query, dom_id, slot, face, req_type, group, selected_img = null, loaded = false) {
+        super(cards, query, dom_id, slot, face, req_type, group, selected_img, loaded);
+    }
+    
+    reset() {
+        // sets the Card back to its default state
+        this.card_counter.style.visibility = "hidden";
+        this.card_counter_btn.style.visibility = "hidden";
+        this.elem_prev.style.visibility = "hidden";
+        this.elem_next.style.visibility = "hidden";
+        this.locked = false;
+        this.elem_padlock.style.display = "none";
+        this.elem_remove.style.display = "none";
+
+        // this.elem_name = document.getElementById(this.dom_id + "-mpccard-name");
+        this.elem_name.innerHTML = "";
+        this.elem_source.innerHTML = "";
+        this.elem_slot.innerHTML = "";
+
+        this.elem_img.src = "";
+        this.elem_img_prev.src = "";
+        this.elem_img_next.src = "";
+
+        $(this.elem_img).unbind("onclick");
+        $(this.elem_remove).unbind("onclick");
+        $(this.elem_padlock).unbind("onclick");
+        $(this.elem_next).unbind("onclick");
+        $(this.elem_prev).unbind("onclick");
+        $(this.elem_name).unbind("keydown");
+
+        this.elem_name.setAttribute("contentEditable", "false");
     }
 
     get_query() {
@@ -151,8 +179,8 @@ class Card extends CardBase {
         // update all cards in the group too
         if (this.locked) {
             let this_group = groups[this.group];
-            for (let i = 0; i < this_group.length; i++) {
-                let this_obj = $('#' + this_group[i]).data("obj");
+            for (let item of this_group) {
+                let this_obj = $('#' + item).data("obj");
                 this_obj.img_idx = new_idx;
                 this_obj.update_card();
             }
@@ -336,7 +364,7 @@ class Card extends CardBase {
         }
     }
 
-    setup_card(cards, query, dom_id, slot, face, req_type, group, selected_img) {
+    setup_card(cards, query, dom_id, slot, face, req_type, group, selected_img, loaded = false) {
         // array of card image obj's
         // each card image obj has properties: drive ID, name, source, DPI
         this.cards = cards;
@@ -355,6 +383,7 @@ class Card extends CardBase {
         this.img_count = cards.length;
         this.dom_id = dom_id;
         this.req_type = req_type;
+        this.loaded = loaded;
 
         // store references to the card's html elements
         this.pe = document.getElementById(this.dom_id)
@@ -372,8 +401,8 @@ class Card extends CardBase {
         // for more than one search result, allow users to click on the counter to bring up the grid img selector
         this.card_counter = document.getElementById(this.dom_id + "-mpccard-counter");
         this.card_counter_btn = document.getElementById(this.dom_id + "-mpccard-counter-btn");
-        this.card_counter.style.display = "none";
-        this.card_counter_btn.style.display = "none";
+
+        this.reset();
         
         this.elem_counter = this.card_counter;
         if (this.img_count > 1) {
@@ -393,50 +422,51 @@ class Card extends CardBase {
         // attach this object to the parent element
         $(this.pe).data("obj", this);
 
-        // enable or disable static visual elements - left/right arrows, padlock, slot number at top
-        if (this.req_type === "back") {
+        // click on thumbnail for detailed view
+        if (!this.empty) {
+            this.elem_img.onclick = $.proxy(function() {
+                this.open_detailed_view();
+            }, this);
+        }
+
+        if (this.req_type == "back") {
             this.locked = true;
             this.group = 1;
-            this.elem_padlock.style.display = "none";
-            if (this.slot === "-") {
-                // common cardback on right panel
-                this.elem_slot.innerHTML = "Cardback";
-                // also disable the padlock for the common cardback (it's always locked), searching in-place,
-                // and the remove card button
-                this.elem_padlock.style.display = "none";
-                this.elem_name.setAttribute("contentEditable", "false");
-                this.elem_remove.style.display = "none";
-            } else {
-                // cardbacks on the backs of other cards (left panel)
-                this.elem_prev.style.visibility = "hidden";
-                this.elem_next.style.visibility = "hidden";
-                this.elem_counter.style.visibility = "hidden";
+        }
 
-                // set this cardback's idx to the common cardback's id
-                this.img_idx = $("#slot--back").data("obj").img_idx;
-            }
+        // enable padlock for locking groups other than cardback
+        if (this.group > 1) {
+            this.elem_padlock.style.display = "";
+            this.elem_padlock.onclick = $.proxy(function () {
+                this.toggle_lock();
+            }, this);
+        }
+
+        // set slot name + remove card btn + set up in-place search
+        if (this.slot != "-") {
+            this.elem_slot.innerHTML = "Slot " + (parseInt(this.slot) + 1).toString();
+
+            this.elem_remove.style.display = "";
+            $(this.elem_remove).unbind("onclick");
+            this.elem_remove.onclick = $.proxy(function() {
+                this.remove_card();
+            }, this);
+
+            this.elem_name.setAttribute("contentEditable", "true");
+            $(this.elem_name).keydown($.proxy(function (e) {
+                if (e.keyCode === 13) {
+                    let search_query = this.elem_name.innerText;
+                    this.search_in_place(search_query);
+                }
+            }, this));
         } else {
+            this.elem_slot.innerHTML = "Cardback";
+        }
+        // enable version picker
+        if (this.img_count > 1 & (this.slot == "-" | this.req_type != "back")) {
             this.elem_prev.style.visibility = "visible";
             this.elem_next.style.visibility = "visible";
             this.elem_counter.style.visibility = "visible";
-
-            this.elem_name.setAttribute("contentEditable", "true");
-        }
-
-        // set slot number - the common cardback (right panel) is handled slightly differently
-        if (this.slot !== "-") {
-            this.elem_slot.innerHTML = "Slot " + (parseInt(this.slot) + 1).toString();
-        }
-
-        // add onclick functions to buttons
-        $(this.elem_remove).unbind("onclick");
-        this.elem_remove.onclick = $.proxy(function() {
-            this.remove_card();
-        }, this);
-        if (!this.empty) {
-            // unbind previous onclick events, then set up onclick events to page between versions
-            $(this.elem_prev).unbind("onclick");
-            $(this.elem_next).unbind("onclick");
 
             this.elem_prev.onclick = $.proxy(function () {
                 this.update_idx(-1);
@@ -446,59 +476,18 @@ class Card extends CardBase {
                 this.update_idx(1);
             }, this);
 
-            // group button active when more than one image is present and this card is in a group
-            if (this.group > 1 && this.img_count > 1) {
-                $(this.elem_padlock).unbind("onclick");
-                this.elem_padlock.onclick = $.proxy(function () {
-                    this.toggle_lock();
-                }, this);
-            } else {
-                this.elem_padlock.style.display = "none";
-            }
-
-            // add onclick to thumbnail to reveal detailed info about card
-            $(this.elem_img).unbind("onclick");
-            this.elem_img.onclick = $.proxy(function() {
-                this.open_detailed_view();
-            }, this);
-        } else {
-            // left/right buttons, as well as dl button and padlock, should be invisible
-            this.elem_padlock.style.display = "none";
-            if (this.face === "back") {
-                // no results found, and this card is a back face, meaning we should use the common cardback
-                // only search again if this Card isn't being instantiated by a search for a cardback
-                // i.e. when no cardbacks are found, this check will avoid recursively triggering ajax queries
-                search_api(drive_order, "", [this.slot, ""], "back", this.dom_id, "back")
-                groups[1].push(this.dom_id);
-            } 
-        }
-
-        // hide left/right buttons if no results or only one result
-        if (this.img_count <= 1) {
-            this.elem_prev.style.display = "none";
-            this.elem_next.style.display = "none";
-            // add onclick to counter to reveal grid view picker
-            // TODO: detach event listeners too?
-            this.elem_counter.onclick = null;
-        } else {
-            this.elem_prev.style.display = "";
-            this.elem_next.style.display = "";
-            // add onclick to counter to reveal grid view picker
-            $(this.elem_counter).unbind("onclick");
             this.elem_counter.onclick = $.proxy(function() {
                 this.open_grid_view();
             }, this);
         }
 
-        // event listener on cardname edit to research
-        $(this.elem_name).unbind("keydown"); // to remove previously added keydown event listeners, otherwise they can stack
-        $(this.elem_name).keydown($.proxy(function (e) {
-            if (e.keyCode === 13) {
-                let search_query = this.elem_name.innerText;
-                this.search_in_place(search_query);
-                return false;
+        $(this.elem_img).one('inview', function(event, isInView) {
+            if (isInView) {
+                let card_obj = $(this.parentElement.parentElement).data("obj");
+                card_obj.load_thumbnails();
+                card_obj.loaded = true;
             }
-        }, this));
+        })
 
         // de-focus the query div
         $(this.elem_name).blur();
@@ -510,6 +499,32 @@ class Card extends CardBase {
         $(this.elem_img).load($.proxy(function () {
             this.fade_in();
         }, this));
+    }
+
+    load_thumbnails() {
+        if (!this.empty) {
+            // some search results were found - use info from currently selected image variant
+            // load the previous and next images for a smooth slideshow
+            // keep them loaded by changing the src of visible img elements, but they sit behind the main
+            // element due to z-index
+            let buffer_id = this.cards[wrap0(this.img_idx, this.img_count)].id;
+            this.elem_img.src = get_thumbnail(buffer_id);
+
+            // respect the length of the returned results
+            if (this.img_count > 1) {
+                buffer_id = this.cards[wrap0(this.img_idx - 1, this.img_count)].id;
+                this.elem_img_prev.src = get_thumbnail(buffer_id);
+
+                if (this.img_count > 2) {
+                    buffer_id = this.cards[wrap0(this.img_idx + 1, this.img_count)].id;
+                    this.elem_img_next.src = get_thumbnail(buffer_id);
+                }
+            }
+        } else {
+            // this.elem_counter.style.display = "none";
+            // no search results - update image src to blank image
+            this.elem_img.src = "https://mpcautofill.com/static/cardpicker/blank.png";
+        }
     }
 
     search_in_place(search_query) {
@@ -545,27 +560,6 @@ class Card extends CardBase {
             // some search results were found - use info from currently selected image variant
             curr_title = this.get_curr_img().name;
             curr_source = format_source(this.get_curr_img().source_verbose, this.get_curr_img().dpi)
-
-            // load the previous and next images for a smooth slideshow
-            // keep them loaded by changing the src of visible img elements, but they sit behind the main
-            // element due to z-index
-            let buffer_id = this.cards[wrap0(this.img_idx, this.img_count)].id;
-            this.elem_img.src = get_thumbnail(buffer_id);
-
-            // respect the length of the returned results
-            if (this.img_count > 1) {
-                buffer_id = this.cards[wrap0(this.img_idx - 1, this.img_count)].id;
-                this.elem_img_prev.src = get_thumbnail(buffer_id);
-
-                if (this.img_count > 2) {
-                    buffer_id = this.cards[wrap0(this.img_idx + 1, this.img_count)].id;
-                    this.elem_img_next.src = get_thumbnail(buffer_id);
-                }
-            }
-        } else {
-            // this.elem_counter.style.display = "none";
-            // no search results - update image src to blank image
-            this.elem_img.src = "https://mpcautofill.com/static/cardpicker/blank.png";
         }
 
         // update image name
@@ -576,6 +570,10 @@ class Card extends CardBase {
 
         // update selected image/total
         this.elem_counter.innerHTML = (this.img_idx + 1).toString() + "/" + this.img_count.toString();
+
+        if (this.loaded) {
+            this.load_thumbnails();
+        }
     }
 }
 
@@ -601,14 +599,23 @@ class CardRecent extends CardBase {
         this.elem_slot = document.getElementById(this.dom_id + "-mpccard-slot");
         this.elem_img = document.getElementById(this.dom_id + "-card-img");
 
+        $(this.elem_img).one('inview', function(event, isInView) {
+            if (isInView) {
+                $(this.parentElement.parentElement).data("obj").load_thumbnails();
+            }
+        })
+
         // attach this object to the parent element
         $(this.pe).data("obj", this);
 
         // insert things
-        this.elem_img.src = get_thumbnail(cards[0].id);
         this.elem_name.innerText = cards[0].name;
         this.elem_source.innerText = format_source(cards[0].source_verbose, cards[0].dpi);
         this.elem_slot.innerText = cards[0].date;
+    }
+
+    load_thumbnails() {
+        this.elem_img.src = get_thumbnail(this.cards[0].id);
 
         // add onclick to thumbnail to reveal detailed info about card
         $(this.elem_img).unbind("onclick");
@@ -637,6 +644,7 @@ class CardGrid extends CardRecent {
         // this function is called open_detailed_view bc that's bound to clicking on the thumbnail,
         // but this will really select this image for the card
         this.card_obj.set_idx(this.slot-1);
+        this.card_obj.load_thumbnails();
         $('#gridSelectModal').modal('hide');
     }
 }
