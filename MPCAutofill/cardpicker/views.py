@@ -3,9 +3,6 @@ from django.shortcuts import render, redirect
 
 from cardpicker.utils.search_functions import (
     build_context,
-    parse_text,
-    parse_xml,
-    parse_csv,
     query_es_cardback,
     query_es_card,
     query_es_token,
@@ -13,6 +10,7 @@ from cardpicker.utils.search_functions import (
     search_new_elasticsearch_definition,
 )
 from cardpicker.utils.to_searchable import to_searchable
+from cardpicker.utils.orderdict import OrderDict, Faces, ReqTypes
 from cardpicker.forms import InputText, InputXML, InputCSV
 from cardpicker.models import Card, Cardback, Token, Source
 
@@ -108,17 +106,17 @@ def search(drive_order, query, req_type):
     # or a request with "token" type with query like "goblin", so handle both of those cases here
     if query.lower()[0:2] == "t:":
         query = query[2:]
-        req_type = "token"
+        req_type = ReqTypes.TOKEN.value
 
     # now that we've potentially trimmed the query for tokens, convert the query to a searchable string
     query = to_searchable(query)
 
     # search for tokens if this request is for a token
-    if req_type == "token":
+    if req_type == ReqTypes.TOKEN.value:
         results = query_es_token(drive_order, query)
 
     # search for cardbacks if request is for cardbacks
-    elif req_type == "back":
+    elif req_type == ReqTypes.CARDBACK.value:
         results = query_es_cardback()
 
     # otherwise, search normally
@@ -146,10 +144,11 @@ def review(request):
             lines_raw = form["card_list"].value()
 
             # parse the text input to obtain the order dict and quantity in this order
-            (order, qty) = parse_text(lines_raw)
+            order = OrderDict()
+            qty = order.from_text(lines_raw)
 
             # build context
-            context = build_context(drive_order, order, qty)
+            context = build_context(drive_order, order.to_dict(), qty)
 
             return render(request, "cardpicker/review.html", context)
 
@@ -163,14 +162,15 @@ def insert_text(request):
     offset = int(request.POST.get("offset"))
 
     # parse the text input to obtain the order dict and quantity in this addition to the order
-    (order, qty) = parse_text(text, offset)
+    order = OrderDict()
+    qty = order.from_text(text, offset)
 
     # remove the "-" element from the common cardback slot list so the selected common cardback doesn't reset on us
-    order["back"][""]["slots"].pop(0)
+    order.remove_common_cardback()
 
     # build context
     context = {
-        "order": order,
+        "order": order.to_dict(),
         "qty": qty,
     }
 
@@ -190,10 +190,11 @@ def input_csv(request):
             csvfile = request.FILES["file"].read()
 
             # parse the csv file to obtain the order dict and quantity in this order
-            (order, qty) = parse_csv(csvfile)
+            order = OrderDict()
+            qty = order.from_csv(csvfile)
 
             # build context
-            context = build_context(drive_order, order, qty)
+            context = build_context(drive_order, order.to_dict(), qty)
 
             return render(request, "cardpicker/review.html", context)
 
@@ -214,10 +215,11 @@ def input_xml(request):
                 xmlfile = request.FILES["file"].read()
 
                 # parse the XML file to obtain the order dict and quantity in this order
-                (order, qty) = parse_xml(xmlfile, 0)
+                order = OrderDict
+                qty = order.from_xml(xmlfile, 0)
 
                 # build context
-                context = build_context(drive_order, order, qty)
+                context = build_context(drive_order, order.to_dict(), qty)
 
                 return render(request, "cardpicker/review.html", context)
 
@@ -235,14 +237,15 @@ def insert_xml(request):
     offset = int(request.POST.get("offset"))
 
     # parse the XML input to obtain the order dict and quantity in this addition to the order
-    (order, qty) = parse_xml(xml, offset)
+    order = OrderDict()
+    qty = order.from_xml(xml, offset)
 
     # remove the - element from the common cardback slot list so the selected common cardback doesn't reset on us
-    order["back"][""]["slots"].pop(0)
+    order.remove_common_cardback()
 
     # build context
     context = {
-        "order": order,
+        "order": order.to_dict(),
         "qty": qty,
     }
 
