@@ -26,6 +26,12 @@ class Faces(Enum):
     FACES = [FRONT, BACK]
 
 
+class CSVHeaders(Enum):
+    FRONT = "Front"
+    BACK = "Back"
+    QTY = "Quantity"
+
+
 class CardImage:
     def __init__(self, query: str, slots: List[Tuple[Any, str]], req_type: str):
         self.query = query
@@ -33,6 +39,7 @@ class CardImage:
             slots  # slots is a list of tuples where each tuple is (slot, image id)
         )
         self.req_type = req_type
+        self.data = []
 
     def add_slots(self, new_slots: List[Tuple[Any, str]]):
         self.slots += new_slots
@@ -43,6 +50,9 @@ class CardImage:
                 0
             )  # TODO: naive to assume that it's the first element in the list?
 
+    def insert_data(self, data):
+        self.data = data
+
     def __str__(self):
         return f"'{self.query}': '{self.req_type}', with slots:\n    {self.slots}"
 
@@ -51,6 +61,7 @@ class CardImage:
             "query": self.query,
             "slots": [list(x) for x in self.slots],
             "req_type": self.req_type,
+            "data": self.data,
         }
 
 
@@ -58,14 +69,17 @@ class CardImageCollection:
     def __init__(self):
         self.card_images: Dict[str, CardImage] = {}
 
-    def insert(self, query: str, slots: List[Any], req_type: str, selected_img: str):
-        slots_with_id = [(x, selected_img) for x in slots]
+    def insert_with_ids(self, query: str, slots: List[Tuple[Any, str]], req_type: str):
         # create a CardImage and insert into the dictionary
         if query not in self.card_images.keys():
-            self.card_images[query] = CardImage(query, slots_with_id, req_type)
+            self.card_images[query] = CardImage(query, slots, req_type)
         else:
             # update the CardImage with the given query with more slots
-            self.card_images[query].add_slots(slots_with_id)
+            self.card_images[query].add_slots(slots)
+
+    def insert(self, query: str, slots: List[Any], req_type: str, selected_img: str):
+        slots_with_id = [(x, selected_img) for x in slots]
+        self.insert_with_ids(query, slots_with_id, req_type)
 
     def insert_empty(self, slots):
         # insert empty slots in the requested face
@@ -130,9 +144,8 @@ class OrderDict:
         return {x: self.order[x].to_dict() for x in Faces.FACES.value}
 
     def from_text(self, input_lines: str, offset: int = 0):
+        # populates OrderDict from supplied text input
         transforms = dict((x.front, x.back) for x in DFCPair.objects.all())
-        cards_dict = OrderDict()
-
         curr_slot = offset
 
         # loop over lines in the input text, and for each, parse it into usable information
@@ -189,6 +202,7 @@ class OrderDict:
         return curr_slot - offset
 
     def from_csv(self, csv_bytes):
+        # populates OrderDict from supplied CSV bytes
         transforms = dict((x.front, x.back) for x in DFCPair.objects.all())
         # TODO: I'm sure this can be cleaned up a lot, the logic here is confusing and unintuitive
         curr_slot = 0
@@ -199,14 +213,16 @@ class OrderDict:
         csv_string_split = csv_bytes.decode(csv_format["encoding"]).splitlines()
 
         # handle case where csv doesn't have correct headers
-        headers = "Quantity,Front,Back"  # TODO: constants for CSV headers
+        headers = ",".join(
+            [CSVHeaders.FRONT.value, CSVHeaders.BACK.value, CSVHeaders.QTY.value]
+        )
         if csv_string_split[0] != headers:
             # this CSV doesn't appear to have the correct column headers, so we'll attach them here
             csv_string_split = [headers] + csv_string_split
         csv_dictreader = csv.DictReader(csv_string_split)
 
         for line in csv_dictreader:
-            qty = line["Quantity"]
+            qty = line[CSVHeaders.QTY.value]
             if qty:
                 # try to parse qty as int
                 try:
@@ -219,11 +235,14 @@ class OrderDict:
                 qty = 1
 
             # only care about lines with a front specified
-            if line["Front"]:
+            if line[CSVHeaders.FRONT.value]:
                 # the slots for this line in the CSV
                 curr_slots = list(range(curr_slot, curr_slot + qty))
 
-                query_faces = [line["Front"], line["Back"]]
+                query_faces = [
+                    line[CSVHeaders.FRONT.value],
+                    line[CSVHeaders.BACK.value],
+                ]
                 req_type_front = ReqTypes.CARD.value
                 req_type_back = ReqTypes.CARD.value
 
@@ -232,7 +251,7 @@ class OrderDict:
                     query_faces[0] = query_faces[0][2:]
                     req_type_front = ReqTypes.TOKEN.value
 
-                if not line["Back"]:
+                if not line[CSVHeaders.BACK.value]:
                     # back face not specified
                     # potentially doing transform things, because a back wasn't specified
                     # first, determine if this card is a DFC by virtue of it having its two faces separated by an &
@@ -281,6 +300,7 @@ class OrderDict:
         return curr_slot
 
     def from_xml(self, input_text, offset=0):
+        # populates OrderDict from supplied XML file contents
         # TODO: gotta set up cardback IDs for cards which use the default cardback
         # TODO: don't include the right panel back in this dict, bc it'll overwrite the cardback they had?
 
@@ -330,4 +350,13 @@ class OrderDict:
 
         return qty
 
-    # TODO: from_json method (for database storage)
+    def from_json(self, order_json):
+        # populates OrderDict from supplied json/dictionary
+        for face in Faces.FACES.value:
+            for key in order_json[face].keys():
+                query = order_json[face][key]["query"]
+                slots = order_json[face][key]["slots"]
+                req_type = order_json[face][key]["req_type"]
+                self.order[face].insert_with_ids(query, slots, req_type)
+
+    # TODO: cardstock, foil/nonfoil, selected cardback

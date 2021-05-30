@@ -83,13 +83,14 @@ def credits(request):
 def search_multiple(request):
     # search endpoint function - the frontend requests the search results for this query as JSON
     drive_order = request.POST.get("drive_order").split(",")
-    order = json.loads(request.POST.get("order"))
+    order = OrderDict()
+    order.from_json(json.loads(request.POST.get("order")))
 
-    for face in order.keys():
-        for key in order[face].keys():
-            result = search(drive_order, key, order[face][key]["req_type"])
-            order[face][key]["data"] = result
-    return JsonResponse(order)
+    for face in Faces.FACES.value:
+        for item in order.order[face].card_images.values():
+            result = search(drive_order, item.query, item.req_type)
+            item.insert_data(result)
+    return JsonResponse(order.to_dict())
 
 
 def search_individual(request):
