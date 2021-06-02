@@ -120,8 +120,12 @@
                                     </div>
                                 </td>
                                 <td><a target="_blank" href="{{ source.reddit }}">{{ source.username }}</a></td>
-                                <td class="text-center"><a target="_blank"
-                                    href="{{ source.drive_link }}">Link</a></td>
+                                {% if source.drive_link %}
+                                    <td class="text-center"><a target="_blank"
+                                        href="{{ source.drive_link }}">Link</a></td>
+                                {% else %}
+                                    <td></td>
+                                {% endif %}
                             </tr>
                         {% endfor %}
                         </tbody>

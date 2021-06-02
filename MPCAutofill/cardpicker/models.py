@@ -1,8 +1,7 @@
-from django.db import models
 from datetime import datetime
+
+from django.db import models
 from django.utils import dateformat
-from django.contrib.postgres.indexes import GinIndex
-from django.contrib.postgres import search as pg_search
 
 datestring = "jS F, Y"
 
@@ -13,6 +12,7 @@ class Source(models.Model):
     username = models.CharField(max_length=50)
     reddit = models.CharField(max_length=100)
     drive_id = models.CharField(max_length=100, unique=True)
+    drive_link = models.CharField(max_length=200, unique=True)
     description = models.CharField(max_length=400)
     order = models.IntegerField(default=0)
 
@@ -80,7 +80,7 @@ class Source(models.Model):
             "username": self.username,
             "reddit": self.reddit,
             "drive_id": self.drive_id,
-            "drive_link": f"https://drive.google.com/drive/folders/{self.drive_id}",
+            "drive_link": self.drive_link,
             "description": self.description,
             "qty_all": qty_all,
             "qty_cards": qty_cards,

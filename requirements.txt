@@ -26,6 +26,7 @@ idna==2.10
 importlib-metadata==4.0.1
 iniconfig==1.1.1
 inquirer==2.7.0
+isort==5.8.0
 macholib==1.14
 mypy==0.812
 mypy-extensions==0.4.3
@@ -55,7 +56,7 @@ tqdm==4.60.0
 typing-extensions==3.10.0.0
 ua-parser==0.10.0
 uritemplate==3.0.1
-urllib3==1.26.4
+urllib3==1.26.5
 user-agents==2.2.0
 webdriver-manager==3.4.1
 zipp==3.4.1

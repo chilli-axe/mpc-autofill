@@ -54,8 +54,12 @@
         {% for source in sources %}
             <tr>
                 <td><a target="_blank" href="{{ source.reddit }}">{{ source.username }}</a></td>
-                <td style="text-align: center"><a target="_blank"
-                    href="https://drive.google.com/drive/folders/{{ source.drive_id }}">Link</a></td>
+                {% if source.drive_link %}
+                    <td style="text-align: center"><a target="_blank"
+                        href="{{ source.drive_link }}">Link</a></td>
+                {% else %}
+                    <td></td>
+                {% endif %}
                 <td><b>{{ source.qty_cards }}</b> cards, <b>{{ source.qty_cardbacks }}</b> cardbacks,
                     and <b>{{ source.qty_tokens }}</b> tokens, at <b>{{ source.avgdpi }}</b> DPI on average
                     &#8212 {{ source.description }}</td>
