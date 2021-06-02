@@ -1,6 +1,7 @@
+from django.utils import dateformat
 from django_elasticsearch_dsl import Document, fields
 from django_elasticsearch_dsl.registries import registry
-from django.utils import dateformat
+
 from .models import Card, Cardback, Token
 
 datestring = "jS F, Y"
