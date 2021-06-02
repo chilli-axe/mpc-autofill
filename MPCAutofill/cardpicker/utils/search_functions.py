@@ -1,20 +1,14 @@
-import csv
+from datetime import timedelta
+from math import floor
 
-import chardet
-import defusedxml.ElementTree as ET
+from django.utils import timezone
+from elasticsearch_dsl.query import Match
+from Levenshtein import distance
 
-from cardpicker.documents import CardSearch, CardbackSearch, TokenSearch
+from cardpicker.documents import CardbackSearch, CardSearch, TokenSearch
 from cardpicker.forms import InputText
 from cardpicker.models import Source
 from cardpicker.utils.to_searchable import to_searchable
-
-from elasticsearch_dsl.query import Match
-
-from math import floor
-from Levenshtein import distance
-
-from datetime import timedelta
-from django.utils import timezone
 
 
 def build_context(drive_order, order, qty):

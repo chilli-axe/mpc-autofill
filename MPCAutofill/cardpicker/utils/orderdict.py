@@ -2,12 +2,12 @@
 Object Model for working with OrderDicts - the data structure that defines a user's card order
 """
 
-import chardet
 import csv
-import defusedxml.ElementTree as ET
-
-from typing import Any, Tuple, List, Dict
 from enum import Enum
+from typing import Any, Dict, List, Set, Tuple
+
+import chardet
+import defusedxml.ElementTree as ET
 
 from cardpicker.models import DFCPair
 from cardpicker.utils.search_functions import process_line, text_to_list
@@ -33,7 +33,9 @@ class CSVHeaders(Enum):
 
 
 class CardImage:
-    def __init__(self, query: str, slots: List[Tuple[Any, str]], req_type: str):
+    def __init__(self, query: str, slots: Set[Tuple[Any, str]], req_type: str):
+        if not query:
+            query = ""
         self.query = query
         self.slots = (
             slots  # slots is a list of tuples where each tuple is (slot, image id)
@@ -41,14 +43,13 @@ class CardImage:
         self.req_type = req_type
         self.data = []
 
-    def add_slots(self, new_slots: List[Tuple[Any, str]]):
-        self.slots += new_slots
+    def add_slots(self, new_slots: Set[Tuple[Any, str]]):
+        self.slots |= new_slots
 
     def remove_common_cardback(self):
-        if "-" in [x[0] for x in self.slots]:
-            self.slots.pop(
-                0
-            )  # TODO: naive to assume that it's the first element in the list?
+        common_cardback_elem = [x for x in self.slots if x[0] == "-"]
+        if common_cardback_elem:
+            self.slots.remove(common_cardback_elem[0])
 
     def insert_data(self, data):
         self.data = data
@@ -69,7 +70,7 @@ class CardImageCollection:
     def __init__(self):
         self.card_images: Dict[str, CardImage] = {}
 
-    def insert_with_ids(self, query: str, slots: List[Tuple[Any, str]], req_type: str):
+    def insert_with_ids(self, query: str, slots: Set[Tuple[Any, str]], req_type: str):
         # create a CardImage and insert into the dictionary
         if query not in self.card_images.keys():
             self.card_images[query] = CardImage(query, slots, req_type)
@@ -78,13 +79,13 @@ class CardImageCollection:
             self.card_images[query].add_slots(slots)
 
     def insert(self, query: str, slots: List[Any], req_type: str, selected_img: str):
-        slots_with_id = [(x, selected_img) for x in slots]
+        slots_with_id = {(x, selected_img) for x in slots}
         self.insert_with_ids(query, slots_with_id, req_type)
 
     def insert_empty(self, slots):
         # insert empty slots in the requested face
         # for back face, this will add onto the common cardback's slots
-        slots_with_id = [(x, "") for x in slots]
+        slots_with_id = {(x, "") for x in slots}
         self.card_images[""].add_slots(slots_with_id)
 
     def __str__(self):
@@ -111,7 +112,7 @@ class OrderDict:
     def insert(
         self,
         query: str,
-        slots: List[Tuple[Any, str]],
+        slots: Set[Tuple[Any, str]],
         face: str,
         req_type: str,
         selected_img: str,
@@ -124,7 +125,7 @@ class OrderDict:
 
         self.order[face].insert(query, slots, req_type, selected_img)
 
-    def insert_empty(self, slots: List[Tuple[Any, str]], face: str):
+    def insert_empty(self, slots: Set[Tuple[Any, str]], face: str):
         # check that the given face is in the order's keys and raise an error if not
         if face not in self.order.keys():
             raise ValueError(
@@ -132,6 +133,16 @@ class OrderDict:
             )
 
         self.order[face].insert_empty(slots)
+
+    def set_common_cardback_id(self, slots, selected_img):
+        # sets the common cardback's ID and sets the same ID to the given back face slots
+        yaboi = [
+            x
+            for x in self.order[Faces.BACK.value].card_images[""].slots
+            if x[0] in slots
+        ]
+        [self.order[Faces.BACK.value].card_images[""].slots.remove(x) for x in yaboi]
+        self.insert("", slots, Faces.BACK.value, ReqTypes.CARDBACK.value, selected_img)
 
     def remove_common_cardback(self):
         # pop the common cardback from the back face's slots
@@ -161,7 +172,7 @@ class OrderDict:
                     over_cap = True
 
                 req_type = ""
-                curr_slots = list(range(curr_slot, curr_slot + qty))
+                curr_slots = set(range(curr_slot, curr_slot + qty))
 
                 # first, determine if this card is a DFC by virtue of it having its two faces separated by an ampersand
                 query_faces = [query, ""]
@@ -237,7 +248,7 @@ class OrderDict:
             # only care about lines with a front specified
             if line[CSVHeaders.FRONT.value]:
                 # the slots for this line in the CSV
-                curr_slots = list(range(curr_slot, curr_slot + qty))
+                curr_slots = set(range(curr_slot, curr_slot + qty))
 
                 query_faces = [
                     line[CSVHeaders.FRONT.value],
@@ -316,9 +327,11 @@ class OrderDict:
             for child in elem:
                 # structure: id, slots, name, query
                 card_id = child[0].text
-                slots = [x + offset for x in text_to_list(child[1].text)]
+                slots = {
+                    x + offset for x in text_to_list(child[1].text) if x + offset < 612
+                }
                 # filter out slot numbers greater than or equal to 612
-                slots = [x for x in slots if x < 612]
+                # slots = {x for x in slots if x < 612}
                 if slots:
                     used_slots += slots
                     query = child[3].text
@@ -334,19 +347,22 @@ class OrderDict:
         # missing cards we need to account for - and calculate the range of all slots in the order
         qty = max(used_slots) - min(used_slots) + 1
         all_slots = set(range(min(used_slots), max(used_slots) + 1))
-        self.insert_empty(list(all_slots - used_slots), Faces.FRONT.value)
+        empty_slots = all_slots - used_slots
+        if empty_slots:
+            self.insert_empty(empty_slots, Faces.FRONT.value)
 
         # for cardbacks, start by assuming all back slots are empty, then if the xml has any back cards, remove those
         # from the set of empty cardback slots
         empty_back_slots = all_slots
-        # cardback_id = ""  # comments left here in case we eventually wanna pass cardback info to the frontend
+        cardback_id = ""  # comments left here in case we eventually wanna pass cardback info to the frontend
         if root[2].tag == "backs":
             # remove the back slots from used_slots, leaving us with just slots with the common cardback
             empty_back_slots -= xml_parse_face(root[2], Faces.BACK.value, offset)
-            # cardback_id = root[3].text
-        # else:
-        # cardback_id = root[2].text
-        self.insert_empty(list(empty_back_slots), Faces.BACK.value)
+            cardback_id = root[3].text
+        else:
+            cardback_id = root[2].text
+        self.insert_empty(empty_back_slots, Faces.BACK.value)
+        self.set_common_cardback_id(empty_back_slots, cardback_id)
 
         return qty
 
@@ -355,7 +371,8 @@ class OrderDict:
         for face in Faces.FACES.value:
             for key in order_json[face].keys():
                 query = order_json[face][key]["query"]
-                slots = order_json[face][key]["slots"]
+                # slots = order_json[face][key]["slots"]
+                slots = {tuple(x) for x in order_json[face][key]["slots"]}
                 req_type = order_json[face][key]["req_type"]
                 self.order[face].insert_with_ids(query, slots, req_type)
 

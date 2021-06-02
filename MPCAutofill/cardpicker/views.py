@@ -1,20 +1,15 @@
-from django.http import JsonResponse
-from django.shortcuts import render, redirect
-
-from cardpicker.utils.search_functions import (
-    build_context,
-    query_es_cardback,
-    query_es_card,
-    query_es_token,
-    search_new,
-    search_new_elasticsearch_definition,
-)
-from cardpicker.utils.to_searchable import to_searchable
-from cardpicker.utils.orderdict import OrderDict, Faces, ReqTypes
-from cardpicker.forms import InputText, InputXML, InputCSV
-from cardpicker.models import Card, Cardback, Token, Source
-
 import json
+
+from django.http import JsonResponse
+from django.shortcuts import redirect, render
+
+from cardpicker.forms import InputCSV, InputText, InputXML
+from cardpicker.models import Card, Cardback, Source, Token
+from cardpicker.utils.orderdict import Faces, OrderDict, ReqTypes
+from cardpicker.utils.search_functions import (
+    build_context, query_es_card, query_es_cardback, query_es_token,
+    search_new, search_new_elasticsearch_definition)
+from cardpicker.utils.to_searchable import to_searchable
 
 
 def index(request, error=False):
@@ -209,14 +204,12 @@ def input_xml(request):
         form = InputXML(request.POST, request.FILES)
         if form.is_valid():
             try:
-                print("Request is valid for XML uploader")
-
                 # retrieve drive order and XML file from request
                 drive_order = list(request.POST.get("drive_order").split(","))
                 xmlfile = request.FILES["file"].read()
 
                 # parse the XML file to obtain the order dict and quantity in this order
-                order = OrderDict
+                order = OrderDict()
                 qty = order.from_xml(xmlfile, 0)
 
                 # build context
