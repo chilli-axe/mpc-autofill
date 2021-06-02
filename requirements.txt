@@ -55,7 +55,7 @@ tqdm==4.60.0
 typing-extensions==3.10.0.0
 ua-parser==0.10.0
 uritemplate==3.0.1
-urllib3==1.26.4
+urllib3==1.26.5
 user-agents==2.2.0
 webdriver-manager==3.4.1
 zipp==3.4.1
