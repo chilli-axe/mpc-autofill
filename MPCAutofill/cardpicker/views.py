@@ -7,8 +7,13 @@ from cardpicker.forms import InputCSV, InputText, InputXML
 from cardpicker.models import Card, Cardback, Source, Token
 from cardpicker.utils.orderdict import Faces, OrderDict, ReqTypes
 from cardpicker.utils.search_functions import (
-    build_context, query_es_card, query_es_cardback, query_es_token,
-    search_new, search_new_elasticsearch_definition)
+    build_context,
+    query_es_card,
+    query_es_cardback,
+    query_es_token,
+    search_new,
+    search_new_elasticsearch_definition,
+)
 from cardpicker.utils.to_searchable import to_searchable
 
 
@@ -82,9 +87,11 @@ def search_multiple(request):
     order.from_json(json.loads(request.POST.get("order")))
 
     for face in Faces.FACES.value:
-        for item in order.order[face].card_images.values():
+        for item in order[face].values():
             result = search(drive_order, item.query, item.req_type)
             item.insert_data(result)
+    result = search(drive_order, order.cardback.query, order.cardback.req_type)
+    order.cardback.insert_data(result)
     return JsonResponse(order.to_dict())
 
 
@@ -235,6 +242,7 @@ def insert_xml(request):
     qty = order.from_xml(xml, offset)
 
     # remove the - element from the common cardback slot list so the selected common cardback doesn't reset on us
+    # TODO: it still seems to reset? weird
     order.remove_common_cardback()
 
     # build context

@@ -3,7 +3,7 @@ import csv
 from bulk_sync import bulk_sync
 from django.core.management.base import BaseCommand
 
-from cardpicker.models import Card, Cardback, Source, Token
+from cardpicker.models import Source
 
 
 def read_sources_csv():
