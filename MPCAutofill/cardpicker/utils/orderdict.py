@@ -5,17 +5,8 @@ Object Model for working with OrderDicts - the data structure that defines a use
 import csv
 from collections import abc
 from enum import Enum
-from typing import (
-    AbstractSet,
-    Any,
-    Dict,
-    ItemsView,
-    Iterator,
-    List,
-    Set,
-    Tuple,
-    ValuesView,
-)
+from typing import (AbstractSet, Any, Dict, ItemsView, Iterator, List, Set,
+                    Tuple, ValuesView)
 
 import chardet
 import defusedxml.ElementTree as ET
@@ -159,6 +150,8 @@ class OrderDict(abc.MutableMapping):
         return self.__dict__.keys()
 
     def __init__(self):
+        self.cardstock: Cardstocks = Cardstocks.S30
+        self.foil = False
         self.__dict__: Dict[str, CardImageCollection] = {
             Faces.FRONT.value: CardImageCollection(),
             Faces.BACK.value: CardImageCollection(),
@@ -200,9 +193,35 @@ class OrderDict(abc.MutableMapping):
         return "\n".join(f"{key} {str(value)}" for key, value in self)
 
     def to_dict(self):
-        # TODO: repair missing front face slots here (can happen with mangled XML's)
         ret = {x: self[x].to_dict() for x in Faces.FACES.value}
         ret[Faces.BACK.value][""] = self.cardback.to_dict()
+
+        # in the event of mangled xml's, the following bit of code will repair the front face of the
+        # orderdict such that we get empty slots rather than missing cards on the frontend
+        used_slots = set()
+        for image in self.front:
+            used_slots = used_slots.union({x[0] for x in self.front[image].slots})
+        # qty = max(used_slots) - min(used_slots) + 1
+        all_slots = set(range(min(used_slots), max(used_slots) + 1))
+
+        empty_slots = all_slots - used_slots
+        if empty_slots:
+            ret[Faces.FRONT.value][""] = CardImage(
+                "", {(x, "") for x in empty_slots}, ReqTypes.CARD.value
+            )
+
+        # attach the common cardback id in an easy to access place for the frontend
+        common_cardback_id = ""
+        common_back_in_orderdict = "false"
+        common_back_elem = [x[1] for x in self.cardback.slots if x[0] == "-"]
+        if common_back_elem:
+            common_cardback_id = common_back_elem[0]
+            common_back_in_orderdict = "true"
+        ret["common_cardback"] = {
+            "id": common_cardback_id,
+            "in_order": common_back_in_orderdict,
+        }
+
         return ret
 
     def from_text(self, input_lines: str, offset: int = 0):
@@ -424,6 +443,7 @@ class OrderDict(abc.MutableMapping):
 
     def from_json(self, order_json):
         # populates OrderDict from supplied json/dictionary
+        self.remove_common_cardback()
         for face in Faces.FACES.value:
             for key in order_json[face].keys():
                 query = order_json[face][key]["query"]
@@ -434,9 +454,5 @@ class OrderDict(abc.MutableMapping):
                     self[face].insert_with_ids(query, slots, req_type)
                 else:
                     self.cardback.add_slots(slots)
-
-        # if common cardback not in order_json, remove it from the populated OrderDict
-        if "-" not in [x[0] for x in order_json[Faces.BACK.value][""]["slots"]]:
-            self.remove_common_cardback()
 
     # TODO: cardstock, foil/nonfoil, selected cardback

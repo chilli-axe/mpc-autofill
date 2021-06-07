@@ -33,6 +33,12 @@ $.ajaxSetup({
     }
 });
 
+function add_to_group(group, dom_ids) {
+    if (groups[group] === undefined) {
+        groups[group] = new Set();
+    }
+    dom_ids.forEach(groups[group].add, groups[group]);
+}
 
 function insert_data(drive_order, order) {
     // clear out the list of cards with specific versions that don't exist anymore
@@ -148,7 +154,7 @@ function search_api(drive_order, query, slot_id, face, dom_id, req_type = "norma
             'req_type': req_type,
         },
         success: function(data) {
-            build_card(data, dom_id, data['query'], slot_id, face, group, true);
+            build_card(data, dom_id, data['query'], slot_id, face, group);
         },
         error: function () {
             // callback here in 5 seconds
@@ -159,19 +165,32 @@ function search_api(drive_order, query, slot_id, face, dom_id, req_type = "norma
    })
 }
 
+function get_common_cardback_id(data) {
+    // if common cardback not present in data, retrieve the currently selected ID from the dom
+    if (data["common_cardback"]["in_order"] === "true") {
+        return data["common_cardback"]["id"];
+    } else {
+        // attempt to retrieve ID from dom
+        cardback_obj = $("#slot--back").data("obj");
+        if (cardback_obj !== undefined) {
+            return cardback_obj.get_curr_img().id;
+        } else {
+            return "";
+        }
+    }
+}
 
 function build_cards(data) {
     // call build_card on multiple cards by interpreting an order dict, and handle grouping 
-    for (let face in data) {
+    let cardback_id = get_common_cardback_id(data);
+    for (const face of ["front", "back"]) {
         for (let key in data[face]) {
 
             let req_type = data[face][key]["req_type"];
             let slot_ids = data[face][key]["slots"]
 
             let group = 0;
-            if (req_type === "back") {
-                group = 1;
-            } else if (slot_ids.length > 1) {
+            if (slot_ids.length > 1 & req_type !== "back") {
                 group = max_group;
                 max_group++;
             }
@@ -180,29 +199,23 @@ function build_cards(data) {
             let dom_ids = [];
             for (let i=0; i<slot_ids.length; i++) {
                 let dom_id = "slot" + slot_ids[i][0].toString() + "-" + face;
-                build_card(data[face][key].data, dom_id, key, slot_ids[i], face, group);
+                build_card(data[face][key], dom_id, key, slot_ids[i], face, group, cardback_id);
                 dom_ids.push(dom_id);
             }
 
-            if (slot_ids.length > 0) {
-                if (group === 1 && groups[group] !== undefined) {
-                    // add new backs to common cardback group
-                    dom_ids.forEach(groups[group].add, groups[group]);
-                } else {
-                    // assuming that the group number being used here hasn't already been allocated
-                    let yaboi_set = new Set(dom_ids);
-                    groups[group] = yaboi_set;
-                }
+            if (slot_ids.length > 0 && req_type !== "back" && group > 0) {
+                add_to_group(group, dom_ids)
             }
         }
     }
 }
 
 
-function build_card(card, dom_id, query, slot_id, face, group, loaded = false) {
+function build_card(card, dom_id, query, slot_id, face, group, common_back_id = "") {
     // accepts search result data and information about one specific card slot, and builds it
     // first creates the dom element if it doesn't exist, then instantiates the Card which will attach itself
     // to that element
+    let loaded = false;
     if ($('#' + dom_id).length < 1) {
         // create div element for this card to occupy with the appropriate classes
         // let card_elem = document.createElement("div");
@@ -253,6 +266,15 @@ function build_card(card, dom_id, query, slot_id, face, group, loaded = false) {
         else {
             document.getElementById("card-container").appendChild(card_elem);
         }
+    } else {
+        loaded = true;
+    }
+
+    // for cardbacks, decide the group number on a slot-by-slot basis, due to how multiple cardbacks works
+    if ((card.req_type === "back" && (slot_id[1] === common_back_id || slot_id[1] === "")) || slot_id[0] === "-") {
+        group = 1;
+        add_to_group(group, [dom_id]);
+        slot_id[1] = common_back_id;
     }
 
     // insert the returned data into this card's dom element
@@ -269,7 +291,7 @@ function build_card(card, dom_id, query, slot_id, face, group, loaded = false) {
         slot_id[1],
         loaded
     );
-    return dom_id;
+    return group;
 }
 
 

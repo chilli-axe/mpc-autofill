@@ -7,13 +7,8 @@ from cardpicker.forms import InputCSV, InputText, InputXML
 from cardpicker.models import Card, Cardback, Source, Token
 from cardpicker.utils.orderdict import Faces, OrderDict, ReqTypes
 from cardpicker.utils.search_functions import (
-    build_context,
-    query_es_card,
-    query_es_cardback,
-    query_es_token,
-    search_new,
-    search_new_elasticsearch_definition,
-)
+    build_context, query_es_card, query_es_cardback, query_es_token,
+    search_new, search_new_elasticsearch_definition)
 from cardpicker.utils.to_searchable import to_searchable
 
 

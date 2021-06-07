@@ -195,10 +195,9 @@ class Card extends CardBase {
         let this_group = groups[this.group];
         let new_state = !this.locked;
 
-        for (let i = 0; i < this_group.length; i++) {
-            let this_elem = $('#' + this_group[i]);
-            this_elem.data("obj").set_lock(new_state);
-        }
+        groups[this.group].forEach(function(value) {
+            $("#" + value).data("obj").set_lock(new_state);
+        })
     }
 
     set_lock(new_state) {
