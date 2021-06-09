@@ -1,0 +1,105 @@
+{# base card template #}
+<div id="basecard" style="display: none; opacity: 0;" class="card mpccard">
+    <div class="card-header pb-0 text-center">
+        <p class="mpccard-slot"></p>
+        <button class="padlock"><i class="bi bi-unlock"></i></button>
+        <button class="remove"><i class="bi bi-x-circle"></i></button>
+        <div class="spinner-border dl-loading" role="status" style="display: none">
+        </div>
+    </div>
+    <div class="rounded-lg shadow-lg embed-responsive embed-responsive-7by5">
+        <img class="embed-responsive-item card-img" style="z-index: 1"> <!-- onerror="thumbnail_404(this);"  -->
+        <img class="embed-responsive-item card-img-prev" style="z-index: 0">
+        <img class="embed-responsive-item card-img-next" style="z-index: 0">
+    </div>
+    <div class="card-body mb-0 text-center">
+        <h5 class="card-subtitle mpccard-name" contentEditable="true"
+            spellcheck="false" onfocus="selectElementContents(this)"></h5>
+        <div class="mpccard-spacing">
+            <p class="card-text mpccard-source"></p>
+            <p class="card-text mpccard-counter" style="display: none;"></p>
+            <button class="card-text mpccard-counter-btn btn btn-outline-info" style="display: none;"></button>
+        </div>
+    </div>
+    <div class="padding-top" style="padding-top: 20px;">
+        <button class="prev btn btn-outline-primary">&#10094;</button>
+        <button class="next btn btn-outline-primary">&#10095;</button>
+    </div>
+</div>
+
+{# base card template for What's New page #}
+<div id="basecard-new" style="display: none; opacity: 0;" class="card mpccard">
+    <div class="card-header pb-0 text-center">
+        <p class="mpccard-slot"></p>
+    </div>
+    <div class="rounded-lg shadow-lg embed-responsive embed-responsive-7by5">
+        <img class="embed-responsive-item card-img" onerror="thumbnail_404(this);" style="z-index: 1">
+    </div>
+    <div class="card-body mb-0 text-center">
+        <h5 class="card-subtitle mpccard-name"></h5>
+        <div class="mpccard-spacing">
+            <p class="card-text mpccard-source"></p>
+        </div>
+    </div>
+</div>
+
+{# base card template for grid view #}
+<div id="basecard-grid" class="card mpccard" style="display: none; opacity: 0;">
+    <div class="card-header pb-0 text-center">
+        <p class="mpccard-slot"></p>
+    </div>
+    <div class="rounded-lg shadow-lg embed-responsive embed-responsive-7by5">
+        <img class="embed-responsive-item card-img" style="z-index: 1;" onerror="thumbnail_404(this);">
+    </div>
+    <div class="card-body mb-0 text-center">
+        <h5 class="card-subtitle mpccard-name"></h5>
+        <div class="mpccard-spacing">
+            <p class="card-text mpccard-source"></p>
+        </div>
+    </div>
+</div>
+
+{# extra card info & hi res image modal #}
+<div class="modal fade" id="detailedViewModal" tabindex="-1" role="dialog" aria-labelledby="detailedViewModalLabel"
+        aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 id="detailedViewModalLabel" class="modal-title">Card Details</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-lg-5 mb-3 mb-lg-0">
+                        <div class="shadow-lg embed-responsive embed-responsive-7by5" style="border-radius: 18px"> {# TODO: percentage for border radius? #}
+                            <img id="detailedView-img" class="embed-responsive-item card-preview" style="z-index: 1" onerror="thumbnail_404_med(this);">
+                        </div>
+                        <div id="detailedView-spinner" class="spinner-border vertical-center" role="status">
+                            <span class="sr-only">Loading...</span>
+                        </div>
+                    </div>
+                    <div class="col-lg-7">
+                        <h4 id="detailedView-name">Cardname</h4>
+                        <table class="table table-hover">
+                            <tbody>
+                            <tr><td><b>Content Creator</b></td><td id="detailedView-source"></td><tr>
+                            <tr><td><b>Resolution</b></td><td id="detailedView-dpi"></td></tr>
+                            <tr><td><b>Date Created</b></td><td id="detailedView-date"></td></tr>
+                            <tr><td><b>Drive ID</b></td><td><code id="detailedView-id"></code></td></tr>
+                            <tr><td><b>Class</b></td><td id="detailedView-class"></td></tr>
+                        </table>
+                        <button id="detailedView-dl" type="button" class="btn btn-primary btn-block">Download Image</button>
+                    </div>
+                    {% comment %} TODO: report issue button {% endcomment %}
+
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>

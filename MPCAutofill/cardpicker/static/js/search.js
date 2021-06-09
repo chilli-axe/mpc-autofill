@@ -344,7 +344,7 @@ function build_new_cards(source, data, more) {
         let dom_id = card_item.id;
         
         // copy the base card sitting in the dom, adjust it, then stick it into this artist's card container
-        let card_elem = document.getElementById("basecard").cloneNode(true);
+        let card_elem = document.getElementById("basecard-new").cloneNode(true);
         card_elem.style.display = "";
         card_elem.id = dom_id;
 

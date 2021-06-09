@@ -19,6 +19,16 @@ function get_thumbnail_med(driveID) {
     return "https://drive.google.com/thumbnail?sz=w1122-h1122&id=" + driveID
 }
 
+function thumbnail_404(source) {
+    source.src = "/static/cardpicker/error_404.png";
+    return true;
+}
+
+function thumbnail_404_med(source) {
+    source.src = "/static/cardpicker/error_404_med.png";
+    return true;
+}
+
 function selectElementContents(el) {
     // TODO: this is a bit fucked atm
     // select all text in contentEditable
@@ -522,7 +532,7 @@ class Card extends CardBase {
         } else {
             // this.elem_counter.style.display = "none";
             // no search results - update image src to blank image
-            this.elem_img.src = "https://mpcautofill.com/static/cardpicker/blank.png";
+            this.elem_img.src = "/static/cardpicker/blank.png";
         }
     }
 

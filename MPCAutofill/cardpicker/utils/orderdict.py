@@ -384,8 +384,6 @@ class OrderDict(abc.MutableMapping):
 
     def from_xml(self, input_text, offset=0):
         # populates OrderDict from supplied XML file contents
-        # TODO: gotta set up cardback IDs for cards which use the default cardback
-        # TODO: don't include the right panel back in this dict, bc it'll overwrite the cardback they had?
 
         # note: this raises an IndexError if you upload an old xml (which doesn't include the search query), and this
         # exception is handled in the view that calls parse_xml
