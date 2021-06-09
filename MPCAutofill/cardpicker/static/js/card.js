@@ -547,12 +547,7 @@ class Card extends CardBase {
         $(this.pe).animate({opacity: 0}, 250, $.proxy(function () {
             // first, if this card is in a lock group, remove it from the group
             if (this.group > 0) {
-                // attempt to yeet this id out of the group
-                // using the top rated javascript answer of all time on stackoverflow haha
-                let id_idx = groups[this.group].indexOf(this.dom_id);
-                if (id_idx > -1) {
-                    groups[this.group].splice(id_idx, 1);
-                }
+                groups[this.group].delete(this.dom_id);
             }
 
             // query elasticsearch for info w/ the new search query and pass the current card slot
