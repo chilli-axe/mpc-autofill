@@ -14,7 +14,7 @@ function download(filename, text) {
 function generateXml() {
     // create xml document
     let doc = document.implementation.createDocument("", "", null);
-    let e = document.getElementById("cardstockSelect");
+    let e = document.getElementById("cardstock-dropdown");
     let selectedCardstock = e.options[e.selectedIndex].value;
 
     // top level XML doc element, attach everything to this
@@ -25,7 +25,7 @@ function generateXml() {
     let qtyElem = doc.createElement("quantity");
     let bracketElem = doc.createElement("bracket");
     let stockElem = doc.createElement("stock");
-    let foil = document.getElementById("foilSelect");
+    let foil = document.getElementById("cardstock-foil");
     let foilElem = doc.createElement("foil");
 
     qtyElem.appendChild(doc.createTextNode(qty));
@@ -233,4 +233,9 @@ function remove_card() {
         }
     }
     $('#removeCardModal').modal('hide');
+}
+
+function set_cardstock(data) {
+    document.getElementById("cardstock-dropdown").value = data.cardstock;
+    document.getElementById("cardstock-foil").checked = data.foil === "true";
 }

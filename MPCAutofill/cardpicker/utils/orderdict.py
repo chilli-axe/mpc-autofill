@@ -17,7 +17,7 @@ from cardpicker.utils.to_searchable import to_searchable
 
 
 class Cardstocks(Enum):
-    S30 = "(S30)(Standard Smooth"
+    S30 = "(S30) Standard Smooth"
     S33 = "(S33) Superior Smooth"
     M31 = "(M31) Linen"
     P10 = "(P10) Plastic"
@@ -150,12 +150,12 @@ class OrderDict(abc.MutableMapping):
         return self.__dict__.keys()
 
     def __init__(self):
-        self.cardstock: Cardstocks = Cardstocks.S30
-        self.foil = False
         self.__dict__: Dict[str, CardImageCollection] = {
             Faces.FRONT.value: CardImageCollection(),
             Faces.BACK.value: CardImageCollection(),
         }
+        self.cardstock: Cardstocks = Cardstocks.S30
+        self.foil = False
         self.cardback = CardbackImage()
 
     def insert(
@@ -221,6 +221,9 @@ class OrderDict(abc.MutableMapping):
             "id": common_cardback_id,
             "in_order": common_back_in_orderdict,
         }
+
+        ret["cardstock"] = self.cardstock.value
+        ret["foil"] = "true" if self.foil else "false"
 
         return ret
 
@@ -296,7 +299,7 @@ class OrderDict(abc.MutableMapping):
 
         # handle case where csv doesn't have correct headers
         headers = ",".join(
-            [CSVHeaders.FRONT.value, CSVHeaders.BACK.value, CSVHeaders.QTY.value]
+            [CSVHeaders.QTY.value, CSVHeaders.FRONT.value, CSVHeaders.BACK.value]
         )
         if csv_string_split[0] != headers:
             # this CSV doesn't appear to have the correct column headers, so we'll attach them here
@@ -390,6 +393,11 @@ class OrderDict(abc.MutableMapping):
         # TODO: handle the exception here and return nothing
         root = ET.fromstring(input_text)
 
+        # passing cardstock through the Cardstocks enum to validate that the given cardstock is valid
+        # TODO: handle KeyError exception here?
+        self.cardstock = {str(x.value): x for x in Cardstocks}[root[0][2].text]
+        self.foil = root[0][3].text == "true"
+
         def xml_parse_face(elem, face, offset):
             # parse a given face of the uploaded xml and add its cards to the orderdict, returning the slot
             # numbers found for this face in the xml
@@ -441,6 +449,8 @@ class OrderDict(abc.MutableMapping):
 
     def from_json(self, order_json):
         # populates OrderDict from supplied json/dictionary
+        self.cardstock = {str(x.value): x for x in Cardstocks}[order_json["cardstock"]]
+        self.foil = order_json["foil"] == "true"
         self.remove_common_cardback()
         for face in Faces.FACES.value:
             for key in order_json[face].keys():

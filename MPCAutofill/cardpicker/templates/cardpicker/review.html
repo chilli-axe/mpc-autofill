@@ -38,6 +38,7 @@
 
         document.getElementById("id_body").onload = function () {
             let order = {{ order|safe }};
+            set_cardstock(order);
             insert_data(drive_order, order);
         }
         // enable tooltips
@@ -94,16 +95,16 @@
 
                 {# cardstock dropdown label and foil selector #}
                 <div class="float-left">
-                    <label for="cardstockSelect" style="font-size: 1rem">Cardstock:</label>
+                    <label for="cardstock-dropdown" style="font-size: 1rem">Cardstock:</label>
                 </div>
                 <div class="float-right">
-                    <input type="checkbox" class="form-check-input" id="foilSelect">
-                    <label class="form-check-label" for="foilSelect" style="font-size: 1rem; user-select: none">Foil</label>
+                    <input type="checkbox" class="form-check-input" id="cardstock-foil">
+                    <label class="form-check-label" for="cardstock-foil" style="font-size: 1rem; user-select: none">Foil</label>
                 </div>
 
                 {# dropdown to select cardstock #}
                 <div class="form-group">
-                    <select class="custom-select" id="cardstockSelect">
+                    <select class="custom-select" id="cardstock-dropdown">
                         <option selected="selected">(S30) Standard Smooth</option>
                         <option>(S33) Superior Smooth</option>
                         <option>(M31) Linen</option>
