@@ -1,5 +1,5 @@
 """
-Object Model for working with OrderDicts - the data structure that defines a user's card order
+Object Model for working with MPCOrders - the data structure that defines a user's card order
 """
 
 import csv
@@ -130,7 +130,7 @@ class CardImageCollection(abc.MutableMapping):
         return {key: value.to_dict() for key, value in self.items()}
 
 
-class OrderDict(abc.MutableMapping):
+class MPCOrder(abc.MutableMapping):
     def __setitem__(self, key: str, value: CardImageCollection) -> None:
         self.__dict__[key] = value
 
@@ -161,7 +161,7 @@ class OrderDict(abc.MutableMapping):
     def insert(
         self,
         query: str,
-        slots: Set[Tuple[Any, str]],
+        slots: List[Any],
         face: str,
         req_type: str,
         selected_img: str,
@@ -169,7 +169,7 @@ class OrderDict(abc.MutableMapping):
         # check that the given face is in the order's keys and raise an error if not
         if face not in self.keys():
             raise ValueError(
-                f"Specified face not in OrderDict's faces: you specified {face}, I have {self.keys()}"
+                f"Specified face not in MPCOrder's faces: you specified {face}, I have {self.keys()}"
             )
 
         self[face].insert(query, slots, req_type, selected_img)
@@ -197,7 +197,7 @@ class OrderDict(abc.MutableMapping):
         ret[Faces.BACK.value][""] = self.cardback.to_dict()
 
         # in the event of mangled xml's, the following bit of code will repair the front face of the
-        # orderdict such that we get empty slots rather than missing cards on the frontend
+        # mpc order such that we get empty slots rather than missing cards on the frontend
         used_slots = set()
         for image in self.front:
             used_slots = used_slots.union({x[0] for x in self.front[image].slots})
@@ -212,14 +212,14 @@ class OrderDict(abc.MutableMapping):
 
         # attach the common cardback id in an easy to access place for the frontend
         common_cardback_id = ""
-        common_back_in_orderdict = "false"
+        common_back_in_mpc_order = "false"
         common_back_elem = [x[1] for x in self.cardback.slots if x[0] == "-"]
         if common_back_elem:
             common_cardback_id = common_back_elem[0]
-            common_back_in_orderdict = "true"
+            common_back_in_mpc_order = "true"
         ret["common_cardback"] = {
             "id": common_cardback_id,
-            "in_order": common_back_in_orderdict,
+            "in_order": common_back_in_mpc_order,
         }
 
         ret["cardstock"] = self.cardstock.value
@@ -228,7 +228,7 @@ class OrderDict(abc.MutableMapping):
         return ret
 
     def from_text(self, input_lines: str, offset: int = 0):
-        # populates OrderDict from supplied text input
+        # populates MPCOrder from supplied text input
         transforms = dict((x.front, x.back) for x in DFCPair.objects.all())
         curr_slot = offset
 
@@ -287,7 +287,7 @@ class OrderDict(abc.MutableMapping):
         return curr_slot - offset
 
     def from_csv(self, csv_bytes):
-        # populates OrderDict from supplied CSV bytes
+        # populates MPCOrder from supplied CSV bytes
         transforms = dict((x.front, x.back) for x in DFCPair.objects.all())
         # TODO: I'm sure this can be cleaned up a lot, the logic here is confusing and unintuitive
         curr_slot = 0
@@ -386,7 +386,7 @@ class OrderDict(abc.MutableMapping):
         return curr_slot
 
     def from_xml(self, input_text, offset=0):
-        # populates OrderDict from supplied XML file contents
+        # populates MPCOrder from supplied XML file contents
 
         # note: this raises an IndexError if you upload an old xml (which doesn't include the search query), and this
         # exception is handled in the view that calls parse_xml
@@ -399,7 +399,7 @@ class OrderDict(abc.MutableMapping):
         self.foil = root[0][3].text == "true"
 
         def xml_parse_face(elem, face, offset):
-            # parse a given face of the uploaded xml and add its cards to the orderdict, returning the slot
+            # parse a given face of the uploaded xml and add its cards to the mpc order, returning the slot
             # numbers found for this face in the xml
             used_slots = []
             for child in elem:
@@ -413,7 +413,6 @@ class OrderDict(abc.MutableMapping):
                 if slots:
                     used_slots += slots
                     query = child[3].text
-                    # self.insert(query, slots, face, ReqTypes.CARD.value, card_id)
                     if query:
                         self.insert(query, slots, face, ReqTypes.CARD.value, card_id)
                     else:
@@ -429,12 +428,10 @@ class OrderDict(abc.MutableMapping):
         # missing cards we need to account for - and calculate the range of all slots in the order
         qty = max(used_slots) - min(used_slots) + 1
         all_slots = set(range(min(used_slots), max(used_slots) + 1))
-        # empty_slots = all_slots - used_slots
 
         # for cardbacks, start by assuming all back slots are empty, then if the xml has any back cards, remove those
         # from the set of empty cardback slots
         empty_back_slots = all_slots
-        cardback_id = ""  # comments left here in case we eventually wanna pass cardback info to the frontend
         if root[2].tag == "backs":
             # remove the back slots from used_slots, leaving us with just slots with the common cardback
             empty_back_slots -= xml_parse_face(root[2], Faces.BACK.value, offset)
@@ -448,7 +445,7 @@ class OrderDict(abc.MutableMapping):
         return qty
 
     def from_json(self, order_json):
-        # populates OrderDict from supplied json/dictionary
+        # populates MPCOrder from supplied json/dictionary
         self.cardstock = {str(x.value): x for x in Cardstocks}[order_json["cardstock"]]
         self.foil = order_json["foil"] == "true"
         self.remove_common_cardback()
@@ -462,5 +459,3 @@ class OrderDict(abc.MutableMapping):
                     self[face].insert_with_ids(query, slots, req_type)
                 else:
                     self.cardback.add_slots(slots)
-
-    # TODO: cardstock, foil/nonfoil, selected cardback

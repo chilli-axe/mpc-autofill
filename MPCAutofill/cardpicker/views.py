@@ -5,7 +5,7 @@ from django.shortcuts import redirect, render
 
 from cardpicker.forms import InputCSV, InputText, InputXML
 from cardpicker.models import Card, Cardback, Source, Token
-from cardpicker.utils.orderdict import Faces, OrderDict, ReqTypes
+from cardpicker.utils.mpcorder import Faces, MPCOrder, ReqTypes
 from cardpicker.utils.search_functions import (
     build_context, query_es_card, query_es_cardback, query_es_token,
     search_new, search_new_elasticsearch_definition)
@@ -78,7 +78,7 @@ def credits(request):
 def search_multiple(request):
     # search endpoint function - the frontend requests the search results for this query as JSON
     drive_order = request.POST.get("drive_order").split(",")
-    order = OrderDict()
+    order = MPCOrder()
     order.from_json(json.loads(request.POST.get("order")))
 
     for face in Faces.FACES.value:
@@ -142,7 +142,7 @@ def review(request):
             lines_raw = form["card_list"].value()
 
             # parse the text input to obtain the order dict and quantity in this order
-            order = OrderDict()
+            order = MPCOrder()
             qty = order.from_text(lines_raw)
 
             # build context
@@ -160,7 +160,7 @@ def insert_text(request):
     offset = int(request.POST.get("offset"))
 
     # parse the text input to obtain the order dict and quantity in this addition to the order
-    order = OrderDict()
+    order = MPCOrder()
     qty = order.from_text(text, offset)
 
     # remove the "-" element from the common cardback slot list so the selected common cardback doesn't reset on us
@@ -188,7 +188,7 @@ def input_csv(request):
             csvfile = request.FILES["file"].read()
 
             # parse the csv file to obtain the order dict and quantity in this order
-            order = OrderDict()
+            order = MPCOrder()
             qty = order.from_csv(csvfile)
 
             # build context
@@ -211,7 +211,7 @@ def input_xml(request):
                 xmlfile = request.FILES["file"].read()
 
                 # parse the XML file to obtain the order dict and quantity in this order
-                order = OrderDict()
+                order = MPCOrder()
                 qty = order.from_xml(xmlfile, 0)
 
                 # build context
@@ -233,7 +233,7 @@ def insert_xml(request):
     offset = int(request.POST.get("offset"))
 
     # parse the XML input to obtain the order dict and quantity in this addition to the order
-    order = OrderDict()
+    order = MPCOrder()
     qty = order.from_xml(xml, offset)
 
     # remove the - element from the common cardback slot list so the selected common cardback doesn't reset on us

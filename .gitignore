@@ -163,3 +163,4 @@ MPCAutofill/ignored
 ga_settings.py
 bootstrap.min.css
 jquery.ui.touch-punch.js
+MPCAutofill/client_secrets.json
