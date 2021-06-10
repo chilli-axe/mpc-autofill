@@ -1,15 +1,12 @@
-import os
-import pickle
 import time
 from math import floor
 
 from django.core import management
 from django.core.management.base import BaseCommand
 from django.db import transaction
-from google.auth.transport.requests import Request
-from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
+from oauth2client.service_account import ServiceAccountCredentials
 from tqdm import tqdm
 
 from cardpicker.models import Card, Cardback, Source, Token
@@ -22,6 +19,8 @@ SCOPES = [
     "https://www.googleapis.com/auth/drive.metadata.readonly",
     "https://www.googleapis.com/auth/drive.readonly",
 ]
+
+SERVICE_ACC_FILENAME = "client_secrets.json"
 
 DPI_HEIGHT_RATIO = 300 / 1122  # 300 DPI for image of vertical resolution 1122 pixels
 
@@ -291,24 +290,8 @@ def add_card(folder, source, item, q_cards, q_cardbacks, q_tokens):
 
 
 def login():
-    creds = None
-    # The file token.pickle stores the user's access and refresh tokens, and is
-    # created automatically when the authorization flow completes for the first
-    # time.
-    if os.path.exists("token.pickle"):
-        with open("token.pickle", "rb") as token:
-            creds = pickle.load(token)
-    # If there are no (valid) credentials available, let the user log in.
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
-            flow = InstalledAppFlow.from_client_secrets_file("credentials.json", SCOPES)
-            creds = flow.run_local_server(port=0)
-        # Save the credentials for the next run
-        with open("token.pickle", "wb") as token:
-            pickle.dump(creds, token)
-
+    # authenticate with Google Drive service account JSON credentials
+    creds = ServiceAccountCredentials.from_json_keyfile_name(SERVICE_ACC_FILENAME, scopes=SCOPES)
     return build("drive", "v3", credentials=creds)
 
 
