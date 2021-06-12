@@ -131,8 +131,6 @@ def search(drive_order, query, req_type):
 def review(request):
     # return the review page with the order dict and quantity from parsing the given text input as context
     # used for rendering the review page
-
-    # TODO: rename this to input_text?
     if request.method == "POST":
         form = InputText(request.POST)
         if form.is_valid():
@@ -237,7 +235,6 @@ def insert_xml(request):
     qty = order.from_xml(xml, offset)
 
     # remove the - element from the common cardback slot list so the selected common cardback doesn't reset on us
-    # TODO: it still seems to reset? weird
     order.remove_common_cardback()
 
     # build context

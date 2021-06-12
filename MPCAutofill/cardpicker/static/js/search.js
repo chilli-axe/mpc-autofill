@@ -46,7 +46,7 @@ function insert_data(drive_order, order) {
 
     // switch to fronts if necessary
     if (!front_visible) {
-        switchFaces();
+        switch_faces();
     }
     $('#loadModal').modal('show')
     
@@ -137,7 +137,9 @@ function alert_missing_versions(cards_not_found) {
         }
 
         // show the modal
-        $('#missingCardsModal').modal('show');
+        setTimeout($.proxy(function () {
+            $('#missingCardsModal').modal('show');
+        }, this), 700);
     }
 }
 

@@ -188,12 +188,11 @@ class Card extends CardBase {
         // when setting the card's idx, check if it's in a group and is locked - if so, 
         // update all cards in the group too
         if (this.locked) {
-            let this_group = groups[this.group];
-            for (let item of this_group) {
-                let this_obj = $('#' + item).data("obj");
+            groups[this.group].forEach(function(value) {
+                let this_obj = $('#' + value).data("obj");
                 this_obj.img_idx = new_idx;
                 this_obj.update_card();
-            }
+            })
         } else {
             this.img_idx = new_idx;
             this.update_card();
@@ -202,7 +201,6 @@ class Card extends CardBase {
 
     toggle_lock() {
         // toggle locking for this card's group
-        let this_group = groups[this.group];
         let new_state = !this.locked;
 
         groups[this.group].forEach(function(value) {
@@ -292,7 +290,8 @@ class Card extends CardBase {
 
         // if the Card is part of a lock group, update the group with this Card's new dom ID
         if (this.group > 0) {
-            groups[this.group][groups[this.group].indexOf(this.dom_id)] = new_dom_id;
+            groups[this.group].delete(this.dom_id);
+            groups[this.group].add(new_dom_id);
         }
 
         this.dom_id = new_dom_id;
@@ -433,6 +432,7 @@ class Card extends CardBase {
 
         // click on thumbnail for detailed view
         if (!this.empty) {
+            this.elem_counter.style.visibility = "visible";
             this.elem_img.onclick = $.proxy(function() {
                 this.open_detailed_view();
             }, this);
@@ -475,7 +475,6 @@ class Card extends CardBase {
         if (this.img_count > 1 & (this.slot == "-" | this.req_type != "back")) {
             this.elem_prev.style.visibility = "visible";
             this.elem_next.style.visibility = "visible";
-            this.elem_counter.style.visibility = "visible";
 
             this.elem_prev.onclick = $.proxy(function () {
                 this.update_idx(-1);

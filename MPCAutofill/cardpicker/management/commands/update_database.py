@@ -291,7 +291,9 @@ def add_card(folder, source, item, q_cards, q_cardbacks, q_tokens):
 
 def login():
     # authenticate with Google Drive service account JSON credentials
-    creds = ServiceAccountCredentials.from_json_keyfile_name(SERVICE_ACC_FILENAME, scopes=SCOPES)
+    creds = ServiceAccountCredentials.from_json_keyfile_name(
+        SERVICE_ACC_FILENAME, scopes=SCOPES
+    )
     return build("drive", "v3", credentials=creds)
 
 

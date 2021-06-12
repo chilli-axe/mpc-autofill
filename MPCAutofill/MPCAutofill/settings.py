@@ -12,23 +12,28 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 
 import os
 
-# from cardpicker.search_backends import CustomElasticSearchEngine
+from environ import Env
+
+env = Env()
+env.read_env()
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Production-specific settings kept in local_settings.py
-try:
-    from MPCAutofill.local_settings import *
-except ImportError:
-    # SECURITY WARNING: keep the secret key used in production secret!
-    SECRET_KEY = "a=jl+kf*^v%4x!qjm8)kzfr9l(2hg)&^wfdjnlqg9^p(fph5c4"
 
-    # SECURITY WARNING: don't run with debug turned on in production!
-    DEBUG = True
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = env("DJANGO_SECRET_KEY", default="-")
 
-    ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = env("DJANGO_DEBUG", default=False)
 
+ALLOWED_HOSTS = env("ALLOWED_HOSTS", default=["localhost", "127.0.0.1"])
+
+# Google Analytics GTAG
+GTAG = env("GTAG", default="")
+
+PREPEND_WWW = env("PREPEND_WWW", default=False)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/

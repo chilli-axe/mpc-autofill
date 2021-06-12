@@ -11,7 +11,7 @@ function download(filename, text) {
     document.body.removeChild(element);
 }
 
-function generateXml() {
+function generate_xml() {
     // create xml document
     let doc = document.implementation.createDocument("", "", null);
     let e = document.getElementById("cardstock-dropdown");
@@ -128,7 +128,7 @@ function generateXml() {
     download("cards.xml", xml);
 }
 
-function switchFaces() {
+function switch_faces() {
     front_visible = !front_visible;
 
     let front_faces = document.getElementsByClassName("card-front");
@@ -156,7 +156,7 @@ function switchFaces() {
     switch_button.textContent = button_text;
 }
 
-function downloadAll() {
+function download_all() {
     // TODO: can we rewrite this to zip up the requested images?
     // TODO: or download individually without opening one billion windows?
     // get all Card objects using a set to avoid duplicates
@@ -215,7 +215,7 @@ function remove_card() {
             if (this_obj.group > 0) {
                 // the Card's dom ID will be sitting in the array groups[this_obj.group],
                 // at index groups[this_obj.group].indexOf(this_obj.dom_id)
-                groups[this_obj.group].splice(groups[this_obj.group].indexOf(this_obj.dom_id), 1);
+                groups[this_obj.group].delete(this_obj.dom_id);
             }
 
             // delete the dom element
