@@ -152,6 +152,7 @@ cython_debug/
 
 .idea
 .DS_Store
+MPCAutofill/card_db.db
 MPCAutofill/build
 MPCAutofill/cards
 MPCAutofill/credentials.json
@@ -164,3 +165,4 @@ ga_settings.py
 bootstrap.min.css
 jquery.ui.touch-punch.js
 MPCAutofill/client_secrets.json
+static

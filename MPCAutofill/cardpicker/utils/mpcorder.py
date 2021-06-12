@@ -201,14 +201,14 @@ class MPCOrder(abc.MutableMapping):
         used_slots = set()
         for image in self.front:
             used_slots = used_slots.union({x[0] for x in self.front[image].slots})
-        # qty = max(used_slots) - min(used_slots) + 1
-        all_slots = set(range(min(used_slots), max(used_slots) + 1))
-
-        empty_slots = all_slots - used_slots
-        if empty_slots:
-            ret[Faces.FRONT.value][""] = CardImage(
-                "", {(x, "") for x in empty_slots}, ReqTypes.CARD.value
-            )
+        
+        if used_slots:
+            all_slots = set(range(min(used_slots), max(used_slots) + 1))
+            empty_slots = all_slots - used_slots
+            if empty_slots:
+                ret[Faces.FRONT.value][""] = CardImage(
+                    "", {(x, "") for x in empty_slots}, ReqTypes.CARD.value
+                ).to_dict()
 
         # attach the common cardback id in an easy to access place for the frontend
         common_cardback_id = ""
@@ -426,21 +426,23 @@ class MPCOrder(abc.MutableMapping):
         # figure out which slots are empty in the order
         # calculate qty with the maximum and minimum slot numbers in the order, because there might be
         # missing cards we need to account for - and calculate the range of all slots in the order
-        qty = max(used_slots) - min(used_slots) + 1
-        all_slots = set(range(min(used_slots), max(used_slots) + 1))
+        qty = 0
+        if used_slots:
+            qty = max(used_slots) - min(used_slots) + 1
+            all_slots = set(range(min(used_slots), max(used_slots) + 1))
 
-        # for cardbacks, start by assuming all back slots are empty, then if the xml has any back cards, remove those
-        # from the set of empty cardback slots
-        empty_back_slots = all_slots
-        if root[2].tag == "backs":
-            # remove the back slots from used_slots, leaving us with just slots with the common cardback
-            empty_back_slots -= xml_parse_face(root[2], Faces.BACK.value, offset)
-            cardback_id = root[3].text
-        else:
-            cardback_id = root[2].text
+            # for cardbacks, start by assuming all back slots are empty, then if the xml has any back cards,
+            # remove those from the set of empty cardback slots
+            empty_back_slots = all_slots
+            if root[2].tag == "backs":
+                # remove the back slots from used_slots, leaving us with just slots with the common cardback
+                empty_back_slots -= xml_parse_face(root[2], Faces.BACK.value, offset)
+                cardback_id = root[3].text
+            else:
+                cardback_id = root[2].text
 
-        self.add_to_cardback(empty_back_slots)
-        self.set_common_cardback_id(empty_back_slots, cardback_id)
+            self.add_to_cardback(empty_back_slots)
+            self.set_common_cardback_id(empty_back_slots, cardback_id)
 
         return qty
 

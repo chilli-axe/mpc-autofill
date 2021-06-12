@@ -19,6 +19,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="source",
             name="drive_id",
-            field=models.CharField(max_length=100, unique=True),
+            field=models.CharField(max_length=100, unique=False),
         ),
     ]
