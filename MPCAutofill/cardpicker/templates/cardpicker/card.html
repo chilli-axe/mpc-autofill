@@ -4,13 +4,11 @@
         <p class="mpccard-slot"></p>
         <button class="padlock"><i class="bi bi-unlock"></i></button>
         <button class="remove"><i class="bi bi-x-circle"></i></button>
-        <div class="spinner-border dl-loading" role="status" style="display: none">
-        </div>
     </div>
     <div class="rounded-lg shadow-lg embed-responsive embed-responsive-7by5">
-        <img class="embed-responsive-item card-img" style="z-index: 1"> <!-- onerror="thumbnail_404(this);"  -->
-        <img class="embed-responsive-item card-img-prev" style="z-index: 0">
-        <img class="embed-responsive-item card-img-next" style="z-index: 0">
+        <img class="embed-responsive-item card-img" loading="lazy" style="z-index: 1" onerror="thumbnail_404(this);">
+        <img class="embed-responsive-item card-img-prev" loading="lazy" style="z-index: 0" onerror="thumbnail_404(this);">
+        <img class="embed-responsive-item card-img-next" loading="lazy" style="z-index: 0" onerror="thumbnail_404(this);">
     </div>
     <div class="card-body mb-0 text-center">
         <h5 class="card-subtitle mpccard-name" contentEditable="true"
@@ -33,7 +31,7 @@
         <p class="mpccard-slot"></p>
     </div>
     <div class="rounded-lg shadow-lg embed-responsive embed-responsive-7by5">
-        <img class="embed-responsive-item card-img" onerror="thumbnail_404(this);" style="z-index: 1">
+        <img class="embed-responsive-item card-img" loading="lazy" onerror="thumbnail_404(this);" style="z-index: 1">
     </div>
     <div class="card-body mb-0 text-center">
         <h5 class="card-subtitle mpccard-name"></h5>
@@ -49,7 +47,7 @@
         <p class="mpccard-slot"></p>
     </div>
     <div class="rounded-lg shadow-lg embed-responsive embed-responsive-7by5">
-        <img class="embed-responsive-item card-img" style="z-index: 1;" onerror="thumbnail_404(this);">
+        <img class="embed-responsive-item card-img" loading="lazy" style="z-index: 1;" onerror="thumbnail_404(this);">
     </div>
     <div class="card-body mb-0 text-center">
         <h5 class="card-subtitle mpccard-name"></h5>

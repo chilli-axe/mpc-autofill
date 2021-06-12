@@ -217,7 +217,6 @@ function build_card(card, dom_id, query, slot_id, face, group, common_back_id = 
     // accepts search result data and information about one specific card slot, and builds it
     // first creates the dom element if it doesn't exist, then instantiates the Card which will attach itself
     // to that element
-    let loaded = false;
     if ($('#' + dom_id).length < 1) {
         // create div element for this card to occupy with the appropriate classes
         // let card_elem = document.createElement("div");
@@ -268,9 +267,7 @@ function build_card(card, dom_id, query, slot_id, face, group, common_back_id = 
         else {
             document.getElementById("card-container").appendChild(card_elem);
         }
-    } else {
-        loaded = true;
-    }
+    } 
 
     // for cardbacks, decide the group number on a slot-by-slot basis, due to how multiple cardbacks works
     if ((card.req_type === "back" && (slot_id[1] === common_back_id || slot_id[1] === "")) || slot_id[0] === "-") {
@@ -290,8 +287,7 @@ function build_card(card, dom_id, query, slot_id, face, group, common_back_id = 
         face,
         card.req_type,
         group,
-        slot_id[1],
-        loaded
+        slot_id[1]
     );
     return group;
 }

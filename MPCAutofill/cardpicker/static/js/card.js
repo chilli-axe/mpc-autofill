@@ -56,8 +56,8 @@ function trigger_download(img_id, new_tab = true) {
 }
 
 class CardBase {
-    constructor(cards, query, dom_id, slot, face, req_type, group, selected_img = null, loaded = false) {
-        this.setup_card(cards, query, dom_id, slot, face, req_type, group, selected_img, loaded);
+    constructor(cards, query, dom_id, slot, face, req_type, group, selected_img = null) {
+        this.setup_card(cards, query, dom_id, slot, face, req_type, group, selected_img);
     }
 
     get_curr_img() {
@@ -104,10 +104,10 @@ class CardBase {
         view_class.innerText = img_class;
 
         // use jquery proxy to link the download button to this Card object's dl function
-        $(dl_button).unbind("onclick");
-        dl_button.onclick = $.proxy(function () {
+        $(dl_button).off("click");
+        $(dl_button).on('click', $.proxy(function () {
             trigger_download(this.get_curr_img().id, false);
-        }, this);
+        }, this));
 
         // hide the 300 dpi image until it loads in - show a loading spinner in its place until then
         view_img.style.opacity = 0;
@@ -138,11 +138,12 @@ class CardBase {
 // Card class - one for each face of each card slot
 // contains logic to page between results, search again with new query, display correct stuff depending on results, etc.
 class Card extends CardBase {
-    constructor(cards, query, dom_id, slot, face, req_type, group, selected_img = null, loaded = false) {
-        super(cards, query, dom_id, slot, face, req_type, group, selected_img, loaded);
+    constructor(cards, query, dom_id, slot, face, req_type, group, selected_img = null) {
+        super(cards, query, dom_id, slot, face, req_type, group, selected_img);
     }
     
     reset() {
+        
         // sets the Card back to its default state
         this.card_counter.style.visibility = "hidden";
         this.card_counter_btn.style.visibility = "hidden";
@@ -161,12 +162,12 @@ class Card extends CardBase {
         this.elem_img_prev.src = "";
         this.elem_img_next.src = "";
 
-        $(this.elem_img).unbind("onclick");
-        $(this.elem_remove).unbind("onclick");
-        $(this.elem_padlock).unbind("onclick");
-        $(this.elem_next).unbind("onclick");
-        $(this.elem_prev).unbind("onclick");
-        $(this.elem_name).unbind("keydown");
+        $(this.elem_img).off("click");
+        $(this.elem_remove).off("click");
+        $(this.elem_padlock).off("click");
+        $(this.elem_next).off("click");
+        $(this.elem_prev).off("click");
+        $(this.elem_name).off("keydown");
 
         this.elem_name.setAttribute("contentEditable", "false");
     }
@@ -372,7 +373,7 @@ class Card extends CardBase {
         }
     }
 
-    setup_card(cards, query, dom_id, slot, face, req_type, group, selected_img, loaded = false) {
+    setup_card(cards, query, dom_id, slot, face, req_type, group, selected_img) {
         // array of card image obj's
         // each card image obj has properties: drive ID, name, source, DPI
         this.cards = cards;
@@ -391,7 +392,6 @@ class Card extends CardBase {
         this.img_count = cards.length;
         this.dom_id = dom_id;
         this.req_type = req_type;
-        this.loaded = loaded;
 
         // store references to the card's html elements
         this.pe = document.getElementById(this.dom_id)
@@ -432,10 +432,13 @@ class Card extends CardBase {
 
         // click on thumbnail for detailed view
         if (!this.empty) {
-            this.elem_counter.style.visibility = "visible";
-            this.elem_img.onclick = $.proxy(function() {
+            if (this.req_type !== "back" | this.slot === "-") {
+                this.elem_counter.style.visibility = "visible";
+            }
+            
+            $(this.elem_img).on('click', $.proxy(function() {
                 this.open_detailed_view();
-            }, this);
+            }, this));
         }
 
         if (this.req_type == "back") {
@@ -446,9 +449,9 @@ class Card extends CardBase {
         // enable padlock for locking groups other than cardback
         if (this.group > 1) {
             this.elem_padlock.style.display = "";
-            this.elem_padlock.onclick = $.proxy(function () {
+            $(this.elem_padlock).on('click', $.proxy(function () {
                 this.toggle_lock();
-            }, this);
+            }, this));
         }
 
         // set slot name + remove card btn + set up in-place search
@@ -456,10 +459,11 @@ class Card extends CardBase {
             this.elem_slot.innerHTML = "Slot " + (parseInt(this.slot) + 1).toString();
 
             this.elem_remove.style.display = "";
-            $(this.elem_remove).unbind("onclick");
-            this.elem_remove.onclick = $.proxy(function() {
+            let elem_remove = $(this.elem_remove);
+            elem_remove.off("click");
+            elem_remove.on('click', $.proxy(function() {
                 this.remove_card();
-            }, this);
+            }, this));
 
             this.elem_name.setAttribute("contentEditable", "true");
             $(this.elem_name).keydown($.proxy(function (e) {
@@ -476,25 +480,22 @@ class Card extends CardBase {
             this.elem_prev.style.visibility = "visible";
             this.elem_next.style.visibility = "visible";
 
-            this.elem_prev.onclick = $.proxy(function () {
+            $(this.elem_prev).on('click', $.proxy(function () {
                 this.update_idx(-1);
-            }, this);
+            }, this));
 
-            this.elem_next.onclick = $.proxy(function () {
+            $(this.elem_next).on('click', $.proxy(function () {
                 this.update_idx(1);
-            }, this);
+            }, this));
 
-            this.elem_counter.onclick = $.proxy(function() {
+            $(this.elem_counter).on('click', $.proxy(function() {
                 this.open_grid_view();
-            }, this);
+            }, this));
         }
 
-        $(this.elem_img).one('inview', function(event, isInView) {
-            if (isInView) {
-                let card_obj = $(this.parentElement.parentElement).data("obj");
-                card_obj.load_thumbnails();
-                card_obj.loaded = true;
-            }
+        $(this.elem_img).one('load', function() {
+            let card_obj = $(this.parentElement.parentElement).data("obj");
+            card_obj.load_thumbnails();
         })
 
         // de-focus the query div
@@ -574,9 +575,7 @@ class Card extends CardBase {
         // update selected image/total
         this.elem_counter.innerHTML = (this.img_idx + 1).toString() + "/" + this.img_count.toString();
 
-        if (this.loaded) {
-            this.load_thumbnails();
-        }
+        this.load_thumbnails();
     }
 }
 
@@ -602,12 +601,6 @@ class CardRecent extends CardBase {
         this.elem_slot = document.getElementById(this.dom_id + "-mpccard-slot");
         this.elem_img = document.getElementById(this.dom_id + "-card-img");
 
-        $(this.elem_img).one('inview', function(event, isInView) {
-            if (isInView) {
-                $(this.parentElement.parentElement).data("obj").load_thumbnails();
-            }
-        })
-
         // attach this object to the parent element
         $(this.pe).data("obj", this);
 
@@ -615,20 +608,22 @@ class CardRecent extends CardBase {
         this.elem_name.innerText = cards[0].name;
         this.elem_source.innerText = format_source(cards[0].source_verbose, cards[0].dpi);
         this.elem_slot.innerText = cards[0].date;
+
+        // load thumbnails and set up fade in
+        this.load_thumbnails();
+        $(this.elem_img).one('load', $.proxy(function() {
+            this.fade_in();
+        }, this));
     }
 
     load_thumbnails() {
         this.elem_img.src = get_thumbnail(this.cards[0].id);
 
-        // add onclick to thumbnail to reveal detailed info about card
-        $(this.elem_img).unbind("onclick");
-        this.elem_img.onclick = $.proxy(function() {
+        // add click event to thumbnail to reveal detailed info about card
+        let elem_img = $(this.elem_img)
+        elem_img.off('click');
+        elem_img.on('click', $.proxy(function() {
             this.open_detailed_view();
-        }, this);
-
-        // wait for first image to complete loading before fading in
-        $(this.elem_img).load($.proxy(function () {
-            this.fade_in();
         }, this));
     }
 }

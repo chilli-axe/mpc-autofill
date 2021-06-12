@@ -19,6 +19,10 @@ The following Python modules:
 * `django-user-agents`
 * `django-elasticsearch-dsl` and `elasticsearch-dsl`
 
+And the following JS libraries:
+* `bootstrap@4.6.0`
+* `jquery-ui-touch-punch@0.2.3`
+
 Other:
 * [Bootstrap Superhero](https://bootswatch.com/superhero/)
 * Elasticsearch (probably easiest with Docker)
