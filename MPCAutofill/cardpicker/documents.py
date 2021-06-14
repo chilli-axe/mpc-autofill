@@ -23,7 +23,7 @@ common_settings = {"number_of_shards": 5, "number_of_replicas": 0}
 @registry.register_document
 class CardSearch(Document):
     source = fields.TextField(attr="source_to_str")
-    searchq_keyword = fields.TextField(analyzer='keyword')
+    searchq_keyword = fields.TextField(analyzer="keyword")
 
     class Index:
         # name of the elasticsearch index
@@ -52,7 +52,7 @@ class CardSearch(Document):
 @registry.register_document
 class CardbackSearch(Document):
     source = fields.TextField(attr="source_to_str")
-    searchq_keyword = fields.TextField(analyzer='keyword')
+    searchq_keyword = fields.TextField(analyzer="keyword")
 
     class Index:
         # name of the elasticsearch index
@@ -81,7 +81,7 @@ class CardbackSearch(Document):
 @registry.register_document
 class TokenSearch(Document):
     source = fields.TextField(attr="source_to_str")
-    searchq_keyword = fields.TextField(analyzer='keyword')
+    searchq_keyword = fields.TextField(analyzer="keyword")
 
     class Index:
         # name of the elasticsearch index

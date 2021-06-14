@@ -86,7 +86,9 @@ def search_multiple(request):
         for item in order[face].values():
             result = search(drive_order, fuzzy_search, item.query, item.req_type)
             item.insert_data(result)
-    result = search(drive_order, fuzzy_search, order.cardback.query, order.cardback.req_type)
+    result = search(
+        drive_order, fuzzy_search, order.cardback.query, order.cardback.req_type
+    )
     order.cardback.insert_data(result)
     return JsonResponse(order.to_dict())
 
@@ -94,10 +96,11 @@ def search_multiple(request):
 def search_individual(request):
     # search endpoint function - the frontend requests the search results for this query as JSON
     drive_order = request.POST.get("drive_order").split(",")
+    fuzzy_search = request.POST.get("fuzzy_search") == "true"
     query = request.POST.get("query").rstrip("\n")
     req_type = request.POST.get("req_type")
 
-    return JsonResponse(search(drive_order, query, req_type))
+    return JsonResponse(search(drive_order, fuzzy_search, query, req_type))
 
 
 def search(drive_order, fuzzy_search, query, req_type):

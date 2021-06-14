@@ -37,8 +37,8 @@
             <p>
                 Type your desired proxy list into the text box and hit <b>Submit</b>. One card per line.
                 Click <b>Search Settings</b> to change which drives are searched, and the order in which cards are shown.
-                You can also toggle between fuzzy (forgiving) and precise (exact) search types. Search for tokens by 
-                prepending the query with <code>t:</code>, e.g. <code>t:goblin</code>.
+                You can also toggle between fuzzy (forgiving) and precise (exact) search modes. Search for tokens by 
+                prepending the query with <code>t:</code> &#8212 for example, <code>t:goblin</code>.
             </p>
             <p>
                 You can upload your order as a CSV, specifying quantities and the queries for card fronts and backs.
@@ -111,7 +111,7 @@
                     <br>
                     Click the table header to enable or disable all drives. 
                     <br><br>
-                    <input type="checkbox" id="searchtype" checked data-toggle="toggle" data-on="Fuzzy Search" data-off="Precise Search" 
+                    <input type="checkbox" id="searchtype" data-toggle="toggle" data-on="Fuzzy Search" data-off="Precise Search" 
                         data-onstyle="success" data-offstyle="info" data-width="100%" data-height="40px" data-size="md">
                     <br><br>
                     <table class="table table-hover" id="drivePicker">
@@ -126,10 +126,10 @@
                         <tbody>
                         {% for source in sources %}
                             <tr style="cursor: grab">
-                                
                                 <td style="vertical-align: middle">
-                                    {% comment %}  {% endcomment %}
-                                    <input type="checkbox" class="drivesource" checked data-toggle="toggle" id="{{ source.id }}" data-size="sm">
+                                    <div class="active text-center">
+                                        <input type="checkbox" class="drivesource" checked data-toggle="toggle" id="{{ source.id }}" data-size="sm">
+                                    </div>
                                 </td>
                                 <td style="vertical-align: middle"><a target="_blank" href="{{ source.reddit }}">{{ source.username }}</a></td>
                                 <td style="vertical-align: middle">

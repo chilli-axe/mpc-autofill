@@ -163,7 +163,7 @@ function search_api(drive_order, fuzzy_search, query, slot_id, face, dom_id, req
         error: function () {
             // callback here in 5 seconds
             setTimeout(function () {
-                search_api(drive_order, fuzzy_search, query, slot_ids, dom_id, face, req_type, group);
+                search_api(drive_order, fuzzy_search, query, slot_id, dom_id, face, req_type, group);
             }, 5000)
         }
    })
