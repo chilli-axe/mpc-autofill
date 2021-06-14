@@ -6,7 +6,6 @@
     <script src="{% static 'js/review.js' %}?20"></script>
     <script src="{% static 'js/card.js' %}?20"></script>
     <script src="{% static 'js/search.js' %}?20"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css">
 
     {% load crispy_forms_tags %}
 
@@ -31,6 +30,7 @@
         let groups = {};
         let max_group = 2;
         let drive_order = {{ drive_order|safe }}.toString();
+        let fuzzy_search = {{ fuzzy_search|safe }}.toString() === "true";
         let qty = {{ qty }};
         let front_visible = true;
         let cards_not_found = [];
@@ -38,7 +38,7 @@
         document.getElementById("id_body").onload = function () {
             let order = {{ order|safe }};
             set_cardstock(order);
-            insert_data(drive_order, order);
+            insert_data(drive_order, fuzzy_search, order);
         }
         // enable tooltips
         $(function () {

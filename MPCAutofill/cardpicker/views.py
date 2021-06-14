@@ -78,14 +78,15 @@ def credits(request):
 def search_multiple(request):
     # search endpoint function - the frontend requests the search results for this query as JSON
     drive_order = request.POST.get("drive_order").split(",")
+    fuzzy_search = request.POST.get("fuzzy_search") == "true"
     order = MPCOrder()
     order.from_json(json.loads(request.POST.get("order")))
 
     for face in Faces.FACES.value:
         for item in order[face].values():
-            result = search(drive_order, item.query, item.req_type)
+            result = search(drive_order, fuzzy_search, item.query, item.req_type)
             item.insert_data(result)
-    result = search(drive_order, order.cardback.query, order.cardback.req_type)
+    result = search(drive_order, fuzzy_search, order.cardback.query, order.cardback.req_type)
     order.cardback.insert_data(result)
     return JsonResponse(order.to_dict())
 
@@ -99,7 +100,7 @@ def search_individual(request):
     return JsonResponse(search(drive_order, query, req_type))
 
 
-def search(drive_order, query, req_type):
+def search(drive_order, fuzzy_search, query, req_type):
     # this function can either receive a request with "normal" type with query like "t:goblin",
     # or a request with "token" type with query like "goblin", so handle both of those cases here
     if query.lower()[0:2] == "t:":
@@ -111,7 +112,7 @@ def search(drive_order, query, req_type):
 
     # search for tokens if this request is for a token
     if req_type == ReqTypes.TOKEN.value:
-        results = query_es_token(drive_order, query)
+        results = query_es_token(drive_order, fuzzy_search, query)
 
     # search for cardbacks if request is for cardbacks
     elif req_type == ReqTypes.CARDBACK.value:
@@ -119,7 +120,7 @@ def search(drive_order, query, req_type):
 
     # otherwise, search normally
     else:
-        results = query_es_card(drive_order, query)
+        results = query_es_card(drive_order, fuzzy_search, query)
 
     return {
         "data": results,
@@ -134,9 +135,9 @@ def review(request):
     if request.method == "POST":
         form = InputText(request.POST)
         if form.is_valid():
-            print("Request is valid for text uploader")
             # retrieve drive order and raw user input from request
             drive_order = list(request.POST.get("drive_order").split(","))
+            fuzzy_search = request.POST.get("fuzzy_search") == "true"
             lines_raw = form["card_list"].value()
 
             # parse the text input to obtain the order dict and quantity in this order
@@ -144,7 +145,7 @@ def review(request):
             qty = order.from_text(lines_raw)
 
             # build context
-            context = build_context(drive_order, order.to_dict(), qty)
+            context = build_context(drive_order, fuzzy_search, order.to_dict(), qty)
 
             return render(request, "cardpicker/review.html", context)
 
@@ -179,10 +180,9 @@ def input_csv(request):
     if request.method == "POST":
         form = InputCSV(request.POST, request.FILES)
         if form.is_valid():
-            print("Request is valid for CSV uploader")
-
             # retrieve drive order and csv file from request
             drive_order = list(request.POST.get("drive_order").split(","))
+            fuzzy_search = request.POST.get("fuzzy_search") == "true"
             csvfile = request.FILES["file"].read()
 
             # parse the csv file to obtain the order dict and quantity in this order
@@ -190,7 +190,7 @@ def input_csv(request):
             qty = order.from_csv(csvfile)
 
             # build context
-            context = build_context(drive_order, order.to_dict(), qty)
+            context = build_context(drive_order, fuzzy_search, order.to_dict(), qty)
 
             return render(request, "cardpicker/review.html", context)
 
@@ -206,6 +206,7 @@ def input_xml(request):
             try:
                 # retrieve drive order and XML file from request
                 drive_order = list(request.POST.get("drive_order").split(","))
+                fuzzy_search = request.POST.get("fuzzy_search") == "true"
                 xmlfile = request.FILES["file"].read()
 
                 # parse the XML file to obtain the order dict and quantity in this order
@@ -213,7 +214,7 @@ def input_xml(request):
                 qty = order.from_xml(xmlfile, 0)
 
                 # build context
-                context = build_context(drive_order, order.to_dict(), qty)
+                context = build_context(drive_order, fuzzy_search, order.to_dict(), qty)
 
                 return render(request, "cardpicker/review.html", context)
 

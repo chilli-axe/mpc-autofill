@@ -40,7 +40,7 @@ function add_to_group(group, dom_ids) {
     dom_ids.forEach(groups[group].add, groups[group]);
 }
 
-function insert_data(drive_order, order) {
+function insert_data(drive_order, fuzzy_search, order) {
     // clear out the list of cards with specific versions that don't exist anymore
     cards_not_found = [];
 
@@ -59,6 +59,7 @@ function insert_data(drive_order, order) {
         dataType: 'JSON',
         data: {
             'drive_order': drive_order,
+            'fuzzy_search': fuzzy_search,
             'order': JSON.stringify(order),
         },
         success: function(data) {
@@ -144,7 +145,7 @@ function alert_missing_versions(cards_not_found) {
 }
 
 
-function search_api(drive_order, query, slot_id, face, dom_id, req_type = "normal", group = 0) {
+function search_api(drive_order, fuzzy_search, query, slot_id, face, dom_id, req_type = "normal", group = 0) {
     // used for individual searches when modifying a card in-place
     $.ajax({
         type: 'POST',
@@ -152,6 +153,7 @@ function search_api(drive_order, query, slot_id, face, dom_id, req_type = "norma
         dataType: 'JSON',
         data: {
             'drive_order': drive_order,
+            'fuzzy_search': fuzzy_search,
             'query': query,
             'req_type': req_type,
         },
@@ -161,7 +163,7 @@ function search_api(drive_order, query, slot_id, face, dom_id, req_type = "norma
         error: function () {
             // callback here in 5 seconds
             setTimeout(function () {
-                search_api(drive_order, query, slot_ids, dom_id, face, req_type, group);
+                search_api(drive_order, fuzzy_search, query, slot_ids, dom_id, face, req_type, group);
             }, 5000)
         }
    })
@@ -304,7 +306,7 @@ function insert_text() {
         },
         function (data) {
             qty += data.qty;
-            insert_data(drive_order, data.order);
+            insert_data(drive_order, fuzzy_search, data.order);
         },
         'json'
     );
@@ -326,7 +328,7 @@ function insert_xml() {
             },
             function (data) {
                 qty += data.qty;
-                insert_data(drive_order, data.order);
+                insert_data(drive_order, fuzzy_search, data.order);
             },
             'json'
         ));

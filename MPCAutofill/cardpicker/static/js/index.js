@@ -7,13 +7,15 @@ document.getElementById("id_body").onload = function () {
     $('#cardinput, #input_csv, #input_xml').submit(function (eventObj) {
         // user is submitting card input form - grab the order of selected drives and attach it to the form as a
         // hidden input
-        let input = $("<input>", {type: "hidden", name: "drive_order", value: driveOrder()});
-        $(this).append(input)
+        let input_drives = $("<input>", {type: "hidden", name: "drive_order", value: get_drive_order()});
+        $(this).append(input_drives)
+        let input_fuzzy_search = $("<input>", {type: "hidden", name: "fuzzy_search", value: document.getElementById("searchtype").checked});
+        $(this).append(input_fuzzy_search)
         return true;
     });
 }
 
-function driveOrder() {
+function get_drive_order() {
     // get checkbox elements from dom, in order
     let driveElements = document.getElementsByClassName("drivesource");
     let drives = []
@@ -27,19 +29,19 @@ function driveOrder() {
     return drives.toString();
 }
 
-function toggleCheckboxes() {
+function toggle_checkboxes() {
     // get checkbox elements from dom, in order
     let driveElements = document.getElementsByClassName("drivesource");
-    var enableDrives = true;
+    var enableDrives = 'on';
     // for each drive, check if it's enabled, and if it is, we'll be disabling drives here
     for (let i = 0; i < driveElements.length; i++) {
         if (driveElements[i].checked) {
-            enableDrives = false;
+            enableDrives = 'off';
             break;
         }
     }
     // for each drive, set its checkedness
     for (let i = 0; i < driveElements.length; i++) {
-        driveElements[i].checked = enableDrives;
+        $(driveElements[i]).bootstrapToggle(enableDrives);
     }
 }

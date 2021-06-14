@@ -166,3 +166,5 @@ bootstrap.min.css
 jquery.ui.touch-punch.js
 MPCAutofill/client_secrets.json
 static
+*.db
+.env_prod
