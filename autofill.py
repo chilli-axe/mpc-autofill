@@ -3,6 +3,7 @@
 # (macos) pyinstaller --onefile --hidden-import=colorama --hidden-import=inquirer --icon=favicon.ico autofill.py
 
 import colorama
+from distlib.compat import raw_input
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.common.exceptions import (
     NoAlertPresentException,
@@ -15,6 +16,7 @@ from selenium.webdriver.support.expected_conditions import invisibility_of_eleme
 from selenium.webdriver.support.ui import WebDriverWait, Select
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+import argparse
 import time
 import os
 import sys
@@ -78,6 +80,13 @@ function doPost(e) {
 }
 """
 
+# Define the command line argument parser
+command_line_argument_parser = argparse.ArgumentParser(description='Make Playing Cards Autofill Script')
+
+command_line_argument_parser.add_argument('-skipsetup', action="store_true", default=False, help='Skip Setup')
+
+command_line_args = command_line_argument_parser.parse_args()
+
 # Disable logging messages for webdriver_manager
 os.environ["WDM_LOG_LEVEL"] = "0"
 
@@ -118,46 +127,23 @@ def text_to_list(input_text):
 
 
 def fill_cards(bar: tqdm, driver, root):
-    # Load Custom Game Cards (63mm x 88mm) page
-    driver.get("https://www.makeplayingcards.com/design/custom-blank-card.html")
 
-    # Select card stock
-    stock_dropdown = Select(driver.find_element_by_id("dro_paper_type"))
-    stock_dropdown.select_by_visible_text(order.details.stock)
+    if not command_line_args.skipsetup:
+        print(
+            "Configuring a new order. If you'd like to continue uploading cards to an existing project,"
+            "start this program with the -skipsetup option and follow the printed instructions."
+            "example: ./autofill -skipsetup"
+        )
+        configure_order(driver)
+    else:
+        print(
+            "Please sign in and select an existing project to continue editing."
+            "Once you've signed in, return to the script execution window and press ENTER."
+        )
+        driver.get("https://www.makeplayingcards.com/login.aspx")
+        raw_input("Press Enter to continue...")
 
-    # Select number of cards
-    qty_dropdown = Select(driver.find_element_by_id("dro_choosesize"))
-    qty_dropdown.select_by_value(order.details.bracket)
-
-    # Switch the finish to foil if the user ordered foil cards
-    if order.details.foil:
-        foil_dropdown = Select(driver.find_element_by_id("dro_product_effect"))
-        foil_dropdown.select_by_value("EF_055")
-
-    # Accept current settings and move to next step
-    driver.execute_script(
-        "javascript:doPersonalize('https://www.makeplayingcards.com/products/pro_item_process_flow.aspx')"
-    )
-
-    # Set the desired number of cards, then move to the next step
-    switch_to_frame(driver, "sysifm_loginFrame")
-    driver.execute_script(
-        "javascript:document.getElementById('txt_card_number').value="
-        + str(order.details.quantity)
-        + ";"
-    )
-
-    # Select "different images" for front
-    driver.execute_script("javascript:setMode('ImageText', 0);")
-    driver.switch_to.default_content()
-
-    # Insert card fronts
-    for i in range(0, len(cardsinfo_front)):
-        curr_card = q_front.get()
-        if curr_card != ("", ""):
-            pid = upload_card(driver, curr_card[0])
-            insert_card(driver, pid, curr_card[1])
-        bar.update(1)
+    insert_card_fronts(bar, driver)
 
     # Page through to backs
     driver.execute_script("javascript:oDesign.setNextStep();")
@@ -236,6 +222,56 @@ def fill_cards(bar: tqdm, driver, root):
     # Page over to the next step from "add text to backs"
     wait(driver)
     driver.execute_script("javascript:oDesign.setNextStep();")
+
+
+# Insert card fronts
+def insert_card_fronts(bar, driver):
+    for i in range(0, len(cardsinfo_front)):
+        curr_card = q_front.get()
+        slots = curr_card[1]
+        filepath = curr_card[0]
+
+        if curr_card != ("", "") and card_not_uploaded(driver, slots):
+            pid = upload_card(driver, filepath)
+            insert_card(driver, pid, slots)
+
+        bar.update(1)
+
+
+# Performs all of the preliminary order configuration that's needed before the card upload process can begin.
+def configure_order(driver):
+    # Load Custom Game Cards (63mm x 88mm) page
+    driver.get("https://www.makeplayingcards.com/design/custom-blank-card.html")
+
+    # Select card stock
+    stock_dropdown = Select(driver.find_element_by_id("dro_paper_type"))
+    stock_dropdown.select_by_visible_text(order.details.stock)
+
+    # Select number of cards
+    qty_dropdown = Select(driver.find_element_by_id("dro_choosesize"))
+    qty_dropdown.select_by_value(order.details.bracket)
+
+    # Switch the finish to foil if the user ordered foil cards
+    if order.details.foil:
+        foil_dropdown = Select(driver.find_element_by_id("dro_product_effect"))
+        foil_dropdown.select_by_value("EF_055")
+
+    # Accept current settings and move to next step
+    driver.execute_script(
+        "javascript:doPersonalize('https://www.makeplayingcards.com/products/pro_item_process_flow.aspx')"
+    )
+
+    # Set the desired number of cards, then move to the next step
+    switch_to_frame(driver, "sysifm_loginFrame")
+    driver.execute_script(
+        "javascript:document.getElementById('txt_card_number').value="
+        + str(order.details.quantity)
+        + ";"
+    )
+
+    # Select "different images" for front
+    driver.execute_script("javascript:setMode('ImageText', 0);")
+    driver.switch_to.default_content()
 
 
 def wait(driver):
@@ -414,6 +450,15 @@ def upload_card(driver, filepath):
         return ""
 
 
+def card_not_uploaded(driver, slots):
+    results = 0
+
+    for slot in slots:
+        xpath = "//*[contains(@src, 'default.gif') and @index={}]".format(slot)
+        results += len(driver.find_elements_by_xpath(xpath))
+
+    return len(slots) == results
+
 def insert_card(driver, pid, slots):
     if pid != "":
         # Use mpc's JS functions to insert cards without simulated drag/drop
@@ -489,6 +534,7 @@ if __name__ == "__main__":
     chrome_options = Options()
     chrome_options.add_argument("--log-level=3")
     chrome_options.add_experimental_option("excludeSwitches", ["enable-logging"])
+    chrome_options.add_experimental_option("detach", True)
     driver = webdriver.Chrome(ChromeDriverManager().install(), options=chrome_options)
     driver.set_window_size(1200, 900)
     driver.implicitly_wait(5)
