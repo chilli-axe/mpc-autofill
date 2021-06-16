@@ -4,7 +4,9 @@
 {% block content %}
 
     <script src="{% static 'js/index.js' %}"></script>
-
+    <link href="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.6.1/css/bootstrap4-toggle.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.6.1/js/bootstrap4-toggle.min.js"></script>
+    
     {% load crispy_forms_tags %}
 
     {% if mobile %}
@@ -34,8 +36,9 @@
             </p>
             <p>
                 Type your desired proxy list into the text box and hit <b>Submit</b>. One card per line.
-                Click <b>Select Drives</b> to change which drives are searched, and the order in which cards are shown.
-                Search for tokens by prepending the query with <code>t:</code>, e.g. <code>t:goblin</code>.
+                Click <b>Search Settings</b> to change which drives are searched, and the order in which cards are shown.
+                You can also toggle between fuzzy (forgiving) and precise (exact) search modes. Search for tokens by 
+                prepending the query with <code>t:</code> &#8212 for example, <code>t:goblin</code>.
             </p>
             <p>
                 You can upload your order as a CSV, specifying quantities and the queries for card fronts and backs.
@@ -65,7 +68,7 @@
             <input form="cardinput" type="submit" class="btn btn-success mt-2" value="Submit">
 
             <button type="button" class="btn btn-primary mt-2" data-toggle="modal" data-target="#selectDrivesModal">
-                Select Drives
+                Search Settings
             </button>
 
             <button type="button" class="btn btn-secondary dropdown-toggle mt-2" id="uploadCardsBtn"
@@ -97,41 +100,44 @@
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="selectDrivesLabel">Select Drives</h5>
+                    <h5 class="modal-title" id="selectDrivesLabel">Search Settings</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
                     Select the drives you'd like to search, and drag & drop them to change the order images are shown in.
-                    Check the <a href='/credits'>Credits</a> for an overview of what each drive contains.
+                    Check the <a target="_blank" href='/credits'>Credits</a> for an overview of what each drive contains.
                     <br>
                     Click the table header to enable or disable all drives. 
                     <br><br>
+                    <input type="checkbox" id="searchtype" data-toggle="toggle" data-on="Fuzzy Search" data-off="Precise Search" 
+                        data-onstyle="success" data-offstyle="info" data-width="100%" data-height="40px" data-size="md">
+                    <br><br>
                     <table class="table table-hover" id="drivePicker">
                         <thead>
-                        <tr onclick="toggleCheckboxes()" style="cursor: pointer; user-select: none;">
+                        <tr onclick="toggle_checkboxes()" style="cursor: pointer; user-select: none;">
                             <th scope="col" class="text-center">Enabled</th>
                             <th scope="col">Content Creator</th>
                             <th scope="col" class="text-center">Drive Link</th>
+                            <th></th>
                         </tr>
                         </thead>
                         <tbody>
                         {% for source in sources %}
                             <tr style="cursor: grab">
-                                <td>
+                                <td style="vertical-align: middle">
                                     <div class="active text-center">
-                                        <input class="form-check-input drivesource" type="checkbox"
-                                               checked style="transform: scale(1.5)" id="{{ source.id }}">
+                                        <input type="checkbox" class="drivesource" checked data-toggle="toggle" id="{{ source.id }}" data-size="sm">
                                     </div>
                                 </td>
-                                <td><a target="_blank" href="{{ source.reddit }}">{{ source.username }}</a></td>
+                                <td style="vertical-align: middle"><a target="_blank" href="{{ source.reddit }}">{{ source.username }}</a></td>
+                                <td style="vertical-align: middle">
                                 {% if source.drive_link %}
-                                    <td class="text-center"><a target="_blank"
-                                        href="{{ source.drive_link }}">Link</a></td>
-                                {% else %}
-                                    <td></td>
+                                    <div class="active text-center"><a target="_blank" href="{{ source.drive_link }}">Link</a></div>
                                 {% endif %}
+                                </td>
+                                <td style="vertical-align: middle"><i class="bi bi-grip-horizontal" style="font-size: 2em"></i></td>
                             </tr>
                         {% endfor %}
                         </tbody>

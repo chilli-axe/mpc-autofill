@@ -11,7 +11,7 @@ from cardpicker.models import Source
 from cardpicker.utils.to_searchable import to_searchable
 
 
-def build_context(drive_order, order, qty):
+def build_context(drive_order, fuzzy_search, order, qty):
     # I found myself copy/pasting this between the three input methods so I figured it belonged in its own function
 
     # For donation modal, approximate how many cards I've rendered
@@ -22,6 +22,7 @@ def build_context(drive_order, order, qty):
     context = {
         "form": InputText,
         "drive_order": drive_order,
+        "fuzzy_search": "true" if fuzzy_search else "false",
         "order": order,
         "qty": qty,
         "my_cards": f"{my_cards :,d}",
@@ -37,8 +38,8 @@ def text_to_list(input_text):
     return [int(x) for x in input_text.strip("][").replace(" ", "").split(",")]
 
 
-def query_es_card(drive_order, query):
-    return search_database(drive_order, query, CardSearch.search())
+def query_es_card(drive_order, fuzzy_search, query):
+    return search_database(drive_order, fuzzy_search, query, CardSearch.search())
 
 
 def query_es_cardback():
@@ -49,11 +50,11 @@ def query_es_cardback():
     return results
 
 
-def query_es_token(drive_order, query):
-    return search_database(drive_order, query, TokenSearch.search())
+def query_es_token(drive_order, fuzzy_search, query):
+    return search_database(drive_order, fuzzy_search, query, TokenSearch.search())
 
 
-def search_database(drive_order, query, s):
+def search_database(drive_order, fuzzy_search, query, s):
     # search through the database for a given query, over the drives specified in drive_orders,
     # using the search index specified in s (this enables reuse of code between Card and Token search functions)
     results = []
@@ -61,7 +62,10 @@ def search_database(drive_order, query, s):
     query_parsed = to_searchable(query)
 
     # set up search - match the query and use the AND operator
-    match = Match(searchq={"query": query_parsed, "operator": "AND"})
+    if fuzzy_search:
+        match = Match(searchq={"query": query_parsed, "operator": "AND"})
+    else:
+        match = Match(searchq_keyword={"query": query_parsed, "operator": "AND"})
     s_query = s.query(match)
     hits = (
         s_query.sort({"priority": {"order": "desc"}}).params(preserve_order=True).scan()
@@ -69,7 +73,8 @@ def search_database(drive_order, query, s):
     hits_dict = [x.to_dict() for x in hits]
 
     if hits_dict:
-        hits_dict.sort(key=lambda x: distance(x["searchq"], query_parsed))
+        if fuzzy_search:
+            hits_dict.sort(key=lambda x: distance(x["searchq"], query_parsed))
         for drive in drive_order:
             results += [x for x in hits_dict if x["source"] == drive]
 

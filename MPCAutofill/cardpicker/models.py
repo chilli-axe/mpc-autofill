@@ -98,6 +98,7 @@ class CardBase(models.Model):
     source_verbose = models.CharField(max_length=50)
     dpi = models.IntegerField(default=0)
     searchq = models.CharField(max_length=200)
+    searchq_keyword = models.CharField(max_length=200)
     thumbpath = models.CharField(max_length=200)
     date = models.DateTimeField(default=datetime.now)
 

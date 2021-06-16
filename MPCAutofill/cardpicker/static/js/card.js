@@ -551,7 +551,7 @@ class Card extends CardBase {
             }
 
             // query elasticsearch for info w/ the new search query and pass the current card slot
-            search_api(drive_order, search_query, [parseInt(this.slot), ""], this.face, this.dom_id, "normal", 0);
+            search_api(drive_order, fuzzy_search, search_query, [parseInt(this.slot), ""], this.face, this.dom_id, "normal", 0);
         }, this));
     }
 

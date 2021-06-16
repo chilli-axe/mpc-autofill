@@ -201,7 +201,7 @@ class MPCOrder(abc.MutableMapping):
         used_slots = set()
         for image in self.front:
             used_slots = used_slots.union({x[0] for x in self.front[image].slots})
-        
+
         if used_slots:
             all_slots = set(range(min(used_slots), max(used_slots) + 1))
             empty_slots = all_slots - used_slots

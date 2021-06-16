@@ -40,7 +40,6 @@ def locate_drives(service, sources):
 
 
 def crawl_drive(service, folder):
-    print(f"Beginning crawling drive: {folder['name']}")
     # maintain a list of images found in this folder so far, and also maintain a list of
     # unexplored folders in this drive
     unexplored_folders = [folder]
@@ -149,7 +148,7 @@ def crawl_drive(service, folder):
 
 
 def search_folder(service, source, folder):
-    print(f"Searching drive: {source.id}\n")
+    print(f"Searching drive: {source.id}")
 
     # maintain list of cards, cardbacks, and tokens found for this Source
     q_cards = []
@@ -179,7 +178,7 @@ def search_folder(service, source, folder):
             x[1].objects.filter(source=source).delete()
             x[1].objects.bulk_create(x[0])
 
-    print(f" and done! That took {time.time() - t0} seconds.")
+    print(f" and done! That took {time.time() - t0} seconds.\n")
 
     # build postgres indexes for these objects - I couldn't seem to correctly build the index when
     # objects were instantiated but this is good enough
@@ -283,6 +282,7 @@ def add_card(folder, source, item, q_cards, q_cardbacks, q_tokens):
                 source_verbose=source_verbose,
                 dpi=dpi,
                 searchq=to_searchable(cardname),  # search-friendly card name
+                searchq_keyword=to_searchable(cardname),  # for keyword search
                 thumbpath=extension,
                 date=item["createdTime"],
             )

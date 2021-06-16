@@ -237,5 +237,7 @@ function remove_card() {
 
 function set_cardstock(data) {
     document.getElementById("cardstock-dropdown").value = data.cardstock;
-    document.getElementById("cardstock-foil").checked = data.foil === "true";
+    if (data.foil === "true") {
+        $(document.getElementById("cardstock-foil")).bootstrapToggle("on");
+    }
 }
