@@ -13,7 +13,7 @@
 
     {# toast to alert the user that they've hit MPC's deck size cap #}
     <div aria-live="polite" aria-atomic="true" data-autohide="false">
-        <div id="maxCardsToast" class="toast" style="position: fixed; left: 0; z-index: 99999;" data-delay="5000">
+        <div id="maxCardsToast" class="toast" style="position: fixed; right: 0; z-index: 0;" data-delay="5000">
             <div class="toast-header">
                 <strong class="mr-auto">Order Size Limit</strong>
                 <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
@@ -38,6 +38,8 @@
         let cards_not_found = [];
 
         document.getElementById("id_body").onload = function () {
+            $('#maxCardsToast').on('hide.bs.toast', function () {this.style.zIndex = "0";});
+            $('#maxCardsToast').on('show.bs.toast', function () {this.style.zIndex = "99999";});
             let order = {{ order|safe }};
             set_cardstock(order);
             insert_data(drive_order, fuzzy_search, order);
