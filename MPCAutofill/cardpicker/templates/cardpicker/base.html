@@ -8,9 +8,9 @@
     <script src="https://cdn.jsdelivr.net/npm/js-cookie@rc/dist/js.cookie.min.js"></script>
     <script async src="https://www.googletagmanager.com/gtag/js?id={{ GTAG }}"></script>
     <script>
-        var gtag = '{{ GTAG }}';
+        var my_gtag = '{{ GTAG }}';
         if (Cookies.get('ga_disabled') === 'true') {
-            window['ga-disable-'.concat(gtag)] = true;
+            window['ga-disable-'.concat(my_gtag)] = true;
         }
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}

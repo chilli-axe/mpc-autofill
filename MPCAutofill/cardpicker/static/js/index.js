@@ -29,18 +29,18 @@ function cookie_toast_shown() {
 function cookie_toast_hidden() {
     this.style.zIndex = "0";
     if (Cookies.get('ga_disabled') === undefined) {
-        Cookies.set('ga_disabled', 'false')
+        Cookies.set('ga_disabled', 'false', { expires: 365 })
     }
 }
 
 function cookie_toast_opt_in() {
-    Cookies.set('ga_disabled', 'false');
+    Cookies.set('ga_disabled', 'false', { expires: 365 });
     $('#cookieToast').toast('hide');
 }
 
 function cookie_toast_opt_out() {
-    Cookies.set('ga_disabled', 'true');
-    window['ga-disable-'.concat(gtag)] = true;
+    Cookies.set('ga_disabled', 'true', { expires: 365 });
+    window['ga-disable-'.concat(my_gtag)] = true;
     $('#cookieToast').toast('hide');
 }
 
