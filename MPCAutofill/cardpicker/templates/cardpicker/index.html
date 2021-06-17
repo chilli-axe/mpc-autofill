@@ -3,11 +3,41 @@
 
 {% block content %}
 
-    <script src="{% static 'js/index.js' %}?22"></script>
+    <script src="{% static 'js/index.js' %}?24"></script>
     <link href="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.6.1/css/bootstrap4-toggle.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.6.1/js/bootstrap4-toggle.min.js"></script>
     
     {% load crispy_forms_tags %}
+
+    {# toast to allow users to opt out of Google Analytics #}
+    <div aria-live="polite" aria-atomic="true">
+        <div id="cookieToast" class="toast" style="position: fixed; left: 0; z-index: 0;" data-autohide="false">
+            <div class="toast-header">
+                <strong class="mr-auto">Cookie Usage</strong>
+                <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+                <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <div class="toast-body">
+                <p>
+                MPC Autofill uses cookies for collecting analytics 
+                data to help improve the site. Your data is never shared with anyone. Would you like to opt 
+                out of analytics cookies?
+                </p>
+                <p>
+                View our privacy policy <a target="_blank" href="/legal">here</a>.
+                </p>
+                <div class="row">
+                <div class="col-6">
+                <button type="button" class="btn btn-outline-info btn-sm btn-block" onclick="cookie_toast_opt_out()">Opt me out please!</button>
+                </div>
+                <div class="col-6">
+                <button type="button" class="btn btn-primary btn-sm btn-block"  onclick="cookie_toast_opt_in()">That's fine!</button>
+                </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     {% if mobile %}
         <div class="alert alert-primary" role="alert">
@@ -158,7 +188,7 @@
     <!-- Footer -->
     <footer class="page-footer font-small blue">
         <div class="footer-copyright text-center py-3">
-            <a href="legal">MPC Autofill Legal Disclaimer</a>
+            <a href="legal">MPC Autofill Legal Disclaimer and Privacy Policy</a>
         </div>
     </footer>
 

@@ -13,6 +13,35 @@ document.getElementById("id_body").onload = function () {
         $(this).append(input_fuzzy_search)
         return true;
     });
+    let cookie_toast = $('#cookieToast');
+    cookie_toast.on('hide.bs.toast', cookie_toast_hidden);
+    cookie_toast.on('show.bs.toast', cookie_toast_shown);
+    // Cookies.remove('ga_disabled')
+    if (Cookies.get('ga_disabled') === undefined) {
+        cookie_toast.toast('show');
+    }
+}
+
+function cookie_toast_shown() {
+    this.style.zIndex = "99999";
+}
+
+function cookie_toast_hidden() {
+    this.style.zIndex = "0";
+    if (Cookies.get('ga_disabled') === undefined) {
+        Cookies.set('ga_disabled', 'false')
+    }
+}
+
+function cookie_toast_opt_in() {
+    Cookies.set('ga_disabled', 'false');
+    $('#cookieToast').toast('hide');
+}
+
+function cookie_toast_opt_out() {
+    Cookies.set('ga_disabled', 'true');
+    window['ga-disable-'.concat(gtag)] = true;
+    $('#cookieToast').toast('hide');
 }
 
 function get_drive_order() {
