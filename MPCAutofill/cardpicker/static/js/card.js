@@ -550,8 +550,18 @@ class Card extends CardBase {
                 groups[this.group].delete(this.dom_id);
             }
 
+            let search_type = "";
+            let common_back_id = "";
+            if (search_query === "\n" & this.face === "back") {
+                search_type = "back";
+                // specify common cardback ID
+                common_back_id = $("#slot--back").data("obj").get_curr_img().id;
+            } else if (this.req_type === "token") {
+                search_type = "token";
+            }
+
             // query elasticsearch for info w/ the new search query and pass the current card slot
-            search_api(drive_order, fuzzy_search, search_query, [parseInt(this.slot), ""], this.face, this.dom_id, "normal", 0);
+            search_api(drive_order, fuzzy_search, search_query, [parseInt(this.slot), ""], this.face, this.dom_id, search_type, 0, common_back_id);
         }, this));
     }
 

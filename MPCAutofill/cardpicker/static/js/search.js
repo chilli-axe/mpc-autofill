@@ -145,7 +145,7 @@ function alert_missing_versions(cards_not_found) {
 }
 
 
-function search_api(drive_order, fuzzy_search, query, slot_id, face, dom_id, req_type = "normal", group = 0) {
+function search_api(drive_order, fuzzy_search, query, slot_id, face, dom_id, req_type = "normal", group = 0, common_back_id = "") {
     // used for individual searches when modifying a card in-place
     $.ajax({
         type: 'POST',
@@ -158,12 +158,12 @@ function search_api(drive_order, fuzzy_search, query, slot_id, face, dom_id, req
             'req_type': req_type,
         },
         success: function(data) {
-            build_card(data, dom_id, data['query'], slot_id, face, group);
+            build_card(data, dom_id, data['query'], slot_id, face, group, common_back_id);
         },
         error: function () {
             // callback here in 5 seconds
             setTimeout(function () {
-                search_api(drive_order, fuzzy_search, query, slot_id, dom_id, face, req_type, group);
+                search_api(drive_order, fuzzy_search, query, slot_id, dom_id, face, req_type, group, common_back_id);
             }, 5000)
         }
    })
