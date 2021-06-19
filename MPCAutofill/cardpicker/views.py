@@ -8,7 +8,7 @@ from cardpicker.models import Card, Cardback, Source, Token
 from cardpicker.utils.mpcorder import Faces, MPCOrder, ReqTypes
 from cardpicker.utils.search_functions import (
     build_context, query_es_card, query_es_cardback, query_es_token,
-    search_new, search_new_elasticsearch_definition)
+    retrieve_search_settings, search_new, search_new_elasticsearch_definition)
 from cardpicker.utils.to_searchable import to_searchable
 
 
@@ -77,30 +77,30 @@ def credits(request):
 
 def search_multiple(request):
     # search endpoint function - the frontend requests the search results for this query as JSON
-    drive_order = request.POST.get("drive_order").split(",")
-    fuzzy_search = request.POST.get("fuzzy_search") == "true"
-    order = MPCOrder()
-    order.from_json(json.loads(request.POST.get("order")))
+    drive_order, fuzzy_search = retrieve_search_settings(request)
+    if drive_order is not None and fuzzy_search is not None:
+        order = MPCOrder()
+        order.from_json(json.loads(request.POST.get("order")))
 
-    for face in Faces.FACES.value:
-        for item in order[face].values():
-            result = search(drive_order, fuzzy_search, item.query, item.req_type)
-            item.insert_data(result)
-    result = search(
-        drive_order, fuzzy_search, order.cardback.query, order.cardback.req_type
-    )
-    order.cardback.insert_data(result)
-    return JsonResponse(order.to_dict())
+        for face in Faces.FACES.value:
+            for item in order[face].values():
+                result = search(drive_order, fuzzy_search, item.query, item.req_type)
+                item.insert_data(result)
+        result = search(
+            drive_order, fuzzy_search, order.cardback.query, order.cardback.req_type
+        )
+        order.cardback.insert_data(result)
+        return JsonResponse(order.to_dict())
 
 
 def search_individual(request):
     # search endpoint function - the frontend requests the search results for this query as JSON
-    drive_order = request.POST.get("drive_order").split(",")
-    fuzzy_search = request.POST.get("fuzzy_search") == "true"
-    query = request.POST.get("query").rstrip("\n")
-    req_type = request.POST.get("req_type")
+    drive_order, fuzzy_search = retrieve_search_settings(request)
+    if drive_order is not None and fuzzy_search is not None:
+        query = request.POST.get("query").rstrip("\n")
+        req_type = request.POST.get("req_type")
 
-    return JsonResponse(search(drive_order, fuzzy_search, query, req_type))
+        return JsonResponse(search(drive_order, fuzzy_search, query, req_type))
 
 
 def search(drive_order, fuzzy_search, query, req_type):
@@ -139,8 +139,9 @@ def review(request):
         form = InputText(request.POST)
         if form.is_valid():
             # retrieve drive order and raw user input from request
-            drive_order = list(request.POST.get("drive_order").split(","))
-            fuzzy_search = request.POST.get("fuzzy_search") == "true"
+            drive_order, fuzzy_search = retrieve_search_settings(request)
+            if drive_order is None or fuzzy_search is None:
+                return redirect("index")
             lines_raw = form["card_list"].value()
 
             # parse the text input to obtain the order dict and quantity in this order
@@ -159,22 +160,24 @@ def insert_text(request):
     # return a JSON response with the order dict and quantity from parsing the given input
     # used for inserting new cards into an existing order on the review page
     text = request.POST.get("text")
-    offset = int(request.POST.get("offset"))
+    offset = request.POST.get("offset")
+    if text and offset:
+        offset = int(offset)
 
-    # parse the text input to obtain the order dict and quantity in this addition to the order
-    order = MPCOrder()
-    qty = order.from_text(text, offset)
+        # parse the text input to obtain the order dict and quantity in this addition to the order
+        order = MPCOrder()
+        qty = order.from_text(text, offset)
 
-    # remove the "-" element from the common cardback slot list so the selected common cardback doesn't reset on us
-    order.remove_common_cardback()
+        # remove the "-" element from the common cardback slot list so the selected common cardback doesn't reset on us
+        order.remove_common_cardback()
 
-    # build context
-    context = {
-        "order": order.to_dict(),
-        "qty": qty,
-    }
+        # build context
+        context = {
+            "order": order.to_dict(),
+            "qty": qty,
+        }
 
-    return JsonResponse(context)
+        return JsonResponse(context)
 
 
 def input_csv(request):
@@ -184,8 +187,9 @@ def input_csv(request):
         form = InputCSV(request.POST, request.FILES)
         if form.is_valid():
             # retrieve drive order and csv file from request
-            drive_order = list(request.POST.get("drive_order").split(","))
-            fuzzy_search = request.POST.get("fuzzy_search") == "true"
+            drive_order, fuzzy_search = retrieve_search_settings(request)
+            if drive_order is None or fuzzy_search is None:
+                return redirect("index")
             csvfile = request.FILES["file"].read()
 
             # parse the csv file to obtain the order dict and quantity in this order
@@ -208,8 +212,9 @@ def input_xml(request):
         if form.is_valid():
             try:
                 # retrieve drive order and XML file from request
-                drive_order = list(request.POST.get("drive_order").split(","))
-                fuzzy_search = request.POST.get("fuzzy_search") == "true"
+                drive_order, fuzzy_search = retrieve_search_settings(request)
+                if drive_order is None or fuzzy_search is None:
+                    return redirect("index")
                 xmlfile = request.FILES["file"].read()
 
                 # parse the XML file to obtain the order dict and quantity in this order
@@ -232,19 +237,20 @@ def insert_xml(request):
     # return a JSON response with the order dict and quantity from parsing the given XML input
     # used for inserting new cards into an existing order on the review page
     xml = request.POST.get("xml")
-    offset = int(request.POST.get("offset"))
+    offset = request.POST.get("offset")
+    if xml and offset:
+        offset = int(offset)
+        # parse the XML input to obtain the order dict and quantity in this addition to the order
+        order = MPCOrder()
+        qty = order.from_xml(xml, offset)
 
-    # parse the XML input to obtain the order dict and quantity in this addition to the order
-    order = MPCOrder()
-    qty = order.from_xml(xml, offset)
+        # remove the - element from the common cardback slot list so the selected common cardback doesn't reset on us
+        order.remove_common_cardback()
 
-    # remove the - element from the common cardback slot list so the selected common cardback doesn't reset on us
-    order.remove_common_cardback()
+        # build context
+        context = {
+            "order": order.to_dict(),
+            "qty": qty,
+        }
 
-    # build context
-    context = {
-        "order": order.to_dict(),
-        "qty": qty,
-    }
-
-    return JsonResponse(context)
+        return JsonResponse(context)

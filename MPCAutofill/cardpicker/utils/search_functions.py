@@ -10,6 +10,8 @@ from cardpicker.forms import InputText
 from cardpicker.models import Source
 from cardpicker.utils.to_searchable import to_searchable
 
+from typing import Tuple, List, Dict
+
 
 def build_context(drive_order, fuzzy_search, order, qty):
     # I found myself copy/pasting this between the three input methods so I figured it belonged in its own function
@@ -31,7 +33,19 @@ def build_context(drive_order, fuzzy_search, order, qty):
     return context
 
 
-def text_to_list(input_text):
+def retrieve_search_settings(request) -> Tuple[List, bool]:
+    # safely retrieve drive_order and fuzzy_search from request, given that sometimes
+    # they might not exist, and trying to manipulate None objects results in exceptions
+    drive_order = request.POST.get("drive_order")
+    if drive_order is not None:
+        drive_order = drive_order.split(",")
+    fuzzy_search = request.POST.get("fuzzy_search")
+    if fuzzy_search is not None:
+        fuzzy_search = fuzzy_search == "true"
+    return drive_order, fuzzy_search
+
+
+def text_to_list(input_text) -> List[int]:
     # Helper function to translate strings like "[2, 4, 5, 6]" into lists
     if input_text == "":
         return []
@@ -54,7 +68,7 @@ def query_es_token(drive_order, fuzzy_search, query):
     return search_database(drive_order, fuzzy_search, query, TokenSearch.search())
 
 
-def search_database(drive_order, fuzzy_search, query, s):
+def search_database(drive_order, fuzzy_search, query, s) -> List[Dict]:
     # search through the database for a given query, over the drives specified in drive_orders,
     # using the search index specified in s (this enables reuse of code between Card and Token search functions)
     results = []
@@ -89,7 +103,7 @@ def process_line(input_str):
     num_idx = 0
     input_str = input_str.replace("//", "&")
     while True:
-        if num_idx > len(input_str):
+        if num_idx >= len(input_str):
             return None, None
         try:
             int(input_str[num_idx])
