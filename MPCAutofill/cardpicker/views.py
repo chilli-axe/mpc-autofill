@@ -92,6 +92,10 @@ def search_multiple(request):
         order.cardback.insert_data(result)
         return JsonResponse(order.to_dict())
 
+    # if drive order or fuzzy search can't be determined from the given request, return an
+    # empty JsonResponse and the frontend will handle it (views should always return a response)
+    return JsonResponse({})
+
 
 def search_individual(request):
     # search endpoint function - the frontend requests the search results for this query as JSON
@@ -101,6 +105,10 @@ def search_individual(request):
         req_type = request.POST.get("req_type")
 
         return JsonResponse(search(drive_order, fuzzy_search, query, req_type))
+
+    # if drive order or fuzzy search can't be determined from the given request, return an
+    # empty JsonResponse and the frontend will handle it (views should always return a response)
+    return JsonResponse({})
 
 
 def search(drive_order, fuzzy_search, query, req_type):
@@ -179,6 +187,10 @@ def insert_text(request):
 
         return JsonResponse(context)
 
+    # if drive order or fuzzy search can't be determined from the given request, return an
+    # empty JsonResponse and the frontend will handle it (views should always return a response)
+    return JsonResponse({})
+
 
 def input_csv(request):
     # return the review page with the order dict and quantity from parsing the given CSV input as context
@@ -254,3 +266,7 @@ def insert_xml(request):
         }
 
         return JsonResponse(context)
+
+    # if drive order or fuzzy search can't be determined from the given request, return an
+    # empty JsonResponse and the frontend will handle it (views should always return a response)
+    return JsonResponse({})

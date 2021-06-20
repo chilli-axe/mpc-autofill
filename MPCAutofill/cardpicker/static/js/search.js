@@ -64,7 +64,11 @@ function insert_data(drive_order, fuzzy_search, order) {
         },
         success: function(data) {
             // insert cards with this data into the dom
-            build_cards(data);
+            if (Object.keys(data).length === 0) {
+                $('#errorToast').toast('show');
+            } else {
+                build_cards(data);
+            }
         },
         error: function () {
             alert("Error");
@@ -158,7 +162,11 @@ function search_api(drive_order, fuzzy_search, query, slot_id, face, dom_id, req
             'req_type': req_type,
         },
         success: function(data) {
-            build_card(data, dom_id, data['query'], slot_id, face, group, common_back_id);
+            if (Object.keys(data).length === 0) {
+                $('#errorToast').toast('show');
+            } else {
+                build_card(data, dom_id, data['query'], slot_id, face, group, common_back_id);
+            }
         },
         error: function () {
             // callback here in 5 seconds

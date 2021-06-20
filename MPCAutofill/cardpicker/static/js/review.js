@@ -241,3 +241,12 @@ function set_cardstock(data) {
         $(document.getElementById("cardstock-foil")).bootstrapToggle("on");
     }
 }
+
+function setup_toasts(toasts) {
+    function setup_toast(toast_id) {
+        let toast = $("#".concat(toast_id));
+        toast.on('hide.bs.toast', function () {this.style.zIndex = "0";});
+        toast.on('show.bs.toast', function () {this.style.zIndex = "99999";});
+    }
+    toasts.forEach(toast => setup_toast(toast));
+}
