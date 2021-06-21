@@ -47,7 +47,7 @@ function save_search_settings() {
         settings["drives"].push([drive_elements[i].id, drive_enabled])
     }
 
-    Cookies.set('search_settings', JSON.stringify(settings));
+    Cookies.set('search_settings', JSON.stringify(settings), { expires: 365 });
 }
 
 function load_search_settings() {
