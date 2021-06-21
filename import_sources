@@ -1,0 +1,4 @@
+# helper script to import sources from CSV with ez command    
+
+cd ~/mpc-autofill/MPCAutofill
+~/mpc-autofill/MPCAutofill/env/bin/python ~/mpc-autofill/MPCAutofill/manage.py import_sources
