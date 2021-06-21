@@ -20,6 +20,71 @@ document.getElementById("id_body").onload = function () {
     if (Cookies.get('ga_disabled') === undefined) {
         cookie_toast.toast('show');
     }
+
+    // save search settings to cookie when closing the modal
+    $('#selectDrivesModal').on('hidden.bs.modal', save_search_settings);
+    load_search_settings();
+}
+
+function save_search_settings() {
+    let settings = new Object;
+    // settings["drives"] = new Object;
+    settings["drives"] = []
+
+    // save search mode settings
+    settings["fuzzy_search"] = "off";
+    if (document.getElementById("searchtype").checked) {
+        settings["fuzzy_search"] = "on";
+    }
+
+    // save drive order and enabled/disabled status
+    let drive_elements = document.getElementsByClassName("drivesource");
+    for (let i = 0; i < drive_elements.length; i++) {
+        let drive_enabled = "off";
+        if (drive_elements[i].checked) {
+            drive_enabled = "on";
+        }
+        settings["drives"].push([drive_elements[i].id, drive_enabled])
+    }
+
+    Cookies.set('search_settings', JSON.stringify(settings));
+}
+
+function load_search_settings() {
+    let settings = Cookies.get('search_settings');
+    if (settings !== undefined) {
+        settings = JSON.parse(settings);
+
+        let drives = settings["drives"];
+        let fuzzy_search = settings["fuzzy_search"];
+
+        // maintain a set of all drives loaded into the page for making sure any new drives get inserted at the bottom
+        let all_drive_elems = document.getElementsByClassName("drivesource");
+        let all_drives = new Set();
+        for (let i=all_drive_elems.length-1; i>=0; i--) {
+            all_drives.add(all_drive_elems[i].id);
+        }
+
+        // reorder the drive table elements according to the cookie by inserting them all after the first one
+        // in the cookie (in reverse order)
+        $("#" + drives[0][0]).bootstrapToggle(drives[0][1]);
+        let first_drive_row = $("#" + drives[0][0] + "-row");
+        all_drives.delete(drives[0][0]);
+        for (let i=drives.length-1; i>0; i--) {
+            $("#" + drives[i][0]).bootstrapToggle(drives[i][1]);
+            $("#" + drives[i][0] + "-row").insertAfter(first_drive_row);
+            all_drives.delete(drives[i][0]);
+        }
+
+        // any drives left in all_drives at this point were added to the site between now and when the user's
+        // search settings cookie was last saved
+        // stick these users onto the end - note that the drives were inserted into the set in reverse order,
+        // meaning that these will be insertAfter'd in reverse order, which orders the elements correctly
+        let last_drive_row = $("#" + drives[drives.length-1][0] + "-row");
+        all_drives.forEach(drive => $("#" + drive + "-row").insertAfter(last_drive_row));
+
+        $("#searchtype").bootstrapToggle(fuzzy_search);
+    }
 }
 
 function cookie_toast_shown() {
@@ -46,12 +111,12 @@ function cookie_toast_opt_out() {
 
 function get_drive_order() {
     // get checkbox elements from dom, in order
-    let driveElements = document.getElementsByClassName("drivesource");
-    let drives = []
+    let drive_elements = document.getElementsByClassName("drivesource");
+    let drives = [];
     // for each drive, if it's enabled, add its id to the output list
-    for (let i = 0; i < driveElements.length; i++) {
-        if (driveElements[i].checked) {
-            drives.push(driveElements[i].id)
+    for (let i = 0; i < drive_elements.length; i++) {
+        if (drive_elements[i].checked) {
+            drives.push(drive_elements[i].id)
         }
     }
     // convert to string when outputting

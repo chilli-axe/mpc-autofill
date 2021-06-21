@@ -3,7 +3,7 @@
 
 {% block content %}
 
-    <script src="{% static 'js/index.js' %}?27"></script>
+    <script src="{% static 'js/index.js' %}?28"></script>
     <link href="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.6.1/css/bootstrap4-toggle.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.6.1/js/bootstrap4-toggle.min.js"></script>
     
@@ -20,7 +20,7 @@
             </div>
             <div class="toast-body">
                 <p>
-                MPC Autofill uses cookies for collecting analytics 
+                MPC Autofill uses cookies for remembering your search settings, and for collecting analytics 
                 data to help improve the site. Your data is never shared with anyone. Would you like to opt 
                 out of analytics cookies?
                 </p>
@@ -159,10 +159,11 @@
                         </thead>
                         <tbody>
                         {% for source in sources %}
-                            <tr style="cursor: grab">
+                            <tr id="{{ source.id }}-row" style="cursor: grab">
                                 <td style="vertical-align: middle">
                                     <div class="active text-center">
-                                        <input type="checkbox" class="drivesource" checked data-toggle="toggle" id="{{ source.id }}" data-size="sm">
+                                        <input type="checkbox" class="drivesource" checked 
+                                                data-toggle="toggle" id="{{ source.id }}" data-size="sm">
                                     </div>
                                 </td>
                                 <td style="vertical-align: middle"><a target="_blank" href="{{ source.reddit }}">{{ source.username }}</a></td>

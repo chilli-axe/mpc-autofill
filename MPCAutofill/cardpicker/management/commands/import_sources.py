@@ -47,5 +47,8 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         sources = read_sources_csv()
-        sync_sources(sources)
-        print("All sources synchronised from CSV to database.")
+        if sources:
+            sync_sources(sources)
+            print("All sources synchronised from CSV to database.")
+        else:
+            print("No sources synchronised to database because none were found.")
