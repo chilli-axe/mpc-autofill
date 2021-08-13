@@ -12,7 +12,32 @@ from cardpicker.utils.search_functions import (
 from cardpicker.utils.to_searchable import to_searchable
 
 
-def index(request, error=False):
+class ErrorWrappers:
+    """
+    View function decorators which gracefully handle exceptions and allow the exception message to be displayed
+    to the user.
+    """
+
+    def to_index(func):
+        def wrapper(*args, **kwargs):
+            try:
+                return func(*args, **kwargs)
+            except Exception as e:
+                return index(*args, **kwargs, exception=str(e))
+
+        return wrapper
+
+    def to_json(func):
+        def wrapper(*args, **kwargs):
+            try:
+                return func(*args, **kwargs)
+            except Exception as e:
+                return JsonResponse({"exception": str(e)})
+
+        return wrapper
+
+
+def index(request, exception=None):
     return render(
         request,
         "cardpicker/index.html",
@@ -20,6 +45,7 @@ def index(request, error=False):
             "form": InputText,
             "mobile": not request.user_agent.is_pc,
             "sources": [x.to_dict() for x in Source.objects.all()],
+            "exception": exception if exception else "",
         },
     )
 
@@ -75,6 +101,7 @@ def credits(request):
     )
 
 
+@ErrorWrappers.to_json
 def search_multiple(request):
     # search endpoint function - the frontend requests the search results for this query as JSON
     drive_order, fuzzy_search = retrieve_search_settings(request)
@@ -97,6 +124,7 @@ def search_multiple(request):
     return JsonResponse({})
 
 
+@ErrorWrappers.to_json
 def search_individual(request):
     # search endpoint function - the frontend requests the search results for this query as JSON
     drive_order, fuzzy_search = retrieve_search_settings(request)
@@ -140,6 +168,7 @@ def search(drive_order, fuzzy_search, query, req_type):
     }
 
 
+@ErrorWrappers.to_index
 def review(request):
     # return the review page with the order dict and quantity from parsing the given text input as context
     # used for rendering the review page
@@ -164,6 +193,7 @@ def review(request):
     return redirect("index")
 
 
+@ErrorWrappers.to_json
 def insert_text(request):
     # return a JSON response with the order dict and quantity from parsing the given input
     # used for inserting new cards into an existing order on the review page
@@ -192,6 +222,7 @@ def insert_text(request):
     return JsonResponse({})
 
 
+@ErrorWrappers.to_index
 def input_csv(request):
     # return the review page with the order dict and quantity from parsing the given CSV input as context
     # used for rendering the review page
@@ -216,6 +247,7 @@ def input_csv(request):
     return redirect("index")
 
 
+@ErrorWrappers.to_index
 def input_xml(request):
     # return the review page with the order dict and quantity from parsing the given XML input as context
     # used for rendering the review page
@@ -245,6 +277,7 @@ def input_xml(request):
     return redirect("index")
 
 
+@ErrorWrappers.to_json
 def insert_xml(request):
     # return a JSON response with the order dict and quantity from parsing the given XML input
     # used for inserting new cards into an existing order on the review page

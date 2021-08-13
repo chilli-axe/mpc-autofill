@@ -106,7 +106,7 @@ class CardBase {
         // use jquery proxy to link the download button to this Card object's dl function
         $(dl_button).off("click");
         $(dl_button).on('click', $.proxy(function () {
-            trigger_download(this.get_curr_img().id, false);
+            trigger_download(this.get_curr_img().id, true);
         }, this));
 
         // hide the 300 dpi image until it loads in - show a loading spinner in its place until then

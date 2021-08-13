@@ -1,7 +1,10 @@
 from datetime import timedelta
 from math import floor
+from typing import Dict, List, Optional, Tuple, Type
 
 from django.utils import timezone
+from elasticsearch_dsl.document import Document
+from elasticsearch_dsl.index import Index
 from elasticsearch_dsl.query import Match
 from Levenshtein import distance
 
@@ -10,10 +13,18 @@ from cardpicker.forms import InputText
 from cardpicker.models import Source
 from cardpicker.utils.to_searchable import to_searchable
 
-from typing import Tuple, List, Dict
+
+class SearchExceptions:
+    class IndexNotFoundException(Exception):
+        def __init__(self, index):
+            self.message = (
+                f"The search index {index} does not exist. Usually, this happens because the database "
+                f"is in the middle of updating - check back in a few minutes!"
+            )
+            super().__init__(self.message)
 
 
-def build_context(drive_order, fuzzy_search, order, qty):
+def build_context(drive_order: List[str], fuzzy_search: bool, order: Dict, qty: int):
     # I found myself copy/pasting this between the three input methods so I figured it belonged in its own function
 
     # For donation modal, approximate how many cards I've rendered
@@ -52,25 +63,33 @@ def text_to_list(input_text) -> List[int]:
     return [int(x) for x in input_text.strip("][").replace(" ", "").split(",")]
 
 
-def query_es_card(drive_order, fuzzy_search, query):
-    return search_database(drive_order, fuzzy_search, query, CardSearch.search())
+def query_es_card(drive_order: List[str], fuzzy_search: bool, query: str):
+    return search_database(drive_order, fuzzy_search, query, CardSearch)
 
 
 def query_es_cardback():
     # return all cardbacks in the search index
+    if not Index(CardbackSearch.Index.name).exists():
+        raise SearchExceptions.IndexNotFoundException(CardbackSearch.__name__)
     s = CardbackSearch.search()
     hits = s.sort({"priority": {"order": "desc"}}).params(preserve_order=True).scan()
     results = [x.to_dict() for x in hits]
     return results
 
 
-def query_es_token(drive_order, fuzzy_search, query):
-    return search_database(drive_order, fuzzy_search, query, TokenSearch.search())
+def query_es_token(drive_order: List[str], fuzzy_search: bool, query: str):
+    return search_database(drive_order, fuzzy_search, query, TokenSearch)
 
 
-def search_database(drive_order, fuzzy_search, query, s) -> List[Dict]:
+def search_database(
+    drive_order: List[str], fuzzy_search: bool, query: str, index: Type[Document]
+) -> List[Dict]:
     # search through the database for a given query, over the drives specified in drive_orders,
     # using the search index specified in s (this enables reuse of code between Card and Token search functions)
+    if not Index(index.Index.name).exists():
+        raise SearchExceptions.IndexNotFoundException(index.__name__)
+    s = index.search()
+
     results = []
 
     query_parsed = to_searchable(query)
@@ -95,13 +114,13 @@ def search_database(drive_order, fuzzy_search, query, s) -> List[Dict]:
     return results
 
 
-def process_line(input_str):
+def process_line(input_str: str) -> Tuple[Optional[str], Optional[int]]:
     # Extract the quantity and card name from a given line of the text input
     input_str = str(" ".join([x for x in input_str.split(" ") if x]))
     if input_str.isspace() or len(input_str) == 0:
         return None, None
     num_idx = 0
-    input_str = input_str.replace("//", "&")
+    input_str = input_str.replace("//", "&").replace("/", "&")
     while True:
         if num_idx >= len(input_str):
             return None, None

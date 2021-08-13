@@ -1,5 +1,5 @@
 // set the heights of the two divs containing the textarea to 100% here rather than fucking around with crispy
-document.getElementById("id_body").onload = function () {
+function on_load(exception) {
     let textarea_elem = document.getElementById("id_card_list");
     textarea_elem.parentElement.style.height = "100%";
     textarea_elem.parentElement.parentElement.style.height = "100%";
@@ -19,6 +19,11 @@ document.getElementById("id_body").onload = function () {
     // Cookies.remove('ga_disabled')
     if (Cookies.get('ga_disabled') === undefined) {
         cookie_toast.toast('show');
+    }
+
+    if (exception !== "" && exception !== undefined && exception !== null) {
+        // set up error toast and display it
+        handle_error(exception);
     }
 
     // save search settings to cookie when closing the modal

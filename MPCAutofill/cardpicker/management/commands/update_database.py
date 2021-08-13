@@ -180,11 +180,7 @@ def search_folder(service, source, folder):
 
     print(f" and done! That took {time.time() - t0} seconds.\n")
 
-    # build postgres indexes for these objects - I couldn't seem to correctly build the index when
-    # objects were instantiated but this is good enough
 
-
-# def add_card(folderDict, parentDict, folder, source, item, q_cards, q_cardbacks, q_tokens):
 def add_card(folder, source, item, q_cards, q_cardbacks, q_tokens):
     try:
         # file is valid when it's not trashed and filesize does not exceed 30 MB

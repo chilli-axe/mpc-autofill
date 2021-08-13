@@ -9,6 +9,15 @@
     
     {% load crispy_forms_tags %}
 
+{# code to run on page load #}
+    <script type="text/javascript">
+    let exception = "{{ exception|safe }}";
+
+    document.getElementById("id_body").onload = function () {
+        on_load(exception);
+    }
+    </script>
+
     {# toast to allow users to opt out of Google Analytics #}
     <div aria-live="polite" aria-atomic="true">
         <div id="cookieToast" class="toast" style="position: fixed; left: 0; z-index: 0;" data-autohide="false">

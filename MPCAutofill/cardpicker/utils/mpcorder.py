@@ -16,6 +16,18 @@ from cardpicker.utils.search_functions import process_line, text_to_list
 from cardpicker.utils.to_searchable import to_searchable
 
 
+class ParsingErrors:
+    class MalformedXMLException(Exception):
+        def __init__(self):
+            self.message = "The input XML file contained a syntax error."
+            super().__init__(self.message)
+
+    class MissingElementElement(Exception):
+        def __init__(self, element, index):
+            self.message = f"Your XML file wasn't structured correctly. The {element} element was expected at index {index}."
+            super().__init__(self.message)
+
+
 class Cardstocks(Enum):
     S30 = "(S30) Standard Smooth"
     S33 = "(S33) Superior Smooth"
@@ -249,8 +261,8 @@ class MPCOrder(abc.MutableMapping):
 
                 # first, determine if this card is a DFC by virtue of it having its two faces separated by an ampersand
                 query_faces = [query, ""]
-                if "&" in query_faces[0]:
-                    query_split = [to_searchable(x) for x in query.split(" & ")]
+                query_split = [to_searchable(x) for x in query.split(" & ")]
+                if len(query_split) > 1:
                     if (
                         query_split[0] in transforms.keys()
                         and query_split[1] in transforms.values()
@@ -340,10 +352,10 @@ class MPCOrder(abc.MutableMapping):
                     # back face not specified
                     # potentially doing transform things, because a back wasn't specified
                     # first, determine if this card is a DFC by virtue of it having its two faces separated by an &
-                    if "&" in query_faces[0]:
-                        query_split = [
-                            to_searchable(x) for x in query_faces[0].split(" & ")
-                        ]  # TODO: check, query_faces[0] was query (undefined)
+                    query_split = [
+                        to_searchable(x) for x in query_faces[0].split(" & ")
+                    ]
+                    if len(query_split) > 1:
                         if (
                             query_split[0] in transforms.keys()
                             and query_split[1] in transforms.values()
@@ -388,13 +400,17 @@ class MPCOrder(abc.MutableMapping):
     def from_xml(self, input_text, offset=0):
         # populates MPCOrder from supplied XML file contents
 
+        # TODO: validate structure of uploaded XML file separately to this logic before proceeding
+        # TODO: convert XML to dict or something in this validation?
+
         # note: this raises an IndexError if you upload an old xml (which doesn't include the search query), and this
         # exception is handled in the view that calls parse_xml
-        # TODO: handle the exception here and return nothing
-        root = ET.fromstring(input_text)
+        try:
+            root = ET.fromstring(input_text)
+        except (ET.ParseError):
+            raise ParsingErrors.MalformedXMLException
 
         # passing cardstock through the Cardstocks enum to validate that the given cardstock is valid
-        # TODO: handle KeyError exception here?
         self.cardstock = {str(x.value): x for x in Cardstocks}[root[0][2].text]
         self.foil = root[0][3].text == "true"
 
@@ -434,12 +450,15 @@ class MPCOrder(abc.MutableMapping):
             # for cardbacks, start by assuming all back slots are empty, then if the xml has any back cards,
             # remove those from the set of empty cardback slots
             empty_back_slots = all_slots
+            cardback_index = 2
             if root[2].tag == "backs":
                 # remove the back slots from used_slots, leaving us with just slots with the common cardback
                 empty_back_slots -= xml_parse_face(root[2], Faces.BACK.value, offset)
-                cardback_id = root[3].text
-            else:
-                cardback_id = root[2].text
+                cardback_index = 3
+            try:
+                cardback_id = root[cardback_index].text
+            except IndexError:
+                raise ParsingErrors.MissingElementElement("cardback", cardback_index)
 
             self.add_to_cardback(empty_back_slots)
             self.set_common_cardback_id(empty_back_slots, cardback_id)

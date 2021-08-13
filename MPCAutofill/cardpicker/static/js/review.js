@@ -190,9 +190,11 @@ function bracket(qty) {
 }
 
 function update_qty(new_qty) {
-    qty = new_qty;
-    document.getElementById("order_qty").innerHTML = new_qty;
-    document.getElementById("order_bracket").innerHTML = bracket(new_qty);
+    if (new_qty !== undefined) {
+        qty = new_qty;
+        document.getElementById("order_qty").innerHTML = new_qty;
+        document.getElementById("order_bracket").innerHTML = bracket(new_qty);
+    }
 }
 
 function clearText() {

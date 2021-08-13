@@ -30,6 +30,7 @@
     <script src="{% static 'js/jquery.ui.touch-punch.js' %}"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+    <script src="{% static 'js/base.js' %}"></script>
     
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css">
 </head>
@@ -82,6 +83,19 @@
     </div>
 </nav>
 <div class="container addmargin">
+    {# error message toast #}
+    <div aria-live="polite" aria-atomic="true">
+        <div id="errorToast" class="toast" style="position: fixed; left: 0; z-index: 0;" data-delay="10000">
+            <div class="toast-header">
+                <strong class="mr-auto">Server Error</strong>
+            </div>
+            <div class="toast-body">
+                <p>We're sorry, but an error occurred while handling your request.</p>
+                <p id="error_message_paragraph">Error message: <b id="error_message_body"></b></p>
+            </div>
+        </div>
+    </div>
+
     {% block content %}{% endblock %}
 </div>
 </body>

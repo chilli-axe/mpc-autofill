@@ -64,8 +64,8 @@ function insert_data(drive_order, fuzzy_search, order) {
         },
         success: function(data) {
             // insert cards with this data into the dom
-            if (Object.keys(data).length === 0) {
-                $('#errorToast').toast('show');
+            if (Object.keys(data).length === 0 || (data.exception !== "" && data.exception !== null && data.exception !== undefined)) {
+                    handle_error(data.exception);
             } else {
                 build_cards(data);
             }
@@ -162,8 +162,8 @@ function search_api(drive_order, fuzzy_search, query, slot_id, face, dom_id, req
             'req_type': req_type,
         },
         success: function(data) {
-            if (Object.keys(data).length === 0) {
-                $('#errorToast').toast('show');
+            if (Object.keys(data).length === 0 || (data.exception !== "" && data.exception !== null && data.exception !== undefined)) {
+                    handle_error(data.exception);
             } else {
                 build_card(data, dom_id, data['query'], slot_id, face, group, common_back_id);
             }
@@ -313,8 +313,12 @@ function insert_text() {
             'offset': qty
         },
         function (data) {
-            qty += data.qty;
-            insert_data(drive_order, fuzzy_search, data.order);
+            if (Object.keys(data).length === 0 || (data.exception !== "" && data.exception !== null && data.exception !== undefined)) {
+                    handle_error(data.exception);
+            } else {
+                qty += data.qty;
+                insert_data(drive_order, fuzzy_search, data.order);
+            }
         },
         'json'
     );
@@ -335,8 +339,12 @@ function insert_xml() {
                 'offset': qty
             },
             function (data) {
-                qty += data.qty;
-                insert_data(drive_order, fuzzy_search, data.order);
+                if (Object.keys(data).length === 0 || (data.exception !== "" && data.exception !== null && data.exception !== undefined)) {
+                    handle_error(data.exception);
+                } else {
+                    qty += data.qty;
+                    insert_data(drive_order, fuzzy_search, data.order);
+                }
             },
             'json'
         ));
