@@ -85,18 +85,18 @@
                             Add Cards
                         </button>
                         <div class="dropdown-menu" aria-labelledby="addCardsBtn">
-                            <a class="dropdown-item" data-toggle="modal" data-target="#textModal"
+                            <label class="dropdown-item" data-toggle="modal" data-target="#textModal"
                                onclick="clear_text('id_card_list');">
                                 Text Input
-                            </a>
+                            </label>
                             {# TODO: fix for safari #}
                             <label class="dropdown-item" onchange="insert_xml()">
                                 XML Order<input type="file" accept=".xml" hidden name="file" id="xmlfile">
                             </label>
-                            <a class="dropdown-item" data-toggle="modal" data-target="#inputLinkModal"
+                            <label class="dropdown-item" data-toggle="modal" data-target="#inputLinkModal"
                                onclick="clear_text('id_list_url');">
                                 From URL
-                            </a>
+                            </label>
                         </div>
                     </div>
                 </div>
@@ -159,7 +159,7 @@
                         <p>Type the names of the cards you'd like to add to your order and hit <b>Submit</b>. One card
                             per line.</p>
                         {% csrf_token %}
-                        {{ form|crispy }}
+                        {{ input_text_form|crispy }}
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
