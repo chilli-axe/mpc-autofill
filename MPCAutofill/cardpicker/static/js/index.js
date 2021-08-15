@@ -4,7 +4,7 @@ function on_load(exception) {
     textarea_elem.parentElement.style.height = "100%";
     textarea_elem.parentElement.parentElement.style.height = "100%";
 
-    $('#cardinput, #input_csv, #input_xml').submit(function (eventObj) {
+    $('#cardinput, #input_csv, #input_xml, #input_link').submit(function (eventObj) {
         // user is submitting card input form - grab the order of selected drives and attach it to the form as a
         // hidden input
         let input_drives = $("<input>", {type: "hidden", name: "drive_order", value: get_drive_order()});

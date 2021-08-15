@@ -197,10 +197,9 @@ function update_qty(new_qty) {
     }
 }
 
-function clearText() {
-    let textarea_elem = document.getElementById("id_card_list");
+function clear_text(text_field) {
+    let textarea_elem = document.getElementById(text_field);
     textarea_elem.value = "";
-    // textarea_elem.blur();
 }
 
 function remove_card() {

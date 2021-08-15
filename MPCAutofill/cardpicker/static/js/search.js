@@ -352,6 +352,31 @@ function insert_xml() {
 }
 
 
+function insert_link() {
+    let list_url = document.getElementById("id_list_url").value;
+
+    $.post(
+        '/ajax/link/',
+        {
+            'list_url': list_url,
+            'offset': qty
+        },
+        function (data) {
+            if (Object.keys(data).length === 0 || (data.exception !== "" && data.exception !== null && data.exception !== undefined)) {
+                    handle_error(data.exception);
+            } else {
+                qty += data.qty;
+                insert_data(drive_order, fuzzy_search, data.order);
+            }
+        },
+        'json'
+    );
+
+    $('#inputLinkModal').modal('hide');
+    return false;
+}
+
+
 function build_new_cards(source, data, more) {
     // iterate over the search results
     for (let i=0; i<data.length; i++) {

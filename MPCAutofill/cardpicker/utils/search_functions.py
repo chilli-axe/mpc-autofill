@@ -33,7 +33,6 @@ def build_context(drive_order: List[str], fuzzy_search: bool, order: Dict, qty: 
     )
 
     context = {
-        "form": InputText,
         "drive_order": drive_order,
         "fuzzy_search": "true" if fuzzy_search else "false",
         "order": order,

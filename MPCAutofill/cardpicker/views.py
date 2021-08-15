@@ -3,9 +3,9 @@ import json
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
 
-from cardpicker.forms import InputCSV, InputText, InputXML
+from cardpicker.forms import InputCSV, InputLink, InputText, InputXML
 from cardpicker.models import Card, Cardback, Source, Token
-from cardpicker.utils.mpcorder import Faces, MPCOrder, ReqTypes
+from cardpicker.utils.mpcorder import Faces, ImportSites, MPCOrder, ReqTypes
 from cardpicker.utils.search_functions import (
     build_context, query_es_card, query_es_cardback, query_es_token,
     retrieve_search_settings, search_new, search_new_elasticsearch_definition)
@@ -42,8 +42,6 @@ def index(request, exception=None):
         request,
         "cardpicker/index.html",
         {
-            "form": InputText,
-            "mobile": not request.user_agent.is_pc,
             "sources": [x.to_dict() for x in Source.objects.all()],
             "exception": exception if exception else "",
         },
@@ -288,6 +286,64 @@ def insert_xml(request):
         # parse the XML input to obtain the order dict and quantity in this addition to the order
         order = MPCOrder()
         qty = order.from_xml(xml, offset)
+
+        # remove the - element from the common cardback slot list so the selected common cardback doesn't reset on us
+        order.remove_common_cardback()
+
+        # build context
+        context = {
+            "order": order.to_dict(),
+            "qty": qty,
+        }
+
+        return JsonResponse(context)
+
+    # if drive order or fuzzy search can't be determined from the given request, return an
+    # empty JsonResponse and the frontend will handle it (views should always return a response)
+    return JsonResponse({})
+
+
+@ErrorWrappers.to_index
+def input_link(request):
+    # return the review page with the order dict and quantity from parsing the given XML input as context
+    # used for rendering the review page
+    if request.method == "POST":
+        form = InputLink(request.POST)
+        if form.is_valid():
+            try:
+                # retrieve drive order and list URL from request
+                drive_order, fuzzy_search = retrieve_search_settings(request)
+                if drive_order is None or fuzzy_search is None:
+                    return redirect("index")
+                url = form["list_url"].value()
+
+                # parse the link input to obtain the order dict and quantity in this order
+                order = MPCOrder()
+                qty = order.from_link(url)
+
+                # build context
+                context = build_context(drive_order, fuzzy_search, order.to_dict(), qty)
+
+                return render(request, "cardpicker/review.html", context)
+
+            except IndexError:
+                # IndexErrors can occur when trying to parse old XMLs that don't include the search query
+                return redirect("index")
+
+    return redirect("index")
+
+
+@ErrorWrappers.to_json
+def insert_link(request):
+    # return a JSON response with the order dict and quantity from parsing the given XML input
+    # used for inserting new cards into an existing order on the review page
+    list_url = request.POST.get("list_url")
+    offset = request.POST.get("offset")
+    if list_url and offset:
+        offset = int(offset)
+        # parse the XML input to obtain the order dict and quantity in this addition to the order
+        order = MPCOrder()
+        qty = order.from_link(list_url, offset)
 
         # remove the - element from the common cardback slot list so the selected common cardback doesn't reset on us
         order.remove_common_cardback()

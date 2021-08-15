@@ -9,13 +9,12 @@
     
     {% load crispy_forms_tags %}
 
-{# code to run on page load #}
+    {# code to run on page load #}
     <script type="text/javascript">
-    let exception = "{{ exception|safe }}";
-
-    document.getElementById("id_body").onload = function () {
-        on_load(exception);
-    }
+        let exception = unescape("{{ exception|escapejs }}");
+        document.getElementById("id_body").onload = function () {
+            on_load(exception);
+        }
     </script>
 
     {# toast to allow users to opt out of Google Analytics #}
@@ -96,7 +95,7 @@
         <div class="col-lg-6 col-md-6 col-md-12"> {# style="padding-bottom: 30px" #}
             <form method="post" action="{% url 'review' %}" id="cardinput" style="display: inline; height: 100%;">
                 {% csrf_token %}
-                {{ form|crispy }}
+                {{ input_text_form|crispy }}
             </form>
         </div>
     </div>
@@ -134,10 +133,47 @@
                         XML Order<input type="file" accept=".xml" hidden name="file" id="xmlfile">
                     </label>
                 </form>
+
+                {# decklist import form #}
+                <button type="button" class="dropdown-item" data-toggle="modal" data-target="#inputLinkModal">
+                    From URL
+                </button>
             </div>
         </div>
     </div>
 
+    {# import list modal #}
+    <div class="modal fade" id="inputLinkModal" tabindex="-1" role="dialog" aria-labelledby="inputLinkLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="inputLinkLabel">Import List from URL</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    Paste a link to a card list hosted on one of the below sites (not affiliated) to import into MPC Autofill:
+                    <ul>
+                        {% for import_site in import_sites %}
+                            <li><a href="{{ import_site.1|safe }}" target="_blank">{{ import_site.0|safe }}</a></li>
+                        {% endfor %}
+                    </ul>
+
+                    <form method="post" action="{% url 'input_link' %}" id="input_link" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        {{ input_link_form|crispy }}
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" onclick="$('#input_link').submit()" data-dismiss="modal">Import</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# search settings modal #}
     <div class="modal fade" id="selectDrivesModal" tabindex="-1" role="dialog" aria-labelledby="selectDrivesLabel"
          aria-hidden="true">
         <div class="modal-dialog" role="document">

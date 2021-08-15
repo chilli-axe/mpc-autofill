@@ -82,6 +82,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "cardpicker.context_processors.add_gtag",
+                "cardpicker.context_processors.common_info",
             ],
         },
     },

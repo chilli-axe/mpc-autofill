@@ -26,3 +26,16 @@ class InputCSV(forms.Form):
 
 class InputXML(forms.Form):
     file = forms.FileField()
+
+
+class InputLink(forms.Form):
+    list_url = forms.CharField(
+        widget=forms.TextInput(
+            attrs={
+                "placeholder": "Card list URL",
+                "class": "form-control",
+            }
+        ),
+        label="",
+        required=True,
+    )

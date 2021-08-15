@@ -86,13 +86,17 @@
                         </button>
                         <div class="dropdown-menu" aria-labelledby="addCardsBtn">
                             <a class="dropdown-item" data-toggle="modal" data-target="#textModal"
-                               onclick="clearText();">
+                               onclick="clear_text('id_card_list');">
                                 Text Input
                             </a>
                             {# TODO: fix for safari #}
                             <label class="dropdown-item" onchange="insert_xml()">
                                 XML Order<input type="file" accept=".xml" hidden name="file" id="xmlfile">
                             </label>
+                            <a class="dropdown-item" data-toggle="modal" data-target="#inputLinkModal"
+                               onclick="clear_text('id_list_url');">
+                                From URL
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -162,6 +166,37 @@
                         <input type="submit" class="btn btn-success" value="Submit">
                     </div>
                 </form>
+            </div>
+        </div>
+    </div>
+
+    {# import list modal #}
+    <div class="modal fade" id="inputLinkModal" tabindex="-1" role="dialog" aria-labelledby="inputLinkLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="inputLinkLabel">Import List from URL</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    Paste a link to a card list hosted on one of the below sites (not affiliated) to import into MPC Autofill:
+                    <ul>
+                        {% for import_site in import_sites %}
+                            <li><a href="{{ import_site.1|safe }}" target="_blank">{{ import_site.0|safe }}</a></li>
+                        {% endfor %}
+                    </ul>
+
+                    <form method="post" onsubmit="return insert_link()" id="input_link" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        {{ input_link_form|crispy }}
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" onclick="$('#input_link').submit()" data-dismiss="modal">Import</button>
+                </div>
             </div>
         </div>
     </div>
