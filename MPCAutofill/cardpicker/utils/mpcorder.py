@@ -12,7 +12,7 @@ import chardet
 import defusedxml.ElementTree as ET
 
 from cardpicker.models import DFCPair
-from cardpicker.utils.link_imports import ImportSites, LinkInputErrors
+from cardpicker.utils.link_imports import ImportSites
 from cardpicker.utils.search_functions import process_line, text_to_list
 from cardpicker.utils.to_searchable import to_searchable
 
@@ -26,6 +26,13 @@ class ParsingErrors:
     class MissingElementException(Exception):
         def __init__(self, element, index):
             self.message = f"Your XML file wasn't structured correctly. The {element} element was expected at index {index}."
+            super().__init__(self.message)
+
+    class SiteNotSupportedException(Exception):
+        def __init__(self, url):
+            self.message = (
+                f"Importing card lists from {url} is not supported. Sorry about that!"
+            )
             super().__init__(self.message)
 
 
@@ -471,7 +478,7 @@ class MPCOrder(abc.MutableMapping):
             site_instance = site()
             if url.startswith(site_instance.base_url):
                 return self.from_text(site_instance.retrieve_card_list(url), offset)
-        raise LinkInputErrors.SiteNotSupportedException(url)
+        raise ParsingErrors.SiteNotSupportedException(url)
 
     def from_json(self, order_json):
         # populates MPCOrder from supplied json/dictionary
