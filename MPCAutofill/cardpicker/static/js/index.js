@@ -1,5 +1,5 @@
 // set the heights of the two divs containing the textarea to 100% here rather than fucking around with crispy
-function on_load(exception) {
+function index_on_load() {
     let textarea_elem = document.getElementById("id_card_list");
     textarea_elem.parentElement.style.height = "100%";
     textarea_elem.parentElement.parentElement.style.height = "100%";
@@ -13,18 +13,6 @@ function on_load(exception) {
         $(this).append(input_fuzzy_search)
         return true;
     });
-    let cookie_toast = $('#cookieToast');
-    cookie_toast.on('hide.bs.toast', cookie_toast_hidden);
-    cookie_toast.on('show.bs.toast', cookie_toast_shown);
-    // Cookies.remove('ga_disabled')
-    if (Cookies.get('ga_disabled') === undefined) {
-        cookie_toast.toast('show');
-    }
-
-    if (exception !== "" && exception !== undefined && exception !== null) {
-        // set up error toast and display it
-        handle_error(exception);
-    }
 
     // save search settings to cookie when closing the modal
     $('#selectDrivesModal').on('hidden.bs.modal', save_search_settings);
@@ -90,28 +78,6 @@ function load_search_settings() {
 
         $("#searchtype").bootstrapToggle(fuzzy_search);
     }
-}
-
-function cookie_toast_shown() {
-    this.style.zIndex = "99999";
-}
-
-function cookie_toast_hidden() {
-    this.style.zIndex = "0";
-    if (Cookies.get('ga_disabled') === undefined) {
-        Cookies.set('ga_disabled', 'false', { expires: 365 })
-    }
-}
-
-function cookie_toast_opt_in() {
-    Cookies.set('ga_disabled', 'false', { expires: 365 });
-    $('#cookieToast').toast('hide');
-}
-
-function cookie_toast_opt_out() {
-    Cookies.set('ga_disabled', 'true', { expires: 365 });
-    window['ga-disable-'.concat(my_gtag)] = true;
-    $('#cookieToast').toast('hide');
 }
 
 function get_drive_order() {

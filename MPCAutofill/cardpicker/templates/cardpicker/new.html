@@ -9,6 +9,7 @@
     <script type="text/javascript">
         let pages = {};
         document.getElementById("id_body").onload = function () {
+            base_on_load(exception);
             let context = {{ sources|safe }};
             for (const [source, info] of Object.entries(context)) {
                 pages[source] = 0;

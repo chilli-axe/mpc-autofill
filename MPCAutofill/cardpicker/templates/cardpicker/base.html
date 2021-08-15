@@ -47,9 +47,6 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav mr-auto">
-                {% comment %} <li class="nav-item">
-                    <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
-                </li> {% endcomment %}
                 <li class="nav-item">
                     <a class="nav-link" href="/guide">Guide</a>
                 </li>
@@ -64,9 +61,6 @@
                         Download
                     </a>
                 </li>
-                {% comment %} <li class="nav-item">
-                    <a class="nav-link" href="https://github.com/ndepaola/mpc-autofill" target="_blank">GitHub</a>
-                </li> {% endcomment %}
                 <li class="nav-item">
                     <a class="nav-link" href="https://discord.gg/VRScmDMeSw" target="_blank">Join the Discord!</a>
                 </li>
@@ -95,6 +89,48 @@
             </div>
         </div>
     </div>
+
+    {# toast to allow users to opt out of Google Analytics #}
+    <div aria-live="polite" aria-atomic="true">
+        <div id="cookieToast" class="toast" style="position: fixed; left: 0; z-index: 0;" data-autohide="false">
+            <div class="toast-header">
+                <strong class="mr-auto">Cookie Usage</strong>
+                <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+                <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <div class="toast-body">
+                <p>
+                MPC Autofill uses cookies for remembering your search settings, and for collecting analytics
+                data to help improve the site. Your data is never shared with anyone. Would you like to opt
+                out of analytics cookies?
+                </p>
+                <p>
+                View our privacy policy <a target="_blank" href="/legal">here</a>.
+                </p>
+                <div class="mt-2 pt-2 border-top">
+                    <div class="row">
+                        <div class="col-6">
+                            <button type="button" class="btn btn-outline-info btn-sm btn-block"
+                                    onclick="cookie_toast_opt_out()">Opt me out please!</button>
+                        </div>
+                        <div class="col-6">
+                            <button type="button" class="btn btn-primary btn-sm btn-block"
+                                    onclick="cookie_toast_opt_in()">That's fine!</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# code to run on page load #}
+    <script type="text/javascript">
+        let exception = unescape("{{ exception|escapejs }}");
+        document.getElementById("id_body").onload = function () {
+            base_on_load(exception);
+        }
+    </script>
 
     {% block content %}{% endblock %}
 </div>
