@@ -3,6 +3,7 @@ Object Model for working with MPCOrders - the data structure that defines a user
 """
 
 import csv
+import json
 from collections import abc
 from dataclasses import dataclass
 from enum import Enum
@@ -112,8 +113,25 @@ class Scryfall(ImportSite):
         return card_list
 
 
-ImportSites = [TappedOut, CubeCobra, MTGGoldfish, Scryfall]
-# TODO: reach out to Archidekt, Moxfield, Deckstats and Aetherhub regarding data integration
+class Archidekt(ImportSite):
+    def __init__(self):
+        self.name = "Archidekt"
+        self.base_url = "https://archidekt.com"
+
+    def retrieve_card_list(self, url: str) -> str:
+        deck_id = url.rsplit("#", 1)[0].split("/")[-1]
+        response = requests.get(f"{self.base_url}/api/decks/{deck_id}/small/")
+        if response.status_code == 404 or not deck_id:
+            raise ParsingErrors.InvalidURLException(self.name, url)
+        response_json = json.loads(response.content.decode("utf-8"))
+        card_list = ""
+        for x in response_json["cards"]:
+            card_list += f"{x['quantity']} {x['card']['oracleCard']['name']}\n"
+        return card_list
+
+
+ImportSites = [TappedOut, CubeCobra, MTGGoldfish, Scryfall, Archidekt]
+# TODO: reach out to Moxfield, Deckstats, and Aetherhub regarding data integration
 
 
 class Cardstocks(Enum):
