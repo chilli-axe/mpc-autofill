@@ -1,7 +1,7 @@
 from django.conf import settings
 
 from cardpicker.forms import InputLink, InputText
-from cardpicker.utils.mpcorder import ImportSites
+from cardpicker.utils.link_imports import ImportSites
 
 
 def add_gtag(request):

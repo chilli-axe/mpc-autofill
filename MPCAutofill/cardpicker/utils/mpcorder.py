@@ -3,18 +3,16 @@ Object Model for working with MPCOrders - the data structure that defines a user
 """
 
 import csv
-import json
 from collections import abc
-from dataclasses import dataclass
 from enum import Enum
 from typing import (AbstractSet, Any, Dict, ItemsView, Iterator, List, Set,
                     Tuple, ValuesView)
 
 import chardet
 import defusedxml.ElementTree as ET
-import requests
 
 from cardpicker.models import DFCPair
+from cardpicker.utils.link_imports import ImportSites, LinkInputErrors
 from cardpicker.utils.search_functions import process_line, text_to_list
 from cardpicker.utils.to_searchable import to_searchable
 
@@ -29,109 +27,6 @@ class ParsingErrors:
         def __init__(self, element, index):
             self.message = f"Your XML file wasn't structured correctly. The {element} element was expected at index {index}."
             super().__init__(self.message)
-
-    class SiteNotSupportedException(Exception):
-        def __init__(self, url):
-            self.message = (
-                f"Importing card lists from {url} is not supported. Sorry about that!"
-            )
-            super().__init__(self.message)
-
-    class InvalidURLException(Exception):
-        def __init__(self, site, url):
-            self.message = f"There was a problem with importing your list from {site} at URL {url}. Check that your URL is correct and try again."
-            super().__init__(self.message)
-
-
-@dataclass
-class ImportSite:
-    name: str
-    base_url: str
-
-    def retrieve_card_list(self, url: str) -> str:
-        raise NotImplementedError
-
-
-class TappedOut(ImportSite):
-    def __init__(self):
-        self.name = "TappedOut"
-        self.base_url = "https://tappedout.net"
-
-    def retrieve_card_list(self, url: str) -> str:
-        response = requests.get(url + "?fmt=txt")
-        if response.status_code == 404:
-            raise ParsingErrors.InvalidURLException(self.name, url)
-        card_list = response.content.decode("utf-8")
-        for x in ["Sideboard:"]:
-            card_list = card_list.replace(x + "\r\n", "")
-        return card_list
-
-
-class CubeCobra(ImportSite):
-    def __init__(self):
-        self.name = "CubeCobra"
-        self.base_url = "https://cubecobra.com"
-
-    def retrieve_card_list(self, url: str) -> str:
-        cube_id = url.split("/")[-1]
-        response = requests.get(
-            f"{self.base_url}/cube/download/plaintext/{cube_id}?primary=Color%20Category&secondary=Types-Multicolor&tertiary=Mana%20Value&quaternary=Alphabetical&showother=false"
-        )
-        if (
-            response.url == "https://cubecobra.com/404" or not cube_id
-        ):  # cubecobra returns code 200 for 404 page
-            raise ParsingErrors.InvalidURLException(self.name, url)
-        return response.content.decode("utf-8")
-
-
-class MTGGoldfish(ImportSite):
-    def __init__(self):
-        self.name = "MTGGoldfish"
-        self.base_url = "https://www.mtggoldfish.com"
-
-    def retrieve_card_list(self, url: str) -> str:
-        deck_id = url.split("#")[0].split("/")[-1]
-        response = requests.get(f"{self.base_url}/deck/download/{deck_id}")
-        if response.status_code == 404 or not deck_id:
-            raise ParsingErrors.InvalidURLException(self.name, url)
-        return response.content.decode("utf-8")
-
-
-class Scryfall(ImportSite):
-    def __init__(self):
-        self.name = "Scryfall"
-        self.base_url = "https://scryfall.com"
-
-    def retrieve_card_list(self, url: str) -> str:
-        deck_id = url.rsplit("#", 1)[0].split("/")[-1]
-        response = requests.get(f"https://api.scryfall.com/decks/{deck_id}/export/text")
-        if response.status_code == 404 or not deck_id:
-            raise ParsingErrors.InvalidURLException(self.name, url)
-        card_list = response.content.decode("utf-8")
-        for x in ["// Sideboard"]:
-            card_list = card_list.replace(x, "")
-        return card_list
-
-
-class Archidekt(ImportSite):
-    def __init__(self):
-        self.name = "Archidekt"
-        self.base_url = "https://archidekt.com"
-
-    def retrieve_card_list(self, url: str) -> str:
-        deck_id = url.rsplit("#", 1)[0].split("/")[-1]
-        response = requests.get(f"{self.base_url}/api/decks/{deck_id}/small/")
-        if response.status_code == 404 or not deck_id:
-            raise ParsingErrors.InvalidURLException(self.name, url)
-        response_json = json.loads(response.content.decode("utf-8"))
-        card_list = ""
-        for x in response_json["cards"]:
-            card_list += f"{x['quantity']} {x['card']['oracleCard']['name']}\n"
-        return card_list
-
-
-ImportSites = [TappedOut, CubeCobra, MTGGoldfish, Scryfall, Archidekt]
-# TODO: reach out to Moxfield, Deckstats, and Aetherhub regarding data integration
 
 
 class Cardstocks(Enum):
@@ -576,7 +471,7 @@ class MPCOrder(abc.MutableMapping):
             site_instance = site()
             if url.startswith(site_instance.base_url):
                 return self.from_text(site_instance.retrieve_card_list(url), offset)
-        raise ParsingErrors.SiteNotSupportedException(url)
+        raise LinkInputErrors.SiteNotSupportedException(url)
 
     def from_json(self, order_json):
         # populates MPCOrder from supplied json/dictionary
