@@ -1,0 +1,19 @@
+{% extends 'cardpicker/base.html' %}
+{% load static %}
+
+{% block content %}
+    <h2>{{ blog.name }} Blog</h2>
+
+    <div class="card-columns">
+        {% for post in posts %}
+            {% include "blog/synopsis.html" %}
+        {% endfor %}
+    </div>
+
+    <!-- Footer -->
+    <footer class="page-footer font-small blue">
+        <div class="footer-copyright text-center py-3">
+            <a href="legal">MPC Autofill Legal Disclaimer and Privacy Policy</a>
+        </div>
+    </footer>
+{% endblock %}

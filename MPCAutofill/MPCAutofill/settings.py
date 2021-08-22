@@ -45,6 +45,7 @@ PREPEND_WWW = env("PREPEND_WWW", default=False)
 
 INSTALLED_APPS = [
     "cardpicker.apps.CardpickerConfig",
+    "blog.apps.BlogConfig",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",

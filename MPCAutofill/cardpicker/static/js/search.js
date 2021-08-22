@@ -416,6 +416,30 @@ function build_new_cards(source, data, more) {
     pages[source] = pages[source] + 1;
 }
 
+function build_blog_card(container_id, card) {
+    // iterate over the search results
+    let dom_id = card.id;
+
+    // copy the base card sitting in the dom, adjust it, then stick it into this artist's card container
+    let card_elem = document.getElementById("basecard-new").cloneNode(true);
+    card_elem.style.display = "";
+    card_elem.id = dom_id;
+
+    // set up element IDs for this man
+    let class_ids = [
+        "mpccard-slot",
+        "card-img",
+        "mpccard-name",
+        "mpccard-source",
+    ];
+    for (let i=0; i<class_ids.length; i++) {
+        card_elem.getElementsByClassName(class_ids[i])[0].id = dom_id + "-" + class_ids[i];
+    }
+
+    // stick into dom under the source's card container, and instantiate the Card
+    document.getElementById(container_id).appendChild(card_elem);
+    let new_card = new CardRecent(card, dom_id);
+}
 
 function load_new_cards(source) {
     // ajax function to ask the server for a page on the What's New page (kek) and stick it into the dom

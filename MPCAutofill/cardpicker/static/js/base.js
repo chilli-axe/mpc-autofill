@@ -42,7 +42,7 @@ function cookie_toast_shown() {
 }
 
 function cookie_toast_hidden() {
-    this.style.zIndex = "0";
+    this.style.zIndex = "-1";
     if (Cookies.get('ga_disabled') === undefined) {
         Cookies.set('ga_disabled', 'false', { expires: 365 })
     }
