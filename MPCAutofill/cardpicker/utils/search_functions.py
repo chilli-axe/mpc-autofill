@@ -6,10 +6,10 @@ from django.utils import timezone
 from elasticsearch_dsl.document import Document
 from elasticsearch_dsl.index import Index
 from elasticsearch_dsl.query import Match
+from elasticsearch.exceptions import ConnectionError as ElasticConnectionError
 from Levenshtein import distance
 
 from cardpicker.documents import CardbackSearch, CardSearch, TokenSearch
-from cardpicker.forms import InputText
 from cardpicker.models import Source
 from cardpicker.utils.to_searchable import to_searchable
 
@@ -22,6 +22,25 @@ class SearchExceptions:
                 f"is in the middle of updating - check back in a few minutes!"
             )
             super().__init__(self.message)
+
+    class ConnectionTimedOutException(Exception):
+        def __init__(self):
+            self.message = "Unable to connect to the search engine (timed out)."
+            super().__init__(self.message)
+
+
+def elastic_connection(func):
+    """
+    Small function wrapper which makes elasticsearch's connection error more readable.
+    """
+
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except ElasticConnectionError:
+            raise SearchExceptions.ConnectionTimedOutException
+
+    return wrapper
 
 
 def build_context(drive_order: List[str], fuzzy_search: bool, order: Dict, qty: int):
@@ -66,6 +85,7 @@ def query_es_card(drive_order: List[str], fuzzy_search: bool, query: str):
     return search_database(drive_order, fuzzy_search, query, CardSearch)
 
 
+@elastic_connection
 def query_es_cardback():
     # return all cardbacks in the search index
     if not Index(CardbackSearch.Index.name).exists():
@@ -80,6 +100,7 @@ def query_es_token(drive_order: List[str], fuzzy_search: bool, query: str):
     return search_database(drive_order, fuzzy_search, query, TokenSearch)
 
 
+@elastic_connection
 def search_database(
     drive_order: List[str], fuzzy_search: bool, query: str, index: Type[Document]
 ) -> List[Dict]:
@@ -141,6 +162,7 @@ def process_line(input_str: str) -> Tuple[Optional[str], Optional[int]]:
             return name, qty
 
 
+@elastic_connection
 def search_new_elasticsearch_definition():
     days = 14
     dt_from = timezone.now() - timedelta(days=days)
@@ -148,6 +170,7 @@ def search_new_elasticsearch_definition():
     return CardSearch().search().filter("range", date={"from": dt_from, "to": dt_to})
 
 
+@elastic_connection
 def search_new(s, source, page=0):
     # define page size and the range to paginate with
     page_size = 6
