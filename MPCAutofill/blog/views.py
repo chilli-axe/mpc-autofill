@@ -1,5 +1,8 @@
 from django.shortcuts import render
+from django.http import Http404
 from blog.models import Blog, BlogPost, ShowcaseBlogPost
+
+from django.core.exceptions import ObjectDoesNotExist
 
 
 def index(request):
@@ -17,9 +20,14 @@ def blog(request, blog):
 def blog_post(request, blog, blog_post):
     # todo: retrieve blog object
     post_id = blog_post.split("-")[0]
-    post = ShowcaseBlogPost.objects.get(id=post_id)
-    post_template = "showcase_blog_post"
-    if not post:
-        post = BlogPost.objects.get(id=post_id)
-        post_template = "blog_post"
+    try:
+        post = ShowcaseBlogPost.objects.get(id=post_id)
+        post_template = "showcase_blog_post"
+    except ObjectDoesNotExist:
+        # the blog post must be a BlogPost obj
+        try:
+            post = BlogPost.objects.get(id=post_id)
+            post_template = "blog_post"
+        except ObjectDoesNotExist:
+            raise Http404("Blog post does not exist")
     return render(request, f"blog/{post_template}.html", {"post": post.get_content()})
