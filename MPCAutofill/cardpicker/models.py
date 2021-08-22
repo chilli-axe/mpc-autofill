@@ -3,6 +3,8 @@ from datetime import datetime
 from django.db import models
 from django.utils import dateformat
 
+from hurry.filesize import size, alternative
+
 datestring = "jS F, Y"
 
 
@@ -101,6 +103,7 @@ class CardBase(models.Model):
     searchq_keyword = models.CharField(max_length=200)
     thumbpath = models.CharField(max_length=200)
     date = models.DateTimeField(default=datetime.now)
+    size = models.IntegerField()
 
     def __str__(self):
         return "[{}] {}: {}, uploaded: {}".format(
@@ -118,6 +121,7 @@ class CardBase(models.Model):
             "searchq": self.searchq,
             "thumbpath": self.thumbpath,
             "date": dateformat.format(self.date, datestring),
+            "size": size(self.size, system=alternative),
         }
 
     def source_to_str(self):

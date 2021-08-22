@@ -16,7 +16,7 @@ function get_thumbnail(driveID) {
 
 function get_thumbnail_med(driveID) {
     // small helper function to insert a drive ID into a 300 dpi image URL and return it
-    return "https://drive.google.com/thumbnail?sz=w1122-h1122&id=" + driveID
+    return "https://drive.google.com/thumbnail?sz=w800-h800&id=" + driveID
 }
 
 function thumbnail_404(source) {
@@ -87,7 +87,8 @@ class CardBase {
         let view_id = document.getElementById("detailedView-id");
         let view_class = document.getElementById("detailedView-class");
         let view_spinner = document.getElementById("detailedView-spinner");
-        let dl_button = document.getElementById("detailedView-dl")
+        let dl_button = document.getElementById("detailedView-dl");
+        let view_size = document.getElementById("detailedView-size");
 
         view_name.innerText = this.get_curr_img().name;
         view_img.src = get_thumbnail_med(this.get_curr_img().id);
@@ -95,6 +96,7 @@ class CardBase {
         view_dpi.innerText = this.get_curr_img().dpi + " DPI";
         view_id.innerText = this.get_curr_img().id;
         view_date.innerText = this.get_curr_img().date;
+        view_size.innerText = this.get_curr_img().size;
 
         // pretty version of card type/class
         let img_class = "";

@@ -4,6 +4,8 @@ from django_elasticsearch_dsl.registries import registry
 
 from .models import Card, Cardback, Token
 
+from hurry.filesize import size, alternative
+
 datestring = "jS F, Y"
 
 common_fields = [
@@ -15,6 +17,7 @@ common_fields = [
     "thumbpath",
     "searchq",
     "date",
+    "size",
 ]
 
 common_settings = {"number_of_shards": 5, "number_of_replicas": 0}
@@ -46,6 +49,7 @@ class CardSearch(Document):
             "searchq": self.searchq,
             "thumbpath": self.thumbpath,
             "date": dateformat.format(self.date, datestring),
+            "size": size(self.size, system=alternative),
         }
 
 
@@ -75,6 +79,7 @@ class CardbackSearch(Document):
             "searchq": self.searchq,
             "thumbpath": self.thumbpath,
             "date": dateformat.format(self.date, datestring),
+            "size": size(self.size, system=alternative),
         }
 
 
@@ -104,4 +109,5 @@ class TokenSearch(Document):
             "searchq": self.searchq,
             "thumbpath": self.thumbpath,
             "date": dateformat.format(self.date, datestring),
+            "size": size(self.size, system=alternative),
         }

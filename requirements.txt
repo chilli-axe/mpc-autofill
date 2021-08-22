@@ -24,6 +24,7 @@ google-auth-httplib2==0.1.0
 google-auth-oauthlib==0.4.4
 googleapis-common-protos==1.53.0
 httplib2==0.19.1
+hurry.filesize==0.9
 idna==2.10
 importlib-metadata==4.0.1
 iniconfig==1.1.1

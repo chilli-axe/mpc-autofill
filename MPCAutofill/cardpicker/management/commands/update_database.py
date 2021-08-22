@@ -24,6 +24,8 @@ SERVICE_ACC_FILENAME = "client_secrets.json"
 
 DPI_HEIGHT_RATIO = 300 / 1122  # 300 DPI for image of vertical resolution 1122 pixels
 
+# TODO: accept multiple drives as arguments, rather than one or all
+
 
 def locate_drives(service, sources):
     def get_folder_from_id(drive_id, bar: tqdm):
@@ -281,6 +283,7 @@ def add_card(folder, source, item, q_cards, q_cardbacks, q_tokens):
                 searchq_keyword=to_searchable(cardname),  # for keyword search
                 thumbpath=extension,
                 date=item["createdTime"],
+                size=item["size"],
             )
         )
 
