@@ -2,7 +2,10 @@ import string
 from datetime import datetime
 
 from django.db import models
+from django.utils import dateformat
 from markdown import markdown
+
+datestring = "jS F, Y"
 
 
 class Blog(models.Model):
@@ -15,14 +18,11 @@ class Blog(models.Model):
     def to_dict(self):
         return {
             "name": self.name,
-            "url": self.url,
+            "url": f"/blog/{self.url}",
         }
 
     def to_dict_with_posts(self, num_posts=0):
-        posts = [
-            x.get_synopsis(absolute_url=True)
-            for x in BlogPost.objects.filter(blog__pk=self.pk)
-        ]
+        posts = [x.get_synopsis() for x in BlogPost.objects.filter(blog__pk=self.pk)]
         if num_posts > 0:
             posts = posts[0:num_posts]
         d = self.to_dict()
@@ -40,36 +40,34 @@ class BlogPost(models.Model):
     def __str__(self):
         return f'"{self.name}", created on {self.date_created}'
 
-    def get_url(self, absolute_url=False) -> str:
+    def get_url(self) -> str:
         name_flattened = (
             self.name.lower()
             .translate(str.maketrans("", "", string.punctuation))
             .replace(" ", "-")
         )
-        post_url = f"{self.pk}-{name_flattened}"
-        if absolute_url:
-            return f"{self.blog.url}/{post_url}"
+        post_url = f"/blog/{self.blog.url}/{self.pk}-{name_flattened}"
         return post_url
 
     def get_content(self):
         return {
             "name": self.name,
-            "date_created": self.date_created,
+            "date_created": dateformat.format(self.date_created, datestring),
             "synopsis": self.synopsis,
             "contents": markdown(self.contents),
             "blog": self.blog.to_dict(),
             "url": self.get_url(),
         }
 
-    def get_synopsis(self, absolute_url=False):
+    def get_synopsis(self):
         # i thought it'd be neat if each synopsis's border colour changed
         borders = ["primary", "success", "warning", "info", "light"]
         return {
             "name": self.name,
-            "date_created": self.date_created,
+            "date_created": dateformat.format(self.date_created, datestring),
             "synopsis": markdown(self.synopsis),
             "blog": self.blog.name,
-            "url": self.get_url(absolute_url),
+            "url": self.get_url(),
             "border": borders[self.pk % len(borders)],
         }
 
@@ -83,7 +81,7 @@ class ShowcaseBlogPost(BlogPost):
     def get_content(self):
         return {
             "name": self.name,
-            "date_created": self.date_created,
+            "date_created": dateformat.format(self.date_created, datestring),
             "contents": markdown(self.contents),
             "blog": self.blog.to_dict(),
             "url": self.get_url(),

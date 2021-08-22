@@ -1,8 +1,11 @@
 import json
+from datetime import timedelta
 
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
+from django.utils import timezone
 
+from blog.models import BlogPost
 from cardpicker.forms import InputCSV, InputLink, InputText, InputXML
 from cardpicker.models import Card, Cardback, Source, Token
 from cardpicker.utils.mpcorder import Faces, MPCOrder, ReqTypes
@@ -38,11 +41,18 @@ class ErrorWrappers:
 
 
 def index(request, exception=None):
+    posts = [
+        x.get_synopsis()
+        for x in BlogPost.objects.filter(
+            date_created__gte=timezone.now() - timedelta(days=14)
+        )
+    ]
     return render(
         request,
         "cardpicker/index.html",
         {
             "sources": [x.to_dict() for x in Source.objects.all()],
+            "posts": posts,
             "exception": exception if exception else "",
         },
     )

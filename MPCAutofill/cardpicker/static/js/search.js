@@ -49,7 +49,7 @@ function insert_data(drive_order, fuzzy_search, order) {
         switch_faces();
     }
     $('#loadModal').modal('show')
-    
+
     // query Django for info on this order
     // expected to return the order dict (from function parameter) but with card info filled in under the
     // ['data'] property for each card
@@ -62,10 +62,10 @@ function insert_data(drive_order, fuzzy_search, order) {
             'fuzzy_search': fuzzy_search,
             'order': JSON.stringify(order),
         },
-        success: function(data) {
+        success: function (data) {
             // insert cards with this data into the dom
             if (Object.keys(data).length === 0 || (data.exception !== "" && data.exception !== null && data.exception !== undefined)) {
-                    handle_error(data.exception);
+                handle_error(data.exception);
             } else {
                 build_cards(data);
             }
@@ -74,10 +74,10 @@ function insert_data(drive_order, fuzzy_search, order) {
             alert("Error");
             // TODO: not shit?
         },
-        complete: function() {
+        complete: function () {
             // pause for a moment so the modal can catch up in case our results return too quickly
-            setTimeout(function(){ 
-                $('#loadModal').modal('hide'); 
+            setTimeout(function () {
+                $('#loadModal').modal('hide');
                 // alert the user if specific card versions they requested no longer exist
                 alert_missing_versions(cards_not_found);
                 // alert the user if they've reached the cap of 612 cards
@@ -86,10 +86,10 @@ function insert_data(drive_order, fuzzy_search, order) {
                 }
             }, 700);
         }
-   })
-   
-   // update quantity and bracket variables and html
-   update_qty(qty);
+    })
+
+    // update quantity and bracket variables and html
+    update_qty(qty);
 }
 
 
@@ -108,7 +108,7 @@ function alert_missing_versions(cards_not_found) {
         }
 
         // add each missing card to the table
-        for (let i=0; i<cards_not_found.length; i++) {
+        for (let i = 0; i < cards_not_found.length; i++) {
             // stick this not found image into the table
             let row_element = document.createElement("tr");
 
@@ -116,7 +116,7 @@ function alert_missing_versions(cards_not_found) {
             let id_element = document.createElement("td");
             id_element.style.textAlign = "center";
             // id_element.innerText = cards_not_found[i].id;
-            
+
             let id_text_element = document.createElement("code");
             id_text_element.innerText = cards_not_found[i].id;
             id_element.appendChild(id_text_element);
@@ -133,7 +133,7 @@ function alert_missing_versions(cards_not_found) {
             } else {
                 query_element.innerText = cards_not_found[i].query;
             }
-            
+
             // attach all three to the row element, then append row element to the table
             row_element.appendChild(id_element);
             row_element.appendChild(slot_element);
@@ -161,9 +161,9 @@ function search_api(drive_order, fuzzy_search, query, slot_id, face, dom_id, req
             'query': query,
             'req_type': req_type,
         },
-        success: function(data) {
+        success: function (data) {
             if (Object.keys(data).length === 0 || (data.exception !== "" && data.exception !== null && data.exception !== undefined)) {
-                    handle_error(data.exception);
+                handle_error(data.exception);
             } else {
                 build_card(data, dom_id, data['query'], slot_id, face, group, common_back_id);
             }
@@ -174,7 +174,7 @@ function search_api(drive_order, fuzzy_search, query, slot_id, face, dom_id, req
                 search_api(drive_order, fuzzy_search, query, slot_id, dom_id, face, req_type, group, common_back_id);
             }, 5000)
         }
-   })
+    })
 }
 
 function get_common_cardback_id(data) {
@@ -209,7 +209,7 @@ function build_cards(data) {
 
             // build the cards and keep track of constructed dom IDs
             let dom_ids = [];
-            for (let i=0; i<slot_ids.length; i++) {
+            for (let i = 0; i < slot_ids.length; i++) {
                 let dom_id = "slot" + slot_ids[i][0].toString() + "-" + face;
                 build_card(data[face][key], dom_id, key, slot_ids[i], face, group, cardback_id);
                 dom_ids.push(dom_id);
@@ -249,7 +249,7 @@ function build_card(card, dom_id, query, slot_id, face, group, common_back_id = 
             "prev",
             "next",
         ];
-        for (let i=0; i<class_ids.length; i++) {
+        for (let i = 0; i < class_ids.length; i++) {
             card_elem.getElementsByClassName(class_ids[i])[0].id = dom_id + "-" + class_ids[i];
         }
 
@@ -273,11 +273,10 @@ function build_card(card, dom_id, query, slot_id, face, group, common_back_id = 
             card_elem.className = "card mpccard card-back-common";
             card_elem.style.display = "";
             document.getElementById("cardback-container").appendChild(card_elem);
-        }
-        else {
+        } else {
             document.getElementById("card-container").appendChild(card_elem);
         }
-    } 
+    }
 
     // for cardbacks, decide the group number on a slot-by-slot basis, due to how multiple cardbacks works
     if ((card.req_type === "back" && (slot_id[1] === common_back_id || slot_id[1] === "")) || slot_id[0] === "-") {
@@ -314,7 +313,7 @@ function insert_text() {
         },
         function (data) {
             if (Object.keys(data).length === 0 || (data.exception !== "" && data.exception !== null && data.exception !== undefined)) {
-                    handle_error(data.exception);
+                handle_error(data.exception);
             } else {
                 qty += data.qty;
                 insert_data(drive_order, fuzzy_search, data.order);
@@ -363,7 +362,7 @@ function insert_link() {
         },
         function (data) {
             if (Object.keys(data).length === 0 || (data.exception !== "" && data.exception !== null && data.exception !== undefined)) {
-                    handle_error(data.exception);
+                handle_error(data.exception);
             } else {
                 qty += data.qty;
                 insert_data(drive_order, fuzzy_search, data.order);
@@ -379,11 +378,11 @@ function insert_link() {
 
 function build_new_cards(source, data, more) {
     // iterate over the search results
-    for (let i=0; i<data.length; i++) {
-        
+    for (let i = 0; i < data.length; i++) {
+
         let card_item = data[i];
         let dom_id = card_item.id;
-        
+
         // copy the base card sitting in the dom, adjust it, then stick it into this artist's card container
         let card_elem = document.getElementById("basecard-new").cloneNode(true);
         card_elem.style.display = "";
@@ -396,7 +395,7 @@ function build_new_cards(source, data, more) {
             "mpccard-name",
             "mpccard-source",
         ];
-        for (let i=0; i<class_ids.length; i++) {
+        for (let i = 0; i < class_ids.length; i++) {
             card_elem.getElementsByClassName(class_ids[i])[0].id = dom_id + "-" + class_ids[i];
         }
 
@@ -432,7 +431,7 @@ function build_blog_card(container_id, card) {
         "mpccard-name",
         "mpccard-source",
     ];
-    for (let i=0; i<class_ids.length; i++) {
+    for (let i = 0; i < class_ids.length; i++) {
         card_elem.getElementsByClassName(class_ids[i])[0].id = dom_id + "-" + class_ids[i];
     }
 
@@ -450,9 +449,9 @@ function load_new_cards(source) {
             'source': source,
             'page': pages[source],
         },
-        success: function(data) {
+        success: function (data) {
             // use the search results to stick the new page into the dom
-            build_new_cards(source, data.sources[source].hits, data.sources[source].more);            
+            build_new_cards(source, data.sources[source].hits, data.sources[source].more);
         },
         error: function () {
             // callback here in 5 seconds

@@ -1,6 +1,8 @@
 {% extends 'cardpicker/base.html' %}
 {% load static %}
 
+{% block title %}MPC Autofill Blogs{% endblock %}
+
 {% block content %}
 
 {% for blog in blogs %}
@@ -8,21 +10,19 @@
         <nav style="margin-top: -2em"></nav>
 
         <h1 class="display-4" style="font-size: 3em">{{ blog.name }} Blog</h1>
+        <p class="lead"><i>Showing up to the most recent 4 posts.</i></p>
         <hr class="my-4">
         <div class="card-columns">
-            {% for post in blog.posts %}
-                {% include "blog/synopsis.html" %}
-            {% endfor %}
+            {% if blog.posts|length > 0 %}
+                {% for post in blog.posts %}
+                    {% include "blog/synopsis.html" %}
+                {% endfor %}
+            {% else %}
+                <p class="text-center"><i>No blog posts :(</i></p>
+            {% endif %}
         </div>
-        <a class="btn btn-primary btn-lg" href="/blog/{{ blog.url }}" role="button">{{ blog.name }} Blog</a>
+        <a class="btn btn-primary btn-lg" href="{{ blog.url }}" role="button">{{ blog.name }} Blog</a>
     </div>
-<!--    <h2>{{ blog.name }} Blog</h2>-->
-
-<!--    <div class="card-columns">-->
-<!--        {% for post in blog.posts %}-->
-<!--            {% include "blog/synopsis.html" %}-->
-<!--        {% endfor %}-->
-<!--    </div>-->
     <hr>
 {% endfor %}
 

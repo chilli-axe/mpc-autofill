@@ -52,11 +52,11 @@ function generate_xml() {
     for (let i = 0; i < card_elems.length; i++) {
         // retrieve information about the current card object
         let curr_obj = $('#' + card_elems[i].id).data("obj");
-        
+
         // only proceed if the card obj has any search results
         if (curr_obj.cards.length > 0) {
             let curr_id = curr_obj.get_curr_img().id;
-        
+
             if (curr_id !== cardback_id) {
                 // the card we're looking at isn't the common cardback, so we care about it
                 let curr_face = curr_obj.face;
@@ -79,7 +79,7 @@ function generate_xml() {
                 }
             }
         }
-    }   
+    }
 
     // insert everything from the order map into XML elements
     for (let face in order_map) {
@@ -208,7 +208,7 @@ function remove_card() {
 
         // remove the Card from its lock group/s (if it's part of any) and delete its elements
         let faces = ["-front", "-back"];
-        for (let i=0; i<faces.length; i++) {
+        for (let i = 0; i < faces.length; i++) {
             let this_elem = $("#slot" + slot_to_remove.toString() + faces[i]);
             let this_obj = this_elem.data("obj");
 
@@ -223,13 +223,13 @@ function remove_card() {
             this_elem.remove();
         }
 
-        update_qty(qty-1);
+        update_qty(qty - 1);
 
         if (slot_to_remove !== qty) {
             // update the card slots on all cards after the one we just deleted
-            for (let i=slot_to_remove; i<qty; i++) {
-                $("#slot" + (i+1).toString() + "-front").data("obj").update_slot(i);
-                $("#slot" + (i+1).toString() + "-back").data("obj").update_slot(i);
+            for (let i = slot_to_remove; i < qty; i++) {
+                $("#slot" + (i + 1).toString() + "-front").data("obj").update_slot(i);
+                $("#slot" + (i + 1).toString() + "-back").data("obj").update_slot(i);
             }
         }
     }
@@ -246,8 +246,13 @@ function set_cardstock(data) {
 function setup_toasts(toasts) {
     function setup_toast(toast_id) {
         let toast = $("#".concat(toast_id));
-        toast.on('hide.bs.toast', function () {this.style.zIndex = "0";});
-        toast.on('show.bs.toast', function () {this.style.zIndex = "99999";});
+        toast.on('hide.bs.toast', function () {
+            this.style.zIndex = "0";
+        });
+        toast.on('show.bs.toast', function () {
+            this.style.zIndex = "99999";
+        });
     }
+
     toasts.forEach(toast => setup_toast(toast));
 }

@@ -19,7 +19,7 @@
         <nav style="margin-top: -2em">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item" style="font-size: 1.3em;"><a href="/blog">Blogs</a></li>
-                <li class="breadcrumb-item" style="font-size: 1.3em;"><a href="/blog/{{ post.blog.url }}">{{ post.blog.name }}</a></li>
+                <li class="breadcrumb-item" style="font-size: 1.3em;"><a href="{{ post.blog.url }}">{{ post.blog.name }}</a></li>
                 <li class="breadcrumb-item active" aria-current="page" style="font-size: 1.3em;">{{ post.name }}</li>
             </ol>
         </nav>
@@ -33,7 +33,7 @@
         </div>
         <div id="card-container" class="row row-cols-xl-6 row-cols-lg-4 row-cols-md-3 row-cols-sm-2 row-cols-2"></div>
         <br>
-        <a class="btn btn-primary btn-lg" href="/blog/{{ post.blog.url }}" role="button">Back to {{ post.blog.name }}</a>
+        <a class="btn btn-primary btn-lg" href="{{ post.blog.url }}" role="button">Back to {{ post.blog.name }}</a>
     </div>
 
     {% include "cardpicker/card.html" %}

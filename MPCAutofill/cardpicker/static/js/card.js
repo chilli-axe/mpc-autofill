@@ -115,9 +115,9 @@ class CardBase {
         view_img.style.opacity = 0;
         view_spinner.style.opacity = 1;
         var img = new Image();
-        img.onload = function() { 
-            $(view_spinner).animate({opacity: 0}, 250); 
-            $(view_img).animate({opacity: 1}, 250); 
+        img.onload = function () {
+            $(view_spinner).animate({opacity: 0}, 250);
+            $(view_img).animate({opacity: 1}, 250);
         }
         img.src = get_thumbnail_med(this.get_curr_img().id);
 
@@ -129,7 +129,7 @@ class CardBase {
         if (this.pe.style.opacity === "0") {
             // animating the opacity instead of using fadeIn so things stay in place
             $(this.pe).css("pointer-events", "auto");
-            $(this.pe).animate({opacity: 1}, 250, function() {
+            $(this.pe).animate({opacity: 1}, 250, function () {
                 // re-enable the hover effect after the card loads in
                 this.classList.add("mpccard-hover");
             })
@@ -143,9 +143,9 @@ class Card extends CardBase {
     constructor(cards, query, dom_id, slot, face, req_type, group, selected_img = null) {
         super(cards, query, dom_id, slot, face, req_type, group, selected_img);
     }
-    
+
     reset() {
-        
+
         // sets the Card back to its default state
         this.card_counter.style.visibility = "hidden";
         this.card_counter_btn.style.visibility = "hidden";
@@ -191,7 +191,7 @@ class Card extends CardBase {
         // when setting the card's idx, check if it's in a group and is locked - if so, 
         // update all cards in the group too
         if (this.locked) {
-            groups[this.group].forEach(function(value) {
+            groups[this.group].forEach(function (value) {
                 let this_obj = $('#' + value).data("obj");
                 this_obj.img_idx = new_idx;
                 this_obj.update_card();
@@ -206,7 +206,7 @@ class Card extends CardBase {
         // toggle locking for this card's group
         let new_state = !this.locked;
 
-        groups[this.group].forEach(function(value) {
+        groups[this.group].forEach(function (value) {
             $("#" + value).data("obj").set_lock(new_state);
         })
     }
@@ -258,7 +258,7 @@ class Card extends CardBase {
                 curr_name = "\"" + curr_img.name + "\"";
             }
             document.getElementById("removeCardName").innerText = curr_name;
-            
+
             $('#removeCardModal').modal('show');
         }
     }
@@ -285,10 +285,10 @@ class Card extends CardBase {
             this.elem_remove,
             this.elem_padlock
         ];
-        for (let i=0; i<x.length; i++) {
+        for (let i = 0; i < x.length; i++) {
             x[i].id = x[i].id.replace(re, "slot" + new_slot.toString() + "-");
         }
-        
+
         let new_dom_id = this.dom_id.replace(re, "slot" + new_slot.toString() + "-");
 
         // if the Card is part of a lock group, update the group with this Card's new dom ID
@@ -329,13 +329,13 @@ class Card extends CardBase {
             for (let i = start_idx; i < final_idx; i++) {
                 let card_item = card_obj.cards[i];
                 let dom_id = card_obj.cards[i].id;
-                let slot_num = i+1;
-                
+                let slot_num = i + 1;
+
                 // copy the base grid card sitting in the dom and enable visibility
                 let card_elem = document.getElementById("basecard-grid").cloneNode(true);
                 card_elem.style.display = "";
                 card_elem.id = dom_id;
-    
+
                 // set up element IDs for this man
                 let class_ids = [
                     "mpccard-slot",
@@ -343,10 +343,10 @@ class Card extends CardBase {
                     "mpccard-name",
                     "mpccard-source",
                 ];
-                for (let i=0; i<class_ids.length; i++) {
+                for (let i = 0; i < class_ids.length; i++) {
                     card_elem.getElementsByClassName(class_ids[i])[0].id = dom_id + "-" + class_ids[i];
                 }
-    
+
                 // stick into dom under the grid container, and instantiate the CardGrid
                 grid_container.appendChild(card_elem);
                 let new_card = new CardGrid(card_item, dom_id, slot_num, card_obj);
@@ -358,7 +358,7 @@ class Card extends CardBase {
 
         // clear out any existing rows from the table ("destroy all children" lmao)
         grid_container.innerHTML = "";
-        
+
         // unbind any scroll events previously bound to this modal
         let grid_modal = $("#gridSelectModal");
         grid_modal.unbind("scroll");
@@ -383,7 +383,7 @@ class Card extends CardBase {
         // other info
         this.query = query;
         if (query.length > 0 && query.toLowerCase().slice(0, 2) === "t:") {
-            this.query = query.slice(2); 
+            this.query = query.slice(2);
             // TODO: req_type = token?
         }
         this.slot = slot;
@@ -413,7 +413,7 @@ class Card extends CardBase {
         this.card_counter_btn = document.getElementById(this.dom_id + "-mpccard-counter-btn");
 
         this.reset();
-        
+
         this.elem_counter = this.card_counter;
         if (this.img_count > 1) {
             this.elem_counter = this.card_counter_btn;
@@ -437,8 +437,8 @@ class Card extends CardBase {
             if (this.req_type !== "back" | this.slot === "-") {
                 this.elem_counter.style.visibility = "visible";
             }
-            
-            $(this.elem_img).on('click', $.proxy(function() {
+
+            $(this.elem_img).on('click', $.proxy(function () {
                 this.open_detailed_view();
             }, this));
         }
@@ -463,7 +463,7 @@ class Card extends CardBase {
             this.elem_remove.style.display = "";
             let elem_remove = $(this.elem_remove);
             elem_remove.off("click");
-            elem_remove.on('click', $.proxy(function() {
+            elem_remove.on('click', $.proxy(function () {
                 this.remove_card();
             }, this));
 
@@ -490,12 +490,12 @@ class Card extends CardBase {
                 this.update_idx(1);
             }, this));
 
-            $(this.elem_counter).on('click', $.proxy(function() {
+            $(this.elem_counter).on('click', $.proxy(function () {
                 this.open_grid_view();
             }, this));
         }
 
-        $(this.elem_img).one('load', function() {
+        $(this.elem_img).one('load', function () {
             let card_obj = $(this.parentElement.parentElement).data("obj");
             card_obj.load_thumbnails();
         })
@@ -623,7 +623,7 @@ class CardRecent extends CardBase {
 
         // load thumbnails and set up fade in
         this.load_thumbnails();
-        $(this.elem_img).one('load', $.proxy(function() {
+        $(this.elem_img).one('load', $.proxy(function () {
             this.fade_in();
         }, this));
     }
@@ -634,7 +634,7 @@ class CardRecent extends CardBase {
         // add click event to thumbnail to reveal detailed info about card
         let elem_img = $(this.elem_img)
         elem_img.off('click');
-        elem_img.on('click', $.proxy(function() {
+        elem_img.on('click', $.proxy(function () {
             this.open_detailed_view();
         }, this));
     }
@@ -653,7 +653,7 @@ class CardGrid extends CardRecent {
     open_detailed_view() {
         // this function is called open_detailed_view bc that's bound to clicking on the thumbnail,
         // but this will really select this image for the card
-        this.card_obj.set_idx(this.slot-1);
+        this.card_obj.set_idx(this.slot - 1);
         this.card_obj.load_thumbnails();
         $('#gridSelectModal').modal('hide');
     }

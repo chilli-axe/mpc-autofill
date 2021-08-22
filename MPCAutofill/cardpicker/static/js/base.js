@@ -31,9 +31,9 @@ function error_toast_shown() {
 }
 
 function error_toast_hidden() {
-    this.style.zIndex = "0";
+    this.style.zIndex = "-1";
     if (Cookies.get('ga_disabled') === undefined) {
-        Cookies.set('ga_disabled', 'false', { expires: 365 })
+        Cookies.set('ga_disabled', 'false', {expires: 365})
     }
 }
 
@@ -42,19 +42,19 @@ function cookie_toast_shown() {
 }
 
 function cookie_toast_hidden() {
-    this.style.zIndex = "-1";
+    this.style.zIndex = "-2";
     if (Cookies.get('ga_disabled') === undefined) {
-        Cookies.set('ga_disabled', 'false', { expires: 365 })
+        Cookies.set('ga_disabled', 'false', {expires: 365})
     }
 }
 
 function cookie_toast_opt_in() {
-    Cookies.set('ga_disabled', 'false', { expires: 365 });
+    Cookies.set('ga_disabled', 'false', {expires: 365});
     $('#cookieToast').toast('hide');
 }
 
 function cookie_toast_opt_out() {
-    Cookies.set('ga_disabled', 'true', { expires: 365 });
+    Cookies.set('ga_disabled', 'true', {expires: 365});
     window['ga-disable-'.concat(my_gtag)] = true;
     $('#cookieToast').toast('hide');
 }
