@@ -1,10 +1,8 @@
 from datetime import datetime
 
 from django.db import models
-from django.utils import dateformat
-from hurry.filesize import alternative, size
 
-datestring = "jS F, Y"
+from cardpicker.utils import serialiser
 
 
 # Create your models here.
@@ -110,18 +108,7 @@ class CardBase(models.Model):
         )
 
     def to_dict(self):
-        return {
-            "id": self.id,
-            "name": self.name,
-            "priority": self.priority,
-            "source": self.source.id,
-            "source_verbose": self.source_verbose,
-            "dpi": self.dpi,
-            "searchq": self.searchq,
-            "thumbpath": self.thumbpath,
-            "date": dateformat.format(self.date, datestring),
-            "size": size(self.size, system=alternative),
-        }
+        return serialiser.card_to_dict(self)
 
     def source_to_str(self):
         return self.source.id

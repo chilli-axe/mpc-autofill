@@ -1,11 +1,9 @@
-from django.utils import dateformat
 from django_elasticsearch_dsl import Document, fields
 from django_elasticsearch_dsl.registries import registry
-from hurry.filesize import alternative, size
+
+from cardpicker.utils import serialiser
 
 from .models import Card, Cardback, Token
-
-datestring = "jS F, Y"
 
 common_fields = [
     "id",
@@ -38,18 +36,7 @@ class CardSearch(Document):
         fields = common_fields
 
     def to_dict(self):
-        return {
-            "id": self.id,
-            "name": self.name,
-            "priority": self.priority,
-            "source": self.source,
-            "source_verbose": self.source_verbose,
-            "dpi": self.dpi,
-            "searchq": self.searchq,
-            "thumbpath": self.thumbpath,
-            "date": dateformat.format(self.date, datestring),
-            "size": size(self.size, system=alternative),
-        }
+        return serialiser.card_to_dict(self)
 
 
 @registry.register_document
@@ -68,18 +55,7 @@ class CardbackSearch(Document):
         fields = common_fields
 
     def to_dict(self):
-        return {
-            "id": self.id,
-            "name": self.name,
-            "priority": self.priority,
-            "source": self.source,
-            "source_verbose": self.source_verbose,
-            "dpi": self.dpi,
-            "searchq": self.searchq,
-            "thumbpath": self.thumbpath,
-            "date": dateformat.format(self.date, datestring),
-            "size": size(self.size, system=alternative),
-        }
+        return serialiser.card_to_dict(self)
 
 
 @registry.register_document
@@ -98,15 +74,4 @@ class TokenSearch(Document):
         fields = common_fields
 
     def to_dict(self):
-        return {
-            "id": self.id,
-            "name": self.name,
-            "priority": self.priority,
-            "source": self.source,
-            "source_verbose": self.source_verbose,
-            "dpi": self.dpi,
-            "searchq": self.searchq,
-            "thumbpath": self.thumbpath,
-            "date": dateformat.format(self.date, datestring),
-            "size": size(self.size, system=alternative),
-        }
+        return serialiser.card_to_dict(self)
