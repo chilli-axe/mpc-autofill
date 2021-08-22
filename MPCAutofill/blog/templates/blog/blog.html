@@ -2,12 +2,21 @@
 {% load static %}
 
 {% block content %}
-    <h2>{{ blog.name }} Blog</h2>
+    <div class="jumbotron">
+        <nav style="margin-top: -2em">
+            <ol class="breadcrumb">
+            <li class="breadcrumb-item" style="font-size: 1.3em;"><a href="/blog">Blogs</a></li>
+            <li class="breadcrumb-item active" aria-current="page" style="font-size: 1.3em;">{{ blog.name }}</li>
+        </ol>
+        </nav>
 
-    <div class="card-columns">
-        {% for post in posts %}
-            {% include "blog/synopsis.html" %}
-        {% endfor %}
+        <h1 class="display-4" style="font-size: 3em">{{ blog.name }} Blog</h1>
+        <hr class="my-4">
+        <div class="card-columns">
+            {% for post in posts %}
+                {% include "blog/synopsis.html" %}
+            {% endfor %}
+        </div>
     </div>
 
     {% include "cardpicker/footer.html" %}

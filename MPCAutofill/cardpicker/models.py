@@ -2,8 +2,7 @@ from datetime import datetime
 
 from django.db import models
 from django.utils import dateformat
-
-from hurry.filesize import size, alternative
+from hurry.filesize import alternative, size
 
 datestring = "jS F, Y"
 

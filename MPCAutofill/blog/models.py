@@ -1,9 +1,8 @@
-from django.db import models
 import string
 from datetime import datetime
-from markdown import markdown
 
-# Create your models here.
+from django.db import models
+from markdown import markdown
 
 
 class Blog(models.Model):
@@ -19,40 +18,59 @@ class Blog(models.Model):
             "url": self.url,
         }
 
+    def to_dict_with_posts(self, num_posts=0):
+        posts = [
+            x.get_synopsis(absolute_url=True)
+            for x in BlogPost.objects.filter(blog__pk=self.pk)
+        ]
+        if num_posts > 0:
+            posts = posts[0:num_posts]
+        d = self.to_dict()
+        d["posts"] = posts
+        return d
+
 
 class BlogPost(models.Model):
     name = models.CharField(max_length=40)
     date_created = models.DateTimeField(default=datetime.now)
-    synopsis = models.TextField()
+    synopsis = models.TextField(max_length=140)  # truncated for Google page description
     contents = models.TextField()
     blog = models.ForeignKey(Blog, on_delete=models.CASCADE)
 
     def __str__(self):
-        return f"\"{self.name}\", created on {self.date_created}"
+        return f'"{self.name}", created on {self.date_created}'
 
-    def get_url(self) -> str:
-        name_flattened = self.name.lower().translate(str.maketrans("", "", string.punctuation)).replace(" ", "-")
-        # trim length if long
-        # name_length = 10
-        # name_shortened = name_flattened[0:name_length] if len(name_flattened) > name_length else name_flattened
-        return f"{self.pk}-{name_flattened}"  # {self.blog.url}/
+    def get_url(self, absolute_url=False) -> str:
+        name_flattened = (
+            self.name.lower()
+            .translate(str.maketrans("", "", string.punctuation))
+            .replace(" ", "-")
+        )
+        post_url = f"{self.pk}-{name_flattened}"
+        if absolute_url:
+            return f"{self.blog.url}/{post_url}"
+        return post_url
 
     def get_content(self):
         return {
             "name": self.name,
             "date_created": self.date_created,
+            "synopsis": self.synopsis,
             "contents": markdown(self.contents),
             "blog": self.blog.to_dict(),
             "url": self.get_url(),
         }
 
-    def get_synopsis(self):
+    def get_synopsis(self, absolute_url=False):
+        # i thought it'd be neat if each synopsis's border colour changed
+        borders = ["primary", "success", "warning", "info", "light"]
         return {
             "name": self.name,
             "date_created": self.date_created,
             "synopsis": markdown(self.synopsis),
             "blog": self.blog.name,
-            "url": self.get_url(),
+            "url": self.get_url(absolute_url),
+            "border": borders[self.pk % len(borders)],
         }
 
     class Meta:
@@ -60,7 +78,7 @@ class BlogPost(models.Model):
 
 
 class ShowcaseBlogPost(BlogPost):
-    cards = models.ManyToManyField('cardpicker.Card')
+    cards = models.ManyToManyField("cardpicker.Card")
 
     def get_content(self):
         return {
@@ -71,4 +89,3 @@ class ShowcaseBlogPost(BlogPost):
             "url": self.get_url(),
             "cards": [x.to_dict() for x in self.cards.all()],
         }
-

@@ -3,10 +3,10 @@ from math import floor
 from typing import Dict, List, Optional, Tuple, Type
 
 from django.utils import timezone
+from elasticsearch.exceptions import ConnectionError as ElasticConnectionError
 from elasticsearch_dsl.document import Document
 from elasticsearch_dsl.index import Index
 from elasticsearch_dsl.query import Match
-from elasticsearch.exceptions import ConnectionError as ElasticConnectionError
 from Levenshtein import distance
 
 from cardpicker.documents import CardbackSearch, CardSearch, TokenSearch

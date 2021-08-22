@@ -1,4 +1,5 @@
 from django.contrib import admin
+
 from blog.models import Blog, BlogPost, ShowcaseBlogPost
 
 # Register your models here.

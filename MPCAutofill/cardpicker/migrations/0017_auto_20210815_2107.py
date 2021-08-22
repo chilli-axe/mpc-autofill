@@ -6,25 +6,25 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('cardpicker', '0016_populate_searchq_keyword'),
+        ("cardpicker", "0016_populate_searchq_keyword"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='card',
-            name='size',
+            model_name="card",
+            name="size",
             field=models.IntegerField(default=0),
             preserve_default=False,
         ),
         migrations.AddField(
-            model_name='cardback',
-            name='size',
+            model_name="cardback",
+            name="size",
             field=models.IntegerField(default=0),
             preserve_default=False,
         ),
         migrations.AddField(
-            model_name='token',
-            name='size',
+            model_name="token",
+            name="size",
             field=models.IntegerField(default=0),
             preserve_default=False,
         ),

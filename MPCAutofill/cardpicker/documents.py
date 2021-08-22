@@ -1,10 +1,9 @@
 from django.utils import dateformat
 from django_elasticsearch_dsl import Document, fields
 from django_elasticsearch_dsl.registries import registry
+from hurry.filesize import alternative, size
 
 from .models import Card, Cardback, Token
-
-from hurry.filesize import size, alternative
 
 datestring = "jS F, Y"
 

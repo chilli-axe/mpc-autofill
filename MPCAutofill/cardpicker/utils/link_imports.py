@@ -16,7 +16,7 @@ class ImportSite:
         """
 
         raise NotImplementedError
-    
+
     def InvalidURLException(self, url):
         return Exception(
             f"There was a problem with importing your list from {self.__class__.__name__} at URL {url}. "

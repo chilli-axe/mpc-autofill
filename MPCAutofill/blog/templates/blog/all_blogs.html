@@ -1,0 +1,30 @@
+{% extends 'cardpicker/base.html' %}
+{% load static %}
+
+{% block content %}
+
+{% for blog in blogs %}
+    <div class="jumbotron">
+        <nav style="margin-top: -2em"></nav>
+
+        <h1 class="display-4" style="font-size: 3em">{{ blog.name }} Blog</h1>
+        <hr class="my-4">
+        <div class="card-columns">
+            {% for post in blog.posts %}
+                {% include "blog/synopsis.html" %}
+            {% endfor %}
+        </div>
+        <a class="btn btn-primary btn-lg" href="/blog/{{ blog.url }}" role="button">{{ blog.name }} Blog</a>
+    </div>
+<!--    <h2>{{ blog.name }} Blog</h2>-->
+
+<!--    <div class="card-columns">-->
+<!--        {% for post in blog.posts %}-->
+<!--            {% include "blog/synopsis.html" %}-->
+<!--        {% endfor %}-->
+<!--    </div>-->
+    <hr>
+{% endfor %}
+
+{% include "cardpicker/footer.html" %}
+{% endblock %}

@@ -21,8 +21,10 @@
     <title>{% block title %} MPC Autofill {% endblock %}</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description"
-          content="The easiest way to print kitchen-table proxy cards for Magic: The Gathering (MTG) with MakePlayingCards (MPC). No prior knowledge required.">
+    {% block description %}
+        <meta name="description"
+              content="The easiest way to print kitchen-table proxy cards for Magic: The Gathering (MTG) with MakePlayingCards (MPC). No prior knowledge required.">
+    {% endblock %}
     <link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.min.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'css/custom.css' %}?1516">
     <script src="http://code.jquery.com/jquery.min.js"></script>

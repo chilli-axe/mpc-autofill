@@ -1,30 +1,28 @@
-from django.shortcuts import render
-from django.http import Http404
-from blog.models import Blog, BlogPost, ShowcaseBlogPost
-
 from django.core.exceptions import ObjectDoesNotExist
+from django.http import Http404
+from django.shortcuts import render
+
+from blog.models import Blog, BlogPost, ShowcaseBlogPost
 
 
 def index(request):
-    # get all blog posts and insert into context
-    posts = [x.get_synopsis() for x in BlogPost.objects.all()]
-    return render(request, "blog/blog.html", {"posts": posts})
+    blogs = [x.to_dict_with_posts(num_posts=4) for x in Blog.objects.all()]
+    return render(request, "blog/all_blogs.html", {"blogs": blogs})
 
 
 def blog(request, blog):
-    # get all blog posts and insert into context
     posts = [x.get_synopsis() for x in BlogPost.objects.filter(blog__url=blog)]
-    return render(request, "blog/blog.html", {"blog": Blog.objects.get(url=blog), "posts": posts})
+    return render(
+        request, "blog/blog.html", {"blog": Blog.objects.get(url=blog), "posts": posts}
+    )
 
 
 def blog_post(request, blog, blog_post):
-    # todo: retrieve blog object
     post_id = blog_post.split("-")[0]
     try:
         post = ShowcaseBlogPost.objects.get(id=post_id)
         post_template = "showcase_blog_post"
     except ObjectDoesNotExist:
-        # the blog post must be a BlogPost obj
         try:
             post = BlogPost.objects.get(id=post_id)
             post_template = "blog_post"

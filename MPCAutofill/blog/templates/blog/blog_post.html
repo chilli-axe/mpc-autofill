@@ -1,16 +1,20 @@
 {% extends 'cardpicker/base.html' %}
 {% load static %}
+{% block title %} {{ post.name }} {% endblock %}
+{% block description %}
+    <meta name="description"
+          content="MPC Autofill blog — {{ post.synopsis }}">
+{% endblock %}
 
 {% block content %}
-
-<!--<nav>-->
-<!--        <ol class="breadcrumb">-->
-<!--    <li class="breadcrumb-item" style="font-size: 1.15em;"><a href="#">Home</a></li>-->
-<!--    <li class="breadcrumb-item" style="font-size: 1.15em;"><a href="#">Library</a></li>-->
-<!--    <li class="breadcrumb-item active" aria-current="page" style="font-size: 1.15em;">Data</li>-->
-<!--  </ol>-->
-<!--</nav>-->
     <div class="jumbotron">
+        <nav style="margin-top: -2em">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item" style="font-size: 1.3em;"><a href="/blog">Blogs</a></li>
+                <li class="breadcrumb-item" style="font-size: 1.3em;"><a href="/blog/{{ post.blog.url }}">{{ post.blog.name }}</a></li>
+                <li class="breadcrumb-item active" aria-current="page" style="font-size: 1.3em;">{{ post.name }}</li>
+            </ol>
+        </nav>
 
         <h1 class="display-4" style="font-size: 3em">{{ post.name }}</h1>
         <p class="lead">Posted in <i>{{ post.blog.name }}</i> on {{ post.date_created }}</p>
