@@ -17,3 +17,7 @@ def common_info(request):
         "mobile": not request.user_agent.is_pc,
         "import_sites": [(x.__name__, x().base_url) for x in ImportSites],
     }
+
+
+def cache_version(request):
+    return {"version": 3400}  # used to bust browser caches when the site updates
