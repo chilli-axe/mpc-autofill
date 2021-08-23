@@ -84,7 +84,6 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
                 "cardpicker.context_processors.add_gtag",
                 "cardpicker.context_processors.common_info",
-                "cardpicker.context_processors.cache_version",
             ],
         },
     },
@@ -140,6 +139,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 STATIC_URL = "/static/"
+STATICFILES_STORAGE = "django.contrib.staticfiles.storage.ManifestStaticFilesStorage"
 
 STATICFILES_DIRS = [
     os.path.normpath(os.path.join(BASE_DIR, "cardpicker/static")),
