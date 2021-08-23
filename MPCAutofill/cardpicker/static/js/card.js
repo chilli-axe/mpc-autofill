@@ -55,6 +55,12 @@ function trigger_download(img_id, new_tab = true) {
     document.body.removeChild(element);
 }
 
+function image_size_to_mb_string(size) {
+    let size_mb = size / 1000000;
+    size_mb = Math.round(size_mb * 100) / 100;  // 2 decimal places
+    return size_mb.toString() + " MB"
+}
+
 class CardBase {
     constructor(cards, query, dom_id, slot, face, req_type, group, selected_img = null) {
         this.setup_card(cards, query, dom_id, slot, face, req_type, group, selected_img);
@@ -96,7 +102,7 @@ class CardBase {
         view_dpi.innerText = this.get_curr_img().dpi + " DPI";
         view_id.innerText = this.get_curr_img().id;
         view_date.innerText = this.get_curr_img().date;
-        view_size.innerText = this.get_curr_img().size;
+        view_size.innerText = image_size_to_mb_string(this.get_curr_img().size);
 
         // pretty version of card type/class
         let img_class = "";
