@@ -4,6 +4,8 @@ from django.db import models
 
 from cardpicker.utils import serialiser
 
+from django.utils import dateformat
+
 
 # Create your models here.
 class Source(models.Model):
@@ -108,7 +110,18 @@ class CardBase(models.Model):
         )
 
     def to_dict(self):
-        return serialiser.card_to_dict(self)
+        return {
+            "id": self.id,
+            "name": self.name,
+            "priority": self.priority,
+            "source": self.source.id,
+            "source_verbose": self.source_verbose,
+            "dpi": self.dpi,
+            "searchq": self.searchq,
+            "thumbpath": self.thumbpath,
+            "date": dateformat.format(self.date, "jS F, Y"),
+            "size": self.size,
+        }
 
     def source_to_str(self):
         return self.source.id
