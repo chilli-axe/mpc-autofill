@@ -95,6 +95,39 @@ class Deckstats(ImportSite):
         return card_list
 
 
+class MagicVille(ImportSite):
+    def __init__(self):
+        self.base_url = "https://magic-ville.com"
+
+    def retrieve_card_list(self, url: str) -> str:
+        deck_id = url.strip("#").split("=")[-1]
+        response = requests.get(
+            f"{self.base_url}/fr/decks/dl_appr?ref={deck_id}&save=1"
+        )
+        card_list = response.content.decode("utf-8")
+        for x in ["// www.magic-ville.com deck file\r\n", "SB: "]:
+            card_list = card_list.replace(x, "")
+        if not deck_id or not card_list:
+            raise self.InvalidURLException(url)
+        return card_list
+
+
+class ManaStack(ImportSite):
+    def __init__(self):
+        self.base_url = "https://manastack.com"
+
+    def retrieve_card_list(self, url: str) -> str:
+        deck_id = url.split("/")[-1]
+        response = requests.get(f"{self.base_url}/api/deck/list?slug={deck_id}")
+        if response.status_code == 404 or not deck_id:
+            raise self.InvalidURLException(url)
+        response_json = json.loads(response.content.decode("utf-8"))
+        card_list = ""
+        for x in response_json["list"]["cards"]:
+            card_list += f"{x['count']} {x['card']['name']}\n"
+        return card_list
+
+
 class Moxfield(ImportSite):
     def __init__(self):
         self.base_url = "https://www.moxfield.com"
@@ -117,22 +150,6 @@ class Moxfield(ImportSite):
         for token in response_json["tokens"]:
             if token["layout"] == "token":
                 card_list += f"t:{token['name']}\n"
-        return card_list
-
-
-class ManaStack(ImportSite):
-    def __init__(self):
-        self.base_url = "https://manastack.com"
-
-    def retrieve_card_list(self, url: str) -> str:
-        deck_id = url.split("/")[-1]
-        response = requests.get(f"{self.base_url}/api/deck/list?slug={deck_id}")
-        if response.status_code == 404 or not deck_id:
-            raise self.InvalidURLException(url)
-        response_json = json.loads(response.content.decode("utf-8"))
-        card_list = ""
-        for x in response_json["list"]["cards"]:
-            card_list += f"{x['count']} {x['card']['name']}\n"
         return card_list
 
 
@@ -182,6 +199,7 @@ ImportSites = [
     Archidekt,
     CubeCobra,
     Deckstats,
+    MagicVille,
     ManaStack,
     Moxfield,
     MTGGoldfish,

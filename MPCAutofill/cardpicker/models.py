@@ -1,9 +1,6 @@
 from datetime import datetime
 
 from django.db import models
-
-from cardpicker.utils import serialiser
-
 from django.utils import dateformat
 
 

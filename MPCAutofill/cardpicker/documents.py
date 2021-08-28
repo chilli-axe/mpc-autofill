@@ -1,9 +1,27 @@
+from django.utils import dateformat
 from django_elasticsearch_dsl import Document, fields
 from django_elasticsearch_dsl.registries import registry
 
-from cardpicker.utils import serialiser
-
 from .models import Card, Cardback, Token
+
+
+def card_to_dict(obj):
+    """
+    Serialises a given Card object. Defined here because both models.py and documents.py use this function.
+    """
+    return {
+        "id": obj.id,
+        "name": obj.name,
+        "priority": obj.priority,
+        "source": obj.source,
+        "source_verbose": obj.source_verbose,
+        "dpi": obj.dpi,
+        "searchq": obj.searchq,
+        "thumbpath": obj.thumbpath,
+        "date": dateformat.format(obj.date, "jS F, Y"),
+        "size": obj.size,
+    }
+
 
 common_fields = [
     "id",
@@ -36,7 +54,7 @@ class CardSearch(Document):
         fields = common_fields
 
     def to_dict(self):
-        return serialiser.card_to_dict(self)
+        return card_to_dict(self)
 
 
 @registry.register_document
@@ -55,7 +73,7 @@ class CardbackSearch(Document):
         fields = common_fields
 
     def to_dict(self):
-        return serialiser.card_to_dict(self)
+        return card_to_dict(self)
 
 
 @registry.register_document
@@ -74,4 +92,4 @@ class TokenSearch(Document):
         fields = common_fields
 
     def to_dict(self):
-        return serialiser.card_to_dict(self)
+        return card_to_dict(self)
