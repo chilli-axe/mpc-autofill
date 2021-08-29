@@ -1,9 +1,12 @@
 import string
 from datetime import datetime
 
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.utils import dateformat
 from markdown import markdown
+
+from cardpicker.models import Card
 
 datestring = "jS F, Y"
 
@@ -76,14 +79,28 @@ class BlogPost(models.Model):
 
 
 class ShowcaseBlogPost(BlogPost):
-    cards = models.ManyToManyField("cardpicker.Card")
+    """
+    TODO: many to many fields are problematic with how the database updates (deletes all rows and creates new rows)
+    re-evaluate this later and see if it's possible to use many to many - for now, I'm storing google drive IDs in
+    plaintext comma-separated and retrieving the objects from those IDs
+    It's also probably possible to set up the database crawler to account for this
+    """
+
+    cards = models.ManyToManyField("cardpicker.Card", blank=True)
+    card_ids = models.CharField(max_length=800, blank=True)
 
     def get_content(self):
+        cards = []
+        try:
+            card_ids = self.card_ids.split(",")
+            cards = [x.to_dict() for x in Card.objects.filter(pk__in=card_ids)]
+        except (ObjectDoesNotExist, AttributeError):
+            pass
         return {
             "name": self.name,
             "date_created": dateformat.format(self.date_created, datestring),
             "contents": markdown(self.contents),
             "blog": self.blog.to_dict(),
             "url": self.get_url(),
-            "cards": [x.to_dict() for x in self.cards.all()],
+            "cards": cards,
         }
