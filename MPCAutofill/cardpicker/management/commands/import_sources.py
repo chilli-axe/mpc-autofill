@@ -18,8 +18,6 @@ def read_sources_csv():
             sources.append(
                 Source(
                     id=row["key"],
-                    username=row["username"],
-                    reddit=row["reddit"],
                     drive_id=row["drive_id"],
                     drive_link="https://drive.google.com/open?id=" + row["drive_id"]
                     if row["drive_public"] != "FALSE"

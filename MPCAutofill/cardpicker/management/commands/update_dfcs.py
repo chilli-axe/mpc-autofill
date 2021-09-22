@@ -13,10 +13,15 @@ def sync_dfcs():
     scryfall_query_dfc = "https://api.scryfall.com/cards/search?q=is:dfc%20-layout:art_series%20-layout:double_faced_token"
     response_dfc = json.loads(requests.get(scryfall_query_dfc).content)
 
+    data = response_dfc["data"]
+    while response_dfc["has_more"]:
+        response_dfc = json.loads(requests.get(response_dfc["next_page"]).content)
+        data += response_dfc["data"]
+
     # maintain list of all dfcs found so far
     q_dfcpairs = []
 
-    for x in response_dfc["data"]:
+    for x in data:
         # retrieve front and back names for this card, then create a DFCPair for it and append to list
         front_name = x["card_faces"][0]["name"]
         back_name = x["card_faces"][1]["name"]

@@ -7,8 +7,6 @@ from django.utils import dateformat
 # Create your models here.
 class Source(models.Model):
     id = models.CharField(max_length=50, primary_key=True)
-    username = models.CharField(max_length=50)
-    reddit = models.CharField(max_length=100)
     drive_id = models.CharField(max_length=100, unique=True)
     drive_link = models.CharField(max_length=200, unique=True)
     description = models.CharField(max_length=400)
@@ -75,8 +73,6 @@ class Source(models.Model):
         qty_all, qty_cards, qty_cardbacks, qty_tokens, avgdpi = self.count()
         return {
             "id": self.id,
-            "username": self.username,
-            "reddit": self.reddit,
             "drive_id": self.drive_id,
             "drive_link": self.drive_link,
             "description": self.description,

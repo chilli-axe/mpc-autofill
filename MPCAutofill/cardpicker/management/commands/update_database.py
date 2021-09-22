@@ -1,6 +1,7 @@
 import time
 from math import floor
 
+import googleapiclient.errors
 from django.core import management
 from django.core.management.base import BaseCommand
 from django.db import transaction
@@ -29,7 +30,11 @@ DPI_HEIGHT_RATIO = 300 / 1122  # 300 DPI for image of vertical resolution 1122 p
 
 def locate_drives(service, sources):
     def get_folder_from_id(drive_id, bar: tqdm):
-        folder = service.files().get(fileId=drive_id).execute()
+        try:
+            folder = service.files().get(fileId=drive_id).execute()
+        except googleapiclient.errors.HttpError:
+            folder = None
+
         time.sleep(0.1)
         bar.update(1)
         return folder
@@ -37,6 +42,10 @@ def locate_drives(service, sources):
     print("Retrieving Google Drive folders...")
     bar = tqdm(total=len(sources))
     folders = {x.id: get_folder_from_id(x.drive_id, bar) for x in sources}
+    for x in sources:
+        if not folders[x.id]:
+            print(f"Failed on drive: {x.id}")
+            folders.pop(x.id)
     print("...and done!")
     return folders
 

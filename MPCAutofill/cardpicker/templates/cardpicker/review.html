@@ -128,17 +128,9 @@
                         data-placement="top" title="Popups need to be enabled for this to function properly. Beware &#8212 this can open lots of tabs!">
                         Download All Images
                     </button>
-                    <div class="col-lg-6 col-md-12 col-sm-12 col-12">
-                        <button type="button" class="btn btn-primary btn-block" data-toggle="modal"
-                                onclick="generate_xml();" data-target="#donationModal">
-                            Generate Order
-                        </button>
-                    </div>
-                    <div class="col-lg-6 col-md-12 col-sm-12 col-12">
-                        <a href="/guide" target="_blank" class="btn btn-info btn-block" role="button">
-                            What's Next?
-                        </a>
-                    </div>
+                    <button type="button" class="btn btn-primary btn-block" onclick="generate_xml();">
+                        Generate Order
+                    </button>
                 </div>
             </div>
         </div>
@@ -218,76 +210,6 @@
                             <span class="sr-only">Loading...</span>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    {# donation modal #}
-    <div class="modal fade" id="donationModal" tabindex="-1" role="dialog" aria-labelledby="donationLabel"
-         aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="donationLabel">Order Generated</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <p>Your order document is downloading now! Head over to the
-                        <a href='/guide' target="_blank">Guide</a> for instructions on what to do next.</p>
-                    <p><b>Be sure to complete your MakePlayingCards order with <i>PayPal</i>.</b></p>
-
-                    <h5>While You're Here...</h5>
-                    <p>
-                        I'd like to ask a favour.
-                    </p>
-                    <p>
-                        I discovered MPC a few years ago when I was looking into how to proxy cards for my cube, but I
-                        wasn't satisfied with any print-ready images available at the time. Since then, my hobby has
-                        been working to provide the absolute highest-quality MPC-ready images that I can to the
-                        community. My drive has {{ my_cards }}+ images, each rendered with Photoshop templates and
-                        tools I built from scratch.
-                    </p>
-                    <p>
-                        However, in line with Wizards of the Coast's Fan Content Policy, I can't charge anything for
-                        access to the work I produce. The costs associated with maintaining and improving MPC Autofill
-                        are coming out of my pocket; I'm a one-man operation.
-                    </p>
-                    <p>
-                        That's why I'm humbly asking that if you found this website and/or my images helpful, please
-                        consider dropping a few dollars into the tip jar below. It'd mean a lot to me. <3
-                    </p>
-                    <div style="text-align: center">
-                        <div class="btn-group btn-group-toggle" data-toggle="buttons" id="donationOptions">
-                            <label class="btn btn-outline-primary active">
-                                <input type="radio" name="donationOption" id="donate1" autocomplete="off">Donate $1
-                            </label>
-                            <label class="btn btn-outline-primary">
-                                <input type="radio" name="donationOption" id="donate5" autocomplete="off" checked>Donate
-                                $5
-                            </label>
-                            <label class="btn btn-outline-primary">
-                                <input type="radio" name="donationOption" id="donate15" autocomplete="off">Donate $15
-                            </label>
-                        </div>
-                    </div>
-                    <br>
-                    {% with 'cardpicker/paypal.svg' as paypal_img %}
-                        <button class="btn-block btn-primary paypal-donate-btn" onclick="redirectPaypal()">
-                            <img src="{% static paypal_img %}" style="padding: 6px 6px">
-                        </button>
-                    {% endwith %}
-                    <script type="text/javascript">
-                        function redirectPaypal(obj) {
-                            let donationAmount = document.querySelector('input[name="donationOption"]:checked').id.slice(6);
-                            window.open("https://www.paypal.com/paypalme/chilliaxe/" + donationAmount + "usd", "_blank")
-                        }
-                    </script>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" data-dismiss="modal">Dismiss</button>
                 </div>
             </div>
         </div>
@@ -381,5 +303,3 @@
     {% include "cardpicker/card.html" %}
 
 {% endblock %}
-
-
