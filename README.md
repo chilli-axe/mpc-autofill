@@ -14,9 +14,9 @@ The below guide describes the procedure for setting up the web component. If you
 #### <em>All steps with the prefix [PROD] are only needed if you are deploying this web app in a production environment. For running the application locally or for development, you can skip these steps.</em>
 1. Clone this repo somewhere on your server/local computer. This will be referred to as the `$working_directory`.
 2. If you are using an IDE to run the Django commands and are NOT using Windows: go to the `$working_directory/.run` directory and for each XML file delete the option `SDK_HOME`
-3. Add the file `$working_director/MPCAutofill/MPCAutofill/.env` to edit any environment variables used in `$working_directory/MPCAutofill/MPCAutofill/settings.py`.  
-   IN ORDER TO RUN THE APP LOCALLY, YOU MUST ADD `DJANGO_DEBUG=on` TO THE `$working_director/MPCAutofill/MPCAutofill/.env` FILE
-4. **[PROD]** In the `$working_director`, create a folder called `staticroot` for static assets
+3. Add the file `$working_directory/MPCAutofill/MPCAutofill/.env` to edit any environment variables used in `$working_directory/MPCAutofill/MPCAutofill/settings.py`.  
+   IN ORDER TO RUN THE APP LOCALLY, YOU MUST ADD `DJANGO_DEBUG=on` TO THE `$working_directory/MPCAutofill/MPCAutofill/.env` FILE
+4. **[PROD]** In the `$working_directory`, create a folder called `staticroot` for static assets
 5. **[PROD]** Deploy the Django project (I'm using DigitalOcean for Ubuntu) with a webserver (I'm using Apache) and serve static files with another webserver if you want (I was previously using nginx but now I just serve static files with Apache as well)
 6. Install Elasticsearch based on your OS, or with Docker ([Installation Guide](https://www.elastic.co/guide/en/elasticsearch/reference/current/install-elasticsearch.html))
    1. It might make the most sense to unzip the Elasticsearch directory into your `$working_directory`
