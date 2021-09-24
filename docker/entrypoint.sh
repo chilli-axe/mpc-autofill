@@ -3,14 +3,6 @@ set -e
 
 # Gather static files
 python3 manage.py collectstatic --noinput
-# Bootstrap Superhero
-test -f ../static/css/bootstrap.min.css || \
-    curl https://bootswatch.com/5/superhero/bootstrap.min.css \
-    --output ../static/css/bootstrap.min.css
-# jquery-ui-touch-punch@0.2.3
-test -f ../static/js/jquery.ui.touch-punch.js || \
-    curl https://raw.githubusercontent.com/furf/jquery-ui-touch-punch/master/jquery.ui.touch-punch.js \
-    --output ../static/js/jquery.ui.touch-punch.js
 
 # Wait for elasticsearch to come up
 echo "Waiting for Elasticsearch..."
