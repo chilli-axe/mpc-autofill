@@ -39,5 +39,4 @@ You can also create an admin account for http://localhost:8000/admin, if you lik
 # TODO
 
 - Cronjobs
-- Make containers or volumes persistent to save large scanning overhead at start
 - GS Scripts?
