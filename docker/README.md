@@ -20,15 +20,17 @@ You can setup MPCAutofill using docker on a clean Ubuntu with the following inst
     sudo apt update
     sudo apt install docker.io docker-compose
     sudo usermod -aG docker $USER
-    reboot
+    sudo reboot
 
     sudo apt install git
     git clone https://github.com/fklemme/mpc-autofill.git
-    cd mpc-autofill/docker
+    cd mpc-autofill
+    # Edit files according to the top of this README
+    cd docker
     docker-compose up -d
 
 Depending on the size of your configured drives, this can take a while before the website becomes available.
-Later, stop all containers with:
+Later, you can stop all containers with:
 
     docker-compose down
 
