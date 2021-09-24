@@ -1,4 +1,4 @@
-# Run MPCAutofill with Docker
+# Run MPCAutofill using Docker
 
 1. Copy your Google Service Account key to `MPCAutofill/client_secrets.json`
 2. Populate `MPCAutofill/drives.csv`
@@ -8,14 +8,14 @@
 
 # Prepare Google Service Account
 
-If you haven't used this before, create a Google Service Account. Create a new project, navigate to Service Accounts, create a new one, go to "Manage Keys", add new key and choose JSON format. Save this file to `MPCAutofill/client_secrets.json`
+If you haven't run MPCAutofill before, create a Google Service Account first. Create a new project, navigate to Service Accounts, create a new one, go to "Manage Keys", add a new key and choose JSON format. Copy the downloaded file to `MPCAutofill/client_secrets.json`
 
-Make sure your Google Drive API is enabled! Check
+Also make sure your Google Drive API is enabled! Check
 https://console.developers.google.com/apis/api/drive.googleapis.com/overview?project=yourprojectid
 
 # Docker Installation on Ubuntu
 
-You can setup MPCAutofill using docker on a clean Ubuntu with the following instructions:
+You can setup MPCAutofill using Docker on a clean Ubuntu with the following instructions:
 
     sudo apt update
     sudo apt install docker.io docker-compose
@@ -25,11 +25,11 @@ You can setup MPCAutofill using docker on a clean Ubuntu with the following inst
     sudo apt install git
     git clone https://github.com/fklemme/mpc-autofill.git
     cd mpc-autofill
-    # Edit files according to the top of this README
+    # Now, edit files according to the top of this README
     cd docker
     docker-compose up -d
 
-Depending on the size of your configured drives, this can take a while before the website becomes available.
+Depending on the size of your configured drives, this can take a while before the website becomes available at http://localhost:8000.
 Later, you can stop all containers with:
 
     docker-compose down
