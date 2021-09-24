@@ -33,5 +33,6 @@ Later, stop all containers with:
 
 # TODO
 
-Cronjobs?
-GS Scripts?
+- Cronjobs
+- Make containers or volumes persistent to save large scanning overhead at start
+- GS Scripts?
