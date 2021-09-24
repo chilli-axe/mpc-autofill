@@ -12,6 +12,26 @@ If you haven't used this before, create a Google Service Account. Create a new p
 Make sure your Google Drive API is enable! Check
 https://console.developers.google.com/apis/api/drive.googleapis.com/overview?project=<yourprojectid>
 
+# Installation on Ubuntu
+
+You can setup MPCAutofill using docker on a clean Ubuntu with the following instructions:
+
+    sudo apt update
+    sudo apt install docker.io docker-compose
+    sudo usermod -aG docker $USER
+    reboot
+
+    sudo apt install git
+    git clone https://github.com/fklemme/mpc-autofill.git
+    cd mpc-autofill/docker
+    docker-compose up -d
+
+Depending on the size of your configured drives, this can take a while before the website becomes available.
+Later, stop all containers with:
+
+    docker-compose down
+
 # TODO
 
+Cronjobs?
 GS Scripts?
