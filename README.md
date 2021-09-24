@@ -20,7 +20,7 @@ The below guide describes the procedure for setting up the web component. If you
 5. **[PROD]** Deploy the Django project (I'm using DigitalOcean for Ubuntu) with a webserver (I'm using Apache) and serve static files with another webserver if you want (I was previously using nginx but now I just serve static files with Apache as well)
 6. Install Elasticsearch based on your OS, or with Docker ([Installation Guide](https://www.elastic.co/guide/en/elasticsearch/reference/current/install-elasticsearch.html))
    1. It might make the most sense to unzip the Elasticsearch directory into your `$working_directory`
-   2. Optionally, add the executables to your PATH for easy terminal access (add `location-of-package/elasticsearch-<VERSION_NUM>/bin/` to your PATH)
+   2. Optionally, add the executables to your PATH for easy terminal access (add `location-of-package/elasticsearch-<VERSION_NUM>/bin` to your PATH)
 7. Run Elasticsearch
    1. Use the executable indicated in your OS's Installation Guide, optionally running it as a daemon.
    2. Test that Elasticsearch is running by querying the local instance. For example: `wget -qO- http://localhost:9200/`
