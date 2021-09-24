@@ -1,10 +1,37 @@
+# Sources: https://testdriven.io/blog/dockerizing-django-with-postgres-gunicorn-and-nginx/
+
 version: '3.4'
 
 services:
-  mpcautofill:
-    image: mpcautofill
+  elasticsearch:
+    image: elasticsearch:7.14.1
+    expose:
+      - 9200
+      - 9300
+    environment:
+      - discovery.type=single-node
+  django:
+    image: mpcautofill_django
     build:
-      context: .
-      dockerfile: ./Dockerfile
+      context: ..
+      dockerfile: ./docker/Dockerfile_django
+    volumes:
+      - django_static:/MPCAutofill/static
+    expose:
+      - 8000
+    depends_on:
+      - elasticsearch
+  nginx:
+    image: mpcautofill_nginx
+    build:
+      context: ..
+      dockerfile: ./docker/Dockerfile_nginx
+    volumes:
+      - django_static:/MPCAutofill/static
     ports:
-      - 8000:8000
+      - 8000:80
+    depends_on:
+      - django
+
+volumes:
+  django_static:

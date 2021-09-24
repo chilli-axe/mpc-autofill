@@ -1,7 +1,4 @@
-# Sources: https://testdriven.io/blog/dockerizing-django-with-postgres-gunicorn-and-nginx/
-
 FROM ubuntu:20.04
-#SHELL ["/bin/bash", "-c"]
 
 # Keeps Python from generating .pyc files in the container
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -15,33 +12,39 @@ RUN set -eux; \
         python3-pip \
         python3-dev \
         gcc \
+        curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy repository
-COPY .. /app
-WORKDIR /app
+# Copy requirements.txt
+COPY requirements.txt /MPCAutofill/
+WORKDIR /MPCAutofill
 
 # Install pip requirements
-RUN pip3 install --upgrade pip
 RUN pip3 install gunicorn wheel
 RUN pip3 install -r requirements.txt
 
-# Creates a non-root user with an explicit UID and adds permission to access the /app folder
-RUN adduser -u 5678 --disabled-password --gecos "" appuser && \
-    chown -R appuser /app
-USER appuser
+# Copy repository
+COPY . /MPCAutofill
 
-# MPCAutofill settings
+# Create a non-root user and add permission to access the /MPCAutofill folder
+RUN adduser -u 5678 --disabled-password --gecos "" mpcautofill && \
+    chown -R mpcautofill /MPCAutofill
+USER mpcautofill
+
+# Prepare folder for static files
+RUN mkdir -p static
+
+# Configure MPCAutofill settings
 RUN echo "DJANGO_SECRET_KEY=$(openssl rand -base64 12)" >> MPCAutofill/MPCAutofill/.env
 RUN echo "DJANGO_DEBUG=True" >> MPCAutofill/MPCAutofill/.env
+# Update Elasticsearch hostname
+RUN sed -i "s/localhost:9200/elasticsearch:9200/g" MPCAutofill/MPCAutofill/settings.py
 
-# Run migrations
-WORKDIR /app/MPCAutofill
-RUN python3 manage.py migrate
+# Prepare start
+WORKDIR /MPCAutofill/MPCAutofill
+RUN chmod +x /MPCAutofill/docker/entrypoint.sh
 
-RUN python3 manage.py collectstatic
+ENTRYPOINT ["/MPCAutofill/docker/entrypoint.sh"]
 
 EXPOSE 8000
-
-# During debugging, this entry point will be overridden. For more information, please refer to https://aka.ms/vscode-docker-python-debug
 CMD ["gunicorn", "--bind", "0.0.0.0:8000", "MPCAutofill.wsgi"]
