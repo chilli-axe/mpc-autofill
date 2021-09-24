@@ -9,10 +9,8 @@ ENV PYTHONUNBUFFERED=1
 RUN set -eux; \
     apt-get update && \
     apt-get install -y --no-install-recommends \
-        python3-pip \
-        python3-dev \
-        gcc \
-        curl \
+        python3-pip python3-dev \
+        gcc netcat curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements.txt
@@ -31,20 +29,16 @@ RUN adduser -u 5678 --disabled-password --gecos "" mpcautofill && \
     chown -R mpcautofill /MPCAutofill
 USER mpcautofill
 
-# Prepare folder for static files
+# Copy environment file
+COPY docker/django_env.txt MPCAutofill/MPCAutofill/.env
+
+# Prepare folder for static files (create now as user for permissions)
 RUN mkdir -p static
 
-# Configure MPCAutofill settings
-RUN echo "DJANGO_SECRET_KEY=$(openssl rand -base64 12)" >> MPCAutofill/MPCAutofill/.env
-RUN echo "DJANGO_DEBUG=True" >> MPCAutofill/MPCAutofill/.env
-# Update Elasticsearch hostname
-RUN sed -i "s/localhost:9200/elasticsearch:9200/g" MPCAutofill/MPCAutofill/settings.py
-
-# Prepare start
+# Prepare to start
 WORKDIR /MPCAutofill/MPCAutofill
 RUN chmod +x /MPCAutofill/docker/entrypoint.sh
 
-ENTRYPOINT ["/MPCAutofill/docker/entrypoint.sh"]
-
 EXPOSE 8000
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "MPCAutofill.wsgi"]
+ENTRYPOINT ["/MPCAutofill/docker/entrypoint.sh"]
+CMD ["gunicorn", "MPCAutofill.wsgi:application", "--bind", "0.0.0.0:8000"]

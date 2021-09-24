@@ -3,35 +3,59 @@
 version: '3.4'
 
 services:
+  # Postgres database for Django
+  postgres:
+    image: postgres:13.0-alpine
+    expose:
+      - 5432
+    environment:
+      - POSTGRES_DB=mpcautofill
+      - POSTGRES_USER=mpcautofill
+      - POSTGRES_PASSWORD=mpcautofill
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # Elasticsearch used by MPCAutofill
   elasticsearch:
     image: elasticsearch:7.14.1
     expose:
       - 9200
-      - 9300
     environment:
       - discovery.type=single-node
+    volumes:
+      - elaticsearch_data:/usr/share/elasticsearch/data
+
+  # Unicorn serving Django
   django:
     image: mpcautofill_django
     build:
       context: ..
       dockerfile: ./docker/Dockerfile_django
     volumes:
+      # Writes to
       - django_static:/MPCAutofill/static
     expose:
       - 8000
     depends_on:
+      - postgres
       - elasticsearch
+
+  # Nginx serving Django's static files
   nginx:
     image: mpcautofill_nginx
     build:
       context: ..
       dockerfile: ./docker/Dockerfile_nginx
     volumes:
+      # Reads from
       - django_static:/MPCAutofill/static
     ports:
       - 8000:80
     depends_on:
       - django
 
+# Persistent storage for containers
 volumes:
+  postgres_data:
+  elaticsearch_data:
   django_static:

@@ -2,8 +2,9 @@
 
 1. Copy your Google Service Account key to `MPCAutofill/client_secrets.json`
 2. Populate `MPCAutofill/drives.csv`
-3. Run `docker-compose up`
-4. Browse http://localhost:8000, or equivalent
+3. Put random secret into `docker/django_env.txt` (e.g., by running `sed -i 's/DJANGO_SECRET_KEY=.*/DJANGO_SECRET_KEY=$(openssl rand -base64 12)/g' docker/django_env.txt`)
+4. Switch to `docker` subdirectory and run `docker-compose up`
+5. Browse http://localhost:8000
 
 # Prepare Google Service Account
 
@@ -30,6 +31,10 @@ Depending on the size of your configured drives, this can take a while before th
 Later, stop all containers with:
 
     docker-compose down
+
+You can also create an admin account for http://localhost:8000/admin, if you like:
+
+    docker-compose exec django python3 manage.py createsuperuser
 
 # TODO
 
