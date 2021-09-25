@@ -46,20 +46,11 @@ def elastic_connection(func):
 def build_context(drive_order: List[str], fuzzy_search: bool, order: Dict, qty: int):
     # I found myself copy/pasting this between the three input methods so I figured it belonged in its own function
 
-    # For donation modal, approximate how many cards I've rendered
-    #my_cards = 100 * floor(
-    #    int(Source.objects.get(id="Chilli_Axe").count()[0].replace(",", "")) / 100
-    #)
-
-    # With Chilli_Axe's drive not in the list, the above always causes an exception
-    my_cards = 0 # workaround
-
     context = {
         "drive_order": drive_order,
         "fuzzy_search": "true" if fuzzy_search else "false",
         "order": order,
         "qty": qty,
-        "my_cards": f"{my_cards :,d}",
     }
 
     return context
