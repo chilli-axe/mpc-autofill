@@ -1,9 +1,6 @@
 #!/bin/bash
 set -e
 
-# Gather static files
-python3 manage.py collectstatic --noinput
-
 # Wait for postgres to come up
 echo "Waiting for Postgres..."
 sleep 10
@@ -20,16 +17,19 @@ until curl --silent --output /dev/null http://elasticsearch:9200/_cat/health?h=s
     sleep 5
 done
 
-# Check if database is already migrated
+# Check if we are running for the first time
 if ! python3 manage.py migrate --check; then
-    # Run migrations and populate database before first start
-    echo "Running migrate..."
+    # Gather static files
+    python3 manage.py collectstatic --noinput
+
+    # Run migrations and populate database
+    echo "Migrate Django database..."
     python3 manage.py migrate
-    echo "Running import_sources..."
+    echo "Read drives from CSV..."
     python3 manage.py import_sources
-    echo "Running update_database..."
+    echo "Scan drives and update database..."
     python3 manage.py update_database
-    echo "Running update_dfcs..."
+    echo "Retrieve double-faced cards from Sryfall..."
     python3 manage.py update_dfcs
 fi
 
