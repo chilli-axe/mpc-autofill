@@ -33,4 +33,10 @@ if ! python3 manage.py migrate --check; then
     python3 manage.py update_dfcs
 fi
 
+# Start cron daemon to regularly update the database
+# (Having additional background processes in a docker container is
+# somewhat against the convention. But I think it's fine for now.)
+echo "Starting cron daemon for background updates..."
+cron
+
 exec "$@"
