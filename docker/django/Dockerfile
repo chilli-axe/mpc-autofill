@@ -29,6 +29,14 @@ RUN pip3 install -r requirements.txt
 # Copy entire repository
 COPY . /MPCAutofill
 
+# Make sure that all scripts are executable
+RUN chmod +x docker/django/*.sh
+
+# Let's be nice to the user and give some clear error message
+# if they missed to install any of the mandatory files.
+RUN ./docker/django/check_client_secrets.sh && \
+    ./docker/django/check_drives.sh
+
 # Install cronjobs
 RUN cp docker/django/crontab.txt /etc/crontab
 
@@ -42,9 +50,6 @@ RUN cp docker/django/env.txt MPCAutofill/MPCAutofill/.env
 
 # Prepare folder for static files (create now as user for permissions)
 RUN mkdir -p static
-
-# Make sure that all scripts are executable (for cron and entrypoint)
-RUN chmod +x docker/django/*.sh
 
 # Prepare to start
 EXPOSE 8000
