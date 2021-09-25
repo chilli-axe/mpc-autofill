@@ -1,8 +1,10 @@
 # Run MPCAutofill using Docker
 
+Setup overview:
+
 1. Copy your Google Service Account key to `MPCAutofill/client_secrets.json`
 2. Populate `MPCAutofill/drives.csv`
-3. Put random secret into `docker/django_env.txt` (e.g., by running `sed -i "s/DJANGO_SECRET_KEY=.*/DJANGO_SECRET_KEY=$(openssl rand -base64 12)/g" docker/django_env.txt`)
+3. Put random secret into `docker/django/env.txt` (e.g., by running `sed -i "s/DJANGO_SECRET_KEY=.*/DJANGO_SECRET_KEY=$(openssl rand -base64 12)/g" docker/django/env.txt`)
 4. Switch to `docker` subdirectory and run `docker-compose up`
 5. Browse http://localhost:8000 and start assembling your order :)
 

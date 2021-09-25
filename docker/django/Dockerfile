@@ -6,8 +6,7 @@ ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
 # Install additional dependencies
-RUN set -eux; \
-    apt-get update && \
+RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         python3-pip python3-dev \
         gcc netcat curl \
@@ -21,7 +20,7 @@ WORKDIR /MPCAutofill
 RUN pip3 install gunicorn wheel
 RUN pip3 install -r requirements.txt
 
-# Copy repository
+# Copy entire repository
 COPY . /MPCAutofill
 
 # Create a non-root user and add permission to access the /MPCAutofill folder
@@ -30,15 +29,15 @@ RUN adduser -u 5678 --disabled-password --gecos "" mpcautofill && \
 USER mpcautofill
 
 # Copy environment file
-COPY docker/django_env.txt MPCAutofill/MPCAutofill/.env
+COPY docker/django/env.txt MPCAutofill/MPCAutofill/.env
 
 # Prepare folder for static files (create now as user for permissions)
 RUN mkdir -p static
 
 # Prepare to start
 WORKDIR /MPCAutofill/MPCAutofill
-RUN chmod +x /MPCAutofill/docker/entrypoint.sh
+RUN chmod +x /MPCAutofill/docker/django/entrypoint.sh
 
 EXPOSE 8000
-ENTRYPOINT ["/MPCAutofill/docker/entrypoint.sh"]
+ENTRYPOINT ["/MPCAutofill/docker/django/entrypoint.sh"]
 CMD ["gunicorn", "MPCAutofill.wsgi:application", "--bind", "0.0.0.0:8000"]

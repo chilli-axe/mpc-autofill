@@ -30,7 +30,7 @@ services:
     image: mpcautofill_django
     build:
       context: ..
-      dockerfile: ./docker/Dockerfile_django
+      dockerfile: ./docker/django/Dockerfile
     volumes:
       # Writes to
       - django_static:/MPCAutofill/static
@@ -45,7 +45,7 @@ services:
     image: mpcautofill_nginx
     build:
       context: ..
-      dockerfile: ./docker/Dockerfile_nginx
+      dockerfile: ./docker/nginx/Dockerfile
     volumes:
       # Reads from
       - django_static:/MPCAutofill/static
