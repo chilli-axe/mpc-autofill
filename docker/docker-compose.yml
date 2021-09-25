@@ -1,4 +1,10 @@
-# Sources: https://testdriven.io/blog/dockerizing-django-with-postgres-gunicorn-and-nginx/
+# This script configures a multi-container setup to serve MPCAutofill and all
+# its dependencies. Simply navigate to the base directory and run
+# "docker-compose up" to get started. Optionally, you can pass "-d" to detach
+# all containers and their outputs to the background. By default, MPCAutofill
+# is served at http://localhost:8000. You can adjust the port near the bottom
+# of this file. Many code templates and inspirations are taken from blog post:
+# https://testdriven.io/blog/dockerizing-django-with-postgres-gunicorn-and-nginx/
 
 version: '3.4'
 
@@ -22,6 +28,7 @@ services:
       - 9200
     environment:
       - discovery.type=single-node
+      - logger.level=WARN
     volumes:
       - elaticsearch_data:/usr/share/elasticsearch/data
 

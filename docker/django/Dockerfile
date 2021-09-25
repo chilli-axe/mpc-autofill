@@ -1,3 +1,5 @@
+# Docker to serve Django via Unicorn and run
+# cron to regularly update the card database
 FROM ubuntu:20.04
 
 # Keeps Python from generating .pyc files in the container

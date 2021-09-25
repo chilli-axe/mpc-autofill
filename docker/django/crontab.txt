@@ -10,6 +10,7 @@
   0  0  *  *  * mpcautofill /MPCAutofill/docker/django/update_database.sh >/proc/1/fd/1 2>/proc/1/fd/2
   0  0  *  *  0 mpcautofill /MPCAutofill/docker/django/sync_dfcs.sh >/proc/1/fd/1 2>/proc/1/fd/2
 
+# Redirect outputs to STD so that they are captured by Docker's logging system
 # >/proc/1/fd/1 redirects STDOUT from the command to PID1's STDOUT
 # 2>/proc/1/fd/2 redirects STDERR from the command to PID1's STDERR
 
