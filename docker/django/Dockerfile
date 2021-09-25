@@ -12,6 +12,7 @@ RUN apt-get update && \
         gcc netcat curl cron \
     && rm -rf /var/lib/apt/lists/*
 # Cron: Clean system tasks and allow start as unprivileged user
+# This is a bit hacky but should be fine in Docker environment
 RUN rm -rf /etc/cron.*/* && \
     chmod u+s /usr/sbin/cron
 
