@@ -39,8 +39,3 @@ Later, you can stop all containers with:
 You can also create an admin account for http://localhost:8000/admin, if you like:
 
     docker-compose exec django python3 manage.py createsuperuser
-
-# TODOs
-
-- Setup cronjobs for long-running containers
-- Handle Google Scripts for the client tool?
