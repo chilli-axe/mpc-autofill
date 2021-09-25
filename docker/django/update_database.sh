@@ -1,6 +1,5 @@
 #!/bin/bash
 
-# Called by cron to scan drives and update the database
-
+echo "Cronjob -- Scan drives and update database..."
 cd /MPCAutofill/MPCAutofill
 python3 manage.py update_database

@@ -1,6 +1,5 @@
 #!/bin/bash
 
-# Called by cron to update double-faced cards
-
+echo "Cronjob -- Retrieve double-faced cards from Sryfall..."
 cd /MPCAutofill/MPCAutofill
 python3 manage.py update_dfcs

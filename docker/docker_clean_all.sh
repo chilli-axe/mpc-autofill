@@ -1,6 +1,10 @@
 #!/bin/bash
 
-# Completely clean up docker environment
+# Helper script for testing purposes
+
+# Remove all containers
 docker rm -f $(docker ps -a -q)
-docker rmi -f $(docker images -a -q)
+# Remove all volumes
 docker volume rm $(docker volume ls -q)
+# Remove all images
+#docker rmi -f $(docker images -a -q)
