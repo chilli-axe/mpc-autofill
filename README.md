@@ -28,3 +28,6 @@ Other:
 * `0 0 * * * bash /root/mpc-autofill/update_database >> /root/db_update.txt 2>&1`
 * `0 0 * * SUN bash /root/mpc-autofill/sync_dfcs`
 8. Deploy two Google Script according to the code specified in `autofill.py` and adjust the URLs in that script to point to your GS endpoints
+
+## Using Docker
+If you are not interested in development but rather want to simply run MPCAutofill with minimal effort, consider using the alternative setup using Docker. Futher details are in the [docker sub-folder](docker/).
