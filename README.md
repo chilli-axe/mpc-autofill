@@ -69,7 +69,7 @@ You can also create an admin account for http://localhost:8000/admin, if you lik
 
 Docker can also be run on Windows through virtual machines. Download Docker Desktop and follow the installation instructions on https://docs.docker.com/desktop/windows/install/. Make sure that you have virtualization instructions enabled in your BIOS/UEFI. Most other dependencies are handled by the installer.
 
-Once you finished the Docker Desktop installation and restarted your machine, download this repostory and extract it somewhere on your machine. Make sure to configure your `client_secrets.json` and `drives.csv` as described previously. Then, open the Windows Command Prompt and navigate to the extracted repository folder. Change to the docker sub-folder and run `docker-compose up`. After a while, MPCAutofill will become available at http://localhost:8000.
+Once you finished the Docker Desktop installation and restarted your machine, download this repository and extract it somewhere on your machine. Make sure to configure your `client_secrets.json` and `drives.csv` as described previously. Then, open the Windows Command Prompt and navigate to the extracted repository folder. Change to the docker sub-folder and run `docker-compose up`. After a while, MPCAutofill will become available at http://localhost:8000.
 
 ## Manual Installation
 
