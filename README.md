@@ -31,17 +31,17 @@ The below guide describes the procedure for setting up the web component. If you
 9. Update the `$working_directory/MPCAutofill/drives.csv` spreadsheet with links to public Google Drives with MPC ready images
    1. Do not edit the first row of the spreadsheet
    2. Heading Reference (key = Name of Drive Owner, drive_id = 33 character Gdrive identifier, drive_public = TRUE, description = Description of what's in that drive)
-    3. Drive ID is everything after `https://drive.google.com/drive/u/0/folders/` in the Gdrive link
+   3. Drive ID is everything after `https://drive.google.com/drive/u/0/folders/` in the Gdrive link
 11. Install the main dependencies using a python virtual environment (this entire step is often automatically handled by your IDE)
-    1. To initialize the environment, create the virtual environment library using `python3 -m venv $working_directory/venv`
+    1. To initialize the environment, create the virtual environment library using `python3 -m venv $working_directory/venv`  
     For Windows the command will be  `py -m venv $working_directory\venv`
     2. Activate the environment using your OS specific command in the table found in this section of the docs: [Scroll to the table](https://docs.python.org/3.8/library/venv.html#creating-virtual-environments)
     3. In the `$working_directory` with the virtual environment active, run the command `pip3 install -r requirements.txt` to install all requirements listed in `$working_directory/requirements.txt`
-12. In the `$working_directory`, run the command `python manage.py migrate` to ensure the database tables reflect any Django model changes.
-13. In the `$working_directory`, run the command `python manage.py update_dfcs` to synchronise the double-faced cards table with Scryfall.
-14. In the `$working_directory`, run the command `python manage.py import_sources` to sync sources in `$working_directory/MPCAutofill/drives.csv` to the database (optionally specifying a particular drive to sync with `-d <drivename>`)
+12. In the `$working_directory/MPCAutofill`, run the command `python manage.py migrate` to ensure the database tables reflect any Django model changes.
+13. In the `$working_directory/MPCAutofill`, run the command `python manage.py update_dfcs` to synchronise the double-faced cards table with Scryfall.
+14. In the `$working_directory/MPCAutofill`, run the command `python manage.py import_sources` to sync sources in `$working_directory/MPCAutofill/drives.csv` to the database (optionally specifying a particular drive to sync with `-d <drivename>`)
 15. (Elasticsearch must be running for this script to work)  
-   In the `$working_directory`, run the command `python manage.py update_database` to populate the database with cards from the sources loaded with `import_sources`
+   In the `$working_directory/MPCAutofill`, run the command `python manage.py update_database` to populate the database with cards from the sources loaded with `import_sources`
 15. Optionally, create a cronjob to periodically run the database updater command, to ensure MPC Autofill reflects the current state of the linked Drives, and another cronjob to periodically synchronise the double-faced cards table with Scryfall:
 ```
 0 0 * * * bash /root/mpc-autofill/update_database >> /root/db_update.txt 2>&1
