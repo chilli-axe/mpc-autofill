@@ -44,13 +44,13 @@ In case you are deploying to production, also make sure to put a random secret i
 You can set up Docker and Docker-compose on a clean Ubuntu with the following instructions:
 
     sudo apt update
-    sudo apt install docker.io docker-compose
+    sudo apt install -y docker.io docker-compose
     sudo usermod -aG docker $USER
     sudo reboot
 
 Now, you can check out this repository and run the Docker scripts:
 
-    sudo apt install git
+    sudo apt install -y git
     git clone https://github.com/chilli-axe/mpc-autofill.git
     cd mpc-autofill
     # At this point, configure all necessary files as described previously.
