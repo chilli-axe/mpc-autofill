@@ -20,7 +20,7 @@ You also need some Google Drives to be added to `MPCAutofill/drives.csv`. An emp
 
 | Key    | Drive ID                            | Public | Description                            |
 | ------ | ----------------------------------- | ------ | -------------------------------------- |
-| MyName | 2WmU2qeUouXmPefxYxMDHZnlsIYPe3KlqFy |        | "My own up-side-down japanese proxies" |
+| MyName | 2WmU2qeUouXmPefxYxMDHZnlsIYPe3KlqFy |        | "My own upside-down japanese proxies"  |
 | Otto   | q6iJFoJseX-xnHKLiJlRDU2aeaM6Ditvq2X | FALSE  | "Otto's future-sight swamp collection" |
 
 The public field is _true_ by default and can be left empty.
