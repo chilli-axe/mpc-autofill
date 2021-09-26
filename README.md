@@ -36,12 +36,12 @@ The below guide describes the procedure for setting up the web component. If you
     1. To initialize the environment, create the virtual environment library using `python3 -m venv $working_directory/venv`  
     For Windows the command will be  `py -m venv $working_directory\venv`
     2. Activate the environment using your OS specific command in the table found in this section of the docs: [Scroll to the table](https://docs.python.org/3.8/library/venv.html#creating-virtual-environments)
-    3. In the `$working_directory` with the virtual environment active, run the command `pip3 install -r requirements.txt` to install all requirements listed in `$working_directory/requirements.txt`
-12. In the `$working_directory/MPCAutofill`, run the command `python manage.py migrate` to ensure the database tables reflect any Django model changes.
-13. In the `$working_directory/MPCAutofill`, run the command `python manage.py update_dfcs` to synchronise the double-faced cards table with Scryfall.
-14. In the `$working_directory/MPCAutofill`, run the command `python manage.py import_sources` to sync sources in `$working_directory/MPCAutofill/drives.csv` to the database (optionally specifying a particular drive to sync with `-d <drivename>`)
+    3. In `$working_directory` with the virtual environment active, run the command `pip3 install -r requirements.txt` to install all requirements listed in `$working_directory/requirements.txt`
+12. In `$working_directory/MPCAutofill`, run the command `python manage.py migrate` to ensure the database tables reflect any Django model changes.
+13. In `$working_directory/MPCAutofill`, run the command `python manage.py update_dfcs` to synchronise the double-faced cards table with Scryfall.
+14. In `$working_directory/MPCAutofill`, run the command `python manage.py import_sources` to sync sources in `$working_directory/MPCAutofill/drives.csv` to the database (optionally specifying a particular drive to sync with `-d <drivename>`)
 15. (Elasticsearch must be running for this script to work)  
-   In the `$working_directory/MPCAutofill`, run the command `python manage.py update_database` to populate the database with cards from the sources loaded with `import_sources`
+   In `$working_directory/MPCAutofill`, run the command `python manage.py update_database` to populate the database with cards from the sources loaded with `import_sources`
 15. Optionally, create a cronjob to periodically run the database updater command, to ensure MPC Autofill reflects the current state of the linked Drives, and another cronjob to periodically synchronise the double-faced cards table with Scryfall:
 ```
 0 0 * * * bash /root/mpc-autofill/update_database >> /root/db_update.txt 2>&1
