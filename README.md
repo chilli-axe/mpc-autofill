@@ -71,7 +71,7 @@ Docker can also be run on Windows through virtual machines. Download Docker Desk
 
 Once you finished the Docker Desktop installation and restarted your machine, download this repository and extract it somewhere on your machine. Make sure to configure your `client_secrets.json` and `drives.csv` as described previously. Then, open the Windows Command Prompt and navigate to the extracted repository folder. Change to the docker sub-folder and run `docker-compose up`. After a while, MPCAutofill will become available at http://localhost:8000.
 
-![docker_cmd](https://user-images.githubusercontent.com/5053254/134814160-8872e01e-70a3-4db7-bbae-2337bd05eaef.png)
+![docker_cmd](https://user-images.githubusercontent.com/5053254/134817708-bb556248-e974-42e1-a92b-ce9b0325c763.png)
 
 ## Manual Installation
 
