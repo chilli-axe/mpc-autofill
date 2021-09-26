@@ -34,6 +34,7 @@ The below guide describes the procedure for setting up the web component. If you
     3. Drive ID is everything after `https://drive.google.com/drive/u/0/folders/` in the Gdrive link
 11. Install the main dependencies using a python virtual environment (this entire step is often automatically handled by your IDE)
     1. To initialize the environment, create the virtual environment library using `python3 -m venv $working_directory/venv`
+    For Windows the command will be  `py -m venv $working_directory\venv`
     2. Activate the environment using your OS specific command in the table found in this section of the docs: [Scroll to the table](https://docs.python.org/3.8/library/venv.html#creating-virtual-environments)
     3. In the `$working_directory` with the virtual environment active, run the command `pip3 install -r requirements.txt` to install all requirements listed in `$working_directory/requirements.txt`
 12. In the `$working_directory`, run the command `python manage.py migrate` to ensure the database tables reflect any Django model changes.
