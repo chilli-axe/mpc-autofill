@@ -48,3 +48,6 @@ The below guide describes the procedure for setting up the web component. If you
 0 0 * * SUN bash /root/mpc-autofill/sync_dfcs
 ```
 16. **[PROD]** Deploy two Google Script according to the code specified in `autofill.py` and adjust the URLs in that script to point to your GS endpoints
+17. (At this point elasticsearch should be running and you should be inside the virtual environment)  
+   In `$working_directory/MPCAutofill`, run the command `python manage.py runserver` to start the local Django server. 
+18. Open your web browser and go to http://127.0.0.1:8000/
