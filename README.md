@@ -20,7 +20,7 @@ You also need some Google Drives to be added to `MPCAutofill/drives.csv`. An emp
 
 | Key    | Drive ID                            | Public | Description                            |
 | ------ | ----------------------------------- | ------ | -------------------------------------- |
-| MyName | 2WmU2qeUouXmPefxYxM_H_nlsIYPe3KlqFy |        | "My own up-side-down japanese proxies" |
+| MyName | 2WmU2qeUouXmPefxYxMDHZnlsIYPe3KlqFy |        | "My own up-side-down japanese proxies" |
 | Otto   | q6iJFoJseX-xnHKLiJlRDU2aeaM6Ditvq2X | FALSE  | "Otto's future-sight swamp collection" |
 
 The public field is _true_ by default and can be left empty.
@@ -39,6 +39,8 @@ The easiest way to get MPCAutofill running as quickly as possible is by using Do
 
 In case you are deploying to production, also make sure to put a random secret into `docker/django/env.txt`, e.g., by running `sed -i "s/DJANGO_SECRET_KEY=.*/DJANGO_SECRET_KEY=$(openssl rand -base64 12)/g" docker/django/env.txt`.
 
+### Docker on Linux
+
 You can set up Docker and Docker-compose on a clean Ubuntu with the following instructions:
 
     sudo apt update
@@ -50,7 +52,9 @@ Now, you can check out this repository and run the Docker scripts:
 
     sudo apt install git
     git clone https://github.com/chilli-axe/mpc-autofill.git
-    cd mpc-autofill/docker
+    cd mpc-autofill
+    # At this point, configure all necessary files as described previously.
+    cd docker
     docker-compose up
 
 Depending on the size of your configured drives, this can take a while before the website becomes available at http://localhost:8000. Optionally, you can also pass "-d" to run all containers detached. In that case, you can later stop all containers with:
@@ -61,7 +65,15 @@ You can also create an admin account for http://localhost:8000/admin, if you lik
 
     docker-compose exec django python3 manage.py createsuperuser
 
+### Docker on Windows
+
+Docker can also be run on Windows through virtual machines. Download Docker Desktop and follow the installation instructions on https://docs.docker.com/desktop/windows/install/. Make sure that you have virtualization instructions enabled in your BIOS/UEFI. Most other dependencies are handled by the installer.
+
+Once you finished the Docker Desktop installation and restarted your machine, download this repostory and extract it somewhere on your machine. Make sure to configure your `client_secrets.json` and `drives.csv` as described previously. Then, open the Windows Command Prompt and navigate to the extracted repository folder. Change to the docker sub-folder and run `docker-compose up`. After a while, MPCAutofill will become available at http://localhost:8000.
+
 ## Manual Installation
+
+If you aim to contribute to MPCAutofill or are familiar with running Django locally, you can also install MPCAutofill manually.
 
 To be updated with [PR #33](pull/33).
 
