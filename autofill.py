@@ -119,13 +119,6 @@ def text_to_list(input_text):
     return [int(x) for x in input_text.strip("][").replace(" ", "").split(",")]
 
 
-def text_to_list(input_text):
-    # Helper function to translate strings like "[2, 4, 5, 6]" into lists
-    if input_text == "":
-        return []
-    return [int(x) for x in input_text.strip("][").replace(" ", "").split(",")]
-
-
 def fill_cards(bar: tqdm, driver, root):
 
     if not command_line_args.skipsetup:

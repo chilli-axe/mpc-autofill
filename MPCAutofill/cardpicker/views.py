@@ -58,10 +58,6 @@ def index(request, exception=None):
     )
 
 
-def guide(request):
-    return render(request, "cardpicker/guide.html")
-
-
 def new_cards(request):
     # serves the What's New page - this function returns the first page of results for all sources for
     # cards uploaded in the last two weeks
