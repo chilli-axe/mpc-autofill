@@ -27,7 +27,7 @@ The below guide describes the procedure for setting up the web component. If you
 8. Set up your Google Drive credentials using a Google Drive service account. For each step, only follow the instructions for the given section, then return and complete the next step. The linked tutorial is slightly out of date, but it is the most complete tutorial around.
    1. [Step 1](https://help.talend.com/r/E3i03eb7IpvsigwC58fxQg/uEUUsDd_MSx64yoJgSa1xg) - NOTE: The project name, product name, and Application type don't matter for just running the tool locally.
    2. [Step 2](https://help.talend.com/r/E3i03eb7IpvsigwC58fxQg/ol2OwTHmFbDiMjQl3ES5QA) - NOTE: The JSON file you download at the end of this step is named something slightly different from what the application expects. Make sure to rename it.
-   3. Rename the saved JSON file and move it to: `$working_directory/MPCAutofill`
+   3. Rename the saved JSON file to `client_secrets.json` and move it to: `$working_directory/MPCAutofill`
 9. Update the `$working_directory/MPCAutofill/drives.csv` spreadsheet with links to public Google Drives with MPC ready images
 10. Install the main dependencies using a python virtual environment (this entire step is often automatically handled by your IDE)
     1. To initialize the environment, create the virtual environment library using `python3 -m venv $working_directory/venv`
