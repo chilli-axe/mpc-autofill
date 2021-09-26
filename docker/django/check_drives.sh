@@ -1,6 +1,10 @@
 #!/bin/bash
 set -e
 
+# Ensure that there is a newline at the end of drives.csv,
+# otherwise "wc" won't count correctly.
+sed -i -e '$a\' MPCAutofill/drives.csv
+
 if [ $(cat MPCAutofill/drives.csv | wc -l) -lt 2 ]; then
     echo "=================================================="
     echo "  ERROR: No drives configured!"
