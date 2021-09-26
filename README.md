@@ -1,7 +1,69 @@
 # mpc-autofill
+
 Automating MakePlayingCards's online ordering system.
 
-The below guide describes the procedure for setting up the web component. If you're here to download the clientside program, check the Releases tab.
+The below guide describes the procedure for setting up the web component. If you're here to download the clientside program, check the [Releases](releases/) tab.
+
+# Preparation
+
+Before the web application can be started, a couple of user files need to be prepared and copied to the right places.
+
+## Step 1: Setup Google Service Account
+
+If you are running MPCAutofill for the first time, you need to set up a Google Service Account first. Go to https://console.developers.google.com/ and create a new project. Then, navigate to Service Accounts, create a new one, go to "Manage Keys", add a new key while choosing the JSON format. Finally, copy the downloaded key into the sub-folder `MPCAutofill/client_secrets.json`.
+
+Also, make sure your Google Drive API is enabled. Otherwise, all drive imports will fail! You can verify this by visiting the following website with your Google project id inserted at the end of the link: https://console.developers.google.com/apis/api/drive.googleapis.com/overview?project=yourprojectid
+
+## Step 2: Populate Google Drive CSV
+
+You also need some Google Drives to be added to `MPCAutofill/drives.csv`. An empty template can be found in place. The Google Drive ID required in the CSV is the cryptic part of the Google Drive URL, usually at the end. An example CSV could look like this:
+
+| Key    | Drive ID                            | Public | Description                            |
+| ------ | ----------------------------------- | ------ | -------------------------------------- |
+| MyName | 2WmU2qeUouXmPefxYxM_H_nlsIYPe3KlqFy |        | "My own up-side-down japanese proxies" |
+| Otto   | q6iJFoJseX-xnHKLiJlRDU2aeaM6Ditvq2X | FALSE  | "Otto's future-sight swamp collection" |
+
+The public field is _true_ by default and can be left empty.
+
+## (Optional) Step 3: Upload Google Scripts for the Client
+
+This step is usually optional as the Google Scripts can be shared among installations. But if you find the client (`autofill.py`) not working, make sure the included Google Scripts are available at the given links. Otherwise, deploy both included scripts and update the links accordingly.
+
+# Installation
+
+Two alternative installation methods are described in the following. At this point in time, make sure you already have set up your `client_secrets.json` and your `drives.csv` as described previously.
+
+## Using Docker Containers
+
+The easiest way to get MPCAutofill running as quickly as possible is by using Docker containers. The [docker](docker/) sub-folder includes all necessary scripts to automatically set up and run MPCAutofill with all its dependencies. The only tools you need are Docker and Docker-compose.
+
+In case you are deploying to production, also make sure to put a random secret into `docker/django/env.txt`, e.g., by running `sed -i "s/DJANGO_SECRET_KEY=.*/DJANGO_SECRET_KEY=$(openssl rand -base64 12)/g" docker/django/env.txt`.
+
+You can set up Docker and Docker-compose on a clean Ubuntu with the following instructions:
+
+    sudo apt update
+    sudo apt install docker.io docker-compose
+    sudo usermod -aG docker $USER
+    sudo reboot
+
+Now, you can check out this repository and run the Docker scripts:
+
+    sudo apt install git
+    git clone https://github.com/chilli-axe/mpc-autofill.git
+    cd mpc-autofill/docker
+    docker-compose up
+
+Depending on the size of your configured drives, this can take a while before the website becomes available at http://localhost:8000. Optionally, you can also pass "-d" to run all containers detached. In that case, you can later stop all containers with:
+
+    docker-compose down
+
+You can also create an admin account for http://localhost:8000/admin, if you like:
+
+    docker-compose exec django python3 manage.py createsuperuser
+
+## Manual Installation
+
+To be updated with [PR #33](pull/33).
 
 # Requirements
 `requirements.txt` for the web application and local tool combined exists in the repo as well.
@@ -28,6 +90,3 @@ Other:
 * `0 0 * * * bash /root/mpc-autofill/update_database >> /root/db_update.txt 2>&1`
 * `0 0 * * SUN bash /root/mpc-autofill/sync_dfcs`
 8. Deploy two Google Script according to the code specified in `autofill.py` and adjust the URLs in that script to point to your GS endpoints
-
-## Using Docker
-If you are not interested in development but rather want to simply run MPCAutofill with minimal effort, consider using the alternative setup using Docker. Futher details are in the [docker sub-folder](docker/).
