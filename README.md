@@ -18,10 +18,10 @@ Also, make sure your Google Drive API is enabled. Otherwise, all drive imports w
 
 You also need some Google Drives to be added to `MPCAutofill/drives.csv`. An empty template can be found in place. The Google Drive ID required in the CSV is the cryptic part of the Google Drive URL, usually at the end. An example CSV could look like this:
 
-| Key    | Drive ID                            | Public | Description                            |
-| ------ | ----------------------------------- | ------ | -------------------------------------- |
-| MyName | 2WmU2qeUouXmPefxYxMDHZnlsIYPe3KlqFy |        | "My own upside-down japanese proxies"  |
-| Otto   | q6iJFoJseX-xnHKLiJlRDU2aeaM6Ditvq2X | FALSE  | "Otto's future-sight swamp collection" |
+| key    | drive_id                            | drive_public | description                            |
+| ------ | ----------------------------------- | ------------ | -------------------------------------- |
+| MyName | 2WmU2qeUouXmPefxYxMDHZnlsIYPe3KlqFy |              | "My own upside-down japanese proxies"  |
+| Otto   | q6iJFoJseX-xnHKLiJlRDU2aeaM6Ditvq2X | FALSE        | "Otto's future-sight swamp collection" |
 
 The public field is _true_ by default and can be left empty.
 
