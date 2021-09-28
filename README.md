@@ -16,7 +16,7 @@ Also, make sure your Google Drive API is enabled. Otherwise, all drive imports w
 
 ## Step 2: Populate Google Drive CSV
 
-You also need some Google Drives to be added to `MPCAutofill/drives.csv`. An empty template can be found in place. The Google Drive ID required in the CSV is the cryptic part of the Google Drive URL, usually at the end. An example CSV could look like this:
+You also need some Google Drives to be added to `MPCAutofill/drives.csv`. An template CSV with an example entry can be found in place. The Google Drive ID required in the CSV is the cryptic part of the Google Drive URL, usually at the end. Another example for the `drives.csv` could look like this:
 
 | key    | drive_id                            | drive_public | description                            |
 | ------ | ----------------------------------- | ------------ | -------------------------------------- |
