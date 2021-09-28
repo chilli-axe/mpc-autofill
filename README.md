@@ -73,6 +73,8 @@ Once you finished the Docker Desktop installation and restarted your machine, do
 
 ![docker_cmd](https://user-images.githubusercontent.com/5053254/134817708-bb556248-e974-42e1-a92b-ce9b0325c763.png)
 
+If you make any changes to your files afterwards, consider using `docker-compose up --build --force-recreate` to ensure that everything is updated right away.
+
 ## Manual Installation
 
 If you aim to contribute to MPCAutofill or are familiar with running Django locally, you can also install MPCAutofill manually.
