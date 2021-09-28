@@ -77,17 +77,18 @@ Once you finished the Docker Desktop installation and restarted your machine, do
 
 If you aim to contribute to MPCAutofill or are familiar with running Django locally, you can also install MPCAutofill manually.
 
-To be updated with [PR #33](pull/33).
+### Requirements
 
-# Requirements
 `requirements.txt` for the web application and local tool combined.
 
 * Python3.8+
 * Elasticsearch (probably easiest with Docker)
 * A Google account
 
-# Setup
-#### <em>All steps with the prefix [PROD] are only needed if you are deploying this web app in a production environment. For running the application locally or for development, you can skip these steps.</em>
+#### Step-by-Step Instructions
+
+<b><em>All steps with the prefix [PROD] are only needed if you are deploying this web app in a production environment. For running the application locally or for development, you can skip these steps.</em></b>
+
 1. Clone this repo somewhere on your server/local computer. This will be referred to as the `$working_directory`.
 2. If you are using an IDE to run the Django commands and are NOT using Windows: go to the `$working_directory/.run` directory and for each XML file delete the option `SDK_HOME`
 3. Add the file `$working_directory/MPCAutofill/MPCAutofill/.env` to edit any environment variables used in `$working_directory/MPCAutofill/MPCAutofill/settings.py`.  
