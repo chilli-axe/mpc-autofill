@@ -46,7 +46,7 @@ pytest==6.2.3
 protobuf==3.17.0
 pyasn1==0.4.8
 pyasn1-modules==0.2.8
-pyinstaller==3.6
+pyinstaller==4.5.1
 pyinstaller-hooks-contrib==2021.1
 pyparsing==2.4.7
 python-Levenshtein==0.12.2
