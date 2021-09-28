@@ -73,7 +73,13 @@ Once you finished the Docker Desktop installation and restarted your machine, do
 
 ![docker_cmd](https://user-images.githubusercontent.com/5053254/134817708-bb556248-e974-42e1-a92b-ce9b0325c763.png)
 
-If you make any changes to your files afterwards, consider using `docker-compose up --build --force-recreate` to ensure that everything is updated right away.
+### Q&A: Common Problems
+
+_The website just gives me "502 Bad Gateway"!_ The Danjo instance isn't ready yet, probably still scanning cards. Have a look at the docker output. Use `docker-compose logs django` if you started them detached.
+
+_I changed some files but it looks like Docker didn't adopt those changes!_ All files including `drives.csv` are part of the image and not updated automatically. Try `docker-compose up --build --force-recreate` to rebuild all images and containers, and to make sure that all changes are reflected in Docker.
+
+_The website seems to work fine but I can't generate orders!_ Do you have cardbacks in your Google Drive? Add a folder named "Cardbacks" to your Drive and put some cardbacks there!
 
 ## Manual Installation
 
