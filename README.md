@@ -23,7 +23,7 @@ You also need some Google Drives to be added to `MPCAutofill/drives.csv`. An emp
 | MyName | 2WmU2qeUouXmPefxYxMDHZnlsIYPe3KlqFy |        | "My own upside-down japanese proxies"  |
 | Otto   | q6iJFoJseX-xnHKLiJlRDU2aeaM6Ditvq2X | FALSE  | "Otto's future-sight swamp collection" |
 
-The public field is _true_ by default and can be left empty.
+The public field is _true_ by default and can be left empty. If a drive is marked non-public, it won't be displayed on the contribution page or in the search settings popup.
 
 ## (Optional) Step 3: Upload Google Scripts for the Client
 
