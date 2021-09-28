@@ -85,7 +85,7 @@ If you aim to contribute to MPCAutofill or are familiar with running Django loca
 * Elasticsearch (probably easiest with Docker)
 * A Google account
 
-#### Step-by-Step Instructions
+### Step-by-Step Instructions
 
 <b><em>All steps with the prefix [PROD] are only needed if you are deploying this web app in a production environment. For running the application locally or for development, you can skip these steps.</em></b>
 
