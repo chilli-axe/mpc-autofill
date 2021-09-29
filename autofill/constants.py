@@ -6,12 +6,12 @@ class States(str, Enum):
     defining_order = "Defining Order"
     paging_to_fronts = "Paging to Fronts"
     paging_to_backs = "Paging to Backs"
+    paging_to_review = "Paging to Review"
     inserting_fronts = "Inserting Fronts"
     inserting_backs = "Inserting Backs"
     uploading_image = "Uploading Image"
     inserting_image = "Inserting Image"
     waiting = "Waiting"
-    # stepping_through = "Stepping Through"
     finished = "Finished"
 
 
@@ -48,5 +48,10 @@ class CardTags(str, Enum):
     query = "query"
 
 
+class GoogleScriptsAPIs(str, Enum):
+    image_name = "https://script.google.com/macros/s/AKfycbw90rkocSdppkEuyVdsTuZNslrhd5zNT3XMgfucNMM1JjhLl-Q/exec"
+    image_content = "https://script.google.com/macros/s/AKfycbzzCWc2x3tfQU1Zp45LB1P19FNZE-4njwzfKT5_Rx399h-5dELZWyvf/exec"
+
+
 BRACKETS = [18, 36, 55, 72, 90, 108, 126, 144, 162, 180, 198, 216, 234, 396, 504, 612]
-THREADS = 3  # per CardImageCollection
+THREADS = 5  # shared between CardImageCollections

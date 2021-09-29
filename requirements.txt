@@ -18,6 +18,7 @@ django-environ==0.4.5
 django-user-agents==0.4.0
 elasticsearch==7.13.0
 elasticsearch-dsl==7.3.0
+enlighten==1.10.1
 google-api-core==1.26.3
 google-api-python-client==2.4.0
 google-auth==1.30.0
