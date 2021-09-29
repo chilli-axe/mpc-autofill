@@ -1,8 +1,17 @@
 import os
 import sys
+from functools import wraps
 from platform import system
-from typing import Dict, List, Union
+from typing import TYPE_CHECKING, Dict, List, Union
 from xml.etree import ElementTree
+
+from selenium import webdriver
+from selenium.common.exceptions import (NoAlertPresentException,
+                                        UnexpectedAlertPresentException)
+
+if TYPE_CHECKING:
+    from driver import AutofillDriver
+
 
 # IS_WINDOWS: bool = system() == "Windows"
 CURRDIR: str = (
@@ -25,6 +34,10 @@ class InvalidStateException(Exception):
         super().__init__(self.message)
 
 
+class ValidationException(Exception):
+    pass
+
+
 def text_to_list(input_text: str) -> List[int]:
     """
     Helper function to translate strings like "[2, 4, 5, 6]" into lists
@@ -32,7 +45,7 @@ def text_to_list(input_text: str) -> List[int]:
 
     if not input_text:
         return []
-    return [int(x) for x in input_text.strip("][").replace(" ", "").split(",")]
+    return sorted([int(x) for x in input_text.strip("][").replace(" ", "").split(",")])
 
 
 def unpack_element(
@@ -51,3 +64,29 @@ def unpack_element(
         else:
             element_dict[x.tag] = x
     return element_dict
+
+
+def file_exists(file_path: str) -> bool:
+    return (
+        file_path != "" and os.path.isfile(file_path) and os.path.getsize(file_path) > 0
+    )
+
+
+def alert_handler(func):
+    """
+    Function decorator which accepts an alert in the given Selenium driver if one is raised.
+    TODO: this doesn't seem to work properly?
+    """
+
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except UnexpectedAlertPresentException:
+            try:
+                autofill_driver: "AutofillDriver" = args[0]
+                alert = autofill_driver.driver.switch_to.alert
+                alert.accept()
+            except NoAlertPresentException:
+                pass
+
+    return wrapper

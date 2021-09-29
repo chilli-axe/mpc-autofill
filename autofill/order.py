@@ -2,7 +2,6 @@ import os
 import sys
 import time
 from concurrent.futures import ThreadPoolExecutor
-from functools import partial
 from glob import glob
 from queue import Queue
 from typing import Dict, List, Set
@@ -10,12 +9,13 @@ from xml.etree import ElementTree
 
 import attr
 import constants
+import enlighten
 import PyInquirer  # TODO: this package is unmaintained and crashes when you click in terminal on macos
 import requests
-from driver import AutofillDriver
 from numpy import array, uint8
 from requests import exceptions as re_exc
-from utils import CURRDIR, TEXT_BOLD, TEXT_END, text_to_list, unpack_element
+from utils import (CURRDIR, TEXT_BOLD, TEXT_END, ValidationException,
+                   file_exists, text_to_list, unpack_element)
 
 
 @attr.s
@@ -23,32 +23,32 @@ class CardImage:
     # TODO: file size from google scripts api as validation that the file exists on gdrive?
     # TODO: new API endpoint on google scripts that takes a list of image IDs and returns their total size?
 
-    drive_id = attr.ib(type=str, default="")
-    slots = attr.ib(type=List[int], default=[])
-    name = attr.ib(type=str, default="")
-    file_path = attr.ib(type=str, default="")
-    query = attr.ib(type=str, default="")
-    bar = attr.ib(type=str, default="")  # TODO
+    drive_id: str = attr.ib(default="")
+    slots: List[int] = attr.ib(default=[])
+    name: str = attr.ib(default="")
+    file_path: str = attr.ib(default="")
+    query: str = attr.ib(default="")
 
-    downloaded = attr.ib(type=bool, default=False)
-    uploaded = attr.ib(type=bool, default=False)
-    errored = attr.ib(type=bool, default=False)
+    downloaded: bool = attr.ib(init=False, default=False)
+    uploaded: bool = attr.ib(init=False, default=False)
+    errored: bool = attr.ib(init=False, default=False)
 
     @classmethod
-    def from_dict(cls, card_dict: Dict[str, str]) -> "CardImage":  # TODO: progress bar
+    def from_dict(cls, card_dict: Dict[str, str]) -> "CardImage":
         # assert that the keys of the input dict contains constants.CardTags
         drive_id = card_dict[constants.CardTags.id]
         slots = text_to_list(card_dict[constants.CardTags.slots])
         name = card_dict[constants.CardTags.name]
         query = card_dict[constants.CardTags.query]
         card_image = cls(drive_id=drive_id, slots=slots, name=name, query=query)
-        card_image.retrieve_card_name()
-        card_image.generate_file_path()
-        card_image.validate()
         return card_image
 
+    def __attrs_post_init__(self):
+        self.generate_file_path()
+        self.validate()
+
     def validate(self) -> None:
-        pass
+        pass  # TODO
 
     def retrieve_card_name(self) -> None:
         if not self.name:
@@ -56,7 +56,7 @@ class CardImage:
                 # TODO: rate limiting to 0.1s per query - can we use a decorator to rate-limit all API calls?
                 time.sleep(0.1)
                 with requests.post(
-                    "https://script.google.com/macros/s/AKfycbw90rkocSdppkEuyVdsTuZNslrhd5zNT3XMgfucNMM1JjhLl-Q/exec",
+                    constants.GoogleScriptsAPIs.image_name.value,
                     data={"id": self.drive_id},
                     timeout=30,
                 ) as r_info:
@@ -72,8 +72,13 @@ class CardImage:
             os.mkdir(cards_folder)
         return cards_folder
 
-    # def generate_filepath(cls, drive_id: str, file_name: str = None) -> str:
     def generate_file_path(self) -> None:
+        # file paths for local files are stored in the `id` field. If the `id` field corresponds to a file that exists
+        # in the file system, assume that's the card's file path.
+        if file_exists(self.drive_id):
+            self.file_path = self.drive_id
+            return
+
         if not self.name:
             self.retrieve_card_name()
 
@@ -86,70 +91,8 @@ class CardImage:
                 f"{name_split[0]} ({self.drive_id}).{name_split[1]}",
             )
         self.file_path = file_path
-        """
-        # in the case of file name request failing, filepath will be referenced before assignment unless we do this
-        filepath = ""
-        if filename:
-            # Split the filename on extension and add in the ID as well
-            # The filename with and without the ID in parentheses is checked for, so if the user downloads the image from
-            # Google Drive without modifying the filename, it should work as expected
-            # However, looking for the file with the ID in parentheses is preferred because it eliminates the possibility
-            # of filename clashes between different images
-            filename_split = filename.rsplit(".", 1)
-            filename_id = filename_split[0] + " (" + file_id + ")." + filename_split[1]
 
-            # Filepath from filename
-            # TODO: os.path.join?
-            filepath = cards_folder + "/" + filename
-
-            if not os.path.isfile(filepath) or os.path.getsize(filepath) <= 0:
-                # The filepath without ID in parentheses doesn't exist - change the filepath to contain the ID instead
-                filepath = cards_folder + "/" + filename_id
-
-            # Download the image if it doesn't exist, or if it does exist but it's empty
-            if (not os.path.isfile(filepath)) or os.path.getsize(filepath) <= 0:
-                # Google script request for file contents
-                # Set the request's timeout to 30 seconds, so if the server decides to not respond, we can
-                # move on without stopping the whole autofill process    )) > 0 and text_to_list(cardinfo[1])[0] > 10:
-                try:
-
-                    # Five attempts at downloading the image, in case the api returns an empty image for whatever reason
-                    attempt_counter = 0
-                    image_downloaded = False
-                    while attempt_counter < 5 and not image_downloaded:
-
-                        with requests_post(
-                                "https://script.google.com/macros/s/AKfycbzzCWc2x3tfQU1Zp45LB1P19FNZE-4njwzfKT5_Rx399h-5dELZWyvf/exec",
-                                data={"id": file_id},
-                                timeout=120,
-                        ) as r_contents:
-
-                            # Check if the response returned any data
-                            filecontents = r_contents.json()["result"]
-                            if len(filecontents) > 0:
-                                # Download the image
-                                f = open(filepath, "bw")
-                                f.write(np_array(filecontents, dtype=np_uint8))
-                                f.close()
-                                image_downloaded = True
-                            else:
-                                attempt_counter += 1
-
-                    if not image_downloaded:
-                        # Tried to download image three times and never got any data, add to error queue
-                        q_error.put(
-                            f"{TEXT_BOLD}{filename}{TEXT_END}:\n  https://drive.google.com/uc?id={file_id}&export=download"
-                        )
-
-                except requests_Timeout:
-                    # Failed to download image because of a timeout error - add it to error queue
-                    q_error.put(
-                        f"{TEXT_BOLD}{filename}{TEXT_END}:\n  https://drive.google.com/uc?id={file_id}&export=download"
-                    )
-        """
-
-    def download_image(self, queue: Queue):
-        # progress bar update
+    def download_image(self, queue: Queue, download_bar: enlighten.Counter):
         if not self.file_exists():
             try:
                 # Five attempts at downloading the image, in case the api returns an empty image for whatever reason
@@ -157,14 +100,14 @@ class CardImage:
                 image_downloaded = False
                 while attempt_counter < 5 and not image_downloaded:
                     with requests.post(
-                        "https://script.google.com/macros/s/AKfycbzzCWc2x3tfQU1Zp45LB1P19FNZE-4njwzfKT5_Rx399h-5dELZWyvf/exec",
+                        constants.GoogleScriptsAPIs.image_content.value,
                         data={"id": self.drive_id},
                         timeout=120,
                     ) as r_contents:
                         if "<title>Error</title>" in r_contents.text:
                             # error occurred while attempting to retrieve from Google API
                             self.errored = True
-                            return
+                            break
                         filecontents = r_contents.json()["result"]
                         if len(filecontents) > 0:
                             # Download the image
@@ -176,23 +119,24 @@ class CardImage:
                         else:
                             attempt_counter += 1
             except requests.Timeout:
-                # TODO: error reporting
                 pass
 
         if self.file_exists():
             self.downloaded = True
-            queue.put(self)
+        else:
+            print(
+                f'Failed to download "{TEXT_BOLD}{self.name}{TEXT_END}" (Drive ID {TEXT_BOLD}{self.drive_id}{TEXT_END})'
+            )
+        # put card onto queue irrespective of whether it was downloaded successfully or not
+        queue.put(self)
+        download_bar.update()
 
     def file_exists(self) -> bool:
         """
         Determines whether this image has been downloaded successfully.
         """
 
-        return (
-            self.file_path != ""
-            and os.path.isfile(self.file_path)
-            and os.path.getsize(self.file_path) > 0
-        )
+        return file_exists(self.file_path)
 
 
 @attr.s
@@ -201,13 +145,18 @@ class CardImageCollection:
     A collection of CardImages for one face of a CardOrder.
     """
 
-    cards = attr.ib(type=List[CardImage], default=[])
-    queue = attr.ib(type=Queue, default=Queue())
-    num_slots = attr.ib(type=int, default=0)
+    cards: List[CardImage] = attr.ib(default=[])
+    queue: Queue = attr.ib(init=False, default=attr.Factory(Queue))
+    num_slots: int = attr.ib(default=0)
+    face: constants.Faces = attr.ib(default=constants.Faces.front)
 
     @classmethod
     def from_element(
-        cls, element: ElementTree, num_slots, fill_image_id: str = None
+        cls,
+        element: ElementTree,
+        num_slots,
+        face: constants.Faces,
+        fill_image_id: str = None,
     ) -> "CardImageCollection":
         card_images = []
         if element:
@@ -216,7 +165,7 @@ class CardImageCollection:
                     x, [x.value for x in constants.CardTags], unpack_to_text=True
                 )
                 card_images.append(CardImage.from_dict(card_dict))
-        card_image_collection = cls(cards=card_images, num_slots=num_slots)
+        card_image_collection = cls(cards=card_images, num_slots=num_slots, face=face)
         if fill_image_id:
             # fill the remaining slots in this card image collection with a new card image based off the given id
             pass
@@ -231,7 +180,14 @@ class CardImageCollection:
                     )
                 )
 
-        card_image_collection.validate()
+        # postponing validation from post-init so we don't error for missing slots that `fill_image_id` would fill
+        try:
+            card_image_collection.validate()
+        except ValidationException as e:
+            input(
+                f"There was a problem with your order file:\n\n{TEXT_BOLD}{e}{TEXT_END}\n\nPress Enter to exit."
+            )
+            sys.exit(0)
         return card_image_collection
 
     def all_slots(self) -> Set[int]:
@@ -241,29 +197,32 @@ class CardImageCollection:
         return {y for x in self.cards for y in x.slots}
 
     def validate(self) -> None:
-        assert self.num_slots > 0
+        if self.num_slots == 0:
+            raise ValidationException(f"{self.face} has no images!")
         slots_missing = self.all_slots() - self.slots()
         if slots_missing:
-            print("cooked")
-            # TODO: we should raise an exception here, and there should be built-in handling for any exception that
-            # diplays an error message to the user with a prompt to press any key to close the window
+            raise ValidationException(
+                f"The following slots are empty in your order for the {self.face} face: "
+                f"{TEXT_BOLD}{sorted(slots_missing)}{TEXT_END}"
+            )
 
-    def download_images(self, bar) -> None:
+    def download_images(
+        self, pool: ThreadPoolExecutor, download_bar: enlighten.Counter
+    ) -> None:
         """
-        Spins up Constants.THREADS threads to download images from this collection's images, putting
-        the downloaded images' details onto this collection's queue. Async function.
+        Set up the provided ThreadPoolExecutor to download this collection's images, updating the given progress
+        bar with each image. Async function.
         """
 
-        with ThreadPoolExecutor(max_workers=constants.THREADS) as pool:
-            pool.map(lambda x: x.download_image(self.queue), self.cards)
+        pool.map(lambda x: x.download_image(self.queue, download_bar), self.cards)
 
 
 @attr.s
 class Details:
-    quantity = attr.ib(type=int, default=0)
-    bracket = attr.ib(type=int, default=0)
-    stock = attr.ib(type=str, default=0)
-    foil = attr.ib(type=bool, default=False)
+    quantity: int = attr.ib(default=0)
+    bracket: int = attr.ib(default=0)
+    stock: str = attr.ib(default=0)
+    foil: bool = attr.ib(default=False)
 
     @classmethod
     def from_element(cls, element: ElementTree.Element) -> "Details":
@@ -274,20 +233,33 @@ class Details:
         foil: bool = details_dict[constants.DetailsTags.foil].text == "true"
 
         details = cls(quantity=quantity, bracket=bracket, stock=stock, foil=foil)
-        details.validate()
         return details
 
+    def __attrs_post_init__(self):
+        try:
+            self.validate()
+        except ValidationException as e:
+            input(
+                f"There was a problem with your order file:\n\n{TEXT_BOLD}{e}{TEXT_END}\n\nPress Enter to exit."
+            )
+            sys.exit(0)
+
     def validate(self) -> None:
-        assert 0 < self.quantity <= constants.BRACKETS[-1]
-        assert self.stock in [x.value for x in constants.Cardstocks]
-        assert self.bracket in constants.BRACKETS
+        if not 0 < self.quantity <= constants.BRACKETS[-1]:
+            raise ValidationException(
+                f"Order quantity {self.quantity} outside allowable range of 0 to {constants.BRACKETS[-1]}!"
+            )
+        if self.bracket not in constants.BRACKETS:
+            raise ValidationException(f"Order bracket {self.bracket} not supported!")
+        if self.stock not in [x.value for x in constants.Cardstocks]:
+            raise ValidationException(f"Order cardstock {self.stock} not supported!")
 
 
 @attr.s
 class CardOrder:
-    details = attr.ib(type=Details, default=None)
-    fronts = attr.ib(type=CardImageCollection, default=[])
-    backs = attr.ib(type=CardImageCollection, default=[])
+    details: Details = attr.ib(default=None)
+    fronts: CardImageCollection = attr.ib(default=None)
+    backs: CardImageCollection = attr.ib(default=None)
 
     @classmethod
     def from_xml_in_folder(cls) -> "CardOrder":
@@ -330,8 +302,7 @@ class CardOrder:
             f"Successfully read XML file: {TEXT_BOLD}{file_name}{TEXT_END}\n"
             f"Your order has a total of {TEXT_BOLD}{order.details.quantity}{TEXT_END} cards, in the MPC bracket of up "
             f"to {TEXT_BOLD}{order.details.bracket}{TEXT_END} cards.\n{TEXT_BOLD}{order.details.stock}{TEXT_END} "
-            f"cardstock ({TEXT_BOLD}{'foil' if order.details.foil else 'nonfoil'}{TEXT_END}).\n\n"
-            f"Starting card downloader and webdriver processes."
+            f"cardstock ({TEXT_BOLD}{'foil' if order.details.foil else 'nonfoil'}{TEXT_END}).\n"
         )
 
         return order
@@ -342,29 +313,41 @@ class CardOrder:
         root_dict = unpack_element(root, [x.value for x in constants.BaseTags])
         details = Details.from_element(root_dict[constants.BaseTags.details])
         fronts = CardImageCollection.from_element(
-            root_dict[constants.BaseTags.fronts], details.quantity
+            element=root_dict[constants.BaseTags.fronts],
+            num_slots=details.quantity,
+            face=constants.Faces.front,
         )
-        backs = CardImageCollection.from_element(
-            root_dict[constants.BaseTags.backs],
-            details.quantity,
-            fill_image_id=root_dict[constants.BaseTags.cardback].text,
-        )
+        cardback_elem = root_dict[constants.BaseTags.cardback]
+        if cardback_elem is not None:
+            backs = CardImageCollection.from_element(
+                element=root_dict[constants.BaseTags.backs],
+                num_slots=details.quantity,
+                face=constants.Faces.back,
+                fill_image_id=cardback_elem.text,
+            )
+        else:
+            print(
+                f"{TEXT_BOLD}Warning{TEXT_END}: Your order file did not contain a common cardback image."
+            )
+            backs = CardImageCollection.from_element(
+                element=root_dict[constants.BaseTags.backs],
+                num_slots=details.quantity,
+                face=constants.Faces.back,
+            )
 
         order = cls(details=details, fronts=fronts, backs=backs)
-        order.validate()
-
         return order
+
+    def __attrs_post_init__(self):
+        try:
+            self.validate()
+        except ValidationException as e:
+            input(
+                f"There was a problem with your order file:\n\n{TEXT_BOLD}{e}{TEXT_END}\n\nPress Enter to exit."
+            )
+            sys.exit(0)
 
     def validate(self) -> None:
         # TODO: validate that all images have file paths
         # TODO: validate that all images exist in google scripts API (might be neat to report on size of order in MB?)
         pass
-
-    def execute(self, autofill_driver: AutofillDriver) -> None:
-        # create progress bars and state text, setup multithreading
-        # TODO: these aren't running asynchronously
-        self.fronts.download_images("")
-        self.backs.download_images("")
-
-        autofill_driver.define_order(self.details)
-        autofill_driver.insert_fronts(self.details, self.fronts)
