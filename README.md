@@ -16,12 +16,12 @@ Also, make sure your Google Drive API is enabled. Otherwise, all drive imports w
 
 ## Step 2: Populate Google Drive CSV
 
-You also need some Google Drives to be added to `MPCAutofill/drives.csv`. An empty template can be found in place. The Google Drive ID required in the CSV is the cryptic part of the Google Drive URL, usually at the end. An example CSV could look like this:
+You also need some Google Drives to be added to `MPCAutofill/drives.csv`. A template CSV with an example entry can be found in place. The Google Drive ID required in the CSV is the cryptic part of the Google Drive URL, usually at the end. Another example for the `drives.csv` could look like this:
 
-| Key    | Drive ID                            | Public | Description                            |
-| ------ | ----------------------------------- | ------ | -------------------------------------- |
-| MyName | 2WmU2qeUouXmPefxYxMDHZnlsIYPe3KlqFy |        | "My own upside-down japanese proxies"  |
-| Otto   | q6iJFoJseX-xnHKLiJlRDU2aeaM6Ditvq2X | FALSE  | "Otto's future-sight swamp collection" |
+| key    | drive_id                            | drive_public | description                            |
+| ------ | ----------------------------------- | ------------ | -------------------------------------- |
+| MyName | 2WmU2qeUouXmPefxYxMDHZnlsIYPe3KlqFy |              | "My own upside-down japanese proxies"  |
+| Otto   | q6iJFoJseX-xnHKLiJlRDU2aeaM6Ditvq2X | FALSE        | "Otto's future-sight swamp collection" |
 
 The public field is _true_ by default and can be left empty.
 
@@ -72,6 +72,14 @@ Docker can also be run on Windows through virtual machines. Download Docker Desk
 Once you finished the Docker Desktop installation and restarted your machine, download this repository and extract it somewhere on your machine. Make sure to configure your `client_secrets.json` and `drives.csv` as described previously. Then, open the Windows Command Prompt and navigate to the extracted repository folder. Change to the docker sub-folder and run `docker-compose up`. After a while, MPCAutofill will become available at http://localhost:8000.
 
 ![docker_cmd](https://user-images.githubusercontent.com/5053254/134817708-bb556248-e974-42e1-a92b-ce9b0325c763.png)
+
+### Q&A: Common Problems
+
+_The website just gives me "502 Bad Gateway"!_ The Django instance isn't ready yet, probably still scanning cards. Have a look at the docker output. Use `docker-compose logs django` if you started them detached.
+
+_I changed some files but it looks like Docker didn't adopt those changes!_ All files including `drives.csv` are part of the image and not updated automatically. Try `docker-compose up --build --force-recreate` to rebuild all images and containers, and to make sure that all changes are reflected in Docker.
+
+_The website seems to work fine but I can't generate orders!_ Do you have cardbacks in your Google Drive? Add a folder named "Cardbacks" to your Drive and put some cardbacks there!
 
 ## Manual Installation
 
