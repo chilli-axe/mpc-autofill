@@ -16,7 +16,7 @@ Also, make sure your Google Drive API is enabled. Otherwise, all drive imports w
 
 ## Step 2: Populate Google Drive CSV
 
-You also need some Google Drives to be added to `MPCAutofill/drives.csv`. An template CSV with an example entry can be found in place. The Google Drive ID required in the CSV is the cryptic part of the Google Drive URL, usually at the end. Another example for the `drives.csv` could look like this:
+You also need some Google Drives to be added to `MPCAutofill/drives.csv`. A template CSV with an example entry can be found in place. The Google Drive ID required in the CSV is the cryptic part of the Google Drive URL, usually at the end. Another example for the `drives.csv` could look like this:
 
 | key    | drive_id                            | drive_public | description                            |
 | ------ | ----------------------------------- | ------------ | -------------------------------------- |
@@ -75,7 +75,7 @@ Once you finished the Docker Desktop installation and restarted your machine, do
 
 ### Q&A: Common Problems
 
-_The website just gives me "502 Bad Gateway"!_ The Danjo instance isn't ready yet, probably still scanning cards. Have a look at the docker output. Use `docker-compose logs django` if you started them detached.
+_The website just gives me "502 Bad Gateway"!_ The Django instance isn't ready yet, probably still scanning cards. Have a look at the docker output. Use `docker-compose logs django` if you started them detached.
 
 _I changed some files but it looks like Docker didn't adopt those changes!_ All files including `drives.csv` are part of the image and not updated automatically. Try `docker-compose up --build --force-recreate` to rebuild all images and containers, and to make sure that all changes are reflected in Docker.
 
