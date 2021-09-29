@@ -23,17 +23,17 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Production-specific settings kept in local_settings.py
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env("DJANGO_SECRET_KEY", default="-")
+SECRET_KEY = env("DJANGO_SECRET_KEY", default="Change me in .env")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env("DJANGO_DEBUG", default=False)
+DEBUG = env("DJANGO_DEBUG", default="false").lower() == "true"
 
-ALLOWED_HOSTS = env("ALLOWED_HOSTS", default=["localhost", "127.0.0.1"])
+ALLOWED_HOSTS = env("DJANGO_ALLOWED_HOSTS", default="localhost 127.0.0.1").split()
 
 # Google Analytics GTAG
 GTAG = env("GTAG", default="")
 
-PREPEND_WWW = env("PREPEND_WWW", default=False)
+PREPEND_WWW = env("PREPEND_WWW", default="false").lower() == "true"
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
