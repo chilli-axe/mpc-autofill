@@ -75,7 +75,9 @@ Once you finished the Docker Desktop installation and restarted your machine, do
 
 ### Q&A: Common Problems
 
-_Docker-compose fails with "/bin/sh: 1: ./docker/django/check_client_secrets.sh: not found"!_ This error appears on Windows when using git to check out the repository. (For some reason, `COPY . /MPCAutofill` does not copy any files.) As a workaround, download the repostitory as zip file instead.
+_Docker-compose fails with "docker.errors.DockerException: Error while fetching server API version: (2, 'CreateFile', 'The system cannot find the file specified.')"!_ Your docker daemon isn't running. Just start Docker Desktop, wait for a couple of seconds, and try again.
+
+_Docker-compose fails with "/bin/sh: 1: ./docker/django/check_client_secrets.sh: not found"!_ This error appears when you are using git to check out the repository on Windows. (For some reason, `COPY . /MPCAutofill` does not copy any files to the image.) As a workaround, just download the repostitory as zip file instead.
 
 _The website just gives me "502 Bad Gateway"!_ The Django instance isn't ready yet, probably still scanning cards. Have a look at the docker output. Use `docker-compose logs django` if you started them detached.
 
