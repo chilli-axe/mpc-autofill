@@ -79,7 +79,7 @@ _Docker-compose fails with "docker.errors.DockerException: Error while fetching 
 
 _The website just gives me "502 Bad Gateway"!_ The Django instance isn't ready yet, probably still scanning cards. Have a look at the docker output. Use `docker-compose logs django` if you started them detached.
 
-_I changed some files but it looks like Docker didn't adopt those changes!_ All files including `drives.csv` are part of the image and not updated automatically. Try `docker-compose up --build --force-recreate` to rebuild all images and containers, and to make sure that all changes are reflected in Docker.
+_I changed some files but it looks like Docker didn't adopt those changes!_ All files (including `drives.csv`) are part of the images and not updated automatically. If you just changed some code, `docker-compose build` should be sufficient to update the images and rebuild affected containers. However, if you changed, e.g., your `drives.csv`, the old state might still persist in the databases (stored in "volumes"). In this case, you can either manually trigger an update with `docker-compose exec django python3 manage.py import_sources` followed by `docker-compose exec django python3 manage.py update_database`, or, in doubt, just start all over again in a clean environment by executing the `docker_clean_all` script.
 
 _The website seems to work fine but I can't generate orders!_ Do you have cardbacks in your Google Drive? Add a folder named "Cardbacks" to your Drive and put some cardbacks there!
 
