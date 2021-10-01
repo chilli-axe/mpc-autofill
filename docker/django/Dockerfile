@@ -12,7 +12,7 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         dos2unix \
         python3-pip python3-dev \
-        gcc netcat curl cron \
+        gcc netcat curl cron libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 # Cron: Clean system tasks and allow start as unprivileged user
 # This is a bit hacky but should be fine in Docker environment
