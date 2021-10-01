@@ -67,3 +67,4 @@ user-agents==2.2.0
 webdriver-manager==3.4.1
 zipp==3.4.1
 psycopg2-binary==2.9.1
+enquiries==0.1.0
