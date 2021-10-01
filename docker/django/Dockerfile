@@ -34,7 +34,7 @@ COPY MPCAutofill /MPCAutofill/MPCAutofill
 # Make sure that all scripts are executable, and in case we
 # checked out under Windows with CRLF, convert line endings
 RUN chmod +x docker/django/*.sh && \
-    find . -type f -exec dos2unix {} \;
+    find . -type f -name "*.sh" -exec dos2unix {} \;
 
 # Let's be nice to the user and give some clear error message
 # if they missed to install any of the mandatory files.
