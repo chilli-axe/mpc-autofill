@@ -1,46 +1,34 @@
 import os
+import textwrap
 import time
 from concurrent.futures import ThreadPoolExecutor
+from typing import Optional
 
 import attr
 import constants
 import enlighten
-from constants import Faces, States
+from constants import States
 from order import CardImage, CardImageCollection, CardOrder
 from selenium import webdriver
 from selenium.common import exceptions as sl_exc
-from selenium.common.exceptions import (NoAlertPresentException,
-                                        NoSuchElementException,
-                                        UnexpectedAlertPresentException)
+from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.expected_conditions import \
     invisibility_of_element
 from selenium.webdriver.support.ui import Select, WebDriverWait
-from utils import TEXT_BOLD, TEXT_END, InvalidStateException, alert_handler
+from utils import (TEXT_BOLD, TEXT_END, InvalidStateException, alert_handler,
+                   time_to_hours_minutes_seconds)
 from webdriver_manager.chrome import ChromeDriverManager
 
 # Disable logging messages for webdriver_manager
 os.environ["WDM_LOG_LEVEL"] = "0"
 
 
-def initialise_driver() -> webdriver.Chrome:
-    chrome_options = Options()
-    chrome_options.add_argument("--log-level=3")
-    chrome_options.add_experimental_option("excludeSwitches", ["enable-logging"])
-    chrome_options.add_experimental_option("detach", True)
-    driver = webdriver.Chrome(ChromeDriverManager().install(), options=chrome_options)
-    driver.set_window_size(1200, 900)
-    driver.implicitly_wait(5)
-    driver.set_network_conditions(offline=False, latency=5, throughput=5 * 125000)
-
-    return driver
-
-
-# TODO: wrapper for dismissing alerts on MPC's website (can occur if the user clicks)
-# TODO: wrapper for uncaught exceptions - display the error message and prompt to press any key before closing
 @attr.s
 class AutofillDriver:
-    driver: webdriver.Chrome = attr.ib(default=attr.Factory(initialise_driver))
+    driver: webdriver.Chrome = attr.ib(
+        default=None
+    )  # delay initialisation until XML is selected and parsed
     starting_url: str = attr.ib(
         init=False,
         default="https://www.makeplayingcards.com/design/custom-blank-card.html",
@@ -56,6 +44,20 @@ class AutofillDriver:
     upload_bar: enlighten.Counter = attr.ib(init=False, default=None)
 
     # region initialisation
+    def initialise_driver(self) -> None:
+        chrome_options = Options()
+        chrome_options.add_argument("--log-level=3")
+        chrome_options.add_experimental_option("excludeSwitches", ["enable-logging"])
+        chrome_options.add_experimental_option("detach", True)
+        driver = webdriver.Chrome(
+            ChromeDriverManager().install(), options=chrome_options
+        )
+        driver.set_window_size(1200, 900)
+        driver.implicitly_wait(5)
+        driver.set_network_conditions(offline=False, latency=5, throughput=5 * 125000)
+
+        self.driver = driver
+
     def configure_bars(self) -> None:
         num_images = len(self.order.fronts.cards) + len(self.order.backs.cards)
         status_format = "State: {state}, Action: {action}"
@@ -78,6 +80,7 @@ class AutofillDriver:
 
     def __attrs_post_init__(self):
         self.configure_bars()
+        self.initialise_driver()
         self.driver.get(self.starting_url)
         self.set_state(States.defining_order)
 
@@ -121,6 +124,14 @@ class AutofillDriver:
 
         self.set_state(States.paging_to_review)
 
+    def page_to_review(self) -> None:
+        self.assert_state(States.paging_to_review)
+
+        self.next_step()
+        self.next_step()
+
+        self.set_state(States.finished)
+
     # endregion
 
     # region helpers
@@ -137,7 +148,6 @@ class AutofillDriver:
     def assert_state(self, expected_state) -> None:
         if self.state != expected_state:
             raise InvalidStateException(expected_state, self.state)
-            # TODO: how do we recover from here?
 
     @alert_handler
     def switch_to_frame(self, frame: str) -> None:
@@ -149,7 +159,7 @@ class AutofillDriver:
     @alert_handler
     def wait(self) -> None:
         """
-        Wait until the loading circle in MPC disappears
+        Wait until the loading circle in MPC disappears.
         """
 
         try:
@@ -172,8 +182,8 @@ class AutofillDriver:
         Executes the given JavaScript command in self.driver
         This can occasionally fail - e.g.
         "selenium.common.exceptions.JavaScriptException: Message: javascript error: setMode is not defined"
+        # TODO: handle javascript errors?
         """
-        # TODO: handle javascript errors
 
         self.driver.execute_script(f"javascript:{js}")
 
@@ -240,12 +250,21 @@ class AutofillDriver:
     # endregion
 
     # region uploading
-    def upload_image(self, image: "CardImage") -> str:
+    def image_not_uploaded(self, image: CardImage):
+        # TODO: this doesn't work for the common cardback (has 7 slots for example, but only 1 slot will be filled)
+        results = 0
+
+        for slot in image.slots:
+            xpath = f"//*[contains(@src, 'default.gif') and @index={slot}]"
+            results += len(self.driver.find_elements_by_xpath(xpath))
+
+        return len(image.slots) == results
+
+    def upload_image(self, image: CardImage) -> Optional[str]:
         """
         Uploads the given CardImage. Returns the image's PID in MPC.
+        # TODO: this was copied over from the original autofill.py and could benefit from being overhauled
         """
-
-        # TODO: needs overhauling
 
         if image.file_exists():
             self.set_state(self.state, f'Uploading "{image.name}"')
@@ -279,7 +298,7 @@ class AutofillDriver:
                         "//*[contains(@id, 'upload_')]"
                     )
                     if len(elem) > num_elems:
-                        # Return the uploaded card's PID so we can easily insert it into slots
+                        # Return the uploaded card's PID so we can insert it into its slots
                         return elem[-1].get_attribute("pid")
 
                     time.sleep(2)
@@ -292,12 +311,14 @@ class AutofillDriver:
                     except sl_exc.NoAlertPresentException:
                         pass
         else:
-            pass  # error queue
+            print(
+                f'Image {TEXT_BOLD}"{image.name}"{TEXT_END} at path {TEXT_BOLD}{image.file_path}{TEXT_END} does '
+                f"not exist!"
+            )
+            return None
 
-        self.set_state(self.state)
-
-    def insert_image(self, pid: str, image: CardImage):
-        # TODO: needs better safeguarding against errors, and validation that the image was uploaded
+    def insert_image(self, pid: Optional[str], image: CardImage):
+        # TODO: needs better safeguarding against errors
         if pid:
             self.set_state(self.state, f'Inserting "{image.name}"')
             self.execute_javascript("l = PageLayout.prototype")
@@ -310,14 +331,12 @@ class AutofillDriver:
             self.set_state(self.state)
 
     def upload_and_insert_image(self, image: "CardImage") -> None:
-        # validate that the current order face matches this image's face
-        # wait until the image has been downloaded
-
-        pid = self.upload_image(image)
-        self.insert_image(pid, image)
+        if self.image_not_uploaded(image):
+            pid = self.upload_image(image)
+            self.insert_image(pid, image)
 
     def upload_and_insert_images(self, images: "CardImageCollection") -> None:
-        for _ in range(len(images.cards)):
+        for i in range(len(images.cards)):
             image: "CardImage" = images.queue.get()
             if image.downloaded:
                 self.upload_and_insert_image(image)
@@ -325,13 +344,37 @@ class AutofillDriver:
 
     # endregion
 
-    def execute(self) -> None:
-        # TODO: delay initialisation of download bars to here?
-        print("Starting image downloader and webdriver processes.")
+    def execute(self, skip_setup: bool) -> None:
+        t = time.time()
         with ThreadPoolExecutor(max_workers=constants.THREADS) as pool:
             self.order.fronts.download_images(pool, self.download_bar)
             self.order.backs.download_images(pool, self.download_bar)
 
-            self.define_order()
+            if skip_setup:
+                input(
+                    textwrap.dedent(
+                        """
+                        Please sign in and select an existing project to continue editing. Once you've signed in,
+                        return to the script execution window and press Enter.
+                        """
+                    )
+                )
+            else:
+                self.define_order()
             self.insert_fronts()
             self.insert_backs()
+            self.page_to_review()
+        hours, mins, secs = time_to_hours_minutes_seconds(time.time() - t)
+        print("Elapsed time: ", end="")
+        if hours > 0:
+            print(f"{hours} hours, ", end="")
+        print(f"{mins} minutes and {secs} seconds.")
+        input(
+            textwrap.dedent(
+                """
+                Please review your order and ensure everything has been uploaded correctly before finalising with MPC.
+                If you need to make any changes, you can do so by adding it to your Saved Projects and editing in your
+                normal browser. Press Enter to close this window - your Chrome window will remain open.
+                """
+            )
+        )

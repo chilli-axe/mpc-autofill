@@ -9,9 +9,6 @@ class States(str, Enum):
     paging_to_review = "Paging to Review"
     inserting_fronts = "Inserting Fronts"
     inserting_backs = "Inserting Backs"
-    uploading_image = "Uploading Image"
-    inserting_image = "Inserting Image"
-    waiting = "Waiting"
     finished = "Finished"
 
 
@@ -32,6 +29,7 @@ class BaseTags(str, Enum):
     fronts = "fronts"
     backs = "backs"
     cardback = "cardback"
+    filepath = "filepath"
 
 
 class DetailsTags(str, Enum):
