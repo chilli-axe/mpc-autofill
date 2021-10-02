@@ -23,6 +23,18 @@ class CardImage:
     # TODO: file size from google scripts api as validation that the file exists on gdrive?
     # TODO: new API endpoint on google scripts that takes a list of image IDs and returns their total size?
 
+    """
+    TODO:
+    * can potentially add a <filepath> tag to XML files for clarity
+        * shouldn't be a problem in terms of local tool parsing with how we're doing it here
+        * might be an issue with reuploading an XML to the site but need to investigate
+        * would require thought as to how to approach the common cardback
+        * i'll update the XML schema when i add local file support to the site & will update this module then
+    * rewrite file upload method?
+    * retrieve file name for local common cardback by splitting on / or \ or whatever
+    * optionally skip setup
+    """
+
     drive_id: str = attr.ib(default="")
     slots: List[int] = attr.ib(default=[])
     name: str = attr.ib(default="")
@@ -48,7 +60,7 @@ class CardImage:
         self.validate()
 
     def validate(self) -> None:
-        pass  # TODO
+        pass  # TODO: validate with google API that this file exists?
 
     def retrieve_card_name(self) -> None:
         if not self.name:
@@ -297,6 +309,7 @@ class CardOrder:
                 "Your XML file contains a syntax error so it can't be processed. Press Enter to exit."
             )
             sys.exit(0)
+        print(f"Parsing XML file {TEXT_BOLD}{file_name}{TEXT_END}...")
         order = cls.from_element_tree(xml)
         print(
             f"Successfully read XML file: {TEXT_BOLD}{file_name}{TEXT_END}\n"
@@ -348,6 +361,11 @@ class CardOrder:
             sys.exit(0)
 
     def validate(self) -> None:
-        # TODO: validate that all images have file paths
+        for collection in [self.fronts, self.backs]:
+            for image in collection.cards:
+                if not image.file_path:
+                    raise ValidationException(
+                        f"Image {TEXT_BOLD}{image.name}{TEXT_END} in {TEXT_BOLD}{collection.face}{TEXT_END} "
+                        f"has no file path."
+                    )
         # TODO: validate that all images exist in google scripts API (might be neat to report on size of order in MB?)
-        pass

@@ -1,13 +1,10 @@
 import os
 import sys
-from functools import wraps
-from platform import system
-from typing import TYPE_CHECKING, Dict, List, Union
+from math import floor
+from typing import TYPE_CHECKING, Dict, List, Tuple, Union
 from xml.etree import ElementTree
 
-from selenium import webdriver
-from selenium.common.exceptions import (NoAlertPresentException,
-                                        UnexpectedAlertPresentException)
+from selenium.common.exceptions import NoAlertPresentException
 
 if TYPE_CHECKING:
     from driver import AutofillDriver
@@ -40,7 +37,7 @@ class ValidationException(Exception):
 
 def text_to_list(input_text: str) -> List[int]:
     """
-    Helper function to translate strings like "[2, 4, 5, 6]" into lists
+    Helper function to translate strings like "[2, 4, 5, 6]" into sorted lists.
     """
 
     if not input_text:
@@ -74,19 +71,24 @@ def file_exists(file_path: str) -> bool:
 
 def alert_handler(func):
     """
-    Function decorator which accepts an alert in the given Selenium driver if one is raised.
-    TODO: this doesn't seem to work properly?
+    Function decorator which accepts an alert in the given Selenium driver if one is raised by the decorated function.
     """
 
     def wrapper(*args, **kwargs):
+        ret = func(*args, **kwargs)
         try:
-            return func(*args, **kwargs)
-        except UnexpectedAlertPresentException:
-            try:
-                autofill_driver: "AutofillDriver" = args[0]
-                alert = autofill_driver.driver.switch_to.alert
-                alert.accept()
-            except NoAlertPresentException:
-                pass
+            autofill_driver: "AutofillDriver" = args[0]
+            alert = autofill_driver.driver.switch_to.alert
+            alert.accept()
+        except NoAlertPresentException:
+            pass
+        return ret
 
     return wrapper
+
+
+def time_to_hours_minutes_seconds(t) -> Tuple[int, int, int]:
+    hours = int(floor(t / 3600))
+    mins = int(floor(t / 60) - hours * 60)
+    secs = int(t - (mins * 60) - (hours * 3600))
+    return hours, mins, secs
