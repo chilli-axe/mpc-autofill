@@ -56,6 +56,9 @@ function generate_xml() {
         // only proceed if the card obj has any search results
         if (curr_obj.cards.length > 0) {
             let curr_id = curr_obj.get_curr_img().drive_id;
+            if (curr_id === "") {
+                curr_id = curr_obj.get_curr_img().file_path;  // TODO: determine from curr_obj.get_curr_img().source_type
+            }
 
             if (curr_id !== cardback_id) {
                 // the card we're looking at isn't the common cardback, so we care about it
@@ -164,7 +167,7 @@ function download_all() {
     $(".mpc-order").each(function () {
         let curr_obj = $(this).data("obj");
         // check if the Card is empty before trying to retrieve its current img ID
-        if (!curr_obj.empty) {
+        if (!curr_obj.empty && curr_obj.drive_id !== "") {
             card_set = card_set.add(curr_obj.get_curr_img().drive_id);
         }
     })

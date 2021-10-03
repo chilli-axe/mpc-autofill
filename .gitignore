@@ -160,6 +160,7 @@ MPCAutofill/ignored
 */token.pickle
 */mpcautofillkey
 */mpcautofillkey.pub
+MPCAutofill/local_index
 
 ga_settings.py
 bootstrap.min.css

@@ -9,14 +9,20 @@ function format_source(source, dpi) {
     return source + " [" + dpi.toString() + " DPI]";
 }
 
-function get_thumbnail(driveID) {
-    // small helper function to insert a drive ID into a thumbnail URL and return it
-    return "https://drive.google.com/thumbnail?sz=w400-h400&id=" + driveID
+function get_thumbnail(card) {
+    if (card.source_type === "GOOGLE_DRIVE") {
+        return "https://drive.google.com/thumbnail?sz=w400-h400&id=" + card.drive_id;
+    } else if (card.source_type === "LOCAL") {
+        return "/static/" + card.static_path;
+    }
 }
 
-function get_thumbnail_med(driveID) {
-    // small helper function to insert a drive ID into a 300 dpi image URL and return it
-    return "https://drive.google.com/thumbnail?sz=w800-h800&id=" + driveID
+function get_thumbnail_med(card) {
+    if (card.source_type === "GOOGLE_DRIVE") {
+        return "https://drive.google.com/thumbnail?sz=w800-h800&id=" + card.drive_id;
+    } else if (card.source_type === "LOCAL") {
+        return "/static/" + card.static_path;
+    }    
 }
 
 function thumbnail_404(source) {
@@ -97,7 +103,7 @@ class CardBase {
         let view_size = document.getElementById("detailedView-size");
 
         view_name.innerText = this.get_curr_img().name;
-        view_img.src = get_thumbnail_med(this.get_curr_img().drive_id);
+        view_img.src = get_thumbnail_med(this.get_curr_img());
         view_source.innerText = this.get_curr_img().source;
         view_dpi.innerText = this.get_curr_img().dpi + " DPI";
         view_id.innerText = this.get_curr_img().drive_id;
@@ -125,7 +131,7 @@ class CardBase {
             $(view_spinner).animate({opacity: 0}, 250);
             $(view_img).animate({opacity: 1}, 250);
         }
-        img.src = get_thumbnail_med(this.get_curr_img().drive_id);
+        img.src = get_thumbnail_med(this.get_curr_img());
 
         // disable hovering on the parent element temporarily while we bring up the modal
         this.enable_modal("detailedViewModal");
@@ -524,17 +530,17 @@ class Card extends CardBase {
             // load the previous and next images for a smooth slideshow
             // keep them loaded by changing the src of visible img elements, but they sit behind the main
             // element due to z-index
-            let buffer_id = this.cards[wrap0(this.img_idx, this.img_count)].drive_id;
-            this.elem_img.src = get_thumbnail(buffer_id);
+            let buffer_card = this.cards[wrap0(this.img_idx, this.img_count)];
+            this.elem_img.src = get_thumbnail(buffer_card);
 
             // respect the length of the returned results
             if (this.img_count > 1) {
-                buffer_id = this.cards[wrap0(this.img_idx - 1, this.img_count)].drive_id;
-                this.elem_img_prev.src = get_thumbnail(buffer_id);
+                buffer_card = this.cards[wrap0(this.img_idx - 1, this.img_count)]
+                this.elem_img_prev.src = get_thumbnail(buffer_card);
 
                 if (this.img_count > 2) {
-                    buffer_id = this.cards[wrap0(this.img_idx + 1, this.img_count)].drive_id;
-                    this.elem_img_next.src = get_thumbnail(buffer_id);
+                    buffer_card = this.cards[wrap0(this.img_idx + 1, this.img_count)];
+                    this.elem_img_next.src = get_thumbnail(buffer_card);
                 }
             }
         } else {
@@ -635,7 +641,7 @@ class CardRecent extends CardBase {
     }
 
     load_thumbnails() {
-        this.elem_img.src = get_thumbnail(this.cards[0].drive_id);
+        this.elem_img.src = get_thumbnail(this.cards[0]);
 
         // add click event to thumbnail to reveal detailed info about card
         let elem_img = $(this.elem_img)

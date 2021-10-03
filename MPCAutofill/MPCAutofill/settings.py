@@ -145,8 +145,12 @@ USE_TZ = True
 STATIC_URL = "/static/"
 STATICFILES_STORAGE = "django.contrib.staticfiles.storage.ManifestStaticFilesStorage"
 
+# local file indexing
+LOCAL_FILE_INDEX = "local_index"
+
 STATICFILES_DIRS = [
     os.path.normpath(os.path.join(BASE_DIR, "cardpicker/static")),
+    os.path.normpath(os.path.join(BASE_DIR, LOCAL_FILE_INDEX)),
 ]
 
 STATIC_ROOT = os.path.join(os.path.dirname(BASE_DIR), "static")
@@ -169,6 +173,3 @@ EMAIL_HOST_PASSWORD = env("DJANGO_GMAIL_PASSWORD", default="")
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = "default from email"
-
-# local file indexing
-LOCAL_FILE_INDEX = r"G:\Google Drive"

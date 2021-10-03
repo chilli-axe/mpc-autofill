@@ -53,6 +53,7 @@ def do_stuff(
     created_time: datetime,
     drive_id: str = "",
     file_path: str = "",
+    static_path: str = "",
 ) -> Tuple[Type[Union[GenericCard]], Union[GenericCard]]:
     # strip the extension off of the item name to retrieve the card name
     try:
@@ -79,7 +80,7 @@ def do_stuff(
         card_class = Token
         source_verbose = source_verbose + " Tokens"
 
-    elif "cardbacks" in folder_name.lower() or "card backs" in folder_name.lower():
+    elif "cardback" in folder_name.lower() or "card back" in folder_name.lower():
         card_class = Cardback
         source_verbose = source_verbose + " Cardbacks"
 
@@ -91,6 +92,7 @@ def do_stuff(
         card_class(
             drive_id=drive_id,
             file_path=file_path,
+            static_path=static_path,
             name=cardname,
             priority=priority,
             source=source,
@@ -258,7 +260,7 @@ def search_folder(service, source, folder):
         if valid:
             card_class, card = do_stuff(
                 file_name=item["name"],
-                folder_name=folder["name"],
+                folder_name=item["folder_name"],
                 source=source,
                 height=int(item["imageMediaMetadata"]["height"]),
                 size=item["size"],
@@ -332,7 +334,8 @@ def crawl_local_folder(
                     created_time=make_aware(
                         datetime.fromtimestamp(os.path.getctime(str(image_path)))
                     ),
-                    file_path=str(image_path),
+                    file_path=str(image_path.resolve()),  # absolute path
+                    static_path=str(image_path.relative_to(path)),
                 )
                 card_dict[card_class].append(card)
 

@@ -28,7 +28,7 @@ def read_sources_csv():
             )
             i += 1
 
-    print("Read CSV file and found {} sources.".format(len(sources)))
+    print("Read CSV file and found {} source(/s).".format(len(sources)))
     return sources
 
 
@@ -37,6 +37,8 @@ def sync_sources(sources):
     ret = bulk_sync(
         new_models=sources, key_fields=key_fields, filters=None, db_class=Source
     )
+
+    # TODO: do we want to create local file sources here? currently creating in update_database.py
 
 
 class Command(BaseCommand):

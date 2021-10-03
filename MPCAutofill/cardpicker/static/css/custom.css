@@ -173,6 +173,7 @@
   background-size: cover;
   background-position: center center;
   background-repeat: no-repeat;
+  background-color: #2b3e50;
 }
 
 .mpc-col {
@@ -241,4 +242,4 @@
         column-count: 4;
     }
 }
-
+

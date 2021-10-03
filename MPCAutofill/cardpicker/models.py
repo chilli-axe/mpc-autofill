@@ -99,6 +99,7 @@ class CardBase(models.Model):
     drive_id = models.CharField(max_length=50, null=True)
     extension = models.CharField(max_length=200)
     file_path = models.CharField(max_length=300, null=True)
+    static_path = models.CharField(max_length=200, null=True)
 
     name = models.CharField(max_length=200)
     priority = models.IntegerField(default=0)
@@ -123,6 +124,7 @@ class CardBase(models.Model):
             "drive_id": self.drive_id,
             "extension": self.extension,
             "file_path": self.file_path,
+            "static_path": self.static_path,
             "name": self.name,
             "priority": self.priority,
             "source": self.source.id,
