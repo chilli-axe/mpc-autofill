@@ -94,7 +94,7 @@ class Source(models.Model):
 
 
 class CardBase(models.Model):
-    id = models.BigAutoField(primary_key=True)
+    id = models.IntegerField(primary_key=True, auto_created=True)
 
     drive_id = models.CharField(max_length=50, null=True)
     extension = models.CharField(max_length=200)

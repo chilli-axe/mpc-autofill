@@ -10,6 +10,7 @@ def card_to_dict(obj):
     Serialises a given Card object.
     """
     return {
+        "id": obj.id,
         "drive_id": obj.drive_id,
         "extension": obj.extension,
         "file_path": obj.file_path,
@@ -26,6 +27,7 @@ def card_to_dict(obj):
 
 
 common_fields = [
+    "id",
     "drive_id",
     "extension",
     "file_path",
