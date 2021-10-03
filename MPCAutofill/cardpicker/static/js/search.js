@@ -185,7 +185,7 @@ function get_common_cardback_id(data) {
         // attempt to retrieve ID from dom
         cardback_obj = $("#slot--back").data("obj");
         if (cardback_obj !== undefined) {
-            return cardback_obj.get_curr_img().id;
+            return cardback_obj.get_curr_img().drive_id;
         } else {
             return "";
         }

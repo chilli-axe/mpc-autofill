@@ -97,10 +97,10 @@ class CardBase {
         let view_size = document.getElementById("detailedView-size");
 
         view_name.innerText = this.get_curr_img().name;
-        view_img.src = get_thumbnail_med(this.get_curr_img().id);
+        view_img.src = get_thumbnail_med(this.get_curr_img().drive_id);
         view_source.innerText = this.get_curr_img().source;
         view_dpi.innerText = this.get_curr_img().dpi + " DPI";
-        view_id.innerText = this.get_curr_img().id;
+        view_id.innerText = this.get_curr_img().drive_id;
         view_date.innerText = this.get_curr_img().date;
         view_size.innerText = image_size_to_mb_string(this.get_curr_img().size);
 
@@ -114,7 +114,7 @@ class CardBase {
         // use jquery proxy to link the download button to this Card object's dl function
         $(dl_button).off("click");
         $(dl_button).on('click', $.proxy(function () {
-            trigger_download(this.get_curr_img().id, true);
+            trigger_download(this.get_curr_img().drive_id, true);
         }, this));
 
         // hide the 300 dpi image until it loads in - show a loading spinner in its place until then
@@ -125,7 +125,7 @@ class CardBase {
             $(view_spinner).animate({opacity: 0}, 250);
             $(view_img).animate({opacity: 1}, 250);
         }
-        img.src = get_thumbnail_med(this.get_curr_img().id);
+        img.src = get_thumbnail_med(this.get_curr_img().drive_id);
 
         // disable hovering on the parent element temporarily while we bring up the modal
         this.enable_modal("detailedViewModal");
@@ -235,7 +235,7 @@ class Card extends CardBase {
         // select the result for this card with the given drive ID
         // idk, that's shit english but you get what I mean man
         for (let i = 0; i < this.cards.length; i++) {
-            if (this.cards[i].id === driveID) {
+            if (this.cards[i].drive_id === driveID) {
                 // switch to this index
                 this.set_idx(i);
                 return;
@@ -524,16 +524,16 @@ class Card extends CardBase {
             // load the previous and next images for a smooth slideshow
             // keep them loaded by changing the src of visible img elements, but they sit behind the main
             // element due to z-index
-            let buffer_id = this.cards[wrap0(this.img_idx, this.img_count)].id;
+            let buffer_id = this.cards[wrap0(this.img_idx, this.img_count)].drive_id;
             this.elem_img.src = get_thumbnail(buffer_id);
 
             // respect the length of the returned results
             if (this.img_count > 1) {
-                buffer_id = this.cards[wrap0(this.img_idx - 1, this.img_count)].id;
+                buffer_id = this.cards[wrap0(this.img_idx - 1, this.img_count)].drive_id;
                 this.elem_img_prev.src = get_thumbnail(buffer_id);
 
                 if (this.img_count > 2) {
-                    buffer_id = this.cards[wrap0(this.img_idx + 1, this.img_count)].id;
+                    buffer_id = this.cards[wrap0(this.img_idx + 1, this.img_count)].drive_id;
                     this.elem_img_next.src = get_thumbnail(buffer_id);
                 }
             }
@@ -563,7 +563,7 @@ class Card extends CardBase {
             if (search_query === "\n" & this.face === "back") {
                 search_type = "back";
                 // specify common cardback ID
-                common_back_id = $("#slot--back").data("obj").get_curr_img().id;
+                common_back_id = $("#slot--back").data("obj").get_curr_img().drive_id;
             } else if (this.req_type === "token") {
                 search_type = "token";
             }
@@ -635,7 +635,7 @@ class CardRecent extends CardBase {
     }
 
     load_thumbnails() {
-        this.elem_img.src = get_thumbnail(this.cards[0].id);
+        this.elem_img.src = get_thumbnail(this.cards[0].drive_id);
 
         // add click event to thumbnail to reveal detailed info about card
         let elem_img = $(this.elem_img)
