@@ -6,23 +6,29 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('cardpicker', '0001_initial'),
+        ("cardpicker", "0001_initial"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='card',
-            name='id',
-            field=models.IntegerField(auto_created=True, primary_key=True, serialize=False),
+            model_name="card",
+            name="id",
+            field=models.IntegerField(
+                auto_created=True, primary_key=True, serialize=False
+            ),
         ),
         migrations.AlterField(
-            model_name='cardback',
-            name='id',
-            field=models.IntegerField(auto_created=True, primary_key=True, serialize=False),
+            model_name="cardback",
+            name="id",
+            field=models.IntegerField(
+                auto_created=True, primary_key=True, serialize=False
+            ),
         ),
         migrations.AlterField(
-            model_name='token',
-            name='id',
-            field=models.IntegerField(auto_created=True, primary_key=True, serialize=False),
+            model_name="token",
+            name="id",
+            field=models.IntegerField(
+                auto_created=True, primary_key=True, serialize=False
+            ),
         ),
     ]

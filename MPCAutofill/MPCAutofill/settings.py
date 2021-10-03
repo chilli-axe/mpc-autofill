@@ -169,3 +169,6 @@ EMAIL_HOST_PASSWORD = env("DJANGO_GMAIL_PASSWORD", default="")
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = "default from email"
+
+# local file indexing
+LOCAL_FILE_INDEX = r"G:\Google Drive"

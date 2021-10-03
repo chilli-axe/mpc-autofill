@@ -1,16 +1,24 @@
+import os
 import time
+from datetime import datetime
+from itertools import chain
 from math import floor
+from pathlib import Path
+from typing import Dict, Tuple, Type, Union
 
 import googleapiclient.errors
+import imagesize
+from django.conf import settings
 from django.core import management
 from django.core.management.base import BaseCommand
 from django.db import transaction
+from django.utils.timezone import make_aware
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from oauth2client.service_account import ServiceAccountCredentials
 from tqdm import tqdm
 
-from cardpicker.models import Card, Cardback, Source, Token
+from cardpicker.models import Card, Cardback, Source, SourceType, Token
 from cardpicker.utils.to_searchable import to_searchable
 
 # cron job to run this cmd daily: 0 0 * * * bash /root/mpc-autofill/update_database >> /root/db_update.txt 2>&1
@@ -21,13 +29,83 @@ SCOPES = [
     "https://www.googleapis.com/auth/drive.readonly",
 ]
 
+GenericCard = Union[Card, Cardback, Token]
+
 SERVICE_ACC_FILENAME = "client_secrets.json"
 
 DPI_HEIGHT_RATIO = 300 / 1122  # 300 DPI for image of vertical resolution 1122 pixels
 
 # TODO: accept multiple drives as arguments, rather than one or all
 
+# region shared
 
+
+def calculate_dpi(height: int) -> int:
+    return 10 * round(height * DPI_HEIGHT_RATIO / 10)
+
+
+def do_stuff(
+    file_name: str,
+    folder_name: str,
+    source: Source,
+    height: int,
+    size: int,
+    created_time: datetime,
+    drive_id: str = "",
+    file_path: str = "",
+) -> Tuple[Type[Union[GenericCard]], Union[GenericCard]]:
+    # strip the extension off of the item name to retrieve the card name
+    try:
+        [cardname, extension] = file_name.rsplit(".", 1)
+    except ValueError:
+        print(f"Issue with parsing image: {file_name}")
+        cardname = file_name
+        extension = ""
+
+    # TODO: enforce logic of local files having a filepath and no gdrive id, and gdrive files having a gdrive id and no filepath
+
+    card_class = Card
+    priority = 2
+    if ")" in cardname:
+        priority = 1
+
+    source_verbose = source.id
+
+    if "basic" in folder_name.lower():
+        priority += 5
+        source_verbose = source_verbose + " Basics"
+
+    elif "token" in folder_name.lower():
+        card_class = Token
+        source_verbose = source_verbose + " Tokens"
+
+    elif "cardbacks" in folder_name.lower() or "card backs" in folder_name.lower():
+        card_class = Cardback
+        source_verbose = source_verbose + " Cardbacks"
+
+    # Calculate source image DPI, rounded to tens
+    dpi = calculate_dpi(int(height))
+
+    return (
+        card_class,
+        card_class(
+            drive_id=drive_id,
+            file_path=file_path,
+            name=cardname,
+            priority=priority,
+            source=source,
+            source_verbose=source_verbose,
+            dpi=dpi,
+            searchq=to_searchable(cardname),  # search-friendly card name
+            searchq_keyword=to_searchable(cardname),  # for keyword search
+            extension=extension,
+            date=created_time,
+            size=size,
+        ),
+    )
+
+
+# region google drive
 def locate_drives(service, sources):
     def get_folder_from_id(drive_id, bar: tqdm):
         try:
@@ -77,12 +155,11 @@ def crawl_drive(service, folder):
         time.sleep(0.1)
         curr_folder = unexplored_folders[0]
 
-        # Skip some folders as specified
-        acceptable = (
+        indexable = (
             all(x not in curr_folder["name"] for x in ignored_folders)
             and curr_folder["name"][0] != "!"
         )
-        if acceptable:
+        if indexable:
             print(f"Searching: {curr_folder['name']}")
 
             # Store this folder's name in a dict with gdrive ID as keys for tracking parent folder names for cards
@@ -160,142 +237,45 @@ def crawl_drive(service, folder):
 
 def search_folder(service, source, folder):
     print(f"Searching drive: {source.id}")
-
-    # maintain list of cards, cardbacks, and tokens found for this Source
-    q_cards = []
-    q_cardbacks = []
-    q_tokens = []
+    card_dict = {Card: [], Cardback: [], Token: []}
 
     # crawl the drive to retrieve a complete list of images it contains
     images = crawl_drive(service, folder)
     print(f"Number of images found: {len(images)}")
 
     # add the retrieved cards to the database
-    for x in images:
-        add_card(folder, source, x, q_cards, q_cardbacks, q_tokens)
+    for item in images:
+        try:
+            # google drive files are valid when it's not trashed and filesize does not exceed 30 MB
+            valid = not item["trashed"] and int(item["size"]) < 30000000
+            if not valid:
+                print(
+                    f"Can't index this card: <{item['id']}> {item['name']}, size: {item['size']} bytes"
+                )
+        except KeyError:
+            valid = True
+
+        if valid:
+            card_class, card = do_stuff(
+                file_name=item["name"],
+                folder_name=folder["name"],
+                source=source,
+                height=int(item["imageMediaMetadata"]["height"]),
+                size=item["size"],
+                created_time=item["createdTime"],
+                drive_id=item["id"],
+            )
+            card_dict[card_class].append(card)
 
     print(
         f"\nFinished crawling {folder['name']}.\nSynchronising to database...", end=""
     )
-
     t0 = time.time()
-
-    # Synchronise q_cards with Cards, q_cardbacks with Cardbacks, and q_tokens with Tokens
-    queue_object_map = [(q_cardbacks, Cardback), (q_tokens, Token), (q_cards, Card)]
-
-    # django-bulk-sync is kinda super broken and this is way better
-    for x in queue_object_map:
+    for card_class, card_list in card_dict.items():
         with transaction.atomic():
-            x[1].objects.filter(source=source).delete()
-            x[1].objects.bulk_create(x[0])
-
+            card_class.objects.filter(source=source).delete()
+            card_class.objects.bulk_create(card_list)
     print(f" and done! That took {time.time() - t0} seconds.\n")
-
-
-def add_card(folder, source, item, q_cards, q_cardbacks, q_tokens):
-    try:
-        # file is valid when it's not trashed and filesize does not exceed 30 MB
-        valid = not item["trashed"] and int(item["size"]) < 30000000
-        if not valid:
-            print(
-                f"Can't index this card: <{item['id']}> {item['name']}, size: {item['size']} bytes"
-            )
-    except KeyError:
-        valid = True
-
-    if valid:
-        # strip the extension off of the item name to retrieve the card name
-        try:
-            [cardname, extension] = item["name"].rsplit(".", 1)
-        except ValueError:
-            print(f"Issue with parsing image: {item['name']}")
-            return
-
-        source_verbose = "Unknown"
-
-        img_type = "card"
-        folder_name = item["folder_name"]
-        parent_name = item["parent_name"]
-
-        # Skip this file if it doesn't have a name after splitting name & extension
-        if not cardname:
-            return
-
-        scryfall = False
-        priority = 2
-
-        if ")" in cardname:
-            priority = 1
-
-        if folder["name"] == "Chilli_Axe's MPC Proxies":
-            source_verbose = "Chilli_Axe"
-
-            if "Retro Cube" in parent_name:
-                priority = 0
-                source_verbose = "Chilli_Axe Retro Cube"
-
-            elif folder_name == "12. Cardbacks":
-                if "Black Lotus" in item["name"]:
-                    priority += 10
-                img_type = "cardback"
-                priority += 5
-
-        elif folder["name"] == "nofacej MPC Card Backs":
-            img_type = "cardback"
-            source_verbose = source.id
-
-        elif folder["name"] == "MPC Scryfall Scans":
-            source_verbose = "berndt_toast83/" + folder_name
-            scryfall = True
-
-        else:
-            source_verbose = source.id
-
-        if "basic" in folder_name.lower():
-            priority += 5
-            source_verbose = source_verbose + " Basics"
-
-        elif "token" in folder_name.lower():
-            img_type = "token"
-            if not scryfall:
-                source_verbose = source_verbose + " Tokens"
-
-        elif "cardbacks" in folder_name.lower() or "card backs" in folder_name.lower():
-            img_type = "cardback"
-            source_verbose = source_verbose + " Cardbacks"
-
-        # Calculate source image DPI, rounded to tens
-        dpi = 10 * round(
-            int(item["imageMediaMetadata"]["height"]) * DPI_HEIGHT_RATIO / 10
-        )
-
-        # Skip card if its source couldn't be determined
-        if source == "Unknown":
-            return
-
-        # Use a dictionary to map the img type to the queue and class of card we need to append/create
-        queue_object_map = {
-            "cardback": (q_cardbacks, Cardback),
-            "token": (q_tokens, Token),
-            "card": (q_cards, Card),
-        }
-
-        queue_object_map[img_type][0].append(
-            queue_object_map[img_type][1](
-                drive_id=item["id"],
-                name=cardname,
-                priority=priority,
-                source=source,
-                source_verbose=source_verbose,
-                dpi=dpi,
-                file_path="",
-                searchq=to_searchable(cardname),  # search-friendly card name
-                searchq_keyword=to_searchable(cardname),  # for keyword search
-                extension=extension,
-                date=item["createdTime"],
-                size=item["size"],
-            )
-        )
 
 
 def login():
@@ -304,6 +284,71 @@ def login():
         SERVICE_ACC_FILENAME, scopes=SCOPES
     )
     return build("drive", "v3", credentials=creds)
+
+
+# endregion
+
+# region local files
+
+
+def crawl_local_folder(
+    path: Path,
+) -> None:
+    """
+    create a local file Source for each folder in the given path
+    e.g. if path contains `Chilli_Axe's MTG Renders` and `Stuff`, create one source for each, then return a dict
+    mapping the Source object to a list of folders associated with that Source (including all sub directories).
+    """
+
+    top_level_folders = [x for x in path.iterdir() if x.is_dir()]
+    print(
+        f"Located {len(top_level_folders)} folders in the local file index - these will be indexed as separate Sources."
+    )
+    # TODO: primary key uniqueness enforced by file system - but what about between local files and gdrive files?
+    for folder in top_level_folders:
+        if folder.name[0] != ".":
+            print(f"Searching folder: {folder.name}")
+            source = Source(
+                id=folder.name,
+                drive_id="",
+                drive_link="",
+                source_type=SourceType.LOCAL_FILE,
+                description=f"Local file directory at {folder}",
+            )
+            card_dict = {Card: [], Cardback: [], Token: []}
+
+            image_paths = [
+                x for x in chain(folder.rglob("*.png"), folder.rglob("*.jpg"))
+            ]  # TODO: more image types?
+            print(f"Number of images found: {len(image_paths)}")
+
+            for image_path in image_paths:
+                card_class, card = do_stuff(
+                    file_name=image_path.name,
+                    folder_name=image_path.parent.name,
+                    source=source,
+                    height=imagesize.get(str(image_path))[1],
+                    size=os.path.getsize(str(image_path)),
+                    created_time=make_aware(
+                        datetime.fromtimestamp(os.path.getctime(str(image_path)))
+                    ),
+                    file_path=str(image_path),
+                )
+                card_dict[card_class].append(card)
+
+            print(
+                f"\nFinished searching {folder.name}.\nSynchronising to database...",
+                end="",
+            )
+            t0 = time.time()
+            with transaction.atomic():
+                source.save()
+                for card_class, card_list in card_dict.items():
+                    card_class.objects.bulk_create(card_list)
+            print(f" and done! That took {time.time() - t0} seconds.\n")
+
+
+# endregion
 
 
 class Command(BaseCommand):
@@ -324,29 +369,49 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         # user can specify which drive should be searched - if no drive is specified, search all drives
         drive = kwargs["drive"]
-
-        service = login()
         t = time.time()
 
-        # If a valid drive was specified, search only that drive - otherwise, search all drives
-        if drive:
-            # Try/except to see if the given drive name maps to a Source
-            try:
-                source = Source.objects.get(id=drive)
-                folder = locate_drives(service, [source])[source.id]
-                print(f"Rebuilding database for specific drive: {source.id}.")
-                search_folder(service, source, folder)
-            except KeyError:
-                print(
-                    f"Invalid drive specified: {drive}\nYou may specify one of the following drives:"
-                )
-                [print(x.id) for x in Source.objects.all()]
-                return
-        else:
-            sources = locate_drives(service, Source.objects.all())
-            print("Rebuilding database with all drives.")
-            for x in sources:
-                search_folder(service, Source.objects.get(id=x), sources[x])
+        management.call_command("import_sources")
+        num_gdrive_sources = Source.objects.filter(
+            source_type=SourceType.GOOGLE_DRIVE
+        ).count()
+        if num_gdrive_sources > 0:
+            print(
+                f"{num_gdrive_sources} Google Drive(/s) sources found in the database."
+            )
+            service = login()
+
+            # If a valid drive was specified, search only that drive - otherwise, search all drives
+            if drive:
+                # Try/except to see if the given drive name maps to a Source
+                try:
+                    source = Source.objects.get(id=drive)
+                    folder = locate_drives(service, [source])[source.id]
+                    print(f"Rebuilding database for specific drive: {source.id}.")
+                    search_folder(service, source, folder)
+                except KeyError:
+                    print(
+                        f"Invalid drive specified: {drive}\nYou may specify one of the following drives:"
+                    )
+                    [print(x.id) for x in Source.objects.all()]
+                    return
+            else:
+                sources = locate_drives(service, Source.objects.all())
+                print("Rebuilding database with all drives.")
+                for x in sources:
+                    search_folder(service, Source.objects.get(id=x), sources[x])
+
+        if settings.LOCAL_FILE_INDEX:
+            print("Local file index path was specified.")
+            local_file_index = Path(settings.LOCAL_FILE_INDEX)
+            if not local_file_index.exists():
+                print("Your local file index path does not exist!")
+            else:
+                print(f'Repopulating local files index from path "{local_file_index}"')
+                Source.objects.filter(
+                    source_type=SourceType.LOCAL_FILE
+                ).delete()  # associated files deleted from cascade
+                crawl_local_folder(local_file_index)
 
         t0 = time.time()
         print("Rebuilding Elasticsearch indexes...")

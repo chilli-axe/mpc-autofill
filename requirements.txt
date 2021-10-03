@@ -27,6 +27,7 @@ google-auth-oauthlib==0.4.4
 googleapis-common-protos==1.53.0
 httplib2==0.19.1
 idna==2.10
+imagesize==1.2.0
 importlib-metadata==4.0.1
 iniconfig==1.1.1
 inquirer==2.7.0
