@@ -14,6 +14,11 @@ import os
 
 from environ import Env
 
+# local file indexing
+LOCAL_FILE_INDEX = r"G:\Google Drive"
+
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
 env = Env()
 env.read_env()
 
@@ -145,12 +150,9 @@ USE_TZ = True
 STATIC_URL = "/static/"
 STATICFILES_STORAGE = "django.contrib.staticfiles.storage.ManifestStaticFilesStorage"
 
-# local file indexing
-LOCAL_FILE_INDEX = "local_index"
-
 STATICFILES_DIRS = [
     os.path.normpath(os.path.join(BASE_DIR, "cardpicker/static")),
-    os.path.normpath(os.path.join(BASE_DIR, LOCAL_FILE_INDEX)),
+    os.path.normpath(LOCAL_FILE_INDEX),
 ]
 
 STATIC_ROOT = os.path.join(os.path.dirname(BASE_DIR), "static")

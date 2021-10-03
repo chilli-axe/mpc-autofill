@@ -65,9 +65,9 @@ def new_cards(request):
     s = search_new_elasticsearch_definition()
     results = {}
     for source in Source.objects.all():
-        result = search_new(s, source.id)
+        result = search_new(s, source.key)
         if result["qty"] > 0:
-            results[source.id] = result
+            results[source.key] = result
 
     return render(request, "cardpicker/new.html", {"sources": results})
 

@@ -17,7 +17,7 @@ def read_sources_csv():
         for row in drivesreader:
             sources.append(
                 Source(
-                    id=row["key"],
+                    key=row["key"],
                     drive_id=row["drive_id"],
                     drive_link="https://drive.google.com/open?id=" + row["drive_id"]
                     if row["drive_public"] != "FALSE"
@@ -33,7 +33,7 @@ def read_sources_csv():
 
 
 def sync_sources(sources):
-    key_fields = ("id",)
+    key_fields = ("key",)
     ret = bulk_sync(
         new_models=sources, key_fields=key_fields, filters=None, db_class=Source
     )

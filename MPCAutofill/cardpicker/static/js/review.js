@@ -167,7 +167,7 @@ function download_all() {
     $(".mpc-order").each(function () {
         let curr_obj = $(this).data("obj");
         // check if the Card is empty before trying to retrieve its current img ID
-        if (!curr_obj.empty && curr_obj.drive_id !== "") {
+        if (!curr_obj.empty && curr_obj.get_curr_img().source_type === "GOOGLE_DRIVE") {
             card_set = card_set.add(curr_obj.get_curr_img().drive_id);
         }
     })

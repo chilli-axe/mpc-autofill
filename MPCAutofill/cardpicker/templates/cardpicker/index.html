@@ -175,11 +175,11 @@
                             <tr id="{{ source.id }}-row" style="cursor: grab">
                                 <td style="vertical-align: middle">
                                     <div class="active text-center">
-                                        <input type="checkbox" class="drivesource" checked
-                                                data-toggle="toggle" id="{{ source.id }}" data-size="sm">
+                                        <input type="checkbox" class="drivesource" checked data-toggle="toggle"
+                                               id="{{ source.id }}"  data-key="{{ source.key }}" data-size="sm">
                                     </div>
                                 </td>
-                                <td style="vertical-align: middle"><p>{{ source.id }}</p></td>
+                                <td style="vertical-align: middle"><p>{{ source.key }}</p></td>
                                 <td style="vertical-align: middle">
                                 {% if source.drive_link %}
                                     <div class="active text-center"><a target="_blank" href="{{ source.drive_link }}">Link</a></div>

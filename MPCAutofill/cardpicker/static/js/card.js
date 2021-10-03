@@ -102,13 +102,21 @@ class CardBase {
         let dl_button = document.getElementById("detailedView-dl");
         let view_size = document.getElementById("detailedView-size");
 
-        view_name.innerText = this.get_curr_img().name;
-        view_img.src = get_thumbnail_med(this.get_curr_img());
-        view_source.innerText = this.get_curr_img().source;
-        view_dpi.innerText = this.get_curr_img().dpi + " DPI";
-        view_id.innerText = this.get_curr_img().drive_id;
-        view_date.innerText = this.get_curr_img().date;
-        view_size.innerText = image_size_to_mb_string(this.get_curr_img().size);
+        let curr_img = this.get_curr_img()
+        view_name.innerText = curr_img.name;
+        view_img.src = get_thumbnail_med(curr_img);
+        view_source.innerText = curr_img.source;
+        view_dpi.innerText = curr_img.dpi + " DPI";
+        view_date.innerText = curr_img.date;
+        view_size.innerText = image_size_to_mb_string(curr_img.size);
+
+        if (curr_img.source_type === "GOOGLE_DRIVE") {
+            view_id.innerText = curr_img.drive_id;
+            dl_button.style.display = "";
+        } else if (curr_img.source_type === "LOCAL") {
+            view_id.innerText = curr_img.file_path;
+            dl_button.style.display = "none";
+        }
 
         // pretty version of card type/class
         let img_class = "";
@@ -120,7 +128,7 @@ class CardBase {
         // use jquery proxy to link the download button to this Card object's dl function
         $(dl_button).off("click");
         $(dl_button).on('click', $.proxy(function () {
-            trigger_download(this.get_curr_img().drive_id, true);
+            trigger_download(curr_img.id, true);
         }, this));
 
         // hide the 300 dpi image until it loads in - show a loading spinner in its place until then
@@ -131,7 +139,7 @@ class CardBase {
             $(view_spinner).animate({opacity: 0}, 250);
             $(view_img).animate({opacity: 1}, 250);
         }
-        img.src = get_thumbnail_med(this.get_curr_img());
+        img.src = get_thumbnail_med(curr_img);
 
         // disable hovering on the parent element temporarily while we bring up the modal
         this.enable_modal("detailedViewModal");

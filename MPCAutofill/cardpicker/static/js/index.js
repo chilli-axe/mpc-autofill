@@ -76,6 +76,7 @@ function save_search_settings() {
 }
 
 function load_search_settings() {
+    // Cookies.remove('search_settings');
     let settings = Cookies.get('search_settings');
     if (settings !== undefined) {
         settings = JSON.parse(settings);
@@ -116,10 +117,10 @@ function get_drive_order() {
     // get checkbox elements from dom, in order
     let drive_elements = document.getElementsByClassName("drivesource");
     let drives = [];
-    // for each drive, if it's enabled, add its id to the output list
+    // for each drive, if it's enabled, add its key to the output list
     for (let i = 0; i < drive_elements.length; i++) {
         if (drive_elements[i].checked) {
-            drives.push(drive_elements[i].id)
+            drives.push(drive_elements[i].dataset.key)
         }
     }
     // convert to string when outputting

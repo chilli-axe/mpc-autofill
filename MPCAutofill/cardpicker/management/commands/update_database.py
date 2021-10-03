@@ -4,7 +4,7 @@ from datetime import datetime
 from itertools import chain
 from math import floor
 from pathlib import Path
-from typing import Dict, Tuple, Type, Union
+from typing import Tuple, Type, Union
 
 import googleapiclient.errors
 import imagesize
@@ -44,7 +44,7 @@ def calculate_dpi(height: int) -> int:
     return 10 * round(height * DPI_HEIGHT_RATIO / 10)
 
 
-def do_stuff(
+def create_card_object(
     file_name: str,
     folder_name: str,
     source: Source,
@@ -55,7 +55,13 @@ def do_stuff(
     file_path: str = "",
     static_path: str = "",
 ) -> Tuple[Type[Union[GenericCard]], Union[GenericCard]]:
-    # strip the extension off of the item name to retrieve the card name
+    """
+    Takes information about a new Card row and creates a database entry for it (needs to be saved later). Contains some
+    business logic for DPI calculation and determining which table to insert the row into (Card, Cardback, or Token).
+    Returns the table which the row should be inserted into as well as the row itself (all three tables share the same
+    columns.)
+    """
+
     try:
         [cardname, extension] = file_name.rsplit(".", 1)
     except ValueError:
@@ -70,7 +76,7 @@ def do_stuff(
     if ")" in cardname:
         priority = 1
 
-    source_verbose = source.id
+    source_verbose = source.key
 
     if "basic" in folder_name.lower():
         priority += 5
@@ -121,11 +127,11 @@ def locate_drives(service, sources):
 
     print("Retrieving Google Drive folders...")
     bar = tqdm(total=len(sources))
-    folders = {x.id: get_folder_from_id(x.drive_id, bar) for x in sources}
+    folders = {x.key: get_folder_from_id(x.drive_id, bar) for x in sources}
     for x in sources:
-        if not folders[x.id]:
-            print(f"Failed on drive: {x.id}")
-            folders.pop(x.id)
+        if not folders[x.key]:
+            print(f"Failed on drive: {x.key}")
+            folders.pop(x.key)
     print("...and done!")
     return folders
 
@@ -238,7 +244,7 @@ def crawl_drive(service, folder):
 
 
 def search_folder(service, source, folder):
-    print(f"Searching drive: {source.id}")
+    print(f"Searching drive: {source.key}")
     card_dict = {Card: [], Cardback: [], Token: []}
 
     # crawl the drive to retrieve a complete list of images it contains
@@ -258,7 +264,7 @@ def search_folder(service, source, folder):
             valid = True
 
         if valid:
-            card_class, card = do_stuff(
+            card_class, card = create_card_object(
                 file_name=item["name"],
                 folder_name=item["folder_name"],
                 source=source,
@@ -306,12 +312,12 @@ def crawl_local_folder(
     print(
         f"Located {len(top_level_folders)} folders in the local file index - these will be indexed as separate Sources."
     )
-    # TODO: primary key uniqueness enforced by file system - but what about between local files and gdrive files?
+    # TODO: key uniqueness enforced by file system - but what about between local files and gdrive files?
     for folder in top_level_folders:
         if folder.name[0] != ".":
             print(f"Searching folder: {folder.name}")
             source = Source(
-                id=folder.name,
+                key=folder.name,
                 drive_id="",
                 drive_link="",
                 source_type=SourceType.LOCAL_FILE,
@@ -325,7 +331,7 @@ def crawl_local_folder(
             print(f"Number of images found: {len(image_paths)}")
 
             for image_path in image_paths:
-                card_class, card = do_stuff(
+                card_class, card = create_card_object(
                     file_name=image_path.name,
                     folder_name=image_path.parent.name,
                     source=source,
@@ -356,10 +362,9 @@ def crawl_local_folder(
 
 class Command(BaseCommand):
     # set up help line to print the available drive options
-    help = "You may specify one of the following drives: "
-    for source in Source.objects.all():
-        help += f"{source.id}, "
-    help = help[:-2]
+    help = "You may specify one of the following drives: " + ", ".join(
+        [x.key for x in Source.objects.all()]
+    )
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -388,21 +393,21 @@ class Command(BaseCommand):
             if drive:
                 # Try/except to see if the given drive name maps to a Source
                 try:
-                    source = Source.objects.get(id=drive)
-                    folder = locate_drives(service, [source])[source.id]
-                    print(f"Rebuilding database for specific drive: {source.id}.")
+                    source = Source.objects.get(key=drive)
+                    folder = locate_drives(service, [source])[source.key]
+                    print(f"Rebuilding database for specific drive: {source.key}.")
                     search_folder(service, source, folder)
                 except KeyError:
                     print(
                         f"Invalid drive specified: {drive}\nYou may specify one of the following drives:"
                     )
-                    [print(x.id) for x in Source.objects.all()]
+                    [print(x.key) for x in Source.objects.all()]
                     return
             else:
                 sources = locate_drives(service, Source.objects.all())
                 print("Rebuilding database with all drives.")
                 for x in sources:
-                    search_folder(service, Source.objects.get(id=x), sources[x])
+                    search_folder(service, Source.objects.get(key=x), sources[x])
 
         if settings.LOCAL_FILE_INDEX:
             print("Local file index path was specified.")

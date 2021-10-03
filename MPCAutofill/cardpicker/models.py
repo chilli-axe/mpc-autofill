@@ -10,7 +10,7 @@ class SourceType(models.TextChoices):
 
 
 class Source(models.Model):
-    id = models.CharField(max_length=50, primary_key=True)
+    key = models.CharField(max_length=50, unique=True)
     source_type = models.CharField(
         max_length=12,
         choices=SourceType.choices,
@@ -25,7 +25,7 @@ class Source(models.Model):
         (qty_total, qty_cards, qty_cardbacks, qty_tokens, _) = self.count()
         return "[{}.] {} ({} total: {} cards, {} cardbacks, {} tokens)".format(
             self.order,
-            self.id,
+            self.key,
             qty_total,
             qty_cards,
             qty_cardbacks,
@@ -82,6 +82,7 @@ class Source(models.Model):
         qty_all, qty_cards, qty_cardbacks, qty_tokens, avgdpi = self.count()
         return {
             "id": self.id,
+            "key": self.key,
             "drive_id": self.drive_id,
             "drive_link": self.drive_link,
             "description": self.description,
@@ -94,8 +95,6 @@ class Source(models.Model):
 
 
 class CardBase(models.Model):
-    id = models.IntegerField(primary_key=True, auto_created=True)
-
     drive_id = models.CharField(max_length=50, null=True)
     extension = models.CharField(max_length=200)
     file_path = models.CharField(max_length=300, null=True)
@@ -127,7 +126,7 @@ class CardBase(models.Model):
             "static_path": self.static_path,
             "name": self.name,
             "priority": self.priority,
-            "source": self.source.id,
+            "source": self.source.key,
             "source_type": self.source.source_type,
             "source_verbose": self.source_verbose,
             "searchq": self.searchq,
@@ -137,7 +136,7 @@ class CardBase(models.Model):
         }
 
     def source_to_str(self):
-        return self.source.id
+        return self.source.key
 
     def source_type_to_str(self):
         return self.source.source_type

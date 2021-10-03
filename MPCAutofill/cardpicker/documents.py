@@ -28,7 +28,6 @@ def card_to_dict(obj):
 
 
 common_fields = [
-    "id",
     "drive_id",
     "extension",
     "file_path",
@@ -47,6 +46,7 @@ common_settings = {"number_of_shards": 5, "number_of_replicas": 0}
 
 @registry.register_document
 class CardSearch(Document):
+    id = fields.IntegerField(attr="id")
     source = fields.TextField(attr="source_to_str")
     source_type = fields.TextField(attr="source_type_to_str")
     searchq_keyword = fields.TextField(analyzer="keyword")
@@ -67,6 +67,7 @@ class CardSearch(Document):
 
 @registry.register_document
 class CardbackSearch(Document):
+    id = fields.IntegerField()
     source = fields.TextField(attr="source_to_str")
     source_type = fields.TextField(attr="source_type_to_str")
     searchq_keyword = fields.TextField(analyzer="keyword")
@@ -87,6 +88,7 @@ class CardbackSearch(Document):
 
 @registry.register_document
 class TokenSearch(Document):
+    id = fields.IntegerField()
     source = fields.TextField(attr="source_to_str")
     source_type = fields.TextField(attr="source_type_to_str")
     searchq_keyword = fields.TextField(analyzer="keyword")
