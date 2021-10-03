@@ -282,15 +282,16 @@ def add_card(folder, source, item, q_cards, q_cardbacks, q_tokens):
 
         queue_object_map[img_type][0].append(
             queue_object_map[img_type][1](
-                id=item["id"],
+                drive_id=item["id"],
                 name=cardname,
                 priority=priority,
                 source=source,
                 source_verbose=source_verbose,
                 dpi=dpi,
+                file_path="",
                 searchq=to_searchable(cardname),  # search-friendly card name
                 searchq_keyword=to_searchable(cardname),  # for keyword search
-                thumbpath=extension,
+                extension=extension,
                 date=item["createdTime"],
                 size=item["size"],
             )

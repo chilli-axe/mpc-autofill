@@ -4,11 +4,20 @@ from django.db import models
 from django.utils import dateformat
 
 
-# Create your models here.
+class SourceType(models.TextChoices):
+    GOOGLE_DRIVE = ("GOOGLE_DRIVE", "Google Drive")
+    LOCAL_FILE = ("LOCAL", "Local File")
+
+
 class Source(models.Model):
     id = models.CharField(max_length=50, primary_key=True)
-    drive_id = models.CharField(max_length=100, unique=True)
-    drive_link = models.CharField(max_length=200, unique=True)
+    source_type = models.CharField(
+        max_length=12,
+        choices=SourceType.choices,
+        default=SourceType.GOOGLE_DRIVE,
+    )
+    drive_id = models.CharField(max_length=100, unique=True, null=True)
+    drive_link = models.CharField(max_length=200, unique=True, null=True)
     description = models.CharField(max_length=400)
     order = models.IntegerField(default=0)
 
@@ -85,15 +94,21 @@ class Source(models.Model):
 
 
 class CardBase(models.Model):
-    id = models.CharField(max_length=50, primary_key=True)
+    id = models.BigAutoField(primary_key=True)
+
+    drive_id = models.CharField(max_length=50, null=True)
+    extension = models.CharField(max_length=200)
+    file_path = models.CharField(max_length=300, null=True)
+
     name = models.CharField(max_length=200)
     priority = models.IntegerField(default=0)
     source = models.ForeignKey(Source, on_delete=models.CASCADE)
     source_verbose = models.CharField(max_length=50)
-    dpi = models.IntegerField(default=0)
+
     searchq = models.CharField(max_length=200)
     searchq_keyword = models.CharField(max_length=200)
-    thumbpath = models.CharField(max_length=200)
+
+    dpi = models.IntegerField(default=0)
     date = models.DateTimeField(default=datetime.now)
     size = models.IntegerField()
 
@@ -105,19 +120,25 @@ class CardBase(models.Model):
     def to_dict(self):
         return {
             "id": self.id,
+            "drive_id": self.drive_id,
+            "extension": self.extension,
+            "file_path": self.file_path,
             "name": self.name,
             "priority": self.priority,
             "source": self.source.id,
+            "source_type": self.source.source_type,
             "source_verbose": self.source_verbose,
-            "dpi": self.dpi,
             "searchq": self.searchq,
-            "thumbpath": self.thumbpath,
+            "dpi": self.dpi,
             "date": dateformat.format(self.date, "jS F, Y"),
             "size": self.size,
         }
 
     def source_to_str(self):
         return self.source.id
+
+    def source_type_to_str(self):
+        return self.source.source_type
 
     class Meta:
         abstract = True
