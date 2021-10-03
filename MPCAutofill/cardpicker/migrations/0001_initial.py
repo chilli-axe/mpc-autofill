@@ -47,10 +47,10 @@ class Migration(migrations.Migration):
                         max_length=12,
                     ),
                 ),
-                ("drive_id", models.CharField(max_length=100, null=True, unique=True)),
+                ("drive_id", models.CharField(max_length=100, null=True)),
                 (
                     "drive_link",
-                    models.CharField(max_length=200, null=True, unique=True),
+                    models.CharField(max_length=200, null=True),
                 ),
                 ("description", models.CharField(max_length=400)),
                 ("order", models.IntegerField(default=0)),

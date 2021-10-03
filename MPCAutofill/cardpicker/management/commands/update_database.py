@@ -380,6 +380,8 @@ class Command(BaseCommand):
         t = time.time()
 
         management.call_command("import_sources")
+        management.call_command("update_dfcs")
+
         num_gdrive_sources = Source.objects.filter(
             source_type=SourceType.GOOGLE_DRIVE
         ).count()

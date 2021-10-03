@@ -39,7 +39,13 @@ function generate_xml() {
     orderElem.appendChild(detailsElem);
 
     // take note of the selected common cardback's ID - will come in handy in a minute
-    let cardback_id = $("#slot--back").data("obj").get_curr_img().drive_id;
+    let cardback_id = "";
+    let cardback = $("#slot--back").data("obj").get_curr_img();
+    if (cardback.source_type === "GOOGLE_DRIVE") {
+        cardback_id = cardback.drive_id;
+    } else if (cardback.source_type === "LOCAL") {
+        cardback_id = cardback.file_path;
+    }
 
     // set up an object we can use to keep track of what to write to the XML
     let order_map = {};
@@ -55,17 +61,18 @@ function generate_xml() {
 
         // only proceed if the card obj has any search results
         if (curr_obj.cards.length > 0) {
-            let curr_id = curr_obj.get_curr_img().drive_id;
-            if (curr_id === "") {
-                curr_id = curr_obj.get_curr_img().file_path;  // TODO: determine from curr_obj.get_curr_img().source_type
+            let curr_id = "";
+            let curr_img = curr_obj.get_curr_img()
+            if (curr_img.source_type === "GOOGLE_DRIVE") {
+                curr_id = curr_img.drive_id;
+            } else if (curr_img.source_type === "LOCAL") {
+                curr_id = curr_img.file_path;
             }
 
             if (curr_id !== cardback_id) {
-                // the card we're looking at isn't the common cardback, so we care about it
                 let curr_face = curr_obj.face;
                 if (order_map[curr_face][curr_id] === undefined) {
                     // this image doesn't exist in the order map yet, so add it
-                    let curr_img = curr_obj.get_curr_img();
                     let curr_name = curr_img.name + "." + curr_img.extension;
                     order_map[curr_face][curr_id] = {
                         "id": curr_id, // image ID

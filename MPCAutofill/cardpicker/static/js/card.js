@@ -249,7 +249,7 @@ class Card extends CardBase {
         // select the result for this card with the given drive ID
         // idk, that's shit english but you get what I mean man
         for (let i = 0; i < this.cards.length; i++) {
-            if (this.cards[i].drive_id === driveID) {
+            if (this.cards[i].drive_id === driveID || this.cards[i].file_path === driveID) {
                 // switch to this index
                 this.set_idx(i);
                 return;

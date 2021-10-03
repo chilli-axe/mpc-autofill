@@ -16,8 +16,8 @@ class Source(models.Model):
         choices=SourceType.choices,
         default=SourceType.GOOGLE_DRIVE,
     )
-    drive_id = models.CharField(max_length=100, unique=True, null=True)
-    drive_link = models.CharField(max_length=200, unique=True, null=True)
+    drive_id = models.CharField(max_length=100, null=True)
+    drive_link = models.CharField(max_length=200, null=True)
     description = models.CharField(max_length=400)
     order = models.IntegerField(default=0)
 

@@ -15,7 +15,7 @@ import os
 from environ import Env
 
 # local file indexing
-LOCAL_FILE_INDEX = r"G:\Google Drive"
+LOCAL_FILE_INDEX = r""  # for example: r"C:\Users\John Doe\Desktop\MPC Cards"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
