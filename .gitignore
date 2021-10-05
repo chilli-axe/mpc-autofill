@@ -118,13 +118,13 @@ celerybeat.pid
 *.sage.py
 
 # Environments
-.env
-.venv
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
+/.env/
+/.venv/
+/env/
+/venv/
+/ENV/
+/env.bak/
+/venv.bak/
 
 # Spyder project settings
 .spyderproject
@@ -152,20 +152,20 @@ cython_debug/
 
 .idea
 .DS_Store
-MPCAutofill/card_db.db
-MPCAutofill/build
-MPCAutofill/cards
-MPCAutofill/credentials.json
-MPCAutofill/ignored
+/MPCAutofill/card_db.db
+/MPCAutofill/build
+/MPCAutofill/cards
+/MPCAutofill/credentials.json
+/MPCAutofill/ignored
 */token.pickle
 */mpcautofillkey
 */mpcautofillkey.pub
-MPCAutofill/local_index
+/MPCAutofill/local_index
 
 ga_settings.py
 bootstrap.min.css
 jquery.ui.touch-punch.js
-MPCAutofill/client_secrets.json
-static
+/MPCAutofill/client_secrets.json
+/static/
 *.db
 .env_prod

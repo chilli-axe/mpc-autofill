@@ -19,9 +19,6 @@ done
 
 # Check if we are running for the first time
 if ! python3 manage.py migrate --check; then
-    # Gather static files
-    python3 manage.py collectstatic --noinput
-
     # Run migrations and populate database
     echo "Migrate Django database..."
     python3 manage.py migrate
