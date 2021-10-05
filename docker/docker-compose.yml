@@ -41,6 +41,7 @@ services:
     volumes:
       # Writes to
       - django_static:/MPCAutofill/static
+      - ${MPCAUTOFILL_LOCAL_FILES}:/cards
     expose:
       - 8000
     depends_on:
@@ -56,8 +57,9 @@ services:
     volumes:
       # Reads from
       - django_static:/MPCAutofill/static
+      - ${MPCAUTOFILL_LOCAL_FILES}:/cards
     ports:
-      - 8000:80
+      - ${MPCAUTOFILL_HTTP_PORT:-8000}:80
     depends_on:
       - django
 

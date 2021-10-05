@@ -44,19 +44,21 @@ RUN ./docker/django/check_client_secrets.sh && \
 # Install cronjobs
 RUN cp docker/django/crontab.txt /etc/crontab
 
-# Create a non-root user and add permission to access the /MPCAutofill folder
-RUN adduser -u 5678 --disabled-password --gecos "" mpcautofill && \
-    chown -R mpcautofill /MPCAutofill
+# Create a non-root user and add permission to access the /MPCAutofill and /cards
+RUN mkdir -p /cards && \
+    adduser -u 5678 --disabled-password --gecos "" mpcautofill && \
+    chown -R mpcautofill /MPCAutofill /cards
 USER mpcautofill
 
 # Place environment file
 RUN cp docker/django/env.txt MPCAutofill/MPCAutofill/.env
 
-# Prepare folder for static files (create now as user for permissions)
-RUN mkdir -p static
+# Collect static files now. This ensures write permissions on the mounted static/
+# folder and /cards is not yet mounted, therefore no cards will be copied.
+WORKDIR /MPCAutofill/MPCAutofill
+RUN python3 manage.py collectstatic --noinput
 
 # Prepare to start
 EXPOSE 8000
-WORKDIR /MPCAutofill/MPCAutofill
 ENTRYPOINT ["/MPCAutofill/docker/django/entrypoint.sh"]
 CMD ["gunicorn", "MPCAutofill.wsgi:application", "--bind", "0.0.0.0:8000"]

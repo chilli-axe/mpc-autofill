@@ -14,11 +14,6 @@ import os
 
 from environ import Env
 
-# local file indexing
-LOCAL_FILE_INDEX = r""  # for example: r"C:\Users\John Doe\Desktop\MPC Cards"
-
-DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-
 env = Env()
 env.read_env()
 
@@ -34,6 +29,11 @@ SECRET_KEY = env("DJANGO_SECRET_KEY", default="-")
 DEBUG = env("DJANGO_DEBUG", default=False)
 
 ALLOWED_HOSTS = env("ALLOWED_HOSTS", default=["localhost", "127.0.0.1"])
+
+# local file indexing
+LOCAL_FILE_INDEX = env("DJANGO_LOCAL_FILES", default=r"") # for example: r"C:\Users\John Doe\Desktop\MPC Cards"
+
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Google Analytics GTAG
 GTAG = env("GTAG", default="")
