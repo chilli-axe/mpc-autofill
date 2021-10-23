@@ -46,7 +46,7 @@ pytest==6.2.3
 protobuf==3.17.0
 pyasn1==0.4.8
 pyasn1-modules==0.2.8
-pyinstaller==3.6
+pyinstaller==4.5.1
 pyinstaller-hooks-contrib==2021.1
 pyparsing==2.4.7
 python-Levenshtein==0.12.2
@@ -67,3 +67,4 @@ user-agents==2.2.0
 webdriver-manager==3.4.1
 zipp==3.4.1
 psycopg2-binary==2.9.1
+enquiries==0.1.0
