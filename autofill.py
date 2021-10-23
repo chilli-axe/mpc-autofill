@@ -414,8 +414,8 @@ def upload_card(driver, filepath):
         while progress_container.value_of_css_property("display") == "none":
             # Attempt to upload card until the upload progress bar appears
             driver.find_element_by_xpath('//*[@id="uploadId"]').send_keys(filepath)
-            time.sleep(1)
             progress_container = driver.find_element_by_id("divFileProgressContainer")
+            time.sleep(0.2)
 
         # Wait as long as necessary for the image to finish uploading
         while True:
