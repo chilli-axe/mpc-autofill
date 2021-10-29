@@ -97,8 +97,12 @@ WSGI_APPLICATION = "MPCAutofill.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": os.path.join(BASE_DIR, "card_db.db"),
+        "ENGINE": env("DATABASE_ENGINE", default="django.db.backends.sqlite3"),
+        "NAME": env("DATABASE_NAME", default=os.path.join(BASE_DIR, "card_db.db")),
+        "USER": env("DATABASE_USER", default="mpcautofill"),
+        "PASSWORD": env("DATABASE_PASSWORD", default="mpcautofill"),
+        "HOST": env("DATABASE_HOST", default="postgres"),
+        "PORT": env("DATABASE_PORT", default=5432),
     }
 }
 
@@ -149,7 +153,7 @@ STATIC_ROOT = os.path.join(os.path.dirname(BASE_DIR), "static")
 
 # elasticsearch DSL settings
 ELASTICSEARCH_DSL = {
-    "default": {"hosts": "localhost:9200"},
+    "default": {"hosts": "{}:9200".format(env("ELASTICSEARCH_HOST", default="localhost"))},
 }
 
 ELASTICSEARCH_DSL_AUTOSYNC = False
