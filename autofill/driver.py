@@ -26,9 +26,7 @@ os.environ["WDM_LOG_LEVEL"] = "0"
 
 @attr.s
 class AutofillDriver:
-    driver: webdriver.Chrome = attr.ib(
-        default=None
-    )  # delay initialisation until XML is selected and parsed
+    driver: webdriver.Chrome = attr.ib(default=None)  # delay initialisation until XML is selected and parsed
     starting_url: str = attr.ib(
         init=False,
         default="https://www.makeplayingcards.com/design/custom-blank-card.html",
@@ -36,9 +34,7 @@ class AutofillDriver:
     order: CardOrder = attr.ib(default=attr.Factory(CardOrder.from_xml_in_folder))
     state: str = attr.ib(init=False, default=States.initialising)
     action: str = attr.ib(init=False, default="")
-    manager: enlighten.Manager = attr.ib(
-        init=False, default=attr.Factory(enlighten.get_manager)
-    )
+    manager: enlighten.Manager = attr.ib(init=False, default=attr.Factory(enlighten.get_manager))
     status_bar: enlighten.StatusBar = attr.ib(init=False, default=False)
     download_bar: enlighten.Counter = attr.ib(init=False, default=None)
     upload_bar: enlighten.Counter = attr.ib(init=False, default=None)
@@ -49,9 +45,7 @@ class AutofillDriver:
         chrome_options.add_argument("--log-level=3")
         chrome_options.add_experimental_option("excludeSwitches", ["enable-logging"])
         chrome_options.add_experimental_option("detach", True)
-        driver = webdriver.Chrome(
-            ChromeDriverManager().install(), options=chrome_options
-        )
+        driver = webdriver.Chrome(ChromeDriverManager().install(), options=chrome_options)
         driver.set_window_size(1200, 900)
         driver.implicitly_wait(5)
         driver.set_network_conditions(offline=False, latency=5, throughput=5 * 125000)
@@ -67,12 +61,8 @@ class AutofillDriver:
             action=f"{TEXT_BOLD}N/A{TEXT_END}",
             position=1,
         )
-        self.download_bar = self.manager.counter(
-            total=num_images, desc="Images Downloaded", position=2
-        )
-        self.upload_bar = self.manager.counter(
-            total=num_images, desc="Images Uploaded", position=3
-        )
+        self.download_bar = self.manager.counter(total=num_images, desc="Images Downloaded", position=2)
+        self.upload_bar = self.manager.counter(total=num_images, desc="Images Uploaded", position=3)
 
         self.status_bar.refresh()
         self.download_bar.refresh()
@@ -167,9 +157,7 @@ class AutofillDriver:
             # Wait for the element to become invisible
             while True:
                 try:
-                    WebDriverWait(self.driver, 100).until(
-                        invisibility_of_element(wait_elem)
-                    )
+                    WebDriverWait(self.driver, 100).until(invisibility_of_element(wait_elem))
                 except sl_exc.TimeoutException:
                     continue
                 break
@@ -185,9 +173,7 @@ class AutofillDriver:
         # TODO: handle javascript errors?
         """
 
-        return self.driver.execute_script(
-            f"javascript:{'return ' if return_ else ''}{js}"
-        )
+        return self.driver.execute_script(f"javascript:{'return ' if return_ else ''}{js}")
 
     def next_step(self) -> None:
         """
@@ -219,9 +205,7 @@ class AutofillDriver:
 
         # Set the desired number of cards, then move to the next step
         self.switch_to_frame("sysifm_loginFrame")
-        self.execute_javascript(
-            f"document.getElementById('txt_card_number').value={self.order.details.quantity};"
-        )
+        self.execute_javascript(f"document.getElementById('txt_card_number').value={self.order.details.quantity};")
         self.different_images()
         self.driver.switch_to.default_content()
 
@@ -271,32 +255,18 @@ class AutofillDriver:
             self.set_state(self.state, f'Uploading "{image.name}"')
 
             # an image definitely shouldn't be uploading here, but doesn't hurt to make sure
-            while (
-                self.execute_javascript(
-                    "oDesignImage.UploadStatus == 'Uploading'", return_=True
-                )
-                is True
-            ):
+            while self.execute_javascript("oDesignImage.UploadStatus == 'Uploading'", return_=True) is True:
                 time.sleep(0.5)
 
             # upload image to mpc
-            self.driver.find_element_by_xpath('//*[@id="uploadId"]').send_keys(
-                image.file_path
-            )
+            self.driver.find_element_by_xpath('//*[@id="uploadId"]').send_keys(image.file_path)
             time.sleep(1)
 
-            while (
-                self.execute_javascript(
-                    "oDesignImage.UploadStatus == 'Uploading'", return_=True
-                )
-                is True
-            ):
+            while self.execute_javascript("oDesignImage.UploadStatus == 'Uploading'", return_=True) is True:
                 time.sleep(0.5)
 
             # return PID of last uploaded image
-            return self.execute_javascript(
-                "oDesignImage.dn_getImageList()", return_=True
-            ).split(";")[-1]
+            return self.execute_javascript("oDesignImage.dn_getImageList()", return_=True).split(";")[-1]
 
         else:
             print(
@@ -312,9 +282,7 @@ class AutofillDriver:
             self.execute_javascript("l = PageLayout.prototype")
             for slot in image.slots:
                 # Insert the card into each slot and wait for the page to load before continuing
-                self.execute_javascript(
-                    f'l.applyDragPhoto(l.getElement3("dnImg", {slot}), 0, "{pid}")'
-                )
+                self.execute_javascript(f'l.applyDragPhoto(l.getElement3("dnImg", {slot}), 0, "{pid}")')
                 self.wait()
             self.set_state(self.state)
 

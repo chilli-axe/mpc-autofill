@@ -172,17 +172,13 @@ class CardImageCollection:
         card_images = []
         if element:
             for x in element:
-                card_dict = unpack_element(
-                    x, [x.value for x in constants.CardTags], unpack_to_text=True
-                )
+                card_dict = unpack_element(x, [x.value for x in constants.CardTags], unpack_to_text=True)
                 card_images.append(CardImage.from_dict(card_dict))
         card_image_collection = cls(cards=card_images, num_slots=num_slots, face=face)
         if fill_image_id:
             # fill the remaining slots in this card image collection with a new card image based off the given id
             pass
-            missing_slots = (
-                card_image_collection.all_slots() - card_image_collection.slots()
-            )
+            missing_slots = card_image_collection.all_slots() - card_image_collection.slots()
             if missing_slots:
                 card_image_collection.cards.append(
                     CardImage(
@@ -195,9 +191,7 @@ class CardImageCollection:
         try:
             card_image_collection.validate()
         except ValidationException as e:
-            input(
-                f"There was a problem with your order file:\n\n{TEXT_BOLD}{e}{TEXT_END}\n\nPress Enter to exit."
-            )
+            input(f"There was a problem with your order file:\n\n{TEXT_BOLD}{e}{TEXT_END}\n\nPress Enter to exit.")
             sys.exit(0)
         return card_image_collection
 
@@ -217,9 +211,7 @@ class CardImageCollection:
                 f"{TEXT_BOLD}{sorted(slots_missing)}{TEXT_END}"
             )
 
-    def download_images(
-        self, pool: ThreadPoolExecutor, download_bar: enlighten.Counter
-    ) -> None:
+    def download_images(self, pool: ThreadPoolExecutor, download_bar: enlighten.Counter) -> None:
         """
         Set up the provided ThreadPoolExecutor to download this collection's images, updating the given progress
         bar with each image. Async function.
@@ -250,9 +242,7 @@ class Details:
         try:
             self.validate()
         except ValidationException as e:
-            input(
-                f"There was a problem with your order file:\n\n{TEXT_BOLD}{e}{TEXT_END}\n\nPress Enter to exit."
-            )
+            input(f"There was a problem with your order file:\n\n{TEXT_BOLD}{e}{TEXT_END}\n\nPress Enter to exit.")
             sys.exit(0)
 
     def validate(self) -> None:
@@ -286,9 +276,7 @@ class CardOrder:
         elif len(xml_glob) == 1:
             file_name = xml_glob[0]
         else:
-            xml_select_string = (
-                "Multiple XML files found. Please select one for this order: "
-            )
+            xml_select_string = "Multiple XML files found. Please select one for this order: "
             questions = {
                 "type": "list",
                 "name": "xml_choice",
@@ -304,9 +292,7 @@ class CardOrder:
         try:
             xml = ElementTree.parse(file_name)
         except ElementTree.ParseError:
-            input(
-                "Your XML file contains a syntax error so it can't be processed. Press Enter to exit."
-            )
+            input("Your XML file contains a syntax error so it can't be processed. Press Enter to exit.")
             sys.exit(0)
         print(f"Parsing XML file {TEXT_BOLD}{file_name}{TEXT_END}...")
         order = cls.from_element_tree(xml)
@@ -338,9 +324,7 @@ class CardOrder:
                 fill_image_id=cardback_elem.text,
             )
         else:
-            print(
-                f"{TEXT_BOLD}Warning{TEXT_END}: Your order file did not contain a common cardback image."
-            )
+            print(f"{TEXT_BOLD}Warning{TEXT_END}: Your order file did not contain a common cardback image.")
             backs = CardImageCollection.from_element(
                 element=root_dict[constants.BaseTags.backs],
                 num_slots=details.quantity,
@@ -354,9 +338,7 @@ class CardOrder:
         try:
             self.validate()
         except ValidationException as e:
-            input(
-                f"There was a problem with your order file:\n\n{TEXT_BOLD}{e}{TEXT_END}\n\nPress Enter to exit."
-            )
+            input(f"There was a problem with your order file:\n\n{TEXT_BOLD}{e}{TEXT_END}\n\nPress Enter to exit.")
             sys.exit(0)
 
     def validate(self) -> None:

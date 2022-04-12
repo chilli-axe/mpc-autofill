@@ -11,11 +11,7 @@ if TYPE_CHECKING:
 
 
 # IS_WINDOWS: bool = system() == "Windows"
-CURRDIR: str = (
-    os.path.dirname(os.path.realpath(sys.executable))
-    if getattr(sys, "frozen", False)
-    else os.getcwd()
-)
+CURRDIR: str = os.path.dirname(os.path.realpath(sys.executable)) if getattr(sys, "frozen", False) else os.getcwd()
 
 TEXT_BOLD = "\033[1m"
 TEXT_END = "\033[0m"
@@ -64,9 +60,7 @@ def unpack_element(
 
 
 def file_exists(file_path: str) -> bool:
-    return (
-        file_path != "" and os.path.isfile(file_path) and os.path.getsize(file_path) > 0
-    )
+    return file_path != "" and os.path.isfile(file_path) and os.path.getsize(file_path) > 0
 
 
 def alert_handler(func):
