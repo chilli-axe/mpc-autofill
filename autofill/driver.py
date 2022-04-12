@@ -2,7 +2,7 @@ import os
 import textwrap
 import time
 from concurrent.futures import ThreadPoolExecutor
-from typing import Optional
+from typing import Any, Optional
 
 import attr
 import constants
@@ -177,7 +177,7 @@ class AutofillDriver:
             return
 
     @alert_handler
-    def execute_javascript(self, js: str) -> None:
+    def execute_javascript(self, js: str, return_: bool = False) -> Any:
         """
         Executes the given JavaScript command in self.driver
         This can occasionally fail - e.g.
@@ -185,7 +185,9 @@ class AutofillDriver:
         # TODO: handle javascript errors?
         """
 
-        self.driver.execute_script(f"javascript:{js}")
+        return self.driver.execute_script(
+            f"javascript:{'return ' if return_ else ''}{js}"
+        )
 
     def next_step(self) -> None:
         """
@@ -263,53 +265,39 @@ class AutofillDriver:
     def upload_image(self, image: CardImage) -> Optional[str]:
         """
         Uploads the given CardImage. Returns the image's PID in MPC.
-        # TODO: this was copied over from the original autofill.py and could benefit from being overhauled
         """
 
         if image.file_exists():
             self.set_state(self.state, f'Uploading "{image.name}"')
-            num_elems = len(
-                self.driver.find_elements_by_xpath("//*[contains(@id, 'upload_')]")
-            )
 
-            # if an image is uploading already, wait for it to finish uploading before continuing
-            progress_container = self.driver.find_element_by_id(
-                "divFileProgressContainer"
-            )
-
-            while progress_container.value_of_css_property("display") != "none":
-                time.sleep(3)
-
-            while progress_container.value_of_css_property("display") == "none":
-                # Attempt to upload card until the upload progress bar appears
-                self.driver.find_element_by_xpath('//*[@id="uploadId"]').send_keys(
-                    image.file_path
+            # an image definitely shouldn't be uploading here, but doesn't hurt to make sure
+            while (
+                self.execute_javascript(
+                    "oDesignImage.UploadStatus == 'Uploading'", return_=True
                 )
-                time.sleep(1)
-                progress_container = self.driver.find_element_by_id(
-                    "divFileProgressContainer"
+                is True
+            ):
+                time.sleep(0.5)
+
+            # upload image to mpc
+            self.driver.find_element_by_xpath('//*[@id="uploadId"]').send_keys(
+                image.file_path
+            )
+            time.sleep(1)
+
+            while (
+                self.execute_javascript(
+                    "oDesignImage.UploadStatus == 'Uploading'", return_=True
                 )
+                is True
+            ):
+                time.sleep(0.5)
 
-            # Wait as long as necessary for the image to finish uploading
-            while True:
-                try:
-                    # Wait until the image has finished uploading
-                    elem = self.driver.find_elements_by_xpath(
-                        "//*[contains(@id, 'upload_')]"
-                    )
-                    if len(elem) > num_elems:
-                        # Return the uploaded card's PID so we can insert it into its slots
-                        return elem[-1].get_attribute("pid")
+            # return PID of last uploaded image
+            return self.execute_javascript(
+                "oDesignImage.dn_getImageList()", return_=True
+            ).split(";")[-1]
 
-                    time.sleep(2)
-
-                except sl_exc.UnexpectedAlertPresentException:
-                    # If the user clicks on the window, alerts can pop up - we just want to dismiss these and move on
-                    try:
-                        alert = self.driver.switch_to.alert
-                        alert.accept()
-                    except sl_exc.NoAlertPresentException:
-                        pass
         else:
             print(
                 f'Image {TEXT_BOLD}"{image.name}"{TEXT_END} at path {TEXT_BOLD}{image.file_path}{TEXT_END} does '

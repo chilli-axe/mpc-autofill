@@ -75,14 +75,13 @@ def alert_handler(func):
     """
 
     def wrapper(*args, **kwargs):
-        ret = func(*args, **kwargs)
         try:
             autofill_driver: "AutofillDriver" = args[0]
             alert = autofill_driver.driver.switch_to.alert
             alert.accept()
         except NoAlertPresentException:
             pass
-        return ret
+        return func(*args, **kwargs)
 
     return wrapper
 

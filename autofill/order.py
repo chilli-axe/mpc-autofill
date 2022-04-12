@@ -30,7 +30,6 @@ class CardImage:
         * might be an issue with reuploading an XML to the site but need to investigate
         * would require thought as to how to approach the common cardback
         * i'll update the XML schema when i add local file support to the site & will update this module then
-    * rewrite file upload method?
     * retrieve file name for local common cardback by splitting on / or \ or whatever
     * optionally skip setup
     """
