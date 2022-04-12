@@ -10,7 +10,7 @@ from xml.etree import ElementTree
 import attr
 import constants
 import enlighten
-import PyInquirer  # TODO: this package is unmaintained and crashes when you click in terminal on macos
+import InquirerPy
 import requests
 from numpy import array, uint8
 from requests import exceptions as re_exc
@@ -283,7 +283,7 @@ class CardOrder:
                 "message": xml_select_string,
                 "choices": xml_glob,
             }
-            answers = PyInquirer.prompt(questions, style=PyInquirer.default_style)
+            answers = InquirerPy.prompt(questions)
             file_name = answers["xml_choice"]
         return cls.from_file_name(file_name)
 
