@@ -1,7 +1,6 @@
 attrs
 enlighten
 InquirerPy
-numpy
 pyinstaller
 requests
 selenium

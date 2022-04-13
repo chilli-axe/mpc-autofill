@@ -6,8 +6,6 @@ from typing import Any, Optional
 
 import attr
 import enlighten
-from src.constants import States, THREADS
-from src.order import CardImage, CardImageCollection, CardOrder
 from selenium import webdriver
 from selenium.common import exceptions as sl_exc
 from selenium.common.exceptions import NoSuchElementException
@@ -15,9 +13,12 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.expected_conditions import \
     invisibility_of_element
 from selenium.webdriver.support.ui import Select, WebDriverWait
-from src.utils import (TEXT_BOLD, TEXT_END, InvalidStateException, alert_handler,
-                   time_to_hours_minutes_seconds)
 from webdriver_manager.chrome import ChromeDriverManager
+
+from src.constants import THREADS, States
+from src.order import CardImage, CardImageCollection, CardOrder
+from src.utils import (TEXT_BOLD, TEXT_END, InvalidStateException,
+                       alert_handler, time_to_hours_minutes_seconds)
 
 # Disable logging messages for webdriver_manager
 os.environ["WDM_LOG_LEVEL"] = "0"

@@ -5,17 +5,18 @@ from concurrent.futures import ThreadPoolExecutor
 from glob import glob
 from queue import Queue
 from typing import Dict, List, Set
+from urllib import request
 from xml.etree import ElementTree
 
 import attr
-import src.constants as constants
 import enlighten
 import InquirerPy
 import requests
-from numpy import array, uint8
 from requests import exceptions as re_exc
+
+import src.constants as constants
 from src.utils import (CURRDIR, TEXT_BOLD, TEXT_END, ValidationException,
-                   file_exists, text_to_list, unpack_element)
+                       file_exists, text_to_list, unpack_element)
 
 
 @attr.s
@@ -105,32 +106,7 @@ class CardImage:
 
     def download_image(self, queue: Queue, download_bar: enlighten.Counter):
         if not self.file_exists():
-            try:
-                # Five attempts at downloading the image, in case the api returns an empty image for whatever reason
-                attempt_counter = 0
-                image_downloaded = False
-                while attempt_counter < 5 and not image_downloaded:
-                    with requests.post(
-                        constants.GoogleScriptsAPIs.image_content.value,
-                        data={"id": self.drive_id},
-                        timeout=120,
-                    ) as r_contents:
-                        if "<title>Error</title>" in r_contents.text:
-                            # error occurred while attempting to retrieve from Google API
-                            self.errored = True
-                            break
-                        filecontents = r_contents.json()["result"]
-                        if len(filecontents) > 0:
-                            # Download the image
-                            # TODO: doable w/o numpy dependency?
-                            f = open(self.file_path, "bw")
-                            f.write(array(filecontents, dtype=uint8))
-                            f.close()
-                            image_downloaded = True
-                        else:
-                            attempt_counter += 1
-            except requests.Timeout:
-                pass
+            request.urlretrieve(f"https://drive.google.com/uc?id={self.drive_id}&export=download", self.file_path)
 
         if self.file_exists():
             self.downloaded = True
