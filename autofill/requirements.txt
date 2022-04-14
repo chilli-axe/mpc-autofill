@@ -2,6 +2,7 @@ attrs
 enlighten
 InquirerPy
 pyinstaller
+ratelimit
 requests
 selenium
 webdriver-manager

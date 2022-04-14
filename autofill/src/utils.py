@@ -1,9 +1,11 @@
 import os
 import sys
 from math import floor
-from typing import TYPE_CHECKING, Dict, List, Tuple, Union
+from typing import TYPE_CHECKING, Dict, List, Optional, Tuple, Union
 from xml.etree import ElementTree
 
+import ratelimit
+import requests
 from selenium.common.exceptions import NoAlertPresentException
 
 if TYPE_CHECKING:
@@ -29,6 +31,41 @@ class InvalidStateException(Exception):
 
 class ValidationException(Exception):
     pass
+
+
+@ratelimit.sleep_and_retry
+@ratelimit.limits(calls=1, period=0.1)
+def get_google_drive_file_name(drive_id: str) -> Optional[str]:
+    """
+    Retrieve the name for the Google Drive file identified by `drive_id`.
+    """
+
+    name = ""
+    try:
+        with requests.post(
+            "https://script.google.com/macros/s/AKfycbw90rkocSdppkEuyVdsTuZNslrhd5zNT3XMgfucNMM1JjhLl-Q/exec",
+            data={"id": drive_id},
+            timeout=30,
+        ) as r_info:
+            name = r_info.json()["name"]
+    except requests.exceptions.Timeout:
+        pass
+    return name
+
+
+@ratelimit.sleep_and_retry
+@ratelimit.limits(calls=1, period=0.1)
+def download_google_drive_file(drive_id: str, file_path: str) -> None:
+    """
+    Download the Google Drive file identified by `drive_id` to the specified `file_path`.
+    """
+
+    with open(file_path, "wb") as f:
+        r = requests.get(f"https://drive.google.com/uc?id={drive_id}&export=download", allow_redirects=True)
+        if r.status_code != 200:
+            pass  # TODO: check how this error is being reported on
+        for chunk in r.iter_content(1024):
+            f.write(chunk)
 
 
 def text_to_list(input_text: str) -> List[int]:

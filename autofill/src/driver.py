@@ -237,9 +237,7 @@ class AutofillDriver:
 
     # region uploading
     def image_not_uploaded(self, image: CardImage):
-        # TODO: this doesn't work for the common cardback (has 7 slots for example, but only 1 slot will be filled)
         results = 0
-
         for slot in image.slots:
             xpath = f"//*[contains(@src, 'default.gif') and @index={slot}]"
             results += len(self.driver.find_elements_by_xpath(xpath))

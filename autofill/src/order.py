@@ -1,22 +1,20 @@
 import os
 import sys
-import time
 from concurrent.futures import ThreadPoolExecutor
 from glob import glob
 from queue import Queue
 from typing import Dict, List, Set
-from urllib import request
 from xml.etree import ElementTree
 
 import attr
 import enlighten
 import InquirerPy
-import requests
-from requests import exceptions as re_exc
 
 import src.constants as constants
 from src.utils import (CURRDIR, TEXT_BOLD, TEXT_END, ValidationException,
-                       file_exists, text_to_list, unpack_element)
+                       download_google_drive_file, file_exists,
+                       get_google_drive_file_name, text_to_list,
+                       unpack_element)
 
 
 @attr.s
@@ -64,18 +62,10 @@ class CardImage:
 
     def retrieve_card_name(self) -> None:
         if not self.name:
-            try:
-                # TODO: rate limiting to 0.1s per query - can we use a decorator to rate-limit all API calls?
-                time.sleep(0.1)
-                with requests.post(
-                    constants.GoogleScriptsAPIs.image_name.value,
-                    data={"id": self.drive_id},
-                    timeout=30,
-                ) as r_info:
-                    self.name = r_info.json()["name"]
-            except re_exc.Timeout:
-                self.name = ""
-                # TODO: error handling that doesn't cancel the entire order
+            name = get_google_drive_file_name(drive_id=self.drive_id)
+            if name is not None:
+                ...  # TODO: error handling that doesn't cancel the entire order if name does not come back
+            self.name = name
 
     @classmethod
     def image_directory(cls) -> str:
@@ -106,7 +96,7 @@ class CardImage:
 
     def download_image(self, queue: Queue, download_bar: enlighten.Counter):
         if not self.file_exists():
-            request.urlretrieve(f"https://drive.google.com/uc?id={self.drive_id}&export=download", self.file_path)
+            download_google_drive_file(self.drive_id, self.file_path)
 
         if self.file_exists():
             self.downloaded = True
@@ -153,7 +143,6 @@ class CardImageCollection:
         card_image_collection = cls(cards=card_images, num_slots=num_slots, face=face)
         if fill_image_id:
             # fill the remaining slots in this card image collection with a new card image based off the given id
-            pass
             missing_slots = card_image_collection.all_slots() - card_image_collection.slots()
             if missing_slots:
                 card_image_collection.cards.append(
@@ -306,7 +295,10 @@ class CardOrder:
                 num_slots=details.quantity,
                 face=constants.Faces.back,
             )
-
+        # If the order has a single cardback, set its slots to [0], as it will only be uploaded and inserted into
+        # a single slot
+        if len(backs.cards) == 1:
+            backs.cards[0].slots = [0]
         order = cls(details=details, fronts=fronts, backs=backs)
         return order
 
