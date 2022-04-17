@@ -164,6 +164,7 @@ class AutofillDriver:
 
     # region uploading
     def image_not_uploaded(self, image: CardImage) -> bool:
+        # niche TODO: if you --skipsetup and insert an image into one of `image`'s slots, `image` will not be uploaded
         results = 0
         for slot in image.slots:
             xpath = f"//*[contains(@src, 'default.gif') and @index={slot}]"
@@ -268,8 +269,6 @@ class AutofillDriver:
         self.set_state(States.inserting_fronts)
 
     def insert_fronts(self) -> None:
-        self.page_to_fronts()
-
         self.assert_state(States.inserting_fronts)
         self.upload_and_insert_images(self.order.fronts)
 
@@ -302,8 +301,6 @@ class AutofillDriver:
         self.set_state(States.inserting_backs)
 
     def insert_backs(self) -> None:
-        self.page_to_backs()
-
         self.assert_state(States.inserting_backs)
         self.upload_and_insert_images(self.order.backs)
 
@@ -333,14 +330,17 @@ class AutofillDriver:
                 input(
                     textwrap.dedent(
                         """
-                        Please sign in and select an existing project to continue editing. Once you've signed in,
+                        Please sign in and select an existing project to continue editing. Once you've signed in, 
                         return to the script execution window and press Enter.
                         """
                     )
                 )
+                self.set_state(States.inserting_fronts)
             else:
                 self.define_order()
+                self.page_to_fronts()
             self.insert_fronts()
+            self.page_to_backs()
             self.insert_backs()
             self.page_to_review()
         hours, mins, secs = time_to_hours_minutes_seconds(time.time() - t)

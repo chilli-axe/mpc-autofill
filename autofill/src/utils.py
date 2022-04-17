@@ -14,7 +14,6 @@ if TYPE_CHECKING:
     from driver import AutofillDriver
 
 
-# IS_WINDOWS: bool = system() == "Windows"
 CURRDIR: str = os.path.dirname(os.path.realpath(sys.executable)) if getattr(sys, "frozen", False) else os.getcwd()
 
 TEXT_BOLD = "\033[1m"
