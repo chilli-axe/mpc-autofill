@@ -42,7 +42,7 @@ def get_google_drive_file_name(drive_id: str) -> Optional[str]:
     Retrieve the name for the Google Drive file identified by `drive_id`.
     """
 
-    name = ""
+    name = None
     try:
         with requests.post(
             constants.GoogleScriptsAPIs.image_name.value,

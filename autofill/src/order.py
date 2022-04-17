@@ -3,7 +3,7 @@ import sys
 from concurrent.futures import ThreadPoolExecutor
 from glob import glob
 from queue import Queue
-from typing import Dict, List, Set
+from typing import Dict, List, Optional, Set
 from xml.etree import ElementTree
 
 import attr
@@ -18,29 +18,82 @@ from src.utils import (CURRDIR, TEXT_BOLD, TEXT_END, ValidationException,
 
 @attr.s
 class CardImage:
-    # TODO: file size from google scripts api as validation that the file exists on gdrive?
-    # TODO: new API endpoint on google scripts that takes a list of image IDs and returns their total size?
-
-    """
-    TODO:
-    * can potentially add a <filepath> tag to XML files for clarity
-        * shouldn't be a problem in terms of local tool parsing with how we're doing it here
-        * might be an issue with reuploading an XML to the site but need to investigate
-        * would require thought as to how to approach the common cardback
-        * i'll update the XML schema when i add local file support to the site & will update this module then
-    * retrieve file name for local common cardback by splitting on / or \ or whatever
-    * optionally skip setup
-    """
-
     drive_id: str = attr.ib(default="")
     slots: List[int] = attr.ib(default=[])
-    name: str = attr.ib(default="")
-    file_path: str = attr.ib(default="")
+    name: Optional[str] = attr.ib(default="")
+    file_path: Optional[str] = attr.ib(default="")
     query: str = attr.ib(default="")
 
     downloaded: bool = attr.ib(init=False, default=False)
     uploaded: bool = attr.ib(init=False, default=False)
     errored: bool = attr.ib(init=False, default=False)
+
+    # region file system interactions
+
+    @classmethod
+    def image_directory(cls) -> str:
+        cards_folder = CURRDIR + "/cards"
+        if not os.path.exists(cards_folder):
+            os.mkdir(cards_folder)
+        return cards_folder
+
+    def file_exists(self) -> bool:
+        """
+        Determines whether this image has been downloaded successfully.
+        """
+
+        return file_exists(self.file_path)
+
+    def retrieve_card_name(self) -> None:
+        """
+        Retrieves the file's name based on Google Drive ID. `None` indicates that the file on GDrive is invalid.
+        """
+
+        if not self.name:
+            self.name = get_google_drive_file_name(drive_id=self.drive_id)
+
+    def generate_file_path(self) -> None:
+        """
+        Sets `self.file_path` according to the following logic:
+        * If `self.drive_id` points to a valid file in the user's file system, use it as the file path
+        * If a file with `self.name` exists in the `cards` directory, use the path to that file as the file path
+        * Otherwise, use `self.name` with `self.drive_id` in parentheses in the `cards` directory as the file path.
+        """
+
+        if file_exists(self.drive_id):
+            self.file_path = self.drive_id
+            return
+
+        if not self.name:
+            self.retrieve_card_name()
+
+        if self.name is None:
+            self.file_path = None
+        else:
+            file_path = os.path.join(self.image_directory(), self.name)
+            if not os.path.isfile(file_path) or os.path.getsize(file_path) <= 0:
+                # The filepath without ID in parentheses doesn't exist - change the filepath to contain the ID instead
+                name_split = self.name.rsplit(".", 1)
+                file_path = os.path.join(
+                    self.image_directory(),
+                    f"{name_split[0]} ({self.drive_id}).{name_split[1]}",
+                )
+            self.file_path = file_path
+
+    # endregion
+
+    # region initialisation
+
+    def validate(self) -> None:
+        self.errored = any([self.errored, self.name is None, self.file_path is None])
+
+    def __attrs_post_init__(self):
+        self.generate_file_path()
+        self.validate()
+
+    # endregion
+
+    # region public
 
     @classmethod
     def from_dict(cls, card_dict: Dict[str, str]) -> "CardImage":
@@ -52,67 +105,23 @@ class CardImage:
         card_image = cls(drive_id=drive_id, slots=slots, name=name, query=query)
         return card_image
 
-    def __attrs_post_init__(self):
-        self.generate_file_path()
-        self.validate()
-
-    def validate(self) -> None:
-        pass  # TODO: validate with google API that this file exists?
-
-    def retrieve_card_name(self) -> None:
-        if not self.name:
-            name = get_google_drive_file_name(drive_id=self.drive_id)
-            if name is not None:
-                ...  # TODO: error handling that doesn't cancel the entire order if name does not come back
-            self.name = name
-
-    @classmethod
-    def image_directory(cls) -> str:
-        cards_folder = CURRDIR + "/cards"
-        if not os.path.exists(cards_folder):
-            os.mkdir(cards_folder)
-        return cards_folder
-
-    def generate_file_path(self) -> None:
-        # file paths for local files are stored in the `id` field. If the `id` field corresponds to a file that exists
-        # in the file system, assume that's the card's file path.
-        if file_exists(self.drive_id):
-            self.file_path = self.drive_id
-            return
-
-        if not self.name:
-            self.retrieve_card_name()
-
-        file_path = os.path.join(self.image_directory(), self.name)
-        if not os.path.isfile(file_path) or os.path.getsize(file_path) <= 0:
-            # The filepath without ID in parentheses doesn't exist - change the filepath to contain the ID instead
-            name_split = self.name.rsplit(".", 1)
-            file_path = os.path.join(
-                self.image_directory(),
-                f"{name_split[0]} ({self.drive_id}).{name_split[1]}",
-            )
-        self.file_path = file_path
-
     def download_image(self, queue: Queue, download_bar: enlighten.Counter):
-        if not self.file_exists():
+        if not self.file_exists() and not self.errored:
             self.errored = not download_google_drive_file(self.drive_id, self.file_path)
 
-        if self.file_exists():
+        if self.file_exists() and not self.errored:
             self.downloaded = True
         else:
             print(
-                f'Failed to download "{TEXT_BOLD}{self.name}{TEXT_END}" (Drive ID {TEXT_BOLD}{self.drive_id}{TEXT_END})'
+                f'Failed to download "{TEXT_BOLD}{self.name}{TEXT_END}" - '
+                f"(Drive ID {TEXT_BOLD}{self.drive_id}{TEXT_END}), "
+                f'allocated to slots {TEXT_BOLD}{", ".join([str(x) for x in self.slots])}{TEXT_END}'
             )
         # put card onto queue irrespective of whether it was downloaded successfully or not
         queue.put(self)
         download_bar.update()
 
-    def file_exists(self) -> bool:
-        """
-        Determines whether this image has been downloaded successfully.
-        """
-
-        return file_exists(self.file_path)
+    # endregion
 
 
 @attr.s
@@ -125,6 +134,28 @@ class CardImageCollection:
     queue: Queue = attr.ib(init=False, default=attr.Factory(Queue))
     num_slots: int = attr.ib(default=0)
     face: constants.Faces = attr.ib(default=constants.Faces.front)
+
+    # region initialisation
+
+    def all_slots(self) -> Set[int]:
+        return set(range(0, self.num_slots))
+
+    def slots(self) -> Set[int]:
+        return {y for x in self.cards for y in x.slots}
+
+    def validate(self) -> None:
+        if self.num_slots == 0:
+            raise ValidationException(f"{self.face} has no images!")
+        slots_missing = self.all_slots() - self.slots()
+        if slots_missing:
+            raise ValidationException(
+                f"The following slots are empty in your order for the {self.face} face: "
+                f"{TEXT_BOLD}{sorted(slots_missing)}{TEXT_END}"
+            )
+
+    # endregion
+
+    # region public
 
     @classmethod
     def from_element(
@@ -159,22 +190,6 @@ class CardImageCollection:
             sys.exit(0)
         return card_image_collection
 
-    def all_slots(self) -> Set[int]:
-        return set(range(0, self.num_slots))
-
-    def slots(self) -> Set[int]:
-        return {y for x in self.cards for y in x.slots}
-
-    def validate(self) -> None:
-        if self.num_slots == 0:
-            raise ValidationException(f"{self.face} has no images!")
-        slots_missing = self.all_slots() - self.slots()
-        if slots_missing:
-            raise ValidationException(
-                f"The following slots are empty in your order for the {self.face} face: "
-                f"{TEXT_BOLD}{sorted(slots_missing)}{TEXT_END}"
-            )
-
     def download_images(self, pool: ThreadPoolExecutor, download_bar: enlighten.Counter) -> None:
         """
         Set up the provided ThreadPoolExecutor to download this collection's images, updating the given progress
@@ -183,6 +198,8 @@ class CardImageCollection:
 
         pool.map(lambda x: x.download_image(self.queue, download_bar), self.cards)
 
+    # endregion
+
 
 @attr.s
 class Details:
@@ -190,6 +207,29 @@ class Details:
     bracket: int = attr.ib(default=0)
     stock: str = attr.ib(default=0)
     foil: bool = attr.ib(default=False)
+
+    # region initialisation
+
+    def validate(self) -> None:
+        if not 0 < self.quantity <= constants.BRACKETS[-1]:
+            raise ValidationException(
+                f"Order quantity {self.quantity} outside allowable range of 0 to {constants.BRACKETS[-1]}!"
+            )
+        if self.bracket not in constants.BRACKETS:
+            raise ValidationException(f"Order bracket {self.bracket} not supported!")
+        if self.stock not in [x.value for x in constants.Cardstocks]:
+            raise ValidationException(f"Order cardstock {self.stock} not supported!")
+
+    def __attrs_post_init__(self):
+        try:
+            self.validate()
+        except ValidationException as e:
+            input(f"There was a problem with your order file:\n\n{TEXT_BOLD}{e}{TEXT_END}\n\nPress Enter to exit.")
+            sys.exit(0)
+
+    # endregion
+
+    # region public
 
     @classmethod
     def from_element(cls, element: ElementTree.Element) -> "Details":
@@ -202,22 +242,7 @@ class Details:
         details = cls(quantity=quantity, bracket=bracket, stock=stock, foil=foil)
         return details
 
-    def __attrs_post_init__(self):
-        try:
-            self.validate()
-        except ValidationException as e:
-            input(f"There was a problem with your order file:\n\n{TEXT_BOLD}{e}{TEXT_END}\n\nPress Enter to exit.")
-            sys.exit(0)
-
-    def validate(self) -> None:
-        if not 0 < self.quantity <= constants.BRACKETS[-1]:
-            raise ValidationException(
-                f"Order quantity {self.quantity} outside allowable range of 0 to {constants.BRACKETS[-1]}!"
-            )
-        if self.bracket not in constants.BRACKETS:
-            raise ValidationException(f"Order bracket {self.bracket} not supported!")
-        if self.stock not in [x.value for x in constants.Cardstocks]:
-            raise ValidationException(f"Order cardstock {self.stock} not supported!")
+    # endregion
 
 
 @attr.s
@@ -226,48 +251,23 @@ class CardOrder:
     fronts: CardImageCollection = attr.ib(default=None)
     backs: CardImageCollection = attr.ib(default=None)
 
-    @classmethod
-    def from_xml_in_folder(cls) -> "CardOrder":
-        """
-        Reads an XML from the current directory, offering a choice if multiple are detected, and populates this
-        object with the contents of the file.
-        """
+    # region initialisation
 
-        xml_glob = list(glob(os.path.join(CURRDIR, "*.xml")))
-        if len(xml_glob) <= 0:
-            input("No XML files found in this directory. Press enter to exit.")
-            sys.exit(0)
-        elif len(xml_glob) == 1:
-            file_name = xml_glob[0]
-        else:
-            xml_select_string = "Multiple XML files found. Please select one for this order: "
-            questions = {
-                "type": "list",
-                "name": "xml_choice",
-                "message": xml_select_string,
-                "choices": xml_glob,
-            }
-            answers = InquirerPy.prompt(questions)
-            file_name = answers["xml_choice"]
-        return cls.from_file_name(file_name)
+    def validate(self) -> None:
+        for collection in [self.fronts, self.backs]:
+            for image in collection.cards:
+                if not image.file_path:
+                    raise ValidationException(
+                        f"Image {TEXT_BOLD}{image.name}{TEXT_END} in {TEXT_BOLD}{collection.face}{TEXT_END} "
+                        f"has no file path."
+                    )
 
-    @classmethod
-    def from_file_name(cls, file_name: str) -> "CardOrder":
+    def __attrs_post_init__(self):
         try:
-            xml = ElementTree.parse(file_name)
-        except ElementTree.ParseError:
-            input("Your XML file contains a syntax error so it can't be processed. Press Enter to exit.")
+            self.validate()
+        except ValidationException as e:
+            input(f"There was a problem with your order file:\n\n{TEXT_BOLD}{e}{TEXT_END}\n\nPress Enter to exit.")
             sys.exit(0)
-        print(f"Parsing XML file {TEXT_BOLD}{file_name}{TEXT_END}...")
-        order = cls.from_element_tree(xml)
-        print(
-            f"Successfully read XML file: {TEXT_BOLD}{file_name}{TEXT_END}\n"
-            f"Your order has a total of {TEXT_BOLD}{order.details.quantity}{TEXT_END} cards, in the MPC bracket of up "
-            f"to {TEXT_BOLD}{order.details.bracket}{TEXT_END} cards.\n{TEXT_BOLD}{order.details.stock}{TEXT_END} "
-            f"cardstock ({TEXT_BOLD}{'foil' if order.details.foil else 'nonfoil'}{TEXT_END}).\n"
-        )
-
-        return order
 
     @classmethod
     def from_element_tree(cls, xml: ElementTree.ElementTree) -> "CardOrder":
@@ -301,19 +301,51 @@ class CardOrder:
         order = cls(details=details, fronts=fronts, backs=backs)
         return order
 
-    def __attrs_post_init__(self):
+    @classmethod
+    def from_file_name(cls, file_name: str) -> "CardOrder":
         try:
-            self.validate()
-        except ValidationException as e:
-            input(f"There was a problem with your order file:\n\n{TEXT_BOLD}{e}{TEXT_END}\n\nPress Enter to exit.")
+            xml = ElementTree.parse(file_name)
+        except ElementTree.ParseError:
+            input("Your XML file contains a syntax error so it can't be processed. Press Enter to exit.")
             sys.exit(0)
+        print(f"Parsing XML file {TEXT_BOLD}{file_name}{TEXT_END}...")
+        order = cls.from_element_tree(xml)
+        print(
+            f"Successfully read XML file: {TEXT_BOLD}{file_name}{TEXT_END}\n"
+            f"Your order has a total of {TEXT_BOLD}{order.details.quantity}{TEXT_END} cards, in the MPC bracket of up "
+            f"to {TEXT_BOLD}{order.details.bracket}{TEXT_END} cards.\n{TEXT_BOLD}{order.details.stock}{TEXT_END} "
+            f"cardstock ({TEXT_BOLD}{'foil' if order.details.foil else 'nonfoil'}{TEXT_END})."
+        )
 
-    def validate(self) -> None:
-        for collection in [self.fronts, self.backs]:
-            for image in collection.cards:
-                if not image.file_path:
-                    raise ValidationException(
-                        f"Image {TEXT_BOLD}{image.name}{TEXT_END} in {TEXT_BOLD}{collection.face}{TEXT_END} "
-                        f"has no file path."
-                    )
-        # TODO: validate that all images exist in google scripts API (might be neat to report on size of order in MB?)
+        return order
+
+    # endregion
+
+    # region public
+
+    @classmethod
+    def from_xml_in_folder(cls) -> "CardOrder":
+        """
+        Reads an XML from the current directory, offering a choice if multiple are detected, and populates this
+        object with the contents of the file.
+        """
+
+        xml_glob = list(glob(os.path.join(CURRDIR, "*.xml")))
+        if len(xml_glob) <= 0:
+            input("No XML files found in this directory. Press enter to exit.")
+            sys.exit(0)
+        elif len(xml_glob) == 1:
+            file_name = xml_glob[0]
+        else:
+            xml_select_string = "Multiple XML files found. Please select one for this order: "
+            questions = {
+                "type": "list",
+                "name": "xml_choice",
+                "message": xml_select_string,
+                "choices": xml_glob,
+            }
+            answers = InquirerPy.prompt(questions)
+            file_name = answers["xml_choice"]
+        return cls.from_file_name(file_name)
+
+    # endregion
