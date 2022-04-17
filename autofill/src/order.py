@@ -9,7 +9,6 @@ from xml.etree import ElementTree
 import attr
 import enlighten
 import InquirerPy
-
 import src.constants as constants
 from src.utils import (CURRDIR, TEXT_BOLD, TEXT_END, ValidationException,
                        download_google_drive_file, file_exists,
@@ -96,7 +95,7 @@ class CardImage:
 
     def download_image(self, queue: Queue, download_bar: enlighten.Counter):
         if not self.file_exists():
-            download_google_drive_file(self.drive_id, self.file_path)
+            self.errored = not download_google_drive_file(self.drive_id, self.file_path)
 
         if self.file_exists():
             self.downloaded = True

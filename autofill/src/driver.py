@@ -13,12 +13,11 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.expected_conditions import \
     invisibility_of_element
 from selenium.webdriver.support.ui import Select, WebDriverWait
-from webdriver_manager.chrome import ChromeDriverManager
-
 from src.constants import THREADS, States
 from src.order import CardImage, CardImageCollection, CardOrder
 from src.utils import (TEXT_BOLD, TEXT_END, InvalidStateException,
                        alert_handler, time_to_hours_minutes_seconds)
+from webdriver_manager.chrome import ChromeDriverManager
 
 # Disable logging messages for webdriver_manager
 os.environ["WDM_LOG_LEVEL"] = "0"
@@ -26,6 +25,7 @@ os.environ["WDM_LOG_LEVEL"] = "0"
 
 @attr.s
 class AutofillDriver:
+    # TODO: catch chrome version or missing installation error
     driver: webdriver.Chrome = attr.ib(default=None)  # delay initialisation until XML is selected and parsed
     starting_url: str = attr.ib(
         init=False,

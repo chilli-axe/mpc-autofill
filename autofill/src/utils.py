@@ -4,8 +4,10 @@ from math import floor
 from typing import TYPE_CHECKING, Dict, List, Optional, Tuple, Union
 from xml.etree import ElementTree
 
+import numpy as np
 import ratelimit
 import requests
+import src.constants as constants
 from selenium.common.exceptions import NoAlertPresentException
 
 if TYPE_CHECKING:
@@ -43,7 +45,7 @@ def get_google_drive_file_name(drive_id: str) -> Optional[str]:
     name = ""
     try:
         with requests.post(
-            "https://script.google.com/macros/s/AKfycbw90rkocSdppkEuyVdsTuZNslrhd5zNT3XMgfucNMM1JjhLl-Q/exec",
+            constants.GoogleScriptsAPIs.image_name.value,
             data={"id": drive_id},
             timeout=30,
         ) as r_info:
@@ -55,17 +57,26 @@ def get_google_drive_file_name(drive_id: str) -> Optional[str]:
 
 @ratelimit.sleep_and_retry
 @ratelimit.limits(calls=1, period=0.1)
-def download_google_drive_file(drive_id: str, file_path: str) -> None:
+def download_google_drive_file(drive_id: str, file_path: str) -> bool:
     """
     Download the Google Drive file identified by `drive_id` to the specified `file_path`.
+    Returns whether the request was successful or not.
     """
 
-    with open(file_path, "wb") as f:
-        r = requests.get(f"https://drive.google.com/uc?id={drive_id}&export=download", allow_redirects=True)
-        if r.status_code != 200:
-            pass  # TODO: check how this error is being reported on
-        for chunk in r.iter_content(1024):
-            f.write(chunk)
+    with requests.post(
+        constants.GoogleScriptsAPIs.image_content.value,
+        data={"id": drive_id},
+    ) as r_contents:
+        if "<title>Error</title>" in r_contents.text:
+            # error occurred while attempting to retrieve from Google API
+            return False
+        filecontents = r_contents.json()["result"]
+        if len(filecontents) > 0:
+            # Download the image
+            with open(file_path, "wb") as f:
+                f.write(np.array(filecontents, dtype=np.uint8))
+                return True
+    return False
 
 
 def text_to_list(input_text: str) -> List[int]:

@@ -1,6 +1,7 @@
 attrs
 enlighten
 InquirerPy
+numpy
 pyinstaller
 ratelimit
 requests
