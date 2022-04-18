@@ -12,8 +12,8 @@ import InquirerPy
 import src.constants as constants
 from src.utils import (CURRDIR, TEXT_BOLD, TEXT_END, ValidationException,
                        download_google_drive_file, file_exists,
-                       get_google_drive_file_name, text_to_list,
-                       unpack_element)
+                       get_google_drive_file_name, image_directory,
+                       text_to_list, unpack_element)
 
 
 @attr.s
@@ -29,13 +29,6 @@ class CardImage:
     errored: bool = attr.ib(init=False, default=False)
 
     # region file system interactions
-
-    @classmethod
-    def image_directory(cls) -> str:
-        cards_folder = CURRDIR + "/cards"
-        if not os.path.exists(cards_folder):
-            os.mkdir(cards_folder)
-        return cards_folder
 
     def file_exists(self) -> bool:
         """
@@ -70,12 +63,12 @@ class CardImage:
         if self.name is None:
             self.file_path = None
         else:
-            file_path = os.path.join(self.image_directory(), self.name)
+            file_path = os.path.join(image_directory(), self.name)
             if not os.path.isfile(file_path) or os.path.getsize(file_path) <= 0:
                 # The filepath without ID in parentheses doesn't exist - change the filepath to contain the ID instead
                 name_split = self.name.rsplit(".", 1)
                 file_path = os.path.join(
-                    self.image_directory(),
+                    image_directory(),
                     f"{name_split[0]} ({self.drive_id}).{name_split[1]}",
                 )
             self.file_path = file_path
@@ -96,12 +89,12 @@ class CardImage:
     # region public
 
     @classmethod
-    def from_dict(cls, card_dict: Dict[str, str]) -> "CardImage":
-        # assert that the keys of the input dict contains constants.CardTags
-        drive_id = card_dict[constants.CardTags.id]
-        slots = text_to_list(card_dict[constants.CardTags.slots])
-        name = card_dict[constants.CardTags.name]
-        query = card_dict[constants.CardTags.query]
+    def from_element(cls, element: ElementTree.Element) -> "CardImage":
+        card_dict = unpack_element(element, [x.value for x in constants.DetailsTags])
+        drive_id = card_dict[constants.CardTags.id].text
+        slots = text_to_list(card_dict[constants.CardTags.slots].text)
+        name = card_dict[constants.CardTags.name].text
+        query = card_dict[constants.CardTags.query].text
         card_image = cls(drive_id=drive_id, slots=slots, name=name, query=query)
         return card_image
 
@@ -168,8 +161,7 @@ class CardImageCollection:
         card_images = []
         if element:
             for x in element:
-                card_dict = unpack_element(x, [x.value for x in constants.CardTags], unpack_to_text=True)
-                card_images.append(CardImage.from_dict(card_dict))
+                card_images.append(CardImage.from_element(x))
         card_image_collection = cls(cards=card_images, num_slots=num_slots, face=face)
         if fill_image_id:
             # fill the remaining slots in this card image collection with a new card image based off the given id
@@ -205,15 +197,15 @@ class CardImageCollection:
 class Details:
     quantity: int = attr.ib(default=0)
     bracket: int = attr.ib(default=0)
-    stock: str = attr.ib(default=0)
+    stock: str = attr.ib(default=constants.Cardstocks.S30)
     foil: bool = attr.ib(default=False)
 
     # region initialisation
 
     def validate(self) -> None:
-        if not 0 < self.quantity <= constants.BRACKETS[-1]:
+        if not 0 < self.quantity <= self.bracket:
             raise ValidationException(
-                f"Order quantity {self.quantity} outside allowable range of 0 to {constants.BRACKETS[-1]}!"
+                f"Order quantity {self.quantity} outside allowable range of {TEXT_BOLD}[0, {self.bracket}]{TEXT_END}!"
             )
         if self.bracket not in constants.BRACKETS:
             raise ValidationException(f"Order bracket {self.bracket} not supported!")
@@ -270,9 +262,8 @@ class CardOrder:
             sys.exit(0)
 
     @classmethod
-    def from_element_tree(cls, xml: ElementTree.ElementTree) -> "CardOrder":
-        root = xml.getroot()
-        root_dict = unpack_element(root, [x.value for x in constants.BaseTags])
+    def from_element(cls, element: ElementTree.Element) -> "CardOrder":
+        root_dict = unpack_element(element, [x.value for x in constants.BaseTags])
         details = Details.from_element(root_dict[constants.BaseTags.details])
         fronts = CardImageCollection.from_element(
             element=root_dict[constants.BaseTags.fronts],
@@ -309,7 +300,7 @@ class CardOrder:
             input("Your XML file contains a syntax error so it can't be processed. Press Enter to exit.")
             sys.exit(0)
         print(f"Parsing XML file {TEXT_BOLD}{file_name}{TEXT_END}...")
-        order = cls.from_element_tree(xml)
+        order = cls.from_element(xml.getroot())
         print(
             f"Successfully read XML file: {TEXT_BOLD}{file_name}{TEXT_END}\n"
             f"Your order has a total of {TEXT_BOLD}{order.details.quantity}{TEXT_END} cards, in the MPC bracket of up "

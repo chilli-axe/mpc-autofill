@@ -106,6 +106,13 @@ def unpack_element(
     return element_dict
 
 
+def image_directory() -> str:
+    cards_folder = os.path.join(CURRDIR, "cards")
+    if not os.path.exists(cards_folder):
+        os.mkdir(cards_folder)
+    return cards_folder
+
+
 def file_exists(file_path: str) -> bool:
     return file_path != "" and os.path.isfile(file_path) and os.path.getsize(file_path) > 0
 
