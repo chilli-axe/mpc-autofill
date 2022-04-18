@@ -10,6 +10,7 @@ import attr
 import enlighten
 import InquirerPy
 import src.constants as constants
+from defusedxml.ElementTree import parse as defused_parse
 from src.utils import (CURRDIR, TEXT_BOLD, TEXT_END, ValidationException,
                        download_google_drive_file, file_exists,
                        get_google_drive_file_name, image_directory,
@@ -55,6 +56,7 @@ class CardImage:
 
         if file_exists(self.drive_id):
             self.file_path = self.drive_id
+            self.name = os.path.basename(self.file_path)
             return
 
         if not self.name:
@@ -295,7 +297,7 @@ class CardOrder:
     @classmethod
     def from_file_name(cls, file_name: str) -> "CardOrder":
         try:
-            xml = ElementTree.parse(file_name)
+            xml = defused_parse(file_name)
         except ElementTree.ParseError:
             input("Your XML file contains a syntax error so it can't be processed. Press Enter to exit.")
             sys.exit(0)
