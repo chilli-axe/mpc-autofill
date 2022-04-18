@@ -106,9 +106,9 @@ class CardImage:
             self.downloaded = True
         else:
             print(
-                f'Failed to download "{TEXT_BOLD}{self.name}{TEXT_END}" - '
-                f"(Drive ID {TEXT_BOLD}{self.drive_id}{TEXT_END}), "
-                f'allocated to slots {TEXT_BOLD}{", ".join([str(x) for x in self.slots])}{TEXT_END}'
+                f"Failed to download '{TEXT_BOLD}{self.name}{TEXT_END}' - "
+                f"allocated to slot/s {TEXT_BOLD}[{', '.join([str(x) for x in self.slots])}]{TEXT_END}).\n"
+                f"Download link - {TEXT_BOLD}https://drive.google.com/uc?id={self.drive_id}&export=download{TEXT_END}\n"
             )
         # put card onto queue irrespective of whether it was downloaded successfully or not
         queue.put(self)
