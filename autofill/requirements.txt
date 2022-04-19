@@ -1,8 +1,12 @@
 attrs
+coverage
+defusedxml
 enlighten
 InquirerPy
 numpy
+pre-commit
 pyinstaller
+pytest
 ratelimit
 requests
 selenium

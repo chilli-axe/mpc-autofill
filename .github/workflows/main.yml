@@ -14,18 +14,19 @@ jobs:
         include:
           - os: macos-latest
             TARGET: macos
-            CMD_BUILD: cd autofill && pyinstaller autofill.spec
+            CMD_BUILD: pyinstaller autofill.spec
             OUT_FILE_NAME: autofill
           - os: windows-latest
             TARGET: windows
-            CMD_BUILD: cd autofill && pip install pywin32 && pyinstaller autofill.spec
+            CMD_BUILD: pip install pywin32 && pyinstaller autofill.spec
             OUT_FILE_NAME: autofill.exe
           - os: ubuntu-latest
             TARGET: linux
-            CMD_BUILD: cd autofill && pyinstaller autofill.spec
+            CMD_BUILD: pyinstaller autofill.spec
             OUT_FILE_NAME: autofill
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
+    - uses: browser-actions/setup-chrome@latest
     - name: Set up Python 3.9
       uses: actions/setup-python@v2
       with:
@@ -35,8 +36,10 @@ jobs:
         python -m pip install --upgrade pip
         cd autofill
         pip install -r requirements.txt
+    - name: Run tests
+      run: cd autofill/src && pytest tests.py
     - name: Build with pyinstaller for ${{ matrix.TARGET }}
-      run: ${{matrix.CMD_BUILD}}
+      run: cd autofill && ${{matrix.CMD_BUILD}}
     - name: Upload artifact
       uses: actions/upload-artifact@v2
       with:

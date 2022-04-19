@@ -7,8 +7,9 @@ from xml.etree import ElementTree
 import numpy as np
 import ratelimit
 import requests
-import src.constants as constants
 from selenium.common.exceptions import NoAlertPresentException
+
+import src.constants as constants
 
 if TYPE_CHECKING:
     from driver import AutofillDriver
@@ -41,17 +42,19 @@ def get_google_drive_file_name(drive_id: str) -> Optional[str]:
     Retrieve the name for the Google Drive file identified by `drive_id`.
     """
 
-    name = None
+    if not drive_id:
+        return None
     try:
         with requests.post(
             constants.GoogleScriptsAPIs.image_name.value,
             data={"id": drive_id},
             timeout=30,
         ) as r_info:
-            name = r_info.json()["name"]
+            if r_info.status_code == 500:
+                return None
+            return r_info.json()["name"]
     except requests.exceptions.Timeout:
-        pass
-    return name
+        return None
 
 
 @ratelimit.sleep_and_retry

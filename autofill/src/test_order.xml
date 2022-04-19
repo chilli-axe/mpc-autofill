@@ -1,0 +1,23 @@
+<order>
+    <details>
+        <quantity>10</quantity>
+        <bracket>18</bracket>
+        <stock>(S30) Standard Smooth</stock>
+        <foil>true</foil>
+    </details>
+    <fronts>
+        <card>
+            <id>1OAw4l9RYbgYrmnyYeR1iVDoIS6_aus49</id>
+            <slots>4,0,7,2,8,3,5,6,1</slots>
+            <name>Island (Unsanctioned).png</name>
+            <query>island</query>
+        </card>
+        <card>
+            <id>1wlrM7pNHQ5NqS9GY5LWH7Hd04TtNgHI4</id>
+            <slots>9</slots>
+            <name>Rite of Flame.png</name>
+            <query>rite of flame</query>
+        </card>
+    </fronts>
+    <cardback>16g2UamJ2jzwNHovLesvsinvd6_qPkZfy</cardback>
+</order>

@@ -9,12 +9,21 @@ from xml.etree import ElementTree
 import attr
 import enlighten
 import InquirerPy
-import src.constants as constants
 from defusedxml.ElementTree import parse as defused_parse
-from src.utils import (CURRDIR, TEXT_BOLD, TEXT_END, ValidationException,
-                       download_google_drive_file, file_exists,
-                       get_google_drive_file_name, image_directory,
-                       text_to_list, unpack_element)
+
+import src.constants as constants
+from src.utils import (
+    CURRDIR,
+    TEXT_BOLD,
+    TEXT_END,
+    ValidationException,
+    download_google_drive_file,
+    file_exists,
+    get_google_drive_file_name,
+    image_directory,
+    text_to_list,
+    unpack_element,
+)
 
 
 @attr.s
@@ -23,7 +32,7 @@ class CardImage:
     slots: List[int] = attr.ib(default=[])
     name: Optional[str] = attr.ib(default="")
     file_path: Optional[str] = attr.ib(default="")
-    query: str = attr.ib(default="")
+    query: Optional[str] = attr.ib(default=None)
 
     downloaded: bool = attr.ib(init=False, default=False)
     uploaded: bool = attr.ib(init=False, default=False)

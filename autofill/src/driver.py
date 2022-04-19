@@ -12,14 +12,19 @@ from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.expected_conditions import \
-    invisibility_of_element
+from selenium.webdriver.support.expected_conditions import invisibility_of_element
 from selenium.webdriver.support.ui import Select, WebDriverWait
+from webdriver_manager.chrome import ChromeDriverManager
+
 from src.constants import THREADS, States
 from src.order import CardImage, CardImageCollection, CardOrder
-from src.utils import (TEXT_BOLD, TEXT_END, InvalidStateException,
-                       alert_handler, time_to_hours_minutes_seconds)
-from webdriver_manager.chrome import ChromeDriverManager
+from src.utils import (
+    TEXT_BOLD,
+    TEXT_END,
+    InvalidStateException,
+    alert_handler,
+    time_to_hours_minutes_seconds,
+)
 
 # Disable logging messages for webdriver_manager
 os.environ["WDM_LOG_LEVEL"] = "0"
@@ -28,6 +33,7 @@ os.environ["WDM_LOG_LEVEL"] = "0"
 @attr.s
 class AutofillDriver:
     driver: webdriver.Chrome = attr.ib(default=None)  # delay initialisation until XML is selected and parsed
+    headless: bool = attr.ib(default=False)
     starting_url: str = attr.ib(
         init=False,
         default="https://www.makeplayingcards.com/design/custom-blank-card.html",
@@ -45,6 +51,8 @@ class AutofillDriver:
         try:
             chrome_options = Options()
             chrome_options.add_argument("--log-level=3")
+            if self.headless:
+                chrome_options.add_argument("--headless")
             chrome_options.add_experimental_option("excludeSwitches", ["enable-logging"])
             chrome_options.add_experimental_option("detach", True)
             driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
@@ -330,7 +338,7 @@ class AutofillDriver:
                 input(
                     textwrap.dedent(
                         """
-                        Please sign in and select an existing project to continue editing. Once you've signed in, 
+                        Please sign in and select an existing project to continue editing. Once you've signed in,
                         return to the script execution window and press Enter.
                         """
                     )
@@ -353,7 +361,7 @@ class AutofillDriver:
                 """
                 Please review your order and ensure everything has been uploaded correctly before finalising with MPC.
                 If any images failed to download, links to download them will have been printed above.
-                If you need to make any changes to your order, you can do so by adding it to your Saved Projects and 
+                If you need to make any changes to your order, you can do so by adding it to your Saved Projects and
                 editing in your  normal browser. Press Enter to close this window - your Chrome window will remain open.
                 """
             )
