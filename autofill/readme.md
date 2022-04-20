@@ -12,6 +12,7 @@ Once the autofilling process completes, you can either complete and pay for your
 * Download the latest Windows release from [the Releases tab](https://github.com/chilli-axe/mpc-autofill/releases),
 * Move the executable file into the same directory as your XML order,
 * Double-click the executable to run. If you have multiple XML files in the directory, you will be prompted to select one.
+* If text doesn't seem to render properly (bold text and progress bars don't work), try right-clicking on the window, opening Properties, and setting the font to `Cascadia Mono`.
 
 # macOS and Linux Guide
 * Download the latest macOS or Linux release from [the Releases tab](https://github.com/chilli-axe/mpc-autofill/releases),

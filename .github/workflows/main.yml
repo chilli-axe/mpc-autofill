@@ -14,15 +14,12 @@ jobs:
         include:
           - os: macos-latest
             TARGET: macos
-            CMD_BUILD: pyinstaller autofill.spec
             OUT_FILE_NAME: autofill
           - os: windows-latest
             TARGET: windows
-            CMD_BUILD: pip install pywin32 && pyinstaller autofill.spec
             OUT_FILE_NAME: autofill.exe
           - os: ubuntu-latest
             TARGET: linux
-            CMD_BUILD: pyinstaller autofill.spec
             OUT_FILE_NAME: autofill
     steps:
     - uses: actions/checkout@v2
@@ -39,7 +36,7 @@ jobs:
     - name: Run tests
       run: cd autofill/src && pytest tests.py
     - name: Build with pyinstaller for ${{ matrix.TARGET }}
-      run: cd autofill && ${{matrix.CMD_BUILD}}
+      run: cd autofill && pyinstaller autofill.spec
     - name: Upload artifact
       uses: actions/upload-artifact@v2
       with:

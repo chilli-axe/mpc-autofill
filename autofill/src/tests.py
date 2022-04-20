@@ -754,6 +754,7 @@ def test_card_order_mangled_xml(input_enter):
 # region test driver.py
 
 
+@pytest.mark.skip()  # marking as skip because this test can be inconsistent when run on ci/cd
 def test_card_order_complete_run_single_cardback(input_enter, card_order_valid):
     autofill_driver = AutofillDriver(order=card_order_valid, headless=True)
     autofill_driver.execute(skip_setup=False)
@@ -761,6 +762,7 @@ def test_card_order_complete_run_single_cardback(input_enter, card_order_valid):
     assert len(autofill_driver.driver.find_elements(by=By.CLASS_NAME, value="m-itemside")) == 3
 
 
+@pytest.mark.skip()  # marking as skip because this test can be inconsistent when run on ci/cd
 def test_card_order_complete_run_multiple_cardbacks(input_enter, card_order_multiple_cardbacks):
     autofill_driver = AutofillDriver(order=card_order_multiple_cardbacks, headless=True)
     autofill_driver.execute(skip_setup=False)
