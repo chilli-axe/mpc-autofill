@@ -757,12 +757,14 @@ def test_card_order_mangled_xml(input_enter):
 def test_card_order_complete_run_single_cardback(input_enter, card_order_valid):
     autofill_driver = AutofillDriver(order=card_order_valid, headless=True)
     autofill_driver.execute(skip_setup=False)
+    time.sleep(5)  # seems necessary to ensure these tests work as expected on ci/cd
     assert len(autofill_driver.driver.find_elements(by=By.CLASS_NAME, value="m-itemside")) == 3
 
 
 def test_card_order_complete_run_multiple_cardbacks(input_enter, card_order_multiple_cardbacks):
     autofill_driver = AutofillDriver(order=card_order_multiple_cardbacks, headless=True)
     autofill_driver.execute(skip_setup=False)
+    time.sleep(5)  # seems necessary to ensure these tests work as expected on ci/cd
     assert len(autofill_driver.driver.find_elements(by=By.CLASS_NAME, value="m-itemside")) == 4
 
 
