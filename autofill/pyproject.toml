@@ -1,0 +1,6 @@
+[tool.isort]
+profile = "black"
+skip = ["build", "dist", "cards"]
+
+[tool.black]
+line-length = 120
