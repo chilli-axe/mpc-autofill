@@ -9,6 +9,8 @@ from django.core.management.base import BaseCommand
 
 
 def sync_dfcs():
+    t0 = time.time()
+    print("Querying Scryfall for DFS pairs...")
     scryfall_query_dfc = "https://api.scryfall.com/cards/search?q=is:dfc%20-layout:art_series%20-layout:double_faced_token"
     response_dfc = json.loads(requests.get(scryfall_query_dfc).content)
 
@@ -49,7 +51,6 @@ def sync_dfcs():
             )
 
     # synchronise the located DFCPairs to database
-    t0 = time.time()
     key_fields = ("front",)
     ret = bulk_sync(
         new_models=q_dfcpairs, key_fields=key_fields, filters=None, db_class=DFCPair

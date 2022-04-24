@@ -1,4 +1,4 @@
-# helper script to crawl drives and rebuild index with ez command    
+# helper script to crawl drives and rebuild index with ez command
 
 cd ~/mpc-autofill/MPCAutofill
 if [[ "$1" == "" ]]

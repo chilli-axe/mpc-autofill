@@ -2,8 +2,6 @@
 
 Automating MakePlayingCards's online ordering system.
 
-The below guide describes the procedure for setting up the web component. If you're here to download the clientside program, check the [Releases](releases/) tab.
-
 # Preparation
 
 Before the web application can be started, a couple of user files need to be prepared and copied to the right places.
