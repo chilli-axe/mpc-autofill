@@ -19,7 +19,7 @@ Once the autofilling process completes, you can either complete and pay for your
 * Your computer will probably not recognise the file as an executable, preventing you from double-clicking it on macOS and from running it in the Terminal in Linux. Fixing this is easy:
   * Move the file to your desktop,
   * Open the Terminal (on macOS, this is located under Applications/Utilities),
-  * Run the following command: `chmod 755 autofill` (or try `chmod +x autofill` if that didn't work for whatever reason)
+  * Run the following command: `chmod +x autofill`, which marks the file as an executable,
   * You can now run the tool in macOS by double-clicking on it and in Linux with `./autofill` in the Terminal.
   * [This guide by Apple](https://support.apple.com/en-au/guide/terminal/apdd100908f-06b3-4e63-8a87-32e71241bab4/mac) has further information on the topic.
 * You may have issues with running the executable on older versions of macOS [due to a limitation of PyInstaller](https://stackoverflow.com/questions/49908236/pyinstaller-executable-fails-on-old-os-x). GitHub is configured to compile the tool for Windows, macOS, and Linux (Ubuntu) on the latest available versions.
