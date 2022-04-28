@@ -3,7 +3,7 @@ import sys
 from concurrent.futures import ThreadPoolExecutor
 from glob import glob
 from queue import Queue
-from typing import Dict, List, Optional, Set
+from typing import List, Optional, Set
 from xml.etree import ElementTree
 
 import attr
@@ -250,9 +250,23 @@ class Details:
 
 @attr.s
 class CardOrder:
+    name: Optional[str] = attr.ib(default=None)
     details: Details = attr.ib(default=None)
     fronts: CardImageCollection = attr.ib(default=None)
     backs: CardImageCollection = attr.ib(default=None)
+
+    # region logging
+
+    def print_order_overview(self):
+        if self.name is not None:
+            print(f"Successfully parsed card order: {TEXT_BOLD}{self.name}{TEXT_END}")
+        print(
+            f"Your order has a total of {TEXT_BOLD}{self.details.quantity}{TEXT_END} cards, in the MPC bracket of up "
+            f"to {TEXT_BOLD}{self.details.bracket}{TEXT_END} cards.\n{TEXT_BOLD}{self.details.stock}{TEXT_END} "
+            f"cardstock ({TEXT_BOLD}{'foil' if self.details.foil else 'nonfoil'}{TEXT_END}).\n "
+        )
+
+    # endregion
 
     # region initialisation
 
@@ -273,7 +287,7 @@ class CardOrder:
             sys.exit(0)
 
     @classmethod
-    def from_element(cls, element: ElementTree.Element) -> "CardOrder":
+    def from_element(cls, element: ElementTree.Element, name: Optional[str] = None) -> "CardOrder":
         root_dict = unpack_element(element, [x.value for x in constants.BaseTags])
         details = Details.from_element(root_dict[constants.BaseTags.details])
         fronts = CardImageCollection.from_element(
@@ -300,7 +314,7 @@ class CardOrder:
         # a single slot
         if len(backs.cards) == 1:
             backs.cards[0].slots = [0]
-        order = cls(details=details, fronts=fronts, backs=backs)
+        order = cls(name=name, details=details, fronts=fronts, backs=backs)
         return order
 
     @classmethod
@@ -311,14 +325,7 @@ class CardOrder:
             input("Your XML file contains a syntax error so it can't be processed. Press Enter to exit.")
             sys.exit(0)
         print(f"Parsing XML file {TEXT_BOLD}{file_name}{TEXT_END}...")
-        order = cls.from_element(xml.getroot())
-        print(
-            f"Successfully read XML file: {TEXT_BOLD}{file_name}{TEXT_END}\n"
-            f"Your order has a total of {TEXT_BOLD}{order.details.quantity}{TEXT_END} cards, in the MPC bracket of up "
-            f"to {TEXT_BOLD}{order.details.bracket}{TEXT_END} cards.\n{TEXT_BOLD}{order.details.stock}{TEXT_END} "
-            f"cardstock ({TEXT_BOLD}{'foil' if order.details.foil else 'nonfoil'}{TEXT_END})."
-        )
-
+        order = cls.from_element(xml.getroot(), name=file_name)
         return order
 
     # endregion

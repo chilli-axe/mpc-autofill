@@ -1,3 +1,42 @@
+"""
+image_name Google Scripts API
+Deployed at: https://script.google.com/macros/s/AKfycbw90rkocSdppkEuyVdsTuZNslrhd5zNT3XMgfucNMM1JjhLl-Q/exec
+
+function doPost(e) {
+  return (function(id){
+    var file = DriveApp.getFileById(id);
+    return ContentService
+      .createTextOutput(JSON.stringify({
+        //result: file.getBlob().getBytes(),
+        name: file.getName(),
+        mimeType: file.getBlob().getContentType()
+      }))
+      .setMimeType(ContentService.MimeType.JSON);
+  })(e.parameters.id);
+}
+
+
+image_content Google Scripts API
+Deployed at: https://script.google.com/macros/s/AKfycbzzCWc2x3tfQU1Zp45LB1P19FNZE-4njwzfKT5_Rx399h-5dELZWyvf/exec
+
+function doPost(e) {
+  return (function(id){
+    var file = DriveApp.getFileById(id);
+    var size = file.getSize();
+    var result = [];
+    if (size <= 30000000) {
+      result = file.getBlob().getBytes();
+    }
+    return ContentService
+      .createTextOutput(JSON.stringify({
+        result: result,
+      }))
+      .setMimeType(ContentService.MimeType.JSON);
+  })(e.parameters.id);
+}
+"""
+
+
 from enum import Enum
 
 

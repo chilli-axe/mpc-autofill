@@ -85,6 +85,7 @@ class AutofillDriver:
 
     def __attrs_post_init__(self):
         self.configure_bars()
+        self.order.print_order_overview()
         self.initialise_driver()
         self.driver.get(self.starting_url)
         self.set_state(States.defining_order)
@@ -337,14 +338,30 @@ class AutofillDriver:
             if skip_setup:
                 input(
                     textwrap.dedent(
-                        """
-                        Please sign in and select an existing project to continue editing. Once you've signed in,
-                        return to the script execution window and press Enter.
+                        f"""
+                        The program has been started with {TEXT_BOLD}--skipsetup{TEXT_END}, which will continue
+                        uploading cards to an existing project. Please sign in to MPC and select an existing project
+                        to continue editing. Once you've signed in and are on the {TEXT_BOLD}Customize front{TEXT_END}
+                        page, return to the console window and press Enter.
                         """
                     )
                 )
                 self.set_state(States.inserting_fronts)
             else:
+                print(
+                    textwrap.dedent(
+                        f"""
+                        Configuring a new order. If you'd like to continue uploading cards to an existing project,
+                        start the program with the {TEXT_BOLD}--skipsetup{TEXT_END} option (in command prompt or
+                        terminal) and follow the printed instructions.
+
+                        Windows:
+                            {TEXT_BOLD}autofill.exe --skipsetup{TEXT_END}
+                        macOS or Linux:
+                            {TEXT_BOLD}./autofill --skipsetup{TEXT_END}
+                        """
+                    )
+                )
                 self.define_order()
                 self.page_to_fronts()
             self.insert_fronts()
@@ -354,8 +371,8 @@ class AutofillDriver:
         hours, mins, secs = time_to_hours_minutes_seconds(time.time() - t)
         print("Elapsed time: ", end="")
         if hours > 0:
-            print(f"{hours} hours, ", end="")
-        print(f"{mins} minutes and {secs} seconds.")
+            print(f"{hours} hour{'s' if hours > 1 else ''}, ", end="")
+        print(f"{mins} minute{'s' if mins > 1 else ''} and {secs} second{'s' if secs > 1 else ''}.")
         input(
             textwrap.dedent(
                 """
