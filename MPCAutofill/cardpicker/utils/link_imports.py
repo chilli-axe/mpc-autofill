@@ -197,7 +197,7 @@ class TappedOut(ImportSite):
 
 class TcgPlayer(ImportSite):
     def __init__(self):
-        self.base_url = "https://www.tcgplayer.com/"
+        self.base_url = "https://decks.tcgplayer.com/"
 
     def retrieve_card_list(self, url: str) -> str:
         # TCGPlayer doesn't expose a useful API, so we need to parse the html directly
