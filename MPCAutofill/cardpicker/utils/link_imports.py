@@ -1,6 +1,7 @@
 import json
 import re
 from dataclasses import dataclass
+import html
 
 import requests
 
@@ -194,6 +195,23 @@ class TappedOut(ImportSite):
         return card_list
 
 
+class TcgPlayer(ImportSite):
+    def __init__(self):
+        self.base_url = "https://www.tcgplayer.com/"
+
+    def retrieve_card_list(self, url: str) -> str:
+        # TCGPlayer doesn't expose a useful API, so we need to parse the html directly
+        response = requests.get(url)
+        if response.status_code == 404:
+            raise self.InvalidURLException(url)
+        cardTuple = re.findall('<span class=\"subdeck-group__card-qty\">(.+?)</span> '
+                               '<span class=\"subdeck-group__card-name\">(.+?)</span>', response.text)
+        card_list = ""
+        for qty, name in cardTuple:
+            card_list += "{} {}\n".format(qty, html.unescape(name))
+        return card_list
+
+
 ImportSites = [
     Aetherhub,
     Archidekt,
@@ -205,4 +223,5 @@ ImportSites = [
     MTGGoldfish,
     Scryfall,
     TappedOut,
+    TcgPlayer
 ]
