@@ -195,7 +195,7 @@ class TappedOut(ImportSite):
         return card_list
 
 
-class TcgPlayer(ImportSite):
+class TCGPlayer(ImportSite):
     def __init__(self):
         self.base_url = "https://decks.tcgplayer.com/"
 
@@ -226,5 +226,5 @@ ImportSites = [
     MTGGoldfish,
     Scryfall,
     TappedOut,
-    TcgPlayer,
+    TCGPlayer,
 ]
