@@ -2,16 +2,15 @@ from datetime import timedelta
 from math import floor
 from typing import Dict, List, Optional, Tuple, Type
 
+from cardpicker.documents import CardbackSearch, CardSearch, TokenSearch
+from cardpicker.models import Source
+from cardpicker.utils.to_searchable import to_searchable
 from django.utils import timezone
 from elasticsearch.exceptions import ConnectionError as ElasticConnectionError
 from elasticsearch_dsl.document import Document
 from elasticsearch_dsl.index import Index
 from elasticsearch_dsl.query import Match
 from Levenshtein import distance
-
-from cardpicker.documents import CardbackSearch, CardSearch, TokenSearch
-from cardpicker.models import Source
-from cardpicker.utils.to_searchable import to_searchable
 
 
 class SearchExceptions:

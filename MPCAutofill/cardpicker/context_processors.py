@@ -1,7 +1,6 @@
-from django.conf import settings
-
 from cardpicker.forms import InputLink, InputText
 from cardpicker.utils.link_imports import ImportSites
+from django.conf import settings
 
 
 def add_gtag(request):

@@ -1,7 +1,7 @@
+import html
 import json
 import re
 from dataclasses import dataclass
-import html
 
 import requests
 
@@ -204,8 +204,11 @@ class TcgPlayer(ImportSite):
         response = requests.get(url)
         if response.status_code == 404:
             raise self.InvalidURLException(url)
-        cardTuple = re.findall('<span class=\"subdeck-group__card-qty\">(.+?)</span> '
-                               '<span class=\"subdeck-group__card-name\">(.+?)</span>', response.text)
+        cardTuple = re.findall(
+            '<span class="subdeck-group__card-qty">(.+?)</span> '
+            '<span class="subdeck-group__card-name">(.+?)</span>',
+            response.text,
+        )
         card_list = ""
         for qty, name in cardTuple:
             card_list += "{} {}\n".format(qty, html.unescape(name))
@@ -223,5 +226,5 @@ ImportSites = [
     MTGGoldfish,
     Scryfall,
     TappedOut,
-    TcgPlayer
+    TcgPlayer,
 ]

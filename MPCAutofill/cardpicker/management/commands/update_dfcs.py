@@ -3,10 +3,9 @@ import time
 
 import requests
 from bulk_sync import bulk_sync
-from django.core.management.base import BaseCommand
-
 from cardpicker.models import DFCPair
 from cardpicker.utils.to_searchable import to_searchable
+from django.core.management.base import BaseCommand
 
 
 def sync_dfcs():

@@ -2,6 +2,8 @@ import time
 from math import floor
 
 import googleapiclient.errors
+from cardpicker.models import Card, Cardback, Source, Token
+from cardpicker.utils.to_searchable import to_searchable
 from django.core import management
 from django.core.management.base import BaseCommand
 from django.db import transaction
@@ -9,9 +11,6 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from oauth2client.service_account import ServiceAccountCredentials
 from tqdm import tqdm
-
-from cardpicker.models import Card, Cardback, Source, Token
-from cardpicker.utils.to_searchable import to_searchable
 
 # cron job to run this cmd daily: 0 0 * * * bash /root/mpc-autofill/update_database >> /root/db_update.txt 2>&1
 

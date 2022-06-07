@@ -5,12 +5,20 @@ Object Model for working with MPCOrders - the data structure that defines a user
 import csv
 from collections import abc
 from enum import Enum
-from typing import (AbstractSet, Any, Dict, ItemsView, Iterator, List, Set,
-                    Tuple, ValuesView)
+from typing import (
+    AbstractSet,
+    Any,
+    Dict,
+    ItemsView,
+    Iterator,
+    List,
+    Set,
+    Tuple,
+    ValuesView,
+)
 
 import chardet
 import defusedxml.ElementTree as ET
-
 from cardpicker.models import DFCPair
 from cardpicker.utils.link_imports import ImportSites
 from cardpicker.utils.search_functions import process_line, text_to_list

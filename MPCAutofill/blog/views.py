@@ -1,8 +1,7 @@
+from blog.models import Blog, BlogPost, ShowcaseBlogPost
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import Http404
 from django.shortcuts import render
-
-from blog.models import Blog, BlogPost, ShowcaseBlogPost
 
 
 def index(request):
