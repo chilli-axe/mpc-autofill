@@ -1,0 +1,156 @@
+{% extends 'cardpicker/base.html' %}
+{% load static %}
+
+{% block title %} MPC Autofill Guide {% endblock %}
+
+{% block content %}
+    <h2>MPC Autofill Guide</h2>
+    <h3>Introduction to MPC Proxies</h3>
+    <p>
+        <img class="img-fluid float-md-right" style="width: 32rem; padding: 10px 10px 10px 10px;"
+             src="{% static 'cardpicker/autofill-cardshand.png' %}">
+        <a href="https://www.makeplayingcards.com/" target="_blank">MakePlayingCards.com</a> (MPC) is a
+        Hong Kong-headquartered company that <em>"offers an online platform to create high quality, customised playing
+        cards... at wholesale prices."</em> Ordering cards through MPC uses an intuitive drag and drop GUI where the
+        user uploads print-ready images for each card.
+    </p>
+    <p>
+        MPC is fantastic for cheaply printing playtest (proxy) cards for casual trading card game play. Cards printed
+        with MPC are not counterfeits, as they're intentionally impossible to mistake for real cards &#8212 they don't
+        have holo stamps, typically are labelled as not for sale and have different set symbols, and have different
+        cardbacks.
+    </p>
+    <p>
+        Some folks in the <a href="https://www.reddit.com/r/mpcproxies/" target="_blank">r/mpcproxies</a> community
+        share Google Drives with print-ready Magic: The Gathering card images they've prepared, making it possible
+        to print a huge variety of cards with no image editing skills.
+    </p>
+    {% comment %} <p>
+        Check out <a href="https://mpcproxy.com/" target="_blank">mpcproxy.com</a> for more info as well.
+    </p> {% endcomment %}
+    <br>
+    <h3>Why MPC Autofill</h3>
+    <p>
+    <div class="embed-responsive embed-responsive-4by3 float-md-right mpc-vid">
+        <video loop autoplay muted playsinline class="embed-responsive-item">
+            <source src="https://thumbs.gfycat.com/HotGracefulJaguar-mobile.mp4" type="video/mp4">
+        </video>
+    </div>
+    Normally, ordering through MPC is very laborious. You have to collect the card images for everything in your order
+    yourself, then manually upload each card, and drag and drop them into the correct slots.
+    </p>
+    </p>
+    <p>
+        Double-faced cards are also a headache. If you want to order 396 cards and 2 of them have two faces,
+        you have to manually drag and drop your cardback to the other 394 cards.
+    </p>
+    <p>
+        <b>We make it dead easy to order with MPC.</b> Just paste your desired card list in MPC Autofill, and
+        we'll search a wide range of community Drives for you. Then, you can customise your order by choosing between
+        different versions of cards and different cardbacks.
+    </p>
+    <p>
+        Once you're happy, a button press exports an XML file describing your order. Then, a small program will read
+        this file, download every card from Google Drive for you, and automatically fill them into MPC.
+    </p>
+    <br>
+    <h3>Usage Guide</h3>
+    <h4>1. Customise Your Order</h4>
+    <p>
+    <div class="embed-responsive embed-responsive-16by9 float-md-right mpc-vid">
+        <video loop autoplay muted playsinline class="embed-responsive-item">
+            <source src="https://thumbs.gfycat.com/ForsakenAbleHammerheadshark-mobile.mp4" type="video/mp4">
+        </video>
+    </div>
+
+    Type the list of cards you'd like to print with MPC into the home page, including how many of each you'd like.
+    Then click <b>Submit</b> to be taken to the review page. Or, can upload a CSV of your card list, which
+    lets you specify what cards should be on the fronts and backs &#8212 this lets you easily print one deck on the
+    fronts and one deck on the backs. Download the CSV template
+    <b><a href="{% static 'cardpicker/template.csv' %}">here</a></b>.
+    You can also re-upload an existing XML order to edit it further.
+    </p>
+    <p>
+        If you'd like to only use some community Drives, you can click <b>Select Drives</b> before submitting your
+        card list. Here, you can selectively enable or disable each Drive, and you can drag & drop to change which
+        Drives' cards are shown before others.
+    </p>
+    <p>
+        The review page shows how your order will be filled into MPC. If a card has multiple versions, use the
+        left and right arrows to page through them. You can synchronise the selected versions of cards as well, by
+        clicking the <b>padlock</b> above the card &#8212 e.g. if you'd like the 10th version of 20 copies of a card.
+    </p>
+    <p>
+        If you misspell a card name or change your mind, you can click on the card's name and input a new search query,
+        which will just change that one card. You can also insert more cards into your order by clicking the <b>Add
+        Cards</b>
+        button in the top right.
+    </p>
+    <p>
+        <div class="embed-responsive embed-responsive-16by9 float-md-right mpc-vid">
+            <video loop autoplay muted playsinline class="embed-responsive-item">
+                <source src="https://thumbs.gfycat.com/KnobbyDimHalcyon-mobile.mp4" type="video/mp4">
+            </video>
+        </div>
+        Click the <b>arrow</b> above a card to download the currently selected full-resolution image. You can also
+        download all images in your order by clicking the <b>Download All Images</b> button &#8212 please note that
+        you should have popups enabled for this to work properly.
+    </p>
+    </p>
+        On this page, you can also choose your cardstock and cardback. S30 and S33 cardstock options are the closest
+        to the feel of real cards, with some people preferring S33 (though it's slightly more expensive). Linen and
+        P10 Plastic are options to consider if you like to play with unsleeved cards.
+    </p>
+    <p>
+        Once you're satisfied with your order, click the <b>Generate Order</b> button. This will download a file
+        called <code>cards.xml</code> to your computer, which we'll need in the next step.
+    </p>
+
+    <h4>2. Download and Run the Tool</h4>
+    <p>
+        At this point, you're ready to automatically fill your order into MPC! First, download the tool from
+        <a href="https://github.com/chilli-axe/mpc-autofill/releases" target="_blank">GitHub</a>.
+        The tool is compiled for Windows, macOS, and Linux. One extra step is required to run the tool on macOS
+        and Linux - see the instructions
+        <a href="https://github.com/chilli-axe/mpc-autofill/blob/master/autofill/readme.md"  target="_blank">here</a>.
+        You only need to download the executable, not the zipped-up the source code.
+        Make sure you have Google Chrome installed on your computer as well.
+    </p>
+    <p>
+        I recommend creating an account with MakePlayingCards now, as it'll come in handy in a bit.
+    </p>
+    <p>
+        Put your <code>cards.xml</code> file into the same folder as the executable and run it.
+        If you're unsure about running an executable on your computer for security reasons, you can read & download the
+        Python source code on
+        <a href="https://github.com/chilli-axe/mpc-autofill/blob/master/autofill" target="_blank">GitHub</a>
+        and run that instead. Instructions for how to run the Python source code are provided.
+    </p>
+    <p>
+        When you run MPC Autofill, it'll do two things:
+    <ul>
+        <li>Create a folder next to the executable called <code>cards</code> and start downloading the images
+            for your order into this folder,
+        </li>
+        <li>Open an automated Chrome window and navigate to MPC's website. Your order details are specified for you
+            (cardstock and number of cards in order), then your cards are automatically uploaded and dragged to the
+            correct slots. This can take a while, so feel free to do something else in the meantime.
+        </li>
+    </ul>
+    </p>
+    <p>
+        Also &#8212 it's completely normal for cards to upload and fill into MPC out of order, nothing to worry about.
+    </p>
+    <p>
+        Once it's finished, your Chrome window will take you to the MPC finalise order page. Here, you can log in with
+        your MPC account and save it to your Saved Projects, or you can complete the order and enter it into MPC's
+        production system right away.
+    </p>
+    <p>
+        And that's it! I hope you found this guide easy to understand and follow. If you have any questions, get in
+        touch with us on <a href="https://www.reddit.com/r/mpcproxies/">r/mpcproxies</a> and
+        <a href="https://www.reddit.com/r/mpcproxies/">r/magicproxies</a>! :)
+    </p>
+    <!-- Footer -->
+    {% include "cardpicker/footer.html" %}
+{% endblock %}

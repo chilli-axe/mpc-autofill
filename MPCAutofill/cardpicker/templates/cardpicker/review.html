@@ -23,7 +23,7 @@
                 </button>
             </div>
             <div class="toast-body">
-                You have reached the maximum deck size MPC offers at 612 cards. 
+                You have reached the maximum deck size MPC offers at 612 cards.
                 If you'd like to purchase more cards, you'll need to create a second order.
             </div>
         </div>
@@ -70,7 +70,7 @@
                     <br>
                     On smaller screens, you may need to scroll down on this panel to generate your order.
                 </p>
-                
+
                 <div class="row no-gutters">
                     {# button to toggle between fronts and backs of cards #}
                     <div class="col-lg-6 col-md-12 col-sm-12 col-12">
@@ -104,7 +104,7 @@
                 </div>
 
                 {# foil selector #}
-                <input type="checkbox" id="cardstock-foil" data-toggle="toggle" data-on="Foil (Fronts Only)" data-off="Non-Foil" 
+                <input type="checkbox" id="cardstock-foil" data-toggle="toggle" data-on="Foil (Fronts Only)" data-off="Non-Foil"
                         data-onstyle="success" data-offstyle="info" data-width="100%" data-height="40px" data-size="md">
 
                 {# dropdown to select cardstock #}
@@ -128,9 +128,17 @@
                         data-placement="top" title="Popups need to be enabled for this to function properly. Beware &#8212 this can open lots of tabs!">
                         Download All Images
                     </button>
-                    <button type="button" class="btn btn-primary btn-block" onclick="generate_xml();">
-                        Generate Order
-                    </button>
+                    <div class="col-lg-6 col-md-12 col-sm-12 col-12">
+                        <button type="button" class="btn btn-primary btn-block" data-toggle="modal"
+                                onclick="generate_xml();" data-target="#donationModal">
+                            Generate Order
+                        </button>
+                    </div>
+                    <div class="col-lg-6 col-md-12 col-sm-12 col-12">
+                        <a href="/guide" target="_blank" class="btn btn-info btn-block" role="button">
+                            What's Next?
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -196,7 +204,7 @@
     </div>
 
     {# loading modal #}
-    <div class="modal fade" id="loadModal" data-backdrop="static" tabindex="-1" role="dialog" 
+    <div class="modal fade" id="loadModal" data-backdrop="static" tabindex="-1" role="dialog"
         aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
@@ -233,7 +241,7 @@
                     This typically happens when the creator of the image removed it from their Drive
                         (even if they reuploaded it later).
                     <br>
-                    The versions we couldn't find are tabulated below for your reference. The cards in 
+                    The versions we couldn't find are tabulated below for your reference. The cards in
                     these slots have reverted to the first versions we found when searching the database.
                     </p>
                     <table class="table table-hover">
