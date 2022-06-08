@@ -185,9 +185,13 @@
                                 </td>
                                 <td style="vertical-align: middle"><p>{{ source.id }}</p></td>
                                 <td style="vertical-align: middle">
-                                {% if source.drive_link %}
-                                    <div class="active text-center"><a target="_blank" href="{{ source.drive_link }}">Link</a></div>
-                                {% endif %}
+                                    <div class="active text-center">
+                                    {% if source.drive_link %}
+                                    <a target="_blank" href="{{ source.drive_link }}">Link</a>
+                                    {% else %}
+                                    Private
+                                    {% endif %}
+                                    </div>
                                 </td>
                                 <td style="vertical-align: middle"><i class="bi bi-grip-horizontal" style="font-size: 2em"></i></td>
                             </tr>
