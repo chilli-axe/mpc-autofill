@@ -102,10 +102,14 @@ class CardImage:
     @classmethod
     def from_element(cls, element: ElementTree.Element) -> "CardImage":
         card_dict = unpack_element(element, [x.value for x in constants.DetailsTags])
-        drive_id = card_dict[constants.CardTags.id].text
+        drive_id = card_dict[constants.CardTags.id].text.strip(' "')
         slots = text_to_list(card_dict[constants.CardTags.slots].text)
-        name = card_dict[constants.CardTags.name].text
-        query = card_dict[constants.CardTags.query].text
+        name = None
+        if constants.CardTags.name in card_dict.keys():
+            name = card_dict[constants.CardTags.name].text
+        query = None
+        if constants.CardTags.name in card_dict.keys():
+            query = card_dict[constants.CardTags.query].text
         card_image = cls(drive_id=drive_id, slots=slots, name=name, query=query)
         return card_image
 
@@ -180,7 +184,7 @@ class CardImageCollection:
             if missing_slots:
                 card_image_collection.cards.append(
                     CardImage(
-                        drive_id=fill_image_id,
+                        drive_id=fill_image_id.strip(' "'),
                         slots=list(missing_slots),
                     )
                 )
