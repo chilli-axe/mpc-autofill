@@ -287,7 +287,7 @@ class AutofillDriver:
 
     # region insert backs
 
-    def page_to_backs(self) -> None:
+    def page_to_backs(self, skip_setup: bool) -> None:
         self.assert_state(States.paging_to_backs)
 
         self.next_step()
@@ -298,14 +298,15 @@ class AutofillDriver:
             pass
         self.next_step()
 
-        self.switch_to_frame("sysifm_loginFrame")
-        if len(self.order.backs.cards) == 1:
-            # Same cardback for every card
-            self.same_images()
-        else:
-            # Different cardbacks
-            self.different_images()
-        self.driver.switch_to.default_content()
+        if not skip_setup:
+            self.switch_to_frame("sysifm_loginFrame")
+            if len(self.order.backs.cards) == 1:
+                # Same cardback for every card
+                self.same_images()
+            else:
+                # Different cardbacks
+                self.different_images()
+            self.driver.switch_to.default_content()
 
         self.set_state(States.inserting_backs)
 
@@ -365,7 +366,7 @@ class AutofillDriver:
                 self.define_order()
                 self.page_to_fronts()
             self.insert_fronts()
-            self.page_to_backs()
+            self.page_to_backs(skip_setup)
             self.insert_backs()
             self.page_to_review()
         hours, mins, secs = time_to_hours_minutes_seconds(time.time() - t)
