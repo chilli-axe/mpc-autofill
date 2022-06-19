@@ -173,13 +173,17 @@ class AutofillDriver:
 
     # region uploading
     def image_not_uploaded(self, image: CardImage) -> bool:
-        # niche TODO: if you --skipsetup and insert an image into one of `image`'s slots, `image` will not be uploaded
-        results = 0
-        for slot in image.slots:
-            xpath = f"//*[contains(@src, 'default.gif') and @index={slot}]"
-            results += len(self.driver.find_elements(by=By.XPATH, value=xpath))
+        """
+        Returns True any of `image`'s slots are empty.
+        """
 
-        return len(image.slots) == results
+        self.execute_javascript("l = PageLayout.prototype")
+        return any(
+            [
+                self.execute_javascript(f'l.checkEmptyImage(l.getElement3("dnImg", {slot}))', return_=True)
+                for slot in image.slots
+            ]
+        )
 
     def upload_image(self, image: CardImage) -> Optional[str]:
         """
