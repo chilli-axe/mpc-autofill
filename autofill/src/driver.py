@@ -9,7 +9,7 @@ import attr
 import enlighten
 from selenium import webdriver
 from selenium.common import exceptions as sl_exc
-from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import NoAlertPresentException, NoSuchElementException
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
@@ -136,7 +136,7 @@ class AutofillDriver:
         )
         self.status_bar.refresh()
 
-    def assert_state(self, expected_state) -> None:
+    def assert_state(self, expected_state: States) -> None:
         if self.state != expected_state:
             raise InvalidStateException(expected_state, self.state)
 
@@ -173,20 +173,39 @@ class AutofillDriver:
 
         self.execute_javascript("setMode('ImageText', 1);")
 
+    def is_image_currently_uploading(self) -> bool:
+        return self.execute_javascript("oDesignImage.UploadStatus == 'Uploading'", return_=True) is True
+
+    @staticmethod
+    def get_element_for_slot_js(slot: int) -> str:
+        return f'PageLayout.prototype.getElement3("dnImg", "{slot}")'
+
+    def get_ssid(self):
+        try:
+            return self.driver.current_url.split("?ssid=")[1]
+        except IndexError:
+            raise Exception(
+                "The SSID of the project cannot be determined from the current URL. "
+                "Are you sure you have entered MPC's project editor?"
+            )
+
+    def handle_alert(self) -> None:
+        """
+        Accepts an alert if one is present.
+        """
+
+        try:
+            alert = self.driver.switch_to.alert
+            alert.accept()
+        except NoAlertPresentException:
+            pass
+
     # endregion
 
     # region uploading
-    def image_not_uploaded(self, image: CardImage) -> bool:
-        """
-        Returns True any of `image`'s slots are empty.
-        """
-
-        self.execute_javascript("l = PageLayout.prototype")
-        return any(
-            [
-                self.execute_javascript(f'l.checkEmptyImage(l.getElement3("dnImg", {slot}))', return_=True)
-                for slot in image.slots
-            ]
+    def is_slot_filled(self, slot: int) -> bool:
+        return not self.execute_javascript(
+            f"PageLayout.prototype.checkEmptyImage({self.get_element_for_slot_js(slot)})", return_=True
         )
 
     def upload_image(self, image: CardImage) -> Optional[str]:
@@ -198,14 +217,14 @@ class AutofillDriver:
             self.set_state(self.state, f'Uploading "{image.name}"')
 
             # an image definitely shouldn't be uploading here, but doesn't hurt to make sure
-            while self.execute_javascript("oDesignImage.UploadStatus == 'Uploading'", return_=True) is True:
+            while self.is_image_currently_uploading():
                 time.sleep(0.5)
 
             # upload image to mpc
-            self.driver.find_element(by=By.XPATH, value='//*[@id="uploadId"]').send_keys(image.file_path)
+            self.driver.find_element(by=By.ID, value="uploadId").send_keys(image.file_path)
             time.sleep(1)
 
-            while self.execute_javascript("oDesignImage.UploadStatus == 'Uploading'", return_=True) is True:
+            while self.is_image_currently_uploading():
                 time.sleep(0.5)
 
             # return PID of last uploaded image
@@ -218,24 +237,48 @@ class AutofillDriver:
             )
             return None
 
-    def insert_image(self, pid: Optional[str], image: CardImage):
+    def insert_image(self, pid: Optional[str], image: CardImage, slots: Optional[list[int]] = None):
         """
         Inserts the image identified by `pid` into `image.slots`.
+        If `slots` is specified, fill the image into those slots instead.
         """
+
+        slots_to_fill = image.slots
+        if slots is not None:
+            slots_to_fill = slots
 
         if pid:
             self.set_state(self.state, f'Inserting "{image.name}"')
-            self.execute_javascript("l = PageLayout.prototype")
-            for slot in image.slots:
+            for slot in slots_to_fill:
                 # Insert the card into each slot and wait for the page to load before continuing
-                self.execute_javascript(f'l.applyDragPhoto(l.getElement3("dnImg", {slot}), 0, "{pid}")')
+                self.execute_javascript(
+                    f'PageLayout.prototype.applyDragPhoto({self.get_element_for_slot_js(slot)}, 0, "{pid}")'
+                )
                 self.wait()
             self.set_state(self.state)
 
     def upload_and_insert_image(self, image: CardImage) -> None:
-        if self.image_not_uploaded(image):
+        """
+        Uploads and inserts `image` into MPC. How this is executed depends on whether the image has already been fully
+        or partially uploaded, on not uploaded at all:
+        * None of the image's slots filled - upload the image and insert it into all slots
+        * Some of the image's slots filled - fill the unfilled slots with the image in the first filled
+        * All of the image's slots filled - no action required
+        """
+
+        slots_filled = [self.is_slot_filled(slot) for slot in image.slots]
+        if all(slots_filled):
+            return
+        elif not any(slots_filled):
             pid = self.upload_image(image)
             self.insert_image(pid, image)
+        else:
+            idx = next(index for index, value in enumerate(slots_filled) if value is True)
+            pid = self.execute_javascript(
+                f'{self.get_element_for_slot_js(image.slots[idx])}.getAttribute("pid")', return_=True
+            )
+            unfilled_slot_numbers = [image.slots[i] for i in range(len(image.slots)) if slots_filled[i] is False]
+            self.insert_image(pid, image, slots=unfilled_slot_numbers)
 
     def upload_and_insert_images(self, images: CardImageCollection) -> None:
         for i in range(len(images.cards)):
@@ -264,6 +307,32 @@ class AutofillDriver:
             foil_dropdown.select_by_value("EF_055")
 
         self.set_state(States.paging_to_fronts)
+
+    @alert_handler
+    def redefine_order(self) -> None:
+        """
+        Called when continuing to edit an existing MPC project. Ensures that the MPC project's size and bracket
+        align with the order's size and bracket.
+        """
+
+        self.assert_state(States.defining_order)
+
+        # navigate to insert fronts page
+        ssid = self.get_ssid()
+        self.execute_javascript(
+            f"oTrackerBar.setFlow('https://www.makeplayingcards.com/products/playingcard/design/dn_playingcards_front_dynamic.aspx?ssid={ssid}');"
+        )
+        self.wait()
+
+        self.execute_javascript("PageLayout.prototype.renderDesignCount()")
+        with self.switch_to_frame("sysifm_loginFrame"):
+            self.execute_javascript("displayTotalCount()")
+            qty_dropdown = Select(self.driver.find_element(by=By.ID, value="dro_total_count"))
+            qty_dropdown.select_by_value(str(self.order.details.bracket))
+            self.execute_javascript(f"document.getElementById('txt_card_number').value={self.order.details.quantity};")
+            self.different_images()
+            self.handle_alert()
+        self.set_state(States.inserting_fronts)
 
     # endregion
 
@@ -305,17 +374,19 @@ class AutofillDriver:
             pass
         self.next_step()
 
-        if not skip_setup:
-            with self.switch_to_frame("sysifm_loginFrame"):
-                if len(self.order.backs.cards) == 1:
-                    # Same cardback for every card
-                    self.same_images()
-                else:
-                    # Different cardbacks
-                    self.different_images()
-        else:
+        if skip_setup:
+            # bring up the dialogue for selecting same or different images
             self.wait()
+            self.execute_javascript("PageLayout.prototype.renderDesignCount()")
 
+        with self.switch_to_frame("sysifm_loginFrame"):
+            if len(self.order.backs.cards) == 1:
+                # Same cardback for every card
+                self.same_images()
+            else:
+                # Different cardbacks
+                self.different_images()
+            self.handle_alert()  # potential alert here from switching from same image to different images
         self.set_state(States.inserting_backs)
 
     def insert_backs(self) -> None:
@@ -345,24 +416,26 @@ class AutofillDriver:
             self.order.backs.download_images(pool, self.download_bar)
 
             if skip_setup:
+                self.set_state(States.defining_order, "Awaiting user input")
                 input(
                     textwrap.dedent(
                         f"""
                         The program has been started with {TEXT_BOLD}--skipsetup{TEXT_END}, which will continue
                         uploading cards to an existing project. Please sign in to MPC and select an existing project
-                        to continue editing. Once you've signed in and are on the {TEXT_BOLD}Customize front{TEXT_END}
-                        page, return to the console window and press Enter.
+                        to continue editing. Once you've signed in and have entered the MPC project editor, return to
+                        the console window and press Enter.
                         """
                     )
                 )
-                self.set_state(States.inserting_fronts)
+                self.redefine_order()
+
             else:
                 print(
                     textwrap.dedent(
                         f"""
                         Configuring a new order. If you'd like to continue uploading cards to an existing project,
-                        start the program with the {TEXT_BOLD}--skipsetup{TEXT_END} option (in command prompt or
-                        terminal) and follow the printed instructions.
+                        start the program with the {TEXT_BOLD}--skipsetup{TEXT_END} option (in command prompt or terminal)
+                        and follow the printed instructions.
 
                         Windows:
                             {TEXT_BOLD}autofill.exe --skipsetup{TEXT_END}

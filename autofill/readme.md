@@ -8,8 +8,6 @@ This tool ingests XML files generated with this project's web component, and:
 
 Once the autofilling process completes, you can either complete and pay for your order or save it to your MPC account to purchase/modify later.
 
-By default, the tool will upload the order as a new MPC project. The tool also supports continuing with saved MPC projects - run the program with the command line argument `--skipsetup` to use this functionality. You will be prompted to log into MPC, navigate to a saved project, and continue editing it before the program will continue.
-
 ## User Guide
 ### Windows
 * Download the latest Windows release from [the Releases tab](https://github.com/chilli-axe/mpc-autofill/releases),
@@ -26,6 +24,14 @@ By default, the tool will upload the order as a new MPC project. The tool also s
   * Run the following command: `chmod +x autofill` (this marks the file as an executable),
   * You can now run the tool in macOS by double-clicking on it and in Linux by running `./autofill` in the Terminal. If you have multiple XML files in the directory, you will be prompted to select one.
 * You may have issues with running the executable on older versions of macOS [due to a limitation of PyInstaller](https://stackoverflow.com/questions/49908236/pyinstaller-executable-fails-on-old-os-x). GitHub is configured to compile the tool for Windows, macOS, and Linux (Ubuntu) on the latest available version of each operating system.
+
+## Editing Existing Projects
+By default, the tool will create the order as a new MPC project. The tool also supports continuing with saved MPC projects - run the program with the command line argument `--skipsetup` to use this functionality. You will be prompted to log into MPC, navigate to a saved project, and continue editing it before the program will continue.
+
+Some notes on how editing an existing project with `--skipsetup` works:
+* The project's bracket and quantity will be automatically adjusted according to the XML being processed,
+* Any slots which have already been filled will not be refilled,
+* If an image is now allocated to more slots, the tool will fill the unfilled slots with the image from the first filled slot for that image.
 
 ## Developer Guide
 ### Running the Source Code
