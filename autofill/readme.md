@@ -33,6 +33,9 @@ Some notes on how editing an existing project with `--skipsetup` works:
 * Any slots which have already been filled will not be refilled,
 * If an image is now allocated to more slots, the tool will fill the unfilled slots with the image from the first filled slot for that image.
 
+## Specifying Browser
+By default, the tool will configure a driver for Google Chrome. The three major Chromium-based browsers are supported (Chrome, Edge, and Brave), and you can specify which browser should be used to configure the driver with the `--browser` command line argument.
+
 ## Developer Guide
 ### Running the Source Code
 From the base repo directory:

@@ -1,21 +1,18 @@
-import os
 import textwrap
 import time
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
-from typing import Any, Optional
+from typing import Any, Callable, Optional
 
 import attr
 import enlighten
 from selenium import webdriver
 from selenium.common import exceptions as sl_exc
 from selenium.common.exceptions import NoAlertPresentException, NoSuchElementException
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
+from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.support.expected_conditions import invisibility_of_element
 from selenium.webdriver.support.ui import Select, WebDriverWait
-from webdriver_manager.chrome import ChromeDriverManager
 
 from src.constants import THREADS, States
 from src.order import CardImage, CardImageCollection, CardOrder
@@ -26,14 +23,13 @@ from src.utils import (
     alert_handler,
     time_to_hours_minutes_seconds,
 )
-
-# Disable logging messages for webdriver_manager
-os.environ["WDM_LOG_LEVEL"] = "0"
+from src.webdrivers import get_chrome_driver
 
 
 @attr.s
 class AutofillDriver:
     driver: webdriver.Chrome = attr.ib(default=None)  # delay initialisation until XML is selected and parsed
+    driver_callable: Callable[[bool], WebDriver] = attr.ib(default=get_chrome_driver)
     headless: bool = attr.ib(default=False)
     starting_url: str = attr.ib(
         init=False,
@@ -50,20 +46,14 @@ class AutofillDriver:
     # region initialisation
     def initialise_driver(self) -> None:
         try:
-            chrome_options = Options()
-            chrome_options.add_argument("--log-level=3")
-            if self.headless:
-                chrome_options.add_argument("--headless")
-            chrome_options.add_experimental_option("excludeSwitches", ["enable-logging"])
-            chrome_options.add_experimental_option("detach", True)
-            driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
+            driver = self.driver_callable(self.headless)
             driver.set_window_size(1200, 900)
             driver.implicitly_wait(5)
-            driver.set_network_conditions(offline=False, latency=5, throughput=5 * 125000)
+            print(f"Successfully initialised {TEXT_BOLD}{driver.name}{TEXT_END} driver.")
         except ValueError as e:
             raise Exception(
-                f"An error occurred while attempting to configure Chrome webdriver. Please make sure you have "
-                f"installed Chrome and that it is up to date: {e}"
+                f"An error occurred while attempting to configure the webdriver for {self.driver.name}. "
+                f"Please make sure you have installed {self.driver.name} and that it is up to date: {e}"
             )
 
         self.driver = driver

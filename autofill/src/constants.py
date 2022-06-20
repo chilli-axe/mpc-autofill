@@ -37,7 +37,16 @@ function doPost(e) {
 """
 
 
+import os
 from enum import Enum
+from typing import Callable
+
+from selenium.webdriver.remote.webdriver import WebDriver
+
+import src.webdrivers as wd
+
+# Disable logging messages for webdriver_manager
+os.environ["WDM_LOG_LEVEL"] = "0"
 
 
 class States(str, Enum):
@@ -83,6 +92,15 @@ class CardTags(str, Enum):
     slots = "slots"
     name = "name"
     query = "query"
+
+
+browsers: dict[str, Callable[[bool], WebDriver]] = {
+    "chrome": wd.get_chrome_driver,
+    "brave": wd.get_brave_driver,
+    # "firefox": wd.get_firefox_driver,  # TODO: this driver is a bit buggy with the rest of the code - test thoroughly
+    "edge": wd.get_edge_driver,
+    # "opera": wd.get_opera_driver,  # TODO: this driver is a bit buggy with the rest of the code - test thoroughly
+}
 
 
 class GoogleScriptsAPIs(str, Enum):
