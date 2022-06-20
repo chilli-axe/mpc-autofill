@@ -2,6 +2,7 @@ import os
 import textwrap
 import time
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import contextmanager
 from typing import Any, Optional
 
 import attr
@@ -95,15 +96,18 @@ class AutofillDriver:
     # region utils
 
     @alert_handler
+    @contextmanager
     def switch_to_frame(self, frame: str) -> None:
         """
-        Attempts to switch to the specified frame.
+        Context manager for switching to `frame`.
         """
 
         try:
             self.driver.switch_to.frame(frame)
         except (sl_exc.NoSuchFrameException, sl_exc.NoSuchElementException):
-            pass
+            return
+        yield
+        self.driver.switch_to.default_content()
 
     @alert_handler
     def wait(self) -> None:
@@ -274,10 +278,9 @@ class AutofillDriver:
         )
 
         # Set the desired number of cards, then move to the next step
-        self.switch_to_frame("sysifm_loginFrame")
-        self.execute_javascript(f"document.getElementById('txt_card_number').value={self.order.details.quantity};")
-        self.different_images()
-        self.driver.switch_to.default_content()
+        with self.switch_to_frame("sysifm_loginFrame"):
+            self.execute_javascript(f"document.getElementById('txt_card_number').value={self.order.details.quantity};")
+            self.different_images()
 
         self.set_state(States.inserting_fronts)
 
@@ -303,14 +306,15 @@ class AutofillDriver:
         self.next_step()
 
         if not skip_setup:
-            self.switch_to_frame("sysifm_loginFrame")
-            if len(self.order.backs.cards) == 1:
-                # Same cardback for every card
-                self.same_images()
-            else:
-                # Different cardbacks
-                self.different_images()
-            self.driver.switch_to.default_content()
+            with self.switch_to_frame("sysifm_loginFrame"):
+                if len(self.order.backs.cards) == 1:
+                    # Same cardback for every card
+                    self.same_images()
+                else:
+                    # Different cardbacks
+                    self.different_images()
+        else:
+            self.wait()
 
         self.set_state(States.inserting_backs)
 
