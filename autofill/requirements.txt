@@ -11,4 +11,4 @@ pytest
 ratelimit
 requests
 selenium
-webdriver-manager
+webdriver-manager==3.5.4
