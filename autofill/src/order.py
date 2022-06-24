@@ -152,12 +152,12 @@ class CardImageCollection:
         return {y for x in self.cards for y in x.slots}
 
     def validate(self) -> None:
-        if self.num_slots == 0:
+        if self.num_slots == 0 or not self.cards:
             raise ValidationException(f"{self.face} has no images!")
         slots_missing = self.all_slots() - self.slots()
         if slots_missing:
-            raise ValidationException(
-                f"The following slots are empty in your order for the {self.face} face: "
+            print(
+                f"Warning - the following slots are empty in your order for the {self.face} face: "
                 f"{TEXT_BOLD}{sorted(slots_missing)}{TEXT_END}"
             )
 

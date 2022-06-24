@@ -748,6 +748,11 @@ def test_card_order_mangled_xml(input_enter):
     assert exc_info.value.code == 0
 
 
+def test_card_order_missing_slots(input_enter, card_order_element_invalid_quantity):
+    # just testing that this order parses without error
+    card_order = CardOrder.from_element(card_order_element_invalid_quantity)
+
+
 # endregion
 # endregion
 
@@ -768,12 +773,6 @@ def test_card_order_complete_run_multiple_cardbacks(input_enter, card_order_mult
     autofill_driver.execute(skip_setup=False)
     time.sleep(5)  # seems necessary to ensure these tests work as expected on ci/cd
     assert len(autofill_driver.driver.find_elements(by=By.CLASS_NAME, value="m-itemside")) == 4
-
-
-def test_card_order_invalid_quantity(input_enter, card_order_element_invalid_quantity):
-    with pytest.raises(SystemExit) as exc_info:
-        CardOrder.from_element(card_order_element_invalid_quantity)
-    assert exc_info.value.code == 0
 
 
 # endregion

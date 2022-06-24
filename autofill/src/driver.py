@@ -451,7 +451,7 @@ class AutofillDriver:
                 Please review your order and ensure everything has been uploaded correctly before finalising with MPC.
                 If any images failed to download, links to download them will have been printed above.
                 If you need to make any changes to your order, you can do so by adding it to your Saved Projects and
-                editing in your  normal browser. Press Enter to close this window - your Chrome window will remain open.
+                editing in your normal browser. Press Enter to close this window - your Chrome window will remain open.
                 """
             )
         )
