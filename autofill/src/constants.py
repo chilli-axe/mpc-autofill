@@ -99,7 +99,6 @@ browsers: dict[str, Callable[[bool], WebDriver]] = {
     "brave": wd.get_brave_driver,
     # "firefox": wd.get_firefox_driver,  # TODO: this driver is a bit buggy with the rest of the code - test thoroughly
     "edge": wd.get_edge_driver,
-    # "opera": wd.get_opera_driver,  # TODO: this driver is a bit buggy with the rest of the code - test thoroughly
 }
 
 
