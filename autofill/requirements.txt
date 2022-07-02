@@ -1,0 +1,15 @@
+attrs
+click
+colorama
+coverage
+defusedxml
+enlighten
+InquirerPy
+numpy
+pre-commit
+pyinstaller
+pytest
+ratelimit
+requests
+selenium
+webdriver-manager==3.5.4

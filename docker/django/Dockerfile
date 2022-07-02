@@ -10,8 +10,9 @@ ENV PYTHONUNBUFFERED=1
 # Install tools and additional dependencies
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
+        dos2unix \
         python3-pip python3-dev \
-        gcc netcat curl cron \
+        gcc netcat curl cron libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 # Cron: Clean system tasks and allow start as unprivileged user
 # This is a bit hacky but should be fine in Docker environment
@@ -26,11 +27,14 @@ WORKDIR /MPCAutofill
 RUN pip3 install gunicorn wheel
 RUN pip3 install -r requirements.txt
 
-# Copy entire repository
-COPY . /MPCAutofill
+# Copy relevant files from repository
+COPY docker /MPCAutofill/docker
+COPY MPCAutofill /MPCAutofill/MPCAutofill
 
-# Make sure that all scripts are executable
-RUN chmod +x docker/django/*.sh
+# Make sure that all scripts are executable, and in case we
+# checked out under Windows with CRLF, convert line endings
+RUN chmod +x docker/django/*.sh && \
+    find . -type f -name "*.sh" -exec dos2unix {} \;
 
 # Let's be nice to the user and give some clear error message
 # if they missed to install any of the mandatory files.
