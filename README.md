@@ -37,7 +37,7 @@ Two alternative installation methods are described in the following. At this poi
 
 The easiest way to get MPCAutofill running as quickly as possible is by using Docker containers. The [docker](docker/) sub-folder includes all necessary scripts to automatically set up and run MPCAutofill with all its dependencies. The only tools you need are Docker and Docker-compose.
 
-In case you are deploying to production, also make sure to put a random secret into `docker/django/env.txt`, e.g., by running `sed -i "s/DJANGO_SECRET_KEY=.*/DJANGO_SECRET_KEY=$(openssl rand -base64 12)/g" docker/django/env.txt`.
+_Notes for production:_ First and foremost, make sure to put a random secret into `docker/django/env.txt`, e.g., by running `sed -i "s/DJANGO_SECRET_KEY=.*/DJANGO_SECRET_KEY=$(openssl rand -base64 12)/g" docker/django/env.txt`. In the same file, you might also want to add `DJANGO_ALLOWED_HOSTS="*"` to allow access to the website from other hosts.
 
 ### Docker on Linux
 
