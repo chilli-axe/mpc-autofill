@@ -20,7 +20,14 @@ def to_searchable(input_str):
     input_str = re.sub("[\(\[].*?[\)\]]", "", input_str)
 
     # Remove hyphens and the word "the"
-    input_str = input_str.replace("-", " ").replace(" the ", " ").replace("the ", "")
+    input_str = input_str.replace("-", " ").replace(" the ", " ")
+
+    # Fix whitespace
+    input_str = " ".join([x for x in input_str.split(" ") if x]).strip()
+
+    # If the string begins with the word "the", remove it
+    if input_str.startswith("the "):
+        input_str = input_str[4:]
 
     # Remove punctuation
     input_str = input_str.translate(str.maketrans("", "", string.punctuation))
@@ -28,16 +35,4 @@ def to_searchable(input_str):
     # Remove all digits
     input_str = input_str.translate(str.maketrans("", "", string.digits))
 
-    # Remove all words from this list
-    to_remove = [
-        "Boxtopper",
-        "Border",
-        '"Constellation"',
-        "Fullart",
-    ]
-    for x in to_remove:
-        input_str = input_str.replace(x.lower(), "")
-
-    # Fix whitespace
-    input_str = " ".join([x for x in input_str.split(" ") if x]).strip()
     return input_str
