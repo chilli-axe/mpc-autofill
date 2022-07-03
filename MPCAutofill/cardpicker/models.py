@@ -8,7 +8,7 @@ from django.utils import dateformat
 class Source(models.Model):
     id = models.CharField(max_length=50, primary_key=True)
     drive_id = models.CharField(max_length=100, unique=True)
-    drive_link = models.CharField(max_length=200, unique=True)
+    drive_link = models.CharField(max_length=200, blank=True, null=True)
     description = models.CharField(max_length=400)
     order = models.IntegerField(default=0)
 
