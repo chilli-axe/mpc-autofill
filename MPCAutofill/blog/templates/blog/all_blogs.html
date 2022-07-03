@@ -7,12 +7,10 @@
 
 {% for blog in blogs %}
     <div class="jumbotron">
-        <nav style="margin-top: -2em"></nav>
-
         <h1 class="display-4" style="font-size: 3em">{{ blog.name }} Blog</h1>
         <p class="lead"><i>Showing up to the most recent 4 posts.</i></p>
         <hr class="my-4">
-        <div class="card-columns">
+        <div class="card-columns"> <!-- TODO: replace with Mason -->
             {% if blog.posts|length > 0 %}
                 {% for post in blog.posts %}
                     {% include "blog/synopsis.html" %}

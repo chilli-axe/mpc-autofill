@@ -19,7 +19,7 @@
 }
 
 .sticky-offset {
-  top: 56px;
+  top: 60px;
 }
 
 .asteriskField {
@@ -27,7 +27,7 @@
 }
 
 .addmargin {
-  margin-top: 56px;
+  margin-top: 60px;
 }
 
 #drivePicker:hover {
@@ -112,7 +112,7 @@
   overflow: hidden;
   outline:none;
   color: white;
-  font-size: 1.3em; 
+  font-size: 1.3em;
 }
 
 .remove {
@@ -126,7 +126,7 @@
   overflow: hidden;
   outline:none;
   color: white;
-  font-size: 1.3em; 
+  font-size: 1.3em;
 }
 
 .dl-loading {
@@ -184,12 +184,12 @@
   height: 100vh;
 }
 
-.embed-responsive-7by5 {
+.ratio-7x5 {
   padding-bottom: 139.6825%;
   overflow: hidden;
 }
 
-.embed-responsive-7by5 > img {
+.ratio-7x5 > img {
   transform: scale(1.088, 1.065);
 }
 
@@ -197,16 +197,9 @@
   position: absolute;
   top: calc(50% - 2em);
   left: calc(50% - 2em);
-  width: 4em; 
+  width: 4em;
   height: 4em;
 }
-
-/* .card.mpccard > .embed-responsive, .modal-body > .embed-responsive {
-    overflow: hidden;
-}
-.card.mpccard > .embed-responsive > img, .modal-body > .embed-responsive > img {
-    transform: scale(1.088, 1.065);
-} */
 
 .container.addmargin > .row > .col-lg-4 > .sticky-top.sticky-offset {
   scrollbar-width: none;
@@ -241,4 +234,3 @@
         column-count: 4;
     }
 }
-

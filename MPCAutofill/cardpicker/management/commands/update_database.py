@@ -220,7 +220,6 @@ def add_card(folder, source, item, q_cards, q_cardbacks, q_tokens):
         if not cardname:
             return
 
-        scryfall = False
         priority = 2
 
         if ")" in cardname:
@@ -241,14 +240,10 @@ def add_card(folder, source, item, q_cards, q_cardbacks, q_tokens):
 
         elif folder["name"] == "nofacej MPC Card Backs":
             img_type = "cardback"
-            source_verbose = source.id
-
-        elif folder["name"] == "MPC Scryfall Scans":
-            source_verbose = "berndt_toast83/" + folder_name
-            scryfall = True
+            source_verbose = str(source.id)
 
         else:
-            source_verbose = source.id
+            source_verbose = str(source.id)
 
         if "basic" in folder_name.lower():
             priority += 5
@@ -256,8 +251,6 @@ def add_card(folder, source, item, q_cards, q_cardbacks, q_tokens):
 
         elif "token" in folder_name.lower():
             img_type = "token"
-            if not scryfall:
-                source_verbose = source_verbose + " Tokens"
 
         elif "cardbacks" in folder_name.lower() or "card backs" in folder_name.lower():
             img_type = "cardback"
