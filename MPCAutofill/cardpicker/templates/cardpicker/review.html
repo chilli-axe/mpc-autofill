@@ -192,7 +192,8 @@
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" onclick="$('#input_link').submit()" data-bs-dismiss="modal">Import</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-success" onclick="$('#input_link').submit()" data-bs-dismiss="modal">Submit</button>
                 </div>
             </div>
         </div>
@@ -270,9 +271,9 @@
                     Slot <b id="removeCardId"></b>: <i id="removeCardName"></i></p>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" onclick="remove_card();">Confirm</button>
-                    <button type="button" class="btn btn-warning" onclick="prompt_deletion = false; remove_card();">Confirm and Don't Ask Again</button>
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="prompt_deletion = false; remove_card();">Confirm and Don't Ask Again</button>
+                    <button type="button" class="btn btn-success" onclick="remove_card();">Confirm</button>
                 </div>
             </div>
         </div>
