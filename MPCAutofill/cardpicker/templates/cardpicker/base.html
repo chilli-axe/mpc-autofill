@@ -18,14 +18,14 @@
         gtag('config', '{{ GTAG }}');
     </script>
 
-    <title>{% block title %} MPC Autofill {% endblock %}</title>
+    <title>{% block title %}{{ SITE_NAME }}{% endblock %}</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     {% block description %}
         <meta name="description"
               content="The easiest way to print kitchen-table proxy cards for Magic: The Gathering (MTG) with MakePlayingCards (MPC). No prior knowledge required.">
     {% endblock %}
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@5.1.3/dist/superhero/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@5.1.3/dist/{{ THEME }}/bootstrap.min.css">
     <link href="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap-switch-button@1.1.0/css/bootstrap-switch-button.min.css" rel="stylesheet"/>
     <link rel="stylesheet" type="text/css" href="{% static 'css/custom.css' %}">
     <script src="http://code.jquery.com/jquery.min.js"></script>
@@ -34,21 +34,20 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-pprn3073KE6tl6bjs2QrFaJGz5/SUsLqktiwsUTF55Jfv3qYSDhgCecCxMW52nD2" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap-switch-button@1.1.0/dist/bootstrap-switch-button.min.js"></script>
     <script src="{% static 'js/base.js' %}"></script>
-
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css">
 </head>
 <body id="id_body" style="touch-action: manipulation;">
 {# Navbar #}
-<nav class="navbar navbar-expand-md navbar-light bg-primary fixed-top">
-    <div class="container-fluid">
+<div class="navbar navbar-expand-lg fixed-top navbar-dark bg-primary" style="height: 50px;">
+    <div class="container justify-content-center fixed-top align-middle bg-primary">
         <a class="navbar-brand" href="/">
-            <img src="{% static 'cardpicker/logolowres.png' %}?10" width="30" height="30">
-            <b>MPC Autofill</b></a>
+            <img src="{% static 'cardpicker/logolowres.png' %}?10" width="40" height="40">&nbsp;
+            <span class="align-middle"><b>{{ SITE_NAME }}</b></span></a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
                 aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="collapse navbar-collapse" id="navbarSupportedContent" style="font-weight: bold;">
             <ul class="navbar-nav me-auto">
                 <li class="nav-item"><a class="nav-link" href="/guide">Guide</a></li>
                 <li class="nav-item"><a class="nav-link" href="/new">What's New?</a></li>
@@ -56,19 +55,22 @@
             </ul>
             <ul class="navbar-nav justify-content-end">
                 <li class="nav-item">
-                    <a class="nav-link" href="https://www.reddit.com/r/magicproxies/" target="_blank">Reddit</a>
+                    <a class="nav-link" href="https://github.com/chilli-axe/mpc-autofill" target="_blank">Github</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="http://mprox.link/discord" target="_blank">Discord</a>
+                    <a class="nav-link" href="{{ REDDIT }}" target="_blank">Reddit</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="https://github.com/chilli-axe/mpc-autofill" target="_blank">GitHub</a>
+                    <a class="nav-link" href="{{ DISCORD }}" target="_blank">Discord</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/legal">About</a>
                 </li>
             </ul>
         </div>
     </div>
-</nav>
-<div class="container addmargin" style="max-width: 1200px;">
+</div>
+<div class="container pt-2 addmargin" style="max-width: 1200px;">
     {# error message toast #}
     <div aria-live="polite" aria-atomic="true">
         <div id="errorToast" class="toast" style="position: fixed; left: 0; z-index: -1;" data-bs-delay="10000">
@@ -91,7 +93,7 @@
             </div>
             <div class="toast-body">
                 <p>
-                MPC Autofill uses cookies for remembering your search settings, and for collecting analytics
+                {{ SITE_NAME }} uses cookies for remembering your search settings, and for collecting analytics
                 data to help improve the site. Your data is never shared with anyone. Would you like to opt
                 out of analytics cookies?
                 </p>

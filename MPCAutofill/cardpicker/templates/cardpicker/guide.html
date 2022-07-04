@@ -1,10 +1,10 @@
 {% extends 'cardpicker/base.html' %}
 {% load static %}
 
-{% block title %} MPC Autofill Guide {% endblock %}
+{% block title %} {{ SITE_NAME }} Guide {% endblock %}
 
 {% block content %}
-    <h2>MPC Autofill Guide</h2>
+    <h2>{{ SITE_NAME }} Guide</h2>
     <h3>Introduction to MPC Proxies</h3>
     <p>
         <img class="img-fluid float-md-end" style="width: 32rem; padding: 10px 10px 10px 10px;"
@@ -21,12 +21,12 @@
         cardbacks.
     </p>
     <p>
-        Some folks in the <a href="https://www.reddit.com/r/mpcproxies/" target="_blank">r/mpcproxies</a> community
+        Some folks in the <a href="{{ REDDIT }}" target="_blank">r/mpcproxies</a> community
         share Google Drives with print-ready Magic: The Gathering card images they've prepared, making it possible
         to print a huge variety of cards with no image editing skills.
     </p>
     <br>
-    <h3>Why MPC Autofill</h3>
+    <h3>Why {{ SITE_NAME }}</h3>
     <div class="ratio ratio-4x3 float-md-end mpc-vid">
         <video loop autoplay muted playsinline>
             <source src="https://thumbs.gfycat.com/HotGracefulJaguar-mobile.mp4" type="video/mp4">
@@ -41,7 +41,7 @@
         you have to manually drag and drop your cardback to the other 394 cards.
     </p>
     <p>
-        <b>We make it dead easy to order with MPC.</b> Just paste your desired card list in MPC Autofill, and
+        <b>We make it dead easy to order with MPC.</b> Just paste your desired card list in {{ SITE_NAME }}, and
         we'll search a wide range of community Drives for you. Then, you can customise your order by choosing between
         different versions of cards and different cardbacks.
     </p>
@@ -123,7 +123,7 @@
         and run that instead. Instructions for how to run the Python source code are provided.
     </p>
     <p>
-        When you run MPC Autofill, it'll do two things:
+        When you run {{ SITE_NAME }}, it'll do two things:
     </p>
     <ul>
         <li>Create a folder next to the executable called <code>cards</code> and start downloading the images
