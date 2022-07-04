@@ -30,9 +30,9 @@
         {% else %}
             <div style="display: inline" class="text-primary">{{ info.qty }} new card</div>
         {% endif %}
-        
-        <div id="{{ source }}-container" class="row row-cols-xl-6 row-cols-lg-4 row-cols-md-3 row-cols-sm-2 row-cols-2"></div>
-        
+
+        <div id="{{ source }}-container" class="g-0 row row-cols-xxl-6 row-cols-lg-4 row-cols-md-3 row-cols-sm-2 row-cols-2"></div>
+
         <div id="{{ source }}-more" style="text-align: center; display: none;">
             <br>
             <button type="button" class="btn btn-primary" style="min-width: 20%" onclick="load_new_cards('{{ source }}')">
@@ -43,6 +43,6 @@
     {% endfor %}
 
     {% include "cardpicker/card.html" %}
-    
+
     {% include "cardpicker/footer.html" %}
 {% endblock %}

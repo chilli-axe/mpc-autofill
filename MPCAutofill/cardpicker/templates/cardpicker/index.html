@@ -60,18 +60,18 @@
     <div class="row">
         <div class="col-lg-6">
             <div style="text-align: center">
-                <a class="btn btn-block btn-info mt-2" style="border-radius: 200px" href="#">Guide</a>
+                <a class="btn w-100 btn-info mt-2" style="border-radius: 200px" href="/guide">Guide</a>
             </div>
         </div>
         <div class="col-lg-6">
             <input form="cardinput" type="submit" class="btn btn-success mt-2" value="Submit">
 
-            <button type="button" class="btn btn-primary mt-2" data-toggle="modal" data-target="#selectDrivesModal">
+            <button type="button" class="btn btn-primary mt-2" data-bs-toggle="modal" data-bs-target="#selectDrivesModal">
                 Search Settings
             </button>
 
             <button type="button" class="btn btn-secondary dropdown-toggle mt-2" id="uploadCardsBtn"
-                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 Upload List
             </button>
             <div class="dropdown-menu" aria-labelledby="uploadCardsBtn">
@@ -92,7 +92,7 @@
                 </form>
 
                 {# decklist import form #}
-                <button type="button" class="dropdown-item" data-toggle="modal" data-target="#inputLinkModal">
+                <button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#inputLinkModal">
                     From URL
                 </button>
             </div>
@@ -121,9 +121,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="inputLinkLabel">Import List from URL</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     Paste a link to a card list hosted on one of the below sites (not affiliated) to import into MPC Autofill:
@@ -139,7 +137,7 @@
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" onclick="$('#input_link').submit()" data-dismiss="modal">Import</button>
+                    <button type="button" class="btn btn-primary" onclick="$('#input_link').submit()" data-bs-dismiss="modal">Import</button>
                 </div>
             </div>
         </div>
@@ -152,9 +150,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="selectDrivesLabel">Search Settings</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     Select the drives you'd like to search, and drag & drop them to change the order images are shown in.
@@ -180,7 +176,7 @@
                                 <td style="vertical-align: middle">
                                     <div class="active text-center">
                                         <input type="checkbox" class="drivesource" checked
-                                                data-toggle="toggle" id="{{ source.id }}" data-size="sm">
+                                                data-bs-toggle="toggle" id="{{ source.id }}" data-bs-size="sm">
                                     </div>
                                 </td>
                                 <td style="vertical-align: middle"><p>{{ source.id }}</p></td>
@@ -205,7 +201,7 @@
                     </body>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" data-dismiss="modal">Save Changes</button>
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Save Changes</button>
                 </div>
             </div>
         </div>

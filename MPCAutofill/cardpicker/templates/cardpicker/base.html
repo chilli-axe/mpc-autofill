@@ -25,13 +25,14 @@
         <meta name="description"
               content="The easiest way to print kitchen-table proxy cards for Magic: The Gathering (MTG) with MakePlayingCards (MPC). No prior knowledge required.">
     {% endblock %}
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@4.6.0/dist/superhero/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@5.1.3/dist/superhero/bootstrap.min.css">
+    <link href="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap-switch-button@1.1.0/css/bootstrap-switch-button.min.css" rel="stylesheet"/>
     <link rel="stylesheet" type="text/css" href="{% static 'css/custom.css' %}">
     <script src="http://code.jquery.com/jquery.min.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js" integrity="sha512-0bEtK0USNd96MnO4XhH8jhv3nyRF0eK87pJke6pkYf3cM0uDIhNJy9ltuzqgypoIFXw3JSuiy04tVk4AjpZdZw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-pprn3073KE6tl6bjs2QrFaJGz5/SUsLqktiwsUTF55Jfv3qYSDhgCecCxMW52nD2" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap-switch-button@1.1.0/dist/bootstrap-switch-button.min.js"></script>
     <script src="{% static 'js/base.js' %}"></script>
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css">
@@ -43,12 +44,12 @@
         <a class="navbar-brand" href="/">
             <img src="{% static 'cardpicker/logolowres.png' %}?10" width="30" height="30">
             <b>MPC Autofill</b></a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
                 aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <ul class="navbar-nav mr-auto">
+            <ul class="navbar-nav me-auto">
                 <li class="nav-item"><a class="nav-link" href="/guide">Guide</a></li>
                 <li class="nav-item"><a class="nav-link" href="/new">What's New?</a></li>
                 <li class="nav-item"><a class="nav-link" href="/credits">Contributions</a></li>
@@ -65,15 +66,14 @@
                 </li>
             </ul>
         </div>
-
     </div>
 </nav>
-<div class="container addmargin">
+<div class="container addmargin" style="max-width: 1200px;">
     {# error message toast #}
     <div aria-live="polite" aria-atomic="true">
-        <div id="errorToast" class="toast" style="position: fixed; left: 0; z-index: -1;" data-delay="10000">
+        <div id="errorToast" class="toast" style="position: fixed; left: 0; z-index: -1;" data-bs-delay="10000">
             <div class="toast-header">
-                <strong class="mr-auto">Server Error</strong>
+                <strong class="me-auto">Server Error</strong>
             </div>
             <div class="toast-body">
                 <p>We're sorry, but an error occurred while handling your request.</p>
@@ -84,12 +84,10 @@
 
     {# toast to allow users to opt out of Google Analytics #}
     <div aria-live="polite" aria-atomic="true">
-        <div id="cookieToast" class="toast" style="position: fixed; left: 0; z-index: -2;" data-autohide="false">
+        <div id="cookieToast" class="toast" style="position: fixed; left: 0; z-index: -2;" data-bs-autohide="false">
             <div class="toast-header">
-                <strong class="mr-auto">Cookie Usage</strong>
-                <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
-                <span aria-hidden="true">×</span>
-                </button>
+                <strong class="me-auto">Cookie Usage</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
             </div>
             <div class="toast-body">
                 <p>
@@ -103,11 +101,11 @@
                 <div class="mt-2 pt-2 border-top">
                     <div class="row">
                         <div class="col-6">
-                            <button type="button" class="btn btn-outline-info btn-sm btn-block"
+                            <button type="button" class="btn btn-outline-info btn-sm w-100"
                                     onclick="cookie_toast_opt_out()">Opt me out please!</button>
                         </div>
                         <div class="col-6">
-                            <button type="button" class="btn btn-primary btn-sm btn-block"
+                            <button type="button" class="btn btn-primary btn-sm w-100"
                                     onclick="cookie_toast_opt_in()">That's fine!</button>
                         </div>
                     </div>

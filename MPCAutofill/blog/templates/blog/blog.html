@@ -5,7 +5,7 @@
 
 {% block content %}
     <div class="jumbotron">
-        <nav style="margin-top: -2em">
+        <nav>
             <ol class="breadcrumb">
             <li class="breadcrumb-item" style="font-size: 1.3em;"><a href="/blog">Blogs</a></li>
             <li class="breadcrumb-item active" aria-current="page" style="font-size: 1.3em;">{{ blog.name }}</li>
@@ -14,7 +14,7 @@
 
         <h1 class="display-4" style="font-size: 3em">{{ blog.name }} Blog</h1>
         <hr class="my-4">
-        <div class="card-columns">
+        <div class="card-columns"> <!-- TODO: replace with Mason -->
             {% if posts|length > 0 %}
                 {% for post in posts %}
                     {% include "blog/synopsis.html" %}

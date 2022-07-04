@@ -21,7 +21,7 @@
     </script>
 
     <div class="jumbotron">
-        <nav style="margin-top: -2em">
+        <nav>
             <ol class="breadcrumb">
                 <li class="breadcrumb-item" style="font-size: 1.3em;"><a href="/blog">Blogs</a></li>
                 <li class="breadcrumb-item" style="font-size: 1.3em;"><a href="{{ post.blog.url }}">{{ post.blog.name }}</a></li>
@@ -36,7 +36,7 @@
         <div style="font-size: 1.15em;">
             {{ post.contents | safe }}
         </div>
-        <div id="card-container" class="row row-cols-xl-6 row-cols-lg-4 row-cols-md-3 row-cols-sm-2 row-cols-2"></div>
+        <div id="card-container" class="row g-0 row-cols-xxl-6 row-cols-lg-4 row-cols-md-3 row-cols-sm-2 row-cols-2"></div>
         <br>
         <a class="btn btn-primary btn-lg" href="{{ post.blog.url }}" role="button">Back to {{ post.blog.name }}</a>
     </div>
