@@ -89,9 +89,9 @@ If you aim to contribute to MPCAutofill or are familiar with running Django loca
 
 `requirements.txt` for the web application and local tool combined.
 
-* Python3.8+
-* Elasticsearch (probably easiest with Docker)
-* A Google account
+* Python 3.9+,
+* Elasticsearch 7.10.x - install natively on your machine or run in Docker,
+* A Google account.
 
 ### Step-by-Step Instructions
 
@@ -99,7 +99,7 @@ If you aim to contribute to MPCAutofill or are familiar with running Django loca
 
 1. Clone this repo somewhere on your server/local computer. This will be referred to as the `$working_directory`.
 2. If you are using an IDE to run the Django commands and are NOT using Windows: go to the `$working_directory/.run` directory and for each XML file delete the option `SDK_HOME`
-3. Add the file `$working_directory/MPCAutofill/MPCAutofill/.env` to edit any environment variables used in `$working_directory/MPCAutofill/MPCAutofill/settings.py`.  
+3. Add the file `$working_directory/MPCAutofill/MPCAutofill/.env` to edit any environment variables used in `$working_directory/MPCAutofill/MPCAutofill/settings.py`.
    IN ORDER TO RUN THE APP LOCALLY, YOU MUST ADD `DJANGO_DEBUG=on` TO THE `$working_directory/MPCAutofill/MPCAutofill/.env` FILE
 4. **[PROD]** In the `$working_directory`, create a folder called `staticroot` for static assets
 5. **[PROD]** Deploy the Django project (I'm using DigitalOcean for Ubuntu) with a webserver (I'm using Apache) and serve static files with another webserver if you want (I was previously using nginx but now I just serve static files with Apache as well)
@@ -118,14 +118,14 @@ If you aim to contribute to MPCAutofill or are familiar with running Django loca
    2. Heading Reference (key = Name of Drive Owner, drive_id = 33 character Gdrive identifier, drive_public = TRUE, description = Description of what's in that drive)
    3. Drive ID is everything after `https://drive.google.com/drive/u/0/folders/` in the Gdrive link
 11. Install the main dependencies using a python virtual environment (this entire step is often automatically handled by your IDE)
-    1. To initialize the environment, create the virtual environment library using `python3 -m venv $working_directory/venv`  
+    1. To initialize the environment, create the virtual environment library using `python3 -m venv $working_directory/venv`
     For Windows the command will be  `py -m venv $working_directory\venv`
     2. Activate the environment using your OS specific command in the table found in this section of the docs: [Scroll to the table](https://docs.python.org/3.8/library/venv.html#creating-virtual-environments)
     3. In `$working_directory` with the virtual environment active, run the command `pip3 install -r requirements.txt` to install all requirements listed in `$working_directory/requirements.txt`
 12. In `$working_directory/MPCAutofill`, run the command `python manage.py migrate` to ensure the database tables reflect any Django model changes.
 13. In `$working_directory/MPCAutofill`, run the command `python manage.py update_dfcs` to synchronise the double-faced cards table with Scryfall.
 14. In `$working_directory/MPCAutofill`, run the command `python manage.py import_sources` to sync sources in `$working_directory/MPCAutofill/drives.csv` to the database (optionally specifying a particular drive to sync with `-d <drivename>`)
-15. (Elasticsearch must be running for this script to work)  
+15. (Elasticsearch must be running for this script to work)
    In `$working_directory/MPCAutofill`, run the command `python manage.py update_database` to populate the database with cards from the sources loaded with `import_sources`
 15. Optionally, create a cronjob to periodically run the database updater command, to ensure MPC Autofill reflects the current state of the linked Drives, and another cronjob to periodically synchronise the double-faced cards table with Scryfall:
 ```
@@ -133,6 +133,6 @@ If you aim to contribute to MPCAutofill or are familiar with running Django loca
 0 0 * * SUN bash /root/mpc-autofill/sync_dfcs
 ```
 16. **[PROD]** Deploy two Google Script according to the code specified in `autofill.py` and adjust the URLs in that script to point to your GS endpoints
-17. (At this point elasticsearch should be running and you should be inside the virtual environment)  
-   In `$working_directory/MPCAutofill`, run the command `python manage.py runserver` to start the local Django server. 
+17. (At this point elasticsearch should be running and you should be inside the virtual environment)
+   In `$working_directory/MPCAutofill`, run the command `python manage.py runserver` to start the local Django server.
 18. Open your web browser and go to http://127.0.0.1:8000/
