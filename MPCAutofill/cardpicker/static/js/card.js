@@ -72,7 +72,7 @@ class CardBase {
     }
 
     enable_modal(modal_id) {
-        // disable hover-based shadows on the parent element temporarily while we bring up 
+        // disable hover-based shadows on the parent element temporarily while we bring up
         // the modal, then re-enable it
         this.pe.classList.remove("mpccard-hover");
         $('#' + modal_id).modal('show');
@@ -194,7 +194,7 @@ class Card extends CardBase {
     }
 
     set_idx(new_idx) {
-        // when setting the card's idx, check if it's in a group and is locked - if so, 
+        // when setting the card's idx, check if it's in a group and is locked - if so,
         // update all cards in the group too
         if (this.locked) {
             groups[this.group].forEach(function (value) {
@@ -264,8 +264,11 @@ class Card extends CardBase {
                 curr_name = "\"" + curr_img.name + "\"";
             }
             document.getElementById("removeCardName").innerText = curr_name;
-
-            $('#removeCardModal').modal('show');
+            if (prompt_deletion === true) {
+                $('#removeCardModal').modal('show');
+            } else {
+                remove_card();
+            }
         }
     }
 
@@ -598,7 +601,7 @@ class Card extends CardBase {
 }
 
 class CardRecent extends CardBase {
-    // a stripped-down version of the Card class, with one image, and which isn't interactive except for 
+    // a stripped-down version of the Card class, with one image, and which isn't interactive except for
     // being able to open the detailed view
     constructor(card, dom_id) {
         super([card], null, dom_id, null, null, null, null, null);
@@ -647,7 +650,7 @@ class CardRecent extends CardBase {
 }
 
 class CardGrid extends CardRecent {
-    // a stripped-down version of the Card class, with one image, and which isn't interactive except for 
+    // a stripped-down version of the Card class, with one image, and which isn't interactive except for
     // being able to click on the thumbnail to select this image for the parent card
     constructor(card, dom_id, slot_num, card_obj) {
         super(card, dom_id);

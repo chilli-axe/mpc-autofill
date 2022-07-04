@@ -36,6 +36,7 @@
         let fuzzy_search = {{ fuzzy_search|safe }}.toString() === "true";
         let qty = {{ qty }};
         let front_visible = true;
+        let prompt_deletion = true;
         let cards_not_found = [];
 
         document.getElementById("id_body").onload = function () {
@@ -270,6 +271,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-primary" onclick="remove_card();">Confirm</button>
+                    <button type="button" class="btn btn-warning" onclick="prompt_deletion = false; remove_card();">Confirm and Don't Ask Again</button>
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                 </div>
             </div>
