@@ -22,7 +22,7 @@ SCOPES = [
 
 SERVICE_ACC_FILENAME = "client_secrets.json"
 
-DPI_HEIGHT_RATIO = 300 / 1122  # 300 DPI for image of vertical resolution 1122 pixels
+DPI_HEIGHT_RATIO = 300 / 1110  # 300 DPI for image of vertical resolution 1110 pixels
 
 # TODO: accept multiple drives as arguments, rather than one or all
 
