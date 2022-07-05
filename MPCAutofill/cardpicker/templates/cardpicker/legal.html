@@ -1,13 +1,47 @@
 {% extends 'cardpicker/base.html' %}
 
-{% block title %} MPC Autofill Privacy Policy {% endblock %}
+{% block title %} {{ SITE_NAME }} Legal {% endblock %}
 
 {% block content %}
+
+
+    <h2>About {{ SITE_NAME }}</h2>
+
+    <p>
+        MPC Autofill is an open source project primarily developed by
+        <a target="_blank" href="https://www.reddit.com/user/Chilli_Axe/">u/Chilli_Axe</a>
+		(<a href="https://github.com/chilli-axe/mpc-autofill">source</a>) and extended by others.
+		This application and any forks are completely open source and licensed under the
+        <a href="https://www.gnu.org/licenses/gpl-3.0.en.html">GNU Public use license</a>,
+        meaning it is free to use, modify, and distribute.
+    </p>
+
+    <h2>Legal Disclaimer</h2>
+
+    <p>{{ SITE_NAME }} is unofficial Fan Content permitted under the Fan Content Policy.
+        Not approved/endorsed by Wizards.
+        Portions of the materials used are property of Wizards of the Coast.
+        <a href="https://company.wizards.com/">©Wizards of the Coast LLC.</a></p>
+
+    <p>Custom card images displayed on {{ SITE_NAME }} are subject to the license terms under which they were uploaded to
+        their hosts (Google Drive). {{ SITE_NAME }} is not responsible for the content of user-uploaded images.</p>
+
+    <p>{{ SITE_NAME }} does not condone or support the resale (or other commercial use) of playtest cards printed with this website
+        in any way.
+        As per <a href="https://www.makeplayingcards.com/">MakePlayingCards.com</a>'s user agreement, users acknowledge
+        that they
+        <i>"...own all copyrights for [card images used in orders] or have full authorization to use them."</i></p>
+
+    <p>{{ SITE_NAME }} is not affiliated with, produced by, or endorsed by
+        <a href="https://www.makeplayingcards.com/">MakePlayingCards.com</a>,
+        <a href="https://scryfall.com/">Scryfall</a>, or Wizards of the Coast.
+    </p>
+
     <h2>Privacy Policy</h2>
 
     <b>Last updated: 21st June, 2021</b>
     <p>
-    MPC Autofill collects site usage data through Google Analytics via cookies. Understanding how users interact
+    {{ SITE_NAME }} collects site usage data through Google Analytics via cookies. Understanding how users interact
     with the site allows me to continue to improve the site to the best of my ability. Users are presented with the
     option to opt-out of having their data collected by Google Analytics.
     </p>
@@ -16,10 +50,10 @@
     ordering, and the search mode you selected (precise or fuzzy) &#8212 which is considered core site functionality.
     </p>
     <p>
-    MPC Autofill will never share information collected by Google Analytics with third parties.
+    {{ SITE_NAME }} will never share information collected by Google Analytics with third parties.
     </p>
     <p>
-    Information collected by Google Analytics includes the following items. <b>Note</b>: this is not an exhaustive list, but captures my
+    Information collected by Google Analytics includes the following items. <b>Note</b>: this is not an exhaustive list, but captures the
     motivation for implementing Google Analytics:
     </p>
     <ul>
@@ -32,7 +66,7 @@
         <li> Average site usage across times of day and days of the week, allowing me to schedule site maintenance more effectively. </li>
     </ul>
     <p>
-    MPC Autofill's usage of Google Analytics does not include the usage of Google Adwords or other advertising features.
+    {{ SITE_NAME }}'s usage of Google Analytics does not include the usage of Google Adwords or other advertising features.
     </p>
     <p>
     You can find more information on Google's privacy policy
@@ -41,8 +75,8 @@
     <a href="https://tools.google.com/dlpage/gaoptout" target="_blank">here</a>.
     </p>
 
-    If you have any questions about our Privacy Policy or would like to otherwise get in touch, you can contact us at:
-    <a href="mailto:mpcfillsite@gmail.com">mpcfillsite@gmail.com</a>
+    If you have any questions about our Privacy Policy or would like to to request a takedown of artistic material you own that
+    may have been misattributed by a drive owner, feel free to email us at: <a href="mailto:{{ EMAIL }}">{{ EMAIL }}</a>
 
     {% include "cardpicker/footer.html" %}
 {% endblock %}

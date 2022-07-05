@@ -21,27 +21,28 @@
 
     {% if mobile %}
     <div class="alert alert-primary" role="alert">
-        It seems like you're on a mobile device! Please note that MPC Autofill requires a macOS or Windows computer
+        It seems like you're on a mobile device! Please note that {{ SITE_NAME }} requires a macOS or Windows computer
         to run the executable that fills your order into MPC.
     </div>
     {% endif %}
     <div class="row">
         <div class="col-lg-6 col-md-6 col-md-12">
-            <h2>MPC Autofill <em class="orpheus" style="font-size: 1rem;">by
-                <a target="_blank" href="https://www.reddit.com/user/Chilli_Axe/">u/Chilli_Axe</a></em></h2>
+            <h2>{{ SITE_NAME }}</h2>
+            <h5><em class="orpheus" style="font-size: 1rem;">
+                Original project by <a target="_blank" href="https://www.reddit.com/user/Chilli_Axe/">u/Chilli_Axe</a>
+            </em></h5>
             <p>
-                MPC Autofill automates the process of printing cards through
+                {{ SITE_NAME }} automates the process of printing playtest cards through
                 <a href="https://www.makeplayingcards.com/" target="_blank">MakePlayingCards.com</a>
-                with images hosted on public Google Drives.
+                with images hosted on Google Drive.
             </p>
             <p>
                 Type your desired card list into the text box and hit <b>Submit</b>. One card per line.
-                Click <b>Search Settings</b> to change which drives are searched, and the order in which cards are shown.
-                You can also toggle between fuzzy (forgiving) and precise (exact) search modes.
+                Click <b>Settings</b> to change which drives are searched, and the order in which cards are shown.
+                You can also toggle between fuzzy (forgiving) and precise (exact) search mode.
             </p>
             <p>
-                <b>Search for tokens</b> by prepending the query with <code>t:</code> &#8212 for example,
-                <code>t:goblin</code>.
+                Search for tokens by prepending the card name with <code>t:</code> &#8212 for example, <code>t:goblin</code>.
             </p>
             <p>
                 You can upload your order as a CSV, specifying quantities and the queries for card fronts and backs.
@@ -63,9 +64,10 @@
                 <a class="btn w-100 btn-info mt-2" style="border-radius: 200px" href="/guide">Guide</a>
             </div>
         </div>
+
         <div class="col-lg-6 d-flex justify-content-end">
-            <button type="button" class="btn btn-light dropdown-toggle mt-2 ms-2" id="uploadCardsBtn"
-                    data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <button type="button" class="btn btn-outline-primary dropdown-toggle mt-2 ms-2" id="uploadCardsBtn"
+                    data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="color: white;">
                 Upload List
             </button>
             <div class="dropdown-menu" aria-labelledby="uploadCardsBtn">
@@ -91,11 +93,11 @@
                 </button>
             </div>
 
-            <button type="button" class="btn btn-primary mt-2 ms-2" data-bs-toggle="modal" data-bs-target="#selectDrivesModal">
-                Search Settings
+            <button type="button" class="btn btn-outline-info mt-2 ms-2" data-bs-toggle="modal" data-bs-target="#selectDrivesModal" style="color: white;">
+                Settings
             </button>
 
-            <input form="cardinput" type="submit" class="btn btn-success mt-2 ms-2" value="Submit">
+            <input form="cardinput" type="submit" class="btn btn-outline-success mt-2 ms-2" style="color: white;" value="Submit">
         </div>
     </div>
 
@@ -124,7 +126,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    Paste a link to a card list hosted on one of the below sites (not affiliated) to import into MPC Autofill:
+                    Paste a link to a card list hosted on one of the below sites (not affiliated) to import into {{ SITE_NAME }}:
                     <ul>
                         {% for import_site in import_sites %}
                             <li><a href="{{ import_site.1|safe }}" target="_blank">{{ import_site.0|safe }}</a></li>
@@ -179,7 +181,7 @@
                                                 data-bs-toggle="toggle" id="{{ source.id }}" data-bs-size="sm">
                                     </div>
                                 </td>
-                                <td style="vertical-align: middle"><p>{{ source.id }}</p></td>
+                                <td style="vertical-align: middle">{{ source.id }}</td>
                                 <td style="vertical-align: middle">
                                     <div class="active text-center">
                                     {% if source.drive_link %}

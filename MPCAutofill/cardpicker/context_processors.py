@@ -3,8 +3,13 @@ from cardpicker.utils.link_imports import ImportSites
 from django.conf import settings
 
 
-def add_gtag(request):
+def add_site_info(request):
     return {
+        "SITE_NAME": settings.SITE_NAME,
+        "EMAIL": settings.TARGET_EMAIL,
+        "DISCORD": settings.DISCORD,
+        "REDDIT": settings.REDDIT,
+        "THEME": settings.THEME,
         "GTAG": settings.GTAG,
     }
 
