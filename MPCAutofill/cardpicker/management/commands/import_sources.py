@@ -5,7 +5,7 @@ from cardpicker.models import Source
 from django.core.management.base import BaseCommand
 
 
-def read_sources_csv():
+def read_sources_csv() -> list[Source]:
     sources = []
 
     # read CSV file for drive data
@@ -20,7 +20,7 @@ def read_sources_csv():
                     drive_id=row["drive_id"],
                     drive_link="https://drive.google.com/open?id=" + row["drive_id"]
                     if str(row["drive_public"]).lower() != "false"
-                    else "",
+                    else None,
                     description=row["description"],
                     order=i,
                 )
@@ -31,7 +31,7 @@ def read_sources_csv():
     return sources
 
 
-def sync_sources(sources):
+def sync_sources(sources: list[Source]) -> None:
     key_fields = ("id",)
     ret = bulk_sync(
         new_models=sources, key_fields=key_fields, filters=None, db_class=Source
@@ -46,6 +46,6 @@ class Command(BaseCommand):
         sources = read_sources_csv()
         if sources:
             sync_sources(sources)
-            print("All sources synchronised from CSV to database.")
+            print("All sources imported from CSV to database.")
         else:
-            print("No sources synchronised to database because none were found.")
+            print("No sources imported to database because none were found.")
