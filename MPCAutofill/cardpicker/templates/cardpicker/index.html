@@ -58,10 +58,16 @@
         </div>
     </div>
 
-    <div class="row justify-content-end">
-        <div class="container-mx-0 d-flex justify-content-end">
+    <div class="row">
+        <div class="col-lg-6">
+            <div style="text-align: center">
+                <a class="btn w-100 btn-info mt-2" style="border-radius: 200px" href="/guide">Guide</a>
+            </div>
+        </div>
+
+        <div class="col-lg-6 d-flex justify-content-end">
             <button type="button" class="btn btn-outline-primary dropdown-toggle mt-2 ms-2" id="uploadCardsBtn"
-                    style="color: #FFF" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="color: white;">
                 Upload List
             </button>
             <div class="dropdown-menu" aria-labelledby="uploadCardsBtn">
@@ -86,12 +92,12 @@
                     From URL
                 </button>
             </div>
-            &nbsp;
-            <button type="button" class="btn btn-outline-info mt-2" data-bs-toggle="modal" data-bs-target="#selectDrivesModal" style="color: #fff;">
+
+            <button type="button" class="btn btn-outline-info mt-2 ms-2" data-bs-toggle="modal" data-bs-target="#selectDrivesModal" style="color: white;">
                 Settings
             </button>
-            &nbsp;
-            <input form="cardinput" type="submit" class="btn btn-outline-success mt-2" value="Submit" style="color: #fff;">
+
+            <input form="cardinput" type="submit" class="btn btn-outline-success mt-2 ms-2" style="color: white;" value="Submit">
         </div>
     </div>
 
@@ -176,13 +182,15 @@
                                     </div>
                                 </td>
                                 <td style="vertical-align: middle">{{ source.id }}</td>
-                                {% if source.drive_link %}
-                                    <td style="vertical-align: middle" class="active text-center"><a target="_blank"
-                                        href="{{ source.drive_link }}">Link</a>
-                                    </td>
-                                {% else %}
-                                    <td style="vertical-align: middle; font-weight: bold;" class="text-center">Private</td>
-                                {% endif %}
+                                <td style="vertical-align: middle">
+                                    <div class="active text-center">
+                                    {% if source.drive_link %}
+                                    <a target="_blank" href="{{ source.drive_link }}">Link</a>
+                                    {% else %}
+                                    Private
+                                    {% endif %}
+                                    </div>
+                                </td>
                                 <td style="vertical-align: middle"><i class="bi bi-grip-horizontal" style="font-size: 2em"></i></td>
                             </tr>
                         {% endfor %}

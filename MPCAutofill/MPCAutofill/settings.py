@@ -36,6 +36,7 @@ ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["localhost", "127.0.0.1"])
 # Unique site information
 GTAG = env("GTAG", default="")  # Google Analytics
 SITE_NAME = env("SITE_NAME", default="MPC Autofill")
+TARGET_EMAIL = env("TARGET_EMAIL", default="your_email@somewhere.com")
 DISCORD = env("DISCORD", default="http://mprox.link/discord")
 REDDIT = env("REDDIT", default="https://www.reddit.com/r/mpcproxies/")
 THEME = env("THEME", default="superhero")
