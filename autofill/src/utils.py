@@ -7,15 +7,16 @@ from xml.etree import ElementTree
 import numpy as np
 import ratelimit
 import requests
-from selenium.common.exceptions import NoAlertPresentException
-
 import src.constants as constants
+from selenium.common.exceptions import NoAlertPresentException
 
 if TYPE_CHECKING:
     from driver import AutofillDriver
 
 
-CURRDIR: str = os.path.dirname(os.path.realpath(sys.executable)) if getattr(sys, "frozen", False) else os.getcwd()
+CURRDIR: str = (
+    os.path.dirname(os.path.realpath(sys.executable)) if getattr(sys, "frozen", False) else os.path.dirname(__file__)
+)
 
 TEXT_BOLD = "\033[1m"
 TEXT_END = "\033[0m"

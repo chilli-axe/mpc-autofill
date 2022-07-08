@@ -9,12 +9,7 @@ def to_searchable(input_str: str) -> str:
 
     # Convert a card name to a search-friendly string
     # First, convert to unicode to ignore accents and other unusual characters, and convert to lowercase
-    input_str = (
-        unicodedata.normalize("NFD", input_str)
-        .encode("ascii", "ignore")
-        .decode("utf8")
-        .lower()
-    )
+    input_str = unicodedata.normalize("NFD", input_str).encode("ascii", "ignore").decode("utf8").lower()
 
     # Remove text inside brackets
     input_str = re.sub("[\(\[].*?[\)\]]", "", input_str)
