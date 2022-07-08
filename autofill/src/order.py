@@ -3,15 +3,14 @@ import sys
 from concurrent.futures import ThreadPoolExecutor
 from glob import glob
 from queue import Queue
-from typing import List, Optional, Set
+from typing import Optional
 from xml.etree import ElementTree
 
 import attr
 import enlighten
 import InquirerPy
-from defusedxml.ElementTree import parse as defused_parse
-
 import src.constants as constants
+from defusedxml.ElementTree import parse as defused_parse
 from src.utils import (
     CURRDIR,
     TEXT_BOLD,
@@ -29,7 +28,7 @@ from src.utils import (
 @attr.s
 class CardImage:
     drive_id: str = attr.ib(default="")
-    slots: List[int] = attr.ib(default=[])
+    slots: list[int] = attr.ib(default=[])
     name: Optional[str] = attr.ib(default="")
     file_path: Optional[str] = attr.ib(default="")
     query: Optional[str] = attr.ib(default=None)
@@ -113,7 +112,7 @@ class CardImage:
         card_image = cls(drive_id=drive_id, slots=slots, name=name, query=query)
         return card_image
 
-    def download_image(self, queue: Queue, download_bar: enlighten.Counter):
+    def download_image(self, queue: Queue, download_bar: enlighten.Counter) -> None:
         if not self.file_exists() and not self.errored:
             self.errored = not download_google_drive_file(self.drive_id, self.file_path)
 
@@ -138,17 +137,17 @@ class CardImageCollection:
     A collection of CardImages for one face of a CardOrder.
     """
 
-    cards: List[CardImage] = attr.ib(default=[])
+    cards: list[CardImage] = attr.ib(default=[])
     queue: Queue = attr.ib(init=False, default=attr.Factory(Queue))
     num_slots: int = attr.ib(default=0)
     face: constants.Faces = attr.ib(default=constants.Faces.front)
 
     # region initialisation
 
-    def all_slots(self) -> Set[int]:
+    def all_slots(self) -> set[int]:
         return set(range(0, self.num_slots))
 
-    def slots(self) -> Set[int]:
+    def slots(self) -> set[int]:
         return {y for x in self.cards for y in x.slots}
 
     def validate(self) -> None:
@@ -167,11 +166,7 @@ class CardImageCollection:
 
     @classmethod
     def from_element(
-        cls,
-        element: ElementTree,
-        num_slots,
-        face: constants.Faces,
-        fill_image_id: str = None,
+        cls, element: ElementTree, num_slots, face: constants.Faces, fill_image_id: str = None
     ) -> "CardImageCollection":
         card_images = []
         if element:
@@ -261,7 +256,7 @@ class CardOrder:
 
     # region logging
 
-    def print_order_overview(self):
+    def print_order_overview(self) -> None:
         if self.name is not None:
             print(f"Successfully parsed card order: {TEXT_BOLD}{self.name}{TEXT_END}")
         print(

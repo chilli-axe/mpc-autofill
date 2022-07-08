@@ -1,5 +1,6 @@
 import json
 from datetime import timedelta
+from typing import Any
 
 from blog.models import BlogPost
 from cardpicker.forms import InputCSV, InputLink, InputText, InputXML
@@ -15,7 +16,7 @@ from cardpicker.utils.search_functions import (
     search_new_elasticsearch_definition,
 )
 from cardpicker.utils.to_searchable import to_searchable
-from django.http import JsonResponse
+from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
 
@@ -45,13 +46,8 @@ class ErrorWrappers:
         return wrapper
 
 
-def index(request, exception=None):
-    posts = [
-        x.get_synopsis()
-        for x in BlogPost.objects.filter(
-            date_created__gte=timezone.now() - timedelta(days=14)
-        )
-    ]
+def index(request: HttpRequest, exception=None) -> HttpResponse:
+    posts = [x.get_synopsis() for x in BlogPost.objects.filter(date_created__gte=timezone.now() - timedelta(days=14))]
     return render(
         request,
         "cardpicker/index.html",
@@ -63,7 +59,7 @@ def index(request, exception=None):
     )
 
 
-def new_cards(request):
+def new_cards(request: HttpRequest) -> HttpResponse:
     # serves the What's New page - this function returns the first page of results for all sources for
     # cards uploaded in the last two weeks
 
@@ -77,7 +73,7 @@ def new_cards(request):
     return render(request, "cardpicker/new.html", {"sources": results})
 
 
-def search_new_page(request):
+def search_new_page(request: HttpRequest) -> HttpResponse:
     # triggers when the user clicks 'load more' on the What's New page
     # this function takes the current page number and source from the frontend and returns the next page
     # extract specified source and page from post request
@@ -93,15 +89,15 @@ def search_new_page(request):
     return JsonResponse({"sources": results}, safe=False)
 
 
-def legal(request):
+def legal(request: HttpRequest) -> HttpResponse:
     return render(request, "cardpicker/legal.html")
 
 
-def guide(request):
+def guide(request: HttpRequest) -> HttpResponse:
     return render(request, "cardpicker/guide.html")
 
 
-def credits(request):
+def credits(request: HttpRequest) -> HttpResponse:
     sources = [x.to_dict() for x in Source.objects.all()]
     total_count = [x.objects.all().count() for x in [Card, Cardback, Token]]
     total_count.append(sum(total_count))
@@ -114,8 +110,8 @@ def credits(request):
     )
 
 
-@ErrorWrappers.to_json
-def search_multiple(request):
+# @ErrorWrappers.to_json
+def search_multiple(request: HttpRequest) -> HttpResponse:
     # search endpoint function - the frontend requests the search results for this query as JSON
     drive_order, fuzzy_search = retrieve_search_settings(request)
     if drive_order is not None and fuzzy_search is not None:
@@ -126,9 +122,7 @@ def search_multiple(request):
             for item in order[face].values():
                 result = search(drive_order, fuzzy_search, item.query, item.req_type)
                 item.insert_data(result)
-        result = search(
-            drive_order, fuzzy_search, order.cardback.query, order.cardback.req_type
-        )
+        result = search(drive_order, fuzzy_search, order.cardback.query, order.cardback.req_type)
         order.cardback.insert_data(result)
         return JsonResponse(order.to_dict())
 
@@ -137,13 +131,15 @@ def search_multiple(request):
     return JsonResponse({})
 
 
-@ErrorWrappers.to_json
-def search_individual(request):
+# @ErrorWrappers.to_json
+def search_individual(request: HttpRequest) -> HttpResponse:
     # search endpoint function - the frontend requests the search results for this query as JSON
     drive_order, fuzzy_search = retrieve_search_settings(request)
     if drive_order is not None and fuzzy_search is not None:
         query = request.POST.get("query").rstrip("\n")
-        req_type = request.POST.get("req_type")
+        req_type = ReqTypes.CARD
+        if req_type_string := request.POST.get("req_type"):
+            req_type = ReqTypes(req_type_string)  # TODO: validation on this
 
         return JsonResponse(search(drive_order, fuzzy_search, query, req_type))
 
@@ -152,22 +148,22 @@ def search_individual(request):
     return JsonResponse({})
 
 
-def search(drive_order, fuzzy_search, query, req_type):
+def search(drive_order: list[str], fuzzy_search: bool, query: str, req_type: ReqTypes) -> dict[str, Any]:
     # this function can either receive a request with "normal" type with query like "t:goblin",
     # or a request with "token" type with query like "goblin", so handle both of those cases here
     if query.lower()[0:2] == "t:":
         query = query[2:]
-        req_type = ReqTypes.TOKEN.value
+        req_type = ReqTypes.TOKEN
 
     # now that we've potentially trimmed the query for tokens, convert the query to a searchable string
     query = to_searchable(query)
 
     # search for tokens if this request is for a token
-    if req_type == ReqTypes.TOKEN.value:
+    if req_type == ReqTypes.TOKEN:
         results = query_es_token(drive_order, fuzzy_search, query)
 
     # search for cardbacks if request is for cardbacks
-    elif req_type == ReqTypes.CARDBACK.value:
+    elif req_type == ReqTypes.CARDBACK:
         results = query_es_cardback()
 
     # otherwise, search normally
@@ -181,8 +177,8 @@ def search(drive_order, fuzzy_search, query, req_type):
     }
 
 
-@ErrorWrappers.to_index
-def review(request):
+# @ErrorWrappers.to_index
+def review(request: HttpRequest) -> HttpResponse:
     # return the review page with the order dict and quantity from parsing the given text input as context
     # used for rendering the review page
     if request.method == "POST":
@@ -206,8 +202,8 @@ def review(request):
     return redirect("index")
 
 
-@ErrorWrappers.to_json
-def insert_text(request):
+# @ErrorWrappers.to_json
+def insert_text(request: HttpRequest) -> HttpResponse:
     # return a JSON response with the order dict and quantity from parsing the given input
     # used for inserting new cards into an existing order on the review page
     text = request.POST.get("text")
@@ -235,8 +231,8 @@ def insert_text(request):
     return JsonResponse({})
 
 
-@ErrorWrappers.to_index
-def input_csv(request):
+# @ErrorWrappers.to_index
+def input_csv(request: HttpRequest) -> HttpResponse:
     # return the review page with the order dict and quantity from parsing the given CSV input as context
     # used for rendering the review page
     if request.method == "POST":
@@ -260,8 +256,8 @@ def input_csv(request):
     return redirect("index")
 
 
-@ErrorWrappers.to_index
-def input_xml(request):
+# @ErrorWrappers.to_index
+def input_xml(request: HttpRequest) -> HttpResponse:
     # return the review page with the order dict and quantity from parsing the given XML input as context
     # used for rendering the review page
     if request.method == "POST":
@@ -290,8 +286,8 @@ def input_xml(request):
     return redirect("index")
 
 
-@ErrorWrappers.to_json
-def insert_xml(request):
+# @ErrorWrappers.to_json
+def insert_xml(request: HttpRequest) -> HttpResponse:
     # return a JSON response with the order dict and quantity from parsing the given XML input
     # used for inserting new cards into an existing order on the review page
     xml = request.POST.get("xml")
@@ -318,8 +314,8 @@ def insert_xml(request):
     return JsonResponse({})
 
 
-@ErrorWrappers.to_index
-def input_link(request):
+# @ErrorWrappers.to_index
+def input_link(request: HttpRequest) -> HttpResponse:
     # return the review page with the order dict and quantity from parsing the given XML input as context
     # used for rendering the review page
     if request.method == "POST":
@@ -348,8 +344,8 @@ def input_link(request):
     return redirect("index")
 
 
-@ErrorWrappers.to_json
-def insert_link(request):
+# @ErrorWrappers.to_json
+def insert_link(request: HttpRequest) -> HttpResponse:
     # return a JSON response with the order dict and quantity from parsing the given XML input
     # used for inserting new cards into an existing order on the review page
     list_url = request.POST.get("list_url")

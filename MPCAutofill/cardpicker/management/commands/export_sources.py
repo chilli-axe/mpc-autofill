@@ -2,7 +2,7 @@ from cardpicker.models import Source
 from django.core.management.base import BaseCommand
 
 
-def export_sources_csv():
+def export_sources_csv() -> None:
     with open("exported_drives.csv", "w") as csvfile:
         sources = Source.objects.all()
         csvfile.write(
@@ -22,7 +22,7 @@ class Command(BaseCommand):
     # set up help line to print the available drive options
     help = "Synchronises Google Drives from database to exported_drives.csv (in root project directory)."
 
-    def handle(self, *args, **kwargs):
+    def handle(self, *args, **kwargs) -> None:
         if Source.objects.count() > 0:
             export_sources_csv()
             print(f"{Source.objects.count()} source/s exported from database to CSV.")

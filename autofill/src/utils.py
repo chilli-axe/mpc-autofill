@@ -1,7 +1,7 @@
 import os
 import sys
 from math import floor
-from typing import TYPE_CHECKING, Dict, List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Optional, Union
 from xml.etree import ElementTree
 
 import numpy as np
@@ -82,7 +82,7 @@ def download_google_drive_file(drive_id: str, file_path: str) -> bool:
     return False
 
 
-def text_to_list(input_text: str) -> List[int]:
+def text_to_list(input_text: str) -> list[int]:
     """
     Helper function to translate strings like "[2, 4, 5, 6]" into sorted lists.
     """
@@ -93,8 +93,8 @@ def text_to_list(input_text: str) -> List[int]:
 
 
 def unpack_element(
-    element: ElementTree.Element, tags: List[str], unpack_to_text=False
-) -> Union[Dict[str, ElementTree.Element], Dict[str, str]]:
+    element: ElementTree.Element, tags: list[str], unpack_to_text=False
+) -> Union[dict[str, ElementTree.Element], dict[str, str]]:
     """
     Unpacks `element` according to expected tags. Expected tags that don't have elements in `element` have
     value None in the return dictionary.
@@ -138,7 +138,7 @@ def alert_handler(func):
     return wrapper
 
 
-def time_to_hours_minutes_seconds(t) -> Tuple[int, int, int]:
+def time_to_hours_minutes_seconds(t) -> tuple[int, int, int]:
     hours = int(floor(t / 3600))
     mins = int(floor(t / 60) - hours * 60)
     secs = int(t - (mins * 60) - (hours * 3600))

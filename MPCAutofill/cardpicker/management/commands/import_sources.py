@@ -33,16 +33,14 @@ def read_sources_csv() -> list[Source]:
 
 def sync_sources(sources: list[Source]) -> None:
     key_fields = ("id",)
-    ret = bulk_sync(
-        new_models=sources, key_fields=key_fields, filters=None, db_class=Source
-    )
+    ret = bulk_sync(new_models=sources, key_fields=key_fields, filters=None, db_class=Source)
 
 
 class Command(BaseCommand):
     # set up help line to print the available drive options
     help = "Synchronises Google Drives from drives.csv (in root project directory) to database."
 
-    def handle(self, *args, **kwargs):
+    def handle(self, *args, **kwargs) -> None:
         sources = read_sources_csv()
         if sources:
             sync_sources(sources)

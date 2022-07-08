@@ -5,17 +5,7 @@ Object Model for working with MPCOrders - the data structure that defines a user
 import csv
 from collections import abc
 from enum import Enum
-from typing import (
-    AbstractSet,
-    Any,
-    Dict,
-    ItemsView,
-    Iterator,
-    List,
-    Set,
-    Tuple,
-    ValuesView,
-)
+from typing import AbstractSet, Any, ItemsView, Iterator, Optional, ValuesView
 
 import chardet
 import defusedxml.ElementTree as ET
@@ -32,15 +22,15 @@ class ParsingErrors:
             super().__init__(self.message)
 
     class MissingElementException(Exception):
-        def __init__(self, element, index):
-            self.message = f"Your XML file wasn't structured correctly. The {element} element was expected at index {index}."
+        def __init__(self, element: str, index: int):
+            self.message = (
+                f"Your XML file wasn't structured correctly. The {element} element was expected at index {index}."
+            )
             super().__init__(self.message)
 
     class SiteNotSupportedException(Exception):
-        def __init__(self, url):
-            self.message = (
-                f"Importing card lists from {url} is not supported. Sorry about that!"
-            )
+        def __init__(self, url: str):
+            self.message = f"Importing card lists from {url} is not supported. Sorry about that!"
             super().__init__(self.message)
 
 
@@ -70,17 +60,13 @@ class CSVHeaders(Enum):
 
 
 class CardImage:
-    def __init__(self, query: str, slots: Set[Tuple[Any, str]], req_type: str):
-        if not query:
-            query = ""
-        self.query = query
-        self.slots = (
-            slots  # slots is a set of tuples where each tuple is (slot, image id)
-        )
+    def __init__(self, query: Optional[str], slots: set[tuple[Any, str]], req_type: ReqTypes):
+        self.query = query if query is not None else ""
+        self.slots = slots  # slots is a set of tuples where each tuple is (slot, image id)
         self.req_type = req_type
         self.data = []
 
-    def add_slots(self, new_slots: Set[Tuple[Any, str]]):
+    def add_slots(self, new_slots: set[tuple[Any, str]]) -> None:
         self.slots |= new_slots
 
     def insert_data(self, results):
@@ -96,14 +82,14 @@ class CardImage:
         return {
             "query": self.query,
             "slots": [list(x) for x in self.slots],
-            "req_type": self.req_type,
+            "req_type": self.req_type.value,
             "data": self.data,
         }
 
 
 class CardbackImage(CardImage):
     def __init__(self):
-        super(CardbackImage, self).__init__("", {("-", "")}, ReqTypes.CARDBACK.value)
+        super(CardbackImage, self).__init__("", {("-", "")}, ReqTypes.CARDBACK)
 
     def remove_common_cardback(self):
         common_cardback_elem = [x for x in self.slots if x[0] == "-"]
@@ -137,9 +123,9 @@ class CardImageCollection(abc.MutableMapping):
         return self.__dict__.items()
 
     def __init__(self):
-        self.__dict__: Dict[str, CardImage] = {}
+        self.__dict__: dict[str, CardImage] = {}
 
-    def insert_with_ids(self, query: str, slots: Set[Tuple[Any, str]], req_type: str):
+    def insert_with_ids(self, query: str, slots: set[tuple[Any, str]], req_type: ReqTypes):
         # create a CardImage and insert into the dictionary
         if query not in self.keys():
             self[query] = CardImage(query, slots, req_type)
@@ -147,7 +133,7 @@ class CardImageCollection(abc.MutableMapping):
             # update the CardImage with the given query with more slots
             self[query].add_slots(slots)
 
-    def insert(self, query: str, slots: List[Any], req_type: str, selected_img: str):
+    def insert(self, query: str, slots: list[Any], req_type: ReqTypes, selected_img: str):
         slots_with_id = {(x, selected_img) for x in slots}
         self.insert_with_ids(query, slots_with_id, req_type)
 
@@ -178,7 +164,7 @@ class MPCOrder(abc.MutableMapping):
         return self.__dict__.keys()
 
     def __init__(self):
-        self.__dict__: Dict[str, CardImageCollection] = {
+        self.__dict__: dict[str, CardImageCollection] = {
             Faces.FRONT.value: CardImageCollection(),
             Faces.BACK.value: CardImageCollection(),
         }
@@ -186,27 +172,18 @@ class MPCOrder(abc.MutableMapping):
         self.foil = False
         self.cardback = CardbackImage()
 
-    def insert(
-        self,
-        query: str,
-        slots: List[Any],
-        face: str,
-        req_type: str,
-        selected_img: str,
-    ):
+    def insert(self, query: str, slots: list[Any], face: str, req_type: ReqTypes, selected_img: str) -> None:
         # check that the given face is in the order's keys and raise an error if not
         if face not in self.keys():
-            raise ValueError(
-                f"Specified face not in MPCOrder's faces: you specified {face}, I have {self.keys()}"
-            )
+            raise ValueError(f"Specified face not in MPCOrder's faces: you specified {face}, I have {self.keys()}")
 
         self[face].insert(query, slots, req_type, selected_img)
 
-    def add_to_cardback(self, slots: Set[int]):
+    def add_to_cardback(self, slots: set[int]) -> None:
         slots_with_ids = {(x, "") for x in slots}
         self.cardback.add_slots(slots_with_ids)
 
-    def set_common_cardback_id(self, slots: Set[Any], selected_img):
+    def set_common_cardback_id(self, slots: set[Any], selected_img: str) -> None:
         # sets the common cardback's ID and sets the same ID to the given back face slots
         slots.add("-")
         yaboi = [x for x in self.cardback.slots if x[0] in slots]
@@ -255,7 +232,8 @@ class MPCOrder(abc.MutableMapping):
 
         return ret
 
-    def from_text(self, input_lines: str, offset: int = 0):
+    def from_text(self, input_lines: str, offset: int = 0) -> int:
+        # TODO: update naming for clarity, add docstring, etc.
         # populates MPCOrder from supplied text input
         transforms = dict((x.front, x.back) for x in DFCPair.objects.all())
         curr_slot = offset
@@ -272,21 +250,18 @@ class MPCOrder(abc.MutableMapping):
                     qty = 612 - curr_slot
                     over_cap = True
 
-                req_type = ""
+                req_type = ReqTypes.CARD
                 curr_slots = set(range(curr_slot, curr_slot + qty))
 
                 # first, determine if this card is a DFC by virtue of it having its two faces separated by an ampersand
                 query_faces = [query, ""]
                 query_split = [to_searchable(x) for x in query.split(" & ")]
                 if len(query_split) > 1:
-                    if (
-                        query_split[0] in transforms.keys()
-                        and query_split[1] in transforms.values()
-                    ):
+                    if query_split[0] in transforms.keys() and query_split[1] in transforms.values():
                         query_faces = query_split
                 elif query[0:2].lower() == "t:":
                     query_faces[0] = to_searchable(query[2:])
-                    req_type = ReqTypes.TOKEN.value
+                    req_type = ReqTypes.TOKEN
                 else:
                     query_faces[0] = to_searchable(query)
                     # gotta check if query is the front of a DFC here as well
@@ -298,9 +273,7 @@ class MPCOrder(abc.MutableMapping):
 
                 if query_faces[1]:
                     # is a DFC, gotta add the back face to the correct slots
-                    self.insert(
-                        query_faces[1], curr_slots, Faces.BACK.value, req_type, ""
-                    )
+                    self.insert(query_faces[1], curr_slots, Faces.BACK.value, req_type, "")
 
                 else:
                     # is not a DFC, so add this card's slots onto the common cardback's slots
@@ -314,7 +287,8 @@ class MPCOrder(abc.MutableMapping):
 
         return curr_slot - offset
 
-    def from_csv(self, csv_bytes):
+    def from_csv(self, csv_bytes: bytes) -> int:
+        # TODO: as above, these return integer length of the cards added to the order (I think)
         # populates MPCOrder from supplied CSV bytes
         transforms = dict((x.front, x.back) for x in DFCPair.objects.all())
         # TODO: I'm sure this can be cleaned up a lot, the logic here is confusing and unintuitive
@@ -326,9 +300,7 @@ class MPCOrder(abc.MutableMapping):
         csv_string_split = csv_bytes.decode(csv_format["encoding"]).splitlines()
 
         # handle case where csv doesn't have correct headers
-        headers = ",".join(
-            [CSVHeaders.QTY.value, CSVHeaders.FRONT.value, CSVHeaders.BACK.value]
-        )
+        headers = ",".join([CSVHeaders.QTY.value, CSVHeaders.FRONT.value, CSVHeaders.BACK.value])
         if csv_string_split[0] != headers:
             # this CSV doesn't appear to have the correct column headers, so we'll attach them here
             csv_string_split = [headers] + csv_string_split
@@ -356,26 +328,21 @@ class MPCOrder(abc.MutableMapping):
                     line[CSVHeaders.FRONT.value],
                     line[CSVHeaders.BACK.value],
                 ]
-                req_type_front = ReqTypes.CARD.value
-                req_type_back = ReqTypes.CARD.value
+                req_type_front = ReqTypes.CARD
+                req_type_back = ReqTypes.CARD
 
                 # process the front face as a token if necessary
                 if query_faces[0][0:2].lower() == "t:":
                     query_faces[0] = query_faces[0][2:]
-                    req_type_front = ReqTypes.TOKEN.value
+                    req_type_front = ReqTypes.TOKEN
 
                 if not line[CSVHeaders.BACK.value]:
                     # back face not specified
                     # potentially doing transform things, because a back wasn't specified
                     # first, determine if this card is a DFC by virtue of it having its two faces separated by an &
-                    query_split = [
-                        to_searchable(x) for x in query_faces[0].split(" & ")
-                    ]
+                    query_split = [to_searchable(x) for x in query_faces[0].split(" & ")]
                     if len(query_split) > 1:
-                        if (
-                            query_split[0] in transforms.keys()
-                            and query_split[1] in transforms.values()
-                        ):
+                        if query_split[0] in transforms.keys() and query_split[1] in transforms.values():
                             query_faces = query_split
                     else:
                         # gotta check if query is the front of a DFC here as well
@@ -387,21 +354,17 @@ class MPCOrder(abc.MutableMapping):
                     # both sides specified - process the back face as a token if necessary
                     if query_faces[1][0:2].lower() == "t:":
                         query_faces[1] = query_faces[1][2:]
-                        req_type_back = ReqTypes.TOKEN.value
+                        req_type_back = ReqTypes.TOKEN
 
                 # ensure everything has been converted to searchable
                 query_faces = [to_searchable(x) for x in query_faces]
 
                 # stick the front face into the dictionary
-                self.insert(
-                    query_faces[0], curr_slots, Faces.FRONT.value, req_type_front, ""
-                )
+                self.insert(query_faces[0], curr_slots, Faces.FRONT.value, req_type_front, "")
 
                 if query_faces[1]:
                     # is a DFC, gotta add the back face to the correct slots
-                    self.insert(
-                        query_faces[1], curr_slots, Faces.BACK.value, req_type_back, ""
-                    )
+                    self.insert(query_faces[1], curr_slots, Faces.BACK.value, req_type_back, "")
 
                 else:
                     # is not a DFC, so add this card's slots onto the common cardback's slots
@@ -413,7 +376,7 @@ class MPCOrder(abc.MutableMapping):
         # TODO: Read in chunks if big?
         return curr_slot
 
-    def from_xml(self, input_text, offset=0):
+    def from_xml(self, input_text: str, offset=0) -> int:
         # populates MPCOrder from supplied XML file contents
 
         # TODO: validate structure of uploaded XML file separately to this logic before proceeding
@@ -437,16 +400,14 @@ class MPCOrder(abc.MutableMapping):
             for child in elem:
                 # structure: id, slots, name, query
                 card_id = child[0].text
-                slots = {
-                    x + offset for x in text_to_list(child[1].text) if x + offset < 612
-                }
+                slots = {x + offset for x in text_to_list(child[1].text) if x + offset < 612}
                 # filter out slot numbers greater than or equal to 612
                 # slots = {x for x in slots if x < 612}
                 if slots:
                     used_slots += slots
                     query = child[3].text
                     if query:
-                        self.insert(query, slots, face, ReqTypes.CARD.value, card_id)
+                        self.insert(query, list(slots), face, ReqTypes.CARD.value, card_id)
                     else:
                         self.cardback.add_slots({(x, card_id) for x in slots})
 
@@ -481,14 +442,15 @@ class MPCOrder(abc.MutableMapping):
 
         return qty
 
-    def from_link(self, url: str, offset=0):
+    def from_link(self, url: str, offset=0) -> int:
         for site in ImportSites:
             site_instance = site()
             if url.startswith(site_instance.base_url):
                 return self.from_text(site_instance.retrieve_card_list(url), offset)
         raise ParsingErrors.SiteNotSupportedException(url)
 
-    def from_json(self, order_json):
+    def from_json(self, order_json: dict[str, Any]) -> None:
+        # TODO: update method name to indicate that this updates in-place rather than returning an instance
         # populates MPCOrder from supplied json/dictionary
         self.cardstock = {str(x.value): x for x in Cardstocks}[order_json["cardstock"]]
         self.foil = order_json["foil"] == "true"
@@ -498,7 +460,9 @@ class MPCOrder(abc.MutableMapping):
                 query = order_json[face][key]["query"]
                 # slots = order_json[face][key]["slots"]
                 slots = {tuple(x) for x in order_json[face][key]["slots"]}
-                req_type = order_json[face][key]["req_type"]
+                req_type = ReqTypes.CARD
+                if req_type_string := order_json[face][key]["req_type"]:
+                    req_type = ReqTypes(req_type_string)
                 if query:
                     self[face].insert_with_ids(query, slots, req_type)
                 else:

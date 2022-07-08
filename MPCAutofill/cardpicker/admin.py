@@ -28,7 +28,7 @@ class AdminDFCPair(admin.ModelAdmin):
 class AdminSource(admin.ModelAdmin):
     list_display = ("id", "drive_id", "contribution", "description")
 
-    def contribution(self, obj):
+    def contribution(self, obj: Source) -> str:
         qty_all, qty_cards, qty_cardbacks, qty_tokens, avgdpi = obj.count()
 
         return "{} images - {} cards, {} cardbacks, and {} tokens @ {} DPI on average".format(

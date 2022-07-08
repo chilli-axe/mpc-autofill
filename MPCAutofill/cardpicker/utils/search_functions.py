@@ -1,13 +1,12 @@
 from datetime import timedelta
-from math import floor
-from typing import Dict, List, Optional, Tuple, Type
+from typing import Any, Callable, Optional, Type
 
 from cardpicker.documents import CardbackSearch, CardSearch, TokenSearch
 from cardpicker.models import Source
 from cardpicker.utils.to_searchable import to_searchable
 from django.utils import timezone
 from elasticsearch.exceptions import ConnectionError as ElasticConnectionError
-from elasticsearch_dsl.document import Document
+from elasticsearch_dsl.document import Document, Search
 from elasticsearch_dsl.index import Index
 from elasticsearch_dsl.query import Match
 from Levenshtein import distance
@@ -28,12 +27,12 @@ class SearchExceptions:
             super().__init__(self.message)
 
 
-def elastic_connection(func):
+def elastic_connection(func: Callable):
     """
     Small function wrapper which makes elasticsearch's connection error more readable.
     """
 
-    def wrapper(*args, **kwargs):
+    def wrapper(*args: Any, **kwargs: dict[str, Any]):
         try:
             return func(*args, **kwargs)
         except ElasticConnectionError:
@@ -42,9 +41,7 @@ def elastic_connection(func):
     return wrapper
 
 
-def build_context(drive_order: List[str], fuzzy_search: bool, order: Dict, qty: int):
-    # I found myself copy/pasting this between the three input methods so I figured it belonged in its own function
-
+def build_context(drive_order: list[str], fuzzy_search: bool, order: dict, qty: int):
     context = {
         "drive_order": drive_order,
         "fuzzy_search": "true" if fuzzy_search else "false",
@@ -55,7 +52,7 @@ def build_context(drive_order: List[str], fuzzy_search: bool, order: Dict, qty: 
     return context
 
 
-def retrieve_search_settings(request) -> Tuple[List, bool]:
+def retrieve_search_settings(request) -> tuple[list[str], bool]:
     # safely retrieve drive_order and fuzzy_search from request, given that sometimes
     # they might not exist, and trying to manipulate None objects results in exceptions
     drive_order = request.POST.get("drive_order")
@@ -67,19 +64,19 @@ def retrieve_search_settings(request) -> Tuple[List, bool]:
     return drive_order, fuzzy_search
 
 
-def text_to_list(input_text) -> List[int]:
+def text_to_list(input_text: str) -> list[int]:
     # Helper function to translate strings like "[2, 4, 5, 6]" into lists
     if input_text == "":
         return []
     return [int(x) for x in input_text.strip("][").replace(" ", "").split(",")]
 
 
-def query_es_card(drive_order: List[str], fuzzy_search: bool, query: str):
+def query_es_card(drive_order: list[str], fuzzy_search: bool, query: str) -> list[dict[str, Any]]:
     return search_database(drive_order, fuzzy_search, query, CardSearch)
 
 
 @elastic_connection
-def query_es_cardback():
+def query_es_cardback() -> list[dict[str, Any]]:
     # return all cardbacks in the search index
     if not Index(CardbackSearch.Index.name).exists():
         raise SearchExceptions.IndexNotFoundException(CardbackSearch.__name__)
@@ -89,14 +86,14 @@ def query_es_cardback():
     return results
 
 
-def query_es_token(drive_order: List[str], fuzzy_search: bool, query: str):
+def query_es_token(drive_order: list[str], fuzzy_search: bool, query: str) -> list[dict[str, Any]]:
     return search_database(drive_order, fuzzy_search, query, TokenSearch)
 
 
 @elastic_connection
 def search_database(
-    drive_order: List[str], fuzzy_search: bool, query: str, index: Type[Document]
-) -> List[Dict]:
+    drive_order: list[str], fuzzy_search: bool, query: str, index: Type[Document]
+) -> list[dict[str, Any]]:
     # search through the database for a given query, over the drives specified in drive_orders,
     # using the search index specified in s (this enables reuse of code between Card and Token search functions)
     if not Index(index.Index.name).exists():
@@ -113,9 +110,7 @@ def search_database(
     else:
         match = Match(searchq_keyword={"query": query_parsed, "operator": "AND"})
     s_query = s.query(match)
-    hits = (
-        s_query.sort({"priority": {"order": "desc"}}).params(preserve_order=True).scan()
-    )
+    hits = s_query.sort({"priority": {"order": "desc"}}).params(preserve_order=True).scan()
     hits_dict = [x.to_dict() for x in hits]
 
     if hits_dict:
@@ -127,7 +122,7 @@ def search_database(
     return results
 
 
-def process_line(input_str: str) -> Tuple[Optional[str], Optional[int]]:
+def process_line(input_str: str) -> tuple[Optional[str], Optional[int]]:
     # Extract the quantity and card name from a given line of the text input
     input_str = str(" ".join([x for x in input_str.split(" ") if x]))
     if input_str.isspace() or len(input_str) == 0:
@@ -164,7 +159,7 @@ def search_new_elasticsearch_definition():
 
 
 @elastic_connection
-def search_new(s, source, page=0):
+def search_new(s: Search, source: Source, page: int = 0) -> dict[str, Any]:
     # define page size and the range to paginate with
     page_size = 6
     start_idx = page_size * page

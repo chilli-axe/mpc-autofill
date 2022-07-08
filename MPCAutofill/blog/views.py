@@ -11,9 +11,7 @@ def index(request):
 
 def blog(request, blog):
     posts = [x.get_synopsis() for x in BlogPost.objects.filter(blog__url=blog)]
-    return render(
-        request, "blog/blog.html", {"blog": Blog.objects.get(url=blog), "posts": posts}
-    )
+    return render(request, "blog/blog.html", {"blog": Blog.objects.get(url=blog), "posts": posts})
 
 
 def blog_post(request, blog, blog_post):

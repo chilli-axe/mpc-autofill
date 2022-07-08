@@ -43,11 +43,7 @@ class BlogPost(models.Model):
         return f'"{self.name}", created on {self.date_created}'
 
     def get_url(self) -> str:
-        name_flattened = (
-            self.name.lower()
-            .translate(str.maketrans("", "", string.punctuation))
-            .replace(" ", "-")
-        )
+        name_flattened = self.name.lower().translate(str.maketrans("", "", string.punctuation)).replace(" ", "-")
         post_url = f"/blog/{self.blog.url}/{self.pk}-{name_flattened}"
         return post_url
 

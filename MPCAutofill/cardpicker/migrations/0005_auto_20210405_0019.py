@@ -14,22 +14,16 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="card",
             name="source",
-            field=models.ForeignKey(
-                on_delete=django.db.models.deletion.CASCADE, to="cardpicker.Source"
-            ),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="cardpicker.Source"),
         ),
         migrations.AlterField(
             model_name="cardback",
             name="source",
-            field=models.ForeignKey(
-                on_delete=django.db.models.deletion.CASCADE, to="cardpicker.Source"
-            ),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="cardpicker.Source"),
         ),
         migrations.AlterField(
             model_name="token",
             name="source",
-            field=models.ForeignKey(
-                on_delete=django.db.models.deletion.CASCADE, to="cardpicker.Source"
-            ),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="cardpicker.Source"),
         ),
     ]
