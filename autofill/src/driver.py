@@ -13,7 +13,6 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.support.expected_conditions import invisibility_of_element
 from selenium.webdriver.support.ui import Select, WebDriverWait
-
 from src.constants import THREADS, States
 from src.order import CardImage, CardImageCollection, CardOrder
 from src.utils import (
@@ -117,7 +116,7 @@ class AutofillDriver:
         except sl_exc.NoSuchElementException:
             return
 
-    def set_state(self, state: str, action: str = "") -> None:
+    def set_state(self, state: str, action: Optional[str] = None) -> None:
         self.state = state
         self.action = action
         self.status_bar.update(
@@ -227,7 +226,7 @@ class AutofillDriver:
             )
             return None
 
-    def insert_image(self, pid: Optional[str], image: CardImage, slots: Optional[list[int]] = None):
+    def insert_image(self, pid: Optional[str], image: CardImage, slots: Optional[list[int]] = None) -> None:
         """
         Inserts the image identified by `pid` into `image.slots`.
         If `slots` is specified, fill the image into those slots instead.

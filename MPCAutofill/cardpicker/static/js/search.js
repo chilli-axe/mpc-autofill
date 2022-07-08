@@ -193,7 +193,7 @@ function get_common_cardback_id(data) {
 }
 
 function build_cards(data) {
-    // call build_card on multiple cards by interpreting an order dict, and handle grouping 
+    // call build_card on multiple cards by interpreting an order dict, and handle grouping
     let cardback_id = get_common_cardback_id(data);
     for (const face of ["front", "back"]) {
         for (let key in data[face]) {
@@ -286,7 +286,7 @@ function build_card(card, dom_id, query, slot_id, face, group, common_back_id = 
     }
 
     // insert the returned data into this card's dom element
-    // since the Card will attach itself to the relevant dom element as soon as it's instantiated, 
+    // since the Card will attach itself to the relevant dom element as soon as it's instantiated,
     // we don't need to keep track of it as a variable here
     let new_card = new Card(
         card.data,

@@ -163,3 +163,4 @@ staticroot
 elasticsearch
 *.db
 .env_prod
+MPCAutofill/exported_drives.csv

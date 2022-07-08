@@ -1,39 +1,12 @@
+from typing import Any, Union
+
 from django.utils import dateformat
 from django_elasticsearch_dsl import Document, fields
 from django_elasticsearch_dsl.registries import registry
 
 from .models import Card, Cardback, Token
 
-
-def card_to_dict(obj):
-    """
-    Serialises a given Card object. Defined here because both models.py and documents.py use this function.
-    """
-    return {
-        "id": obj.id,
-        "name": obj.name,
-        "priority": obj.priority,
-        "source": obj.source,
-        "source_verbose": obj.source_verbose,
-        "dpi": obj.dpi,
-        "searchq": obj.searchq,
-        "thumbpath": obj.thumbpath,
-        "date": dateformat.format(obj.date, "jS F, Y"),
-        "size": obj.size,
-    }
-
-
-common_fields = [
-    "id",
-    "name",
-    "priority",
-    "source_verbose",
-    "dpi",
-    "thumbpath",
-    "searchq",
-    "date",
-    "size",
-]
+common_fields = ["id", "name", "priority", "source_verbose", "dpi", "thumbpath", "searchq", "date", "size"]
 
 common_settings = {"number_of_shards": 5, "number_of_replicas": 0}
 
@@ -93,3 +66,22 @@ class TokenSearch(Document):
 
     def to_dict(self, **kwargs):
         return card_to_dict(self)
+
+
+def card_to_dict(obj: Union[CardSearch, CardbackSearch, TokenSearch]) -> dict[str, Any]:
+    """
+    Serialises a given Card document.
+    """
+
+    return {
+        "id": obj.id,
+        "name": obj.name,
+        "priority": obj.priority,
+        "source": obj.source,
+        "source_verbose": obj.source_verbose,
+        "dpi": obj.dpi,
+        "searchq": obj.searchq,
+        "thumbpath": obj.thumbpath,
+        "date": dateformat.format(obj.date, "jS F, Y"),
+        "size": obj.size,
+    }

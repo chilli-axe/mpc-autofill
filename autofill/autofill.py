@@ -1,7 +1,6 @@
 import os
 
 import click
-
 from src.constants import browsers
 from src.driver import AutofillDriver
 from src.utils import TEXT_BOLD, TEXT_END

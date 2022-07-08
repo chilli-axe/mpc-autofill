@@ -6,10 +6,9 @@ from queue import Queue
 from xml.etree import ElementTree
 
 import pytest
+import src.constants as constants
 from enlighten import Counter
 from selenium.webdriver.common.by import By
-
-import src.constants as constants
 from src.driver import AutofillDriver
 from src.order import CardImage, CardImageCollection, CardOrder, Details
 from src.utils import get_google_drive_file_name, text_to_list
@@ -52,11 +51,17 @@ def assert_orders_identical(a: CardOrder, b: CardOrder) -> None:
 # region fixtures
 
 
+FILE_PATH = os.path.dirname(__file__)
 SIMPLE_CUBE = "Simple Cube"
 SIMPLE_CUBE_ID = "1YKRRJUN8J9F4bAYCtZLb5mPDJDaabeR_"
 SIMPLE_LOTUS = "Simple Lotus"
 SIMPLE_LOTUS_ID = "1R7Wqjgghwe81mh0o83g_r3iC8zUaetKX"
 TEST_IMAGE = "test_image"
+
+
+@pytest.fixture(autouse=True)
+def change_test_dir(request, monkeypatch):
+    monkeypatch.chdir(FILE_PATH)
 
 
 @pytest.fixture()
@@ -79,13 +84,6 @@ def input_enter(monkeypatch) -> None:
     monkeypatch.setattr("builtins.input", lambda _: "\n")
 
 
-# @pytest.fixture()
-# def std_in(monkeypatch) -> io.StringIO:
-#     string_io = io.StringIO()
-#     monkeypatch.setattr("sys.stdin", string_io)
-#     return string_io
-
-
 # region CardImage
 @pytest.fixture()
 def image_element_local_file() -> ElementTree.Element:
@@ -93,7 +91,7 @@ def image_element_local_file() -> ElementTree.Element:
         textwrap.dedent(  # file exists in /src/cards
             f"""
             <card>
-                <id>{os.getcwd()}/cards/{TEST_IMAGE}.png</id>
+                <id>{FILE_PATH}/cards/{TEST_IMAGE}.png</id>
                 <slots>0</slots>
                 <name>{TEST_IMAGE}.png</name>
                 <query>test image</query>
@@ -355,7 +353,7 @@ def card_order_element_valid() -> ElementTree.Element:
                         <query>simple lotus</query>
                     </card>
                 </fronts>
-                <cardback>{os.getcwd()}/cards/{TEST_IMAGE}.png</cardback>
+                <cardback>{FILE_PATH}/cards/{TEST_IMAGE}.png</cardback>
             </order>
             """
         )
@@ -381,7 +379,7 @@ def card_order_element_multiple_cardbacks() -> ElementTree.Element:
                 </details>
                 <fronts>
                     <card>
-                        <id>{os.getcwd()}/cards/{TEST_IMAGE}.png</id>
+                        <id>{FILE_PATH}/cards/{TEST_IMAGE}.png</id>
                         <slots>0,3</slots>
                         <name></name>
                         <query></query>
@@ -439,7 +437,7 @@ def card_order_element_invalid_quantity() -> ElementTree.Element:
                         <query>simple lotus</query>
                     </card>
                 </fronts>
-                <cardback>{os.getcwd()}/cards/{TEST_IMAGE}.png</cardback>
+                <cardback>{FILE_PATH}/cards/{TEST_IMAGE}.png</cardback>
             </order>
             """
         )
@@ -472,7 +470,7 @@ def card_order_element_missing_front_image() -> ElementTree.Element:
                         <query>simple lotus</query>
                     </card>
                 </fronts>
-                <cardback>{os.getcwd()}/cards/{TEST_IMAGE}.png</cardback>
+                <cardback>{FILE_PATH}/cards/{TEST_IMAGE}.png</cardback>
             </order>
             """
         )
@@ -609,14 +607,14 @@ def test_card_order_valid(card_order_valid):
                         drive_id=SIMPLE_CUBE_ID,
                         slots=[0],
                         name=f"{SIMPLE_CUBE}.png",
-                        file_path=f"{os.getcwd()}/cards/{SIMPLE_CUBE} ({SIMPLE_CUBE_ID}).png",  # not on disk
+                        file_path=f"{FILE_PATH}/cards/{SIMPLE_CUBE} ({SIMPLE_CUBE_ID}).png",  # not on disk
                         query="simple cube",
                     ),
                     CardImage(
                         drive_id=SIMPLE_LOTUS_ID,
                         slots=[1, 2],
                         name=f"{SIMPLE_LOTUS}.png",
-                        file_path=f"{os.getcwd()}/cards/{SIMPLE_LOTUS}.png",  # already exists on disk
+                        file_path=f"{FILE_PATH}/cards/{SIMPLE_LOTUS}.png",  # already exists on disk
                         query="simple lotus",
                     ),
                 ],
@@ -626,10 +624,10 @@ def test_card_order_valid(card_order_valid):
                 num_slots=3,
                 cards=[
                     CardImage(
-                        drive_id=f"{os.getcwd()}/cards/{TEST_IMAGE}.png",
+                        drive_id=f"{FILE_PATH}/cards/{TEST_IMAGE}.png",
                         slots=[0],  # for orders with a single back image, the back image is only assigned to slot 0
                         name=f"{TEST_IMAGE}.png",  # name retrieved from file on disk
-                        file_path=f"{os.getcwd()}/cards/{TEST_IMAGE}.png",
+                        file_path=f"{FILE_PATH}/cards/{TEST_IMAGE}.png",
                         query=None,
                     )
                 ],
@@ -653,17 +651,17 @@ def test_card_order_multiple_cardbacks(card_order_multiple_cardbacks):
                 num_slots=4,
                 cards=[
                     CardImage(
-                        drive_id=f"{os.getcwd()}/cards/{TEST_IMAGE}.png",
+                        drive_id=f"{FILE_PATH}/cards/{TEST_IMAGE}.png",
                         slots=[0, 3],
                         name=f"{TEST_IMAGE}.png",  # name retrieved from file on disk
-                        file_path=f"{os.getcwd()}/cards/{TEST_IMAGE}.png",
+                        file_path=f"{FILE_PATH}/cards/{TEST_IMAGE}.png",
                         query=None,
                     ),
                     CardImage(
                         drive_id=SIMPLE_LOTUS_ID,
                         slots=[1, 2],
                         name=f"{SIMPLE_LOTUS}.png",
-                        file_path=f"{os.getcwd()}/cards/{SIMPLE_LOTUS}.png",  # already exists on disk
+                        file_path=f"{FILE_PATH}/cards/{SIMPLE_LOTUS}.png",  # already exists on disk
                         query="simple lotus",
                     ),
                 ],
@@ -676,14 +674,14 @@ def test_card_order_multiple_cardbacks(card_order_multiple_cardbacks):
                         drive_id=SIMPLE_LOTUS_ID,
                         slots=[1],
                         name=f"{SIMPLE_LOTUS}.png",
-                        file_path=f"{os.getcwd()}/cards/{SIMPLE_LOTUS}.png",  # already exists on disk
+                        file_path=f"{FILE_PATH}/cards/{SIMPLE_LOTUS}.png",  # already exists on disk
                         query="simple lotus",
                     ),
                     CardImage(
                         drive_id=SIMPLE_CUBE_ID,
                         slots=[0, 2, 3],
                         name=f"{SIMPLE_CUBE}.png",
-                        file_path=f"{os.getcwd()}/cards/{SIMPLE_CUBE} ({SIMPLE_CUBE_ID}).png",  # not on disk
+                        file_path=f"{FILE_PATH}/cards/{SIMPLE_CUBE} ({SIMPLE_CUBE_ID}).png",  # not on disk
                         query=None,
                     ),
                 ],
@@ -713,14 +711,14 @@ def test_card_order_valid_from_file():
                         drive_id="1OAw4l9RYbgYrmnyYeR1iVDoIS6_aus49",
                         slots=list(range(9)),
                         name="Island (Unsanctioned).png",
-                        file_path=f"{os.getcwd()}/cards/Island (Unsanctioned).png",
+                        file_path=f"{FILE_PATH}/cards/Island (Unsanctioned).png",
                         query="island",
                     ),
                     CardImage(
                         drive_id="1wlrM7pNHQ5NqS9GY5LWH7Hd04TtNgHI4",
                         slots=[9],
                         name="Rite of Flame.png",
-                        file_path=f"{os.getcwd()}/cards/Rite of Flame.png",
+                        file_path=f"{FILE_PATH}/cards/Rite of Flame.png",
                         query="rite of flame",
                     ),
                 ],
@@ -733,7 +731,7 @@ def test_card_order_valid_from_file():
                         drive_id="16g2UamJ2jzwNHovLesvsinvd6_qPkZfy",
                         slots=[0],  # for orders with a single back image, the back image is only assigned to slot 0
                         name="MTGA Lotus.png",
-                        file_path=f"{os.getcwd()}/cards/MTGA Lotus.png",
+                        file_path=f"{FILE_PATH}/cards/MTGA Lotus.png",
                         query=None,
                     )
                 ],

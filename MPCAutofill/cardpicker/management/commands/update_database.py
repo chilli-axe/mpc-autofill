@@ -1,5 +1,8 @@
+import datetime as dt
 import time
+from dataclasses import dataclass
 from math import floor
+from typing import Any
 
 import googleapiclient.errors
 from cardpicker.models import Card, Cardback, Source, Token
@@ -7,7 +10,7 @@ from cardpicker.utils.to_searchable import to_searchable
 from django.core import management
 from django.core.management.base import BaseCommand
 from django.db import transaction
-from googleapiclient.discovery import build
+from googleapiclient.discovery import Resource, build
 from googleapiclient.errors import HttpError
 from oauth2client.service_account import ServiceAccountCredentials
 from tqdm import tqdm
@@ -27,8 +30,27 @@ DPI_HEIGHT_RATIO = 300 / 1110  # 300 DPI for image of vertical resolution 1110 p
 # TODO: accept multiple drives as arguments, rather than one or all
 
 
-def locate_drives(service, sources):
-    def get_folder_from_id(drive_id, bar: tqdm):
+@dataclass
+class Folder:
+    id: str
+    name: str
+    parents: list[str]
+
+
+@dataclass
+class Image:  # TODO: update these Any types
+    id: str
+    name: str
+    size: int
+    parent: str
+    created_time: dt.datetime
+    height: int
+    folder: Folder
+
+
+def locate_drives(service: Resource, sources: list[Source]) -> dict[str, Folder]:
+    # TODO: add data classes for things retrieved by google drive api - better typing than dict[str, str]
+    def get_folder_from_id(drive_id: str) -> Folder:
         try:
             folder = service.files().get(fileId=drive_id).execute()
         except googleapiclient.errors.HttpError:
@@ -36,11 +58,11 @@ def locate_drives(service, sources):
 
         time.sleep(0.1)
         bar.update(1)
-        return folder
+        return Folder(id=folder["id"], name=folder["name"], parents=[])
 
     print("Retrieving Google Drive folders...")
     bar = tqdm(total=len(sources))
-    folders = {x.id: get_folder_from_id(x.drive_id, bar) for x in sources}
+    folders = {x.id: get_folder_from_id(x.drive_id) for x in sources}
     for x in sources:
         if not folders[x.id]:
             print(f"Failed on drive: {x.id}")
@@ -49,10 +71,10 @@ def locate_drives(service, sources):
     return folders
 
 
-def crawl_drive(service, folder):
+def crawl_drive(service: Resource, folder: Folder) -> list[Image]:
     # maintain a list of images found in this folder so far, and also maintain a list of
     # unexplored folders in this drive
-    unexplored_folders = [folder]
+    unexplored_folders: list[Folder] = [folder]
     folder_dict = {}
 
     # skip any folders with these names
@@ -68,7 +90,7 @@ def crawl_drive(service, folder):
     ]
 
     # crawl through the drive one folder at a time
-    images = []
+    images: list[Image] = []
     while len(unexplored_folders) > 0:
         # explore the first folder in the list - retrieve all images in the folder, add any folders inside it
         # to the unexplored folder list, then remove the current folder from that list, then repeat until all
@@ -77,15 +99,12 @@ def crawl_drive(service, folder):
         curr_folder = unexplored_folders[0]
 
         # Skip some folders as specified
-        acceptable = (
-            all(x not in curr_folder["name"] for x in ignored_folders)
-            and curr_folder["name"][0] != "!"
-        )
+        acceptable = all(x not in curr_folder.name for x in ignored_folders) and curr_folder.name[0] != "!"
         if acceptable:
-            print(f"Searching: {curr_folder['name']}")
+            print(f"Searching: {curr_folder.name}")
 
             # Store this folder's name in a dict with gdrive ID as keys for tracking parent folder names for cards
-            folder_dict[curr_folder["id"]] = curr_folder["name"]
+            folder_dict[curr_folder.id] = curr_folder.name
 
             # Search for folders within the current folder
             while True:
@@ -93,14 +112,15 @@ def crawl_drive(service, folder):
                     results = (
                         service.files()
                         .list(
-                            q="mimeType='application/vnd.google-apps.folder' and "
-                            f"'{curr_folder['id']}' in parents",
+                            q="mimeType='application/vnd.google-apps.folder' and " f"'{curr_folder.id}' in parents",
                             fields="files(id, name, parents)",
                             pageSize=500,
                         )
                         .execute()
                     )
-                    unexplored_folders += results.get("files", [])
+                    unexplored_folders += [
+                        Folder(id=x["id"], name=x["name"], parents=x["parents"]) for x in results.get("files", [])
+                    ]
                     break
                 except HttpError:
                     pass
@@ -117,9 +137,9 @@ def crawl_drive(service, folder):
                             q="(mimeType contains 'image/png' or "
                             "mimeType contains 'image/jpg' or "
                             "mimeType contains 'image/jpeg') and "
-                            f"'{curr_folder['id']}' in parents",
+                            f"'{curr_folder.id}' in parents",
                             fields="nextPageToken, files("
-                            "id, name, trashed, size, properties, parents, createdTime, imageMediaMetadata, owners"
+                            "id, name, trashed, size, parents, createdTime, imageMediaMetadata"
                             ")",
                             pageSize=500,
                             pageToken=page_token,
@@ -138,14 +158,22 @@ def crawl_drive(service, folder):
                 # Append the retrieved images to the image list
                 located_images = results.get("files", [])
                 for x in located_images:
-                    # Store references to current folder name and parent name in each image
-                    x["folder_name"] = curr_folder["name"]
-                    try:
-                        x["parent_name"] = folder_dict[curr_folder["parents"][0]]
-                    except KeyError:
-                        x["parent_name"] = ""
-
-                images += results.get("files", [])
+                    if not x["trashed"]:
+                        try:
+                            parent = folder_dict[curr_folder.parents[0]]
+                        except KeyError:
+                            parent = ""
+                        images.append(
+                            Image(
+                                id=x["id"],
+                                name=x["name"],
+                                created_time=x["createdTime"],
+                                folder=curr_folder,
+                                height=x["imageMediaMetadata"]["height"],
+                                parent=parent,
+                                size=x["size"],
+                            )
+                        )
 
                 page_token = results.get("nextPageToken", None)
                 if page_token is None:
@@ -157,7 +185,8 @@ def crawl_drive(service, folder):
     return images
 
 
-def search_folder(service, source, folder):
+def search_folder(service: Resource, source: Source, folder: Folder) -> None:
+    # TODO: this code is horrendously unclear with its variable scope and needs to be rewritten.
     print(f"Searching drive: {source.id}")
 
     # maintain list of cards, cardbacks, and tokens found for this Source
@@ -173,9 +202,7 @@ def search_folder(service, source, folder):
     for x in images:
         add_card(folder, source, x, q_cards, q_cardbacks, q_tokens)
 
-    print(
-        f"\nFinished crawling {folder['name']}.\nSynchronising to database...", end=""
-    )
+    print(f"\nFinished crawling {folder.name}.\nSynchronising to database...", end="")
 
     t0 = time.time()
 
@@ -191,109 +218,86 @@ def search_folder(service, source, folder):
     print(f" and done! That took {time.time() - t0} seconds.\n")
 
 
-def add_card(folder, source, item, q_cards, q_cardbacks, q_tokens):
+def add_card(
+    folder: Folder, source: Source, item: Image, q_cards: list[Card], q_cardbacks: list[Cardback], q_tokens: list[Token]
+) -> None:
+    # file is valid when it's not trashed and filesize does not exceed 30 MB
+    if int(item.size) > 30_000_000:
+        print(f"Can't index this card: <{item.id}> {item.name}, size: {item.size} bytes")
+        return
+
+    # strip the extension off of the item name to retrieve the card name
     try:
-        # file is valid when it's not trashed and filesize does not exceed 30 MB
-        valid = not item["trashed"] and int(item["size"]) < 30000000
-        if not valid:
-            print(
-                f"Can't index this card: <{item['id']}> {item['name']}, size: {item['size']} bytes"
-            )
-    except KeyError:
-        valid = True
+        cardname, extension = item.name.rsplit(".", 1)
+    except ValueError:
+        print(f"Issue with parsing image: {item.name}")
+        return
 
-    if valid:
-        # strip the extension off of the item name to retrieve the card name
-        try:
-            [cardname, extension] = item["name"].rsplit(".", 1)
-        except ValueError:
-            print(f"Issue with parsing image: {item['name']}")
-            return
+    img_type = "card"
+    folder_name = item.folder.name
 
-        source_verbose = "Unknown"
+    # Skip this file if it doesn't have a name after splitting name & extension
+    if not cardname:
+        return
 
-        img_type = "card"
-        folder_name = item["folder_name"]
-        parent_name = item["parent_name"]
+    priority = 2
+    source_verbose = str(source.id)
 
-        # Skip this file if it doesn't have a name after splitting name & extension
-        if not cardname:
-            return
+    if ")" in cardname:
+        priority = 1
 
-        priority = 2
-
-        if ")" in cardname:
-            priority = 1
-
-        if folder["name"] == "Chilli_Axe's MPC Proxies":
-            source_verbose = "Chilli_Axe"
-
-            if "Retro Cube" in parent_name:
-                priority = 0
-                source_verbose = "Chilli_Axe Retro Cube"
-
-            elif folder_name == "12. Cardbacks":
-                if "Black Lotus" in item["name"]:
-                    priority += 10
-                img_type = "cardback"
-                priority += 5
-
-        elif folder["name"] == "nofacej MPC Card Backs":
+    if folder.name == "Chilli_Axe's MPC Proxies":
+        if folder_name == "12. Cardbacks":
+            if "Black Lotus" in item.name:
+                priority += 10
             img_type = "cardback"
-            source_verbose = str(source.id)
-
-        else:
-            source_verbose = str(source.id)
-
-        if "basic" in folder_name.lower():
             priority += 5
-            source_verbose = source_verbose + " Basics"
+    elif folder.name == "nofacej MPC Card Backs":
+        img_type = "cardback"
 
-        elif "token" in folder_name.lower():
-            img_type = "token"
+    if "basic" in folder_name.lower():
+        priority += 5
+        source_verbose = source_verbose + " Basics"
+    elif "token" in folder_name.lower():
+        img_type = "token"
+    elif "cardbacks" in folder_name.lower() or "card backs" in folder_name.lower():
+        img_type = "cardback"
+        source_verbose = source_verbose + " Cardbacks"
 
-        elif "cardbacks" in folder_name.lower() or "card backs" in folder_name.lower():
-            img_type = "cardback"
-            source_verbose = source_verbose + " Cardbacks"
+    # Calculate source image DPI, rounded to tens
+    dpi = 10 * round(int(item.height) * DPI_HEIGHT_RATIO / 10)
 
-        # Calculate source image DPI, rounded to tens
-        dpi = 10 * round(
-            int(item["imageMediaMetadata"]["height"]) * DPI_HEIGHT_RATIO / 10
+    # Skip card if its source couldn't be determined
+    if source == "Unknown":
+        return
+
+    # Use a dictionary to map the img type to the queue and class of card we need to append/create
+    queue_object_map = {
+        "cardback": (q_cardbacks, Cardback),
+        "token": (q_tokens, Token),
+        "card": (q_cards, Card),
+    }
+
+    queue_object_map[img_type][0].append(
+        queue_object_map[img_type][1](
+            id=item.id,
+            name=cardname,
+            priority=priority,
+            source=source,
+            source_verbose=source_verbose,
+            dpi=dpi,
+            searchq=to_searchable(cardname),  # search-friendly card name
+            searchq_keyword=to_searchable(cardname),  # for keyword search
+            thumbpath=extension,
+            date=item.created_time,
+            size=item.size,
         )
-
-        # Skip card if its source couldn't be determined
-        if source == "Unknown":
-            return
-
-        # Use a dictionary to map the img type to the queue and class of card we need to append/create
-        queue_object_map = {
-            "cardback": (q_cardbacks, Cardback),
-            "token": (q_tokens, Token),
-            "card": (q_cards, Card),
-        }
-
-        queue_object_map[img_type][0].append(
-            queue_object_map[img_type][1](
-                id=item["id"],
-                name=cardname,
-                priority=priority,
-                source=source,
-                source_verbose=source_verbose,
-                dpi=dpi,
-                searchq=to_searchable(cardname),  # search-friendly card name
-                searchq_keyword=to_searchable(cardname),  # for keyword search
-                thumbpath=extension,
-                date=item["createdTime"],
-                size=item["size"],
-            )
-        )
-
-
-def login():
-    # authenticate with Google Drive service account JSON credentials
-    creds = ServiceAccountCredentials.from_json_keyfile_name(
-        SERVICE_ACC_FILENAME, scopes=SCOPES
     )
+
+
+def login() -> Resource:
+    # authenticate with Google Drive service account JSON credentials
+    creds = ServiceAccountCredentials.from_json_keyfile_name(SERVICE_ACC_FILENAME, scopes=SCOPES)
     return build("drive", "v3", credentials=creds)
 
 
@@ -304,15 +308,10 @@ class Command(BaseCommand):
         help += f"{source.id}, "
     help = help[:-2]
 
-    def add_arguments(self, parser):
-        parser.add_argument(
-            "-d",
-            "--drive",
-            type=str,
-            help="Only update a specific drive",
-        )
+    def add_arguments(self, parser) -> None:
+        parser.add_argument("-d", "--drive", type=str, help="Only update a specific drive")
 
-    def handle(self, *args, **kwargs):
+    def handle(self, *args: Any, **kwargs: dict[str, Any]) -> None:
         # user can specify which drive should be searched - if no drive is specified, search all drives
         drive = kwargs["drive"]
 
@@ -328,9 +327,7 @@ class Command(BaseCommand):
                 print(f"Rebuilding database for specific drive: {source.id}.")
                 search_folder(service, source, folder)
             except KeyError:
-                print(
-                    f"Invalid drive specified: {drive}\nYou may specify one of the following drives:"
-                )
+                print(f"Invalid drive specified: {drive}\nYou may specify one of the following drives:")
                 [print(x.id) for x in Source.objects.all()]
                 return
         else:

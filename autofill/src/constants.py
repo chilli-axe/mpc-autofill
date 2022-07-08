@@ -41,9 +41,8 @@ import os
 from enum import Enum
 from typing import Callable
 
-from selenium.webdriver.remote.webdriver import WebDriver
-
 import src.webdrivers as wd
+from selenium.webdriver.remote.webdriver import WebDriver
 
 # Disable logging messages for webdriver_manager
 os.environ["WDM_LOG_LEVEL"] = "0"

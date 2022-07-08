@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Any
 
 from django.db import models
 from django.utils import dateformat
@@ -23,7 +24,7 @@ class Source(models.Model):
             qty_tokens,
         )
 
-    def count(self):
+    def count(self) -> tuple[str, str, str, str, float]:
         # return the number of cards that this Source created, and the Source's average DPI
         qty_cards = Card.objects.filter(source=self).count()
         qty_cardbacks = Cardback.objects.filter(source=self).count()
@@ -34,25 +35,15 @@ class Source(models.Model):
         if qty_all > 0:
             total_dpi = 0
             total_dpi += (
-                Card.objects.filter(source=self).aggregate(models.Sum("dpi"))[
-                    "dpi__sum"
-                ]
-                if qty_cards > 0
-                else 0
+                Card.objects.filter(source=self).aggregate(models.Sum("dpi"))["dpi__sum"] if qty_cards > 0 else 0
             )
             total_dpi += (
-                Cardback.objects.filter(source=self).aggregate(models.Sum("dpi"))[
-                    "dpi__sum"
-                ]
+                Cardback.objects.filter(source=self).aggregate(models.Sum("dpi"))["dpi__sum"]
                 if qty_cardbacks > 0
                 else 0
             )
             total_dpi += (
-                Token.objects.filter(source=self).aggregate(models.Sum("dpi"))[
-                    "dpi__sum"
-                ]
-                if qty_tokens > 0
-                else 0
+                Token.objects.filter(source=self).aggregate(models.Sum("dpi"))["dpi__sum"] if qty_tokens > 0 else 0
             )
             avgdpi = int(total_dpi / qty_all)
         else:
@@ -69,7 +60,7 @@ class Source(models.Model):
     class Meta:
         ordering = ["order"]
 
-    def to_dict(self):
+    def to_dict(self) -> dict[str, Any]:
         qty_all, qty_cards, qty_cardbacks, qty_tokens, avgdpi = self.count()
         return {
             "id": self.id,
@@ -98,11 +89,9 @@ class CardBase(models.Model):
     size = models.IntegerField()
 
     def __str__(self):
-        return "[{}] {}: {}, uploaded: {}".format(
-            self.source, self.name, self.id, self.date
-        )
+        return "[{}] {}: {}, uploaded: {}".format(self.source, self.name, self.id, self.date)
 
-    def to_dict(self):
+    def to_dict(self) -> dict[str, Any]:
         return {
             "id": self.id,
             "name": self.name,
@@ -116,7 +105,7 @@ class CardBase(models.Model):
             "size": self.size,
         }
 
-    def source_to_str(self):
+    def source_to_str(self) -> str:
         return self.source.id
 
     class Meta:

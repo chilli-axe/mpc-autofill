@@ -62,9 +62,7 @@ class CubeCobra(ImportSite):
         response = requests.get(
             f"{self.base_url}/cube/download/plaintext/{cube_id}?primary=Color%20Category&secondary=Types-Multicolor&tertiary=Mana%20Value&quaternary=Alphabetical&showother=false"
         )
-        if (
-            response.url == "https://cubecobra.com/404" or not cube_id
-        ):  # cubecobra returns code 200 for 404 page
+        if response.url == "https://cubecobra.com/404" or not cube_id:  # cubecobra returns code 200 for 404 page
             raise self.InvalidURLException(url)
         return response.content.decode("utf-8")
 
@@ -74,9 +72,7 @@ class Deckstats(ImportSite):
         self.base_url = "https://deckstats.net"
 
     def retrieve_card_list(self, url: str) -> str:
-        owner_id, deck_id = (
-            re.compile(rf"^{self.base_url}/decks/(\d*)/(\d*)").search(url).groups()
-        )
+        owner_id, deck_id = re.compile(rf"^{self.base_url}/decks/(\d*)/(\d*)").search(url).groups()
         response = requests.get(
             f"{self.base_url}/api.php?action=get_deck&id_type=saved&owner_id={owner_id}&id={deck_id}&response_type=list"
         )
@@ -102,9 +98,7 @@ class MagicVille(ImportSite):
 
     def retrieve_card_list(self, url: str) -> str:
         deck_id = url.strip("#").split("=")[-1]
-        response = requests.get(
-            f"{self.base_url}/fr/decks/dl_appr?ref={deck_id}&save=1"
-        )
+        response = requests.get(f"{self.base_url}/fr/decks/dl_appr?ref={deck_id}&save=1")
         card_list = response.content.decode("utf-8")
         for x in ["// www.magic-ville.com deck file\r\n", "SB: "]:
             card_list = card_list.replace(x, "")
@@ -205,8 +199,7 @@ class TCGPlayer(ImportSite):
         if response.status_code == 404:
             raise self.InvalidURLException(url)
         cardTuple = re.findall(
-            '<span class="subdeck-group__card-qty">(.+?)</span> '
-            '<span class="subdeck-group__card-name">(.+?)</span>',
+            '<span class="subdeck-group__card-qty">(.+?)</span> ' '<span class="subdeck-group__card-name">(.+?)</span>',
             response.text,
         )
         card_list = ""
