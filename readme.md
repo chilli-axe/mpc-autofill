@@ -2,7 +2,7 @@
 
 Automating MakePlayingCards's online ordering system.
 
-If you're here to download the desktop client, check the [Releases](releases/) tab.
+If you're here to download the desktop client, check the [Releases](https://github.com/chilli-axe/mpc-autofill/releases) tab.
 
 # Monorepo Structure
 * Web project:
@@ -15,6 +15,10 @@ If you're here to download the desktop client, check the [Releases](releases/) t
   * Located in `/autofill`,
   * Responsible for parsing XML orders, downloading images from Google Drive, and automating MPC's order creation interface.
 
-Each component of the project has its own README and Python dependencies.
+Each component of the project has its own README; check those out for more details.
 
-Please ensure that you install the `pre-commit` Python package and run `pre-commit install` before committing any code to your branch / PR - this will run `black` and `isort` on your code to maintain consistent styling.
+# Requirements
+* Python 3.9+ and the packages specified in `requirements.txt` for each component (web project and desktop client).
+
+# Contributing
+* Please ensure that you install the `pre-commit` Python package and run `pre-commit install` before committing any code to your branch / PR - this will run `black` and `isort` on your code to maintain consistent styling.

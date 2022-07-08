@@ -16,4 +16,5 @@ Markdown
 oauth2client
 pre-commit
 psycopg2-binary
+pytest-django
 tqdm
