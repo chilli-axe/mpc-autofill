@@ -21,6 +21,6 @@ def common_info(request: HttpRequest) -> dict[str, Any]:
     return {
         "input_text_form": InputText,
         "input_link_form": InputLink,
-        "mobile": not request.user_agent.is_pc,
+        "mobile": not request.user_agent.is_pc,  # type: ignore
         "import_sites": [(x.__name__, x().base_url) for x in ImportSites],
     }

@@ -21,33 +21,21 @@ repos:
     rev: v0.961
     hooks:
       - id: mypy
-        args: [--config-file, mypy.ini, autofill/]
+        args: [--config-file, mypy.ini, autofill/, MPCAutofill/]
         additional_dependencies: [
           "django-stubs[compatible-mypy]",
           "types-Markdown",
           "types-selenium",
           "types-requests",
+          "types-chardet",
           "attrs",
           "click",
-#          "chardet",
-#          "defusedxml",
-#          "Django~=4.0",
           "django-crispy-forms",
           "django-elasticsearch-dsl~=7.2",
-#          "django-bulk-sync",
           "django-environ",
           "django-user-agents",
           "enlighten",
-#          "elasticsearch-dsl>=7.0.0,<8.0.0",
-#          "google-api-python-client",
-#          "google-auth-httplib2",
-#          "google-auth-oauthlib",
-#          "Levenshtein",
           "Markdown",
-#          "oauth2client",
-#          "psycopg2-binary",
           "pytest",
-#          "pytest-django",
-#          "tqdm",
         ]
         pass_filenames: false

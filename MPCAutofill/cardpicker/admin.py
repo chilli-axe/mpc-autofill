@@ -5,27 +5,27 @@ from .models import Card, Cardback, DFCPair, Source, Token
 
 # Register your models here.
 @admin.register(Card)
-class AdminCard(admin.ModelAdmin):
+class AdminCard(admin.ModelAdmin[Card]):
     list_display = ("name", "source", "dpi", "date")
 
 
 @admin.register(Cardback)
-class AdminCardback(admin.ModelAdmin):
+class AdminCardback(admin.ModelAdmin[Cardback]):
     list_display = ("name", "source", "dpi", "date")
 
 
 @admin.register(Token)
-class AdminToken(admin.ModelAdmin):
+class AdminToken(admin.ModelAdmin[Token]):
     list_display = ("name", "source", "dpi", "date")
 
 
 @admin.register(DFCPair)
-class AdminDFCPair(admin.ModelAdmin):
+class AdminDFCPair(admin.ModelAdmin[DFCPair]):
     list_display = ("front", "back")
 
 
 @admin.register(Source)
-class AdminSource(admin.ModelAdmin):
+class AdminSource(admin.ModelAdmin[Source]):
     list_display = ("id", "drive_id", "contribution", "description")
 
     def contribution(self, obj: Source) -> str:

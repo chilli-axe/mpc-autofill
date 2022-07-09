@@ -26,7 +26,7 @@ class CardSearch(Document):
         model = Card
         fields = common_fields
 
-    def to_dict(self, **kwargs):
+    def to_dict(self, **kwargs: dict[str, Any]) -> dict[str, Any]:
         return card_to_dict(self)
 
 
@@ -45,7 +45,7 @@ class CardbackSearch(Document):
         model = Cardback
         fields = common_fields
 
-    def to_dict(self, **kwargs):
+    def to_dict(self, **kwargs: dict[str, Any]) -> dict[str, Any]:
         return card_to_dict(self)
 
 
@@ -64,7 +64,7 @@ class TokenSearch(Document):
         model = Token
         fields = common_fields
 
-    def to_dict(self, **kwargs):
+    def to_dict(self, **kwargs: dict[str, Any]) -> dict[str, Any]:
         return card_to_dict(self)
 
 

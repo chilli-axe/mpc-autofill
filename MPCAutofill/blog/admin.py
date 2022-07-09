@@ -7,5 +7,5 @@ admin.site.register(BlogPost)
 
 
 @admin.register(ShowcaseBlogPost)
-class ShowcaseBlogPostAdmin(admin.ModelAdmin):
+class ShowcaseBlogPostAdmin(admin.ModelAdmin[ShowcaseBlogPost]):
     raw_id_fields = ("cards",)

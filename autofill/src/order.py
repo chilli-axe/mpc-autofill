@@ -104,8 +104,6 @@ class CardImage:
         drive_id = ""
         if (drive_id_text := card_dict[constants.CardTags.id].text) is not None:
             drive_id = drive_id_text.strip(' "')
-        else:
-            drive_id = ""  # TODO: we need a test case for this
         slots = []
         if (slots_text := card_dict[constants.CardTags.slots].text) is not None:
             slots = text_to_list(slots_text)

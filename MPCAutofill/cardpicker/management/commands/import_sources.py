@@ -1,4 +1,5 @@
 import csv
+from typing import Any
 
 from bulk_sync import bulk_sync
 from cardpicker.models import Source
@@ -40,7 +41,7 @@ class Command(BaseCommand):
     # set up help line to print the available drive options
     help = "Synchronises Google Drives from drives.csv (in root project directory) to database."
 
-    def handle(self, *args, **kwargs) -> None:
+    def handle(self, *args: Any, **kwargs: dict[str, Any]) -> None:
         sources = read_sources_csv()
         if sources:
             sync_sources(sources)

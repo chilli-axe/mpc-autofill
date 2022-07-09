@@ -18,7 +18,7 @@ class ImportSite:
 
         raise NotImplementedError
 
-    def InvalidURLException(self, url):
+    def InvalidURLException(self, url: str) -> Exception:
         return Exception(
             f"There was a problem with importing your list from {self.__class__.__name__} at URL {url}. "
             f"Check that your URL is correct and try again."
@@ -26,7 +26,7 @@ class ImportSite:
 
 
 class Aetherhub(ImportSite):
-    def __init__(self):
+    def __init__(self) -> None:
         self.base_url = "https://aetherhub.com"
 
     def retrieve_card_list(self, url: str) -> str:
@@ -38,7 +38,7 @@ class Aetherhub(ImportSite):
 
 
 class Archidekt(ImportSite):
-    def __init__(self):
+    def __init__(self) -> None:
         self.base_url = "https://archidekt.com"
 
     def retrieve_card_list(self, url: str) -> str:
@@ -54,7 +54,7 @@ class Archidekt(ImportSite):
 
 
 class CubeCobra(ImportSite):
-    def __init__(self):
+    def __init__(self) -> None:
         self.base_url = "https://cubecobra.com"
 
     def retrieve_card_list(self, url: str) -> str:
@@ -68,11 +68,14 @@ class CubeCobra(ImportSite):
 
 
 class Deckstats(ImportSite):
-    def __init__(self):
+    def __init__(self) -> None:
         self.base_url = "https://deckstats.net"
 
     def retrieve_card_list(self, url: str) -> str:
-        owner_id, deck_id = re.compile(rf"^{self.base_url}/decks/(\d*)/(\d*)").search(url).groups()
+        regex_results = re.compile(rf"^{self.base_url}/decks/(\d*)/(\d*)").search(url)
+        if regex_results is None:
+            raise self.InvalidURLException(url)
+        owner_id, deck_id = regex_results.groups()
         response = requests.get(
             f"{self.base_url}/api.php?action=get_deck&id_type=saved&owner_id={owner_id}&id={deck_id}&response_type=list"
         )
@@ -93,7 +96,7 @@ class Deckstats(ImportSite):
 
 
 class MagicVille(ImportSite):
-    def __init__(self):
+    def __init__(self) -> None:
         self.base_url = "https://magic-ville.com"
 
     def retrieve_card_list(self, url: str) -> str:
@@ -108,7 +111,7 @@ class MagicVille(ImportSite):
 
 
 class ManaStack(ImportSite):
-    def __init__(self):
+    def __init__(self) -> None:
         self.base_url = "https://manastack.com"
 
     def retrieve_card_list(self, url: str) -> str:
@@ -124,7 +127,7 @@ class ManaStack(ImportSite):
 
 
 class Moxfield(ImportSite):
-    def __init__(self):
+    def __init__(self) -> None:
         self.base_url = "https://www.moxfield.com"
 
     def retrieve_card_list(self, url: str) -> str:
@@ -149,7 +152,7 @@ class Moxfield(ImportSite):
 
 
 class MTGGoldfish(ImportSite):
-    def __init__(self):
+    def __init__(self) -> None:
         self.base_url = "https://www.mtggoldfish.com"
 
     def retrieve_card_list(self, url: str) -> str:
@@ -161,7 +164,7 @@ class MTGGoldfish(ImportSite):
 
 
 class Scryfall(ImportSite):
-    def __init__(self):
+    def __init__(self) -> None:
         self.base_url = "https://scryfall.com"
 
     def retrieve_card_list(self, url: str) -> str:
@@ -176,7 +179,7 @@ class Scryfall(ImportSite):
 
 
 class TappedOut(ImportSite):
-    def __init__(self):
+    def __init__(self) -> None:
         self.base_url = "https://tappedout.net"
 
     def retrieve_card_list(self, url: str) -> str:
@@ -190,7 +193,7 @@ class TappedOut(ImportSite):
 
 
 class TCGPlayer(ImportSite):
-    def __init__(self):
+    def __init__(self) -> None:
         self.base_url = "https://decks.tcgplayer.com/"
 
     def retrieve_card_list(self, url: str) -> str:

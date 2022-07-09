@@ -1,7 +1,7 @@
 import os
 import sys
 from math import floor
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Any, Callable, Optional, TypeVar, cast
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
 
@@ -13,8 +13,6 @@ from selenium.common.exceptions import NoAlertPresentException
 
 if TYPE_CHECKING:
     from driver import AutofillDriver
-
-from typing import Any, Callable, TypeVar, cast
 
 # https://mypy.readthedocs.io/en/stable/generics.html#declaring-decorators
 F = TypeVar("F", bound=Callable[..., Any])
