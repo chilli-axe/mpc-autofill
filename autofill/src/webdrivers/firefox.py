@@ -9,5 +9,5 @@ def get_firefox_driver(headless: bool = False) -> Firefox:
     options.add_argument("--log-level=3")
     if headless:
         options.add_argument("--headless")
-    driver = Firefox(service=Service(GeckoDriverManager().install()), options=options)
+    driver = Firefox(service=Service(GeckoDriverManager().install()), options=options)  # type: ignore
     return driver

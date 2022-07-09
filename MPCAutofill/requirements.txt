@@ -7,7 +7,7 @@ django-elasticsearch-dsl~=7.2
 django-bulk-sync
 django-environ
 django-user-agents
-elasticsearch-dsl~=7.3
+elasticsearch-dsl>=7.0.0,<8.0.0
 google-api-python-client
 google-auth-httplib2
 google-auth-oauthlib

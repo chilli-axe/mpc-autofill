@@ -3,15 +3,25 @@ import textwrap
 import time
 from concurrent.futures import ThreadPoolExecutor
 from queue import Queue
+from typing import Generator
 from xml.etree import ElementTree
 
 import pytest
 import src.constants as constants
+import src.utils
 from enlighten import Counter
 from selenium.webdriver.common.by import By
 from src.driver import AutofillDriver
 from src.order import CardImage, CardImageCollection, CardOrder, Details
 from src.utils import get_google_drive_file_name, text_to_list
+
+
+@pytest.fixture(autouse=True)
+def monkeypatch_current_working_directory(request, monkeypatch) -> None:
+    monkeypatch.setattr(os, "getcwd", lambda: FILE_PATH)
+    monkeypatch.setattr(src.utils, "CURRDIR", FILE_PATH)
+    monkeypatch.chdir(FILE_PATH)
+
 
 # region assert data structures identical
 
@@ -51,17 +61,12 @@ def assert_orders_identical(a: CardOrder, b: CardOrder) -> None:
 # region fixtures
 
 
-FILE_PATH = os.path.dirname(__file__)
+FILE_PATH = os.path.abspath(os.path.dirname(__file__))
 SIMPLE_CUBE = "Simple Cube"
 SIMPLE_CUBE_ID = "1YKRRJUN8J9F4bAYCtZLb5mPDJDaabeR_"
 SIMPLE_LOTUS = "Simple Lotus"
 SIMPLE_LOTUS_ID = "1R7Wqjgghwe81mh0o83g_r3iC8zUaetKX"
 TEST_IMAGE = "test_image"
-
-
-@pytest.fixture(autouse=True)
-def change_test_dir(request, monkeypatch):
-    monkeypatch.chdir(FILE_PATH)
 
 
 @pytest.fixture()
@@ -80,13 +85,13 @@ def pool():
 
 
 @pytest.fixture()
-def input_enter(monkeypatch) -> None:
+def input_enter(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr("builtins.input", lambda _: "\n")
 
 
 # region CardImage
 @pytest.fixture()
-def image_element_local_file() -> ElementTree.Element:
+def image_element_local_file() -> Generator[ElementTree.Element, None, None]:
     yield ElementTree.fromstring(
         textwrap.dedent(  # file exists in /src/cards
             f"""
@@ -102,13 +107,13 @@ def image_element_local_file() -> ElementTree.Element:
 
 
 @pytest.fixture()
-def image_local_file(image_element_local_file):
+def image_local_file(image_element_local_file: ElementTree.Element) -> Generator[CardImage, None, None]:
     card_image = CardImage.from_element(image_element_local_file)
     yield card_image
 
 
 @pytest.fixture()
-def image_element_invalid_google_drive() -> ElementTree.Element:
+def image_element_invalid_google_drive() -> Generator[ElementTree.Element, None, None]:
     yield ElementTree.fromstring(
         textwrap.dedent(
             f"""
@@ -124,13 +129,15 @@ def image_element_invalid_google_drive() -> ElementTree.Element:
 
 
 @pytest.fixture()
-def image_invalid_google_drive(image_element_invalid_google_drive) -> CardImage:
+def image_invalid_google_drive(
+    image_element_invalid_google_drive: ElementTree.Element,
+) -> Generator[CardImage, None, None]:
     card_image = CardImage.from_element(image_element_invalid_google_drive)
     yield card_image
 
 
 @pytest.fixture()
-def image_element_valid_google_drive() -> ElementTree.Element:
+def image_element_valid_google_drive() -> Generator[ElementTree.Element, None, None]:
     yield ElementTree.fromstring(
         textwrap.dedent(
             f"""
@@ -146,13 +153,13 @@ def image_element_valid_google_drive() -> ElementTree.Element:
 
 
 @pytest.fixture()
-def image_valid_google_drive(image_element_valid_google_drive) -> CardImage:
+def image_valid_google_drive(image_element_valid_google_drive: ElementTree.Element) -> Generator[CardImage, None, None]:
     card_image = CardImage.from_element(image_element_valid_google_drive)
     yield card_image
 
 
 @pytest.fixture()
-def image_element_valid_google_drive_on_disk() -> ElementTree.Element:
+def image_element_valid_google_drive_on_disk() -> Generator[ElementTree.Element, None, None]:
     yield ElementTree.fromstring(
         textwrap.dedent(  # file exists in /src/cards
             f"""
@@ -169,14 +176,14 @@ def image_element_valid_google_drive_on_disk() -> ElementTree.Element:
 
 @pytest.fixture()
 def image_valid_google_drive_on_disk(
-    image_element_valid_google_drive_on_disk,
-) -> CardImage:
+    image_element_valid_google_drive_on_disk: ElementTree.Element,
+) -> Generator[CardImage, None, None]:
     card_image = CardImage.from_element(image_element_valid_google_drive_on_disk)
     yield card_image
 
 
 @pytest.fixture()
-def image_element_google_valid_drive_no_name() -> ElementTree.Element:
+def image_element_google_valid_drive_no_name() -> Generator[ElementTree.Element, None, None]:
     yield ElementTree.fromstring(
         textwrap.dedent(
             f"""
@@ -193,13 +200,13 @@ def image_element_google_valid_drive_no_name() -> ElementTree.Element:
 
 @pytest.fixture()
 def image_google_valid_drive_no_name(
-    image_element_google_valid_drive_no_name,
-) -> CardImage:
+    image_element_google_valid_drive_no_name: ElementTree.Element,
+) -> Generator[CardImage, None, None]:
     card_image = CardImage.from_element(image_element_google_valid_drive_no_name)
-    if os.path.exists(card_image.file_path):
+    if card_image.file_path is not None and os.path.exists(card_image.file_path):
         os.unlink(card_image.file_path)
     yield card_image
-    if os.path.exists(card_image.file_path):
+    if card_image.file_path is not None and os.path.exists(card_image.file_path):
         os.unlink(card_image.file_path)  # image is downloaded from Google Drive in test
 
 
@@ -208,7 +215,7 @@ def image_google_valid_drive_no_name(
 
 
 @pytest.fixture()
-def card_image_collection_element_valid() -> ElementTree:
+def card_image_collection_element_valid():
     yield ElementTree.fromstring(
         textwrap.dedent(
             f"""
@@ -233,8 +240,8 @@ def card_image_collection_element_valid() -> ElementTree:
 
 @pytest.fixture()
 def card_image_collection_valid(
-    card_image_collection_element_valid,
-) -> CardImageCollection:
+    card_image_collection_element_valid: ElementTree.Element,
+) -> Generator[CardImageCollection, None, None]:
     card_image_collection = CardImageCollection.from_element(
         element=card_image_collection_element_valid,
         num_slots=1,
@@ -244,7 +251,7 @@ def card_image_collection_valid(
 
 
 @pytest.fixture()
-def card_image_collection_element_no_cards() -> ElementTree:
+def card_image_collection_element_no_cards():
     yield ElementTree.fromstring(
         textwrap.dedent(
             f"""
@@ -260,7 +267,7 @@ def card_image_collection_element_no_cards() -> ElementTree:
 
 
 @pytest.fixture()
-def details_element_valid() -> ElementTree:
+def details_element_valid():
     yield ElementTree.fromstring(
         textwrap.dedent(
             f"""
@@ -276,7 +283,7 @@ def details_element_valid() -> ElementTree:
 
 
 @pytest.fixture()
-def details_element_quantity_greater_than_bracket() -> ElementTree.Element:
+def details_element_quantity_greater_than_bracket() -> Generator[ElementTree.Element, None, None]:
     yield ElementTree.fromstring(
         textwrap.dedent(
             f"""
@@ -292,7 +299,7 @@ def details_element_quantity_greater_than_bracket() -> ElementTree.Element:
 
 
 @pytest.fixture()
-def details_element_invalid_cardstock() -> ElementTree.Element:
+def details_element_invalid_cardstock() -> Generator[ElementTree.Element, None, None]:
     yield ElementTree.fromstring(
         textwrap.dedent(
             f"""
@@ -308,7 +315,7 @@ def details_element_invalid_cardstock() -> ElementTree.Element:
 
 
 @pytest.fixture()
-def details_element_invalid_bracket() -> ElementTree.Element:
+def details_element_invalid_bracket() -> Generator[ElementTree.Element, None, None]:
     yield ElementTree.fromstring(
         textwrap.dedent(
             f"""
@@ -328,7 +335,7 @@ def details_element_invalid_bracket() -> ElementTree.Element:
 
 
 @pytest.fixture()
-def card_order_element_valid() -> ElementTree.Element:
+def card_order_element_valid() -> Generator[ElementTree.Element, None, None]:
     yield ElementTree.fromstring(
         textwrap.dedent(
             f"""
@@ -361,12 +368,12 @@ def card_order_element_valid() -> ElementTree.Element:
 
 
 @pytest.fixture()
-def card_order_valid(card_order_element_valid) -> CardOrder:
+def card_order_valid(card_order_element_valid: ElementTree.Element) -> Generator[CardOrder, None, None]:
     yield CardOrder.from_element(card_order_element_valid)
 
 
 @pytest.fixture()
-def card_order_element_multiple_cardbacks() -> ElementTree.Element:
+def card_order_element_multiple_cardbacks() -> Generator[ElementTree.Element, None, None]:
     yield ElementTree.fromstring(
         textwrap.dedent(
             f"""
@@ -407,12 +414,14 @@ def card_order_element_multiple_cardbacks() -> ElementTree.Element:
 
 
 @pytest.fixture()
-def card_order_multiple_cardbacks(card_order_element_multiple_cardbacks) -> CardOrder:
+def card_order_multiple_cardbacks(
+    card_order_element_multiple_cardbacks: ElementTree.Element,
+) -> Generator[CardOrder, None, None]:
     yield CardOrder.from_element(card_order_element_multiple_cardbacks)
 
 
 @pytest.fixture()
-def card_order_element_invalid_quantity() -> ElementTree.Element:
+def card_order_element_invalid_quantity() -> Generator[ElementTree.Element, None, None]:
     yield ElementTree.fromstring(
         textwrap.dedent(
             f"""
@@ -445,7 +454,7 @@ def card_order_element_invalid_quantity() -> ElementTree.Element:
 
 
 @pytest.fixture()
-def card_order_element_missing_front_image() -> ElementTree.Element:
+def card_order_element_missing_front_image() -> Generator[ElementTree.Element, None, None]:
     yield ElementTree.fromstring(
         textwrap.dedent(
             f"""
@@ -504,12 +513,12 @@ def test_text_to_list():
 # region test CardImage
 
 
-def test_card_image_drive_id_file_exists(image_local_file):
+def test_card_image_drive_id_file_exists(image_local_file: CardImage):
     assert image_local_file.drive_id == image_local_file.file_path
     assert image_local_file.file_exists()
 
 
-def test_invalid_google_drive_image(image_invalid_google_drive, counter, queue):
+def test_invalid_google_drive_image(image_invalid_google_drive: CardImage, counter: Counter, queue: Queue[CardImage]):
     image_invalid_google_drive.download_image(download_bar=counter, queue=queue)
     assert image_invalid_google_drive.errored is True
 

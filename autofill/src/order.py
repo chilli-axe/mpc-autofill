@@ -4,7 +4,7 @@ from concurrent.futures import ThreadPoolExecutor
 from glob import glob
 from queue import Queue
 from typing import Optional
-from xml.etree import ElementTree
+from xml.etree.ElementTree import Element, ParseError
 
 import attr
 import enlighten
@@ -90,7 +90,7 @@ class CardImage:
     def validate(self) -> None:
         self.errored = any([self.errored, self.name is None, self.file_path is None])
 
-    def __attrs_post_init__(self):
+    def __attrs_post_init__(self) -> None:
         self.generate_file_path()
         self.validate()
 
@@ -99,10 +99,16 @@ class CardImage:
     # region public
 
     @classmethod
-    def from_element(cls, element: ElementTree.Element) -> "CardImage":
+    def from_element(cls, element: Element) -> "CardImage":
         card_dict = unpack_element(element, [x.value for x in constants.DetailsTags])
-        drive_id = card_dict[constants.CardTags.id].text.strip(' "')
-        slots = text_to_list(card_dict[constants.CardTags.slots].text)
+        drive_id = ""
+        if (drive_id_text := card_dict[constants.CardTags.id].text) is not None:
+            drive_id = drive_id_text.strip(' "')
+        else:
+            drive_id = ""  # TODO: we need a test case for this
+        slots = []
+        if (slots_text := card_dict[constants.CardTags.slots].text) is not None:
+            slots = text_to_list(slots_text)
         name = None
         if constants.CardTags.name in card_dict.keys():
             name = card_dict[constants.CardTags.name].text
@@ -112,7 +118,7 @@ class CardImage:
         card_image = cls(drive_id=drive_id, slots=slots, name=name, query=query)
         return card_image
 
-    def download_image(self, queue: Queue, download_bar: enlighten.Counter) -> None:
+    def download_image(self, queue: Queue["CardImage"], download_bar: enlighten.Counter) -> None:
         if not self.file_exists() and not self.errored:
             self.errored = not download_google_drive_file(self.drive_id, self.file_path)
 
@@ -138,7 +144,7 @@ class CardImageCollection:
     """
 
     cards: list[CardImage] = attr.ib(default=[])
-    queue: Queue = attr.ib(init=False, default=attr.Factory(Queue))
+    queue: Queue[CardImage] = attr.ib(init=False, default=attr.Factory(Queue))
     num_slots: int = attr.ib(default=0)
     face: constants.Faces = attr.ib(default=constants.Faces.front)
 
@@ -166,7 +172,7 @@ class CardImageCollection:
 
     @classmethod
     def from_element(
-        cls, element: ElementTree, num_slots, face: constants.Faces, fill_image_id: str = None
+        cls, element: Element, num_slots: int, face: constants.Faces, fill_image_id: Optional[str] = None
     ) -> "CardImageCollection":
         card_images = []
         if element:
@@ -207,7 +213,7 @@ class CardImageCollection:
 class Details:
     quantity: int = attr.ib(default=0)
     bracket: int = attr.ib(default=0)
-    stock: str = attr.ib(default=constants.Cardstocks.S30)
+    stock: str = attr.ib(default=constants.Cardstocks.S30.value)
     foil: bool = attr.ib(default=False)
 
     # region initialisation
@@ -222,7 +228,7 @@ class Details:
         if self.stock not in [x.value for x in constants.Cardstocks]:
             raise ValidationException(f"Order cardstock {self.stock} not supported!")
 
-    def __attrs_post_init__(self):
+    def __attrs_post_init__(self) -> None:
         try:
             self.validate()
         except ValidationException as e:
@@ -234,11 +240,15 @@ class Details:
     # region public
 
     @classmethod
-    def from_element(cls, element: ElementTree.Element) -> "Details":
+    def from_element(cls, element: Element) -> "Details":
         details_dict = unpack_element(element, [x.value for x in constants.DetailsTags])
-        quantity: int = int(details_dict[constants.DetailsTags.quantity].text)
-        bracket: int = int(details_dict[constants.DetailsTags.bracket].text)
-        stock: str = details_dict[constants.DetailsTags.stock].text
+        quantity = 0
+        if (quantity_text := details_dict[constants.DetailsTags.quantity].text) is not None:
+            quantity = int(quantity_text)
+        bracket = 0
+        if (bracket_text := details_dict[constants.DetailsTags.bracket].text) is not None:
+            bracket = int(bracket_text)
+        stock = details_dict[constants.DetailsTags.stock].text or constants.Cardstocks.S30
         foil: bool = details_dict[constants.DetailsTags.foil].text == "true"
 
         details = cls(quantity=quantity, bracket=bracket, stock=stock, foil=foil)
@@ -278,7 +288,7 @@ class CardOrder:
                         f"has no file path."
                     )
 
-    def __attrs_post_init__(self):
+    def __attrs_post_init__(self) -> None:
         try:
             self.validate()
         except ValidationException as e:
@@ -286,7 +296,7 @@ class CardOrder:
             sys.exit(0)
 
     @classmethod
-    def from_element(cls, element: ElementTree.Element, name: Optional[str] = None) -> "CardOrder":
+    def from_element(cls, element: Element, name: Optional[str] = None) -> "CardOrder":
         root_dict = unpack_element(element, [x.value for x in constants.BaseTags])
         details = Details.from_element(root_dict[constants.BaseTags.details])
         fronts = CardImageCollection.from_element(
@@ -295,7 +305,7 @@ class CardOrder:
             face=constants.Faces.front,
         )
         cardback_elem = root_dict[constants.BaseTags.cardback]
-        if cardback_elem is not None:
+        if cardback_elem.text is not None:
             backs = CardImageCollection.from_element(
                 element=root_dict[constants.BaseTags.backs],
                 num_slots=details.quantity,
@@ -320,7 +330,7 @@ class CardOrder:
     def from_file_name(cls, file_name: str) -> "CardOrder":
         try:
             xml = defused_parse(file_name)
-        except ElementTree.ParseError:
+        except ParseError:
             input("Your XML file contains a syntax error so it can't be processed. Press Enter to exit.")
             sys.exit(0)
         print(f"Parsing XML file {TEXT_BOLD}{file_name}{TEXT_END}...")

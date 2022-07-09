@@ -1,8 +1,9 @@
 import os
 import sys
 from math import floor
-from typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING, Optional
 from xml.etree import ElementTree
+from xml.etree.ElementTree import Element
 
 import numpy as np
 import ratelimit
@@ -13,10 +14,13 @@ from selenium.common.exceptions import NoAlertPresentException
 if TYPE_CHECKING:
     from driver import AutofillDriver
 
+from typing import Any, Callable, TypeVar, cast
 
-CURRDIR: str = (
-    os.path.dirname(os.path.realpath(sys.executable)) if getattr(sys, "frozen", False) else os.path.dirname(__file__)
-)
+# https://mypy.readthedocs.io/en/stable/generics.html#declaring-decorators
+F = TypeVar("F", bound=Callable[..., Any])
+
+
+CURRDIR: str = os.path.dirname(os.path.realpath(sys.executable)) if getattr(sys, "frozen", False) else os.getcwd()
 
 TEXT_BOLD = "\033[1m"
 TEXT_END = "\033[0m"
@@ -24,7 +28,7 @@ TEXT_END = "\033[0m"
 
 class InvalidStateException(Exception):
     # TODO: recovery from invalid state?
-    def __init__(self, state, expected_state):
+    def __init__(self, state: str, expected_state: str):
         self.message = (
             f"Expected the driver to be in the state {TEXT_BOLD}{expected_state}{TEXT_END} but the driver is in the "
             f"state {TEXT_BOLD}{state}{TEXT_END}"
@@ -36,8 +40,8 @@ class ValidationException(Exception):
     pass
 
 
-@ratelimit.sleep_and_retry
-@ratelimit.limits(calls=1, period=0.1)
+@ratelimit.sleep_and_retry  # type: ignore  # `ratelimit` does not implement decorator typing correctly
+@ratelimit.limits(calls=1, period=0.1)  # type: ignore  # `ratelimit` does not implement decorator typing correctly
 def get_google_drive_file_name(drive_id: str) -> Optional[str]:
     """
     Retrieve the name for the Google Drive file identified by `drive_id`.
@@ -58,8 +62,8 @@ def get_google_drive_file_name(drive_id: str) -> Optional[str]:
         return None
 
 
-@ratelimit.sleep_and_retry
-@ratelimit.limits(calls=1, period=0.1)
+@ratelimit.sleep_and_retry  # type: ignore  # `ratelimit` does not implement decorator typing correctly
+@ratelimit.limits(calls=1, period=0.1)  # type: ignore  # `ratelimit` does not implement decorator typing correctly
 def download_google_drive_file(drive_id: str, file_path: str) -> bool:
     """
     Download the Google Drive file identified by `drive_id` to the specified `file_path`.
@@ -92,22 +96,13 @@ def text_to_list(input_text: str) -> list[int]:
     return sorted([int(x) for x in input_text.strip("][").replace(" ", "").split(",")])
 
 
-def unpack_element(
-    element: ElementTree.Element, tags: list[str], unpack_to_text=False
-) -> Union[dict[str, ElementTree.Element], dict[str, str]]:
+def unpack_element(element: ElementTree.Element, tags: list[str]) -> dict[str, ElementTree.Element]:
     """
     Unpacks `element` according to expected tags. Expected tags that don't have elements in `element` have
     value None in the return dictionary.
-    If `unpack_to_text` is specified, returns the text of each element rather than the elements themselves.
     """
 
-    element_dict = {x: None for x in tags}
-    for x in element:
-        if unpack_to_text:
-            element_dict[x.tag] = x.text
-        else:
-            element_dict[x.tag] = x
-    return element_dict
+    return {tag: Element(tag) for tag in tags} | {item.tag: item for item in element}
 
 
 def image_directory() -> str:
@@ -117,16 +112,16 @@ def image_directory() -> str:
     return cards_folder
 
 
-def file_exists(file_path: str) -> bool:
-    return file_path != "" and os.path.isfile(file_path) and os.path.getsize(file_path) > 0
+def file_exists(file_path: Optional[str]) -> bool:
+    return file_path is not None and file_path != "" and os.path.isfile(file_path) and os.path.getsize(file_path) > 0
 
 
-def alert_handler(func):
+def alert_handler(func: F) -> F:
     """
     Function decorator which accepts an alert in the given Selenium driver if one is raised by the decorated function.
     """
 
-    def wrapper(*args, **kwargs):
+    def wrapper(*args: Any, **kwargs: dict[str, Any]) -> F:
         try:
             autofill_driver: "AutofillDriver" = args[0]
             alert = autofill_driver.driver.switch_to.alert
@@ -135,10 +130,10 @@ def alert_handler(func):
             pass
         return func(*args, **kwargs)
 
-    return wrapper
+    return cast(F, wrapper)
 
 
-def time_to_hours_minutes_seconds(t) -> tuple[int, int, int]:
+def time_to_hours_minutes_seconds(t: float) -> tuple[int, int, int]:
     hours = int(floor(t / 3600))
     mins = int(floor(t / 60) - hours * 60)
     secs = int(t - (mins * 60) - (hours * 3600))
