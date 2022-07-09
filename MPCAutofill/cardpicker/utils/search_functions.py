@@ -162,14 +162,14 @@ def search_new_elasticsearch_definition() -> Search:
 
 
 @elastic_connection
-def search_new(s: Search, source: str, page: int = 0) -> dict[str, Any]:
+def search_new(s: Search, source_key: str, page: int = 0) -> dict[str, Any]:
     # define page size and the range to paginate with
     page_size = 6
     start_idx = page_size * page
     end_idx = page_size * (page + 1)
 
     # match the given source
-    query = s.filter("match", source=source).sort({"date": {"order": "desc"}})
+    query = s.filter("match", source=source_key).sort({"date": {"order": "desc"}})
 
     # quantity related things
     qty = query.count()

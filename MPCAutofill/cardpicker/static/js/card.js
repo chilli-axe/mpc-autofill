@@ -9,14 +9,14 @@ function format_source(source, dpi) {
     return source + " [" + dpi.toString() + " DPI]";
 }
 
-function get_thumbnail(driveID) {
+function get_thumbnail(drive_id) {
     // small helper function to insert a drive ID into a thumbnail URL and return it
-    return "https://drive.google.com/thumbnail?sz=w400-h400&id=" + driveID
+    return "https://drive.google.com/thumbnail?sz=w400-h400&id=" + drive_id
 }
 
-function get_thumbnail_med(driveID) {
+function get_thumbnail_med(drive_id) {
     // small helper function to insert a drive ID into a 300 dpi image URL and return it
-    return "https://drive.google.com/thumbnail?sz=w800-h800&id=" + driveID
+    return "https://drive.google.com/thumbnail?sz=w800-h800&id=" + drive_id
 }
 
 function thumbnail_404(source) {
@@ -40,9 +40,9 @@ function selectElementContents(el) {
     sel.addRange(range);
 }
 
-function trigger_download(img_id, new_tab = true) {
+function trigger_download(drive_id, new_tab = true) {
     // download an image with the given google drive ID
-    let img_url = "https://drive.google.com/uc?id=" + img_id + "&export=download";
+    let img_url = "https://drive.google.com/uc?id=" + drive_id + "&export=download";
 
     let element = document.createElement('a');
     element.href = img_url;
@@ -96,13 +96,15 @@ class CardBase {
         let dl_button = document.getElementById("detailedView-dl");
         let view_size = document.getElementById("detailedView-size");
 
-        view_name.innerText = this.get_curr_img().name;
-        view_img.src = get_thumbnail_med(this.get_curr_img().id);
-        view_source.innerText = this.get_curr_img().source;
-        view_dpi.innerText = this.get_curr_img().dpi + " DPI";
-        view_id.innerText = this.get_curr_img().id;
-        view_date.innerText = this.get_curr_img().date;
-        view_size.innerText = image_size_to_mb_string(this.get_curr_img().size);
+        let curr_img = this.get_curr_img();
+
+        view_name.innerText = curr_img.name;
+        view_img.src = get_thumbnail_med(curr_img.drive_id);
+        view_source.innerText = curr_img.source;
+        view_dpi.innerText = curr_img.dpi + " DPI";
+        view_id.innerText = curr_img.drive_id;
+        view_date.innerText = curr_img.date;
+        view_size.innerText = image_size_to_mb_string(curr_img.size);
 
         // pretty version of card type/class
         let img_class = "";
@@ -114,7 +116,7 @@ class CardBase {
         // use jquery proxy to link the download button to this Card object's dl function
         $(dl_button).off("click");
         $(dl_button).on('click', $.proxy(function () {
-            trigger_download(this.get_curr_img().id, true);
+            trigger_download(curr_img.drive_id, true);
         }, this));
 
         // hide the 300 dpi image until it loads in - show a loading spinner in its place until then
@@ -125,7 +127,7 @@ class CardBase {
             $(view_spinner).animate({opacity: 0}, 250);
             $(view_img).animate({opacity: 1}, 250);
         }
-        img.src = get_thumbnail_med(this.get_curr_img().id);
+        img.src = get_thumbnail_med(curr_img.drive_id);
 
         // disable hovering on the parent element temporarily while we bring up the modal
         this.enable_modal("detailedViewModal");
@@ -231,11 +233,11 @@ class Card extends CardBase {
         }
     }
 
-    select_id(driveID) {
+    select_id(drive_id) {
         // select the result for this card with the given drive ID
         // idk, that's shit english but you get what I mean man
         for (let i = 0; i < this.cards.length; i++) {
-            if (this.cards[i].id === driveID) {
+            if (this.cards[i].drive_id === drive_id) {
                 // switch to this index
                 this.set_idx(i);
                 return;
@@ -244,7 +246,7 @@ class Card extends CardBase {
 
         // if we didn't return from the function by this point, the version wasn't found
         cards_not_found.push({
-            id: driveID,
+            drive_id: drive_id,
             query: this.query,
             slot: this.slot + 1
         })
@@ -337,7 +339,7 @@ class Card extends CardBase {
             // insert up to page_size card images into the modal
             for (let i = start_idx; i < final_idx; i++) {
                 let card_item = card_obj.cards[i];
-                let dom_id = card_obj.cards[i].id;
+                let dom_id = card_obj.cards[i].drive_id;
                 let slot_num = i + 1;
 
                 // copy the base grid card sitting in the dom and enable visibility
@@ -527,16 +529,16 @@ class Card extends CardBase {
             // load the previous and next images for a smooth slideshow
             // keep them loaded by changing the src of visible img elements, but they sit behind the main
             // element due to z-index
-            let buffer_id = this.cards[wrap0(this.img_idx, this.img_count)].id;
+            let buffer_id = this.cards[wrap0(this.img_idx, this.img_count)].drive_id;
             this.elem_img.src = get_thumbnail(buffer_id);
 
             // respect the length of the returned results
             if (this.img_count > 1) {
-                buffer_id = this.cards[wrap0(this.img_idx - 1, this.img_count)].id;
+                buffer_id = this.cards[wrap0(this.img_idx - 1, this.img_count)].drive_id;
                 this.elem_img_prev.src = get_thumbnail(buffer_id);
 
                 if (this.img_count > 2) {
-                    buffer_id = this.cards[wrap0(this.img_idx + 1, this.img_count)].id;
+                    buffer_id = this.cards[wrap0(this.img_idx + 1, this.img_count)].drive_id;
                     this.elem_img_next.src = get_thumbnail(buffer_id);
                 }
             }
@@ -638,7 +640,7 @@ class CardRecent extends CardBase {
     }
 
     load_thumbnails() {
-        this.elem_img.src = get_thumbnail(this.cards[0].id);
+        this.elem_img.src = get_thumbnail(this.cards[0].drive_id);
 
         // add click event to thumbnail to reveal detailed info about card
         let elem_img = $(this.elem_img)

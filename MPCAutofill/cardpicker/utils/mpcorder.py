@@ -1,5 +1,6 @@
 """
 Object Model for working with MPCOrders - the data structure that defines a user's card order
+TODO: is it possible to refactor this and the desktop tool's data structures for reuse between them?
 """
 
 import csv
@@ -44,6 +45,7 @@ class ParsingErrors:
             super().__init__(self.message)
 
 
+# TODO: move these constants to a `constants` module at the root of the repo to share between django project and desktop tool
 class Cardstocks(str, Enum):
     S30 = "(S30) Standard Smooth"
     S33 = "(S33) Superior Smooth"
@@ -136,6 +138,7 @@ class CardImageCollection(abc.MutableMapping[str, Any]):
         self.__dict__: dict[str, CardImage] = {}
 
     def insert_with_ids(self, query: str, slots: set[tuple[Any, str]], req_type: ReqTypes) -> None:
+        # TODO: the naming of this method is confusing
         # create a CardImage and insert into the dictionary
         if query not in self.keys():
             self[query] = CardImage(query, slots, req_type)
@@ -245,7 +248,7 @@ class MPCOrder(abc.MutableMapping[str, Any]):
     def from_text(self, input_lines: str, offset: int = 0) -> int:
         # TODO: update naming for clarity, add docstring, etc.
         # populates MPCOrder from supplied text input
-        transforms = dict((x.front, x.back) for x in DFCPair.objects.all())
+        transforms = dict((x.front_searchable, x.back_searchable) for x in DFCPair.objects.all())
         curr_slot = offset
 
         # loop over lines in the input text, and for each, parse it into usable information
@@ -300,7 +303,7 @@ class MPCOrder(abc.MutableMapping[str, Any]):
     def from_csv(self, csv_bytes: bytes) -> int:
         # TODO: as above, these return integer length of the cards added to the order (I think)
         # populates MPCOrder from supplied CSV bytes
-        transforms = dict((x.front, x.back) for x in DFCPair.objects.all())
+        transforms = dict((x.front_searchable, x.back_searchable) for x in DFCPair.objects.all())
         # TODO: I'm sure this can be cleaned up a lot, the logic here is confusing and unintuitive
         curr_slot = 0
 

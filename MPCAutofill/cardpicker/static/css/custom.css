@@ -10,16 +10,18 @@
   position:absolute;
   bottom:10px;
   right:10px;
+  height: 38px;
 }
 
 .prev {
   position:absolute;
   bottom:10px;
   left:10px;
+  height: 38px;
 }
 
 .sticky-offset {
-  top: 60px;
+  top: 50px;
 }
 
 .asteriskField {
@@ -27,7 +29,7 @@
 }
 
 .addmargin {
-  margin-top: 60px;
+  margin-top: 50px;
 }
 
 #drivePicker:hover {
@@ -99,6 +101,10 @@
   -webkit-transform: translateX(-50%);
   transform: translateX(-50%);
   width: 45%;
+}
+
+.mpccard-counter-btn {
+    height: 38px;
 }
 
 .padlock {
@@ -203,7 +209,7 @@
 
 .container.addmargin > .row > .col-lg-4 > .sticky-top.sticky-offset {
   scrollbar-width: none;
-  max-height: calc(100vh - 60px);
+  max-height: calc(100vh - 50px);
   overflow-y: scroll;
   overflow-x: hidden;
 }

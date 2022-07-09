@@ -74,9 +74,9 @@ def new_cards(request: HttpRequest) -> HttpResponse:
     results = {}
     try:
         for source in Source.objects.all():
-            result = search_new(s, source.id)
+            result = search_new(s, source.key)
             if result["qty"] > 0:
-                results[source.id] = result
+                results[source.key] = result
     except SearchExceptions.ConnectionTimedOutException as e:
         # display empty What's New page with error message if unable to connect to elasticsearch
         return render(request, "cardpicker/new.html", {"exception": str(e.args[0])})
@@ -88,15 +88,15 @@ def search_new_page(request: HttpRequest) -> HttpResponse:
     # triggers when the user clicks 'load more' on the What's New page
     # this function takes the current page number and source from the frontend and returns the next page
     # extract specified source and page from post request
-    if (source := request.POST.get("source")) is None or (page_string := request.POST.get("page")) is None:
+    if (source_key := request.POST.get("source")) is None or (page_string := request.POST.get("page")) is None:
         # the frontend will handle this
         return JsonResponse({})
 
     s = search_new_elasticsearch_definition()
     results = {}
-    result = search_new(s, source, int(page_string))
+    result = search_new(s, source_key, int(page_string))
     if result["qty"] > 0:
-        results[source] = result
+        results[source_key] = result
 
     return JsonResponse({"sources": results}, safe=False)
 
@@ -109,13 +109,13 @@ def guide(request: HttpRequest) -> HttpResponse:
     return render(request, "cardpicker/guide.html")
 
 
-def credits(request: HttpRequest) -> HttpResponse:
+def contributions(request: HttpRequest) -> HttpResponse:
     sources = [x.to_dict() for x in Source.objects.all()]
     total_count = [x.objects.all().count() for x in [Card, Cardback, Token]]
     total_count.append(sum(total_count))
     total_count_f = [f"{x:,d}" for x in total_count]
 
-    return render(request, "cardpicker/credits.html", {"sources": sources, "total_count": total_count_f})
+    return render(request, "cardpicker/contributions.html", {"sources": sources, "total_count": total_count_f})
 
 
 @ErrorWrappers.to_json
@@ -220,10 +220,7 @@ def insert_text(request: HttpRequest) -> HttpResponse:
     order.remove_common_cardback()
 
     # build context
-    context = {
-        "order": order.to_dict(),
-        "qty": qty,
-    }
+    context = {"order": order.to_dict(), "qty": qty}
 
     return JsonResponse(context)
 

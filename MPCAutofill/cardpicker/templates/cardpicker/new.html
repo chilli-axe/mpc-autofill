@@ -4,7 +4,7 @@
 {% block title %} {{ SITE_NAME }} Recent Cards {% endblock %}
 
 {% block content %}
-
+<div class="pt-2">
     <script src="{% static 'js/card.js' %}"></script>
     <script src="{% static 'js/search.js' %}"></script>
 
@@ -45,4 +45,5 @@
     {% include "cardpicker/card.html" %}
 
     {% include "cardpicker/footer.html" %}
+</div>
 {% endblock %}

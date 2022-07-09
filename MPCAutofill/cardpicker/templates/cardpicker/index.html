@@ -2,6 +2,7 @@
 {% load static %}
 
 {% block content %}
+<div class="pt-2">
     <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.css"/>
     <script type="text/javascript" src="//cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.min.js"></script>
 
@@ -156,7 +157,7 @@
                 </div>
                 <div class="modal-body">
                     Select the drives you'd like to search, and drag & drop them to change the order images are shown in.
-                    Check the <a target="_blank" href='/credits'>Credits</a> for an overview of what each drive contains.
+                    Check the <a target="_blank" href='/contributions'>Contributions</a> for an overview of what each drive contains.
                     <br>
                     Click the table header to enable or disable all drives.
                     <br><br>
@@ -174,14 +175,14 @@
                         </thead>
                         <tbody>
                         {% for source in sources %}
-                            <tr id="{{ source.id }}-row" style="cursor: grab">
+                            <tr id="{{ source.key }}-row" style="cursor: grab">
                                 <td style="vertical-align: middle">
                                     <div class="active text-center">
                                         <input type="checkbox" class="drivesource" checked
-                                                data-bs-toggle="toggle" id="{{ source.id }}" data-bs-size="sm">
+                                                data-bs-toggle="toggle" id="{{ source.key }}" data-bs-size="sm">
                                     </div>
                                 </td>
-                                <td style="vertical-align: middle">{{ source.id }}</td>
+                                <td style="vertical-align: middle">{{ source.key }}</td>
                                 <td style="vertical-align: middle">
                                     <div class="active text-center">
                                     {% if source.drive_link %}
@@ -210,5 +211,5 @@
     </div>
 
     {% include "cardpicker/footer.html" %}
-
+</div>
 {% endblock %}
