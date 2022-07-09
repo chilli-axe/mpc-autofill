@@ -110,7 +110,7 @@ def credits(request: HttpRequest) -> HttpResponse:
     )
 
 
-# @ErrorWrappers.to_json
+@ErrorWrappers.to_json
 def search_multiple(request: HttpRequest) -> HttpResponse:
     # search endpoint function - the frontend requests the search results for this query as JSON
     drive_order, fuzzy_search = retrieve_search_settings(request)
@@ -131,7 +131,7 @@ def search_multiple(request: HttpRequest) -> HttpResponse:
     return JsonResponse({})
 
 
-# @ErrorWrappers.to_json
+@ErrorWrappers.to_json
 def search_individual(request: HttpRequest) -> HttpResponse:
     # search endpoint function - the frontend requests the search results for this query as JSON
     drive_order, fuzzy_search = retrieve_search_settings(request)
@@ -177,7 +177,7 @@ def search(drive_order: list[str], fuzzy_search: bool, query: str, req_type: Req
     }
 
 
-# @ErrorWrappers.to_index
+@ErrorWrappers.to_index
 def review(request: HttpRequest) -> HttpResponse:
     # return the review page with the order dict and quantity from parsing the given text input as context
     # used for rendering the review page
@@ -202,7 +202,7 @@ def review(request: HttpRequest) -> HttpResponse:
     return redirect("index")
 
 
-# @ErrorWrappers.to_json
+@ErrorWrappers.to_json
 def insert_text(request: HttpRequest) -> HttpResponse:
     # return a JSON response with the order dict and quantity from parsing the given input
     # used for inserting new cards into an existing order on the review page
@@ -231,7 +231,7 @@ def insert_text(request: HttpRequest) -> HttpResponse:
     return JsonResponse({})
 
 
-# @ErrorWrappers.to_index
+@ErrorWrappers.to_index
 def input_csv(request: HttpRequest) -> HttpResponse:
     # return the review page with the order dict and quantity from parsing the given CSV input as context
     # used for rendering the review page
@@ -256,7 +256,7 @@ def input_csv(request: HttpRequest) -> HttpResponse:
     return redirect("index")
 
 
-# @ErrorWrappers.to_index
+@ErrorWrappers.to_index
 def input_xml(request: HttpRequest) -> HttpResponse:
     # return the review page with the order dict and quantity from parsing the given XML input as context
     # used for rendering the review page
@@ -286,7 +286,7 @@ def input_xml(request: HttpRequest) -> HttpResponse:
     return redirect("index")
 
 
-# @ErrorWrappers.to_json
+@ErrorWrappers.to_json
 def insert_xml(request: HttpRequest) -> HttpResponse:
     # return a JSON response with the order dict and quantity from parsing the given XML input
     # used for inserting new cards into an existing order on the review page
@@ -314,7 +314,7 @@ def insert_xml(request: HttpRequest) -> HttpResponse:
     return JsonResponse({})
 
 
-# @ErrorWrappers.to_index
+@ErrorWrappers.to_index
 def input_link(request: HttpRequest) -> HttpResponse:
     # return the review page with the order dict and quantity from parsing the given XML input as context
     # used for rendering the review page
@@ -344,7 +344,7 @@ def input_link(request: HttpRequest) -> HttpResponse:
     return redirect("index")
 
 
-# @ErrorWrappers.to_json
+@ErrorWrappers.to_json
 def insert_link(request: HttpRequest) -> HttpResponse:
     # return a JSON response with the order dict and quantity from parsing the given XML input
     # used for inserting new cards into an existing order on the review page
