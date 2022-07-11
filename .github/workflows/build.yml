@@ -3,6 +3,7 @@ name: MPC Autofill Desktop Client
 on:
   push:
     branches: [ master ]
+  workflow_dispatch:
 jobs:
   build:
     name: Build packages
