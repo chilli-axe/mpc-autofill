@@ -1,12 +1,13 @@
 import json
 from datetime import timedelta
-from typing import Any
+from typing import Any, Callable, Optional, TypeVar, Union, cast
 
 from blog.models import BlogPost
 from cardpicker.forms import InputCSV, InputLink, InputText, InputXML
 from cardpicker.models import Card, Cardback, Source, Token
 from cardpicker.utils.mpcorder import Faces, MPCOrder, ReqTypes
 from cardpicker.utils.search_functions import (
+    SearchExceptions,
     build_context,
     query_es_card,
     query_es_cardback,
@@ -20,6 +21,9 @@ from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
 
+# https://mypy.readthedocs.io/en/stable/generics.html#declaring-decorators
+F = TypeVar("F", bound=Callable[..., Any])
+
 
 class ErrorWrappers:
     """
@@ -27,26 +31,29 @@ class ErrorWrappers:
     to the user.
     """
 
-    def to_index(func):
-        def wrapper(*args, **kwargs):
+    @staticmethod
+    def to_index(func: F) -> F:
+        def wrapper(*args: Any, **kwargs: Any) -> Union[F, HttpResponse]:
             try:
                 return func(*args, **kwargs)
             except Exception as e:
-                return index(*args, **kwargs, exception=str(e))
+                kwargs["exception"] = e.args[0]  # TODO: validate
+                return index(*args, **kwargs)
 
-        return wrapper
+        return cast(F, wrapper)
 
-    def to_json(func):
-        def wrapper(*args, **kwargs):
+    @staticmethod
+    def to_json(func: F) -> F:
+        def wrapper(*args: Any, **kwargs: Any) -> Union[F, HttpResponse]:
             try:
                 return func(*args, **kwargs)
             except Exception as e:
                 return JsonResponse({"exception": str(e)})
 
-        return wrapper
+        return cast(F, wrapper)
 
 
-def index(request: HttpRequest, exception=None) -> HttpResponse:
+def index(request: HttpRequest, exception: Optional[str] = None) -> HttpResponse:
     posts = [x.get_synopsis() for x in BlogPost.objects.filter(date_created__gte=timezone.now() - timedelta(days=14))]
     return render(
         request,
@@ -54,7 +61,7 @@ def index(request: HttpRequest, exception=None) -> HttpResponse:
         {
             "sources": [x.to_dict() for x in Source.objects.all()],
             "posts": posts,
-            "exception": exception if exception else "",
+            "exception": exception or "",
         },
     )
 
@@ -65,10 +72,14 @@ def new_cards(request: HttpRequest) -> HttpResponse:
 
     s = search_new_elasticsearch_definition()
     results = {}
-    for source in Source.objects.all():
-        result = search_new(s, source.id)
-        if result["qty"] > 0:
-            results[source.id] = result
+    try:
+        for source in Source.objects.all():
+            result = search_new(s, source.id)
+            if result["qty"] > 0:
+                results[source.id] = result
+    except SearchExceptions.ConnectionTimedOutException as e:
+        # display empty What's New page with error message if unable to connect to elasticsearch
+        return render(request, "cardpicker/new.html", {"exception": str(e.args[0])})
 
     return render(request, "cardpicker/new.html", {"sources": results})
 
@@ -77,12 +88,13 @@ def search_new_page(request: HttpRequest) -> HttpResponse:
     # triggers when the user clicks 'load more' on the What's New page
     # this function takes the current page number and source from the frontend and returns the next page
     # extract specified source and page from post request
-    source = request.POST.get("source")
-    page = int(request.POST.get("page"))
+    if (source := request.POST.get("source")) is None or (page_string := request.POST.get("page")) is None:
+        # the frontend will handle this
+        return JsonResponse({})
 
     s = search_new_elasticsearch_definition()
     results = {}
-    result = search_new(s, source, page)
+    result = search_new(s, source, int(page_string))
     if result["qty"] > 0:
         results[source] = result
 
@@ -103,49 +115,41 @@ def credits(request: HttpRequest) -> HttpResponse:
     total_count.append(sum(total_count))
     total_count_f = [f"{x:,d}" for x in total_count]
 
-    return render(
-        request,
-        "cardpicker/credits.html",
-        {"sources": sources, "total_count": total_count_f},
-    )
+    return render(request, "cardpicker/credits.html", {"sources": sources, "total_count": total_count_f})
 
 
 @ErrorWrappers.to_json
 def search_multiple(request: HttpRequest) -> HttpResponse:
     # search endpoint function - the frontend requests the search results for this query as JSON
     drive_order, fuzzy_search = retrieve_search_settings(request)
-    if drive_order is not None and fuzzy_search is not None:
-        order = MPCOrder()
-        order.from_json(json.loads(request.POST.get("order")))
+    if len(drive_order) == 0:
+        # the frontend will handle this
+        return JsonResponse({})
+    order = MPCOrder()
+    order.from_json(json.loads(request.POST.get("order", "")))
 
-        for face in Faces.FACES.value:
-            for item in order[face].values():
-                result = search(drive_order, fuzzy_search, item.query, item.req_type)
-                item.insert_data(result)
-        result = search(drive_order, fuzzy_search, order.cardback.query, order.cardback.req_type)
-        order.cardback.insert_data(result)
-        return JsonResponse(order.to_dict())
-
-    # if drive order or fuzzy search can't be determined from the given request, return an
-    # empty JsonResponse and the frontend will handle it (views should always return a response)
-    return JsonResponse({})
+    for face in Faces.FACES.value:
+        for item in order[face].values():
+            result = search(drive_order, fuzzy_search, item.query, item.req_type)
+            item.insert_data(result)
+    result = search(drive_order, fuzzy_search, order.cardback.query, order.cardback.req_type)
+    order.cardback.insert_data(result)
+    return JsonResponse(order.to_dict())
 
 
 @ErrorWrappers.to_json
 def search_individual(request: HttpRequest) -> HttpResponse:
     # search endpoint function - the frontend requests the search results for this query as JSON
     drive_order, fuzzy_search = retrieve_search_settings(request)
-    if drive_order is not None and fuzzy_search is not None:
-        query = request.POST.get("query").rstrip("\n")
-        req_type = ReqTypes.CARD
-        if req_type_string := request.POST.get("req_type"):
-            req_type = ReqTypes(req_type_string)  # TODO: validation on this
+    if len(drive_order) == 0:
+        # the frontend will handle this
+        return JsonResponse({})
+    query = request.POST.get("query", "").rstrip("\n")
+    req_type = ReqTypes.CARD
+    if req_type_string := request.POST.get("req_type"):
+        req_type = ReqTypes(req_type_string)  # TODO: validation on this
 
-        return JsonResponse(search(drive_order, fuzzy_search, query, req_type))
-
-    # if drive order or fuzzy search can't be determined from the given request, return an
-    # empty JsonResponse and the frontend will handle it (views should always return a response)
-    return JsonResponse({})
+    return JsonResponse(search(drive_order, fuzzy_search, query, req_type))
 
 
 def search(drive_order: list[str], fuzzy_search: bool, query: str, req_type: ReqTypes) -> dict[str, Any]:
@@ -170,11 +174,7 @@ def search(drive_order: list[str], fuzzy_search: bool, query: str, req_type: Req
     else:
         results = query_es_card(drive_order, fuzzy_search, query)
 
-    return {
-        "data": results,
-        "req_type": req_type,
-        "query": query,
-    }
+    return {"data": results, "req_type": req_type, "query": query}
 
 
 @ErrorWrappers.to_index
@@ -186,7 +186,7 @@ def review(request: HttpRequest) -> HttpResponse:
         if form.is_valid():
             # retrieve drive order and raw user input from request
             drive_order, fuzzy_search = retrieve_search_settings(request)
-            if drive_order is None or fuzzy_search is None:
+            if len(drive_order) == 0:
                 return redirect("index")
             lines_raw = form["card_list"].value()
 
@@ -206,29 +206,26 @@ def review(request: HttpRequest) -> HttpResponse:
 def insert_text(request: HttpRequest) -> HttpResponse:
     # return a JSON response with the order dict and quantity from parsing the given input
     # used for inserting new cards into an existing order on the review page
-    text = request.POST.get("text")
-    offset = request.POST.get("offset")
-    if text and offset:
-        offset = int(offset)
+    if (text := request.POST.get("text")) is None or (offset_string := request.POST.get("offset")) is None:
+        # frontend will handle this
+        return JsonResponse({})
 
-        # parse the text input to obtain the order dict and quantity in this addition to the order
-        order = MPCOrder()
-        qty = order.from_text(text, offset)
+    offset = int(offset_string)
 
-        # remove the "-" element from the common cardback slot list so the selected common cardback doesn't reset on us
-        order.remove_common_cardback()
+    # parse the text input to obtain the order dict and quantity in this addition to the order
+    order = MPCOrder()
+    qty = order.from_text(text, offset)
 
-        # build context
-        context = {
-            "order": order.to_dict(),
-            "qty": qty,
-        }
+    # remove the "-" element from the common cardback slot list so the selected common cardback doesn't reset on us
+    order.remove_common_cardback()
 
-        return JsonResponse(context)
+    # build context
+    context = {
+        "order": order.to_dict(),
+        "qty": qty,
+    }
 
-    # if drive order or fuzzy search can't be determined from the given request, return an
-    # empty JsonResponse and the frontend will handle it (views should always return a response)
-    return JsonResponse({})
+    return JsonResponse(context)
 
 
 @ErrorWrappers.to_index
@@ -240,9 +237,9 @@ def input_csv(request: HttpRequest) -> HttpResponse:
         if form.is_valid():
             # retrieve drive order and csv file from request
             drive_order, fuzzy_search = retrieve_search_settings(request)
-            if drive_order is None or fuzzy_search is None:
+            if len(drive_order) == 0:
                 return redirect("index")
-            csvfile = request.FILES["file"].read()
+            csvfile = request.FILES["file"].read()  # type: ignore  # TODO: revisit this and type it properly
 
             # parse the csv file to obtain the order dict and quantity in this order
             order = MPCOrder()
@@ -266,9 +263,9 @@ def input_xml(request: HttpRequest) -> HttpResponse:
             try:
                 # retrieve drive order and XML file from request
                 drive_order, fuzzy_search = retrieve_search_settings(request)
-                if drive_order is None or fuzzy_search is None:
+                if len(drive_order) == 0:
                     return redirect("index")
-                xmlfile = request.FILES["file"].read()
+                xmlfile = request.FILES["file"].read()  # type: ignore  # TODO: revisit this and type it properly
 
                 # parse the XML file to obtain the order dict and quantity in this order
                 order = MPCOrder()
@@ -290,28 +287,22 @@ def input_xml(request: HttpRequest) -> HttpResponse:
 def insert_xml(request: HttpRequest) -> HttpResponse:
     # return a JSON response with the order dict and quantity from parsing the given XML input
     # used for inserting new cards into an existing order on the review page
-    xml = request.POST.get("xml")
-    offset = request.POST.get("offset")
-    if xml and offset:
-        offset = int(offset)
-        # parse the XML input to obtain the order dict and quantity in this addition to the order
-        order = MPCOrder()
-        qty = order.from_xml(xml, offset)
+    if (xml := request.POST.get("xml")) is None or (offset_string := request.POST.get("offset")) is None:
+        # frontend will handle this
+        return JsonResponse({})
 
-        # remove the - element from the common cardback slot list so the selected common cardback doesn't reset on us
-        order.remove_common_cardback()
+    offset = int(offset_string)
+    # parse the XML input to obtain the order dict and quantity in this addition to the order
+    order = MPCOrder()
+    qty = order.from_xml(xml, offset)
 
-        # build context
-        context = {
-            "order": order.to_dict(),
-            "qty": qty,
-        }
+    # remove the - element from the common cardback slot list so the selected common cardback doesn't reset on us
+    order.remove_common_cardback()
 
-        return JsonResponse(context)
+    # build context
+    context = {"order": order.to_dict(), "qty": qty}
 
-    # if drive order or fuzzy search can't be determined from the given request, return an
-    # empty JsonResponse and the frontend will handle it (views should always return a response)
-    return JsonResponse({})
+    return JsonResponse(context)
 
 
 @ErrorWrappers.to_index
@@ -324,7 +315,7 @@ def input_link(request: HttpRequest) -> HttpResponse:
             try:
                 # retrieve drive order and list URL from request
                 drive_order, fuzzy_search = retrieve_search_settings(request)
-                if drive_order is None or fuzzy_search is None:
+                if len(drive_order) == 0:
                     return redirect("index")
                 url = form["list_url"].value()
 
@@ -348,25 +339,21 @@ def input_link(request: HttpRequest) -> HttpResponse:
 def insert_link(request: HttpRequest) -> HttpResponse:
     # return a JSON response with the order dict and quantity from parsing the given XML input
     # used for inserting new cards into an existing order on the review page
-    list_url = request.POST.get("list_url")
-    offset = request.POST.get("offset")
-    if list_url and offset:
-        offset = int(offset)
-        # parse the XML input to obtain the order dict and quantity in this addition to the order
-        order = MPCOrder()
-        qty = order.from_link(list_url, offset)
+    if (list_url := request.POST.get("list_url")) is None or (offset_string := request.POST.get("offset")) is None:
+        # frontend will handle this
+        return JsonResponse({})
+    offset = int(offset_string)
+    # parse the XML input to obtain the order dict and quantity in this addition to the order
+    order = MPCOrder()
+    qty = order.from_link(list_url, offset)
 
-        # remove the - element from the common cardback slot list so the selected common cardback doesn't reset on us
-        order.remove_common_cardback()
+    # remove the - element from the common cardback slot list so the selected common cardback doesn't reset on us
+    order.remove_common_cardback()
 
-        # build context
-        context = {
-            "order": order.to_dict(),
-            "qty": qty,
-        }
+    # build context
+    context = {
+        "order": order.to_dict(),
+        "qty": qty,
+    }
 
-        return JsonResponse(context)
-
-    # if drive order or fuzzy search can't be determined from the given request, return an
-    # empty JsonResponse and the frontend will handle it (views should always return a response)
-    return JsonResponse({})
+    return JsonResponse(context)

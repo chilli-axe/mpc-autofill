@@ -1,3 +1,5 @@
+from typing import Any
+
 from cardpicker.models import Source
 from django.core.management.base import BaseCommand
 
@@ -22,7 +24,7 @@ class Command(BaseCommand):
     # set up help line to print the available drive options
     help = "Synchronises Google Drives from database to exported_drives.csv (in root project directory)."
 
-    def handle(self, *args, **kwargs) -> None:
+    def handle(self, *args: Any, **kwargs: dict[str, Any]) -> None:
         if Source.objects.count() > 0:
             export_sources_csv()
             print(f"{Source.objects.count()} source/s exported from database to CSV.")

@@ -2,7 +2,7 @@ import textwrap
 import time
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Generator, Optional
 
 import attr
 import enlighten
@@ -27,7 +27,9 @@ from src.webdrivers import get_chrome_driver
 
 @attr.s
 class AutofillDriver:
-    driver: webdriver.Chrome = attr.ib(default=None)  # delay initialisation until XML is selected and parsed
+    driver: webdriver.remote.webdriver.WebDriver = attr.ib(
+        default=None
+    )  # delay initialisation until XML is selected and parsed
     driver_callable: Callable[[bool], WebDriver] = attr.ib(default=get_chrome_driver)
     headless: bool = attr.ib(default=False)
     starting_url: str = attr.ib(
@@ -36,7 +38,7 @@ class AutofillDriver:
     )
     order: CardOrder = attr.ib(default=attr.Factory(CardOrder.from_xml_in_folder))
     state: str = attr.ib(init=False, default=States.initialising)
-    action: str = attr.ib(init=False, default="")
+    action: Optional[str] = attr.ib(init=False, default=None)
     manager: enlighten.Manager = attr.ib(init=False, default=attr.Factory(enlighten.get_manager))
     status_bar: enlighten.StatusBar = attr.ib(init=False, default=False)
     download_bar: enlighten.Counter = attr.ib(init=False, default=None)
@@ -73,7 +75,7 @@ class AutofillDriver:
         self.download_bar.refresh()
         self.upload_bar.refresh()
 
-    def __attrs_post_init__(self):
+    def __attrs_post_init__(self) -> None:
         self.configure_bars()
         self.order.print_order_overview()
         self.initialise_driver()
@@ -86,7 +88,7 @@ class AutofillDriver:
 
     @alert_handler
     @contextmanager
-    def switch_to_frame(self, frame: str) -> None:
+    def switch_to_frame(self, frame: str) -> Generator[None, None, None]:
         """
         Context manager for switching to `frame`.
         """
@@ -120,8 +122,8 @@ class AutofillDriver:
         self.state = state
         self.action = action
         self.status_bar.update(
-            state=f"{TEXT_BOLD}{self.state}{TEXT_END}",  # type: ignore
-            action=f"{TEXT_BOLD}{self.action or 'N/A'}{TEXT_END}",  # type: ignore
+            state=f"{TEXT_BOLD}{self.state}{TEXT_END}",
+            action=f"{TEXT_BOLD}{self.action or 'N/A'}{TEXT_END}",
         )
         self.status_bar.refresh()
 
@@ -138,7 +140,7 @@ class AutofillDriver:
         # TODO: handle javascript errors?
         """
 
-        return self.driver.execute_script(f"javascript:{'return ' if return_ else ''}{js}")
+        return self.driver.execute_script(f"javascript:{'return ' if return_ else ''}{js}")  # type: ignore
 
     def next_step(self) -> None:
         """
@@ -169,7 +171,7 @@ class AutofillDriver:
     def get_element_for_slot_js(slot: int) -> str:
         return f'PageLayout.prototype.getElement3("dnImg", "{slot}")'
 
-    def get_ssid(self):
+    def get_ssid(self) -> str:
         try:
             return self.driver.current_url.split("?ssid=")[1]
         except IndexError:

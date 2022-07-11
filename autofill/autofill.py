@@ -20,7 +20,7 @@ os.system("")  # enables ansi escape characters in terminal
     type=click.Choice(sorted(browsers.keys()), case_sensitive=False),
     help="Web browser to automate.",
 )
-def main(skipsetup, browser):
+def main(skipsetup: bool, browser: str) -> None:
     try:
         AutofillDriver(driver_callable=browsers[browser]).execute(skipsetup)
     except Exception as e:

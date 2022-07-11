@@ -1,5 +1,6 @@
 import string
 from datetime import datetime
+from typing import Any
 
 from cardpicker.models import Card
 from django.core.exceptions import ObjectDoesNotExist
@@ -14,16 +15,16 @@ class Blog(models.Model):
     name = models.CharField(max_length=20, unique=True)
     url = models.CharField(max_length=10, unique=True)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.name} (url /{self.url})"
 
-    def to_dict(self):
+    def to_dict(self) -> dict[str, Any]:
         return {
             "name": self.name,
             "url": f"/blog/{self.url}",
         }
 
-    def to_dict_with_posts(self, num_posts=0):
+    def to_dict_with_posts(self, num_posts: int = 0) -> dict[str, Any]:
         posts = [x.get_synopsis() for x in BlogPost.objects.filter(blog__pk=self.pk)]
         if num_posts > 0:
             posts = posts[0:num_posts]
@@ -39,7 +40,7 @@ class BlogPost(models.Model):
     contents = models.TextField()
     blog = models.ForeignKey(Blog, on_delete=models.CASCADE)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f'"{self.name}", created on {self.date_created}'
 
     def get_url(self) -> str:
@@ -47,7 +48,7 @@ class BlogPost(models.Model):
         post_url = f"/blog/{self.blog.url}/{self.pk}-{name_flattened}"
         return post_url
 
-    def get_content(self):
+    def get_content(self) -> dict[str, Any]:
         return {
             "name": self.name,
             "date_created": dateformat.format(self.date_created, datestring),
@@ -57,7 +58,7 @@ class BlogPost(models.Model):
             "url": self.get_url(),
         }
 
-    def get_synopsis(self):
+    def get_synopsis(self) -> dict[str, Any]:
         # i thought it'd be neat if each synopsis's border colour changed
         borders = ["primary", "success", "warning", "info", "light"]
         return {
@@ -84,7 +85,7 @@ class ShowcaseBlogPost(BlogPost):
     cards = models.ManyToManyField("cardpicker.Card", blank=True)
     card_ids = models.CharField(max_length=800, blank=True)
 
-    def get_content(self):
+    def get_content(self) -> dict[str, Any]:
         cards = []
         try:
             card_ids = self.card_ids.split(",")

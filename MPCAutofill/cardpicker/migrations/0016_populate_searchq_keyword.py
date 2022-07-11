@@ -1,7 +1,7 @@
 from django.db import migrations
 
 
-def insert_searchq_keyword(apps, schema_editor):
+def insert_searchq_keyword(apps, schema_editor) -> None:  # type: ignore  # TODO: type this properly
     for model_name in ["Card", "Cardback", "Token"]:
         model = apps.get_model("cardpicker", model_name)
         for card in model.objects.all():

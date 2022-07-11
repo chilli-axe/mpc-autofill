@@ -5,7 +5,7 @@ from math import floor
 from typing import Any
 
 import googleapiclient.errors
-from cardpicker.models import Card, Cardback, Source, Token
+from cardpicker.models import Card, Cardback, CardBase, Source, Token
 from cardpicker.utils.to_searchable import to_searchable
 from django.core import management
 from django.core.management.base import BaseCommand
@@ -190,9 +190,9 @@ def search_folder(service: Resource, source: Source, folder: Folder) -> None:
     print(f"Searching drive: {source.id}")
 
     # maintain list of cards, cardbacks, and tokens found for this Source
-    q_cards = []
-    q_cardbacks = []
-    q_tokens = []
+    q_cards: list[Card] = []
+    q_cardbacks: list[Cardback] = []
+    q_tokens: list[Token] = []
 
     # crawl the drive to retrieve a complete list of images it contains
     images = crawl_drive(service, folder)
@@ -200,7 +200,7 @@ def search_folder(service: Resource, source: Source, folder: Folder) -> None:
 
     # add the retrieved cards to the database
     for x in images:
-        add_card(folder, source, x, q_cards, q_cardbacks, q_tokens)
+        add_card(folder=folder, source=source, item=x, q_cards=q_cards, q_cardbacks=q_cardbacks, q_tokens=q_tokens)
 
     print(f"\nFinished crawling {folder.name}.\nSynchronising to database...", end="")
 
@@ -210,10 +210,10 @@ def search_folder(service: Resource, source: Source, folder: Folder) -> None:
     queue_object_map = [(q_cardbacks, Cardback), (q_tokens, Token), (q_cards, Card)]
 
     # django-bulk-sync is kinda super broken and this is way better
-    for x in queue_object_map:
+    for queue, model in queue_object_map:
         with transaction.atomic():
-            x[1].objects.filter(source=source).delete()
-            x[1].objects.bulk_create(x[0])
+            model.objects.filter(source=source).delete()
+            model.objects.bulk_create(queue)  # type: ignore  # TODO: proper typing here
 
     print(f" and done! That took {time.time() - t0} seconds.\n")
 
@@ -267,18 +267,11 @@ def add_card(
     # Calculate source image DPI, rounded to tens
     dpi = 10 * round(int(item.height) * DPI_HEIGHT_RATIO / 10)
 
-    # Skip card if its source couldn't be determined
-    if source == "Unknown":
-        return
-
     # Use a dictionary to map the img type to the queue and class of card we need to append/create
-    queue_object_map = {
-        "cardback": (q_cardbacks, Cardback),
-        "token": (q_tokens, Token),
-        "card": (q_cards, Card),
-    }
+    queue_object_map = {"cardback": (q_cardbacks, Cardback), "token": (q_tokens, Token), "card": (q_cards, Card)}
 
-    queue_object_map[img_type][0].append(
+    queue: list[CardBase] = queue_object_map[img_type][0]  # type: ignore
+    queue.append(
         queue_object_map[img_type][1](
             id=item.id,
             name=cardname,
@@ -308,7 +301,7 @@ class Command(BaseCommand):
         help += f"{source.id}, "
     help = help[:-2]
 
-    def add_arguments(self, parser) -> None:
+    def add_arguments(self, parser) -> None:  # type: ignore
         parser.add_argument("-d", "--drive", type=str, help="Only update a specific drive")
 
     def handle(self, *args: Any, **kwargs: dict[str, Any]) -> None:
@@ -331,7 +324,7 @@ class Command(BaseCommand):
                 [print(x.id) for x in Source.objects.all()]
                 return
         else:
-            sources = locate_drives(service, Source.objects.all())
+            sources = locate_drives(service, list(Source.objects.all()))
             print("Rebuilding database with all drives.")
             for x in sources:
                 search_folder(service, Source.objects.get(id=x), sources[x])

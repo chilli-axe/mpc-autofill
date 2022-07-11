@@ -1,7 +1,7 @@
 from cardpicker.utils.to_searchable import to_searchable
 
 
-def test_to_searchable():
+def test_to_searchable() -> None:
     # basic case
     assert to_searchable("Lightning Bolt") == "lightning bolt"
     assert to_searchable(" Lightning   BOLT ") == "lightning bolt"

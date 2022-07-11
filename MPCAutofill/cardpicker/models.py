@@ -13,7 +13,7 @@ class Source(models.Model):
     description = models.CharField(max_length=400)
     order = models.IntegerField(default=0)
 
-    def __str__(self):
+    def __str__(self) -> str:
         (qty_total, qty_cards, qty_cardbacks, qty_tokens, _) = self.count()
         return "[{}.] {} ({} total: {} cards, {} cardbacks, {} tokens)".format(
             self.order,
@@ -88,7 +88,7 @@ class CardBase(models.Model):
     date = models.DateTimeField(default=datetime.now)
     size = models.IntegerField()
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "[{}] {}: {}, uploaded: {}".format(self.source, self.name, self.id, self.date)
 
     def to_dict(self) -> dict[str, Any]:
@@ -129,5 +129,5 @@ class DFCPair(models.Model):
     front = models.CharField(max_length=200, primary_key=True)
     back = models.CharField(max_length=200, unique=True)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "{} // {}".format(self.front, self.back)

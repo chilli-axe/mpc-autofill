@@ -1,9 +1,9 @@
 from datetime import timedelta
-from typing import Any, Callable, Optional, Type
+from typing import Any, Callable, Optional, Type, TypeVar, cast
 
 from cardpicker.documents import CardbackSearch, CardSearch, TokenSearch
-from cardpicker.models import Source
 from cardpicker.utils.to_searchable import to_searchable
+from django.http import HttpRequest
 from django.utils import timezone
 from elasticsearch.exceptions import ConnectionError as ElasticConnectionError
 from elasticsearch_dsl.document import Document, Search
@@ -11,10 +11,13 @@ from elasticsearch_dsl.index import Index
 from elasticsearch_dsl.query import Match
 from Levenshtein import distance
 
+# https://mypy.readthedocs.io/en/stable/generics.html#declaring-decorators
+F = TypeVar("F", bound=Callable[..., Any])
+
 
 class SearchExceptions:
     class IndexNotFoundException(Exception):
-        def __init__(self, index):
+        def __init__(self, index: str) -> None:
             self.message = (
                 f"The search index {index} does not exist. Usually, this happens because the database "
                 f"is in the middle of updating - check back in a few minutes!"
@@ -22,26 +25,26 @@ class SearchExceptions:
             super().__init__(self.message)
 
     class ConnectionTimedOutException(Exception):
-        def __init__(self):
+        def __init__(self) -> None:
             self.message = "Unable to connect to the search engine (timed out)."
             super().__init__(self.message)
 
 
-def elastic_connection(func: Callable):
+def elastic_connection(func: F) -> F:
     """
     Small function wrapper which makes elasticsearch's connection error more readable.
     """
 
-    def wrapper(*args: Any, **kwargs: dict[str, Any]):
+    def wrapper(*args: Any, **kwargs: dict[str, Any]) -> F:
         try:
             return func(*args, **kwargs)
         except ElasticConnectionError:
             raise SearchExceptions.ConnectionTimedOutException
 
-    return wrapper
+    return cast(F, wrapper)
 
 
-def build_context(drive_order: list[str], fuzzy_search: bool, order: dict, qty: int):
+def build_context(drive_order: list[str], fuzzy_search: bool, order: dict[str, Any], qty: int) -> dict[str, Any]:
     context = {
         "drive_order": drive_order,
         "fuzzy_search": "true" if fuzzy_search else "false",
@@ -52,15 +55,15 @@ def build_context(drive_order: list[str], fuzzy_search: bool, order: dict, qty: 
     return context
 
 
-def retrieve_search_settings(request) -> tuple[list[str], bool]:
+def retrieve_search_settings(request: HttpRequest) -> tuple[list[str], bool]:
     # safely retrieve drive_order and fuzzy_search from request, given that sometimes
     # they might not exist, and trying to manipulate None objects results in exceptions
-    drive_order = request.POST.get("drive_order")
-    if drive_order is not None:
-        drive_order = drive_order.split(",")
-    fuzzy_search = request.POST.get("fuzzy_search")
-    if fuzzy_search is not None:
-        fuzzy_search = fuzzy_search == "true"
+    drive_order = []
+    if (drive_order_string := request.POST.get("drive_order")) is not None:
+        drive_order = drive_order_string.split(",")
+    fuzzy_search = False
+    if (fuzzy_search_string := request.POST.get("fuzzy_search")) is not None:
+        fuzzy_search = fuzzy_search_string == "true"
     return drive_order, fuzzy_search
 
 
@@ -151,7 +154,7 @@ def process_line(input_str: str) -> tuple[Optional[str], Optional[int]]:
 
 
 @elastic_connection
-def search_new_elasticsearch_definition():
+def search_new_elasticsearch_definition() -> Search:
     days = 14
     dt_from = timezone.now() - timedelta(days=days)
     dt_to = timezone.now()
@@ -159,7 +162,7 @@ def search_new_elasticsearch_definition():
 
 
 @elastic_connection
-def search_new(s: Search, source: Source, page: int = 0) -> dict[str, Any]:
+def search_new(s: Search, source: str, page: int = 0) -> dict[str, Any]:
     # define page size and the range to paginate with
     page_size = 6
     start_idx = page_size * page
@@ -176,7 +179,6 @@ def search_new(s: Search, source: Source, page: int = 0) -> dict[str, Any]:
         results["hits"] = [x.to_dict() for x in query[start_idx:end_idx]]
 
     # let the frontend know whether to continue to show the load more button
-    # TODO: I couldn't be fucked to solve true vs True for json serialisation but this works fine so eh?
     results["more"] = "false"
     if qty > end_idx:
         results["more"] = "true"

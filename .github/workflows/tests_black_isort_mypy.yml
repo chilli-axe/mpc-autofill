@@ -1,4 +1,4 @@
-name: MPC Autofill Tests and Formatting
+name: MPC Autofill Tests, black, isort, and mypy
 on:
   push:
     branches: [ master ]
@@ -31,7 +31,7 @@ jobs:
         run: |
           cd ${{ matrix.package }} && pytest .
   pre-commit:
-    name: Auto-format project
+    name: black, isort, and mypy
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2

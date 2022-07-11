@@ -1,5 +1,6 @@
 import json
 import time
+from typing import Any
 
 import requests
 from bulk_sync import bulk_sync
@@ -59,5 +60,5 @@ class Command(BaseCommand):
     # set up help line to print the available drive options
     help = "Synchronises stored double-faced card pairs with Scryfall database."
 
-    def handle(self, *args, **kwargs):
+    def handle(self, *args: Any, **kwargs: dict[str, Any]) -> None:
         sync_dfcs()
