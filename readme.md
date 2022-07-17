@@ -1,3 +1,6 @@
+![build](https://github.com/chilli-axe/mpc-autofill/actions/workflows/build.yml/badge.svg)
+![tests_black_isort_mypy](https://github.com/chilli-axe/mpc-autofill/actions/workflows/tests_black_isort_mypy.yml/badge.svg)
+
 # mpc-autofill
 
 Automating MakePlayingCards's online ordering system.
