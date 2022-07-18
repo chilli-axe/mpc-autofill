@@ -17,6 +17,7 @@ from cardpicker.utils.search_functions import (
     search_new_elasticsearch_definition,
 )
 from cardpicker.utils.to_searchable import to_searchable
+from django.db import connection
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
@@ -110,7 +111,76 @@ def guide(request: HttpRequest) -> HttpResponse:
 
 
 def contributions(request: HttpRequest) -> HttpResponse:
-    sources = [x.to_dict() for x in Source.objects.all()]
+    """
+    Report on the number of cards, cardbacks, and tokens that each Source has, as well as the average DPI across all
+    three card types.
+    Rawdogging the SQL here to minimise the number of hits to the database. I might come back to this at some point
+    to rewrite in Django ORM at a later point.
+    """
+
+    with connection.cursor() as cursor:
+        cursor.execute(
+            """
+            SELECT
+                cardpicker_source.key,
+                cardpicker_source.drive_id,
+                cardpicker_source.drive_link,
+                cardpicker_source.description,
+                COALESCE(COUNT(cardpicker_card.dpi), 0),
+                COALESCE(SUM(cardpicker_card.dpi), 0)
+            FROM cardpicker_source
+            LEFT JOIN cardpicker_card ON cardpicker_source.id = cardpicker_card.source_id
+            GROUP BY cardpicker_source.key
+            ORDER BY cardpicker_source.key
+            """
+        )
+        rows_card = cursor.fetchall()
+        cursor.execute(
+            """
+            SELECT
+                COALESCE(COUNT(cardpicker_cardback.dpi), 0),
+                COALESCE(SUM(cardpicker_cardback.dpi), 0)
+            FROM cardpicker_source
+            LEFT JOIN cardpicker_cardback ON cardpicker_source.id = cardpicker_cardback.source_id
+            GROUP BY cardpicker_source.key
+            ORDER BY cardpicker_source.key
+            """
+        )
+        rows_cardback = cursor.fetchall()
+        cursor.execute(
+            """
+            SELECT
+                COALESCE(COUNT(cardpicker_token.dpi), 0),
+                COALESCE(SUM(cardpicker_token.dpi), 0)
+            FROM cardpicker_source
+            LEFT JOIN cardpicker_token ON cardpicker_source.id = cardpicker_token.source_id
+            GROUP BY cardpicker_source.key
+            ORDER BY cardpicker_source.key
+            """
+        )
+        rows_token = cursor.fetchall()
+    sources = []
+    for (
+        (key, drive_id, drive_link, description, card_count, card_total_dpi),
+        (cardback_count, cardback_total_dpi),
+        (token_count, token_total_dpi),
+    ) in zip(rows_card, rows_cardback, rows_token):
+        total_count = card_count + cardback_count + token_count
+        sources.append(
+            {
+                "key": key,
+                "drive_id": drive_id,
+                "drive_link": drive_link,
+                "description": description,
+                "qty_cards": f"{card_count :,d}",
+                "qty_cardbacks": f"{cardback_count :,d}",
+                "qty_tokens": f"{token_count :,d}",
+                "avgdpi": f"{(card_total_dpi + cardback_total_dpi + token_total_dpi) / total_count:.2f}"
+                if total_count > 0
+                else 0,
+            }
+        )
+
     total_count = [x.objects.all().count() for x in [Card, Cardback, Token]]
     total_count.append(sum(total_count))
     total_count_f = [f"{x:,d}" for x in total_count]

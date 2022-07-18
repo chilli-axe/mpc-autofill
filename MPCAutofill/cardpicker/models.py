@@ -56,13 +56,18 @@ class Source(models.Model):
     class Meta:
         ordering = ["order"]
 
-    def to_dict(self) -> dict[str, Any]:
-        qty_all, qty_cards, qty_cardbacks, qty_tokens, avgdpi = self.count()
-        return {
+    def to_dict(self, count: bool = False) -> dict[str, Any]:
+        source_dict = {
             "key": self.key,
             "drive_id": self.drive_id,
             "drive_link": self.drive_link,
             "description": self.description,
+        }
+        if not count:
+            return source_dict
+        qty_all, qty_cards, qty_cardbacks, qty_tokens, avgdpi = self.count()
+        return {
+            **source_dict,
             "qty_all": qty_all,
             "qty_cards": qty_cards,
             "qty_cardbacks": qty_cardbacks,

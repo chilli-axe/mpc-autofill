@@ -47,8 +47,11 @@
                         Private
                     {% endif %}
                 </td>
-                <td><b>{{ source.qty_cards }}</b> cards, <b>{{ source.qty_cardbacks }}</b> cardbacks,
-                    and <b>{{ source.qty_tokens }}</b> tokens, at <b>{{ source.avgdpi }}</b> DPI on average
+                <td>
+                    <b>{{ source.qty_cards }}</b> card{% if source.qty_cards != '1' %}s{% endif %},
+                    <b>{{ source.qty_cardbacks }}</b> cardback{% if source.qty_cardbacks != '1' %}s{% endif %},
+                    and <b>{{ source.qty_tokens }}</b> token{% if source.qty_tokens != '1' %}s{% endif %},
+                    at <b>{{ source.avgdpi }}</b> DPI on average
                     &#8212 {{ source.description }}</td>
             </tr>
         {% endfor %}
