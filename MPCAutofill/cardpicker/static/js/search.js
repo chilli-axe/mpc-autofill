@@ -381,7 +381,7 @@ function build_new_cards(source, data, more) {
     for (let i = 0; i < data.length; i++) {
 
         let card_item = data[i];
-        let dom_id = card_item.id;
+        let dom_id = card_item.drive_id;
 
         // copy the base card sitting in the dom, adjust it, then stick it into this artist's card container
         let card_elem = document.getElementById("basecard-new").cloneNode(true);
@@ -417,7 +417,7 @@ function build_new_cards(source, data, more) {
 
 function build_blog_card(container_id, card) {
     // iterate over the search results
-    let dom_id = card.id;
+    let dom_id = card.drive_id;
 
     // copy the base card sitting in the dom, adjust it, then stick it into this artist's card container
     let card_elem = document.getElementById("basecard-new").cloneNode(true);

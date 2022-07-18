@@ -4,7 +4,7 @@ from . import views
 
 urlpatterns = [
     path("", views.index, name="index"),
-    path("credits", views.credits, name="credits"),
+    path("contributions", views.contributions, name="contributions"),
     path("new", views.new_cards, name="new"),
     path("legal", views.legal, name="legal"),
     re_path(r"^ajax/getnew/$", views.search_new_page, name="getnew"),

@@ -11,7 +11,7 @@ from django.core.management.base import BaseCommand
 
 def sync_dfcs() -> None:
     t0 = time.time()
-    print("Querying Scryfall for DFS pairs...")
+    print("Querying Scryfall for DFC pairs...")
     scryfall_query_dfc = (
         "https://api.scryfall.com/cards/search?q=is:dfc%20-layout:art_series%20-layout:double_faced_token"
     )
@@ -29,7 +29,14 @@ def sync_dfcs() -> None:
         # retrieve front and back names for this card, then create a DFCPair for it and append to list
         front_name = x["card_faces"][0]["name"]
         back_name = x["card_faces"][1]["name"]
-        q_dfcpairs.append(DFCPair(front=to_searchable(front_name), back=to_searchable(back_name)))
+        q_dfcpairs.append(
+            DFCPair(
+                front=front_name,
+                front_searchable=to_searchable(front_name),
+                back=back_name,
+                back_searchable=to_searchable(back_name),
+            )
+        )
 
     # also retrieve meld pairs and save them as DFCPairs
     time.sleep(0.1)
@@ -44,8 +51,10 @@ def sync_dfcs() -> None:
             card_bit = "Top" if is_top else "Bottom"
             q_dfcpairs.append(
                 DFCPair(
-                    front=to_searchable(x["name"]),
-                    back=to_searchable(f"{meld_result} {card_bit}"),
+                    front=x["name"],
+                    front_searchable=to_searchable(x["name"]),
+                    back=f"{meld_result} ({card_bit})",
+                    back_searchable=to_searchable(f"{meld_result} {card_bit}"),
                 )
             )
 

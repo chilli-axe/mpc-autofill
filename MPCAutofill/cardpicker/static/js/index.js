@@ -88,6 +88,7 @@ function load_search_settings() {
         let all_drives = new Set();
         for (let i = all_drive_elems.length - 1; i >= 0; i--) {
             all_drives.add(all_drive_elems[i].id);
+            $("#" + all_drive_elems[i].id).bootstrapToggle();
         }
 
         // reorder the drive table elements according to the cookie by inserting them all after the first one

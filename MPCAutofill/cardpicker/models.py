@@ -7,7 +7,7 @@ from django.utils import dateformat
 
 # Create your models here.
 class Source(models.Model):
-    id = models.CharField(max_length=50, primary_key=True)
+    key = models.CharField(max_length=50, unique=True)  # must be a valid jquery identifier
     drive_id = models.CharField(max_length=100, unique=True)
     drive_link = models.CharField(max_length=200, blank=True, null=True)
     description = models.CharField(max_length=400)
@@ -15,13 +15,9 @@ class Source(models.Model):
 
     def __str__(self) -> str:
         (qty_total, qty_cards, qty_cardbacks, qty_tokens, _) = self.count()
-        return "[{}.] {} ({} total: {} cards, {} cardbacks, {} tokens)".format(
-            self.order,
-            self.id,
-            qty_total,
-            qty_cards,
-            qty_cardbacks,
-            qty_tokens,
+        return (
+            f"[{self.order}.] {self.key} "
+            f"({qty_total} total: {qty_cards} cards, {qty_cardbacks} cardbacks, {qty_tokens} tokens)"
         )
 
     def count(self) -> tuple[str, str, str, str, float]:
@@ -60,13 +56,18 @@ class Source(models.Model):
     class Meta:
         ordering = ["order"]
 
-    def to_dict(self) -> dict[str, Any]:
-        qty_all, qty_cards, qty_cardbacks, qty_tokens, avgdpi = self.count()
-        return {
-            "id": self.id,
+    def to_dict(self, count: bool = False) -> dict[str, Any]:
+        source_dict = {
+            "key": self.key,
             "drive_id": self.drive_id,
             "drive_link": self.drive_link,
             "description": self.description,
+        }
+        if not count:
+            return source_dict
+        qty_all, qty_cards, qty_cardbacks, qty_tokens, avgdpi = self.count()
+        return {
+            **source_dict,
             "qty_all": qty_all,
             "qty_cards": qty_cards,
             "qty_cardbacks": qty_cardbacks,
@@ -76,7 +77,7 @@ class Source(models.Model):
 
 
 class CardBase(models.Model):
-    id = models.CharField(max_length=50, primary_key=True)
+    drive_id = models.CharField(max_length=50, unique=True)
     name = models.CharField(max_length=200)
     priority = models.IntegerField(default=0)
     source = models.ForeignKey(Source, on_delete=models.CASCADE)
@@ -84,29 +85,29 @@ class CardBase(models.Model):
     dpi = models.IntegerField(default=0)
     searchq = models.CharField(max_length=200)
     searchq_keyword = models.CharField(max_length=200)
-    thumbpath = models.CharField(max_length=200)
+    extension = models.CharField(max_length=200)
     date = models.DateTimeField(default=datetime.now)
     size = models.IntegerField()
 
     def __str__(self) -> str:
-        return "[{}] {}: {}, uploaded: {}".format(self.source, self.name, self.id, self.date)
+        return "[{}] {}: {}, uploaded: {}".format(self.source, self.name, self.drive_id, self.date)
 
     def to_dict(self) -> dict[str, Any]:
         return {
-            "id": self.id,
+            "drive_id": self.drive_id,
             "name": self.name,
             "priority": self.priority,
-            "source": self.source.id,
+            "source": self.source.key,
             "source_verbose": self.source_verbose,
             "dpi": self.dpi,
             "searchq": self.searchq,
-            "thumbpath": self.thumbpath,
+            "extension": self.extension,
             "date": dateformat.format(self.date, "jS F, Y"),
             "size": self.size,
         }
 
     def source_to_str(self) -> str:
-        return self.source.id
+        return self.source.key
 
     class Meta:
         abstract = True
@@ -126,8 +127,10 @@ class Token(CardBase):
 
 
 class DFCPair(models.Model):
-    front = models.CharField(max_length=200, primary_key=True)
+    front = models.CharField(max_length=200, unique=True)
+    front_searchable = models.CharField(max_length=200, unique=True)
     back = models.CharField(max_length=200, unique=True)
+    back_searchable = models.CharField(max_length=200, unique=True)
 
     def __str__(self) -> str:
         return "{} // {}".format(self.front, self.back)

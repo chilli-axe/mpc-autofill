@@ -62,11 +62,11 @@ def locate_drives(service: Resource, sources: list[Source]) -> dict[str, Folder]
 
     print("Retrieving Google Drive folders...")
     bar = tqdm(total=len(sources))
-    folders = {x.id: get_folder_from_id(x.drive_id) for x in sources}
+    folders = {x.key: get_folder_from_id(x.drive_id) for x in sources}
     for x in sources:
-        if not folders[x.id]:
-            print(f"Failed on drive: {x.id}")
-            folders.pop(x.id)
+        if not folders[x.key]:
+            print(f"Failed on drive: {x.key}")
+            folders.pop(x.key)
     print("...and done!")
     return folders
 
@@ -187,7 +187,7 @@ def crawl_drive(service: Resource, folder: Folder) -> list[Image]:
 
 def search_folder(service: Resource, source: Source, folder: Folder) -> None:
     # TODO: this code is horrendously unclear with its variable scope and needs to be rewritten.
-    print(f"Searching drive: {source.id}")
+    print(f"Searching drive: {source.key}")
 
     # maintain list of cards, cardbacks, and tokens found for this Source
     q_cards: list[Card] = []
@@ -241,7 +241,7 @@ def add_card(
         return
 
     priority = 2
-    source_verbose = str(source.id)
+    source_verbose = str(source.key)
 
     if ")" in cardname:
         priority = 1
@@ -273,7 +273,7 @@ def add_card(
     queue: list[CardBase] = queue_object_map[img_type][0]  # type: ignore
     queue.append(
         queue_object_map[img_type][1](
-            id=item.id,
+            drive_id=item.id,
             name=cardname,
             priority=priority,
             source=source,
@@ -281,7 +281,7 @@ def add_card(
             dpi=dpi,
             searchq=to_searchable(cardname),  # search-friendly card name
             searchq_keyword=to_searchable(cardname),  # for keyword search
-            thumbpath=extension,
+            extension=extension,
             date=item.created_time,
             size=item.size,
         )
@@ -296,10 +296,7 @@ def login() -> Resource:
 
 class Command(BaseCommand):
     # set up help line to print the available drive options
-    help = "You may specify one of the following drives: "
-    for source in Source.objects.all():
-        help += f"{source.id}, "
-    help = help[:-2]
+    help = "You may specify one of the following drives: " + ", ".join(Source.objects.values_list("key", flat=True))
 
     def add_arguments(self, parser) -> None:  # type: ignore
         parser.add_argument("-d", "--drive", type=str, help="Only update a specific drive")
@@ -315,19 +312,19 @@ class Command(BaseCommand):
         if drive:
             # Try/except to see if the given drive name maps to a Source
             try:
-                source = Source.objects.get(id=drive)
-                folder = locate_drives(service, [source])[source.id]
-                print(f"Rebuilding database for specific drive: {source.id}.")
+                source = Source.objects.get(key=drive)
+                folder = locate_drives(service, [source])[source.key]
+                print(f"Rebuilding database for specific drive: {source.key}.")
                 search_folder(service, source, folder)
             except KeyError:
                 print(f"Invalid drive specified: {drive}\nYou may specify one of the following drives:")
-                [print(x.id) for x in Source.objects.all()]
+                [print(x.key) for x in Source.objects.all()]
                 return
         else:
             sources = locate_drives(service, list(Source.objects.all()))
             print("Rebuilding database with all drives.")
             for x in sources:
-                search_folder(service, Source.objects.get(id=x), sources[x])
+                search_folder(service, Source.objects.get(key=x), sources[x])
 
         t0 = time.time()
         print("Rebuilding Elasticsearch indexes...")

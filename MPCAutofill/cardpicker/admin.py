@@ -6,17 +6,17 @@ from .models import Card, Cardback, DFCPair, Source, Token
 # Register your models here.
 @admin.register(Card)
 class AdminCard(admin.ModelAdmin[Card]):
-    list_display = ("name", "source", "dpi", "date")
+    list_display = ("drive_id", "name", "source", "dpi", "date")
 
 
 @admin.register(Cardback)
 class AdminCardback(admin.ModelAdmin[Cardback]):
-    list_display = ("name", "source", "dpi", "date")
+    list_display = ("drive_id", "name", "source", "dpi", "date")
 
 
 @admin.register(Token)
 class AdminToken(admin.ModelAdmin[Token]):
-    list_display = ("name", "source", "dpi", "date")
+    list_display = ("drive_id", "name", "source", "dpi", "date")
 
 
 @admin.register(DFCPair)
@@ -26,7 +26,7 @@ class AdminDFCPair(admin.ModelAdmin[DFCPair]):
 
 @admin.register(Source)
 class AdminSource(admin.ModelAdmin[Source]):
-    list_display = ("id", "drive_id", "contribution", "description")
+    list_display = ("key", "drive_id", "contribution", "description")
 
     def contribution(self, obj: Source) -> str:
         qty_all, qty_cards, qty_cardbacks, qty_tokens, avgdpi = obj.count()
