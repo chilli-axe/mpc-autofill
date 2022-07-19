@@ -463,7 +463,7 @@ class MPCOrder(abc.MutableMapping[str, Any]):
     def from_link(self, url: str, offset: int = 0) -> int:
         for site in ImportSites:
             site_instance = site()
-            if url.startswith(site_instance.base_url):
+            if url.startswith(site_instance.get_base_url()):
                 return self.from_text(site_instance.retrieve_card_list(url), offset)
         raise ParsingErrors.SiteNotSupportedException(url)
 
