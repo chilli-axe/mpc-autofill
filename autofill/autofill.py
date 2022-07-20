@@ -24,7 +24,7 @@ os.system("")  # enables ansi escape characters in terminal
     "--exportpdf",
     default=False,
     help="Create a PDF export of the card images and do not create a project for MPC.",
-    is_flag=True
+    is_flag=True,
 )
 def main(skipsetup: bool, browser: str, exportpdf: bool) -> None:
     try:

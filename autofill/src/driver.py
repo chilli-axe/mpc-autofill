@@ -15,6 +15,7 @@ from selenium.webdriver.support.expected_conditions import invisibility_of_eleme
 from selenium.webdriver.support.ui import Select, WebDriverWait
 from src.constants import THREADS, States
 from src.order import CardImage, CardImageCollection, CardOrder
+from src.pdf_maker import PdfExporter
 from src.utils import (
     TEXT_BOLD,
     TEXT_END,
@@ -23,7 +24,6 @@ from src.utils import (
     time_to_hours_minutes_seconds,
 )
 from src.webdrivers import get_chrome_driver
-from src.pdf_maker import PdfExporter
 
 
 @attr.s
@@ -434,7 +434,7 @@ class AutofillDriver:
                         """
                     )
                 )
-                
+
                 exporter = PdfExporter(order=self.order)
                 exporter.execute()
                 return
