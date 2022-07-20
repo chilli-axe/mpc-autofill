@@ -23,6 +23,7 @@ from src.utils import (
     time_to_hours_minutes_seconds,
 )
 from src.webdrivers import get_chrome_driver
+from src.pdf_maker import PdfExporter
 
 
 @attr.s
@@ -32,6 +33,7 @@ class AutofillDriver:
     )  # delay initialisation until XML is selected and parsed
     driver_callable: Callable[[bool], WebDriver] = attr.ib(default=get_chrome_driver)
     headless: bool = attr.ib(default=False)
+    export_pdf: bool = attr.ib(default=False)
     starting_url: str = attr.ib(
         init=False,
         default="https://www.makeplayingcards.com/design/custom-blank-card.html",
@@ -78,6 +80,8 @@ class AutofillDriver:
     def __attrs_post_init__(self) -> None:
         self.configure_bars()
         self.order.print_order_overview()
+        if self.export_pdf:
+            return
         self.initialise_driver()
         self.driver.get(self.starting_url)
         self.set_state(States.defining_order)
@@ -419,6 +423,21 @@ class AutofillDriver:
                     )
                 )
                 self.redefine_order()
+
+            elif self.export_pdf:
+                input(
+                    textwrap.dedent(
+                        f"""
+                        The program has been started with {TEXT_BOLD}--exportpdf{TEXT_END}, which will generate a
+                        PDF containing the images. These cards can be taken to a printer to be printed and cut down.
+                        Please wait for the images to download and press Enter.
+                        """
+                    )
+                )
+                
+                exporter = PdfExporter(order=self.order)
+                exporter.execute()
+                return
 
             else:
                 print(

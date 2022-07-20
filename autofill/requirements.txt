@@ -4,6 +4,7 @@ colorama
 coverage
 defusedxml
 enlighten
+fpdf2
 InquirerPy
 numpy
 pre-commit

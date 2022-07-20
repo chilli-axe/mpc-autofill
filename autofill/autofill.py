@@ -20,9 +20,15 @@ os.system("")  # enables ansi escape characters in terminal
     type=click.Choice(sorted(browsers.keys()), case_sensitive=False),
     help="Web browser to automate.",
 )
-def main(skipsetup: bool, browser: str) -> None:
+@click.option(
+    "--exportpdf",
+    default=False,
+    help="Create a PDF export of the card images and do not create a project for MPC.",
+    is_flag=True
+)
+def main(skipsetup: bool, browser: str, exportpdf: bool) -> None:
     try:
-        AutofillDriver(driver_callable=browsers[browser]).execute(skipsetup)
+        AutofillDriver(driver_callable=browsers[browser], export_pdf=exportpdf).execute(skipsetup)
     except Exception as e:
         print(f"An uncaught exception occurred: {TEXT_BOLD}{e}{TEXT_END}")
         input("Press Enter to exit.")
