@@ -58,13 +58,13 @@ From the base repo directory:
 * The resultant executable will be in `/autofill/dist`.
 
 ### Running the Test Suite
-Two tests in `src/tests.py` (at the bottom of the file) are marked as skip as they don't work consistently in GitHub Actions. I suggest commenting out the `pytest.mark.skip()` lines when running tests on your machine to run these. Note that they can take a couple of minutes to run as they put through small orders with MPC.
+Two tests in `tests/test_desktop_client.py` (at the bottom of the file) are marked as skip as they don't work consistently in GitHub Actions. I suggest commenting out the `pytest.mark.skip()` lines when running tests on your machine to run these. Note that they can take a couple of minutes to run as they put through small orders with MPC.
 From the base repo directory:
 * `cd autofill`,
 * Activate virtual environment or create one with `venv`,
 * Install requirements - `pip install -r requirements.txt`,
-* `cd src`,
-* Run tests - `coverage run -m pytest tests.py`,
+* `cd tests`,
+* Run tests - `coverage run -m pytest test_desktop_client.py`,
 * Report on code coverage: `coverage report`.
 
 ### XML Specification
