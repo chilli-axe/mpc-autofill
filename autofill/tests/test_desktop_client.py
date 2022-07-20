@@ -13,7 +13,13 @@ from enlighten import Counter
 from selenium.webdriver.common.by import By
 from src.driver import AutofillDriver
 from src.order import CardImage, CardImageCollection, CardOrder, Details
-from src.utils import get_google_drive_file_name, text_to_list
+from src.pdf_maker import PdfExporter
+from src.utils import (
+    get_google_drive_file_name,
+    remove_directories,
+    remove_files,
+    text_to_list,
+)
 
 
 @pytest.fixture(autouse=True)
@@ -761,6 +767,98 @@ def test_card_order_missing_slots(input_enter, card_order_element_invalid_quanti
 
 
 # endregion
+# endregion
+
+# region test pdf_maker.py PdfExporter
+
+
+def test_pdf_export_complete_3_cards_single_file(monkeypatch, card_order_valid):
+    def do_nothing(_):
+        return None
+
+    def replace_execute(self, skip_setup=False):
+        with ThreadPoolExecutor(max_workers=3) as pool:
+            self.order.fronts.download_images(pool, self.download_bar)
+            self.order.backs.download_images(pool, self.download_bar)
+
+    monkeypatch.setattr("src.driver.AutofillDriver.execute", replace_execute)
+    autofill_driver = AutofillDriver(order=card_order_valid, export_pdf=True)
+    autofill_driver.execute(skip_setup=False)
+
+    monkeypatch.setattr("src.pdf_maker.PdfExporter.ask_questions", do_nothing)
+    card_order_valid.name = "test_order.xml"
+    pdf_exporter = PdfExporter(order=card_order_valid)
+    pdf_exporter.execute()
+
+    expected_generated_files = [
+        "export/test_order/1.pdf",
+    ]
+
+    for file_path in expected_generated_files:
+        assert os.path.exists(file_path)
+    remove_files(expected_generated_files)
+    remove_directories(["export/test_order", "export"])
+
+
+def test_pdf_export_complete_3_cards_separate_files(monkeypatch, card_order_valid):
+    def do_nothing(_):
+        return None
+
+    def replace_execute(self, skip_setup=False):
+        with ThreadPoolExecutor(max_workers=3) as pool:
+            self.order.fronts.download_images(pool, self.download_bar)
+            self.order.backs.download_images(pool, self.download_bar)
+
+    monkeypatch.setattr("src.driver.AutofillDriver.execute", replace_execute)
+    autofill_driver = AutofillDriver(order=card_order_valid, export_pdf=True)
+    autofill_driver.execute(skip_setup=False)
+
+    monkeypatch.setattr("src.pdf_maker.PdfExporter.ask_questions", do_nothing)
+    card_order_valid.name = "test_order.xml"
+    pdf_exporter = PdfExporter(order=card_order_valid, number_of_cards_per_file=1)
+    pdf_exporter.execute()
+
+    expected_generated_files = ["export/test_order/1.pdf", "export/test_order/2.pdf", "export/test_order/3.pdf"]
+
+    for file_path in expected_generated_files:
+        assert os.path.exists(file_path)
+    remove_files(expected_generated_files)
+    remove_directories(["export/test_order", "export"])
+
+
+def test_pdf_export_complete_separate_faces(monkeypatch, card_order_valid):
+    def do_nothing(_):
+        return None
+
+    def replace_execute(self, skip_setup=False):
+        with ThreadPoolExecutor(max_workers=3) as pool:
+            self.order.fronts.download_images(pool, self.download_bar)
+            self.order.backs.download_images(pool, self.download_bar)
+
+    monkeypatch.setattr("src.driver.AutofillDriver.execute", replace_execute)
+    autofill_driver = AutofillDriver(order=card_order_valid, export_pdf=True)
+    autofill_driver.execute(skip_setup=False)
+
+    monkeypatch.setattr("src.pdf_maker.PdfExporter.ask_questions", do_nothing)
+    card_order_valid.name = "test_order.xml"
+    pdf_exporter = PdfExporter(order=card_order_valid, separate_faces=True, number_of_cards_per_file=1)
+    pdf_exporter.execute()
+
+    expected_generated_files = [
+        "export/test_order/backs/1.pdf",
+        "export/test_order/backs/2.pdf",
+        "export/test_order/backs/3.pdf",
+        "export/test_order/fronts/1.pdf",
+        "export/test_order/fronts/2.pdf",
+        "export/test_order/fronts/3.pdf",
+    ]
+
+    for file_path in expected_generated_files:
+        assert os.path.exists(file_path)
+    remove_files(expected_generated_files)
+    remove_directories(["export/test_order/backs", "export/test_order/fronts", "export/test_order", "export"])
+
+
 # endregion
 
 # region test driver.py
