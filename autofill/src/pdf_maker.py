@@ -1,20 +1,21 @@
 import os
+from concurrent.futures import ThreadPoolExecutor
 
 import attr
 import InquirerPy
 from fpdf import FPDF
+from src.constants import THREADS
+from src.driver import OrderStatusBarBaseClass
 from src.order import CardOrder
-from src.utils import ValidationException
 
 
 @attr.s
-class PdfExporter:
+class PdfExporter(OrderStatusBarBaseClass):
     pdf: FPDF = attr.ib(default=None)
-    order: CardOrder = attr.ib(default=None)
     card_width_in_inches: float = attr.ib(default=2.73)
     card_height_in_inches: float = attr.ib(default=3.71)
     file_num: int = attr.ib(default=1)
-    number_of_cards_per_file: int = attr.ib(default=100)
+    number_of_cards_per_file: int = attr.ib(default=60)
     paths_by_slot: dict[int, tuple[str, str]] = attr.ib(default={})
     save_path: str = attr.ib(default="")
     separate_faces: bool = attr.ib(default=False)
@@ -22,8 +23,9 @@ class PdfExporter:
 
     def __attrs_post_init__(self) -> None:
         self.ask_questions()
+        self.configure_bars()
         self.generate_file_path()
-        self.collect_images()
+        self.download_and_collect_images()
 
     def ask_questions(self) -> None:
         questions = [
@@ -79,7 +81,11 @@ class PdfExporter:
             extra = "%s/" % self.current_face
         self.pdf.output(self.save_path + extra + str(self.file_num) + ".pdf")
 
-    def collect_images(self) -> None:
+    def download_and_collect_images(self) -> None:
+        with ThreadPoolExecutor(max_workers=THREADS) as pool:
+            self.order.fronts.download_images(pool, self.download_bar)
+            self.order.backs.download_images(pool, self.download_bar)
+
         backs_by_slots = {}
         for card in self.order.backs.cards:
             for slot in card.slots:

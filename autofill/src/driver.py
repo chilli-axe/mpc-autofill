@@ -15,7 +15,6 @@ from selenium.webdriver.support.expected_conditions import invisibility_of_eleme
 from selenium.webdriver.support.ui import Select, WebDriverWait
 from src.constants import THREADS, States
 from src.order import CardImage, CardImageCollection, CardOrder
-from src.pdf_maker import PdfExporter
 from src.utils import (
     TEXT_BOLD,
     TEXT_END,
@@ -27,39 +26,14 @@ from src.webdrivers import get_chrome_driver
 
 
 @attr.s
-class AutofillDriver:
-    driver: webdriver.remote.webdriver.WebDriver = attr.ib(
-        default=None
-    )  # delay initialisation until XML is selected and parsed
-    driver_callable: Callable[[bool], WebDriver] = attr.ib(default=get_chrome_driver)
-    headless: bool = attr.ib(default=False)
-    export_pdf: bool = attr.ib(default=False)
-    starting_url: str = attr.ib(
-        init=False,
-        default="https://www.makeplayingcards.com/design/custom-blank-card.html",
-    )
+class OrderStatusBarBaseClass:
     order: CardOrder = attr.ib(default=attr.Factory(CardOrder.from_xml_in_folder))
     state: str = attr.ib(init=False, default=States.initialising)
-    action: Optional[str] = attr.ib(init=False, default=None)
+
     manager: enlighten.Manager = attr.ib(init=False, default=attr.Factory(enlighten.get_manager))
     status_bar: enlighten.StatusBar = attr.ib(init=False, default=False)
     download_bar: enlighten.Counter = attr.ib(init=False, default=None)
     upload_bar: enlighten.Counter = attr.ib(init=False, default=None)
-
-    # region initialisation
-    def initialise_driver(self) -> None:
-        try:
-            driver = self.driver_callable(self.headless)
-            driver.set_window_size(1200, 900)
-            driver.implicitly_wait(5)
-            print(f"Successfully initialised {TEXT_BOLD}{driver.name}{TEXT_END} driver.")
-        except ValueError as e:
-            raise Exception(
-                f"An error occurred while attempting to configure the webdriver for {self.driver.name}. "
-                f"Please make sure you have installed {self.driver.name} and that it is up to date: {e}"
-            )
-
-        self.driver = driver
 
     def configure_bars(self) -> None:
         num_images = len(self.order.fronts.cards) + len(self.order.backs.cards)
@@ -77,11 +51,38 @@ class AutofillDriver:
         self.download_bar.refresh()
         self.upload_bar.refresh()
 
+
+@attr.s
+class AutofillDriver(OrderStatusBarBaseClass):
+    driver: webdriver.remote.webdriver.WebDriver = attr.ib(
+        default=None
+    )  # delay initialisation until XML is selected and parsed
+    driver_callable: Callable[[bool], WebDriver] = attr.ib(default=get_chrome_driver)
+    headless: bool = attr.ib(default=False)
+    starting_url: str = attr.ib(
+        init=False,
+        default="https://www.makeplayingcards.com/design/custom-blank-card.html",
+    )
+    action: Optional[str] = attr.ib(init=False, default=None)
+
+    # region initialisation
+    def initialise_driver(self) -> None:
+        try:
+            driver = self.driver_callable(self.headless)
+            driver.set_window_size(1200, 900)
+            driver.implicitly_wait(5)
+            print(f"Successfully initialised {TEXT_BOLD}{driver.name}{TEXT_END} driver.")
+        except ValueError as e:
+            raise Exception(
+                f"An error occurred while attempting to configure the webdriver for {self.driver.name}. "
+                f"Please make sure you have installed {self.driver.name} and that it is up to date: {e}"
+            )
+
+        self.driver = driver
+
     def __attrs_post_init__(self) -> None:
         self.configure_bars()
         self.order.print_order_overview()
-        if self.export_pdf:
-            return
         self.initialise_driver()
         self.driver.get(self.starting_url)
         self.set_state(States.defining_order)
@@ -423,21 +424,6 @@ class AutofillDriver:
                     )
                 )
                 self.redefine_order()
-
-            elif self.export_pdf:
-                input(
-                    textwrap.dedent(
-                        f"""
-                        The program has been started with {TEXT_BOLD}--exportpdf{TEXT_END}, which will generate a
-                        PDF containing the images. These cards can be taken to a printer to be printed and cut down.
-                        Please wait for the images to download and press Enter.
-                        """
-                    )
-                )
-
-                exporter = PdfExporter(order=self.order)
-                exporter.execute()
-                return
 
             else:
                 print(

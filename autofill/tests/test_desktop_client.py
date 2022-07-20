@@ -776,15 +776,6 @@ def test_pdf_export_complete_3_cards_single_file(monkeypatch, card_order_valid):
     def do_nothing(_):
         return None
 
-    def replace_execute(self, skip_setup=False):
-        with ThreadPoolExecutor(max_workers=3) as pool:
-            self.order.fronts.download_images(pool, self.download_bar)
-            self.order.backs.download_images(pool, self.download_bar)
-
-    monkeypatch.setattr("src.driver.AutofillDriver.execute", replace_execute)
-    autofill_driver = AutofillDriver(order=card_order_valid, export_pdf=True)
-    autofill_driver.execute(skip_setup=False)
-
     monkeypatch.setattr("src.pdf_maker.PdfExporter.ask_questions", do_nothing)
     card_order_valid.name = "test_order.xml"
     pdf_exporter = PdfExporter(order=card_order_valid)
@@ -804,15 +795,6 @@ def test_pdf_export_complete_3_cards_separate_files(monkeypatch, card_order_vali
     def do_nothing(_):
         return None
 
-    def replace_execute(self, skip_setup=False):
-        with ThreadPoolExecutor(max_workers=3) as pool:
-            self.order.fronts.download_images(pool, self.download_bar)
-            self.order.backs.download_images(pool, self.download_bar)
-
-    monkeypatch.setattr("src.driver.AutofillDriver.execute", replace_execute)
-    autofill_driver = AutofillDriver(order=card_order_valid, export_pdf=True)
-    autofill_driver.execute(skip_setup=False)
-
     monkeypatch.setattr("src.pdf_maker.PdfExporter.ask_questions", do_nothing)
     card_order_valid.name = "test_order.xml"
     pdf_exporter = PdfExporter(order=card_order_valid, number_of_cards_per_file=1)
@@ -829,15 +811,6 @@ def test_pdf_export_complete_3_cards_separate_files(monkeypatch, card_order_vali
 def test_pdf_export_complete_separate_faces(monkeypatch, card_order_valid):
     def do_nothing(_):
         return None
-
-    def replace_execute(self, skip_setup=False):
-        with ThreadPoolExecutor(max_workers=3) as pool:
-            self.order.fronts.download_images(pool, self.download_bar)
-            self.order.backs.download_images(pool, self.download_bar)
-
-    monkeypatch.setattr("src.driver.AutofillDriver.execute", replace_execute)
-    autofill_driver = AutofillDriver(order=card_order_valid, export_pdf=True)
-    autofill_driver.execute(skip_setup=False)
 
     monkeypatch.setattr("src.pdf_maker.PdfExporter.ask_questions", do_nothing)
     card_order_valid.name = "test_order.xml"
@@ -864,7 +837,7 @@ def test_pdf_export_complete_separate_faces(monkeypatch, card_order_valid):
 # region test driver.py
 
 
-@pytest.mark.skip()  # marking as skip because this test can be inconsistent when run on ci/cd
+# @pytest.mark.skip()  # marking as skip because this test can be inconsistent when run on ci/cd
 def test_card_order_complete_run_single_cardback(input_enter, card_order_valid):
     autofill_driver = AutofillDriver(order=card_order_valid, headless=True)
     autofill_driver.execute(skip_setup=False)
@@ -872,7 +845,7 @@ def test_card_order_complete_run_single_cardback(input_enter, card_order_valid):
     assert len(autofill_driver.driver.find_elements(by=By.CLASS_NAME, value="m-itemside")) == 3
 
 
-@pytest.mark.skip()  # marking as skip because this test can be inconsistent when run on ci/cd
+# @pytest.mark.skip()  # marking as skip because this test can be inconsistent when run on ci/cd
 def test_card_order_complete_run_multiple_cardbacks(input_enter, card_order_multiple_cardbacks):
     autofill_driver = AutofillDriver(order=card_order_multiple_cardbacks, headless=True)
     autofill_driver.execute(skip_setup=False)
