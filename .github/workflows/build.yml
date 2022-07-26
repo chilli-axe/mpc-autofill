@@ -16,13 +16,13 @@ jobs:
         include:
           - os: macos-latest
             TARGET: macos
-            OUT_FILE_NAME: autofill-macos
+            OUT_FILE_NAME: autofill
           - os: windows-latest
             TARGET: windows
-            OUT_FILE_NAME: autofill-windows.exe
+            OUT_FILE_NAME: autofill.exe
           - os: ubuntu-latest
             TARGET: linux
-            OUT_FILE_NAME: autofill-linux
+            OUT_FILE_NAME: autofill
     steps:
     - uses: actions/checkout@v2
     - uses: browser-actions/setup-chrome@latest
@@ -35,7 +35,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
     - name: Build with pyinstaller for ${{ matrix.TARGET }}
-      run: pyinstaller autofill.spec -n ${{ matrix.OUT_FILE_NAME }}
+      run: pyinstaller autofill.spec
     - name: Upload artifact
       uses: actions/upload-artifact@v2
       with:
