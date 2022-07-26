@@ -161,7 +161,7 @@ def crawl_drive(service: Resource, folder: Folder) -> list[Image]:
                     if not x["trashed"]:
                         try:
                             parent = folder_dict[curr_folder.parents[0]]
-                        except KeyError:
+                        except (KeyError, IndexError):
                             parent = ""
                         images.append(
                             Image(
