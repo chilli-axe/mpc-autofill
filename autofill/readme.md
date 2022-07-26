@@ -38,6 +38,9 @@ Some notes on how editing an existing project with `--skipsetup` works:
 ### Specifying a Browser
 By default, the tool will configure a driver for Google Chrome. The three major Chromium-based browsers are supported (Chrome, Edge, and Brave), and you can specify which browser should be used to configure the driver with the `--browser` command line argument.
 
+### Exporting to PDF
+You can optionally export the downloaded images to a PDF which can be uploaded to a card printing site by using the `--exportpdfs` command line argument. Once the images are downloaded, press enter and you'll be presented with a few questions. If you plan to upload the PDFs to MakePlayingCards, select `yes` when asked about storing the separate faces in their own PDF. If you plan to use DriveThruCards, select `no` for that question, and then set the number of cards to include per exported file. If using DriveThruCards, be aware that they have a file size upload limit of 1gb, so depending on the file size of the selected images, your order may need to be set to a lower number, like 30 or 40 cards.
+
 ## Developer Guide
 ### Running the Source Code
 From the base repo directory:
@@ -55,13 +58,13 @@ From the base repo directory:
 * The resultant executable will be in `/autofill/dist`.
 
 ### Running the Test Suite
-Two tests in `src/tests.py` (at the bottom of the file) are marked as skip as they don't work consistently in GitHub Actions. I suggest commenting out the `pytest.mark.skip()` lines when running tests on your machine to run these. Note that they can take a couple of minutes to run as they put through small orders with MPC.
+Two tests in `tests/test_desktop_client.py` (at the bottom of the file) are marked as skip as they don't work consistently in GitHub Actions. I suggest commenting out the `pytest.mark.skip()` lines when running tests on your machine to run these. Note that they can take a couple of minutes to run as they put through small orders with MPC.
 From the base repo directory:
 * `cd autofill`,
 * Activate virtual environment or create one with `venv`,
 * Install requirements - `pip install -r requirements.txt`,
-* `cd src`,
-* Run tests - `coverage run -m pytest tests.py`,
+* `cd tests`,
+* Run tests - `coverage run -m pytest test_desktop_client.py`,
 * Report on code coverage: `coverage report`.
 
 ### XML Specification

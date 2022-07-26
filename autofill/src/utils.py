@@ -136,3 +136,19 @@ def time_to_hours_minutes_seconds(t: float) -> tuple[int, int, int]:
     mins = int(floor(t / 60) - hours * 60)
     secs = int(t - (mins * 60) - (hours * 3600))
     return hours, mins, secs
+
+
+def remove_directories(directory_list: list[str]) -> None:
+    for directory in directory_list:
+        try:
+            os.rmdir(directory)
+        except Exception:
+            pass
+
+
+def remove_files(file_list: list[str]) -> None:
+    for file in file_list:
+        try:
+            os.remove(file)
+        except Exception:
+            pass

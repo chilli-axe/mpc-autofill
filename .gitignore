@@ -55,6 +55,9 @@ coverage.xml
 *.py,cover
 .hypothesis/
 .pytest_cache/
+autofill/export/
+autofill/tests/export/
+
 cover/
 
 # Translations
