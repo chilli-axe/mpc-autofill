@@ -16,13 +16,13 @@ jobs:
         include:
           - os: macos-latest
             TARGET: macos
-            OUT_FILE_NAME: autofill
+            OUT_FILE_NAME: autofill-macos
           - os: windows-latest
             TARGET: windows
-            OUT_FILE_NAME: autofill.exe
+            OUT_FILE_NAME: autofill-windows.exe
           - os: ubuntu-latest
             TARGET: linux
-            OUT_FILE_NAME: autofill
+            OUT_FILE_NAME: autofill-linux
     steps:
     - uses: actions/checkout@v2
     - uses: browser-actions/setup-chrome@latest
