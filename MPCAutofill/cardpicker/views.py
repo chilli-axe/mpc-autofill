@@ -126,12 +126,13 @@ def contributions(request: HttpRequest) -> HttpResponse:
                 cardpicker_source.drive_id,
                 cardpicker_source.drive_link,
                 cardpicker_source.description,
+                cardpicker_source.ordinal,
                 COALESCE(COUNT(cardpicker_card.dpi), 0),
                 COALESCE(SUM(cardpicker_card.dpi), 0)
             FROM cardpicker_source
             LEFT JOIN cardpicker_card ON cardpicker_source.id = cardpicker_card.source_id
-            GROUP BY cardpicker_source.key
-            ORDER BY cardpicker_source.key
+            GROUP BY cardpicker_source.ordinal, cardpicker_source.key
+            ORDER BY cardpicker_source.ordinal, cardpicker_source.key
             """
         )
         rows_card = cursor.fetchall()
@@ -142,8 +143,8 @@ def contributions(request: HttpRequest) -> HttpResponse:
                 COALESCE(SUM(cardpicker_cardback.dpi), 0)
             FROM cardpicker_source
             LEFT JOIN cardpicker_cardback ON cardpicker_source.id = cardpicker_cardback.source_id
-            GROUP BY cardpicker_source.key
-            ORDER BY cardpicker_source.key
+            GROUP BY cardpicker_source.ordinal, cardpicker_source.key
+            ORDER BY cardpicker_source.ordinal, cardpicker_source.key
             """
         )
         rows_cardback = cursor.fetchall()
@@ -154,14 +155,14 @@ def contributions(request: HttpRequest) -> HttpResponse:
                 COALESCE(SUM(cardpicker_token.dpi), 0)
             FROM cardpicker_source
             LEFT JOIN cardpicker_token ON cardpicker_source.id = cardpicker_token.source_id
-            GROUP BY cardpicker_source.key
-            ORDER BY cardpicker_source.key
+            GROUP BY cardpicker_source.ordinal, cardpicker_source.key
+            ORDER BY cardpicker_source.ordinal, cardpicker_source.key
             """
         )
         rows_token = cursor.fetchall()
     sources = []
     for (
-        (key, drive_id, drive_link, description, card_count, card_total_dpi),
+        (key, drive_id, drive_link, description, _, card_count, card_total_dpi),
         (cardback_count, cardback_total_dpi),
         (token_count, token_total_dpi),
     ) in zip(rows_card, rows_cardback, rows_token):

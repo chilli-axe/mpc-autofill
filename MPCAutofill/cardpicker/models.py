@@ -11,12 +11,12 @@ class Source(models.Model):
     drive_id = models.CharField(max_length=100, unique=True)
     drive_link = models.CharField(max_length=200, blank=True, null=True)
     description = models.CharField(max_length=400)
-    order = models.IntegerField(default=0)
+    ordinal = models.IntegerField(default=0)
 
     def __str__(self) -> str:
         (qty_total, qty_cards, qty_cardbacks, qty_tokens, _) = self.count()
         return (
-            f"[{self.order}.] {self.key} "
+            f"[{self.ordinal}.] {self.key} "
             f"({qty_total} total: {qty_cards} cards, {qty_cardbacks} cardbacks, {qty_tokens} tokens)"
         )
 
@@ -54,7 +54,7 @@ class Source(models.Model):
         )
 
     class Meta:
-        ordering = ["order"]
+        ordering = ["ordinal"]
 
     def to_dict(self, count: bool = False) -> dict[str, Any]:
         source_dict = {

@@ -23,7 +23,7 @@ def read_sources_csv() -> list[Source]:
                     if str(row["drive_public"]).lower() != "false"
                     else None,
                     description=row["description"],
-                    order=i,
+                    ordinal=i,
                 )
             )
             i += 1
