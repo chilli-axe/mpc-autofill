@@ -23,7 +23,8 @@ class ImportSite(ABC):
 
         raise NotImplementedError
 
-    def retrieve_card_list(self, url: str) -> str:
+    @classmethod
+    def retrieve_card_list(cls, url: str) -> str:
         """
         Takes a URL pointing to a card list hosted on this class's site, queries the site's API / whatever for
         the card list, formats it and returns it.
@@ -31,8 +32,9 @@ class ImportSite(ABC):
 
         raise NotImplementedError
 
-    def raise_invalid_url_exception(self, url: str) -> None:
-        raise InvalidURLException(import_site_name=self.__class__.__name__, url=url)
+    @classmethod
+    def raise_invalid_url_exception(cls, url: str) -> None:
+        raise InvalidURLException(import_site_name=cls.__name__, url=url)
 
 
 class Aetherhub(ImportSite):
@@ -40,11 +42,12 @@ class Aetherhub(ImportSite):
     def get_base_url() -> str:
         return "https://aetherhub.com"
 
-    def retrieve_card_list(self, url: str) -> str:
+    @classmethod
+    def retrieve_card_list(cls, url: str) -> str:
         deck_id = url.split("-")[-1]
-        response = requests.get(f"{self.get_base_url()}/Deck/MtgoDeckExport/{deck_id}")
+        response = requests.get(f"{cls.get_base_url()}/Deck/MtgoDeckExport/{deck_id}")
         if response.status_code == 404 or not deck_id:
-            self.raise_invalid_url_exception(url)
+            cls.raise_invalid_url_exception(url)
         return response.content.decode("utf-8")
 
 
@@ -53,11 +56,12 @@ class Archidekt(ImportSite):
     def get_base_url() -> str:
         return "https://archidekt.com"
 
-    def retrieve_card_list(self, url: str) -> str:
+    @classmethod
+    def retrieve_card_list(cls, url: str) -> str:
         deck_id = url.rsplit("#", 1)[0].split("/")[-1]
-        response = requests.get(f"{self.get_base_url()}/api/decks/{deck_id}/small/")
+        response = requests.get(f"{cls.get_base_url()}/api/decks/{deck_id}/small/")
         if response.status_code == 404 or not deck_id:
-            self.raise_invalid_url_exception(url)
+            cls.raise_invalid_url_exception(url)
         response_json = json.loads(response.content.decode("utf-8"))
         card_list = ""
         for x in response_json["cards"]:
@@ -70,13 +74,14 @@ class CubeCobra(ImportSite):
     def get_base_url() -> str:
         return "https://cubecobra.com"
 
-    def retrieve_card_list(self, url: str) -> str:
+    @classmethod
+    def retrieve_card_list(cls, url: str) -> str:
         cube_id = url.split("/")[-1]
         response = requests.get(
-            f"{self.get_base_url()}/cube/download/plaintext/{cube_id}?primary=Color%20Category&secondary=Types-Multicolor&tertiary=Mana%20Value&quaternary=Alphabetical&showother=false"
+            f"{cls.get_base_url()}/cube/download/plaintext/{cube_id}?primary=Color%20Category&secondary=Types-Multicolor&tertiary=Mana%20Value&quaternary=Alphabetical&showother=false"
         )
         if response.url == "https://cubecobra.com/404" or not cube_id:  # cubecobra returns code 200 for 404 page
-            self.raise_invalid_url_exception(url)
+            cls.raise_invalid_url_exception(url)
         return response.content.decode("utf-8")
 
 
@@ -85,17 +90,18 @@ class Deckstats(ImportSite):
     def get_base_url() -> str:
         return "https://deckstats.net"
 
-    def retrieve_card_list(self, url: str) -> str:
-        regex_results = re.compile(rf"^{self.get_base_url()}/decks/(\d*)/(\d*)").search(url)
+    @classmethod
+    def retrieve_card_list(cls, url: str) -> str:
+        regex_results = re.compile(rf"^{cls.get_base_url()}/decks/(\d*)/(\d*)").search(url)
         if regex_results is None:
-            self.raise_invalid_url_exception(url)
+            cls.raise_invalid_url_exception(url)
             return ""  # only necessary so mypy understands the above function throws an exception
         owner_id, deck_id = regex_results.groups()
         response = requests.get(
-            f"{self.get_base_url()}/api.php?action=get_deck&id_type=saved&owner_id={owner_id}&id={deck_id}&response_type=list"
+            f"{cls.get_base_url()}/api.php?action=get_deck&id_type=saved&owner_id={owner_id}&id={deck_id}&response_type=list"
         )
         if response.status_code == 404 or not owner_id or not deck_id:
-            self.raise_invalid_url_exception(url)
+            cls.raise_invalid_url_exception(url)
         card_list = json.loads(response.content.decode("utf-8"))["list"]
         for x in [
             "//Main\n",
@@ -115,14 +121,15 @@ class MagicVille(ImportSite):
     def get_base_url() -> str:
         return "https://magic-ville.com"
 
-    def retrieve_card_list(self, url: str) -> str:
+    @classmethod
+    def retrieve_card_list(cls, url: str) -> str:
         deck_id = url.strip("#").split("=")[-1]
-        response = requests.get(f"{self.get_base_url()}/fr/decks/dl_appr?ref={deck_id}&save=1")
+        response = requests.get(f"{cls.get_base_url()}/fr/decks/dl_appr?ref={deck_id}&save=1")
         card_list = response.content.decode("utf-8")
         for x in ["// www.magic-ville.com deck file\r\n", "SB: "]:
             card_list = card_list.replace(x, "")
         if not deck_id or not card_list:
-            self.raise_invalid_url_exception(url)
+            cls.raise_invalid_url_exception(url)
         return card_list
 
 
@@ -131,11 +138,12 @@ class ManaStack(ImportSite):
     def get_base_url() -> str:
         return "https://manastack.com"
 
-    def retrieve_card_list(self, url: str) -> str:
+    @classmethod
+    def retrieve_card_list(cls, url: str) -> str:
         deck_id = url.split("/")[-1]
-        response = requests.get(f"{self.get_base_url()}/api/deck/list?slug={deck_id}")
+        response = requests.get(f"{cls.get_base_url()}/api/deck/list?slug={deck_id}")
         if response.status_code == 404 or not deck_id:
-            self.raise_invalid_url_exception(url)
+            cls.raise_invalid_url_exception(url)
         response_json = json.loads(response.content.decode("utf-8"))
         card_list = ""
         for x in response_json["list"]["cards"]:
@@ -148,7 +156,8 @@ class Moxfield(ImportSite):
     def get_base_url() -> str:
         return "https://www.moxfield.com"
 
-    def retrieve_card_list(self, url: str) -> str:
+    @classmethod
+    def retrieve_card_list(cls, url: str) -> str:
         deck_id = url.split("/")[-1]
         response = requests.get(f"https://api.moxfield.com/v2/decks/all/{deck_id}")
 
@@ -174,11 +183,12 @@ class MTGGoldfish(ImportSite):
     def get_base_url() -> str:
         return "https://www.mtggoldfish.com"
 
-    def retrieve_card_list(self, url: str) -> str:
+    @classmethod
+    def retrieve_card_list(cls, url: str) -> str:
         deck_id = url.split("#")[0].split("/")[-1]
-        response = requests.get(f"{self.get_base_url()}/deck/download/{deck_id}")
+        response = requests.get(f"{cls.get_base_url()}/deck/download/{deck_id}")
         if response.status_code == 404 or not deck_id:
-            self.raise_invalid_url_exception(url)
+            cls.raise_invalid_url_exception(url)
         return response.content.decode("utf-8")
 
 
@@ -187,11 +197,12 @@ class Scryfall(ImportSite):
     def get_base_url() -> str:
         return "https://scryfall.com"
 
-    def retrieve_card_list(self, url: str) -> str:
+    @classmethod
+    def retrieve_card_list(cls, url: str) -> str:
         deck_id = url.rsplit("#", 1)[0].split("/")[-1]
         response = requests.get(f"https://api.scryfall.com/decks/{deck_id}/export/text")
         if response.status_code == 404 or not deck_id:
-            self.raise_invalid_url_exception(url)
+            cls.raise_invalid_url_exception(url)
         card_list = response.content.decode("utf-8")
         for x in ["// Sideboard"]:
             card_list = card_list.replace(x, "")
@@ -203,10 +214,11 @@ class TappedOut(ImportSite):
     def get_base_url() -> str:
         return "https://tappedout.net"
 
-    def retrieve_card_list(self, url: str) -> str:
+    @classmethod
+    def retrieve_card_list(cls, url: str) -> str:
         response = requests.get(url + "?fmt=txt")
         if response.status_code == 404:
-            self.raise_invalid_url_exception(url)
+            cls.raise_invalid_url_exception(url)
         card_list = response.content.decode("utf-8")
         for x in ["Sideboard:\r\n"]:
             card_list = card_list.replace(x, "")
@@ -218,17 +230,18 @@ class TCGPlayer(ImportSite):
     def get_base_url() -> str:
         return "https://decks.tcgplayer.com/"
 
-    def retrieve_card_list(self, url: str) -> str:
+    @classmethod
+    def retrieve_card_list(cls, url: str) -> str:
         # TCGPlayer doesn't expose a useful API, so we need to parse the html directly
         response = requests.get(url)
         if response.status_code == 404:
-            self.raise_invalid_url_exception(url)
-        cardTuple = re.findall(
+            cls.raise_invalid_url_exception(url)
+        card_tuple = re.findall(
             '<span class="subdeck-group__card-qty">(.+?)</span> ' '<span class="subdeck-group__card-name">(.+?)</span>',
             response.text,
         )
         card_list = ""
-        for qty, name in cardTuple:
+        for qty, name in card_tuple:
             card_list += "{} {}\n".format(qty, html.unescape(name))
         return card_list
 
