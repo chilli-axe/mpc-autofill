@@ -55,7 +55,7 @@ def locate_drives(service: Resource, sources: list[Source]) -> dict[str, Folder]
         except googleapiclient.errors.HttpError:
             return None
 
-        time.sleep(0.1)
+        time.sleep(0.01)
         bar.update(1)
         return Folder(id=folder["id"], name=folder["name"], parents=[])
 
@@ -96,7 +96,7 @@ def crawl_drive(service: Resource, folder: Folder) -> list[Image]:
         # explore the first folder in the list - retrieve all images in the folder, add any folders inside it
         # to the unexplored folder list, then remove the current folder from that list, then repeat until all
         # folders have been explored
-        time.sleep(0.1)
+        time.sleep(0.01)
         curr_folder = unexplored_folders[0]
 
         # Skip some folders as specified
@@ -130,7 +130,7 @@ def crawl_drive(service: Resource, folder: Folder) -> list[Image]:
             page_token = None
             while True:
                 # Search for all images within this folder
-                time.sleep(0.1)
+                time.sleep(0.01)
                 try:
                     results = (
                         service.files()
@@ -216,7 +216,7 @@ def search_folder(service: Resource, source: Source, folder: Folder) -> None:
             model.objects.filter(source=source).delete()
             model.objects.bulk_create(queue)  # type: ignore  # TODO: proper typing here
 
-    print(f" and done! That took {time.time() - t0} seconds.\n")
+    print(f" and done! That took {time.time() - t0:.2f} seconds.\n")
 
 
 def add_card(
@@ -330,7 +330,7 @@ class Command(BaseCommand):
         t0 = time.time()
         print("Rebuilding Elasticsearch indexes...")
         management.call_command("search_index", "--rebuild", "-f")
-        print(f"and done! That took {time.time() - t0} seconds.\n")
+        print(f"and done! That took {time.time() - t0:.2f} seconds.\n")
 
         t_final = time.time()
         mins = floor((t_final - t) / 60)
