@@ -8,7 +8,7 @@ class InputText(forms.Form):
                 "placeholder": "4x Rite of Flame\n"
                 "4x Brainstorm\n"
                 "3x Mox Opal\n"
-                "1x Empty the Warrens\n"
+                "1x Empty the Warrens\n\n"
                 "6x t:Goblin",
                 "rows": "12",
                 "class": "form-control",
