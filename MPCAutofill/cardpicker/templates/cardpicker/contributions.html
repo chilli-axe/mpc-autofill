@@ -33,7 +33,7 @@
     <table class="table table-hover">
         <thead>
         <tr>
-            <th scope="col">Key</th>
+            <th scope="col">Name</th>
             <th scope="col" style="text-align: center;">Drive</th>
             <th scope="col">Contribution</th>
         </tr>
@@ -41,7 +41,7 @@
         <tbody>
         {% for source in sources %}
             <tr>
-                <td><p>{{ source.key }}</p></td>
+                <td><p>{{ source.name }}</p></td>
                 <td style="text-align: center; font-weight: bold;">
                     {% if source.drive_link %}
                         <a target="_blank" href="{{ source.drive_link }}">Link</a>

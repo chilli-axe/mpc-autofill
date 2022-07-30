@@ -82,7 +82,11 @@ def new_cards(request: HttpRequest) -> HttpResponse:
         # display empty What's New page with error message if unable to connect to elasticsearch
         return render(request, "cardpicker/new.html", {"exception": str(e.args[0])})
 
-    return render(request, "cardpicker/new.html", {"sources": results})
+    return render(
+        request,
+        "cardpicker/new.html",
+        {"sources": {x.key: x.to_dict() for x in Source.objects.all()}, "results": results},
+    )
 
 
 def search_new_page(request: HttpRequest) -> HttpResponse:
@@ -99,7 +103,7 @@ def search_new_page(request: HttpRequest) -> HttpResponse:
     if result["qty"] > 0:
         results[source_key] = result
 
-    return JsonResponse({"sources": results}, safe=False)
+    return JsonResponse({"results": results}, safe=False)
 
 
 def legal(request: HttpRequest) -> HttpResponse:
@@ -122,7 +126,7 @@ def contributions(request: HttpRequest) -> HttpResponse:
         cursor.execute(
             """
             SELECT
-                cardpicker_source.key,
+                cardpicker_source.name,
                 cardpicker_source.drive_id,
                 cardpicker_source.drive_link,
                 cardpicker_source.description,
@@ -131,8 +135,8 @@ def contributions(request: HttpRequest) -> HttpResponse:
                 COALESCE(SUM(cardpicker_card.dpi), 0)
             FROM cardpicker_source
             LEFT JOIN cardpicker_card ON cardpicker_source.id = cardpicker_card.source_id
-            GROUP BY cardpicker_source.ordinal, cardpicker_source.key
-            ORDER BY cardpicker_source.ordinal, cardpicker_source.key
+            GROUP BY cardpicker_source.ordinal, cardpicker_source.name
+            ORDER BY cardpicker_source.ordinal, cardpicker_source.name
             """
         )
         rows_card = cursor.fetchall()
@@ -143,8 +147,8 @@ def contributions(request: HttpRequest) -> HttpResponse:
                 COALESCE(SUM(cardpicker_cardback.dpi), 0)
             FROM cardpicker_source
             LEFT JOIN cardpicker_cardback ON cardpicker_source.id = cardpicker_cardback.source_id
-            GROUP BY cardpicker_source.ordinal, cardpicker_source.key
-            ORDER BY cardpicker_source.ordinal, cardpicker_source.key
+            GROUP BY cardpicker_source.ordinal, cardpicker_source.name
+            ORDER BY cardpicker_source.ordinal, cardpicker_source.name
             """
         )
         rows_cardback = cursor.fetchall()
@@ -155,21 +159,21 @@ def contributions(request: HttpRequest) -> HttpResponse:
                 COALESCE(SUM(cardpicker_token.dpi), 0)
             FROM cardpicker_source
             LEFT JOIN cardpicker_token ON cardpicker_source.id = cardpicker_token.source_id
-            GROUP BY cardpicker_source.ordinal, cardpicker_source.key
-            ORDER BY cardpicker_source.ordinal, cardpicker_source.key
+            GROUP BY cardpicker_source.ordinal, cardpicker_source.name
+            ORDER BY cardpicker_source.ordinal, cardpicker_source.name
             """
         )
         rows_token = cursor.fetchall()
     sources = []
     for (
-        (key, drive_id, drive_link, description, _, card_count, card_total_dpi),
+        (name, drive_id, drive_link, description, _, card_count, card_total_dpi),
         (cardback_count, cardback_total_dpi),
         (token_count, token_total_dpi),
     ) in zip(rows_card, rows_cardback, rows_token):
         total_count = card_count + cardback_count + token_count
         sources.append(
             {
-                "key": key,
+                "name": name,
                 "drive_id": drive_id,
                 "drive_link": drive_link,
                 "description": description,

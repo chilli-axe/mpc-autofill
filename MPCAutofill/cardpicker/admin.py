@@ -26,7 +26,7 @@ class AdminDFCPair(admin.ModelAdmin[DFCPair]):
 
 @admin.register(Source)
 class AdminSource(admin.ModelAdmin[Source]):
-    list_display = ("key", "drive_id", "contribution", "description")
+    list_display = ("name", "drive_id", "contribution", "description")
 
     def contribution(self, obj: Source) -> str:
         qty_all, qty_cards, qty_cardbacks, qty_tokens, avgdpi = obj.count()

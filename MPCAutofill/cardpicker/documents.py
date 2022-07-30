@@ -13,7 +13,8 @@ common_settings = {"number_of_shards": 5, "number_of_replicas": 0}
 
 @registry.register_document
 class CardSearch(Document):
-    source = fields.TextField(attr="source_to_str")
+    source = fields.TextField(attr="get_source_key")
+    source_name = fields.TextField(attr="get_source_name")
     searchq_keyword = fields.TextField(analyzer="keyword")
 
     class Index:
@@ -32,7 +33,8 @@ class CardSearch(Document):
 
 @registry.register_document
 class CardbackSearch(Document):
-    source = fields.TextField(attr="source_to_str")
+    source = fields.TextField(attr="get_source_key")
+    source_name = fields.TextField(attr="get_source_name")
     searchq_keyword = fields.TextField(analyzer="keyword")
 
     class Index:
@@ -51,7 +53,8 @@ class CardbackSearch(Document):
 
 @registry.register_document
 class TokenSearch(Document):
-    source = fields.TextField(attr="source_to_str")
+    source = fields.TextField(attr="get_source_key")
+    source_name = fields.TextField(attr="get_source_name")
     searchq_keyword = fields.TextField(analyzer="keyword")
 
     class Index:
@@ -78,6 +81,7 @@ def card_to_dict(obj: Union[CardSearch, CardbackSearch, TokenSearch]) -> dict[st
         "name": obj.name,
         "priority": obj.priority,
         "source": obj.source,
+        "source_name": obj.source_name,
         "source_verbose": obj.source_verbose,
         "dpi": obj.dpi,
         "searchq": obj.searchq,

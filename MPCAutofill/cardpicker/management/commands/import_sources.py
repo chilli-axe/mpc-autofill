@@ -15,9 +15,12 @@ def read_sources_csv() -> list[Source]:
         # order the sources by row number in CSV
         i = 0
         for row in drivesreader:
+            name: str = row["name"].strip()
+            key = name.replace(" ", "_").translate(str.maketrans("", "", "!\"#$%&'()*+,./:;<=>?@[\]^`{|}~"))
             sources.append(
                 Source(
-                    key=row["key"],
+                    key=key,
+                    name=name,
                     drive_id=row["drive_id"],
                     drive_link="https://drive.google.com/open?id=" + row["drive_id"]
                     if str(row["drive_public"]).lower() != "false"

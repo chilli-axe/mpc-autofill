@@ -1,5 +1,6 @@
 {% extends 'cardpicker/base.html' %}
 {% load static %}
+{% load dict_get %}
 
 {% block title %} {{ SITE_NAME }} Recent Cards {% endblock %}
 
@@ -12,7 +13,7 @@
         let pages = {};
         document.getElementById("id_body").onload = function () {
             base_on_load(exception);
-            let context = {{ sources|safe }};
+            let context = {{ results|safe }};
             for (const [source, info] of Object.entries(context)) {
                 pages[source] = 0;
                 build_new_cards(source, info.hits, info.more);
@@ -23,8 +24,8 @@
     <h2>What's New?</h2>
     <p>Check out the new cards added to {{ SITE_NAME }} in the last two weeks.</p>
 
-    {% for source, info in sources.items %}
-        <h3 style="display: inline" class="orpheus"> <em>{{ source }}</em> </h3>
+    {% for source, info in results.items %}
+        <h3 style="display: inline" class="orpheus"> <em>{{ sources|dict_get:source|dict_get:"name" }}</em> </h3>
         {% if info.qty > 1%}
             <div style="display: inline" class="text-primary">{{ info.qty }} new cards</div>
         {% else %}

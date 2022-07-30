@@ -168,7 +168,7 @@
                         <thead>
                         <tr onclick="toggle_checkboxes()" style="cursor: pointer; user-select: none;">
                             <th scope="col" class="text-center">Enabled</th>
-                            <th scope="col">Content Creator</th>
+                            <th scope="col">Contributor Name</th>
                             <th scope="col" class="text-center">Drive Link</th>
                             <th></th>
                         </tr>
@@ -182,7 +182,7 @@
                                                 data-bs-toggle="toggle" id="{{ source.key }}" data-bs-size="sm">
                                     </div>
                                 </td>
-                                <td style="vertical-align: middle">{{ source.key }}</td>
+                                <td style="vertical-align: middle">{{ source.name }}</td>
                                 <td style="vertical-align: middle">
                                     <div class="active text-center">
                                     {% if source.drive_link %}

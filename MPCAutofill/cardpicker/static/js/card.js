@@ -100,7 +100,7 @@ class CardBase {
 
         view_name.innerText = curr_img.name;
         view_img.src = get_thumbnail_med(curr_img.drive_id);
-        view_source.innerText = curr_img.source;
+        view_source.innerText = curr_img.source_name;
         view_dpi.innerText = curr_img.dpi + " DPI";
         view_id.innerText = curr_img.drive_id;
         view_date.innerText = curr_img.date;

@@ -242,7 +242,7 @@ def add_card(
         return
 
     priority = 2
-    source_verbose = str(source.key)
+    source_verbose: str = source.name
 
     if ")" in cardname:
         priority = 1
@@ -317,7 +317,7 @@ class Command(BaseCommand):
                 folder = locate_drives(service, [source])[source.key]
                 print(f"Rebuilding database for specific drive: {source.key}.")
                 search_folder(service, source, folder)
-            except KeyError:
+            except Source.DoesNotExist:
                 print(f"Invalid drive specified: {drive}\nYou may specify one of the following drives:")
                 [print(x.key) for x in Source.objects.all()]
                 return

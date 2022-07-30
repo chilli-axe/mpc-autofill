@@ -16,10 +16,10 @@ Also, make sure your Google Drive API is enabled. Otherwise, all drive imports w
 
 You also need some Google Drives to be added to `MPCAutofill/drives.csv`. A template CSV with an example entry can be found in place. The Google Drive ID required in the CSV is the cryptic part of the Google Drive URL, usually at the end. Another example for the `drives.csv` could look like this:
 
-| key    | drive_id                            | drive_public | description                            |
-| ------ | ----------------------------------- | ------------ | -------------------------------------- |
-| MyName | 2WmU2qeUouXmPefxYxMDHZnlsIYPe3KlqFy |              | "My own upside-down japanese proxies"  |
-| Otto   | q6iJFoJseX-xnHKLiJlRDU2aeaM6Ditvq2X | FALSE        | "Otto's future-sight swamp collection" |
+| name    | drive_id                            | drive_public | description                            |
+|---------| ----------------------------------- | ------------ | -------------------------------------- |
+| My Name | 2WmU2qeUouXmPefxYxMDHZnlsIYPe3KlqFy |              | "My own upside-down japanese proxies"  |
+| Otto    | q6iJFoJseX-xnHKLiJlRDU2aeaM6Ditvq2X | FALSE        | "Otto's future-sight swamp collection" |
 
 The public field is _true_ by default and can be left empty. If a drive is marked non-public, its link won't be displayed on the contribution page or in the search settings popup.
 
@@ -115,7 +115,7 @@ If you aim to contribute to MPCAutofill or are familiar with running Django loca
    3. Rename the saved JSON file to `client_secrets.json` and move it to: `$working_directory/MPCAutofill`
 9. Update the `$working_directory/MPCAutofill/drives.csv` spreadsheet with links to public Google Drives with MPC ready images
    1. Do not edit the first row of the spreadsheet
-   2. Heading Reference (key = Name of Drive Owner, drive_id = 33 character Gdrive identifier, drive_public = TRUE, description = Description of what's in that drive)
+   2. Heading Reference (`name` = Name of Drive Owner, `drive_id` = 33 character Gdrive identifier, `drive_public` = TRUE, `description` = Description of what's in that drive)
    3. Drive ID is everything after `https://drive.google.com/drive/u/0/folders/` in the Gdrive link
 11. Install the main dependencies using a python virtual environment (this entire step is often automatically handled by your IDE)
     1. To initialize the environment, create the virtual environment library using `python3 -m venv $working_directory/venv`

@@ -451,7 +451,7 @@ function load_new_cards(source) {
         },
         success: function (data) {
             // use the search results to stick the new page into the dom
-            build_new_cards(source, data.sources[source].hits, data.sources[source].more);
+            build_new_cards(source, data.results[source].hits, data.results[source].more);
         },
         error: function () {
             // callback here in 5 seconds

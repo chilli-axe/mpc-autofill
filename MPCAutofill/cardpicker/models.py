@@ -7,7 +7,8 @@ from django.utils import dateformat
 
 # Create your models here.
 class Source(models.Model):
-    key = models.CharField(max_length=50, unique=True)  # must be a valid jquery identifier
+    key = models.CharField(max_length=50, unique=True)  # must be a valid HTML id
+    name = models.CharField(max_length=50, unique=True)  # human-readable name
     drive_id = models.CharField(max_length=100, unique=True)
     drive_link = models.CharField(max_length=200, blank=True, null=True)
     description = models.CharField(max_length=400)
@@ -16,7 +17,7 @@ class Source(models.Model):
     def __str__(self) -> str:
         (qty_total, qty_cards, qty_cardbacks, qty_tokens, _) = self.count()
         return (
-            f"[{self.ordinal}.] {self.key} "
+            f"[{self.ordinal}.] {self.name} "
             f"({qty_total} total: {qty_cards} cards, {qty_cardbacks} cardbacks, {qty_tokens} tokens)"
         )
 
@@ -59,6 +60,7 @@ class Source(models.Model):
     def to_dict(self, count: bool = False) -> dict[str, Any]:
         source_dict = {
             "key": self.key,
+            "name": self.name,
             "drive_id": self.drive_id,
             "drive_link": self.drive_link,
             "description": self.description,
@@ -106,7 +108,10 @@ class CardBase(models.Model):
             "size": self.size,
         }
 
-    def source_to_str(self) -> str:
+    def get_source_name(self) -> str:
+        return self.source.name
+
+    def get_source_key(self) -> str:
         return self.source.key
 
     class Meta:
