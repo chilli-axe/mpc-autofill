@@ -2,7 +2,7 @@ import datetime as dt
 import time
 from dataclasses import dataclass
 from math import floor
-from typing import Any
+from typing import Any, Optional
 
 import googleapiclient.errors
 from cardpicker.models import Card, Cardback, CardBase, Source, Token
@@ -38,7 +38,7 @@ class Folder:
 
 
 @dataclass
-class Image:  # TODO: update these Any types
+class Image:
     id: str
     name: str
     size: int
@@ -49,12 +49,11 @@ class Image:  # TODO: update these Any types
 
 
 def locate_drives(service: Resource, sources: list[Source]) -> dict[str, Folder]:
-    # TODO: add data classes for things retrieved by google drive api - better typing than dict[str, str]
-    def get_folder_from_id(drive_id: str) -> Folder:
+    def get_folder_from_id(drive_id: str) -> Optional[Folder]:
         try:
             folder = service.files().get(fileId=drive_id).execute()
         except googleapiclient.errors.HttpError:
-            folder = None
+            return None
 
         time.sleep(0.1)
         bar.update(1)
@@ -62,11 +61,13 @@ def locate_drives(service: Resource, sources: list[Source]) -> dict[str, Folder]
 
     print("Retrieving Google Drive folders...")
     bar = tqdm(total=len(sources))
-    folders = {x.key: get_folder_from_id(x.drive_id) for x in sources}
+    folders = {}
     for x in sources:
-        if not folders[x.key]:
+        folder = get_folder_from_id(x.drive_id)
+        if folder is not None:
+            folders[x.key] = folder
+        else:
             print(f"Failed on drive: {x.key}")
-            folders.pop(x.key)
     print("...and done!")
     return folders
 
