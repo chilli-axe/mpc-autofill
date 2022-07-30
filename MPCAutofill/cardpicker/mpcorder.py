@@ -135,8 +135,8 @@ class CardImageCollection(abc.MutableMapping[str, Any]):
     def items(self) -> ItemsView[str, CardImage]:
         return self.__dict__.items()
 
-    def __init__(self) -> None:
-        self.__dict__: dict[str, CardImage] = {}
+    def __init__(self, dict_: Optional[dict[str, CardImage]] = None) -> None:
+        self.__dict__: dict[str, CardImage] = dict_ or {}
 
     def insert_with_ids(self, query: str, slots: set[tuple[Any, str]], req_type: ReqTypes) -> None:
         # TODO: the naming of this method is confusing
@@ -177,14 +177,21 @@ class MPCOrder(abc.MutableMapping[str, Any]):
     def keys(self) -> KeysView[str]:
         return self.__dict__.keys()
 
-    def __init__(self) -> None:
+    def __init__(
+        self,
+        fronts: Optional[CardImageCollection] = None,
+        backs: Optional[CardImageCollection] = None,
+        cardstock: Cardstocks = Cardstocks.S30,
+        foil: bool = False,
+        cardback: Optional[CardbackImage] = None,
+    ) -> None:
         self.__dict__: dict[str, CardImageCollection] = {
-            Faces.FRONT.value: CardImageCollection(),
-            Faces.BACK.value: CardImageCollection(),
+            Faces.FRONT.value: fronts or CardImageCollection(),
+            Faces.BACK.value: backs or CardImageCollection(),
         }
-        self.cardstock: Cardstocks = Cardstocks.S30
-        self.foil = False
-        self.cardback = CardbackImage()
+        self.cardstock: Cardstocks = cardstock
+        self.foil = foil
+        self.cardback = cardback or CardbackImage()
 
     def insert(self, query: str, slots: set[Union[int, str]], face: str, req_type: ReqTypes, selected_img: str) -> None:
         # check that the given face is in the order's keys and raise an error if not
@@ -280,7 +287,7 @@ class MPCOrder(abc.MutableMapping[str, Any]):
                     query_faces[0] = to_searchable(query)
                     # gotta check if query is the front of a DFC here as well
                     if query_faces[0] in transforms.keys():
-                        query_faces = [query, transforms[query_faces[0]]]
+                        query_faces = [query_faces[0], transforms[query_faces[0]]]
 
                 # stick the front face into the dictionary
                 self.insert(query_faces[0], curr_slots, Faces.FRONT.value, req_type, "")
