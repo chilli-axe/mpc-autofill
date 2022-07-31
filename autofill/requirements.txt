@@ -1,5 +1,5 @@
 attrs
-click
+click==8.0.4
 colorama
 coverage
 defusedxml

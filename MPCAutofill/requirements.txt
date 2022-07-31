@@ -1,5 +1,6 @@
 attrs
 chardet
+click==8.0.4
 defusedxml
 Django~=4.0
 django-crispy-forms
@@ -18,4 +19,5 @@ oauth2client
 pre-commit
 psycopg2-binary
 pytest-django
+ratelimit
 tqdm

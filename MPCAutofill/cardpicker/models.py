@@ -2,10 +2,21 @@ from datetime import datetime
 from typing import Any
 
 from django.db import models
+from django.db.models import TextChoices
 from django.utils import dateformat
+from django.utils.translation import gettext_lazy
 
 
-# Create your models here.
+class SourceTypeChoices(TextChoices):
+    """
+    Unique identifier for a Source type.
+    """
+
+    GOOGLE_DRIVE = ("GOOGLE_DRIVE", gettext_lazy("Google Drive"))
+    LOCAL_FILE = ("LOCAL_FILE", gettext_lazy("Local File"))
+    AWS_S3 = ("AWS_S3", gettext_lazy("AWS S3"))
+
+
 class Source(models.Model):
     key = models.CharField(max_length=50, unique=True)  # must be a valid HTML id
     name = models.CharField(max_length=50, unique=True)  # human-readable name
@@ -13,6 +24,9 @@ class Source(models.Model):
     drive_link = models.CharField(max_length=200, blank=True, null=True)
     description = models.CharField(max_length=400)
     ordinal = models.IntegerField(default=0)
+    source_type = models.CharField(
+        max_length=20, choices=SourceTypeChoices.choices, default=SourceTypeChoices.GOOGLE_DRIVE
+    )
 
     def __str__(self) -> str:
         (qty_total, qty_cards, qty_cardbacks, qty_tokens, _) = self.count()
