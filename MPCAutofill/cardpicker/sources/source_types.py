@@ -23,11 +23,15 @@ class SourceType:
         raise NotImplementedError
 
     @staticmethod
-    def get_description() -> str:
+    def get_download_link(identifier: str) -> Optional[str]:
         raise NotImplementedError
 
     @staticmethod
-    def get_download_link(identifier: str) -> Optional[str]:
+    def get_small_thumbnail_url(identifier: str) -> Optional[str]:
+        raise NotImplementedError
+
+    @staticmethod
+    def get_medium_thumbnail_url(identifier: str) -> Optional[str]:
         raise NotImplementedError
 
     @staticmethod
@@ -49,12 +53,16 @@ class GoogleDrive(SourceType):
         return SourceTypeChoices.GOOGLE_DRIVE
 
     @staticmethod
-    def get_description() -> str:
-        return "whatever"  # TODO
-
-    @staticmethod
     def get_download_link(identifier: str) -> Optional[str]:
         return f"https://drive.google.com/uc?id={identifier}&export=download"
+
+    @staticmethod
+    def get_small_thumbnail_url(identifier: str) -> Optional[str]:
+        return f"https://drive.google.com/thumbnail?sz=w400-h400&id={identifier}"
+
+    @staticmethod
+    def get_medium_thumbnail_url(identifier: str) -> Optional[str]:
+        return f"https://drive.google.com/thumbnail?sz=w800-h800&id={identifier}"
 
     @staticmethod
     def get_all_folders(sources: list["Source"]) -> dict[str, Optional[Folder]]:

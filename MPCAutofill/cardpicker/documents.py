@@ -17,6 +17,8 @@ class CardSearch(Document):
     source_name = fields.TextField(attr="get_source_name")
     source_type = fields.TextField(attr="get_source_type")
     download_link = fields.TextField(attr="get_download_link")
+    small_thumbnail_url = fields.TextField(attr="get_small_thumbnail_url")
+    medium_thumbnail_url = fields.TextField(attr="get_medium_thumbnail_url")
     searchq_keyword = fields.TextField(analyzer="keyword")
 
     class Index:
@@ -39,6 +41,8 @@ class CardbackSearch(Document):
     source_name = fields.TextField(attr="get_source_name")
     source_type = fields.TextField(attr="get_source_type")
     download_link = fields.TextField(attr="get_download_link")
+    small_thumbnail_url = fields.TextField(attr="get_small_thumbnail_url")
+    medium_thumbnail_url = fields.TextField(attr="get_medium_thumbnail_url")
     searchq_keyword = fields.TextField(analyzer="keyword")
 
     class Index:
@@ -61,6 +65,8 @@ class TokenSearch(Document):
     source_name = fields.TextField(attr="get_source_name")
     source_type = fields.TextField(attr="get_source_type")
     download_link = fields.TextField(attr="get_download_link")
+    small_thumbnail_url = fields.TextField(attr="get_small_thumbnail_url")
+    medium_thumbnail_url = fields.TextField(attr="get_medium_thumbnail_url")
     searchq_keyword = fields.TextField(analyzer="keyword")
 
     class Index:
@@ -96,4 +102,6 @@ def card_to_dict(obj: Union[CardSearch, CardbackSearch, TokenSearch]) -> dict[st
         "date": dateformat.format(obj.date, "jS F, Y"),
         "size": obj.size,
         "download_link": obj.download_link,
+        "small_thumbnail_url": obj.small_thumbnail_url,
+        "medium_thumbnail_url": obj.medium_thumbnail_url,
     }

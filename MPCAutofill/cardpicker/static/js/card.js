@@ -9,16 +9,6 @@ function format_source(source, dpi) {
     return source + " [" + dpi.toString() + " DPI]";
 }
 
-function get_thumbnail(identifier) {
-    // small helper function to insert a drive ID into a thumbnail URL and return it
-    return "https://drive.google.com/thumbnail?sz=w400-h400&id=" + identifier
-}
-
-function get_thumbnail_med(identifier) {
-    // small helper function to insert a drive ID into a 300 dpi image URL and return it
-    return "https://drive.google.com/thumbnail?sz=w800-h800&id=" + identifier
-}
-
 function thumbnail_404(source) {
     source.src = "/static/cardpicker/error_404.png";
     return true;
@@ -98,7 +88,7 @@ class CardBase {
         let curr_img = this.get_curr_img();
 
         view_name.innerText = curr_img.name;
-        view_img.src = get_thumbnail_med(curr_img.identifier);
+        view_img.src = curr_img.medium_thumbnail_url;
         view_source.innerText = curr_img.source_name;
         view_source_type.innerText = curr_img.source_type;
         view_dpi.innerText = curr_img.dpi + " DPI";
@@ -132,7 +122,7 @@ class CardBase {
             $(view_spinner).animate({opacity: 0}, 250);
             $(view_img).animate({opacity: 1}, 250);
         }
-        img.src = get_thumbnail_med(curr_img.identifier);
+        img.src = curr_img.medium_thumbnail_url;
 
         // disable hovering on the parent element temporarily while we bring up the modal
         this.enable_modal("detailedViewModal");
@@ -534,17 +524,14 @@ class Card extends CardBase {
             // load the previous and next images for a smooth slideshow
             // keep them loaded by changing the src of visible img elements, but they sit behind the main
             // element due to z-index
-            let buffer_id = this.cards[wrap0(this.img_idx, this.img_count)].identifier;
-            this.elem_img.src = get_thumbnail(buffer_id);
+            this.elem_img.src = this.cards[wrap0(this.img_idx, this.img_count)].small_thumbnail_url;
 
             // respect the length of the returned results
             if (this.img_count > 1) {
-                buffer_id = this.cards[wrap0(this.img_idx - 1, this.img_count)].identifier;
-                this.elem_img_prev.src = get_thumbnail(buffer_id);
+                this.elem_img_prev.src = this.cards[wrap0(this.img_idx - 1, this.img_count)].small_thumbnail_url;
 
                 if (this.img_count > 2) {
-                    buffer_id = this.cards[wrap0(this.img_idx + 1, this.img_count)].identifier;
-                    this.elem_img_next.src = get_thumbnail(buffer_id);
+                    this.elem_img_next.src = this.cards[wrap0(this.img_idx + 1, this.img_count)].small_thumbnail_url;
                 }
             }
         } else {
@@ -645,7 +632,7 @@ class CardRecent extends CardBase {
     }
 
     load_thumbnails() {
-        this.elem_img.src = get_thumbnail(this.cards[0].identifier);
+        this.elem_img.src = this.cards[0].small_thumbnail_url;
 
         // add click event to thumbnail to reveal detailed info about card
         let elem_img = $(this.elem_img)

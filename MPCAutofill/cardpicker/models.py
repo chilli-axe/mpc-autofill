@@ -111,6 +111,8 @@ class CardBase(models.Model):
             "date": dateformat.format(self.date, "jS F, Y"),
             "size": self.size,
             "download_link": self.get_download_link(),
+            "small_thumbnail_url": self.get_small_thumbnail_url(),
+            "medium_thumbnail_url": self.get_medium_thumbnail_url(),
         }
 
     def get_source_key(self) -> str:
@@ -124,6 +126,16 @@ class CardBase(models.Model):
 
     def get_download_link(self) -> Optional[str]:
         return SourceTypeChoices.get_source_type(SourceTypeChoices[self.source.source_type]).get_download_link(
+            self.identifier
+        )
+
+    def get_small_thumbnail_url(self) -> Optional[str]:
+        return SourceTypeChoices.get_source_type(SourceTypeChoices[self.source.source_type]).get_small_thumbnail_url(
+            self.identifier
+        )
+
+    def get_medium_thumbnail_url(self) -> Optional[str]:
+        return SourceTypeChoices.get_source_type(SourceTypeChoices[self.source.source_type]).get_medium_thumbnail_url(
             self.identifier
         )
 
