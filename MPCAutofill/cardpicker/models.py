@@ -1,20 +1,9 @@
 from datetime import datetime
-from typing import Any
+from typing import Any, Optional
 
+from cardpicker.sources.source_types import SourceTypeChoices
 from django.db import models
-from django.db.models import TextChoices
 from django.utils import dateformat
-from django.utils.translation import gettext_lazy
-
-
-class SourceTypeChoices(TextChoices):
-    """
-    Unique identifier for a Source type.
-    """
-
-    GOOGLE_DRIVE = ("GOOGLE_DRIVE", gettext_lazy("Google Drive"))
-    LOCAL_FILE = ("LOCAL_FILE", gettext_lazy("Local File"))
-    AWS_S3 = ("AWS_S3", gettext_lazy("AWS S3"))
 
 
 class Source(models.Model):
@@ -115,18 +104,28 @@ class CardBase(models.Model):
             "priority": self.priority,
             "source": self.source.key,
             "source_verbose": self.source_verbose,
+            "source_type": self.get_source_type(),
             "dpi": self.dpi,
             "searchq": self.searchq,
             "extension": self.extension,
             "date": dateformat.format(self.date, "jS F, Y"),
             "size": self.size,
+            "download_link": self.get_download_link(),
         }
+
+    def get_source_key(self) -> str:
+        return self.source.key
 
     def get_source_name(self) -> str:
         return self.source.name
 
-    def get_source_key(self) -> str:
-        return self.source.key
+    def get_source_type(self) -> str:
+        return SourceTypeChoices[self.source.source_type].label
+
+    def get_download_link(self) -> Optional[str]:
+        return SourceTypeChoices.get_source_type(SourceTypeChoices[self.source.source_type]).get_download_link(
+            self.identifier
+        )
 
     class Meta:
         abstract = True

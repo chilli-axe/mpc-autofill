@@ -40,10 +40,8 @@ function selectElementContents(el) {
     sel.addRange(range);
 }
 
-function trigger_download(identifier, new_tab = true) {
-    // download an image with the given google drive ID
-    let img_url = "https://drive.google.com/uc?id=" + identifier + "&export=download";
-
+function trigger_download(img_url, new_tab = true) {
+    // download an image with the given download link
     let element = document.createElement('a');
     element.href = img_url;
     element.setAttribute('download', "deez.png");
@@ -88,6 +86,7 @@ class CardBase {
         let view_name = document.getElementById("detailedView-name");
         let view_img = document.getElementById("detailedView-img");
         let view_source = document.getElementById("detailedView-source");
+        let view_source_type = document.getElementById("detailedView-sourceType");
         let view_dpi = document.getElementById("detailedView-dpi");
         let view_date = document.getElementById("detailedView-date");
         let view_id = document.getElementById("detailedView-id");
@@ -101,6 +100,7 @@ class CardBase {
         view_name.innerText = curr_img.name;
         view_img.src = get_thumbnail_med(curr_img.identifier);
         view_source.innerText = curr_img.source_name;
+        view_source_type.innerText = curr_img.source_type;
         view_dpi.innerText = curr_img.dpi + " DPI";
         view_id.innerText = curr_img.identifier;
         view_date.innerText = curr_img.date;
@@ -114,10 +114,15 @@ class CardBase {
         view_class.innerText = img_class;
 
         // use jquery proxy to link the download button to this Card object's dl function
-        $(dl_button).off("click");
-        $(dl_button).on('click', $.proxy(function () {
-            trigger_download(curr_img.identifier, true);
-        }, this));
+        if (curr_img.download_link === undefined || curr_img.download_link === null) {
+            dl_button.style.display = "none";
+        } else {
+            dl_button.style.display = "";
+            $(dl_button).off("click");
+            $(dl_button).on('click', $.proxy(function () {
+                trigger_download(curr_img.download_link, true);
+            }, this));
+        }
 
         // hide the 300 dpi image until it loads in - show a loading spinner in its place until then
         view_img.style.opacity = 0;

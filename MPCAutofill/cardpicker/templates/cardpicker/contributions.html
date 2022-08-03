@@ -35,22 +35,19 @@
         <tr>
             <th scope="col">Name</th>
             <th scope="col">Type</th>
-            <th scope="col" style="text-align: center;">Link</th>
             <th scope="col">Contribution</th>
         </tr>
         </thead>
         <tbody>
         {% for source in sources %}
             <tr>
-                <td><p>{{ source.name }}</p></td>
+                <td>
+                {% if source.external_link %}
+                    <a target="_blank" href="{{ source.external_link }}">{{ source.name }}</a>
+                {% else %}
+                    <p>{{ source.name }}</p>
+                {% endif %}
                 <td><p>{{ source.source_type }}</p></td>
-                <td style="text-align: center; font-weight: bold;">
-                    {% if source.external_link %}
-                        <a target="_blank" href="{{ source.external_link }}">Link</a>
-                    {% else %}
-                        Private
-                    {% endif %}
-                </td>
                 <td>
                     <b>{{ source.qty_cards }}</b> card{% if source.qty_cards != '1' %}s{% endif %},
                     <b>{{ source.qty_cardbacks }}</b> cardback{% if source.qty_cardbacks != '1' %}s{% endif %},

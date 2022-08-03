@@ -15,6 +15,8 @@ common_settings = {"number_of_shards": 5, "number_of_replicas": 0}
 class CardSearch(Document):
     source = fields.TextField(attr="get_source_key")
     source_name = fields.TextField(attr="get_source_name")
+    source_type = fields.TextField(attr="get_source_type")
+    download_link = fields.TextField(attr="get_download_link")
     searchq_keyword = fields.TextField(analyzer="keyword")
 
     class Index:
@@ -35,6 +37,8 @@ class CardSearch(Document):
 class CardbackSearch(Document):
     source = fields.TextField(attr="get_source_key")
     source_name = fields.TextField(attr="get_source_name")
+    source_type = fields.TextField(attr="get_source_type")
+    download_link = fields.TextField(attr="get_download_link")
     searchq_keyword = fields.TextField(analyzer="keyword")
 
     class Index:
@@ -55,6 +59,8 @@ class CardbackSearch(Document):
 class TokenSearch(Document):
     source = fields.TextField(attr="get_source_key")
     source_name = fields.TextField(attr="get_source_name")
+    source_type = fields.TextField(attr="get_source_type")
+    download_link = fields.TextField(attr="get_download_link")
     searchq_keyword = fields.TextField(analyzer="keyword")
 
     class Index:
@@ -83,9 +89,11 @@ def card_to_dict(obj: Union[CardSearch, CardbackSearch, TokenSearch]) -> dict[st
         "source": obj.source,
         "source_name": obj.source_name,
         "source_verbose": obj.source_verbose,
+        "source_type": obj.source_type,
         "dpi": obj.dpi,
         "searchq": obj.searchq,
         "extension": obj.extension,
         "date": dateformat.format(obj.date, "jS F, Y"),
         "size": obj.size,
+        "download_link": obj.download_link,
     }

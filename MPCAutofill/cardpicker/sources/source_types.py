@@ -1,26 +1,25 @@
-import time
-from typing import Optional
+from typing import TYPE_CHECKING, Optional, Type
 
 import googleapiclient.errors
 from attr import define
-from cardpicker.models import Source, SourceTypeChoices
 from cardpicker.sources.api import (
     Folder,
     Image,
     execute_google_drive_api_call,
     find_or_create_google_drive_service,
 )
+from django.db.models import TextChoices
+from django.utils.translation import gettext_lazy
 from tqdm import tqdm
+
+if TYPE_CHECKING:
+    from cardpicker.models import Source
 
 
 @define
 class SourceType:
     @staticmethod
-    def get_identifier() -> SourceTypeChoices:
-        raise NotImplementedError
-
-    @staticmethod
-    def get_name() -> str:
+    def get_identifier() -> "SourceTypeChoices":
         raise NotImplementedError
 
     @staticmethod
@@ -28,11 +27,11 @@ class SourceType:
         raise NotImplementedError
 
     @staticmethod
-    def get_download_link(card_id: str) -> Optional[str]:
+    def get_download_link(identifier: str) -> Optional[str]:
         raise NotImplementedError
 
     @staticmethod
-    def get_all_folders(sources: list[Source]) -> dict[str, Optional[Folder]]:
+    def get_all_folders(sources: list["Source"]) -> dict[str, Optional[Folder]]:
         raise NotImplementedError
 
     @staticmethod
@@ -46,23 +45,19 @@ class SourceType:
 
 class GoogleDrive(SourceType):
     @staticmethod
-    def get_identifier() -> SourceTypeChoices:
+    def get_identifier() -> "SourceTypeChoices":
         return SourceTypeChoices.GOOGLE_DRIVE
-
-    @staticmethod
-    def get_name() -> str:
-        return SourceTypeChoices.GOOGLE_DRIVE.label
 
     @staticmethod
     def get_description() -> str:
         return "whatever"  # TODO
 
     @staticmethod
-    def get_download_link(card_id: str) -> Optional[str]:
-        return f"https://drive.google.com/uc?id={card_id}&export=download"
+    def get_download_link(identifier: str) -> Optional[str]:
+        return f"https://drive.google.com/uc?id={identifier}&export=download"
 
     @staticmethod
-    def get_all_folders(sources: list[Source]) -> dict[str, Optional[Folder]]:
+    def get_all_folders(sources: list["Source"]) -> dict[str, Optional[Folder]]:
         service = find_or_create_google_drive_service()
         print("Retrieving Google Drive folders...")
         bar = tqdm(total=len(sources))
@@ -138,11 +133,31 @@ class GoogleDrive(SourceType):
 
 
 class LocalFile(SourceType):
-    ...
+    @staticmethod
+    def get_identifier() -> "SourceTypeChoices":
+        return SourceTypeChoices.LOCAL_FILE
 
 
 class AWSS3(SourceType):
-    ...
+    @staticmethod
+    def get_identifier() -> "SourceTypeChoices":
+        return SourceTypeChoices.AWS_S3
+
+
+class SourceTypeChoices(TextChoices):
+    """
+    Unique identifier for a Source type.
+    """
+
+    GOOGLE_DRIVE = ("GOOGLE_DRIVE", gettext_lazy("Google Drive"))
+    LOCAL_FILE = ("LOCAL_FILE", gettext_lazy("Local File"))
+    AWS_S3 = ("AWS_S3", gettext_lazy("AWS S3"))
+
+    def get_source_type(self) -> Type[SourceType]:
+        source_type_or_none = {x.get_identifier(): x for x in [GoogleDrive, LocalFile, AWSS3]}.get(self)
+        if source_type_or_none is None:
+            raise Exception(f"Incorrect configuration of source types means {self} isn't mapped")
+        return source_type_or_none
 
 
 __all__ = ["Folder", "Image", "SourceType", "SourceTypeChoices", "GoogleDrive", "LocalFile", "AWSS3"]

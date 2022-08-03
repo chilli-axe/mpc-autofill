@@ -3,15 +3,8 @@ from concurrent.futures import ThreadPoolExecutor
 from itertools import groupby
 from typing import Optional, Type
 
-from cardpicker.models import Card, Cardback, Source, SourceTypeChoices, Token
-from cardpicker.sources.source_types import (
-    AWSS3,
-    Folder,
-    GoogleDrive,
-    Image,
-    LocalFile,
-    SourceType,
-)
+from cardpicker.models import Card, Cardback, Source, Token
+from cardpicker.sources.source_types import Folder, Image, SourceType, SourceTypeChoices
 from cardpicker.utils import TEXT_BOLD, TEXT_END
 from cardpicker.utils.to_searchable import to_searchable
 from django.db import transaction
@@ -162,16 +155,10 @@ def update_database(source_key: Optional[str] = None) -> None:
     If `source_key` is specified, only update that source; otherwise, update all sources.
     """
 
-    source_types: dict[SourceTypeChoices, Type[SourceType]] = {
-        SourceTypeChoices.GOOGLE_DRIVE: GoogleDrive,
-        SourceTypeChoices.LOCAL_FILE: LocalFile,
-        SourceTypeChoices.AWS_S3: AWSS3,
-    }
-
     if source_key:
         try:
             source = Source.objects.get(key=source_key)
-            source_type = source_types[SourceTypeChoices[source.source_type]]
+            source_type = SourceTypeChoices.get_source_type(SourceTypeChoices[source.source_type])
             if (root_folder := source_type.get_all_folders([source])[source.key]) is not None:
                 update_database_for_source(source=source, source_type=source_type, root_folder=root_folder)
         except Source.DoesNotExist:
@@ -186,7 +173,7 @@ def update_database(source_key: Optional[str] = None) -> None:
         sources = sorted(Source.objects.all(), key=lambda x: x.source_type)
         for source_type_name, grouped_sources_iterable in groupby(sources, lambda x: x.source_type):
             grouped_sources = list(grouped_sources_iterable)
-            source_type = source_types[SourceTypeChoices[source_type_name]]
+            source_type = SourceTypeChoices.get_source_type(SourceTypeChoices[source_type_name])
             folders = source_type.get_all_folders(grouped_sources)
             print(
                 f"Identified the following sources of type "

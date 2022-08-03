@@ -170,7 +170,6 @@
                             <th scope="col" class="text-center">Enabled</th>
                             <th scope="col">Name</th>
                             <th scope="col">Type</th>
-                            <th scope="col" class="text-center">Link</th>
                             <th></th>
                         </tr>
                         </thead>
@@ -183,17 +182,14 @@
                                                 data-bs-toggle="toggle" id="{{ source.key }}" data-bs-size="sm">
                                     </div>
                                 </td>
-                                <td style="vertical-align: middle">{{ source.name }}</td>
-                                <td style="vertical-align: middle">{{ source.source_type }}</td>
                                 <td style="vertical-align: middle">
-                                    <div class="active text-center">
                                     {% if source.external_link %}
-                                    <a target="_blank" href="{{ source.external_link }}">Link</a>
+                                        <a target="_blank" href="{{ source.external_link }}">{{ source.name }}</a>
                                     {% else %}
-                                    Private
+                                        {{ source.name }}
                                     {% endif %}
-                                    </div>
                                 </td>
+                                <td style="vertical-align: middle">{{ source.source_type }}</td>
                                 <td style="vertical-align: middle"><i class="bi bi-grip-horizontal" style="font-size: 2em"></i></td>
                             </tr>
                         {% endfor %}
