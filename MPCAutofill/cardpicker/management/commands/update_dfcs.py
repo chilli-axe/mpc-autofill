@@ -2,36 +2,42 @@ import json
 import time
 from typing import Any
 
+import ratelimit
 import requests
 from bulk_sync import bulk_sync
+from cardpicker.constants import DFC_URL, MELD_URL
 from cardpicker.models import DFCPair
 from cardpicker.utils.to_searchable import to_searchable
 from django.core.management.base import BaseCommand
 
 
+@ratelimit.sleep_and_retry  # type: ignore  # `ratelimit` does not implement decorator typing correctly
+@ratelimit.limits(calls=1, period=0.1)  # type: ignore  # `ratelimit` does not implement decorator typing correctly
+def query_scryfall(url: str) -> dict[str, Any]:
+    return json.loads(requests.get(url).content)
+
+
+def query_scryfall_paginated(url: str) -> list[dict[str, Any]]:
+    response = query_scryfall(url)
+    data = response["data"]
+    while response["has_more"]:
+        response = query_scryfall(response["next_page"])
+        data += response["data"]
+    return data
+
+
 def sync_dfcs() -> None:
     t0 = time.time()
     print("Querying Scryfall for DFC pairs...")
-    scryfall_query_dfc = (
-        "https://api.scryfall.com/cards/search?q=is:dfc -layout:art_series -layout:double_faced_token -is:reversible"
-    )
-    response_dfc = json.loads(requests.get(scryfall_query_dfc).content)
+    dfc_pairs: list[DFCPair] = []
 
-    data = response_dfc["data"]
-    while response_dfc["has_more"]:
-        response_dfc = json.loads(requests.get(response_dfc["next_page"]).content)
-        data += response_dfc["data"]
-
-    print(f"Identified {len(data)} double-faced cards")
-
-    # maintain list of all dfcs found so far
-    q_dfcpairs = []
-
-    for x in data:
-        # retrieve front and back names for this card, then create a DFCPair for it and append to list
-        front_name = x["card_faces"][0]["name"]
-        back_name = x["card_faces"][1]["name"]
-        q_dfcpairs.append(
+    # query data and construct objects for regular double-faced cards
+    dfc_data = query_scryfall_paginated(DFC_URL)
+    print(f"Identified {len(dfc_data)} double-faced cards")
+    for item in dfc_data:
+        front_name = item["card_faces"][0]["name"]
+        back_name = item["card_faces"][1]["name"]
+        dfc_pairs.append(
             DFCPair(
                 front=front_name,
                 front_searchable=to_searchable(front_name),
@@ -40,33 +46,28 @@ def sync_dfcs() -> None:
             )
         )
 
-    # also retrieve meld pairs and save them as DFCPairs
-    time.sleep(0.1)
-    scryfall_query_meld = "https://api.scryfall.com/cards/search?q=is:meld"
-    response_meld = json.loads(requests.get(scryfall_query_meld).content)
-
-    print(f"Identified {len(response_meld['data'])} meld pieces")
-
-    for x in response_meld["data"]:
-        card_part = [y for y in x["all_parts"] if y["name"] == x["name"]][0]
-        meld_result = [y for y in x["all_parts"] if y["component"] == "meld_result"][0]["name"]
+    # query data and construct objects for meld pairs
+    meld_data = query_scryfall_paginated(MELD_URL)
+    print(f"Identified {len(meld_data)} meld pieces")
+    for item in meld_data:
+        card_part = next(filter(lambda part: part["name"] == item["name"], item["all_parts"]))
+        meld_result = next(filter(lambda part: part["component"] == "meld_result", item["all_parts"]))["name"]
         if card_part["component"] == "meld_part":
-            is_top = "\n(Melds with " not in x["oracle_text"]
+            is_top = "\n(Melds with " not in item["oracle_text"]
             card_bit = "Top" if is_top else "Bottom"
-            q_dfcpairs.append(
+            dfc_pairs.append(
                 DFCPair(
-                    front=x["name"],
-                    front_searchable=to_searchable(x["name"]),
+                    front=item["name"],
+                    front_searchable=to_searchable(item["name"]),
                     back=f"{meld_result} ({card_bit})",
                     back_searchable=to_searchable(f"{meld_result} {card_bit}"),
                 )
             )
 
-    # synchronise the located DFCPairs to database
+    # synchronise DFCPair objects to database
     key_fields = ("front",)
-    ret = bulk_sync(new_models=q_dfcpairs, key_fields=key_fields, filters=None, db_class=DFCPair)
-
-    print("Finished synchronising database with Scryfall DFCs, which took {} seconds.".format(time.time() - t0))
+    bulk_sync(new_models=dfc_pairs, key_fields=key_fields, filters=None, db_class=DFCPair)
+    print(f"Finished synchronising database with Scryfall DFCs, which took {(time.time() - t0):.2f} seconds.")
 
 
 class Command(BaseCommand):
