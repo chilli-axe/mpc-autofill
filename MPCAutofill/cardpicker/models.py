@@ -76,14 +76,14 @@ class Source(models.Model):
             "key": self.key,
             "name": self.name,
             "identifier": self.identifier,
+            "source_type": SourceTypeChoices[self.source_type].label,
             "external_link": self.external_link,
             "description": self.description,
         }
         if not count:
             return source_dict
         qty_all, qty_cards, qty_cardbacks, qty_tokens, avgdpi = self.count()
-        return {
-            **source_dict,
+        return source_dict | {
             "qty_all": qty_all,
             "qty_cards": qty_cards,
             "qty_cardbacks": qty_cardbacks,
