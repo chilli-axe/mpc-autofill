@@ -13,7 +13,7 @@ def sync_dfcs() -> None:
     t0 = time.time()
     print("Querying Scryfall for DFC pairs...")
     scryfall_query_dfc = (
-        "https://api.scryfall.com/cards/search?q=is:dfc%20-layout:art_series%20-layout:double_faced_token"
+        "https://api.scryfall.com/cards/search?q=is:dfc -layout:art_series -layout:double_faced_token -is:reversible"
     )
     response_dfc = json.loads(requests.get(scryfall_query_dfc).content)
 
@@ -21,6 +21,8 @@ def sync_dfcs() -> None:
     while response_dfc["has_more"]:
         response_dfc = json.loads(requests.get(response_dfc["next_page"]).content)
         data += response_dfc["data"]
+
+    print(f"Identified {len(data)} double-faced cards")
 
     # maintain list of all dfcs found so far
     q_dfcpairs = []
@@ -40,8 +42,10 @@ def sync_dfcs() -> None:
 
     # also retrieve meld pairs and save them as DFCPairs
     time.sleep(0.1)
-    scryfall_query_meld = "https://api.scryfall.com/cards/search?q=is:meld%"
+    scryfall_query_meld = "https://api.scryfall.com/cards/search?q=is:meld"
     response_meld = json.loads(requests.get(scryfall_query_meld).content)
+
+    print(f"Identified {len(response_meld['data'])} meld pieces")
 
     for x in response_meld["data"]:
         card_part = [y for y in x["all_parts"] if y["name"] == x["name"]][0]
