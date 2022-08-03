@@ -6,7 +6,7 @@ from django_elasticsearch_dsl.registries import registry
 
 from .models import Card, Cardback, Token
 
-common_fields = ["drive_id", "name", "priority", "source_verbose", "dpi", "extension", "searchq", "date", "size"]
+common_fields = ["identifier", "name", "priority", "source_verbose", "dpi", "extension", "searchq", "date", "size"]
 
 common_settings = {"number_of_shards": 5, "number_of_replicas": 0}
 
@@ -77,7 +77,7 @@ def card_to_dict(obj: Union[CardSearch, CardbackSearch, TokenSearch]) -> dict[st
     """
 
     return {
-        "drive_id": obj.drive_id,
+        "identifier": obj.identifier,
         "name": obj.name,
         "priority": obj.priority,
         "source": obj.source,

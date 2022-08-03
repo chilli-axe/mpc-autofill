@@ -21,8 +21,8 @@ def read_sources_csv() -> list[Source]:
                 Source(
                     key=key,
                     name=name,
-                    drive_id=row["drive_id"],
-                    drive_link="https://drive.google.com/open?id=" + row["drive_id"]
+                    identifier=row["drive_id"],
+                    external_link="https://drive.google.com/open?id=" + row["drive_id"]
                     if str(row["drive_public"]).lower() != "false"
                     else None,
                     description=row["description"],

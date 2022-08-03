@@ -86,7 +86,7 @@ def transform_images_into_objects(
         if "token" in image.folder.name.lower():
             tokens.append(
                 Token(
-                    drive_id=image.id,
+                    identifier=image.id,
                     name=name,
                     priority=priority,
                     source=source,
@@ -102,7 +102,7 @@ def transform_images_into_objects(
         elif "cardbacks" in image.folder.name.lower() or "card backs" in image.folder.name.lower():
             cardbacks.append(
                 Cardback(
-                    drive_id=image.id,
+                    identifier=image.id,
                     name=name,
                     priority=priority,
                     source=source,
@@ -118,7 +118,7 @@ def transform_images_into_objects(
         else:
             cards.append(
                 Card(
-                    drive_id=image.id,
+                    identifier=image.id,
                     name=name,
                     priority=priority,
                     source=source,

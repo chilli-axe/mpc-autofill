@@ -127,8 +127,8 @@ def contributions(request: HttpRequest) -> HttpResponse:
             """
             SELECT
                 cardpicker_source.name,
-                cardpicker_source.drive_id,
-                cardpicker_source.drive_link,
+                cardpicker_source.identifier,
+                cardpicker_source.external_link,
                 cardpicker_source.description,
                 cardpicker_source.ordinal,
                 COALESCE(COUNT(cardpicker_card.dpi), 0),
@@ -166,7 +166,7 @@ def contributions(request: HttpRequest) -> HttpResponse:
         rows_token = cursor.fetchall()
     sources = []
     for (
-        (name, drive_id, drive_link, description, _, card_count, card_total_dpi),
+        (name, identifier, external_link, description, _, card_count, card_total_dpi),
         (cardback_count, cardback_total_dpi),
         (token_count, token_total_dpi),
     ) in zip(rows_card, rows_cardback, rows_token):
@@ -174,8 +174,8 @@ def contributions(request: HttpRequest) -> HttpResponse:
         sources.append(
             {
                 "name": name,
-                "drive_id": drive_id,
-                "drive_link": drive_link,
+                "identifier": identifier,
+                "external_link": external_link,
                 "description": description,
                 "qty_cards": f"{card_count :,d}",
                 "qty_cardbacks": f"{cardback_count :,d}",

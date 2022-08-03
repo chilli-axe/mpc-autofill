@@ -20,13 +20,13 @@ class SourceTypeChoices(TextChoices):
 class Source(models.Model):
     key = models.CharField(max_length=50, unique=True)  # must be a valid HTML id
     name = models.CharField(max_length=50, unique=True)  # human-readable name
-    drive_id = models.CharField(max_length=100, unique=True)
-    drive_link = models.CharField(max_length=200, blank=True, null=True)
-    description = models.CharField(max_length=400)
-    ordinal = models.IntegerField(default=0)
+    identifier = models.CharField(max_length=200, unique=True)  # e.g. drive ID, root directory path
     source_type = models.CharField(
         max_length=20, choices=SourceTypeChoices.choices, default=SourceTypeChoices.GOOGLE_DRIVE
     )
+    external_link = models.CharField(max_length=200, blank=True, null=True)
+    description = models.CharField(max_length=400)
+    ordinal = models.IntegerField(default=0)
 
     def __str__(self) -> str:
         (qty_total, qty_cards, qty_cardbacks, qty_tokens, _) = self.count()
@@ -75,8 +75,8 @@ class Source(models.Model):
         source_dict = {
             "key": self.key,
             "name": self.name,
-            "drive_id": self.drive_id,
-            "drive_link": self.drive_link,
+            "identifier": self.identifier,
+            "external_link": self.external_link,
             "description": self.description,
         }
         if not count:
@@ -93,7 +93,7 @@ class Source(models.Model):
 
 
 class CardBase(models.Model):
-    drive_id = models.CharField(max_length=50, unique=True)
+    identifier = models.CharField(max_length=200, unique=True)
     name = models.CharField(max_length=200)
     priority = models.IntegerField(default=0)
     source = models.ForeignKey(Source, on_delete=models.CASCADE)
@@ -106,11 +106,11 @@ class CardBase(models.Model):
     size = models.IntegerField()
 
     def __str__(self) -> str:
-        return "[{}] {}: {}, uploaded: {}".format(self.source, self.name, self.drive_id, self.date)
+        return "[{}] {}: {}, uploaded: {}".format(self.source, self.name, self.identifier, self.date)
 
     def to_dict(self) -> dict[str, Any]:
         return {
-            "drive_id": self.drive_id,
+            "identifier": self.identifier,
             "name": self.name,
             "priority": self.priority,
             "source": self.source.key,

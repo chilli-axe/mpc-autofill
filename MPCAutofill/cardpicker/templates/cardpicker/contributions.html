@@ -43,8 +43,8 @@
             <tr>
                 <td><p>{{ source.name }}</p></td>
                 <td style="text-align: center; font-weight: bold;">
-                    {% if source.drive_link %}
-                        <a target="_blank" href="{{ source.drive_link }}">Link</a>
+                    {% if source.external_link %}
+                        <a target="_blank" href="{{ source.external_link }}">Link</a>
                     {% else %}
                         Private
                     {% endif %}

@@ -69,7 +69,7 @@ class GoogleDrive(SourceType):
         folders: dict[str, Optional[Folder]] = {}
         for x in sources:
             try:
-                if (folder := execute_google_drive_api_call(service.files().get(fileId=x.drive_id))) is not None:
+                if (folder := execute_google_drive_api_call(service.files().get(fileId=x.identifier))) is not None:
                     folders[x.key] = Folder(id=folder["id"], name=folder["name"], parents=[])
                 else:
                     raise googleapiclient.errors.HttpError
