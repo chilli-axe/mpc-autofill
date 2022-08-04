@@ -1,11 +1,12 @@
-from dataclasses import dataclass
 import datetime as dt
-import ratelimit
-from typing import Any, Optional
 import threading
-from oauth2client.service_account import ServiceAccountCredentials
+from dataclasses import dataclass
+from typing import Any, Optional
+
+import ratelimit
 from googleapiclient.discovery import Resource, build
 from googleapiclient.errors import HttpError
+from oauth2client.service_account import ServiceAccountCredentials
 
 thread_local = threading.local()  # Should only be called once per thread
 
