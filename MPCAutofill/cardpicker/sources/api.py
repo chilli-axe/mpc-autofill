@@ -22,6 +22,11 @@ class Folder:
             return self.name
         return f"{self.parent.get_full_path()} / {self.name}"
 
+    def get_top_level_folder(self) -> "Folder":
+        if self.parent is None:
+            return self
+        return self.parent.get_top_level_folder()
+
 
 @dataclass
 class Image:

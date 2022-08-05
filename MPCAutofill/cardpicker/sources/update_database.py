@@ -7,6 +7,7 @@ from cardpicker.models import Card, Cardback, Source, Token
 from cardpicker.sources.source_types import Folder, Image, SourceType, SourceTypeChoices
 from cardpicker.utils import TEXT_BOLD, TEXT_END
 from cardpicker.utils.to_searchable import to_searchable
+from django.conf import settings
 from django.db import transaction
 
 MAX_WORKERS = 5
@@ -41,6 +42,11 @@ def explore_folder(source: Source, source_type: Type[SourceType], root_folder: F
 def transform_images_into_objects(
     source: Source, images: list[Image]
 ) -> tuple[list[Card], list[Cardback], list[Token]]:
+    """
+    Transform `images`, which are all associated with `source`, into a set of Django ORM objects ready to be
+    synchronised to the database.
+    """
+
     print(f"Generating objects for source {TEXT_BOLD}{source.name}{TEXT_END}...", end="")
     t0 = time.time()
 
@@ -58,24 +64,22 @@ def transform_images_into_objects(
             if not name or not extension:
                 continue
         except ValueError:
-            print(f"Issue with parsing image: {image.name}")
+            print(f"Issue with parsing image name: {image.name}")
             continue
 
         dpi = 10 * round(int(image.height) * DPI_HEIGHT_RATIO / 10)
         source_verbose = source.name
-        priority = 1 if ")" in name else 2
-        # if source_name == "Chilli_Axe's MPC Proxies":
-        #     if image.folder.name == "12. Cardbacks":
-        #         if "Black Lotus" in image.name:
-        #             priority += 10
-        #         card_type = Cardback
-        #         priority += 5
-        # elif folder.name == "nofacej MPC Card Backs":
-        #     img_type = "cardback"
+        priority = 1 if "(" in name and ")" in name else 2
 
+        folder_location = image.folder.get_full_path()
+        if folder_location == settings.DEFAULT_CARDBACK_FOLDER_PATH:
+            if name == settings.DFEAULT_CARDBACK_IMAGE_NAME:
+                priority += 10
+            priority += 5
         if "basic" in image.folder.name.lower():
             priority += 5
             source_verbose += " Basics"
+
         if "token" in image.folder.name.lower():
             tokens.append(
                 Token(
@@ -84,7 +88,7 @@ def transform_images_into_objects(
                     priority=priority,
                     source=source,
                     source_verbose=f"{source_verbose} Tokens",
-                    folder_location=image.folder.get_full_path(),
+                    folder_location=folder_location,
                     dpi=dpi,
                     searchq=to_searchable(name),  # search-friendly card name
                     searchq_keyword=to_searchable(name),  # for keyword search
@@ -101,7 +105,7 @@ def transform_images_into_objects(
                     priority=priority,
                     source=source,
                     source_verbose=f"{source_verbose} Cardbacks",
-                    folder_location=image.folder.get_full_path(),
+                    folder_location=folder_location,
                     dpi=dpi,
                     searchq=to_searchable(name),  # search-friendly card name
                     searchq_keyword=to_searchable(name),  # for keyword search
@@ -118,7 +122,7 @@ def transform_images_into_objects(
                     priority=priority,
                     source=source,
                     source_verbose=source_verbose,
-                    folder_location=image.folder.get_full_path(),
+                    folder_location=folder_location,
                     dpi=dpi,
                     searchq=to_searchable(name),  # search-friendly card name
                     searchq_keyword=to_searchable(name),  # for keyword search
