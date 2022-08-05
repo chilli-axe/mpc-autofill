@@ -1,15 +1,20 @@
+import threading
 from datetime import timedelta
 from typing import Any, Callable, Optional, Type, TypeVar, cast
 
 from cardpicker.documents import CardbackSearch, CardSearch, TokenSearch
 from cardpicker.utils.to_searchable import to_searchable
+from django.conf import settings
 from django.http import HttpRequest
 from django.utils import timezone
+from elasticsearch import Elasticsearch
 from elasticsearch.exceptions import ConnectionError as ElasticConnectionError
 from elasticsearch_dsl.document import Document, Search
 from elasticsearch_dsl.index import Index
 from elasticsearch_dsl.query import Match
 from Levenshtein import distance
+
+thread_local = threading.local()  # Should only be called once per thread
 
 # https://mypy.readthedocs.io/en/stable/generics.html#declaring-decorators
 F = TypeVar("F", bound=Callable[..., Any])
@@ -28,6 +33,16 @@ class SearchExceptions:
         def __init__(self) -> None:
             self.message = "Unable to connect to the search engine (timed out)."
             super().__init__(self.message)
+
+
+def get_elasticsearch_connection() -> Elasticsearch:
+    if (es := getattr(thread_local, "elasticsearch", None)) is None:
+        es = Elasticsearch([settings.ELASTICSEARCH_HOST], port=9200)
+    return es
+
+
+def ping_elasticsearch() -> bool:
+    return get_elasticsearch_connection().ping()
 
 
 def elastic_connection(func: F) -> F:

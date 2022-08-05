@@ -163,8 +163,9 @@ STATICFILES_DIRS = [
 STATIC_ROOT = os.path.join(os.path.dirname(BASE_DIR), env("STATIC", default="static"))
 
 # elasticsearch DSL settings
+ELASTICSEARCH_HOST = env("ELASTICSEARCH_HOST", default="localhost")
 ELASTICSEARCH_DSL = {
-    "default": {"hosts": "{}:9200".format(env("ELASTICSEARCH_HOST", default="localhost"))},
+    "default": {"hosts": f"{ELASTICSEARCH_HOST}:9200"},
 }
 
 ELASTICSEARCH_DSL_AUTOSYNC = False

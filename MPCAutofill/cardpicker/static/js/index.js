@@ -49,6 +49,17 @@ function index_on_load() {
             }
         ]
     });
+
+    // alert the user if the search engine is offline
+    $.ajax({
+        type: 'POST',
+        url: '/ajax/status/',
+        success: function (data) {
+            if (data["online"] === "false") {
+                handle_error("The search engine is offline.")
+            }
+        }
+    })
 }
 
 function save_search_settings() {

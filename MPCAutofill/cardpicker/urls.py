@@ -18,4 +18,5 @@ urlpatterns = [
     path("input_xml", views.input_xml, name="input_xml"),
     path("input_csv", views.input_csv, name="input_csv"),
     path("input_link", views.input_link, name="input_link"),
+    path("ajax/status/", views.elasticsearch_status, name="status"),
 ]

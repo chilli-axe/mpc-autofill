@@ -10,6 +10,7 @@ from cardpicker.utils.mpcorder import Faces, MPCOrder, ReqTypes
 from cardpicker.utils.search_functions import (
     SearchExceptions,
     build_context,
+    ping_elasticsearch,
     query_es_card,
     query_es_cardback,
     query_es_token,
@@ -66,6 +67,10 @@ def index(request: HttpRequest, exception: Optional[str] = None) -> HttpResponse
             "exception": exception or "",
         },
     )
+
+
+def elasticsearch_status(request: HttpRequest) -> HttpResponse:
+    return JsonResponse({"online": "true" if ping_elasticsearch() else "false"})
 
 
 def new_cards(request: HttpRequest) -> HttpResponse:
