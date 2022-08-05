@@ -84,6 +84,7 @@ def transform_images_into_objects(
                     priority=priority,
                     source=source,
                     source_verbose=f"{source_verbose} Tokens",
+                    folder_location=image.folder.get_full_path(),
                     dpi=dpi,
                     searchq=to_searchable(name),  # search-friendly card name
                     searchq_keyword=to_searchable(name),  # for keyword search
@@ -100,6 +101,7 @@ def transform_images_into_objects(
                     priority=priority,
                     source=source,
                     source_verbose=f"{source_verbose} Cardbacks",
+                    folder_location=image.folder.get_full_path(),
                     dpi=dpi,
                     searchq=to_searchable(name),  # search-friendly card name
                     searchq_keyword=to_searchable(name),  # for keyword search
@@ -116,6 +118,7 @@ def transform_images_into_objects(
                     priority=priority,
                     source=source,
                     source_verbose=source_verbose,
+                    folder_location=image.folder.get_full_path(),
                     dpi=dpi,
                     searchq=to_searchable(name),  # search-friendly card name
                     searchq_keyword=to_searchable(name),  # for keyword search

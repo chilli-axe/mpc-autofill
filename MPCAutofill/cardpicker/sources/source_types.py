@@ -73,7 +73,7 @@ class GoogleDrive(SourceType):
         for x in sources:
             try:
                 if (folder := execute_google_drive_api_call(service.files().get(fileId=x.identifier))) is not None:
-                    folders[x.key] = Folder(id=folder["id"], name=folder["name"], parents=[])
+                    folders[x.key] = Folder(id=folder["id"], name=folder["name"], parent=None)
                 else:
                     raise googleapiclient.errors.HttpError
             except googleapiclient.errors.HttpError:
@@ -95,7 +95,7 @@ class GoogleDrive(SourceType):
                 pageSize=500,
             )
         )
-        folders = [Folder(id=x["id"], name=x["name"], parents=x["parents"]) for x in results.get("files", [])]
+        folders = [Folder(id=x["id"], name=x["name"], parent=folder) for x in results.get("files", [])]
         return folders
 
     @staticmethod

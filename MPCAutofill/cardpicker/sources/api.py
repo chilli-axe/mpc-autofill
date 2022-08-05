@@ -15,7 +15,12 @@ thread_local = threading.local()  # Should only be called once per thread
 class Folder:
     id: str
     name: str
-    parents: list[str]
+    parent: Optional["Folder"]
+
+    def get_full_path(self) -> str:
+        if self.parent is None:
+            return self.name
+        return f"{self.parent.get_full_path()} / {self.name}"
 
 
 @dataclass
@@ -23,7 +28,6 @@ class Image:
     id: str
     name: str
     size: int
-    # parent: str
     created_time: dt.datetime
     height: int
     folder: Folder

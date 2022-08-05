@@ -87,6 +87,7 @@ class CardBase(models.Model):
     priority = models.IntegerField(default=0)
     source = models.ForeignKey(Source, on_delete=models.CASCADE)
     source_verbose = models.CharField(max_length=50)
+    folder_location = models.CharField(max_length=300)
     dpi = models.IntegerField(default=0)
     searchq = models.CharField(max_length=200)
     searchq_keyword = models.CharField(max_length=200)
