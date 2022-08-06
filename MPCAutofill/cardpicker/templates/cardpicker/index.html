@@ -35,11 +35,11 @@
             <p>
                 {{ SITE_NAME }} automates the process of printing playtest cards through
                 <a href="https://www.makeplayingcards.com/" target="_blank">MakePlayingCards.com</a>
-                with images hosted on Google Drive.
+                with images made by the community.
             </p>
             <p>
                 Type your desired card list into the text box and hit <b>Submit</b>. One card per line.
-                Click <b>Settings</b> to change which drives are searched, and the order in which cards are shown.
+                Click <b>Settings</b> to change which sources are searched, and the order in which cards are shown.
                 You can also toggle between fuzzy (forgiving) and precise (exact) search modes.
             </p>
             <div class="alert alert-secondary" role="alert">
@@ -156,10 +156,10 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    Select the drives you'd like to search, and drag & drop them to change the order images are shown in.
-                    Check the <a target="_blank" href='/contributions'>Contributions</a> for an overview of what each drive contains.
+                    Select the sources you'd like to search, and drag & drop them to change the order images are shown in.
+                    Check the <a target="_blank" href='/contributions'>Contributions</a> for an overview of what each source contains.
                     <br>
-                    Click the table header to enable or disable all drives.
+                    Click the table header to enable or disable all sources.
                     <br><br>
                     <input type="checkbox" id="searchtype" data-toggle="toggle" data-on="Fuzzy Search" data-off="Precise Search"
                         data-onstyle="success" data-offstyle="info" data-width="100%" data-height="40px" data-size="md">
@@ -168,8 +168,8 @@
                         <thead>
                         <tr onclick="toggle_checkboxes()" style="cursor: pointer; user-select: none;">
                             <th scope="col" class="text-center">Enabled</th>
-                            <th scope="col">Contributor Name</th>
-                            <th scope="col" class="text-center">Drive Link</th>
+                            <th scope="col">Name</th>
+                            <th scope="col">Type</th>
                             <th></th>
                         </tr>
                         </thead>
@@ -182,16 +182,14 @@
                                                 data-bs-toggle="toggle" id="{{ source.key }}" data-bs-size="sm">
                                     </div>
                                 </td>
-                                <td style="vertical-align: middle">{{ source.name }}</td>
                                 <td style="vertical-align: middle">
-                                    <div class="active text-center">
-                                    {% if source.drive_link %}
-                                    <a target="_blank" href="{{ source.drive_link }}">Link</a>
+                                    {% if source.external_link %}
+                                        <a target="_blank" href="{{ source.external_link }}">{{ source.name }}</a>
                                     {% else %}
-                                    Private
+                                        {{ source.name }}
                                     {% endif %}
-                                    </div>
                                 </td>
+                                <td style="vertical-align: middle">{{ source.source_type }}</td>
                                 <td style="vertical-align: middle"><i class="bi bi-grip-horizontal" style="font-size: 2em"></i></td>
                             </tr>
                         {% endfor %}

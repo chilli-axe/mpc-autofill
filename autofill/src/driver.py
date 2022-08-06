@@ -20,7 +20,7 @@ from src.utils import (
     TEXT_END,
     InvalidStateException,
     alert_handler,
-    time_to_hours_minutes_seconds,
+    log_hours_minutes_seconds_elapsed,
 )
 from src.webdrivers import get_chrome_driver
 
@@ -446,11 +446,7 @@ class AutofillDriver(OrderStatusBarBaseClass):
             self.page_to_backs(skip_setup)
             self.insert_backs()
             self.page_to_review()
-        hours, mins, secs = time_to_hours_minutes_seconds(time.time() - t)
-        print("Elapsed time: ", end="")
-        if hours > 0:
-            print(f"{hours} hour{'s' if hours > 1 else ''}, ", end="")
-        print(f"{mins} minute{'s' if mins > 1 else ''} and {secs} second{'s' if secs > 1 else ''}.")
+        log_hours_minutes_seconds_elapsed(t)
         input(
             textwrap.dedent(
                 """

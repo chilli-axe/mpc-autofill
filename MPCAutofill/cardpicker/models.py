@@ -1,16 +1,19 @@
 from datetime import datetime
-from typing import Any
+from typing import Any, Optional
 
+from cardpicker.sources.source_types import SourceTypeChoices
 from django.db import models
 from django.utils import dateformat
 
 
-# Create your models here.
 class Source(models.Model):
     key = models.CharField(max_length=50, unique=True)  # must be a valid HTML id
     name = models.CharField(max_length=50, unique=True)  # human-readable name
-    drive_id = models.CharField(max_length=100, unique=True)
-    drive_link = models.CharField(max_length=200, blank=True, null=True)
+    identifier = models.CharField(max_length=200, unique=True)  # e.g. drive ID, root directory path
+    source_type = models.CharField(
+        max_length=20, choices=SourceTypeChoices.choices, default=SourceTypeChoices.GOOGLE_DRIVE
+    )
+    external_link = models.CharField(max_length=200, blank=True, null=True)
     description = models.CharField(max_length=400)
     ordinal = models.IntegerField(default=0)
 
@@ -61,15 +64,15 @@ class Source(models.Model):
         source_dict = {
             "key": self.key,
             "name": self.name,
-            "drive_id": self.drive_id,
-            "drive_link": self.drive_link,
+            "identifier": self.identifier,
+            "source_type": SourceTypeChoices[self.source_type].label,
+            "external_link": self.external_link,
             "description": self.description,
         }
         if not count:
             return source_dict
         qty_all, qty_cards, qty_cardbacks, qty_tokens, avgdpi = self.count()
-        return {
-            **source_dict,
+        return source_dict | {
             "qty_all": qty_all,
             "qty_cards": qty_cards,
             "qty_cardbacks": qty_cardbacks,
@@ -79,11 +82,12 @@ class Source(models.Model):
 
 
 class CardBase(models.Model):
-    drive_id = models.CharField(max_length=50, unique=True)
+    identifier = models.CharField(max_length=200, unique=True)
     name = models.CharField(max_length=200)
     priority = models.IntegerField(default=0)
     source = models.ForeignKey(Source, on_delete=models.CASCADE)
     source_verbose = models.CharField(max_length=50)
+    folder_location = models.CharField(max_length=300)
     dpi = models.IntegerField(default=0)
     searchq = models.CharField(max_length=200)
     searchq_keyword = models.CharField(max_length=200)
@@ -92,27 +96,49 @@ class CardBase(models.Model):
     size = models.IntegerField()
 
     def __str__(self) -> str:
-        return "[{}] {}: {}, uploaded: {}".format(self.source, self.name, self.drive_id, self.date)
+        return "[{}] {}: {}, uploaded: {}".format(self.source, self.name, self.identifier, self.date)
 
     def to_dict(self) -> dict[str, Any]:
         return {
-            "drive_id": self.drive_id,
+            "identifier": self.identifier,
             "name": self.name,
             "priority": self.priority,
             "source": self.source.key,
             "source_verbose": self.source_verbose,
+            "source_type": self.get_source_type(),
             "dpi": self.dpi,
             "searchq": self.searchq,
             "extension": self.extension,
             "date": dateformat.format(self.date, "jS F, Y"),
             "size": self.size,
+            "download_link": self.get_download_link(),
+            "small_thumbnail_url": self.get_small_thumbnail_url(),
+            "medium_thumbnail_url": self.get_medium_thumbnail_url(),
         }
+
+    def get_source_key(self) -> str:
+        return self.source.key
 
     def get_source_name(self) -> str:
         return self.source.name
 
-    def get_source_key(self) -> str:
-        return self.source.key
+    def get_source_type(self) -> str:
+        return SourceTypeChoices[self.source.source_type].label
+
+    def get_download_link(self) -> Optional[str]:
+        return SourceTypeChoices.get_source_type(SourceTypeChoices[self.source.source_type]).get_download_link(
+            self.identifier
+        )
+
+    def get_small_thumbnail_url(self) -> Optional[str]:
+        return SourceTypeChoices.get_source_type(SourceTypeChoices[self.source.source_type]).get_small_thumbnail_url(
+            self.identifier
+        )
+
+    def get_medium_thumbnail_url(self) -> Optional[str]:
+        return SourceTypeChoices.get_source_type(SourceTypeChoices[self.source.source_type]).get_medium_thumbnail_url(
+            self.identifier
+        )
 
     class Meta:
         abstract = True

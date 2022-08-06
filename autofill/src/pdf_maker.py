@@ -6,7 +6,6 @@ import InquirerPy
 from fpdf import FPDF
 from src.constants import THREADS
 from src.driver import OrderStatusBarBaseClass
-from src.order import CardOrder
 
 
 @attr.s

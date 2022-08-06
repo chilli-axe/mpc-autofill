@@ -35,7 +35,11 @@ repos:
           "django-environ",
           "django-user-agents",
           "enlighten",
+          "google-api-python-client",
+          "oauth2client",
           "Markdown",
           "pytest",
+          "ratelimit",
+          "tqdm",
         ]
         pass_filenames: false

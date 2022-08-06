@@ -5,6 +5,7 @@ from typing import Any, Callable, Optional, TypeVar, Union, cast
 from blog.models import BlogPost
 from cardpicker.forms import InputCSV, InputLink, InputText, InputXML
 from cardpicker.models import Card, Cardback, Source, Token
+from cardpicker.sources.source_types import SourceTypeChoices
 from cardpicker.utils.mpcorder import Faces, MPCOrder, ReqTypes
 from cardpicker.utils.search_functions import (
     SearchExceptions,
@@ -127,8 +128,9 @@ def contributions(request: HttpRequest) -> HttpResponse:
             """
             SELECT
                 cardpicker_source.name,
-                cardpicker_source.drive_id,
-                cardpicker_source.drive_link,
+                cardpicker_source.identifier,
+                cardpicker_source.source_type,
+                cardpicker_source.external_link,
                 cardpicker_source.description,
                 cardpicker_source.ordinal,
                 COALESCE(COUNT(cardpicker_card.dpi), 0),
@@ -166,7 +168,7 @@ def contributions(request: HttpRequest) -> HttpResponse:
         rows_token = cursor.fetchall()
     sources = []
     for (
-        (name, drive_id, drive_link, description, _, card_count, card_total_dpi),
+        (name, identifier, source_type, external_link, description, _, card_count, card_total_dpi),
         (cardback_count, cardback_total_dpi),
         (token_count, token_total_dpi),
     ) in zip(rows_card, rows_cardback, rows_token):
@@ -174,8 +176,9 @@ def contributions(request: HttpRequest) -> HttpResponse:
         sources.append(
             {
                 "name": name,
-                "drive_id": drive_id,
-                "drive_link": drive_link,
+                "identifier": identifier,
+                "source_type": SourceTypeChoices[source_type].label,
+                "external_link": external_link,
                 "description": description,
                 "qty_cards": f"{card_count :,d}",
                 "qty_cardbacks": f"{cardback_count :,d}",

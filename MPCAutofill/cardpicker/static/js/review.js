@@ -39,7 +39,7 @@ function generate_xml() {
     orderElem.appendChild(detailsElem);
 
     // take note of the selected common cardback's ID - will come in handy in a minute
-    let cardback_id = $("#slot--back").data("obj").get_curr_img().drive_id;
+    let cardback_id = $("#slot--back").data("obj").get_curr_img().identifier;
 
     // set up an object we can use to keep track of what to write to the XML
     let order_map = {};
@@ -55,7 +55,7 @@ function generate_xml() {
 
         // only proceed if the card obj has any search results
         if (curr_obj.cards.length > 0) {
-            let curr_id = curr_obj.get_curr_img().drive_id;
+            let curr_id = curr_obj.get_curr_img().identifier;
 
             if (curr_id !== cardback_id) {
                 // the card we're looking at isn't the common cardback, so we care about it
@@ -165,7 +165,7 @@ function download_all() {
         let curr_obj = $(this).data("obj");
         // check if the Card is empty before trying to retrieve its current img ID
         if (!curr_obj.empty) {
-            card_set = card_set.add(curr_obj.get_curr_img().drive_id);
+            card_set = card_set.add(curr_obj.get_curr_img().identifier);
         }
     })
 

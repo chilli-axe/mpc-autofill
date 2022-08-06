@@ -1,6 +1,4 @@
-# mpc-autofill
-
-Automating MakePlayingCards's online ordering system.
+# MPCAutofill
 
 # Preparation
 

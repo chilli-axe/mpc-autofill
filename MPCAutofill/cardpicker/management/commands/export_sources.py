@@ -12,7 +12,7 @@ def export_sources_csv() -> None:
                 [
                     "name,drive_id,drive_public,description",
                     *[
-                        f"{source.name},{source.drive_id},{'false' if source.drive_link is None else ''},\"{source.description}\""
+                        f"{source.name},{source.identifier},{'false' if source.external_link is None else ''},\"{source.description}\""
                         for source in sources
                     ],
                 ]
