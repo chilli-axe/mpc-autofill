@@ -1,3 +1,7 @@
+import { search_api } from './search.js';
+require('bootstrap-icons/font/bootstrap-icons.css');
+import { remove_card } from './review.js';
+
 function wrap0(idx, max) {
     // small helper function to wrap an index between 0 and max-1
     if (idx >= max) idx = 0;
@@ -9,17 +13,17 @@ function format_source(source, dpi) {
     return source + " [" + dpi.toString() + " DPI]";
 }
 
-function thumbnail_404(source) {
+export function thumbnail_404(source) {
     source.src = "/static/cardpicker/error_404.png";
     return true;
 }
 
-function thumbnail_404_med(source) {
+export function thumbnail_404_med(source) {
     source.src = "/static/cardpicker/error_404_med.png";
     return true;
 }
 
-function selectElementContents(el) {
+export function selectElementContents(el) {
     // TODO: this is a bit fucked atm
     // select all text in contentEditable
     // http://stackoverflow.com/a/6150060/145346
@@ -63,10 +67,8 @@ class CardBase {
         // disable hover-based shadows on the parent element temporarily while we bring up
         // the modal, then re-enable it
         this.pe.classList.remove("mpccard-hover");
-        $('#' + modal_id).modal('show');
-        setTimeout($.proxy(function () {
-            this.pe.classList.add("mpccard-hover");
-        }, this), 100);
+        bootstrap.Modal.getOrCreateInstance('#' + modal_id).show();
+        setTimeout(function () {this.pe.classList.add("mpccard-hover")}.bind(this), 100);
     }
 
     open_detailed_view() {
@@ -109,9 +111,9 @@ class CardBase {
         } else {
             dl_button.style.display = "";
             $(dl_button).off("click");
-            $(dl_button).on('click', $.proxy(function () {
+            $(dl_button).on('click', function () { // TODO: do we need to `bind` here?
                 trigger_download(curr_img.download_link, true);
-            }, this));
+            }.bind(this));
         }
 
         // hide the 300 dpi image until it loads in - show a loading spinner in its place until then
@@ -142,7 +144,7 @@ class CardBase {
 
 // Card class - one for each face of each card slot
 // contains logic to page between results, search again with new query, display correct stuff depending on results, etc.
-class Card extends CardBase {
+export class Card extends CardBase {
     constructor(cards, query, dom_id, slot, face, req_type, group, selected_img = null) {
         super(cards, query, dom_id, slot, face, req_type, group, selected_img);
     }
@@ -262,7 +264,7 @@ class Card extends CardBase {
             }
             document.getElementById("removeCardName").innerText = curr_name;
             if (prompt_deletion === true) {
-                $('#removeCardModal').modal('show');
+                bootstrap.Modal.getOrCreateInstance('#removeCardModal').show();
             } else {
                 remove_card();
             }
@@ -366,13 +368,14 @@ class Card extends CardBase {
         grid_container.innerHTML = "";
 
         // unbind any scroll events previously bound to this modal
+
         let grid_modal = $("#gridSelectModal");
-        grid_modal.unbind("scroll");
+        grid_modal.off("scroll");
 
         // if the number of images in this Card exceeds the page size, load in one page of images, and set up
         // an event listener on scrolling to the bottom of the modal to load in subsequent pages
         if (this.img_count > page_size) {
-            grid_modal.bind("scroll", $.proxy(chk_scroll, this));
+            grid_modal.on("scroll", chk_scroll.bind(this));
             append_page(0, page_size, this);
             grid_img_idx = page_size;
         } else {
@@ -443,10 +446,7 @@ class Card extends CardBase {
             if (this.req_type !== "back" | this.slot === "-") {
                 this.elem_counter.style.visibility = "visible";
             }
-
-            $(this.elem_img).on('click', $.proxy(function () {
-                this.open_detailed_view();
-            }, this));
+            $(this.elem_img).on('click', function () {this.open_detailed_view()}.bind(this));
         }
 
         if (this.req_type == "back") {
@@ -455,11 +455,9 @@ class Card extends CardBase {
         }
 
         // enable padlock for locking groups other than cardback
-        if (this.group > 1) {
+        if (this.group > 1 && cards.length > 1) {
             this.elem_padlock.style.display = "";
-            $(this.elem_padlock).on('click', $.proxy(function () {
-                this.toggle_lock();
-            }, this));
+            $(this.elem_padlock).on('click', function () {this.toggle_lock()}.bind(this));
         }
 
         // set slot name + remove card btn + set up in-place search
@@ -469,17 +467,15 @@ class Card extends CardBase {
             this.elem_remove.style.display = "";
             let elem_remove = $(this.elem_remove);
             elem_remove.off("click");
-            elem_remove.on('click', $.proxy(function () {
-                this.remove_card();
-            }, this));
+            elem_remove.on('click', function () {this.remove_card()}.bind(this));
 
             this.elem_name.setAttribute("contentEditable", "true");
-            $(this.elem_name).keydown($.proxy(function (e) {
+            $(this.elem_name).keydown(function (e) {
                 if (e.keyCode === 13) {
                     let search_query = this.elem_name.innerText;
                     this.search_in_place(search_query);
                 }
-            }, this));
+            }.bind(this));
         } else {
             this.elem_slot.innerHTML = "Cardback";
         }
@@ -488,17 +484,9 @@ class Card extends CardBase {
             this.elem_prev.style.visibility = "visible";
             this.elem_next.style.visibility = "visible";
 
-            $(this.elem_prev).on('click', $.proxy(function () {
-                this.update_idx(-1);
-            }, this));
-
-            $(this.elem_next).on('click', $.proxy(function () {
-                this.update_idx(1);
-            }, this));
-
-            $(this.elem_counter).on('click', $.proxy(function () {
-                this.open_grid_view();
-            }, this));
+            $(this.elem_prev).on('click', function () {this.update_idx(-1)}.bind(this));
+            $(this.elem_next).on('click', function () {this.update_idx(1)}.bind(this));
+            $(this.elem_counter).on('click', function () {this.open_grid_view()}.bind(this));
         }
 
         $(this.elem_img).one('load', function () {
@@ -513,9 +501,7 @@ class Card extends CardBase {
         this.update_card();
 
         // wait for first image to complete loading before fading in
-        $(this.elem_img).load($.proxy(function () {
-            this.fade_in();
-        }, this));
+        $(this.elem_img).on("load", function () {this.fade_in()}.bind(this));
     }
 
     load_thumbnails() {
@@ -551,7 +537,7 @@ class Card extends CardBase {
         this.pe.classList.remove("mpccard-hover");
 
         // callback function when the card finishes fading out, in the context of this Card object
-        $(this.pe).animate({opacity: 0}, 250, $.proxy(function () {
+        $(this.pe).animate({opacity: 0}, 250, function () {
             // first, if this card is in a lock group, remove it from the group
             if (this.group > 0) {
                 groups[this.group].delete(this.dom_id);
@@ -567,7 +553,7 @@ class Card extends CardBase {
 
             // query elasticsearch for info w/ the new search query and pass the current card slot
             search_api(drive_order, fuzzy_search, search_query_trimmed, [parseInt(this.slot), ""], this.face, this.dom_id, search_type, 0, common_back_id);
-        }, this));
+        }.bind(this));
     }
 
     update_card() {
@@ -594,7 +580,7 @@ class Card extends CardBase {
     }
 }
 
-class CardRecent extends CardBase {
+export class CardRecent extends CardBase {
     // a stripped-down version of the Card class, with one image, and which isn't interactive except for
     // being able to open the detailed view
     constructor(card, dom_id) {
@@ -626,9 +612,7 @@ class CardRecent extends CardBase {
 
         // load thumbnails and set up fade in
         this.load_thumbnails();
-        $(this.elem_img).one('load', $.proxy(function () {
-            this.fade_in();
-        }, this));
+        $(this.elem_img).one('load', function () {this.fade_in()}.bind(this));
     }
 
     load_thumbnails() {
@@ -637,13 +621,11 @@ class CardRecent extends CardBase {
         // add click event to thumbnail to reveal detailed info about card
         let elem_img = $(this.elem_img)
         elem_img.off('click');
-        elem_img.on('click', $.proxy(function () {
-            this.open_detailed_view();
-        }, this));
+        elem_img.on('click', function () {this.open_detailed_view()}.bind(this));
     }
 }
 
-class CardGrid extends CardRecent {
+export class CardGrid extends CardRecent {
     // a stripped-down version of the Card class, with one image, and which isn't interactive except for
     // being able to click on the thumbnail to select this image for the parent card
     constructor(card, dom_id, slot_num, card_obj) {
@@ -658,6 +640,6 @@ class CardGrid extends CardRecent {
         // but this will really select this image for the card
         this.card_obj.set_idx(this.slot - 1);
         this.card_obj.load_thumbnails();
-        $('#gridSelectModal').modal('hide');
+        bootstrap.Modal.getOrCreateInstance('#gridSelectModal').hide();
     }
 }

@@ -3,14 +3,27 @@
 
 {% block title %} Review MPC Order {% endblock %}
 
+{% block scripts %}
+    <script src="{% static 'js/review.bundle.js' %}"></script>
+{% endblock %}
+
 {% block content %}
 
-    <script src="{% static 'js/review.js' %}"></script>
-    <script src="{% static 'js/card.js' %}"></script>
-    <script src="{% static 'js/search.js' %}"></script>
-    <link href="https://cdn.jsdelivr.net/gh/palcarazm/bootstrap5-toggle@4.1.0/css/bootstrap5-toggle.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/gh/palcarazm/bootstrap5-toggle@4.1.0/js/bootstrap5-toggle.min.js"></script>
+
     {% load crispy_forms_tags %}
+
+    <script type="text/javascript">
+        window.onbeforeunload = function() { return false; }
+        var groups = {};
+        var max_group = 2;
+        var drive_order = {{ drive_order|safe }}.toString();
+        var fuzzy_search = {{ fuzzy_search|safe }}.toString() === "true";
+        var qty = {{ qty }};
+        var order = {{ order|safe }};
+        var front_visible = true;
+        var prompt_deletion = true;
+        var cards_not_found = [];
+    </script>
 
     {# toast to alert the user that they've hit MPC's deck size cap #}
     <div aria-live="polite" aria-atomic="true" data-bs-autohide="false">
@@ -26,32 +39,6 @@
         </div>
     </div>
 
-    {# code to run on page load #}
-    <script type="text/javascript">
-        window.onbeforeunload = function() { return false; }
-
-        let groups = {};
-        let max_group = 2;
-        let drive_order = {{ drive_order|safe }}.toString();
-        let fuzzy_search = {{ fuzzy_search|safe }}.toString() === "true";
-        let qty = {{ qty }};
-        let front_visible = true;
-        let prompt_deletion = true;
-        let cards_not_found = [];
-
-        document.getElementById("id_body").onload = function () {
-            setup_toasts(["maxCardsToast", "errorToast"]);
-            let order = {{ order|safe }};
-            set_cardstock(order);
-            insert_data(drive_order, fuzzy_search, order);
-            // enable tooltips
-            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-              return new bootstrap.Tooltip(tooltipTriggerEl)
-            })
-        }
-    </script>
-
     <div class="row">
         {# left panel #}
         <div class="col-lg-8 col-md-8 col-sm-6 col-6">
@@ -60,7 +47,7 @@
 
         {# right panel #}
         <div class="col-lg-4 col-md-4 col-sm-6 col-6" style="z-index: 1;">
-            <div class="sticky-top sticky-offset">
+            <div class="sticky-top sticky-offset g-0">
                 <h2>Review Your Order</h2>
                 {# info on order size and mpc bracket #}
                 <p style="font-size: 1rem">Your order has a total of <b id="order_qty"></b> cards,
@@ -74,7 +61,7 @@
                     {# button to toggle between fronts and backs of cards #}
                     <div class="col-lg-6 col-md-12 col-sm-12 col-12">
                         <button type="button" class="btn btn-primary w-100" id="switchFacesBtn"
-                                onclick="switch_faces()">
+                                onclick="Library.review.switch_faces()">
                             Switch to Backs
                         </button>
                     </div>
@@ -87,15 +74,15 @@
                         </button>
                         <div class="dropdown-menu" aria-labelledby="addCardsBtn">
                             <label id="btn_add_cards_text_input" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#textModal"
-                               onclick="clear_text('id_card_list');">
+                               onclick="Library.review.clear_text('id_card_list');">
                                 Text Input
                             </label>
                             {# TODO: fix for safari #}
-                            <label class="dropdown-item" onchange="insert_xml()">
+                            <label class="dropdown-item" onchange="Library.review.insert_xml()">
                                 XML Order<input type="file" accept=".xml" hidden name="file" id="xmlfile">
                             </label>
                             <label class="dropdown-item" data-bs-toggle="modal" data-bs-target="#inputLinkModal"
-                               onclick="clear_text('id_list_url');">
+                               onclick="Library.review.clear_text('id_list_url');">
                                 From URL
                             </label>
                         </div>
@@ -123,13 +110,13 @@
 
                 {# download images, generate order, and what's next buttons #}
                 <div class="row g-0">
-                    <button id="btn_download_all" type="button" class="btn btn-success w-100" onclick="download_all();"
-                            data-bs-toggle="tooltip" data-bs-placement="top" title="Popups need to be enabled for this to function properly. Beware &#8212 this can open lots of tabs!">
+                    <button id="btn_download_all" type="button" class="btn btn-success w-100" onclick="Library.review.download_all();" data-bs-toggle="tooltip"
+                        data-bs-placement="top" title="Popups need to be enabled for this to function properly. Beware &#8212 this can open lots of tabs!">
                         Download All Images
                     </button>
                     <div class="col-lg-6 col-md-12 col-sm-12 col-12">
                         <button id="btn_generate_xml" type="button" class="btn btn-primary w-100"
-                                data-bs-toggle="modal" onclick="generate_xml();">
+                                onclick="Library.review.generate_xml();">
                             Generate Order
                         </button>
                     </div>
@@ -153,7 +140,7 @@
                     <h5 class="modal-title" id="textModalLabel">Insert Cards</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form method="post" onsubmit="return insert_text();" id="insert_text" style="display: inline">
+                <form method="post" onsubmit="return Library.review.insert_text();" id="insert_text" style="display: inline">
                     <div class="modal-body">
                         <p>Type the names of the cards you'd like to add to your order and hit <b>Submit</b>. One card
                             per line.</p>
@@ -186,7 +173,7 @@
                         {% endfor %}
                     </ul>
 
-                    <form method="post" onsubmit="return insert_link()" id="input_link" enctype="multipart/form-data">
+                    <form method="post" onsubmit="return Library.review.insert_link()" id="input_link" enctype="multipart/form-data">
                         {% csrf_token %}
                         {{ input_link_form|crispy }}
                     </form>
@@ -272,8 +259,8 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button id="btn_confirm_remove_card_no_reminder" type="button" class="btn btn-primary" onclick="prompt_deletion = false; remove_card();">Confirm and Don't Ask Again</button>
-                    <button id="btn_confirm_remove_card" type="button" class="btn btn-success" onclick="remove_card();">Confirm</button>
+                    <button id="btn_confirm_remove_card_no_reminder" type="button" class="btn btn-primary" onclick="prompt_deletion = false; Library.review.remove_card();">Confirm and Don't Ask Again</button>
+                    <button id="btn_confirm_remove_card" type="button" class="btn btn-success" onclick="Library.review.remove_card();">Confirm</button>
                 </div>
             </div>
         </div>

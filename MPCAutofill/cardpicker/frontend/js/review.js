@@ -1,3 +1,9 @@
+import { insert_data, update_qty, bracket, switch_faces, insert_xml, insert_text, insert_link } from  './search.js';
+import { thumbnail_404, thumbnail_404_med, selectElementContents } from './card.js';
+import 'bootstrap5-toggle';
+import "bootstrap5-toggle/css/bootstrap5-toggle.min.css";
+
+
 function download(filename, text) {
     let element = document.createElement('a');
     element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
@@ -11,7 +17,7 @@ function download(filename, text) {
     document.body.removeChild(element);
 }
 
-function generate_xml() {
+export function generate_xml() {
     // create xml document
     let doc = document.implementation.createDocument("", "", null);
     let e = document.getElementById("cardstock-dropdown");
@@ -128,35 +134,7 @@ function generate_xml() {
     download("cards.xml", xml);
 }
 
-function switch_faces() {
-    front_visible = !front_visible;
-
-    let front_faces = document.getElementsByClassName("card-front");
-    let back_faces = document.getElementsByClassName("card-back");
-    let switch_button = document.getElementById("switchFacesBtn");
-
-    // decide what styles the front and back cards should take on, as well as the switch face button text
-    let front_style = "none";
-    let back_style = "";
-    let button_text = "Switch to Fronts";
-    if (front_visible) {
-        front_style = "";
-        back_style = "none";
-        button_text = "Switch to Backs";
-    }
-
-    // apply changes to fronts, backs, and switch face button
-    for (let i = 0; i < front_faces.length; i++) {
-        front_faces[i].style.display = front_style;
-    }
-    for (let i = 0; i < back_faces.length; i++) {
-        back_faces[i].style.display = back_style;
-    }
-
-    switch_button.textContent = button_text;
-}
-
-function download_all() {
+export function download_all() {
     // TODO: can we rewrite this to zip up the requested images?
     // TODO: or download individually without opening one billion windows?
     // get all Card objects using a set to avoid duplicates
@@ -176,33 +154,12 @@ function download_all() {
     }
 }
 
-function bracket(qty) {
-    // small helper function to calculate the MPC bracket the current order lands in
-    // TODO: write this more efficiently?
-    qty = parseInt(qty);
-    let brackets = [18, 36, 55, 72, 90, 108, 126, 144, 162, 180, 198, 216, 234, 396, 504, 612];
-    for (let i = 0; i < brackets.length; i++) {
-        if (brackets[i] >= qty) {
-            return brackets[i].toString();
-        }
-    }
-    return brackets[brackets.length - 1].toString();
-}
-
-function update_qty(new_qty) {
-    if (new_qty !== undefined) {
-        qty = new_qty;
-        document.getElementById("order_qty").innerHTML = new_qty;
-        document.getElementById("order_bracket").innerHTML = bracket(new_qty);
-    }
-}
-
-function clear_text(text_field) {
+export function clear_text(text_field) {
     let textarea_elem = document.getElementById(text_field);
     textarea_elem.value = "";
 }
 
-function remove_card() {
+export function remove_card() {
     let slot_to_remove = document.getElementById("removeCardId").slot_num;
     if (qty > 1) {
 
@@ -233,7 +190,7 @@ function remove_card() {
             }
         }
     }
-    $('#removeCardModal').modal('hide');
+    bootstrap.Modal.getOrCreateInstance('#removeCardModal').hide();
 }
 
 function set_cardstock(data) {
@@ -256,3 +213,19 @@ function setup_toasts(toasts) {
 
     toasts.forEach(toast => setup_toast(toast));
 }
+
+function review_on_load() {
+    setup_toasts(["maxCardsToast", "errorToast"]);
+    set_cardstock(order);
+    insert_data(drive_order, fuzzy_search, order);
+    // enable tooltips
+    // TODO: check this
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+      return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
+}
+
+window.addEventListener('load', review_on_load, false);
+
+export { thumbnail_404, thumbnail_404_med, switch_faces, insert_xml, insert_text, insert_link, selectElementContents };

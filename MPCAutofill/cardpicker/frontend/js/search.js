@@ -1,3 +1,6 @@
+import { handle_error } from './base.js';
+import { Card } from './card.js';
+
 function add_to_group(group, dom_ids) {
     if (groups[group] === undefined) {
         groups[group] = new Set();
@@ -5,7 +8,56 @@ function add_to_group(group, dom_ids) {
     dom_ids.forEach(groups[group].add, groups[group]);
 }
 
-function insert_data(drive_order, fuzzy_search, order) {
+export function bracket(qty) {
+    // small helper function to calculate the MPC bracket the current order lands in
+    // TODO: write this more efficiently?
+    qty = parseInt(qty);
+    let brackets = [18, 36, 55, 72, 90, 108, 126, 144, 162, 180, 198, 216, 234, 396, 504, 612];
+    for (let i = 0; i < brackets.length; i++) {
+        if (brackets[i] >= qty) {
+            return brackets[i].toString();
+        }
+    }
+    return brackets[brackets.length - 1].toString();
+}
+
+export function update_qty(new_qty) {
+    if (new_qty !== undefined) {
+        qty = new_qty;
+        document.getElementById("order_qty").innerHTML = new_qty;
+        document.getElementById("order_bracket").innerHTML = bracket(new_qty);
+    }
+}
+
+export function switch_faces() {
+    front_visible = !front_visible;
+
+    let front_faces = document.getElementsByClassName("card-front");
+    let back_faces = document.getElementsByClassName("card-back");
+    let switch_button = document.getElementById("switchFacesBtn");
+
+    // decide what styles the front and back cards should take on, as well as the switch face button text
+    let front_style = "none";
+    let back_style = "";
+    let button_text = "Switch to Fronts";
+    if (front_visible) {
+        front_style = "";
+        back_style = "none";
+        button_text = "Switch to Backs";
+    }
+
+    // apply changes to fronts, backs, and switch face button
+    for (let i = 0; i < front_faces.length; i++) {
+        front_faces[i].style.display = front_style;
+    }
+    for (let i = 0; i < back_faces.length; i++) {
+        back_faces[i].style.display = back_style;
+    }
+
+    switch_button.textContent = button_text;
+}
+
+export function insert_data(drive_order, fuzzy_search, order) {
     // clear out the list of cards with specific versions that don't exist anymore
     cards_not_found = [];
 
@@ -13,7 +65,9 @@ function insert_data(drive_order, fuzzy_search, order) {
     if (!front_visible) {
         switch_faces();
     }
-    $('#loadModal').modal('show')
+
+    const loadModal = bootstrap.Modal.getOrCreateInstance('#loadModal');
+    loadModal.show();
 
     // query Django for info on this order
     // expected to return the order dict (from function parameter) but with card info filled in under the
@@ -42,7 +96,7 @@ function insert_data(drive_order, fuzzy_search, order) {
         complete: function () {
             // pause for a moment so the modal can catch up in case our results return too quickly
             setTimeout(function () {
-                $('#loadModal').modal('hide');
+                loadModal.hide();
                 // alert the user if specific card versions they requested no longer exist
                 alert_missing_versions(cards_not_found);
                 // alert the user if they've reached the cap of 612 cards
@@ -107,14 +161,14 @@ function alert_missing_versions(cards_not_found) {
         }
 
         // show the modal
-        setTimeout($.proxy(function () {
-            $('#missingCardsModal').modal('show');
-        }, this), 700);
+        setTimeout(function () {
+            bootstrap.Modal.getOrCreateInstance('#missingCardsModal').hide()
+        }, 700);
     }
 }
 
 
-function search_api(drive_order, fuzzy_search, query, slot_id, face, dom_id, req_type = "normal", group = 0, common_back_id = "") {
+export function search_api(drive_order, fuzzy_search, query, slot_id, face, dom_id, req_type = "normal", group = 0, common_back_id = "") {
     // used for individual searches when modifying a card in-place
     $.ajax({
         type: 'POST',
@@ -148,7 +202,7 @@ function get_common_cardback_id(data) {
         return data["common_cardback"]["id"];
     } else {
         // attempt to retrieve ID from dom
-        cardback_obj = $("#slot--back").data("obj");
+        let cardback_obj = $("#slot--back").data("obj");
         if (cardback_obj !== undefined) {
             return cardback_obj.get_curr_img().id;
         } else {
@@ -267,7 +321,7 @@ function build_card(card, dom_id, query, slot_id, face, group, common_back_id = 
 }
 
 
-function insert_text() {
+export function insert_text() {
     let text = document.getElementById("id_card_list").value;
 
     $.post(
@@ -287,12 +341,12 @@ function insert_text() {
         'json'
     );
 
-    $('#textModal').modal('hide');
+    bootstrap.Modal.getOrCreateInstance('#textModal').hide();
     return false;
 }
 
 
-function insert_xml() {
+export function insert_xml() {
     // read the XML file as text, then do a POST request with the contents
     let xmlfiles = document.getElementById("xmlfile").files;
     if (xmlfiles.length > 0) {
@@ -316,7 +370,7 @@ function insert_xml() {
 }
 
 
-function insert_link() {
+export function insert_link() {
     let list_url = document.getElementById("id_list_url").value;
 
     $.post(
@@ -336,7 +390,7 @@ function insert_link() {
         'json'
     );
 
-    $('#inputLinkModal').modal('hide');
+    bootstrap.Modal.getOrCreateInstance('#inputLinkModal').hide();
     return false;
 }
 

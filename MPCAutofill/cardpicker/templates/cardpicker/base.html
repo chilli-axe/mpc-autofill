@@ -3,20 +3,13 @@
 <html lang="en">
 <head>
     <link rel="shortcut icon" href="{% static 'cardpicker/favicon.ico' %}"/>
-
-    <!-- Global site tag (gtag.js) - Google Analytics -->
-    <script src="{% static 'js/js.cookie-2.2.1.min.js'%}"></script>
-    <script async src="https://www.googletagmanager.com/gtag/js?id={{ GTAG }}"></script>
-    <script>
-        var my_gtag = '{{ GTAG }}';
-        if (Cookies.get('ga_disabled') === 'true') {
-            window['ga-disable-'.concat(my_gtag)] = true;
-        }
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', '{{ GTAG }}');
+    <script type="text/javascript">
+        var my_gtag = "{{ GTAG }}";
+        var exception = "{{ exception }}";
     </script>
+
+    {# Global site tag (gtag.js) - Google Analytics #}
+    <script async src="https://www.googletagmanager.com/gtag/js?id={{ GTAG }}"></script>
 
     <title>{% block title %}{{ SITE_NAME }}{% endblock %}</title>
     <meta charset="utf-8">
@@ -25,107 +18,91 @@
         <meta name="description"
               content="The easiest way to print kitchen-table proxy cards for Magic: The Gathering (MTG) with MakePlayingCards (MPC). No prior knowledge required.">
     {% endblock %}
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@5.1.3/dist/{{ THEME }}/bootstrap.min.css">
-    <link href="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap-switch-button@1.1.0/css/bootstrap-switch-button.min.css" rel="stylesheet"/>
+
+    <script src="{% static 'js/base.bundle.js' %}"></script>
+    {% block scripts %}{% endblock %} {# any js that child templates need to load #}
     <link rel="stylesheet" type="text/css" href="{% static 'css/custom.css' %}">
-    <script src="https://code.jquery.com/jquery.min.js"></script>
-    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js" integrity="sha512-0bEtK0USNd96MnO4XhH8jhv3nyRF0eK87pJke6pkYf3cM0uDIhNJy9ltuzqgypoIFXw3JSuiy04tVk4AjpZdZw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-pprn3073KE6tl6bjs2QrFaJGz5/SUsLqktiwsUTF55Jfv3qYSDhgCecCxMW52nD2" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap-switch-button@1.1.0/dist/bootstrap-switch-button.min.js"></script>
-    <script src="{% static 'js/base.js' %}"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css">
 </head>
 <body id="id_body" style="touch-action: manipulation;">
-{# Navbar #}
-<div class="navbar navbar-expand-lg fixed-top navbar-dark bg-primary" style="height: 50px;">
-    <div class="container justify-content-center fixed-top align-middle bg-primary" style="max-width: 1200px;">
-        <a class="navbar-brand" href="/">
-            <img src="{% static 'cardpicker/logolowres.png' %}?10" width="40" height="40">&nbsp;
-            <span class="align-middle"><b>{{ SITE_NAME }}</b></span></a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
-                aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarSupportedContent" style="font-weight: bold;">
-            <ul class="navbar-nav me-auto">
-                <li class="nav-item"><a class="nav-link" href="/guide">Guide</a></li>
-                <li class="nav-item"><a class="nav-link" href="/new">What's New?</a></li>
-                <li class="nav-item"><a class="nav-link" href="/contributions">Contributions</a></li>
-            </ul>
-            <ul class="navbar-nav justify-content-end">
-                <li class="nav-item">
-                    <a class="nav-link" href="https://github.com/chilli-axe/mpc-autofill" target="_blank">GitHub</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ REDDIT }}" target="_blank">Reddit</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ DISCORD }}" target="_blank">Discord</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/legal">About</a>
-                </li>
-            </ul>
-        </div>
-    </div>
-</div>
-
-<div class="container addmargin" style="max-width: 1200px;">
-    {# error message toast #}
-    <div aria-live="polite" aria-atomic="true">
-        <div id="errorToast" class="toast" style="position: fixed; left: 0; z-index: -1;" data-bs-delay="10000">
-            <div class="toast-header">
-                <strong class="me-auto">Server Error</strong>
-            </div>
-            <div class="toast-body">
-                <p>We're sorry, but an error occurred while handling your request.</p>
-                <p id="error_message_paragraph">Error message: <b id="error_message_body"></b></p>
+    {# Navbar #}
+    <div class="navbar navbar-expand-lg fixed-top navbar-dark bg-primary" style="height: 50px;">
+        <div class="container justify-content-center fixed-top align-middle bg-primary" style="max-width: 1200px;">
+            <a class="navbar-brand" href="/">
+                <img src="{% static 'cardpicker/logolowres.png' %}?10" width="40" height="40">&nbsp;
+                <span class="align-middle"><b>{{ SITE_NAME }}</b></span></a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+                    aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent" style="font-weight: bold;">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item"><a class="nav-link" href="/guide">Guide</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/new">What's New?</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/contributions">Contributions</a></li>
+                </ul>
+                <ul class="navbar-nav justify-content-end">
+                    <li class="nav-item">
+                        <a class="nav-link" href="https://github.com/chilli-axe/mpc-autofill" target="_blank">GitHub</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ REDDIT }}" target="_blank">Reddit</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ DISCORD }}" target="_blank">Discord</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/legal">About</a>
+                    </li>
+                </ul>
             </div>
         </div>
     </div>
-
-    {# toast to allow users to opt out of Google Analytics #}
-    <div aria-live="polite" aria-atomic="true">
-        <div id="cookieToast" class="toast" style="position: fixed; left: 0; z-index: -2;" data-bs-autohide="false">
-            <div class="toast-header">
-                <strong class="me-auto">Cookie Usage</strong>
-                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+    <div class="container addmargin" style="max-width: 1200px;">
+        {# error message toast #}
+        <div aria-live="polite" aria-atomic="true">
+            <div id="errorToast" class="toast" style="position: fixed; left: 0; z-index: -1;" data-bs-delay="10000">
+                <div class="toast-header">
+                    <strong class="me-auto">Server Error</strong>
+                </div>
+                <div class="toast-body">
+                    <p>We're sorry, but an error occurred while handling your request.</p>
+                    <p id="error_message_paragraph">Error message: <b id="error_message_body"></b></p>
+                </div>
             </div>
-            <div class="toast-body">
-                <p>
-                {{ SITE_NAME }} uses cookies for remembering your search settings, and for collecting analytics
-                data to help improve the site. Your data is never shared with anyone. Would you like to opt
-                out of analytics cookies?
-                </p>
-                <p>
-                View our privacy policy <a target="_blank" href="/legal">here</a>.
-                </p>
-                <div class="mt-2 pt-2 border-top">
-                    <div class="row">
-                        <div class="col-6">
-                            <button type="button" class="btn btn-outline-info btn-sm w-100"
-                                    onclick="cookie_toast_opt_out()">Opt me out please!</button>
-                        </div>
-                        <div class="col-6">
-                            <button type="button" class="btn btn-primary btn-sm w-100"
-                                    onclick="cookie_toast_opt_in()">That's fine!</button>
+        </div>
+
+        {# toast to allow users to opt out of Google Analytics #}
+        <div aria-live="polite" aria-atomic="true">
+            <div id="cookieToast" class="toast" style="position: fixed; left: 0; z-index: -2;" data-bs-autohide="false">
+                <div class="toast-header">
+                    <strong class="me-auto">Cookie Usage</strong>
+                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+                <div class="toast-body">
+                    <p>
+                    {{ SITE_NAME }} uses cookies for remembering your search settings, and for collecting analytics
+                    data to help improve the site. Your data is never shared with anyone. Would you like to opt
+                    out of analytics cookies?
+                    </p>
+                    <p>
+                    View our privacy policy <a target="_blank" href="/legal">here</a>.
+                    </p>
+                    <div class="mt-2 pt-2 border-top">
+                        <div class="row">
+                            <div class="col-6">
+                                <button type="button" class="btn btn-outline-info btn-sm w-100"
+                                        onclick="Library.base.cookie_toast_opt_out()">Opt me out please!</button>
+                            </div>
+                            <div class="col-6">
+                                <button type="button" class="btn btn-primary btn-sm w-100"
+                                        onclick="Library.base.cookie_toast_opt_in()">That's fine!</button>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-
-    {# code to run on page load #}
-    <script type="text/javascript">
-        let exception = unescape("{{ exception|escapejs }}");
-        document.getElementById("id_body").onload = function () {
-            base_on_load(exception);
-        }
-    </script>
-
-    {% block content %}{% endblock %}
-</div>
-</body>
+            {% block content %}{% endblock %}
+        </div>
+    </body>
 </html>

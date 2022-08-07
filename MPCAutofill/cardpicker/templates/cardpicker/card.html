@@ -6,13 +6,13 @@
         <button class="remove"><i class="bi bi-x-circle"></i></button>
     </div>
     <div class="rounded-lg shadow-lg ratio ratio-7x5">
-        <img class="card-img" loading="lazy" style="z-index: 1" onerror="thumbnail_404(this);">
-        <img class="card-img-prev" loading="lazy" style="z-index: 0" onerror="thumbnail_404(this);">
-        <img class="card-img-next" loading="lazy" style="z-index: 0" onerror="thumbnail_404(this);">
+        <img class="card-img" loading="lazy" style="z-index: 1" onerror="Library.review.thumbnail_404(this);">
+        <img class="card-img-prev" loading="lazy" style="z-index: 0" onerror="Library.review.thumbnail_404(this);">
+        <img class="card-img-next" loading="lazy" style="z-index: 0" onerror="Library.review.thumbnail_404(this);">
     </div>
     <div class="card-body mb-0 text-center">
         <h5 class="card-subtitle mpccard-name" contentEditable="true"
-            spellcheck="false" onfocus="selectElementContents(this)"></h5>
+            spellcheck="false" onfocus="Library.review.selectElementContents(this)"></h5>
         <div class="mpccard-spacing">
             <p class="card-text mpccard-source"></p>
             <p class="card-text mpccard-counter" style="display: none;"></p>
@@ -31,7 +31,7 @@
         <p class="mpccard-slot"></p>
     </div>
     <div class="rounded-lg shadow-lg ratio ratio-7x5">
-        <img class="card-img" loading="lazy" onerror="thumbnail_404(this);" style="z-index: 1">
+        <img class="card-img" loading="lazy" onerror="Library.review.thumbnail_404(this);" style="z-index: 1">
     </div>
     <div class="card-body mb-0 text-center">
         <h5 class="card-subtitle mpccard-name"></h5>
@@ -47,7 +47,7 @@
         <p class="mpccard-slot"></p>
     </div>
     <div class="rounded-lg shadow-lg ratio ratio-7x5">
-        <img class="card-img" loading="lazy" style="z-index: 1;" onerror="thumbnail_404(this);">
+        <img class="card-img" loading="lazy" style="z-index: 1;" onerror="Library.review.thumbnail_404(this);">
     </div>
     <div class="card-body mb-0 text-center">
         <h5 class="card-subtitle mpccard-name"></h5>
@@ -70,14 +70,14 @@
                 <div class="row">
                     <div class="col-lg-5 mb-3 mb-lg-0" style="position: relative">
                         <div class="shadow-lg ratio ratio-7x5" style="border-radius: 18px"> {# TODO: percentage for border radius? #}
-                            <img id="detailedView-img" class="card-preview" style="z-index: 1" onerror="thumbnail_404_med(this);">
+                            <img id="detailedView-img" class="card-preview" style="z-index: 1" onerror="Library.review.thumbnail_404_med(this);">
                         </div>
                         <div id="detailedView-spinner" class="spinner-border vertical-center" role="status">
                             <span class="visually-hidden">Loading...</span>
                         </div>
                     </div>
                     <div class="col-lg-7">
-                        <h4 id="detailedView-name">Cardname</h4>
+                        <h4 id="detailedView-name"></h4>
                         <table class="table table-hover">
                             <tbody>
                             <tr><td><b>Source Name</b></td><td id="detailedView-source"></td><tr>

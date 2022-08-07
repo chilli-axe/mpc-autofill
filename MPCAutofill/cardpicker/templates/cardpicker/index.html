@@ -1,24 +1,16 @@
 {% extends 'cardpicker/base.html' %}
 {% load static %}
 
+{% block scripts %}
+    <script src="{% static 'js/index.bundle.js' %}"></script>
+{% endblock %}
+
 {% block content %}
 <div class="pt-2">
-    <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.css"/>
-    <script type="text/javascript" src="//cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.min.js"></script>
-
-    <script src="{% static 'js/index.js' %}"></script>
-    <link href="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.6.1/css/bootstrap4-toggle.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.6.1/js/bootstrap4-toggle.min.js"></script>
+    {% comment %} <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.css"/> {% endcomment %}
+    {% comment %} <script type="text/javascript" src="//cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.min.js"></script> {% endcomment %}
 
     {% load crispy_forms_tags %}
-
-    {# code to run on page load #}
-    <script type="text/javascript">
-        document.getElementById("id_body").onload = function () {
-            base_on_load(exception);
-            index_on_load();
-        }
-    </script>
 
     {% if mobile %}
     <div id="mobile-device-alert" class="alert alert-primary" role="alert">
@@ -51,7 +43,7 @@
                 Or, you can re-upload an order XML for further editing.
             </p>
         </div>
-        <div class="col-lg-6 col-md-6 col-md-12"> {# style="padding-bottom: 30px" #}
+        <div class="col-lg-6 col-md-6 col-md-12">
             <form method="post" action="{% url 'review' %}" id="cardinput" style="display: inline; height: 100%;">
                 {% csrf_token %}
                 {{ input_text_form|crispy }}
@@ -167,14 +159,14 @@
                     <br><br>
                     <table class="table table-hover" id="drivePicker">
                         <thead>
-                        <tr onclick="toggle_checkboxes()" style="cursor: pointer; user-select: none;">
+                        <tr onclick="Library.index.toggle_checkboxes()" style="cursor: pointer; user-select: none;">
                             <th scope="col" class="text-center">Enabled</th>
                             <th scope="col">Name</th>
                             <th scope="col">Type</th>
                             <th></th>
                         </tr>
                         </thead>
-                        <tbody id="search-settings-table">
+                        <tbody id="drive-order-tbody">
                         {% for source in sources %}
                             <tr id="{{ source.key }}-row" style="cursor: grab">
                                 <td style="vertical-align: middle">
@@ -196,10 +188,6 @@
                         {% endfor %}
                         </tbody>
                     </table>
-                    <script type="text/javascript">
-                        $('tbody').sortable();
-                        $('tbody').disableSelection();
-                    </script>
                     </body>
                 </div>
                 <div class="modal-footer">

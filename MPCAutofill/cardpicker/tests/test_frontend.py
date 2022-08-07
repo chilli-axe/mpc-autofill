@@ -221,7 +221,7 @@ class TestFrontend:
     def assert_search_settings(driver, test_source_rows: list[TestSourceRow]) -> None:
         driver.find_element(By.ID, value="btn_settings").click()
         time.sleep(1)
-        table_rows = driver.find_element(By.ID, value="search-settings-table").find_elements(By.XPATH, value="*")
+        table_rows = driver.find_element(By.ID, value="drive-order-tbody").find_elements(By.XPATH, value="*")
         assert [x.get_attribute("id") for x in table_rows] == [f"{x.key}-row" for x in test_source_rows]
         for test_source_row in test_source_rows:
             assert (

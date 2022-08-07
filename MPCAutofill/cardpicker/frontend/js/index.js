@@ -1,10 +1,16 @@
+import Cookies from 'js-cookie';
+import { handle_error } from './base.js';
+import 'bootstrap5-toggle';
+import "bootstrap5-toggle/css/bootstrap5-toggle.min.css";
+require('jquery-ui/ui/widgets/sortable');
+
 // set the heights of the two divs containing the textarea to 100% here rather than fucking around with crispy
 function index_on_load() {
     let textarea_elem = document.getElementById("id_card_list");
     textarea_elem.parentElement.style.height = "100%";
     textarea_elem.parentElement.parentElement.style.height = "100%";
 
-    $('#cardinput, #input_csv, #input_xml, #input_link').submit(function (eventObj) {
+    $('#cardinput, #input_csv, #input_xml, #input_link').on("submit", function (eventObj) {
         // user is submitting card input form - grab the order of selected drives and attach it to the form as a
         // hidden input
         let input_drives = $("<input>", {type: "hidden", name: "drive_order", value: get_drive_order()});
@@ -21,34 +27,37 @@ function index_on_load() {
     // save search settings to cookie when closing the modal
     $('#selectDrivesModal').on('hidden.bs.modal', save_search_settings);
     load_search_settings();
-    $("#blogs").slick({
-        infinite: true,
-        arrows: false,
-        slidesToShow: 4,
-        slidesToScroll: 1,
-        autoplay: true,
-        autoplaySpeed: 3000,
-        responsive: [
-            {
-                breakpoint: 992,
-                settings: {
-                    slidesToShow: 3,
-                }
-            },
-            {
-                breakpoint: 768,
-                settings: {
-                    slidesToShow: 2,
-                }
-            },
-            {
-                breakpoint: 576,
-                settings: {
-                    slidesToShow: 1,
-                }
-            }
-        ]
-    });
+    // $("#blogs").slick({  // TODO: replace with masonry
+    //     infinite: true,
+    //     arrows: false,
+    //     slidesToShow: 4,
+    //     slidesToScroll: 1,
+    //     autoplay: true,
+    //     autoplaySpeed: 3000,
+    //     responsive: [
+    //         {
+    //             breakpoint: 992,
+    //             settings: {
+    //                 slidesToShow: 3,
+    //             }
+    //         },
+    //         {
+    //             breakpoint: 768,
+    //             settings: {
+    //                 slidesToShow: 2,
+    //             }
+    //         },
+    //         {
+    //             breakpoint: 576,
+    //             settings: {
+    //                 slidesToShow: 1,
+    //             }
+    //         }
+    //     ]
+    // });
+
+
+    $('#drive-order-tbody').sortable();
 
     // alert the user if the search engine is offline
     $.ajax({
@@ -59,7 +68,7 @@ function index_on_load() {
                 handle_error("The search engine is offline.")
             }
         }
-    })
+    });
 }
 
 function save_search_settings() {
@@ -138,7 +147,7 @@ function get_drive_order() {
     return drives.toString();
 }
 
-function toggle_checkboxes() {
+export function toggle_checkboxes() {
     // get checkbox elements from dom, in order
     let driveElements = document.getElementsByClassName("drivesource");
     var enableDrives = 'on';
@@ -154,3 +163,5 @@ function toggle_checkboxes() {
         $(driveElements[i]).bootstrapToggle(enableDrives);
     }
 }
+
+window.addEventListener('load', index_on_load, false);
