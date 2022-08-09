@@ -105,11 +105,11 @@ class GoogleDrive(SourceType):
         folders: dict[str, Optional[Folder]] = {}
         for x in sources:
             try:
-                if (folder := execute_google_drive_api_call(service.files().get(fileId=x.identifier))) is not None:
+                if folder := execute_google_drive_api_call(service.files().get(fileId=x.identifier)):
                     folders[x.key] = Folder(id=folder["id"], name=folder["name"], parent=None)
                 else:
-                    raise googleapiclient.errors.HttpError
-            except googleapiclient.errors.HttpError:
+                    raise KeyError
+            except (googleapiclient.errors.HttpError, KeyError):
                 folders[x.key] = None
                 print(f"Failed on drive: {x.key}")
             finally:
