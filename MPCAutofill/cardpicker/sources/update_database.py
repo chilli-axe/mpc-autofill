@@ -25,7 +25,7 @@ def explore_folder(source: Source, source_type: Type[SourceType], root_folder: F
     """
 
     t0 = time.time()
-    print(f"Locating images for source {TEXT_BOLD}{source.name}{TEXT_END}...", end="")
+    print(f"Locating images for source {TEXT_BOLD}{source.name}{TEXT_END}...", end="", flush=True)
     image_list: list[Image] = []
     folder_list: list[Folder] = [root_folder]
     with ThreadPoolExecutor(max_workers=MAX_WORKERS) as pool:
@@ -49,7 +49,7 @@ def transform_images_into_objects(
     synchronised to the database.
     """
 
-    print(f"Generating objects for source {TEXT_BOLD}{source.name}{TEXT_END}...", end="")
+    print(f"Generating objects for source {TEXT_BOLD}{source.name}{TEXT_END}...", end="", flush=True)
     t0 = time.time()
 
     cards: list[Card] = []
@@ -141,7 +141,7 @@ def transform_images_into_objects(
 
 
 def bulk_sync_objects(source: Source, cards: list[Card], cardbacks: list[Cardback], tokens: list[Token]) -> None:
-    print(f"Synchronising objects to database for source {TEXT_BOLD}{source.name}{TEXT_END}...", end="")
+    print(f"Synchronising objects to database for source {TEXT_BOLD}{source.name}{TEXT_END}...", end="", flush=True)
     t0 = time.time()
     for object_list, model in [(cards, Card), (cardbacks, Cardback), (tokens, Token)]:
         with transaction.atomic():

@@ -1,7 +1,11 @@
 {% extends 'cardpicker/base.html' %}
+{% load static %}
 
 {% block title %} {{ SITE_NAME }} Contributions {% endblock %}
 
+{% block scripts %}
+    <script src="{% static 'js/guide.bundle.js' %}"></script>
+{% endblock %}
 {% block content %}
 <div class="pt-2">
     <h2>Contributions</h2>

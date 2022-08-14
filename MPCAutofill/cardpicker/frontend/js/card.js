@@ -1,6 +1,7 @@
 import { search_api } from './search.js';
 require('bootstrap-icons/font/bootstrap-icons.css');
 import { remove_card } from './review.js';
+import { Modal } from 'bootstrap';
 
 function wrap0(idx, max) {
     // small helper function to wrap an index between 0 and max-1
@@ -11,16 +12,6 @@ function wrap0(idx, max) {
 
 function format_source(source, dpi) {
     return source + " [" + dpi.toString() + " DPI]";
-}
-
-export function thumbnail_404(source) {
-    source.src = "/static/cardpicker/error_404.png";
-    return true;
-}
-
-export function thumbnail_404_med(source) {
-    source.src = "/static/cardpicker/error_404_med.png";
-    return true;
 }
 
 export function selectElementContents(el) {
@@ -67,7 +58,7 @@ class CardBase {
         // disable hover-based shadows on the parent element temporarily while we bring up
         // the modal, then re-enable it
         this.pe.classList.remove("mpccard-hover");
-        bootstrap.Modal.getOrCreateInstance('#' + modal_id).show();
+        Modal.getOrCreateInstance('#' + modal_id).show();
         setTimeout(function () {this.pe.classList.add("mpccard-hover")}.bind(this), 100);
     }
 
@@ -264,7 +255,7 @@ export class Card extends CardBase {
             }
             document.getElementById("removeCardName").innerText = curr_name;
             if (prompt_deletion === true) {
-                bootstrap.Modal.getOrCreateInstance('#removeCardModal').show();
+                Modal.getOrCreateInstance('#removeCardModal').show();
             } else {
                 remove_card();
             }
@@ -640,6 +631,6 @@ export class CardGrid extends CardRecent {
         // but this will really select this image for the card
         this.card_obj.set_idx(this.slot - 1);
         this.card_obj.load_thumbnails();
-        bootstrap.Modal.getOrCreateInstance('#gridSelectModal').hide();
+        Modal.getOrCreateInstance('#gridSelectModal').hide();
     }
 }

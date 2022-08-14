@@ -1,99 +1,12 @@
 import Cookies from 'js-cookie';
-import { handle_error } from './base.js';
-import 'bootstrap5-toggle';
-import "bootstrap5-toggle/css/bootstrap5-toggle.min.css";
 require('jquery-ui/ui/widgets/sortable');
-
-// set the heights of the two divs containing the textarea to 100% here rather than fucking around with crispy
-function index_on_load() {
-    let textarea_elem = document.getElementById("id_card_list");
-    textarea_elem.parentElement.style.height = "100%";
-    textarea_elem.parentElement.parentElement.style.height = "100%";
-
-    $('#cardinput, #input_csv, #input_xml, #input_link').on("submit", function (eventObj) {
-        // user is submitting card input form - grab the order of selected drives and attach it to the form as a
-        // hidden input
-        let input_drives = $("<input>", {type: "hidden", name: "drive_order", value: get_drive_order()});
-        $(this).append(input_drives)
-        let input_fuzzy_search = $("<input>", {
-            type: "hidden",
-            name: "fuzzy_search",
-            value: document.getElementById("searchtype").checked
-        });
-        $(this).append(input_fuzzy_search)
-        return true;
-    });
-
-    // save search settings to cookie when closing the modal
-    $('#selectDrivesModal').on('hidden.bs.modal', save_search_settings);
-    load_search_settings();
-    // $("#blogs").slick({  // TODO: replace with masonry
-    //     infinite: true,
-    //     arrows: false,
-    //     slidesToShow: 4,
-    //     slidesToScroll: 1,
-    //     autoplay: true,
-    //     autoplaySpeed: 3000,
-    //     responsive: [
-    //         {
-    //             breakpoint: 992,
-    //             settings: {
-    //                 slidesToShow: 3,
-    //             }
-    //         },
-    //         {
-    //             breakpoint: 768,
-    //             settings: {
-    //                 slidesToShow: 2,
-    //             }
-    //         },
-    //         {
-    //             breakpoint: 576,
-    //             settings: {
-    //                 slidesToShow: 1,
-    //             }
-    //         }
-    //     ]
-    // });
+import 'bootstrap5-toggle';
+require("./base.js");
+import { base_on_load, handle_error } from './base.js';
+import "bootstrap5-toggle/css/bootstrap5-toggle.min.css";  // this css should be loaded last
 
 
-    $('#drive-order-tbody').sortable();
-
-    // alert the user if the search engine is offline
-    $.ajax({
-        type: 'POST',
-        url: '/ajax/status/',
-        success: function (data) {
-            if (data["online"] === "false") {
-                handle_error("The search engine is offline.")
-            }
-        }
-    });
-}
-
-function save_search_settings() {
-    let settings = new Object;
-    // settings["drives"] = new Object;
-    settings["drives"] = []
-
-    // save search mode settings
-    settings["fuzzy_search"] = "off";
-    if (document.getElementById("searchtype").checked) {
-        settings["fuzzy_search"] = "on";
-    }
-
-    // save drive order and enabled/disabled status
-    let drive_elements = document.getElementsByClassName("drivesource");
-    for (let i = 0; i < drive_elements.length; i++) {
-        let drive_enabled = "off";
-        if (drive_elements[i].checked) {
-            drive_enabled = "on";
-        }
-        settings["drives"].push([drive_elements[i].id, drive_enabled])
-    }
-
-    Cookies.set('search_settings', JSON.stringify(settings), {expires: 365});
-}
+//#region search settings
 
 function load_search_settings() {
     let settings = Cookies.get('search_settings');
@@ -133,6 +46,29 @@ function load_search_settings() {
     }
 }
 
+function save_search_settings() {
+    let settings = new Object;
+    settings["drives"] = []
+
+    // save search mode settings
+    settings["fuzzy_search"] = "off";
+    if (document.getElementById("searchtype").checked) {
+        settings["fuzzy_search"] = "on";
+    }
+
+    // save drive order and enabled/disabled status
+    let drive_elements = document.getElementsByClassName("drivesource");
+    for (let i = 0; i < drive_elements.length; i++) {
+        let drive_enabled = "off";
+        if (drive_elements[i].checked) {
+            drive_enabled = "on";
+        }
+        settings["drives"].push([drive_elements[i].id, drive_enabled])
+    }
+
+    Cookies.set('search_settings', JSON.stringify(settings), {expires: 365});
+}
+
 function get_drive_order() {
     // get checkbox elements from dom, in order
     let drive_elements = document.getElementsByClassName("drivesource");
@@ -145,6 +81,89 @@ function get_drive_order() {
     }
     // convert to string when outputting
     return drives.toString();
+}
+
+function configure_form_submit_hooks() {
+    $('#cardinput, #input_csv, #input_xml, #input_link').on("submit", function (eventObj) {
+        // user is submitting card input form - grab the order of selected drives and attach it to the form as a
+        // hidden input
+        let input_drives = $("<input>", {type: "hidden", name: "drive_order", value: get_drive_order()});
+        $(this).append(input_drives)
+        let input_fuzzy_search = $("<input>", {
+            type: "hidden",
+            name: "fuzzy_search",
+            value: document.getElementById("searchtype").checked
+        });
+        $(this).append(input_fuzzy_search)
+        return true;
+    });
+}
+
+//#endregion
+
+
+//#region misc
+
+function configure_textarea_height() {
+    let textarea_elem = document.getElementById("id_card_list");
+    textarea_elem.parentElement.style.height = "100%";
+    textarea_elem.parentElement.parentElement.style.height = "100%";
+}
+
+function ping_elasticsearch() {
+    // alert the user if the search engine is offline
+    $.ajax({
+        type: 'POST',
+        url: '/ajax/status/',
+        success: function (data) {
+            if (data["online"] === "false") {
+                handle_error("The search engine is offline.")
+            }
+        }
+    });
+}
+
+//#endregion
+
+// this function is called in `index.html`
+export function index_on_load() {
+    base_on_load();
+
+    configure_textarea_height();
+    configure_form_submit_hooks();
+    load_search_settings();
+    // save search settings when closing the modal
+    document.getElementById('selectDrivesModal').addEventListener('hidden.bs.modal', save_search_settings);
+    // $("#blogs").slick({  // TODO: replace with masonry
+    //     infinite: true,
+    //     arrows: false,
+    //     slidesToShow: 4,
+    //     slidesToScroll: 1,
+    //     autoplay: true,
+    //     autoplaySpeed: 3000,
+    //     responsive: [
+    //         {
+    //             breakpoint: 992,
+    //             settings: {
+    //                 slidesToShow: 3,
+    //             }
+    //         },
+    //         {
+    //             breakpoint: 768,
+    //             settings: {
+    //                 slidesToShow: 2,
+    //             }
+    //         },
+    //         {
+    //             breakpoint: 576,
+    //             settings: {
+    //                 slidesToShow: 1,
+    //             }
+    //         }
+    //     ]
+    // });
+    $('#drive-order-tbody').sortable();
+    ping_elasticsearch();
 }
 
 export function toggle_checkboxes() {

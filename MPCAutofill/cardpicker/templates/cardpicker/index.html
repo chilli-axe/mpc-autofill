@@ -10,6 +10,10 @@
     {% comment %} <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.css"/> {% endcomment %}
     {% comment %} <script type="text/javascript" src="//cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.min.js"></script> {% endcomment %}
 
+    <script type="text/javascript">
+        window.addEventListener('load', Library.index.index_on_load, false);
+    </script>
+
     {% load crispy_forms_tags %}
 
     {% if mobile %}
@@ -171,7 +175,7 @@
                             <tr id="{{ source.key }}-row" style="cursor: grab">
                                 <td style="vertical-align: middle">
                                     <div class="active text-center">
-                                        <input type="checkbox" class="drivesource" checked
+                                        <input type="checkbox" class="drivesource" checked data-toggle="toggle"
                                                 data-bs-toggle="toggle" id="{{ source.key }}" data-bs-size="sm">
                                     </div>
                                 </td>

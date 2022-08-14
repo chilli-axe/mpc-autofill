@@ -1,7 +1,11 @@
-import { insert_data, update_qty, bracket, switch_faces, insert_xml, insert_text, insert_link } from  './search.js';
-import { thumbnail_404, thumbnail_404_med, selectElementContents } from './card.js';
 import 'bootstrap5-toggle';
-import "bootstrap5-toggle/css/bootstrap5-toggle.min.css";
+import { Modal, Tooltip } from 'bootstrap';
+
+
+require("./base.js");
+import { insert_data, update_qty, bracket, switch_faces, insert_xml, insert_text, insert_link } from  './search.js';
+import { selectElementContents } from './card.js';
+import "bootstrap5-toggle/css/bootstrap5-toggle.min.css"; // this css should be loaded last
 
 
 function download(filename, text) {
@@ -190,7 +194,7 @@ export function remove_card() {
             }
         }
     }
-    bootstrap.Modal.getOrCreateInstance('#removeCardModal').hide();
+    Modal.getOrCreateInstance('#removeCardModal').hide();
 }
 
 function set_cardstock(data) {
@@ -214,7 +218,7 @@ function setup_toasts(toasts) {
     toasts.forEach(toast => setup_toast(toast));
 }
 
-function review_on_load() {
+export function review_on_load() {
     setup_toasts(["maxCardsToast", "errorToast"]);
     set_cardstock(order);
     insert_data(drive_order, fuzzy_search, order);
@@ -222,10 +226,8 @@ function review_on_load() {
     // TODO: check this
     var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
     var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-      return new bootstrap.Tooltip(tooltipTriggerEl)
+      return new Tooltip(tooltipTriggerEl)
     })
 }
 
-window.addEventListener('load', review_on_load, false);
-
-export { thumbnail_404, thumbnail_404_med, switch_faces, insert_xml, insert_text, insert_link, selectElementContents };
+export { switch_faces, insert_xml, insert_text, insert_link, selectElementContents };

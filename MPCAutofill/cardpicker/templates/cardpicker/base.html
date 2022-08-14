@@ -19,9 +19,8 @@
               content="The easiest way to print kitchen-table proxy cards for Magic: The Gathering (MTG) with MakePlayingCards (MPC). No prior knowledge required.">
     {% endblock %}
 
-    <script src="{% static 'js/base.bundle.js' %}"></script>
+    <script src="{% static 'js/vendor.bundle.js' %}"></script>
     {% block scripts %}{% endblock %} {# any js that child templates need to load #}
-    <link rel="stylesheet" type="text/css" href="{% static 'css/custom.css' %}">
 </head>
 <body id="id_body" style="touch-action: manipulation;">
     {# Navbar #}
@@ -89,13 +88,11 @@
                     </p>
                     <div class="mt-2 pt-2 border-top">
                         <div class="row">
-                            <div class="col-6">
-                                <button type="button" class="btn btn-outline-info btn-sm w-100"
-                                        onclick="Library.base.cookie_toast_opt_out()">Opt me out please!</button>
+                            <div id="cookieToastOptOut" class="col-6">
+                                <button type="button" class="btn btn-outline-info btn-sm w-100">Opt me out please!</button>
                             </div>
-                            <div class="col-6">
-                                <button type="button" class="btn btn-primary btn-sm w-100"
-                                        onclick="Library.base.cookie_toast_opt_in()">That's fine!</button>
+                            <div id="cookieToastOptIn" class="col-6">
+                                <button type="button" class="btn btn-primary btn-sm w-100">That's fine!</button>
                             </div>
                         </div>
                     </div>

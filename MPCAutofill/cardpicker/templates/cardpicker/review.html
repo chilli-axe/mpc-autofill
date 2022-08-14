@@ -8,12 +8,10 @@
 {% endblock %}
 
 {% block content %}
-
-
     {% load crispy_forms_tags %}
 
     <script type="text/javascript">
-        window.onbeforeunload = function() { return false; }
+        window.onbeforeunload = function() { return false; }  // "you have unsaved changes" prompt when leaving page
         var groups = {};
         var max_group = 2;
         var drive_order = {{ drive_order|safe }}.toString();
@@ -23,6 +21,7 @@
         var front_visible = true;
         var prompt_deletion = true;
         var cards_not_found = [];
+        window.addEventListener('load', Library.review.review_on_load, false);
     </script>
 
     {# toast to alert the user that they've hit MPC's deck size cap #}
