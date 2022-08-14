@@ -164,7 +164,7 @@ class GoogleDrive(SourceType):
                             created_time=item["createdTime"],
                             folder=folder,
                             height=item["imageMediaMetadata"]["height"],
-                            size=item["size"],
+                            size=int(item["size"]),
                         )
                     )
 

@@ -31,7 +31,8 @@ def explore_folder(source: Source, source_type: Type[SourceType], root_folder: F
         while len(folder_list) > 0:
             folder = folder_list.pop()
             pool.submit(add_images_in_folder_to_list, source_type=source_type, folder=folder, image_list=image_list)
-            folder_list += source_type.get_all_folders_inside_folder(folder)
+            sub_folders = source_type.get_all_folders_inside_folder(folder)
+            folder_list += list(filter(lambda x: not x.name.startswith("!"), sub_folders))
     print(
         f" and done! Located {TEXT_BOLD}{len(image_list):,}{TEXT_END} images "
         f"in {TEXT_BOLD}{(time.time() - t0):.2f}{TEXT_END} seconds."
@@ -56,7 +57,7 @@ def transform_images_into_objects(
 
     for image in images:
         # reasons why an image might be invalid
-        if int(image.size) > 30_000_000:
+        if image.size > 30_000_000:
             print(f"Can't index this card: <{image.id}> {image.name}, size: {image.size:,} bytes")
             continue
         try:
