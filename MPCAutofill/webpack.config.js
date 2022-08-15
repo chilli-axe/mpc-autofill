@@ -10,6 +10,7 @@ module.exports = {
     guide: './cardpicker/frontend/js/guide.js',
     new: './cardpicker/frontend/js/new.js',
     contributions: './cardpicker/frontend/js/contributions.js',
+    legal: './cardpicker/frontend/js/legal.js',
   },
   output: {
     filename: '[name].bundle.js',
@@ -19,20 +20,41 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.css$/,
-        use: ['style-loader', 'css-loader']
-      },
+        test: /\.(s?css)$/,
+        use: [
+          {
+            loader: 'style-loader'
+          },
+          {
+            loader: 'css-loader'
+          },
+          {
+            loader: 'postcss-loader',
+            options: {
+              postcssOptions: {
+                plugins: () => [
+                  require('autoprefixer')
+                ]
+              }
+            }
+          },
+          {
+            loader: 'sass-loader'
+          }
+        ]
+      }
+
     ],
   },
   plugins: [
-    // new BundleAnalyzerPlugin(),
+    new BundleAnalyzerPlugin(),
     new webpack.ProvidePlugin({$: 'jquery', jQuery: 'jquery'}),
     // new webpack.ProvidePlugin({bootstrap: 'bootstrap'}),
   ],
-  optimization: {
-    splitChunks: {
-      chunks: 'all',
-      name: 'vendor',
-    },
-  }
+  // optimization: {
+  //   splitChunks: {
+  //     chunks: 'all',
+  //     name: 'vendor',
+  //   },
+  // }
 };
