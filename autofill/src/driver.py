@@ -272,7 +272,7 @@ class AutofillDriver:
             self.insert_image(pid, image, slots=unfilled_slot_numbers)
 
     def upload_and_insert_images(self, images: CardImageCollection) -> None:
-        for i in range(len(images.cards)):
+        for _ in range(len(images.cards)):
             image: CardImage = images.queue.get()
             if image.downloaded:
                 self.upload_and_insert_image(image)
