@@ -26,34 +26,7 @@ from src.webdrivers import get_chrome_driver
 
 
 @attr.s
-class OrderStatusBarBaseClass:
-    order: CardOrder = attr.ib(default=attr.Factory(CardOrder.from_xml_in_folder))
-    state: str = attr.ib(init=False, default=States.initialising)
-
-    manager: enlighten.Manager = attr.ib(init=False, default=attr.Factory(enlighten.get_manager))
-    status_bar: enlighten.StatusBar = attr.ib(init=False, default=False)
-    download_bar: enlighten.Counter = attr.ib(init=False, default=None)
-    upload_bar: enlighten.Counter = attr.ib(init=False, default=None)
-
-    def configure_bars(self) -> None:
-        num_images = len(self.order.fronts.cards) + len(self.order.backs.cards)
-        status_format = "State: {state}, Action: {action}"
-        self.status_bar = self.manager.status_bar(
-            status_format=status_format,
-            state=f"{TEXT_BOLD}{self.state}{TEXT_END}",
-            action=f"{TEXT_BOLD}N/A{TEXT_END}",
-            position=1,
-        )
-        self.download_bar = self.manager.counter(total=num_images, desc="Images Downloaded", position=2)
-        self.upload_bar = self.manager.counter(total=num_images, desc="Images Uploaded", position=3)
-
-        self.status_bar.refresh()
-        self.download_bar.refresh()
-        self.upload_bar.refresh()
-
-
-@attr.s
-class AutofillDriver(OrderStatusBarBaseClass):
+class AutofillDriver:
     driver: webdriver.remote.webdriver.WebDriver = attr.ib(
         default=None
     )  # delay initialisation until XML is selected and parsed
@@ -63,7 +36,13 @@ class AutofillDriver(OrderStatusBarBaseClass):
         init=False,
         default="https://www.makeplayingcards.com/design/custom-blank-card.html",
     )
+    order: CardOrder = attr.ib(default=attr.Factory(CardOrder.from_xml_in_folder))
+    state: str = attr.ib(init=False, default=States.initialising)
     action: Optional[str] = attr.ib(init=False, default=None)
+    manager: enlighten.Manager = attr.ib(init=False, default=attr.Factory(enlighten.get_manager))
+    status_bar: enlighten.StatusBar = attr.ib(init=False, default=False)
+    download_bar: enlighten.Counter = attr.ib(init=False, default=None)
+    upload_bar: enlighten.Counter = attr.ib(init=False, default=None)
 
     # region initialisation
     def initialise_driver(self) -> None:
@@ -79,6 +58,22 @@ class AutofillDriver(OrderStatusBarBaseClass):
             )
 
         self.driver = driver
+
+    def configure_bars(self) -> None:
+        num_images = len(self.order.fronts.cards) + len(self.order.backs.cards)
+        status_format = "State: {state}"
+        self.status_bar = self.manager.status_bar(
+            status_format=status_format,
+            state=f"{TEXT_BOLD}{self.state}{TEXT_END}",
+            action=f"{TEXT_BOLD}N/A{TEXT_END}",
+            position=1,
+        )
+        self.download_bar = self.manager.counter(total=num_images, desc="Images Downloaded", position=2)
+        self.upload_bar = self.manager.counter(total=num_images, desc="Images Uploaded", position=3)
+
+        self.status_bar.refresh()
+        self.download_bar.refresh()
+        self.upload_bar.refresh()
 
     def __attrs_post_init__(self) -> None:
         self.configure_bars()
