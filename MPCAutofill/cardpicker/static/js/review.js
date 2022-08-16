@@ -165,7 +165,7 @@ function download_all() {
         let curr_obj = $(this).data("obj");
         // check if the Card is empty before trying to retrieve its current img ID
         if (!curr_obj.empty) {
-            card_set = card_set.add(curr_obj.get_curr_img().identifier);
+            card_set = card_set.add(curr_obj.get_curr_img().download_link);
         }
     })
 
