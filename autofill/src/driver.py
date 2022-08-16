@@ -26,14 +26,38 @@ from src.webdrivers import get_chrome_driver
 
 
 @attr.s
-class OrderStatusBarBaseClass:
+class AutofillDriver:
+    driver: webdriver.remote.webdriver.WebDriver = attr.ib(
+        default=None
+    )  # delay initialisation until XML is selected and parsed
+    driver_callable: Callable[[bool], WebDriver] = attr.ib(default=get_chrome_driver)
+    headless: bool = attr.ib(default=False)
+    starting_url: str = attr.ib(
+        init=False,
+        default="https://www.makeplayingcards.com/design/custom-blank-card.html",
+    )
     order: CardOrder = attr.ib(default=attr.Factory(CardOrder.from_xml_in_folder))
     state: str = attr.ib(init=False, default=States.initialising)
-
+    action: Optional[str] = attr.ib(init=False, default=None)
     manager: enlighten.Manager = attr.ib(init=False, default=attr.Factory(enlighten.get_manager))
     status_bar: enlighten.StatusBar = attr.ib(init=False, default=False)
     download_bar: enlighten.Counter = attr.ib(init=False, default=None)
     upload_bar: enlighten.Counter = attr.ib(init=False, default=None)
+
+    # region initialisation
+    def initialise_driver(self) -> None:
+        try:
+            driver = self.driver_callable(self.headless)
+            driver.set_window_size(1200, 900)
+            driver.implicitly_wait(5)
+            print(f"Successfully initialised {TEXT_BOLD}{driver.name}{TEXT_END} driver.")
+        except ValueError as e:
+            raise Exception(
+                f"An error occurred while attempting to configure the webdriver for {self.driver.name}. "
+                f"Please make sure you have installed {self.driver.name} and that it is up to date: {e}"
+            )
+
+        self.driver = driver
 
     def configure_bars(self) -> None:
         num_images = len(self.order.fronts.cards) + len(self.order.backs.cards)
@@ -50,35 +74,6 @@ class OrderStatusBarBaseClass:
         self.status_bar.refresh()
         self.download_bar.refresh()
         self.upload_bar.refresh()
-
-
-@attr.s
-class AutofillDriver(OrderStatusBarBaseClass):
-    driver: webdriver.remote.webdriver.WebDriver = attr.ib(
-        default=None
-    )  # delay initialisation until XML is selected and parsed
-    driver_callable: Callable[[bool], WebDriver] = attr.ib(default=get_chrome_driver)
-    headless: bool = attr.ib(default=False)
-    starting_url: str = attr.ib(
-        init=False,
-        default="https://www.makeplayingcards.com/design/custom-blank-card.html",
-    )
-    action: Optional[str] = attr.ib(init=False, default=None)
-
-    # region initialisation
-    def initialise_driver(self) -> None:
-        try:
-            driver = self.driver_callable(self.headless)
-            driver.set_window_size(1200, 900)
-            driver.implicitly_wait(5)
-            print(f"Successfully initialised {TEXT_BOLD}{driver.name}{TEXT_END} driver.")
-        except ValueError as e:
-            raise Exception(
-                f"An error occurred while attempting to configure the webdriver for {self.driver.name}. "
-                f"Please make sure you have installed {self.driver.name} and that it is up to date: {e}"
-            )
-
-        self.driver = driver
 
     def __attrs_post_init__(self) -> None:
         self.configure_bars()
@@ -277,7 +272,7 @@ class AutofillDriver(OrderStatusBarBaseClass):
             self.insert_image(pid, image, slots=unfilled_slot_numbers)
 
     def upload_and_insert_images(self, images: CardImageCollection) -> None:
-        for i in range(len(images.cards)):
+        for _ in range(len(images.cards)):
             image: CardImage = images.queue.get()
             if image.downloaded:
                 self.upload_and_insert_image(image)

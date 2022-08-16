@@ -107,6 +107,9 @@ class GoogleScriptsAPIs(str, Enum):
         "https://script.google.com/macros/s/AKfycbzzCWc2x3tfQU1Zp45LB1P19FNZE-4njwzfKT5_Rx399h-5dELZWyvf/exec"
     )
 
+    def __str__(self) -> str:
+        return str(self.value)
+
 
 BRACKETS = [18, 36, 55, 72, 90, 108, 126, 144, 162, 180, 198, 216, 234, 396, 504, 612]
 THREADS = 5  # shared between CardImageCollections

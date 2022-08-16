@@ -117,7 +117,7 @@ class CardImage:
         return card_image
 
     def download_image(self, queue: Queue["CardImage"], download_bar: enlighten.Counter) -> None:
-        if not self.file_exists() and not self.errored:
+        if not self.file_exists() and not self.errored and self.file_path is not None:
             self.errored = not download_google_drive_file(self.drive_id, self.file_path)
 
         if self.file_exists() and not self.errored:
