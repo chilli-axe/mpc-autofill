@@ -61,7 +61,7 @@ class AutofillDriver:
 
     def configure_bars(self) -> None:
         num_images = len(self.order.fronts.cards) + len(self.order.backs.cards)
-        status_format = "State: {state}"
+        status_format = "State: {state}, Action: {action}"
         self.status_bar = self.manager.status_bar(
             status_format=status_format,
             state=f"{TEXT_BOLD}{self.state}{TEXT_END}",
