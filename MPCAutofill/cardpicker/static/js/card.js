@@ -561,8 +561,6 @@ class Card extends CardBase {
                 search_type = "back";
                 // specify common cardback ID
                 common_back_id = $("#slot--back").data("obj").get_curr_img().id;
-            } else if (this.req_type === "token") {
-                search_type = "token";
             }
 
             // query elasticsearch for info w/ the new search query and pass the current card slot
