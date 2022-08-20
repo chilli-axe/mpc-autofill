@@ -12,5 +12,6 @@ pyinstaller
 pytest
 ratelimit
 requests
+sanitize-filename
 selenium
 webdriver-manager==3.5.4

@@ -11,6 +11,7 @@ import enlighten
 import InquirerPy
 import src.constants as constants
 from defusedxml.ElementTree import parse as defused_parse
+from sanitize_filename import sanitize
 from src.utils import (
     CURRDIR,
     TEXT_BOLD,
@@ -73,13 +74,12 @@ class CardImage:
         if self.name is None:
             self.file_path = None
         else:
-            file_path = os.path.join(image_directory(), self.name)
+            file_path = os.path.join(image_directory(), sanitize(self.name))
             if not os.path.isfile(file_path) or os.path.getsize(file_path) <= 0:
                 # The filepath without ID in parentheses doesn't exist - change the filepath to contain the ID instead
                 name_split = self.name.rsplit(".", 1)
                 file_path = os.path.join(
-                    image_directory(),
-                    f"{name_split[0]} ({self.drive_id}).{name_split[1]}",
+                    image_directory(), sanitize(f"{name_split[0]} ({self.drive_id}).{name_split[1]}")
                 )
             self.file_path = file_path
 
