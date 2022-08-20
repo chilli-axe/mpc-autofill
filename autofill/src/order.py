@@ -9,9 +9,10 @@ from xml.etree.ElementTree import Element, ParseError
 import attr
 import enlighten
 import InquirerPy
-import src.constants as constants
 from defusedxml.ElementTree import parse as defused_parse
 from sanitize_filename import sanitize
+
+import src.constants as constants
 from src.utils import (
     CURRDIR,
     TEXT_BOLD,
@@ -182,10 +183,7 @@ class CardImageCollection:
             missing_slots = card_image_collection.all_slots() - card_image_collection.slots()
             if missing_slots:
                 card_image_collection.cards.append(
-                    CardImage(
-                        drive_id=fill_image_id.strip(' "'),
-                        slots=list(missing_slots),
-                    )
+                    CardImage(drive_id=fill_image_id.strip(' "'), slots=list(missing_slots))
                 )
 
         # postponing validation from post-init so we don't error for missing slots that `fill_image_id` would fill
@@ -298,9 +296,7 @@ class CardOrder:
         root_dict = unpack_element(element, [x.value for x in constants.BaseTags])
         details = Details.from_element(root_dict[constants.BaseTags.details])
         fronts = CardImageCollection.from_element(
-            element=root_dict[constants.BaseTags.fronts],
-            num_slots=details.quantity,
-            face=constants.Faces.front,
+            element=root_dict[constants.BaseTags.fronts], num_slots=details.quantity, face=constants.Faces.front
         )
         cardback_elem = root_dict[constants.BaseTags.cardback]
         if cardback_elem.text is not None:
@@ -313,9 +309,7 @@ class CardOrder:
         else:
             print(f"{TEXT_BOLD}Warning{TEXT_END}: Your order file did not contain a common cardback image.")
             backs = CardImageCollection.from_element(
-                element=root_dict[constants.BaseTags.backs],
-                num_slots=details.quantity,
-                face=constants.Faces.back,
+                element=root_dict[constants.BaseTags.backs], num_slots=details.quantity, face=constants.Faces.back
             )
         # If the order has a single cardback, set its slots to [0], as it will only be uploaded and inserted into
         # a single slot
@@ -354,12 +348,7 @@ class CardOrder:
             file_name = xml_glob[0]
         else:
             xml_select_string = "Multiple XML files found. Please select one for this order: "
-            questions = {
-                "type": "list",
-                "name": "xml_choice",
-                "message": xml_select_string,
-                "choices": xml_glob,
-            }
+            questions = {"type": "list", "name": "xml_choice", "message": xml_select_string, "choices": xml_glob}
             answers = InquirerPy.prompt(questions)
             file_name = answers["xml_choice"]
         return cls.from_file_name(file_name)

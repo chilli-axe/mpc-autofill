@@ -3,12 +3,13 @@ from concurrent.futures import ThreadPoolExecutor
 from itertools import groupby
 from typing import Optional, Type
 
+from django.conf import settings
+from django.db import transaction
+
 from cardpicker.models import Card, Cardback, Source, Token
 from cardpicker.sources.source_types import Folder, Image, SourceType, SourceTypeChoices
 from cardpicker.utils import TEXT_BOLD, TEXT_END
 from cardpicker.utils.to_searchable import to_searchable
-from django.conf import settings
-from django.db import transaction
 
 MAX_WORKERS = 5
 DPI_HEIGHT_RATIO = 300 / 1110  # 300 DPI for image of vertical resolution 1110 pixels
@@ -65,7 +66,7 @@ def transform_images_into_objects(
             if not name or not extension:
                 continue
         except ValueError:
-            print(f"Issue with parsing image name: {image.name}")
+            print(f"Skipping this image because it has no file extension: {image.name}")
             continue
 
         dpi = 10 * round(int(image.height) * DPI_HEIGHT_RATIO / 10)

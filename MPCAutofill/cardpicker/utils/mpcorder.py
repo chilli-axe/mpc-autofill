@@ -20,6 +20,7 @@ from xml.etree.ElementTree import Element
 
 import chardet
 import defusedxml.ElementTree as ET
+
 from cardpicker.models import DFCPair
 from cardpicker.utils.link_imports import ImportSites
 from cardpicker.utils.search_functions import process_line, text_to_list

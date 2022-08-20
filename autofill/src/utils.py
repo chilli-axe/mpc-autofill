@@ -9,8 +9,9 @@ from xml.etree.ElementTree import Element
 import numpy as np
 import ratelimit
 import requests
-import src.constants as constants
 from selenium.common.exceptions import NoAlertPresentException
+
+import src.constants as constants
 
 if TYPE_CHECKING:
     from driver import AutofillDriver

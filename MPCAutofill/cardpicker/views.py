@@ -3,6 +3,12 @@ from datetime import timedelta
 from typing import Any, Callable, Optional, TypeVar, Union, cast
 
 from blog.models import BlogPost
+
+from django.db import connection
+from django.http import HttpRequest, HttpResponse, JsonResponse
+from django.shortcuts import redirect, render
+from django.utils import timezone
+
 from cardpicker.forms import InputCSV, InputLink, InputText, InputXML
 from cardpicker.models import Card, Cardback, Source, Token
 from cardpicker.sources.source_types import SourceTypeChoices
@@ -19,10 +25,6 @@ from cardpicker.utils.search_functions import (
     search_new_elasticsearch_definition,
 )
 from cardpicker.utils.to_searchable import to_searchable
-from django.db import connection
-from django.http import HttpRequest, HttpResponse, JsonResponse
-from django.shortcuts import redirect, render
-from django.utils import timezone
 
 # https://mypy.readthedocs.io/en/stable/generics.html#declaring-decorators
 F = TypeVar("F", bound=Callable[..., Any])

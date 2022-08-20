@@ -5,6 +5,7 @@ import attr
 import enlighten
 import InquirerPy
 from fpdf import FPDF
+
 from src.constants import THREADS, States
 from src.order import CardOrder
 from src.utils import TEXT_BOLD, TEXT_END

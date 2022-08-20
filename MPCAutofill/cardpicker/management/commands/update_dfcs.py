@@ -5,10 +5,12 @@ from typing import Any
 import ratelimit
 import requests
 from bulk_sync import bulk_sync
+
+from django.core.management.base import BaseCommand
+
 from cardpicker.constants import DFC_URL, MELD_URL
 from cardpicker.models import DFCPair
 from cardpicker.utils.to_searchable import to_searchable
-from django.core.management.base import BaseCommand
 
 
 @ratelimit.sleep_and_retry  # type: ignore  # `ratelimit` does not implement decorator typing correctly

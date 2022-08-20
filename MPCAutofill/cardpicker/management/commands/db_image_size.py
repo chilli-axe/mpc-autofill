@@ -1,8 +1,9 @@
 from typing import Any
 
-from cardpicker.models import Card, Cardback, Token
 from django.core.management.base import BaseCommand
 from django.db.models import Sum
+
+from cardpicker.models import Card, Cardback, Token
 
 
 class Command(BaseCommand):

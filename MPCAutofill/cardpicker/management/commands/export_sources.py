@@ -1,7 +1,8 @@
 from typing import Any
 
-from cardpicker.models import Source
 from django.core.management.base import BaseCommand
+
+from cardpicker.models import Source
 
 
 def export_sources_csv() -> None:

@@ -1,12 +1,13 @@
 import time
 from typing import Any, Optional
 
+from django.core import management
+from django.core.management.base import BaseCommand
+
 from cardpicker.models import Source
 from cardpicker.sources.update_database import update_database
 from cardpicker.utils import log_hours_minutes_seconds_elapsed
 from cardpicker.utils.search_functions import ping_elasticsearch
-from django.core import management
-from django.core.management.base import BaseCommand
 
 
 class Command(BaseCommand):

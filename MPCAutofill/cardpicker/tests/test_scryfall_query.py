@@ -1,6 +1,7 @@
 import json
 
 import requests
+
 from cardpicker.constants import DFC_URL, MELD_URL
 
 

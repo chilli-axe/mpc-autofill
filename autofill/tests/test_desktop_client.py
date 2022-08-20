@@ -7,10 +7,11 @@ from typing import Generator
 from xml.etree import ElementTree
 
 import pytest
-import src.constants as constants
-import src.utils
 from enlighten import Counter
 from selenium.webdriver.common.by import By
+
+import src.constants as constants
+import src.utils
 from src.driver import AutofillDriver
 from src.order import CardImage, CardImageCollection, CardOrder, Details
 from src.pdf_maker import PdfExporter

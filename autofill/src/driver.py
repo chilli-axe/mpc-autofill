@@ -13,6 +13,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.support.expected_conditions import invisibility_of_element
 from selenium.webdriver.support.ui import Select, WebDriverWait
+
 from src.constants import THREADS, States
 from src.order import CardImage, CardImageCollection, CardOrder
 from src.utils import (
@@ -122,8 +123,7 @@ class AutofillDriver:
         self.state = state
         self.action = action
         self.status_bar.update(
-            state=f"{TEXT_BOLD}{self.state}{TEXT_END}",
-            action=f"{TEXT_BOLD}{self.action or 'N/A'}{TEXT_END}",
+            state=f"{TEXT_BOLD}{self.state}{TEXT_END}", action=f"{TEXT_BOLD}{self.action or 'N/A'}{TEXT_END}"
         )
         self.status_bar.refresh()
 

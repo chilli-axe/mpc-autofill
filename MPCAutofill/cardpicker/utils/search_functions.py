@@ -2,17 +2,19 @@ import threading
 from datetime import timedelta
 from typing import Any, Callable, Optional, Type, TypeVar, cast
 
-from cardpicker.documents import CardbackSearch, CardSearch, TokenSearch
-from cardpicker.utils.to_searchable import to_searchable
-from django.conf import settings
-from django.http import HttpRequest
-from django.utils import timezone
 from elasticsearch import Elasticsearch
 from elasticsearch.exceptions import ConnectionError as ElasticConnectionError
 from elasticsearch_dsl.document import Document, Search
 from elasticsearch_dsl.index import Index
 from elasticsearch_dsl.query import Match
 from Levenshtein import distance
+
+from django.conf import settings
+from django.http import HttpRequest
+from django.utils import timezone
+
+from cardpicker.documents import CardbackSearch, CardSearch, TokenSearch
+from cardpicker.utils.to_searchable import to_searchable
 
 thread_local = threading.local()  # Should only be called once per thread
 

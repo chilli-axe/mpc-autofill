@@ -1,9 +1,10 @@
 from datetime import datetime
 from typing import Any, Optional
 
-from cardpicker.sources.source_types import SourceTypeChoices
 from django.db import models
 from django.utils import dateformat
+
+from cardpicker.sources.source_types import SourceTypeChoices
 
 
 class Source(models.Model):

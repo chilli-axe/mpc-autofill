@@ -2,15 +2,17 @@ from typing import TYPE_CHECKING, Optional, Type
 
 import googleapiclient.errors
 from attr import define
+from tqdm import tqdm
+
+from django.db.models import TextChoices
+from django.utils.translation import gettext_lazy
+
 from cardpicker.sources.api import (
     Folder,
     Image,
     execute_google_drive_api_call,
     find_or_create_google_drive_service,
 )
-from django.db.models import TextChoices
-from django.utils.translation import gettext_lazy
-from tqdm import tqdm
 
 if TYPE_CHECKING:
     from cardpicker.models import Source
