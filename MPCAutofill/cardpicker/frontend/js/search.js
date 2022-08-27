@@ -136,7 +136,6 @@ function alert_missing_versions(cards_not_found) {
             // formatting for drive ID field
             let id_element = document.createElement("td");
             id_element.style.textAlign = "center";
-            // id_element.innerText = cards_not_found[i].id;
 
             let id_text_element = document.createElement("code");
             id_text_element.innerText = cards_not_found[i].identifier;
@@ -147,24 +146,32 @@ function alert_missing_versions(cards_not_found) {
             slot_element.style.textAlign = "center";
             slot_element.innerText = cards_not_found[i].slot;
 
+            // formatting for face field
+            let face_element = document.createElement("td");
+            face_element.style.textAlign = "center";
+            face_element.innerText = cards_not_found[i].face;
+
             // formatting for search query field
             let query_element = document.createElement("td");
             if (!cards_not_found[i].query || cards_not_found[i].query === "None") {
                 query_element.innerText = "Not given"
             } else {
-                query_element.innerText = cards_not_found[i].query;
+                let query_text_element = document.createElement("code");
+                query_text_element.innerText = cards_not_found[i].query;
+                query_element.appendChild(query_text_element);
             }
 
             // attach all three to the row element, then append row element to the table
             row_element.appendChild(id_element);
             row_element.appendChild(slot_element);
+            row_element.appendChild(face_element);
             row_element.appendChild(query_element);
             not_found_table.appendChild(row_element);
         }
 
         // show the modal
         setTimeout(function () {
-            Modal.getOrCreateInstance('#missingCardsModal').hide()
+            Modal.getOrCreateInstance('#missingCardsModal').show()
         }, 700);
     }
 }

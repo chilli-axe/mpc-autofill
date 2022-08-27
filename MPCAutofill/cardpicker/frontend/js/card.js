@@ -236,7 +236,8 @@ export class Card extends CardBase {
         cards_not_found.push({
             identifier: identifier,
             query: this.query,
-            slot: this.slot + 1
+            slot: this.slot + 1,
+            face: this.face,
         })
     }
 
