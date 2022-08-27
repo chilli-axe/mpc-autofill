@@ -1,7 +1,7 @@
 import { search_api } from './search.js';
 require('bootstrap-icons/font/bootstrap-icons.css');
 import { remove_card } from './review.js';
-import { Modal } from 'bootstrap';
+import Modal from 'bootstrap/js/dist/modal';
 
 function wrap0(idx, max) {
     // small helper function to wrap an index between 0 and max-1

@@ -47,14 +47,14 @@ module.exports = {
     ],
   },
   plugins: [
-    new BundleAnalyzerPlugin(),
+    // new BundleAnalyzerPlugin(),
     new webpack.ProvidePlugin({$: 'jquery', jQuery: 'jquery'}),
-    // new webpack.ProvidePlugin({bootstrap: 'bootstrap'}),
   ],
   // optimization: {
   //   splitChunks: {
   //     chunks: 'all',
   //     name: 'vendor',
+  //     // maxSize: 50000,
   //   },
   // }
 };

@@ -1,5 +1,5 @@
 import Cookies from 'js-cookie';
-import { Toast } from 'bootstrap';
+import Toast from 'bootstrap/js/dist/toast';
 
 import '../scss/styles.scss'
 // import "bootswatch/dist/superhero/bootstrap.min.css"; // TODO: read theme from env var and this is super inefficient

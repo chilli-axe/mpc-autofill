@@ -1,4 +1,8 @@
 import Cookies from 'js-cookie';
+require('bootstrap/js/dist/modal');
+
+require('bootstrap/js/dist/dropdown');
+
 require('jquery-ui/ui/widgets/sortable');
 import 'bootstrap5-toggle';
 require("./base.js");
@@ -121,6 +125,22 @@ function ping_elasticsearch() {
             }
         }
     });
+}
+
+//#endregion
+
+//#region form submission
+
+export function input_link_submit() {
+    $('#input_link').submit();
+}
+
+export function input_csv_submit() {
+    $('#input_csv').submit();
+}
+
+export function input_xml_submit() {
+    $('#input_xml').submit();
 }
 
 //#endregion

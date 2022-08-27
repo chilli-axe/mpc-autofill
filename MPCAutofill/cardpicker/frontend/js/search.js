@@ -1,4 +1,4 @@
-import { Modal } from 'bootstrap';
+import Modal from 'bootstrap/js/dist/modal';
 
 import { handle_error } from './base.js';
 import { Card } from './card.js';

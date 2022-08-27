@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "webpack --mode development --watch",
+    "dev": "webpack --mode development",
     "build": "webpack --mode production"
   },
   "keywords": [],
@@ -13,6 +13,7 @@
   "license": "ISC",
   "devDependencies": {
     "autoprefixer": "^10.4.8",
+    "compression-webpack-plugin": "^10.0.0",
     "css-loader": "^6.7.1",
     "postcss-loader": "^7.0.1",
     "sass": "^1.54.4",
