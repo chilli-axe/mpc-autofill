@@ -5,7 +5,7 @@ require('bootstrap/js/dist/dropdown');
 
 require("./base.js");
 import { insert_data, update_qty, bracket, switch_faces, insert_xml, insert_text, insert_link } from  './search.js';
-import { selectElementContents } from './card.js';
+import { selectElementContents, trigger_download } from './card.js';
 import "bootstrap5-toggle/css/bootstrap5-toggle.min.css"; // this css should be loaded last
 
 

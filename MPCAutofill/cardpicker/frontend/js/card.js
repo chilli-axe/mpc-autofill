@@ -25,7 +25,7 @@ export function selectElementContents(el) {
     sel.addRange(range);
 }
 
-function trigger_download(img_url, new_tab = true) {
+export function trigger_download(img_url, new_tab = true) {
     // download an image with the given download link
     let element = document.createElement('a');
     element.href = img_url;
