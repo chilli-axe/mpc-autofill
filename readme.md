@@ -16,10 +16,17 @@ JetBrains supports this project's development through their [Open Source Develop
 # Monorepo Structure
 * Web project:
   * Located in `/MPCAutofill`,
-  * The backend is built with Django 4 and uses Elasticsearch 7 for managing search results,
-      * The engine for database linked to the Django project is not critical - SQLite is fine,
-  * The frontend is built with Bootstrap 5 and jQuery,
   * Images stored in the Google Drives connected to the project are indexed in Elasticsearch,
+  * Stack:
+    * Backend:
+      * Django 4,
+      * The database of your choosing (Elasticsearch is fine),
+      * Elasticsearch 7.x,
+      * Google Drive API integration,
+    * Frontend:
+      * jQuery + jQuery UI,
+      * Bootstrap 5,
+      * Webpack + Babel for compiling and bundling the frontend,
   * Facilitates the generation of XML orders for use with the desktop client,
   * Intended to be deployed as a web application but can also be spun up locally with Docker.
       * Note: the Docker bulid is broken at the moment.
