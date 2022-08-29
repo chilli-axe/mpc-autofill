@@ -1,6 +1,7 @@
 const path = require('path');
 const webpack = require('webpack');  // to access built-in plugins
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
 module.exports = {
   mode: 'production',
@@ -13,8 +14,8 @@ module.exports = {
     legal: './cardpicker/frontend/js/legal.js',
   },
   output: {
-    filename: '[name].bundle.js',
-    path: path.resolve(__dirname, './cardpicker/static/js'),
+    filename: 'js/[name].bundle.js',
+    path: path.resolve(__dirname, './cardpicker/static'),
     library: ['Library', '[name]'],
   },
   module: {
@@ -22,12 +23,8 @@ module.exports = {
       {
         test: /\.(s?css)$/,
         use: [
-          {
-            loader: 'style-loader'
-          },
-          {
-            loader: 'css-loader'
-          },
+          MiniCssExtractPlugin.loader,
+          'css-loader',
           {
             loader: 'postcss-loader',
             options: {
@@ -38,9 +35,7 @@ module.exports = {
               }
             }
           },
-          {
-            loader: 'sass-loader'
-          }
+          'sass-loader'
         ]
       }
 
@@ -49,12 +44,6 @@ module.exports = {
   plugins: [
     // new BundleAnalyzerPlugin(),
     new webpack.ProvidePlugin({$: 'jquery', jQuery: 'jquery'}),
+    new MiniCssExtractPlugin({filename: 'css/[name].bundle.css'})
   ],
-  // optimization: {
-  //   splitChunks: {
-  //     chunks: 'all',
-  //     name: 'vendor',
-  //     // maxSize: 50000,
-  //   },
-  // }
 };

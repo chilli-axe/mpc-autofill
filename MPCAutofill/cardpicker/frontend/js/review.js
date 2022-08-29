@@ -1,6 +1,7 @@
 import 'bootstrap5-toggle';
 import Modal from 'bootstrap/js/dist/modal';
 import Tooltip from 'bootstrap/js/dist/tooltip';
+require('bootstrap/js/dist/dropdown');
 
 require("./base.js");
 import { insert_data, update_qty, bracket, switch_faces, insert_xml, insert_text, insert_link } from  './search.js';
