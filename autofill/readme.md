@@ -23,8 +23,8 @@ Once the autofilling process completes, you can either complete and pay for your
 * Your computer will probably not recognise the file as an executable, preventing you from double-clicking it on macOS and from running it in the Terminal in Linux. [This guide by Apple](https://support.apple.com/en-au/guide/terminal/apdd100908f-06b3-4e63-8a87-32e71241bab4/mac) has further information on the topic. Fixing it is easy:
   * Open the Terminal (on macOS, this is located in `Applications/Utilities`),
   * Navigate to the directory you moved the executable to (using `cd` - for example, if you moved it to your desktop, run `cd ~/Desktop`),
-  * Run the following command: `chmod +x autofill` (this marks the file as an executable),
-  * You can now run the tool in macOS by double-clicking on it and in Linux by running `./autofill` in the Terminal. If you have multiple XML files in the directory, you will be prompted to select one.
+  * Run the following command: `sudo chmod +x autofill-macos` (this marks the file as an executable),
+  * You can now run the tool in macOS by double-clicking on it and in Linux by running `./autofill-macos` in the Terminal. If you have multiple XML files in the directory, you will be prompted to select one.
 * You may have issues with running the executable on older versions of macOS [due to a limitation of PyInstaller](https://stackoverflow.com/questions/49908236/pyinstaller-executable-fails-on-old-os-x). GitHub is configured to compile the tool for Windows, macOS, and Linux (Ubuntu) on the latest available version of each operating system.
 
 ### Editing Existing Projects
