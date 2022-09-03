@@ -32,7 +32,7 @@ Once the autofilling process completes, you can either complete and pay for your
       * Open the Terminal,
       * Type the following commands into the terminal window, one at a time (you can copy and paste them from here):
         * `cd ~/Desktop`
-        * `chmod +x autofill-macos`
+        * `chmod +x autofill-linux`
         * `./autofill-linux`
 * You may have issues with running the executable on older versions of macOS [due to a limitation of PyInstaller](https://stackoverflow.com/questions/49908236/pyinstaller-executable-fails-on-old-os-x). GitHub is configured to compile the tool for Windows, macOS, and Linux (Ubuntu) on the latest available version of each operating system.
 
