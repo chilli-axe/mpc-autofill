@@ -429,9 +429,11 @@ class AutofillDriver:
                         and follow the printed instructions.
 
                         Windows:
-                            {TEXT_BOLD}autofill.exe --skipsetup{TEXT_END}
-                        macOS or Linux:
-                            {TEXT_BOLD}./autofill --skipsetup{TEXT_END}
+                            {TEXT_BOLD}autofill-windows.exe --skipsetup{TEXT_END}
+                        macOS:
+                            {TEXT_BOLD}./autofill-macos --skipsetup{TEXT_END}
+                        Linux:
+                            {TEXT_BOLD}./autofill-linux --skipsetup{TEXT_END}
                         """
                     )
                 )
