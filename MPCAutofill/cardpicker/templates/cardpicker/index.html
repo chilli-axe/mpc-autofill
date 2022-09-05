@@ -67,7 +67,7 @@
         </div>
 
         <div class="col-lg-6 d-flex justify-content-end">
-            <button id="btn_upload_list" type="button" class="btn btn-outline-primary dropdown-toggle mt-2 ms-2" id="uploadCardsBtn"
+            <button type="button" class="btn btn-outline-primary dropdown-toggle mt-2 ms-2" id="uploadCardsBtn"
                     data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="color: white;">
                 Upload List
             </button>
@@ -140,7 +140,8 @@
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" onclick="$('#input_link').submit()" data-bs-dismiss="modal">Import</button>
+                    <button type="button" id="inputLinkModal-submit" class="btn btn-primary"
+                            onclick="$('#input_link').submit()" data-bs-dismiss="modal">Import</button>
                 </div>
             </div>
         </div>
@@ -202,7 +203,8 @@
                     </body>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Save Changes</button>
+                    <button type="button" id="selectDrivesModal-submit" class="btn btn-primary"
+                            data-bs-dismiss="modal">Save Changes</button>
                 </div>
             </div>
         </div>

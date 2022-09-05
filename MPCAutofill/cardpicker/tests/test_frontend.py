@@ -57,16 +57,19 @@ class TestFrontend:
         )
         call_command("update_database")
 
+    def wait_for_search_results_modal(self, chrome_driver):
+        load_modal = chrome_driver.find_element(By.ID, value="loadModal")
+        WebDriverWait(chrome_driver, 1).until(visibility_of(load_modal))
+        WebDriverWait(chrome_driver, 1).until(invisibility_of_element(load_modal))
+        time.sleep(2)
+
     def test_basic_search_and_xml_generation(self, elasticsearch, chrome_driver, live_server):
         chrome_driver.get(live_server.url)
         text_area = chrome_driver.find_element(By.ID, value="id_card_list")
         text_area.send_keys("4 brainstorm\n3 island")
         chrome_driver.find_element(By.ID, value="btn_submit").click()
 
-        load_modal = chrome_driver.find_element(By.ID, value="loadModal")
-        WebDriverWait(chrome_driver, 1).until(visibility_of(load_modal))
-        WebDriverWait(chrome_driver, 1).until(invisibility_of_element(load_modal))
-        time.sleep(2)
+        self.wait_for_search_results_modal(chrome_driver)
 
         assert chrome_driver.find_element(By.ID, value="order_qty").text == "7"
         assert chrome_driver.find_element(By.ID, value="order_bracket").text == "18"
@@ -154,10 +157,7 @@ class TestFrontend:
         text_area.send_keys("4 brainstorm\n3 island")
         chrome_driver.find_element(By.ID, value="btn_submit").click()
 
-        load_modal = chrome_driver.find_element(By.ID, value="loadModal")
-        WebDriverWait(chrome_driver, 1).until(visibility_of(load_modal))
-        WebDriverWait(chrome_driver, 1).until(invisibility_of_element(load_modal))
-        time.sleep(2)
+        self.wait_for_search_results_modal(chrome_driver)
 
         assert chrome_driver.find_element(By.ID, value="slot0-front").is_displayed() is True
         assert chrome_driver.find_element(By.ID, value="slot0-back").is_displayed() is False
@@ -190,3 +190,22 @@ class TestFrontend:
         assert chrome_driver.find_element(By.ID, value="slot5-back").is_displayed() is True
         assert chrome_driver.find_element(By.ID, value="slot6-front").is_displayed() is False
         assert chrome_driver.find_element(By.ID, value="slot6-back").is_displayed() is True
+
+    def test_search_when_all_drives_disabled(self, elasticsearch, chrome_driver, live_server):
+        chrome_driver.get(live_server.url)
+        chrome_driver.find_element(By.ID, value="btn_settings").click()
+        time.sleep(1)
+        chrome_driver.find_element(By.ID, value="example_cards").click()
+        chrome_driver.find_element(By.ID, value="selectDrivesModal-submit").click()
+        time.sleep(1)
+        text_area = chrome_driver.find_element(By.ID, value="id_card_list")
+        text_area.send_keys("4 brainstorm\n3 island")
+        chrome_driver.find_element(By.ID, value="btn_submit").click()
+
+        self.wait_for_search_results_modal(chrome_driver)
+
+        # no search results
+        for slot in range(0, 7):
+            assert (
+                chrome_driver.find_element(By.ID, value=f"slot{slot}-front-mpccard-source").text == "Your Search Query"
+            )
