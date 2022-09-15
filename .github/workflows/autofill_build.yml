@@ -1,12 +1,12 @@
 # credit: https://data-dive.com/multi-os-deployment-in-cloud-using-pyinstaller-and-github-actions
-name: MPC Autofill Desktop Client
+name: Desktop client build
 on:
   push:
     branches: [ master ]
   workflow_dispatch:
 jobs:
   build:
-    name: Build packages
+    name: Build
     runs-on: ${{ matrix.os }}
     defaults:
       run:
