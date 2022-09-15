@@ -1,12 +1,12 @@
 # credit: https://data-dive.com/multi-os-deployment-in-cloud-using-pyinstaller-and-github-actions
-name: Desktop client build
+name: Build
 on:
   push:
     branches: [ master ]
   workflow_dispatch:
 jobs:
   build:
-    name: Build
+    name: Desktop client
     runs-on: ${{ matrix.os }}
     defaults:
       run:

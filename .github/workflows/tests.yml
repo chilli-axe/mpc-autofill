@@ -1,4 +1,4 @@
-name: Django project tests
+name: Tests
 on:
   push:
     branches: [ '*' ]
@@ -6,8 +6,38 @@ on:
     branches: [ master ]
   workflow_dispatch:
 jobs:
-  tests:
-    name: Run tests
+  pre-commit:
+    name: Formatting and static type checking
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+      - name: Install pre-commit
+        run: pip install pre-commit
+      - name: Run pre-commit
+        run: pre-commit run --all-files
+  desktop-tests:
+    name: Desktop client tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+      - name: Install Python dependencies
+        working-directory: autofill
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Run tests
+        run: |
+          cd autofill && pytest .
+  django-tests:
+    name: Django project tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
