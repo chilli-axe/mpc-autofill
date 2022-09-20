@@ -12,6 +12,7 @@ from selenium.webdriver import Chrome
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.expected_conditions import (
     invisibility_of_element,
     visibility_of,
@@ -24,7 +25,6 @@ DOWNLOAD_FOLDER = os.path.join(FILE_PATH, "downloads")
 
 
 class TestFrontend:
-
     # region fixtures
 
     @pytest.fixture()
@@ -99,7 +99,7 @@ class TestFrontend:
     def wait_for_search_results_modal(driver):
         load_modal = driver.find_element(By.ID, value="loadModal")
         WebDriverWait(driver, 1).until(visibility_of(load_modal))
-        WebDriverWait(driver, 1).until(invisibility_of_element(load_modal))
+        WebDriverWait(driver, 1).until(invisibility_of_element(load_modal))  # slot0-front
         time.sleep(2)
 
     @staticmethod
@@ -259,5 +259,31 @@ class TestFrontend:
         self.assert_card_state(chrome_driver, 4, "front", "Island", 1, 1, "Example Cards")
         self.assert_card_state(chrome_driver, 5, "front", "Island", 1, 1, "Example Cards")
         self.assert_card_state(chrome_driver, 6, "front", "Island", 1, 1, "Example Cards")
+
+    def test_search_in_place(self, elasticsearch, chrome_driver, live_server):
+        # TODO: can we create fixtures for search results to speed up these tests?
+        # set up results page with single result
+        chrome_driver.get(live_server.url)
+        text_area = chrome_driver.find_element(By.ID, value="id_card_list")
+        text_area.send_keys("brainstorm")
+        chrome_driver.find_element(By.ID, value="btn_submit").click()
+        self.wait_for_search_results_modal(chrome_driver)
+
+        # assertions on the single result
+        self.assert_order_qty(chrome_driver, 1)
+        self.assert_order_bracket(chrome_driver, 18)
+        self.assert_card_state(chrome_driver, 0, "front", "Brainstorm", 1, 1, "Example Cards")
+
+        # search in-place
+        card_name = chrome_driver.find_element(By.ID, value="slot0-front-mpccard-name")
+        card_name.clear()
+        card_name.send_keys("island")
+        card_name.send_keys(Keys.ENTER)
+        card_element = chrome_driver.find_element(By.ID, value="slot0-front")
+        WebDriverWait(chrome_driver, 10).until(invisibility_of_element(card_element))
+        WebDriverWait(chrome_driver, 10).until(visibility_of(card_element))
+
+        # assertion on the changed card state
+        self.assert_card_state(chrome_driver, 0, "front", "Island", 1, 1, "Example Cards")
 
     # endregion
