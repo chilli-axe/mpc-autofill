@@ -23,23 +23,22 @@ FILE_PATH = os.path.abspath(os.path.dirname(__file__))
 DOWNLOAD_FOLDER = os.path.join(FILE_PATH, "downloads")
 
 
-@pytest.fixture()
-def chrome_driver() -> Chrome:
-    options = Options()
-    options.add_argument("--headless")
-    options.add_experimental_option("prefs", {"download.default_directory": DOWNLOAD_FOLDER})
-    driver = Chrome(service=Service(ChromeDriverManager().install()), options=options)
-    driver.set_window_size(1440, 900)
-    driver.implicitly_wait(0)
-    os.mkdir(DOWNLOAD_FOLDER)
-    yield driver
-    driver.quit()
-    shutil.rmtree(DOWNLOAD_FOLDER, ignore_errors=True)
-
-
 class TestFrontend:
 
     # region fixtures
+
+    @pytest.fixture()
+    def chrome_driver(self) -> Chrome:
+        options = Options()
+        options.add_argument("--headless")
+        options.add_experimental_option("prefs", {"download.default_directory": DOWNLOAD_FOLDER})
+        driver = Chrome(service=Service(ChromeDriverManager().install()), options=options)
+        driver.set_window_size(1440, 900)
+        driver.implicitly_wait(0)
+        os.mkdir(DOWNLOAD_FOLDER)
+        yield driver
+        driver.quit()
+        shutil.rmtree(DOWNLOAD_FOLDER, ignore_errors=True)
 
     @pytest.fixture(autouse=True)
     def enable_db_access_and_django_debug(self, db, settings):
@@ -96,33 +95,37 @@ class TestFrontend:
     # endregion
 
     # region helpers
-
-    def wait_for_search_results_modal(self, chrome_driver):
-        load_modal = chrome_driver.find_element(By.ID, value="loadModal")
-        WebDriverWait(chrome_driver, 1).until(visibility_of(load_modal))
-        WebDriverWait(chrome_driver, 1).until(invisibility_of_element(load_modal))
+    @staticmethod
+    def wait_for_search_results_modal(driver):
+        load_modal = driver.find_element(By.ID, value="loadModal")
+        WebDriverWait(driver, 1).until(visibility_of(load_modal))
+        WebDriverWait(driver, 1).until(invisibility_of_element(load_modal))
         time.sleep(2)
 
-    def generate_and_download_xml(self, chrome_driver):
-        chrome_driver.find_element(By.ID, value="btn_generate_xml").click()
+    @staticmethod
+    def generate_and_download_xml(driver):
+        driver.find_element(By.ID, value="btn_generate_xml").click()
         time.sleep(1)
 
-    def assert_order_qty(self, chrome_driver, qty: int):
-        assert chrome_driver.find_element(By.ID, value="order_qty").text == str(qty)
+    @staticmethod
+    def assert_order_qty(driver, qty: int):
+        assert driver.find_element(By.ID, value="order_qty").text == str(qty)
 
-    def assert_order_bracket(self, chrome_driver, bracket: int):
-        assert chrome_driver.find_element(By.ID, value="order_bracket").text == str(bracket)
+    @staticmethod
+    def assert_order_bracket(driver, bracket: int):
+        assert driver.find_element(By.ID, value="order_bracket").text == str(bracket)
 
+    @staticmethod
     def assert_card_state(
-        self, chrome_driver, slot: int, active_face: str, name: str, selected_image: int, total_images: int, source: str
+        driver, slot: int, active_face: str, name: str, selected_image: int, total_images: int, source: str
     ):
         inactive_face = ({"front", "back"} - {active_face}).pop()
         counter = f"{selected_image}/{total_images}"
-        assert chrome_driver.find_element(By.ID, value=f"slot{slot}-{active_face}").is_displayed() is True
-        assert chrome_driver.find_element(By.ID, value=f"slot{slot}-{inactive_face}").is_displayed() is False
-        assert chrome_driver.find_element(By.ID, value=f"slot{slot}-{active_face}-mpccard-name").text == name
-        assert chrome_driver.find_element(By.ID, value=f"slot{slot}-{active_face}-mpccard-counter").text == counter
-        assert source in chrome_driver.find_element(By.ID, value=f"slot{slot}-{active_face}-mpccard-source").text
+        assert driver.find_element(By.ID, value=f"slot{slot}-{active_face}").is_displayed() is True
+        assert driver.find_element(By.ID, value=f"slot{slot}-{inactive_face}").is_displayed() is False
+        assert driver.find_element(By.ID, value=f"slot{slot}-{active_face}-mpccard-name").text == name
+        assert driver.find_element(By.ID, value=f"slot{slot}-{active_face}-mpccard-counter").text == counter
+        assert source in driver.find_element(By.ID, value=f"slot{slot}-{active_face}-mpccard-source").text
 
     # endregion
 

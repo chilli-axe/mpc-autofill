@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="update_dfcs" type="PythonConfigurationType" factoryName="Python">
+  <configuration default="false" name="Web Project - Dev Server" type="PythonConfigurationType" factoryName="Python">
     <module name="mpc-autofill" />
     <option name="INTERPRETER_OPTIONS" value="" />
     <option name="PARENT_ENVS" value="true" />
@@ -12,7 +12,7 @@
     <option name="ADD_CONTENT_ROOTS" value="true" />
     <option name="ADD_SOURCE_ROOTS" value="true" />
     <option name="SCRIPT_NAME" value="$PROJECT_DIR$/MPCAutofill/manage.py" />
-    <option name="PARAMETERS" value="update_dfcs" />
+    <option name="PARAMETERS" value="runserver" />
     <option name="SHOW_COMMAND_LINE" value="false" />
     <option name="EMULATE_TERMINAL" value="false" />
     <option name="MODULE_MODE" value="false" />

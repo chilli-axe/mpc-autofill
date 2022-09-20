@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="autofill tests" type="tests" factoryName="py.test">
+  <configuration default="false" name="Desktop Client - Run Tests" type="tests" factoryName="py.test">
     <module name="mpc-autofill" />
     <option name="INTERPRETER_OPTIONS" value="" />
     <option name="PARENT_ENVS" value="true" />

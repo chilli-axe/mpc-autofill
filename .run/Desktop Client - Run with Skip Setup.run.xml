@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="autofill skip setup" type="PythonConfigurationType" factoryName="Python">
+  <configuration default="false" name="Desktop Client - Run with Skip Setup" type="PythonConfigurationType" factoryName="Python">
     <module name="mpc-autofill" />
     <option name="INTERPRETER_OPTIONS" value="" />
     <option name="PARENT_ENVS" value="true" />
