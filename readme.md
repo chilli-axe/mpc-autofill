@@ -1,5 +1,5 @@
 ![build](https://github.com/chilli-axe/mpc-autofill/actions/workflows/build.yml/badge.svg)
-![tests_black_isort_mypy](https://github.com/chilli-axe/mpc-autofill/actions/workflows/tests_black_isort_mypy.yml/badge.svg)
+![tests](https://github.com/chilli-axe/mpc-autofill/actions/workflows/tests.yml/badge.svg)
 [![Github all releases](https://img.shields.io/github/downloads/chilli-axe/mpc-autofill/total.svg)](https://GitHub.com/chilli-axe/mpc-autofill/releases/)
 
 # mpc-autofill
