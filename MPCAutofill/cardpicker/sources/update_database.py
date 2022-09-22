@@ -75,7 +75,7 @@ def transform_images_into_objects(
 
         folder_location = image.folder.get_full_path()
         if folder_location == settings.DEFAULT_CARDBACK_FOLDER_PATH:
-            if name == settings.DFEAULT_CARDBACK_IMAGE_NAME:
+            if name == settings.DEFAULT_CARDBACK_IMAGE_NAME:
                 priority += 10
             priority += 5
         if "basic" in image.folder.name.lower():

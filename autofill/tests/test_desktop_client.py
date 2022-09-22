@@ -65,15 +65,19 @@ def assert_orders_identical(a: CardOrder, b: CardOrder) -> None:
 
 # endregion
 
-# region fixtures
 
+# region constants
 
 FILE_PATH = os.path.abspath(os.path.dirname(__file__))
 SIMPLE_CUBE = "Simple Cube"
-SIMPLE_CUBE_ID = "1YKRRJUN8J9F4bAYCtZLb5mPDJDaabeR_"
+SIMPLE_CUBE_ID = "1JtXL6Ca9nQkvhwZZRR9ZuKA9_DzsFf1V"
 SIMPLE_LOTUS = "Simple Lotus"
-SIMPLE_LOTUS_ID = "1R7Wqjgghwe81mh0o83g_r3iC8zUaetKX"
+SIMPLE_LOTUS_ID = "1oigI6wz0zA--pNMuExKTs40kBNH6VRP_"
 TEST_IMAGE = "test_image"
+
+# endregion
+
+# region fixtures
 
 
 @pytest.fixture()
