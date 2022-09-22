@@ -4,9 +4,6 @@ import shutil
 import time
 
 import pytest
-from cardpicker.sources.source_types import SourceTypeChoices
-from cardpicker.tests.factories import SourceFactory
-from django.core.management import call_command
 from pytest_elasticsearch import factories
 from selenium.webdriver import Chrome
 from selenium.webdriver.chrome.options import Options
@@ -19,6 +16,11 @@ from selenium.webdriver.support.expected_conditions import (
 )
 from selenium.webdriver.support.ui import WebDriverWait
 from webdriver_manager.chrome import ChromeDriverManager
+
+from django.core.management import call_command
+
+from cardpicker.sources.source_types import SourceTypeChoices
+from cardpicker.tests.factories import SourceFactory
 
 FILE_PATH = os.path.abspath(os.path.dirname(__file__))
 DOWNLOAD_FOLDER = os.path.join(FILE_PATH, "downloads")
@@ -33,8 +35,11 @@ class TestFrontend:
     ISLAND_ID = "1IDtqSjJ4Yo45AnNA4SplOiN7ewibifMa"
     SIMPLE_CUBE = "Simple Cube"  # default back
     SIMPLE_CUBE_ID = "1JtXL6Ca9nQkvhwZZRR9ZuKA9_DzsFf1V"
+    HUNTMASTER_OF_THE_FELLS = "Huntmaster of the Fells"
+    RAVAGER_OF_THE_FELLS = "Ravager of the Fells"
 
     EXAMPLE_DRIVE_1 = "Example Drive 1"
+    EXAMPLE_DRIVE_1_KEY = "example_drive_1"
 
     # endregion
 
@@ -48,7 +53,8 @@ class TestFrontend:
         driver = Chrome(service=Service(ChromeDriverManager().install()), options=options)
         driver.set_window_size(1440, 900)
         driver.implicitly_wait(0)
-        os.mkdir(DOWNLOAD_FOLDER)
+        if not os.path.exists(DOWNLOAD_FOLDER):  # TODO: replace this with pytest's directory fixture
+            os.mkdir(DOWNLOAD_FOLDER)
         yield driver
         driver.quit()
         shutil.rmtree(DOWNLOAD_FOLDER, ignore_errors=True)
@@ -58,7 +64,7 @@ class TestFrontend:
         settings.DEBUG = True
         settings.DEFAULT_CARDBACK_IMAGE_NAME = self.SIMPLE_CUBE
 
-    @pytest.fixture()
+    @pytest.fixture(scope="module")
     def elasticsearch(self):
         """
         This fixture expects elasticsearch to be running on your machine.
@@ -69,7 +75,7 @@ class TestFrontend:
     @pytest.fixture(autouse=True)
     def stand_up_database(self, elasticsearch) -> None:
         SourceFactory(
-            key="example_cards",
+            key=self.EXAMPLE_DRIVE_1_KEY,
             name=self.EXAMPLE_DRIVE_1,
             identifier="1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq",
             source_type=SourceTypeChoices.GOOGLE_DRIVE,
@@ -115,8 +121,8 @@ class TestFrontend:
     @staticmethod
     def wait_for_search_results_modal(driver):
         load_modal = driver.find_element(By.ID, value="loadModal")
-        WebDriverWait(driver, 1).until(visibility_of(load_modal))
-        WebDriverWait(driver, 1).until(invisibility_of_element(load_modal))  # slot0-front
+        WebDriverWait(driver, 10).until(visibility_of(load_modal))
+        WebDriverWait(driver, 10).until(invisibility_of_element(load_modal))
         time.sleep(2)
 
     @staticmethod
@@ -147,11 +153,16 @@ class TestFrontend:
         ) == counter
         assert source in driver.find_element(By.ID, value=f"slot{slot}-{active_face}-mpccard-source").text
 
+    @staticmethod
+    def toggle_faces(driver):
+        driver.find_element(By.ID, value="switchFacesBtn").click()
+        time.sleep(3)
+
     # endregion
 
     # region tests
 
-    def test_basic_search_and_xml_generation(self, elasticsearch, chrome_driver, live_server):
+    def test_basic_search_and_xml_generation(self, chrome_driver, live_server):
         chrome_driver.get(live_server.url)
         text_area = chrome_driver.find_element(By.ID, value="id_card_list")
         text_area.send_keys("4 brainstorm\n3 island")
@@ -204,29 +215,26 @@ class TestFrontend:
                 ),
             )
 
-    def test_toggle_faces(self, elasticsearch, chrome_driver, live_server):
+    def test_toggle_faces(self, chrome_driver, live_server):
         chrome_driver.get(live_server.url)
         text_area = chrome_driver.find_element(By.ID, value="id_card_list")
         text_area.send_keys("4 brainstorm\n3 island")
         chrome_driver.find_element(By.ID, value="btn_submit").click()
-
         self.wait_for_search_results_modal(chrome_driver)
 
         for i in range(0, 7):
             assert chrome_driver.find_element(By.ID, value=f"slot{i}-front").is_displayed() is True
             assert chrome_driver.find_element(By.ID, value=f"slot{i}-back").is_displayed() is False
-
-        chrome_driver.find_element(By.ID, value="switchFacesBtn").click()
-
+        self.toggle_faces(chrome_driver)
         for i in range(0, 7):
             assert chrome_driver.find_element(By.ID, value=f"slot{i}-front").is_displayed() is False
             assert chrome_driver.find_element(By.ID, value=f"slot{i}-back").is_displayed() is True
 
-    def test_search_when_all_drives_disabled(self, elasticsearch, chrome_driver, live_server):
+    def test_search_when_all_drives_disabled(self, chrome_driver, live_server):
         chrome_driver.get(live_server.url)
         chrome_driver.find_element(By.ID, value="btn_settings").click()
         time.sleep(1)
-        chrome_driver.find_element(By.ID, value="example_cards").click()
+        chrome_driver.find_element(By.ID, value=self.EXAMPLE_DRIVE_1_KEY).click()
         chrome_driver.find_element(By.ID, value="selectDrivesModal-submit").click()
         time.sleep(1)
         text_area = chrome_driver.find_element(By.ID, value="id_card_list")
@@ -241,7 +249,7 @@ class TestFrontend:
                 chrome_driver.find_element(By.ID, value=f"slot{slot}-front-mpccard-source").text == "Your Search Query"
             )
 
-    def test_upload_valid_xml(self, elasticsearch, chrome_driver, live_server, valid_xml):
+    def test_upload_valid_xml(self, chrome_driver, live_server, valid_xml):
         chrome_driver.get(live_server.url)
         chrome_driver.find_element(By.ID, value="xmlfile").send_keys(valid_xml)
 
@@ -258,7 +266,7 @@ class TestFrontend:
         self.assert_card_state(chrome_driver, 5, "front", self.ISLAND, 1, 2, self.EXAMPLE_DRIVE_1)
         self.assert_card_state(chrome_driver, 6, "front", self.ISLAND, 1, 2, self.EXAMPLE_DRIVE_1)
 
-    def test_search_in_place(self, elasticsearch, chrome_driver, live_server):
+    def test_search_in_place(self, chrome_driver, live_server):
         # TODO: can we create fixtures for search results to speed up these tests?
         # set up results page with single result
         chrome_driver.get(live_server.url)
@@ -283,5 +291,20 @@ class TestFrontend:
 
         # assertion on the changed card state
         self.assert_card_state(chrome_driver, 0, "front", self.ISLAND, 1, 2, self.EXAMPLE_DRIVE_1)
+
+    def test_dfc_search(self, chrome_driver, live_server):
+        call_command("update_dfcs")
+        # set up results page with single result
+        chrome_driver.get(live_server.url)
+        text_area = chrome_driver.find_element(By.ID, value="id_card_list")
+        text_area.send_keys("huntmaster of the fells")
+        chrome_driver.find_element(By.ID, value="btn_submit").click()
+        self.wait_for_search_results_modal(chrome_driver)
+
+        self.assert_order_qty(chrome_driver, 1)
+        self.assert_order_bracket(chrome_driver, 18)
+        self.assert_card_state(chrome_driver, 0, "front", self.HUNTMASTER_OF_THE_FELLS, 1, 1, self.EXAMPLE_DRIVE_1)
+        self.toggle_faces(chrome_driver)
+        self.assert_card_state(chrome_driver, 0, "back", self.RAVAGER_OF_THE_FELLS, 1, 1, self.EXAMPLE_DRIVE_1)
 
     # endregion

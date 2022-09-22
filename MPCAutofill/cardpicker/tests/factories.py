@@ -1,4 +1,5 @@
 import factory
+
 from cardpicker import models
 
 
