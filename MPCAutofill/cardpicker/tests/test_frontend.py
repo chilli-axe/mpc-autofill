@@ -56,6 +56,16 @@ class TestFrontend:
         yield driver
         driver.quit()
 
+    @pytest.fixture()
+    def mobile_chrome_driver(self, download_folder) -> Chrome:
+        options = Options()
+        options.add_argument("--headless")
+        options.add_experimental_option("mobileEmulation", {"deviceName": "iPhone X"})
+        driver = Chrome(service=Service(ChromeDriverManager().install()), options=options)
+        driver.implicitly_wait(0)
+        yield driver
+        driver.quit()
+
     @pytest.fixture(autouse=True)  # only auto-used within the scope of this class
     def django_settings(self, db, settings):
         settings.DEBUG = True
@@ -302,5 +312,12 @@ class TestFrontend:
         self.assert_card_state(chrome_driver, 0, "front", self.HUNTMASTER_OF_THE_FELLS, 1, 1, self.EXAMPLE_DRIVE_1)
         self.toggle_faces(chrome_driver)
         self.assert_card_state(chrome_driver, 0, "back", self.RAVAGER_OF_THE_FELLS, 1, 1, self.EXAMPLE_DRIVE_1)
+
+    def test_mobile_banner(self, mobile_chrome_driver, live_server):
+        mobile_chrome_driver.get(live_server.url)
+        assert (
+            "It seems like you're on a mobile device!"
+            in mobile_chrome_driver.find_element(By.ID, "mobile-device-alert").text
+        )
 
     # endregion
