@@ -1,7 +1,6 @@
-import os
 import re
-import shutil
 import time
+from pathlib import Path
 
 import pytest
 from pytest_elasticsearch import factories
@@ -21,9 +20,6 @@ from django.core.management import call_command
 
 from cardpicker.sources.source_types import SourceTypeChoices
 from cardpicker.tests.factories import SourceFactory
-
-FILE_PATH = os.path.abspath(os.path.dirname(__file__))
-DOWNLOAD_FOLDER = os.path.join(FILE_PATH, "downloads")
 
 
 class TestFrontend:
@@ -45,19 +41,20 @@ class TestFrontend:
 
     # region fixtures
 
+    @pytest.fixture(scope="module")
+    def download_folder(self, tmp_path_factory) -> Path:
+        return tmp_path_factory.mktemp("downloads")
+
     @pytest.fixture()
-    def chrome_driver(self) -> Chrome:
+    def chrome_driver(self, download_folder) -> Chrome:
         options = Options()
         options.add_argument("--headless")
-        options.add_experimental_option("prefs", {"download.default_directory": DOWNLOAD_FOLDER})
+        options.add_experimental_option("prefs", {"download.default_directory": str(download_folder)})
         driver = Chrome(service=Service(ChromeDriverManager().install()), options=options)
         driver.set_window_size(1440, 900)
         driver.implicitly_wait(0)
-        if not os.path.exists(DOWNLOAD_FOLDER):  # TODO: replace this with pytest's directory fixture
-            os.mkdir(DOWNLOAD_FOLDER)
         yield driver
         driver.quit()
-        shutil.rmtree(DOWNLOAD_FOLDER, ignore_errors=True)
 
     @pytest.fixture(autouse=True)  # only auto-used within the scope of this class
     def django_settings(self, db, settings):
@@ -83,7 +80,7 @@ class TestFrontend:
         call_command("update_database")
 
     @pytest.fixture()
-    def valid_xml(self):
+    def valid_xml(self, download_folder):
         xml_contents = f"""
             <order>
                 <details>
@@ -109,11 +106,10 @@ class TestFrontend:
                 <cardback>{self.SIMPLE_CUBE_ID}</cardback>
             </order>
             """
-        valid_xml_path = os.path.join(DOWNLOAD_FOLDER, "valid_xml.xml")
+        valid_xml_path = str(download_folder / "valid_xml.xml")
         with open(valid_xml_path, "w") as f:
             f.write(xml_contents)
         yield valid_xml_path
-        os.remove(os.path.join(valid_xml_path))
 
     # endregion
 
@@ -162,7 +158,7 @@ class TestFrontend:
 
     # region tests
 
-    def test_basic_search_and_xml_generation(self, chrome_driver, live_server):
+    def test_basic_search_and_xml_generation(self, chrome_driver, live_server, download_folder):
         chrome_driver.get(live_server.url)
         text_area = chrome_driver.find_element(By.ID, value="id_card_list")
         text_area.send_keys("4 brainstorm\n3 island")
@@ -182,7 +178,7 @@ class TestFrontend:
         self.assert_card_state(chrome_driver, 6, "front", self.ISLAND, 1, 2, self.EXAMPLE_DRIVE_1)
 
         self.generate_and_download_xml(chrome_driver)
-        with open(os.path.join(DOWNLOAD_FOLDER, "cards.xml"), "r") as f:
+        with open(download_folder / "cards.xml", "r") as f:
             assert re.sub(r"[\n\t\s]*", "", str(f.read())) == re.sub(
                 r"[\n\t\s]*",
                 "",
