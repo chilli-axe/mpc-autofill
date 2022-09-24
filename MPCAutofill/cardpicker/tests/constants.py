@@ -38,6 +38,12 @@ class TestSources(Enum):
         identifier="1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq",
         source_type=SourceTypeChoices.GOOGLE_DRIVE,
     )
+    EXAMPLE_DRIVE_2 = TestSource(
+        key="example_drive_2",
+        name="Example Drive 2",
+        identifier="18wZl7T9DU_lf2X5xYFiyH6pATVy8ZlOd",
+        source_type=SourceTypeChoices.GOOGLE_DRIVE,
+    )
 
     @DynamicClassAttribute
     def value(self) -> TestSource:

@@ -28,3 +28,9 @@ def stand_up_database(elasticsearch) -> None:
         identifier=TestSources.EXAMPLE_DRIVE_1.value.identifier,
         source_type=TestSources.EXAMPLE_DRIVE_1.value.source_type,
     )
+    SourceFactory(
+        key=TestSources.EXAMPLE_DRIVE_2.value.key,
+        name=TestSources.EXAMPLE_DRIVE_2.value.name,
+        identifier=TestSources.EXAMPLE_DRIVE_2.value.identifier,
+        source_type=TestSources.EXAMPLE_DRIVE_2.value.source_type,
+    )
