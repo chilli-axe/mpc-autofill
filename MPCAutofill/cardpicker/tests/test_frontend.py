@@ -369,11 +369,11 @@ class TestFrontend:
         )
 
         # search in-place
+        card_element = chrome_driver.find_element(By.ID, value="slot0-front")
         card_name = chrome_driver.find_element(By.ID, value="slot0-front-mpccard-name")
         card_name.clear()
         card_name.send_keys("island")
         card_name.send_keys(Keys.ENTER)
-        card_element = chrome_driver.find_element(By.ID, value="slot0-front")
         WebDriverWait(chrome_driver, 10).until(invisibility_of_element(card_element))
         WebDriverWait(chrome_driver, 10).until(visibility_of(card_element))
 
