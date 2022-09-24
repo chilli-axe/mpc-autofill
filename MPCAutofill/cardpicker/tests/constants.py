@@ -26,6 +26,8 @@ class TestCards(Enum):
     SIMPLE_CUBE = TestCard(identifier="1JtXL6Ca9nQkvhwZZRR9ZuKA9_DzsFf1V", name="Simple Cube")  # default back
     HUNTMASTER_OF_THE_FELLS = TestCard(identifier="", name="Huntmaster of the Fells")
     RAVAGER_OF_THE_FELLS = TestCard(identifier="", name="Ravager of the Fells")
+    PAST_IN_FLAMES_1 = TestCard(identifier="1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1", name="Past in Flames")
+    PAST_IN_FLAMES_2 = TestCard(identifier="1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU", name="Past in Flames")
 
     @DynamicClassAttribute
     def value(self) -> TestCard:
