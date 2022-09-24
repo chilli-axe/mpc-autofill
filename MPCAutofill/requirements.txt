@@ -23,5 +23,6 @@ pytest-django
 pytest-elasticsearch
 ratelimit
 selenium
+syrupy
 tqdm
 webdriver-manager==3.5.4

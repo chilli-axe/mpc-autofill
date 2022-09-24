@@ -3,7 +3,6 @@ import time
 from pathlib import Path
 
 import pytest
-from pytest_elasticsearch import factories
 from selenium.webdriver import Chrome
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
@@ -18,28 +17,14 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 from django.core.management import call_command
 
-from cardpicker.sources.source_types import SourceTypeChoices
-from cardpicker.tests.factories import SourceFactory
+from cardpicker.tests.constants import TestCard, TestCards, TestSource, TestSources
 
 
 class TestFrontend:
-    # region constants
-
-    BRAINSTORM = "Brainstorm"
-    BRAINSTORM_ID = "1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5"
-    ISLAND = "Island"
-    ISLAND_ID = "1IDtqSjJ4Yo45AnNA4SplOiN7ewibifMa"
-    SIMPLE_CUBE = "Simple Cube"  # default back
-    SIMPLE_CUBE_ID = "1JtXL6Ca9nQkvhwZZRR9ZuKA9_DzsFf1V"
-    HUNTMASTER_OF_THE_FELLS = "Huntmaster of the Fells"
-    RAVAGER_OF_THE_FELLS = "Ravager of the Fells"
-
-    EXAMPLE_DRIVE_1 = "Example Drive 1"
-    EXAMPLE_DRIVE_1_KEY = "example_drive_1"
-
-    # endregion
-
     # region fixtures
+    @pytest.fixture(autouse=True)  # this is only auto-use within the scope of `TestFrontend`
+    def populated_database(self, django_settings, stand_up_database):
+        call_command("update_database")
 
     @pytest.fixture(scope="module")
     def download_folder(self, tmp_path_factory) -> Path:
@@ -66,29 +51,6 @@ class TestFrontend:
         yield driver
         driver.quit()
 
-    @pytest.fixture(autouse=True)  # only auto-used within the scope of this class
-    def django_settings(self, db, settings):
-        settings.DEBUG = True
-        settings.DEFAULT_CARDBACK_IMAGE_NAME = self.SIMPLE_CUBE
-
-    @pytest.fixture(scope="module")
-    def elasticsearch(self):
-        """
-        This fixture expects elasticsearch to be running on your machine.
-        """
-
-        return factories.elasticsearch("elasticsearch_nooproc")
-
-    @pytest.fixture(autouse=True)
-    def stand_up_database(self, elasticsearch) -> None:
-        SourceFactory(
-            key=self.EXAMPLE_DRIVE_1_KEY,
-            name=self.EXAMPLE_DRIVE_1,
-            identifier="1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq",
-            source_type=SourceTypeChoices.GOOGLE_DRIVE,
-        )
-        call_command("update_database")
-
     @pytest.fixture()
     def valid_xml(self, download_folder):
         xml_contents = f"""
@@ -101,19 +63,19 @@ class TestFrontend:
                 </details>
                 <fronts>
                     <card>
-                        <id>{self.BRAINSTORM_ID}</id>
+                        <id>{TestCards.BRAINSTORM.value.identifier}</id>
                         <slots>1,2,0,3</slots>
-                        <name>{self.BRAINSTORM}.png</name>
+                        <name>{TestCards.BRAINSTORM.value.name}.png</name>
                         <query>brainstorm</query>
                     </card>
                     <card>
-                        <id>{self.ISLAND_ID}</id>
+                        <id>{TestCards.ISLAND.value.identifier}</id>
                         <slots>4,5,6</slots>
-                        <name>{self.ISLAND}.png</name>
+                        <name>{TestCards.ISLAND.value.name}.png</name>
                         <query>island</query>
                     </card>
                 </fronts>
-                <cardback>{self.SIMPLE_CUBE_ID}</cardback>
+                <cardback>{TestCards.SIMPLE_CUBE.value.identifier}</cardback>
             </order>
             """
         valid_xml_path = str(download_folder / "valid_xml.xml")
@@ -146,18 +108,18 @@ class TestFrontend:
 
     @staticmethod
     def assert_card_state(
-        driver, slot: int, active_face: str, name: str, selected_image: int, total_images: int, source: str
+        driver, slot: int, active_face: str, card: TestCard, selected_image: int, total_images: int, source: TestSource
     ):
         inactive_face = ({"front", "back"} - {active_face}).pop()
         counter = f"{selected_image}/{total_images}"
         assert driver.find_element(By.ID, value=f"slot{slot}-{active_face}").is_displayed() is True
         assert driver.find_element(By.ID, value=f"slot{slot}-{inactive_face}").is_displayed() is False
-        assert driver.find_element(By.ID, value=f"slot{slot}-{active_face}-mpccard-name").text == name
+        assert driver.find_element(By.ID, value=f"slot{slot}-{active_face}-mpccard-name").text == card.name
         assert (
             driver.find_element(By.ID, value=f"slot{slot}-{active_face}-mpccard-counter").text
             or driver.find_element(By.ID, value=f"slot{slot}-{active_face}-mpccard-counter-btn").text
         ) == counter
-        assert source in driver.find_element(By.ID, value=f"slot{slot}-{active_face}-mpccard-source").text
+        assert source.name in driver.find_element(By.ID, value=f"slot{slot}-{active_face}-mpccard-source").text
 
     @staticmethod
     def toggle_faces(driver):
@@ -179,13 +141,69 @@ class TestFrontend:
         self.assert_order_qty(chrome_driver, 7)
         self.assert_order_bracket(chrome_driver, 18)
 
-        self.assert_card_state(chrome_driver, 0, "front", self.BRAINSTORM, 1, 1, self.EXAMPLE_DRIVE_1)
-        self.assert_card_state(chrome_driver, 1, "front", self.BRAINSTORM, 1, 1, self.EXAMPLE_DRIVE_1)
-        self.assert_card_state(chrome_driver, 2, "front", self.BRAINSTORM, 1, 1, self.EXAMPLE_DRIVE_1)
-        self.assert_card_state(chrome_driver, 3, "front", self.BRAINSTORM, 1, 1, self.EXAMPLE_DRIVE_1)
-        self.assert_card_state(chrome_driver, 4, "front", self.ISLAND, 1, 2, self.EXAMPLE_DRIVE_1)
-        self.assert_card_state(chrome_driver, 5, "front", self.ISLAND, 1, 2, self.EXAMPLE_DRIVE_1)
-        self.assert_card_state(chrome_driver, 6, "front", self.ISLAND, 1, 2, self.EXAMPLE_DRIVE_1)
+        self.assert_card_state(
+            chrome_driver,
+            slot=0,
+            active_face="front",
+            card=TestCards.BRAINSTORM.value,
+            selected_image=1,
+            total_images=1,
+            source=TestSources.EXAMPLE_DRIVE_1.value,
+        )
+        self.assert_card_state(
+            chrome_driver,
+            slot=1,
+            active_face="front",
+            card=TestCards.BRAINSTORM.value,
+            selected_image=1,
+            total_images=1,
+            source=TestSources.EXAMPLE_DRIVE_1.value,
+        )
+        self.assert_card_state(
+            chrome_driver,
+            slot=2,
+            active_face="front",
+            card=TestCards.BRAINSTORM.value,
+            selected_image=1,
+            total_images=1,
+            source=TestSources.EXAMPLE_DRIVE_1.value,
+        )
+        self.assert_card_state(
+            chrome_driver,
+            slot=3,
+            active_face="front",
+            card=TestCards.BRAINSTORM.value,
+            selected_image=1,
+            total_images=1,
+            source=TestSources.EXAMPLE_DRIVE_1.value,
+        )
+        self.assert_card_state(
+            chrome_driver,
+            slot=4,
+            active_face="front",
+            card=TestCards.ISLAND.value,
+            selected_image=1,
+            total_images=2,
+            source=TestSources.EXAMPLE_DRIVE_1.value,
+        )
+        self.assert_card_state(
+            chrome_driver,
+            slot=5,
+            active_face="front",
+            card=TestCards.ISLAND.value,
+            selected_image=1,
+            total_images=2,
+            source=TestSources.EXAMPLE_DRIVE_1.value,
+        )
+        self.assert_card_state(
+            chrome_driver,
+            slot=6,
+            active_face="front",
+            card=TestCards.ISLAND.value,
+            selected_image=1,
+            total_images=2,
+            source=TestSources.EXAMPLE_DRIVE_1.value,
+        )
 
         self.generate_and_download_xml(chrome_driver)
         with open(download_folder / "cards.xml", "r") as f:
@@ -203,19 +221,19 @@ class TestFrontend:
                     </details>
                     <fronts>
                         <card>
-                            <id>{self.BRAINSTORM_ID}</id>
+                            <id>{TestCards.BRAINSTORM.value.identifier}</id>
                             <slots>1,2,0,3</slots>
-                            <name>{self.BRAINSTORM}.png</name>
+                            <name>{TestCards.BRAINSTORM.value.name}.png</name>
                             <query>brainstorm</query>
                         </card>
                         <card>
-                            <id>{self.ISLAND_ID}</id>
+                            <id>{TestCards.ISLAND.value.identifier}</id>
                             <slots>4,5,6</slots>
-                            <name>{self.ISLAND}.png</name>
+                            <name>{TestCards.ISLAND.value.name}.png</name>
                             <query>island</query>
                         </card>
                     </fronts>
-                    <cardback>{self.SIMPLE_CUBE_ID}</cardback>
+                    <cardback>{TestCards.SIMPLE_CUBE.value.identifier}</cardback>
                 </order>
                 """
                 ),
@@ -240,7 +258,7 @@ class TestFrontend:
         chrome_driver.get(live_server.url)
         chrome_driver.find_element(By.ID, value="btn_settings").click()
         time.sleep(1)
-        chrome_driver.find_element(By.ID, value=self.EXAMPLE_DRIVE_1_KEY).click()
+        chrome_driver.find_element(By.ID, value=TestSources.EXAMPLE_DRIVE_1.value.key).click()
         chrome_driver.find_element(By.ID, value="selectDrivesModal-submit").click()
         time.sleep(1)
         text_area = chrome_driver.find_element(By.ID, value="id_card_list")
@@ -264,13 +282,69 @@ class TestFrontend:
         self.assert_order_qty(chrome_driver, 7)
         self.assert_order_bracket(chrome_driver, 18)
 
-        self.assert_card_state(chrome_driver, 0, "front", self.BRAINSTORM, 1, 1, self.EXAMPLE_DRIVE_1)
-        self.assert_card_state(chrome_driver, 1, "front", self.BRAINSTORM, 1, 1, self.EXAMPLE_DRIVE_1)
-        self.assert_card_state(chrome_driver, 2, "front", self.BRAINSTORM, 1, 1, self.EXAMPLE_DRIVE_1)
-        self.assert_card_state(chrome_driver, 3, "front", self.BRAINSTORM, 1, 1, self.EXAMPLE_DRIVE_1)
-        self.assert_card_state(chrome_driver, 4, "front", self.ISLAND, 1, 2, self.EXAMPLE_DRIVE_1)
-        self.assert_card_state(chrome_driver, 5, "front", self.ISLAND, 1, 2, self.EXAMPLE_DRIVE_1)
-        self.assert_card_state(chrome_driver, 6, "front", self.ISLAND, 1, 2, self.EXAMPLE_DRIVE_1)
+        self.assert_card_state(
+            driver=chrome_driver,
+            slot=0,
+            active_face="front",
+            card=TestCards.BRAINSTORM.value,
+            selected_image=1,
+            total_images=1,
+            source=TestSources.EXAMPLE_DRIVE_1.value,
+        )
+        self.assert_card_state(
+            driver=chrome_driver,
+            slot=1,
+            active_face="front",
+            card=TestCards.BRAINSTORM.value,
+            selected_image=1,
+            total_images=1,
+            source=TestSources.EXAMPLE_DRIVE_1.value,
+        )
+        self.assert_card_state(
+            driver=chrome_driver,
+            slot=2,
+            active_face="front",
+            card=TestCards.BRAINSTORM.value,
+            selected_image=1,
+            total_images=1,
+            source=TestSources.EXAMPLE_DRIVE_1.value,
+        )
+        self.assert_card_state(
+            driver=chrome_driver,
+            slot=3,
+            active_face="front",
+            card=TestCards.BRAINSTORM.value,
+            selected_image=1,
+            total_images=1,
+            source=TestSources.EXAMPLE_DRIVE_1.value,
+        )
+        self.assert_card_state(
+            driver=chrome_driver,
+            slot=4,
+            active_face="front",
+            card=TestCards.ISLAND.value,
+            selected_image=1,
+            total_images=2,
+            source=TestSources.EXAMPLE_DRIVE_1.value,
+        )
+        self.assert_card_state(
+            driver=chrome_driver,
+            slot=5,
+            active_face="front",
+            card=TestCards.ISLAND.value,
+            selected_image=1,
+            total_images=2,
+            source=TestSources.EXAMPLE_DRIVE_1.value,
+        )
+        self.assert_card_state(
+            driver=chrome_driver,
+            slot=6,
+            active_face="front",
+            card=TestCards.ISLAND.value,
+            selected_image=1,
+            total_images=2,
+            source=TestSources.EXAMPLE_DRIVE_1.value,
+        )
 
     def test_search_in_place(self, chrome_driver, live_server):
         # TODO: can we create fixtures for search results to speed up these tests?
@@ -284,7 +358,15 @@ class TestFrontend:
         # assertions on the single result
         self.assert_order_qty(chrome_driver, 1)
         self.assert_order_bracket(chrome_driver, 18)
-        self.assert_card_state(chrome_driver, 0, "front", self.BRAINSTORM, 1, 1, self.EXAMPLE_DRIVE_1)
+        self.assert_card_state(
+            driver=chrome_driver,
+            slot=0,
+            active_face="front",
+            card=TestCards.BRAINSTORM.value,
+            selected_image=1,
+            total_images=1,
+            source=TestSources.EXAMPLE_DRIVE_1.value,
+        )
 
         # search in-place
         card_name = chrome_driver.find_element(By.ID, value="slot0-front-mpccard-name")
@@ -296,7 +378,15 @@ class TestFrontend:
         WebDriverWait(chrome_driver, 10).until(visibility_of(card_element))
 
         # assertion on the changed card state
-        self.assert_card_state(chrome_driver, 0, "front", self.ISLAND, 1, 2, self.EXAMPLE_DRIVE_1)
+        self.assert_card_state(
+            driver=chrome_driver,
+            slot=0,
+            active_face="front",
+            card=TestCards.ISLAND.value,
+            selected_image=1,
+            total_images=2,
+            source=TestSources.EXAMPLE_DRIVE_1.value,
+        )
 
     def test_dfc_search(self, chrome_driver, live_server):
         call_command("update_dfcs")
@@ -309,9 +399,25 @@ class TestFrontend:
 
         self.assert_order_qty(chrome_driver, 1)
         self.assert_order_bracket(chrome_driver, 18)
-        self.assert_card_state(chrome_driver, 0, "front", self.HUNTMASTER_OF_THE_FELLS, 1, 1, self.EXAMPLE_DRIVE_1)
+        self.assert_card_state(
+            driver=chrome_driver,
+            slot=0,
+            active_face="front",
+            card=TestCards.HUNTMASTER_OF_THE_FELLS.value,
+            selected_image=1,
+            total_images=1,
+            source=TestSources.EXAMPLE_DRIVE_1.value,
+        )
         self.toggle_faces(chrome_driver)
-        self.assert_card_state(chrome_driver, 0, "back", self.RAVAGER_OF_THE_FELLS, 1, 1, self.EXAMPLE_DRIVE_1)
+        self.assert_card_state(
+            driver=chrome_driver,
+            slot=0,
+            active_face="back",
+            card=TestCards.RAVAGER_OF_THE_FELLS.value,
+            selected_image=1,
+            total_images=1,
+            source=TestSources.EXAMPLE_DRIVE_1.value,
+        )
 
     def test_mobile_banner(self, mobile_chrome_driver, live_server):
         mobile_chrome_driver.get(live_server.url)
