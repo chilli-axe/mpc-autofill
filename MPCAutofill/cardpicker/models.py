@@ -22,7 +22,7 @@ class Source(models.Model):
         (qty_total, qty_cards, qty_cardbacks, qty_tokens, _) = self.count()
         return (
             f"[{self.ordinal}.] {self.name} "
-            f"({qty_total} total: {qty_cards} cards, {qty_cardbacks} cardbacks, {qty_tokens} tokens)"
+            f"[{qty_total} total: {qty_cards} cards, {qty_cardbacks} cardbacks, {qty_tokens} tokens]"
         )
 
     def count(self) -> tuple[str, str, str, str, float]:
@@ -97,7 +97,13 @@ class CardBase(models.Model):
     size = models.IntegerField()
 
     def __str__(self) -> str:
-        return "[{}] {}: {}, uploaded: {}".format(self.source, self.name, self.identifier, self.date)
+        return (
+            f"[{self.source.name}] "
+            f"{self.name} "
+            f"[Identifier: {self.identifier}, "
+            f"Uploaded: {self.date.strftime('%d/%m/%Y')}, "
+            f"Priority: {self.priority}]"
+        )
 
     def to_dict(self) -> dict[str, Any]:
         return {
