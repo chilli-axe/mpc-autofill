@@ -130,17 +130,15 @@ class TestFrontend:
 
     # region tests
 
-    def test_basic_search_and_xml_generation(self, chrome_driver, live_server, download_folder):
+    def test_basic_search_and_xml_generation(self, chrome_driver, live_server, download_folder, snapshot):
         chrome_driver.get(live_server.url)
         text_area = chrome_driver.find_element(By.ID, value="id_card_list")
         text_area.send_keys("4 brainstorm\n3 island")
         chrome_driver.find_element(By.ID, value="btn_submit").click()
-
         self.wait_for_search_results_modal(chrome_driver)
 
         self.assert_order_qty(chrome_driver, 7)
         self.assert_order_bracket(chrome_driver, 18)
-
         self.assert_card_state(
             chrome_driver,
             slot=0,
@@ -207,37 +205,7 @@ class TestFrontend:
 
         self.generate_and_download_xml(chrome_driver)
         with open(download_folder / "cards.xml", "r") as f:
-            assert re.sub(r"[\n\t\s]*", "", str(f.read())) == re.sub(
-                r"[\n\t\s]*",
-                "",
-                (
-                    f"""
-                <order>
-                    <details>
-                        <quantity>7</quantity>
-                        <bracket>18</bracket>
-                        <stock>(S30) Standard Smooth</stock>
-                        <foil>false</foil>
-                    </details>
-                    <fronts>
-                        <card>
-                            <id>{TestCards.BRAINSTORM.value.identifier}</id>
-                            <slots>1,2,0,3</slots>
-                            <name>{TestCards.BRAINSTORM.value.name}.png</name>
-                            <query>brainstorm</query>
-                        </card>
-                        <card>
-                            <id>{TestCards.ISLAND.value.identifier}</id>
-                            <slots>4,5,6</slots>
-                            <name>{TestCards.ISLAND.value.name}.png</name>
-                            <query>island</query>
-                        </card>
-                    </fronts>
-                    <cardback>{TestCards.SIMPLE_CUBE.value.identifier}</cardback>
-                </order>
-                """
-                ),
-            )
+            assert str(f.read()) == snapshot
 
     def test_toggle_faces(self, chrome_driver, live_server):
         chrome_driver.get(live_server.url)
@@ -416,6 +384,33 @@ class TestFrontend:
             card=TestCards.RAVAGER_OF_THE_FELLS.value,
             selected_image=1,
             total_images=1,
+            source=TestSources.EXAMPLE_DRIVE_1.value,
+        )
+
+    def test_priority_ordering(self, chrome_driver, live_server):
+        chrome_driver.get(live_server.url)
+        text_area = chrome_driver.find_element(By.ID, value="id_card_list")
+        text_area.send_keys("island")
+        chrome_driver.find_element(By.ID, value="btn_submit").click()
+        self.wait_for_search_results_modal(chrome_driver)
+
+        self.assert_card_state(
+            chrome_driver,
+            slot=0,
+            active_face="front",
+            card=TestCards.ISLAND.value,
+            selected_image=1,
+            total_images=2,
+            source=TestSources.EXAMPLE_DRIVE_1.value,
+        )
+        chrome_driver.find_element(By.ID, value="slot0-front-next").click()
+        self.assert_card_state(
+            chrome_driver,
+            slot=0,
+            active_face="front",
+            card=TestCards.ISLAND_CLASSICAL.value,
+            selected_image=2,
+            total_images=2,
             source=TestSources.EXAMPLE_DRIVE_1.value,
         )
 

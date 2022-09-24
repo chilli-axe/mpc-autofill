@@ -22,6 +22,7 @@ class TestSource:
 class TestCards(Enum):
     BRAINSTORM = TestCard(identifier="1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5", name="Brainstorm")
     ISLAND = TestCard(identifier="1IDtqSjJ4Yo45AnNA4SplOiN7ewibifMa", name="Island")
+    ISLAND_CLASSICAL = TestCard(identifier="1HsvTYs1jFGe1c8U1PnNZ9aB8jkAW7KU0", name="Island (William Bradford)")
     SIMPLE_CUBE = TestCard(identifier="1JtXL6Ca9nQkvhwZZRR9ZuKA9_DzsFf1V", name="Simple Cube")  # default back
     HUNTMASTER_OF_THE_FELLS = TestCard(identifier="", name="Huntmaster of the Fells")
     RAVAGER_OF_THE_FELLS = TestCard(identifier="", name="Ravager of the Fells")
