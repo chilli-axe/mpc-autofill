@@ -1,0 +1,23 @@
+# name: TestUpdateDatabase.test_comprehensive_snapshot[cardbacks]
+  list([
+    <Cardback: [Example Drive 1] Simple Cube [Identifier: 1JtXL6Ca9nQkvhwZZRR9ZuKA9_DzsFf1V, Uploaded: 22/09/2022, Priority: 2]>,
+    <Cardback: [Example Drive 1] Simple Lotus [Identifier: 1oigI6wz0zA--pNMuExKTs40kBNH6VRP_, Uploaded: 22/09/2022, Priority: 2]>,
+  ])
+# ---
+# name: TestUpdateDatabase.test_comprehensive_snapshot[cards]
+  list([
+    <Card: [Example Drive 1] Mountain [Identifier: 1-dcs0FEE05MTGiYbKqs9HnRdhXkgtIJG, Uploaded: 22/09/2022, Priority: 7]>,
+    <Card: [Example Drive 1] Plains [Identifier: 1743iShpNEhY5xQ2PCUNpca4UL5t4rG3g, Uploaded: 22/09/2022, Priority: 7]>,
+    <Card: [Example Drive 1] Huntmaster of the Fells [Identifier: 1991MWCur9NdAFi-tQQD5YbQj2oqV_WRy, Uploaded: 22/09/2022, Priority: 2]>,
+    <Card: [Example Drive 1] Island (William Bradford) [Identifier: 1HsvTYs1jFGe1c8U1PnNZ9aB8jkAW7KU0, Uploaded: 22/09/2022, Priority: 6]>,
+    <Card: [Example Drive 1] Island [Identifier: 1IDtqSjJ4Yo45AnNA4SplOiN7ewibifMa, Uploaded: 22/09/2022, Priority: 7]>,
+    <Card: [Example Drive 1] Swamp [Identifier: 1O5Y_lBOBJK1D9Tw6pcsQJXYoTZXhR3mV, Uploaded: 22/09/2022, Priority: 7]>,
+    <Card: [Example Drive 1] Forest [Identifier: 1Sne_vn7TlohIbsjt933Kd5k2ff6vFS1I, Uploaded: 22/09/2022, Priority: 7]>,
+    <Card: [Example Drive 1] Brainstorm [Identifier: 1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5, Uploaded: 22/09/2022, Priority: 2]>,
+    <Card: [Example Drive 1] Ravager of the Fells [Identifier: 1lv8WC1Xf1qxA7VHSc8jOtT5up6FwaBPH, Uploaded: 22/09/2022, Priority: 2]>,
+  ])
+# ---
+# name: TestUpdateDatabase.test_comprehensive_snapshot[tokens]
+  list([
+  ])
+# ---

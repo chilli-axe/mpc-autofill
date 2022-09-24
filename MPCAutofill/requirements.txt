@@ -10,6 +10,7 @@ django-environ
 django-stubs-ext
 django-user-agents
 elasticsearch-dsl>=7.0.0,<8.0.0
+factory-boy
 google-api-python-client
 google-auth-httplib2
 google-auth-oauthlib
@@ -19,5 +20,9 @@ oauth2client
 pre-commit
 psycopg2-binary
 pytest-django
+pytest-elasticsearch
 ratelimit
+selenium
+syrupy
 tqdm
+webdriver-manager==3.5.4

@@ -21,7 +21,7 @@
     </script>
 
     {% if mobile %}
-    <div class="alert alert-primary" role="alert">
+    <div id="mobile-device-alert" class="alert alert-primary" role="alert">
         It seems like you're on a mobile device! Please note that {{ SITE_NAME }} requires a Windows, macOS, or Linux
         computer to run the executable that fills your order into MPC.
     </div>
@@ -94,11 +94,11 @@
                 </button>
             </div>
 
-            <button type="button" class="btn btn-outline-info mt-2 ms-2" data-bs-toggle="modal" data-bs-target="#selectDrivesModal" style="color: white;">
+            <button id="btn_settings" type="button" class="btn btn-outline-info mt-2 ms-2" data-bs-toggle="modal" data-bs-target="#selectDrivesModal" style="color: white;">
                 Settings
             </button>
 
-            <input form="cardinput" type="submit" class="btn btn-outline-success mt-2 ms-2" style="color: white;" value="Submit">
+            <input id="btn_submit" form="cardinput" type="submit" class="btn btn-outline-success mt-2 ms-2" style="color: white;" value="Submit">
         </div>
     </div>
 
@@ -140,7 +140,8 @@
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" onclick="$('#input_link').submit()" data-bs-dismiss="modal">Import</button>
+                    <button type="button" id="inputLinkModal-submit" class="btn btn-primary"
+                            onclick="$('#input_link').submit()" data-bs-dismiss="modal">Import</button>
                 </div>
             </div>
         </div>
@@ -202,7 +203,8 @@
                     </body>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Save Changes</button>
+                    <button type="button" id="selectDrivesModal-submit" class="btn btn-primary"
+                            data-bs-dismiss="modal">Save Changes</button>
                 </div>
             </div>
         </div>

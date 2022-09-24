@@ -123,13 +123,13 @@
 
                 {# download images, generate order, and what's next buttons #}
                 <div class="row g-0">
-                    <button type="button" class="btn btn-success w-100" onclick="download_all();" data-bs-toggle="tooltip"
-                        data-bs-placement="top" title="Popups need to be enabled for this to function properly. Beware &#8212 this can open lots of tabs!">
+                    <button id="btn_download_all" type="button" class="btn btn-success w-100" onclick="download_all();"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Popups need to be enabled for this to function properly. Beware &#8212 this can open lots of tabs!">
                         Download All Images
                     </button>
                     <div class="col-lg-6 col-md-12 col-sm-12 col-12">
-                        <button type="button" class="btn btn-primary w-100" data-bs-toggle="modal"
-                                onclick="generate_xml();" data-bs-target="#donationModal">
+                        <button id="btn_generate_xml" type="button" class="btn btn-primary w-100"
+                                data-bs-toggle="modal" onclick="generate_xml();">
                             Generate Order
                         </button>
                     </div>
