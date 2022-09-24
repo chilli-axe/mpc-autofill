@@ -374,8 +374,8 @@ class TestFrontend:
         card_name.clear()
         card_name.send_keys("island")
         card_name.send_keys(Keys.ENTER)
-        WebDriverWait(chrome_driver, 10).until(invisibility_of_element(card_element))
-        WebDriverWait(chrome_driver, 10).until(visibility_of(card_element))
+        WebDriverWait(chrome_driver, 30).until(invisibility_of_element(card_element))
+        WebDriverWait(chrome_driver, 30).until(visibility_of(card_element))
 
         # assertion on the changed card state
         self.assert_card_state(
