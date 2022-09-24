@@ -314,6 +314,7 @@ class TestFrontend:
             source=TestSources.EXAMPLE_DRIVE_1.value,
         )
 
+    @pytest.mark.skip(reason="Appears to run inconsistently on GitHub Actions.")
     def test_search_in_place(self, chrome_driver, live_server):
         # TODO: can we create fixtures for search results to speed up these tests?
         # set up results page with single result
