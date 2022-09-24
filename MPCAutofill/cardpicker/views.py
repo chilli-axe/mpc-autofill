@@ -11,8 +11,8 @@ from django.utils import timezone
 
 from cardpicker.forms import InputCSV, InputLink, InputText, InputXML
 from cardpicker.models import Card, Cardback, Source, Token
-from cardpicker.sources.source_types import SourceTypeChoices
 from cardpicker.mpcorder import Faces, MPCOrder, ReqTypes
+from cardpicker.sources.source_types import SourceTypeChoices
 from cardpicker.utils.search_functions import (
     SearchExceptions,
     build_context,
