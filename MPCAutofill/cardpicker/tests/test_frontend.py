@@ -1,11 +1,12 @@
-import re
 import time
+from dataclasses import dataclass
 from pathlib import Path
 
 import pytest
 from selenium.webdriver import Chrome
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.expected_conditions import (
@@ -18,6 +19,12 @@ from webdriver_manager.chrome import ChromeDriverManager
 from django.core.management import call_command
 
 from cardpicker.tests.constants import TestCard, TestCards, TestSource, TestSources
+
+
+@dataclass
+class TestSourceRow:
+    key: str
+    enabled: bool
 
 
 class TestFrontend:
@@ -120,6 +127,17 @@ class TestFrontend:
             or driver.find_element(By.ID, value=f"slot{slot}-{active_face}-mpccard-counter-btn").text
         ) == counter
         assert source.name in driver.find_element(By.ID, value=f"slot{slot}-{active_face}-mpccard-source").text
+
+    @staticmethod
+    def assert_search_settings(driver, test_source_rows: list[TestSourceRow]) -> None:
+        driver.find_element(By.ID, value="btn_settings").click()
+        time.sleep(1)
+        table_rows = driver.find_element(By.ID, value="search-settings-table").find_elements(By.XPATH, value="*")
+        assert [x.get_attribute("id") for x in table_rows] == [f"{x.key}-row" for x in test_source_rows]
+        for test_source_row in test_source_rows:
+            assert (
+                driver.find_element(By.ID, value=test_source_row.key).get_attribute("checked") == "true"
+            ) == test_source_row.enabled
 
     @staticmethod
     def toggle_faces(driver):
@@ -413,6 +431,38 @@ class TestFrontend:
             selected_image=2,
             total_images=2,
             source=TestSources.EXAMPLE_DRIVE_1.value,
+        )
+
+    def test_disabling_a_drive_saved_by_cookie(self, chrome_driver, live_server):
+        chrome_driver.get(live_server.url)
+        chrome_driver.find_element(By.ID, value="btn_settings").click()
+        time.sleep(1)
+        chrome_driver.execute_script(f"javascript:$('#example_drive_2').bootstrapToggle('off')")
+        chrome_driver.find_element(By.ID, value="selectDrivesModal-submit").click()
+        time.sleep(1)
+        chrome_driver.refresh()
+
+        self.assert_search_settings(
+            chrome_driver,
+            [TestSourceRow(key="example_drive_1", enabled=True), TestSourceRow(key="example_drive_2", enabled=False)],
+        )
+
+    def test_reordering_drives_saved_by_cookie(self, chrome_driver, live_server):
+        chrome_driver.get(live_server.url)
+        chrome_driver.find_element(By.ID, value="btn_settings").click()
+        time.sleep(1)
+        action = ActionChains(chrome_driver)
+        action.drag_and_drop(
+            source=chrome_driver.find_element(By.ID, value="example_drive_2-row"),
+            target=chrome_driver.find_element(By.ID, value="example_drive_1-row"),
+        ).perform()
+        chrome_driver.find_element(By.ID, value="selectDrivesModal-submit").click()
+        time.sleep(1)
+        chrome_driver.refresh()
+
+        self.assert_search_settings(
+            chrome_driver,
+            [TestSourceRow(key="example_drive_2", enabled=True), TestSourceRow(key="example_drive_1", enabled=True)],
         )
 
     def test_mobile_banner(self, mobile_chrome_driver, live_server):
