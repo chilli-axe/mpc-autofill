@@ -28,23 +28,32 @@ function load_search_settings() {
         let drives = settings["drives"];
         let fuzzy_search = settings["fuzzy_search"];
 
-        // reorder the drive table elements according to the cookie by inserting them all after the first one
-        // in the cookie (in reverse order)
-        $("#" + drives[0][0]).bootstrapToggle(drives[0][1]);
-        let first_drive_row = $("#" + drives[0][0] + "-row");
-        all_drives.delete(drives[0][0]);
-        for (let i = drives.length - 1; i > 0; i--) {
-            $("#" + drives[i][0]).bootstrapToggle(drives[i][1]);
-            $("#" + drives[i][0] + "-row").insertAfter(first_drive_row);
-            all_drives.delete(drives[i][0]);
-        }
+        if (drives.length > 0) {
+            // maintain a set of all drives loaded into the page for making sure any new drives get inserted at the bottom
+            let all_drive_elems = document.getElementsByClassName("drivesource");
+            let all_drives = new Set();
+            for (let i = all_drive_elems.length - 1; i >= 0; i--) {
+                all_drives.add(all_drive_elems[i].id);
+            }
 
-        // any drives left in all_drives at this point were added to the site between now and when the user's
-        // search settings cookie was last saved
-        // stick these users onto the end - note that the drives were inserted into the set in reverse order,
-        // meaning that these will be insertAfter'd in reverse order, which orders the elements correctly
-        let last_drive_row = $("#" + drives[drives.length - 1][0] + "-row");
-        all_drives.forEach(drive => $("#" + drive + "-row").insertAfter(last_drive_row));
+            // reorder the drive table elements according to the cookie by inserting them all after the first one
+            // in the cookie (in reverse order)
+            $("#" + drives[0][0]).bootstrapToggle(drives[0][1]);
+            let first_drive_row = $("#" + drives[0][0] + "-row");
+            all_drives.delete(drives[0][0]);
+            for (let i = drives.length - 1; i > 0; i--) {
+                $("#" + drives[i][0]).bootstrapToggle(drives[i][1]);
+                $("#" + drives[i][0] + "-row").insertAfter(first_drive_row);
+                all_drives.delete(drives[i][0]);
+            }
+
+            // any drives left in all_drives at this point were added to the site between now and when the user's
+            // search settings cookie was last saved
+            // stick these users onto the end - note that the drives were inserted into the set in reverse order,
+            // meaning that these will be insertAfter'd in reverse order, which orders the elements correctly
+            let last_drive_row = $("#" + drives[drives.length - 1][0] + "-row");
+            all_drives.forEach(drive => $("#" + drive + "-row").insertAfter(last_drive_row));
+        }
 
         $("#searchtype").bootstrapToggle(fuzzy_search);
     }
