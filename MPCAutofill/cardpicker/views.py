@@ -213,7 +213,7 @@ def search_multiple(request: HttpRequest) -> HttpResponse:
     order = MPCOrder()
     order.from_json(json.loads(request.POST.get("order", "")))
 
-    for face in Faces.FACES.value:
+    for face in Faces.get_faces():
         for item in order[face].values():
             result = search(drive_order, fuzzy_search, item.query, item.req_type)
             item.insert_data(result)

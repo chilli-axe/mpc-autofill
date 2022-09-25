@@ -14,7 +14,6 @@ from cardpicker.mpcorder import (
 from cardpicker.tests.factories import DFCPairFactory
 
 
-@pytest.mark.django_db
 class TestMPCOrder:
     # region helpers
 
@@ -32,8 +31,8 @@ class TestMPCOrder:
 
     @classmethod
     def assert_mpc_orders_identical(cls, a: MPCOrder, b: MPCOrder) -> None:
-        cls.assert_card_image_collections_identical(a[Faces.FRONT.value], b[Faces.FRONT.value])
-        cls.assert_card_image_collections_identical(a[Faces.BACK.value], b[Faces.BACK.value])
+        cls.assert_card_image_collections_identical(a[Faces.FRONT], b[Faces.FRONT])
+        cls.assert_card_image_collections_identical(a[Faces.BACK], b[Faces.BACK])
         cls.assert_card_images_identical(a.cardback, b.cardback)
         assert a.cardstock == b.cardstock
         assert a.foil == b.foil
@@ -43,7 +42,7 @@ class TestMPCOrder:
     # region fixtures
 
     @pytest.fixture()
-    def some_dfcs(self):
+    def double_faced_cards(self, db):
         DFCPairFactory(
             front="Huntmaster of the Fells",
             front_searchable="huntmaster of fells",
@@ -61,7 +60,7 @@ class TestMPCOrder:
 
     # region tests
 
-    def test_populate_from_text(self, some_dfcs):
+    def test_populate_from_text(self, double_faced_cards):
         order = MPCOrder()
         order.from_text(
             textwrap.dedent(
@@ -97,7 +96,7 @@ class TestMPCOrder:
             ),
         )
 
-    def test_populate_from_text_offset(self, some_dfcs):
+    def test_populate_from_text_offset(self, double_faced_cards):
         order = MPCOrder()
         order.from_text(
             textwrap.dedent(
@@ -136,7 +135,7 @@ class TestMPCOrder:
             ),
         )
 
-    def test_populate_from_text_twice(self, some_dfcs):
+    def test_populate_from_text_twice(self, double_faced_cards):
         order = MPCOrder()
         order.from_text(
             textwrap.dedent(

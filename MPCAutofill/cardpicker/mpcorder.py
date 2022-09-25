@@ -60,10 +60,13 @@ class ReqTypes(str, Enum):
     CARDBACK = "back"
 
 
-class Faces(Enum):
+class Faces(str, Enum):
     FRONT = "front"
     BACK = "back"
-    FACES = [FRONT, BACK]
+
+    @classmethod
+    def get_faces(cls) -> list[str]:
+        return [cls.FRONT.value, cls.BACK.value]
 
 
 class CSVHeaders(str, Enum):
@@ -220,7 +223,7 @@ class MPCOrder(abc.MutableMapping[str, Any]):
         return "\n".join(f"{key} {str(value)}" for key, value in self.items())
 
     def to_dict(self) -> dict[str, Union[str, dict[str, Any]]]:
-        ret: dict[str, Union[str, dict[str, Any]]] = {x: self[x].to_dict() for x in Faces.FACES.value}
+        ret: dict[str, Union[str, dict[str, Any]]] = {x: self[x].to_dict() for x in Faces.get_faces()}
         ret[Faces.BACK.value][""] = self.cardback.to_dict()  # type: ignore
 
         # in the event of mangled xml's, the following bit of code will repair the front face of the
@@ -480,7 +483,7 @@ class MPCOrder(abc.MutableMapping[str, Any]):
         self.cardstock = {str(x.value): x for x in Cardstocks}[order_json["cardstock"]]
         self.foil = order_json["foil"] == "true"
         self.remove_common_cardback()
-        for face in Faces.FACES.value:
+        for face in Faces.get_faces():
             for key in order_json[face].keys():
                 query = order_json[face][key]["query"]
                 slots = {(x[0], x[1]) for x in order_json[face][key]["slots"]}
