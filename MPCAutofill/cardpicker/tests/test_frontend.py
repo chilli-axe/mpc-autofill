@@ -244,7 +244,12 @@ class TestFrontend:
         chrome_driver.get(live_server.url)
         chrome_driver.find_element(By.ID, value="btn_settings").click()
         time.sleep(1)
-        chrome_driver.find_element(By.ID, value=TestSources.EXAMPLE_DRIVE_1.value.key).click()
+        chrome_driver.find_element(By.ID, value=TestSources.EXAMPLE_DRIVE_1.value.key).find_element(
+            By.XPATH, value="./.."
+        ).click()
+        chrome_driver.find_element(By.ID, value=TestSources.EXAMPLE_DRIVE_2.value.key).find_element(
+            By.XPATH, value="./.."
+        ).click()
         chrome_driver.find_element(By.ID, value="selectDrivesModal-submit").click()
         time.sleep(1)
         text_area = chrome_driver.find_element(By.ID, value="id_card_list")
@@ -437,14 +442,19 @@ class TestFrontend:
         chrome_driver.get(live_server.url)
         chrome_driver.find_element(By.ID, value="btn_settings").click()
         time.sleep(1)
-        chrome_driver.execute_script(f"javascript:$('#example_drive_2').bootstrapToggle('off')")
+        chrome_driver.find_element(By.ID, value=TestSources.EXAMPLE_DRIVE_2.value.key).find_element(
+            By.XPATH, value="./.."
+        ).click()
         chrome_driver.find_element(By.ID, value="selectDrivesModal-submit").click()
         time.sleep(1)
         chrome_driver.refresh()
 
         self.assert_search_settings(
             chrome_driver,
-            [TestSourceRow(key="example_drive_1", enabled=True), TestSourceRow(key="example_drive_2", enabled=False)],
+            [
+                TestSourceRow(key=TestSources.EXAMPLE_DRIVE_1.value.key, enabled=True),
+                TestSourceRow(key=TestSources.EXAMPLE_DRIVE_2.value.key, enabled=False),
+            ],
         )
 
     def test_reordering_drives_saved_by_cookie(self, chrome_driver, live_server):
@@ -452,9 +462,10 @@ class TestFrontend:
         chrome_driver.find_element(By.ID, value="btn_settings").click()
         time.sleep(1)
         action = ActionChains(chrome_driver)
-        action.drag_and_drop(
-            source=chrome_driver.find_element(By.ID, value="example_drive_2-row"),
-            target=chrome_driver.find_element(By.ID, value="example_drive_1-row"),
+        action.drag_and_drop_by_offset(
+            source=chrome_driver.find_element(By.ID, value=f"{TestSources.EXAMPLE_DRIVE_2.value.key}-row"),
+            xoffset=30,
+            yoffset=-70,
         ).perform()
         chrome_driver.find_element(By.ID, value="selectDrivesModal-submit").click()
         time.sleep(1)
@@ -462,7 +473,10 @@ class TestFrontend:
 
         self.assert_search_settings(
             chrome_driver,
-            [TestSourceRow(key="example_drive_2", enabled=True), TestSourceRow(key="example_drive_1", enabled=True)],
+            [
+                TestSourceRow(key=TestSources.EXAMPLE_DRIVE_2.value.key, enabled=True),
+                TestSourceRow(key=TestSources.EXAMPLE_DRIVE_1.value.key, enabled=True),
+            ],
         )
 
     def test_mobile_banner(self, mobile_chrome_driver, live_server):
