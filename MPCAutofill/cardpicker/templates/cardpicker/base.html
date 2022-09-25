@@ -1,104 +1,138 @@
 <!DOCTYPE html>
 {% load static %}
 <html lang="en">
-<head>
-    <link rel="shortcut icon" href="{% static 'cardpicker/favicon.ico' %}"/>
-    <script type="text/javascript">
+    <head>
+        <link rel="shortcut icon" href="{% static 'cardpicker/favicon.ico' %}"/>
+        <script type="text/javascript">
         var my_gtag = "{{ GTAG }}";
         var exception = "{{ exception }}";
-    </script>
-
-    {# Global site tag (gtag.js) - Google Analytics #}
-    <script async src="https://www.googletagmanager.com/gtag/js?id={{ GTAG }}"></script>
-
-    <title>{% block title %}{{ SITE_NAME }}{% endblock %}</title>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    {% block description %}
-        <meta name="description"
-              content="The easiest way to print kitchen-table proxy cards for Magic: The Gathering (MTG) with MakePlayingCards (MPC). No prior knowledge required.">
-    {% endblock %}
-
-    {% comment %} <script src="{% static 'js/vendor.bundle.js' %}"></script> {% endcomment %}
-    {% block scripts %}{% endblock %} {# any js and css that child templates need to load #}
-</head>
-<body id="id_body" style="touch-action: manipulation;">
-    {# Navbar #}
-    <nav class="navbar navbar-expand-lg fixed-top navbar-dark bg-primary" style="height: 50px;">
-        <div class="container justify-content-center fixed-top align-middle bg-primary" style="max-width: 1200px;">
-            <a class="navbar-brand" href="/">
-                <img src="{% static 'cardpicker/logolowres.png' %}?10" width="40" height="40">&nbsp;
-                <span class="align-middle"><b>{{ SITE_NAME }}</b></span></a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
-                    aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarSupportedContent" style="font-weight: bold;">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item"><a class="nav-link" href="/guide">Guide</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/new">What's New?</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/contributions">Contributions</a></li>
-                </ul>
-                <ul class="navbar-nav justify-content-end">
-                    <li class="nav-item">
-                        <a class="nav-link" href="https://github.com/chilli-axe/mpc-autofill" target="_blank">GitHub</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ REDDIT }}" target="_blank">Reddit</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ DISCORD }}" target="_blank">Discord</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/legal">About</a>
-                    </li>
-                </ul>
+        </script>
+        {# Global site tag (gtag.js) - Google Analytics #}
+        <script async src="https://www.googletagmanager.com/gtag/js?id={{ GTAG }}"></script>
+        <title>
+            {% block title %}{{ SITE_NAME }}{% endblock %}
+        </title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        {% block description %}
+            <meta name="description"
+                  content="The easiest way to print kitchen-table proxy cards for Magic: The Gathering (MTG) with MakePlayingCards (MPC). No prior knowledge required.">
+        {% endblock %}
+        {% comment %} <script src="{% static 'js/vendor.bundle.js' %}"></script> {% endcomment %}
+        {% block scripts %}{% endblock %}
+        {# any js and css that child templates need to load #}
+    </head>
+    <body id="id_body" style="touch-action: manipulation;">
+        {# Navbar #}
+        <nav class="navbar navbar-expand-lg fixed-top navbar-dark bg-primary"
+             style="height: 50px;">
+            <div class="container justify-content-center fixed-top align-middle bg-primary"
+                 style="max-width: 1200px;">
+                <a class="navbar-brand" href="/">
+                    <img src="{% static 'cardpicker/logolowres.png' %}?10"
+                         width="40"
+                         height="40">
+                    &nbsp;
+                    <span class="align-middle"><b>{{ SITE_NAME }}</b></span></a>
+                <button class="navbar-toggler"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#navbarSupportedContent"
+                        aria-controls="navbarSupportedContent"
+                        aria-expanded="false"
+                        aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse"
+                     id="navbarSupportedContent"
+                     style="font-weight: bold;">
+                    <ul class="navbar-nav me-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="/guide">Guide</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/new">What's New?</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/contributions">Contributions</a>
+                        </li>
+                    </ul>
+                    <ul class="navbar-nav justify-content-end">
+                        <li class="nav-item">
+                            <a class="nav-link"
+                               href="https://github.com/chilli-axe/mpc-autofill"
+                               target="_blank">GitHub</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ REDDIT }}" target="_blank">Reddit</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ DISCORD }}" target="_blank">Discord</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/legal">About</a>
+                        </li>
+                    </ul>
+                </div>
             </div>
-        </div>
-    </nav>
-    <div class="container addmargin" style="max-width: 1200px;">
-        {# error message toast #}
-        <div aria-live="polite" aria-atomic="true">
-            <div id="errorToast" class="toast" style="position: fixed; left: 0; z-index: -1;" data-bs-delay="10000">
-                <div class="toast-header">
-                    <strong class="me-auto">Server Error</strong>
-                </div>
-                <div class="toast-body">
-                    <p>We're sorry, but an error occurred while handling your request.</p>
-                    <p id="error_message_paragraph">Error message: <b id="error_message_body"></b></p>
+        </nav>
+        <div class="container addmargin" style="max-width: 1200px;">
+            {# error message toast #}
+            <div aria-live="polite" aria-atomic="true">
+                <div id="errorToast"
+                     class="toast"
+                     style="position: fixed;
+                            left: 0;
+                            z-index: -1;"
+                     data-bs-delay="10000">
+                    <div class="toast-header">
+                        <strong class="me-auto">Server Error</strong>
+                    </div>
+                    <div class="toast-body">
+                        <p>We're sorry, but an error occurred while handling your request.</p>
+                        <p id="error_message_paragraph">
+                            Error message: <b id="error_message_body"></b>
+                        </p>
+                    </div>
                 </div>
             </div>
-        </div>
-
-        {# toast to allow users to opt out of Google Analytics #}
-        <div aria-live="polite" aria-atomic="true">
-            <div id="cookieToast" class="toast" style="position: fixed; left: 0; z-index: -2;" data-bs-autohide="false">
-                <div class="toast-header">
-                    <strong class="me-auto">Cookie Usage</strong>
-                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-                </div>
-                <div class="toast-body">
-                    <p>
-                    {{ SITE_NAME }} uses cookies for remembering your search settings, and for collecting analytics
-                    data to help improve the site. Your data is never shared with anyone. Would you like to opt
-                    out of analytics cookies?
-                    </p>
-                    <p>
-                    View our privacy policy <a target="_blank" href="/legal">here</a>.
-                    </p>
-                    <div class="mt-2 pt-2 border-top">
-                        <div class="row">
-                            <div id="cookieToastOptOut" class="col-6">
-                                <button type="button" class="btn btn-outline-info btn-sm w-100">Opt me out please!</button>
-                            </div>
-                            <div id="cookieToastOptIn" class="col-6">
-                                <button type="button" class="btn btn-primary btn-sm w-100">That's fine!</button>
+            {# toast to allow users to opt out of Google Analytics #}
+            <div aria-live="polite" aria-atomic="true">
+                <div id="cookieToast"
+                     class="toast"
+                     style="position: fixed;
+                            left: 0;
+                            z-index: -2;"
+                     data-bs-autohide="false">
+                    <div class="toast-header">
+                        <strong class="me-auto">Cookie Usage</strong>
+                        <button type="button"
+                                class="btn-close"
+                                data-bs-dismiss="toast"
+                                aria-label="Close"></button>
+                    </div>
+                    <div class="toast-body">
+                        <p>
+                            {{ SITE_NAME }} uses cookies for remembering your search settings, and for collecting analytics
+                            data to help improve the site. Your data is never shared with anyone. Would you like to opt
+                            out of analytics cookies?
+                        </p>
+                        <p>
+                            View our privacy policy <a target="_blank" href="/legal">here</a>.
+                        </p>
+                        <div class="mt-2 pt-2 border-top">
+                            <div class="row">
+                                <div id="cookieToastOptOut" class="col-6">
+                                    <button type="button" class="btn btn-outline-info btn-sm w-100">Opt me out please!</button>
+                                </div>
+                                <div id="cookieToastOptIn" class="col-6">
+                                    <button type="button" class="btn btn-primary btn-sm w-100">That's fine!</button>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
             {% block content %}{% endblock %}
         </div>
     </body>
