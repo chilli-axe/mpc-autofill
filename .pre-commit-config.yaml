@@ -48,3 +48,9 @@ repos:
     rev: "v2.7.1"
     hooks:
       - id: prettier
+  - repo: https://github.com/Riverside-Healthcare/djLint
+    rev: v1.17.2
+    hooks:
+      - id: djlint-django
+        args:
+          - --reformat
