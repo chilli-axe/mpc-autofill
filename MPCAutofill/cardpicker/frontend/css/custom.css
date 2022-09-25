@@ -7,16 +7,16 @@
 }
 
 .next {
-  position:absolute;
-  bottom:10px;
-  right:10px;
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
   height: 38px;
 }
 
 .prev {
-  position:absolute;
-  bottom:10px;
-  left:10px;
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
   height: 38px;
 }
 
@@ -25,7 +25,7 @@
 }
 
 .asteriskField {
-    display: none;
+  display: none;
 }
 
 .addmargin {
@@ -37,7 +37,7 @@
 }
 
 .card-img-top {
-    object-fit: cover;
+  object-fit: cover;
 }
 
 .mpccard-hover {
@@ -46,7 +46,7 @@
 }
 
 .mpccard-hover::after {
-  content: '';
+  content: "";
   position: absolute;
   z-index: -1;
   width: 100%;
@@ -92,7 +92,8 @@
   /*outline: 1px solid navy;*/
 }
 
-.mpccard-counter, .mpccard-counter-btn {
+.mpccard-counter,
+.mpccard-counter-btn {
   font-size: 0.85rem;
   font-weight: bold;
   position: absolute;
@@ -104,53 +105,53 @@
 }
 
 .mpccard-counter-btn {
-    height: 38px;
+  height: 38px;
 }
 
 .padlock {
-  position:absolute;
-  top:10px;
-  left:5px;
-  background-color:transparent;
-  background-repeat:no-repeat;
+  position: absolute;
+  top: 10px;
+  left: 5px;
+  background-color: transparent;
+  background-repeat: no-repeat;
   border: none;
   cursor: pointer;
   overflow: hidden;
-  outline:none;
+  outline: none;
   color: white;
   font-size: 1.3em;
 }
 
 .remove {
-  position:absolute;
-  top:10px;
-  right:5px;
-  background-color:transparent;
-  background-repeat:no-repeat;
+  position: absolute;
+  top: 10px;
+  right: 5px;
+  background-color: transparent;
+  background-repeat: no-repeat;
   border: none;
   cursor: pointer;
   overflow: hidden;
-  outline:none;
+  outline: none;
   color: white;
   font-size: 1.3em;
 }
 
 .dl-loading {
-  position:absolute;
-  top:15px;
-  left:10px;
+  position: absolute;
+  top: 15px;
+  left: 10px;
 }
 
 .padlock0 {
-  position:absolute;
-  top:15px;
-  left:10px;
-  background-color:transparent;
-  background-repeat:no-repeat;
+  position: absolute;
+  top: 15px;
+  left: 10px;
+  background-color: transparent;
+  background-repeat: no-repeat;
   border: none;
   cursor: pointer;
   overflow: hidden;
-  outline:none;
+  outline: none;
 }
 
 .paypal-donate-btn {
@@ -186,7 +187,7 @@
   overflow-y: scroll;
 }
 
-.mpc-row{
+.mpc-row {
   height: 100vh;
 }
 
@@ -213,30 +214,33 @@
   overflow-y: scroll;
   overflow-x: hidden;
 }
-.container.addmargin > .row > .col-lg-4 > .sticky-top.sticky-offset::-webkit-scrollbar {
+.container.addmargin
+  > .row
+  > .col-lg-4
+  > .sticky-top.sticky-offset::-webkit-scrollbar {
   display: none;
 }
 
 @media (min-width: 576px) {
-    .card-columns {
-        column-count: 2;
-    }
+  .card-columns {
+    column-count: 2;
+  }
 }
 
 @media (min-width: 768px) {
-    .card-columns {
-        column-count: 3;
-    }
+  .card-columns {
+    column-count: 3;
+  }
 }
 
 @media (min-width: 992px) {
-    .card-columns {
-        column-count: 4;
-    }
+  .card-columns {
+    column-count: 4;
+  }
 }
 
 @media (min-width: 1200px) {
-    .card-columns {
-        column-count: 4;
-    }
+  .card-columns {
+    column-count: 4;
+  }
 }

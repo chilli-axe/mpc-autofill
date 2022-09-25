@@ -1,9 +1,9 @@
 name: Tests
 on:
   push:
-    branches: [ '*' ]
+    branches: ["*"]
   pull_request:
-    branches: [ master ]
+    branches: [master]
   workflow_dispatch:
 jobs:
   pre-commit:
@@ -71,7 +71,7 @@ jobs:
         with:
           name: "client_secrets.json"
           json: ${{ secrets.GOOGLE_DRIVE_API_KEY }}
-          dir: 'MPCAutofill/'
+          dir: "MPCAutofill/"
       - name: Run tests
         run: |
           cd MPCAutofill && pytest .

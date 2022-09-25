@@ -1,22 +1,22 @@
-const path = require('path');
-const webpack = require('webpack');  // to access built-in plugins
+const path = require("path");
+const webpack = require("webpack"); // to access built-in plugins
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 //const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 module.exports = {
-  mode: 'production',
+  mode: "production",
   entry: {
-    index: './cardpicker/frontend/js/index.js',
-    review: './cardpicker/frontend/js/review.js',
-    guide: './cardpicker/frontend/js/guide.js',
-    new: './cardpicker/frontend/js/new.js',
-    contributions: './cardpicker/frontend/js/contributions.js',
-    legal: './cardpicker/frontend/js/legal.js',
+    index: "./cardpicker/frontend/js/index.js",
+    review: "./cardpicker/frontend/js/review.js",
+    guide: "./cardpicker/frontend/js/guide.js",
+    new: "./cardpicker/frontend/js/new.js",
+    contributions: "./cardpicker/frontend/js/contributions.js",
+    legal: "./cardpicker/frontend/js/legal.js",
   },
   output: {
-    filename: 'js/[name].bundle.js',
-    path: path.resolve(__dirname, './cardpicker/static'),
-    library: ['Library', '[name]'],
+    filename: "js/[name].bundle.js",
+    path: path.resolve(__dirname, "./cardpicker/static"),
+    library: ["Library", "[name]"],
   },
   module: {
     rules: [
@@ -24,36 +24,33 @@ module.exports = {
         test: /\.m?js$/,
         exclude: /(node_modules|bower_components)/,
         use: {
-          loader: 'babel-loader',
+          loader: "babel-loader",
           options: {
-            presets: ['@babel/preset-env']
-          }
-        }
+            presets: ["@babel/preset-env"],
+          },
+        },
       },
       {
         test: /\.(s?css)$/,
         use: [
           MiniCssExtractPlugin.loader,
-          'css-loader',
+          "css-loader",
           {
-            loader: 'postcss-loader',
+            loader: "postcss-loader",
             options: {
               postcssOptions: {
-                plugins: () => [
-                  require('autoprefixer')
-                ]
-              }
-            }
+                plugins: () => [require("autoprefixer")],
+              },
+            },
           },
-          'sass-loader'
-        ]
-      }
-
+          "sass-loader",
+        ],
+      },
     ],
   },
   plugins: [
     // new BundleAnalyzerPlugin(),
-    new webpack.ProvidePlugin({$: 'jquery', jQuery: 'jquery'}),
-    new MiniCssExtractPlugin({filename: 'css/[name].bundle.css'})
+    new webpack.ProvidePlugin({ $: "jquery", jQuery: "jquery" }),
+    new MiniCssExtractPlugin({ filename: "css/[name].bundle.css" }),
   ],
 };
