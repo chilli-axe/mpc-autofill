@@ -4,9 +4,13 @@
 
 # mpc-autofill
 
-Automating MakePlayingCards's online ordering system.
+Automating MakePlayingCards' online ordering system.
 
-If you're here to download the desktop client, check the [Releases](https://github.com/chilli-axe/mpc-autofill/releases) tab.
+<img align="right" width="64px" src="https://resources.jetbrains.com/storage/products/company/brand/logos/jb_beam.svg" alt="JetBrains Logo (Main) logo.">
+
+If you're here to download the desktop client, check the [Releases]("https://github.com/chilli-axe/mpc-autofill/releases") tab.
+
+JetBrains supports this project's development through their [Open Source Development licensing](https://jb.gg/OpenSourceSupport").
 
 # Monorepo Structure
 * Web project:
