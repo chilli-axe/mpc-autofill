@@ -557,10 +557,10 @@ class Card extends CardBase {
 
             let search_type = "";
             let common_back_id = "";
-            if (search_query === "\n" & this.face === "back") {
+            if (search_query === "\n" && this.face === "back") {
                 search_type = "back";
                 // specify common cardback ID
-                common_back_id = $("#slot--back").data("obj").get_curr_img().id;
+                common_back_id = $("#slot--back").data("obj").get_curr_img().identifier;
             }
 
             // query elasticsearch for info w/ the new search query and pass the current card slot
