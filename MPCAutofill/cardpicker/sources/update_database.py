@@ -57,82 +57,80 @@ def transform_images_into_objects(
     tokens: list[Token] = []
 
     for image in images:
-        # reasons why an image might be invalid
-        if image.size > 30_000_000:
-            print(f"Can't index this card: <{image.id}> {image.name}, size: {image.size:,} bytes")
-            continue
         try:
+            # reasons why an image might be invalid
+            assert image.size <= 30_000_000, f"Image size is greater than 30 MB at **int({image.size / 1_000_000})** MB"
+            assert image.name, "File name is empty string"
+            assert "." in image.name[:-1], "File name has no extension"
             name, extension = image.name.rsplit(".", 1)
-            if not name or not extension:
-                continue
-        except ValueError:
-            print(f"Skipping this image because it has no file extension: {image.name}")
-            continue
+            assert bool(searchable_name := to_searchable(name)), "Searchable file name is empty string"
 
-        dpi = 10 * round(int(image.height) * DPI_HEIGHT_RATIO / 10)
-        source_verbose = source.name
-        priority = 1 if "(" in name and ")" in name else 2
+            dpi = 10 * round(int(image.height) * DPI_HEIGHT_RATIO / 10)
+            source_verbose = source.name
+            priority = 1 if "(" in name and ")" in name else 2
 
-        folder_location = image.folder.get_full_path()
-        if folder_location == settings.DEFAULT_CARDBACK_FOLDER_PATH:
-            if name == settings.DEFAULT_CARDBACK_IMAGE_NAME:
-                priority += 10
-            priority += 5
-        if "basic" in image.folder.name.lower():
-            priority += 5
-            source_verbose += " Basics"
+            folder_location = image.folder.get_full_path()
+            if folder_location == settings.DEFAULT_CARDBACK_FOLDER_PATH:
+                if name == settings.DEFAULT_CARDBACK_IMAGE_NAME:
+                    priority += 10
+                priority += 5
+            if "basic" in image.folder.name.lower():
+                priority += 5
+                source_verbose += " Basics"
 
-        if "token" in image.folder.name.lower():
-            tokens.append(
-                Token(
-                    identifier=image.id,
-                    name=name,
-                    priority=priority,
-                    source=source,
-                    source_verbose=f"{source_verbose} Tokens",
-                    folder_location=folder_location,
-                    dpi=dpi,
-                    searchq=to_searchable(name),  # search-friendly card name
-                    searchq_keyword=to_searchable(name),  # for keyword search
-                    extension=extension,
-                    date=image.created_time,
-                    size=image.size,
+            if "token" in image.folder.name.lower():
+                tokens.append(
+                    Token(
+                        identifier=image.id,
+                        name=name,
+                        priority=priority,
+                        source=source,
+                        source_verbose=f"{source_verbose} Tokens",
+                        folder_location=folder_location,
+                        dpi=dpi,
+                        searchq=searchable_name,  # search-friendly card name
+                        searchq_keyword=searchable_name,  # for keyword search
+                        extension=extension,
+                        date=image.created_time,
+                        size=image.size,
+                    )
                 )
-            )
-        elif "cardbacks" in image.folder.name.lower() or "card backs" in image.folder.name.lower():
-            cardbacks.append(
-                Cardback(
-                    identifier=image.id,
-                    name=name,
-                    priority=priority,
-                    source=source,
-                    source_verbose=f"{source_verbose} Cardbacks",
-                    folder_location=folder_location,
-                    dpi=dpi,
-                    searchq=to_searchable(name),  # search-friendly card name
-                    searchq_keyword=to_searchable(name),  # for keyword search
-                    extension=extension,
-                    date=image.created_time,
-                    size=image.size,
+            elif "cardbacks" in image.folder.name.lower() or "card backs" in image.folder.name.lower():
+                cardbacks.append(
+                    Cardback(
+                        identifier=image.id,
+                        name=name,
+                        priority=priority,
+                        source=source,
+                        source_verbose=f"{source_verbose} Cardbacks",
+                        folder_location=folder_location,
+                        dpi=dpi,
+                        searchq=searchable_name,  # search-friendly card name
+                        searchq_keyword=searchable_name,  # for keyword search
+                        extension=extension,
+                        date=image.created_time,
+                        size=image.size,
+                    )
                 )
-            )
-        else:
-            cards.append(
-                Card(
-                    identifier=image.id,
-                    name=name,
-                    priority=priority,
-                    source=source,
-                    source_verbose=source_verbose,
-                    folder_location=folder_location,
-                    dpi=dpi,
-                    searchq=to_searchable(name),  # search-friendly card name
-                    searchq_keyword=to_searchable(name),  # for keyword search
-                    extension=extension,
-                    date=image.created_time,
-                    size=image.size,
+            else:
+                cards.append(
+                    Card(
+                        identifier=image.id,
+                        name=name,
+                        priority=priority,
+                        source=source,
+                        source_verbose=source_verbose,
+                        folder_location=folder_location,
+                        dpi=dpi,
+                        searchq=searchable_name,  # search-friendly card name
+                        searchq_keyword=searchable_name,  # for keyword search
+                        extension=extension,
+                        date=image.created_time,
+                        size=image.size,
+                    )
                 )
-            )
+        except AssertionError as e:
+            print(f"Skipping image **{image.name}** (identifier **{image.id}**) for the following reason: **{e}**")
     print(
         f" and done! Generated {TEXT_BOLD}{len(cards):,}{TEXT_END} card/s, {TEXT_BOLD}{len(cardbacks):,}{TEXT_END} "
         f"cardback/s, and {TEXT_BOLD}{len(tokens):,}{TEXT_END} token/s in "
