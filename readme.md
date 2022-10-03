@@ -10,7 +10,7 @@ Automating MakePlayingCards' online ordering system.
 
 If you're here to download the desktop client, check the [Releases]("https://github.com/chilli-axe/mpc-autofill/releases") tab.
 
-JetBrains supports this project's development through their [Open Source Development licensing](https://jb.gg/OpenSourceSupport").
+JetBrains supports this project's development through their [Open Source Development licensing](https://jb.gg/OpenSourceSupport).
 
 # Monorepo Structure
 * Web project:
