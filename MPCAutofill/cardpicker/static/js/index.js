@@ -88,19 +88,19 @@ function save_search_settings() {
 
 function load_search_settings() {
     let settings = Cookies.get('search_settings');
+    // maintain a set of all drives loaded into the page for making sure any new drives get inserted at the bottom
+    let all_drive_elems = document.getElementsByClassName("drivesource");
+    let all_drives = new Set();
+    for (let i = all_drive_elems.length - 1; i >= 0; i--) {
+        all_drives.add(all_drive_elems[i].id);
+        $("#" + all_drive_elems[i].id).bootstrapToggle();
+    }
+
     if (settings !== undefined) {
         settings = JSON.parse(settings);
 
         let drives = settings["drives"];
         let fuzzy_search = settings["fuzzy_search"];
-
-        // maintain a set of all drives loaded into the page for making sure any new drives get inserted at the bottom
-        let all_drive_elems = document.getElementsByClassName("drivesource");
-        let all_drives = new Set();
-        for (let i = all_drive_elems.length - 1; i >= 0; i--) {
-            all_drives.add(all_drive_elems[i].id);
-            $("#" + all_drive_elems[i].id).bootstrapToggle();
-        }
 
         // reorder the drive table elements according to the cookie by inserting them all after the first one
         // in the cookie (in reverse order)
