@@ -1,7 +1,7 @@
 import { search_api } from "./search.js";
-require("bootstrap-icons/font/bootstrap-icons.css");
 import { remove_card } from "./review.js";
 import Modal from "bootstrap/js/dist/modal";
+require("bootstrap-icons/font/bootstrap-icons.css");
 
 function wrap0(idx, max) {
   // small helper function to wrap an index between 0 and max-1
@@ -18,16 +18,16 @@ export function selectElementContents(el) {
   // TODO: this is a bit fucked atm
   // select all text in contentEditable
   // http://stackoverflow.com/a/6150060/145346
-  let range = document.createRange();
+  const range = document.createRange();
   range.selectNodeContents(el);
-  let sel = window.getSelection();
+  const sel = window.getSelection();
   sel.removeAllRanges();
   sel.addRange(range);
 }
 
 export function trigger_download(img_url, new_tab = true) {
   // download an image with the given download link
-  let element = document.createElement("a");
+  const element = document.createElement("a");
   element.href = img_url;
   element.setAttribute("download", "deez.png");
   if (new_tab) element.target = "_blank";
@@ -89,19 +89,19 @@ class CardBase {
     // when the card's thumbnail is clicked, fill its information into the detailed view modal
 
     // insert the card's name, creator, dpi, and 300 dpi image into the modal
-    let view_name = document.getElementById("detailedView-name");
-    let view_img = document.getElementById("detailedView-img");
-    let view_source = document.getElementById("detailedView-source");
-    let view_source_type = document.getElementById("detailedView-sourceType");
-    let view_dpi = document.getElementById("detailedView-dpi");
-    let view_date = document.getElementById("detailedView-date");
-    let view_id = document.getElementById("detailedView-id");
-    let view_class = document.getElementById("detailedView-class");
-    let view_spinner = document.getElementById("detailedView-spinner");
-    let dl_button = document.getElementById("detailedView-dl");
-    let view_size = document.getElementById("detailedView-size");
+    const view_name = document.getElementById("detailedView-name");
+    const view_img = document.getElementById("detailedView-img");
+    const view_source = document.getElementById("detailedView-source");
+    const view_source_type = document.getElementById("detailedView-sourceType");
+    const view_dpi = document.getElementById("detailedView-dpi");
+    const view_date = document.getElementById("detailedView-date");
+    const view_id = document.getElementById("detailedView-id");
+    const view_class = document.getElementById("detailedView-class");
+    const view_spinner = document.getElementById("detailedView-spinner");
+    const dl_button = document.getElementById("detailedView-dl");
+    const view_size = document.getElementById("detailedView-size");
 
-    let curr_img = this.get_curr_img();
+    const curr_img = this.get_curr_img();
 
     view_name.innerText = curr_img.name;
     view_img.src = curr_img.medium_thumbnail_url;
@@ -133,14 +133,14 @@ class CardBase {
         function () {
           // TODO: do we need to `bind` here?
           trigger_download(curr_img.download_link, true);
-        }.bind(this)
+        }
       );
     }
 
     // hide the 300 dpi image until it loads in - show a loading spinner in its place until then
     view_img.style.opacity = 0;
     view_spinner.style.opacity = 1;
-    var img = new Image();
+    const img = new Image();
     img.onload = function () {
       $(view_spinner).animate({ opacity: 0 }, 250);
       $(view_img).animate({ opacity: 1 }, 250);
@@ -217,7 +217,7 @@ export class Card extends CardBase {
 
   update_idx(n) {
     // determine the new idx of this card, then set it
-    let new_idx = wrap0(this.img_idx + n, this.img_count);
+    const new_idx = wrap0(this.img_idx + n, this.img_count);
     this.set_idx(new_idx);
   }
 
@@ -226,7 +226,7 @@ export class Card extends CardBase {
     // update all cards in the group too
     if (this.locked) {
       groups[this.group].forEach(function (value) {
-        let this_obj = $("#" + value).data("obj");
+        const this_obj = $("#" + value).data("obj");
         this_obj.img_idx = new_idx;
         this_obj.update_card();
       });
@@ -238,7 +238,7 @@ export class Card extends CardBase {
 
   toggle_lock() {
     // toggle locking for this card's group
-    let new_state = !this.locked;
+    const new_state = !this.locked;
 
     groups[this.group].forEach(function (value) {
       $("#" + value)
@@ -250,8 +250,8 @@ export class Card extends CardBase {
   set_lock(new_state) {
     // toggle this card between locked and unlocked
     this.locked = new_state;
-    let unicode_locked = '<i class="bi bi-lock"></i>';
-    let unicode_unlocked = '<i class="bi bi-unlock"></i>';
+    const unicode_locked = '<i class="bi bi-lock"></i>';
+    const unicode_unlocked = '<i class="bi bi-unlock"></i>';
     if (this.locked) {
       this.elem_padlock.innerHTML = unicode_locked;
       this.elem_padlock.style.textShadow =
@@ -275,7 +275,7 @@ export class Card extends CardBase {
 
     // if we didn't return from the function by this point, the version wasn't found
     cards_not_found.push({
-      identifier: identifier,
+      identifier,
       query: this.query,
       slot: this.slot + 1,
       face: this.face,
@@ -290,7 +290,7 @@ export class Card extends CardBase {
       document.getElementById("removeCardId").innerText = this.slot + 1;
 
       // describe the card differently if no results were found
-      let curr_img = this.get_curr_img();
+      const curr_img = this.get_curr_img();
       let curr_name =
         'No card found, with the search query: "' + this.query + '"';
       if (curr_img !== undefined) {
@@ -311,8 +311,8 @@ export class Card extends CardBase {
     this.elem_slot.innerHTML = "Slot " + (new_slot + 1).toString();
 
     // update this Card's dom_id field and all of its HTML elements with their new IDs with regex
-    let re = /slot\d+-/;
-    let x = [
+    const re = /slot\d+-/;
+    const x = [
       this.pe,
       this.elem_slot,
       this.elem_img,
@@ -331,7 +331,7 @@ export class Card extends CardBase {
       x[i].id = x[i].id.replace(re, "slot" + new_slot.toString() + "-");
     }
 
-    let new_dom_id = this.dom_id.replace(
+    const new_dom_id = this.dom_id.replace(
       re,
       "slot" + new_slot.toString() + "-"
     );
@@ -351,13 +351,13 @@ export class Card extends CardBase {
     this.enable_modal("gridSelectModal");
 
     // define page size - how many thumbnails to load at a time
-    let page_size = 20;
+    const page_size = 20;
     let grid_img_idx = 0;
 
     function chk_scroll(e) {
       // insert a new page into the grid modal if the user has scrolled to the bottom
-      let elem = $(e.currentTarget),
-        offsetHeight = 100;
+      const elem = $(e.currentTarget);
+        const offsetHeight = 100;
       if (
         elem[0].scrollHeight - elem.scrollTop() - elem.outerHeight() <=
         offsetHeight
@@ -376,19 +376,19 @@ export class Card extends CardBase {
 
       // insert up to page_size card images into the modal
       for (let i = start_idx; i < final_idx; i++) {
-        let card_item = card_obj.cards[i];
-        let dom_id = card_obj.cards[i].identifier;
-        let slot_num = i + 1;
+        const card_item = card_obj.cards[i];
+        const dom_id = card_obj.cards[i].identifier;
+        const slot_num = i + 1;
 
         // copy the base grid card sitting in the dom and enable visibility
-        let card_elem = document
+        const card_elem = document
           .getElementById("basecard-grid")
           .cloneNode(true);
         card_elem.style.display = "";
         card_elem.id = dom_id;
 
         // set up element IDs for this man
-        let class_ids = [
+        const class_ids = [
           "mpccard-slot",
           "card-img",
           "mpccard-name",
@@ -401,19 +401,19 @@ export class Card extends CardBase {
 
         // stick into dom under the grid container, and instantiate the CardGrid
         grid_container.appendChild(card_elem);
-        let new_card = new CardGrid(card_item, dom_id, slot_num, card_obj);
+        const new_card = new CardGrid(card_item, dom_id, slot_num, card_obj);
       }
     }
 
     // reference to grid image container
-    let grid_container = document.getElementById("grid-container");
+    const grid_container = document.getElementById("grid-container");
 
     // clear out any existing rows from the table ("destroy all children" lmao)
     grid_container.innerHTML = "";
 
     // unbind any scroll events previously bound to this modal
 
-    let grid_modal = $("#gridSelectModal");
+    const grid_modal = $("#gridSelectModal");
     grid_modal.off("scroll");
 
     // if the number of images in this Card exceeds the page size, load in one page of images, and set up
@@ -527,7 +527,7 @@ export class Card extends CardBase {
       this.elem_slot.innerHTML = "Slot " + (parseInt(this.slot) + 1).toString();
 
       this.elem_remove.style.display = "";
-      let elem_remove = $(this.elem_remove);
+      const elem_remove = $(this.elem_remove);
       elem_remove.off("click");
       elem_remove.on(
         "click",
@@ -540,7 +540,7 @@ export class Card extends CardBase {
       $(this.elem_name).keydown(
         function (e) {
           if (e.keyCode === 13) {
-            let search_query = this.elem_name.innerText;
+            const search_query = this.elem_name.innerText;
             this.search_in_place(search_query);
           }
         }.bind(this)
@@ -577,7 +577,7 @@ export class Card extends CardBase {
     }
 
     $(this.elem_img).one("load", function () {
-      let card_obj = $(this.parentElement.parentElement).data("obj");
+      const card_obj = $(this.parentElement.parentElement).data("obj");
       card_obj.load_thumbnails();
     });
 
@@ -749,7 +749,7 @@ export class CardRecent extends CardBase {
     this.elem_img.src = this.cards[0].small_thumbnail_url;
 
     // add click event to thumbnail to reveal detailed info about card
-    let elem_img = $(this.elem_img);
+    const elem_img = $(this.elem_img);
     elem_img.off("click");
     elem_img.on(
       "click",

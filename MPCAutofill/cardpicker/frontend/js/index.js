@@ -1,19 +1,19 @@
 import Cookies from "js-cookie";
+import "bootstrap5-toggle";
+import { base_on_load, handle_error } from "./base.js";
+import "bootstrap5-toggle/css/bootstrap5-toggle.min.css";
 require("bootstrap/js/dist/modal");
 
 require("bootstrap/js/dist/dropdown");
 
 require("jquery-ui/ui/widgets/sortable");
-import "bootstrap5-toggle";
-require("./base.js");
-import { base_on_load, handle_error } from "./base.js";
-import "bootstrap5-toggle/css/bootstrap5-toggle.min.css"; // this css should be loaded last
+require("./base.js"); // this css should be loaded last
 
-//#region search settings
+// #region search settings
 
 function load_search_settings() {
   // maintain a set of all drives loaded into the page for making sure any new drives get inserted at the bottom
-  let all_drive_elems = document.getElementsByClassName("drivesource");
+  const all_drive_elems = document.getElementsByClassName("drivesource");
   let all_drives = new Set();
   for (let i = all_drive_elems.length - 1; i >= 0; i--) {
     all_drives.add(all_drive_elems[i].id);
@@ -24,13 +24,13 @@ function load_search_settings() {
   if (settings !== undefined) {
     settings = JSON.parse(settings);
 
-    let drives = settings["drives"];
-    let fuzzy_search = settings["fuzzy_search"];
+    const drives = settings.drives;
+    const fuzzy_search = settings.fuzzy_search;
 
     if (drives.length > 0) {
       // maintain a set of all drives loaded into the page for making sure any new drives get inserted at the bottom
-      let all_drive_elems = document.getElementsByClassName("drivesource");
-      let all_drives = new Set();
+      const all_drive_elems = document.getElementsByClassName("drivesource");
+      const all_drives = new Set();
       for (let i = all_drive_elems.length - 1; i >= 0; i--) {
         all_drives.add(all_drive_elems[i].id);
       }
@@ -38,7 +38,7 @@ function load_search_settings() {
       // reorder the drive table elements according to the cookie by inserting them all after the first one
       // in the cookie (in reverse order)
       $("#" + drives[0][0]).bootstrapToggle(drives[0][1]);
-      let first_drive_row = $("#" + drives[0][0] + "-row");
+      const first_drive_row = $("#" + drives[0][0] + "-row");
       all_drives.delete(drives[0][0]);
       for (let i = drives.length - 1; i > 0; i--) {
         $("#" + drives[i][0]).bootstrapToggle(drives[i][1]);
@@ -50,7 +50,7 @@ function load_search_settings() {
       // search settings cookie was last saved
       // stick these users onto the end - note that the drives were inserted into the set in reverse order,
       // meaning that these will be insertAfter'd in reverse order, which orders the elements correctly
-      let last_drive_row = $("#" + drives[drives.length - 1][0] + "-row");
+      const last_drive_row = $("#" + drives[drives.length - 1][0] + "-row");
       all_drives.forEach((drive) =>
         $("#" + drive + "-row").insertAfter(last_drive_row)
       );
@@ -61,23 +61,23 @@ function load_search_settings() {
 }
 
 function save_search_settings() {
-  let settings = new Object();
-  settings["drives"] = [];
+  const settings = new Object();
+  settings.drives = [];
 
   // save search mode settings
-  settings["fuzzy_search"] = "off";
+  settings.fuzzy_search = "off";
   if (document.getElementById("searchtype").checked) {
-    settings["fuzzy_search"] = "on";
+    settings.fuzzy_search = "on";
   }
 
   // save drive order and enabled/disabled status
-  let drive_elements = document.getElementsByClassName("drivesource");
+  const drive_elements = document.getElementsByClassName("drivesource");
   for (let i = 0; i < drive_elements.length; i++) {
     let drive_enabled = "off";
     if (drive_elements[i].checked) {
       drive_enabled = "on";
     }
-    settings["drives"].push([drive_elements[i].id, drive_enabled]);
+    settings.drives.push([drive_elements[i].id, drive_enabled]);
   }
 
   Cookies.set("search_settings", JSON.stringify(settings), { expires: 365 });
@@ -85,8 +85,8 @@ function save_search_settings() {
 
 export function toggle_checkboxes() {
   // get checkbox elements from dom, in order
-  let driveElements = document.getElementsByClassName("drivesource");
-  var enableDrives = "on";
+  const driveElements = document.getElementsByClassName("drivesource");
+  let enableDrives = "on";
   // for each drive, check if it's enabled, and if it is, we'll be disabling drives here
   for (let i = 0; i < driveElements.length; i++) {
     if (driveElements[i].checked) {
@@ -102,8 +102,8 @@ export function toggle_checkboxes() {
 
 function get_drive_order() {
   // get checkbox elements from dom, in order
-  let drive_elements = document.getElementsByClassName("drivesource");
-  let drives = [];
+  const drive_elements = document.getElementsByClassName("drivesource");
+  const drives = [];
   // for each drive, if it's enabled, add its id to the output list
   for (let i = 0; i < drive_elements.length; i++) {
     if (drive_elements[i].checked) {
@@ -120,13 +120,13 @@ function configure_form_submit_hooks() {
     function (eventObj) {
       // user is submitting card input form - grab the order of selected drives and attach it to the form as a
       // hidden input
-      let input_drives = $("<input>", {
+      const input_drives = $("<input>", {
         type: "hidden",
         name: "drive_order",
         value: get_drive_order(),
       });
       $(this).append(input_drives);
-      let input_fuzzy_search = $("<input>", {
+      const input_fuzzy_search = $("<input>", {
         type: "hidden",
         name: "fuzzy_search",
         value: document.getElementById("searchtype").checked,
@@ -137,12 +137,12 @@ function configure_form_submit_hooks() {
   );
 }
 
-//#endregion
+// #endregion
 
-//#region misc
+// #region misc
 
 function configure_textarea_height() {
-  let textarea_elem = document.getElementById("id_card_list");
+  const textarea_elem = document.getElementById("id_card_list");
   textarea_elem.parentElement.style.height = "100%";
   textarea_elem.parentElement.parentElement.style.height = "100%";
 }
@@ -153,16 +153,16 @@ function ping_elasticsearch() {
     type: "POST",
     url: "/ajax/status/",
     success: function (data) {
-      if (data["online"] === "false") {
+      if (data.online === "false") {
         handle_error("The search engine is offline.");
       }
     },
   });
 }
 
-//#endregion
+// #endregion
 
-//#region form submission
+// #region form submission
 
 export function input_link_submit() {
   $("#input_link").submit();
@@ -176,7 +176,7 @@ export function input_xml_submit() {
   $("#input_xml").submit();
 }
 
-//#endregion
+// #endregion
 
 // this function is called in `index.html`
 export function index_on_load() {
