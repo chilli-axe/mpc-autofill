@@ -542,6 +542,8 @@ class Card extends CardBase {
     }
 
     search_in_place(search_query) {
+        let search_query_trimmed = search_query.trim()
+
         // animating the opacity instead of using fadeOut so things stay in place
         $(this.pe).css("pointer-events", "none");
 
@@ -557,14 +559,14 @@ class Card extends CardBase {
 
             let search_type = "";
             let common_back_id = "";
-            if (search_query === "\n" && this.face === "back") {
+            if ((search_query_trimmed === "" || search_query_trimmed === null) && this.face === "back") {
                 search_type = "back";
                 // specify common cardback ID
                 common_back_id = $("#slot--back").data("obj").get_curr_img().identifier;
             }
 
             // query elasticsearch for info w/ the new search query and pass the current card slot
-            search_api(drive_order, fuzzy_search, search_query, [parseInt(this.slot), ""], this.face, this.dom_id, search_type, 0, common_back_id);
+            search_api(drive_order, fuzzy_search, search_query_trimmed, [parseInt(this.slot), ""], this.face, this.dom_id, search_type, 0, common_back_id);
         }, this));
     }
 
