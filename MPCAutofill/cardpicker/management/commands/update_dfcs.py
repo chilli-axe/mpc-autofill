@@ -52,8 +52,14 @@ def sync_dfcs() -> None:
     meld_data = query_scryfall_paginated(MELD_URL)
     print(f"Identified {len(meld_data)} meld pieces")
     for item in meld_data:
-        card_part = next(filter(lambda part: part["name"] == item["name"], item["all_parts"]))
-        meld_result = next(filter(lambda part: part["component"] == "meld_result", item["all_parts"]))["name"]
+        card_part_singleton_list = list(filter(lambda part: part["name"] == item["name"], item["all_parts"]))
+        meld_result_singleton_list = list(filter(lambda part: part["component"] == "meld_result", item["all_parts"]))
+
+        if len(card_part_singleton_list) != 1 or len(meld_result_singleton_list) != 1:
+            continue
+
+        card_part = card_part_singleton_list.pop()
+        meld_result = meld_result_singleton_list.pop()["name"]
         if card_part["component"] == "meld_part":
             is_top = "\n(Melds with " not in item["oracle_text"]
             card_bit = "Top" if is_top else "Bottom"
