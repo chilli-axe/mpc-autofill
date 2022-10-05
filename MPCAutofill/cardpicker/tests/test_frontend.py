@@ -1,6 +1,7 @@
 import time
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Optional, Union
 
 import pytest
 from selenium.webdriver import Chrome
@@ -106,7 +107,7 @@ class TestFrontend:
         time.sleep(1)
 
     @staticmethod
-    def search_in_place(driver, slot: int, face: str, search_query: str | None):
+    def search_in_place(driver, slot: int, face: str, search_query: Optional[str]):
         card_name = driver.find_element(By.ID, value=f"slot{slot}-{face}-mpccard-name")
         card_name.clear()
         if search_query is not None:
@@ -125,11 +126,11 @@ class TestFrontend:
     @staticmethod
     def assert_card_state(
         driver,
-        slot: int | str,
+        slot: Union[int, str],
         active_face: str,
         card: TestCard,
-        selected_image: int | None,
-        total_images: int | None,
+        selected_image: Optional[int],
+        total_images: Optional[int],
         source: TestSource,
         has_reverse_face: bool = True,
     ):
