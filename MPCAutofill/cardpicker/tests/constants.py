@@ -24,6 +24,7 @@ class TestCards(Enum):
     ISLAND = TestCard(identifier="1IDtqSjJ4Yo45AnNA4SplOiN7ewibifMa", name="Island")
     ISLAND_CLASSICAL = TestCard(identifier="1HsvTYs1jFGe1c8U1PnNZ9aB8jkAW7KU0", name="Island (William Bradford)")
     SIMPLE_CUBE = TestCard(identifier="1JtXL6Ca9nQkvhwZZRR9ZuKA9_DzsFf1V", name="Simple Cube")  # default back
+    SIMPLE_LOTUS = TestCard(identifier="1oigI6wz0zA--pNMuExKTs40kBNH6VRP_", name="Simple Lotus")
     HUNTMASTER_OF_THE_FELLS = TestCard(identifier="", name="Huntmaster of the Fells")
     RAVAGER_OF_THE_FELLS = TestCard(identifier="", name="Ravager of the Fells")
     PAST_IN_FLAMES_1 = TestCard(identifier="1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1", name="Past in Flames")

@@ -1,7 +1,7 @@
 # name: TestUpdateDatabase.test_comprehensive_snapshot[cardbacks]
   list([
-    <Cardback: [Example Drive 1] Simple Cube [Identifier: 1JtXL6Ca9nQkvhwZZRR9ZuKA9_DzsFf1V, Uploaded: 22/09/2022, Priority: 2]>,
-    <Cardback: [Example Drive 1] Simple Lotus [Identifier: 1oigI6wz0zA--pNMuExKTs40kBNH6VRP_, Uploaded: 22/09/2022, Priority: 2]>,
+    <Cardback: [Example Drive 1] Simple Cube [Identifier: 1JtXL6Ca9nQkvhwZZRR9ZuKA9_DzsFf1V, Uploaded: 22/09/2022, Priority: 17]>,
+    <Cardback: [Example Drive 1] Simple Lotus [Identifier: 1oigI6wz0zA--pNMuExKTs40kBNH6VRP_, Uploaded: 22/09/2022, Priority: 7]>,
   ])
 # ---
 # name: TestUpdateDatabase.test_comprehensive_snapshot[cards]

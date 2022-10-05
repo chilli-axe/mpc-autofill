@@ -106,6 +106,15 @@ class TestFrontend:
         time.sleep(1)
 
     @staticmethod
+    def search_in_place(driver, slot: int, face: str, search_query: str | None):
+        card_name = driver.find_element(By.ID, value=f"slot{slot}-{face}-mpccard-name")
+        card_name.clear()
+        if search_query is not None:
+            card_name.send_keys(search_query)
+        card_name.send_keys(Keys.ENTER)
+        time.sleep(5)
+
+    @staticmethod
     def assert_order_qty(driver, qty: int):
         assert driver.find_element(By.ID, value="order_qty").text == str(qty)
 
@@ -115,17 +124,27 @@ class TestFrontend:
 
     @staticmethod
     def assert_card_state(
-        driver, slot: int, active_face: str, card: TestCard, selected_image: int, total_images: int, source: TestSource
+        driver,
+        slot: int | str,
+        active_face: str,
+        card: TestCard,
+        selected_image: int | None,
+        total_images: int | None,
+        source: TestSource,
+        has_reverse_face: bool = True,
     ):
-        inactive_face = ({"front", "back"} - {active_face}).pop()
-        counter = f"{selected_image}/{total_images}"
+        if has_reverse_face:
+            inactive_face = ({"front", "back"} - {active_face}).pop()
+            assert driver.find_element(By.ID, value=f"slot{slot}-{inactive_face}").is_displayed() is False
+
         assert driver.find_element(By.ID, value=f"slot{slot}-{active_face}").is_displayed() is True
-        assert driver.find_element(By.ID, value=f"slot{slot}-{inactive_face}").is_displayed() is False
         assert driver.find_element(By.ID, value=f"slot{slot}-{active_face}-mpccard-name").text == card.name
-        assert (
-            driver.find_element(By.ID, value=f"slot{slot}-{active_face}-mpccard-counter").text
-            or driver.find_element(By.ID, value=f"slot{slot}-{active_face}-mpccard-counter-btn").text
-        ) == counter
+        if selected_image is not None and total_images is not None:
+            counter = f"{selected_image}/{total_images}"
+            assert (
+                driver.find_element(By.ID, value=f"slot{slot}-{active_face}-mpccard-counter").text
+                or driver.find_element(By.ID, value=f"slot{slot}-{active_face}-mpccard-counter-btn").text
+            ) == counter
         assert source.name in driver.find_element(By.ID, value=f"slot{slot}-{active_face}-mpccard-source").text
 
     @staticmethod
@@ -337,7 +356,6 @@ class TestFrontend:
             source=TestSources.EXAMPLE_DRIVE_1.value,
         )
 
-    @pytest.mark.skip(reason="Appears to run inconsistently on GitHub Actions.")
     def test_search_in_place(self, chrome_driver, live_server):
         # TODO: can we create fixtures for search results to speed up these tests?
         # set up results page with single result
@@ -361,13 +379,7 @@ class TestFrontend:
         )
 
         # search in-place
-        card_element = chrome_driver.find_element(By.ID, value="slot0-front")
-        card_name = chrome_driver.find_element(By.ID, value="slot0-front-mpccard-name")
-        card_name.clear()
-        card_name.send_keys("island")
-        card_name.send_keys(Keys.ENTER)
-        WebDriverWait(chrome_driver, 30).until(invisibility_of_element(card_element))
-        WebDriverWait(chrome_driver, 30).until(visibility_of(card_element))
+        self.search_in_place(driver=chrome_driver, slot=0, face="front", search_query="island")
 
         # assertion on the changed card state
         self.assert_card_state(
@@ -477,6 +489,66 @@ class TestFrontend:
                 TestSourceRow(key=TestSources.EXAMPLE_DRIVE_2.value.key, enabled=True),
                 TestSourceRow(key=TestSources.EXAMPLE_DRIVE_1.value.key, enabled=True),
             ],
+        )
+
+    def test_cleared_card_back_name_defaulting_to_selected_common_card_back(self, chrome_driver, live_server):
+        chrome_driver.get(live_server.url)
+        text_area = chrome_driver.find_element(By.ID, value="id_card_list")
+        text_area.send_keys("brainstorm")
+        chrome_driver.find_element(By.ID, value="btn_submit").click()
+        self.wait_for_search_results_modal(chrome_driver)
+        self.toggle_faces(chrome_driver)
+        self.assert_card_state(
+            driver=chrome_driver,
+            slot=0,
+            active_face="back",
+            card=TestCards.SIMPLE_CUBE.value,
+            selected_image=None,
+            total_images=None,
+            source=TestSources.EXAMPLE_DRIVE_1.value,
+        )
+        self.assert_card_state(
+            driver=chrome_driver,
+            slot="-",
+            active_face="back",
+            card=TestCards.SIMPLE_CUBE.value,
+            selected_image=1,
+            total_images=2,
+            source=TestSources.EXAMPLE_DRIVE_1.value,
+            has_reverse_face=False,
+        )
+
+        chrome_driver.find_element(By.ID, value="slot--back-next").click()
+        self.assert_card_state(
+            driver=chrome_driver,
+            slot=0,
+            active_face="back",
+            card=TestCards.SIMPLE_LOTUS.value,
+            selected_image=None,
+            total_images=None,
+            source=TestSources.EXAMPLE_DRIVE_1.value,
+        )
+        self.assert_card_state(
+            driver=chrome_driver,
+            slot="-",
+            active_face="back",
+            card=TestCards.SIMPLE_LOTUS.value,
+            selected_image=2,
+            total_images=2,
+            source=TestSources.EXAMPLE_DRIVE_1.value,
+            has_reverse_face=False,
+        )
+
+        self.search_in_place(driver=chrome_driver, slot=0, face="back", search_query=None)
+
+        self.assert_card_state(
+            driver=chrome_driver,
+            slot=0,
+            active_face="back",
+            card=TestCards.SIMPLE_LOTUS.value,
+            selected_image=None,
+            total_images=None,
+            source=TestSources.EXAMPLE_DRIVE_1.value,
         )
 
     def test_mobile_banner(self, mobile_chrome_driver, live_server):

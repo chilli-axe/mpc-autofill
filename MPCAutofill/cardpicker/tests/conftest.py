@@ -8,6 +8,7 @@ from cardpicker.tests.factories import SourceFactory
 @pytest.fixture()
 def django_settings(db, settings):
     settings.DEBUG = True
+    settings.DEFAULT_CARDBACK_FOLDER_PATH = "MPC Autofill Sample 1 / Cardbacks"
     settings.DEFAULT_CARDBACK_IMAGE_NAME = TestCards.SIMPLE_CUBE.value.name
 
 
