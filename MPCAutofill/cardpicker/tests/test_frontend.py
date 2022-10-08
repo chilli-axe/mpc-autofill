@@ -552,6 +552,30 @@ class TestFrontend:
             source=TestSources.EXAMPLE_DRIVE_1.value,
         )
 
+    def test_modal(self, chrome_driver, live_server):
+        chrome_driver.get(live_server.url)
+        text_area = chrome_driver.find_element(By.ID, value="id_card_list")
+        text_area.send_keys("brainstorm")
+        chrome_driver.find_element(By.ID, value="btn_submit").click()
+        self.wait_for_search_results_modal(chrome_driver)
+
+        # bring up modal
+        chrome_driver.find_element(By.ID, value="slot0-front-card-img").click()
+        time.sleep(1)
+
+        # assert modal contents
+        assert (
+            chrome_driver.find_element(By.ID, value="detailedView-img").get_attribute("src")
+            == f"https://drive.google.com/thumbnail?sz=w800-h800&id={TestCards.BRAINSTORM.value.identifier}"
+        )
+        assert (
+            chrome_driver.find_element(By.ID, value="detailedView-source").text
+            == TestSources.EXAMPLE_DRIVE_1.value.name
+        )
+        assert chrome_driver.find_element(By.ID, value="detailedView-sourceType").text == "Google Drive"
+        assert chrome_driver.find_element(By.ID, value="detailedView-class").text == "Card"
+        assert chrome_driver.find_element(By.ID, value="detailedView-id").text == TestCards.BRAINSTORM.value.identifier
+
     def test_mobile_banner(self, mobile_chrome_driver, live_server):
         mobile_chrome_driver.get(live_server.url)
         assert (
