@@ -1,3 +1,4 @@
+import os
 import time
 from dataclasses import dataclass
 from pathlib import Path
@@ -552,7 +553,7 @@ class TestFrontend:
             source=TestSources.EXAMPLE_DRIVE_1.value,
         )
 
-    def test_modal(self, chrome_driver, live_server):
+    def test_detailed_view_modal(self, chrome_driver, live_server):
         chrome_driver.get(live_server.url)
         text_area = chrome_driver.find_element(By.ID, value="id_card_list")
         text_area.send_keys("brainstorm")
@@ -575,6 +576,43 @@ class TestFrontend:
         assert chrome_driver.find_element(By.ID, value="detailedView-sourceType").text == "Google Drive"
         assert chrome_driver.find_element(By.ID, value="detailedView-class").text == "Card"
         assert chrome_driver.find_element(By.ID, value="detailedView-id").text == TestCards.BRAINSTORM.value.identifier
+
+    def test_download_single_image(self, chrome_driver, live_server, download_folder):
+        chrome_driver.get(live_server.url)
+        text_area = chrome_driver.find_element(By.ID, value="id_card_list")
+        text_area.send_keys("brainstorm")
+        chrome_driver.find_element(By.ID, value="btn_submit").click()
+        self.wait_for_search_results_modal(chrome_driver)
+
+        # bring up modal and download the image
+        chrome_driver.find_element(By.ID, value="slot0-front-card-img").click()
+        time.sleep(1)
+        chrome_driver.find_element(By.ID, value="detailedView-dl").click()
+        time.sleep(5)
+
+        # assert the expected image has been downloaded
+        os.path.exists(download_folder / "Brainstorm.png")
+
+    def test_download_all_images(self, chrome_driver, live_server, download_folder):
+        chrome_driver.get(live_server.url)
+        text_area = chrome_driver.find_element(By.ID, value="id_card_list")
+        text_area.send_keys("4 brainstorm\n3 island\nhuntmaster of the fells")
+        chrome_driver.find_element(By.ID, value="btn_submit").click()
+        self.wait_for_search_results_modal(chrome_driver)
+
+        # download all images
+        chrome_driver.find_element(By.ID, value="btn_download_all").click()
+        time.sleep(10)
+
+        # assert the expected images have been downloaded
+        for expected_file in [
+            f"{TestCards.BRAINSTORM.value.name}.png",
+            f"{TestCards.ISLAND.value.name}.png",
+            f"{TestCards.HUNTMASTER_OF_THE_FELLS.value.name}.png",
+            f"{TestCards.RAVAGER_OF_THE_FELLS.value.name}.png",
+            f"{TestCards.SIMPLE_CUBE.value.name}.png",
+        ]:
+            os.path.exists(download_folder / expected_file)
 
     def test_mobile_banner(self, mobile_chrome_driver, live_server):
         mobile_chrome_driver.get(live_server.url)
