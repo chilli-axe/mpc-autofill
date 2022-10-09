@@ -61,7 +61,7 @@ export function base_on_load() {
   gtag("config", "{{ GTAG }}");
 
   // cookie toast configuration
-  let cookie_toast = Toast.getOrCreateInstance("#cookieToast");
+  const cookie_toast = Toast.getOrCreateInstance("#cookieToast");
   document
     .getElementById("cookieToast")
     .addEventListener("hide.bs.toast", cookie_toast_hidden); // TODO: should we use hidden.bs.toast instead?
@@ -98,7 +98,7 @@ export function cookie_toast_opt_out() {
 }
 
 export function handle_error(exc) {
-  let error_toast = Toast.getOrCreateInstance("#errorToast");
+  const error_toast = Toast.getOrCreateInstance("#errorToast");
   if (exc !== "" && exc !== undefined && exc !== null) {
     document.getElementById("error_message_body").textContent = exc;
   } else {

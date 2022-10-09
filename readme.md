@@ -14,26 +14,28 @@ If you're here to download the desktop client, check the [Releases]("https://git
 JetBrains supports this project's development through their [Open Source Development licensing](https://jb.gg/OpenSourceSupport).
 
 # Monorepo Structure
+
 <<<<<<< HEAD
-* Web project:
-  * Located in `/MPCAutofill`,
-  * Images stored in the Google Drives connected to the project are indexed in Elasticsearch,
-  * Stack:
-    * Backend:
-      * Django 4,
-      * The database of your choosing (Elasticsearch is fine),
-      * Elasticsearch 7.x,
-      * Google Drive API integration,
-    * Frontend:
-      * jQuery + jQuery UI,
-      * Bootstrap 5,
-      * Webpack + Babel for compiling and bundling the frontend,
-  * Facilitates the generation of XML orders for use with the desktop client,
-  * Intended to be deployed as a web application but can also be spun up locally with Docker.
-      * Note: the Docker bulid is broken at the moment.
-* Desktop client:
-  * Located in `/autofill`,
-  * Responsible for parsing XML orders, downloading images from Google Drive, and automating MPC's order creation interface.
+
+- Web project:
+  - Located in `/MPCAutofill`,
+  - Images stored in the Google Drives connected to the project are indexed in Elasticsearch,
+  - Stack:
+    - Backend:
+      - Django 4,
+      - The database of your choosing (Elasticsearch is fine),
+      - Elasticsearch 7.x,
+      - Google Drive API integration,
+    - Frontend:
+      - jQuery + jQuery UI,
+      - Bootstrap 5,
+      - Webpack + Babel for compiling and bundling the frontend,
+  - Facilitates the generation of XML orders for use with the desktop client,
+  - Intended to be deployed as a web application but can also be spun up locally with Docker.
+    - Note: the Docker bulid is broken at the moment.
+- Desktop client:
+  - Located in `/autofill`,
+  - Responsible for parsing XML orders, downloading images from Google Drive, and automating MPC's order creation interface.
 
 Each component of the project has its own README; check those out for more details.
 

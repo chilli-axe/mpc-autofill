@@ -14,7 +14,7 @@ export function bracket(qty) {
   // small helper function to calculate the MPC bracket the current order lands in
   // TODO: write this more efficiently?
   qty = parseInt(qty);
-  let brackets = [
+  const brackets = [
     18, 36, 55, 72, 90, 108, 126, 144, 162, 180, 198, 216, 234, 396, 504, 612,
   ];
   for (let i = 0; i < brackets.length; i++) {
@@ -36,9 +36,9 @@ export function update_qty(new_qty) {
 export function switch_faces() {
   front_visible = !front_visible;
 
-  let front_faces = document.getElementsByClassName("card-front");
-  let back_faces = document.getElementsByClassName("card-back");
-  let switch_button = document.getElementById("switchFacesBtn");
+  const front_faces = document.getElementsByClassName("card-front");
+  const back_faces = document.getElementsByClassName("card-back");
+  const switch_button = document.getElementById("switchFacesBtn");
 
   // decide what styles the front and back cards should take on, as well as the switch face button text
   let front_style = "none";
@@ -81,8 +81,8 @@ export function insert_data(drive_order, fuzzy_search, order) {
     url: "/ajax/msearch/",
     dataType: "JSON",
     data: {
-      drive_order: drive_order,
-      fuzzy_search: fuzzy_search,
+      drive_order,
+      fuzzy_search,
       order: JSON.stringify(order),
     },
     success: function (data) {
@@ -124,7 +124,7 @@ function alert_missing_versions(cards_not_found) {
   // alert the user if versions of cards they requested couldn't be found
   if (cards_not_found.length > 0) {
     // locate the cards not found modal table in the dom
-    let not_found_table = document.getElementById("missingCardsTable");
+    const not_found_table = document.getElementById("missingCardsTable");
 
     // clear out any existing rows from the table ("destroy all children" lmao)
     not_found_table.innerHTML = "";
@@ -137,32 +137,32 @@ function alert_missing_versions(cards_not_found) {
     // add each missing card to the table
     for (let i = 0; i < cards_not_found.length; i++) {
       // stick this not found image into the table
-      let row_element = document.createElement("tr");
+      const row_element = document.createElement("tr");
 
       // formatting for drive ID field
-      let id_element = document.createElement("td");
+      const id_element = document.createElement("td");
       id_element.style.textAlign = "center";
 
-      let id_text_element = document.createElement("code");
+      const id_text_element = document.createElement("code");
       id_text_element.innerText = cards_not_found[i].identifier;
       id_element.appendChild(id_text_element);
 
       // formatting for slot field
-      let slot_element = document.createElement("td");
+      const slot_element = document.createElement("td");
       slot_element.style.textAlign = "center";
       slot_element.innerText = cards_not_found[i].slot;
 
       // formatting for face field
-      let face_element = document.createElement("td");
+      const face_element = document.createElement("td");
       face_element.style.textAlign = "center";
       face_element.innerText = cards_not_found[i].face;
 
       // formatting for search query field
-      let query_element = document.createElement("td");
+      const query_element = document.createElement("td");
       if (!cards_not_found[i].query || cards_not_found[i].query === "None") {
         query_element.innerText = "Not given";
       } else {
-        let query_text_element = document.createElement("code");
+        const query_text_element = document.createElement("code");
         query_text_element.innerText = cards_not_found[i].query;
         query_element.appendChild(query_text_element);
       }
@@ -199,10 +199,10 @@ export function search_api(
     url: "/ajax/search/",
     dataType: "JSON",
     data: {
-      drive_order: drive_order,
-      fuzzy_search: fuzzy_search,
-      query: query,
-      req_type: req_type,
+      drive_order,
+      fuzzy_search,
+      query,
+      req_type,
     },
     success: function (data) {
       if (
@@ -216,7 +216,7 @@ export function search_api(
         build_card(
           data,
           dom_id,
-          data["query"],
+          data.query,
           slot_id,
           face,
           group,
@@ -245,11 +245,11 @@ export function search_api(
 
 function get_common_cardback_id(data) {
   // if common cardback not present in data, retrieve the currently selected ID from the dom
-  if (data["common_cardback"]["in_order"] === "true") {
-    return data["common_cardback"]["id"];
+  if (data.common_cardback.in_order === "true") {
+    return data.common_cardback.id;
   } else {
     // attempt to retrieve ID from dom
-    let cardback_obj = $("#slot--back").data("obj");
+    const cardback_obj = $("#slot--back").data("obj");
     if (cardback_obj !== undefined) {
       return cardback_obj.get_curr_img().id;
     } else {
@@ -260,11 +260,11 @@ function get_common_cardback_id(data) {
 
 function build_cards(data) {
   // call build_card on multiple cards by interpreting an order dict, and handle grouping
-  let cardback_id = get_common_cardback_id(data);
+  const cardback_id = get_common_cardback_id(data);
   for (const face of ["front", "back"]) {
-    for (let key in data[face]) {
-      let req_type = data[face][key]["req_type"];
-      let slot_ids = data[face][key]["slots"];
+    for (const key in data[face]) {
+      const req_type = data[face][key].req_type;
+      const slot_ids = data[face][key].slots;
 
       let group = 0;
       if ((slot_ids.length > 1) & (req_type !== "back")) {
@@ -273,9 +273,9 @@ function build_cards(data) {
       }
 
       // build the cards and keep track of constructed dom IDs
-      let dom_ids = [];
+      const dom_ids = [];
       for (let i = 0; i < slot_ids.length; i++) {
-        let dom_id = "slot" + slot_ids[i][0].toString() + "-" + face;
+        const dom_id = "slot" + slot_ids[i][0].toString() + "-" + face;
         build_card(
           data[face][key],
           dom_id,
@@ -310,12 +310,12 @@ function build_card(
   if ($("#" + dom_id).length < 1) {
     // create div element for this card to occupy with the appropriate classes
     // let card_elem = document.createElement("div");
-    let card_elem = document.getElementById("basecard").cloneNode(true);
+    const card_elem = document.getElementById("basecard").cloneNode(true);
     card_elem.id = dom_id;
     card_elem.className = "card mpc-order mpccard card-" + face;
 
     // set up IDs for this man
-    let class_ids = [
+    const class_ids = [
       "mpccard-slot",
       "padlock",
       "remove",
@@ -373,7 +373,7 @@ function build_card(
   // insert the returned data into this card's dom element
   // since the Card will attach itself to the relevant dom element as soon as it's instantiated,
   // we don't need to keep track of it as a variable here
-  let new_card = new Card(
+  const new_card = new Card(
     card.data,
     query,
     dom_id,
@@ -387,12 +387,12 @@ function build_card(
 }
 
 export function insert_text() {
-  let text = document.getElementById("id_card_list").value;
+  const text = document.getElementById("id_card_list").value;
 
   $.post(
     "/ajax/text/",
     {
-      text: text,
+      text,
       offset: qty,
     },
     function (data) {
@@ -417,7 +417,7 @@ export function insert_text() {
 
 export function insert_xml() {
   // read the XML file as text, then do a POST request with the contents
-  let xmlfiles = document.getElementById("xmlfile").files;
+  const xmlfiles = document.getElementById("xmlfile").files;
   if (xmlfiles.length > 0) {
     xmlfiles[0].text().then((text) =>
       $.post(
@@ -446,12 +446,12 @@ export function insert_xml() {
 }
 
 export function insert_link() {
-  let list_url = document.getElementById("id_list_url").value;
+  const list_url = document.getElementById("id_list_url").value;
 
   $.post(
     "/ajax/link/",
     {
-      list_url: list_url,
+      list_url,
       offset: qty,
     },
     function (data) {
@@ -476,15 +476,15 @@ export function insert_link() {
 
 function build_blog_card(container_id, card) {
   // iterate over the search results
-  let dom_id = card.identifier;
+  const dom_id = card.identifier;
 
   // copy the base card sitting in the dom, adjust it, then stick it into this artist's card container
-  let card_elem = document.getElementById("basecard-new").cloneNode(true);
+  const card_elem = document.getElementById("basecard-new").cloneNode(true);
   card_elem.style.display = "";
   card_elem.id = dom_id;
 
   // set up element IDs for this man
-  let class_ids = [
+  const class_ids = [
     "mpccard-slot",
     "card-img",
     "mpccard-name",
@@ -497,5 +497,5 @@ function build_blog_card(container_id, card) {
 
   // stick into dom under the source's card container, and instantiate the Card
   document.getElementById(container_id).appendChild(card_elem);
-  let new_card = new CardRecent(card, dom_id);
+  const new_card = new CardRecent(card, dom_id);
 }

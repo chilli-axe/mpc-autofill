@@ -14,7 +14,7 @@ require("./base.js"); // this css should be loaded last
 function load_search_settings() {
   // maintain a set of all drives loaded into the page for making sure any new drives get inserted at the bottom
   const all_drive_elems = document.getElementsByClassName("drivesource");
-  let all_drives = new Set();
+  const all_drives = new Set();
   for (let i = all_drive_elems.length - 1; i >= 0; i--) {
     all_drives.add(all_drive_elems[i].id);
     $("#" + all_drive_elems[i].id).bootstrapToggle();

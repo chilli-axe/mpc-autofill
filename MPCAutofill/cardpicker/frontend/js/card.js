@@ -128,13 +128,10 @@ class CardBase {
     } else {
       dl_button.style.display = "";
       $(dl_button).off("click");
-      $(dl_button).on(
-        "click",
-        function () {
-          // TODO: do we need to `bind` here?
-          trigger_download(curr_img.download_link, true);
-        }
-      );
+      $(dl_button).on("click", function () {
+        // TODO: do we need to `bind` here?
+        trigger_download(curr_img.download_link, true);
+      });
     }
 
     // hide the 300 dpi image until it loads in - show a loading spinner in its place until then
@@ -357,7 +354,7 @@ export class Card extends CardBase {
     function chk_scroll(e) {
       // insert a new page into the grid modal if the user has scrolled to the bottom
       const elem = $(e.currentTarget);
-        const offsetHeight = 100;
+      const offsetHeight = 100;
       if (
         elem[0].scrollHeight - elem.scrollTop() - elem.outerHeight() <=
         offsetHeight
@@ -549,10 +546,7 @@ export class Card extends CardBase {
       this.elem_slot.innerHTML = "Cardback";
     }
     // enable version picker
-    if (
-      (this.img_count > 1) &&
-      ((this.slot === "-") || (this.req_type !== "back"))
-    ) {
+    if (this.img_count > 1 && (this.slot === "-" || this.req_type !== "back")) {
       this.elem_prev.style.visibility = "visible";
       this.elem_next.style.visibility = "visible";
 
@@ -627,7 +621,7 @@ export class Card extends CardBase {
   }
 
   search_in_place(search_query) {
-    let search_query_trimmed = search_query.trim();
+    const search_query_trimmed = search_query.trim();
 
     // animating the opacity instead of using fadeOut so things stay in place
     $(this.pe).css("pointer-events", "none");

@@ -1,20 +1,20 @@
-require("./base.js");
 import { base_on_load } from "./base.js";
 import { CardRecent } from "./card.js";
+require("./base.js");
 
 function build_new_cards(source, data, more) {
   // iterate over the search results
   for (let i = 0; i < data.length; i++) {
-    let card_item = data[i];
-    let dom_id = card_item.identifier;
+    const card_item = data[i];
+    const dom_id = card_item.identifier;
 
     // copy the base card sitting in the dom, adjust it, then stick it into this artist's card container
-    let card_elem = document.getElementById("basecard-new").cloneNode(true);
+    const card_elem = document.getElementById("basecard-new").cloneNode(true);
     card_elem.style.display = "";
     card_elem.id = dom_id;
 
     // set up element IDs for this man
-    let class_ids = [
+    const class_ids = [
       "mpccard-slot",
       "card-img",
       "mpccard-name",
@@ -27,7 +27,7 @@ function build_new_cards(source, data, more) {
 
     // stick into dom under the source's card container, and instantiate the Card
     document.getElementById(source + "-container").appendChild(card_elem);
-    let new_card = new CardRecent(card_item, dom_id);
+    const new_card = new CardRecent(card_item, dom_id);
 
     // hide/show the 'load more' button
     if (more == "true") {
@@ -47,7 +47,7 @@ export function load_new_cards(source) {
     type: "POST",
     url: "/ajax/getnew/",
     data: {
-      source: source,
+      source,
       page: pages[source],
     },
     success: function (data) {
