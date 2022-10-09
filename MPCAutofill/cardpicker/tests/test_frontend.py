@@ -169,6 +169,11 @@ class TestFrontend:
 
     # region tests
 
+    @pytest.mark.parametrize("url", ["", "contributions", "new", "legal", "guide"])
+    def test_views(self, client, live_server, url):
+        response = client.get(f"{live_server.url}/{url}")
+        assert response.status_code == 200
+
     def test_basic_search_and_xml_generation(self, chrome_driver, live_server, download_folder, snapshot):
         chrome_driver.get(live_server.url)
         text_area = chrome_driver.find_element(By.ID, value="id_card_list")
