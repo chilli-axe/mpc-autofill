@@ -13,6 +13,7 @@ from cardpicker.forms import InputCSV, InputLink, InputText, InputXML
 from cardpicker.models import Card, Cardback, Source, Token
 from cardpicker.mpcorder import Faces, MPCOrder, ReqTypes
 from cardpicker.sources.source_types import SourceTypeChoices
+from cardpicker.utils.sanitisation import to_searchable
 from cardpicker.utils.search_functions import (
     SearchExceptions,
     build_context,
@@ -24,7 +25,6 @@ from cardpicker.utils.search_functions import (
     search_new,
     search_new_elasticsearch_definition,
 )
-from cardpicker.utils.to_searchable import to_searchable
 
 # https://mypy.readthedocs.io/en/stable/generics.html#declaring-decorators
 F = TypeVar("F", bound=Callable[..., Any])

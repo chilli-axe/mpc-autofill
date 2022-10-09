@@ -8,7 +8,7 @@ from bulk_sync import bulk_sync
 
 from cardpicker.constants import DFC_URL, MELD_URL
 from cardpicker.models import DFCPair
-from cardpicker.utils.to_searchable import to_searchable
+from cardpicker.utils.sanitisation import to_searchable
 
 
 @ratelimit.sleep_and_retry  # type: ignore  # `ratelimit` does not implement decorator typing correctly

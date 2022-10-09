@@ -9,7 +9,7 @@ from django.db import transaction
 from cardpicker.models import Card, Cardback, Source, Token
 from cardpicker.sources.source_types import Folder, Image, SourceType, SourceTypeChoices
 from cardpicker.utils import TEXT_BOLD, TEXT_END
-from cardpicker.utils.to_searchable import to_searchable
+from cardpicker.utils.sanitisation import to_searchable
 
 MAX_WORKERS = 5
 DPI_HEIGHT_RATIO = 300 / 1110  # 300 DPI for image of vertical resolution 1110 pixels

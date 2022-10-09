@@ -6,25 +6,15 @@ TODO: is it possible to refactor this and the desktop tool's data structures for
 import csv
 from collections import abc
 from enum import Enum
-from typing import (
-    AbstractSet,
-    Any,
-    ItemsView,
-    Iterator,
-    KeysView,
-    Optional,
-    Union,
-    ValuesView,
-)
+from typing import Any, ItemsView, Iterator, KeysView, Optional, Union, ValuesView
 from xml.etree.ElementTree import Element
 
 import chardet
 import defusedxml.ElementTree as ET
 
 from cardpicker.models import DFCPair
+from cardpicker.utils import process_line, text_to_list, to_searchable
 from cardpicker.utils.link_imports import ImportSites
-from cardpicker.utils.search_functions import process_line, text_to_list
-from cardpicker.utils.to_searchable import to_searchable
 
 
 class ParsingErrors:
@@ -265,7 +255,7 @@ class MPCOrder(abc.MutableMapping[str, Any]):
         # loop over lines in the input text, and for each, parse it into usable information
         for line in input_lines.splitlines():
             # extract the query and quantity from the current line of the input text
-            (query, qty) = process_line(line)
+            query, qty = process_line(line)
 
             if query is not None and qty is not None:
                 # cap at 612

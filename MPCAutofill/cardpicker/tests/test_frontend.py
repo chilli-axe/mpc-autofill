@@ -1,4 +1,5 @@
 import os
+import re
 import time
 from dataclasses import dataclass
 from pathlib import Path
@@ -20,7 +21,13 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 from django.core.management import call_command
 
-from cardpicker.tests.constants import TestCard, TestCards, TestSource, TestSources
+from cardpicker.tests.constants import (
+    TestCard,
+    TestCards,
+    TestDecks,
+    TestSource,
+    TestSources,
+)
 
 
 @dataclass
@@ -119,6 +126,14 @@ class TestFrontend:
         time.sleep(5)
 
     @staticmethod
+    def get_ids_of_all_cards_with_name(driver, name) -> list[str]:
+        return [x.get_attribute("id") for x in driver.find_elements(By.XPATH, value=f"//*[text() = '{name}']/../..")]
+
+    @staticmethod
+    def get_slot_from_id(id_: str) -> int:
+        return int(re.search(r"^slot(\d.*)-front|back$", id_).groups()[0])
+
+    @staticmethod
     def assert_order_qty(driver, qty: int):
         assert driver.find_element(By.ID, value="order_qty").text == str(qty)
 
@@ -139,9 +154,13 @@ class TestFrontend:
     ):
         if has_reverse_face:
             inactive_face = ({"front", "back"} - {active_face}).pop()
-            assert driver.find_element(By.ID, value=f"slot{slot}-{inactive_face}").is_displayed() is False
+            assert (
+                driver.find_element(By.ID, value=f"slot{slot}-{inactive_face}").is_displayed() is False
+            ), f"Expected the face {inactive_face} for card {card.name} to be hidden!"
 
-        assert driver.find_element(By.ID, value=f"slot{slot}-{active_face}").is_displayed() is True
+        assert (
+            driver.find_element(By.ID, value=f"slot{slot}-{active_face}").is_displayed() is True
+        ), f"Expected the face {active_face} for card {card.name} to be visible!"
         assert driver.find_element(By.ID, value=f"slot{slot}-{active_face}-mpccard-name").text == card.name
         if selected_image is not None and total_images is not None:
             counter = f"{selected_image}/{total_images}"
@@ -651,6 +670,86 @@ class TestFrontend:
             f"{TestCards.SIMPLE_CUBE.value.name}.png",
         ]:
             os.path.exists(download_folder / expected_file)
+
+    @pytest.mark.parametrize("url", [x.value for x in TestDecks])
+    def test_import_from_url(self, chrome_driver, url):
+        call_command("update_dfcs")
+        chrome_driver.find_element(By.ID, value="uploadCardsBtn").click()
+        chrome_driver.find_element(By.ID, value="input_url").click()
+        time.sleep(1)
+        chrome_driver.find_element(By.ID, value="list_url").send_keys(url)
+        chrome_driver.find_element(By.ID, value="inputLinkModal-submit").click()
+        self.wait_for_search_results_modal(chrome_driver)
+
+        # each site might return the cards in the deck in a different order
+        brainstorm_slots = [
+            self.get_slot_from_id(id_)
+            for id_ in self.get_ids_of_all_cards_with_name(chrome_driver, TestCards.BRAINSTORM.value.name)
+        ]
+        past_in_flames_slots = [
+            self.get_slot_from_id(id_)
+            for id_ in self.get_ids_of_all_cards_with_name(chrome_driver, TestCards.PAST_IN_FLAMES_1.value.name)
+        ]
+        delver_of_secrets_slots = [
+            self.get_slot_from_id(id_)
+            for id_ in self.get_ids_of_all_cards_with_name(chrome_driver, TestCards.DELVER_OF_SECRETS.value.name)
+        ]
+
+        self.assert_order_qty(chrome_driver, 8)
+        self.assert_order_bracket(chrome_driver, 18)
+        assert len(brainstorm_slots) == 4
+        assert len(past_in_flames_slots) == 3
+        assert len(delver_of_secrets_slots) == 1
+
+        for slot in brainstorm_slots:
+            self.assert_card_state(
+                driver=chrome_driver,
+                slot=slot,
+                active_face="front",
+                card=TestCards.BRAINSTORM.value,
+                selected_image=1,
+                total_images=1,
+                source=TestSources.EXAMPLE_DRIVE_1.value,
+            )
+        for slot in past_in_flames_slots:
+            self.assert_card_state(
+                driver=chrome_driver,
+                slot=slot,
+                active_face="front",
+                card=TestCards.PAST_IN_FLAMES_1.value,
+                selected_image=1,
+                total_images=2,
+                source=TestSources.EXAMPLE_DRIVE_1.value,
+            )
+        self.assert_card_state(
+            driver=chrome_driver,
+            slot=delver_of_secrets_slots[0],
+            active_face="front",
+            card=TestCards.DELVER_OF_SECRETS.value,
+            selected_image=1,
+            total_images=1,
+            source=TestSources.EXAMPLE_DRIVE_1.value,
+        )
+        self.toggle_faces(chrome_driver)
+        for slot in brainstorm_slots + past_in_flames_slots:
+            self.assert_card_state(
+                driver=chrome_driver,
+                slot=slot,
+                active_face="back",
+                card=TestCards.SIMPLE_CUBE.value,
+                selected_image=None,
+                total_images=None,
+                source=TestSources.EXAMPLE_DRIVE_1.value,
+            )
+        self.assert_card_state(
+            driver=chrome_driver,
+            slot=delver_of_secrets_slots[0],
+            active_face="back",
+            card=TestCards.INSECTILE_ABERRATION.value,
+            selected_image=1,
+            total_images=1,
+            source=TestSources.EXAMPLE_DRIVE_1.value,
+        )
 
     def test_mobile_banner(self, mobile_chrome_driver):
         assert (

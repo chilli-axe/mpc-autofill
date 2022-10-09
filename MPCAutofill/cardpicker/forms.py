@@ -32,6 +32,7 @@ class InputLink(forms.Form):
     list_url = forms.CharField(
         widget=forms.TextInput(
             attrs={
+                "id": "list_url",
                 "placeholder": "Card list URL",
                 "class": "form-control",
             }
