@@ -29,6 +29,9 @@ class TestCards(Enum):
     RAVAGER_OF_THE_FELLS = TestCard(identifier="", name="Ravager of the Fells")
     PAST_IN_FLAMES_1 = TestCard(identifier="1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1", name="Past in Flames")
     PAST_IN_FLAMES_2 = TestCard(identifier="1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU", name="Past in Flames")
+    DELVER_OF_SECRETS = TestCard(identifier="17fopRCNRge72U8Hac8pApHZtEalx5kHy", name="Delver of Secrets")
+    INSECTILE_ABERRATION = TestCard(identifier="1mO73GTYlieP0kiZEkF58pJSrZTmC9lNh", name="Insectile Aberration")
+    GOBLIN = TestCard(identifier="1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA", name="Goblin")  # token
 
     @DynamicClassAttribute
     def value(self) -> TestCard:
