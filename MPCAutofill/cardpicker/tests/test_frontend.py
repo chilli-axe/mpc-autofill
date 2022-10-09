@@ -40,23 +40,25 @@ class TestFrontend:
         return tmp_path_factory.mktemp("downloads")
 
     @pytest.fixture()
-    def chrome_driver(self, download_folder) -> Chrome:
+    def chrome_driver(self, download_folder, live_server) -> Chrome:
         options = Options()
         options.add_argument("--headless")
         options.add_experimental_option("prefs", {"download.default_directory": str(download_folder)})
         driver = Chrome(service=Service(ChromeDriverManager().install()), options=options)
         driver.set_window_size(1440, 900)
         driver.implicitly_wait(0)
+        driver.get(live_server.url)
         yield driver
         driver.quit()
 
     @pytest.fixture()
-    def mobile_chrome_driver(self, download_folder) -> Chrome:
+    def mobile_chrome_driver(self, live_server, download_folder) -> Chrome:
         options = Options()
         options.add_argument("--headless")
         options.add_experimental_option("mobileEmulation", {"deviceName": "iPhone X"})
         driver = Chrome(service=Service(ChromeDriverManager().install()), options=options)
         driver.implicitly_wait(0)
+        driver.get(live_server.url)
         yield driver
         driver.quit()
 
@@ -174,8 +176,7 @@ class TestFrontend:
         response = client.get(f"{live_server.url}/{url}")
         assert response.status_code == 200
 
-    def test_basic_search_and_xml_generation(self, chrome_driver, live_server, download_folder, snapshot):
-        chrome_driver.get(live_server.url)
+    def test_basic_search_and_xml_generation(self, chrome_driver, download_folder, snapshot):
         text_area = chrome_driver.find_element(By.ID, value="id_card_list")
         text_area.send_keys("4 brainstorm\n3 island")
         chrome_driver.find_element(By.ID, value="btn_submit").click()
@@ -251,8 +252,7 @@ class TestFrontend:
         with open(download_folder / "cards.xml", "r") as f:
             assert str(f.read()) == snapshot
 
-    def test_toggle_faces(self, chrome_driver, live_server):
-        chrome_driver.get(live_server.url)
+    def test_toggle_faces(self, chrome_driver):
         text_area = chrome_driver.find_element(By.ID, value="id_card_list")
         text_area.send_keys("4 brainstorm\n3 island")
         chrome_driver.find_element(By.ID, value="btn_submit").click()
@@ -266,8 +266,7 @@ class TestFrontend:
             assert chrome_driver.find_element(By.ID, value=f"slot{i}-front").is_displayed() is False
             assert chrome_driver.find_element(By.ID, value=f"slot{i}-back").is_displayed() is True
 
-    def test_search_when_all_drives_disabled(self, chrome_driver, live_server):
-        chrome_driver.get(live_server.url)
+    def test_search_when_all_drives_disabled(self, chrome_driver):
         chrome_driver.find_element(By.ID, value="btn_settings").click()
         time.sleep(1)
         chrome_driver.find_element(By.ID, value=TestSources.EXAMPLE_DRIVE_1.value.key).find_element(
@@ -290,8 +289,7 @@ class TestFrontend:
                 chrome_driver.find_element(By.ID, value=f"slot{slot}-front-mpccard-source").text == "Your Search Query"
             )
 
-    def test_upload_valid_xml(self, chrome_driver, live_server, valid_xml):
-        chrome_driver.get(live_server.url)
+    def test_upload_valid_xml(self, chrome_driver, valid_xml):
         chrome_driver.find_element(By.ID, value="xmlfile").send_keys(valid_xml)
 
         self.wait_for_search_results_modal(chrome_driver)
@@ -363,10 +361,10 @@ class TestFrontend:
             source=TestSources.EXAMPLE_DRIVE_1.value,
         )
 
-    def test_search_in_place(self, chrome_driver, live_server):
+    def test_search_in_place(self, chrome_driver):
         # TODO: can we create fixtures for search results to speed up these tests?
         # set up results page with single result
-        chrome_driver.get(live_server.url)
+
         text_area = chrome_driver.find_element(By.ID, value="id_card_list")
         text_area.send_keys("brainstorm")
         chrome_driver.find_element(By.ID, value="btn_submit").click()
@@ -399,10 +397,9 @@ class TestFrontend:
             source=TestSources.EXAMPLE_DRIVE_1.value,
         )
 
-    def test_dfc_search(self, chrome_driver, live_server):
+    def test_dfc_search(self, chrome_driver):
         call_command("update_dfcs")
         # set up results page with single result
-        chrome_driver.get(live_server.url)
         text_area = chrome_driver.find_element(By.ID, value="id_card_list")
         text_area.send_keys("huntmaster of the fells")
         chrome_driver.find_element(By.ID, value="btn_submit").click()
@@ -430,8 +427,7 @@ class TestFrontend:
             source=TestSources.EXAMPLE_DRIVE_1.value,
         )
 
-    def test_priority_ordering(self, chrome_driver, live_server):
-        chrome_driver.get(live_server.url)
+    def test_priority_ordering(self, chrome_driver):
         text_area = chrome_driver.find_element(By.ID, value="id_card_list")
         text_area.send_keys("island")
         chrome_driver.find_element(By.ID, value="btn_submit").click()
@@ -457,8 +453,50 @@ class TestFrontend:
             source=TestSources.EXAMPLE_DRIVE_1.value,
         )
 
-    def test_disabling_a_drive_saved_by_cookie(self, chrome_driver, live_server):
-        chrome_driver.get(live_server.url)
+    def test_source_default_ordering(self, chrome_driver):
+        text_area = chrome_driver.find_element(By.ID, value="id_card_list")
+        text_area.send_keys("past in flames")
+        chrome_driver.find_element(By.ID, value="btn_submit").click()
+        self.wait_for_search_results_modal(chrome_driver)
+
+        self.assert_card_state(
+            driver=chrome_driver,
+            slot=0,
+            active_face="front",
+            card=TestCards.PAST_IN_FLAMES_1.value,
+            selected_image=1,
+            total_images=2,
+            source=TestSources.EXAMPLE_DRIVE_1.value,
+        )
+
+    def test_source_non_default_ordering(self, chrome_driver):
+        chrome_driver.find_element(By.ID, value="btn_settings").click()
+        time.sleep(1)
+        action = ActionChains(chrome_driver)
+        action.drag_and_drop_by_offset(
+            source=chrome_driver.find_element(By.ID, value=f"{TestSources.EXAMPLE_DRIVE_2.value.key}-row"),
+            xoffset=30,
+            yoffset=-70,
+        ).perform()
+        chrome_driver.find_element(By.ID, value="selectDrivesModal-submit").click()
+        time.sleep(1)
+
+        text_area = chrome_driver.find_element(By.ID, value="id_card_list")
+        text_area.send_keys("past in flames")
+        chrome_driver.find_element(By.ID, value="btn_submit").click()
+        self.wait_for_search_results_modal(chrome_driver)
+
+        self.assert_card_state(
+            driver=chrome_driver,
+            slot=0,
+            active_face="front",
+            card=TestCards.PAST_IN_FLAMES_2.value,
+            selected_image=1,
+            total_images=2,
+            source=TestSources.EXAMPLE_DRIVE_2.value,
+        )
+
+    def test_disabling_a_drive_saved_by_cookie(self, chrome_driver):
         chrome_driver.find_element(By.ID, value="btn_settings").click()
         time.sleep(1)
         chrome_driver.find_element(By.ID, value=TestSources.EXAMPLE_DRIVE_2.value.key).find_element(
@@ -476,8 +514,7 @@ class TestFrontend:
             ],
         )
 
-    def test_reordering_drives_saved_by_cookie(self, chrome_driver, live_server):
-        chrome_driver.get(live_server.url)
+    def test_reordering_drives_saved_by_cookie(self, chrome_driver):
         chrome_driver.find_element(By.ID, value="btn_settings").click()
         time.sleep(1)
         action = ActionChains(chrome_driver)
@@ -498,8 +535,7 @@ class TestFrontend:
             ],
         )
 
-    def test_cleared_card_back_name_defaulting_to_selected_common_card_back(self, chrome_driver, live_server):
-        chrome_driver.get(live_server.url)
+    def test_cleared_card_back_name_defaulting_to_selected_common_card_back(self, chrome_driver):
         text_area = chrome_driver.find_element(By.ID, value="id_card_list")
         text_area.send_keys("brainstorm")
         chrome_driver.find_element(By.ID, value="btn_submit").click()
@@ -558,8 +594,7 @@ class TestFrontend:
             source=TestSources.EXAMPLE_DRIVE_1.value,
         )
 
-    def test_detailed_view_modal(self, chrome_driver, live_server):
-        chrome_driver.get(live_server.url)
+    def test_detailed_view_modal(self, chrome_driver):
         text_area = chrome_driver.find_element(By.ID, value="id_card_list")
         text_area.send_keys("brainstorm")
         chrome_driver.find_element(By.ID, value="btn_submit").click()
@@ -582,8 +617,7 @@ class TestFrontend:
         assert chrome_driver.find_element(By.ID, value="detailedView-class").text == "Card"
         assert chrome_driver.find_element(By.ID, value="detailedView-id").text == TestCards.BRAINSTORM.value.identifier
 
-    def test_download_single_image(self, chrome_driver, live_server, download_folder):
-        chrome_driver.get(live_server.url)
+    def test_download_single_image(self, chrome_driver, download_folder):
         text_area = chrome_driver.find_element(By.ID, value="id_card_list")
         text_area.send_keys("brainstorm")
         chrome_driver.find_element(By.ID, value="btn_submit").click()
@@ -598,8 +632,7 @@ class TestFrontend:
         # assert the expected image has been downloaded
         os.path.exists(download_folder / "Brainstorm.png")
 
-    def test_download_all_images(self, chrome_driver, live_server, download_folder):
-        chrome_driver.get(live_server.url)
+    def test_download_all_images(self, chrome_driver, download_folder):
         text_area = chrome_driver.find_element(By.ID, value="id_card_list")
         text_area.send_keys("4 brainstorm\n3 island\nhuntmaster of the fells")
         chrome_driver.find_element(By.ID, value="btn_submit").click()
@@ -619,8 +652,7 @@ class TestFrontend:
         ]:
             os.path.exists(download_folder / expected_file)
 
-    def test_mobile_banner(self, mobile_chrome_driver, live_server):
-        mobile_chrome_driver.get(live_server.url)
+    def test_mobile_banner(self, mobile_chrome_driver):
         assert (
             "It seems like you're on a mobile device!"
             in mobile_chrome_driver.find_element(By.ID, "mobile-device-alert").text
