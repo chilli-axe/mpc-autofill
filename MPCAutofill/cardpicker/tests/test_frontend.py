@@ -394,6 +394,27 @@ class TestFrontend:
                 source=TestSources.EXAMPLE_DRIVE_2.value,
             )
 
+    def test_fuzzy_search(self, chrome_driver):
+        chrome_driver.find_element(By.ID, value="btn_settings").click()
+        time.sleep(1)
+        chrome_driver.find_element(By.ID, value="searchtype").find_element(By.XPATH, value="./..").click()
+        chrome_driver.find_element(By.ID, value="selectDrivesModal-submit").click()
+        time.sleep(1)
+        text_area = chrome_driver.find_element(By.ID, value="id_card_list")
+        text_area.send_keys("past in")
+        chrome_driver.find_element(By.ID, value="btn_submit").click()
+        self.wait_for_search_results_modal(chrome_driver)
+
+        self.assert_card_state(
+            driver=chrome_driver,
+            slot=0,
+            active_face="front",
+            card=TestCards.PAST_IN_FLAMES_1.value,
+            selected_image=1,
+            total_images=2,
+            source=TestSources.EXAMPLE_DRIVE_1.value,
+        )
+
     def test_search_when_all_drives_disabled(self, chrome_driver):
         chrome_driver.find_element(By.ID, value="btn_settings").click()
         time.sleep(1)
@@ -408,7 +429,6 @@ class TestFrontend:
         text_area = chrome_driver.find_element(By.ID, value="id_card_list")
         text_area.send_keys("4 brainstorm\n3 island")
         chrome_driver.find_element(By.ID, value="btn_submit").click()
-
         self.wait_for_search_results_modal(chrome_driver)
 
         # no search results
