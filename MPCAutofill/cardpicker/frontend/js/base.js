@@ -1,3 +1,5 @@
+/* global my_gtag, exception */
+
 import Cookies from "js-cookie";
 import Toast from "bootstrap/js/dist/toast";
 
@@ -53,6 +55,7 @@ export function base_on_load() {
   if (Cookies.get("ga_disabled") === "true") {
     window["ga-disable-".concat(my_gtag)] = true;
   }
+  /* eslint-disable no-undef */
   window.dataLayer = window.dataLayer || [];
   function gtag() {
     dataLayer.push(arguments);

@@ -1,3 +1,5 @@
+/* global pages, context, exception */
+
 import { base_on_load } from "./base.js";
 import { CardRecent } from "./card.js";
 require("./base.js");
@@ -27,10 +29,11 @@ function build_new_cards(source, data, more) {
 
     // stick into dom under the source's card container, and instantiate the Card
     document.getElementById(source + "-container").appendChild(card_elem);
-    const new_card = new CardRecent(card_item, dom_id);
+    /* eslint-disable no-new */
+    new CardRecent(card_item, dom_id);
 
     // hide/show the 'load more' button
-    if (more == "true") {
+    if (more === "true") {
       document.getElementById(source + "-more").style.display = "";
     } else {
       document.getElementById(source + "-more").style.display = "none";

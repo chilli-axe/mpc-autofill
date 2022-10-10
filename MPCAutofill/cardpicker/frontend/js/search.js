@@ -1,3 +1,5 @@
+/* global groups, qty, front_visible, cards_not_found, max_group, drive_order, fuzzy_search */
+
 import Modal from "bootstrap/js/dist/modal";
 
 import { handle_error } from "./base.js";
@@ -373,7 +375,8 @@ function build_card(
   // insert the returned data into this card's dom element
   // since the Card will attach itself to the relevant dom element as soon as it's instantiated,
   // we don't need to keep track of it as a variable here
-  const new_card = new Card(
+  /* eslint-disable no-new */
+  new Card(
     card.data,
     query,
     dom_id,
@@ -474,6 +477,7 @@ export function insert_link() {
   return false;
 }
 
+/*
 function build_blog_card(container_id, card) {
   // iterate over the search results
   const dom_id = card.identifier;
@@ -497,5 +501,6 @@ function build_blog_card(container_id, card) {
 
   // stick into dom under the source's card container, and instantiate the Card
   document.getElementById(container_id).appendChild(card_elem);
-  const new_card = new CardRecent(card, dom_id);
+  new CardRecent(card, dom_id);
 }
+ */

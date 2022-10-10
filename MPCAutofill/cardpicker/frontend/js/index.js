@@ -61,7 +61,7 @@ function load_search_settings() {
 }
 
 function save_search_settings() {
-  const settings = new Object();
+  const settings = {};
   settings.drives = [];
 
   // save search mode settings

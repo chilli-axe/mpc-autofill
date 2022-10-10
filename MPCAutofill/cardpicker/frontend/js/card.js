@@ -1,3 +1,5 @@
+/* global groups, qty, cards_not_found, drive_order, fuzzy_search, prompt_deletion */
+
 import { search_api } from "./search.js";
 import { remove_card } from "./review.js";
 import Modal from "bootstrap/js/dist/modal";
@@ -398,7 +400,8 @@ export class Card extends CardBase {
 
         // stick into dom under the grid container, and instantiate the CardGrid
         grid_container.appendChild(card_elem);
-        const new_card = new CardGrid(card_item, dom_id, slot_num, card_obj);
+        /* eslint-disable no-new */
+        new CardGrid(card_item, dom_id, slot_num, card_obj);
       }
     }
 
@@ -503,7 +506,7 @@ export class Card extends CardBase {
       );
     }
 
-    if (this.req_type == "back") {
+    if (this.req_type === "back") {
       this.locked = true;
       this.group = 1;
     }
@@ -520,7 +523,7 @@ export class Card extends CardBase {
     }
 
     // set slot name + remove card btn + set up in-place search
-    if (this.slot != "-") {
+    if (this.slot !== "-") {
       this.elem_slot.innerHTML = "Slot " + (parseInt(this.slot) + 1).toString();
 
       this.elem_remove.style.display = "";

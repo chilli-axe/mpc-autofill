@@ -1,3 +1,5 @@
+/* global qty, groups, drive_order, fuzzy_search, order */
+
 import "bootstrap5-toggle";
 import Modal from "bootstrap/js/dist/modal";
 import Tooltip from "bootstrap/js/dist/tooltip";
@@ -238,7 +240,8 @@ export function review_on_load() {
   const tooltipTriggerList = [].slice.call(
     document.querySelectorAll('[data-bs-toggle="tooltip"]')
   );
-  const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+  tooltipTriggerList.map(function (tooltipTriggerEl) {
+    // TODO: this was const tooltipList = ...
     return new Tooltip(tooltipTriggerEl);
   });
 }

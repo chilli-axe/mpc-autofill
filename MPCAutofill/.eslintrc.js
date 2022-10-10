@@ -11,5 +11,8 @@ module.exports = {
     ecmaVersion: "latest",
     sourceType: "module",
   },
-  rules: {},
+  rules: {
+    camelcase: "off", // TODO: remove this and convert things to camelcase
+    "no-global-assign": "off",
+  },
 };
