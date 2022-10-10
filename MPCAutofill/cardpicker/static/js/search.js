@@ -83,7 +83,7 @@ function alert_missing_versions(cards_not_found) {
             // id_element.innerText = cards_not_found[i].id;
 
             let id_text_element = document.createElement("code");
-            id_text_element.innerText = cards_not_found[i].id;
+            id_text_element.innerText = cards_not_found[i].identifier;
             id_element.appendChild(id_text_element);
 
             // formatting for slot field

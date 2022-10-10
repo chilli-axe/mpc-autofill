@@ -101,6 +101,32 @@ class TestFrontend:
             f.write(xml_contents)
         yield valid_xml_path
 
+    @pytest.fixture()
+    def xml_with_invalid_card(self, download_folder):
+        xml_contents = f"""
+                <order>
+                    <details>
+                        <quantity>1</quantity>
+                        <bracket>18</bracket>
+                        <stock>(S30) Standard Smooth</stock>
+                        <foil>false</foil>
+                    </details>
+                    <fronts>
+                        <card>
+                            <id>invalid</id>
+                            <slots>0</slots>
+                            <name>{TestCards.BRAINSTORM.value.name}.png</name>
+                            <query>brainstorm</query>
+                        </card>
+                    </fronts>
+                    <cardback>{TestCards.SIMPLE_CUBE.value.identifier}</cardback>
+                </order>
+                """
+        xml_with_invalid_card_path = str(download_folder / "xml_with_invalid_card.xml")
+        with open(xml_with_invalid_card_path, "w") as f:
+            f.write(xml_contents)
+        yield xml_with_invalid_card_path
+
     # endregion
 
     # region helpers
@@ -879,6 +905,24 @@ class TestFrontend:
             total_images=1,
             source=TestSources.EXAMPLE_DRIVE_1.value,
         )
+
+    def test_missing_cards_modal(self, chrome_driver, xml_with_invalid_card):
+        chrome_driver.find_element(By.ID, value="xmlfile").send_keys(xml_with_invalid_card)
+        self.wait_for_search_results_modal(chrome_driver)
+        time.sleep(1)
+
+        assert chrome_driver.find_element(By.ID, value="missingCardsModal").is_displayed()
+        row_elements = chrome_driver.find_element(By.ID, value="missingCardsTable").find_elements(
+            By.XPATH, value=".//tr"
+        )
+        assert len(row_elements) == 1
+        row_element = row_elements.pop()
+        cell_elements = row_element.find_elements(By.XPATH, value=".//td")
+        assert len(cell_elements) == 3
+        identifier_cell, slot_cell, search_query_cell = cell_elements
+        assert identifier_cell.text == "invalid"
+        assert slot_cell.text == "1"
+        assert search_query_cell.text == "brainstorm"
 
     def test_mobile_banner(self, mobile_chrome_driver):
         assert (
