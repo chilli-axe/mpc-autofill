@@ -1,6 +1,7 @@
 ![build](https://github.com/chilli-axe/mpc-autofill/actions/workflows/build.yml/badge.svg)
 ![tests](https://github.com/chilli-axe/mpc-autofill/actions/workflows/tests.yml/badge.svg)
 [![Github all releases](https://img.shields.io/github/downloads/chilli-axe/mpc-autofill/total.svg)](https://GitHub.com/chilli-axe/mpc-autofill/releases/)
+[![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=7LJNRSLJYCZTJ&currency_code=AUD&source=url)
 
 # mpc-autofill
 
@@ -15,10 +16,13 @@ JetBrains supports this project's development through their [Open Source Develop
 # Monorepo Structure
 * Web project:
   * Located in `/MPCAutofill`,
-  * Backend is Django 4 with Elasticsearch (sqlite is fine), frontend is Jquery,
-  * Indexes images stored in the Google Drives connected to the project,
+  * The backend is built with Django 4 and uses Elasticsearch 7 for managing search results,
+      * The engine for database linked to the Django project is not critical - SQLite is fine,
+  * The frontend is built with Bootstrap 5 and jQuery,
+  * Images stored in the Google Drives connected to the project are indexed in Elasticsearch,
   * Facilitates the generation of XML orders for use with the desktop client,
   * Intended to be deployed as a web application but can also be spun up locally with Docker.
+      * Note: the Docker bulid is broken at the moment.
 * Desktop client:
   * Located in `/autofill`,
   * Responsible for parsing XML orders, downloading images from Google Drive, and automating MPC's order creation interface.
