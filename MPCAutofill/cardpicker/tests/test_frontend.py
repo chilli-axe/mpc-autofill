@@ -107,8 +107,10 @@ class TestFrontend:
     @staticmethod
     def wait_for_search_results_modal(driver):
         load_modal = driver.find_element(By.ID, value="loadModal")
-        WebDriverWait(driver, 10).until(visibility_of(load_modal))
-        WebDriverWait(driver, 10).until(invisibility_of_element(load_modal))
+        if load_modal.is_displayed():
+            WebDriverWait(driver, 10).until(visibility_of(load_modal))
+        if not load_modal.is_displayed():
+            WebDriverWait(driver, 10).until(invisibility_of_element(load_modal))
         time.sleep(2)
 
     @staticmethod
@@ -284,6 +286,113 @@ class TestFrontend:
         for i in range(0, 7):
             assert chrome_driver.find_element(By.ID, value=f"slot{i}-front").is_displayed() is False
             assert chrome_driver.find_element(By.ID, value=f"slot{i}-back").is_displayed() is True
+
+    def test_card_version_selection(self, chrome_driver):
+        text_area = chrome_driver.find_element(By.ID, value="id_card_list")
+        text_area.send_keys("2 island\n2 past in flames")
+        chrome_driver.find_element(By.ID, value="btn_submit").click()
+        self.wait_for_search_results_modal(chrome_driver)
+
+        # change version without locking
+        for i in range(0, 2):
+            self.assert_card_state(
+                driver=chrome_driver,
+                slot=i,
+                active_face="front",
+                card=TestCards.ISLAND.value,
+                selected_image=1,
+                total_images=2,
+                source=TestSources.EXAMPLE_DRIVE_1.value,
+            )
+        chrome_driver.find_element(By.ID, value="slot1-front-next").click()
+        self.assert_card_state(
+            driver=chrome_driver,
+            slot=0,
+            active_face="front",
+            card=TestCards.ISLAND.value,
+            selected_image=1,
+            total_images=2,
+            source=TestSources.EXAMPLE_DRIVE_1.value,
+        )
+        self.assert_card_state(
+            driver=chrome_driver,
+            slot=1,
+            active_face="front",
+            card=TestCards.ISLAND_CLASSICAL.value,
+            selected_image=2,
+            total_images=2,
+            source=TestSources.EXAMPLE_DRIVE_1.value,
+        )
+        chrome_driver.find_element(By.ID, value="slot0-front-prev").click()
+        self.assert_card_state(
+            driver=chrome_driver,
+            slot=0,
+            active_face="front",
+            card=TestCards.ISLAND_CLASSICAL.value,
+            selected_image=2,
+            total_images=2,
+            source=TestSources.EXAMPLE_DRIVE_1.value,
+        )
+        self.assert_card_state(
+            driver=chrome_driver,
+            slot=0,
+            active_face="front",
+            card=TestCards.ISLAND_CLASSICAL.value,
+            selected_image=2,
+            total_images=2,
+            source=TestSources.EXAMPLE_DRIVE_1.value,
+        )
+
+        # change version with the `next` button while locking
+        for i in range(2, 4):
+            self.assert_card_state(
+                driver=chrome_driver,
+                slot=i,
+                active_face="front",
+                card=TestCards.PAST_IN_FLAMES_1.value,
+                selected_image=1,
+                total_images=2,
+                source=TestSources.EXAMPLE_DRIVE_1.value,
+            )
+        chrome_driver.find_element(By.ID, value="slot3-front-padlock").click()
+        chrome_driver.find_element(By.ID, value="slot3-front-next").click()
+        for i in range(2, 4):
+            self.assert_card_state(
+                driver=chrome_driver,
+                slot=i,
+                active_face="front",
+                card=TestCards.PAST_IN_FLAMES_2.value,
+                selected_image=2,
+                total_images=2,
+                source=TestSources.EXAMPLE_DRIVE_2.value,
+            )
+        chrome_driver.find_element(By.ID, value="slot2-front-prev").click()
+        for i in range(2, 4):
+            self.assert_card_state(
+                driver=chrome_driver,
+                slot=i,
+                active_face="front",
+                card=TestCards.PAST_IN_FLAMES_1.value,
+                selected_image=1,
+                total_images=2,
+                source=TestSources.EXAMPLE_DRIVE_1.value,
+            )
+
+        # change version with the modal view
+        chrome_driver.find_element(By.ID, value="slot3-front-mpccard-counter-btn").click()
+        time.sleep(1)
+        chrome_driver.find_element(By.ID, value=f"{TestCards.PAST_IN_FLAMES_2.value.identifier}-card-img").click()
+        time.sleep(1)
+        for i in range(2, 4):
+            self.assert_card_state(
+                driver=chrome_driver,
+                slot=i,
+                active_face="front",
+                card=TestCards.PAST_IN_FLAMES_2.value,
+                selected_image=2,
+                total_images=2,
+                source=TestSources.EXAMPLE_DRIVE_2.value,
+            )
 
     def test_search_when_all_drives_disabled(self, chrome_driver):
         chrome_driver.find_element(By.ID, value="btn_settings").click()
