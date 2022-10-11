@@ -66,15 +66,14 @@
                                 <p>{{ source.source_type }}</p>
                             </td>
                             <td>
-                                <b>{{ source.qty_cards }}</b> card
-                                {% if source.qty_cards != '1' %}s{% endif %}
-                                ,
-                                <b>{{ source.qty_cardbacks }}</b> cardback
-                                {% if source.qty_cardbacks != '1' %}s{% endif %}
-                                ,
-                                and <b>{{ source.qty_tokens }}</b> token
-                                {% if source.qty_tokens != '1' %}s{% endif %}
-                                ,
+                                <b>{{ source.qty_cards }}</b>
+                                {# djlint:off #}
+                                {% if source.qty_cards != '1' %}cards{% else %}card{% endif %},
+                                <b>{{ source.qty_cardbacks }}</b>
+                                {% if source.qty_cardbacks != '1' %}cardbacks{% else %}cardback{% endif %},
+                                and <b>{{ source.qty_tokens }}</b>
+                                {% if source.qty_tokens != '1' %}tokens{% else %}token{% endif %},
+                                {# djlint:on #}
                                 at <b>{{ source.avgdpi }}</b> DPI on average
                                 &#8212 {{ source.description }}
                             </td>
