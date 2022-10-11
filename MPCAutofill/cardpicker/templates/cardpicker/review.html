@@ -86,7 +86,7 @@
                             Add Cards
                         </button>
                         <div class="dropdown-menu" aria-labelledby="addCardsBtn">
-                            <label class="dropdown-item" data-bs-toggle="modal" data-bs-target="#textModal"
+                            <label id="btn_add_cards_text_input" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#textModal"
                                onclick="clear_text('id_card_list');">
                                 Text Input
                             </label>
@@ -162,7 +162,7 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <input type="submit" class="btn btn-success" value="Submit">
+                        <input id="btn_add_cards_submit" type="submit" class="btn btn-success" value="Submit">
                     </div>
                 </form>
             </div>

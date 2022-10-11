@@ -926,6 +926,53 @@ class TestFrontend:
         assert slot_cell.text == "1"
         assert search_query_cell.text == "brainstorm"
 
+    def test_add_cards_to_order_by_text(self, chrome_driver):
+        call_command("update_dfcs")
+        self.load_review_page_with_search_string(chrome_driver, "brainstorm")
+
+        self.assert_order_qty(chrome_driver, 1)
+        self.assert_order_bracket(chrome_driver, 18)
+        self.assert_card_state(
+            driver=chrome_driver,
+            slot=0,
+            active_face="front",
+            card=TestCards.BRAINSTORM.value,
+            selected_image=1,
+            total_images=1,
+            source=TestSources.EXAMPLE_DRIVE_1.value,
+        )
+
+        chrome_driver.find_element(By.ID, value="addCardsBtn").click()
+        chrome_driver.find_element(By.ID, value="btn_add_cards_text_input").click()
+        time.sleep(1)
+        chrome_driver.find_element(By.ID, value="id_card_list").send_keys("2 huntmaster of the fells")
+        chrome_driver.find_element(By.ID, value="btn_add_cards_submit").click()
+        time.sleep(5)
+
+        self.assert_order_qty(chrome_driver, 3)
+        self.assert_order_bracket(chrome_driver, 18)
+        for i in range(1, 3):
+            self.assert_card_state(
+                driver=chrome_driver,
+                slot=i,
+                active_face="front",
+                card=TestCards.HUNTMASTER_OF_THE_FELLS.value,
+                selected_image=1,
+                total_images=1,
+                source=TestSources.EXAMPLE_DRIVE_1.value,
+            )
+        self.toggle_faces(chrome_driver)
+        for i in range(1, 3):
+            self.assert_card_state(
+                driver=chrome_driver,
+                slot=i,
+                active_face="back",
+                card=TestCards.RAVAGER_OF_THE_FELLS.value,
+                selected_image=1,
+                total_images=1,
+                source=TestSources.EXAMPLE_DRIVE_1.value,
+            )
+
     def test_mobile_banner(self, mobile_chrome_driver):
         assert (
             "It seems like you're on a mobile device!"
