@@ -920,10 +920,11 @@ class TestFrontend:
         assert len(row_elements) == 1
         row_element = row_elements.pop()
         cell_elements = row_element.find_elements(By.XPATH, value=".//td")
-        assert len(cell_elements) == 3
-        identifier_cell, slot_cell, search_query_cell = cell_elements
+        assert len(cell_elements) == 4
+        identifier_cell, slot_cell, face_cell, search_query_cell = cell_elements
         assert identifier_cell.text == "invalid"
         assert slot_cell.text == "1"
+        assert face_cell.text == "front"
         assert search_query_cell.text == "brainstorm"
 
     def test_add_cards_to_order_by_text(self, chrome_driver):
