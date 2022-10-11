@@ -102,6 +102,18 @@ class TestFrontend:
         yield valid_xml_path
 
     @pytest.fixture()
+    def valid_csv(self, download_folder):
+        csv_contents = f"""
+            quantity,front,back
+            4,brainstorm,
+            3,island,
+            """
+        valid_csv_path = str(download_folder / "valid_csv.csv")
+        with open(valid_csv_path, "w") as f:
+            f.write(csv_contents)
+        yield valid_csv_path
+
+    @pytest.fixture()
     def xml_with_invalid_card(self, download_folder):
         xml_contents = f"""
                 <order>
@@ -455,77 +467,36 @@ class TestFrontend:
                 chrome_driver.find_element(By.ID, value=f"slot{slot}-front-mpccard-source").text == "Your Search Query"
             )
 
-    def test_upload_valid_xml(self, chrome_driver, valid_xml):
-        chrome_driver.find_element(By.ID, value="xmlfile").send_keys(valid_xml)
+    def test_upload_valid_file(self, chrome_driver, live_server, valid_xml, valid_csv):
+        for element_id, file_path in [("xmlfile", valid_xml), ("csvfile", valid_csv)]:
+            chrome_driver.get(live_server.url)
+            chrome_driver.find_element(By.ID, value=element_id).send_keys(file_path)
 
-        self.wait_for_search_results_modal(chrome_driver)
+            self.wait_for_search_results_modal(chrome_driver)
 
-        self.assert_order_qty(chrome_driver, 7)
-        self.assert_order_bracket(chrome_driver, 18)
+            self.assert_order_qty(chrome_driver, 7)
+            self.assert_order_bracket(chrome_driver, 18)
 
-        self.assert_card_state(
-            driver=chrome_driver,
-            slot=0,
-            active_face="front",
-            card=TestCards.BRAINSTORM.value,
-            selected_image=1,
-            total_images=1,
-            source=TestSources.EXAMPLE_DRIVE_1.value,
-        )
-        self.assert_card_state(
-            driver=chrome_driver,
-            slot=1,
-            active_face="front",
-            card=TestCards.BRAINSTORM.value,
-            selected_image=1,
-            total_images=1,
-            source=TestSources.EXAMPLE_DRIVE_1.value,
-        )
-        self.assert_card_state(
-            driver=chrome_driver,
-            slot=2,
-            active_face="front",
-            card=TestCards.BRAINSTORM.value,
-            selected_image=1,
-            total_images=1,
-            source=TestSources.EXAMPLE_DRIVE_1.value,
-        )
-        self.assert_card_state(
-            driver=chrome_driver,
-            slot=3,
-            active_face="front",
-            card=TestCards.BRAINSTORM.value,
-            selected_image=1,
-            total_images=1,
-            source=TestSources.EXAMPLE_DRIVE_1.value,
-        )
-        self.assert_card_state(
-            driver=chrome_driver,
-            slot=4,
-            active_face="front",
-            card=TestCards.ISLAND.value,
-            selected_image=1,
-            total_images=2,
-            source=TestSources.EXAMPLE_DRIVE_1.value,
-        )
-        self.assert_card_state(
-            driver=chrome_driver,
-            slot=5,
-            active_face="front",
-            card=TestCards.ISLAND.value,
-            selected_image=1,
-            total_images=2,
-            source=TestSources.EXAMPLE_DRIVE_1.value,
-        )
-        self.assert_card_state(
-            driver=chrome_driver,
-            slot=6,
-            active_face="front",
-            card=TestCards.ISLAND.value,
-            selected_image=1,
-            total_images=2,
-            source=TestSources.EXAMPLE_DRIVE_1.value,
-        )
+            for i in range(0, 4):
+                self.assert_card_state(
+                    driver=chrome_driver,
+                    slot=i,
+                    active_face="front",
+                    card=TestCards.BRAINSTORM.value,
+                    selected_image=1,
+                    total_images=1,
+                    source=TestSources.EXAMPLE_DRIVE_1.value,
+                )
+            for i in range(4, 7):
+                self.assert_card_state(
+                    driver=chrome_driver,
+                    slot=i,
+                    active_face="front",
+                    card=TestCards.ISLAND.value,
+                    selected_image=1,
+                    total_images=2,
+                    source=TestSources.EXAMPLE_DRIVE_1.value,
+                )
 
     @pytest.mark.parametrize(
         "from_query, from_card, to_query, to_card",
