@@ -973,6 +973,48 @@ class TestFrontend:
                 source=TestSources.EXAMPLE_DRIVE_1.value,
             )
 
+    def test_add_cards_to_order_by_xml(self, chrome_driver, valid_xml):
+        self.load_review_page_with_search_string(chrome_driver, "past in flames")
+
+        self.assert_order_qty(chrome_driver, 1)
+        self.assert_order_bracket(chrome_driver, 18)
+        self.assert_card_state(
+            driver=chrome_driver,
+            slot=0,
+            active_face="front",
+            card=TestCards.PAST_IN_FLAMES_1.value,
+            selected_image=1,
+            total_images=2,
+            source=TestSources.EXAMPLE_DRIVE_1.value,
+        )
+
+        chrome_driver.find_element(By.ID, value="addCardsBtn").click()
+        chrome_driver.find_element(By.ID, value="xmlfile").send_keys(valid_xml)
+        time.sleep(5)
+
+        self.assert_order_qty(chrome_driver, 8)
+        self.assert_order_bracket(chrome_driver, 18)
+        for i in range(1, 5):
+            self.assert_card_state(
+                driver=chrome_driver,
+                slot=i,
+                active_face="front",
+                card=TestCards.BRAINSTORM.value,
+                selected_image=1,
+                total_images=1,
+                source=TestSources.EXAMPLE_DRIVE_1.value,
+            )
+        for i in range(5, 8):
+            self.assert_card_state(
+                driver=chrome_driver,
+                slot=i,
+                active_face="front",
+                card=TestCards.ISLAND.value,
+                selected_image=1,
+                total_images=2,
+                source=TestSources.EXAMPLE_DRIVE_1.value,
+            )
+
     def test_mobile_banner(self, mobile_chrome_driver):
         assert (
             "It seems like you're on a mobile device!"
