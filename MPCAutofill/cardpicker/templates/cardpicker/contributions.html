@@ -1,63 +1,86 @@
 {% extends 'cardpicker/base.html' %}
-
-{% block title %} {{ SITE_NAME }} Contributions {% endblock %}
-
-{% block content %}
-<div class="pt-2">
-    <h2>Contributions</h2>
-    <p>
-        The database contains <b>{{ total_count.3 }}</b> images &#8212 comprised of
-        <b>{{ total_count.0 }}</b> cards, <b>{{ total_count.1 }}</b> card backs, and <b>{{ total_count.2 }}</b> tokens
-        &#8212 from <b>{{ sources|length }}</b> contributors. The database is automatically synced with all sources
-        every day (starting at midnight in NYC) to ensure all changes are recorded.
-    </p>
-    <div class="alert alert-secondary" role="alert">
-        <h3>Contribution Guidelines</h3>
-        <ul>
-            <li>Image filetype must be either <code>png</code> (recommended) or <code>jpeg</code></li>
-            <li>When you have multiple versions of a card in the same folder, use parentheses to differentiate them
-                &#8212 e.g. <code>Image A.png</code> and <code>Image A (Extended).png</code>
-            </li>
-            <li>If a card has multiple names, use an ampersand to separate them
-                &#8212 e.g. <code>Fire & Ice.png</code></li>
-            <li>Store your token images in a folder called <code>Tokens</code> (anywhere in your repository)</li>
-            <li>Store your cardback images in a folder called <code>Cardbacks</code> (anywhere on your repository)</li>
-            <li>Prepend the names of any folders you don't want to be indexed by {{ SITE_NAME }} with <code>!</code>
-                &#8212 e.g. <code>!Misc and Art</code></li>
-            <li>Limit your files to less than 30 MB per image &#8212 this is the maximum that Google Scripts can return
-                in one request, which means the desktop client won't work with images larger than this.
-                As such, images larger than 30 MB will not be indexed.
-            </li>
-        </ul>
-    </div>
-    <table class="table table-hover">
-        <thead>
-        <tr>
-            <th scope="col">Name</th>
-            <th scope="col">Type</th>
-            <th scope="col">Contribution</th>
-        </tr>
-        </thead>
-        <tbody>
-        {% for source in sources %}
-            <tr>
-                <td>
-                {% if source.external_link %}
-                    <a target="_blank" href="{{ source.external_link }}">{{ source.name }}</a>
-                {% else %}
-                    <p>{{ source.name }}</p>
-                {% endif %}
-                <td><p>{{ source.source_type }}</p></td>
-                <td>
-                    <b>{{ source.qty_cards }}</b> card{% if source.qty_cards != '1' %}s{% endif %},
-                    <b>{{ source.qty_cardbacks }}</b> cardback{% if source.qty_cardbacks != '1' %}s{% endif %},
-                    and <b>{{ source.qty_tokens }}</b> token{% if source.qty_tokens != '1' %}s{% endif %},
-                    at <b>{{ source.avgdpi }}</b> DPI on average
-                    &#8212 {{ source.description }}</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
-    {% include "cardpicker/footer.html" %}
-</div>
+{% load static %}
+{% block title %}{{ SITE_NAME }} Contributions{% endblock %}
+{% block scripts %}
+    <script src="{% static 'js/guide.bundle.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'css/contributions.bundle.css' %}">
 {% endblock %}
+{% block content %}
+    <div class="pt-2">
+        <h2>Contributions</h2>
+        <p>
+            The database contains <b>{{ total_count.3 }}</b> images &#8212 comprised of
+            <b>{{ total_count.0 }}</b> cards, <b>{{ total_count.1 }}</b> card backs, and <b>{{ total_count.2 }}</b> tokens
+            &#8212 from <b>{{ sources|length }}</b> contributors. The database is automatically synced with all sources
+            every day (starting at midnight in NYC) to ensure all changes are recorded.
+        </p>
+        <div class="alert alert-secondary" role="alert">
+            <h3>Contribution Guidelines</h3>
+            <ul>
+                <li>
+                    Image filetype must be either <code>png</code> (recommended) or <code>jpeg</code>
+                </li>
+                <li>
+                    When you have multiple versions of a card in the same folder, use parentheses to differentiate them
+                    &#8212 e.g. <code>Image A.png</code> and <code>Image A (Extended).png</code>
+                </li>
+                <li>
+                    If a card has multiple names, use an ampersand to separate them
+                    &#8212 e.g. <code>Fire & Ice.png</code>
+                </li>
+                <li>
+                    Store your token images in a folder called <code>Tokens</code> (anywhere in your repository)
+                </li>
+                <li>
+                    Store your cardback images in a folder called <code>Cardbacks</code> (anywhere on your repository)
+                </li>
+                <li>
+                    Prepend the names of any folders you don't want to be indexed by {{ SITE_NAME }} with <code>!</code>
+                    &#8212 e.g. <code>!Misc and Art</code>
+                </li>
+                <li>
+                    Limit your files to less than 30 MB per image &#8212 this is the maximum that Google Scripts can return
+                    in one request, which means the desktop client won't work with images larger than this.
+                    As such, images larger than 30 MB will not be indexed.
+                </li>
+            </ul>
+        </div>
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th scope="col">Name</th>
+                    <th scope="col">Type</th>
+                    <th scope="col">Contribution</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for source in sources %}
+                    <tr>
+                        <td>
+                            {% if source.external_link %}
+                                <a target="_blank" href="{{ source.external_link }}">{{ source.name }}</a>
+                            {% else %}
+                                <p>{{ source.name }}</p>
+                            {% endif %}
+                            <td>
+                                <p>{{ source.source_type }}</p>
+                            </td>
+                            <td>
+                                <b>{{ source.qty_cards }}</b>
+                                {# djlint:off #}
+                                {% if source.qty_cards != '1' %}cards{% else %}card{% endif %},
+                                <b>{{ source.qty_cardbacks }}</b>
+                                {% if source.qty_cardbacks != '1' %}cardbacks{% else %}cardback{% endif %},
+                                and <b>{{ source.qty_tokens }}</b>
+                                {% if source.qty_tokens != '1' %}tokens{% else %}token{% endif %},
+                                {# djlint:on #}
+                                at <b>{{ source.avgdpi }}</b> DPI on average
+                                &#8212 {{ source.description }}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% include "cardpicker/footer.html" %}
+        </div>
+    {% endblock %}

@@ -14,24 +14,34 @@ If you're here to download the desktop client, check the [Releases]("https://git
 JetBrains supports this project's development through their [Open Source Development licensing](https://jb.gg/OpenSourceSupport).
 
 # Monorepo Structure
-* Web project:
-  * Located in `/MPCAutofill`,
-  * The backend is built with Django 4 and uses Elasticsearch 7 for managing search results,
-      * The engine for database linked to the Django project is not critical - SQLite is fine,
-  * The frontend is built with Bootstrap 5 and jQuery,
-  * Images stored in the Google Drives connected to the project are indexed in Elasticsearch,
-  * Facilitates the generation of XML orders for use with the desktop client,
-  * Intended to be deployed as a web application but can also be spun up locally with Docker.
-      * Note: the Docker bulid is broken at the moment.
-* Desktop client:
-  * Located in `/autofill`,
-  * Responsible for parsing XML orders, downloading images from Google Drive, and automating MPC's order creation interface.
+
+- Web project:
+  - Located in `/MPCAutofill`,
+  - Images stored in the Google Drives connected to the project are indexed in Elasticsearch,
+  - Stack:
+    - Backend:
+      - Django 4,
+      - The database of your choosing (Elasticsearch is fine),
+      - Elasticsearch 7.x,
+      - Google Drive API integration,
+    - Frontend:
+      - jQuery + jQuery UI,
+      - Bootstrap 5,
+      - Webpack + Babel for compiling and bundling the frontend,
+  - Facilitates the generation of XML orders for use with the desktop client,
+  - Intended to be deployed as a web application but can also be spun up locally with Docker.
+    - Note: the Docker build is broken at the moment.
+- Desktop client:
+  - Located in `/autofill`,
+  - Responsible for parsing XML orders, downloading images from Google Drive, and automating MPC's order creation interface.
 
 Each component of the project has its own README; check those out for more details.
 
 # Requirements
-* Python 3.9+ and the packages specified in `requirements.txt` for each component (web project and desktop client).
+
+- Python 3.9+ and the packages specified in `requirements.txt` for each component (web project and desktop client).
 
 # Contributing
-* Please ensure that you install the `pre-commit` Python package and run `pre-commit install` before committing any code to your branch / PR - this will run `black` and `isort` on your code to maintain consistent styling, and run `mypy` to catch any static typing issues.
-* GitHub Actions is configured in this repository to run the Django project's end-to-end tests. To run these, it needs to access the Google Drive API, and does so through a repository secret named `GOOGLE_DRIVE_API_KEY`. If you fork this project, you'll need to set this repository secret for GitHub Actions to run these tests for you.
+
+- Please ensure that you install the `pre-commit` Python package and run `pre-commit install` before committing any code to your branch / PR - this will run `black` and `isort` on your code to maintain consistent styling, and run `mypy` to catch any static typing issues.
+- GitHub Actions is configured in this repository to run the Django project's end-to-end tests. To run these, it needs to access the Google Drive API, and does so through a repository secret named `GOOGLE_DRIVE_API_KEY`. If you fork this project, you'll need to set this repository secret for GitHub Actions to run these tests for you.

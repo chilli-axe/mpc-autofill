@@ -1,9 +1,9 @@
 name: Tests
 on:
   push:
-    branches: [ '*' ]
+    branches: ["*"]
   pull_request:
-    branches: [ master ]
+    branches: [master]
   workflow_dispatch:
 jobs:
   pre-commit:
@@ -59,12 +59,19 @@ jobs:
           sudo dpkg -i elasticsearch-7.17.6-amd64.deb
       - name: Start Elasticsearch
         run: sudo systemctl start elasticsearch.service
+      - name: Install npm
+        uses: actions/setup-node@v3
+      - name: Compile frontend
+        working-directory: MPCAutofill
+        run: |
+          npm ci
+          npm run build
       - name: Write Google Drive API credentials to file
         uses: jsdaniell/create-json@1.1.2
         with:
           name: "client_secrets.json"
           json: ${{ secrets.GOOGLE_DRIVE_API_KEY }}
-          dir: 'MPCAutofill/'
+          dir: "MPCAutofill/"
       - name: Run tests
         run: |
           cd MPCAutofill && pytest .

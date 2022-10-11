@@ -221,7 +221,7 @@ class TestFrontend:
     def assert_search_settings(driver, test_source_rows: list[TestSourceRow]) -> None:
         driver.find_element(By.ID, value="btn_settings").click()
         time.sleep(1)
-        table_rows = driver.find_element(By.ID, value="search-settings-table").find_elements(By.XPATH, value="*")
+        table_rows = driver.find_element(By.ID, value="drive-order-tbody").find_elements(By.XPATH, value="*")
         assert [x.get_attribute("id") for x in table_rows] == [f"{x.key}-row" for x in test_source_rows]
         for test_source_row in test_source_rows:
             assert (
@@ -920,10 +920,11 @@ class TestFrontend:
         assert len(row_elements) == 1
         row_element = row_elements.pop()
         cell_elements = row_element.find_elements(By.XPATH, value=".//td")
-        assert len(cell_elements) == 3
-        identifier_cell, slot_cell, search_query_cell = cell_elements
+        assert len(cell_elements) == 4
+        identifier_cell, slot_cell, face_cell, search_query_cell = cell_elements
         assert identifier_cell.text == "invalid"
         assert slot_cell.text == "1"
+        assert face_cell.text == "front"
         assert search_query_cell.text == "brainstorm"
 
     def test_add_cards_to_order_by_text(self, chrome_driver):
