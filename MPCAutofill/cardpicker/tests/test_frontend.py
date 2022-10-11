@@ -697,6 +697,108 @@ class TestFrontend:
         assert chrome_driver.find_element(By.ID, value="detailedView-class").text == "Card"
         assert chrome_driver.find_element(By.ID, value="detailedView-id").text == TestCards.BRAINSTORM.value.identifier
 
+    def test_delete_card_from_order(self, chrome_driver):
+        self.load_review_page_with_search_string(chrome_driver, "2 brainstorm\n1 island")
+
+        self.assert_order_qty(chrome_driver, 3)
+        self.assert_order_bracket(chrome_driver, 18)
+        for i in range(0, 2):
+            self.assert_card_state(
+                driver=chrome_driver,
+                slot=i,
+                active_face="front",
+                card=TestCards.BRAINSTORM.value,
+                selected_image=1,
+                total_images=1,
+                source=TestSources.EXAMPLE_DRIVE_1.value,
+            )
+        self.assert_card_state(
+            driver=chrome_driver,
+            slot=2,
+            active_face="front",
+            card=TestCards.ISLAND.value,
+            selected_image=1,
+            total_images=2,
+            source=TestSources.EXAMPLE_DRIVE_1.value,
+        )
+
+        chrome_driver.find_element(By.ID, value="slot1-front-remove").click()
+        time.sleep(1)
+        chrome_driver.find_element(By.ID, value="btn_confirm_remove_card").click()
+
+        self.assert_order_qty(chrome_driver, 2)
+        self.assert_order_bracket(chrome_driver, 18)
+        self.assert_card_state(
+            driver=chrome_driver,
+            slot=0,
+            active_face="front",
+            card=TestCards.BRAINSTORM.value,
+            selected_image=1,
+            total_images=1,
+            source=TestSources.EXAMPLE_DRIVE_1.value,
+        )
+        self.assert_card_state(
+            driver=chrome_driver,
+            slot=1,
+            active_face="front",
+            card=TestCards.ISLAND.value,
+            selected_image=1,
+            total_images=2,
+            source=TestSources.EXAMPLE_DRIVE_1.value,
+        )
+
+    def test_delete_multiple_cards_from_order(self, chrome_driver):
+        self.load_review_page_with_search_string(chrome_driver, "2 brainstorm\n2 past in flames")
+
+        self.assert_order_qty(chrome_driver, 4)
+        self.assert_order_bracket(chrome_driver, 18)
+        for i in range(0, 2):
+            self.assert_card_state(
+                driver=chrome_driver,
+                slot=i,
+                active_face="front",
+                card=TestCards.BRAINSTORM.value,
+                selected_image=1,
+                total_images=1,
+                source=TestSources.EXAMPLE_DRIVE_1.value,
+            )
+        for i in range(2, 4):
+            self.assert_card_state(
+                driver=chrome_driver,
+                slot=2,
+                active_face="front",
+                card=TestCards.PAST_IN_FLAMES_1.value,
+                selected_image=1,
+                total_images=2,
+                source=TestSources.EXAMPLE_DRIVE_1.value,
+            )
+
+        chrome_driver.find_element(By.ID, value="slot1-front-remove").click()
+        time.sleep(1)
+        chrome_driver.find_element(By.ID, value="btn_confirm_remove_card_no_reminder").click()
+        chrome_driver.find_element(By.ID, value="slot1-front-remove").click()
+
+        self.assert_order_qty(chrome_driver, 2)
+        self.assert_order_bracket(chrome_driver, 18)
+        self.assert_card_state(
+            driver=chrome_driver,
+            slot=0,
+            active_face="front",
+            card=TestCards.BRAINSTORM.value,
+            selected_image=1,
+            total_images=1,
+            source=TestSources.EXAMPLE_DRIVE_1.value,
+        )
+        self.assert_card_state(
+            driver=chrome_driver,
+            slot=1,
+            active_face="front",
+            card=TestCards.PAST_IN_FLAMES_1.value,
+            selected_image=1,
+            total_images=2,
+            source=TestSources.EXAMPLE_DRIVE_1.value,
+        )
+
     def test_download_single_image(self, chrome_driver, download_folder):
         self.load_review_page_with_search_string(chrome_driver, "brainstorm")
 
