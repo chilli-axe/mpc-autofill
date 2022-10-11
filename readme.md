@@ -15,8 +15,6 @@ JetBrains supports this project's development through their [Open Source Develop
 
 # Monorepo Structure
 
-<<<<<<< HEAD
-
 - Web project:
   - Located in `/MPCAutofill`,
   - Images stored in the Google Drives connected to the project are indexed in Elasticsearch,
@@ -32,7 +30,7 @@ JetBrains supports this project's development through their [Open Source Develop
       - Webpack + Babel for compiling and bundling the frontend,
   - Facilitates the generation of XML orders for use with the desktop client,
   - Intended to be deployed as a web application but can also be spun up locally with Docker.
-    - Note: the Docker bulid is broken at the moment.
+    - Note: the Docker build is broken at the moment.
 - Desktop client:
   - Located in `/autofill`,
   - Responsible for parsing XML orders, downloading images from Google Drive, and automating MPC's order creation interface.
