@@ -139,6 +139,13 @@ class TestFrontend:
             WebDriverWait(driver, 10).until(invisibility_of_element(load_modal))
         time.sleep(2)
 
+    @classmethod
+    def load_review_page_with_search_string(cls, driver, search_string):
+        text_area = driver.find_element(By.ID, value="id_card_list")
+        text_area.send_keys(search_string)
+        driver.find_element(By.ID, value="btn_submit").click()
+        cls.wait_for_search_results_modal(driver)
+
     @staticmethod
     def generate_and_download_xml(driver):
         driver.find_element(By.ID, value="btn_generate_xml").click()
@@ -224,10 +231,7 @@ class TestFrontend:
         assert response.status_code == 200
 
     def test_basic_search_and_xml_generation(self, chrome_driver, download_folder, snapshot):
-        text_area = chrome_driver.find_element(By.ID, value="id_card_list")
-        text_area.send_keys("4 brainstorm\n3 island")
-        chrome_driver.find_element(By.ID, value="btn_submit").click()
-        self.wait_for_search_results_modal(chrome_driver)
+        self.load_review_page_with_search_string(chrome_driver, "4 brainstorm\n3 island")
 
         self.assert_order_qty(chrome_driver, 7)
         self.assert_order_bracket(chrome_driver, 18)
@@ -300,10 +304,7 @@ class TestFrontend:
             assert str(f.read()) == snapshot
 
     def test_toggle_faces(self, chrome_driver):
-        text_area = chrome_driver.find_element(By.ID, value="id_card_list")
-        text_area.send_keys("4 brainstorm\n3 island")
-        chrome_driver.find_element(By.ID, value="btn_submit").click()
-        self.wait_for_search_results_modal(chrome_driver)
+        self.load_review_page_with_search_string(chrome_driver, "4 brainstorm\n3 island")
 
         for i in range(0, 7):
             assert chrome_driver.find_element(By.ID, value=f"slot{i}-front").is_displayed() is True
@@ -314,10 +315,7 @@ class TestFrontend:
             assert chrome_driver.find_element(By.ID, value=f"slot{i}-back").is_displayed() is True
 
     def test_card_version_selection(self, chrome_driver):
-        text_area = chrome_driver.find_element(By.ID, value="id_card_list")
-        text_area.send_keys("2 island\n2 past in flames")
-        chrome_driver.find_element(By.ID, value="btn_submit").click()
-        self.wait_for_search_results_modal(chrome_driver)
+        self.load_review_page_with_search_string(chrome_driver, "2 island\n2 past in flames")
 
         # change version without locking
         for i in range(0, 2):
@@ -426,10 +424,7 @@ class TestFrontend:
         chrome_driver.find_element(By.ID, value="searchtype").find_element(By.XPATH, value="./..").click()
         chrome_driver.find_element(By.ID, value="selectDrivesModal-submit").click()
         time.sleep(1)
-        text_area = chrome_driver.find_element(By.ID, value="id_card_list")
-        text_area.send_keys("past in")
-        chrome_driver.find_element(By.ID, value="btn_submit").click()
-        self.wait_for_search_results_modal(chrome_driver)
+        self.load_review_page_with_search_string(chrome_driver, "past in")
 
         self.assert_card_state(
             driver=chrome_driver,
@@ -452,10 +447,7 @@ class TestFrontend:
         ).click()
         chrome_driver.find_element(By.ID, value="selectDrivesModal-submit").click()
         time.sleep(1)
-        text_area = chrome_driver.find_element(By.ID, value="id_card_list")
-        text_area.send_keys("4 brainstorm\n3 island")
-        chrome_driver.find_element(By.ID, value="btn_submit").click()
-        self.wait_for_search_results_modal(chrome_driver)
+        self.load_review_page_with_search_string(chrome_driver, "4 brainstorm\n3 island")
 
         # no search results
         for slot in range(0, 7):
@@ -538,11 +530,7 @@ class TestFrontend:
     def test_search_in_place(self, chrome_driver):
         # TODO: can we create fixtures for search results to speed up these tests?
         # set up results page with single result
-
-        text_area = chrome_driver.find_element(By.ID, value="id_card_list")
-        text_area.send_keys("brainstorm")
-        chrome_driver.find_element(By.ID, value="btn_submit").click()
-        self.wait_for_search_results_modal(chrome_driver)
+        self.load_review_page_with_search_string(chrome_driver, "brainstorm")
 
         # assertions on the single result
         self.assert_order_qty(chrome_driver, 1)
@@ -574,10 +562,7 @@ class TestFrontend:
     def test_dfc_search(self, chrome_driver):
         call_command("update_dfcs")
         # set up results page with single result
-        text_area = chrome_driver.find_element(By.ID, value="id_card_list")
-        text_area.send_keys("huntmaster of the fells")
-        chrome_driver.find_element(By.ID, value="btn_submit").click()
-        self.wait_for_search_results_modal(chrome_driver)
+        self.load_review_page_with_search_string(chrome_driver, "huntmaster of the fells")
 
         self.assert_order_qty(chrome_driver, 1)
         self.assert_order_bracket(chrome_driver, 18)
@@ -602,10 +587,7 @@ class TestFrontend:
         )
 
     def test_priority_ordering(self, chrome_driver):
-        text_area = chrome_driver.find_element(By.ID, value="id_card_list")
-        text_area.send_keys("island")
-        chrome_driver.find_element(By.ID, value="btn_submit").click()
-        self.wait_for_search_results_modal(chrome_driver)
+        self.load_review_page_with_search_string(chrome_driver, "island")
 
         self.assert_card_state(
             chrome_driver,
@@ -628,10 +610,7 @@ class TestFrontend:
         )
 
     def test_source_default_ordering(self, chrome_driver):
-        text_area = chrome_driver.find_element(By.ID, value="id_card_list")
-        text_area.send_keys("past in flames")
-        chrome_driver.find_element(By.ID, value="btn_submit").click()
-        self.wait_for_search_results_modal(chrome_driver)
+        self.load_review_page_with_search_string(chrome_driver, "past in flames")
 
         self.assert_card_state(
             driver=chrome_driver,
@@ -655,10 +634,7 @@ class TestFrontend:
         chrome_driver.find_element(By.ID, value="selectDrivesModal-submit").click()
         time.sleep(1)
 
-        text_area = chrome_driver.find_element(By.ID, value="id_card_list")
-        text_area.send_keys("past in flames")
-        chrome_driver.find_element(By.ID, value="btn_submit").click()
-        self.wait_for_search_results_modal(chrome_driver)
+        self.load_review_page_with_search_string(chrome_driver, "past in flames")
 
         self.assert_card_state(
             driver=chrome_driver,
@@ -710,10 +686,8 @@ class TestFrontend:
         )
 
     def test_cleared_card_back_name_defaulting_to_selected_common_card_back(self, chrome_driver):
-        text_area = chrome_driver.find_element(By.ID, value="id_card_list")
-        text_area.send_keys("brainstorm")
-        chrome_driver.find_element(By.ID, value="btn_submit").click()
-        self.wait_for_search_results_modal(chrome_driver)
+        self.load_review_page_with_search_string(chrome_driver, "brainstorm")
+
         self.toggle_faces(chrome_driver)
         self.assert_card_state(
             driver=chrome_driver,
@@ -769,10 +743,7 @@ class TestFrontend:
         )
 
     def test_detailed_view_modal(self, chrome_driver):
-        text_area = chrome_driver.find_element(By.ID, value="id_card_list")
-        text_area.send_keys("brainstorm")
-        chrome_driver.find_element(By.ID, value="btn_submit").click()
-        self.wait_for_search_results_modal(chrome_driver)
+        self.load_review_page_with_search_string(chrome_driver, "brainstorm")
 
         # bring up modal
         chrome_driver.find_element(By.ID, value="slot0-front-card-img").click()
@@ -792,10 +763,7 @@ class TestFrontend:
         assert chrome_driver.find_element(By.ID, value="detailedView-id").text == TestCards.BRAINSTORM.value.identifier
 
     def test_download_single_image(self, chrome_driver, download_folder):
-        text_area = chrome_driver.find_element(By.ID, value="id_card_list")
-        text_area.send_keys("brainstorm")
-        chrome_driver.find_element(By.ID, value="btn_submit").click()
-        self.wait_for_search_results_modal(chrome_driver)
+        self.load_review_page_with_search_string(chrome_driver, "brainstorm")
 
         # bring up modal and download the image
         chrome_driver.find_element(By.ID, value="slot0-front-card-img").click()
@@ -807,10 +775,7 @@ class TestFrontend:
         os.path.exists(download_folder / "Brainstorm.png")
 
     def test_download_all_images(self, chrome_driver, download_folder):
-        text_area = chrome_driver.find_element(By.ID, value="id_card_list")
-        text_area.send_keys("4 brainstorm\n3 island\nhuntmaster of the fells")
-        chrome_driver.find_element(By.ID, value="btn_submit").click()
-        self.wait_for_search_results_modal(chrome_driver)
+        self.load_review_page_with_search_string(chrome_driver, "4 brainstorm\n3 island\nhuntmaster of the fells")
 
         # download all images
         chrome_driver.find_element(By.ID, value="btn_download_all").click()
