@@ -527,10 +527,17 @@ class TestFrontend:
             source=TestSources.EXAMPLE_DRIVE_1.value,
         )
 
-    def test_search_in_place(self, chrome_driver):
-        # TODO: can we create fixtures for search results to speed up these tests?
+    @pytest.mark.parametrize(
+        "from_query, from_card, to_query, to_card",
+        [
+            ("brainstorm", TestCards.BRAINSTORM.value, "mountain", TestCards.MOUNTAIN.value),
+            ("brainstorm", TestCards.BRAINSTORM.value, "t:goblin", TestCards.GOBLIN.value),
+            ("t:goblin", TestCards.GOBLIN.value, "brainstorm", TestCards.BRAINSTORM.value),
+        ],
+    )
+    def test_search_in_place(self, chrome_driver, from_query, from_card, to_query, to_card):
         # set up results page with single result
-        self.load_review_page_with_search_string(chrome_driver, "brainstorm")
+        self.load_review_page_with_search_string(chrome_driver, from_query)
 
         # assertions on the single result
         self.assert_order_qty(chrome_driver, 1)
@@ -539,23 +546,23 @@ class TestFrontend:
             driver=chrome_driver,
             slot=0,
             active_face="front",
-            card=TestCards.BRAINSTORM.value,
+            card=from_card,
             selected_image=1,
             total_images=1,
             source=TestSources.EXAMPLE_DRIVE_1.value,
         )
 
         # search in-place
-        self.search_in_place(driver=chrome_driver, slot=0, face="front", search_query="island")
+        self.search_in_place(driver=chrome_driver, slot=0, face="front", search_query=to_query)
 
         # assertion on the changed card state
         self.assert_card_state(
             driver=chrome_driver,
             slot=0,
             active_face="front",
-            card=TestCards.ISLAND.value,
+            card=to_card,
             selected_image=1,
-            total_images=2,
+            total_images=1,
             source=TestSources.EXAMPLE_DRIVE_1.value,
         )
 

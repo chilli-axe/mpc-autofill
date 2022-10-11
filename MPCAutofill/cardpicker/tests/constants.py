@@ -23,6 +23,7 @@ class TestCards(Enum):
     BRAINSTORM = TestCard(identifier="1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5", name="Brainstorm")
     ISLAND = TestCard(identifier="1IDtqSjJ4Yo45AnNA4SplOiN7ewibifMa", name="Island")
     ISLAND_CLASSICAL = TestCard(identifier="1HsvTYs1jFGe1c8U1PnNZ9aB8jkAW7KU0", name="Island (William Bradford)")
+    MOUNTAIN = TestCard(identifier="1-dcs0FEE05MTGiYbKqs9HnRdhXkgtIJG", name="Mountain")
     SIMPLE_CUBE = TestCard(identifier="1JtXL6Ca9nQkvhwZZRR9ZuKA9_DzsFf1V", name="Simple Cube")  # default back
     SIMPLE_LOTUS = TestCard(identifier="1oigI6wz0zA--pNMuExKTs40kBNH6VRP_", name="Simple Lotus")
     HUNTMASTER_OF_THE_FELLS = TestCard(identifier="", name="Huntmaster of the Fells")
