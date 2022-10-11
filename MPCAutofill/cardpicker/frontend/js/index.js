@@ -1,11 +1,10 @@
 import Cookies from "js-cookie";
-import "bootstrap5-toggle";
 import { base_on_load, handle_error } from "./base.js";
 import "bootstrap5-toggle/css/bootstrap5-toggle.min.css";
+import "bootstrap5-toggle";
+
 require("bootstrap/js/dist/modal");
-
 require("bootstrap/js/dist/dropdown");
-
 require("jquery-ui/ui/widgets/sortable");
 require("./base.js"); // this css should be loaded last
 

@@ -244,3 +244,7 @@
     column-count: 4;
   }
 }
+
+.toggle-handle {
+  background-color: white !important;
+}

@@ -1,5 +1,6 @@
 /* global qty, groups, drive_order, fuzzy_search, order */
 
+import "bootstrap5-toggle/css/bootstrap5-toggle.min.css";
 import "bootstrap5-toggle";
 import Modal from "bootstrap/js/dist/modal";
 import Tooltip from "bootstrap/js/dist/tooltip";
@@ -13,9 +14,8 @@ import {
   insert_link,
 } from "./search.js";
 import { selectElementContents, trigger_download } from "./card.js";
-import "bootstrap5-toggle/css/bootstrap5-toggle.min.css";
-require("bootstrap/js/dist/dropdown");
 
+require("bootstrap/js/dist/dropdown");
 require("./base.js"); // this css should be loaded last
 
 function download(filename, text) {
