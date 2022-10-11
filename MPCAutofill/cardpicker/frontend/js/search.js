@@ -248,12 +248,12 @@ export function search_api(
 function get_common_cardback_id(data) {
   // if common cardback not present in data, retrieve the currently selected ID from the dom
   if (data.common_cardback.in_order === "true") {
-    return data.common_cardback.id;
+    return data.common_cardback.identifier;
   } else {
     // attempt to retrieve ID from dom
     const cardback_obj = $("#slot--back").data("obj");
     if (cardback_obj !== undefined) {
-      return cardback_obj.get_curr_img().id;
+      return cardback_obj.get_curr_img().identifier;
     } else {
       return "";
     }
