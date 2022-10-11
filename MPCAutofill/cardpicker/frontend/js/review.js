@@ -236,12 +236,10 @@ export function review_on_load() {
   set_cardstock(order);
   insert_data(drive_order, fuzzy_search, order);
   // enable tooltips
-  // TODO: check this
   const tooltipTriggerList = [].slice.call(
     document.querySelectorAll('[data-bs-toggle="tooltip"]')
   );
   tooltipTriggerList.map(function (tooltipTriggerEl) {
-    // TODO: this was const tooltipList = ...
     return new Tooltip(tooltipTriggerEl);
   });
 }

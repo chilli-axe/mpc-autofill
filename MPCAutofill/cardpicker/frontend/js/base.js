@@ -4,8 +4,8 @@ import Cookies from "js-cookie";
 import Toast from "bootstrap/js/dist/toast";
 
 import "../scss/styles.scss";
-// import "bootswatch/dist/superhero/bootstrap.min.css"; // TODO: read theme from env var and this is super inefficient
 import "../css/custom.css";
+
 // set up ajax to attach the CSRF token to all requests to the server
 // lifted from https://docs.djangoproject.com/en/3.1/ref/csrf/#ajax
 function getCookie(name) {

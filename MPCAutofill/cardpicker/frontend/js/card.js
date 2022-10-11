@@ -188,7 +188,6 @@ export class Card extends CardBase {
     this.elem_padlock.style.display = "none";
     this.elem_remove.style.display = "none";
 
-    // this.elem_name = document.getElementById(this.dom_id + "-mpccard-name");
     this.elem_name.innerHTML = "";
     this.elem_source.innerHTML = "";
     this.elem_slot.innerHTML = "";
