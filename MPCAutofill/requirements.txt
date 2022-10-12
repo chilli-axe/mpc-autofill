@@ -25,4 +25,5 @@ ratelimit
 selenium
 syrupy
 tqdm
+tzdata
 webdriver-manager==3.5.4
