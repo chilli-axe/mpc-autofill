@@ -82,7 +82,7 @@ class TestFrontend:
                 <fronts>
                     <card>
                         <id>{TestCards.BRAINSTORM.value.identifier}</id>
-                        <slots>1,2,0,3</slots>
+                        <slots>0,1,2,3</slots>
                         <name>{TestCards.BRAINSTORM.value.name}.png</name>
                         <query>brainstorm</query>
                     </card>

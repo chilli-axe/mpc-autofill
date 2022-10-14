@@ -119,9 +119,12 @@ export function generate_xml() {
         for (const property in order_map[face][img]) {
           // add this property
           const thisElem = doc.createElement(property);
-          thisElem.appendChild(
-            doc.createTextNode(order_map[face][img][property])
-          );
+          const property_value = order_map[face][img][property];
+          if (property_value instanceof Array) {
+            // ensure card slots are ordered
+            property_value.sort((a, b) => a - b);
+          }
+          thisElem.appendChild(doc.createTextNode(property_value));
           cardElem.appendChild(thisElem);
         }
         // add this element to the face element
