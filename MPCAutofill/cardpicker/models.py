@@ -12,6 +12,7 @@ from django.utils.translation import gettext_lazy
 
 from cardpicker.constants import DATE_FORMAT
 from cardpicker.sources.source_types import SourceTypeChoices
+from cardpicker.tags import Tag
 
 
 class Faces(models.TextChoices):
@@ -261,11 +262,15 @@ class Card(models.Model):
             self.identifier
         )
 
-    def get_tags(self):
+    def set_tags(self, tags: list(Tag)):
+        self.tags = json.dumps(tags)
+
+    def get_tags(self) -> list:
         if not self.tags:
             return []
         try:
-            return json.loads(self.tags)
+            raw_tags = json.loads(self.tags)
+            return list(map(Tag, raw_tags))
         except:
             return []
 
