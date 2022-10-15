@@ -28,6 +28,7 @@ def stand_up_database(elasticsearch) -> None:
         name=TestSources.EXAMPLE_DRIVE_1.value.name,
         identifier=TestSources.EXAMPLE_DRIVE_1.value.identifier,
         source_type=TestSources.EXAMPLE_DRIVE_1.value.source_type,
+        external_link=f"https://drive.google.com/open?id={TestSources.EXAMPLE_DRIVE_1.value.identifier}",
     )
     SourceFactory(
         key=TestSources.EXAMPLE_DRIVE_2.value.key,

@@ -107,7 +107,20 @@ class CardBase {
 
     view_name.innerText = curr_img.name;
     view_img.src = curr_img.medium_thumbnail_url;
-    view_source.innerText = curr_img.source_name;
+    view_source.innerHTML = ""; // destroy all children
+    if (
+      curr_img.source_external_link !== undefined &&
+      curr_img.source_external_link !== null &&
+      curr_img.source_external_link !== ""
+    ) {
+      const source_link_element = document.createElement("a");
+      source_link_element.innerText = curr_img.source_name;
+      source_link_element.href = curr_img.source_external_link;
+      source_link_element.target = "_blank";
+      view_source.append(source_link_element);
+    } else {
+      view_source.innerText = curr_img.source_name;
+    }
     view_source_type.innerText = curr_img.source_type;
     view_dpi.innerText = curr_img.dpi + " DPI";
     view_id.innerText = curr_img.identifier;

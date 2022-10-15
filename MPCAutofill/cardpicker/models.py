@@ -129,6 +129,9 @@ class CardBase(models.Model):
     def get_source_name(self) -> str:
         return self.source.name
 
+    def get_source_external_link(self) -> Optional[str]:
+        return self.source.external_link or None
+
     def get_source_type(self) -> str:
         return SourceTypeChoices[self.source.source_type].label
 

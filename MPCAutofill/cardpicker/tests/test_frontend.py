@@ -689,9 +689,11 @@ class TestFrontend:
             chrome_driver.find_element(By.ID, value="detailedView-img").get_attribute("src")
             == f"https://drive.google.com/thumbnail?sz=w800-h800&id={TestCards.BRAINSTORM.value.identifier}"
         )
+        source_element = chrome_driver.find_element(By.ID, value="detailedView-source")
+        assert source_element.text == TestSources.EXAMPLE_DRIVE_1.value.name
         assert (
-            chrome_driver.find_element(By.ID, value="detailedView-source").text
-            == TestSources.EXAMPLE_DRIVE_1.value.name
+            source_element.find_element(By.XPATH, value=".//a").get_attribute("href")
+            == f"https://drive.google.com/open?id={TestSources.EXAMPLE_DRIVE_1.value.identifier}"
         )
         assert chrome_driver.find_element(By.ID, value="detailedView-sourceType").text == "Google Drive"
         assert chrome_driver.find_element(By.ID, value="detailedView-class").text == "Card"

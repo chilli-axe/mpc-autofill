@@ -16,6 +16,7 @@ common_settings = {"number_of_shards": 5, "number_of_replicas": 0}
 class CardSearch(Document):
     source = fields.TextField(attr="get_source_key")
     source_name = fields.TextField(attr="get_source_name")
+    source_external_link = fields.TextField(attr="get_source_external_link")
     source_type = fields.TextField(attr="get_source_type")
     download_link = fields.TextField(attr="get_download_link")
     small_thumbnail_url = fields.TextField(attr="get_small_thumbnail_url")
@@ -40,6 +41,7 @@ class CardSearch(Document):
 class CardbackSearch(Document):
     source = fields.TextField(attr="get_source_key")
     source_name = fields.TextField(attr="get_source_name")
+    source_external_link = fields.TextField(attr="get_source_external_link")
     source_type = fields.TextField(attr="get_source_type")
     download_link = fields.TextField(attr="get_download_link")
     small_thumbnail_url = fields.TextField(attr="get_small_thumbnail_url")
@@ -64,6 +66,7 @@ class CardbackSearch(Document):
 class TokenSearch(Document):
     source = fields.TextField(attr="get_source_key")
     source_name = fields.TextField(attr="get_source_name")
+    source_external_link = fields.TextField(attr="get_source_external_link")
     source_type = fields.TextField(attr="get_source_type")
     download_link = fields.TextField(attr="get_download_link")
     small_thumbnail_url = fields.TextField(attr="get_small_thumbnail_url")
@@ -95,6 +98,7 @@ def card_to_dict(obj: Union[CardSearch, CardbackSearch, TokenSearch]) -> dict[st
         "priority": obj.priority,
         "source": obj.source,
         "source_name": obj.source_name,
+        "source_external_link": obj.source_external_link,
         "source_verbose": obj.source_verbose,
         "source_type": obj.source_type,
         "dpi": obj.dpi,
