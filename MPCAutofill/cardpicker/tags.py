@@ -14,7 +14,7 @@ class Tag(str, MultiValueEnum):
     NSFW = "NSFW"
 
     @staticmethod
-    def from_card_name(card_name: str) -> list[Tag]:
+    def list_from_card_name(card_name: str) -> list[Tag]:
         tag_set = set()
         pattern = r"\(([^\(\)]+)\)|\[([^\[\]]+)\]" # Get content of () and []
         tag_parts = re.findall(pattern, card_name)

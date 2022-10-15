@@ -2,6 +2,7 @@ import itertools
 import uuid
 from collections import defaultdict
 from datetime import datetime
+import json
 from typing import Any, Optional
 
 from django.contrib.auth.models import User
@@ -197,6 +198,7 @@ class Card(models.Model):
     extension = models.CharField(max_length=200)
     date = models.DateTimeField(default=datetime.now)
     size = models.IntegerField()
+    tags = models.CharField(max_length=200, default="")
 
     def __str__(self) -> str:
         return (
@@ -229,6 +231,7 @@ class Card(models.Model):
             "download_link": self.get_download_link(),
             "small_thumbnail_url": self.get_small_thumbnail_url(),
             "medium_thumbnail_url": self.get_medium_thumbnail_url(),
+            "tags": self.get_tags(),
         }
 
     def get_source_key(self) -> str:
@@ -257,6 +260,14 @@ class Card(models.Model):
         return SourceTypeChoices.get_source_type(SourceTypeChoices[self.source.source_type]).get_medium_thumbnail_url(
             self.identifier
         )
+
+    def get_tags(self):
+        if not self.tags:
+            return []
+        try:
+            return json.loads(self.tags)
+        except:
+            return []
 
     class Meta:
         ordering = ["-priority"]
