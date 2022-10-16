@@ -1,8 +1,8 @@
 import itertools
+import json
 import uuid
 from collections import defaultdict
 from datetime import datetime
-import json
 from typing import Any, Optional
 
 from django.contrib.auth.models import User
