@@ -262,10 +262,10 @@ class Card(models.Model):
             self.identifier
         )
 
-    def set_tags(self, tags: list(Tag)) -> None:
+    def set_tags(self, tags: list[Tag]) -> None:
         self.tags = json.dumps(tags)
 
-    def get_tags(self) -> list(Tag):
+    def get_tags(self) -> list[Tag]:
         if not self.tags:
             return []
         try:
