@@ -3,8 +3,10 @@ from concurrent.futures import ThreadPoolExecutor
 from itertools import groupby
 from typing import Optional, Type
 
+from bulk_sync import bulk_sync
+
 from django.conf import settings
-from django.db import transaction
+from django.db.models import Q
 
 from cardpicker.models import Card, Cardback, Source, Token
 from cardpicker.sources.source_types import Folder, Image, SourceType, SourceTypeChoices
@@ -142,11 +144,10 @@ def transform_images_into_objects(
 
 def bulk_sync_objects(source: Source, cards: list[Card], cardbacks: list[Cardback], tokens: list[Token]) -> None:
     print(f"Synchronising objects to database for source {TEXT_BOLD}{source.name}{TEXT_END}...", end="", flush=True)
+    key_fields = ("identifier",)
     t0 = time.time()
     for object_list, model in [(cards, Card), (cardbacks, Cardback), (tokens, Token)]:
-        with transaction.atomic():
-            model.objects.filter(source=source).delete()
-            model.objects.bulk_create(object_list)  # type: ignore
+        bulk_sync(new_models=object_list, key_fields=key_fields, filters=Q(source_id=source.pk), db_class=model)
     print(f" and done! That took {TEXT_BOLD}{(time.time() - t0):.2f}{TEXT_END} seconds.")
 
 

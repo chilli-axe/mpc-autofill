@@ -11,4 +11,19 @@ class TestUpdateDatabase:
         assert list(Cardback.objects.all().order_by("identifier")) == snapshot(name="cardbacks")
         assert list(Token.objects.all().order_by("identifier")) == snapshot(name="tokens")
 
+    def test_upsert(self, django_settings, stand_up_database):
+        update_database()
+        pk_to_identifier_1 = (
+            {x.pk: x.identifier for x in Card.objects.all()}
+            | {x.pk: x.identifier for x in Cardback.objects.all()}
+            | {x.pk: x.identifier for x in Token.objects.all()}
+        )
+        update_database()
+        pk_to_identifier_2 = (
+            {x.pk: x.identifier for x in Card.objects.all()}
+            | {x.pk: x.identifier for x in Cardback.objects.all()}
+            | {x.pk: x.identifier for x in Token.objects.all()}
+        )
+        assert pk_to_identifier_1 == pk_to_identifier_2
+
     # endregion
