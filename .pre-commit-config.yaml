@@ -37,6 +37,7 @@ repos:
             "pytest~=7.3",
             "ratelimit~=2.2",
             # desktop tool
+            "aenum",
             "attrs~=23.1",
             "click==8.0.4",
             "enlighten~=1.11",
