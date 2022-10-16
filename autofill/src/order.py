@@ -223,6 +223,8 @@ class Details:
             raise ValidationException(f"Order bracket {self.bracket} not supported!")
         if self.stock not in [x.value for x in constants.Cardstocks]:
             raise ValidationException(f"Order cardstock {self.stock} not supported!")
+        if self.stock == constants.Cardstocks.P10 and self.foil == True:
+            raise ValidationException(f"Order cardstock {self.stock} is not supported in foil!")
 
     def __attrs_post_init__(self) -> None:
         try:
