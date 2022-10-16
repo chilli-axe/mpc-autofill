@@ -18,8 +18,6 @@ class Tag(str, MultiValueEnum):
         tag_set = set()
         pattern = r"\(([^\(\)]+)\)|\[([^\[\]]+)\]" # Get content of () and []
         tag_parts = re.findall(pattern, card_name)
-        if tag_parts is None:
-            return []
         cleaned_parts = list(map(lambda x: x[0] if len(x[0]) != 0 else x[1], tag_parts))
         for tag_part in cleaned_parts:
             raw_tags = tag_part.split(",")
