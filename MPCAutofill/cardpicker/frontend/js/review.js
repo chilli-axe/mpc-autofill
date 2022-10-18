@@ -157,13 +157,11 @@ export function handleP10Foil() {
   const e = document.getElementById("cardstock-dropdown");
   const selectedCardstock = e.options[e.selectedIndex].value;
 
-  const foilCheckBox = document.getElementById("cardstock-foil");
-
   if (selectedCardstock === "(P10) Plastic") {
     $(document.getElementById("cardstock-foil")).bootstrapToggle("off"); // Turns it off
-    $(document.getElementById("cardstock-foil")).bootstrapToggle('disable') // Disables the checkbox when P10 is selected
+    $(document.getElementById("cardstock-foil")).bootstrapToggle("disable"); // Disables the checkbox when P10 is selected
   } else {
-    $(document.getElementById("cardstock-foil")).bootstrapToggle('enable') // Enable the checkbox when P10 is selected
+    $(document.getElementById("cardstock-foil")).bootstrapToggle("enable"); // Enable the checkbox when P10 is selected
   }
 }
 
