@@ -151,6 +151,20 @@ export function generate_xml() {
   download("cards.xml", xml);
 }
 
+export function handleP10Foil() {
+  // Cardstock P10 is not available as foil.
+  // Tool tips are unfortunately not supported by bootstrap toggles.
+  const e = document.getElementById("cardstock-dropdown");
+  const selectedCardstock = e.options[e.selectedIndex].value;
+
+  if (selectedCardstock === "(P10) Plastic") {
+    $(document.getElementById("cardstock-foil")).bootstrapToggle("off"); // Turns it off
+    $(document.getElementById("cardstock-foil")).bootstrapToggle("disable"); // Disables the checkbox when P10 is selected
+  } else {
+    $(document.getElementById("cardstock-foil")).bootstrapToggle("enable"); // Enable the checkbox when P10 is selected
+  }
+}
+
 export function download_all() {
   // TODO: can we rewrite this to zip up the requested images?
   // TODO: or download individually without opening one billion windows?
