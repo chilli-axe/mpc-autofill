@@ -38,10 +38,6 @@ COPY MPCAutofill/cardpicker/frontend /MPCAutofill/cardpicker/frontend
 COPY MPCAutofill/package.json /MPCAutofill/package.json
 COPY MPCAutofill/package-lock.json /MPCAutofill/package-lock.json
 
-# Install frontend requirements and compile
-RUN mkdir /MPCAutofill/src && touch /MPCAutofill/src/index.js
-RUN npm install && npm run build
-
 # Copy relevant files from repository
 COPY docker /MPCAutofill/docker
 COPY MPCAutofill /MPCAutofill/MPCAutofill
