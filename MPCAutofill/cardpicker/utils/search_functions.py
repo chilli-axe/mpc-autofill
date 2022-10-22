@@ -1,19 +1,20 @@
 import threading
 from datetime import timedelta
-from typing import Any, Callable, Type, TypeVar, cast
+from typing import Any, Callable, TypeVar, cast
 
 from elasticsearch import Elasticsearch
 from elasticsearch.exceptions import ConnectionError as ElasticConnectionError
-from elasticsearch_dsl.document import Document, Search
+from elasticsearch_dsl.document import Search
 from elasticsearch_dsl.index import Index
-from elasticsearch_dsl.query import Match
+from elasticsearch_dsl.query import Match, Term
 from Levenshtein import distance
 
 from django.conf import settings
 from django.http import HttpRequest
 from django.utils import timezone
 
-from cardpicker.documents import CardbackSearch, CardSearch, TokenSearch
+from cardpicker.documents import CardSearch
+from cardpicker.models import CardTypes
 from cardpicker.utils.sanitisation import to_searchable
 
 thread_local = threading.local()  # Should only be called once per thread
@@ -92,33 +93,38 @@ def text_to_list(input_text: str) -> list[int]:
 
 
 def query_es_card(drive_order: list[str], fuzzy_search: bool, query: str) -> list[dict[str, Any]]:
-    return search_database(drive_order, fuzzy_search, query, CardSearch)
+    return search_database(drive_order, fuzzy_search, query, CardTypes.CARD)
 
 
 @elastic_connection
 def query_es_cardback() -> list[dict[str, Any]]:
     # return all cardbacks in the search index
-    if not Index(CardbackSearch.Index.name).exists():
-        raise SearchExceptions.IndexNotFoundException(CardbackSearch.__name__)
-    s = CardbackSearch.search()
-    hits = s.sort({"priority": {"order": "desc"}}).params(preserve_order=True).scan()
+    if not Index(CardSearch.Index.name).exists():
+        raise SearchExceptions.IndexNotFoundException(CardSearch.__name__)
+    s = CardSearch.search()
+    hits = (
+        s.filter(Term(card_type=CardTypes.CARDBACK))
+        .sort({"priority": {"order": "desc"}})
+        .params(preserve_order=True)
+        .scan()
+    )
     results = [x.to_dict() for x in hits]
     return results
 
 
 def query_es_token(drive_order: list[str], fuzzy_search: bool, query: str) -> list[dict[str, Any]]:
-    return search_database(drive_order, fuzzy_search, query, TokenSearch)
+    return search_database(drive_order, fuzzy_search, query, CardTypes.TOKEN)
 
 
 @elastic_connection
 def search_database(
-    drive_order: list[str], fuzzy_search: bool, query: str, index: Type[Document]
+    drive_order: list[str], fuzzy_search: bool, query: str, card_type: CardTypes
 ) -> list[dict[str, Any]]:
     # search through the database for a given query, over the drives specified in drive_orders,
     # using the search index specified in s (this enables reuse of code between Card and Token search functions)
-    if not Index(index.Index.name).exists():
-        raise SearchExceptions.IndexNotFoundException(index.__name__)
-    s = index.search()
+    if not Index(CardSearch.Index.name).exists():
+        raise SearchExceptions.IndexNotFoundException(CardSearch.__name__)
+    s = CardSearch.search().filter(Term(card_type=card_type))
 
     results = []
 

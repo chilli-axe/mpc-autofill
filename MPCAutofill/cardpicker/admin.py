@@ -1,21 +1,11 @@
 from django.contrib import admin
 
-from .models import Card, Cardback, DFCPair, Source, Token
+from .models import Card, DFCPair, Source
 
 
 # Register your models here.
 @admin.register(Card)
 class AdminCard(admin.ModelAdmin[Card]):
-    list_display = ("identifier", "name", "source", "dpi", "date")
-
-
-@admin.register(Cardback)
-class AdminCardback(admin.ModelAdmin[Cardback]):
-    list_display = ("identifier", "name", "source", "dpi", "date")
-
-
-@admin.register(Token)
-class AdminToken(admin.ModelAdmin[Token]):
     list_display = ("identifier", "name", "source", "dpi", "date")
 
 

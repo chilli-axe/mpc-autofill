@@ -8,7 +8,7 @@ from bulk_sync import bulk_sync
 from django.conf import settings
 from django.db.models import Q
 
-from cardpicker.models import Card, Cardback, Source, Token
+from cardpicker.models import Card, CardTypes, Source
 from cardpicker.sources.source_types import Folder, Image, SourceType, SourceTypeChoices
 from cardpicker.utils import TEXT_BOLD, TEXT_END
 from cardpicker.utils.sanitisation import to_searchable
@@ -43,9 +43,7 @@ def explore_folder(source: Source, source_type: Type[SourceType], root_folder: F
     return image_list
 
 
-def transform_images_into_objects(
-    source: Source, images: list[Image]
-) -> tuple[list[Card], list[Cardback], list[Token]]:
+def transform_images_into_objects(source: Source, images: list[Image]) -> list[Card]:
     """
     Transform `images`, which are all associated with `source`, into a set of Django ORM objects ready to be
     synchronised to the database.
@@ -55,8 +53,9 @@ def transform_images_into_objects(
     t0 = time.time()
 
     cards: list[Card] = []
-    cardbacks: list[Cardback] = []
-    tokens: list[Token] = []
+    card_count = 0
+    cardback_count = 0
+    token_count = 0
 
     for image in images:
         try:
@@ -80,81 +79,58 @@ def transform_images_into_objects(
                 priority += 5
                 source_verbose += " Basics"
 
+            card_type = CardTypes.CARD
             if "token" in image.folder.name.lower():
-                tokens.append(
-                    Token(
-                        identifier=image.id,
-                        name=name,
-                        priority=priority,
-                        source=source,
-                        source_verbose=f"{source_verbose} Tokens",
-                        folder_location=folder_location,
-                        dpi=dpi,
-                        searchq=searchable_name,  # search-friendly card name
-                        searchq_keyword=searchable_name,  # for keyword search
-                        extension=extension,
-                        date=image.created_time,
-                        size=image.size,
-                    )
-                )
+                card_type = CardTypes.TOKEN
+                source_verbose = f"{source_verbose} Tokens"
+                token_count += 1
             elif "cardbacks" in image.folder.name.lower() or "card backs" in image.folder.name.lower():
-                cardbacks.append(
-                    Cardback(
-                        identifier=image.id,
-                        name=name,
-                        priority=priority,
-                        source=source,
-                        source_verbose=f"{source_verbose} Cardbacks",
-                        folder_location=folder_location,
-                        dpi=dpi,
-                        searchq=searchable_name,  # search-friendly card name
-                        searchq_keyword=searchable_name,  # for keyword search
-                        extension=extension,
-                        date=image.created_time,
-                        size=image.size,
-                    )
-                )
+                card_type = CardTypes.CARDBACK
+                source_verbose = f"{source_verbose} Cardbacks"
+                cardback_count += 1
             else:
-                cards.append(
-                    Card(
-                        identifier=image.id,
-                        name=name,
-                        priority=priority,
-                        source=source,
-                        source_verbose=source_verbose,
-                        folder_location=folder_location,
-                        dpi=dpi,
-                        searchq=searchable_name,  # search-friendly card name
-                        searchq_keyword=searchable_name,  # for keyword search
-                        extension=extension,
-                        date=image.created_time,
-                        size=image.size,
-                    )
+                card_count += 1
+
+            cards.append(
+                Card(
+                    identifier=image.id,
+                    card_type=card_type,
+                    name=name,
+                    priority=priority,
+                    source=source,
+                    source_verbose=source_verbose,
+                    folder_location=folder_location,
+                    dpi=dpi,
+                    searchq=searchable_name,  # search-friendly card name
+                    searchq_keyword=searchable_name,  # for keyword search
+                    extension=extension,
+                    date=image.created_time,
+                    size=image.size,
                 )
+            )
         except AssertionError as e:
             print(f"Skipping image **{image.name}** (identifier **{image.id}**) for the following reason: **{e}**")
     print(
-        f" and done! Generated {TEXT_BOLD}{len(cards):,}{TEXT_END} card/s, {TEXT_BOLD}{len(cardbacks):,}{TEXT_END} "
-        f"cardback/s, and {TEXT_BOLD}{len(tokens):,}{TEXT_END} token/s in "
+        f" and done! Generated {TEXT_BOLD}{card_count:,}{TEXT_END} card/s, {TEXT_BOLD}{cardback_count:,}{TEXT_END} "
+        f"cardback/s, and {TEXT_BOLD}{token_count:,}{TEXT_END} token/s in "
         f"{TEXT_BOLD}{(time.time() - t0):.2f}{TEXT_END} seconds."
     )
 
-    return cards, cardbacks, tokens
+    return cards
 
 
-def bulk_sync_objects(source: Source, cards: list[Card], cardbacks: list[Cardback], tokens: list[Token]) -> None:
+def bulk_sync_objects(source: Source, cards: list[Card]) -> None:
     print(f"Synchronising objects to database for source {TEXT_BOLD}{source.name}{TEXT_END}...", end="", flush=True)
     key_fields = ("identifier",)
     t0 = time.time()
-    for object_list, model in [(cards, Card), (cardbacks, Cardback), (tokens, Token)]:
-        bulk_sync(new_models=object_list, key_fields=key_fields, filters=Q(source_id=source.pk), db_class=model)
+    bulk_sync(new_models=cards, key_fields=key_fields, filters=Q(source_id=source.pk), db_class=Card)
     print(f" and done! That took {TEXT_BOLD}{(time.time() - t0):.2f}{TEXT_END} seconds.")
 
 
 def update_database_for_source(source: Source, source_type: Type[SourceType], root_folder: Folder) -> None:
     images = explore_folder(source=source, source_type=source_type, root_folder=root_folder)
-    cards, cardbacks, tokens = transform_images_into_objects(source=source, images=images)
-    bulk_sync_objects(source=source, cards=cards, cardbacks=cardbacks, tokens=tokens)
+    cards = transform_images_into_objects(source=source, images=images)
+    bulk_sync_objects(source=source, cards=cards)
 
 
 def update_database(source_key: Optional[str] = None) -> None:
