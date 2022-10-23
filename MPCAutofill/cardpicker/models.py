@@ -1,10 +1,13 @@
+import itertools
 from datetime import datetime
 from typing import Any, Optional
 
-from django.db import models
-from django.utils import dateformat
+from django.contrib.auth.models import User
+from django.db import models, transaction
+from django.utils import dateformat, timezone
 from django.utils.translation import gettext_lazy
 
+from cardpicker.constants import DATE_FORMAT
 from cardpicker.sources.source_types import SourceTypeChoices
 
 
@@ -17,6 +20,16 @@ class CardTypes(models.TextChoices):
     CARD = ("CARD", gettext_lazy("Card"))
     CARDBACK = ("CARDBACK", gettext_lazy("Cardback"))
     TOKEN = ("TOKEN", gettext_lazy("Token"))
+
+
+class Cardstocks(models.TextChoices):
+    S30_NONFOIL = ("S30_FOIL", gettext_lazy("S30 (Standard Smooth)"))
+    S30_FOIl = ("S30_NONFOIL", gettext_lazy("S30 (Standard Smooth) — Foil"))
+    S33_NONFOIL = ("S33_FOIL", gettext_lazy("S33 (Superior Smooth)"))
+    S33_FOIl = ("S33_NONFOIL", gettext_lazy("S33 (Superior Smooth) — Foil"))
+    M31_NONFOIL = ("M31_FOIL", gettext_lazy("M31 (Linen)"))
+    M31_FOIl = ("M31_NONFOIL", gettext_lazy("M31 (Linen) — Foil"))
+    P10_NONFOIL = ("P10_NONFOIL", gettext_lazy("P10 (Plastic)"))
 
 
 class Source(models.Model):
@@ -119,7 +132,7 @@ class Card(models.Model):
             "dpi": self.dpi,
             "searchq": self.searchq,
             "extension": self.extension,
-            "date": dateformat.format(self.date, "jS F, Y"),
+            "date": dateformat.format(self.date, DATE_FORMAT),
             "size": self.size,
             "download_link": self.get_download_link(),
             "small_thumbnail_url": self.get_small_thumbnail_url(),
@@ -165,3 +178,112 @@ class DFCPair(models.Model):
 
     def __str__(self) -> str:
         return "{} // {}".format(self.front, self.back)
+
+
+# https://simpleisbetterthancomplex.com/article/2021/07/08/what-you-should-know-about-the-django-user-model.html
+
+
+def get_default_cardback() -> Optional[Card]:
+    return Card.objects.filter(card_type=CardTypes.CARDBACK).order_by("-priority").first()
+
+
+class Project(models.Model):
+    key = models.CharField(max_length=50, unique=True)
+    name = models.CharField(max_length=100, unique=True)
+    description = models.TextField(blank=True)
+    user = models.ForeignKey(to=User, on_delete=models.CASCADE)
+    date_created = models.DateTimeField(default=timezone.now)
+    date_modified = models.DateTimeField(default=timezone.now)
+    cardback = models.ForeignKey(to=Card, on_delete=models.SET_NULL, null=True, default=get_default_cardback)
+    cardstock = models.CharField(max_length=20, choices=Cardstocks.choices, default=Cardstocks.S30_NONFOIL)
+
+    def get_project_size(self) -> int:
+        max_slot: Optional[int] = ProjectMember.objects.filter(project=self).aggregate(models.Max("slot"))["slot__max"]
+        if max_slot is None:
+            return 0
+        return max_slot + 1
+
+    def get_project_members(self) -> dict[str, dict[str, list[dict[str, Any]]]]:  # TODO: horrific typing
+        members = list(ProjectMember.objects.filter(project=self))
+        # TODO: consider rewriting this to groupby in SQL
+        return {
+            face: {
+                query: [value.to_dict() for value in more_values]
+                for query, more_values in itertools.groupby(values, key=lambda x: x.query)
+            }
+            for face, values in itertools.groupby(
+                sorted(members, key=lambda x: (x.face, x.query)), key=lambda x: x.face
+            )
+        }
+
+    def set_project_members(self, records: dict[str, dict[str, list[dict[str, Any]]]]) -> None:
+        """
+        Synchronise the members of this project with the contents of `records`.
+
+        :param records: A set of records which follow the schema of `get_project_members`.
+        :return: None
+        """
+        # TODO: protection against bad data here
+
+        card_identifiers = set()
+        for face in records.keys():
+            for query in records[face].keys():
+                for record in records[face][query]:
+                    if (card_identifier := record.get("card_identifier"), None) is not None:
+                        card_identifiers.add(card_identifier)
+
+        card_identifiers_to_pk: dict[str, Card] = {
+            x.identifier: x for x in Card.objects.filter(identifier__in=card_identifiers)
+        }
+
+        members: list[ProjectMember] = []
+        for face in Faces:
+            if (face_members := records.get(face, None)) is not None:
+                for query, values in face_members.items():
+                    for value in values:
+                        card_identifier = value.get("card_identifier", None)
+                        members.append(
+                            ProjectMember(
+                                card=card_identifiers_to_pk[card_identifier] if card_identifier is not None else None,
+                                slot=value["slot"],
+                                query=query,
+                                face=face,
+                            )
+                        )
+
+        with transaction.atomic():
+            ProjectMember.objects.filter(project=self).delete()
+            ProjectMember.objects.bulk_create(members)
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "key": self.key,
+            "name": self.name,
+            "user_username": self.user.username,
+            "date_created": dateformat.format(self.date_created, DATE_FORMAT),
+            "date_modified": dateformat.format(self.date_modified, DATE_FORMAT),
+            "project_size": self.get_project_size(),
+        }
+
+    def __str__(self) -> str:
+        project_size = self.get_project_size()
+        return f"{self.name}: Belongs to {self.user}, has {project_size} card{'s' if project_size != 1 else ''}"
+
+
+class ProjectMember(models.Model):
+    card = models.ForeignKey(to=Card, on_delete=models.SET_NULL, null=True, blank=True)
+    project = models.ForeignKey(to=Project, on_delete=models.CASCADE)
+    query = models.CharField(max_length=200)
+    slot = models.IntegerField()
+    face = models.CharField(max_length=5, choices=Faces.choices, default=Faces.FRONT)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["card", "project", "slot", "face"], name="projectmember_unique")]
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "card_identifier": self.card.identifier if self.card else None,
+            "query": self.query,
+            "slot": self.slot,
+            "face": self.face,
+        }

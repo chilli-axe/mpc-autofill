@@ -5,7 +5,8 @@ from django_elasticsearch_dsl.registries import registry
 
 from django.utils import dateformat
 
-from .models import Card
+from cardpicker.constants import DATE_FORMAT
+from cardpicker.models import Card
 
 
 @registry.register_document
@@ -44,7 +45,7 @@ class CardSearch(Document):
             "dpi": self.dpi,
             "searchq": self.searchq,
             "extension": self.extension,
-            "date": dateformat.format(self.date, "jS F, Y"),
+            "date": dateformat.format(self.date, DATE_FORMAT),
             "size": self.size,
             "download_link": self.download_link,
             "small_thumbnail_url": self.small_thumbnail_url,
