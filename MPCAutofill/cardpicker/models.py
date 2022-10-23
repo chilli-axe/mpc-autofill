@@ -34,6 +34,7 @@ class Cardstocks(models.TextChoices):
 
 class Source(models.Model):
     key = models.CharField(max_length=50, unique=True)  # must be a valid HTML id
+    user = models.ForeignKey(to=User, on_delete=models.SET_NULL, null=True, blank=True)
     name = models.CharField(max_length=50, unique=True)  # human-readable name
     identifier = models.CharField(max_length=200, unique=True)  # e.g. drive ID, root directory path
     source_type = models.CharField(
