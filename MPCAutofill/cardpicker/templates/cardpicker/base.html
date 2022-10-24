@@ -86,16 +86,16 @@
                                         <hr class="dropdown-divider">
                                     </li>
                                     <li>
-                                        <a class="dropdown-item" href="{% url 'logout' %}">Logout</a>
+                                        <a class="dropdown-item" href="{% url 'logout' %}">Log Out</a>
                                     </li>
                                 </ul>
                             </li>
                         {% else %}
                             <li class="nav-item">
-                                <a class="nav-link" href="{% url 'login' %}">Register</a>
+                                <a class="nav-link" href="{% url 'signup' %}">Sign Up</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="{% url 'login' %}">Login</a>
+                                <a class="nav-link" href="{% url 'login' %}">Log In</a>
                             </li>
                         {% endif %}
                     </ul>
