@@ -59,22 +59,45 @@
                         <li class="nav-item">
                             <a class="nav-link" href="/contributions">Contributions</a>
                         </li>
-                    </ul>
-                    <ul class="navbar-nav justify-content-end">
                         <li class="nav-item">
                             <a class="nav-link"
-                               href="https://github.com/chilli-axe/mpc-autofill"
-                               target="_blank">GitHub</a>
+                               href="https://github.com/chilli-axe/mpc-autofill/releases"
+                               target="_blank">Download</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ REDDIT }}" target="_blank">Reddit</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ DISCORD }}" target="_blank">Discord</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/legal">About</a>
-                        </li>
+                    </ul>
+                    <ul class="navbar-nav ms-auto">
+                        {% if user.is_authenticated %}
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle"
+                                   href="#"
+                                   role="button"
+                                   data-bs-toggle="dropdown"
+                                   aria-expanded="false">
+                                    {{ user.username }}
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        <a class="dropdown-item" href="#">Manage Projects</a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="#">Manage Account</a>
+                                    </li>
+                                    <li>
+                                        <hr class="dropdown-divider">
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="{% url 'logout' %}">Logout</a>
+                                    </li>
+                                </ul>
+                            </li>
+                        {% else %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'login' %}">Register</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'login' %}">Login</a>
+                            </li>
+                        {% endif %}
                     </ul>
                 </div>
             </div>

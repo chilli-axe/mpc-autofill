@@ -9,6 +9,7 @@ django-bulk-sync
 django-environ
 django-stubs-ext
 django-user-agents
+django-widget-tweaks
 elasticsearch-dsl>=7.0.0,<8.0.0
 factory-boy
 google-api-python-client

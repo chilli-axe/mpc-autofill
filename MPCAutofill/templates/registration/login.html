@@ -1,0 +1,42 @@
+{% extends 'cardpicker/base.html' %}
+{% load widget_tweaks %}
+{% block content %}
+    <h2>Log In</h2>
+    <div class="container" style="max-width: 576px;">
+        <form method="post" action="{% url 'login' %}">
+            {% csrf_token %}
+            <div class="form-outline mb-4">
+                {{ form.username.label_tag }}
+                {{ form.username|add_class:"form-control" }}
+            </div>
+            <div class="form-outline mb-4">
+                {{ form.password.label_tag }}
+                {{ form.password|add_class:"form-control" }}
+            </div>
+            <a href="{% url 'password_reset' %}">Forgot password?</a>
+            {% comment %}
+  <div class="row mb-4">
+    <div class="col d-flex justify-content-center">
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" value="" id="form2Example31" checked />
+        <label class="form-check-label" for="form2Example31">Remember me</label>
+      </div>
+    </div>
+    <div class="col">
+      <a href="{% url 'password_reset' %}">Forgot password?</a>
+    </div>
+  </div>
+            {% endcomment %}
+            <div class="d-grid">
+                <input class="btn btn-primary mb-4" type="submit" value="Log In">
+                <input type="hidden" name="next" value="{{ next }}">
+            </div>
+            <div class="text-center">
+                <p>
+                    Don't have an account yet? <a href="#!">Create one here!</a>
+                </p>
+            </div>
+        </form>
+    </div>
+    {% include "cardpicker/footer.html" %}
+{% endblock %}
