@@ -5,7 +5,6 @@ from typing import Any, Callable, Optional, TypeVar, Union, cast
 
 from blog.models import BlogPost
 
-from django.contrib.auth.forms import AuthenticationForm
 from django.db import connection
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import redirect, render

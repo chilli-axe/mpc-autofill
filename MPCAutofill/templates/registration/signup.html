@@ -23,21 +23,27 @@
                 {{ form.email.label_tag }}
                 {{ form.email|add_class:"form-control" }}
             </div>
-            <div class="form-outline mb-4"
-                 data-bs-html="true"
-                 data-bs-toggle="tooltip"
-                 data-bs-placement="left"
-                 title="{{ form.password1.help_text }}">
-                {{ form.password1.label_tag }}
-                {{ form.password1|add_class:"form-control" }}
-            </div>
-            <div class="form-outline mb-4"
-                 data-bs-html="true"
-                 data-bs-toggle="tooltip"
-                 data-bs-placement="left"
-                 title="{{ form.password2.help_text }}">
-                {{ form.password2.label_tag }}
-                {{ form.password2|add_class:"form-control" }}
+            <div class="row">
+                <div class="col-6">
+                    <div class="form-outline mb-4"
+                         data-bs-html="true"
+                         data-bs-toggle="tooltip"
+                         data-bs-placement="left"
+                         title="{{ form.password1.help_text }}">
+                        {{ form.password1.label_tag }}
+                        {{ form.password1|add_class:"form-control" }}
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="form-outline mb-4"
+                         data-bs-html="true"
+                         data-bs-toggle="tooltip"
+                         data-bs-placement="left"
+                         title="{{ form.password2.help_text }}">
+                        {{ form.password2.label_tag }}
+                        {{ form.password2|add_class:"form-control" }}
+                    </div>
+                </div>
             </div>
             <div class="d-grid">
                 <input class="btn btn-primary mb-4" type="submit" value="Sign Up">
