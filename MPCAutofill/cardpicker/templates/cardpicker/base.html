@@ -18,9 +18,12 @@
             <meta name="description"
                   content="The easiest way to print kitchen-table proxy cards for Magic: The Gathering (MTG) with MakePlayingCards (MPC). No prior knowledge required.">
         {% endblock %}
-        {% comment %} <script src="{% static 'js/vendor.bundle.js' %}"></script> {% endcomment %}
-        {% block scripts %}{% endblock %}
-        {# any js and css that child templates need to load #}
+        {% block scripts %}
+            {# any js and css that child templates need to load. defaults to configuration required for a static page #}
+            <script src="{% static 'js/static_page.bundle.js' %}"></script>
+            <link rel="stylesheet" href="{% static 'css/static_page.bundle.css' %}">
+            <script type="text/javascript">window.addEventListener('load', Library.static_page.base_on_load, false);</script>
+        {% endblock %}
     </head>
     <body id="id_body" style="touch-action: manipulation;">
         {# Navbar #}

@@ -3,7 +3,6 @@
 import "bootstrap5-toggle/css/bootstrap5-toggle.min.css";
 import "bootstrap5-toggle";
 import Modal from "bootstrap/js/dist/modal";
-import Tooltip from "bootstrap/js/dist/tooltip";
 import {
   insert_data,
   update_qty,
@@ -14,6 +13,7 @@ import {
   insert_link,
 } from "./search.js";
 import { selectElementContents, trigger_download } from "./card.js";
+import { base_on_load } from "./base";
 
 require("bootstrap/js/dist/dropdown");
 require("./base.js"); // this css should be loaded last
@@ -249,16 +249,11 @@ function setup_toasts(toasts) {
 }
 
 export function review_on_load() {
+  base_on_load();
+
   setup_toasts(["maxCardsToast", "errorToast"]);
   set_cardstock(order);
   insert_data(drive_order, fuzzy_search, order);
-  // enable tooltips
-  const tooltipTriggerList = [].slice.call(
-    document.querySelectorAll('[data-bs-toggle="tooltip"]')
-  );
-  tooltipTriggerList.map(function (tooltipTriggerEl) {
-    return new Tooltip(tooltipTriggerEl);
-  });
 }
 
 export {

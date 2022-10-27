@@ -11,7 +11,7 @@ from django.shortcuts import redirect, render
 from django.utils import timezone
 
 from cardpicker.forms import InputCSV, InputLink, InputText, InputXML
-from cardpicker.models import Card, CardTypes, Source
+from cardpicker.models import CardTypes, Source
 from cardpicker.mpcorder import Faces, MPCOrder, ReqTypes
 from cardpicker.sources.source_types import SourceTypeChoices
 from cardpicker.utils.sanitisation import to_searchable

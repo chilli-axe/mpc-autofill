@@ -1,4 +1,4 @@
-/* global pages, context, exception */
+/* global pages, context */
 
 import { base_on_load } from "./base.js";
 import { CardRecent } from "./card.js";
@@ -69,7 +69,7 @@ export function load_new_cards(source) {
 }
 
 export function new_on_load() {
-  base_on_load(exception);
+  base_on_load();
 
   for (const [source, info] of Object.entries(context)) {
     pages[source] = 0;

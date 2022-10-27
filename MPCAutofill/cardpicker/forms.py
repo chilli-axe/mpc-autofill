@@ -12,7 +12,7 @@ class InputText(forms.Form):
                 "6x t:Goblin",
                 "rows": "12",
                 "class": "form-control",
-                "style": "margin-bottom: 5px; width: 100%; height: 100%; background-color: #cfcfcf;",
+                "style": "margin-bottom: 5px; width: 100%; height: 100%",
             }
         ),
         label="",

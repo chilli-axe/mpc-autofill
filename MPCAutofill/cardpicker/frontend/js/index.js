@@ -3,6 +3,7 @@ import { base_on_load, handle_error } from "./base.js";
 import "bootstrap5-toggle/css/bootstrap5-toggle.min.css";
 import "bootstrap5-toggle";
 
+require("bootstrap-icons/font/bootstrap-icons.css");
 require("bootstrap/js/dist/modal");
 require("bootstrap/js/dist/dropdown");
 require("jquery-ui/ui/widgets/sortable");

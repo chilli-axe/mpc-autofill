@@ -8,10 +8,8 @@ module.exports = {
   entry: {
     index: "./cardpicker/frontend/js/index.js",
     review: "./cardpicker/frontend/js/review.js",
-    guide: "./cardpicker/frontend/js/guide.js",
     new: "./cardpicker/frontend/js/new.js",
-    contributions: "./cardpicker/frontend/js/contributions.js",
-    legal: "./cardpicker/frontend/js/legal.js",
+    static_page: "./cardpicker/frontend/js/static_page.js",
   },
   output: {
     filename: "js/[name].bundle.js",
