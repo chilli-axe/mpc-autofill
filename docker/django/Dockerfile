@@ -60,8 +60,8 @@ RUN adduser -u 5678 --disabled-password --gecos "" mpcautofill && \
     chown -R mpcautofill /MPCAutofill
 USER mpcautofill
 
-# Place environment file
-RUN cp docker/django/env.txt MPCAutofill/MPCAutofill/.env
+# Place environment file if one does not already exist
+RUN ./docker/django/copy_env_file.sh
 
 # Prepare folder for static files (create now as user for permissions)
 RUN mkdir -p static
