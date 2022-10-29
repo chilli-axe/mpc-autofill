@@ -54,6 +54,11 @@ def sync_dfcs() -> None:
     meld_data = query_scryfall_paginated(MELD_URL)
     print(f"Identified {len(meld_data)} meld pieces")
     for item in meld_data:
+        if "all_parts" not in item:
+            card_name = item["name"]
+            print(f"Skipping {card_name} (missing key 'all_parts')")
+            continue
+
         card_part_singleton_list = list(filter(lambda part: part["name"] == item["name"], item["all_parts"]))
         meld_result_singleton_list = list(filter(lambda part: part["component"] == "meld_result", item["all_parts"]))
 
