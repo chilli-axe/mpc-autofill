@@ -47,7 +47,7 @@ class TestFrontend:
         return tmp_path_factory.mktemp("downloads")
 
     @pytest.fixture()
-    def chrome_driver(self, download_folder, live_server) -> Chrome:
+    def chrome_driver_without_google_analytics_settings(self, download_folder, live_server) -> Chrome:
         options = Options()
         options.add_argument("--headless")
         options.add_experimental_option("prefs", {"download.default_directory": str(download_folder)})
@@ -57,6 +57,11 @@ class TestFrontend:
         driver.get(live_server.url)
         yield driver
         driver.quit()
+
+    @pytest.fixture()
+    def chrome_driver(self, chrome_driver_without_google_analytics_settings) -> Chrome:
+        chrome_driver_without_google_analytics_settings.add_cookie({"name": "ga_disabled", "value": "false"})
+        yield chrome_driver_without_google_analytics_settings
 
     @pytest.fixture()
     def mobile_chrome_driver(self, live_server, download_folder) -> Chrome:
