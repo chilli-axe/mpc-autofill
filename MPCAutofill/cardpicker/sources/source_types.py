@@ -105,6 +105,7 @@ class GoogleDrive(SourceType):
         print("Retrieving Google Drive folders...")
         bar = tqdm(total=len(sources))
         folders: dict[str, Optional[Folder]] = {}
+        error_drives = []
         for x in sources:
             try:
                 if folder := execute_google_drive_api_call(service.files().get(fileId=x.identifier)):
@@ -113,11 +114,13 @@ class GoogleDrive(SourceType):
                     raise KeyError
             except (googleapiclient.errors.HttpError, KeyError):
                 folders[x.key] = None
-                print(f"Failed on drive: {x.key}")
+                error_drives.append(x.key)
             finally:
                 bar.update(1)
 
         print("...and done!")
+        if error_drives:
+            print(f"Failed to connect to the following drives: {', '.join(error_drives)}")
         return folders
 
     @staticmethod
