@@ -51,6 +51,7 @@ repos:
             "google-api-python-client~=2.86",
             "oauth2client~=4.1",
             "Markdown~=3.4",
+            "psycopg2",
             "tqdm~=4.65",
           ]
         pass_filenames: false

@@ -3,9 +3,11 @@ import json
 import uuid
 from collections import defaultdict
 from datetime import datetime
+from email.policy import default
 from typing import Any, Optional
 
 from django.contrib.auth.models import User
+from django.contrib.postgres.fields import ArrayField
 from django.db import connection, models, transaction
 from django.utils import dateformat, timezone
 from django.utils.translation import gettext_lazy
@@ -199,7 +201,10 @@ class Card(models.Model):
     extension = models.CharField(max_length=200)
     date = models.DateTimeField(default=datetime.now)
     size = models.IntegerField()
-    tags = models.CharField(max_length=200, default="")
+    tags = ArrayField(
+        models.CharField(max_length=20),
+        default=list,  # Empty list as default
+    )
 
     def __str__(self) -> str:
         return (
@@ -263,16 +268,10 @@ class Card(models.Model):
         )
 
     def set_tags(self, tags: list[Tag]) -> None:
-        self.tags = json.dumps(tags)
+        self.tags = tags
 
     def get_tags(self) -> list[Tag]:
-        if not self.tags:
-            return []
-        try:
-            raw_tags = json.loads(self.tags)
-            return list(map(Tag, raw_tags))
-        except:
-            return []
+        return list(map(Tag, self.tags))
 
     class Meta:
         ordering = ["-priority"]

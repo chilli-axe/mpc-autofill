@@ -16,7 +16,7 @@ class Tag(str, MultiValueEnum):
 
     @staticmethod
     def list_from_card_name(card_name: str) -> list[Tag]:
-        tag_set = set()
+        tag_set = set()  # Use set to not have duplicate tags
         pattern = r"\(([^\(\)]+)\)|\[([^\[\]]+)\]"  # Get content of () and []
         tag_parts = re.findall(pattern, card_name)
         cleaned_parts = list(map(lambda x: x[0] if len(x[0]) != 0 else x[1], tag_parts))

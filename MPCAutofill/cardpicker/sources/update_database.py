@@ -71,9 +71,6 @@ def transform_images_into_objects(source: Source, images: list[Image]) -> list[C
             name, extension = image.name.rsplit(".", 1)
             assert bool(searchable_name := to_searchable(name)), "Searchable file name is empty string"
             tag_list = Tag.list_from_card_name(name)
-            tags = ""
-            if len(tag_list) > 0:
-                tags = json.dumps(tag_list)
 
             dpi = 10 * round(int(image.height) * DPI_HEIGHT_RATIO / 10)
             source_verbose = source.name
@@ -115,7 +112,7 @@ def transform_images_into_objects(source: Source, images: list[Image]) -> list[C
                     extension=extension,
                     date=image.created_time,
                     size=image.size,
-                    tags=tags,
+                    tags=tag_list,
                 )
             )
         except AssertionError as e:
