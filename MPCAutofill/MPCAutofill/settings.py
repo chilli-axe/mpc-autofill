@@ -119,7 +119,7 @@ WSGI_APPLICATION = "MPCAutofill.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": env("DATABASE_ENGINE", default="django.db.backends.postgresql"),
-        "NAME": env("DATABASE_NAME", default=os.path.join(BASE_DIR, "card_db.db")),
+        "NAME": env("DATABASE_NAME", default="card_db.db"),
         "USER": env("DATABASE_USER", default="mpcautofill"),
         "PASSWORD": env("DATABASE_PASSWORD", default="mpcautofill"),
         "HOST": env("DATABASE_HOST", default="postgres"),
