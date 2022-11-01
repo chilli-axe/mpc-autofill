@@ -122,7 +122,7 @@ DATABASES = {
         "NAME": env("DATABASE_NAME", default="card_db.db"),
         "USER": env("DATABASE_USER", default="mpcautofill"),
         "PASSWORD": env("DATABASE_PASSWORD", default="mpcautofill"),
-        "HOST": env("DATABASE_HOST", default="postgres"),
+        "HOST": env("DATABASE_HOST", default="localhost"),
         "PORT": env("DATABASE_PORT", default=5432),
     }
 }
