@@ -1,4 +1,5 @@
 import itertools
+import uuid
 from datetime import datetime
 from typing import Any, Optional
 
@@ -189,7 +190,7 @@ def get_default_cardback() -> Optional[Card]:
 
 
 class Project(models.Model):
-    key = models.CharField(max_length=50, unique=True)
+    key = models.UUIDField(default=uuid.uuid4, unique=True)
     name = models.CharField(max_length=100, unique=True)
     description = models.TextField(blank=True)
     user = models.ForeignKey(to=User, on_delete=models.CASCADE)

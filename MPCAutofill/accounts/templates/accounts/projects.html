@@ -4,6 +4,7 @@
     <table class="table table-hover">
         <thead>
             <tr>
+                <th scope="col">Project Key</th>
                 <th scope="col">Project Name</th>
                 <th scope="col">Date Created</th>
                 <th scope="col">Date Modified</th>
@@ -14,6 +15,7 @@
         <tbody>
             {% for project in projects %}
                 <tr>
+                    <td style="vertical-align: middle">{{ project.key }}</td>
                     <td style="vertical-align: middle">{{ project.name }}</td>
                     <td style="vertical-align: middle">{{ project.date_created }}</td>
                     <td style="vertical-align: middle">{{ project.date_modified }}</td>

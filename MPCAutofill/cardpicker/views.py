@@ -196,6 +196,9 @@ def contributions(request: HttpRequest) -> HttpResponse:
     return render(request, "cardpicker/contributions.html", {"sources": sources, "total_count": total_count_f})
 
 
+# region old API
+
+
 @ErrorWrappers.to_json
 def search_multiple(request: HttpRequest) -> HttpResponse:
     # search endpoint function - the frontend requests the search results for this query as JSON
@@ -432,3 +435,10 @@ def insert_link(request: HttpRequest) -> HttpResponse:
     }
 
     return JsonResponse(context)
+
+
+# endregion
+
+# region new API
+
+# endregion
