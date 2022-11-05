@@ -17,12 +17,12 @@
     "babel-loader": "^8.2.5",
     "compression-webpack-plugin": "^10.0.0",
     "css-loader": "^6.7.1",
+    "file-loader": "^6.2.0",
     "mini-css-extract-plugin": "^2.6.1",
     "postcss-loader": "^7.0.1",
     "sass": "^1.55.0",
     "sass-loader": "^13.1.0",
     "style-loader": "^3.3.1",
-    "file-loader": "^6.2.0",
     "webpack": "^5.74.0",
     "webpack-bundle-analyzer": "^4.6.1",
     "webpack-cli": "^4.10.0"
@@ -33,6 +33,7 @@
     "bootstrap-icons": "^1.9.1",
     "bootstrap5-toggle": "^4.3.4",
     "bootswatch": "^5.2.1",
+    "create-react-app": "^1.2.1",
     "jquery": "^3.6.1",
     "jquery-ui": "^1.13.2",
     "js-cookie": "^3.0.1"
