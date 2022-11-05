@@ -28,12 +28,20 @@ os.system("")  # enables ansi escape characters in terminal
     help="Create a PDF export of the card images and do not create a project for MPC.",
     is_flag=True,
 )
-def main(skipsetup: bool, browser: str, exportpdf: bool) -> None:
+@click.option(
+    "-u",
+    "--username"
+)
+@click.option(
+    "-p",
+    "--password"
+)
+def main(skipsetup: bool, browser: str, exportpdf: bool, username: str, password: str) -> None:
     try:
         if exportpdf:
             PdfExporter().execute()
         else:
-            AutofillDriver(driver_callable=browsers[browser]).execute(skipsetup)
+            AutofillDriver(driver_callable=browsers[browser]).execute(skipsetup, username, password)
     except Exception as e:
         print(f"An uncaught exception occurred: {TEXT_BOLD}{e}{TEXT_END}")
         input("Press Enter to exit.")

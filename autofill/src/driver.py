@@ -42,6 +42,8 @@ class AutofillDriver:
     download_bar: enlighten.Counter = attr.ib(init=False, default=None)
     upload_bar: enlighten.Counter = attr.ib(init=False, default=None)
     file_path_to_pid_map: dict[str, str] = {}
+    username: str = None
+    password: str = None
 
     # region initialisation
     def initialise_driver(self) -> None:
@@ -437,12 +439,45 @@ class AutofillDriver:
         self.next_step()
         self.next_step()
 
+        if self.username is not None:
+
+            print("wait 3 more seconds")
+            time.sleep(3)
+
+            self.execute_javascript(f"document.getElementById('chk_appear').checked=true;")
+            self.execute_javascript("oFavCart.updateToProject();")
+
+            print("wait")
+            self.wait()
+            print("wait 3 more seconds")
+            time.sleep(3)
+            print("enter username")
+            txt_email = self.driver.find_element(By.ID, "txt_email")
+            txt_email.clear()
+            txt_email.send_keys(self.username)
+            print("enter password")
+            txt_password = self.driver.find_element(By.ID, "txt_password")
+            txt_password.clear()
+            txt_password.send_keys(self.password)
+            print("login")
+            
+            self.driver.find_element(By.ID, "btn_submit").click()
+
         self.set_state(States.finished)
 
     # region public
 
-    def execute(self, skip_setup: bool, all: bool) -> None:
+    def execute(self, skip_setup: bool, username: str, password: str) -> None:
         t = time.time()
+        self.username = username
+        self.password = password
+
+        link = self.driver.find_element(By.LINK_TEXT, "Sign in")
+        if link is not None:
+            print("link found")
+        else:
+            print("link NOT found")
+
         with ThreadPoolExecutor(max_workers=THREADS) as pool:
             self.order.fronts.download_images(pool, self.download_bar)
             self.order.backs.download_images(pool, self.download_bar)
