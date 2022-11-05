@@ -441,4 +441,9 @@ def insert_link(request: HttpRequest) -> HttpResponse:
 
 # region new API
 
+
+def editor(request: HttpRequest) -> HttpResponse:
+    return render(request, "cardpicker/editor.html")
+
+
 # endregion
