@@ -36,12 +36,19 @@ os.system("")  # enables ansi escape characters in terminal
     "-p",
     "--password"
 )
-def main(skipsetup: bool, browser: str, exportpdf: bool, username: str, password: str) -> None:
+@click.option(
+    "-a",
+    "--all",
+    default=False,
+    help="Create a saved project for each XML file found in the current folder.",
+    is_flag=True,
+)
+def main(skipsetup: bool, browser: str, exportpdf: bool, username: str, password: str, all: bool) -> None:
     try:
         if exportpdf:
             PdfExporter().execute()
         else:
-            AutofillDriver(driver_callable=browsers[browser]).execute(skipsetup, username, password)
+            AutofillDriver(driver_callable=browsers[browser], username=username, password=password, all_files=all).execute(skipsetup)
     except Exception as e:
         print(f"An uncaught exception occurred: {TEXT_BOLD}{e}{TEXT_END}")
         input("Press Enter to exit.")

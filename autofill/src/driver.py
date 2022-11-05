@@ -13,6 +13,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.support.expected_conditions import invisibility_of_element
 from selenium.webdriver.support.ui import Select, WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 from src.constants import THREADS, States
 from src.order import CardImage, CardImageCollection, CardOrder
@@ -34,7 +35,9 @@ class AutofillDriver:
     driver_callable: Callable[[bool], WebDriver] = attr.ib(default=get_chrome_driver)
     headless: bool = attr.ib(default=False)
     starting_url: str = attr.ib(init=False, default="https://www.makeplayingcards.com/design/custom-blank-card.html")
-    order: CardOrder = attr.ib(default=attr.Factory(CardOrder.from_xml_in_folder))
+    #order: CardOrder = attr.ib(default=attr.Factory(CardOrder.from_xml_in_folder))
+    order: CardOrder = attr.ib(default=None)
+    orders: str = attr.ib(default=None)
     state: str = attr.ib(init=False, default=States.initialising)
     action: Optional[str] = attr.ib(init=False, default=None)
     manager: enlighten.Manager = attr.ib(init=False, default=attr.Factory(enlighten.get_manager))
@@ -42,8 +45,9 @@ class AutofillDriver:
     download_bar: enlighten.Counter = attr.ib(init=False, default=None)
     upload_bar: enlighten.Counter = attr.ib(init=False, default=None)
     file_path_to_pid_map: dict[str, str] = {}
-    username: str = None
-    password: str = None
+    username: str = attr.ib(default=None)
+    password: str = attr.ib(default=None)
+    all_files: bool = attr.ib(default=False)
 
     # region initialisation
     def initialise_driver(self) -> None:
@@ -62,9 +66,10 @@ class AutofillDriver:
 
     def configure_bars(self) -> None:
         num_images = len(self.order.fronts.cards) + len(self.order.backs.cards)
-        status_format = "State: {state}, Action: {action}"
+        status_format = "Order: {order}, State: {state}, Action: {action}"
         self.status_bar = self.manager.status_bar(
             status_format=status_format,
+            order=f"{TEXT_BOLD}{self.order.name}{TEXT_END}",
             state=f"{TEXT_BOLD}{self.state}{TEXT_END}",
             action=f"{TEXT_BOLD}N/A{TEXT_END}",
             position=1,
@@ -77,6 +82,13 @@ class AutofillDriver:
         self.upload_bar.refresh()
 
     def __attrs_post_init__(self) -> None:
+        print(f"all_files: {self.all_files}")
+        if self.all_files is False:
+            self.order = CardOrder.from_xml_in_folder()
+        else:
+            self.orders = CardOrder.get_xml_files_in_folder()
+            self.order = CardOrder.from_file_name(self.orders[0])
+            
         self.configure_bars()
         self.order.print_order_overview()
         self.initialise_driver()
@@ -192,8 +204,30 @@ class AutofillDriver:
             pass
 
     def set_project_name(self, name: str) -> None:
-        if name is not None:
-            self.execute_javascript(f"document.getElementById('txt_temporaryname').value='{name}';")
+        if name is not None and self.username is not None and self.password is not None:
+            print("Set project name")
+            txt_temporaryname = self.driver.find_element(By.ID, "txt_temporaryname")
+            txt_temporaryname.clear()
+            txt_temporaryname.send_keys(name)
+
+            self.execute_javascript("oDesign.setTemporarySave();")
+
+            self.wait()
+
+            with self.switch_to_frame("sysifm_loginFrame"):
+
+                print("enter username")
+                txt_email = WebDriverWait(self.driver, 100).until(EC.visibility_of_element_located((By.ID, 'txt_email')))
+                txt_email.clear()
+                txt_email.send_keys(self.username)
+
+                print("enter password")
+                txt_password = self.driver.find_element(By.ID, "txt_password")
+                txt_password.clear()
+                txt_password.send_keys(self.password)
+
+                print("login")
+                self.execute_javascript("btn_submit_onclick();")
 
     # endregion
 
@@ -439,45 +473,19 @@ class AutofillDriver:
         self.next_step()
         self.next_step()
 
-        if self.username is not None:
+        chk_appear = WebDriverWait(self.driver, 100).until(EC.visibility_of_element_located((By.ID, 'chk_appear')))
+        chk_appear.click()
 
-            print("wait 3 more seconds")
-            time.sleep(3)
+        self.execute_javascript("oFavCart.updateToProject();")
 
-            self.execute_javascript(f"document.getElementById('chk_appear').checked=true;")
-            self.execute_javascript("oFavCart.updateToProject();")
-
-            print("wait")
-            self.wait()
-            print("wait 3 more seconds")
-            time.sleep(3)
-            print("enter username")
-            txt_email = self.driver.find_element(By.ID, "txt_email")
-            txt_email.clear()
-            txt_email.send_keys(self.username)
-            print("enter password")
-            txt_password = self.driver.find_element(By.ID, "txt_password")
-            txt_password.clear()
-            txt_password.send_keys(self.password)
-            print("login")
-            
-            self.driver.find_element(By.ID, "btn_submit").click()
+        self.wait();
 
         self.set_state(States.finished)
 
     # region public
 
-    def execute(self, skip_setup: bool, username: str, password: str) -> None:
+    def execute(self, skip_setup: bool) -> None:
         t = time.time()
-        self.username = username
-        self.password = password
-
-        link = self.driver.find_element(By.LINK_TEXT, "Sign in")
-        if link is not None:
-            print("link found")
-        else:
-            print("link NOT found")
-
         with ThreadPoolExecutor(max_workers=THREADS) as pool:
             self.order.fronts.download_images(pool, self.download_bar)
             self.order.backs.download_images(pool, self.download_bar)

@@ -360,4 +360,12 @@ class CardOrder:
             file_name = answers["xml_choice"]
         return cls.from_file_name(file_name)
 
+    @classmethod
+    def get_xml_files_in_folder(cls):
+        xml_glob = list(glob(os.path.join(CURRDIR, "*.xml")))
+        if len(xml_glob) <= 0:
+            input("No XML files found in this directory. Press enter to exit.")
+            sys.exit(0)
+        return xml_glob
+
     # endregion
