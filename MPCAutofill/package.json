@@ -29,6 +29,7 @@
   },
   "dependencies": {
     "@popperjs/core": "^2.11.6",
+    "@reduxjs/toolkit": "^1.9.0",
     "bootstrap": "^5.2.2",
     "bootstrap-icons": "^1.9.1",
     "bootstrap5-toggle": "^4.3.4",
@@ -36,7 +37,8 @@
     "create-react-app": "^1.2.1",
     "jquery": "^3.6.1",
     "jquery-ui": "^1.13.2",
-    "js-cookie": "^3.0.1"
+    "js-cookie": "^3.0.1",
+    "react-redux": "^8.0.5"
   },
   "babel": {
     "presets": [
