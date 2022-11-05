@@ -3,12 +3,13 @@ import time
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
 from typing import Any, Callable, Generator, Optional
+from pathlib import Path
 
 import attr
 import enlighten
 from selenium import webdriver
 from selenium.common import exceptions as sl_exc
-from selenium.common.exceptions import NoAlertPresentException, NoSuchElementException
+from selenium.common.exceptions import NoAlertPresentException, NoSuchElementException, TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.support.expected_conditions import invisibility_of_element
@@ -34,20 +35,22 @@ class AutofillDriver:
     )  # delay initialisation until XML is selected and parsed
     driver_callable: Callable[[bool], WebDriver] = attr.ib(default=get_chrome_driver)
     headless: bool = attr.ib(default=False)
+    login_url: str = attr.ib(init=False, default="https://www.makeplayingcards.com/login.aspx")
     starting_url: str = attr.ib(init=False, default="https://www.makeplayingcards.com/design/custom-blank-card.html")
-    #order: CardOrder = attr.ib(default=attr.Factory(CardOrder.from_xml_in_folder))
     order: CardOrder = attr.ib(default=None)
     orders: str = attr.ib(default=None)
+    order_index: int = attr.ib(default=0)
     state: str = attr.ib(init=False, default=States.initialising)
     action: Optional[str] = attr.ib(init=False, default=None)
     manager: enlighten.Manager = attr.ib(init=False, default=attr.Factory(enlighten.get_manager))
-    status_bar: enlighten.StatusBar = attr.ib(init=False, default=False)
+    status_bar: enlighten.StatusBar = attr.ib(init=False, default=None)
     download_bar: enlighten.Counter = attr.ib(init=False, default=None)
     upload_bar: enlighten.Counter = attr.ib(init=False, default=None)
+    file_bar: enlighten.Counter = attr.ib(init=False, default=None)
     file_path_to_pid_map: dict[str, str] = {}
+    process_all_files: bool = attr.ib(default=False)
     username: str = attr.ib(default=None)
     password: str = attr.ib(default=None)
-    all_files: bool = attr.ib(default=False)
 
     # region initialisation
     def initialise_driver(self) -> None:
@@ -65,35 +68,92 @@ class AutofillDriver:
         self.driver = driver
 
     def configure_bars(self) -> None:
-        num_images = len(self.order.fronts.cards) + len(self.order.backs.cards)
-        status_format = "Order: {order}, State: {state}, Action: {action}"
+        num_images = 1
+        status_format = "File: {filename}, State: {state}, Action: {action}{fill}[{elapsed}]"
         self.status_bar = self.manager.status_bar(
             status_format=status_format,
-            order=f"{TEXT_BOLD}{self.order.name}{TEXT_END}",
-            state=f"{TEXT_BOLD}{self.state}{TEXT_END}",
-            action=f"{TEXT_BOLD}N/A{TEXT_END}",
-            position=1,
+            filename=f"",
+            state=f"",
+            action=f"",
+            autorefresh=True,
+            min_delta=0.5,
+            position=1
         )
-        self.download_bar = self.manager.counter(total=num_images, desc="Images Downloaded", position=2)
-        self.upload_bar = self.manager.counter(total=num_images, desc="Images Uploaded", position=3)
-
+        self.download_bar = self.manager.counter(
+            total=num_images,
+            desc="Images Downloaded",
+            bar_format='{desc}{desc_pad}{percentage:3.0f}%|{bar}| {count:{len_total}d}/{total:d}',
+            position=2
+        )
+        self.upload_bar = self.manager.counter(
+            total=num_images,
+            desc="Images Uploaded",
+            bar_format='{desc}{desc_pad}{percentage:3.0f}%|{bar}| {count:{len_total}d}/{total:d}',
+            position=3
+        )
         self.status_bar.refresh()
         self.download_bar.refresh()
         self.upload_bar.refresh()
+        if self.process_all_files is True:
+            num_file = len(self.orders)
+            self.file_bar = self.manager.counter(
+                total=num_file,
+                desc="File Processed",
+                bar_format='{desc}{desc_pad}{percentage:3.0f}%|{bar}| {count:{len_total}d}/{total:d}',
+                position=4
+            )
+            self.file_bar.refresh()
+
+    def configure_bars_for_current_order(self) -> None:
+        num_images = len(self.order.fronts.cards) + len(self.order.backs.cards)
+        filename = Path(self.order.name).name
+        self.status_bar.update(
+            filename=f"{TEXT_BOLD}{filename}{TEXT_END}",
+            state=f"{TEXT_BOLD}{self.state}{TEXT_END}",
+            action=f"{TEXT_BOLD}N/A{TEXT_END}"
+        )
+        self.download_bar.count = 0
+        self.download_bar.total = num_images
+        self.download_bar.refresh()
+        self.upload_bar.count = 0
+        self.upload_bar.total = num_images
+        self.upload_bar.refresh()
 
     def __attrs_post_init__(self) -> None:
-        print(f"all_files: {self.all_files}")
-        if self.all_files is False:
-            self.order = CardOrder.from_xml_in_folder()
-        else:
+        if self.process_all_files is True:
             self.orders = CardOrder.get_xml_files_in_folder()
-            self.order = CardOrder.from_file_name(self.orders[0])
-            
-        self.configure_bars()
-        self.order.print_order_overview()
+        else:
+            self.order = CardOrder.from_xml_in_folder()
         self.initialise_driver()
-        self.driver.get(self.starting_url)
-        self.set_state(States.defining_order)
+        if self.process_all_files is True:
+            self.login()
+
+    def login(self) -> None:
+        
+        self.driver.get(self.login_url)
+        
+        self.execute_javascript("acceptCookiePolicy();")
+
+        txt_email = WebDriverWait(self.driver, 100).until(EC.visibility_of_element_located((By.ID, 'txt_email')))
+        txt_email.clear()
+        txt_email.send_keys(self.username)
+
+        txt_password = self.driver.find_element(By.ID, "txt_password")
+        txt_password.clear()
+        txt_password.send_keys(self.password)
+
+        self.execute_javascript("btn_submit_onclick();")    
+
+        try:
+            WebDriverWait(self.driver, 5).until(EC.alert_is_present(), 'Timed out waiting for PA creation confirmation popup to appear.')
+            alert = self.driver.switch_to.alert
+            alert.accept()
+            input("Could not login. Please check your credentials. Press Enter to exit.")
+            exit()
+        except TimeoutException:
+            pass
+
+        print("Login successful.\n")
 
     # endregion
 
@@ -135,7 +195,8 @@ class AutofillDriver:
         self.state = state
         self.action = action
         self.status_bar.update(
-            state=f"{TEXT_BOLD}{self.state}{TEXT_END}", action=f"{TEXT_BOLD}{self.action or 'N/A'}{TEXT_END}"
+            state=f"{TEXT_BOLD}{self.state}{TEXT_END}",
+            action=f"{TEXT_BOLD}{self.action or 'N/A'}{TEXT_END}"
         )
         self.status_bar.refresh()
 
@@ -205,29 +266,11 @@ class AutofillDriver:
 
     def set_project_name(self, name: str) -> None:
         if name is not None and self.username is not None and self.password is not None:
-            print("Set project name")
             txt_temporaryname = self.driver.find_element(By.ID, "txt_temporaryname")
             txt_temporaryname.clear()
             txt_temporaryname.send_keys(name)
-
             self.execute_javascript("oDesign.setTemporarySave();")
-
             self.wait()
-
-            with self.switch_to_frame("sysifm_loginFrame"):
-
-                print("enter username")
-                txt_email = WebDriverWait(self.driver, 100).until(EC.visibility_of_element_located((By.ID, 'txt_email')))
-                txt_email.clear()
-                txt_email.send_keys(self.username)
-
-                print("enter password")
-                txt_password = self.driver.find_element(By.ID, "txt_password")
-                txt_password.clear()
-                txt_password.send_keys(self.password)
-
-                print("login")
-                self.execute_javascript("btn_submit_onclick();")
 
     # endregion
 
@@ -418,8 +461,6 @@ class AutofillDriver:
     def insert_fronts(self) -> None:
         self.assert_state(States.inserting_fronts)
         
-        self.set_project_name(self.order.details.name)
-
         self.upload_and_insert_images(self.order.fronts)
 
         self.set_state(States.paging_to_backs)
@@ -437,8 +478,9 @@ class AutofillDriver:
         self.next_step()
         self.wait()
         try:
-            self.driver.find_element(by=By.ID, value="closeBtn").click()
-        except NoSuchElementException:
+            closeBtn = WebDriverWait(self.driver, 5).until(EC.visibility_of_element_located((By.ID, 'closeBtn')))
+            closeBtn.click()
+        except TimeoutException:
             pass
         self.next_step()
 
@@ -455,6 +497,7 @@ class AutofillDriver:
                 # Different cardbacks
                 self.different_images()
             self.handle_alert()  # potential alert here from switching from same image to different images
+            
         self.set_state(States.inserting_backs)
 
     def insert_backs(self) -> None:
@@ -471,21 +514,26 @@ class AutofillDriver:
         self.assert_state(States.paging_to_review)
 
         self.next_step()
+
+        if self.process_all_files is True:
+            self.wait()
+            # Give the project a name before going to the last step.
+            self.set_project_name(self.order.details.name)
+
         self.next_step()
 
-        chk_appear = WebDriverWait(self.driver, 100).until(EC.visibility_of_element_located((By.ID, 'chk_appear')))
-        chk_appear.click()
-
-        self.execute_javascript("oFavCart.updateToProject();")
-
-        self.wait();
+        if self.process_all_files is True:
+            chk_appear = WebDriverWait(self.driver, 100).until(EC.visibility_of_element_located((By.ID, 'chk_appear')))
+            chk_appear.click()
+            self.execute_javascript("oFavCart.updateToProject();")
+            print(f"Project {TEXT_BOLD}{self.order.details.name}{TEXT_END} added to you Saved Projects.\n")
 
         self.set_state(States.finished)
 
     # region public
 
-    def execute(self, skip_setup: bool) -> None:
-        t = time.time()
+    def execute_current_order(self, skip_setup: bool) -> None:
+        self.driver.get(self.starting_url)
         with ThreadPoolExecutor(max_workers=THREADS) as pool:
             self.order.fronts.download_images(pool, self.download_bar)
             self.order.backs.download_images(pool, self.download_bar)
@@ -505,28 +553,47 @@ class AutofillDriver:
                 self.redefine_order()
 
             else:
-                print(
-                    textwrap.dedent(
-                        f"""
-                        Configuring a new order. If you'd like to continue uploading cards to an existing project,
-                        start the program with the {TEXT_BOLD}--skipsetup{TEXT_END} option (in command prompt or terminal)
-                        and follow the printed instructions.
+                self.set_state(States.defining_order)
+                if self.process_all_files is False:
+                    print(
+                        textwrap.dedent(
+                            f"""
+                            Configuring a new order. If you'd like to continue uploading cards to an existing project,
+                            start the program with the {TEXT_BOLD}--skipsetup{TEXT_END} option (in command prompt or terminal)
+                            and follow the printed instructions.
 
-                        Windows:
-                            {TEXT_BOLD}autofill-windows.exe --skipsetup{TEXT_END}
-                        macOS:
-                            {TEXT_BOLD}./autofill-macos --skipsetup{TEXT_END}
-                        Linux:
-                            {TEXT_BOLD}./autofill-linux --skipsetup{TEXT_END}
-                        """
+                            Windows:
+                                {TEXT_BOLD}autofill-windows.exe --skipsetup{TEXT_END}
+                            macOS:
+                                {TEXT_BOLD}./autofill-macos --skipsetup{TEXT_END}
+                            Linux:
+                                {TEXT_BOLD}./autofill-linux --skipsetup{TEXT_END}
+                            """
+                        )
                     )
-                )
                 self.define_order()
                 self.page_to_fronts()
             self.insert_fronts()
             self.page_to_backs(skip_setup)
             self.insert_backs()
             self.page_to_review()
+
+    def execute(self, skip_setup: bool) -> None:
+        t = time.time()
+        self.configure_bars()
+
+        if self.process_all_files is True:
+            for order in self.orders:
+                self.order = CardOrder.from_file_name(order)
+                self.configure_bars_for_current_order()
+                self.order.print_order_overview()
+                self.execute_current_order(skip_setup)
+                self.file_bar.update()
+        else:
+            self.configure_bars_for_current_order()
+            self.order.print_order_overview()
+            self.execute_current_order(skip_setup)
+        
         log_hours_minutes_seconds_elapsed(t)
         input(
             textwrap.dedent(

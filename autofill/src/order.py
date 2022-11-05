@@ -273,7 +273,7 @@ class CardOrder:
         print(
             f"Your order has a total of {TEXT_BOLD}{self.details.quantity}{TEXT_END} cards, in the MPC bracket of up "
             f"to {TEXT_BOLD}{self.details.bracket}{TEXT_END} cards.\n{TEXT_BOLD}{self.details.stock}{TEXT_END} "
-            f"cardstock ({TEXT_BOLD}{'foil' if self.details.foil else 'nonfoil'}{TEXT_END}).\n "
+            f"cardstock ({TEXT_BOLD}{'foil' if self.details.foil else 'nonfoil'}{TEXT_END}). "
         )
 
     # endregion
@@ -332,7 +332,6 @@ class CardOrder:
         except ParseError:
             input("Your XML file contains a syntax error so it can't be processed. Press Enter to exit.")
             sys.exit(0)
-        print(f"Parsing XML file {TEXT_BOLD}{file_name}{TEXT_END}...")
         order = cls.from_element(xml.getroot(), name=file_name)
         return order
 
@@ -366,6 +365,8 @@ class CardOrder:
         if len(xml_glob) <= 0:
             input("No XML files found in this directory. Press enter to exit.")
             sys.exit(0)
+        else:
+            print(f"{len(xml_glob)} order(s) found in current folder.")
         return xml_glob
 
     # endregion

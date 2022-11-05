@@ -1,6 +1,7 @@
 import os
 
 import click
+import textwrap
 
 from src.constants import browsers
 from src.driver import AutofillDriver
@@ -29,6 +30,13 @@ os.system("")  # enables ansi escape characters in terminal
     is_flag=True,
 )
 @click.option(
+    "-a",
+    "--all",
+    default=False,
+    help="Create a saved project for each XML file found in the current folder.",
+    is_flag=True,
+)
+@click.option(
     "-u",
     "--username"
 )
@@ -36,19 +44,18 @@ os.system("")  # enables ansi escape characters in terminal
     "-p",
     "--password"
 )
-@click.option(
-    "-a",
-    "--all",
-    default=False,
-    help="Create a saved project for each XML file found in the current folder.",
-    is_flag=True,
-)
-def main(skipsetup: bool, browser: str, exportpdf: bool, username: str, password: str, all: bool) -> None:
+def main(skipsetup: bool, browser: str, exportpdf: bool, all: bool, username: str, password: str) -> None:
     try:
         if exportpdf:
             PdfExporter().execute()
         else:
-            AutofillDriver(driver_callable=browsers[browser], username=username, password=password, all_files=all).execute(skipsetup)
+            if all is True:
+                print(f"The XML files found in the current folder will be saved as {TEXT_BOLD}Saved Projects{TEXT_END} in your MPC account.")
+                if username is None:
+                    username = click.prompt("Enter your MPC username", type=str)
+                if password is None:
+                    password = click.prompt("Enter your MPC password", hide_input=True, type=str)
+            AutofillDriver(driver_callable=browsers[browser], process_all_files=all, username=username, password=password).execute(skipsetup)
     except Exception as e:
         print(f"An uncaught exception occurred: {TEXT_BOLD}{e}{TEXT_END}")
         input("Press Enter to exit.")
