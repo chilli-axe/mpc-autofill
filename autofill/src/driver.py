@@ -189,6 +189,10 @@ class AutofillDriver:
         except NoAlertPresentException:
             pass
 
+    def set_project_name(self, name: str) -> None:
+        if name is not None:
+            self.execute_javascript(f"document.getElementById('txt_temporaryname').value='{name}';")
+
     # endregion
 
     # region uploading
@@ -309,7 +313,7 @@ class AutofillDriver:
     # endregion
 
     # region define order
-
+    
     def define_order(self) -> None:
         self.assert_state(States.defining_order)
         # Select card stock
@@ -377,6 +381,9 @@ class AutofillDriver:
 
     def insert_fronts(self) -> None:
         self.assert_state(States.inserting_fronts)
+        
+        self.set_project_name(self.order.details.name)
+
         self.upload_and_insert_images(self.order.fronts)
 
         self.set_state(States.paging_to_backs)
@@ -434,7 +441,7 @@ class AutofillDriver:
 
     # region public
 
-    def execute(self, skip_setup: bool) -> None:
+    def execute(self, skip_setup: bool, all: bool) -> None:
         t = time.time()
         with ThreadPoolExecutor(max_workers=THREADS) as pool:
             self.order.fronts.download_images(pool, self.download_bar)
