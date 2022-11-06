@@ -11,12 +11,14 @@ from django.shortcuts import redirect, render
 from django.utils import timezone
 
 from cardpicker.forms import InputCSV, InputLink, InputText, InputXML
-from cardpicker.models import CardTypes, Source
+from cardpicker.models import CardTypes, DFCPair, Source
 from cardpicker.mpcorder import Faces, MPCOrder, ReqTypes
 from cardpicker.sources.source_types import SourceTypeChoices
 from cardpicker.utils.sanitisation import to_searchable
 from cardpicker.utils.search_functions import (
     SearchExceptions,
+    SearchQuery,
+    SearchSettings,
     build_context,
     ping_elasticsearch,
     query_es_card,
@@ -444,6 +446,53 @@ def insert_link(request: HttpRequest) -> HttpResponse:
 
 def editor(request: HttpRequest) -> HttpResponse:
     return render(request, "cardpicker/editor.html")
+
+
+def api_function_1(request: HttpRequest) -> HttpResponse:
+    """
+    Return the first page of search results for a given list of queries.
+    Each query should be of the form {card name, card type}.
+    This function should also accept a set of search settings in a standard format.
+    Return a dictionary of search results of the following form:
+    {(card name, card type): {"num_hits": num_hits, "hits": [list of Card dicts]}
+    and it's assumed that `hits` starts from the first hit.
+    """
+
+    search_settings = SearchSettings.from_request(request)
+    queries = SearchQuery.list_from_request(request)
+    results = {}
+    for query in queries:
+        results[(query.query, query.card_type)] = query.retrieve_card_documents(
+            search_settings=search_settings, all_results=False
+        )
+    return JsonResponse({"results": results})
+
+
+def api_function_2(request: HttpRequest) -> HttpResponse:
+    """
+    Return all *other* search results for the given query.
+    Given that `api_function_1` returned the first page of hits,
+    this function returns all hits that weren't returned by that function.
+    The query should be of the form {card name, card type}.
+    This function should also accept a set of search settings in a standard format.
+    Return a list of Card dicts
+    """
+
+    search_settings = SearchSettings.from_request(request)
+    query = SearchQuery.from_request(request)
+    if query is not None:
+        result = query.retrieve_card_documents(search_settings=search_settings, all_results=True)
+        return JsonResponse({"result": result})
+    return JsonResponse({"result": ""})
+
+
+def api_function_3(request: HttpRequest) -> HttpResponse:
+    """
+    Return a list of double-faced cards.
+    """
+
+    transforms = dict((x.front_searchable, x.back_searchable) for x in DFCPair.objects.all())
+    return JsonResponse({"transforms": transforms})
 
 
 # endregion

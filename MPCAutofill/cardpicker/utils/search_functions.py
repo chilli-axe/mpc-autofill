@@ -1,6 +1,7 @@
 import threading
+from dataclasses import dataclass, field
 from datetime import timedelta
-from typing import Any, Callable, TypeVar, cast
+from typing import Any, Callable, Optional, TypeVar, Union, cast
 
 from elasticsearch import Elasticsearch
 from elasticsearch.exceptions import ConnectionError as ElasticConnectionError
@@ -13,8 +14,9 @@ from django.conf import settings
 from django.http import HttpRequest
 from django.utils import timezone
 
+from cardpicker.constants import PAGE_SIZE
 from cardpicker.documents import CardSearch
-from cardpicker.models import CardTypes
+from cardpicker.models import CardTypes, Source
 from cardpicker.utils.sanitisation import to_searchable
 
 thread_local = threading.local()  # Should only be called once per thread
@@ -62,6 +64,7 @@ def elastic_connection(func: F) -> F:
     return cast(F, wrapper)
 
 
+# region old API
 def build_context(drive_order: list[str], fuzzy_search: bool, order: dict[str, Any], qty: int) -> dict[str, Any]:
     context = {
         "drive_order": drive_order,
@@ -178,3 +181,117 @@ def search_new(s: Search, source_key: str, page: int = 0) -> dict[str, Any]:
         results["more"] = "true"
 
     return results
+
+
+# endregion
+
+# region new API
+
+
+@dataclass(frozen=True, eq=True)
+class SearchSettings:
+    fuzzy_search: bool = field(default=False)
+    card_sources: list[str] = field(default_factory=list)
+    cardback_sources: list[str] = field(default_factory=list)
+    min_dpi: Optional[int] = None
+    max_dpi: Optional[int] = None
+
+    @classmethod
+    def from_request(cls, request: HttpRequest) -> "SearchSettings":
+        fuzzy_search = request.POST.get("fuzzy_search", "false") == "true"
+
+        sources: set[str] = {x.key for x in Source.objects}
+
+        card_sources: list[str] = []
+        if (card_sources_string := request.POST.get("card_sources")) is not None:
+            card_source_keys = card_sources_string.split(",")
+            for card_source_key in card_source_keys:
+                if card_source_key in sources:
+                    card_sources.append(card_source_key)
+
+        cardback_sources: list[str] = []
+        if (cardback_sources_string := request.POST.get("cardback_sources")) is not None:
+            cardback_source_keys = cardback_sources_string.split(",")
+            for cardback_source_key in cardback_source_keys:
+                if cardback_source_key in sources:
+                    cardback_sources.append(cardback_source_key)
+
+        min_dpi = None
+        max_dpi = None
+        min_dpi_string = request.POST.get("min_dpi", None)
+        max_dpi_string = request.POST.get("max_dpi", None)
+        if min_dpi_string and max_dpi_string:
+            min_dpi = int(min_dpi_string)
+            max_dpi = int(max_dpi_string)
+
+        return cls(
+            fuzzy_search=fuzzy_search,
+            card_sources=card_sources,
+            cardback_sources=cardback_sources,
+            min_dpi=min_dpi,
+            max_dpi=max_dpi,
+        )
+
+
+@dataclass(frozen=True, eq=True)
+class SearchQuery:
+    query: str
+    card_type: CardTypes
+
+    @classmethod
+    def from_request(cls, dict_: Union[dict[str, Optional[str]], HttpRequest]) -> Optional["SearchQuery"]:
+        query = dict_.get("query", None)
+        card_type = dict_.get("card_type", None)
+        card_types = {str(x) for x in CardTypes}
+        if query and card_type in card_types:
+            return SearchQuery(query=query, card_type=CardTypes[card_type])
+        return None
+
+    @classmethod
+    def list_from_request(cls, request: HttpRequest) -> list["SearchQuery"]:
+        # uniqueness of queries guaranteed
+        query_dicts = request.POST.get("queries", [])
+        queries = set()
+        if query_dicts:
+            for query_dict in query_dicts:
+                query = cls.from_request(query_dict)
+                if query is not None:
+                    queries.add(query)
+        return sorted(queries, key=lambda x: (x.query, x.card_type))
+
+    @elastic_connection
+    def retrieve_card_documents(
+        self, search_settings: SearchSettings, all_results: bool = False
+    ) -> list[dict[str, Any]]:
+        if not Index(CardSearch.Index.name).exists():
+            raise SearchExceptions.IndexNotFoundException(CardSearch.__name__)
+        s = CardSearch.search().filter(Term(card_type=str(self.card_type)))
+
+        searchable_query = to_searchable(self.query)
+
+        # set up search - match the query and use the AND operator
+        if search_settings.fuzzy_search:
+            match = Match(searchq={"query": searchable_query, "operator": "AND"})
+        else:
+            match = Match(searchq_keyword={"query": searchable_query, "operator": "AND"})
+        s = s.query(match).sort({"priority": {"order": "desc"}})
+
+        if all_results:
+            hits = s.params(preserve_order=True).scan()
+        else:
+            hits = s[0:PAGE_SIZE]
+        hits_as_dicts = [x.to_dict() for x in hits]
+
+        results = []
+        if hits_as_dicts:
+            if search_settings.fuzzy_search:
+                # sort fuzzy search results by how closely they match the input search query
+                hits_as_dicts.sort(key=lambda x: distance(x["searchq"], searchable_query))
+            for source_key in search_settings.card_sources:
+                # sort and filter by source order
+                results += [x for x in hits_as_dicts if x["source"] == source_key]
+
+        return results
+
+
+# endregion
