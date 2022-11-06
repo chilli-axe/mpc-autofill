@@ -81,7 +81,6 @@ class BaseTags(str, Enum):
 
 
 class DetailsTags(str, Enum):
-    name = "name"
     quantity = "quantity"
     bracket = "bracket"
     stock = "stock"

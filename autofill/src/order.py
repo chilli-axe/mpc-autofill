@@ -208,7 +208,6 @@ class CardImageCollection:
 
 @attr.s
 class Details:
-    name: str = attr.ib(default=None)
     quantity: int = attr.ib(default=0)
     bracket: int = attr.ib(default=0)
     stock: str = attr.ib(default=constants.Cardstocks.S30.value)
@@ -242,7 +241,6 @@ class Details:
     @classmethod
     def from_element(cls, element: Element) -> "Details":
         details_dict = unpack_element(element, [x.value for x in constants.DetailsTags])
-        name = details_dict[constants.DetailsTags.name].text
         quantity = 0
         if (quantity_text := details_dict[constants.DetailsTags.quantity].text) is not None:
             quantity = int(quantity_text)
@@ -252,7 +250,7 @@ class Details:
         stock = details_dict[constants.DetailsTags.stock].text or constants.Cardstocks.S30
         foil: bool = details_dict[constants.DetailsTags.foil].text == "true"
 
-        details = cls(name=name, quantity=quantity, bracket=bracket, stock=stock, foil=foil)
+        details = cls(quantity=quantity, bracket=bracket, stock=stock, foil=foil)
         return details
 
     # endregion
@@ -300,8 +298,6 @@ class CardOrder:
     def from_element(cls, element: Element, name: Optional[str] = None) -> "CardOrder":
         root_dict = unpack_element(element, [x.value for x in constants.BaseTags])
         details = Details.from_element(root_dict[constants.BaseTags.details])
-        if details.name is None:
-            details.name = Path(name).stem
         fronts = CardImageCollection.from_element(
             element=root_dict[constants.BaseTags.fronts], num_slots=details.quantity, face=constants.Faces.front
         )
