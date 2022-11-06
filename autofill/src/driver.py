@@ -39,7 +39,6 @@ class AutofillDriver:
     starting_url: str = attr.ib(init=False, default="https://www.makeplayingcards.com/design/custom-blank-card.html")
     order: CardOrder = attr.ib(default=None)
     orders: str = attr.ib(default=None)
-    order_index: int = attr.ib(default=0)
     state: str = attr.ib(init=False, default=States.initialising)
     action: Optional[str] = attr.ib(init=False, default=None)
     manager: enlighten.Manager = attr.ib(init=False, default=attr.Factory(enlighten.get_manager))
