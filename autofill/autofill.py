@@ -1,7 +1,6 @@
 import os
 
 import click
-import textwrap
 
 from src.constants import browsers
 from src.driver import AutofillDriver
