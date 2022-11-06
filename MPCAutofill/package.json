@@ -13,6 +13,8 @@
   "devDependencies": {
     "@babel/core": "^7.19.3",
     "@babel/preset-env": "^7.19.4",
+    "@babel/preset-react": "^7.18.6",
+    "@types/react-dom": "^18.0.8",
     "autoprefixer": "^10.4.12",
     "babel-loader": "^8.2.5",
     "compression-webpack-plugin": "^10.0.0",
@@ -34,11 +36,13 @@
     "bootstrap-icons": "^1.9.1",
     "bootstrap5-toggle": "^4.3.4",
     "bootswatch": "^5.2.1",
-    "create-react-app": "^1.2.1",
     "jquery": "^3.6.1",
     "jquery-ui": "^1.13.2",
     "js-cookie": "^3.0.1",
-    "react-redux": "^8.0.5"
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-redux": "^8.0.5",
+    "ts-loader": "^9.4.1"
   },
   "babel": {
     "presets": [

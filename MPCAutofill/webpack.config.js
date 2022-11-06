@@ -10,6 +10,10 @@ module.exports = {
     review: "./cardpicker/frontend/js/review.js",
     new: "./cardpicker/frontend/js/new.js",
     static_page: "./cardpicker/frontend/js/static_page.js",
+    editor: "./cardpicker/frontend/js/editor.tsx",
+  },
+  resolve: {
+    extensions: [".tsx", ".ts", ".js"],
   },
   output: {
     filename: "js/[name].bundle.js",
@@ -19,12 +23,17 @@ module.exports = {
   module: {
     rules: [
       {
+        test: /\.tsx?$/,
+        use: "ts-loader",
+        exclude: /node_modules/,
+      },
+      {
         test: /\.m?js$/,
         exclude: /(node_modules|bower_components)/,
         use: {
           loader: "babel-loader",
           options: {
-            presets: ["@babel/preset-env"],
+            presets: ["@babel/preset-env", "@babel/preset-react"],
           },
         },
       },
