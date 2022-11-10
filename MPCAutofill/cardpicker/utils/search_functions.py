@@ -6,7 +6,7 @@ from elasticsearch import Elasticsearch
 from elasticsearch.exceptions import ConnectionError as ElasticConnectionError
 from elasticsearch_dsl.document import Search
 from elasticsearch_dsl.index import Index
-from elasticsearch_dsl.query import Match, Term
+from elasticsearch_dsl.query import Bool, Match, Term, Terms
 from Levenshtein import distance
 
 from django.conf import settings
@@ -120,13 +120,14 @@ def query_es_token(drive_order: list[str], fuzzy_search: bool, query: str) -> li
 def search_database(
     drive_order: list[str], fuzzy_search: bool, query: str, card_type: CardTypes
 ) -> list[dict[str, Any]]:
-    # search through the database for a given query, over the drives specified in drive_orders,
-    # using the search index specified in s (this enables reuse of code between Card and Token search functions)
+    # search through the database for a given query, over the drives specified in drive_orders, filtering by `card_type`
     if not Index(CardSearch.Index.name).exists():
         raise SearchExceptions.IndexNotFoundException(CardSearch.__name__)
-    s = CardSearch.search().filter(Term(card_type=card_type))
-
-    results = []
+    s = (
+        CardSearch.search()
+        .filter(Term(card_type=card_type))
+        .filter(Bool(should=Terms(source=drive_order), minimum_should_match=1))
+    )
 
     query_parsed = to_searchable(query)
 
@@ -135,17 +136,15 @@ def search_database(
         match = Match(searchq={"query": query_parsed, "operator": "AND"})
     else:
         match = Match(searchq_keyword={"query": query_parsed, "operator": "AND"})
-    s_query = s.query(match)
-    hits = s_query.sort({"priority": {"order": "desc"}}).params(preserve_order=True).scan()
-    hits_dict = [x.to_dict() for x in hits]
 
-    if hits_dict:
-        if fuzzy_search:
-            hits_dict.sort(key=lambda x: distance(x["searchq"], query_parsed))
-        for drive in drive_order:
-            results += [x for x in hits_dict if x["source"] == drive]
+    s = s.query(match).sort({"priority": {"order": "desc"}})
+    source_order = {x: i for i, x in enumerate(drive_order)}
+    hits = [x.to_dict() for x in sorted(s.params(preserve_order=True).scan(), key=lambda x: source_order[x.source])]
 
-    return results
+    if fuzzy_search:
+        hits.sort(key=lambda x: distance(x["searchq"], query_parsed))
+
+    return hits
 
 
 @elastic_connection

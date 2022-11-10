@@ -10,7 +10,7 @@ from .models import Card
 
 @registry.register_document
 class CardSearch(Document):
-    source = fields.TextField(attr="get_source_key")
+    source = fields.TextField(attr="get_source_key", analyzer="keyword")
     source_name = fields.TextField(attr="get_source_name")
     source_external_link = fields.TextField(attr="get_source_external_link")
     source_type = fields.TextField(attr="get_source_type")
