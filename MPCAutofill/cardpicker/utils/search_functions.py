@@ -197,29 +197,27 @@ class SearchSettings:
     max_dpi: Optional[int] = None
 
     @classmethod
-    def from_request(cls, request: HttpRequest) -> "SearchSettings":
-        fuzzy_search = request.POST.get("fuzzy_search", "false") == "true"
+    def from_json_body(cls, json_body: dict[str, Any]) -> "SearchSettings":
+        fuzzy_search = json_body.get("fuzzy_search", False) is True
 
-        sources: set[str] = {x.key for x in Source.objects}
+        sources: set[str] = {x.key for x in Source.objects.all()}
 
         card_sources: list[str] = []
-        if (card_sources_string := request.POST.get("card_sources")) is not None:
-            card_source_keys = card_sources_string.split(",")
+        if (card_source_keys := json_body.get("card_sources")) is not None:
             for card_source_key in card_source_keys:
                 if card_source_key in sources:
                     card_sources.append(card_source_key)
 
         cardback_sources: list[str] = []
-        if (cardback_sources_string := request.POST.get("cardback_sources")) is not None:
-            cardback_source_keys = cardback_sources_string.split(",")
+        if (cardback_source_keys := json_body.get("cardback_sources")) is not None:
             for cardback_source_key in cardback_source_keys:
                 if cardback_source_key in sources:
                     cardback_sources.append(cardback_source_key)
 
         min_dpi = None
         max_dpi = None
-        min_dpi_string = request.POST.get("min_dpi", None)
-        max_dpi_string = request.POST.get("max_dpi", None)
+        min_dpi_string = json_body.get("min_dpi", None)
+        max_dpi_string = json_body.get("max_dpi", None)
         if min_dpi_string and max_dpi_string:
             min_dpi = int(min_dpi_string)
             max_dpi = int(max_dpi_string)
@@ -239,22 +237,22 @@ class SearchQuery:
     card_type: CardTypes
 
     @classmethod
-    def from_request(cls, dict_: Union[dict[str, Optional[str]], HttpRequest]) -> Optional["SearchQuery"]:
-        query = dict_.get("query", None)
-        card_type = dict_.get("card_type", None)
+    def from_json_body(cls, json_body: dict[str, Any]) -> Optional["SearchQuery"]:
+        query = json_body.get("query", None)
+        card_type = json_body.get("card_type", None)
         card_types = {str(x) for x in CardTypes}
         if query and card_type in card_types:
             return SearchQuery(query=query, card_type=CardTypes[card_type])
         return None
 
     @classmethod
-    def list_from_request(cls, request: HttpRequest) -> list["SearchQuery"]:
+    def list_from_json_body(cls, json_body: dict[str, Any]) -> list["SearchQuery"]:
         # uniqueness of queries guaranteed
-        query_dicts = request.POST.get("queries", [])
+        query_dicts = json_body.get("queries", [])
         queries = set()
         if query_dicts:
             for query_dict in query_dicts:
-                query = cls.from_request(query_dict)
+                query = cls.from_json_body(query_dict)
                 if query is not None:
                     queries.add(query)
         return sorted(queries, key=lambda x: (x.query, x.card_type))
@@ -262,10 +260,14 @@ class SearchQuery:
     @elastic_connection
     def retrieve_card_documents(
         self, search_settings: SearchSettings, all_results: bool = False
-    ) -> list[dict[str, Any]]:
+    ) -> tuple[int, list[dict[str, Any]]]:
         if not Index(CardSearch.Index.name).exists():
             raise SearchExceptions.IndexNotFoundException(CardSearch.__name__)
-        s = CardSearch.search().filter(Term(card_type=str(self.card_type)))
+        s = (
+            CardSearch.search()
+            .filter(Term(card_type=self.card_type))
+            .filter(Terms(source=search_settings.card_sources))
+        )
 
         searchable_query = to_searchable(self.query)
 
@@ -291,7 +293,7 @@ class SearchQuery:
                 # sort and filter by source order
                 results += [x for x in hits_as_dicts if x["source"] == source_key]
 
-        return results
+        return s.count(), results
 
 
 # endregion

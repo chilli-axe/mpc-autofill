@@ -22,6 +22,7 @@ urlpatterns = [
     path("input_link", views.input_link, name="input_link"),
     # endregion
     # region new API
-    path("editor", views.editor, name="editor")
+    path("editor", views.editor, name="editor"),
+    re_path(r"^2/search/$", views.api_function_1, name="api_function_1"),
     # endregion
 ]

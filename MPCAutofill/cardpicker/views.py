@@ -458,14 +458,17 @@ def api_function_1(request: HttpRequest) -> HttpResponse:
     and it's assumed that `hits` starts from the first hit.
     """
 
-    search_settings = SearchSettings.from_request(request)
-    queries = SearchQuery.list_from_request(request)
-    results = {}
-    for query in queries:
-        results[(query.query, query.card_type)] = query.retrieve_card_documents(
-            search_settings=search_settings, all_results=False
-        )
-    return JsonResponse({"results": results})
+    # TODO: ping elasticsearch here
+    if request.method == "POST":
+        json_body = json.loads(request.body)
+        search_settings = SearchSettings.from_json_body(json_body)
+        queries = SearchQuery.list_from_json_body(json_body)
+        results: dict[str, dict[str, dict[str, Any]]] = defaultdict(dict)
+        for query in queries:
+            qty, hits = query.retrieve_card_documents(search_settings=search_settings, all_results=False)
+            results[query.query][query.card_type] = {"quantity": qty, "results": hits}
+        return JsonResponse({"results": results})
+    return JsonResponse({})
 
 
 def api_function_2(request: HttpRequest) -> HttpResponse:
@@ -476,14 +479,17 @@ def api_function_2(request: HttpRequest) -> HttpResponse:
     The query should be of the form {card name, card type}.
     This function should also accept a set of search settings in a standard format.
     Return a list of Card dicts
+    TODO: i think these should be folded into one endpoint
     """
 
-    search_settings = SearchSettings.from_request(request)
-    query = SearchQuery.from_request(request)
-    if query is not None:
-        result = query.retrieve_card_documents(search_settings=search_settings, all_results=True)
-        return JsonResponse({"result": result})
-    return JsonResponse({"result": ""})
+    if request.method == "POST":
+        json_body = json.loads(request.body)
+        search_settings = SearchSettings.from_json_body(json_body)
+        query = SearchQuery.from_json_body(json_body)
+        if query is not None:
+            result = query.retrieve_card_documents(search_settings=search_settings, all_results=True)
+            return JsonResponse({"result": result})
+    return JsonResponse({})
 
 
 def api_function_3(request: HttpRequest) -> HttpResponse:
