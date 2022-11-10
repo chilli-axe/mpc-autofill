@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from "react-redux";
 // import { decrement, increment } from './cardSlotSlice'
 import { RootState, AppDispatch } from "./store";
 import { CardSlot } from "./cardSlot";
-import { fetchCards } from "./searchResultsSlice";
+import { addSearchResults, fetchCards } from "./searchResultsSlice";
 // import styles from './Counter.module.css'
 
 export function CardGrid() {

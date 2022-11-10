@@ -1,6 +1,8 @@
 {% extends 'cardpicker/base.html' %}
 {% block content %}
-    <h2>Projects</h2>
+    {# djlint:off #}
+    <h2>{{ user.username }}'{% if object.image.url.lower|slice:"-1:" != "s" %}s{% endif %} Projects</h2>
+    {# djlint:on #}
     <table class="table table-hover">
         <thead>
             <tr>
@@ -50,4 +52,5 @@
             {% endfor %}
         </tbody>
     </table>
+    {% include "cardpicker/footer.html" %}
 {% endblock %}
