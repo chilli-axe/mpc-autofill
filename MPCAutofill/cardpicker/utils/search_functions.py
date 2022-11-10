@@ -1,7 +1,7 @@
 import threading
 from dataclasses import dataclass, field
 from datetime import timedelta
-from typing import Any, Callable, Optional, TypeVar, Union, cast
+from typing import Any, Callable, Optional, TypeVar, cast
 
 from elasticsearch import Elasticsearch
 from elasticsearch.exceptions import ConnectionError as ElasticConnectionError
@@ -266,34 +266,31 @@ class SearchQuery:
         s = (
             CardSearch.search()
             .filter(Term(card_type=self.card_type))
-            .filter(Terms(source=search_settings.card_sources))
+            .filter(Bool(should=Terms(source=search_settings.card_sources), minimum_should_match=1))
         )
 
-        searchable_query = to_searchable(self.query)
+        query_parsed = to_searchable(self.query)
 
         # set up search - match the query and use the AND operator
         if search_settings.fuzzy_search:
-            match = Match(searchq={"query": searchable_query, "operator": "AND"})
+            match = Match(searchq={"query": query_parsed, "operator": "AND"})
         else:
-            match = Match(searchq_keyword={"query": searchable_query, "operator": "AND"})
+            match = Match(searchq_keyword={"query": query_parsed, "operator": "AND"})
+
         s = s.query(match).sort({"priority": {"order": "desc"}})
+        source_order = {x: i for i, x in enumerate(search_settings.card_sources)}
 
         if all_results:
-            hits = s.params(preserve_order=True).scan()
+            hits_iterable = s.params(preserve_order=True).scan()
         else:
-            hits = s[0:PAGE_SIZE]
-        hits_as_dicts = [x.to_dict() for x in hits]
+            hits_iterable = s[0:PAGE_SIZE]
 
-        results = []
-        if hits_as_dicts:
-            if search_settings.fuzzy_search:
-                # sort fuzzy search results by how closely they match the input search query
-                hits_as_dicts.sort(key=lambda x: distance(x["searchq"], searchable_query))
-            for source_key in search_settings.card_sources:
-                # sort and filter by source order
-                results += [x for x in hits_as_dicts if x["source"] == source_key]
+        hits = [x.to_dict() for x in sorted(hits_iterable, key=lambda x: source_order[x.source])]
 
-        return s.count(), results
+        if search_settings.fuzzy_search:
+            hits.sort(key=lambda x: distance(x["searchq"], query_parsed))
+
+        return s.count(), hits
 
 
 # endregion
