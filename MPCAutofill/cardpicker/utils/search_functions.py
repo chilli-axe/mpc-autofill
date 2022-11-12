@@ -1,7 +1,7 @@
 import threading
 from dataclasses import dataclass, field
 from datetime import timedelta
-from typing import Any, Callable, Optional, TypeVar, cast
+from typing import Any, Callable, Optional, TypeVar, Union, cast
 
 from elasticsearch import Elasticsearch
 from elasticsearch.exceptions import ConnectionError as ElasticConnectionError
@@ -259,8 +259,8 @@ class SearchQuery:
 
     @elastic_connection
     def retrieve_card_documents(
-        self, search_settings: SearchSettings, all_results: bool = False
-    ) -> tuple[int, list[dict[str, Any]]]:
+        self, search_settings: SearchSettings, all_results: bool = False, identifier_only: bool = False
+    ) -> tuple[int, list[Union[dict[str, Any]], str]]:
         if not Index(CardSearch.Index.name).exists():
             raise SearchExceptions.IndexNotFoundException(CardSearch.__name__)
         s = (
@@ -280,17 +280,22 @@ class SearchQuery:
         s = s.query(match).sort({"priority": {"order": "desc"}})
         source_order = {x: i for i, x in enumerate(search_settings.card_sources)}
 
+        if identifier_only:  # minimise the amount of queried data here
+            s = s.source(fields=["identifier", "source", "searchq"])
+
         if all_results:
             hits_iterable = s.params(preserve_order=True).scan()
         else:
             hits_iterable = s[0:PAGE_SIZE]
 
-        hits = [x.to_dict() for x in sorted(hits_iterable, key=lambda x: source_order[x.source])]
-
+        hits = sorted(hits_iterable, key=lambda x: source_order[x.source])
         if search_settings.fuzzy_search:
-            hits.sort(key=lambda x: distance(x["searchq"], query_parsed))
+            hits.sort(key=lambda x: distance(x.searchq, query_parsed))
 
-        return s.count(), hits
+        if identifier_only:
+            return s.count(), [x.identifier for x in hits]
+        else:
+            return s.count(), [x.to_dict() for x in hits]
 
 
 # endregion

@@ -454,7 +454,7 @@ def api_function_1(request: HttpRequest) -> HttpResponse:
     Each query should be of the form {card name, card type}.
     This function should also accept a set of search settings in a standard format.
     Return a dictionary of search results of the following form:
-    {(card name, card type): {"num_hits": num_hits, "hits": [list of Card dicts]}
+    {(card name, card type): {"num_hits": num_hits, "hits": [list of Card identifiers]}
     and it's assumed that `hits` starts from the first hit.
     """
 
@@ -465,31 +465,33 @@ def api_function_1(request: HttpRequest) -> HttpResponse:
         queries = SearchQuery.list_from_json_body(json_body)
         results: dict[str, dict[str, dict[str, Any]]] = defaultdict(dict)
         for query in queries:
-            qty, hits = query.retrieve_card_documents(search_settings=search_settings, all_results=False)
+            qty, hits = query.retrieve_card_documents(
+                search_settings=search_settings, all_results=True, identifier_only=True
+            )
             results[query.query][query.card_type] = {"quantity": qty, "results": hits}
         return JsonResponse({"results": results})
     return JsonResponse({})
 
 
-def api_function_2(request: HttpRequest) -> HttpResponse:
-    """
-    Return all *other* search results for the given query.
-    Given that `api_function_1` returned the first page of hits,
-    this function returns all hits that weren't returned by that function.
-    The query should be of the form {card name, card type}.
-    This function should also accept a set of search settings in a standard format.
-    Return a list of Card dicts
-    TODO: i think these should be folded into one endpoint
-    """
-
-    if request.method == "POST":
-        json_body = json.loads(request.body)
-        search_settings = SearchSettings.from_json_body(json_body)
-        query = SearchQuery.from_json_body(json_body)
-        if query is not None:
-            result = query.retrieve_card_documents(search_settings=search_settings, all_results=True)
-            return JsonResponse({"result": result})
-    return JsonResponse({})
+# def api_function_2(request: HttpRequest) -> HttpResponse:
+#     """
+#     Return all *other* search results for the given query.
+#     Given that `api_function_1` returned the first page of hits,
+#     this function returns all hits that weren't returned by that function.
+#     The query should be of the form {card name, card type}.
+#     This function should also accept a set of search settings in a standard format.
+#     Return a list of Card dicts
+#     TODO: i think these should be folded into one endpoint
+#     """
+#
+#     if request.method == "POST":
+#         json_body = json.loads(request.body)
+#         search_settings = SearchSettings.from_json_body(json_body)
+#         query = SearchQuery.from_json_body(json_body)
+#         if query is not None:
+#             result = query.retrieve_card_documents(search_settings=search_settings, all_results=True)
+#             return JsonResponse({"result": result})
+#     return JsonResponse({})
 
 
 def api_function_3(request: HttpRequest) -> HttpResponse:

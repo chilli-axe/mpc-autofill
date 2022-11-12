@@ -12,21 +12,17 @@ export function CardGrid() {
   const dispatch = useDispatch<AppDispatch>();
 
   useEffect(() => {
-    alert("doing the thing5");
-    const results = dispatch(fetchCards());
-    alert(results);
+    dispatch(fetchCards());
   }, [dispatch]);
 
   return (
-    <div className="col-lg-8 col-md-8 col-sm-6 col-6">
-      <div
-        id="card-container"
-        className="row g-0 row-cols-xxl-4 row-cols-lg-3 row-cols-md-2 row-cols-sm-1 row-cols-1"
-      >
-        <CardSlot></CardSlot>
-        <CardSlot></CardSlot>
-        <CardSlot></CardSlot>
-      </div>
+    <div
+      id="card-container"
+      className="row g-0 row-cols-xxl-4 row-cols-lg-3 row-cols-md-2 row-cols-sm-1 row-cols-1"
+    >
+      <CardSlot></CardSlot>
+      <CardSlot></CardSlot>
+      <CardSlot></CardSlot>
     </div>
   );
 }

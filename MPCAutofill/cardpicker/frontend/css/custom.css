@@ -24,10 +24,6 @@
   top: 50px;
 }
 
-.asteriskField {
-  display: none;
-}
-
 .addmargin {
   margin-top: 50px;
 }
@@ -214,11 +210,11 @@
   overflow-y: scroll;
   overflow-x: hidden;
 }
-.container.addmargin
-  > .row
-  > .col-lg-4
-  > .sticky-top.sticky-offset::-webkit-scrollbar {
-  display: none;
+.container.addmargin,
+> .row,
+> .col-lg-4,
+> .sticky-top.sticky-offset::-webkit-scrollbar {
+  /*display: none;*/
 }
 
 @media (min-width: 576px) {
