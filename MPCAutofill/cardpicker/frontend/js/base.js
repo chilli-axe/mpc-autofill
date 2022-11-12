@@ -6,6 +6,7 @@ import Toast from "bootstrap/js/dist/toast";
 import "../scss/styles.scss";
 import "../css/custom.css";
 import Tooltip from "bootstrap/js/dist/tooltip";
+require("bootstrap/js/dist/collapse");
 
 // set up ajax to attach the CSRF token to all requests to the server
 // lifted from https://docs.djangoproject.com/en/3.1/ref/csrf/#ajax
