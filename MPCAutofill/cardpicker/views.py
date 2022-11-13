@@ -461,6 +461,7 @@ def api_function_1(request: HttpRequest) -> HttpResponse:
 
     # TODO: ping elasticsearch here
     if request.method == "POST":
+        time.sleep(3)
         json_body = json.loads(request.body)
         search_settings = SearchSettings.from_json_body(json_body)
         queries = SearchQuery.list_from_json_body(json_body)
@@ -474,7 +475,7 @@ def api_function_1(request: HttpRequest) -> HttpResponse:
 
 def api_function_2(request: HttpRequest) -> HttpResponse:
     if request.method == "POST":
-        time.sleep(2)
+        time.sleep(6)
         json_body = json.loads(request.body)
         card_identifiers = json_body.get("card_identifiers", [])
         if len(card_identifiers) > 100:

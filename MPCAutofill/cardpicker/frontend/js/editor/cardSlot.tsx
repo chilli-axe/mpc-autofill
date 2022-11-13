@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-// import { decrement, increment } from './cardSlotSlice'
 import { RootState } from "./store";
 import { Card } from "./card";
 import { Faces, SearchQuery } from "./constants";
+import { wrapIndex } from "./utils";
 import { Root } from "react-dom/client";
 
 // import styles from './Counter.module.css'
@@ -15,65 +15,33 @@ interface CardSlotProps {
 }
 
 export function CardSlot(props: CardSlotProps) {
-  // props should contain face, slot number, and search query
-  // state should contain selected image
-  // const selectedImage = useSelector(
-  //   (state: RootState) => state.cardSlot.selectedImage
-  // );
-  // const face = useSelector((state: RootState) => state.cardSlot.face);
-  // const dispatch = useDispatch();
-
   const searchQuery: SearchQuery = props.searchQuery;
   const face = props.face;
   const slot = props.slot;
-
-  let initialSelectedImage = null;
-  const [selectedImage, setSelectedImage] = useState(initialSelectedImage);
+  const [selectedImage, setSelectedImage] = useState(null);
 
   const searchResultsForQuery = useSelector(
     (state: RootState) =>
       (state.searchResults.searchResults[searchQuery.query] ?? {})[
         searchQuery.card_type
       ] ?? []
-  );
-  // alert(maybeSearchResultsForQuery)
+  ); // TODO: move this selector into searchResultsSlice
   if (searchResultsForQuery.length > 0 && selectedImage === null) {
-    // alert(searchResultsForQuery[0])
     setSelectedImage(searchResultsForQuery[0]);
   }
 
   const selectedImageIndex = searchResultsForQuery.indexOf(selectedImage);
-  // if (maybeSearchResultsForQuery !== undefined) {
-  //   const maybeSearchResultsForQueryAndCardType = useSelector((state: RootState) => state.searchResults.searchResults[searchQuery.query][searchQuery.card_type])
-  //   if (maybeSearchResultsForQueryAndCardType !== undefined) {
-  //     alert("thing is not undefined!")
-  //     alert(maybeSearchResultsForQueryAndCardType[0])
-  //     // initialSelectedImage = maybeSearchResultsForQueryAndCardType[0]
-  //   }
-  // }
 
-  // const [searchQuery, setSearchQuery] = useState({query: null, card_type: null});
+  function setSelectedImageFromDelta(delta: number): void {
+    // TODO: docstring
+    setSelectedImage(
+      searchResultsForQuery[
+        wrapIndex(selectedImageIndex + delta, searchResultsForQuery.length)
+      ]
+    );
+  }
 
   return (
-    // <div>
-    //   <h1>My face: {face}</h1>
-    //   <div>
-    //     <button
-    //       aria-label="Increment value"
-    //       onClick={() => dispatch(increment())}
-    //     >
-    //       Increment
-    //     </button>
-    //     <span>{selectedImage}</span>
-    //     <button
-    //       aria-label="Decrement value"
-    //       onClick={() => dispatch(decrement())}
-    //     >
-    //       Decrement
-    //     </button>
-    //   </div>
-    // </div>
-
     // style={{opacity: 0}}
     <div className="card mpccard">
       <div className="card-header pb-0 text-center">
@@ -85,14 +53,30 @@ export function CardSlot(props: CardSlotProps) {
           <i className="bi bi-x-circle"></i>
         </button>
       </div>
-      <Card
-        identifier={selectedImage}
-        index={selectedImageIndex}
-        hits={searchResultsForQuery.length}
-      ></Card>
-      <div className="padding-top" style={{ paddingTop: 20 + "px" }}>
-        <button className="prev btn btn-outline-primary">&#10094;</button>
-        <button className="next btn btn-outline-primary">&#10095;</button>
+      <Card identifier={selectedImage}></Card>
+      <div
+        className="card-footer padding-top"
+        style={{ paddingTop: 50 + "px" }}
+      >
+        <button className="card-text mpccard-counter-btn btn btn-outline-info">
+          {selectedImageIndex + 1}/{searchResultsForQuery.length}
+        </button>
+        {searchResultsForQuery.length > 1 && (
+          <div>
+            <button
+              className="prev btn btn-outline-primary"
+              onClick={() => setSelectedImageFromDelta(-1)}
+            >
+              &#10094;
+            </button>
+            <button
+              className="next btn btn-outline-primary"
+              onClick={() => setSelectedImageFromDelta(1)}
+            >
+              &#10095;
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -8,19 +8,17 @@ import { TransitionGroup } from "react-transition-group";
 
 interface CardProps {
   identifier: string;
-  index: number;
-  hits: number;
+  // TODO: consider how to implement previous/next images
+  // we could have 3 instances of this component per slot,
+  // or the one instance of this component per slot could manage all 3 images.
 }
 
 export function Card(props: CardProps) {
   const [loading, setLoading] = useState(true);
+  const [nameEditable, setNameEditable] = useState(false);
   // const maybeCardDocument = undefined;
 
-  // alert("ye3")
   const identifier: string = props.identifier;
-  // alert(identifier);
-  // const maybeCardDocument = useSelector((state: RootState) => state.cardDocuments.cardDocuments[identifier])
-  // alert(maybeCardDocument === undefined)
   const maybeCardDocument = useSelector(
     (state: RootState) => state.cardDocuments.cardDocuments[identifier]
   );
@@ -28,14 +26,22 @@ export function Card(props: CardProps) {
   // const maybeCard = useSelector(state => getCard(state, props.identifier));
   if (maybeCardDocument === undefined) {
     return (
-      <div className="ratio ratio-7x5">
-        <div className="d-flex justify-content-center align-items-center">
-          <div
-            className="spinner-border"
-            style={{ width: 4 + "em", height: 4 + "em" }}
-            role="status"
-          >
-            <span className="visually-hidden">Loading...</span>
+      <div>
+        <div className="ratio ratio-7x5">
+          <div className="d-flex justify-content-center align-items-center">
+            <div
+              className="spinner-border"
+              style={{ width: 4 + "em", height: 4 + "em" }}
+              role="status"
+            >
+              <span className="visually-hidden">Loading...</span>
+            </div>
+          </div>
+        </div>
+        <div className="card-body mb-0 text-center">
+          <h5 className="card-subtitle mpccard-name" />
+          <div className="mpccard-spacing">
+            <p className="card-text mpccard-source" />
           </div>
         </div>
       </div>
@@ -68,7 +74,7 @@ export function Card(props: CardProps) {
           <img
             className="card-img"
             loading="lazy"
-            style={{ zIndex: 1, display: loading ? "none" : "block" }}
+            style={{ zIndex: 1, opacity: loading ? 0 : 1 }} //  display: loading ? "none" : "block"
             src={cardSmallThumbnailUrl}
             onLoad={() => setLoading(false)}
             // onError={{thumbnail_404(this)}}
@@ -79,24 +85,13 @@ export function Card(props: CardProps) {
           <h5
             className="card-subtitle mpccard-name"
             // contentEditable="true"  // TODO: sort out a better way of managing text input
-            spellCheck="false"
+            // spellCheck="false"
             // onFocus="Library.review.selectElementContents(this)"
           >
             {cardName}
           </h5>
           <div className="mpccard-spacing">
             <p className="card-text mpccard-source">{cardSourceVerbose}</p>
-            {/*<p*/}
-            {/*    className="card-text mpccard-counter"*/}
-            {/*    // style={{display: "none"}}*/}
-            {/*></p>*/}
-
-            <button
-              className="card-text mpccard-counter-btn btn btn-outline-info"
-              // style={{display: "none"}}
-            >
-              {props.index + 1}/{props.hits}
-            </button>
           </div>
         </div>
       </div>
