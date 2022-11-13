@@ -198,29 +198,31 @@ class SearchSettings:
 
     @classmethod
     def from_json_body(cls, json_body: dict[str, Any]) -> "SearchSettings":
-        fuzzy_search = json_body.get("fuzzy_search", False) is True
+        search_settings = json_body.get("search_settings", {})
+
+        fuzzy_search = search_settings.get("fuzzy_search", False) is True
 
         sources: set[str] = {x.key for x in Source.objects.all()}
 
         card_sources: list[str] = []
-        if (card_source_keys := json_body.get("card_sources")) is not None:
+        if (card_source_keys := search_settings.get("card_sources")) is not None:
             for card_source_key in card_source_keys:
                 if card_source_key in sources:
                     card_sources.append(card_source_key)
 
         cardback_sources: list[str] = []
-        if (cardback_source_keys := json_body.get("cardback_sources")) is not None:
+        if (cardback_source_keys := search_settings.get("cardback_sources")) is not None:
             for cardback_source_key in cardback_source_keys:
                 if cardback_source_key in sources:
                     cardback_sources.append(cardback_source_key)
 
         min_dpi = None
         max_dpi = None
-        min_dpi_string = json_body.get("min_dpi", None)
-        max_dpi_string = json_body.get("max_dpi", None)
-        if min_dpi_string and max_dpi_string:
-            min_dpi = int(min_dpi_string)
-            max_dpi = int(max_dpi_string)
+        min_dpi_string = search_settings.get("min_dpi", None)
+        max_dpi_string = search_settings.get("max_dpi", None)
+        if min_dpi_string is not None and max_dpi_string is not None:
+            min_dpi = min(int(min_dpi_string), 0)
+            max_dpi = max(int(max_dpi_string), 2000)
 
         return cls(
             fuzzy_search=fuzzy_search,

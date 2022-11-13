@@ -16,11 +16,13 @@ export const fetchCards = createAsyncThunk(
     const rawResponse = await fetch("/2/search/", {
       method: "POST",
       body: JSON.stringify({
-        fuzzy_search: false,
-        card_sources: ["chilli"],
-        cardback_sources: ["chilli"],
-        min_dpi: 0,
-        max_dpi: 1500,
+        search_settings: {
+          fuzzy_search: false,
+          card_sources: ["chilli"],
+          cardback_sources: ["chilli"],
+          min_dpi: 0,
+          max_dpi: 1500,
+        },
         queries: [
           { query: "island", card_type: CardTypes.Card } as SearchQuery,
           { query: "past in flames", card_type: CardTypes.Card } as SearchQuery,
@@ -63,6 +65,9 @@ export const searchResultsSlice = createSlice({
     addSearchResults: (state, action) => {
       // state.results.push(...action.payload)
       state.searchResults = { ...state.searchResults, ...action.payload };
+    },
+    clearSearchResults: (state, action) => {
+      state.searchResults = {};
     },
   },
   extraReducers(builder) {

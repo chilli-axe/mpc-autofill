@@ -59,7 +59,7 @@ export function CardSlot(props: CardSlotProps) {
         style={{ paddingTop: 50 + "px" }}
       >
         <button className="card-text mpccard-counter-btn btn btn-outline-info">
-          {selectedImageIndex + 1}/{searchResultsForQuery.length}
+          {selectedImageIndex + 1} / {searchResultsForQuery.length}
         </button>
         {searchResultsForQuery.length > 1 && (
           <div>
