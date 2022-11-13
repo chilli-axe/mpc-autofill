@@ -6,7 +6,13 @@ import { RootState } from "./store";
 // import { getCard } from "./cardDocumentsSlice";
 import { TransitionGroup } from "react-transition-group";
 
-export function Card(props: any) {
+interface CardProps {
+  identifier: string;
+  index: number;
+  hits: number;
+}
+
+export function Card(props: CardProps) {
   const [loading, setLoading] = useState(true);
   // const maybeCardDocument = undefined;
 
@@ -15,7 +21,6 @@ export function Card(props: any) {
   // alert(identifier);
   // const maybeCardDocument = useSelector((state: RootState) => state.cardDocuments.cardDocuments[identifier])
   // alert(maybeCardDocument === undefined)
-  // @ts-ignore
   const maybeCardDocument = useSelector(
     (state: RootState) => state.cardDocuments.cardDocuments[identifier]
   );

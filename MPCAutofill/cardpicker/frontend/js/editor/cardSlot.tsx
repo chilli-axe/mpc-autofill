@@ -8,7 +8,13 @@ import { Root } from "react-dom/client";
 
 // import styles from './Counter.module.css'
 
-export function CardSlot(props: any) {
+interface CardSlotProps {
+  searchQuery: SearchQuery;
+  face: Faces;
+  slot: number;
+}
+
+export function CardSlot(props: CardSlotProps) {
   // props should contain face, slot number, and search query
   // state should contain selected image
   // const selectedImage = useSelector(
@@ -18,13 +24,12 @@ export function CardSlot(props: any) {
   // const dispatch = useDispatch();
 
   const searchQuery: SearchQuery = props.searchQuery;
-  const face: Faces = props.face;
-  const slot: number = props.slot;
+  const face = props.face;
+  const slot = props.slot;
 
   let initialSelectedImage = null;
   const [selectedImage, setSelectedImage] = useState(initialSelectedImage);
 
-  // @ts-ignore
   const searchResultsForQuery = useSelector(
     (state: RootState) =>
       (state.searchResults.searchResults[searchQuery.query] ?? {})[
@@ -39,7 +44,6 @@ export function CardSlot(props: any) {
 
   const selectedImageIndex = searchResultsForQuery.indexOf(selectedImage);
   // if (maybeSearchResultsForQuery !== undefined) {
-  //   // @ts-ignore
   //   const maybeSearchResultsForQueryAndCardType = useSelector((state: RootState) => state.searchResults.searchResults[searchQuery.query][searchQuery.card_type])
   //   if (maybeSearchResultsForQueryAndCardType !== undefined) {
   //     alert("thing is not undefined!")

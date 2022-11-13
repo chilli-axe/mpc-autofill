@@ -33,22 +33,41 @@ export const fetchCardDocuments = createAsyncThunk(
   }
 );
 
+interface CardDocument {
+  // This should match the data returned by `to_dict` on the `Card` Django model
+  identifier: string;
+  name: string;
+  priority: number;
+  source: string;
+  source_verbose: string;
+  dpi: number;
+  searchq: string;
+  extension: string;
+  date: string; // formatted by backend
+  download_link: string;
+  small_thumbnail_url: string;
+  medium_thumbnail_url: string;
+}
+
+interface CardDocuments {
+  [key: string]: CardDocument;
+}
+
+interface CardDocumentsState {
+  cardDocuments: CardDocuments;
+  status: string;
+  error: string;
+}
+
+const initialState: CardDocumentsState = {
+  cardDocuments: {},
+  status: "idle",
+  error: null,
+};
+
 export const cardDocumentsSlice = createSlice({
   name: "cardDocuments",
-  initialState: {
-    cardDocuments: {}, // card ID -> card document
-    status: "idle",
-    error: null,
-    /*
-    reconsider how search results are stored here
-    currently - {"opt": {"CARD": [{}, {}, {}, ...]}}
-    where each {} represents a full card document from elasticsearch
-
-    i think we need to split this up into two:
-    a map which tracks the card IDs associated with each query - card type pair
-    and a global map of all card documents keyed by id
-     */
-  },
+  initialState,
   reducers: {
     addCardDocuments: (state, action) => {
       // state.results.push(...action.payload)

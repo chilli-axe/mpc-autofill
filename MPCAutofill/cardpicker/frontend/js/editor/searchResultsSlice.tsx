@@ -36,23 +36,29 @@ export const fetchCards = createAsyncThunk(
   }
 );
 
+type SearchResultsForQuery = {
+  [card_type in CardTypes]: string;
+};
+
+interface SearchResults {
+  [query: string]: SearchResultsForQuery;
+}
+
+interface SearchResultsState {
+  searchResults: SearchResults;
+  status: string;
+  error: string;
+}
+
+const initialState: SearchResultsState = {
+  searchResults: {}, // search query & card type -> number of hits + list of card IDs
+  status: "idle",
+  error: null,
+};
+
 export const searchResultsSlice = createSlice({
   name: "searchResults",
-  initialState: {
-    // results: [],
-    searchResults: {}, // search query & card type -> number of hits + list of card IDs
-    status: "idle",
-    error: null,
-    /*
-    reconsider how search results are stored here
-    currently - {"opt": {"CARD": [{}, {}, {}, ...]}}
-    where each {} represents a full card document from elasticsearch
-
-    i think we need to split this up into two:
-    a map which tracks the card IDs associated with each query - card type pair
-    and a global map of all card documents keyed by id
-     */
-  },
+  initialState,
   reducers: {
     addSearchResults: (state, action) => {
       // state.results.push(...action.payload)
