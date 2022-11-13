@@ -4,6 +4,7 @@ import {
   createSelector,
 } from "@reduxjs/toolkit";
 import Cookies from "js-cookie";
+import { CardTypes, SearchQuery } from "./constants";
 
 // import { AnyAction } from 'redux'
 // import { RootState } from './store'
@@ -21,8 +22,8 @@ export const fetchCards = createAsyncThunk(
         min_dpi: 0,
         max_dpi: 1500,
         queries: [
-          { query: "island", card_type: "CARD" },
-          { query: "past in flames", card_type: "CARD" },
+          { query: "island", card_type: CardTypes.Card } as SearchQuery,
+          { query: "past in flames", card_type: CardTypes.Card } as SearchQuery,
         ],
       }),
       credentials: "same-origin",
@@ -40,7 +41,6 @@ export const searchResultsSlice = createSlice({
   initialState: {
     // results: [],
     searchResults: {}, // search query & card type -> number of hits + list of card IDs
-    cards: {}, // card ID -> card document
     status: "idle",
     error: null,
     /*

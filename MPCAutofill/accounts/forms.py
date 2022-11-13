@@ -4,7 +4,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 
 
-class SignUpForm(UserCreationForm):
+class SignUpForm(UserCreationForm[User]):
     # def __init__(self, request, *args, **kwargs):
     #     super().__init__(*args, **kwargs)
     #     self.request = request

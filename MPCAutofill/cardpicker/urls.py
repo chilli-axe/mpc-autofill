@@ -24,5 +24,6 @@ urlpatterns = [
     # region new API
     path("editor", views.editor, name="editor"),
     re_path(r"^2/search/$", views.api_function_1, name="api_function_1"),
+    re_path(r"^2/getCards/$", views.api_function_2, name="api_function_2"),
     # endregion
 ]

@@ -258,17 +258,10 @@ class SearchQuery:
         return sorted(queries, key=lambda x: (x.query, x.card_type))
 
     @elastic_connection
-    def retrieve_card_documents(
-        self, search_settings: SearchSettings, all_results: bool = False, identifier_only: bool = False
-    ) -> tuple[int, list[Union[dict[str, Any]], str]]:
+    def retrieve_card_identifiers(self, search_settings: SearchSettings) -> list[str]:
+        # ) -> tuple[int, list[str]]:
         if not Index(CardSearch.Index.name).exists():
             raise SearchExceptions.IndexNotFoundException(CardSearch.__name__)
-        s = (
-            CardSearch.search()
-            .filter(Term(card_type=self.card_type))
-            .filter(Bool(should=Terms(source=search_settings.card_sources), minimum_should_match=1))
-        )
-
         query_parsed = to_searchable(self.query)
 
         # set up search - match the query and use the AND operator
@@ -277,25 +270,23 @@ class SearchQuery:
         else:
             match = Match(searchq_keyword={"query": query_parsed, "operator": "AND"})
 
-        s = s.query(match).sort({"priority": {"order": "desc"}})
+        s = (
+            CardSearch.search()
+            .filter(Term(card_type=self.card_type))
+            .filter(Bool(should=Terms(source=search_settings.card_sources), minimum_should_match=1))
+            .query(match)
+            .sort({"priority": {"order": "desc"}})
+            .source(fields=["identifier", "source", "searchq"])
+        )
+        hits_iterable = s.params(preserve_order=True).scan()
+
         source_order = {x: i for i, x in enumerate(search_settings.card_sources)}
-
-        if identifier_only:  # minimise the amount of queried data here
-            s = s.source(fields=["identifier", "source", "searchq"])
-
-        if all_results:
-            hits_iterable = s.params(preserve_order=True).scan()
-        else:
-            hits_iterable = s[0:PAGE_SIZE]
-
-        hits = sorted(hits_iterable, key=lambda x: source_order[x.source])
         if search_settings.fuzzy_search:
-            hits.sort(key=lambda x: distance(x.searchq, query_parsed))
-
-        if identifier_only:
-            return s.count(), [x.identifier for x in hits]
+            hits = sorted(hits_iterable, key=lambda x: (source_order[x.source], distance(x.searchq, query_parsed)))
         else:
-            return s.count(), [x.to_dict() for x in hits]
+            hits = sorted(hits_iterable, key=lambda x: source_order[x.source])
+
+        return [x.identifier for x in hits]
 
 
 # endregion

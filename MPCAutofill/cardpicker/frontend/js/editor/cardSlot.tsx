@@ -1,16 +1,54 @@
-import React from "react";
+import React, { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 // import { decrement, increment } from './cardSlotSlice'
 import { RootState } from "./store";
 import { Card } from "./card";
+import { Faces, SearchQuery } from "./constants";
+import { Root } from "react-dom/client";
+
 // import styles from './Counter.module.css'
 
 export function CardSlot(props: any) {
-  const selectedImage = useSelector(
-    (state: RootState) => state.cardSlot.selectedImage
+  // props should contain face, slot number, and search query
+  // state should contain selected image
+  // const selectedImage = useSelector(
+  //   (state: RootState) => state.cardSlot.selectedImage
+  // );
+  // const face = useSelector((state: RootState) => state.cardSlot.face);
+  // const dispatch = useDispatch();
+
+  const searchQuery: SearchQuery = props.searchQuery;
+  const face: Faces = props.face;
+  const slot: number = props.slot;
+
+  let initialSelectedImage = null;
+  const [selectedImage, setSelectedImage] = useState(initialSelectedImage);
+
+  // @ts-ignore
+  const searchResultsForQuery = useSelector(
+    (state: RootState) =>
+      (state.searchResults.searchResults[searchQuery.query] ?? {})[
+        searchQuery.card_type
+      ] ?? []
   );
-  const face = useSelector((state: RootState) => state.cardSlot.face);
-  const dispatch = useDispatch();
+  // alert(maybeSearchResultsForQuery)
+  if (searchResultsForQuery.length > 0 && selectedImage === null) {
+    // alert(searchResultsForQuery[0])
+    setSelectedImage(searchResultsForQuery[0]);
+  }
+
+  const selectedImageIndex = searchResultsForQuery.indexOf(selectedImage);
+  // if (maybeSearchResultsForQuery !== undefined) {
+  //   // @ts-ignore
+  //   const maybeSearchResultsForQueryAndCardType = useSelector((state: RootState) => state.searchResults.searchResults[searchQuery.query][searchQuery.card_type])
+  //   if (maybeSearchResultsForQueryAndCardType !== undefined) {
+  //     alert("thing is not undefined!")
+  //     alert(maybeSearchResultsForQueryAndCardType[0])
+  //     // initialSelectedImage = maybeSearchResultsForQueryAndCardType[0]
+  //   }
+  // }
+
+  // const [searchQuery, setSearchQuery] = useState({query: null, card_type: null});
 
   return (
     // <div>
@@ -35,7 +73,7 @@ export function CardSlot(props: any) {
     // style={{opacity: 0}}
     <div className="card mpccard">
       <div className="card-header pb-0 text-center">
-        <p className="mpccard-slot">Slot N</p>
+        <p className="mpccard-slot">Slot {slot + 1}</p>
         <button className="padlock">
           <i className="bi bi-unlock"></i>
         </button>
@@ -43,7 +81,11 @@ export function CardSlot(props: any) {
           <i className="bi bi-x-circle"></i>
         </button>
       </div>
-      <Card identifier="Eee"></Card>
+      <Card
+        identifier={selectedImage}
+        index={selectedImageIndex}
+        hits={searchResultsForQuery.length}
+      ></Card>
       <div className="padding-top" style={{ paddingTop: 20 + "px" }}>
         <button className="prev btn btn-outline-primary">&#10094;</button>
         <button className="next btn btn-outline-primary">&#10095;</button>

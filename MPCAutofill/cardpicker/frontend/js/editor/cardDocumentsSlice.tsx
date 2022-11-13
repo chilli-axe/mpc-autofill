@@ -10,31 +10,28 @@ import Cookies from "js-cookie";
 // import { ThunkAction } from 'redux-thunk'
 
 // TODO: we should write something to read a page of card IDs from searchResults (100 at a time?) and query the backend for their full data
-// export const fetchCards = createAsyncThunk(
-//   "searchResults/fetchCards",
-//   async () => {
-//     const rawResponse = await fetch("/2/search/", {
-//       method: "POST",
-//       body: JSON.stringify({
-//         fuzzy_search: false,
-//         card_sources: ["chilli"],
-//         cardback_sources: ["chilli"],
-//         min_dpi: 0,
-//         max_dpi: 1500,
-//         queries: [
-//           { query: "island", card_type: "CARD" },
-//           { query: "past in flames", card_type: "CARD" },
-//         ],
-//       }),
-//       credentials: "same-origin",
-//       headers: {
-//         "X-CSRFToken": Cookies.get("csrftoken"),
-//       },
-//     });
-//     const content = await rawResponse.json();
-//     return content.results;
-//   }
-// );
+export const fetchCardDocuments = createAsyncThunk(
+  "cardDocuments/fetchCardDocuments",
+  async () => {
+    const rawResponse = await fetch("/2/getCards/", {
+      method: "POST",
+      body: JSON.stringify({
+        card_identifiers: [
+          "1-BVOLIOK35eaNl2ytZtOlieejd0_D4z0",
+          "1mCg4xFgdigH2Jyq8dmNHWOe1fht1Eoth",
+          "1_rvQRbdskxqoRt94mh6JQrt9VgHdJY7h",
+          "1YUOZcuGSJ5Kx4wuLR5bqhAkNUlnYq6fm",
+        ],
+      }),
+      credentials: "same-origin",
+      headers: {
+        "X-CSRFToken": Cookies.get("csrftoken"),
+      },
+    });
+    const content = await rawResponse.json();
+    return content.results;
+  }
+);
 
 export const cardDocumentsSlice = createSlice({
   name: "cardDocuments",
@@ -58,14 +55,14 @@ export const cardDocumentsSlice = createSlice({
       state.cardDocuments = { ...state.cardDocuments, ...action.payload };
     },
   },
-  // extraReducers(builder) {
-  //   // omit posts loading reducers
-  //   builder.addCase(fetchCards.fulfilled, (state, action) => {
-  //     // We can directly add the new post object to our posts array
-  //     // state.posts.push(action.payload)
-  //     state.searchResults = { ...state.searchResults, ...action.payload };
-  //   })
-  // }
+  extraReducers(builder) {
+    // omit posts loading reducers
+    builder.addCase(fetchCardDocuments.fulfilled, (state, action) => {
+      // We can directly add the new post object to our posts array
+      // state.posts.push(action.payload)
+      state.cardDocuments = { ...state.cardDocuments, ...action.payload };
+    });
+  },
 });
 export const { addCardDocuments } = cardDocumentsSlice.actions;
 

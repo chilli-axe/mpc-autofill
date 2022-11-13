@@ -1,4 +1,5 @@
 import json
+import time
 from collections import defaultdict
 from datetime import timedelta
 from typing import Any, Callable, Optional, TypeVar, Union, cast
@@ -11,7 +12,7 @@ from django.shortcuts import redirect, render
 from django.utils import timezone
 
 from cardpicker.forms import InputCSV, InputLink, InputText, InputXML
-from cardpicker.models import CardTypes, DFCPair, Source
+from cardpicker.models import Card, CardTypes, DFCPair, Source
 from cardpicker.mpcorder import Faces, MPCOrder, ReqTypes
 from cardpicker.sources.source_types import SourceTypeChoices
 from cardpicker.utils.sanitisation import to_searchable
@@ -463,35 +464,24 @@ def api_function_1(request: HttpRequest) -> HttpResponse:
         json_body = json.loads(request.body)
         search_settings = SearchSettings.from_json_body(json_body)
         queries = SearchQuery.list_from_json_body(json_body)
-        results: dict[str, dict[str, dict[str, Any]]] = defaultdict(dict)
+        results: dict[str, dict[str, list[str]]] = defaultdict(dict)
         for query in queries:
-            qty, hits = query.retrieve_card_documents(
-                search_settings=search_settings, all_results=True, identifier_only=True
-            )
-            results[query.query][query.card_type] = {"quantity": qty, "results": hits}
+            hits = query.retrieve_card_identifiers(search_settings=search_settings)
+            results[query.query][query.card_type] = hits
         return JsonResponse({"results": results})
     return JsonResponse({})
 
 
-# def api_function_2(request: HttpRequest) -> HttpResponse:
-#     """
-#     Return all *other* search results for the given query.
-#     Given that `api_function_1` returned the first page of hits,
-#     this function returns all hits that weren't returned by that function.
-#     The query should be of the form {card name, card type}.
-#     This function should also accept a set of search settings in a standard format.
-#     Return a list of Card dicts
-#     TODO: i think these should be folded into one endpoint
-#     """
-#
-#     if request.method == "POST":
-#         json_body = json.loads(request.body)
-#         search_settings = SearchSettings.from_json_body(json_body)
-#         query = SearchQuery.from_json_body(json_body)
-#         if query is not None:
-#             result = query.retrieve_card_documents(search_settings=search_settings, all_results=True)
-#             return JsonResponse({"result": result})
-#     return JsonResponse({})
+def api_function_2(request: HttpRequest) -> HttpResponse:
+    if request.method == "POST":
+        time.sleep(2)
+        json_body = json.loads(request.body)
+        card_identifiers = json_body.get("card_identifiers", [])
+        if len(card_identifiers) > 100:
+            card_identifiers = card_identifiers[0:100]
+        objs = {x.identifier: x.to_dict() for x in Card.objects.filter(identifier__in=card_identifiers)}
+        return JsonResponse({"results": objs})
+    return JsonResponse({})
 
 
 def api_function_3(request: HttpRequest) -> HttpResponse:
