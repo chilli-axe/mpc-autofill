@@ -5,6 +5,9 @@ import {
 } from "@reduxjs/toolkit";
 import Cookies from "js-cookie";
 import { CardTypes, SearchQuery } from "./constants";
+import { RootState } from "./store";
+import { useSelector } from "react-redux";
+import { Root } from "react-dom/client";
 
 // import { AnyAction } from 'redux'
 // import { RootState } from './store'
@@ -12,17 +15,13 @@ import { CardTypes, SearchQuery } from "./constants";
 
 export const fetchCards = createAsyncThunk(
   "searchResults/fetchCards",
-  async () => {
+  async (arg, thunkAPI) => {
+    // @ts-ignore  // TODO
+    const state: RootState = thunkAPI.getState();
     const rawResponse = await fetch("/2/search/", {
       method: "POST",
       body: JSON.stringify({
-        search_settings: {
-          fuzzy_search: false,
-          card_sources: ["chilli"],
-          cardback_sources: ["chilli"],
-          min_dpi: 0,
-          max_dpi: 1500,
-        },
+        searchSettings: state.searchSettings,
         queries: [
           { query: "island", card_type: CardTypes.Card } as SearchQuery,
           { query: "past in flames", card_type: CardTypes.Card } as SearchQuery,
