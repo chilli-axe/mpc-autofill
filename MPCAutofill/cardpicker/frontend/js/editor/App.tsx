@@ -1,5 +1,7 @@
 import * as React from "react";
 import { CardGrid } from "./cardGrid";
+import { SearchSettings } from "./searchSettings";
+
 // import './App.css';
 
 function App() {
@@ -11,7 +13,13 @@ function App() {
           <CardGrid></CardGrid>
         </div>
         <div className="col-lg-4 col-md-4 col-sm-6 col-6">
-          <div className="sticky-top sticky-offset g-0"></div>
+          <div className="sticky-top sticky-offset g-0">
+            <div className="row g-0">
+              <div className="col-lg-6 col-md-12 col-sm-12 col-12">
+                <SearchSettings></SearchSettings>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
