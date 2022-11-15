@@ -2,6 +2,7 @@ import { configureStore } from "@reduxjs/toolkit";
 import cardSlotReducer from "./cardSlotSlice";
 import searchResultsReducer from "./searchResultsSlice";
 import cardDocumentsReducer from "./cardDocumentsSlice";
+import sourceDocumentsReducer from "./sourceDocumentsSlice";
 import searchSettingsReducer from "./searchSettingsSlice";
 
 export const store = configureStore({
@@ -10,6 +11,7 @@ export const store = configureStore({
     searchSettings: searchSettingsReducer,
     searchResults: searchResultsReducer,
     cardDocuments: cardDocumentsReducer,
+    sourceDocuments: sourceDocumentsReducer,
   },
 });
 
