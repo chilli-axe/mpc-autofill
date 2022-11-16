@@ -38,7 +38,7 @@ class CardSearch(Document):
             "priority": self.priority,
             "source": self.source,
             "source_name": self.source_name,
-            "source_external_link": self.source_external_link,
+            "source_external_link": self.source_external_link or "",
             "source_verbose": self.source_verbose,
             "source_type": self.source_type,
             "dpi": self.dpi,
