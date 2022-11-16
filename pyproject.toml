@@ -1,5 +1,9 @@
 [tool.isort]
 profile = "black"
+known_cardpicker = "cardpicker"
+known_src = "src"
+known_django = "django"
+sections = ["FUTURE", "STDLIB", "THIRDPARTY", "DJANGO", "CARDPICKER", "SRC", "FIRSTPARTY", "LOCALFOLDER"]
 skip = ["build", "dist", "cards"]
 
 [tool.black]

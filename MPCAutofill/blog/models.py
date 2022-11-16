@@ -2,11 +2,13 @@ import string
 from datetime import datetime
 from typing import Any
 
-from cardpicker.models import Card
+from markdown import markdown
+
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.utils import dateformat
-from markdown import markdown
+
+from cardpicker.models import Card
 
 datestring = "jS F, Y"
 

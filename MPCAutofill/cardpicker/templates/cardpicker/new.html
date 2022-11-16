@@ -1,50 +1,44 @@
 {% extends 'cardpicker/base.html' %}
 {% load static %}
 {% load dict_get %}
-
-{% block title %} {{ SITE_NAME }} Recent Cards {% endblock %}
-
+{% block title %}{{ SITE_NAME }} Recent Cards{% endblock %}
+{% block scripts %}
+    <script src="{% static 'js/new.bundle.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'css/new.bundle.css' %}">
+{% endblock %}
 {% block content %}
-<div class="pt-2">
-    <script src="{% static 'js/card.js' %}"></script>
-    <script src="{% static 'js/search.js' %}"></script>
-
-    <script type="text/javascript">
-        let pages = {};
-        document.getElementById("id_body").onload = function () {
-            base_on_load(exception);
-            let context = {{ results|safe }};
-            for (const [source, info] of Object.entries(context)) {
-                pages[source] = 0;
-                build_new_cards(source, info.hits, info.more);
-            }
-        }
-    </script>
-
-    <h2>What's New?</h2>
-    <p>Check out the new cards added to {{ SITE_NAME }} in the last two weeks.</p>
-
-    {% for source, info in results.items %}
-        <h3 style="display: inline" class="orpheus"> <em>{{ sources|dict_get:source|dict_get:"name" }}</em> </h3>
-        {% if info.qty > 1%}
-            <div style="display: inline" class="text-primary">{{ info.qty }} new cards</div>
-        {% else %}
-            <div style="display: inline" class="text-primary">{{ info.qty }} new card</div>
-        {% endif %}
-
-        <div id="{{ source }}-container" class="g-0 row row-cols-xxl-6 row-cols-lg-4 row-cols-md-3 row-cols-sm-2 row-cols-2"></div>
-
-        <div id="{{ source }}-more" style="text-align: center; display: none;">
-            <br>
-            <button type="button" class="btn btn-primary" style="min-width: 20%" onclick="load_new_cards('{{ source }}')">
-                Load More
-            </button>
-        </div>
-        <hr>
-    {% endfor %}
-
-    {% include "cardpicker/card.html" %}
-
-    {% include "cardpicker/footer.html" %}
-</div>
+    <div class="pt-2">
+        <script type="text/javascript">
+        var pages = {};
+        var context = {{ results|safe }};
+        window.addEventListener('load', Library.new.new_on_load, false);
+        </script>
+        <h2>What's New?</h2>
+        <p>Check out the new cards added to {{ SITE_NAME }} in the last two weeks.</p>
+        {% for source, info in results.items %}
+            <h3 style="display: inline" class="orpheus">
+                <em>{{ sources|dict_get:source|dict_get:"name" }}</em>
+            </h3>
+            {% if info.qty > 1 %}
+                <div style="display: inline" class="text-primary">{{ info.qty }} new cards</div>
+            {% else %}
+                <div style="display: inline" class="text-primary">{{ info.qty }} new card</div>
+            {% endif %}
+            <div id="{{ source }}-container"
+                 class="g-0 row row-cols-xxl-6 row-cols-lg-4 row-cols-md-3 row-cols-sm-2 row-cols-2">
+            </div>
+            <div id="{{ source }}-more" style="text-align: center; display: none;">
+                <br>
+                <button type="button"
+                        class="btn btn-primary"
+                        style="min-width: 20%"
+                        onclick="load_new_cards('{{ source }}')">
+                    Load More
+                </button>
+            </div>
+            <hr>
+        {% endfor %}
+        {% include "cardpicker/card.html" %}
+        {% include "cardpicker/footer.html" %}
+    </div>
 {% endblock %}

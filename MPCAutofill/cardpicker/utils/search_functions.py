@@ -1,18 +1,21 @@
 import threading
 from datetime import timedelta
-from typing import Any, Callable, Optional, Type, TypeVar, cast
+from typing import Any, Callable, TypeVar, cast
 
-from cardpicker.documents import CardbackSearch, CardSearch, TokenSearch
-from cardpicker.utils.to_searchable import to_searchable
+from elasticsearch import Elasticsearch
+from elasticsearch.exceptions import ConnectionError as ElasticConnectionError
+from elasticsearch_dsl.document import Search
+from elasticsearch_dsl.index import Index
+from elasticsearch_dsl.query import Bool, Match, Term, Terms
+from Levenshtein import distance
+
 from django.conf import settings
 from django.http import HttpRequest
 from django.utils import timezone
-from elasticsearch import Elasticsearch
-from elasticsearch.exceptions import ConnectionError as ElasticConnectionError
-from elasticsearch_dsl.document import Document, Search
-from elasticsearch_dsl.index import Index
-from elasticsearch_dsl.query import Match
-from Levenshtein import distance
+
+from cardpicker.documents import CardSearch
+from cardpicker.models import CardTypes
+from cardpicker.utils.sanitisation import to_searchable
 
 thread_local = threading.local()  # Should only be called once per thread
 
@@ -90,35 +93,41 @@ def text_to_list(input_text: str) -> list[int]:
 
 
 def query_es_card(drive_order: list[str], fuzzy_search: bool, query: str) -> list[dict[str, Any]]:
-    return search_database(drive_order, fuzzy_search, query, CardSearch)
+    return search_database(drive_order, fuzzy_search, query, CardTypes.CARD)
 
 
 @elastic_connection
 def query_es_cardback() -> list[dict[str, Any]]:
     # return all cardbacks in the search index
-    if not Index(CardbackSearch.Index.name).exists():
-        raise SearchExceptions.IndexNotFoundException(CardbackSearch.__name__)
-    s = CardbackSearch.search()
-    hits = s.sort({"priority": {"order": "desc"}}).params(preserve_order=True).scan()
+    if not Index(CardSearch.Index.name).exists():
+        raise SearchExceptions.IndexNotFoundException(CardSearch.__name__)
+    s = CardSearch.search()
+    hits = (
+        s.filter(Term(card_type=CardTypes.CARDBACK))
+        .sort({"priority": {"order": "desc"}})
+        .params(preserve_order=True)
+        .scan()
+    )
     results = [x.to_dict() for x in hits]
     return results
 
 
 def query_es_token(drive_order: list[str], fuzzy_search: bool, query: str) -> list[dict[str, Any]]:
-    return search_database(drive_order, fuzzy_search, query, TokenSearch)
+    return search_database(drive_order, fuzzy_search, query, CardTypes.TOKEN)
 
 
 @elastic_connection
 def search_database(
-    drive_order: list[str], fuzzy_search: bool, query: str, index: Type[Document]
+    drive_order: list[str], fuzzy_search: bool, query: str, card_type: CardTypes
 ) -> list[dict[str, Any]]:
-    # search through the database for a given query, over the drives specified in drive_orders,
-    # using the search index specified in s (this enables reuse of code between Card and Token search functions)
-    if not Index(index.Index.name).exists():
-        raise SearchExceptions.IndexNotFoundException(index.__name__)
-    s = index.search()
-
-    results = []
+    # search through the database for a given query, over the drives specified in drive_orders, filtering by `card_type`
+    if not Index(CardSearch.Index.name).exists():
+        raise SearchExceptions.IndexNotFoundException(CardSearch.__name__)
+    s = (
+        CardSearch.search()
+        .filter(Term(card_type=card_type))
+        .filter(Bool(should=Terms(source=drive_order), minimum_should_match=1))
+    )
 
     query_parsed = to_searchable(query)
 
@@ -127,45 +136,15 @@ def search_database(
         match = Match(searchq={"query": query_parsed, "operator": "AND"})
     else:
         match = Match(searchq_keyword={"query": query_parsed, "operator": "AND"})
-    s_query = s.query(match)
-    hits = s_query.sort({"priority": {"order": "desc"}}).params(preserve_order=True).scan()
-    hits_dict = [x.to_dict() for x in hits]
 
-    if hits_dict:
-        if fuzzy_search:
-            hits_dict.sort(key=lambda x: distance(x["searchq"], query_parsed))
-        for drive in drive_order:
-            results += [x for x in hits_dict if x["source"] == drive]
+    s = s.query(match).sort({"priority": {"order": "desc"}})
+    source_order = {x: i for i, x in enumerate(drive_order)}
+    hits = [x.to_dict() for x in sorted(s.params(preserve_order=True).scan(), key=lambda x: source_order[x.source])]
 
-    return results
+    if fuzzy_search:
+        hits.sort(key=lambda x: distance(x["searchq"], query_parsed))
 
-
-def process_line(input_str: str) -> tuple[Optional[str], Optional[int]]:
-    # Extract the quantity and card name from a given line of the text input
-    input_str = str(" ".join([x for x in input_str.split(" ") if x]))
-    if input_str.isspace() or len(input_str) == 0:
-        return None, None
-    num_idx = 0
-    input_str = input_str.replace("//", "&").replace("/", "&")
-    while True:
-        if num_idx >= len(input_str):
-            return None, None
-        try:
-            int(input_str[num_idx])
-            num_idx += 1
-        except ValueError:
-            if num_idx == 0:
-                # no number at the start of the line - assume qty 1
-                qty = 1
-                name = " ".join(input_str.split(" "))
-            else:
-                # located the break between qty and name
-                try:
-                    qty = int(input_str[0 : num_idx + 1].lower().replace("x", ""))
-                except ValueError:
-                    return None, None
-                name = " ".join(x for x in input_str[num_idx + 1 :].split(" ") if x)
-            return name, qty
+    return hits
 
 
 @elastic_connection

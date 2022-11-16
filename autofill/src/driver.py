@@ -13,6 +13,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.support.expected_conditions import invisibility_of_element
 from selenium.webdriver.support.ui import Select, WebDriverWait
+
 from src.constants import THREADS, States
 from src.order import CardImage, CardImageCollection, CardOrder
 from src.utils import (
@@ -26,14 +27,36 @@ from src.webdrivers import get_chrome_driver
 
 
 @attr.s
-class OrderStatusBarBaseClass:
+class AutofillDriver:
+    driver: webdriver.remote.webdriver.WebDriver = attr.ib(
+        default=None
+    )  # delay initialisation until XML is selected and parsed
+    driver_callable: Callable[[bool], WebDriver] = attr.ib(default=get_chrome_driver)
+    headless: bool = attr.ib(default=False)
+    starting_url: str = attr.ib(init=False, default="https://www.makeplayingcards.com/design/custom-blank-card.html")
     order: CardOrder = attr.ib(default=attr.Factory(CardOrder.from_xml_in_folder))
     state: str = attr.ib(init=False, default=States.initialising)
-
+    action: Optional[str] = attr.ib(init=False, default=None)
     manager: enlighten.Manager = attr.ib(init=False, default=attr.Factory(enlighten.get_manager))
     status_bar: enlighten.StatusBar = attr.ib(init=False, default=False)
     download_bar: enlighten.Counter = attr.ib(init=False, default=None)
     upload_bar: enlighten.Counter = attr.ib(init=False, default=None)
+    file_path_to_pid_map: dict[str, str] = {}
+
+    # region initialisation
+    def initialise_driver(self) -> None:
+        try:
+            driver = self.driver_callable(self.headless)
+            driver.set_window_size(1200, 900)
+            driver.implicitly_wait(5)
+            print(f"Successfully initialised {TEXT_BOLD}{driver.name}{TEXT_END} driver.")
+        except ValueError as e:
+            raise Exception(
+                f"An error occurred while attempting to configure the webdriver for {self.driver.name}. "
+                f"Please make sure you have installed {self.driver.name} and that it is up to date: {e}"
+            )
+
+        self.driver = driver
 
     def configure_bars(self) -> None:
         num_images = len(self.order.fronts.cards) + len(self.order.backs.cards)
@@ -50,35 +73,6 @@ class OrderStatusBarBaseClass:
         self.status_bar.refresh()
         self.download_bar.refresh()
         self.upload_bar.refresh()
-
-
-@attr.s
-class AutofillDriver(OrderStatusBarBaseClass):
-    driver: webdriver.remote.webdriver.WebDriver = attr.ib(
-        default=None
-    )  # delay initialisation until XML is selected and parsed
-    driver_callable: Callable[[bool], WebDriver] = attr.ib(default=get_chrome_driver)
-    headless: bool = attr.ib(default=False)
-    starting_url: str = attr.ib(
-        init=False,
-        default="https://www.makeplayingcards.com/design/custom-blank-card.html",
-    )
-    action: Optional[str] = attr.ib(init=False, default=None)
-
-    # region initialisation
-    def initialise_driver(self) -> None:
-        try:
-            driver = self.driver_callable(self.headless)
-            driver.set_window_size(1200, 900)
-            driver.implicitly_wait(5)
-            print(f"Successfully initialised {TEXT_BOLD}{driver.name}{TEXT_END} driver.")
-        except ValueError as e:
-            raise Exception(
-                f"An error occurred while attempting to configure the webdriver for {self.driver.name}. "
-                f"Please make sure you have installed {self.driver.name} and that it is up to date: {e}"
-            )
-
-        self.driver = driver
 
     def __attrs_post_init__(self) -> None:
         self.configure_bars()
@@ -127,8 +121,7 @@ class AutofillDriver(OrderStatusBarBaseClass):
         self.state = state
         self.action = action
         self.status_bar.update(
-            state=f"{TEXT_BOLD}{self.state}{TEXT_END}",
-            action=f"{TEXT_BOLD}{self.action or 'N/A'}{TEXT_END}",
+            state=f"{TEXT_BOLD}{self.state}{TEXT_END}", action=f"{TEXT_BOLD}{self.action or 'N/A'}{TEXT_END}"
         )
         self.status_bar.refresh()
 
@@ -204,28 +197,58 @@ class AutofillDriver(OrderStatusBarBaseClass):
             f"PageLayout.prototype.checkEmptyImage({self.get_element_for_slot_js(slot)})", return_=True
         )
 
-    def upload_image(self, image: CardImage) -> Optional[str]:
+    def get_all_uploaded_image_pids(self) -> list[str]:
+        if pid_string := self.execute_javascript("oDesignImage.dn_getImageList()", return_=True):
+            return pid_string.split(";")
+        return []
+
+    def get_number_of_uploaded_images(self) -> int:
+        return len(self.get_all_uploaded_image_pids())
+
+    def attempt_to_upload_image(self, image: CardImage) -> None:
         """
-        Uploads the given CardImage. Returns the image's PID in MPC.
+        A single attempt at uploading `image` to MPC.
         """
 
-        if image.file_exists():
+        # an image definitely shouldn't be uploading here, but doesn't hurt to make sure
+        while self.is_image_currently_uploading():
+            time.sleep(0.5)
+
+        # send the image contents to mpc
+        self.driver.find_element(by=By.ID, value="uploadId").send_keys(image.file_path)
+        time.sleep(1)
+
+        # wait for the image to finish uploading
+        while self.is_image_currently_uploading():
+            time.sleep(0.5)
+
+    def upload_image(self, image: CardImage, max_tries: int = 3) -> Optional[str]:
+        """
+        Uploads the given CardImage with `max_tries` attempts. Returns the image's PID in MPC.
+        """
+
+        if image.file_path is not None and image.file_exists():
+            if image.file_path in self.file_path_to_pid_map.keys():
+                return self.file_path_to_pid_map[image.file_path]
+
             self.set_state(self.state, f'Uploading "{image.name}"')
+            get_number_of_uploaded_images = self.get_number_of_uploaded_images()
 
-            # an image definitely shouldn't be uploading here, but doesn't hurt to make sure
-            while self.is_image_currently_uploading():
-                time.sleep(0.5)
-
-            # upload image to mpc
-            self.driver.find_element(by=By.ID, value="uploadId").send_keys(image.file_path)
-            time.sleep(1)
-
-            while self.is_image_currently_uploading():
-                time.sleep(0.5)
-
-            # return PID of last uploaded image
-            return self.execute_javascript("oDesignImage.dn_getImageList()", return_=True).split(";")[-1]
-
+            tries = 0
+            while True:
+                self.attempt_to_upload_image(image)
+                if self.get_number_of_uploaded_images() > get_number_of_uploaded_images:
+                    # a new image has been uploaded - assume the last image in the editor is the one we just uploaded
+                    pid = self.get_all_uploaded_image_pids()[-1]
+                    self.file_path_to_pid_map[image.file_path] = pid
+                    return pid
+                tries += 1
+                if tries >= max_tries:
+                    print(
+                        f'Attempted to upload image {TEXT_BOLD}"{image.name}"{TEXT_END} {max_tries} times, '
+                        f"but no attempt succeeded! Skipping this image."
+                    )
+                    return None
         else:
             print(
                 f'Image {TEXT_BOLD}"{image.name}"{TEXT_END} at path {TEXT_BOLD}{image.file_path}{TEXT_END} does '
@@ -277,7 +300,7 @@ class AutofillDriver(OrderStatusBarBaseClass):
             self.insert_image(pid, image, slots=unfilled_slot_numbers)
 
     def upload_and_insert_images(self, images: CardImageCollection) -> None:
-        for i in range(len(images.cards)):
+        for _ in range(len(images.cards)):
             image: CardImage = images.queue.get()
             if image.downloaded:
                 self.upload_and_insert_image(image)
@@ -337,6 +360,9 @@ class AutofillDriver(OrderStatusBarBaseClass):
     def page_to_fronts(self) -> None:
         self.assert_state(States.paging_to_fronts)
 
+        # reset this between fronts and backs
+        self.file_path_to_pid_map = {}
+
         # Accept current settings and move to next step
         self.execute_javascript(
             "doPersonalize('https://www.makeplayingcards.com/products/pro_item_process_flow.aspx');"
@@ -361,6 +387,9 @@ class AutofillDriver(OrderStatusBarBaseClass):
 
     def page_to_backs(self, skip_setup: bool) -> None:
         self.assert_state(States.paging_to_backs)
+
+        # reset this between fronts and backs
+        self.file_path_to_pid_map = {}
 
         self.next_step()
         self.wait()
@@ -434,9 +463,11 @@ class AutofillDriver(OrderStatusBarBaseClass):
                         and follow the printed instructions.
 
                         Windows:
-                            {TEXT_BOLD}autofill.exe --skipsetup{TEXT_END}
-                        macOS or Linux:
-                            {TEXT_BOLD}./autofill --skipsetup{TEXT_END}
+                            {TEXT_BOLD}autofill-windows.exe --skipsetup{TEXT_END}
+                        macOS:
+                            {TEXT_BOLD}./autofill-macos --skipsetup{TEXT_END}
+                        Linux:
+                            {TEXT_BOLD}./autofill-linux --skipsetup{TEXT_END}
                         """
                     )
                 )

@@ -2,14 +2,19 @@ import os
 from concurrent.futures import ThreadPoolExecutor
 
 import attr
+import enlighten
 import InquirerPy
 from fpdf import FPDF
-from src.constants import THREADS
-from src.driver import OrderStatusBarBaseClass
+
+from src.constants import THREADS, States
+from src.order import CardOrder
+from src.utils import TEXT_BOLD, TEXT_END
 
 
 @attr.s
-class PdfExporter(OrderStatusBarBaseClass):
+class PdfExporter:
+    order: CardOrder = attr.ib(default=attr.Factory(CardOrder.from_xml_in_folder))
+    state: str = attr.ib(init=False, default=States.initialising)
     pdf: FPDF = attr.ib(default=None)
     card_width_in_inches: float = attr.ib(default=2.73)
     card_height_in_inches: float = attr.ib(default=3.71)
@@ -19,6 +24,29 @@ class PdfExporter(OrderStatusBarBaseClass):
     save_path: str = attr.ib(default="")
     separate_faces: bool = attr.ib(default=False)
     current_face: str = attr.ib(default="all")
+    manager: enlighten.Manager = attr.ib(init=False, default=attr.Factory(enlighten.get_manager))
+    status_bar: enlighten.StatusBar = attr.ib(init=False, default=False)
+    download_bar: enlighten.Counter = attr.ib(init=False, default=None)
+    processed_bar: enlighten.Counter = attr.ib(init=False, default=None)
+
+    def configure_bars(self) -> None:
+        num_images = len(self.order.fronts.cards) + len(self.order.backs.cards)
+        status_format = "State: {state}"
+        self.status_bar = self.manager.status_bar(
+            status_format=status_format,
+            state=f"{TEXT_BOLD}{self.state}{TEXT_END}",
+            position=1,
+        )
+        self.download_bar = self.manager.counter(total=num_images, desc="Images Downloaded", position=2)
+        self.processed_bar = self.manager.counter(total=num_images, desc="Images Processed", position=3)
+
+        self.download_bar.refresh()
+        self.processed_bar.refresh()
+
+    def set_state(self, state: str) -> None:
+        self.state = state
+        self.status_bar.update(state=f"{TEXT_BOLD}{self.state}{TEXT_END}")
+        self.status_bar.refresh()
 
     def __attrs_post_init__(self) -> None:
         self.ask_questions()
@@ -45,7 +73,7 @@ class PdfExporter(OrderStatusBarBaseClass):
                 + "the longer the processing will take and the larger the file size will be.",
                 "default": 60,
                 "when": lambda result: result["split_faces"] is False,
-                "transformer": lambda result: 1 if int(result) < 1 else int(result),
+                "transformer": lambda result: 1 if (int_result := int(result)) < 1 else int_result,
             },
         ]
         answers = InquirerPy.prompt(questions)
@@ -53,14 +81,16 @@ class PdfExporter(OrderStatusBarBaseClass):
             self.separate_faces = True
             self.number_of_cards_per_file = 1
         else:
-            self.number_of_cards_per_file = 1 if int(answers["cards_per_file"]) < 1 else int(answers["cards_per_file"])
+            self.number_of_cards_per_file = (
+                1 if (int_cards_per_file := int(answers["cards_per_file"])) < 1 else int_cards_per_file
+            )
 
     def generate_file_path(self) -> None:
         basename = os.path.basename(str(self.order.name))
         if not basename:
             basename = "cards.xml"
         file_name = os.path.splitext(basename)[0]
-        self.save_path = "export/%s/" % file_name
+        self.save_path = f"export/{file_name}/"
         os.makedirs(self.save_path, exist_ok=True)
         if self.separate_faces:
             for face in ["backs", "fronts"]:
@@ -77,8 +107,8 @@ class PdfExporter(OrderStatusBarBaseClass):
     def save_file(self) -> None:
         extra = ""
         if self.separate_faces:
-            extra = "%s/" % self.current_face
-        self.pdf.output(self.save_path + extra + str(self.file_num) + ".pdf")
+            extra = f"{self.current_face}/"
+        self.pdf.output(f"{self.save_path}{extra}{self.file_num}.pdf")
 
     def download_and_collect_images(self) -> None:
         with ThreadPoolExecutor(max_workers=THREADS) as pool:
@@ -107,37 +137,38 @@ class PdfExporter(OrderStatusBarBaseClass):
         else:
             self.export()
 
-        print("Finished exporting files! They should be accessible at %s" % self.save_path)
+        print(f"Finished exporting files! They should be accessible at {self.save_path}.")
 
     def export(self) -> None:
         for slot in sorted(self.paths_by_slot.keys()):
             (back_path, front_path) = self.paths_by_slot[slot]
-            print("Working on slot %s" % str(slot))
+            self.set_state(f"Working on slot {slot}")
             if slot == 0:
                 self.generate_pdf()
             elif slot % self.number_of_cards_per_file == 0:
-                print("Saving PDF #%s" % str(self.file_num))
+                self.set_state(f"Saving PDF #{slot}")
                 self.save_file()
                 self.file_num = self.file_num + 1
                 self.generate_pdf()
-            print("Adding images for slot %s" % str(slot))
+            self.set_state(f"Adding images for slot {slot}")
             self.add_image(back_path)
             self.add_image(front_path)
+            self.processed_bar.update()
 
-        print("Saving PDF #%s" % str(self.file_num))
+        self.set_state(f"Saving PDF #{self.file_num}")
         self.save_file()
 
     def export_separate_faces(self) -> None:
         all_faces = ["backs", "fronts"]
         for slot in sorted(self.paths_by_slot.keys()):
             image_paths_tuple = self.paths_by_slot[slot]
-            print("Working on slot " + str(slot))
+            self.set_state(f"Working on slot {slot}")
             for face in all_faces:
                 face_index = all_faces.index(face)
                 self.current_face = face
                 self.generate_pdf()
                 self.add_image(image_paths_tuple[face_index])
-                print("Saving %s PDF for slot %s" % (face, str(slot)))
+                self.set_state(f"Saving {face} PDF for slot {slot}")
                 self.save_file()
                 if face_index == 1:
                     self.file_num = self.file_num + 1

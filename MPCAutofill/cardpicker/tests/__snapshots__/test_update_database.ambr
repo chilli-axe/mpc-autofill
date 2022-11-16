@@ -1,0 +1,20 @@
+# name: TestUpdateDatabase.test_comprehensive_snapshot[cards]
+  list([
+    <Card: [Example Drive 1] Mountain [Type: CARD, Identifier: 1-dcs0FEE05MTGiYbKqs9HnRdhXkgtIJG, Uploaded: 22/09/2022, Priority: 7]>,
+    <Card: [Example Drive 1] Plains [Type: CARD, Identifier: 1743iShpNEhY5xQ2PCUNpca4UL5t4rG3g, Uploaded: 22/09/2022, Priority: 7]>,
+    <Card: [Example Drive 1] Delver of Secrets [Type: CARD, Identifier: 17fopRCNRge72U8Hac8pApHZtEalx5kHy, Uploaded: 09/10/2022, Priority: 2]>,
+    <Card: [Example Drive 1] Huntmaster of the Fells [Type: CARD, Identifier: 1991MWCur9NdAFi-tQQD5YbQj2oqV_WRy, Uploaded: 22/09/2022, Priority: 2]>,
+    <Card: [Example Drive 1] Island (William Bradford) [Type: CARD, Identifier: 1HsvTYs1jFGe1c8U1PnNZ9aB8jkAW7KU0, Uploaded: 22/09/2022, Priority: 6]>,
+    <Card: [Example Drive 1] Island [Type: CARD, Identifier: 1IDtqSjJ4Yo45AnNA4SplOiN7ewibifMa, Uploaded: 22/09/2022, Priority: 7]>,
+    <Card: [Example Drive 1] Simple Cube [Type: CARDBACK, Identifier: 1JtXL6Ca9nQkvhwZZRR9ZuKA9_DzsFf1V, Uploaded: 22/09/2022, Priority: 17]>,
+    <Card: [Example Drive 1] Swamp [Type: CARD, Identifier: 1O5Y_lBOBJK1D9Tw6pcsQJXYoTZXhR3mV, Uploaded: 22/09/2022, Priority: 7]>,
+    <Card: [Example Drive 1] Forest [Type: CARD, Identifier: 1Sne_vn7TlohIbsjt933Kd5k2ff6vFS1I, Uploaded: 22/09/2022, Priority: 7]>,
+    <Card: [Example Drive 1] Past in Flames [Type: CARD, Identifier: 1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1, Uploaded: 24/09/2022, Priority: 2]>,
+    <Card: [Example Drive 1] Goblin [Type: TOKEN, Identifier: 1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA, Uploaded: 09/10/2022, Priority: 2]>,
+    <Card: [Example Drive 1] Brainstorm [Type: CARD, Identifier: 1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5, Uploaded: 22/09/2022, Priority: 2]>,
+    <Card: [Example Drive 2] Past in Flames [Type: CARD, Identifier: 1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU, Uploaded: 24/09/2022, Priority: 2]>,
+    <Card: [Example Drive 1] Ravager of the Fells [Type: CARD, Identifier: 1lv8WC1Xf1qxA7VHSc8jOtT5up6FwaBPH, Uploaded: 22/09/2022, Priority: 2]>,
+    <Card: [Example Drive 1] Insectile Aberration [Type: CARD, Identifier: 1mO73GTYlieP0kiZEkF58pJSrZTmC9lNh, Uploaded: 09/10/2022, Priority: 2]>,
+    <Card: [Example Drive 1] Simple Lotus [Type: CARDBACK, Identifier: 1oigI6wz0zA--pNMuExKTs40kBNH6VRP_, Uploaded: 22/09/2022, Priority: 7]>,
+  ])
+# ---

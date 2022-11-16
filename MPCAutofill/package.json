@@ -1,0 +1,45 @@
+{
+  "name": "mpcautofill",
+  "version": "1.0.0",
+  "description": "# Automating MakePlayingCards' online ordering system",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "webpack --mode development",
+    "build": "webpack --mode production"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@babel/core": "^7.19.3",
+    "@babel/preset-env": "^7.19.4",
+    "autoprefixer": "^10.4.12",
+    "babel-loader": "^8.2.5",
+    "compression-webpack-plugin": "^10.0.0",
+    "css-loader": "^6.7.1",
+    "mini-css-extract-plugin": "^2.6.1",
+    "postcss-loader": "^7.0.1",
+    "sass": "^1.55.0",
+    "sass-loader": "^13.1.0",
+    "style-loader": "^3.3.1",
+    "file-loader": "^6.2.0",
+    "webpack": "^5.74.0",
+    "webpack-bundle-analyzer": "^4.6.1",
+    "webpack-cli": "^4.10.0"
+  },
+  "dependencies": {
+    "@popperjs/core": "^2.11.6",
+    "bootstrap": "^5.2.2",
+    "bootstrap-icons": "^1.9.1",
+    "bootstrap5-toggle": "^4.3.4",
+    "bootswatch": "^5.2.1",
+    "jquery": "^3.6.1",
+    "jquery-ui": "^1.13.2",
+    "js-cookie": "^3.0.1"
+  },
+  "babel": {
+    "presets": [
+      "@babel/preset-env"
+    ]
+  }
+}

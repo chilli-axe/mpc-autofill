@@ -6,7 +6,7 @@
 # of this file. Many code templates and inspirations are taken from blog post:
 # https://testdriven.io/blog/dockerizing-django-with-postgres-gunicorn-and-nginx/
 
-version: '3.4'
+version: "3.4"
 
 services:
   # Postgres database for Django

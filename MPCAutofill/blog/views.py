@@ -1,6 +1,7 @@
 from typing import Union
 
 from blog.models import Blog, BlogPost, ShowcaseBlogPost
+
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import Http404, HttpRequest, HttpResponse
 from django.shortcuts import render

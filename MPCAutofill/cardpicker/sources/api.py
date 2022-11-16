@@ -1,6 +1,8 @@
 import datetime as dt
+import os
 import threading
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any, Optional
 
 import ratelimit
@@ -53,7 +55,9 @@ SERVICE_ACC_FILENAME = "client_secrets.json"
 
 def find_or_create_google_drive_service() -> Resource:
     if (service := getattr(thread_local, "google_drive_service", None)) is None:
-        creds = ServiceAccountCredentials.from_json_keyfile_name(SERVICE_ACC_FILENAME, scopes=SCOPES)
+        creds = ServiceAccountCredentials.from_json_keyfile_name(
+            str(Path(os.path.abspath(__file__)).parent.parent.parent / SERVICE_ACC_FILENAME), scopes=SCOPES
+        )
         service = build("drive", "v3", credentials=creds)
         thread_local.google_drive_service = service
     return service

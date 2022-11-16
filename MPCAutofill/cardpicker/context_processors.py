@@ -1,9 +1,10 @@
 from typing import Any
 
-from cardpicker.forms import InputLink, InputText
-from cardpicker.utils.link_imports import ImportSites
 from django.conf import settings
 from django.http import HttpRequest
+
+from cardpicker.forms import InputLink, InputText
+from cardpicker.utils.link_imports import ImportSites
 
 
 def add_site_info(request: HttpRequest) -> dict[str, Any]:

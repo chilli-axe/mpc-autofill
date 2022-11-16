@@ -51,6 +51,7 @@ PREPEND_WWW = env("PREPEND_WWW", default=False)
 
 # SESSION_COOKIE_SECURE = True
 # CSRF_COOKIE_SECURE = True
+CSRF_TRUSTED_ORIGINS = ["http://localhost:8000", "http://127.0.0.1:8000"]  # required for Docker with Django 4.x+
 
 # Application definition
 
@@ -69,6 +70,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "django.middleware.gzip.GZipMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -77,7 +79,6 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "django_user_agents.middleware.UserAgentMiddleware",
-    "django.middleware.gzip.GZipMiddleware",
 ]
 
 ROOT_URLCONF = "MPCAutofill.urls"
@@ -182,4 +183,4 @@ DEFAULT_FROM_EMAIL = "default from email"
 
 # Database update settings
 DEFAULT_CARDBACK_FOLDER_PATH = env("DEFAULT_CARDBACK_FOLDER_PATH", default="Chilli_Axe's MTG Renders / 12. Cardbacks")
-DFEAULT_CARDBACK_IMAGE_NAME = env("DEFAULT_CARDBACK_IMAGE_NAME", default="Black Lotus")
+DEFAULT_CARDBACK_IMAGE_NAME = env("DEFAULT_CARDBACK_IMAGE_NAME", default="Black Lotus")

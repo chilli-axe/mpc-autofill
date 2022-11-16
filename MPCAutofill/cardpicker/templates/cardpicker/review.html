@@ -1,23 +1,39 @@
 {% extends 'cardpicker/base.html' %}
 {% load static %}
-
-{% block title %} Review MPC Order {% endblock %}
-
+{% block title %}Review MPC Order{% endblock %}
+{% block scripts %}
+    <script src="{% static 'js/review.bundle.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'css/review.bundle.css' %}">
+{% endblock %}
 {% block content %}
-
-    <script src="{% static 'js/review.js' %}"></script>
-    <script src="{% static 'js/card.js' %}"></script>
-    <script src="{% static 'js/search.js' %}"></script>
-    <link href="https://cdn.jsdelivr.net/gh/palcarazm/bootstrap5-toggle@4.1.0/css/bootstrap5-toggle.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/gh/palcarazm/bootstrap5-toggle@4.1.0/js/bootstrap5-toggle.min.js"></script>
     {% load crispy_forms_tags %}
-
+    <script type="text/javascript">
+        window.onbeforeunload = function() { return false; }  // "you have unsaved changes" prompt when leaving page
+        var groups = {};
+        var max_group = 2;
+        var drive_order = {{ drive_order|safe }}.toString();
+        var fuzzy_search = {{ fuzzy_search|safe }}.toString() === "true";
+        var qty = {{ qty }};
+        var order = {{ order|safe }};
+        var front_visible = true;
+        var prompt_deletion = true;
+        var cards_not_found = [];
+        window.addEventListener('load', Library.review.review_on_load, false);
+    </script>
     {# toast to alert the user that they've hit MPC's deck size cap #}
     <div aria-live="polite" aria-atomic="true" data-bs-autohide="false">
-        <div id="maxCardsToast" class="toast" style="position: fixed; right: 0; z-index: 0;" data-bs-delay="5000">
+        <div id="maxCardsToast"
+             class="toast"
+             style="position: fixed;
+                    right: 0;
+                    z-index: 0;"
+             data-bs-delay="5000">
             <div class="toast-header">
                 <strong class="me-auto">Order Size Limit</strong>
-                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="toast"
+                        aria-label="Close"></button>
             </div>
             <div class="toast-body">
                 You have reached the maximum deck size MPC offers at 612 cards.
@@ -25,187 +41,227 @@
             </div>
         </div>
     </div>
-
-    {# code to run on page load #}
-    <script type="text/javascript">
-        window.onbeforeunload = function() { return false; }
-
-        let groups = {};
-        let max_group = 2;
-        let drive_order = {{ drive_order|safe }}.toString();
-        let fuzzy_search = {{ fuzzy_search|safe }}.toString() === "true";
-        let qty = {{ qty }};
-        let front_visible = true;
-        let prompt_deletion = true;
-        let cards_not_found = [];
-
-        document.getElementById("id_body").onload = function () {
-            setup_toasts(["maxCardsToast", "errorToast"]);
-            let order = {{ order|safe }};
-            set_cardstock(order);
-            insert_data(drive_order, fuzzy_search, order);
-            // enable tooltips
-            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-              return new bootstrap.Tooltip(tooltipTriggerEl)
-            })
-        }
-    </script>
-
     <div class="row">
         {# left panel #}
         <div class="col-lg-8 col-md-8 col-sm-6 col-6">
-            <div id="card-container" class="row g-0 row-cols-xxl-4 row-cols-lg-3 row-cols-md-2 row-cols-sm-1 row-cols-1"></div>
+            <div id="card-container"
+                 class="row g-0 row-cols-xxl-4 row-cols-lg-3 row-cols-md-2 row-cols-sm-1 row-cols-1"></div>
         </div>
-
         {# right panel #}
         <div class="col-lg-4 col-md-4 col-sm-6 col-6" style="z-index: 1;">
-            <div class="sticky-top sticky-offset">
+            <div class="sticky-top sticky-offset g-0">
                 <h2>Review Your Order</h2>
                 {# info on order size and mpc bracket #}
-                <p style="font-size: 1rem">Your order has a total of <b id="order_qty"></b> cards,
+                <p style="font-size: 1rem">
+                    Your order has a total of <b id="order_qty"></b> cards,
                     <br>
                     in the MPC bracket of up to <b id="order_bracket"></b> cards.
                     <br>
                     On smaller screens, you may need to scroll down on this panel to generate your order.
                 </p>
-
                 <div class="row g-0">
                     {# button to toggle between fronts and backs of cards #}
                     <div class="col-lg-6 col-md-12 col-sm-12 col-12">
-                        <button type="button" class="btn btn-primary w-100" id="switchFacesBtn"
-                                onclick="switch_faces()">
+                        <button type="button"
+                                class="btn btn-primary w-100"
+                                id="switchFacesBtn"
+                                onclick="Library.review.switch_faces()">
                             Switch to Backs
                         </button>
                     </div>
-
                     {# insert cards dropdown #}
                     <div class="col-lg-6 col-md-12 col-sm-12 col-12 dropdown">
-                        <button type="button" class="btn btn-secondary w-100 dropdown-toggle" id="addCardsBtn"
-                                data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <button type="button"
+                                class="btn btn-secondary w-100 dropdown-toggle"
+                                id="addCardsBtn"
+                                data-bs-toggle="dropdown"
+                                aria-haspopup="true"
+                                aria-expanded="false">
                             Add Cards
                         </button>
                         <div class="dropdown-menu" aria-labelledby="addCardsBtn">
-                            <label class="dropdown-item" data-bs-toggle="modal" data-bs-target="#textModal"
-                               onclick="clear_text('id_card_list');">
+                            <label id="btn_add_cards_text_input"
+                                   class="dropdown-item"
+                                   data-bs-toggle="modal"
+                                   data-bs-target="#textModal"
+                                   onclick="Library.review.clear_text('id_card_list');">
                                 Text Input
                             </label>
                             {# TODO: fix for safari #}
-                            <label class="dropdown-item" onchange="insert_xml()">
-                                XML Order<input type="file" accept=".xml" hidden name="file" id="xmlfile">
+                            <label class="dropdown-item" onchange="Library.review.insert_xml()">
+                                XML Order
+                                <input type="file" accept=".xml" hidden name="file" id="xmlfile">
                             </label>
-                            <label class="dropdown-item" data-bs-toggle="modal" data-bs-target="#inputLinkModal"
-                               onclick="clear_text('id_list_url');">
+                            <label class="dropdown-item"
+                                   data-bs-toggle="modal"
+                                   data-bs-target="#inputLinkModal"
+                                   onclick="Library.review.clear_text('id_list_url');">
                                 From URL
                             </label>
                         </div>
                     </div>
                 </div>
-
                 {# foil selector #}
-                <input type="checkbox" id="cardstock-foil" data-toggle="toggle" data-on="Foil (Fronts Only)" data-off="Non-Foil"
-                        data-onstyle="success" data-offstyle="info" data-width="100%" data-height="40px" data-size="md">
-
+                <input type="checkbox"
+                       id="cardstock-foil"
+                       data-toggle="toggle"
+                       data-on="Foil (Fronts Only)"
+                       data-off="Non-Foil"
+                       data-onstyle="success"
+                       data-offstyle="info"
+                       data-width="100%"
+                       data-height="40px"
+                       data-size="md">
                 {# dropdown to select cardstock #}
                 <div class="form-group">
-                    <select class="form-select" id="cardstock-dropdown">
-                        <option selected="selected">(S30) Standard Smooth</option>
-                        <option>(S33) Superior Smooth</option>
-                        <option>(M31) Linen</option>
-                        <option>(P10) Plastic</option>
+                    <select class="form-select"
+                            id="cardstock-dropdown"
+                            onclick="Library.review.handleP10Foil();">
+                        <option selected="selected">
+                            (S30) Standard Smooth
+                        </option>
+                        <option>
+                            (S33) Superior Smooth
+                        </option>
+                        <option>
+                            (M31) Linen
+                        </option>
+                        <option>
+                            (P10) Plastic
+                        </option>
                     </select>
                 </div>
-
                 {# common cardback #}
                 <div class="row g-0" id="cardback-row">
                     <div id="cardback-container" class="col-lg-8 offset-lg-2 col-md-12"></div>
                 </div>
-
                 {# download images, generate order, and what's next buttons #}
                 <div class="row g-0">
-                    <button type="button" class="btn btn-success w-100" onclick="download_all();" data-bs-toggle="tooltip"
-                        data-bs-placement="top" title="Popups need to be enabled for this to function properly. Beware &#8212 this can open lots of tabs!">
+                    <button id="btn_download_all"
+                            type="button"
+                            class="btn btn-success w-100"
+                            onclick="Library.review.download_all();"
+                            data-bs-toggle="tooltip"
+                            data-bs-placement="top"
+                            title="Popups need to be enabled for this to function properly. Beware &#8212 this can open lots of tabs!">
                         Download All Images
                     </button>
                     <div class="col-lg-6 col-md-12 col-sm-12 col-12">
-                        <button type="button" class="btn btn-primary w-100" data-bs-toggle="modal"
-                                onclick="generate_xml();" data-bs-target="#donationModal">
+                        <button id="btn_generate_xml"
+                                type="button"
+                                class="btn btn-primary w-100"
+                                onclick="Library.review.generate_xml();">
                             Generate Order
                         </button>
                     </div>
                     <div class="col-lg-6 col-md-12 col-sm-12 col-12">
-                        <a href="/guide" target="_blank" class="btn btn-info w-100" role="button">
-                            What's Next?
-                        </a>
+                        <a href="/guide"
+                           target="_blank"
+                           class="btn btn-info w-100"
+                           role="button">What's Next?</a>
                     </div>
                 </div>
             </div>
         </div>
-
     </div>
-
     {# card text input modal #}
-    <div class="modal fade" id="textModal" tabindex="-1" role="dialog" aria-labelledby="textModalLabel"
+    <div class="modal fade"
+         id="textModal"
+         tabindex="-1"
+         role="dialog"
+         aria-labelledby="textModalLabel"
          aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="textModalLabel">Insert Cards</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Close"></button>
                 </div>
-                <form method="post" onsubmit="return insert_text();" id="insert_text" style="display: inline">
+                <form method="post"
+                      onsubmit="return Library.review.insert_text();"
+                      id="insert_text"
+                      style="display: inline">
                     <div class="modal-body">
-                        <p>Type the names of the cards you'd like to add to your order and hit <b>Submit</b>. One card
-                            per line.</p>
+                        <p>
+                            Type the names of the cards you'd like to add to your order and hit <b>Submit</b>. One card
+                            per line.
+                        </p>
                         {% csrf_token %}
                         {{ input_text_form|crispy }}
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <input type="submit" class="btn btn-success" value="Submit">
+                        <input id="btn_add_cards_submit"
+                               type="submit"
+                               class="btn btn-success"
+                               value="Submit">
                     </div>
                 </form>
             </div>
         </div>
     </div>
-
     {# import list modal #}
-    <div class="modal fade" id="inputLinkModal" tabindex="-1" role="dialog" aria-labelledby="inputLinkLabel"
-        aria-hidden="true">
+    <div class="modal fade"
+         id="inputLinkModal"
+         tabindex="-1"
+         role="dialog"
+         aria-labelledby="inputLinkLabel"
+         aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="inputLinkLabel">Import List from URL</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     Paste a link to a card list hosted on one of the below sites (not affiliated) to import into MPC Autofill:
                     <ul>
                         {% for import_site in import_sites %}
-                            <li><a href="{{ import_site.1|safe }}" target="_blank">{{ import_site.0|safe }}</a></li>
+                            <li>
+                                <a href="{{ import_site.1|safe }}" target="_blank">{{ import_site.0|safe }}</a>
+                            </li>
                         {% endfor %}
                     </ul>
-
-                    <form method="post" onsubmit="return insert_link()" id="input_link" enctype="multipart/form-data">
+                    <form method="post"
+                          onsubmit="return Library.review.insert_link()"
+                          id="input_link"
+                          enctype="multipart/form-data">
                         {% csrf_token %}
                         {{ input_link_form|crispy }}
                     </form>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-success" onclick="$('#input_link').submit()" data-bs-dismiss="modal">Submit</button>
+                    <button type="button"
+                            class="btn btn-success"
+                            onclick="$('#input_link').submit()"
+                            data-bs-dismiss="modal">
+                        Submit
+                    </button>
                 </div>
             </div>
         </div>
     </div>
-
     {# loading modal #}
-    <div class="modal fade" id="loadModal" data-bs-backdrop="static" tabindex="-1" role="dialog"
-        aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+    <div class="modal fade"
+         id="loadModal"
+         data-bs-backdrop="static"
+         tabindex="-1"
+         role="dialog"
+         aria-labelledby="exampleModalCenterTitle"
+         aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
                 <div class="modal-header text-center">
-                    <h5 class="modal-title w-100" id="exampleModalLongTitle" style="user-select: none">Loading your cards...</h5>
+                    <h5 class="modal-title w-100"
+                        id="exampleModalLongTitle"
+                        style="user-select: none">Loading your cards...</h5>
                 </div>
                 <div class="modal-body">
                     <div class="d-flex justify-content-center">
@@ -217,87 +273,136 @@
             </div>
         </div>
     </div>
-
     {# missing card versions modal #}
-    <div class="modal fade" id="missingCardsModal" tabindex="-1" role="dialog" aria-labelledby="missingCardsModalLabel"
+    <div class="modal fade"
+         id="missingCardsModal"
+         tabindex="-1"
+         role="dialog"
+         aria-labelledby="missingCardsModalLabel"
          aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="missingCardsModalLabel">Missing Card Versions</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <p>
-                    Some card versions you specified couldn't be found. Sorry about that!
-                    <br>
-                    This typically happens when the creator of the image removed it from their Drive
+                        Some card versions you specified couldn't be found. Sorry about that!
+                        <br>
+                        This typically happens when the creator of the image removed it from their repository
                         (even if they reuploaded it later).
-                    <br>
-                    The versions we couldn't find are tabulated below for your reference. The cards in
-                    these slots have reverted to the first versions we found when searching the database.
+                        <br>
+                        The versions we couldn't find are tabulated below for your reference. The cards in
+                        these slots have reverted to the first versions we found when searching the database.
                     </p>
                     <table class="table table-hover">
                         <thead>
-                        <tr>
-                            <th scope="col">Drive ID</th>
-                            <th scope="col">Slot</th>
-                            <th scope="col">Search Query</th>
-                        </tr>
+                            <tr>
+                                <th scope="col">Identifier</th>
+                                <th scope="col">
+                                    Slot
+                                </th>
+                                <th scope="col">
+                                    Face
+                                </th>
+                                <th scope="col">
+                                    Search Query
+                                </th>
+                            </tr>
                         </thead>
                         <tbody id="missingCardsTable">
                         </tbody>
                     </table>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        Close
+                    </button>
                 </div>
             </div>
         </div>
     </div>
-
     {# remove card confirmation modal #}
-    <div class="modal fade" id="removeCardModal" tabindex="-1" role="dialog" aria-labelledby="removeCardModalLabel"
+    <div class="modal fade"
+         id="removeCardModal"
+         tabindex="-1"
+         role="dialog"
+         aria-labelledby="removeCardModalLabel"
          aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="removeCardModalLabel">Remove Card</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <h5 class="modal-title" id="removeCardModalLabel">
+                        Remove Card
+                    </h5>
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Close">
+                    </button>
                 </div>
                 <div class="modal-body">
-                    <p>Are you sure you'd like to remove this card?
-                    <br>
-                    Slot <b id="removeCardId"></b>: <i id="removeCardName"></i></p>
+                    <p>
+                        Are you sure you'd like to remove this card?
+                        <br>
+                        Slot <b id="removeCardId"></b>: <i id="removeCardName"></i>
+                    </p>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" onclick="prompt_deletion = false; remove_card();">Confirm and Don't Ask Again</button>
-                    <button type="button" class="btn btn-success" onclick="remove_card();">Confirm</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        Cancel
+                    </button>
+                    <button id="btn_confirm_remove_card_no_reminder"
+                            type="button"
+                            class="btn btn-primary"
+                            onclick="prompt_deletion = false; Library.review.remove_card();">
+                        Confirm and Don't Ask Again
+                    </button>
+                    <button id="btn_confirm_remove_card"
+                            type="button"
+                            class="btn btn-success"
+                            onclick="Library.review.remove_card();">
+                        Confirm
+                    </button>
                 </div>
             </div>
         </div>
     </div>
-
     {# card selection grid modal #}
-    <div class="modal fade" id="gridSelectModal" tabindex="-1" role="dialog" aria-labelledby="gridSelectModalLabel"
+    <div class="modal fade"
+         id="gridSelectModal"
+         tabindex="-1"
+         role="dialog"
+         aria-labelledby="gridSelectModalLabel"
          aria-hidden="true">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 id="gridSelectModalLabel" class="modal-title">Select Version</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <h5 id="gridSelectModalLabel" class="modal-title">
+                        Select Version
+                    </h5>
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Close">
+                    </button>
                 </div>
                 <div class="modal-body">
-                    <div id="grid-container" class="row g-0 row-cols-xxl-4 row-cols-lg-3 row-cols-md-2 row-cols-sm-2 row-cols-2"></div>
+                    <div id="grid-container"
+                         class="row g-0 row-cols-xxl-4 row-cols-lg-3 row-cols-md-2 row-cols-sm-2 row-cols-2">
+                    </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        Close
+                    </button>
                 </div>
             </div>
         </div>
     </div>
-
     {% include "cardpicker/card.html" %}
-
 {% endblock %}

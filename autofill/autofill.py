@@ -1,6 +1,7 @@
 import os
 
 import click
+
 from src.constants import browsers
 from src.driver import AutofillDriver
 from src.pdf_maker import PdfExporter

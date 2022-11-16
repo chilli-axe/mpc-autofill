@@ -1,9 +1,22 @@
 from datetime import datetime
 from typing import Any, Optional
 
-from cardpicker.sources.source_types import SourceTypeChoices
 from django.db import models
 from django.utils import dateformat
+from django.utils.translation import gettext_lazy
+
+from cardpicker.sources.source_types import SourceTypeChoices
+
+
+class Faces(models.TextChoices):
+    FRONT = ("FRONT", gettext_lazy("Front"))
+    BACK = ("BACK", gettext_lazy("Back"))
+
+
+class CardTypes(models.TextChoices):
+    CARD = ("CARD", gettext_lazy("Card"))
+    CARDBACK = ("CARDBACK", gettext_lazy("Cardback"))
+    TOKEN = ("TOKEN", gettext_lazy("Token"))
 
 
 class Source(models.Model):
@@ -21,40 +34,29 @@ class Source(models.Model):
         (qty_total, qty_cards, qty_cardbacks, qty_tokens, _) = self.count()
         return (
             f"[{self.ordinal}.] {self.name} "
-            f"({qty_total} total: {qty_cards} cards, {qty_cardbacks} cardbacks, {qty_tokens} tokens)"
+            f"[{qty_total} total: {qty_cards} cards, {qty_cardbacks} cardbacks, {qty_tokens} tokens]"
         )
 
     def count(self) -> tuple[str, str, str, str, float]:
         # return the number of cards that this Source created, and the Source's average DPI
-        qty_cards = Card.objects.filter(source=self).count()
-        qty_cardbacks = Cardback.objects.filter(source=self).count()
-        qty_tokens = Token.objects.filter(source=self).count()
+        qty_cards = Card.objects.filter(source=self).filter(card_type=CardTypes.CARD).count()
+        qty_cardbacks = Card.objects.filter(source=self).filter(card_type=CardTypes.CARDBACK).count()
+        qty_tokens = Card.objects.filter(source=self).filter(card_type=CardTypes.TOKEN).count()
         qty_all = qty_cards + qty_cardbacks + qty_tokens
 
         # if this source has any cards/cardbacks/tokens, average the dpi of all of their things
+        avg_dpi = 0
         if qty_all > 0:
-            total_dpi = 0
-            total_dpi += (
-                Card.objects.filter(source=self).aggregate(models.Sum("dpi"))["dpi__sum"] if qty_cards > 0 else 0
+            avg_dpi = int(
+                (Card.objects.filter(source=self).aggregate(models.Sum("dpi"))["dpi__sum"] if qty_cards > 0 else 0)
+                / qty_all
             )
-            total_dpi += (
-                Cardback.objects.filter(source=self).aggregate(models.Sum("dpi"))["dpi__sum"]
-                if qty_cardbacks > 0
-                else 0
-            )
-            total_dpi += (
-                Token.objects.filter(source=self).aggregate(models.Sum("dpi"))["dpi__sum"] if qty_tokens > 0 else 0
-            )
-            avgdpi = int(total_dpi / qty_all)
-        else:
-            avgdpi = 0
-
         return (
             f"{qty_all :,d}",
             f"{qty_cards :,d}",
             f"{qty_cardbacks :,d}",
             f"{qty_tokens :,d}",
-            avgdpi,
+            avg_dpi,
         )
 
     class Meta:
@@ -81,7 +83,8 @@ class Source(models.Model):
         }
 
 
-class CardBase(models.Model):
+class Card(models.Model):
+    card_type = models.CharField(max_length=20, choices=CardTypes.choices, default=CardTypes.CARD)
     identifier = models.CharField(max_length=200, unique=True)
     name = models.CharField(max_length=200)
     priority = models.IntegerField(default=0)
@@ -96,7 +99,14 @@ class CardBase(models.Model):
     size = models.IntegerField()
 
     def __str__(self) -> str:
-        return "[{}] {}: {}, uploaded: {}".format(self.source, self.name, self.identifier, self.date)
+        return (
+            f"[{self.source.name}] "
+            f"{self.name} "
+            f"[Type: {self.card_type}, "
+            f"Identifier: {self.identifier}, "
+            f"Uploaded: {self.date.strftime('%d/%m/%Y')}, "
+            f"Priority: {self.priority}]"
+        )
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -122,6 +132,9 @@ class CardBase(models.Model):
     def get_source_name(self) -> str:
         return self.source.name
 
+    def get_source_external_link(self) -> Optional[str]:
+        return self.source.external_link or None
+
     def get_source_type(self) -> str:
         return SourceTypeChoices[self.source.source_type].label
 
@@ -141,20 +154,7 @@ class CardBase(models.Model):
         )
 
     class Meta:
-        abstract = True
         ordering = ["-priority"]
-
-
-class Card(CardBase):
-    pass
-
-
-class Cardback(CardBase):
-    pass
-
-
-class Token(CardBase):
-    pass
 
 
 class DFCPair(models.Model):

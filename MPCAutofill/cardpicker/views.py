@@ -1,12 +1,20 @@
 import json
+from collections import defaultdict
 from datetime import timedelta
 from typing import Any, Callable, Optional, TypeVar, Union, cast
 
 from blog.models import BlogPost
+
+from django.db import connection
+from django.http import HttpRequest, HttpResponse, JsonResponse
+from django.shortcuts import redirect, render
+from django.utils import timezone
+
 from cardpicker.forms import InputCSV, InputLink, InputText, InputXML
-from cardpicker.models import Card, Cardback, Source, Token
+from cardpicker.models import CardTypes, Source
+from cardpicker.mpcorder import Faces, MPCOrder, ReqTypes
 from cardpicker.sources.source_types import SourceTypeChoices
-from cardpicker.utils.mpcorder import Faces, MPCOrder, ReqTypes
+from cardpicker.utils.sanitisation import to_searchable
 from cardpicker.utils.search_functions import (
     SearchExceptions,
     build_context,
@@ -18,11 +26,6 @@ from cardpicker.utils.search_functions import (
     search_new,
     search_new_elasticsearch_definition,
 )
-from cardpicker.utils.to_searchable import to_searchable
-from django.db import connection
-from django.http import HttpRequest, HttpResponse, JsonResponse
-from django.shortcuts import redirect, render
-from django.utils import timezone
 
 # https://mypy.readthedocs.io/en/stable/generics.html#declaring-decorators
 F = TypeVar("F", bound=Callable[..., Any])
@@ -138,46 +141,40 @@ def contributions(request: HttpRequest) -> HttpResponse:
                 cardpicker_source.external_link,
                 cardpicker_source.description,
                 cardpicker_source.ordinal,
-                COALESCE(COUNT(cardpicker_card.dpi), 0),
-                COALESCE(SUM(cardpicker_card.dpi), 0)
+                COALESCE(SUM(cardpicker_card.dpi), 0),
+                COUNT(cardpicker_card.dpi)
             FROM cardpicker_source
             LEFT JOIN cardpicker_card ON cardpicker_source.id = cardpicker_card.source_id
-            GROUP BY cardpicker_source.ordinal, cardpicker_source.name
+            GROUP BY cardpicker_source.name,
+                cardpicker_source.identifier,
+                cardpicker_source.source_type,
+                cardpicker_source.external_link,
+                cardpicker_source.description,
+                cardpicker_source.ordinal
             ORDER BY cardpicker_source.ordinal, cardpicker_source.name
             """
         )
-        rows_card = cursor.fetchall()
+        results_1 = cursor.fetchall()
         cursor.execute(
             """
             SELECT
-                COALESCE(COUNT(cardpicker_cardback.dpi), 0),
-                COALESCE(SUM(cardpicker_cardback.dpi), 0)
+                cardpicker_source.identifier,
+                cardpicker_card.card_type,
+                COUNT(cardpicker_card.card_type)
             FROM cardpicker_source
-            LEFT JOIN cardpicker_cardback ON cardpicker_source.id = cardpicker_cardback.source_id
-            GROUP BY cardpicker_source.ordinal, cardpicker_source.name
-            ORDER BY cardpicker_source.ordinal, cardpicker_source.name
+            LEFT JOIN cardpicker_card ON cardpicker_source.id = cardpicker_card.source_id
+            GROUP BY cardpicker_source.identifier, cardpicker_card.card_type
             """
         )
-        rows_cardback = cursor.fetchall()
-        cursor.execute(
-            """
-            SELECT
-                COALESCE(COUNT(cardpicker_token.dpi), 0),
-                COALESCE(SUM(cardpicker_token.dpi), 0)
-            FROM cardpicker_source
-            LEFT JOIN cardpicker_token ON cardpicker_source.id = cardpicker_token.source_id
-            GROUP BY cardpicker_source.ordinal, cardpicker_source.name
-            ORDER BY cardpicker_source.ordinal, cardpicker_source.name
-            """
-        )
-        rows_token = cursor.fetchall()
+        results_2 = cursor.fetchall()
+
+    source_card_count_by_type: dict[str, dict[str, int]] = defaultdict(dict)
+    card_count_by_type: dict[str, int] = defaultdict(int)
+    for (identifier, card_type, count) in results_2:
+        source_card_count_by_type[identifier][card_type] = count
+        card_count_by_type[card_type] += count
     sources = []
-    for (
-        (name, identifier, source_type, external_link, description, _, card_count, card_total_dpi),
-        (cardback_count, cardback_total_dpi),
-        (token_count, token_total_dpi),
-    ) in zip(rows_card, rows_cardback, rows_token):
-        total_count = card_count + cardback_count + token_count
+    for (name, identifier, source_type, external_link, description, ordinal, total_dpi, total_count) in results_1:
         sources.append(
             {
                 "name": name,
@@ -185,16 +182,14 @@ def contributions(request: HttpRequest) -> HttpResponse:
                 "source_type": SourceTypeChoices[source_type].label,
                 "external_link": external_link,
                 "description": description,
-                "qty_cards": f"{card_count :,d}",
-                "qty_cardbacks": f"{cardback_count :,d}",
-                "qty_tokens": f"{token_count :,d}",
-                "avgdpi": f"{(card_total_dpi + cardback_total_dpi + token_total_dpi) / total_count:.2f}"
-                if total_count > 0
-                else 0,
+                "qty_cards": f"{source_card_count_by_type[identifier].get(CardTypes.CARD, 0):,d}",
+                "qty_cardbacks": f"{source_card_count_by_type[identifier].get(CardTypes.CARDBACK, 0) :,d}",
+                "qty_tokens": f"{source_card_count_by_type[identifier].get(CardTypes.TOKEN, 0) :,d}",
+                "avgdpi": f"{(total_dpi / total_count):.2f}" if total_count > 0 else 0,
             }
         )
 
-    total_count = [x.objects.all().count() for x in [Card, Cardback, Token]]
+    total_count = [card_count_by_type[x] for x in CardTypes]
     total_count.append(sum(total_count))
     total_count_f = [f"{x:,d}" for x in total_count]
 
@@ -211,7 +206,7 @@ def search_multiple(request: HttpRequest) -> HttpResponse:
     order = MPCOrder()
     order.from_json(json.loads(request.POST.get("order", "")))
 
-    for face in Faces.FACES.value:
+    for face in Faces.get_faces():
         for item in order[face].values():
             result = search(drive_order, fuzzy_search, item.query, item.req_type)
             item.insert_data(result)

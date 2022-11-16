@@ -41,8 +41,9 @@ import os
 from enum import Enum
 from typing import Callable
 
-import src.webdrivers as wd
 from selenium.webdriver.remote.webdriver import WebDriver
+
+import src.webdrivers as wd
 
 # Disable logging messages for webdriver_manager
 os.environ["WDM_LOG_LEVEL"] = "0"
@@ -106,6 +107,9 @@ class GoogleScriptsAPIs(str, Enum):
     image_content = (
         "https://script.google.com/macros/s/AKfycbzzCWc2x3tfQU1Zp45LB1P19FNZE-4njwzfKT5_Rx399h-5dELZWyvf/exec"
     )
+
+    def __str__(self) -> str:
+        return str(self.value)
 
 
 BRACKETS = [18, 36, 55, 72, 90, 108, 126, 144, 162, 180, 198, 216, 234, 396, 504, 612]

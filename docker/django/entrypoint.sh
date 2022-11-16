@@ -17,11 +17,12 @@ until curl --silent --output /dev/null http://elasticsearch:9200/_cat/health?h=s
     sleep 5
 done
 
+# Gather static files
+npm install && npm run build
+python3 manage.py collectstatic --noinput
+
 # Check if we are running for the first time
 if ! python3 manage.py migrate --check; then
-    # Gather static files
-    python3 manage.py collectstatic --noinput
-
     # Run migrations and populate database
     echo "Migrate Django database..."
     python3 manage.py migrate
@@ -29,7 +30,7 @@ if ! python3 manage.py migrate --check; then
     python3 manage.py import_sources
     echo "Scan drives and update database..."
     python3 manage.py update_database
-    echo "Retrieve double-faced cards from Sryfall..."
+    echo "Retrieve double-faced cards from Scryfall..."
     python3 manage.py update_dfcs
 fi
 

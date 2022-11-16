@@ -161,10 +161,15 @@ ga_settings.py
 bootstrap.min.css
 jquery.ui.touch-punch.js
 MPCAutofill/client_secrets.json
-static
+**/static/js
 staticroot
 elasticsearch
 *.db
 .env_prod
 MPCAutofill/exported_drives.csv
 MPCAutofill/drives.csv
+/MPCAutofill/node_modules/
+/MPCAutofill/cardpicker/static/css/
+/static/
+*.woff
+*.woff2

@@ -9,8 +9,10 @@ from xml.etree.ElementTree import Element, ParseError
 import attr
 import enlighten
 import InquirerPy
-import src.constants as constants
 from defusedxml.ElementTree import parse as defused_parse
+from sanitize_filename import sanitize
+
+import src.constants as constants
 from src.utils import (
     CURRDIR,
     TEXT_BOLD,
@@ -73,13 +75,12 @@ class CardImage:
         if self.name is None:
             self.file_path = None
         else:
-            file_path = os.path.join(image_directory(), self.name)
+            file_path = os.path.join(image_directory(), sanitize(self.name))
             if not os.path.isfile(file_path) or os.path.getsize(file_path) <= 0:
                 # The filepath without ID in parentheses doesn't exist - change the filepath to contain the ID instead
                 name_split = self.name.rsplit(".", 1)
                 file_path = os.path.join(
-                    image_directory(),
-                    f"{name_split[0]} ({self.drive_id}).{name_split[1]}",
+                    image_directory(), sanitize(f"{name_split[0]} ({self.drive_id}).{name_split[1]}")
                 )
             self.file_path = file_path
 
@@ -117,7 +118,7 @@ class CardImage:
         return card_image
 
     def download_image(self, queue: Queue["CardImage"], download_bar: enlighten.Counter) -> None:
-        if not self.file_exists() and not self.errored:
+        if not self.file_exists() and not self.errored and self.file_path is not None:
             self.errored = not download_google_drive_file(self.drive_id, self.file_path)
 
         if self.file_exists() and not self.errored:
@@ -182,10 +183,7 @@ class CardImageCollection:
             missing_slots = card_image_collection.all_slots() - card_image_collection.slots()
             if missing_slots:
                 card_image_collection.cards.append(
-                    CardImage(
-                        drive_id=fill_image_id.strip(' "'),
-                        slots=list(missing_slots),
-                    )
+                    CardImage(drive_id=fill_image_id.strip(' "'), slots=list(missing_slots))
                 )
 
         # postponing validation from post-init so we don't error for missing slots that `fill_image_id` would fill
@@ -225,6 +223,8 @@ class Details:
             raise ValidationException(f"Order bracket {self.bracket} not supported!")
         if self.stock not in [x.value for x in constants.Cardstocks]:
             raise ValidationException(f"Order cardstock {self.stock} not supported!")
+        if self.stock == constants.Cardstocks.P10 and self.foil == True:
+            raise ValidationException(f"Order cardstock {self.stock} is not supported in foil!")
 
     def __attrs_post_init__(self) -> None:
         try:
@@ -298,9 +298,7 @@ class CardOrder:
         root_dict = unpack_element(element, [x.value for x in constants.BaseTags])
         details = Details.from_element(root_dict[constants.BaseTags.details])
         fronts = CardImageCollection.from_element(
-            element=root_dict[constants.BaseTags.fronts],
-            num_slots=details.quantity,
-            face=constants.Faces.front,
+            element=root_dict[constants.BaseTags.fronts], num_slots=details.quantity, face=constants.Faces.front
         )
         cardback_elem = root_dict[constants.BaseTags.cardback]
         if cardback_elem.text is not None:
@@ -313,9 +311,7 @@ class CardOrder:
         else:
             print(f"{TEXT_BOLD}Warning{TEXT_END}: Your order file did not contain a common cardback image.")
             backs = CardImageCollection.from_element(
-                element=root_dict[constants.BaseTags.backs],
-                num_slots=details.quantity,
-                face=constants.Faces.back,
+                element=root_dict[constants.BaseTags.backs], num_slots=details.quantity, face=constants.Faces.back
             )
         # If the order has a single cardback, set its slots to [0], as it will only be uploaded and inserted into
         # a single slot
@@ -354,12 +350,7 @@ class CardOrder:
             file_name = xml_glob[0]
         else:
             xml_select_string = "Multiple XML files found. Please select one for this order: "
-            questions = {
-                "type": "list",
-                "name": "xml_choice",
-                "message": xml_select_string,
-                "choices": xml_glob,
-            }
+            questions = {"type": "list", "name": "xml_choice", "message": xml_select_string, "choices": xml_glob}
             answers = InquirerPy.prompt(questions)
             file_name = answers["xml_choice"]
         return cls.from_file_name(file_name)

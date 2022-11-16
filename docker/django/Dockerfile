@@ -1,6 +1,6 @@
 # Docker to serve Django via Unicorn and run
 # cron to regularly update the card database
-FROM ubuntu:20.04
+FROM ubuntu:22.04
 
 # Keeps Python from generating .pyc files in the container
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -19,13 +19,24 @@ RUN apt-get update && \
 RUN rm -rf /etc/cron.*/* && \
     chmod u+s /usr/sbin/cron
 
+# Configure apt with node 16
+RUN curl -sL https://deb.nodesource.com/setup_18.x | bash -
+
+# Install node and npm
+RUN apt-get install -y nodejs
+
 # Copy requirements.txt
-COPY requirements.txt /MPCAutofill/
+COPY MPCAutofill/requirements.txt /MPCAutofill/
 WORKDIR /MPCAutofill
 
 # Install pip requirements
 RUN pip3 install gunicorn wheel
 RUN pip3 install -r requirements.txt
+
+# Copy frontend files from repository
+COPY MPCAutofill/cardpicker/frontend /MPCAutofill/cardpicker/frontend
+COPY MPCAutofill/package.json /MPCAutofill/package.json
+COPY MPCAutofill/package-lock.json /MPCAutofill/package-lock.json
 
 # Copy relevant files from repository
 COPY docker /MPCAutofill/docker
@@ -49,8 +60,8 @@ RUN adduser -u 5678 --disabled-password --gecos "" mpcautofill && \
     chown -R mpcautofill /MPCAutofill
 USER mpcautofill
 
-# Place environment file
-RUN cp docker/django/env.txt MPCAutofill/MPCAutofill/.env
+# Place environment file if one does not already exist
+RUN ./docker/django/copy_env_file.sh
 
 # Prepare folder for static files (create now as user for permissions)
 RUN mkdir -p static

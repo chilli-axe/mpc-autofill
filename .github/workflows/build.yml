@@ -1,12 +1,12 @@
 # credit: https://data-dive.com/multi-os-deployment-in-cloud-using-pyinstaller-and-github-actions
-name: MPC Autofill Desktop Client
+name: Build
 on:
   push:
-    branches: [ master ]
+    branches: [master]
   workflow_dispatch:
 jobs:
   build:
-    name: Build packages
+    name: Desktop client
     runs-on: ${{ matrix.os }}
     defaults:
       run:
@@ -24,20 +24,20 @@ jobs:
             TARGET: linux
             OUT_FILE_NAME: autofill
     steps:
-    - uses: actions/checkout@v2
-    - uses: browser-actions/setup-chrome@latest
-    - name: Set up Python 3.9
-      uses: actions/setup-python@v2
-      with:
-        python-version: 3.9
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-    - name: Build with pyinstaller for ${{ matrix.TARGET }}
-      run: pyinstaller autofill.spec
-    - name: Upload artifact
-      uses: actions/upload-artifact@v2
-      with:
-        path: ./autofill/dist/${{ matrix.OUT_FILE_NAME }}
-        name: autofill-${{ matrix.TARGET }}
+      - uses: actions/checkout@v2
+      - uses: browser-actions/setup-chrome@latest
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Build with pyinstaller for ${{ matrix.TARGET }}
+        run: pyinstaller autofill.spec
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          path: ./autofill/dist/${{ matrix.OUT_FILE_NAME }}
+          name: autofill-${{ matrix.TARGET }}

@@ -12,7 +12,7 @@ class InputText(forms.Form):
                 "6x t:Goblin",
                 "rows": "12",
                 "class": "form-control",
-                "style": "margin-bottom: 5px; width: 100%; height: 100%; background-color: #cfcfcf;",
+                "style": "margin-bottom: 5px; width: 100%; height: 100%",
             }
         ),
         label="",
@@ -32,6 +32,7 @@ class InputLink(forms.Form):
     list_url = forms.CharField(
         widget=forms.TextInput(
             attrs={
+                "id": "list_url",
                 "placeholder": "Card list URL",
                 "class": "form-control",
             }

@@ -2,8 +2,10 @@ import csv
 from typing import Any
 
 from bulk_sync import bulk_sync
-from cardpicker.models import Source
+
 from django.core.management.base import BaseCommand
+
+from cardpicker.models import Source
 
 
 def read_sources_csv() -> list[Source]:
