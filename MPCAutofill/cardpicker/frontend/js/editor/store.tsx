@@ -4,6 +4,7 @@ import searchResultsReducer from "./searchResultsSlice";
 import cardDocumentsReducer from "./cardDocumentsSlice";
 import sourceDocumentsReducer from "./sourceDocumentsSlice";
 import searchSettingsReducer from "./searchSettingsSlice";
+import projectReducer from "./projectSlice";
 
 export const store = configureStore({
   reducer: {
@@ -12,6 +13,7 @@ export const store = configureStore({
     searchResults: searchResultsReducer,
     cardDocuments: cardDocumentsReducer,
     sourceDocuments: sourceDocumentsReducer,
+    project: projectReducer,
   },
 });
 

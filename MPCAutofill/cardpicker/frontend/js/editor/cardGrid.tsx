@@ -5,7 +5,7 @@ import { RootState, AppDispatch } from "./store";
 import { CardSlot } from "./cardSlot";
 import { addSearchResults, fetchCards } from "./searchResultsSlice";
 import { fetchCardDocuments } from "./cardDocumentsSlice";
-import { SearchQuery, CardTypes, Faces } from "./constants";
+import { Faces, Front, Back } from "./constants";
 
 // import styles from './Counter.module.css'
 
@@ -23,32 +23,36 @@ export function CardGrid() {
     dispatch(fetchCardDocuments());
   }, [dispatch]);
 
+  let cardSlotsFronts = [];
+  let cardSlotsBacks = [];
+  const project = useSelector((state: RootState) => state.project);
+
+  for (const [slot, projectMember] of Object.entries(project.front)) {
+    cardSlotsFronts.push(
+      <CardSlot
+        searchQuery={projectMember.query}
+        face={Front}
+        slot={parseInt(slot)} // TODO: this sucks a bit
+        selectedImage={projectMember.selectedImage}
+      ></CardSlot>
+    );
+  }
+  for (const [slot, projectMember] of Object.entries(project.back)) {
+    cardSlotsBacks.push(
+      <CardSlot
+        searchQuery={projectMember.query}
+        face={Back}
+        slot={parseInt(slot)} // TODO: this sucks a bit
+        selectedImage={projectMember.selectedImage}
+      ></CardSlot>
+    );
+  }
+
   return (
-    <div
-      id="card-container"
-      className="row g-0 row-cols-xxl-4 row-cols-lg-3 row-cols-md-2 row-cols-sm-1 row-cols-1"
-    >
-      <CardSlot
-        searchQuery={
-          { query: "island", card_type: CardTypes.Card } as SearchQuery
-        }
-        face={Faces.Front}
-        slot={0}
-      ></CardSlot>
-      <CardSlot
-        searchQuery={
-          { query: "past in flames", card_type: CardTypes.Card } as SearchQuery
-        }
-        face={Faces.Front}
-        slot={1}
-      ></CardSlot>
-      <CardSlot
-        searchQuery={
-          { query: "past in flames", card_type: CardTypes.Card } as SearchQuery
-        }
-        face={Faces.Front}
-        slot={2}
-      ></CardSlot>
+    <div className="row g-0 row-cols-xxl-4 row-cols-lg-3 row-cols-md-2 row-cols-sm-1 row-cols-1">
+      {cardSlotsFronts}
+      {/*<div>{cardSlotsFronts}</div>*/}
+      {/*<div>{cardSlotsBacks}</div>*/}
     </div>
   );
 }

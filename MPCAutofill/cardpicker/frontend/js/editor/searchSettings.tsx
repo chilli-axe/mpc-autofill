@@ -35,7 +35,7 @@ export function SearchSettings() {
           <br />
           Click the table header to enable or disable all sources.
           <br />
-          <input
+          <input // TODO: this is broken at the moment.
             type="checkbox"
             id="searchtype"
             data-toggle="toggle"

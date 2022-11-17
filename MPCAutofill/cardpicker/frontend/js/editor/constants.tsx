@@ -9,7 +9,6 @@ export interface SearchQuery {
   card_type: CardTypes;
 }
 
-export enum Faces {
-  Front = "front",
-  Back = "back",
-}
+export type Faces = "front" | "back";
+export const Front: Faces = "front";
+export const Back: Faces = "back";

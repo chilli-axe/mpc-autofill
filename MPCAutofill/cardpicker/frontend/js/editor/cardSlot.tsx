@@ -1,10 +1,10 @@
-import React, { useState } from "react";
+import React from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { RootState } from "./store";
+import { AppDispatch, RootState } from "./store";
 import { Card } from "./card";
 import { Faces, SearchQuery } from "./constants";
 import { wrapIndex } from "./utils";
-import { Root } from "react-dom/client";
+import { setSelectedImage } from "./projectSlice";
 
 // import styles from './Counter.module.css'
 
@@ -12,13 +12,16 @@ interface CardSlotProps {
   searchQuery: SearchQuery;
   face: Faces;
   slot: number;
+  selectedImage?: string;
 }
 
 export function CardSlot(props: CardSlotProps) {
   const searchQuery: SearchQuery = props.searchQuery;
   const face = props.face;
   const slot = props.slot;
-  const [selectedImage, setSelectedImage] = useState(null);
+  let selectedImage = props.selectedImage;
+
+  const dispatch = useDispatch<AppDispatch>();
 
   const searchResultsForQuery = useSelector(
     (state: RootState) =>
@@ -26,18 +29,28 @@ export function CardSlot(props: CardSlotProps) {
         searchQuery.card_type
       ] ?? []
   ); // TODO: move this selector into searchResultsSlice
-  if (searchResultsForQuery.length > 0 && selectedImage === null) {
-    setSelectedImage(searchResultsForQuery[0]);
+  if (
+    (searchResultsForQuery.length > 0 && selectedImage === null) ||
+    selectedImage === undefined
+  ) {
+    // setSelectedImage(searchResultsForQuery[0]);
+    selectedImage = searchResultsForQuery[0];
+    dispatch(setSelectedImage({ face, slot, selectedImage }));
   }
 
   const selectedImageIndex = searchResultsForQuery.indexOf(selectedImage);
 
   function setSelectedImageFromDelta(delta: number): void {
     // TODO: docstring
-    setSelectedImage(
-      searchResultsForQuery[
-        wrapIndex(selectedImageIndex + delta, searchResultsForQuery.length)
-      ]
+    dispatch(
+      setSelectedImage({
+        face,
+        slot,
+        selectedImage:
+          searchResultsForQuery[
+            wrapIndex(selectedImageIndex + delta, searchResultsForQuery.length)
+          ],
+      })
     );
   }
 
