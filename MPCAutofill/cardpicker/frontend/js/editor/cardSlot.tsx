@@ -56,7 +56,7 @@ export function CardSlot(props: CardSlotProps) {
 
   return (
     // style={{opacity: 0}}
-    <div className="card mpccard">
+    <div className="card mpccard mpccard-hover">
       <div className="card-header pb-0 text-center">
         <p className="mpccard-slot">Slot {slot + 1}</p>
         <button className="padlock">

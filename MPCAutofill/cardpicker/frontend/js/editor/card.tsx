@@ -5,6 +5,8 @@ import { RootState } from "./store";
 // import styles from './Counter.module.css'
 // import { getCard } from "./cardDocumentsSlice";
 import { TransitionGroup } from "react-transition-group";
+import Modal from "react-bootstrap/Modal";
+import Button from "react-bootstrap/Button";
 
 interface CardProps {
   identifier: string;
@@ -16,6 +18,10 @@ interface CardProps {
 export function Card(props: CardProps) {
   const [loading, setLoading] = useState(true);
   const [nameEditable, setNameEditable] = useState(false);
+  const [show, setShow] = useState(false);
+
+  const handleClose = () => setShow(false);
+  const handleShow = () => setShow(true);
   // const maybeCardDocument = undefined;
 
   const identifier: string = props.identifier;
@@ -77,6 +83,7 @@ export function Card(props: CardProps) {
             style={{ zIndex: 1, opacity: loading ? 0 : 1 }} //  display: loading ? "none" : "block"
             src={cardSmallThumbnailUrl}
             onLoad={() => setLoading(false)}
+            onClick={handleShow}
             // onError={{thumbnail_404(this)}}
           />
           {/*</TransitionGroup>*/}
@@ -94,6 +101,18 @@ export function Card(props: CardProps) {
             <p className="card-text mpccard-source">{cardSourceVerbose}</p>
           </div>
         </div>
+
+        <Modal show={show} onHide={handleClose}>
+          <Modal.Header closeButton>
+            <Modal.Title>test</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>test</Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={handleClose}>
+              Close
+            </Button>
+          </Modal.Footer>
+        </Modal>
       </div>
     );
   }
