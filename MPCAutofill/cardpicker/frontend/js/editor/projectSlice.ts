@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { CardTypes, Faces, SearchQuery } from "./constants";
+import { RootState } from "./store";
 
 interface ProjectMember {
   query: SearchQuery;
@@ -7,33 +8,54 @@ interface ProjectMember {
 }
 
 type ProjectMembers = {
-  [slot: number]: ProjectMember;
+  [face in Faces]: ProjectMember;
 };
 
 type Project = {
-  [face in Faces]: ProjectMembers;
+  [slot: number]: ProjectMembers;
 };
 
 const initialState: Project = {
-  front: {
-    0: {
+  0: {
+    front: {
       query: { query: "island", card_type: CardTypes.Card },
       selectedImage: null,
     },
-    1: {
-      query: { query: "island", card_type: CardTypes.Card },
-      selectedImage: null,
-    },
-    2: {
-      query: { query: "past in flames", card_type: CardTypes.Card },
-      selectedImage: null,
-    },
-    3: {
-      query: { query: "past in flames", card_type: CardTypes.Card },
+    back: {
+      query: { query: "black lotus", card_type: CardTypes.Cardback },
       selectedImage: null,
     },
   },
-  back: {},
+  1: {
+    front: {
+      query: { query: "island", card_type: CardTypes.Card },
+      selectedImage: null,
+    },
+    back: {
+      query: { query: "black lotus", card_type: CardTypes.Cardback },
+      selectedImage: null,
+    },
+  },
+  2: {
+    front: {
+      query: { query: "past in flames", card_type: CardTypes.Card },
+      selectedImage: null,
+    },
+    back: {
+      query: { query: "black lotus", card_type: CardTypes.Cardback },
+      selectedImage: null,
+    },
+  },
+  3: {
+    front: {
+      query: { query: "past in flames", card_type: CardTypes.Card },
+      selectedImage: null,
+    },
+    back: {
+      query: { query: "black lotus", card_type: CardTypes.Cardback },
+      selectedImage: null,
+    },
+  },
 };
 
 interface SetSelectedImageAction {
@@ -50,7 +72,7 @@ export const projectSlice = createSlice({
       state,
       action: PayloadAction<SetSelectedImageAction>
     ) => {
-      state[action.payload.face][action.payload.slot].selectedImage =
+      state[action.payload.slot][action.payload.face].selectedImage =
         action.payload.selectedImage;
     },
     // switchToFront: state => {
@@ -66,6 +88,9 @@ export const projectSlice = createSlice({
     // },
   },
 });
+
+const selectProject = (state: RootState) => state.project;
+// const getProjectCardCount = createSelector(selectProject, project => )
 
 // Action creators are generated for each case reducer function
 export const { setSelectedImage } = projectSlice.actions;

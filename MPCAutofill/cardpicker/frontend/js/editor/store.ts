@@ -1,5 +1,4 @@
 import { configureStore } from "@reduxjs/toolkit";
-import cardSlotReducer from "./cardSlotSlice";
 import searchResultsReducer from "./searchResultsSlice";
 import cardDocumentsReducer from "./cardDocumentsSlice";
 import sourceDocumentsReducer from "./sourceDocumentsSlice";
@@ -8,7 +7,6 @@ import projectReducer from "./projectSlice";
 
 export const store = configureStore({
   reducer: {
-    cardSlot: cardSlotReducer,
     searchSettings: searchSettingsReducer,
     searchResults: searchResultsReducer,
     cardDocuments: cardDocumentsReducer,

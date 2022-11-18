@@ -23,6 +23,7 @@ export const fetchCardDocuments = createAsyncThunk(
           "1YUOZcuGSJ5Kx4wuLR5bqhAkNUlnYq6fm",
           "1Ndv0ukuzfBA-eSar36EP2qJJuJuj5Ido",
           "1a3NSE99JqZw2ZQzmfatB4Im_TYDc700D",
+          "1LrVX0pUcye9n_0RtaDNVl2xPrQgn7CYf",
         ],
       }),
       credentials: "same-origin",
