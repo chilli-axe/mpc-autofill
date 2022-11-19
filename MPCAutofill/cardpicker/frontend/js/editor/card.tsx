@@ -7,6 +7,9 @@ import { RootState } from "./store";
 import { TransitionGroup } from "react-transition-group";
 import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
+import Row from "react-bootstrap/Row";
+import Table from "react-bootstrap/Table";
+import { imageSizeToMBString } from "./utils";
 
 interface CardProps {
   identifier: string;
@@ -16,7 +19,8 @@ interface CardProps {
 }
 
 export function Card(props: CardProps) {
-  const [loading, setLoading] = useState(true);
+  const [smallThumbnailLoading, setSmallThumbnailLoading] = useState(true);
+  const [mediumThumbnailLoading, setMediumThumbnailLoading] = useState(true);
   const [nameEditable, setNameEditable] = useState(false);
   const [show, setShow] = useState(false);
 
@@ -53,16 +57,12 @@ export function Card(props: CardProps) {
       </div>
     );
   } else {
-    const cardSmallThumbnailUrl: string = maybeCardDocument.small_thumbnail_url;
-    const cardName: string = maybeCardDocument.name;
-    const cardSourceVerbose: string = maybeCardDocument.source_verbose;
-
     return (
       <div>
         <div className="rounded-lg shadow-lg ratio ratio-7x5">
           <div
             className="d-flex justify-content-center align-items-center"
-            style={{ display: loading ? "block" : "none" }}
+            style={{ display: smallThumbnailLoading ? "block" : "none" }}
           >
             <div
               className="spinner-border"
@@ -80,9 +80,9 @@ export function Card(props: CardProps) {
           <img
             className="card-img"
             loading="lazy"
-            style={{ zIndex: 1, opacity: loading ? 0 : 1 }} //  display: loading ? "none" : "block"
-            src={cardSmallThumbnailUrl}
-            onLoad={() => setLoading(false)}
+            style={{ zIndex: 1, opacity: smallThumbnailLoading ? 0 : 1 }}
+            src={maybeCardDocument.small_thumbnail_url}
+            onLoad={() => setSmallThumbnailLoading(false)}
             onClick={handleShow}
             // onError={{thumbnail_404(this)}}
           />
@@ -95,18 +95,127 @@ export function Card(props: CardProps) {
             // spellCheck="false"
             // onFocus="Library.review.selectElementContents(this)"
           >
-            {cardName}
+            {maybeCardDocument.name}
           </h5>
           <div className="mpccard-spacing">
-            <p className="card-text mpccard-source">{cardSourceVerbose}</p>
+            <p className="card-text mpccard-source">
+              {maybeCardDocument.source_verbose}
+            </p>
           </div>
         </div>
 
-        <Modal show={show} onHide={handleClose}>
+        <Modal show={show} onHide={handleClose} size={"xl"}>
           <Modal.Header closeButton>
-            <Modal.Title>test</Modal.Title>
+            <Modal.Title>Card Details</Modal.Title>
           </Modal.Header>
-          <Modal.Body>test</Modal.Body>
+          <Modal.Body>
+            <Row>
+              <div
+                className="col-lg-5 mb-3 mb-lg-0"
+                style={{ position: "relative" }}
+              >
+                {/*  <div className="shadow-lg ratio ratio-7x5"*/}
+                {/*  // style="border-radius: 18px"*/}
+                {/*  >*/}
+                {/*    <img*/}
+                {/*      className="card-img"*/}
+                {/*      loading="lazy"*/}
+                {/*      style={{ zIndex: 1, opacity: mediumThumbnailLoading ? 0 : 1 }}*/}
+                {/*      src={cardMediumThumbnailUrl}*/}
+                {/*      onLoad={() => setMediumThumbnailLoading(false)}*/}
+                {/*      // onError={{thumbnail_404(this)}}*/}
+                {/*    />*/}
+                {/*  </div>*/}
+                <div className="rounded-xl shadow-lg ratio ratio-7x5">
+                  <div
+                    className="d-flex justify-content-center align-items-center"
+                    style={{
+                      display: mediumThumbnailLoading ? "block" : "none",
+                    }}
+                  >
+                    <div
+                      className="spinner-border"
+                      style={{ width: 4 + "em", height: 4 + "em" }}
+                      role="status"
+                    >
+                      <span className="visually-hidden">Loading...</span>
+                    </div>
+                  </div>
+
+                  {/*<TransitionGroup*/}
+                  {/*  transitionName="example"*/}
+                  {/*  transitionEnterTimeout={500}*/}
+                  {/*  transitionLeaveTimeout={300}>*/}
+                  <img
+                    className="card-img"
+                    loading="lazy"
+                    style={{
+                      zIndex: 1,
+                      opacity: mediumThumbnailLoading ? 0 : 1,
+                    }}
+                    src={maybeCardDocument.medium_thumbnail_url}
+                    onLoad={() => setMediumThumbnailLoading(false)}
+                    // onError={{thumbnail_404(this)}}
+                  />
+                  {/*</TransitionGroup>*/}
+                </div>
+              </div>
+              <div className="col-lg-7">
+                <h4>{maybeCardDocument.name}</h4>
+                <Table hover>
+                  <tbody>
+                    <tr>
+                      <td>
+                        <b>Source Name</b>
+                      </td>
+                      <td>{maybeCardDocument.source}</td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <b>Source Type</b>
+                      </td>
+                      <td>{maybeCardDocument.source_type}</td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <b>Class</b>
+                      </td>
+                      <td>
+                        {maybeCardDocument.card_type.charAt(0).toUpperCase() +
+                          maybeCardDocument.card_type.slice(1).toLowerCase()}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <b>Identifier</b>
+                      </td>
+                      <td>
+                        <code>{maybeCardDocument.identifier}</code>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <b>Resolution</b>
+                      </td>
+                      <td>{maybeCardDocument.dpi} DPI</td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <b>Date Created</b>
+                      </td>
+                      <td>{maybeCardDocument.date}</td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <b>File Size</b>
+                      </td>
+                      <td>{imageSizeToMBString(maybeCardDocument.size, 2)}</td>
+                    </tr>
+                  </tbody>
+                </Table>
+              </div>
+            </Row>
+          </Modal.Body>
           <Modal.Footer>
             <Button variant="secondary" onClick={handleClose}>
               Close

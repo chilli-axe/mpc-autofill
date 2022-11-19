@@ -126,6 +126,7 @@ class Card(models.Model):
     def to_dict(self) -> dict[str, Any]:
         return {
             "identifier": self.identifier,
+            "card_type": self.card_type,
             "name": self.name,
             "priority": self.priority,
             "source": self.source.key,

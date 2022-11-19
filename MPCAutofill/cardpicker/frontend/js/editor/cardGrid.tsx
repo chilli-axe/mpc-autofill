@@ -44,13 +44,8 @@ export function CardGrid() {
   }
 
   return (
-    <>
-      <div className="row g-0 row-cols-xxl-4 row-cols-lg-3 row-cols-md-2 row-cols-sm-1 row-cols-1">
-        {cardSlotsFronts}
-      </div>
-      <div className="row g-0 row-cols-xxl-4 row-cols-lg-3 row-cols-md-2 row-cols-sm-1 row-cols-1">
-        {cardSlotsBacks}
-      </div>
-    </>
+    <div className="row g-0 row-cols-xxl-4 row-cols-lg-3 row-cols-md-2 row-cols-sm-1 row-cols-1">
+      {cardSlotsFronts}
+    </div>
   );
 }

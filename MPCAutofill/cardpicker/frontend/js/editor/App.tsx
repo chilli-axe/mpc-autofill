@@ -1,25 +1,21 @@
 import * as React from "react";
 import { CardGrid } from "./cardGrid";
 import { SearchSettings } from "./searchSettings";
-import Col from "react-bootstrap/Col";
-import Row from "react-bootstrap/Row";
 
 function App() {
   return (
     <div>
-      <h1>Hello world from React!</h1>
-      <Row>
-        <Col xxl={8} xl={8} lg={8} md={8} sm={6} xs={6}>
-          <CardGrid></CardGrid>
-        </Col>
-        <Col xxl={8} xl={4} lg={4} md={4} sm={6} xs={6}>
-          <div className="sticky-top sticky-offset g-0">
-            <Row className="g-0" xxl={6} xl={6} lg={6} md={12} sm={12} xs={12}>
-              <SearchSettings />
-            </Row>
+      <div className="col-lg-8 col-md-8 col-sm-6 col-6">
+        <CardGrid />
+      </div>
+      <div className="col-lg-4 col-md-4 col-sm-6 col-6" style={{ zIndex: 1 }}>
+        <div className="sticky-top sticky-offset g-0">
+          <h2>Edit MPC Project</h2>
+          <div className="col-lg-6 col-md-12 col-sm-12 col-12">
+            <SearchSettings />
           </div>
-        </Col>
-      </Row>
+        </div>
+      </div>
     </div>
   );
 }

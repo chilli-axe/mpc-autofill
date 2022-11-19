@@ -39,15 +39,18 @@ export const fetchCardDocuments = createAsyncThunk(
 interface CardDocument {
   // This should match the data returned by `to_dict` on the `Card` Django model
   identifier: string;
+  card_type: string;
   name: string;
   priority: number;
   source: string;
   source_verbose: string;
+  source_type: string;
   dpi: number;
   searchq: string;
   extension: string;
   date: string; // formatted by backend
   download_link: string;
+  size: number;
   small_thumbnail_url: string;
   medium_thumbnail_url: string;
 }

@@ -1,5 +1,9 @@
 .rounded-lg {
-  border-radius: 0.45rem !important;
+  border-radius: 0.5rem !important;
+}
+
+.rounded-xl {
+  border-radius: 1.1rem !important;
 }
 
 .shadow-lg {
