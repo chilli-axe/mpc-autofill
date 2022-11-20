@@ -66,6 +66,10 @@ interface SetSelectedImageAction {
   selectedImage: string;
 }
 
+interface DeleteImageAction {
+  slot: number;
+}
+
 export const projectSlice = createSlice({
   name: "project",
   initialState,
@@ -77,6 +81,10 @@ export const projectSlice = createSlice({
       state.members[action.payload.slot][action.payload.face].selectedImage =
         action.payload.selectedImage;
     },
+    deleteImage: (state, action: PayloadAction<DeleteImageAction>) => {
+      state.members.splice(action.payload.slot, 1);
+    },
+
     // switchToFront: state => {
     //   // Redux Toolkit allows us to write "mutating" logic in reducers. It
     //   // doesn't actually mutate the state because it uses the Immer library,
@@ -95,6 +103,6 @@ const selectProject = (state: RootState) => state.project;
 // const getProjectCardCount = createSelector(selectProject, project => )
 
 // Action creators are generated for each case reducer function
-export const { setSelectedImage } = projectSlice.actions;
+export const { setSelectedImage, deleteImage } = projectSlice.actions;
 
 export default projectSlice.reducer;

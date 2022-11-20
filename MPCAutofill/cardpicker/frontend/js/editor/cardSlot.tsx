@@ -4,7 +4,7 @@ import { AppDispatch, RootState } from "./store";
 import { Card } from "./card";
 import { Faces, SearchQuery } from "./constants";
 import { wrapIndex } from "./utils";
-import { setSelectedImage } from "./projectSlice";
+import { deleteImage, setSelectedImage } from "./projectSlice";
 import BSCard from "react-bootstrap/Card";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
@@ -62,6 +62,10 @@ export function CardSlot(props: CardSlotProps) {
       wrapIndex(selectedImageIndex - 1, searchResultsForQuery.length)
     ];
 
+  const deleteThisImage = () => {
+    dispatch(deleteImage({ slot }));
+  };
+
   function setSelectedImageFromDelta(delta: number): void {
     // TODO: docstring
     dispatch(
@@ -105,7 +109,7 @@ export function CardSlot(props: CardSlotProps) {
             <i className="bi bi-unlock"></i>
           </button>
           <button className="remove">
-            <i className="bi bi-x-circle"></i>
+            <i className="bi bi-x-circle" onClick={deleteThisImage}></i>
           </button>
         </BSCard.Header>
         <Card
