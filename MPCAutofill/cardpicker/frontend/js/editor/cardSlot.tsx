@@ -6,6 +6,7 @@ import { Faces, SearchQuery } from "./constants";
 import { wrapIndex } from "./utils";
 import { setSelectedImage } from "./projectSlice";
 import BSCard from "react-bootstrap/Card";
+import Button from "react-bootstrap/Button";
 
 // import styles from './Counter.module.css'
 
@@ -89,23 +90,25 @@ export function CardSlot(props: CardSlotProps) {
         nextImageIdentifier={nextImage}
       ></Card>
       <BSCard.Footer className="padding-top" style={{ paddingTop: 50 + "px" }}>
-        <button className="mpccard-counter-btn btn btn-outline-info">
+        <Button variant="outline-info" className="mpccard-counter-btn">
           {selectedImageIndex + 1} / {searchResultsForQuery.length}
-        </button>
+        </Button>
         {searchResultsForQuery.length > 1 && (
           <div>
-            <button
-              className="prev btn btn-outline-primary"
+            <Button
+              variant="outline-primary"
+              className="prev"
               onClick={() => setSelectedImageFromDelta(-1)}
             >
               &#10094;
-            </button>
-            <button
-              className="next btn btn-outline-primary"
+            </Button>
+            <Button
+              variant="outline-primary"
+              className="next"
               onClick={() => setSelectedImageFromDelta(1)}
             >
               &#10095;
-            </button>
+            </Button>
           </div>
         )}
       </BSCard.Footer>

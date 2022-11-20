@@ -1,6 +1,7 @@
 import * as React from "react";
 import { CardGrid } from "./cardGrid";
 import { SearchSettings } from "./searchSettings";
+import { AddCards } from "./addCards";
 import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
 
@@ -13,9 +14,14 @@ function App() {
       <Col lg={4} md={4} sm={6} xs={6} style={{ zIndex: 1 }}>
         <div className="sticky-top sticky-offset g-0">
           <h2>Edit MPC Project</h2>
-          <Col lg={6} md={12} sm={12} xs={12}>
-            <SearchSettings />
-          </Col>
+          <Row>
+            <Col lg={6} md={12} sm={12} xs={12}>
+              <SearchSettings />
+            </Col>
+            <Col lg={6} md={12} sm={12} xs={12}>
+              <AddCards />
+            </Col>
+          </Row>
         </div>
       </Col>
     </Row>
