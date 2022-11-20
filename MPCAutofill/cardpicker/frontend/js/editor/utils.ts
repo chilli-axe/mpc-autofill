@@ -11,3 +11,16 @@ export function imageSizeToMBString(
   sizeMB = Math.round(sizeMB * roundFactor) / roundFactor;
   return `${sizeMB} MB`;
 }
+
+export function bracket(projectSize: number): number {
+  // small helper function to calculate the MPC bracket the current order lands in
+  const brackets = [
+    18, 36, 55, 72, 90, 108, 126, 144, 162, 180, 198, 216, 234, 396, 504, 612,
+  ];
+  for (let i = 0; i < brackets.length; i++) {
+    if (brackets[i] >= projectSize) {
+      return brackets[i];
+    }
+  }
+  return brackets[brackets.length - 1];
+}

@@ -18,7 +18,7 @@ export function SearchSettings() {
   }, [dispatch]);
 
   return (
-    <div className="d-grid gap-2">
+    <div className="d-grid gap-0">
       <Button variant={"primary"} onClick={handleShow}>
         <i className="bi bi-gear" style={{ paddingRight: 0.5 + "em" }} />
         Search Settings
