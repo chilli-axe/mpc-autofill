@@ -14,7 +14,7 @@ export function ProjectStatus() {
   const handleShow = () => setShow(true);
 
   const projectSize = useSelector(
-    (state: RootState) => Object.keys(state.project).length
+    (state: RootState) => state.project.members.length
   );
 
   return (

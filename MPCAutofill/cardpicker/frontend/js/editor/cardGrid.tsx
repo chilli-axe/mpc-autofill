@@ -22,25 +22,27 @@ export function CardGrid() {
 
   let cardSlotsFronts = [];
   let cardSlotsBacks = [];
-  const project = useSelector((state: RootState) => state.project);
+  const projectMembers = useSelector(
+    (state: RootState) => state.project.members
+  );
 
-  for (const [slot, projectMember] of Object.entries(project)) {
+  for (const [slot, slotProjectMember] of projectMembers.entries()) {
     cardSlotsFronts.push(
       <CardSlot
         key={`${Front}-slot-${slot}`}
-        searchQuery={projectMember.front.query}
+        searchQuery={slotProjectMember.front.query}
         face={Front}
-        slot={parseInt(slot)} // TODO: this sucks a bit
-        selectedImage={projectMember.front.selectedImage}
+        slot={slot}
+        selectedImage={slotProjectMember.front.selectedImage}
       ></CardSlot>
     );
     cardSlotsBacks.push(
       <CardSlot
         key={`${Back}-slot-${slot}`}
-        searchQuery={projectMember.back.query}
+        searchQuery={slotProjectMember.back.query}
         face={Back}
-        slot={parseInt(slot)} // TODO: this sucks a bit
-        selectedImage={projectMember.back.selectedImage}
+        slot={slot}
+        selectedImage={slotProjectMember.back.selectedImage}
       ></CardSlot>
     );
   }

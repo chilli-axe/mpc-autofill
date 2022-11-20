@@ -15,8 +15,8 @@ export const fetchCards = createAsyncThunk(
 
     // identify queries with no search results
     let queriesToSearch = [];
-    for (const [slot, projectMembers] of Object.entries(state.project)) {
-      for (const [face, projectMember] of Object.entries(projectMembers)) {
+    for (const slotProjectMembers of state.project.members) {
+      for (const [face, projectMember] of Object.entries(slotProjectMembers)) {
         if (
           (state.searchResults.searchResults[projectMember.query.query] ?? {})[
             projectMember.query.card_type

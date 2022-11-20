@@ -7,55 +7,57 @@ interface ProjectMember {
   selectedImage?: string;
 }
 
-type ProjectMembers = {
+type SlotProjectMembers = {
   [face in Faces]: ProjectMember;
 };
 
 type Project = {
-  [slot: number]: ProjectMembers;
+  members: Array<SlotProjectMembers>;
 };
 
 const initialState: Project = {
-  0: {
-    front: {
-      query: { query: "island", card_type: CardTypes.Card },
-      selectedImage: null,
+  members: [
+    {
+      front: {
+        query: { query: "island", card_type: CardTypes.Card },
+        selectedImage: null,
+      },
+      back: {
+        query: { query: "black lotus", card_type: CardTypes.Cardback },
+        selectedImage: null,
+      },
     },
-    back: {
-      query: { query: "black lotus", card_type: CardTypes.Cardback },
-      selectedImage: null,
+    {
+      front: {
+        query: { query: "island", card_type: CardTypes.Card },
+        selectedImage: null,
+      },
+      back: {
+        query: { query: "black lotus", card_type: CardTypes.Cardback },
+        selectedImage: null,
+      },
     },
-  },
-  1: {
-    front: {
-      query: { query: "island", card_type: CardTypes.Card },
-      selectedImage: null,
+    {
+      front: {
+        query: { query: "past in flames", card_type: CardTypes.Card },
+        selectedImage: null,
+      },
+      back: {
+        query: { query: "black lotus", card_type: CardTypes.Cardback },
+        selectedImage: null,
+      },
     },
-    back: {
-      query: { query: "black lotus", card_type: CardTypes.Cardback },
-      selectedImage: null,
+    {
+      front: {
+        query: { query: "necropotence", card_type: CardTypes.Card },
+        selectedImage: null,
+      },
+      back: {
+        query: { query: "black lotus", card_type: CardTypes.Cardback },
+        selectedImage: null,
+      },
     },
-  },
-  2: {
-    front: {
-      query: { query: "past in flames", card_type: CardTypes.Card },
-      selectedImage: null,
-    },
-    back: {
-      query: { query: "black lotus", card_type: CardTypes.Cardback },
-      selectedImage: null,
-    },
-  },
-  3: {
-    front: {
-      query: { query: "necropotence", card_type: CardTypes.Card },
-      selectedImage: null,
-    },
-    back: {
-      query: { query: "black lotus", card_type: CardTypes.Cardback },
-      selectedImage: null,
-    },
-  },
+  ],
 };
 
 interface SetSelectedImageAction {
@@ -72,7 +74,7 @@ export const projectSlice = createSlice({
       state,
       action: PayloadAction<SetSelectedImageAction>
     ) => {
-      state[action.payload.slot][action.payload.face].selectedImage =
+      state.members[action.payload.slot][action.payload.face].selectedImage =
         action.payload.selectedImage;
     },
     // switchToFront: state => {
