@@ -467,8 +467,9 @@ def api_function_1(request: HttpRequest) -> HttpResponse:
         queries = SearchQuery.list_from_json_body(json_body)
         results: dict[str, dict[str, list[str]]] = defaultdict(dict)
         for query in queries:
-            hits = query.retrieve_card_identifiers(search_settings=search_settings)
-            results[query.query][query.card_type] = hits
+            if results[query.query].get(query.card_type, None) is None:
+                hits = query.retrieve_card_identifiers(search_settings=search_settings)
+                results[query.query][query.card_type] = hits
         return JsonResponse({"results": results})
     return JsonResponse({})
 

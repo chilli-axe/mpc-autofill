@@ -6,31 +6,33 @@ import {
 import Cookies from "js-cookie";
 import { CardTypes, SearchQuery } from "./constants";
 import { RootState } from "./store";
-import { useSelector } from "react-redux";
-import { Root } from "react-dom/client";
-
-// import { AnyAction } from 'redux'
-// import { RootState } from './store'
-// import { ThunkAction } from 'redux-thunk'
 
 export const fetchCards = createAsyncThunk(
   "searchResults/fetchCards",
   async (arg, thunkAPI) => {
     // @ts-ignore  // TODO
     const state: RootState = thunkAPI.getState();
+
+    // identify queries with no search results
+    let queriesToSearch = [];
+    for (const [slot, projectMembers] of Object.entries(state.project)) {
+      for (const [face, projectMember] of Object.entries(projectMembers)) {
+        if (
+          (state.searchResults.searchResults[projectMember.query.query] ?? {})[
+            projectMember.query.card_type
+          ] == undefined
+        ) {
+          // results for this query have not been retrieved & stored yet
+          queriesToSearch.push(projectMember.query);
+        }
+      }
+    }
+
     const rawResponse = await fetch("/2/search/", {
       method: "POST",
       body: JSON.stringify({
         searchSettings: state.searchSettings,
-        queries: [
-          { query: "island", card_type: CardTypes.Card } as SearchQuery,
-          { query: "past in flames", card_type: CardTypes.Card } as SearchQuery,
-          { query: "necropotence", card_type: CardTypes.Card } as SearchQuery,
-          {
-            query: "black lotus",
-            card_type: CardTypes.Cardback,
-          } as SearchQuery,
-        ],
+        queries: queriesToSearch,
       }),
       credentials: "same-origin",
       headers: {
@@ -84,24 +86,5 @@ export const searchResultsSlice = createSlice({
   },
 });
 export const { addSearchResults } = searchResultsSlice.actions;
-
-// const logAndAdd = (queries: Array<string>) => {
-//   return (dispatch, getState) => {
-//     const stateBefore = getState()
-//     console.log(`Counter before: ${stateBefore.counter}`)
-//     // dispatch(incrementByAmount(queries))
-//     const stateAfter = getState()
-//     console.log(`Counter after: ${stateAfter.counter}`)
-//   }
-// }
-
-// export const addSearchResultsAsync = (queries: Array<[string, string]>) => (dispatch: any) => {
-//   setTimeout(() => {
-//     dispatch(addSearchResults(queries))
-//   }, 1000)
-// }
-
-// Action creators are generated for each case reducer function
-// export const { increment, decrement, incrementByAmount } = cardSlotSlice.actions
 
 export default searchResultsSlice.reducer;
