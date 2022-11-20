@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { AppDispatch, RootState } from "./store";
 import { Card } from "./card";
@@ -23,24 +23,30 @@ export function CardSlot(props: CardSlotProps) {
 
   const dispatch = useDispatch<AppDispatch>();
 
-  // TODO: move this block of code (sets the selected image to first search result) into useEffect
   const searchResultsForQuery = useSelector(
     (state: RootState) =>
       (state.searchResults.searchResults[searchQuery.query] ?? {})[
         searchQuery.card_type
       ] ?? []
   ); // TODO: move this selector into searchResultsSlice
-  if (
-    (searchResultsForQuery.length > 0 && selectedImage === null) ||
-    selectedImage === undefined
-  ) {
-    // setSelectedImage(searchResultsForQuery[0]);
-    selectedImage = searchResultsForQuery[0];
-    dispatch(setSelectedImage({ face, slot, selectedImage }));
-  }
+
+  useEffect(() => {
+    // If no image is selected and there are search results, select the first image in search results
+    if (
+      (searchResultsForQuery.length > 0 && selectedImage === null) ||
+      selectedImage === undefined
+    ) {
+      dispatch(
+        setSelectedImage({
+          face,
+          slot,
+          selectedImage: searchResultsForQuery[0],
+        })
+      );
+    }
+  }, [searchResultsForQuery]);
 
   const selectedImageIndex = searchResultsForQuery.indexOf(selectedImage);
-
   const previousImage =
     searchResultsForQuery[
       wrapIndex(selectedImageIndex + 1, searchResultsForQuery.length)
