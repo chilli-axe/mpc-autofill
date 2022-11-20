@@ -5,6 +5,7 @@ import { Card } from "./card";
 import { Faces, SearchQuery } from "./constants";
 import { wrapIndex } from "./utils";
 import { setSelectedImage } from "./projectSlice";
+import BSCard from "react-bootstrap/Card";
 
 // import styles from './Counter.module.css'
 
@@ -72,8 +73,8 @@ export function CardSlot(props: CardSlotProps) {
 
   return (
     // style={{opacity: 0}}
-    <div className="card mpccard mpccard-hover">
-      <div className="card-header pb-0 text-center">
+    <BSCard className="mpccard mpccard-hover">
+      <BSCard.Header className="pb-0 text-center">
         <p className="mpccard-slot">Slot {slot + 1}</p>
         <button className="padlock">
           <i className="bi bi-unlock"></i>
@@ -81,17 +82,14 @@ export function CardSlot(props: CardSlotProps) {
         <button className="remove">
           <i className="bi bi-x-circle"></i>
         </button>
-      </div>
+      </BSCard.Header>
       <Card
         imageIdentifier={selectedImage}
         previousImageIdentifier={previousImage}
         nextImageIdentifier={nextImage}
       ></Card>
-      <div
-        className="card-footer padding-top"
-        style={{ paddingTop: 50 + "px" }}
-      >
-        <button className="card-text mpccard-counter-btn btn btn-outline-info">
+      <BSCard.Footer className="padding-top" style={{ paddingTop: 50 + "px" }}>
+        <button className="mpccard-counter-btn btn btn-outline-info">
           {selectedImageIndex + 1} / {searchResultsForQuery.length}
         </button>
         {searchResultsForQuery.length > 1 && (
@@ -110,7 +108,7 @@ export function CardSlot(props: CardSlotProps) {
             </button>
           </div>
         )}
-      </div>
-    </div>
+      </BSCard.Footer>
+    </BSCard>
   );
 }

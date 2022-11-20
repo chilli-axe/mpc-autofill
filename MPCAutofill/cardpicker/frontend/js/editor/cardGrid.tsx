@@ -1,11 +1,11 @@
 import React, { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
-// import { decrement, increment } from './cardSlotSlice'
 import { RootState, AppDispatch } from "./store";
 import { CardSlot } from "./cardSlot";
 import { addSearchResults, fetchCards } from "./searchResultsSlice";
 import { fetchCardDocuments } from "./cardDocumentsSlice";
 import { Faces, Front, Back } from "./constants";
+import Row from "react-bootstrap/Row";
 
 // import styles from './Counter.module.css'
 
@@ -46,8 +46,8 @@ export function CardGrid() {
   }
 
   return (
-    <div className="row g-0 row-cols-xxl-4 row-cols-lg-3 row-cols-md-2 row-cols-sm-1 row-cols-1">
+    <Row xxl={4} lg={3} md={2} sm={1} xs={1} className="g-0">
       {cardSlotsFronts}
-    </div>
+    </Row>
   );
 }

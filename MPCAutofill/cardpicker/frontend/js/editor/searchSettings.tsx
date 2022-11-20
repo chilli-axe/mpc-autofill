@@ -1,6 +1,6 @@
 import { fetchSourceDocuments } from "./sourceDocumentsSlice";
 
-require("bootstrap/js/dist/modal");
+require("bootstrap-icons/font/bootstrap-icons.css");
 import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
 import React, { useEffect, useState } from "react";
@@ -8,7 +8,6 @@ import { useDispatch } from "react-redux";
 import { AppDispatch } from "./store";
 
 export function SearchSettings() {
-  // TODO: consider introducing/using bootstrap-react to ensure modals render properly
   const [show, setShow] = useState(false);
 
   const handleClose = () => setShow(false);

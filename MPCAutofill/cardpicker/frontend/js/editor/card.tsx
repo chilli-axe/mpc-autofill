@@ -9,6 +9,7 @@ import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
 import Row from "react-bootstrap/Row";
 import Table from "react-bootstrap/Table";
+import BSCard from "react-bootstrap/Card";
 import { imageSizeToMBString } from "./utils";
 
 interface CardProps {
@@ -53,12 +54,12 @@ export function Card(props: CardProps) {
             </div>
           </div>
         </div>
-        <div className="card-body mb-0 text-center">
+        <BSCard.Body className="mb-0 text-center">
           <h5 className="card-subtitle mpccard-name" />
           <div className="mpccard-spacing">
             <p className="card-text mpccard-source" />
           </div>
-        </div>
+        </BSCard.Body>
       </div>
     );
   } else {
@@ -114,21 +115,21 @@ export function Card(props: CardProps) {
 
           {/*</TransitionGroup>*/}
         </div>
-        <div className="card-body mb-0 text-center">
-          <h5
-            className="card-subtitle mpccard-name"
+        <BSCard.Body className="mb-0 text-center">
+          <BSCard.Subtitle
+            className="mpccard-name"
             // contentEditable="true"  // TODO: sort out a better way of managing text input
             // spellCheck="false"
             // onFocus="Library.review.selectElementContents(this)"
           >
             {maybeCardDocument.name}
-          </h5>
+          </BSCard.Subtitle>
           <div className="mpccard-spacing">
-            <p className="card-text mpccard-source">
+            <BSCard.Text className="mpccard-source">
               {maybeCardDocument.source_verbose}
-            </p>
+            </BSCard.Text>
           </div>
-        </div>
+        </BSCard.Body>
 
         <Modal show={show} onHide={handleClose} size={"xl"}>
           <Modal.Header closeButton>
