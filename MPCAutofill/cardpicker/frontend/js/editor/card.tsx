@@ -12,10 +12,9 @@ import Table from "react-bootstrap/Table";
 import { imageSizeToMBString } from "./utils";
 
 interface CardProps {
-  identifier: string;
-  // TODO: consider how to implement previous/next images
-  // we could have 3 instances of this component per slot,
-  // or the one instance of this component per slot could manage all 3 images.
+  imageIdentifier: string;
+  previousImageIdentifier: string;
+  nextImageIdentifier: string;
 }
 
 export function Card(props: CardProps) {
@@ -26,14 +25,20 @@ export function Card(props: CardProps) {
 
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
-  // const maybeCardDocument = undefined;
 
-  const identifier: string = props.identifier;
+  const imageIdentifier: string = props.imageIdentifier;
   const maybeCardDocument = useSelector(
-    (state: RootState) => state.cardDocuments.cardDocuments[identifier]
+    (state: RootState) => state.cardDocuments.cardDocuments[imageIdentifier]
   );
-  // alert(maybeCardDocument === undefined)
-  // const maybeCard = useSelector(state => getCard(state, props.identifier));
+  const maybePreviousCardDocument = useSelector(
+    (state: RootState) =>
+      state.cardDocuments.cardDocuments[props.previousImageIdentifier]
+  );
+  const maybeNextCardDocument = useSelector(
+    (state: RootState) =>
+      state.cardDocuments.cardDocuments[props.nextImageIdentifier]
+  );
+
   if (maybeCardDocument === undefined) {
     return (
       <div>
@@ -86,6 +91,27 @@ export function Card(props: CardProps) {
             onClick={handleShow}
             // onError={{thumbnail_404(this)}}
           />
+          {props.previousImageIdentifier !== imageIdentifier &&
+            maybePreviousCardDocument !== undefined && (
+              <img
+                className="card-img"
+                loading="lazy"
+                style={{ zIndex: 0, opacity: 0 }}
+                src={maybePreviousCardDocument.small_thumbnail_url}
+                // onError={{thumbnail_404(this)}}
+              />
+            )}
+          {props.nextImageIdentifier !== imageIdentifier &&
+            maybeNextCardDocument !== undefined && (
+              <img
+                className="card-img"
+                loading="lazy"
+                style={{ zIndex: 0, opacity: 0 }}
+                src={maybeNextCardDocument.small_thumbnail_url}
+                // onError={{thumbnail_404(this)}}
+              />
+            )}
+
           {/*</TransitionGroup>*/}
         </div>
         <div className="card-body mb-0 text-center">
@@ -147,7 +173,6 @@ export function Card(props: CardProps) {
                   {/*  transitionEnterTimeout={500}*/}
                   {/*  transitionLeaveTimeout={300}>*/}
                   <img
-                    className="card-img"
                     loading="lazy"
                     style={{
                       zIndex: 1,

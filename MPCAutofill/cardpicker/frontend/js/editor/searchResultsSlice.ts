@@ -25,6 +25,7 @@ export const fetchCards = createAsyncThunk(
         queries: [
           { query: "island", card_type: CardTypes.Card } as SearchQuery,
           { query: "past in flames", card_type: CardTypes.Card } as SearchQuery,
+          { query: "necropotence", card_type: CardTypes.Card } as SearchQuery,
           {
             query: "black lotus",
             card_type: CardTypes.Cardback,

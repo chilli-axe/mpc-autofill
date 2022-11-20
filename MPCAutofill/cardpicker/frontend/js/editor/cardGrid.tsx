@@ -27,6 +27,7 @@ export function CardGrid() {
   for (const [slot, projectMember] of Object.entries(project)) {
     cardSlotsFronts.push(
       <CardSlot
+        key={`${Front}-slot-${slot}`}
         searchQuery={projectMember.front.query}
         face={Front}
         slot={parseInt(slot)} // TODO: this sucks a bit
@@ -35,6 +36,7 @@ export function CardGrid() {
     );
     cardSlotsBacks.push(
       <CardSlot
+        key={`${Back}-slot-${slot}`}
         searchQuery={projectMember.back.query}
         face={Back}
         slot={parseInt(slot)} // TODO: this sucks a bit

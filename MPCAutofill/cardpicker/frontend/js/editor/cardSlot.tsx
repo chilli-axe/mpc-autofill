@@ -23,6 +23,7 @@ export function CardSlot(props: CardSlotProps) {
 
   const dispatch = useDispatch<AppDispatch>();
 
+  // TODO: move this block of code (sets the selected image to first search result) into useEffect
   const searchResultsForQuery = useSelector(
     (state: RootState) =>
       (state.searchResults.searchResults[searchQuery.query] ?? {})[
@@ -39,6 +40,15 @@ export function CardSlot(props: CardSlotProps) {
   }
 
   const selectedImageIndex = searchResultsForQuery.indexOf(selectedImage);
+
+  const previousImage =
+    searchResultsForQuery[
+      wrapIndex(selectedImageIndex + 1, searchResultsForQuery.length)
+    ];
+  const nextImage =
+    searchResultsForQuery[
+      wrapIndex(selectedImageIndex - 1, searchResultsForQuery.length)
+    ];
 
   function setSelectedImageFromDelta(delta: number): void {
     // TODO: docstring
@@ -66,7 +76,11 @@ export function CardSlot(props: CardSlotProps) {
           <i className="bi bi-x-circle"></i>
         </button>
       </div>
-      <Card identifier={selectedImage}></Card>
+      <Card
+        imageIdentifier={selectedImage}
+        previousImageIdentifier={previousImage}
+        nextImageIdentifier={nextImage}
+      ></Card>
       <div
         className="card-footer padding-top"
         style={{ paddingTop: 50 + "px" }}

@@ -48,7 +48,7 @@ const initialState: Project = {
   },
   3: {
     front: {
-      query: { query: "past in flames", card_type: CardTypes.Card },
+      query: { query: "necropotence", card_type: CardTypes.Card },
       selectedImage: null,
     },
     back: {
