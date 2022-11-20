@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { AppDispatch, RootState } from "./store";
 import { Card } from "./card";
@@ -7,8 +7,7 @@ import { wrapIndex } from "./utils";
 import { setSelectedImage } from "./projectSlice";
 import BSCard from "react-bootstrap/Card";
 import Button from "react-bootstrap/Button";
-
-// import styles from './Counter.module.css'
+import Modal from "react-bootstrap/Modal";
 
 interface CardSlotProps {
   searchQuery: SearchQuery;
@@ -22,6 +21,11 @@ export function CardSlot(props: CardSlotProps) {
   const face = props.face;
   const slot = props.slot;
   let selectedImage = props.selectedImage;
+
+  const [show, setShow] = useState(false);
+
+  const handleClose = () => setShow(false);
+  const handleShow = () => setShow(true);
 
   const dispatch = useDispatch<AppDispatch>();
 
@@ -72,46 +76,83 @@ export function CardSlot(props: CardSlotProps) {
     );
   }
 
+  let counterElement = (
+    <p className="mpccard-counter">
+      {selectedImageIndex + 1} / {searchResultsForQuery.length}
+    </p>
+  );
+  if (searchResultsForQuery.length == 0) {
+    counterElement.props.style = { opacity: 0 };
+  }
+  if (searchResultsForQuery.length > 1) {
+    counterElement = (
+      <Button
+        variant="outline-info"
+        className="mpccard-counter-btn"
+        onClick={handleShow}
+      >
+        {selectedImageIndex + 1} / {searchResultsForQuery.length}
+      </Button>
+    );
+  }
+
   return (
-    // style={{opacity: 0}}
-    <BSCard className="mpccard mpccard-hover">
-      <BSCard.Header className="pb-0 text-center">
-        <p className="mpccard-slot">Slot {slot + 1}</p>
-        <button className="padlock">
-          <i className="bi bi-unlock"></i>
-        </button>
-        <button className="remove">
-          <i className="bi bi-x-circle"></i>
-        </button>
-      </BSCard.Header>
-      <Card
-        imageIdentifier={selectedImage}
-        previousImageIdentifier={previousImage}
-        nextImageIdentifier={nextImage}
-      ></Card>
-      <BSCard.Footer className="padding-top" style={{ paddingTop: 50 + "px" }}>
-        <Button variant="outline-info" className="mpccard-counter-btn">
-          {selectedImageIndex + 1} / {searchResultsForQuery.length}
-        </Button>
-        {searchResultsForQuery.length > 1 && (
-          <div>
-            <Button
-              variant="outline-primary"
-              className="prev"
-              onClick={() => setSelectedImageFromDelta(-1)}
-            >
-              &#10094;
-            </Button>
-            <Button
-              variant="outline-primary"
-              className="next"
-              onClick={() => setSelectedImageFromDelta(1)}
-            >
-              &#10095;
-            </Button>
-          </div>
-        )}
-      </BSCard.Footer>
-    </BSCard>
+    <>
+      <BSCard className="mpccard mpccard-hover">
+        <BSCard.Header className="pb-0 text-center">
+          <p className="mpccard-slot">Slot {slot + 1}</p>
+          <button className="padlock">
+            <i className="bi bi-unlock"></i>
+          </button>
+          <button className="remove">
+            <i className="bi bi-x-circle"></i>
+          </button>
+        </BSCard.Header>
+        <Card
+          imageIdentifier={selectedImage}
+          previousImageIdentifier={previousImage}
+          nextImageIdentifier={nextImage}
+        ></Card>
+        <BSCard.Footer
+          className="padding-top"
+          style={{ paddingTop: 50 + "px" }}
+        >
+          {counterElement}
+          {searchResultsForQuery.length > 1 && (
+            <div>
+              <Button
+                variant="outline-primary"
+                className="prev"
+                onClick={() => setSelectedImageFromDelta(-1)}
+              >
+                &#10094;
+              </Button>
+              <Button
+                variant="outline-primary"
+                className="next"
+                onClick={() => setSelectedImageFromDelta(1)}
+              >
+                &#10095;
+              </Button>
+            </div>
+          )}
+        </BSCard.Footer>
+      </BSCard>
+
+      <Modal show={show} onHide={handleClose}>
+        <Modal.Header closeButton>
+          <Modal.Title>Select Version</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>In Progress</Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleClose}>
+            Close
+          </Button>
+          <Button variant="primary" onClick={handleClose}>
+            Save Changes
+          </Button>
+        </Modal.Footer>
+      </Modal>
+    </>
   );
 }

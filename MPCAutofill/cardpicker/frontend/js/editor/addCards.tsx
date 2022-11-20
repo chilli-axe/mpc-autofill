@@ -1,21 +1,13 @@
-import { fetchSourceDocuments } from "./sourceDocumentsSlice";
-
 require("bootstrap-icons/font/bootstrap-icons.css");
 import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
-import React, { useEffect, useState } from "react";
-import { useDispatch } from "react-redux";
-import { AppDispatch } from "./store";
+import React, { useState } from "react";
 
 export function AddCards() {
   const [show, setShow] = useState(false);
 
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
-  const dispatch = useDispatch<AppDispatch>();
-  useEffect(() => {
-    dispatch(fetchSourceDocuments());
-  }, [dispatch]);
 
   return (
     <div className="d-grid gap-0">
