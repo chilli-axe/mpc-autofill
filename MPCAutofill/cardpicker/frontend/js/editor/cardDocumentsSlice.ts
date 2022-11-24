@@ -1,31 +1,40 @@
-import {
-  createSlice,
-  createAsyncThunk,
-  createSelector,
-} from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import Cookies from "js-cookie";
 
-// import { AnyAction } from 'redux'
-// import { RootState } from './store'
-// import { ThunkAction } from 'redux-thunk'
+import { RootState } from "./store";
+import { fetchCards } from "./searchResultsSlice";
 
 // TODO: we should write something to read a page of card IDs from searchResults (100 at a time?) and query the backend for their full data
 export const fetchCardDocuments = createAsyncThunk(
   "cardDocuments/fetchCardDocuments",
-  async () => {
+  async (arg, thunkAPI) => {
+    await thunkAPI.dispatch(fetchCards());
+
+    // @ts-ignore  // TODO
+    const state: RootState = thunkAPI.getState();
+
+    // identify queries with no search results
+    let identifiersToSearch: Set<string> = new Set();
+    for (const slotProjectMembers of state.project.members) {
+      for (const [face, projectMember] of Object.entries(slotProjectMembers)) {
+        if (
+          (
+            (state.searchResults.searchResults[projectMember.query.query] ??
+              {})[projectMember.query.card_type] ?? []
+          ).length > 0
+        ) {
+          // results for this identifier have not been retrieved & stored yet
+          state.searchResults.searchResults[projectMember.query.query][
+            projectMember.query.card_type
+          ].forEach((x) => identifiersToSearch.add(x));
+        }
+      }
+    }
+
     const rawResponse = await fetch("/2/getCards/", {
       method: "POST",
       body: JSON.stringify({
-        card_identifiers: [
-          "1-BVOLIOK35eaNl2ytZtOlieejd0_D4z0",
-          "1mCg4xFgdigH2Jyq8dmNHWOe1fht1Eoth",
-          "1_rvQRbdskxqoRt94mh6JQrt9VgHdJY7h",
-          "1YUOZcuGSJ5Kx4wuLR5bqhAkNUlnYq6fm",
-          "1Ndv0ukuzfBA-eSar36EP2qJJuJuj5Ido",
-          "1a3NSE99JqZw2ZQzmfatB4Im_TYDc700D",
-          "1LrVX0pUcye9n_0RtaDNVl2xPrQgn7CYf",
-          "1PxWVhIhUA_HAlHkCvx3O5O_HAaZhzyES",
-        ],
+        card_identifiers: Array.from(identifiersToSearch),
       }),
       credentials: "same-origin",
       headers: {

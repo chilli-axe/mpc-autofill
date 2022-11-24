@@ -12,9 +12,9 @@ import Row from "react-bootstrap/Row";
 export function CardGrid() {
   const dispatch = useDispatch<AppDispatch>();
 
-  useEffect(() => {
-    dispatch(fetchCards());
-  }, [dispatch]);
+  // useEffect(() => {
+  //   dispatch(fetchCards());
+  // }, [dispatch]);
 
   useEffect(() => {
     dispatch(fetchCardDocuments());

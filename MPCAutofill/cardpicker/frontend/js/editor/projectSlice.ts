@@ -29,7 +29,7 @@ const initialState: Project = {
     },
     {
       front: {
-        query: { query: "island", card_type: CardTypes.Card },
+        query: { query: "grim monolith", card_type: CardTypes.Card },
         selectedImage: null,
       },
       back: {

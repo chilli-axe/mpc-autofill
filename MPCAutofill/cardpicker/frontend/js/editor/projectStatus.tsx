@@ -52,7 +52,7 @@ export function ProjectStatus() {
         Your project contains <b>{projectSize}</b> card
         {projectSize !== 1 && "s"}, belongs in the MPC bracket of up to{" "}
         <b>{bracket(projectSize)}</b> cards, and is{" "}
-        <b>{imageSizeToMBString(projectFileSize, 2)}</b> in total.
+        <b>{imageSizeToMBString(projectFileSize, 0)}</b> in total.
         <br />
         <br />
         <Row>

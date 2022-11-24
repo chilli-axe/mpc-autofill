@@ -4,7 +4,7 @@ import {
   createSelector,
 } from "@reduxjs/toolkit";
 import Cookies from "js-cookie";
-import { CardTypes, SearchQuery } from "./constants";
+import { CardTypes } from "./constants";
 import { RootState } from "./store";
 
 export const fetchCards = createAsyncThunk(
@@ -40,12 +40,15 @@ export const fetchCards = createAsyncThunk(
       },
     });
     const content = await rawResponse.json();
+    //
+    // thunkAPI.dispatch(fetchCardDocuments());
+
     return content.results;
   }
 );
 
 type SearchResultsForQuery = {
-  [card_type in CardTypes]: string;
+  [card_type in CardTypes]: Array<string>;
 };
 
 interface SearchResults {
