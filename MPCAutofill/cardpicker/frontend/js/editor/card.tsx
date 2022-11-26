@@ -87,6 +87,7 @@ export function Card(props: CardProps) {
             onLoad={() => setSmallThumbnailLoading(false)}
             onClick={handleShow}
             // onError={{thumbnail_404(this)}}
+            alt={maybeCardDocument.name}
           />
           {props.previousImageIdentifier !== imageIdentifier &&
             maybePreviousCardDocument !== undefined && (
@@ -96,6 +97,7 @@ export function Card(props: CardProps) {
                 style={{ zIndex: 0, opacity: 0 }}
                 src={maybePreviousCardDocument.small_thumbnail_url}
                 // onError={{thumbnail_404(this)}}
+                alt={maybePreviousCardDocument.name}
               />
             )}
           {props.nextImageIdentifier !== imageIdentifier &&
@@ -106,6 +108,7 @@ export function Card(props: CardProps) {
                 style={{ zIndex: 0, opacity: 0 }}
                 src={maybeNextCardDocument.small_thumbnail_url}
                 // onError={{thumbnail_404(this)}}
+                alt={maybeNextCardDocument.name}
               />
             )}
         </div>
