@@ -1,8 +1,4 @@
-import {
-  createSlice,
-  createAsyncThunk,
-  createSelector,
-} from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import Cookies from "js-cookie";
 import { CardTypes } from "./constants";
 import { RootState } from "./store";
@@ -28,22 +24,22 @@ export const fetchCards = createAsyncThunk(
       }
     }
 
-    const rawResponse = await fetch("/2/search/", {
-      method: "POST",
-      body: JSON.stringify({
-        searchSettings: state.searchSettings,
-        queries: queriesToSearch,
-      }),
-      credentials: "same-origin",
-      headers: {
-        "X-CSRFToken": Cookies.get("csrftoken"),
-      },
-    });
-    const content = await rawResponse.json();
-    //
-    // thunkAPI.dispatch(fetchCardDocuments());
+    if (queriesToSearch.length > 0) {
+      const rawResponse = await fetch("/2/search/", {
+        method: "POST",
+        body: JSON.stringify({
+          searchSettings: state.searchSettings,
+          queries: queriesToSearch,
+        }),
+        credentials: "same-origin",
+        headers: {
+          "X-CSRFToken": Cookies.get("csrftoken"),
+        },
+      });
+      const content = await rawResponse.json();
 
-    return content.results;
+      return content.results;
+    }
   }
 );
 
@@ -62,7 +58,7 @@ interface SearchResultsState {
 }
 
 const initialState: SearchResultsState = {
-  searchResults: {}, // search query & card type -> number of hits + list of card IDs
+  searchResults: {},
   status: "idle",
   error: null,
 };
@@ -72,7 +68,6 @@ export const searchResultsSlice = createSlice({
   initialState,
   reducers: {
     addSearchResults: (state, action) => {
-      // state.results.push(...action.payload)
       state.searchResults = { ...state.searchResults, ...action.payload };
     },
     clearSearchResults: (state, action) => {
@@ -80,10 +75,7 @@ export const searchResultsSlice = createSlice({
     },
   },
   extraReducers(builder) {
-    // omit posts loading reducers
     builder.addCase(fetchCards.fulfilled, (state, action) => {
-      // We can directly add the new post object to our posts array
-      // state.posts.push(action.payload)
       state.searchResults = { ...state.searchResults, ...action.payload };
     });
   },

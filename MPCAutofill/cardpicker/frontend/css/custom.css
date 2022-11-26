@@ -176,6 +176,10 @@
   max-width: 32rem;
 }
 
+.card-img-fade-in {
+  transition: opacity 0.3s;
+}
+
 .card-img {
   background-size: cover;
   background-position: center center;

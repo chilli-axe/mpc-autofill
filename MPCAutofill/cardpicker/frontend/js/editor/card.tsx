@@ -1,10 +1,7 @@
-import React, { useState } from "react";
-import { useSelector, useDispatch } from "react-redux";
-// import { decrement, increment } from './cardSlotSlice'
+import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import { RootState } from "./store";
-// import styles from './Counter.module.css'
-// import { getCard } from "./cardDocumentsSlice";
-import { TransitionGroup } from "react-transition-group";
+
 import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
 import Row from "react-bootstrap/Row";
@@ -23,6 +20,9 @@ export function Card(props: CardProps) {
   const [mediumThumbnailLoading, setMediumThumbnailLoading] = useState(true);
   const [nameEditable, setNameEditable] = useState(false);
   const [show, setShow] = useState(false);
+
+  // ensure that the medium thumbnail fades in each time the selected image changes
+  useEffect(() => setMediumThumbnailLoading(true), [props.imageIdentifier]);
 
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
@@ -79,12 +79,8 @@ export function Card(props: CardProps) {
             </div>
           </div>
 
-          {/*<TransitionGroup*/}
-          {/*  transitionName="example"*/}
-          {/*  transitionEnterTimeout={500}*/}
-          {/*  transitionLeaveTimeout={300}>*/}
           <img
-            className="card-img"
+            className="card-img card-img-fade-in"
             loading="lazy"
             style={{ zIndex: 1, opacity: smallThumbnailLoading ? 0 : 1 }}
             src={maybeCardDocument.small_thumbnail_url}
@@ -112,8 +108,6 @@ export function Card(props: CardProps) {
                 // onError={{thumbnail_404(this)}}
               />
             )}
-
-          {/*</TransitionGroup>*/}
         </div>
         <BSCard.Body className="mb-0 text-center">
           <BSCard.Subtitle
@@ -141,18 +135,6 @@ export function Card(props: CardProps) {
                 className="col-lg-5 mb-3 mb-lg-0"
                 style={{ position: "relative" }}
               >
-                {/*  <div className="shadow-lg ratio ratio-7x5"*/}
-                {/*  // style="border-radius: 18px"*/}
-                {/*  >*/}
-                {/*    <img*/}
-                {/*      className="card-img"*/}
-                {/*      loading="lazy"*/}
-                {/*      style={{ zIndex: 1, opacity: mediumThumbnailLoading ? 0 : 1 }}*/}
-                {/*      src={cardMediumThumbnailUrl}*/}
-                {/*      onLoad={() => setMediumThumbnailLoading(false)}*/}
-                {/*      // onError={{thumbnail_404(this)}}*/}
-                {/*    />*/}
-                {/*  </div>*/}
                 <div className="rounded-xl shadow-lg ratio ratio-7x5">
                   <div
                     className="d-flex justify-content-center align-items-center"
@@ -169,12 +151,8 @@ export function Card(props: CardProps) {
                     </div>
                   </div>
 
-                  {/*<TransitionGroup*/}
-                  {/*  transitionName="example"*/}
-                  {/*  transitionEnterTimeout={500}*/}
-                  {/*  transitionLeaveTimeout={300}>*/}
                   <img
-                    loading="lazy"
+                    className="card-img-fade-in"
                     style={{
                       zIndex: 1,
                       opacity: mediumThumbnailLoading ? 0 : 1,
@@ -183,7 +161,6 @@ export function Card(props: CardProps) {
                     onLoad={() => setMediumThumbnailLoading(false)}
                     // onError={{thumbnail_404(this)}}
                   />
-                  {/*</TransitionGroup>*/}
                 </div>
               </div>
               <div className="col-lg-7">
@@ -252,27 +229,3 @@ export function Card(props: CardProps) {
     );
   }
 }
-
-// <img className="card-img-prev"
-//              loading="lazy"
-//              style={{zIndex: 0}}
-//              // onError="thumbnail_404(this);"
-//         ></img>
-//       <img
-//           className="card-img-next"
-//           loading="lazy" style={{zIndex: 0}}
-//           // onError="thumbnail_404(this);"
-//       ></img>
-
-// <ReactCSSTransitionGroup
-//  transitionName="example"
-//  transitionEnterTimeout={500}
-//  transitionLeaveTimeout={300}>
-//   <img className="card-img"
-//       loading="lazy"
-//       style={{zIndex: 1, display: loading ? "none" : "block"}}
-//       src={cardSmallThumbnailUrl}
-//       onLoad={() => setLoading(false)}
-//       // onError={{thumbnail_404(this)}}
-//  />
-// </ReactCSSTransitionGroup>

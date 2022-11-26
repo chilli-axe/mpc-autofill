@@ -31,18 +31,20 @@ export const fetchCardDocuments = createAsyncThunk(
       }
     }
 
-    const rawResponse = await fetch("/2/getCards/", {
-      method: "POST",
-      body: JSON.stringify({
-        card_identifiers: Array.from(identifiersToSearch),
-      }),
-      credentials: "same-origin",
-      headers: {
-        "X-CSRFToken": Cookies.get("csrftoken"),
-      },
-    });
-    const content = await rawResponse.json();
-    return content.results;
+    if (identifiersToSearch.size > 0) {
+      const rawResponse = await fetch("/2/getCards/", {
+        method: "POST",
+        body: JSON.stringify({
+          card_identifiers: Array.from(identifiersToSearch),
+        }),
+        credentials: "same-origin",
+        headers: {
+          "X-CSRFToken": Cookies.get("csrftoken"),
+        },
+      });
+      const content = await rawResponse.json();
+      return content.results;
+    }
   }
 );
 
