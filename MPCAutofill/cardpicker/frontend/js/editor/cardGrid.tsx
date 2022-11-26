@@ -27,7 +27,7 @@ export function CardGrid() {
   );
   useEffect(() => {
     dispatch(fetchCardDocuments());
-  }, [searchQueries]);
+  }, [searchQueries]); // TODO: this still seems to be firing when it shouldn't
 
   for (const [slot, slotProjectMember] of projectMembers.entries()) {
     cardSlotsFronts.push(
@@ -50,9 +50,34 @@ export function CardGrid() {
     );
   }
 
+  const frontsVisible = useSelector(
+    (state: RootState) => state.viewSettings.frontsVisible
+  );
+
   return (
-    <Row xxl={4} lg={3} md={2} sm={1} xs={1} className="g-0">
-      {cardSlotsFronts}
-    </Row>
+    <>
+      <Row
+        xxl={4}
+        lg={3}
+        md={2}
+        sm={1}
+        xs={1}
+        className="g-0"
+        style={{ display: frontsVisible ? "" : "none" }}
+      >
+        {cardSlotsFronts}
+      </Row>
+      <Row
+        xxl={4}
+        lg={3}
+        md={2}
+        sm={1}
+        xs={1}
+        className="g-0"
+        style={{ display: frontsVisible ? "none" : "" }}
+      >
+        {cardSlotsBacks}
+      </Row>
+    </>
   );
 }

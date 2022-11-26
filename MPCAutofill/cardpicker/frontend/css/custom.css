@@ -270,3 +270,7 @@
   opacity: 0.01;
   transition: opacity 300ms ease-in;
 }
+
+.flex-centre {
+  justify-content: center;
+}

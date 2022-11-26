@@ -4,9 +4,11 @@ import cardDocumentsReducer from "./cardDocumentsSlice";
 import sourceDocumentsReducer from "./sourceDocumentsSlice";
 import searchSettingsReducer from "./searchSettingsSlice";
 import projectReducer from "./projectSlice";
+import viewSettingsReducer from "./viewSettingsSlice";
 
 export const store = configureStore({
   reducer: {
+    viewSettings: viewSettingsReducer,
     searchSettings: searchSettingsReducer,
     searchResults: searchResultsReducer,
     cardDocuments: cardDocumentsReducer,

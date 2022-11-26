@@ -11,9 +11,6 @@ import "../css/custom.css";
 // require("bootstrap/js/dist/dropdown");
 require("bootstrap-icons/font/bootstrap-icons.css");
 
-import "bootstrap5-toggle/css/bootstrap5-toggle.min.css";
-import "bootstrap5-toggle";
-
 const root = ReactDOMClient.createRoot(
   document.getElementById("app") as HTMLElement
 );
