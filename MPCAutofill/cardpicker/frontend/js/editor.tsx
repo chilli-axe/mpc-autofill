@@ -4,10 +4,13 @@ import store from "./editor/store";
 import { Provider } from "react-redux";
 import * as ReactDOMClient from "react-dom/client";
 
-require("./base.js");
+import "../scss/styles.scss";
+import "../css/custom.css";
+
+// require("./base.js");
 // require("bootstrap/js/dist/dropdown");
-// require("bootstrap-icons/font/bootstrap-icons.css");
-//
+require("bootstrap-icons/font/bootstrap-icons.css");
+
 import "bootstrap5-toggle/css/bootstrap5-toggle.min.css";
 import "bootstrap5-toggle";
 

@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { RootState, AppDispatch } from "./store";
 import { CardSlot } from "./cardSlot";
 import { fetchCardDocuments } from "./cardDocumentsSlice";
-import { Faces, Front, Back } from "./constants";
+import { Front, Back } from "./constants";
 import Row from "react-bootstrap/Row";
 
 // import styles from './Counter.module.css'

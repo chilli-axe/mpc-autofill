@@ -1,5 +1,3 @@
-require("bootstrap-icons/font/bootstrap-icons.css");
-import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
 import React, { useState } from "react";
 import { useSelector } from "react-redux";
