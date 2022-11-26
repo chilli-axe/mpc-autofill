@@ -3,7 +3,6 @@ import { useSelector, useDispatch } from "react-redux";
 import { RootState, AppDispatch } from "./store";
 import { CardSlot } from "./cardSlot";
 import { fetchCardDocuments } from "./cardDocumentsSlice";
-import { fetchCards } from "./searchResultsSlice";
 import { Faces, Front, Back } from "./constants";
 import Row from "react-bootstrap/Row";
 
@@ -18,9 +17,17 @@ export function CardGrid() {
     (state: RootState) => state.project.members
   );
 
+  // retrieve cards from database when queries in the project change
+  let searchQueries: Array<string> = [];
+  useSelector((state: RootState) =>
+    state.project.members.forEach((x) => {
+      searchQueries.push(JSON.stringify(x.front.query));
+      searchQueries.push(JSON.stringify(x.back.query));
+    })
+  );
   useEffect(() => {
     dispatch(fetchCardDocuments());
-  }, [dispatch, projectMembers]);
+  }, [searchQueries]);
 
   for (const [slot, slotProjectMember] of projectMembers.entries()) {
     cardSlotsFronts.push(

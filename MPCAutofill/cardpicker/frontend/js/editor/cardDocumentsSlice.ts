@@ -8,11 +8,9 @@ import { fetchCards } from "./searchResultsSlice";
 export const fetchCardDocuments = createAsyncThunk(
   "cardDocuments/fetchCardDocuments",
   async (arg, thunkAPI) => {
-    // alert("dispatching fetchCards")  // TODO: this is being called a second time (when selecting first images)
-    await thunkAPI.dispatch(fetchCards());
-
     // @ts-ignore  // TODO
     const state: RootState = thunkAPI.getState();
+    await thunkAPI.dispatch(fetchCards());
 
     // identify queries with no search results
     let allIdentifiers: Set<string> = new Set();
@@ -82,7 +80,7 @@ interface CardDocuments {
 
 interface CardDocumentsState {
   cardDocuments: CardDocuments;
-  status: string;
+  status: "idle" | "loading" | "succeeded" | "failed";
   error: string;
 }
 
@@ -97,40 +95,23 @@ export const cardDocumentsSlice = createSlice({
   initialState,
   reducers: {
     addCardDocuments: (state, action) => {
-      // state.results.push(...action.payload)
       state.cardDocuments = { ...state.cardDocuments, ...action.payload };
     },
   },
   extraReducers(builder) {
-    // omit posts loading reducers
-    builder.addCase(fetchCardDocuments.fulfilled, (state, action) => {
-      // We can directly add the new post object to our posts array
-      // state.posts.push(action.payload)
-      state.cardDocuments = { ...state.cardDocuments, ...action.payload };
-    });
+    builder
+      .addCase(fetchCardDocuments.pending, (state, action) => {
+        state.status = "loading";
+      })
+      .addCase(fetchCardDocuments.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.cardDocuments = { ...state.cardDocuments, ...action.payload };
+      })
+      .addCase(fetchCardDocuments.rejected, (state, action) => {
+        state.status = "failed"; // TODO: build some stuff for displaying error messages
+        state.error = action.error.message;
+      });
   },
 });
-export const { addCardDocuments } = cardDocumentsSlice.actions;
-
-// export const getCard = (state: any, cardIdentifier: string) => createSelector(state.cardDocuments.cardDocuments.get(cardIdentifier))
-
-// const logAndAdd = (queries: Array<string>) => {
-//   return (dispatch, getState) => {
-//     const stateBefore = getState()
-//     console.log(`Counter before: ${stateBefore.counter}`)
-//     // dispatch(incrementByAmount(queries))
-//     const stateAfter = getState()
-//     console.log(`Counter after: ${stateAfter.counter}`)
-//   }
-// }
-
-// export const addSearchResultsAsync = (queries: Array<[string, string]>) => (dispatch: any) => {
-//   setTimeout(() => {
-//     dispatch(addSearchResults(queries))
-//   }, 1000)
-// }
-
-// Action creators are generated for each case reducer function
-// export const { increment, decrement, incrementByAmount } = cardSlotSlice.actions
 
 export default cardDocumentsSlice.reducer;
