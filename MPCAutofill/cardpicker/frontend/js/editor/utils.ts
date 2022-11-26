@@ -24,3 +24,13 @@ export function bracket(projectSize: number): number {
   }
   return brackets[brackets.length - 1];
 }
+
+export function processLine(line: string): [string, number] | null {
+  const trimmedLine = line.replace(/\s+/g, " ").trim();
+  if (trimmedLine.length == 0) {
+    return null;
+  }
+  const re = /^([0-9]*)?x?\s?(.*)$/; // extract quantity and card name from input text
+  const results = re.exec(trimmedLine);
+  return [results[2].toLowerCase(), parseInt(results[1] ?? "1")];
+}

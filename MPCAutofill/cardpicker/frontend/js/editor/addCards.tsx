@@ -1,13 +1,32 @@
+import { useDispatch } from "react-redux";
+
 require("bootstrap-icons/font/bootstrap-icons.css");
 import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
 import React, { useState } from "react";
 import Dropdown from "react-bootstrap/Dropdown";
+import Form from "react-bootstrap/Form";
+import { processLine } from "./utils";
+import { addImages } from "./projectSlice";
+import { AppDispatch } from "./store";
 
 export function AddCards() {
+  const dispatch = useDispatch<AppDispatch>();
   const [showTextModal, setShowTextModal] = useState(false);
   const handleCloseTextModal = () => setShowTextModal(false);
   const handleShowTextModal = () => setShowTextModal(true);
+  const [textModalValue, setTextModalValue] = useState("");
+
+  const handleSubmitTextModal = () => {
+    let queriesToQuantity: { [query: string]: number } = {};
+    textModalValue.split(/\r?\n|\r|\n/g).forEach((line) => {
+      const [query, quantity] = processLine(line);
+      queriesToQuantity[query] = (queriesToQuantity[query] ?? 0) + quantity;
+    });
+
+    dispatch(addImages(queriesToQuantity));
+    handleCloseTextModal();
+  };
 
   const [showXMLModal, setShowXMLModal] = useState(false);
   const handleCloseXMLModal = () => setShowXMLModal(false);
@@ -66,16 +85,34 @@ export function AddCards() {
         </Dropdown.Menu>
       </Dropdown>
 
-      <Modal show={showTextModal} onHide={handleCloseTextModal}>
+      <Modal
+        show={showTextModal}
+        onHide={handleCloseTextModal}
+        onExited={() => setTextModalValue("")}
+      >
         <Modal.Header closeButton>
           <Modal.Title>Add Cards — Text</Modal.Title>
         </Modal.Header>
-        <Modal.Body>In Progress</Modal.Body>
+        <Modal.Body>
+          <p>
+            Type the names of the cards you'd like to add to your order and hit{" "}
+            <b>Submit</b>. One card per line.
+          </p>
+          <Form.Group className="mb-3" controlId="exampleForm.ControlTextarea1">
+            <Form.Control
+              as="textarea"
+              rows={12}
+              placeholder="4x Lion's Eye Diamond&#10;4x Golgari Grave-Troll&#10;4x Bridge from Below&#10;3x Breakthrough&#10;&#10;6x t:Zombie"
+              onChange={(event) => setTextModalValue(event.target.value)}
+              value={textModalValue}
+            />
+          </Form.Group>
+        </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={handleCloseTextModal}>
             Close
           </Button>
-          <Button variant="success" onClick={handleCloseTextModal}>
+          <Button variant="success" onClick={handleSubmitTextModal}>
             Submit
           </Button>
         </Modal.Footer>

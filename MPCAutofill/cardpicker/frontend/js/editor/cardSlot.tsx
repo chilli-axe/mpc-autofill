@@ -80,26 +80,6 @@ export function CardSlot(props: CardSlotProps) {
     );
   }
 
-  let counterElement = (
-    <p className="mpccard-counter">
-      {selectedImageIndex + 1} / {searchResultsForQuery.length}
-    </p>
-  );
-  if (searchResultsForQuery.length == 0) {
-    counterElement.props.style = { opacity: 0 };
-  }
-  if (searchResultsForQuery.length > 1) {
-    counterElement = (
-      <Button
-        variant="outline-info"
-        className="mpccard-counter-btn"
-        onClick={handleShow}
-      >
-        {selectedImageIndex + 1} / {searchResultsForQuery.length}
-      </Button>
-    );
-  }
-
   return (
     <>
       <BSCard className="mpccard mpccard-hover">
@@ -121,24 +101,37 @@ export function CardSlot(props: CardSlotProps) {
           className="padding-top"
           style={{ paddingTop: 50 + "px" }}
         >
-          {counterElement}
+          {searchResultsForQuery.length == 1 && (
+            <p className="mpccard-counter text-center align-middle">
+              1 / {searchResultsForQuery.length}
+            </p>
+          )}
           {searchResultsForQuery.length > 1 && (
-            <div>
+            <>
               <Button
-                variant="outline-primary"
-                className="prev"
-                onClick={() => setSelectedImageFromDelta(-1)}
+                variant="outline-info"
+                className="mpccard-counter-btn"
+                onClick={handleShow}
               >
-                &#10094;
+                {selectedImageIndex + 1} / {searchResultsForQuery.length}
               </Button>
-              <Button
-                variant="outline-primary"
-                className="next"
-                onClick={() => setSelectedImageFromDelta(1)}
-              >
-                &#10095;
-              </Button>
-            </div>
+              <div>
+                <Button
+                  variant="outline-primary"
+                  className="prev"
+                  onClick={() => setSelectedImageFromDelta(-1)}
+                >
+                  &#10094;
+                </Button>
+                <Button
+                  variant="outline-primary"
+                  className="next"
+                  onClick={() => setSelectedImageFromDelta(1)}
+                >
+                  &#10095;
+                </Button>
+              </div>
+            </>
           )}
         </BSCard.Footer>
       </BSCard>

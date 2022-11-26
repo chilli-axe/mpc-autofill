@@ -2,8 +2,8 @@ import React, { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState, AppDispatch } from "./store";
 import { CardSlot } from "./cardSlot";
-import { addSearchResults, fetchCards } from "./searchResultsSlice";
 import { fetchCardDocuments } from "./cardDocumentsSlice";
+import { fetchCards } from "./searchResultsSlice";
 import { Faces, Front, Back } from "./constants";
 import Row from "react-bootstrap/Row";
 
@@ -12,15 +12,15 @@ import Row from "react-bootstrap/Row";
 export function CardGrid() {
   const dispatch = useDispatch<AppDispatch>();
 
-  useEffect(() => {
-    dispatch(fetchCardDocuments());
-  }, [dispatch]);
-
   let cardSlotsFronts = [];
   let cardSlotsBacks = [];
   const projectMembers = useSelector(
     (state: RootState) => state.project.members
   );
+
+  useEffect(() => {
+    dispatch(fetchCardDocuments());
+  }, [dispatch, projectMembers]);
 
   for (const [slot, slotProjectMember] of projectMembers.entries()) {
     cardSlotsFronts.push(

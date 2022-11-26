@@ -81,6 +81,27 @@ export const projectSlice = createSlice({
       state.members[action.payload.slot][action.payload.face].selectedImage =
         action.payload.selectedImage;
     },
+    addImages: (state, action) => {
+      let newMembers: Array<SlotProjectMembers> = [];
+
+      for (const [key, value] of Object.entries(action.payload)) {
+        // @ts-ignore  // TODO
+        newMembers = [
+          ...newMembers,
+          ...Array(value).fill({
+            front: {
+              query: { query: key, card_type: CardTypes.Card },
+              selectedImage: null,
+            },
+            back: {
+              query: { query: "black lotus", card_type: CardTypes.Cardback },
+              selectedImage: null,
+            },
+          }),
+        ];
+      }
+      state.members = [...state.members, ...newMembers];
+    },
     deleteImage: (state, action: PayloadAction<DeleteImageAction>) => {
       state.members.splice(action.payload.slot, 1);
     },
@@ -103,6 +124,7 @@ const selectProject = (state: RootState) => state.project;
 // const getProjectCardCount = createSelector(selectProject, project => )
 
 // Action creators are generated for each case reducer function
-export const { setSelectedImage, deleteImage } = projectSlice.actions;
+export const { setSelectedImage, addImages, deleteImage } =
+  projectSlice.actions;
 
 export default projectSlice.reducer;

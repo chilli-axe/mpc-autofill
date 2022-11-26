@@ -8,13 +8,14 @@ import { fetchCards } from "./searchResultsSlice";
 export const fetchCardDocuments = createAsyncThunk(
   "cardDocuments/fetchCardDocuments",
   async (arg, thunkAPI) => {
+    // alert("dispatching fetchCards")  // TODO: this is being called a second time (when selecting first images)
     await thunkAPI.dispatch(fetchCards());
 
     // @ts-ignore  // TODO
     const state: RootState = thunkAPI.getState();
 
     // identify queries with no search results
-    let identifiersToSearch: Set<string> = new Set();
+    let allIdentifiers: Set<string> = new Set();
     for (const slotProjectMembers of state.project.members) {
       for (const [face, projectMember] of Object.entries(slotProjectMembers)) {
         if (
@@ -26,10 +27,18 @@ export const fetchCardDocuments = createAsyncThunk(
           // results for this identifier have not been retrieved & stored yet
           state.searchResults.searchResults[projectMember.query.query][
             projectMember.query.card_type
-          ].forEach((x) => identifiersToSearch.add(x));
+          ].forEach((x) => allIdentifiers.add(x));
         }
       }
     }
+    const identifiersWithResults = new Set(
+      Object.keys(state.cardDocuments.cardDocuments)
+    );
+    const identifiersToSearch = new Set(
+      Array.from(allIdentifiers).filter(
+        (item) => !identifiersWithResults.has(item)
+      )
+    );
 
     if (identifiersToSearch.size > 0) {
       const rawResponse = await fetch("/2/getCards/", {
