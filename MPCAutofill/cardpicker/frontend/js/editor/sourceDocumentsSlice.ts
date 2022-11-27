@@ -16,11 +16,11 @@ interface SourceDocuments {
 }
 
 interface SourceDocumentsState {
-  sourceDocuments: SourceDocuments;
+  sourceDocuments?: SourceDocuments;
 }
 
 const initialState: SourceDocumentsState = {
-  sourceDocuments: {},
+  sourceDocuments: null,
 };
 
 export const fetchSourceDocuments = createAsyncThunk(

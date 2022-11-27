@@ -20,14 +20,17 @@ export const searchSettingsSlice = createSlice({
   name: "searchSettings",
   initialState,
   reducers: {
-    enableFuzzySearch: (state, action) => {
+    enableFuzzySearch: (state) => {
       state.fuzzySearch = true;
     },
-    disableFuzzySearch: (state, action) => {
+    disableFuzzySearch: (state) => {
       state.fuzzySearch = false;
     },
-    toggleFuzzySearch: (state, action) => {
+    toggleFuzzySearch: (state) => {
       state.fuzzySearch = !state.fuzzySearch;
+    },
+    setFuzzySearch: (state, action) => {
+      state.fuzzySearch = action.payload;
     },
     addCardSource: (state, action) => {
       state.cardSources.push(action.payload);
@@ -59,6 +62,7 @@ export const {
   toggleFuzzySearch,
   enableFuzzySearch,
   disableFuzzySearch,
+  setFuzzySearch,
   addCardSource,
   removeCardSource,
   addCardbackSource,
