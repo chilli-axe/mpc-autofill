@@ -33,6 +33,7 @@
     "webpack-cli": "^4.10.0"
   },
   "dependencies": {
+    "@hello-pangea/dnd": "^16.1.0",
     "@popperjs/core": "^2.11.6",
     "bootstrap": "^5.2.2",
     "bootstrap-icons": "^1.9.1",

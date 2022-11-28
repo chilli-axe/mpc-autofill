@@ -3,6 +3,7 @@ import Cookies from "js-cookie";
 
 interface SourceDocument {
   // This should match the data returned by `to_dict` on the `Source` Django model
+  pk: number;
   key: string;
   name: string;
   identifier: string;

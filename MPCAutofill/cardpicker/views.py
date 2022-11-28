@@ -491,7 +491,6 @@ def api_function_3(request: HttpRequest) -> HttpResponse:
     Return a list of sources.
     """
 
-    time.sleep(5)
     objs = {x.key: x.to_dict() for x in Source.objects.all()}
     return JsonResponse({"results": objs})
 
