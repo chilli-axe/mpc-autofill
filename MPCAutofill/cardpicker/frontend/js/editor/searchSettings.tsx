@@ -67,18 +67,6 @@ export function SearchSettings() {
               {...provided.draggableProps}
               {...provided.dragHandleProps}
             >
-              <td
-                style={{
-                  verticalAlign: "middle",
-                  width: 10 + "%",
-                  textAlign: "center",
-                }}
-              >
-                <i
-                  className="bi bi-grip-horizontal"
-                  style={{ fontSize: 2 + "em" }}
-                ></i>
-              </td>
               <td style={{ verticalAlign: "middle", width: 20 + "%" }}>
                 <Toggle
                   on="On"
@@ -110,6 +98,18 @@ export function SearchSettings() {
               >
                 {sourceDocument.source_type}
               </td>
+              <td
+                style={{
+                  verticalAlign: "middle",
+                  width: 10 + "%",
+                  textAlign: "center",
+                }}
+              >
+                <i
+                  className="bi bi-grip-horizontal"
+                  style={{ fontSize: 2 + "em" }}
+                />
+              </td>
             </tr>
           )}
         </Draggable>
@@ -122,10 +122,10 @@ export function SearchSettings() {
             <Table ref={provided.innerRef} style={{ tableLayout: "auto" }}>
               <thead>
                 <tr>
-                  <th></th>
                   <th className="prevent-select">Enabled</th>
                   <th className="prevent-select">Source Name</th>
                   <th className="prevent-select">Source Type</th>
+                  <th />
                 </tr>
               </thead>
               <tbody>{sourceRows}</tbody>

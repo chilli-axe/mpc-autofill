@@ -111,7 +111,7 @@ export function AddCards() {
           <Button variant="secondary" onClick={handleCloseTextModal}>
             Close
           </Button>
-          <Button variant="success" onClick={handleSubmitTextModal}>
+          <Button variant="primary" onClick={handleSubmitTextModal}>
             Submit
           </Button>
         </Modal.Footer>
@@ -150,7 +150,7 @@ export function AddCards() {
           <Button variant="secondary" onClick={handleCloseURLModal}>
             Close
           </Button>
-          <Button variant="success" onClick={handleCloseURLModal}>
+          <Button variant="primary" onClick={handleCloseURLModal}>
             Submit
           </Button>
         </Modal.Footer>

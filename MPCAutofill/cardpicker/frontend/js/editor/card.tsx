@@ -65,7 +65,10 @@ export function Card(props: CardProps) {
   } else {
     return (
       <div>
-        <div className="rounded-lg shadow-lg ratio ratio-7x5">
+        <div
+          className="rounded-lg shadow-lg ratio ratio-7x5"
+          style={{ zIndex: 0 }}
+        >
           <div
             className="d-flex justify-content-center align-items-center"
             style={{ display: smallThumbnailLoading ? "block" : "none" }}
@@ -138,7 +141,10 @@ export function Card(props: CardProps) {
                 className="col-lg-5 mb-3 mb-lg-0"
                 style={{ position: "relative" }}
               >
-                <div className="rounded-xl shadow-lg ratio ratio-7x5">
+                <div
+                  className="rounded-xl shadow-lg ratio ratio-7x5"
+                  style={{ zIndex: 0 }}
+                >
                   <div
                     className="d-flex justify-content-center align-items-center"
                     style={{
