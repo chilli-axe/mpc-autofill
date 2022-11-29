@@ -66,6 +66,10 @@ interface SetSelectedImageAction {
   selectedImage: string;
 }
 
+interface AddImagesAction {
+  [key: string]: number;
+}
+
 interface DeleteImageAction {
   slot: number;
 }
@@ -81,11 +85,10 @@ export const projectSlice = createSlice({
       state.members[action.payload.slot][action.payload.face].selectedImage =
         action.payload.selectedImage;
     },
-    addImages: (state, action) => {
+    addImages: (state, action: PayloadAction<AddImagesAction>) => {
       let newMembers: Array<SlotProjectMembers> = [];
 
       for (const [key, value] of Object.entries(action.payload)) {
-        // @ts-ignore  // TODO
         newMembers = [
           ...newMembers,
           ...Array(value).fill({
@@ -94,6 +97,7 @@ export const projectSlice = createSlice({
               selectedImage: null,
             },
             back: {
+              // TODO: this needs to default to the selected cardback (and set group membership)
               query: { query: "black lotus", card_type: CardTypes.Cardback },
               selectedImage: null,
             },
