@@ -3,10 +3,9 @@ import React, { useState } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "./store";
 import Alert from "react-bootstrap/Alert";
-import { bracket } from "./utils";
+import { bracket, imageSizeToMBString } from "./utils";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
-import { imageSizeToMBString } from "./utils";
 import Tooltip from "react-bootstrap/Tooltip";
 import OverlayTrigger from "react-bootstrap/OverlayTrigger";
 
@@ -23,11 +22,12 @@ function getProjectFileSize(): number {
   const cardDocuments = useSelector(
     (state: RootState) => state.cardDocuments.cardDocuments
   );
-  let projectSize = 0;
-  uniqueCardIdentifiers.forEach(
-    (value) => (projectSize += (cardDocuments[value] ?? { size: 0 }).size)
+  return Array.from(uniqueCardIdentifiers).reduce(
+    (accumulator: number, identifier: string) => {
+      return accumulator + (cardDocuments[identifier] ?? { size: 0 }).size;
+    },
+    0
   );
-  return projectSize;
 }
 
 export function ProjectStatus() {
@@ -35,8 +35,6 @@ export function ProjectStatus() {
 
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
-
-  getProjectFileSize();
 
   const projectSize = useSelector(
     (state: RootState) => state.project.members.length
