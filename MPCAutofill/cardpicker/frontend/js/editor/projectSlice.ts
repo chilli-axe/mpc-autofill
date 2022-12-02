@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { CardTypes, Faces, SearchQuery } from "./constants";
 import { RootState } from "./store";
+import { useSelector } from "react-redux";
 
 interface ProjectMember {
   query: SearchQuery;
@@ -124,7 +125,30 @@ export const projectSlice = createSlice({
   },
 });
 
-const selectProject = (state: RootState) => state.project;
+export const selectProjectMembers = (
+  state: RootState
+): Array<SlotProjectMembers> => state.project.members;
+
+export const selectProjectSize = (state: RootState): number =>
+  state.project.members.length;
+
+export const selectProjectFileSize = (state: RootState): number => {
+  const uniqueCardIdentifiers = new Set<string>();
+  for (const slotProjectMembers of state.project.members) {
+    for (const [face, projectMember] of Object.entries(slotProjectMembers)) {
+      uniqueCardIdentifiers.add(projectMember.selectedImage);
+    }
+  }
+
+  const cardDocuments = state.cardDocuments.cardDocuments;
+  return Array.from(uniqueCardIdentifiers).reduce(
+    (accumulator: number, identifier: string) => {
+      return accumulator + (cardDocuments[identifier] ?? { size: 0 }).size;
+    },
+    0
+  );
+};
+
 // const getProjectCardCount = createSelector(selectProject, project => )
 
 // Action creators are generated for each case reducer function

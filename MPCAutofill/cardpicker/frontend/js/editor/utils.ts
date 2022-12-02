@@ -34,3 +34,32 @@ export function processLine(line: string): [string, number] | null {
   const results = re.exec(trimmedLine);
   return [results[2].toLowerCase(), parseInt(results[1] ?? "1")];
 }
+
+export function downloadImage(imageURL: string, new_tab: boolean = true) {
+  // download an image with the given download link
+  const element = document.createElement("a");
+  element.href = imageURL;
+  element.setAttribute("download", "deez.png"); // TODO: can we affect file name?
+  if (new_tab) element.target = "_blank";
+
+  element.style.display = "none";
+  document.body.appendChild(element);
+  element.click();
+  document.body.removeChild(element);
+}
+
+export function downloadText(filename: string, text: string) {
+  const element = document.createElement("a");
+  element.setAttribute(
+    "href",
+    "data:text/plain;charset=utf-8," + encodeURIComponent(text)
+  );
+  element.setAttribute("download", filename);
+
+  element.style.display = "none";
+  document.body.appendChild(element);
+
+  element.click();
+
+  document.body.removeChild(element);
+}

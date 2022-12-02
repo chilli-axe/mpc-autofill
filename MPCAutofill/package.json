@@ -46,7 +46,8 @@
     "react-bootstrap-toggle": "^2.3.2",
     "react-dom": "^18.2.0",
     "react-redux": "^8.0.5",
-    "ts-loader": "^9.4.1"
+    "ts-loader": "^9.4.1",
+    "xml-formatter": "^2.6.1"
   },
   "babel": {
     "presets": [

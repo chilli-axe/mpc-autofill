@@ -5,6 +5,7 @@ import { CardSlot } from "./cardSlot";
 import { fetchCardDocuments } from "./cardDocumentsSlice";
 import { Front, Back } from "./constants";
 import Row from "react-bootstrap/Row";
+import { selectProjectMembers } from "./projectSlice";
 
 // import styles from './Counter.module.css'
 
@@ -13,18 +14,14 @@ export function CardGrid() {
 
   let cardSlotsFronts = [];
   let cardSlotsBacks = [];
-  const projectMembers = useSelector(
-    (state: RootState) => state.project.members
-  );
+  const projectMembers = useSelector(selectProjectMembers);
 
   // retrieve cards from database when queries in the project change
   let searchQueries: Array<string> = [];
-  useSelector((state: RootState) =>
-    state.project.members.forEach((x) => {
-      searchQueries.push(JSON.stringify(x.front.query));
-      searchQueries.push(JSON.stringify(x.back.query));
-    })
-  );
+  projectMembers.forEach((x) => {
+    searchQueries.push(JSON.stringify(x.front.query));
+    searchQueries.push(JSON.stringify(x.back.query));
+  });
   useEffect(() => {
     dispatch(fetchCardDocuments());
   }, [searchQueries]); // TODO: this still seems to be firing when it shouldn't

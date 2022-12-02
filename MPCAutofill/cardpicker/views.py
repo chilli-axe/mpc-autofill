@@ -504,4 +504,13 @@ def api_function_4(request: HttpRequest) -> HttpResponse:
     return JsonResponse({"transforms": transforms})
 
 
+def api_function_5(request: HttpRequest) -> HttpResponse:
+    """
+    Return a list of cardstocks.
+    """
+
+    cardstocks = [{"name": "S30", "can_be_foil": True}]  # TODO
+    return JsonResponse({"cardstocks": cardstocks})
+
+
 # endregion
