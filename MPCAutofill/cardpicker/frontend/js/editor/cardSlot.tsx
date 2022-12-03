@@ -83,6 +83,9 @@ export function CardSlot(props: CardSlotProps) {
       })
     );
   }
+  function setSelectedImageFromIdentifier(selectedImage: string): void {
+    dispatch(setSelectedImage({ face, slot, selectedImage }));
+  }
 
   const cardHeaderTitle = `Slot ${slot + 1}`;
   const cardHeaderButtons = (
@@ -156,9 +159,13 @@ export function CardSlot(props: CardSlotProps) {
         <Modal.Body>
           <Row className="g-0" xxl={4} xl={4} lg={3} md={2} sm={2} xs={2}>
             {searchResultsForQuery.map((identifier, index) => (
-              <Card
+              <Card // TODO: paginate or lazy-load these
                 imageIdentifier={identifier}
                 cardHeaderTitle={`Option ${index + 1}`}
+                imageOnClick={() => {
+                  setSelectedImageFromIdentifier(identifier);
+                  handleCloseGridSelector();
+                }}
                 key={`${face}-${slot}-${identifier}`}
               />
             ))}
