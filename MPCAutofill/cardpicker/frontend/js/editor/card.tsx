@@ -1,27 +1,24 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, ReactElement } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "./store";
 
 import BSCard from "react-bootstrap/Card";
-import { CardDetailedView } from "./cardDetailedView";
 
 interface CardProps {
   imageIdentifier: string;
   previousImageIdentifier?: string;
   nextImageIdentifier?: string;
+  cardHeaderTitle: string;
+  cardHeaderButtons?: ReactElement;
+  cardFooter?: ReactElement;
+  imageOnClick?: React.MouseEventHandler<HTMLImageElement>;
+  cardOnClick?: React.MouseEventHandler<HTMLElement>;
 }
 
 export function Card(props: CardProps) {
   const [smallThumbnailLoading, setSmallThumbnailLoading] = useState(true);
 
   const [nameEditable, setNameEditable] = useState(false);
-  const [show, setShow] = useState(false);
-
-  // ensure that the medium thumbnail fades in each time the selected image changes
-  // useEffect(() => setMediumThumbnailLoading(true), [props.imageIdentifier]);
-
-  const handleClose = () => setShow(false);
-  const handleShow = () => setShow(true);
 
   const imageIdentifier: string = props.imageIdentifier;
   const maybeCardDocument = useSelector(
@@ -36,80 +33,79 @@ export function Card(props: CardProps) {
       state.cardDocuments.cardDocuments[props.nextImageIdentifier]
   );
 
-  if (maybeCardDocument === undefined) {
-    return (
-      <div>
-        <div className="ratio ratio-7x5">
-          <div className="d-flex justify-content-center align-items-center">
-            <div
-              className="spinner-border"
-              style={{ width: 4 + "em", height: 4 + "em" }}
-              role="status"
-            >
-              <span className="visually-hidden">Loading...</span>
-            </div>
+  const cardImageElements =
+    maybeCardDocument !== undefined ? (
+      <>
+        <div
+          className="d-flex justify-content-center align-items-center"
+          style={{ display: smallThumbnailLoading ? "block" : "none" }}
+        >
+          <div
+            className="spinner-border"
+            style={{ width: 4 + "em", height: 4 + "em" }}
+            role="status"
+          >
+            <span className="visually-hidden">Loading...</span>
           </div>
         </div>
-        <BSCard.Body className="mb-0 text-center">
-          <h5 className="card-subtitle mpccard-name" />
-          <div className="mpccard-spacing">
-            <p className="card-text mpccard-source" />
-          </div>
-        </BSCard.Body>
+
+        <img
+          className="card-img card-img-fade-in"
+          loading="lazy"
+          style={{ zIndex: 1, opacity: smallThumbnailLoading ? 0 : 1 }}
+          src={maybeCardDocument.small_thumbnail_url}
+          onLoad={() => setSmallThumbnailLoading(false)}
+          onClick={props.imageOnClick}
+          // onClick={handleShow}  // TODO: pass onclick function in props
+          // onError={{thumbnail_404(this)}}
+          alt={maybeCardDocument.name}
+        />
+        {props.previousImageIdentifier !== imageIdentifier &&
+          maybePreviousCardDocument !== undefined && (
+            <img
+              className="card-img"
+              loading="lazy"
+              style={{ zIndex: 0, opacity: 0 }}
+              src={maybePreviousCardDocument.small_thumbnail_url}
+              // onError={{thumbnail_404(this)}}
+              alt={maybePreviousCardDocument.name}
+            />
+          )}
+        {props.nextImageIdentifier !== imageIdentifier &&
+          maybeNextCardDocument !== undefined && (
+            <img
+              className="card-img"
+              loading="lazy"
+              style={{ zIndex: 0, opacity: 0 }}
+              src={maybeNextCardDocument.small_thumbnail_url}
+              // onError={{thumbnail_404(this)}}
+              alt={maybeNextCardDocument.name}
+            />
+          )}
+      </>
+    ) : (
+      <div className="d-flex justify-content-center align-items-center">
+        <div
+          className="spinner-border"
+          style={{ width: 4 + "em", height: 4 + "em" }}
+          role="status"
+        >
+          <span className="visually-hidden">Loading...</span>
+        </div>
       </div>
     );
-  } else {
-    return (
+  return (
+    <BSCard className="mpccard mpccard-hover" onClick={props.cardOnClick}>
+      <BSCard.Header className="pb-0 text-center">
+        <p className="mpccard-slot">{props.cardHeaderTitle}</p>
+        {props.cardHeaderButtons}
+      </BSCard.Header>
       <div>
         <div
           className="rounded-lg shadow-lg ratio ratio-7x5"
           style={{ zIndex: 0 }}
         >
-          <div
-            className="d-flex justify-content-center align-items-center"
-            style={{ display: smallThumbnailLoading ? "block" : "none" }}
-          >
-            <div
-              className="spinner-border"
-              style={{ width: 4 + "em", height: 4 + "em" }}
-              role="status"
-            >
-              <span className="visually-hidden">Loading...</span>
-            </div>
-          </div>
-
-          <img
-            className="card-img card-img-fade-in"
-            loading="lazy"
-            style={{ zIndex: 1, opacity: smallThumbnailLoading ? 0 : 1 }}
-            src={maybeCardDocument.small_thumbnail_url}
-            onLoad={() => setSmallThumbnailLoading(false)}
-            onClick={handleShow}
-            // onError={{thumbnail_404(this)}}
-            alt={maybeCardDocument.name}
-          />
-          {props.previousImageIdentifier !== imageIdentifier &&
-            maybePreviousCardDocument !== undefined && (
-              <img
-                className="card-img"
-                loading="lazy"
-                style={{ zIndex: 0, opacity: 0 }}
-                src={maybePreviousCardDocument.small_thumbnail_url}
-                // onError={{thumbnail_404(this)}}
-                alt={maybePreviousCardDocument.name}
-              />
-            )}
-          {props.nextImageIdentifier !== imageIdentifier &&
-            maybeNextCardDocument !== undefined && (
-              <img
-                className="card-img"
-                loading="lazy"
-                style={{ zIndex: 0, opacity: 0 }}
-                src={maybeNextCardDocument.small_thumbnail_url}
-                // onError={{thumbnail_404(this)}}
-                alt={maybeNextCardDocument.name}
-              />
-            )}
+          {cardImageElements}
         </div>
         <BSCard.Body className="mb-0 text-center">
           <BSCard.Subtitle
@@ -118,20 +114,24 @@ export function Card(props: CardProps) {
             // spellCheck="false"
             // onFocus="Library.review.selectElementContents(this)"
           >
-            {maybeCardDocument.name}
+            {maybeCardDocument !== undefined && maybeCardDocument.name}
           </BSCard.Subtitle>
           <div className="mpccard-spacing">
             <BSCard.Text className="mpccard-source">
-              {maybeCardDocument.source_verbose}
+              {maybeCardDocument !== undefined &&
+                maybeCardDocument.source_verbose}
             </BSCard.Text>
           </div>
         </BSCard.Body>
-        <CardDetailedView
-          cardDocument={maybeCardDocument}
-          show={show}
-          handleClose={handleClose}
-        />
       </div>
-    );
-  }
+      {props.cardFooter != null && (
+        <BSCard.Footer
+          className="padding-top"
+          style={{ paddingTop: 50 + "px" }}
+        >
+          {props.cardFooter}
+        </BSCard.Footer>
+      )}
+    </BSCard>
+  );
 }

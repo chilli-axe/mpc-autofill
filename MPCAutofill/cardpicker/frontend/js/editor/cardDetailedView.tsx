@@ -4,10 +4,11 @@ import Table from "react-bootstrap/Table";
 import { downloadImage, imageSizeToMBString } from "./utils";
 import Button from "react-bootstrap/Button";
 import React, { useEffect, useState } from "react";
-import { CardDocument } from "./cardDocumentsSlice";
+import { useSelector } from "react-redux";
+import { RootState } from "./store";
 
 interface CardDetailedViewProps {
-  cardDocument: CardDocument;
+  imageIdentifier: string;
   show: boolean;
   handleClose: {
     (): void;
@@ -16,120 +17,128 @@ interface CardDetailedViewProps {
 }
 
 export function CardDetailedView(props: CardDetailedViewProps) {
+  // ensure that the medium thumbnail fades in each time the selected image changes
   const [mediumThumbnailLoading, setMediumThumbnailLoading] = useState(true);
-  useEffect(() => setMediumThumbnailLoading(true), [props.cardDocument]);
+  useEffect(() => setMediumThumbnailLoading(true), [props.imageIdentifier]);
+
+  const maybeCardDocument = useSelector(
+    (state: RootState) =>
+      state.cardDocuments.cardDocuments[props.imageIdentifier]
+  );
 
   return (
-    <Modal show={props.show} onHide={props.handleClose} size={"xl"}>
-      <Modal.Header closeButton>
-        <Modal.Title>Card Details</Modal.Title>
-      </Modal.Header>
-      <Modal.Body>
-        <Row>
-          <div
-            className="col-lg-5 mb-3 mb-lg-0"
-            style={{ position: "relative" }}
-          >
+    maybeCardDocument !== undefined && (
+      <Modal show={props.show} onHide={props.handleClose} size={"xl"}>
+        <Modal.Header closeButton>
+          <Modal.Title>Card Details</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Row>
             <div
-              className="rounded-xl shadow-lg ratio ratio-7x5"
-              style={{ zIndex: 0 }}
+              className="col-lg-5 mb-3 mb-lg-0"
+              style={{ position: "relative" }}
             >
               <div
-                className="d-flex justify-content-center align-items-center"
-                style={{
-                  display: mediumThumbnailLoading ? "block" : "none",
-                }}
+                className="rounded-xl shadow-lg ratio ratio-7x5"
+                style={{ zIndex: 0 }}
               >
                 <div
-                  className="spinner-border"
-                  style={{ width: 4 + "em", height: 4 + "em" }}
-                  role="status"
+                  className="d-flex justify-content-center align-items-center"
+                  style={{
+                    display: mediumThumbnailLoading ? "block" : "none",
+                  }}
                 >
-                  <span className="visually-hidden">Loading...</span>
+                  <div
+                    className="spinner-border"
+                    style={{ width: 4 + "em", height: 4 + "em" }}
+                    role="status"
+                  >
+                    <span className="visually-hidden">Loading...</span>
+                  </div>
                 </div>
-              </div>
 
-              <img
-                className="card-img-fade-in"
-                style={{
-                  zIndex: 1,
-                  opacity: mediumThumbnailLoading ? 0 : 1,
-                }}
-                src={props.cardDocument.medium_thumbnail_url}
-                onLoad={() => setMediumThumbnailLoading(false)}
-                // onError={{thumbnail_404(this)}}
-              />
+                <img
+                  className="card-img-fade-in"
+                  style={{
+                    zIndex: 1,
+                    opacity: mediumThumbnailLoading ? 0 : 1,
+                  }}
+                  src={maybeCardDocument.medium_thumbnail_url}
+                  onLoad={() => setMediumThumbnailLoading(false)}
+                  // onError={{thumbnail_404(this)}}
+                />
+              </div>
             </div>
-          </div>
-          <div className="col-lg-7">
-            <h4>{props.cardDocument.name}</h4>
-            <Table hover>
-              <tbody>
-                <tr>
-                  <td>
-                    <b>Source Name</b>
-                  </td>
-                  <td>{props.cardDocument.source}</td>
-                </tr>
-                <tr>
-                  <td>
-                    <b>Source Type</b>
-                  </td>
-                  <td>{props.cardDocument.source_type}</td>
-                </tr>
-                <tr>
-                  <td>
-                    <b>Class</b>
-                  </td>
-                  <td>
-                    {props.cardDocument.card_type.charAt(0).toUpperCase() +
-                      props.cardDocument.card_type.slice(1).toLowerCase()}
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <b>Identifier</b>
-                  </td>
-                  <td>
-                    <code>{props.cardDocument.identifier}</code>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <b>Resolution</b>
-                  </td>
-                  <td>{props.cardDocument.dpi} DPI</td>
-                </tr>
-                <tr>
-                  <td>
-                    <b>Date Created</b>
-                  </td>
-                  <td>{props.cardDocument.date}</td>
-                </tr>
-                <tr>
-                  <td>
-                    <b>File Size</b>
-                  </td>
-                  <td>{imageSizeToMBString(props.cardDocument.size, 2)}</td>
-                </tr>
-              </tbody>
-            </Table>
-            <div className="d-grid gap-0">
-              <Button
-                variant="primary"
-                onClick={() => downloadImage(props.cardDocument.download_link)}
-              >
-                Download Image
-              </Button>
+            <div className="col-lg-7">
+              <h4>{maybeCardDocument.name}</h4>
+              <Table hover>
+                <tbody>
+                  <tr>
+                    <td>
+                      <b>Source Name</b>
+                    </td>
+                    <td>{maybeCardDocument.source}</td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <b>Source Type</b>
+                    </td>
+                    <td>{maybeCardDocument.source_type}</td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <b>Class</b>
+                    </td>
+                    <td>
+                      {maybeCardDocument.card_type.charAt(0).toUpperCase() +
+                        maybeCardDocument.card_type.slice(1).toLowerCase()}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <b>Identifier</b>
+                    </td>
+                    <td>
+                      <code>{maybeCardDocument.identifier}</code>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <b>Resolution</b>
+                    </td>
+                    <td>{maybeCardDocument.dpi} DPI</td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <b>Date Created</b>
+                    </td>
+                    <td>{maybeCardDocument.date}</td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <b>File Size</b>
+                    </td>
+                    <td>{imageSizeToMBString(maybeCardDocument.size, 2)}</td>
+                  </tr>
+                </tbody>
+              </Table>
+              <div className="d-grid gap-0">
+                <Button
+                  variant="primary"
+                  onClick={() => downloadImage(maybeCardDocument.download_link)}
+                >
+                  Download Image
+                </Button>
+              </div>
             </div>
-          </div>
-        </Row>
-      </Modal.Body>
-      <Modal.Footer>
-        <Button variant="secondary" onClick={props.handleClose}>
-          Close
-        </Button>
-      </Modal.Footer>
-    </Modal>
+          </Row>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={props.handleClose}>
+            Close
+          </Button>
+        </Modal.Footer>
+      </Modal>
+    )
   );
 }
