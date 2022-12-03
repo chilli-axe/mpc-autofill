@@ -7,7 +7,7 @@ import Button from "react-bootstrap/Button";
 import Row from "react-bootstrap/Row";
 import Table from "react-bootstrap/Table";
 import BSCard from "react-bootstrap/Card";
-import { imageSizeToMBString } from "./utils";
+import { imageSizeToMBString, downloadImage } from "./utils";
 
 interface CardProps {
   imageIdentifier: string;
@@ -225,6 +225,16 @@ export function Card(props: CardProps) {
                     </tr>
                   </tbody>
                 </Table>
+                <div className="d-grid gap-0">
+                  <Button
+                    variant="primary"
+                    onClick={() =>
+                      downloadImage(maybeCardDocument.download_link)
+                    }
+                  >
+                    Download Image
+                  </Button>
+                </div>
               </div>
             </Row>
           </Modal.Body>
