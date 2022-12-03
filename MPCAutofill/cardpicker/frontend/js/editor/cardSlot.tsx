@@ -8,6 +8,7 @@ import { deleteImage, setSelectedImage } from "./projectSlice";
 import BSCard from "react-bootstrap/Card";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
+import Row from "react-bootstrap/Row";
 
 interface CardSlotProps {
   searchQuery: SearchQuery;
@@ -136,11 +137,20 @@ export function CardSlot(props: CardSlotProps) {
         </BSCard.Footer>
       </BSCard>
 
-      <Modal show={show} onHide={handleClose}>
+      <Modal show={show} onHide={handleClose} size={"lg"}>
         <Modal.Header closeButton>
           <Modal.Title>Select Version</Modal.Title>
         </Modal.Header>
-        <Modal.Body>In Progress</Modal.Body>
+        <Modal.Body>
+          <Row className="g-0" xxl={4} xl={4} lg={3} md={2} sm={2} xs={2}>
+            {searchResultsForQuery.map((identifier) => (
+              <Card
+                imageIdentifier={identifier}
+                key={`${face}-${slot}-${identifier}`}
+              />
+            ))}
+          </Row>
+        </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={handleClose}>
             Close
