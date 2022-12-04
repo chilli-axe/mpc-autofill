@@ -6,9 +6,8 @@ import { Faces, SearchQuery } from "./constants";
 import { wrapIndex } from "./utils";
 import { deleteImage, setSelectedImage } from "./projectSlice";
 import Button from "react-bootstrap/Button";
-import Modal from "react-bootstrap/Modal";
-import Row from "react-bootstrap/Row";
 import { CardDetailedView } from "./cardDetailedView";
+import { GridSelector } from "./gridSelector";
 
 interface CardSlotProps {
   searchQuery: SearchQuery;
@@ -83,9 +82,6 @@ export function CardSlot(props: CardSlotProps) {
       })
     );
   }
-  function setSelectedImageFromIdentifier(selectedImage: string): void {
-    dispatch(setSelectedImage({ face, slot, selectedImage }));
-  }
 
   const cardHeaderTitle = `Slot ${slot + 1}`;
   const cardHeaderButtons = (
@@ -147,37 +143,13 @@ export function CardSlot(props: CardSlotProps) {
         imageOnClick={handleShowDetailedView}
       />
 
-      {/*TODO: this grid selector should be its own component */}
-      <Modal
+      <GridSelector
+        face={face}
+        slot={slot}
+        searchResultsForQuery={searchResultsForQuery}
         show={showGridSelector}
-        onHide={handleCloseGridSelector}
-        size={"lg"}
-      >
-        <Modal.Header closeButton>
-          <Modal.Title>Select Version</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Row className="g-0" xxl={4} xl={4} lg={3} md={2} sm={2} xs={2}>
-            {searchResultsForQuery.map((identifier, index) => (
-              <Card // TODO: paginate or lazy-load these
-                imageIdentifier={identifier}
-                cardHeaderTitle={`Option ${index + 1}`}
-                imageOnClick={() => {
-                  setSelectedImageFromIdentifier(identifier);
-                  handleCloseGridSelector();
-                }}
-                key={`${face}-${slot}-${identifier}`}
-              />
-            ))}
-          </Row>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={handleCloseGridSelector}>
-            Close
-          </Button>
-        </Modal.Footer>
-      </Modal>
-
+        handleClose={handleCloseGridSelector}
+      />
       <CardDetailedView
         imageIdentifier={selectedImage}
         show={showDetailedView}
