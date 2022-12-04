@@ -79,7 +79,6 @@ class Source(models.Model):
 
     def to_dict(self, count: bool = False) -> dict[str, Any]:
         source_dict = {
-            "pk": self.pk,
             "key": self.key,
             "name": self.name,
             "identifier": self.identifier,

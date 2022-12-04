@@ -1,6 +1,6 @@
 import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
-import React, { useState, useCallback, ReactNode } from "react";
+import React, { useState, useEffect, ReactNode } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "./store";
 import { setFuzzySearch } from "./searchSettingsSlice";
@@ -29,14 +29,22 @@ export function SearchSettings() {
     handleClose();
   };
 
+  const [sourceOrder, setSourceOrder] = useState([]);
   const maybeSourceDocuments = useSelector(
     (state: RootState) => state.sourceDocuments.sourceDocuments
   );
-
-  const onDragEnd = useCallback(() => {
-    alert("thing happened");
-    // the only one that is required
-  }, []);
+  useEffect(
+    () => setSourceOrder(Object.keys(maybeSourceDocuments ?? {})),
+    [maybeSourceDocuments]
+  );
+  const onDragEnd = (result: any) => {
+    // TODO: looks like the table is resizing when we drag/drop items - ideally its height should be fixed
+    // TODO: review this bit of code (copied from drag/drop sandbox example) and see if it can be improved
+    const reorderedSourceOrder = [...sourceOrder];
+    const [removed] = reorderedSourceOrder.splice(result.source.index, 1);
+    reorderedSourceOrder.splice(result.destination.index, 0, removed);
+    setSourceOrder(reorderedSourceOrder);
+  };
 
   let sourceTable = (
     <div className="d-flex justify-content-center align-items-center">
@@ -50,71 +58,63 @@ export function SearchSettings() {
     </div>
   );
   if (maybeSourceDocuments != null) {
-    // TODO: logic for ordering of sources in the table goes here
-    let sourceRows: Array<ReactNode> = [];
-    for (const [sourceKey, sourceDocument] of Object.entries(
-      maybeSourceDocuments
-    )) {
-      sourceRows.push(
-        <Draggable
-          key={sourceKey}
-          draggableId={sourceKey}
-          index={sourceDocument.pk}
-        >
-          {(provided, snapshot) => (
-            <tr
-              ref={provided.innerRef}
-              {...provided.draggableProps}
-              {...provided.dragHandleProps}
+    const sourceRows: Array<ReactNode> = sourceOrder.map((sourceKey, index) => (
+      <Draggable key={sourceKey} draggableId={sourceKey} index={index}>
+        {(provided, snapshot) => (
+          <tr
+            ref={provided.innerRef}
+            {...provided.draggableProps}
+            {...provided.dragHandleProps}
+          >
+            <td style={{ verticalAlign: "middle", width: 20 + "%" }}>
+              <Toggle
+                on="On"
+                onClassName="flex-centre prevent-select"
+                off="Off"
+                offClassName="flex-centre prevent-select"
+                onstyle="primary"
+                offstyle="primary"
+                size="md"
+                height={38 + "px"}
+              />
+            </td>
+            <td style={{ verticalAlign: "middle", width: 40 + "%" }}>
+              {maybeSourceDocuments[sourceKey].external_link != null ? (
+                <a
+                  className="prevent-select"
+                  href={maybeSourceDocuments[sourceKey].external_link}
+                  target="_blank"
+                >
+                  {maybeSourceDocuments[sourceKey].name}
+                </a>
+              ) : (
+                <a className="prevent-select">
+                  {maybeSourceDocuments[sourceKey].name}
+                </a>
+              )}
+            </td>
+            <td
+              className="prevent-select"
+              style={{ verticalAlign: "middle", width: 30 + "%" }}
             >
-              <td style={{ verticalAlign: "middle", width: 20 + "%" }}>
-                <Toggle
-                  on="On"
-                  onClassName="flex-centre prevent-select"
-                  off="Off"
-                  offClassName="flex-centre prevent-select"
-                  onstyle="primary"
-                  offstyle="primary"
-                  size="md"
-                  height={38 + "px"}
-                />
-              </td>
-              <td style={{ verticalAlign: "middle", width: 40 + "%" }}>
-                {sourceDocument.external_link != null ? (
-                  <a
-                    className="prevent-select"
-                    href={sourceDocument.external_link}
-                    target="_blank"
-                  >
-                    {sourceDocument.name}
-                  </a>
-                ) : (
-                  <a className="prevent-select">{sourceDocument.name}</a>
-                )}
-              </td>
-              <td
-                className="prevent-select"
-                style={{ verticalAlign: "middle", width: 30 + "%" }}
-              >
-                {sourceDocument.source_type}
-              </td>
-              <td
-                style={{
-                  verticalAlign: "middle",
-                  width: 10 + "%",
-                  textAlign: "center",
-                }}
-              >
-                <i
-                  className="bi bi-grip-horizontal"
-                  style={{ fontSize: 2 + "em" }}
-                />
-              </td>
-            </tr>
-          )}
-        </Draggable>
-      );
-    }
+              {maybeSourceDocuments[sourceKey].source_type}
+            </td>
+            <td
+              style={{
+                verticalAlign: "middle",
+                width: 10 + "%",
+                textAlign: "center",
+              }}
+            >
+              <i
+                className="bi bi-grip-horizontal"
+                style={{ fontSize: 2 + "em" }}
+              />
+            </td>
+          </tr>
+        )}
+      </Draggable>
+    ));
     sourceTable = (
       <DragDropContext onDragEnd={onDragEnd}>
         <Droppable droppableId="source-order">
