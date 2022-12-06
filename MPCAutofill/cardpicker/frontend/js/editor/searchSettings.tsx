@@ -10,40 +10,86 @@ import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 // @ts-ignore  // TODO: https://github.com/arnthor3/react-bootstrap-toggle/issues/21
 import Toggle from "react-bootstrap-toggle";
 
+interface SourceEnabledStatus {
+  [source: string]: boolean;
+}
+
 export function SearchSettings() {
   const dispatch = useDispatch<AppDispatch>();
   const [show, setShow] = useState(false);
 
+  // component-level copies of redux state
   const fuzzySearch = useSelector(
     (state: RootState) => state.searchSettings.fuzzySearch
   );
   const [localFuzzySearch, setLocalFuzzySearch] = useState(fuzzySearch);
 
-  const handleClose = () => setShow(false);
-  const handleShow = () => {
-    setLocalFuzzySearch(fuzzySearch);
-    setShow(true);
-  };
-  const handleSave = () => {
-    dispatch(setFuzzySearch(localFuzzySearch));
-    handleClose();
-  };
-
   const [sourceOrder, setSourceOrder] = useState([]);
+
+  const initialSourceEnabledStatusState: SourceEnabledStatus = {};
+  const [sourceEnabledStatus, setSourceEnabledStatus] = useState(
+    initialSourceEnabledStatusState
+  );
+
   const maybeSourceDocuments = useSelector(
     (state: RootState) => state.sourceDocuments.sourceDocuments
   );
   useEffect(
-    () => setSourceOrder(Object.keys(maybeSourceDocuments ?? {})),
+    // TODO: this needs to move such that the initial redux state is set from this selector, not react state
+    () => {
+      const sourceArray: Array<string> = Object.keys(
+        maybeSourceDocuments ?? {}
+      );
+      setSourceOrder(sourceArray);
+      setSourceEnabledStatus(
+        Object.assign({}, ...sourceArray.map((x: string) => ({ [x]: true })))
+      );
+    },
     [maybeSourceDocuments]
   );
+
+  // modal management functions
+  const handleClose = () => setShow(false);
+  const handleShow = () => {
+    // set up the component-level state with the current redux state
+    setLocalFuzzySearch(fuzzySearch);
+    setShow(true);
+  };
+  const handleSave = () => {
+    // copy component-level state into redux state when the user clicks "save changes"
+    dispatch(setFuzzySearch(localFuzzySearch));
+    // TODO: set which sources are enabled in redux
+    handleClose();
+  };
+
   const onDragEnd = (result: any) => {
-    // TODO: looks like the table is resizing when we drag/drop items - ideally its height should be fixed
+    // TODO: get rid of this any type
     // TODO: review this bit of code (copied from drag/drop sandbox example) and see if it can be improved
     const reorderedSourceOrder = [...sourceOrder];
     const [removed] = reorderedSourceOrder.splice(result.source.index, 1);
     reorderedSourceOrder.splice(result.destination.index, 0, removed);
     setSourceOrder(reorderedSourceOrder);
+  };
+
+  const toggleSpecificSourceEnabledStatus = (source: string) => {
+    const sourceEnabledStatusCopy: SourceEnabledStatus = {
+      ...sourceEnabledStatus,
+    };
+    sourceEnabledStatusCopy[source] = !sourceEnabledStatusCopy[source];
+    setSourceEnabledStatus(sourceEnabledStatusCopy);
+  };
+
+  const toggleAllSourceEnabledStatuses = () => {
+    const newEnabledStatus = !Object.values(sourceEnabledStatus).some(
+      (x) => x === true
+    );
+    const sourceEnabledStatusCopy: SourceEnabledStatus = Object.assign(
+      {},
+      ...Object.keys(sourceEnabledStatus).map((x: string) => ({
+        [x]: newEnabledStatus,
+      }))
+    );
+    setSourceEnabledStatus(sourceEnabledStatusCopy);
   };
 
   let sourceTable = (
@@ -73,9 +119,17 @@ export function SearchSettings() {
                 off="Off"
                 offClassName="flex-centre prevent-select"
                 onstyle="primary"
-                offstyle="primary"
+                offstyle="secondary"
                 size="md"
                 height={38 + "px"}
+                active={
+                  sourceEnabledStatus[maybeSourceDocuments[sourceKey].key]
+                }
+                onClick={() =>
+                  toggleSpecificSourceEnabledStatus(
+                    maybeSourceDocuments[sourceKey].key
+                  )
+                }
               />
             </td>
             <td style={{ verticalAlign: "middle", width: 40 + "%" }}>
@@ -119,17 +173,22 @@ export function SearchSettings() {
       <DragDropContext onDragEnd={onDragEnd}>
         <Droppable droppableId="source-order">
           {(provided, snapshot) => (
-            <Table ref={provided.innerRef} style={{ tableLayout: "auto" }}>
-              <thead>
-                <tr>
-                  <th className="prevent-select">Enabled</th>
-                  <th className="prevent-select">Source Name</th>
-                  <th className="prevent-select">Source Type</th>
-                  <th />
-                </tr>
-              </thead>
-              <tbody>{sourceRows}</tbody>
-            </Table>
+            <div style={{ height: sourceRows.length * 59 + 38 + "px" }}>
+              <Table ref={provided.innerRef} style={{ tableLayout: "auto" }}>
+                <thead>
+                  <tr
+                    style={{ height: 38 + "px" }}
+                    onClick={toggleAllSourceEnabledStatuses}
+                  >
+                    <th className="prevent-select">Enabled</th>
+                    <th className="prevent-select">Source Name</th>
+                    <th className="prevent-select">Source Type</th>
+                    <th />
+                  </tr>
+                </thead>
+                <tbody>{sourceRows}</tbody>
+              </Table>
+            </div>
           )}
         </Droppable>
       </DragDropContext>
