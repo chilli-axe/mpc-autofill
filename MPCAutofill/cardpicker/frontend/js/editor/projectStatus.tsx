@@ -19,6 +19,7 @@ import formatXML from "xml-formatter";
 
 // @ts-ignore
 import Toggle from "react-bootstrap-toggle";
+import { RootState } from "./store";
 
 // TODO: review the codebase for instances of this https://redux.js.org/usage/deriving-data-selectors#optimizing-selectors-with-memoization
 
@@ -33,6 +34,10 @@ export function ProjectStatus() {
   const projectSize = useSelector(selectProjectSize);
   const projectBracket = bracket(projectSize);
   const projectFileSize = useSelector(selectProjectFileSize);
+  // TODO: this seems inefficient?
+  const cardDocuments = useSelector(
+    (state: RootState) => state.cardDocuments.cardDocuments
+  );
 
   function generateXML() {
     // TODO: this should be an "output selector" on projectSlice
@@ -82,25 +87,36 @@ export function ProjectStatus() {
         const faceElement = doc.createElement(`${face}s`);
 
         for (const [identifier, slots] of Object.entries(orderMap[face])) {
-          const cardElement = doc.createElement("card");
+          const maybeCardDocument = cardDocuments[identifier];
+          if (maybeCardDocument != null) {
+            const cardElement = doc.createElement("card");
 
-          const identifierElement = doc.createElement("id");
-          identifierElement.appendChild(doc.createTextNode(identifier));
-          cardElement.appendChild(identifierElement);
+            const identifierElement = doc.createElement("id");
+            identifierElement.appendChild(doc.createTextNode(identifier));
+            cardElement.appendChild(identifierElement);
 
-          const slotsElement = doc.createElement("slots");
-          slotsElement.appendChild(
-            doc.createTextNode(
-              Array.from(slots)
-                .sort((a, b) => a - b)
-                .toString()
-            )
-          );
-          cardElement.appendChild(slotsElement);
+            const slotsElement = doc.createElement("slots");
+            slotsElement.appendChild(
+              doc.createTextNode(
+                Array.from(slots)
+                  .sort((a, b) => a - b)
+                  .toString()
+              )
+            );
+            cardElement.appendChild(slotsElement);
 
-          // TODO: look up card name and query here
+            const nameElement = doc.createElement("name");
+            nameElement.appendChild(doc.createTextNode(maybeCardDocument.name));
+            cardElement.append(nameElement);
 
-          faceElement.appendChild(cardElement);
+            const queryElement = doc.createElement("query");
+            queryElement.appendChild(
+              doc.createTextNode(maybeCardDocument.searchq)
+            );
+            cardElement.append(queryElement);
+
+            faceElement.appendChild(cardElement);
+          }
         }
         orderElement.appendChild(faceElement);
       }
