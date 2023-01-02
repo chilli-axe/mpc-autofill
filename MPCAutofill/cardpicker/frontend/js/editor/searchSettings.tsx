@@ -135,16 +135,13 @@ export function SearchSettings() {
             <td style={{ verticalAlign: "middle", width: 40 + "%" }}>
               {maybeSourceDocuments[sourceKey].external_link != null ? (
                 <a
-                  className="prevent-select"
                   href={maybeSourceDocuments[sourceKey].external_link}
                   target="_blank"
                 >
                   {maybeSourceDocuments[sourceKey].name}
                 </a>
               ) : (
-                <a className="prevent-select">
-                  {maybeSourceDocuments[sourceKey].name}
-                </a>
+                <a>{maybeSourceDocuments[sourceKey].name}</a>
               )}
             </td>
             <td
@@ -231,7 +228,7 @@ export function SearchSettings() {
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={handleClose}>
-            Close
+            Close Without Saving
           </Button>
           <Button variant="primary" onClick={handleSave}>
             Save Changes

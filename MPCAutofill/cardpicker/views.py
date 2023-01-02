@@ -513,4 +513,13 @@ def api_function_5(request: HttpRequest) -> HttpResponse:
     return JsonResponse({"cardstocks": cardstocks})
 
 
+def api_function_6(request: HttpRequest) -> HttpResponse:
+    """
+    Return a list of cardbacks.
+    """
+
+    cardbacks = [x.identifier for x in Card.objects.filter(card_type=CardTypes.CARDBACK)]
+    return JsonResponse({"cardbacks": cardbacks})
+
+
 # endregion

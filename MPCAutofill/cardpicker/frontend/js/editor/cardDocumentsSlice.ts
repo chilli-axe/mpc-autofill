@@ -38,6 +38,8 @@ export const fetchCardDocuments = createAsyncThunk(
       )
     );
 
+    // TODO: identify cardbacks in the same way
+
     if (identifiersToSearch.size > 0) {
       const rawResponse = await fetch("/2/getCards/", {
         method: "POST",
