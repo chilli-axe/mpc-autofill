@@ -106,7 +106,11 @@ export function ProjectStatus() {
             cardElement.appendChild(slotsElement);
 
             const nameElement = doc.createElement("name");
-            nameElement.appendChild(doc.createTextNode(maybeCardDocument.name));
+            nameElement.appendChild(
+              doc.createTextNode(
+                `${maybeCardDocument.name}.${maybeCardDocument.extension}`
+              )
+            );
             cardElement.append(nameElement);
 
             const queryElement = doc.createElement("query");
