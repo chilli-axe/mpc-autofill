@@ -3,6 +3,7 @@ from collections import defaultdict
 from datetime import timedelta
 from typing import Any, Callable, Optional, TypeVar, Union, cast
 
+import patreon
 from blog.models import BlogPost
 
 from django.db import connection
@@ -26,6 +27,8 @@ from cardpicker.utils.search_functions import (
     search_new,
     search_new_elasticsearch_definition,
 )
+
+from MPCAutofill.settings import PATREON_ENABLED, PATREON_KEY
 
 # https://mypy.readthedocs.io/en/stable/generics.html#declaring-decorators
 F = TypeVar("F", bound=Callable[..., Any])
@@ -194,6 +197,68 @@ def contributions(request: HttpRequest) -> HttpResponse:
     total_count_f = [f"{x:,d}" for x in total_count]
 
     return render(request, "cardpicker/contributions.html", {"sources": sources, "total_count": total_count_f})
+
+
+def patrons(request: HttpRequest) -> HttpResponse:
+    # Disable page without Patreon
+    if not PATREON_ENABLED:
+        return redirect("index")
+
+    # Patreon API object
+    api_client = patreon.API(PATREON_KEY)
+
+    # Get Patreon campaign
+    campaign_id = api_client.get_campaigns(1).data()[0].id()
+    campaign = api_client.get_campaigns_by_id(
+        campaign_id, includes=["tiers"], fields={"tier": ["title", "description", "amount_cents"]}
+    ).data()
+
+    # Get Patreon members
+    mems = []
+    cursor = None
+    while True:
+        # TODO: Move Patreon logic out of views?
+        members_response = api_client.get_campaigns_by_id_members(
+            campaign_id,
+            100,
+            cursor=cursor,
+            includes=["user", "currently_entitled_tiers"],
+            fields={
+                # See patreon/schemas/member.py
+                "member": ["full_name", "email", "lifetime_support_cents", "pledge_relationship_start"],
+                "tier": ["title"],
+            },
+        )
+        mems += members_response.data()
+        # print(members_response.json_data)
+
+        # Avoid Exception: 'Provided cursor path did not result in a link'
+        if members_response.json_data.get("links") is None:
+            break
+        cursor = api_client.extract_cursor(members_response)
+
+    # Assign and render our needed data
+    members = []
+    for member in mems:
+        members.append(
+            {
+                "name": member.attribute("full_name"),
+                "dollars": member.attribute("lifetime_support_cents") / 100,
+                "tier": member.relationship("currently_entitled_tiers")[0].attribute("title"),
+                "date": member.attribute("pledge_relationship_start")[:10],
+            }
+        )
+    members = sorted(members, key=lambda d: d["name"])
+    tiers = []
+    for tier in campaign.relationship("tiers"):
+        tiers.append(
+            {
+                "name": tier.attribute("title"),
+                "description": tier.attribute("description"),
+                "dollars": round(tier.attribute("amount_cents") / 100),
+            }
+        )
+    return render(request, "cardpicker/patrons.html", {"members": members, "tiers": tiers})
 
 
 @ErrorWrappers.to_json

@@ -27,3 +27,4 @@ syrupy
 tqdm
 tzdata
 webdriver-manager==3.5.4
+git+https://github.com/Patreon/patreon-python@master#egg=patreon

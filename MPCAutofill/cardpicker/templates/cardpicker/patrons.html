@@ -1,0 +1,50 @@
+{% extends 'cardpicker/base.html' %}
+{% load static %}
+{% block title %}{{ SITE_NAME }} Patreon Supporters{% endblock %}
+{% block content %}
+    <div class="pt-2">
+        <h2>Patreon Supporters</h2>
+        <p>
+            Our site and tools like Proxyshop, Card Crafter, and MTG Art Downloader are supported by the
+            generous contributions made by our Patrons. Currently, there are {{ members.count }} Proxy enthusiasts
+            supporting our work and helping various MTG related tools be created and maintained. If you would like
+            to <a href="{{ PATREON_URL }}">become a patron</a>, we offer the following reward tiers!
+        </p>
+        <div class="alert alert-secondary" role="alert">
+            <h3>Patron Tiers</h3>
+            {% for tier in tiers %}
+                <h6>
+                    <b>{{ tier.name }} (${{ tier.dollars }})</b>
+                </h6>
+                {{ tier.description | safe }}
+            {% endfor %}
+            <span><a class="link-warning fw-bolder" href="{{ PATREON_URL }}">Become a Patron today!</a></span>
+        </div>
+        <table class="table table-hover text-lg-center">
+            <thead>
+                <tr>
+                    <th scope="col">Name</th>
+                    <th scope="col">Tier</th>
+                    <th scope="col">Supporter Since</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for member in members %}
+                    <tr>
+                        <td>
+                            <h6>
+                                <b>{{ member.name }}</b>
+                            </h6>
+                            <td>
+                                <span>{{ member.tier }}</span>
+                            </td>
+                            <td>
+                                <span>{{ member.date }}</span>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% include "cardpicker/footer.html" %}
+        </div>
+    {% endblock %}

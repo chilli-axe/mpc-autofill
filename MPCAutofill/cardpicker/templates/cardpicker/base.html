@@ -59,6 +59,11 @@
                         <li class="nav-item">
                             <a class="nav-link" href="/contributions">Contributions</a>
                         </li>
+                        {% if PATREON_ENABLED %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'patrons' %}">Patreon</a>
+                            </li>
+                        {% endif %}
                     </ul>
                     <ul class="navbar-nav justify-content-end">
                         <li class="nav-item">
