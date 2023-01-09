@@ -13,6 +13,12 @@ patreon_header = {
 }
 
 
+class Campaign(TypedDict):
+    # Campaign data scheme
+    id: str
+    about: str
+
+
 class Supporter(TypedDict):
     # Patron data scheme
     name: str
@@ -27,34 +33,38 @@ class SupporterTier(TypedDict):
     usd: int
 
 
-def get_patreon_campaign_details() -> tuple[str, dict[str, SupporterTier]]:
+def get_patreon_campaign_details() -> tuple[Campaign, dict[str, SupporterTier]]:
     """
     Get needed patreon campaign details.
     :return: Campaign ID, list of dictionaries containing supporter tier info.
     """
     try:
-        campaign = requests.get(
+        res = requests.get(
             # https://docs.patreon.com/#get-api-oauth2-v2-campaigns
             url="https://www.patreon.com/api/oauth2/v2/campaigns",
-            params={"include": "tiers", "fields[tier]": ",".join(["title", "description", "amount_cents"])},
+            params={
+                "include": "tiers",
+                "fields[campaign]": "summary",
+                "fields[tier]": ",".join(["title", "description", "amount_cents"]),
+            },
             headers=patreon_header,
         ).json()
 
+        # Properly format campaign details
+        campaign: Campaign = {"id": res["data"][0]["id"], "about": res["data"][0]["attributes"]["summary"]}
+
         # Properly format campaign tiers
         tiers: dict[str, SupporterTier] = {}
-        for tier in campaign["included"]:
+        for tier in res["included"]:
             # Build dictionary of tiers to reference by ID
             tiers[tier["id"]] = {
                 "title": tier["attributes"]["title"],
                 "description": tier["attributes"]["description"],
                 "usd": round(tier["attributes"]["amount_cents"] / 100),
             }
-
-        # Retrieve campaign ID
-        campaign_id: str = campaign["data"][0]["id"]
-        return campaign_id, tiers
     except KeyError:
         raise Exception("Cannot locate Patreon campaign. Check Patreon access token!")
+    return campaign, tiers
 
 
 def get_patrons(campaign_id: str, campaign_tiers: dict[str, SupporterTier]) -> list[Supporter]:

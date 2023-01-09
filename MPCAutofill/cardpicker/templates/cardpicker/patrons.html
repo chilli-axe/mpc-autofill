@@ -4,12 +4,7 @@
 {% block content %}
     <div class="pt-2">
         <h2>Patreon Supporters</h2>
-        <p>
-            Our site and tools like Proxyshop, Card Crafter, and MTG Art Downloader are supported by the
-            generous contributions made by our Patrons. Currently, there are {{ members.count }} Proxy enthusiasts
-            supporting our work and helping various MTG related tools be created and maintained. If you would like
-            to <a href="{{ PATREON_URL }}">become a patron</a>, we offer the following reward tiers!
-        </p>
+        <p>{{ campaign.about | safe }}</p>
         <div class="alert alert-secondary" role="alert">
             <h3>Patron Tiers</h3>
             {% for key, tier in tiers.items %}

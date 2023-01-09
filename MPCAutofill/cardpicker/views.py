@@ -205,9 +205,9 @@ def patrons(request: HttpRequest) -> HttpResponse:
         return redirect("index")
 
     # Campaign details
-    campaign_id, tiers = get_patreon_campaign_details()
-    members = get_patrons(campaign_id, tiers)
-    return render(request, "cardpicker/patrons.html", {"members": members, "tiers": tiers})
+    campaign, tiers = get_patreon_campaign_details()
+    members = get_patrons(campaign["id"], tiers)
+    return render(request, "cardpicker/patrons.html", {"members": members, "tiers": tiers, "campaign": campaign})
 
 
 @ErrorWrappers.to_json
