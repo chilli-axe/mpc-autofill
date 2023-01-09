@@ -22,9 +22,9 @@ psycopg2-binary
 pytest-django
 pytest-elasticsearch
 ratelimit
+requests
 selenium
 syrupy
 tqdm
 tzdata
 webdriver-manager==3.5.4
-git+https://github.com/Patreon/patreon-python@master#egg=patreon

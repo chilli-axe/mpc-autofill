@@ -186,6 +186,5 @@ DEFAULT_CARDBACK_FOLDER_PATH = env("DEFAULT_CARDBACK_FOLDER_PATH", default="Chil
 DEFAULT_CARDBACK_IMAGE_NAME = env("DEFAULT_CARDBACK_IMAGE_NAME", default="Black Lotus")
 
 # PATREON
-PATREON_ENABLED = env("PATREON_ENABLED", default=False)
-PATREON_URL = env("PATREON_URL", default="http://patreon.com/mpcfill")
+PATREON_URL = env("PATREON_URL", default="")
 PATREON_KEY = env("PATREON_KEY", default="")

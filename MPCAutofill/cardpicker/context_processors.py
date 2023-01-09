@@ -15,7 +15,6 @@ def add_site_info(request: HttpRequest) -> dict[str, Any]:
         "REDDIT": settings.REDDIT,
         "THEME": settings.THEME,
         "GTAG": settings.GTAG,
-        "PATREON_ENABLED": settings.PATREON_ENABLED,
         "PATREON_URL": settings.PATREON_URL,
     }
 

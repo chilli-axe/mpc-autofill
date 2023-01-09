@@ -12,9 +12,9 @@
         </p>
         <div class="alert alert-secondary" role="alert">
             <h3>Patron Tiers</h3>
-            {% for tier in tiers %}
+            {% for key, tier in tiers.items %}
                 <h6>
-                    <b>{{ tier.name }} (${{ tier.dollars }})</b>
+                    <b>{{ tier.title }} (${{ tier.usd }} USD)</b>
                 </h6>
                 {{ tier.description | safe }}
             {% endfor %}
