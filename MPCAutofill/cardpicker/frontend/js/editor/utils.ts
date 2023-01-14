@@ -1,3 +1,5 @@
+import { CardTypePrefixes, CardTypes } from "./constants";
+
 export function wrapIndex(index: number, count: number): number {
   return ((index % count) + count) % count;
 }
@@ -6,6 +8,10 @@ export function imageSizeToMBString(
   size: number,
   numDecimalPlaces: number
 ): string {
+  /**
+   * Format `size` (a size in bytes) as a string in megabytes.
+   */
+
   const roundFactor = 10 ** numDecimalPlaces;
   let sizeMB = size / 1000000;
   sizeMB = Math.round(sizeMB * roundFactor) / roundFactor;
@@ -13,7 +19,10 @@ export function imageSizeToMBString(
 }
 
 export function bracket(projectSize: number): number {
-  // small helper function to calculate the MPC bracket the current order lands in
+  /**
+   * Calculate the MPC bracket that `projectSize` falls into.
+   */
+
   const brackets = [
     18, 36, 55, 72, 90, 108, 126, 144, 162, 180, 198, 216, 234, 396, 504, 612,
   ];
@@ -36,7 +45,11 @@ export function processLine(line: string): [string, number] | null {
 }
 
 export function downloadImage(imageURL: string, new_tab: boolean = true) {
-  // download an image with the given download link
+  /**
+   * Download an image with the given download link.
+   * Note that this only works when `imageURL` has the same origin as where the link was opened from.
+   */
+
   const element = document.createElement("a");
   element.href = imageURL;
   element.setAttribute("download", "deez.png"); // TODO: can we affect file name?
@@ -62,4 +75,17 @@ export function downloadText(filename: string, text: string) {
   element.click();
 
   document.body.removeChild(element);
+}
+
+export function processPrefix(query: string): [string, CardTypes] {
+  /**
+   * Identify the prefix of a query. For example, `string`="t:goblin" would yield ["goblin", TOKEN].
+   */
+
+  for (const [prefix, cardType] of Object.entries(CardTypePrefixes)) {
+    if (prefix != "" && query.startsWith(`${prefix}:`)) {
+      return [query.slice(prefix.length + 1), cardType];
+    }
+  }
+  return [query, CardTypePrefixes[""]];
 }

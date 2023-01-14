@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { CardTypes, Faces, SearchQuery } from "./constants";
 import { RootState } from "./store";
+import { processPrefix } from "./utils";
 import { useSelector } from "react-redux";
 
 interface ProjectMember {
@@ -89,12 +90,13 @@ export const projectSlice = createSlice({
     addImages: (state, action: PayloadAction<AddImagesAction>) => {
       let newMembers: Array<SlotProjectMembers> = [];
 
-      for (const [key, value] of Object.entries(action.payload)) {
+      for (const [query, quantity] of Object.entries(action.payload)) {
+        const [processedQuery, cardType] = processPrefix(query);
         newMembers = [
           ...newMembers,
-          ...Array(value).fill({
+          ...Array(quantity).fill({
             front: {
-              query: { query: key, card_type: CardTypes.Card },
+              query: { query: processedQuery, card_type: cardType },
               selectedImage: null,
             },
             back: {

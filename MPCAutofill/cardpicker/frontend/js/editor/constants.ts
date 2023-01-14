@@ -12,3 +12,9 @@ export interface SearchQuery {
 export type Faces = "front" | "back";
 export const Front: Faces = "front";
 export const Back: Faces = "back";
+
+export const CardTypePrefixes = {
+  "": CardTypes.Card,
+  b: CardTypes.Cardback,
+  t: CardTypes.Token,
+};
