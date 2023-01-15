@@ -184,3 +184,7 @@ DEFAULT_FROM_EMAIL = "default from email"
 # Database update settings
 DEFAULT_CARDBACK_FOLDER_PATH = env("DEFAULT_CARDBACK_FOLDER_PATH", default="Chilli_Axe's MTG Renders / 12. Cardbacks")
 DEFAULT_CARDBACK_IMAGE_NAME = env("DEFAULT_CARDBACK_IMAGE_NAME", default="Black Lotus")
+
+# PATREON
+PATREON_URL = env("PATREON_URL", default="")
+PATREON_KEY = env("PATREON_KEY", default="")
