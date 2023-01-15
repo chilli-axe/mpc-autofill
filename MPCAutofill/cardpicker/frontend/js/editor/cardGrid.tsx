@@ -22,6 +22,7 @@ export function CardGrid() {
     searchQueries.push(JSON.stringify(x.front.query));
     searchQueries.push(JSON.stringify(x.back.query));
   });
+  // const cardbackCount = useSelector((state: RootState) => state.cardbacks.cardbacks.length)
   useEffect(() => {
     dispatch(fetchCardDocuments());
   }, [searchQueries]); // TODO: this still seems to be firing when it shouldn't

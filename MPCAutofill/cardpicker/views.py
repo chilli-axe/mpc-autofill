@@ -479,8 +479,8 @@ def api_function_2(request: HttpRequest) -> HttpResponse:
         time.sleep(2)
         json_body = json.loads(request.body)
         card_identifiers = json_body.get("card_identifiers", [])
-        if len(card_identifiers) > 100:
-            card_identifiers = card_identifiers[0:100]
+        # if len(card_identifiers) > 100:  # TODO
+        #     card_identifiers = card_identifiers[0:100]
         objs = {x.identifier: x.to_dict() for x in Card.objects.filter(identifier__in=card_identifiers)}
         return JsonResponse({"results": objs})
     return JsonResponse({})
@@ -518,7 +518,8 @@ def api_function_6(request: HttpRequest) -> HttpResponse:
     Return a list of cardbacks.
     """
 
-    cardbacks = [x.identifier for x in Card.objects.filter(card_type=CardTypes.CARDBACK)]
+    # TODO: think about the best way to order these results (after ordering by priority)
+    cardbacks = [x.identifier for x in Card.objects.filter(card_type=CardTypes.CARDBACK).order_by("-priority", "name")]
     return JsonResponse({"cardbacks": cardbacks})
 
 

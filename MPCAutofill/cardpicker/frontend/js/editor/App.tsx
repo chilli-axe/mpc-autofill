@@ -1,5 +1,6 @@
 import * as React from "react";
 import { CardGrid } from "./cardGrid";
+import { CommonCardback } from "./commonCardback";
 import { SearchSettings } from "./searchSettings";
 import { AddCards } from "./addCards";
 import { ProjectStatus } from "./projectStatus";
@@ -34,6 +35,9 @@ function App() {
             </Col>
             <Col lg={6} md={12} sm={12} xs={12}>
               <AddCards />
+            </Col>
+            <Col className="g-0" lg={{ span: 8, offset: 2 }} md={12}>
+              <CommonCardback />
             </Col>
           </Row>
         </div>

@@ -3,17 +3,20 @@ import Cookies from "js-cookie";
 
 import { RootState } from "./store";
 import { fetchCards } from "./searchResultsSlice";
+import { fetchCardbacks } from "./cardbackSlice";
 
 // TODO: we should write something to read a page of card IDs from searchResults (100 at a time?) and query the backend for their full data
 export const fetchCardDocuments = createAsyncThunk(
   "cardDocuments/fetchCardDocuments",
   async (arg, thunkAPI) => {
+    await thunkAPI.dispatch(fetchCards());
+    await thunkAPI.dispatch(fetchCardbacks()); // TODO: this is firing twice
+
     // @ts-ignore  // TODO
     const state: RootState = thunkAPI.getState();
-    await thunkAPI.dispatch(fetchCards());
 
     // identify queries with no search results
-    let allIdentifiers: Set<string> = new Set();
+    let allIdentifiers: Set<string> = new Set(state.cardbacks.cardbacks);
     for (const slotProjectMembers of state.project.members) {
       for (const [face, projectMember] of Object.entries(slotProjectMembers)) {
         if (
@@ -37,8 +40,6 @@ export const fetchCardDocuments = createAsyncThunk(
         (item) => !identifiersWithResults.has(item)
       )
     );
-
-    // TODO: identify cardbacks in the same way
 
     if (identifiersToSearch.size > 0) {
       const rawResponse = await fetch("/2/getCards/", {

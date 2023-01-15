@@ -5,21 +5,17 @@ import { Card } from "./card";
 import { Faces, SearchQuery } from "./constants";
 import { wrapIndex } from "./utils";
 import { deleteImage, setSelectedImage } from "./projectSlice";
+import { fetchCardbacks } from "./cardbackSlice";
 import Button from "react-bootstrap/Button";
 import { CardDetailedView } from "./cardDetailedView";
-import { CardSlotGridSelector } from "./gridSelector";
+import { CommonCardbackGridSelector } from "./gridSelector";
+import { fetchCardDocuments } from "./cardDocumentsSlice";
 
-interface CardSlotProps {
-  searchQuery: SearchQuery;
-  face: Faces;
-  slot: number;
+interface CommonCardbackProps {
   selectedImage?: string;
 }
 
-export function CardSlot(props: CardSlotProps) {
-  const searchQuery: SearchQuery = props.searchQuery;
-  const face = props.face;
-  const slot = props.slot;
+export function CommonCardback(props: CommonCardbackProps) {
   let selectedImage = props.selectedImage;
 
   const [showDetailedView, setShowDetailedView] = useState(false);
@@ -30,85 +26,65 @@ export function CardSlot(props: CardSlotProps) {
   const handleCloseGridSelector = () => setShowGridSelector(false);
   const handleShowGridSelector = () => setShowGridSelector(true);
 
-  const dispatch = useDispatch<AppDispatch>();
+  // TODO: move this selector somewhere more sensible
+  const searchResults = useSelector(
+    (state: RootState) => state.cardbacks.cardbacks
+  );
 
-  const searchResultsForQuery = useSelector(
-    (state: RootState) =>
-      (state.searchResults.searchResults[searchQuery.query] ?? {})[
-        searchQuery.card_type
-      ] ?? []
-  ); // TODO: move this selector into searchResultsSlice
+  // TODO
+  // useEffect(() => {
+  //   // If no image is selected and there are search results, select the first image in search results
+  //   if (
+  //     (searchResults.length > 0 && selectedImage === null) ||
+  //     selectedImage === undefined
+  //   ) {
+  //     dispatch(
+  //       setSelectedImage({
+  //         face,
+  //         slot,
+  //         selectedImage: searchResults[0],
+  //       })
+  //     );
+  //   }
+  // }, [searchResults]);
 
-  useEffect(() => {
-    // If no image is selected and there are search results, select the first image in search results
-    if (
-      (searchResultsForQuery.length > 0 && selectedImage === null) ||
-      selectedImage === undefined
-    ) {
-      dispatch(
-        setSelectedImage({
-          face,
-          slot,
-          selectedImage: searchResultsForQuery[0],
-        })
-      );
-    }
-  }, [searchResultsForQuery]);
-
-  const selectedImageIndex = searchResultsForQuery.indexOf(selectedImage);
+  const selectedImageIndex = searchResults.indexOf(selectedImage);
   const previousImage =
-    searchResultsForQuery[
-      wrapIndex(selectedImageIndex + 1, searchResultsForQuery.length)
-    ];
+    searchResults[wrapIndex(selectedImageIndex + 1, searchResults.length)];
   const nextImage =
-    searchResultsForQuery[
-      wrapIndex(selectedImageIndex - 1, searchResultsForQuery.length)
-    ];
-
-  const deleteThisImage = () => {
-    dispatch(deleteImage({ slot }));
-  };
+    searchResults[wrapIndex(selectedImageIndex - 1, searchResults.length)];
 
   function setSelectedImageFromDelta(delta: number): void {
-    // TODO: docstring
-    dispatch(
-      setSelectedImage({
-        face,
-        slot,
-        selectedImage:
-          searchResultsForQuery[
-            wrapIndex(selectedImageIndex + delta, searchResultsForQuery.length)
-          ],
-      })
-    );
+    // TODO
+    // dispatch(
+    //   setSelectedImage({
+    //     face,
+    //     slot,
+    //     selectedImage:
+    //       searchResults[
+    //         wrapIndex(selectedImageIndex + delta, searchResults.length)
+    //       ],
+    //   })
+    // );
   }
 
-  const cardHeaderTitle = `Slot ${slot + 1}`;
-  const cardHeaderButtons = (
-    <>
-      <button className="padlock">
-        <i className="bi bi-unlock"></i>
-      </button>
-      <button className="remove">
-        <i className="bi bi-x-circle" onClick={deleteThisImage}></i>
-      </button>
-    </>
-  );
+  // TODO: would be good to reuse some of this code
+  const cardHeaderTitle = "Cardback";
   const cardFooter = (
     <>
-      {searchResultsForQuery.length == 1 && (
+      {searchResults.length == 1 && (
         <p className="mpccard-counter text-center align-middle">
-          1 / {searchResultsForQuery.length}
+          1 / {searchResults.length}
         </p>
       )}
-      {searchResultsForQuery.length > 1 && (
+      {searchResults.length > 1 && (
         <>
           <Button
             variant="outline-info"
             className="mpccard-counter-btn"
             onClick={handleShowGridSelector}
           >
-            {selectedImageIndex + 1} / {searchResultsForQuery.length}
+            {selectedImageIndex + 1} / {searchResults.length}
           </Button>
           <div>
             <Button
@@ -139,14 +115,11 @@ export function CardSlot(props: CardSlotProps) {
         nextImageIdentifier={nextImage}
         cardHeaderTitle={cardHeaderTitle}
         cardFooter={cardFooter}
-        cardHeaderButtons={cardHeaderButtons}
         imageOnClick={handleShowDetailedView}
       />
 
-      <CardSlotGridSelector
-        face={face}
-        slot={slot}
-        searchResultsForQuery={searchResultsForQuery}
+      <CommonCardbackGridSelector
+        searchResults={searchResults}
         show={showGridSelector}
         handleClose={handleCloseGridSelector}
       />
