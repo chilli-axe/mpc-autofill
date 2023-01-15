@@ -2,12 +2,13 @@ import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { AppDispatch, RootState } from "./store";
 import { Card } from "./card";
-import { Faces, SearchQuery } from "./constants";
+import { Faces, Back, SearchQuery } from "./constants";
 import { wrapIndex } from "./utils";
 import {
   deleteImage,
   setSelectedImage,
   setSelectedCardback,
+  bulkSetSelectedImage,
 } from "./projectSlice";
 import { fetchCardbacks } from "./cardbackSlice";
 import Button from "react-bootstrap/Button";
@@ -59,12 +60,20 @@ export function CommonCardback(props: CommonCardbackProps) {
     searchResults[wrapIndex(selectedImageIndex - 1, searchResults.length)];
 
   function setSelectedImageFromDelta(delta: number): void {
+    const newImage =
+      searchResults[
+        wrapIndex(selectedImageIndex + delta, searchResults.length)
+      ];
+    dispatch(
+      bulkSetSelectedImage({
+        currentImage: selectedImage,
+        selectedImage: newImage,
+        face: Back,
+      })
+    );
     dispatch(
       setSelectedCardback({
-        selectedImage:
-          searchResults[
-            wrapIndex(selectedImageIndex + delta, searchResults.length)
-          ],
+        selectedImage: newImage,
       })
     );
   }

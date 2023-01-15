@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { CardTypes, Faces, SearchQuery } from "./constants";
+import { Back, CardTypes, Faces, Front, SearchQuery } from "./constants";
 import { RootState } from "./store";
 import { processPrefix } from "./utils";
 import { useSelector } from "react-redux";
@@ -58,6 +58,12 @@ interface SetSelectedImageAction {
   selectedImage: string;
 }
 
+interface BulkSetSelectedImageAction {
+  face: Faces;
+  currentImage: string;
+  selectedImage: string;
+}
+
 interface SetSelectedCardbackAction {
   selectedImage: string;
 }
@@ -87,6 +93,37 @@ export const projectSlice = createSlice({
       } else {
         state.members[action.payload.slot][action.payload.face].selectedImage =
           action.payload.selectedImage;
+      }
+    },
+    bulkSetSelectedImage: (
+      state,
+      action: PayloadAction<BulkSetSelectedImageAction>
+    ) => {
+      // identify all cards in the specified face which have selected the old image
+      // set all those images to the new image
+
+      const mySet: Set<number> = new Set();
+      for (const [slot, projectMember] of state.members.entries()) {
+        if (
+          projectMember[action.payload.face].selectedImage ==
+          action.payload.currentImage
+        ) {
+          // TODO: common cardback should also be filtered out here
+          mySet.add(slot);
+        }
+      }
+      for (const slot of mySet) {
+        // TODO: copied and pasted from above. this is pretty bad.
+        if (state.members[slot][action.payload.face] == null) {
+          state.members[slot][action.payload.face] = {
+            query: null,
+            selectedImage: action.payload.selectedImage,
+          };
+        } else {
+          state.members[slot][action.payload.face].selectedImage =
+            action.payload.selectedImage;
+        }
+        // setSelectedImage(state, {face: action.payload.face, slot: slot, selectedImage: action.payload.selectedImage})
       }
     },
     setSelectedCardback: (
@@ -160,7 +197,12 @@ export const selectProjectFileSize = (state: RootState): number => {
 // const getProjectCardCount = createSelector(selectProject, project => )
 
 // Action creators are generated for each case reducer function
-export const { setSelectedImage, setSelectedCardback, addImages, deleteImage } =
-  projectSlice.actions;
+export const {
+  setSelectedImage,
+  bulkSetSelectedImage,
+  setSelectedCardback,
+  addImages,
+  deleteImage,
+} = projectSlice.actions;
 
 export default projectSlice.reducer;
