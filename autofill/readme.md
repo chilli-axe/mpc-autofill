@@ -58,6 +58,10 @@ By default, the tool will configure a driver for Google Chrome. The three major 
 
 You can optionally export the downloaded images to a PDF which can be uploaded to a card printing site by using the `--exportpdfs` command line argument. Once the images are downloaded, press enter and you'll be presented with a few questions. If you plan to upload the PDFs to MakePlayingCards, select `yes` when asked about storing the separate faces in their own PDF. If you plan to use DriveThruCards, select `no` for that question, and then set the number of cards to include per exported file. If using DriveThruCards, be aware that they have a file size upload limit of 1gb, so depending on the file size of the selected images, your order may need to be set to a lower number, like 30 or 40 cards.
 
+### Process multiple XML files in batch
+
+You can optionally process multiple XML files generated on https://mpcfill.com in a single script execution. This can be useful if you want to prepare multiple decks, individually wrapped, with different back covers, for example. For this option to work, it is necessary to be authenticated on https://www.makeplayingcards.com to be able to save each deck as Saved Project. This is why the "-a" option will ask for credentials in order to automatically login and save the projects. Once the process is completed, the saved projects can be added in the cart and the order can be completed. You can specify the credentials on the command line with the option "-u" and "-p". If the credentials are not provided, a prompt will request the user to provide them.
+
 ## Developer Guide
 
 ### Running the Source Code
