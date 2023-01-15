@@ -15,6 +15,7 @@ type SlotProjectMembers = {
 
 type Project = {
   members: Array<SlotProjectMembers>;
+  cardback: string | null;
 };
 
 const initialState: Project = {
@@ -60,6 +61,7 @@ const initialState: Project = {
       },
     },
   ],
+  cardback: null,
 };
 
 interface SetSelectedImageAction {

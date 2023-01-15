@@ -28,7 +28,7 @@ export const fetchSourceDocuments = createAsyncThunk(
   "sourceDocuments/fetchSourceDocuments",
   async () => {
     const rawResponse = await fetch("/2/getSources/", {
-      method: "POST",
+      method: "GET",
       credentials: "same-origin",
       headers: {
         "X-CSRFToken": Cookies.get("csrftoken"),

@@ -10,7 +10,7 @@ export const fetchCardDocuments = createAsyncThunk(
   "cardDocuments/fetchCardDocuments",
   async (arg, thunkAPI) => {
     await thunkAPI.dispatch(fetchCards());
-    await thunkAPI.dispatch(fetchCardbacks()); // TODO: this is firing twice
+    await thunkAPI.dispatch(fetchCardbacks());
 
     // @ts-ignore  // TODO
     const state: RootState = thunkAPI.getState();

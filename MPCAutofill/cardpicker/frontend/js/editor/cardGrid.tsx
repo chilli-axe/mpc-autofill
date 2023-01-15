@@ -17,15 +17,17 @@ export function CardGrid() {
   const projectMembers = useSelector(selectProjectMembers);
 
   // retrieve cards from database when queries in the project change
-  let searchQueries: Array<string> = [];
+  // TODO: I think this snippet should move somewhere more sensible & reusable. probably as a selector.
+  let searchQueries: Set<string> = new Set();
   projectMembers.forEach((x) => {
-    searchQueries.push(JSON.stringify(x.front.query));
-    searchQueries.push(JSON.stringify(x.back.query));
+    searchQueries.add(JSON.stringify(x.front.query.query));
+    searchQueries.add(JSON.stringify(x.back.query.query));
   });
-  // const cardbackCount = useSelector((state: RootState) => state.cardbacks.cardbacks.length)
+  const searchQueriesArray = Array.from(searchQueries);
+  searchQueriesArray.sort();
   useEffect(() => {
     dispatch(fetchCardDocuments());
-  }, [searchQueries]); // TODO: this still seems to be firing when it shouldn't
+  }, [searchQueriesArray.join(",")]);
 
   for (const [slot, slotProjectMember] of projectMembers.entries()) {
     cardSlotsFronts.push(
