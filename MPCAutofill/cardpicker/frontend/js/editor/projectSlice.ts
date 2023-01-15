@@ -70,6 +70,10 @@ interface SetSelectedImageAction {
   selectedImage: string;
 }
 
+interface SetSelectedCardbackAction {
+  selectedImage: string;
+}
+
 interface AddImagesAction {
   [key: string]: number;
 }
@@ -88,6 +92,12 @@ export const projectSlice = createSlice({
     ) => {
       state.members[action.payload.slot][action.payload.face].selectedImage =
         action.payload.selectedImage;
+    },
+    setSelectedCardback: (
+      state,
+      action: PayloadAction<SetSelectedCardbackAction>
+    ) => {
+      state.cardback = action.payload.selectedImage;
     },
     addImages: (state, action: PayloadAction<AddImagesAction>) => {
       let newMembers: Array<SlotProjectMembers> = [];
@@ -156,7 +166,7 @@ export const selectProjectFileSize = (state: RootState): number => {
 // const getProjectCardCount = createSelector(selectProject, project => )
 
 // Action creators are generated for each case reducer function
-export const { setSelectedImage, addImages, deleteImage } =
+export const { setSelectedImage, setSelectedCardback, addImages, deleteImage } =
   projectSlice.actions;
 
 export default projectSlice.reducer;

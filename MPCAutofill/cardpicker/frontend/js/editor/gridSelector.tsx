@@ -3,7 +3,7 @@ import Row from "react-bootstrap/Row";
 import { Card } from "./card";
 import Button from "react-bootstrap/Button";
 import React from "react";
-import { setSelectedImage } from "./projectSlice";
+import { setSelectedCardback, setSelectedImage } from "./projectSlice";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "./store";
 import { Faces } from "./constants";
@@ -84,7 +84,6 @@ export function CardSlotGridSelector(props: CardSlotGridSelectorProps) {
       handleClose={props.handleClose}
       onClick={setSelectedImageFromIdentifier}
     />
-    // <GridSelector face={} slot={} searchResultsForQuery={} show={} handleClose={}/>
   );
 }
 
@@ -93,10 +92,7 @@ export function CommonCardbackGridSelector(
 ) {
   const dispatch = useDispatch<AppDispatch>();
   function setSelectedImageFromIdentifier(selectedImage: string): void {
-    alert("todo");
-    // dispatch(
-    //   setSelectedImage({face: props.face, slot: props.slot, selectedImage})
-    // );
+    dispatch(setSelectedCardback({ selectedImage }));
   }
   return (
     <GridSelector
@@ -105,6 +101,5 @@ export function CommonCardbackGridSelector(
       handleClose={props.handleClose}
       onClick={setSelectedImageFromIdentifier}
     />
-    // <GridSelector face={} slot={} searchResultsForQuery={} show={} handleClose={}/>
   );
 }

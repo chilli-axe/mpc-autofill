@@ -9,11 +9,12 @@ import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
 import { useEffect } from "react";
 import { fetchSourceDocuments } from "./sourceDocumentsSlice";
-import { useDispatch } from "react-redux";
-import { AppDispatch } from "./store";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "./store";
 
 function App() {
   const dispatch = useDispatch<AppDispatch>();
+  const cardback = useSelector((state: RootState) => state.project.cardback);
   useEffect(() => {
     dispatch(fetchSourceDocuments());
   }, []);
@@ -41,7 +42,7 @@ function App() {
             </Col>
           </Row>
           <Col className="g-0" lg={{ span: 8, offset: 2 }} md={12}>
-            <CommonCardback />
+            <CommonCardback selectedImage={cardback} />
           </Col>
         </div>
       </Col>

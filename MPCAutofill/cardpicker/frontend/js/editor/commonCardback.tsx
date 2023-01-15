@@ -4,7 +4,11 @@ import { AppDispatch, RootState } from "./store";
 import { Card } from "./card";
 import { Faces, SearchQuery } from "./constants";
 import { wrapIndex } from "./utils";
-import { deleteImage, setSelectedImage } from "./projectSlice";
+import {
+  deleteImage,
+  setSelectedImage,
+  setSelectedCardback,
+} from "./projectSlice";
 import { fetchCardbacks } from "./cardbackSlice";
 import Button from "react-bootstrap/Button";
 import { CardDetailedView } from "./cardDetailedView";
@@ -16,6 +20,8 @@ interface CommonCardbackProps {
 }
 
 export function CommonCardback(props: CommonCardbackProps) {
+  const dispatch = useDispatch<AppDispatch>();
+
   let selectedImage = props.selectedImage;
 
   const [showDetailedView, setShowDetailedView] = useState(false);
@@ -32,21 +38,19 @@ export function CommonCardback(props: CommonCardbackProps) {
   );
 
   // TODO
-  // useEffect(() => {
-  //   // If no image is selected and there are search results, select the first image in search results
-  //   if (
-  //     (searchResults.length > 0 && selectedImage === null) ||
-  //     selectedImage === undefined
-  //   ) {
-  //     dispatch(
-  //       setSelectedImage({
-  //         face,
-  //         slot,
-  //         selectedImage: searchResults[0],
-  //       })
-  //     );
-  //   }
-  // }, [searchResults]);
+  useEffect(() => {
+    // If no image is selected and there are cardbacks, select the first image in search results
+    if (
+      (searchResults.length > 0 && selectedImage === null) ||
+      selectedImage === undefined
+    ) {
+      dispatch(
+        setSelectedCardback({
+          selectedImage: searchResults[0],
+        })
+      );
+    }
+  }, [searchResults]);
 
   const selectedImageIndex = searchResults.indexOf(selectedImage);
   const previousImage =
@@ -55,17 +59,14 @@ export function CommonCardback(props: CommonCardbackProps) {
     searchResults[wrapIndex(selectedImageIndex - 1, searchResults.length)];
 
   function setSelectedImageFromDelta(delta: number): void {
-    // TODO
-    // dispatch(
-    //   setSelectedImage({
-    //     face,
-    //     slot,
-    //     selectedImage:
-    //       searchResults[
-    //         wrapIndex(selectedImageIndex + delta, searchResults.length)
-    //       ],
-    //   })
-    // );
+    dispatch(
+      setSelectedCardback({
+        selectedImage:
+          searchResults[
+            wrapIndex(selectedImageIndex + delta, searchResults.length)
+          ],
+      })
+    );
   }
 
   // TODO: would be good to reuse some of this code
