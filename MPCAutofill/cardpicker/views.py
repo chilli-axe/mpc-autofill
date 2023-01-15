@@ -6,12 +6,13 @@ from typing import Any, Callable, Optional, TypeVar, Union, cast
 from blog.models import BlogPost
 
 from django.db import connection
+from django.db.models import Sum
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
 
 from cardpicker.forms import InputCSV, InputLink, InputText, InputXML
-from cardpicker.models import CardTypes, Source
+from cardpicker.models import Card, CardTypes, Source
 from cardpicker.mpcorder import Faces, MPCOrder, ReqTypes
 from cardpicker.sources.source_types import SourceTypeChoices
 from cardpicker.utils.patreon import get_patreon_campaign_details, get_patrons
@@ -145,7 +146,8 @@ def contributions(request: HttpRequest) -> HttpResponse:
                 cardpicker_source.description,
                 cardpicker_source.ordinal,
                 COALESCE(SUM(cardpicker_card.dpi), 0),
-                COUNT(cardpicker_card.dpi)
+                COUNT(cardpicker_card.dpi),
+                SUM(cardpicker_card.size)
             FROM cardpicker_source
             LEFT JOIN cardpicker_card ON cardpicker_source.id = cardpicker_card.source_id
             GROUP BY cardpicker_source.name,
@@ -177,7 +179,18 @@ def contributions(request: HttpRequest) -> HttpResponse:
         source_card_count_by_type[identifier][card_type] = count
         card_count_by_type[card_type] += count
     sources = []
-    for (name, identifier, source_type, external_link, description, ordinal, total_dpi, total_count) in results_1:
+    total_database_size = 0
+    for (
+        name,
+        identifier,
+        source_type,
+        external_link,
+        description,
+        ordinal,
+        total_dpi,
+        total_count,
+        total_size,
+    ) in results_1:
         sources.append(
             {
                 "name": name,
@@ -189,14 +202,23 @@ def contributions(request: HttpRequest) -> HttpResponse:
                 "qty_cardbacks": f"{source_card_count_by_type[identifier].get(CardTypes.CARDBACK, 0) :,d}",
                 "qty_tokens": f"{source_card_count_by_type[identifier].get(CardTypes.TOKEN, 0) :,d}",
                 "avgdpi": f"{(total_dpi / total_count):.2f}" if total_count > 0 else 0,
+                "size": f"{(total_size / 1_000_000_000):.2f} GB",
             }
         )
+        total_database_size += total_size
 
     total_count = [card_count_by_type[x] for x in CardTypes]
     total_count.append(sum(total_count))
     total_count_f = [f"{x:,d}" for x in total_count]
 
-    return render(request, "cardpicker/contributions.html", {"sources": sources, "total_count": total_count_f})
+    # database_size = f"{(Card.objects.aggregate(Sum('size'))['size__sum'] / 1_000_000_000):.2f}"
+    total_database_size_f = f"{(total_database_size / 1_000_000_000):.2f} GB"
+
+    return render(
+        request,
+        "cardpicker/contributions.html",
+        {"sources": sources, "total_count": total_count_f, "total_size": total_database_size_f},
+    )
 
 
 def patrons(request: HttpRequest) -> HttpResponse:
