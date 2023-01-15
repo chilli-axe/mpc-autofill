@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { AppDispatch, RootState } from "./store";
 import { Card } from "./card";
-import { Faces, SearchQuery } from "./constants";
+import { Faces, Back, SearchQuery } from "./constants";
 import { wrapIndex } from "./utils";
 import { deleteImage, setSelectedImage } from "./projectSlice";
 import Button from "react-bootstrap/Button";
@@ -10,7 +10,7 @@ import { CardDetailedView } from "./cardDetailedView";
 import { CardSlotGridSelector } from "./gridSelector";
 
 interface CardSlotProps {
-  searchQuery: SearchQuery;
+  searchQuery?: SearchQuery;
   face: Faces;
   slot: number;
   selectedImage?: string;
@@ -32,12 +32,26 @@ export function CardSlot(props: CardSlotProps) {
 
   const dispatch = useDispatch<AppDispatch>();
 
-  const searchResultsForQuery = useSelector(
-    (state: RootState) =>
-      (state.searchResults.searchResults[searchQuery.query] ?? {})[
-        searchQuery.card_type
-      ] ?? []
-  ); // TODO: move this selector into searchResultsSlice
+  // TODO: move this selector into searchResultsSlice
+  // this is a bit confusing. if the card has a query, use the query's results. if it's a cardback with no query,
+  // display the common cardback's results.
+  const cardbacks =
+    useSelector((state: RootState) => state.cardbacks.cardbacks) ?? [];
+  const projectCardback = useSelector(
+    (state: RootState) => state.project.cardback
+  );
+  // alert(projectCardback)
+  const searchResultsForQuery =
+    searchQuery != null
+      ? useSelector(
+          (state: RootState) =>
+            (state.searchResults.searchResults[searchQuery.query] ?? {})[
+              searchQuery.card_type
+            ] ?? []
+        )
+      : face == Back
+      ? cardbacks
+      : [];
 
   useEffect(() => {
     // If no image is selected and there are search results, select the first image in search results
@@ -45,15 +59,25 @@ export function CardSlot(props: CardSlotProps) {
       (searchResultsForQuery.length > 0 && selectedImage === null) ||
       selectedImage === undefined
     ) {
-      dispatch(
-        setSelectedImage({
-          face,
-          slot,
-          selectedImage: searchResultsForQuery[0],
-        })
-      );
+      if (searchQuery != null) {
+        dispatch(
+          setSelectedImage({
+            face: face,
+            slot: slot,
+            selectedImage: searchResultsForQuery[0],
+          })
+        );
+      } else if (face == Back && projectCardback != null) {
+        dispatch(
+          setSelectedImage({
+            face: face,
+            slot: slot,
+            selectedImage: projectCardback,
+          })
+        );
+      }
     }
-  }, [searchResultsForQuery]);
+  }, [searchResultsForQuery, projectCardback]);
 
   const selectedImageIndex = searchResultsForQuery.indexOf(selectedImage);
   const previousImage =
@@ -141,20 +165,26 @@ export function CardSlot(props: CardSlotProps) {
         cardFooter={cardFooter}
         cardHeaderButtons={cardHeaderButtons}
         imageOnClick={handleShowDetailedView}
+        noResultsFound={
+          searchResultsForQuery.length == 0 && searchQuery == null
+        }
       />
 
-      <CardSlotGridSelector
-        face={face}
-        slot={slot}
-        searchResultsForQuery={searchResultsForQuery}
-        show={showGridSelector}
-        handleClose={handleCloseGridSelector}
-      />
       <CardDetailedView
         imageIdentifier={selectedImage}
         show={showDetailedView}
         handleClose={handleCloseDetailedView}
       />
+
+      {searchResultsForQuery.length > 1 && (
+        <CardSlotGridSelector
+          face={face}
+          slot={slot}
+          searchResultsForQuery={searchResultsForQuery}
+          show={showGridSelector}
+          handleClose={handleCloseGridSelector}
+        />
+      )}
     </>
   );
 }

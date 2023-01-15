@@ -14,6 +14,8 @@ export const fetchCards = createAsyncThunk(
     for (const slotProjectMembers of state.project.members) {
       for (const [face, projectMember] of Object.entries(slotProjectMembers)) {
         if (
+          projectMember != null &&
+          projectMember.query != null &&
           (state.searchResults.searchResults[projectMember.query.query] ?? {})[
             projectMember.query.card_type
           ] == undefined

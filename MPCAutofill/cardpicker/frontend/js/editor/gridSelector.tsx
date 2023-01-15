@@ -57,6 +57,7 @@ function GridSelector(props: GridSelectorProps) {
                 props.handleClose();
               }}
               key={`gridSelector-${identifier}`}
+              noResultsFound={false}
             />
           ))}
         </Row>

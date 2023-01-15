@@ -117,6 +117,7 @@ export function CommonCardback(props: CommonCardbackProps) {
         cardHeaderTitle={cardHeaderTitle}
         cardFooter={cardFooter}
         imageOnClick={handleShowDetailedView}
+        noResultsFound={false}
       />
 
       <CommonCardbackGridSelector

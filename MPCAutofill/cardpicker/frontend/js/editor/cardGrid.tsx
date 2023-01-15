@@ -20,8 +20,12 @@ export function CardGrid() {
   // TODO: I think this snippet should move somewhere more sensible & reusable. probably as a selector.
   let searchQueries: Set<string> = new Set();
   projectMembers.forEach((x) => {
-    searchQueries.add(JSON.stringify(x.front.query.query));
-    searchQueries.add(JSON.stringify(x.back.query.query));
+    if (x.front != null && x.front.query != null) {
+      searchQueries.add(JSON.stringify(x.front.query.query));
+    }
+    if (x.back != null && x.back.query != null) {
+      searchQueries.add(JSON.stringify(x.back.query.query));
+    }
   });
   const searchQueriesArray = Array.from(searchQueries);
   searchQueriesArray.sort();
@@ -33,19 +37,31 @@ export function CardGrid() {
     cardSlotsFronts.push(
       <CardSlot
         key={`${Front}-slot-${slot}`}
-        searchQuery={slotProjectMember.front.query}
+        searchQuery={
+          slotProjectMember.front != null ? slotProjectMember.front.query : null
+        }
         face={Front}
         slot={slot}
-        selectedImage={slotProjectMember.front.selectedImage}
+        selectedImage={
+          slotProjectMember.front != null
+            ? slotProjectMember.front.selectedImage
+            : null
+        }
       ></CardSlot>
     );
     cardSlotsBacks.push(
       <CardSlot
         key={`${Back}-slot-${slot}`}
-        searchQuery={slotProjectMember.back.query}
+        searchQuery={
+          slotProjectMember.back != null ? slotProjectMember.back.query : null
+        }
         face={Back}
         slot={slot}
-        selectedImage={slotProjectMember.back.selectedImage}
+        selectedImage={
+          slotProjectMember.back != null
+            ? slotProjectMember.back.selectedImage
+            : null
+        }
       ></CardSlot>
     );
   }

@@ -500,8 +500,8 @@ def api_function_4(request: HttpRequest) -> HttpResponse:
     Return a list of double-faced cards.
     """
 
-    transforms = dict((x.front_searchable, x.back_searchable) for x in DFCPair.objects.all())
-    return JsonResponse({"transforms": transforms})
+    dfc_pairs = dict((x.front_searchable, x.back_searchable) for x in DFCPair.objects.all())
+    return JsonResponse({"dfc_pairs": dfc_pairs})
 
 
 def api_function_5(request: HttpRequest) -> HttpResponse:

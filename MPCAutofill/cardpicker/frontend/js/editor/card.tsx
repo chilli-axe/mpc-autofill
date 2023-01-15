@@ -5,7 +5,7 @@ import { RootState } from "./store";
 import BSCard from "react-bootstrap/Card";
 
 interface CardProps {
-  imageIdentifier: string;
+  imageIdentifier?: string;
   previousImageIdentifier?: string;
   nextImageIdentifier?: string;
   cardHeaderTitle: string;
@@ -13,6 +13,7 @@ interface CardProps {
   cardFooter?: ReactElement;
   imageOnClick?: React.MouseEventHandler<HTMLImageElement>;
   cardOnClick?: React.MouseEventHandler<HTMLElement>;
+  noResultsFound: boolean;
 }
 
 export function Card(props: CardProps) {
@@ -32,6 +33,8 @@ export function Card(props: CardProps) {
     (state: RootState) =>
       state.cardDocuments.cardDocuments[props.nextImageIdentifier]
   );
+  const searchResultsIdle = // TODO: replace the magic string here with a constant
+    useSelector((state: RootState) => state.searchResults.status) == "idle";
 
   const cardImageElements =
     maybeCardDocument !== undefined ? (
@@ -83,6 +86,14 @@ export function Card(props: CardProps) {
             />
           )}
       </>
+    ) : props.noResultsFound ? (
+      <img
+        className="card-img card-img-fade-in"
+        loading="lazy"
+        style={{ zIndex: 1 }}
+        src={"/static/cardpicker/blank.png"} // TODO: double check this is the correct way to serve this image
+        alt="Card not found"
+      />
     ) : (
       <div className="d-flex justify-content-center align-items-center">
         <div

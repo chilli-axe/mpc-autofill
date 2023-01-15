@@ -10,7 +10,7 @@ interface ProjectMember {
 }
 
 type SlotProjectMembers = {
-  [face in Faces]: ProjectMember;
+  [face in Faces]: ProjectMember | null;
 };
 
 type Project = {
@@ -25,40 +25,28 @@ const initialState: Project = {
         query: { query: "island", card_type: CardTypes.Card },
         selectedImage: null,
       },
-      back: {
-        query: { query: "black lotus", card_type: CardTypes.Cardback },
-        selectedImage: null,
-      },
+      back: null,
     },
     {
       front: {
         query: { query: "grim monolith", card_type: CardTypes.Card },
         selectedImage: null,
       },
-      back: {
-        query: { query: "black lotus", card_type: CardTypes.Cardback },
-        selectedImage: null,
-      },
+      back: null,
     },
     {
       front: {
         query: { query: "past in flames", card_type: CardTypes.Card },
         selectedImage: null,
       },
-      back: {
-        query: { query: "black lotus", card_type: CardTypes.Cardback },
-        selectedImage: null,
-      },
+      back: null,
     },
     {
       front: {
         query: { query: "necropotence", card_type: CardTypes.Card },
         selectedImage: null,
       },
-      back: {
-        query: { query: "black lotus", card_type: CardTypes.Cardback },
-        selectedImage: null,
-      },
+      back: null,
     },
   ],
   cardback: null,
@@ -90,8 +78,16 @@ export const projectSlice = createSlice({
       state,
       action: PayloadAction<SetSelectedImageAction>
     ) => {
-      state.members[action.payload.slot][action.payload.face].selectedImage =
-        action.payload.selectedImage;
+      // TODO: this is a bit awkward
+      if (state.members[action.payload.slot][action.payload.face] == null) {
+        state.members[action.payload.slot][action.payload.face] = {
+          query: null,
+          selectedImage: action.payload.selectedImage,
+        };
+      } else {
+        state.members[action.payload.slot][action.payload.face].selectedImage =
+          action.payload.selectedImage;
+      }
     },
     setSelectedCardback: (
       state,
@@ -111,11 +107,7 @@ export const projectSlice = createSlice({
               query: { query: processedQuery, card_type: cardType },
               selectedImage: null,
             },
-            back: {
-              // TODO: this needs to default to the selected cardback (and set group membership)
-              query: { query: "black lotus", card_type: CardTypes.Cardback },
-              selectedImage: null,
-            },
+            back: null, // TODO: handle DFCs here
           }),
         ];
       }
@@ -150,7 +142,9 @@ export const selectProjectFileSize = (state: RootState): number => {
   const uniqueCardIdentifiers = new Set<string>();
   for (const slotProjectMembers of state.project.members) {
     for (const [face, projectMember] of Object.entries(slotProjectMembers)) {
-      uniqueCardIdentifiers.add(projectMember.selectedImage);
+      if (projectMember != null && projectMember.selectedImage != null) {
+        uniqueCardIdentifiers.add(projectMember.selectedImage);
+      }
     }
   }
 

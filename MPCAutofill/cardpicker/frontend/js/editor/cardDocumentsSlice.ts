@@ -16,10 +16,13 @@ export const fetchCardDocuments = createAsyncThunk(
     const state: RootState = thunkAPI.getState();
 
     // identify queries with no search results
+    // TODO: this should be turned into a reusable selector
     let allIdentifiers: Set<string> = new Set(state.cardbacks.cardbacks);
     for (const slotProjectMembers of state.project.members) {
       for (const [face, projectMember] of Object.entries(slotProjectMembers)) {
         if (
+          projectMember != null &&
+          projectMember.query != null &&
           (
             (state.searchResults.searchResults[projectMember.query.query] ??
               {})[projectMember.query.card_type] ?? []

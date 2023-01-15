@@ -5,7 +5,7 @@ export enum CardTypes {
 }
 
 export interface SearchQuery {
-  query: string;
+  query: string | null;
   card_type: CardTypes;
 }
 

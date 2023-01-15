@@ -100,7 +100,7 @@ export function AddCards() {
           <Form.Group className="mb-3" controlId="exampleForm.ControlTextarea1">
             <Form.Control
               as="textarea"
-              rows={12}
+              rows={12} // TODO: let's retrieve this placeholder string from the backend
               placeholder="4x Lion's Eye Diamond&#10;4x Golgari Grave-Troll&#10;4x Bridge from Below&#10;3x Breakthrough&#10;&#10;6x t:Zombie"
               onChange={(event) => setTextModalValue(event.target.value)}
               value={textModalValue}
