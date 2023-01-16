@@ -261,7 +261,6 @@ class SearchQuery:
 
     @elastic_connection
     def retrieve_card_identifiers(self, search_settings: SearchSettings) -> list[str]:
-        # ) -> tuple[int, list[str]]:
         if not Index(CardSearch.Index.name).exists():
             raise SearchExceptions.IndexNotFoundException(CardSearch.__name__)
         query_parsed = to_searchable(self.query)

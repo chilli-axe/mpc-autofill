@@ -15,6 +15,7 @@ from cardpicker.forms import InputCSV, InputLink, InputText, InputXML
 from cardpicker.models import Card, CardTypes, DFCPair, Source
 from cardpicker.mpcorder import Faces, MPCOrder, ReqTypes
 from cardpicker.sources.source_types import SourceTypeChoices
+from cardpicker.utils.link_imports import ImportSites
 from cardpicker.utils.sanitisation import to_searchable
 from cardpicker.utils.search_functions import (
     SearchExceptions,
@@ -445,6 +446,9 @@ def insert_link(request: HttpRequest) -> HttpResponse:
 # region new API
 
 
+# TODO: rename these functions to something useful once they've all been hashed out.
+
+
 def editor(request: HttpRequest) -> HttpResponse:
     return render(request, "cardpicker/editor.html")
 
@@ -461,7 +465,7 @@ def api_function_1(request: HttpRequest) -> HttpResponse:
 
     # TODO: ping elasticsearch here
     if request.method == "POST":
-        time.sleep(1)
+        # time.sleep(1)  # TODO: remove these. just for testing.
         json_body = json.loads(request.body)
         search_settings = SearchSettings.from_json_body(json_body)
         queries = SearchQuery.list_from_json_body(json_body)
@@ -471,18 +475,23 @@ def api_function_1(request: HttpRequest) -> HttpResponse:
                 hits = query.retrieve_card_identifiers(search_settings=search_settings)
                 results[query.query][query.card_type] = hits
         return JsonResponse({"results": results})
+    else:
+        ...  # TODO: return error response
     return JsonResponse({})
 
 
 def api_function_2(request: HttpRequest) -> HttpResponse:
+    # TODO: bit confusing to call this `getCards` while expecting POST
     if request.method == "POST":
-        time.sleep(2)
+        # time.sleep(2)  # TODO: remove these. just for testing.
         json_body = json.loads(request.body)
         card_identifiers = json_body.get("card_identifiers", [])
         # if len(card_identifiers) > 100:  # TODO
         #     card_identifiers = card_identifiers[0:100]
         objs = {x.identifier: x.to_dict() for x in Card.objects.filter(identifier__in=card_identifiers)}
         return JsonResponse({"results": objs})
+    else:
+        ...  # TODO: return error response
     return JsonResponse({})
 
 
@@ -521,6 +530,37 @@ def api_function_6(request: HttpRequest) -> HttpResponse:
     # TODO: think about the best way to order these results (after ordering by priority)
     cardbacks = [x.identifier for x in Card.objects.filter(card_type=CardTypes.CARDBACK).order_by("-priority", "name")]
     return JsonResponse({"cardbacks": cardbacks})
+
+
+def api_function_7(request: HttpRequest) -> HttpResponse:
+    """
+    Return a list of import sites.
+    """
+
+    time.sleep(4)
+    import_sites = [{"name": x.__name__, "url": x().get_base_url()} for x in ImportSites]
+    return JsonResponse({"import_sites": import_sites})
+
+
+def api_function_8(request: HttpRequest) -> HttpResponse:
+    """
+    Return the result of querying an import site for the specified URL.
+    TODO: rewrite this, the english is a bit bad.
+    """
+
+    if request.method == "POST":
+        json_body = json.loads(request.body)
+        url = json_body.get("url", None)
+        if url is None:
+            ...  # TODO: handle this case
+        for site in ImportSites:
+            if url.startswith(site.get_base_url()):
+                text = site.retrieve_card_list(url)
+                return JsonResponse({"cards": text})
+        # TODO: return error indicating site is not supported
+    else:
+        ...  # TODO: return error response
+    return JsonResponse({})
 
 
 # endregion

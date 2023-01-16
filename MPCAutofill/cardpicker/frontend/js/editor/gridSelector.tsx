@@ -11,6 +11,7 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "./store";
 import { Back, Faces } from "./constants";
+import { VariableSizeGrid as Grid } from "react-window";
 
 interface GridSelectorProps {
   imageIdentifiers: Array<string>;

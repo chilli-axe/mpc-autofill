@@ -11,13 +11,8 @@ from cardpicker.models import Card
 
 @registry.register_document
 class CardSearch(Document):
+    # TODO: review this before finalising the rewritten frontend to ensure this is the minimum data to store in ES.
     source = fields.TextField(attr="get_source_key", analyzer="keyword")
-    # source_name = fields.TextField(attr="get_source_name")
-    # source_external_link = fields.TextField(attr="get_source_external_link")
-    # source_type = fields.TextField(attr="get_source_type")
-    # download_link = fields.TextField(attr="get_download_link")
-    # small_thumbnail_url = fields.TextField(attr="get_small_thumbnail_url")
-    # medium_thumbnail_url = fields.TextField(attr="get_medium_thumbnail_url")
     searchq_keyword = fields.TextField(analyzer="keyword")
     card_type = fields.KeywordField()
 
