@@ -3,10 +3,14 @@ import Row from "react-bootstrap/Row";
 import { Card } from "./card";
 import Button from "react-bootstrap/Button";
 import React from "react";
-import { setSelectedCardback, setSelectedImage } from "./projectSlice";
-import { useDispatch } from "react-redux";
-import { AppDispatch } from "./store";
-import { Faces } from "./constants";
+import {
+  bulkSetSelectedImage,
+  setSelectedCardback,
+  setSelectedImage,
+} from "./projectSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "./store";
+import { Back, Faces } from "./constants";
 
 interface GridSelectorProps {
   imageIdentifiers: Array<string>;
@@ -91,8 +95,18 @@ export function CardSlotGridSelector(props: CardSlotGridSelectorProps) {
 export function CommonCardbackGridSelector(
   props: CommonCardbackGridSelectorProps
 ) {
+  const projectCardback = useSelector(
+    (state: RootState) => state.project.cardback
+  );
   const dispatch = useDispatch<AppDispatch>();
   function setSelectedImageFromIdentifier(selectedImage: string): void {
+    dispatch(
+      bulkSetSelectedImage({
+        currentImage: projectCardback,
+        selectedImage: selectedImage,
+        face: Back,
+      })
+    );
     dispatch(setSelectedCardback({ selectedImage }));
   }
   return (
