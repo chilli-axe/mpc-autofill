@@ -236,13 +236,14 @@ export function AddCards() {
         </Modal.Header>
         <Modal.Body>
           Paste a link to a card list hosted on one of the below sites (not
-          affiliated) to import into MPC Autofill:
+          affiliated) to import the list into MPC Autofill:
           <br />
           {importSitesElement}
           <Form.Group className="mb-3">
             <Form.Control
               type={"url"}
               required={true}
+              placeholder="https://"
               onChange={(event) => setURLModalValue(event.target.value)}
               value={URLModalValue}
             />

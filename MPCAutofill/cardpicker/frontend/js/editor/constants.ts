@@ -1,4 +1,4 @@
-export enum CardTypes {
+export enum CardTypes { // TODO: string literal
   Card = "CARD",
   Cardback = "CARDBACK",
   Token = "TOKEN",
