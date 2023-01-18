@@ -3,7 +3,7 @@ import Dropdown from "react-bootstrap/Dropdown";
 import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
 
-export function AddCardsXML() {
+export function AddCardsByXML() {
   const [showXMLModal, setShowXMLModal] = useState(false);
   const handleCloseXMLModal = () => setShowXMLModal(false);
   const handleShowXMLModal = () => setShowXMLModal(true);

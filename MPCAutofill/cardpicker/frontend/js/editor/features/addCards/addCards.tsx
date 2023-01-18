@@ -1,9 +1,9 @@
 import React from "react";
 import Dropdown from "react-bootstrap/Dropdown";
-import { AddCardsText } from "./addCardsText";
-import { AddCardsURL } from "./addCardsURL";
-import { AddCardsXML } from "./addCardsXML";
-import { AddCardsCSV } from "./addCardsCSV";
+import { AddCardsByText } from "./addCardsByText";
+import { AddCardsByURL } from "./addCardsByURL";
+import { AddCardsByXML } from "./addCardsByXML";
+import { AddCardsByCSV } from "./addCardsByCSV";
 
 export function AddCards() {
   return (
@@ -19,10 +19,10 @@ export function AddCards() {
           </Dropdown.Toggle>
         </div>
         <Dropdown.Menu>
-          <AddCardsText />
-          <AddCardsXML />
-          <AddCardsCSV />
-          <AddCardsURL />
+          <AddCardsByText />
+          <AddCardsByXML />
+          <AddCardsByCSV />
+          <AddCardsByURL />
         </Dropdown.Menu>
       </Dropdown>
     </>

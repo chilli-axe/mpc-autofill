@@ -6,20 +6,20 @@ import {
   selectProjectSize,
 } from "./projectSlice";
 import Alert from "react-bootstrap/Alert";
-import { bracket, imageSizeToMBString } from "./utils";
+import { bracket, imageSizeToMBString } from "../../common/utils";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Tooltip from "react-bootstrap/Tooltip";
 import OverlayTrigger from "react-bootstrap/OverlayTrigger";
 import { useSelector } from "react-redux";
-import { Front, Back } from "./constants";
-import { downloadText } from "./utils";
+import { Front, Back } from "../../common/constants";
+import { downloadText } from "../../common/utils";
 
 import formatXML from "xml-formatter";
 
 // @ts-ignore
 import Toggle from "react-bootstrap-toggle";
-import { RootState } from "./store";
+import { RootState } from "../../app/store";
 
 // TODO: review the codebase for instances of this https://redux.js.org/usage/deriving-data-selectors#optimizing-selectors-with-memoization
 

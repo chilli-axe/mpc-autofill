@@ -1,11 +1,11 @@
 import React, { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { RootState, AppDispatch } from "./store";
+import { RootState, AppDispatch } from "../../app/store";
 import { CardSlot } from "./cardSlot";
-import { fetchCardDocuments } from "./cardDocumentsSlice";
-import { Front, Back } from "./constants";
+import { fetchCardDocuments } from "../search/cardDocumentsSlice";
+import { Front, Back } from "../../common/constants";
 import Row from "react-bootstrap/Row";
-import { selectProjectMembers } from "./projectSlice";
+import { selectProjectMembers } from "../project/projectSlice";
 
 // import styles from './Counter.module.css'
 

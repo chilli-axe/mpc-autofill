@@ -1,14 +1,14 @@
 import { useDispatch } from "react-redux";
-import { AppDispatch } from "./store";
+import { AppDispatch } from "../../app/store";
 import React, { useState } from "react";
-import { processLine } from "./utils";
-import { addImages } from "./projectSlice";
+import { processLine } from "../../common/utils";
+import { addImages } from "../project/projectSlice";
 import Dropdown from "react-bootstrap/Dropdown";
 import Modal from "react-bootstrap/Modal";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 
-export function AddCardsText() {
+export function AddCardsByText() {
   const dispatch = useDispatch<AppDispatch>();
   const [showTextModal, setShowTextModal] = useState(false);
   const handleCloseTextModal = () => setShowTextModal(false);
@@ -17,7 +17,7 @@ export function AddCardsText() {
 
   const handleSubmitTextModal = () => {
     let queriesToQuantity: { [query: string]: number } = {};
-    textModalValue.split(/\r?\n|\r|\n/g).forEach((line) => {
+    textModalValue.split(/\r?\n|\r|\n/g).forEach((line: string | null) => {
       if (line != null && line.trim().length > 0) {
         const [query, quantity] = processLine(line);
         queriesToQuantity[query] = (queriesToQuantity[query] ?? 0) + quantity;

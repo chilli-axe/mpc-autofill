@@ -1,9 +1,9 @@
 import { useDispatch } from "react-redux";
-import { AppDispatch } from "./store";
+import { AppDispatch } from "../../app/store";
 import React, { useEffect, useState } from "react";
 import Cookies from "js-cookie";
-import { processLine } from "./utils";
-import { addImages } from "./projectSlice";
+import { processLine } from "../../common/utils";
+import { addImages } from "../project/projectSlice";
 import Dropdown from "react-bootstrap/Dropdown";
 import Modal from "react-bootstrap/Modal";
 import Form from "react-bootstrap/Form";
@@ -14,7 +14,7 @@ interface ImportSite {
   url: string;
 }
 
-export function AddCardsURL() {
+export function AddCardsByURL() {
   const dispatch = useDispatch<AppDispatch>();
 
   const [showURLModal, setShowURLModal] = useState(false);

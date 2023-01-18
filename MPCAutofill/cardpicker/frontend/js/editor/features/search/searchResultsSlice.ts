@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import Cookies from "js-cookie";
-import { CardTypes } from "./constants";
-import { RootState } from "./store";
+import { CardTypes } from "../../common/constants";
+import { RootState } from "../../app/store";
 
 export const fetchCards = createAsyncThunk(
   "searchResults/fetchCards",

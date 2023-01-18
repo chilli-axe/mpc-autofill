@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { AppDispatch, RootState } from "./store";
+import { AppDispatch, RootState } from "../../app/store";
 import { Card } from "./card";
-import { Faces, Back, SearchQuery } from "./constants";
-import { wrapIndex } from "./utils";
-import { deleteImage, setSelectedImage } from "./projectSlice";
+import { Faces, Back, SearchQuery } from "../../common/constants";
+import { wrapIndex } from "../../common/utils";
+import { deleteImage, setSelectedImage } from "../project/projectSlice";
 import Button from "react-bootstrap/Button";
 import { CardDetailedView } from "./cardDetailedView";
 import { CardSlotGridSelector } from "./gridSelector";

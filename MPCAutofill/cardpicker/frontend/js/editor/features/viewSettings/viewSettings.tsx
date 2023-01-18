@@ -1,6 +1,6 @@
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "./store";
+import { RootState } from "../../app/store";
 import { toggleFaces } from "./viewSettingsSlice";
 
 // @ts-ignore  // TODO: https://github.com/arnthor3/react-bootstrap-toggle/issues/21

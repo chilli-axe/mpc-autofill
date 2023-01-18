@@ -1,20 +1,20 @@
 import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { AppDispatch, RootState } from "./store";
+import { AppDispatch, RootState } from "../../app/store";
 import { Card } from "./card";
-import { Faces, Back, SearchQuery } from "./constants";
-import { wrapIndex } from "./utils";
+import { Faces, Back, SearchQuery } from "../../common/constants";
+import { wrapIndex } from "../../common/utils";
 import {
   deleteImage,
   setSelectedImage,
   setSelectedCardback,
   bulkSetSelectedImage,
-} from "./projectSlice";
+} from "../project/projectSlice";
 import { fetchCardbacks } from "./cardbackSlice";
 import Button from "react-bootstrap/Button";
 import { CardDetailedView } from "./cardDetailedView";
 import { CommonCardbackGridSelector } from "./gridSelector";
-import { fetchCardDocuments } from "./cardDocumentsSlice";
+import { fetchCardDocuments } from "../search/cardDocumentsSlice";
 
 interface CommonCardbackProps {
   selectedImage?: string;

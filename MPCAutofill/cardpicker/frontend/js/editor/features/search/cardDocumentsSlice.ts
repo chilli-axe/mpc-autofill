@@ -1,9 +1,9 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import Cookies from "js-cookie";
 
-import { RootState } from "./store";
+import { RootState } from "../../app/store";
 import { fetchCards } from "./searchResultsSlice";
-import { fetchCardbacks } from "./cardbackSlice";
+import { fetchCardbacks } from "../card/cardbackSlice";
 
 // TODO: we should write something to read a page of card IDs from searchResults (100 at a time?) and query the backend for their full data
 export const fetchCardDocuments = createAsyncThunk(

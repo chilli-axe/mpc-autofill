@@ -1,11 +1,11 @@
 import { configureStore } from "@reduxjs/toolkit";
-import searchResultsReducer from "./searchResultsSlice";
-import cardDocumentsReducer from "./cardDocumentsSlice";
-import cardbacksReducer from "./cardbackSlice";
-import sourceDocumentsReducer from "./sourceDocumentsSlice";
-import searchSettingsReducer from "./searchSettingsSlice";
-import projectReducer from "./projectSlice";
-import viewSettingsReducer from "./viewSettingsSlice";
+import searchResultsReducer from "../features/search/searchResultsSlice";
+import cardDocumentsReducer from "../features/search/cardDocumentsSlice";
+import cardbacksReducer from "../features/card/cardbackSlice";
+import sourceDocumentsReducer from "../features/search/sourceDocumentsSlice";
+import searchSettingsReducer from "../features/searchSettings/searchSettingsSlice";
+import projectReducer from "../features/project/projectSlice";
+import viewSettingsReducer from "../features/viewSettings/viewSettingsSlice";
 
 export const store = configureStore({
   reducer: {

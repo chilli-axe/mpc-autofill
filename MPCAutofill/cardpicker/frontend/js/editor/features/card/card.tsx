@@ -1,6 +1,6 @@
 import React, { useState, ReactElement } from "react";
 import { useSelector } from "react-redux";
-import { RootState } from "./store";
+import { RootState } from "../../app/store";
 
 import BSCard from "react-bootstrap/Card";
 

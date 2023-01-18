@@ -7,10 +7,10 @@ import {
   bulkSetSelectedImage,
   setSelectedCardback,
   setSelectedImage,
-} from "./projectSlice";
+} from "../project/projectSlice";
 import { useDispatch, useSelector } from "react-redux";
-import { AppDispatch, RootState } from "./store";
-import { Back, Faces } from "./constants";
+import { AppDispatch, RootState } from "../../app/store";
+import { Back, Faces } from "../../common/constants";
 
 interface GridSelectorProps {
   imageIdentifiers: Array<string>;

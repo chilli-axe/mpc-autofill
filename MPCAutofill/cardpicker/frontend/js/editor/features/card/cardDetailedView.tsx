@@ -1,11 +1,11 @@
 import Modal from "react-bootstrap/Modal";
 import Row from "react-bootstrap/Row";
 import Table from "react-bootstrap/Table";
-import { downloadImage, imageSizeToMBString } from "./utils";
+import { downloadImage, imageSizeToMBString } from "../../common/utils";
 import Button from "react-bootstrap/Button";
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { RootState } from "./store";
+import { RootState } from "../../app/store";
 
 interface CardDetailedViewProps {
   imageIdentifier: string;

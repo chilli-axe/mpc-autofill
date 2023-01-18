@@ -1,7 +1,13 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { Back, CardTypes, Faces, Front, SearchQuery } from "./constants";
-import { RootState } from "./store";
-import { processPrefix } from "./utils";
+import {
+  Back,
+  CardTypes,
+  Faces,
+  Front,
+  SearchQuery,
+} from "../../common/constants";
+import { RootState } from "../../app/store";
+import { processPrefix } from "../../common/utils";
 import { useSelector } from "react-redux";
 
 interface ProjectMember {

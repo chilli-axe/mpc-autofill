@@ -2,7 +2,7 @@ import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
 import React, { useState, useEffect, ReactNode } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { AppDispatch, RootState } from "./store";
+import { AppDispatch, RootState } from "../../app/store";
 import { setFuzzySearch } from "./searchSettingsSlice";
 import Table from "react-bootstrap/Table";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
