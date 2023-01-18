@@ -147,7 +147,7 @@ def contributions(request: HttpRequest) -> HttpResponse:
                 cardpicker_source.ordinal,
                 COALESCE(SUM(cardpicker_card.dpi), 0),
                 COUNT(cardpicker_card.dpi),
-                SUM(cardpicker_card.size)
+                COALESCE(SUM(cardpicker_card.size), 0)
             FROM cardpicker_source
             LEFT JOIN cardpicker_card ON cardpicker_source.id = cardpicker_card.source_id
             GROUP BY cardpicker_source.name,
