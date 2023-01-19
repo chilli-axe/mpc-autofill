@@ -18,6 +18,7 @@ export function AddCardsByURL() {
   const dispatch = useDispatch<AppDispatch>();
 
   const [showURLModal, setShowURLModal] = useState(false);
+  const [loading, setLoading] = useState(false);
   const handleCloseURLModal = () => setShowURLModal(false);
   const handleShowURLModal = () => setShowURLModal(true);
   const [URLModalValue, setURLModalValue] = useState("");
@@ -42,7 +43,7 @@ export function AddCardsByURL() {
 
   const handleSubmitURLModal = async () => {
     // TODO: propagate the custom site name through to the new frontend
-    // TODO: provide some feedback that this is in progress
+    setLoading(true); // TODO: hande]le errors in API response
     const rawResponse = await fetch("/2/queryImportSite/", {
       method: "POST",
       body: JSON.stringify({ url: URLModalValue }),
@@ -64,6 +65,7 @@ export function AddCardsByURL() {
 
     dispatch(addImages(queriesToQuantity));
     handleCloseURLModal();
+    setLoading(false);
   };
 
   return (
@@ -116,6 +118,7 @@ export function AddCardsByURL() {
               placeholder="https://"
               onChange={(event) => setURLModalValue(event.target.value)}
               value={URLModalValue}
+              disabled={loading || importSites == null}
             />
           </Form.Group>
         </Modal.Body>
@@ -128,6 +131,7 @@ export function AddCardsByURL() {
             onClick={async () => {
               await handleSubmitURLModal();
             }}
+            disabled={loading || importSites == null}
           >
             Submit
           </Button>
