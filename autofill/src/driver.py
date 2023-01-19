@@ -8,7 +8,11 @@ import attr
 import enlighten
 from selenium import webdriver
 from selenium.common import exceptions as sl_exc
-from selenium.common.exceptions import NoAlertPresentException, NoSuchElementException
+from selenium.common.exceptions import (
+    NoAlertPresentException,
+    NoSuchElementException,
+    NoSuchWindowException,
+)
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.support.expected_conditions import invisibility_of_element
@@ -405,12 +409,15 @@ class AutofillDriver:
             self.execute_javascript("PageLayout.prototype.renderDesignCount()")
 
         with self.switch_to_frame("sysifm_loginFrame"):
-            if len(self.order.backs.cards) == 1:
-                # Same cardback for every card
-                self.same_images()
-            else:
-                # Different cardbacks
-                self.different_images()
+            try:
+                if len(self.order.backs.cards) == 1:
+                    # Same cardback for every card
+                    self.same_images()
+                else:
+                    # Different cardbacks
+                    self.different_images()
+            except NoSuchWindowException:  # TODO: investigate exactly why this happens under --skipsetup. too tired atm
+                pass
             self.handle_alert()  # potential alert here from switching from same image to different images
         self.set_state(States.inserting_backs)
 
