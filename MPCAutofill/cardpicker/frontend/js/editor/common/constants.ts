@@ -1,20 +1,19 @@
-export enum CardTypes { // TODO: string literal
-  Card = "CARD",
-  Cardback = "CARDBACK",
-  Token = "TOKEN",
-}
+export type CardType = "CARD" | "CARDBACK" | "TOKEN";
+export const Card: CardType = "CARD";
+export const Cardback: CardType = "CARDBACK";
+export const Token: CardType = "TOKEN";
 
-export interface SearchQuery {
-  query: string | null;
-  card_type: CardTypes;
-}
+export const CardTypePrefixes = {
+  "": Card,
+  b: Cardback,
+  t: Token,
+};
 
 export type Faces = "front" | "back";
 export const Front: Faces = "front";
 export const Back: Faces = "back";
 
-export const CardTypePrefixes = {
-  "": CardTypes.Card,
-  b: CardTypes.Cardback,
-  t: CardTypes.Token,
-};
+export interface SearchQuery {
+  query: string | null;
+  card_type: CardType;
+}

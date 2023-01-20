@@ -1,11 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import {
-  Back,
-  CardTypes,
-  Faces,
-  Front,
-  SearchQuery,
-} from "../../common/constants";
+import { Back, Card, Faces, Front, SearchQuery } from "../../common/constants";
 import { RootState } from "../../app/store";
 import { processPrefix } from "../../common/utils";
 import { useSelector } from "react-redux";
@@ -28,28 +22,28 @@ const initialState: Project = {
   members: [
     {
       front: {
-        query: { query: "island", card_type: CardTypes.Card },
+        query: { query: "island", card_type: Card },
         selectedImage: null,
       },
       back: null,
     },
     {
       front: {
-        query: { query: "grim monolith", card_type: CardTypes.Card },
+        query: { query: "grim monolith", card_type: Card },
         selectedImage: null,
       },
       back: null,
     },
     {
       front: {
-        query: { query: "past in flames", card_type: CardTypes.Card },
+        query: { query: "past in flames", card_type: Card },
         selectedImage: null,
       },
       back: null,
     },
     {
       front: {
-        query: { query: "necropotence", card_type: CardTypes.Card },
+        query: { query: "necropotence", card_type: Card },
         selectedImage: null,
       },
       back: null,

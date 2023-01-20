@@ -1,4 +1,4 @@
-import { CardTypePrefixes, CardTypes } from "./constants";
+import { CardTypePrefixes, CardType } from "./constants";
 
 export function wrapIndex(index: number, count: number): number {
   return ((index % count) + count) % count;
@@ -77,7 +77,7 @@ export function downloadText(filename: string, text: string) {
   document.body.removeChild(element);
 }
 
-export function processPrefix(query: string): [string, CardTypes] {
+export function processPrefix(query: string): [string, CardType] {
   /**
    * Identify the prefix of a query. For example, `string`="t:goblin" would yield ["goblin", TOKEN].
    */

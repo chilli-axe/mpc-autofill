@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import Cookies from "js-cookie";
-import { CardTypes } from "../../common/constants";
+import { CardType } from "../../common/constants";
 import { RootState } from "../../app/store";
 
 export const fetchCards = createAsyncThunk(
@@ -46,7 +46,7 @@ export const fetchCards = createAsyncThunk(
 );
 
 type SearchResultsForQuery = {
-  [card_type in CardTypes]: Array<string>;
+  [card_type in CardType]: Array<string>;
 };
 
 interface SearchResults {
