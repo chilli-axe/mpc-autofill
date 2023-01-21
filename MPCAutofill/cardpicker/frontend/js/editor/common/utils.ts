@@ -34,16 +34,6 @@ export function bracket(projectSize: number): number {
   return brackets[brackets.length - 1];
 }
 
-export function processLine(line: string): [string, number] | null {
-  const trimmedLine = line.replace(/\s+/g, " ").trim();
-  if (trimmedLine.length == 0) {
-    return null;
-  }
-  const re = /^([0-9]*)?x?\s?(.*)$/; // extract quantity and card name from input text
-  const results = re.exec(trimmedLine);
-  return [results[2].toLowerCase(), parseInt(results[1] ?? "1")];
-}
-
 export function downloadImage(imageURL: string, new_tab: boolean = true) {
   /**
    * Download an image with the given download link.
@@ -79,7 +69,7 @@ export function downloadText(filename: string, text: string) {
 
 export function processPrefix(query: string): [string, CardType] {
   /**
-   * Identify the prefix of a query. For example, `string`="t:goblin" would yield ["goblin", TOKEN].
+   * Identify the prefix of a query. For example, `query`="t:goblin" would yield ["goblin", TOKEN].
    */
 
   for (const [prefix, cardType] of Object.entries(CardTypePrefixes)) {
@@ -88,4 +78,37 @@ export function processPrefix(query: string): [string, CardType] {
     }
   }
   return [query, CardTypePrefixes[""]];
+}
+
+export function processLine(line: string): [string, number] | null {
+  /**
+   * Process `line` to identify the search query and the number of instances requested.
+   * For example, `line`="3x goblin" would yield ["goblin", 3].
+   */
+
+  const trimmedLine = line.replace(/\s+/g, " ").trim();
+  if (trimmedLine.length == 0) {
+    return null;
+  }
+  const re = /^([0-9]*)?x?\s?(.*)$/; // note that "x" after the quantity is ignored - e.g. 3x and 3 are treated the same
+  const results = re.exec(trimmedLine);
+  return [results[2].toLowerCase(), parseInt(results[1] ?? "1")];
+}
+
+export function processLines(lines: string): { [query: string]: number } {
+  /**
+   * Process each line in `lines` and aggregate by query, summing the number of instances requested.
+   */
+
+  let queriesToQuantity: { [query: string]: number } = {};
+  lines.split(/\r?\n|\r|\n/g).forEach((line: string) => {
+    if (line != null && line.trim().length > 0) {
+      const processedLine = processLine(line);
+      if (processedLine != null) {
+        const [query, quantity] = processedLine;
+        queriesToQuantity[query] = (queriesToQuantity[query] ?? 0) + quantity;
+      }
+    }
+  });
+  return queriesToQuantity;
 }

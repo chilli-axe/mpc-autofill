@@ -1,7 +1,9 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import Cookies from "js-cookie";
-import { CardType } from "../../common/constants";
+import { Back, CardType } from "../../common/constants";
 import { RootState } from "../../app/store";
+import { selectQueriesWithoutSearchResults } from "../project/projectSlice";
+import { useSelector } from "react-redux";
 
 export const fetchCards = createAsyncThunk(
   "searchResults/fetchCards",
@@ -9,29 +11,13 @@ export const fetchCards = createAsyncThunk(
     // @ts-ignore  // TODO
     const state: RootState = thunkAPI.getState();
 
-    // identify queries with no search results
-    let queriesToSearch = [];
-    for (const slotProjectMembers of state.project.members) {
-      for (const [face, projectMember] of Object.entries(slotProjectMembers)) {
-        if (
-          projectMember != null &&
-          projectMember.query != null &&
-          (state.searchResults.searchResults[projectMember.query.query] ?? {})[
-            projectMember.query.card_type
-          ] == undefined
-        ) {
-          // results for this query have not been retrieved & stored yet
-          queriesToSearch.push(projectMember.query);
-        }
-      }
-    }
-
-    if (queriesToSearch.length > 0) {
+    const queriesToSearch = selectQueriesWithoutSearchResults(state);
+    if (queriesToSearch.size > 0) {
       const rawResponse = await fetch("/2/search/", {
         method: "POST",
         body: JSON.stringify({
           searchSettings: state.searchSettings,
-          queries: queriesToSearch,
+          queries: Array.from(queriesToSearch),
         }),
         credentials: "same-origin",
         headers: {

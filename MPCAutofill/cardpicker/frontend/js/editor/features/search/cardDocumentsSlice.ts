@@ -4,43 +4,31 @@ import Cookies from "js-cookie";
 import { RootState } from "../../app/store";
 import { fetchCards } from "./searchResultsSlice";
 import { fetchCardbacks } from "../card/cardbackSlice";
+import { selectUniqueCardIdentifiers } from "../project/projectSlice";
 
 // TODO: we should write something to read a page of card IDs from searchResults (100 at a time?) and query the backend for their full data
 export const fetchCardDocuments = createAsyncThunk(
   "cardDocuments/fetchCardDocuments",
   async (arg, thunkAPI) => {
+    // TODO: paginate
+    /**
+     * This function queries card documents (entire database rows) from the backend. It only queries cards which have
+     * not yet been queried.
+     */
+
     await thunkAPI.dispatch(fetchCards());
     await thunkAPI.dispatch(fetchCardbacks());
 
     // @ts-ignore  // TODO
     const state: RootState = thunkAPI.getState();
 
-    // identify queries with no search results
-    // TODO: this should be turned into a reusable selector
-    let allIdentifiers: Set<string> = new Set(state.cardbacks.cardbacks);
-    for (const slotProjectMembers of state.project.members) {
-      for (const [face, projectMember] of Object.entries(slotProjectMembers)) {
-        if (
-          projectMember != null &&
-          projectMember.query != null &&
-          (
-            (state.searchResults.searchResults[projectMember.query.query] ??
-              {})[projectMember.query.card_type] ?? []
-          ).length > 0
-        ) {
-          // results for this identifier have not been retrieved & stored yet
-          state.searchResults.searchResults[projectMember.query.query][
-            projectMember.query.card_type
-          ].forEach((x) => allIdentifiers.add(x));
-        }
-      }
-    }
-    const identifiersWithResults = new Set(
+    const allIdentifiers = selectUniqueCardIdentifiers(state);
+    const identifiersWithKnownData = new Set(
       Object.keys(state.cardDocuments.cardDocuments)
     );
     const identifiersToSearch = new Set(
       Array.from(allIdentifiers).filter(
-        (item) => !identifiersWithResults.has(item)
+        (item) => !identifiersWithKnownData.has(item)
       )
     );
 

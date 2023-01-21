@@ -194,6 +194,48 @@ export const selectProjectFileSize = (state: RootState): number => {
   );
 };
 
+export const selectUniqueCardIdentifiers = (state: RootState): Set<string> => {
+  const allIdentifiers: Set<string> = new Set(state.cardbacks.cardbacks);
+  for (const slotProjectMembers of state.project.members) {
+    for (const projectMember of Object.values(slotProjectMembers)) {
+      if (
+        projectMember != null &&
+        projectMember.query != null &&
+        (
+          (state.searchResults.searchResults[projectMember.query.query] ?? {})[
+            projectMember.query.card_type
+          ] ?? []
+        ).length > 0
+      ) {
+        state.searchResults.searchResults[projectMember.query.query][
+          projectMember.query.card_type
+        ].forEach((x: string) => allIdentifiers.add(x));
+      }
+    }
+  }
+  return allIdentifiers;
+};
+
+export const selectQueriesWithoutSearchResults = (
+  state: RootState
+): Set<string> => {
+  const queriesToSearch: Set<string> = new Set();
+  for (const slotProjectMembers of state.project.members) {
+    for (const projectMember of Object.values(slotProjectMembers)) {
+      if (
+        projectMember != null &&
+        projectMember.query != null &&
+        (state.searchResults.searchResults[projectMember.query.query] ?? {})[
+          projectMember.query.card_type
+        ] == undefined
+      ) {
+        queriesToSearch.add(projectMember.query.query);
+      }
+    }
+  }
+  return queriesToSearch;
+};
+
 // const getProjectCardCount = createSelector(selectProject, project => )
 
 // Action creators are generated for each case reducer function

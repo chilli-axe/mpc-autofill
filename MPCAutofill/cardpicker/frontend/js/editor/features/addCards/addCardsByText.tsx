@@ -1,7 +1,7 @@
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "../../app/store";
 import React, { useState } from "react";
-import { processLine } from "../../common/utils";
+import { processLines } from "../../common/utils";
 import { addImages } from "../project/projectSlice";
 import Dropdown from "react-bootstrap/Dropdown";
 import Modal from "react-bootstrap/Modal";
@@ -16,14 +16,11 @@ export function AddCardsByText() {
   const [textModalValue, setTextModalValue] = useState("");
 
   const handleSubmitTextModal = () => {
-    let queriesToQuantity: { [query: string]: number } = {};
-    textModalValue.split(/\r?\n|\r|\n/g).forEach((line: string | null) => {
-      if (line != null && line.trim().length > 0) {
-        const [query, quantity] = processLine(line);
-        queriesToQuantity[query] = (queriesToQuantity[query] ?? 0) + quantity;
-      }
-    });
+    /**
+     * Parse the contents of the modal and add the resultant queries in the desired numbers of instances to the project.
+     */
 
+    const queriesToQuantity = processLines(textModalValue);
     dispatch(addImages(queriesToQuantity));
     handleCloseTextModal();
   };

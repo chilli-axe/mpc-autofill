@@ -2,7 +2,7 @@ import { useDispatch } from "react-redux";
 import { AppDispatch } from "../../app/store";
 import React, { useEffect, useState } from "react";
 import Cookies from "js-cookie";
-import { processLine } from "../../common/utils";
+import { processLines } from "../../common/utils";
 import { addImages } from "../project/projectSlice";
 import Dropdown from "react-bootstrap/Dropdown";
 import Modal from "react-bootstrap/Modal";
@@ -43,7 +43,7 @@ export function AddCardsByURL() {
 
   const handleSubmitURLModal = async () => {
     // TODO: propagate the custom site name through to the new frontend
-    setLoading(true); // TODO: hande]le errors in API response
+    setLoading(true); // TODO: handele errors in API response
     const rawResponse = await fetch("/2/queryImportSite/", {
       method: "POST",
       body: JSON.stringify({ url: URLModalValue }),
@@ -53,15 +53,7 @@ export function AddCardsByURL() {
       },
     });
     const content = await rawResponse.json();
-
-    // TODO: reuse this snippet in a function
-    let queriesToQuantity: { [query: string]: number } = {};
-    content["cards"].split(/\r?\n|\r|\n/g).forEach((line: string) => {
-      if (line != null && line.trim().length > 0) {
-        const [query, quantity] = processLine(line);
-        queriesToQuantity[query] = (queriesToQuantity[query] ?? 0) + quantity;
-      }
-    });
+    const queriesToQuantity = processLines(content["cards"]);
 
     dispatch(addImages(queriesToQuantity));
     handleCloseURLModal();

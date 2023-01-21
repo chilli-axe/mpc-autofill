@@ -40,7 +40,6 @@ export function CardSlot(props: CardSlotProps) {
   const projectCardback = useSelector(
     (state: RootState) => state.project.cardback
   );
-  // alert(projectCardback)
   const searchResultsForQuery =
     searchQuery != null
       ? useSelector(
