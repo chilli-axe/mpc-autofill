@@ -80,10 +80,10 @@ export function processPrefix(query: string): [string, CardType] {
   return [query, CardTypePrefixes[""]];
 }
 
-export function processLine(line: string): [string, number] | null {
+export function processLine(line: string): [string, CardType, number] | null {
   /**
    * Process `line` to identify the search query and the number of instances requested.
-   * For example, `line`="3x goblin" would yield ["goblin", 3].
+   * For example, `line`="3x t:goblin" would yield ["goblin", TOKEN, 3].
    */
 
   const trimmedLine = line.replace(/\s+/g, " ").trim();
@@ -92,23 +92,35 @@ export function processLine(line: string): [string, number] | null {
   }
   const re = /^([0-9]*)?x?\s?(.*)$/; // note that "x" after the quantity is ignored - e.g. 3x and 3 are treated the same
   const results = re.exec(trimmedLine);
-  return [results[2].toLowerCase(), parseInt(results[1] ?? "1")];
+  return [
+    ...processPrefix(results[2].toLowerCase()),
+    parseInt(results[1] ?? "1"),
+  ];
 }
 
-export function processLines(lines: string): { [query: string]: number } {
+export type AggregatedQueries = {
+  [query: string]: { [cardType in CardType]?: number };
+};
+
+export function processLines(lines: string): AggregatedQueries {
   /**
-   * Process each line in `lines` and aggregate by query, summing the number of instances requested.
+   * Process each line in `lines` and aggregate by query and card type, summing the number of instances requested.
    */
 
-  let queriesToQuantity: { [query: string]: number } = {};
+  let aggregatedQueries: AggregatedQueries = {};
   lines.split(/\r?\n|\r|\n/g).forEach((line: string) => {
     if (line != null && line.trim().length > 0) {
       const processedLine = processLine(line);
       if (processedLine != null) {
-        const [query, quantity] = processedLine;
-        queriesToQuantity[query] = (queriesToQuantity[query] ?? 0) + quantity;
+        const [query, cardType, quantity] = processedLine;
+        if (aggregatedQueries[query] == null) {
+          aggregatedQueries[query] = { [cardType]: quantity };
+        } else {
+          aggregatedQueries[query][cardType] =
+            (aggregatedQueries[query][cardType] ?? 0) + quantity;
+        }
       }
     }
   });
-  return queriesToQuantity;
+  return aggregatedQueries;
 }

@@ -20,8 +20,8 @@ export function AddCardsByText() {
      * Parse the contents of the modal and add the resultant queries in the desired numbers of instances to the project.
      */
 
-    const queriesToQuantity = processLines(textModalValue);
-    dispatch(addImages(queriesToQuantity));
+    const aggregatedQueries = processLines(textModalValue);
+    dispatch(addImages(aggregatedQueries));
     handleCloseTextModal();
   };
 

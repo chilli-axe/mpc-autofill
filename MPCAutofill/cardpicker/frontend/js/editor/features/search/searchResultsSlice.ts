@@ -12,7 +12,7 @@ export const fetchCards = createAsyncThunk(
     const state: RootState = thunkAPI.getState();
 
     const queriesToSearch = selectQueriesWithoutSearchResults(state);
-    if (queriesToSearch.size > 0) {
+    if (queriesToSearch.length > 0) {
       const rawResponse = await fetch("/2/search/", {
         method: "POST",
         body: JSON.stringify({

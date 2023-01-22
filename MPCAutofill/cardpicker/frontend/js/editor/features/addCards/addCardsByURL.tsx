@@ -53,9 +53,9 @@ export function AddCardsByURL() {
       },
     });
     const content = await rawResponse.json();
-    const queriesToQuantity = processLines(content["cards"]);
+    const aggregatedQueries = processLines(content["cards"]);
 
-    dispatch(addImages(queriesToQuantity));
+    dispatch(addImages(aggregatedQueries));
     handleCloseURLModal();
     setLoading(false);
   };

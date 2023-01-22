@@ -1,8 +1,8 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { Back, Card, Faces, Front, SearchQuery } from "../../common/constants";
 import { RootState } from "../../app/store";
-import { processPrefix } from "../../common/utils";
 import { useSelector } from "react-redux";
+import { AggregatedQueries } from "../../common/utils";
 
 interface ProjectMember {
   query: SearchQuery;
@@ -132,21 +132,24 @@ export const projectSlice = createSlice({
     ) => {
       state.cardback = action.payload.selectedImage;
     },
-    addImages: (state, action: PayloadAction<AddImagesAction>) => {
+    addImages: (state, action: PayloadAction<AggregatedQueries>) => {
       let newMembers: Array<SlotProjectMembers> = [];
 
-      for (const [query, quantity] of Object.entries(action.payload)) {
-        const [processedQuery, cardType] = processPrefix(query);
-        newMembers = [
-          ...newMembers,
-          ...Array(quantity).fill({
-            front: {
-              query: { query: processedQuery, card_type: cardType },
-              selectedImage: null,
-            },
-            back: null, // TODO: handle DFCs here
-          }),
-        ];
+      for (const [query, cardTypeToQuantity] of Object.entries(
+        action.payload
+      )) {
+        for (const [cardType, quantity] of Object.entries(cardTypeToQuantity)) {
+          newMembers = [
+            ...newMembers,
+            ...Array(quantity).fill({
+              front: {
+                query: { query: query, card_type: cardType },
+                selectedImage: null,
+              },
+              back: null, // TODO: handle DFCs here
+            }),
+          ];
+        }
       }
       state.members = [...state.members, ...newMembers];
     },
@@ -218,8 +221,8 @@ export const selectUniqueCardIdentifiers = (state: RootState): Set<string> => {
 
 export const selectQueriesWithoutSearchResults = (
   state: RootState
-): Set<string> => {
-  const queriesToSearch: Set<string> = new Set();
+): Array<SearchQuery> => {
+  const queriesToSearch: Array<SearchQuery> = [];
   for (const slotProjectMembers of state.project.members) {
     for (const projectMember of Object.values(slotProjectMembers)) {
       if (
@@ -229,7 +232,7 @@ export const selectQueriesWithoutSearchResults = (
           projectMember.query.card_type
         ] == undefined
       ) {
-        queriesToSearch.add(projectMember.query.query);
+        queriesToSearch.push(projectMember.query);
       }
     }
   }
