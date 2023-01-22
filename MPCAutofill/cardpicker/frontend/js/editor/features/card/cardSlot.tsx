@@ -13,14 +13,12 @@ interface CardSlotProps {
   searchQuery?: SearchQuery;
   face: Faces;
   slot: number;
-  selectedImage?: string;
 }
 
 export function CardSlot(props: CardSlotProps) {
   const searchQuery: SearchQuery = props.searchQuery;
   const face = props.face;
   const slot = props.slot;
-  let selectedImage = props.selectedImage;
 
   const [showDetailedView, setShowDetailedView] = useState(false);
   const [showGridSelector, setShowGridSelector] = useState(false);
@@ -40,44 +38,67 @@ export function CardSlot(props: CardSlotProps) {
   const projectCardback = useSelector(
     (state: RootState) => state.project.cardback
   );
-  const searchResultsForQuery =
+  const searchResultsForQueryOrNull =
     searchQuery != null
       ? useSelector(
           (state: RootState) =>
             (state.searchResults.searchResults[searchQuery.query] ?? {})[
               searchQuery.card_type
-            ] ?? []
+            ]
         )
       : face == Back
       ? cardbacks
       : [];
 
-  useEffect(() => {
-    // If no image is selected and there are search results, select the first image in search results
-    if (
-      (searchResultsForQuery.length > 0 && selectedImage === null) ||
-      selectedImage === undefined
-    ) {
-      if (searchQuery != null) {
-        dispatch(
-          setSelectedImage({
-            face: face,
-            slot: slot,
-            selectedImage: searchResultsForQuery[0],
-          })
-        );
-      } else if (face == Back && projectCardback != null) {
-        dispatch(
-          setSelectedImage({
-            face: face,
-            slot: slot,
-            selectedImage: projectCardback,
-          })
-        );
-      }
-    }
-  }, [searchResultsForQuery, projectCardback]);
+  const selectedImage = useSelector((state: RootState) =>
+    state.project.members[slot] != null
+      ? state.project.members[slot][face] != null
+        ? state.project.members[slot][face].selectedImage
+        : null
+      : null
+  );
 
+  useEffect(() => {
+    /**
+     * Set the selected image according to some initialisation logic (if search results have loaded).
+     */
+
+    if (searchResultsForQueryOrNull != null) {
+      let mutatedSelectedImage = selectedImage;
+
+      // If an image is selected and it's not in the search results, deselect the image
+      if (
+        mutatedSelectedImage != null &&
+        !searchResultsForQueryOrNull.includes(mutatedSelectedImage)
+      ) {
+        mutatedSelectedImage = null;
+      }
+
+      // If no image is selected and there are search results, select the first image in search results
+      if (
+        searchResultsForQueryOrNull.length > 0 &&
+        mutatedSelectedImage == null
+      ) {
+        if (searchQuery != null) {
+          mutatedSelectedImage = searchResultsForQueryOrNull[0];
+        } else if (face == Back && projectCardback != null) {
+          mutatedSelectedImage = projectCardback;
+        }
+      }
+
+      dispatch(
+        setSelectedImage({
+          face: face,
+          slot: slot,
+          selectedImage: mutatedSelectedImage,
+        })
+      );
+    }
+  }, [searchResultsForQueryOrNull, projectCardback]);
+
+  // const selectedImage = useSelector((state: RootState) => (state.project.members[slot] != null ? (state.project.members[slot][face] != null ? state.project.members[slot][face].selectedImage : null) : null))
+
+  const searchResultsForQuery = searchResultsForQueryOrNull ?? [];
   const selectedImageIndex = searchResultsForQuery.indexOf(selectedImage);
   const previousImage =
     searchResultsForQuery[

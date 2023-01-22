@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { RootState, AppDispatch } from "../../app/store";
 import { CardSlot } from "./cardSlot";
 import { fetchCardDocuments } from "../search/cardDocumentsSlice";
+import { clearSearchResults } from "../search/searchResultsSlice";
 import { Front, Back } from "../../common/constants";
 import Row from "react-bootstrap/Row";
 import { selectProjectMembers } from "../project/projectSlice";
@@ -15,6 +16,8 @@ export function CardGrid() {
   let cardSlotsFronts = [];
   let cardSlotsBacks = [];
   const projectMembers = useSelector(selectProjectMembers);
+  const cardSources =
+    useSelector((state: RootState) => state.searchSettings.cardSources) ?? [];
 
   // retrieve cards from database when queries in the project change
   // TODO: I think this snippet should move somewhere more sensible & reusable. probably as a selector.
@@ -29,9 +32,20 @@ export function CardGrid() {
   });
   const searchQueriesArray = Array.from(searchQueries);
   searchQueriesArray.sort();
+
+  // alert([searchQueriesArray.join(","), cardSources.join(",")])
+
+  // TODO: this implementation is not correct. when card sources change, we want to recalculate search results,
+  // but attempt to keep the same images selected. the current implementation does not attempt to reselect the same images.
   useEffect(() => {
     dispatch(fetchCardDocuments());
-  }, [searchQueriesArray.join(",")]);
+  }, [searchQueriesArray.join(","), cardSources.join(",")]);
+
+  useEffect(() => {
+    // recalculate search results when sources change
+    dispatch(clearSearchResults());
+    dispatch(fetchCardDocuments());
+  }, [cardSources.join(",")]);
 
   for (const [slot, slotProjectMember] of projectMembers.entries()) {
     cardSlotsFronts.push(
@@ -42,11 +56,6 @@ export function CardGrid() {
         }
         face={Front}
         slot={slot}
-        selectedImage={
-          slotProjectMember.front != null
-            ? slotProjectMember.front.selectedImage
-            : null
-        }
       ></CardSlot>
     );
     cardSlotsBacks.push(
@@ -57,11 +66,6 @@ export function CardGrid() {
         }
         face={Back}
         slot={slot}
-        selectedImage={
-          slotProjectMember.back != null
-            ? slotProjectMember.back.selectedImage
-            : null
-        }
       ></CardSlot>
     );
   }

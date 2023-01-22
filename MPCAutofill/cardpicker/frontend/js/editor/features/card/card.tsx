@@ -41,7 +41,7 @@ export function Card(props: CardProps) {
       <>
         <div
           className="d-flex justify-content-center align-items-center"
-          style={{ display: smallThumbnailLoading ? "block" : "none" }}
+          style={{ opacity: smallThumbnailLoading ? 1 : 0 }}
         >
           <div
             className="spinner-border"

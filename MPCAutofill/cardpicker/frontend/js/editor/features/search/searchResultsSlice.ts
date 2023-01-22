@@ -58,7 +58,7 @@ export const searchResultsSlice = createSlice({
     addSearchResults: (state, action) => {
       state.searchResults = { ...state.searchResults, ...action.payload };
     },
-    clearSearchResults: (state, action) => {
+    clearSearchResults: (state) => {
       state.searchResults = {};
     },
   },
@@ -68,6 +68,7 @@ export const searchResultsSlice = createSlice({
     });
   },
 });
-export const { addSearchResults } = searchResultsSlice.actions;
+export const { addSearchResults, clearSearchResults } =
+  searchResultsSlice.actions;
 
 export default searchResultsSlice.reducer;

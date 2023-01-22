@@ -2,8 +2,9 @@ import { createSlice } from "@reduxjs/toolkit";
 
 interface SearchSettingsState {
   fuzzySearch: boolean;
-  cardSources: Array<string>;
-  cardbackSources: Array<string>;
+  // cardSources?: Array<[string, boolean]>;
+  cardSources?: Array<string>;
+  // cardbackSources: Array<string>;  // TODO
   minDPI: number;
   maxDPI: number;
 }
@@ -11,7 +12,7 @@ interface SearchSettingsState {
 const initialState: SearchSettingsState = {
   fuzzySearch: false,
   cardSources: ["chilli"],
-  cardbackSources: ["chilli"],
+  // cardbackSources: null,
   minDPI: 0,
   maxDPI: 1500,
 };
@@ -41,15 +42,18 @@ export const searchSettingsSlice = createSlice({
         state.cardSources.splice(index, 1);
       }
     },
-    addCardbackSource: (state, action) => {
-      state.cardbackSources.push(action.payload);
+    setCardSources: (state, action) => {
+      state.cardSources = [...action.payload];
     },
-    removeCardbackSource: (state, action) => {
-      const index = state.cardbackSources.indexOf(action.payload);
-      if (index !== -1) {
-        state.cardbackSources.splice(index, 1);
-      }
-    },
+    // addCardbackSource: (state, action) => {
+    //   state.cardbackSources.push(action.payload);
+    // },
+    // removeCardbackSource: (state, action) => {
+    //   const index = state.cardbackSources.indexOf(action.payload);
+    //   if (index !== -1) {
+    //     state.cardbackSources.splice(index, 1);
+    //   }
+    // },
     setMinDPI: (state, action) => {
       state.minDPI = action.payload;
     },
@@ -65,8 +69,9 @@ export const {
   setFuzzySearch,
   addCardSource,
   removeCardSource,
-  addCardbackSource,
-  removeCardbackSource,
+  setCardSources,
+  // addCardbackSource,
+  // removeCardbackSource,
   setMinDPI,
   setMaxDPI,
 } = searchSettingsSlice.actions;

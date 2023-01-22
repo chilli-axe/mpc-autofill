@@ -3,16 +3,15 @@ import Button from "react-bootstrap/Button";
 import React, { useState, useEffect, ReactNode } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../../app/store";
-import { setFuzzySearch } from "./searchSettingsSlice";
+import { setFuzzySearch, setCardSources } from "./searchSettingsSlice";
 import Table from "react-bootstrap/Table";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
+import { getSearchSettings, setSearchSettings } from "../../common/cookies";
 
 // @ts-ignore  // TODO: https://github.com/arnthor3/react-bootstrap-toggle/issues/21
 import Toggle from "react-bootstrap-toggle";
 
-interface SourceEnabledStatus {
-  [source: string]: boolean;
-}
+type SourceRow = [string, boolean];
 
 export function SearchSettings() {
   const dispatch = useDispatch<AppDispatch>();
@@ -24,11 +23,9 @@ export function SearchSettings() {
   );
   const [localFuzzySearch, setLocalFuzzySearch] = useState(fuzzySearch);
 
-  const [sourceOrder, setSourceOrder] = useState([]);
-
-  const initialSourceEnabledStatusState: SourceEnabledStatus = {};
-  const [sourceEnabledStatus, setSourceEnabledStatus] = useState(
-    initialSourceEnabledStatusState
+  const initialLocalSourceOrder: Array<SourceRow> = [];
+  const [localSourceOrder, setLocalSourceOrder] = useState(
+    initialLocalSourceOrder
   );
 
   const maybeSourceDocuments = useSelector(
@@ -37,13 +34,35 @@ export function SearchSettings() {
   useEffect(
     // TODO: this needs to move such that the initial redux state is set from this selector, not react state
     () => {
-      const sourceArray: Array<string> = Object.keys(
+      const cookieSettings = getSearchSettings();
+
+      const unmatchedSources: Array<string> = Object.keys(
         maybeSourceDocuments ?? {}
       );
-      setSourceOrder(sourceArray);
-      setSourceEnabledStatus(
-        Object.assign({}, ...sourceArray.map((x: string) => ({ [x]: true })))
-      );
+
+      if (cookieSettings != null) {
+        // alert("cookieSettings not null")
+        // dispatch(setFuzzySearch(cookieSettings.fuzzySearch));
+        //
+        // for (const man of cookieSettings.drives) {
+        //   alert(JSON.stringify(man))
+        // }
+
+        // TODO: temporary
+        setLocalSourceOrder(unmatchedSources.map((x) => [x, true]));
+      } else {
+        setLocalSourceOrder(unmatchedSources.map((x) => [x, true]));
+      }
+
+      /**
+       * create a new object to track whether each drive is enabled or disabled. initialise as empty list. called `x`
+       * for each item in cookie drives:
+       * check if the item matches a drive fetched from the database
+       * if it does, append to `x` the drive name and whether it's enabled or not, and remove the drive from the list
+       * of sources retrieved from the database
+       * once you reach the end of this loop, iterate over the remaining sources retrieved from the database,
+       * and set them all to true.
+       */
     },
     [maybeSourceDocuments]
   );
@@ -57,39 +76,42 @@ export function SearchSettings() {
   };
   const handleSave = () => {
     // copy component-level state into redux state when the user clicks "save changes"
+
+    // TODO
+    setSearchSettings({
+      fuzzySearch: localFuzzySearch,
+      drives: localSourceOrder,
+    });
     dispatch(setFuzzySearch(localFuzzySearch));
-    // TODO: set which sources are enabled in redux
+    dispatch(
+      setCardSources(localSourceOrder.filter((x) => x[1]).map((x) => x[0]))
+    );
+
     handleClose();
   };
 
   const onDragEnd = (result: any) => {
     // TODO: get rid of this any type
     // TODO: review this bit of code (copied from drag/drop sandbox example) and see if it can be improved
-    const reorderedSourceOrder = [...sourceOrder];
-    const [removed] = reorderedSourceOrder.splice(result.source.index, 1);
-    reorderedSourceOrder.splice(result.destination.index, 0, removed);
-    setSourceOrder(reorderedSourceOrder);
+    const updatedSourceOrder = [...localSourceOrder];
+    const [removed] = updatedSourceOrder.splice(result.source.index, 1);
+    updatedSourceOrder.splice(result.destination.index, 0, removed);
+    setLocalSourceOrder(updatedSourceOrder);
   };
 
-  const toggleSpecificSourceEnabledStatus = (source: string) => {
-    const sourceEnabledStatusCopy: SourceEnabledStatus = {
-      ...sourceEnabledStatus,
-    };
-    sourceEnabledStatusCopy[source] = !sourceEnabledStatusCopy[source];
-    setSourceEnabledStatus(sourceEnabledStatusCopy);
+  const toggleSpecificSourceEnabledStatus = (index: number) => {
+    let updatedSourceOrder = [...localSourceOrder];
+    updatedSourceOrder[index][1] = !updatedSourceOrder[index][1];
+    setLocalSourceOrder(updatedSourceOrder);
   };
 
   const toggleAllSourceEnabledStatuses = () => {
-    const newEnabledStatus = !Object.values(sourceEnabledStatus).some(
-      (x) => x === true
-    );
-    const sourceEnabledStatusCopy: SourceEnabledStatus = Object.assign(
-      {},
-      ...Object.keys(sourceEnabledStatus).map((x: string) => ({
-        [x]: newEnabledStatus,
-      }))
-    );
-    setSourceEnabledStatus(sourceEnabledStatusCopy);
+    const newEnabledStatus: boolean = !localSourceOrder.some((x) => x[1]);
+    let updatedSourceOrder: Array<SourceRow> = localSourceOrder.map((x) => [
+      x[0],
+      newEnabledStatus,
+    ]);
+    setLocalSourceOrder(updatedSourceOrder);
   };
 
   let sourceTable = (
@@ -104,68 +126,64 @@ export function SearchSettings() {
     </div>
   );
   if (maybeSourceDocuments != null) {
-    const sourceRows: Array<ReactNode> = sourceOrder.map((sourceKey, index) => (
-      <Draggable key={sourceKey} draggableId={sourceKey} index={index}>
-        {(provided, snapshot) => (
-          <tr
-            ref={provided.innerRef}
-            {...provided.draggableProps}
-            {...provided.dragHandleProps}
-          >
-            <td style={{ verticalAlign: "middle", width: 20 + "%" }}>
-              <Toggle
-                on="On"
-                onClassName="flex-centre prevent-select"
-                off="Off"
-                offClassName="flex-centre prevent-select"
-                onstyle="primary"
-                offstyle="secondary"
-                size="md"
-                height={38 + "px"}
-                active={
-                  sourceEnabledStatus[maybeSourceDocuments[sourceKey].key]
-                }
-                onClick={() =>
-                  toggleSpecificSourceEnabledStatus(
-                    maybeSourceDocuments[sourceKey].key
-                  )
-                }
-              />
-            </td>
-            <td style={{ verticalAlign: "middle", width: 40 + "%" }}>
-              {maybeSourceDocuments[sourceKey].external_link != null ? (
-                <a
-                  href={maybeSourceDocuments[sourceKey].external_link}
-                  target="_blank"
-                >
-                  {maybeSourceDocuments[sourceKey].name}
-                </a>
-              ) : (
-                <a>{maybeSourceDocuments[sourceKey].name}</a>
-              )}
-            </td>
-            <td
-              className="prevent-select"
-              style={{ verticalAlign: "middle", width: 30 + "%" }}
+    const sourceRows: Array<ReactNode> = localSourceOrder.map(
+      (sourceRow, index) => (
+        <Draggable key={sourceRow[0]} draggableId={sourceRow[0]} index={index}>
+          {(provided, snapshot) => (
+            <tr
+              ref={provided.innerRef}
+              {...provided.draggableProps}
+              {...provided.dragHandleProps}
             >
-              {maybeSourceDocuments[sourceKey].source_type}
-            </td>
-            <td
-              style={{
-                verticalAlign: "middle",
-                width: 10 + "%",
-                textAlign: "center",
-              }}
-            >
-              <i
-                className="bi bi-grip-horizontal"
-                style={{ fontSize: 2 + "em" }}
-              />
-            </td>
-          </tr>
-        )}
-      </Draggable>
-    ));
+              <td style={{ verticalAlign: "middle", width: 20 + "%" }}>
+                <Toggle
+                  on="On"
+                  onClassName="flex-centre prevent-select"
+                  off="Off"
+                  offClassName="flex-centre prevent-select"
+                  onstyle="primary"
+                  offstyle="secondary"
+                  size="md"
+                  height={38 + "px"}
+                  active={sourceRow[1]}
+                  onClick={() => toggleSpecificSourceEnabledStatus(index)}
+                />
+              </td>
+              <td style={{ verticalAlign: "middle", width: 40 + "%" }}>
+                {maybeSourceDocuments[sourceRow[0]].external_link != null ? (
+                  <a
+                    href={maybeSourceDocuments[sourceRow[0]].external_link}
+                    target="_blank"
+                  >
+                    {maybeSourceDocuments[sourceRow[0]].name}
+                  </a>
+                ) : (
+                  <a>{maybeSourceDocuments[sourceRow[0]].name}</a>
+                )}
+              </td>
+              <td
+                className="prevent-select"
+                style={{ verticalAlign: "middle", width: 30 + "%" }}
+              >
+                {maybeSourceDocuments[sourceRow[0]].source_type}
+              </td>
+              <td
+                style={{
+                  verticalAlign: "middle",
+                  width: 10 + "%",
+                  textAlign: "center",
+                }}
+              >
+                <i
+                  className="bi bi-grip-horizontal"
+                  style={{ fontSize: 2 + "em" }}
+                />
+              </td>
+            </tr>
+          )}
+        </Draggable>
+      )
+    );
     sourceTable = (
       <DragDropContext onDragEnd={onDragEnd}>
         <Droppable droppableId="source-order">

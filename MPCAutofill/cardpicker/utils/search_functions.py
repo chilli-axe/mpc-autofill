@@ -240,6 +240,7 @@ class SearchQuery:
 
     @classmethod
     def from_json_body(cls, json_body: dict[str, Any]) -> Optional["SearchQuery"]:
+        # TODO: validate that `json_body` is actually a dictionary
         query = json_body.get("query", None)
         card_type = json_body.get("card_type", None)
         card_types = {str(x) for x in CardTypes}
