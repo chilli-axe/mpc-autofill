@@ -7,7 +7,7 @@ from elasticsearch import Elasticsearch
 from elasticsearch.exceptions import ConnectionError as ElasticConnectionError
 from elasticsearch_dsl.document import Search
 from elasticsearch_dsl.index import Index
-from elasticsearch_dsl.query import Bool, Match, Term, Terms
+from elasticsearch_dsl.query import Bool, Match, Range, Term, Terms
 from Levenshtein import distance
 
 from django.conf import settings
@@ -221,8 +221,9 @@ class SearchSettings:
         min_dpi_string = search_settings.get("minDPI", None)
         max_dpi_string = search_settings.get("maxDPI", None)
         if min_dpi_string is not None and max_dpi_string is not None:
-            min_dpi = min(int(min_dpi_string), 0)
-            max_dpi = max(int(max_dpi_string), 2000)
+            # these min and max bounds match the constants in the frontend
+            min_dpi = max(int(min_dpi_string), 0)
+            max_dpi = min(int(max_dpi_string), 1500)
 
         return cls(
             fuzzy_search=fuzzy_search,
@@ -276,6 +277,7 @@ class SearchQuery:
             CardSearch.search()
             .filter(Term(card_type=self.card_type))
             .filter(Bool(should=Terms(source=search_settings.card_sources), minimum_should_match=1))
+            .filter(Range(dpi={"gte": search_settings.min_dpi, "lte": search_settings.max_dpi}))
             .query(match)
             .sort({"priority": {"order": "desc"}})
             .source(fields=["identifier", "source", "searchq"])

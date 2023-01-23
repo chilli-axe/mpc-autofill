@@ -1,12 +1,27 @@
 import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
+import Form from "react-bootstrap/Form";
 import React, { useState, useEffect, ReactNode } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../../app/store";
-import { setFuzzySearch, setCardSources } from "./searchSettingsSlice";
+import {
+  setFuzzySearch,
+  setCardSources,
+  setMinDPI,
+  setMaxDPI,
+} from "./searchSettingsSlice";
 import Table from "react-bootstrap/Table";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
-import { getSearchSettings, setSearchSettings } from "../../common/cookies";
+import {
+  getCookieSearchSettings,
+  setCookieSearchSettings,
+} from "../../common/cookies";
+import { MinimumDPI, MaximumDPI, DPIStep } from "../../common/constants";
+
+import Col from "react-bootstrap/Col";
+import Row from "react-bootstrap/Row";
+
+// TODO: ensure that settings are not saved unless you click "Save Changes"
 
 // @ts-ignore  // TODO: https://github.com/arnthor3/react-bootstrap-toggle/issues/21
 import Toggle from "react-bootstrap-toggle";
@@ -27,42 +42,61 @@ export function SearchSettings() {
   const [localSourceOrder, setLocalSourceOrder] = useState(
     initialLocalSourceOrder
   );
+  const [localMinimumDPI, setLocalMinimumDPI] = useState(MinimumDPI);
+  const [localMaximumDPI, setLocalMaximumDPI] = useState(MaximumDPI);
 
   const maybeSourceDocuments = useSelector(
     (state: RootState) => state.sourceDocuments.sourceDocuments
   );
+
+  const cardSources = useSelector(
+    (state: RootState) => state.searchSettings.cardSources
+  );
+
   useEffect(
     // TODO: this needs to move such that the initial redux state is set from this selector, not react state
     () => {
-      const cookieSettings = getSearchSettings();
+      if (maybeSourceDocuments != null) {
+        const cookieSettings = getCookieSearchSettings();
 
-      const unmatchedSources: Array<string> = Object.keys(
-        maybeSourceDocuments ?? {}
-      );
+        const unmatchedSources: Array<string> =
+          Object.keys(maybeSourceDocuments);
 
-      if (cookieSettings != null) {
-        // alert("cookieSettings not null")
-        // dispatch(setFuzzySearch(cookieSettings.fuzzySearch));
-        //
-        // for (const man of cookieSettings.drives) {
-        //   alert(JSON.stringify(man))
-        // }
+        let selectedSources: Array<SourceRow> = unmatchedSources.map(
+          (x: string) => [x, true]
+        );
 
-        // TODO: temporary
-        setLocalSourceOrder(unmatchedSources.map((x) => [x, true]));
-      } else {
-        setLocalSourceOrder(unmatchedSources.map((x) => [x, true]));
+        if (cookieSettings != null) {
+          // alert("cookieSettings not null")
+          // dispatch(setFuzzySearch(cookieSettings.fuzzySearch));
+          //
+          // for (const man of cookieSettings.drives) {
+          //   alert(JSON.stringify(man))
+          // }
+
+          // TODO: temporary
+          selectedSources = unmatchedSources.map((x) => [x, true]);
+        } else {
+        }
+
+        setLocalSourceOrder(selectedSources);
+
+        /**
+         * create a new object to track whether each drive is enabled or disabled. initialise as empty list. called `x`
+         * for each item in cookie drives:
+         * check if the item matches a drive fetched from the database
+         * if it does, append to `x` the drive name and whether it's enabled or not, and remove the drive from the list
+         * of sources retrieved from the database
+         * once you reach the end of this loop, iterate over the remaining sources retrieved from the database,
+         * and set them all to true.
+         */
+        if (cardSources == null) {
+          // TODO: update this section after finishing the implementation of reconciling sources against cookies.
+          dispatch(
+            setCardSources(selectedSources.filter((x) => x[1]).map((x) => x[0]))
+          );
+        }
       }
-
-      /**
-       * create a new object to track whether each drive is enabled or disabled. initialise as empty list. called `x`
-       * for each item in cookie drives:
-       * check if the item matches a drive fetched from the database
-       * if it does, append to `x` the drive name and whether it's enabled or not, and remove the drive from the list
-       * of sources retrieved from the database
-       * once you reach the end of this loop, iterate over the remaining sources retrieved from the database,
-       * and set them all to true.
-       */
     },
     [maybeSourceDocuments]
   );
@@ -78,7 +112,7 @@ export function SearchSettings() {
     // copy component-level state into redux state when the user clicks "save changes"
 
     // TODO
-    setSearchSettings({
+    setCookieSearchSettings({
       fuzzySearch: localFuzzySearch,
       drives: localSourceOrder,
     });
@@ -86,6 +120,8 @@ export function SearchSettings() {
     dispatch(
       setCardSources(localSourceOrder.filter((x) => x[1]).map((x) => x[0]))
     );
+    dispatch(setMinDPI(localMinimumDPI));
+    dispatch(setMaxDPI(localMaximumDPI));
 
     handleClose();
   };
@@ -221,15 +257,13 @@ export function SearchSettings() {
           <Modal.Title>Search Settings</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          Select the sources you'd like to search, and drag & drop them to
-          change the order images are shown in.
-          <br />
-          Click the table header to enable or disable all sources.
+          <h5>Search Type</h5>
+          Configure how closely the search results should match your query.
           <br />
           <br />
           <Toggle
             onClick={() => setLocalFuzzySearch(!localFuzzySearch)}
-            on="Fuzzy Search"
+            on="Fuzzy (Forgiving) Search"
             onClassName="flex-centre"
             off="Precise Search"
             offClassName="flex-centre"
@@ -240,6 +274,54 @@ export function SearchSettings() {
             height={38 + "px"}
             active={localFuzzySearch}
           />
+          <hr />
+          <h5>Resolution</h5>
+          Configure the DPI (dots per inch) range the search results must be
+          within.
+          <br />
+          At a fixed physical size, a higher DPI means a higher resolution
+          print.
+          <br />
+          MakePlayingCards prints cards up to <b>800 DPI</b>, meaning an 800 DPI
+          print and a 1200 DPI print will <b>look the same</b>.
+          <br />
+          <br />
+          <Row>
+            <Col xs={6}>
+              <Form.Label>
+                Minimum: <b>{localMinimumDPI} DPI</b>
+              </Form.Label>
+              <Form.Range
+                defaultValue={localMinimumDPI}
+                min={MinimumDPI}
+                max={MaximumDPI}
+                step={DPIStep}
+                onChange={(event) => {
+                  setLocalMinimumDPI(parseInt(event.target.value));
+                }}
+              />
+            </Col>
+            <Col xs={6}>
+              <Form.Label>
+                Maximum: <b>{localMaximumDPI} DPI</b>
+              </Form.Label>
+              <Form.Range
+                defaultValue={localMaximumDPI}
+                min={MinimumDPI}
+                max={MaximumDPI}
+                step={DPIStep}
+                onChange={(event) => {
+                  setLocalMaximumDPI(parseInt(event.target.value));
+                }}
+              />
+            </Col>
+          </Row>
+          <hr />
+          <h5>Sources</h5>
+          Configure the sources you'd like to search. <b>Drag & drop</b> them to
+          change the order they're searched in.
+          <br />
+          Click the <b>table header</b> to enable or disable all sources.
           <br />
           <br />
           {sourceTable}

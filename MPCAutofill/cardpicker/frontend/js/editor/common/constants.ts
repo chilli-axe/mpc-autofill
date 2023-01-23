@@ -17,3 +17,7 @@ export interface SearchQuery {
   query: string | null;
   card_type: CardType;
 }
+
+export const MinimumDPI = 0;
+export const MaximumDPI = 1500;
+export const DPIStep = 50;

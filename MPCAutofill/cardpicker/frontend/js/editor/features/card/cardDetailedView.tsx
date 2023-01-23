@@ -45,7 +45,7 @@ export function CardDetailedView(props: CardDetailedViewProps) {
                 <div
                   className="d-flex justify-content-center align-items-center"
                   style={{
-                    display: mediumThumbnailLoading ? "block" : "none",
+                    opacity: mediumThumbnailLoading ? 1 : 0,
                   }}
                 >
                   <div

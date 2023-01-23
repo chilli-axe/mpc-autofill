@@ -10,7 +10,7 @@ export interface CookieSearchSettings {
   drives: Array<[string, boolean]>;
 }
 
-export function getSearchSettings(): CookieSearchSettings | null {
+export function getCookieSearchSettings(): CookieSearchSettings | null {
   const rawSettings = Cookies.get("searchSettings");
   if (rawSettings == null) {
     return null;
@@ -27,6 +27,6 @@ export function getSearchSettings(): CookieSearchSettings | null {
   }
 }
 
-export function setSearchSettings(settings: CookieSearchSettings): void {
+export function setCookieSearchSettings(settings: CookieSearchSettings): void {
   Cookies.set("searchSettings", JSON.stringify(settings));
 }

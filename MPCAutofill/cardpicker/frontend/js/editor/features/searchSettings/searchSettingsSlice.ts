@@ -1,20 +1,20 @@
 import { createSlice } from "@reduxjs/toolkit";
+import { MinimumDPI, MaximumDPI } from "../../common/constants";
 
 interface SearchSettingsState {
   fuzzySearch: boolean;
-  // cardSources?: Array<[string, boolean]>;
   cardSources?: Array<string>;
-  // cardbackSources: Array<string>;  // TODO
+  // cardbackSources: Array<string>;  // TODO: reconsider this. maybe a toggle for whether cardbacks should be filtered?
   minDPI: number;
   maxDPI: number;
 }
 
 const initialState: SearchSettingsState = {
   fuzzySearch: false,
-  cardSources: ["chilli"],
+  cardSources: null,
   // cardbackSources: null,
-  minDPI: 0,
-  maxDPI: 1500,
+  minDPI: MinimumDPI,
+  maxDPI: MaximumDPI,
 };
 
 export const searchSettingsSlice = createSlice({
