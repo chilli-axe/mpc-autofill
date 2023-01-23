@@ -8,6 +8,7 @@ from bulk_sync import bulk_sync
 from django.conf import settings
 from django.db.models import Q
 
+from cardpicker.constants import MAX_SIZE_MB
 from cardpicker.models import Card, CardTypes, Source
 from cardpicker.sources.source_types import Folder, Image, SourceType, SourceTypeChoices
 from cardpicker.utils import TEXT_BOLD, TEXT_END
@@ -60,7 +61,9 @@ def transform_images_into_objects(source: Source, images: list[Image]) -> list[C
     for image in images:
         try:
             # reasons why an image might be invalid
-            assert image.size <= 30_000_000, f"Image size is greater than 30 MB at **int({image.size / 1_000_000})** MB"
+            assert image.size <= (
+                MAX_SIZE_MB * 1_000_000
+            ), f"Image size is greater than {MAX_SIZE_MB} MB at **int({image.size / 1_000_000})** MB"
             assert image.name, "File name is empty string"
             assert "." in image.name[:-1], "File name has no extension"
             name, extension = image.name.rsplit(".", 1)

@@ -21,3 +21,6 @@ export interface SearchQuery {
 export const MinimumDPI = 0;
 export const MaximumDPI = 1500;
 export const DPIStep = 50;
+
+export const MaximumSize = 30; // megabytes
+export const SizeStep = 1;

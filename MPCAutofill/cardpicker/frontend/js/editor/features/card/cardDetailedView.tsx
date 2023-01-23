@@ -25,6 +25,9 @@ export function CardDetailedView(props: CardDetailedViewProps) {
     (state: RootState) =>
       state.cardDocuments.cardDocuments[props.imageIdentifier]
   );
+  const maybeSourceDocuments = useSelector(
+    (state: RootState) => state.sourceDocuments.sourceDocuments
+  );
 
   return (
     maybeCardDocument !== undefined && (
@@ -77,7 +80,23 @@ export function CardDetailedView(props: CardDetailedViewProps) {
                     <td>
                       <b>Source Name</b>
                     </td>
-                    <td>{maybeCardDocument.source}</td>
+                    <td>
+                      {maybeSourceDocuments != null &&
+                      maybeSourceDocuments[maybeCardDocument.source]
+                        .external_link != null ? (
+                        <a
+                          href={
+                            maybeSourceDocuments[maybeCardDocument.source]
+                              .external_link
+                          }
+                          target="_blank"
+                        >
+                          {maybeCardDocument.source}
+                        </a>
+                      ) : (
+                        <a>{maybeCardDocument.source}</a>
+                      )}
+                    </td>
                   </tr>
                   <tr>
                     <td>

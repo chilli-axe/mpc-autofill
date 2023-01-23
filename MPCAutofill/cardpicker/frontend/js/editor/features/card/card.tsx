@@ -129,8 +129,8 @@ export function Card(props: CardProps) {
           </BSCard.Subtitle>
           <div className="mpccard-spacing">
             <BSCard.Text className="mpccard-source">
-              {maybeCardDocument !== undefined &&
-                maybeCardDocument.source_verbose}
+              {maybeCardDocument != null &&
+                `${maybeCardDocument.source_verbose} [${maybeCardDocument.dpi} DPI]`}
             </BSCard.Text>
           </div>
         </BSCard.Body>

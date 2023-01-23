@@ -9,6 +9,7 @@ import {
   setCardSources,
   setMinDPI,
   setMaxDPI,
+  setMaxSize,
 } from "./searchSettingsSlice";
 import Table from "react-bootstrap/Table";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
@@ -16,12 +17,19 @@ import {
   getCookieSearchSettings,
   setCookieSearchSettings,
 } from "../../common/cookies";
-import { MinimumDPI, MaximumDPI, DPIStep } from "../../common/constants";
+import {
+  MinimumDPI,
+  MaximumDPI,
+  DPIStep,
+  MaximumSize,
+  SizeStep,
+} from "../../common/constants";
 
 import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
 
 // TODO: ensure that settings are not saved unless you click "Save Changes"
+// TODO: make min/max DPI sliders stack vertically on mobile
 
 // @ts-ignore  // TODO: https://github.com/arnthor3/react-bootstrap-toggle/issues/21
 import Toggle from "react-bootstrap-toggle";
@@ -32,25 +40,31 @@ export function SearchSettings() {
   const dispatch = useDispatch<AppDispatch>();
   const [show, setShow] = useState(false);
 
-  // component-level copies of redux state
-  const fuzzySearch = useSelector(
-    (state: RootState) => state.searchSettings.fuzzySearch
+  // global state managed in redux
+  const globalSearchSettings = useSelector(
+    (state: RootState) => state.searchSettings
   );
-  const [localFuzzySearch, setLocalFuzzySearch] = useState(fuzzySearch);
 
+  // component-level copies of redux state
+  const [localFuzzySearch, setLocalFuzzySearch] = useState(
+    globalSearchSettings.fuzzySearch
+  );
   const initialLocalSourceOrder: Array<SourceRow> = [];
   const [localSourceOrder, setLocalSourceOrder] = useState(
-    initialLocalSourceOrder
+    initialLocalSourceOrder // TODO: set this initial state from redux state
   );
-  const [localMinimumDPI, setLocalMinimumDPI] = useState(MinimumDPI);
-  const [localMaximumDPI, setLocalMaximumDPI] = useState(MaximumDPI);
+  const [localMinimumDPI, setLocalMinimumDPI] = useState(
+    globalSearchSettings.minDPI
+  );
+  const [localMaximumDPI, setLocalMaximumDPI] = useState(
+    globalSearchSettings.maxDPI
+  );
+  const [localMaximumSize, setLocalMaximumSize] = useState(
+    globalSearchSettings.maxSize
+  );
 
   const maybeSourceDocuments = useSelector(
     (state: RootState) => state.sourceDocuments.sourceDocuments
-  );
-
-  const cardSources = useSelector(
-    (state: RootState) => state.searchSettings.cardSources
   );
 
   useEffect(
@@ -90,7 +104,7 @@ export function SearchSettings() {
          * once you reach the end of this loop, iterate over the remaining sources retrieved from the database,
          * and set them all to true.
          */
-        if (cardSources == null) {
+        if (globalSearchSettings.cardSources == null) {
           // TODO: update this section after finishing the implementation of reconciling sources against cookies.
           dispatch(
             setCardSources(selectedSources.filter((x) => x[1]).map((x) => x[0]))
@@ -105,7 +119,10 @@ export function SearchSettings() {
   const handleClose = () => setShow(false);
   const handleShow = () => {
     // set up the component-level state with the current redux state
-    setLocalFuzzySearch(fuzzySearch);
+    setLocalFuzzySearch(globalSearchSettings.fuzzySearch);
+    setLocalMinimumDPI(globalSearchSettings.minDPI);
+    setLocalMaximumDPI(globalSearchSettings.maxDPI);
+    setLocalMaximumSize(globalSearchSettings.maxSize);
     setShow(true);
   };
   const handleSave = () => {
@@ -122,6 +139,7 @@ export function SearchSettings() {
     );
     dispatch(setMinDPI(localMinimumDPI));
     dispatch(setMaxDPI(localMaximumDPI));
+    dispatch(setMaxSize(localMaximumSize));
 
     handleClose();
   };
@@ -275,11 +293,11 @@ export function SearchSettings() {
             active={localFuzzySearch}
           />
           <hr />
-          <h5>Resolution</h5>
-          Configure the DPI (dots per inch) range the search results must be
-          within.
+          <h5>Filters</h5>
+          Configure the DPI (dots per inch) and file size ranges the search
+          results must be within.
           <br />
-          At a fixed physical size, a higher DPI means a higher resolution
+          At a fixed physical size, a higher DPI yields a higher resolution
           print.
           <br />
           MakePlayingCards prints cards up to <b>800 DPI</b>, meaning an 800 DPI
@@ -316,6 +334,18 @@ export function SearchSettings() {
               />
             </Col>
           </Row>
+          <Form.Label>
+            File size: Up to <b>{localMaximumSize} MB</b>
+          </Form.Label>
+          <Form.Range
+            defaultValue={localMaximumSize}
+            min={0}
+            max={MaximumSize}
+            step={SizeStep}
+            onChange={(event) => {
+              setLocalMaximumSize(parseInt(event.target.value));
+            }}
+          />
           <hr />
           <h5>Sources</h5>
           Configure the sources you'd like to search. <b>Drag & drop</b> them to

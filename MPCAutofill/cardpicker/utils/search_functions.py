@@ -14,7 +14,7 @@ from django.conf import settings
 from django.http import HttpRequest
 from django.utils import timezone
 
-from cardpicker.constants import PAGE_SIZE
+from cardpicker.constants import MAX_SIZE_MB, PAGE_SIZE
 from cardpicker.documents import CardSearch
 from cardpicker.models import CardTypes, Source
 from cardpicker.utils.sanitisation import to_searchable
@@ -190,11 +190,12 @@ def search_new(s: Search, source_key: str, page: int = 0) -> dict[str, Any]:
 
 @dataclass(frozen=True, eq=True)
 class SearchSettings:
-    fuzzy_search: bool = field(default=False)
-    card_sources: list[str] = field(default_factory=list)
-    cardback_sources: list[str] = field(default_factory=list)
-    min_dpi: Optional[int] = None
-    max_dpi: Optional[int] = None
+    fuzzy_search: bool
+    card_sources: list[str]
+    cardback_sources: list[str]
+    min_dpi: int
+    max_dpi: int
+    max_size: int  # number of bytes
 
     @classmethod
     def from_json_body(cls, json_body: dict[str, Any]) -> "SearchSettings":
@@ -216,14 +217,9 @@ class SearchSettings:
                 if cardback_source_key in sources:
                     cardback_sources.append(cardback_source_key)
 
-        min_dpi = None
-        max_dpi = None
-        min_dpi_string = search_settings.get("minDPI", None)
-        max_dpi_string = search_settings.get("maxDPI", None)
-        if min_dpi_string is not None and max_dpi_string is not None:
-            # these min and max bounds match the constants in the frontend
-            min_dpi = max(int(min_dpi_string), 0)
-            max_dpi = min(int(max_dpi_string), 1500)
+        min_dpi = int(search_settings.get("minDPI", "0"))
+        max_dpi = int(search_settings.get("maxDPI", "1500"))
+        max_size = int(search_settings.get("maxSize", str(MAX_SIZE_MB))) * 1_000_000
 
         return cls(
             fuzzy_search=fuzzy_search,
@@ -231,6 +227,7 @@ class SearchSettings:
             cardback_sources=cardback_sources,
             min_dpi=min_dpi,
             max_dpi=max_dpi,
+            max_size=max_size,
         )
 
 
@@ -278,6 +275,7 @@ class SearchQuery:
             .filter(Term(card_type=self.card_type))
             .filter(Bool(should=Terms(source=search_settings.card_sources), minimum_should_match=1))
             .filter(Range(dpi={"gte": search_settings.min_dpi, "lte": search_settings.max_dpi}))
+            .filter(Range(size={"lte": search_settings.max_size}))
             .query(match)
             .sort({"priority": {"order": "desc"}})
             .source(fields=["identifier", "source", "searchq"])

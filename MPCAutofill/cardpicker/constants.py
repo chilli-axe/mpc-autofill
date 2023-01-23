@@ -4,3 +4,5 @@ MELD_URL = "https://api.scryfall.com/cards/search?q=is:meld"
 DATE_FORMAT = "jS F, Y"
 
 PAGE_SIZE = 10
+
+MAX_SIZE_MB = 30
