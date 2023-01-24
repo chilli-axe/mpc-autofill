@@ -5,6 +5,7 @@ import React, { useState, useEffect, ReactNode } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../../app/store";
 import {
+  SourceRow,
   setFuzzySearch,
   setCardSources,
   setMinDPI,
@@ -34,8 +35,6 @@ import Row from "react-bootstrap/Row";
 // @ts-ignore  // TODO: https://github.com/arnthor3/react-bootstrap-toggle/issues/21
 import Toggle from "react-bootstrap-toggle";
 
-type SourceRow = [string, boolean];
-
 export function SearchSettings() {
   const dispatch = useDispatch<AppDispatch>();
   const [show, setShow] = useState(false);
@@ -46,20 +45,19 @@ export function SearchSettings() {
   );
 
   // component-level copies of redux state
-  const [localFuzzySearch, setLocalFuzzySearch] = useState(
+  const [localFuzzySearch, setLocalFuzzySearch] = useState<boolean>(
     globalSearchSettings.fuzzySearch
   );
-  const initialLocalSourceOrder: Array<SourceRow> = [];
-  const [localSourceOrder, setLocalSourceOrder] = useState(
-    initialLocalSourceOrder // TODO: set this initial state from redux state
+  const [localSourceOrder, setLocalSourceOrder] = useState<Array<SourceRow>>(
+    globalSearchSettings.cardSources ?? []
   );
-  const [localMinimumDPI, setLocalMinimumDPI] = useState(
+  const [localMinimumDPI, setLocalMinimumDPI] = useState<number>(
     globalSearchSettings.minDPI
   );
-  const [localMaximumDPI, setLocalMaximumDPI] = useState(
+  const [localMaximumDPI, setLocalMaximumDPI] = useState<number>(
     globalSearchSettings.maxDPI
   );
-  const [localMaximumSize, setLocalMaximumSize] = useState(
+  const [localMaximumSize, setLocalMaximumSize] = useState<number>(
     globalSearchSettings.maxSize
   );
 
@@ -106,9 +104,7 @@ export function SearchSettings() {
          */
         if (globalSearchSettings.cardSources == null) {
           // TODO: update this section after finishing the implementation of reconciling sources against cookies.
-          dispatch(
-            setCardSources(selectedSources.filter((x) => x[1]).map((x) => x[0]))
-          );
+          dispatch(setCardSources(selectedSources));
         }
       }
     },
@@ -119,24 +115,22 @@ export function SearchSettings() {
   const handleClose = () => setShow(false);
   const handleShow = () => {
     // set up the component-level state with the current redux state
+    setLocalSourceOrder(globalSearchSettings.cardSources);
     setLocalFuzzySearch(globalSearchSettings.fuzzySearch);
     setLocalMinimumDPI(globalSearchSettings.minDPI);
     setLocalMaximumDPI(globalSearchSettings.maxDPI);
     setLocalMaximumSize(globalSearchSettings.maxSize);
+
     setShow(true);
   };
   const handleSave = () => {
-    // copy component-level state into redux state when the user clicks "save changes"
-
-    // TODO
+    // copy component-level state into redux state and into cookies
     setCookieSearchSettings({
       fuzzySearch: localFuzzySearch,
       drives: localSourceOrder,
     });
     dispatch(setFuzzySearch(localFuzzySearch));
-    dispatch(
-      setCardSources(localSourceOrder.filter((x) => x[1]).map((x) => x[0]))
-    );
+    dispatch(setCardSources(localSourceOrder));
     dispatch(setMinDPI(localMinimumDPI));
     dispatch(setMaxDPI(localMaximumDPI));
     dispatch(setMaxSize(localMaximumSize));
@@ -155,7 +149,10 @@ export function SearchSettings() {
 
   const toggleSpecificSourceEnabledStatus = (index: number) => {
     let updatedSourceOrder = [...localSourceOrder];
-    updatedSourceOrder[index][1] = !updatedSourceOrder[index][1];
+    updatedSourceOrder[index] = [
+      updatedSourceOrder[index][0],
+      !updatedSourceOrder[index][1],
+    ];
     setLocalSourceOrder(updatedSourceOrder);
   };
 
@@ -270,7 +267,7 @@ export function SearchSettings() {
         Search Settings
       </Button>
 
-      <Modal show={show} onHide={handleClose}>
+      <Modal show={show} onHide={handleSave}>
         <Modal.Header closeButton>
           <Modal.Title>Search Settings</Modal.Title>
         </Modal.Header>

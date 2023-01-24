@@ -207,8 +207,8 @@ class SearchSettings:
 
         card_sources: list[str] = []
         if (card_source_keys := search_settings.get("cardSources")) is not None:
-            for card_source_key in card_source_keys:
-                if card_source_key in sources:
+            for card_source_key, card_source_enabled in card_source_keys:
+                if card_source_enabled and card_source_key in sources:
                     card_sources.append(card_source_key)
 
         cardback_sources: list[str] = []
