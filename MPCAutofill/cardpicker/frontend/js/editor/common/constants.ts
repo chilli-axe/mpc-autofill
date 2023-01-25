@@ -18,6 +18,8 @@ export interface SearchQuery {
   card_type: CardType;
 }
 
+export const ToggleButtonHeight = 38; // pixels
+
 export const MinimumDPI = 0;
 export const MaximumDPI = 1500;
 export const DPIStep = 50;
