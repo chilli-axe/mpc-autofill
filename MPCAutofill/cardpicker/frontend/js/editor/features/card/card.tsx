@@ -1,4 +1,4 @@
-import React, { useState, ReactElement } from "react";
+import React, { useState, ReactElement, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "../../app/store";
 
@@ -17,7 +17,9 @@ interface CardProps {
 }
 
 export function Card(props: CardProps) {
+  // ensure that the small thumbnail fades in each time the selected image changes
   const [smallThumbnailLoading, setSmallThumbnailLoading] = useState(true);
+  useEffect(() => setSmallThumbnailLoading(true), [props.imageIdentifier]);
 
   const [nameEditable, setNameEditable] = useState(false);
 
