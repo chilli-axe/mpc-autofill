@@ -34,15 +34,19 @@ export function SourceSettings(props: SourceSettingsProps) {
     (state: RootState) => state.sourceDocuments.sourceDocuments
   );
 
+  const moveSourceToIndex = (sourceIndex: number, destinationIndex: number) => {
+    const updatedSourceOrder = [...props.localSourceOrder];
+    const [removed] = updatedSourceOrder.splice(sourceIndex, 1);
+    updatedSourceOrder.splice(destinationIndex, 0, removed);
+    props.setLocalSourceOrder(updatedSourceOrder);
+  };
+
   const onDragEnd = (result: DropResult) => {
     /**
      * Update `localSourceOrder` according to the drag and drop result.
      */
 
-    const updatedSourceOrder = [...props.localSourceOrder];
-    const [removed] = updatedSourceOrder.splice(result.source.index, 1);
-    updatedSourceOrder.splice(result.destination.index, 0, removed);
-    props.setLocalSourceOrder(updatedSourceOrder);
+    moveSourceToIndex(result.source.index, result.destination.index);
   };
 
   const toggleSpecificSourceEnabledStatus = (index: number) => {
@@ -126,7 +130,36 @@ export function SourceSettings(props: SourceSettingsProps) {
               <td
                 style={{
                   verticalAlign: "middle",
-                  width: 10 + "%",
+                  width: 5 + "%",
+                  textAlign: "center",
+                }}
+              >
+                <div>
+                  <i
+                    className="bi bi-chevron-double-up"
+                    style={{ fontSize: 1 + "em", cursor: "pointer" }}
+                    onClick={() => {
+                      moveSourceToIndex(index, 0);
+                    }}
+                  />
+                </div>
+                <div>
+                  <i
+                    className="bi bi-chevron-double-down"
+                    style={{ fontSize: 1 + "em", cursor: "pointer" }}
+                    onClick={() => {
+                      moveSourceToIndex(
+                        index,
+                        props.localSourceOrder.length - 1
+                      );
+                    }}
+                  />
+                </div>
+              </td>
+              <td
+                style={{
+                  verticalAlign: "middle",
+                  width: 5 + "%",
                   textAlign: "center",
                 }}
               >
@@ -159,6 +192,7 @@ export function SourceSettings(props: SourceSettingsProps) {
                     <th className="prevent-select">Source Name</th>
                     <th className="prevent-select">Source Type</th>
                     <th />
+                    <th />
                   </tr>
                 </thead>
                 <tbody>{sourceRows}</tbody>
@@ -176,7 +210,8 @@ export function SourceSettings(props: SourceSettingsProps) {
       Configure the sources you'd like to search. <b>Drag & drop</b> them to
       change the order they're searched in.
       <br />
-      Click the <b>table header</b> to enable or disable all sources.
+      Click the <b>table header</b> to enable or disable all sources. Use the{" "}
+      <b>arrows</b> to send the source to the top or bottom.
       <br />
       <br />
       {sourceTable}
