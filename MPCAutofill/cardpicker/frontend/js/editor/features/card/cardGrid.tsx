@@ -23,9 +23,10 @@ export function CardGrid() {
   let cardSlotsFronts = [];
   let cardSlotsBacks = [];
   const projectMembers = useSelector(selectProjectMembers);
-  const stringifiedSearchSettings = JSON.stringify(
-    useSelector((state: RootState) => state.searchSettings)
+  const searchSettings = useSelector(
+    (state: RootState) => state.searchSettings
   );
+  const stringifiedSearchSettings = JSON.stringify(searchSettings);
 
   // retrieve cards from database when queries in the project change
   // TODO: I think this snippet should move somewhere more sensible & reusable. probably as a selector.
@@ -43,13 +44,17 @@ export function CardGrid() {
   searchQueriesArray.sort();
 
   useEffect(() => {
-    dispatch(fetchCardDocuments());
+    if (searchSettings.cardSources != null) {
+      dispatch(fetchCardDocuments());
+    }
   }, [searchQueriesArray.join(",")]);
 
   useEffect(() => {
     // recalculate search results when search settings
-    dispatch(clearSearchResults());
-    dispatch(fetchCardDocuments());
+    if (searchSettings.cardSources != null) {
+      dispatch(clearSearchResults());
+      dispatch(fetchCardDocuments());
+    }
   }, [stringifiedSearchSettings]);
 
   for (const [slot, slotProjectMember] of projectMembers.entries()) {

@@ -185,8 +185,10 @@ export function CardSlot(props: CardSlotProps) {
         cardFooter={cardFooter}
         cardHeaderButtons={cardHeaderButtons}
         imageOnClick={handleShowDetailedView}
+        searchQuery={searchQuery}
         noResultsFound={
-          searchResultsForQuery.length == 0 && searchQuery == null
+          searchResultsForQueryOrNull != null &&
+          searchResultsForQueryOrNull.length == 0
         }
       />
 

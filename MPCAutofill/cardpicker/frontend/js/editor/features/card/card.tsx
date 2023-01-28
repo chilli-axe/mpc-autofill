@@ -3,6 +3,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "../../app/store";
 
 import BSCard from "react-bootstrap/Card";
+import { SearchQuery } from "../../common/constants";
 
 interface CardProps {
   imageIdentifier?: string;
@@ -13,6 +14,7 @@ interface CardProps {
   cardFooter?: ReactElement;
   imageOnClick?: React.MouseEventHandler<HTMLImageElement>;
   cardOnClick?: React.MouseEventHandler<HTMLElement>;
+  searchQuery?: SearchQuery;
   noResultsFound: boolean;
 }
 
@@ -127,12 +129,18 @@ export function Card(props: CardProps) {
             // spellCheck="false"
             // onFocus="Library.review.selectElementContents(this)"
           >
-            {maybeCardDocument !== undefined && maybeCardDocument.name}
+            {maybeCardDocument != null && maybeCardDocument.name}
+            {maybeCardDocument == null &&
+              props.searchQuery != null &&
+              props.searchQuery.query}
           </BSCard.Subtitle>
           <div className="mpccard-spacing">
             <BSCard.Text className="mpccard-source">
               {maybeCardDocument != null &&
                 `${maybeCardDocument.source_verbose} [${maybeCardDocument.dpi} DPI]`}
+              {maybeCardDocument == null &&
+                props.searchQuery != null &&
+                "Your search query"}
             </BSCard.Text>
           </div>
         </BSCard.Body>

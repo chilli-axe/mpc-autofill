@@ -210,8 +210,9 @@ export function SourceSettings(props: SourceSettingsProps) {
       Configure the sources you'd like to search. <b>Drag & drop</b> them to
       change the order they're searched in.
       <br />
-      Click the <b>table header</b> to enable or disable all sources. Use the{" "}
-      <b>arrows</b> to send the source to the top or bottom.
+      Use the <b>arrows</b> to send a source to the top or bottom.
+      <br />
+      Click the <b>table header</b> to enable or disable all sources.
       <br />
       <br />
       {sourceTable}
