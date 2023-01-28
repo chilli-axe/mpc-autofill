@@ -4,11 +4,7 @@
  */
 
 import Cookies from "js-cookie";
-
-export interface CookieSearchSettings {
-  fuzzySearch: boolean;
-  drives: Array<[string, boolean]>;
-}
+import { CookieSearchSettings } from "./types";
 
 export function getCookieSearchSettings(): CookieSearchSettings | null {
   const rawSettings = Cookies.get("searchSettings");
@@ -17,9 +13,9 @@ export function getCookieSearchSettings(): CookieSearchSettings | null {
   }
   const parsedSettings = JSON.parse(rawSettings);
   if (
-    parsedSettings["fuzzySearch"] != null &&
-    parsedSettings["drives"] != null &&
-    parsedSettings["drives"].length > 0
+    parsedSettings.fuzzySearch != null &&
+    parsedSettings.drives != null &&
+    parsedSettings.drives.length > 0
   ) {
     return parsedSettings;
   } else {

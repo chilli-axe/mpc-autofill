@@ -3,7 +3,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "../../app/store";
 
 import BSCard from "react-bootstrap/Card";
-import { SearchQuery } from "../../common/constants";
+import { SearchQuery } from "../../common/types";
 
 interface CardProps {
   imageIdentifier?: string;
@@ -23,7 +23,7 @@ export function Card(props: CardProps) {
   const [smallThumbnailLoading, setSmallThumbnailLoading] = useState(true);
   useEffect(() => setSmallThumbnailLoading(true), [props.imageIdentifier]);
 
-  const [nameEditable, setNameEditable] = useState(false);
+  // const [nameEditable, setNameEditable] = useState(false);
 
   const imageIdentifier: string = props.imageIdentifier;
   const maybeCardDocument = useSelector(
@@ -37,8 +37,8 @@ export function Card(props: CardProps) {
     (state: RootState) =>
       state.cardDocuments.cardDocuments[props.nextImageIdentifier]
   );
-  const searchResultsIdle = // TODO: replace the magic string here with a constant
-    useSelector((state: RootState) => state.searchResults.status) == "idle";
+  // const searchResultsIdle = // TODO: replace the magic string here with a constant
+  //   useSelector((state: RootState) => state.searchResults.status) === "idle";
 
   const cardImageElements =
     maybeCardDocument !== undefined ? (

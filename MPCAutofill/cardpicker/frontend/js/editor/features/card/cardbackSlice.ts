@@ -1,26 +1,13 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import Cookies from "js-cookie";
+import { APIGetCardbacks } from "../../app/api";
+import { CardbacksState } from "../../common/types";
 
 export const fetchCardbacks = createAsyncThunk(
   "cardbacks/fetchCardbacks",
   async (arg, thunkAPI) => {
-    const rawResponse = await fetch("/2/getCardbacks/", {
-      method: "GET",
-      credentials: "same-origin",
-      headers: {
-        "X-CSRFToken": Cookies.get("csrftoken"),
-      },
-    });
-    const content = await rawResponse.json();
-    return content.cardbacks;
+    return APIGetCardbacks();
   }
 );
-
-interface CardbacksState {
-  cardbacks: Array<string>;
-  status: "idle" | "loading" | "succeeded" | "failed";
-  error: string;
-}
 
 const initialState: CardbacksState = {
   cardbacks: [],

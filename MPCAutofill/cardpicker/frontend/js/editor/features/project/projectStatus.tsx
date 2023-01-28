@@ -1,33 +1,27 @@
 import Button from "react-bootstrap/Button";
-import React, { useState } from "react";
+import React from "react";
 import {
   selectProjectFileSize,
   selectProjectMembers,
   selectProjectSize,
 } from "./projectSlice";
 import Alert from "react-bootstrap/Alert";
-import { bracket, imageSizeToMBString } from "../../common/utils";
+import { bracket, imageSizeToMBString, downloadText } from "../../common/utils";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Tooltip from "react-bootstrap/Tooltip";
 import OverlayTrigger from "react-bootstrap/OverlayTrigger";
 import { useSelector } from "react-redux";
 import { Front, Back } from "../../common/constants";
-import { downloadText } from "../../common/utils";
-
 import formatXML from "xml-formatter";
-
-// @ts-ignore
-import Toggle from "react-bootstrap-toggle";
 import { RootState } from "../../app/store";
 
 // TODO: review the codebase for instances of this https://redux.js.org/usage/deriving-data-selectors#optimizing-selectors-with-memoization
 
 export function ProjectStatus() {
-  const [show, setShow] = useState(false);
-
-  const handleClose = () => setShow(false);
-  const handleShow = () => setShow(true);
+  // const [show, setShow] = useState(false);
+  // const handleClose = () => setShow(false);
+  // const handleShow = () => setShow(true);
 
   const projectMembers = useSelector(selectProjectMembers);
 
@@ -55,7 +49,7 @@ export function ProjectStatus() {
       for (const face of [Front, Back]) {
         if (projectMember[face].selectedImage != null) {
           // TODO: common cardback should also be filtered out here
-          if (orderMap[face][projectMember[face].selectedImage] == undefined) {
+          if (orderMap[face][projectMember[face].selectedImage] == null) {
             orderMap[face][projectMember[face].selectedImage] = new Set([slot]);
           } else {
             orderMap[face][projectMember[face].selectedImage].add(slot);

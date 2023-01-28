@@ -5,18 +5,19 @@
 
 import React from "react";
 
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore  // TODO: https://github.com/arnthor3/react-bootstrap-toggle/issues/21
 import Toggle from "react-bootstrap-toggle";
 import { ToggleButtonHeight } from "../../common/constants";
 
-interface SearchTypeSettings {
+interface SearchTypeSettingsProps {
   localFuzzySearch: boolean;
   setLocalFuzzySearch: {
     (newLocalFuzzySearch: boolean): void;
   };
 }
 
-export function SearchTypeSettings(props: SearchTypeSettings) {
+export function SearchTypeSettings(props: SearchTypeSettingsProps) {
   return (
     <>
       <h5>Search Type</h5>

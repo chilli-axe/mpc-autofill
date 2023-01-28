@@ -2,19 +2,15 @@ import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { AppDispatch, RootState } from "../../app/store";
 import { Card } from "./card";
-import { Faces, Back, SearchQuery } from "../../common/constants";
+import { Back } from "../../common/constants";
 import { wrapIndex } from "../../common/utils";
 import {
-  deleteImage,
-  setSelectedImage,
   setSelectedCardback,
   bulkSetSelectedImage,
 } from "../project/projectSlice";
-import { fetchCardbacks } from "./cardbackSlice";
 import Button from "react-bootstrap/Button";
 import { CardDetailedView } from "./cardDetailedView";
 import { CommonCardbackGridSelector } from "./gridSelector";
-import { fetchCardDocuments } from "../search/cardDocumentsSlice";
 
 interface CommonCardbackProps {
   selectedImage?: string;
@@ -23,7 +19,7 @@ interface CommonCardbackProps {
 export function CommonCardback(props: CommonCardbackProps) {
   const dispatch = useDispatch<AppDispatch>();
 
-  let selectedImage = props.selectedImage;
+  const selectedImage = props.selectedImage;
 
   const [showDetailedView, setShowDetailedView] = useState(false);
   const [showGridSelector, setShowGridSelector] = useState(false);
@@ -82,7 +78,7 @@ export function CommonCardback(props: CommonCardbackProps) {
   const cardHeaderTitle = "Cardback";
   const cardFooter = (
     <>
-      {searchResults.length == 1 && (
+      {searchResults.length === 1 && (
         <p className="mpccard-counter text-center align-middle">
           1 / {searchResults.length}
         </p>

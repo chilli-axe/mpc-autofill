@@ -1,22 +1,13 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { Back, Card, Faces, Front, SearchQuery } from "../../common/constants";
+import { Card } from "../../common/constants";
 import { RootState } from "../../app/store";
-import { useSelector } from "react-redux";
-import { AggregatedQueries } from "../../common/utils";
-
-interface ProjectMember {
-  query: SearchQuery;
-  selectedImage?: string;
-}
-
-type SlotProjectMembers = {
-  [face in Faces]: ProjectMember | null;
-};
-
-type Project = {
-  members: Array<SlotProjectMembers>;
-  cardback: string | null;
-};
+import {
+  AggregatedQueries,
+  SearchQuery,
+  Project,
+  SlotProjectMembers,
+  Faces,
+} from "../../common/types";
 
 const initialState: Project = {
   members: [
@@ -68,10 +59,6 @@ interface SetSelectedCardbackAction {
   selectedImage: string;
 }
 
-interface AddImagesAction {
-  [key: string]: number;
-}
-
 interface DeleteImageAction {
   slot: number;
 }
@@ -105,7 +92,7 @@ export const projectSlice = createSlice({
       const mySet: Set<number> = new Set();
       for (const [slot, projectMember] of state.members.entries()) {
         if (
-          projectMember[action.payload.face].selectedImage ==
+          projectMember[action.payload.face].selectedImage ===
           action.payload.currentImage
         ) {
           // TODO: common cardback should also be filtered out here
@@ -143,7 +130,7 @@ export const projectSlice = createSlice({
             ...newMembers,
             ...Array(quantity).fill({
               front: {
-                query: { query: query, card_type: cardType },
+                query: { query, card_type: cardType },
                 selectedImage: null,
               },
               back: null, // TODO: handle DFCs here
@@ -181,7 +168,7 @@ export const selectProjectSize = (state: RootState): number =>
 export const selectProjectFileSize = (state: RootState): number => {
   const uniqueCardIdentifiers = new Set<string>();
   for (const slotProjectMembers of state.project.members) {
-    for (const [face, projectMember] of Object.entries(slotProjectMembers)) {
+    for (const projectMember of Object.values(slotProjectMembers)) {
       if (projectMember != null && projectMember.selectedImage != null) {
         uniqueCardIdentifiers.add(projectMember.selectedImage);
       }
@@ -230,7 +217,7 @@ export const selectQueriesWithoutSearchResults = (
         projectMember.query != null &&
         (state.searchResults.searchResults[projectMember.query.query] ?? {})[
           projectMember.query.card_type
-        ] == undefined
+        ] == null
       ) {
         queriesToSearch.push(projectMember.query);
       }

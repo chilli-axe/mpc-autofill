@@ -1,4 +1,5 @@
-export type CardType = "CARD" | "CARDBACK" | "TOKEN";
+import { CardType, Faces } from "./types";
+
 export const Card: CardType = "CARD";
 export const Cardback: CardType = "CARDBACK";
 export const Token: CardType = "TOKEN";
@@ -9,14 +10,8 @@ export const CardTypePrefixes = {
   t: Token,
 };
 
-export type Faces = "front" | "back";
 export const Front: Faces = "front";
 export const Back: Faces = "back";
-
-export interface SearchQuery {
-  query: string | null;
-  card_type: CardType;
-}
 
 export const ToggleButtonHeight = 38; // pixels
 
@@ -26,3 +21,5 @@ export const DPIStep = 50;
 
 export const MaximumSize = 30; // megabytes
 export const SizeStep = 1;
+
+export const CSRFToken = "csrftoken";

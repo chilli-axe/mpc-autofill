@@ -52,6 +52,8 @@ repos:
     rev: "v8.24.0"
     hooks:
       - id: eslint
+        files: \.tsx?$
+        types: [file]
         additional_dependencies:
           - eslint@8.24.0
           - eslint-config-prettier@v8.5.0
@@ -60,6 +62,7 @@ repos:
           - eslint-plugin-import@v2.26.0
           - eslint-config-standard@v17.0.0
           - "@typescript-eslint/eslint-plugin@5.48.2"
+          - "@typescript-eslint/parser@5.49.0"
         args:
           - --fix
   - repo: https://github.com/Riverside-Healthcare/djLint

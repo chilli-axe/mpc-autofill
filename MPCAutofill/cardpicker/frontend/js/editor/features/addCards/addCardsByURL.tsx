@@ -1,18 +1,14 @@
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "../../app/store";
 import React, { useEffect, useState } from "react";
-import Cookies from "js-cookie";
 import { processLines } from "../../common/utils";
 import { addImages } from "../project/projectSlice";
 import Dropdown from "react-bootstrap/Dropdown";
 import Modal from "react-bootstrap/Modal";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
-
-interface ImportSite {
-  name: string;
-  url: string;
-}
+import { APIGetImportSites, APIQueryImportSite } from "../../app/api";
+import { ImportSite } from "../../common/types";
 
 export function AddCardsByURL() {
   const dispatch = useDispatch<AppDispatch>();
@@ -25,36 +21,14 @@ export function AddCardsByURL() {
   const [importSites, setImportSites] = useState(null);
 
   useEffect(() => {
-    const fetchImportSites = async () => {
-      const rawResponse = await fetch("/2/getImportSites", {
-        method: "GET", // TODO: double check that other requests are using GET instead of POST appropriately
-        credentials: "same-origin",
-        headers: {
-          "X-CSRFToken": Cookies.get("csrftoken"),
-        },
-      });
-      const content = await rawResponse.json();
-      // TODO: this is mad unsafe
-      setImportSites(content["import_sites"]);
-    };
-
-    fetchImportSites();
+    APIGetImportSites().then((results) => setImportSites(results));
   }, []);
 
   const handleSubmitURLModal = async () => {
     // TODO: propagate the custom site name through to the new frontend
-    setLoading(true); // TODO: handele errors in API response
-    const rawResponse = await fetch("/2/queryImportSite/", {
-      method: "POST",
-      body: JSON.stringify({ url: URLModalValue }),
-      credentials: "same-origin",
-      headers: {
-        "X-CSRFToken": Cookies.get("csrftoken"),
-      },
-    });
-    const content = await rawResponse.json();
-    const aggregatedQueries = processLines(content["cards"]);
-
+    setLoading(true);
+    const lines = await APIQueryImportSite(URLModalValue);
+    const aggregatedQueries = processLines(lines);
     dispatch(addImages(aggregatedQueries));
     handleCloseURLModal();
     setLoading(false);

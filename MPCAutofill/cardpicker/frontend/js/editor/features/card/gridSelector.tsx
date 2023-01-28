@@ -10,7 +10,8 @@ import {
 } from "../project/projectSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../../app/store";
-import { Back, Faces } from "../../common/constants";
+import { Back } from "../../common/constants";
+import { Faces } from "../../common/types";
 
 interface GridSelectorProps {
   imageIdentifiers: Array<string>;
@@ -103,7 +104,7 @@ export function CommonCardbackGridSelector(
     dispatch(
       bulkSetSelectedImage({
         currentImage: projectCardback,
-        selectedImage: selectedImage,
+        selectedImage,
         face: Back,
       })
     );

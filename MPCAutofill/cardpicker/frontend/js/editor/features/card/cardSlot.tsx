@@ -2,12 +2,13 @@ import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { AppDispatch, RootState } from "../../app/store";
 import { Card } from "./card";
-import { Faces, Back, SearchQuery } from "../../common/constants";
+import { Back } from "../../common/constants";
 import { wrapIndex } from "../../common/utils";
 import { deleteImage, setSelectedImage } from "../project/projectSlice";
 import Button from "react-bootstrap/Button";
 import { CardDetailedView } from "./cardDetailedView";
 import { CardSlotGridSelector } from "./gridSelector";
+import { Faces, SearchQuery } from "../../common/types";
 
 interface CardSlotProps {
   searchQuery?: SearchQuery;
@@ -46,7 +47,7 @@ export function CardSlot(props: CardSlotProps) {
               searchQuery.card_type
             ]
         )
-      : face == Back
+      : face === Back
       ? cardbacks
       : [];
 
@@ -81,15 +82,15 @@ export function CardSlot(props: CardSlotProps) {
       ) {
         if (searchQuery != null) {
           mutatedSelectedImage = searchResultsForQueryOrNull[0];
-        } else if (face == Back && projectCardback != null) {
+        } else if (face === Back && projectCardback != null) {
           mutatedSelectedImage = projectCardback;
         }
       }
 
       dispatch(
         setSelectedImage({
-          face: face,
-          slot: slot,
+          face,
+          slot,
           selectedImage: mutatedSelectedImage,
         })
       );
@@ -140,7 +141,7 @@ export function CardSlot(props: CardSlotProps) {
   );
   const cardFooter = (
     <>
-      {searchResultsForQuery.length == 1 && (
+      {searchResultsForQuery.length === 1 && (
         <p className="mpccard-counter text-center align-middle">
           1 / {searchResultsForQuery.length}
         </p>
@@ -176,7 +177,7 @@ export function CardSlot(props: CardSlotProps) {
   );
 
   return (
-    <>
+    <div style={{ contentVisibility: "auto" }}>
       <Card
         imageIdentifier={selectedImage}
         previousImageIdentifier={previousImage}
@@ -188,7 +189,7 @@ export function CardSlot(props: CardSlotProps) {
         searchQuery={searchQuery}
         noResultsFound={
           searchResultsForQueryOrNull != null &&
-          searchResultsForQueryOrNull.length == 0
+          searchResultsForQueryOrNull.length === 0
         }
       />
 
@@ -207,6 +208,6 @@ export function CardSlot(props: CardSlotProps) {
           handleClose={handleCloseGridSelector}
         />
       )}
-    </>
+    </div>
   );
 }

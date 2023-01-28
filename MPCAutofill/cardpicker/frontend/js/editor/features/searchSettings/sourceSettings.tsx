@@ -14,9 +14,10 @@ import {
 import Table from "react-bootstrap/Table";
 import { useSelector } from "react-redux";
 import { RootState } from "../../app/store";
-import { SourceRow } from "./searchSettingsSlice";
+import { SourceRow } from "../../common/types";
 import { ToggleButtonHeight } from "../../common/constants";
 
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore  // TODO: https://github.com/arnthor3/react-bootstrap-toggle/issues/21
 import Toggle from "react-bootstrap-toggle";
 
@@ -54,7 +55,7 @@ export function SourceSettings(props: SourceSettingsProps) {
      * Toggle the enabled status of the source at `index` in `localSourceOrder`.
      */
 
-    let updatedSourceOrder = [...props.localSourceOrder];
+    const updatedSourceOrder = [...props.localSourceOrder];
     updatedSourceOrder[index] = [
       updatedSourceOrder[index][0],
       !updatedSourceOrder[index][1],
@@ -67,8 +68,8 @@ export function SourceSettings(props: SourceSettingsProps) {
      * Toggle the enabled status of all sources in `localSourceOrder`. If any is enabled, they're all disabled.
      */
 
-    const newEnabledStatus: boolean = !props.localSourceOrder.some((x) => x[1]);
-    let updatedSourceOrder: Array<SourceRow> = props.localSourceOrder.map(
+    const newEnabledStatus = !props.localSourceOrder.some((x) => x[1]);
+    const updatedSourceOrder: Array<SourceRow> = props.localSourceOrder.map(
       (x) => [x[0], newEnabledStatus]
     );
     props.setLocalSourceOrder(updatedSourceOrder);

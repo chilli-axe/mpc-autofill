@@ -12,13 +12,13 @@ import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../../app/store";
 import {
-  SourceRow,
   setFuzzySearch,
   setCardSources,
   setMinDPI,
   setMaxDPI,
   setMaxSize,
 } from "./searchSettingsSlice";
+import { SourceRow } from "../../common/types";
 import {
   getCookieSearchSettings,
   setCookieSearchSettings,
@@ -77,8 +77,9 @@ export function SearchSettings() {
 
         // TODO: temporary
         selectedSources = unmatchedSources.map((x) => [x, true]);
-      } else {
       }
+      // else {
+      // }
 
       setLocalSourceOrder(selectedSources);
 

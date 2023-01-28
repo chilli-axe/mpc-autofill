@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState, AppDispatch } from "../../app/store";
 import { CardSlot } from "./cardSlot";
@@ -8,8 +8,6 @@ import { Front, Back } from "../../common/constants";
 import Row from "react-bootstrap/Row";
 import { selectProjectMembers } from "../project/projectSlice";
 import Modal from "react-bootstrap/Modal";
-import Form from "react-bootstrap/Form";
-import Button from "react-bootstrap/Button";
 
 // import styles from './Counter.module.css'
 
@@ -18,10 +16,10 @@ export function CardGrid() {
 
   // TODO: this doesn't work yet
   const searchResultsIdle = // TODO: replace the magic string here with a constant
-    useSelector((state: RootState) => state.searchResults.status) == "idle";
+    useSelector((state: RootState) => state.searchResults.status) === "idle";
 
-  let cardSlotsFronts = [];
-  let cardSlotsBacks = [];
+  const cardSlotsFronts = [];
+  const cardSlotsBacks = [];
   const projectMembers = useSelector(selectProjectMembers);
   const searchSettings = useSelector(
     (state: RootState) => state.searchSettings
@@ -30,7 +28,7 @@ export function CardGrid() {
 
   // retrieve cards from database when queries in the project change
   // TODO: I think this snippet should move somewhere more sensible & reusable. probably as a selector.
-  let searchQueries: Set<string> = new Set();
+  const searchQueries: Set<string> = new Set();
   projectMembers.forEach((x) => {
     // TODO: does this implementation mean you wouldn't retrieve search results if you have `goblin` in the project and search for `t:goblin`?
     if (x.front != null && x.front.query != null) {

@@ -1,4 +1,5 @@
-import { CardTypePrefixes, CardType } from "./constants";
+import { CardTypePrefixes } from "./constants";
+import { AggregatedQueries, CardType } from "./types";
 
 export function wrapIndex(index: number, count: number): number {
   return ((index % count) + count) % count;
@@ -34,7 +35,7 @@ export function bracket(projectSize: number): number {
   return brackets[brackets.length - 1];
 }
 
-export function downloadImage(imageURL: string, new_tab: boolean = true) {
+export function downloadImage(imageURL: string, new_tab = true) {
   /**
    * Download an image with the given download link.
    * Note that this only works when `imageURL` has the same origin as where the link was opened from.
@@ -73,7 +74,7 @@ export function processPrefix(query: string): [string, CardType] {
    */
 
   for (const [prefix, cardType] of Object.entries(CardTypePrefixes)) {
-    if (prefix != "" && query.startsWith(`${prefix}:`)) {
+    if (prefix !== "" && query.startsWith(`${prefix}:`)) {
       return [query.slice(prefix.length + 1), cardType];
     }
   }
@@ -87,7 +88,7 @@ export function processLine(line: string): [string, CardType, number] | null {
    */
 
   const trimmedLine = line.replace(/\s+/g, " ").trim();
-  if (trimmedLine.length == 0) {
+  if (trimmedLine.length === 0) {
     return null;
   }
   const re = /^([0-9]*)?x?\s?(.*)$/; // note that "x" after the quantity is ignored - e.g. 3x and 3 are treated the same
@@ -98,16 +99,12 @@ export function processLine(line: string): [string, CardType, number] | null {
   ];
 }
 
-export type AggregatedQueries = {
-  [query: string]: { [cardType in CardType]?: number };
-};
-
 export function processLines(lines: string): AggregatedQueries {
   /**
    * Process each line in `lines` and aggregate by query and card type, summing the number of instances requested.
    */
 
-  let aggregatedQueries: AggregatedQueries = {};
+  const aggregatedQueries: AggregatedQueries = {};
   lines.split(/\r?\n|\r|\n/g).forEach((line: string) => {
     if (line != null && line.trim().length > 0) {
       const processedLine = processLine(line);

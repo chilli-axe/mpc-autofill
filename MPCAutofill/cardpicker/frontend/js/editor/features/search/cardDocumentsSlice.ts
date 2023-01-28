@@ -1,10 +1,11 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import Cookies from "js-cookie";
 
 import { RootState } from "../../app/store";
 import { fetchCards } from "./searchResultsSlice";
 import { fetchCardbacks } from "../card/cardbackSlice";
 import { selectUniqueCardIdentifiers } from "../project/projectSlice";
+import { APIGetCards } from "../../app/api";
+import { CardDocumentsState } from "../../common/types";
 
 // TODO: we should write something to read a page of card IDs from searchResults (100 at a time?) and query the backend for their full data
 export const fetchCardDocuments = createAsyncThunk(
@@ -19,6 +20,7 @@ export const fetchCardDocuments = createAsyncThunk(
     await thunkAPI.dispatch(fetchCards());
     await thunkAPI.dispatch(fetchCardbacks());
 
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore  // TODO
     const state: RootState = thunkAPI.getState();
 
@@ -33,50 +35,10 @@ export const fetchCardDocuments = createAsyncThunk(
     );
 
     if (identifiersToSearch.size > 0) {
-      const rawResponse = await fetch("/2/getCards/", {
-        method: "POST",
-        body: JSON.stringify({
-          card_identifiers: Array.from(identifiersToSearch),
-        }),
-        credentials: "same-origin",
-        headers: {
-          "X-CSRFToken": Cookies.get("csrftoken"),
-        },
-      });
-      const content = await rawResponse.json();
-      return content.results;
+      return APIGetCards(identifiersToSearch);
     }
   }
 );
-
-interface CardDocument {
-  // This should match the data returned by `to_dict` on the `Card` Django model
-  identifier: string;
-  card_type: string;
-  name: string;
-  priority: number;
-  source: string;
-  source_verbose: string;
-  source_type: string;
-  dpi: number;
-  searchq: string;
-  extension: string;
-  date: string; // formatted by backend
-  download_link: string;
-  size: number;
-  small_thumbnail_url: string;
-  medium_thumbnail_url: string;
-}
-
-interface CardDocuments {
-  [key: string]: CardDocument;
-}
-
-interface CardDocumentsState {
-  cardDocuments: CardDocuments;
-  status: "idle" | "loading" | "succeeded" | "failed";
-  error: string;
-}
 
 const initialState: CardDocumentsState = {
   cardDocuments: {},
