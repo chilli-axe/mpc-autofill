@@ -2,11 +2,16 @@ import React, { useState } from "react";
 import Dropdown from "react-bootstrap/Dropdown";
 import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
+import { TextFileDropzone } from "../dropzone";
 
 export function AddCardsByXML() {
   const [showXMLModal, setShowXMLModal] = useState(false);
   const handleCloseXMLModal = () => setShowXMLModal(false);
   const handleShowXMLModal = () => setShowXMLModal(true);
+
+  const myCallback = (fileContents: string) => {
+    console.log("file received!");
+  };
 
   return (
     <>
@@ -18,7 +23,12 @@ export function AddCardsByXML() {
         <Modal.Header closeButton>
           <Modal.Title>Add Cards — XML</Modal.Title>
         </Modal.Header>
-        <Modal.Body>In Progress</Modal.Body>
+        <Modal.Body>
+          <TextFileDropzone
+            mimeTypes={{ "text/xml": [".xml"] }}
+            callback={myCallback}
+          />
+        </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={handleCloseXMLModal}>
             Close

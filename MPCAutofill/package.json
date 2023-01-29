@@ -35,6 +35,7 @@
   "dependencies": {
     "@hello-pangea/dnd": "^16.1.0",
     "@popperjs/core": "^2.11.6",
+    "@types/styled-components": "^5.1.26",
     "bootstrap": "^5.2.2",
     "bootstrap-icons": "^1.9.1",
     "bootswatch": "^5.2.1",
@@ -45,7 +46,9 @@
     "react-bootstrap": "^2.6.0",
     "react-bootstrap-toggle": "^2.3.2",
     "react-dom": "^18.2.0",
+    "react-dropzone": "^14.2.3",
     "react-redux": "^8.0.5",
+    "styled-components": "^5.3.6",
     "ts-loader": "^9.4.1",
     "xml-formatter": "^2.6.1"
   },
