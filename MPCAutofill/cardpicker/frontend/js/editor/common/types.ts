@@ -69,10 +69,6 @@ export interface SearchResultsState {
   error: string;
 }
 
-export type AggregatedQueries = {
-  [query: string]: { [cardType in CardType]?: number };
-};
-
 export type SourceRow = [string, boolean];
 
 export interface SearchSettingsState {
@@ -91,7 +87,7 @@ export interface ImportSite {
 
 export interface SearchQuery {
   query: string | null;
-  card_type: CardType;
+  card_type: CardType; // TODO: rename this to `cardType`
 }
 
 export interface ProjectMember {
@@ -112,3 +108,9 @@ export interface CookieSearchSettings {
   fuzzySearch: boolean;
   drives: Array<[string, boolean]>;
 }
+
+export interface DFCPairs {
+  [front: string]: string;
+}
+
+export type ProcessedLine = [number, SearchQuery?, SearchQuery?];

@@ -12,6 +12,7 @@ export const CardTypePrefixes = {
 
 export const Front: Faces = "front";
 export const Back: Faces = "back";
+export const FaceSeparator = "|";
 
 export const ToggleButtonHeight = 38; // pixels
 

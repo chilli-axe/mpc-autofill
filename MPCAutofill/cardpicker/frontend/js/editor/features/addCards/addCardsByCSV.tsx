@@ -2,8 +2,13 @@ import React, { useState } from "react";
 import Dropdown from "react-bootstrap/Dropdown";
 import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
+import { DFCPairs } from "../../common/types";
 
-export function AddCardsByCSV() {
+interface AddCardsByCSVProps {
+  dfcPairs: DFCPairs;
+}
+
+export function AddCardsByCSV(props: AddCardsByCSVProps) {
   const [showCSVModal, setShowCSVModal] = useState(false);
   const handleCloseCSVModal = () => setShowCSVModal(false);
   const handleShowCSVModal = () => setShowCSVModal(true);

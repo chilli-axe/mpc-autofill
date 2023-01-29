@@ -2,11 +2,11 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { Card } from "../../common/constants";
 import { RootState } from "../../app/store";
 import {
-  AggregatedQueries,
   SearchQuery,
   Project,
   SlotProjectMembers,
   Faces,
+  ProcessedLine,
 } from "../../common/types";
 
 const initialState: Project = {
@@ -57,6 +57,10 @@ interface BulkSetSelectedImageAction {
 
 interface SetSelectedCardbackAction {
   selectedImage: string;
+}
+
+interface AddImagesAction {
+  lines: Array<ProcessedLine>;
 }
 
 interface DeleteImageAction {
@@ -119,28 +123,21 @@ export const projectSlice = createSlice({
     ) => {
       state.cardback = action.payload.selectedImage;
     },
-    addImages: (state, action: PayloadAction<AggregatedQueries>) => {
+    addImages: (state, action: PayloadAction<AddImagesAction>) => {
       let newMembers: Array<SlotProjectMembers> = [];
-
-      for (const [query, cardTypeToQuantity] of Object.entries(
-        action.payload
-      )) {
-        for (const [cardType, quantity] of Object.entries(cardTypeToQuantity)) {
-          newMembers = [
-            ...newMembers,
-            ...Array(quantity).fill({
-              front: {
-                query: { query, card_type: cardType },
-                selectedImage: null,
-              },
-              back: null, // TODO: handle DFCs here
-            }),
-          ];
-        }
+      for (const [quantity, frontQuery, backQuery] of action.payload.lines) {
+        newMembers = [
+          ...newMembers,
+          ...Array(quantity).fill({
+            front: { query: frontQuery, selectedImage: null },
+            back: { query: backQuery, selectedImage: null },
+          }),
+        ];
       }
       state.members = [...state.members, ...newMembers];
     },
     deleteImage: (state, action: PayloadAction<DeleteImageAction>) => {
+      // TODO: this breaks when you add a DFC card then delete the different card from the project.
       state.members.splice(action.payload.slot, 1);
     },
 

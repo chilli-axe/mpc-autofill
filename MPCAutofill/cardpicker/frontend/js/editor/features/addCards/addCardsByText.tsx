@@ -7,8 +7,14 @@ import Dropdown from "react-bootstrap/Dropdown";
 import Modal from "react-bootstrap/Modal";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
+import { DFCPairs } from "../../common/types";
+import { FaceSeparator } from "../../common/constants";
 
-export function AddCardsByText() {
+interface AddCardsByTextProps {
+  dfcPairs: DFCPairs;
+}
+
+export function AddCardsByText(props: AddCardsByTextProps) {
   const dispatch = useDispatch<AppDispatch>();
   const [showTextModal, setShowTextModal] = useState(false);
   const handleCloseTextModal = () => setShowTextModal(false);
@@ -20,8 +26,8 @@ export function AddCardsByText() {
      * Parse the contents of the modal and add the resultant queries in the desired numbers of instances to the project.
      */
 
-    const aggregatedQueries = processLines(textModalValue);
-    dispatch(addImages(aggregatedQueries));
+    const processedLines = processLines(textModalValue, props.dfcPairs);
+    dispatch(addImages({ lines: processedLines }));
     handleCloseTextModal();
   };
 
@@ -43,6 +49,15 @@ export function AddCardsByText() {
           <p>
             Type the names of the cards you'd like to add to your order and hit{" "}
             <b>Submit</b>. One card per line.
+          </p>
+          <p>
+            Specify both front and back queries by separating them with{" "}
+            <code>{FaceSeparator}</code> — for example,{" "}
+            <code>4x goblin {FaceSeparator} t:elf</code>.
+          </p>
+          <p>
+            If you don't specify a back query and your front query is a
+            double-faced card, we will automatically query the back for you.
           </p>
           <Form.Group className="mb-3">
             <Form.Control

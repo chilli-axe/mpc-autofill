@@ -7,6 +7,7 @@ import {
   SearchResults,
   SourceDocuments,
   SearchQuery,
+  DFCPairs,
 } from "../common/types";
 
 export async function APIGetCards(
@@ -92,4 +93,16 @@ export async function APIQueryImportSite(url: string): Promise<string> {
   });
   const content = await rawResponse.json();
   return content.cards;
+}
+
+export async function APIGetDFCPairs(): Promise<DFCPairs> {
+  const rawResponse = await fetch("/2/getDFCPairs/", {
+    method: "GET",
+    credentials: "same-origin",
+    headers: {
+      "X-CSRFToken": Cookies.get(CSRFToken),
+    },
+  });
+  const content = await rawResponse.json();
+  return content.dfc_pairs;
 }

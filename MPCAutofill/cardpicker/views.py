@@ -506,10 +506,10 @@ def api_function_3(request: HttpRequest) -> HttpResponse:
 
 def api_function_4(request: HttpRequest) -> HttpResponse:
     """
-    Return a list of double-faced cards.
+    Return a list of double-faced cards. The unedited names are returned and the frontend is expected to sanitise them.
     """
 
-    dfc_pairs = dict((x.front_searchable, x.back_searchable) for x in DFCPair.objects.all())
+    dfc_pairs = dict((x.front, x.back) for x in DFCPair.objects.all())
     return JsonResponse({"dfc_pairs": dfc_pairs})
 
 

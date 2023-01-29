@@ -8,9 +8,13 @@ import Modal from "react-bootstrap/Modal";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import { APIGetImportSites, APIQueryImportSite } from "../../app/api";
-import { ImportSite } from "../../common/types";
+import { ImportSite, DFCPairs } from "../../common/types";
 
-export function AddCardsByURL() {
+interface AddCardsByURLProps {
+  dfcPairs: DFCPairs;
+}
+
+export function AddCardsByURL(props: AddCardsByURLProps) {
   const dispatch = useDispatch<AppDispatch>();
 
   const [showURLModal, setShowURLModal] = useState(false);
@@ -28,8 +32,8 @@ export function AddCardsByURL() {
     // TODO: propagate the custom site name through to the new frontend
     setLoading(true);
     const lines = await APIQueryImportSite(URLModalValue);
-    const aggregatedQueries = processLines(lines);
-    dispatch(addImages(aggregatedQueries));
+    const processedLines = processLines(lines, props.dfcPairs);
+    dispatch(addImages({ lines: processedLines }));
     handleCloseURLModal();
     setLoading(false);
   };

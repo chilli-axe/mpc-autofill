@@ -1,11 +1,29 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Dropdown from "react-bootstrap/Dropdown";
 import { AddCardsByText } from "./addCardsByText";
 import { AddCardsByURL } from "./addCardsByURL";
 import { AddCardsByXML } from "./addCardsByXML";
 import { AddCardsByCSV } from "./addCardsByCSV";
+import { APIGetDFCPairs } from "../../app/api";
+import { DFCPairs } from "../../common/types";
+import { processQuery } from "../../common/utils";
 
 export function AddCards() {
+  const [dfcPairs, setDFCPairs] = useState<DFCPairs>({});
+
+  useEffect(() => {
+    APIGetDFCPairs().then((pairs) =>
+      setDFCPairs(
+        Object.fromEntries(
+          Object.keys(pairs).map((front) => [
+            processQuery(front),
+            processQuery(pairs[front]),
+          ])
+        )
+      )
+    );
+  }, []);
+
   return (
     <>
       <Dropdown>
@@ -19,10 +37,10 @@ export function AddCards() {
           </Dropdown.Toggle>
         </div>
         <Dropdown.Menu>
-          <AddCardsByText />
+          <AddCardsByText dfcPairs={dfcPairs} />
           <AddCardsByXML />
-          <AddCardsByCSV />
-          <AddCardsByURL />
+          <AddCardsByCSV dfcPairs={dfcPairs} />
+          <AddCardsByURL dfcPairs={dfcPairs} />
         </Dropdown.Menu>
       </Dropdown>
     </>
