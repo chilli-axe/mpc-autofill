@@ -106,3 +106,17 @@ export async function APIGetDFCPairs(): Promise<DFCPairs> {
   const content = await rawResponse.json();
   return content.dfc_pairs;
 }
+
+export async function APIGetPlaceholderText(): Promise<{
+  [cardType: string]: Array<[number, string]>;
+}> {
+  const rawResponse = await fetch("/2/getPlaceholderText/", {
+    method: "GET",
+    credentials: "same-origin",
+    headers: {
+      "X-CSRFToken": Cookies.get(CSRFToken),
+    },
+  });
+  const content = await rawResponse.json();
+  return content.cards;
+}

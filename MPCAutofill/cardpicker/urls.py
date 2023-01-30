@@ -31,5 +31,6 @@ urlpatterns = [
     re_path(r"^2/getCardbacks/$", views.api_function_6, name="api_function_6"),
     re_path(r"^2/getImportSites/$", views.api_function_7, name="api_function_7"),
     re_path(r"^2/queryImportSite/$", views.api_function_8, name="api_function_8"),  # TODO: rename this
+    re_path(r"^2/getPlaceholderText/$", views.api_function_9, name="api_function_9"),
     # endregion
 ]

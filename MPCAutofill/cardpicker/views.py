@@ -1,12 +1,15 @@
 import json
+import re
 import time
 from collections import defaultdict
 from datetime import timedelta
+from random import choices, randint
 from typing import Any, Callable, Optional, TypeVar, Union, cast
 
 from blog.models import BlogPost
 
 from django.db import connection
+from django.db.models import Count
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
@@ -561,6 +564,39 @@ def api_function_8(request: HttpRequest) -> HttpResponse:
     else:
         ...  # TODO: return error response
     return JsonResponse({})
+
+
+def api_function_9(request: HttpRequest) -> HttpResponse:
+    """
+    Return a list of sample cards you can query this database for.
+    Used in the placeholder text of the Add Cards — Text component in the frontend.
+    """
+
+    # TODO: tidy this up a bit
+
+    # TODO: i don't know how to do this in a single query in the Django ORM :(
+    identifiers = {
+        card_type: list(Card.objects.filter(card_type=card_type).values_list("id", flat=True)[0:1000])
+        for card_type in CardTypes
+    }
+    selected_identifiers = {
+        card_type: choices(
+            identifiers[card_type], k=min(4 if card_type == CardTypes.CARD else 1, len(identifiers[card_type]))
+        )
+        for card_type in CardTypes
+    }
+    men = {
+        x[0]: re.sub(r"\([^)]*\)", "", x[1]).strip()
+        for x in Card.objects.filter(pk__in=[y for z in selected_identifiers.values() for y in z]).values_list(
+            "id", "name"
+        )
+    }
+    return_value = {
+        card_type: [(randint(1, 4), men[identifier]) for identifier in identifiers]
+        for card_type, identifiers in selected_identifiers.items()
+    }
+
+    return JsonResponse({"cards": return_value})
 
 
 # endregion

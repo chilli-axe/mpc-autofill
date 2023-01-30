@@ -4,10 +4,17 @@ export const Card: CardType = "CARD";
 export const Cardback: CardType = "CARDBACK";
 export const Token: CardType = "TOKEN";
 
-export const CardTypePrefixes = {
+export const CardTypeSeparator = ":";
+
+export const CardTypePrefixes: { [prefix: string]: CardType } = {
   "": Card,
   b: Cardback,
   t: Token,
+};
+export const ReversedCardTypePrefixes = {
+  Card: "",
+  Cardback: "b:",
+  Token: "t:",
 };
 
 export const Front: Faces = "front";

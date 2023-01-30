@@ -1,14 +1,22 @@
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "../../app/store";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { processLines } from "../../common/utils";
 import { addImages } from "../project/projectSlice";
 import Dropdown from "react-bootstrap/Dropdown";
 import Modal from "react-bootstrap/Modal";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
-import { DFCPairs } from "../../common/types";
-import { FaceSeparator } from "../../common/constants";
+import { DFCPairs, CardType } from "../../common/types";
+import {
+  FaceSeparator,
+  Card,
+  Cardback,
+  Token,
+  CardTypePrefixes,
+  CardTypeSeparator,
+} from "../../common/constants";
+import { APIGetPlaceholderText } from "../../app/api";
 
 interface AddCardsByTextProps {
   dfcPairs: DFCPairs;
@@ -20,6 +28,43 @@ export function AddCardsByText(props: AddCardsByTextProps) {
   const handleCloseTextModal = () => setShowTextModal(false);
   const handleShowTextModal = () => setShowTextModal(true);
   const [textModalValue, setTextModalValue] = useState("");
+
+  const [placeholderText, setPlaceholderText] = useState("");
+
+  const generatePlaceholderText = (placeholders: {
+    [cardType: string]: Array<[number, string]>;
+  }): string => {
+    // const separator = "&#10;";
+    const separator = "\n";
+    const placeholderTextByCardType: Array<string> = [];
+    const reversedCardTypePrefixes = Object.fromEntries(
+      Object.keys(CardTypePrefixes).map((prefix: CardType) => [
+        CardTypePrefixes[prefix],
+        prefix.length > 0 ? prefix + CardTypeSeparator : prefix,
+      ])
+    );
+    for (const cardType of [Card, Token, Cardback]) {
+      if (placeholders[cardType] != null) {
+        placeholderTextByCardType.push(
+          placeholders[cardType]
+            .map(
+              (x: [number, string]) =>
+                `${x[0]}x ${reversedCardTypePrefixes[cardType]}${x[1]}`
+            )
+            .join(separator)
+        );
+      }
+    }
+    return placeholderTextByCardType.join(separator + separator);
+  };
+
+  useEffect(() => {
+    APIGetPlaceholderText().then((placeholders) =>
+      setPlaceholderText(generatePlaceholderText(placeholders))
+    );
+  }, []);
+
+  // "4x Lion's Eye Diamond&#10;4x Golgari Grave-Troll&#10;4x Bridge from Below&#10;3x Breakthrough&#10;&#10;6x t:Zombie"
 
   const handleSubmitTextModal = () => {
     /**
@@ -63,7 +108,7 @@ export function AddCardsByText(props: AddCardsByTextProps) {
             <Form.Control
               as="textarea"
               rows={12} // TODO: let's retrieve this placeholder string from the backend
-              placeholder="4x Lion's Eye Diamond&#10;4x Golgari Grave-Troll&#10;4x Bridge from Below&#10;3x Breakthrough&#10;&#10;6x t:Zombie"
+              placeholder={placeholderText}
               required={true}
               onChange={(event) => setTextModalValue(event.target.value)}
               value={textModalValue}

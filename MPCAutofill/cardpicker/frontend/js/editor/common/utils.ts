@@ -1,4 +1,9 @@
-import { CardTypePrefixes, FaceSeparator, Card } from "./constants";
+import {
+  CardTypePrefixes,
+  FaceSeparator,
+  Card,
+  CardTypeSeparator,
+} from "./constants";
 import { DFCPairs, SearchQuery, ProcessedLine } from "./types";
 
 export function wrapIndex(index: number, count: number): number {
@@ -75,6 +80,7 @@ export function processQuery(query: string): string {
    * https://www.elastic.co/guide/en/elasticsearch/reference/7.17/analysis-classic-tokenizer.html
    */
 
+  // TODO: remove numbers from the front
   // escaping \[ is technically unnecessary, but I think it's more readable to escape it
   return (
     query
@@ -94,7 +100,10 @@ export function processPrefix(query: string): SearchQuery {
   for (const [prefix, cardType] of Object.entries(CardTypePrefixes)) {
     if (
       prefix !== "" &&
-      query.trimStart().toLowerCase().startsWith(`${prefix}:`)
+      query
+        .trimStart()
+        .toLowerCase()
+        .startsWith(`${prefix}${CardTypeSeparator}`)
     ) {
       return {
         query: processQuery(query.trimStart().slice(prefix.length + 1)),
