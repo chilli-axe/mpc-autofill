@@ -30,12 +30,15 @@ export function AddCardsByURL(props: AddCardsByURLProps) {
 
   const handleSubmitURLModal = async () => {
     // TODO: propagate the custom site name through to the new frontend
-    setLoading(true);
-    const lines = await APIQueryImportSite(URLModalValue);
-    const processedLines = processLines(lines, props.dfcPairs);
-    dispatch(addImages({ lines: processedLines }));
-    handleCloseURLModal();
-    setLoading(false);
+    const trimmedURL = URLModalValue.trim();
+    if (trimmedURL.length > 0) {
+      setLoading(true);
+      const lines = await APIQueryImportSite(trimmedURL);
+      const processedLines = processLines(lines, props.dfcPairs);
+      dispatch(addImages({ lines: processedLines }));
+      handleCloseURLModal();
+      setLoading(false);
+    }
   };
 
   return (

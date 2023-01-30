@@ -32,6 +32,7 @@ const Container = styled.div`
   color: #bdbdbd;
   outline: none;
   transition: border 0.24s ease-in-out;
+  cursor: pointer;
 `;
 
 interface StyledDropzoneProps {
