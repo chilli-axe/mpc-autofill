@@ -6,7 +6,7 @@ import { AddCardsByXML } from "./addCardsByXML";
 import { AddCardsByCSV } from "./addCardsByCSV";
 import { APIGetDFCPairs } from "../../app/api";
 import { DFCPairs } from "../../common/types";
-import { processQuery } from "../../common/utils";
+import { processQuery } from "../../common/processing";
 
 export function AddCards() {
   const [dfcPairs, setDFCPairs] = useState<DFCPairs>({});

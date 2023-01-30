@@ -1,7 +1,7 @@
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "../../app/store";
 import React, { useEffect, useState } from "react";
-import { processLines } from "../../common/utils";
+import { processLines } from "../../common/processing";
 import { addImages } from "../project/projectSlice";
 import Dropdown from "react-bootstrap/Dropdown";
 import Modal from "react-bootstrap/Modal";

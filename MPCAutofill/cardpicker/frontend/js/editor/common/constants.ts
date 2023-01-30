@@ -11,11 +11,6 @@ export const CardTypePrefixes: { [prefix: string]: CardType } = {
   b: Cardback,
   t: Token,
 };
-export const ReversedCardTypePrefixes = {
-  Card: "",
-  Cardback: "b:",
-  Token: "t:",
-};
 
 export const Front: Faces = "front";
 export const Back: Faces = "back";
@@ -31,3 +26,7 @@ export const MaximumSize = 30; // megabytes
 export const SizeStep = 1;
 
 export const CSRFToken = "csrftoken";
+
+export const Brackets: Array<number> = [
+  18, 36, 55, 72, 90, 108, 126, 144, 162, 180, 198, 216, 234, 396, 504, 612,
+];

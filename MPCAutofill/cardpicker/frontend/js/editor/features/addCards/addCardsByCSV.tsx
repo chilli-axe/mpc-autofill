@@ -36,8 +36,8 @@ export function AddCardsByCSV(props: AddCardsByCSVProps) {
         </Modal.Header>
         <Modal.Body>
           <p>
-            Upload a CSV file of cards to add to the project. The file must
-            match the following format:
+            Upload a CSV file of cards to add to the project. The file must{" "}
+            <b>exactly</b> match the following format:
           </p>
           <Table
             bordered={true}

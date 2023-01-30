@@ -1,7 +1,7 @@
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "../../app/store";
 import React, { useEffect, useState } from "react";
-import { processLines } from "../../common/utils";
+import { processLines } from "../../common/processing";
 import { addImages } from "../project/projectSlice";
 import Dropdown from "react-bootstrap/Dropdown";
 import Modal from "react-bootstrap/Modal";
@@ -28,21 +28,23 @@ export function AddCardsByText(props: AddCardsByTextProps) {
   const handleCloseTextModal = () => setShowTextModal(false);
   const handleShowTextModal = () => setShowTextModal(true);
   const [textModalValue, setTextModalValue] = useState("");
-
   const [placeholderText, setPlaceholderText] = useState("");
 
-  const generatePlaceholderText = (placeholders: {
+  const formatPlaceholderText = (placeholders: {
     [cardType: string]: Array<[number, string]>;
   }): string => {
-    // const separator = "&#10;";
-    const separator = "\n";
-    const placeholderTextByCardType: Array<string> = [];
+    // TODO: check compatibility of `\n` in different browsers. `separator` was previously "&#10;".
+
     const reversedCardTypePrefixes = Object.fromEntries(
       Object.keys(CardTypePrefixes).map((prefix: CardType) => [
         CardTypePrefixes[prefix],
         prefix.length > 0 ? prefix + CardTypeSeparator : prefix,
       ])
     );
+
+    const separator = "\n";
+    const placeholderTextByCardType: Array<string> = [];
+
     for (const cardType of [Card, Token, Cardback]) {
       if (placeholders[cardType] != null) {
         placeholderTextByCardType.push(
@@ -60,11 +62,9 @@ export function AddCardsByText(props: AddCardsByTextProps) {
 
   useEffect(() => {
     APIGetPlaceholderText().then((placeholders) =>
-      setPlaceholderText(generatePlaceholderText(placeholders))
+      setPlaceholderText(formatPlaceholderText(placeholders))
     );
   }, []);
-
-  // "4x Lion's Eye Diamond&#10;4x Golgari Grave-Troll&#10;4x Bridge from Below&#10;3x Breakthrough&#10;&#10;6x t:Zombie"
 
   const handleSubmitTextModal = () => {
     /**
@@ -107,7 +107,7 @@ export function AddCardsByText(props: AddCardsByTextProps) {
           <Form.Group className="mb-3">
             <Form.Control
               as="textarea"
-              rows={12} // TODO: let's retrieve this placeholder string from the backend
+              rows={12}
               placeholder={placeholderText}
               required={true}
               onChange={(event) => setTextModalValue(event.target.value)}
