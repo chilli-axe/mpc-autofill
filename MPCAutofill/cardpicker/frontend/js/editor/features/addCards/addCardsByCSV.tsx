@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { CSSProperties, useState } from "react";
 import Dropdown from "react-bootstrap/Dropdown";
 import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
@@ -18,6 +18,8 @@ export function AddCardsByCSV(props: AddCardsByCSVProps) {
   const myCallback = (fileContents: string) => {
     console.log("file received!");
   };
+
+  const columnStyle: CSSProperties = { width: 20 + "%", textAlign: "center" };
 
   return (
     <>
@@ -46,17 +48,15 @@ export function AddCardsByCSV(props: AddCardsByCSVProps) {
             }}
           >
             <thead>
-              <th>Quantity</th>
-              <th>Front</th>
-              <th>Back</th>
+              <th style={columnStyle}>Quantity</th>
+              <th style={columnStyle}>Front</th>
+              <th style={columnStyle}>Front ID</th>
+              <th style={columnStyle}>Back</th>
+              <th style={columnStyle}>Back ID</th>
             </thead>
             <tbody>
               {Array(3).fill(
-                <tr>
-                  <td style={{ width: 20 + "%" }} />
-                  <td style={{ width: 40 + "%" }} />
-                  <td style={{ width: 40 + "%" }} />
-                </tr>
+                <tr>{Array(5).fill(<td style={{ width: 20 + "%" }} />)}</tr>
               )}
             </tbody>
           </Table>
@@ -70,30 +70,40 @@ export function AddCardsByCSV(props: AddCardsByCSVProps) {
             }}
           >
             <thead>
-              <th>Quantity</th>
-              <th>Front</th>
-              <th>Back</th>
+              <th style={columnStyle}>Quantity</th>
+              <th style={columnStyle}>Front</th>
+              <th style={columnStyle}>Front ID</th>
+              <th style={columnStyle}>Back</th>
+              <th style={columnStyle}>Back ID</th>
             </thead>
             <tbody>
               <tr>
-                <td style={{ width: 20 + "%" }}>
+                <td style={columnStyle}>
                   <code>2</code>
                 </td>
-                <td style={{ width: 40 + "%" }}>
+                <td style={columnStyle}>
                   <code>island</code>
                 </td>
-                <td style={{ width: 40 + "%" }}>
+                <td style={columnStyle}>
+                  <code>1HsvTYs1...</code>
+                </td>
+                <td style={columnStyle}>
                   <code>forest</code>
                 </td>
+                <td style={columnStyle} />
               </tr>
               <tr>
-                <td style={{ width: 20 + "%" }}>
+                <td style={columnStyle}>
                   <code>3</code>
                 </td>
-                <td style={{ width: 40 + "%" }}>
+                <td style={columnStyle}>
                   <code>t:goblin</code>
                 </td>
-                <td style={{ width: 40 + "%" }} />
+                <td style={columnStyle} />
+                <td style={columnStyle} />
+                <td style={columnStyle}>
+                  <code>1JtXL6Ca...</code>
+                </td>
               </tr>
             </tbody>
           </Table>
