@@ -28,6 +28,7 @@ export function ProjectStatus() {
   const projectSize = useSelector(selectProjectSize);
   const projectBracket = bracket(projectSize);
   const projectFileSize = useSelector(selectProjectFileSize);
+  const cardback = useSelector((state: RootState) => state.project.cardback);
   // TODO: this seems inefficient?
   const cardDocuments = useSelector(
     (state: RootState) => state.cardDocuments.cardDocuments
@@ -47,8 +48,10 @@ export function ProjectStatus() {
     const orderMap: OrderMap = { front: {}, back: {} };
     for (const [slot, projectMember] of projectMembers.entries()) {
       for (const face of [Front, Back]) {
-        if (projectMember[face].selectedImage != null) {
-          // TODO: common cardback should also be filtered out here
+        if (
+          projectMember[face].selectedImage != null &&
+          projectMember[face].selectedImage !== cardback
+        ) {
           if (orderMap[face][projectMember[face].selectedImage] == null) {
             orderMap[face][projectMember[face].selectedImage] = new Set([slot]);
           } else {
@@ -120,7 +123,9 @@ export function ProjectStatus() {
       }
     }
 
-    // TODO: common cardback
+    const cardbackElement = doc.createElement("cardback");
+    cardbackElement.appendChild(doc.createTextNode(cardback));
+    orderElement.appendChild(cardbackElement);
 
     doc.appendChild(orderElement);
 
