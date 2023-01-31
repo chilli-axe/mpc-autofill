@@ -30,6 +30,7 @@
     "sass": "^1.55.0",
     "sass-loader": "^13.1.0",
     "style-loader": "^3.3.1",
+    "ts-jest": "^29.0.5",
     "ts-loader": "^9.4.2",
     "webpack": "^5.74.0",
     "webpack-bundle-analyzer": "^4.6.1",
