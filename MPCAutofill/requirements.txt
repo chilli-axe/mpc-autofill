@@ -2,6 +2,7 @@ attrs
 chardet
 click==8.0.4
 defusedxml
+python-dotenv
 Django~=4.0
 django-crispy-forms~=1.14
 django-elasticsearch-dsl~=7.2

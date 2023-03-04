@@ -4,11 +4,11 @@ from typing import TypedDict, Union
 
 import requests
 
-from MPCAutofill.settings import PATREON_KEY
+from MPCAutofill.settings import PATREON_ACCESS
 
 # Header must be included to access Patreon info
 patreon_header = {
-    "Authorization": f"Bearer {PATREON_KEY}",
+    "Authorization": f"Bearer {PATREON_ACCESS}",
     "User-Agent": f"Patreon-Python, version 0.5.1, platform {platform.platform()}",
 }
 
