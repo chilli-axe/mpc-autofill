@@ -1,0 +1,4 @@
+# helper script to refresh patreon tokens
+
+cd ~/mpc-autofill/MPCAutofill
+~/mpc-autofill/MPCAutofill/env/bin/python ~/mpc-autofill/MPCAutofill/manage.py refresh_patreon
