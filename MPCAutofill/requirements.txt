@@ -23,8 +23,8 @@ pytest-django
 pytest-elasticsearch
 ratelimit
 requests
-selenium
-syrupy
+selenium~=4.8
+syrupy~=3.0
 tqdm
 tzdata
 webdriver-manager==3.5.4
