@@ -96,12 +96,14 @@ class AutofillDriver:
         Context manager for switching to `frame`.
         """
 
+        in_frame = True
         try:
             self.driver.switch_to.frame(frame)
         except (sl_exc.NoSuchFrameException, sl_exc.NoSuchElementException):
-            return
+            in_frame = False
         yield
-        self.driver.switch_to.default_content()
+        if in_frame:
+            self.driver.switch_to.default_content()
 
     @alert_handler
     def wait(self) -> None:
