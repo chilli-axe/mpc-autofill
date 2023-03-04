@@ -49,7 +49,7 @@ class TestFrontend:
     @pytest.fixture()
     def chrome_driver_without_google_analytics_settings(self, download_folder, live_server) -> Chrome:
         options = Options()
-        options.add_argument("--headless")
+        options.add_argument("--headless=new")
         options.add_experimental_option("prefs", {"download.default_directory": str(download_folder)})
         driver = Chrome(service=Service(ChromeDriverManager().install()), options=options)
         driver.set_window_size(1440, 900)
@@ -66,7 +66,7 @@ class TestFrontend:
     @pytest.fixture()
     def mobile_chrome_driver(self, live_server, download_folder) -> Chrome:
         options = Options()
-        options.add_argument("--headless")
+        options.add_argument("--headless=new")
         options.add_experimental_option("mobileEmulation", {"deviceName": "iPhone X"})
         driver = Chrome(service=Service(ChromeDriverManager().install()), options=options)
         driver.implicitly_wait(0)
