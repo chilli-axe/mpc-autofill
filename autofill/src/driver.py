@@ -351,7 +351,7 @@ class AutofillDriver:
 
         self.execute_javascript("PageLayout.prototype.renderDesignCount()")
         with self.switch_to_frame("sysifm_loginFrame"):
-            self.execute_javascript("displayTotalCount()")
+            self.execute_javascript("displayTotalCount()")  # display the dropdown for "up to N cards"
             qty_dropdown = Select(self.driver.find_element(by=By.ID, value="dro_total_count"))
             qty_dropdown.select_by_value(str(self.order.details.bracket))
             self.execute_javascript(f"document.getElementById('txt_card_number').value={self.order.details.quantity};")
@@ -408,8 +408,10 @@ class AutofillDriver:
         if skip_setup:
             # bring up the dialogue for selecting same or different images
             self.wait()
-            self.execute_javascript("PageLayout.prototype.renderDesignCount()")
-
+            try:
+                self.execute_javascript("PageLayout.prototype.renderDesignCount()")
+            except sl_exc.JavascriptException:  # the dialogue has already been brought up if the above line failed
+                pass
         with self.switch_to_frame("sysifm_loginFrame"):
             try:
                 if len(self.order.backs.cards) == 1:
