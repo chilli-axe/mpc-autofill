@@ -1,3 +1,13 @@
+import { FromSchema } from "json-schema-to-ts";
+
+import {
+  sourceRowSchema,
+  searchSettingsSchema,
+  filterSettingsSchema,
+  sourceSettingsSchema,
+  searchTypeSettingsSchema,
+} from "./schemas";
+
 export type CardType = "CARD" | "CARDBACK" | "TOKEN";
 export type Faces = "front" | "back";
 
@@ -8,6 +18,7 @@ export interface CardDocument {
   name: string;
   priority: number;
   source: string;
+  source_id: number;
   source_verbose: string;
   source_type: string;
   dpi: number;
@@ -27,15 +38,16 @@ export interface CardDocuments {
 export interface CardDocumentsState {
   cardDocuments: CardDocuments;
   status: "idle" | "loading" | "succeeded" | "failed";
-  error: string;
+  error: string | null;
 }
 
 export interface CardbacksState {
   cardbacks: Array<string>;
   status: "idle" | "loading" | "succeeded" | "failed";
-  error: string;
+  error: string | null;
 }
 
+// TODO: create json schemas for these, infer types from them, and see if we can define the schema once between frontend and backend
 export interface SourceDocument {
   // This should match the data returned by `to_dict` on the `Source` Django model
   pk: number;
@@ -48,11 +60,11 @@ export interface SourceDocument {
 }
 
 export interface SourceDocuments {
-  [key: string]: SourceDocument;
+  [pk: number]: SourceDocument;
 }
 
 export interface SourceDocumentsState {
-  sourceDocuments?: SourceDocuments;
+  sourceDocuments?: SourceDocuments; // null indicates the data has not yet loaded from the backend
 }
 
 export type SearchResultsForQuery = {
@@ -66,19 +78,16 @@ export interface SearchResults {
 export interface SearchResultsState {
   searchResults: SearchResults;
   status: string;
-  error: string;
+  error: string | null;
 }
 
-export type SourceRow = [string, boolean];
+// export type SourceRow = [number, boolean]
 
-export interface SearchSettingsState {
-  fuzzySearch: boolean;
-  cardSources?: Array<SourceRow>;
-  // cardbackSources: Array<string>;  // TODO: reconsider this. maybe a toggle for whether cardbacks should be filtered?
-  minDPI: number;
-  maxDPI: number;
-  maxSize: number;
-}
+export type SourceRow = FromSchema<typeof sourceRowSchema>;
+export type SearchTypeSettings = FromSchema<typeof searchTypeSettingsSchema>;
+export type FilterSettings = FromSchema<typeof filterSettingsSchema>;
+export type SourceSettings = FromSchema<typeof sourceSettingsSchema>;
+export type SearchSettings = FromSchema<typeof searchSettingsSchema>;
 
 export interface ImportSite {
   name: string;
@@ -104,13 +113,8 @@ export type Project = {
   cardback: string | null;
 };
 
-export interface CookieSearchSettings {
-  fuzzySearch: boolean;
-  drives: Array<[string, boolean]>;
-}
-
 export interface DFCPairs {
   [front: string]: string;
 }
 
-export type ProcessedLine = [number, SearchQuery?, SearchQuery?];
+export type ProcessedLine = [number, SearchQuery | null, SearchQuery | null];

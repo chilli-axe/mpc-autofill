@@ -14,20 +14,13 @@ import {
   MinimumDPI,
   SizeStep,
 } from "../../common/constants";
+import { FilterSettings as FilterSettingsType } from "../../common/types";
 import React from "react";
 
 interface FilterSettingsProps {
-  localMinimumDPI: number;
-  localMaximumDPI: number;
-  localMaximumSize: number;
-  setLocalMinimumDPI: {
-    (newLocalMinimumDPI: number): void;
-  };
-  setLocalMaximumDPI: {
-    (newLocalMaximumDPI: number): void;
-  };
-  setLocalMaximumSize: {
-    (newLocalMaximumSize: number): void;
+  filterSettings: FilterSettingsType;
+  setFilterSettings: {
+    (newFilterSettings: FilterSettingsType): void;
   };
 }
 
@@ -47,43 +40,52 @@ export function FilterSettings(props: FilterSettingsProps) {
       <Row>
         <Col xs={6}>
           <Form.Label>
-            Minimum: <b>{props.localMinimumDPI} DPI</b>
+            Minimum: <b>{props.filterSettings.minimumDPI} DPI</b>
           </Form.Label>
           <Form.Range
-            defaultValue={props.localMinimumDPI}
+            defaultValue={props.filterSettings.minimumDPI}
             min={MinimumDPI}
             max={MaximumDPI}
             step={DPIStep}
             onChange={(event) => {
-              props.setLocalMinimumDPI(parseInt(event.target.value));
+              props.setFilterSettings({
+                ...props.filterSettings,
+                minimumDPI: parseInt(event.target.value),
+              });
             }}
           />
         </Col>
         <Col xs={6}>
           <Form.Label>
-            Maximum: <b>{props.localMaximumDPI} DPI</b>
+            Maximum: <b>{props.filterSettings.maximumDPI} DPI</b>
           </Form.Label>
           <Form.Range
-            defaultValue={props.localMaximumDPI}
+            defaultValue={props.filterSettings.maximumDPI}
             min={MinimumDPI}
             max={MaximumDPI}
             step={DPIStep}
             onChange={(event) => {
-              props.setLocalMaximumDPI(parseInt(event.target.value));
+              props.setFilterSettings({
+                ...props.filterSettings,
+                maximumDPI: parseInt(event.target.value),
+              });
             }}
           />
         </Col>
       </Row>
       <Form.Label>
-        File size: Up to <b>{props.localMaximumSize} MB</b>
+        File size: Up to <b>{props.filterSettings.maximumSize} MB</b>
       </Form.Label>
       <Form.Range
-        defaultValue={props.localMaximumSize}
+        defaultValue={props.filterSettings.maximumSize}
         min={0}
         max={MaximumSize}
         step={SizeStep}
         onChange={(event) => {
-          props.setLocalMaximumSize(parseInt(event.target.value));
+          props.setFilterSettings({
+            ...props.filterSettings,
+            maximumSize: parseInt(event.target.value),
+          });
         }}
       />
     </>

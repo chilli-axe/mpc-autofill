@@ -17,12 +17,13 @@ interface AddCardsByURLProps {
 export function AddCardsByURL(props: AddCardsByURLProps) {
   const dispatch = useDispatch<AppDispatch>();
 
+  // TODO: should probably set up type hints for all `useState` usages
   const [showURLModal, setShowURLModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const handleCloseURLModal = () => setShowURLModal(false);
   const handleShowURLModal = () => setShowURLModal(true);
   const [URLModalValue, setURLModalValue] = useState("");
-  const [importSites, setImportSites] = useState(null);
+  const [importSites, setImportSites] = useState<ImportSite[] | null>(null);
 
   useEffect(() => {
     APIGetImportSites().then((results) => setImportSites(results));

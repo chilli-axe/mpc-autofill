@@ -13,6 +13,7 @@ from django.db.models import Count
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
 
 from cardpicker.forms import InputCSV, InputLink, InputText, InputXML
 from cardpicker.models import Card, CardTypes, DFCPair, Source
@@ -503,7 +504,8 @@ def api_function_3(request: HttpRequest) -> HttpResponse:
     Return a list of sources.
     """
 
-    objs = {x.key: x.to_dict() for x in Source.objects.all()}
+    objs = {x.pk: x.to_dict() for x in Source.objects.all()}
+    # objs = {x.key: x.to_dict() for x in Source.objects.all()}
     return JsonResponse({"results": objs})
 
 

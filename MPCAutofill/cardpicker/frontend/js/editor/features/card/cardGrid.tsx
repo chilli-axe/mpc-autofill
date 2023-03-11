@@ -9,8 +9,6 @@ import Row from "react-bootstrap/Row";
 import { selectProjectMembers } from "../project/projectSlice";
 import Modal from "react-bootstrap/Modal";
 
-// import styles from './Counter.module.css'
-
 export function CardGrid() {
   const dispatch = useDispatch<AppDispatch>();
 
@@ -42,14 +40,14 @@ export function CardGrid() {
   searchQueriesArray.sort();
 
   useEffect(() => {
-    if (searchSettings.cardSources != null) {
+    if (searchSettings.sourceSettings.sources != null) {
       dispatch(fetchCardDocuments());
     }
   }, [searchQueriesArray.join(",")]);
 
   useEffect(() => {
-    // recalculate search results when search settings
-    if (searchSettings.cardSources != null) {
+    // recalculate search results when search settings change
+    if (searchSettings.sourceSettings.sources != null) {
       dispatch(clearSearchResults());
       dispatch(fetchCardDocuments());
     }

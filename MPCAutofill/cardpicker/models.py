@@ -79,6 +79,7 @@ class Source(models.Model):
 
     def to_dict(self, count: bool = False) -> dict[str, Any]:
         source_dict = {
+            "pk": self.pk,
             "key": self.key,
             "name": self.name,
             "identifier": self.identifier,
@@ -130,6 +131,7 @@ class Card(models.Model):
             "name": self.name,
             "priority": self.priority,
             "source": self.source.key,
+            "source_id": self.source.pk,
             "source_verbose": self.source_verbose,
             "source_type": self.get_source_type(),
             "dpi": self.dpi,

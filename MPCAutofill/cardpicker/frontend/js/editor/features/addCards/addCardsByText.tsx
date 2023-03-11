@@ -23,6 +23,7 @@ interface AddCardsByTextProps {
 }
 
 export function AddCardsByText(props: AddCardsByTextProps) {
+  // TODO: add an accordion here for explaining how to search for each different card type with prefixes
   const dispatch = useDispatch<AppDispatch>();
   const [showTextModal, setShowTextModal] = useState(false);
   const handleCloseTextModal = () => setShowTextModal(false);

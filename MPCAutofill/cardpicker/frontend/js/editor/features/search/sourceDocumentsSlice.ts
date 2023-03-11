@@ -3,7 +3,7 @@ import { APIGetSources } from "../../app/api";
 import { SourceDocumentsState } from "../../common/types";
 
 const initialState: SourceDocumentsState = {
-  sourceDocuments: null,
+  sourceDocuments: undefined,
 };
 
 export const fetchSourceDocuments = createAsyncThunk(

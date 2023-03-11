@@ -14,28 +14,28 @@ const initialState: Project = {
     {
       front: {
         query: { query: "island", card_type: Card },
-        selectedImage: null,
+        selectedImage: undefined,
       },
       back: null,
     },
     {
       front: {
         query: { query: "grim monolith", card_type: Card },
-        selectedImage: null,
+        selectedImage: undefined,
       },
       back: null,
     },
     {
       front: {
         query: { query: "past in flames", card_type: Card },
-        selectedImage: null,
+        selectedImage: undefined,
       },
       back: null,
     },
     {
       front: {
         query: { query: "necropotence", card_type: Card },
-        selectedImage: null,
+        selectedImage: undefined,
       },
       back: null,
     },
@@ -46,7 +46,7 @@ const initialState: Project = {
 interface SetSelectedImageAction {
   face: Faces;
   slot: number;
-  selectedImage: string;
+  selectedImage?: string;
 }
 
 interface BulkSetSelectedImageAction {

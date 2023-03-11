@@ -25,23 +25,33 @@ export function Card(props: CardProps) {
 
   // const [nameEditable, setNameEditable] = useState(false);
 
-  const imageIdentifier: string = props.imageIdentifier;
-  const maybeCardDocument = useSelector(
-    (state: RootState) => state.cardDocuments.cardDocuments[imageIdentifier]
+  // we have to store these in variables for typescript to recognise that
+  // the below ternary operators avoid indexing with `undefined`
+  const imageIdentifier = props.imageIdentifier;
+  const previousImageIdentifier = props.previousImageIdentifier;
+  const nextImageIdentifier = props.nextImageIdentifier;
+
+  const maybeCardDocument = useSelector((state: RootState) =>
+    imageIdentifier != null
+      ? state.cardDocuments.cardDocuments[imageIdentifier]
+      : undefined
   );
-  const maybePreviousCardDocument = useSelector(
-    (state: RootState) =>
-      state.cardDocuments.cardDocuments[props.previousImageIdentifier]
+
+  const maybePreviousCardDocument = useSelector((state: RootState) =>
+    previousImageIdentifier != null
+      ? state.cardDocuments.cardDocuments[previousImageIdentifier]
+      : undefined
   );
-  const maybeNextCardDocument = useSelector(
-    (state: RootState) =>
-      state.cardDocuments.cardDocuments[props.nextImageIdentifier]
+  const maybeNextCardDocument = useSelector((state: RootState) =>
+    nextImageIdentifier != null
+      ? state.cardDocuments.cardDocuments[nextImageIdentifier]
+      : undefined
   );
   // const searchResultsIdle = // TODO: replace the magic string here with a constant
   //   useSelector((state: RootState) => state.searchResults.status) === "idle";
 
   const cardImageElements =
-    maybeCardDocument !== undefined ? (
+    maybeCardDocument != null ? (
       <>
         <div
           className="d-flex justify-content-center align-items-center"
@@ -67,7 +77,7 @@ export function Card(props: CardProps) {
           // onError={{thumbnail_404(this)}}
           alt={maybeCardDocument.name}
         />
-        {props.previousImageIdentifier !== imageIdentifier &&
+        {props.previousImageIdentifier !== props.imageIdentifier &&
           maybePreviousCardDocument !== undefined && (
             <img
               className="card-img"
@@ -78,7 +88,7 @@ export function Card(props: CardProps) {
               alt={maybePreviousCardDocument.name}
             />
           )}
-        {props.nextImageIdentifier !== imageIdentifier &&
+        {props.nextImageIdentifier !== props.imageIdentifier &&
           maybeNextCardDocument !== undefined && (
             <img
               className="card-img"

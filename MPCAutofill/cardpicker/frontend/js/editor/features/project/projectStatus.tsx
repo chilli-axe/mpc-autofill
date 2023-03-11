@@ -48,14 +48,16 @@ export function ProjectStatus() {
     const orderMap: OrderMap = { front: {}, back: {} };
     for (const [slot, projectMember] of projectMembers.entries()) {
       for (const face of [Front, Back]) {
-        if (
-          projectMember[face].selectedImage != null &&
-          projectMember[face].selectedImage !== cardback
-        ) {
-          if (orderMap[face][projectMember[face].selectedImage] == null) {
-            orderMap[face][projectMember[face].selectedImage] = new Set([slot]);
-          } else {
-            orderMap[face][projectMember[face].selectedImage].add(slot);
+        const projectMemberAtFace = projectMember[face];
+        if (projectMemberAtFace != null) {
+          const selectedImage = projectMemberAtFace.selectedImage;
+          if (selectedImage != null && selectedImage !== cardback) {
+            // add to `orderMap`, initialising if necessary
+            if (orderMap[face][selectedImage] == null) {
+              orderMap[face][selectedImage] = new Set([slot]);
+            } else {
+              orderMap[face][selectedImage].add(slot);
+            }
           }
         }
       }
@@ -124,7 +126,9 @@ export function ProjectStatus() {
     }
 
     const cardbackElement = doc.createElement("cardback");
-    cardbackElement.appendChild(doc.createTextNode(cardback));
+    if (cardback != null) {
+      cardbackElement.appendChild(doc.createTextNode(cardback));
+    }
     orderElement.appendChild(cardbackElement);
 
     doc.appendChild(orderElement);

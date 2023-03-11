@@ -12,20 +12,27 @@ import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../../app/store";
 import {
-  setFuzzySearch,
+  // setFuzzySearch,
   setCardSources,
-  setMinDPI,
-  setMaxDPI,
-  setMaxSize,
+  // setMinDPI,
+  // setMaxDPI,
+  // setMaxSize,
+  setSearchTypeSettings,
+  setSourceSettings,
+  setFilterSettings,
 } from "./searchSettingsSlice";
-import { SourceRow } from "../../common/types";
+import {
+  SearchTypeSettings,
+  SourceSettings,
+  FilterSettings,
+} from "../../common/types";
 import {
   getCookieSearchSettings,
   setCookieSearchSettings,
 } from "../../common/cookies";
-import { SearchTypeSettings } from "./searchTypeSettings";
-import { FilterSettings } from "./filterSettings";
-import { SourceSettings } from "./sourceSettings";
+import { SearchTypeSettings as SearchTypeSettingsElement } from "./searchTypeSettings";
+import { FilterSettings as FilterSettingsElement } from "./filterSettings";
+import { SourceSettings as SourceSettingsElement } from "./sourceSettings";
 
 export function SearchSettings() {
   const dispatch = useDispatch<AppDispatch>();
@@ -37,21 +44,28 @@ export function SearchSettings() {
   );
 
   // component-level copies of redux state
-  const [localFuzzySearch, setLocalFuzzySearch] = useState<boolean>(
-    globalSearchSettings.fuzzySearch
-  );
-  const [localSourceOrder, setLocalSourceOrder] = useState<Array<SourceRow>>(
-    globalSearchSettings.cardSources ?? []
-  );
-  const [localMinimumDPI, setLocalMinimumDPI] = useState<number>(
-    globalSearchSettings.minDPI
-  );
-  const [localMaximumDPI, setLocalMaximumDPI] = useState<number>(
-    globalSearchSettings.maxDPI
-  );
-  const [localMaximumSize, setLocalMaximumSize] = useState<number>(
-    globalSearchSettings.maxSize
-  );
+  const [localSearchTypeSettings, setLocalSearchTypeSettings] =
+    useState<SearchTypeSettings>(globalSearchSettings.searchTypeSettings);
+  const [localSourceSettings, setLocalSourceSettings] =
+    useState<SourceSettings>(globalSearchSettings.sourceSettings);
+  const [localFilterSettings, setLocalFilterSettings] =
+    useState<FilterSettings>(globalSearchSettings.filterSettings);
+
+  // const [localFuzzySearch, setLocalFuzzySearch] = useState<boolean>(
+  //   globalSearchSettings.fuzzySearch
+  // );
+  // const [localSourceOrder, setLocalSourceOrder] = useState<Array<SourceRow>>(
+  //   globalSearchSettings.cardSources ?? []
+  // );
+  // const [localMinimumDPI, setLocalMinimumDPI] = useState<number>(
+  //   globalSearchSettings.minDPI
+  // );
+  // const [localMaximumDPI, setLocalMaximumDPI] = useState<number>(
+  //   globalSearchSettings.maxDPI
+  // );
+  // const [localMaximumSize, setLocalMaximumSize] = useState<number>(
+  //   globalSearchSettings.maxSize
+  // );
 
   const maybeSourceDocuments = useSelector(
     (state: RootState) => state.sourceDocuments.sourceDocuments
@@ -59,42 +73,22 @@ export function SearchSettings() {
 
   useEffect(() => {
     if (maybeSourceDocuments != null) {
-      const cookieSettings = getCookieSearchSettings();
-
-      const unmatchedSources: Array<string> = Object.keys(maybeSourceDocuments);
-
-      let selectedSources: Array<SourceRow> = unmatchedSources.map(
-        (x: string) => [x, true]
-      );
+      const cookieSettings = getCookieSearchSettings(maybeSourceDocuments);
 
       if (cookieSettings != null) {
-        // alert("cookieSettings not null")
-        // dispatch(setFuzzySearch(cookieSettings.fuzzySearch));
-        //
-        // for (const man of cookieSettings.drives) {
-        //   alert(JSON.stringify(man))
-        // }
-
-        // TODO: temporary
-        selectedSources = unmatchedSources.map((x) => [x, true]);
+        setLocalSearchTypeSettings(cookieSettings.searchTypeSettings);
+        setLocalSourceSettings(cookieSettings.sourceSettings);
+        setFilterSettings(cookieSettings.filterSettings);
       }
-      // else {
-      // }
 
-      setLocalSourceOrder(selectedSources);
-
-      /**
-       * create a new object to track whether each drive is enabled or disabled. initialise as empty list. called `x`
-       * for each item in cookie drives:
-       * check if the item matches a drive fetched from the database
-       * if it does, append to `x` the drive name and whether it's enabled or not, and remove the drive from the list
-       * of sources retrieved from the database
-       * once you reach the end of this loop, iterate over the remaining sources retrieved from the database,
-       * and set them all to true.
-       */
-      if (globalSearchSettings.cardSources == null) {
+      if (
+        globalSearchSettings.sourceSettings.sources == null &&
+        cookieSettings != null
+      ) {
         // TODO: update this section after finishing the implementation of reconciling sources against cookies.
-        dispatch(setCardSources(selectedSources));
+        dispatch(setSearchTypeSettings(cookieSettings.searchTypeSettings));
+        dispatch(setSourceSettings(cookieSettings.sourceSettings));
+        dispatch(setFilterSettings(cookieSettings.filterSettings));
       }
     }
   }, [maybeSourceDocuments]);
@@ -103,25 +97,22 @@ export function SearchSettings() {
   const handleClose = () => setShow(false);
   const handleShow = () => {
     // set up the component-level state with the current redux state
-    setLocalSourceOrder(globalSearchSettings.cardSources);
-    setLocalFuzzySearch(globalSearchSettings.fuzzySearch);
-    setLocalMinimumDPI(globalSearchSettings.minDPI);
-    setLocalMaximumDPI(globalSearchSettings.maxDPI);
-    setLocalMaximumSize(globalSearchSettings.maxSize);
+    setLocalSearchTypeSettings(globalSearchSettings.searchTypeSettings);
+    setLocalFilterSettings(globalSearchSettings.filterSettings);
+    setLocalSourceSettings(globalSearchSettings.sourceSettings);
 
     setShow(true);
   };
   const handleSave = () => {
     // copy component-level state into redux state and into cookies
     setCookieSearchSettings({
-      fuzzySearch: localFuzzySearch,
-      drives: localSourceOrder,
+      searchTypeSettings: localSearchTypeSettings,
+      sourceSettings: localSourceSettings,
+      filterSettings: localFilterSettings,
     });
-    dispatch(setFuzzySearch(localFuzzySearch));
-    dispatch(setCardSources(localSourceOrder));
-    dispatch(setMinDPI(localMinimumDPI));
-    dispatch(setMaxDPI(localMaximumDPI));
-    dispatch(setMaxSize(localMaximumSize));
+    dispatch(setSearchTypeSettings(localSearchTypeSettings));
+    dispatch(setSourceSettings(localSourceSettings));
+    dispatch(setFilterSettings(localFilterSettings));
 
     handleClose();
   };
@@ -138,23 +129,19 @@ export function SearchSettings() {
           <Modal.Title>Search Settings</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <SearchTypeSettings
-            localFuzzySearch={localFuzzySearch}
-            setLocalFuzzySearch={setLocalFuzzySearch}
+          <SearchTypeSettingsElement
+            searchTypeSettings={localSearchTypeSettings}
+            setSearchTypeSettings={setLocalSearchTypeSettings}
           />
           <hr />
-          <FilterSettings
-            localMinimumDPI={localMinimumDPI}
-            localMaximumDPI={localMaximumDPI}
-            localMaximumSize={localMaximumSize}
-            setLocalMinimumDPI={setLocalMinimumDPI}
-            setLocalMaximumDPI={setLocalMaximumDPI}
-            setLocalMaximumSize={setLocalMaximumSize}
+          <FilterSettingsElement
+            filterSettings={localFilterSettings}
+            setFilterSettings={setLocalFilterSettings}
           />
           <hr />
-          <SourceSettings
-            localSourceOrder={localSourceOrder}
-            setLocalSourceOrder={setLocalSourceOrder}
+          <SourceSettingsElement
+            sourceSettings={localSourceSettings}
+            setSourceSettings={setLocalSourceSettings}
           />
         </Modal.Body>
         <Modal.Footer>

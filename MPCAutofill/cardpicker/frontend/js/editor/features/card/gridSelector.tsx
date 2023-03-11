@@ -101,14 +101,16 @@ export function CommonCardbackGridSelector(
   );
   const dispatch = useDispatch<AppDispatch>();
   function setSelectedImageFromIdentifier(selectedImage: string): void {
-    dispatch(
-      bulkSetSelectedImage({
-        currentImage: projectCardback,
-        selectedImage,
-        face: Back,
-      })
-    );
-    dispatch(setSelectedCardback({ selectedImage }));
+    if (projectCardback != null) {
+      dispatch(
+        bulkSetSelectedImage({
+          currentImage: projectCardback,
+          selectedImage,
+          face: Back,
+        })
+      );
+      dispatch(setSelectedCardback({ selectedImage }));
+    }
   }
   return (
     <GridSelector

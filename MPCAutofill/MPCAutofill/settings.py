@@ -69,9 +69,11 @@ INSTALLED_APPS = [
     "crispy_forms",
     "django_user_agents",
     "widget_tweaks",
+    "corsheaders",
 ]
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.gzip.GZipMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",

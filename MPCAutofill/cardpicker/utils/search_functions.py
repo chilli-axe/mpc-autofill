@@ -190,6 +190,7 @@ def search_new(s: Search, source_key: str, page: int = 0) -> dict[str, Any]:
 
 @dataclass(frozen=True, eq=True)
 class SearchSettings:
+    # TODO: would be neat to use json schema for this
     fuzzy_search: bool
     card_sources: list[str]
     cardback_sources: list[str]
@@ -200,26 +201,29 @@ class SearchSettings:
     @classmethod
     def from_json_body(cls, json_body: dict[str, Any]) -> "SearchSettings":
         search_settings = json_body.get("searchSettings", {})
+        search_type_settings = search_settings.get("searchTypeSettings", {})
+        source_settings = search_settings.get("sourceSettings", {})
+        filter_settings = search_settings.get("filterSettings", {})
 
-        fuzzy_search = search_settings.get("fuzzySearch", False) is True
+        fuzzy_search = search_type_settings.get("fuzzySearch", False) is True
 
-        sources: set[str] = {x.key for x in Source.objects.all()}
+        sources: dict[int, str] = {x.pk: x.key for x in Source.objects.all()}
 
         card_sources: list[str] = []
-        if (card_source_keys := search_settings.get("cardSources")) is not None:
+        if (card_source_keys := source_settings.get("sources")) is not None:
             for card_source_key, card_source_enabled in card_source_keys:
-                if card_source_enabled and card_source_key in sources:
-                    card_sources.append(card_source_key)
+                if card_source_enabled and card_source_key in sources.keys():
+                    card_sources.append(sources[card_source_key])
 
-        cardback_sources: list[str] = []
-        if (cardback_source_keys := search_settings.get("cardbackSources")) is not None:
-            for cardback_source_key in cardback_source_keys:
-                if cardback_source_key in sources:
-                    cardback_sources.append(cardback_source_key)
+        cardback_sources: list[str] = card_sources  # TODO  # []
+        # if (cardback_source_keys := search_settings.get("cardbackSources")) is not None:
+        #     for cardback_source_key in cardback_source_keys:
+        #         if cardback_source_key in sources.keys():
+        #             cardback_sources.append(sources[cardback_source_key])
 
-        min_dpi = int(search_settings.get("minDPI", "0"))
-        max_dpi = int(search_settings.get("maxDPI", "1500"))
-        max_size = int(search_settings.get("maxSize", str(MAX_SIZE_MB))) * 1_000_000
+        min_dpi = int(filter_settings.get("minimumDPI", "0"))
+        max_dpi = int(filter_settings.get("maximumDPI", "1500"))
+        max_size = int(filter_settings.get("maximumSize", str(MAX_SIZE_MB))) * 1_000_000
 
         return cls(
             fuzzy_search=fuzzy_search,

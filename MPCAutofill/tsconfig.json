@@ -8,5 +8,6 @@
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
     "jsx": "react-jsx"
+    //    "strictNullChecks": true  // TODO: high priority, re enable this!
   }
 }

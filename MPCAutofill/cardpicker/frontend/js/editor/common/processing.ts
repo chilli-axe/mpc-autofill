@@ -60,11 +60,11 @@ export function processLine(line: string, dfcPairs: DFCPairs): ProcessedLine {
    */
 
   const trimmedLine = line.replace(/\s+/g, " ").trim();
-  if (trimmedLine.length === 0) {
-    return [0, null, null];
-  }
   const re = /^([0-9]*)?x?\s?(.*)$/; // note that "x" after the quantity is ignored - e.g. 3x and 3 are treated the same
   const results = re.exec(trimmedLine);
+  if (results == null) {
+    return [0, null, null];
+  }
   const quantity = parseInt(results[1] ?? "1");
 
   let frontQuery: SearchQuery | null = null;
@@ -75,7 +75,11 @@ export function processLine(line: string, dfcPairs: DFCPairs): ProcessedLine {
   }
   if (backRawQuery != null && backRawQuery.length > 0) {
     backQuery = processPrefix(backRawQuery);
-  } else if (frontQuery != null && frontQuery.query in dfcPairs) {
+  } else if (
+    frontQuery != null &&
+    frontQuery.query != null &&
+    frontQuery.query in dfcPairs
+  ) {
     // attempt to match to DFC pair
     // TODO: is it problematic to assume that all DFC pairs are the `Card` type?
     backQuery = { query: dfcPairs[frontQuery.query], card_type: Card };
@@ -91,7 +95,7 @@ export function processLines(
    * Process each line in `lines`, ignoring any lines which don't contain relevant information.
    */
 
-  const queries: Array<[number, SearchQuery?, SearchQuery?]> = [];
+  const queries: Array<[number, SearchQuery | null, SearchQuery | null]> = [];
   lines.split(/\r?\n|\r|\n/g).forEach((line: string) => {
     if (line != null && line.trim().length > 0) {
       const [quantity, frontSearchQuery, backSearchQuery] = processLine(

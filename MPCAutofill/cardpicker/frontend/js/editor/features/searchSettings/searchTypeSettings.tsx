@@ -8,12 +8,13 @@ import React from "react";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore  // TODO: https://github.com/arnthor3/react-bootstrap-toggle/issues/21
 import Toggle from "react-bootstrap-toggle";
+import { SearchTypeSettings as SearchTypeSettingsType } from "../../common/types";
 import { ToggleButtonHeight } from "../../common/constants";
 
 interface SearchTypeSettingsProps {
-  localFuzzySearch: boolean;
-  setLocalFuzzySearch: {
-    (newLocalFuzzySearch: boolean): void;
+  searchTypeSettings: SearchTypeSettingsType;
+  setSearchTypeSettings: {
+    (newSearchTypeSettings: SearchTypeSettingsType): void;
   };
 }
 
@@ -25,7 +26,12 @@ export function SearchTypeSettings(props: SearchTypeSettingsProps) {
       <br />
       <br />
       <Toggle
-        onClick={() => props.setLocalFuzzySearch(!props.localFuzzySearch)}
+        onClick={() =>
+          props.setSearchTypeSettings({
+            ...props.searchTypeSettings,
+            fuzzySearch: !props.searchTypeSettings.fuzzySearch,
+          })
+        }
         on="Fuzzy (Forgiving) Search"
         onClassName="flex-centre"
         off="Precise Search"
@@ -35,7 +41,7 @@ export function SearchTypeSettings(props: SearchTypeSettingsProps) {
         width={100 + "%"}
         size="md"
         height={ToggleButtonHeight + "px"}
-        active={props.localFuzzySearch}
+        active={props.searchTypeSettings.fuzzySearch}
       />
     </>
   );

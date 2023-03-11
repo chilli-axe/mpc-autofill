@@ -3,7 +3,7 @@
 import Cookies from "js-cookie";
 import { CSRFToken } from "../common/constants";
 import {
-  SearchSettingsState,
+  SearchSettings,
   CardDocuments,
   SearchResults,
   SourceDocuments,
@@ -41,7 +41,7 @@ export async function APIGetCardbacks(): Promise<Array<string>> {
 }
 
 export async function APISearch(
-  searchSettings: SearchSettingsState,
+  searchSettings: SearchSettings,
   queriesToSearch: Array<SearchQuery>
 ): Promise<SearchResults> {
   const rawResponse = await fetch("/2/searchResults/", {

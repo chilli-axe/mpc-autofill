@@ -14,7 +14,8 @@ import { AppDispatch, RootState } from "./store";
 
 function App() {
   const dispatch = useDispatch<AppDispatch>();
-  const cardback = useSelector((state: RootState) => state.project.cardback);
+  const cardback =
+    useSelector((state: RootState) => state.project.cardback) ?? undefined;
   useEffect(() => {
     dispatch(fetchSourceDocuments());
   }, []);

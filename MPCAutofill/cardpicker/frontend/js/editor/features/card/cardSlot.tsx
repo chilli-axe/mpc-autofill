@@ -17,7 +17,7 @@ interface CardSlotProps {
 }
 
 export function CardSlot(props: CardSlotProps) {
-  const searchQuery: SearchQuery = props.searchQuery;
+  const searchQuery = props.searchQuery;
   const face = props.face;
   const slot = props.slot;
 
@@ -39,8 +39,8 @@ export function CardSlot(props: CardSlotProps) {
   const projectCardback = useSelector(
     (state: RootState) => state.project.cardback
   );
-  const searchResultsForQueryOrNull =
-    searchQuery != null
+  const searchResultsForQueryOrDefault =
+    searchQuery != null && searchQuery.query != null
       ? useSelector(
           (state: RootState) =>
             (state.searchResults.searchResults[searchQuery.query] ?? {})[
@@ -51,37 +51,35 @@ export function CardSlot(props: CardSlotProps) {
       ? cardbacks
       : [];
 
-  const selectedImage = useSelector((state: RootState) =>
-    state.project.members[slot] != null
-      ? state.project.members[slot][face] != null
-        ? state.project.members[slot][face].selectedImage
-        : null
-      : null
+  const projectMember = useSelector(
+    (state: RootState) => state.project.members[slot][face]
   );
+  const selectedImage: string | undefined =
+    projectMember != null ? projectMember.selectedImage : undefined;
 
   useEffect(() => {
     /**
      * Set the selected image according to some initialisation logic (if search results have loaded).
      */
 
-    if (searchResultsForQueryOrNull != null) {
+    if (searchResultsForQueryOrDefault != null) {
       let mutatedSelectedImage = selectedImage;
 
       // If an image is selected and it's not in the search results, deselect the image
       if (
         mutatedSelectedImage != null &&
-        !searchResultsForQueryOrNull.includes(mutatedSelectedImage)
+        !searchResultsForQueryOrDefault.includes(mutatedSelectedImage)
       ) {
-        mutatedSelectedImage = null;
+        mutatedSelectedImage = undefined;
       }
 
       // If no image is selected and there are search results, select the first image in search results
       if (
-        searchResultsForQueryOrNull.length > 0 &&
+        searchResultsForQueryOrDefault.length > 0 &&
         mutatedSelectedImage == null
       ) {
         if (searchQuery != null) {
-          mutatedSelectedImage = searchResultsForQueryOrNull[0];
+          mutatedSelectedImage = searchResultsForQueryOrDefault[0];
         } else if (face === Back && projectCardback != null) {
           mutatedSelectedImage = projectCardback;
         }
@@ -95,11 +93,11 @@ export function CardSlot(props: CardSlotProps) {
         })
       );
     }
-  }, [searchResultsForQueryOrNull, projectCardback]);
+  }, [searchResultsForQueryOrDefault, projectCardback]);
 
   // const selectedImage = useSelector((state: RootState) => (state.project.members[slot] != null ? (state.project.members[slot][face] != null ? state.project.members[slot][face].selectedImage : null) : null))
 
-  const searchResultsForQuery = searchResultsForQueryOrNull ?? [];
+  const searchResultsForQuery = searchResultsForQueryOrDefault ?? [];
   const selectedImageIndex = searchResultsForQuery.indexOf(selectedImage);
   const previousImage =
     searchResultsForQuery[
@@ -188,16 +186,18 @@ export function CardSlot(props: CardSlotProps) {
         imageOnClick={handleShowDetailedView}
         searchQuery={searchQuery}
         noResultsFound={
-          searchResultsForQueryOrNull != null &&
-          searchResultsForQueryOrNull.length === 0
+          searchResultsForQueryOrDefault != null &&
+          searchResultsForQueryOrDefault.length === 0
         }
       />
 
-      <CardDetailedView
-        imageIdentifier={selectedImage}
-        show={showDetailedView}
-        handleClose={handleCloseDetailedView}
-      />
+      {selectedImage != null && (
+        <CardDetailedView
+          imageIdentifier={selectedImage}
+          show={showDetailedView}
+          handleClose={handleCloseDetailedView}
+        />
+      )}
 
       {searchResultsForQuery.length > 1 && (
         <CardSlotGridSelector

@@ -65,7 +65,7 @@ export const cardDocumentsSlice = createSlice({
       })
       .addCase(fetchCardDocuments.rejected, (state, action) => {
         state.status = "failed"; // TODO: build some stuff for displaying error messages
-        state.error = action.error.message;
+        state.error = action.error.message ?? null;
       });
   },
 });
