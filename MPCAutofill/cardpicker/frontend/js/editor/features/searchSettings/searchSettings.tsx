@@ -12,11 +12,6 @@ import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../../app/store";
 import {
-  // setFuzzySearch,
-  setCardSources,
-  // setMinDPI,
-  // setMaxDPI,
-  // setMaxSize,
   setSearchTypeSettings,
   setSourceSettings,
   setFilterSettings,
@@ -51,22 +46,6 @@ export function SearchSettings() {
   const [localFilterSettings, setLocalFilterSettings] =
     useState<FilterSettings>(globalSearchSettings.filterSettings);
 
-  // const [localFuzzySearch, setLocalFuzzySearch] = useState<boolean>(
-  //   globalSearchSettings.fuzzySearch
-  // );
-  // const [localSourceOrder, setLocalSourceOrder] = useState<Array<SourceRow>>(
-  //   globalSearchSettings.cardSources ?? []
-  // );
-  // const [localMinimumDPI, setLocalMinimumDPI] = useState<number>(
-  //   globalSearchSettings.minDPI
-  // );
-  // const [localMaximumDPI, setLocalMaximumDPI] = useState<number>(
-  //   globalSearchSettings.maxDPI
-  // );
-  // const [localMaximumSize, setLocalMaximumSize] = useState<number>(
-  //   globalSearchSettings.maxSize
-  // );
-
   const maybeSourceDocuments = useSelector(
     (state: RootState) => state.sourceDocuments.sourceDocuments
   );
@@ -74,18 +53,7 @@ export function SearchSettings() {
   useEffect(() => {
     if (maybeSourceDocuments != null) {
       const cookieSettings = getCookieSearchSettings(maybeSourceDocuments);
-
       if (cookieSettings != null) {
-        setLocalSearchTypeSettings(cookieSettings.searchTypeSettings);
-        setLocalSourceSettings(cookieSettings.sourceSettings);
-        setFilterSettings(cookieSettings.filterSettings);
-      }
-
-      if (
-        globalSearchSettings.sourceSettings.sources == null &&
-        cookieSettings != null
-      ) {
-        // TODO: update this section after finishing the implementation of reconciling sources against cookies.
         dispatch(setSearchTypeSettings(cookieSettings.searchTypeSettings));
         dispatch(setSourceSettings(cookieSettings.sourceSettings));
         dispatch(setFilterSettings(cookieSettings.filterSettings));

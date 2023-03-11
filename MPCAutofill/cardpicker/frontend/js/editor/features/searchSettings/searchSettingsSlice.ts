@@ -20,9 +20,6 @@ export const searchSettingsSlice = createSlice({
   name: "searchSettings",
   initialState,
   reducers: {
-    setCardSources: (state, action) => {
-      state.sourceSettings.sources = [...action.payload];
-    },
     setSearchTypeSettings: (state, action) => {
       state.searchTypeSettings = action.payload;
     },
@@ -34,10 +31,6 @@ export const searchSettingsSlice = createSlice({
     },
   },
 });
-export const {
-  setCardSources,
-  setSearchTypeSettings,
-  setSourceSettings,
-  setFilterSettings,
-} = searchSettingsSlice.actions;
+export const { setSearchTypeSettings, setSourceSettings, setFilterSettings } =
+  searchSettingsSlice.actions;
 export default searchSettingsSlice.reducer;
