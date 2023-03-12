@@ -39,17 +39,15 @@ export function CardSlot(props: CardSlotProps) {
   const projectCardback = useSelector(
     (state: RootState) => state.project.cardback
   );
-  const searchResultsForQueryOrDefault =
+  const searchResultsForQueryOrDefault = useSelector((state: RootState) =>
     searchQuery != null && searchQuery.query != null
-      ? useSelector(
-          (state: RootState) =>
-            (state.searchResults.searchResults[searchQuery.query] ?? {})[
-              searchQuery.card_type
-            ]
-        )
+      ? (state.searchResults.searchResults[searchQuery.query] ?? {})[
+          searchQuery.card_type
+        ]
       : face === Back
       ? cardbacks
-      : [];
+      : []
+  );
 
   const projectMember = useSelector(
     (state: RootState) => state.project.members[slot][face]
@@ -98,15 +96,22 @@ export function CardSlot(props: CardSlotProps) {
   // const selectedImage = useSelector((state: RootState) => (state.project.members[slot] != null ? (state.project.members[slot][face] != null ? state.project.members[slot][face].selectedImage : null) : null))
 
   const searchResultsForQuery = searchResultsForQueryOrDefault ?? [];
-  const selectedImageIndex = searchResultsForQuery.indexOf(selectedImage);
-  const previousImage =
-    searchResultsForQuery[
-      wrapIndex(selectedImageIndex + 1, searchResultsForQuery.length)
-    ];
-  const nextImage =
-    searchResultsForQuery[
-      wrapIndex(selectedImageIndex - 1, searchResultsForQuery.length)
-    ];
+  const selectedImageIndex: number | undefined =
+    selectedImage != null
+      ? searchResultsForQuery.indexOf(selectedImage)
+      : undefined;
+  const previousImage: string | undefined =
+    selectedImageIndex != null
+      ? searchResultsForQuery[
+          wrapIndex(selectedImageIndex + 1, searchResultsForQuery.length)
+        ]
+      : undefined;
+  const nextImage: string | undefined =
+    selectedImageIndex != null
+      ? searchResultsForQuery[
+          wrapIndex(selectedImageIndex - 1, searchResultsForQuery.length)
+        ]
+      : undefined;
 
   const deleteThisImage = () => {
     dispatch(deleteImage({ slot }));
@@ -114,16 +119,21 @@ export function CardSlot(props: CardSlotProps) {
 
   function setSelectedImageFromDelta(delta: number): void {
     // TODO: docstring
-    dispatch(
-      setSelectedImage({
-        face,
-        slot,
-        selectedImage:
-          searchResultsForQuery[
-            wrapIndex(selectedImageIndex + delta, searchResultsForQuery.length)
-          ],
-      })
-    );
+    if (selectedImageIndex != null) {
+      dispatch(
+        setSelectedImage({
+          face,
+          slot,
+          selectedImage:
+            searchResultsForQuery[
+              wrapIndex(
+                selectedImageIndex + delta,
+                searchResultsForQuery.length
+              )
+            ],
+        })
+      );
+    }
   }
 
   const cardHeaderTitle = `Slot ${slot + 1}`;
@@ -151,7 +161,7 @@ export function CardSlot(props: CardSlotProps) {
             className="mpccard-counter-btn"
             onClick={handleShowGridSelector}
           >
-            {selectedImageIndex + 1} / {searchResultsForQuery.length}
+            {(selectedImageIndex ?? 0) + 1} / {searchResultsForQuery.length}
           </Button>
           <div>
             <Button

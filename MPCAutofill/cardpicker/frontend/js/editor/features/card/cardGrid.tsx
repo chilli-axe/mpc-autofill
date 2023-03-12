@@ -58,7 +58,9 @@ export function CardGrid() {
       <CardSlot
         key={`${Front}-slot-${slot}`}
         searchQuery={
-          slotProjectMember.front != null ? slotProjectMember.front.query : null
+          slotProjectMember.front != null
+            ? slotProjectMember.front.query
+            : undefined
         }
         face={Front}
         slot={slot}
@@ -68,7 +70,9 @@ export function CardGrid() {
       <CardSlot
         key={`${Back}-slot-${slot}`}
         searchQuery={
-          slotProjectMember.back != null ? slotProjectMember.back.query : null
+          slotProjectMember.back != null
+            ? slotProjectMember.back.query
+            : undefined
         }
         face={Back}
         slot={slot}

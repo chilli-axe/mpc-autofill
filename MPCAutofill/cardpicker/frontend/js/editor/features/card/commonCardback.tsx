@@ -49,29 +49,36 @@ export function CommonCardback(props: CommonCardbackProps) {
     }
   }, [searchResults]);
 
-  const selectedImageIndex = searchResults.indexOf(selectedImage);
-  const previousImage =
-    searchResults[wrapIndex(selectedImageIndex + 1, searchResults.length)];
-  const nextImage =
-    searchResults[wrapIndex(selectedImageIndex - 1, searchResults.length)];
+  const selectedImageIndex: number | undefined =
+    selectedImage != null ? searchResults.indexOf(selectedImage) : undefined;
+  const previousImage: string | undefined =
+    selectedImageIndex != null
+      ? searchResults[wrapIndex(selectedImageIndex + 1, searchResults.length)]
+      : undefined;
+  const nextImage: string | undefined =
+    selectedImageIndex != null
+      ? searchResults[wrapIndex(selectedImageIndex - 1, searchResults.length)]
+      : undefined;
 
   function setSelectedImageFromDelta(delta: number): void {
-    const newImage =
-      searchResults[
-        wrapIndex(selectedImageIndex + delta, searchResults.length)
-      ];
-    dispatch(
-      bulkSetSelectedImage({
-        currentImage: selectedImage,
-        selectedImage: newImage,
-        face: Back,
-      })
-    );
-    dispatch(
-      setSelectedCardback({
-        selectedImage: newImage,
-      })
-    );
+    if (selectedImage != null && selectedImageIndex != null) {
+      const newImage =
+        searchResults[
+          wrapIndex(selectedImageIndex + delta, searchResults.length)
+        ];
+      dispatch(
+        bulkSetSelectedImage({
+          currentImage: selectedImage,
+          selectedImage: newImage,
+          face: Back,
+        })
+      );
+      dispatch(
+        setSelectedCardback({
+          selectedImage: newImage,
+        })
+      );
+    }
   }
 
   // TODO: would be good to reuse some of this code
@@ -90,7 +97,7 @@ export function CommonCardback(props: CommonCardbackProps) {
             className="mpccard-counter-btn"
             onClick={handleShowGridSelector}
           >
-            {selectedImageIndex + 1} / {searchResults.length}
+            {(selectedImageIndex ?? 0) + 1} / {searchResults.length}
           </Button>
           <div>
             <Button
@@ -130,11 +137,13 @@ export function CommonCardback(props: CommonCardbackProps) {
         show={showGridSelector}
         handleClose={handleCloseGridSelector}
       />
-      <CardDetailedView
-        imageIdentifier={selectedImage}
-        show={showDetailedView}
-        handleClose={handleCloseDetailedView}
-      />
+      {selectedImage != null && (
+        <CardDetailedView
+          imageIdentifier={selectedImage}
+          show={showDetailedView}
+          handleClose={handleCloseDetailedView}
+        />
+      )}
     </>
   );
 }

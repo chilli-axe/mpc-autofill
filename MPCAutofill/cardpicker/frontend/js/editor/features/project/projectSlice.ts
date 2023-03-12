@@ -7,6 +7,7 @@ import {
   SlotProjectMembers,
   Faces,
   ProcessedLine,
+  ProjectMember,
 } from "../../common/types";
 
 const initialState: Project = {
@@ -78,11 +79,14 @@ export const projectSlice = createSlice({
       // TODO: this is a bit awkward
       if (state.members[action.payload.slot][action.payload.face] == null) {
         state.members[action.payload.slot][action.payload.face] = {
-          query: null,
+          query: {
+            query: null,
+            card_type: Card,
+          },
           selectedImage: action.payload.selectedImage,
         };
       } else {
-        state.members[action.payload.slot][action.payload.face].selectedImage =
+        state.members[action.payload.slot][action.payload.face]!.selectedImage =
           action.payload.selectedImage;
       }
     },
@@ -96,8 +100,9 @@ export const projectSlice = createSlice({
       const mySet: Set<number> = new Set();
       for (const [slot, projectMember] of state.members.entries()) {
         if (
-          projectMember[action.payload.face].selectedImage ===
-          action.payload.currentImage
+          projectMember[action.payload.face] != null &&
+          projectMember[action.payload.face]!.selectedImage ===
+            action.payload.currentImage
         ) {
           // TODO: common cardback should also be filtered out here
           mySet.add(slot);
@@ -107,11 +112,14 @@ export const projectSlice = createSlice({
         // TODO: copied and pasted from above. this is pretty bad.
         if (state.members[slot][action.payload.face] == null) {
           state.members[slot][action.payload.face] = {
-            query: null,
+            query: {
+              query: null,
+              card_type: Card,
+            },
             selectedImage: action.payload.selectedImage,
           };
         } else {
-          state.members[slot][action.payload.face].selectedImage =
+          state.members[slot][action.payload.face]!.selectedImage =
             action.payload.selectedImage;
         }
         // setSelectedImage(state, {face: action.payload.face, slot: slot, selectedImage: action.payload.selectedImage})
@@ -188,6 +196,7 @@ export const selectUniqueCardIdentifiers = (state: RootState): Set<string> => {
       if (
         projectMember != null &&
         projectMember.query != null &&
+        projectMember.query.query != null &&
         (
           (state.searchResults.searchResults[projectMember.query.query] ?? {})[
             projectMember.query.card_type
@@ -212,6 +221,7 @@ export const selectQueriesWithoutSearchResults = (
       if (
         projectMember != null &&
         projectMember.query != null &&
+        projectMember.query.query != null &&
         (state.searchResults.searchResults[projectMember.query.query] ?? {})[
           projectMember.query.card_type
         ] == null
