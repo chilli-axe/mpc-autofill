@@ -9,6 +9,7 @@ import {
   ProcessedLine,
   ProjectMember,
 } from "../../common/types";
+import { generateXML } from "../exports/exportXML";
 
 const initialState: Project = {
   members: [
@@ -169,6 +170,15 @@ export const selectProjectMembers = (
 
 export const selectProjectSize = (state: RootState): number =>
   state.project.members.length;
+
+export const selectGeneratedXML = (state: RootState): string => {
+  return generateXML(
+    selectProjectMembers(state),
+    state.cardDocuments.cardDocuments,
+    state.project.cardback,
+    selectProjectSize(state)
+  );
+};
 
 export const selectProjectFileSize = (state: RootState): number => {
   const uniqueCardIdentifiers = new Set<string>();
