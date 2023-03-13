@@ -7,14 +7,13 @@ import Dropdown from "react-bootstrap/Dropdown";
 import Modal from "react-bootstrap/Modal";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
-import { DFCPairs, CardType } from "../../common/types";
+import { DFCPairs } from "../../common/types";
 import {
   FaceSeparator,
   Card,
   Cardback,
   Token,
-  CardTypePrefixes,
-  CardTypeSeparator,
+  ReversedCardTypePrefixes,
 } from "../../common/constants";
 import { APIGetPlaceholderText } from "../../app/api";
 
@@ -36,13 +35,6 @@ export function ImportText(props: ImportTextProps) {
   }): string => {
     // TODO: check compatibility of `\n` in different browsers. `separator` was previously "&#10;".
 
-    const reversedCardTypePrefixes = Object.fromEntries(
-      Object.keys(CardTypePrefixes).map((prefix: CardType) => [
-        CardTypePrefixes[prefix],
-        prefix.length > 0 ? prefix + CardTypeSeparator : prefix,
-      ])
-    );
-
     const separator = "\n";
     const placeholderTextByCardType: Array<string> = [];
 
@@ -52,7 +44,7 @@ export function ImportText(props: ImportTextProps) {
           placeholders[cardType]
             .map(
               (x: [number, string]) =>
-                `${x[0]}x ${reversedCardTypePrefixes[cardType]}${x[1]}`
+                `${x[0]}x ${ReversedCardTypePrefixes[cardType]}${x[1]}`
             )
             .join(separator)
         );

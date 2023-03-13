@@ -1,4 +1,4 @@
-import { Back, Front } from "../../common/constants";
+import { Back, Front, ReversedCardTypePrefixes } from "../../common/constants";
 import { bracket } from "../../common/utils";
 import formatXML from "xml-formatter";
 import { CardDocuments, SlotProjectMembers } from "../../common/types";
@@ -76,7 +76,12 @@ function createCardElement(
     cardElement.append(nameElement);
 
     const queryElement = doc.createElement("query");
-    queryElement.appendChild(doc.createTextNode(maybeCardDocument.searchq));
+    queryElement.appendChild(
+      doc.createTextNode(
+        ReversedCardTypePrefixes[maybeCardDocument.card_type] +
+          maybeCardDocument.searchq
+      )
+    );
     cardElement.append(queryElement);
     return cardElement;
   }

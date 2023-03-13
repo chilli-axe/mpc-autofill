@@ -12,6 +12,13 @@ export const CardTypePrefixes: { [prefix: string]: CardType } = {
   t: Token,
 };
 
+export const ReversedCardTypePrefixes = Object.fromEntries(
+  Object.keys(CardTypePrefixes).map((prefix: string) => [
+    CardTypePrefixes[prefix],
+    prefix.length > 0 ? prefix + CardTypeSeparator : prefix,
+  ])
+);
+
 export const Front: Faces = "front";
 export const Back: Faces = "back";
 export const FaceSeparator = "|";
