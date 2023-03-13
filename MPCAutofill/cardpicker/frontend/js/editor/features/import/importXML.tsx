@@ -4,7 +4,7 @@ import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
 import { TextFileDropzone } from "../dropzone";
 
-export function AddCardsByXML() {
+export function ImportXML() {
   const [showXMLModal, setShowXMLModal] = useState(false);
   const handleCloseXMLModal = () => setShowXMLModal(false);
   const handleShowXMLModal = () => setShowXMLModal(true);

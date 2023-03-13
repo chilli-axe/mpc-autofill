@@ -77,7 +77,7 @@ function aggregateIntoQuantities(
 export function generateDecklist(
   projectMembers: Array<SlotProjectMembers>,
   cardDocuments: CardDocuments
-): Array<string> {
+): string {
   /**
    * Generate a decklist representation of the project, suitable for uploading to deckbuilding websites
    * or sending to a friend. Only includes cards, not cardbacks or tokens.
@@ -88,5 +88,5 @@ export function generateDecklist(
     cardDocuments
   );
   const stringifiedCardNames = stringifyCardNames(projectMemberNames);
-  return aggregateIntoQuantities(stringifiedCardNames);
+  return aggregateIntoQuantities(stringifiedCardNames).join("\n");
 }

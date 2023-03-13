@@ -18,11 +18,11 @@ import {
 } from "../../common/constants";
 import { APIGetPlaceholderText } from "../../app/api";
 
-interface AddCardsByTextProps {
+interface ImportTextProps {
   dfcPairs: DFCPairs;
 }
 
-export function AddCardsByText(props: AddCardsByTextProps) {
+export function ImportText(props: ImportTextProps) {
   // TODO: add an accordion here for explaining how to search for each different card type with prefixes
   const dispatch = useDispatch<AppDispatch>();
   const [showTextModal, setShowTextModal] = useState(false);

@@ -8,8 +8,8 @@ import {
   Faces,
   ProcessedLine,
 } from "../../common/types";
-import { generateXML } from "../export/XML";
-import { generateDecklist } from "../export/decklist";
+import { generateXML } from "../export/exportXML";
+import { generateDecklist } from "../export/exportDecklist";
 
 const initialState: Project = {
   members: [
@@ -184,7 +184,7 @@ export const selectGeneratedDecklist = (state: RootState): string => {
   return generateDecklist(
     selectProjectMembers(state),
     state.cardDocuments.cardDocuments
-  ).join("\n");
+  );
 };
 
 export const selectProjectFileSize = (state: RootState): number => {

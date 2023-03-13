@@ -6,11 +6,11 @@ import { DFCPairs } from "../../common/types";
 import { TextFileDropzone } from "../dropzone";
 import Table from "react-bootstrap/Table";
 
-interface AddCardsByCSVProps {
+interface ImportCSVProps {
   dfcPairs: DFCPairs;
 }
 
-export function AddCardsByCSV(props: AddCardsByCSVProps) {
+export function ImportCSV(props: ImportCSVProps) {
   const [showCSVModal, setShowCSVModal] = useState(false);
   const handleCloseCSVModal = () => setShowCSVModal(false);
   const handleShowCSVModal = () => setShowCSVModal(true);

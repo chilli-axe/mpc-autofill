@@ -10,11 +10,11 @@ import Button from "react-bootstrap/Button";
 import { APIGetImportSites, APIQueryImportSite } from "../../app/api";
 import { ImportSite, DFCPairs } from "../../common/types";
 
-interface AddCardsByURLProps {
+interface ImportURLProps {
   dfcPairs: DFCPairs;
 }
 
-export function AddCardsByURL(props: AddCardsByURLProps) {
+export function ImportURL(props: ImportURLProps) {
   const dispatch = useDispatch<AppDispatch>();
 
   // TODO: should probably set up type hints for all `useState` usages

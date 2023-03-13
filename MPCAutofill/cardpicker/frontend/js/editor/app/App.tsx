@@ -2,7 +2,7 @@ import * as React from "react";
 import { CardGrid } from "../features/card/cardGrid";
 import { CommonCardback } from "../features/card/commonCardback";
 import { SearchSettings } from "../features/searchSettings/searchSettings";
-import { AddCards } from "../features/addCards/addCards";
+import { Import } from "../features/import/import";
 import { ProjectStatus } from "../features/project/projectStatus";
 import { ViewSettings } from "../features/viewSettings/viewSettings";
 import Col from "react-bootstrap/Col";
@@ -39,7 +39,7 @@ function App() {
               <SearchSettings />
             </Col>
             <Col lg={6} md={12} sm={12} xs={12}>
-              <AddCards />
+              <Import />
             </Col>
           </Row>
           <Col className="g-0" lg={{ span: 8, offset: 2 }} md={12}>
