@@ -7,9 +7,9 @@ import {
   SlotProjectMembers,
   Faces,
   ProcessedLine,
-  ProjectMember,
 } from "../../common/types";
-import { generateXML } from "../exports/exportXML";
+import { generateXML } from "../export/XML";
+import { generateDecklist } from "../export/decklist";
 
 const initialState: Project = {
   members: [
@@ -178,6 +178,13 @@ export const selectGeneratedXML = (state: RootState): string => {
     state.project.cardback,
     selectProjectSize(state)
   );
+};
+
+export const selectGeneratedDecklist = (state: RootState): string => {
+  return generateDecklist(
+    selectProjectMembers(state),
+    state.cardDocuments.cardDocuments
+  ).join("\n");
 };
 
 export const selectProjectFileSize = (state: RootState): number => {

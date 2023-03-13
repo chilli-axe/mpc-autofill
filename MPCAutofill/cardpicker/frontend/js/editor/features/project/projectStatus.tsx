@@ -4,6 +4,7 @@ import {
   selectProjectFileSize,
   selectProjectSize,
   selectGeneratedXML,
+  selectGeneratedDecklist,
 } from "./projectSlice";
 import Alert from "react-bootstrap/Alert";
 import { bracket, imageSizeToMBString, downloadText } from "../../common/utils";
@@ -21,11 +22,13 @@ export function ProjectStatus() {
   // const handleShow = () => setShow(true);
 
   const generatedXML = useSelector(selectGeneratedXML);
+  const generatedDecklist = useSelector(selectGeneratedDecklist);
   const projectSize = useSelector(selectProjectSize);
   const projectFileSize = useSelector(selectProjectFileSize);
 
   // TODO: read project name
   const exportXML = () => downloadText("cards.xml", generatedXML);
+  const exportDecklist = () => downloadText("decklist.txt", generatedDecklist);
 
   return (
     <>
@@ -76,7 +79,7 @@ export function ProjectStatus() {
                   <Tooltip {...props}>Download Decklist</Tooltip>
                 )}
               >
-                <Button variant="outline-light">
+                <Button variant="outline-light" onClick={exportDecklist}>
                   <i
                     className="bi bi-file-text"
                     style={{ fontSize: 1.25 + "rem" }}

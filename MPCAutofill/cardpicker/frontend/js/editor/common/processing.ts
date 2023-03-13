@@ -10,6 +10,11 @@ import {
 } from "./constants";
 import { DFCPairs, SearchQuery, ProcessedLine } from "./types";
 
+export function stripTextInParentheses(text: string): string {
+  const re = /[([].*?[)\]]/g;
+  return text.replaceAll(re, "").trim();
+}
+
 export function processQuery(query: string): string {
   /**
    * Process `query` by converting to lowercase, removing all punctuation, and sanitising whitespace.

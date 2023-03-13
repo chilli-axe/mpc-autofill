@@ -6,20 +6,20 @@ import { CardDocuments, SlotProjectMembers } from "../../common/types";
 interface SlotsByIdentifier {
   [identifier: string]: Set<number>;
 }
-interface OrderMap {
+interface SlotsByIdentifierAndFace {
   front: SlotsByIdentifier;
   back: SlotsByIdentifier;
 }
 
-function aggregateIntoOrderMap(
+function aggregateSlotsByIdentifierAndFace(
   projectMembers: Array<SlotProjectMembers>,
   cardback: string | null
-): OrderMap {
+): SlotsByIdentifierAndFace {
   /**
    * Aggregate cards in project by (face, selected image) => a list of slots.
    */
 
-  const orderMap: OrderMap = { front: {}, back: {} };
+  const orderMap: SlotsByIdentifierAndFace = { front: {}, back: {} };
   for (const [slot, projectMember] of projectMembers.entries()) {
     for (const face of [Front, Back]) {
       const projectMemberAtFace = projectMember[face];
@@ -39,14 +39,14 @@ function aggregateIntoOrderMap(
   return orderMap;
 }
 
-function createElementForOrderMapItem(
+function createCardElement(
   cardDocuments: CardDocuments,
   doc: XMLDocument,
   identifier: string,
   slots: Set<number>
 ): Element | null {
   /**
-   * Create an XML element representing image `identifier`, which is included in `face` at `slots`.
+   * Create an XML element representing the card `identifier`, which is included in the project at `slots`.
    */
 
   const maybeCardDocument = cardDocuments[identifier];
@@ -94,7 +94,7 @@ export function generateXML(
    * and suitable for uploading through the desktop tool.
    */
 
-  const orderMap = aggregateIntoOrderMap(projectMembers, cardback);
+  const orderMap = aggregateSlotsByIdentifierAndFace(projectMembers, cardback);
 
   // top level XML doc element, attach everything to this
   const doc = document.implementation.createDocument("", "", null);
@@ -120,7 +120,7 @@ export function generateXML(
     if (Object.keys(orderMap[face]).length > 0) {
       const faceElement = doc.createElement(`${face}s`);
       for (const [identifier, slots] of Object.entries(orderMap[face])) {
-        const cardElement = createElementForOrderMapItem(
+        const cardElement = createCardElement(
           cardDocuments,
           doc,
           identifier,
