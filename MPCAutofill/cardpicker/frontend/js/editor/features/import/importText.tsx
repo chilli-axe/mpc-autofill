@@ -91,7 +91,10 @@ export function ImportText(props: ImportTextProps) {
           <p>
             Specify both front and back queries by separating them with{" "}
             <code>{FaceSeparator}</code> — for example,{" "}
-            <code>4x goblin {FaceSeparator} t:elf</code>.
+            <code>
+              4x goblin {FaceSeparator} {ReversedCardTypePrefixes[Token]}elf
+            </code>
+            .
           </p>
           <p>
             If you don't specify a back query and your front query is a
