@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { Card } from "../../common/constants";
+import { Card, ReversedCardTypePrefixes } from "../../common/constants";
 import { RootState } from "../../app/store";
 import {
   SearchQuery,
@@ -167,6 +167,27 @@ export const projectSlice = createSlice({
 export const selectProjectMembers = (
   state: RootState
 ): Array<SlotProjectMembers> => state.project.members;
+
+// TODO: this is disgusting
+export const selectProjectMemberQueries = (state: RootState): Set<string> =>
+  new Set(
+    state.project.members.flatMap((x: SlotProjectMembers) =>
+      (x.front?.query?.query != null
+        ? [
+            ReversedCardTypePrefixes[x.front?.query?.card_type] +
+              x.front?.query?.query,
+          ]
+        : []
+      ).concat(
+        x.back?.query?.query != null
+          ? [
+              ReversedCardTypePrefixes[x.back?.query?.card_type] +
+                x.back?.query?.query,
+            ]
+          : []
+      )
+    )
+  );
 
 export const selectProjectSize = (state: RootState): number =>
   state.project.members.length;

@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState, AppDispatch } from "../../app/store";
 import { CardSlot } from "./cardSlot";
@@ -6,7 +6,10 @@ import { fetchCardDocuments } from "../search/cardDocumentsSlice";
 import { clearSearchResults } from "../search/searchResultsSlice";
 import { Front, Back } from "../../common/constants";
 import Row from "react-bootstrap/Row";
-import { selectProjectMembers } from "../project/projectSlice";
+import {
+  selectProjectMembers,
+  selectProjectMemberQueries,
+} from "../project/projectSlice";
 import Modal from "react-bootstrap/Modal";
 
 export function CardGrid() {
@@ -16,34 +19,33 @@ export function CardGrid() {
   const searchResultsIdle = // TODO: replace the magic string here with a constant
     useSelector((state: RootState) => state.searchResults.status) === "idle";
 
+  const searchQueriesSet = useSelector(selectProjectMemberQueries);
+
   const cardSlotsFronts = [];
   const cardSlotsBacks = [];
   const projectMembers = useSelector(selectProjectMembers);
   const searchSettings = useSelector(
     (state: RootState) => state.searchSettings
   );
-  const stringifiedSearchSettings = JSON.stringify(searchSettings);
+  const stringifiedSearchSettings = useMemo<string>(
+    () => JSON.stringify(searchSettings),
+    [searchSettings]
+  );
+  const stringifiedSources = JSON.stringify(
+    searchSettings.sourceSettings.sources
+  );
 
-  // retrieve cards from database when queries in the project change
-  // TODO: I think this snippet should move somewhere more sensible & reusable. probably as a selector.
-  const searchQueries: Set<string> = new Set();
-  projectMembers.forEach((x) => {
-    // TODO: does this implementation mean you wouldn't retrieve search results if you have `goblin` in the project and search for `t:goblin`?
-    if (x.front != null && x.front.query != null) {
-      searchQueries.add(JSON.stringify(x.front.query.query));
-    }
-    if (x.back != null && x.back.query != null) {
-      searchQueries.add(JSON.stringify(x.back.query.query));
-    }
-  });
-  const searchQueriesArray = Array.from(searchQueries);
-  searchQueriesArray.sort();
+  const stringifiedSearchQueries = useMemo<string>(() => {
+    const searchQueriesArray = Array.from(searchQueriesSet);
+    searchQueriesArray.sort();
+    return JSON.stringify(searchQueriesArray);
+  }, [projectMembers]);
 
   useEffect(() => {
     if (searchSettings.sourceSettings.sources != null) {
       dispatch(fetchCardDocuments());
     }
-  }, [searchQueriesArray.join(",")]);
+  }, [stringifiedSearchQueries, stringifiedSources]);
 
   useEffect(() => {
     // recalculate search results when search settings change
