@@ -53,11 +53,9 @@ export function SearchSettings() {
   useEffect(() => {
     if (maybeSourceDocuments != null) {
       const cookieSettings = getCookieSearchSettings(maybeSourceDocuments);
-      if (cookieSettings != null) {
-        dispatch(setSearchTypeSettings(cookieSettings.searchTypeSettings));
-        dispatch(setSourceSettings(cookieSettings.sourceSettings));
-        dispatch(setFilterSettings(cookieSettings.filterSettings));
-      }
+      dispatch(setSearchTypeSettings(cookieSettings.searchTypeSettings));
+      dispatch(setSourceSettings(cookieSettings.sourceSettings));
+      dispatch(setFilterSettings(cookieSettings.filterSettings));
     }
   }, [maybeSourceDocuments]);
 

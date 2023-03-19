@@ -43,7 +43,7 @@ class Source(models.Model):
     )
     external_link = models.CharField(max_length=200, blank=True, null=True)
     description = models.CharField(max_length=400)
-    ordinal = models.IntegerField(default=0)
+    ordinal = models.IntegerField(default=0)  # TODO: why is this not unique?
 
     def __str__(self) -> str:
         (qty_total, qty_cards, qty_cardbacks, qty_tokens, _) = self.count()

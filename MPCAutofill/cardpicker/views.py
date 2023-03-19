@@ -492,8 +492,8 @@ def api_function_2(request: HttpRequest) -> HttpResponse:
         card_identifiers = json_body.get("card_identifiers", [])
         # if len(card_identifiers) > 100:  # TODO
         #     card_identifiers = card_identifiers[0:100]
-        objs = {x.identifier: x.to_dict() for x in Card.objects.filter(identifier__in=card_identifiers)}
-        return JsonResponse({"results": objs})
+        results = {x.identifier: x.to_dict() for x in Card.objects.filter(identifier__in=card_identifiers)}
+        return JsonResponse({"results": results})
     else:
         ...  # TODO: return error response
     return JsonResponse({})
@@ -504,9 +504,8 @@ def api_function_3(request: HttpRequest) -> HttpResponse:
     Return a list of sources.
     """
 
-    objs = {x.pk: x.to_dict() for x in Source.objects.all()}
-    # objs = {x.key: x.to_dict() for x in Source.objects.all()}
-    return JsonResponse({"results": objs})
+    results = {x.pk: x.to_dict() for x in Source.objects.order_by("ordinal", "pk")}
+    return JsonResponse({"results": results})
 
 
 def api_function_4(request: HttpRequest) -> HttpResponse:

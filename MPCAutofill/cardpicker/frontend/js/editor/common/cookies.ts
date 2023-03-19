@@ -5,25 +5,28 @@
 
 import Cookies from "js-cookie";
 import Ajv from "ajv";
-import { SearchSettings, SourceDocuments, SourceRow } from "./types";
+import {
+  SearchSettings,
+  SourceDocument,
+  SourceDocuments,
+  SourceRow,
+} from "./types";
 import { searchSettingsSchema } from "./schemas";
-import { CSRFToken } from "./constants";
+import { CSRFToken, MaximumDPI, MaximumSize, MinimumDPI } from "./constants";
 
 const ajv = new Ajv();
 
 export function getCSRFHeader(): HeadersInit | undefined {
   const csrfToken = Cookies.get(CSRFToken);
   if (csrfToken != null) {
-    return {
-      "X-CSRFToken": Cookies.get(CSRFToken) ?? "",
-    };
+    return { "X-CSRFToken": csrfToken };
   }
   return undefined;
 }
 
 export function getCookieSearchSettings(
   sourceDocuments: SourceDocuments
-): SearchSettings | null {
+): SearchSettings {
   /**
    * Get search settings from cookie data. If valid data is retrieved,
    * ensure that all `sourceDocuments` are included in the returned settings,
@@ -52,7 +55,20 @@ export function getCookieSearchSettings(
       );
     return rawSettings;
   } else {
-    return null;
+    // default settings
+    return {
+      searchTypeSettings: { fuzzySearch: false },
+      sourceSettings: {
+        sources: Object.values(sourceDocuments).map(
+          (sourceDocument: SourceDocument) => [sourceDocument.pk, true]
+        ),
+      },
+      filterSettings: {
+        minimumDPI: MinimumDPI,
+        maximumDPI: MaximumDPI,
+        maximumSize: MaximumSize,
+      },
+    };
   }
 }
 

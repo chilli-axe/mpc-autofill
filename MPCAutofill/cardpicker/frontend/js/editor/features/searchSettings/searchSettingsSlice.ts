@@ -3,6 +3,7 @@ import { MinimumDPI, MaximumDPI, MaximumSize } from "../../common/constants";
 import { SearchSettings } from "../../common/types";
 
 const initialState: SearchSettings = {
+  // TODO: this default is redundant through `cookies.ts`. reconsider this
   searchTypeSettings: {
     fuzzySearch: false,
   },
