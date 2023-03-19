@@ -127,7 +127,7 @@ def image_local_file(image_element_local_file: ElementTree.Element) -> Generator
 def image_element_invalid_google_drive() -> Generator[ElementTree.Element, None, None]:
     yield ElementTree.fromstring(
         textwrap.dedent(
-            f"""
+            """
             <card>
                 <id>invalid_google_drive_id</id>
                 <slots>0</slots>
@@ -265,7 +265,7 @@ def card_image_collection_valid(
 def card_image_collection_element_no_cards():
     yield ElementTree.fromstring(
         textwrap.dedent(
-            f"""
+            """
             <fronts>
             </fronts>
             """
@@ -281,7 +281,7 @@ def card_image_collection_element_no_cards():
 def details_element_valid():
     yield ElementTree.fromstring(
         textwrap.dedent(
-            f"""
+            """
             <details>
                 <quantity>1</quantity>
                 <bracket>18</bracket>
@@ -297,7 +297,7 @@ def details_element_valid():
 def details_element_quantity_greater_than_bracket() -> Generator[ElementTree.Element, None, None]:
     yield ElementTree.fromstring(
         textwrap.dedent(
-            f"""
+            """
             <details>
                 <quantity>19</quantity>
                 <bracket>18</bracket>
@@ -313,7 +313,7 @@ def details_element_quantity_greater_than_bracket() -> Generator[ElementTree.Ele
 def details_element_invalid_cardstock() -> Generator[ElementTree.Element, None, None]:
     yield ElementTree.fromstring(
         textwrap.dedent(
-            f"""
+            """
             <details>
                 <quantity>18</quantity>
                 <bracket>18</bracket>
@@ -329,7 +329,7 @@ def details_element_invalid_cardstock() -> Generator[ElementTree.Element, None, 
 def details_element_invalid_bracket() -> Generator[ElementTree.Element, None, None]:
     yield ElementTree.fromstring(
         textwrap.dedent(
-            f"""
+            """
             <details>
                 <quantity>18</quantity>
                 <bracket>940</bracket>
@@ -768,7 +768,7 @@ def test_card_order_mangled_xml(input_enter):
 
 def test_card_order_missing_slots(input_enter, card_order_element_invalid_quantity):
     # just testing that this order parses without error
-    card_order = CardOrder.from_element(card_order_element_invalid_quantity)
+    CardOrder.from_element(card_order_element_invalid_quantity)
 
 
 # endregion

@@ -1,11 +1,6 @@
-from typing import Any
-
 from django_elasticsearch_dsl import Document, fields
 from django_elasticsearch_dsl.registries import registry
 
-from django.utils import dateformat
-
-from cardpicker.constants import DATE_FORMAT
 from cardpicker.models import Card
 
 

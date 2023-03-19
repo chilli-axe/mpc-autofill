@@ -1,8 +1,7 @@
 from accounts.forms import SignUpForm
 
-from django.contrib.auth import authenticate, login
 from django.http import HttpRequest, HttpResponse
-from django.shortcuts import redirect, render
+from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.views import generic
 

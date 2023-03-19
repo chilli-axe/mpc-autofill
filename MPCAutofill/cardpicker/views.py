@@ -9,11 +9,9 @@ from typing import Any, Callable, Optional, TypeVar, Union, cast
 from blog.models import BlogPost
 
 from django.db import connection
-from django.db.models import Count
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
-from django.views.decorators.csrf import csrf_exempt
 
 from cardpicker.forms import InputCSV, InputLink, InputText, InputXML
 from cardpicker.models import Card, CardTypes, DFCPair, Source

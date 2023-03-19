@@ -1,7 +1,7 @@
 import threading
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import timedelta
-from typing import Any, Callable, Optional, TypeVar, Union, cast
+from typing import Any, Callable, Optional, TypeVar, cast
 
 from elasticsearch import Elasticsearch
 from elasticsearch.exceptions import ConnectionError as ElasticConnectionError
@@ -14,7 +14,7 @@ from django.conf import settings
 from django.http import HttpRequest
 from django.utils import timezone
 
-from cardpicker.constants import MAX_SIZE_MB, PAGE_SIZE
+from cardpicker.constants import MAX_SIZE_MB
 from cardpicker.documents import CardSearch
 from cardpicker.models import CardTypes, Source
 from cardpicker.utils.sanitisation import to_searchable

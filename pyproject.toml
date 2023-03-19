@@ -8,3 +8,13 @@ skip = ["build", "dist", "cards"]
 
 [tool.black]
 line-length = 120
+
+[tool.ruff]
+line-length = 120
+
+# Never enforce `E501` (line length violations).
+ignore = ["E501"]
+
+# Ignore `E402` (import violations) and `F403` (error from `import *`) in all `__init__.py` files
+[tool.ruff.per-file-ignores]
+"__init__.py" = ["E402", "F403"]

@@ -108,7 +108,7 @@ class TestFrontend:
 
     @pytest.fixture()
     def valid_csv(self, download_folder):
-        csv_contents = f"""
+        csv_contents = """
             quantity,front,back
             4,brainstorm,
             3,island,
