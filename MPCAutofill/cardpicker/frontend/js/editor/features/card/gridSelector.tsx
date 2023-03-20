@@ -2,7 +2,7 @@ import Modal from "react-bootstrap/Modal";
 import Row from "react-bootstrap/Row";
 import { Card } from "./card";
 import Button from "react-bootstrap/Button";
-import React from "react";
+import React, { memo } from "react";
 import {
   bulkSetSelectedImage,
   setSelectedCardback,
@@ -93,6 +93,8 @@ export function CardSlotGridSelector(props: CardSlotGridSelectorProps) {
   );
 }
 
+export const MemoizedCardSlotGridSelector = memo(CardSlotGridSelector);
+
 export function CommonCardbackGridSelector(
   props: CommonCardbackGridSelectorProps
 ) {
@@ -121,3 +123,7 @@ export function CommonCardbackGridSelector(
     />
   );
 }
+
+export const MemoizedCommonCardbackGridSelector = memo(
+  CommonCardbackGridSelector
+);

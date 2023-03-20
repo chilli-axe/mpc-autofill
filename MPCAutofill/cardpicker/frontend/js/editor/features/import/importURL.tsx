@@ -1,3 +1,5 @@
+// TODO: make the modal unable to be dismissed while the URL is loading
+
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "../../app/store";
 import React, { useEffect, useState } from "react";

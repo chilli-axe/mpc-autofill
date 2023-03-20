@@ -3,7 +3,7 @@ import Row from "react-bootstrap/Row";
 import Table from "react-bootstrap/Table";
 import { downloadImage, imageSizeToMBString } from "../../common/utils";
 import Button from "react-bootstrap/Button";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, memo } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "../../app/store";
 
@@ -165,3 +165,5 @@ export function CardDetailedView(props: CardDetailedViewProps) {
     </div>
   );
 }
+
+export const MemoizedCardDetailedView = memo(CardDetailedView);

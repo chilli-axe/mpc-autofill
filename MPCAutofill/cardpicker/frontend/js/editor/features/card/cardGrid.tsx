@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState, AppDispatch } from "../../app/store";
-import { CardSlot } from "./cardSlot";
+import { MemoizedCardSlot } from "./cardSlot";
 import { fetchCardDocuments } from "../search/cardDocumentsSlice";
 import { clearSearchResults } from "../search/searchResultsSlice";
 import { Front, Back } from "../../common/constants";
@@ -57,7 +57,7 @@ export function CardGrid() {
 
   for (const [slot, slotProjectMember] of projectMembers.entries()) {
     cardSlotsFronts.push(
-      <CardSlot
+      <MemoizedCardSlot
         key={`${Front}-slot-${slot}`}
         searchQuery={
           slotProjectMember.front != null
@@ -66,10 +66,10 @@ export function CardGrid() {
         }
         face={Front}
         slot={slot}
-      ></CardSlot>
+      ></MemoizedCardSlot>
     );
     cardSlotsBacks.push(
-      <CardSlot
+      <MemoizedCardSlot
         key={`${Back}-slot-${slot}`}
         searchQuery={
           slotProjectMember.back != null
@@ -78,7 +78,7 @@ export function CardGrid() {
         }
         face={Back}
         slot={slot}
-      ></CardSlot>
+      ></MemoizedCardSlot>
     );
   }
 
@@ -86,6 +86,7 @@ export function CardGrid() {
     (state: RootState) => state.viewSettings.frontsVisible
   );
 
+  // TODO: we should aim to lift state up here and conditionally render rather than hide
   return (
     <>
       <Row

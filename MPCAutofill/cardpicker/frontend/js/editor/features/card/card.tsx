@@ -1,4 +1,4 @@
-import React, { useState, ReactElement, useEffect } from "react";
+import React, { useState, ReactElement, useEffect, memo } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "../../app/store";
 
@@ -166,3 +166,5 @@ export function Card(props: CardProps) {
     </BSCard>
   );
 }
+
+export const MemoizedCard = memo(Card);

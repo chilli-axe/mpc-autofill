@@ -1,13 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState, memo } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { AppDispatch, RootState } from "../../app/store";
-import { Card } from "./card";
+import { MemoizedCard } from "./card";
 import { Back } from "../../common/constants";
 import { wrapIndex } from "../../common/utils";
 import { deleteImage, setSelectedImage } from "../project/projectSlice";
 import Button from "react-bootstrap/Button";
-import { CardDetailedView } from "./cardDetailedView";
-import { CardSlotGridSelector } from "./gridSelector";
+import { MemoizedCardDetailedView } from "./cardDetailedView";
+import { MemoizedCardSlotGridSelector } from "./gridSelector";
 import { Faces, SearchQuery } from "../../common/types";
 
 interface CardSlotProps {
@@ -186,7 +186,7 @@ export function CardSlot(props: CardSlotProps) {
 
   return (
     <div style={{ contentVisibility: "auto" }}>
-      <Card
+      <MemoizedCard
         imageIdentifier={selectedImage}
         previousImageIdentifier={previousImage}
         nextImageIdentifier={nextImage}
@@ -202,7 +202,7 @@ export function CardSlot(props: CardSlotProps) {
       />
 
       {selectedImage != null && (
-        <CardDetailedView
+        <MemoizedCardDetailedView
           imageIdentifier={selectedImage}
           show={showDetailedView}
           handleClose={handleCloseDetailedView}
@@ -210,7 +210,7 @@ export function CardSlot(props: CardSlotProps) {
       )}
 
       {searchResultsForQuery.length > 1 && (
-        <CardSlotGridSelector
+        <MemoizedCardSlotGridSelector
           face={face}
           slot={slot}
           searchResultsForQuery={searchResultsForQuery}
@@ -221,3 +221,5 @@ export function CardSlot(props: CardSlotProps) {
     </div>
   );
 }
+
+export const MemoizedCardSlot = memo(CardSlot);

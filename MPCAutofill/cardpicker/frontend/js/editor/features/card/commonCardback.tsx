@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { AppDispatch, RootState } from "../../app/store";
-import { Card } from "./card";
+import { MemoizedCard } from "./card";
 import { Back } from "../../common/constants";
 import { wrapIndex } from "../../common/utils";
 import {
@@ -9,8 +9,8 @@ import {
   bulkSetSelectedImage,
 } from "../project/projectSlice";
 import Button from "react-bootstrap/Button";
-import { CardDetailedView } from "./cardDetailedView";
-import { CommonCardbackGridSelector } from "./gridSelector";
+import { MemoizedCardDetailedView } from "./cardDetailedView";
+import { MemoizedCommonCardbackGridSelector } from "./gridSelector";
 
 interface CommonCardbackProps {
   selectedImage?: string;
@@ -122,7 +122,7 @@ export function CommonCardback(props: CommonCardbackProps) {
 
   return (
     <>
-      <Card
+      <MemoizedCard
         imageIdentifier={selectedImage}
         previousImageIdentifier={previousImage}
         nextImageIdentifier={nextImage}
@@ -132,13 +132,13 @@ export function CommonCardback(props: CommonCardbackProps) {
         noResultsFound={false}
       />
 
-      <CommonCardbackGridSelector
+      <MemoizedCommonCardbackGridSelector
         searchResults={searchResults}
         show={showGridSelector}
         handleClose={handleCloseGridSelector}
       />
       {selectedImage != null && (
-        <CardDetailedView
+        <MemoizedCardDetailedView
           imageIdentifier={selectedImage}
           show={showDetailedView}
           handleClose={handleCloseDetailedView}
