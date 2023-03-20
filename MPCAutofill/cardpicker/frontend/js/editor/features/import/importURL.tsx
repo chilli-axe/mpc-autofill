@@ -65,8 +65,12 @@ export function ImportURL(props: ImportURLProps) {
           {importSites != null ? (
             <ul>
               {importSites.map((importSite: ImportSite) => (
-                <li>
-                  <a href={importSite.url} target="_blank">
+                <li key={`${importSite.name}-row`}>
+                  <a
+                    key={importSite.name}
+                    href={importSite.url}
+                    target="_blank"
+                  >
                     {importSite.name}
                   </a>
                 </li>
