@@ -10,9 +10,23 @@ import {
 } from "./constants";
 import { DFCPairs, SearchQuery, ProcessedLine } from "./types";
 
-export function stripTextInParentheses(text: string): string {
-  const re = /[([].*?[)\]]/g;
+export function sanitiseWhitespace(text: string): string {
+  /**
+   * Clean any instances of doubled-up whitespace from `text`.
+   */
+
+  const re = / +(?= )/g;
   return text.replaceAll(re, "").trim();
+}
+
+export function stripTextInParentheses(text: string): string {
+  /**
+   * Remove all text within (parentheses) from `text`.
+   * Does not handle (nested (parentheses)). TODO: update this function to do this
+   */
+
+  const re = /[([].*?[)\]]/g;
+  return sanitiseWhitespace(text.replaceAll(re, ""));
 }
 
 export function processQuery(query: string): string {
@@ -24,13 +38,12 @@ export function processQuery(query: string): string {
 
   // TODO: remove any numbers from the front
   // escaping \[ is technically unnecessary, but I think it's more readable to escape it
-  return (
+  return sanitiseWhitespace(
     query
       .toLowerCase()
       .trim()
       // eslint-disable-next-line
       .replace(/[~`!@#$%^&*(){}\[\];:"'<,.>?/\\|_+=]/g, "")
-      .replace(/ +(?= )/g, "")
   );
 }
 
