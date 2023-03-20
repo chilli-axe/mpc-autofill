@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState, AppDispatch } from "../../app/store";
 import { MemoizedCardSlot } from "./cardSlot";
@@ -11,9 +11,20 @@ import {
   selectProjectMemberQueries,
 } from "../project/projectSlice";
 import Modal from "react-bootstrap/Modal";
+import { MemoizedCardDetailedView } from "./cardDetailedView";
 
 export function CardGrid() {
   const dispatch = useDispatch<AppDispatch>();
+
+  const [detailedViewSelectedImage, setDetailedViewSelectedImage] = useState<
+    string | null
+  >(null);
+  const [showDetailedView, setShowDetailedView] = useState(false);
+  const handleCloseDetailedView = () => setShowDetailedView(false);
+  const handleShowDetailedView = useCallback((selectedImage: string) => {
+    setDetailedViewSelectedImage(selectedImage);
+    setShowDetailedView(true);
+  }, []);
 
   // TODO: this doesn't work yet
   const searchResultsIdle = // TODO: replace the magic string here with a constant
@@ -66,6 +77,7 @@ export function CardGrid() {
         }
         face={Front}
         slot={slot}
+        handleShowDetailedView={handleShowDetailedView}
       ></MemoizedCardSlot>
     );
     cardSlotsBacks.push(
@@ -78,6 +90,7 @@ export function CardGrid() {
         }
         face={Back}
         slot={slot}
+        handleShowDetailedView={handleShowDetailedView}
       ></MemoizedCardSlot>
     );
   }
@@ -117,6 +130,14 @@ export function CardGrid() {
         </Modal.Header>
         <Modal.Body>TODO</Modal.Body>
       </Modal>
+
+      {detailedViewSelectedImage != null && (
+        <MemoizedCardDetailedView
+          imageIdentifier={detailedViewSelectedImage}
+          show={showDetailedView}
+          handleClose={handleCloseDetailedView}
+        />
+      )}
     </>
   );
 }

@@ -14,6 +14,9 @@ interface CardSlotProps {
   searchQuery?: SearchQuery;
   face: Faces;
   slot: number;
+  handleShowDetailedView: {
+    (selectedImage: string): void;
+  };
 }
 
 export function CardSlot(props: CardSlotProps) {
@@ -21,11 +24,8 @@ export function CardSlot(props: CardSlotProps) {
   const face = props.face;
   const slot = props.slot;
 
-  const [showDetailedView, setShowDetailedView] = useState(false);
   const [showGridSelector, setShowGridSelector] = useState(false);
 
-  const handleCloseDetailedView = () => setShowDetailedView(false);
-  const handleShowDetailedView = () => setShowDetailedView(true);
   const handleCloseGridSelector = () => setShowGridSelector(false);
   const handleShowGridSelector = () => setShowGridSelector(true);
 
@@ -54,6 +54,12 @@ export function CardSlot(props: CardSlotProps) {
   );
   const selectedImage: string | undefined =
     projectMember != null ? projectMember.selectedImage : undefined;
+
+  const handleShowDetailedView = () => {
+    if (selectedImage != null) {
+      props.handleShowDetailedView(selectedImage);
+    }
+  };
 
   useEffect(() => {
     /**
@@ -200,14 +206,6 @@ export function CardSlot(props: CardSlotProps) {
           searchResultsForQueryOrDefault.length === 0
         }
       />
-
-      {selectedImage != null && (
-        <MemoizedCardDetailedView
-          imageIdentifier={selectedImage}
-          show={showDetailedView}
-          handleClose={handleCloseDetailedView}
-        />
-      )}
 
       {searchResultsForQuery.length > 1 && (
         <MemoizedCardSlotGridSelector
