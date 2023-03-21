@@ -66,12 +66,16 @@ jobs:
         run: |
           npm ci
           npm run build
+      - name: Run Jest tests
+        working-directory: MPCAutofill
+        run: |
+          npm run test
       - name: Write Google Drive API credentials to file
         uses: jsdaniell/create-json@1.1.2
         with:
           name: "client_secrets.json"
           json: ${{ secrets.GOOGLE_DRIVE_API_KEY }}
           dir: "MPCAutofill/"
-      - name: Run tests
+      - name: Run Django integration tests
         run: |
           cd MPCAutofill && pytest .
