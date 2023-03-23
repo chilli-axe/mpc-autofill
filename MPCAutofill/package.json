@@ -31,6 +31,7 @@
     "jsdom": "^21.1.0",
     "json-schema-to-ts": "^2.7.2",
     "mini-css-extract-plugin": "^2.6.1",
+    "msw": "^1.2.0",
     "postcss-loader": "^7.0.1",
     "sass": "^1.55.0",
     "sass-loader": "^13.1.0",
