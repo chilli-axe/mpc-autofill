@@ -1,7 +1,7 @@
 /* global qty, groups, drive_order, fuzzy_search, order */
 
-// import "bootstrap5-toggle/css/bootstrap5-toggle.min.css";
-// import "bootstrap5-toggle";
+import "bootstrap5-toggle/css/bootstrap5-toggle.min.css";
+import "bootstrap5-toggle";
 import Modal from "bootstrap/js/dist/modal";
 import {
   insert_data,
