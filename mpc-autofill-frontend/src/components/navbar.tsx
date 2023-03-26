@@ -3,6 +3,7 @@ import BSNavbar from "react-bootstrap/Navbar";
 import NavDropdown from "react-bootstrap/NavDropdown";
 import Container from "react-bootstrap/Container";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function Navbar() {
   return (
@@ -18,7 +19,7 @@ export default function Navbar() {
         bg="primary"
         style={{ maxWidth: 1200 + "px" }}
       >
-        <BSNavbar.Brand href="/">
+        <BSNavbar.Brand href="/" as={Link}>
           <Image src="/logolowres.png" alt="logo" width="40" height="40" />{" "}
           <span className="align-middle">
             <b>MPC Autofill</b>
@@ -27,9 +28,15 @@ export default function Navbar() {
         <BSNavbar.Toggle aria-controls="basic-navbar-nav" />
         <BSNavbar.Collapse id="basic-navbar-nav" style={{ fontWeight: "bold" }}>
           <Nav className="me-auto">
-            <Nav.Link href="/guide">Guide</Nav.Link>
-            <Nav.Link href="/new">What's New?</Nav.Link>
-            <Nav.Link href="/contributions">Contributions</Nav.Link>
+            <Nav.Link as={Link} href="/guide">
+              Guide
+            </Nav.Link>
+            <Nav.Link as={Link} href="/new">
+              What's New?
+            </Nav.Link>
+            <Nav.Link as={Link} href="/contributions">
+              Contributions
+            </Nav.Link>
             <Nav.Link
               href="https://github.com/chilli-axe/mpc-autofill/releases"
               target="_blank"
