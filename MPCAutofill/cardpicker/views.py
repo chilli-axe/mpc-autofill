@@ -8,15 +8,14 @@ from typing import Any, Callable, Optional, TypeVar, Union, cast
 
 from blog.models import BlogPost
 
-from django.db import connection
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
 
 from cardpicker.forms import InputCSV, InputLink, InputText, InputXML
-from cardpicker.models import Card, CardTypes, DFCPair, Source
+from cardpicker.models import Card, CardTypes, DFCPair, Source, summarise_contributions
 from cardpicker.mpcorder import Faces, MPCOrder, ReqTypes
-from cardpicker.sources.source_types import SourceTypeChoices
 from cardpicker.utils.link_imports import ImportSites
 from cardpicker.utils.sanitisation import to_searchable
 from cardpicker.utils.search_functions import (
@@ -130,75 +129,7 @@ def guide(request: HttpRequest) -> HttpResponse:
 
 
 def contributions(request: HttpRequest) -> HttpResponse:
-    """
-    Report on the number of cards, cardbacks, and tokens that each Source has, as well as the average DPI across all
-    three card types.
-    Rawdogging the SQL here to minimise the number of hits to the database. I might come back to this at some point
-    to rewrite in Django ORM at a later point.
-    """
-
-    with connection.cursor() as cursor:
-        cursor.execute(
-            """
-            SELECT
-                cardpicker_source.name,
-                cardpicker_source.identifier,
-                cardpicker_source.source_type,
-                cardpicker_source.external_link,
-                cardpicker_source.description,
-                cardpicker_source.ordinal,
-                COALESCE(SUM(cardpicker_card.dpi), 0),
-                COUNT(cardpicker_card.dpi)
-            FROM cardpicker_source
-            LEFT JOIN cardpicker_card ON cardpicker_source.id = cardpicker_card.source_id
-            GROUP BY cardpicker_source.name,
-                cardpicker_source.identifier,
-                cardpicker_source.source_type,
-                cardpicker_source.external_link,
-                cardpicker_source.description,
-                cardpicker_source.ordinal
-            ORDER BY cardpicker_source.ordinal, cardpicker_source.name
-            """
-        )
-        results_1 = cursor.fetchall()
-        cursor.execute(
-            """
-            SELECT
-                cardpicker_source.identifier,
-                cardpicker_card.card_type,
-                COUNT(cardpicker_card.card_type)
-            FROM cardpicker_source
-            LEFT JOIN cardpicker_card ON cardpicker_source.id = cardpicker_card.source_id
-            GROUP BY cardpicker_source.identifier, cardpicker_card.card_type
-            """
-        )
-        results_2 = cursor.fetchall()
-
-    source_card_count_by_type: dict[str, dict[str, int]] = defaultdict(dict)
-    card_count_by_type: dict[str, int] = defaultdict(int)
-    for (identifier, card_type, count) in results_2:
-        source_card_count_by_type[identifier][card_type] = count
-        card_count_by_type[card_type] += count
-    sources = []
-    for (name, identifier, source_type, external_link, description, ordinal, total_dpi, total_count) in results_1:
-        sources.append(
-            {
-                "name": name,
-                "identifier": identifier,
-                "source_type": SourceTypeChoices[source_type].label,
-                "external_link": external_link,
-                "description": description,
-                "qty_cards": f"{source_card_count_by_type[identifier].get(CardTypes.CARD, 0):,d}",
-                "qty_cardbacks": f"{source_card_count_by_type[identifier].get(CardTypes.CARDBACK, 0) :,d}",
-                "qty_tokens": f"{source_card_count_by_type[identifier].get(CardTypes.TOKEN, 0) :,d}",
-                "avgdpi": f"{(total_dpi / total_count):.2f}" if total_count > 0 else 0,
-            }
-        )
-
-    total_count = [card_count_by_type[x] for x in CardTypes]
-    total_count.append(sum(total_count))
-    total_count_f = [f"{x:,d}" for x in total_count]
-
+    sources, total_count_f = summarise_contributions()
     return render(request, "cardpicker/contributions.html", {"sources": sources, "total_count": total_count_f})
 
 
@@ -455,6 +386,7 @@ def editor(request: HttpRequest) -> HttpResponse:
     return render(request, "cardpicker/editor.html")
 
 
+@csrf_exempt
 def api_function_1(request: HttpRequest) -> HttpResponse:
     """
     Return the first page of search results for a given list of queries.
@@ -482,6 +414,7 @@ def api_function_1(request: HttpRequest) -> HttpResponse:
     return JsonResponse({})
 
 
+@csrf_exempt
 def api_function_2(request: HttpRequest) -> HttpResponse:
     # TODO: bit confusing to call this `getCards` while expecting POST
     if request.method == "POST":
@@ -497,6 +430,7 @@ def api_function_2(request: HttpRequest) -> HttpResponse:
     return JsonResponse({})
 
 
+@csrf_exempt
 def api_function_3(request: HttpRequest) -> HttpResponse:
     """
     Return a list of sources.
@@ -506,6 +440,7 @@ def api_function_3(request: HttpRequest) -> HttpResponse:
     return JsonResponse({"results": results})
 
 
+@csrf_exempt
 def api_function_4(request: HttpRequest) -> HttpResponse:
     """
     Return a list of double-faced cards. The unedited names are returned and the frontend is expected to sanitise them.
@@ -515,6 +450,7 @@ def api_function_4(request: HttpRequest) -> HttpResponse:
     return JsonResponse({"dfc_pairs": dfc_pairs})
 
 
+@csrf_exempt
 def api_function_5(request: HttpRequest) -> HttpResponse:
     """
     Return a list of cardstocks.
@@ -524,6 +460,7 @@ def api_function_5(request: HttpRequest) -> HttpResponse:
     return JsonResponse({"cardstocks": cardstocks})
 
 
+@csrf_exempt
 def api_function_6(request: HttpRequest) -> HttpResponse:
     """
     Return a list of cardbacks.
@@ -534,6 +471,7 @@ def api_function_6(request: HttpRequest) -> HttpResponse:
     return JsonResponse({"cardbacks": cardbacks})
 
 
+@csrf_exempt
 def api_function_7(request: HttpRequest) -> HttpResponse:
     """
     Return a list of import sites.
@@ -544,6 +482,7 @@ def api_function_7(request: HttpRequest) -> HttpResponse:
     return JsonResponse({"import_sites": import_sites})
 
 
+@csrf_exempt
 def api_function_8(request: HttpRequest) -> HttpResponse:
     """
     Return the result of querying an import site for the specified URL.
@@ -565,11 +504,14 @@ def api_function_8(request: HttpRequest) -> HttpResponse:
     return JsonResponse({})
 
 
+@csrf_exempt
 def api_function_9(request: HttpRequest) -> HttpResponse:
     """
     Return a list of sample cards you can query this database for.
     Used in the placeholder text of the Add Cards — Text component in the frontend.
     """
+
+    # TODO: consider reusing this to display some random cards on the landing page
 
     # TODO: tidy this up a bit
 
@@ -596,6 +538,12 @@ def api_function_9(request: HttpRequest) -> HttpResponse:
     }
 
     return JsonResponse({"cards": return_value})
+
+
+@csrf_exempt
+def api_function_10(request: HttpRequest) -> HttpResponse:
+    sources, total_count_f = summarise_contributions()
+    return JsonResponse({"sources": sources, "total_count": total_count_f})
 
 
 # endregion

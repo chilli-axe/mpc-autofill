@@ -1,10 +1,11 @@
 import itertools
 import uuid
+from collections import defaultdict
 from datetime import datetime
 from typing import Any, Optional
 
 from django.contrib.auth.models import User
-from django.db import models, transaction
+from django.db import connection, models, transaction
 from django.utils import dateformat, timezone
 from django.utils.translation import gettext_lazy
 
@@ -97,6 +98,79 @@ class Source(models.Model):
             "qty_tokens": qty_tokens,
             "avgdpi": avgdpi,
         }
+
+
+def summarise_contributions() -> tuple[list[dict[str, Any]], list[str]]:
+    """
+    Report on the number of cards, cardbacks, and tokens that each Source has, as well as the average DPI across all
+    three card types.
+    Rawdogging the SQL here to minimise the number of hits to the database. I might come back to this at some point
+    to rewrite in Django ORM at a later point.
+    """
+
+    with connection.cursor() as cursor:
+        cursor.execute(
+            """
+            SELECT
+                cardpicker_source.name,
+                cardpicker_source.identifier,
+                cardpicker_source.source_type,
+                cardpicker_source.external_link,
+                cardpicker_source.description,
+                cardpicker_source.ordinal,
+                COALESCE(SUM(cardpicker_card.dpi), 0),
+                COUNT(cardpicker_card.dpi)
+            FROM cardpicker_source
+            LEFT JOIN cardpicker_card ON cardpicker_source.id = cardpicker_card.source_id
+            GROUP BY cardpicker_source.name,
+                cardpicker_source.identifier,
+                cardpicker_source.source_type,
+                cardpicker_source.external_link,
+                cardpicker_source.description,
+                cardpicker_source.ordinal
+            ORDER BY cardpicker_source.ordinal, cardpicker_source.name
+            """
+        )
+        results_1 = cursor.fetchall()
+        cursor.execute(
+            """
+            SELECT
+                cardpicker_source.identifier,
+                cardpicker_card.card_type,
+                COUNT(cardpicker_card.card_type)
+            FROM cardpicker_source
+            LEFT JOIN cardpicker_card ON cardpicker_source.id = cardpicker_card.source_id
+            GROUP BY cardpicker_source.identifier, cardpicker_card.card_type
+            """
+        )
+        results_2 = cursor.fetchall()
+
+    source_card_count_by_type: dict[str, dict[str, int]] = defaultdict(dict)
+    card_count_by_type: dict[str, int] = defaultdict(int)
+    for (identifier, card_type, count) in results_2:
+        source_card_count_by_type[identifier][card_type] = count
+        card_count_by_type[card_type] += count
+    sources: list[dict[str, Any]] = []
+    for (name, identifier, source_type, external_link, description, ordinal, total_dpi, total_count) in results_1:
+        sources.append(
+            {
+                "name": name,
+                "identifier": identifier,
+                "source_type": SourceTypeChoices[source_type].label,
+                "external_link": external_link,
+                "description": description,
+                "qty_cards": f"{source_card_count_by_type[identifier].get(CardTypes.CARD, 0):,d}",
+                "qty_cardbacks": f"{source_card_count_by_type[identifier].get(CardTypes.CARDBACK, 0) :,d}",
+                "qty_tokens": f"{source_card_count_by_type[identifier].get(CardTypes.TOKEN, 0) :,d}",
+                "avgdpi": f"{(total_dpi / total_count):.2f}" if total_count > 0 else 0,
+            }
+        )
+
+    total_count = [card_count_by_type[x] for x in CardTypes]
+    total_count.append(sum(total_count))
+    total_count_f = [f"{x:,d}" for x in total_count]
+
+    return sources, total_count_f
 
 
 class Card(models.Model):

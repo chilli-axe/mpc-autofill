@@ -15,32 +15,35 @@ JetBrains supports this project's development through their [Open Source Develop
 
 # Monorepo Structure
 
-- Web project:
-  - Located in `/MPCAutofill`,
-  - Images stored in the Google Drives connected to the project are indexed in Elasticsearch,
+- Web backend:
+  - Located in `/MPCAutofill`.
+  - **Note**: The frontend in this section of the codebase is considered deprecated and no new features will be added to it.
+    - See `/mpc-autofill-frontend` for the successor to this code.
+  - Images stored in the Google Drives connected to the project are indexed in Elasticsearch.
+  - The backend system is intentionally decoupled from `/mpc-autofill-frontend`, which allows the configuration of which backend to retrieve data from.
   - Stack:
     - Backend:
-      - Django 4,
-      - The database of your choosing (Elasticsearch is fine),
-      - Elasticsearch 7.x,
-      - Google Drive API integration,
-    - Frontend:
-      - jQuery + jQuery UI,
-      - Bootstrap 5,
-      - Webpack + Babel for compiling and bundling the frontend,
-  - Facilitates the generation of XML orders for use with the desktop client,
+      - Django 4, the database of your choosing (sqlite is fine), Elasticsearch 7.x, and Google Drive API integration.
+    - Frontend (deprecated):
+      - jQuery + jQuery UI, Bootstrap 5, Webpack + Babel for compilation and bundling.
+  - Facilitates the generation of XML orders for use with the desktop client.
   - Intended to be deployed as a web application but can also be spun up locally with Docker.
+- Web frontend:
+  - **Note**: At time of writing, this component of the project is not yet stable. Please continue to use the frontend in `/MPCAutofill` for a stable frontend experience.
+  - Located in `/mpc-autofill-frontend`.
+  - A web app that communicates with a specified MPC Autofill backend (hosted somewhere on the internet) and facilitates the creation, customisation, and exporting of projects with drives linked to that backend.
+  - Stack:
+    - Static Next.js web app built with Typescript, React-Bootstrap, and Redux.
+    - Automatically deployed on GitHub Pages.
+      - TODO: flesh out deployment details
 - Desktop client:
   - Located in `/autofill`,
   - Responsible for parsing XML orders, downloading images from Google Drive, and automating MPC's order creation interface.
 
 Each component of the project has its own README; check those out for more details.
 
-# Requirements
-
-- Python 3.9+ and the packages specified in `requirements.txt` for each component (web project and desktop client).
-
 # Contributing
 
-- Please ensure that you install the `pre-commit` Python package and run `pre-commit install` before committing any code to your branch / PR - this will run `black` and `isort` on your code to maintain consistent styling, and run `mypy` to catch any static typing issues.
+- Please ensure that you install the `pre-commit` Python package and run `pre-commit install` before committing any code to your branch / PR - this will run various linting, code styling, and static type checking tools to validate your code.
 - GitHub Actions is configured in this repository to run the Django project's end-to-end tests. To run these, it needs to access the Google Drive API, and does so through a repository secret named `GOOGLE_DRIVE_API_KEY`. If you fork this project, you'll need to set this repository secret for GitHub Actions to run these tests for you.
+  - **Note**: If you create a pull request to this repository from your fork and you don't follow this step, your CI build will fail! Don't worry about it unless the code you're touching has test coverage.

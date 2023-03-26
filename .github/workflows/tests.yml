@@ -66,10 +66,6 @@ jobs:
         run: |
           npm ci
           npm run build
-      - name: Run Jest tests
-        working-directory: MPCAutofill
-        run: |
-          npm run test
       - name: Write Google Drive API credentials to file
         uses: jsdaniell/create-json@1.1.2
         with:
@@ -79,3 +75,19 @@ jobs:
       - name: Run Django integration tests
         run: |
           cd MPCAutofill && pytest .
+  frontend-tests:
+    name: Frontend tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install npm
+        uses: actions/setup-node@v3
+      - name: Compile frontend
+        working-directory: mpc-autofill-frontend
+        run: |
+          npm ci
+          npm run build
+      - name: Run frontend tests
+        working-directory: mpc-autofill-frontend
+        run: |
+          npm run test
