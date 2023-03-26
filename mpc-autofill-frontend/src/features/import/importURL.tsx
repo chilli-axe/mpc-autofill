@@ -1,16 +1,16 @@
 // TODO: make the modal unable to be dismissed while the URL is loading
 
 import { useDispatch } from "react-redux";
-import { AppDispatch } from "../../app/store";
+import { AppDispatch } from "@/app/store";
 import React, { useEffect, useState } from "react";
-import { processLines } from "../../common/processing";
+import { processLines } from "@/common/processing";
 import { addImages } from "../project/projectSlice";
 import Dropdown from "react-bootstrap/Dropdown";
 import Modal from "react-bootstrap/Modal";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
-import { APIGetImportSites, APIQueryImportSite } from "../../app/api";
-import { ImportSite, DFCPairs } from "../../common/types";
+import { APIGetImportSites, APIQueryImportSite } from "@/app/api";
+import { ImportSite, DFCPairs } from "@/common/types";
 
 interface ImportURLProps {
   dfcPairs: DFCPairs;

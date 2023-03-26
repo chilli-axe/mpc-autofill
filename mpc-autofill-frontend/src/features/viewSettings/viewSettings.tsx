@@ -5,9 +5,9 @@
 
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "../../app/store";
+import { RootState } from "@/app/store";
 import { toggleFaces } from "./viewSettingsSlice";
-import { ToggleButtonHeight } from "../../common/constants";
+import { ToggleButtonHeight } from "@/common/constants";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore  // TODO: https://github.com/arnthor3/react-bootstrap-toggle/issues/21

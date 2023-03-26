@@ -2,9 +2,9 @@ import {
   CardDocuments,
   ProjectMember,
   SlotProjectMembers,
-} from "../../common/types";
-import { Back, Card, Front, FaceSeparator } from "../../common/constants";
-import { stripTextInParentheses } from "../../common/processing";
+} from "@/common/types";
+import { Back, Card, Front, FaceSeparator } from "@/common/constants";
+import { stripTextInParentheses } from "@/common/processing";
 
 function extractProjectMemberNames(
   projectMembers: Array<SlotProjectMembers>,

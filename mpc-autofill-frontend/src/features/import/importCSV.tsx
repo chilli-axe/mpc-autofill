@@ -2,7 +2,7 @@ import React, { CSSProperties, useState } from "react";
 import Dropdown from "react-bootstrap/Dropdown";
 import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
-import { DFCPairs } from "../../common/types";
+import { DFCPairs } from "@/common/types";
 import { TextFileDropzone } from "../dropzone";
 import Table from "react-bootstrap/Table";
 

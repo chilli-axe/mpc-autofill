@@ -1,14 +1,14 @@
 import React, { useCallback, useEffect, useState, memo } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { AppDispatch, RootState } from "../../app/store";
+import { AppDispatch, RootState } from "@/app/store";
 import { MemoizedCard } from "./card";
-import { Back } from "../../common/constants";
-import { wrapIndex } from "../../common/utils";
+import { Back } from "@/common/constants";
+import { wrapIndex } from "@/common/utils";
 import { deleteImage, setSelectedImage } from "../project/projectSlice";
 import Button from "react-bootstrap/Button";
 import { MemoizedCardDetailedView } from "./cardDetailedView";
 import { MemoizedCardSlotGridSelector } from "./gridSelector";
-import { Faces, SearchQuery } from "../../common/types";
+import { Faces, SearchQuery } from "@/common/types";
 
 interface CardSlotProps {
   searchQuery?: SearchQuery;

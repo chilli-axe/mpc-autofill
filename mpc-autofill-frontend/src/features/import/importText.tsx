@@ -1,5 +1,5 @@
 import { useDispatch } from "react-redux";
-import { AppDispatch } from "../../app/store";
+import { AppDispatch } from "@/app/store";
 import React, { useEffect, useState } from "react";
 import { processLines } from "../../common/processing";
 import { addImages } from "../project/projectSlice";
@@ -7,15 +7,15 @@ import Dropdown from "react-bootstrap/Dropdown";
 import Modal from "react-bootstrap/Modal";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
-import { DFCPairs } from "../../common/types";
+import { DFCPairs } from "@/common/types";
 import {
   FaceSeparator,
   Card,
   Cardback,
   Token,
   ReversedCardTypePrefixes,
-} from "../../common/constants";
-import { APIGetPlaceholderText } from "../../app/api";
+} from "@/common/constants";
+import { APIGetPlaceholderText } from "@/app/api";
 
 interface ImportTextProps {
   dfcPairs: DFCPairs;

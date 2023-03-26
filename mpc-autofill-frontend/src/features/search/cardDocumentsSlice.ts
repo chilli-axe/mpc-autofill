@@ -1,11 +1,11 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
-import { RootState } from "../../app/store";
+import { RootState } from "@/app/store";
 import { fetchCards } from "./searchResultsSlice";
 import { fetchCardbacks } from "../card/cardbackSlice";
 import { selectUniqueCardIdentifiers } from "../project/projectSlice";
-import { APIGetCards } from "../../app/api";
-import { CardDocumentsState } from "../../common/types";
+import { APIGetCards } from "@/app/api";
+import { CardDocumentsState } from "@/common/types";
 
 // TODO: we should write something to read a page of card IDs from searchResults (100 at a time?) and query the backend for their full data
 export const fetchCardDocuments = createAsyncThunk(

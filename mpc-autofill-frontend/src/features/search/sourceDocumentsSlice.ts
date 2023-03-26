@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { APIGetSources } from "../../app/api";
-import { SourceDocumentsState } from "../../common/types";
+import { APIGetSources } from "@/app/api";
+import { SourceDocumentsState } from "@/common/types";
 
 const initialState: SourceDocumentsState = {
   sourceDocuments: undefined,

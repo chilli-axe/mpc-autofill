@@ -9,9 +9,9 @@ import {
   setSelectedImage,
 } from "../project/projectSlice";
 import { useDispatch, useSelector } from "react-redux";
-import { AppDispatch, RootState } from "../../app/store";
-import { Back } from "../../common/constants";
-import { Faces } from "../../common/types";
+import { AppDispatch, RootState } from "@/app/store";
+import { Back } from "@/common/constants";
+import { Faces } from "@/common/types";
 
 interface GridSelectorProps {
   imageIdentifiers: Array<string>;

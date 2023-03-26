@@ -10,7 +10,7 @@ import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { AppDispatch, RootState } from "../../app/store";
+import { AppDispatch, RootState } from "@/app/store";
 import {
   setSearchTypeSettings,
   setSourceSettings,
@@ -20,11 +20,11 @@ import {
   SearchTypeSettings,
   SourceSettings,
   FilterSettings,
-} from "../../common/types";
+} from "@/common/types";
 import {
   getCookieSearchSettings,
   setCookieSearchSettings,
-} from "../../common/cookies";
+} from "@/common/cookies";
 import { SearchTypeSettings as SearchTypeSettingsElement } from "./searchTypeSettings";
 import { FilterSettings as FilterSettingsElement } from "./filterSettings";
 import { SourceSettings as SourceSettingsElement } from "./sourceSettings";

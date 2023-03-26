@@ -1,7 +1,7 @@
-import { Back, Front, ReversedCardTypePrefixes } from "../../common/constants";
-import { bracket } from "../../common/utils";
+import { Back, Front, ReversedCardTypePrefixes } from "@/common/constants";
+import { bracket } from "@/common/utils";
 import formatXML from "xml-formatter";
-import { CardDocuments, SlotProjectMembers } from "../../common/types";
+import { CardDocuments, SlotProjectMembers } from "@/common/types";
 
 interface SlotsByIdentifier {
   [identifier: string]: Set<number>;

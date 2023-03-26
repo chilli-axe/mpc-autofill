@@ -1,14 +1,14 @@
 import * as React from "react";
-import { CardGrid } from "../features/card/cardGrid";
-import { CommonCardback } from "../features/card/commonCardback";
-import { SearchSettings } from "../features/searchSettings/searchSettings";
-import { Import } from "../features/import/import";
-import { ProjectStatus } from "../features/project/projectStatus";
-import { ViewSettings } from "../features/viewSettings/viewSettings";
+import { CardGrid } from "@/features/card/cardGrid";
+import { CommonCardback } from "@/features/card/commonCardback";
+import { SearchSettings } from "@/features/searchSettings/searchSettings";
+import { Import } from "@/features/import/import";
+import { ProjectStatus } from "@/features/project/projectStatus";
+import { ViewSettings } from "@/features/viewSettings/viewSettings";
 import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
 import { useEffect } from "react";
-import { fetchSourceDocuments } from "../features/search/sourceDocumentsSlice";
+import { fetchSourceDocuments } from "@/features/search/sourceDocumentsSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "./store";
 

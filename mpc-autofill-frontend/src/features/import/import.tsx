@@ -4,9 +4,9 @@ import { ImportText } from "./importText";
 import { ImportURL } from "./importURL";
 import { ImportXML } from "./importXML";
 import { ImportCSV } from "./importCSV";
-import { APIGetDFCPairs } from "../../app/api";
-import { DFCPairs } from "../../common/types";
-import { processQuery } from "../../common/processing";
+import { APIGetDFCPairs } from "@/app/api";
+import { DFCPairs } from "@/common/types";
+import { processQuery } from "@/common/processing";
 
 export function Import() {
   const [dfcPairs, setDFCPairs] = useState<DFCPairs>({});

@@ -1,10 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { RootState, AppDispatch } from "../../app/store";
+import { RootState, AppDispatch } from "@/app/store";
 import { MemoizedCardSlot } from "./cardSlot";
 import { fetchCardDocuments } from "../search/cardDocumentsSlice";
 import { clearSearchResults } from "../search/searchResultsSlice";
-import { Front, Back } from "../../common/constants";
+import { Front, Back } from "@/common/constants";
 import Row from "react-bootstrap/Row";
 import {
   selectProjectMembers,

@@ -1,9 +1,9 @@
 import React, { useState, ReactElement, useEffect, memo } from "react";
 import { useSelector } from "react-redux";
-import { RootState } from "../../app/store";
+import { RootState } from "@/app/store";
 
 import BSCard from "react-bootstrap/Card";
-import { SearchQuery } from "../../common/types";
+import { SearchQuery } from "@/common/types";
 
 interface CardProps {
   imageIdentifier?: string;

@@ -13,7 +13,7 @@ import {
   MaximumSize,
   MinimumDPI,
   SizeStep,
-} from "../../common/constants";
+} from "@/common/constants";
 import { FilterSettings as FilterSettingsType } from "../../common/types";
 import React from "react";
 

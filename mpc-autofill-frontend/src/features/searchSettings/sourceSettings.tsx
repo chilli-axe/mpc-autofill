@@ -13,12 +13,12 @@ import {
 } from "@hello-pangea/dnd"; // TODO: look into using `react-dnd` instead as it's a significantly smaller package
 import Table from "react-bootstrap/Table";
 import { useSelector } from "react-redux";
-import { RootState } from "../../app/store";
+import { RootState } from "@/app/store";
 import {
   SourceRow,
   SourceSettings as SourceSettingsType,
 } from "../../common/types";
-import { ToggleButtonHeight } from "../../common/constants";
+import { ToggleButtonHeight } from "@/common/constants";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore  // TODO: https://github.com/arnthor3/react-bootstrap-toggle/issues/21

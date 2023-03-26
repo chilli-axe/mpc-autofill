@@ -1,13 +1,13 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { Card, ReversedCardTypePrefixes } from "../../common/constants";
-import { RootState } from "../../app/store";
+import { Card, ReversedCardTypePrefixes } from "@/common/constants";
+import { RootState } from "@/app/store";
 import {
   SearchQuery,
   Project,
   SlotProjectMembers,
   Faces,
   ProcessedLine,
-} from "../../common/types";
+} from "@/common/types";
 import { generateXML } from "../export/exportXML";
 import { generateDecklist } from "../export/exportDecklist";
 

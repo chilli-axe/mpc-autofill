@@ -7,7 +7,7 @@ import {
   selectGeneratedDecklist,
 } from "./projectSlice";
 import Alert from "react-bootstrap/Alert";
-import { bracket, imageSizeToMBString, downloadText } from "../../common/utils";
+import { bracket, imageSizeToMBString, downloadText } from "@/common/utils";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Tooltip from "react-bootstrap/Tooltip";

@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { APIGetCardbacks } from "../../app/api";
-import { CardbacksState } from "../../common/types";
+import { APIGetCardbacks } from "@/app/api";
+import { CardbacksState } from "@/common/types";
 
 export const fetchCardbacks = createAsyncThunk(
   "cardbacks/fetchCardbacks",
