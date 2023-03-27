@@ -192,8 +192,7 @@ def search_new(s: Search, source_key: str, page: int = 0) -> dict[str, Any]:
 class SearchSettings:
     # TODO: would be neat to use json schema for this
     fuzzy_search: bool
-    card_sources: list[str]
-    cardback_sources: list[str]
+    sources: list[str]
     min_dpi: int
     max_dpi: int
     max_size: int  # number of bytes
@@ -207,19 +206,15 @@ class SearchSettings:
 
         fuzzy_search = search_type_settings.get("fuzzySearch", False) is True
 
-        sources: dict[int, str] = {x.pk: x.key for x in Source.objects.all()}
+        source_lookup: dict[int, str] = {x.pk: x.key for x in Source.objects.all()}
 
-        card_sources: list[str] = []
+        sources: list[str] = []
         if (card_source_keys := source_settings.get("sources")) is not None:
-            for card_source_key, card_source_enabled in card_source_keys:
-                if card_source_enabled and card_source_key in sources.keys():
-                    card_sources.append(sources[card_source_key])
-
-        cardback_sources: list[str] = card_sources  # TODO  # []
-        # if (cardback_source_keys := search_settings.get("cardbackSources")) is not None:
-        #     for cardback_source_key in cardback_source_keys:
-        #         if cardback_source_key in sources.keys():
-        #             cardback_sources.append(sources[cardback_source_key])
+            sources = [
+                source_lookup[card_source_key]
+                for card_source_key, card_source_enabled in card_source_keys
+                if card_source_enabled and card_source_key in source_lookup.keys()
+            ]
 
         min_dpi = int(filter_settings.get("minimumDPI", "0"))
         max_dpi = int(filter_settings.get("maximumDPI", "1500"))
@@ -227,8 +222,7 @@ class SearchSettings:
 
         return cls(
             fuzzy_search=fuzzy_search,
-            card_sources=card_sources,
-            cardback_sources=cardback_sources,
+            sources=sources,
             min_dpi=min_dpi,
             max_dpi=max_dpi,
             max_size=max_size,
@@ -242,7 +236,11 @@ class SearchQuery:
 
     @classmethod
     def from_json_body(cls, json_body: dict[str, Any]) -> Optional["SearchQuery"]:
-        # TODO: validate that `json_body` is actually a dictionary
+        """
+        Private entry point. Generate an instance of this class from `json_body` (which is most likely a subset
+        of a larger JSON body).
+        """
+
         query = json_body.get("query", None)
         card_type = json_body.get("card_type", None)
         card_types = {str(x) for x in CardTypes}
@@ -252,6 +250,10 @@ class SearchQuery:
 
     @classmethod
     def list_from_json_body(cls, json_body: dict[str, Any]) -> list["SearchQuery"]:
+        """
+        Public entry point. Generate a list of instances of this class from `json_body`.
+        """
+
         # uniqueness of queries guaranteed
         query_dicts = json_body.get("queries", [])
         queries = set()
@@ -264,6 +266,11 @@ class SearchQuery:
 
     @elastic_connection
     def retrieve_card_identifiers(self, search_settings: SearchSettings) -> list[str]:
+        """
+        This is the core search algorithm for MPC Autofill - queries Elasticsearch for `self` given `search_settings`
+        and returns the list of corresponding `Card` identifiers.
+        """
+
         if not Index(CardSearch.Index.name).exists():
             raise SearchExceptions.IndexNotFoundException(CardSearch.__name__)
         query_parsed = to_searchable(self.query)
@@ -277,7 +284,7 @@ class SearchQuery:
         s = (
             CardSearch.search()
             .filter(Term(card_type=self.card_type))
-            .filter(Bool(should=Terms(source=search_settings.card_sources), minimum_should_match=1))
+            .filter(Bool(should=Terms(source=search_settings.sources), minimum_should_match=1))
             .filter(Range(dpi={"gte": search_settings.min_dpi, "lte": search_settings.max_dpi}))
             .filter(Range(size={"lte": search_settings.max_size}))
             .query(match)
@@ -286,7 +293,7 @@ class SearchQuery:
         )
         hits_iterable = s.params(preserve_order=True).scan()
 
-        source_order = {x: i for i, x in enumerate(search_settings.card_sources)}
+        source_order = {x: i for i, x in enumerate(search_settings.sources)}
         if search_settings.fuzzy_search:
             hits = sorted(hits_iterable, key=lambda x: (source_order[x.source], distance(x.searchq, query_parsed)))
         else:
