@@ -28,6 +28,9 @@ export default function Navbar() {
         <BSNavbar.Toggle aria-controls="basic-navbar-nav" />
         <BSNavbar.Collapse id="basic-navbar-nav" style={{ fontWeight: "bold" }}>
           <Nav className="me-auto">
+            <Nav.Link as={Link} href="/editor">
+              Editor (Temp)
+            </Nav.Link>
             <Nav.Link as={Link} href="/guide">
               Guide
             </Nav.Link>
