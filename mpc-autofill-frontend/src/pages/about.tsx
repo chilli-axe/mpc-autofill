@@ -54,7 +54,7 @@ export default function About() {
           or any other commercial entities.
         </p>
         <h2>Privacy Policy</h2>
-        <b>Last updated: 26st March, 2023</b>
+        <b>Last updated: 26th March, 2023</b>
         <p>
           MPC Autofill collects site usage data through Google Analytics via
           cookies. Understanding how users interact with the site allows me to
