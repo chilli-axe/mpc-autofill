@@ -1,7 +1,5 @@
 import Layout from "./../features/ui/layout";
-import { Provider } from "react-redux";
 import App from "./../app/app";
-import store from "./../app/store";
 import Head from "next/head";
 require("bootstrap-icons/font/bootstrap-icons.css");
 
@@ -14,9 +12,7 @@ export default function Editor() {
         <meta name="description" content="Edit MPC Project" />
       </Head>
       <Layout>
-        <Provider store={store}>
-          <App />
-        </Provider>
+        <App />
       </Layout>
     </>
   );
