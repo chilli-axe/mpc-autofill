@@ -4,7 +4,7 @@ click==8.0.4
 defusedxml
 Django~=4.0
 django-cors-headers
-django-crispy-forms
+django-crispy-forms~=1.14
 django-elasticsearch-dsl~=7.2
 django-bulk-sync
 django-environ
