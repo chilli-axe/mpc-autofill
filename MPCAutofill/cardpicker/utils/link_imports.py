@@ -87,7 +87,8 @@ class CubeCobra(ImportSite):
         )
         if response.url == "https://cubecobra.com/404" or not cube_id:  # cubecobra returns code 200 for 404 page
             cls.raise_invalid_url_exception(url)
-        return response.content.decode("utf-8")
+        # filter out lines like `# mainboard` and `# maybeboard` which were recently introduced by cubecobra
+        return "\n".join([x for x in response.content.decode("utf-8").split("\n") if not x.startswith("# ")])
 
 
 class Deckstats(ImportSite):
