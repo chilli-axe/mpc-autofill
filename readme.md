@@ -18,7 +18,7 @@ JetBrains supports this project's development through their [Open Source Develop
 - Web backend:
   - Located in `/MPCAutofill`.
   - **Note**: The frontend in this section of the codebase is considered deprecated and no new features will be added to it.
-    - See `/mpc-autofill-frontend` for the successor to this code.
+    - See `/frontend` for the successor to this code.
   - Images stored in the Google Drives connected to the project are indexed in Elasticsearch.
   - The backend system is intentionally decoupled from `/mpc-autofill-frontend`, which allows the configuration of which backend to retrieve data from.
   - Stack:
@@ -30,14 +30,14 @@ JetBrains supports this project's development through their [Open Source Develop
   - Intended to be deployed as a web application but can also be spun up locally with Docker.
 - Web frontend:
   - **Note**: At time of writing, this component of the project is not yet stable. Please continue to use the frontend in `/MPCAutofill` for a stable frontend experience.
-  - Located in `/mpc-autofill-frontend`.
+  - Located in `/frontend`.
   - A web app that communicates with a specified MPC Autofill backend (hosted somewhere on the internet) and facilitates the creation, customisation, and exporting of projects with drives linked to that backend.
   - Stack:
     - Static Next.js web app built with Typescript, React-Bootstrap, and Redux.
     - Automatically deployed on GitHub Pages.
       - TODO: flesh out deployment details
 - Desktop client:
-  - Located in `/autofill`,
+  - Located in `/desktop-tool`,
   - Responsible for parsing XML orders, downloading images from Google Drive, and automating MPC's order creation interface.
 
 Each component of the project has its own README; check those out for more details.

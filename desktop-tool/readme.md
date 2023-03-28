@@ -1,4 +1,4 @@
-# MPC Autofill Desktop Client
+# MPC Autofill Desktop Tool
 
 ## Overview
 

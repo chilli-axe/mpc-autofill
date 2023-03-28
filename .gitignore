@@ -55,8 +55,8 @@ coverage.xml
 *.py,cover
 .hypothesis/
 .pytest_cache/
-autofill/export/
-autofill/tests/export/
+desktop-tool/export/
+desktop-tool/tests/export/
 
 cover/
 

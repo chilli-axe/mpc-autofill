@@ -1,9 +1,9 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Web Project - Build Frontend (Dev)" type="js.build_tools.npm">
-    <package-json value="$PROJECT_DIR$/mpc-autofill-frontend/package.json" />
+    <package-json value="$PROJECT_DIR$/MPCAutofill/package.json" />
     <command value="run" />
     <scripts>
-      <script value="dev" />
+      <script value="build" />
     </scripts>
     <node-interpreter value="project" />
     <envs />

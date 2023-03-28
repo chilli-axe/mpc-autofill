@@ -24,7 +24,7 @@ repos:
     rev: v0.961
     hooks:
       - id: mypy
-        args: [--config-file, mypy.ini, autofill/, MPCAutofill/]
+        args: [--config-file, mypy.ini, desktop-tool/, MPCAutofill/]
         additional_dependencies:
           [
             "django-stubs[compatible-mypy]",
