@@ -85,10 +85,10 @@ MIDDLEWARE = [
     "django_user_agents.middleware.UserAgentMiddleware",
 ]
 
-CORS_ALLOWED_ORIGINS = [
-    "http://127.0.0.1:3000",
-    "http://localhost:3000",
-]  # the frontend next.js server is hosted here by default
+CORS_ALLOWED_ORIGINS = env.list(
+    "CORS_ALLOWED_ORIGINS",
+    default=["http://127.0.0.1:3000", "http://localhost:3000"],  # the frontend next.js server is hosted here by default
+)
 
 ROOT_URLCONF = "MPCAutofill.urls"
 
