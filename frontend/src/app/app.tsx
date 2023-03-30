@@ -10,15 +10,17 @@ import Row from "react-bootstrap/Row";
 import { useEffect } from "react";
 import { fetchSourceDocuments } from "@/features/search/sourceDocumentsSlice";
 import { useDispatch, useSelector } from "react-redux";
-import { AppDispatch, RootState } from "./store";
+import { RootState } from "./store";
+import DisableSSR from "@/features/ui/disableSSR";
+import { ThunkDispatch } from "redux-thunk";
 
 function App() {
-  const dispatch = useDispatch<AppDispatch>();
+  const dispatch = useDispatch<ThunkDispatch<any, any, any>>();
   const cardback =
     useSelector((state: RootState) => state.project.cardback) ?? undefined;
   useEffect(() => {
     dispatch(fetchSourceDocuments());
-  }, []);
+  }, [dispatch]);
 
   return (
     <Row>
@@ -30,7 +32,11 @@ function App() {
           className="sticky-top sticky-offset g-0"
           style={{ position: "sticky" }}
         >
-          <ProjectStatus />
+          {/* TODO: the fact that we have to do this for XML generation to work is dumb. fix it!
+          XMLs shouldn't constantly recalculate, they should only calculate on-demand; same with decklists. */}
+          <DisableSSR>
+            <ProjectStatus />
+          </DisableSSR>
           <Row className="g-0">
             <ViewSettings />
           </Row>

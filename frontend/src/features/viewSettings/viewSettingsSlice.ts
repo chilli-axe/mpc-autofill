@@ -1,4 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
+import { RootState } from "@/app/store";
 
 export const viewSettingsSlice = createSlice({
   name: "cardGrid",
@@ -6,13 +7,13 @@ export const viewSettingsSlice = createSlice({
     frontsVisible: true,
   },
   reducers: {
-    switchToFront: (state) => {
+    switchToFront: (state: RootState) => {
       state.frontsVisible = true;
     },
-    switchToBack: (state) => {
+    switchToBack: (state: RootState) => {
       state.frontsVisible = false;
     },
-    toggleFaces: (state) => {
+    toggleFaces: (state: RootState) => {
       state.frontsVisible = !state.frontsVisible;
     },
   },

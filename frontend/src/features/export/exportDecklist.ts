@@ -9,7 +9,7 @@ import { stripTextInParentheses } from "@/common/processing";
 function extractProjectMemberNames(
   projectMembers: Array<SlotProjectMembers>,
   cardDocuments: CardDocuments
-): Array<Array<string | null>> {
+): Array<[string | null, string | null]> {
   /**
    * Retrieve the names of each card (note: excludes cardbacks and tokens) in the project.
    */
@@ -19,21 +19,23 @@ function extractProjectMemberNames(
   ): string | null {
     return projectMember != null &&
       projectMember.selectedImage != null &&
-      cardDocuments[projectMember.selectedImage] != null &&
+      Object.prototype.hasOwnProperty.call(
+        cardDocuments,
+        projectMember.selectedImage
+      ) &&
       cardDocuments[projectMember.selectedImage].card_type === Card
       ? stripTextInParentheses(cardDocuments[projectMember.selectedImage].name)
       : null;
   }
 
-  return projectMembers.map((slotProjectMembers: SlotProjectMembers) =>
-    [Front, Back].flatMap((face) =>
-      extractProjectMemberName(slotProjectMembers[face])
-    )
-  );
+  return projectMembers.map((slotProjectMembers: SlotProjectMembers) => [
+    extractProjectMemberName(slotProjectMembers[Front]),
+    extractProjectMemberName(slotProjectMembers[Back]),
+  ]);
 }
 
 function stringifyCardNames(
-  projectMemberNames: Array<Array<string | null>>
+  projectMemberNames: Array<[string | null, string | null]>
 ): Array<string> {
   /**
    * Convert each image's front and back names into a single string.
@@ -41,14 +43,14 @@ function stringifyCardNames(
    */
 
   return projectMemberNames
-    .map((a: [string | null, string | null]) =>
-      a[0] != null
-        ? a[1] != null
-          ? `${a[0]} ${FaceSeparator} ${a[1]}`
-          : a[0]
+    .map((item: [string | null, string | null]) =>
+      item[0] != null
+        ? item[1] != null
+          ? `${item[0]} ${FaceSeparator} ${item[1]}`
+          : item[0]
         : ""
     )
-    .filter((a) => a != null && a.length > 0);
+    .filter((line): line is string => line != null && line.length > 0);
 }
 
 function aggregateIntoQuantities(

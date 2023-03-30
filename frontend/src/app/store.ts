@@ -1,4 +1,4 @@
-import { configureStore } from "@reduxjs/toolkit";
+import { configureStore, Store } from "@reduxjs/toolkit";
 import searchResultsReducer from "../features/search/searchResultsSlice";
 import cardDocumentsReducer from "../features/search/cardDocumentsSlice";
 import cardbacksReducer from "../features/card/cardbackSlice";
@@ -7,7 +7,7 @@ import searchSettingsReducer from "../features/searchSettings/searchSettingsSlic
 import projectReducer from "../features/project/projectSlice";
 import viewSettingsReducer from "../features/viewSettings/viewSettingsSlice";
 
-export const store = configureStore({
+export const store: Store = configureStore({
   reducer: {
     viewSettings: viewSettingsReducer,
     searchSettings: searchSettingsReducer,

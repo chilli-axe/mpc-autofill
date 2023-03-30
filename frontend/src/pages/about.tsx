@@ -41,11 +41,11 @@ export default function About() {
         <p>
           MPC Autofill does not condone or support the resale (or other
           commercial use) of cards printed with this website in any way. As per{" "}
-          <a href="https://www.makeplayingcards.com/">MakePlayingCards.com</a>'s
-          user agreement, users acknowledge that they{" "}
+          <a href="https://www.makeplayingcards.com/">MakePlayingCards.com</a>
+          &apos;s user agreement, users acknowledge that they{" "}
           <i>
-            "...own all copyrights for [card images used in orders] or have full
-            authorization to use them."
+            &quot;...own all copyrights for [card images used in orders] or have
+            full authorization to use them.&quot;
           </i>
         </p>
         <p>
@@ -102,11 +102,11 @@ export default function About() {
           </li>
         </ul>
         <p>
-          MPC Autofill's usage of Google Analytics does not include the usage of
-          Google Adwords or other advertising features.
+          MPC Autofill&apos;s usage of Google Analytics does not include the
+          usage of Google Adwords or other advertising features.
         </p>
         <p>
-          You can find more information on Google's privacy policy{" "}
+          You can find more information on Google&apos;s privacy policy{" "}
           <a
             href="https://policies.google.com/privacy?hl=en-US"
             target="_blank"

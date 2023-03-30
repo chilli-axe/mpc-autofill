@@ -20,8 +20,6 @@ export const fetchCardDocuments = createAsyncThunk(
     await thunkAPI.dispatch(fetchCards());
     await thunkAPI.dispatch(fetchCardbacks());
 
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore  // TODO
     const state: RootState = thunkAPI.getState();
 
     const allIdentifiers = selectUniqueCardIdentifiers(state);
@@ -50,22 +48,22 @@ export const cardDocumentsSlice = createSlice({
   name: "cardDocuments",
   initialState,
   reducers: {
-    addCardDocuments: (state, action) => {
+    addCardDocuments: (state: RootState, action) => {
       state.cardDocuments = { ...state.cardDocuments, ...action.payload };
     },
   },
   extraReducers(builder) {
     builder
-      .addCase(fetchCardDocuments.pending, (state, action) => {
+      .addCase(fetchCardDocuments.pending, (state: RootState, action) => {
         state.status = "loading";
       })
-      .addCase(fetchCardDocuments.fulfilled, (state, action) => {
+      .addCase(fetchCardDocuments.fulfilled, (state: RootState, action) => {
         state.status = "succeeded";
         state.cardDocuments = { ...state.cardDocuments, ...action.payload };
       })
-      .addCase(fetchCardDocuments.rejected, (state, action) => {
+      .addCase(fetchCardDocuments.rejected, (state: RootState, action) => {
         state.status = "failed"; // TODO: build some stuff for displaying error messages
-        state.error = action.error.message ?? null;
+        state.error = ""; // TODO: // action.error.message ?? null;
       });
   },
 });

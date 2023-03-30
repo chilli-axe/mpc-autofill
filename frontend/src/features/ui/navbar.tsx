@@ -16,7 +16,6 @@ export default function Navbar() {
     >
       <Container
         className="justify-content-center fixed-top align-middle"
-        bg="primary"
         style={{ maxWidth: 1200 + "px" }}
       >
         <BSNavbar.Brand href="/" as={Link}>
@@ -35,7 +34,7 @@ export default function Navbar() {
               Guide
             </Nav.Link>
             <Nav.Link as={Link} href="/new">
-              What's New?
+              What&apos;s New?
             </Nav.Link>
             <Nav.Link as={Link} href="/contributions">
               Contributions

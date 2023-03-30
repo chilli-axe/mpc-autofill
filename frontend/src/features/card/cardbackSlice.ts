@@ -1,6 +1,8 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { APIGetCardbacks } from "@/app/api";
-import { CardbacksState } from "@/common/types";
+import { CardbacksState, CardDocuments } from "@/common/types";
+import { RootState } from "@/app/store";
+import { getCSRFHeader } from "@/common/cookies";
 
 export const fetchCardbacks = createAsyncThunk(
   "cardbacks/fetchCardbacks",
@@ -19,22 +21,22 @@ export const cardbackSlice = createSlice({
   name: "cardbacks",
   initialState,
   reducers: {
-    addCardbackDocuments: (state, action) => {
+    addCardbackDocuments: (state: RootState, action) => {
       state.cardbacks = [...action.payload];
     },
   },
   extraReducers(builder) {
     builder
-      .addCase(fetchCardbacks.pending, (state, action) => {
+      .addCase(fetchCardbacks.pending, (state: RootState, action) => {
         state.status = "loading";
       })
-      .addCase(fetchCardbacks.fulfilled, (state, action) => {
+      .addCase(fetchCardbacks.fulfilled, (state: RootState, action) => {
         state.status = "succeeded";
         state.cardbacks = [...action.payload];
       })
-      .addCase(fetchCardbacks.rejected, (state, action) => {
+      .addCase(fetchCardbacks.rejected, (state: RootState, action) => {
         state.status = "failed"; // TODO: build some stuff for displaying error messages
-        state.error = action.error.message ?? null;
+        state.error = ""; // TODO:  // action.error.message ?? null;
       });
   },
 });

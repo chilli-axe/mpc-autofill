@@ -7,9 +7,11 @@ import {
   SlotProjectMembers,
   Faces,
   ProcessedLine,
+  ProjectMember,
 } from "@/common/types";
 import { generateXML } from "../export/exportXML";
 import { generateDecklist } from "../export/exportDecklist";
+import { Front, Back } from "@/common/constants";
 
 const initialState: Project = {
   members: [
@@ -74,7 +76,7 @@ export const projectSlice = createSlice({
   initialState,
   reducers: {
     setSelectedImage: (
-      state,
+      state: RootState,
       action: PayloadAction<SetSelectedImageAction>
     ) => {
       // TODO: this is a bit awkward
@@ -92,7 +94,7 @@ export const projectSlice = createSlice({
       }
     },
     bulkSetSelectedImage: (
-      state,
+      state: RootState,
       action: PayloadAction<BulkSetSelectedImageAction>
     ) => {
       // identify all cards in the specified face which have selected the old image
@@ -127,12 +129,12 @@ export const projectSlice = createSlice({
       }
     },
     setSelectedCardback: (
-      state,
+      state: RootState,
       action: PayloadAction<SetSelectedCardbackAction>
     ) => {
       state.cardback = action.payload.selectedImage;
     },
-    addImages: (state, action: PayloadAction<AddImagesAction>) => {
+    addImages: (state: RootState, action: PayloadAction<AddImagesAction>) => {
       let newMembers: Array<SlotProjectMembers> = [];
       for (const [quantity, frontQuery, backQuery] of action.payload.lines) {
         newMembers = [
@@ -145,7 +147,10 @@ export const projectSlice = createSlice({
       }
       state.members = [...state.members, ...newMembers];
     },
-    deleteImage: (state, action: PayloadAction<DeleteImageAction>) => {
+    deleteImage: (
+      state: RootState,
+      action: PayloadAction<DeleteImageAction>
+    ) => {
       // TODO: this breaks when you add a DFC card then delete the different card from the project.
       state.members.splice(action.payload.slot, 1);
     },
@@ -211,9 +216,12 @@ export const selectGeneratedDecklist = (state: RootState): string => {
 export const selectProjectFileSize = (state: RootState): number => {
   const uniqueCardIdentifiers = new Set<string>();
   for (const slotProjectMembers of state.project.members) {
-    for (const projectMember of Object.values(slotProjectMembers)) {
-      if (projectMember != null && projectMember.selectedImage != null) {
-        uniqueCardIdentifiers.add(projectMember.selectedImage);
+    for (const face of [Front, Back]) {
+      if (
+        slotProjectMembers[face] != null &&
+        slotProjectMembers[face].selectedImage != null
+      ) {
+        uniqueCardIdentifiers.add(slotProjectMembers[face].selectedImage);
       }
     }
   }
@@ -230,7 +238,8 @@ export const selectProjectFileSize = (state: RootState): number => {
 export const selectUniqueCardIdentifiers = (state: RootState): Set<string> => {
   const allIdentifiers: Set<string> = new Set(state.cardbacks.cardbacks);
   for (const slotProjectMembers of state.project.members) {
-    for (const projectMember of Object.values(slotProjectMembers)) {
+    for (const face of [Front, Back]) {
+      const projectMember = slotProjectMembers[face];
       if (
         projectMember != null &&
         projectMember.query != null &&
@@ -255,7 +264,8 @@ export const selectQueriesWithoutSearchResults = (
 ): Array<SearchQuery> => {
   const queriesToSearch: Array<SearchQuery> = [];
   for (const slotProjectMembers of state.project.members) {
-    for (const projectMember of Object.values(slotProjectMembers)) {
+    for (const face of [Front, Back]) {
+      const projectMember = slotProjectMembers[face];
       if (
         projectMember != null &&
         projectMember.query != null &&

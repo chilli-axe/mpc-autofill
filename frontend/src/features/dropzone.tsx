@@ -50,7 +50,6 @@ export function TextFileDropzone(props: StyledDropzoneProps) {
       reader.onabort = () => console.log("file reading was aborted");
       reader.onerror = () => console.log("file reading has failed");
       reader.onload = () => {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore  // TODO
         const fileContents: string = reader.result;
         props.callback(fileContents);

@@ -1,10 +1,12 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { APIGetSources } from "@/app/api";
-import { SourceDocumentsState } from "@/common/types";
+import { SourceDocuments, SourceDocumentsState } from "@/common/types";
+import { RootState } from "@/app/store";
+import { getCSRFHeader } from "@/common/cookies";
 
-const initialState: SourceDocumentsState = {
+const initialState = {
   sourceDocuments: undefined,
-};
+} as SourceDocumentsState;
 
 export const fetchSourceDocuments = createAsyncThunk(
   "sourceDocuments/fetchSourceDocuments",
@@ -16,12 +18,24 @@ export const fetchSourceDocuments = createAsyncThunk(
 export const sourceDocumentsSlice = createSlice({
   name: "sourceDocuments",
   initialState,
-  reducers: {},
-  extraReducers(builder) {
-    // omit posts loading reducers
-    builder.addCase(fetchSourceDocuments.fulfilled, (state, action) => {
+  reducers: {
+    addSourceDocuments: (state: RootState, action) => {
       state.sourceDocuments = { ...state.sourceDocuments, ...action.payload };
-    });
+    },
+  },
+  extraReducers(builder) {
+    builder.addCase(
+      fetchSourceDocuments.fulfilled,
+      (state: RootState, action) => {
+        state.sourceDocuments = { ...state.sourceDocuments, ...action.payload };
+      }
+    );
+    builder.addCase(
+      fetchSourceDocuments.rejected,
+      (state: RootState, action) => {
+        alert("TODO");
+      }
+    );
   },
 });
 

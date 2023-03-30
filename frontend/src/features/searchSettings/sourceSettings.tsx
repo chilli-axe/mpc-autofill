@@ -20,8 +20,7 @@ import {
 } from "../../common/types";
 import { ToggleButtonHeight } from "@/common/constants";
 
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore  // TODO: https://github.com/arnthor3/react-bootstrap-toggle/issues/21
+// @ts-ignore: https://github.com/arnthor3/react-bootstrap-toggle/issues/21
 import Toggle from "react-bootstrap-toggle";
 
 // TODO: make min/max DPI sliders stack vertically on mobile
@@ -219,8 +218,8 @@ export function SourceSettings(props: SourceSettingsProps) {
   return (
     <>
       <h5>Sources</h5>
-      Configure the sources you'd like to search. <b>Drag & drop</b> them to
-      change the order they're searched in.
+      Configure the sources you&apos;d like to search. <b>Drag & drop</b> them
+      to change the order they&apos;re searched in.
       <br />
       Use the <b>arrows</b> to send a source to the top or bottom.
       <br />

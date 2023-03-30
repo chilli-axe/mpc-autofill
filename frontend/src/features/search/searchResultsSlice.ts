@@ -2,13 +2,11 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { RootState } from "@/app/store";
 import { selectQueriesWithoutSearchResults } from "../project/projectSlice";
 import { APISearch } from "@/app/api";
-import { SearchResultsState } from "@/common/types";
+import { SearchResults, SearchResultsState } from "@/common/types";
 
 export const fetchCards = createAsyncThunk(
   "searchResults/fetchCards",
   async (arg, thunkAPI) => {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore  // TODO
     const state: RootState = thunkAPI.getState();
 
     const queriesToSearch = selectQueriesWithoutSearchResults(state);
@@ -28,16 +26,19 @@ export const searchResultsSlice = createSlice({
   name: "searchResults",
   initialState,
   reducers: {
-    addSearchResults: (state, action) => {
+    addSearchResults: (state: RootState, action) => {
       state.searchResults = { ...state.searchResults, ...action.payload };
     },
-    clearSearchResults: (state) => {
+    clearSearchResults: (state: RootState) => {
       state.searchResults = {};
     },
   },
   extraReducers(builder) {
-    builder.addCase(fetchCards.fulfilled, (state, action) => {
+    builder.addCase(fetchCards.fulfilled, (state: RootState, action) => {
       state.searchResults = { ...state.searchResults, ...action.payload };
+    });
+    builder.addCase(fetchCards.rejected, (state: RootState, action) => {
+      alert("TODO");
     });
   },
 });

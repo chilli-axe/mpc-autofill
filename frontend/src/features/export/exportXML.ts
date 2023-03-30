@@ -99,60 +99,58 @@ export function generateXML(
    * and suitable for uploading through the desktop tool.
    */
 
-  return ""; // TODO: can't reference `document` when server-side rendering
+  const orderMap = aggregateSlotsByIdentifierAndFace(projectMembers, cardback);
 
-  // const orderMap = aggregateSlotsByIdentifierAndFace(projectMembers, cardback);
-  //
-  // // top level XML doc element, attach everything to this
-  // const doc = document.implementation.createDocument("", "", null);
-  // const orderElement = doc.createElement("order");
-  //
-  // // project details
-  // const detailsElement = doc.createElement("details");
-  //
-  // const quantityElement = doc.createElement("quantity");
-  // quantityElement.appendChild(doc.createTextNode(projectSize.toString()));
-  // detailsElement.appendChild(quantityElement);
-  //
-  // const bracketElement = doc.createElement("bracket");
-  // bracketElement.appendChild(
-  //   doc.createTextNode(bracket(projectSize).toString())
-  // );
-  // detailsElement.appendChild(bracketElement);
-  //
-  // orderElement.append(detailsElement);
-  //
-  // // project cards
-  // for (const face of [Front, Back]) {
-  //   if (Object.keys(orderMap[face]).length > 0) {
-  //     const faceElement = doc.createElement(`${face}s`);
-  //     for (const [identifier, slots] of Object.entries(orderMap[face])) {
-  //       const cardElement = createCardElement(
-  //         cardDocuments,
-  //         doc,
-  //         identifier,
-  //         slots
-  //       );
-  //       if (cardElement != null) {
-  //         faceElement.appendChild(cardElement);
-  //       }
-  //     }
-  //     orderElement.appendChild(faceElement);
-  //   }
-  // }
-  //
-  // // common cardback
-  // const cardbackElement = doc.createElement("cardback");
-  // if (cardback != null) {
-  //   cardbackElement.appendChild(doc.createTextNode(cardback));
-  // }
-  // orderElement.appendChild(cardbackElement);
-  //
-  // doc.appendChild(orderElement);
-  //
-  // // serialise to XML and format nicely
-  // const serialiser = new XMLSerializer();
-  // const xml = serialiser.serializeToString(doc);
-  //
-  // return formatXML(xml, { collapseContent: true });
+  // top level XML doc element, attach everything to this
+  const doc = document.implementation.createDocument("", "", null);
+  const orderElement = doc.createElement("order");
+
+  // project details
+  const detailsElement = doc.createElement("details");
+
+  const quantityElement = doc.createElement("quantity");
+  quantityElement.appendChild(doc.createTextNode(projectSize.toString()));
+  detailsElement.appendChild(quantityElement);
+
+  const bracketElement = doc.createElement("bracket");
+  bracketElement.appendChild(
+    doc.createTextNode(bracket(projectSize).toString())
+  );
+  detailsElement.appendChild(bracketElement);
+
+  orderElement.append(detailsElement);
+
+  // project cards
+  for (const face of [Front, Back]) {
+    if (Object.keys(orderMap[face]).length > 0) {
+      const faceElement = doc.createElement(`${face}s`);
+      for (const [identifier, slots] of Object.entries(orderMap[face])) {
+        const cardElement = createCardElement(
+          cardDocuments,
+          doc,
+          identifier,
+          slots
+        );
+        if (cardElement != null) {
+          faceElement.appendChild(cardElement);
+        }
+      }
+      orderElement.appendChild(faceElement);
+    }
+  }
+
+  // common cardback
+  const cardbackElement = doc.createElement("cardback");
+  if (cardback != null) {
+    cardbackElement.appendChild(doc.createTextNode(cardback));
+  }
+  orderElement.appendChild(cardbackElement);
+
+  doc.appendChild(orderElement);
+
+  // serialise to XML and format nicely
+  const serialiser = new XMLSerializer();
+  const xml = serialiser.serializeToString(doc);
+
+  return formatXML(xml, { collapseContent: true });
 }

@@ -12,9 +12,10 @@ import {
 } from "../project/projectSlice";
 import Modal from "react-bootstrap/Modal";
 import { MemoizedCardDetailedView } from "./cardDetailedView";
+import { ThunkDispatch } from "redux-thunk";
 
 export function CardGrid() {
-  const dispatch = useDispatch<AppDispatch>();
+  const dispatch = useDispatch<ThunkDispatch<any, any, any>>();
 
   const [detailedViewSelectedImage, setDetailedViewSelectedImage] = useState<
     string | null
@@ -70,11 +71,7 @@ export function CardGrid() {
     cardSlotsFronts.push(
       <MemoizedCardSlot
         key={`${Front}-slot-${slot}`}
-        searchQuery={
-          slotProjectMember.front != null
-            ? slotProjectMember.front.query
-            : undefined
-        }
+        searchQuery={slotProjectMember.front?.query}
         face={Front}
         slot={slot}
         handleShowDetailedView={handleShowDetailedView}
@@ -83,11 +80,7 @@ export function CardGrid() {
     cardSlotsBacks.push(
       <MemoizedCardSlot
         key={`${Back}-slot-${slot}`}
-        searchQuery={
-          slotProjectMember.back != null
-            ? slotProjectMember.back.query
-            : undefined
-        }
+        searchQuery={slotProjectMember.back?.query}
         face={Back}
         slot={slot}
         handleShowDetailedView={handleShowDetailedView}

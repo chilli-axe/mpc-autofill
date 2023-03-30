@@ -28,7 +28,8 @@ export async function APIGetCards(
   return content.results;
 }
 
-export async function APIGetCardbacks(): Promise<Array<string>> {
+// TODO: the correct return type is `Promise<Array<string>>`
+export async function APIGetCardbacks(): Promise<any> {
   const rawResponse = await fetch("http://127.0.0.1:8000/2/cardbacks/", {
     method: "GET",
     credentials: "same-origin",
@@ -38,10 +39,11 @@ export async function APIGetCardbacks(): Promise<Array<string>> {
   return content.cardbacks;
 }
 
+// TODO: the correct return type is `Promise<SearchResults>`
 export async function APISearch(
   searchSettings: SearchSettings,
   queriesToSearch: Array<SearchQuery>
-): Promise<SearchResults> {
+): Promise<any> {
   const rawResponse = await fetch("http://127.0.0.1:8000/2/searchResults/", {
     method: "POST",
     body: JSON.stringify({
@@ -55,7 +57,8 @@ export async function APISearch(
   return content.results;
 }
 
-export async function APIGetSources(): Promise<SourceDocuments> {
+// TODO: the correct return type is `Promise<SourceDocuments>`
+export async function APIGetSources(): Promise<any> {
   const rawResponse = await fetch("http://127.0.0.1:8000/2/sources/", {
     method: "GET",
     credentials: "same-origin",

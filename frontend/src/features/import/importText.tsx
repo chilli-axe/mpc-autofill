@@ -85,8 +85,8 @@ export function ImportText(props: ImportTextProps) {
         </Modal.Header>
         <Modal.Body>
           <p>
-            Type the names of the cards you'd like to add to your order and hit{" "}
-            <b>Submit</b>. One card per line.
+            Type the names of the cards you&apos;d like to add to your order and
+            hit <b>Submit</b>. One card per line.
           </p>
           <p>
             Specify both front and back queries by separating them with{" "}
@@ -97,7 +97,7 @@ export function ImportText(props: ImportTextProps) {
             .
           </p>
           <p>
-            If you don't specify a back query and your front query is a
+            If you don&apos;t specify a back query and your front query is a
             double-faced card, we will automatically query the back for you.
           </p>
           <Form.Group className="mb-3">
