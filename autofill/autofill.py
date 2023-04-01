@@ -1,6 +1,7 @@
 import os
 
 import click
+from wakepy import set_keepawake, unset_keepawake
 
 from src.constants import browsers
 from src.driver import AutofillDriver
@@ -28,12 +29,22 @@ os.system("")  # enables ansi escape characters in terminal
     help="Create a PDF export of the card images and do not create a project for MPC.",
     is_flag=True,
 )
-def main(skipsetup: bool, browser: str, exportpdf: bool) -> None:
+@click.option(
+    "--preventsleep",
+    default=False,
+    help="Prevents the system from falling asleep during execution",
+    is_flag=True,
+)
+def main(skipsetup: bool, browser: str, exportpdf: bool, preventsleep: bool) -> None:
     try:
+        if preventsleep:
+            set_keepawake(keep_screen_awake=True)
         if exportpdf:
             PdfExporter().execute()
         else:
             AutofillDriver(driver_callable=browsers[browser]).execute(skipsetup)
+        if preventsleep:
+            unset_keepawake()
     except Exception as e:
         print(f"An uncaught exception occurred: {TEXT_BOLD}{e}{TEXT_END}")
         input("Press Enter to exit.")

@@ -15,3 +15,4 @@ requests
 sanitize-filename
 selenium~=4.8
 webdriver-manager==3.5.4
+wakepy==0.6.0
