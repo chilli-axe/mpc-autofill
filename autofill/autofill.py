@@ -38,6 +38,7 @@ os.system("")  # enables ansi escape characters in terminal
 def main(skipsetup: bool, browser: str, exportpdf: bool, preventsleep: bool) -> None:
     try:
         if preventsleep:
+            print("System sleep is being prevented during this execution")
             set_keepawake(keep_screen_awake=True)
         if exportpdf:
             PdfExporter().execute()
