@@ -68,7 +68,7 @@ export function Card(props: CardProps) {
           onClick={props.imageOnClick}
           // onError={{thumbnail_404(this)}}
           alt={maybeCardDocument.name}
-          fill="layout"
+          fill={true}
         />
         {props.previousImageIdentifier !== props.imageIdentifier &&
           maybePreviousCardDocument !== undefined && (
@@ -79,7 +79,7 @@ export function Card(props: CardProps) {
               src={maybePreviousCardDocument.small_thumbnail_url}
               // onError={{thumbnail_404(this)}}
               alt={maybePreviousCardDocument.name}
-              fill="layout"
+              fill={true}
             />
           )}
         {props.nextImageIdentifier !== props.imageIdentifier &&
@@ -91,7 +91,7 @@ export function Card(props: CardProps) {
               src={maybeNextCardDocument.small_thumbnail_url}
               // onError={{thumbnail_404(this)}}
               alt={maybeNextCardDocument.name}
-              fill="layout"
+              fill={true}
             />
           )}
       </>
@@ -102,7 +102,7 @@ export function Card(props: CardProps) {
         style={{ zIndex: 1 }}
         src="/blank.png"
         alt="Card not found"
-        fill="layout"
+        fill={true}
       />
     ) : (
       <div className="d-flex justify-content-center align-items-center">

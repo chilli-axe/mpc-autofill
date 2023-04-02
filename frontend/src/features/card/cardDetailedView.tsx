@@ -63,6 +63,7 @@ export function CardDetailedView(props: CardDetailedViewProps) {
                   </div>
 
                   <Image
+                    alt={maybeCardDocument.name}
                     className="card-img-fade-in"
                     style={{
                       zIndex: 1,
@@ -70,7 +71,7 @@ export function CardDetailedView(props: CardDetailedViewProps) {
                     }}
                     src={maybeCardDocument.medium_thumbnail_url}
                     onLoad={() => setMediumThumbnailLoading(false)}
-                    fill="layout"
+                    fill={true}
                     // onError={{thumbnail_404(this)}}
                   />
                 </div>
