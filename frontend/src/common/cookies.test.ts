@@ -2,7 +2,6 @@ import { getCookieSearchSettings } from "./cookies";
 import Cookies from "js-cookie";
 import { SourceDocuments } from "./types";
 import { MaximumDPI, MaximumSize, MinimumDPI } from "./constants";
-import { expect, jest, test } from "@jest/globals";
 
 // # region constants
 
