@@ -22,7 +22,10 @@ export default function About() {
         <p>
           This project is only possible because of the code contributions of the
           following people (thanks to{" "}
-          <a href="https://contrib.rocks">contrib.rocks</a> for the graphic!):
+          <a href="https://contrib.rocks" target="_blank">
+            contrib.rocks
+          </a>{" "}
+          for the graphic!):
         </p>
         <div style={{ textAlign: "center" }}>
           <a
@@ -41,7 +44,9 @@ export default function About() {
         <p>
           MPC Autofill does not condone or support the resale (or other
           commercial use) of cards printed with this website in any way. As per{" "}
-          <a href="https://www.makeplayingcards.com/">MakePlayingCards.com</a>
+          <a href="https://www.makeplayingcards.com/" target="_blank">
+            MakePlayingCards.com
+          </a>
           &apos;s user agreement, users acknowledge that they{" "}
           <i>
             &quot;...own all copyrights for [card images used in orders] or have
@@ -50,7 +55,9 @@ export default function About() {
         </p>
         <p>
           MPC Autofill is not affiliated with, produced by, or endorsed by{" "}
-          <a href="https://www.makeplayingcards.com/">MakePlayingCards.com</a>{" "}
+          <a href="https://www.makeplayingcards.com/" target="_blank">
+            MakePlayingCards.com
+          </a>{" "}
           or any other commercial entities.
         </p>
         <h2>Privacy Policy</h2>

@@ -12,17 +12,31 @@ import {
   SourceRow,
 } from "./types";
 import { searchSettingsSchema } from "./schemas";
-import { CSRFToken, MaximumDPI, MaximumSize, MinimumDPI } from "./constants";
+import {
+  CSRFCookie,
+  SearchSettingsCookie,
+  GoogleAnalyticsConsentCookie,
+  MaximumDPI,
+  MaximumSize,
+  MinimumDPI,
+} from "./constants";
 
 const ajv = new Ajv();
 
+//# region CSRF
+// TODO: unsure if we still need this.
+
 export function getCSRFHeader(): HeadersInit | undefined {
-  const csrfToken = Cookies.get(CSRFToken);
+  const csrfToken = Cookies.get(CSRFCookie);
   if (csrfToken != null) {
     return { "X-CSRFToken": csrfToken };
   }
   return undefined;
 }
+
+//# endregion
+
+//# region search settings
 
 export function getCookieSearchSettings(
   sourceDocuments: SourceDocuments
@@ -33,7 +47,7 @@ export function getCookieSearchSettings(
    * with any new sources that weren't previously included added to the end and enabled.
    */
 
-  const rawSettings = JSON.parse(Cookies.get("searchSettings") ?? "{}");
+  const rawSettings = JSON.parse(Cookies.get(SearchSettingsCookie) ?? "{}");
   const validate = ajv.compile(searchSettingsSchema);
   const rawSettingsValid = validate(rawSettings);
   if (rawSettingsValid) {
@@ -73,5 +87,26 @@ export function getCookieSearchSettings(
 }
 
 export function setCookieSearchSettings(settings: SearchSettings): void {
-  Cookies.set("searchSettings", JSON.stringify(settings));
+  Cookies.set(SearchSettingsCookie, JSON.stringify(settings), {
+    expires: 365,
+    sameSite: "strict",
+  });
 }
+
+//# endregion
+
+//# region google analytics consent
+
+export function getGoogleAnalyticsConsent(): boolean | undefined {
+  const rawConsent = Cookies.get(GoogleAnalyticsConsentCookie);
+  return rawConsent != undefined ? JSON.parse(rawConsent) === true : undefined;
+}
+
+export function setGoogleAnalyticsConsent(consent: boolean): void {
+  Cookies.set(GoogleAnalyticsConsentCookie, JSON.stringify(consent), {
+    expires: 365,
+    sameSite: "strict",
+  });
+}
+
+//# endregion

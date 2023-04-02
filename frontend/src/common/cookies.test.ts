@@ -63,7 +63,7 @@ const defaultSettings = {
 
 // # endregion
 
-// # region tests
+//# region mocks
 
 const mockGetCookies = jest.fn();
 const mockSetCookies = jest.fn();
@@ -79,6 +79,10 @@ jest.mock("js-cookie", () => ({
     }),
   },
 }));
+
+//# endregion
+
+// # region tests
 
 test("default settings are returned when cookies are empty", () => {
   (Cookies.get as jest.Mock).mockReturnValue(JSON.stringify({}));
