@@ -1,3 +1,10 @@
+/**
+ * This module contains components which allows the user to select between
+ * different card versions while seeing them all at once.
+ * A generic component is provided as the basis for grid selectors,
+ * and additional components extend this for use with `CardSlot` and `CommonCardback`.
+ */
+
 import Modal from "react-bootstrap/Modal";
 import Row from "react-bootstrap/Row";
 import { Card } from "./card";
@@ -25,6 +32,7 @@ interface GridSelectorProps {
   };
 }
 
+// TODO: do we move this into `cardSlot.tsx`? same with the other component below
 interface CardSlotGridSelectorProps {
   face: Faces;
   slot: number;

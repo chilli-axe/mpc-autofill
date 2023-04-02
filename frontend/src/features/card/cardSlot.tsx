@@ -1,3 +1,11 @@
+/**
+ * A higher-level wrapper for the `Card` component with additional functionality.
+ * Card slots allow modifying the selected image for the given slot number and face,
+ * both via previous/next arrows and the grid selector. Clicking the selected image
+ * displays the detailed view. Card slots can be deleted, which also deletes the
+ * card slot for the same slot number in the other face.
+ */
+
 import React, { useCallback, useEffect, useState, memo } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { AppDispatch, RootState } from "@/app/store";

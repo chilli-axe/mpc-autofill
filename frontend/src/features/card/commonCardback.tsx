@@ -1,3 +1,9 @@
+/**
+ * A higher-level wrapper for the `Card` component with additional functionality.
+ * Similar to the `CardSlot` component, but tailored specifically for use with
+ * the project cardback (displayed in the right panel of the project editor).
+ */
+
 import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { AppDispatch, RootState } from "@/app/store";

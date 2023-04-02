@@ -1,3 +1,8 @@
+/**
+ * This component displays all `CardSlot`s in the project and is responsible for
+ * querying the server for search results as necessary.
+ */
+
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState, AppDispatch } from "@/app/store";
@@ -92,7 +97,7 @@ export function CardGrid() {
     (state: RootState) => state.viewSettings.frontsVisible
   );
 
-  // TODO: we should aim to lift state up here and conditionally render rather than hide
+  // TODO: should we aim to lift state up here and conditionally render rather than hide?
   return (
     <>
       <Row
