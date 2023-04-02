@@ -15,7 +15,7 @@ interface CardProps {
   cardFooter?: ReactElement;
   imageOnClick?: React.MouseEventHandler<HTMLImageElement>;
   cardOnClick?: React.MouseEventHandler<HTMLElement>;
-  searchQuery: SearchQuery | undefined;
+  searchQuery?: SearchQuery | undefined;
   noResultsFound: boolean;
 }
 
