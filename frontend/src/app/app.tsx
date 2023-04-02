@@ -1,3 +1,8 @@
+/**
+ * This component represents the complete MPC Autofill project editor, ready to
+ * drop into a page (as the only component). Must be wrapped with a Redux provider.
+ */
+
 import * as React from "react";
 import { CardGrid } from "@/features/card/cardGrid";
 import { CommonCardback } from "@/features/card/commonCardback";

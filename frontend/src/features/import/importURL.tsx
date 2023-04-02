@@ -1,3 +1,10 @@
+/**
+ * This component is the URL-based entrypoint for cards into the project editor.
+ * The backend returns a list of domains that it claims to know how to talk to,
+ * displayed to the user. A freeform text box is exposed and the backend is asked
+ * to process the URL when the user hits Submit.
+ */
+
 // TODO: make the modal unable to be dismissed while the URL is loading
 
 import { useDispatch } from "react-redux";

@@ -1,3 +1,13 @@
+/**
+ * This component is the XML-based entrypoint for cards into the project editor.
+ * Projects which have been previously exported as XML can be re-uploaded through
+ * this component and their cards will be added to the current project state.
+ * A dropzone is exposed for the user to either drag-and-drop or select their file with.
+ * The user will be prompted on whether they want to retain their uploaded file's
+ * finish settings (e.g. foil/nonfoil, the selected cardstock) or retain the project's
+ * finish settings.
+ */
+
 import React, { useState } from "react";
 import Dropdown from "react-bootstrap/Dropdown";
 import Modal from "react-bootstrap/Modal";

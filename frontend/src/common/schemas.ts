@@ -1,3 +1,7 @@
+/**
+ * This module contains various JSON schema definitions, e.g. for search settings.
+ */
+
 export const searchTypeSettingsSchema = {
   type: "object",
   properties: {

@@ -1,3 +1,8 @@
+/**
+ * This module contains functionality for generating a decklist representation of the project,
+ * suitable for uploading to deckbuilding websites or sending to a friend.
+ */
+
 import {
   CardDocuments,
   ProjectMember,

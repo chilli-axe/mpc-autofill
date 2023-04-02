@@ -1,4 +1,8 @@
-// retrieved from https://redux.js.org/usage/writing-tests
+/**
+ * This module contains a few utils for testing with Redux and React Testing Library.
+ * Retrieved from https://redux.js.org/usage/writing-tests
+ */
+
 import React, { PropsWithChildren } from "react";
 import { render } from "@testing-library/react";
 import type { RenderOptions } from "@testing-library/react";

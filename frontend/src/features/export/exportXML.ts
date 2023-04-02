@@ -1,3 +1,9 @@
+/**
+ * This module contains functionality for generating an XML representation of the project,
+ * suitable for re-uploading into the frontend or uploading to MakePlayingCards
+ * through the desktop tool CLI.
+ */
+
 import { Back, Front, ReversedCardTypePrefixes } from "@/common/constants";
 import { bracket } from "@/common/utils";
 import formatXML from "xml-formatter";

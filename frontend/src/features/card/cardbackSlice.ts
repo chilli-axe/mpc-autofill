@@ -1,3 +1,7 @@
+/**
+ * State management for cardbacks retrieved from the backend.
+ */
+
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { APIGetCardbacks } from "@/app/api";
 import { CardbacksState, CardDocuments } from "@/common/types";

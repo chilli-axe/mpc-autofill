@@ -1,3 +1,7 @@
+/**
+ * State management for the user's configuration of the project - selected cards and cardbacks.
+ */
+
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { Card, ReversedCardTypePrefixes } from "@/common/constants";
 import { RootState } from "@/app/store";

@@ -1,3 +1,7 @@
+/**
+ * State management for sources retrieved from the backend.
+ */
+
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { APIGetSources } from "@/app/api";
 import { SourceDocuments, SourceDocumentsState } from "@/common/types";

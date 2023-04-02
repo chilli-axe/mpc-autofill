@@ -1,3 +1,11 @@
+/**
+ * This component is the CSV-based entrypoint for cards into the project editor.
+ * The component displays a CSV schema which the uploaded file should follow.
+ * A dropzone is exposed for the user to either drag-and-drop or select their file with.
+ * Broadly similar to text-based input, but allows specifying the preferred image for each
+ * row (front and back) - the image will be selected if included in the search results.
+ */
+
 import React, { CSSProperties, useState } from "react";
 import Dropdown from "react-bootstrap/Dropdown";
 import Modal from "react-bootstrap/Modal";

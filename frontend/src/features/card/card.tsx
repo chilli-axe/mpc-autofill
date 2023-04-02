@@ -1,3 +1,10 @@
+/**
+ * This component is a fundamental UI building block for displaying cards.
+ * Displays a card's image, some extra information (its name, its source's name, and its DPI),
+ * and has optional props for extending the component to include extra functionality.
+ * If being used in a gallery, the previous and next images can be cached for visual smoothness.
+ */
+
 import React, { useState, ReactElement, useEffect, memo } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "@/app/store";
@@ -7,15 +14,25 @@ import { SearchQuery } from "@/common/types";
 import Image from "next/image";
 
 interface CardProps {
+  /** The card image identifier to display. */
   imageIdentifier: string | undefined;
+  /** If this `Card` is part of a gallery, use this prop to cache the previous image for visual smoothness. */
   previousImageIdentifier?: string | undefined;
+  /** If this `Card` is part of a gallery, use this prop to cache the next image for visual smoothness. */
   nextImageIdentifier?: string | undefined;
+  /** The string to display in the `Card` header. */
   cardHeaderTitle: string;
+  /** An element (intended for use with a series of buttons) to include in the `Card` header.  */
   cardHeaderButtons?: ReactElement;
+  /** An element (e.g. prev/next buttons) to display in the card footer. If not passed, no footer will be rendered. */
   cardFooter?: ReactElement;
+  /** A callback function for when the displayed image is clicked. */
   imageOnClick?: React.MouseEventHandler<HTMLImageElement>;
+  /** A callback function for when the `Card` (the HTML surrounding the image) is clicked. */
   cardOnClick?: React.MouseEventHandler<HTMLElement>;
+  /** The `SearchQuery` specified when searching for this card. */
   searchQuery?: SearchQuery | undefined;
+  /** Whether no search results were found when searching for `searchQuery` under the configured search settings. */
   noResultsFound: boolean;
 }
 

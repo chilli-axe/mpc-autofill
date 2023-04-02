@@ -1,3 +1,7 @@
+/**
+ * State management for cards retrieved from the backend.
+ */
+
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
 import { RootState } from "@/app/store";
@@ -11,7 +15,8 @@ import { CardDocumentsState } from "@/common/types";
 export const fetchCardDocuments = createAsyncThunk(
   "cardDocuments/fetchCardDocuments",
   async (arg, thunkAPI) => {
-    // TODO: paginate
+    // TODO: paginate and introduce the concept of a search strategy
+    // e.g. retrieve the first image for each selected image first, then fill out search results from top to bottom
     /**
      * This function queries card documents (entire database rows) from the backend. It only queries cards which have
      * not yet been queried.

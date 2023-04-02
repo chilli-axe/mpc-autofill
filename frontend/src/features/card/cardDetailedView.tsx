@@ -1,3 +1,9 @@
+/**
+ * If the user clicks a card in the project editor, this component will be displayed,
+ * which is a modal that shows a higher-resolution version of the card,
+ * some more information (e.g. size, dote uploaded, etc.), and a direct download link.
+ */
+
 import Modal from "react-bootstrap/Modal";
 import Row from "react-bootstrap/Row";
 import Table from "react-bootstrap/Table";

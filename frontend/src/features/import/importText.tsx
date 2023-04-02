@@ -1,3 +1,9 @@
+/**
+ * This component is the text-based entrypoint for cards into the project editor
+ * (probably the primary way that users upload cards).
+ * A freeform text area is exposed and the cards are processed when the user hits Submit.
+ */
+
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "@/app/store";
 import React, { useEffect, useState } from "react";
