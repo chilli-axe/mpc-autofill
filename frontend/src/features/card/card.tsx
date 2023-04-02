@@ -8,8 +8,8 @@ import Image from "next/image";
 
 interface CardProps {
   imageIdentifier: string | undefined;
-  previousImageIdentifier: string | undefined;
-  nextImageIdentifier: string | undefined;
+  previousImageIdentifier?: string | undefined;
+  nextImageIdentifier?: string | undefined;
   cardHeaderTitle: string;
   cardHeaderButtons?: ReactElement;
   cardFooter?: ReactElement;
