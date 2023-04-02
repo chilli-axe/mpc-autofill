@@ -23,28 +23,20 @@ export function Card(props: CardProps) {
   const [smallThumbnailLoading, setSmallThumbnailLoading] = useState(true);
   useEffect(() => setSmallThumbnailLoading(true), [props.imageIdentifier]);
 
-  // const [nameEditable, setNameEditable] = useState(false);
-
-  // we have to store these in variables for typescript to recognise that
-  // the below ternary operators avoid indexing with `undefined`
-  const imageIdentifier = props.imageIdentifier;
-  const previousImageIdentifier = props.previousImageIdentifier;
-  const nextImageIdentifier = props.nextImageIdentifier;
-
   const maybeCardDocument = useSelector((state: RootState) =>
-    imageIdentifier != null
-      ? state.cardDocuments.cardDocuments[imageIdentifier]
+    props.imageIdentifier != null
+      ? state.cardDocuments.cardDocuments[props.imageIdentifier]
       : undefined
   );
 
   const maybePreviousCardDocument = useSelector((state: RootState) =>
-    previousImageIdentifier != null
-      ? state.cardDocuments.cardDocuments[previousImageIdentifier]
+    props.previousImageIdentifier != null
+      ? state.cardDocuments.cardDocuments[props.previousImageIdentifier]
       : undefined
   );
   const maybeNextCardDocument = useSelector((state: RootState) =>
-    nextImageIdentifier != null
-      ? state.cardDocuments.cardDocuments[nextImageIdentifier]
+    props.nextImageIdentifier != null
+      ? state.cardDocuments.cardDocuments[props.nextImageIdentifier]
       : undefined
   );
   // const searchResultsIdle = // TODO: replace the magic string here with a constant
@@ -73,7 +65,6 @@ export function Card(props: CardProps) {
           src={maybeCardDocument.small_thumbnail_url}
           onLoad={() => setSmallThumbnailLoading(false)}
           onClick={props.imageOnClick}
-          // onClick={handleShow}  // TODO: pass onclick function in props
           // onError={{thumbnail_404(this)}}
           alt={maybeCardDocument.name}
         />
@@ -133,12 +124,7 @@ export function Card(props: CardProps) {
           {cardImageElements}
         </div>
         <BSCard.Body className="mb-0 text-center">
-          <BSCard.Subtitle
-            className="mpccard-name"
-            // contentEditable="true"  // TODO: sort out a better way of managing text input
-            // spellCheck="false"
-            // onFocus="Library.review.selectElementContents(this)"
-          >
+          <BSCard.Subtitle className="mpccard-name">
             {maybeCardDocument != null && maybeCardDocument.name}
             {maybeCardDocument == null &&
               props.searchQuery != null &&

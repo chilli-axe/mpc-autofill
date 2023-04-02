@@ -13,9 +13,10 @@ import { getCSRFHeader } from "@/common/cookies";
 // TODO: hardcoding this to 127.0.0.1:8000 is temporary for local dev.
 // remove this when adding config for which domain to query.
 
+// TODO: the correct return type is `Promise<CardDocuments>`
 export async function APIGetCards(
   identifiersToSearch: Set<string>
-): Promise<CardDocuments> {
+): Promise<any> {
   const rawResponse = await fetch("http://127.0.0.1:8000/2/cards/", {
     method: "POST",
     body: JSON.stringify({

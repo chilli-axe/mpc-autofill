@@ -143,6 +143,7 @@ export function CardSlot(props: CardSlotProps) {
   }
 
   const cardHeaderTitle = `Slot ${slot + 1}`;
+  // TODO: the padlock should be replaced by a checkbox showing if the card is selected or not
   const cardHeaderButtons = (
     <>
       <button className="padlock">
