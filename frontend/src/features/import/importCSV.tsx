@@ -60,6 +60,27 @@ export function ImportCSV(props: ImportCSVProps) {
               )}
             </tbody>
           </Table>
+          Where the columns follow these rules:
+          <ul>
+            <li>
+              <b>Quantity</b>: The quantity to include of this row. Must be
+              greater than 0. <b>Cannot be blank.</b>
+            </li>
+            <li>
+              <b>Front</b>: Search query for card front. <b>Cannot be blank.</b>
+            </li>
+            <li>
+              <b>Front ID</b>: If this image is in the front search results, it
+              will be pre-selected. Can be blank.
+            </li>
+            <li>
+              <b>Front</b>: Search query for card back. Can be blank.
+            </li>
+            <li>
+              <b>Front ID</b>: If this image is in the back search results, it
+              will be pre-selected. Can be blank.
+            </li>
+          </ul>
           For example:
           <Table
             bordered={true}
