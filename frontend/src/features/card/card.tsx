@@ -7,15 +7,15 @@ import { SearchQuery } from "@/common/types";
 import Image from "next/image";
 
 interface CardProps {
-  imageIdentifier?: string;
-  previousImageIdentifier?: string;
-  nextImageIdentifier?: string;
+  imageIdentifier: string | undefined;
+  previousImageIdentifier: string | undefined;
+  nextImageIdentifier: string | undefined;
   cardHeaderTitle: string;
   cardHeaderButtons?: ReactElement;
   cardFooter?: ReactElement;
   imageOnClick?: React.MouseEventHandler<HTMLImageElement>;
   cardOnClick?: React.MouseEventHandler<HTMLElement>;
-  searchQuery?: SearchQuery;
+  searchQuery: SearchQuery | undefined;
   noResultsFound: boolean;
 }
 
@@ -132,7 +132,7 @@ export function Card(props: CardProps) {
           <BSCard.Subtitle className="mpccard-name">
             {maybeCardDocument != null && maybeCardDocument.name}
             {maybeCardDocument == null &&
-              props.searchQuery != null &&
+              props.searchQuery != undefined &&
               props.searchQuery.query}
           </BSCard.Subtitle>
           <div className="mpccard-spacing">
@@ -140,7 +140,7 @@ export function Card(props: CardProps) {
               {maybeCardDocument != null &&
                 `${maybeCardDocument.source_verbose} [${maybeCardDocument.dpi} DPI]`}
               {maybeCardDocument == null &&
-                props.searchQuery != null &&
+                props.searchQuery != undefined &&
                 "Your search query"}
             </BSCard.Text>
           </div>

@@ -11,7 +11,7 @@ import { MemoizedCardSlotGridSelector } from "./gridSelector";
 import { Faces, SearchQuery } from "@/common/types";
 
 interface CardSlotProps {
-  searchQuery?: SearchQuery | undefined;
+  searchQuery: SearchQuery | undefined;
   face: Faces;
   slot: number;
   handleShowDetailedView: {

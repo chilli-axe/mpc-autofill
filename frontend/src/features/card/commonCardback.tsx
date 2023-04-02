@@ -13,7 +13,7 @@ import { MemoizedCardDetailedView } from "./cardDetailedView";
 import { MemoizedCommonCardbackGridSelector } from "./gridSelector";
 
 interface CommonCardbackProps {
-  selectedImage?: string;
+  selectedImage: string | undefined;
 }
 
 export function CommonCardback(props: CommonCardbackProps) {
