@@ -37,3 +37,5 @@ export const CSRFToken = "csrftoken";
 export const Brackets: Array<number> = [
   18, 36, 55, 72, 90, 108, 126, 144, 162, 180, 198, 216, 234, 396, 504, 612,
 ];
+
+export const ProjectMaxSize: number = Brackets[Brackets.length - 1];

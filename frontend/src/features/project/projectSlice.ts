@@ -11,7 +11,7 @@ import {
 } from "@/common/types";
 import { generateXML } from "../export/exportXML";
 import { generateDecklist } from "../export/exportDecklist";
-import { Front, Back } from "@/common/constants";
+import { Front, Back, ProjectMaxSize } from "@/common/constants";
 
 const initialState: Project = {
   members: [
@@ -135,15 +135,26 @@ export const projectSlice = createSlice({
       state.cardback = action.payload.selectedImage;
     },
     addImages: (state: RootState, action: PayloadAction<AddImagesAction>) => {
+      /**
+       * ProjectMaxSize (612 cards at time of writing) is enforced at this layer.
+       */
+
       let newMembers: Array<SlotProjectMembers> = [];
       for (const [quantity, frontQuery, backQuery] of action.payload.lines) {
+        const cappedQuantity = Math.min(
+          quantity,
+          ProjectMaxSize - (state.members.length + newMembers.length)
+        );
         newMembers = [
           ...newMembers,
-          ...Array(quantity).fill({
+          ...Array(cappedQuantity).fill({
             front: { query: frontQuery, selectedImage: null },
             back: { query: backQuery, selectedImage: null },
           }),
         ];
+        if (state.members.length + newMembers.length >= ProjectMaxSize) {
+          break;
+        }
       }
       state.members = [...state.members, ...newMembers];
     },
@@ -179,15 +190,15 @@ export const selectProjectMemberQueries = (state: RootState): Set<string> =>
     state.project.members.flatMap((x: SlotProjectMembers) =>
       (x.front?.query?.query != null
         ? [
-            ReversedCardTypePrefixes[x.front?.query?.card_type] +
-              x.front?.query?.query,
+            ReversedCardTypePrefixes[x.front.query.card_type] +
+              x.front.query.query,
           ]
         : []
       ).concat(
         x.back?.query?.query != null
           ? [
-              ReversedCardTypePrefixes[x.back?.query?.card_type] +
-                x.back?.query?.query,
+              ReversedCardTypePrefixes[x.back.query.card_type] +
+                x.back.query.query,
             ]
           : []
       )

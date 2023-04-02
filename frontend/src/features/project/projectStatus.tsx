@@ -13,6 +13,7 @@ import Col from "react-bootstrap/Col";
 import Tooltip from "react-bootstrap/Tooltip";
 import OverlayTrigger from "react-bootstrap/OverlayTrigger";
 import { useSelector } from "react-redux";
+import { ProjectMaxSize } from "@/common/constants";
 
 // TODO: review the codebase for instances of this https://redux.js.org/usage/deriving-data-selectors#optimizing-selectors-with-memoization
 
@@ -40,6 +41,11 @@ export function ProjectStatus() {
         <b>{imageSizeToMBString(projectFileSize, 0)}</b> in total.
         <br />
         <br />
+        {projectSize >= ProjectMaxSize && (
+          <Alert variant="warning">
+            You&apos;ve reached the maximum project size!
+          </Alert>
+        )}
         <Row>
           <Col xs={3}>
             <div className="d-grid gap-0">
