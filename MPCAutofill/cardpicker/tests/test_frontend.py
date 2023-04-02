@@ -247,6 +247,7 @@ class TestFrontend:
         response = client.get(f"{live_server.url}/{url}")
         assert response.status_code == 200
 
+    # TODO: replicate this test in the new frontend
     def test_basic_search_and_xml_generation(self, chrome_driver, download_folder, snapshot):
         self.load_review_page_with_search_string(chrome_driver, "4 brainstorm\n3 island")
 
@@ -277,6 +278,7 @@ class TestFrontend:
         with open(download_folder / "cards.xml", "r") as f:
             assert str(f.read()) == snapshot
 
+    # TODO: replicate this test in the new frontend
     def test_toggle_faces(self, chrome_driver):
         self.load_review_page_with_search_string(chrome_driver, "4 brainstorm\n3 island")
 
@@ -288,6 +290,7 @@ class TestFrontend:
             assert chrome_driver.find_element(By.ID, value=f"slot{i}-front").is_displayed() is False
             assert chrome_driver.find_element(By.ID, value=f"slot{i}-back").is_displayed() is True
 
+    # TODO: replicate this test in the new frontend
     def test_card_version_selection(self, chrome_driver):
         self.load_review_page_with_search_string(chrome_driver, "2 island\n2 past in flames")
 
@@ -392,6 +395,7 @@ class TestFrontend:
                 source=TestSources.EXAMPLE_DRIVE_2.value,
             )
 
+    # TODO: replicate this test in the new frontend
     def test_fuzzy_search(self, chrome_driver):
         chrome_driver.find_element(By.ID, value="btn_settings").click()
         time.sleep(1)
@@ -410,6 +414,7 @@ class TestFrontend:
             source=TestSources.EXAMPLE_DRIVE_1.value,
         )
 
+    # TODO: replicate this test in the new frontend
     def test_search_when_all_drives_disabled(self, chrome_driver):
         chrome_driver.find_element(By.ID, value="btn_settings").click()
         time.sleep(1)
@@ -429,6 +434,7 @@ class TestFrontend:
                 chrome_driver.find_element(By.ID, value=f"slot{slot}-front-mpccard-source").text == "Your Search Query"
             )
 
+    # TODO: replicate this test in the new frontend
     def test_upload_valid_file(self, chrome_driver, live_server, valid_xml, valid_csv):
         for element_id, file_path in [("xmlfile", valid_xml), ("csvfile", valid_csv)]:
             chrome_driver.get(live_server.url)
@@ -460,6 +466,7 @@ class TestFrontend:
                     source=TestSources.EXAMPLE_DRIVE_1.value,
                 )
 
+    # TODO: replicate this test in the new frontend
     @pytest.mark.parametrize(
         "from_query, from_card, to_query, to_card",
         [
@@ -499,6 +506,7 @@ class TestFrontend:
             source=TestSources.EXAMPLE_DRIVE_1.value,
         )
 
+    # TODO: replicate this test in the new frontend
     def test_dfc_search(self, chrome_driver):
         call_command("update_dfcs")
         # set up results page with single result
@@ -526,6 +534,7 @@ class TestFrontend:
             source=TestSources.EXAMPLE_DRIVE_1.value,
         )
 
+    # TODO: replicate this test in the new frontend
     def test_priority_ordering(self, chrome_driver):
         self.load_review_page_with_search_string(chrome_driver, "island")
 
@@ -549,6 +558,7 @@ class TestFrontend:
             source=TestSources.EXAMPLE_DRIVE_1.value,
         )
 
+    # TODO: replicate this test in the new frontend
     def test_source_default_ordering(self, chrome_driver):
         self.load_review_page_with_search_string(chrome_driver, "past in flames")
 
@@ -562,6 +572,7 @@ class TestFrontend:
             source=TestSources.EXAMPLE_DRIVE_1.value,
         )
 
+    # TODO: replicate this test in the new frontend
     def test_source_non_default_ordering(self, chrome_driver):
         chrome_driver.find_element(By.ID, value="btn_settings").click()
         time.sleep(1)
@@ -586,6 +597,7 @@ class TestFrontend:
             source=TestSources.EXAMPLE_DRIVE_2.value,
         )
 
+    # TODO: replicate this test in the new frontend
     def test_disabling_a_drive_saved_by_cookie(self, chrome_driver):
         chrome_driver.find_element(By.ID, value="btn_settings").click()
         time.sleep(1)
@@ -604,6 +616,7 @@ class TestFrontend:
             ],
         )
 
+    # TODO: replicate this test in the new frontend
     def test_reordering_drives_saved_by_cookie(self, chrome_driver):
         chrome_driver.find_element(By.ID, value="btn_settings").click()
         time.sleep(1)
@@ -625,6 +638,7 @@ class TestFrontend:
             ],
         )
 
+    # TODO: replicate this test in the new frontend
     def test_cleared_card_back_name_defaulting_to_selected_common_card_back(self, chrome_driver):
         self.load_review_page_with_search_string(chrome_driver, "brainstorm")
 
@@ -682,6 +696,7 @@ class TestFrontend:
             source=TestSources.EXAMPLE_DRIVE_1.value,
         )
 
+    # TODO: replicate this test in the new frontend
     def test_detailed_view_modal(self, chrome_driver):
         self.load_review_page_with_search_string(chrome_driver, "brainstorm")
 
@@ -704,6 +719,7 @@ class TestFrontend:
         assert chrome_driver.find_element(By.ID, value="detailedView-class").text == "Card"
         assert chrome_driver.find_element(By.ID, value="detailedView-id").text == TestCards.BRAINSTORM.value.identifier
 
+    # TODO: replicate this test in the new frontend
     def test_delete_card_from_order(self, chrome_driver):
         self.load_review_page_with_search_string(chrome_driver, "2 brainstorm\n1 island")
 
@@ -754,6 +770,7 @@ class TestFrontend:
             source=TestSources.EXAMPLE_DRIVE_1.value,
         )
 
+    # TODO: replicate this test in the new frontend
     def test_delete_multiple_cards_from_order(self, chrome_driver):
         self.load_review_page_with_search_string(chrome_driver, "2 brainstorm\n2 past in flames")
 
@@ -806,6 +823,7 @@ class TestFrontend:
             source=TestSources.EXAMPLE_DRIVE_1.value,
         )
 
+    # TODO: replicate this test in the new frontend
     def test_download_single_image(self, chrome_driver, download_folder):
         self.load_review_page_with_search_string(chrome_driver, "brainstorm")
 
@@ -818,6 +836,7 @@ class TestFrontend:
         # assert the expected image has been downloaded
         os.path.exists(download_folder / "Brainstorm.png")
 
+    # TODO: replicate this test in the new frontend
     def test_download_all_images(self, chrome_driver, download_folder):
         self.load_review_page_with_search_string(chrome_driver, "4 brainstorm\n3 island\nhuntmaster of the fells")
 
@@ -835,6 +854,7 @@ class TestFrontend:
         ]:
             os.path.exists(download_folder / expected_file)
 
+    # TODO: replicate this test in the new frontend
     @pytest.mark.parametrize("url", [x.value for x in TestDecks])
     def test_import_from_url(self, chrome_driver, url):
         call_command("update_dfcs")
@@ -915,6 +935,7 @@ class TestFrontend:
             source=TestSources.EXAMPLE_DRIVE_1.value,
         )
 
+    # TODO: replicate this test in the new frontend
     def test_missing_cards_modal(self, chrome_driver, xml_with_invalid_card):
         chrome_driver.find_element(By.ID, value="xmlfile").send_keys(xml_with_invalid_card)
         self.wait_for_search_results_modal(chrome_driver)
@@ -934,6 +955,7 @@ class TestFrontend:
         assert face_cell.text == "front"
         assert search_query_cell.text == "brainstorm"
 
+    # TODO: replicate this test in the new frontend
     def test_add_cards_to_order_by_text(self, chrome_driver):
         call_command("update_dfcs")
         self.load_review_page_with_search_string(chrome_driver, "brainstorm")
@@ -981,6 +1003,7 @@ class TestFrontend:
                 source=TestSources.EXAMPLE_DRIVE_1.value,
             )
 
+    # TODO: replicate this test in the new frontend
     def test_add_cards_to_order_by_xml(self, chrome_driver, valid_xml):
         self.load_review_page_with_search_string(chrome_driver, "past in flames")
 
@@ -1023,6 +1046,7 @@ class TestFrontend:
                 source=TestSources.EXAMPLE_DRIVE_1.value,
             )
 
+    # TODO: replicate this test in the new frontend
     def test_mobile_banner(self, mobile_chrome_driver):
         assert (
             "It seems like you're on a mobile device!"
