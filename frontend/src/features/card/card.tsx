@@ -4,6 +4,7 @@ import { RootState } from "@/app/store";
 
 import BSCard from "react-bootstrap/Card";
 import { SearchQuery } from "@/common/types";
+import Image from "next/image";
 
 interface CardProps {
   imageIdentifier?: string;
@@ -58,7 +59,7 @@ export function Card(props: CardProps) {
           </div>
         </div>
 
-        <img
+        <Image
           className="card-img card-img-fade-in"
           loading="lazy"
           style={{ zIndex: 1, opacity: smallThumbnailLoading ? 0 : 1 }}
@@ -67,37 +68,41 @@ export function Card(props: CardProps) {
           onClick={props.imageOnClick}
           // onError={{thumbnail_404(this)}}
           alt={maybeCardDocument.name}
+          fill="layout"
         />
         {props.previousImageIdentifier !== props.imageIdentifier &&
           maybePreviousCardDocument !== undefined && (
-            <img
+            <Image
               className="card-img"
               loading="lazy"
               style={{ zIndex: 0, opacity: 0 }}
               src={maybePreviousCardDocument.small_thumbnail_url}
               // onError={{thumbnail_404(this)}}
               alt={maybePreviousCardDocument.name}
+              fill="layout"
             />
           )}
         {props.nextImageIdentifier !== props.imageIdentifier &&
           maybeNextCardDocument !== undefined && (
-            <img
+            <Image
               className="card-img"
               loading="lazy"
               style={{ zIndex: 0, opacity: 0 }}
               src={maybeNextCardDocument.small_thumbnail_url}
               // onError={{thumbnail_404(this)}}
               alt={maybeNextCardDocument.name}
+              fill="layout"
             />
           )}
       </>
     ) : props.noResultsFound ? (
-      <img
+      <Image
         className="card-img card-img-fade-in"
         loading="lazy"
         style={{ zIndex: 1 }}
-        src={"/static/cardpicker/blank.png"} // TODO: double check this is the correct way to serve this image
+        src="/blank.png"
         alt="Card not found"
+        fill="layout"
       />
     ) : (
       <div className="d-flex justify-content-center align-items-center">

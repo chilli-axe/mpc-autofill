@@ -6,6 +6,7 @@ import Button from "react-bootstrap/Button";
 import React, { useEffect, useState, memo } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "@/app/store";
+import Image from "next/image";
 
 interface CardDetailedViewProps {
   imageIdentifier: string;
@@ -61,7 +62,7 @@ export function CardDetailedView(props: CardDetailedViewProps) {
                     </div>
                   </div>
 
-                  <img
+                  <Image
                     className="card-img-fade-in"
                     style={{
                       zIndex: 1,
@@ -69,6 +70,7 @@ export function CardDetailedView(props: CardDetailedViewProps) {
                     }}
                     src={maybeCardDocument.medium_thumbnail_url}
                     onLoad={() => setMediumThumbnailLoading(false)}
+                    fill="layout"
                     // onError={{thumbnail_404(this)}}
                   />
                 </div>
