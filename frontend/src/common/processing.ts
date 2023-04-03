@@ -130,3 +130,8 @@ export function processLines(
   });
   return queries;
 }
+
+export function formatURL(backendURL: string, routeURL: string): string {
+  // TODO: implement this properly
+  return backendURL + routeURL;
+}

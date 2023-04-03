@@ -13,11 +13,13 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     <>
       {consent === true && <GoogleAnalytics trackPageViews />}
       <SSRProvider>
-        <Toasts />
-        <Navbar />
-        <Container className="addmargin" style={{ maxWidth: 1200 + "px" }}>
-          <Provider store={store}>{children}</Provider>
-        </Container>
+        <Provider store={store}>
+          <Toasts />
+          <Navbar />
+          <Container className="addmargin" style={{ maxWidth: 1200 + "px" }}>
+            {children}
+          </Container>
+        </Provider>
       </SSRProvider>
     </>
   );

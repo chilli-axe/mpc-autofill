@@ -4,8 +4,8 @@
  * A freeform text area is exposed and the cards are processed when the user hits Submit.
  */
 
-import { useDispatch } from "react-redux";
-import { AppDispatch } from "@/app/store";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "@/app/store";
 import React, { useEffect, useState } from "react";
 import { processLines } from "../../common/processing";
 import { addImages } from "../project/projectSlice";
@@ -29,6 +29,7 @@ interface ImportTextProps {
 
 export function ImportText(props: ImportTextProps) {
   // TODO: add an accordion here for explaining how to search for each different card type with prefixes
+  const backendURL = useSelector((state: RootState) => state.backend.url);
   const dispatch = useDispatch<AppDispatch>();
   const [showTextModal, setShowTextModal] = useState(false);
   const handleCloseTextModal = () => setShowTextModal(false);
@@ -60,7 +61,7 @@ export function ImportText(props: ImportTextProps) {
   };
 
   useEffect(() => {
-    APIGetPlaceholderText().then((placeholders) =>
+    APIGetPlaceholderText(backendURL).then((placeholders) =>
       setPlaceholderText(formatPlaceholderText(placeholders))
     );
   }, []);

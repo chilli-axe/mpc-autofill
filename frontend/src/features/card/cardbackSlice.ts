@@ -11,7 +11,8 @@ import { getCSRFHeader } from "@/common/cookies";
 export const fetchCardbacks = createAsyncThunk(
   "cardbacks/fetchCardbacks",
   async (arg, thunkAPI) => {
-    return APIGetCardbacks();
+    const state: RootState = thunkAPI.getState();
+    return APIGetCardbacks(state.backend.url);
   }
 );
 

@@ -15,7 +15,11 @@ export const fetchCards = createAsyncThunk(
 
     const queriesToSearch = selectQueriesWithoutSearchResults(state);
     if (queriesToSearch.length > 0) {
-      return APISearch(state.searchSettings, queriesToSearch);
+      return APISearch(
+        state.backend.url,
+        state.searchSettings,
+        queriesToSearch
+      );
     }
   }
 );

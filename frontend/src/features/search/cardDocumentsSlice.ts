@@ -38,7 +38,7 @@ export const fetchCardDocuments = createAsyncThunk(
     );
 
     if (identifiersToSearch.size > 0) {
-      return APIGetCards(identifiersToSearch);
+      return APIGetCards(state.backend.url, identifiersToSearch);
     }
   }
 );

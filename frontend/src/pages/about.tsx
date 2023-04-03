@@ -1,19 +1,29 @@
 import Head from "next/head";
 import Layout from "@/features/ui/layout";
 import Footer from "@/features/ui/footer";
+import { ProjectName } from "@/common/constants";
+import { useSelector } from "react-redux";
+import { RootState } from "@/app/store";
 
 export default function About() {
+  // TODO: if data is given, include a section about the connected backend
+  // TODO: having some issues with retrieving data from redux here
+  // const backendName = useSelector((state: RootState) => state.backendInfo.name)
+  // const backendDescription = useSelector((state: RootState) => state.backendInfo.description)
   return (
     <>
       <Head>
-        <title>About MPC Autofill</title>
-        <meta name="description" content="About MPC Autofill" />
+        <title>About {ProjectName}</title>
+        <meta name="description" content={`About ${ProjectName}`} />
       </Head>
       <Layout>
-        <h2>About</h2>
+        <h2>About {ProjectName}</h2>
         <p>
-          MPC Autofill is an open source project licensed under the{" "}
-          <a href="https://www.gnu.org/licenses/gpl-3.0.en.html">
+          {ProjectName} is an open source project licensed under the{" "}
+          <a
+            href="https://www.gnu.org/licenses/gpl-3.0.en.html"
+            target="_blank"
+          >
             GNU General Public License 3
           </a>{" "}
           &mdash; meaning it is free to use, modify, and distribute. Read the
@@ -37,12 +47,12 @@ export default function About() {
         </div>
         <h2>Disclaimer</h2>
         <p>
-          Custom card images displayed on MPC Autofill are subject to the
+          Custom card images displayed on {ProjectName} are subject to the
           license terms under which they were uploaded to their hosts. MPC
           Autofill is not responsible for the content of user-uploaded images.
         </p>
         <p>
-          MPC Autofill does not condone or support the resale (or other
+          {ProjectName} does not condone or support the resale (or other
           commercial use) of cards printed with this website in any way. As per{" "}
           <a href="https://www.makeplayingcards.com/" target="_blank">
             MakePlayingCards.com
@@ -54,7 +64,7 @@ export default function About() {
           </i>
         </p>
         <p>
-          MPC Autofill is not affiliated with, produced by, or endorsed by{" "}
+          {ProjectName} is not affiliated with, produced by, or endorsed by{" "}
           <a href="https://www.makeplayingcards.com/" target="_blank">
             MakePlayingCards.com
           </a>{" "}
@@ -63,7 +73,7 @@ export default function About() {
         <h2>Privacy Policy</h2>
         <b>Last updated: 26th March, 2023</b>
         <p>
-          MPC Autofill collects site usage data through Google Analytics via
+          {ProjectName} collects site usage data through Google Analytics via
           cookies. Understanding how users interact with the site allows me to
           continue to improve the site to the best of my ability. Users are
           presented with the option to opt-out of having their data collected by
@@ -74,7 +84,7 @@ export default function About() {
           core site functionality and cannot be disabled.
         </p>
         <p>
-          MPC Autofill will never share information collected by Google
+          {ProjectName} will never share information collected by Google
           Analytics with third parties.
         </p>
         <p>
@@ -109,7 +119,7 @@ export default function About() {
           </li>
         </ul>
         <p>
-          MPC Autofill&apos;s usage of Google Analytics does not include the
+          {ProjectName}&apos;s usage of Google Analytics does not include the
           usage of Google Adwords or other advertising features.
         </p>
         <p>
@@ -127,8 +137,8 @@ export default function About() {
           </a>
           .
         </p>
+        <Footer />
       </Layout>
-      <Footer />
     </>
   );
 }

@@ -14,6 +14,7 @@ import {
   getGoogleAnalyticsConsent,
 } from "@/common/cookies";
 import DisableSSR from "@/features/ui/disableSSR";
+import { ProjectName } from "@/common/constants";
 
 function GoogleAnalyticsConsentToast() {
   const consent = getGoogleAnalyticsConsent();
@@ -39,7 +40,7 @@ function GoogleAnalyticsConsentToast() {
       </Toast.Header>
       <Toast.Body>
         <p>
-          MPC Autofill uses cookies for remembering your search settings, and
+          {ProjectName} uses cookies for remembering your search settings, and
           for collecting analytics data to help improve the site. Your data is
           never shared with anyone. Would you like to opt out of analytics
           cookies?

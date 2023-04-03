@@ -1,3 +1,5 @@
+export const ProjectName = "MPC Autofill";
+
 import { CardType, Faces } from "./types";
 
 export const Card: CardType = "CARD";

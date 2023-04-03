@@ -34,5 +34,6 @@ urlpatterns = [
     re_path(r"^2/importSiteDecklist/$", views.api_function_8, name="api_function_8"),  # TODO: rename this
     re_path(r"^2/placeholderText/$", views.api_function_9, name="api_function_9"),
     re_path(r"^2/contributions/$", views.api_function_10, name="api_function_10"),
+    re_path(r"^2/info/$", views.api_function_11, name="api_function_11"),
     # endregion
 ]

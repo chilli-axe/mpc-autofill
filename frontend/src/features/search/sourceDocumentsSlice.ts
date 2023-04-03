@@ -14,8 +14,9 @@ const initialState = {
 
 export const fetchSourceDocuments = createAsyncThunk(
   "sourceDocuments/fetchSourceDocuments",
-  async () => {
-    return APIGetSources();
+  async (arg, thunkAPI) => {
+    const state: RootState = thunkAPI.getState();
+    return APIGetSources(state.backend.url);
   }
 );
 

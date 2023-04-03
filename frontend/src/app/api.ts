@@ -9,15 +9,17 @@ import {
   DFCPairs,
 } from "@/common/types";
 import { getCSRFHeader } from "@/common/cookies";
+import { formatURL } from "@/common/processing";
 
 // TODO: hardcoding this to 127.0.0.1:8000 is temporary for local dev.
 // remove this when adding config for which domain to query.
 
 // TODO: the correct return type is `Promise<CardDocuments>`
 export async function APIGetCards(
+  backendURL: string,
   identifiersToSearch: Set<string>
 ): Promise<any> {
-  const rawResponse = await fetch("http://127.0.0.1:8000/2/cards/", {
+  const rawResponse = await fetch(formatURL(backendURL, "/2/cards/"), {
     method: "POST",
     body: JSON.stringify({
       card_identifiers: Array.from(identifiersToSearch),
@@ -30,8 +32,8 @@ export async function APIGetCards(
 }
 
 // TODO: the correct return type is `Promise<Array<string>>`
-export async function APIGetCardbacks(): Promise<any> {
-  const rawResponse = await fetch("http://127.0.0.1:8000/2/cardbacks/", {
+export async function APIGetCardbacks(backendURL: string): Promise<any> {
+  const rawResponse = await fetch(formatURL(backendURL, "/2/cardbacks/"), {
     method: "GET",
     credentials: "same-origin",
     headers: getCSRFHeader(),
@@ -42,10 +44,11 @@ export async function APIGetCardbacks(): Promise<any> {
 
 // TODO: the correct return type is `Promise<SearchResults>`
 export async function APISearch(
+  backendURL: string,
   searchSettings: SearchSettings,
   queriesToSearch: Array<SearchQuery>
 ): Promise<any> {
-  const rawResponse = await fetch("http://127.0.0.1:8000/2/searchResults/", {
+  const rawResponse = await fetch(formatURL(backendURL, "/2/searchResults/"), {
     method: "POST",
     body: JSON.stringify({
       searchSettings,
@@ -59,8 +62,8 @@ export async function APISearch(
 }
 
 // TODO: the correct return type is `Promise<SourceDocuments>`
-export async function APIGetSources(): Promise<any> {
-  const rawResponse = await fetch("http://127.0.0.1:8000/2/sources/", {
+export async function APIGetSources(backendURL: string): Promise<any> {
+  const rawResponse = await fetch(formatURL(backendURL, "/2/sources/"), {
     method: "GET",
     credentials: "same-origin",
     headers: getCSRFHeader(),
@@ -69,8 +72,8 @@ export async function APIGetSources(): Promise<any> {
   return content.results;
 }
 
-export async function APIGetImportSites() {
-  const rawResponse = await fetch("http://127.0.0.1:8000/2/importSites", {
+export async function APIGetImportSites(backendURL: string) {
+  const rawResponse = await fetch(formatURL(backendURL, "/2/importSites"), {
     method: "GET",
     credentials: "same-origin",
     headers: getCSRFHeader(),
@@ -79,9 +82,12 @@ export async function APIGetImportSites() {
   return content.import_sites;
 }
 
-export async function APIQueryImportSite(url: string): Promise<string> {
+export async function APIQueryImportSite(
+  backendURL: string,
+  url: string
+): Promise<string> {
   const rawResponse = await fetch(
-    "http://127.0.0.1:8000/2/importSiteDecklist/",
+    formatURL(backendURL, "/2/importSiteDecklist/"),
     {
       method: "POST",
       body: JSON.stringify({ url }),
@@ -93,8 +99,8 @@ export async function APIQueryImportSite(url: string): Promise<string> {
   return content.cards;
 }
 
-export async function APIGetDFCPairs(): Promise<DFCPairs> {
-  const rawResponse = await fetch("http://127.0.0.1:8000/2/DFCPairs/", {
+export async function APIGetDFCPairs(backendURL: string): Promise<DFCPairs> {
+  const rawResponse = await fetch(formatURL(backendURL, "/2/DFCPairs/"), {
     method: "GET",
     credentials: "same-origin",
     headers: getCSRFHeader(),
@@ -103,14 +109,28 @@ export async function APIGetDFCPairs(): Promise<DFCPairs> {
   return content.dfc_pairs;
 }
 
-export async function APIGetPlaceholderText(): Promise<{
+export async function APIGetPlaceholderText(backendURL: string): Promise<{
   [cardType: string]: Array<[number, string]>;
 }> {
-  const rawResponse = await fetch("http://127.0.0.1:8000/2/placeholderText/", {
+  const rawResponse = await fetch(
+    formatURL(backendURL, "/2/placeholderText/"),
+    {
+      method: "GET",
+      credentials: "same-origin",
+      headers: getCSRFHeader(),
+    }
+  );
+  const content = await rawResponse.json();
+  return content.cards;
+}
+
+// TODO: the correct return type is `Promise<BackendInfo>`
+export async function APIGetBackendInfo(backendURL: string): Promise<any> {
+  const rawResponse = await fetch(formatURL(backendURL, "/2/info/"), {
     method: "GET",
     credentials: "same-origin",
     headers: getCSRFHeader(),
   });
   const content = await rawResponse.json();
-  return content.cards;
+  return content.info;
 }

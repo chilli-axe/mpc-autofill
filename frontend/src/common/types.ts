@@ -81,6 +81,21 @@ export interface SearchResultsState {
   error: string | null;
 }
 
+export interface BackendInfo {
+  name: string | null;
+  description: string | null;
+  email: string | null;
+  reddit: string | null;
+  discord: string | null;
+  patreon_url: string | null; // TODO: rethink this probably
+}
+
+export interface BackendState {
+  url: string | null;
+  info: BackendInfo | undefined;
+  // TODO: connection status stuff in here probably
+}
+
 // export type SourceRow = [number, boolean]
 
 export type SourceRow = FromSchema<typeof sourceRowSchema>;
@@ -96,7 +111,7 @@ export interface ImportSite {
 
 export interface SearchQuery {
   query: string | null;
-  card_type: CardType; // TODO: rename this to `cardType`
+  card_type: CardType; // TODO: rename this to `cardType` from `card_type`
 }
 
 export interface ProjectMember {

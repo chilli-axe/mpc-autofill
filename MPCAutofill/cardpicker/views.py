@@ -8,6 +8,7 @@ from typing import Any, Callable, Optional, TypeVar, Union, cast
 
 from blog.models import BlogPost
 
+from django.conf import settings
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
@@ -544,6 +545,28 @@ def api_function_9(request: HttpRequest) -> HttpResponse:
 def api_function_10(request: HttpRequest) -> HttpResponse:
     sources, total_count_f = summarise_contributions()
     return JsonResponse({"sources": sources, "total_count": total_count_f})
+
+
+@csrf_exempt
+def api_function_11(request: HttpRequest) -> HttpResponse:
+    """
+    Return a stack of metadata about the server for the frontend to display.
+    It's expected that this route will be called once when the server is connected.
+    """
+
+    time.sleep(1)
+    return JsonResponse(
+        {
+            "info": {
+                "name": settings.SITE_NAME,
+                "description": "Testing some stuff locally",
+                "email": settings.TARGET_EMAIL,
+                "reddit": settings.REDDIT,
+                "discord": settings.DISCORD,
+                "patreon_url": "aouaoeu",
+            }
+        }
+    )
 
 
 # endregion

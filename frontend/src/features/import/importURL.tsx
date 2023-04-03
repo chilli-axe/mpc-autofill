@@ -7,8 +7,8 @@
 
 // TODO: make the modal unable to be dismissed while the URL is loading
 
-import { useDispatch } from "react-redux";
-import { AppDispatch } from "@/app/store";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "@/app/store";
 import React, { useEffect, useState } from "react";
 import { processLines } from "@/common/processing";
 import { addImages } from "../project/projectSlice";
@@ -18,12 +18,14 @@ import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import { APIGetImportSites, APIQueryImportSite } from "@/app/api";
 import { ImportSite, DFCPairs } from "@/common/types";
+import { ProjectName } from "@/common/constants";
 
 interface ImportURLProps {
   dfcPairs: DFCPairs;
 }
 
 export function ImportURL(props: ImportURLProps) {
+  const backendURL = useSelector((state: RootState) => state.backend.url);
   const dispatch = useDispatch<AppDispatch>();
 
   // TODO: should probably set up type hints for all `useState` usages
@@ -35,7 +37,7 @@ export function ImportURL(props: ImportURLProps) {
   const [importSites, setImportSites] = useState<ImportSite[] | null>(null);
 
   useEffect(() => {
-    APIGetImportSites().then((results) => setImportSites(results));
+    APIGetImportSites(backendURL).then((results) => setImportSites(results));
   }, []);
 
   const handleSubmitURLModal = async () => {
@@ -43,7 +45,7 @@ export function ImportURL(props: ImportURLProps) {
     const trimmedURL = URLModalValue.trim();
     if (trimmedURL.length > 0) {
       setLoading(true);
-      const lines = await APIQueryImportSite(trimmedURL);
+      const lines = await APIQueryImportSite(backendURL, trimmedURL);
       const processedLines = processLines(lines, props.dfcPairs);
       dispatch(addImages({ lines: processedLines }));
       handleCloseURLModal();
@@ -67,7 +69,7 @@ export function ImportURL(props: ImportURLProps) {
         </Modal.Header>
         <Modal.Body>
           Paste a link to a card list hosted on one of the below sites (not
-          affiliated) to import the list into MPC Autofill:
+          affiliated) to import the list into {ProjectName}:
           <br />
           {importSites != null ? (
             <ul>

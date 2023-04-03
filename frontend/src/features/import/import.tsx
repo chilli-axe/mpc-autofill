@@ -5,14 +5,17 @@ import { ImportURL } from "./importURL";
 import { ImportXML } from "./importXML";
 import { ImportCSV } from "./importCSV";
 import { APIGetDFCPairs } from "@/app/api";
+import { useSelector } from "react-redux";
 import { DFCPairs } from "@/common/types";
 import { processQuery } from "@/common/processing";
+import { RootState } from "@/app/store";
 
 export function Import() {
   const [dfcPairs, setDFCPairs] = useState<DFCPairs>({});
+  const backendURL = useSelector((state: RootState) => state.backend.url);
 
   useEffect(() => {
-    APIGetDFCPairs().then((pairs) =>
+    APIGetDFCPairs(backendURL).then((pairs) =>
       setDFCPairs(
         Object.fromEntries(
           Object.keys(pairs).map((front) => [
