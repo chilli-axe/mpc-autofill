@@ -60,7 +60,7 @@ You can optionally export the downloaded images to a PDF which can be uploaded t
 
 ### Preventing Sleep
 
-By default the system can fall asleep during execution. System sleep during execution can be prevented by with the `--preventsleep` command line argument. This might require sudo/admin permissions on linux.
+By default the system is prevented from falling asleep during execution. This might require sudo/admin permissions on linux. System sleep during execution can be allowed with the `--allowsleep` command line argument.
 
 ## Developer Guide
 

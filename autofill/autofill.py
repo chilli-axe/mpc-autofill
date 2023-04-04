@@ -1,7 +1,8 @@
 import os
+from contextlib import nullcontext
 
 import click
-from wakepy import set_keepawake, unset_keepawake
+from wakepy import keepawake
 
 from src.constants import browsers
 from src.driver import AutofillDriver
@@ -30,22 +31,20 @@ os.system("")  # enables ansi escape characters in terminal
     is_flag=True,
 )
 @click.option(
-    "--preventsleep",
+    "--allowsleep",
     default=False,
-    help="Prevents the system from falling asleep during execution",
+    help="Allows the system to fall alseep during execution",
     is_flag=True,
 )
-def main(skipsetup: bool, browser: str, exportpdf: bool, preventsleep: bool) -> None:
+def main(skipsetup: bool, browser: str, exportpdf: bool, allowsleep: bool) -> None:
     try:
-        if preventsleep:
-            print("System sleep is being prevented during this execution")
-            set_keepawake(keep_screen_awake=True)
-        if exportpdf:
-            PdfExporter().execute()
-        else:
-            AutofillDriver(driver_callable=browsers[browser]).execute(skipsetup)
-        if preventsleep:
-            unset_keepawake()
+        with keepawake(keep_screen_awake=True) if not allowsleep else nullcontext():
+            if not allowsleep:
+                print("System sleep is being prevented during this execution")
+            if exportpdf:
+                PdfExporter().execute()
+            else:
+                AutofillDriver(driver_callable=browsers[browser]).execute(skipsetup)
     except Exception as e:
         print(f"An uncaught exception occurred: {TEXT_BOLD}{e}{TEXT_END}")
         input("Press Enter to exit.")
