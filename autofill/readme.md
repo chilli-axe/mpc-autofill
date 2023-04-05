@@ -58,6 +58,10 @@ By default, the tool will configure a driver for Google Chrome. The three major 
 
 You can optionally export the downloaded images to a PDF which can be uploaded to a card printing site by using the `--exportpdfs` command line argument. Once the images are downloaded, press enter and you'll be presented with a few questions. If you plan to upload the PDFs to MakePlayingCards, select `yes` when asked about storing the separate faces in their own PDF. If you plan to use DriveThruCards, select `no` for that question, and then set the number of cards to include per exported file. If using DriveThruCards, be aware that they have a file size upload limit of 1gb, so depending on the file size of the selected images, your order may need to be set to a lower number, like 30 or 40 cards.
 
+### Preventing Sleep
+
+By default the system is prevented from falling asleep during execution. This might require sudo/admin permissions on linux. System sleep during execution can be allowed with the `--allowsleep` command line argument.
+
 ## Developer Guide
 
 ### Running the Source Code
