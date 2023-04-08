@@ -38,6 +38,73 @@ const urlValidationStages = [
   "Checking search engine health",
 ];
 
+function validateURLStructure(
+  url: string,
+  validationStatus: Array<ValidationState>
+) {
+  try {
+    new URL(url);
+    validationStatus = [
+      ...validationStatus.slice(0, -1),
+      ValidationState.SUCCEEDED,
+    ];
+  } catch (error) {
+    validationStatus = [
+      ...validationStatus.slice(0, -1),
+      ValidationState.FAILED,
+    ];
+  }
+  return validationStatus;
+}
+
+async function pingBackend(
+  url: string,
+  validationStatus: Array<ValidationState>
+): Promise<Array<ValidationState>> {
+  try {
+    const p = new Ping();
+    await p.ping(url, function (err: any, data: any) {
+      validationStatus = [
+        ...validationStatus.slice(0, -1),
+        err ? ValidationState.FAILED : ValidationState.SUCCEEDED,
+      ];
+    });
+  } catch (error) {
+    validationStatus = [
+      ...validationStatus.slice(0, -1),
+      ValidationState.FAILED,
+    ];
+  }
+  return validationStatus;
+}
+
+async function searchEngineHealthCheck(
+  url: string,
+  validationStatus: Array<ValidationState>
+): Promise<Array<ValidationState>> {
+  try {
+    await fetch(new URL("2/searchEngineHealth/", url).toString(), {
+      method: "GET",
+      mode: "cors",
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        validationStatus = [
+          ...validationStatus.slice(0, -1),
+          (data.online ?? false) === true
+            ? ValidationState.SUCCEEDED
+            : ValidationState.FAILED,
+        ];
+      });
+  } catch (error) {
+    validationStatus = [
+      ...validationStatus.slice(0, -1),
+      ValidationState.FAILED,
+    ];
+  }
+  return validationStatus;
+}
+
 export function BackendConfig(props: BackendConfigProps) {
   const dispatch = useDispatch();
 
@@ -52,15 +119,6 @@ export function BackendConfig(props: BackendConfigProps) {
   const [serverURL, setServerURL] = useState<string>("");
 
   const handleSubmit = async () => {
-    /**
-     * high level summary of what we need to do on submit:
-     * 1. prepend the URL with http:// if necessary
-     * 2. attempt to construct a `URL` with the user's value and throw if invalid
-     * 3. ping the server and check if a connection can be made
-     * 4. ping the server's elasticsearch endpoint and check if ES is online
-     * 5. should be good to go now
-     */
-
     const formattedURL = withHttp(serverURL.trim());
 
     let updatedValidationStatus: Array<ValidationState> = [];
@@ -72,18 +130,10 @@ export function BackendConfig(props: BackendConfigProps) {
       ValidationState.IN_PROGRESS,
     ];
     setValidationStatus(updatedValidationStatus);
-    try {
-      new URL(formattedURL);
-      updatedValidationStatus = [
-        ...updatedValidationStatus.slice(0, -1),
-        ValidationState.SUCCEEDED,
-      ];
-    } catch (error) {
-      updatedValidationStatus = [
-        ...updatedValidationStatus.slice(0, -1),
-        ValidationState.FAILED,
-      ];
-    }
+    updatedValidationStatus = validateURLStructure(
+      formattedURL,
+      updatedValidationStatus
+    );
     setValidationStatus(updatedValidationStatus);
 
     // ping the server to check if it's alive
@@ -96,20 +146,10 @@ export function BackendConfig(props: BackendConfigProps) {
         ValidationState.IN_PROGRESS,
       ];
       setValidationStatus(updatedValidationStatus);
-      try {
-        const p = new Ping();
-        await p.ping(formattedURL, function (err: any, data: any) {
-          updatedValidationStatus = [
-            ...updatedValidationStatus.slice(0, -1),
-            err ? ValidationState.FAILED : ValidationState.SUCCEEDED,
-          ];
-        });
-      } catch (error) {
-        updatedValidationStatus = [
-          ...updatedValidationStatus.slice(0, -1),
-          ValidationState.FAILED,
-        ];
-      }
+      updatedValidationStatus = await pingBackend(
+        formattedURL,
+        updatedValidationStatus
+      );
       setValidationStatus(updatedValidationStatus);
     }
 
@@ -123,26 +163,10 @@ export function BackendConfig(props: BackendConfigProps) {
         ValidationState.IN_PROGRESS,
       ];
       setValidationStatus(updatedValidationStatus);
-      try {
-        await fetch(new URL("2/searchEngineHealth/", formattedURL).toString(), {
-          method: "GET",
-          mode: "cors",
-        })
-          .then((response) => response.json())
-          .then((data) => {
-            updatedValidationStatus = [
-              ...updatedValidationStatus.slice(0, -1),
-              (data.online ?? false) === true
-                ? ValidationState.SUCCEEDED
-                : ValidationState.FAILED,
-            ];
-          });
-      } catch (error) {
-        updatedValidationStatus = [
-          ...updatedValidationStatus.slice(0, -1),
-          ValidationState.FAILED,
-        ];
-      }
+      updatedValidationStatus = await searchEngineHealthCheck(
+        formattedURL,
+        updatedValidationStatus
+      );
       setValidationStatus(updatedValidationStatus);
     }
 
