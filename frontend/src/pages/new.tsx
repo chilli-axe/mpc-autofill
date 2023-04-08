@@ -4,6 +4,7 @@ import Footer from "@/features/ui/footer";
 import { ProjectName } from "@/common/constants";
 
 export default function New() {
+  // TODO: looks like we're hitting /info every time we switch to a different page
   return (
     <>
       <Head>

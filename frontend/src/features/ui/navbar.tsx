@@ -40,10 +40,10 @@ export default function Navbar() {
         fixed="top"
         variant="dark"
         bg="primary"
-        style={{ height: 50 + "px" }}
+        style={{ minHeight: 50 + "px" }}
       >
         <Container
-          className="justify-content-center fixed-top align-middle"
+          className="justify-content-center fixed-top align-middle bg-primary"
           style={{ maxWidth: 1200 + "px" }}
         >
           <BSNavbar.Brand href="/" as={Link}>
