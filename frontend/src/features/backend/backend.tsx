@@ -172,7 +172,9 @@ export function BackendConfig(props: BackendConfigProps) {
 
     // set state in redux and cookies + clean up API cached data
     if (
-      updatedValidationStatus.every((item) => item == ValidationState.SUCCEEDED)
+      updatedValidationStatus.every(
+        (item) => item === ValidationState.SUCCEEDED
+      )
     ) {
       dispatch(setURL(formattedURL));
       setCookieBackendURL(formattedURL);
@@ -217,11 +219,7 @@ export function BackendConfig(props: BackendConfigProps) {
                   {urlValidationStages.map((item, i) => (
                     <li key={item}>
                       <i
-                        className={
-                          validationStatus[i] != undefined
-                            ? `bi bi-${validationStatus[i]}`
-                            : "bi bi-circle"
-                        }
+                        className={`bi bi-${validationStatus[i] ?? "circle"}`}
                       />{" "}
                       {item}
                       {validationStatus[i] === ValidationState.IN_PROGRESS &&
