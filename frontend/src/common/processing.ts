@@ -131,6 +131,11 @@ export function processLines(
   return queries;
 }
 
+export function withHttp(url: string): string {
+  return !/^https?:\/\//i.test(url) ? `http://${url}` : url;
+}
+
+// TODO: delete this when remaining API interactions have been moved to RTK query
 export function formatURL(backendURL: string, routeURL: string): string {
   // TODO: implement this properly
   return backendURL + routeURL;

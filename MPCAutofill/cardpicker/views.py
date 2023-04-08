@@ -569,4 +569,8 @@ def api_function_11(request: HttpRequest) -> HttpResponse:
     )
 
 
+def api_function_12(request: HttpRequest) -> HttpResponse:
+    return JsonResponse({"online": ping_elasticsearch()})
+
+
 # endregion
