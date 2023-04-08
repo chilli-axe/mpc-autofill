@@ -10,15 +10,10 @@ import React, { CSSProperties, useState } from "react";
 import Dropdown from "react-bootstrap/Dropdown";
 import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
-import { DFCPairs } from "@/common/types";
 import { TextFileDropzone } from "../dropzone";
 import Table from "react-bootstrap/Table";
 
-interface ImportCSVProps {
-  dfcPairs: DFCPairs;
-}
-
-export function ImportCSV(props: ImportCSVProps) {
+export function ImportCSV() {
   const [showCSVModal, setShowCSVModal] = useState(false);
   const handleCloseCSVModal = () => setShowCSVModal(false);
   const handleShowCSVModal = () => setShowCSVModal(true);

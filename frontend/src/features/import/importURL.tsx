@@ -9,49 +9,53 @@
 
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/app/store";
-import React, { useEffect, useState } from "react";
+import React, { useState, useCallback } from "react";
 import { processLines } from "@/common/processing";
 import { addImages } from "../project/projectSlice";
 import Dropdown from "react-bootstrap/Dropdown";
 import Modal from "react-bootstrap/Modal";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
-import { APIGetImportSites, APIQueryImportSite } from "@/app/api";
-import { ImportSite, DFCPairs } from "@/common/types";
+import {
+  useGetBackendInfoQuery,
+  useGetDFCPairsQuery,
+  useGetImportSitesQuery,
+} from "@/app/api";
 import { ProjectName } from "@/common/constants";
+import { apiSlice } from "@/app/api";
 
-interface ImportURLProps {
-  dfcPairs: DFCPairs;
-}
+export function ImportURL() {
+  const dfcPairsQuery = useGetDFCPairsQuery();
+  const importSitesQuery = useGetImportSitesQuery();
+  const backendInfoQuery = useGetBackendInfoQuery();
 
-export function ImportURL(props: ImportURLProps) {
   const backendURL = useSelector((state: RootState) => state.backend.url);
   const dispatch = useDispatch<AppDispatch>();
 
-  // TODO: should probably set up type hints for all `useState` usages
+  // TODO: should probably set up type hints for all `useState` usages throughout the app
   const [showURLModal, setShowURLModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const handleCloseURLModal = () => setShowURLModal(false);
   const handleShowURLModal = () => setShowURLModal(true);
   const [URLModalValue, setURLModalValue] = useState("");
-  const [importSites, setImportSites] = useState<ImportSite[] | null>(null);
 
-  useEffect(() => {
-    APIGetImportSites(backendURL).then((results) => setImportSites(results));
-  }, []);
+  const [triggerFn, queryImportSiteQuery] =
+    apiSlice.endpoints.queryImportSite.useLazyQuery();
 
-  const handleSubmitURLModal = async () => {
-    // TODO: propagate the custom site name through to the new frontend
+  const handleSubmitURLModal = useCallback(async () => {
     const trimmedURL = URLModalValue.trim();
     if (trimmedURL.length > 0) {
       setLoading(true);
-      const lines = await APIQueryImportSite(backendURL, trimmedURL);
-      const processedLines = processLines(lines, props.dfcPairs);
+      const query = await triggerFn(URLModalValue);
+      const processedLines = processLines(
+        query.data ?? "",
+        dfcPairsQuery.data ?? {}
+      );
       dispatch(addImages({ lines: processedLines }));
       handleCloseURLModal();
       setLoading(false);
     }
-  };
+  }, [URLModalValue]);
 
   return (
     <>
@@ -69,11 +73,12 @@ export function ImportURL(props: ImportURLProps) {
         </Modal.Header>
         <Modal.Body>
           Paste a link to a card list hosted on one of the below sites (not
-          affiliated) to import the list into {ProjectName}:
+          affiliated) to import the list into{" "}
+          {backendInfoQuery.data?.name ?? ProjectName}:
           <br />
-          {importSites != null ? (
+          {importSitesQuery.data != null ? (
             <ul>
-              {importSites.map((importSite: ImportSite) => (
+              {importSitesQuery.data.map((importSite) => (
                 <li key={`${importSite.name}-row`}>
                   <a
                     key={importSite.name}
@@ -105,9 +110,9 @@ export function ImportURL(props: ImportURLProps) {
               type={"url"}
               required={true}
               placeholder="https://"
-              onChange={(event) => setURLModalValue(event.target.value)}
+              onChange={(event) => setURLModalValue(event.target.value.trim())}
               value={URLModalValue}
-              disabled={loading || importSites == null}
+              disabled={loading || importSitesQuery.data == null}
             />
           </Form.Group>
         </Modal.Body>
@@ -120,7 +125,7 @@ export function ImportURL(props: ImportURLProps) {
             onClick={async () => {
               await handleSubmitURLModal();
             }}
-            disabled={loading || importSites == null}
+            disabled={loading || importSitesQuery.isFetching}
           >
             Submit
           </Button>

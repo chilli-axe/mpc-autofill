@@ -1,32 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import Dropdown from "react-bootstrap/Dropdown";
 import { ImportText } from "./importText";
 import { ImportURL } from "./importURL";
 import { ImportXML } from "./importXML";
 import { ImportCSV } from "./importCSV";
-import { APIGetDFCPairs } from "@/app/api";
-import { useSelector } from "react-redux";
-import { DFCPairs } from "@/common/types";
-import { processQuery } from "@/common/processing";
-import { RootState } from "@/app/store";
 
 export function Import() {
-  const [dfcPairs, setDFCPairs] = useState<DFCPairs>({});
-  const backendURL = useSelector((state: RootState) => state.backend.url);
-
-  useEffect(() => {
-    APIGetDFCPairs(backendURL).then((pairs) =>
-      setDFCPairs(
-        Object.fromEntries(
-          Object.keys(pairs).map((front) => [
-            processQuery(front),
-            processQuery(pairs[front]),
-          ])
-        )
-      )
-    );
-  }, []);
-
   return (
     <>
       <Dropdown>
@@ -40,10 +19,10 @@ export function Import() {
           </Dropdown.Toggle>
         </div>
         <Dropdown.Menu>
-          <ImportText dfcPairs={dfcPairs} />
+          <ImportText />
           <ImportXML />
-          <ImportCSV dfcPairs={dfcPairs} />
-          <ImportURL dfcPairs={dfcPairs} />
+          <ImportCSV />
+          <ImportURL />
         </Dropdown.Menu>
       </Dropdown>
     </>

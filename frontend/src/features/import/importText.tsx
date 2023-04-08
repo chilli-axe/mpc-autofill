@@ -4,16 +4,15 @@
  * A freeform text area is exposed and the cards are processed when the user hits Submit.
  */
 
-import { useDispatch, useSelector } from "react-redux";
-import { AppDispatch, RootState } from "@/app/store";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "@/app/store";
 import React, { useEffect, useState } from "react";
-import { processLines } from "../../common/processing";
+import { processLines } from "@/common/processing";
 import { addImages } from "../project/projectSlice";
 import Dropdown from "react-bootstrap/Dropdown";
 import Modal from "react-bootstrap/Modal";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
-import { DFCPairs } from "@/common/types";
 import {
   FaceSeparator,
   Card,
@@ -21,15 +20,13 @@ import {
   Token,
   ReversedCardTypePrefixes,
 } from "@/common/constants";
-import { APIGetPlaceholderText } from "@/app/api";
+import { useGetDFCPairsQuery, useGetPlaceholderTextQuery } from "@/app/api";
 
-interface ImportTextProps {
-  dfcPairs: DFCPairs;
-}
-
-export function ImportText(props: ImportTextProps) {
+export function ImportText() {
   // TODO: add an accordion here for explaining how to search for each different card type with prefixes
-  const backendURL = useSelector((state: RootState) => state.backend.url);
+  const placeholderTextQuery = useGetPlaceholderTextQuery();
+  const dfcPairsQuery = useGetDFCPairsQuery();
+
   const dispatch = useDispatch<AppDispatch>();
   const [showTextModal, setShowTextModal] = useState(false);
   const handleCloseTextModal = () => setShowTextModal(false);
@@ -61,17 +58,20 @@ export function ImportText(props: ImportTextProps) {
   };
 
   useEffect(() => {
-    APIGetPlaceholderText(backendURL).then((placeholders) =>
-      setPlaceholderText(formatPlaceholderText(placeholders))
-    );
-  }, []);
+    if (placeholderTextQuery.data != undefined) {
+      setPlaceholderText(formatPlaceholderText(placeholderTextQuery.data));
+    }
+  }, [placeholderTextQuery.data]);
 
   const handleSubmitTextModal = () => {
     /**
      * Parse the contents of the modal and add the resultant queries in the desired numbers of instances to the project.
      */
 
-    const processedLines = processLines(textModalValue, props.dfcPairs);
+    const processedLines = processLines(
+      textModalValue,
+      dfcPairsQuery.data ?? {}
+    );
     dispatch(addImages({ lines: processedLines }));
     handleCloseTextModal();
   };

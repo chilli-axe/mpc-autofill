@@ -92,7 +92,6 @@ export interface BackendInfo {
 
 export interface BackendState {
   url: string | null;
-  info: BackendInfo | undefined;
   // TODO: connection status stuff in here probably
 }
 

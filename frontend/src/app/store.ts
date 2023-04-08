@@ -1,6 +1,7 @@
 import { combineReducers, configureStore, Store } from "@reduxjs/toolkit";
 import type { PreloadedState } from "@reduxjs/toolkit";
 
+import { apiSlice } from "@/app/api";
 import searchResultsReducer from "../features/search/searchResultsSlice";
 import cardDocumentsReducer from "../features/search/cardDocumentsSlice";
 import cardbacksReducer from "../features/card/cardbackSlice";
@@ -12,6 +13,7 @@ import backendReducer from "../features/backend/backendSlice";
 
 // Create the root reducer separately so we can extract the RootState type
 const rootReducer = combineReducers({
+  [apiSlice.reducerPath]: apiSlice.reducer,
   viewSettings: viewSettingsReducer,
   searchSettings: searchSettingsReducer,
   searchResults: searchResultsReducer,
@@ -23,7 +25,12 @@ const rootReducer = combineReducers({
 });
 
 export const setupStore = (preloadedState?: PreloadedState<RootState>) => {
-  return configureStore({ reducer: rootReducer, preloadedState });
+  return configureStore({
+    reducer: rootReducer,
+    preloadedState,
+    middleware: (getDefaultMiddleware) =>
+      getDefaultMiddleware().concat(apiSlice.middleware),
+  });
 };
 
 export const store: Store = setupStore();

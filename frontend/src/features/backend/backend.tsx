@@ -9,7 +9,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/app/store";
 import Form from "react-bootstrap/Form";
 import Nav from "react-bootstrap/Nav";
-import { setURL, fetchInfo } from "@/features/backend/backendSlice";
+import { setURL } from "@/features/backend/backendSlice";
 import { ProjectName } from "@/common/constants";
 
 interface BackendConfigProps {
@@ -27,9 +27,6 @@ export function BackendConfig(props: BackendConfigProps) {
 
   const handleSubmit = async () => {
     dispatch(setURL(serverURL));
-    // TODO: fix the below typescript error
-    // @ts-ignore
-    dispatch(fetchInfo(serverURL));
     props.handleClose();
   };
 

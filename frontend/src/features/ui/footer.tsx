@@ -1,6 +1,5 @@
 import Link from "next/link";
-import { useSelector } from "react-redux";
-import { RootState } from "@/app/store";
+import { useGetBackendInfoQuery } from "@/app/api";
 
 function Spacer() {
   return (
@@ -9,12 +8,7 @@ function Spacer() {
 }
 
 export default function Footer() {
-  const backendReddit = useSelector(
-    (state: RootState) => state.backend.info?.reddit
-  );
-  const backendDiscord = useSelector(
-    (state: RootState) => state.backend.info?.discord
-  );
+  const backendInfoQuery = useGetBackendInfoQuery();
   return (
     <>
       <hr />
@@ -23,18 +17,18 @@ export default function Footer() {
           <a href="https://github.com/chilli-axe/mpc-autofill" target="_blank">
             GitHub
           </a>
-          {backendReddit != null && (
+          {backendInfoQuery.data?.reddit != null && (
             <>
               <Spacer />•<Spacer />
-              <a href={backendReddit} target="_blank">
+              <a href={backendInfoQuery.data.reddit} target="_blank">
                 Reddit
               </a>
             </>
           )}
-          {backendDiscord != null && (
+          {backendInfoQuery.data?.discord != null && (
             <>
               <Spacer />•<Spacer />
-              <a href={backendDiscord} target="_blank">
+              <a href={backendInfoQuery.data.discord} target="_blank">
                 Discord
               </a>
             </>

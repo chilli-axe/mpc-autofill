@@ -11,9 +11,11 @@ import { BackendConfig } from "@/features/backend/backend";
 import { useState } from "react";
 import { clearURL } from "@/features/backend/backendSlice";
 import DisableSSR from "@/features/ui/disableSSR";
+import { useGetBackendInfoQuery } from "@/app/api";
 
 export default function Navbar() {
   const dispatch = useDispatch();
+  const backendInfoQuery = useGetBackendInfoQuery();
 
   const [showBackendConfig, setShowBackendConfig] = useState(false);
 
@@ -21,9 +23,6 @@ export default function Navbar() {
   const handleShowBackendConfig = () => setShowBackendConfig(true);
 
   const backendURL = useSelector((state: RootState) => state.backend.url);
-  const backendName = useSelector(
-    (state: RootState) => state.backend.info?.name
-  );
 
   const clearBackendURL = () => dispatch(clearURL());
 
@@ -43,7 +42,7 @@ export default function Navbar() {
           <BSNavbar.Brand href="/" as={Link}>
             <Image src="/logolowres.png" alt="logo" width="40" height="40" />{" "}
             <span className="align-middle">
-              <b>{backendName ?? ProjectName}</b>
+              <b>{backendInfoQuery.data?.name ?? ProjectName}</b>
             </span>
           </BSNavbar.Brand>
           <BSNavbar.Toggle aria-controls="basic-navbar-nav" />
@@ -81,7 +80,7 @@ export default function Navbar() {
                   Configure Server
                 </Nav.Link>
               ) : (
-                <NavDropdown title={backendName ?? backendURL}>
+                <NavDropdown title={backendInfoQuery.data?.name ?? backendURL}>
                   <NavDropdown.Item onClick={handleShowBackendConfig}>
                     Configure Server
                   </NavDropdown.Item>
