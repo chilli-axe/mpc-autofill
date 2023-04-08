@@ -3,7 +3,7 @@ import Cookies from "js-cookie";
 import { SourceDocuments } from "./types";
 import { MaximumDPI, MaximumSize, MinimumDPI } from "./constants";
 
-// # region constants
+//# region constants
 
 const sourceDocuments: SourceDocuments = {
   0: {
@@ -61,7 +61,7 @@ const defaultSettings = {
   },
 };
 
-// # endregion
+//# endregion
 
 //# region mocks
 
@@ -82,7 +82,7 @@ jest.mock("js-cookie", () => ({
 
 //# endregion
 
-// # region tests
+//# region tests
 
 test("default settings are returned when cookies are empty", () => {
   (Cookies.get as jest.Mock).mockReturnValue(JSON.stringify({}));
@@ -221,4 +221,4 @@ test("cookies with incomplete source order plus invalid sources are correctly re
   ]);
 });
 
-// # endregion
+//# endregion

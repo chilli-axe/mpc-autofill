@@ -11,10 +11,12 @@ import { GoogleAnalyticsConsentCookie } from "@/common/constants";
 
 beforeEach(() => {
   Cookies.remove(GoogleAnalyticsConsentCookie);
+  // @ts-ignore
   delete window.gtag;
 });
 afterEach(() => {
   Cookies.remove(GoogleAnalyticsConsentCookie);
+  // @ts-ignore
   delete window.gtag;
 });
 
