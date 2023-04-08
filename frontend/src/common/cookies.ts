@@ -113,15 +113,19 @@ export function setGoogleAnalyticsConsent(consent: boolean): void {
 
 //# region backend
 
-export function getBackendURL(): string | undefined {
+export function getCookieBackendURL(): string | undefined {
   return Cookies.get(BackendURLCookie);
 }
 
-export function setBackendURL(url: string): void {
+export function setCookieBackendURL(url: string): void {
   Cookies.set(BackendURLCookie, url, {
     expires: 365,
     sameSite: "strict",
   });
+}
+
+export function clearCookieBackendURL(): void {
+  Cookies.remove(BackendURLCookie);
 }
 
 //# endregion

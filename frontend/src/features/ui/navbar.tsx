@@ -11,7 +11,8 @@ import { BackendConfig } from "@/features/backend/backend";
 import { useState } from "react";
 import { clearURL } from "@/features/backend/backendSlice";
 import DisableSSR from "@/features/ui/disableSSR";
-import { useGetBackendInfoQuery } from "@/app/api";
+import { apiSlice, useGetBackendInfoQuery } from "@/app/api";
+import { clearCookieBackendURL } from "@/common/cookies";
 
 export default function Navbar() {
   const dispatch = useDispatch();
@@ -19,12 +20,18 @@ export default function Navbar() {
 
   const [showBackendConfig, setShowBackendConfig] = useState(false);
 
-  const handleCloseBackendConfig = () => setShowBackendConfig(false);
+  const handleCloseBackendConfig = () => {
+    setShowBackendConfig(false);
+  };
   const handleShowBackendConfig = () => setShowBackendConfig(true);
 
   const backendURL = useSelector((state: RootState) => state.backend.url);
 
-  const clearBackendURL = () => dispatch(clearURL());
+  const clearBackendURL = () => {
+    dispatch(clearURL());
+    clearCookieBackendURL();
+    dispatch(apiSlice.util.resetApiState());
+  };
 
   return (
     <DisableSSR>

@@ -5,13 +5,13 @@
 import Offcanvas from "react-bootstrap/Offcanvas";
 import Button from "react-bootstrap/Button";
 import React, { useState, useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "@/app/store";
+import { useDispatch } from "react-redux";
 import Form from "react-bootstrap/Form";
 import Nav from "react-bootstrap/Nav";
 import { setURL } from "@/features/backend/backendSlice";
 import { ProjectName } from "@/common/constants";
-import { getBackendURL, setBackendURL } from "@/common/cookies";
+import { getCookieBackendURL, setCookieBackendURL } from "@/common/cookies";
+import { apiSlice } from "@/app/api";
 
 interface BackendConfigProps {
   show: boolean;
@@ -24,19 +24,27 @@ interface BackendConfigProps {
 export function BackendConfig(props: BackendConfigProps) {
   const dispatch = useDispatch();
 
+  const [triggerFn, getBackendInfoQuery] =
+    apiSlice.endpoints.getBackendInfo.useLazyQuery();
+
+  // TODO: these variable names are mad confusing
   const [serverURL, setServerURL] = useState<string>("");
 
   const handleSubmit = async () => {
     dispatch(setURL(serverURL));
-    setBackendURL(serverURL);
+    setCookieBackendURL(serverURL);
+    dispatch(apiSlice.util.resetApiState());
+    triggerFn();
     props.handleClose();
   };
 
   useEffect(() => {
-    const backendURL = getBackendURL();
+    const backendURL = getCookieBackendURL();
     if (backendURL != undefined) {
       setServerURL(backendURL);
       dispatch(setURL(backendURL));
+      dispatch(apiSlice.util.resetApiState());
+      triggerFn();
     }
   }, []);
 
@@ -44,7 +52,7 @@ export function BackendConfig(props: BackendConfigProps) {
     <>
       <Offcanvas show={props.show} onHide={props.handleClose}>
         <Offcanvas.Header closeButton>
-          <Offcanvas.Title>Server Configuration</Offcanvas.Title>
+          <Offcanvas.Title>Configure Server</Offcanvas.Title>
         </Offcanvas.Header>
         <Offcanvas.Body>
           Enter the URL of the server you&apos;d like to connect {ProjectName}{" "}
