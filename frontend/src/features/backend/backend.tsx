@@ -11,6 +11,7 @@ import Form from "react-bootstrap/Form";
 import Nav from "react-bootstrap/Nav";
 import { setURL } from "@/features/backend/backendSlice";
 import { ProjectName } from "@/common/constants";
+import { getBackendURL, setBackendURL } from "@/common/cookies";
 
 interface BackendConfigProps {
   show: boolean;
@@ -27,8 +28,17 @@ export function BackendConfig(props: BackendConfigProps) {
 
   const handleSubmit = async () => {
     dispatch(setURL(serverURL));
+    setBackendURL(serverURL);
     props.handleClose();
   };
+
+  useEffect(() => {
+    const backendURL = getBackendURL();
+    if (backendURL != undefined) {
+      setServerURL(backendURL);
+      dispatch(setURL(backendURL));
+    }
+  }, []);
 
   return (
     <>

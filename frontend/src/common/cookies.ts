@@ -1,6 +1,5 @@
 /**
  * Data API for interacting with anything stored in cookies.
- * TODO: move the functionality for checking if users consent to Google Analytics tracking to here.
  */
 
 import Cookies from "js-cookie";
@@ -19,6 +18,7 @@ import {
   MaximumDPI,
   MaximumSize,
   MinimumDPI,
+  BackendURLCookie,
 } from "./constants";
 
 const ajv = new Ajv();
@@ -104,6 +104,21 @@ export function getGoogleAnalyticsConsent(): boolean | undefined {
 
 export function setGoogleAnalyticsConsent(consent: boolean): void {
   Cookies.set(GoogleAnalyticsConsentCookie, JSON.stringify(consent), {
+    expires: 365,
+    sameSite: "strict",
+  });
+}
+
+//# endregion
+
+//# region backend
+
+export function getBackendURL(): string | undefined {
+  return Cookies.get(BackendURLCookie);
+}
+
+export function setBackendURL(url: string): void {
+  Cookies.set(BackendURLCookie, url, {
     expires: 365,
     sameSite: "strict",
   });

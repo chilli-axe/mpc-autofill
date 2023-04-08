@@ -37,6 +37,7 @@ export const SizeStep = 1;
 export const CSRFCookie = "csrftoken";
 export const SearchSettingsCookie = "searchSettings";
 export const GoogleAnalyticsConsentCookie = "googleAnalyticsConsent";
+export const BackendURLCookie = "backendURL";
 
 export const Brackets: Array<number> = [
   18, 36, 55, 72, 90, 108, 126, 144, 162, 180, 198, 216, 234, 396, 504, 612,
