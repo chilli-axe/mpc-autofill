@@ -96,6 +96,7 @@ export interface SourceContribution {
 export interface Contributions {
   sources: Array<SourceContribution>;
   card_count_by_type: { [card_type in CardType]: number };
+  total_database_size: number;
 }
 
 export interface BackendInfo {

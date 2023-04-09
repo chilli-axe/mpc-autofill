@@ -536,7 +536,7 @@ def api_function_9(request: HttpRequest) -> HttpResponse:
 
     # TODO: consider reusing this to display some random cards on the landing page
 
-    # TODO: tidy this up a bit
+    # TODO: tidy this up. i have no clue what this code is doing
 
     # TODO: i don't know how to do this in a single query in the Django ORM :(
     identifiers = {
@@ -566,7 +566,9 @@ def api_function_9(request: HttpRequest) -> HttpResponse:
 @csrf_exempt
 def api_function_10(request: HttpRequest) -> HttpResponse:
     sources, card_count_by_type, total_database_size = summarise_contributions()
-    return JsonResponse({"sources": sources, "card_count_by_type": card_count_by_type})
+    return JsonResponse(
+        {"sources": sources, "card_count_by_type": card_count_by_type, "total_database_size": total_database_size}
+    )
 
 
 @csrf_exempt
@@ -585,7 +587,7 @@ def api_function_11(request: HttpRequest) -> HttpResponse:
                 "email": settings.TARGET_EMAIL,
                 "reddit": settings.REDDIT,
                 "discord": settings.DISCORD,
-                "patreon_url": "aouaoeu",
+                "patreon_url": settings.PATREON_URL,
             }
         }
     )
