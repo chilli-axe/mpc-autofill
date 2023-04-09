@@ -86,11 +86,10 @@ export function BackendConfig(props: BackendConfigProps) {
   const [triggerFn, getBackendInfoQuery] =
     apiSlice.endpoints.getBackendInfo.useLazyQuery();
 
-  // TODO: these variable names are mad confusing
-  const [serverURL, setServerURL] = useState<string>("");
+  const [localServerURL, setLocalServerURL] = useState<string>("");
 
   const handleSubmit = async () => {
-    const formattedURL = standardiseURL(serverURL.trim());
+    const formattedURL = standardiseURL(localServerURL.trim());
 
     let updatedValidationStatus: Array<ValidationState> = [];
     setValidationStatus(updatedValidationStatus);
@@ -129,7 +128,7 @@ export function BackendConfig(props: BackendConfigProps) {
   useEffect(() => {
     const backendURL = getCookieBackendURL();
     if (backendURL != undefined) {
-      setServerURL(backendURL);
+      setLocalServerURL(backendURL);
       dispatch(setURL(backendURL));
       dispatch(apiSlice.util.resetApiState());
       triggerFn();
@@ -151,8 +150,8 @@ export function BackendConfig(props: BackendConfigProps) {
             <Form.Group className="mb-3" controlId="formURL">
               <Form.Control
                 placeholder="https://"
-                onChange={(event) => setServerURL(event.target.value)}
-                value={serverURL}
+                onChange={(event) => setLocalServerURL(event.target.value)}
+                value={localServerURL}
               />
             </Form.Group>
             {validationStatus.length > 0 && (
