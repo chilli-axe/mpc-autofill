@@ -130,8 +130,12 @@ def guide(request: HttpRequest) -> HttpResponse:
 
 
 def contributions(request: HttpRequest) -> HttpResponse:
-    sources, total_count_f = summarise_contributions()
-    return render(request, "cardpicker/contributions.html", {"sources": sources, "total_count": total_count_f})
+    sources, card_count_by_type = summarise_contributions()
+    total_count = [card_count_by_type[x] for x in CardTypes]
+    total_count.append(sum(total_count))
+    return render(
+        request, "cardpicker/contributions.html", {"sources": sources, "total_count": [f"{x:,d}" for x in total_count]}
+    )
 
 
 # region old API
@@ -543,8 +547,8 @@ def api_function_9(request: HttpRequest) -> HttpResponse:
 
 @csrf_exempt
 def api_function_10(request: HttpRequest) -> HttpResponse:
-    sources, total_count_f = summarise_contributions()
-    return JsonResponse({"sources": sources, "total_count": total_count_f})
+    sources, card_count_by_type = summarise_contributions()
+    return JsonResponse({"sources": sources, "card_count_by_type": card_count_by_type})
 
 
 @csrf_exempt

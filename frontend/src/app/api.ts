@@ -9,6 +9,7 @@ import {
   DFCPairs,
   BackendInfo,
   ImportSite,
+  Contributions,
 } from "@/common/types";
 import { RootState } from "@/app/store";
 
@@ -111,6 +112,9 @@ export const apiSlice = createApi({
         arg
       ) => response.cards,
     }),
+    getContributions: builder.query<Contributions, void>({
+      query: () => ({ url: `2/contributions/`, method: "GET" }),
+    }),
     getBackendInfo: builder.query<BackendInfo, void>({
       query: () => ({ url: `2/info/`, method: "GET" }),
       transformResponse: (response: { info: BackendInfo }, meta, arg) =>
@@ -130,6 +134,7 @@ export const {
   useQueryImportSiteQuery,
   useGetDFCPairsQuery,
   useGetPlaceholderTextQuery,
+  useGetContributionsQuery,
   useGetBackendInfoQuery,
 } = apiSlice;
 

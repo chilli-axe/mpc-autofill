@@ -81,6 +81,23 @@ export interface SearchResultsState {
   error: string | null;
 }
 
+export interface SourceContribution {
+  name: string;
+  identifier: string;
+  source_type: string; // TODO
+  external_link: string;
+  description: string;
+  qty_cards: string; // formatted by backend
+  qty_cardbacks: string; // formatted by backend
+  qty_tokens: string; // formatted by backend
+  avgdpi: string; // formatted by backend
+}
+
+export interface Contributions {
+  sources: Array<SourceContribution>;
+  card_count_by_type: { [card_type in CardType]: number };
+}
+
 export interface BackendInfo {
   name: string | null;
   description: string | null;

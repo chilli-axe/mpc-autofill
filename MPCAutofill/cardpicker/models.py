@@ -100,7 +100,7 @@ class Source(models.Model):
         }
 
 
-def summarise_contributions() -> tuple[list[dict[str, Any]], list[str]]:
+def summarise_contributions() -> tuple[list[dict[str, Any]], dict[str, int]]:
     """
     Report on the number of cards, cardbacks, and tokens that each Source has, as well as the average DPI across all
     three card types.
@@ -150,27 +150,21 @@ def summarise_contributions() -> tuple[list[dict[str, Any]], list[str]]:
     for (identifier, card_type, count) in results_2:
         source_card_count_by_type[identifier][card_type] = count
         card_count_by_type[card_type] += count
-    sources: list[dict[str, Any]] = []
-    for (name, identifier, source_type, external_link, description, ordinal, total_dpi, total_count) in results_1:
-        sources.append(
-            {
-                "name": name,
-                "identifier": identifier,
-                "source_type": SourceTypeChoices[source_type].label,
-                "external_link": external_link,
-                "description": description,
-                "qty_cards": f"{source_card_count_by_type[identifier].get(CardTypes.CARD, 0):,d}",
-                "qty_cardbacks": f"{source_card_count_by_type[identifier].get(CardTypes.CARDBACK, 0) :,d}",
-                "qty_tokens": f"{source_card_count_by_type[identifier].get(CardTypes.TOKEN, 0) :,d}",
-                "avgdpi": f"{(total_dpi / total_count):.2f}" if total_count > 0 else 0,
-            }
-        )
-
-    total_count = [card_count_by_type[x] for x in CardTypes]
-    total_count.append(sum(total_count))
-    total_count_f = [f"{x:,d}" for x in total_count]
-
-    return sources, total_count_f
+    sources: list[dict[str, Any]] = [
+        {
+            "name": name,
+            "identifier": identifier,
+            "source_type": SourceTypeChoices[source_type].label,
+            "external_link": external_link,
+            "description": description,
+            "qty_cards": f"{source_card_count_by_type[identifier].get(CardTypes.CARD, 0):,d}",
+            "qty_cardbacks": f"{source_card_count_by_type[identifier].get(CardTypes.CARDBACK, 0) :,d}",
+            "qty_tokens": f"{source_card_count_by_type[identifier].get(CardTypes.TOKEN, 0) :,d}",
+            "avgdpi": f"{(total_dpi / total_count):.2f}" if total_count > 0 else 0,
+        }
+        for (name, identifier, source_type, external_link, description, ordinal, total_dpi, total_count) in results_1
+    ]
+    return sources, card_count_by_type
 
 
 class Card(models.Model):
