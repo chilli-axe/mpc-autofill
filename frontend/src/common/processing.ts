@@ -131,8 +131,15 @@ export function processLines(
   return queries;
 }
 
-export function withHttp(url: string): string {
-  return !/^https?:\/\//i.test(url) ? `http://${url}` : url;
+export function standardiseURL(url: string): string {
+  /**
+   * Standardise `url` in the following ways:
+   * 1. Ensure a http prefix is included, defaulting to `http://` if not specified
+   * 2. Trim any trailing slash and path
+   */
+
+  const re = [...url.matchAll(/^(https?:\/\/)?(.*?)(?:\/.*)?$/gm)][0];
+  return (re[1] ?? "http://") + re[2];
 }
 
 // TODO: delete this when remaining API interactions have been moved to RTK query

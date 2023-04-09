@@ -12,7 +12,7 @@ import { setURL } from "@/features/backend/backendSlice";
 import { ProjectName } from "@/common/constants";
 import { getCookieBackendURL, setCookieBackendURL } from "@/common/cookies";
 import { apiSlice } from "@/app/api";
-import { withHttp } from "@/common/processing";
+import { standardiseURL } from "@/common/processing";
 // TODO: https://github.com/alfg/ping.js/issues/29#issuecomment-487240910
 // @ts-ignore
 import Ping from "ping.js";
@@ -38,50 +38,31 @@ const urlValidationStages = [
   "Checking search engine health",
 ];
 
-function validateURLStructure(
-  url: string,
-  validationStatus: Array<ValidationState>
-) {
+function validateURLStructure(url: string): boolean {
+  // ensure the URL provided by the user is valid
+  let outcome = false;
   try {
     new URL(url);
-    validationStatus = [
-      ...validationStatus.slice(0, -1),
-      ValidationState.SUCCEEDED,
-    ];
-  } catch (error) {
-    validationStatus = [
-      ...validationStatus.slice(0, -1),
-      ValidationState.FAILED,
-    ];
-  }
-  return validationStatus;
+    outcome = true;
+  } catch (error) {}
+  return outcome;
 }
 
-async function pingBackend(
-  url: string,
-  validationStatus: Array<ValidationState>
-): Promise<Array<ValidationState>> {
+async function pingBackend(url: string): Promise<boolean> {
+  // ping the server to check if it's alive
+  let outcome = false;
   try {
     const p = new Ping();
     await p.ping(url, function (err: any, data: any) {
-      validationStatus = [
-        ...validationStatus.slice(0, -1),
-        err ? ValidationState.FAILED : ValidationState.SUCCEEDED,
-      ];
+      outcome = err == null;
     });
-  } catch (error) {
-    validationStatus = [
-      ...validationStatus.slice(0, -1),
-      ValidationState.FAILED,
-    ];
-  }
-  return validationStatus;
+  } catch (error) {}
+  return outcome;
 }
 
-async function searchEngineHealthCheck(
-  url: string,
-  validationStatus: Array<ValidationState>
-): Promise<Array<ValidationState>> {
+async function searchEngineHealthCheck(url: string): Promise<boolean> {
+  // ping the search engine to see if it's alive
+  let outcome = false;
   try {
     await fetch(new URL("2/searchEngineHealth/", url).toString(), {
       method: "GET",
@@ -89,20 +70,10 @@ async function searchEngineHealthCheck(
     })
       .then((response) => response.json())
       .then((data) => {
-        validationStatus = [
-          ...validationStatus.slice(0, -1),
-          (data.online ?? false) === true
-            ? ValidationState.SUCCEEDED
-            : ValidationState.FAILED,
-        ];
+        outcome = (data.online ?? false) === true;
       });
-  } catch (error) {
-    validationStatus = [
-      ...validationStatus.slice(0, -1),
-      ValidationState.FAILED,
-    ];
-  }
-  return validationStatus;
+  } catch (error) {}
+  return outcome;
 }
 
 export function BackendConfig(props: BackendConfigProps) {
@@ -119,55 +90,27 @@ export function BackendConfig(props: BackendConfigProps) {
   const [serverURL, setServerURL] = useState<string>("");
 
   const handleSubmit = async () => {
-    const formattedURL = withHttp(serverURL.trim());
+    const formattedURL = standardiseURL(serverURL.trim());
 
     let updatedValidationStatus: Array<ValidationState> = [];
     setValidationStatus(updatedValidationStatus);
 
-    // ensure the URL provided by the user is valid
-    updatedValidationStatus = [
-      ...updatedValidationStatus,
-      ValidationState.IN_PROGRESS,
-    ];
-    setValidationStatus(updatedValidationStatus);
-    updatedValidationStatus = validateURLStructure(
-      formattedURL,
-      updatedValidationStatus
-    );
-    setValidationStatus(updatedValidationStatus);
-
-    // ping the server to check if it's alive
-    if (
-      updatedValidationStatus[updatedValidationStatus.length - 1] !=
-      ValidationState.FAILED
-    ) {
+    for (const validationFn of [
+      validateURLStructure,
+      pingBackend,
+      searchEngineHealthCheck,
+    ]) {
+      updatedValidationStatus.push(ValidationState.IN_PROGRESS);
+      setValidationStatus(updatedValidationStatus);
+      const outcome = await validationFn(formattedURL);
       updatedValidationStatus = [
-        ...updatedValidationStatus,
-        ValidationState.IN_PROGRESS,
+        ...updatedValidationStatus.slice(0, -1),
+        outcome ? ValidationState.SUCCEEDED : ValidationState.FAILED,
       ];
       setValidationStatus(updatedValidationStatus);
-      updatedValidationStatus = await pingBackend(
-        formattedURL,
-        updatedValidationStatus
-      );
-      setValidationStatus(updatedValidationStatus);
-    }
-
-    // ping the search engine to see if it's alive
-    if (
-      updatedValidationStatus[updatedValidationStatus.length - 1] !=
-      ValidationState.FAILED
-    ) {
-      updatedValidationStatus = [
-        ...updatedValidationStatus,
-        ValidationState.IN_PROGRESS,
-      ];
-      setValidationStatus(updatedValidationStatus);
-      updatedValidationStatus = await searchEngineHealthCheck(
-        formattedURL,
-        updatedValidationStatus
-      );
-      setValidationStatus(updatedValidationStatus);
+      if (!outcome) {
+        break;
+      }
     }
 
     // set state in redux and cookies + clean up API cached data

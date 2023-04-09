@@ -5,9 +5,11 @@ import {
   processPrefix,
   processLine,
   processLines,
+  standardiseURL,
 } from "./processing";
 import { Token, Card, Cardback } from "./constants";
 import { DFCPairs } from "./types";
+import each from "jest-each";
 
 // # region constants
 
@@ -141,6 +143,21 @@ test("multiple lines processed correctly", () => {
       { card_type: Card, query: "insectile aberration" },
     ],
   ]);
+});
+
+describe("URLs are sanitised correctly", () => {
+  each([
+    "http://127.0.0.1:8000",
+    "http://127.0.0.1:8000/",
+    "https://127.0.0.1:8000",
+    "127.0.0.1:8000",
+    "127.0.0.1:8000/",
+    "127.0.0.1:8000/path",
+  ]).test("%s", (text) => {
+    expect(standardiseURL(text)).toBe(
+      "http" + (text.includes("https") ? "s" : "") + "://127.0.0.1:8000"
+    );
+  });
 });
 
 // # endregion
