@@ -100,7 +100,7 @@ class Source(models.Model):
         }
 
 
-def summarise_contributions() -> tuple[list[dict[str, Any]], dict[str, int]]:
+def summarise_contributions() -> tuple[list[dict[str, Any]], dict[str, int], int]:
     """
     Report on the number of cards, cardbacks, and tokens that each Source has, as well as the average DPI across all
     three card types.
@@ -119,7 +119,8 @@ def summarise_contributions() -> tuple[list[dict[str, Any]], dict[str, int]]:
                 cardpicker_source.description,
                 cardpicker_source.ordinal,
                 COALESCE(SUM(cardpicker_card.dpi), 0),
-                COUNT(cardpicker_card.dpi)
+                COUNT(cardpicker_card.dpi),
+                COALESCE(SUM(cardpicker_card.size), 0)
             FROM cardpicker_source
             LEFT JOIN cardpicker_card ON cardpicker_source.id = cardpicker_card.source_id
             GROUP BY cardpicker_source.name,
@@ -150,21 +151,35 @@ def summarise_contributions() -> tuple[list[dict[str, Any]], dict[str, int]]:
     for (identifier, card_type, count) in results_2:
         source_card_count_by_type[identifier][card_type] = count
         card_count_by_type[card_type] += count
-    sources: list[dict[str, Any]] = [
-        {
-            "name": name,
-            "identifier": identifier,
-            "source_type": SourceTypeChoices[source_type].label,
-            "external_link": external_link,
-            "description": description,
-            "qty_cards": f"{source_card_count_by_type[identifier].get(CardTypes.CARD, 0):,d}",
-            "qty_cardbacks": f"{source_card_count_by_type[identifier].get(CardTypes.CARDBACK, 0) :,d}",
-            "qty_tokens": f"{source_card_count_by_type[identifier].get(CardTypes.TOKEN, 0) :,d}",
-            "avgdpi": f"{(total_dpi / total_count):.2f}" if total_count > 0 else 0,
-        }
-        for (name, identifier, source_type, external_link, description, ordinal, total_dpi, total_count) in results_1
-    ]
-    return sources, card_count_by_type
+    sources = []
+    total_database_size = 0
+    for (
+        name,
+        identifier,
+        source_type,
+        external_link,
+        description,
+        ordinal,
+        total_dpi,
+        total_count,
+        total_size,
+    ) in results_1:
+        sources.append(
+            {
+                "name": name,
+                "identifier": identifier,
+                "source_type": SourceTypeChoices[source_type].label,
+                "external_link": external_link,
+                "description": description,
+                "qty_cards": f"{source_card_count_by_type[identifier].get(CardTypes.CARD, 0):,d}",
+                "qty_cardbacks": f"{source_card_count_by_type[identifier].get(CardTypes.CARDBACK, 0) :,d}",
+                "qty_tokens": f"{source_card_count_by_type[identifier].get(CardTypes.TOKEN, 0) :,d}",
+                "avgdpi": f"{(total_dpi / total_count):.2f}" if total_count > 0 else 0,
+                "size": f"{(total_size / 1_000_000_000):.2f} GB",
+            }
+        )
+        total_database_size += total_size
+    return sources, card_count_by_type, total_database_size
 
 
 class Card(models.Model):

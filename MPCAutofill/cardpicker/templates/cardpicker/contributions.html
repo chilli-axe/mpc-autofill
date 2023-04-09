@@ -5,7 +5,7 @@
     <div class="pt-2">
         <h2>Contributions</h2>
         <p>
-            The database contains <b>{{ total_count.3 }}</b> images &#8212 comprised of
+            The database contains <b>{{ total_count.3 }}</b> images, with a total size of <b>{{ total_size }}</b> &#8212 comprised of
             <b>{{ total_count.0 }}</b> cards, <b>{{ total_count.1 }}</b> card backs, and <b>{{ total_count.2 }}</b> tokens
             &#8212 from <b>{{ sources|length }}</b> contributors. The database is automatically synced with all sources
             every day (starting at midnight in NYC) to ensure all changes are recorded.
@@ -71,6 +71,7 @@
                                 {% if source.qty_tokens != '1' %}tokens{% else %}token{% endif %},
                                 {# djlint:on #}
                                 at <b>{{ source.avgdpi }}</b> DPI on average
+                                and a total size of <b>{{ source.size }}</b>
                                 &#8212 {{ source.description }}
                             </td>
                         </tr>

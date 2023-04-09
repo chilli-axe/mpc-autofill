@@ -13,5 +13,6 @@ pytest
 ratelimit
 requests
 sanitize-filename
-selenium
+selenium~=4.8
 webdriver-manager==3.5.4
+wakepy==0.6.0

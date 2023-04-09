@@ -112,7 +112,7 @@ class CardImage:
         if constants.CardTags.name in card_dict.keys():
             name = card_dict[constants.CardTags.name].text
         query = None
-        if constants.CardTags.name in card_dict.keys():
+        if constants.CardTags.query in card_dict.keys():
             query = card_dict[constants.CardTags.query].text
         card_image = cls(drive_id=drive_id, slots=slots, name=name, query=query)
         return card_image

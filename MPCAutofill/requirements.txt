@@ -2,6 +2,7 @@ attrs
 chardet
 click==8.0.4
 defusedxml
+python-dotenv
 Django~=4.0
 django-cors-headers
 django-crispy-forms~=1.14
@@ -24,7 +25,8 @@ psycopg2-binary
 pytest-django
 pytest-elasticsearch
 ratelimit
-selenium
+requests
+selenium~=4.8
 syrupy~=3.0
 tqdm
 tzdata

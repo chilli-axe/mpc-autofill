@@ -115,7 +115,6 @@ WSGI_APPLICATION = "MPCAutofill.wsgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
-
 DATABASES = {
     "default": {
         "ENGINE": env("DATABASE_ENGINE", default="django.db.backends.sqlite3"),
@@ -195,3 +194,10 @@ DEFAULT_FROM_EMAIL = "default from email"
 # Database update settings
 DEFAULT_CARDBACK_FOLDER_PATH = env("DEFAULT_CARDBACK_FOLDER_PATH", default="Chilli_Axe's MTG Renders / 12. Cardbacks")
 DEFAULT_CARDBACK_IMAGE_NAME = env("DEFAULT_CARDBACK_IMAGE_NAME", default="Black Lotus")
+
+# PATREON
+PATREON_ACCESS = env("PATREON_ACCESS", default="")
+PATREON_REFRESH = env("PATREON_REFRESH", default="")
+PATREON_CLIENT = env("PATREON_CLIENT", default="")
+PATREON_SECRET = env("PATREON_SECRET", default="")
+PATREON_URL = env("PATREON_URL", default="")

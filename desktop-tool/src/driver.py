@@ -8,7 +8,11 @@ import attr
 import enlighten
 from selenium import webdriver
 from selenium.common import exceptions as sl_exc
-from selenium.common.exceptions import NoAlertPresentException, NoSuchElementException
+from selenium.common.exceptions import (
+    NoAlertPresentException,
+    NoSuchElementException,
+    NoSuchWindowException,
+)
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.support.expected_conditions import invisibility_of_element
@@ -50,7 +54,7 @@ class AutofillDriver:
             driver.set_window_size(1200, 900)
             driver.implicitly_wait(5)
             print(f"Successfully initialised {TEXT_BOLD}{driver.name}{TEXT_END} driver.")
-        except ValueError as e:
+        except (ValueError, sl_exc.WebDriverException) as e:
             raise Exception(
                 f"An error occurred while attempting to configure the webdriver for {self.driver.name}. "
                 f"Please make sure you have installed {self.driver.name} and that it is up to date: {e}"
@@ -92,12 +96,14 @@ class AutofillDriver:
         Context manager for switching to `frame`.
         """
 
+        in_frame = True
         try:
             self.driver.switch_to.frame(frame)
         except (sl_exc.NoSuchFrameException, sl_exc.NoSuchElementException):
-            return
+            in_frame = False
         yield
-        self.driver.switch_to.default_content()
+        if in_frame:
+            self.driver.switch_to.default_content()
 
     @alert_handler
     def wait(self) -> None:
@@ -345,7 +351,7 @@ class AutofillDriver:
 
         self.execute_javascript("PageLayout.prototype.renderDesignCount()")
         with self.switch_to_frame("sysifm_loginFrame"):
-            self.execute_javascript("displayTotalCount()")
+            self.execute_javascript("displayTotalCount()")  # display the dropdown for "up to N cards"
             qty_dropdown = Select(self.driver.find_element(by=By.ID, value="dro_total_count"))
             qty_dropdown.select_by_value(str(self.order.details.bracket))
             self.execute_javascript(f"document.getElementById('txt_card_number').value={self.order.details.quantity};")
@@ -402,15 +408,20 @@ class AutofillDriver:
         if skip_setup:
             # bring up the dialogue for selecting same or different images
             self.wait()
-            self.execute_javascript("PageLayout.prototype.renderDesignCount()")
-
+            try:
+                self.execute_javascript("PageLayout.prototype.renderDesignCount()")
+            except sl_exc.JavascriptException:  # the dialogue has already been brought up if the above line failed
+                pass
         with self.switch_to_frame("sysifm_loginFrame"):
-            if len(self.order.backs.cards) == 1:
-                # Same cardback for every card
-                self.same_images()
-            else:
-                # Different cardbacks
-                self.different_images()
+            try:
+                if len(self.order.backs.cards) == 1:
+                    # Same cardback for every card
+                    self.same_images()
+                else:
+                    # Different cardbacks
+                    self.different_images()
+            except NoSuchWindowException:  # TODO: investigate exactly why this happens under --skipsetup. too tired atm
+                pass
             self.handle_alert()  # potential alert here from switching from same image to different images
         self.set_state(States.inserting_backs)
 

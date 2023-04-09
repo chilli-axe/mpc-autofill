@@ -9,7 +9,7 @@ from xml.etree.ElementTree import Element
 import numpy as np
 import ratelimit
 import requests
-from selenium.common.exceptions import NoAlertPresentException
+from selenium.common.exceptions import NoAlertPresentException, NoSuchWindowException
 
 import src.constants as constants
 
@@ -142,7 +142,7 @@ def alert_handler(func: F) -> F:
             autofill_driver: "AutofillDriver" = args[0]
             alert = autofill_driver.driver.switch_to.alert
             alert.accept()
-        except NoAlertPresentException:
+        except (NoAlertPresentException, NoSuchWindowException):
             pass
         return func(*args, **kwargs)
 

@@ -18,6 +18,7 @@ from cardpicker.forms import InputCSV, InputLink, InputText, InputXML
 from cardpicker.models import Card, CardTypes, DFCPair, Source, summarise_contributions
 from cardpicker.mpcorder import Faces, MPCOrder, ReqTypes
 from cardpicker.utils.link_imports import ImportSites
+from cardpicker.utils.patreon import get_patreon_campaign_details, get_patrons
 from cardpicker.utils.sanitisation import to_searchable
 from cardpicker.utils.search_functions import (
     SearchExceptions,
@@ -32,6 +33,8 @@ from cardpicker.utils.search_functions import (
     search_new,
     search_new_elasticsearch_definition,
 )
+
+from MPCAutofill.settings import PATREON_URL
 
 # https://mypy.readthedocs.io/en/stable/generics.html#declaring-decorators
 F = TypeVar("F", bound=Callable[..., Any])
@@ -130,12 +133,27 @@ def guide(request: HttpRequest) -> HttpResponse:
 
 
 def contributions(request: HttpRequest) -> HttpResponse:
-    sources, card_count_by_type = summarise_contributions()
+    sources, card_count_by_type, total_database_size = summarise_contributions()
     total_count = [card_count_by_type[x] for x in CardTypes]
     total_count.append(sum(total_count))
+    total_database_size_f = f"{(total_database_size / 1_000_000_000):.2f} GB"
+
     return render(
-        request, "cardpicker/contributions.html", {"sources": sources, "total_count": [f"{x:,d}" for x in total_count]}
+        request,
+        "cardpicker/contributions.html",
+        {"sources": sources, "total_count": [f"{x:,d}" for x in total_count], "total_size": total_database_size_f},
     )
+
+
+def patrons(request: HttpRequest) -> HttpResponse:
+    # Disable page without Patreon
+    if not PATREON_URL:
+        return redirect("index")
+
+    # Campaign details
+    campaign, tiers = get_patreon_campaign_details()
+    members = get_patrons(campaign["id"], tiers)
+    return render(request, "cardpicker/patrons.html", {"members": members, "tiers": tiers, "campaign": campaign})
 
 
 # region old API
@@ -547,7 +565,7 @@ def api_function_9(request: HttpRequest) -> HttpResponse:
 
 @csrf_exempt
 def api_function_10(request: HttpRequest) -> HttpResponse:
-    sources, card_count_by_type = summarise_contributions()
+    sources, card_count_by_type, total_database_size = summarise_contributions()
     return JsonResponse({"sources": sources, "card_count_by_type": card_count_by_type})
 
 

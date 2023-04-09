@@ -60,6 +60,11 @@
                         <li class="nav-item">
                             <a class="nav-link" href="/contributions">Contributions</a>
                         </li>
+                        {% if PATREON_URL %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'patrons' %}">Patreon</a>
+                            </li>
+                        {% endif %}
                     </ul>
                 </div>
             </div>
