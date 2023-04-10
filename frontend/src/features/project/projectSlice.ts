@@ -19,6 +19,7 @@ import { Front, Back, ProjectMaxSize } from "@/common/constants";
 
 const initialState: Project = {
   members: [
+    // TODO: clear this initial state. it's just set up like this for easy testing.
     {
       front: {
         query: { query: "island", card_type: Card },

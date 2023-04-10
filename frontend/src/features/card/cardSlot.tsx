@@ -6,7 +6,7 @@
  * card slot for the same slot number in the other face.
  */
 
-import React, { useCallback, useEffect, useState, memo } from "react";
+import React, { useEffect, useState, memo } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { AppDispatch, RootState } from "@/app/store";
 import { MemoizedCard } from "./card";
@@ -14,7 +14,6 @@ import { Back } from "@/common/constants";
 import { wrapIndex } from "@/common/utils";
 import { deleteImage, setSelectedImage } from "../project/projectSlice";
 import Button from "react-bootstrap/Button";
-import { MemoizedCardDetailedView } from "./cardDetailedView";
 import { MemoizedCardSlotGridSelector } from "./gridSelector";
 import { Faces, SearchQuery } from "@/common/types";
 
@@ -48,7 +47,7 @@ export function CardSlot(props: CardSlotProps) {
     (state: RootState) => state.project.cardback
   );
   const searchResultsForQueryOrDefault = useSelector((state: RootState) =>
-    searchQuery != null && searchQuery.query != null
+    searchQuery?.query != null
       ? (state.searchResults.searchResults[searchQuery.query] ?? {})[
           searchQuery.card_type
         ]
@@ -60,8 +59,7 @@ export function CardSlot(props: CardSlotProps) {
   const projectMember = useSelector(
     (state: RootState) => state.project.members[slot][face]
   );
-  const selectedImage: string | undefined =
-    projectMember != null ? projectMember.selectedImage : undefined;
+  const selectedImage = projectMember?.selectedImage;
 
   const handleShowDetailedView = () => {
     if (selectedImage != null) {

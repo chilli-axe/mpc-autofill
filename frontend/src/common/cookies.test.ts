@@ -1,67 +1,7 @@
 import { getCookieSearchSettings } from "./cookies";
 import Cookies from "js-cookie";
-import { SourceDocuments } from "./types";
 import { MaximumDPI, MaximumSize, MinimumDPI } from "./constants";
-
-//# region constants
-
-const sourceDocuments: SourceDocuments = {
-  0: {
-    pk: 0,
-    key: "source_1",
-    name: "Source 1",
-    identifier: "id_1",
-    source_type: "gdrive",
-    external_link: undefined,
-    description: "",
-  },
-  1: {
-    pk: 1,
-    key: "source_2",
-    name: "Source 2",
-    identifier: "id_2",
-    source_type: "gdrive",
-    external_link: undefined,
-    description: "",
-  },
-  2: {
-    pk: 2,
-    key: "source_3",
-    name: "Source 3",
-    identifier: "id_3",
-    source_type: "gdrive",
-    external_link: undefined,
-    description: "",
-  },
-  3: {
-    pk: 3,
-    key: "source_4",
-    name: "Source 4",
-    identifier: "id_4",
-    source_type: "gdrive",
-    external_link: undefined,
-    description: "",
-  },
-};
-
-const defaultSettings = {
-  searchTypeSettings: { fuzzySearch: false },
-  sourceSettings: {
-    sources: [
-      [0, true],
-      [1, true],
-      [2, true],
-      [3, true],
-    ],
-  },
-  filterSettings: {
-    minimumDPI: MinimumDPI,
-    maximumDPI: MaximumDPI,
-    maximumSize: MaximumSize,
-  },
-};
-
-//# endregion
+import { sourceDocuments, defaultSettings } from "@/common/test-constants";
 
 //# region mocks
 

@@ -8,7 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "jest"
+    "test": "jest --silent"
   },
   "dependencies": {
     "@hello-pangea/dnd": "^16.2.0",

@@ -1,5 +1,6 @@
 // The below can be used in a Jest global setup file or similar for your testing set-up
 import { loadEnvConfig } from "@next/env";
+import "@testing-library/jest-dom";
 
 // retrieved from https://stackoverflow.com/a/68539103/13021511
 global.matchMedia =
