@@ -1,0 +1,294 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`the html structure of a Card with a single document 1`] = `
+<body>
+  <div>
+    <div
+      class="mpccard mpccard-hover card"
+    >
+      <div
+        class="pb-0 text-center card-header"
+      >
+        <p
+          class="mpccard-slot"
+        >
+          Card 1
+        </p>
+      </div>
+      <div>
+        <div
+          class="rounded-lg shadow-lg ratio ratio-7x5"
+          style="z-index: 0;"
+        >
+          <div
+            class="d-flex justify-content-center align-items-center"
+            style="opacity: 1;"
+          >
+            <div
+              class="spinner-border"
+              role="status"
+              style="width: 4em; height: 4em;"
+            >
+              <span
+                class="visually-hidden"
+              >
+                Loading...
+              </span>
+            </div>
+          </div>
+          <img
+            alt="Card 1"
+            class="card-img card-img-fade-in"
+            data-nimg="fill"
+            decoding="async"
+            loading="lazy"
+            src=""
+            style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent; z-index: 1; opacity: 0;"
+          />
+        </div>
+        <div
+          class="mb-0 text-center card-body"
+        >
+          <div
+            class="mpccard-name card-subtitle h6"
+          >
+            Card 1
+          </div>
+          <div
+            class="mpccard-spacing"
+          >
+            <p
+              class="mpccard-source card-text"
+            >
+              Card Source [1200 DPI]
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+`;
+
+exports[`the html structure of a Card with no search results 1`] = `
+<body>
+  <div>
+    <div
+      class="mpccard mpccard-hover card"
+    >
+      <div
+        class="pb-0 text-center card-header"
+      >
+        <p
+          class="mpccard-slot"
+        >
+          Card 1
+        </p>
+      </div>
+      <div>
+        <div
+          class="rounded-lg shadow-lg ratio ratio-7x5"
+          style="z-index: 0;"
+        >
+          <img
+            alt="Card not found"
+            class="card-img card-img-fade-in"
+            data-nimg="fill"
+            decoding="async"
+            loading="lazy"
+            sizes="100vw"
+            src="/_next/image?url=%2Fblank.png&w=3840&q=75"
+            srcset="/_next/image?url=%2Fblank.png&w=640&q=75 640w, /_next/image?url=%2Fblank.png&w=750&q=75 750w, /_next/image?url=%2Fblank.png&w=828&q=75 828w, /_next/image?url=%2Fblank.png&w=1080&q=75 1080w, /_next/image?url=%2Fblank.png&w=1200&q=75 1200w, /_next/image?url=%2Fblank.png&w=1920&q=75 1920w, /_next/image?url=%2Fblank.png&w=2048&q=75 2048w, /_next/image?url=%2Fblank.png&w=3840&q=75 3840w"
+            style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent; z-index: 1;"
+          />
+        </div>
+        <div
+          class="mb-0 text-center card-body"
+        >
+          <div
+            class="mpccard-name card-subtitle h6"
+          >
+            My Invalid Query
+          </div>
+          <div
+            class="mpccard-spacing"
+          >
+            <p
+              class="mpccard-source card-text"
+            >
+              Your search query
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+`;
+
+exports[`the html structure of a Card with three documents 1`] = `
+<body>
+  <div>
+    <div
+      class="mpccard mpccard-hover card"
+    >
+      <div
+        class="pb-0 text-center card-header"
+      >
+        <p
+          class="mpccard-slot"
+        >
+          Card 3
+        </p>
+      </div>
+      <div>
+        <div
+          class="rounded-lg shadow-lg ratio ratio-7x5"
+          style="z-index: 0;"
+        >
+          <div
+            class="d-flex justify-content-center align-items-center"
+            style="opacity: 1;"
+          >
+            <div
+              class="spinner-border"
+              role="status"
+              style="width: 4em; height: 4em;"
+            >
+              <span
+                class="visually-hidden"
+              >
+                Loading...
+              </span>
+            </div>
+          </div>
+          <img
+            alt="Card 1"
+            class="card-img card-img-fade-in"
+            data-nimg="fill"
+            decoding="async"
+            loading="lazy"
+            src=""
+            style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent; z-index: 1; opacity: 0;"
+          />
+          <img
+            alt="Card 2"
+            class="card-img"
+            data-nimg="fill"
+            decoding="async"
+            loading="lazy"
+            src=""
+            style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent; z-index: 0; opacity: 0;"
+          />
+          <img
+            alt="Card 3"
+            class="card-img"
+            data-nimg="fill"
+            decoding="async"
+            loading="lazy"
+            src=""
+            style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent; z-index: 0; opacity: 0;"
+          />
+        </div>
+        <div
+          class="mb-0 text-center card-body"
+        >
+          <div
+            class="mpccard-name card-subtitle h6"
+          >
+            Card 1
+          </div>
+          <div
+            class="mpccard-spacing"
+          >
+            <p
+              class="mpccard-source card-text"
+            >
+              Card Source [1200 DPI]
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+`;
+
+exports[`the html structure of a Card with two documents 1`] = `
+<body>
+  <div>
+    <div
+      class="mpccard mpccard-hover card"
+    >
+      <div
+        class="pb-0 text-center card-header"
+      >
+        <p
+          class="mpccard-slot"
+        >
+          Card 2
+        </p>
+      </div>
+      <div>
+        <div
+          class="rounded-lg shadow-lg ratio ratio-7x5"
+          style="z-index: 0;"
+        >
+          <div
+            class="d-flex justify-content-center align-items-center"
+            style="opacity: 1;"
+          >
+            <div
+              class="spinner-border"
+              role="status"
+              style="width: 4em; height: 4em;"
+            >
+              <span
+                class="visually-hidden"
+              >
+                Loading...
+              </span>
+            </div>
+          </div>
+          <img
+            alt="Card 1"
+            class="card-img card-img-fade-in"
+            data-nimg="fill"
+            decoding="async"
+            loading="lazy"
+            src=""
+            style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent; z-index: 1; opacity: 0;"
+          />
+          <img
+            alt="Card 2"
+            class="card-img"
+            data-nimg="fill"
+            decoding="async"
+            loading="lazy"
+            src=""
+            style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent; z-index: 0; opacity: 0;"
+          />
+        </div>
+        <div
+          class="mb-0 text-center card-body"
+        >
+          <div
+            class="mpccard-name card-subtitle h6"
+          >
+            Card 1
+          </div>
+          <div
+            class="mpccard-spacing"
+          >
+            <p
+              class="mpccard-source card-text"
+            >
+              Card Source [1200 DPI]
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+`;

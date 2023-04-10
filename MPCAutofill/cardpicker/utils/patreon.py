@@ -1,6 +1,5 @@
-import json
 import platform
-from typing import TypedDict, Union
+from typing import TypedDict
 
 import requests
 

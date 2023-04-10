@@ -1,20 +1,22 @@
 import threading
+from dataclasses import dataclass
 from datetime import timedelta
-from typing import Any, Callable, TypeVar, cast
+from typing import Any, Callable, Optional, TypeVar, cast
 
 from elasticsearch import Elasticsearch
 from elasticsearch.exceptions import ConnectionError as ElasticConnectionError
 from elasticsearch_dsl.document import Search
 from elasticsearch_dsl.index import Index
-from elasticsearch_dsl.query import Bool, Match, Term, Terms
+from elasticsearch_dsl.query import Bool, Match, Range, Term, Terms
 from Levenshtein import distance
 
 from django.conf import settings
 from django.http import HttpRequest
 from django.utils import timezone
 
+from cardpicker.constants import MAX_SIZE_MB
 from cardpicker.documents import CardSearch
-from cardpicker.models import CardTypes
+from cardpicker.models import CardTypes, Source
 from cardpicker.utils.sanitisation import to_searchable
 
 thread_local = threading.local()  # Should only be called once per thread
@@ -62,6 +64,7 @@ def elastic_connection(func: F) -> F:
     return cast(F, wrapper)
 
 
+# region old API
 def build_context(drive_order: list[str], fuzzy_search: bool, order: dict[str, Any], qty: int) -> dict[str, Any]:
     context = {
         "drive_order": drive_order,
@@ -178,3 +181,125 @@ def search_new(s: Search, source_key: str, page: int = 0) -> dict[str, Any]:
         results["more"] = "true"
 
     return results
+
+
+# endregion
+
+# region new API
+
+
+@dataclass(frozen=True, eq=True)
+class SearchSettings:
+    # TODO: would be neat to use json schema for this
+    fuzzy_search: bool
+    sources: list[str]
+    min_dpi: int
+    max_dpi: int
+    max_size: int  # number of bytes
+
+    @classmethod
+    def from_json_body(cls, json_body: dict[str, Any]) -> "SearchSettings":
+        search_settings = json_body.get("searchSettings", {})
+        search_type_settings = search_settings.get("searchTypeSettings", {})
+        source_settings = search_settings.get("sourceSettings", {})
+        filter_settings = search_settings.get("filterSettings", {})
+
+        fuzzy_search = search_type_settings.get("fuzzySearch", False) is True
+
+        source_lookup: dict[int, str] = {x.pk: x.key for x in Source.objects.all()}
+
+        sources: list[str] = []
+        if (card_source_keys := source_settings.get("sources")) is not None:
+            sources = [
+                source_lookup[card_source_key]
+                for card_source_key, card_source_enabled in card_source_keys
+                if card_source_enabled and card_source_key in source_lookup.keys()
+            ]
+
+        min_dpi = int(filter_settings.get("minimumDPI", "0"))
+        max_dpi = int(filter_settings.get("maximumDPI", "1500"))
+        max_size = int(filter_settings.get("maximumSize", str(MAX_SIZE_MB))) * 1_000_000
+
+        return cls(
+            fuzzy_search=fuzzy_search,
+            sources=sources,
+            min_dpi=min_dpi,
+            max_dpi=max_dpi,
+            max_size=max_size,
+        )
+
+
+@dataclass(frozen=True, eq=True)
+class SearchQuery:
+    query: str
+    card_type: CardTypes
+
+    @classmethod
+    def from_json_body(cls, json_body: dict[str, Any]) -> Optional["SearchQuery"]:
+        """
+        Private entry point. Generate an instance of this class from `json_body` (which is most likely a subset
+        of a larger JSON body).
+        """
+
+        query = json_body.get("query", None)
+        card_type = json_body.get("card_type", None)
+        card_types = {str(x) for x in CardTypes}
+        if query and card_type in card_types:
+            return SearchQuery(query=query, card_type=CardTypes[card_type])
+        return None
+
+    @classmethod
+    def list_from_json_body(cls, json_body: dict[str, Any]) -> list["SearchQuery"]:
+        """
+        Public entry point. Generate a list of instances of this class from `json_body`.
+        """
+
+        # uniqueness of queries guaranteed
+        query_dicts = json_body.get("queries", [])
+        queries = set()
+        if query_dicts:
+            for query_dict in query_dicts:
+                query = cls.from_json_body(query_dict)
+                if query is not None:
+                    queries.add(query)
+        return sorted(queries, key=lambda x: (x.query, x.card_type))
+
+    @elastic_connection
+    def retrieve_card_identifiers(self, search_settings: SearchSettings) -> list[str]:
+        """
+        This is the core search algorithm for MPC Autofill - queries Elasticsearch for `self` given `search_settings`
+        and returns the list of corresponding `Card` identifiers.
+        """
+
+        if not Index(CardSearch.Index.name).exists():
+            raise SearchExceptions.IndexNotFoundException(CardSearch.__name__)
+        query_parsed = to_searchable(self.query)
+
+        # set up search - match the query and use the AND operator
+        if search_settings.fuzzy_search:
+            match = Match(searchq={"query": query_parsed, "operator": "AND"})
+        else:
+            match = Match(searchq_keyword={"query": query_parsed, "operator": "AND"})
+
+        s = (
+            CardSearch.search()
+            .filter(Term(card_type=self.card_type))
+            .filter(Bool(should=Terms(source=search_settings.sources), minimum_should_match=1))
+            .filter(Range(dpi={"gte": search_settings.min_dpi, "lte": search_settings.max_dpi}))
+            .filter(Range(size={"lte": search_settings.max_size}))
+            .query(match)
+            .sort({"priority": {"order": "desc"}})
+            .source(fields=["identifier", "source", "searchq"])
+        )
+        hits_iterable = s.params(preserve_order=True).scan()
+
+        source_order = {x: i for i, x in enumerate(search_settings.sources)}
+        if search_settings.fuzzy_search:
+            hits = sorted(hits_iterable, key=lambda x: (source_order[x.source], distance(x.searchq, query_parsed)))
+        else:
+            hits = sorted(hits_iterable, key=lambda x: source_order[x.source])
+
+        return [x.identifier for x in hits]
+
+
+# endregion

@@ -5,7 +5,34 @@ from django_elasticsearch_dsl.registries import registry
 
 from django.utils import dateformat
 
-from .models import Card
+from cardpicker.constants import DATE_FORMAT
+from cardpicker.models import Card
+
+# region new API
+
+# when the old (django template-based) UI is fully decommissioned, we can reduce the amount of data stored in
+# elasticsearch by replacing the code in the `old API` region below with this code.
+
+
+# @registry.register_document
+# class CardSearch(Document):
+#     source = fields.TextField(attr="get_source_key", analyzer="keyword")
+#     searchq_keyword = fields.TextField(analyzer="keyword")
+#     card_type = fields.KeywordField()
+#
+#     class Index:
+#         # name of the elasticsearch index
+#         name = "cards"
+#         # see Elasticsearch Indices API reference for available settings
+#         settings = {"number_of_shards": 5, "number_of_replicas": 0}
+#
+#     class Django:
+#         model = Card
+#         fields = ["identifier", "priority", "dpi", "searchq", "date", "size"]
+
+# endregion
+
+# region old API
 
 
 @registry.register_document
@@ -44,9 +71,12 @@ class CardSearch(Document):
             "dpi": self.dpi,
             "searchq": self.searchq,
             "extension": self.extension,
-            "date": dateformat.format(self.date, "jS F, Y"),
+            "date": dateformat.format(self.date, DATE_FORMAT),
             "size": self.size,
             "download_link": self.download_link,
             "small_thumbnail_url": self.small_thumbnail_url,
             "medium_thumbnail_url": self.medium_thumbnail_url,
         }
+
+
+# endregion

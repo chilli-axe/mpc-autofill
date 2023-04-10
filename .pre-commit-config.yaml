@@ -1,17 +1,22 @@
 repos:
+  - repo: https://github.com/charliermarsh/ruff-pre-commit
+    rev: "v0.0.257"
+    hooks:
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
   - repo: https://github.com/pycqa/isort
     rev: 5.12.0
     hooks:
       - id: isort
         name: isort (python)
         args: ["--profile", "black"]
-
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v2.3.0
     hooks:
       - id: check-yaml
       - id: end-of-file-fixer
       - id: trailing-whitespace
+        exclude: ".*/__snapshots__/.*" # trimming whitespace can break snapshot tests
   - repo: https://github.com/psf/black
     rev: 22.8.0
     hooks:
@@ -20,7 +25,7 @@ repos:
     rev: v0.961
     hooks:
       - id: mypy
-        args: [--config-file, mypy.ini, autofill/, MPCAutofill/]
+        args: [--config-file, mypy.ini, desktop-tool/, MPCAutofill/]
         additional_dependencies:
           [
             "django-stubs[compatible-mypy]",
@@ -41,6 +46,8 @@ repos:
             "pytest",
             "ratelimit",
             "tqdm",
+            "django-widget-tweaks",
+            "django-cors-headers",
           ]
         pass_filenames: false
   - repo: https://github.com/pre-commit/mirrors-prettier
@@ -51,13 +58,18 @@ repos:
     rev: "v8.24.0"
     hooks:
       - id: eslint
+        files: \.tsx?$
+        types: [file]
         additional_dependencies:
           - eslint@8.24.0
           - eslint-config-prettier@v8.5.0
+          - eslint-config-next@v13.2.4
           - eslint-plugin-promise@v6.0.1
           - eslint-plugin-n@v15.3.0
           - eslint-plugin-import@v2.26.0
           - eslint-config-standard@v17.0.0
+          - "@typescript-eslint/eslint-plugin@5.48.2"
+          - "@typescript-eslint/parser@5.49.0"
         args:
           - --fix
   - repo: https://github.com/Riverside-Healthcare/djLint

@@ -57,6 +57,7 @@ CSRF_TRUSTED_ORIGINS = ["http://localhost:8000", "http://127.0.0.1:8000"]  # req
 
 INSTALLED_APPS = [
     "cardpicker.apps.CardpickerConfig",
+    "accounts",
     "blog.apps.BlogConfig",
     "django.contrib.admin",
     "django.contrib.auth",
@@ -67,9 +68,12 @@ INSTALLED_APPS = [
     "django_elasticsearch_dsl",
     "crispy_forms",
     "django_user_agents",
+    "widget_tweaks",
+    "corsheaders",
 ]
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.gzip.GZipMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -81,12 +85,17 @@ MIDDLEWARE = [
     "django_user_agents.middleware.UserAgentMiddleware",
 ]
 
+CORS_ALLOWED_ORIGINS = env.list(
+    "CORS_ALLOWED_ORIGINS",
+    default=["http://127.0.0.1:3000", "http://localhost:3000"],  # the frontend next.js server is hosted here by default
+)
+
 ROOT_URLCONF = "MPCAutofill.urls"
 
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [os.path.join(BASE_DIR, "templates")],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -136,6 +145,8 @@ AUTH_PASSWORD_VALIDATORS = [
         "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
+LOGIN_REDIRECT_URL = "/"
+LOGOUT_REDIRECT_URL = "/"
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.0/topics/i18n/

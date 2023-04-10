@@ -16,10 +16,15 @@ Including another URLconf
 
 
 from django.contrib import admin
+from django.templatetags.static import static  # Not from django.conf.urls.static
 from django.urls import include, path
+from django.views.generic.base import RedirectView
 
 urlpatterns = [
+    # the below URL ensures that <base URL>/favicon.ico works as expected
+    path("favicon.ico", RedirectView.as_view(url=static("cardpicker/favicon.ico"))),
     path("admin/", admin.site.urls),
     path("", include("cardpicker.urls")),
-    path("blog/", include("blog.urls")),
+    # path("accounts/", include("accounts.urls")),
+    # path("accounts/", include("django.contrib.auth.urls")),
 ]

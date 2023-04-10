@@ -1,3 +1,4 @@
+# TODO: when restructuring & tidying up the repo, move this out of utils.
 import html
 import json
 import re
@@ -78,7 +79,11 @@ class CubeCobra(ImportSite):
     def retrieve_card_list(cls, url: str) -> str:
         cube_id = url.split("/")[-1]
         response = requests.get(
-            f"{cls.get_base_url()}/cube/download/plaintext/{cube_id}?primary=Color%20Category&secondary=Types-Multicolor&tertiary=Mana%20Value&quaternary=Alphabetical&showother=false"
+            f"{cls.get_base_url()}/cube/download/plaintext/{cube_id}"
+            f"?primary=Color%20Category"
+            f"&secondary=Types-Multicolor&tertiary=Mana%20Value"
+            f"&quaternary=Alphabetical"
+            f"&showother=false"
         )
         if response.url == "https://cubecobra.com/404" or not cube_id:  # cubecobra returns code 200 for 404 page
             cls.raise_invalid_url_exception(url)
@@ -99,7 +104,12 @@ class Deckstats(ImportSite):
             return ""  # only necessary so mypy understands the above function throws an exception
         owner_id, deck_id = regex_results.groups()
         response = requests.get(
-            f"{cls.get_base_url()}/api.php?action=get_deck&id_type=saved&owner_id={owner_id}&id={deck_id}&response_type=list"
+            f"{cls.get_base_url()}/api.php"
+            f"?action=get_deck"
+            f"&id_type=saved"
+            f"&owner_id={owner_id}"
+            f"&id={deck_id}"
+            f"&response_type=list"
         )
         if response.status_code == 404 or not owner_id or not deck_id:
             cls.raise_invalid_url_exception(url)

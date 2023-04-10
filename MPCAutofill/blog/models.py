@@ -8,9 +8,8 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.utils import dateformat
 
+from cardpicker.constants import DATE_FORMAT
 from cardpicker.models import Card
-
-datestring = "jS F, Y"
 
 
 class Blog(models.Model):
@@ -53,7 +52,7 @@ class BlogPost(models.Model):
     def get_content(self) -> dict[str, Any]:
         return {
             "name": self.name,
-            "date_created": dateformat.format(self.date_created, datestring),
+            "date_created": dateformat.format(self.date_created, DATE_FORMAT),
             "synopsis": self.synopsis,
             "contents": markdown(self.contents),
             "blog": self.blog.to_dict(),
@@ -65,7 +64,7 @@ class BlogPost(models.Model):
         borders = ["primary", "success", "warning", "info", "light"]
         return {
             "name": self.name,
-            "date_created": dateformat.format(self.date_created, datestring),
+            "date_created": dateformat.format(self.date_created, DATE_FORMAT),
             "synopsis": markdown(self.synopsis),
             "blog": self.blog.name,
             "url": self.get_url(),
@@ -96,7 +95,7 @@ class ShowcaseBlogPost(BlogPost):
             pass
         return {
             "name": self.name,
-            "date_created": dateformat.format(self.date_created, datestring),
+            "date_created": dateformat.format(self.date_created, DATE_FORMAT),
             "contents": markdown(self.contents),
             "blog": self.blog.to_dict(),
             "url": self.get_url(),

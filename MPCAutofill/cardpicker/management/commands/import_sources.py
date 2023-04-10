@@ -39,7 +39,7 @@ def read_sources_csv() -> list[Source]:
 
 def sync_sources(sources: list[Source]) -> None:
     key_fields = ("key",)
-    ret = bulk_sync(new_models=sources, key_fields=key_fields, filters=None, db_class=Source)
+    bulk_sync(new_models=sources, key_fields=key_fields, filters=None, db_class=Source)
 
 
 class Command(BaseCommand):

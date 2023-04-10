@@ -1,24 +1,29 @@
 import json
+import re
+import time
 from collections import defaultdict
 from datetime import timedelta
+from random import choices, randint
 from typing import Any, Callable, Optional, TypeVar, Union, cast
 
 from blog.models import BlogPost
 
-from django.db import connection
-from django.db.models import Sum
+from django.conf import settings
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
 
 from cardpicker.forms import InputCSV, InputLink, InputText, InputXML
-from cardpicker.models import Card, CardTypes, Source
+from cardpicker.models import Card, CardTypes, DFCPair, Source, summarise_contributions
 from cardpicker.mpcorder import Faces, MPCOrder, ReqTypes
-from cardpicker.sources.source_types import SourceTypeChoices
+from cardpicker.utils.link_imports import ImportSites
 from cardpicker.utils.patreon import get_patreon_campaign_details, get_patrons
 from cardpicker.utils.sanitisation import to_searchable
 from cardpicker.utils.search_functions import (
     SearchExceptions,
+    SearchQuery,
+    SearchSettings,
     build_context,
     ping_elasticsearch,
     query_es_card,
@@ -128,96 +133,15 @@ def guide(request: HttpRequest) -> HttpResponse:
 
 
 def contributions(request: HttpRequest) -> HttpResponse:
-    """
-    Report on the number of cards, cardbacks, and tokens that each Source has, as well as the average DPI across all
-    three card types.
-    Rawdogging the SQL here to minimise the number of hits to the database. I might come back to this at some point
-    to rewrite in Django ORM at a later point.
-    """
-
-    with connection.cursor() as cursor:
-        cursor.execute(
-            """
-            SELECT
-                cardpicker_source.name,
-                cardpicker_source.identifier,
-                cardpicker_source.source_type,
-                cardpicker_source.external_link,
-                cardpicker_source.description,
-                cardpicker_source.ordinal,
-                COALESCE(SUM(cardpicker_card.dpi), 0),
-                COUNT(cardpicker_card.dpi),
-                COALESCE(SUM(cardpicker_card.size), 0)
-            FROM cardpicker_source
-            LEFT JOIN cardpicker_card ON cardpicker_source.id = cardpicker_card.source_id
-            GROUP BY cardpicker_source.name,
-                cardpicker_source.identifier,
-                cardpicker_source.source_type,
-                cardpicker_source.external_link,
-                cardpicker_source.description,
-                cardpicker_source.ordinal
-            ORDER BY cardpicker_source.ordinal, cardpicker_source.name
-            """
-        )
-        results_1 = cursor.fetchall()
-        cursor.execute(
-            """
-            SELECT
-                cardpicker_source.identifier,
-                cardpicker_card.card_type,
-                COUNT(cardpicker_card.card_type)
-            FROM cardpicker_source
-            LEFT JOIN cardpicker_card ON cardpicker_source.id = cardpicker_card.source_id
-            GROUP BY cardpicker_source.identifier, cardpicker_card.card_type
-            """
-        )
-        results_2 = cursor.fetchall()
-
-    source_card_count_by_type: dict[str, dict[str, int]] = defaultdict(dict)
-    card_count_by_type: dict[str, int] = defaultdict(int)
-    for (identifier, card_type, count) in results_2:
-        source_card_count_by_type[identifier][card_type] = count
-        card_count_by_type[card_type] += count
-    sources = []
-    total_database_size = 0
-    for (
-        name,
-        identifier,
-        source_type,
-        external_link,
-        description,
-        ordinal,
-        total_dpi,
-        total_count,
-        total_size,
-    ) in results_1:
-        sources.append(
-            {
-                "name": name,
-                "identifier": identifier,
-                "source_type": SourceTypeChoices[source_type].label,
-                "external_link": external_link,
-                "description": description,
-                "qty_cards": f"{source_card_count_by_type[identifier].get(CardTypes.CARD, 0):,d}",
-                "qty_cardbacks": f"{source_card_count_by_type[identifier].get(CardTypes.CARDBACK, 0) :,d}",
-                "qty_tokens": f"{source_card_count_by_type[identifier].get(CardTypes.TOKEN, 0) :,d}",
-                "avgdpi": f"{(total_dpi / total_count):.2f}" if total_count > 0 else 0,
-                "size": f"{(total_size / 1_000_000_000):.2f} GB",
-            }
-        )
-        total_database_size += total_size
-
+    sources, card_count_by_type, total_database_size = summarise_contributions()
     total_count = [card_count_by_type[x] for x in CardTypes]
     total_count.append(sum(total_count))
-    total_count_f = [f"{x:,d}" for x in total_count]
-
-    # database_size = f"{(Card.objects.aggregate(Sum('size'))['size__sum'] / 1_000_000_000):.2f}"
     total_database_size_f = f"{(total_database_size / 1_000_000_000):.2f} GB"
 
     return render(
         request,
         "cardpicker/contributions.html",
-        {"sources": sources, "total_count": total_count_f, "total_size": total_database_size_f},
+        {"sources": sources, "total_count": [f"{x:,d}" for x in total_count], "total_size": total_database_size_f},
     )
 
 
@@ -230,6 +154,9 @@ def patrons(request: HttpRequest) -> HttpResponse:
     campaign, tiers = get_patreon_campaign_details()
     members = get_patrons(campaign["id"], tiers)
     return render(request, "cardpicker/patrons.html", {"members": members, "tiers": tiers, "campaign": campaign})
+
+
+# region old API
 
 
 @ErrorWrappers.to_json
@@ -468,3 +395,206 @@ def insert_link(request: HttpRequest) -> HttpResponse:
     }
 
     return JsonResponse(context)
+
+
+# endregion
+
+# region new API
+
+
+# TODO: rename these functions to something useful once they've all been hashed out.
+
+
+def editor(request: HttpRequest) -> HttpResponse:
+    return render(request, "cardpicker/editor.html")
+
+
+@csrf_exempt
+def api_function_1(request: HttpRequest) -> HttpResponse:
+    """
+    Return the first page of search results for a given list of queries.
+    Each query should be of the form {card name, card type}.
+    This function should also accept a set of search settings in a standard format.
+    Return a dictionary of search results of the following form:
+    {(card name, card type): {"num_hits": num_hits, "hits": [list of Card identifiers]}
+    and it's assumed that `hits` starts from the first hit.
+    """
+
+    # TODO: ping elasticsearch here
+    if request.method == "POST":
+        # time.sleep(1)  # TODO: remove these. just for testing.
+        json_body = json.loads(request.body)
+        search_settings = SearchSettings.from_json_body(json_body)
+        queries = SearchQuery.list_from_json_body(json_body)
+        results: dict[str, dict[str, list[str]]] = defaultdict(dict)
+        for query in queries:
+            if results[query.query].get(query.card_type, None) is None:
+                hits = query.retrieve_card_identifiers(search_settings=search_settings)
+                results[query.query][query.card_type] = hits
+        return JsonResponse({"results": results})
+    else:
+        ...  # TODO: return error response
+    return JsonResponse({})
+
+
+@csrf_exempt
+def api_function_2(request: HttpRequest) -> HttpResponse:
+    # TODO: bit confusing to call this `getCards` while expecting POST
+    if request.method == "POST":
+        # time.sleep(2)  # TODO: remove these. just for testing.
+        json_body = json.loads(request.body)
+        card_identifiers = json_body.get("card_identifiers", [])
+        # if len(card_identifiers) > 100:  # TODO
+        #     card_identifiers = card_identifiers[0:100]
+        results = {x.identifier: x.to_dict() for x in Card.objects.filter(identifier__in=card_identifiers)}
+        return JsonResponse({"results": results})
+    else:
+        ...  # TODO: return error response
+    return JsonResponse({})
+
+
+@csrf_exempt
+def api_function_3(request: HttpRequest) -> HttpResponse:
+    """
+    Return a list of sources.
+    """
+
+    results = {x.pk: x.to_dict() for x in Source.objects.order_by("ordinal", "pk")}
+    return JsonResponse({"results": results})
+
+
+@csrf_exempt
+def api_function_4(request: HttpRequest) -> HttpResponse:
+    """
+    Return a list of double-faced cards. The unedited names are returned and the frontend is expected to sanitise them.
+    """
+
+    dfc_pairs = dict((x.front, x.back) for x in DFCPair.objects.all())
+    return JsonResponse({"dfc_pairs": dfc_pairs})
+
+
+@csrf_exempt
+def api_function_5(request: HttpRequest) -> HttpResponse:
+    """
+    Return a list of cardstocks.
+    """
+
+    cardstocks = [{"name": "S30", "can_be_foil": True}]  # TODO
+    return JsonResponse({"cardstocks": cardstocks})
+
+
+@csrf_exempt
+def api_function_6(request: HttpRequest) -> HttpResponse:
+    """
+    Return a list of cardbacks.
+    """
+
+    # TODO: think about the best way to order these results (after ordering by priority)
+    cardbacks = [x.identifier for x in Card.objects.filter(card_type=CardTypes.CARDBACK).order_by("-priority", "name")]
+    return JsonResponse({"cardbacks": cardbacks})
+
+
+@csrf_exempt
+def api_function_7(request: HttpRequest) -> HttpResponse:
+    """
+    Return a list of import sites.
+    """
+
+    time.sleep(4)
+    import_sites = [{"name": x.__name__, "url": x().get_base_url()} for x in ImportSites]
+    return JsonResponse({"import_sites": import_sites})
+
+
+@csrf_exempt
+def api_function_8(request: HttpRequest) -> HttpResponse:
+    """
+    Return the result of querying an import site for the specified URL.
+    TODO: rewrite this, the english is a bit bad.
+    """
+
+    if request.method == "POST":
+        json_body = json.loads(request.body)
+        url = json_body.get("url", None)
+        if url is None:
+            ...  # TODO: handle this case
+        for site in ImportSites:
+            if url.startswith(site.get_base_url()):
+                text = site.retrieve_card_list(url)
+                return JsonResponse({"cards": text})
+        # TODO: return error indicating site is not supported
+    else:
+        ...  # TODO: return error response
+    return JsonResponse({})
+
+
+@csrf_exempt
+def api_function_9(request: HttpRequest) -> HttpResponse:
+    """
+    Return a list of sample cards you can query this database for.
+    Used in the placeholder text of the Add Cards — Text component in the frontend.
+    """
+
+    # TODO: consider reusing this to display some random cards on the landing page
+
+    # TODO: tidy this up. i have no clue what this code is doing
+
+    # TODO: i don't know how to do this in a single query in the Django ORM :(
+    identifiers = {
+        card_type: list(Card.objects.filter(card_type=card_type).values_list("id", flat=True)[0:1000])
+        for card_type in CardTypes
+    }
+    selected_identifiers = {
+        card_type: choices(
+            identifiers[card_type], k=min(4 if card_type == CardTypes.CARD else 1, len(identifiers[card_type]))
+        )
+        for card_type in CardTypes
+    }
+    men = {
+        x[0]: re.sub(r"\([^)]*\)", "", x[1]).strip()
+        for x in Card.objects.filter(pk__in=[y for z in selected_identifiers.values() for y in z]).values_list(
+            "id", "name"
+        )
+    }
+    return_value = {
+        card_type: [(randint(1, 4), men[identifier]) for identifier in identifiers]
+        for card_type, identifiers in selected_identifiers.items()
+    }
+
+    return JsonResponse({"cards": return_value})
+
+
+@csrf_exempt
+def api_function_10(request: HttpRequest) -> HttpResponse:
+    sources, card_count_by_type, total_database_size = summarise_contributions()
+    return JsonResponse(
+        {"sources": sources, "card_count_by_type": card_count_by_type, "total_database_size": total_database_size}
+    )
+
+
+@csrf_exempt
+def api_function_11(request: HttpRequest) -> HttpResponse:
+    """
+    Return a stack of metadata about the server for the frontend to display.
+    It's expected that this route will be called once when the server is connected.
+    """
+
+    time.sleep(1)
+    return JsonResponse(
+        {
+            "info": {
+                "name": settings.SITE_NAME,
+                "description": "Testing some stuff locally",
+                "email": settings.TARGET_EMAIL,
+                "reddit": settings.REDDIT,
+                "discord": settings.DISCORD,
+                "patreon_url": settings.PATREON_URL,
+            }
+        }
+    )
+
+
+def api_function_12(request: HttpRequest) -> HttpResponse:
+    return JsonResponse({"online": ping_elasticsearch()})
+
+
+# endregion

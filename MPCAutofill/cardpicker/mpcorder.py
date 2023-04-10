@@ -145,7 +145,7 @@ class CardImageCollection(abc.MutableMapping[str, Any]):
         self.insert_with_ids(query, slots_with_id, req_type)
 
     def __str__(self) -> str:
-        return f"contains the following:\n" + "\n".join(str(x) for x in self.values())
+        return "contains the following:\n" + "\n".join(str(x) for x in self.values())
 
     def to_dict(self) -> dict[str, Any]:
         return {key: value.to_dict() for key, value in self.items()}

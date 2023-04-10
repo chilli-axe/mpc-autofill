@@ -1,0 +1,56 @@
+{% extends 'cardpicker/base.html' %}
+{% block content %}
+    {# djlint:off #}
+    <h2>{{ user.username }}'{% if object.image.url.lower|slice:"-1:" != "s" %}s{% endif %} Projects</h2>
+    {# djlint:on #}
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th scope="col">Project Key</th>
+                <th scope="col">Project Name</th>
+                <th scope="col">Date Created</th>
+                <th scope="col">Date Modified</th>
+                <th scope="col">Size</th>
+                <th scope="col" style="text-align: center">Manage</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for project in projects %}
+                <tr>
+                    <td style="vertical-align: middle">{{ project.key }}</td>
+                    <td style="vertical-align: middle">{{ project.name }}</td>
+                    <td style="vertical-align: middle">{{ project.date_created }}</td>
+                    <td style="vertical-align: middle">{{ project.date_modified }}</td>
+                    <td style="vertical-align: middle">
+                        {{ project.project_size }}
+                        {# djlint:off #}
+                {% if project.project_size != 1 %}cards{% else %}card{% endif %}
+                        {# djlint:on #}
+                    </td>
+                    <td style="vertical-align: middle; text-align: center">
+                        <div class="dropdown">
+                            <i class="bi bi-three-dots"
+                               type="button"
+                               data-bs-toggle="dropdown"
+                               aria-expanded="false"
+                               style="font-size: 2em">
+                            </i>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a class="dropdown-item" href="#"><i class="bi bi-pencil-square" style="padding-right: 0.5em"></i>Edit</a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="#"><i class="bi bi-box-arrow-up" style="padding-right: 0.5em"></i>Share</a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="#"><i class="bi bi-x-circle" style="padding-right: 0.5em"></i>Delete</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% include "cardpicker/footer.html" %}
+{% endblock %}

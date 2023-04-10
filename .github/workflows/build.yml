@@ -10,7 +10,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     defaults:
       run:
-        working-directory: autofill
+        working-directory: desktop-tool
     strategy:
       matrix:
         include:
@@ -39,5 +39,5 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v2
         with:
-          path: ./autofill/dist/${{ matrix.OUT_FILE_NAME }}
+          path: ./desktop-tool/dist/${{ matrix.OUT_FILE_NAME }}
           name: autofill-${{ matrix.TARGET }}
