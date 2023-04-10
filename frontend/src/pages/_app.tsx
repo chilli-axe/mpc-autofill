@@ -16,8 +16,8 @@ export default function App({ Component, pageProps }: AppProps) {
   return (
     <>
       <style jsx global>{`
-        html {
-          font-family: ${lato.style.fontFamily};
+        :root {
+          --font-lato: ${lato.style.fontFamily};
         }
       `}</style>
       <Component {...pageProps} />
