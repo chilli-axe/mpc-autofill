@@ -136,8 +136,12 @@ export function BackendConfig(props: BackendConfigProps) {
   }, []);
 
   return (
-    <div className={lato.className}>
-      <Offcanvas show={props.show} onHide={props.handleClose}>
+    <>
+      <Offcanvas
+        className={lato.className}
+        show={props.show}
+        onHide={props.handleClose}
+      >
         <Offcanvas.Header closeButton>
           <Offcanvas.Title>Configure Server</Offcanvas.Title>
         </Offcanvas.Header>
@@ -178,6 +182,6 @@ export function BackendConfig(props: BackendConfigProps) {
           </Form>
         </Offcanvas.Body>
       </Offcanvas>
-    </div>
+    </>
   );
 }
