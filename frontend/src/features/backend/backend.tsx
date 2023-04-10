@@ -7,7 +7,6 @@ import Button from "react-bootstrap/Button";
 import React, { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import Form from "react-bootstrap/Form";
-import { lato } from "@/app/font";
 import { setURL } from "@/features/backend/backendSlice";
 import { ProjectName } from "@/common/constants";
 import { getCookieBackendURL, setCookieBackendURL } from "@/common/cookies";
