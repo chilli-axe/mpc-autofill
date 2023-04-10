@@ -17,6 +17,7 @@ jobs:
           npm ci
           npm run test
           npx next build
+          npx next export
       - name: Publish frontend to GitHub Pages repo
         uses: dmnemec/copy_file_to_another_repo_action@main
         env:
