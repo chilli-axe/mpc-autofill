@@ -7,7 +7,7 @@ import Button from "react-bootstrap/Button";
 import React, { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import Form from "react-bootstrap/Form";
-import Nav from "react-bootstrap/Nav";
+import { lato } from "@/app/font";
 import { setURL } from "@/features/backend/backendSlice";
 import { ProjectName } from "@/common/constants";
 import { getCookieBackendURL, setCookieBackendURL } from "@/common/cookies";
@@ -136,7 +136,7 @@ export function BackendConfig(props: BackendConfigProps) {
   }, []);
 
   return (
-    <>
+    <div className={lato.className}>
       <Offcanvas show={props.show} onHide={props.handleClose}>
         <Offcanvas.Header closeButton>
           <Offcanvas.Title>Configure Server</Offcanvas.Title>
@@ -178,6 +178,6 @@ export function BackendConfig(props: BackendConfigProps) {
           </Form>
         </Offcanvas.Body>
       </Offcanvas>
-    </>
+    </div>
   );
 }
