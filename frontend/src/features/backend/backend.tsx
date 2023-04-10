@@ -4,7 +4,7 @@
 
 import Offcanvas from "react-bootstrap/Offcanvas";
 import Button from "react-bootstrap/Button";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, FormEvent } from "react";
 import { useDispatch } from "react-redux";
 import Form from "react-bootstrap/Form";
 import { setURL } from "@/features/backend/backendSlice";
@@ -81,13 +81,16 @@ export function BackendConfig(props: BackendConfigProps) {
   const [validationStatus, setValidationStatus] = useState<
     Array<ValidationState>
   >([]);
+  const [validating, setValidating] = useState<boolean>(false);
 
   const [triggerFn, getBackendInfoQuery] =
     apiSlice.endpoints.getBackendInfo.useLazyQuery();
 
   const [localServerURL, setLocalServerURL] = useState<string>("");
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault(); // to avoid reloading the page
+    setValidating(true);
     const formattedURL = standardiseURL(localServerURL.trim());
 
     let updatedValidationStatus: Array<ValidationState> = [];
@@ -122,6 +125,7 @@ export function BackendConfig(props: BackendConfigProps) {
       dispatch(apiSlice.util.resetApiState());
       triggerFn();
     }
+    setValidating(false);
   };
 
   useEffect(() => {
@@ -145,12 +149,13 @@ export function BackendConfig(props: BackendConfigProps) {
           to.
           <br />
           <br />
-          <Form>
+          <Form onSubmit={handleSubmit}>
             <Form.Group className="mb-3" controlId="formURL">
               <Form.Control
                 placeholder="https://"
                 onChange={(event) => setLocalServerURL(event.target.value)}
                 value={localServerURL}
+                disabled={validating}
               />
             </Form.Group>
             {validationStatus.length > 0 && (
@@ -171,7 +176,7 @@ export function BackendConfig(props: BackendConfigProps) {
                 <hr />
               </>
             )}
-            <Button variant="primary" onClick={handleSubmit}>
+            <Button variant="primary" type="submit" disabled={validating}>
               Submit
             </Button>
           </Form>
