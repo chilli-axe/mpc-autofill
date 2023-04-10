@@ -11,8 +11,8 @@ export default function Guide() {
         <meta name="description" content="TODO" /> {/* TODO */}
       </Head>
       <Layout>
-        <h1>Test</h1>
-        <p>Should be my guide page</p>
+        <h1>Guide</h1>
+        <p>Under construction</p>
         <Footer />
       </Layout>
     </>

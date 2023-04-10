@@ -12,8 +12,8 @@ export default function New() {
         <meta name="description" content="TODO" /> {/* TODO */}
       </Head>
       <Layout>
-        <h1>Test</h1>
-        <p>Should be my new page</p>
+        <h1>What&apos;s New?</h1>
+        <p>Under construction</p>
         <Footer />
       </Layout>
     </>
