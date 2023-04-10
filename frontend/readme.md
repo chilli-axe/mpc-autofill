@@ -6,6 +6,7 @@
 
 - The MPC Autofill frontend integrates with the backend (in `/MPCAutofill`) as a decoupled deployment.
   - That is, the frontend is statically hosted on GitHub and any backend server deployed on the Internet can be connected to it.
+  - The app is automatically deployed on GitHub Pages to `mpcautofill.github.io` whenever changes are made to the `frontend-release` branch.
 - It facilitates the creation and management of projects which can be automatically sent to MakePlayingCards.com using the desktop tool CLI (in `/desktop-tool).
 - Users can:
   - Add cards to their project through various methods (e.g. text, URL).
