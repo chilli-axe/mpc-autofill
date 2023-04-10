@@ -12,11 +12,13 @@ jobs:
         uses: actions/checkout@v2
       - name: Install npm
         uses: actions/setup-node@v3
-      - name: Build frontend
+      - name: Install packages and run tests
         working-directory: frontend
         run: |
           npm ci
           npm run test
+      - name: Build frontend
+        run: |
           npx next build
           npx next export
         env:
