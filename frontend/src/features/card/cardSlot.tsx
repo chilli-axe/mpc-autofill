@@ -57,7 +57,7 @@ export function CardSlot(props: CardSlotProps) {
   );
 
   const projectMember = useSelector(
-    (state: RootState) => state.project.members[slot][face]
+    (state: RootState) => (state.project.members[slot] ?? {})[face]
   );
   const selectedImage = projectMember?.selectedImage;
 
@@ -156,7 +156,11 @@ export function CardSlot(props: CardSlotProps) {
         <i className="bi bi-unlock"></i>
       </button>
       <button className="remove">
-        <i className="bi bi-x-circle" onClick={deleteThisImage}></i>
+        <i
+          className="bi bi-x-circle"
+          onClick={deleteThisImage}
+          aria-label={`remove-${face}${slot}`}
+        ></i>
       </button>
     </>
   );

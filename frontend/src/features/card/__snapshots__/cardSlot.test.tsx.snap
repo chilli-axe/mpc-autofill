@@ -26,6 +26,7 @@ exports[`the html structure of a CardSlot with a single search result, image sel
             class="remove"
           >
             <i
+              aria-label="remove-front0"
               class="bi bi-x-circle"
             />
           </button>
@@ -123,6 +124,7 @@ exports[`the html structure of a CardSlot with a single search result, no image 
             class="remove"
           >
             <i
+              aria-label="remove-front0"
               class="bi bi-x-circle"
             />
           </button>
@@ -220,6 +222,7 @@ exports[`the html structure of a CardSlot with multiple search results, image se
             class="remove"
           >
             <i
+              aria-label="remove-front0"
               class="bi bi-x-circle"
             />
           </button>

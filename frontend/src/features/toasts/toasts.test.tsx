@@ -8,6 +8,7 @@ import {
   waitForElementToBeRemoved,
 } from "@testing-library/react";
 import { GoogleAnalyticsConsentCookie } from "@/common/constants";
+import { cardDocument1 } from "@/common/test-constants";
 
 beforeEach(() => {
   Cookies.remove(GoogleAnalyticsConsentCookie);
@@ -58,11 +59,7 @@ test("google analytics consent popup does not appear once consent is specified",
   await waitForElementToBeRemoved(() => screen.getByText("Cookie Usage"));
 
   // the popup should no longer appear upon page reload
-  renderWithProviders(<About />);
-  await expect(
-    async () =>
-      await waitFor(() => {
-        expect(screen.getByText("Cookie Usage")).not.toBeNull();
-      })
-  ).rejects.toThrow();
+  await waitFor(() =>
+    expect(screen.queryByText("Cookie Usage")).not.toBeInTheDocument()
+  );
 });

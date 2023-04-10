@@ -13,6 +13,7 @@ import {
   projectSelectedImage1,
   projectSelectedImage2,
 } from "@/common/test-constants";
+import About from "@/pages/about";
 
 test("the html structure of a CardSlot with a single search result, no image selected", () => {
   const rendered = renderWithProviders(
@@ -158,4 +159,28 @@ test("switching images in a CardSlot wraps around", async () => {
     expect(screen.getByText("3 / 3")).toBeInTheDocument();
   });
   expect(screen.getByText(cardDocument3.name)).toBeInTheDocument();
+});
+
+test("deleting a CardSlot", async () => {
+  renderWithProviders(
+    <CardSlot
+      searchQuery={{ query: "my search query", card_type: Card }}
+      slot={0}
+      face={Front}
+      handleShowDetailedView={() => {}}
+    />,
+    {
+      preloadedState: {
+        cardDocuments: cardDocumentsThreeResults,
+        searchResults: searchResultsThreeResults,
+        project: projectSelectedImage1,
+      },
+    }
+  );
+  expect(screen.getByText(cardDocument1.name)).toBeInTheDocument();
+
+  screen.getByLabelText("remove-front0").click();
+  await waitFor(() => {
+    expect(screen.queryByText(cardDocument1.name)).not.toBeInTheDocument();
+  });
 });
