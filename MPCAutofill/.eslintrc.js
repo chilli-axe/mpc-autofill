@@ -6,8 +6,6 @@ module.exports = {
     jquery: true,
   },
   extends: ["standard", "prettier"],
-  parser: "@typescript-eslint/parser",
-  plugins: ["@typescript-eslint", "react-hooks"],
   overrides: [],
   parserOptions: {
     ecmaVersion: "latest",
