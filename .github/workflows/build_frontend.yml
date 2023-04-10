@@ -18,6 +18,7 @@ jobs:
           npm ci
           npm run test
       - name: Build frontend
+        working-directory: frontend
         run: |
           npx next build
           npx next export
