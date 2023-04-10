@@ -23,6 +23,7 @@ jobs:
         uses: dmnemec/copy_file_to_another_repo_action@main
         env:
           API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
+          NEXT_PUBLIC_GA_MEASUREMENT_ID: ${{ vars.NEXT_PUBLIC_GA_MEASUREMENT_ID }}
         with:
           source_file: "frontend/out/."
           destination_repo: "mpcautofill/mpcautofill.github.io"
