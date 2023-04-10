@@ -1,4 +1,5 @@
-![build](https://github.com/chilli-axe/mpc-autofill/actions/workflows/build.yml/badge.svg)
+![build_desktop_tool](https://github.com/chilli-axe/mpc-autofill/actions/workflows/build_desktop_tool.yml/badge.svg)
+![build_frontend](https://github.com/chilli-axe/mpc-autofill/actions/workflows/build_desktop_tool.yml/badge.svg)
 ![tests](https://github.com/chilli-axe/mpc-autofill/actions/workflows/tests.yml/badge.svg)
 [![Github all releases](https://img.shields.io/github/downloads/chilli-axe/mpc-autofill/total.svg)](https://GitHub.com/chilli-axe/mpc-autofill/releases/)
 [![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=7LJNRSLJYCZTJ&currency_code=AUD&source=url)

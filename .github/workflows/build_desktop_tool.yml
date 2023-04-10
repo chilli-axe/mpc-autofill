@@ -1,5 +1,5 @@
 # credit: https://data-dive.com/multi-os-deployment-in-cloud-using-pyinstaller-and-github-actions
-name: Build desktop tool
+name: Desktop tool build
 on:
   push:
     branches: [master]
