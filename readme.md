@@ -61,13 +61,8 @@ This repository is configured with a few secrets and environment variables which
 
 ## Secrets
 
-| Secret Name            | Description                                                                                                                                                            |
-| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `API_TOKEN_GITHUB`     | A GitHub API token configured with `repo` permissions.<br />Used by [`copy_file_to_another_repo_action`](https://github.com/dmnemec/copy_file_to_another_repo_action). |
-| `GOOGLE_DRIVE_API_KEY` | Your Google Drive API key.<br />Used by GitHub Actions when running backend tests.                                                                                     |
-
-## Environment Variables
-
-| Environment Name      | Variable Name                   | Description                                                                                                                                              |
-| --------------------- | ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `frontend-production` | `NEXT_PUBLIC_GA_MEASUREMENT_ID` | Your _Google Analytics measurement id_. <br/>Used by the [`nextjs-google-analytics`](https://github.com/MauricioRobayo/nextjs-google-analytics) package. |
+| Secret Name                     | Description                                                                                                                                                                                        |
+| ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GOOGLE_DRIVE_API_KEY`          | Your Google Drive API key.<br />Used by GitHub Actions when running backend tests.                                                                                                                 |
+| `API_TOKEN_GITHUB`              | A GitHub API token configured with `repo` permissions.<br />Used by [`copy_file_to_another_repo_action`](https://github.com/dmnemec/copy_file_to_another_repo_action) when deploying the frontend. |
+| `NEXT_PUBLIC_GA_MEASUREMENT_ID` | Your _Google Analytics measurement id_.<br/>Used by the [`nextjs-google-analytics`](https://github.com/MauricioRobayo/nextjs-google-analytics) package when deploying the frontend.                |
