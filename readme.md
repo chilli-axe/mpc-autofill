@@ -39,8 +39,7 @@ Each component of the project has its own README; check those out for more detai
 - A web app that communicates with a specified MPC Autofill backend (hosted somewhere on the Internet) and facilitates the creation, customisation, and exporting of projects with drives linked to that backend.
 - Stack:
   - Static Next.js web app built with Typescript, React-Bootstrap, and Redux.
-  - Automatically deployed on GitHub Pages.
-    - TODO: flesh out deployment details
+  - Automatically deployed on GitHub Pages to `mpcautofill.github.io` whenever changes are made to the `frontend-release` branch.
 
 ## Desktop Client
 

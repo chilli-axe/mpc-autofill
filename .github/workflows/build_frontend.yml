@@ -4,7 +4,8 @@ on:
     branches: [frontend-release]
   workflow_dispatch:
 jobs:
-  copy-file:
+  build:
+    name: Build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -15,13 +16,15 @@ jobs:
         working-directory: frontend
         run: |
           npm ci
+          npm run test
           npx next build
+          npx next export
       - name: Publish frontend to GitHub Pages repo
         uses: dmnemec/copy_file_to_another_repo_action@main
         env:
           API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
         with:
-          source_file: "frontend/out"
+          source_file: "frontend/out/."
           destination_repo: "mpcautofill/mpcautofill.github.io"
           user_email: "chilli.axe@gmail.com"
           user_name: "chilli-axe"
