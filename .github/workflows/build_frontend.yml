@@ -21,10 +21,10 @@ jobs:
           npx next export
       - name: Publish frontend to GitHub Pages repo
         uses: dmnemec/copy_file_to_another_repo_action@main
-        working-directory: frontend/out
         env:
           API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
         with:
+          source_file: "/frontend/out/"
           destination_repo: "mpcautofill/mpcautofill.github.io"
           user_email: "chilli.axe@gmail.com"
           user_name: "chilli-axe"
