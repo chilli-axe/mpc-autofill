@@ -5,8 +5,13 @@ import { lato } from "@/app/font";
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
-    <main className={lato.className}>
+    <>
+      <style jsx global>{`
+        html {
+          font-family: ${lato.style.fontFamily};
+        }
+      `}</style>
       <Component {...pageProps} />
-    </main>
+    </>
   );
 }

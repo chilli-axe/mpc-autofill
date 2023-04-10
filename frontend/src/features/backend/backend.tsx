@@ -137,11 +137,7 @@ export function BackendConfig(props: BackendConfigProps) {
 
   return (
     <>
-      <Offcanvas
-        className={lato.className}
-        show={props.show}
-        onHide={props.handleClose}
-      >
+      <Offcanvas show={props.show} onHide={props.handleClose}>
         <Offcanvas.Header closeButton>
           <Offcanvas.Title>Configure Server</Offcanvas.Title>
         </Offcanvas.Header>
