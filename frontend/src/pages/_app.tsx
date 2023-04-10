@@ -13,13 +13,8 @@ const lato = Lato({
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
-    <>
-      <style jsx global>{`
-        html {
-          font-family: ${lato.style.fontFamily};
-        }
-      `}</style>
+    <main className={lato.className}>
       <Component {...pageProps} />
-    </>
+    </main>
   );
 }
