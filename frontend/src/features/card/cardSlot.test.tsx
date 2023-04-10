@@ -184,3 +184,47 @@ test("deleting a CardSlot", async () => {
     expect(screen.queryByText(cardDocument1.name)).not.toBeInTheDocument();
   });
 });
+
+test("CardSlot automatically selects the first search result", async () => {
+  renderWithProviders(
+    <CardSlot
+      searchQuery={{ query: "my search query", card_type: Card }}
+      slot={0}
+      face={Front}
+      handleShowDetailedView={() => {}}
+    />,
+    {
+      // no `project` state given -> nothing selected
+      preloadedState: {
+        cardDocuments: cardDocumentsThreeResults,
+        searchResults: searchResultsThreeResults,
+      },
+    }
+  );
+
+  await waitFor(() => {
+    expect(screen.queryByText(cardDocument1.name)).toBeInTheDocument();
+  });
+});
+
+test("CardSlot automatically deselects invalid image then selects the first search result", async () => {
+  renderWithProviders(
+    <CardSlot
+      searchQuery={{ query: "my search query", card_type: Card }}
+      slot={0}
+      face={Front}
+      handleShowDetailedView={() => {}}
+    />,
+    {
+      preloadedState: {
+        cardDocuments: cardDocumentsThreeResults,
+        searchResults: searchResultsOneResult,
+        project: projectSelectedImage2, // not in search results
+      },
+    }
+  );
+
+  await waitFor(() => {
+    expect(screen.queryByText(cardDocument1.name)).toBeInTheDocument();
+  });
+});
