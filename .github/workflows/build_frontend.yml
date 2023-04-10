@@ -23,7 +23,7 @@ jobs:
         env:
           API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
         with:
-          source_file: "/frontend/out"
+          source_file: "frontend/out"
           destination_repo: "mpcautofill/mpcautofill.github.io"
           user_email: "chilli.axe@gmail.com"
           user_name: "chilli-axe"
