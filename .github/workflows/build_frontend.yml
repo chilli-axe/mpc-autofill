@@ -1,0 +1,27 @@
+name: Build frontend
+on:
+  push:
+    branches: [frontend-release]
+  workflow_dispatch:
+jobs:
+  copy-file:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Install npm
+        uses: actions/setup-node@v3
+      - name: Build frontend
+        working-directory: frontend
+        run: |
+          npm ci
+          npx next build
+      - name: Publish frontend to GitHub Pages repo
+        uses: dmnemec/copy_file_to_another_repo_action@main
+        env:
+          API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
+        with:
+          source_file: "frontend/out"
+          destination_repo: "mpcautofill/mpcautofill.github.io"
+          user_email: "chilli.axe@gmail.com"
+          user_name: "chilli-axe"
