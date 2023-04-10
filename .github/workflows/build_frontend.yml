@@ -23,7 +23,7 @@ jobs:
           npx next build
           npx next export
         env:
-          NEXT_PUBLIC_GA_MEASUREMENT_ID: ${{ vars.NEXT_PUBLIC_GA_MEASUREMENT_ID }}
+          NEXT_PUBLIC_GA_MEASUREMENT_ID: ${{ secrets.NEXT_PUBLIC_GA_MEASUREMENT_ID }}
       - name: Publish frontend to GitHub Pages repo
         uses: dmnemec/copy_file_to_another_repo_action@main
         env:
