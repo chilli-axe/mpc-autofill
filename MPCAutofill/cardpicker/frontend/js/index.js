@@ -1,4 +1,3 @@
-import Cookies from "js-cookie";
 import { base_on_load, handle_error } from "./base.js";
 import "bootstrap5-toggle/css/bootstrap5-toggle.min.css";
 import "bootstrap5-toggle";
@@ -20,8 +19,8 @@ function load_search_settings() {
     $("#" + all_drive_elems[i].id).bootstrapToggle();
   }
 
-  let settings = Cookies.get("search_settings");
-  if (settings !== undefined) {
+  let settings = window.localStorage.getItem("search_settings");
+  if (settings != null) {
     settings = JSON.parse(settings);
 
     const drives = settings.drives;
@@ -80,7 +79,7 @@ function save_search_settings() {
     settings.drives.push([drive_elements[i].id, drive_enabled]);
   }
 
-  Cookies.set("search_settings", JSON.stringify(settings), { expires: 365 });
+  window.localStorage.setItem("search_settings", JSON.stringify(settings));
 }
 
 export function toggle_checkboxes() {
