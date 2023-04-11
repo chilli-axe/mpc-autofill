@@ -2,14 +2,16 @@
  * This component allows users to configure which backend server the frontend should retrieve data from.
  */
 
+import Alert from "react-bootstrap/Alert";
 import Offcanvas from "react-bootstrap/Offcanvas";
 import Button from "react-bootstrap/Button";
 import React, { useState, useEffect, FormEvent } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import Form from "react-bootstrap/Form";
-import { setURL } from "@/features/backend/backendSlice";
+import { clearURL, setURL } from "@/features/backend/backendSlice";
 import { ProjectName } from "@/common/constants";
 import {
+  clearLocalStorageBackendURL,
   getLocalStorageBackendURL,
   setLocalStorageBackendURL,
 } from "@/common/cookies";
@@ -18,6 +20,7 @@ import { standardiseURL } from "@/common/processing";
 // TODO: https://github.com/alfg/ping.js/issues/29#issuecomment-487240910
 // @ts-ignore
 import Ping from "ping.js";
+import { RootState } from "@/app/store";
 require("bootstrap-icons/font/bootstrap-icons.css");
 
 interface BackendConfigProps {
@@ -89,12 +92,20 @@ export function BackendConfig(props: BackendConfigProps) {
   const [triggerFn, getBackendInfoQuery] =
     apiSlice.endpoints.getBackendInfo.useLazyQuery();
 
-  const [localServerURL, setLocalServerURL] = useState<string>("");
+  const backendURL = useSelector((state: RootState) => state.backend.url);
+  const clearBackendURL = () => {
+    dispatch(clearURL());
+    clearLocalStorageBackendURL();
+    dispatch(apiSlice.util.resetApiState());
+    setValidationStatus([]);
+  };
+
+  const [localBackendURL, setLocalBackendURL] = useState<string>("");
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault(); // to avoid reloading the page
     setValidating(true);
-    const formattedURL = standardiseURL(localServerURL.trim());
+    const formattedURL = standardiseURL(localBackendURL.trim());
 
     let updatedValidationStatus: Array<ValidationState> = [];
     setValidationStatus(updatedValidationStatus);
@@ -126,6 +137,7 @@ export function BackendConfig(props: BackendConfigProps) {
       dispatch(setURL(formattedURL));
       setLocalStorageBackendURL(formattedURL);
       dispatch(apiSlice.util.resetApiState());
+      setLocalBackendURL("");
       triggerFn();
     }
     setValidating(false);
@@ -134,7 +146,6 @@ export function BackendConfig(props: BackendConfigProps) {
   useEffect(() => {
     const backendURL = getLocalStorageBackendURL();
     if (backendURL != undefined) {
-      setLocalServerURL(backendURL);
       dispatch(setURL(backendURL));
       dispatch(apiSlice.util.resetApiState());
       triggerFn();
@@ -149,15 +160,25 @@ export function BackendConfig(props: BackendConfigProps) {
         </Offcanvas.Header>
         <Offcanvas.Body>
           Enter the URL of the server you&apos;d like to connect {ProjectName}{" "}
-          to.
+          to and hit <b>Submit</b>.
           <br />
           <br />
+          {backendURL != null && (
+            <Alert variant="success">
+              You&apos;re currently connected to <b>{backendURL}</b>.
+              <br />
+              <br />
+              <Button variant="danger" onClick={clearBackendURL}>
+                Disconnect
+              </Button>
+            </Alert>
+          )}
           <Form onSubmit={handleSubmit}>
             <Form.Group className="mb-3" controlId="formURL">
               <Form.Control
                 placeholder="https://"
-                onChange={(event) => setLocalServerURL(event.target.value)}
-                value={localServerURL}
+                onChange={(event) => setLocalBackendURL(event.target.value)}
+                value={localBackendURL}
                 disabled={validating}
               />
             </Form.Group>

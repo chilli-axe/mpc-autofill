@@ -1,21 +1,18 @@
 import Nav from "react-bootstrap/Nav";
 import BSNavbar from "react-bootstrap/Navbar";
-import NavDropdown from "react-bootstrap/NavDropdown";
 import Container from "react-bootstrap/Container";
 import Image from "next/image";
 import Link from "next/link";
-import { useSelector, useDispatch } from "react-redux";
+import Button from "react-bootstrap/Button";
+import { useSelector } from "react-redux";
 import { RootState } from "@/app/store";
 import { ProjectName } from "@/common/constants";
 import { BackendConfig } from "@/features/backend/backend";
 import { useState } from "react";
-import { clearURL } from "@/features/backend/backendSlice";
 import DisableSSR from "@/features/ui/disableSSR";
-import { apiSlice, useGetBackendInfoQuery } from "@/app/api";
-import { clearLocalStorageBackendURL } from "@/common/cookies";
+import { useGetBackendInfoQuery } from "@/app/api";
 
 export default function Navbar() {
-  const dispatch = useDispatch();
   const backendInfoQuery = useGetBackendInfoQuery();
 
   const [showBackendConfig, setShowBackendConfig] = useState(false);
@@ -26,12 +23,6 @@ export default function Navbar() {
   const handleShowBackendConfig = () => setShowBackendConfig(true);
 
   const backendURL = useSelector((state: RootState) => state.backend.url);
-
-  const clearBackendURL = () => {
-    dispatch(clearURL());
-    clearLocalStorageBackendURL();
-    dispatch(apiSlice.util.resetApiState());
-  };
 
   return (
     <DisableSSR>
@@ -82,20 +73,9 @@ export default function Navbar() {
               </Nav.Link>
             </Nav>
             <Nav className="ms-auto">
-              {backendURL == null ? (
-                <Nav.Link onClick={handleShowBackendConfig}>
-                  Configure Server
-                </Nav.Link>
-              ) : (
-                <NavDropdown title={backendInfoQuery.data?.name ?? backendURL}>
-                  <NavDropdown.Item onClick={handleShowBackendConfig}>
-                    Configure Server
-                  </NavDropdown.Item>
-                  <NavDropdown.Item onClick={clearBackendURL}>
-                    Exit Server
-                  </NavDropdown.Item>
-                </NavDropdown>
-              )}
+              <Button variant="secondary" onClick={handleShowBackendConfig}>
+                Configure Server
+              </Button>
             </Nav>
           </BSNavbar.Collapse>
         </Container>
