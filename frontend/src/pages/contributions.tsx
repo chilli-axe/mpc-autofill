@@ -41,7 +41,7 @@ function ContributionsSummary() {
 
   return backendURL != null ? (
     <>
-      <h2>Contributions</h2>
+      <h2>{backendInfoQuery.data?.name ?? ""} Contributions</h2>
       <p>
         The {backendInfoQuery.data?.name ?? ""} database tracks{" "}
         <b>{totalImages.toLocaleString()}</b> images, with a total size of{" "}
