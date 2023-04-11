@@ -83,7 +83,7 @@ export default function About() {
           or any other commercial entities.
         </p>
         <h2>Privacy Policy</h2>
-        <b>Last updated: 26th March, 2023</b>
+        <b>Last updated: 11th April, 2023</b>
         <p>
           {ProjectName} collects site usage data through Google Analytics via
           cookies. Understanding how users interact with the site allows me to
@@ -92,8 +92,9 @@ export default function About() {
           Google Analytics.
         </p>
         <p>
-          We use cookies to remember your search settings, which is considered
-          core site functionality and cannot be disabled.
+          We use local storage to remember your search settings and your server
+          configuration, which is considered core site functionality and cannot
+          be disabled.
         </p>
         <p>
           {ProjectName} will never share information collected by Google

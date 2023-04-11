@@ -9,7 +9,10 @@ import { useDispatch } from "react-redux";
 import Form from "react-bootstrap/Form";
 import { setURL } from "@/features/backend/backendSlice";
 import { ProjectName } from "@/common/constants";
-import { getCookieBackendURL, setCookieBackendURL } from "@/common/cookies";
+import {
+  getLocalStorageBackendURL,
+  setLocalStorageBackendURL,
+} from "@/common/cookies";
 import { apiSlice } from "@/app/api";
 import { standardiseURL } from "@/common/processing";
 // TODO: https://github.com/alfg/ping.js/issues/29#issuecomment-487240910
@@ -121,7 +124,7 @@ export function BackendConfig(props: BackendConfigProps) {
       )
     ) {
       dispatch(setURL(formattedURL));
-      setCookieBackendURL(formattedURL);
+      setLocalStorageBackendURL(formattedURL);
       dispatch(apiSlice.util.resetApiState());
       triggerFn();
     }
@@ -129,7 +132,7 @@ export function BackendConfig(props: BackendConfigProps) {
   };
 
   useEffect(() => {
-    const backendURL = getCookieBackendURL();
+    const backendURL = getLocalStorageBackendURL();
     if (backendURL != undefined) {
       setLocalServerURL(backendURL);
       dispatch(setURL(backendURL));

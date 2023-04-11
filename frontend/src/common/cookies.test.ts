@@ -1,44 +1,33 @@
-import { getCookieSearchSettings } from "./cookies";
-import Cookies from "js-cookie";
-import { MaximumDPI, MaximumSize, MinimumDPI } from "./constants";
+import { getLocalStorageSearchSettings } from "./cookies";
+import {
+  MaximumDPI,
+  MaximumSize,
+  MinimumDPI,
+  SearchSettingsKey,
+} from "./constants";
 import { sourceDocuments, defaultSettings } from "@/common/test-constants";
 
-//# region mocks
-
-const mockGetCookies = jest.fn();
-const mockSetCookies = jest.fn();
-
-jest.mock("js-cookie", () => ({
-  __esModule: true,
-  default: {
-    set: jest.fn().mockImplementation((...args) => {
-      mockSetCookies(...args);
-    }),
-    get: jest.fn().mockImplementation((...args) => {
-      mockGetCookies(...args);
-    }),
-  },
-}));
-
-//# endregion
+beforeEach(() => window.localStorage.removeItem(SearchSettingsKey));
+afterEach(() => window.localStorage.removeItem(SearchSettingsKey));
 
 //# region tests
 
 test("default settings are returned when cookies are empty", () => {
-  (Cookies.get as jest.Mock).mockReturnValue(JSON.stringify({}));
+  window.localStorage.setItem(SearchSettingsKey, JSON.stringify({}));
 
-  expect(getCookieSearchSettings(sourceDocuments)).toStrictEqual(
+  expect(getLocalStorageSearchSettings(sourceDocuments)).toStrictEqual(
     defaultSettings
   );
 });
 
 test("default settings are returned when cookie data doesn't match schema", () => {
   // some arbitrary garbage json data
-  (Cookies.get as jest.Mock).mockReturnValue(
+  window.localStorage.setItem(
+    SearchSettingsKey,
     JSON.stringify({ a: 1, b: 2, garbage: true })
   );
 
-  expect(getCookieSearchSettings(sourceDocuments)).toStrictEqual(
+  expect(getLocalStorageSearchSettings(sourceDocuments)).toStrictEqual(
     defaultSettings
   );
 });
@@ -57,11 +46,12 @@ test("cookies with complete source order are respected", () => {
     },
     filterSettings: { minimumDPI: 100, maximumDPI: 200, maximumSize: 15 },
   };
-  (Cookies.get as jest.Mock).mockReturnValue(
+  window.localStorage.setItem(
+    SearchSettingsKey,
     JSON.stringify(settingsWithCompleteSourceOrder)
   );
 
-  expect(getCookieSearchSettings(sourceDocuments)).toStrictEqual(
+  expect(getLocalStorageSearchSettings(sourceDocuments)).toStrictEqual(
     settingsWithCompleteSourceOrder
   );
 });
@@ -85,12 +75,13 @@ test("referenced sources that don't exist in database are filtered out", () => {
       maximumSize: MaximumSize,
     },
   };
-  (Cookies.get as jest.Mock).mockReturnValue(
+  window.localStorage.setItem(
+    SearchSettingsKey,
     JSON.stringify(settingsWithCompleteSourceOrder)
   );
 
   expect(
-    getCookieSearchSettings(sourceDocuments).sourceSettings.sources
+    getLocalStorageSearchSettings(sourceDocuments).sourceSettings.sources
   ).toStrictEqual([
     [1, true],
     [0, true],
@@ -114,13 +105,14 @@ test("cookies with incomplete source order are correctly reconciled", () => {
       maximumSize: MaximumSize,
     },
   };
-  (Cookies.get as jest.Mock).mockReturnValue(
+  window.localStorage.setItem(
+    SearchSettingsKey,
     JSON.stringify(settingsWithCompleteSourceOrder)
   );
 
   // sources 2 and 3 should be added onto the end and enabled
   expect(
-    getCookieSearchSettings(sourceDocuments).sourceSettings.sources
+    getLocalStorageSearchSettings(sourceDocuments).sourceSettings.sources
   ).toStrictEqual([
     [1, true],
     [0, false],
@@ -146,13 +138,14 @@ test("cookies with incomplete source order plus invalid sources are correctly re
       maximumSize: MaximumSize,
     },
   };
-  (Cookies.get as jest.Mock).mockReturnValue(
+  window.localStorage.setItem(
+    SearchSettingsKey,
     JSON.stringify(settingsWithCompleteSourceOrder)
   );
 
   // sources 2 and 3 should be added onto the end and enabled
   expect(
-    getCookieSearchSettings(sourceDocuments).sourceSettings.sources
+    getLocalStorageSearchSettings(sourceDocuments).sourceSettings.sources
   ).toStrictEqual([
     [1, true],
     [0, false],

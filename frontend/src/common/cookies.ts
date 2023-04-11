@@ -1,5 +1,5 @@
 /**
- * Data API for interacting with anything stored in cookies.
+ * Data API for interacting with anything stored in cookies or local storage.
  */
 
 import Cookies from "js-cookie";
@@ -12,13 +12,13 @@ import {
 } from "./types";
 import { searchSettingsSchema } from "./schemas";
 import {
-  CSRFCookie,
-  SearchSettingsCookie,
-  GoogleAnalyticsConsentCookie,
+  CSRFKey,
+  SearchSettingsKey,
+  GoogleAnalyticsConsentKey,
   MaximumDPI,
   MaximumSize,
   MinimumDPI,
-  BackendURLCookie,
+  BackendURLKey,
 } from "./constants";
 
 const ajv = new Ajv();
@@ -27,7 +27,7 @@ const ajv = new Ajv();
 // TODO: unsure if we still need this.
 
 export function getCSRFHeader(): HeadersInit | undefined {
-  const csrfToken = Cookies.get(CSRFCookie);
+  const csrfToken = Cookies.get(CSRFKey);
   if (csrfToken != null) {
     return { "X-CSRFToken": csrfToken };
   }
@@ -38,16 +38,18 @@ export function getCSRFHeader(): HeadersInit | undefined {
 
 //# region search settings
 
-export function getCookieSearchSettings(
+export function getLocalStorageSearchSettings(
   sourceDocuments: SourceDocuments
 ): SearchSettings {
   /**
-   * Get search settings from cookie data. If valid data is retrieved,
+   * Get search settings from localStorage data. If valid data is retrieved,
    * ensure that all `sourceDocuments` are included in the returned settings,
    * with any new sources that weren't previously included added to the end and enabled.
    */
 
-  const rawSettings = JSON.parse(Cookies.get(SearchSettingsCookie) ?? "{}");
+  const rawSettings = JSON.parse(
+    localStorage.getItem(SearchSettingsKey) ?? "{}"
+  );
   const validate = ajv.compile(searchSettingsSchema);
   const rawSettingsValid = validate(rawSettings);
   if (rawSettingsValid) {
@@ -56,7 +58,7 @@ export function getCookieSearchSettings(
       Object.values(sourceDocuments).map((sourceDocument) => sourceDocument.pk)
     );
     const sources: Array<SourceRow> = rawSettings.sourceSettings.sources ?? [];
-    const sourceInCookieSet: Set<number> = new Set(
+    const sourceInLocalStorageSet: Set<number> = new Set(
       sources.map((row) => row[0])
     );
     // one fat line of reconciliation, good luck reading this future nick! i wrote this at 12:26am.
@@ -64,7 +66,7 @@ export function getCookieSearchSettings(
       .filter((row: SourceRow) => sourceInDatabaseSet.has(row[0]))
       .concat(
         Array.from(sourceInDatabaseSet)
-          .filter((pk: number) => !sourceInCookieSet.has(pk))
+          .filter((pk: number) => !sourceInLocalStorageSet.has(pk))
           .map((pk: number) => [pk, true])
       );
     return rawSettings;
@@ -86,11 +88,8 @@ export function getCookieSearchSettings(
   }
 }
 
-export function setCookieSearchSettings(settings: SearchSettings): void {
-  Cookies.set(SearchSettingsCookie, JSON.stringify(settings), {
-    expires: 365,
-    sameSite: "strict",
-  });
+export function setLocalStorageSearchSettings(settings: SearchSettings): void {
+  localStorage.setItem(SearchSettingsKey, JSON.stringify(settings));
 }
 
 //# endregion
@@ -98,12 +97,12 @@ export function setCookieSearchSettings(settings: SearchSettings): void {
 //# region google analytics consent
 
 export function getGoogleAnalyticsConsent(): boolean | undefined {
-  const rawConsent = Cookies.get(GoogleAnalyticsConsentCookie);
+  const rawConsent = Cookies.get(GoogleAnalyticsConsentKey);
   return rawConsent != undefined ? JSON.parse(rawConsent) === true : undefined;
 }
 
 export function setGoogleAnalyticsConsent(consent: boolean): void {
-  Cookies.set(GoogleAnalyticsConsentCookie, JSON.stringify(consent), {
+  Cookies.set(GoogleAnalyticsConsentKey, JSON.stringify(consent), {
     expires: 365,
     sameSite: "strict",
   });
@@ -113,19 +112,16 @@ export function setGoogleAnalyticsConsent(consent: boolean): void {
 
 //# region backend
 
-export function getCookieBackendURL(): string | undefined {
-  return Cookies.get(BackendURLCookie);
+export function getLocalStorageBackendURL() {
+  return localStorage.getItem(BackendURLKey);
 }
 
-export function setCookieBackendURL(url: string): void {
-  Cookies.set(BackendURLCookie, url, {
-    expires: 365,
-    sameSite: "strict",
-  });
+export function setLocalStorageBackendURL(url: string) {
+  localStorage.setItem(BackendURLKey, url);
 }
 
-export function clearCookieBackendURL(): void {
-  Cookies.remove(BackendURLCookie);
+export function clearLocalStorageBackendURL(): void {
+  localStorage.removeItem(BackendURLKey);
 }
 
 //# endregion

@@ -7,15 +7,15 @@ import {
   waitFor,
   waitForElementToBeRemoved,
 } from "@testing-library/react";
-import { GoogleAnalyticsConsentCookie } from "@/common/constants";
+import { GoogleAnalyticsConsentKey } from "@/common/constants";
 
 beforeEach(() => {
-  Cookies.remove(GoogleAnalyticsConsentCookie);
+  Cookies.remove(GoogleAnalyticsConsentKey);
   // @ts-ignore
   delete window.gtag;
 });
 afterEach(() => {
-  Cookies.remove(GoogleAnalyticsConsentCookie);
+  Cookies.remove(GoogleAnalyticsConsentKey);
   // @ts-ignore
   delete window.gtag;
 });

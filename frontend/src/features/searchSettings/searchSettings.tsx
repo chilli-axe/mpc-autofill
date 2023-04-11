@@ -22,8 +22,8 @@ import {
   FilterSettings,
 } from "@/common/types";
 import {
-  getCookieSearchSettings,
-  setCookieSearchSettings,
+  getLocalStorageSearchSettings,
+  setLocalStorageSearchSettings,
 } from "@/common/cookies";
 import { SearchTypeSettings as SearchTypeSettingsElement } from "./searchTypeSettings";
 import { FilterSettings as FilterSettingsElement } from "./filterSettings";
@@ -52,10 +52,11 @@ export function SearchSettings() {
 
   useEffect(() => {
     if (maybeSourceDocuments != null) {
-      const cookieSettings = getCookieSearchSettings(maybeSourceDocuments);
-      dispatch(setSearchTypeSettings(cookieSettings.searchTypeSettings));
-      dispatch(setSourceSettings(cookieSettings.sourceSettings));
-      dispatch(setFilterSettings(cookieSettings.filterSettings));
+      const localStorageSettings =
+        getLocalStorageSearchSettings(maybeSourceDocuments);
+      dispatch(setSearchTypeSettings(localStorageSettings.searchTypeSettings));
+      dispatch(setSourceSettings(localStorageSettings.sourceSettings));
+      dispatch(setFilterSettings(localStorageSettings.filterSettings));
     }
   }, [maybeSourceDocuments]);
 
@@ -70,8 +71,8 @@ export function SearchSettings() {
     setShow(true);
   };
   const handleSave = () => {
-    // copy component-level state into redux state and into cookies
-    setCookieSearchSettings({
+    // copy component-level state into redux state and into local storage
+    setLocalStorageSearchSettings({
       searchTypeSettings: localSearchTypeSettings,
       sourceSettings: localSourceSettings,
       filterSettings: localFilterSettings,

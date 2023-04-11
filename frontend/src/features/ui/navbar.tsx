@@ -12,7 +12,7 @@ import { useState } from "react";
 import { clearURL } from "@/features/backend/backendSlice";
 import DisableSSR from "@/features/ui/disableSSR";
 import { apiSlice, useGetBackendInfoQuery } from "@/app/api";
-import { clearCookieBackendURL } from "@/common/cookies";
+import { clearLocalStorageBackendURL } from "@/common/cookies";
 
 export default function Navbar() {
   const dispatch = useDispatch();
@@ -29,7 +29,7 @@ export default function Navbar() {
 
   const clearBackendURL = () => {
     dispatch(clearURL());
-    clearCookieBackendURL();
+    clearLocalStorageBackendURL();
     dispatch(apiSlice.util.resetApiState());
   };
 

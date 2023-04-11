@@ -6,7 +6,6 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { APIGetSources } from "@/app/api";
 import { SourceDocuments, SourceDocumentsState } from "@/common/types";
 import { RootState } from "@/app/store";
-import { getCSRFHeader } from "@/common/cookies";
 
 const initialState = {
   sourceDocuments: undefined,
