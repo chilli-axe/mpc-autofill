@@ -65,7 +65,7 @@ function GridSelector(props: GridSelectorProps) {
             <Card // TODO: paginate or lazy-load these
               imageIdentifier={identifier}
               cardHeaderTitle={`Option ${index + 1}`}
-              imageOnClick={() => {
+              cardOnClick={() => {
                 props.onClick(identifier);
                 props.handleClose();
               }}

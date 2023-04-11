@@ -8,7 +8,6 @@ import {
   waitForElementToBeRemoved,
 } from "@testing-library/react";
 import { GoogleAnalyticsConsentCookie } from "@/common/constants";
-import { cardDocument1 } from "@/common/test-constants";
 
 beforeEach(() => {
   Cookies.remove(GoogleAnalyticsConsentCookie);
@@ -51,9 +50,7 @@ test("opting out of google analytics", async () => {
 
 test("google analytics consent popup does not appear once consent is specified", async () => {
   renderWithProviders(<About />);
-  await waitFor(() => {
-    expect(screen.getByText("Cookie Usage")).not.toBeNull();
-  });
+  await waitFor(() => expect(screen.getByText("Cookie Usage")).not.toBeNull());
 
   screen.getByText("That's fine!").click();
   await waitForElementToBeRemoved(() => screen.getByText("Cookie Usage"));

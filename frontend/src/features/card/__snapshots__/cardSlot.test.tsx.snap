@@ -327,3 +327,235 @@ exports[`the html structure of a CardSlot with multiple search results, image se
   </div>
 </body>
 `;
+
+exports[`the html structure of a CardSlot's grid selector 1`] = `
+<div
+  class="modal-dialog modal-lg"
+>
+  <div
+    class="modal-content"
+  >
+    <div
+      class="modal-header"
+    >
+      <div
+        class="modal-title h4"
+      >
+        Select Version
+      </div>
+      <button
+        aria-label="Close"
+        class="btn-close"
+        type="button"
+      />
+    </div>
+    <div
+      class="modal-body"
+    >
+      <div
+        class="g-0 row row-cols-xxl-4 row-cols-xl-4 row-cols-lg-3 row-cols-md-2 row-cols-sm-2 row-cols-2"
+      >
+        <div
+          class="mpccard mpccard-hover card"
+        >
+          <div
+            class="pb-0 text-center card-header"
+          >
+            <p
+              class="mpccard-slot"
+            >
+              Option 1
+            </p>
+          </div>
+          <div>
+            <div
+              class="rounded-lg shadow-lg ratio ratio-7x5"
+              style="z-index: 0;"
+            >
+              <div
+                class="d-flex justify-content-center align-items-center"
+                style="opacity: 0;"
+              >
+                <div
+                  class="spinner-border"
+                  role="status"
+                  style="width: 4em; height: 4em;"
+                >
+                  <span
+                    class="visually-hidden"
+                  >
+                    Loading...
+                  </span>
+                </div>
+              </div>
+              <img
+                alt="Card 1"
+                class="card-img card-img-fade-in"
+                data-nimg="fill"
+                decoding="async"
+                loading="lazy"
+                src=""
+                style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent; z-index: 1; opacity: 1;"
+              />
+            </div>
+            <div
+              class="mb-0 text-center card-body"
+            >
+              <div
+                class="mpccard-name card-subtitle h6"
+              >
+                Card 1
+              </div>
+              <div
+                class="mpccard-spacing"
+              >
+                <p
+                  class="mpccard-source card-text"
+                >
+                  Card Source [1200 DPI]
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div
+          class="mpccard mpccard-hover card"
+        >
+          <div
+            class="pb-0 text-center card-header"
+          >
+            <p
+              class="mpccard-slot"
+            >
+              Option 2
+            </p>
+          </div>
+          <div>
+            <div
+              class="rounded-lg shadow-lg ratio ratio-7x5"
+              style="z-index: 0;"
+            >
+              <div
+                class="d-flex justify-content-center align-items-center"
+                style="opacity: 0;"
+              >
+                <div
+                  class="spinner-border"
+                  role="status"
+                  style="width: 4em; height: 4em;"
+                >
+                  <span
+                    class="visually-hidden"
+                  >
+                    Loading...
+                  </span>
+                </div>
+              </div>
+              <img
+                alt="Card 2"
+                class="card-img card-img-fade-in"
+                data-nimg="fill"
+                decoding="async"
+                loading="lazy"
+                src=""
+                style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent; z-index: 1; opacity: 1;"
+              />
+            </div>
+            <div
+              class="mb-0 text-center card-body"
+            >
+              <div
+                class="mpccard-name card-subtitle h6"
+              >
+                Card 2
+              </div>
+              <div
+                class="mpccard-spacing"
+              >
+                <p
+                  class="mpccard-source card-text"
+                >
+                  Card Source [1200 DPI]
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div
+          class="mpccard mpccard-hover card"
+        >
+          <div
+            class="pb-0 text-center card-header"
+          >
+            <p
+              class="mpccard-slot"
+            >
+              Option 3
+            </p>
+          </div>
+          <div>
+            <div
+              class="rounded-lg shadow-lg ratio ratio-7x5"
+              style="z-index: 0;"
+            >
+              <div
+                class="d-flex justify-content-center align-items-center"
+                style="opacity: 0;"
+              >
+                <div
+                  class="spinner-border"
+                  role="status"
+                  style="width: 4em; height: 4em;"
+                >
+                  <span
+                    class="visually-hidden"
+                  >
+                    Loading...
+                  </span>
+                </div>
+              </div>
+              <img
+                alt="Card 3"
+                class="card-img card-img-fade-in"
+                data-nimg="fill"
+                decoding="async"
+                loading="lazy"
+                src=""
+                style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent; z-index: 1; opacity: 1;"
+              />
+            </div>
+            <div
+              class="mb-0 text-center card-body"
+            >
+              <div
+                class="mpccard-name card-subtitle h6"
+              >
+                Card 3
+              </div>
+              <div
+                class="mpccard-spacing"
+              >
+                <p
+                  class="mpccard-source card-text"
+                >
+                  Card Source [1200 DPI]
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div
+      class="modal-footer"
+    >
+      <button
+        class="btn btn-secondary"
+        type="button"
+      >
+        Close
+      </button>
+    </div>
+  </div>
+</div>
+`;
