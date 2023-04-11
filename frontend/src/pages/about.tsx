@@ -2,14 +2,25 @@ import Head from "next/head";
 import Layout from "@/features/ui/layout";
 import Footer from "@/features/ui/footer";
 import { ProjectName } from "@/common/constants";
-import { useSelector } from "react-redux";
-import { RootState } from "@/app/store";
+import { useGetBackendInfoQuery } from "@/app/api";
+
+function BackendDescription() {
+  const backendInfoQuery = useGetBackendInfoQuery();
+
+  return (
+    <>
+      {backendInfoQuery.data?.name != null &&
+        backendInfoQuery.data?.description != null && (
+          <>
+            <h2>About {backendInfoQuery.data.name}</h2>
+            <p>{backendInfoQuery.data.description}</p>
+          </>
+        )}
+    </>
+  );
+}
 
 export default function About() {
-  // TODO: if data is given, include a section about the connected backend
-  // TODO: having some issues with retrieving data from redux here
-  // const backendName = useSelector((state: RootState) => state.backendInfo.name)
-  // const backendDescription = useSelector((state: RootState) => state.backendInfo.description)
   return (
     <>
       <Head>
@@ -45,6 +56,7 @@ export default function About() {
             <img src="https://contrib.rocks/image?repo=chilli-axe/mpc-autofill&columns=5" />
           </a>
         </div>
+        <BackendDescription />
         <h2>Disclaimer</h2>
         <p>
           Custom card images displayed on {ProjectName} are subject to the
