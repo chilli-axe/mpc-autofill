@@ -23,19 +23,18 @@ urlpatterns = [
     path("input_link", views.input_link, name="input_link"),
     # endregion
     # region new API
-    # TODO: do these actually need to use `re_path`?
     path("editor", views.editor, name="editor"),
-    re_path(r"^2/searchResults/$", views.api_function_1, name="api_function_1"),
-    re_path(r"^2/cards/$", views.api_function_2, name="api_function_2"),
-    re_path(r"^2/sources/$", views.api_function_3, name="api_function_3"),
-    re_path(r"^2/DFCPairs/$", views.api_function_4, name="api_function_4"),
-    re_path(r"^2/cardstocks/$", views.api_function_5, name="api_function_5"),
-    re_path(r"^2/cardbacks/$", views.api_function_6, name="api_function_6"),
-    re_path(r"^2/importSites/$", views.api_function_7, name="api_function_7"),
-    re_path(r"^2/importSiteDecklist/$", views.api_function_8, name="api_function_8"),  # TODO: rename this
-    re_path(r"^2/placeholderText/$", views.api_function_9, name="api_function_9"),
-    re_path(r"^2/contributions/$", views.api_function_10, name="api_function_10"),
-    re_path(r"^2/info/$", views.api_function_11, name="api_function_11"),
-    re_path(r"^2/searchEngineHealth/$", views.api_function_12, name="api_function_12"),
+    path("2/searchResults/", views.api_function_1, name="api_function_1"),
+    path("2/cards/", views.api_function_2, name="api_function_2"),
+    path("2/sources/", views.api_function_3, name="api_function_3"),
+    path("2/DFCPairs/", views.api_function_4, name="api_function_4"),
+    path("2/cardstocks/", views.api_function_5, name="api_function_5"),
+    path("2/cardbacks/", views.api_function_6, name="api_function_6"),
+    path("2/importSites/", views.api_function_7, name="api_function_7"),
+    path("2/importSiteDecklist/", views.api_function_8, name="api_function_8"),  # TODO: rename this
+    path("2/placeholderText/", views.api_function_9, name="api_function_9"),
+    path("2/contributions/", views.api_function_10, name="api_function_10"),
+    path("2/info/", views.api_function_11, name="api_function_11"),
+    path("2/searchEngineHealth/", views.api_function_12, name="api_function_12"),
     # endregion
 ]
