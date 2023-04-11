@@ -43,10 +43,7 @@ export function CommonCardback(props: CommonCardbackProps) {
   // TODO
   useEffect(() => {
     // If no image is selected and there are cardbacks, select the first image in search results
-    if (
-      (searchResults.length > 0 && selectedImage === null) ||
-      selectedImage === undefined
-    ) {
+    if (searchResults.length > 0 && selectedImage == null) {
       dispatch(
         setSelectedCardback({
           selectedImage: searchResults[0],
