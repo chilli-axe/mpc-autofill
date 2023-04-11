@@ -10,7 +10,6 @@ function ContributionsSummary() {
   const contributionsQuery = useGetContributionsQuery();
   const backendInfoQuery = useGetBackendInfoQuery();
 
-  const name = backendInfoQuery.data?.name ?? ProjectName;
   const totalImages =
     contributionsQuery.data?.card_count_by_type != null
       ? Object.values(contributionsQuery.data.card_count_by_type).reduce(
@@ -37,9 +36,10 @@ function ContributionsSummary() {
     <>
       <h2>Contributions</h2>
       <p>
-        The {name} database tracks <b>{totalImages.toLocaleString()}</b> images,
-        with a total size of <b>{formattedDatabaseSize} GB</b> &mdash; comprised
-        of <b>{formattedImagesByCardType[Card]}</b> cards,{" "}
+        The {backendInfoQuery.data?.name ?? ""} database tracks{" "}
+        <b>{totalImages.toLocaleString()}</b> images, with a total size of{" "}
+        <b>{formattedDatabaseSize} GB</b> &mdash; comprised of{" "}
+        <b>{formattedImagesByCardType[Card]}</b> cards,{" "}
         <b>{formattedImagesByCardType[Cardback]}</b> cardbacks, and{" "}
         <b>{formattedImagesByCardType[Token]}</b> tokens &mdash; from{" "}
         <b>{(contributionsQuery.data?.sources ?? []).length}</b> sources.
