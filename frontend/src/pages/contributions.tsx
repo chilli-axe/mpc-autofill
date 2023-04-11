@@ -5,8 +5,15 @@ import Footer from "@/features/ui/footer";
 import { useGetBackendInfoQuery, useGetContributionsQuery } from "@/app/api";
 import { Card, Cardback, ProjectName, Token } from "@/common/constants";
 import Alert from "react-bootstrap/Alert";
+import Table from "react-bootstrap/Table";
+import React from "react";
+import { SourceContribution } from "@/common/types";
+import { useSelector } from "react-redux";
+import { RootState } from "@/app/store";
+import Link from "next/link";
 
 function ContributionsSummary() {
+  const backendURL = useSelector((state: RootState) => state.backend.url);
   const contributionsQuery = useGetContributionsQuery();
   const backendInfoQuery = useGetBackendInfoQuery();
 
@@ -32,7 +39,7 @@ function ContributionsSummary() {
     ])
   );
 
-  return (
+  return backendURL != null ? (
     <>
       <h2>Contributions</h2>
       <p>
@@ -50,6 +57,8 @@ function ContributionsSummary() {
         timely manner.
       </p>
     </>
+  ) : (
+    <br />
   );
 }
 
@@ -99,6 +108,81 @@ function ContributionGuidelines() {
   );
 }
 
+function sourceContributionRow(contribution: SourceContribution) {
+  /**
+   * Generate the table row for `contribution` in the `ContributionsPerSource` summary table.
+   */
+
+  return (
+    <tr key={contribution.name}>
+      <td>
+        {contribution.external_link != null ? (
+          <Link href={contribution.external_link} target="_blank">
+            {contribution.name}
+          </Link>
+        ) : (
+          contribution.name
+        )}
+      </td>
+      <td>{contribution.source_type}</td>
+      <td>
+        <b>{contribution.qty_cards}</b> card
+        {contribution.qty_cards != "1" && "s"},{" "}
+        <b>{contribution.qty_cardbacks}</b> cardback
+        {contribution.qty_cardbacks != "1" && "s"}, and{" "}
+        <b>{contribution.qty_tokens}</b> token
+        {contribution.qty_tokens != "1" && "s"}, at{" "}
+        <b>{contribution.avgdpi} DPI</b> on average and a total size of{" "}
+        <b>{contribution.size}</b>.
+        {contribution.description.length > 0 && (
+          <>
+            <br />
+            <i>&quot;{contribution.description}&quot;</i>
+          </>
+        )}
+      </td>
+    </tr>
+  );
+}
+
+function ContributionsPerSource() {
+  const backendURL = useSelector((state: RootState) => state.backend.url);
+  const contributionsQuery = useGetContributionsQuery();
+
+  return backendURL != null ? (
+    contributionsQuery.data?.sources == null ? (
+      <div className="d-flex justify-content-center align-items-center">
+        <div
+          className="spinner-border"
+          style={{ width: 4 + "em", height: 4 + "em" }}
+          role="status"
+        >
+          <span className="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    ) : (
+      <Table style={{ tableLayout: "auto" }}>
+        <thead>
+          <tr>
+            <th className="prevent-select">Name</th>
+            <th className="prevent-select">Type</th>
+            <th className="prevent-select">Contribution</th>
+            <th />
+            <th />
+          </tr>
+        </thead>
+        <tbody>
+          {contributionsQuery.data.sources.map((contribution) =>
+            sourceContributionRow(contribution)
+          )}
+        </tbody>
+      </Table>
+    )
+  ) : (
+    <></>
+  );
+}
+
 export default function Contributions() {
   return (
     <>
@@ -109,6 +193,7 @@ export default function Contributions() {
       <Layout>
         <ContributionsSummary />
         <ContributionGuidelines />
+        <ContributionsPerSource />
         <Footer />
       </Layout>
     </>

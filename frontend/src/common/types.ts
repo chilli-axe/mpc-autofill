@@ -91,6 +91,7 @@ export interface SourceContribution {
   qty_cardbacks: string; // formatted by backend
   qty_tokens: string; // formatted by backend
   avgdpi: string; // formatted by backend
+  size: string; // formatted by backend
 }
 
 export interface Contributions {

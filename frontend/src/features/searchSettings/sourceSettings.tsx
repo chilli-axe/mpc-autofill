@@ -23,8 +23,6 @@ import { ToggleButtonHeight } from "@/common/constants";
 // @ts-ignore: https://github.com/arnthor3/react-bootstrap-toggle/issues/21
 import Toggle from "react-bootstrap-toggle";
 
-// TODO: make min/max DPI sliders stack vertically on mobile
-
 interface SourceSettingsProps {
   sourceSettings: SourceSettingsType;
   setSourceSettings: {
