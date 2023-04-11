@@ -79,6 +79,12 @@ function ContributionGuidelines() {
           When you have multiple versions of a card in the same folder, use
           parentheses to differentiate them &mdash; e.g.{" "}
           <code>Image A.png</code> and <code>Image A (Extended).png</code>
+          <ul>
+            <li>
+              The text in parentheses (e.g. <code>Extended</code> in the above
+              example) will be ignored by the search engine.
+            </li>
+          </ul>
         </li>
         <li>
           If a card has multiple names, use an ampersand to separate them
