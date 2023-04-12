@@ -131,6 +131,7 @@ export function ImportCSV() {
               </tr>
             </tbody>
           </Table>
+          <hr />
           <TextFileDropzone
             mimeTypes={{ "text/csv": [".csv"] }}
             callback={myCallback}
