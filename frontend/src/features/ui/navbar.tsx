@@ -1,4 +1,5 @@
 import Nav from "react-bootstrap/Nav";
+import NavDropdown from "react-bootstrap/NavDropdown";
 import BSNavbar from "react-bootstrap/Navbar";
 import Container from "react-bootstrap/Container";
 import Image from "next/image";
@@ -8,19 +9,29 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/app/store";
 import { ProjectName } from "@/common/constants";
 import { BackendConfig } from "@/features/backend/backend";
-import { useState } from "react";
+import React, { useState } from "react";
 import DisableSSR from "@/features/ui/disableSSR";
 import { useGetBackendInfoQuery } from "@/app/api";
+import { SupportDeveloperModal } from "@/features/support/supportDeveloper";
+import { SupportBackendModal } from "@/features/support/supportBackend";
 
 export default function Navbar() {
   const backendInfoQuery = useGetBackendInfoQuery();
 
   const [showBackendConfig, setShowBackendConfig] = useState(false);
+  const [showSupportDeveloperModal, setShowSupportDeveloperModal] =
+    useState(false);
+  const [showSupportBackendModal, setShowSupportBackendModal] = useState(false);
 
-  const handleCloseBackendConfig = () => {
-    setShowBackendConfig(false);
-  };
+  const handleCloseBackendConfig = () => setShowBackendConfig(false);
   const handleShowBackendConfig = () => setShowBackendConfig(true);
+  const handleCloseSupportDeveloperModal = () =>
+    setShowSupportDeveloperModal(false);
+  const handleShowSupportDeveloperModal = () =>
+    setShowSupportDeveloperModal(true);
+  const handleCloseSupportBackendModal = () =>
+    setShowSupportBackendModal(false);
+  const handleShowSupportBackendModal = () => setShowSupportBackendModal(true);
 
   const backendURL = useSelector((state: RootState) => state.backend.url);
 
@@ -71,6 +82,18 @@ export default function Navbar() {
               >
                 Download
               </Nav.Link>
+              <NavDropdown title="Support Us">
+                <NavDropdown.Item onClick={handleShowSupportDeveloperModal}>
+                  <i className="bi bi-braces" /> Support the Developer
+                </NavDropdown.Item>
+                {backendInfoQuery.data?.name != null &&
+                  backendInfoQuery.data?.patreon_url != null && (
+                    <NavDropdown.Item onClick={handleShowSupportBackendModal}>
+                      <i className="bi bi-server" /> Support{" "}
+                      {backendInfoQuery.data.name}
+                    </NavDropdown.Item>
+                  )}
+              </NavDropdown>
             </Nav>
             <Nav className="ms-auto">
               <Button variant="secondary" onClick={handleShowBackendConfig}>
@@ -83,6 +106,14 @@ export default function Navbar() {
       <BackendConfig
         show={showBackendConfig}
         handleClose={handleCloseBackendConfig}
+      />
+      <SupportDeveloperModal
+        show={showSupportDeveloperModal}
+        handleClose={handleCloseSupportDeveloperModal}
+      />
+      <SupportBackendModal
+        show={showSupportBackendModal}
+        handleClose={handleCloseSupportBackendModal}
       />
     </DisableSSR>
   );
