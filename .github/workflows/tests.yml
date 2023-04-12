@@ -1,93 +1,30 @@
 name: Tests
 on:
   push:
-    branches: ["*"]
-  pull_request:
-    branches: [master]
+    branches: ["master"]
   workflow_dispatch:
 jobs:
-  pre-commit:
-    name: Formatting and static type checking
+  test-backend:
+    name: Backend tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Set up Python 3.9
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.9
-      - name: Install pre-commit
-        run: pip install pre-commit
-      - name: Run pre-commit
-        run: pre-commit run --all-files
-  desktop-tests:
-    name: Desktop client tests
+      - uses: ./.github/actions/test-backend
+  test-desktop-tool:
+    name: Desktop tool tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Set up Python 3.9
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.9
-      - name: Install Python dependencies
-        working-directory: desktop-tool
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-      - name: Run tests
-        run: |
-          cd desktop-tool && pytest .
-  django-tests:
-    name: Django project tests
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: browser-actions/setup-chrome@latest
-      - name: Set up Python 3.9
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.9
-      - name: Install Python dependencies
-        working-directory: MPCAutofill
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-      - name: Install Elasticsearch
-        run: |
-          wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-7.17.6-amd64.deb -q
-          wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-7.17.6-amd64.deb.sha512
-          shasum -a 512 -c elasticsearch-7.17.6-amd64.deb.sha512
-          sudo dpkg -i elasticsearch-7.17.6-amd64.deb
-      - name: Start Elasticsearch
-        run: sudo systemctl start elasticsearch.service
-      - name: Install npm
-        uses: actions/setup-node@v3
-      - name: Compile frontend
-        working-directory: MPCAutofill
-        run: |
-          npm ci
-          npm run build
-      - name: Write Google Drive API credentials to file
-        uses: jsdaniell/create-json@1.1.2
-        with:
-          name: "client_secrets.json"
-          json: ${{ secrets.GOOGLE_DRIVE_API_KEY }}
-          dir: "MPCAutofill/"
-      - name: Run Django integration tests
-        run: |
-          cd MPCAutofill && pytest .
-  frontend-tests:
+      - uses: ./.github/actions/test-test-desktop-tool
+  test-frontend:
     name: Frontend tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Install npm
-        uses: actions/setup-node@v3
-      - name: Compile frontend
-        working-directory: frontend
-        run: |
-          npm ci
-          npm run build
-      - name: Run frontend tests
-        working-directory: frontend
-        run: |
-          npm run test
+      - uses: ./.github/actions/test-frontend
+  test-pre-commit:
+    name: Formatting and static type checking
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ./.github/actions/test-pre-commit

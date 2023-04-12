@@ -1,0 +1,13 @@
+name: Desktop tool tests
+on:
+  pull_request:
+    paths:
+      - "desktop-tool/**"
+  workflow_dispatch:
+jobs:
+  test-backend:
+    name: Desktop tool tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ./.github/actions/test-desktop-tool

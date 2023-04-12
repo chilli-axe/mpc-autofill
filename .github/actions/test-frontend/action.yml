@@ -1,0 +1,19 @@
+name: Frontend tests
+description: Test the MPC Autofill static frontend
+runs:
+  using: composite
+  steps:
+    - uses: actions/checkout@v2
+    - name: Install npm
+      uses: actions/setup-node@v3
+    - name: Compile frontend
+      working-directory: frontend
+      run: |
+        npm ci
+        npm run build
+      shell: bash
+    - name: Run frontend tests
+      working-directory: frontend
+      run: |
+        npm run test
+      shell: bash
