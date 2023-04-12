@@ -1,5 +1,9 @@
 name: Backend tests
 description: Test the MPC Autofill Django backend
+inputs:
+  google-drive-api-key:
+    description: Your Google Drive API key, required for running the database crawler
+    required: true
 runs:
   using: composite
   steps:
@@ -37,7 +41,7 @@ runs:
       uses: jsdaniell/create-json@1.1.2
       with:
         name: "client_secrets.json"
-        json: ${{ secrets.GOOGLE_DRIVE_API_KEY }}
+        json: ${{ inputs.google-drive-api-key }}
         dir: "MPCAutofill/"
     - name: Run Django integration tests
       run: |
