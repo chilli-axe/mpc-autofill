@@ -7,7 +7,6 @@ inputs:
 runs:
   using: composite
   steps:
-    - uses: actions/checkout@v2
     - uses: browser-actions/setup-chrome@latest
     - name: Set up Python 3.9
       uses: actions/setup-python@v2

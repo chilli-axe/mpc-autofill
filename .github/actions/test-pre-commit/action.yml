@@ -3,7 +3,6 @@ description: Validate code styling and type safety with pre-commit hooks
 runs:
   using: composite
   steps:
-    - uses: actions/checkout@v2
     - name: Set up Python 3.9
       uses: actions/setup-python@v2
       with:

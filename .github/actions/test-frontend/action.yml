@@ -3,7 +3,6 @@ description: Test the MPC Autofill static frontend
 runs:
   using: composite
   steps:
-    - uses: actions/checkout@v2
     - name: Install npm
       uses: actions/setup-node@v3
     - name: Compile frontend
