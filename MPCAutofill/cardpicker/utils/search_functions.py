@@ -14,7 +14,6 @@ from django.conf import settings
 from django.http import HttpRequest
 from django.utils import timezone
 
-from cardpicker.constants import MAX_SIZE_MB
 from cardpicker.documents import CardSearch
 from cardpicker.models import CardTypes, Source
 from cardpicker.utils.sanitisation import to_searchable
@@ -199,26 +198,32 @@ class SearchSettings:
 
     @classmethod
     def from_json_body(cls, json_body: dict[str, Any]) -> "SearchSettings":
-        search_settings = json_body.get("searchSettings", {})
-        search_type_settings = search_settings.get("searchTypeSettings", {})
-        source_settings = search_settings.get("sourceSettings", {})
-        filter_settings = search_settings.get("filterSettings", {})
+        """
+        :param json_body: JSON body from the frontend to read settings from.
+        :return: The parsed search settings.
+        :raises: KeyError if data is missing.
+        """
 
-        fuzzy_search = search_type_settings.get("fuzzySearch", False) is True
+        search_settings = json_body["searchSettings"]
+        search_type_settings = search_settings["searchTypeSettings"]
+        source_settings = search_settings["sourceSettings"]
+        filter_settings = search_settings["filterSettings"]
+
+        fuzzy_search = search_type_settings["fuzzySearch"] is True
 
         source_lookup: dict[int, str] = {x.pk: x.key for x in Source.objects.all()}
 
         sources: list[str] = []
-        if (card_source_keys := source_settings.get("sources")) is not None:
+        if (card_source_keys := source_settings["sources"]) is not None:
             sources = [
                 source_lookup[card_source_key]
                 for card_source_key, card_source_enabled in card_source_keys
                 if card_source_enabled and card_source_key in source_lookup.keys()
             ]
 
-        min_dpi = int(filter_settings.get("minimumDPI", "0"))
-        max_dpi = int(filter_settings.get("maximumDPI", "1500"))
-        max_size = int(filter_settings.get("maximumSize", str(MAX_SIZE_MB))) * 1_000_000
+        min_dpi = int(filter_settings["minimumDPI"])
+        max_dpi = int(filter_settings["maximumDPI"])
+        max_size = int(filter_settings["maximumSize"]) * 1_000_000
 
         return cls(
             fuzzy_search=fuzzy_search,
@@ -252,10 +257,12 @@ class SearchQuery:
     def list_from_json_body(cls, json_body: dict[str, Any]) -> list["SearchQuery"]:
         """
         Public entry point. Generate a list of instances of this class from `json_body`.
+        :raises: KeyError if no queries are specified.
         """
 
         # uniqueness of queries guaranteed
-        query_dicts = json_body.get("queries", [])
+        query_dicts = json_body["queries"]
+        # TODO: use json schema (shared with frontend) to validate this data
         queries = set()
         if query_dicts:
             for query_dict in query_dicts:

@@ -159,10 +159,6 @@ export function BackendConfig(props: BackendConfigProps) {
           <Offcanvas.Title>Configure Server</Offcanvas.Title>
         </Offcanvas.Header>
         <Offcanvas.Body>
-          Enter the URL of the server you&apos;d like to connect {ProjectName}{" "}
-          to and hit <b>Submit</b>.
-          <br />
-          <br />
           {backendURL != null && (
             <Alert variant="success">
               You&apos;re currently connected to <b>{backendURL}</b>.
@@ -173,6 +169,10 @@ export function BackendConfig(props: BackendConfigProps) {
               </Button>
             </Alert>
           )}
+          Enter the URL of the server you&apos;d like to connect {ProjectName}{" "}
+          to and hit <b>Submit</b>.
+          <br />
+          <br />
           <Form onSubmit={handleSubmit}>
             <Form.Group className="mb-3" controlId="formURL">
               <Form.Control

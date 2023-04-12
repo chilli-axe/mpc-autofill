@@ -23,18 +23,17 @@ urlpatterns = [
     path("input_link", views.input_link, name="input_link"),
     # endregion
     # region new API
-    path("editor", views.editor, name="editor"),
-    path("2/searchResults/", views.api_function_1, name="api_function_1"),
-    path("2/cards/", views.api_function_2, name="api_function_2"),
-    path("2/sources/", views.api_function_3, name="api_function_3"),
-    path("2/DFCPairs/", views.api_function_4, name="api_function_4"),
-    path("2/cardstocks/", views.api_function_5, name="api_function_5"),
-    path("2/cardbacks/", views.api_function_6, name="api_function_6"),
-    path("2/importSites/", views.api_function_7, name="api_function_7"),
-    path("2/importSiteDecklist/", views.api_function_8, name="api_function_8"),  # TODO: rename this
-    path("2/placeholderText/", views.api_function_9, name="api_function_9"),
-    path("2/contributions/", views.api_function_10, name="api_function_10"),
-    path("2/info/", views.api_function_11, name="api_function_11"),
-    path("2/searchEngineHealth/", views.api_function_12, name="api_function_12"),
+    path("2/searchResults/", views.post_search_results),
+    path("2/cards/", views.post_cards),
+    path("2/sources/", views.get_sources),
+    path("2/DFCPairs/", views.get_dfc_pairs),
+    # path("2/cardstocks/", views.api_function_5, name="api_function_5"),
+    path("2/cardbacks/", views.get_cardbacks),
+    path("2/importSites/", views.get_import_sites),
+    path("2/importSiteDecklist/", views.post_import_site_decklist),
+    path("2/sampleCards/", views.get_sample_cards),
+    path("2/contributions/", views.get_contributions),
+    path("2/info/", views.get_info),
+    path("2/searchEngineHealth/", views.get_search_engine_health),
     # endregion
 ]

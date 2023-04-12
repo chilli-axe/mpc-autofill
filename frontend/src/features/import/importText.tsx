@@ -7,7 +7,7 @@
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "@/app/store";
 import React, { useEffect, useState } from "react";
-import { processLines } from "@/common/processing";
+import { processLines, stripTextInParentheses } from "@/common/processing";
 import { addImages } from "../project/projectSlice";
 import Dropdown from "react-bootstrap/Dropdown";
 import Modal from "react-bootstrap/Modal";
@@ -20,11 +20,12 @@ import {
   Token,
   ReversedCardTypePrefixes,
 } from "@/common/constants";
-import { useGetDFCPairsQuery, useGetPlaceholderTextQuery } from "@/app/api";
+import { useGetDFCPairsQuery, useGetSampleCardsQuery } from "@/app/api";
+import { CardDocument } from "@/common/types";
 
 export function ImportText() {
   // TODO: add an accordion here for explaining how to search for each different card type with prefixes
-  const placeholderTextQuery = useGetPlaceholderTextQuery();
+  const sampleCardsQuery = useGetSampleCardsQuery();
   const dfcPairsQuery = useGetDFCPairsQuery();
 
   const dispatch = useDispatch<AppDispatch>();
@@ -35,7 +36,7 @@ export function ImportText() {
   const [placeholderText, setPlaceholderText] = useState("");
 
   const formatPlaceholderText = (placeholders: {
-    [cardType: string]: Array<[number, string]>;
+    [cardType: string]: Array<CardDocument>;
   }): string => {
     // TODO: check compatibility of `\n` in different browsers. `separator` was previously "&#10;".
 
@@ -47,8 +48,10 @@ export function ImportText() {
         placeholderTextByCardType.push(
           placeholders[cardType]
             .map(
-              (x: [number, string]) =>
-                `${x[0]}x ${ReversedCardTypePrefixes[cardType]}${x[1]}`
+              (x) =>
+                `${Math.floor(Math.random() * 3) + 1}x ${
+                  ReversedCardTypePrefixes[cardType]
+                }${stripTextInParentheses(x.name)}`
             )
             .join(separator)
         );
@@ -58,10 +61,10 @@ export function ImportText() {
   };
 
   useEffect(() => {
-    if (placeholderTextQuery.data != undefined) {
-      setPlaceholderText(formatPlaceholderText(placeholderTextQuery.data));
+    if (sampleCardsQuery.data != undefined) {
+      setPlaceholderText(formatPlaceholderText(sampleCardsQuery.data));
     }
-  }, [placeholderTextQuery.data]);
+  }, [sampleCardsQuery.data]);
 
   const handleSubmitTextModal = () => {
     /**

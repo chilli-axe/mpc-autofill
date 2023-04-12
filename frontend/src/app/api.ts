@@ -2,6 +2,7 @@
 // TODO: read this http://florimond.dev/en/posts/2018/08/restful-api-design-13-best-practices-to-make-your-users-happy/
 import {
   SearchSettings,
+  CardDocument,
   CardDocuments,
   SearchResults,
   SourceDocuments,
@@ -101,13 +102,13 @@ export const apiSlice = createApi({
         );
       },
     }),
-    getPlaceholderText: builder.query<
-      { [cardType: string]: Array<[number, string]> },
+    getSampleCards: builder.query<
+      { [cardType: string]: Array<CardDocument> },
       void
     >({
-      query: () => ({ url: `2/placeholderText/`, method: "GET" }),
+      query: () => ({ url: `2/sampleCards/`, method: "GET" }),
       transformResponse: (
-        response: { cards: { [cardType: string]: Array<[number, string]> } },
+        response: { cards: { [cardType: string]: Array<CardDocument> } },
         meta,
         arg
       ) => response.cards,
@@ -133,7 +134,7 @@ export const {
   useGetImportSitesQuery,
   useQueryImportSiteQuery,
   useGetDFCPairsQuery,
-  useGetPlaceholderTextQuery,
+  useGetSampleCardsQuery,
   useGetContributionsQuery,
   useGetBackendInfoQuery,
 } = apiSlice;

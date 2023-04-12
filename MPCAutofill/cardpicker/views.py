@@ -1,15 +1,21 @@
+import itertools
 import json
-import re
 import time
 from collections import defaultdict
 from datetime import timedelta
-from random import choices, randint
+from random import choices
 from typing import Any, Callable, Optional, TypeVar, Union, cast
 
 from blog.models import BlogPost
 
 from django.conf import settings
-from django.http import HttpRequest, HttpResponse, JsonResponse
+from django.http import (
+    HttpRequest,
+    HttpResponse,
+    HttpResponseBadRequest,
+    HttpResponseServerError,
+    JsonResponse,
+)
 from django.shortcuts import redirect, render
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
@@ -38,6 +44,9 @@ from MPCAutofill.settings import PATREON_URL
 
 # https://mypy.readthedocs.io/en/stable/generics.html#declaring-decorators
 F = TypeVar("F", bound=Callable[..., Any])
+
+
+# region old API
 
 
 class ErrorWrappers:
@@ -154,9 +163,6 @@ def patrons(request: HttpRequest) -> HttpResponse:
     campaign, tiers = get_patreon_campaign_details()
     members = get_patrons(campaign["id"], tiers)
     return render(request, "cardpicker/patrons.html", {"members": members, "tiers": tiers, "campaign": campaign})
-
-
-# region old API
 
 
 @ErrorWrappers.to_json
@@ -402,15 +408,8 @@ def insert_link(request: HttpRequest) -> HttpResponse:
 # region new API
 
 
-# TODO: rename these functions to something useful once they've all been hashed out.
-
-
-def editor(request: HttpRequest) -> HttpResponse:
-    return render(request, "cardpicker/editor.html")
-
-
 @csrf_exempt
-def api_function_1(request: HttpRequest) -> HttpResponse:
+def post_search_results(request: HttpRequest) -> HttpResponse:
     """
     Return the first page of search results for a given list of queries.
     Each query should be of the form {card name, card type}.
@@ -420,12 +419,17 @@ def api_function_1(request: HttpRequest) -> HttpResponse:
     and it's assumed that `hits` starts from the first hit.
     """
 
-    # TODO: ping elasticsearch here
     if request.method == "POST":
-        # time.sleep(1)  # TODO: remove these. just for testing.
         json_body = json.loads(request.body)
-        search_settings = SearchSettings.from_json_body(json_body)
-        queries = SearchQuery.list_from_json_body(json_body)
+        try:
+            search_settings = SearchSettings.from_json_body(json_body)
+            queries = SearchQuery.list_from_json_body(json_body)
+        except KeyError as e:
+            return HttpResponseBadRequest(f"The provided JSON body is invalid. {e.__class__.__name__}: {str(e)}")
+
+        if not ping_elasticsearch():
+            return HttpResponseServerError("Search engine is offline.")
+
         results: dict[str, dict[str, list[str]]] = defaultdict(dict)
         for query in queries:
             if results[query.query].get(query.card_type, None) is None:
@@ -433,13 +437,11 @@ def api_function_1(request: HttpRequest) -> HttpResponse:
                 results[query.query][query.card_type] = hits
         return JsonResponse({"results": results})
     else:
-        ...  # TODO: return error response
-    return JsonResponse({})
+        return HttpResponseBadRequest("Expected POST request.")
 
 
 @csrf_exempt
-def api_function_2(request: HttpRequest) -> HttpResponse:
-    # TODO: bit confusing to call this `getCards` while expecting POST
+def post_cards(request: HttpRequest) -> HttpResponse:
     if request.method == "POST":
         # time.sleep(2)  # TODO: remove these. just for testing.
         json_body = json.loads(request.body)
@@ -449,12 +451,11 @@ def api_function_2(request: HttpRequest) -> HttpResponse:
         results = {x.identifier: x.to_dict() for x in Card.objects.filter(identifier__in=card_identifiers)}
         return JsonResponse({"results": results})
     else:
-        ...  # TODO: return error response
-    return JsonResponse({})
+        return HttpResponseBadRequest("Expected POST request.")
 
 
 @csrf_exempt
-def api_function_3(request: HttpRequest) -> HttpResponse:
+def get_sources(request: HttpRequest) -> HttpResponse:
     """
     Return a list of sources.
     """
@@ -464,7 +465,7 @@ def api_function_3(request: HttpRequest) -> HttpResponse:
 
 
 @csrf_exempt
-def api_function_4(request: HttpRequest) -> HttpResponse:
+def get_dfc_pairs(request: HttpRequest) -> HttpResponse:
     """
     Return a list of double-faced cards. The unedited names are returned and the frontend is expected to sanitise them.
     """
@@ -484,7 +485,7 @@ def api_function_5(request: HttpRequest) -> HttpResponse:
 
 
 @csrf_exempt
-def api_function_6(request: HttpRequest) -> HttpResponse:
+def get_cardbacks(request: HttpRequest) -> HttpResponse:
     """
     Return a list of cardbacks.
     """
@@ -495,7 +496,7 @@ def api_function_6(request: HttpRequest) -> HttpResponse:
 
 
 @csrf_exempt
-def api_function_7(request: HttpRequest) -> HttpResponse:
+def get_import_sites(request: HttpRequest) -> HttpResponse:
     """
     Return a list of import sites.
     """
@@ -506,65 +507,63 @@ def api_function_7(request: HttpRequest) -> HttpResponse:
 
 
 @csrf_exempt
-def api_function_8(request: HttpRequest) -> HttpResponse:
+def post_import_site_decklist(request: HttpRequest) -> HttpResponse:
     """
-    Return the result of querying an import site for the specified URL.
-    TODO: rewrite this, the english is a bit bad.
+    Read the specified import site URL and process & return the associated decklist.
     """
 
     if request.method == "POST":
         json_body = json.loads(request.body)
         url = json_body.get("url", None)
         if url is None:
-            ...  # TODO: handle this case
+            return HttpResponseBadRequest("No decklist URL provided.")
         for site in ImportSites:
             if url.startswith(site.get_base_url()):
                 text = site.retrieve_card_list(url)
                 return JsonResponse({"cards": text})
-        # TODO: return error indicating site is not supported
+        return HttpResponseBadRequest("The specified decklist URL does not match any known import sites.")
     else:
-        ...  # TODO: return error response
-    return JsonResponse({})
+        return HttpResponseBadRequest("Expected POST request.")
 
 
 @csrf_exempt
-def api_function_9(request: HttpRequest) -> HttpResponse:
+def get_sample_cards(request: HttpRequest) -> HttpResponse:
     """
-    Return a list of sample cards you can query this database for.
+    Return a selection of cards you can query this database for.
     Used in the placeholder text of the Add Cards — Text component in the frontend.
+
+    TODO: i don't know how to do this in a single query in the Django ORM :(
     """
 
-    # TODO: consider reusing this to display some random cards on the landing page
-
-    # TODO: tidy this up. i have no clue what this code is doing
-
-    # TODO: i don't know how to do this in a single query in the Django ORM :(
+    # sample some large number of identifiers from the database
     identifiers = {
         card_type: list(Card.objects.filter(card_type=card_type).values_list("id", flat=True)[0:1000])
         for card_type in CardTypes
     }
-    selected_identifiers = {
-        card_type: choices(
+
+    # select a few of those identifiers at random
+    selected_identifiers = [
+        identifier
+        for card_type in CardTypes
+        for identifier in choices(
             identifiers[card_type], k=min(4 if card_type == CardTypes.CARD else 1, len(identifiers[card_type]))
         )
-        for card_type in CardTypes
-    }
-    men = {
-        x[0]: re.sub(r"\([^)]*\)", "", x[1]).strip()
-        for x in Card.objects.filter(pk__in=[y for z in selected_identifiers.values() for y in z]).values_list(
-            "id", "name"
-        )
-    }
-    return_value = {
-        card_type: [(randint(1, 4), men[identifier]) for identifier in identifiers]
-        for card_type, identifiers in selected_identifiers.items()
-    }
+    ]
 
-    return JsonResponse({"cards": return_value})
+    # retrieve the full ORM objects for the selected identifiers and group by type
+    cards = [card.to_dict() for card in Card.objects.filter(pk__in=selected_identifiers).order_by("card_type", "pk")]
+    cards_by_type = {group[0]: list(group[1]) for group in itertools.groupby(cards, key=lambda x: x["card_type"])}
+
+    return JsonResponse({"cards": cards_by_type})
 
 
 @csrf_exempt
-def api_function_10(request: HttpRequest) -> HttpResponse:
+def get_contributions(request: HttpRequest) -> HttpResponse:
+    """
+    Return a summary of contributions to the database.
+    Used by the Contributions page.
+    """
+
     sources, card_count_by_type, total_database_size = summarise_contributions()
     return JsonResponse(
         {"sources": sources, "card_count_by_type": card_count_by_type, "total_database_size": total_database_size}
@@ -572,7 +571,7 @@ def api_function_10(request: HttpRequest) -> HttpResponse:
 
 
 @csrf_exempt
-def api_function_11(request: HttpRequest) -> HttpResponse:
+def get_info(request: HttpRequest) -> HttpResponse:
     """
     Return a stack of metadata about the server for the frontend to display.
     It's expected that this route will be called once when the server is connected.
@@ -593,7 +592,7 @@ def api_function_11(request: HttpRequest) -> HttpResponse:
     )
 
 
-def api_function_12(request: HttpRequest) -> HttpResponse:
+def get_search_engine_health(request: HttpRequest) -> HttpResponse:
     return JsonResponse({"online": ping_elasticsearch()})
 
 
