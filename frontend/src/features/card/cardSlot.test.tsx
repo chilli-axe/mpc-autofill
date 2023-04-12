@@ -1,7 +1,7 @@
 import { renderWithProviders } from "@/common/test-utils";
 import { CardSlot } from "@/features/card/cardSlot";
 import { screen, waitFor } from "@testing-library/react";
-import { Front, Back, Card } from "@/common/constants";
+import { Front, Back, Card, ProjectName } from "@/common/constants";
 import {
   cardDocument1,
   cardDocument2,

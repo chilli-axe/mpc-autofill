@@ -60,6 +60,7 @@ class AutofillDriver:
                 f"Please make sure you have installed {self.driver.name} and that it is up to date: {e}"
             )
 
+        print("")
         self.driver = driver
 
     def configure_bars(self) -> None:
