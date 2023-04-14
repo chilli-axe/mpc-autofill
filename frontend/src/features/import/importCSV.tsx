@@ -13,6 +13,112 @@ import Button from "react-bootstrap/Button";
 import { TextFileDropzone } from "../dropzone";
 import Table from "react-bootstrap/Table";
 
+interface CSVTableProps {
+  columnStyle: CSSProperties;
+}
+
+function CSVFormat(props: CSVTableProps) {
+  return (
+    <>
+      <Table
+        bordered={true}
+        style={{
+          borderStyle: "solid",
+          borderColor: "#333333",
+          borderWidth: 1 + "px",
+        }}
+      >
+        <thead>
+          <th style={props.columnStyle}>Quantity</th>
+          <th style={props.columnStyle}>Front</th>
+          <th style={props.columnStyle}>Front ID</th>
+          <th style={props.columnStyle}>Back</th>
+          <th style={props.columnStyle}>Back ID</th>
+        </thead>
+        <tbody>
+          {Array(3).fill(
+            <tr>{Array(5).fill(<td style={{ width: 20 + "%" }} />)}</tr>
+          )}
+        </tbody>
+      </Table>
+      Where the columns follow these rules:
+      <ul>
+        <li>
+          <b>Quantity</b>: The quantity to include of this row. Must be greater
+          than 0. <b>Cannot be blank.</b>
+        </li>
+        <li>
+          <b>Front</b>: Search query for card front. <b>Cannot be blank.</b>
+        </li>
+        <li>
+          <b>Front ID</b>: If this image is in the front search results, it will
+          be pre-selected. Can be blank.
+        </li>
+        <li>
+          <b>Front</b>: Search query for card back. Can be blank.
+        </li>
+        <li>
+          <b>Front ID</b>: If this image is in the back search results, it will
+          be pre-selected. Can be blank.
+        </li>
+      </ul>
+    </>
+  );
+}
+
+function SampleCSV(props: CSVTableProps) {
+  return (
+    <>
+      <Table
+        bordered={true}
+        style={{
+          borderStyle: "solid",
+          borderColor: "#333333",
+          borderWidth: 1 + "px",
+        }}
+      >
+        <thead>
+          <th style={props.columnStyle}>Quantity</th>
+          <th style={props.columnStyle}>Front</th>
+          <th style={props.columnStyle}>Front ID</th>
+          <th style={props.columnStyle}>Back</th>
+          <th style={props.columnStyle}>Back ID</th>
+        </thead>
+        <tbody>
+          <tr>
+            <td style={props.columnStyle}>
+              <code>2</code>
+            </td>
+            <td style={props.columnStyle}>
+              <code>island</code>
+            </td>
+            <td style={props.columnStyle}>
+              <code>1HsvTYs1...</code>
+            </td>
+            <td style={props.columnStyle}>
+              <code>forest</code>
+            </td>
+            <td style={props.columnStyle} />
+          </tr>
+          <tr>
+            <td style={props.columnStyle}>
+              <code>3</code>
+            </td>
+            <td style={props.columnStyle}>
+              <code>t:goblin</code>
+            </td>
+            <td style={props.columnStyle} />
+            <td style={props.columnStyle} />
+            <td style={props.columnStyle}>
+              <code>1JtXL6Ca...</code>
+            </td>
+          </tr>
+        </tbody>
+      </Table>
+    </>
+  );
+}
+
 export function ImportCSV() {
   const [showCSVModal, setShowCSVModal] = useState(false);
   const handleCloseCSVModal = () => setShowCSVModal(false);
@@ -42,95 +148,9 @@ export function ImportCSV() {
             Upload a CSV file of cards to add to the project. The file must{" "}
             <b>exactly</b> match the following format:
           </p>
-          <Table
-            bordered={true}
-            style={{
-              borderStyle: "solid",
-              borderColor: "#333333",
-              borderWidth: 1 + "px",
-            }}
-          >
-            <thead>
-              <th style={columnStyle}>Quantity</th>
-              <th style={columnStyle}>Front</th>
-              <th style={columnStyle}>Front ID</th>
-              <th style={columnStyle}>Back</th>
-              <th style={columnStyle}>Back ID</th>
-            </thead>
-            <tbody>
-              {Array(3).fill(
-                <tr>{Array(5).fill(<td style={{ width: 20 + "%" }} />)}</tr>
-              )}
-            </tbody>
-          </Table>
-          Where the columns follow these rules:
-          <ul>
-            <li>
-              <b>Quantity</b>: The quantity to include of this row. Must be
-              greater than 0. <b>Cannot be blank.</b>
-            </li>
-            <li>
-              <b>Front</b>: Search query for card front. <b>Cannot be blank.</b>
-            </li>
-            <li>
-              <b>Front ID</b>: If this image is in the front search results, it
-              will be pre-selected. Can be blank.
-            </li>
-            <li>
-              <b>Front</b>: Search query for card back. Can be blank.
-            </li>
-            <li>
-              <b>Front ID</b>: If this image is in the back search results, it
-              will be pre-selected. Can be blank.
-            </li>
-          </ul>
+          <CSVFormat columnStyle={columnStyle} />
           For example:
-          <Table
-            bordered={true}
-            style={{
-              borderStyle: "solid",
-              borderColor: "#333333",
-              borderWidth: 1 + "px",
-            }}
-          >
-            <thead>
-              <th style={columnStyle}>Quantity</th>
-              <th style={columnStyle}>Front</th>
-              <th style={columnStyle}>Front ID</th>
-              <th style={columnStyle}>Back</th>
-              <th style={columnStyle}>Back ID</th>
-            </thead>
-            <tbody>
-              <tr>
-                <td style={columnStyle}>
-                  <code>2</code>
-                </td>
-                <td style={columnStyle}>
-                  <code>island</code>
-                </td>
-                <td style={columnStyle}>
-                  <code>1HsvTYs1...</code>
-                </td>
-                <td style={columnStyle}>
-                  <code>forest</code>
-                </td>
-                <td style={columnStyle} />
-              </tr>
-              <tr>
-                <td style={columnStyle}>
-                  <code>3</code>
-                </td>
-                <td style={columnStyle}>
-                  <code>t:goblin</code>
-                </td>
-                <td style={columnStyle} />
-                <td style={columnStyle} />
-                <td style={columnStyle}>
-                  <code>1JtXL6Ca...</code>
-                </td>
-              </tr>
-            </tbody>
-          </Table>
+          <SampleCSV columnStyle={columnStyle} />
           <hr />
           <TextFileDropzone
             mimeTypes={{ "text/csv": [".csv"] }}
