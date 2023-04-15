@@ -200,7 +200,11 @@ export function BackendConfig(props: BackendConfigProps) {
                 <hr />
               </>
             )}
-            <Button variant="primary" type="submit" disabled={validating}>
+            <Button
+              variant="primary"
+              type="submit"
+              disabled={validating || localBackendURL.trim().length == 0}
+            >
               Submit
             </Button>
           </Form>

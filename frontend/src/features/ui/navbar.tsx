@@ -82,9 +82,9 @@ export default function Navbar() {
               >
                 Download
               </Nav.Link>
-              <NavDropdown title="Support Us">
+              <NavDropdown title="Donate">
                 <NavDropdown.Item onClick={handleShowSupportDeveloperModal}>
-                  <i className="bi bi-braces" /> Support the Developer
+                  <i className="bi bi-code" /> Support the Developer
                 </NavDropdown.Item>
                 {backendInfoQuery.data?.name != null &&
                   backendInfoQuery.data?.patreon_url != null && (
