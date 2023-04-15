@@ -47,7 +47,7 @@ export function SupportDeveloperModal(props: SupportDeveloperModalProps) {
         </p>
         <p>
           You can support my continued development of this project through{" "}
-          <i>Buy me a coffee</i> below ♥️
+          <i>Buy Me a Coffee</i> below ♥️
         </p>
         <h4>Where does my donation go?</h4>
         <p>
