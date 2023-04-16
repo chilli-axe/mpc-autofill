@@ -955,7 +955,6 @@ class TestFrontend:
         assert face_cell.text == "front"
         assert search_query_cell.text == "brainstorm"
 
-    # TODO: replicate this test in the new frontend
     def test_add_cards_to_order_by_text(self, chrome_driver):
         call_command("update_dfcs")
         self.load_review_page_with_search_string(chrome_driver, "brainstorm")
