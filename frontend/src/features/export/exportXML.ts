@@ -56,42 +56,42 @@ function createCardElement(
    */
 
   const maybeCardDocument = cardDocuments[identifier];
-  if (maybeCardDocument != null) {
-    const cardElement = doc.createElement("card");
-
-    const identifierElement = doc.createElement("id");
-    identifierElement.appendChild(doc.createTextNode(identifier));
-    cardElement.appendChild(identifierElement);
-
-    const slotsElement = doc.createElement("slots");
-    slotsElement.appendChild(
-      doc.createTextNode(
-        Array.from(slots)
-          .sort((a, b) => a - b)
-          .toString()
-      )
-    );
-    cardElement.appendChild(slotsElement);
-
-    const nameElement = doc.createElement("name");
-    nameElement.appendChild(
-      doc.createTextNode(
-        `${maybeCardDocument.name}.${maybeCardDocument.extension}`
-      )
-    );
-    cardElement.append(nameElement);
-
-    const queryElement = doc.createElement("query");
-    queryElement.appendChild(
-      doc.createTextNode(
-        ReversedCardTypePrefixes[maybeCardDocument.card_type] +
-          maybeCardDocument.searchq
-      )
-    );
-    cardElement.append(queryElement);
-    return cardElement;
+  if (maybeCardDocument == null) {
+    return null;
   }
-  return null;
+  const cardElement = doc.createElement("card");
+
+  const identifierElement = doc.createElement("id");
+  identifierElement.appendChild(doc.createTextNode(identifier));
+  cardElement.appendChild(identifierElement);
+
+  const slotsElement = doc.createElement("slots");
+  slotsElement.appendChild(
+    doc.createTextNode(
+      Array.from(slots)
+        .sort((a, b) => a - b)
+        .toString()
+    )
+  );
+  cardElement.appendChild(slotsElement);
+
+  const nameElement = doc.createElement("name");
+  nameElement.appendChild(
+    doc.createTextNode(
+      `${maybeCardDocument.name}.${maybeCardDocument.extension}`
+    )
+  );
+  cardElement.append(nameElement);
+
+  const queryElement = doc.createElement("query");
+  queryElement.appendChild(
+    doc.createTextNode(
+      ReversedCardTypePrefixes[maybeCardDocument.card_type] +
+        maybeCardDocument.searchq
+    )
+  );
+  cardElement.append(queryElement);
+  return cardElement;
 }
 
 export function generateXML(
@@ -137,11 +137,14 @@ export function generateXML(
           identifier,
           slots
         );
-        if (cardElement != null) {
+        const cardIsProjectCardback = identifier === cardback && face === Back;
+        if (cardElement != null && !cardIsProjectCardback) {
           faceElement.appendChild(cardElement);
         }
       }
-      orderElement.appendChild(faceElement);
+      if (faceElement.children.length > 0) {
+        orderElement.appendChild(faceElement);
+      }
     }
   }
 
