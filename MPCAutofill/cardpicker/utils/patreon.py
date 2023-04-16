@@ -101,6 +101,7 @@ def get_patrons(campaign_id: str, campaign_tiers: dict[str, SupporterTier]) -> O
                 "date": mem["attributes"]["pledge_relationship_start"][:10],
             }
             for mem in members
+            if len(mem["relationships"]["currently_entitled_tiers"]["data"]) > 0
         ]
     except KeyError:
         print("Warning: Cannot locate Patreon campaign. Check Patreon access token!")
