@@ -11,6 +11,7 @@ import { SourceContribution } from "@/common/types";
 import { useSelector } from "react-redux";
 import { RootState } from "@/app/store";
 import Link from "next/link";
+import { Spinner } from "@/features/ui/spinner";
 
 function ContributionsSummary() {
   const backendURL = useSelector((state: RootState) => state.backend.url);
@@ -157,15 +158,7 @@ function ContributionsPerSource() {
 
   return backendURL != null ? (
     contributionsQuery.data?.sources == null ? (
-      <div className="d-flex justify-content-center align-items-center">
-        <div
-          className="spinner-border"
-          style={{ width: 4 + "em", height: 4 + "em" }}
-          role="status"
-        >
-          <span className="visually-hidden">Loading...</span>
-        </div>
-      </div>
+      <Spinner />
     ) : (
       <Table style={{ tableLayout: "auto" }}>
         <thead>

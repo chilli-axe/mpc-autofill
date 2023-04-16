@@ -161,7 +161,7 @@ def patrons(request: HttpRequest) -> HttpResponse:
 
     # Campaign details
     campaign, tiers = get_patreon_campaign_details()
-    members = get_patrons(campaign["id"], tiers)
+    members = get_patrons(campaign["id"], tiers) if campaign is not None and tiers is not None else []
     return render(request, "cardpicker/patrons.html", {"members": members, "tiers": tiers, "campaign": campaign})
 
 
@@ -578,6 +578,10 @@ def get_info(request: HttpRequest) -> HttpResponse:
     """
 
     time.sleep(1)
+
+    campaign, tiers = get_patreon_campaign_details()
+    members = get_patrons(campaign["id"], tiers) if campaign is not None and tiers is not None else None
+
     return JsonResponse(
         {
             "info": {
@@ -586,7 +590,12 @@ def get_info(request: HttpRequest) -> HttpResponse:
                 "email": settings.TARGET_EMAIL,
                 "reddit": settings.REDDIT,
                 "discord": settings.DISCORD,
-                "patreon_url": settings.PATREON_URL,
+                "patreon": {
+                    "url": settings.PATREON_URL,
+                    "members": members,
+                    "tiers": tiers,
+                    "campaign": campaign,
+                },
             }
         }
     )

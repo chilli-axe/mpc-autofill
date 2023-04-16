@@ -100,13 +100,37 @@ export interface Contributions {
   total_database_size: number;
 }
 
+export interface PatreonCampaign {
+  id: string;
+  about: string;
+}
+
+export interface PatreonSupporter {
+  name: string;
+  tier: string;
+  date: string;
+}
+
+export interface PatreonSupporterTier {
+  title: string;
+  description: string;
+  usd: number;
+}
+
+export interface PatreonInfo {
+  url: string | null;
+  members: Array<PatreonSupporter> | null;
+  tiers: { [tierId: string]: PatreonSupporterTier } | null;
+  campaign: PatreonCampaign | null;
+}
+
 export interface BackendInfo {
   name: string | null;
   description: string | null;
   email: string | null;
   reddit: string | null;
   discord: string | null;
-  patreon_url: string | null; // TODO: rethink this probably
+  patreon: PatreonInfo;
 }
 
 export interface BackendState {

@@ -2,6 +2,7 @@ import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
 import React from "react";
 import { useGetBackendInfoQuery } from "@/app/api";
+import { Spinner } from "@/features/ui/spinner";
 
 interface SupportBackendModalProps {
   show: boolean;
@@ -22,7 +23,22 @@ export function SupportBackendModal(props: SupportBackendModalProps) {
         </Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        <p>TODO</p>
+        {backendInfoQuery?.data?.patreon == null ? (
+          <Spinner />
+        ) : (
+          <>
+            <h4>Patron Tiers</h4>
+            {Object.values(backendInfoQuery.data.patreon.tiers ?? {}).map(
+              (tier) => (
+                <h6 key={`patreon-tier-${tier.title}`}>
+                  <b>
+                    {tier.title} (${tier.usd} USD)
+                  </b>
+                </h6>
+              )
+            )}
+          </>
+        )}
       </Modal.Body>
       <Modal.Footer>
         <Button variant="secondary" onClick={props.handleClose}>

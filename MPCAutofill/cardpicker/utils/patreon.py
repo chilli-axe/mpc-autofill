@@ -1,9 +1,9 @@
 import platform
-from typing import TypedDict
+from typing import Optional, TypedDict
 
 import requests
 
-from MPCAutofill.settings import PATREON_ACCESS
+from MPCAutofill.settings import PATREON_ACCESS, PATREON_URL
 
 # Header must be included to access Patreon info
 patreon_header = {
@@ -32,11 +32,15 @@ class SupporterTier(TypedDict):
     usd: int
 
 
-def get_patreon_campaign_details() -> tuple[Campaign, dict[str, SupporterTier]]:
+def get_patreon_campaign_details() -> tuple[Optional[Campaign], Optional[dict[str, SupporterTier]]]:
     """
     Get needed patreon campaign details.
     :return: Campaign ID, list of dictionaries containing supporter tier info.
     """
+
+    if not PATREON_URL:
+        return None, None
+
     try:
         res = requests.get(
             # https://docs.patreon.com/#get-api-oauth2-v2-campaigns
@@ -62,15 +66,20 @@ def get_patreon_campaign_details() -> tuple[Campaign, dict[str, SupporterTier]]:
                 "usd": round(tier["attributes"]["amount_cents"] / 100),
             }
     except KeyError:
-        raise Exception("Cannot locate Patreon campaign. Check Patreon access token!")
+        print("Warning: Cannot locate Patreon campaign. Check Patreon access token!")
+        return None, None
     return campaign, tiers
 
 
-def get_patrons(campaign_id: str, campaign_tiers: dict[str, SupporterTier]) -> list[Supporter]:
+def get_patrons(campaign_id: str, campaign_tiers: dict[str, SupporterTier]) -> Optional[list[Supporter]]:
     """
     Get our patreon contributors.
     :return: List of dictionaries containing patreon contributor info.
     """
+
+    if not PATREON_URL:
+        return None
+
     try:
         members = requests.get(
             # https://docs.patreon.com/#get-api-oauth2-v2-campaigns-campaign_id-members
@@ -94,4 +103,5 @@ def get_patrons(campaign_id: str, campaign_tiers: dict[str, SupporterTier]) -> l
             for mem in members
         ]
     except KeyError:
-        raise Exception("Cannot locate Patreon campaign. Check Patreon access token!")
+        print("Warning: Cannot locate Patreon campaign. Check Patreon access token!")
+        return None

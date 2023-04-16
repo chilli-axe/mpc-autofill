@@ -87,7 +87,8 @@ export default function Navbar() {
                   <i className="bi bi-code" /> Support the Developer
                 </NavDropdown.Item>
                 {backendInfoQuery.data?.name != null &&
-                  backendInfoQuery.data?.patreon_url != null && (
+                  (backendInfoQuery.data?.patreon?.url ?? "").trim().length >
+                    0 && (
                     <NavDropdown.Item onClick={handleShowSupportBackendModal}>
                       <i className="bi bi-server" /> Support{" "}
                       {backendInfoQuery.data.name}
