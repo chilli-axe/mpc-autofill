@@ -87,7 +87,8 @@ MIDDLEWARE = [
 
 CORS_ALLOWED_ORIGINS = env.list(
     "CORS_ALLOWED_ORIGINS",
-    default=["http://127.0.0.1:3000", "http://localhost:3000"],  # the frontend next.js server is hosted here by default
+    # allow CORS from a frontend app running locally and from the deployed frontend
+    default=["http://127.0.0.1:3000", "http://localhost:3000", "https://mpcautofill.github.io"],
 )
 
 ROOT_URLCONF = "MPCAutofill.urls"
