@@ -4,7 +4,7 @@
  * the project cardback (displayed in the right panel of the project editor).
  */
 
-import React, { useEffect, useState } from "react";
+import React, { memo, useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { AppDispatch, RootState } from "@/app/store";
 import { MemoizedCard } from "./card";
@@ -16,7 +16,55 @@ import {
 } from "../project/projectSlice";
 import Button from "react-bootstrap/Button";
 import { MemoizedCardDetailedView } from "./cardDetailedView";
-import { MemoizedCommonCardbackGridSelector } from "./gridSelector";
+import { GridSelector } from "./gridSelector";
+
+//# region grid selector
+
+interface CommonCardbackGridSelectorProps {
+  searchResults: Array<string>;
+  show: boolean;
+  handleClose: {
+    (): void;
+    (event: React.MouseEvent<HTMLButtonElement, MouseEvent>): void;
+  };
+}
+
+export function CommonCardbackGridSelector(
+  props: CommonCardbackGridSelectorProps
+) {
+  const projectCardback = useSelector(
+    (state: RootState) => state.project.cardback
+  );
+  const dispatch = useDispatch<AppDispatch>();
+  function setSelectedImageFromIdentifier(selectedImage: string): void {
+    if (projectCardback != null) {
+      dispatch(
+        bulkSetSelectedImage({
+          currentImage: projectCardback,
+          selectedImage,
+          face: Back,
+        })
+      );
+      dispatch(setSelectedCardback({ selectedImage }));
+    }
+  }
+  return (
+    <GridSelector
+      imageIdentifiers={props.searchResults}
+      show={props.show}
+      handleClose={props.handleClose}
+      onClick={setSelectedImageFromIdentifier}
+    />
+  );
+}
+
+export const MemoizedCommonCardbackGridSelector = memo(
+  CommonCardbackGridSelector
+);
+
+//# endregion
+
+//# region common cardback
 
 interface CommonCardbackProps {
   selectedImage: string | undefined;
@@ -150,3 +198,5 @@ export function CommonCardback(props: CommonCardbackProps) {
     </>
   );
 }
+
+//# endregion

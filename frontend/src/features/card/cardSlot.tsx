@@ -14,7 +14,7 @@ import { Back } from "@/common/constants";
 import { wrapIndex } from "@/common/utils";
 import { deleteImage, setSelectedImage } from "../project/projectSlice";
 import Button from "react-bootstrap/Button";
-import { MemoizedCardSlotGridSelector } from "./gridSelector";
+import { GridSelector } from "./gridSelector";
 import { Faces, SearchQuery } from "@/common/types";
 
 interface CardSlotProps {
@@ -25,6 +25,42 @@ interface CardSlotProps {
     (selectedImage: string): void;
   };
 }
+
+//# region grid selector
+
+interface CardSlotGridSelectorProps {
+  face: Faces;
+  slot: number;
+  searchResultsForQuery: Array<string>;
+  show: boolean;
+  handleClose: {
+    (): void;
+    (event: React.MouseEvent<HTMLButtonElement, MouseEvent>): void;
+  };
+}
+
+export function CardSlotGridSelector(props: CardSlotGridSelectorProps) {
+  const dispatch = useDispatch<AppDispatch>();
+  function setSelectedImageFromIdentifier(selectedImage: string): void {
+    dispatch(
+      setSelectedImage({ face: props.face, slot: props.slot, selectedImage })
+    );
+  }
+  return (
+    <GridSelector
+      imageIdentifiers={props.searchResultsForQuery}
+      show={props.show}
+      handleClose={props.handleClose}
+      onClick={setSelectedImageFromIdentifier}
+    />
+  );
+}
+
+export const MemoizedCardSlotGridSelector = memo(CardSlotGridSelector);
+
+//# endregion
+
+//# region card slot
 
 export function CardSlot(props: CardSlotProps) {
   const searchQuery = props.searchQuery;
@@ -232,3 +268,5 @@ export function CardSlot(props: CardSlotProps) {
 }
 
 export const MemoizedCardSlot = memo(CardSlot);
+
+//# endregion
