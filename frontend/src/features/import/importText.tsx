@@ -118,6 +118,7 @@ export function ImportText() {
               required={true}
               onChange={(event) => setTextModalValue(event.target.value)}
               value={textModalValue}
+              aria-label="import-text"
             />
           </Form.Group>
         </Modal.Body>
@@ -125,7 +126,11 @@ export function ImportText() {
           <Button variant="secondary" onClick={handleCloseTextModal}>
             Close
           </Button>
-          <Button variant="primary" onClick={handleSubmitTextModal}>
+          <Button
+            variant="primary"
+            onClick={handleSubmitTextModal}
+            aria-label="import-text-submit"
+          >
             Submit
           </Button>
         </Modal.Footer>

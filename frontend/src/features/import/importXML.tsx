@@ -3,7 +3,7 @@
  * Projects which have been previously exported as XML can be re-uploaded through
  * this component and their cards will be added to the current project state.
  * A dropzone is exposed for the user to either drag-and-drop or select their file with.
- * The user will be prompted on whether they want to retain their uploaded file's
+ * The user will be prompted on whether they want to use their uploaded file's
  * finish settings (e.g. foil/nonfoil, the selected cardstock) or retain the project's
  * finish settings.
  */
