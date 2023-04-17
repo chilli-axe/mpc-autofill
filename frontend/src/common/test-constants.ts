@@ -3,6 +3,7 @@
  */
 
 import {
+  BackendState,
   CardDocument,
   CardDocumentsState,
   Project,
@@ -123,6 +124,25 @@ export const cardDocument3: CardDocument = {
   medium_thumbnail_url: "",
 };
 
+export const cardDocument4: CardDocument = {
+  identifier: "abc123456",
+  card_type: "CARD",
+  name: "Card 4",
+  priority: 0,
+  source: "Card Source",
+  source_id: 0,
+  source_verbose: "Card Source",
+  source_type: "google drive",
+  dpi: 1200,
+  searchq: "card 4",
+  extension: "png",
+  date: "1st January, 2000", // formatted by backend
+  download_link: "",
+  size: 10_000_000,
+  small_thumbnail_url: "",
+  medium_thumbnail_url: "",
+};
+
 export const cardDocumentsOneResult: CardDocumentsState = {
   cardDocuments: {
     [cardDocument1.identifier]: cardDocument1,
@@ -136,6 +156,17 @@ export const cardDocumentsThreeResults: CardDocumentsState = {
     [cardDocument1.identifier]: cardDocument1,
     [cardDocument2.identifier]: cardDocument2,
     [cardDocument3.identifier]: cardDocument3,
+  },
+  status: "idle",
+  error: null,
+};
+
+export const cardDocumentsFourResults: CardDocumentsState = {
+  cardDocuments: {
+    [cardDocument1.identifier]: cardDocument1,
+    [cardDocument2.identifier]: cardDocument2,
+    [cardDocument3.identifier]: cardDocument3,
+    [cardDocument4.identifier]: cardDocument4,
   },
   status: "idle",
   error: null,
@@ -222,6 +253,14 @@ export const defaultSettings: SearchSettings = {
     maximumDPI: MaximumDPI,
     maximumSize: MaximumSize,
   },
+};
+
+//# endregion
+
+//# region backend
+
+export const localBackend: BackendState = {
+  url: "https://127.0.0.1:8000",
 };
 
 //# endregion

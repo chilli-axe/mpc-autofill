@@ -27,8 +27,8 @@ Each component of the project has its own README; check those out for more detai
 
 ## Backend
 
-- Located in `/MPCAutofill`.
 - **Note**: The frontend in this section of the codebase is considered deprecated and no new features will be added to it.
+- Located in `/MPCAutofill`.
   - See `/frontend` for the successor to this part of the project.
 - Images stored in the Google Drives connected to the project are indexed in Elasticsearch.
 - The backend server is decoupled from `/frontend` and the frontend allows users to configure which backend to retrieve data from.
@@ -47,7 +47,7 @@ Each component of the project has its own README; check those out for more detai
 - A web app that communicates with a specified MPC Autofill backend (hosted somewhere on the Internet) and facilitates the creation, customisation, and exporting of projects with drives linked to that backend.
 - Stack:
   - Static Next.js web app built with Typescript, React-Bootstrap, and Redux.
-  - Automatically deployed on GitHub Pages to `mpcautofill.github.io` whenever changes are made to the `frontend-release` branch.
+  - Automatically deployed on GitHub Pages to https://mpcautofill.github.io whenever changes are made to the `frontend-release` branch.
 
 ## Desktop Client
 

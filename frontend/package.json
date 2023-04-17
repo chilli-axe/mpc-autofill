@@ -64,7 +64,8 @@
     "standard": "^17.0.0",
     "style-loader": "^3.3.2",
     "ts-jest": "^29.0.5",
-    "ts-loader": "^9.4.2"
+    "ts-loader": "^9.4.2",
+    "whatwg-fetch": "^3.6.2"
   },
   "msw": {
     "workerDirectory": "public"
