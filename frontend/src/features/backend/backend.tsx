@@ -55,17 +55,14 @@ function validateURLStructure(url: string): boolean {
 
 async function pingBackend(url: string): Promise<boolean> {
   // ping the server to check if it's alive
-  return true;
-
-  // TODO: re-enable the below code after sorting out why nginx breaks /favicon.ico for the backend
-  // let outcome = false;
-  // try {
-  //   const p = new Ping();
-  //   await p.ping(url, function (err: any, data: any) {
-  //     outcome = err == null;
-  //   });
-  // } catch (error) {}
-  // return outcome;
+  let outcome = false;
+  try {
+    const p = new Ping();
+    await p.ping(url, function (err: any, data: any) {
+      outcome = err == null;
+    });
+  } catch (error) {}
+  return outcome;
 }
 
 async function searchEngineHealthCheck(url: string): Promise<boolean> {
