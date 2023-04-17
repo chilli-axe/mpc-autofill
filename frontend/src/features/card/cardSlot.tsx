@@ -48,6 +48,7 @@ export function CardSlotGridSelector(props: CardSlotGridSelectorProps) {
   }
   return (
     <GridSelector
+      testId={`${props.face}-slot${props.slot}-grid-selector`}
       imageIdentifiers={props.searchResultsForQuery}
       show={props.show}
       handleClose={props.handleClose}
@@ -238,7 +239,10 @@ export function CardSlot(props: CardSlotProps) {
   );
 
   return (
-    <div style={{ contentVisibility: "auto" }}>
+    <div
+      style={{ contentVisibility: "auto" }}
+      data-testid={`${props.face}-slot${props.slot}`}
+    >
       <MemoizedCard
         imageIdentifier={selectedImage}
         previousImageIdentifier={previousImage}

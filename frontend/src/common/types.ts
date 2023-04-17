@@ -55,7 +55,7 @@ export interface SourceDocument {
   name: string;
   identifier: string;
   source_type: string; // TODO
-  external_link?: string;
+  external_link: string | null;
   description: string;
 }
 

@@ -11,6 +11,7 @@ import Button from "react-bootstrap/Button";
 import React from "react";
 
 interface GridSelectorProps {
+  testId: string;
   imageIdentifiers: Array<string>;
   show: boolean;
   handleClose: {
@@ -24,7 +25,12 @@ interface GridSelectorProps {
 
 export function GridSelector(props: GridSelectorProps) {
   return (
-    <Modal show={props.show} onHide={props.handleClose} size={"lg"}>
+    <Modal
+      show={props.show}
+      onHide={props.handleClose}
+      size={"lg"}
+      data-testid={props.testId}
+    >
       <Modal.Header closeButton>
         <Modal.Title>Select Version</Modal.Title>
       </Modal.Header>

@@ -257,9 +257,7 @@ export const selectUniqueCardIdentifiers = (state: RootState): Set<string> => {
     for (const face of [Front, Back]) {
       const projectMember = slotProjectMembers[face];
       if (
-        projectMember != null &&
-        projectMember.query != null &&
-        projectMember.query.query != null &&
+        projectMember?.query?.query != null &&
         (
           (state.searchResults.searchResults[projectMember.query.query] ?? {})[
             projectMember.query.card_type
@@ -283,9 +281,7 @@ export const selectQueriesWithoutSearchResults = (
     for (const face of [Front, Back]) {
       const projectMember = slotProjectMembers[face];
       if (
-        projectMember != null &&
-        projectMember.query != null &&
-        projectMember.query.query != null &&
+        projectMember?.query?.query != null &&
         (state.searchResults.searchResults[projectMember.query.query] ?? {})[
           projectMember.query.card_type
         ] == null

@@ -14,6 +14,13 @@ import {
 } from "@/common/types";
 import { Card, MaximumDPI, MaximumSize, MinimumDPI } from "@/common/constants";
 
+//# region backend
+
+export const localBackendURL = "https://127.0.0.1:8000";
+export const localBackend: BackendState = { url: localBackendURL };
+
+//# endregion
+
 //# region sources
 
 export const sourceDocument1: SourceDocument = {
@@ -22,7 +29,7 @@ export const sourceDocument1: SourceDocument = {
   name: "Source 1",
   identifier: "id_1",
   source_type: "gdrive",
-  external_link: undefined,
+  external_link: null,
   description: "",
 };
 
@@ -32,7 +39,7 @@ export const sourceDocument2: SourceDocument = {
   name: "Source 2",
   identifier: "id_2",
   source_type: "gdrive",
-  external_link: undefined,
+  external_link: null,
   description: "",
 };
 
@@ -42,7 +49,7 @@ export const sourceDocument3: SourceDocument = {
   name: "Source 3",
   identifier: "id_3",
   source_type: "gdrive",
-  external_link: undefined,
+  external_link: null,
   description: "",
 };
 
@@ -52,7 +59,7 @@ export const sourceDocument4: SourceDocument = {
   name: "Source 4",
   identifier: "id_4",
   source_type: "gdrive",
-  external_link: undefined,
+  external_link: null,
   description: "",
 };
 
@@ -73,7 +80,7 @@ export const cardDocument1: CardDocument = {
   name: "Card 1",
   priority: 0,
   source: "Card Source",
-  source_id: 0,
+  source_id: sourceDocument1.pk,
   source_verbose: "Card Source",
   source_type: "google drive",
   dpi: 1200,
@@ -92,7 +99,7 @@ export const cardDocument2: CardDocument = {
   name: "Card 2",
   priority: 0,
   source: "Card Source",
-  source_id: 0,
+  source_id: sourceDocument1.pk,
   source_verbose: "Card Source",
   source_type: "google drive",
   dpi: 1200,
@@ -111,7 +118,7 @@ export const cardDocument3: CardDocument = {
   name: "Card 3",
   priority: 0,
   source: "Card Source",
-  source_id: 0,
+  source_id: sourceDocument1.pk,
   source_verbose: "Card Source",
   source_type: "google drive",
   dpi: 1200,
@@ -130,7 +137,7 @@ export const cardDocument4: CardDocument = {
   name: "Card 4",
   priority: 0,
   source: "Card Source",
-  source_id: 0,
+  source_id: sourceDocument1.pk,
   source_verbose: "Card Source",
   source_type: "google drive",
   dpi: 1200,
@@ -141,67 +148,6 @@ export const cardDocument4: CardDocument = {
   size: 10_000_000,
   small_thumbnail_url: "",
   medium_thumbnail_url: "",
-};
-
-export const cardDocumentsOneResult: CardDocumentsState = {
-  cardDocuments: {
-    [cardDocument1.identifier]: cardDocument1,
-  },
-  status: "idle",
-  error: null,
-};
-
-export const cardDocumentsThreeResults: CardDocumentsState = {
-  cardDocuments: {
-    [cardDocument1.identifier]: cardDocument1,
-    [cardDocument2.identifier]: cardDocument2,
-    [cardDocument3.identifier]: cardDocument3,
-  },
-  status: "idle",
-  error: null,
-};
-
-export const cardDocumentsFourResults: CardDocumentsState = {
-  cardDocuments: {
-    [cardDocument1.identifier]: cardDocument1,
-    [cardDocument2.identifier]: cardDocument2,
-    [cardDocument3.identifier]: cardDocument3,
-    [cardDocument4.identifier]: cardDocument4,
-  },
-  status: "idle",
-  error: null,
-};
-
-//# endregion
-
-//# region search results
-
-export const searchResultsOneResult: SearchResultsState = {
-  searchResults: {
-    "my search query": {
-      CARD: [cardDocument1.identifier],
-      CARDBACK: [],
-      TOKEN: [],
-    },
-  },
-  status: "idle",
-  error: null,
-};
-
-export const searchResultsThreeResults: SearchResultsState = {
-  searchResults: {
-    "my search query": {
-      CARD: [
-        cardDocument1.identifier,
-        cardDocument2.identifier,
-        cardDocument3.identifier,
-      ],
-      CARDBACK: [],
-      TOKEN: [],
-    },
-  },
-  status: "idle",
-  error: null,
 };
 
 //# endregion
@@ -253,14 +199,6 @@ export const defaultSettings: SearchSettings = {
     maximumDPI: MaximumDPI,
     maximumSize: MaximumSize,
   },
-};
-
-//# endregion
-
-//# region backend
-
-export const localBackend: BackendState = {
-  url: "https://127.0.0.1:8000",
 };
 
 //# endregion

@@ -75,7 +75,7 @@ export function CardGrid() {
   for (const [slot, slotProjectMember] of projectMembers.entries()) {
     cardSlotsFronts.push(
       <MemoizedCardSlot
-        key={`${Front}-slot-${slot}`}
+        key={`${Front}-slot${slot}`}
         searchQuery={slotProjectMember.front?.query}
         face={Front}
         slot={slot}
@@ -84,7 +84,7 @@ export function CardGrid() {
     );
     cardSlotsBacks.push(
       <MemoizedCardSlot
-        key={`${Back}-slot-${slot}`}
+        key={`${Back}-slot${slot}`}
         searchQuery={slotProjectMember.back?.query}
         face={Back}
         slot={slot}
