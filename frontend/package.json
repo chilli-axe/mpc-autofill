@@ -65,5 +65,8 @@
     "style-loader": "^3.3.2",
     "ts-jest": "^29.0.5",
     "ts-loader": "^9.4.2"
+  },
+  "msw": {
+    "workerDirectory": "public"
   }
 }
