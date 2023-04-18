@@ -173,7 +173,7 @@ export function CommonCardback(props: CommonCardbackProps) {
   );
 
   return (
-    <>
+    <div data-testid="common-cardback">
       <MemoizedCard
         imageIdentifier={selectedImage}
         previousImageIdentifier={previousImage}
@@ -196,7 +196,7 @@ export function CommonCardback(props: CommonCardbackProps) {
           handleClose={handleCloseDetailedView}
         />
       )}
-    </>
+    </div>
   );
 }
 

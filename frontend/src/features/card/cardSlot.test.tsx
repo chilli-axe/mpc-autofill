@@ -1,6 +1,5 @@
-import { renderWithProviders } from "@/common/test-utils";
 import { screen, waitFor } from "@testing-library/react";
-import { Card } from "@/common/constants";
+import { Back, Card, Front } from "@/common/constants";
 import {
   localBackend,
   cardDocument1,
@@ -9,6 +8,12 @@ import {
   projectSelectedImage1,
   projectSelectedImage2,
 } from "@/common/test-constants";
+import {
+  renderWithProviders,
+  expectCardSlotToNotExist,
+  expectCardGridSlotState,
+  expectCardbackSlotState,
+} from "@/common/test-utils";
 import {
   cardDocumentsOneResult,
   cardDocumentsThreeResults,
@@ -45,9 +50,7 @@ test("the html structure of a CardSlot with a single search result, no image sel
       },
     },
   });
-  await waitFor(() =>
-    expect(screen.queryAllByText(cardDocument1.name)).toHaveLength(1)
-  );
+  await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 1);
   expect(screen.getByTestId("front-slot0")).toMatchSnapshot();
 });
 
@@ -64,9 +67,8 @@ test("the html structure of a CardSlot with a single search result, image select
       project: projectSelectedImage1,
     },
   });
-  await waitFor(() =>
-    expect(screen.queryAllByText(cardDocument1.name)).toHaveLength(1)
-  );
+
+  await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 1);
   expect(screen.getByTestId("front-slot0")).toMatchSnapshot();
 });
 
@@ -80,9 +82,8 @@ test("the html structure of a CardSlot with multiple search results, image selec
   renderWithProviders(<App />, {
     preloadedState: { backend: localBackend, project: projectSelectedImage1 },
   });
-  await waitFor(() =>
-    expect(screen.queryAllByText(cardDocument1.name)).toHaveLength(1)
-  );
+
+  await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 3);
   expect(screen.getByTestId("front-slot0")).toMatchSnapshot();
 });
 
@@ -99,13 +100,12 @@ test("the html structure of a CardSlot's grid selector", async () => {
       project: projectSelectedImage1,
     },
   });
-  await waitFor(() =>
-    expect(screen.queryAllByText(cardDocument1.name)).toHaveLength(1)
-  );
-  await waitFor(() => screen.getByText("1 / 3").click());
+
+  // from preloaded state
+  await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 3);
+
   await waitFor(() => expect(screen.getByText("Select Version")));
-  // this is a bit hacky, but i'm not sure how else to identify the whole modal with RTL
-  // expect(document.getElementsByClassName("modal-lg")[0]).toMatchSnapshot();
+
   expect(screen.getByTestId("front-slot0-grid-selector")).toMatchSnapshot();
 });
 
@@ -123,14 +123,13 @@ test("switching to the next image in a CardSlot", async () => {
       project: projectSelectedImage1,
     },
   });
-  await waitFor(() => expect(screen.getByText("1 / 3")).toBeInTheDocument());
-  await waitFor(() =>
-    expect(screen.getByText(cardDocument1.name)).toBeInTheDocument()
-  );
+
+  // from preloaded state
+  await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 3);
 
   screen.getByText("❯").click();
-  await waitFor(() => expect(screen.getByText("2 / 3")).toBeInTheDocument());
-  expect(screen.getByText(cardDocument2.name)).toBeInTheDocument();
+
+  await expectCardGridSlotState(1, Front, cardDocument2.name, 2, 3);
 });
 
 test("switching to the previous image in a CardSlot", async () => {
@@ -145,14 +144,13 @@ test("switching to the previous image in a CardSlot", async () => {
       project: projectSelectedImage2,
     },
   });
-  await waitFor(() => expect(screen.getByText("2 / 3")).toBeInTheDocument());
-  await waitFor(() =>
-    expect(screen.getByText(cardDocument2.name)).toBeInTheDocument()
-  );
+
+  // from preloaded state
+  await expectCardGridSlotState(1, Front, cardDocument2.name, 2, 3);
 
   screen.getByText("❮").click();
-  await waitFor(() => expect(screen.getByText("1 / 3")).toBeInTheDocument());
-  expect(screen.getByText(cardDocument1.name)).toBeInTheDocument();
+
+  await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 3);
 });
 
 test("switching images in a CardSlot wraps around", async () => {
@@ -167,22 +165,19 @@ test("switching images in a CardSlot wraps around", async () => {
       project: projectSelectedImage2,
     },
   });
-  await waitFor(() => expect(screen.getByText("2 / 3")).toBeInTheDocument());
-  await waitFor(() =>
-    expect(screen.getByText(cardDocument2.name)).toBeInTheDocument()
-  );
+
+  // from preloaded state
+  await expectCardGridSlotState(1, Front, cardDocument2.name, 2, 3);
+
+  // page between images and ensure that wrapping around works
+  screen.getByText("❯").click();
+  await expectCardGridSlotState(1, Front, cardDocument3.name, 3, 3);
 
   screen.getByText("❯").click();
-  await waitFor(() => expect(screen.getByText("3 / 3")).toBeInTheDocument());
-  expect(screen.getByText(cardDocument3.name)).toBeInTheDocument();
-
-  screen.getByText("❯").click();
-  await waitFor(() => expect(screen.getByText("1 / 3")).toBeInTheDocument());
-  expect(screen.getByText(cardDocument1.name)).toBeInTheDocument();
+  await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 3);
 
   screen.getByText("❮").click();
-  await waitFor(() => expect(screen.getByText("3 / 3")).toBeInTheDocument());
-  expect(screen.getByText(cardDocument3.name)).toBeInTheDocument();
+  await expectCardGridSlotState(1, Front, cardDocument3.name, 3, 3);
 });
 
 test("selecting an image in a CardSlot via the grid selector", async () => {
@@ -198,6 +193,9 @@ test("selecting an image in a CardSlot via the grid selector", async () => {
     },
   });
 
+  // from preloaded state
+  await expectCardGridSlotState(1, Front, cardDocument2.name, 2, 3);
+
   await waitFor(() => screen.getByText("2 / 3").click());
   await waitFor(() => expect(screen.getByText("Select Version")));
 
@@ -205,9 +203,7 @@ test("selecting an image in a CardSlot via the grid selector", async () => {
   expect(screen.getByText("Option 3")).toBeInTheDocument();
   screen.getByText("Option 1").click();
 
-  await waitFor(() => {
-    expect(screen.getByText("1 / 3")).toBeInTheDocument();
-  });
+  await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 3);
 });
 
 test("deleting a CardSlot", async () => {
@@ -227,9 +223,8 @@ test("deleting a CardSlot", async () => {
   );
 
   screen.getByLabelText("remove-front0").click();
-  await waitFor(() => {
-    expect(screen.queryByText(cardDocument1.name)).not.toBeInTheDocument();
-  });
+
+  await expectCardSlotToNotExist(1);
 });
 
 test("CardSlot automatically selects the first search result", async () => {
@@ -256,9 +251,7 @@ test("CardSlot automatically selects the first search result", async () => {
     },
   });
 
-  await waitFor(() => {
-    expect(screen.queryByText(cardDocument1.name)).toBeInTheDocument();
-  });
+  await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 3);
 });
 
 test("CardSlot automatically deselects invalid image then selects the first search result", async () => {
@@ -274,9 +267,7 @@ test("CardSlot automatically deselects invalid image then selects the first sear
     },
   });
 
-  await waitFor(() => {
-    expect(screen.queryByText(cardDocument1.name)).toBeInTheDocument();
-  });
+  await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 1);
 });
 
 test("CardSlot uses cardbacks as search results for backs with no search query", async () => {
@@ -303,10 +294,8 @@ test("CardSlot uses cardbacks as search results for backs with no search query",
     },
   });
 
-  await waitFor(() =>
-    expect(screen.getAllByText(cardDocument1.name)).toHaveLength(2)
-  );
-  expect(screen.getAllByText("1 / 2")).toHaveLength(2);
+  await expectCardGridSlotState(1, Back, cardDocument1.name, 1, 2);
+  await expectCardbackSlotState(cardDocument1.name, 1, 2);
 });
 
 test("CardSlot defaults to project cardback for backs with no search query", async () => {
@@ -330,8 +319,6 @@ test("CardSlot defaults to project cardback for backs with no search query", asy
     },
   });
 
-  await waitFor(() =>
-    expect(screen.queryAllByText(cardDocument1.name)).toHaveLength(2)
-  );
-  expect(screen.getAllByText("1 / 2")).toHaveLength(2);
+  await expectCardGridSlotState(1, Back, cardDocument1.name, 1, 2);
+  await expectCardbackSlotState(cardDocument1.name, 1, 2);
 });

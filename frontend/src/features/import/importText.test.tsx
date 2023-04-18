@@ -1,10 +1,15 @@
-import { renderWithProviders } from "@/common/test-utils";
 import {
   cardDocument1,
   cardDocument2,
   cardDocument4,
   localBackend,
 } from "@/common/test-constants";
+import {
+  renderWithProviders,
+  expectCardSlotToExist,
+  expectCardGridSlotState,
+  expectCardbackSlotState,
+} from "@/common/test-utils";
 import {
   cardDocumentsThreeResults,
   cardDocumentsFourResults,
@@ -16,7 +21,7 @@ import {
 } from "@/mocks/handlers";
 import { screen, waitFor, fireEvent } from "@testing-library/react";
 import App from "@/app/app";
-import { Card } from "@/common/constants";
+import { Card, Front, Back } from "@/common/constants";
 import { server } from "@/mocks/server";
 
 const preloadedState = {
@@ -41,13 +46,6 @@ async function importText(text: string) {
   screen.getByLabelText("import-text-submit").click();
 }
 
-async function expectCardSlotToExist(slot: number) {
-  // front and back are both picked up by this query, even though only the front is visible
-  await waitFor(() =>
-    expect(screen.getAllByText(`Slot ${slot}`)).toHaveLength(2)
-  );
-}
-
 test("importing one card by text into an empty project", async () => {
   server.use(
     cardDocumentsThreeResults,
@@ -62,17 +60,9 @@ test("importing one card by text into an empty project", async () => {
 
   // a card slot should have been created
   await expectCardSlotToExist(1);
-  // cardDocument1 should be selected for the front and have a single search result
-  await waitFor(() =>
-    expect(screen.getByText(cardDocument1.name)).toBeInTheDocument()
-  );
-  expect(screen.getByText("1 / 1")).toBeInTheDocument();
-  // cardDocument2 should be selected from the back and have two search results
-  // the card name and the text "1 / 2" should be present in the grid and the common cardback
-  await waitFor(() =>
-    expect(screen.getAllByText(cardDocument2.name)).toHaveLength(2)
-  ); // back
-  expect(screen.getAllByText("1 / 2")).toHaveLength(2);
+  await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 1);
+  await expectCardGridSlotState(1, Back, cardDocument2.name, 1, 2);
+  await expectCardbackSlotState(cardDocument2.name, 1, 2);
 });
 
 test("importing multiple instances of one card by text into an empty project", async () => {
@@ -89,18 +79,12 @@ test("importing multiple instances of one card by text into an empty project", a
 
   // two card slots should have been created
   await expectCardSlotToExist(1);
+  await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 1);
+  await expectCardGridSlotState(1, Back, cardDocument2.name, 1, 2);
   await expectCardSlotToExist(2);
-  // cardDocument1 should be selected for the front and have a single search result
-  await waitFor(() =>
-    expect(screen.getAllByText(cardDocument1.name)).toHaveLength(2)
-  ); // back
-  expect(screen.getAllByText("1 / 1")).toHaveLength(2);
-  // cardDocument2 should be selected from the back and have two search results
-  // the card name and the text "1 / 2" should be present in the grid and the common cardback
-  await waitFor(() =>
-    expect(screen.getAllByText(cardDocument2.name)).toHaveLength(3)
-  ); // back
-  expect(screen.getAllByText("1 / 2")).toHaveLength(3);
+  await expectCardGridSlotState(2, Front, cardDocument1.name, 1, 1);
+  await expectCardGridSlotState(2, Back, cardDocument2.name, 1, 2);
+  await expectCardbackSlotState(cardDocument2.name, 1, 2);
 });
 
 test("importing multiple instances of one card by text into a non-empty project", async () => {
@@ -130,28 +114,20 @@ test("importing multiple instances of one card by text into a non-empty project"
 
   // this slot should already exist from our preloaded state
   await expectCardSlotToExist(1);
-  await waitFor(() =>
-    expect(screen.getByText(cardDocument1.name)).toBeInTheDocument()
-  );
-  expect(screen.getByText("1 / 1")).toBeInTheDocument();
+  await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 1);
+  await expectCardGridSlotState(1, Back, cardDocument2.name, 1, 2);
+  await expectCardbackSlotState(cardDocument2.name, 1, 2);
 
   // import two instances of a card
   await importText("2x my search query");
 
   // two card slots should have been created
   await expectCardSlotToExist(2);
+  await expectCardGridSlotState(2, Front, cardDocument1.name, 1, 1);
+  await expectCardGridSlotState(2, Back, cardDocument2.name, 1, 2);
   await expectCardSlotToExist(3);
-  // cardDocument1 should be selected for each front and have a single search result
-  await waitFor(() =>
-    expect(screen.getAllByText(cardDocument1.name)).toHaveLength(3)
-  ); // back
-  expect(screen.getAllByText("1 / 1")).toHaveLength(3);
-  // cardDocument2 should be selected from the back and have two search results
-  // the card name and the text "1 / 2" should be present in the grid and the common cardback
-  await waitFor(() =>
-    expect(screen.getAllByText(cardDocument2.name)).toHaveLength(4)
-  ); // back
-  expect(screen.getAllByText("1 / 2")).toHaveLength(4);
+  await expectCardGridSlotState(3, Front, cardDocument1.name, 1, 1);
+  await expectCardGridSlotState(3, Back, cardDocument2.name, 1, 2);
 });
 
 test("importing one DFC-paired card by text into an empty project", async () => {
@@ -164,23 +140,12 @@ test("importing one DFC-paired card by text into an empty project", async () => 
   );
   renderWithProviders(<App />, { preloadedState });
 
-  // import a card
+  // import one instance of a double faced card
   await importText("my search query");
 
-  // a card slot should have been created
+  // we should now have both sides of that DFC pair in slot 1
   await expectCardSlotToExist(1);
-  // cardDocument1 should be selected for the front and have a single search result
-  await waitFor(() =>
-    expect(screen.getByText(cardDocument1.name)).toBeInTheDocument()
-  );
-  expect(screen.getAllByText("1 / 1")).toHaveLength(2);
-  // cardDocument2 should be the project cardback and have two search results
-  // cardDocument4 should be selected from the back and have one search results
-  await waitFor(() =>
-    expect(screen.getByText(cardDocument2.name)).toBeInTheDocument()
-  );
-  await waitFor(() =>
-    expect(screen.getByText(cardDocument4.name)).toBeInTheDocument()
-  );
-  expect(screen.getByText("1 / 2")).toBeInTheDocument();
+  await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 1);
+  await expectCardGridSlotState(1, Back, cardDocument4.name, 1, 1);
+  await expectCardbackSlotState(cardDocument2.name, 1, 2);
 });
