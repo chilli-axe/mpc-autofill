@@ -50,6 +50,7 @@ export function CommonCardbackGridSelector(
   }
   return (
     <GridSelector
+      testId="cardback-grid-selector"
       imageIdentifiers={props.searchResults}
       show={props.show}
       handleClose={props.handleClose}
