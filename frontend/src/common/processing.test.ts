@@ -155,7 +155,7 @@ describe("URLs are sanitised correctly", () => {
     "127.0.0.1:8000/path",
   ]).test("%s", (text) => {
     expect(standardiseURL(text)).toBe(
-      "http" + (text.includes("https") ? "s" : "") + "://127.0.0.1:8000"
+      "http" + (text.includes("http://") ? "" : "s") + "://127.0.0.1:8000"
     );
   });
 });

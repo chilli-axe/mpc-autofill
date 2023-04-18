@@ -134,12 +134,12 @@ export function processLines(
 export function standardiseURL(url: string): string {
   /**
    * Standardise `url` in the following ways:
-   * 1. Ensure a http prefix is included, defaulting to `http://` if not specified
+   * 1. Ensure a http prefix is included, defaulting to `https://` if not specified
    * 2. Trim any trailing slash and path
    */
 
   const re = [...url.matchAll(/^(https?:\/\/)?(.*?)(?:\/.*)?$/gm)][0];
-  return (re[1] ?? "http://") + re[2];
+  return (re[1] ?? "https://") + re[2];
 }
 
 // TODO: delete this when remaining API interactions have been moved to RTK query
