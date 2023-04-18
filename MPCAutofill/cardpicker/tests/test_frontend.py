@@ -506,7 +506,6 @@ class TestFrontend:
             source=TestSources.EXAMPLE_DRIVE_1.value,
         )
 
-    # TODO: replicate this test in the new frontend
     def test_dfc_search(self, chrome_driver):
         call_command("update_dfcs")
         # set up results page with single result
@@ -719,7 +718,6 @@ class TestFrontend:
         assert chrome_driver.find_element(By.ID, value="detailedView-class").text == "Card"
         assert chrome_driver.find_element(By.ID, value="detailedView-id").text == TestCards.BRAINSTORM.value.identifier
 
-    # TODO: replicate this test in the new frontend
     def test_delete_card_from_order(self, chrome_driver):
         self.load_review_page_with_search_string(chrome_driver, "2 brainstorm\n1 island")
 

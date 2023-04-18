@@ -7,6 +7,7 @@ import {
 import {
   renderWithProviders,
   expectCardSlotToExist,
+  expectCardSlotToNotExist,
   expectCardGridSlotState,
   expectCardbackSlotState,
 } from "@/common/test-utils";
@@ -87,6 +88,50 @@ test("importing multiple instances of one card by text into an empty project", a
   await expectCardbackSlotState(cardDocument2.name, 1, 2);
 });
 
+test("importing multiple instances of one card without an x by text into an empty project", async () => {
+  server.use(
+    cardDocumentsThreeResults,
+    cardbacksTwoOtherResults,
+    sourceDocumentsOneResult,
+    searchResultsOneResult
+  );
+  renderWithProviders(<App />, { preloadedState });
+
+  // import two instances of a card without an x
+  await importText("2 my search query");
+
+  // two card slots should have been created
+  await expectCardSlotToExist(1);
+  await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 1);
+  await expectCardGridSlotState(1, Back, cardDocument2.name, 1, 2);
+  await expectCardSlotToExist(2);
+  await expectCardGridSlotState(2, Front, cardDocument1.name, 1, 1);
+  await expectCardGridSlotState(2, Back, cardDocument2.name, 1, 2);
+  await expectCardbackSlotState(cardDocument2.name, 1, 2);
+});
+
+test("importing multiple instances of one card with a capital X by text into an empty project", async () => {
+  server.use(
+    cardDocumentsThreeResults,
+    cardbacksTwoOtherResults,
+    sourceDocumentsOneResult,
+    searchResultsOneResult
+  );
+  renderWithProviders(<App />, { preloadedState });
+
+  // import two instances of a card with a capital X
+  await importText("2X my search query");
+
+  // two card slots should have been created
+  await expectCardSlotToExist(1);
+  await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 1);
+  await expectCardGridSlotState(1, Back, cardDocument2.name, 1, 2);
+  await expectCardSlotToExist(2);
+  await expectCardGridSlotState(2, Front, cardDocument1.name, 1, 1);
+  await expectCardGridSlotState(2, Back, cardDocument2.name, 1, 2);
+  await expectCardbackSlotState(cardDocument2.name, 1, 2);
+});
+
 test("importing multiple instances of one card by text into a non-empty project", async () => {
   server.use(
     cardDocumentsThreeResults,
@@ -148,4 +193,18 @@ test("importing one DFC-paired card by text into an empty project", async () => 
   await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 1);
   await expectCardGridSlotState(1, Back, cardDocument4.name, 1, 1);
   await expectCardbackSlotState(cardDocument2.name, 1, 2);
+});
+
+test("importing an empty string by text into an empty project", async () => {
+  server.use(
+    cardDocumentsThreeResults,
+    cardbacksTwoOtherResults,
+    sourceDocumentsOneResult,
+    searchResultsOneResult
+  );
+  renderWithProviders(<App />, { preloadedState });
+
+  await importText("");
+
+  await expectCardSlotToNotExist(1);
 });

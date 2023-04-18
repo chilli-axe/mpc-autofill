@@ -78,7 +78,7 @@ export function processLine(line: string, dfcPairs: DFCPairs): ProcessedLine {
    */
 
   const trimmedLine = line.replace(/\s+/g, " ").trim();
-  const re = /^([0-9]*)?x?\s?(.*)$/; // note that "x" after the quantity is ignored - e.g. 3x and 3 are treated the same
+  const re = /^([0-9]*)?[xX]?\s?(.*)$/; // note that "x" after the quantity is ignored - e.g. 3x and 3 are treated the same
   const results = re.exec(trimmedLine);
   if (results == null) {
     return [0, null, null];
