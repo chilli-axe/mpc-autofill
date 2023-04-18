@@ -1,0 +1,86 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`the html structure of text importer 1`] = `
+<div
+  class="modal-dialog"
+  data-testid="import-text"
+>
+  <div
+    class="modal-content"
+  >
+    <div
+      class="modal-header"
+    >
+      <div
+        class="modal-title h4"
+      >
+        Add Cards — Text
+      </div>
+      <button
+        aria-label="Close"
+        class="btn-close"
+        type="button"
+      />
+    </div>
+    <div
+      class="modal-body"
+    >
+      <p>
+        Type the names of the cards you'd like to add to your order and hit 
+        <b>
+          Submit
+        </b>
+        . One card per line.
+      </p>
+      <p>
+        Specify both front and back queries by separating them with
+         
+        <code>
+          |
+        </code>
+         — for example,
+         
+        <code>
+          4x goblin 
+          |
+           
+          t:
+          elf
+        </code>
+        .
+      </p>
+      <p>
+        If you don't specify a back query and your front query is a double-faced card, we will automatically query the back for you.
+      </p>
+      <div
+        class="mb-3"
+      >
+        <textarea
+          aria-label="import-text"
+          class="form-control"
+          placeholder=""
+          required=""
+          rows="12"
+        />
+      </div>
+    </div>
+    <div
+      class="modal-footer"
+    >
+      <button
+        class="btn btn-secondary"
+        type="button"
+      >
+        Close
+      </button>
+      <button
+        aria-label="import-text-submit"
+        class="btn btn-primary"
+        type="button"
+      >
+        Submit
+      </button>
+    </div>
+  </div>
+</div>
+`;

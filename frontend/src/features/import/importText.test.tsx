@@ -1,7 +1,10 @@
 import {
   cardDocument1,
   cardDocument2,
+  cardDocument3,
   cardDocument4,
+  cardDocument5,
+  cardDocument6,
   localBackend,
 } from "@/common/test-constants";
 import {
@@ -19,11 +22,26 @@ import {
   searchResultsOneResult,
   dfcPairsMatchingCards1And4,
   searchResultsForDFCMatchedCards1And4,
+  sampleCards,
 } from "@/mocks/handlers";
 import { screen, waitFor, fireEvent } from "@testing-library/react";
+import { within } from "@testing-library/dom";
 import App from "@/app/app";
 import { Card, Front, Back } from "@/common/constants";
 import { server } from "@/mocks/server";
+
+//# region mocks
+// this ensures that the text import placeholder text is deterministic between test runs
+
+beforeEach(() => {
+  jest.spyOn(global.Math, "random").mockReturnValue(1);
+});
+
+afterEach(() => {
+  jest.spyOn(global.Math, "random").mockRestore();
+});
+
+//# endregion
 
 const preloadedState = {
   backend: localBackend,
@@ -46,6 +64,18 @@ async function importText(text: string) {
   fireEvent.change(textArea, { target: { value: text } });
   screen.getByLabelText("import-text-submit").click();
 }
+
+//# region snapshot tests
+
+test("the html structure of text importer", async () => {
+  renderWithProviders(<App />, { preloadedState });
+
+  await openImportTextModal();
+
+  expect(screen.getByTestId("import-text")).toMatchSnapshot();
+});
+
+//# endregion
 
 test("importing one card by text into an empty project", async () => {
   server.use(
@@ -207,4 +237,30 @@ test("importing an empty string by text into an empty project", async () => {
   await importText("");
 
   await expectCardSlotToNotExist(1);
+});
+
+test("the placeholder text of the text importer", async () => {
+  server.use(sampleCards);
+  renderWithProviders(<App />, { preloadedState });
+
+  await openImportTextModal();
+
+  const myman = within(screen.getByTestId("import-text")).getByRole("textbox");
+
+  // TODO: assert on the placeholder text of the text area
+  await waitFor(() =>
+    expect(
+      within(screen.getByTestId("import-text")).getByRole("textbox")
+    ).toHaveAttribute(
+      "placeholder",
+      `4x ${cardDocument1.name}
+4x ${cardDocument2.name}
+4x ${cardDocument3.name}
+4x ${cardDocument4.name}
+
+4x t:${cardDocument6.name}
+
+4x b:${cardDocument5.name}`
+    )
+  );
 });

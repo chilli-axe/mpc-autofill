@@ -89,6 +89,7 @@ export function ImportText() {
         show={showTextModal}
         onHide={handleCloseTextModal}
         onExited={() => setTextModalValue("")}
+        data-testid="import-text"
       >
         <Modal.Header closeButton>
           <Modal.Title>Add Cards — Text</Modal.Title>

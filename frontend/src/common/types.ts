@@ -48,6 +48,7 @@ export interface CardbacksState {
 }
 
 // TODO: create json schemas for these, infer types from them, and see if we can define the schema once between frontend and backend
+// TODO: it seems DRF serialisers can accomplish this: https://www.django-rest-framework.org/api-guide/serializers/
 export interface SourceDocument {
   // This should match the data returned by `to_dict` on the `Source` Django model
   pk: number;
@@ -137,8 +138,6 @@ export interface BackendState {
   url: string | null;
   // TODO: connection status stuff in here probably
 }
-
-// export type SourceRow = [number, boolean]
 
 export type SourceRow = FromSchema<typeof sourceRowSchema>;
 export type SearchTypeSettings = FromSchema<typeof searchTypeSettingsSchema>;

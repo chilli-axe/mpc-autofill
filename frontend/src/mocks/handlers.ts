@@ -5,8 +5,11 @@ import {
   cardDocument2,
   cardDocument3,
   cardDocument4,
+  cardDocument5,
+  cardDocument6,
   sourceDocument1,
 } from "@/common/test-constants";
+import { Card, Cardback, Token } from "@/common/constants";
 
 function buildRoute(route: string) {
   /**
@@ -190,6 +193,26 @@ export const dfcPairsMatchingCards1And4 = rest.get(
     return res(
       ctx.status(200),
       ctx.json({ dfc_pairs: { ["my search query"]: cardDocument4.name } })
+    );
+  }
+);
+
+//# endregion
+
+//# region sample cards
+
+export const sampleCards = rest.get(
+  buildRoute("2/sampleCards"),
+  (req, res, ctx) => {
+    return res(
+      ctx.status(200),
+      ctx.json({
+        cards: {
+          [Card]: [cardDocument1, cardDocument2, cardDocument3, cardDocument4],
+          [Cardback]: [cardDocument5],
+          [Token]: [cardDocument6],
+        },
+      })
     );
   }
 );

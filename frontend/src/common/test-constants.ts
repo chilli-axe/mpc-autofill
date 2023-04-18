@@ -150,6 +150,44 @@ export const cardDocument4: CardDocument = {
   medium_thumbnail_url: "",
 };
 
+export const cardDocument5: CardDocument = {
+  identifier: "abc1234567",
+  card_type: "CARDBACK",
+  name: "Card 5",
+  priority: 0,
+  source: "Card Source",
+  source_id: sourceDocument2.pk,
+  source_verbose: "Card Source",
+  source_type: "google drive",
+  dpi: 1200,
+  searchq: "card 5",
+  extension: "png",
+  date: "1st January, 2000", // formatted by backend
+  download_link: "",
+  size: 10_000_000,
+  small_thumbnail_url: "",
+  medium_thumbnail_url: "",
+};
+
+export const cardDocument6: CardDocument = {
+  identifier: "abc12345678",
+  card_type: "TOKEN",
+  name: "Card 6",
+  priority: 0,
+  source: "Card Source",
+  source_id: sourceDocument3.pk,
+  source_verbose: "Card Source",
+  source_type: "google drive",
+  dpi: 1200,
+  searchq: "card 6",
+  extension: "png",
+  date: "1st January, 2000", // formatted by backend
+  download_link: "",
+  size: 10_000_000,
+  small_thumbnail_url: "",
+  medium_thumbnail_url: "",
+};
+
 //# endregion
 
 //# region project
