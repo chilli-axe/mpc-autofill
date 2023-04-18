@@ -1,0 +1,177 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`the html structure of a CardDetailedView 1`] = `
+<div
+  class="modal-dialog modal-xl"
+  data-testid="detailed-view"
+>
+  <div
+    class="modal-content"
+  >
+    <div
+      class="modal-header"
+    >
+      <div
+        class="modal-title h4"
+      >
+        Card Details
+      </div>
+      <button
+        aria-label="Close"
+        class="btn-close"
+        type="button"
+      />
+    </div>
+    <div
+      class="modal-body"
+    >
+      <div
+        class="row"
+      >
+        <div
+          class="col-lg-5 mb-3 mb-lg-0"
+          style="position: relative;"
+        >
+          <div
+            class="rounded-xl shadow-lg ratio ratio-7x5"
+            style="z-index: 0;"
+          >
+            <div
+              class="d-flex justify-content-center align-items-center"
+              style="opacity: 0;"
+            >
+              <div
+                class="spinner-border"
+                role="status"
+                style="width: 4em; height: 4em;"
+              >
+                <span
+                  class="visually-hidden"
+                >
+                  Loading...
+                </span>
+              </div>
+            </div>
+            <img
+              alt="Card 1"
+              class="card-img-fade-in"
+              data-nimg="fill"
+              decoding="async"
+              src=""
+              style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent; z-index: 1; opacity: 1;"
+            />
+          </div>
+        </div>
+        <div
+          class="col-lg-7"
+        >
+          <h4>
+            Card 1
+          </h4>
+          <table
+            class="table table-hover"
+          >
+            <tbody>
+              <tr>
+                <td>
+                  <b>
+                    Source Name
+                  </b>
+                </td>
+                <td>
+                  <a>
+                    Card Source
+                  </a>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <b>
+                    Source Type
+                  </b>
+                </td>
+                <td>
+                  google drive
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <b>
+                    Class
+                  </b>
+                </td>
+                <td>
+                  Card
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <b>
+                    Identifier
+                  </b>
+                </td>
+                <td>
+                  <code>
+                    abc123
+                  </code>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <b>
+                    Resolution
+                  </b>
+                </td>
+                <td>
+                  1200
+                   DPI
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <b>
+                    Date Created
+                  </b>
+                </td>
+                <td>
+                  1st January, 2000
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <b>
+                    File Size
+                  </b>
+                </td>
+                <td>
+                  10 MB
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div
+            class="d-grid gap-0"
+          >
+            <button
+              class="btn btn-primary"
+              type="button"
+            >
+              Download Image
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div
+      class="modal-footer"
+    >
+      <button
+        class="btn btn-secondary"
+        type="button"
+      >
+        Close
+      </button>
+    </div>
+  </div>
+</div>
+`;

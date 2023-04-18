@@ -39,7 +39,12 @@ export function CardDetailedView(props: CardDetailedViewProps) {
   return (
     <div>
       {maybeCardDocument != null && (
-        <Modal show={props.show} onHide={props.handleClose} size={"xl"}>
+        <Modal
+          show={props.show}
+          onHide={props.handleClose}
+          size={"xl"}
+          data-testid="detailed-view"
+        >
           <Modal.Header closeButton>
             <Modal.Title>Card Details</Modal.Title>
           </Modal.Header>
