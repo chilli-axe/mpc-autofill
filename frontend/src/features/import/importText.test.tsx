@@ -2,7 +2,6 @@ import { renderWithProviders } from "@/common/test-utils";
 import {
   cardDocument1,
   cardDocument2,
-  cardDocument3,
   cardDocument4,
   localBackend,
 } from "@/common/test-constants";
@@ -155,13 +154,12 @@ test("importing multiple instances of one card by text into a non-empty project"
   expect(screen.getAllByText("1 / 2")).toHaveLength(4);
 });
 
-// TODO: i cannot figure out atm why this test is failing. fix it later
-test.skip("importing one DFC-paired card by text into an empty project", async () => {
+test("importing one DFC-paired card by text into an empty project", async () => {
   server.use(
     cardDocumentsFourResults,
     cardbacksTwoOtherResults,
     sourceDocumentsOneResult,
-    searchResultsOneResult,
+    searchResultsForDFCMatchedCards1And4,
     dfcPairsMatchingCards1And4
   );
   renderWithProviders(<App />, { preloadedState });

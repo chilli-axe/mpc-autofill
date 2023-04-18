@@ -163,15 +163,17 @@ export const searchResultsForDFCMatchedCards1And4 = rest.post(
     return res(
       ctx.status(200),
       ctx.json({
-        "my search query": {
-          CARD: [cardDocument1.identifier],
-          CARDBACK: [],
-          TOKEN: [],
-        },
-        "card 4": {
-          CARD: [cardDocument4.identifier],
-          CARDBACK: [],
-          TOKEN: [],
+        results: {
+          "my search query": {
+            CARD: [cardDocument1.identifier],
+            CARDBACK: [],
+            TOKEN: [],
+          },
+          "card 4": {
+            CARD: [cardDocument4.identifier],
+            CARDBACK: [],
+            TOKEN: [],
+          },
         },
       })
     );
