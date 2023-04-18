@@ -104,6 +104,7 @@ test("the html structure of a CardSlot's grid selector", async () => {
   // from preloaded state
   await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 3);
 
+  await waitFor(() => screen.getByText("1 / 3").click());
   await waitFor(() => expect(screen.getByText("Select Version")));
 
   expect(screen.getByTestId("front-slot0-grid-selector")).toMatchSnapshot();
