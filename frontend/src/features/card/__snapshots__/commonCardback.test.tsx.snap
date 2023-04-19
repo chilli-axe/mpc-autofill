@@ -1,0 +1,181 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`the html structure of a CommonCardback with a single search result 1`] = `
+<div
+  data-testid="common-cardback"
+>
+  <div
+    class="mpccard mpccard-hover card"
+  >
+    <div
+      class="pb-0 text-center card-header"
+    >
+      <p
+        class="mpccard-slot"
+      >
+        Cardback
+      </p>
+    </div>
+    <div>
+      <div
+        class="rounded-lg shadow-lg ratio ratio-7x5"
+        style="z-index: 0;"
+      >
+        <div
+          class="d-flex justify-content-center align-items-center"
+          style="opacity: 0;"
+        >
+          <div
+            class="spinner-border"
+            role="status"
+            style="width: 4em; height: 4em;"
+          >
+            <span
+              class="visually-hidden"
+            >
+              Loading...
+            </span>
+          </div>
+        </div>
+        <img
+          alt="Card 1"
+          class="card-img card-img-fade-in"
+          data-nimg="fill"
+          decoding="async"
+          loading="lazy"
+          src=""
+          style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent; z-index: 1; opacity: 1;"
+        />
+      </div>
+      <div
+        class="mb-0 text-center card-body"
+      >
+        <div
+          class="mpccard-name card-subtitle h6"
+        >
+          Card 1
+        </div>
+        <div
+          class="mpccard-spacing"
+        >
+          <p
+            class="mpccard-source card-text"
+          >
+            Card Source [1200 DPI]
+          </p>
+        </div>
+      </div>
+    </div>
+    <div
+      class="padding-top card-footer"
+      style="padding-top: 50px;"
+    >
+      <p
+        class="mpccard-counter text-center align-middle"
+      >
+        1 / 
+        1
+      </p>
+    </div>
+  </div>
+  <div />
+</div>
+`;
+
+exports[`the html structure of a CommonCardback with multiple search results 1`] = `
+<div
+  data-testid="common-cardback"
+>
+  <div
+    class="mpccard mpccard-hover card"
+  >
+    <div
+      class="pb-0 text-center card-header"
+    >
+      <p
+        class="mpccard-slot"
+      >
+        Cardback
+      </p>
+    </div>
+    <div>
+      <div
+        class="rounded-lg shadow-lg ratio ratio-7x5"
+        style="z-index: 0;"
+      >
+        <div
+          class="d-flex justify-content-center align-items-center"
+          style="opacity: 0;"
+        >
+          <div
+            class="spinner-border"
+            role="status"
+            style="width: 4em; height: 4em;"
+          >
+            <span
+              class="visually-hidden"
+            >
+              Loading...
+            </span>
+          </div>
+        </div>
+        <img
+          alt="Card 1"
+          class="card-img card-img-fade-in"
+          data-nimg="fill"
+          decoding="async"
+          loading="lazy"
+          src=""
+          style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent; z-index: 1; opacity: 1;"
+        />
+      </div>
+      <div
+        class="mb-0 text-center card-body"
+      >
+        <div
+          class="mpccard-name card-subtitle h6"
+        >
+          Card 1
+        </div>
+        <div
+          class="mpccard-spacing"
+        >
+          <p
+            class="mpccard-source card-text"
+          >
+            Card Source [1200 DPI]
+          </p>
+        </div>
+      </div>
+    </div>
+    <div
+      class="padding-top card-footer"
+      style="padding-top: 50px;"
+    >
+      <button
+        class="mpccard-counter-btn btn btn-outline-info"
+        type="button"
+      >
+        1
+         / 
+        2
+      </button>
+      <div>
+        <button
+          class="prev btn btn-outline-primary"
+          type="button"
+        >
+          ❮
+        </button>
+        <button
+          class="next btn btn-outline-primary"
+          type="button"
+        >
+          ❯
+        </button>
+      </div>
+    </div>
+  </div>
+  <div />
+</div>
+`;

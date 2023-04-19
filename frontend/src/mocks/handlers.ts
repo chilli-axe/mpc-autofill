@@ -92,6 +92,18 @@ export const cardDocumentsFourResults = rest.post(
 
 //# region cardback
 
+export const cardbacksOneResult = rest.get(
+  buildRoute("2/cardbacks"),
+  (req, res, ctx) => {
+    return res(
+      ctx.status(200),
+      ctx.json({
+        cardbacks: [cardDocument1.identifier],
+      })
+    );
+  }
+);
+
 export const cardbacksTwoResults = rest.get(
   buildRoute("2/cardbacks"),
   (req, res, ctx) => {
