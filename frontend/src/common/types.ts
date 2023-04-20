@@ -173,4 +173,9 @@ export interface DFCPairs {
   [front: string]: string;
 }
 
+export interface ViewSettingsState {
+  frontsVisible: boolean;
+  sourcesVisible: { [source: string]: boolean };
+}
+
 export type ProcessedLine = [number, SearchQuery | null, SearchQuery | null];

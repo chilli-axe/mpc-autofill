@@ -8,10 +8,11 @@ import Modal from "react-bootstrap/Modal";
 import Row from "react-bootstrap/Row";
 import { Card } from "./card";
 import Button from "react-bootstrap/Button";
-import React, { useState } from "react";
-import { useSelector } from "react-redux";
+import React from "react";
+import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/app/store";
-import { CardDocument, CardDocuments } from "@/common/types";
+import { CardDocument } from "@/common/types";
+import { toggleSourceVisible } from "@/features/viewSettings/viewSettingsSlice";
 
 interface GridSelectorProps {
   testId: string;
@@ -27,19 +28,13 @@ interface GridSelectorProps {
 }
 
 export function GridSelector(props: GridSelectorProps) {
-  const [collapsedState, setCollapsedState] = useState<{
-    [source: string]: boolean;
-  }>({});
-  const cardDocuments: CardDocuments = useSelector(
+  const cardDocuments = useSelector(
     (state: RootState) => state.cardDocuments.cardDocuments
   );
-
-  const toggleSourceCollapsed = (source: string) => {
-    setCollapsedState({
-      ...collapsedState,
-      [source]: !(collapsedState[source] ?? true),
-    });
-  };
+  const sourcesVisible = useSelector(
+    (state: RootState) => state.viewSettings.sourcesVisible
+  );
+  const dispatch = useDispatch();
 
   // TODO: we should probably consider returning the data from the backend like this.
   const cardIdentifiersAndOptionNumbersBySource = props.imageIdentifiers.reduce(
@@ -84,7 +79,7 @@ export function GridSelector(props: GridSelectorProps) {
               <div
                 key={`${key}`}
                 className="d-flex justify-content-between"
-                onClick={() => toggleSourceCollapsed(key)}
+                onClick={() => dispatch(toggleSourceVisible(key))}
               >
                 <h4 className="orpheus" key={`${key}-header`}>
                   <i key={`${key}-italics`}>{key}</i>
@@ -92,13 +87,13 @@ export function GridSelector(props: GridSelectorProps) {
                 <i
                   key={`${key}-arrow`}
                   className={
-                    collapsedState[key] ?? true
+                    sourcesVisible[key] ?? true
                       ? "bi bi-chevron-down"
                       : "bi bi-chevron-left"
                   }
                 ></i>
               </div>
-              {(collapsedState[key] ?? true) && (
+              {(sourcesVisible[key] ?? true) && (
                 <>
                   <hr key={`${key}-top-hr`} />
                   <Row
