@@ -82,13 +82,15 @@ export function GridSelector(props: GridSelectorProps) {
           ([key, value]) => (
             <>
               <div
+                key={`${key}`}
                 className="d-flex justify-content-between"
                 onClick={() => toggleSourceCollapsed(key)}
               >
-                <h4 className="orpheus">
-                  <i>{key}</i>
+                <h4 className="orpheus" key={`${key}-header`}>
+                  <i key={`${key}-italics`}>{key}</i>
                 </h4>
                 <i
+                  key={`${key}-arrow`}
                   className={
                     collapsedState[key] ?? true
                       ? "bi bi-chevron-down"
@@ -98,7 +100,7 @@ export function GridSelector(props: GridSelectorProps) {
               </div>
               {(collapsedState[key] ?? true) && (
                 <>
-                  <hr />
+                  <hr key={`${key}-top-hr`} />
                   <Row
                     className="g-0"
                     xxl={4}
@@ -107,6 +109,7 @@ export function GridSelector(props: GridSelectorProps) {
                     md={2}
                     sm={2}
                     xs={2}
+                    key={`${key}-row`}
                   >
                     {value.map(([identifier, index]) => (
                       <Card
@@ -123,7 +126,7 @@ export function GridSelector(props: GridSelectorProps) {
                   </Row>
                 </>
               )}
-              <hr />
+              <hr key={`${key}-bottom-hr`} />
             </>
           )
         )}
