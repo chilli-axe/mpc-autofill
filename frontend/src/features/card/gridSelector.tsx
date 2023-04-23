@@ -8,7 +8,7 @@ import Modal from "react-bootstrap/Modal";
 import Row from "react-bootstrap/Row";
 import { Card } from "./card";
 import Button from "react-bootstrap/Button";
-import React, { useMemo } from "react";
+import React, { useCallback, useMemo } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/app/store";
 import { CardDocument } from "@/common/types";
@@ -27,14 +27,126 @@ interface GridSelectorProps {
   };
 }
 
+interface SoupProps {
+  cardIdentifiersAndOptionNumbersBySource: {
+    [source: string]: Array<[string, number]>;
+  };
+  selectImage: {
+    (identifier: string): void;
+  };
+}
+
+function PrimordialSoup(props: SoupProps) {
+  /**
+   * Render all images in `cardIdentifiersAndOptionNumbersBySource` in one block -
+   * i.e. not separated by source.
+   */
+
+  return (
+    <Row className="g-0" xxl={4} xl={4} lg={3} md={2} sm={2} xs={2}>
+      {Object.entries(props.cardIdentifiersAndOptionNumbersBySource).map(
+        ([key, value], sourceIndex) => (
+          <>
+            {value.flatMap(([identifier, index]) => (
+              <Card // TODO: paginate or lazy-load these
+                imageIdentifier={identifier}
+                cardHeaderTitle={`Option ${index + 1}`}
+                cardOnClick={() => props.selectImage(identifier)}
+                key={`gridSelector-${identifier}`}
+                noResultsFound={false}
+              />
+            ))}
+          </>
+        )
+      )}
+    </Row>
+  );
+}
+
+function NonPrimordialSoup(props: SoupProps) {
+  /**
+   * Render all images in `cardIdentifiersAndOptionNumbersBySource` separated by source.
+   * Allow users to toggle whether each source's cards are showed/hidden.
+   */
+
+  const dispatch = useDispatch();
+  const sourcesVisible = useSelector(
+    (state: RootState) => state.viewSettings.sourcesVisible
+  );
+  return (
+    <>
+      {Object.entries(props.cardIdentifiersAndOptionNumbersBySource).map(
+        ([key, value], sourceIndex) => (
+          <>
+            <div
+              className="sticky-top"
+              onClick={() => dispatch(toggleSourceVisible(key))}
+              style={{
+                backgroundColor: "#4E5D6B",
+                zIndex: sourceIndex + 100,
+              }}
+            >
+              <hr key={`${key}-top-hr`} />
+              <div key={`${key}`} className="d-flex justify-content-between">
+                <h4
+                  className="orpheus prevent-select ms-2"
+                  key={`${key}-header`}
+                >
+                  <i key={`${key}-italics`}>{key}</i>
+                </h4>
+                <h4
+                  key={`${key}-arrow`}
+                  className={`me-2 bi bi-chevron-left rotate-${
+                    sourcesVisible[key] ?? true ? "" : "neg"
+                  }90`}
+                  style={{ transition: "all 0.25s 0s" }}
+                ></h4>
+              </div>
+              {(sourcesVisible[key] ?? true) && <hr key={`${key}-bottom-hr`} />}
+            </div>
+
+            {(sourcesVisible[key] ?? true) && (
+              <>
+                <Row
+                  className="g-0"
+                  xxl={4}
+                  xl={4}
+                  lg={3}
+                  md={2}
+                  sm={2}
+                  xs={2}
+                  key={`${key}-row`}
+                >
+                  {value.map(([identifier, index]) => (
+                    <Card
+                      imageIdentifier={identifier}
+                      cardHeaderTitle={`Option ${index + 1}`}
+                      cardOnClick={() => props.selectImage(identifier)}
+                      key={`gridSelector-${identifier}`}
+                      noResultsFound={false}
+                    />
+                  ))}
+                </Row>
+              </>
+            )}
+          </>
+        )
+      )}
+    </>
+  );
+}
+
 export function GridSelector(props: GridSelectorProps) {
   const cardDocuments = useSelector(
     (state: RootState) => state.cardDocuments.cardDocuments
   );
-  const sourcesVisible = useSelector(
-    (state: RootState) => state.viewSettings.sourcesVisible
+  const selectImage = useCallback(
+    (identifier: string) => {
+      props.onClick(identifier);
+      props.handleClose();
+    },
+    [props]
   );
-  const dispatch = useDispatch();
 
   const cardIdentifiersAndOptionNumbersBySource = useMemo(
     () =>
@@ -76,68 +188,12 @@ export function GridSelector(props: GridSelectorProps) {
         <Modal.Title>Select Version</Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        {Object.entries(cardIdentifiersAndOptionNumbersBySource).map(
-          ([key, value], sourceIndex) => (
-            <>
-              <div
-                className="sticky-top"
-                onClick={() => dispatch(toggleSourceVisible(key))}
-                style={{
-                  backgroundColor: "#4E5D6B",
-                  zIndex: sourceIndex + 100,
-                }}
-              >
-                <hr key={`${key}-top-hr`} />
-                <div key={`${key}`} className="d-flex justify-content-between">
-                  <h4
-                    className="orpheus prevent-select ms-2"
-                    key={`${key}-header`}
-                  >
-                    <i key={`${key}-italics`}>{key}</i>
-                  </h4>
-                  <h4
-                    key={`${key}-arrow`}
-                    className={`me-2 bi bi-chevron-left rotate-${
-                      sourcesVisible[key] ?? true ? "" : "neg"
-                    }90`}
-                    style={{ transition: "all 0.25s 0s" }}
-                  ></h4>
-                </div>
-                {(sourcesVisible[key] ?? true) && (
-                  <hr key={`${key}-bottom-hr`} />
-                )}
-              </div>
-
-              {(sourcesVisible[key] ?? true) && (
-                <>
-                  <Row
-                    className="g-0"
-                    xxl={4}
-                    xl={4}
-                    lg={3}
-                    md={2}
-                    sm={2}
-                    xs={2}
-                    key={`${key}-row`}
-                  >
-                    {value.map(([identifier, index]) => (
-                      <Card
-                        imageIdentifier={identifier}
-                        cardHeaderTitle={`Option ${index + 1}`}
-                        cardOnClick={() => {
-                          props.onClick(identifier);
-                          props.handleClose();
-                        }}
-                        key={`gridSelector-${identifier}`}
-                        noResultsFound={false}
-                      />
-                    ))}
-                  </Row>
-                </>
-              )}
-            </>
-          )
-        )}
+        <NonPrimordialSoup
+          cardIdentifiersAndOptionNumbersBySource={
+            cardIdentifiersAndOptionNumbersBySource
+          }
+          selectImage={selectImage}
+        />
       </Modal.Body>
       <Modal.Footer>
         <Button variant="secondary" onClick={props.handleClose}>

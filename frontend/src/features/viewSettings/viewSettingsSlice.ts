@@ -1,10 +1,11 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { RootState } from "@/app/store";
-import { Faces, ViewSettingsState } from "@/common/types";
+import { ViewSettingsState } from "@/common/types";
 
 const initialState: ViewSettingsState = {
   frontsVisible: true,
   sourcesVisible: {},
+  facetBySource: true, // opt into the new grid selector UX by default
 };
 
 export const viewSettingsSlice = createSlice({
@@ -26,11 +27,19 @@ export const viewSettingsSlice = createSlice({
         [action.payload]: !(state.sourcesVisible[action.payload] ?? true),
       };
     },
+    toggleFacetBySource: (state: RootState) => {
+      state.facetBySource = !state.facetBySource;
+    },
   },
 });
 
 // Action creators are generated for each case reducer function
-export const { switchToFront, switchToBack, toggleFaces, toggleSourceVisible } =
-  viewSettingsSlice.actions;
+export const {
+  switchToFront,
+  switchToBack,
+  toggleFaces,
+  toggleSourceVisible,
+  toggleFacetBySource,
+} = viewSettingsSlice.actions;
 
 export default viewSettingsSlice.reducer;

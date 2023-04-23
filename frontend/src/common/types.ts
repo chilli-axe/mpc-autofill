@@ -176,6 +176,7 @@ export interface DFCPairs {
 export interface ViewSettingsState {
   frontsVisible: boolean;
   sourcesVisible: { [source: string]: boolean };
+  facetBySource: boolean;
 }
 
 export type ProcessedLine = [number, SearchQuery | null, SearchQuery | null];
