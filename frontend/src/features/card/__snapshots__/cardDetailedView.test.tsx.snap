@@ -80,7 +80,7 @@ exports[`the html structure of a CardDetailedView 1`] = `
                 </td>
                 <td>
                   <a>
-                    Card Source
+                    Source 1
                   </a>
                 </td>
               </tr>

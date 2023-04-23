@@ -8,6 +8,8 @@ import {
   cardDocument5,
   cardDocument6,
   sourceDocument1,
+  sourceDocument2,
+  sourceDocument3,
 } from "@/common/test-constants";
 import { Card, Cardback, Token } from "@/common/constants";
 
@@ -37,6 +39,26 @@ export const sourceDocumentsOneResult = rest.get(
   }
 );
 
+export const sourceDocumentsThreeResults = rest.get(
+  buildRoute("2/sources/"),
+  (req, res, ctx) => {
+    return res(
+      ctx.status(200),
+      ctx.json({
+        results: {
+          [sourceDocument1.pk]: sourceDocument1,
+          [sourceDocument2.pk]: sourceDocument2,
+          [sourceDocument3.pk]: sourceDocument3,
+        },
+      })
+    );
+  }
+);
+
+//# endregion
+
+//# region card
+
 export const cardDocumentsOneResult = rest.post(
   buildRoute("2/cards/"),
   (req, res, ctx) => {
@@ -50,10 +72,6 @@ export const cardDocumentsOneResult = rest.post(
     );
   }
 );
-
-//# endregion
-
-//# region card
 
 export const cardDocumentsThreeResults = rest.post(
   buildRoute("2/cards/"),
@@ -82,6 +100,25 @@ export const cardDocumentsFourResults = rest.post(
           [cardDocument2.identifier]: cardDocument2,
           [cardDocument3.identifier]: cardDocument3,
           [cardDocument4.identifier]: cardDocument4,
+        },
+      })
+    );
+  }
+);
+
+export const cardDocumentsSixResults = rest.post(
+  buildRoute("2/cards/"),
+  (req, res, ctx) => {
+    return res(
+      ctx.status(200),
+      ctx.json({
+        results: {
+          [cardDocument1.identifier]: cardDocument1,
+          [cardDocument2.identifier]: cardDocument2,
+          [cardDocument3.identifier]: cardDocument3,
+          [cardDocument4.identifier]: cardDocument4,
+          [cardDocument5.identifier]: cardDocument5,
+          [cardDocument6.identifier]: cardDocument6,
         },
       })
     );
@@ -165,6 +202,29 @@ export const searchResultsThreeResults = rest.post(
             ],
             CARDBACK: [],
             TOKEN: [],
+          },
+        },
+      })
+    );
+  }
+);
+
+export const searchResultsSixResults = rest.post(
+  buildRoute("2/searchResults/"),
+  (req, res, ctx) => {
+    return res(
+      ctx.status(200),
+      ctx.json({
+        results: {
+          "my search query": {
+            CARD: [
+              cardDocument1.identifier,
+              cardDocument2.identifier,
+              cardDocument3.identifier,
+              cardDocument4.identifier,
+            ],
+            CARDBACK: [cardDocument5.identifier],
+            TOKEN: [cardDocument6.identifier],
           },
         },
       })
