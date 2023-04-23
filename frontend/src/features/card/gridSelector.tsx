@@ -12,7 +12,15 @@ import React, { useCallback, useMemo } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/app/store";
 import { CardDocument } from "@/common/types";
-import { toggleSourceVisible } from "@/features/viewSettings/viewSettingsSlice";
+import {
+  toggleSourceVisible,
+  makeAllSourcesVisible,
+  toggleFacetBySource,
+} from "@/features/viewSettings/viewSettingsSlice";
+import Col from "react-bootstrap/Col";
+import { ToggleButtonHeight } from "@/common/constants";
+// @ts-ignore: https://github.com/arnthor3/react-bootstrap-toggle/issues/21
+import Toggle from "react-bootstrap-toggle";
 
 interface GridSelectorProps {
   testId: string;
@@ -36,7 +44,7 @@ interface SoupProps {
   };
 }
 
-function PrimordialSoup(props: SoupProps) {
+function CardsGroupedTogether(props: SoupProps) {
   /**
    * Render all images in `cardIdentifiersAndOptionNumbersBySource` in one block -
    * i.e. not separated by source.
@@ -63,7 +71,7 @@ function PrimordialSoup(props: SoupProps) {
   );
 }
 
-function NonPrimordialSoup(props: SoupProps) {
+function CardsFacetedBySource(props: SoupProps) {
   /**
    * Render all images in `cardIdentifiersAndOptionNumbersBySource` separated by source.
    * Allow users to toggle whether each source's cards are showed/hidden.
@@ -137,8 +145,12 @@ function NonPrimordialSoup(props: SoupProps) {
 }
 
 export function GridSelector(props: GridSelectorProps) {
+  const dispatch = useDispatch();
   const cardDocuments = useSelector(
     (state: RootState) => state.cardDocuments.cardDocuments
+  );
+  const facetBySource = useSelector(
+    (state: RootState) => state.viewSettings.facetBySource
   );
   const selectImage = useCallback(
     (identifier: string) => {
@@ -181,19 +193,59 @@ export function GridSelector(props: GridSelectorProps) {
     <Modal
       show={props.show}
       onHide={props.handleClose}
-      size={"lg"}
+      size="lg"
       data-testid={props.testId}
     >
       <Modal.Header closeButton>
         <Modal.Title>Select Version</Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        <NonPrimordialSoup
-          cardIdentifiersAndOptionNumbersBySource={
-            cardIdentifiersAndOptionNumbersBySource
-          }
-          selectImage={selectImage}
-        />
+        <Row>
+          <Col md={8} sm={6}>
+            <Toggle
+              onClick={() => dispatch(toggleFacetBySource())}
+              on="Facet By Source"
+              onClassName="flex-centre"
+              off="Group All Cards Together"
+              offClassName="flex-centre"
+              onstyle="success"
+              offstyle="info"
+              width={100 + "%"}
+              size="md"
+              height={ToggleButtonHeight + "px"}
+              active={facetBySource}
+            />
+          </Col>
+          {facetBySource && (
+            <Col md={4} sm={6}>
+              <div className="d-grid gap-0">
+                <Button onClick={() => dispatch(makeAllSourcesVisible())}>
+                  <i
+                    className="bi bi-arrows-expand"
+                    style={{ paddingRight: 0.5 + "em" }}
+                  />{" "}
+                  Expand All
+                </Button>
+              </div>
+            </Col>
+          )}
+        </Row>
+        <br />
+        {facetBySource ? (
+          <CardsFacetedBySource
+            cardIdentifiersAndOptionNumbersBySource={
+              cardIdentifiersAndOptionNumbersBySource
+            }
+            selectImage={selectImage}
+          />
+        ) : (
+          <CardsGroupedTogether
+            cardIdentifiersAndOptionNumbersBySource={
+              cardIdentifiersAndOptionNumbersBySource
+            }
+            selectImage={selectImage}
+          />
+        )}
       </Modal.Body>
       <Modal.Footer>
         <Button variant="secondary" onClick={props.handleClose}>

@@ -27,6 +27,9 @@ export const viewSettingsSlice = createSlice({
         [action.payload]: !(state.sourcesVisible[action.payload] ?? true),
       };
     },
+    makeAllSourcesVisible: (state: RootState) => {
+      state.sourcesVisible = {};
+    },
     toggleFacetBySource: (state: RootState) => {
       state.facetBySource = !state.facetBySource;
     },
@@ -39,6 +42,7 @@ export const {
   switchToBack,
   toggleFaces,
   toggleSourceVisible,
+  makeAllSourcesVisible,
   toggleFacetBySource,
 } = viewSettingsSlice.actions;
 
