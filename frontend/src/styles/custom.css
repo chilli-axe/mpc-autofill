@@ -280,3 +280,11 @@
   -ms-user-select: none; /* IE 10 and IE 11 */
   user-select: none; /* Standard syntax */
 }
+
+.rotate-90 {
+  transform: rotate(-90deg);
+}
+
+.rotate-neg90 {
+  transform: rotate(0deg);
+}

@@ -8,7 +8,7 @@ import Modal from "react-bootstrap/Modal";
 import Row from "react-bootstrap/Row";
 import { Card } from "./card";
 import Button from "react-bootstrap/Button";
-import React from "react";
+import React, { useMemo } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/app/store";
 import { CardDocument } from "@/common/types";
@@ -36,28 +36,31 @@ export function GridSelector(props: GridSelectorProps) {
   );
   const dispatch = useDispatch();
 
-  // TODO: we should probably consider returning the data from the backend like this.
-  const cardIdentifiersAndOptionNumbersBySource = props.imageIdentifiers.reduce(
-    (
-      accumulator: { [sourceName: string]: Array<[string, number]> },
-      value,
-      currentIndex
-    ) => {
-      const cardDocument: CardDocument | null = cardDocuments[value];
-      if (cardDocument != null) {
-        if (
-          !Object.prototype.hasOwnProperty.call(
-            accumulator,
-            cardDocument.source
-          )
-        ) {
-          accumulator[cardDocument.source] = [];
-        }
-        accumulator[cardDocument.source].push([value, currentIndex]);
-      }
-      return accumulator;
-    },
-    {}
+  const cardIdentifiersAndOptionNumbersBySource = useMemo(
+    () =>
+      props.imageIdentifiers.reduce(
+        (
+          accumulator: { [sourceName: string]: Array<[string, number]> },
+          value,
+          currentIndex
+        ) => {
+          const cardDocument: CardDocument | null = cardDocuments[value];
+          if (cardDocument != null) {
+            if (
+              !Object.prototype.hasOwnProperty.call(
+                accumulator,
+                cardDocument.source
+              )
+            ) {
+              accumulator[cardDocument.source] = [];
+            }
+            accumulator[cardDocument.source].push([value, currentIndex]);
+          }
+          return accumulator;
+        },
+        {}
+      ),
+    [cardDocuments, props.imageIdentifiers]
   );
 
   // TODO: paginate or lazy-load these cards. this is quite slow when you have hundreds of images.
@@ -84,14 +87,13 @@ export function GridSelector(props: GridSelectorProps) {
                 <h4 className="orpheus" key={`${key}-header`}>
                   <i key={`${key}-italics`}>{key}</i>
                 </h4>
-                <i
+                <h4
                   key={`${key}-arrow`}
-                  className={
-                    sourcesVisible[key] ?? true
-                      ? "bi bi-chevron-down"
-                      : "bi bi-chevron-left"
-                  }
-                ></i>
+                  className={`bi bi-chevron-left rotate-${
+                    sourcesVisible[key] ?? true ? "" : "neg"
+                  }90`}
+                  style={{ transition: "all 0.25s 0s" }}
+                ></h4>
               </div>
               {(sourcesVisible[key] ?? true) && (
                 <>
