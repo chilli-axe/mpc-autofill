@@ -411,7 +411,7 @@ exports[`the html structure of a CardSlot's grid selector, cards faceted by sour
             class="orpheus prevent-select ms-2"
           >
             <i>
-              source_1
+              Source 1
             </i>
           </h4>
           <h4
