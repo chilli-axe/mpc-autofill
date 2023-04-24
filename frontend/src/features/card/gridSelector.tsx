@@ -4,6 +4,7 @@
  * Card versions are faceted by source, and all cards for a source can be temporarily hidden.
  */
 
+import Collapse from "react-bootstrap/Collapse";
 import Modal from "react-bootstrap/Modal";
 import Row from "react-bootstrap/Row";
 import { Card } from "./card";
@@ -108,13 +109,17 @@ function CardsFacetedBySource(props: SoupProps) {
                     sourcesVisible[key] ?? true ? "" : "neg"
                   }90`}
                   style={{ transition: "all 0.25s 0s" }}
+                  data-testid={`${key}-collapse-header`}
                 ></h4>
               </div>
-              {(sourcesVisible[key] ?? true) && <hr key={`${key}-bottom-hr`} />}
             </div>
 
-            {(sourcesVisible[key] ?? true) && (
-              <>
+            <Collapse
+              in={sourcesVisible[key] ?? true}
+              data-testid={`${key}-collapse`}
+            >
+              <div>
+                <hr key={`${key}-bottom-hr`} />
                 <Row
                   className="g-0"
                   xxl={4}
@@ -135,8 +140,8 @@ function CardsFacetedBySource(props: SoupProps) {
                     />
                   ))}
                 </Row>
-              </>
-            )}
+              </div>
+            </Collapse>
           </>
         )
       )}

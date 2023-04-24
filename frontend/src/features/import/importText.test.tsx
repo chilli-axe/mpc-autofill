@@ -13,6 +13,8 @@ import {
   expectCardSlotToNotExist,
   expectCardGridSlotState,
   expectCardbackSlotState,
+  openImportTextModal,
+  importText,
 } from "@/common/test-utils";
 import {
   cardDocumentsThreeResults,
@@ -24,7 +26,7 @@ import {
   searchResultsForDFCMatchedCards1And4,
   sampleCards,
 } from "@/mocks/handlers";
-import { screen, waitFor, fireEvent } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
 import { within } from "@testing-library/dom";
 import App from "@/app/app";
 import { Card, Front, Back } from "@/common/constants";
@@ -50,20 +52,6 @@ const preloadedState = {
     cardback: cardDocument2.identifier,
   },
 };
-
-async function openImportTextModal() {
-  // open the modal and find the text area
-  screen.getByText("Add Cards", { exact: false }).click();
-  await waitFor(() => screen.getByText("Text", { exact: false }).click());
-  await waitFor(() => expect(screen.getByText("Add Cards — Text")));
-  return screen.getByLabelText("import-text");
-}
-
-async function importText(text: string) {
-  const textArea = await openImportTextModal();
-  fireEvent.change(textArea, { target: { value: text } });
-  screen.getByLabelText("import-text-submit").click();
-}
 
 //# region snapshot tests
 

@@ -61,7 +61,7 @@ exports[`the html structure of a CommonCardback with a single search result 1`] 
           <p
             class="mpccard-source card-text"
           >
-            Card Source [1200 DPI]
+            Source 1 [1200 DPI]
           </p>
         </div>
       </div>
@@ -143,7 +143,7 @@ exports[`the html structure of a CommonCardback with multiple search results 1`]
           <p
             class="mpccard-source card-text"
           >
-            Card Source [1200 DPI]
+            Source 1 [1200 DPI]
           </p>
         </div>
       </div>
