@@ -46,7 +46,7 @@ test("toggling between faceting cards by source vs grouped together works as exp
   );
 });
 
-test("collapsing a source in the faceted view then uncollapsing it works as expected", async () => {
+test("collapsing a source in the faceted view then expanding it works as expected", async () => {
   server.use(
     cardDocumentsThreeResults,
     sourceDocumentsOneResult,
@@ -86,7 +86,7 @@ test("collapsing a source in the faceted view then uncollapsing it works as expe
   );
 });
 
-test("expanding all sources works as expected", async () => {
+test("collapsing and expanding all sources works as expected", async () => {
   server.use(
     cardDocumentsThreeResults,
     sourceDocumentsOneResult,
@@ -107,9 +107,7 @@ test("expanding all sources works as expected", async () => {
     ).toHaveClass("show")
   );
 
-  within(gridSelector)
-    .getByTestId(`${sourceDocument1.name}-collapse-header`)
-    .click();
+  within(gridSelector).getByText("Collapse All").click();
   await waitFor(() =>
     expect(
       within(gridSelector).getByTestId(`${sourceDocument1.name}-collapse`)

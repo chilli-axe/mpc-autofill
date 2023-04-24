@@ -388,11 +388,12 @@ exports[`the html structure of a CardSlot's grid selector, cards faceted by sour
               type="button"
             >
               <i
-                class="bi bi-arrows-expand"
+                class="bi bi-arrows-collapse"
                 style="padding-right: 0.5em;"
               />
                
-              Expand All
+              Collapse
+               All
             </button>
           </div>
         </div>
@@ -697,7 +698,7 @@ exports[`the html structure of a CardSlot's grid selector, cards faceted by sour
 </div>
 `;
 
-exports[`the html structure of a CardSlot's grid selector, cards groued together 1`] = `
+exports[`the html structure of a CardSlot's grid selector, cards grouped together 1`] = `
 <div
   class="modal-dialog modal-lg"
   data-testid="front-slot0-grid-selector"

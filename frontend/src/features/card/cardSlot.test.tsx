@@ -102,11 +102,6 @@ test("the html structure of a CardSlot's grid selector, cards faceted by source"
     preloadedState: {
       backend: localBackend,
       project: projectSelectedImage1,
-      // viewSettings: {
-      //   frontsVisible: true,
-      //   facetBySource: true,
-      //   sourcesVisible: {},
-      // },
     },
   });
 
@@ -114,7 +109,7 @@ test("the html structure of a CardSlot's grid selector, cards faceted by source"
   expect(gridSelector).toMatchSnapshot();
 });
 
-test("the html structure of a CardSlot's grid selector, cards groued together", async () => {
+test("the html structure of a CardSlot's grid selector, cards grouped together", async () => {
   server.use(
     cardDocumentsSixResults,
     sourceDocumentsThreeResults,

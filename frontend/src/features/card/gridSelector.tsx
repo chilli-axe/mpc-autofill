@@ -12,10 +12,11 @@ import Button from "react-bootstrap/Button";
 import React, { useCallback, useMemo } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/app/store";
-import { CardDocument } from "@/common/types";
+import { CardDocument, SourceDocument } from "@/common/types";
 import {
   toggleSourceVisible,
   makeAllSourcesVisible,
+  makeAllSourcesInvisible,
   toggleFacetBySource,
 } from "@/features/viewSettings/viewSettingsSlice";
 import Col from "react-bootstrap/Col";
@@ -165,11 +166,24 @@ export function GridSelector(props: GridSelectorProps) {
     [props]
   );
 
+  // TODO: move these selectors into a common area where they can be reused
+  const sourceKeyToName = useSelector((state: RootState) =>
+    Object.fromEntries(
+      Object.keys(state.sourceDocuments.sourceDocuments ?? {}).map((pk) => [
+        state.sourceDocuments.sourceDocuments[pk].key,
+        state.sourceDocuments.sourceDocuments[pk].key,
+      ])
+    )
+  );
+  const sourceKeys = Object.keys(sourceKeyToName);
+  const anySourcesCollapsed = useSelector((state: RootState) =>
+    Object.values(state.viewSettings.sourcesVisible ?? {}).includes(false)
+  );
   const cardIdentifiersAndOptionNumbersBySource = useMemo(
     () =>
       props.imageIdentifiers.reduce(
         (
-          accumulator: { [sourceName: string]: Array<[string, number]> },
+          accumulator: { [sourceKey: string]: Array<[string, number]> },
           value,
           currentIndex
         ) => {
@@ -224,12 +238,22 @@ export function GridSelector(props: GridSelectorProps) {
           {facetBySource && (
             <Col md={4} sm={6}>
               <div className="d-grid gap-0">
-                <Button onClick={() => dispatch(makeAllSourcesVisible())}>
+                <Button
+                  onClick={() =>
+                    dispatch(
+                      anySourcesCollapsed
+                        ? makeAllSourcesVisible()
+                        : makeAllSourcesInvisible(sourceKeys)
+                    )
+                  }
+                >
                   <i
-                    className="bi bi-arrows-expand"
+                    className={`bi bi-arrows-${
+                      anySourcesCollapsed ? "expand" : "collapse"
+                    }`}
                     style={{ paddingRight: 0.5 + "em" }}
                   />{" "}
-                  Expand All
+                  {anySourcesCollapsed ? "Expand" : "Collapse"} All
                 </Button>
               </div>
             </Col>

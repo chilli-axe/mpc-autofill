@@ -30,6 +30,14 @@ export const viewSettingsSlice = createSlice({
     makeAllSourcesVisible: (state: RootState) => {
       state.sourcesVisible = {};
     },
+    makeAllSourcesInvisible: (
+      state: RootState,
+      action: PayloadAction<Array<string>>
+    ) => {
+      state.sourcesVisible = Object.fromEntries(
+        action.payload.map((x) => [x, false])
+      );
+    },
     toggleFacetBySource: (state: RootState) => {
       state.facetBySource = !state.facetBySource;
     },
@@ -43,6 +51,7 @@ export const {
   toggleFaces,
   toggleSourceVisible,
   makeAllSourcesVisible,
+  makeAllSourcesInvisible,
   toggleFacetBySource,
 } = viewSettingsSlice.actions;
 
