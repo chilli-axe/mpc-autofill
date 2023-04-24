@@ -411,19 +411,19 @@ exports[`the html structure of a CardSlot's grid selector, cards faceted by sour
             class="orpheus prevent-select ms-2"
           >
             <i>
-              Source 1
+              source_1
             </i>
           </h4>
           <h4
             class="me-2 bi bi-chevron-left rotate-90"
-            data-testid="Source 1-collapse-header"
+            data-testid="source_1-collapse-header"
             style="transition: all 0.25s 0s;"
           />
         </div>
       </div>
       <div
         class="collapse show"
-        data-testid="Source 1-collapse"
+        data-testid="source_1-collapse"
       >
         <hr />
         <div

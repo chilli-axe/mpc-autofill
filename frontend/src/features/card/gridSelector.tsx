@@ -39,7 +39,7 @@ interface GridSelectorProps {
 
 interface SoupProps {
   cardIdentifiersAndOptionNumbersBySource: {
-    [source: string]: Array<[string, number]>;
+    [sourceKey: string]: Array<[string, number]>;
   };
   selectImage: {
     (identifier: string): void;
@@ -86,41 +86,45 @@ function CardsFacetedBySource(props: SoupProps) {
   return (
     <>
       {Object.entries(props.cardIdentifiersAndOptionNumbersBySource).map(
-        ([key, value], sourceIndex) => (
+        ([sourceKey, cardIdentifiersAndOptionNumbers], sourceIndex) => (
           <>
             <div
               className="sticky-top"
-              onClick={() => dispatch(toggleSourceVisible(key))}
+              onClick={() => dispatch(toggleSourceVisible(sourceKey))}
               style={{
                 backgroundColor: "#4E5D6B",
                 zIndex: sourceIndex + 100,
               }}
+              key={`${sourceKey}-header`}
             >
-              <hr key={`${key}-top-hr`} />
-              <div key={`${key}`} className="d-flex justify-content-between">
+              <hr key={`${sourceKey}-top-hr`} />
+              <div
+                key={`${sourceKey}-header-inner`}
+                className="d-flex justify-content-between"
+              >
                 <h4
                   className="orpheus prevent-select ms-2"
-                  key={`${key}-header`}
+                  key={`${sourceKey}-header-title`}
                 >
-                  <i key={`${key}-italics`}>{key}</i>
+                  <i key={`${sourceKey}-italics`}>{sourceKey}</i>
                 </h4>
                 <h4
-                  key={`${key}-arrow`}
+                  key={`${sourceKey}-arrow`}
                   className={`me-2 bi bi-chevron-left rotate-${
-                    sourcesVisible[key] ?? true ? "" : "neg"
+                    sourcesVisible[sourceKey] ?? true ? "" : "neg"
                   }90`}
                   style={{ transition: "all 0.25s 0s" }}
-                  data-testid={`${key}-collapse-header`}
+                  data-testid={`${sourceKey}-collapse-header`}
                 ></h4>
               </div>
             </div>
 
             <Collapse
-              in={sourcesVisible[key] ?? true}
-              data-testid={`${key}-collapse`}
+              in={sourcesVisible[sourceKey] ?? true}
+              data-testid={`${sourceKey}-collapse`}
             >
               <div>
-                <hr key={`${key}-bottom-hr`} />
+                <hr key={`${sourceKey}-bottom-hr`} />
                 <Row
                   className="g-0"
                   xxl={4}
@@ -129,17 +133,19 @@ function CardsFacetedBySource(props: SoupProps) {
                   md={2}
                   sm={2}
                   xs={2}
-                  key={`${key}-row`}
+                  key={`${sourceKey}-row`}
                 >
-                  {value.map(([identifier, index]) => (
-                    <Card
-                      imageIdentifier={identifier}
-                      cardHeaderTitle={`Option ${index + 1}`}
-                      cardOnClick={() => props.selectImage(identifier)}
-                      key={`gridSelector-${identifier}`}
-                      noResultsFound={false}
-                    />
-                  ))}
+                  {cardIdentifiersAndOptionNumbers.map(
+                    ([identifier, optionNumber]) => (
+                      <Card
+                        imageIdentifier={identifier}
+                        cardHeaderTitle={`Option ${optionNumber + 1}`}
+                        cardOnClick={() => props.selectImage(identifier)}
+                        key={`gridSelector-${identifier}`}
+                        noResultsFound={false}
+                      />
+                    )
+                  )}
                 </Row>
               </div>
             </Collapse>
@@ -242,7 +248,8 @@ export function GridSelector(props: GridSelectorProps) {
                   onClick={() =>
                     dispatch(
                       anySourcesCollapsed
-                        ? makeAllSourcesVisible()
+                        ? // ? makeAllSourcesInvisible(sourceKeys)
+                          makeAllSourcesVisible()
                         : makeAllSourcesInvisible(sourceKeys)
                     )
                   }

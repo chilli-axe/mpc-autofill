@@ -106,10 +106,10 @@ export function CardDetailedView(props: CardDetailedViewProps) {
                             }
                             target="_blank"
                           >
-                            {maybeCardDocument.source}
+                            {maybeCardDocument.source_name}
                           </a>
                         ) : (
-                          <a>{maybeCardDocument.source}</a>
+                          <a>{maybeCardDocument.source_name}</a>
                         )}
                       </td>
                     </tr>

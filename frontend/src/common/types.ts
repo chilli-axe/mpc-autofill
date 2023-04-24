@@ -18,6 +18,7 @@ export interface CardDocument {
   name: string;
   priority: number;
   source: string;
+  source_name: string;
   source_id: number;
   source_verbose: string;
   source_type: string;
