@@ -13,14 +13,14 @@ import {
   MaximumSize,
   MinimumDPI,
   SearchSettingsKey,
-} from "./constants";
-import { searchSettingsSchema } from "./schemas";
+} from "@/common/constants";
+import { searchSettingsSchema } from "@/common/schemas";
 import {
   SearchSettings,
   SourceDocument,
   SourceDocuments,
   SourceRow,
-} from "./types";
+} from "@/common/types";
 
 const ajv = new Ajv();
 

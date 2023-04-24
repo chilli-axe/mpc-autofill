@@ -7,8 +7,8 @@ import {
   CardTypePrefixes,
   CardTypeSeparator,
   FaceSeparator,
-} from "./constants";
-import { DFCPairs, ProcessedLine, SearchQuery } from "./types";
+} from "@/common/constants";
+import { DFCPairs, ProcessedLine, SearchQuery } from "@/common/types";
 
 export function sanitiseWhitespace(text: string): string {
   /**

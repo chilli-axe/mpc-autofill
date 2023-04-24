@@ -16,15 +16,14 @@ import { useDispatch, useSelector } from "react-redux";
 
 import { RootState } from "@/app/store";
 import { ToggleButtonHeight } from "@/common/constants";
-import { CardDocument, SourceDocument } from "@/common/types";
+import { CardDocument } from "@/common/types";
+import { Card } from "@/features/card/card";
 import {
   makeAllSourcesInvisible,
   makeAllSourcesVisible,
   toggleFacetBySource,
   toggleSourceVisible,
 } from "@/features/viewSettings/viewSettingsSlice";
-
-import { Card } from "./card";
 
 interface GridSelectorProps {
   testId: string;

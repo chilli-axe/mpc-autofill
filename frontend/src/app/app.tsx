@@ -9,6 +9,7 @@ import Row from "react-bootstrap/Row";
 import { useDispatch, useSelector } from "react-redux";
 import { ThunkDispatch } from "redux-thunk";
 
+import { RootState } from "@/app/store";
 import { CardGrid } from "@/features/card/cardGrid";
 import { CommonCardback } from "@/features/card/commonCardback";
 import { Import } from "@/features/import/import";
@@ -17,8 +18,6 @@ import { fetchSourceDocuments } from "@/features/search/sourceDocumentsSlice";
 import { SearchSettings } from "@/features/searchSettings/searchSettings";
 import DisableSSR from "@/features/ui/disableSSR";
 import { ViewSettings } from "@/features/viewSettings/viewSettings";
-
-import { RootState } from "./store";
 
 function App() {
   const dispatch = useDispatch<ThunkDispatch<any, any, any>>();

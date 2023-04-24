@@ -11,8 +11,7 @@ import { useDispatch, useSelector } from "react-redux";
 
 import { RootState } from "@/app/store";
 import { ToggleButtonHeight } from "@/common/constants";
-
-import { toggleFaces } from "./viewSettingsSlice";
+import { toggleFaces } from "@/features/viewSettings/viewSettingsSlice";
 
 export function ViewSettings() {
   const dispatch = useDispatch();

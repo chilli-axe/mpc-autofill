@@ -14,10 +14,9 @@ import { AppDispatch, RootState } from "@/app/store";
 import { Back } from "@/common/constants";
 import { Faces, SearchQuery } from "@/common/types";
 import { wrapIndex } from "@/common/utils";
-
-import { deleteImage, setSelectedImage } from "../project/projectSlice";
-import { MemoizedCard } from "./card";
-import { GridSelector } from "./gridSelector";
+import { MemoizedCard } from "@/features/card/card";
+import { GridSelector } from "@/features/card/gridSelector";
+import { deleteImage, setSelectedImage } from "@/features/project/projectSlice";
 
 interface CardSlotProps {
   searchQuery: SearchQuery | undefined;

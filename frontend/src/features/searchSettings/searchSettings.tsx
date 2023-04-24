@@ -21,15 +21,14 @@ import {
   SearchTypeSettings,
   SourceSettings,
 } from "@/common/types";
-
-import { FilterSettings as FilterSettingsElement } from "./filterSettings";
+import { FilterSettings as FilterSettingsElement } from "@/features/searchSettings/filterSettings";
 import {
   setFilterSettings,
   setSearchTypeSettings,
   setSourceSettings,
-} from "./searchSettingsSlice";
-import { SearchTypeSettings as SearchTypeSettingsElement } from "./searchTypeSettings";
-import { SourceSettings as SourceSettingsElement } from "./sourceSettings";
+} from "@/features/searchSettings/searchSettingsSlice";
+import { SearchTypeSettings as SearchTypeSettingsElement } from "@/features/searchSettings/searchTypeSettings";
+import { SourceSettings as SourceSettingsElement } from "@/features/searchSettings/sourceSettings";
 
 export function SearchSettings() {
   const dispatch = useDispatch<AppDispatch>();

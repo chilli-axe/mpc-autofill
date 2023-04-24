@@ -6,7 +6,7 @@ import {
   searchTypeSettingsSchema,
   sourceRowSchema,
   sourceSettingsSchema,
-} from "./schemas";
+} from "@/common/schemas";
 
 export type CardType = "CARD" | "CARDBACK" | "TOKEN";
 export type Faces = "front" | "back";

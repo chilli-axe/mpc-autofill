@@ -1,6 +1,6 @@
 export const ProjectName = "MPC Autofill";
 
-import { CardType, Faces } from "./types";
+import { CardType, Faces } from "@/common/types";
 
 export const Card: CardType = "CARD";
 export const Cardback: CardType = "CARDBACK";

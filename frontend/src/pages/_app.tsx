@@ -1,5 +1,5 @@
-import "./../styles/styles.scss";
-import "./../styles/custom.css";
+import "@/styles/styles.scss";
+import "@/styles/custom.css";
 
 import { AppProps } from "next/app";
 // unfortunately, for static deployment, we need to specify our Bootswatch theme font here again :/

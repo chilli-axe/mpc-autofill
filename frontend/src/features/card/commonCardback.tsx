@@ -11,14 +11,13 @@ import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/app/store";
 import { Back } from "@/common/constants";
 import { wrapIndex } from "@/common/utils";
-
+import { MemoizedCard } from "@/features/card/card";
+import { MemoizedCardDetailedView } from "@/features/card/cardDetailedView";
+import { GridSelector } from "@/features/card/gridSelector";
 import {
   bulkSetSelectedImage,
   setSelectedCardback,
-} from "../project/projectSlice";
-import { MemoizedCard } from "./card";
-import { MemoizedCardDetailedView } from "./cardDetailedView";
-import { GridSelector } from "./gridSelector";
+} from "@/features/project/projectSlice";
 
 //# region grid selector
 

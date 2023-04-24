@@ -9,13 +9,12 @@ import { useSelector } from "react-redux";
 
 import { ProjectMaxSize } from "@/common/constants";
 import { bracket, downloadText, imageSizeToMBString } from "@/common/utils";
-
 import {
   selectGeneratedDecklist,
   selectGeneratedXML,
   selectProjectFileSize,
   selectProjectSize,
-} from "./projectSlice";
+} from "@/features/project/projectSlice";
 
 // TODO: review the codebase for instances of this https://redux.js.org/usage/deriving-data-selectors#optimizing-selectors-with-memoization
 

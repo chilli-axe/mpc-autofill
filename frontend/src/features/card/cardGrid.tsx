@@ -11,6 +11,8 @@ import { ThunkDispatch } from "redux-thunk";
 
 import { AppDispatch, RootState } from "@/app/store";
 import { Back, Front } from "@/common/constants";
+import { MemoizedCardDetailedView } from "@/features/card/cardDetailedView";
+import { MemoizedCardSlot } from "@/features/card/cardSlot";
 
 import {
   selectProjectMemberQueries,
@@ -18,8 +20,6 @@ import {
 } from "../project/projectSlice";
 import { fetchCardDocuments } from "../search/cardDocumentsSlice";
 import { clearSearchResults } from "../search/searchResultsSlice";
-import { MemoizedCardDetailedView } from "./cardDetailedView";
-import { MemoizedCardSlot } from "./cardSlot";
 
 export function CardGrid() {
   const dispatch = useDispatch<ThunkDispatch<any, any, any>>();

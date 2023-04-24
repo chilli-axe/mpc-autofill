@@ -6,8 +6,7 @@ import { Provider } from "react-redux";
 import store from "@/app/store";
 import { getGoogleAnalyticsConsent } from "@/common/cookies";
 import { Toasts } from "@/features/toasts/toasts";
-
-import Navbar from "./navbar";
+import Navbar from "@/features/ui/navbar";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const consent = getGoogleAnalyticsConsent();
