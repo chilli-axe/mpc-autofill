@@ -177,7 +177,7 @@ export function GridSelector(props: GridSelectorProps) {
     Object.fromEntries(
       Object.keys(state.sourceDocuments.sourceDocuments ?? {}).map((pk) => [
         state.sourceDocuments.sourceDocuments[pk].key,
-        state.sourceDocuments.sourceDocuments[pk].key,
+        state.sourceDocuments.sourceDocuments[pk].name,
       ])
     )
   );
