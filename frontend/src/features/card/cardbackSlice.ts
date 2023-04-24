@@ -2,9 +2,9 @@
  * State management for cardbacks retrieved from the backend.
  */
 
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { APIGetCardbacks } from "@/app/api";
-import { CardbacksState, CardDocuments } from "@/common/types";
+import { CardDocuments, CardbacksState } from "@/common/types";
 import { RootState } from "@/app/store";
 
 export const fetchCardbacks = createAsyncThunk(

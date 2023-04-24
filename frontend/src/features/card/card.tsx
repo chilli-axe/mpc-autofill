@@ -5,7 +5,7 @@
  * If being used in a gallery, the previous and next images can be cached for visual smoothness.
  */
 
-import React, { useState, ReactElement, useEffect, memo } from "react";
+import React, { ReactElement, memo, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "@/app/store";
 

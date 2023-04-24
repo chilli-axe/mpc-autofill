@@ -1,13 +1,13 @@
 import Button from "react-bootstrap/Button";
 import React from "react";
 import {
+  selectGeneratedDecklist,
+  selectGeneratedXML,
   selectProjectFileSize,
   selectProjectSize,
-  selectGeneratedXML,
-  selectGeneratedDecklist,
 } from "./projectSlice";
 import Alert from "react-bootstrap/Alert";
-import { bracket, imageSizeToMBString, downloadText } from "@/common/utils";
+import { bracket, downloadText, imageSizeToMBString } from "@/common/utils";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Tooltip from "react-bootstrap/Tooltip";

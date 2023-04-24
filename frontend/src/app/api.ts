@@ -1,26 +1,26 @@
 // TODO: set up the below API calls to use best practices with handling all cases `fetch` can return
 // TODO: read this http://florimond.dev/en/posts/2018/08/restful-api-design-13-best-practices-to-make-your-users-happy/
 import {
-  SearchSettings,
+  BackendInfo,
   CardDocument,
   CardDocuments,
-  SearchResults,
-  SourceDocuments,
-  SearchQuery,
-  DFCPairs,
-  BackendInfo,
-  ImportSite,
   Contributions,
+  DFCPairs,
+  ImportSite,
+  SearchQuery,
+  SearchResults,
+  SearchSettings,
+  SourceDocuments,
 } from "@/common/types";
 import { RootState } from "@/app/store";
 
 // Need to use the React-specific entry point to allow generating React hooks
 import {
-  createApi,
-  fetchBaseQuery,
   BaseQueryFn,
   FetchArgs,
   FetchBaseQueryError,
+  createApi,
+  fetchBaseQuery,
 } from "@reduxjs/toolkit/query/react";
 
 // dynamic base URL implementation retrieved from https://stackoverflow.com/a/69570628/13021511

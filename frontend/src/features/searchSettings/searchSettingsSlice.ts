@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { MinimumDPI, MaximumDPI, MaximumSize } from "@/common/constants";
+import { MaximumDPI, MaximumSize, MinimumDPI } from "@/common/constants";
 import { SearchSettings } from "@/common/types";
 import { RootState } from "@/app/store";
 

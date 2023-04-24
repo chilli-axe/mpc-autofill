@@ -12,13 +12,13 @@ import {
 } from "./types";
 import { searchSettingsSchema } from "./schemas";
 import {
+  BackendURLKey,
   CSRFKey,
-  SearchSettingsKey,
   GoogleAnalyticsConsentKey,
   MaximumDPI,
   MaximumSize,
   MinimumDPI,
-  BackendURLKey,
+  SearchSettingsKey,
 } from "./constants";
 
 const ajv = new Ajv();

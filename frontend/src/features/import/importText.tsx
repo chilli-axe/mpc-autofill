@@ -14,11 +14,11 @@ import Modal from "react-bootstrap/Modal";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import {
-  FaceSeparator,
   Card,
   Cardback,
-  Token,
+  FaceSeparator,
   ReversedCardTypePrefixes,
+  Token,
 } from "@/common/constants";
 import { useGetDFCPairsQuery, useGetSampleCardsQuery } from "@/app/api";
 import { CardDocument } from "@/common/types";

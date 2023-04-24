@@ -6,8 +6,8 @@
  * card slot for the same slot number in the other face.
  */
 
-import React, { useEffect, useState, memo } from "react";
-import { useSelector, useDispatch } from "react-redux";
+import React, { memo, useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/app/store";
 import { MemoizedCard } from "./card";
 import { Back } from "@/common/constants";

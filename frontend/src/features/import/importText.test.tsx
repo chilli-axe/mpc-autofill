@@ -8,28 +8,28 @@ import {
   localBackend,
 } from "@/common/test-constants";
 import {
-  renderWithProviders,
+  expectCardGridSlotState,
   expectCardSlotToExist,
   expectCardSlotToNotExist,
-  expectCardGridSlotState,
   expectCardbackSlotState,
-  openImportTextModal,
   importText,
+  openImportTextModal,
+  renderWithProviders,
 } from "@/common/test-utils";
 import {
-  cardDocumentsThreeResults,
   cardDocumentsFourResults,
+  cardDocumentsThreeResults,
   cardbacksTwoOtherResults,
-  sourceDocumentsOneResult,
-  searchResultsOneResult,
   dfcPairsMatchingCards1And4,
-  searchResultsForDFCMatchedCards1And4,
   sampleCards,
+  searchResultsForDFCMatchedCards1And4,
+  searchResultsOneResult,
+  sourceDocumentsOneResult,
 } from "@/mocks/handlers";
 import { screen, waitFor } from "@testing-library/react";
 import { within } from "@testing-library/dom";
 import App from "@/app/app";
-import { Card, Front, Back } from "@/common/constants";
+import { Back, Card, Front } from "@/common/constants";
 import { server } from "@/mocks/server";
 
 //# region mocks

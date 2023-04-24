@@ -8,7 +8,7 @@ import {
   ProjectMember,
   SlotProjectMembers,
 } from "@/common/types";
-import { Back, Card, Front, FaceSeparator } from "@/common/constants";
+import { Back, Card, FaceSeparator, Front } from "@/common/constants";
 import { stripTextInParentheses } from "@/common/processing";
 
 function extractProjectMemberNames(

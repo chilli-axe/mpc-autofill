@@ -9,7 +9,7 @@
 
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/app/store";
-import React, { useState, useCallback } from "react";
+import React, { useCallback, useState } from "react";
 import { processLines } from "@/common/processing";
 import { addImages } from "../project/projectSlice";
 import Dropdown from "react-bootstrap/Dropdown";

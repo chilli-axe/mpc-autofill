@@ -1,4 +1,4 @@
-import { combineReducers, configureStore, Store } from "@reduxjs/toolkit";
+import { Store, combineReducers, configureStore } from "@reduxjs/toolkit";
 import type { PreloadedState } from "@reduxjs/toolkit";
 
 import { apiSlice } from "@/app/api";

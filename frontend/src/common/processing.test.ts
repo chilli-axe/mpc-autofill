@@ -1,13 +1,13 @@
 import {
-  sanitiseWhitespace,
-  stripTextInParentheses,
-  processQuery,
-  processPrefix,
   processLine,
   processLines,
+  processPrefix,
+  processQuery,
+  sanitiseWhitespace,
   standardiseURL,
+  stripTextInParentheses,
 } from "./processing";
-import { Token, Card, Cardback } from "./constants";
+import { Card, Cardback, Token } from "./constants";
 import { DFCPairs } from "./types";
 import each from "jest-each";
 

@@ -5,14 +5,14 @@
  */
 
 import React, { memo, useEffect, useState } from "react";
-import { useSelector, useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/app/store";
 import { MemoizedCard } from "./card";
 import { Back } from "@/common/constants";
 import { wrapIndex } from "@/common/utils";
 import {
-  setSelectedCardback,
   bulkSetSelectedImage,
+  setSelectedCardback,
 } from "../project/projectSlice";
 import Button from "react-bootstrap/Button";
 import { MemoizedCardDetailedView } from "./cardDetailedView";

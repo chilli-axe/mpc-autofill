@@ -3,12 +3,12 @@
  */
 
 import {
-  CardTypePrefixes,
-  FaceSeparator,
   Card,
+  CardTypePrefixes,
   CardTypeSeparator,
+  FaceSeparator,
 } from "./constants";
-import { DFCPairs, SearchQuery, ProcessedLine } from "./types";
+import { DFCPairs, ProcessedLine, SearchQuery } from "./types";
 
 export function sanitiseWhitespace(text: string): string {
   /**

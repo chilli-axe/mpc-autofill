@@ -2,8 +2,8 @@ import { server } from "@/mocks/server";
 import {
   cardDocumentsOneResult,
   cardbacksOneResult,
-  sourceDocumentsOneResult,
   cardbacksTwoResults,
+  sourceDocumentsOneResult,
 } from "@/mocks/handlers";
 import {
   expectCardbackSlotState,

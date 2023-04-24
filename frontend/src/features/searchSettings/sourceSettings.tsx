@@ -8,8 +8,8 @@ import React, { ReactNode } from "react";
 import {
   DragDropContext,
   Draggable,
-  Droppable,
   DropResult,
+  Droppable,
 } from "@hello-pangea/dnd"; // TODO: look into using `react-dnd` instead as it's a significantly smaller package
 import Table from "react-bootstrap/Table";
 import { useSelector } from "react-redux";

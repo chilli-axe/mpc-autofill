@@ -2,7 +2,7 @@
  * State management for cards retrieved from the backend.
  */
 
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
 import { RootState } from "@/app/store";
 import { fetchCards } from "./searchResultsSlice";

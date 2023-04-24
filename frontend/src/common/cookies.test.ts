@@ -5,7 +5,7 @@ import {
   MinimumDPI,
   SearchSettingsKey,
 } from "./constants";
-import { sourceDocuments, defaultSettings } from "@/common/test-constants";
+import { defaultSettings, sourceDocuments } from "@/common/test-constants";
 
 beforeEach(() => window.localStorage.removeItem(SearchSettingsKey));
 afterEach(() => window.localStorage.removeItem(SearchSettingsKey));

@@ -4,16 +4,16 @@
  */
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { RootState, AppDispatch } from "@/app/store";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "@/app/store";
 import { MemoizedCardSlot } from "./cardSlot";
 import { fetchCardDocuments } from "../search/cardDocumentsSlice";
 import { clearSearchResults } from "../search/searchResultsSlice";
-import { Front, Back } from "@/common/constants";
+import { Back, Front } from "@/common/constants";
 import Row from "react-bootstrap/Row";
 import {
-  selectProjectMembers,
   selectProjectMemberQueries,
+  selectProjectMembers,
 } from "../project/projectSlice";
 import Modal from "react-bootstrap/Modal";
 import { MemoizedCardDetailedView } from "./cardDetailedView";

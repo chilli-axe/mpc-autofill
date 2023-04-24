@@ -8,18 +8,18 @@
 
 import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/app/store";
 import {
+  setFilterSettings,
   setSearchTypeSettings,
   setSourceSettings,
-  setFilterSettings,
 } from "./searchSettingsSlice";
 import {
+  FilterSettings,
   SearchTypeSettings,
   SourceSettings,
-  FilterSettings,
 } from "@/common/types";
 import {
   getLocalStorageSearchSettings,

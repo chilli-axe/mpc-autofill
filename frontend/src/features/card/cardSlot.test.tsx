@@ -1,30 +1,30 @@
 import { screen, waitFor } from "@testing-library/react";
 import { Back, Card, Front } from "@/common/constants";
 import {
-  localBackend,
   cardDocument1,
   cardDocument2,
   cardDocument3,
+  localBackend,
   projectSelectedImage1,
   projectSelectedImage2,
 } from "@/common/test-constants";
 import {
-  renderWithProviders,
-  expectCardSlotToNotExist,
   expectCardGridSlotState,
+  expectCardSlotToNotExist,
   expectCardbackSlotState,
   openCardSlotGridSelector,
+  renderWithProviders,
 } from "@/common/test-utils";
 import {
   cardDocumentsOneResult,
-  cardDocumentsThreeResults,
   cardDocumentsSixResults,
+  cardDocumentsThreeResults,
   cardbacksTwoResults,
+  searchResultsOneResult,
+  searchResultsSixResults,
+  searchResultsThreeResults,
   sourceDocumentsOneResult,
   sourceDocumentsThreeResults,
-  searchResultsOneResult,
-  searchResultsThreeResults,
-  searchResultsSixResults,
 } from "@/mocks/handlers";
 import { server } from "@/mocks/server";
 import App from "@/app/app";

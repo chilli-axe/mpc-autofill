@@ -10,14 +10,14 @@ import Row from "react-bootstrap/Row";
 import { Card } from "./card";
 import Button from "react-bootstrap/Button";
 import React, { useCallback, useMemo } from "react";
-import { useSelector, useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/app/store";
 import { CardDocument, SourceDocument } from "@/common/types";
 import {
-  toggleSourceVisible,
-  makeAllSourcesVisible,
   makeAllSourcesInvisible,
+  makeAllSourcesVisible,
   toggleFacetBySource,
+  toggleSourceVisible,
 } from "@/features/viewSettings/viewSettingsSlice";
 import Col from "react-bootstrap/Col";
 import { ToggleButtonHeight } from "@/common/constants";

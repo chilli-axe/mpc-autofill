@@ -2,20 +2,20 @@
  * State management for the user's configuration of the project - selected cards and cardbacks.
  */
 
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 import { Card, ReversedCardTypePrefixes } from "@/common/constants";
 import { RootState } from "@/app/store";
 import {
-  SearchQuery,
-  Project,
-  SlotProjectMembers,
   Faces,
   ProcessedLine,
+  Project,
   ProjectMember,
+  SearchQuery,
+  SlotProjectMembers,
 } from "@/common/types";
 import { generateXML } from "../export/exportXML";
 import { generateDecklist } from "../export/exportDecklist";
-import { Front, Back, ProjectMaxSize } from "@/common/constants";
+import { Back, Front, ProjectMaxSize } from "@/common/constants";
 
 const initialState: Project = {
   members: [

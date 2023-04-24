@@ -1,11 +1,11 @@
 import { FromSchema } from "json-schema-to-ts";
 
 import {
-  sourceRowSchema,
-  searchSettingsSchema,
   filterSettingsSchema,
-  sourceSettingsSchema,
+  searchSettingsSchema,
   searchTypeSettingsSchema,
+  sourceRowSchema,
+  sourceSettingsSchema,
 } from "./schemas";
 
 export type CardType = "CARD" | "CARDBACK" | "TOKEN";

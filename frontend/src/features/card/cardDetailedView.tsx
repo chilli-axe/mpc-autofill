@@ -9,7 +9,7 @@ import Row from "react-bootstrap/Row";
 import Table from "react-bootstrap/Table";
 import { downloadImage, imageSizeToMBString } from "@/common/utils";
 import Button from "react-bootstrap/Button";
-import React, { useEffect, useState, memo } from "react";
+import React, { memo, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "@/app/store";
 import Image from "next/image";

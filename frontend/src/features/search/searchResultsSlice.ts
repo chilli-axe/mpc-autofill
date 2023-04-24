@@ -2,7 +2,7 @@
  * State management for search results - what images are returned for what search queries.
  */
 
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { RootState } from "@/app/store";
 import { selectQueriesWithoutSearchResults } from "../project/projectSlice";
 import { APISearch } from "@/app/api";

@@ -10,8 +10,8 @@ import Button from "react-bootstrap/Button";
 import ToastContainer from "react-bootstrap/ToastContainer";
 import Link from "next/link";
 import {
-  setGoogleAnalyticsConsent,
   getGoogleAnalyticsConsent,
+  setGoogleAnalyticsConsent,
 } from "@/common/cookies";
 import DisableSSR from "@/features/ui/disableSSR";
 import { ProjectName } from "@/common/constants";
