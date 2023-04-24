@@ -1,17 +1,18 @@
-import { server } from "@/mocks/server";
-import {
-  cardDocumentsOneResult,
-  cardbacksOneResult,
-  cardbacksTwoResults,
-  sourceDocumentsOneResult,
-} from "@/mocks/handlers";
+import { screen } from "@testing-library/react";
+
+import App from "@/app/app";
+import { cardDocument1, localBackend } from "@/common/test-constants";
 import {
   expectCardbackSlotState,
   renderWithProviders,
 } from "@/common/test-utils";
-import App from "@/app/app";
-import { cardDocument1, localBackend } from "@/common/test-constants";
-import { screen } from "@testing-library/react";
+import {
+  cardbacksOneResult,
+  cardbacksTwoResults,
+  cardDocumentsOneResult,
+  sourceDocumentsOneResult,
+} from "@/mocks/handlers";
+import { server } from "@/mocks/server";
 
 //# region snapshot tests
 

@@ -5,16 +5,18 @@
  */
 
 import React, { memo, useEffect, useState } from "react";
+import Button from "react-bootstrap/Button";
 import { useDispatch, useSelector } from "react-redux";
+
 import { AppDispatch, RootState } from "@/app/store";
-import { MemoizedCard } from "./card";
 import { Back } from "@/common/constants";
 import { wrapIndex } from "@/common/utils";
+
 import {
   bulkSetSelectedImage,
   setSelectedCardback,
 } from "../project/projectSlice";
-import Button from "react-bootstrap/Button";
+import { MemoizedCard } from "./card";
 import { MemoizedCardDetailedView } from "./cardDetailedView";
 import { GridSelector } from "./gridSelector";
 

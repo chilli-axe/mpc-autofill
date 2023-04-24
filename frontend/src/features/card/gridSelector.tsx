@@ -4,14 +4,18 @@
  * Card versions are faceted by source, and all cards for a source can be temporarily hidden.
  */
 
+import React, { useCallback, useMemo } from "react";
+import Button from "react-bootstrap/Button";
+import Col from "react-bootstrap/Col";
 import Collapse from "react-bootstrap/Collapse";
 import Modal from "react-bootstrap/Modal";
 import Row from "react-bootstrap/Row";
-import { Card } from "./card";
-import Button from "react-bootstrap/Button";
-import React, { useCallback, useMemo } from "react";
+// @ts-ignore: https://github.com/arnthor3/react-bootstrap-toggle/issues/21
+import Toggle from "react-bootstrap-toggle";
 import { useDispatch, useSelector } from "react-redux";
+
 import { RootState } from "@/app/store";
+import { ToggleButtonHeight } from "@/common/constants";
 import { CardDocument, SourceDocument } from "@/common/types";
 import {
   makeAllSourcesInvisible,
@@ -19,10 +23,8 @@ import {
   toggleFacetBySource,
   toggleSourceVisible,
 } from "@/features/viewSettings/viewSettingsSlice";
-import Col from "react-bootstrap/Col";
-import { ToggleButtonHeight } from "@/common/constants";
-// @ts-ignore: https://github.com/arnthor3/react-bootstrap-toggle/issues/21
-import Toggle from "react-bootstrap-toggle";
+
+import { Card } from "./card";
 
 interface GridSelectorProps {
   testId: string;

@@ -2,25 +2,26 @@
  * This component allows users to configure which backend server the frontend should retrieve data from.
  */
 
-import Alert from "react-bootstrap/Alert";
-import Offcanvas from "react-bootstrap/Offcanvas";
-import Button from "react-bootstrap/Button";
+// TODO: https://github.com/alfg/ping.js/issues/29#issuecomment-487240910
+// @ts-ignore
+import Ping from "ping.js";
 import React, { FormEvent, useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import Alert from "react-bootstrap/Alert";
+import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
-import { clearURL, setURL } from "@/features/backend/backendSlice";
+import Offcanvas from "react-bootstrap/Offcanvas";
+import { useDispatch, useSelector } from "react-redux";
+
+import { apiSlice } from "@/app/api";
+import { RootState } from "@/app/store";
 import { ProjectName } from "@/common/constants";
 import {
   clearLocalStorageBackendURL,
   getLocalStorageBackendURL,
   setLocalStorageBackendURL,
 } from "@/common/cookies";
-import { apiSlice } from "@/app/api";
 import { standardiseURL } from "@/common/processing";
-// TODO: https://github.com/alfg/ping.js/issues/29#issuecomment-487240910
-// @ts-ignore
-import Ping from "ping.js";
-import { RootState } from "@/app/store";
+import { clearURL, setURL } from "@/features/backend/backendSlice";
 require("bootstrap-icons/font/bootstrap-icons.css");
 
 interface BackendConfigProps {

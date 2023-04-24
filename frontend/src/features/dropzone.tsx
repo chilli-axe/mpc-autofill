@@ -3,8 +3,8 @@
  */
 
 import React, { useCallback } from "react";
-import styled from "styled-components"; // TODO: see if we can remove this new dependency
 import { DropzoneRootProps, useDropzone } from "react-dropzone";
+import styled from "styled-components"; // TODO: see if we can remove this new dependency
 
 const getColor = (props: DropzoneRootProps) => {
   if (props.isDragAccept) {

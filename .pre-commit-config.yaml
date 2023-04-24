@@ -68,6 +68,7 @@ repos:
           - eslint-plugin-n@v15.3.0
           - eslint-plugin-import@v2.26.0
           - eslint-config-standard@v17.0.0
+          - eslint-plugin-simple-import-sort@10.0.0
           - "@typescript-eslint/eslint-plugin@5.48.2"
           - "@typescript-eslint/parser@5.49.0"
         args:

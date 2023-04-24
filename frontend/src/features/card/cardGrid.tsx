@@ -4,20 +4,22 @@
  */
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { AppDispatch, RootState } from "@/app/store";
-import { MemoizedCardSlot } from "./cardSlot";
-import { fetchCardDocuments } from "../search/cardDocumentsSlice";
-import { clearSearchResults } from "../search/searchResultsSlice";
-import { Back, Front } from "@/common/constants";
+import Modal from "react-bootstrap/Modal";
 import Row from "react-bootstrap/Row";
+import { useDispatch, useSelector } from "react-redux";
+import { ThunkDispatch } from "redux-thunk";
+
+import { AppDispatch, RootState } from "@/app/store";
+import { Back, Front } from "@/common/constants";
+
 import {
   selectProjectMemberQueries,
   selectProjectMembers,
 } from "../project/projectSlice";
-import Modal from "react-bootstrap/Modal";
+import { fetchCardDocuments } from "../search/cardDocumentsSlice";
+import { clearSearchResults } from "../search/searchResultsSlice";
 import { MemoizedCardDetailedView } from "./cardDetailedView";
-import { ThunkDispatch } from "redux-thunk";
+import { MemoizedCardSlot } from "./cardSlot";
 
 export function CardGrid() {
   const dispatch = useDispatch<ThunkDispatch<any, any, any>>();

@@ -4,11 +4,12 @@
  */
 
 import React from "react";
-
 // @ts-ignore: https://github.com/arnthor3/react-bootstrap-toggle/issues/21
 import Toggle from "react-bootstrap-toggle";
-import { SearchTypeSettings as SearchTypeSettingsType } from "../../common/types";
+
 import { ToggleButtonHeight } from "@/common/constants";
+
+import { SearchTypeSettings as SearchTypeSettingsType } from "../../common/types";
 
 interface SearchTypeSettingsProps {
   searchTypeSettings: SearchTypeSettingsType;

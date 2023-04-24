@@ -1,19 +1,20 @@
-import Nav from "react-bootstrap/Nav";
-import NavDropdown from "react-bootstrap/NavDropdown";
-import BSNavbar from "react-bootstrap/Navbar";
-import Container from "react-bootstrap/Container";
 import Image from "next/image";
 import Link from "next/link";
+import React, { useState } from "react";
 import Button from "react-bootstrap/Button";
+import Container from "react-bootstrap/Container";
+import Nav from "react-bootstrap/Nav";
+import BSNavbar from "react-bootstrap/Navbar";
+import NavDropdown from "react-bootstrap/NavDropdown";
 import { useSelector } from "react-redux";
+
+import { useGetBackendInfoQuery } from "@/app/api";
 import { RootState } from "@/app/store";
 import { ProjectName } from "@/common/constants";
 import { BackendConfig } from "@/features/backend/backend";
-import React, { useState } from "react";
-import DisableSSR from "@/features/ui/disableSSR";
-import { useGetBackendInfoQuery } from "@/app/api";
-import { SupportDeveloperModal } from "@/features/support/supportDeveloper";
 import { SupportBackendModal } from "@/features/support/supportBackend";
+import { SupportDeveloperModal } from "@/features/support/supportDeveloper";
+import DisableSSR from "@/features/ui/disableSSR";
 
 export default function Navbar() {
   const backendInfoQuery = useGetBackendInfoQuery();

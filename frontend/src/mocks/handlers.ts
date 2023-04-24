@@ -1,4 +1,6 @@
 import { rest } from "msw";
+
+import { Card, Cardback, Token } from "@/common/constants";
 import {
   cardDocument1,
   cardDocument2,
@@ -11,7 +13,6 @@ import {
   sourceDocument2,
   sourceDocument3,
 } from "@/common/test-constants";
-import { Card, Cardback, Token } from "@/common/constants";
 
 function buildRoute(route: string) {
   /**

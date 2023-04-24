@@ -2,19 +2,20 @@
  * This component is a container for the various toast alerts the app needs to raise.
  */
 
-import React, { useState } from "react";
-import Toast from "react-bootstrap/Toast";
-import Row from "react-bootstrap/Row";
-import Col from "react-bootstrap/Col";
-import Button from "react-bootstrap/Button";
-import ToastContainer from "react-bootstrap/ToastContainer";
 import Link from "next/link";
+import React, { useState } from "react";
+import Button from "react-bootstrap/Button";
+import Col from "react-bootstrap/Col";
+import Row from "react-bootstrap/Row";
+import Toast from "react-bootstrap/Toast";
+import ToastContainer from "react-bootstrap/ToastContainer";
+
+import { ProjectName } from "@/common/constants";
 import {
   getGoogleAnalyticsConsent,
   setGoogleAnalyticsConsent,
 } from "@/common/cookies";
 import DisableSSR from "@/features/ui/disableSSR";
-import { ProjectName } from "@/common/constants";
 
 function GoogleAnalyticsConsentToast() {
   const consent = getGoogleAnalyticsConsent();

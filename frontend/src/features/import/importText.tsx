@@ -4,15 +4,15 @@
  * A freeform text area is exposed and the cards are processed when the user hits Submit.
  */
 
-import { useDispatch } from "react-redux";
-import { AppDispatch } from "@/app/store";
 import React, { useEffect, useState } from "react";
-import { processLines, stripTextInParentheses } from "@/common/processing";
-import { addImages } from "../project/projectSlice";
-import Dropdown from "react-bootstrap/Dropdown";
-import Modal from "react-bootstrap/Modal";
-import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
+import Dropdown from "react-bootstrap/Dropdown";
+import Form from "react-bootstrap/Form";
+import Modal from "react-bootstrap/Modal";
+import { useDispatch } from "react-redux";
+
+import { useGetDFCPairsQuery, useGetSampleCardsQuery } from "@/app/api";
+import { AppDispatch } from "@/app/store";
 import {
   Card,
   Cardback,
@@ -20,8 +20,10 @@ import {
   ReversedCardTypePrefixes,
   Token,
 } from "@/common/constants";
-import { useGetDFCPairsQuery, useGetSampleCardsQuery } from "@/app/api";
+import { processLines, stripTextInParentheses } from "@/common/processing";
 import { CardDocument } from "@/common/types";
+
+import { addImages } from "../project/projectSlice";
 
 export function ImportText() {
   // TODO: add an accordion here for explaining how to search for each different card type with prefixes

@@ -1,3 +1,7 @@
+import { screen, waitFor } from "@testing-library/react";
+
+import App from "@/app/app";
+import { Card, Front } from "@/common/constants";
 import { cardDocument1, localBackend } from "@/common/test-constants";
 import {
   expectCardGridSlotState,
@@ -8,9 +12,6 @@ import {
   searchResultsOneResult,
   sourceDocumentsOneResult,
 } from "@/mocks/handlers";
-import { screen, waitFor } from "@testing-library/react";
-import App from "@/app/app";
-import { Card, Front } from "@/common/constants";
 import { server } from "@/mocks/server";
 
 //# region snapshot tests

@@ -1,10 +1,10 @@
-import { renderWithProviders } from "@/common/test-utils";
-import { Card } from "@/features/card/card";
 import {
   cardDocument1,
   cardDocument2,
   cardDocument3,
 } from "@/common/test-constants";
+import { renderWithProviders } from "@/common/test-utils";
+import { Card } from "@/features/card/card";
 
 test("the html structure of a Card with a single document", () => {
   const rendered = renderWithProviders(

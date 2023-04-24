@@ -1,4 +1,6 @@
 import { screen, waitFor } from "@testing-library/react";
+
+import App from "@/app/app";
 import { Back, Card, Front } from "@/common/constants";
 import {
   cardDocument1,
@@ -9,17 +11,17 @@ import {
   projectSelectedImage2,
 } from "@/common/test-constants";
 import {
+  expectCardbackSlotState,
   expectCardGridSlotState,
   expectCardSlotToNotExist,
-  expectCardbackSlotState,
   openCardSlotGridSelector,
   renderWithProviders,
 } from "@/common/test-utils";
 import {
+  cardbacksTwoResults,
   cardDocumentsOneResult,
   cardDocumentsSixResults,
   cardDocumentsThreeResults,
-  cardbacksTwoResults,
   searchResultsOneResult,
   searchResultsSixResults,
   searchResultsThreeResults,
@@ -27,7 +29,6 @@ import {
   sourceDocumentsThreeResults,
 } from "@/mocks/handlers";
 import { server } from "@/mocks/server";
-import App from "@/app/app";
 
 //# region snapshot tests
 

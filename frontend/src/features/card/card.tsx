@@ -5,13 +5,13 @@
  * If being used in a gallery, the previous and next images can be cached for visual smoothness.
  */
 
-import React, { ReactElement, memo, useEffect, useState } from "react";
-import { useSelector } from "react-redux";
-import { RootState } from "@/app/store";
-
-import BSCard from "react-bootstrap/Card";
-import { SearchQuery } from "@/common/types";
 import Image from "next/image";
+import React, { memo, ReactElement, useEffect, useState } from "react";
+import BSCard from "react-bootstrap/Card";
+import { useSelector } from "react-redux";
+
+import { RootState } from "@/app/store";
+import { SearchQuery } from "@/common/types";
 
 interface CardProps {
   /** The card image identifier to display. */

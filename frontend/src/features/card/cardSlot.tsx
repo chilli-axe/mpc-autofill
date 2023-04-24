@@ -7,15 +7,17 @@
  */
 
 import React, { memo, useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { AppDispatch, RootState } from "@/app/store";
-import { MemoizedCard } from "./card";
-import { Back } from "@/common/constants";
-import { wrapIndex } from "@/common/utils";
-import { deleteImage, setSelectedImage } from "../project/projectSlice";
 import Button from "react-bootstrap/Button";
-import { GridSelector } from "./gridSelector";
+import { useDispatch, useSelector } from "react-redux";
+
+import { AppDispatch, RootState } from "@/app/store";
+import { Back } from "@/common/constants";
 import { Faces, SearchQuery } from "@/common/types";
+import { wrapIndex } from "@/common/utils";
+
+import { deleteImage, setSelectedImage } from "../project/projectSlice";
+import { MemoizedCard } from "./card";
+import { GridSelector } from "./gridSelector";
 
 interface CardSlotProps {
   searchQuery: SearchQuery | undefined;

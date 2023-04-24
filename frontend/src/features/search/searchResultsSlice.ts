@@ -3,10 +3,12 @@
  */
 
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { RootState } from "@/app/store";
-import { selectQueriesWithoutSearchResults } from "../project/projectSlice";
+
 import { APISearch } from "@/app/api";
+import { RootState } from "@/app/store";
 import { SearchResults, SearchResultsState } from "@/common/types";
+
+import { selectQueriesWithoutSearchResults } from "../project/projectSlice";
 
 export const fetchCards = createAsyncThunk(
   "searchResults/fetchCards",

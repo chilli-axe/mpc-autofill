@@ -7,11 +7,12 @@
  */
 
 import React, { CSSProperties, useState } from "react";
+import Button from "react-bootstrap/Button";
 import Dropdown from "react-bootstrap/Dropdown";
 import Modal from "react-bootstrap/Modal";
-import Button from "react-bootstrap/Button";
-import { TextFileDropzone } from "../dropzone";
 import Table from "react-bootstrap/Table";
+
+import { TextFileDropzone } from "../dropzone";
 
 interface CSVTableProps {
   columnStyle: CSSProperties;

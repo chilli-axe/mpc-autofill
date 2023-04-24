@@ -3,21 +3,22 @@
  * drop into a page (as the only component). Must be wrapped with a Redux provider.
  */
 
-import * as React from "react";
-import { CardGrid } from "@/features/card/cardGrid";
-import { CommonCardback } from "@/features/card/commonCardback";
-import { SearchSettings } from "@/features/searchSettings/searchSettings";
-import { Import } from "@/features/import/import";
-import { ProjectStatus } from "@/features/project/projectStatus";
-import { ViewSettings } from "@/features/viewSettings/viewSettings";
+import React, { useEffect } from "react";
 import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
-import { useEffect } from "react";
-import { fetchSourceDocuments } from "@/features/search/sourceDocumentsSlice";
 import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "./store";
-import DisableSSR from "@/features/ui/disableSSR";
 import { ThunkDispatch } from "redux-thunk";
+
+import { CardGrid } from "@/features/card/cardGrid";
+import { CommonCardback } from "@/features/card/commonCardback";
+import { Import } from "@/features/import/import";
+import { ProjectStatus } from "@/features/project/projectStatus";
+import { fetchSourceDocuments } from "@/features/search/sourceDocumentsSlice";
+import { SearchSettings } from "@/features/searchSettings/searchSettings";
+import DisableSSR from "@/features/ui/disableSSR";
+import { ViewSettings } from "@/features/viewSettings/viewSettings";
+
+import { RootState } from "./store";
 
 function App() {
   const dispatch = useDispatch<ThunkDispatch<any, any, any>>();

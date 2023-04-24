@@ -1,7 +1,8 @@
 import Head from "next/head";
-import Layout from "@/features/ui/layout";
-import Footer from "@/features/ui/footer";
+
 import { ProjectName } from "@/common/constants";
+import Footer from "@/features/ui/footer";
+import Layout from "@/features/ui/layout";
 
 export default function New() {
   // TODO: looks like we're hitting /info every time we switch to a different page

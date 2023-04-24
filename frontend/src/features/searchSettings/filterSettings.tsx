@@ -4,9 +4,11 @@
  * This component forms part of the Search Settings modal.
  */
 
-import Row from "react-bootstrap/Row";
+import React from "react";
 import Col from "react-bootstrap/Col";
 import Form from "react-bootstrap/Form";
+import Row from "react-bootstrap/Row";
+
 import {
   DPIStep,
   MaximumDPI,
@@ -14,8 +16,8 @@ import {
   MinimumDPI,
   SizeStep,
 } from "@/common/constants";
+
 import { FilterSettings as FilterSettingsType } from "../../common/types";
-import React from "react";
 
 interface FilterSettingsProps {
   filterSettings: FilterSettingsType;

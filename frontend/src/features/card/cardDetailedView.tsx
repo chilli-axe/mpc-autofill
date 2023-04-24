@@ -4,15 +4,16 @@
  * some more information (e.g. size, dote uploaded, etc.), and a direct download link.
  */
 
+import Image from "next/image";
+import React, { memo, useEffect, useState } from "react";
+import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import Row from "react-bootstrap/Row";
 import Table from "react-bootstrap/Table";
-import { downloadImage, imageSizeToMBString } from "@/common/utils";
-import Button from "react-bootstrap/Button";
-import React, { memo, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
+
 import { RootState } from "@/app/store";
-import Image from "next/image";
+import { downloadImage, imageSizeToMBString } from "@/common/utils";
 
 interface CardDetailedViewProps {
   imageIdentifier: string;

@@ -4,10 +4,11 @@
  * through the desktop tool CLI.
  */
 
-import { Back, Front, ReversedCardTypePrefixes } from "@/common/constants";
-import { bracket } from "@/common/utils";
 import formatXML from "xml-formatter";
+
+import { Back, Front, ReversedCardTypePrefixes } from "@/common/constants";
 import { CardDocuments, SlotProjectMembers } from "@/common/types";
+import { bracket } from "@/common/utils";
 
 interface SlotsByIdentifier {
   [identifier: string]: Set<number>;

@@ -2,15 +2,9 @@
  * Data API for interacting with anything stored in cookies or local storage.
  */
 
-import Cookies from "js-cookie";
 import Ajv from "ajv";
-import {
-  SearchSettings,
-  SourceDocument,
-  SourceDocuments,
-  SourceRow,
-} from "./types";
-import { searchSettingsSchema } from "./schemas";
+import Cookies from "js-cookie";
+
 import {
   BackendURLKey,
   CSRFKey,
@@ -20,6 +14,13 @@ import {
   MinimumDPI,
   SearchSettingsKey,
 } from "./constants";
+import { searchSettingsSchema } from "./schemas";
+import {
+  SearchSettings,
+  SourceDocument,
+  SourceDocuments,
+  SourceRow,
+} from "./types";
 
 const ajv = new Ajv();
 

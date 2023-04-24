@@ -1,11 +1,12 @@
-import { getLocalStorageSearchSettings } from "./cookies";
+import { defaultSettings, sourceDocuments } from "@/common/test-constants";
+
 import {
   MaximumDPI,
   MaximumSize,
   MinimumDPI,
   SearchSettingsKey,
 } from "./constants";
-import { defaultSettings, sourceDocuments } from "@/common/test-constants";
+import { getLocalStorageSearchSettings } from "./cookies";
 
 beforeEach(() => window.localStorage.removeItem(SearchSettingsKey));
 afterEach(() => window.localStorage.removeItem(SearchSettingsKey));

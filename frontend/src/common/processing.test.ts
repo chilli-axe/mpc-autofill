@@ -1,3 +1,6 @@
+import each from "jest-each";
+
+import { Card, Cardback, Token } from "./constants";
 import {
   processLine,
   processLines,
@@ -7,9 +10,7 @@ import {
   standardiseURL,
   stripTextInParentheses,
 } from "./processing";
-import { Card, Cardback, Token } from "./constants";
 import { DFCPairs } from "./types";
-import each from "jest-each";
 
 // # region constants
 

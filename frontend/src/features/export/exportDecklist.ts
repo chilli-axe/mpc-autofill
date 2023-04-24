@@ -3,13 +3,13 @@
  * suitable for uploading to deckbuilding websites or sending to a friend.
  */
 
+import { Back, Card, FaceSeparator, Front } from "@/common/constants";
+import { stripTextInParentheses } from "@/common/processing";
 import {
   CardDocuments,
   ProjectMember,
   SlotProjectMembers,
 } from "@/common/types";
-import { Back, Card, FaceSeparator, Front } from "@/common/constants";
-import { stripTextInParentheses } from "@/common/processing";
 
 function extractProjectMemberNames(
   projectMembers: Array<SlotProjectMembers>,

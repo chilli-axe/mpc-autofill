@@ -1,19 +1,21 @@
-import Button from "react-bootstrap/Button";
 import React from "react";
+import Alert from "react-bootstrap/Alert";
+import Button from "react-bootstrap/Button";
+import Col from "react-bootstrap/Col";
+import OverlayTrigger from "react-bootstrap/OverlayTrigger";
+import Row from "react-bootstrap/Row";
+import Tooltip from "react-bootstrap/Tooltip";
+import { useSelector } from "react-redux";
+
+import { ProjectMaxSize } from "@/common/constants";
+import { bracket, downloadText, imageSizeToMBString } from "@/common/utils";
+
 import {
   selectGeneratedDecklist,
   selectGeneratedXML,
   selectProjectFileSize,
   selectProjectSize,
 } from "./projectSlice";
-import Alert from "react-bootstrap/Alert";
-import { bracket, downloadText, imageSizeToMBString } from "@/common/utils";
-import Row from "react-bootstrap/Row";
-import Col from "react-bootstrap/Col";
-import Tooltip from "react-bootstrap/Tooltip";
-import OverlayTrigger from "react-bootstrap/OverlayTrigger";
-import { useSelector } from "react-redux";
-import { ProjectMaxSize } from "@/common/constants";
 
 // TODO: review the codebase for instances of this https://redux.js.org/usage/deriving-data-selectors#optimizing-selectors-with-memoization
 

@@ -2,6 +2,7 @@
  * Some pre-built objects which can be used to build up Redux state for tests.
  */
 
+import { Card, MaximumDPI, MaximumSize, MinimumDPI } from "@/common/constants";
 import {
   BackendState,
   CardDocument,
@@ -12,7 +13,6 @@ import {
   SourceDocument,
   SourceDocuments,
 } from "@/common/types";
-import { Card, MaximumDPI, MaximumSize, MinimumDPI } from "@/common/constants";
 
 //# region backend
 

@@ -4,24 +4,25 @@
  * This component forms part of the Search Settings modal.
  */
 
-import React, { ReactNode } from "react";
 import {
   DragDropContext,
   Draggable,
-  DropResult,
   Droppable,
+  DropResult,
 } from "@hello-pangea/dnd"; // TODO: look into using `react-dnd` instead as it's a significantly smaller package
+import React, { ReactNode } from "react";
 import Table from "react-bootstrap/Table";
+// @ts-ignore: https://github.com/arnthor3/react-bootstrap-toggle/issues/21
+import Toggle from "react-bootstrap-toggle";
 import { useSelector } from "react-redux";
+
 import { RootState } from "@/app/store";
+import { ToggleButtonHeight } from "@/common/constants";
+
 import {
   SourceRow,
   SourceSettings as SourceSettingsType,
 } from "../../common/types";
-import { ToggleButtonHeight } from "@/common/constants";
-
-// @ts-ignore: https://github.com/arnthor3/react-bootstrap-toggle/issues/21
-import Toggle from "react-bootstrap-toggle";
 
 interface SourceSettingsProps {
   sourceSettings: SourceSettingsType;

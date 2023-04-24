@@ -1,7 +1,8 @@
 import { createSlice } from "@reduxjs/toolkit";
+
+import { RootState } from "@/app/store";
 import { MaximumDPI, MaximumSize, MinimumDPI } from "@/common/constants";
 import { SearchSettings } from "@/common/types";
-import { RootState } from "@/app/store";
 
 const initialState: SearchSettings = {
   // TODO: this default is redundant through `cookies.ts`. reconsider this

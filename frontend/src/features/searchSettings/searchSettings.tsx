@@ -6,27 +6,29 @@
  * A button is exposed in the right-hand panel of the main GUI to show this modal.
  */
 
-import Modal from "react-bootstrap/Modal";
-import Button from "react-bootstrap/Button";
 import React, { useEffect, useState } from "react";
+import Button from "react-bootstrap/Button";
+import Modal from "react-bootstrap/Modal";
 import { useDispatch, useSelector } from "react-redux";
+
 import { AppDispatch, RootState } from "@/app/store";
 import {
-  setFilterSettings,
-  setSearchTypeSettings,
-  setSourceSettings,
-} from "./searchSettingsSlice";
+  getLocalStorageSearchSettings,
+  setLocalStorageSearchSettings,
+} from "@/common/cookies";
 import {
   FilterSettings,
   SearchTypeSettings,
   SourceSettings,
 } from "@/common/types";
-import {
-  getLocalStorageSearchSettings,
-  setLocalStorageSearchSettings,
-} from "@/common/cookies";
-import { SearchTypeSettings as SearchTypeSettingsElement } from "./searchTypeSettings";
+
 import { FilterSettings as FilterSettingsElement } from "./filterSettings";
+import {
+  setFilterSettings,
+  setSearchTypeSettings,
+  setSourceSettings,
+} from "./searchSettingsSlice";
+import { SearchTypeSettings as SearchTypeSettingsElement } from "./searchTypeSettings";
 import { SourceSettings as SourceSettingsElement } from "./sourceSettings";
 
 export function SearchSettings() {

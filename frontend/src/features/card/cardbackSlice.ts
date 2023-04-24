@@ -3,9 +3,10 @@
  */
 
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+
 import { APIGetCardbacks } from "@/app/api";
-import { CardDocuments, CardbacksState } from "@/common/types";
 import { RootState } from "@/app/store";
+import { CardbacksState, CardDocuments } from "@/common/types";
 
 export const fetchCardbacks = createAsyncThunk(
   "cardbacks/fetchCardbacks",

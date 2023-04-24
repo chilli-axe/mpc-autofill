@@ -2,9 +2,10 @@
  * State management for the backend that the app should communicate with as configured by the user.
  */
 
-import { BackendState } from "@/common/types";
 import { createSlice } from "@reduxjs/toolkit";
+
 import { RootState } from "@/app/store";
+import { BackendState } from "@/common/types";
 
 const initialState: BackendState = {
   url: null,

@@ -1,6 +1,7 @@
-import Layout from "./../features/ui/layout";
-import App from "./../app/app";
 import Head from "next/head";
+
+import App from "./../app/app";
+import Layout from "./../features/ui/layout";
 require("bootstrap-icons/font/bootstrap-icons.css");
 
 export default function Editor() {

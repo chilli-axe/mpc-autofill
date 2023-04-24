@@ -1,4 +1,5 @@
 import Link from "next/link";
+
 import { useGetBackendInfoQuery } from "@/app/api";
 
 function Spacer() {

@@ -1,11 +1,13 @@
-import Navbar from "./navbar";
+import { GoogleAnalytics } from "nextjs-google-analytics";
 import Container from "react-bootstrap/Container";
 import SSRProvider from "react-bootstrap/SSRProvider";
 import { Provider } from "react-redux";
+
 import store from "@/app/store";
-import { GoogleAnalytics } from "nextjs-google-analytics";
-import { Toasts } from "@/features/toasts/toasts";
 import { getGoogleAnalyticsConsent } from "@/common/cookies";
+import { Toasts } from "@/features/toasts/toasts";
+
+import Navbar from "./navbar";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const consent = getGoogleAnalyticsConsent();

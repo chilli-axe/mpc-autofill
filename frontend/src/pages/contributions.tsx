@@ -1,16 +1,16 @@
 import Head from "next/head";
-import Layout from "@/features/ui/layout";
-import Footer from "@/features/ui/footer";
-
-import { useGetBackendInfoQuery, useGetContributionsQuery } from "@/app/api";
-import { Card, Cardback, ProjectName, Token } from "@/common/constants";
+import Link from "next/link";
+import React from "react";
 import Alert from "react-bootstrap/Alert";
 import Table from "react-bootstrap/Table";
-import React from "react";
-import { SourceContribution } from "@/common/types";
 import { useSelector } from "react-redux";
+
+import { useGetBackendInfoQuery, useGetContributionsQuery } from "@/app/api";
 import { RootState } from "@/app/store";
-import Link from "next/link";
+import { Card, Cardback, ProjectName, Token } from "@/common/constants";
+import { SourceContribution } from "@/common/types";
+import Footer from "@/features/ui/footer";
+import Layout from "@/features/ui/layout";
 import { Spinner } from "@/features/ui/spinner";
 
 function ContributionsSummary() {

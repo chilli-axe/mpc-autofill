@@ -9,9 +9,10 @@
  */
 
 import React, { useState } from "react";
+import Button from "react-bootstrap/Button";
 import Dropdown from "react-bootstrap/Dropdown";
 import Modal from "react-bootstrap/Modal";
-import Button from "react-bootstrap/Button";
+
 import { TextFileDropzone } from "../dropzone";
 
 export function ImportXML() {

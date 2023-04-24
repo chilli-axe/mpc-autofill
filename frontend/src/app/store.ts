@@ -1,15 +1,16 @@
-import { Store, combineReducers, configureStore } from "@reduxjs/toolkit";
 import type { PreloadedState } from "@reduxjs/toolkit";
+import { combineReducers, configureStore, Store } from "@reduxjs/toolkit";
 
 import { apiSlice } from "@/app/api";
-import searchResultsReducer from "../features/search/searchResultsSlice";
-import cardDocumentsReducer from "../features/search/cardDocumentsSlice";
+
+import backendReducer from "../features/backend/backendSlice";
 import cardbacksReducer from "../features/card/cardbackSlice";
+import projectReducer from "../features/project/projectSlice";
+import cardDocumentsReducer from "../features/search/cardDocumentsSlice";
+import searchResultsReducer from "../features/search/searchResultsSlice";
 import sourceDocumentsReducer from "../features/search/sourceDocumentsSlice";
 import searchSettingsReducer from "../features/searchSettings/searchSettingsSlice";
-import projectReducer from "../features/project/projectSlice";
 import viewSettingsReducer from "../features/viewSettings/viewSettingsSlice";
-import backendReducer from "../features/backend/backendSlice";
 
 // Create the root reducer separately so we can extract the RootState type
 const rootReducer = combineReducers({

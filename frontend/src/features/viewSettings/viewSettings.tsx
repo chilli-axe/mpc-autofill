@@ -4,14 +4,15 @@
  */
 
 import React from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "@/app/store";
-import { toggleFaces } from "./viewSettingsSlice";
-import { ToggleButtonHeight } from "@/common/constants";
-
 // eslint-disable-next-line
 // @ts-ignore: https://github.com/arnthor3/react-bootstrap-toggle/issues/21
 import Toggle from "react-bootstrap-toggle";
+import { useDispatch, useSelector } from "react-redux";
+
+import { RootState } from "@/app/store";
+import { ToggleButtonHeight } from "@/common/constants";
+
+import { toggleFaces } from "./viewSettingsSlice";
 
 export function ViewSettings() {
   const dispatch = useDispatch();

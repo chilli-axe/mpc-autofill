@@ -1,9 +1,10 @@
 import React from "react";
 import Dropdown from "react-bootstrap/Dropdown";
+
+import { ImportCSV } from "./importCSV";
 import { ImportText } from "./importText";
 import { ImportURL } from "./importURL";
 import { ImportXML } from "./importXML";
-import { ImportCSV } from "./importCSV";
 
 export function Import() {
   return (

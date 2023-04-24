@@ -1,21 +1,22 @@
-import { server } from "@/mocks/server";
-import {
-  cardDocumentsThreeResults,
-  searchResultsThreeResults,
-  sourceDocumentsOneResult,
-} from "@/mocks/handlers";
-import {
-  openCardSlotGridSelector,
-  renderWithProviders,
-} from "@/common/test-utils";
+import { waitFor, within } from "@testing-library/react";
+
 import App from "@/app/app";
+import { Front } from "@/common/constants";
 import {
   localBackend,
   projectSelectedImage1,
   sourceDocument1,
 } from "@/common/test-constants";
-import { Front } from "@/common/constants";
-import { waitFor, within } from "@testing-library/react";
+import {
+  openCardSlotGridSelector,
+  renderWithProviders,
+} from "@/common/test-utils";
+import {
+  cardDocumentsThreeResults,
+  searchResultsThreeResults,
+  sourceDocumentsOneResult,
+} from "@/mocks/handlers";
+import { server } from "@/mocks/server";
 
 test("toggling between faceting cards by source vs grouped together works as expected", async () => {
   server.use(

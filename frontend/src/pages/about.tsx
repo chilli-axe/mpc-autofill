@@ -1,8 +1,9 @@
 import Head from "next/head";
-import Layout from "@/features/ui/layout";
-import Footer from "@/features/ui/footer";
-import { ProjectName } from "@/common/constants";
+
 import { useGetBackendInfoQuery } from "@/app/api";
+import { ProjectName } from "@/common/constants";
+import Footer from "@/features/ui/footer";
+import Layout from "@/features/ui/layout";
 
 function BackendDescription() {
   const backendInfoQuery = useGetBackendInfoQuery();

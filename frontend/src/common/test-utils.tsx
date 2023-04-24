@@ -3,18 +3,18 @@
  * Retrieved from https://redux.js.org/usage/writing-tests
  */
 
-import React, { PropsWithChildren } from "react";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import type { RenderOptions } from "@testing-library/react";
-import { within } from "@testing-library/dom";
 import type { PreloadedState } from "@reduxjs/toolkit";
+import { Store } from "@reduxjs/toolkit";
+import { within } from "@testing-library/dom";
+import type { RenderOptions } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import React, { PropsWithChildren } from "react";
 import { Provider } from "react-redux";
 
 import { RootState, setupStore } from "@/app/store";
-import { Store } from "@reduxjs/toolkit";
-import { Faces } from "@/common/types";
 import { Front } from "@/common/constants";
 import { cardDocument1 } from "@/common/test-constants";
+import { Faces } from "@/common/types";
 
 // This type interface extends the default options for render from RTL, as well
 // as allows the user to specify other things such as initialState, store.

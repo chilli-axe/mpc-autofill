@@ -1,13 +1,14 @@
-import { renderWithProviders } from "@/common/test-utils";
-import Cookies from "js-cookie";
-// these tests assume that the toast appears on any page and therefore render the simplest page possible
-import About from "@/pages/about";
 import {
   screen,
   waitFor,
   waitForElementToBeRemoved,
 } from "@testing-library/react";
+import Cookies from "js-cookie";
+
 import { GoogleAnalyticsConsentKey } from "@/common/constants";
+import { renderWithProviders } from "@/common/test-utils";
+// these tests assume that the toast appears on any page and therefore render the simplest page possible
+import About from "@/pages/about";
 
 beforeEach(() => {
   Cookies.remove(GoogleAnalyticsConsentKey);
