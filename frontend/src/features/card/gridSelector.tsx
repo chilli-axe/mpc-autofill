@@ -37,16 +37,17 @@ interface GridSelectorProps {
   };
 }
 
-interface SoupProps {
+interface CardGridDisplayProps {
   cardIdentifiersAndOptionNumbersBySource: {
     [sourceKey: string]: Array<[string, number]>;
   };
   selectImage: {
     (identifier: string): void;
   };
+  sourceKeyToName: { [sourceKey: string]: string };
 }
 
-function CardsGroupedTogether(props: SoupProps) {
+function CardsGroupedTogether(props: CardGridDisplayProps) {
   /**
    * Render all images in `cardIdentifiersAndOptionNumbersBySource` in one block -
    * i.e. not separated by source.
@@ -73,7 +74,7 @@ function CardsGroupedTogether(props: SoupProps) {
   );
 }
 
-function CardsFacetedBySource(props: SoupProps) {
+function CardsFacetedBySource(props: CardGridDisplayProps) {
   /**
    * Render all images in `cardIdentifiersAndOptionNumbersBySource` separated by source.
    * Allow users to toggle whether each source's cards are showed/hidden.
@@ -106,7 +107,9 @@ function CardsFacetedBySource(props: SoupProps) {
                   className="orpheus prevent-select ms-2"
                   key={`${sourceKey}-header-title`}
                 >
-                  <i key={`${sourceKey}-italics`}>{sourceKey}</i>
+                  <i key={`${sourceKey}-italics`}>
+                    {props.sourceKeyToName[sourceKey]}
+                  </i>
                 </h4>
                 <h4
                   key={`${sourceKey}-arrow`}
@@ -273,6 +276,7 @@ export function GridSelector(props: GridSelectorProps) {
               cardIdentifiersAndOptionNumbersBySource
             }
             selectImage={selectImage}
+            sourceKeyToName={sourceKeyToName}
           />
         ) : (
           <CardsGroupedTogether
@@ -280,6 +284,7 @@ export function GridSelector(props: GridSelectorProps) {
               cardIdentifiersAndOptionNumbersBySource
             }
             selectImage={selectImage}
+            sourceKeyToName={sourceKeyToName}
           />
         )}
       </Modal.Body>
