@@ -116,6 +116,21 @@ test("line that matches to dfc pair but a back is also manually specified is pro
   ]);
 });
 
+test("a card name that's a subset of a DFC pair's front is not matched", () => {
+  expect(
+    processLines("1 elesh norn\n1 elesh norn, grand cenobite", {
+      "elesh norn": "the argent etchings",
+    })
+  ).toStrictEqual([
+    [
+      1,
+      { card_type: Card, query: "elesh norn" },
+      { card_type: Card, query: "the argent etchings" },
+    ],
+    [1, { card_type: Card, query: "elesh norn grand cenobite" }, null],
+  ]);
+});
+
 test("line that requests 0 of a card is processed correctly", () => {
   expect(processLine("0 opt", dfcPairs)).toStrictEqual([
     0,

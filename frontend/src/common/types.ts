@@ -18,6 +18,7 @@ export interface CardDocument {
   name: string;
   priority: number;
   source: string;
+  source_name: string;
   source_id: number;
   source_verbose: string;
   source_type: string;
@@ -171,6 +172,12 @@ export type Project = {
 
 export interface DFCPairs {
   [front: string]: string;
+}
+
+export interface ViewSettingsState {
+  frontsVisible: boolean;
+  sourcesVisible: { [source: string]: boolean };
+  facetBySource: boolean;
 }
 
 export type ProcessedLine = [number, SearchQuery | null, SearchQuery | null];

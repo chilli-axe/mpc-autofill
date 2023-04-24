@@ -4,7 +4,7 @@
  */
 
 import React, { PropsWithChildren } from "react";
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import type { RenderOptions } from "@testing-library/react";
 import { within } from "@testing-library/dom";
 import type { PreloadedState } from "@reduxjs/toolkit";
@@ -13,6 +13,8 @@ import { Provider } from "react-redux";
 import { RootState, setupStore } from "@/app/store";
 import { Store } from "@reduxjs/toolkit";
 import { Faces } from "@/common/types";
+import { Front } from "@/common/constants";
+import { cardDocument1 } from "@/common/test-constants";
 
 // This type interface extends the default options for render from RTL, as well
 // as allows the user to specify other things such as initialState, store.
@@ -109,6 +111,57 @@ export async function expectCardbackSlotState(
   return await expectCardSlotState(
     "common-cardback",
     cardName,
+    selectedImage,
+    totalImages
+  );
+}
+
+//# endregion
+
+//# region UI interactions
+
+export async function openImportTextModal() {
+  // open the modal and find the text area
+  screen.getByText("Add Cards", { exact: false }).click();
+  await waitFor(() => screen.getByText("Text", { exact: false }).click());
+  await waitFor(() => expect(screen.getByText("Add Cards — Text")));
+  return screen.getByLabelText("import-text");
+}
+
+export async function importText(text: string) {
+  const textArea = await openImportTextModal();
+  fireEvent.change(textArea, { target: { value: text } });
+  screen.getByLabelText("import-text-submit").click();
+}
+
+async function openGridSelector(
+  cardSlotTestId: string,
+  gridSelectorTestId: string,
+  selectedImage: number,
+  totalImages: number
+) {
+  expect(totalImages).toBeGreaterThan(1);
+  await expectCardSlotState(cardSlotTestId, null, selectedImage, totalImages);
+
+  await waitFor(() =>
+    within(screen.getByTestId(cardSlotTestId))
+      .getByText(`${selectedImage} / ${totalImages}`)
+      .click()
+  );
+  await waitFor(() => expect(screen.getByText("Option 1")));
+
+  return screen.getByTestId(gridSelectorTestId);
+}
+
+export async function openCardSlotGridSelector(
+  slot: number,
+  face: Faces,
+  selectedImage: number,
+  totalImages: number
+) {
+  return await openGridSelector(
+    `${face}-slot${slot - 1}`,
+    `${face}-slot${slot - 1}-grid-selector`,
     selectedImage,
     totalImages
   );

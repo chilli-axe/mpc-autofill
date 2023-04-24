@@ -60,7 +60,7 @@ exports[`the html structure of a Card with a single document 1`] = `
             <p
               class="mpccard-source card-text"
             >
-              Card Source [1200 DPI]
+              Source 1 [1200 DPI]
             </p>
           </div>
         </div>
@@ -204,7 +204,7 @@ exports[`the html structure of a Card with three documents 1`] = `
             <p
               class="mpccard-source card-text"
             >
-              Card Source [1200 DPI]
+              Source 1 [1200 DPI]
             </p>
           </div>
         </div>
@@ -283,7 +283,7 @@ exports[`the html structure of a Card with two documents 1`] = `
             <p
               class="mpccard-source card-text"
             >
-              Card Source [1200 DPI]
+              Source 1 [1200 DPI]
             </p>
           </div>
         </div>

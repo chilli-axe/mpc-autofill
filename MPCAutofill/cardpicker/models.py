@@ -213,7 +213,9 @@ class Card(models.Model):
             "card_type": self.card_type,
             "name": self.name,
             "priority": self.priority,
+            # TODO: consider only including source_pk here. reference the other data from sourceDocuments in frontend
             "source": self.source.key,
+            "source_name": self.source.name,
             "source_id": self.source.pk,
             "source_verbose": self.source_verbose,
             "source_type": self.get_source_type(),

@@ -13,14 +13,18 @@ import {
   expectCardSlotToNotExist,
   expectCardGridSlotState,
   expectCardbackSlotState,
+  openCardSlotGridSelector,
 } from "@/common/test-utils";
 import {
   cardDocumentsOneResult,
   cardDocumentsThreeResults,
+  cardDocumentsSixResults,
   cardbacksTwoResults,
   sourceDocumentsOneResult,
+  sourceDocumentsThreeResults,
   searchResultsOneResult,
   searchResultsThreeResults,
+  searchResultsSixResults,
 } from "@/mocks/handlers";
 import { server } from "@/mocks/server";
 import App from "@/app/app";
@@ -87,11 +91,11 @@ test("the html structure of a CardSlot with multiple search results, image selec
   expect(screen.getByTestId("front-slot0")).toMatchSnapshot();
 });
 
-test("the html structure of a CardSlot's grid selector", async () => {
+test("the html structure of a CardSlot's grid selector, cards faceted by source", async () => {
   server.use(
-    cardDocumentsThreeResults,
-    sourceDocumentsOneResult,
-    searchResultsThreeResults
+    cardDocumentsSixResults,
+    sourceDocumentsThreeResults,
+    searchResultsSixResults
   );
 
   renderWithProviders(<App />, {
@@ -101,13 +105,31 @@ test("the html structure of a CardSlot's grid selector", async () => {
     },
   });
 
-  // from preloaded state
-  await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 3);
+  const gridSelector = await openCardSlotGridSelector(1, Front, 1, 4);
+  expect(gridSelector).toMatchSnapshot();
+});
 
-  await waitFor(() => screen.getByText("1 / 3").click());
-  await waitFor(() => expect(screen.getByText("Select Version")));
+test("the html structure of a CardSlot's grid selector, cards grouped together", async () => {
+  server.use(
+    cardDocumentsSixResults,
+    sourceDocumentsThreeResults,
+    searchResultsSixResults
+  );
 
-  expect(screen.getByTestId("front-slot0-grid-selector")).toMatchSnapshot();
+  renderWithProviders(<App />, {
+    preloadedState: {
+      backend: localBackend,
+      project: projectSelectedImage1,
+      viewSettings: {
+        frontsVisible: true,
+        facetBySource: false,
+        sourcesVisible: {},
+      },
+    },
+  });
+
+  const gridSelector = await openCardSlotGridSelector(1, Front, 1, 4);
+  expect(gridSelector).toMatchSnapshot();
 });
 
 //# endregion
