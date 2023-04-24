@@ -13,6 +13,7 @@ import {
   expectCardSlotToNotExist,
   expectCardGridSlotState,
   expectCardbackSlotState,
+  openCardSlotGridSelector,
 } from "@/common/test-utils";
 import {
   cardDocumentsOneResult,
@@ -101,21 +102,39 @@ test("the html structure of a CardSlot's grid selector, cards faceted by source"
     preloadedState: {
       backend: localBackend,
       project: projectSelectedImage1,
+      // viewSettings: {
+      //   frontsVisible: true,
+      //   facetBySource: true,
+      //   sourcesVisible: {},
+      // },
+    },
+  });
+
+  const gridSelector = await openCardSlotGridSelector(1, Front, 1, 4);
+  expect(gridSelector).toMatchSnapshot();
+});
+
+test("the html structure of a CardSlot's grid selector, cards groued together", async () => {
+  server.use(
+    cardDocumentsSixResults,
+    sourceDocumentsThreeResults,
+    searchResultsSixResults
+  );
+
+  renderWithProviders(<App />, {
+    preloadedState: {
+      backend: localBackend,
+      project: projectSelectedImage1,
       viewSettings: {
         frontsVisible: true,
-        facetBySource: true,
+        facetBySource: false,
         sourcesVisible: {},
       },
     },
   });
 
-  // from preloaded state
-  await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 4);
-
-  await waitFor(() => screen.getByText("1 / 4").click());
-  await waitFor(() => expect(screen.getByText("Select Version")));
-
-  expect(screen.getByTestId("front-slot0-grid-selector")).toMatchSnapshot();
+  const gridSelector = await openCardSlotGridSelector(1, Front, 1, 4);
+  expect(gridSelector).toMatchSnapshot();
 });
 
 //# endregion

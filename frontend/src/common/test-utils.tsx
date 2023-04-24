@@ -148,7 +148,7 @@ async function openGridSelector(
       .getByText(`${selectedImage} / ${totalImages}`)
       .click()
   );
-  await waitFor(() => expect(screen.getByText("Select Version")));
+  await waitFor(() => expect(screen.getByText("Option 1")));
 
   return screen.getByTestId(gridSelectorTestId);
 }
