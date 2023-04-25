@@ -163,6 +163,7 @@ export function CardSlot(props: CardSlotProps) {
         ]
       : undefined;
 
+  // TODO: add a confirmation prompt here. yes/no/yes and don't ask again.
   const deleteThisImage = () => {
     dispatch(deleteImage({ slot }));
   };

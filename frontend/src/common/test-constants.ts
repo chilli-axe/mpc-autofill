@@ -211,6 +211,33 @@ export const projectSelectedImage1: Project = {
   cardback: null,
 };
 
+export const projectThreeMembersSelectedImage1: Project = {
+  members: [
+    {
+      front: {
+        query: { query: "my search query", card_type: Card },
+        selectedImage: cardDocument1.identifier,
+      },
+      back: null,
+    },
+    {
+      front: {
+        query: { query: "my search query", card_type: Card },
+        selectedImage: cardDocument1.identifier,
+      },
+      back: null,
+    },
+    {
+      front: {
+        query: { query: "my search query", card_type: Card },
+        selectedImage: cardDocument1.identifier,
+      },
+      back: null,
+    },
+  ],
+  cardback: null,
+};
+
 export const projectSelectedImage2: Project = {
   members: [
     {

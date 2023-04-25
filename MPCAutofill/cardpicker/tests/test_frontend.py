@@ -695,7 +695,6 @@ class TestFrontend:
             source=TestSources.EXAMPLE_DRIVE_1.value,
         )
 
-    # TODO: replicate this test in the new frontend
     def test_detailed_view_modal(self, chrome_driver):
         self.load_review_page_with_search_string(chrome_driver, "brainstorm")
 
@@ -768,7 +767,6 @@ class TestFrontend:
             source=TestSources.EXAMPLE_DRIVE_1.value,
         )
 
-    # TODO: replicate this test in the new frontend
     def test_delete_multiple_cards_from_order(self, chrome_driver):
         self.load_review_page_with_search_string(chrome_driver, "2 brainstorm\n2 past in flames")
 

@@ -9,6 +9,7 @@ import {
   localBackend,
   projectSelectedImage1,
   projectSelectedImage2,
+  projectThreeMembersSelectedImage1,
 } from "@/common/test-constants";
 import {
   expectCardbackSlotState,
@@ -249,6 +250,29 @@ test("deleting a CardSlot", async () => {
   screen.getByLabelText("remove-front0").click();
 
   await expectCardSlotToNotExist(1);
+});
+
+test("deleting multiple CardSlots", async () => {
+  server.use(
+    cardDocumentsThreeResults,
+    sourceDocumentsOneResult,
+    searchResultsThreeResults
+  );
+  renderWithProviders(<App />, {
+    preloadedState: {
+      backend: localBackend,
+      project: projectThreeMembersSelectedImage1,
+    },
+  });
+  await waitFor(() =>
+    expect(screen.getAllByText(cardDocument1.name)).toHaveLength(3)
+  );
+
+  screen.getByLabelText("remove-front0").click();
+  screen.getByLabelText("remove-front1").click();
+
+  await expectCardSlotToNotExist(2);
+  await expectCardSlotToNotExist(3);
 });
 
 test("CardSlot automatically selects the first search result", async () => {
