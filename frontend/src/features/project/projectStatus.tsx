@@ -1,3 +1,4 @@
+import { saveAs } from "file-saver";
 import React from "react";
 import Alert from "react-bootstrap/Alert";
 import Button from "react-bootstrap/Button";
@@ -8,7 +9,7 @@ import Tooltip from "react-bootstrap/Tooltip";
 import { useSelector } from "react-redux";
 
 import { ProjectMaxSize } from "@/common/constants";
-import { bracket, downloadText, imageSizeToMBString } from "@/common/utils";
+import { bracket, imageSizeToMBString } from "@/common/utils";
 import {
   selectGeneratedDecklist,
   selectGeneratedXML,
@@ -28,9 +29,17 @@ export function ProjectStatus() {
   const projectSize = useSelector(selectProjectSize);
   const projectFileSize = useSelector(selectProjectFileSize);
 
-  // TODO: read project name
-  const exportXML = () => downloadText("cards.xml", generatedXML);
-  const exportDecklist = () => downloadText("decklist.txt", generatedDecklist);
+  // TODO: read project name for these file names
+  const exportXML = () =>
+    saveAs(
+      new Blob([generatedXML], { type: "text/plain;charset=utf-8" }),
+      "cards.xml"
+    );
+  const exportDecklist = () =>
+    saveAs(
+      new Blob([generatedDecklist], { type: "text/xml;charset=utf-8" }),
+      "decklist.txt"
+    );
 
   return (
     <>

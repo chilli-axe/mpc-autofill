@@ -4,6 +4,7 @@
  * some more information (e.g. size, dote uploaded, etc.), and a direct download link.
  */
 
+import { saveAs } from "file-saver";
 import Image from "next/image";
 import React, { memo, useEffect, useState } from "react";
 import Button from "react-bootstrap/Button";
@@ -13,7 +14,7 @@ import Table from "react-bootstrap/Table";
 import { useSelector } from "react-redux";
 
 import { RootState } from "@/app/store";
-import { downloadImage, imageSizeToMBString } from "@/common/utils";
+import { imageSizeToMBString } from "@/common/utils";
 
 interface CardDetailedViewProps {
   imageIdentifier: string;
@@ -161,7 +162,11 @@ export function CardDetailedView(props: CardDetailedViewProps) {
                   <Button
                     variant="primary"
                     onClick={() =>
-                      downloadImage(maybeCardDocument.download_link)
+                      // TODO: setting the filename like this doesn't work for google drive links :(
+                      saveAs(
+                        maybeCardDocument.download_link,
+                        `${maybeCardDocument.name} (${maybeCardDocument.identifier}).${maybeCardDocument.extension}`
+                      )
                     }
                   >
                     Download Image
