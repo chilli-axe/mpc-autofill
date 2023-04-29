@@ -32,12 +32,12 @@ export function ProjectStatus() {
   // TODO: read project name for these file names
   const exportXML = () =>
     saveAs(
-      new Blob([generatedXML], { type: "text/plain;charset=utf-8" }),
+      new Blob([generatedXML], { type: "text/xml;charset=utf-8" }),
       "cards.xml"
     );
   const exportDecklist = () =>
     saveAs(
-      new Blob([generatedDecklist], { type: "text/xml;charset=utf-8" }),
+      new Blob([generatedDecklist], { type: "text/plain;charset=utf-8" }),
       "decklist.txt"
     );
 

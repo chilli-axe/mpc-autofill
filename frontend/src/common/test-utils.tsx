@@ -170,17 +170,25 @@ export async function openCardSlotGridSelector(
   );
 }
 
-export async function downloadXML() {
+async function downloadFile(id: string) {
   // @ts-ignore
   jest.spyOn(global, "Blob").mockImplementation(function (content, options) {
     return { content, options };
   });
-  await waitFor(() => screen.getByTestId("download-xml").click());
+  await waitFor(() => screen.getByTestId(`download-${id}`).click());
   expect(FileSaver.saveAs).toHaveBeenCalledTimes(1);
 
   // @ts-ignore
   const [blob, filename] = (FileSaver.saveAs as jest.Mock).mock.calls[0];
   return [blob, filename];
+}
+
+export async function downloadXML() {
+  return await downloadFile("xml");
+}
+
+export async function downloadDecklist() {
+  return await downloadFile("decklist");
 }
 
 //# endregion

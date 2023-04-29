@@ -53,7 +53,7 @@ test("the XML representation of a simple project with no custom backs", async ()
 
   const [blob, filename] = await downloadXML();
 
-  expect(blob.options).toEqual({ type: "text/plain;charset=utf-8" });
+  expect(blob.options).toEqual({ type: "text/xml;charset=utf-8" });
   expect(normaliseString(blob.content[0])).toBe(
     normaliseString(
       `<order>
@@ -107,7 +107,7 @@ test("the XML representation of a simple project with a custom back for one card
 
   const [blob, filename] = await downloadXML();
 
-  expect(blob.options).toEqual({ type: "text/plain;charset=utf-8" });
+  expect(blob.options).toEqual({ type: "text/xml;charset=utf-8" });
   expect(normaliseString(blob.content[0])).toBe(
     normaliseString(
       `<order>
