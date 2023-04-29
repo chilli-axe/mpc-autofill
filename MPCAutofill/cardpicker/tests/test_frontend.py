@@ -247,7 +247,6 @@ class TestFrontend:
         response = client.get(f"{live_server.url}/{url}")
         assert response.status_code == 200
 
-    # TODO: replicate this test in the new frontend
     def test_basic_search_and_xml_generation(self, chrome_driver, download_folder, snapshot):
         self.load_review_page_with_search_string(chrome_driver, "4 brainstorm\n3 island")
 

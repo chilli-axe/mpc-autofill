@@ -20,6 +20,7 @@ function buildRoute(route: string) {
    * This little helper function ensures the given relative API route is associated
    * with the local backend URL correctly.
    */
+
   const re = /^\/?(.*?)\/?$/g;
   return `${localBackend.url}/${(re.exec(route) ?? ["", ""])[1]}/`;
 }
