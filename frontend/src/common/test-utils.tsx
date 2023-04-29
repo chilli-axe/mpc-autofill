@@ -169,6 +169,14 @@ export async function openCardSlotGridSelector(
   );
 }
 
+export async function downloadXML() {
+  // @ts-ignore
+  global.Blob = function (content, options) {
+    return { content, options };
+  };
+  await waitFor(() => screen.getByTestId("download-xml").click());
+}
+
 //# endregion
 
 //# region misc

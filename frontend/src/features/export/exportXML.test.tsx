@@ -1,4 +1,3 @@
-import { screen, waitFor } from "@testing-library/react";
 import FileSaver from "file-saver";
 
 import App from "@/app/app";
@@ -11,6 +10,7 @@ import {
   localBackend,
 } from "@/common/test-constants";
 import {
+  downloadXML,
   expectCardbackSlotState,
   expectCardGridSlotState,
   importText,
@@ -57,12 +57,7 @@ describe("test XML download", () => {
     await expectCardGridSlotState(2, Back, cardDocument6.name, 1, 1);
     await expectCardbackSlotState(cardDocument5.name, 1, 1);
 
-    // @ts-ignore
-    global.Blob = function (content, options) {
-      return { content, options };
-    };
-    await waitFor(() => screen.getByTestId("download-xml").click());
-
+    await downloadXML();
     expect(FileSaver.saveAs).toHaveBeenCalledTimes(1);
 
     // @ts-ignore
