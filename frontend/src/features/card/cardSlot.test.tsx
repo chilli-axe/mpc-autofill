@@ -20,11 +20,11 @@ import {
 } from "@/common/test-utils";
 import {
   cardbacksTwoResults,
+  cardDocumentsFourResults,
   cardDocumentsOneResult,
-  cardDocumentsSixResults,
   cardDocumentsThreeResults,
+  searchResultsFourResults,
   searchResultsOneResult,
-  searchResultsSixResults,
   searchResultsThreeResults,
   sourceDocumentsOneResult,
   sourceDocumentsThreeResults,
@@ -95,9 +95,9 @@ test("the html structure of a CardSlot with multiple search results, image selec
 
 test("the html structure of a CardSlot's grid selector, cards faceted by source", async () => {
   server.use(
-    cardDocumentsSixResults,
+    cardDocumentsFourResults,
     sourceDocumentsThreeResults,
-    searchResultsSixResults
+    searchResultsFourResults
   );
 
   renderWithProviders(<App />, {
@@ -113,9 +113,9 @@ test("the html structure of a CardSlot's grid selector, cards faceted by source"
 
 test("the html structure of a CardSlot's grid selector, cards grouped together", async () => {
   server.use(
-    cardDocumentsSixResults,
+    cardDocumentsFourResults,
     sourceDocumentsThreeResults,
-    searchResultsSixResults
+    searchResultsFourResults
   );
 
   renderWithProviders(<App />, {

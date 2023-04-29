@@ -78,7 +78,11 @@ export function ProjectStatus() {
                 placement="top"
                 overlay={(props) => <Tooltip {...props}>Download XML</Tooltip>}
               >
-                <Button variant="outline-light" onClick={exportXML}>
+                <Button
+                  variant="outline-light"
+                  onClick={exportXML}
+                  data-testid="download-xml"
+                >
                   <i
                     className="bi bi-file-earmark-arrow-down"
                     style={{ fontSize: 1.25 + "rem" }}
@@ -95,7 +99,11 @@ export function ProjectStatus() {
                   <Tooltip {...props}>Download Decklist</Tooltip>
                 )}
               >
-                <Button variant="outline-light" onClick={exportDecklist}>
+                <Button
+                  variant="outline-light"
+                  onClick={exportDecklist}
+                  data-testid="download-decklist"
+                >
                   <i
                     className="bi bi-file-text"
                     style={{ fontSize: 1.25 + "rem" }}

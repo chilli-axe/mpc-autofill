@@ -210,7 +210,7 @@ export const searchResultsThreeResults = rest.post(
   }
 );
 
-export const searchResultsSixResults = rest.post(
+export const searchResultsFourResults = rest.post(
   buildRoute("2/searchResults/"),
   (req, res, ctx) => {
     return res(
@@ -225,6 +225,49 @@ export const searchResultsSixResults = rest.post(
               cardDocument4.identifier,
             ],
             CARDBACK: [cardDocument5.identifier],
+            TOKEN: [cardDocument6.identifier],
+          },
+        },
+      })
+    );
+  }
+);
+
+export const searchResultsSixResults = rest.post(
+  buildRoute("2/searchResults/"),
+  (req, res, ctx) => {
+    return res(
+      ctx.status(200),
+      ctx.json({
+        results: {
+          "query 1": {
+            CARD: [cardDocument1.identifier],
+            CARDBACK: [],
+            TOKEN: [],
+          },
+          "query 2": {
+            CARD: [cardDocument2.identifier],
+            CARDBACK: [],
+            TOKEN: [],
+          },
+          "query 3": {
+            CARD: [cardDocument4.identifier],
+            CARDBACK: [],
+            TOKEN: [],
+          },
+          "query 4": {
+            CARD: [cardDocument4.identifier],
+            CARDBACK: [],
+            TOKEN: [],
+          },
+          "query 5": {
+            CARD: [],
+            CARDBACK: [cardDocument5.identifier],
+            TOKEN: [],
+          },
+          "query 6": {
+            CARD: [],
+            CARDBACK: [],
             TOKEN: [cardDocument6.identifier],
           },
         },

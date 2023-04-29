@@ -12,9 +12,9 @@ import React, { PropsWithChildren } from "react";
 import { Provider } from "react-redux";
 
 import { RootState, setupStore } from "@/app/store";
-import { Front } from "@/common/constants";
-import { cardDocument1 } from "@/common/test-constants";
 import { Faces } from "@/common/types";
+
+//# region redux test setup
 
 // This type interface extends the default options for render from RTL, as well
 // as allows the user to specify other things such as initialState, store.
@@ -44,6 +44,8 @@ export function renderWithProviders(
   // @ts-ignore
   return { store, ...render(ui, { wrapper: Wrapper, ...renderOptions }) };
 }
+
+//# endregion
 
 //# region assertions
 
@@ -165,6 +167,18 @@ export async function openCardSlotGridSelector(
     selectedImage,
     totalImages
   );
+}
+
+//# endregion
+
+//# region misc
+
+export function normaliseString(text: string): string {
+  /**
+   * Pretty gross, but useful for asserting that generated XMLs are as expected.
+   */
+
+  return text.replaceAll(" ", "").replaceAll("\n", "").replaceAll("\r", "");
 }
 
 //# endregion
