@@ -99,3 +99,39 @@ test("the decklist representation of a simple project with a custom back for one
   );
   expect(filename).toBe("decklist.txt");
 });
+
+test("the decklist representation of a simple project with multiple instances of a card", async () => {
+  server.use(
+    cardDocumentsSixResults,
+    cardbacksOneResult,
+    sourceDocumentsThreeResults,
+    searchResultsSixResults
+  );
+  renderWithProviders(<App />, {
+    preloadedState: {
+      backend: localBackend,
+      project: {
+        members: [],
+        cardback: cardDocument5.identifier,
+      },
+    },
+  });
+
+  await importText("2x query 1\nquery 2 | query 1");
+  await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 1);
+  await expectCardGridSlotState(2, Front, cardDocument1.name, 1, 1);
+  await expectCardGridSlotState(3, Front, cardDocument2.name, 1, 1);
+  await expectCardGridSlotState(3, Back, cardDocument1.name, 1, 1);
+  await expectCardbackSlotState(cardDocument5.name, 1, 1);
+
+  const [blob, filename] = await downloadDecklist();
+
+  expect(blob.options).toEqual({ type: "text/plain;charset=utf-8" });
+  expect(normaliseString(blob.content[0])).toBe(
+    normaliseString(
+      `2x ${cardDocument1.name}
+            1x ${cardDocument2.name} | ${cardDocument1.name}`
+    )
+  );
+  expect(filename).toBe("decklist.txt");
+});
