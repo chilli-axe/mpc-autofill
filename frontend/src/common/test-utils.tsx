@@ -8,6 +8,7 @@ import { Store } from "@reduxjs/toolkit";
 import { within } from "@testing-library/dom";
 import type { RenderOptions } from "@testing-library/react";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import FileSaver from "file-saver";
 import React, { PropsWithChildren } from "react";
 import { Provider } from "react-redux";
 
@@ -171,10 +172,15 @@ export async function openCardSlotGridSelector(
 
 export async function downloadXML() {
   // @ts-ignore
-  global.Blob = function (content, options) {
+  jest.spyOn(global, "Blob").mockImplementation(function (content, options) {
     return { content, options };
-  };
+  });
   await waitFor(() => screen.getByTestId("download-xml").click());
+  expect(FileSaver.saveAs).toHaveBeenCalledTimes(1);
+
+  // @ts-ignore
+  const [blob, filename] = (FileSaver.saveAs as jest.Mock).mock.calls[0];
+  return [blob, filename];
 }
 
 //# endregion
