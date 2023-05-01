@@ -43,7 +43,7 @@ class Source(models.Model):
         max_length=20, choices=SourceTypeChoices.choices, default=SourceTypeChoices.GOOGLE_DRIVE
     )
     external_link = models.CharField(max_length=200, blank=True, null=True)
-    description = models.CharField(max_length=400)
+    description = models.CharField(max_length=400, blank=True)
     ordinal = models.IntegerField(default=0)  # TODO: why is this not unique?
 
     def __str__(self) -> str:
