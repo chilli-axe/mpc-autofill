@@ -24,12 +24,15 @@ import {
 import {
   cardbacksTwoOtherResults,
   cardDocumentsFourResults,
+  cardDocumentsSixResults,
   cardDocumentsThreeResults,
   dfcPairsMatchingCards1And4,
   sampleCards,
   searchResultsForDFCMatchedCards1And4,
   searchResultsOneResult,
+  searchResultsSixResults,
   sourceDocumentsOneResult,
+  sourceDocumentsThreeResults,
 } from "@/mocks/handlers";
 import { server } from "@/mocks/server";
 
@@ -192,6 +195,31 @@ test("importing multiple instances of one card by text into a non-empty project"
   await expectCardSlotToExist(3);
   await expectCardGridSlotState(3, Front, cardDocument1.name, 1, 1);
   await expectCardGridSlotState(3, Back, cardDocument2.name, 1, 2);
+});
+
+test("importing one card of each type into an empty project", async () => {
+  server.use(
+    cardDocumentsSixResults,
+    cardbacksTwoOtherResults,
+    sourceDocumentsThreeResults,
+    searchResultsSixResults
+  );
+  renderWithProviders(<App />, { preloadedState });
+
+  // import one card of each type
+  await importText("query 1\nt:query 6\nb:query 5");
+
+  // three card slots should have been created
+  await expectCardSlotToExist(1);
+  await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 1);
+  await expectCardGridSlotState(1, Back, cardDocument2.name, 1, 2);
+  await expectCardSlotToExist(2);
+  await expectCardGridSlotState(2, Front, cardDocument6.name, 1, 1);
+  await expectCardGridSlotState(2, Back, cardDocument2.name, 1, 2);
+  await expectCardSlotToExist(3);
+  await expectCardGridSlotState(3, Front, cardDocument5.name, 1, 1);
+  await expectCardGridSlotState(3, Back, cardDocument2.name, 1, 2);
+  await expectCardbackSlotState(cardDocument2.name, 1, 2);
 });
 
 test("importing one DFC-paired card by text into an empty project", async () => {

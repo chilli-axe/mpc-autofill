@@ -17,7 +17,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/app/store";
 import { ToggleButtonHeight } from "@/common/constants";
 import { CardDocument } from "@/common/types";
-import { Card } from "@/features/card/card";
+import { MemoizedCard } from "@/features/card/card";
 import {
   makeAllSourcesInvisible,
   makeAllSourcesVisible,
@@ -60,7 +60,7 @@ function CardsGroupedTogether(props: CardGridDisplayProps) {
         ([key, value], sourceIndex) => (
           <>
             {value.flatMap(([identifier, index]) => (
-              <Card // TODO: paginate or lazy-load these
+              <MemoizedCard // TODO: paginate or lazy-load these
                 imageIdentifier={identifier}
                 cardHeaderTitle={`Option ${index + 1}`}
                 cardOnClick={() => props.selectImage(identifier)}
@@ -141,7 +141,7 @@ function CardsFacetedBySource(props: CardGridDisplayProps) {
                 >
                   {cardIdentifiersAndOptionNumbers.map(
                     ([identifier, optionNumber]) => (
-                      <Card
+                      <MemoizedCard
                         imageIdentifier={identifier}
                         cardHeaderTitle={`Option ${optionNumber + 1}`}
                         cardOnClick={() => props.selectImage(identifier)}
