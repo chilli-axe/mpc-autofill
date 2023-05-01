@@ -44,3 +44,7 @@ export const Brackets: Array<number> = [
 ];
 
 export const ProjectMaxSize: number = Brackets[Brackets.length - 1];
+
+export enum QueryTags {
+  BackendSpecific = "backendSpecific",
+}

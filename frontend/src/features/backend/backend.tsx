@@ -14,7 +14,7 @@ import { useDispatch, useSelector } from "react-redux";
 
 import { apiSlice } from "@/app/api";
 import { RootState } from "@/app/store";
-import { ProjectName } from "@/common/constants";
+import { ProjectName, QueryTags } from "@/common/constants";
 import {
   clearLocalStorageBackendURL,
   getLocalStorageBackendURL,
@@ -97,7 +97,7 @@ export function BackendConfig(props: BackendConfigProps) {
   const clearBackendURL = () => {
     dispatch(clearURL());
     clearLocalStorageBackendURL();
-    dispatch(apiSlice.util.resetApiState());
+    dispatch(apiSlice.util.invalidateTags([QueryTags.BackendSpecific]));
     setValidationStatus([]);
   };
 
@@ -137,7 +137,7 @@ export function BackendConfig(props: BackendConfigProps) {
     ) {
       dispatch(setURL(formattedURL));
       setLocalStorageBackendURL(formattedURL);
-      dispatch(apiSlice.util.resetApiState());
+      dispatch(apiSlice.util.invalidateTags([QueryTags.BackendSpecific]));
       setLocalBackendURL("");
       triggerFn();
     }
@@ -148,7 +148,7 @@ export function BackendConfig(props: BackendConfigProps) {
     const backendURL = getLocalStorageBackendURL();
     if (backendURL != undefined) {
       dispatch(setURL(backendURL));
-      dispatch(apiSlice.util.resetApiState());
+      dispatch(apiSlice.util.invalidateTags([QueryTags.BackendSpecific]));
       triggerFn();
     }
   }, []);

@@ -3,10 +3,8 @@ import Link from "next/link";
 import React from "react";
 import Alert from "react-bootstrap/Alert";
 import Table from "react-bootstrap/Table";
-import { useSelector } from "react-redux";
 
 import { useGetBackendInfoQuery, useGetContributionsQuery } from "@/app/api";
-import { RootState } from "@/app/store";
 import { Card, Cardback, ProjectName, Token } from "@/common/constants";
 import { SourceContribution } from "@/common/types";
 import Footer from "@/features/ui/footer";
@@ -14,7 +12,6 @@ import Layout from "@/features/ui/layout";
 import { Spinner } from "@/features/ui/spinner";
 
 function ContributionsSummary() {
-  const backendURL = useSelector((state: RootState) => state.backend.url);
   const contributionsQuery = useGetContributionsQuery();
   const backendInfoQuery = useGetBackendInfoQuery();
 
@@ -40,7 +37,7 @@ function ContributionsSummary() {
     ])
   );
 
-  return backendURL != null ? (
+  return backendInfoQuery.isSuccess ? (
     <>
       <h2>{backendInfoQuery.data?.name ?? ""} Contributions</h2>
       <p>
@@ -153,11 +150,10 @@ function sourceContributionRow(contribution: SourceContribution) {
 }
 
 function ContributionsPerSource() {
-  const backendURL = useSelector((state: RootState) => state.backend.url);
   const contributionsQuery = useGetContributionsQuery();
 
-  return backendURL != null ? (
-    contributionsQuery.data?.sources == null ? (
+  return contributionsQuery.isSuccess ? (
+    contributionsQuery.isLoading || contributionsQuery.data?.sources == null ? (
       <Spinner />
     ) : (
       <Table style={{ tableLayout: "auto" }}>

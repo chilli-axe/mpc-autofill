@@ -10,6 +10,7 @@ import {
 } from "@reduxjs/toolkit/query/react";
 
 import { RootState } from "@/app/store";
+import { QueryTags } from "@/common/constants";
 import {
   BackendInfo,
   CardDocument,
@@ -38,6 +39,7 @@ const dynamicBaseQuery: BaseQueryFn<
 export const apiSlice = createApi({
   reducerPath: "apiSlice",
   baseQuery: dynamicBaseQuery,
+  tagTypes: [QueryTags.BackendSpecific],
   endpoints: (builder) => ({
     getCards: builder.query<CardDocuments, Set<string>>({
       query: (identifiersToSearch) => ({
@@ -45,11 +47,13 @@ export const apiSlice = createApi({
         method: "POST",
         body: { card_identifiers: JSON.stringify(identifiersToSearch) },
       }),
+      providesTags: [QueryTags.BackendSpecific],
       transformResponse: (response: { results: CardDocuments }, meta, arg) =>
         response.results,
     }),
     getCardbacks: builder.query<Array<string>, void>({
       query: () => ({ url: `2/cardbacks/`, method: "GET" }),
+      providesTags: [QueryTags.BackendSpecific],
       transformResponse: (response: { cardbacks: Array<string> }, meta, arg) =>
         response.cardbacks,
     }),
@@ -65,16 +69,19 @@ export const apiSlice = createApi({
           queries: Array.from(input.queries),
         }),
       }),
+      providesTags: [QueryTags.BackendSpecific],
       transformResponse: (response: { results: SearchResults }, meta, arg) =>
         response.results,
     }),
     getSources: builder.query<SourceDocuments, void>({
       query: () => ({ url: `2/sources/`, method: "GET" }),
+      providesTags: [QueryTags.BackendSpecific],
       transformResponse: (response: { results: SourceDocuments }, meta, arg) =>
         response.results,
     }),
     getImportSites: builder.query<Array<ImportSite>, void>({
       query: () => ({ url: `2/importSites/`, method: "GET" }),
+      providesTags: [QueryTags.BackendSpecific],
       transformResponse: (
         response: { import_sites: Array<ImportSite> },
         meta,
@@ -87,11 +94,13 @@ export const apiSlice = createApi({
         method: "POST",
         body: JSON.stringify({ url }),
       }),
+      providesTags: [QueryTags.BackendSpecific],
       transformResponse: (response: { cards: string }, meta, arg) =>
         response.cards,
     }),
     getDFCPairs: builder.query<DFCPairs, void>({
       query: () => ({ url: `2/DFCPairs/`, method: "GET" }),
+      providesTags: [QueryTags.BackendSpecific],
       transformResponse: (response: { dfc_pairs: DFCPairs }, meta, arg) => {
         // sanitise the front and back names before storing
         return Object.fromEntries(
@@ -107,6 +116,7 @@ export const apiSlice = createApi({
       void
     >({
       query: () => ({ url: `2/sampleCards/`, method: "GET" }),
+      providesTags: [QueryTags.BackendSpecific],
       transformResponse: (
         response: { cards: { [cardType: string]: Array<CardDocument> } },
         meta,
@@ -115,9 +125,11 @@ export const apiSlice = createApi({
     }),
     getContributions: builder.query<Contributions, void>({
       query: () => ({ url: `2/contributions/`, method: "GET" }),
+      providesTags: [QueryTags.BackendSpecific],
     }),
     getBackendInfo: builder.query<BackendInfo, void>({
       query: () => ({ url: `2/info/`, method: "GET" }),
+      providesTags: [QueryTags.BackendSpecific],
       transformResponse: (response: { info: BackendInfo }, meta, arg) =>
         response.info,
     }),

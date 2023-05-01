@@ -10,7 +10,8 @@ function BackendDescription() {
 
   return (
     <>
-      {backendInfoQuery.data?.name != null &&
+      {backendInfoQuery.isSuccess &&
+        backendInfoQuery.data?.name != null &&
         backendInfoQuery.data?.description != null && (
           <>
             <h2>About {backendInfoQuery.data.name}</h2>

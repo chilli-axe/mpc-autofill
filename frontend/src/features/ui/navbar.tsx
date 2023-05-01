@@ -35,6 +35,9 @@ export default function Navbar() {
   const handleShowSupportBackendModal = () => setShowSupportBackendModal(true);
 
   const backendURL = useSelector((state: RootState) => state.backend.url);
+  const name =
+    (backendInfoQuery.isSuccess ? backendInfoQuery.data?.name : null) ??
+    ProjectName;
 
   return (
     <DisableSSR>
@@ -52,7 +55,7 @@ export default function Navbar() {
           <BSNavbar.Brand href="/" as={Link}>
             <Image src="/logolowres.png" alt="logo" width="40" height="40" />{" "}
             <span className="align-middle">
-              <b>{backendInfoQuery.data?.name ?? ProjectName}</b>
+              <b>{name}</b>
             </span>
           </BSNavbar.Brand>
           <BSNavbar.Toggle aria-controls="basic-navbar-nav" />
