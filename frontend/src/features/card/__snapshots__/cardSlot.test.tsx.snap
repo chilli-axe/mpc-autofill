@@ -36,22 +36,6 @@ exports[`the html structure of a CardSlot with a single search result, image sel
         class="rounded-lg shadow-lg ratio ratio-7x5"
         style="z-index: 0;"
       >
-        <div
-          class="d-flex justify-content-center align-items-center"
-          style="opacity: 0;"
-        >
-          <div
-            class="spinner-border"
-            role="status"
-            style="width: 4em; height: 4em;"
-          >
-            <span
-              class="visually-hidden"
-            >
-              Loading...
-            </span>
-          </div>
-        </div>
         <img
           alt="Card 1"
           class="card-img card-img-fade-in"
@@ -132,22 +116,6 @@ exports[`the html structure of a CardSlot with a single search result, no image 
         class="rounded-lg shadow-lg ratio ratio-7x5"
         style="z-index: 0;"
       >
-        <div
-          class="d-flex justify-content-center align-items-center"
-          style="opacity: 0;"
-        >
-          <div
-            class="spinner-border"
-            role="status"
-            style="width: 4em; height: 4em;"
-          >
-            <span
-              class="visually-hidden"
-            >
-              Loading...
-            </span>
-          </div>
-        </div>
         <img
           alt="Card 1"
           class="card-img card-img-fade-in"
@@ -228,22 +196,6 @@ exports[`the html structure of a CardSlot with multiple search results, image se
         class="rounded-lg shadow-lg ratio ratio-7x5"
         style="z-index: 0;"
       >
-        <div
-          class="d-flex justify-content-center align-items-center"
-          style="opacity: 0;"
-        >
-          <div
-            class="spinner-border"
-            role="status"
-            style="width: 4em; height: 4em;"
-          >
-            <span
-              class="visually-hidden"
-            >
-              Loading...
-            </span>
-          </div>
-        </div>
         <img
           alt="Card 1"
           class="card-img card-img-fade-in"
@@ -255,21 +207,21 @@ exports[`the html structure of a CardSlot with multiple search results, image se
         />
         <img
           alt="Card 2"
-          class="card-img"
+          class="sc-gueYoa jvIOZX card-img"
           data-nimg="fill"
           decoding="async"
           loading="lazy"
           src=""
-          style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent; z-index: 0; opacity: 0;"
+          style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent;"
         />
         <img
           alt="Card 3"
-          class="card-img"
+          class="sc-gueYoa jvIOZX card-img"
           data-nimg="fill"
           decoding="async"
           loading="lazy"
           src=""
-          style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent; z-index: 0; opacity: 0;"
+          style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent;"
         />
       </div>
       <div
@@ -446,22 +398,6 @@ exports[`the html structure of a CardSlot's grid selector, cards faceted by sour
                 class="rounded-lg shadow-lg ratio ratio-7x5"
                 style="z-index: 0;"
               >
-                <div
-                  class="d-flex justify-content-center align-items-center"
-                  style="opacity: 0;"
-                >
-                  <div
-                    class="spinner-border"
-                    role="status"
-                    style="width: 4em; height: 4em;"
-                  >
-                    <span
-                      class="visually-hidden"
-                    >
-                      Loading...
-                    </span>
-                  </div>
-                </div>
                 <img
                   alt="Card 1"
                   class="card-img card-img-fade-in"
@@ -509,22 +445,6 @@ exports[`the html structure of a CardSlot's grid selector, cards faceted by sour
                 class="rounded-lg shadow-lg ratio ratio-7x5"
                 style="z-index: 0;"
               >
-                <div
-                  class="d-flex justify-content-center align-items-center"
-                  style="opacity: 0;"
-                >
-                  <div
-                    class="spinner-border"
-                    role="status"
-                    style="width: 4em; height: 4em;"
-                  >
-                    <span
-                      class="visually-hidden"
-                    >
-                      Loading...
-                    </span>
-                  </div>
-                </div>
                 <img
                   alt="Card 2"
                   class="card-img card-img-fade-in"
@@ -572,22 +492,6 @@ exports[`the html structure of a CardSlot's grid selector, cards faceted by sour
                 class="rounded-lg shadow-lg ratio ratio-7x5"
                 style="z-index: 0;"
               >
-                <div
-                  class="d-flex justify-content-center align-items-center"
-                  style="opacity: 0;"
-                >
-                  <div
-                    class="spinner-border"
-                    role="status"
-                    style="width: 4em; height: 4em;"
-                  >
-                    <span
-                      class="visually-hidden"
-                    >
-                      Loading...
-                    </span>
-                  </div>
-                </div>
                 <img
                   alt="Card 3"
                   class="card-img card-img-fade-in"
@@ -635,22 +539,6 @@ exports[`the html structure of a CardSlot's grid selector, cards faceted by sour
                 class="rounded-lg shadow-lg ratio ratio-7x5"
                 style="z-index: 0;"
               >
-                <div
-                  class="d-flex justify-content-center align-items-center"
-                  style="opacity: 0;"
-                >
-                  <div
-                    class="spinner-border"
-                    role="status"
-                    style="width: 4em; height: 4em;"
-                  >
-                    <span
-                      class="visually-hidden"
-                    >
-                      Loading...
-                    </span>
-                  </div>
-                </div>
                 <img
                   alt="Card 4"
                   class="card-img card-img-fade-in"
@@ -775,22 +663,6 @@ exports[`the html structure of a CardSlot's grid selector, cards grouped togethe
               class="rounded-lg shadow-lg ratio ratio-7x5"
               style="z-index: 0;"
             >
-              <div
-                class="d-flex justify-content-center align-items-center"
-                style="opacity: 0;"
-              >
-                <div
-                  class="spinner-border"
-                  role="status"
-                  style="width: 4em; height: 4em;"
-                >
-                  <span
-                    class="visually-hidden"
-                  >
-                    Loading...
-                  </span>
-                </div>
-              </div>
               <img
                 alt="Card 1"
                 class="card-img card-img-fade-in"
@@ -838,22 +710,6 @@ exports[`the html structure of a CardSlot's grid selector, cards grouped togethe
               class="rounded-lg shadow-lg ratio ratio-7x5"
               style="z-index: 0;"
             >
-              <div
-                class="d-flex justify-content-center align-items-center"
-                style="opacity: 0;"
-              >
-                <div
-                  class="spinner-border"
-                  role="status"
-                  style="width: 4em; height: 4em;"
-                >
-                  <span
-                    class="visually-hidden"
-                  >
-                    Loading...
-                  </span>
-                </div>
-              </div>
               <img
                 alt="Card 2"
                 class="card-img card-img-fade-in"
@@ -901,22 +757,6 @@ exports[`the html structure of a CardSlot's grid selector, cards grouped togethe
               class="rounded-lg shadow-lg ratio ratio-7x5"
               style="z-index: 0;"
             >
-              <div
-                class="d-flex justify-content-center align-items-center"
-                style="opacity: 0;"
-              >
-                <div
-                  class="spinner-border"
-                  role="status"
-                  style="width: 4em; height: 4em;"
-                >
-                  <span
-                    class="visually-hidden"
-                  >
-                    Loading...
-                  </span>
-                </div>
-              </div>
               <img
                 alt="Card 3"
                 class="card-img card-img-fade-in"
@@ -964,22 +804,6 @@ exports[`the html structure of a CardSlot's grid selector, cards grouped togethe
               class="rounded-lg shadow-lg ratio ratio-7x5"
               style="z-index: 0;"
             >
-              <div
-                class="d-flex justify-content-center align-items-center"
-                style="opacity: 0;"
-              >
-                <div
-                  class="spinner-border"
-                  role="status"
-                  style="width: 4em; height: 4em;"
-                >
-                  <span
-                    class="visually-hidden"
-                  >
-                    Loading...
-                  </span>
-                </div>
-              </div>
               <img
                 alt="Card 4"
                 class="card-img card-img-fade-in"

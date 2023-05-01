@@ -22,12 +22,10 @@ exports[`the html structure of a Card with a single document 1`] = `
         >
           <div
             class="d-flex justify-content-center align-items-center"
-            style="opacity: 1;"
           >
             <div
-              class="spinner-border"
+              class="sc-beqWaB hxFQtk spinner-border"
               role="status"
-              style="width: 4em; height: 4em;"
             >
               <span
                 class="visually-hidden"
@@ -148,12 +146,10 @@ exports[`the html structure of a Card with three documents 1`] = `
         >
           <div
             class="d-flex justify-content-center align-items-center"
-            style="opacity: 1;"
           >
             <div
-              class="spinner-border"
+              class="sc-beqWaB hxFQtk spinner-border"
               role="status"
-              style="width: 4em; height: 4em;"
             >
               <span
                 class="visually-hidden"
@@ -173,21 +169,21 @@ exports[`the html structure of a Card with three documents 1`] = `
           />
           <img
             alt="Card 2"
-            class="card-img"
+            class="sc-gueYoa jvIOZX card-img"
             data-nimg="fill"
             decoding="async"
             loading="lazy"
             src=""
-            style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent; z-index: 0; opacity: 0;"
+            style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent;"
           />
           <img
             alt="Card 3"
-            class="card-img"
+            class="sc-gueYoa jvIOZX card-img"
             data-nimg="fill"
             decoding="async"
             loading="lazy"
             src=""
-            style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent; z-index: 0; opacity: 0;"
+            style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent;"
           />
         </div>
         <div
@@ -236,12 +232,10 @@ exports[`the html structure of a Card with two documents 1`] = `
         >
           <div
             class="d-flex justify-content-center align-items-center"
-            style="opacity: 1;"
           >
             <div
-              class="spinner-border"
+              class="sc-beqWaB hxFQtk spinner-border"
               role="status"
-              style="width: 4em; height: 4em;"
             >
               <span
                 class="visually-hidden"
@@ -261,12 +255,12 @@ exports[`the html structure of a Card with two documents 1`] = `
           />
           <img
             alt="Card 2"
-            class="card-img"
+            class="sc-gueYoa jvIOZX card-img"
             data-nimg="fill"
             decoding="async"
             loading="lazy"
             src=""
-            style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent; z-index: 0; opacity: 0;"
+            style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent;"
           />
         </div>
         <div
