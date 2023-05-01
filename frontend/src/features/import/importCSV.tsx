@@ -6,42 +6,45 @@
  * row (front and back) - the image will be selected if included in the search results.
  */
 
-import React, { CSSProperties, useState } from "react";
+import React, { useState } from "react";
 import Button from "react-bootstrap/Button";
 import Dropdown from "react-bootstrap/Dropdown";
 import Modal from "react-bootstrap/Modal";
 import Table from "react-bootstrap/Table";
+import styled from "styled-components";
 
 import { TextFileDropzone } from "../dropzone";
 
-interface CSVTableProps {
-  columnStyle: CSSProperties;
-}
+const BorderedTable = styled(Table)`
+  border-style: solid;
+  border-color: #333333;
+  border-width: 1px;
+`;
 
-function CSVFormat(props: CSVTableProps) {
+const FormattedColumnHeader = styled.th`
+  width: 20%;
+  text-align: center;
+`;
+const FormattedColumnData = styled.td`
+  width: 20%;
+  text-align: center;
+`;
+
+function CSVFormat() {
   return (
     <>
-      <Table
-        bordered={true}
-        style={{
-          borderStyle: "solid",
-          borderColor: "#333333",
-          borderWidth: 1 + "px",
-        }}
-      >
+      <BorderedTable bordered={true}>
         <thead>
-          <th style={props.columnStyle}>Quantity</th>
-          <th style={props.columnStyle}>Front</th>
-          <th style={props.columnStyle}>Front ID</th>
-          <th style={props.columnStyle}>Back</th>
-          <th style={props.columnStyle}>Back ID</th>
+          <FormattedColumnHeader>Quantity</FormattedColumnHeader>
+          <FormattedColumnHeader>Front</FormattedColumnHeader>
+          <FormattedColumnHeader>Front ID</FormattedColumnHeader>
+          <FormattedColumnHeader>Back</FormattedColumnHeader>
+          <FormattedColumnHeader>Back ID</FormattedColumnHeader>
         </thead>
         <tbody>
-          {Array(3).fill(
-            <tr>{Array(5).fill(<td style={{ width: 20 + "%" }} />)}</tr>
-          )}
+          {Array(3).fill(<tr>{Array(5).fill(<FormattedColumnData />)}</tr>)}
         </tbody>
-      </Table>
+      </BorderedTable>
       Where the columns follow these rules:
       <ul>
         <li>
@@ -67,56 +70,47 @@ function CSVFormat(props: CSVTableProps) {
   );
 }
 
-function SampleCSV(props: CSVTableProps) {
+function SampleCSV() {
   return (
-    <>
-      <Table
-        bordered={true}
-        style={{
-          borderStyle: "solid",
-          borderColor: "#333333",
-          borderWidth: 1 + "px",
-        }}
-      >
-        <thead>
-          <th style={props.columnStyle}>Quantity</th>
-          <th style={props.columnStyle}>Front</th>
-          <th style={props.columnStyle}>Front ID</th>
-          <th style={props.columnStyle}>Back</th>
-          <th style={props.columnStyle}>Back ID</th>
-        </thead>
-        <tbody>
-          <tr>
-            <td style={props.columnStyle}>
-              <code>2</code>
-            </td>
-            <td style={props.columnStyle}>
-              <code>island</code>
-            </td>
-            <td style={props.columnStyle}>
-              <code>1HsvTYs1...</code>
-            </td>
-            <td style={props.columnStyle}>
-              <code>forest</code>
-            </td>
-            <td style={props.columnStyle} />
-          </tr>
-          <tr>
-            <td style={props.columnStyle}>
-              <code>3</code>
-            </td>
-            <td style={props.columnStyle}>
-              <code>t:goblin</code>
-            </td>
-            <td style={props.columnStyle} />
-            <td style={props.columnStyle} />
-            <td style={props.columnStyle}>
-              <code>1JtXL6Ca...</code>
-            </td>
-          </tr>
-        </tbody>
-      </Table>
-    </>
+    <BorderedTable bordered={true}>
+      <thead>
+        <FormattedColumnHeader>Quantity</FormattedColumnHeader>
+        <FormattedColumnHeader>Front</FormattedColumnHeader>
+        <FormattedColumnHeader>Front ID</FormattedColumnHeader>
+        <FormattedColumnHeader>Back</FormattedColumnHeader>
+        <FormattedColumnHeader>Back ID</FormattedColumnHeader>
+      </thead>
+      <tbody>
+        <tr>
+          <FormattedColumnData>
+            <code>2</code>
+          </FormattedColumnData>
+          <FormattedColumnData>
+            <code>island</code>
+          </FormattedColumnData>
+          <FormattedColumnData>
+            <code>1HsvTYs1...</code>
+          </FormattedColumnData>
+          <FormattedColumnData>
+            <code>forest</code>
+          </FormattedColumnData>
+          <FormattedColumnData />
+        </tr>
+        <tr>
+          <FormattedColumnData>
+            <code>3</code>
+          </FormattedColumnData>
+          <FormattedColumnData>
+            <code>t:goblin</code>
+          </FormattedColumnData>
+          <FormattedColumnData />
+          <FormattedColumnData />
+          <FormattedColumnData>
+            <code>1JtXL6Ca...</code>
+          </FormattedColumnData>
+        </tr>
+      </tbody>
+    </BorderedTable>
   );
 }
 
@@ -128,8 +122,6 @@ export function ImportCSV() {
   const myCallback = (fileContents: string) => {
     console.log("file received!");
   };
-
-  const columnStyle: CSSProperties = { width: 20 + "%", textAlign: "center" };
 
   return (
     <>
@@ -149,9 +141,9 @@ export function ImportCSV() {
             Upload a CSV file of cards to add to the project. The file must{" "}
             <b>exactly</b> match the following format:
           </p>
-          <CSVFormat columnStyle={columnStyle} />
+          <CSVFormat />
           For example:
-          <SampleCSV columnStyle={columnStyle} />
+          <SampleCSV />
           <hr />
           <TextFileDropzone
             mimeTypes={{ "text/csv": [".csv"] }}

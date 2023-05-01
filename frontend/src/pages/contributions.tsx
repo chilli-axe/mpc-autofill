@@ -3,6 +3,7 @@ import Link from "next/link";
 import React from "react";
 import Alert from "react-bootstrap/Alert";
 import Table from "react-bootstrap/Table";
+import styled from "styled-components";
 
 import { useGetBackendInfoQuery, useGetContributionsQuery } from "@/app/api";
 import { Card, Cardback, ProjectName, Token } from "@/common/constants";
@@ -10,6 +11,10 @@ import { SourceContribution } from "@/common/types";
 import Footer from "@/features/ui/footer";
 import Layout from "@/features/ui/layout";
 import { Spinner } from "@/features/ui/spinner";
+
+const AutoLayoutTable = styled(Table)`
+  table-layout: auto;
+`;
 
 function ContributionsSummary() {
   const contributionsQuery = useGetContributionsQuery();
@@ -156,7 +161,7 @@ function ContributionsPerSource() {
     contributionsQuery.isLoading || contributionsQuery.data?.sources == null ? (
       <Spinner />
     ) : (
-      <Table style={{ tableLayout: "auto" }}>
+      <AutoLayoutTable>
         <thead>
           <tr>
             <th className="prevent-select">Name</th>
@@ -171,7 +176,7 @@ function ContributionsPerSource() {
             sourceContributionRow(contribution)
           )}
         </tbody>
-      </Table>
+      </AutoLayoutTable>
     )
   ) : (
     <></>

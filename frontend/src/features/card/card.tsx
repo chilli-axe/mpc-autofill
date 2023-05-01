@@ -9,9 +9,16 @@ import Image from "next/image";
 import React, { memo, ReactElement, useEffect, useState } from "react";
 import BSCard from "react-bootstrap/Card";
 import { useSelector } from "react-redux";
+import styled from "styled-components";
 
 import { RootState } from "@/app/store";
 import { SearchQuery } from "@/common/types";
+import { Spinner } from "@/features/ui/spinner";
+
+const HiddenImage = styled(Image)`
+  z-index: 0;
+  opacity: 0;
+`;
 
 interface CardProps {
   /** The card image identifier to display. */
@@ -57,24 +64,11 @@ export function Card(props: CardProps) {
       ? state.cardDocuments.cardDocuments[props.nextImageIdentifier]
       : undefined
   );
-  // const searchResultsIdle = // TODO: replace the magic string here with a constant
-  //   useSelector((state: RootState) => state.searchResults.status) === "idle";
 
   const cardImageElements =
     maybeCardDocument != null ? (
       <>
-        <div
-          className="d-flex justify-content-center align-items-center"
-          style={{ opacity: smallThumbnailLoading ? 1 : 0 }}
-        >
-          <div
-            className="spinner-border"
-            style={{ width: 4 + "em", height: 4 + "em" }}
-            role="status"
-          >
-            <span className="visually-hidden">Loading...</span>
-          </div>
-        </div>
+        {smallThumbnailLoading && <Spinner />}
 
         <Image
           className="card-img card-img-fade-in"
@@ -83,16 +77,15 @@ export function Card(props: CardProps) {
           src={maybeCardDocument.small_thumbnail_url}
           onLoad={() => setSmallThumbnailLoading(false)}
           onClick={props.imageOnClick}
-          // onError={{thumbnail_404(this)}}
+          // onError={{thumbnail_404(this)}} // TODO
           alt={maybeCardDocument.name}
           fill={true}
         />
         {props.previousImageIdentifier !== props.imageIdentifier &&
           maybePreviousCardDocument !== undefined && (
-            <Image
+            <HiddenImage
               className="card-img"
               loading="lazy"
-              style={{ zIndex: 0, opacity: 0 }}
               src={maybePreviousCardDocument.small_thumbnail_url}
               // onError={{thumbnail_404(this)}}
               alt={maybePreviousCardDocument.name}
@@ -101,10 +94,9 @@ export function Card(props: CardProps) {
           )}
         {props.nextImageIdentifier !== props.imageIdentifier &&
           maybeNextCardDocument !== undefined && (
-            <Image
+            <HiddenImage
               className="card-img"
               loading="lazy"
-              style={{ zIndex: 0, opacity: 0 }}
               src={maybeNextCardDocument.small_thumbnail_url}
               // onError={{thumbnail_404(this)}}
               alt={maybeNextCardDocument.name}
@@ -122,15 +114,7 @@ export function Card(props: CardProps) {
         fill={true}
       />
     ) : (
-      <div className="d-flex justify-content-center align-items-center">
-        <div
-          className="spinner-border"
-          style={{ width: 4 + "em", height: 4 + "em" }}
-          role="status"
-        >
-          <span className="visually-hidden">Loading...</span>
-        </div>
-      </div>
+      <Spinner />
     );
   return (
     <BSCard className="mpccard mpccard-hover" onClick={props.cardOnClick}>

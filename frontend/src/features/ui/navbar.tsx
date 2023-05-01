@@ -7,6 +7,7 @@ import Nav from "react-bootstrap/Nav";
 import BSNavbar from "react-bootstrap/Navbar";
 import NavDropdown from "react-bootstrap/NavDropdown";
 import { useSelector } from "react-redux";
+import styled from "styled-components";
 
 import { useGetBackendInfoQuery } from "@/app/api";
 import { RootState } from "@/app/store";
@@ -15,6 +16,18 @@ import { BackendConfig } from "@/features/backend/backend";
 import { SupportBackendModal } from "@/features/support/supportBackend";
 import { SupportDeveloperModal } from "@/features/support/supportDeveloper";
 import DisableSSR from "@/features/ui/disableSSR";
+
+const MaxWidthContainer = styled(Container)`
+  max-width: 1200px;
+`;
+
+const MinHeightNavbar = styled(BSNavbar)`
+  min-height: 50px;
+`;
+
+const BoldCollapse = styled(BSNavbar.Collapse)`
+  font-weight: bold;
+`;
 
 export default function Navbar() {
   const backendInfoQuery = useGetBackendInfoQuery();
@@ -41,17 +54,8 @@ export default function Navbar() {
 
   return (
     <DisableSSR>
-      <BSNavbar
-        expand="lg"
-        fixed="top"
-        variant="dark"
-        bg="primary"
-        style={{ minHeight: 50 + "px" }}
-      >
-        <Container
-          className="justify-content-center fixed-top align-middle bg-primary"
-          style={{ maxWidth: 1200 + "px" }}
-        >
+      <MinHeightNavbar expand="lg" fixed="top" variant="dark" bg="primary">
+        <MaxWidthContainer className="justify-content-center fixed-top align-middle bg-primary">
           <BSNavbar.Brand href="/" as={Link}>
             <Image src="/logolowres.png" alt="logo" width="40" height="40" />{" "}
             <span className="align-middle">
@@ -59,10 +63,8 @@ export default function Navbar() {
             </span>
           </BSNavbar.Brand>
           <BSNavbar.Toggle aria-controls="basic-navbar-nav" />
-          <BSNavbar.Collapse
-            id="basic-navbar-nav"
-            style={{ fontWeight: "bold" }}
-          >
+          <BoldCollapse id="basic-navbar-nav">
+            {/* TODO: i don't know what the above `id` is doing */}
             <Nav className="me-auto">
               <Nav.Link as={Link} href="/editor">
                 Editor (Temp)
@@ -105,9 +107,9 @@ export default function Navbar() {
                 Configure Server
               </Button>
             </Nav>
-          </BSNavbar.Collapse>
-        </Container>
-      </BSNavbar>
+          </BoldCollapse>
+        </MaxWidthContainer>
+      </MinHeightNavbar>
       <BackendConfig
         show={showBackendConfig}
         handleClose={handleCloseBackendConfig}

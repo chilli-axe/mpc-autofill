@@ -7,6 +7,7 @@ import OverlayTrigger from "react-bootstrap/OverlayTrigger";
 import Row from "react-bootstrap/Row";
 import Tooltip from "react-bootstrap/Tooltip";
 import { useSelector } from "react-redux";
+import styled from "styled-components";
 
 import { ProjectMaxSize } from "@/common/constants";
 import { bracket, imageSizeToMBString } from "@/common/utils";
@@ -18,6 +19,10 @@ import {
 } from "@/features/project/projectSlice";
 
 // TODO: review the codebase for instances of this https://redux.js.org/usage/deriving-data-selectors#optimizing-selectors-with-memoization
+
+const SizedIcon = styled.i`
+  font-size 1.25rem
+`;
 
 export function ProjectStatus() {
   // const [show, setShow] = useState(false);
@@ -64,10 +69,7 @@ export function ProjectStatus() {
                 overlay={(props) => <Tooltip {...props}>Save Project</Tooltip>}
               >
                 <Button variant="outline-light">
-                  <i
-                    className="bi bi-device-ssd"
-                    style={{ fontSize: 1.25 + "rem" }}
-                  />
+                  <SizedIcon className="bi bi-device-ssd" />
                 </Button>
               </OverlayTrigger>
             </div>
@@ -83,10 +85,7 @@ export function ProjectStatus() {
                   onClick={exportXML}
                   data-testid="download-xml"
                 >
-                  <i
-                    className="bi bi-file-earmark-arrow-down"
-                    style={{ fontSize: 1.25 + "rem" }}
-                  />
+                  <SizedIcon className="bi bi-file-earmark-arrow-down" />
                 </Button>
               </OverlayTrigger>
             </div>
@@ -104,10 +103,7 @@ export function ProjectStatus() {
                   onClick={exportDecklist}
                   data-testid="download-decklist"
                 >
-                  <i
-                    className="bi bi-file-text"
-                    style={{ fontSize: 1.25 + "rem" }}
-                  />
+                  <SizedIcon className="bi bi-file-text" />
                 </Button>
               </OverlayTrigger>
             </div>
@@ -121,10 +117,7 @@ export function ProjectStatus() {
                 )}
               >
                 <Button variant="outline-light">
-                  <i
-                    className="bi bi-images"
-                    style={{ fontSize: 1.25 + "rem" }}
-                  />
+                  <SizedIcon className="bi bi-images" />
                 </Button>
               </OverlayTrigger>
             </div>

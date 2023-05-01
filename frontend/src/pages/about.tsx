@@ -1,9 +1,14 @@
 import Head from "next/head";
+import styled from "styled-components";
 
 import { useGetBackendInfoQuery } from "@/app/api";
 import { ProjectName } from "@/common/constants";
 import Footer from "@/features/ui/footer";
 import Layout from "@/features/ui/layout";
+
+const CentreAligned = styled.div`
+  text-align: center;
+`;
 
 function BackendDescription() {
   const backendInfoQuery = useGetBackendInfoQuery();
@@ -50,14 +55,14 @@ export default function About() {
           </a>{" "}
           for the graphic!):
         </p>
-        <div style={{ textAlign: "center" }}>
+        <CentreAligned>
           <a
             href="https://github.com/chilli-axe/mpc-autofill/graphs/contributors"
             target="_blank"
           >
             <img src="https://contrib.rocks/image?repo=chilli-axe/mpc-autofill&columns=5" />
           </a>
-        </div>
+        </CentreAligned>
         <BackendDescription />
         <h2>Disclaimer</h2>
         <p>
