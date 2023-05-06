@@ -1,4 +1,5 @@
 import os
+import sys
 from contextlib import nullcontext
 
 import click
@@ -15,11 +16,16 @@ os.system("")  # enables ansi escape characters in terminal
 
 @click.command()
 @click.option(
-    "--skipsetup", default=False, help="Skip project setup to continue editing an existing MPC project.", is_flag=True
+    "--skipsetup",
+    prompt="Skip project setup to continue editing an existing MPC project?" if len(sys.argv) == 1 else False,
+    default=False,
+    help="Skip project setup to continue editing an existing MPC project.",
+    is_flag=True,
 )
 @click.option(
     "-b",
     "--browser",
+    prompt="Web browser to automate." if len(sys.argv) == 1 else False,
     default="chrome",
     type=click.Choice(sorted(browsers.keys()), case_sensitive=False),
     help="Web browser to automate.",
