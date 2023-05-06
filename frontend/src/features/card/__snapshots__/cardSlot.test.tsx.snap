@@ -357,17 +357,23 @@ exports[`the html structure of a CardSlot's grid selector, cards faceted by sour
       >
         <hr />
         <div
-          class="d-flex justify-content-between"
+          class="d-flex p-2 hstack gap-2"
         >
-          <h4
-            class="orpheus prevent-select ms-2"
+          <h3
+            class="orpheus prevent-select"
+            style="font-style: italic;"
           >
-            <i>
-              Source 1
-            </i>
-          </h4>
+            Source 1
+          </h3>
+          <h6
+            class="text-primary"
+          >
+            4
+             version
+            s
+          </h6>
           <h4
-            class="me-2 bi bi-chevron-left rotate-90"
+            class="ms-auto bi bi-chevron-left rotate-90"
             data-testid="source_1-collapse-header"
             style="transition: all 0.25s 0s;"
           />

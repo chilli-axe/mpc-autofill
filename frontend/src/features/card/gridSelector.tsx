@@ -10,6 +10,7 @@ import Col from "react-bootstrap/Col";
 import Collapse from "react-bootstrap/Collapse";
 import Modal from "react-bootstrap/Modal";
 import Row from "react-bootstrap/Row";
+import Stack from "react-bootstrap/Stack";
 // @ts-ignore: https://github.com/arnthor3/react-bootstrap-toggle/issues/21
 import Toggle from "react-bootstrap-toggle";
 import { useDispatch, useSelector } from "react-redux";
@@ -100,27 +101,32 @@ function CardsFacetedBySource(props: CardGridDisplayProps) {
               key={`${sourceKey}-header`}
             >
               <hr key={`${sourceKey}-top-hr`} />
-              <div
+              <Stack
+                direction="horizontal"
+                gap={2}
                 key={`${sourceKey}-header-inner`}
-                className="d-flex justify-content-between"
+                className="d-flex p-2"
               >
-                <h4
-                  className="orpheus prevent-select ms-2"
+                <h3
+                  className="orpheus prevent-select"
                   key={`${sourceKey}-header-title`}
+                  style={{ fontStyle: "italic" }}
                 >
-                  <i key={`${sourceKey}-italics`}>
-                    {props.sourceKeyToName[sourceKey]}
-                  </i>
-                </h4>
+                  {props.sourceKeyToName[sourceKey]}
+                </h3>
+                <h6 className="text-primary">
+                  {cardIdentifiersAndOptionNumbers.length} version
+                  {cardIdentifiersAndOptionNumbers.length != 1 && "s"}
+                </h6>
                 <h4
                   key={`${sourceKey}-arrow`}
-                  className={`me-2 bi bi-chevron-left rotate-${
+                  className={`ms-auto bi bi-chevron-left rotate-${
                     sourcesVisible[sourceKey] ?? true ? "" : "neg"
                   }90`}
                   style={{ transition: "all 0.25s 0s" }}
                   data-testid={`${sourceKey}-collapse-header`}
                 ></h4>
-              </div>
+              </Stack>
             </div>
 
             <Collapse
