@@ -45,3 +45,5 @@ export const sourceDocumentsSlice = createSlice({
 });
 
 export default sourceDocumentsSlice.reducer;
+export const selectSourceDocuments = (state: RootState) =>
+  state.sourceDocuments.sourceDocuments;

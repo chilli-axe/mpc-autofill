@@ -10,7 +10,7 @@ import {
   Droppable,
   DropResult,
 } from "@hello-pangea/dnd"; // TODO: look into using `react-dnd` instead as it's a significantly smaller package
-import React, { ReactNode } from "react";
+import React, { ReactNode, useCallback } from "react";
 import Table from "react-bootstrap/Table";
 // @ts-ignore: https://github.com/arnthor3/react-bootstrap-toggle/issues/21
 import Toggle from "react-bootstrap-toggle";
@@ -18,6 +18,8 @@ import { useSelector } from "react-redux";
 
 import { RootState } from "@/app/store";
 import { ToggleButtonHeight } from "@/common/constants";
+import { selectSourceDocuments } from "@/features/search/sourceDocumentsSlice";
+import { Spinner } from "@/features/ui/spinner";
 
 import {
   SourceRow,
@@ -32,16 +34,19 @@ interface SourceSettingsProps {
 }
 
 export function SourceSettings(props: SourceSettingsProps) {
-  const maybeSourceDocuments = useSelector(
-    (state: RootState) => state.sourceDocuments.sourceDocuments
-  );
+  const maybeSourceDocuments = useSelector(selectSourceDocuments);
 
-  const moveSourceToIndex = (sourceIndex: number, destinationIndex: number) => {
-    const updatedSources = [...(props.sourceSettings.sources ?? [])];
-    const [removed] = updatedSources.splice(sourceIndex, 1);
-    updatedSources.splice(destinationIndex, 0, removed);
-    props.setSourceSettings({ sources: updatedSources });
-  };
+  const sourceSettingsSources = props.sourceSettings.sources;
+  const setSourceSettings = props.setSourceSettings;
+  const moveSourceToIndex = useCallback(
+    (sourceIndex: number, destinationIndex: number) => {
+      const updatedSources = [...(sourceSettingsSources ?? [])];
+      const [removed] = updatedSources.splice(sourceIndex, 1);
+      updatedSources.splice(destinationIndex, 0, removed);
+      setSourceSettings({ sources: updatedSources });
+    },
+    [sourceSettingsSources, setSourceSettings]
+  );
 
   const onDragEnd = (result: DropResult) => {
     /**
@@ -53,44 +58,37 @@ export function SourceSettings(props: SourceSettingsProps) {
     }
   };
 
-  const toggleSpecificSourceEnabledStatus = (index: number) => {
-    /**
-     * Toggle the enabled status of the source at `index` in `localSourceOrder`.
-     */
+  const toggleSpecificSourceEnabledStatus = useCallback(
+    (index: number) => {
+      /**
+       * Toggle the enabled status of the source at `index` in `localSourceOrder`.
+       */
 
-    const updatedSources = [...(props.sourceSettings.sources ?? [])];
-    updatedSources[index] = [
-      updatedSources[index][0],
-      !updatedSources[index][1],
-    ];
-    props.setSourceSettings({ sources: updatedSources });
-  };
+      const updatedSources = [...(sourceSettingsSources ?? [])];
+      updatedSources[index] = [
+        updatedSources[index][0],
+        !updatedSources[index][1],
+      ];
+      setSourceSettings({ sources: updatedSources });
+    },
+    [sourceSettingsSources, setSourceSettings]
+  );
 
-  const toggleAllSourceEnabledStatuses = () => {
+  const toggleAllSourceEnabledStatuses = useCallback(() => {
     /**
      * Toggle the enabled status of all sources in `localSourceOrder`. If any is enabled, they're all disabled.
      */
 
-    const sourcesOrEmpty = props.sourceSettings.sources ?? [];
+    const sourcesOrEmpty = sourceSettingsSources ?? [];
     const newEnabledStatus = !sourcesOrEmpty.some((x) => x[1]);
     const updatedSources: Array<SourceRow> = sourcesOrEmpty.map((x) => [
       x[0],
       newEnabledStatus,
     ]);
-    props.setSourceSettings({ sources: updatedSources });
-  };
+    setSourceSettings({ sources: updatedSources });
+  }, [sourceSettingsSources, setSourceSettings]);
 
-  let sourceTable = (
-    <div className="d-flex justify-content-center align-items-center">
-      <div
-        className="spinner-border"
-        style={{ width: 4 + "em", height: 4 + "em" }}
-        role="status"
-      >
-        <span className="visually-hidden">Loading...</span>
-      </div>
-    </div>
-  );
+  let sourceTable = <Spinner />;
   if (maybeSourceDocuments != null) {
     const sourceRows: Array<ReactNode> = (
       props.sourceSettings.sources ?? []
@@ -102,12 +100,17 @@ export function SourceSettings(props: SourceSettingsProps) {
       >
         {(provided, snapshot) => (
           <tr
+            key={`${sourceRow[0]}-row`}
             ref={provided.innerRef}
             {...provided.draggableProps}
             {...provided.dragHandleProps}
           >
-            <td style={{ verticalAlign: "middle", width: 20 + "%" }}>
+            <td
+              key={`${sourceRow[0]}-toggle-column`}
+              style={{ verticalAlign: "middle", width: 20 + "%" }}
+            >
               <Toggle
+                key={`${sourceRow[0]}-toggle`}
                 on="On"
                 onClassName="flex-centre prevent-select"
                 off="Off"
@@ -121,7 +124,10 @@ export function SourceSettings(props: SourceSettingsProps) {
                 onClick={() => toggleSpecificSourceEnabledStatus(index)}
               />
             </td>
-            <td style={{ verticalAlign: "middle", width: 40 + "%" }}>
+            <td
+              key={`${sourceRow[0]}-name-column`}
+              style={{ verticalAlign: "middle", width: 40 + "%" }}
+            >
               {maybeSourceDocuments[sourceRow[0]].external_link != null ? (
                 <a
                   href={maybeSourceDocuments[sourceRow[0]].external_link}
@@ -134,12 +140,14 @@ export function SourceSettings(props: SourceSettingsProps) {
               )}
             </td>
             <td
+              key={`${sourceRow[0]}-type-column`}
               className="prevent-select"
               style={{ verticalAlign: "middle", width: 30 + "%" }}
             >
               {maybeSourceDocuments[sourceRow[0]].source_type}
             </td>
             <td
+              key={`${sourceRow[0]}-updown-button-column`}
               style={{
                 verticalAlign: "middle",
                 width: 5 + "%",
@@ -148,6 +156,7 @@ export function SourceSettings(props: SourceSettingsProps) {
             >
               <div>
                 <i
+                  key={`${sourceRow[0]}-up-button`}
                   className="bi bi-chevron-double-up"
                   style={{ fontSize: 1 + "em", cursor: "pointer" }}
                   onClick={() => {
@@ -157,6 +166,7 @@ export function SourceSettings(props: SourceSettingsProps) {
               </div>
               <div>
                 <i
+                  key={`${sourceRow[0]}-down-button`}
                   className="bi bi-chevron-double-down"
                   style={{ fontSize: 1 + "em", cursor: "pointer" }}
                   onClick={() => {
@@ -169,6 +179,7 @@ export function SourceSettings(props: SourceSettingsProps) {
               </div>
             </td>
             <td
+              key={`${sourceRow[0]}-drag-button-column`}
               style={{
                 verticalAlign: "middle",
                 width: 5 + "%",
@@ -176,6 +187,7 @@ export function SourceSettings(props: SourceSettingsProps) {
               }}
             >
               <i
+                key={`${sourceRow[0]}-drag-button`}
                 className="bi bi-grip-horizontal"
                 style={{ fontSize: 2 + "em" }}
               />
@@ -206,7 +218,10 @@ export function SourceSettings(props: SourceSettingsProps) {
                     <th />
                   </tr>
                 </thead>
-                <tbody>{sourceRows}</tbody>
+                <tbody>
+                  {sourceRows}
+                  {provided.placeholder}
+                </tbody>
               </Table>
             </div>
           )}

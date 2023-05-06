@@ -6,12 +6,12 @@
  * A button is exposed in the right-hand panel of the main GUI to show this modal.
  */
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import { useDispatch, useSelector } from "react-redux";
 
-import { AppDispatch, RootState } from "@/app/store";
+import { AppDispatch } from "@/app/store";
 import {
   getLocalStorageSearchSettings,
   setLocalStorageSearchSettings,
@@ -21,8 +21,10 @@ import {
   SearchTypeSettings,
   SourceSettings,
 } from "@/common/types";
+import { selectSourceDocuments } from "@/features/search/sourceDocumentsSlice";
 import { FilterSettings as FilterSettingsElement } from "@/features/searchSettings/filterSettings";
 import {
+  selectSearchSettings,
   setFilterSettings,
   setSearchTypeSettings,
   setSourceSettings,
@@ -35,9 +37,7 @@ export function SearchSettings() {
   const [show, setShow] = useState(false);
 
   // global state managed in redux
-  const globalSearchSettings = useSelector(
-    (state: RootState) => state.searchSettings
-  );
+  const globalSearchSettings = useSelector(selectSearchSettings);
 
   // component-level copies of redux state
   const [localSearchTypeSettings, setLocalSearchTypeSettings] =
@@ -47,9 +47,7 @@ export function SearchSettings() {
   const [localFilterSettings, setLocalFilterSettings] =
     useState<FilterSettings>(globalSearchSettings.filterSettings);
 
-  const maybeSourceDocuments = useSelector(
-    (state: RootState) => state.sourceDocuments.sourceDocuments
-  );
+  const maybeSourceDocuments = useSelector(selectSourceDocuments);
 
   useEffect(() => {
     if (maybeSourceDocuments != null) {
@@ -59,18 +57,19 @@ export function SearchSettings() {
       dispatch(setSourceSettings(localStorageSettings.sourceSettings));
       dispatch(setFilterSettings(localStorageSettings.filterSettings));
     }
-  }, [maybeSourceDocuments]);
+  }, [dispatch, maybeSourceDocuments]);
 
   // modal management functions
   const handleClose = () => setShow(false);
-  const handleShow = () => {
+
+  const handleShow = useCallback(() => {
     // set up the component-level state with the current redux state
     setLocalSearchTypeSettings(globalSearchSettings.searchTypeSettings);
     setLocalFilterSettings(globalSearchSettings.filterSettings);
     setLocalSourceSettings(globalSearchSettings.sourceSettings);
 
     setShow(true);
-  };
+  }, [globalSearchSettings]);
   const handleSave = () => {
     // copy component-level state into redux state and into local storage
     setLocalStorageSearchSettings({

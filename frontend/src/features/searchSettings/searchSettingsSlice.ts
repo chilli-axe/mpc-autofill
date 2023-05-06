@@ -1,4 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
+import { useSelector } from "react-redux";
 
 import { RootState } from "@/app/store";
 import { MaximumDPI, MaximumSize, MinimumDPI } from "@/common/constants";
@@ -37,3 +38,4 @@ export const searchSettingsSlice = createSlice({
 export const { setSearchTypeSettings, setSourceSettings, setFilterSettings } =
   searchSettingsSlice.actions;
 export default searchSettingsSlice.reducer;
+export const selectSearchSettings = (state: RootState) => state.searchSettings;

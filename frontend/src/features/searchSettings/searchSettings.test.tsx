@@ -18,10 +18,8 @@ import {
 import {
   cardbacksOneResult,
   cardDocumentsOneResult,
-  cardDocumentsSixResults,
   defaultHandlers,
   searchResultsOneResult,
-  searchResultsSixResults,
   sourceDocumentsThreeResults,
 } from "@/mocks/handlers";
 import { server } from "@/mocks/server";
