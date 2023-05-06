@@ -23,6 +23,7 @@ import {
   cardDocumentsFourResults,
   cardDocumentsOneResult,
   cardDocumentsThreeResults,
+  defaultHandlers,
   searchResultsFourResults,
   searchResultsOneResult,
   searchResultsThreeResults,
@@ -140,7 +141,8 @@ test("switching to the next image in a CardSlot", async () => {
   server.use(
     cardDocumentsThreeResults,
     sourceDocumentsOneResult,
-    searchResultsThreeResults
+    searchResultsThreeResults,
+    ...defaultHandlers
   );
   renderWithProviders(<App />, {
     preloadedState: {
@@ -161,7 +163,8 @@ test("switching to the previous image in a CardSlot", async () => {
   server.use(
     cardDocumentsThreeResults,
     sourceDocumentsOneResult,
-    searchResultsThreeResults
+    searchResultsThreeResults,
+    ...defaultHandlers
   );
   renderWithProviders(<App />, {
     preloadedState: {
@@ -182,7 +185,8 @@ test("switching images in a CardSlot wraps around", async () => {
   server.use(
     cardDocumentsThreeResults,
     sourceDocumentsOneResult,
-    searchResultsThreeResults
+    searchResultsThreeResults,
+    ...defaultHandlers
   );
   renderWithProviders(<App />, {
     preloadedState: {
@@ -209,7 +213,8 @@ test("selecting an image in a CardSlot via the grid selector", async () => {
   server.use(
     cardDocumentsThreeResults,
     sourceDocumentsOneResult,
-    searchResultsThreeResults
+    searchResultsThreeResults,
+    ...defaultHandlers
   );
   renderWithProviders(<App />, {
     preloadedState: {
@@ -235,7 +240,8 @@ test("deleting a CardSlot", async () => {
   server.use(
     cardDocumentsThreeResults,
     sourceDocumentsOneResult,
-    searchResultsThreeResults
+    searchResultsThreeResults,
+    ...defaultHandlers
   );
   renderWithProviders(<App />, {
     preloadedState: {
@@ -256,7 +262,8 @@ test("deleting multiple CardSlots", async () => {
   server.use(
     cardDocumentsThreeResults,
     sourceDocumentsOneResult,
-    searchResultsThreeResults
+    searchResultsThreeResults,
+    ...defaultHandlers
   );
   renderWithProviders(<App />, {
     preloadedState: {
@@ -279,7 +286,8 @@ test("CardSlot automatically selects the first search result", async () => {
   server.use(
     cardDocumentsThreeResults,
     sourceDocumentsOneResult,
-    searchResultsThreeResults
+    searchResultsThreeResults,
+    ...defaultHandlers
   );
   renderWithProviders(<App />, {
     preloadedState: {
@@ -306,7 +314,8 @@ test("CardSlot automatically deselects invalid image then selects the first sear
   server.use(
     cardDocumentsThreeResults,
     sourceDocumentsOneResult,
-    searchResultsOneResult
+    searchResultsOneResult,
+    ...defaultHandlers
   );
   renderWithProviders(<App />, {
     preloadedState: {
@@ -322,7 +331,8 @@ test("CardSlot uses cardbacks as search results for backs with no search query",
   server.use(
     cardDocumentsThreeResults,
     cardbacksTwoResults,
-    sourceDocumentsOneResult
+    sourceDocumentsOneResult,
+    ...defaultHandlers
   );
   renderWithProviders(<App />, {
     preloadedState: {
@@ -350,7 +360,8 @@ test("CardSlot defaults to project cardback for backs with no search query", asy
   server.use(
     cardDocumentsThreeResults,
     cardbacksTwoResults,
-    sourceDocumentsOneResult
+    sourceDocumentsOneResult,
+    ...defaultHandlers
   );
   renderWithProviders(<App />, {
     preloadedState: {

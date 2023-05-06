@@ -26,6 +26,7 @@ import {
   cardDocumentsFourResults,
   cardDocumentsSixResults,
   cardDocumentsThreeResults,
+  defaultHandlers,
   dfcPairsMatchingCards1And4,
   sampleCards,
   searchResultsForDFCMatchedCards1And4,
@@ -74,7 +75,8 @@ test("importing one card by text into an empty project", async () => {
     cardDocumentsThreeResults,
     cardbacksTwoOtherResults,
     sourceDocumentsOneResult,
-    searchResultsOneResult
+    searchResultsOneResult,
+    ...defaultHandlers
   );
   renderWithProviders(<App />, { preloadedState });
 
@@ -93,7 +95,8 @@ test("importing multiple instances of one card by text into an empty project", a
     cardDocumentsThreeResults,
     cardbacksTwoOtherResults,
     sourceDocumentsOneResult,
-    searchResultsOneResult
+    searchResultsOneResult,
+    ...defaultHandlers
   );
   renderWithProviders(<App />, { preloadedState });
 
@@ -115,7 +118,8 @@ test("importing multiple instances of one card without an x by text into an empt
     cardDocumentsThreeResults,
     cardbacksTwoOtherResults,
     sourceDocumentsOneResult,
-    searchResultsOneResult
+    searchResultsOneResult,
+    ...defaultHandlers
   );
   renderWithProviders(<App />, { preloadedState });
 
@@ -137,7 +141,8 @@ test("importing multiple instances of one card with a capital X by text into an 
     cardDocumentsThreeResults,
     cardbacksTwoOtherResults,
     sourceDocumentsOneResult,
-    searchResultsOneResult
+    searchResultsOneResult,
+    ...defaultHandlers
   );
   renderWithProviders(<App />, { preloadedState });
 
@@ -159,7 +164,8 @@ test("importing multiple instances of one card by text into a non-empty project"
     cardDocumentsThreeResults,
     cardbacksTwoOtherResults,
     sourceDocumentsOneResult,
-    searchResultsOneResult
+    searchResultsOneResult,
+    ...defaultHandlers
   );
   renderWithProviders(<App />, {
     preloadedState: {
@@ -202,7 +208,8 @@ test("importing one card of each type into an empty project", async () => {
     cardDocumentsSixResults,
     cardbacksTwoOtherResults,
     sourceDocumentsThreeResults,
-    searchResultsSixResults
+    searchResultsSixResults,
+    ...defaultHandlers
   );
   renderWithProviders(<App />, { preloadedState });
 
@@ -228,7 +235,8 @@ test("importing one DFC-paired card by text into an empty project", async () => 
     cardbacksTwoOtherResults,
     sourceDocumentsOneResult,
     searchResultsForDFCMatchedCards1And4,
-    dfcPairsMatchingCards1And4
+    dfcPairsMatchingCards1And4,
+    ...defaultHandlers
   );
   renderWithProviders(<App />, { preloadedState });
 
@@ -247,7 +255,8 @@ test("importing an empty string by text into an empty project", async () => {
     cardDocumentsThreeResults,
     cardbacksTwoOtherResults,
     sourceDocumentsOneResult,
-    searchResultsOneResult
+    searchResultsOneResult,
+    ...defaultHandlers
   );
   renderWithProviders(<App />, { preloadedState });
 

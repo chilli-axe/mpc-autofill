@@ -9,6 +9,7 @@ import {
 } from "@/common/test-utils";
 import {
   cardDocumentsOneResult,
+  defaultHandlers,
   searchResultsOneResult,
   sourceDocumentsOneResult,
 } from "@/mocks/handlers";
@@ -20,7 +21,8 @@ test("the html structure of a CardDetailedView", async () => {
   server.use(
     cardDocumentsOneResult,
     sourceDocumentsOneResult,
-    searchResultsOneResult
+    searchResultsOneResult,
+    ...defaultHandlers
   );
   renderWithProviders(<App />, {
     preloadedState: {

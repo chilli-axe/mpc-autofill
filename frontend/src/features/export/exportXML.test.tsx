@@ -20,6 +20,7 @@ import {
 import {
   cardbacksOneResult,
   cardDocumentsSixResults,
+  defaultHandlers,
   searchResultsSixResults,
   sourceDocumentsThreeResults,
 } from "@/mocks/handlers";
@@ -34,7 +35,8 @@ test("the XML representation of a simple project with no custom backs", async ()
     cardDocumentsSixResults,
     cardbacksOneResult,
     sourceDocumentsThreeResults,
-    searchResultsSixResults
+    searchResultsSixResults,
+    ...defaultHandlers
   );
   renderWithProviders(<App />, {
     preloadedState: {
@@ -87,7 +89,8 @@ test("the XML representation of a simple project with a custom back for one card
     cardDocumentsSixResults,
     cardbacksOneResult,
     sourceDocumentsThreeResults,
-    searchResultsSixResults
+    searchResultsSixResults,
+    ...defaultHandlers
   );
   renderWithProviders(<App />, {
     preloadedState: {
@@ -149,7 +152,8 @@ test("the XML representation of a simple project with multiple instances of a ca
     cardDocumentsSixResults,
     cardbacksOneResult,
     sourceDocumentsThreeResults,
-    searchResultsSixResults
+    searchResultsSixResults,
+    ...defaultHandlers
   );
   renderWithProviders(<App />, {
     preloadedState: {

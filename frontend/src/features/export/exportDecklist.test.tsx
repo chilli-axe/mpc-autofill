@@ -20,6 +20,7 @@ import {
 import {
   cardbacksOneResult,
   cardDocumentsSixResults,
+  defaultHandlers,
   searchResultsSixResults,
   sourceDocumentsThreeResults,
 } from "@/mocks/handlers";
@@ -34,7 +35,8 @@ test("the decklist representation of a simple project with no custom backs", asy
     cardDocumentsSixResults,
     cardbacksOneResult,
     sourceDocumentsThreeResults,
-    searchResultsSixResults
+    searchResultsSixResults,
+    ...defaultHandlers
   );
   renderWithProviders(<App />, {
     preloadedState: {
@@ -69,7 +71,8 @@ test("the decklist representation of a simple project with a custom back for one
     cardDocumentsSixResults,
     cardbacksOneResult,
     sourceDocumentsThreeResults,
-    searchResultsSixResults
+    searchResultsSixResults,
+    ...defaultHandlers
   );
   renderWithProviders(<App />, {
     preloadedState: {
@@ -105,7 +108,8 @@ test("the decklist representation of a simple project with multiple instances of
     cardDocumentsSixResults,
     cardbacksOneResult,
     sourceDocumentsThreeResults,
-    searchResultsSixResults
+    searchResultsSixResults,
+    ...defaultHandlers
   );
   renderWithProviders(<App />, {
     preloadedState: {

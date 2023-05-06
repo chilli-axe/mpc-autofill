@@ -10,6 +10,7 @@ import {
   cardbacksOneResult,
   cardbacksTwoResults,
   cardDocumentsOneResult,
+  defaultHandlers,
   sourceDocumentsOneResult,
 } from "@/mocks/handlers";
 import { server } from "@/mocks/server";
@@ -20,7 +21,8 @@ test("the html structure of a CommonCardback with a single search result", async
   server.use(
     cardDocumentsOneResult,
     sourceDocumentsOneResult,
-    cardbacksOneResult
+    cardbacksOneResult,
+    ...defaultHandlers
   );
 
   renderWithProviders(<App />, {
@@ -38,7 +40,8 @@ test("the html structure of a CommonCardback with multiple search results", asyn
   server.use(
     cardDocumentsOneResult,
     sourceDocumentsOneResult,
-    cardbacksTwoResults
+    cardbacksTwoResults,
+    ...defaultHandlers
   );
 
   renderWithProviders(<App />, {

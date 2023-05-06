@@ -13,6 +13,7 @@ import {
 } from "@/common/test-utils";
 import {
   cardDocumentsThreeResults,
+  defaultHandlers,
   searchResultsThreeResults,
   sourceDocumentsOneResult,
 } from "@/mocks/handlers";
@@ -22,7 +23,8 @@ test("toggling between faceting cards by source vs grouped together works as exp
   server.use(
     cardDocumentsThreeResults,
     sourceDocumentsOneResult,
-    searchResultsThreeResults
+    searchResultsThreeResults,
+    ...defaultHandlers
   );
 
   renderWithProviders(<App />, {
@@ -51,7 +53,8 @@ test("collapsing a source in the faceted view then expanding it works as expecte
   server.use(
     cardDocumentsThreeResults,
     sourceDocumentsOneResult,
-    searchResultsThreeResults
+    searchResultsThreeResults,
+    ...defaultHandlers
   );
 
   renderWithProviders(<App />, {
@@ -91,7 +94,8 @@ test("collapsing and expanding all sources works as expected", async () => {
   server.use(
     cardDocumentsThreeResults,
     sourceDocumentsOneResult,
-    searchResultsThreeResults
+    searchResultsThreeResults,
+    ...defaultHandlers
   );
 
   renderWithProviders(<App />, {
