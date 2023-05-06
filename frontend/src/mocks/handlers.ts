@@ -27,6 +27,13 @@ function buildRoute(route: string) {
 
 //# region source
 
+export const sourceDocumentsNoResults = rest.get(
+  buildRoute("2/sources/"),
+  (req, res, ctx) => {
+    return res(ctx.status(200), ctx.json({ results: {} }));
+  }
+);
+
 export const sourceDocumentsOneResult = rest.get(
   buildRoute("2/sources/"),
   (req, res, ctx) => {
@@ -60,6 +67,13 @@ export const sourceDocumentsThreeResults = rest.get(
 //# endregion
 
 //# region card
+
+export const cardDocumentsNoResults = rest.post(
+  buildRoute("2/cards/"),
+  (req, res, ctx) => {
+    return res(ctx.status(200), ctx.json({ results: {} }));
+  }
+);
 
 export const cardDocumentsOneResult = rest.post(
   buildRoute("2/cards/"),
@@ -131,6 +145,13 @@ export const cardDocumentsSixResults = rest.post(
 
 //# region cardback
 
+export const cardbacksNoResults = rest.get(
+  buildRoute("2/cardbacks"),
+  (req, res, ctx) => {
+    return res(ctx.status(200), ctx.json({ cardbacks: [] }));
+  }
+);
+
 export const cardbacksOneResult = rest.get(
   buildRoute("2/cardbacks"),
   (req, res, ctx) => {
@@ -170,6 +191,13 @@ export const cardbacksTwoOtherResults = rest.get(
 //# endregion
 
 //# region search results
+
+export const searchResultsNoResults = rest.post(
+  buildRoute("2/searchResults/"),
+  (req, res, ctx) => {
+    return res(ctx.status(200), ctx.json({ results: {} }));
+  }
+);
 
 export const searchResultsOneResult = rest.post(
   buildRoute("2/searchResults/"),
@@ -304,6 +332,13 @@ export const searchResultsForDFCMatchedCards1And4 = rest.post(
 
 //# region dfc pairs
 
+export const dfcPairsNoResults = rest.get(
+  buildRoute("2/DFCPairs/"),
+  (req, res, ctx) => {
+    return res(ctx.status(200), ctx.json({ dfc_pairs: {} }));
+  }
+);
+
 export const dfcPairsMatchingCards1And4 = rest.get(
   buildRoute("2/DFCPairs/"),
   (req, res, ctx) => {
@@ -333,5 +368,59 @@ export const sampleCards = rest.get(
     );
   }
 );
+
+//# endregion
+
+//# region import sites
+
+export const importSitesNoResults = rest.get(
+  buildRoute("2/importSites"),
+  (req, res, ctx) => {
+    return res(ctx.status(200), ctx.json({ import_sites: [] }));
+  }
+);
+
+//# endregion
+
+//# region backend info
+
+export const backendInfoNoPatreon = rest.get(
+  buildRoute("2/info"),
+  (req, res, ctx) => {
+    return res(
+      ctx.status(200),
+      ctx.json({
+        info: {
+          name: "Test Site",
+          description: "Test runner site",
+          email: "test@test.com",
+          reddit: "reddit.com",
+          discord: "discord.com",
+          patreon: {
+            url: "",
+            members: null,
+            tiers: null,
+            campaign: null,
+          },
+        },
+      })
+    );
+  }
+);
+
+//# endregion
+
+//# region presets
+
+export const defaultHandlers = [
+  sourceDocumentsNoResults,
+  cardDocumentsNoResults,
+  cardbacksNoResults,
+  searchResultsNoResults,
+  dfcPairsNoResults,
+  importSitesNoResults,
+  sampleCards,
+  backendInfoNoPatreon,
+];
 
 //# endregion

@@ -170,6 +170,12 @@ export async function openCardSlotGridSelector(
   );
 }
 
+export async function openSearchSettingsModal() {
+  screen.getByText("Search Settings", { exact: false }).click();
+  await waitFor(() => expect(screen.getByText("Search Settings")));
+  return screen.getByTestId("search-settings");
+}
+
 async function downloadFile(id: string) {
   // @ts-ignore
   jest.spyOn(global, "Blob").mockImplementation(function (content, options) {
