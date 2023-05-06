@@ -118,7 +118,7 @@ export function SourceSettings(props: SourceSettingsProps) {
                 onstyle="primary"
                 offstyle="secondary"
                 size="md"
-                width={100 + "%"}
+                width={80 + "%"}
                 height={ToggleButtonHeight + "px"}
                 active={sourceRow[1]}
                 onClick={() => toggleSpecificSourceEnabledStatus(index)}

@@ -210,7 +210,7 @@ exports[`the html structure of search settings 1`] = `
                 <div
                   class="btn toggle btn-md btn-primary"
                   role="button"
-                  style="width: 100%; height: 38px;"
+                  style="width: 80%; height: 38px;"
                 >
                   <div
                     class="toggle-group"
@@ -285,7 +285,7 @@ exports[`the html structure of search settings 1`] = `
                 <div
                   class="btn toggle btn-md btn-primary"
                   role="button"
-                  style="width: 100%; height: 38px;"
+                  style="width: 80%; height: 38px;"
                 >
                   <div
                     class="toggle-group"
@@ -360,7 +360,7 @@ exports[`the html structure of search settings 1`] = `
                 <div
                   class="btn toggle btn-md btn-primary"
                   role="button"
-                  style="width: 100%; height: 38px;"
+                  style="width: 80%; height: 38px;"
                 >
                   <div
                     class="toggle-group"
