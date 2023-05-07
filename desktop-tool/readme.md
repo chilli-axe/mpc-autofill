@@ -42,7 +42,7 @@ Once the autofilling process completes, you can either complete and pay for your
 
 ### Editing Existing Projects
 
-By default, the tool will create the order as a new MPC project. The tool also supports continuing with saved MPC projects - run the program with the command line argument `--skipsetup` to use this functionality. You will be prompted to log into MPC, navigate to a saved project, and continue editing it before the program will continue.
+By default, the tool will create the order as a new MPC project. The tool also supports continuing with saved MPC projects - run the program with the command line argument `--skipsetup` to use this functionality or 'y' when prompted. You will be prompted to log into MPC, navigate to a saved project, and continue editing it before the program will continue.
 
 Some notes on how editing an existing project with `--skipsetup` works:
 
@@ -52,7 +52,7 @@ Some notes on how editing an existing project with `--skipsetup` works:
 
 ### Specifying a Browser
 
-By default, the tool will configure a driver for Google Chrome. The three major Chromium-based browsers are supported (Chrome, Edge, and Brave), and you can specify which browser should be used to configure the driver with the `--browser` command line argument.
+By default, the tool will configure a driver for Google Chrome. The three major Chromium-based browsers are supported (Chrome, Edge, and Brave), and you can specify which browser should be used to configure the driver with the `--browser` command line argument or you can enter the browser to use when prompted.
 
 ### Exporting to PDF
 
