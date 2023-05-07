@@ -56,8 +56,8 @@ class AutofillDriver:
             print(f"Successfully initialised {TEXT_BOLD}{driver.name}{TEXT_END} driver.")
         except (ValueError, sl_exc.WebDriverException) as e:
             raise Exception(
-                f"An error occurred while attempting to configure the webdriver for {self.driver.name}. "
-                f"Please make sure you have installed {self.driver.name} and that it is up to date: {e}"
+                f"An error occurred while attempting to configure the webdriver for your specified browser. "
+                f"Please make sure you have installed the browser and that it is up to date:\n\n{e}"
             )
 
         self.driver = driver
