@@ -16,7 +16,7 @@ elasticsearch-dsl>=7.0.0,<8.0.0
 factory-boy~=3.2
 google-api-python-client~=2.86
 google-auth-httplib2~=0.1
-google-auth-oauthlib1.0
+google-auth-oauthlib~=1.0
 Levenshtein~=0.21
 Markdown~=3.4
 oauth2client~=4.1
