@@ -6,7 +6,6 @@ from typing import Any, Generator, Optional
 
 import attr
 import enlighten
-from selenium import webdriver
 from selenium.common import exceptions as sl_exc
 from selenium.common.exceptions import (
     NoAlertPresentException,
@@ -14,6 +13,7 @@ from selenium.common.exceptions import (
     NoSuchWindowException,
 )
 from selenium.webdriver.common.by import By
+from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.support.expected_conditions import invisibility_of_element
 from selenium.webdriver.support.ui import Select, WebDriverWait
 
@@ -30,10 +30,9 @@ from src.utils import (
 
 @attr.s
 class AutofillDriver:
-    driver: webdriver.remote.webdriver.WebDriver = attr.ib(
-        default=None
-    )  # delay initialisation until XML is selected and parsed
+    driver: WebDriver = attr.ib(default=None)  # delay initialisation until XML is selected and parsed
     browser: Browsers = attr.ib(default=Browsers.chrome)
+    binary_location: Optional[str] = attr.ib(default=None)  # path to browser executable
     headless: bool = attr.ib(default=False)
     starting_url: str = attr.ib(init=False, default="https://www.makeplayingcards.com/design/custom-blank-card.html")
     order: CardOrder = attr.ib(default=attr.Factory(CardOrder.from_xml_in_folder))
@@ -48,7 +47,7 @@ class AutofillDriver:
     # region initialisation
     def initialise_driver(self) -> None:
         try:
-            driver = self.browser.value(self.headless)
+            driver = self.browser.value(headless=self.headless, binary_location=self.binary_location)
             driver.set_window_size(1200, 900)
             driver.implicitly_wait(5)
             print(f"Successfully initialised {TEXT_BOLD}{self.browser.name}{TEXT_END} driver.")

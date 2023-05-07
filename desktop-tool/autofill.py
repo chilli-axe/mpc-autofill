@@ -1,6 +1,7 @@
 import os
 import sys
 from contextlib import nullcontext
+from typing import Optional
 
 import click
 from wakepy import keepawake
@@ -35,6 +36,15 @@ os.system("")  # enables ansi escape characters in terminal
     help="The web browser to run the tool on.",
 )
 @click.option(
+    "--binary-location",
+    default=None,
+    help=(
+        "The file path to your browser's binary (executable). "
+        "You only need to specify this if you have installed your browser of choice but the tool is unable "
+        "to locate it at startup. This is most likely to occur if using the Brave browser."
+    ),
+)
+@click.option(
     "--exportpdf",
     default=False,
     help="Create a PDF export of the card images instead of creating a project for MPC.",
@@ -46,7 +56,7 @@ os.system("")  # enables ansi escape characters in terminal
     help="Allows the system to fall asleep during execution.",
     is_flag=True,
 )
-def main(skipsetup: bool, browser: str, exportpdf: bool, allowsleep: bool) -> None:
+def main(skipsetup: bool, browser: str, binary_location: Optional[str], exportpdf: bool, allowsleep: bool) -> None:
     try:
         with keepawake(keep_screen_awake=True) if not allowsleep else nullcontext():
             if not allowsleep:
@@ -54,7 +64,7 @@ def main(skipsetup: bool, browser: str, exportpdf: bool, allowsleep: bool) -> No
             if exportpdf:
                 PdfExporter().execute()
             else:
-                AutofillDriver(browser=Browsers[browser]).execute(skipsetup)
+                AutofillDriver(browser=Browsers[browser], binary_location=binary_location).execute(skipsetup)
     except Exception as e:
         print(f"An uncaught exception occurred: {TEXT_BOLD}{e}{TEXT_END}")
         input("Press Enter to exit.")
