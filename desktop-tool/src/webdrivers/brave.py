@@ -1,5 +1,3 @@
-import os
-
 from selenium.webdriver import Chrome
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
@@ -22,7 +20,7 @@ def get_brave_driver(headless: bool = False) -> Chrome:
     binary_location = {
         OSType.LINUX: "/usr/bin/brave-browser",
         OSType.MAC: "/Applications/Brave Browser.app/Contents/MacOS/Brave Browser",
-        OSType.WIN: f"{os.getenv('LOCALAPPDATA')}\\BraveSoftware\\Brave-Browser\\Application\\brave.exe",
+        OSType.WIN: "C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe",
     }[os_name()]
     options.binary_location = binary_location
 
