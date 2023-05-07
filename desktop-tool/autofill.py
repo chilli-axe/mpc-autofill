@@ -19,34 +19,38 @@ os.system("")  # enables ansi escape characters in terminal
     "--skipsetup",
     prompt="Skip project setup to continue editing an existing MPC project?" if len(sys.argv) == 1 else False,
     default=False,
-    help="Skip project setup to continue editing an existing MPC project.",
+    help=(
+        "If this flag is passed, the tool will prompt the user to navigate to an existing MPC project "
+        "and will attempt to align the state of the given project XML with the state of the project "
+        "in MakePlayingCards. Note that this has some caveats - refer to the desktop-tool readme for details."
+    ),
     is_flag=True,
 )
 @click.option(
     "-b",
     "--browser",
-    prompt="Web browser to automate." if len(sys.argv) == 1 else False,
+    prompt="Which web browser should the tool run on?" if len(sys.argv) == 1 else False,
     default=Browsers.chrome.name,
     type=click.Choice(sorted([browser.name for browser in Browsers]), case_sensitive=False),
-    help="Web browser to automate.",
+    help="The web browser to run the tool on.",
 )
 @click.option(
     "--exportpdf",
     default=False,
-    help="Create a PDF export of the card images and do not create a project for MPC.",
+    help="Create a PDF export of the card images instead of creating a project for MPC.",
     is_flag=True,
 )
 @click.option(
     "--allowsleep",
     default=False,
-    help="Allows the system to fall alseep during execution",
+    help="Allows the system to fall asleep during execution.",
     is_flag=True,
 )
 def main(skipsetup: bool, browser: str, exportpdf: bool, allowsleep: bool) -> None:
     try:
         with keepawake(keep_screen_awake=True) if not allowsleep else nullcontext():
             if not allowsleep:
-                print("System sleep is being prevented during this execution")
+                print("System sleep is being prevented during this execution.")
             if exportpdf:
                 PdfExporter().execute()
             else:
