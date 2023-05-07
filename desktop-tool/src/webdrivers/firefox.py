@@ -4,6 +4,7 @@ from selenium.webdriver.firefox.service import Service
 from webdriver_manager.firefox import GeckoDriverManager
 
 
+# note: firefox is not currently supported
 def get_firefox_driver(headless: bool = False) -> Firefox:
     options = Options()
     options.add_argument("--log-level=3")

@@ -5,7 +5,7 @@ from contextlib import nullcontext
 import click
 from wakepy import keepawake
 
-from src.constants import browsers
+from src.constants import Browsers
 from src.driver import AutofillDriver
 from src.pdf_maker import PdfExporter
 from src.utils import TEXT_BOLD, TEXT_END
@@ -26,8 +26,8 @@ os.system("")  # enables ansi escape characters in terminal
     "-b",
     "--browser",
     prompt="Web browser to automate." if len(sys.argv) == 1 else False,
-    default="chrome",
-    type=click.Choice(sorted(browsers.keys()), case_sensitive=False),
+    default=Browsers.chrome.name,
+    type=click.Choice(sorted([browser.name for browser in Browsers]), case_sensitive=False),
     help="Web browser to automate.",
 )
 @click.option(
@@ -50,7 +50,7 @@ def main(skipsetup: bool, browser: str, exportpdf: bool, allowsleep: bool) -> No
             if exportpdf:
                 PdfExporter().execute()
             else:
-                AutofillDriver(driver_callable=browsers[browser]).execute(skipsetup)
+                AutofillDriver(browser=Browsers[browser]).execute(skipsetup)
     except Exception as e:
         print(f"An uncaught exception occurred: {TEXT_BOLD}{e}{TEXT_END}")
         input("Press Enter to exit.")

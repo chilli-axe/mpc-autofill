@@ -39,9 +39,7 @@ function doPost(e) {
 
 import os
 from enum import Enum
-from typing import Callable
-
-from selenium.webdriver.remote.webdriver import WebDriver
+from functools import partial
 
 import src.webdrivers as wd
 
@@ -94,12 +92,11 @@ class CardTags(str, Enum):
     query = "query"
 
 
-browsers: dict[str, Callable[[bool], WebDriver]] = {
-    "chrome": wd.get_chrome_driver,
-    "brave": wd.get_brave_driver,
-    # "firefox": wd.get_firefox_driver,  # TODO: this driver is a bit buggy with the rest of the code - test thoroughly
-    "edge": wd.get_edge_driver,
-}
+class Browsers(Enum):
+    chrome = partial(wd.get_chrome_driver)
+    brave = partial(wd.get_brave_driver)
+    edge = partial(wd.get_edge_driver)
+    # TODO: add support for firefox
 
 
 class GoogleScriptsAPIs(str, Enum):

@@ -2,7 +2,7 @@ import textwrap
 import time
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
-from typing import Any, Callable, Generator, Optional
+from typing import Any, Generator, Optional
 
 import attr
 import enlighten
@@ -14,11 +14,10 @@ from selenium.common.exceptions import (
     NoSuchWindowException,
 )
 from selenium.webdriver.common.by import By
-from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.support.expected_conditions import invisibility_of_element
 from selenium.webdriver.support.ui import Select, WebDriverWait
 
-from src.constants import THREADS, States
+from src.constants import THREADS, Browsers, States
 from src.order import CardImage, CardImageCollection, CardOrder
 from src.utils import (
     TEXT_BOLD,
@@ -27,7 +26,6 @@ from src.utils import (
     alert_handler,
     log_hours_minutes_seconds_elapsed,
 )
-from src.webdrivers import get_chrome_driver
 
 
 @attr.s
@@ -35,7 +33,7 @@ class AutofillDriver:
     driver: webdriver.remote.webdriver.WebDriver = attr.ib(
         default=None
     )  # delay initialisation until XML is selected and parsed
-    driver_callable: Callable[[bool], WebDriver] = attr.ib(default=get_chrome_driver)
+    browser: Browsers = attr.ib(default=Browsers.chrome)
     headless: bool = attr.ib(default=False)
     starting_url: str = attr.ib(init=False, default="https://www.makeplayingcards.com/design/custom-blank-card.html")
     order: CardOrder = attr.ib(default=attr.Factory(CardOrder.from_xml_in_folder))
@@ -50,10 +48,10 @@ class AutofillDriver:
     # region initialisation
     def initialise_driver(self) -> None:
         try:
-            driver = self.driver_callable(self.headless)
+            driver = self.browser.value(self.headless)
             driver.set_window_size(1200, 900)
             driver.implicitly_wait(5)
-            print(f"Successfully initialised {TEXT_BOLD}{driver.name}{TEXT_END} driver.")
+            print(f"Successfully initialised {TEXT_BOLD}{self.browser.name}{TEXT_END} driver.")
         except (ValueError, sl_exc.WebDriverException) as e:
             raise Exception(
                 f"An error occurred while attempting to configure the webdriver for your specified browser. "
