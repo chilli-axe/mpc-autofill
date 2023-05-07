@@ -3,6 +3,10 @@ description: Test the MPC Autofill CLI / desktop tool
 runs:
   using: composite
   steps:
+    # not sure atm how to set up brave browser on github actions
+    - uses: browser-actions/setup-chrome@latest
+    - uses: browser-actions/setup-edge@latest
+
     - name: Set up Python 3.9
       uses: actions/setup-python@v2
       with:
@@ -14,6 +18,6 @@ runs:
         pip install -r requirements.txt
       shell: bash
     - name: Run tests
-      run: |
-        cd desktop-tool && pytest .
+      working-directory: desktop-tool
+      run: pytest .
       shell: bash

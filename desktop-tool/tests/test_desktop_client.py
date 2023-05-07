@@ -9,6 +9,8 @@ from xml.etree import ElementTree
 import pytest
 from enlighten import Counter
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.wait import WebDriverWait
 
 import src.constants as constants
 import src.utils
@@ -842,20 +844,32 @@ def test_pdf_export_complete_separate_faces(monkeypatch, card_order_valid):
 # region test driver.py
 
 
-@pytest.mark.skip()  # marking as skip because this test can be inconsistent when run on ci/cd
-def test_card_order_complete_run_single_cardback(input_enter, card_order_valid):
-    autofill_driver = AutofillDriver(order=card_order_valid, headless=True)
+@pytest.mark.parametrize("browser", [constants.Browsers.chrome, constants.Browsers.edge])
+def test_card_order_complete_run_single_cardback(browser, input_enter, card_order_valid):
+    autofill_driver = AutofillDriver(order=card_order_valid, browser=browser, headless=True)
     autofill_driver.execute(skip_setup=False)
-    time.sleep(5)  # seems necessary to ensure these tests work as expected on ci/cd
-    assert len(autofill_driver.driver.find_elements(by=By.CLASS_NAME, value="m-itemside")) == 3
+    assert (
+        len(
+            WebDriverWait(autofill_driver.driver, 30).until(
+                EC.presence_of_all_elements_located((By.CLASS_NAME, "m-itemside"))
+            )
+        )
+        == 3
+    )
 
 
-@pytest.mark.skip()  # marking as skip because this test can be inconsistent when run on ci/cd
-def test_card_order_complete_run_multiple_cardbacks(input_enter, card_order_multiple_cardbacks):
-    autofill_driver = AutofillDriver(order=card_order_multiple_cardbacks, headless=True)
+@pytest.mark.parametrize("browser", [constants.Browsers.chrome, constants.Browsers.edge])
+def test_card_order_complete_run_multiple_cardbacks(browser, input_enter, card_order_multiple_cardbacks):
+    autofill_driver = AutofillDriver(order=card_order_multiple_cardbacks, browser=browser, headless=True)
     autofill_driver.execute(skip_setup=False)
-    time.sleep(5)  # seems necessary to ensure these tests work as expected on ci/cd
-    assert len(autofill_driver.driver.find_elements(by=By.CLASS_NAME, value="m-itemside")) == 4
+    assert (
+        len(
+            WebDriverWait(autofill_driver.driver, 30).until(
+                EC.presence_of_all_elements_located((By.CLASS_NAME, "m-itemside"))
+            )
+        )
+        == 4
+    )
 
 
 # endregion
