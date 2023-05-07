@@ -97,7 +97,7 @@ def download_google_drive_file(drive_id: str, file_path: str) -> bool:
         if len(file_contents) > 0:
             # Download the image
             with open(file_path, "wb") as f:
-                f.write(np.array(file_contents, dtype=np.uint8))
+                f.write(np.array(file_contents).astype(np.uint8))
                 return True
     return False
 
