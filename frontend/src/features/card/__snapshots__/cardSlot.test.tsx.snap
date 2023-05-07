@@ -357,7 +357,7 @@ exports[`the html structure of a CardSlot's grid selector, cards faceted by sour
       >
         <hr />
         <div
-          class="d-flex p-2 hstack gap-2"
+          class="d-flex ps-2 pe-2 hstack gap-2"
         >
           <h3
             class="orpheus prevent-select"

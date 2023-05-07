@@ -105,7 +105,7 @@ function CardsFacetedBySource(props: CardGridDisplayProps) {
                 direction="horizontal"
                 gap={2}
                 key={`${sourceKey}-header-inner`}
-                className="d-flex p-2"
+                className="d-flex ps-2 pe-2"
               >
                 <h3
                   className="orpheus prevent-select"
