@@ -14,9 +14,7 @@ from selenium.common.exceptions import (
 )
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webdriver import WebDriver
-from selenium.webdriver.support.expected_conditions import (
-    invisibility_of_element_located,
-)
+from selenium.webdriver.support.expected_conditions import invisibility_of_element
 from selenium.webdriver.support.ui import Select, WebDriverWait
 
 from src.constants import THREADS, Browsers, States
@@ -111,12 +109,11 @@ class AutofillDriver:
         """
 
         try:
-            self.driver.switch_to.default_content()
+            wait_elem = self.driver.find_element(By.ID, value="sysdiv_wait")
+            # Wait for the element to become invisible
             while True:
                 try:
-                    WebDriverWait(self.driver, 100, poll_frequency=0.1).until(
-                        invisibility_of_element_located((By.ID, "sysdiv_wait"))
-                    )
+                    WebDriverWait(self.driver, 100, poll_frequency=0.1).until(invisibility_of_element(wait_elem))
                 except sl_exc.TimeoutException:
                     continue
                 break
