@@ -25,8 +25,6 @@ Each component of the project - desktop tool, frontend, and backend - has its ow
 | Frontend     | `/frontend`     | The standalone (static) frontend which facilitates MPC project creation.                              | [Docs](https://github.com/chilli-axe/mpc-autofill/blob/master/frontend/readme.md)     |
 | Backend      | `/backend `     | The web backend that MPC Autofill servers run on.                                                     | [Docs](https://github.com/chilli-axe/mpc-autofill/blob/master/MPCAutofill/readme.md)  |
 
-|
-
 # Contributing
 
 - Please ensure that you install the `pre-commit` Python package and run `pre-commit install` before committing any code to your branch / PR - this will run various linting, code styling, and static type checking tools to validate your code.
