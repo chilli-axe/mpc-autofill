@@ -42,6 +42,10 @@ Once the autofilling process completes, you can either complete and pay for your
 
 ## Command-Line Arguments
 
+### Help (`--help`)
+
+Passing the tool this command line argument will display a list of all valid command line arguments you can pass it.
+
 ### Editing Existing Projects (`--skipsetup`)
 
 By default, the tool will create the order as a new MPC project. The tool also supports continuing with saved MPC projects - run the program with the command line argument `--skipsetup` to use this functionality or 'y' when prompted. You will be prompted to log into MPC, navigate to a saved project, and continue editing it before the program will continue.
