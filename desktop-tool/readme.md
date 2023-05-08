@@ -40,7 +40,9 @@ Once the autofilling process completes, you can either complete and pay for your
       - `./autofill-linux`
 - You may have issues with running the executable on older versions of macOS [due to a limitation of PyInstaller](https://stackoverflow.com/questions/49908236/pyinstaller-executable-fails-on-old-os-x). GitHub is configured to compile the tool for Windows, macOS, and Linux (Ubuntu) on the latest available version of each operating system.
 
-### Editing Existing Projects
+## Command-Line Arguments
+
+### Editing Existing Projects (`--skipsetup`)
 
 By default, the tool will create the order as a new MPC project. The tool also supports continuing with saved MPC projects - run the program with the command line argument `--skipsetup` to use this functionality or 'y' when prompted. You will be prompted to log into MPC, navigate to a saved project, and continue editing it before the program will continue.
 
@@ -50,17 +52,19 @@ Some notes on how editing an existing project with `--skipsetup` works:
 - Any slots which have already been filled will not be refilled,
 - If an image is now allocated to more slots, the tool will fill the unfilled slots with the image from the first filled slot for that image.
 
-### Specifying a Browser
+### Specifying a Browser (`-b`, `--browser`, `--binary-location`)
 
 By default, the tool will configure a driver for Google Chrome. The three major Chromium-based browsers are supported (Chrome, Edge, and Brave), and you can specify which browser should be used to configure the driver with the `--browser` command line argument or you can enter the browser to use when prompted.
 
-### Exporting to PDF
+If the tool does not automatically find your browser properly, you can manually pass it the path to your browser's executable (binary) with `--binary-location`.
 
-You can optionally export the downloaded images to a PDF which can be uploaded to a card printing site by using the `--exportpdfs` command line argument. Once the images are downloaded, press enter and you'll be presented with a few questions. If you plan to upload the PDFs to MakePlayingCards, select `yes` when asked about storing the separate faces in their own PDF. If you plan to use DriveThruCards, select `no` for that question, and then set the number of cards to include per exported file. If using DriveThruCards, be aware that they have a file size upload limit of 1gb, so depending on the file size of the selected images, your order may need to be set to a lower number, like 30 or 40 cards.
+### Exporting to PDF (`--exportpdf`)
 
-### Preventing Sleep
+You can optionally export the downloaded images to a PDF which can be uploaded to a card printing site by using the `--exportpdf` command line argument. Once the images are downloaded, press enter and you'll be presented with a few questions. If you plan to upload the PDFs to MakePlayingCards, select `yes` when asked about storing the separate faces in their own PDF. If you plan to use DriveThruCards, select `no` for that question, and then set the number of cards to include per exported file. If using DriveThruCards, be aware that they have a file size upload limit of 1gb, so depending on the file size of the selected images, your order may need to be set to a lower number, like 30 or 40 cards.
 
-By default the system is prevented from falling asleep during execution. This might require sudo/admin permissions on linux. System sleep during execution can be allowed with the `--allowsleep` command line argument.
+### Preventing System Sleep (`--allowsleep`)
+
+By default, your computer is prevented from falling asleep during execution. This might require sudo/admin permissions on linux. System sleep during execution can be allowed with the `--allowsleep` command line argument.
 
 ## Developer Guide
 

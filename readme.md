@@ -15,6 +15,18 @@ If you're here to download the desktop client, check the [Releases]("https://git
 
 JetBrains supports this project's development through their [Open Source Development licensing](https://jb.gg/OpenSourceSupport).
 
+# Documentation
+
+Each component of the project - desktop tool, frontend, and backend - has its own documentation. Links are below:
+
+| Component    | Root Directory  | Description                                                                                           | Link to Docs                                                                          |
+| ------------ | --------------- | ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| Desktop tool | `/desktop-tool` | The tool that auto-fills your project into [MakePlayingCards.com](https://www.makeplayingcards.com/). | [Docs](https://github.com/chilli-axe/mpc-autofill/blob/master/desktop-tool/readme.md) |
+| Frontend     | `/frontend`     | The standalone (static) frontend which facilitates MPC project creation.                              | [Docs](https://github.com/chilli-axe/mpc-autofill/blob/master/frontend/readme.md)     |
+| Backend      | `/backend `     | The web backend that MPC Autofill servers run on.                                                     | [Docs](https://github.com/chilli-axe/mpc-autofill/blob/master/MPCAutofill/readme.md)  |
+
+|
+
 # Contributing
 
 - Please ensure that you install the `pre-commit` Python package and run `pre-commit install` before committing any code to your branch / PR - this will run various linting, code styling, and static type checking tools to validate your code.
@@ -23,7 +35,7 @@ JetBrains supports this project's development through their [Open Source Develop
 
 # Monorepo Structure
 
-Each component of the project has its own README; check those out for more details.
+This section of the docs only discusses each project component. See their individual README's (linked above) for more detail.
 
 ## Backend
 
