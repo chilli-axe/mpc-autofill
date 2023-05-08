@@ -23,7 +23,7 @@ Each component of the project - desktop tool, frontend, and backend - has its ow
 | ------------ | --------------- | ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
 | Desktop tool | `/desktop-tool` | The tool that auto-fills your project into [MakePlayingCards.com](https://www.makeplayingcards.com/). | [Docs](https://github.com/chilli-axe/mpc-autofill/blob/master/desktop-tool/readme.md) |
 | Frontend     | `/frontend`     | The standalone (static) frontend which facilitates MPC project creation.                              | [Docs](https://github.com/chilli-axe/mpc-autofill/blob/master/frontend/readme.md)     |
-| Backend      | `/backend `     | The web backend that MPC Autofill servers run on.                                                     | [Docs](https://github.com/chilli-axe/mpc-autofill/blob/master/MPCAutofill/readme.md)  |
+| Backend      | `/MPCAutofill`  | The web backend that MPC Autofill servers run on.                                                     | [Docs](https://github.com/chilli-axe/mpc-autofill/blob/master/MPCAutofill/readme.md)  |
 
 # Contributing
 
