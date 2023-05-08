@@ -114,16 +114,13 @@ class AutofillDriver:
             self.driver.switch_to.default_content()
             while True:
                 try:
-                    WebDriverWait(self.driver, 100).until(invisibility_of_element_located((By.ID, "sysdiv_wait")))
+                    WebDriverWait(self.driver, 100, poll_frequency=0.1).until(
+                        invisibility_of_element_located((By.ID, "sysdiv_wait"))
+                    )
                 except sl_exc.TimeoutException:
                     continue
                 break
-        except (
-            sl_exc.NoSuchElementException,
-            sl_exc.NoSuchFrameException,
-            sl_exc.WebDriverException,
-            sl_exc.TimeoutException,
-        ):
+        except (sl_exc.NoSuchElementException, sl_exc.NoSuchFrameException, sl_exc.WebDriverException):
             return
 
     def set_state(self, state: str, action: Optional[str] = None) -> None:
