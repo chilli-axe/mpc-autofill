@@ -199,6 +199,22 @@ test("multiple lines processed correctly", () => {
   ]);
 });
 
+test("a line specifying the selected image ID for the front is processed correctly", () => {
+  expect(processLine("opt@xyz", dfcPairs)).toStrictEqual([
+    1,
+    { query: { card_type: Card, query: "opt" }, selectedImage: "xyz" },
+    null,
+  ]);
+});
+
+test("a line specifying the selected image ID for both faces is processed correctly", () => {
+  expect(processLine("2 opt@xyz | char@abcd", dfcPairs)).toStrictEqual([
+    2,
+    { query: { card_type: Card, query: "opt" }, selectedImage: "xyz" },
+    { query: { card_type: Card, query: "char" }, selectedImage: "abcd" },
+  ]);
+});
+
 describe("URLs are sanitised correctly", () => {
   each([
     "http://127.0.0.1:8000",
