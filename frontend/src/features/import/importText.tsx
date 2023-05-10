@@ -18,6 +18,7 @@ import {
   Cardback,
   FaceSeparator,
   ReversedCardTypePrefixes,
+  SelectedImageSeparator,
   Token,
 } from "@/common/constants";
 import { processLines, stripTextInParentheses } from "@/common/processing";
@@ -108,6 +109,14 @@ export function ImportText() {
               4x goblin {FaceSeparator} {ReversedCardTypePrefixes[Token]}elf
             </code>
             .
+          </p>
+          <p>
+            You may optionally specify the image ID to select with{" "}
+            <code>{SelectedImageSeparator}</code> — for example,{" "}
+            <code>
+              brainstorm{SelectedImageSeparator}
+              1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5
+            </code>
           </p>
           <p>
             If you don&apos;t specify a back query and your front query is a

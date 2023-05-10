@@ -50,6 +50,20 @@ exports[`the html structure of text importer 1`] = `
         .
       </p>
       <p>
+        You may optionally specify the image ID to select with
+         
+        <code>
+          @
+        </code>
+         — for example,
+         
+        <code>
+          brainstorm
+          @
+          1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5
+        </code>
+      </p>
+      <p>
         If you don't specify a back query and your front query is a double-faced card, we will automatically query the back for you.
       </p>
       <div
