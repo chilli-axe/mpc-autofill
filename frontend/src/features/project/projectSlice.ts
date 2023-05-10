@@ -133,20 +133,28 @@ export const projectSlice = createSlice({
        */
 
       let newMembers: Array<SlotProjectMembers> = [];
-      for (const [quantity, frontQuery, backQuery] of action.payload.lines) {
+      for (const [quantity, frontMember, backMember] of action.payload.lines) {
         const cappedQuantity = Math.min(
           quantity,
           ProjectMaxSize - (state.members.length + newMembers.length)
         );
-        newMembers = [
-          ...newMembers,
-          ...Array(cappedQuantity).fill({
-            front: { query: frontQuery, selectedImage: null },
-            back: { query: backQuery, selectedImage: null },
-          }),
-        ];
-        if (state.members.length + newMembers.length >= ProjectMaxSize) {
-          break;
+        if (frontMember != null || backMember != null) {
+          newMembers = [
+            ...newMembers,
+            ...Array(cappedQuantity).fill({
+              front: {
+                query: frontMember?.query,
+                selectedImage: frontMember?.selectedImage,
+              },
+              back: {
+                query: backMember?.query,
+                selectedImage: backMember?.selectedImage,
+              },
+            }),
+          ];
+          if (state.members.length + newMembers.length >= ProjectMaxSize) {
+            break;
+          }
         }
       }
       state.members = [...state.members, ...newMembers];

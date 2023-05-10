@@ -8,7 +8,12 @@ import {
   CardTypeSeparator,
   FaceSeparator,
 } from "@/common/constants";
-import { DFCPairs, ProcessedLine, SearchQuery } from "@/common/types";
+import {
+  DFCPairs,
+  ProcessedLine,
+  ProjectMember,
+  SearchQuery,
+} from "@/common/types";
 
 export function sanitiseWhitespace(text: string): string {
   /**
@@ -102,7 +107,11 @@ export function processLine(line: string, dfcPairs: DFCPairs): ProcessedLine {
     // TODO: is it problematic to assume that all DFC pairs are the `Card` type?
     backQuery = { query: dfcPairs[frontQuery.query], card_type: Card };
   }
-  return [quantity, frontQuery, backQuery];
+  return [
+    quantity,
+    frontQuery != null ? { query: frontQuery, selectedImage: undefined } : null,
+    backQuery != null ? { query: backQuery, selectedImage: undefined } : null,
+  ];
 }
 
 export function processLines(
@@ -113,18 +122,13 @@ export function processLines(
    * Process each line in `lines`, ignoring any lines which don't contain relevant information.
    */
 
-  const queries: Array<[number, SearchQuery | null, SearchQuery | null]> = [];
+  const queries: Array<[number, ProjectMember | null, ProjectMember | null]> =
+    [];
   lines.split(/\r?\n|\r|\n/g).forEach((line: string) => {
     if (line != null && line.trim().length > 0) {
-      const [quantity, frontSearchQuery, backSearchQuery] = processLine(
-        line,
-        dfcPairs
-      );
-      if (
-        quantity > 0 &&
-        (frontSearchQuery != null || backSearchQuery != null)
-      ) {
-        queries.push([quantity, frontSearchQuery, backSearchQuery]);
+      const [quantity, frontMember, backMember] = processLine(line, dfcPairs);
+      if (quantity > 0 && (frontMember != null || backMember != null)) {
+        queries.push([quantity, frontMember, backMember]);
       }
     }
   });

@@ -180,4 +180,8 @@ export interface ViewSettingsState {
   facetBySource: boolean;
 }
 
-export type ProcessedLine = [number, SearchQuery | null, SearchQuery | null];
+export type ProcessedLine = [
+  number,
+  ProjectMember | null,
+  ProjectMember | null
+];
