@@ -366,7 +366,7 @@ exports[`the html structure of a CardSlot's grid selector, cards faceted by sour
             Source 1
           </h3>
           <h6
-            class="text-primary"
+            class="text-primary prevent-select"
           >
             4
              version

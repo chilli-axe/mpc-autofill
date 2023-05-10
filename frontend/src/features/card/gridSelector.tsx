@@ -114,7 +114,7 @@ function CardsFacetedBySource(props: CardGridDisplayProps) {
                 >
                   {props.sourceKeyToName[sourceKey]}
                 </h3>
-                <h6 className="text-primary">
+                <h6 className="text-primary prevent-select">
                   {cardIdentifiersAndOptionNumbers.length} version
                   {cardIdentifiersAndOptionNumbers.length != 1 && "s"}
                 </h6>
