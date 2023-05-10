@@ -7,6 +7,7 @@ import {
   CardTypePrefixes,
   CardTypeSeparator,
   FaceSeparator,
+  SelectedImageSeparator,
 } from "@/common/constants";
 import {
   DFCPairs,
@@ -54,7 +55,8 @@ export function processQuery(query: string): string {
 
 export function processPrefix(query: string): SearchQuery {
   /**
-   * Identify the prefix of a query. For example, `query`="t:goblin" would yield ["goblin", TOKEN].
+   * Identify the prefix of a query. For example, `query`="t:goblin" would yield
+   *   {query: "goblin", card_type: TOKEN}.
    */
 
   for (const [prefix, cardType] of Object.entries(CardTypePrefixes)) {
@@ -74,43 +76,87 @@ export function processPrefix(query: string): SearchQuery {
   return { query: processQuery(query), card_type: CardTypePrefixes[""] };
 }
 
-export function processLine(line: string, dfcPairs: DFCPairs): ProcessedLine {
+function unpackLine(
+  line: string
+): [number, [string, string | null] | null, [string, string | null] | null] {
   /**
-   * Process `line` to identify the search query and the number of instances requested for each face.
-   * If no back query is specified, attempt to match the front query to a DFC pair.
-   * For example, `line`="3x t:goblin" would yield [["goblin", TOKEN, 3], null].
-   * Another example is `line`="3x forest | b:elf" would yield [3, ["forest", CARD], ["elf", TOKEN]].
+   * Unpack `line` into its constituents.
+   *
+   * Inputs to this function are unpacked according to the below schema. For example, consider `4x opt@1234 | char@xyz`:
+   *      4x                opt        @        1234         |      char       @        xyz
+   * └─ quantity ──┘ └─ front query ──┘ └─ front image ID ──┘ └─ back query ──┘ └─ back image ID ──┘
+   *
+   * If quantity is not specified, we assume a quantity of 1.
+   * Specifying a back query is optional.
+   * Specifying an image ID (for each face) is optional.
+   *
+   * (sorry for jamming this much stuff into one regex 🗿)
    */
 
   const trimmedLine = line.replace(/\s+/g, " ").trim();
-  const re = /^([0-9]*)?[xX]?\s?(.*)$/; // note that "x" after the quantity is ignored - e.g. 3x and 3 are treated the same
+  const re = new RegExp(
+    `^(?:([0-9]*)?[xX]?\\s?(.*?)(?:${SelectedImageSeparator}([A-z0-9_\\-]*))?)?(?:(?:\\s*)${
+      "\\" + FaceSeparator
+    }(?:\\s*)(.+?)(?:${SelectedImageSeparator}([A-z0-9_\\-]*))?)?$`,
+    "gm"
+  );
   const results = re.exec(trimmedLine);
   if (results == null) {
     return [0, null, null];
   }
-  const quantity = parseInt(results[1] ?? "1");
+  return [
+    parseInt(results[1] ?? "1"),
+    [results[2], results[3]],
+    [results[4], results[5]],
+  ];
+}
+
+export function processLine(line: string, dfcPairs: DFCPairs): ProcessedLine {
+  /**
+   * Process `line` to identify the search query and the number of instances requested for each face.
+   * If no back query is specified, attempt to match the front query to a DFC pair.
+   * For example, `line`="3x t:goblin" would yield:
+   *   [3, {query: {query: "goblin", card_type: TOKEN, selectedImage: null}}, null].
+   * Another example is `line`="3x forest | b:elf" would yield:
+   *   [
+   *     3,
+   *     {query: {query: "forest", card_type: CARD}, selectedImage: null},
+   *     {query: {query: "elf", card_type: TOKEN}, selectedImage: null},
+   *   ].
+   */
+
+  const [quantity, frontRawQuery, backRawQuery] = unpackLine(line);
 
   let frontQuery: SearchQuery | null = null;
-  let backQuery: SearchQuery | null = null;
-  const [frontRawQuery, backRawQuery] = results[2].split(FaceSeparator);
-  if (frontRawQuery != null && frontRawQuery.length > 0) {
-    frontQuery = processPrefix(frontRawQuery);
+  let frontSelectedImage: string | undefined = undefined;
+  if (frontRawQuery != null && (frontRawQuery[0] ?? "").length > 0) {
+    frontQuery = processPrefix(frontRawQuery[0]);
+    frontSelectedImage = frontRawQuery[1] ?? undefined;
   }
-  if (backRawQuery != null && backRawQuery.length > 0) {
-    backQuery = processPrefix(backRawQuery);
+
+  let backQuery: SearchQuery | null = null;
+  let backSelectedImage: string | undefined = undefined;
+  if (backRawQuery != null && (backRawQuery[0] ?? "").length > 0) {
+    backQuery = processPrefix(backRawQuery[0]);
+    backSelectedImage = backRawQuery[1] ?? undefined;
   } else if (
     frontQuery != null &&
-    frontQuery.query != null &&
+    frontQuery?.query != null &&
     frontQuery.query in dfcPairs
   ) {
     // attempt to match to DFC pair
     // TODO: is it problematic to assume that all DFC pairs are the `Card` type?
     backQuery = { query: dfcPairs[frontQuery.query], card_type: Card };
   }
+
   return [
     quantity,
-    frontQuery != null ? { query: frontQuery, selectedImage: undefined } : null,
-    backQuery != null ? { query: backQuery, selectedImage: undefined } : null,
+    frontQuery != null
+      ? { query: frontQuery, selectedImage: frontSelectedImage }
+      : null,
+    backQuery != null
+      ? { query: backQuery, selectedImage: backSelectedImage }
+      : null,
   ];
 }
 
