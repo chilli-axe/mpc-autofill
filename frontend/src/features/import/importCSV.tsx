@@ -6,12 +6,21 @@
  * row (front and back) - the image will be selected if included in the search results.
  */
 
+// @ts-ignore // TODO: put a PR into this repo adding types
+import { parse } from "lil-csv";
 import React, { useState } from "react";
 import Button from "react-bootstrap/Button";
 import Dropdown from "react-bootstrap/Dropdown";
 import Modal from "react-bootstrap/Modal";
 import Table from "react-bootstrap/Table";
+import { useDispatch } from "react-redux";
 import styled from "styled-components";
+
+import { useGetDFCPairsQuery } from "@/app/api";
+import { AppDispatch } from "@/app/store";
+import { FaceSeparator, SelectedImageSeparator } from "@/common/constants";
+import { processLines } from "@/common/processing";
+import { addImages } from "@/features/project/projectSlice";
 
 import { TextFileDropzone } from "../dropzone";
 
@@ -29,6 +38,14 @@ const FormattedColumnData = styled.td`
   width: 20%;
   text-align: center;
 `;
+
+enum CSVHeaders {
+  quantity = "Quantity",
+  frontQuery = "Front",
+  frontSelectedImage = "Front ID",
+  backQuery = "Back",
+  backSelectedImage = "Back ID",
+}
 
 function CSVFormat() {
   return (
@@ -115,12 +132,51 @@ function SampleCSV() {
 }
 
 export function ImportCSV() {
+  const dispatch = useDispatch<AppDispatch>();
+  const dfcPairsQuery = useGetDFCPairsQuery();
   const [showCSVModal, setShowCSVModal] = useState(false);
   const handleCloseCSVModal = () => setShowCSVModal(false);
   const handleShowCSVModal = () => setShowCSVModal(true);
 
-  const myCallback = (fileContents: string) => {
-    console.log("file received!");
+  const parseCSVFile = (fileContents: string) => {
+    const quantityProperty = "quantity";
+    const frontQueryProperty = "frontQuery";
+    const frontSelectedImageProperty = "frontSelectedImage";
+    const backQueryProperty = "backQuery";
+    const backSelectedImageProperty = "backSelectedImage";
+
+    const rows = parse(fileContents, {
+      header: {
+        Quantity: quantityProperty,
+        Front: frontQueryProperty,
+        "Front ID": frontSelectedImageProperty,
+        Back: backQueryProperty,
+        "Back ID": backSelectedImageProperty,
+      },
+    });
+
+    const formatCSVRowAsLine = (x: any): string => {
+      let formattedLine = `${x[quantityProperty] ?? ""} ${
+        x[frontQueryProperty] ?? ""
+      }`;
+      if ((x[frontSelectedImageProperty] ?? "").length > 0) {
+        formattedLine += `${SelectedImageSeparator}${x[frontSelectedImageProperty]}`;
+      }
+      if ((x[backQueryProperty] ?? "").length > 0) {
+        formattedLine += ` ${FaceSeparator} ${x[backQueryProperty]}`;
+        if ((x[backSelectedImageProperty] ?? "").length > 0) {
+          formattedLine += `${SelectedImageSeparator}${x[backSelectedImageProperty]}`;
+        }
+      }
+      return formattedLine;
+    };
+
+    const processedLines = processLines(
+      rows.map(formatCSVRowAsLine),
+      dfcPairsQuery.data ?? {}
+    );
+    dispatch(addImages({ lines: processedLines }));
+    handleCloseCSVModal();
   };
 
   return (
@@ -147,7 +203,7 @@ export function ImportCSV() {
           <hr />
           <TextFileDropzone
             mimeTypes={{ "text/csv": [".csv"] }}
-            callback={myCallback}
+            callback={parseCSVFile}
           />
         </Modal.Body>
         <Modal.Footer>

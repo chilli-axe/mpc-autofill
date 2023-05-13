@@ -3,9 +3,9 @@ import each from "jest-each";
 import { Card, Cardback, Token } from "@/common/constants";
 import {
   processLine,
-  processLines,
   processPrefix,
   processQuery,
+  processStringAsMultipleLines,
   sanitiseWhitespace,
   standardiseURL,
   stripTextInParentheses,
@@ -134,7 +134,7 @@ test("line that matches to dfc pair but a back is also manually specified is pro
 
 test("a card name that's a subset of a DFC pair's front is not matched", () => {
   expect(
-    processLines("1 elesh norn\n1 elesh norn, grand cenobite", {
+    processStringAsMultipleLines("1 elesh norn\n1 elesh norn, grand cenobite", {
       "elesh norn": "the argent etchings",
     })
   ).toStrictEqual([
@@ -178,7 +178,10 @@ test("line that requests -1 of a card is processed correctly", () => {
 
 test("multiple lines processed correctly", () => {
   expect(
-    processLines("char\n0 lightning bolt\n2x delver of secrets", dfcPairs)
+    processStringAsMultipleLines(
+      "char\n0 lightning bolt\n2x delver of secrets",
+      dfcPairs
+    )
   ).toStrictEqual([
     [
       1,

@@ -21,7 +21,10 @@ import {
   SelectedImageSeparator,
   Token,
 } from "@/common/constants";
-import { processLines, stripTextInParentheses } from "@/common/processing";
+import {
+  processStringAsMultipleLines,
+  stripTextInParentheses,
+} from "@/common/processing";
 import { CardDocument } from "@/common/types";
 
 import { addImages } from "../project/projectSlice";
@@ -74,7 +77,7 @@ export function ImportText() {
      * Parse the contents of the modal and add the resultant queries in the desired numbers of instances to the project.
      */
 
-    const processedLines = processLines(
+    const processedLines = processStringAsMultipleLines(
       textModalValue,
       dfcPairsQuery.data ?? {}
     );

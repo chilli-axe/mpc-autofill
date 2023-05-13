@@ -161,7 +161,7 @@ export function processLine(line: string, dfcPairs: DFCPairs): ProcessedLine {
 }
 
 export function processLines(
-  lines: string,
+  lines: Array<string>,
   dfcPairs: DFCPairs
 ): Array<ProcessedLine> {
   /**
@@ -170,7 +170,7 @@ export function processLines(
 
   const queries: Array<[number, ProjectMember | null, ProjectMember | null]> =
     [];
-  lines.split(/\r?\n|\r|\n/g).forEach((line: string) => {
+  lines.forEach((line: string) => {
     if (line != null && line.trim().length > 0) {
       const [quantity, frontMember, backMember] = processLine(line, dfcPairs);
       if (quantity > 0 && (frontMember != null || backMember != null)) {
@@ -179,6 +179,13 @@ export function processLines(
     }
   });
   return queries;
+}
+
+export function processStringAsMultipleLines(
+  lines: string,
+  dfcPairs: DFCPairs
+): Array<ProcessedLine> {
+  return processLines(lines.split(/\r?\n|\r|\n/g), dfcPairs);
 }
 
 export function standardiseURL(url: string): string {
