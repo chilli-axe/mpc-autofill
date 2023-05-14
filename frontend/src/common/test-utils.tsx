@@ -121,6 +121,32 @@ export async function expectCardbackSlotState(
 
 //# endregion
 
+//# region react-dropzone
+
+function createDtWithFiles(files: File[] = []) {
+  /**
+   * Copy/pasted from react-dropzone test source code.
+   *
+   * createDtWithFiles creates a mock data transfer object that can be used for drop events
+   * @param {File[]} files
+   */
+
+  return {
+    dataTransfer: {
+      files,
+      items: files.map((file) => ({
+        kind: "file",
+        size: file.size,
+        type: file.type,
+        getAsFile: () => file,
+      })),
+      types: ["Files"],
+    },
+  };
+}
+
+//# endregion
+
 //# region UI interactions
 
 export async function openImportTextModal() {
@@ -143,6 +169,14 @@ export async function openImportCSVModal() {
   await waitFor(() => screen.getByText("CSV", { exact: false }).click());
   await waitFor(() => expect(screen.getByText("Add Cards — CSV")));
   return screen.getByLabelText("import-csv");
+}
+
+export async function importCSV(fileContents: string) {
+  const dropzone = await openImportCSVModal();
+
+  const file = new File([fileContents], "test.csv", { type: "text/csv" });
+
+  fireEvent.drop(dropzone, createDtWithFiles([file]));
 }
 
 async function openGridSelector(

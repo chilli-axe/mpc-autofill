@@ -68,8 +68,11 @@ export function TextFileDropzone({
     useDropzone({ onDrop, accept: mimeTypes, maxFiles: 1 });
 
   return (
-    <div className="container" aria-label={label ?? "dropzone"}>
-      <Container {...getRootProps({ isFocused, isDragAccept, isDragReject })}>
+    <div className="container">
+      <Container
+        {...getRootProps({ isFocused, isDragAccept, isDragReject })}
+        aria-label={label ?? "dropzone"}
+      >
         <input {...getInputProps()} />
         Drag and drop a file here, or click to select a file.
       </Container>

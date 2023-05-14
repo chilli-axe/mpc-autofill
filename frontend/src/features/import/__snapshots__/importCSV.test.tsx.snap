@@ -254,10 +254,10 @@ exports[`the html structure of CSV importer 1`] = `
       </table>
       <hr />
       <div
-        aria-label="import-csv"
         class="container"
       >
         <div
+          aria-label="import-csv"
           class="sc-dmqHEX lkItOe"
           role="presentation"
           tabindex="0"
