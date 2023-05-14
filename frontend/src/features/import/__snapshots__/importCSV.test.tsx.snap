@@ -1,0 +1,288 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`the html structure of CSV importer 1`] = `
+<div
+  class="modal-dialog"
+  data-testid="import-csv"
+>
+  <div
+    class="modal-content"
+  >
+    <div
+      class="modal-header"
+    >
+      <div
+        class="modal-title h4"
+      >
+        Add Cards — CSV
+      </div>
+      <button
+        aria-label="Close"
+        class="btn-close"
+        type="button"
+      />
+    </div>
+    <div
+      class="modal-body"
+    >
+      <p>
+        Upload a CSV file of cards to add to the project. The file must
+         
+        <b>
+          exactly
+        </b>
+         match the following format:
+      </p>
+      <table
+        class="sc-hLseeU emfKgg table table-bordered"
+      >
+        <thead>
+          <th
+            class="sc-eDDNvR kubbQn"
+          >
+            Quantity
+          </th>
+          <th
+            class="sc-eDDNvR kubbQn"
+          >
+            Front
+          </th>
+          <th
+            class="sc-eDDNvR kubbQn"
+          >
+            Front ID
+          </th>
+          <th
+            class="sc-eDDNvR kubbQn"
+          >
+            Back
+          </th>
+          <th
+            class="sc-eDDNvR kubbQn"
+          >
+            Back ID
+          </th>
+        </thead>
+        <tbody>
+          <tr>
+            <td
+              class="sc-jTrPJq hlHZbj"
+            />
+            <td
+              class="sc-jTrPJq hlHZbj"
+            />
+            <td
+              class="sc-jTrPJq hlHZbj"
+            />
+            <td
+              class="sc-jTrPJq hlHZbj"
+            />
+            <td
+              class="sc-jTrPJq hlHZbj"
+            />
+          </tr>
+          <tr>
+            <td
+              class="sc-jTrPJq hlHZbj"
+            />
+            <td
+              class="sc-jTrPJq hlHZbj"
+            />
+            <td
+              class="sc-jTrPJq hlHZbj"
+            />
+            <td
+              class="sc-jTrPJq hlHZbj"
+            />
+            <td
+              class="sc-jTrPJq hlHZbj"
+            />
+          </tr>
+          <tr>
+            <td
+              class="sc-jTrPJq hlHZbj"
+            />
+            <td
+              class="sc-jTrPJq hlHZbj"
+            />
+            <td
+              class="sc-jTrPJq hlHZbj"
+            />
+            <td
+              class="sc-jTrPJq hlHZbj"
+            />
+            <td
+              class="sc-jTrPJq hlHZbj"
+            />
+          </tr>
+        </tbody>
+      </table>
+      Where the columns follow these rules:
+      <ul>
+        <li>
+          <b>
+            Quantity
+          </b>
+          : The quantity to include of this row. Must be greater than 0. 
+          <b>
+            Cannot be blank.
+          </b>
+        </li>
+        <li>
+          <b>
+            Front
+          </b>
+          : Search query for card front. 
+          <b>
+            Cannot be blank.
+          </b>
+        </li>
+        <li>
+          <b>
+            Front ID
+          </b>
+          : If this image is in the front search results, it will be pre-selected. Can be blank.
+        </li>
+        <li>
+          <b>
+            Front
+          </b>
+          : Search query for card back. Can be blank.
+        </li>
+        <li>
+          <b>
+            Front ID
+          </b>
+          : If this image is in the back search results, it will be pre-selected. Can be blank.
+        </li>
+      </ul>
+      For example:
+      <table
+        class="sc-hLseeU emfKgg table table-bordered"
+      >
+        <thead>
+          <th
+            class="sc-eDDNvR kubbQn"
+          >
+            Quantity
+          </th>
+          <th
+            class="sc-eDDNvR kubbQn"
+          >
+            Front
+          </th>
+          <th
+            class="sc-eDDNvR kubbQn"
+          >
+            Front ID
+          </th>
+          <th
+            class="sc-eDDNvR kubbQn"
+          >
+            Back
+          </th>
+          <th
+            class="sc-eDDNvR kubbQn"
+          >
+            Back ID
+          </th>
+        </thead>
+        <tbody>
+          <tr>
+            <td
+              class="sc-jTrPJq hlHZbj"
+            >
+              <code>
+                2
+              </code>
+            </td>
+            <td
+              class="sc-jTrPJq hlHZbj"
+            >
+              <code>
+                island
+              </code>
+            </td>
+            <td
+              class="sc-jTrPJq hlHZbj"
+            >
+              <code>
+                1HsvTYs1...
+              </code>
+            </td>
+            <td
+              class="sc-jTrPJq hlHZbj"
+            >
+              <code>
+                forest
+              </code>
+            </td>
+            <td
+              class="sc-jTrPJq hlHZbj"
+            />
+          </tr>
+          <tr>
+            <td
+              class="sc-jTrPJq hlHZbj"
+            >
+              <code>
+                3
+              </code>
+            </td>
+            <td
+              class="sc-jTrPJq hlHZbj"
+            >
+              <code>
+                t:goblin
+              </code>
+            </td>
+            <td
+              class="sc-jTrPJq hlHZbj"
+            />
+            <td
+              class="sc-jTrPJq hlHZbj"
+            />
+            <td
+              class="sc-jTrPJq hlHZbj"
+            >
+              <code>
+                1JtXL6Ca...
+              </code>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <hr />
+      <div
+        class="container"
+      >
+        <div
+          aria-label="import-csv"
+          class="sc-dmqHEX lkItOe"
+          role="presentation"
+          tabindex="0"
+        >
+          <input
+            accept="text/csv,.csv"
+            multiple=""
+            style="display: none;"
+            tabindex="-1"
+            type="file"
+          />
+          Drag and drop a file here, or click to select a file.
+        </div>
+      </div>
+    </div>
+    <div
+      class="modal-footer"
+    >
+      <button
+        class="btn btn-secondary"
+        type="button"
+      >
+        Close
+      </button>
+    </div>
+  </div>
+</div>
+`;

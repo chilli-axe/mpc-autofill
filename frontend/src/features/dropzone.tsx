@@ -37,33 +37,42 @@ const Container = styled.div`
 
 interface StyledDropzoneProps {
   mimeTypes: { [mimeType: string]: Array<string> };
-  callback: {
-    (fileContent: string): void;
+  fileUploadCallback: {
+    (fileContent: string | ArrayBuffer | null): void;
   };
+  label: string;
 }
 
-export function TextFileDropzone(props: StyledDropzoneProps) {
-  const onDrop = useCallback((acceptedFiles: Array<File>) => {
-    acceptedFiles.forEach((file: File) => {
-      // TODO: handle errors correctly
-      const reader = new FileReader();
-      reader.onabort = () => console.log("file reading was aborted");
-      reader.onerror = () => console.log("file reading has failed");
-      reader.onload = () => {
-        // @ts-ignore  // TODO
-        const fileContents: string = reader.result;
-        props.callback(fileContents);
-      };
-      reader.readAsText(file);
-    });
-  }, []);
+export function TextFileDropzone({
+  mimeTypes,
+  fileUploadCallback,
+  label,
+}: StyledDropzoneProps) {
+  const onDrop = useCallback(
+    (acceptedFiles: Array<File>) => {
+      acceptedFiles.forEach((file: File) => {
+        // TODO: handle errors correctly
+        const reader = new FileReader();
+        reader.onabort = () => console.log("file reading was aborted");
+        reader.onerror = () => console.log("file reading has failed");
+        reader.onload = () => {
+          fileUploadCallback(reader.result);
+        };
+        reader.readAsText(file);
+      });
+    },
+    [fileUploadCallback]
+  );
 
   const { getRootProps, getInputProps, isFocused, isDragAccept, isDragReject } =
-    useDropzone({ onDrop, accept: props.mimeTypes, maxFiles: 1 });
+    useDropzone({ onDrop, accept: mimeTypes, maxFiles: 1 });
 
   return (
     <div className="container">
-      <Container {...getRootProps({ isFocused, isDragAccept, isDragReject })}>
+      <Container
+        {...getRootProps({ isFocused, isDragAccept, isDragReject })}
+        aria-label={label ?? "dropzone"}
+      >
         <input {...getInputProps()} />
         Drag and drop a file here, or click to select a file.
       </Container>

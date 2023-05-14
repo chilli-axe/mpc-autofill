@@ -20,7 +20,13 @@ export function ImportXML() {
   const handleCloseXMLModal = () => setShowXMLModal(false);
   const handleShowXMLModal = () => setShowXMLModal(true);
 
-  const myCallback = (fileContents: string) => {
+  const myCallback = (fileContents: string | ArrayBuffer | null) => {
+    if (typeof fileContents !== "string") {
+      alert("invalid CSV file uploaded");
+      // TODO: error messaging to the user that they've uploaded an invalid file
+      return;
+    }
+
     console.log("file received!");
   };
 
@@ -37,7 +43,8 @@ export function ImportXML() {
         <Modal.Body>
           <TextFileDropzone
             mimeTypes={{ "text/xml": [".xml"] }}
-            callback={myCallback}
+            fileUploadCallback={myCallback}
+            label="import-xml"
           />
         </Modal.Body>
         <Modal.Footer>

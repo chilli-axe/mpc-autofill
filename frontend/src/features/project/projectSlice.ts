@@ -11,7 +11,6 @@ import {
   Faces,
   ProcessedLine,
   Project,
-  ProjectMember,
   SearchQuery,
   SlotProjectMembers,
 } from "@/common/types";
@@ -54,37 +53,17 @@ const initialState: Project = {
   cardback: null,
 };
 
-interface SetSelectedImageAction {
-  face: Faces;
-  slot: number;
-  selectedImage?: string;
-}
-
-interface BulkSetSelectedImageAction {
-  face: Faces;
-  currentImage: string;
-  selectedImage: string;
-}
-
-interface SetSelectedCardbackAction {
-  selectedImage: string;
-}
-
-interface AddImagesAction {
-  lines: Array<ProcessedLine>;
-}
-
-interface DeleteImageAction {
-  slot: number;
-}
-
 export const projectSlice = createSlice({
   name: "project",
   initialState,
   reducers: {
     setSelectedImage: (
       state: RootState,
-      action: PayloadAction<SetSelectedImageAction>
+      action: PayloadAction<{
+        face: Faces;
+        slot: number;
+        selectedImage?: string;
+      }>
     ) => {
       // TODO: this is a bit awkward
       if (state.members[action.payload.slot][action.payload.face] == null) {
@@ -102,7 +81,11 @@ export const projectSlice = createSlice({
     },
     bulkSetSelectedImage: (
       state: RootState,
-      action: PayloadAction<BulkSetSelectedImageAction>
+      action: PayloadAction<{
+        face: Faces;
+        currentImage: string;
+        selectedImage: string;
+      }>
     ) => {
       // identify all cards in the specified face which have selected the old image
       // set all those images to the new image
@@ -137,37 +120,48 @@ export const projectSlice = createSlice({
     },
     setSelectedCardback: (
       state: RootState,
-      action: PayloadAction<SetSelectedCardbackAction>
+      action: PayloadAction<{ selectedImage: string }>
     ) => {
       state.cardback = action.payload.selectedImage;
     },
-    addImages: (state: RootState, action: PayloadAction<AddImagesAction>) => {
+    addImages: (
+      state: RootState,
+      action: PayloadAction<{ lines: Array<ProcessedLine> }>
+    ) => {
       /**
        * ProjectMaxSize (612 cards at time of writing) is enforced at this layer.
        */
 
       let newMembers: Array<SlotProjectMembers> = [];
-      for (const [quantity, frontQuery, backQuery] of action.payload.lines) {
+      for (const [quantity, frontMember, backMember] of action.payload.lines) {
         const cappedQuantity = Math.min(
           quantity,
           ProjectMaxSize - (state.members.length + newMembers.length)
         );
-        newMembers = [
-          ...newMembers,
-          ...Array(cappedQuantity).fill({
-            front: { query: frontQuery, selectedImage: null },
-            back: { query: backQuery, selectedImage: null },
-          }),
-        ];
-        if (state.members.length + newMembers.length >= ProjectMaxSize) {
-          break;
+        if (frontMember != null || backMember != null) {
+          newMembers = [
+            ...newMembers,
+            ...Array(cappedQuantity).fill({
+              front: {
+                query: frontMember?.query,
+                selectedImage: frontMember?.selectedImage,
+              },
+              back: {
+                query: backMember?.query,
+                selectedImage: backMember?.selectedImage,
+              },
+            }),
+          ];
+          if (state.members.length + newMembers.length >= ProjectMaxSize) {
+            break;
+          }
         }
       }
       state.members = [...state.members, ...newMembers];
     },
     deleteImage: (
       state: RootState,
-      action: PayloadAction<DeleteImageAction>
+      action: PayloadAction<{ slot: number }>
     ) => {
       // TODO: this breaks when you add a DFC card then delete the different card from the project.
       state.members.splice(action.payload.slot, 1);

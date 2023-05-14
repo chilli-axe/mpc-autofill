@@ -22,7 +22,7 @@ import {
 import { apiSlice } from "@/app/api";
 import { AppDispatch, RootState } from "@/app/store";
 import { ProjectName } from "@/common/constants";
-import { processLines } from "@/common/processing";
+import { processStringAsMultipleLines } from "@/common/processing";
 
 import { addImages } from "../project/projectSlice";
 
@@ -49,7 +49,7 @@ export function ImportURL() {
     if (trimmedURL.length > 0) {
       setLoading(true);
       const query = await triggerFn(URLModalValue);
-      const processedLines = processLines(
+      const processedLines = processStringAsMultipleLines(
         query.data ?? "",
         dfcPairsQuery.data ?? {}
       );

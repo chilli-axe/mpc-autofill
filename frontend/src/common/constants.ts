@@ -6,6 +6,7 @@ export const Card: CardType = "CARD";
 export const Cardback: CardType = "CARDBACK";
 export const Token: CardType = "TOKEN";
 
+export const SelectedImageSeparator = "@";
 export const CardTypeSeparator = ":";
 
 export const CardTypePrefixes: { [prefix: string]: CardType } = {
