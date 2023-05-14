@@ -188,7 +188,11 @@ export function ImportCSV() {
         />{" "}
         CSV
       </Dropdown.Item>
-      <Modal show={showCSVModal} onHide={handleCloseCSVModal}>
+      <Modal
+        show={showCSVModal}
+        onHide={handleCloseCSVModal}
+        data-testid="import-csv"
+      >
         <Modal.Header closeButton>
           <Modal.Title>Add Cards — CSV</Modal.Title>
         </Modal.Header>
@@ -204,6 +208,7 @@ export function ImportCSV() {
           <TextFileDropzone
             mimeTypes={{ "text/csv": [".csv"] }}
             callback={parseCSVFile}
+            label="import-csv"
           />
         </Modal.Body>
         <Modal.Footer>

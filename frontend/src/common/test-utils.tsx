@@ -137,6 +137,14 @@ export async function importText(text: string) {
   screen.getByLabelText("import-text-submit").click();
 }
 
+export async function openImportCSVModal() {
+  // open the modal and find the upload dropzone
+  screen.getByText("Add Cards", { exact: false }).click();
+  await waitFor(() => screen.getByText("CSV", { exact: false }).click());
+  await waitFor(() => expect(screen.getByText("Add Cards — CSV")));
+  return screen.getByLabelText("import-csv");
+}
+
 async function openGridSelector(
   cardSlotTestId: string,
   gridSelectorTestId: string,

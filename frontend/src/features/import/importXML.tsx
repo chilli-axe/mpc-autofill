@@ -38,6 +38,7 @@ export function ImportXML() {
           <TextFileDropzone
             mimeTypes={{ "text/xml": [".xml"] }}
             callback={myCallback}
+            label="import-xml"
           />
         </Modal.Body>
         <Modal.Footer>

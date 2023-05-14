@@ -40,6 +40,7 @@ interface StyledDropzoneProps {
   callback: {
     (fileContent: string): void;
   };
+  label: string;
 }
 
 export function TextFileDropzone(props: StyledDropzoneProps) {
@@ -62,7 +63,7 @@ export function TextFileDropzone(props: StyledDropzoneProps) {
     useDropzone({ onDrop, accept: props.mimeTypes, maxFiles: 1 });
 
   return (
-    <div className="container">
+    <div className="container" aria-label={props.label ?? "dropzone"}>
       <Container {...getRootProps({ isFocused, isDragAccept, isDragReject })}>
         <input {...getInputProps()} />
         Drag and drop a file here, or click to select a file.
