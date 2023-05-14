@@ -39,6 +39,7 @@ const FormattedColumnData = styled.td`
   text-align: center;
 `;
 
+// TODO: typescript enums don't allow for reverse lookup :(
 enum CSVHeaders {
   quantity = "Quantity",
   frontQuery = "Front",
@@ -48,6 +49,7 @@ enum CSVHeaders {
 }
 
 function CSVFormat() {
+  // TODO: some strings are defined in a few places in this file. consolidate them
   return (
     <>
       <BorderedTable bordered={true}>
@@ -138,7 +140,12 @@ export function ImportCSV() {
   const handleCloseCSVModal = () => setShowCSVModal(false);
   const handleShowCSVModal = () => setShowCSVModal(true);
 
-  const parseCSVFile = (fileContents: string) => {
+  const parseCSVFile = (fileContents: string | ArrayBuffer | null) => {
+    if (typeof fileContents !== "string") {
+      alert("invalid CSV file uploaded");
+      // TODO: error messaging to the user that they've uploaded an invalid file
+      return;
+    }
     const quantityProperty = "quantity";
     const frontQueryProperty = "frontQuery";
     const frontSelectedImageProperty = "frontSelectedImage";
@@ -207,7 +214,7 @@ export function ImportCSV() {
           <hr />
           <TextFileDropzone
             mimeTypes={{ "text/csv": [".csv"] }}
-            callback={parseCSVFile}
+            fileUploadCallback={parseCSVFile}
             label="import-csv"
           />
         </Modal.Body>
