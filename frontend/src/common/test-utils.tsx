@@ -179,6 +179,24 @@ export async function importCSV(fileContents: string) {
   fireEvent.drop(dropzone, createDtWithFiles([file]));
 }
 
+export async function openImportXMLModal() {
+  // open the modal and find the upload dropzone
+  screen.getByText("Add Cards", { exact: false }).click();
+  await waitFor(() => screen.getByText("XML", { exact: false }).click());
+  await waitFor(() => expect(screen.getByText("Add Cards — XML")));
+  return screen.getByLabelText("import-xml");
+}
+
+export async function importXML(fileContents: string) {
+  const dropzone = await openImportXMLModal();
+
+  const file = new File([fileContents], "test.xml", {
+    type: "text/xml;charset=utf-8",
+  });
+
+  fireEvent.drop(dropzone, createDtWithFiles([file]));
+}
+
 async function openGridSelector(
   cardSlotTestId: string,
   gridSelectorTestId: string,

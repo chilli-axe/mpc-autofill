@@ -36,7 +36,11 @@ export function ImportXML() {
         <i className="bi bi-file-code" style={{ paddingRight: 0.5 + "em" }} />{" "}
         XML
       </Dropdown.Item>
-      <Modal show={showXMLModal} onHide={handleCloseXMLModal}>
+      <Modal
+        show={showXMLModal}
+        onHide={handleCloseXMLModal}
+        data-testid="import-xml"
+      >
         <Modal.Header closeButton>
           <Modal.Title>Add Cards — XML</Modal.Title>
         </Modal.Header>
