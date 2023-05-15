@@ -82,11 +82,11 @@ test("importing one card by XML into an empty project", async () => {
     </order>`
   );
 
-  // a card slot should have been created
+  // a card slot should have been created and it should retain the xml's cardback, not the project cardback
   await expectCardSlotToExist(1);
   await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 1);
-  await expectCardGridSlotState(1, Back, cardDocument2.name, 1, 2);
-  await expectCardbackSlotState(cardDocument3.name, 2, 2);
+  await expectCardGridSlotState(1, Back, cardDocument3.name, 2, 2);
+  await expectCardbackSlotState(cardDocument2.name, 1, 2);
 });
 
 test("importing multiple instances of one card by XML into an empty project", async () => {
@@ -208,13 +208,13 @@ test("importing one card of each type into an empty project", async () => {
   // three card slots should have been created
   await expectCardSlotToExist(1);
   await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 1);
-  await expectCardGridSlotState(1, Back, cardDocument2.name, 1, 2);
+  await expectCardGridSlotState(1, Back, cardDocument3.name, 2, 2);
   await expectCardSlotToExist(2);
   await expectCardGridSlotState(2, Front, cardDocument6.name, 1, 1);
-  await expectCardGridSlotState(2, Back, cardDocument2.name, 1, 2);
+  await expectCardGridSlotState(2, Back, cardDocument3.name, 2, 2);
   await expectCardSlotToExist(3);
   await expectCardGridSlotState(3, Front, cardDocument5.name, 1, 1);
-  await expectCardGridSlotState(3, Back, cardDocument2.name, 1, 2);
+  await expectCardGridSlotState(3, Back, cardDocument3.name, 2, 2);
   await expectCardbackSlotState(cardDocument2.name, 1, 2);
 });
 

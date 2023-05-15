@@ -7,6 +7,7 @@ import {
   CardTypePrefixes,
   CardTypeSeparator,
   FaceSeparator,
+  ProjectMaxSize,
   SelectedImageSeparator,
 } from "@/common/constants";
 import {
@@ -14,6 +15,7 @@ import {
   ProcessedLine,
   ProjectMember,
   SearchQuery,
+  SlotProjectMembers,
 } from "@/common/types";
 
 export function sanitiseWhitespace(text: string): string {
@@ -186,6 +188,45 @@ export function processStringAsMultipleLines(
   dfcPairs: DFCPairs
 ): Array<ProcessedLine> {
   return processLines(lines.split(/\r?\n|\r|\n/g), dfcPairs);
+}
+
+export function convertLinesIntoSlotProjectMembers(
+  lines: Array<ProcessedLine>,
+  memberCount: number
+): Array<SlotProjectMembers> {
+  /**
+   * This function converts `lines` into a format ready to be added to the Redux store.
+   * The project max size is respected here in addition to in the `addMembers` action
+   * to avoid doing unnecessary processing work if a large list of `ProcessedLine` items
+   * is given.
+   */
+
+  let newMembers: Array<SlotProjectMembers> = [];
+  for (const [quantity, frontMember, backMember] of lines) {
+    const cappedQuantity = Math.min(
+      quantity,
+      ProjectMaxSize - (memberCount + newMembers.length)
+    );
+    if (frontMember != null || backMember != null) {
+      newMembers = [
+        ...newMembers,
+        ...Array(cappedQuantity).fill({
+          front: {
+            query: frontMember?.query,
+            selectedImage: frontMember?.selectedImage,
+          },
+          back: {
+            query: backMember?.query,
+            selectedImage: backMember?.selectedImage,
+          },
+        }),
+      ];
+      if (memberCount + newMembers.length >= ProjectMaxSize) {
+        break;
+      }
+    }
+  }
+  return newMembers;
 }
 
 export function standardiseURL(url: string): string {

@@ -9,7 +9,7 @@ import Button from "react-bootstrap/Button";
 import Dropdown from "react-bootstrap/Dropdown";
 import Form from "react-bootstrap/Form";
 import Modal from "react-bootstrap/Modal";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 import { useGetDFCPairsQuery, useGetSampleCardsQuery } from "@/app/api";
 import { AppDispatch } from "@/app/store";
@@ -22,12 +22,13 @@ import {
   Token,
 } from "@/common/constants";
 import {
+  convertLinesIntoSlotProjectMembers,
   processStringAsMultipleLines,
   stripTextInParentheses,
 } from "@/common/processing";
 import { CardDocument } from "@/common/types";
 
-import { addImages } from "../project/projectSlice";
+import { addMembers, selectProjectSize } from "../project/projectSlice";
 
 export function ImportText() {
   // TODO: add an accordion here for explaining how to search for each different card type with prefixes
@@ -40,6 +41,8 @@ export function ImportText() {
   const handleShowTextModal = () => setShowTextModal(true);
   const [textModalValue, setTextModalValue] = useState("");
   const [placeholderText, setPlaceholderText] = useState("");
+
+  const projectSize = useSelector(selectProjectSize);
 
   const formatPlaceholderText = (placeholders: {
     [cardType: string]: Array<CardDocument>;
@@ -81,7 +84,14 @@ export function ImportText() {
       textModalValue,
       dfcPairsQuery.data ?? {}
     );
-    dispatch(addImages({ lines: processedLines }));
+    dispatch(
+      addMembers({
+        members: convertLinesIntoSlotProjectMembers(
+          processedLines,
+          projectSize
+        ),
+      })
+    );
     handleCloseTextModal();
   };
 

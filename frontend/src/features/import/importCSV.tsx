@@ -13,14 +13,17 @@ import Button from "react-bootstrap/Button";
 import Dropdown from "react-bootstrap/Dropdown";
 import Modal from "react-bootstrap/Modal";
 import Table from "react-bootstrap/Table";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import styled from "styled-components";
 
 import { useGetDFCPairsQuery } from "@/app/api";
 import { AppDispatch } from "@/app/store";
 import { FaceSeparator, SelectedImageSeparator } from "@/common/constants";
-import { processLines } from "@/common/processing";
-import { addImages } from "@/features/project/projectSlice";
+import {
+  convertLinesIntoSlotProjectMembers,
+  processLines,
+} from "@/common/processing";
+import { addMembers, selectProjectSize } from "@/features/project/projectSlice";
 
 import { TextFileDropzone } from "../dropzone";
 
@@ -141,6 +144,8 @@ export function ImportCSV() {
   const handleCloseCSVModal = () => setShowCSVModal(false);
   const handleShowCSVModal = () => setShowCSVModal(true);
 
+  const projectSize = useSelector(selectProjectSize);
+
   const parseCSVFile = (fileContents: string | ArrayBuffer | null) => {
     if (typeof fileContents !== "string") {
       alert("invalid CSV file uploaded");
@@ -183,7 +188,14 @@ export function ImportCSV() {
       rows.map(formatCSVRowAsLine),
       dfcPairsQuery.data ?? {}
     );
-    dispatch(addImages({ lines: processedLines }));
+    dispatch(
+      addMembers({
+        members: convertLinesIntoSlotProjectMembers(
+          processedLines,
+          projectSize
+        ),
+      })
+    );
     handleCloseCSVModal();
   };
 
