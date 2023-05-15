@@ -36,22 +36,6 @@ exports[`the html structure of a CardDetailedView 1`] = `
             class="rounded-xl shadow-lg ratio ratio-7x5"
             style="z-index: 0;"
           >
-            <div
-              class="d-flex justify-content-center align-items-center"
-              style="opacity: 0;"
-            >
-              <div
-                class="spinner-border"
-                role="status"
-                style="width: 4em; height: 4em;"
-              >
-                <span
-                  class="visually-hidden"
-                >
-                  Loading...
-                </span>
-              </div>
-            </div>
             <img
               alt="Card 1"
               class="card-img-fade-in"

@@ -15,6 +15,7 @@ import { useSelector } from "react-redux";
 
 import { RootState } from "@/app/store";
 import { imageSizeToMBString } from "@/common/utils";
+import { Spinner } from "@/features/ui/spinner";
 
 interface CardDetailedViewProps {
   imageIdentifier: string;
@@ -60,21 +61,7 @@ export function CardDetailedView(props: CardDetailedViewProps) {
                   className="rounded-xl shadow-lg ratio ratio-7x5"
                   style={{ zIndex: 0 }}
                 >
-                  <div
-                    className="d-flex justify-content-center align-items-center"
-                    style={{
-                      opacity: mediumThumbnailLoading ? 1 : 0,
-                    }}
-                  >
-                    <div
-                      className="spinner-border"
-                      style={{ width: 4 + "em", height: 4 + "em" }}
-                      role="status"
-                    >
-                      <span className="visually-hidden">Loading...</span>
-                    </div>
-                  </div>
-
+                  {mediumThumbnailLoading && <Spinner />}
                   <Image
                     alt={maybeCardDocument.name}
                     className="card-img-fade-in"

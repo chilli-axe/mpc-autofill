@@ -23,6 +23,7 @@ import { apiSlice } from "@/app/api";
 import { AppDispatch, RootState } from "@/app/store";
 import { ProjectName } from "@/common/constants";
 import { processStringAsMultipleLines } from "@/common/processing";
+import { Spinner } from "@/features/ui/spinner";
 
 import { addImages } from "../project/projectSlice";
 
@@ -95,15 +96,7 @@ export function ImportURL() {
           ) : (
             <>
               <br />
-              <div className="d-flex justify-content-center align-items-center">
-                <div
-                  className="spinner-border"
-                  style={{ width: 4 + "em", height: 4 + "em" }}
-                  role="status"
-                >
-                  <span className="visually-hidden">Loading...</span>
-                </div>
-              </div>
+              <Spinner />
               <br />
             </>
           )}
