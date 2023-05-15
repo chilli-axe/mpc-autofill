@@ -68,7 +68,8 @@ function CSVFormat() {
       <ul>
         <li>
           <b>Quantity</b>: The quantity to include of this row. Must be greater
-          than 0. <b>Cannot be blank.</b>
+          than 0. Can be blank &mdash; if blank, a quantity of 1 will be
+          assumed.
         </li>
         <li>
           <b>Front</b>: Search query for card front. <b>Cannot be blank.</b>

@@ -123,10 +123,7 @@ exports[`the html structure of CSV importer 1`] = `
           <b>
             Quantity
           </b>
-          : The quantity to include of this row. Must be greater than 0. 
-          <b>
-            Cannot be blank.
-          </b>
+          : The quantity to include of this row. Must be greater than 0. Can be blank — if blank, a quantity of 1 will be assumed.
         </li>
         <li>
           <b>
