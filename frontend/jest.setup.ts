@@ -4,8 +4,13 @@ import "@testing-library/jest-dom";
 import "whatwg-fetch";
 
 import { loadEnvConfig } from "@next/env";
+import { configure as configureDom } from "@testing-library/dom";
+import { configure as configureReact } from "@testing-library/react";
 
 import { server } from "@/mocks/server";
+
+configureReact({ asyncUtilTimeout: 10_000 });
+configureDom({ asyncUtilTimeout: 10_000 });
 
 // retrieved from https://stackoverflow.com/a/68539103/13021511
 global.matchMedia =
