@@ -22,17 +22,20 @@ import {
 import { apiSlice } from "@/app/api";
 import { AppDispatch, RootState } from "@/app/store";
 import { ProjectName } from "@/common/constants";
-import { processStringAsMultipleLines } from "@/common/processing";
+import {
+  convertLinesIntoSlotProjectMembers,
+  processStringAsMultipleLines,
+} from "@/common/processing";
 import { Spinner } from "@/features/ui/spinner";
 
-import { addImages } from "../project/projectSlice";
+import { addMembers, selectProjectSize } from "../project/projectSlice";
 
 export function ImportURL() {
   const dfcPairsQuery = useGetDFCPairsQuery();
   const importSitesQuery = useGetImportSitesQuery();
   const backendInfoQuery = useGetBackendInfoQuery();
 
-  const backendURL = useSelector((state: RootState) => state.backend.url);
+  const projectSize = useSelector(selectProjectSize);
   const dispatch = useDispatch<AppDispatch>();
 
   // TODO: should probably set up type hints for all `useState` usages throughout the app
@@ -54,7 +57,14 @@ export function ImportURL() {
         query.data ?? "",
         dfcPairsQuery.data ?? {}
       );
-      dispatch(addImages({ lines: processedLines }));
+      dispatch(
+        addMembers({
+          members: convertLinesIntoSlotProjectMembers(
+            processedLines,
+            projectSize
+          ),
+        })
+      );
       handleCloseURLModal();
       setLoading(false);
     }

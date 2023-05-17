@@ -2,7 +2,11 @@ import React from "react";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 
-import { ProjectName } from "@/common/constants";
+import {
+  MakePlayingCards,
+  MakePlayingCardsURL,
+  ProjectName,
+} from "@/common/constants";
 import { Coffee } from "@/features/ui/coffee";
 
 interface SupportDeveloperModalProps {
@@ -28,7 +32,10 @@ export function SupportDeveloperModal(props: SupportDeveloperModalProps) {
         <p>
           I&apos;m responsible for this website, the code that image repository
           servers run on, and the desktop tool that automates
-          MakePlayingCards.com.
+          <a href={MakePlayingCardsURL} target="_blank">
+            {MakePlayingCards}
+          </a>
+          .
         </p>
         <p>
           I started developing {ProjectName} in early 2020 while I was in uni to

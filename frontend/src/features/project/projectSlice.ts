@@ -124,40 +124,21 @@ export const projectSlice = createSlice({
     ) => {
       state.cardback = action.payload.selectedImage;
     },
-    addImages: (
+    addMembers: (
       state: RootState,
-      action: PayloadAction<{ lines: Array<ProcessedLine> }>
+      action: PayloadAction<{ members: Array<SlotProjectMembers> }>
     ) => {
       /**
-       * ProjectMaxSize (612 cards at time of writing) is enforced at this layer.
+       * ProjectMaxSize (612 cards at time of writing) is primarily enforced at this layer.
        */
 
-      let newMembers: Array<SlotProjectMembers> = [];
-      for (const [quantity, frontMember, backMember] of action.payload.lines) {
-        const cappedQuantity = Math.min(
-          quantity,
-          ProjectMaxSize - (state.members.length + newMembers.length)
-        );
-        if (frontMember != null || backMember != null) {
-          newMembers = [
-            ...newMembers,
-            ...Array(cappedQuantity).fill({
-              front: {
-                query: frontMember?.query,
-                selectedImage: frontMember?.selectedImage,
-              },
-              back: {
-                query: backMember?.query,
-                selectedImage: backMember?.selectedImage,
-              },
-            }),
-          ];
-          if (state.members.length + newMembers.length >= ProjectMaxSize) {
-            break;
-          }
-        }
-      }
-      state.members = [...state.members, ...newMembers];
+      state.members = [
+        ...state.members,
+        ...action.payload.members.slice(
+          0,
+          ProjectMaxSize - state.members.length
+        ),
+      ];
     },
     deleteImage: (
       state: RootState,
@@ -208,6 +189,9 @@ export const selectProjectMemberQueries = (state: RootState): Set<string> =>
 
 export const selectProjectSize = (state: RootState): number =>
   state.project.members.length;
+
+export const selectProjectCardback = (state: RootState): string | null =>
+  state.project.cardback;
 
 export const selectGeneratedXML = (state: RootState): string => {
   return generateXML(
@@ -296,7 +280,7 @@ export const {
   setSelectedImage,
   bulkSetSelectedImage,
   setSelectedCardback,
-  addImages,
+  addMembers,
   deleteImage,
 } = projectSlice.actions;
 

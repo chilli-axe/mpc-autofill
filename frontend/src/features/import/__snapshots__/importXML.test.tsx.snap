@@ -1,0 +1,103 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`the html structure of XML importer 1`] = `
+<div
+  class="modal-dialog"
+  data-testid="import-xml"
+>
+  <div
+    class="modal-content"
+  >
+    <div
+      class="modal-header"
+    >
+      <div
+        class="modal-title h4"
+      >
+        Add Cards — XML
+      </div>
+      <button
+        aria-label="Close"
+        class="btn-close"
+        type="button"
+      />
+    </div>
+    <div
+      class="modal-body"
+    >
+      <p>
+        Upload an XML file of cards to add to the project.
+      </p>
+      <p>
+        The 
+        MPC Autofill
+         website can generate an XML file representing your project, and the 
+        MPC Autofill
+         desktop tool which auto-fills your order into
+         
+        <a
+          href="https://www.makeplayingcards.com"
+          target="_blank"
+        >
+          MakePlayingCards.com
+        </a>
+         
+        expects a file in this format.
+      </p>
+      <div
+        class="btn toggle btn-md off btn-info"
+        role="button"
+        style="width: 100%; height: 38px;"
+      >
+        <div
+          class="toggle-group"
+        >
+          <span
+            class="btn toggle-on btn-md flex-centre btn-info"
+          >
+            Update Project with XML Cardback
+          </span>
+          <span
+            class="btn toggle-off btn-md flex-centre btn-info"
+          >
+            Retain Selected Cardback
+          </span>
+          <span
+            class="toggle-handle btn btn-md btn-default"
+          />
+        </div>
+      </div>
+      <hr />
+      <div
+        class="container"
+      >
+        <div
+          aria-label="import-xml"
+          class="sc-dmqHEX lkItOe"
+          role="presentation"
+          tabindex="0"
+        >
+          <input
+            accept="text/xml,.xml"
+            multiple=""
+            style="display: none;"
+            tabindex="-1"
+            type="file"
+          />
+          Drag and drop a file here, or click to select a file.
+        </div>
+      </div>
+    </div>
+    <div
+      class="modal-footer"
+    >
+      <button
+        class="btn btn-secondary"
+        type="button"
+      >
+        Close
+      </button>
+    </div>
+  </div>
+</div>
+`;
