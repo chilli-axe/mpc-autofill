@@ -14,7 +14,7 @@ import Dropdown from "react-bootstrap/Dropdown";
 import Modal from "react-bootstrap/Modal";
 import { useDispatch, useSelector } from "react-redux";
 
-import { Cardback, ProjectMaxSize } from "@/common/constants";
+import { Cardback, ProjectMaxSize, ProjectName } from "@/common/constants";
 import { processPrefix } from "@/common/processing";
 import { SlotProjectMembers } from "@/common/types";
 import {
@@ -154,6 +154,12 @@ export function ImportXML() {
           <Modal.Title>Add Cards — XML</Modal.Title>
         </Modal.Header>
         <Modal.Body>
+          <p>Upload an XML file of cards to add to the project.</p>
+          <p>
+            The {ProjectName} website can generate an XML file representing your
+            project, and the {ProjectName} desktop tool which auto-fills your
+            order into MakePlayingCards expects a file in this format.
+          </p>
           <TextFileDropzone
             mimeTypes={{ "text/xml": [".xml"] }}
             fileUploadCallback={parseXMLFile}

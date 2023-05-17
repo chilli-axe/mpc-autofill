@@ -25,6 +25,16 @@ exports[`the html structure of XML importer 1`] = `
     <div
       class="modal-body"
     >
+      <p>
+        Upload an XML file of cards to add to the project.
+      </p>
+      <p>
+        The 
+        MPC Autofill
+         website can generate an XML file representing your project, and the 
+        MPC Autofill
+         desktop tool which auto-fills your order into MakePlayingCards expects a file in this format.
+      </p>
       <div
         class="container"
       >
