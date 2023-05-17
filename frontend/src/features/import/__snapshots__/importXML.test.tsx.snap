@@ -33,14 +33,16 @@ exports[`the html structure of XML importer 1`] = `
         MPC Autofill
          website can generate an XML file representing your project, and the 
         MPC Autofill
-         desktop tool which auto-fills your order into 
+         desktop tool which auto-fills your order into
+         
         <a
           href="https://www.makeplayingcards.com"
           target="_blank"
         >
           MakePlayingCards.com
         </a>
-         expects a file in this format.
+         
+        expects a file in this format.
       </p>
       <div
         class="btn toggle btn-md off btn-info"
