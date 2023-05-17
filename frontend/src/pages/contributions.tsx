@@ -6,7 +6,14 @@ import Table from "react-bootstrap/Table";
 import styled from "styled-components";
 
 import { useGetBackendInfoQuery, useGetContributionsQuery } from "@/app/api";
-import { Card, Cardback, ProjectName, Token } from "@/common/constants";
+import {
+  Card,
+  Cardback,
+  MakePlayingCards,
+  MakePlayingCardsURL,
+  ProjectName,
+  Token,
+} from "@/common/constants";
 import { SourceContribution } from "@/common/types";
 import Footer from "@/features/ui/footer";
 import Layout from "@/features/ui/layout";
@@ -109,8 +116,12 @@ function ContributionGuidelines() {
         <li>
           Limit your files to less than <b>30 MB</b> per image &mdash; this is
           the maximum that Google Scripts can return in one request and the
-          maximum that MakePlayingCards.com accepts, meaning the desktop client
-          won&apos;t work with images that exceed this limit.
+          maximum that{" "}
+          <a href={MakePlayingCardsURL} target="_blank">
+            {MakePlayingCards}
+          </a>{" "}
+          accepts, meaning the desktop client won&apos;t work with images that
+          exceed this limit.
         </li>
       </ul>
     </Alert>

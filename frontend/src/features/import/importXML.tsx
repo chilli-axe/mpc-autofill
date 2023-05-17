@@ -18,6 +18,8 @@ import { useDispatch, useSelector } from "react-redux";
 
 import {
   Cardback,
+  MakePlayingCards,
+  MakePlayingCardsURL,
   ProjectMaxSize,
   ProjectName,
   ToggleButtonHeight,
@@ -169,7 +171,11 @@ export function ImportXML() {
           <p>
             The {ProjectName} website can generate an XML file representing your
             project, and the {ProjectName} desktop tool which auto-fills your
-            order into MakePlayingCards expects a file in this format.
+            order into{" "}
+            <a href={MakePlayingCardsURL} target="_blank">
+              {MakePlayingCards}
+            </a>{" "}
+            expects a file in this format.
           </p>
           <Toggle
             onClick={() => setUseXMLCardback(!useXMLCardback)}

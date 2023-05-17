@@ -3,6 +3,7 @@ import styled from "styled-components";
 
 import { useGetBackendInfoQuery } from "@/app/api";
 import { ProjectName } from "@/common/constants";
+import { MakePlayingCards, MakePlayingCardsURL } from "@/common/constants";
 import Footer from "@/features/ui/footer";
 import Layout from "@/features/ui/layout";
 
@@ -73,8 +74,8 @@ export default function About() {
         <p>
           {ProjectName} does not condone or support the resale (or other
           commercial use) of cards printed with this website in any way. As per{" "}
-          <a href="https://www.makeplayingcards.com/" target="_blank">
-            MakePlayingCards.com
+          <a href={MakePlayingCardsURL} target="_blank">
+            {MakePlayingCards}
           </a>
           &apos;s user agreement, users acknowledge that they{" "}
           <i>
@@ -84,8 +85,8 @@ export default function About() {
         </p>
         <p>
           {ProjectName} is not affiliated with, produced by, or endorsed by{" "}
-          <a href="https://www.makeplayingcards.com/" target="_blank">
-            MakePlayingCards.com
+          <a href={MakePlayingCardsURL} target="_blank">
+            {MakePlayingCards}
           </a>{" "}
           or any other commercial entities.
         </p>

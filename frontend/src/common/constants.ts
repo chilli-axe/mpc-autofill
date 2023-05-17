@@ -1,4 +1,6 @@
 export const ProjectName = "MPC Autofill";
+export const MakePlayingCards = "MakePlayingCards.com";
+export const MakePlayingCardsURL = "https://www.makeplayingcards.com";
 
 import { CardType, Faces } from "@/common/types";
 
