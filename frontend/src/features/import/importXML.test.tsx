@@ -407,3 +407,41 @@ test("importing a more complex XML into a non-empty project", async () => {
   await expectCardGridSlotState(4, Front, cardDocument1.name, 1, 4);
   await expectCardGridSlotState(4, Back, cardDocument3.name, 2, 2);
 });
+
+test("import an XML and retain its cardback", async () => {
+  server.use(
+    cardDocumentsThreeResults,
+    cardbacksTwoOtherResults,
+    sourceDocumentsOneResult,
+    searchResultsOneResult,
+    ...defaultHandlers
+  );
+  renderWithProviders(<App />, { preloadedState });
+
+  // import a card
+  await importXML(
+    `<order>
+      <details>
+        <quantity>1</quantity>
+        <bracket>18</bracket>
+      </details>
+      <fronts>
+        <card>
+          <id>${cardDocument1.identifier}</id>
+          <slots>0</slots>
+          <name>${cardDocument1.name}</name>
+          <query>my search query</query>
+        </card>
+      </fronts>
+      <cardback>${cardDocument3.identifier}</cardback>
+    </order>`,
+    true
+  );
+
+  // a card slot should have been created and it should retain the xml's cardback, not the project cardback
+  await expectCardSlotToExist(1);
+  await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 1);
+  await expectCardGridSlotState(1, Back, cardDocument3.name, 2, 2);
+  // the project cardback should also have been updated
+  await expectCardbackSlotState(cardDocument3.name, 2, 2);
+});

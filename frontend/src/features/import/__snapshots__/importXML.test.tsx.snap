@@ -36,6 +36,30 @@ exports[`the html structure of XML importer 1`] = `
          desktop tool which auto-fills your order into MakePlayingCards expects a file in this format.
       </p>
       <div
+        class="btn toggle btn-md off btn-info"
+        role="button"
+        style="width: 100%; height: 38px;"
+      >
+        <div
+          class="toggle-group"
+        >
+          <span
+            class="btn toggle-on btn-md flex-centre btn-info"
+          >
+            Update Project with XML Cardback
+          </span>
+          <span
+            class="btn toggle-off btn-md flex-centre btn-info"
+          >
+            Retain Selected Cardback
+          </span>
+          <span
+            class="toggle-handle btn btn-md btn-default"
+          />
+        </div>
+      </div>
+      <hr />
+      <div
         class="container"
       >
         <div

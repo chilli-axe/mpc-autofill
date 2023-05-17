@@ -187,12 +187,18 @@ export async function openImportXMLModal() {
   return screen.getByLabelText("import-xml");
 }
 
-export async function importXML(fileContents: string) {
+export async function importXML(
+  fileContents: string,
+  useXMLCardback: boolean = false
+) {
   const dropzone = await openImportXMLModal();
 
   const file = new File([fileContents], "test.xml", {
     type: "text/xml;charset=utf-8",
   });
+  if (useXMLCardback) {
+    await waitFor(() => screen.getByText("Retain Selected Cardback").click());
+  }
 
   fireEvent.drop(dropzone, createDtWithFiles([file]));
 }

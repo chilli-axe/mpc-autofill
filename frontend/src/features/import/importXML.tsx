@@ -12,15 +12,23 @@ import React, { useState } from "react";
 import Button from "react-bootstrap/Button";
 import Dropdown from "react-bootstrap/Dropdown";
 import Modal from "react-bootstrap/Modal";
+// @ts-ignore: https://github.com/arnthor3/react-bootstrap-toggle/issues/21
+import Toggle from "react-bootstrap-toggle";
 import { useDispatch, useSelector } from "react-redux";
 
-import { Cardback, ProjectMaxSize, ProjectName } from "@/common/constants";
+import {
+  Cardback,
+  ProjectMaxSize,
+  ProjectName,
+  ToggleButtonHeight,
+} from "@/common/constants";
 import { processPrefix } from "@/common/processing";
 import { SlotProjectMembers } from "@/common/types";
 import {
   addMembers,
   selectProjectCardback,
   selectProjectSize,
+  setSelectedCardback,
 } from "@/features/project/projectSlice";
 
 import { TextFileDropzone } from "../dropzone";
@@ -32,12 +40,12 @@ export function ImportXML() {
   const handleShowXMLModal = () => setShowXMLModal(true);
   const projectCardback = useSelector(selectProjectCardback);
   const projectSize = useSelector(selectProjectSize);
+  const [useXMLCardback, setUseXMLCardback] = useState<boolean>(false);
 
   const parseXMLFile = (fileContents: string | ArrayBuffer | null) => {
     /**
-     * TODO - add settings to the XML importer modal for the following:
-     * 1. whether to set the project cardabck according to the imported file
-     * 2. do the same for the imported file's finish settings
+     * TODO - add controls for:
+     * * whether to set the project's finish settings according to the imported file
      */
 
     if (typeof fileContents !== "string") {
@@ -136,6 +144,9 @@ export function ImportXML() {
         });
     }
     dispatch(addMembers({ members: newMembers.slice(0, lastNonNullSlot + 1) }));
+    if (useXMLCardback && cardback != null) {
+      dispatch(setSelectedCardback({ selectedImage: cardback }));
+    }
     handleCloseXMLModal();
   };
 
@@ -160,6 +171,20 @@ export function ImportXML() {
             project, and the {ProjectName} desktop tool which auto-fills your
             order into MakePlayingCards expects a file in this format.
           </p>
+          <Toggle
+            onClick={() => setUseXMLCardback(!useXMLCardback)}
+            on="Update Project with XML Cardback"
+            onClassName="flex-centre"
+            off="Retain Selected Cardback"
+            offClassName="flex-centre"
+            onstyle="info"
+            offstyle="info"
+            width={100 + "%"}
+            size="md"
+            height={ToggleButtonHeight + "px"}
+            active={useXMLCardback}
+          />
+          <hr />
           <TextFileDropzone
             mimeTypes={{ "text/xml": [".xml"] }}
             fileUploadCallback={parseXMLFile}
