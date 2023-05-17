@@ -13,13 +13,12 @@ import { AppDispatch, RootState } from "@/app/store";
 import { Back, Front } from "@/common/constants";
 import { MemoizedCardDetailedView } from "@/features/card/cardDetailedView";
 import { MemoizedCardSlot } from "@/features/card/cardSlot";
-
 import {
   selectProjectMemberQueries,
   selectProjectMembers,
-} from "../project/projectSlice";
-import { fetchCardDocuments } from "../search/cardDocumentsSlice";
-import { clearSearchResults } from "../search/searchResultsSlice";
+} from "@/features/project/projectSlice";
+import { fetchCardDocuments } from "@/features/search/cardDocumentsSlice";
+import { clearSearchResults } from "@/features/search/searchResultsSlice";
 
 export function CardGrid() {
   const dispatch = useDispatch<ThunkDispatch<any, any, any>>();

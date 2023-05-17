@@ -19,13 +19,12 @@ import styled from "styled-components";
 import { useGetDFCPairsQuery } from "@/app/api";
 import { AppDispatch } from "@/app/store";
 import { FaceSeparator, SelectedImageSeparator } from "@/common/constants";
+import { TextFileDropzone } from "@/common/dropzone";
 import {
   convertLinesIntoSlotProjectMembers,
   processLines,
 } from "@/common/processing";
 import { addMembers, selectProjectSize } from "@/features/project/projectSlice";
-
-import { TextFileDropzone } from "../dropzone";
 
 const BorderedTable = styled(Table)`
   border-style: solid;

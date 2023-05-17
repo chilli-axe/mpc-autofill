@@ -24,6 +24,7 @@ import {
   ProjectName,
   ToggleButtonHeight,
 } from "@/common/constants";
+import { TextFileDropzone } from "@/common/dropzone";
 import { processPrefix } from "@/common/processing";
 import { SlotProjectMembers } from "@/common/types";
 import {
@@ -32,8 +33,6 @@ import {
   selectProjectSize,
   setSelectedCardback,
 } from "@/features/project/projectSlice";
-
-import { TextFileDropzone } from "../dropzone";
 
 export function ImportXML() {
   const dispatch = useDispatch();

@@ -20,15 +20,14 @@ import {
   useGetImportSitesQuery,
 } from "@/app/api";
 import { apiSlice } from "@/app/api";
-import { AppDispatch, RootState } from "@/app/store";
+import { AppDispatch } from "@/app/store";
 import { ProjectName } from "@/common/constants";
 import {
   convertLinesIntoSlotProjectMembers,
   processStringAsMultipleLines,
 } from "@/common/processing";
+import { addMembers, selectProjectSize } from "@/features/project/projectSlice";
 import { Spinner } from "@/features/ui/spinner";
-
-import { addMembers, selectProjectSize } from "../project/projectSlice";
 
 export function ImportURL() {
   const dfcPairsQuery = useGetDFCPairsQuery();

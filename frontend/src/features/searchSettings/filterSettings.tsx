@@ -16,8 +16,7 @@ import {
   MinimumDPI,
   SizeStep,
 } from "@/common/constants";
-
-import { FilterSettings as FilterSettingsType } from "../../common/types";
+import { FilterSettings as FilterSettingsType } from "@/common/types";
 
 interface FilterSettingsProps {
   filterSettings: FilterSettingsType;

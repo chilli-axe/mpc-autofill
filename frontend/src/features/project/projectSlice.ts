@@ -14,9 +14,8 @@ import {
   SearchQuery,
   SlotProjectMembers,
 } from "@/common/types";
-
-import { generateDecklist } from "../export/exportDecklist";
-import { generateXML } from "../export/exportXML";
+import { generateDecklist } from "@/features/export/exportDecklist";
+import { generateXML } from "@/features/export/exportXML";
 
 const initialState: Project = {
   members: [

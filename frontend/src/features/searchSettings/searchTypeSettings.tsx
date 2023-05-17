@@ -8,8 +8,7 @@ import React from "react";
 import Toggle from "react-bootstrap-toggle";
 
 import { ToggleButtonHeight } from "@/common/constants";
-
-import { SearchTypeSettings as SearchTypeSettingsType } from "../../common/types";
+import { SearchTypeSettings as SearchTypeSettingsType } from "@/common/types";
 
 interface SearchTypeSettingsProps {
   searchTypeSettings: SearchTypeSettingsType;

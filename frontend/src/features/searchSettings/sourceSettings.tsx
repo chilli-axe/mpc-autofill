@@ -18,13 +18,12 @@ import { useSelector } from "react-redux";
 
 import { RootState } from "@/app/store";
 import { ToggleButtonHeight } from "@/common/constants";
-import { selectSourceDocuments } from "@/features/search/sourceDocumentsSlice";
-import { Spinner } from "@/features/ui/spinner";
-
 import {
   SourceRow,
   SourceSettings as SourceSettingsType,
-} from "../../common/types";
+} from "@/common/types";
+import { selectSourceDocuments } from "@/features/search/sourceDocumentsSlice";
+import { Spinner } from "@/features/ui/spinner";
 
 interface SourceSettingsProps {
   sourceSettings: SourceSettingsType;
