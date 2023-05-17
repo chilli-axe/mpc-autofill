@@ -433,7 +433,6 @@ class TestFrontend:
                 chrome_driver.find_element(By.ID, value=f"slot{slot}-front-mpccard-source").text == "Your Search Query"
             )
 
-    # TODO: replicate this test in the new frontend
     def test_upload_valid_file(self, chrome_driver, live_server, valid_xml, valid_csv):
         for element_id, file_path in [("xmlfile", valid_xml), ("csvfile", valid_csv)]:
             chrome_driver.get(live_server.url)
@@ -997,7 +996,6 @@ class TestFrontend:
                 source=TestSources.EXAMPLE_DRIVE_1.value,
             )
 
-    # TODO: replicate this test in the new frontend
     def test_add_cards_to_order_by_xml(self, chrome_driver, valid_xml):
         self.load_review_page_with_search_string(chrome_driver, "past in flames")
 
