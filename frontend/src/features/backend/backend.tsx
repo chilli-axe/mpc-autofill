@@ -21,7 +21,11 @@ import {
   setLocalStorageBackendURL,
 } from "@/common/cookies";
 import { standardiseURL } from "@/common/processing";
-import { clearURL, setURL } from "@/features/backend/backendSlice";
+import {
+  clearURL,
+  selectBackendURL,
+  setURL,
+} from "@/features/backend/backendSlice";
 require("bootstrap-icons/font/bootstrap-icons.css");
 
 interface BackendConfigProps {
@@ -90,10 +94,7 @@ export function BackendConfig(props: BackendConfigProps) {
   >([]);
   const [validating, setValidating] = useState<boolean>(false);
 
-  const [triggerFn, getBackendInfoQuery] =
-    apiSlice.endpoints.getBackendInfo.useLazyQuery();
-
-  const backendURL = useSelector((state: RootState) => state.backend.url);
+  const backendURL = useSelector(selectBackendURL);
   const clearBackendURL = () => {
     dispatch(clearURL());
     clearLocalStorageBackendURL();
@@ -139,7 +140,6 @@ export function BackendConfig(props: BackendConfigProps) {
       setLocalStorageBackendURL(formattedURL);
       dispatch(apiSlice.util.invalidateTags([QueryTags.BackendSpecific]));
       setLocalBackendURL("");
-      triggerFn();
     }
     setValidating(false);
   };
@@ -149,7 +149,6 @@ export function BackendConfig(props: BackendConfigProps) {
     if (backendURL != undefined) {
       dispatch(setURL(backendURL));
       dispatch(apiSlice.util.invalidateTags([QueryTags.BackendSpecific]));
-      triggerFn();
     }
   }, []);
 

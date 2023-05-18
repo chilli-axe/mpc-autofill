@@ -26,13 +26,21 @@ import {
   convertLinesIntoSlotProjectMembers,
   processStringAsMultipleLines,
 } from "@/common/processing";
+import { selectBackendURL } from "@/features/backend/backendSlice";
 import { addMembers, selectProjectSize } from "@/features/project/projectSlice";
 import { Spinner } from "@/features/ui/spinner";
 
 export function ImportURL() {
-  const dfcPairsQuery = useGetDFCPairsQuery();
-  const importSitesQuery = useGetImportSitesQuery();
-  const backendInfoQuery = useGetBackendInfoQuery();
+  const backendURL = useSelector(selectBackendURL);
+  const dfcPairsQuery = useGetDFCPairsQuery(undefined, {
+    skip: backendURL == null,
+  });
+  const importSitesQuery = useGetImportSitesQuery(undefined, {
+    skip: backendURL == null,
+  });
+  const backendInfoQuery = useGetBackendInfoQuery(undefined, {
+    skip: backendURL == null,
+  });
 
   const projectSize = useSelector(selectProjectSize);
   const dispatch = useDispatch<AppDispatch>();

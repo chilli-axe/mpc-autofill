@@ -27,12 +27,18 @@ import {
   stripTextInParentheses,
 } from "@/common/processing";
 import { CardDocument } from "@/common/types";
+import { selectBackendURL } from "@/features/backend/backendSlice";
 import { addMembers, selectProjectSize } from "@/features/project/projectSlice";
 
 export function ImportText() {
   // TODO: add an accordion here for explaining how to search for each different card type with prefixes
-  const sampleCardsQuery = useGetSampleCardsQuery();
-  const dfcPairsQuery = useGetDFCPairsQuery();
+  const backendURL = useSelector(selectBackendURL);
+  const sampleCardsQuery = useGetSampleCardsQuery(undefined, {
+    skip: backendURL == null,
+  });
+  const dfcPairsQuery = useGetDFCPairsQuery(undefined, {
+    skip: backendURL == null,
+  });
 
   const dispatch = useDispatch<AppDispatch>();
   const [showTextModal, setShowTextModal] = useState(false);

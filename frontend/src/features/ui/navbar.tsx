@@ -13,6 +13,7 @@ import { useGetBackendInfoQuery } from "@/app/api";
 import { RootState } from "@/app/store";
 import { ProjectName } from "@/common/constants";
 import { BackendConfig } from "@/features/backend/backend";
+import { selectBackendURL } from "@/features/backend/backendSlice";
 import { SupportBackendModal } from "@/features/support/supportBackend";
 import { SupportDeveloperModal } from "@/features/support/supportDeveloper";
 import DisableSSR from "@/features/ui/disableSSR";
@@ -30,7 +31,10 @@ const BoldCollapse = styled(BSNavbar.Collapse)`
 `;
 
 export default function Navbar() {
-  const backendInfoQuery = useGetBackendInfoQuery();
+  const backendURL = useSelector(selectBackendURL);
+  const backendInfoQuery = useGetBackendInfoQuery(undefined, {
+    skip: backendURL == null,
+  });
 
   const [showBackendConfig, setShowBackendConfig] = useState(false);
   const [showSupportDeveloperModal, setShowSupportDeveloperModal] =
@@ -47,7 +51,6 @@ export default function Navbar() {
     setShowSupportBackendModal(false);
   const handleShowSupportBackendModal = () => setShowSupportBackendModal(true);
 
-  const backendURL = useSelector((state: RootState) => state.backend.url);
   const name =
     (backendInfoQuery.isSuccess ? backendInfoQuery.data?.name : null) ??
     ProjectName;

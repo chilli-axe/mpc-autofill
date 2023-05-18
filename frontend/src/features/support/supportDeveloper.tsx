@@ -31,7 +31,7 @@ export function SupportDeveloperModal(props: SupportDeveloperModalProps) {
         </p>
         <p>
           I&apos;m responsible for this website, the code that image repository
-          servers run on, and the desktop tool that automates
+          servers run on, and the desktop tool that automates{" "}
           <a href={MakePlayingCardsURL} target="_blank">
             {MakePlayingCards}
           </a>

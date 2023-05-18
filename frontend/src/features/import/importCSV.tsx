@@ -24,6 +24,7 @@ import {
   convertLinesIntoSlotProjectMembers,
   processLines,
 } from "@/common/processing";
+import { selectBackendURL } from "@/features/backend/backendSlice";
 import { addMembers, selectProjectSize } from "@/features/project/projectSlice";
 
 const BorderedTable = styled(Table)`
@@ -138,7 +139,10 @@ function SampleCSV() {
 
 export function ImportCSV() {
   const dispatch = useDispatch<AppDispatch>();
-  const dfcPairsQuery = useGetDFCPairsQuery();
+  const backendURL = useSelector(selectBackendURL);
+  const dfcPairsQuery = useGetDFCPairsQuery(undefined, {
+    skip: backendURL == null,
+  });
   const [showCSVModal, setShowCSVModal] = useState(false);
   const handleCloseCSVModal = () => setShowCSVModal(false);
   const handleShowCSVModal = () => setShowCSVModal(true);

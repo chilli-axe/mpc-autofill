@@ -1,8 +1,10 @@
 import React from "react";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
+import { useSelector } from "react-redux";
 
 import { useGetBackendInfoQuery } from "@/app/api";
+import { selectBackendURL } from "@/features/backend/backendSlice";
 import { Spinner } from "@/features/ui/spinner";
 
 interface SupportBackendModalProps {
@@ -14,7 +16,10 @@ interface SupportBackendModalProps {
 }
 
 export function SupportBackendModal(props: SupportBackendModalProps) {
-  const backendInfoQuery = useGetBackendInfoQuery();
+  const backendURL = useSelector(selectBackendURL);
+  const backendInfoQuery = useGetBackendInfoQuery(undefined, {
+    skip: backendURL == null,
+  });
 
   return (
     <Modal show={props.show} onHide={props.handleClose}>

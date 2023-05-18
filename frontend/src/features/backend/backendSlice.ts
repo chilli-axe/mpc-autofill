@@ -27,3 +27,5 @@ export const backendSlice = createSlice({
 
 export const { setURL, clearURL } = backendSlice.actions;
 export default backendSlice.reducer;
+
+export const selectBackendURL = (state: RootState) => state.backend.url;
