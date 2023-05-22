@@ -7,10 +7,11 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { RootState } from "@/app/store";
 import { Card, ReversedCardTypePrefixes } from "@/common/constants";
 import { Back, Front, ProjectMaxSize } from "@/common/constants";
+import { processPrefix, processQuery } from "@/common/processing";
 import {
   Faces,
-  ProcessedLine,
   Project,
+  ProjectMember,
   SearchQuery,
   SlotProjectMembers,
 } from "@/common/types";
@@ -131,6 +132,40 @@ export const projectSlice = createSlice({
         // setSelectedImage(state, {face: action.payload.face, slot: slot, selectedImage: action.payload.selectedImage})
       }
     },
+    setQuery: (
+      state,
+      action: PayloadAction<{ query: string; face: Faces; slot: number }>
+    ) => {
+      const newQuery = processPrefix(action.payload.query);
+      if (state.members[action.payload.slot][action.payload.face] == null) {
+        state.members[action.payload.slot][action.payload.face] = {
+          query: newQuery,
+          selectedImage: undefined,
+          selected: false,
+        };
+      } else {
+        state.members[action.payload.slot][action.payload.face]!.query =
+          newQuery;
+      }
+    },
+    bulkSetQuery: (
+      state,
+      action: PayloadAction<{ query: string; slots: Array<[Faces, number]> }>
+    ) => {
+      const newQuery = processPrefix(action.payload.query);
+      for (const [face, slot] of action.payload.slots) {
+        if (state.members[slot][face] == null) {
+          state.members[slot][face] = {
+            query: newQuery,
+            selectedImage: undefined,
+            selected: false,
+          };
+        } else {
+          state.members[slot][face]!.query = newQuery;
+          state.members[slot][face]!.selected = false;
+        }
+      }
+    },
     setSelectedCardback: (
       state,
       action: PayloadAction<{ selectedImage: string }>
@@ -218,10 +253,10 @@ export const selectProjectMembers = (
 // TODO: this is a bit disgusting
 export const selectSelectedProjectMembers = (
   state: RootState
-): Array<SlotProjectMembers> =>
-  state.project.members.flatMap((x: SlotProjectMembers) =>
-    (x.front?.selected === true ? [x.front] : []).concat(
-      x.back?.selected === true ? [x.back] : []
+): Array<[Faces, number]> =>
+  state.project.members.flatMap((x: SlotProjectMembers, index: number) =>
+    (x.front?.selected === true ? [[Front, index]] : []).concat(
+      x.back?.selected === true ? [[Back, index]] : []
     )
   );
 
@@ -338,6 +373,8 @@ export const selectQueriesWithoutSearchResults = (
 export const {
   setSelectedImage,
   bulkSetSelectedImage,
+  setQuery,
+  bulkSetQuery,
   setSelectedCardback,
   addMembers,
   toggleMemberSelection,

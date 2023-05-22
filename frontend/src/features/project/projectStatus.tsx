@@ -3,22 +3,20 @@ import React from "react";
 import Alert from "react-bootstrap/Alert";
 import Button from "react-bootstrap/Button";
 import Col from "react-bootstrap/Col";
-import Dropdown from "react-bootstrap/Dropdown";
 import OverlayTrigger from "react-bootstrap/OverlayTrigger";
 import Row from "react-bootstrap/Row";
-import Stack from "react-bootstrap/Stack";
 import Tooltip from "react-bootstrap/Tooltip";
 import { useSelector } from "react-redux";
 import styled from "styled-components";
 
 import { ProjectMaxSize } from "@/common/constants";
 import { bracket, imageSizeToMBString } from "@/common/utils";
+import { SelectedImagesStatus } from "@/features/project/bulkManagement";
 import {
   selectGeneratedDecklist,
   selectGeneratedXML,
   selectProjectFileSize,
   selectProjectSize,
-  selectSelectedProjectMembers,
 } from "@/features/project/projectSlice";
 
 // TODO: review the codebase for instances of this https://redux.js.org/usage/deriving-data-selectors#optimizing-selectors-with-memoization
@@ -27,33 +25,7 @@ const SizedIcon = styled.i`
   font-size 1.25rem
 `;
 
-function SelectedImagesStatus() {
-  const selectedProjectMembers = useSelector(selectSelectedProjectMembers);
-  return (
-    <>
-      {selectedProjectMembers.length > 0 && (
-        <Alert variant="primary">
-          <Stack direction="horizontal" gap={2}>
-            <b>
-              {selectedProjectMembers.length} image
-              {selectedProjectMembers.length != 1 && "s"} selected.
-            </b>
-            <Dropdown className="ms-auto">
-              <Dropdown.Toggle variant="secondary">Modify</Dropdown.Toggle>
-              <Dropdown.Menu></Dropdown.Menu>
-            </Dropdown>
-          </Stack>
-        </Alert>
-      )}
-    </>
-  );
-}
-
 export function ProjectStatus() {
-  // const [show, setShow] = useState(false);
-  // const handleClose = () => setShow(false);
-  // const handleShow = () => setShow(true);
-
   const generatedXML = useSelector(selectGeneratedXML);
   const generatedDecklist = useSelector(selectGeneratedDecklist);
   const projectSize = useSelector(selectProjectSize);
