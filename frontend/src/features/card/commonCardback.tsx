@@ -30,9 +30,11 @@ interface CommonCardbackGridSelectorProps {
   };
 }
 
-export function CommonCardbackGridSelector(
-  props: CommonCardbackGridSelectorProps
-) {
+export function CommonCardbackGridSelector({
+  searchResults,
+  show,
+  handleClose,
+}: CommonCardbackGridSelectorProps) {
   const projectCardback = useSelector(
     (state: RootState) => state.project.cardback
   );
@@ -52,9 +54,9 @@ export function CommonCardbackGridSelector(
   return (
     <GridSelector
       testId="cardback-grid-selector"
-      imageIdentifiers={props.searchResults}
-      show={props.show}
-      handleClose={props.handleClose}
+      imageIdentifiers={searchResults}
+      show={show}
+      handleClose={handleClose}
       onClick={setSelectedImageFromIdentifier}
     />
   );
@@ -72,10 +74,8 @@ interface CommonCardbackProps {
   selectedImage: string | undefined;
 }
 
-export function CommonCardback(props: CommonCardbackProps) {
+export function CommonCardback({ selectedImage }: CommonCardbackProps) {
   const dispatch = useDispatch<AppDispatch>();
-
-  const selectedImage = props.selectedImage;
 
   const [showDetailedView, setShowDetailedView] = useState(false);
   const [showGridSelector, setShowGridSelector] = useState(false);

@@ -40,19 +40,23 @@ interface CardSlotGridSelectorProps {
   };
 }
 
-export function CardSlotGridSelector(props: CardSlotGridSelectorProps) {
+export function CardSlotGridSelector({
+  face,
+  slot,
+  searchResultsForQuery,
+  show,
+  handleClose,
+}: CardSlotGridSelectorProps) {
   const dispatch = useDispatch<AppDispatch>();
   function setSelectedImageFromIdentifier(selectedImage: string): void {
-    dispatch(
-      setSelectedImage({ face: props.face, slot: props.slot, selectedImage })
-    );
+    dispatch(setSelectedImage({ face, slot, selectedImage }));
   }
   return (
     <GridSelector
-      testId={`${props.face}-slot${props.slot}-grid-selector`}
-      imageIdentifiers={props.searchResultsForQuery}
-      show={props.show}
-      handleClose={props.handleClose}
+      testId={`${face}-slot${slot}-grid-selector`}
+      imageIdentifiers={searchResultsForQuery}
+      show={show}
+      handleClose={handleClose}
       onClick={setSelectedImageFromIdentifier}
     />
   );
@@ -64,11 +68,12 @@ export const MemoizedCardSlotGridSelector = memo(CardSlotGridSelector);
 
 //# region card slot
 
-export function CardSlot(props: CardSlotProps) {
-  const searchQuery = props.searchQuery;
-  const face = props.face;
-  const slot = props.slot;
-
+export function CardSlot({
+  searchQuery,
+  face,
+  slot,
+  handleShowDetailedView,
+}: CardSlotProps) {
   const [showGridSelector, setShowGridSelector] = useState(false);
 
   const handleCloseGridSelector = () => setShowGridSelector(false);
@@ -99,9 +104,9 @@ export function CardSlot(props: CardSlotProps) {
   );
   const selectedImage = projectMember?.selectedImage;
 
-  const handleShowDetailedView = () => {
+  const handleShowSelectedImageDetailedView = () => {
     if (selectedImage != null) {
-      props.handleShowDetailedView(selectedImage);
+      handleShowDetailedView(selectedImage);
     }
   };
 
@@ -243,7 +248,7 @@ export function CardSlot(props: CardSlotProps) {
   return (
     <div
       style={{ contentVisibility: "auto" }}
-      data-testid={`${props.face}-slot${props.slot}`}
+      data-testid={`${face}-slot${slot}`}
     >
       <MemoizedCard
         imageIdentifier={selectedImage}
@@ -252,7 +257,7 @@ export function CardSlot(props: CardSlotProps) {
         cardHeaderTitle={cardHeaderTitle}
         cardFooter={cardFooter}
         cardHeaderButtons={cardHeaderButtons}
-        imageOnClick={handleShowDetailedView}
+        imageOnClick={handleShowSelectedImageDetailedView}
         searchQuery={searchQuery}
         noResultsFound={
           searchResultsForQueryOrDefault != null &&

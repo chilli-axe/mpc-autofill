@@ -13,7 +13,6 @@ import Offcanvas from "react-bootstrap/Offcanvas";
 import { useDispatch, useSelector } from "react-redux";
 
 import { apiSlice } from "@/app/api";
-import { RootState } from "@/app/store";
 import { ProjectName, QueryTags } from "@/common/constants";
 import {
   clearLocalStorageBackendURL,
@@ -86,7 +85,7 @@ async function searchEngineHealthCheck(url: string): Promise<boolean> {
   return outcome;
 }
 
-export function BackendConfig(props: BackendConfigProps) {
+export function BackendConfig({ show, handleClose }: BackendConfigProps) {
   const dispatch = useDispatch();
 
   const [validationStatus, setValidationStatus] = useState<
@@ -154,7 +153,7 @@ export function BackendConfig(props: BackendConfigProps) {
 
   return (
     <>
-      <Offcanvas show={props.show} onHide={props.handleClose}>
+      <Offcanvas show={show} onHide={handleClose}>
         <Offcanvas.Header closeButton>
           <Offcanvas.Title>Configure Server</Offcanvas.Title>
         </Offcanvas.Header>

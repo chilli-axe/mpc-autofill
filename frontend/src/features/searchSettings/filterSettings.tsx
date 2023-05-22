@@ -25,7 +25,10 @@ interface FilterSettingsProps {
   };
 }
 
-export function FilterSettings(props: FilterSettingsProps) {
+export function FilterSettings({
+  filterSettings,
+  setFilterSettings,
+}: FilterSettingsProps) {
   return (
     <>
       <h5>Filters</h5>
@@ -41,16 +44,16 @@ export function FilterSettings(props: FilterSettingsProps) {
       <Row>
         <Col xs={6}>
           <Form.Label>
-            Minimum: <b>{props.filterSettings.minimumDPI} DPI</b>
+            Minimum: <b>{filterSettings.minimumDPI} DPI</b>
           </Form.Label>
           <Form.Range
-            defaultValue={props.filterSettings.minimumDPI}
+            defaultValue={filterSettings.minimumDPI}
             min={MinimumDPI}
             max={MaximumDPI}
             step={DPIStep}
             onChange={(event) => {
-              props.setFilterSettings({
-                ...props.filterSettings,
+              setFilterSettings({
+                ...filterSettings,
                 minimumDPI: parseInt(event.target.value),
               });
             }}
@@ -58,16 +61,16 @@ export function FilterSettings(props: FilterSettingsProps) {
         </Col>
         <Col xs={6}>
           <Form.Label>
-            Maximum: <b>{props.filterSettings.maximumDPI} DPI</b>
+            Maximum: <b>{filterSettings.maximumDPI} DPI</b>
           </Form.Label>
           <Form.Range
-            defaultValue={props.filterSettings.maximumDPI}
+            defaultValue={filterSettings.maximumDPI}
             min={MinimumDPI}
             max={MaximumDPI}
             step={DPIStep}
             onChange={(event) => {
-              props.setFilterSettings({
-                ...props.filterSettings,
+              setFilterSettings({
+                ...filterSettings,
                 maximumDPI: parseInt(event.target.value),
               });
             }}
@@ -75,16 +78,16 @@ export function FilterSettings(props: FilterSettingsProps) {
         </Col>
       </Row>
       <Form.Label>
-        File size: Up to <b>{props.filterSettings.maximumSize} MB</b>
+        File size: Up to <b>{filterSettings.maximumSize} MB</b>
       </Form.Label>
       <Form.Range
-        defaultValue={props.filterSettings.maximumSize}
+        defaultValue={filterSettings.maximumSize}
         min={0}
         max={MaximumSize}
         step={SizeStep}
         onChange={(event) => {
-          props.setFilterSettings({
-            ...props.filterSettings,
+          setFilterSettings({
+            ...filterSettings,
             maximumSize: parseInt(event.target.value),
           });
         }}

@@ -26,14 +26,17 @@ interface CardDetailedViewProps {
   };
 }
 
-export function CardDetailedView(props: CardDetailedViewProps) {
+export function CardDetailedView({
+  imageIdentifier,
+  show,
+  handleClose,
+}: CardDetailedViewProps) {
   // ensure that the medium thumbnail fades in each time the selected image changes
   const [mediumThumbnailLoading, setMediumThumbnailLoading] = useState(true);
-  useEffect(() => setMediumThumbnailLoading(true), [props.imageIdentifier]);
+  useEffect(() => setMediumThumbnailLoading(true), [imageIdentifier]);
 
   const maybeCardDocument = useSelector(
-    (state: RootState) =>
-      state.cardDocuments.cardDocuments[props.imageIdentifier]
+    (state: RootState) => state.cardDocuments.cardDocuments[imageIdentifier]
   );
   const maybeSourceDocuments = useSelector(
     (state: RootState) => state.sourceDocuments.sourceDocuments
@@ -43,8 +46,8 @@ export function CardDetailedView(props: CardDetailedViewProps) {
     <div>
       {maybeCardDocument != null && (
         <Modal
-          show={props.show}
-          onHide={props.handleClose}
+          show={show}
+          onHide={handleClose}
           size={"xl"}
           data-testid="detailed-view"
         >
@@ -163,7 +166,7 @@ export function CardDetailedView(props: CardDetailedViewProps) {
             </Row>
           </Modal.Body>
           <Modal.Footer>
-            <Button variant="secondary" onClick={props.handleClose}>
+            <Button variant="secondary" onClick={handleClose}>
               Close
             </Button>
           </Modal.Footer>

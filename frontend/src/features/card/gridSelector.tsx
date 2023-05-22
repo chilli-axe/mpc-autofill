@@ -49,7 +49,11 @@ interface CardGridDisplayProps {
   sourceKeyToName: { [sourceKey: string]: string };
 }
 
-function CardsGroupedTogether(props: CardGridDisplayProps) {
+function CardsGroupedTogether({
+  cardIdentifiersAndOptionNumbersBySource,
+  selectImage,
+  sourceKeyToName,
+}: CardGridDisplayProps) {
   /**
    * Render all images in `cardIdentifiersAndOptionNumbersBySource` in one block -
    * i.e. not separated by source.
@@ -57,14 +61,14 @@ function CardsGroupedTogether(props: CardGridDisplayProps) {
 
   return (
     <Row className="g-0" xxl={4} xl={4} lg={3} md={2} sm={2} xs={2}>
-      {Object.entries(props.cardIdentifiersAndOptionNumbersBySource).map(
+      {Object.entries(cardIdentifiersAndOptionNumbersBySource).map(
         ([key, value], sourceIndex) => (
           <>
             {value.flatMap(([identifier, index]) => (
               <MemoizedCard // TODO: paginate or lazy-load these
                 imageIdentifier={identifier}
                 cardHeaderTitle={`Option ${index + 1}`}
-                cardOnClick={() => props.selectImage(identifier)}
+                cardOnClick={() => selectImage(identifier)}
                 key={`gridSelector-${identifier}`}
                 noResultsFound={false}
               />
@@ -76,7 +80,11 @@ function CardsGroupedTogether(props: CardGridDisplayProps) {
   );
 }
 
-function CardsFacetedBySource(props: CardGridDisplayProps) {
+function CardsFacetedBySource({
+  cardIdentifiersAndOptionNumbersBySource,
+  selectImage,
+  sourceKeyToName,
+}: CardGridDisplayProps) {
   /**
    * Render all images in `cardIdentifiersAndOptionNumbersBySource` separated by source.
    * Allow users to toggle whether each source's cards are showed/hidden.
@@ -88,7 +96,7 @@ function CardsFacetedBySource(props: CardGridDisplayProps) {
   );
   return (
     <>
-      {Object.entries(props.cardIdentifiersAndOptionNumbersBySource).map(
+      {Object.entries(cardIdentifiersAndOptionNumbersBySource).map(
         ([sourceKey, cardIdentifiersAndOptionNumbers], sourceIndex) => (
           <>
             <div
@@ -112,7 +120,7 @@ function CardsFacetedBySource(props: CardGridDisplayProps) {
                   key={`${sourceKey}-header-title`}
                   style={{ fontStyle: "italic" }}
                 >
-                  {props.sourceKeyToName[sourceKey]}
+                  {sourceKeyToName[sourceKey]}
                 </h3>
                 <h6 className="text-primary prevent-select">
                   {cardIdentifiersAndOptionNumbers.length} version
@@ -150,7 +158,7 @@ function CardsFacetedBySource(props: CardGridDisplayProps) {
                       <MemoizedCard
                         imageIdentifier={identifier}
                         cardHeaderTitle={`Option ${optionNumber + 1}`}
-                        cardOnClick={() => props.selectImage(identifier)}
+                        cardOnClick={() => selectImage(identifier)}
                         key={`gridSelector-${identifier}`}
                         noResultsFound={false}
                       />
@@ -166,7 +174,13 @@ function CardsFacetedBySource(props: CardGridDisplayProps) {
   );
 }
 
-export function GridSelector(props: GridSelectorProps) {
+export function GridSelector({
+  testId,
+  imageIdentifiers,
+  show,
+  handleClose,
+  onClick,
+}: GridSelectorProps) {
   const dispatch = useDispatch();
   const cardDocuments = useSelector(
     (state: RootState) => state.cardDocuments.cardDocuments
@@ -176,10 +190,10 @@ export function GridSelector(props: GridSelectorProps) {
   );
   const selectImage = useCallback(
     (identifier: string) => {
-      props.onClick(identifier);
-      props.handleClose();
+      onClick(identifier);
+      handleClose();
     },
-    [props]
+    [onClick, handleClose]
   );
 
   // TODO: move these selectors into a common area where they can be reused
@@ -197,7 +211,7 @@ export function GridSelector(props: GridSelectorProps) {
   );
   const cardIdentifiersAndOptionNumbersBySource = useMemo(
     () =>
-      props.imageIdentifiers.reduce(
+      imageIdentifiers.reduce(
         (
           accumulator: { [sourceKey: string]: Array<[string, number]> },
           value,
@@ -219,18 +233,13 @@ export function GridSelector(props: GridSelectorProps) {
         },
         {}
       ),
-    [cardDocuments, props.imageIdentifiers]
+    [cardDocuments, imageIdentifiers]
   );
 
   // TODO: paginate or lazy-load these cards. this is quite slow when you have hundreds of images.
 
   return (
-    <Modal
-      show={props.show}
-      onHide={props.handleClose}
-      size="lg"
-      data-testid={props.testId}
-    >
+    <Modal show={show} onHide={handleClose} size="lg" data-testid={testId}>
       <Modal.Header closeButton>
         <Modal.Title>Select Version</Modal.Title>
       </Modal.Header>
@@ -296,7 +305,7 @@ export function GridSelector(props: GridSelectorProps) {
         )}
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="secondary" onClick={props.handleClose}>
+        <Button variant="secondary" onClick={handleClose}>
           Close
         </Button>
       </Modal.Footer>

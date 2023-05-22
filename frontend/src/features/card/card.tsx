@@ -43,25 +43,36 @@ interface CardProps {
   noResultsFound: boolean;
 }
 
-export function Card(props: CardProps) {
+export function Card({
+  imageIdentifier,
+  previousImageIdentifier,
+  nextImageIdentifier,
+  cardHeaderTitle,
+  cardHeaderButtons,
+  cardFooter,
+  imageOnClick,
+  cardOnClick,
+  searchQuery,
+  noResultsFound,
+}: CardProps) {
   // ensure that the small thumbnail fades in each time the selected image changes
   const [smallThumbnailLoading, setSmallThumbnailLoading] = useState(true);
-  useEffect(() => setSmallThumbnailLoading(true), [props.imageIdentifier]);
+  useEffect(() => setSmallThumbnailLoading(true), [imageIdentifier]);
 
   const maybeCardDocument = useSelector((state: RootState) =>
-    props.imageIdentifier != null
-      ? state.cardDocuments.cardDocuments[props.imageIdentifier]
+    imageIdentifier != null
+      ? state.cardDocuments.cardDocuments[imageIdentifier]
       : undefined
   );
 
   const maybePreviousCardDocument = useSelector((state: RootState) =>
-    props.previousImageIdentifier != null
-      ? state.cardDocuments.cardDocuments[props.previousImageIdentifier]
+    previousImageIdentifier != null
+      ? state.cardDocuments.cardDocuments[previousImageIdentifier]
       : undefined
   );
   const maybeNextCardDocument = useSelector((state: RootState) =>
-    props.nextImageIdentifier != null
-      ? state.cardDocuments.cardDocuments[props.nextImageIdentifier]
+    nextImageIdentifier != null
+      ? state.cardDocuments.cardDocuments[nextImageIdentifier]
       : undefined
   );
 
@@ -76,12 +87,12 @@ export function Card(props: CardProps) {
           style={{ zIndex: 1, opacity: smallThumbnailLoading ? 0 : 1 }}
           src={maybeCardDocument.small_thumbnail_url}
           onLoad={() => setSmallThumbnailLoading(false)}
-          onClick={props.imageOnClick}
+          onClick={imageOnClick}
           // onError={{thumbnail_404(this)}} // TODO
           alt={maybeCardDocument.name}
           fill={true}
         />
-        {props.previousImageIdentifier !== props.imageIdentifier &&
+        {previousImageIdentifier !== imageIdentifier &&
           maybePreviousCardDocument !== undefined && (
             <HiddenImage
               className="card-img"
@@ -92,7 +103,7 @@ export function Card(props: CardProps) {
               fill={true}
             />
           )}
-        {props.nextImageIdentifier !== props.imageIdentifier &&
+        {nextImageIdentifier !== imageIdentifier &&
           maybeNextCardDocument !== undefined && (
             <HiddenImage
               className="card-img"
@@ -104,7 +115,7 @@ export function Card(props: CardProps) {
             />
           )}
       </>
-    ) : props.noResultsFound ? (
+    ) : noResultsFound ? (
       <Image
         className="card-img card-img-fade-in"
         loading="lazy"
@@ -117,10 +128,10 @@ export function Card(props: CardProps) {
       <Spinner />
     );
   return (
-    <BSCard className="mpccard mpccard-hover" onClick={props.cardOnClick}>
+    <BSCard className="mpccard mpccard-hover" onClick={cardOnClick}>
       <BSCard.Header className="pb-0 text-center">
-        <p className="mpccard-slot">{props.cardHeaderTitle}</p>
-        {props.cardHeaderButtons}
+        <p className="mpccard-slot">{cardHeaderTitle}</p>
+        {cardHeaderButtons}
       </BSCard.Header>
       <div>
         <div
@@ -133,26 +144,26 @@ export function Card(props: CardProps) {
           <BSCard.Subtitle className="mpccard-name">
             {maybeCardDocument != null && maybeCardDocument.name}
             {maybeCardDocument == null &&
-              props.searchQuery != undefined &&
-              props.searchQuery.query}
+              searchQuery != undefined &&
+              searchQuery.query}
           </BSCard.Subtitle>
           <div className="mpccard-spacing">
             <BSCard.Text className="mpccard-source">
               {maybeCardDocument != null &&
                 `${maybeCardDocument.source_verbose} [${maybeCardDocument.dpi} DPI]`}
               {maybeCardDocument == null &&
-                props.searchQuery != undefined &&
+                searchQuery != undefined &&
                 "Your search query"}
             </BSCard.Text>
           </div>
         </BSCard.Body>
       </div>
-      {props.cardFooter != null && (
+      {cardFooter != null && (
         <BSCard.Footer
           className="padding-top"
           style={{ paddingTop: 50 + "px" }}
         >
-          {props.cardFooter}
+          {cardFooter}
         </BSCard.Footer>
       )}
     </BSCard>

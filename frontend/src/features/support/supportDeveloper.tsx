@@ -17,9 +17,12 @@ interface SupportDeveloperModalProps {
   };
 }
 
-export function SupportDeveloperModal(props: SupportDeveloperModalProps) {
+export function SupportDeveloperModal({
+  show,
+  handleClose,
+}: SupportDeveloperModalProps) {
   return (
-    <Modal show={props.show} onHide={props.handleClose}>
+    <Modal show={show} onHide={handleClose}>
       <Modal.Header closeButton>
         <Modal.Title>Support the Developer</Modal.Title>
       </Modal.Header>
@@ -76,7 +79,7 @@ export function SupportDeveloperModal(props: SupportDeveloperModalProps) {
         <Coffee />
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="secondary" onClick={props.handleClose}>
+        <Button variant="secondary" onClick={handleClose}>
           Close
         </Button>
       </Modal.Footer>

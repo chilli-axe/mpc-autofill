@@ -17,7 +17,10 @@ interface SearchTypeSettingsProps {
   };
 }
 
-export function SearchTypeSettings(props: SearchTypeSettingsProps) {
+export function SearchTypeSettings({
+  searchTypeSettings,
+  setSearchTypeSettings,
+}: SearchTypeSettingsProps) {
   return (
     <>
       <h5>Search Type</h5>
@@ -26,9 +29,9 @@ export function SearchTypeSettings(props: SearchTypeSettingsProps) {
       <br />
       <Toggle
         onClick={() =>
-          props.setSearchTypeSettings({
-            ...props.searchTypeSettings,
-            fuzzySearch: !props.searchTypeSettings.fuzzySearch,
+          setSearchTypeSettings({
+            ...searchTypeSettings,
+            fuzzySearch: !searchTypeSettings.fuzzySearch,
           })
         }
         on="Fuzzy (Forgiving) Search"
@@ -40,7 +43,7 @@ export function SearchTypeSettings(props: SearchTypeSettingsProps) {
         width={100 + "%"}
         size="md"
         height={ToggleButtonHeight + "px"}
-        active={props.searchTypeSettings.fuzzySearch}
+        active={searchTypeSettings.fuzzySearch}
       />
     </>
   );

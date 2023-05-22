@@ -15,14 +15,17 @@ interface SupportBackendModalProps {
   };
 }
 
-export function SupportBackendModal(props: SupportBackendModalProps) {
+export function SupportBackendModal({
+  show,
+  handleClose,
+}: SupportBackendModalProps) {
   const backendURL = useSelector(selectBackendURL);
   const backendInfoQuery = useGetBackendInfoQuery(undefined, {
     skip: backendURL == null,
   });
 
   return (
-    <Modal show={props.show} onHide={props.handleClose}>
+    <Modal show={show} onHide={handleClose}>
       <Modal.Header closeButton>
         <Modal.Title>
           Support {backendInfoQuery.data?.name ?? "Your Server Manager"}
@@ -47,7 +50,7 @@ export function SupportBackendModal(props: SupportBackendModalProps) {
         )}
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="secondary" onClick={props.handleClose}>
+        <Button variant="secondary" onClick={handleClose}>
           Close
         </Button>
       </Modal.Footer>
