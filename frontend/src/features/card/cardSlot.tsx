@@ -17,6 +17,7 @@ import { wrapIndex } from "@/common/utils";
 import { MemoizedCard } from "@/features/card/card";
 import { GridSelector } from "@/features/card/gridSelector";
 import {
+  bulkSetMemberSelection,
   deleteSlot,
   setSelectedImage,
   toggleMemberSelection,
@@ -177,8 +178,15 @@ export function CardSlot({
     dispatch(deleteSlot({ slot }));
   };
 
-  const toggleSelectionForThisMember = () => {
-    dispatch(toggleMemberSelection({ slot, face }));
+  const toggleSelectionForThisMember = (
+    event: React.MouseEvent<HTMLButtonElement>
+  ) => {
+    if (event.detail == 2) {
+      // double-click
+      dispatch(bulkSetMemberSelection({ slot, face }));
+    } else {
+      dispatch(toggleMemberSelection({ slot, face }));
+    }
   };
 
   function setSelectedImageFromDelta(delta: number): void {

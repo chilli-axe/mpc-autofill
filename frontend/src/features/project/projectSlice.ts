@@ -30,6 +30,14 @@ const initialState: Project = {
     },
     {
       front: {
+        query: { query: "island", card_type: Card },
+        selectedImage: undefined,
+        selected: false,
+      },
+      back: null,
+    },
+    {
+      front: {
         query: { query: "grim monolith", card_type: Card },
         selectedImage: undefined,
         selected: false,
@@ -157,6 +165,31 @@ export const projectSlice = createSlice({
       ) {
         state.members[action.payload.slot][action.payload.face]!.selected =
           !state.members[action.payload.slot][action.payload.face]!.selected;
+      }
+    },
+    bulkSetMemberSelection: (
+      state,
+      action: PayloadAction<{
+        face: Faces;
+        slot: number;
+      }>
+    ) => {
+      const selectedMember = (state.members[action.payload.slot] ?? {})[
+        action.payload.face
+      ];
+      if (selectedMember != null) {
+        for (const [slot, projectMember] of state.members.entries()) {
+          if (
+            projectMember[action.payload.face] != null &&
+            projectMember[action.payload.face]!.query?.query ===
+              selectedMember.query.query &&
+            projectMember[action.payload.face]!.query?.card_type ===
+              selectedMember.query.card_type
+          ) {
+            projectMember[action.payload.face]!.selected =
+              selectedMember.selected;
+          }
+        }
       }
     },
     deleteSlot: (state, action: PayloadAction<{ slot: number }>) => {
@@ -298,6 +331,7 @@ export const {
   setSelectedCardback,
   addMembers,
   toggleMemberSelection,
+  bulkSetMemberSelection,
   deleteSlot,
 } = projectSlice.actions;
 
