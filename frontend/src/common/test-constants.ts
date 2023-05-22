@@ -204,6 +204,7 @@ export const projectSelectedImage1: Project = {
       front: {
         query: { query: "my search query", card_type: Card },
         selectedImage: cardDocument1.identifier,
+        selected: false,
       },
       back: null,
     },
@@ -217,6 +218,7 @@ export const projectThreeMembersSelectedImage1: Project = {
       front: {
         query: { query: "my search query", card_type: Card },
         selectedImage: cardDocument1.identifier,
+        selected: false,
       },
       back: null,
     },
@@ -224,6 +226,7 @@ export const projectThreeMembersSelectedImage1: Project = {
       front: {
         query: { query: "my search query", card_type: Card },
         selectedImage: cardDocument1.identifier,
+        selected: false,
       },
       back: null,
     },
@@ -231,6 +234,7 @@ export const projectThreeMembersSelectedImage1: Project = {
       front: {
         query: { query: "my search query", card_type: Card },
         selectedImage: cardDocument1.identifier,
+        selected: false,
       },
       back: null,
     },
@@ -244,6 +248,7 @@ export const projectSelectedImage2: Project = {
       front: {
         query: { query: "my search query", card_type: Card },
         selectedImage: cardDocument2.identifier,
+        selected: false,
       },
       back: null,
     },

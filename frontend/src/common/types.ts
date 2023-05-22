@@ -159,6 +159,7 @@ export interface SearchQuery {
 export interface ProjectMember {
   query: SearchQuery;
   selectedImage?: string;
+  selected: boolean;
 }
 
 export type SlotProjectMembers = {

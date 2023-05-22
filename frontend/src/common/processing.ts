@@ -154,10 +154,14 @@ export function processLine(line: string, dfcPairs: DFCPairs): ProcessedLine {
   return [
     quantity,
     frontQuery != null
-      ? { query: frontQuery, selectedImage: frontSelectedImage }
+      ? {
+          query: frontQuery,
+          selectedImage: frontSelectedImage,
+          selected: false,
+        }
       : null,
     backQuery != null
-      ? { query: backQuery, selectedImage: backSelectedImage }
+      ? { query: backQuery, selectedImage: backSelectedImage, selected: false }
       : null,
   ];
 }
@@ -214,10 +218,12 @@ export function convertLinesIntoSlotProjectMembers(
           front: {
             query: frontMember?.query,
             selectedImage: frontMember?.selectedImage,
+            selected: false,
           },
           back: {
             query: backMember?.query,
             selectedImage: backMember?.selectedImage,
+            selected: false,
           },
         }),
       ];

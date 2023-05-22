@@ -24,6 +24,7 @@ const initialState: Project = {
       front: {
         query: { query: "island", card_type: Card },
         selectedImage: undefined,
+        selected: false,
       },
       back: null,
     },
@@ -31,6 +32,7 @@ const initialState: Project = {
       front: {
         query: { query: "grim monolith", card_type: Card },
         selectedImage: undefined,
+        selected: false,
       },
       back: null,
     },
@@ -38,6 +40,7 @@ const initialState: Project = {
       front: {
         query: { query: "past in flames", card_type: Card },
         selectedImage: undefined,
+        selected: false,
       },
       back: null,
     },
@@ -45,6 +48,7 @@ const initialState: Project = {
       front: {
         query: { query: "necropotence", card_type: Card },
         selectedImage: undefined,
+        selected: false,
       },
       back: null,
     },
