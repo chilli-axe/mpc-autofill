@@ -16,10 +16,10 @@ exports[`the html structure of a CardSlot with a single search result, image sel
         Slot 1
       </p>
       <button
-        class="padlock"
+        class="card-select"
       >
         <i
-          class="bi bi-unlock"
+          class="bi bi-square"
         />
       </button>
       <button
@@ -96,10 +96,91 @@ exports[`the html structure of a CardSlot with a single search result, no image 
         Slot 1
       </p>
       <button
-        class="padlock"
+        class="card-select"
       >
         <i
-          class="bi bi-unlock"
+          class="bi bi-square"
+        />
+      </button>
+      <button
+        class="remove"
+      >
+        <i
+          aria-label="remove-front0"
+          class="bi bi-x-circle"
+        />
+      </button>
+    </div>
+    <div>
+      <div
+        class="rounded-lg shadow-lg ratio ratio-7x5"
+        style="z-index: 0;"
+      >
+        <img
+          alt="Card 1"
+          class="card-img card-img-fade-in"
+          data-nimg="fill"
+          decoding="async"
+          loading="lazy"
+          src=""
+          style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent; z-index: 1; opacity: 1;"
+        />
+      </div>
+      <div
+        class="mb-0 text-center card-body"
+      >
+        <div
+          class="mpccard-name card-subtitle h6"
+        >
+          Card 1
+        </div>
+        <div
+          class="mpccard-spacing"
+        >
+          <p
+            class="mpccard-source card-text"
+          >
+            Source 1 [1200 DPI]
+          </p>
+        </div>
+      </div>
+    </div>
+    <div
+      class="padding-top card-footer"
+      style="padding-top: 50px;"
+    >
+      <p
+        class="mpccard-counter text-center align-middle"
+      >
+        1 / 
+        1
+      </p>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`the html structure of a CardSlot with a single search result, slot selected 1`] = `
+<div
+  data-testid="front-slot0"
+>
+  <div
+    class="mpccard mpccard-hover card"
+  >
+    <div
+      class="pb-0 text-center card-header"
+    >
+      <p
+        class="mpccard-slot"
+      >
+        Slot 1
+      </p>
+      <button
+        aria-label="select-front0"
+        class="card-select"
+      >
+        <i
+          class="bi bi-check-square"
         />
       </button>
       <button
@@ -176,10 +257,10 @@ exports[`the html structure of a CardSlot with multiple search results, image se
         Slot 1
       </p>
       <button
-        class="padlock"
+        class="card-select"
       >
         <i
-          class="bi bi-unlock"
+          class="bi bi-square"
         />
       </button>
       <button

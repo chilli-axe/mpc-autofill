@@ -61,6 +61,39 @@ test("the html structure of a CardSlot with a single search result, no image sel
   expect(screen.getByTestId("front-slot0")).toMatchSnapshot();
 });
 
+test("the html structure of a CardSlot with a single search result, slot selected", async () => {
+  server.use(
+    cardDocumentsOneResult,
+    sourceDocumentsOneResult,
+    searchResultsOneResult
+  );
+  renderWithProviders(<App />, {
+    preloadedState: {
+      backend: localBackend,
+      project: {
+        members: [
+          {
+            front: {
+              query: { query: "my search query", card_type: Card },
+              selectedImage: null,
+            },
+            back: null,
+          },
+        ],
+        cardback: null,
+      },
+    },
+  });
+  await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 1);
+  screen.getByLabelText("select-front0").click();
+  await waitFor(() =>
+    expect(screen.getByLabelText("select-front0").firstChild).toHaveClass(
+      "bi-check-square"
+    )
+  );
+  expect(screen.getByTestId("front-slot0")).toMatchSnapshot();
+});
+
 test("the html structure of a CardSlot with a single search result, image selected", async () => {
   server.use(
     cardDocumentsOneResult,

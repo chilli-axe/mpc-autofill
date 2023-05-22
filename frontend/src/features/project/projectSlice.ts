@@ -61,7 +61,7 @@ export const projectSlice = createSlice({
   initialState,
   reducers: {
     setSelectedImage: (
-      state: RootState,
+      state,
       action: PayloadAction<{
         face: Faces;
         slot: number;
@@ -76,6 +76,7 @@ export const projectSlice = createSlice({
             card_type: Card,
           },
           selectedImage: action.payload.selectedImage,
+          selected: false,
         };
       } else {
         state.members[action.payload.slot][action.payload.face]!.selectedImage =
@@ -83,7 +84,7 @@ export const projectSlice = createSlice({
       }
     },
     bulkSetSelectedImage: (
-      state: RootState,
+      state,
       action: PayloadAction<{
         face: Faces;
         currentImage: string;
@@ -113,6 +114,7 @@ export const projectSlice = createSlice({
               card_type: Card,
             },
             selectedImage: action.payload.selectedImage,
+            selected: false,
           };
         } else {
           state.members[slot][action.payload.face]!.selectedImage =
@@ -122,13 +124,13 @@ export const projectSlice = createSlice({
       }
     },
     setSelectedCardback: (
-      state: RootState,
+      state,
       action: PayloadAction<{ selectedImage: string }>
     ) => {
       state.cardback = action.payload.selectedImage;
     },
     addMembers: (
-      state: RootState,
+      state,
       action: PayloadAction<{ members: Array<SlotProjectMembers> }>
     ) => {
       /**
@@ -143,10 +145,21 @@ export const projectSlice = createSlice({
         ),
       ];
     },
-    deleteImage: (
-      state: RootState,
-      action: PayloadAction<{ slot: number }>
+    toggleMemberSelection: (
+      state,
+      action: PayloadAction<{
+        face: Faces;
+        slot: number;
+      }>
     ) => {
+      if (
+        (state.members[action.payload.slot] ?? {})[action.payload.face] != null
+      ) {
+        state.members[action.payload.slot][action.payload.face]!.selected =
+          !state.members[action.payload.slot][action.payload.face]!.selected;
+      }
+    },
+    deleteSlot: (state, action: PayloadAction<{ slot: number }>) => {
       // TODO: this breaks when you add a DFC card then delete the different card from the project.
       state.members.splice(action.payload.slot, 1);
     },
@@ -284,7 +297,8 @@ export const {
   bulkSetSelectedImage,
   setSelectedCardback,
   addMembers,
-  deleteImage,
+  toggleMemberSelection,
+  deleteSlot,
 } = projectSlice.actions;
 
 export default projectSlice.reducer;
