@@ -252,6 +252,18 @@ export const projectSlice = createSlice({
       // TODO: this breaks when you add a DFC card then delete the different card from the project.
       state.members.splice(action.payload.slot, 1);
     },
+    bulkDeleteSlots: (
+      state,
+      action: PayloadAction<{ slots: Array<number> }>
+    ) => {
+      action.payload.slots
+        .sort(function (a, b) {
+          return b - a;
+        })
+        .forEach(function (index) {
+          state.members.splice(index, 1);
+        });
+    },
 
     // switchToFront: state => {
     //   // Redux Toolkit allows us to write "mutating" logic in reducers. It
@@ -388,8 +400,6 @@ export const selectQueriesWithoutSearchResults = (
   return queriesToSearch;
 };
 
-// const getProjectCardCount = createSelector(selectProject, project => )
-
 // Action creators are generated for each case reducer function
 export const {
   setSelectedImage,
@@ -402,6 +412,7 @@ export const {
   toggleMemberSelection,
   bulkSetMemberSelection,
   deleteSlot,
+  bulkDeleteSlots,
 } = projectSlice.actions;
 
 export default projectSlice.reducer;

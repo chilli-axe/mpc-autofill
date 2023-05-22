@@ -21,6 +21,7 @@ import { Faces, SearchQuery } from "@/common/types";
 import { selectBackendURL } from "@/features/backend/backendSlice";
 import { GridSelector } from "@/features/card/gridSelector";
 import {
+  bulkDeleteSlots,
   bulkSetQuery,
   bulkSetSelectedImage,
   selectSelectedProjectMembers,
@@ -79,9 +80,9 @@ function ChangeSelectedImageSelectedImages({
     firstQuery != null &&
     firstQuery.query != null &&
     allSelectedProjectMembersHaveTheSameQuery
-      ? state.searchResults.searchResults[firstQuery.query][
+      ? (state.searchResults.searchResults[firstQuery.query] ?? {})[
           firstQuery.card_type
-        ]
+        ] ?? []
       : []
   );
 
@@ -207,6 +208,22 @@ function ChangeSelectedImageQueries({
   );
 }
 
+function DeleteSelectedImages({
+  selectedProjectMembers,
+}: MutateSelectedImageQueriesProps) {
+  const dispatch = useDispatch<AppDispatch>();
+
+  const slots = selectedProjectMembers.map(([face, slot]) => slot);
+  const onClick = () => dispatch(bulkDeleteSlots({ slots: slots }));
+
+  return (
+    <Dropdown.Item onClick={onClick}>
+      <i className="bi bi-x-circle" style={{ paddingRight: 0.5 + "em" }} />{" "}
+      Delete Slots
+    </Dropdown.Item>
+  );
+}
+
 export function SelectedImagesStatus() {
   const selectedProjectMembers = useSelector(selectSelectedProjectMembers);
   return (
@@ -225,6 +242,9 @@ export function SelectedImagesStatus() {
                 selectedProjectMembers={selectedProjectMembers}
               />
               <ChangeSelectedImageQueries
+                selectedProjectMembers={selectedProjectMembers}
+              />
+              <DeleteSelectedImages
                 selectedProjectMembers={selectedProjectMembers}
               />
             </Dropdown.Menu>
