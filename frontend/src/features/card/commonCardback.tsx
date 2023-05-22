@@ -15,7 +15,7 @@ import { MemoizedCard } from "@/features/card/card";
 import { MemoizedCardDetailedView } from "@/features/card/cardDetailedView";
 import { GridSelector } from "@/features/card/gridSelector";
 import {
-  bulkSetSelectedImage,
+  bulkReplaceSelectedImage,
   setSelectedCardback,
 } from "@/features/project/projectSlice";
 
@@ -42,7 +42,7 @@ export function CommonCardbackGridSelector({
   function setSelectedImageFromIdentifier(selectedImage: string): void {
     if (projectCardback != null) {
       dispatch(
-        bulkSetSelectedImage({
+        bulkReplaceSelectedImage({
           currentImage: projectCardback,
           selectedImage,
           face: Back,
@@ -120,7 +120,7 @@ export function CommonCardback({ selectedImage }: CommonCardbackProps) {
           wrapIndex(selectedImageIndex + delta, searchResults.length)
         ];
       dispatch(
-        bulkSetSelectedImage({
+        bulkReplaceSelectedImage({
           currentImage: selectedImage,
           selectedImage: newImage,
           face: Back,

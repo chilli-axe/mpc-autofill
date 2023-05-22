@@ -92,7 +92,7 @@ export const projectSlice = createSlice({
           action.payload.selectedImage;
       }
     },
-    bulkSetSelectedImage: (
+    bulkReplaceSelectedImage: (
       state,
       action: PayloadAction<{
         face: Faces;
@@ -130,6 +130,27 @@ export const projectSlice = createSlice({
             action.payload.selectedImage;
         }
         // setSelectedImage(state, {face: action.payload.face, slot: slot, selectedImage: action.payload.selectedImage})
+      }
+    },
+    bulkSetSelectedImage: (
+      state,
+      action: PayloadAction<{
+        selectedImage: string;
+        slots: Array<[Faces, number]>;
+      }>
+    ) => {
+      for (const [face, slot] of action.payload.slots) {
+        if (state.members[slot][face] == null) {
+          state.members[slot][face] = {
+            query: { query: null, card_type: Card },
+            selectedImage: action.payload.selectedImage,
+            selected: false,
+          };
+        } else {
+          state.members[slot][face]!.selectedImage =
+            action.payload.selectedImage;
+          state.members[slot][face]!.selected = false;
+        }
       }
     },
     setQuery: (
@@ -372,6 +393,7 @@ export const selectQueriesWithoutSearchResults = (
 // Action creators are generated for each case reducer function
 export const {
   setSelectedImage,
+  bulkReplaceSelectedImage,
   bulkSetSelectedImage,
   setQuery,
   bulkSetQuery,
