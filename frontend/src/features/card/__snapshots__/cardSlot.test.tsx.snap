@@ -16,6 +16,7 @@ exports[`the html structure of a CardSlot with a single search result, image sel
         Slot 1
       </p>
       <button
+        aria-label="select-front0"
         class="card-select"
       >
         <i
@@ -96,6 +97,7 @@ exports[`the html structure of a CardSlot with a single search result, no image 
         Slot 1
       </p>
       <button
+        aria-label="select-front0"
         class="card-select"
       >
         <i
@@ -257,6 +259,7 @@ exports[`the html structure of a CardSlot with multiple search results, image se
         Slot 1
       </p>
       <button
+        aria-label="select-front0"
         class="card-select"
       >
         <i

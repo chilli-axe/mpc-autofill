@@ -22,6 +22,7 @@ import { selectBackendURL } from "@/features/backend/backendSlice";
 import { GridSelector } from "@/features/card/gridSelector";
 import {
   bulkDeleteSlots,
+  bulkSetMemberSelection,
   bulkSetQuery,
   bulkSetSelectedImage,
   selectSelectedProjectMembers,
@@ -224,6 +225,27 @@ function DeleteSelectedImages({
   );
 }
 
+function ClearImageSelection({
+  selectedProjectMembers,
+}: MutateSelectedImageQueriesProps) {
+  const dispatch = useDispatch<AppDispatch>();
+
+  const onClick = () =>
+    dispatch(
+      bulkSetMemberSelection({
+        selectedStatus: false,
+        slots: selectedProjectMembers,
+      })
+    );
+
+  return (
+    <Dropdown.Item onClick={onClick}>
+      <i className="bi bi-circle" style={{ paddingRight: 0.5 + "em" }} /> Clear
+      Selection
+    </Dropdown.Item>
+  );
+}
+
 export function SelectedImagesStatus() {
   const selectedProjectMembers = useSelector(selectSelectedProjectMembers);
   return (
@@ -245,6 +267,9 @@ export function SelectedImagesStatus() {
                 selectedProjectMembers={selectedProjectMembers}
               />
               <DeleteSelectedImages
+                selectedProjectMembers={selectedProjectMembers}
+              />
+              <ClearImageSelection
                 selectedProjectMembers={selectedProjectMembers}
               />
             </Dropdown.Menu>

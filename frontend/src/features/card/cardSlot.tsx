@@ -17,7 +17,7 @@ import { wrapIndex } from "@/common/utils";
 import { MemoizedCard } from "@/features/card/card";
 import { GridSelector } from "@/features/card/gridSelector";
 import {
-  bulkSetMemberSelection,
+  bulkAlignMemberSelection,
   deleteSlot,
   setSelectedImage,
   toggleMemberSelection,
@@ -183,7 +183,7 @@ export function CardSlot({
   ) => {
     if (event.detail == 2) {
       // double-click
-      dispatch(bulkSetMemberSelection({ slot, face }));
+      dispatch(bulkAlignMemberSelection({ slot, face }));
     } else {
       dispatch(toggleMemberSelection({ slot, face }));
     }

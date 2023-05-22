@@ -226,6 +226,25 @@ export const projectSlice = createSlice({
     bulkSetMemberSelection: (
       state,
       action: PayloadAction<{
+        selectedStatus: boolean;
+        slots: Array<[Faces, number]>;
+      }>
+    ) => {
+      for (const [face, slot] of action.payload.slots) {
+        if (state.members[slot][face] == null) {
+          state.members[slot][face] = {
+            query: { query: null, card_type: Card },
+            selectedImage: undefined,
+            selected: action.payload.selectedStatus,
+          };
+        } else {
+          state.members[slot][face]!.selected = action.payload.selectedStatus;
+        }
+      }
+    },
+    bulkAlignMemberSelection: (
+      state,
+      action: PayloadAction<{
         face: Faces;
         slot: number;
       }>
@@ -411,6 +430,7 @@ export const {
   addMembers,
   toggleMemberSelection,
   bulkSetMemberSelection,
+  bulkAlignMemberSelection,
   deleteSlot,
   bulkDeleteSlots,
 } = projectSlice.actions;
