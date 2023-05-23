@@ -303,9 +303,7 @@ export const selectProjectMembers = (
 ): Array<SlotProjectMembers> => state.project.members;
 
 // TODO: this is a bit disgusting
-export const selectSelectedProjectMembers = (
-  state: RootState
-): Array<[Faces, number]> =>
+export const selectSelectedSlots = (state: RootState): Array<[Faces, number]> =>
   state.project.members.flatMap((x: SlotProjectMembers, index: number) =>
     (x.front?.selected === true ? [[Front, index]] : []).concat(
       x.back?.selected === true ? [[Back, index]] : []

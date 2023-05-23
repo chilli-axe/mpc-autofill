@@ -25,15 +25,15 @@ import {
   bulkSetMemberSelection,
   bulkSetQuery,
   bulkSetSelectedImage,
-  selectSelectedProjectMembers,
+  selectSelectedSlots,
 } from "@/features/project/projectSlice";
 
 interface MutateSelectedImageQueriesProps {
-  selectedProjectMembers: Array<[Faces, number]>;
+  slots: Array<[Faces, number]>;
 }
 
 function ChangeSelectedImageSelectedImages({
-  selectedProjectMembers,
+  slots,
 }: MutateSelectedImageQueriesProps) {
   /**
    * sorry for the stupid naming convention here 🗿
@@ -53,23 +53,19 @@ function ChangeSelectedImageSelectedImages({
     setShowChangeSelectedImageSelectedImagesModal(true);
 
   const onSubmit = (selectedImage: string): void => {
-    dispatch(
-      bulkSetSelectedImage({ selectedImage, slots: selectedProjectMembers })
-    );
+    dispatch(bulkSetSelectedImage({ selectedImage, slots }));
     handleCloseChangeSelectedImageSelectedImagesModal();
   };
 
   const firstQuery: SearchQuery | null = useSelector((state: RootState) =>
-    selectedProjectMembers.length > 0 && selectedProjectMembers[0] != null
-      ? state.project.members[selectedProjectMembers[0][1]][
-          selectedProjectMembers[0][0]
-        ].query
+    slots.length > 0 && slots[0] != null
+      ? state.project.members[slots[0][1]][slots[0][0]].query
       : null
   );
   const allSelectedProjectMembersHaveTheSameQuery: boolean = useSelector(
     (state: RootState) =>
       firstQuery != null &&
-      selectedProjectMembers.every(
+      slots.every(
         ([face, slot]) =>
           (state.project.members[slot] ?? {})[face]?.query?.query ==
             firstQuery.query &&
@@ -89,9 +85,10 @@ function ChangeSelectedImageSelectedImages({
 
   return (
     <>
-      {searchResultsForQuery.length > 0 &&
+      {searchResultsForQuery.length > 1 &&
         allSelectedProjectMembersHaveTheSameQuery && (
           <Dropdown.Item
+            className="text-decoration-none"
             onClick={handleShowChangeSelectedImageSelectedImagesModal}
           >
             <i className="bi bi-image" style={{ paddingRight: 0.5 + "em" }} />{" "}
@@ -110,7 +107,7 @@ function ChangeSelectedImageSelectedImages({
 }
 
 function ChangeSelectedImageQueries({
-  selectedProjectMembers,
+  slots,
 }: MutateSelectedImageQueriesProps) {
   const dispatch = useDispatch<AppDispatch>();
 
@@ -132,10 +129,7 @@ function ChangeSelectedImageQueries({
   ) => {
     event.preventDefault(); // to avoid reloading the page
     dispatch(
-      bulkSetQuery({
-        query: changeSelectedImageQueriesModalValue,
-        slots: selectedProjectMembers,
-      })
+      bulkSetQuery({ query: changeSelectedImageQueriesModalValue, slots })
     );
     handleCloseChangeSelectedImageQueriesModal();
   };
@@ -152,7 +146,10 @@ function ChangeSelectedImageQueries({
 
   return (
     <>
-      <Dropdown.Item onClick={handleShowChangeSelectedImageQueriesModal}>
+      <Dropdown.Item
+        className="text-decoration-none"
+        onClick={handleShowChangeSelectedImageQueriesModal}
+      >
         <i
           className="bi bi-arrow-repeat"
           style={{ paddingRight: 0.5 + "em" }}
@@ -209,69 +206,49 @@ function ChangeSelectedImageQueries({
   );
 }
 
-function DeleteSelectedImages({
-  selectedProjectMembers,
-}: MutateSelectedImageQueriesProps) {
+function DeleteSelectedImages({ slots }: MutateSelectedImageQueriesProps) {
   const dispatch = useDispatch<AppDispatch>();
 
-  const slots = selectedProjectMembers.map(([face, slot]) => slot);
-  const onClick = () => dispatch(bulkDeleteSlots({ slots: slots }));
+  const slotNumbers = slots.map(([face, slot]) => slot);
+  const onClick = () => dispatch(bulkDeleteSlots({ slots: slotNumbers }));
 
   return (
-    <Dropdown.Item onClick={onClick}>
+    <Dropdown.Item onClick={onClick} className="text-decoration-none">
       <i className="bi bi-x-circle" style={{ paddingRight: 0.5 + "em" }} />{" "}
       Delete Slots
     </Dropdown.Item>
   );
 }
 
-function ClearImageSelection({
-  selectedProjectMembers,
-}: MutateSelectedImageQueriesProps) {
-  const dispatch = useDispatch<AppDispatch>();
-
-  const onClick = () =>
-    dispatch(
-      bulkSetMemberSelection({
-        selectedStatus: false,
-        slots: selectedProjectMembers,
-      })
-    );
-
-  return (
-    <Dropdown.Item onClick={onClick}>
-      <i className="bi bi-circle" style={{ paddingRight: 0.5 + "em" }} /> Clear
-      Selection
-    </Dropdown.Item>
-  );
-}
-
 export function SelectedImagesStatus() {
-  const selectedProjectMembers = useSelector(selectSelectedProjectMembers);
+  const slots = useSelector(selectSelectedSlots);
+
+  const dispatch = useDispatch<AppDispatch>();
+  const onClick = () =>
+    dispatch(bulkSetMemberSelection({ selectedStatus: false, slots }));
+
   return (
     <>
       <Alert
         variant="primary"
-        style={{ display: selectedProjectMembers.length > 0 ? "" : "none" }}
+        style={{ display: slots.length > 0 ? "" : "none" }}
       >
         <Stack direction="horizontal" gap={2}>
-          <b>{selectedProjectMembers.length}</b> image
-          {selectedProjectMembers.length != 1 && "s"} selected.
-          <Dropdown className="ms-auto">
+          {slots.length} image
+          {slots.length != 1 && "s"} selected.
+          <Button
+            onClick={onClick}
+            className="ms-auto"
+            data-testid="clear-selection"
+          >
+            <i className="bi bi-x-lg" />
+          </Button>
+          <Dropdown>
             <Dropdown.Toggle variant="secondary">Modify</Dropdown.Toggle>
             <Dropdown.Menu>
-              <ChangeSelectedImageSelectedImages
-                selectedProjectMembers={selectedProjectMembers}
-              />
-              <ChangeSelectedImageQueries
-                selectedProjectMembers={selectedProjectMembers}
-              />
-              <DeleteSelectedImages
-                selectedProjectMembers={selectedProjectMembers}
-              />
-              <ClearImageSelection
-                selectedProjectMembers={selectedProjectMembers}
-              />
+              <ChangeSelectedImageSelectedImages slots={slots} />
+              <ChangeSelectedImageQueries slots={slots} />
+              <DeleteSelectedImages slots={slots} />
             </Dropdown.Menu>
           </Dropdown>
         </Stack>
