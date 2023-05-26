@@ -11,6 +11,7 @@ import styled from "styled-components";
 
 import { ProjectMaxSize } from "@/common/constants";
 import { bracket, imageSizeToMBString } from "@/common/utils";
+import { SelectedImagesStatus } from "@/features/project/bulkManagement";
 import {
   selectGeneratedDecklist,
   selectGeneratedXML,
@@ -25,10 +26,6 @@ const SizedIcon = styled.i`
 `;
 
 export function ProjectStatus() {
-  // const [show, setShow] = useState(false);
-  // const handleClose = () => setShow(false);
-  // const handleShow = () => setShow(true);
-
   const generatedXML = useSelector(selectGeneratedXML);
   const generatedDecklist = useSelector(selectGeneratedDecklist);
   const projectSize = useSelector(selectProjectSize);
@@ -49,6 +46,7 @@ export function ProjectStatus() {
   return (
     <>
       <h2>Edit MPC Project</h2>
+      <SelectedImagesStatus />
       <Alert variant="secondary">
         Your project contains <b>{projectSize}</b> card
         {projectSize !== 1 && "s"}, belongs in the MPC bracket of up to{" "}

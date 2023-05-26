@@ -70,7 +70,11 @@ test("empty prefix is processed correctly", () => {
 test("line that doesn't specify quantity is processed correctly", () => {
   expect(processLine("opt", dfcPairs)).toStrictEqual([
     1,
-    { query: { card_type: Card, query: "opt" }, selectedImage: undefined },
+    {
+      query: { card_type: Card, query: "opt" },
+      selectedImage: undefined,
+      selected: false,
+    },
     null,
   ]);
 });
@@ -81,6 +85,7 @@ test("non-dfc line is processed correctly", () => {
     {
       query: { card_type: Card, query: "lightning bolt" },
       selectedImage: undefined,
+      selected: false,
     },
     null,
   ]);
@@ -92,6 +97,7 @@ test("non-dfc cardback line is processed correctly", () => {
     {
       query: { card_type: Cardback, query: "black lotus" },
       selectedImage: undefined,
+      selected: false,
     },
     null,
   ]);
@@ -100,8 +106,16 @@ test("non-dfc cardback line is processed correctly", () => {
 test("manually specified front and back line is processed correctly", () => {
   expect(processLine("5 Opt | Char", dfcPairs)).toStrictEqual([
     5,
-    { query: { card_type: Card, query: "opt" }, selectedImage: undefined },
-    { query: { card_type: Card, query: "char" }, selectedImage: undefined },
+    {
+      query: { card_type: Card, query: "opt" },
+      selectedImage: undefined,
+      selected: false,
+    },
+    {
+      query: { card_type: Card, query: "char" },
+      selectedImage: undefined,
+      selected: false,
+    },
   ]);
 });
 
@@ -111,10 +125,12 @@ test("line that matches to dfc pair is processed correctly", () => {
     {
       query: { card_type: Card, query: "huntmaster of the fells" },
       selectedImage: undefined,
+      selected: false,
     },
     {
       query: { card_type: Card, query: "ravager of the fells" },
       selectedImage: undefined,
+      selected: false,
     },
   ]);
 });
@@ -127,8 +143,13 @@ test("line that matches to dfc pair but a back is also manually specified is pro
     {
       query: { card_type: Card, query: "huntmaster of the fells" },
       selectedImage: undefined,
+      selected: false,
     },
-    { query: { card_type: Token, query: "goblin" }, selectedImage: undefined },
+    {
+      query: { card_type: Token, query: "goblin" },
+      selectedImage: undefined,
+      selected: false,
+    },
   ]);
 });
 
@@ -143,10 +164,12 @@ test("a card name that's a subset of a DFC pair's front is not matched", () => {
       {
         query: { card_type: Card, query: "elesh norn" },
         selectedImage: undefined,
+        selected: false,
       },
       {
         query: { card_type: Card, query: "the argent etchings" },
         selectedImage: undefined,
+        selected: false,
       },
     ],
     [
@@ -154,6 +177,7 @@ test("a card name that's a subset of a DFC pair's front is not matched", () => {
       {
         query: { card_type: Card, query: "elesh norn grand cenobite" },
         selectedImage: undefined,
+        selected: false,
       },
       null,
     ],
@@ -163,7 +187,11 @@ test("a card name that's a subset of a DFC pair's front is not matched", () => {
 test("line that requests 0 of a card is processed correctly", () => {
   expect(processLine("0 opt", dfcPairs)).toStrictEqual([
     0,
-    { query: { card_type: Card, query: "opt" }, selectedImage: undefined },
+    {
+      query: { card_type: Card, query: "opt" },
+      selectedImage: undefined,
+      selected: false,
+    },
     null,
   ]);
 });
@@ -171,7 +199,11 @@ test("line that requests 0 of a card is processed correctly", () => {
 test("line that requests -1 of a card is processed correctly", () => {
   expect(processLine("-1 opt", dfcPairs)).toStrictEqual([
     1,
-    { query: { card_type: Card, query: "-1 opt" }, selectedImage: undefined },
+    {
+      query: { card_type: Card, query: "-1 opt" },
+      selectedImage: undefined,
+      selected: false,
+    },
     null,
   ]);
 });
@@ -185,7 +217,11 @@ test("multiple lines processed correctly", () => {
   ).toStrictEqual([
     [
       1,
-      { query: { card_type: Card, query: "char" }, selectedImage: undefined },
+      {
+        query: { card_type: Card, query: "char" },
+        selectedImage: undefined,
+        selected: false,
+      },
       null,
     ],
     [
@@ -193,10 +229,12 @@ test("multiple lines processed correctly", () => {
       {
         query: { card_type: Card, query: "delver of secrets" },
         selectedImage: undefined,
+        selected: false,
       },
       {
         query: { card_type: Card, query: "insectile aberration" },
         selectedImage: undefined,
+        selected: false,
       },
     ],
   ]);
@@ -205,7 +243,11 @@ test("multiple lines processed correctly", () => {
 test("a line specifying the selected image ID for the front is processed correctly", () => {
   expect(processLine("opt@xyz", dfcPairs)).toStrictEqual([
     1,
-    { query: { card_type: Card, query: "opt" }, selectedImage: "xyz" },
+    {
+      query: { card_type: Card, query: "opt" },
+      selectedImage: "xyz",
+      selected: false,
+    },
     null,
   ]);
 });
@@ -213,8 +255,16 @@ test("a line specifying the selected image ID for the front is processed correct
 test("a line specifying the selected image ID for both faces is processed correctly", () => {
   expect(processLine("2 opt@xyz | char@abcd", dfcPairs)).toStrictEqual([
     2,
-    { query: { card_type: Card, query: "opt" }, selectedImage: "xyz" },
-    { query: { card_type: Card, query: "char" }, selectedImage: "abcd" },
+    {
+      query: { card_type: Card, query: "opt" },
+      selectedImage: "xyz",
+      selected: false,
+    },
+    {
+      query: { card_type: Card, query: "char" },
+      selectedImage: "abcd",
+      selected: false,
+    },
   ]);
 });
 

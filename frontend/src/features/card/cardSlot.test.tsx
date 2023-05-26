@@ -1,4 +1,4 @@
-import { screen, waitFor } from "@testing-library/react";
+import { fireEvent, screen, waitFor } from "@testing-library/react";
 
 import App from "@/app/app";
 import { Back, Card, Front } from "@/common/constants";
@@ -58,6 +58,39 @@ test("the html structure of a CardSlot with a single search result, no image sel
     },
   });
   await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 1);
+  expect(screen.getByTestId("front-slot0")).toMatchSnapshot();
+});
+
+test("the html structure of a CardSlot with a single search result, slot selected", async () => {
+  server.use(
+    cardDocumentsOneResult,
+    sourceDocumentsOneResult,
+    searchResultsOneResult
+  );
+  renderWithProviders(<App />, {
+    preloadedState: {
+      backend: localBackend,
+      project: {
+        members: [
+          {
+            front: {
+              query: { query: "my search query", card_type: Card },
+              selectedImage: null,
+            },
+            back: null,
+          },
+        ],
+        cardback: null,
+      },
+    },
+  });
+  await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 1);
+  screen.getByLabelText("select-front0").click();
+  await waitFor(() =>
+    expect(screen.getByLabelText("select-front0").firstChild).toHaveClass(
+      "bi-check-square"
+    )
+  );
   expect(screen.getByTestId("front-slot0")).toMatchSnapshot();
 });
 
@@ -380,4 +413,53 @@ test("CardSlot defaults to project cardback for backs with no search query", asy
 
   await expectCardGridSlotState(1, Back, cardDocument1.name, 1, 2);
   await expectCardbackSlotState(cardDocument1.name, 1, 2);
+});
+
+test.skip("double clicking the select button selects all slots for the same query", async () => {
+  server.use(
+    cardDocumentsOneResult,
+    sourceDocumentsOneResult,
+    searchResultsOneResult
+  );
+  renderWithProviders(<App />, {
+    preloadedState: {
+      backend: localBackend,
+      project: {
+        members: [
+          {
+            front: {
+              query: { query: "my search query", card_type: Card },
+              selectedImage: null,
+            },
+            back: null,
+          },
+          {
+            front: {
+              query: { query: "my search query", card_type: Card },
+              selectedImage: null,
+            },
+            back: null,
+          },
+        ],
+        cardback: null,
+      },
+    },
+  });
+  await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 1);
+  await expectCardGridSlotState(2, Front, cardDocument1.name, 1, 1);
+  // fireEvent.doubleClick(screen.getByLabelText("select-front0"));
+  screen.getByLabelText("select-front0");
+  // const selectButton = screen.getByLabelText("select-front0");
+  // selectButton.click()
+  // selectButton.click()
+  await waitFor(() =>
+    expect(screen.getByLabelText("select-front0").firstChild).toHaveClass(
+      "bi-check-square"
+    )
+  );
+  await waitFor(() =>
+    expect(screen.getByLabelText("select-front1").firstChild).toHaveClass(
+      "bi-check-square"
+    )
+  );
 });

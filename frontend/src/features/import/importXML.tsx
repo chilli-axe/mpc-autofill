@@ -105,6 +105,7 @@ export function ImportXML() {
               selectedImage:
                 backCardElement.getElementsByTagName("id")[0].textContent ??
                 undefined,
+              selected: false,
             };
 
             lastNonNullSlot = Math.max(lastNonNullSlot, slot);
@@ -131,6 +132,7 @@ export function ImportXML() {
             selectedImage:
               frontCardElement.getElementsByTagName("id")[0].textContent ??
               undefined,
+            selected: false,
           };
 
           // apply the uploaded XML's cardback if the card doesn't have a matching back
@@ -138,6 +140,7 @@ export function ImportXML() {
             newMembers[slot].back = {
               query: { query: null, card_type: Cardback },
               selectedImage: cardback,
+              selected: false,
             };
           }
 

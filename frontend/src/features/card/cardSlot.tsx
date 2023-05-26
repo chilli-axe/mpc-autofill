@@ -16,7 +16,12 @@ import { Faces, SearchQuery } from "@/common/types";
 import { wrapIndex } from "@/common/utils";
 import { MemoizedCard } from "@/features/card/card";
 import { GridSelector } from "@/features/card/gridSelector";
-import { deleteImage, setSelectedImage } from "@/features/project/projectSlice";
+import {
+  bulkAlignMemberSelection,
+  deleteSlot,
+  setSelectedImage,
+  toggleMemberSelection,
+} from "@/features/project/projectSlice";
 
 interface CardSlotProps {
   searchQuery: SearchQuery | undefined;
@@ -169,8 +174,19 @@ export function CardSlot({
       : undefined;
 
   // TODO: add a confirmation prompt here. yes/no/yes and don't ask again.
-  const deleteThisImage = () => {
-    dispatch(deleteImage({ slot }));
+  const deleteThisSlot = () => {
+    dispatch(deleteSlot({ slot }));
+  };
+
+  const toggleSelectionForThisMember = (
+    event: React.MouseEvent<HTMLButtonElement>
+  ) => {
+    if (event.detail == 2) {
+      // double-click
+      dispatch(bulkAlignMemberSelection({ slot, face }));
+    } else {
+      dispatch(toggleMemberSelection({ slot, face }));
+    }
   };
 
   function setSelectedImageFromDelta(delta: number): void {
@@ -193,16 +209,23 @@ export function CardSlot({
   }
 
   const cardHeaderTitle = `Slot ${slot + 1}`;
-  // TODO: the padlock should be replaced by a checkbox showing if the card is selected or not
   const cardHeaderButtons = (
     <>
-      <button className="padlock">
-        <i className="bi bi-unlock"></i>
+      <button
+        className="card-select"
+        onClick={toggleSelectionForThisMember}
+        aria-label={`select-${face}${slot}`}
+      >
+        <i
+          className={`bi bi${
+            projectMember?.selected ?? false ? "-check" : ""
+          }-square`}
+        ></i>
       </button>
       <button className="remove">
         <i
           className="bi bi-x-circle"
-          onClick={deleteThisImage}
+          onClick={deleteThisSlot}
           aria-label={`remove-${face}${slot}`}
         ></i>
       </button>
