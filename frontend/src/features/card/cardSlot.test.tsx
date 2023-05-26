@@ -17,6 +17,7 @@ import {
   expectCardSlotToNotExist,
   openCardSlotGridSelector,
   renderWithProviders,
+  selectSlot,
 } from "@/common/test-utils";
 import {
   cardbacksTwoResults,
@@ -415,7 +416,7 @@ test("CardSlot defaults to project cardback for backs with no search query", asy
   await expectCardbackSlotState(cardDocument1.name, 1, 2);
 });
 
-test.skip("double clicking the select button selects all slots for the same query", async () => {
+test("double clicking the select button selects all slots for the same query", async () => {
   server.use(
     cardDocumentsOneResult,
     sourceDocumentsOneResult,
@@ -447,11 +448,9 @@ test.skip("double clicking the select button selects all slots for the same quer
   });
   await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 1);
   await expectCardGridSlotState(2, Front, cardDocument1.name, 1, 1);
-  // fireEvent.doubleClick(screen.getByLabelText("select-front0"));
-  screen.getByLabelText("select-front0");
-  // const selectButton = screen.getByLabelText("select-front0");
-  // selectButton.click()
-  // selectButton.click()
+
+  await selectSlot(1, Front);
+  await selectSlot(1, Front, 2);
   await waitFor(() =>
     expect(screen.getByLabelText("select-front0").firstChild).toHaveClass(
       "bi-check-square"

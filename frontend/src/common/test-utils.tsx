@@ -236,10 +236,12 @@ export async function openCardSlotGridSelector(
   );
 }
 
-export async function selectSlot(slot: number, face: Faces) {
+export async function selectSlot(slot: number, face: Faces, count: number = 1) {
   const cardElement = screen.getByTestId(`${face}-slot${slot - 1}`);
   fireEvent.click(
-    within(cardElement).getByLabelText(`select-${face}${slot - 1}`)!.children[0]
+    within(cardElement).getByLabelText(`select-${face}${slot - 1}`)!
+      .children[0],
+    { detail: count }
   );
   await waitFor(() =>
     expect(
