@@ -39,7 +39,8 @@ test("the html structure of a CardSlot with a single search result, no image sel
   server.use(
     cardDocumentsOneResult,
     sourceDocumentsOneResult,
-    searchResultsOneResult
+    searchResultsOneResult,
+    ...defaultHandlers
   );
   renderWithProviders(<App />, {
     preloadedState: {
@@ -66,7 +67,8 @@ test("the html structure of a CardSlot with a single search result, slot selecte
   server.use(
     cardDocumentsOneResult,
     sourceDocumentsOneResult,
-    searchResultsOneResult
+    searchResultsOneResult,
+    ...defaultHandlers
   );
   renderWithProviders(<App />, {
     preloadedState: {
@@ -99,7 +101,8 @@ test("the html structure of a CardSlot with a single search result, image select
   server.use(
     cardDocumentsOneResult,
     sourceDocumentsOneResult,
-    searchResultsOneResult
+    searchResultsOneResult,
+    ...defaultHandlers
   );
 
   renderWithProviders(<App />, {
@@ -117,7 +120,8 @@ test("the html structure of a CardSlot with multiple search results, image selec
   server.use(
     cardDocumentsThreeResults,
     sourceDocumentsOneResult,
-    searchResultsThreeResults
+    searchResultsThreeResults,
+    ...defaultHandlers
   );
 
   renderWithProviders(<App />, {
@@ -132,7 +136,8 @@ test("the html structure of a CardSlot's grid selector, cards faceted by source"
   server.use(
     cardDocumentsFourResults,
     sourceDocumentsThreeResults,
-    searchResultsFourResults
+    searchResultsFourResults,
+    ...defaultHandlers
   );
 
   renderWithProviders(<App />, {
@@ -150,7 +155,8 @@ test("the html structure of a CardSlot's grid selector, cards grouped together",
   server.use(
     cardDocumentsFourResults,
     sourceDocumentsThreeResults,
-    searchResultsFourResults
+    searchResultsFourResults,
+    ...defaultHandlers
   );
 
   renderWithProviders(<App />, {
@@ -420,7 +426,8 @@ test("double clicking the select button selects all slots for the same query", a
   server.use(
     cardDocumentsOneResult,
     sourceDocumentsOneResult,
-    searchResultsOneResult
+    searchResultsOneResult,
+    ...defaultHandlers
   );
   renderWithProviders(<App />, {
     preloadedState: {

@@ -266,7 +266,7 @@ test("importing an empty string by text into an empty project", async () => {
 });
 
 test("the placeholder text of the text importer", async () => {
-  server.use(sampleCards);
+  server.use(sampleCards, ...defaultHandlers);
   renderWithProviders(<App />, { preloadedState });
 
   await openImportTextModal();
