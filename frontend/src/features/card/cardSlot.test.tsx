@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
 
 import App from "@/app/app";
 import { Back, Card, Front } from "@/common/constants";
