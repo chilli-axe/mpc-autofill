@@ -236,6 +236,58 @@ export async function openCardSlotGridSelector(
   );
 }
 
+export async function selectSlot(slot: number, face: Faces) {
+  const cardElement = screen.getByTestId(`${face}-slot${slot - 1}`);
+  fireEvent.click(
+    within(cardElement).getByLabelText(`select-${face}${slot - 1}`)!.children[0]
+  );
+  await waitFor(() =>
+    expect(
+      within(cardElement).getByLabelText(`select-${face}${slot - 1}`)!
+        .children[0]
+    ).toHaveClass("bi-check-square")
+  );
+}
+
+export async function deselectSlot(slot: number, face: Faces) {
+  const cardElement = screen.getByTestId(`${face}-slot${slot - 1}`);
+  fireEvent.click(
+    within(cardElement).getByLabelText(`select-${face}${slot - 1}`)!.children[0]
+  );
+  await waitFor(() =>
+    expect(
+      within(cardElement).getByLabelText(`select-${face}${slot - 1}`)!
+        .children[0]
+    ).toHaveClass("bi-square")
+  );
+}
+
+export async function changeQueryForSelectedImages(query: string) {
+  screen.getByText("Modify").click();
+  await waitFor(() => screen.getByText("Change Query").click());
+  const textField = await waitFor(() =>
+    screen.getByLabelText("change-selected-image-queries-text")
+  );
+  fireEvent.change(textField, { target: { value: query } });
+  screen.getByLabelText("change-selected-image-queries-submit").click();
+}
+
+export async function changeImageForSelectedImages(cardName: string) {
+  screen.getByText("Modify").click();
+  await waitFor(() => screen.getByText("Change Version").click());
+  await waitFor(() => expect(screen.getByText("Option 1")));
+  await waitFor(() =>
+    within(screen.getByTestId("bulk-grid-selector"))
+      .getByAltText(cardName)
+      .click()
+  );
+}
+
+export async function deleteSelectedImages() {
+  screen.getByText("Modify").click();
+  await waitFor(() => screen.getByText("Delete Slots").click());
+}
+
 export async function openSearchSettingsModal() {
   screen.getByText("Search Settings", { exact: false }).click();
   await waitFor(() => expect(screen.getByText("Search Settings")));
