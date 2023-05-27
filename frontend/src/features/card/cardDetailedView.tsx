@@ -13,6 +13,7 @@ import Table from "react-bootstrap/Table";
 import { useSelector } from "react-redux";
 
 import { RootState } from "@/app/store";
+import { CardDocument } from "@/common/types";
 import { imageSizeToMBString } from "@/common/utils";
 import {
   MemoizedCardImage,
@@ -26,15 +27,19 @@ interface CardDetailedViewProps {
     (): void;
     (event: React.MouseEvent<HTMLButtonElement, MouseEvent>): void;
   };
+  cardDocument?: CardDocument;
 }
 
 export function CardDetailedView({
   imageIdentifier,
   show,
   handleClose,
+  cardDocument,
 }: CardDetailedViewProps) {
-  const maybeCardDocument = useSelector(
-    (state: RootState) => state.cardDocuments.cardDocuments[imageIdentifier]
+  const maybeCardDocument = useSelector((state: RootState) =>
+    cardDocument != null
+      ? cardDocument
+      : state.cardDocuments.cardDocuments[imageIdentifier]
   );
   const maybeSourceDocuments = useSelector(
     (state: RootState) => state.sourceDocuments.sourceDocuments

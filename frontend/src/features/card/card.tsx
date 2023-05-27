@@ -94,7 +94,7 @@ function CardProportionWrapper(
       className={`rounded-${
         props.small ? "lg" : "xl"
       } shadow-lg ratio ratio-7x5`}
-      style={{ zIndex: 0 }}
+      style={{ zIndex: 0, background: "#4e5d6c" }}
     >
       {props.children}
     </div>
