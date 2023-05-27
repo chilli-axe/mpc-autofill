@@ -19,7 +19,7 @@ exports[`the html structure of a CommonCardback with a single search result 1`] 
     <div>
       <div
         class="rounded-lg shadow-lg ratio ratio-7x5"
-        style="z-index: 0;"
+        style="z-index: 0; background: rgb(78, 93, 108);"
       >
         <img
           alt="Card 1"
@@ -85,7 +85,7 @@ exports[`the html structure of a CommonCardback with multiple search results 1`]
     <div>
       <div
         class="rounded-lg shadow-lg ratio ratio-7x5"
-        style="z-index: 0;"
+        style="z-index: 0; background: rgb(78, 93, 108);"
       >
         <img
           alt="Card 1"

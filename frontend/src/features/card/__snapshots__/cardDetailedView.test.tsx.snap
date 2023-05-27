@@ -34,7 +34,7 @@ exports[`the html structure of a CardDetailedView 1`] = `
         >
           <div
             class="rounded-xl shadow-lg ratio ratio-7x5"
-            style="z-index: 0;"
+            style="z-index: 0; background: rgb(78, 93, 108);"
           >
             <img
               alt="Card 1"

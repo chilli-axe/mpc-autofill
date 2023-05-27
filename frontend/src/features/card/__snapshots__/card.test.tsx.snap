@@ -18,7 +18,7 @@ exports[`the html structure of a Card with a single document 1`] = `
       <div>
         <div
           class="rounded-lg shadow-lg ratio ratio-7x5"
-          style="z-index: 0;"
+          style="z-index: 0; background: rgb(78, 93, 108);"
         >
           <div
             class="d-flex justify-content-center align-items-center"
@@ -86,7 +86,7 @@ exports[`the html structure of a Card with no search results 1`] = `
       <div>
         <div
           class="rounded-lg shadow-lg ratio ratio-7x5"
-          style="z-index: 0;"
+          style="z-index: 0; background: rgb(78, 93, 108);"
         >
           <img
             alt="Card not found"
@@ -142,7 +142,7 @@ exports[`the html structure of a Card with three documents 1`] = `
       <div>
         <div
           class="rounded-lg shadow-lg ratio ratio-7x5"
-          style="z-index: 0;"
+          style="z-index: 0; background: rgb(78, 93, 108);"
         >
           <div
             class="d-flex justify-content-center align-items-center"
@@ -228,7 +228,7 @@ exports[`the html structure of a Card with two documents 1`] = `
       <div>
         <div
           class="rounded-lg shadow-lg ratio ratio-7x5"
-          style="z-index: 0;"
+          style="z-index: 0; background: rgb(78, 93, 108);"
         >
           <div
             class="d-flex justify-content-center align-items-center"

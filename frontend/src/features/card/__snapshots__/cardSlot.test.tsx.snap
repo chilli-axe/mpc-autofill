@@ -35,7 +35,7 @@ exports[`the html structure of a CardSlot with a single search result, image sel
     <div>
       <div
         class="rounded-lg shadow-lg ratio ratio-7x5"
-        style="z-index: 0;"
+        style="z-index: 0; background: rgb(78, 93, 108);"
       >
         <img
           alt="Card 1"
@@ -116,7 +116,7 @@ exports[`the html structure of a CardSlot with a single search result, no image 
     <div>
       <div
         class="rounded-lg shadow-lg ratio ratio-7x5"
-        style="z-index: 0;"
+        style="z-index: 0; background: rgb(78, 93, 108);"
       >
         <img
           alt="Card 1"
@@ -197,7 +197,7 @@ exports[`the html structure of a CardSlot with a single search result, slot sele
     <div>
       <div
         class="rounded-lg shadow-lg ratio ratio-7x5"
-        style="z-index: 0;"
+        style="z-index: 0; background: rgb(78, 93, 108);"
       >
         <img
           alt="Card 1"
@@ -278,7 +278,7 @@ exports[`the html structure of a CardSlot with multiple search results, image se
     <div>
       <div
         class="rounded-lg shadow-lg ratio ratio-7x5"
-        style="z-index: 0;"
+        style="z-index: 0; background: rgb(78, 93, 108);"
       >
         <img
           alt="Card 1"
@@ -486,7 +486,7 @@ exports[`the html structure of a CardSlot's grid selector, cards faceted by sour
             <div>
               <div
                 class="rounded-lg shadow-lg ratio ratio-7x5"
-                style="z-index: 0;"
+                style="z-index: 0; background: rgb(78, 93, 108);"
               >
                 <img
                   alt="Card 1"
@@ -533,7 +533,7 @@ exports[`the html structure of a CardSlot's grid selector, cards faceted by sour
             <div>
               <div
                 class="rounded-lg shadow-lg ratio ratio-7x5"
-                style="z-index: 0;"
+                style="z-index: 0; background: rgb(78, 93, 108);"
               >
                 <img
                   alt="Card 2"
@@ -580,7 +580,7 @@ exports[`the html structure of a CardSlot's grid selector, cards faceted by sour
             <div>
               <div
                 class="rounded-lg shadow-lg ratio ratio-7x5"
-                style="z-index: 0;"
+                style="z-index: 0; background: rgb(78, 93, 108);"
               >
                 <img
                   alt="Card 3"
@@ -627,7 +627,7 @@ exports[`the html structure of a CardSlot's grid selector, cards faceted by sour
             <div>
               <div
                 class="rounded-lg shadow-lg ratio ratio-7x5"
-                style="z-index: 0;"
+                style="z-index: 0; background: rgb(78, 93, 108);"
               >
                 <img
                   alt="Card 4"
@@ -751,7 +751,7 @@ exports[`the html structure of a CardSlot's grid selector, cards grouped togethe
           <div>
             <div
               class="rounded-lg shadow-lg ratio ratio-7x5"
-              style="z-index: 0;"
+              style="z-index: 0; background: rgb(78, 93, 108);"
             >
               <img
                 alt="Card 1"
@@ -798,7 +798,7 @@ exports[`the html structure of a CardSlot's grid selector, cards grouped togethe
           <div>
             <div
               class="rounded-lg shadow-lg ratio ratio-7x5"
-              style="z-index: 0;"
+              style="z-index: 0; background: rgb(78, 93, 108);"
             >
               <img
                 alt="Card 2"
@@ -845,7 +845,7 @@ exports[`the html structure of a CardSlot's grid selector, cards grouped togethe
           <div>
             <div
               class="rounded-lg shadow-lg ratio ratio-7x5"
-              style="z-index: 0;"
+              style="z-index: 0; background: rgb(78, 93, 108);"
             >
               <img
                 alt="Card 3"
@@ -892,7 +892,7 @@ exports[`the html structure of a CardSlot's grid selector, cards grouped togethe
           <div>
             <div
               class="rounded-lg shadow-lg ratio ratio-7x5"
-              style="z-index: 0;"
+              style="z-index: 0; background: rgb(78, 93, 108);"
             >
               <img
                 alt="Card 4"
