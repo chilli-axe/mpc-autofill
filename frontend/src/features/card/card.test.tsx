@@ -4,11 +4,11 @@ import {
   cardDocument3,
 } from "@/common/test-constants";
 import { renderWithProviders } from "@/common/test-utils";
-import { Card } from "@/features/card/card";
+import { MemoizedCard } from "@/features/card/card";
 
 test("the html structure of a Card with a single document", () => {
   const rendered = renderWithProviders(
-    <Card
+    <MemoizedCard
       cardHeaderTitle="Card 1"
       noResultsFound={false}
       imageIdentifier={cardDocument1.identifier}
@@ -30,7 +30,7 @@ test("the html structure of a Card with a single document", () => {
 
 test("the html structure of a Card with two documents", () => {
   const rendered = renderWithProviders(
-    <Card
+    <MemoizedCard
       cardHeaderTitle="Card 2"
       noResultsFound={false}
       imageIdentifier={cardDocument1.identifier}
@@ -54,7 +54,7 @@ test("the html structure of a Card with two documents", () => {
 
 test("the html structure of a Card with three documents", () => {
   const rendered = renderWithProviders(
-    <Card
+    <MemoizedCard
       cardHeaderTitle="Card 3"
       noResultsFound={false}
       imageIdentifier={cardDocument1.identifier}
@@ -80,7 +80,7 @@ test("the html structure of a Card with three documents", () => {
 
 test("the html structure of a Card with no search results", () => {
   const rendered = renderWithProviders(
-    <Card
+    <MemoizedCard
       imageIdentifier={undefined}
       cardHeaderTitle="Card 1"
       noResultsFound={true}

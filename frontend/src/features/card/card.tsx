@@ -6,19 +6,102 @@
  */
 
 import Image from "next/image";
-import React, { memo, ReactElement, useEffect, useState } from "react";
+import React, {
+  memo,
+  PropsWithChildren,
+  ReactElement,
+  useEffect,
+  useState,
+} from "react";
 import BSCard from "react-bootstrap/Card";
 import { useSelector } from "react-redux";
 import styled from "styled-components";
 
 import { RootState } from "@/app/store";
 import { SearchQuery } from "@/common/types";
+import { CardDocument } from "@/common/types";
 import { Spinner } from "@/features/ui/spinner";
 
 const HiddenImage = styled(Image)`
   z-index: 0;
   opacity: 0;
 `;
+
+interface CardImageProps {
+  cardDocument: CardDocument;
+  onClick?: React.MouseEventHandler<HTMLImageElement>;
+  hidden: boolean;
+  small: boolean;
+}
+
+function CardImage({ cardDocument, onClick, hidden, small }: CardImageProps) {
+  const [imageLoading, setImageLoading] = useState(true);
+  // ensure that the small thumbnail fades in each time the selected image changes
+  useEffect(() => setImageLoading(true), [cardDocument.identifier]);
+
+  return (
+    <>
+      {hidden ? (
+        <HiddenImage
+          className="card-img"
+          loading="lazy"
+          src={
+            small
+              ? cardDocument.small_thumbnail_url
+              : cardDocument.medium_thumbnail_url
+          }
+          onLoad={() => setImageLoading(false)}
+          onClick={onClick}
+          // onError={{thumbnail_404(this)}} // TODO
+          alt={cardDocument.name}
+          fill={true}
+        />
+      ) : (
+        <>
+          {imageLoading && <Spinner />}
+          <Image
+            className="card-img card-img-fade-in"
+            loading="lazy"
+            style={{ zIndex: 1, opacity: imageLoading ? 0 : 1 }}
+            src={
+              small
+                ? cardDocument.small_thumbnail_url
+                : cardDocument.medium_thumbnail_url
+            }
+            onLoad={() => setImageLoading(false)}
+            onClick={onClick}
+            // onError={{thumbnail_404(this)}} // TODO
+            alt={cardDocument.name}
+            fill={true}
+          />
+        </>
+      )}
+    </>
+  );
+}
+
+export const MemoizedCardImage = memo(CardImage);
+
+interface CardProportionWrapperProps {
+  small: boolean;
+}
+
+function CardProportionWrapper(
+  props: PropsWithChildren<CardProportionWrapperProps>
+) {
+  return (
+    <div
+      className={`rounded-${
+        props.small ? "lg" : "xl"
+      } shadow-lg ratio ratio-7x5`}
+      style={{ zIndex: 0 }}
+    >
+      {props.children}
+    </div>
+  );
+}
+
+export const MemoizedCardProportionWrapper = memo(CardProportionWrapper);
 
 interface CardProps {
   /** The card image identifier to display. */
@@ -55,10 +138,6 @@ export function Card({
   searchQuery,
   noResultsFound,
 }: CardProps) {
-  // ensure that the small thumbnail fades in each time the selected image changes
-  const [smallThumbnailLoading, setSmallThumbnailLoading] = useState(true);
-  useEffect(() => setSmallThumbnailLoading(true), [imageIdentifier]);
-
   const maybeCardDocument = useSelector((state: RootState) =>
     imageIdentifier != null
       ? state.cardDocuments.cardDocuments[imageIdentifier]
@@ -79,39 +158,28 @@ export function Card({
   const cardImageElements =
     maybeCardDocument != null ? (
       <>
-        {smallThumbnailLoading && <Spinner />}
-
-        <Image
-          className="card-img card-img-fade-in"
-          loading="lazy"
-          style={{ zIndex: 1, opacity: smallThumbnailLoading ? 0 : 1 }}
-          src={maybeCardDocument.small_thumbnail_url}
-          onLoad={() => setSmallThumbnailLoading(false)}
+        <MemoizedCardImage
+          cardDocument={maybeCardDocument}
           onClick={imageOnClick}
-          // onError={{thumbnail_404(this)}} // TODO
-          alt={maybeCardDocument.name}
-          fill={true}
+          hidden={false}
+          small={true}
         />
         {previousImageIdentifier !== imageIdentifier &&
-          maybePreviousCardDocument !== undefined && (
-            <HiddenImage
-              className="card-img"
-              loading="lazy"
-              src={maybePreviousCardDocument.small_thumbnail_url}
-              // onError={{thumbnail_404(this)}}
-              alt={maybePreviousCardDocument.name}
-              fill={true}
+          maybePreviousCardDocument != null && (
+            <MemoizedCardImage
+              cardDocument={maybePreviousCardDocument}
+              onClick={imageOnClick}
+              hidden={true}
+              small={true}
             />
           )}
         {nextImageIdentifier !== imageIdentifier &&
-          maybeNextCardDocument !== undefined && (
-            <HiddenImage
-              className="card-img"
-              loading="lazy"
-              src={maybeNextCardDocument.small_thumbnail_url}
-              // onError={{thumbnail_404(this)}}
-              alt={maybeNextCardDocument.name}
-              fill={true}
+          maybeNextCardDocument != null && (
+            <MemoizedCardImage
+              cardDocument={maybeNextCardDocument}
+              onClick={imageOnClick}
+              hidden={true}
+              small={true}
             />
           )}
       </>
@@ -134,12 +202,9 @@ export function Card({
         {cardHeaderButtons}
       </BSCard.Header>
       <div>
-        <div
-          className="rounded-lg shadow-lg ratio ratio-7x5"
-          style={{ zIndex: 0 }}
-        >
+        <MemoizedCardProportionWrapper small={true}>
           {cardImageElements}
-        </div>
+        </MemoizedCardProportionWrapper>
         <BSCard.Body className="mb-0 text-center">
           <BSCard.Subtitle className="mpccard-name">
             {maybeCardDocument != null && maybeCardDocument.name}
