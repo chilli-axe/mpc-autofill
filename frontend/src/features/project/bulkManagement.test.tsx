@@ -1,7 +1,7 @@
 import { screen, waitFor } from "@testing-library/react";
 
 import App from "@/app/app";
-import { Front } from "@/common/constants";
+import { Back, Front } from "@/common/constants";
 import {
   cardDocument1,
   cardDocument2,
@@ -21,6 +21,7 @@ import {
 } from "@/common/test-utils";
 import {
   cardbacksOneResult,
+  cardbacksTwoResults,
   cardDocumentsOneResult,
   cardDocumentsSixResults,
   cardDocumentsThreeResults,
@@ -141,6 +142,35 @@ test("selecting multiple cards with the same query and changing both of their se
   await changeImageForSelectedImages(cardDocument2.name);
   await expectCardGridSlotState(1, Front, cardDocument2.name, 2, 3);
   await expectCardGridSlotState(2, Front, cardDocument2.name, 2, 3);
+});
+
+test("selecting multiple cardbacks and changing both of their selected images", async () => {
+  server.use(
+    cardDocumentsThreeResults,
+    cardbacksTwoResults,
+    sourceDocumentsOneResult,
+    searchResultsThreeResults,
+    ...defaultHandlers
+  );
+  renderWithProviders(<App />, {
+    preloadedState: {
+      backend: localBackend,
+      project: {
+        members: [],
+        cardback: cardDocument1.identifier,
+      },
+    },
+  });
+
+  await importText("2x my search query");
+  await expectCardGridSlotState(1, Back, cardDocument1.name, 1, 2);
+  await expectCardGridSlotState(2, Back, cardDocument1.name, 1, 2);
+
+  await selectSlot(1, Back);
+  await selectSlot(2, Back);
+  await changeImageForSelectedImages(cardDocument2.name);
+  await expectCardGridSlotState(1, Back, cardDocument2.name, 2, 2);
+  await expectCardGridSlotState(2, Back, cardDocument2.name, 2, 2);
 });
 
 test("cannot change the images of multiple selected images when they don't share the same query", async () => {

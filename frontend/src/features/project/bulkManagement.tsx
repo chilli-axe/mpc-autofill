@@ -16,7 +16,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useGetSampleCardsQuery } from "@/app/api";
 import { RootState } from "@/app/store";
 import { AppDispatch } from "@/app/store";
-import { Card } from "@/common/constants";
+import { Back, Card } from "@/common/constants";
 import { Faces, SearchQuery } from "@/common/types";
 import { selectBackendURL } from "@/features/backend/backendSlice";
 import { GridSelector } from "@/features/card/gridSelector";
@@ -64,28 +64,36 @@ function ChangeSelectedImageSelectedImages({
   );
   const allSelectedProjectMembersHaveTheSameQuery: boolean = useSelector(
     (state: RootState) =>
-      firstQuery != null &&
       slots.every(
         ([face, slot]) =>
-          (state.project.members[slot] ?? {})[face]?.query?.query ==
-            firstQuery.query &&
-          (state.project.members[slot] ?? {})[face]?.query?.card_type ==
-            firstQuery.card_type
+          (firstQuery?.query == null &&
+            (state.project.members[slot] ?? {})[face]?.query?.query == null) ||
+          (firstQuery != null &&
+            (state.project.members[slot] ?? {})[face]?.query?.query ==
+              firstQuery.query &&
+            (state.project.members[slot] ?? {})[face]?.query?.card_type ==
+              firstQuery.card_type)
       )
   );
-  const searchResultsForQuery: Array<string> = useSelector((state: RootState) =>
-    firstQuery != null &&
-    firstQuery.query != null &&
-    allSelectedProjectMembersHaveTheSameQuery
+
+  // TODO: move this selector into searchResultsSlice
+  // this is a bit confusing. if the card has a query, use the query's results. if it's a cardback with no query,
+  // display the common cardback's results.
+  const cardbacks =
+    useSelector((state: RootState) => state.cardbacks.cardbacks) ?? [];
+  const searchResultsForQueryOrDefault = useSelector((state: RootState) =>
+    firstQuery?.query != null
       ? (state.searchResults.searchResults[firstQuery.query] ?? {})[
           firstQuery.card_type
         ] ?? []
+      : slots.length > 0 && slots[0][0] === Back
+      ? cardbacks
       : []
   );
 
   return (
     <>
-      {searchResultsForQuery.length > 1 &&
+      {searchResultsForQueryOrDefault.length > 1 &&
         allSelectedProjectMembersHaveTheSameQuery && (
           <Dropdown.Item
             className="text-decoration-none"
@@ -97,7 +105,7 @@ function ChangeSelectedImageSelectedImages({
         )}
       <GridSelector
         testId="bulk-grid-selector"
-        imageIdentifiers={searchResultsForQuery}
+        imageIdentifiers={searchResultsForQueryOrDefault}
         show={showChangeSelectedImageSelectedImagesModal}
         handleClose={handleCloseChangeSelectedImageSelectedImagesModal}
         onClick={onSubmit}
