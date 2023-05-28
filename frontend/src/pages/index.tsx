@@ -171,7 +171,7 @@ export default function Index() {
       <Layout>
         <br />
         <DynamicLogo />
-        {/*<Footer />*/}
+        <Footer />
       </Layout>
     </>
   );
