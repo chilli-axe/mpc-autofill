@@ -16,6 +16,7 @@ import {
 import { MemoizedCardDetailedView } from "@/features/card/cardDetailedView";
 import Footer from "@/features/ui/footer";
 import Layout from "@/features/ui/layout";
+import { lato } from "@/pages/_app";
 
 const DynamicLogoContainer = styled(Container)`
   position: relative;
@@ -29,8 +30,7 @@ const DynamicLogoContainer = styled(Container)`
 const DynamicLogoLabel = styled.p`
   position: absolute;
   font-weight: bold;
-  font-style: italic;
-  top: 110px;
+  top: 120px;
   left: 50%;
   z-index: 10;
   text-align: center;
@@ -51,16 +51,16 @@ const ImageTransformWrapperBase = styled.div`
   height: 200px;
   width: 200px;
   left: 210px;
-  top: 185px;
+  top: 210px;
 `;
 
 const FirstImageTransformWrapper = styled(ImageTransformWrapperBase)`
-  transform: translate(-200px, -20px);
+  transform: translate(-240px, -50px);
   rotate: -40deg;
   z-index: 0;
 `;
 const SecondImageTransformWrapper = styled(ImageTransformWrapperBase)`
-  transform: translate(-100px, 15px);
+  transform: translate(-120px, 0px);
   rotate: -20deg;
   z-index: 1;
 `;
@@ -71,13 +71,13 @@ const ThirdImageTransformWrapper = styled(ImageTransformWrapperBase)`
 `;
 
 const FourthImageTransformWrapper = styled(ImageTransformWrapperBase)`
-  transform: translate(100px, 15px);
+  transform: translate(120px, 0px);
   rotate: 20deg;
   z-index: 3;
 `;
 
 const FifthImageTransformWrapper = styled(ImageTransformWrapperBase)`
-  transform: translate(200px, -20px);
+  transform: translate(240px, -50px);
   rotate: 40deg;
   z-index: 4;
 `;
@@ -118,7 +118,7 @@ function DynamicLogo() {
     <>
       {sampleCardsQuery.isSuccess ? (
         <DynamicLogoContainer className="shadow-lg">
-          <DynamicLogoLabel className="orpheus">
+          <DynamicLogoLabel className={lato.className}>
             {backendInfoQuery.data?.name ?? ProjectName}
           </DynamicLogoLabel>
           <DynamicLogoArrow
@@ -171,7 +171,7 @@ export default function Index() {
       <Layout>
         <br />
         <DynamicLogo />
-        <Footer />
+        {/*<Footer />*/}
       </Layout>
     </>
   );
