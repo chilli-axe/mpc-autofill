@@ -1,5 +1,6 @@
 import Image from "next/image";
 import React, { useCallback, useEffect, useState } from "react";
+import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
 import { useSelector } from "react-redux";
 import styled, { keyframes, StyledComponent } from "styled-components";
@@ -18,8 +19,8 @@ import { lato } from "@/pages/_app";
 
 const DynamicLogoContainer = styled(Container)`
   position: relative;
-  height: 620px;
-  width: 620px;
+  width: 100%;
+  aspect-ratio: 1 / 1;
   background: linear-gradient(#4692f0, #183251);
   border-radius: 50%;
   outline: solid 4px black;
@@ -31,9 +32,9 @@ const DynamicLogoLabel = styled.p`
   top: 19.3548%;
   left: 50%;
   z-index: 10;
-  text-align: center;
   transform: translate(-50%, 0);
-  font-size: 5em;
+  // TODO: find a better implementation of font scaling
+  font-size: min(5em, 10vw);
   text-shadow: 0 4px 15px #000000;
   white-space: nowrap;
 `;
@@ -213,7 +214,7 @@ export function DynamicLogo() {
       {loading ? (
         <Spinner size={12} />
       ) : (
-        <>
+        <Col xl={6} lg={7} md={8} sm={12} xs={12}>
           <DynamicLogoContainer className="shadow-lg" fluid="sm">
             <DynamicLogoLabel className={lato.className}>
               {backendInfoQuery.data?.name ?? ProjectName}
@@ -260,7 +261,7 @@ export function DynamicLogo() {
               cardDocument={selectedImage}
             />
           )}
-        </>
+        </Col>
       )}
     </>
   );
