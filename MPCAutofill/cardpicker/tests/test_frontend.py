@@ -289,7 +289,6 @@ class TestFrontend:
             assert chrome_driver.find_element(By.ID, value=f"slot{i}-front").is_displayed() is False
             assert chrome_driver.find_element(By.ID, value=f"slot{i}-back").is_displayed() is True
 
-    # TODO: replicate this test in the new frontend
     def test_card_version_selection(self, chrome_driver):
         self.load_review_page_with_search_string(chrome_driver, "2 island\n2 past in flames")
 
@@ -464,7 +463,6 @@ class TestFrontend:
                     source=TestSources.EXAMPLE_DRIVE_1.value,
                 )
 
-    # TODO: replicate this test in the new frontend
     @pytest.mark.parametrize(
         "from_query, from_card, to_query, to_card",
         [
