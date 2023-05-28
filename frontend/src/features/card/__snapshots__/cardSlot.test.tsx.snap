@@ -34,8 +34,7 @@ exports[`the html structure of a CardSlot with a single search result, image sel
     </div>
     <div>
       <div
-        class="rounded-lg shadow-lg ratio ratio-7x5"
-        style="z-index: 0; background: rgb(78, 93, 108);"
+        class="sc-b945a652-1 dMPfjO rounded-lg shadow-lg ratio ratio-7x5"
       >
         <img
           alt="Card 1"
@@ -115,8 +114,7 @@ exports[`the html structure of a CardSlot with a single search result, no image 
     </div>
     <div>
       <div
-        class="rounded-lg shadow-lg ratio ratio-7x5"
-        style="z-index: 0; background: rgb(78, 93, 108);"
+        class="sc-b945a652-1 dMPfjO rounded-lg shadow-lg ratio ratio-7x5"
       >
         <img
           alt="Card 1"
@@ -196,8 +194,7 @@ exports[`the html structure of a CardSlot with a single search result, slot sele
     </div>
     <div>
       <div
-        class="rounded-lg shadow-lg ratio ratio-7x5"
-        style="z-index: 0; background: rgb(78, 93, 108);"
+        class="sc-b945a652-1 dMPfjO rounded-lg shadow-lg ratio ratio-7x5"
       >
         <img
           alt="Card 1"
@@ -277,8 +274,7 @@ exports[`the html structure of a CardSlot with multiple search results, image se
     </div>
     <div>
       <div
-        class="rounded-lg shadow-lg ratio ratio-7x5"
-        style="z-index: 0; background: rgb(78, 93, 108);"
+        class="sc-b945a652-1 dMPfjO rounded-lg shadow-lg ratio ratio-7x5"
       >
         <img
           alt="Card 1"
@@ -291,7 +287,7 @@ exports[`the html structure of a CardSlot with multiple search results, image se
         />
         <img
           alt="Card 2"
-          class="sc-gueYoa jvIOZX card-img"
+          class="sc-b945a652-0 cNFYLw card-img"
           data-nimg="fill"
           decoding="async"
           loading="lazy"
@@ -300,7 +296,7 @@ exports[`the html structure of a CardSlot with multiple search results, image se
         />
         <img
           alt="Card 3"
-          class="sc-gueYoa jvIOZX card-img"
+          class="sc-b945a652-0 cNFYLw card-img"
           data-nimg="fill"
           decoding="async"
           loading="lazy"
@@ -485,8 +481,7 @@ exports[`the html structure of a CardSlot's grid selector, cards faceted by sour
             </div>
             <div>
               <div
-                class="rounded-lg shadow-lg ratio ratio-7x5"
-                style="z-index: 0; background: rgb(78, 93, 108);"
+                class="sc-b945a652-1 dMPfjO rounded-lg shadow-lg ratio ratio-7x5"
               >
                 <img
                   alt="Card 1"
@@ -532,8 +527,7 @@ exports[`the html structure of a CardSlot's grid selector, cards faceted by sour
             </div>
             <div>
               <div
-                class="rounded-lg shadow-lg ratio ratio-7x5"
-                style="z-index: 0; background: rgb(78, 93, 108);"
+                class="sc-b945a652-1 dMPfjO rounded-lg shadow-lg ratio ratio-7x5"
               >
                 <img
                   alt="Card 2"
@@ -579,8 +573,7 @@ exports[`the html structure of a CardSlot's grid selector, cards faceted by sour
             </div>
             <div>
               <div
-                class="rounded-lg shadow-lg ratio ratio-7x5"
-                style="z-index: 0; background: rgb(78, 93, 108);"
+                class="sc-b945a652-1 dMPfjO rounded-lg shadow-lg ratio ratio-7x5"
               >
                 <img
                   alt="Card 3"
@@ -626,8 +619,7 @@ exports[`the html structure of a CardSlot's grid selector, cards faceted by sour
             </div>
             <div>
               <div
-                class="rounded-lg shadow-lg ratio ratio-7x5"
-                style="z-index: 0; background: rgb(78, 93, 108);"
+                class="sc-b945a652-1 dMPfjO rounded-lg shadow-lg ratio ratio-7x5"
               >
                 <img
                   alt="Card 4"
@@ -750,8 +742,7 @@ exports[`the html structure of a CardSlot's grid selector, cards grouped togethe
           </div>
           <div>
             <div
-              class="rounded-lg shadow-lg ratio ratio-7x5"
-              style="z-index: 0; background: rgb(78, 93, 108);"
+              class="sc-b945a652-1 dMPfjO rounded-lg shadow-lg ratio ratio-7x5"
             >
               <img
                 alt="Card 1"
@@ -797,8 +788,7 @@ exports[`the html structure of a CardSlot's grid selector, cards grouped togethe
           </div>
           <div>
             <div
-              class="rounded-lg shadow-lg ratio ratio-7x5"
-              style="z-index: 0; background: rgb(78, 93, 108);"
+              class="sc-b945a652-1 dMPfjO rounded-lg shadow-lg ratio ratio-7x5"
             >
               <img
                 alt="Card 2"
@@ -844,8 +834,7 @@ exports[`the html structure of a CardSlot's grid selector, cards grouped togethe
           </div>
           <div>
             <div
-              class="rounded-lg shadow-lg ratio ratio-7x5"
-              style="z-index: 0; background: rgb(78, 93, 108);"
+              class="sc-b945a652-1 dMPfjO rounded-lg shadow-lg ratio ratio-7x5"
             >
               <img
                 alt="Card 3"
@@ -891,8 +880,7 @@ exports[`the html structure of a CardSlot's grid selector, cards grouped togethe
           </div>
           <div>
             <div
-              class="rounded-lg shadow-lg ratio ratio-7x5"
-              style="z-index: 0; background: rgb(78, 93, 108);"
+              class="sc-b945a652-1 dMPfjO rounded-lg shadow-lg ratio ratio-7x5"
             >
               <img
                 alt="Card 4"

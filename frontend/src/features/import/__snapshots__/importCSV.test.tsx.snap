@@ -34,31 +34,31 @@ exports[`the html structure of CSV importer 1`] = `
          match the following format:
       </p>
       <table
-        class="sc-hLseeU emfKgg table table-bordered"
+        class="sc-8a6e4231-0 gkSvEN table table-bordered"
       >
         <thead>
           <th
-            class="sc-eDDNvR kubbQn"
+            class="sc-8a6e4231-1 fhosHe"
           >
             Quantity
           </th>
           <th
-            class="sc-eDDNvR kubbQn"
+            class="sc-8a6e4231-1 fhosHe"
           >
             Front
           </th>
           <th
-            class="sc-eDDNvR kubbQn"
+            class="sc-8a6e4231-1 fhosHe"
           >
             Front ID
           </th>
           <th
-            class="sc-eDDNvR kubbQn"
+            class="sc-8a6e4231-1 fhosHe"
           >
             Back
           </th>
           <th
-            class="sc-eDDNvR kubbQn"
+            class="sc-8a6e4231-1 fhosHe"
           >
             Back ID
           </th>
@@ -66,53 +66,53 @@ exports[`the html structure of CSV importer 1`] = `
         <tbody>
           <tr>
             <td
-              class="sc-jTrPJq hlHZbj"
+              class="sc-8a6e4231-2 gTmwyB"
             />
             <td
-              class="sc-jTrPJq hlHZbj"
+              class="sc-8a6e4231-2 gTmwyB"
             />
             <td
-              class="sc-jTrPJq hlHZbj"
+              class="sc-8a6e4231-2 gTmwyB"
             />
             <td
-              class="sc-jTrPJq hlHZbj"
+              class="sc-8a6e4231-2 gTmwyB"
             />
             <td
-              class="sc-jTrPJq hlHZbj"
-            />
-          </tr>
-          <tr>
-            <td
-              class="sc-jTrPJq hlHZbj"
-            />
-            <td
-              class="sc-jTrPJq hlHZbj"
-            />
-            <td
-              class="sc-jTrPJq hlHZbj"
-            />
-            <td
-              class="sc-jTrPJq hlHZbj"
-            />
-            <td
-              class="sc-jTrPJq hlHZbj"
+              class="sc-8a6e4231-2 gTmwyB"
             />
           </tr>
           <tr>
             <td
-              class="sc-jTrPJq hlHZbj"
+              class="sc-8a6e4231-2 gTmwyB"
             />
             <td
-              class="sc-jTrPJq hlHZbj"
+              class="sc-8a6e4231-2 gTmwyB"
             />
             <td
-              class="sc-jTrPJq hlHZbj"
+              class="sc-8a6e4231-2 gTmwyB"
             />
             <td
-              class="sc-jTrPJq hlHZbj"
+              class="sc-8a6e4231-2 gTmwyB"
             />
             <td
-              class="sc-jTrPJq hlHZbj"
+              class="sc-8a6e4231-2 gTmwyB"
+            />
+          </tr>
+          <tr>
+            <td
+              class="sc-8a6e4231-2 gTmwyB"
+            />
+            <td
+              class="sc-8a6e4231-2 gTmwyB"
+            />
+            <td
+              class="sc-8a6e4231-2 gTmwyB"
+            />
+            <td
+              class="sc-8a6e4231-2 gTmwyB"
+            />
+            <td
+              class="sc-8a6e4231-2 gTmwyB"
             />
           </tr>
         </tbody>
@@ -155,31 +155,31 @@ exports[`the html structure of CSV importer 1`] = `
       </ul>
       For example:
       <table
-        class="sc-hLseeU emfKgg table table-bordered"
+        class="sc-8a6e4231-0 gkSvEN table table-bordered"
       >
         <thead>
           <th
-            class="sc-eDDNvR kubbQn"
+            class="sc-8a6e4231-1 fhosHe"
           >
             Quantity
           </th>
           <th
-            class="sc-eDDNvR kubbQn"
+            class="sc-8a6e4231-1 fhosHe"
           >
             Front
           </th>
           <th
-            class="sc-eDDNvR kubbQn"
+            class="sc-8a6e4231-1 fhosHe"
           >
             Front ID
           </th>
           <th
-            class="sc-eDDNvR kubbQn"
+            class="sc-8a6e4231-1 fhosHe"
           >
             Back
           </th>
           <th
-            class="sc-eDDNvR kubbQn"
+            class="sc-8a6e4231-1 fhosHe"
           >
             Back ID
           </th>
@@ -187,60 +187,60 @@ exports[`the html structure of CSV importer 1`] = `
         <tbody>
           <tr>
             <td
-              class="sc-jTrPJq hlHZbj"
+              class="sc-8a6e4231-2 gTmwyB"
             >
               <code>
                 2
               </code>
             </td>
             <td
-              class="sc-jTrPJq hlHZbj"
+              class="sc-8a6e4231-2 gTmwyB"
             >
               <code>
                 island
               </code>
             </td>
             <td
-              class="sc-jTrPJq hlHZbj"
+              class="sc-8a6e4231-2 gTmwyB"
             >
               <code>
                 1HsvTYs1...
               </code>
             </td>
             <td
-              class="sc-jTrPJq hlHZbj"
+              class="sc-8a6e4231-2 gTmwyB"
             >
               <code>
                 forest
               </code>
             </td>
             <td
-              class="sc-jTrPJq hlHZbj"
+              class="sc-8a6e4231-2 gTmwyB"
             />
           </tr>
           <tr>
             <td
-              class="sc-jTrPJq hlHZbj"
+              class="sc-8a6e4231-2 gTmwyB"
             >
               <code>
                 3
               </code>
             </td>
             <td
-              class="sc-jTrPJq hlHZbj"
+              class="sc-8a6e4231-2 gTmwyB"
             >
               <code>
                 t:goblin
               </code>
             </td>
             <td
-              class="sc-jTrPJq hlHZbj"
+              class="sc-8a6e4231-2 gTmwyB"
             />
             <td
-              class="sc-jTrPJq hlHZbj"
+              class="sc-8a6e4231-2 gTmwyB"
             />
             <td
-              class="sc-jTrPJq hlHZbj"
+              class="sc-8a6e4231-2 gTmwyB"
             >
               <code>
                 1JtXL6Ca...
@@ -255,7 +255,7 @@ exports[`the html structure of CSV importer 1`] = `
       >
         <div
           aria-label="import-csv"
-          class="sc-dmqHEX lkItOe"
+          class="sc-35ed815a-0 OSOTA"
           role="presentation"
           tabindex="0"
         >

@@ -17,15 +17,15 @@ exports[`the html structure of a Card with a single document 1`] = `
       </div>
       <div>
         <div
-          class="rounded-lg shadow-lg ratio ratio-7x5"
-          style="z-index: 0; background: rgb(78, 93, 108);"
+          class="sc-b945a652-1 dMPfjO rounded-lg shadow-lg ratio ratio-7x5"
         >
           <div
             class="d-flex justify-content-center align-items-center"
           >
             <div
-              class="sc-beqWaB hxFQtk spinner-border"
+              class="sc-ff15f3e1-0 jebGLu spinner-border"
               role="status"
+              size="4"
             >
               <span
                 class="visually-hidden"
@@ -85,8 +85,7 @@ exports[`the html structure of a Card with no search results 1`] = `
       </div>
       <div>
         <div
-          class="rounded-lg shadow-lg ratio ratio-7x5"
-          style="z-index: 0; background: rgb(78, 93, 108);"
+          class="sc-b945a652-1 dMPfjO rounded-lg shadow-lg ratio ratio-7x5"
         >
           <img
             alt="Card not found"
@@ -141,15 +140,15 @@ exports[`the html structure of a Card with three documents 1`] = `
       </div>
       <div>
         <div
-          class="rounded-lg shadow-lg ratio ratio-7x5"
-          style="z-index: 0; background: rgb(78, 93, 108);"
+          class="sc-b945a652-1 dMPfjO rounded-lg shadow-lg ratio ratio-7x5"
         >
           <div
             class="d-flex justify-content-center align-items-center"
           >
             <div
-              class="sc-beqWaB hxFQtk spinner-border"
+              class="sc-ff15f3e1-0 jebGLu spinner-border"
               role="status"
+              size="4"
             >
               <span
                 class="visually-hidden"
@@ -169,7 +168,7 @@ exports[`the html structure of a Card with three documents 1`] = `
           />
           <img
             alt="Card 2"
-            class="sc-gueYoa jvIOZX card-img"
+            class="sc-b945a652-0 cNFYLw card-img"
             data-nimg="fill"
             decoding="async"
             loading="lazy"
@@ -178,7 +177,7 @@ exports[`the html structure of a Card with three documents 1`] = `
           />
           <img
             alt="Card 3"
-            class="sc-gueYoa jvIOZX card-img"
+            class="sc-b945a652-0 cNFYLw card-img"
             data-nimg="fill"
             decoding="async"
             loading="lazy"
@@ -227,15 +226,15 @@ exports[`the html structure of a Card with two documents 1`] = `
       </div>
       <div>
         <div
-          class="rounded-lg shadow-lg ratio ratio-7x5"
-          style="z-index: 0; background: rgb(78, 93, 108);"
+          class="sc-b945a652-1 dMPfjO rounded-lg shadow-lg ratio ratio-7x5"
         >
           <div
             class="d-flex justify-content-center align-items-center"
           >
             <div
-              class="sc-beqWaB hxFQtk spinner-border"
+              class="sc-ff15f3e1-0 jebGLu spinner-border"
               role="status"
+              size="4"
             >
               <span
                 class="visually-hidden"
@@ -255,7 +254,7 @@ exports[`the html structure of a Card with two documents 1`] = `
           />
           <img
             alt="Card 2"
-            class="sc-gueYoa jvIOZX card-img"
+            class="sc-b945a652-0 cNFYLw card-img"
             data-nimg="fill"
             decoding="async"
             loading="lazy"
