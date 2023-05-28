@@ -84,20 +84,27 @@ export const MemoizedCardImage = memo(CardImage);
 
 interface CardProportionWrapperProps {
   small: boolean;
+  bordered?: boolean;
 }
 
-function CardProportionWrapper(
-  props: PropsWithChildren<CardProportionWrapperProps>
-) {
+const CardProportionWrapperStyle = styled.div<{ $borderWidth?: number }>`
+  z-index: 0;
+  background: #4e5d6c;
+  border: solid ${(props) => props.$borderWidth ?? 0}px black;
+`;
+
+function CardProportionWrapper({
+  small,
+  bordered = false,
+  children,
+}: PropsWithChildren<CardProportionWrapperProps>) {
   return (
-    <div
-      className={`rounded-${
-        props.small ? "lg" : "xl"
-      } shadow-lg ratio ratio-7x5`}
-      style={{ zIndex: 0, background: "#4e5d6c" }}
+    <CardProportionWrapperStyle
+      $borderWidth={bordered ? 2 : 0}
+      className={`rounded-${small ? "lg" : "xl"} shadow-lg ratio ratio-7x5`}
     >
-      {props.children}
-    </div>
+      {children}
+    </CardProportionWrapperStyle>
   );
 }
 

@@ -1,5 +1,5 @@
 import Image from "next/image";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import Container from "react-bootstrap/Container";
 import { useSelector } from "react-redux";
 import styled, { keyframes, StyledComponent } from "styled-components";
@@ -13,6 +13,7 @@ import {
   MemoizedCardProportionWrapper,
 } from "@/features/card/card";
 import { MemoizedCardDetailedView } from "@/features/card/cardDetailedView";
+import { Spinner } from "@/features/ui/spinner";
 import { lato } from "@/pages/_app";
 
 const DynamicLogoContainer = styled(Container)`
@@ -140,6 +141,26 @@ const FifthImageTransformWrapper = styled(ImageTransformWrapperBase)`
   z-index: 4;
 `;
 
+const SampleCardDocument: CardDocument = {
+  identifier: "your-design-here",
+  card_type: "CARD",
+  name: "Your Design Here",
+  priority: 0,
+  source: "",
+  source_name: "",
+  source_id: 0,
+  source_verbose: "",
+  source_type: "drive",
+  dpi: 300,
+  searchq: "",
+  extension: "png",
+  date: "1st January, 2000",
+  download_link: "",
+  size: 1,
+  small_thumbnail_url: "/logo-blank.png",
+  medium_thumbnail_url: "",
+};
+
 export function DynamicLogo() {
   // TODO: set up custom hooks for using queries in this way (i.e. not querying until backend URL is specified)
   const backendURL = useSelector(selectBackendURL);
@@ -150,6 +171,10 @@ export function DynamicLogo() {
     skip: backendURL == null,
   });
 
+  // this ignores the initial flash of styled-components not doing the thing on first page load
+  const [loading, setLoading] = useState<boolean>(true);
+  useEffect(() => setLoading(false), []);
+
   const [selectedImage, setSelectedImage] = useState<CardDocument | null>(null);
   const [showDetailedView, setShowDetailedView] = useState<boolean>(false);
   const handleCloseDetailedView = () => setShowDetailedView(false);
@@ -158,61 +183,80 @@ export function DynamicLogo() {
     setShowDetailedView(true);
   }, []);
 
-  // TODO: handle the no data case with a default image that reads "your design here" or something
   const displayCards: Array<
-    [CardDocument, StyledComponent<"div", any, {}, never>]
-  > = sampleCardsQuery.isSuccess
-    ? [
-        [sampleCardsQuery.data["TOKEN"][0], FirstImageTransformWrapper],
-        [sampleCardsQuery.data["CARD"][0], SecondImageTransformWrapper],
-        [sampleCardsQuery.data["CARD"][1], ThirdImageTransformWrapper],
-        [sampleCardsQuery.data["CARD"][2], FourthImageTransformWrapper],
-        [sampleCardsQuery.data["CARD"][3], FifthImageTransformWrapper],
-      ]
-    : [];
+    [CardDocument | null, StyledComponent<"div", any>]
+  > = [
+    [
+      sampleCardsQuery.isSuccess ? sampleCardsQuery.data["TOKEN"][0] : null,
+      FirstImageTransformWrapper,
+    ],
+    [
+      sampleCardsQuery.isSuccess ? sampleCardsQuery.data["CARD"][0] : null,
+      SecondImageTransformWrapper,
+    ],
+    [
+      sampleCardsQuery.isSuccess ? sampleCardsQuery.data["CARD"][1] : null,
+      ThirdImageTransformWrapper,
+    ],
+    [
+      sampleCardsQuery.isSuccess ? sampleCardsQuery.data["CARD"][2] : null,
+      FourthImageTransformWrapper,
+    ],
+    [
+      sampleCardsQuery.isSuccess ? sampleCardsQuery.data["CARD"][3] : null,
+      FifthImageTransformWrapper,
+    ],
+  ];
 
   return (
     <>
-      {sampleCardsQuery.isSuccess ? (
-        <DynamicLogoContainer className="shadow-lg">
-          <DynamicLogoLabel className={lato.className}>
-            {backendInfoQuery.data?.name ?? ProjectName}
-          </DynamicLogoLabel>
-          <DynamicLogoArrow
-            src="/arrow.svg"
-            alt="logo-arrow"
-            width={250}
-            height={250}
-            quality={100}
-          />
-
-          {displayCards.map(([cardDocument, WrapperElement]) => (
-            <WrapperElement key={`${cardDocument.identifier}-outer-wrapper`}>
-              <MemoizedCardProportionWrapper
-                small={true}
-                key={`${cardDocument.identifier}-inner-wrapper`}
-              >
-                <MemoizedCardImage
-                  key={`${cardDocument.identifier}-image`}
-                  cardDocument={cardDocument}
-                  hidden={false}
-                  small={true}
-                  onClick={() => handleShowDetailedView(cardDocument)}
-                />
-              </MemoizedCardProportionWrapper>
-            </WrapperElement>
-          ))}
-        </DynamicLogoContainer>
+      {loading ? (
+        <Spinner size={12} />
       ) : (
-        <div />
-      )}
-      {selectedImage != null && (
-        <MemoizedCardDetailedView
-          imageIdentifier={selectedImage.identifier}
-          show={showDetailedView}
-          handleClose={handleCloseDetailedView}
-          cardDocument={selectedImage}
-        />
+        <>
+          <DynamicLogoContainer className="shadow-lg">
+            <DynamicLogoLabel className={lato.className}>
+              {backendInfoQuery.data?.name ?? ProjectName}
+            </DynamicLogoLabel>
+            <DynamicLogoArrow
+              src="/arrow.svg"
+              alt="logo-arrow"
+              width={250}
+              height={250}
+              quality={100}
+            />
+
+            {displayCards.map(([maybeCardDocument, WrapperElement], index) => (
+              <WrapperElement key={`logo-card${index}-outer-wrapper`}>
+                <MemoizedCardProportionWrapper
+                  bordered={maybeCardDocument == null}
+                  small={true}
+                  key={`$logo-card${index}-inner-wrapper`}
+                >
+                  <MemoizedCardImage
+                    key={`$logo-card${index}-image`}
+                    cardDocument={maybeCardDocument ?? SampleCardDocument}
+                    hidden={false}
+                    small={true}
+                    onClick={() => {
+                      if (maybeCardDocument != null) {
+                        return handleShowDetailedView(maybeCardDocument);
+                      }
+                    }}
+                  />
+                </MemoizedCardProportionWrapper>
+              </WrapperElement>
+            ))}
+          </DynamicLogoContainer>
+          {selectedImage != null && (
+            <MemoizedCardDetailedView
+              imageIdentifier={selectedImage.identifier}
+              show={showDetailedView}
+              handleClose={handleCloseDetailedView}
+              cardDocument={selectedImage}
+            />
+          )}
+        </>
       )}
     </>
   );
