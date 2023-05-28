@@ -11,6 +11,7 @@ import React, {
   PropsWithChildren,
   ReactElement,
   useEffect,
+  useRef,
   useState,
 } from "react";
 import BSCard from "react-bootstrap/Card";
@@ -27,8 +28,13 @@ const HiddenImage = styled(Image)`
   opacity: 0;
 `;
 
+const VisibleImage = styled(Image)<{ isLoading?: boolean }>`
+  z-index: 1;
+  opacity: ${(props) => (props.isLoading ? 0 : 1)};
+`;
+
 interface CardImageProps {
-  cardDocument: CardDocument;
+  cardDocument: CardDocument | null;
   onClick?: React.MouseEventHandler<HTMLImageElement>;
   hidden: boolean;
   small: boolean;
@@ -37,41 +43,51 @@ interface CardImageProps {
 function CardImage({ cardDocument, onClick, hidden, small }: CardImageProps) {
   const [imageLoading, setImageLoading] = useState(true);
   // ensure that the small thumbnail fades in each time the selected image changes
-  useEffect(() => setImageLoading(true), [cardDocument.identifier]);
+  useEffect(() => setImageLoading(true), [cardDocument?.identifier]);
+  useEffect(() => {
+    if (image.current != null && image.current.complete) {
+      setImageLoading(false);
+    }
+  }, [cardDocument?.identifier]);
+
+  // next.js seems to not fire `onLoadingComplete` when opening a page with a cached image
+  // this implementation retrieved from https://stackoverflow.com/a/59809184
+  const image = useRef<HTMLImageElement>(null);
 
   return (
     <>
       {hidden ? (
         <HiddenImage
+          ref={image}
           className="card-img"
           loading="lazy"
           src={
-            small
-              ? cardDocument.small_thumbnail_url
-              : cardDocument.medium_thumbnail_url
+            (small
+              ? cardDocument?.small_thumbnail_url
+              : cardDocument?.medium_thumbnail_url) ?? ""
           }
-          onLoad={() => setImageLoading(false)}
+          onLoadingComplete={(img) => setImageLoading(false)}
           onClick={onClick}
           // onError={{thumbnail_404(this)}} // TODO
-          alt={cardDocument.name}
+          alt={cardDocument?.name ?? ""}
           fill={true}
         />
       ) : (
         <>
           {imageLoading && <Spinner />}
-          <Image
+          <VisibleImage
+            ref={image}
             className="card-img card-img-fade-in"
             loading="lazy"
-            style={{ zIndex: 1, opacity: imageLoading ? 0 : 1 }}
+            isLoading={imageLoading}
             src={
-              small
-                ? cardDocument.small_thumbnail_url
-                : cardDocument.medium_thumbnail_url
+              (small
+                ? cardDocument?.small_thumbnail_url
+                : cardDocument?.medium_thumbnail_url) ?? ""
             }
-            onLoad={() => setImageLoading(false)}
+            onLoadingComplete={(img) => setImageLoading(false)}
             onClick={onClick}
-            // onError={{thumbnail_404(this)}} // TODO
-            alt={cardDocument.name}
+            alt={cardDocument?.name ?? ""}
             fill={true}
           />
         </>

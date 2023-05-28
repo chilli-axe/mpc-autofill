@@ -235,7 +235,11 @@ export function DynamicLogo() {
                 >
                   <MemoizedCardImage
                     key={`$logo-card${index}-image`}
-                    cardDocument={maybeCardDocument ?? SampleCardDocument}
+                    cardDocument={
+                      backendURL == null
+                        ? SampleCardDocument
+                        : maybeCardDocument
+                    }
                     hidden={false}
                     small={true}
                     onClick={() => {
