@@ -1,4 +1,5 @@
 import Head from "next/head";
+import Image from "next/image";
 import React, { useCallback, useState } from "react";
 import Container from "react-bootstrap/Container";
 import { useSelector } from "react-redux";
@@ -56,10 +57,40 @@ function DynamicLogo() {
             background: "linear-gradient(#4692f0, #183251)",
             borderRadius: 300 + "px",
             outline: "solid",
-            outlineWidth: 2 + "px",
+            outlineWidth: 4 + "px",
             outlineColor: "black",
           }}
         >
+          <p
+            className="orpheus"
+            style={{
+              position: "absolute",
+              fontWeight: "bold",
+              fontStyle: "italic",
+              top: 80 + "px",
+              left: 50 + "%",
+              zIndex: 10,
+              textAlign: "center",
+              transform: "translate(-50%, 0px)",
+              fontSize: 3.2 + "em",
+              textShadow: "0px 4px 15px #000000",
+            }}
+          >
+            MPC Autofill
+          </p>
+          <Image
+            src="/arrow.svg"
+            alt="logo-arrow"
+            width={250}
+            height={250}
+            quality={100}
+            style={{
+              position: "absolute",
+              left: 50 + "%",
+              transform: "translate(-50%, 0px)",
+            }}
+          />
+
           <div
             style={{
               position: "absolute",
