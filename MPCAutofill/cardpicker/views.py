@@ -537,7 +537,7 @@ def get_sample_cards(request: HttpRequest) -> HttpResponse:
 
     # sample some large number of identifiers from the database
     identifiers = {
-        card_type: list(Card.objects.filter(card_type=card_type).values_list("id", flat=True)[0:1000])
+        card_type: list(Card.objects.filter(card_type=card_type).values_list("id", flat=True)[0:5000])
         for card_type in CardTypes
     }
 
