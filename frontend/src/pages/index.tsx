@@ -3,7 +3,7 @@ import Image from "next/image";
 import React, { useCallback, useState } from "react";
 import Container from "react-bootstrap/Container";
 import { useSelector } from "react-redux";
-import styled, { StyledComponent } from "styled-components";
+import styled, { keyframes, StyledComponent } from "styled-components";
 
 import { useGetBackendInfoQuery, useGetSampleCardsQuery } from "@/app/api";
 import { ProjectName } from "@/common/constants";
@@ -40,10 +40,21 @@ const DynamicLogoLabel = styled.p`
   white-space: nowrap;
 `;
 
+const DynamicLogoArrowKeyframes = keyframes`
+  0% {
+    transform: translate(-50%, 100px);
+    opacity: 0;
+  }
+  100% {
+    transform: translate(-50%, 0px);
+    opacity: 1;
+  }
+`;
+
 const DynamicLogoArrow = styled(Image)`
   position: absolute;
   left: 50%;
-  transform: translate(-50%, 0px);
+  animation: ${DynamicLogoArrowKeyframes} 0.75s ease-out forwards;
 `;
 
 const ImageTransformWrapperBase = styled.div`
@@ -54,36 +65,85 @@ const ImageTransformWrapperBase = styled.div`
   top: 210px;
 `;
 
-const FirstImageTransformWrapper = styled(ImageTransformWrapperBase)`
-  transform: translate(-240px, -50px);
-  rotate: -40deg;
-  z-index: 0;
+const FirstImageTransformKeyframes = keyframes`
+  0% {
+    transform: translate(0px, 0px);
+    rotate: 0;
+  }
+  100% {
+    transform: translate(-240px, -50px);
+    rotate: -40deg;
+  }
 `;
+
+const FirstImageTransformWrapper = styled(ImageTransformWrapperBase)`
+  z-index: 0;
+  animation: ${FirstImageTransformKeyframes} 1s ease-in-out forwards;
+`;
+
+const SecondImageTransformKeyframes = keyframes`
+  0% {
+    transform: translate(0px, 0px);
+    rotate: 0;
+  }
+  100% {
+    transform: translate(-120px, 0px);
+    rotate: -20deg;
+  }
+`;
+
 const SecondImageTransformWrapper = styled(ImageTransformWrapperBase)`
-  transform: translate(-120px, 0px);
-  rotate: -20deg;
   z-index: 1;
+  animation: ${SecondImageTransformKeyframes} 1s ease-in-out forwards;
+`;
+
+const ThirdImageTransformKeyframes = keyframes`
+  0% {
+    transform: translate(0px, 0px);
+  }
+  100% {
+    transform: translate(0px, 15px);
+  }
 `;
 
 const ThirdImageTransformWrapper = styled(ImageTransformWrapperBase)`
-  transform: translate(0px, 15px);
+  animation: ${ThirdImageTransformKeyframes} 1s ease-in-out forwards;
   z-index: 2;
 `;
 
+const FourthImageTransformKeyframes = keyframes`
+  0% {
+    transform: translate(0px, 0px);
+    rotate: 0;
+  }
+  100% {
+    transform: translate(120px, 0px);
+    rotate: 20deg;
+  }
+`;
+
 const FourthImageTransformWrapper = styled(ImageTransformWrapperBase)`
-  transform: translate(120px, 0px);
-  rotate: 20deg;
+  animation: ${FourthImageTransformKeyframes} 1s ease-in-out forwards;
   z-index: 3;
 `;
 
+const FifthImageTransformKeyframes = keyframes`
+  0% {
+    transform: translate(0px, 0px);
+    rotate: 0;
+  }
+  100% {
+    transform: translate(240px, -50px);
+    rotate: 40deg;
+  }
+`;
+
 const FifthImageTransformWrapper = styled(ImageTransformWrapperBase)`
-  transform: translate(240px, -50px);
-  rotate: 40deg;
+  animation: ${FifthImageTransformKeyframes} 1s ease-in-out forwards;
   z-index: 4;
 `;
 
 function DynamicLogo() {
-  // 57f653
   // TODO: set up custom hooks for using queries in this way (i.e. not querying until backend URL is specified)
   const backendURL = useSelector(selectBackendURL);
   const sampleCardsQuery = useGetSampleCardsQuery(undefined, {
