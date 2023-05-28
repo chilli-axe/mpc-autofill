@@ -5,7 +5,7 @@ import Container from "react-bootstrap/Container";
 import { useSelector } from "react-redux";
 import styled, { StyledComponent } from "styled-components";
 
-import { useGetSampleCardsQuery } from "@/app/api";
+import { useGetBackendInfoQuery, useGetSampleCardsQuery } from "@/app/api";
 import { ProjectName } from "@/common/constants";
 import { CardDocument } from "@/common/types";
 import { selectBackendURL } from "@/features/backend/backendSlice";
@@ -30,13 +30,14 @@ const DynamicLogoLabel = styled.p`
   position: absolute;
   font-weight: bold;
   font-style: italic;
-  top: 80px;
+  top: 110px;
   left: 50%;
   z-index: 10;
   text-align: center;
   transform: translate(-50%, 0px);
-  font-size: 3.2em;
+  font-size: 5em;
   text-shadow: 0 4px 15px #000000;
+  white-space: nowrap;
 `;
 
 const DynamicLogoArrow = styled(Image)`
@@ -88,6 +89,10 @@ function DynamicLogo() {
   const sampleCardsQuery = useGetSampleCardsQuery(undefined, {
     skip: backendURL == null,
   });
+  const backendInfoQuery = useGetBackendInfoQuery(undefined, {
+    skip: backendURL == null,
+  });
+
   const [selectedImage, setSelectedImage] = useState<CardDocument | null>(null);
   const [showDetailedView, setShowDetailedView] = useState<boolean>(false);
   const handleCloseDetailedView = () => setShowDetailedView(false);
@@ -113,7 +118,9 @@ function DynamicLogo() {
     <>
       {sampleCardsQuery.isSuccess ? (
         <DynamicLogoContainer className="shadow-lg">
-          <DynamicLogoLabel className="orpheus">MPC Autofill</DynamicLogoLabel>
+          <DynamicLogoLabel className="orpheus">
+            {backendInfoQuery.data?.name ?? ProjectName}
+          </DynamicLogoLabel>
           <DynamicLogoArrow
             src="/arrow.svg"
             alt="logo-arrow"
