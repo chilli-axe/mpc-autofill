@@ -21,18 +21,18 @@ const DynamicLogoContainer = styled(Container)`
   height: 620px;
   width: 620px;
   background: linear-gradient(#4692f0, #183251);
-  border-radius: 300px;
+  border-radius: 50%;
   outline: solid 4px black;
 `;
 
 const DynamicLogoLabel = styled.p`
   position: absolute;
   font-weight: bold;
-  top: 120px;
+  top: 19.3548%;
   left: 50%;
   z-index: 10;
   text-align: center;
-  transform: translate(-50%, 0px);
+  transform: translate(-50%, 0);
   font-size: 5em;
   text-shadow: 0 4px 15px #000000;
   white-space: nowrap;
@@ -40,11 +40,11 @@ const DynamicLogoLabel = styled.p`
 
 const DynamicLogoArrowKeyframes = keyframes`
   0% {
-    transform: translate(-50%, 100px);
+    transform: translate(-50%, 16%);
     opacity: 0;
   }
   100% {
-    transform: translate(-50%, 0px);
+    transform: translate(-50%, 0);
     opacity: 1;
   }
 `;
@@ -57,19 +57,19 @@ const DynamicLogoArrow = styled(Image)`
 
 const ImageTransformWrapperBase = styled.div`
   position: absolute;
-  height: 200px;
-  width: 200px;
-  left: 210px;
-  top: 210px;
+  height: 32.358%;
+  width: 32.358%;
+  left: 33.871%;
+  top: 33.871%;
 `;
 
 const FirstImageTransformKeyframes = keyframes`
   0% {
-    transform: translate(0px, 0px);
+    transform: translate(0, 0);
     rotate: 0;
   }
   100% {
-    transform: translate(-240px, -50px);
+    transform: translate(-120%, -27%);
     rotate: -40deg;
   }
 `;
@@ -81,11 +81,11 @@ const FirstImageTransformWrapper = styled(ImageTransformWrapperBase)`
 
 const SecondImageTransformKeyframes = keyframes`
   0% {
-    transform: translate(0px, 0px);
+    transform: translate(0, 0);
     rotate: 0;
   }
   100% {
-    transform: translate(-120px, 0px);
+    transform: translate(-60%, 0);
     rotate: -20deg;
   }
 `;
@@ -97,10 +97,10 @@ const SecondImageTransformWrapper = styled(ImageTransformWrapperBase)`
 
 const ThirdImageTransformKeyframes = keyframes`
   0% {
-    transform: translate(0px, 0px);
+    transform: translate(0, 0);
   }
   100% {
-    transform: translate(0px, 15px);
+    transform: translate(0, 6%);
   }
 `;
 
@@ -111,11 +111,11 @@ const ThirdImageTransformWrapper = styled(ImageTransformWrapperBase)`
 
 const FourthImageTransformKeyframes = keyframes`
   0% {
-    transform: translate(0px, 0px);
+    transform: translate(0, 0);
     rotate: 0;
   }
   100% {
-    transform: translate(120px, 0px);
+    transform: translate(60%, 0);
     rotate: 20deg;
   }
 `;
@@ -127,11 +127,11 @@ const FourthImageTransformWrapper = styled(ImageTransformWrapperBase)`
 
 const FifthImageTransformKeyframes = keyframes`
   0% {
-    transform: translate(0px, 0px);
+    transform: translate(0, 0);
     rotate: 0;
   }
   100% {
-    transform: translate(240px, -50px);
+    transform: translate(120%, -27%);
     rotate: 40deg;
   }
 `;
@@ -214,7 +214,7 @@ export function DynamicLogo() {
         <Spinner size={12} />
       ) : (
         <>
-          <DynamicLogoContainer className="shadow-lg">
+          <DynamicLogoContainer className="shadow-lg" fluid="sm">
             <DynamicLogoLabel className={lato.className}>
               {backendInfoQuery.data?.name ?? ProjectName}
             </DynamicLogoLabel>
