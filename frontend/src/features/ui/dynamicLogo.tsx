@@ -2,6 +2,7 @@ import Image from "next/image";
 import React, { useCallback, useEffect, useState } from "react";
 import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
+import Row from "react-bootstrap/Row";
 import { useSelector } from "react-redux";
 import styled, { keyframes, StyledComponent } from "styled-components";
 
@@ -17,7 +18,7 @@ import { MemoizedCardDetailedView } from "@/features/card/cardDetailedView";
 import { Spinner } from "@/features/ui/spinner";
 import { lato } from "@/pages/_app";
 
-const DynamicLogoContainer = styled(Container)`
+const DynamicLogoContainer = styled.div`
   position: relative;
   width: 100%;
   aspect-ratio: 1 / 1;
@@ -214,54 +215,58 @@ export function DynamicLogo() {
       {loading ? (
         <Spinner size={12} />
       ) : (
-        <Col xl={6} lg={7} md={8} sm={12} xs={12}>
-          <DynamicLogoContainer className="shadow-lg" fluid="sm">
-            <DynamicLogoLabel className={lato.className}>
-              {backendInfoQuery.data?.name ?? ProjectName}
-            </DynamicLogoLabel>
-            <DynamicLogoArrow
-              src="/arrow.svg"
-              alt="logo-arrow"
-              width={250}
-              height={250}
-              quality={100}
-            />
+        <Row className="justify-content-center">
+          <Col xl={6} lg={7} md={8} sm={12} xs={12}>
+            <DynamicLogoContainer className="shadow-lg">
+              <DynamicLogoLabel className={lato.className}>
+                {backendInfoQuery.data?.name ?? ProjectName}
+              </DynamicLogoLabel>
+              <DynamicLogoArrow
+                src="/arrow.svg"
+                alt="logo-arrow"
+                width={250}
+                height={250}
+                quality={100}
+              />
 
-            {displayCards.map(([maybeCardDocument, WrapperElement], index) => (
-              <WrapperElement key={`logo-card${index}-outer-wrapper`}>
-                <MemoizedCardProportionWrapper
-                  bordered={maybeCardDocument == null}
-                  small={true}
-                  key={`$logo-card${index}-inner-wrapper`}
-                >
-                  <MemoizedCardImage
-                    key={`$logo-card${index}-image`}
-                    cardDocument={
-                      backendURL == null
-                        ? SampleCardDocument
-                        : maybeCardDocument
-                    }
-                    hidden={false}
-                    small={true}
-                    onClick={() => {
-                      if (maybeCardDocument != null) {
-                        return handleShowDetailedView(maybeCardDocument);
-                      }
-                    }}
-                  />
-                </MemoizedCardProportionWrapper>
-              </WrapperElement>
-            ))}
-          </DynamicLogoContainer>
-          {selectedImage != null && (
-            <MemoizedCardDetailedView
-              imageIdentifier={selectedImage.identifier}
-              show={showDetailedView}
-              handleClose={handleCloseDetailedView}
-              cardDocument={selectedImage}
-            />
-          )}
-        </Col>
+              {displayCards.map(
+                ([maybeCardDocument, WrapperElement], index) => (
+                  <WrapperElement key={`logo-card${index}-outer-wrapper`}>
+                    <MemoizedCardProportionWrapper
+                      bordered={maybeCardDocument == null}
+                      small={true}
+                      key={`$logo-card${index}-inner-wrapper`}
+                    >
+                      <MemoizedCardImage
+                        key={`$logo-card${index}-image`}
+                        cardDocument={
+                          backendURL == null
+                            ? SampleCardDocument
+                            : maybeCardDocument
+                        }
+                        hidden={false}
+                        small={true}
+                        onClick={() => {
+                          if (maybeCardDocument != null) {
+                            return handleShowDetailedView(maybeCardDocument);
+                          }
+                        }}
+                      />
+                    </MemoizedCardProportionWrapper>
+                  </WrapperElement>
+                )
+              )}
+            </DynamicLogoContainer>
+            {selectedImage != null && (
+              <MemoizedCardDetailedView
+                imageIdentifier={selectedImage.identifier}
+                show={showDetailedView}
+                handleClose={handleCloseDetailedView}
+                cardDocument={selectedImage}
+              />
+            )}
+          </Col>
+        </Row>
       )}
     </>
   );
