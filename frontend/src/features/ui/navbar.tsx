@@ -69,9 +69,11 @@ export default function Navbar() {
           <BoldCollapse id="basic-navbar-nav">
             {/* TODO: i don't know what the above `id` is doing */}
             <Nav className="me-auto">
-              <Nav.Link as={Link} href="/editor">
-                Editor (Temp)
-              </Nav.Link>
+              {backendURL != null && (
+                <Nav.Link as={Link} href="/editor">
+                  Editor
+                </Nav.Link>
+              )}
               <Nav.Link as={Link} href="/guide">
                 Guide
               </Nav.Link>
