@@ -138,9 +138,13 @@ function ContributionGuidelines() {
   );
 }
 
-function sourceContributionRow(contribution: SourceContribution) {
+interface SourceContributionRowProps {
+  contribution: SourceContribution;
+}
+
+function SourceContributionRow({ contribution }: SourceContributionRowProps) {
   /**
-   * Generate the table row for `contribution` in the `ContributionsPerSource` summary table.
+   * Table row for `contribution` in the `ContributionsPerSource` summary table.
    */
 
   return (
@@ -196,9 +200,12 @@ function ContributionsPerSource() {
           </tr>
         </thead>
         <tbody>
-          {contributionsQuery.data.sources.map((contribution) =>
-            sourceContributionRow(contribution)
-          )}
+          {contributionsQuery.data.sources.map((contribution) => (
+            <SourceContributionRow
+              key={`${contribution.name}-row`}
+              contribution={contribution}
+            />
+          ))}
         </tbody>
       </AutoLayoutTable>
     )
