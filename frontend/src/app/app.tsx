@@ -8,8 +8,10 @@ import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
 import { useDispatch, useSelector } from "react-redux";
 import { ThunkDispatch } from "redux-thunk";
+import styled from "styled-components";
 
 import { RootState } from "@/app/store";
+import { NavbarHeight } from "@/common/constants";
 import { selectBackendURL } from "@/features/backend/backendSlice";
 import { CardGrid } from "@/features/card/cardGrid";
 import { CommonCardback } from "@/features/card/commonCardback";
@@ -20,6 +22,12 @@ import { SearchSettings } from "@/features/searchSettings/searchSettings";
 import DisableSSR from "@/features/ui/disableSSR";
 import { NoBackendDefault } from "@/features/ui/noBackendDefault";
 import { ViewSettings } from "@/features/viewSettings/viewSettings";
+
+const OverflowCol = styled(Col)`
+  height: calc(100vh - ${NavbarHeight}px);
+  overflow-y: scroll;
+  overscroll-behavior: none;
+`;
 
 function App() {
   // TODO: should we periodically ping the backend to make sure it's still alive?
@@ -36,35 +44,30 @@ function App() {
     <>
       {backendURL != null ? (
         <Row>
-          <Col lg={8} md={8} sm={6} xs={6}>
+          <OverflowCol lg={8} md={8} sm={6} xs={6}>
             <CardGrid />
-          </Col>
-          <Col lg={4} md={4} sm={6} xs={6} style={{ zIndex: 1 }}>
-            <div
-              className="sticky-top sticky-offset g-0"
-              style={{ position: "sticky" }}
-            >
-              {/* TODO: the fact that we have to do this for XML generation to work is dumb. fix it!
-          XMLs shouldn't constantly recalculate, they should only calculate on-demand; same with decklists. */}
-              <DisableSSR>
-                <ProjectStatus />
-              </DisableSSR>
-              <Row className="g-0">
-                <ViewSettings />
-              </Row>
-              <Row className="g-0 py-3">
-                <Col lg={6} md={12} sm={12} xs={12}>
-                  <SearchSettings />
-                </Col>
-                <Col lg={6} md={12} sm={12} xs={12}>
-                  <Import />
-                </Col>
-              </Row>
-              <Col className="g-0" lg={{ span: 8, offset: 2 }} md={12}>
-                <CommonCardback selectedImage={cardback} />
+          </OverflowCol>
+          <OverflowCol lg={4} md={4} sm={6} xs={6} style={{ zIndex: 1 }}>
+            {/* TODO: the fact that we have to do this for XML generation to work is dumb. fix it!
+        XMLs shouldn't constantly recalculate, they should only calculate on-demand; same with decklists. */}
+            <DisableSSR>
+              <ProjectStatus />
+            </DisableSSR>
+            <Row className="g-0">
+              <ViewSettings />
+            </Row>
+            <Row className="g-0 py-3">
+              <Col lg={6} md={12} sm={12} xs={12}>
+                <SearchSettings />
               </Col>
-            </div>
-          </Col>
+              <Col lg={6} md={12} sm={12} xs={12}>
+                <Import />
+              </Col>
+            </Row>
+            <Col className="g-0" lg={{ span: 8, offset: 2 }} md={12}>
+              <CommonCardback selectedImage={cardback} />
+            </Col>
+          </OverflowCol>
         </Row>
       ) : (
         <NoBackendDefault />

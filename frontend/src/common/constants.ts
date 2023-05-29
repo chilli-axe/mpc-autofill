@@ -29,6 +29,9 @@ export const Back: Faces = "back";
 export const FaceSeparator = "|";
 
 export const ToggleButtonHeight = 38; // pixels
+export const NavbarHeight = 50; // pixels
+export const NavbarLogoHeight = 40; // pixels
+export const ContentMaxWidth = 1200; // pixels - aligns with bootstrap's large breakpoint
 
 export const MinimumDPI = 0;
 export const MaximumDPI = 1500;

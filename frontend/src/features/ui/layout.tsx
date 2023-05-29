@@ -4,8 +4,10 @@ import { useEffect } from "react";
 import Container from "react-bootstrap/Container";
 import SSRProvider from "react-bootstrap/SSRProvider";
 import { Provider, useDispatch, useSelector } from "react-redux";
+import styled from "styled-components";
 
 import store from "@/app/store";
+import { ContentMaxWidth, NavbarHeight } from "@/common/constants";
 import {
   getGoogleAnalyticsConsent,
   setLocalStorageBackendURL,
@@ -13,7 +15,7 @@ import {
 import { standardiseURL } from "@/common/processing";
 import { selectBackendURL, setURL } from "@/features/backend/backendSlice";
 import { Toasts } from "@/features/toasts/toasts";
-import Navbar from "@/features/ui/navbar";
+import ProjectNavbar from "@/features/ui/navbar";
 
 function BackendSetter() {
   const router = useRouter();
@@ -39,6 +41,18 @@ function BackendSetter() {
   return <></>;
 }
 
+const ContentContainer = styled(Container)`
+  top: ${NavbarHeight}px;
+  height: calc(100vh - ${NavbarHeight}px);
+  position: fixed;
+  overflow-y: scroll;
+  overflow-x: clip;
+`;
+
+const MaxWidthContainer = styled(Container)`
+  max-width: ${ContentMaxWidth}px;
+`;
+
 export default function Layout({ children }: { children: React.ReactNode }) {
   const consent = getGoogleAnalyticsConsent();
   return (
@@ -48,10 +62,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <Provider store={store}>
           <Toasts />
           <BackendSetter />
-          <Navbar />
-          <Container className="addmargin" style={{ maxWidth: 1200 + "px" }}>
-            {children}
-          </Container>
+          <ProjectNavbar />
+          <ContentContainer fluid>
+            <MaxWidthContainer>{children}</MaxWidthContainer>
+          </ContentContainer>
         </Provider>
       </SSRProvider>
     </>

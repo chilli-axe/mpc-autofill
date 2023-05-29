@@ -18,10 +18,6 @@ import { MemoizedCardDetailedView } from "@/features/card/cardDetailedView";
 import { Spinner } from "@/features/ui/spinner";
 import { lato } from "@/pages/_app";
 
-const DynamicLogoRow = styled(Row)`
-  overflow: hidden;
-`;
-
 const DynamicLogoContainer = styled.div`
   position: relative;
   width: 85%;
@@ -234,7 +230,7 @@ export function DynamicLogo() {
       {loading ? (
         <Spinner size={12} />
       ) : (
-        <DynamicLogoRow className="justify-content-center">
+        <Row className="justify-content-center">
           <Col xl={6} lg={7} md={8} sm={12} xs={12}>
             <DynamicLogoContainer>
               <DynamicLogoLabel className={lato.className}>
@@ -286,7 +282,7 @@ export function DynamicLogo() {
               />
             )}
           </Col>
-        </DynamicLogoRow>
+        </Row>
       )}
     </>
   );

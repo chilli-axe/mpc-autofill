@@ -4,12 +4,17 @@ import React, { useState } from "react";
 import Button from "react-bootstrap/Button";
 import Container from "react-bootstrap/Container";
 import Nav from "react-bootstrap/Nav";
-import BSNavbar from "react-bootstrap/Navbar";
+import Navbar from "react-bootstrap/Navbar";
 import NavDropdown from "react-bootstrap/NavDropdown";
 import { useSelector } from "react-redux";
 import styled from "styled-components";
 
 import { useGetBackendInfoQuery } from "@/app/api";
+import {
+  ContentMaxWidth,
+  NavbarHeight,
+  NavbarLogoHeight,
+} from "@/common/constants";
 import { ProjectName } from "@/common/constants";
 import { BackendConfig } from "@/features/backend/backend";
 import { selectBackendURL } from "@/features/backend/backendSlice";
@@ -18,18 +23,18 @@ import { SupportDeveloperModal } from "@/features/support/supportDeveloper";
 import DisableSSR from "@/features/ui/disableSSR";
 
 const MaxWidthContainer = styled(Container)`
-  max-width: 1200px;
+  max-width: ${ContentMaxWidth}px;
 `;
 
-const MinHeightNavbar = styled(BSNavbar)`
-  min-height: 50px;
+const FixedHeightNavbar = styled(Navbar)`
+  height: ${NavbarHeight}px;
 `;
 
-const BoldCollapse = styled(BSNavbar.Collapse)`
+const BoldCollapse = styled(Navbar.Collapse)`
   font-weight: bold;
 `;
 
-export default function Navbar() {
+export default function ProjectNavbar() {
   const backendURL = useSelector(selectBackendURL);
   const backendInfoQuery = useGetBackendInfoQuery(undefined, {
     skip: backendURL == null,
@@ -56,15 +61,20 @@ export default function Navbar() {
 
   return (
     <DisableSSR>
-      <MinHeightNavbar expand="lg" fixed="top" variant="dark" bg="primary">
-        <MaxWidthContainer className="justify-content-center fixed-top align-middle bg-primary">
-          <BSNavbar.Brand href="/" as={Link}>
-            <Image src="/logolowres.png" alt="logo" width="40" height="40" />{" "}
+      <FixedHeightNavbar expand="lg" fixed="top" variant="dark" bg="primary">
+        <MaxWidthContainer className="justify-content-center align-middle">
+          <Navbar.Brand href="/" as={Link}>
+            <Image
+              src="/logolowres.png"
+              alt="logo"
+              width={NavbarLogoHeight}
+              height={NavbarLogoHeight}
+            />{" "}
             <span className="align-middle">
               <b>{name}</b>
             </span>
-          </BSNavbar.Brand>
-          <BSNavbar.Toggle aria-controls="basic-navbar-nav" />
+          </Navbar.Brand>
+          <Navbar.Toggle aria-controls="basic-navbar-nav" />
           <BoldCollapse id="basic-navbar-nav">
             {/* TODO: i don't know what the above `id` is doing */}
             <Nav className="me-auto">
@@ -117,7 +127,7 @@ export default function Navbar() {
             </Nav>
           </BoldCollapse>
         </MaxWidthContainer>
-      </MinHeightNavbar>
+      </FixedHeightNavbar>
       <BackendConfig
         show={showBackendConfig}
         handleClose={handleCloseBackendConfig}

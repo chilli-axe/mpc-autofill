@@ -24,18 +24,6 @@
   height: 38px;
 }
 
-.sticky-offset {
-  top: 50px;
-}
-
-.addmargin {
-  margin-top: 50px;
-}
-
-#drivePicker:hover {
-  cursor: move;
-}
-
 .card-img-top {
   object-fit: cover;
 }
@@ -136,30 +124,6 @@
   font-size: 1.3em;
 }
 
-.dl-loading {
-  position: absolute;
-  top: 15px;
-  left: 10px;
-}
-
-.padlock0 {
-  position: absolute;
-  top: 15px;
-  left: 10px;
-  background-color: transparent;
-  background-repeat: no-repeat;
-  border: none;
-  cursor: pointer;
-  overflow: hidden;
-  outline: none;
-}
-
-.paypal-donate-btn {
-  border-radius: 32px;
-  background-color: #ffc439;
-  border-color: #ffc439;
-}
-
 .mpccard-spacing {
   padding-top: 10px;
 }
@@ -172,10 +136,6 @@
   font-family: orpheuspro, serif;
 }
 
-.mpc-vid {
-  max-width: 32rem;
-}
-
 .card-img-fade-in {
   transition: opacity 0.3s;
 }
@@ -184,15 +144,6 @@
   background-size: cover;
   background-position: center center;
   background-repeat: no-repeat;
-}
-
-.mpc-col {
-  height: 100%;
-  overflow-y: scroll;
-}
-
-.mpc-row {
-  height: 100vh;
 }
 
 .ratio-7x5 {
@@ -204,71 +155,8 @@
   transform: scale(1.088, 1.065);
 }
 
-#detailedView-spinner {
-  position: absolute;
-  top: calc(50% - 2em);
-  left: calc(50% - 2em);
-  width: 4em;
-  height: 4em;
-}
-
-.container.addmargin > .row > .col-lg-4 > .sticky-top.sticky-offset {
-  scrollbar-width: none;
-  max-height: calc(100vh - 50px);
-  overflow-y: scroll;
-  overflow-x: hidden;
-}
-.container.addmargin,
-> .row,
-> .col-lg-4,
-> .sticky-top.sticky-offset::-webkit-scrollbar {
-  /*display: none;*/
-}
-
-@media (min-width: 576px) {
-  .card-columns {
-    column-count: 2;
-  }
-}
-
-@media (min-width: 768px) {
-  .card-columns {
-    column-count: 3;
-  }
-}
-
-@media (min-width: 992px) {
-  .card-columns {
-    column-count: 4;
-  }
-}
-
-@media (min-width: 1200px) {
-  .card-columns {
-    column-count: 4;
-  }
-}
-
 .toggle-handle {
   background-color: white !important;
-}
-
-.example-enter {
-  opacity: 0.01;
-}
-
-.example-enter.example-enter-active {
-  opacity: 1;
-  transition: opacity 500ms ease-in;
-}
-
-.example-leave {
-  opacity: 1;
-}
-
-.example-leave.example-leave-active {
-  opacity: 0.01;
-  transition: opacity 300ms ease-in;
 }
 
 .flex-centre {
