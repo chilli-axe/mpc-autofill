@@ -29,6 +29,10 @@ function BackendSetter() {
     if (backendURL == null && formattedURL != null) {
       dispatch(setURL(formattedURL));
       setLocalStorageBackendURL(formattedURL);
+      if (server != null && typeof server == "string" && server.length > 0) {
+        // @ts-ignore  // TODO
+        router.replace({ server }, undefined, { shallow: true });
+      }
     }
   }, [router.isReady, backendURL, formattedURL, dispatch]);
 
