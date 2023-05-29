@@ -10,7 +10,6 @@ import { useSelector } from "react-redux";
 import styled from "styled-components";
 
 import { useGetBackendInfoQuery } from "@/app/api";
-import { RootState } from "@/app/store";
 import { ProjectName } from "@/common/constants";
 import { BackendConfig } from "@/features/backend/backend";
 import { selectBackendURL } from "@/features/backend/backendSlice";
@@ -107,8 +106,12 @@ export default function Navbar() {
                   )}
               </NavDropdown>
             </Nav>
-            <Nav className="ms-auto">
-              <Button variant="secondary" onClick={handleShowBackendConfig}>
+            <Nav className="ms-auto d-flex">
+              <Button
+                className="my-2 my-sm-0"
+                variant="success"
+                onClick={handleShowBackendConfig}
+              >
                 Configure Server
               </Button>
             </Nav>
