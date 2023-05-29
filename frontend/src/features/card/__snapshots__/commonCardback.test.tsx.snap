@@ -18,11 +18,11 @@ exports[`the html structure of a CommonCardback with a single search result 1`] 
     </div>
     <div>
       <div
-        class="sc-d09dd085-2 cOokn rounded-lg shadow-lg ratio ratio-7x5"
+        class="sc-e8045987-2 hXybIN rounded-lg shadow-lg ratio ratio-7x5"
       >
         <img
           alt="Card 1"
-          class="sc-d09dd085-1 cqaPYH card-img card-img-fade-in"
+          class="sc-e8045987-1 iUafQq card-img card-img-fade-in"
           data-nimg="fill"
           decoding="async"
           loading="lazy"
@@ -83,11 +83,11 @@ exports[`the html structure of a CommonCardback with multiple search results 1`]
     </div>
     <div>
       <div
-        class="sc-d09dd085-2 cOokn rounded-lg shadow-lg ratio ratio-7x5"
+        class="sc-e8045987-2 hXybIN rounded-lg shadow-lg ratio ratio-7x5"
       >
         <img
           alt="Card 1"
-          class="sc-d09dd085-1 cqaPYH card-img card-img-fade-in"
+          class="sc-e8045987-1 iUafQq card-img card-img-fade-in"
           data-nimg="fill"
           decoding="async"
           loading="lazy"

@@ -28,9 +28,9 @@ const HiddenImage = styled(Image)`
   opacity: 0;
 `;
 
-const VisibleImage = styled(Image)<{ isLoading?: boolean }>`
+const VisibleImage = styled(Image)<{ imageIsLoading?: boolean }>`
   z-index: 1;
-  opacity: ${(props) => (props.isLoading ? 0 : 1)};
+  opacity: ${(props) => (props.imageIsLoading ? 0 : 1)};
 `;
 
 interface CardImageProps {
@@ -79,7 +79,7 @@ function CardImage({ cardDocument, onClick, hidden, small }: CardImageProps) {
             ref={image}
             className="card-img card-img-fade-in"
             loading="lazy"
-            isLoading={imageLoading}
+            imageIsLoading={imageLoading}
             src={
               (small
                 ? cardDocument?.small_thumbnail_url

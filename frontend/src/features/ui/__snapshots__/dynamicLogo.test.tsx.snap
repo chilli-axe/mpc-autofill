@@ -4,110 +4,115 @@ exports[`the html structure of the dynamic logo, backend configured 1`] = `
 <body>
   <div>
     <div
-      class="col-xl-6 col-lg-7 col-md-8 col-sm-12 col-12"
+      class="justify-content-center row"
     >
       <div
-        class="sc-4f028913-0 evuomw shadow-lg container-sm"
+        class="col-xl-6 col-lg-7 col-md-8 col-sm-12 col-12"
       >
-        <p
-          class="sc-4f028913-1 gEWSz className"
-        >
-          Test Site
-        </p>
-        <img
-          alt="logo-arrow"
-          class="sc-4f028913-2 dRUIFh"
-          data-nimg="1"
-          decoding="async"
-          height="250"
-          loading="lazy"
-          src="/arrow.svg"
-          style="color: transparent;"
-          width="250"
-        />
         <div
-          class="sc-4f028913-3 sc-4f028913-4 bMgDxG cYGczG"
+          class="sc-5ce6503b-0 iouIcz shadow-lg"
         >
+          <p
+            class="sc-5ce6503b-1 iQITIs className"
+          >
+            Test Site
+          </p>
           <div
-            class="sc-4156641b-2 eJmZUk rounded-lg shadow-lg ratio ratio-7x5"
+            class="sc-5ce6503b-2 kykdZC"
           >
             <img
-              alt="Card 6"
-              class="sc-4156641b-1 hdzYhz card-img card-img-fade-in"
+              alt="logo-arrow"
               data-nimg="fill"
               decoding="async"
               loading="lazy"
-              src=""
+              src="/arrow.svg"
               style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent;"
             />
           </div>
-        </div>
-        <div
-          class="sc-4f028913-3 sc-4f028913-5 bMgDxG kJEauP"
-        >
           <div
-            class="sc-4156641b-2 eJmZUk rounded-lg shadow-lg ratio ratio-7x5"
+            class="sc-5ce6503b-3 sc-5ce6503b-4 gTYGrk jVJCYo"
           >
-            <img
-              alt="Card 1"
-              class="sc-4156641b-1 hdzYhz card-img card-img-fade-in"
-              data-nimg="fill"
-              decoding="async"
-              loading="lazy"
-              src=""
-              style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent;"
-            />
+            <div
+              class="sc-e8045987-2 hXybIN rounded-lg shadow-lg ratio ratio-7x5"
+            >
+              <img
+                alt="Card 6"
+                class="sc-e8045987-1 iUafQq card-img card-img-fade-in"
+                data-nimg="fill"
+                decoding="async"
+                loading="lazy"
+                src=""
+                style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent;"
+              />
+            </div>
           </div>
-        </div>
-        <div
-          class="sc-4f028913-3 sc-4f028913-6 bMgDxG LGxBR"
-        >
           <div
-            class="sc-4156641b-2 eJmZUk rounded-lg shadow-lg ratio ratio-7x5"
+            class="sc-5ce6503b-3 sc-5ce6503b-5 gTYGrk gYxWUd"
           >
-            <img
-              alt="Card 2"
-              class="sc-4156641b-1 hdzYhz card-img card-img-fade-in"
-              data-nimg="fill"
-              decoding="async"
-              loading="lazy"
-              src=""
-              style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent;"
-            />
+            <div
+              class="sc-e8045987-2 hXybIN rounded-lg shadow-lg ratio ratio-7x5"
+            >
+              <img
+                alt="Card 1"
+                class="sc-e8045987-1 iUafQq card-img card-img-fade-in"
+                data-nimg="fill"
+                decoding="async"
+                loading="lazy"
+                src=""
+                style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent;"
+              />
+            </div>
           </div>
-        </div>
-        <div
-          class="sc-4f028913-3 sc-4f028913-7 bMgDxG eggqud"
-        >
           <div
-            class="sc-4156641b-2 eJmZUk rounded-lg shadow-lg ratio ratio-7x5"
+            class="sc-5ce6503b-3 sc-5ce6503b-6 gTYGrk ktROfX"
           >
-            <img
-              alt="Card 3"
-              class="sc-4156641b-1 hdzYhz card-img card-img-fade-in"
-              data-nimg="fill"
-              decoding="async"
-              loading="lazy"
-              src=""
-              style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent;"
-            />
+            <div
+              class="sc-e8045987-2 hXybIN rounded-lg shadow-lg ratio ratio-7x5"
+            >
+              <img
+                alt="Card 2"
+                class="sc-e8045987-1 iUafQq card-img card-img-fade-in"
+                data-nimg="fill"
+                decoding="async"
+                loading="lazy"
+                src=""
+                style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent;"
+              />
+            </div>
           </div>
-        </div>
-        <div
-          class="sc-4f028913-3 sc-4f028913-8 bMgDxG cZGZSp"
-        >
           <div
-            class="sc-4156641b-2 eJmZUk rounded-lg shadow-lg ratio ratio-7x5"
+            class="sc-5ce6503b-3 sc-5ce6503b-7 gTYGrk ccnuyr"
           >
-            <img
-              alt="Card 4"
-              class="sc-4156641b-1 hdzYhz card-img card-img-fade-in"
-              data-nimg="fill"
-              decoding="async"
-              loading="lazy"
-              src=""
-              style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent;"
-            />
+            <div
+              class="sc-e8045987-2 hXybIN rounded-lg shadow-lg ratio ratio-7x5"
+            >
+              <img
+                alt="Card 3"
+                class="sc-e8045987-1 iUafQq card-img card-img-fade-in"
+                data-nimg="fill"
+                decoding="async"
+                loading="lazy"
+                src=""
+                style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent;"
+              />
+            </div>
+          </div>
+          <div
+            class="sc-5ce6503b-3 sc-5ce6503b-8 gTYGrk dPPiRr"
+          >
+            <div
+              class="sc-e8045987-2 hXybIN rounded-lg shadow-lg ratio ratio-7x5"
+            >
+              <img
+                alt="Card 4"
+                class="sc-e8045987-1 iUafQq card-img card-img-fade-in"
+                data-nimg="fill"
+                decoding="async"
+                loading="lazy"
+                src=""
+                style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent;"
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -120,195 +125,200 @@ exports[`the html structure of the dynamic logo, no backend configured 1`] = `
 <body>
   <div>
     <div
-      class="col-xl-6 col-lg-7 col-md-8 col-sm-12 col-12"
+      class="justify-content-center row"
     >
       <div
-        class="sc-4f028913-0 evuomw shadow-lg container-sm"
+        class="col-xl-6 col-lg-7 col-md-8 col-sm-12 col-12"
       >
-        <p
-          class="sc-4f028913-1 gEWSz className"
-        >
-          MPC Autofill
-        </p>
-        <img
-          alt="logo-arrow"
-          class="sc-4f028913-2 dRUIFh"
-          data-nimg="1"
-          decoding="async"
-          height="250"
-          loading="lazy"
-          src="/arrow.svg"
-          style="color: transparent;"
-          width="250"
-        />
         <div
-          class="sc-4f028913-3 sc-4f028913-4 bMgDxG cYGczG"
+          class="sc-5ce6503b-0 iouIcz shadow-lg"
         >
-          <div
-            class="sc-4156641b-2 kAwxCW rounded-lg shadow-lg ratio ratio-7x5"
+          <p
+            class="sc-5ce6503b-1 iQITIs className"
           >
-            <div
-              class="d-flex justify-content-center align-items-center"
-            >
-              <div
-                class="sc-ff15f3e1-0 jebGLu spinner-border"
-                role="status"
-                size="4"
-              >
-                <span
-                  class="visually-hidden"
-                >
-                  Loading...
-                </span>
-              </div>
-            </div>
+            MPC Autofill
+          </p>
+          <div
+            class="sc-5ce6503b-2 kykdZC"
+          >
             <img
-              alt="Your Design Here"
-              class="sc-4156641b-1 hdALjG card-img card-img-fade-in"
+              alt="logo-arrow"
               data-nimg="fill"
               decoding="async"
               loading="lazy"
-              sizes="100vw"
-              src="/_next/image?url=%2Flogo-blank.png&w=3840&q=75"
-              srcset="/_next/image?url=%2Flogo-blank.png&w=640&q=75 640w, /_next/image?url=%2Flogo-blank.png&w=750&q=75 750w, /_next/image?url=%2Flogo-blank.png&w=828&q=75 828w, /_next/image?url=%2Flogo-blank.png&w=1080&q=75 1080w, /_next/image?url=%2Flogo-blank.png&w=1200&q=75 1200w, /_next/image?url=%2Flogo-blank.png&w=1920&q=75 1920w, /_next/image?url=%2Flogo-blank.png&w=2048&q=75 2048w, /_next/image?url=%2Flogo-blank.png&w=3840&q=75 3840w"
+              src="/arrow.svg"
               style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent;"
             />
           </div>
-        </div>
-        <div
-          class="sc-4f028913-3 sc-4f028913-5 bMgDxG kJEauP"
-        >
           <div
-            class="sc-4156641b-2 kAwxCW rounded-lg shadow-lg ratio ratio-7x5"
+            class="sc-5ce6503b-3 sc-5ce6503b-4 gTYGrk jVJCYo"
           >
             <div
-              class="d-flex justify-content-center align-items-center"
+              class="sc-e8045987-2 cmakOD rounded-lg shadow-lg ratio ratio-7x5"
             >
               <div
-                class="sc-ff15f3e1-0 jebGLu spinner-border"
-                role="status"
-                size="4"
+                class="d-flex justify-content-center align-items-center"
               >
-                <span
-                  class="visually-hidden"
+                <div
+                  class="sc-ff15f3e1-0 jebGLu spinner-border"
+                  role="status"
+                  size="4"
                 >
-                  Loading...
-                </span>
+                  <span
+                    class="visually-hidden"
+                  >
+                    Loading...
+                  </span>
+                </div>
               </div>
+              <img
+                alt="Your Design Here"
+                class="sc-e8045987-1 iUasor card-img card-img-fade-in"
+                data-nimg="fill"
+                decoding="async"
+                loading="lazy"
+                sizes="100vw"
+                src="/_next/image?url=%2Flogo-blank.png&w=3840&q=75"
+                srcset="/_next/image?url=%2Flogo-blank.png&w=640&q=75 640w, /_next/image?url=%2Flogo-blank.png&w=750&q=75 750w, /_next/image?url=%2Flogo-blank.png&w=828&q=75 828w, /_next/image?url=%2Flogo-blank.png&w=1080&q=75 1080w, /_next/image?url=%2Flogo-blank.png&w=1200&q=75 1200w, /_next/image?url=%2Flogo-blank.png&w=1920&q=75 1920w, /_next/image?url=%2Flogo-blank.png&w=2048&q=75 2048w, /_next/image?url=%2Flogo-blank.png&w=3840&q=75 3840w"
+                style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent;"
+              />
             </div>
-            <img
-              alt="Your Design Here"
-              class="sc-4156641b-1 hdALjG card-img card-img-fade-in"
-              data-nimg="fill"
-              decoding="async"
-              loading="lazy"
-              sizes="100vw"
-              src="/_next/image?url=%2Flogo-blank.png&w=3840&q=75"
-              srcset="/_next/image?url=%2Flogo-blank.png&w=640&q=75 640w, /_next/image?url=%2Flogo-blank.png&w=750&q=75 750w, /_next/image?url=%2Flogo-blank.png&w=828&q=75 828w, /_next/image?url=%2Flogo-blank.png&w=1080&q=75 1080w, /_next/image?url=%2Flogo-blank.png&w=1200&q=75 1200w, /_next/image?url=%2Flogo-blank.png&w=1920&q=75 1920w, /_next/image?url=%2Flogo-blank.png&w=2048&q=75 2048w, /_next/image?url=%2Flogo-blank.png&w=3840&q=75 3840w"
-              style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent;"
-            />
           </div>
-        </div>
-        <div
-          class="sc-4f028913-3 sc-4f028913-6 bMgDxG LGxBR"
-        >
           <div
-            class="sc-4156641b-2 kAwxCW rounded-lg shadow-lg ratio ratio-7x5"
+            class="sc-5ce6503b-3 sc-5ce6503b-5 gTYGrk gYxWUd"
           >
             <div
-              class="d-flex justify-content-center align-items-center"
+              class="sc-e8045987-2 cmakOD rounded-lg shadow-lg ratio ratio-7x5"
             >
               <div
-                class="sc-ff15f3e1-0 jebGLu spinner-border"
-                role="status"
-                size="4"
+                class="d-flex justify-content-center align-items-center"
               >
-                <span
-                  class="visually-hidden"
+                <div
+                  class="sc-ff15f3e1-0 jebGLu spinner-border"
+                  role="status"
+                  size="4"
                 >
-                  Loading...
-                </span>
+                  <span
+                    class="visually-hidden"
+                  >
+                    Loading...
+                  </span>
+                </div>
               </div>
+              <img
+                alt="Your Design Here"
+                class="sc-e8045987-1 iUasor card-img card-img-fade-in"
+                data-nimg="fill"
+                decoding="async"
+                loading="lazy"
+                sizes="100vw"
+                src="/_next/image?url=%2Flogo-blank.png&w=3840&q=75"
+                srcset="/_next/image?url=%2Flogo-blank.png&w=640&q=75 640w, /_next/image?url=%2Flogo-blank.png&w=750&q=75 750w, /_next/image?url=%2Flogo-blank.png&w=828&q=75 828w, /_next/image?url=%2Flogo-blank.png&w=1080&q=75 1080w, /_next/image?url=%2Flogo-blank.png&w=1200&q=75 1200w, /_next/image?url=%2Flogo-blank.png&w=1920&q=75 1920w, /_next/image?url=%2Flogo-blank.png&w=2048&q=75 2048w, /_next/image?url=%2Flogo-blank.png&w=3840&q=75 3840w"
+                style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent;"
+              />
             </div>
-            <img
-              alt="Your Design Here"
-              class="sc-4156641b-1 hdALjG card-img card-img-fade-in"
-              data-nimg="fill"
-              decoding="async"
-              loading="lazy"
-              sizes="100vw"
-              src="/_next/image?url=%2Flogo-blank.png&w=3840&q=75"
-              srcset="/_next/image?url=%2Flogo-blank.png&w=640&q=75 640w, /_next/image?url=%2Flogo-blank.png&w=750&q=75 750w, /_next/image?url=%2Flogo-blank.png&w=828&q=75 828w, /_next/image?url=%2Flogo-blank.png&w=1080&q=75 1080w, /_next/image?url=%2Flogo-blank.png&w=1200&q=75 1200w, /_next/image?url=%2Flogo-blank.png&w=1920&q=75 1920w, /_next/image?url=%2Flogo-blank.png&w=2048&q=75 2048w, /_next/image?url=%2Flogo-blank.png&w=3840&q=75 3840w"
-              style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent;"
-            />
           </div>
-        </div>
-        <div
-          class="sc-4f028913-3 sc-4f028913-7 bMgDxG eggqud"
-        >
           <div
-            class="sc-4156641b-2 kAwxCW rounded-lg shadow-lg ratio ratio-7x5"
+            class="sc-5ce6503b-3 sc-5ce6503b-6 gTYGrk ktROfX"
           >
             <div
-              class="d-flex justify-content-center align-items-center"
+              class="sc-e8045987-2 cmakOD rounded-lg shadow-lg ratio ratio-7x5"
             >
               <div
-                class="sc-ff15f3e1-0 jebGLu spinner-border"
-                role="status"
-                size="4"
+                class="d-flex justify-content-center align-items-center"
               >
-                <span
-                  class="visually-hidden"
+                <div
+                  class="sc-ff15f3e1-0 jebGLu spinner-border"
+                  role="status"
+                  size="4"
                 >
-                  Loading...
-                </span>
+                  <span
+                    class="visually-hidden"
+                  >
+                    Loading...
+                  </span>
+                </div>
               </div>
+              <img
+                alt="Your Design Here"
+                class="sc-e8045987-1 iUasor card-img card-img-fade-in"
+                data-nimg="fill"
+                decoding="async"
+                loading="lazy"
+                sizes="100vw"
+                src="/_next/image?url=%2Flogo-blank.png&w=3840&q=75"
+                srcset="/_next/image?url=%2Flogo-blank.png&w=640&q=75 640w, /_next/image?url=%2Flogo-blank.png&w=750&q=75 750w, /_next/image?url=%2Flogo-blank.png&w=828&q=75 828w, /_next/image?url=%2Flogo-blank.png&w=1080&q=75 1080w, /_next/image?url=%2Flogo-blank.png&w=1200&q=75 1200w, /_next/image?url=%2Flogo-blank.png&w=1920&q=75 1920w, /_next/image?url=%2Flogo-blank.png&w=2048&q=75 2048w, /_next/image?url=%2Flogo-blank.png&w=3840&q=75 3840w"
+                style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent;"
+              />
             </div>
-            <img
-              alt="Your Design Here"
-              class="sc-4156641b-1 hdALjG card-img card-img-fade-in"
-              data-nimg="fill"
-              decoding="async"
-              loading="lazy"
-              sizes="100vw"
-              src="/_next/image?url=%2Flogo-blank.png&w=3840&q=75"
-              srcset="/_next/image?url=%2Flogo-blank.png&w=640&q=75 640w, /_next/image?url=%2Flogo-blank.png&w=750&q=75 750w, /_next/image?url=%2Flogo-blank.png&w=828&q=75 828w, /_next/image?url=%2Flogo-blank.png&w=1080&q=75 1080w, /_next/image?url=%2Flogo-blank.png&w=1200&q=75 1200w, /_next/image?url=%2Flogo-blank.png&w=1920&q=75 1920w, /_next/image?url=%2Flogo-blank.png&w=2048&q=75 2048w, /_next/image?url=%2Flogo-blank.png&w=3840&q=75 3840w"
-              style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent;"
-            />
           </div>
-        </div>
-        <div
-          class="sc-4f028913-3 sc-4f028913-8 bMgDxG cZGZSp"
-        >
           <div
-            class="sc-4156641b-2 kAwxCW rounded-lg shadow-lg ratio ratio-7x5"
+            class="sc-5ce6503b-3 sc-5ce6503b-7 gTYGrk ccnuyr"
           >
             <div
-              class="d-flex justify-content-center align-items-center"
+              class="sc-e8045987-2 cmakOD rounded-lg shadow-lg ratio ratio-7x5"
             >
               <div
-                class="sc-ff15f3e1-0 jebGLu spinner-border"
-                role="status"
-                size="4"
+                class="d-flex justify-content-center align-items-center"
               >
-                <span
-                  class="visually-hidden"
+                <div
+                  class="sc-ff15f3e1-0 jebGLu spinner-border"
+                  role="status"
+                  size="4"
                 >
-                  Loading...
-                </span>
+                  <span
+                    class="visually-hidden"
+                  >
+                    Loading...
+                  </span>
+                </div>
               </div>
+              <img
+                alt="Your Design Here"
+                class="sc-e8045987-1 iUasor card-img card-img-fade-in"
+                data-nimg="fill"
+                decoding="async"
+                loading="lazy"
+                sizes="100vw"
+                src="/_next/image?url=%2Flogo-blank.png&w=3840&q=75"
+                srcset="/_next/image?url=%2Flogo-blank.png&w=640&q=75 640w, /_next/image?url=%2Flogo-blank.png&w=750&q=75 750w, /_next/image?url=%2Flogo-blank.png&w=828&q=75 828w, /_next/image?url=%2Flogo-blank.png&w=1080&q=75 1080w, /_next/image?url=%2Flogo-blank.png&w=1200&q=75 1200w, /_next/image?url=%2Flogo-blank.png&w=1920&q=75 1920w, /_next/image?url=%2Flogo-blank.png&w=2048&q=75 2048w, /_next/image?url=%2Flogo-blank.png&w=3840&q=75 3840w"
+                style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent;"
+              />
             </div>
-            <img
-              alt="Your Design Here"
-              class="sc-4156641b-1 hdALjG card-img card-img-fade-in"
-              data-nimg="fill"
-              decoding="async"
-              loading="lazy"
-              sizes="100vw"
-              src="/_next/image?url=%2Flogo-blank.png&w=3840&q=75"
-              srcset="/_next/image?url=%2Flogo-blank.png&w=640&q=75 640w, /_next/image?url=%2Flogo-blank.png&w=750&q=75 750w, /_next/image?url=%2Flogo-blank.png&w=828&q=75 828w, /_next/image?url=%2Flogo-blank.png&w=1080&q=75 1080w, /_next/image?url=%2Flogo-blank.png&w=1200&q=75 1200w, /_next/image?url=%2Flogo-blank.png&w=1920&q=75 1920w, /_next/image?url=%2Flogo-blank.png&w=2048&q=75 2048w, /_next/image?url=%2Flogo-blank.png&w=3840&q=75 3840w"
-              style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent;"
-            />
+          </div>
+          <div
+            class="sc-5ce6503b-3 sc-5ce6503b-8 gTYGrk dPPiRr"
+          >
+            <div
+              class="sc-e8045987-2 cmakOD rounded-lg shadow-lg ratio ratio-7x5"
+            >
+              <div
+                class="d-flex justify-content-center align-items-center"
+              >
+                <div
+                  class="sc-ff15f3e1-0 jebGLu spinner-border"
+                  role="status"
+                  size="4"
+                >
+                  <span
+                    class="visually-hidden"
+                  >
+                    Loading...
+                  </span>
+                </div>
+              </div>
+              <img
+                alt="Your Design Here"
+                class="sc-e8045987-1 iUasor card-img card-img-fade-in"
+                data-nimg="fill"
+                decoding="async"
+                loading="lazy"
+                sizes="100vw"
+                src="/_next/image?url=%2Flogo-blank.png&w=3840&q=75"
+                srcset="/_next/image?url=%2Flogo-blank.png&w=640&q=75 640w, /_next/image?url=%2Flogo-blank.png&w=750&q=75 750w, /_next/image?url=%2Flogo-blank.png&w=828&q=75 828w, /_next/image?url=%2Flogo-blank.png&w=1080&q=75 1080w, /_next/image?url=%2Flogo-blank.png&w=1200&q=75 1200w, /_next/image?url=%2Flogo-blank.png&w=1920&q=75 1920w, /_next/image?url=%2Flogo-blank.png&w=2048&q=75 2048w, /_next/image?url=%2Flogo-blank.png&w=3840&q=75 3840w"
+                style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent;"
+              />
+            </div>
           </div>
         </div>
       </div>

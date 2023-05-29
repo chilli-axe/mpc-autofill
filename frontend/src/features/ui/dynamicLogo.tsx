@@ -20,7 +20,8 @@ import { lato } from "@/pages/_app";
 
 const DynamicLogoContainer = styled.div`
   position: relative;
-  width: 100%;
+  width: 85%;
+  left: 7.5%;
   aspect-ratio: 1 / 1;
   background: linear-gradient(#4692f0, #183251);
   border-radius: 50%;
@@ -35,7 +36,7 @@ const DynamicLogoLabel = styled.p`
   z-index: 10;
   transform: translate(-50%, 0);
   // TODO: find a better implementation of font scaling
-  font-size: min(5em, 10vw);
+  font-size: min(4em, 10vw);
   text-shadow: 0 4px 15px #000000;
   white-space: nowrap;
 `;
@@ -51,7 +52,9 @@ const DynamicLogoArrowKeyframes = keyframes`
   }
 `;
 
-const DynamicLogoArrow = styled(Image)`
+const DynamicLogoArrowWrapper = styled.div`
+  width: 40%;
+  height: 40%;
   position: absolute;
   left: 50%;
   animation: ${DynamicLogoArrowKeyframes} 0.75s ease-out forwards;
@@ -221,13 +224,14 @@ export function DynamicLogo() {
               <DynamicLogoLabel className={lato.className}>
                 {backendInfoQuery.data?.name ?? ProjectName}
               </DynamicLogoLabel>
-              <DynamicLogoArrow
-                src="/arrow.svg"
-                alt="logo-arrow"
-                width={250}
-                height={250}
-                quality={100}
-              />
+              <DynamicLogoArrowWrapper>
+                <Image
+                  src="/arrow.svg"
+                  alt="logo-arrow"
+                  quality={100}
+                  fill={true}
+                />
+              </DynamicLogoArrowWrapper>
 
               {displayCards.map(
                 ([maybeCardDocument, WrapperElement], index) => (
