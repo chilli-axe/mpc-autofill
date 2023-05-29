@@ -18,7 +18,7 @@ import { MemoizedCardDetailedView } from "@/features/card/cardDetailedView";
 import { Spinner } from "@/features/ui/spinner";
 import { lato } from "@/pages/_app";
 
-const DynamicLogoColumn = styled(Col)`
+const DynamicLogoRow = styled(Row)`
   overflow: hidden;
 `;
 
@@ -234,8 +234,8 @@ export function DynamicLogo() {
       {loading ? (
         <Spinner size={12} />
       ) : (
-        <Row className="justify-content-center">
-          <DynamicLogoColumn xl={6} lg={7} md={8} sm={12} xs={12}>
+        <DynamicLogoRow className="justify-content-center">
+          <Col xl={6} lg={7} md={8} sm={12} xs={12}>
             <DynamicLogoContainer>
               <DynamicLogoLabel className={lato.className}>
                 {backendInfoQuery.data?.name ?? ProjectName}
@@ -285,8 +285,8 @@ export function DynamicLogo() {
                 cardDocument={selectedImage}
               />
             )}
-          </DynamicLogoColumn>
-        </Row>
+          </Col>
+        </DynamicLogoRow>
       )}
     </>
   );
