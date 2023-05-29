@@ -59,7 +59,7 @@ const DynamicLogoArrowWrapper = styled.div`
   height: 40%;
   position: absolute;
   left: 50%;
-  animation: ${DynamicLogoArrowKeyframes} 0.75s ease-out forwards;
+  animation: ${DynamicLogoArrowKeyframes} 0.75s ease-out 0.01s forwards;
 `;
 
 const ImageTransformWrapperBase = styled.div`
@@ -93,7 +93,7 @@ const FirstImageTransformKeyframes = keyframes`
 
 const FirstImageTransformWrapper = styled(ImageTransformWrapperBase)`
   z-index: 0;
-  animation: ${FirstImageTransformKeyframes} 1s ease-in-out forwards;
+  animation: ${FirstImageTransformKeyframes} 1s ease-in-out 0.01s forwards;
 `;
 
 const SecondImageTransformKeyframes = keyframes`
@@ -109,7 +109,7 @@ const SecondImageTransformKeyframes = keyframes`
 
 const SecondImageTransformWrapper = styled(ImageTransformWrapperBase)`
   z-index: 1;
-  animation: ${SecondImageTransformKeyframes} 1s ease-in-out forwards;
+  animation: ${SecondImageTransformKeyframes} 1s ease-in-out 0.01s forwards;
 `;
 
 const ThirdImageTransformKeyframes = keyframes`
@@ -122,7 +122,7 @@ const ThirdImageTransformKeyframes = keyframes`
 `;
 
 const ThirdImageTransformWrapper = styled(ImageTransformWrapperBase)`
-  animation: ${ThirdImageTransformKeyframes} 1s ease-in-out forwards;
+  animation: ${ThirdImageTransformKeyframes} 1s ease-in-out 0.01s forwards;
   z-index: 2;
 `;
 
@@ -138,7 +138,7 @@ const FourthImageTransformKeyframes = keyframes`
 `;
 
 const FourthImageTransformWrapper = styled(ImageTransformWrapperBase)`
-  animation: ${FourthImageTransformKeyframes} 1s ease-in-out forwards;
+  animation: ${FourthImageTransformKeyframes} 1s ease-in-out 0.01s forwards;
   z-index: 3;
 `;
 
@@ -154,7 +154,7 @@ const FifthImageTransformKeyframes = keyframes`
 `;
 
 const FifthImageTransformWrapper = styled(ImageTransformWrapperBase)`
-  animation: ${FifthImageTransformKeyframes} 1s ease-in-out forwards;
+  animation: ${FifthImageTransformKeyframes} 1s ease-in-out 0.01s forwards;
   z-index: 4;
 `;
 
