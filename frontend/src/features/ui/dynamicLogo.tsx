@@ -18,6 +18,9 @@ import { MemoizedCardDetailedView } from "@/features/card/cardDetailedView";
 import { Spinner } from "@/features/ui/spinner";
 import { lato } from "@/pages/_app";
 
+// note: i'm using transform3d rather than transform bc it apparently fixes animations on ios safari
+// https://www.reddit.com/r/webdev/comments/iv26y7/iossafari_css_animation_not_working/
+
 const DynamicLogoContainer = styled.div`
   position: relative;
   width: 85%;
@@ -36,7 +39,7 @@ const DynamicLogoLabel = styled.p`
   top: 19.3548%;
   left: 50%;
   z-index: 10;
-  transform: translate(-50%, 0);
+  transform: translate3d(-50%, 0, 0);
   // TODO: find a better implementation of font scaling
   font-size: min(4em, 10vw);
   text-shadow: 0 4px 15px #000000;
@@ -45,11 +48,11 @@ const DynamicLogoLabel = styled.p`
 
 const DynamicLogoArrowKeyframes = keyframes`
   0% {
-    transform: translate(-50%, 16%);
+    transform: translate3d(-50%, 16%, 0);
     opacity: 0;
   }
   100% {
-    transform: translate(-50%, 0);
+    transform: translate3d(-50%, 0, 0);
     opacity: 1;
   }
 `;
@@ -59,7 +62,7 @@ const DynamicLogoArrowWrapper = styled.div`
   height: 40%;
   position: absolute;
   left: 50%;
-  animation: ${DynamicLogoArrowKeyframes} 0.75s ease-out 0.05s forwards;
+  animation: ${DynamicLogoArrowKeyframes} 0.75s ease-out 0.01s forwards;
 `;
 
 const ImageTransformWrapperBase = styled.div`
@@ -82,79 +85,79 @@ const ImageTransformWrapperBase = styled.div`
 
 const FirstImageTransformKeyframes = keyframes`
   0% {
-    transform: translate(0, 0);
+    transform: translate3d(0, 0, 0);
     rotate: 0;
   }
   100% {
-    transform: translate(-120%, -27%);
+    transform: translate3d(-120%, -27%, 0);
     rotate: -40deg;
   }
 `;
 
 const FirstImageTransformWrapper = styled(ImageTransformWrapperBase)`
   z-index: 0;
-  animation: ${FirstImageTransformKeyframes} 1s ease-in-out 0.05s forwards;
+  animation: ${FirstImageTransformKeyframes} 1s ease-in-out 0.01s forwards;
 `;
 
 const SecondImageTransformKeyframes = keyframes`
   0% {
-    transform: translate(0, 0);
+    transform: translate3d(0, 0, 0);
     rotate: 0;
   }
   100% {
-    transform: translate(-60%, 0);
+    transform: translate3d(-60%, 0, 0);
     rotate: -20deg;
   }
 `;
 
 const SecondImageTransformWrapper = styled(ImageTransformWrapperBase)`
   z-index: 1;
-  animation: ${SecondImageTransformKeyframes} 1s ease-in-out 0.05s forwards;
+  animation: ${SecondImageTransformKeyframes} 1s ease-in-out 0.01s forwards;
 `;
 
 const ThirdImageTransformKeyframes = keyframes`
   0% {
-    transform: translate(0, 0);
+    transform: translate3d(0, 0, 0);
   }
   100% {
-    transform: translate(0, 6%);
+    transform: translate3d(0, 6%, 0);
   }
 `;
 
 const ThirdImageTransformWrapper = styled(ImageTransformWrapperBase)`
-  animation: ${ThirdImageTransformKeyframes} 1s ease-in-out 0.05s forwards;
+  animation: ${ThirdImageTransformKeyframes} 1s ease-in-out 0.01s forwards;
   z-index: 2;
 `;
 
 const FourthImageTransformKeyframes = keyframes`
   0% {
-    transform: translate(0, 0);
+    transform: translate3d(0, 0, 0);
     rotate: 0;
   }
   100% {
-    transform: translate(60%, 0);
+    transform: translate3d(60%, 0, 0);
     rotate: 20deg;
   }
 `;
 
 const FourthImageTransformWrapper = styled(ImageTransformWrapperBase)`
-  animation: ${FourthImageTransformKeyframes} 1s ease-in-out 0.05s forwards;
+  animation: ${FourthImageTransformKeyframes} 1s ease-in-out 0.01s forwards;
   z-index: 3;
 `;
 
 const FifthImageTransformKeyframes = keyframes`
   0% {
-    transform: translate(0, 0);
+    transform: translate3d(0, 0, 0);
     rotate: 0;
   }
   100% {
-    transform: translate(120%, -27%);
+    transform: translate3d(120%, -27%, 0);
     rotate: 40deg;
   }
 `;
 
 const FifthImageTransformWrapper = styled(ImageTransformWrapperBase)`
-  animation: ${FifthImageTransformKeyframes} 1s ease-in-out 0.05s forwards;
+  animation: ${FifthImageTransformKeyframes} 1s ease-in-out 0.01s forwards;
   z-index: 4;
 `;
 
