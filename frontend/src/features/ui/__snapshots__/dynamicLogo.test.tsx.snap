@@ -4,21 +4,21 @@ exports[`the html structure of the dynamic logo, backend configured 1`] = `
 <body>
   <div>
     <div
-      class="sc-5316f9e3-0 dSATvH justify-content-center row"
+      class="sc-6d450325-0 kmdrTw justify-content-center row"
     >
       <div
         class="col-xl-6 col-lg-7 col-md-8 col-sm-12 col-12"
       >
         <div
-          class="sc-5316f9e3-1 XtLyF"
+          class="sc-6d450325-1 bfDjwO"
         >
           <p
-            class="sc-5316f9e3-2 kSgTpu className"
+            class="sc-6d450325-2 bOzTDB className"
           >
             Test Site
           </p>
           <div
-            class="sc-5316f9e3-3 ezSraS"
+            class="sc-6d450325-3 dLPAoV"
           >
             <img
               alt="logo-arrow"
@@ -30,7 +30,7 @@ exports[`the html structure of the dynamic logo, backend configured 1`] = `
             />
           </div>
           <div
-            class="sc-5316f9e3-4 sc-5316f9e3-5 oRHYX bKFJTo"
+            class="sc-6d450325-4 sc-6d450325-5 hIWyRA hcMQjf"
           >
             <div
               class="sc-e8045987-2 hXybIN rounded-lg shadow-lg ratio ratio-7x5"
@@ -47,7 +47,7 @@ exports[`the html structure of the dynamic logo, backend configured 1`] = `
             </div>
           </div>
           <div
-            class="sc-5316f9e3-4 sc-5316f9e3-6 oRHYX hmxnyD"
+            class="sc-6d450325-4 sc-6d450325-6 hIWyRA OSXbs"
           >
             <div
               class="sc-e8045987-2 hXybIN rounded-lg shadow-lg ratio ratio-7x5"
@@ -64,7 +64,7 @@ exports[`the html structure of the dynamic logo, backend configured 1`] = `
             </div>
           </div>
           <div
-            class="sc-5316f9e3-4 sc-5316f9e3-7 oRHYX GtuOb"
+            class="sc-6d450325-4 sc-6d450325-7 hIWyRA bFTgYY"
           >
             <div
               class="sc-e8045987-2 hXybIN rounded-lg shadow-lg ratio ratio-7x5"
@@ -81,7 +81,7 @@ exports[`the html structure of the dynamic logo, backend configured 1`] = `
             </div>
           </div>
           <div
-            class="sc-5316f9e3-4 sc-5316f9e3-8 oRHYX ceQUcJ"
+            class="sc-6d450325-4 sc-6d450325-8 hIWyRA jxLABu"
           >
             <div
               class="sc-e8045987-2 hXybIN rounded-lg shadow-lg ratio ratio-7x5"
@@ -98,7 +98,7 @@ exports[`the html structure of the dynamic logo, backend configured 1`] = `
             </div>
           </div>
           <div
-            class="sc-5316f9e3-4 sc-5316f9e3-9 oRHYX gxnxJn"
+            class="sc-6d450325-4 sc-6d450325-9 hIWyRA DaFNM"
           >
             <div
               class="sc-e8045987-2 hXybIN rounded-lg shadow-lg ratio ratio-7x5"
@@ -125,21 +125,21 @@ exports[`the html structure of the dynamic logo, no backend configured 1`] = `
 <body>
   <div>
     <div
-      class="sc-5316f9e3-0 dSATvH justify-content-center row"
+      class="sc-6d450325-0 kmdrTw justify-content-center row"
     >
       <div
         class="col-xl-6 col-lg-7 col-md-8 col-sm-12 col-12"
       >
         <div
-          class="sc-5316f9e3-1 XtLyF"
+          class="sc-6d450325-1 bfDjwO"
         >
           <p
-            class="sc-5316f9e3-2 kSgTpu className"
+            class="sc-6d450325-2 bOzTDB className"
           >
             MPC Autofill
           </p>
           <div
-            class="sc-5316f9e3-3 ezSraS"
+            class="sc-6d450325-3 dLPAoV"
           >
             <img
               alt="logo-arrow"
@@ -151,7 +151,7 @@ exports[`the html structure of the dynamic logo, no backend configured 1`] = `
             />
           </div>
           <div
-            class="sc-5316f9e3-4 sc-5316f9e3-5 oRHYX bKFJTo"
+            class="sc-6d450325-4 sc-6d450325-5 hIWyRA hcMQjf"
           >
             <div
               class="sc-e8045987-2 cmakOD rounded-lg shadow-lg ratio ratio-7x5"
@@ -185,7 +185,7 @@ exports[`the html structure of the dynamic logo, no backend configured 1`] = `
             </div>
           </div>
           <div
-            class="sc-5316f9e3-4 sc-5316f9e3-6 oRHYX hmxnyD"
+            class="sc-6d450325-4 sc-6d450325-6 hIWyRA OSXbs"
           >
             <div
               class="sc-e8045987-2 cmakOD rounded-lg shadow-lg ratio ratio-7x5"
@@ -219,7 +219,7 @@ exports[`the html structure of the dynamic logo, no backend configured 1`] = `
             </div>
           </div>
           <div
-            class="sc-5316f9e3-4 sc-5316f9e3-7 oRHYX GtuOb"
+            class="sc-6d450325-4 sc-6d450325-7 hIWyRA bFTgYY"
           >
             <div
               class="sc-e8045987-2 cmakOD rounded-lg shadow-lg ratio ratio-7x5"
@@ -253,7 +253,7 @@ exports[`the html structure of the dynamic logo, no backend configured 1`] = `
             </div>
           </div>
           <div
-            class="sc-5316f9e3-4 sc-5316f9e3-8 oRHYX ceQUcJ"
+            class="sc-6d450325-4 sc-6d450325-8 hIWyRA jxLABu"
           >
             <div
               class="sc-e8045987-2 cmakOD rounded-lg shadow-lg ratio ratio-7x5"
@@ -287,7 +287,7 @@ exports[`the html structure of the dynamic logo, no backend configured 1`] = `
             </div>
           </div>
           <div
-            class="sc-5316f9e3-4 sc-5316f9e3-9 oRHYX gxnxJn"
+            class="sc-6d450325-4 sc-6d450325-9 hIWyRA DaFNM"
           >
             <div
               class="sc-e8045987-2 cmakOD rounded-lg shadow-lg ratio ratio-7x5"
