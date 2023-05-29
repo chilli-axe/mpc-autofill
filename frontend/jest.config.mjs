@@ -9,7 +9,11 @@ const createJestConfig = nextJest({
 /** @type {import('jest').Config} */
 const config = {
   // Add more setup options before each test is run
-  setupFilesAfterEnv: ["<rootDir>/jest.setup.ts", "jsdom-worker"],
+  setupFilesAfterEnv: [
+    "<rootDir>/jest.setup.ts",
+    "jsdom-worker",
+    "next-router-mock",
+  ],
 
   testEnvironment: "jest-environment-jsdom",
   injectGlobals: true,

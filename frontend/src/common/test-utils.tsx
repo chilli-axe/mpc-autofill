@@ -9,6 +9,7 @@ import { within } from "@testing-library/dom";
 import type { RenderOptions } from "@testing-library/react";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import FileSaver from "file-saver";
+import { MemoryRouterProvider } from "next-router-mock/MemoryRouterProvider/next-13";
 import React, { PropsWithChildren } from "react";
 import { Provider } from "react-redux";
 
@@ -35,9 +36,13 @@ export function renderWithProviders(
 ) {
   function Wrapper({ children }: PropsWithChildren<{}>): JSX.Element {
     if (store != undefined) {
-      return <Provider store={store}>{children}</Provider>;
+      return (
+        <MemoryRouterProvider>
+          <Provider store={store}>{children}</Provider>
+        </MemoryRouterProvider>
+      );
     } else {
-      return <>{children}</>;
+      return <MemoryRouterProvider>{children}</MemoryRouterProvider>;
     }
   }
 
