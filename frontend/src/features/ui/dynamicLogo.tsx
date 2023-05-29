@@ -66,6 +66,16 @@ const ImageTransformWrapperBase = styled.div`
   width: 32.358%;
   left: 33.871%;
   top: 33.871%;
+  transition-property: height width top left z-index;
+  transition-duration: 0.15s;
+  transition-timing-function: ease-in-out;
+  &:hover {
+    height: 40%;
+    width: 40%;
+    top: 20%;
+    left: 30%;
+    z-index: 20;
+  }
 `;
 
 const FirstImageTransformKeyframes = keyframes`

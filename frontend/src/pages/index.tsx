@@ -16,7 +16,7 @@ function JumpIntoEditorButton() {
       <Col xl={6} lg={6} md={8} sm={12} xs={12}>
         <Link href="/editor" passHref legacyBehavior>
           <div className="d-grid gap-0">
-            <Button>Jump into the project editor</Button>
+            <Button>Jump into the project editor!</Button>
           </div>
         </Link>
       </Col>
@@ -36,6 +36,7 @@ export default function Index() {
         <DynamicLogo />
         <br />
         <JumpIntoEditorButton />
+        <hr />
         <Footer />
       </Layout>
     </>
