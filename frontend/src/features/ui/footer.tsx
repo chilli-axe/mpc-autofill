@@ -20,6 +20,8 @@ export default function Footer() {
       <hr />
       <footer className="page-footer font-small blue">
         <div className="footer-copyright text-center py-3">
+          Made with ♥️ by chilli_axe
+          <Spacer />•<Spacer />
           <a href="https://github.com/chilli-axe/mpc-autofill" target="_blank">
             GitHub
           </a>

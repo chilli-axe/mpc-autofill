@@ -24,9 +24,8 @@ function MobileAlert() {
   const ua = UAParser();
   return ua.device.type === "mobile" ? (
     <Alert variant="primary">
-      It seems like you&apos;re on a mobile device! Please note that $
-      {ProjectName} requires a Windows, macOS, or Linux computer to run the
-      executable that fills your order into MPC.
+      It seems like you&apos;re on a mobile device! The {ProjectName} executable
+      that fills your order into MPC requires a desktop computer.
     </Alert>
   ) : (
     <></>

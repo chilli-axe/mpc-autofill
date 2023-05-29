@@ -6,7 +6,10 @@ import SSRProvider from "react-bootstrap/SSRProvider";
 import { Provider, useDispatch, useSelector } from "react-redux";
 
 import store from "@/app/store";
-import { getGoogleAnalyticsConsent } from "@/common/cookies";
+import {
+  getGoogleAnalyticsConsent,
+  setLocalStorageBackendURL,
+} from "@/common/cookies";
 import { standardiseURL } from "@/common/processing";
 import { selectBackendURL, setURL } from "@/features/backend/backendSlice";
 import { Toasts } from "@/features/toasts/toasts";
@@ -16,15 +19,16 @@ function BackendSetter() {
   const router = useRouter();
   const { server } = router.query;
   const formattedURL: string | null =
-    server != null && typeof server == "string"
+    server != null && typeof server == "string" && server.length > 0
       ? standardiseURL(server.trim())
       : null;
 
   const dispatch = useDispatch();
   const backendURL = useSelector(selectBackendURL);
   useEffect(() => {
-    if (backendURL == null && (formattedURL ?? "").length > 0) {
+    if (backendURL == null && formattedURL != null) {
       dispatch(setURL(formattedURL));
+      setLocalStorageBackendURL(formattedURL);
     }
   }, [router.isReady, backendURL, formattedURL, dispatch]);
 

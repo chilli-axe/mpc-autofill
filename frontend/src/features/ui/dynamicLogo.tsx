@@ -25,7 +25,9 @@ const DynamicLogoContainer = styled.div`
   aspect-ratio: 1 / 1;
   background: linear-gradient(#4692f0, #183251);
   border-radius: 50%;
-  outline: solid 4px black;
+  // would like to do the first one of these with outline, but alas
+  // all my homies hate safari
+  box-shadow: 0 0 0 4px black, 0 1rem 2rem rgba(0, 0, 0, 0.4);
 `;
 
 const DynamicLogoLabel = styled.p`
@@ -66,7 +68,7 @@ const ImageTransformWrapperBase = styled.div`
   width: 32.358%;
   left: 33.871%;
   top: 33.871%;
-  transition-property: height width top left z-index;
+  transition-property: height, width, top, left, z-index;
   transition-duration: 0.15s;
   transition-timing-function: ease-in-out;
   &:hover {
@@ -230,7 +232,7 @@ export function DynamicLogo() {
       ) : (
         <Row className="justify-content-center">
           <Col xl={6} lg={7} md={8} sm={12} xs={12}>
-            <DynamicLogoContainer className="shadow-lg">
+            <DynamicLogoContainer>
               <DynamicLogoLabel className={lato.className}>
                 {backendInfoQuery.data?.name ?? ProjectName}
               </DynamicLogoLabel>
