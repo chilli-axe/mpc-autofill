@@ -19,6 +19,7 @@ import { SourceContribution } from "@/common/types";
 import { selectBackendURL } from "@/features/backend/backendSlice";
 import Footer from "@/features/ui/footer";
 import Layout from "@/features/ui/layout";
+import { NoBackendDefault } from "@/features/ui/noBackendDefault";
 import { Spinner } from "@/features/ui/spinner";
 
 const AutoLayoutTable = styled(Table)`
@@ -214,6 +215,24 @@ function ContributionsPerSource() {
   );
 }
 
+function ContributionsOrDefault() {
+  const backendURL = useSelector(selectBackendURL);
+  return (
+    <>
+      {backendURL != null ? (
+        <>
+          <ContributionsSummary />
+          <ContributionGuidelines />
+          <ContributionsPerSource />
+          <Footer />
+        </>
+      ) : (
+        <NoBackendDefault />
+      )}
+    </>
+  );
+}
+
 export default function Contributions() {
   return (
     <>
@@ -222,10 +241,7 @@ export default function Contributions() {
         <meta name="description" content="TODO" /> {/* TODO */}
       </Head>
       <Layout>
-        <ContributionsSummary />
-        <ContributionGuidelines />
-        <ContributionsPerSource />
-        <Footer />
+        <ContributionsOrDefault />
       </Layout>
     </>
   );

@@ -34,17 +34,16 @@ exports[`the html structure of a CardSlot with a single search result, image sel
     </div>
     <div>
       <div
-        class="rounded-lg shadow-lg ratio ratio-7x5"
-        style="z-index: 0;"
+        class="sc-e8045987-2 hXybIN rounded-lg shadow-lg ratio ratio-7x5"
       >
         <img
           alt="Card 1"
-          class="card-img card-img-fade-in"
+          class="sc-e8045987-1 iUafQq card-img card-img-fade-in"
           data-nimg="fill"
           decoding="async"
           loading="lazy"
           src=""
-          style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent; z-index: 1; opacity: 1;"
+          style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent;"
         />
       </div>
       <div
@@ -115,17 +114,16 @@ exports[`the html structure of a CardSlot with a single search result, no image 
     </div>
     <div>
       <div
-        class="rounded-lg shadow-lg ratio ratio-7x5"
-        style="z-index: 0;"
+        class="sc-e8045987-2 hXybIN rounded-lg shadow-lg ratio ratio-7x5"
       >
         <img
           alt="Card 1"
-          class="card-img card-img-fade-in"
+          class="sc-e8045987-1 iUafQq card-img card-img-fade-in"
           data-nimg="fill"
           decoding="async"
           loading="lazy"
           src=""
-          style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent; z-index: 1; opacity: 1;"
+          style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent;"
         />
       </div>
       <div
@@ -196,17 +194,16 @@ exports[`the html structure of a CardSlot with a single search result, slot sele
     </div>
     <div>
       <div
-        class="rounded-lg shadow-lg ratio ratio-7x5"
-        style="z-index: 0;"
+        class="sc-e8045987-2 hXybIN rounded-lg shadow-lg ratio ratio-7x5"
       >
         <img
           alt="Card 1"
-          class="card-img card-img-fade-in"
+          class="sc-e8045987-1 iUafQq card-img card-img-fade-in"
           data-nimg="fill"
           decoding="async"
           loading="lazy"
           src=""
-          style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent; z-index: 1; opacity: 1;"
+          style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent;"
         />
       </div>
       <div
@@ -277,21 +274,20 @@ exports[`the html structure of a CardSlot with multiple search results, image se
     </div>
     <div>
       <div
-        class="rounded-lg shadow-lg ratio ratio-7x5"
-        style="z-index: 0;"
+        class="sc-e8045987-2 hXybIN rounded-lg shadow-lg ratio ratio-7x5"
       >
         <img
           alt="Card 1"
-          class="card-img card-img-fade-in"
+          class="sc-e8045987-1 iUafQq card-img card-img-fade-in"
           data-nimg="fill"
           decoding="async"
           loading="lazy"
           src=""
-          style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent; z-index: 1; opacity: 1;"
+          style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent;"
         />
         <img
           alt="Card 2"
-          class="sc-gueYoa jvIOZX card-img"
+          class="sc-e8045987-0 cnHtjM card-img"
           data-nimg="fill"
           decoding="async"
           loading="lazy"
@@ -300,7 +296,7 @@ exports[`the html structure of a CardSlot with multiple search results, image se
         />
         <img
           alt="Card 3"
-          class="sc-gueYoa jvIOZX card-img"
+          class="sc-e8045987-0 cnHtjM card-img"
           data-nimg="fill"
           decoding="async"
           loading="lazy"
@@ -485,17 +481,16 @@ exports[`the html structure of a CardSlot's grid selector, cards faceted by sour
             </div>
             <div>
               <div
-                class="rounded-lg shadow-lg ratio ratio-7x5"
-                style="z-index: 0;"
+                class="sc-e8045987-2 hXybIN rounded-lg shadow-lg ratio ratio-7x5"
               >
                 <img
                   alt="Card 1"
-                  class="card-img card-img-fade-in"
+                  class="sc-e8045987-1 iUafQq card-img card-img-fade-in"
                   data-nimg="fill"
                   decoding="async"
                   loading="lazy"
                   src=""
-                  style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent; z-index: 1; opacity: 1;"
+                  style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent;"
                 />
               </div>
               <div
@@ -532,17 +527,16 @@ exports[`the html structure of a CardSlot's grid selector, cards faceted by sour
             </div>
             <div>
               <div
-                class="rounded-lg shadow-lg ratio ratio-7x5"
-                style="z-index: 0;"
+                class="sc-e8045987-2 hXybIN rounded-lg shadow-lg ratio ratio-7x5"
               >
                 <img
                   alt="Card 2"
-                  class="card-img card-img-fade-in"
+                  class="sc-e8045987-1 iUafQq card-img card-img-fade-in"
                   data-nimg="fill"
                   decoding="async"
                   loading="lazy"
                   src=""
-                  style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent; z-index: 1; opacity: 1;"
+                  style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent;"
                 />
               </div>
               <div
@@ -579,17 +573,16 @@ exports[`the html structure of a CardSlot's grid selector, cards faceted by sour
             </div>
             <div>
               <div
-                class="rounded-lg shadow-lg ratio ratio-7x5"
-                style="z-index: 0;"
+                class="sc-e8045987-2 hXybIN rounded-lg shadow-lg ratio ratio-7x5"
               >
                 <img
                   alt="Card 3"
-                  class="card-img card-img-fade-in"
+                  class="sc-e8045987-1 iUafQq card-img card-img-fade-in"
                   data-nimg="fill"
                   decoding="async"
                   loading="lazy"
                   src=""
-                  style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent; z-index: 1; opacity: 1;"
+                  style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent;"
                 />
               </div>
               <div
@@ -626,17 +619,16 @@ exports[`the html structure of a CardSlot's grid selector, cards faceted by sour
             </div>
             <div>
               <div
-                class="rounded-lg shadow-lg ratio ratio-7x5"
-                style="z-index: 0;"
+                class="sc-e8045987-2 hXybIN rounded-lg shadow-lg ratio ratio-7x5"
               >
                 <img
                   alt="Card 4"
-                  class="card-img card-img-fade-in"
+                  class="sc-e8045987-1 iUafQq card-img card-img-fade-in"
                   data-nimg="fill"
                   decoding="async"
                   loading="lazy"
                   src=""
-                  style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent; z-index: 1; opacity: 1;"
+                  style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent;"
                 />
               </div>
               <div
@@ -750,17 +742,16 @@ exports[`the html structure of a CardSlot's grid selector, cards grouped togethe
           </div>
           <div>
             <div
-              class="rounded-lg shadow-lg ratio ratio-7x5"
-              style="z-index: 0;"
+              class="sc-e8045987-2 hXybIN rounded-lg shadow-lg ratio ratio-7x5"
             >
               <img
                 alt="Card 1"
-                class="card-img card-img-fade-in"
+                class="sc-e8045987-1 iUafQq card-img card-img-fade-in"
                 data-nimg="fill"
                 decoding="async"
                 loading="lazy"
                 src=""
-                style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent; z-index: 1; opacity: 1;"
+                style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent;"
               />
             </div>
             <div
@@ -797,17 +788,16 @@ exports[`the html structure of a CardSlot's grid selector, cards grouped togethe
           </div>
           <div>
             <div
-              class="rounded-lg shadow-lg ratio ratio-7x5"
-              style="z-index: 0;"
+              class="sc-e8045987-2 hXybIN rounded-lg shadow-lg ratio ratio-7x5"
             >
               <img
                 alt="Card 2"
-                class="card-img card-img-fade-in"
+                class="sc-e8045987-1 iUafQq card-img card-img-fade-in"
                 data-nimg="fill"
                 decoding="async"
                 loading="lazy"
                 src=""
-                style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent; z-index: 1; opacity: 1;"
+                style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent;"
               />
             </div>
             <div
@@ -844,17 +834,16 @@ exports[`the html structure of a CardSlot's grid selector, cards grouped togethe
           </div>
           <div>
             <div
-              class="rounded-lg shadow-lg ratio ratio-7x5"
-              style="z-index: 0;"
+              class="sc-e8045987-2 hXybIN rounded-lg shadow-lg ratio ratio-7x5"
             >
               <img
                 alt="Card 3"
-                class="card-img card-img-fade-in"
+                class="sc-e8045987-1 iUafQq card-img card-img-fade-in"
                 data-nimg="fill"
                 decoding="async"
                 loading="lazy"
                 src=""
-                style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent; z-index: 1; opacity: 1;"
+                style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent;"
               />
             </div>
             <div
@@ -891,17 +880,16 @@ exports[`the html structure of a CardSlot's grid selector, cards grouped togethe
           </div>
           <div>
             <div
-              class="rounded-lg shadow-lg ratio ratio-7x5"
-              style="z-index: 0;"
+              class="sc-e8045987-2 hXybIN rounded-lg shadow-lg ratio ratio-7x5"
             >
               <img
                 alt="Card 4"
-                class="card-img card-img-fade-in"
+                class="sc-e8045987-1 iUafQq card-img card-img-fade-in"
                 data-nimg="fill"
                 decoding="async"
                 loading="lazy"
                 src=""
-                style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent; z-index: 1; opacity: 1;"
+                style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent;"
               />
             </div>
             <div

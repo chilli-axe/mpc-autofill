@@ -18,6 +18,7 @@ import {
 
 export const localBackendURL = "https://127.0.0.1:8000";
 export const localBackend: BackendState = { url: localBackendURL };
+export const noBackend: BackendState = { url: null };
 
 //# endregion
 

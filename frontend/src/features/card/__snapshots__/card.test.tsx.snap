@@ -17,31 +17,16 @@ exports[`the html structure of a Card with a single document 1`] = `
       </div>
       <div>
         <div
-          class="rounded-lg shadow-lg ratio ratio-7x5"
-          style="z-index: 0;"
+          class="sc-e8045987-2 hXybIN rounded-lg shadow-lg ratio ratio-7x5"
         >
-          <div
-            class="d-flex justify-content-center align-items-center"
-          >
-            <div
-              class="sc-beqWaB hxFQtk spinner-border"
-              role="status"
-            >
-              <span
-                class="visually-hidden"
-              >
-                Loading...
-              </span>
-            </div>
-          </div>
           <img
             alt="Card 1"
-            class="card-img card-img-fade-in"
+            class="sc-e8045987-1 iUafQq card-img card-img-fade-in"
             data-nimg="fill"
             decoding="async"
             loading="lazy"
             src=""
-            style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent; z-index: 1; opacity: 0;"
+            style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent;"
           />
         </div>
         <div
@@ -85,8 +70,7 @@ exports[`the html structure of a Card with no search results 1`] = `
       </div>
       <div>
         <div
-          class="rounded-lg shadow-lg ratio ratio-7x5"
-          style="z-index: 0;"
+          class="sc-e8045987-2 hXybIN rounded-lg shadow-lg ratio ratio-7x5"
         >
           <img
             alt="Card not found"
@@ -141,35 +125,20 @@ exports[`the html structure of a Card with three documents 1`] = `
       </div>
       <div>
         <div
-          class="rounded-lg shadow-lg ratio ratio-7x5"
-          style="z-index: 0;"
+          class="sc-e8045987-2 hXybIN rounded-lg shadow-lg ratio ratio-7x5"
         >
-          <div
-            class="d-flex justify-content-center align-items-center"
-          >
-            <div
-              class="sc-beqWaB hxFQtk spinner-border"
-              role="status"
-            >
-              <span
-                class="visually-hidden"
-              >
-                Loading...
-              </span>
-            </div>
-          </div>
           <img
             alt="Card 1"
-            class="card-img card-img-fade-in"
+            class="sc-e8045987-1 iUafQq card-img card-img-fade-in"
             data-nimg="fill"
             decoding="async"
             loading="lazy"
             src=""
-            style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent; z-index: 1; opacity: 0;"
+            style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent;"
           />
           <img
             alt="Card 2"
-            class="sc-gueYoa jvIOZX card-img"
+            class="sc-e8045987-0 cnHtjM card-img"
             data-nimg="fill"
             decoding="async"
             loading="lazy"
@@ -178,7 +147,7 @@ exports[`the html structure of a Card with three documents 1`] = `
           />
           <img
             alt="Card 3"
-            class="sc-gueYoa jvIOZX card-img"
+            class="sc-e8045987-0 cnHtjM card-img"
             data-nimg="fill"
             decoding="async"
             loading="lazy"
@@ -227,35 +196,20 @@ exports[`the html structure of a Card with two documents 1`] = `
       </div>
       <div>
         <div
-          class="rounded-lg shadow-lg ratio ratio-7x5"
-          style="z-index: 0;"
+          class="sc-e8045987-2 hXybIN rounded-lg shadow-lg ratio ratio-7x5"
         >
-          <div
-            class="d-flex justify-content-center align-items-center"
-          >
-            <div
-              class="sc-beqWaB hxFQtk spinner-border"
-              role="status"
-            >
-              <span
-                class="visually-hidden"
-              >
-                Loading...
-              </span>
-            </div>
-          </div>
           <img
             alt="Card 1"
-            class="card-img card-img-fade-in"
+            class="sc-e8045987-1 iUafQq card-img card-img-fade-in"
             data-nimg="fill"
             decoding="async"
             loading="lazy"
             src=""
-            style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent; z-index: 1; opacity: 0;"
+            style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent;"
           />
           <img
             alt="Card 2"
-            class="sc-gueYoa jvIOZX card-img"
+            class="sc-e8045987-0 cnHtjM card-img"
             data-nimg="fill"
             decoding="async"
             loading="lazy"

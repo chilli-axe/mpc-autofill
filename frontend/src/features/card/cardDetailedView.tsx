@@ -5,8 +5,7 @@
  */
 
 import { saveAs } from "file-saver";
-import Image from "next/image";
-import React, { memo, useEffect, useState } from "react";
+import React, { memo } from "react";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import Row from "react-bootstrap/Row";
@@ -14,8 +13,12 @@ import Table from "react-bootstrap/Table";
 import { useSelector } from "react-redux";
 
 import { RootState } from "@/app/store";
+import { CardDocument } from "@/common/types";
 import { imageSizeToMBString } from "@/common/utils";
-import { Spinner } from "@/features/ui/spinner";
+import {
+  MemoizedCardImage,
+  MemoizedCardProportionWrapper,
+} from "@/features/card/card";
 
 interface CardDetailedViewProps {
   imageIdentifier: string;
@@ -24,19 +27,19 @@ interface CardDetailedViewProps {
     (): void;
     (event: React.MouseEvent<HTMLButtonElement, MouseEvent>): void;
   };
+  cardDocument?: CardDocument;
 }
 
 export function CardDetailedView({
   imageIdentifier,
   show,
   handleClose,
+  cardDocument,
 }: CardDetailedViewProps) {
-  // ensure that the medium thumbnail fades in each time the selected image changes
-  const [mediumThumbnailLoading, setMediumThumbnailLoading] = useState(true);
-  useEffect(() => setMediumThumbnailLoading(true), [imageIdentifier]);
-
-  const maybeCardDocument = useSelector(
-    (state: RootState) => state.cardDocuments.cardDocuments[imageIdentifier]
+  const maybeCardDocument = useSelector((state: RootState) =>
+    cardDocument != null
+      ? cardDocument
+      : state.cardDocuments.cardDocuments[imageIdentifier]
   );
   const maybeSourceDocuments = useSelector(
     (state: RootState) => state.sourceDocuments.sourceDocuments
@@ -60,24 +63,13 @@ export function CardDetailedView({
                 className="col-lg-5 mb-3 mb-lg-0"
                 style={{ position: "relative" }}
               >
-                <div
-                  className="rounded-xl shadow-lg ratio ratio-7x5"
-                  style={{ zIndex: 0 }}
-                >
-                  {mediumThumbnailLoading && <Spinner />}
-                  <Image
-                    alt={maybeCardDocument.name}
-                    className="card-img-fade-in"
-                    style={{
-                      zIndex: 1,
-                      opacity: mediumThumbnailLoading ? 0 : 1,
-                    }}
-                    src={maybeCardDocument.medium_thumbnail_url}
-                    onLoad={() => setMediumThumbnailLoading(false)}
-                    fill={true}
-                    // onError={{thumbnail_404(this)}}
+                <MemoizedCardProportionWrapper small={false}>
+                  <MemoizedCardImage
+                    cardDocument={maybeCardDocument}
+                    hidden={false}
+                    small={false}
                   />
-                </div>
+                </MemoizedCardProportionWrapper>
               </div>
               <div className="col-lg-7">
                 <h4>{maybeCardDocument.name}</h4>
