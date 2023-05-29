@@ -80,6 +80,8 @@ test("importing one card by text into an empty project", async () => {
   );
   renderWithProviders(<App />, { preloadedState });
 
+  await expectCardbackSlotState(cardDocument2.name, 1, 2);
+
   // import a card
   await importText("my search query");
 
@@ -87,7 +89,7 @@ test("importing one card by text into an empty project", async () => {
   await expectCardSlotToExist(1);
   await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 1);
   await expectCardGridSlotState(1, Back, cardDocument2.name, 1, 2);
-  await expectCardbackSlotState(cardDocument2.name, 1, 2);
+  await expectCardbackSlotState(cardDocument2.name, 1, 2); // should not have changed
 });
 
 test("importing multiple instances of one card by text into an empty project", async () => {
@@ -100,6 +102,8 @@ test("importing multiple instances of one card by text into an empty project", a
   );
   renderWithProviders(<App />, { preloadedState });
 
+  await expectCardbackSlotState(cardDocument2.name, 1, 2);
+
   // import two instances of a card
   await importText("2x my search query");
 
@@ -110,7 +114,7 @@ test("importing multiple instances of one card by text into an empty project", a
   await expectCardSlotToExist(2);
   await expectCardGridSlotState(2, Front, cardDocument1.name, 1, 1);
   await expectCardGridSlotState(2, Back, cardDocument2.name, 1, 2);
-  await expectCardbackSlotState(cardDocument2.name, 1, 2);
+  await expectCardbackSlotState(cardDocument2.name, 1, 2); // should not have changed
 });
 
 test("importing multiple instances of one card without an x by text into an empty project", async () => {
@@ -146,6 +150,8 @@ test("importing multiple instances of one card with a capital X by text into an 
   );
   renderWithProviders(<App />, { preloadedState });
 
+  await expectCardbackSlotState(cardDocument2.name, 1, 2);
+
   // import two instances of a card with a capital X
   await importText("2X my search query");
 
@@ -156,7 +162,7 @@ test("importing multiple instances of one card with a capital X by text into an 
   await expectCardSlotToExist(2);
   await expectCardGridSlotState(2, Front, cardDocument1.name, 1, 1);
   await expectCardGridSlotState(2, Back, cardDocument2.name, 1, 2);
-  await expectCardbackSlotState(cardDocument2.name, 1, 2);
+  await expectCardbackSlotState(cardDocument2.name, 1, 2); // should not have changed
 });
 
 test("importing multiple instances of one card by text into a non-empty project", async () => {
@@ -213,6 +219,8 @@ test("importing one card of each type into an empty project", async () => {
   );
   renderWithProviders(<App />, { preloadedState });
 
+  await expectCardbackSlotState(cardDocument2.name, 1, 2);
+
   // import one card of each type
   await importText("query 1\nt:query 6\nb:query 5");
 
@@ -226,7 +234,7 @@ test("importing one card of each type into an empty project", async () => {
   await expectCardSlotToExist(3);
   await expectCardGridSlotState(3, Front, cardDocument5.name, 1, 1);
   await expectCardGridSlotState(3, Back, cardDocument2.name, 1, 2);
-  await expectCardbackSlotState(cardDocument2.name, 1, 2);
+  await expectCardbackSlotState(cardDocument2.name, 1, 2); // should not have changed
 });
 
 test("importing one DFC-paired card by text into an empty project", async () => {
@@ -240,6 +248,8 @@ test("importing one DFC-paired card by text into an empty project", async () => 
   );
   renderWithProviders(<App />, { preloadedState });
 
+  await expectCardbackSlotState(cardDocument2.name, 1, 2);
+
   // import one instance of a double faced card
   await importText("my search query");
 
@@ -247,7 +257,7 @@ test("importing one DFC-paired card by text into an empty project", async () => 
   await expectCardSlotToExist(1);
   await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 1);
   await expectCardGridSlotState(1, Back, cardDocument4.name, 1, 1);
-  await expectCardbackSlotState(cardDocument2.name, 1, 2);
+  await expectCardbackSlotState(cardDocument2.name, 1, 2); // should not have changed
 });
 
 test("importing an empty string by text into an empty project", async () => {
@@ -270,10 +280,6 @@ test("the placeholder text of the text importer", async () => {
   renderWithProviders(<App />, { preloadedState });
 
   await openImportTextModal();
-
-  const myman = within(screen.getByTestId("import-text")).getByRole("textbox");
-
-  // TODO: assert on the placeholder text of the text area
   await waitFor(() =>
     expect(
       within(screen.getByTestId("import-text")).getByRole("textbox")

@@ -63,6 +63,8 @@ test("importing one card by XML into an empty project", async () => {
   );
   renderWithProviders(<App />, { preloadedState });
 
+  await expectCardbackSlotState(cardDocument2.name, 1, 2);
+
   // import a card
   await importXML(
     `<order>
@@ -86,7 +88,7 @@ test("importing one card by XML into an empty project", async () => {
   await expectCardSlotToExist(1);
   await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 1);
   await expectCardGridSlotState(1, Back, cardDocument3.name, 2, 2);
-  await expectCardbackSlotState(cardDocument2.name, 1, 2);
+  await expectCardbackSlotState(cardDocument2.name, 1, 2); // should not have changed
 });
 
 test("importing multiple instances of one card by XML into an empty project", async () => {
@@ -98,6 +100,8 @@ test("importing multiple instances of one card by XML into an empty project", as
     ...defaultHandlers
   );
   renderWithProviders(<App />, { preloadedState });
+
+  await expectCardbackSlotState(cardDocument2.name, 1, 2);
 
   // import two instances of a card
   await importXML(
@@ -125,7 +129,7 @@ test("importing multiple instances of one card by XML into an empty project", as
   await expectCardSlotToExist(2);
   await expectCardGridSlotState(2, Front, cardDocument1.name, 1, 1);
   await expectCardGridSlotState(2, Back, cardDocument2.name, 1, 2);
-  await expectCardbackSlotState(cardDocument2.name, 1, 2);
+  await expectCardbackSlotState(cardDocument2.name, 1, 2); // should not have changed
 });
 
 test("importing one specific card version by XML into an empty project", async () => {
@@ -137,6 +141,8 @@ test("importing one specific card version by XML into an empty project", async (
     ...defaultHandlers
   );
   renderWithProviders(<App />, { preloadedState });
+
+  await expectCardbackSlotState(cardDocument2.name, 1, 2);
 
   // import a card
   await importXML(
@@ -161,7 +167,7 @@ test("importing one specific card version by XML into an empty project", async (
   await expectCardSlotToExist(1);
   await expectCardGridSlotState(1, Front, cardDocument3.name, 3, 3);
   await expectCardGridSlotState(1, Back, cardDocument2.name, 1, 2);
-  await expectCardbackSlotState(cardDocument2.name, 1, 2);
+  await expectCardbackSlotState(cardDocument2.name, 1, 2); // should not have changed
 });
 
 test("importing one card of each type into an empty project", async () => {
@@ -173,6 +179,8 @@ test("importing one card of each type into an empty project", async () => {
     ...defaultHandlers
   );
   renderWithProviders(<App />, { preloadedState });
+
+  await expectCardbackSlotState(cardDocument2.name, 1, 2);
 
   // import one card of each type
   await importXML(
@@ -215,7 +223,7 @@ test("importing one card of each type into an empty project", async () => {
   await expectCardSlotToExist(3);
   await expectCardGridSlotState(3, Front, cardDocument5.name, 1, 1);
   await expectCardGridSlotState(3, Back, cardDocument3.name, 2, 2);
-  await expectCardbackSlotState(cardDocument2.name, 1, 2);
+  await expectCardbackSlotState(cardDocument2.name, 1, 2); // should not have changed
 });
 
 test("importing a more complex XML into an empty project", async () => {
@@ -227,6 +235,8 @@ test("importing a more complex XML into an empty project", async () => {
     ...defaultHandlers
   );
   renderWithProviders(<App />, { preloadedState });
+
+  await expectCardbackSlotState(cardDocument2.name, 1, 2);
 
   // import a few cards
   await importXML(
@@ -271,7 +281,7 @@ test("importing a more complex XML into an empty project", async () => {
   await expectCardSlotToExist(3);
   await expectCardGridSlotState(3, Front, cardDocument1.name, 1, 4);
   await expectCardGridSlotState(3, Back, cardDocument2.name, 1, 2);
-  await expectCardbackSlotState(cardDocument2.name, 1, 2);
+  await expectCardbackSlotState(cardDocument2.name, 1, 2); // should not have changed
 });
 
 test("importing an XML with gaps into an empty project", async () => {
@@ -283,6 +293,8 @@ test("importing an XML with gaps into an empty project", async () => {
     ...defaultHandlers
   );
   renderWithProviders(<App />, { preloadedState });
+
+  await expectCardbackSlotState(cardDocument2.name, 1, 2);
 
   // import a few cards
   await importXML(
@@ -328,7 +340,7 @@ test("importing an XML with gaps into an empty project", async () => {
   await expectCardSlotToExist(3);
   await expectCardGridSlotState(4, Front, cardDocument1.name, 1, 4);
   await expectCardGridSlotState(4, Back, cardDocument4.name, 4, 4);
-  await expectCardbackSlotState(cardDocument2.name, 1, 2);
+  await expectCardbackSlotState(cardDocument2.name, 1, 2); // should not have changed
 });
 
 test("importing a more complex XML into a non-empty project", async () => {
@@ -406,6 +418,7 @@ test("importing a more complex XML into a non-empty project", async () => {
   await expectCardSlotToExist(4);
   await expectCardGridSlotState(4, Front, cardDocument1.name, 1, 4);
   await expectCardGridSlotState(4, Back, cardDocument3.name, 2, 2);
+  await expectCardbackSlotState(cardDocument2.name, 1, 2); // should not have changed
 });
 
 test("import an XML and retain its cardback", async () => {
@@ -417,6 +430,8 @@ test("import an XML and retain its cardback", async () => {
     ...defaultHandlers
   );
   renderWithProviders(<App />, { preloadedState });
+
+  await expectCardbackSlotState(cardDocument2.name, 1, 2);
 
   // import a card
   await importXML(
