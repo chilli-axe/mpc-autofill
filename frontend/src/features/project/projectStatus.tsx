@@ -8,8 +8,9 @@ import Row from "react-bootstrap/Row";
 import Tooltip from "react-bootstrap/Tooltip";
 import { useSelector } from "react-redux";
 import styled from "styled-components";
+import { UAParser } from "ua-parser-js";
 
-import { ProjectMaxSize } from "@/common/constants";
+import { ProjectMaxSize, ProjectName } from "@/common/constants";
 import { bracket, imageSizeToMBString } from "@/common/utils";
 import { SelectedImagesStatus } from "@/features/project/bulkManagement";
 import {
@@ -18,6 +19,19 @@ import {
   selectProjectFileSize,
   selectProjectSize,
 } from "@/features/project/projectSlice";
+
+function MobileAlert() {
+  const ua = UAParser();
+  return ua.device.type === "mobile" ? (
+    <Alert variant="primary">
+      It seems like you&apos;re on a mobile device! Please note that $
+      {ProjectName} requires a Windows, macOS, or Linux computer to run the
+      executable that fills your order into MPC.
+    </Alert>
+  ) : (
+    <></>
+  );
+}
 
 // TODO: review the codebase for instances of this https://redux.js.org/usage/deriving-data-selectors#optimizing-selectors-with-memoization
 
@@ -46,6 +60,7 @@ export function ProjectStatus() {
   return (
     <>
       <h2>Edit MPC Project</h2>
+      <MobileAlert />
       <SelectedImagesStatus />
       <Alert variant="secondary">
         Your project contains <b>{projectSize}</b> card
