@@ -7,10 +7,7 @@ const nextConfig = {
   },
   output: "export",
   images: { unoptimized: true },
-  compiler: {
-    // reactStrictMode: true,  // TODO
-    styledComponents: true,
-  },
+  compiler: { reactStrictMode: true, styledComponents: true },
 
   // the below config for why did you render was retrieved from https://stackoverflow.com/a/72400455/13021511
   webpack(config, { dev, isServer }) {
