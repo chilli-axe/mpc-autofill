@@ -43,11 +43,18 @@ function App() {
   return (
     <>
       {backendURL != null ? (
-        <Row>
+        <Row className="g-0">
           <OverflowCol lg={8} md={8} sm={6} xs={6}>
             <CardGrid />
           </OverflowCol>
-          <OverflowCol lg={4} md={4} sm={6} xs={6} style={{ zIndex: 1 }}>
+          <OverflowCol
+            lg={4}
+            md={4}
+            sm={6}
+            xs={6}
+            style={{ zIndex: 1 }}
+            className="px-2"
+          >
             {/* TODO: the fact that we have to do this for XML generation to work is dumb. fix it!
         XMLs shouldn't constantly recalculate, they should only calculate on-demand; same with decklists. */}
             <DisableSSR>

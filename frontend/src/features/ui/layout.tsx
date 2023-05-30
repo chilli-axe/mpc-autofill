@@ -41,6 +41,10 @@ function BackendSetter() {
   return <></>;
 }
 
+const OverscrollProvider = styled(Provider)`
+  overscroll-behavior: none;
+`;
+
 const ContentContainer = styled(Container)`
   top: ${NavbarHeight}px;
   height: calc(100vh - ${NavbarHeight}px);
@@ -59,14 +63,14 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     <>
       {consent === true && <GoogleAnalytics trackPageViews />}
       <SSRProvider>
-        <Provider store={store}>
+        <OverscrollProvider store={store}>
           <Toasts />
           <BackendSetter />
           <ProjectNavbar />
           <ContentContainer fluid>
             <MaxWidthContainer>{children}</MaxWidthContainer>
           </ContentContainer>
-        </Provider>
+        </OverscrollProvider>
       </SSRProvider>
     </>
   );
