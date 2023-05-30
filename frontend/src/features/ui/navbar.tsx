@@ -26,8 +26,8 @@ const MaxWidthContainer = styled(Container)`
   max-width: ${ContentMaxWidth}px;
 `;
 
-const FixedHeightNavbar = styled(Navbar)`
-  height: ${NavbarHeight}px;
+const NoVerticalPaddingNavbar = styled(Navbar)`
+  --bs-navbar-padding-y: 0px;
 `;
 
 const BoldCollapse = styled(Navbar.Collapse)`
@@ -61,7 +61,12 @@ export default function ProjectNavbar() {
 
   return (
     <DisableSSR>
-      <FixedHeightNavbar expand="lg" fixed="top" variant="dark" bg="primary">
+      <NoVerticalPaddingNavbar
+        expand="lg"
+        fixed="top"
+        variant="dark"
+        bg="primary"
+      >
         <MaxWidthContainer className="justify-content-center align-middle">
           <Navbar.Brand href="/" as={Link}>
             <Image
@@ -76,7 +81,6 @@ export default function ProjectNavbar() {
           </Navbar.Brand>
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
           <BoldCollapse id="basic-navbar-nav">
-            {/* TODO: i don't know what the above `id` is doing */}
             <Nav className="me-auto">
               {backendURL != null && (
                 <Nav.Link as={Link} href="/editor">
@@ -118,7 +122,7 @@ export default function ProjectNavbar() {
             </Nav>
             <Nav className="ms-auto d-flex">
               <Button
-                className="my-2 my-sm-0"
+                className="my-xl-0 my-lg-0 my-md-2 my-sm-2 my-2"
                 variant="success"
                 onClick={handleShowBackendConfig}
               >
@@ -127,7 +131,7 @@ export default function ProjectNavbar() {
             </Nav>
           </BoldCollapse>
         </MaxWidthContainer>
-      </FixedHeightNavbar>
+      </NoVerticalPaddingNavbar>
       <BackendConfig
         show={showBackendConfig}
         handleClose={handleCloseBackendConfig}

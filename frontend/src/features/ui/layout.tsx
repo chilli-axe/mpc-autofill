@@ -67,8 +67,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <Toasts />
           <BackendSetter />
           <ProjectNavbar />
-          <ContentContainer fluid>
-            <MaxWidthContainer>{children}</MaxWidthContainer>
+          <ContentContainer fluid className="g-0">
+            <MaxWidthContainer className="g-0">{children}</MaxWidthContainer>
           </ContentContainer>
         </OverscrollProvider>
       </SSRProvider>
