@@ -18,11 +18,11 @@ from selenium.webdriver.support.expected_conditions import invisibility_of_eleme
 from selenium.webdriver.support.ui import Select, WebDriverWait
 
 from src.constants import THREADS, Browsers, States
+from src.exc import InvalidStateException
 from src.order import CardImage, CardImageCollection, CardOrder
 from src.utils import (
     TEXT_BOLD,
     TEXT_END,
-    InvalidStateException,
     alert_handler,
     log_hours_minutes_seconds_elapsed,
 )

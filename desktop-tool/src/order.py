@@ -12,19 +12,16 @@ import InquirerPy
 from defusedxml.ElementTree import parse as defused_parse
 from sanitize_filename import sanitize
 
-import src.constants as constants
-from src.utils import (
+from src import constants
+from src.exc import ValidationException
+from src.io import (
     CURRDIR,
-    TEXT_BOLD,
-    TEXT_END,
-    ValidationException,
     download_google_drive_file,
     file_exists,
     get_google_drive_file_name,
     image_directory,
-    text_to_list,
-    unpack_element,
 )
+from src.utils import TEXT_BOLD, TEXT_END, text_to_list, unpack_element
 
 
 @attr.s

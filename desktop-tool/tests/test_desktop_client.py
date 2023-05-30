@@ -15,14 +15,10 @@ from selenium.webdriver.support.wait import WebDriverWait
 import src.constants as constants
 import src.utils
 from src.driver import AutofillDriver
+from src.io import get_google_drive_file_name, remove_directories, remove_files
 from src.order import CardImage, CardImageCollection, CardOrder, Details
 from src.pdf_maker import PdfExporter
-from src.utils import (
-    get_google_drive_file_name,
-    remove_directories,
-    remove_files,
-    text_to_list,
-)
+from src.utils import text_to_list
 
 
 @pytest.fixture(autouse=True)
