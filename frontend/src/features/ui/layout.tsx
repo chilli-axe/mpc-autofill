@@ -44,7 +44,8 @@ function BackendSetter() {
 
 const OverscrollProvider = styled(Provider)`
   overscroll-behavior: none;
-  overflow: hidden; // https://stackoverflow.com/a/69589919/13021511
+  overflow-x: clip;
+  overflow-y: hidden; // https://stackoverflow.com/a/69589919/13021511
 `;
 
 const ContentContainer = styled(Container)`
