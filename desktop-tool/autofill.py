@@ -6,7 +6,7 @@ from typing import Optional
 import click
 from wakepy import keepawake
 
-from src.constants import Browsers
+from src.constants import Browsers, ImageResizeMethods
 from src.driver import AutofillDriver
 from src.pdf_maker import PdfExporter
 from src.utils import TEXT_BOLD, TEXT_END
@@ -18,7 +18,9 @@ os.system("")  # enables ansi escape characters in terminal
 @click.command()
 @click.option(
     "--skipsetup",
-    prompt="Skip project setup to continue editing an existing MPC project?" if len(sys.argv) == 1 else False,
+    prompt="Skip project setup to continue editing an existing MPC project? (Press Enter if you're not sure.)"
+    if len(sys.argv) == 1
+    else False,
     default=False,
     help=(
         "If this flag is passed, the tool will prompt the user to navigate to an existing MPC project "
@@ -30,7 +32,9 @@ os.system("")  # enables ansi escape characters in terminal
 @click.option(
     "-b",
     "--browser",
-    prompt="Which web browser should the tool run on?" if len(sys.argv) == 1 else False,
+    prompt="Which web browser should the tool run on?  (Press Enter if you're not sure.)"
+    if len(sys.argv) == 1
+    else False,
     default=Browsers.chrome.name,
     type=click.Choice(sorted([browser.name for browser in Browsers]), case_sensitive=False),
     help="The web browser to run the tool on.",
@@ -54,6 +58,29 @@ os.system("")  # enables ansi escape characters in terminal
     "--allowsleep",
     default=False,
     help="Allows the system to fall asleep during execution.",
+    is_flag=True,
+)
+@click.option(
+    "--max-dpi",
+    default=800,
+    type=click.INT,
+    help="Images above this DPI will be downscaled to it before being uploaded to MPC. Defaults to 800 DPI.",
+)
+@click.option(
+    "--downscale-alg",
+    default=ImageResizeMethods.LANCZOS.name,
+    type=click.Choice(sorted([str(x.name) for x in ImageResizeMethods])),
+    help=(
+        "The algorithm used when downscaling images to the max DPI. "
+        "See the link below for a performance comparison of each option: "
+        "\nhttps://pillow.readthedocs.io/en/latest/handbook/concepts.html#filters-comparison-table"
+    ),
+)
+@click.option(
+    "--convert-to-jpeg",
+    default=True,
+    type=click.BOOL,
+    help="If this flag is set, non-JPEG images will be converted to JPEG before being uploaded to MPC.",
     is_flag=True,
 )
 def main(skipsetup: bool, browser: str, binary_location: Optional[str], exportpdf: bool, allowsleep: bool) -> None:

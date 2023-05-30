@@ -41,6 +41,8 @@ import os
 from enum import Enum
 from functools import partial
 
+from PIL import Image
+
 import src.webdrivers as wd
 
 # Disable logging messages for webdriver_manager
@@ -107,6 +109,15 @@ class GoogleScriptsAPIs(str, Enum):
 
     def __str__(self) -> str:
         return str(self.value)
+
+
+class ImageResizeMethods(str, Enum):
+    NEAREST = Image.Resampling.NEAREST
+    BOX = Image.Resampling.BOX
+    BILINEAR = Image.Resampling.BILINEAR
+    HAMMING = Image.Resampling.HAMMING
+    BICUBIC = Image.Resampling.BICUBIC
+    LANCZOS = Image.Resampling.LANCZOS
 
 
 BRACKETS = [18, 36, 55, 72, 90, 108, 126, 144, 162, 180, 198, 216, 234, 396, 504, 612]
