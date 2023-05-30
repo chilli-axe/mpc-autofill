@@ -12,7 +12,7 @@ export default function Editor() {
         {/* TODO: set this to the project title */}
         <meta name="description" content="Edit MPC Project" />
       </Head>
-      <Layout>
+      <Layout gutter={0}>
         <App />
       </Layout>
     </>

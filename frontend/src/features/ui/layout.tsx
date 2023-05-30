@@ -1,6 +1,7 @@
 import { useRouter } from "next/router";
 import { GoogleAnalytics } from "nextjs-google-analytics";
 import { useEffect } from "react";
+import { PropsWithChildren } from "react";
 import Container from "react-bootstrap/Container";
 import SSRProvider from "react-bootstrap/SSRProvider";
 import { Provider, useDispatch, useSelector } from "react-redux";
@@ -57,7 +58,14 @@ const MaxWidthContainer = styled(Container)`
   max-width: ${ContentMaxWidth}px;
 `;
 
-export default function Layout({ children }: { children: React.ReactNode }) {
+interface LayoutProps {
+  gutter?: number;
+}
+
+export default function Layout({
+  gutter = 2,
+  children,
+}: PropsWithChildren<LayoutProps>) {
   const consent = getGoogleAnalyticsConsent();
   return (
     <>
@@ -67,8 +75,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <Toasts />
           <BackendSetter />
           <ProjectNavbar />
-          <ContentContainer fluid className="g-0">
-            <MaxWidthContainer className="g-0">{children}</MaxWidthContainer>
+          <ContentContainer fluid className={`g-${gutter}`}>
+            <MaxWidthContainer className={`g-${gutter}`}>
+              {children}
+            </MaxWidthContainer>
           </ContentContainer>
         </OverscrollProvider>
       </SSRProvider>
