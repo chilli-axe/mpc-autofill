@@ -24,7 +24,10 @@ import { NoBackendDefault } from "@/features/ui/noBackendDefault";
 import { ViewSettings } from "@/features/viewSettings/viewSettings";
 
 const OverflowCol = styled(Col)`
-  height: calc(100vh - ${NavbarHeight}px);
+  height: calc(
+    100vh - ${NavbarHeight}px
+  ); // for compatibility with older browsers
+  height: calc(100dvh - ${NavbarHeight}px); // handles the ios address bar
   overflow-y: scroll;
   overscroll-behavior: none;
 `;
