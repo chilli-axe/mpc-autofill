@@ -6,7 +6,7 @@ import Col from "react-bootstrap/Col";
 import OverlayTrigger from "react-bootstrap/OverlayTrigger";
 import Row from "react-bootstrap/Row";
 import Tooltip from "react-bootstrap/Tooltip";
-import { useSelector } from "react-redux";
+import { useSelector, useStore } from "react-redux";
 import styled from "styled-components";
 import { UAParser } from "ua-parser-js";
 
@@ -35,26 +35,31 @@ function MobileAlert() {
 // TODO: review the codebase for instances of this https://redux.js.org/usage/deriving-data-selectors#optimizing-selectors-with-memoization
 
 const SizedIcon = styled.i`
-  font-size 1.25rem
+  font-size: 1.25rem;
 `;
 
 export function ProjectStatus() {
-  const generatedXML = useSelector(selectGeneratedXML);
-  const generatedDecklist = useSelector(selectGeneratedDecklist);
+  const store = useStore();
   const projectSize = useSelector(selectProjectSize);
   const projectFileSize = useSelector(selectProjectFileSize);
 
   // TODO: read project name for these file names
-  const exportXML = () =>
+  // note: these functions use the store directly rather than `useSelector`
+  // to avoid recalculating XML and decklist every time state changes
+  const exportXML = () => {
+    const generatedXML = selectGeneratedXML(store.getState());
     saveAs(
       new Blob([generatedXML], { type: "text/xml;charset=utf-8" }),
       "cards.xml"
     );
-  const exportDecklist = () =>
+  };
+  const exportDecklist = () => {
+    const generatedDecklist = selectGeneratedDecklist(store.getState());
     saveAs(
       new Blob([generatedDecklist], { type: "text/plain;charset=utf-8" }),
       "decklist.txt"
     );
+  };
 
   return (
     <>

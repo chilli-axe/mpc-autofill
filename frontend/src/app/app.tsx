@@ -19,7 +19,6 @@ import { Import } from "@/features/import/import";
 import { ProjectStatus } from "@/features/project/projectStatus";
 import { fetchSourceDocuments } from "@/features/search/sourceDocumentsSlice";
 import { SearchSettings } from "@/features/searchSettings/searchSettings";
-import DisableSSR from "@/features/ui/disableSSR";
 import { NoBackendDefault } from "@/features/ui/noBackendDefault";
 import { ViewSettings } from "@/features/viewSettings/viewSettings";
 
@@ -58,11 +57,7 @@ function App() {
             style={{ zIndex: 1 }}
             className="px-2"
           >
-            {/* TODO: the fact that we have to do this for XML generation to work is dumb. fix it!
-        XMLs shouldn't constantly recalculate, they should only calculate on-demand; same with decklists. */}
-            <DisableSSR>
-              <ProjectStatus />
-            </DisableSSR>
+            <ProjectStatus />
             <Row className="g-0">
               <ViewSettings />
             </Row>
