@@ -38,6 +38,7 @@ const CardGridDefaultText = styled.div`
   left: 50%;
   transform: translate(-50%, -50%);
   text-shadow: 0 4px 15px #000000;
+  max-width: 90%;
 `;
 
 function CardGridDefault() {
