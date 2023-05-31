@@ -18,7 +18,10 @@ from src.driver import AutofillDriver
 from src.io import get_google_drive_file_name, remove_directories, remove_files
 from src.order import CardImage, CardImageCollection, CardOrder, Details
 from src.pdf_maker import PdfExporter
+from src.processing import ImagePostProcessingConfig
 from src.utils import text_to_list
+
+DEFAULT_POST_PROCESSING = ImagePostProcessingConfig(max_dpi=800, downscale_alg=constants.ImageResizeMethods.LANCZOS)
 
 
 @pytest.fixture(autouse=True)
@@ -528,14 +531,18 @@ def test_card_image_drive_id_file_exists(image_local_file: CardImage):
 
 
 def test_invalid_google_drive_image(image_invalid_google_drive: CardImage, counter: Counter, queue: Queue[CardImage]):
-    image_invalid_google_drive.download_image(download_bar=counter, queue=queue)
+    image_invalid_google_drive.download_image(
+        download_bar=counter, queue=queue, post_processing_config=DEFAULT_POST_PROCESSING
+    )
     assert image_invalid_google_drive.errored is True
 
 
 def test_retrieve_card_name_and_download_file(image_google_valid_drive_no_name, counter, queue):
     assert image_google_valid_drive_no_name.name == f"{SIMPLE_CUBE}.png"
     assert not image_google_valid_drive_no_name.file_exists()
-    image_google_valid_drive_no_name.download_image(download_bar=counter, queue=queue)
+    image_google_valid_drive_no_name.download_image(
+        download_bar=counter, queue=queue, post_processing_config=DEFAULT_POST_PROCESSING
+    )
     assert image_google_valid_drive_no_name.file_exists()
 
 
@@ -557,7 +564,9 @@ def test_generate_google_drive_file_path(image_valid_google_drive):
 def test_card_image_collection_download(card_image_collection_valid, counter, image_google_valid_drive_no_name, pool):
     assert card_image_collection_valid.slots() == {0, 1, 2}
     assert [x.file_exists() for x in card_image_collection_valid.cards] == [False, True]
-    card_image_collection_valid.download_images(pool=pool, download_bar=counter)
+    card_image_collection_valid.download_images(
+        pool=pool, download_bar=counter, post_processing_config=DEFAULT_POST_PROCESSING
+    )
     time.sleep(3)
     pool.shutdown(wait=True, cancel_futures=False)
     assert all([x.file_exists() for x in card_image_collection_valid.cards])
@@ -782,7 +791,7 @@ def test_pdf_export_complete_3_cards_single_file(monkeypatch, card_order_valid):
     monkeypatch.setattr("src.pdf_maker.PdfExporter.ask_questions", do_nothing)
     card_order_valid.name = "test_order.xml"
     pdf_exporter = PdfExporter(order=card_order_valid)
-    pdf_exporter.execute()
+    pdf_exporter.execute(post_processing_config=DEFAULT_POST_PROCESSING)
 
     expected_generated_files = [
         "export/test_order/1.pdf",
@@ -801,7 +810,7 @@ def test_pdf_export_complete_3_cards_separate_files(monkeypatch, card_order_vali
     monkeypatch.setattr("src.pdf_maker.PdfExporter.ask_questions", do_nothing)
     card_order_valid.name = "test_order.xml"
     pdf_exporter = PdfExporter(order=card_order_valid, number_of_cards_per_file=1)
-    pdf_exporter.execute()
+    pdf_exporter.execute(post_processing_config=DEFAULT_POST_PROCESSING)
 
     expected_generated_files = ["export/test_order/1.pdf", "export/test_order/2.pdf", "export/test_order/3.pdf"]
 
@@ -818,7 +827,7 @@ def test_pdf_export_complete_separate_faces(monkeypatch, card_order_valid):
     monkeypatch.setattr("src.pdf_maker.PdfExporter.ask_questions", do_nothing)
     card_order_valid.name = "test_order.xml"
     pdf_exporter = PdfExporter(order=card_order_valid, separate_faces=True, number_of_cards_per_file=1)
-    pdf_exporter.execute()
+    pdf_exporter.execute(post_processing_config=DEFAULT_POST_PROCESSING)
 
     expected_generated_files = [
         "export/test_order/backs/1.pdf",
@@ -843,9 +852,7 @@ def test_pdf_export_complete_separate_faces(monkeypatch, card_order_valid):
 @pytest.mark.parametrize("browser", [constants.Browsers.chrome])
 def test_card_order_complete_run_single_cardback(browser, input_enter, card_order_valid):
     autofill_driver = AutofillDriver(order=card_order_valid, browser=browser, headless=True)
-    autofill_driver.execute(
-        skip_setup=False, max_dpi=800, convert_to_jpeg=True, downscale_alg=constants.ImageResizeMethods.LANCZOS
-    )
+    autofill_driver.execute(skip_setup=False, post_processing_config=DEFAULT_POST_PROCESSING)
     assert (
         len(
             WebDriverWait(autofill_driver.driver, 30).until(
@@ -859,7 +866,7 @@ def test_card_order_complete_run_single_cardback(browser, input_enter, card_orde
 @pytest.mark.parametrize("browser", [constants.Browsers.chrome, constants.Browsers.edge])
 def test_card_order_complete_run_multiple_cardbacks(browser, input_enter, card_order_multiple_cardbacks):
     autofill_driver = AutofillDriver(order=card_order_multiple_cardbacks, browser=browser, headless=True)
-    autofill_driver.execute(skip_setup=False)
+    autofill_driver.execute(skip_setup=False, post_processing_config=DEFAULT_POST_PROCESSING)
     assert (
         len(
             WebDriverWait(autofill_driver.driver, 30).until(
