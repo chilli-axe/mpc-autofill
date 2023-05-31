@@ -196,8 +196,6 @@ function ContributionsPerSource() {
             <th className="prevent-select">Name</th>
             <th className="prevent-select">Type</th>
             <th className="prevent-select">Contribution</th>
-            <th />
-            <th />
           </tr>
         </thead>
         <tbody>
