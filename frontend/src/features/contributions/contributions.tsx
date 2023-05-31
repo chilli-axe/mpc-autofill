@@ -11,6 +11,8 @@ import { selectBackendURL } from "@/features/backend/backendSlice";
 import { Spinner } from "@/features/ui/spinner";
 
 const AutoLayoutTable = styled(Table)`
+  max-width: 100%;
+  overflow-x: scroll;
   table-layout: auto;
 `;
 

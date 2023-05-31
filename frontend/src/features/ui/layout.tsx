@@ -44,7 +44,7 @@ function BackendSetter() {
 
 const OverscrollProvider = styled(Provider)`
   overscroll-behavior: none;
-  overflow-x: clip;
+  overflow-x: hidden;
   overflow-y: hidden; // https://stackoverflow.com/a/69589919/13021511
 `;
 
@@ -56,7 +56,7 @@ const ContentContainer = styled(Container)`
   height: calc(100dvh - ${NavbarHeight}px); // handles the ios address bar
   position: fixed;
   overflow-y: scroll;
-  overflow-x: clip;
+  overflow-x: hidden;
 `;
 
 const MaxWidthContainer = styled(Container)`
