@@ -24,13 +24,6 @@ from src.utils import text_to_list
 DEFAULT_POST_PROCESSING = ImagePostProcessingConfig(max_dpi=800, downscale_alg=constants.ImageResizeMethods.LANCZOS)
 
 
-@pytest.fixture(autouse=True)
-def monkeypatch_current_working_directory(request, monkeypatch) -> None:
-    monkeypatch.setattr(os, "getcwd", lambda: FILE_PATH)
-    monkeypatch.setattr(src.io, "CURRDIR", FILE_PATH)
-    monkeypatch.chdir(FILE_PATH)
-
-
 # region assert data structures identical
 
 
@@ -64,8 +57,11 @@ def assert_orders_identical(a: CardOrder, b: CardOrder) -> None:
     assert_card_image_collections_identical(a.backs, b.backs)
 
 
-# endregion
+def assert_file_size(file_path: str, size: int) -> None:
+    assert os.stat(file_path).st_size == size
 
+
+# endregion
 
 # region constants
 
@@ -79,6 +75,13 @@ TEST_IMAGE = "test_image"
 # endregion
 
 # region fixtures
+
+
+@pytest.fixture(autouse=True)
+def monkeypatch_current_working_directory(request, monkeypatch) -> None:
+    monkeypatch.setattr(os, "getcwd", lambda: FILE_PATH)
+    monkeypatch.setattr(src.io, "CURRDIR", FILE_PATH)
+    monkeypatch.chdir(FILE_PATH)
 
 
 @pytest.fixture()
@@ -167,7 +170,11 @@ def image_element_valid_google_drive() -> Generator[ElementTree.Element, None, N
 @pytest.fixture()
 def image_valid_google_drive(image_element_valid_google_drive: ElementTree.Element) -> Generator[CardImage, None, None]:
     card_image = CardImage.from_element(image_element_valid_google_drive)
+    if card_image.file_path is not None and os.path.exists(card_image.file_path):
+        os.unlink(card_image.file_path)
     yield card_image
+    if card_image.file_path is not None and os.path.exists(card_image.file_path):
+        os.unlink(card_image.file_path)  # image is downloaded from Google Drive in test
 
 
 @pytest.fixture()
@@ -521,13 +528,47 @@ def test_text_to_list():
 
 # endregion
 
-# region test order.py
 # region test CardImage
 
 
 def test_card_image_drive_id_file_exists(image_local_file: CardImage):
     assert image_local_file.drive_id == image_local_file.file_path
     assert image_local_file.file_exists()
+
+
+def test_download_google_drive_image_default_post_processing(
+    image_valid_google_drive: CardImage, counter: Counter, queue: Queue[CardImage]
+):
+    image_valid_google_drive.download_image(
+        download_bar=counter, queue=queue, post_processing_config=DEFAULT_POST_PROCESSING
+    )
+    assert image_valid_google_drive.file_exists() is True
+    assert image_valid_google_drive.errored is False
+    assert_file_size(image_valid_google_drive.file_path, 152990)
+
+
+def test_download_google_drive_image_downscaled(
+    image_valid_google_drive: CardImage, counter: Counter, queue: Queue[CardImage]
+):
+    image_valid_google_drive.download_image(
+        download_bar=counter,
+        queue=queue,
+        post_processing_config=ImagePostProcessingConfig(
+            max_dpi=100, downscale_alg=constants.ImageResizeMethods.LANCZOS
+        ),
+    )
+    assert image_valid_google_drive.file_exists() is True
+    assert image_valid_google_drive.errored is False
+    assert_file_size(image_valid_google_drive.file_path, 50701)
+
+
+def test_download_google_drive_image_no_post_processing(
+    image_valid_google_drive: CardImage, counter: Counter, queue: Queue[CardImage]
+):
+    image_valid_google_drive.download_image(download_bar=counter, queue=queue, post_processing_config=None)
+    assert image_valid_google_drive.file_exists() is True
+    assert image_valid_google_drive.errored is False
+    assert_file_size(image_valid_google_drive.file_path, 155686)
 
 
 def test_invalid_google_drive_image(image_invalid_google_drive: CardImage, counter: Counter, queue: Queue[CardImage]):
@@ -779,9 +820,8 @@ def test_card_order_missing_slots(input_enter, card_order_element_invalid_quanti
 
 
 # endregion
-# endregion
 
-# region test pdf_maker.py PdfExporter
+# region test PdfExporter
 
 
 def test_pdf_export_complete_3_cards_single_file(monkeypatch, card_order_valid):
