@@ -16,7 +16,7 @@ const NoBackendDefaultTextWrapper = styled.div`
 `;
 
 export const NoBackendDefaultText = styled.p`
-  font-size: 1.3em;
+  font-size: 1.25em;
 `;
 
 export function NoBackendDefault() {
