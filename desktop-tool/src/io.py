@@ -7,6 +7,7 @@ import ratelimit
 import requests
 
 import src.constants as constants
+from src.processing import ImagePostProcessingConfig, post_process_image
 
 # region network IO
 
@@ -94,7 +95,9 @@ def remove_files(file_list: list[str]) -> None:
 # region mixed network and file IO
 
 
-def download_google_drive_file(drive_id: str, file_path: str) -> bool:
+def download_google_drive_file(
+    drive_id: str, file_path: str, post_processing_config: Optional[ImagePostProcessingConfig]
+) -> bool:
     """
     Download the Google Drive file identified by `drive_id` to the specified `file_path`.
     Returns whether the request was successful or not.
@@ -106,10 +109,14 @@ def download_google_drive_file(drive_id: str, file_path: str) -> bool:
     if response is not None:
         file_contents = response["result"]
         if len(file_contents) > 0:
-            # Download the image
-            with open(file_path, "wb") as f:
-                f.write(np.array(file_contents).astype(np.uint8))
-                return True
+            if post_processing_config is not None:
+                processed_image = post_process_image(raw_image=file_contents, config=post_processing_config)
+                processed_image.save(file_path)
+            else:
+                # Save the bytes directly to disk - avoid reading in pillow in case any quality degradation occurs
+                with open(file_path, "wb") as f:
+                    f.write(np.array(file_contents).astype(np.uint8))
+            return True
     return False
 
 

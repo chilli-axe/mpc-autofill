@@ -20,6 +20,7 @@ from selenium.webdriver.support.ui import Select, WebDriverWait
 from src.constants import THREADS, Browsers, States
 from src.exc import InvalidStateException
 from src.order import CardImage, CardImageCollection, CardOrder
+from src.processing import ImagePostProcessingConfig
 from src.utils import (
     TEXT_BOLD,
     TEXT_END,
@@ -442,11 +443,15 @@ class AutofillDriver:
 
     # region public
 
-    def execute(self, skip_setup: bool) -> None:
+    def execute(self, skip_setup: bool, post_processing_config: Optional[ImagePostProcessingConfig]) -> None:
         t = time.time()
         with ThreadPoolExecutor(max_workers=THREADS) as pool:
-            self.order.fronts.download_images(pool, self.download_bar)
-            self.order.backs.download_images(pool, self.download_bar)
+            self.order.fronts.download_images(
+                pool=pool, download_bar=self.download_bar, post_processing_config=post_processing_config
+            )
+            self.order.backs.download_images(
+                pool=pool, download_bar=self.download_bar, post_processing_config=post_processing_config
+            )
 
             if skip_setup:
                 self.set_state(States.defining_order, "Awaiting user input")

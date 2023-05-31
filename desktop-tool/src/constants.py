@@ -111,13 +111,16 @@ class GoogleScriptsAPIs(str, Enum):
         return str(self.value)
 
 
-class ImageResizeMethods(str, Enum):
-    NEAREST = Image.Resampling.NEAREST
-    BOX = Image.Resampling.BOX
-    BILINEAR = Image.Resampling.BILINEAR
-    HAMMING = Image.Resampling.HAMMING
-    BICUBIC = Image.Resampling.BICUBIC
-    LANCZOS = Image.Resampling.LANCZOS
+class ImageResizeMethods(Enum):
+    NEAREST = Image.NEAREST
+    BOX = Image.BOX
+    BILINEAR = Image.BILINEAR
+    HAMMING = Image.HAMMING
+    BICUBIC = Image.BICUBIC
+    LANCZOS = Image.LANCZOS
+
+
+DPI_HEIGHT_RATIO = 300 / 1110  # TODO: share this between desktop tool and backend
 
 
 BRACKETS = [18, 36, 55, 72, 90, 108, 126, 144, 162, 180, 198, 216, 234, 396, 504, 612]

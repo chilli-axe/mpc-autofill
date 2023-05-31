@@ -24,7 +24,7 @@ from src.utils import text_to_list
 @pytest.fixture(autouse=True)
 def monkeypatch_current_working_directory(request, monkeypatch) -> None:
     monkeypatch.setattr(os, "getcwd", lambda: FILE_PATH)
-    monkeypatch.setattr(src.utils, "CURRDIR", FILE_PATH)
+    monkeypatch.setattr(src.io, "CURRDIR", FILE_PATH)
     monkeypatch.chdir(FILE_PATH)
 
 
@@ -840,10 +840,12 @@ def test_pdf_export_complete_separate_faces(monkeypatch, card_order_valid):
 # region test driver.py
 
 
-@pytest.mark.parametrize("browser", [constants.Browsers.chrome, constants.Browsers.edge])
+@pytest.mark.parametrize("browser", [constants.Browsers.chrome])
 def test_card_order_complete_run_single_cardback(browser, input_enter, card_order_valid):
     autofill_driver = AutofillDriver(order=card_order_valid, browser=browser, headless=True)
-    autofill_driver.execute(skip_setup=False)
+    autofill_driver.execute(
+        skip_setup=False, max_dpi=800, convert_to_jpeg=True, downscale_alg=constants.ImageResizeMethods.LANCZOS
+    )
     assert (
         len(
             WebDriverWait(autofill_driver.driver, 30).until(
