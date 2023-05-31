@@ -154,9 +154,16 @@ function createDtWithFiles(files: File[] = []) {
 
 //# region UI interactions
 
+function getAddCardsMenu() {
+  return within(screen.getByTestId("right-panel")).getByText("Add Cards", {
+    exact: false,
+  });
+}
+
 export async function openImportTextModal() {
   // open the modal and find the text area
-  screen.getByText("Add Cards", { exact: false }).click();
+  const addCardsMenu = getAddCardsMenu();
+  addCardsMenu.click();
   await waitFor(() => screen.getByText("Text", { exact: false }).click());
   await waitFor(() => expect(screen.getByText("Add Cards — Text")));
   return screen.getByLabelText("import-text");
@@ -170,7 +177,8 @@ export async function importText(text: string) {
 
 export async function openImportCSVModal() {
   // open the modal and find the upload dropzone
-  screen.getByText("Add Cards", { exact: false }).click();
+  const addCardsMenu = getAddCardsMenu();
+  addCardsMenu.click();
   await waitFor(() => screen.getByText("CSV", { exact: false }).click());
   await waitFor(() => expect(screen.getByText("Add Cards — CSV")));
   return screen.getByLabelText("import-csv");
@@ -186,7 +194,8 @@ export async function importCSV(fileContents: string) {
 
 export async function openImportXMLModal() {
   // open the modal and find the upload dropzone
-  screen.getByText("Add Cards", { exact: false }).click();
+  const addCardsMenu = getAddCardsMenu();
+  addCardsMenu.click();
   await waitFor(() => screen.getByText("XML", { exact: false }).click());
   await waitFor(() => expect(screen.getByText("Add Cards — XML")));
   return screen.getByLabelText("import-xml");

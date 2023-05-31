@@ -66,81 +66,87 @@ export function ProjectStatus() {
       <h2>Edit MPC Project</h2>
       <MobileAlert />
       <SelectedImagesStatus />
-      <Alert variant="secondary">
-        Your project contains <b>{projectSize}</b> card
-        {projectSize !== 1 && "s"}, belongs in the MPC bracket of up to{" "}
-        <b>{bracket(projectSize)}</b> cards, and is{" "}
-        <b>{imageSizeToMBString(projectFileSize, 0)}</b> in total.
-        <br />
-        <br />
-        {projectSize >= ProjectMaxSize && (
-          <Alert variant="warning">
-            You&apos;ve reached the maximum project size!
-          </Alert>
-        )}
-        <Row>
-          <Col xs={3}>
-            <div className="d-grid gap-0">
-              <OverlayTrigger
-                placement="top"
-                overlay={(props) => <Tooltip {...props}>Save Project</Tooltip>}
-              >
-                <Button variant="outline-light">
-                  <SizedIcon className="bi bi-device-ssd" />
-                </Button>
-              </OverlayTrigger>
-            </div>
-          </Col>
-          <Col xs={3}>
-            <div className="d-grid gap-0">
-              <OverlayTrigger
-                placement="top"
-                overlay={(props) => <Tooltip {...props}>Download XML</Tooltip>}
-              >
-                <Button
-                  variant="outline-light"
-                  onClick={exportXML}
-                  data-testid="download-xml"
+      {projectSize > 0 && (
+        <Alert variant="secondary">
+          Your project contains <b>{projectSize}</b> card
+          {projectSize !== 1 && "s"}, belongs in the MPC bracket of up to{" "}
+          <b>{bracket(projectSize)}</b> cards, and is{" "}
+          <b>{imageSizeToMBString(projectFileSize, 0)}</b> in total.
+          <br />
+          <br />
+          {projectSize >= ProjectMaxSize && (
+            <Alert variant="warning">
+              You&apos;ve reached the maximum project size!
+            </Alert>
+          )}
+          <Row>
+            <Col xs={3}>
+              <div className="d-grid gap-0">
+                <OverlayTrigger
+                  placement="top"
+                  overlay={(props) => (
+                    <Tooltip {...props}>Save Project</Tooltip>
+                  )}
                 >
-                  <SizedIcon className="bi bi-file-earmark-arrow-down" />
-                </Button>
-              </OverlayTrigger>
-            </div>
-          </Col>
-          <Col xs={3}>
-            <div className="d-grid gap-0">
-              <OverlayTrigger
-                placement="top"
-                overlay={(props) => (
-                  <Tooltip {...props}>Download Decklist</Tooltip>
-                )}
-              >
-                <Button
-                  variant="outline-light"
-                  onClick={exportDecklist}
-                  data-testid="download-decklist"
+                  <Button variant="outline-light">
+                    <SizedIcon className="bi bi-device-ssd" />
+                  </Button>
+                </OverlayTrigger>
+              </div>
+            </Col>
+            <Col xs={3}>
+              <div className="d-grid gap-0">
+                <OverlayTrigger
+                  placement="top"
+                  overlay={(props) => (
+                    <Tooltip {...props}>Download XML</Tooltip>
+                  )}
                 >
-                  <SizedIcon className="bi bi-file-text" />
-                </Button>
-              </OverlayTrigger>
-            </div>
-          </Col>
-          <Col xs={3}>
-            <div className="d-grid gap-0">
-              <OverlayTrigger
-                placement="top"
-                overlay={(props) => (
-                  <Tooltip {...props}>Download Images</Tooltip>
-                )}
-              >
-                <Button variant="outline-light">
-                  <SizedIcon className="bi bi-images" />
-                </Button>
-              </OverlayTrigger>
-            </div>
-          </Col>
-        </Row>
-      </Alert>
+                  <Button
+                    variant="outline-light"
+                    onClick={exportXML}
+                    data-testid="download-xml"
+                  >
+                    <SizedIcon className="bi bi-file-earmark-arrow-down" />
+                  </Button>
+                </OverlayTrigger>
+              </div>
+            </Col>
+            <Col xs={3}>
+              <div className="d-grid gap-0">
+                <OverlayTrigger
+                  placement="top"
+                  overlay={(props) => (
+                    <Tooltip {...props}>Download Decklist</Tooltip>
+                  )}
+                >
+                  <Button
+                    variant="outline-light"
+                    onClick={exportDecklist}
+                    data-testid="download-decklist"
+                  >
+                    <SizedIcon className="bi bi-file-text" />
+                  </Button>
+                </OverlayTrigger>
+              </div>
+            </Col>
+            <Col xs={3}>
+              <div className="d-grid gap-0">
+                <OverlayTrigger
+                  placement="top"
+                  overlay={(props) => (
+                    <Tooltip {...props}>Download Images</Tooltip>
+                  )}
+                >
+                  <Button variant="outline-light">
+                    <SizedIcon className="bi bi-images" />
+                  </Button>
+                </OverlayTrigger>
+              </div>
+            </Col>
+          </Row>
+        </Alert>
+      )}
     </>
   );
 }

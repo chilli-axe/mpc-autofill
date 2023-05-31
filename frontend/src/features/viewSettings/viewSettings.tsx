@@ -11,11 +11,18 @@ import { useDispatch, useSelector } from "react-redux";
 
 import { RootState } from "@/app/store";
 import { ToggleButtonHeight } from "@/common/constants";
+import { selectIsProjectEmpty } from "@/features/project/projectSlice";
 import { toggleFaces } from "@/features/viewSettings/viewSettingsSlice";
 
 export function ViewSettings() {
+  const isProjectEmpty = useSelector(selectIsProjectEmpty);
+  const frontsVisible = useSelector(
+    (state: RootState) => state.viewSettings.frontsVisible
+  );
   const dispatch = useDispatch();
-  return (
+  return isProjectEmpty ? (
+    <></>
+  ) : (
     <Toggle
       onClick={() => dispatch(toggleFaces())}
       on="Switch to Backs"
@@ -27,9 +34,7 @@ export function ViewSettings() {
       width={100 + "%"}
       size="md"
       height={ToggleButtonHeight + "px"}
-      active={useSelector(
-        (state: RootState) => state.viewSettings.frontsVisible
-      )}
+      active={frontsVisible}
     />
   );
 }

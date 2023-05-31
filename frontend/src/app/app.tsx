@@ -23,6 +23,7 @@ import { NoBackendDefault } from "@/features/ui/noBackendDefault";
 import { ViewSettings } from "@/features/viewSettings/viewSettings";
 
 const OverflowCol = styled(Col)`
+  position: relative;
   height: calc(
     100vh - ${NavbarHeight}px
   ); // for compatibility with older browsers
@@ -46,10 +47,11 @@ function App() {
     <>
       {backendURL != null ? (
         <Row className="g-0">
-          <OverflowCol lg={8} md={8} sm={6} xs={6}>
+          <OverflowCol lg={8} md={8} sm={6} xs={6} data-testid="left-panel">
             <CardGrid />
           </OverflowCol>
           <OverflowCol
+            data-testid="right-panel"
             lg={4}
             md={4}
             sm={6}

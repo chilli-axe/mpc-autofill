@@ -417,6 +417,9 @@ export const selectQueriesWithoutSearchResults = (
   return queriesToSearch;
 };
 
+export const selectIsProjectEmpty = (state: RootState) =>
+  state.project.members.length == 0;
+
 // Action creators are generated for each case reducer function
 export const {
   setSelectedImage,
