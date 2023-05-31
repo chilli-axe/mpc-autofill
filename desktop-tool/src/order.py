@@ -60,7 +60,6 @@ class CardImage:
         * If `self.drive_id` points to a valid file in the user's file system, use it as the file path
         * If a file with `self.name` exists in the `cards` directory, use the path to that file as the file path
         * Otherwise, use `self.name` with `self.drive_id` in parentheses in the `cards` directory as the file path.
-            * In this branch, if the file is to be converted to jpeg, we set the file extension to jpeg.
         """
 
         if file_exists(self.drive_id):
