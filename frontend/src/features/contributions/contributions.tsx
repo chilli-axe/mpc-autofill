@@ -10,9 +10,11 @@ import { SourceContribution } from "@/common/types";
 import { selectBackendURL } from "@/features/backend/backendSlice";
 import { Spinner } from "@/features/ui/spinner";
 
-const AutoLayoutTable = styled(Table)`
+const TableWrapper = styled.div`
   max-width: 100%;
   overflow-x: scroll;
+`;
+const AutoLayoutTable = styled(Table)`
   table-layout: auto;
 `;
 
@@ -121,23 +123,25 @@ export function ContributionsPerSource() {
     contributionsQuery.isLoading || contributionsQuery.data?.sources == null ? (
       <Spinner />
     ) : (
-      <AutoLayoutTable>
-        <thead>
-          <tr>
-            <th className="prevent-select">Name</th>
-            <th className="prevent-select">Type</th>
-            <th className="prevent-select">Contribution</th>
-          </tr>
-        </thead>
-        <tbody>
-          {contributionsQuery.data.sources.map((contribution) => (
-            <SourceContributionRow
-              key={`${contribution.name}-row`}
-              contribution={contribution}
-            />
-          ))}
-        </tbody>
-      </AutoLayoutTable>
+      <TableWrapper>
+        <AutoLayoutTable>
+          <thead>
+            <tr>
+              <th className="prevent-select">Name</th>
+              <th className="prevent-select">Type</th>
+              <th className="prevent-select">Contribution</th>
+            </tr>
+          </thead>
+          <tbody>
+            {contributionsQuery.data.sources.map((contribution) => (
+              <SourceContributionRow
+                key={`${contribution.name}-row`}
+                contribution={contribution}
+              />
+            ))}
+          </tbody>
+        </AutoLayoutTable>
+      </TableWrapper>
     )
   ) : (
     <></>
