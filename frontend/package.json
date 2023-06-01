@@ -15,6 +15,7 @@
     "@hello-pangea/dnd": "^16.2.0",
     "@popperjs/core": "^2.11.6",
     "@types/ua-parser-js": "^0.7.36",
+    "base64-js": "^1.5.1",
     "bootstrap": "^5.2.3",
     "bootstrap-icons": "^1.10.3",
     "bootswatch": "^5.2.3",

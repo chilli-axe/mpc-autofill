@@ -2,6 +2,8 @@
  * This module contains functions which sanitise and transform user inputs for cards to query into useful formats.
  */
 
+import { toByteArray } from "base64-js";
+
 import {
   Card,
   CardTypePrefixes,
@@ -250,4 +252,8 @@ export function standardiseURL(url: string): string {
 export function formatURL(backendURL: string, routeURL: string): string {
   // TODO: implement this properly
   return backendURL + routeURL;
+}
+
+export function base64StringToBlob(base64: string): Blob {
+  return new Blob([toByteArray(base64)]);
 }

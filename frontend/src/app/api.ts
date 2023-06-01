@@ -133,6 +133,15 @@ export const apiSlice = createApi({
       transformResponse: (response: { info: BackendInfo }, meta, arg) =>
         response.info,
     }),
+    getGoogleDriveImage: builder.query<string, string>({
+      query: (identifier: string) => ({
+        url: "https://script.google.com/macros/s/AKfycbw8laScKBfxda2Wb0g63gkYDBdy8NWNxINoC4xDOwnCQ3JMFdruam1MdmNmN4wI5k4/exec",
+        method: "GET",
+        params: { id: identifier },
+        responseHandler: "text",
+      }),
+      keepUnusedDataFor: 1,
+    }),
   }),
 });
 
