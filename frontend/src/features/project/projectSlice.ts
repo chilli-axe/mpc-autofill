@@ -337,22 +337,6 @@ export const selectProjectSize = (state: RootState): number =>
 export const selectProjectCardback = (state: RootState): string | null =>
   state.project.cardback;
 
-export const selectGeneratedXML = (state: RootState): string => {
-  return generateXML(
-    selectProjectMembers(state),
-    state.cardDocuments.cardDocuments,
-    state.project.cardback,
-    selectProjectSize(state)
-  );
-};
-
-export const selectGeneratedDecklist = (state: RootState): string => {
-  return generateDecklist(
-    selectProjectMembers(state),
-    state.cardDocuments.cardDocuments
-  );
-};
-
 export const selectProjectFileSize = (state: RootState): number => {
   const uniqueCardIdentifiers = new Set<string>();
   for (const slotProjectMembers of state.project.members) {

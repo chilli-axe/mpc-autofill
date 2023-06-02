@@ -4,11 +4,20 @@
  * through the desktop tool CLI.
  */
 
+import { saveAs } from "file-saver";
+import React from "react";
+import Dropdown from "react-bootstrap/Dropdown";
+import { useStore } from "react-redux";
 import formatXML from "xml-formatter";
 
+import { RootState } from "@/app/store";
 import { Back, Front, ReversedCardTypePrefixes } from "@/common/constants";
 import { CardDocuments, SlotProjectMembers } from "@/common/types";
 import { bracket } from "@/common/utils";
+import {
+  selectProjectMembers,
+  selectProjectSize,
+} from "@/features/project/projectSlice";
 
 interface SlotsByIdentifier {
   [identifier: string]: Set<number>;
@@ -95,6 +104,15 @@ function createCardElement(
   return cardElement;
 }
 
+const selectGeneratedXML = (state: RootState): string => {
+  return generateXML(
+    selectProjectMembers(state),
+    state.cardDocuments.cardDocuments,
+    state.project.cardback,
+    selectProjectSize(state)
+  );
+};
+
 export function generateXML(
   projectMembers: Array<SlotProjectMembers>,
   cardDocuments: CardDocuments,
@@ -163,4 +181,21 @@ export function generateXML(
   const xml = serialiser.serializeToString(doc);
 
   return formatXML(xml, { collapseContent: true });
+}
+
+export function ExportXML() {
+  const store = useStore();
+  const downloadFile = () => {
+    const generatedXML = selectGeneratedXML(store.getState());
+    saveAs(
+      new Blob([generatedXML], { type: "text/xml;charset=utf-8" }),
+      "cards.xml"
+    );
+  };
+
+  return (
+    <Dropdown.Item onClick={downloadFile}>
+      <i className="bi bi-file-code" style={{ paddingRight: 0.5 + "em" }} /> XML
+    </Dropdown.Item>
+  );
 }

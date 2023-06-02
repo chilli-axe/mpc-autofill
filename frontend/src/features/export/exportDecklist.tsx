@@ -3,6 +3,12 @@
  * suitable for uploading to deckbuilding websites or sending to a friend.
  */
 
+import { saveAs } from "file-saver";
+import React from "react";
+import Dropdown from "react-bootstrap/Dropdown";
+import { useStore } from "react-redux";
+
+import { RootState } from "@/app/store";
 import { Back, Card, FaceSeparator, Front } from "@/common/constants";
 import { stripTextInParentheses } from "@/common/processing";
 import {
@@ -10,6 +16,7 @@ import {
   ProjectMember,
   SlotProjectMembers,
 } from "@/common/types";
+import { selectProjectMembers } from "@/features/project/projectSlice";
 
 function extractProjectMemberNames(
   projectMembers: Array<SlotProjectMembers>,
@@ -96,4 +103,29 @@ export function generateDecklist(
   );
   const stringifiedCardNames = stringifyCardNames(projectMemberNames);
   return aggregateIntoQuantities(stringifiedCardNames).join("\n");
+}
+
+const selectGeneratedDecklist = (state: RootState): string => {
+  return generateDecklist(
+    selectProjectMembers(state),
+    state.cardDocuments.cardDocuments
+  );
+};
+
+export function ExportDecklist() {
+  const store = useStore();
+  const downloadFile = () => {
+    const generatedDecklist = selectGeneratedDecklist(store.getState());
+    saveAs(
+      new Blob([generatedDecklist], { type: "text/plain;charset=utf-8" }),
+      "decklist.txt" // TODO: use project name here when we eventually track that
+    );
+  };
+
+  return (
+    <Dropdown.Item onClick={downloadFile}>
+      <i className="bi bi-card-text" style={{ paddingRight: 0.5 + "em" }} />{" "}
+      Decklist
+    </Dropdown.Item>
+  );
 }

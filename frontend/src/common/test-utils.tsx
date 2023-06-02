@@ -310,12 +310,20 @@ export async function openSearchSettingsModal() {
   return screen.getByTestId("search-settings");
 }
 
-async function downloadFile(id: string) {
+function getDownloadMenu() {
+  return within(screen.getByTestId("right-panel")).getByText("Download", {
+    exact: false,
+  });
+}
+
+async function downloadFile(label: string) {
   // @ts-ignore
   jest.spyOn(global, "Blob").mockImplementation(function (content, options) {
     return { content, options };
   });
-  await waitFor(() => screen.getByTestId(`download-${id}`).click());
+  const downloadMenu = getDownloadMenu();
+  downloadMenu.click();
+  await waitFor(() => screen.getByText(label, { exact: false }).click());
   expect(FileSaver.saveAs).toHaveBeenCalledTimes(1);
 
   // @ts-ignore
@@ -324,11 +332,11 @@ async function downloadFile(id: string) {
 }
 
 export async function downloadXML() {
-  return await downloadFile("xml");
+  return await downloadFile("XML");
 }
 
 export async function downloadDecklist() {
-  return await downloadFile("decklist");
+  return await downloadFile("Decklist");
 }
 
 //# endregion
