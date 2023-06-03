@@ -302,6 +302,15 @@ export const selectProjectMembers = (
   state: RootState
 ): Array<SlotProjectMembers> => state.project.members;
 
+export const selectProjectMemberIdentifiers = (state: RootState): Set<string> =>
+  new Set(
+    state.project.members.flatMap((x: SlotProjectMembers) =>
+      (x.front?.selectedImage != null ? [x.front.selectedImage] : []).concat(
+        x.back?.selectedImage != null ? [x.back.selectedImage] : []
+      )
+    )
+  );
+
 // TODO: this is a bit disgusting
 export const selectSelectedSlots = (state: RootState): Array<[Faces, number]> =>
   state.project.members.flatMap((x: SlotProjectMembers, index: number) =>

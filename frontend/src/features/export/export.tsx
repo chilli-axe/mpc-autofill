@@ -2,6 +2,7 @@ import React from "react";
 import Dropdown from "react-bootstrap/Dropdown";
 
 import { ExportDecklist } from "@/features/export/exportDecklist";
+import { ExportImages } from "@/features/export/exportImages";
 import { ExportXML } from "@/features/export/exportXML";
 
 export function Export() {
@@ -20,6 +21,7 @@ export function Export() {
         <Dropdown.Menu>
           <ExportDecklist />
           <ExportXML />
+          <ExportImages />
         </Dropdown.Menu>
       </Dropdown>
     </>
