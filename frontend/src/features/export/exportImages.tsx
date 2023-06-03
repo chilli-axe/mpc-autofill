@@ -1,5 +1,6 @@
 import { saveAs } from "file-saver";
 import React, { useRef, useState } from "react";
+import { Alert } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
 import Dropdown from "react-bootstrap/Dropdown";
 import Modal from "react-bootstrap/Modal";
@@ -11,6 +12,7 @@ import { Pool, spawn, Worker } from "threads";
 import workerURL from "threads-plugin/dist/loader?name=gitWorker!./workers/download.ts";
 
 import { RootState } from "@/app/store";
+import { ProjectName } from "@/common/constants";
 import { base64StringToBlob } from "@/common/processing";
 import { selectProjectMemberIdentifiers } from "@/features/project/projectSlice";
 import { Spinner } from "@/features/ui/spinner";
@@ -18,6 +20,15 @@ import { Spinner } from "@/features/ui/spinner";
 const StyledProgressBar = styled(ProgressBar)`
   --bs-progress-bg: #424e5c;
 `;
+
+// the pool must be recreated whenever image download is commenced
+const createPool = () =>
+  Pool(
+    () =>
+      // @ts-ignore
+      spawn(new Worker(new URL("./workers/download.ts", import.meta.url))),
+    5
+  );
 
 export function ExportImages() {
   const [showImagesModal, setShowImagesModal] = useState(false);
@@ -42,27 +53,25 @@ export function ExportImages() {
   const progress = (100 * downloaded) / cardIdentifiers.length;
 
   // regarding the ts-ignore below: passing this a URL is correct. if you pass it the stringified URL, things break
-  const workerPool = useRef(
-    Pool(
-      () =>
-        // @ts-ignore
-        spawn(new Worker(new URL("./workers/download.ts", import.meta.url))),
-      5
-    )
-  );
+  const workerPool = useRef(createPool());
+
+  const terminate = async () => {
+    await workerPool.current.terminate(true);
+    setDownloading(false);
+  };
 
   const downloadImages = async () => {
     setDownloading(true);
     setDownloaded(0);
+
+    workerPool.current = createPool();
 
     const identifierPool = Array.from(cardIdentifiers);
     let localDownloaded = 0;
 
     identifierPool.map((identifier) =>
       workerPool.current.queue(async (download) => {
-        alert(identifier);
         const cardDocument = cardDocumentsByIdentifier[identifier];
-        alert(cardDocument);
         if (cardDocument != null) {
           const data = await download(identifier);
           saveAs(
@@ -96,11 +105,32 @@ export function ExportImages() {
           <Modal.Title>Download — Card Images</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <p>
-            {downloading
-              ? "Your images should be downloading now. Please don't close the page until the process is complete."
-              : "Click the button below to commence the download."}
-          </p>
+          {downloading && (
+            <p>
+              Your images should be downloading now. This might take a while!
+              Please don&apos;t close the page until the process is complete.
+            </p>
+          )}
+          {!downloading && cardIdentifiers.length == 0 && (
+            <p>
+              You&apos;ll be able to download the card images in your project
+              here once you&apos;ve added some cards.
+            </p>
+          )}
+          {!downloading && cardIdentifiers.length > 0 && (
+            <>
+              <p>
+                Click the button below to begin. This will download the{" "}
+                <b>{cardIdentifiers.length}</b> unique image
+                {cardIdentifiers.length != 1 && "s"} in your project.
+              </p>
+              <Alert variant="info">
+                If you&apos;re planning on using the {ProjectName} desktop tool
+                to auto-fill your project, you don&apos;t need to download
+                images here. The desktop tool will download your images for you.
+              </Alert>
+            </>
+          )}
           {(downloading ||
             (downloaded == cardIdentifiers.length && downloaded > 0)) && (
             <>
@@ -114,12 +144,22 @@ export function ExportImages() {
               <br />
             </>
           )}
+          {downloading && (
+            <>
+              <div className="d-grid gap-0">
+                <Button variant="danger" onClick={terminate}>
+                  Terminate
+                </Button>
+              </div>
+              <br />
+            </>
+          )}
 
           <div className="d-grid gap-0">
             <Button
               variant="primary"
               onClick={downloadImages}
-              disabled={downloading}
+              disabled={downloading || cardIdentifiers.length == 0}
             >
               {downloading ? <Spinner size={1.5} /> : "Download Images"}
             </Button>
