@@ -12,19 +12,17 @@ import InquirerPy
 from defusedxml.ElementTree import parse as defused_parse
 from sanitize_filename import sanitize
 
-import src.constants as constants
-from src.utils import (
+from src import constants
+from src.exc import ValidationException
+from src.io import (
     CURRDIR,
-    TEXT_BOLD,
-    TEXT_END,
-    ValidationException,
     download_google_drive_file,
     file_exists,
     get_google_drive_file_name,
     image_directory,
-    text_to_list,
-    unpack_element,
 )
+from src.processing import ImagePostProcessingConfig
+from src.utils import TEXT_BOLD, TEXT_END, text_to_list, unpack_element
 
 
 @attr.s
@@ -117,9 +115,16 @@ class CardImage:
         card_image = cls(drive_id=drive_id, slots=slots, name=name, query=query)
         return card_image
 
-    def download_image(self, queue: Queue["CardImage"], download_bar: enlighten.Counter) -> None:
+    def download_image(
+        self,
+        queue: Queue["CardImage"],
+        download_bar: enlighten.Counter,
+        post_processing_config: Optional[ImagePostProcessingConfig],
+    ) -> None:
         if not self.file_exists() and not self.errored and self.file_path is not None:
-            self.errored = not download_google_drive_file(self.drive_id, self.file_path)
+            self.errored = not download_google_drive_file(
+                drive_id=self.drive_id, file_path=self.file_path, post_processing_config=post_processing_config
+            )
 
         if self.file_exists() and not self.errored:
             self.downloaded = True
@@ -194,13 +199,18 @@ class CardImageCollection:
             sys.exit(0)
         return card_image_collection
 
-    def download_images(self, pool: ThreadPoolExecutor, download_bar: enlighten.Counter) -> None:
+    def download_images(
+        self,
+        pool: ThreadPoolExecutor,
+        download_bar: enlighten.Counter,
+        post_processing_config: Optional[ImagePostProcessingConfig],
+    ) -> None:
         """
         Set up the provided ThreadPoolExecutor to download this collection's images, updating the given progress
         bar with each image. Async function.
         """
 
-        pool.map(lambda x: x.download_image(self.queue, download_bar), self.cards)
+        pool.map(lambda x: x.download_image(self.queue, download_bar, post_processing_config), self.cards)
 
     # endregion
 

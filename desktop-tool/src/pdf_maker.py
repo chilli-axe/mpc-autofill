@@ -1,5 +1,6 @@
 import os
 from concurrent.futures import ThreadPoolExecutor
+from typing import Optional
 
 import attr
 import enlighten
@@ -8,6 +9,7 @@ from fpdf import FPDF
 
 from src.constants import THREADS, States
 from src.order import CardOrder
+from src.processing import ImagePostProcessingConfig
 from src.utils import TEXT_BOLD, TEXT_END
 
 
@@ -52,7 +54,6 @@ class PdfExporter:
         self.ask_questions()
         self.configure_bars()
         self.generate_file_path()
-        self.download_and_collect_images()
 
     def ask_questions(self) -> None:
         questions = [
@@ -110,10 +111,10 @@ class PdfExporter:
             extra = f"{self.current_face}/"
         self.pdf.output(f"{self.save_path}{extra}{self.file_num}.pdf")
 
-    def download_and_collect_images(self) -> None:
+    def download_and_collect_images(self, post_processing_config: Optional[ImagePostProcessingConfig]) -> None:
         with ThreadPoolExecutor(max_workers=THREADS) as pool:
-            self.order.fronts.download_images(pool, self.download_bar)
-            self.order.backs.download_images(pool, self.download_bar)
+            self.order.fronts.download_images(pool, self.download_bar, post_processing_config)
+            self.order.backs.download_images(pool, self.download_bar, post_processing_config)
 
         backs_by_slots = {}
         for card in self.order.backs.cards:
@@ -130,7 +131,8 @@ class PdfExporter:
             paths_by_slot[slot] = (str(backs_by_slots.get(slot, backs_by_slots[0])), str(fronts_by_slots[slot]))
         self.paths_by_slot = paths_by_slot
 
-    def execute(self) -> None:
+    def execute(self, post_processing_config: Optional[ImagePostProcessingConfig]) -> None:
+        self.download_and_collect_images(post_processing_config=post_processing_config)
         if self.separate_faces:
             self.number_of_cards_per_file = 1
             self.export_separate_faces()
