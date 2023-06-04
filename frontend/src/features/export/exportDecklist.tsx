@@ -123,7 +123,7 @@ export function ExportDecklist() {
   };
 
   return (
-    <Dropdown.Item onClick={downloadFile}>
+    <Dropdown.Item onClick={downloadFile} data-testid="export-decklist-button">
       <i className="bi bi-card-text" style={{ paddingRight: 0.5 + "em" }} />{" "}
       Decklist
     </Dropdown.Item>

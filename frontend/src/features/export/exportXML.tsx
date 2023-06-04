@@ -194,7 +194,7 @@ export function ExportXML() {
   };
 
   return (
-    <Dropdown.Item onClick={downloadFile}>
+    <Dropdown.Item onClick={downloadFile} data-testid="export-xml-button">
       <i className="bi bi-file-code" style={{ paddingRight: 0.5 + "em" }} /> XML
     </Dropdown.Item>
   );

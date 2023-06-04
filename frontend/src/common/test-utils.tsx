@@ -316,14 +316,14 @@ function getDownloadMenu() {
   });
 }
 
-async function downloadFile(label: string) {
+async function downloadFile(testId: string) {
   // @ts-ignore
   jest.spyOn(global, "Blob").mockImplementation(function (content, options) {
     return { content, options };
   });
   const downloadMenu = getDownloadMenu();
   downloadMenu.click();
-  await waitFor(() => screen.getByText(label, { exact: false }).click());
+  await waitFor(() => screen.getByTestId(testId).click());
   expect(FileSaver.saveAs).toHaveBeenCalledTimes(1);
 
   // @ts-ignore
@@ -332,11 +332,11 @@ async function downloadFile(label: string) {
 }
 
 export async function downloadXML() {
-  return await downloadFile("XML");
+  return await downloadFile("export-xml-button");
 }
 
 export async function downloadDecklist() {
-  return await downloadFile("Decklist");
+  return await downloadFile("export-decklist-button");
 }
 
 //# endregion

@@ -8,8 +8,6 @@ import ProgressBar from "react-bootstrap/ProgressBar";
 import { useSelector } from "react-redux";
 import styled from "styled-components";
 import { Pool, spawn, Worker } from "threads";
-// @ts-ignore
-import workerURL from "threads-plugin/dist/loader?name=gitWorker!./workers/download.ts";
 
 import { RootState } from "@/app/store";
 import { ProjectName } from "@/common/constants";
