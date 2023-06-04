@@ -102,10 +102,10 @@ class Browsers(Enum):
 
 
 class GoogleScriptsAPIs(str, Enum):
+    # POST
     image_name = "https://script.google.com/macros/s/AKfycbw90rkocSdppkEuyVdsTuZNslrhd5zNT3XMgfucNMM1JjhLl-Q/exec"
-    image_content = (
-        "https://script.google.com/macros/s/AKfycbzzCWc2x3tfQU1Zp45LB1P19FNZE-4njwzfKT5_Rx399h-5dELZWyvf/exec"
-    )
+    # GET
+    image_content = "https://script.google.com/macros/s/AKfycbw8laScKBfxda2Wb0g63gkYDBdy8NWNxINoC4xDOwnCQ3JMFdruam1MdmNmN4wI5k4/exec"
 
     def __str__(self) -> str:
         return str(self.value)
