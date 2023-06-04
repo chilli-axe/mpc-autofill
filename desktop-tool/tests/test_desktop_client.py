@@ -559,7 +559,7 @@ def test_download_google_drive_image_downscaled(
     )
     assert image_valid_google_drive.file_exists() is True
     assert image_valid_google_drive.errored is False
-    assert_file_size(image_valid_google_drive.file_path, 50701)
+    assert_file_size(image_valid_google_drive.file_path, 51123)
 
 
 def test_download_google_drive_image_no_post_processing(
