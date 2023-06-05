@@ -7,7 +7,7 @@ import Modal from "react-bootstrap/Modal";
 import ProgressBar from "react-bootstrap/ProgressBar";
 import { useSelector } from "react-redux";
 import styled from "styled-components";
-import { Pool, spawn, Worker } from "threads";
+import { FunctionThread, Pool, spawn, Worker } from "threads";
 
 import { RootState } from "@/app/store";
 import { ProjectName } from "@/common/constants";
@@ -18,15 +18,6 @@ import { Spinner } from "@/features/ui/spinner";
 const StyledProgressBar = styled(ProgressBar)`
   --bs-progress-bg: #424e5c;
 `;
-
-// the pool must be recreated whenever image download is commenced
-const createPool = () =>
-  Pool(
-    () =>
-      // @ts-ignore
-      spawn(new Worker(new URL("./workers/download.ts", import.meta.url))),
-    5
-  );
 
 export function ExportImages() {
   const [showImagesModal, setShowImagesModal] = useState(false);
@@ -50,42 +41,53 @@ export function ExportImages() {
   const [downloaded, setDownloaded] = useState<number>(0);
   const progress = (100 * downloaded) / cardIdentifiers.length;
 
-  // regarding the ts-ignore below: passing this a URL is correct. if you pass it the stringified URL, things break
-  const workerPool = useRef(createPool());
-
+  const workerPool = useRef<Pool<FunctionThread> | null>(null);
   const terminate = async () => {
-    await workerPool.current.terminate(true);
-    setDownloading(false);
+    if (workerPool.current != null) {
+      await workerPool.current.terminate(true);
+      setDownloading(false);
+    }
   };
 
   const downloadImages = async () => {
     setDownloading(true);
     setDownloaded(0);
 
-    workerPool.current = createPool();
-
-    const identifierPool = Array.from(cardIdentifiers);
-    let localDownloaded = 0;
-
-    identifierPool.map((identifier) =>
-      workerPool.current.queue(async (download) => {
-        const cardDocument = cardDocumentsByIdentifier[identifier];
-        if (cardDocument != null) {
-          const data = await download(identifier);
-          saveAs(
-            base64StringToBlob(data),
-            `${cardDocument.name} (${cardDocument.identifier}).${cardDocument.extension}`
-          );
-        }
-        localDownloaded++;
-        setDownloaded(localDownloaded);
-      })
+    // @ts-ignore: I don't know what the correct type of workerPool (set in useRef above) is
+    workerPool.current = Pool(
+      () =>
+        // @ts-ignore: passing this a URL is correct. passing it a string breaks it.
+        spawn(new Worker(new URL("./workers/download.ts", import.meta.url))),
+      5
     );
 
-    await workerPool.current.settled();
-    await workerPool.current.terminate();
+    // really wish typescript would shut up about this. i clearly set this ref to a non-null value 2 lines up.
+    if (workerPool.current != null) {
+      const identifierPool = Array.from(cardIdentifiers);
+      let localDownloaded = 0;
 
-    setDownloading(false);
+      identifierPool.map((identifier) => {
+        if (workerPool.current != null) {
+          workerPool.current.queue(async (download) => {
+            const cardDocument = cardDocumentsByIdentifier[identifier];
+            if (cardDocument != null) {
+              const data = await download(identifier);
+              saveAs(
+                base64StringToBlob(data),
+                `${cardDocument.name} (${cardDocument.identifier}).${cardDocument.extension}`
+              );
+            }
+            localDownloaded++;
+            setDownloaded(localDownloaded);
+          });
+        }
+      });
+
+      await workerPool.current.settled();
+      await workerPool.current.terminate();
+
+      setDownloading(false);
+    }
   };
 
   return (
