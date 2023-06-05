@@ -124,6 +124,7 @@ export function ExportImages() {
                 <b>{cardIdentifiers.length}</b> unique image
                 {cardIdentifiers.length != 1 && "s"} in your project.
               </p>
+              <p>This feature may not work as expected on mobile devices.</p>
               <Alert variant="info">
                 If you&apos;re planning on using the {ProjectName} desktop tool
                 to auto-fill your project, you don&apos;t need to download
