@@ -61,7 +61,6 @@ exports[`the html structure of a CommonCardback with a single search result 1`] 
       </p>
     </div>
   </div>
-  <div />
 </div>
 `;
 
@@ -142,6 +141,5 @@ exports[`the html structure of a CommonCardback with multiple search results 1`]
       </div>
     </div>
   </div>
-  <div />
 </div>
 `;

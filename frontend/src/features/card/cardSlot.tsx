@@ -288,7 +288,7 @@ export function CardSlot({
         }
       />
 
-      {searchResultsForQuery.length > 1 && (
+      {searchResultsForQuery.length > 1 && showGridSelector && (
         <MemoizedCardSlotGridSelector
           face={face}
           slot={slot}

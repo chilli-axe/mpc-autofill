@@ -184,13 +184,14 @@ export function CommonCardback({ selectedImage }: CommonCardbackProps) {
         imageOnClick={handleShowDetailedView}
         noResultsFound={false}
       />
-
-      <MemoizedCommonCardbackGridSelector
-        searchResults={searchResults}
-        show={showGridSelector}
-        handleClose={handleCloseGridSelector}
-      />
-      {selectedImage != null && (
+      {showGridSelector && (
+        <MemoizedCommonCardbackGridSelector
+          searchResults={searchResults}
+          show={showGridSelector}
+          handleClose={handleCloseGridSelector}
+        />
+      )}
+      {selectedImage != null && showDetailedView && (
         <MemoizedCardDetailedView
           imageIdentifier={selectedImage}
           show={showDetailedView}
