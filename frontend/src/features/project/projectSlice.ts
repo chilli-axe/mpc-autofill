@@ -302,6 +302,15 @@ export const selectProjectMembers = (
   state: RootState
 ): Array<SlotProjectMembers> => state.project.members;
 
+export const selectProjectMemberIdentifiers = (state: RootState): Set<string> =>
+  new Set(
+    state.project.members.flatMap((x: SlotProjectMembers) =>
+      (x.front?.selectedImage != null ? [x.front.selectedImage] : []).concat(
+        x.back?.selectedImage != null ? [x.back.selectedImage] : []
+      )
+    )
+  );
+
 // TODO: this is a bit disgusting
 export const selectSelectedSlots = (state: RootState): Array<[Faces, number]> =>
   state.project.members.flatMap((x: SlotProjectMembers, index: number) =>
@@ -336,22 +345,6 @@ export const selectProjectSize = (state: RootState): number =>
 
 export const selectProjectCardback = (state: RootState): string | null =>
   state.project.cardback;
-
-export const selectGeneratedXML = (state: RootState): string => {
-  return generateXML(
-    selectProjectMembers(state),
-    state.cardDocuments.cardDocuments,
-    state.project.cardback,
-    selectProjectSize(state)
-  );
-};
-
-export const selectGeneratedDecklist = (state: RootState): string => {
-  return generateDecklist(
-    selectProjectMembers(state),
-    state.cardDocuments.cardDocuments
-  );
-};
 
 export const selectProjectFileSize = (state: RootState): number => {
   const uniqueCardIdentifiers = new Set<string>();

@@ -15,6 +15,7 @@ import { NavbarHeight } from "@/common/constants";
 import { selectBackendURL } from "@/features/backend/backendSlice";
 import { CardGrid } from "@/features/card/cardGrid";
 import { CommonCardback } from "@/features/card/commonCardback";
+import { Export } from "@/features/export/export";
 import { Import } from "@/features/import/import";
 import { ProjectStatus } from "@/features/project/projectStatus";
 import { fetchSourceDocuments } from "@/features/search/sourceDocumentsSlice";
@@ -61,14 +62,14 @@ function App() {
           >
             <ProjectStatus />
             <Row className="g-0">
-              <ViewSettings />
+              <SearchSettings />
             </Row>
             <Row className="g-0 py-3">
               <Col lg={6} md={12} sm={12} xs={12}>
-                <SearchSettings />
+                <Import />
               </Col>
               <Col lg={6} md={12} sm={12} xs={12}>
-                <Import />
+                <Export />
               </Col>
             </Row>
             <Col className="g-0" lg={{ span: 8, offset: 2 }} md={12}>

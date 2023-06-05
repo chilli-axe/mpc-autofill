@@ -10,7 +10,7 @@ import {
 } from "@reduxjs/toolkit/query/react";
 
 import { RootState } from "@/app/store";
-import { QueryTags } from "@/common/constants";
+import { GoogleDriveImageAPIURL, QueryTags } from "@/common/constants";
 import {
   BackendInfo,
   CardDocument,
@@ -132,6 +132,15 @@ export const apiSlice = createApi({
       providesTags: [QueryTags.BackendSpecific],
       transformResponse: (response: { info: BackendInfo }, meta, arg) =>
         response.info,
+    }),
+    getGoogleDriveImage: builder.query<string, string>({
+      query: (identifier: string) => ({
+        url: GoogleDriveImageAPIURL,
+        method: "GET",
+        params: { id: identifier },
+        responseHandler: "text",
+      }),
+      keepUnusedDataFor: 1,
     }),
   }),
 });
