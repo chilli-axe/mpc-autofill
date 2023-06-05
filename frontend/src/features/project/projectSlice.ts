@@ -7,16 +7,13 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { RootState } from "@/app/store";
 import { Card, ReversedCardTypePrefixes } from "@/common/constants";
 import { Back, Front, ProjectMaxSize } from "@/common/constants";
-import { processPrefix, processQuery } from "@/common/processing";
+import { processPrefix } from "@/common/processing";
 import {
   Faces,
   Project,
-  ProjectMember,
   SearchQuery,
   SlotProjectMembers,
 } from "@/common/types";
-import { generateDecklist } from "@/features/export/exportDecklist";
-import { generateXML } from "@/features/export/exportXML";
 
 const initialState: Project = {
   members: [
