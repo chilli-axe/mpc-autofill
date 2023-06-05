@@ -10,11 +10,7 @@ import { useSelector } from "react-redux";
 import styled from "styled-components";
 
 import { useGetBackendInfoQuery } from "@/app/api";
-import {
-  ContentMaxWidth,
-  NavbarHeight,
-  NavbarLogoHeight,
-} from "@/common/constants";
+import { ContentMaxWidth, NavbarLogoHeight } from "@/common/constants";
 import { ProjectName } from "@/common/constants";
 import { BackendConfig } from "@/features/backend/backend";
 import { selectBackendURL } from "@/features/backend/backendSlice";
@@ -87,9 +83,6 @@ export default function ProjectNavbar() {
                   Editor
                 </Nav.Link>
               )}
-              <Nav.Link as={Link} href="/guide">
-                Guide
-              </Nav.Link>
               {backendURL != null && (
                 <>
                   <Nav.Link as={Link} href="/new">
@@ -100,6 +93,13 @@ export default function ProjectNavbar() {
                   </Nav.Link>
                 </>
               )}
+              <Nav.Link
+                as={Link}
+                href="https://github.com/chilli-axe/mpc-autofill/wiki/Overview"
+                target="_blank"
+              >
+                Wiki
+              </Nav.Link>
               <Nav.Link
                 href="https://github.com/chilli-axe/mpc-autofill/releases"
                 target="_blank"
