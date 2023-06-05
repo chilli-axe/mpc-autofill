@@ -119,7 +119,7 @@ export function ImportURL() {
           )}
           <Form.Group className="mb-3">
             <Form.Control
-              type={"url"}
+              type="url"
               required={true}
               placeholder="https://"
               onChange={(event) => setURLModalValue(event.target.value.trim())}

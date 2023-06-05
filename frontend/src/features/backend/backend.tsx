@@ -175,6 +175,7 @@ export function BackendConfig({ show, handleClose }: BackendConfigProps) {
           <Form onSubmit={handleSubmit}>
             <Form.Group className="mb-3" controlId="formURL">
               <Form.Control
+                type="url"
                 placeholder="https://"
                 onChange={(event) => setLocalBackendURL(event.target.value)}
                 value={localBackendURL}
