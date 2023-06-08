@@ -1,6 +1,7 @@
 """
 image_name Google Scripts API
 Deployed at: https://script.google.com/macros/s/AKfycbw90rkocSdppkEuyVdsTuZNslrhd5zNT3XMgfucNMM1JjhLl-Q/exec
+Usage: pass the Google Drive file ID as the `id` parameter of the POST request body.
 
 function doPost(e) {
   return (function(id){
@@ -17,9 +18,10 @@ function doPost(e) {
 
 
 image_content Google Scripts API
-Deployed at: https://script.google.com/macros/s/AKfycbzzCWc2x3tfQU1Zp45LB1P19FNZE-4njwzfKT5_Rx399h-5dELZWyvf/exec
+Deployed at: https://script.google.com/macros/s/AKfycbw8laScKBfxda2Wb0g63gkYDBdy8NWNxINoC4xDOwnCQ3JMFdruam1MdmNmN4wI5k4/exec
+Usage: pass the Google Drive file ID as the `id` parameter in a GET request.
 
-function doPost(e) {
+function doGet(e) {
   return (function(id){
     var file = DriveApp.getFileById(id);
     var size = file.getSize();
@@ -28,11 +30,9 @@ function doPost(e) {
       result = file.getBlob().getBytes();
     }
     return ContentService
-      .createTextOutput(JSON.stringify({
-        result: result,
-      }))
-      .setMimeType(ContentService.MimeType.JSON);
-  })(e.parameters.id);
+      .createTextOutput(Utilities.base64Encode(result))
+      .setMimeType(ContentService.MimeType.TEXT);
+  })(e.parameter.id);
 }
 """
 
