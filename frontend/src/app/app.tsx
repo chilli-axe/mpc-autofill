@@ -16,6 +16,7 @@ import { selectBackendURL } from "@/features/backend/backendSlice";
 import { CardGrid } from "@/features/card/cardGrid";
 import { CommonCardback } from "@/features/card/commonCardback";
 import { Export } from "@/features/export/export";
+import { FinishSettings } from "@/features/finishSettings/finishSettings";
 import { Import } from "@/features/import/import";
 import { ProjectStatus } from "@/features/project/projectStatus";
 import { fetchSourceDocuments } from "@/features/search/sourceDocumentsSlice";
@@ -61,6 +62,9 @@ function App() {
             className="px-2"
           >
             <ProjectStatus />
+            <Row className="g-0 pb-3">
+              <FinishSettings />
+            </Row>
             <Row className="g-0">
               <SearchSettings />
             </Row>

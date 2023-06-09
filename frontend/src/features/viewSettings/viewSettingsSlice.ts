@@ -10,7 +10,7 @@ const initialState: ViewSettingsState = {
 };
 
 export const viewSettingsSlice = createSlice({
-  name: "cardGrid",
+  name: "viewSettings",
   initialState,
   reducers: {
     switchToFront: (state: RootState) => {

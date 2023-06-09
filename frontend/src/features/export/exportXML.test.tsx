@@ -1,7 +1,7 @@
 import FileSaver from "file-saver";
 
 import App from "@/app/app";
-import { Back, Front } from "@/common/constants";
+import { Back, Front, S30 } from "@/common/constants";
 import {
   cardDocument1,
   cardDocument2,
@@ -62,6 +62,8 @@ test("the XML representation of a simple project with no custom backs", async ()
               <details>
                 <quantity>2</quantity>
                 <bracket>18</bracket>
+                <stock>${S30}</stock>
+                <foil>false</foil>
               </details>
               <fronts>
                 <card>
@@ -117,6 +119,8 @@ test("the XML representation of a simple project with a custom back for one card
               <details>
                 <quantity>2</quantity>
                 <bracket>18</bracket>
+                <stock>${S30}</stock>
+                <foil>false</foil>
               </details>
               <fronts>
                 <card>
@@ -181,6 +185,8 @@ test("the XML representation of a simple project with multiple instances of a ca
               <details>
                 <quantity>3</quantity>
                 <bracket>18</bracket>
+                <stock>${S30}</stock>
+                <foil>false</foil>
               </details>
               <fronts>
                 <card>

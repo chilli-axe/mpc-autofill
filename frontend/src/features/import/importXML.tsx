@@ -18,6 +18,7 @@ import { useDispatch, useSelector } from "react-redux";
 
 import {
   Cardback,
+  Cardstocks,
   MakePlayingCards,
   MakePlayingCardsURL,
   ProjectMaxSize,
@@ -26,7 +27,11 @@ import {
 } from "@/common/constants";
 import { TextFileDropzone } from "@/common/dropzone";
 import { processPrefix } from "@/common/processing";
-import { SlotProjectMembers } from "@/common/types";
+import { Cardstock, SlotProjectMembers } from "@/common/types";
+import {
+  setCardstock,
+  setFoil,
+} from "@/features/finishSettings/finishSettingsSlice";
 import {
   addMembers,
   selectProjectCardback,
@@ -42,13 +47,10 @@ export function ImportXML() {
   const projectCardback = useSelector(selectProjectCardback);
   const projectSize = useSelector(selectProjectSize);
   const [useXMLCardback, setUseXMLCardback] = useState<boolean>(false);
+  const [useXMLFinishSettings, setUseXMLFinishSettings] =
+    useState<boolean>(false);
 
   const parseXMLFile = (fileContents: string | ArrayBuffer | null) => {
-    /**
-     * TODO - add controls for:
-     * * whether to set the project's finish settings according to the imported file
-     */
-
     if (typeof fileContents !== "string") {
       alert("invalid CSV file uploaded");
       // TODO: error messaging to the user that they've uploaded an invalid file
@@ -60,6 +62,10 @@ export function ImportXML() {
     const xmlDocument = parser.parseFromString(fileContents, "application/xml");
     const rootElement = xmlDocument.getElementsByTagName("order")[0];
 
+    const detailsElement = rootElement.getElementsByTagName("details")[0];
+    const stock = detailsElement.getElementsByTagName("stock")[0]?.textContent;
+    const foil =
+      detailsElement.getElementsByTagName("foil")[0]?.textContent === "true";
     const frontsElement = rootElement.getElementsByTagName("fronts")[0];
     const backsElement = rootElement.getElementsByTagName("backs")[0];
 
@@ -148,9 +154,21 @@ export function ImportXML() {
         });
     }
     dispatch(addMembers({ members: newMembers.slice(0, lastNonNullSlot + 1) }));
+
+    // update project cardback and finish settings according to user's specification
     if (useXMLCardback && cardback != null) {
       dispatch(setSelectedCardback({ selectedImage: cardback }));
     }
+    if (
+      useXMLFinishSettings &&
+      stock != null &&
+      Cardstocks.includes(stock as Cardstock) &&
+      foil != null
+    ) {
+      dispatch(setCardstock(stock as Cardstock));
+      dispatch(setFoil(foil));
+    }
+
     handleCloseXMLModal();
   };
 
@@ -181,17 +199,32 @@ export function ImportXML() {
           </p>
           <Toggle
             onClick={() => setUseXMLCardback(!useXMLCardback)}
-            on="Update Project with XML Cardback"
+            on="Use XML Cardback"
             onClassName="flex-centre"
             off="Retain Selected Cardback"
             offClassName="flex-centre"
-            onstyle="info"
+            onstyle="success"
             offstyle="info"
             width={100 + "%"}
             size="md"
             height={ToggleButtonHeight + "px"}
             active={useXMLCardback}
           />
+          <div className="pt-3">
+            <Toggle
+              onClick={() => setUseXMLFinishSettings(!useXMLFinishSettings)}
+              on="Use XML Finish Settings"
+              onClassName="flex-centre"
+              off="Retain Selected Finish Settings"
+              offClassName="flex-centre"
+              onstyle="success"
+              offstyle="info"
+              width={100 + "%"}
+              size="md"
+              height={ToggleButtonHeight + "px"}
+              active={useXMLFinishSettings}
+            />
+          </div>
           <hr />
           <TextFileDropzone
             mimeTypes={{ "text/xml": [".xml"] }}

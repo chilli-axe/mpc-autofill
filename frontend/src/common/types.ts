@@ -181,6 +181,17 @@ export interface ViewSettingsState {
   facetBySource: boolean;
 }
 
+export type Cardstock =
+  | "(S30) Standard Smooth"
+  | "(S33) Superior Smooth"
+  | "(M31) Linen"
+  | "(P10) Plastic";
+
+export interface FinishSettingsState {
+  cardstock: Cardstock;
+  foil: boolean;
+}
+
 export type ProcessedLine = [
   number,
   ProjectMember | null,

@@ -1,8 +1,8 @@
+import { Cardstock, CardType, Faces } from "@/common/types";
+
 export const ProjectName = "MPC Autofill";
 export const MakePlayingCards = "MakePlayingCards.com";
 export const MakePlayingCardsURL = "https://www.makeplayingcards.com";
-
-import { CardType, Faces } from "@/common/types";
 
 export const Card: CardType = "CARD";
 export const Cardback: CardType = "CARDBACK";
@@ -54,6 +54,20 @@ export const ProjectMaxSize: number = Brackets[Brackets.length - 1];
 export enum QueryTags {
   BackendSpecific = "backendSpecific",
 }
+
+export const S30: Cardstock = "(S30) Standard Smooth";
+export const S33: Cardstock = "(S33) Superior Smooth";
+export const M31: Cardstock = "(M31) Linen";
+export const P10: Cardstock = "(P10) Plastic";
+export const Cardstocks: Array<Cardstock> = [S30, S33, M31, P10];
+
+export const CardstockFoilCompatibility: { [cardstock in Cardstock]: boolean } =
+  {
+    [S30]: true,
+    [S33]: true,
+    [M31]: true,
+    [P10]: false,
+  };
 
 export const GoogleDriveImageAPIURL =
   "https://script.google.com/macros/s/AKfycbw8laScKBfxda2Wb0g63gkYDBdy8NWNxINoC4xDOwnCQ3JMFdruam1MdmNmN4wI5k4/exec";

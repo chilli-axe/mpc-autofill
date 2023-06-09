@@ -12,8 +12,13 @@ import formatXML from "xml-formatter";
 
 import { RootState } from "@/app/store";
 import { Back, Front, ReversedCardTypePrefixes } from "@/common/constants";
-import { CardDocuments, SlotProjectMembers } from "@/common/types";
+import {
+  CardDocuments,
+  FinishSettingsState,
+  SlotProjectMembers,
+} from "@/common/types";
 import { bracket } from "@/common/utils";
+import { selectFinishSettings } from "@/features/finishSettings/finishSettingsSlice";
 import {
   selectProjectMembers,
   selectProjectSize,
@@ -109,7 +114,8 @@ const selectGeneratedXML = (state: RootState): string => {
     selectProjectMembers(state),
     state.cardDocuments.cardDocuments,
     state.project.cardback,
-    selectProjectSize(state)
+    selectProjectSize(state),
+    selectFinishSettings(state)
   );
 };
 
@@ -117,7 +123,8 @@ export function generateXML(
   projectMembers: Array<SlotProjectMembers>,
   cardDocuments: CardDocuments,
   cardback: string | null,
-  projectSize: number
+  projectSize: number,
+  finishSettings: FinishSettingsState
 ): string {
   /**
    * Generate an XML representation of the project, suitable for re-importing into MPC Autofill
@@ -142,6 +149,16 @@ export function generateXML(
     doc.createTextNode(bracket(projectSize).toString())
   );
   detailsElement.appendChild(bracketElement);
+
+  const stockElement = doc.createElement("stock");
+  stockElement.appendChild(doc.createTextNode(finishSettings.cardstock));
+  detailsElement.appendChild(stockElement);
+
+  const foilElement = doc.createElement("foil");
+  foilElement.appendChild(
+    doc.createTextNode(finishSettings.foil ? "true" : "false")
+  );
+  detailsElement.appendChild(foilElement);
 
   orderElement.append(detailsElement);
 

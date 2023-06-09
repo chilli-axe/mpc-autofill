@@ -1,7 +1,7 @@
 import { screen } from "@testing-library/react";
 
 import App from "@/app/app";
-import { Back, Card, Front } from "@/common/constants";
+import { Back, Card, Front, S30 } from "@/common/constants";
 import {
   cardDocument1,
   cardDocument2,
@@ -71,6 +71,8 @@ test("importing one card by XML into an empty project", async () => {
       <details>
         <quantity>1</quantity>
         <bracket>18</bracket>
+        <stock>${S30}</stock>
+        <foil>false</foil>
       </details>
       <fronts>
         <card>
@@ -109,6 +111,8 @@ test("importing multiple instances of one card by XML into an empty project", as
       <details>
         <quantity>2</quantity>
         <bracket>18</bracket>
+        <stock>${S30}</stock>
+        <foil>false</foil>
       </details>
       <fronts>
         <card>
@@ -150,6 +154,8 @@ test("importing one specific card version by XML into an empty project", async (
       <details>
         <quantity>1</quantity>
         <bracket>18</bracket>
+        <stock>${S30}</stock>
+        <foil>false</foil>
       </details>
       <fronts>
         <card>
@@ -188,6 +194,8 @@ test("importing one card of each type into an empty project", async () => {
       <details>
         <quantity>3</quantity>
         <bracket>18</bracket>
+        <stock>${S30}</stock>
+        <foil>false</foil>
       </details>
       <fronts>
         <card>
@@ -244,6 +252,8 @@ test("importing a more complex XML into an empty project", async () => {
       <details>
         <quantity>3</quantity>
         <bracket>18</bracket>
+        <stock>${S30}</stock>
+        <foil>false</foil>
       </details>
       <fronts>
         <card>
@@ -302,6 +312,8 @@ test("importing an XML with gaps into an empty project", async () => {
       <details>
         <quantity>4</quantity>
         <bracket>18</bracket>
+        <stock>${S30}</stock>
+        <foil>false</foil>
       </details>
       <fronts>
         <card>
@@ -381,6 +393,8 @@ test("importing a more complex XML into a non-empty project", async () => {
       <details>
         <quantity>3</quantity>
         <bracket>18</bracket>
+        <stock>${S30}</stock>
+        <foil>false</foil>
       </details>
       <fronts>
         <card>
@@ -439,6 +453,8 @@ test("import an XML and retain its cardback", async () => {
       <details>
         <quantity>1</quantity>
         <bracket>18</bracket>
+        <stock>${S30}</stock>
+        <foil>false</foil>
       </details>
       <fronts>
         <card>
