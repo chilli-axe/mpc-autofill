@@ -35,18 +35,18 @@ export const searchResultsSlice = createSlice({
   name: "searchResults",
   initialState,
   reducers: {
-    addSearchResults: (state: RootState, action) => {
+    addSearchResults: (state, action) => {
       state.searchResults = { ...state.searchResults, ...action.payload };
     },
-    clearSearchResults: (state: RootState) => {
+    clearSearchResults: (state) => {
       state.searchResults = {};
     },
   },
   extraReducers(builder) {
-    builder.addCase(fetchCards.fulfilled, (state: RootState, action) => {
+    builder.addCase(fetchCards.fulfilled, (state, action) => {
       state.searchResults = { ...state.searchResults, ...action.payload };
     });
-    builder.addCase(fetchCards.rejected, (state: RootState, action) => {
+    builder.addCase(fetchCards.rejected, (state, action) => {
       alert("TODO");
     });
   },

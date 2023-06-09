@@ -24,23 +24,17 @@ export const sourceDocumentsSlice = createSlice({
   name: "sourceDocuments",
   initialState,
   reducers: {
-    addSourceDocuments: (state: RootState, action) => {
+    addSourceDocuments: (state, action) => {
       state.sourceDocuments = { ...state.sourceDocuments, ...action.payload };
     },
   },
   extraReducers(builder) {
-    builder.addCase(
-      fetchSourceDocuments.fulfilled,
-      (state: RootState, action) => {
-        state.sourceDocuments = { ...state.sourceDocuments, ...action.payload };
-      }
-    );
-    builder.addCase(
-      fetchSourceDocuments.rejected,
-      (state: RootState, action) => {
-        alert("TODO");
-      }
-    );
+    builder.addCase(fetchSourceDocuments.fulfilled, (state, action) => {
+      state.sourceDocuments = { ...state.sourceDocuments, ...action.payload };
+    });
+    builder.addCase(fetchSourceDocuments.rejected, (state, action) => {
+      alert("TODO");
+    });
   },
 });
 

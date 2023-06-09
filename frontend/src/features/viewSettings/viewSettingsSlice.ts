@@ -1,6 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-import { RootState } from "@/app/store";
 import { ViewSettingsState } from "@/common/types";
 
 const initialState: ViewSettingsState = {
@@ -13,33 +12,30 @@ export const viewSettingsSlice = createSlice({
   name: "viewSettings",
   initialState,
   reducers: {
-    switchToFront: (state: RootState) => {
+    switchToFront: (state) => {
       state.frontsVisible = true;
     },
-    switchToBack: (state: RootState) => {
+    switchToBack: (state) => {
       state.frontsVisible = false;
     },
-    toggleFaces: (state: RootState) => {
+    toggleFaces: (state) => {
       state.frontsVisible = !state.frontsVisible;
     },
-    toggleSourceVisible: (state: RootState, action: PayloadAction<string>) => {
+    toggleSourceVisible: (state, action: PayloadAction<string>) => {
       state.sourcesVisible = {
         ...state.sourcesVisible,
         [action.payload]: !(state.sourcesVisible[action.payload] ?? true),
       };
     },
-    makeAllSourcesVisible: (state: RootState) => {
+    makeAllSourcesVisible: (state) => {
       state.sourcesVisible = {};
     },
-    makeAllSourcesInvisible: (
-      state: RootState,
-      action: PayloadAction<Array<string>>
-    ) => {
+    makeAllSourcesInvisible: (state, action: PayloadAction<Array<string>>) => {
       state.sourcesVisible = Object.fromEntries(
         action.payload.map((x) => [x, false])
       );
     },
-    toggleFacetBySource: (state: RootState) => {
+    toggleFacetBySource: (state) => {
       state.facetBySource = !state.facetBySource;
     },
   },

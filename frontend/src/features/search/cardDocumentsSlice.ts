@@ -53,7 +53,7 @@ export const cardDocumentsSlice = createSlice({
   name: "cardDocuments",
   initialState,
   reducers: {
-    addCardDocuments: (state: RootState, action) => {
+    addCardDocuments: (state, action) => {
       state.cardDocuments = { ...state.cardDocuments, ...action.payload };
     },
   },
