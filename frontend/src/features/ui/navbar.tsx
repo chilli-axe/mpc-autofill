@@ -101,7 +101,7 @@ export default function ProjectNavbar() {
                 Wiki
               </Nav.Link>
               <Nav.Link
-                href="https://github.com/chilli-axe/mpc-autofill/releases"
+                href="https://github.com/chilli-axe/mpc-autofill/releases/latest"
                 target="_blank"
               >
                 Download
