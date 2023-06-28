@@ -34,31 +34,31 @@ exports[`the html structure of CSV importer 1`] = `
          match the following format:
       </p>
       <table
-        class="sc-b75c0195-0 bDQkIN table table-bordered"
+        class="sc-9ba4be8-0 fjcHUO table table-bordered"
       >
         <thead>
           <th
-            class="sc-b75c0195-1 gcUGJC"
+            class="sc-9ba4be8-1 gGMbCh"
           >
             Quantity
           </th>
           <th
-            class="sc-b75c0195-1 gcUGJC"
+            class="sc-9ba4be8-1 gGMbCh"
           >
             Front
           </th>
           <th
-            class="sc-b75c0195-1 gcUGJC"
+            class="sc-9ba4be8-1 gGMbCh"
           >
             Front ID
           </th>
           <th
-            class="sc-b75c0195-1 gcUGJC"
+            class="sc-9ba4be8-1 gGMbCh"
           >
             Back
           </th>
           <th
-            class="sc-b75c0195-1 gcUGJC"
+            class="sc-9ba4be8-1 gGMbCh"
           >
             Back ID
           </th>
@@ -66,53 +66,53 @@ exports[`the html structure of CSV importer 1`] = `
         <tbody>
           <tr>
             <td
-              class="sc-b75c0195-2 oSaSl"
+              class="sc-9ba4be8-2 jEGATG"
             />
             <td
-              class="sc-b75c0195-2 oSaSl"
+              class="sc-9ba4be8-2 jEGATG"
             />
             <td
-              class="sc-b75c0195-2 oSaSl"
+              class="sc-9ba4be8-2 jEGATG"
             />
             <td
-              class="sc-b75c0195-2 oSaSl"
+              class="sc-9ba4be8-2 jEGATG"
             />
             <td
-              class="sc-b75c0195-2 oSaSl"
-            />
-          </tr>
-          <tr>
-            <td
-              class="sc-b75c0195-2 oSaSl"
-            />
-            <td
-              class="sc-b75c0195-2 oSaSl"
-            />
-            <td
-              class="sc-b75c0195-2 oSaSl"
-            />
-            <td
-              class="sc-b75c0195-2 oSaSl"
-            />
-            <td
-              class="sc-b75c0195-2 oSaSl"
+              class="sc-9ba4be8-2 jEGATG"
             />
           </tr>
           <tr>
             <td
-              class="sc-b75c0195-2 oSaSl"
+              class="sc-9ba4be8-2 jEGATG"
             />
             <td
-              class="sc-b75c0195-2 oSaSl"
+              class="sc-9ba4be8-2 jEGATG"
             />
             <td
-              class="sc-b75c0195-2 oSaSl"
+              class="sc-9ba4be8-2 jEGATG"
             />
             <td
-              class="sc-b75c0195-2 oSaSl"
+              class="sc-9ba4be8-2 jEGATG"
             />
             <td
-              class="sc-b75c0195-2 oSaSl"
+              class="sc-9ba4be8-2 jEGATG"
+            />
+          </tr>
+          <tr>
+            <td
+              class="sc-9ba4be8-2 jEGATG"
+            />
+            <td
+              class="sc-9ba4be8-2 jEGATG"
+            />
+            <td
+              class="sc-9ba4be8-2 jEGATG"
+            />
+            <td
+              class="sc-9ba4be8-2 jEGATG"
+            />
+            <td
+              class="sc-9ba4be8-2 jEGATG"
             />
           </tr>
         </tbody>
@@ -155,31 +155,31 @@ exports[`the html structure of CSV importer 1`] = `
       </ul>
       For example:
       <table
-        class="sc-b75c0195-0 bDQkIN table table-bordered"
+        class="sc-9ba4be8-0 fjcHUO table table-bordered"
       >
         <thead>
           <th
-            class="sc-b75c0195-1 gcUGJC"
+            class="sc-9ba4be8-1 gGMbCh"
           >
             Quantity
           </th>
           <th
-            class="sc-b75c0195-1 gcUGJC"
+            class="sc-9ba4be8-1 gGMbCh"
           >
             Front
           </th>
           <th
-            class="sc-b75c0195-1 gcUGJC"
+            class="sc-9ba4be8-1 gGMbCh"
           >
             Front ID
           </th>
           <th
-            class="sc-b75c0195-1 gcUGJC"
+            class="sc-9ba4be8-1 gGMbCh"
           >
             Back
           </th>
           <th
-            class="sc-b75c0195-1 gcUGJC"
+            class="sc-9ba4be8-1 gGMbCh"
           >
             Back ID
           </th>
@@ -187,60 +187,60 @@ exports[`the html structure of CSV importer 1`] = `
         <tbody>
           <tr>
             <td
-              class="sc-b75c0195-2 oSaSl"
+              class="sc-9ba4be8-2 jEGATG"
             >
               <code>
                 2
               </code>
             </td>
             <td
-              class="sc-b75c0195-2 oSaSl"
+              class="sc-9ba4be8-2 jEGATG"
             >
               <code>
                 island
               </code>
             </td>
             <td
-              class="sc-b75c0195-2 oSaSl"
+              class="sc-9ba4be8-2 jEGATG"
             >
               <code>
                 1HsvTYs1...
               </code>
             </td>
             <td
-              class="sc-b75c0195-2 oSaSl"
+              class="sc-9ba4be8-2 jEGATG"
             >
               <code>
                 forest
               </code>
             </td>
             <td
-              class="sc-b75c0195-2 oSaSl"
+              class="sc-9ba4be8-2 jEGATG"
             />
           </tr>
           <tr>
             <td
-              class="sc-b75c0195-2 oSaSl"
+              class="sc-9ba4be8-2 jEGATG"
             >
               <code>
                 3
               </code>
             </td>
             <td
-              class="sc-b75c0195-2 oSaSl"
+              class="sc-9ba4be8-2 jEGATG"
             >
               <code>
                 t:goblin
               </code>
             </td>
             <td
-              class="sc-b75c0195-2 oSaSl"
+              class="sc-9ba4be8-2 jEGATG"
             />
             <td
-              class="sc-b75c0195-2 oSaSl"
+              class="sc-9ba4be8-2 jEGATG"
             />
             <td
-              class="sc-b75c0195-2 oSaSl"
+              class="sc-9ba4be8-2 jEGATG"
             >
               <code>
                 1JtXL6Ca...

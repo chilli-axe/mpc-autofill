@@ -11,6 +11,10 @@ import {
 
 import { RootState } from "@/app/store";
 import { GoogleDriveImageAPIURL, QueryTags } from "@/common/constants";
+import { getCSRFHeader } from "@/common/cookies";
+import { processQuery } from "@/common/processing";
+import { formatURL } from "@/common/processing";
+import { useAppSelector } from "@/common/types";
 import {
   BackendInfo,
   CardDocument,
@@ -23,6 +27,7 @@ import {
   SearchSettings,
   SourceDocuments,
 } from "@/common/types";
+import { selectBackendURL } from "@/features/backend/backendSlice";
 
 // dynamic base URL implementation retrieved from https://stackoverflow.com/a/69570628/13021511
 const dynamicBaseQuery: BaseQueryFn<
@@ -36,10 +41,10 @@ const dynamicBaseQuery: BaseQueryFn<
 };
 
 // TODO: consider splitting the API across multiple files for readability
-export const apiSlice = createApi({
-  reducerPath: "apiSlice",
+export const api = createApi({
+  reducerPath: "api",
   baseQuery: dynamicBaseQuery,
-  tagTypes: [QueryTags.BackendSpecific],
+  tagTypes: [QueryTags.BackendSpecific, QueryTags.SearchResults],
   endpoints: (builder) => ({
     getCards: builder.query<CardDocuments, Set<string>>({
       query: (identifiersToSearch) => ({
@@ -69,7 +74,7 @@ export const apiSlice = createApi({
           queries: Array.from(input.queries),
         }),
       }),
-      providesTags: [QueryTags.BackendSpecific],
+      providesTags: [QueryTags.BackendSpecific, QueryTags.SearchResults],
       transformResponse: (response: { results: SearchResults }, meta, arg) =>
         response.results,
     }),
@@ -145,23 +150,60 @@ export const apiSlice = createApi({
   }),
 });
 
-// Export hooks for usage in function components, which are
-// auto-generated based on the defined endpoints
-export const {
-  useGetCardsQuery,
-  useGetCardbacksQuery,
-  useSearchQuery,
-  useGetSourcesQuery,
-  useGetImportSitesQuery,
-  useQueryImportSiteQuery,
-  useGetDFCPairsQuery,
-  useGetSampleCardsQuery,
-  useGetContributionsQuery,
-  useGetBackendInfoQuery,
-} = apiSlice;
+//# region hooks
 
-import { getCSRFHeader } from "@/common/cookies";
-import { formatURL, processQuery } from "@/common/processing";
+// Export hooks for usage in function components.
+// We add an extra layer on top of RTK Query's auto-generated hooks
+// to ensure they only fire when a backend is connected.
+const {
+  useGetCardsQuery: useRawGetCardsQuery,
+  useGetCardbacksQuery: useRawGetCardbacksQuery,
+  useSearchQuery: useRawSearchQuery,
+  useGetSourcesQuery: useRawGetSourcesQuery,
+  useGetImportSitesQuery: useRawGetImportSitesQuery,
+  useQueryImportSiteQuery: useRawQueryImportSiteQuery,
+  useGetDFCPairsQuery: useRawGetDFCPairsQuery,
+  useGetSampleCardsQuery: useRawGetSampleCardsQuery,
+  useGetContributionsQuery: useRawGetContributionsQuery,
+  useGetBackendInfoQuery: useRawGetBackendInfoQuery,
+} = api;
+
+export function useGetImportSitesQuery() {
+  const backendURL = useAppSelector(selectBackendURL);
+  return useRawGetImportSitesQuery(undefined, {
+    skip: backendURL == null,
+  });
+}
+
+export function useGetDFCPairsQuery() {
+  const backendURL = useAppSelector(selectBackendURL);
+  return useRawGetDFCPairsQuery(undefined, {
+    skip: backendURL == null,
+  });
+}
+
+export function useGetSampleCardsQuery() {
+  const backendURL = useAppSelector(selectBackendURL);
+  return useRawGetSampleCardsQuery(undefined, {
+    skip: backendURL == null,
+  });
+}
+
+export function useGetContributionsQuery() {
+  const backendURL = useAppSelector(selectBackendURL);
+  return useRawGetContributionsQuery(undefined, {
+    skip: backendURL == null,
+  });
+}
+
+export function useGetBackendInfoQuery() {
+  const backendURL = useAppSelector(selectBackendURL);
+  return useRawGetBackendInfoQuery(undefined, {
+    skip: backendURL == null,
+  });
+}
+
+//# endregion
 
 export async function APIGetCards(
   backendURL: string,

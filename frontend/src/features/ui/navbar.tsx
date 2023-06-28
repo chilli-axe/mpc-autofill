@@ -32,9 +32,7 @@ const BoldCollapse = styled(Navbar.Collapse)`
 
 export default function ProjectNavbar() {
   const backendURL = useSelector(selectBackendURL);
-  const backendInfoQuery = useGetBackendInfoQuery(undefined, {
-    skip: backendURL == null,
-  });
+  const backendInfoQuery = useGetBackendInfoQuery();
 
   const [showBackendConfig, setShowBackendConfig] = useState(false);
   const [showSupportDeveloperModal, setShowSupportDeveloperModal] =

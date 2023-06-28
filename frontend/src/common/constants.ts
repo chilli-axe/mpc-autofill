@@ -53,6 +53,7 @@ export const ProjectMaxSize: number = Brackets[Brackets.length - 1];
 
 export enum QueryTags {
   BackendSpecific = "backendSpecific",
+  SearchResults = "searchResults",
 }
 
 export const S30: Cardstock = "(S30) Standard Smooth";

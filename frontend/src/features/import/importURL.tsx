@@ -19,7 +19,7 @@ import {
   useGetDFCPairsQuery,
   useGetImportSitesQuery,
 } from "@/app/api";
-import { apiSlice } from "@/app/api";
+import { api } from "@/app/api";
 import { AppDispatch } from "@/app/store";
 import { ProjectName } from "@/common/constants";
 import {
@@ -31,16 +31,9 @@ import { addMembers, selectProjectSize } from "@/features/project/projectSlice";
 import { Spinner } from "@/features/ui/spinner";
 
 export function ImportURL() {
-  const backendURL = useSelector(selectBackendURL);
-  const dfcPairsQuery = useGetDFCPairsQuery(undefined, {
-    skip: backendURL == null,
-  });
-  const importSitesQuery = useGetImportSitesQuery(undefined, {
-    skip: backendURL == null,
-  });
-  const backendInfoQuery = useGetBackendInfoQuery(undefined, {
-    skip: backendURL == null,
-  });
+  const dfcPairsQuery = useGetDFCPairsQuery();
+  const importSitesQuery = useGetImportSitesQuery();
+  const backendInfoQuery = useGetBackendInfoQuery();
 
   const projectSize = useSelector(selectProjectSize);
   const dispatch = useDispatch<AppDispatch>();
@@ -53,7 +46,7 @@ export function ImportURL() {
   const [URLModalValue, setURLModalValue] = useState("");
 
   const [triggerFn, queryImportSiteQuery] =
-    apiSlice.endpoints.queryImportSite.useLazyQuery();
+    api.endpoints.queryImportSite.useLazyQuery();
 
   const handleSubmitURLModal = useCallback(async () => {
     const trimmedURL = URLModalValue.trim();

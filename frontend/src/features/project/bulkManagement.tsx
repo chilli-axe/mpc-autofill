@@ -18,7 +18,6 @@ import { RootState } from "@/app/store";
 import { AppDispatch } from "@/app/store";
 import { Back, Card } from "@/common/constants";
 import { Faces, SearchQuery } from "@/common/types";
-import { selectBackendURL } from "@/features/backend/backendSlice";
 import { GridSelector } from "@/features/card/gridSelector";
 import {
   bulkDeleteSlots,
@@ -142,10 +141,7 @@ function ChangeSelectedImageQueries({
     handleCloseChangeSelectedImageQueriesModal();
   };
 
-  const backendURL = useSelector(selectBackendURL);
-  const sampleCardsQuery = useGetSampleCardsQuery(undefined, {
-    skip: backendURL == null,
-  });
+  const sampleCardsQuery = useGetSampleCardsQuery();
   const placeholderCardName =
     sampleCardsQuery.data != null &&
     (sampleCardsQuery.data ?? {})[Card][0] != null

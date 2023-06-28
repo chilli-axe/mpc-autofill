@@ -1,11 +1,9 @@
 import Head from "next/head";
-import { useSelector } from "react-redux";
 import styled from "styled-components";
 
 import { useGetBackendInfoQuery } from "@/app/api";
 import { ProjectName } from "@/common/constants";
 import { MakePlayingCards, MakePlayingCardsURL } from "@/common/constants";
-import { selectBackendURL } from "@/features/backend/backendSlice";
 import Footer from "@/features/ui/footer";
 import Layout from "@/features/ui/layout";
 
@@ -14,10 +12,7 @@ const CentreAligned = styled.div`
 `;
 
 function BackendDescription() {
-  const backendURL = useSelector(selectBackendURL);
-  const backendInfoQuery = useGetBackendInfoQuery(undefined, {
-    skip: backendURL == null,
-  });
+  const backendInfoQuery = useGetBackendInfoQuery();
 
   return (
     <>

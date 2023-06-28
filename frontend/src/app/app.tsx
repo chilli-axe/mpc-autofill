@@ -22,7 +22,6 @@ import { ProjectStatus } from "@/features/project/projectStatus";
 import { fetchSourceDocuments } from "@/features/search/sourceDocumentsSlice";
 import { SearchSettings } from "@/features/searchSettings/searchSettings";
 import { NoBackendDefault } from "@/features/ui/noBackendDefault";
-import { ViewSettings } from "@/features/viewSettings/viewSettings";
 
 const OverflowCol = styled(Col)`
   position: relative;
@@ -42,8 +41,10 @@ function App() {
   const cardback =
     useSelector((state: RootState) => state.project.cardback) ?? undefined;
   useEffect(() => {
-    dispatch(fetchSourceDocuments());
-  }, [dispatch]);
+    if (backendURL != null) {
+      dispatch(fetchSourceDocuments());
+    }
+  }, [dispatch, backendURL]);
 
   return (
     <>

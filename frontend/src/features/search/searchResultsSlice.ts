@@ -47,7 +47,7 @@ export const searchResultsSlice = createSlice({
       state.searchResults = { ...state.searchResults, ...action.payload };
     });
     builder.addCase(fetchCards.rejected, (state, action) => {
-      alert("TODO");
+      alert("fetching cards broke");
     });
   },
 });

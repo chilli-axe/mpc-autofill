@@ -184,12 +184,8 @@ const SampleCardDocument: CardDocument = {
 export function DynamicLogo() {
   // TODO: set up custom hooks for using queries in this way (i.e. not querying until backend URL is specified)
   const backendURL = useSelector(selectBackendURL);
-  const sampleCardsQuery = useGetSampleCardsQuery(undefined, {
-    skip: backendURL == null,
-  });
-  const backendInfoQuery = useGetBackendInfoQuery(undefined, {
-    skip: backendURL == null,
-  });
+  const sampleCardsQuery = useGetSampleCardsQuery();
+  const backendInfoQuery = useGetBackendInfoQuery();
 
   // this ignores the initial flash of styled-components not doing the thing on first page load
   const [loading, setLoading] = useState<boolean>(true);

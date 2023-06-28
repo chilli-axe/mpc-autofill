@@ -1,13 +1,11 @@
 import Link from "next/link";
 import React from "react";
 import Table from "react-bootstrap/Table";
-import { useSelector } from "react-redux";
 import styled from "styled-components";
 
 import { useGetBackendInfoQuery, useGetContributionsQuery } from "@/app/api";
 import { Card, Cardback, ProjectName, Token } from "@/common/constants";
 import { SourceContribution } from "@/common/types";
-import { selectBackendURL } from "@/features/backend/backendSlice";
 import { Spinner } from "@/features/ui/spinner";
 
 const TableWrapper = styled.div`
@@ -19,13 +17,8 @@ const AutoLayoutTable = styled(Table)`
 `;
 
 export function ContributionsSummary() {
-  const backendURL = useSelector(selectBackendURL);
-  const contributionsQuery = useGetContributionsQuery(undefined, {
-    skip: backendURL == null,
-  });
-  const backendInfoQuery = useGetBackendInfoQuery(undefined, {
-    skip: backendURL == null,
-  });
+  const contributionsQuery = useGetContributionsQuery();
+  const backendInfoQuery = useGetBackendInfoQuery();
 
   const totalImages =
     contributionsQuery.data?.card_count_by_type != null
@@ -114,10 +107,7 @@ function SourceContributionRow({ contribution }: SourceContributionRowProps) {
 }
 
 export function ContributionsPerSource() {
-  const backendURL = useSelector(selectBackendURL);
-  const contributionsQuery = useGetContributionsQuery(undefined, {
-    skip: backendURL == null,
-  });
+  const contributionsQuery = useGetContributionsQuery();
 
   return contributionsQuery.isSuccess ? (
     contributionsQuery.isLoading || contributionsQuery.data?.sources == null ? (

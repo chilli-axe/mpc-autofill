@@ -6,7 +6,7 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
 import { APIGetSources } from "@/app/api";
 import { RootState } from "@/app/store";
-import { SourceDocuments, SourceDocumentsState } from "@/common/types";
+import { SourceDocumentsState } from "@/common/types";
 
 const initialState = {
   sourceDocuments: undefined,
@@ -33,7 +33,7 @@ export const sourceDocumentsSlice = createSlice({
       state.sourceDocuments = { ...state.sourceDocuments, ...action.payload };
     });
     builder.addCase(fetchSourceDocuments.rejected, (state, action) => {
-      alert("TODO");
+      alert("fetching sources broke");
     });
   },
 });

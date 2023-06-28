@@ -1,8 +1,6 @@
 import Link from "next/link";
-import { useSelector } from "react-redux";
 
 import { useGetBackendInfoQuery } from "@/app/api";
-import { selectBackendURL } from "@/features/backend/backendSlice";
 
 function Spacer() {
   return (
@@ -11,10 +9,7 @@ function Spacer() {
 }
 
 export default function Footer() {
-  const backendURL = useSelector(selectBackendURL);
-  const backendInfoQuery = useGetBackendInfoQuery(undefined, {
-    skip: backendURL == null,
-  });
+  const backendInfoQuery = useGetBackendInfoQuery();
   return (
     <>
       <hr />

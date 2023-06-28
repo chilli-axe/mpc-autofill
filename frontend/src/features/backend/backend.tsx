@@ -12,7 +12,7 @@ import Form from "react-bootstrap/Form";
 import Offcanvas from "react-bootstrap/Offcanvas";
 import { useDispatch, useSelector } from "react-redux";
 
-import { apiSlice } from "@/app/api";
+import { api } from "@/app/api";
 import { ProjectName, QueryTags } from "@/common/constants";
 import {
   clearLocalStorageBackendURL,
@@ -97,7 +97,7 @@ export function BackendConfig({ show, handleClose }: BackendConfigProps) {
   const clearBackendURL = () => {
     dispatch(clearURL());
     clearLocalStorageBackendURL();
-    dispatch(apiSlice.util.invalidateTags([QueryTags.BackendSpecific]));
+    dispatch(api.util.invalidateTags([QueryTags.BackendSpecific]));
     setValidationStatus([]);
   };
 
@@ -137,7 +137,7 @@ export function BackendConfig({ show, handleClose }: BackendConfigProps) {
     ) {
       dispatch(setURL(formattedURL));
       setLocalStorageBackendURL(formattedURL);
-      dispatch(apiSlice.util.invalidateTags([QueryTags.BackendSpecific]));
+      dispatch(api.util.invalidateTags([QueryTags.BackendSpecific]));
       setLocalBackendURL("");
     }
     setValidating(false);
@@ -147,7 +147,7 @@ export function BackendConfig({ show, handleClose }: BackendConfigProps) {
     const backendURL = getLocalStorageBackendURL();
     if (backendURL != undefined) {
       dispatch(setURL(backendURL));
-      dispatch(apiSlice.util.invalidateTags([QueryTags.BackendSpecific]));
+      dispatch(api.util.invalidateTags([QueryTags.BackendSpecific]));
     }
   }, []);
 

@@ -12,7 +12,7 @@ import Row from "react-bootstrap/Row";
 import Table from "react-bootstrap/Table";
 import { useSelector } from "react-redux";
 
-import { apiSlice } from "@/app/api";
+import { api } from "@/app/api";
 import { RootState } from "@/app/store";
 import { base64StringToBlob } from "@/common/processing";
 import { CardDocument } from "@/common/types";
@@ -50,7 +50,7 @@ export function CardDetailedView({
   );
 
   const [triggerFn, getGoogleDriveImageQuery] =
-    apiSlice.endpoints.getGoogleDriveImage.useLazyQuery();
+    api.endpoints.getGoogleDriveImage.useLazyQuery();
 
   const downloadImage = async () => {
     const response = await triggerFn(maybeCardDocument.identifier);

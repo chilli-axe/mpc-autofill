@@ -10,8 +10,9 @@ import { useDispatch, useSelector } from "react-redux";
 import { ThunkDispatch } from "redux-thunk";
 import styled from "styled-components";
 
-import { AppDispatch, RootState } from "@/app/store";
+import { RootState } from "@/app/store";
 import { Back, Front } from "@/common/constants";
+import { selectBackendURL } from "@/features/backend/backendSlice";
 import { MemoizedCardDetailedView } from "@/features/card/cardDetailedView";
 import { MemoizedCardSlot } from "@/features/card/cardSlot";
 import {
@@ -71,6 +72,8 @@ export function CardGrid() {
   const searchResultsIdle = // TODO: replace the magic string here with a constant
     useSelector((state: RootState) => state.searchResults.status) === "idle";
 
+  const backendURL = useSelector(selectBackendURL);
+
   const searchQueriesSet = useSelector(selectProjectMemberQueries);
 
   const cardSlotsFronts = [];
@@ -94,14 +97,14 @@ export function CardGrid() {
   }, [projectMembers]);
 
   useEffect(() => {
-    if (searchSettings.sourceSettings.sources != null) {
+    if (backendURL != null && searchSettings.sourceSettings.sources != null) {
       dispatch(fetchCardDocuments());
     }
   }, [stringifiedSearchQueries, stringifiedSources]);
 
   useEffect(() => {
     // recalculate search results when search settings change
-    if (searchSettings.sourceSettings.sources != null) {
+    if (backendURL != null && searchSettings.sourceSettings.sources != null) {
       dispatch(clearSearchResults());
       dispatch(fetchCardDocuments());
     }
