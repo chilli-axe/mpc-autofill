@@ -8,6 +8,8 @@ import {
   sourceSettingsSchema,
 } from "@/common/schemas";
 
+export type ThunkStatus = "idle" | "loading" | "succeeded" | "failed";
+
 export type CardType = "CARD" | "CARDBACK" | "TOKEN";
 export type Faces = "front" | "back";
 
@@ -38,13 +40,13 @@ export interface CardDocuments {
 
 export interface CardDocumentsState {
   cardDocuments: CardDocuments;
-  status: "idle" | "loading" | "succeeded" | "failed";
+  status: ThunkStatus;
   error: string | null;
 }
 
 export interface CardbacksState {
   cardbacks: Array<string>;
-  status: "idle" | "loading" | "succeeded" | "failed";
+  status: ThunkStatus;
   error: string | null;
 }
 
@@ -79,7 +81,7 @@ export interface SearchResults {
 
 export interface SearchResultsState {
   searchResults: SearchResults;
-  status: string;
+  status: ThunkStatus;
   error: string | null;
 }
 

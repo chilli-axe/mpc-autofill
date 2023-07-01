@@ -68,9 +68,11 @@ export function CardGrid() {
     setShowDetailedView(true);
   }, []);
 
-  // TODO: this doesn't work yet
-  const searchResultsIdle = // TODO: replace the magic string here with a constant
-    useSelector((state: RootState) => state.searchResults.status) === "idle";
+  const fetchingCardData = useSelector(
+    (state: RootState) =>
+      state.cardDocuments.status == "loading" ||
+      state.searchResults.status === "loading"
+  );
 
   const backendURL = useSelector(selectBackendURL);
 
@@ -161,7 +163,7 @@ export function CardGrid() {
       >
         {cardSlotsBacks}
       </Row>
-      <Modal show={!searchResultsIdle}>
+      <Modal show={fetchingCardData}>
         <Modal.Header closeButton>
           <Modal.Title>Loading...</Modal.Title>
         </Modal.Header>

@@ -27,7 +27,7 @@ export const fetchCards = createAsyncThunk(
 
 const initialState: SearchResultsState = {
   searchResults: {},
-  status: "idle", // TODO: I guess we have to manage this ourselves? I thought redux had tooling to manage this
+  status: "idle",
   error: null,
 };
 
