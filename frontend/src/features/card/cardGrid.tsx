@@ -17,6 +17,7 @@ import { MemoizedCardSlot } from "@/features/card/cardSlot";
 import { selectProjectMembers } from "@/features/project/projectSlice";
 import { fetchCardDocuments } from "@/features/search/cardDocumentsSlice";
 import { clearSearchResults } from "@/features/search/searchResultsSlice";
+import { Spinner } from "@/features/ui/spinner";
 
 const CardGridDefaultBackground = styled.div`
   position: absolute;
@@ -140,11 +141,18 @@ export function CardGrid() {
       >
         {cardSlotsBacks}
       </Row>
-      <Modal show={fetchingCardData}>
-        <Modal.Header closeButton>
-          <Modal.Title>Loading...</Modal.Title>
+      <Modal show={fetchingCardData} centered>
+        <Modal.Header>
+          <Modal.Title
+            style={{ textAlign: "center", userSelect: "none" }}
+            className="w-100"
+          >
+            Loading your cards...
+          </Modal.Title>
         </Modal.Header>
-        <Modal.Body>TODO</Modal.Body>
+        <Modal.Body>
+          <Spinner />
+        </Modal.Body>
       </Modal>
 
       {detailedViewSelectedImage != null && (
