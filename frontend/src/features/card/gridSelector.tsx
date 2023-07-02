@@ -17,7 +17,7 @@ import { useDispatch, useSelector } from "react-redux";
 
 import { RootState } from "@/app/store";
 import { ToggleButtonHeight } from "@/common/constants";
-import { CardDocument } from "@/common/types";
+import { CardDocument, SourceDocuments } from "@/common/types";
 import { MemoizedCard } from "@/features/card/card";
 import {
   makeAllSourcesInvisible,
@@ -197,14 +197,17 @@ export function GridSelector({
   );
 
   // TODO: move these selectors into a common area where they can be reused
-  const sourceKeyToName = useSelector((state: RootState) =>
-    Object.fromEntries(
-      Object.keys(state.sourceDocuments.sourceDocuments ?? {}).map((pk) => [
-        state.sourceDocuments.sourceDocuments[pk].key,
-        state.sourceDocuments.sourceDocuments[pk].name,
-      ])
-    )
-  );
+  const sourceKeyToName = useSelector((state: RootState) => {
+    const sourceDocuments = state.sourceDocuments.sourceDocuments;
+    return sourceDocuments != null
+      ? Object.fromEntries(
+          Object.values(sourceDocuments).map((sourceDocument) => [
+            sourceDocument.key,
+            sourceDocument.name,
+          ])
+        )
+      : {};
+  });
   const sourceKeys = Object.keys(sourceKeyToName);
   const anySourcesCollapsed = useSelector((state: RootState) =>
     Object.values(state.viewSettings.sourcesVisible ?? {}).includes(false)

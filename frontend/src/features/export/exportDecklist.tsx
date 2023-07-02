@@ -115,7 +115,9 @@ const selectGeneratedDecklist = (state: RootState): string => {
 export function ExportDecklist() {
   const store = useStore();
   const downloadFile = () => {
-    const generatedDecklist = selectGeneratedDecklist(store.getState());
+    const generatedDecklist = selectGeneratedDecklist(
+      store.getState() as RootState
+    );
     saveAs(
       new Blob([generatedDecklist], { type: "text/plain;charset=utf-8" }),
       "decklist.txt" // TODO: use project name here when we eventually track that

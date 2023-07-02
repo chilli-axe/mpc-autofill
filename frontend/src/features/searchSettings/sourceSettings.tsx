@@ -128,7 +128,10 @@ export function SourceSettings({
               >
                 {maybeSourceDocuments[sourceRow[0]].external_link != null ? (
                   <a
-                    href={maybeSourceDocuments[sourceRow[0]].external_link}
+                    href={
+                      maybeSourceDocuments[sourceRow[0]].external_link ??
+                      undefined
+                    }
                     target="_blank"
                   >
                     {maybeSourceDocuments[sourceRow[0]].name}

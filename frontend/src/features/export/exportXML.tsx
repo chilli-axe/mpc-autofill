@@ -203,7 +203,7 @@ export function generateXML(
 export function ExportXML() {
   const store = useStore();
   const downloadFile = () => {
-    const generatedXML = selectGeneratedXML(store.getState());
+    const generatedXML = selectGeneratedXML(store.getState() as RootState);
     saveAs(
       new Blob([generatedXML], { type: "text/xml;charset=utf-8" }),
       "cards.xml"

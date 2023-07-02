@@ -106,7 +106,7 @@ export function CardDetailedView({
                               href={
                                 maybeSourceDocuments[
                                   maybeCardDocument.source_id
-                                ].external_link
+                                ].external_link ?? undefined
                               }
                               target="_blank"
                             >

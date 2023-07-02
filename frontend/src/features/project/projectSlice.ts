@@ -310,6 +310,7 @@ export const selectProjectMemberIdentifiers = (state: RootState): Set<string> =>
 
 // TODO: this is a bit disgusting
 export const selectSelectedSlots = (state: RootState): Array<[Faces, number]> =>
+  // @ts-ignore // TODO
   state.project.members.flatMap((x: SlotProjectMembers, index: number) =>
     (x.front?.selected === true ? [[Front, index]] : []).concat(
       x.back?.selected === true ? [[Back, index]] : []

@@ -13,6 +13,7 @@ import {
 // import {ThunkDispatch} from "redux-thunk";
 
 type DispatchFunc = () => AppDispatch;
+type StoreFunc = () => RootState;
 export const useAppDispatch: DispatchFunc = useDispatch;
 export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
 

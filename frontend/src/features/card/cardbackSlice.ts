@@ -11,7 +11,8 @@ export const fetchCardbacks = createAppAsyncThunk(
   "cardbacks/fetchCardbacks",
   async (arg, thunkAPI) => {
     const state = thunkAPI.getState();
-    return APIGetCardbacks(state.backend.url);
+    const backendURL = state.backend.url;
+    return backendURL != null ? APIGetCardbacks(backendURL) : null;
   }
 );
 
@@ -35,8 +36,12 @@ export const cardbackSlice = createSlice({
         state.status = "loading";
       })
       .addCase(fetchCardbacks.fulfilled, (state, action) => {
-        state.status = "succeeded";
-        state.cardbacks = [...action.payload];
+        if (action.payload != null) {
+          state.status = "succeeded";
+          state.cardbacks = [...action.payload];
+        } else {
+          state.status = "failed";
+        }
       })
       .addCase(fetchCardbacks.rejected, (state, action) => {
         state.status = "failed"; // TODO: build some stuff for displaying error messages

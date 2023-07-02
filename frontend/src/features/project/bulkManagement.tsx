@@ -56,7 +56,7 @@ function ChangeSelectedImageSelectedImages({
 
   const firstQuery: SearchQuery | null = useAppSelector((state) =>
     slots.length > 0 && slots[0] != null
-      ? state.project.members[slots[0][1]][slots[0][0]].query
+      ? state.project.members[slots[0][1]][slots[0][0]]?.query ?? null
       : null
   );
   const allSelectedProjectMembersHaveTheSameQuery: boolean = useAppSelector(

@@ -14,13 +14,11 @@ export const fetchCards = createAppAsyncThunk(
     const state = thunkAPI.getState();
 
     const queriesToSearch = selectQueriesWithoutSearchResults(state);
-    if (queriesToSearch.length > 0) {
-      return APISearch(
-        state.backend.url,
-        state.searchSettings,
-        queriesToSearch
-      );
-    }
+
+    const backendURL = state.backend.url;
+    return queriesToSearch.length > 0 && backendURL != null
+      ? APISearch(backendURL, state.searchSettings, queriesToSearch)
+      : null;
   }
 );
 
