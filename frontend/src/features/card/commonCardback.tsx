@@ -6,10 +6,9 @@
 
 import React, { memo, useEffect, useState } from "react";
 import Button from "react-bootstrap/Button";
-import { useDispatch, useSelector } from "react-redux";
 
-import { AppDispatch, RootState } from "@/app/store";
 import { Back } from "@/common/constants";
+import { useAppDispatch, useAppSelector } from "@/common/types";
 import { wrapIndex } from "@/common/utils";
 import { MemoizedCard } from "@/features/card/card";
 import { MemoizedCardDetailedView } from "@/features/card/cardDetailedView";
@@ -35,10 +34,8 @@ export function CommonCardbackGridSelector({
   show,
   handleClose,
 }: CommonCardbackGridSelectorProps) {
-  const projectCardback = useSelector(
-    (state: RootState) => state.project.cardback
-  );
-  const dispatch = useDispatch<AppDispatch>();
+  const projectCardback = useAppSelector((state) => state.project.cardback);
+  const dispatch = useAppDispatch();
   function setSelectedImageFromIdentifier(selectedImage: string): void {
     if (projectCardback != null) {
       dispatch(
@@ -75,7 +72,7 @@ interface CommonCardbackProps {
 }
 
 export function CommonCardback({ selectedImage }: CommonCardbackProps) {
-  const dispatch = useDispatch<AppDispatch>();
+  const dispatch = useAppDispatch();
 
   const [showDetailedView, setShowDetailedView] = useState(false);
   const [showGridSelector, setShowGridSelector] = useState(false);
@@ -86,9 +83,7 @@ export function CommonCardback({ selectedImage }: CommonCardbackProps) {
   const handleShowGridSelector = () => setShowGridSelector(true);
 
   // TODO: move this selector somewhere more sensible
-  const searchResults = useSelector(
-    (state: RootState) => state.cardbacks.cardbacks
-  );
+  const searchResults = useAppSelector((state) => state.cardbacks.cardbacks);
 
   // TODO
   useEffect(() => {

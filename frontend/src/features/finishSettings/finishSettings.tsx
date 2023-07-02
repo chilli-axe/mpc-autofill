@@ -9,13 +9,13 @@ import Form from "react-bootstrap/Form";
 // eslint-disable-next-line
 // @ts-ignore: https://github.com/arnthor3/react-bootstrap-toggle/issues/21
 import Toggle from "react-bootstrap-toggle";
-import { useDispatch, useSelector } from "react-redux";
 
 import {
   CardstockFoilCompatibility,
   Cardstocks,
   ToggleButtonHeight,
 } from "@/common/constants";
+import { useAppDispatch, useAppSelector } from "@/common/types";
 import { Cardstock } from "@/common/types";
 import {
   selectFinishSettings,
@@ -24,8 +24,8 @@ import {
 } from "@/features/finishSettings/finishSettingsSlice";
 
 export function FinishSettings() {
-  const finishSettings = useSelector(selectFinishSettings);
-  const dispatch = useDispatch();
+  const finishSettings = useAppSelector(selectFinishSettings);
+  const dispatch = useAppDispatch();
 
   return (
     <>

@@ -2,16 +2,15 @@
  * State management for cardbacks retrieved from the backend.
  */
 
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { createSlice } from "@reduxjs/toolkit";
 
 import { APIGetCardbacks } from "@/app/api";
-import { RootState } from "@/app/store";
-import { CardbacksState, CardDocuments } from "@/common/types";
+import { CardbacksState, createAppAsyncThunk } from "@/common/types";
 
-export const fetchCardbacks = createAsyncThunk(
+export const fetchCardbacks = createAppAsyncThunk(
   "cardbacks/fetchCardbacks",
   async (arg, thunkAPI) => {
-    const state: RootState = thunkAPI.getState();
+    const state = thunkAPI.getState();
     return APIGetCardbacks(state.backend.url);
   }
 );
@@ -26,20 +25,20 @@ export const cardbackSlice = createSlice({
   name: "cardbacks",
   initialState,
   reducers: {
-    addCardbackDocuments: (state: RootState, action) => {
+    addCardbackDocuments: (state, action) => {
       state.cardbacks = [...action.payload];
     },
   },
   extraReducers(builder) {
     builder
-      .addCase(fetchCardbacks.pending, (state: RootState, action) => {
+      .addCase(fetchCardbacks.pending, (state, action) => {
         state.status = "loading";
       })
-      .addCase(fetchCardbacks.fulfilled, (state: RootState, action) => {
+      .addCase(fetchCardbacks.fulfilled, (state, action) => {
         state.status = "succeeded";
         state.cardbacks = [...action.payload];
       })
-      .addCase(fetchCardbacks.rejected, (state: RootState, action) => {
+      .addCase(fetchCardbacks.rejected, (state, action) => {
         state.status = "failed"; // TODO: build some stuff for displaying error messages
         state.error = ""; // TODO:  // action.error.message ?? null;
       });

@@ -13,7 +13,7 @@ import Button from "react-bootstrap/Button";
 import Dropdown from "react-bootstrap/Dropdown";
 import Modal from "react-bootstrap/Modal";
 import Table from "react-bootstrap/Table";
-import { useDispatch, useSelector } from "react-redux";
+import { ThunkDispatch } from "redux-thunk";
 import styled from "styled-components";
 
 import { useGetDFCPairsQuery } from "@/app/api";
@@ -24,7 +24,9 @@ import {
   convertLinesIntoSlotProjectMembers,
   processLines,
 } from "@/common/processing";
+import { useAppDispatch, useAppSelector } from "@/common/types";
 import { addMembers, selectProjectSize } from "@/features/project/projectSlice";
+import { fetchCardDocuments } from "@/features/search/cardDocumentsSlice";
 
 const BorderedTable = styled(Table)`
   border-style: solid;
@@ -137,13 +139,13 @@ function SampleCSV() {
 }
 
 export function ImportCSV() {
-  const dispatch = useDispatch<AppDispatch>();
+  const dispatch = useAppDispatch();
   const dfcPairsQuery = useGetDFCPairsQuery();
   const [showCSVModal, setShowCSVModal] = useState(false);
   const handleCloseCSVModal = () => setShowCSVModal(false);
   const handleShowCSVModal = () => setShowCSVModal(true);
 
-  const projectSize = useSelector(selectProjectSize);
+  const projectSize = useAppSelector(selectProjectSize);
 
   const parseCSVFile = (fileContents: string | ArrayBuffer | null) => {
     if (typeof fileContents !== "string") {
@@ -195,6 +197,7 @@ export function ImportCSV() {
         ),
       })
     );
+    dispatch(fetchCardDocuments());
     handleCloseCSVModal();
   };
 

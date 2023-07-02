@@ -347,11 +347,9 @@ export const selectProjectFileSize = (state: RootState): number => {
   const uniqueCardIdentifiers = new Set<string>();
   for (const slotProjectMembers of state.project.members) {
     for (const face of [Front, Back]) {
-      if (
-        slotProjectMembers[face] != null &&
-        slotProjectMembers[face].selectedImage != null
-      ) {
-        uniqueCardIdentifiers.add(slotProjectMembers[face].selectedImage);
+      const man = slotProjectMembers[face]?.selectedImage;
+      if (man != null) {
+        uniqueCardIdentifiers.add(man);
       }
     }
   }

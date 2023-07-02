@@ -2,21 +2,21 @@
  * State management for sources retrieved from the backend.
  */
 
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { createSlice } from "@reduxjs/toolkit";
 
 import { APIGetSources } from "@/app/api";
 import { RootState } from "@/app/store";
-import { SourceDocumentsState } from "@/common/types";
+import { createAppAsyncThunk, SourceDocumentsState } from "@/common/types";
 
 const initialState = {
   sourceDocuments: undefined,
 } as SourceDocumentsState;
 
-export const fetchSourceDocuments = createAsyncThunk(
+export const fetchSourceDocuments = createAppAsyncThunk(
   "sourceDocuments/fetchSourceDocuments",
   async (arg, thunkAPI) => {
-    const state: RootState = thunkAPI.getState();
-    return APIGetSources(state.backend.url);
+    const state = thunkAPI.getState();
+    return state.backend.url != null ? APIGetSources(state.backend.url) : null;
   }
 );
 
@@ -30,7 +30,9 @@ export const sourceDocumentsSlice = createSlice({
   },
   extraReducers(builder) {
     builder.addCase(fetchSourceDocuments.fulfilled, (state, action) => {
-      state.sourceDocuments = { ...state.sourceDocuments, ...action.payload };
+      if (action.payload != null) {
+        state.sourceDocuments = { ...state.sourceDocuments, ...action.payload };
+      }
     });
     builder.addCase(fetchSourceDocuments.rejected, (state, action) => {
       alert("fetching sources broke");

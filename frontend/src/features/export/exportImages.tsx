@@ -5,13 +5,12 @@ import Button from "react-bootstrap/Button";
 import Dropdown from "react-bootstrap/Dropdown";
 import Modal from "react-bootstrap/Modal";
 import ProgressBar from "react-bootstrap/ProgressBar";
-import { useSelector } from "react-redux";
 import styled from "styled-components";
 import { FunctionThread, Pool, spawn, Worker } from "threads";
 
-import { RootState } from "@/app/store";
 import { ProjectName } from "@/common/constants";
 import { base64StringToBlob } from "@/common/processing";
+import { useAppSelector } from "@/common/types";
 import { selectProjectMemberIdentifiers } from "@/features/project/projectSlice";
 import { Spinner } from "@/features/ui/spinner";
 
@@ -27,9 +26,9 @@ export function ExportImages() {
   const [downloading, setDownloading] = useState<boolean>(false);
 
   const cardIdentifiers = Array.from(
-    useSelector(selectProjectMemberIdentifiers)
+    useAppSelector(selectProjectMemberIdentifiers)
   );
-  const cardDocumentsByIdentifier = useSelector((state: RootState) =>
+  const cardDocumentsByIdentifier = useAppSelector((state) =>
     Object.fromEntries(
       cardIdentifiers.map((identifier) => [
         identifier,

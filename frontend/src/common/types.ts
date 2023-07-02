@@ -1,5 +1,8 @@
+import { createAsyncThunk } from "@reduxjs/toolkit";
 import { FromSchema } from "json-schema-to-ts";
+import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
 
+import type { AppDispatch, RootState } from "@/app/store";
 import {
   filterSettingsSchema,
   searchSettingsSchema,
@@ -7,6 +10,18 @@ import {
   sourceRowSchema,
   sourceSettingsSchema,
 } from "@/common/schemas";
+// import {ThunkDispatch} from "redux-thunk";
+
+type DispatchFunc = () => AppDispatch;
+export const useAppDispatch: DispatchFunc = useDispatch;
+export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
+
+export const createAppAsyncThunk = createAsyncThunk.withTypes<{
+  state: RootState;
+  dispatch: AppDispatch;
+  rejectValue: string;
+  extra: { s: string; n: number };
+}>();
 
 export type ThunkStatus = "idle" | "loading" | "succeeded" | "failed";
 

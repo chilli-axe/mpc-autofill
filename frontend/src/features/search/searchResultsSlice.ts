@@ -2,17 +2,16 @@
  * State management for search results - what images are returned for what search queries.
  */
 
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { createSlice } from "@reduxjs/toolkit";
 
 import { APISearch } from "@/app/api";
-import { RootState } from "@/app/store";
-import { SearchResults, SearchResultsState } from "@/common/types";
+import { createAppAsyncThunk, SearchResultsState } from "@/common/types";
 import { selectQueriesWithoutSearchResults } from "@/features/project/projectSlice";
 
-export const fetchCards = createAsyncThunk(
+export const fetchCards = createAppAsyncThunk(
   "searchResults/fetchCards",
   async (arg, thunkAPI) => {
-    const state: RootState = thunkAPI.getState();
+    const state = thunkAPI.getState();
 
     const queriesToSearch = selectQueriesWithoutSearchResults(state);
     if (queriesToSearch.length > 0) {

@@ -36,7 +36,7 @@ const dynamicBaseQuery: BaseQueryFn<
   FetchBaseQueryError
 > = async (args, WebApi, extraOptions) => {
   const baseUrl = (WebApi.getState() as RootState).backend.url;
-  const rawBaseQuery = fetchBaseQuery({ baseUrl });
+  const rawBaseQuery = fetchBaseQuery({ baseUrl: baseUrl ?? undefined });
   return rawBaseQuery(args, WebApi, extraOptions);
 };
 

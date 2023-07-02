@@ -2,17 +2,16 @@
  * State management for cards retrieved from the backend.
  */
 
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { createSlice } from "@reduxjs/toolkit";
 
 import { APIGetCards } from "@/app/api";
-import { RootState } from "@/app/store";
-import { CardDocumentsState } from "@/common/types";
+import { CardDocumentsState, createAppAsyncThunk } from "@/common/types";
 import { fetchCardbacks } from "@/features/card/cardbackSlice";
 import { selectUniqueCardIdentifiers } from "@/features/project/projectSlice";
 import { fetchCards } from "@/features/search/searchResultsSlice";
 
 // TODO: we should write something to read a page of card IDs from searchResults (100 at a time?) and query the backend for their full data
-export const fetchCardDocuments = createAsyncThunk(
+export const fetchCardDocuments = createAppAsyncThunk(
   "cardDocuments/fetchCardDocuments",
   async (arg, thunkAPI) => {
     // TODO: paginate and introduce the concept of a search strategy
@@ -25,7 +24,7 @@ export const fetchCardDocuments = createAsyncThunk(
     await thunkAPI.dispatch(fetchCards());
     await thunkAPI.dispatch(fetchCardbacks());
 
-    const state: RootState = thunkAPI.getState();
+    const state = thunkAPI.getState();
 
     const allIdentifiers = selectUniqueCardIdentifiers(state);
     const identifiersWithKnownData = new Set(
@@ -37,8 +36,9 @@ export const fetchCardDocuments = createAsyncThunk(
       )
     );
 
-    if (identifiersToSearch.size > 0) {
-      return APIGetCards(state.backend.url, identifiersToSearch);
+    const backendURL = state.backend.url;
+    if (identifiersToSearch.size > 0 && backendURL != null) {
+      return APIGetCards(backendURL, identifiersToSearch);
     }
   }
 );
@@ -59,14 +59,14 @@ export const cardDocumentsSlice = createSlice({
   },
   extraReducers(builder) {
     builder
-      .addCase(fetchCardDocuments.pending, (state: RootState, action) => {
+      .addCase(fetchCardDocuments.pending, (state, action) => {
         state.status = "loading";
       })
-      .addCase(fetchCardDocuments.fulfilled, (state: RootState, action) => {
+      .addCase(fetchCardDocuments.fulfilled, (state, action) => {
         state.status = "succeeded";
         state.cardDocuments = { ...state.cardDocuments, ...action.payload };
       })
-      .addCase(fetchCardDocuments.rejected, (state: RootState, action) => {
+      .addCase(fetchCardDocuments.rejected, (state, action) => {
         state.status = "failed"; // TODO: build some stuff for displaying error messages
         state.error = ""; // TODO: // action.error.message ?? null;
       });

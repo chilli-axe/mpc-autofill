@@ -12,7 +12,6 @@ import Button from "react-bootstrap/Button";
 import Dropdown from "react-bootstrap/Dropdown";
 import Form from "react-bootstrap/Form";
 import Modal from "react-bootstrap/Modal";
-import { useDispatch, useSelector } from "react-redux";
 
 import {
   useGetBackendInfoQuery,
@@ -20,14 +19,14 @@ import {
   useGetImportSitesQuery,
 } from "@/app/api";
 import { api } from "@/app/api";
-import { AppDispatch } from "@/app/store";
 import { ProjectName } from "@/common/constants";
 import {
   convertLinesIntoSlotProjectMembers,
   processStringAsMultipleLines,
 } from "@/common/processing";
-import { selectBackendURL } from "@/features/backend/backendSlice";
+import { useAppDispatch, useAppSelector } from "@/common/types";
 import { addMembers, selectProjectSize } from "@/features/project/projectSlice";
+import { fetchCardDocuments } from "@/features/search/cardDocumentsSlice";
 import { Spinner } from "@/features/ui/spinner";
 
 export function ImportURL() {
@@ -35,8 +34,8 @@ export function ImportURL() {
   const importSitesQuery = useGetImportSitesQuery();
   const backendInfoQuery = useGetBackendInfoQuery();
 
-  const projectSize = useSelector(selectProjectSize);
-  const dispatch = useDispatch<AppDispatch>();
+  const projectSize = useAppSelector(selectProjectSize);
+  const dispatch = useAppDispatch();
 
   // TODO: should probably set up type hints for all `useState` usages throughout the app
   const [showURLModal, setShowURLModal] = useState(false);
@@ -65,6 +64,7 @@ export function ImportURL() {
           ),
         })
       );
+      dispatch(fetchCardDocuments());
       handleCloseURLModal();
       setLoading(false);
     }

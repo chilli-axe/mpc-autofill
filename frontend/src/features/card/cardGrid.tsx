@@ -6,19 +6,15 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import Modal from "react-bootstrap/Modal";
 import Row from "react-bootstrap/Row";
-import { useDispatch, useSelector } from "react-redux";
 import { ThunkDispatch } from "redux-thunk";
 import styled from "styled-components";
 
-import { RootState } from "@/app/store";
 import { Back, Front } from "@/common/constants";
+import { useAppDispatch, useAppSelector } from "@/common/types";
 import { selectBackendURL } from "@/features/backend/backendSlice";
 import { MemoizedCardDetailedView } from "@/features/card/cardDetailedView";
 import { MemoizedCardSlot } from "@/features/card/cardSlot";
-import {
-  selectProjectMemberQueries,
-  selectProjectMembers,
-} from "@/features/project/projectSlice";
+import { selectProjectMembers } from "@/features/project/projectSlice";
 import { fetchCardDocuments } from "@/features/search/cardDocumentsSlice";
 import { clearSearchResults } from "@/features/search/searchResultsSlice";
 
@@ -56,7 +52,7 @@ function CardGridDefault() {
 }
 
 export function CardGrid() {
-  const dispatch = useDispatch<ThunkDispatch<any, any, any>>();
+  const dispatch = useAppDispatch();
 
   const [detailedViewSelectedImage, setDetailedViewSelectedImage] = useState<
     string | null
@@ -68,41 +64,22 @@ export function CardGrid() {
     setShowDetailedView(true);
   }, []);
 
-  const fetchingCardData = useSelector(
-    (state: RootState) =>
+  const fetchingCardData = useAppSelector(
+    (state) =>
       state.cardDocuments.status == "loading" ||
       state.searchResults.status === "loading"
   );
 
-  const backendURL = useSelector(selectBackendURL);
-
-  const searchQueriesSet = useSelector(selectProjectMemberQueries);
+  const backendURL = useAppSelector(selectBackendURL);
 
   const cardSlotsFronts = [];
   const cardSlotsBacks = [];
-  const projectMembers = useSelector(selectProjectMembers);
-  const searchSettings = useSelector(
-    (state: RootState) => state.searchSettings
-  );
+  const projectMembers = useAppSelector(selectProjectMembers);
+  const searchSettings = useAppSelector((state) => state.searchSettings);
   const stringifiedSearchSettings = useMemo<string>(
     () => JSON.stringify(searchSettings),
     [searchSettings]
   );
-  const stringifiedSources = JSON.stringify(
-    searchSettings.sourceSettings.sources
-  );
-
-  const stringifiedSearchQueries = useMemo<string>(() => {
-    const searchQueriesArray = Array.from(searchQueriesSet);
-    searchQueriesArray.sort();
-    return JSON.stringify(searchQueriesArray);
-  }, [projectMembers]);
-
-  useEffect(() => {
-    if (backendURL != null && searchSettings.sourceSettings.sources != null) {
-      dispatch(fetchCardDocuments());
-    }
-  }, [stringifiedSearchQueries, stringifiedSources]);
 
   useEffect(() => {
     // recalculate search results when search settings change
@@ -133,8 +110,8 @@ export function CardGrid() {
     );
   }
 
-  const frontsVisible = useSelector(
-    (state: RootState) => state.viewSettings.frontsVisible
+  const frontsVisible = useAppSelector(
+    (state) => state.viewSettings.frontsVisible
   );
 
   // TODO: should we aim to lift state up here and conditionally render rather than hide?

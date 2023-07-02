@@ -1,5 +1,5 @@
 import type { PreloadedState } from "@reduxjs/toolkit";
-import { combineReducers, configureStore, Store } from "@reduxjs/toolkit";
+import { combineReducers, configureStore } from "@reduxjs/toolkit";
 
 import { api } from "@/app/api";
 import backendReducer from "@/features/backend/backendSlice";
@@ -31,13 +31,14 @@ export const setupStore = (preloadedState?: PreloadedState<RootState>) => {
     reducer: rootReducer,
     preloadedState,
     middleware: (getDefaultMiddleware) =>
-      getDefaultMiddleware().concat(api.middleware),
+      getDefaultMiddleware().concat([api.middleware]),
   });
 };
 
-export const store: Store = setupStore();
+const store = setupStore();
 
-export type RootState = ReturnType<typeof store.getState>;
-export type AppDispatch = typeof store.dispatch;
+export type AppStore = ReturnType<typeof setupStore>;
+export type RootState = ReturnType<typeof rootReducer>;
+export type AppDispatch = typeof store.dispatch; // AppStore['dispatch']
 
 export default store;

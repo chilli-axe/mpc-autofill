@@ -14,7 +14,6 @@ import Dropdown from "react-bootstrap/Dropdown";
 import Modal from "react-bootstrap/Modal";
 // @ts-ignore: https://github.com/arnthor3/react-bootstrap-toggle/issues/21
 import Toggle from "react-bootstrap-toggle";
-import { useDispatch, useSelector } from "react-redux";
 
 import {
   Cardback,
@@ -27,6 +26,7 @@ import {
 } from "@/common/constants";
 import { TextFileDropzone } from "@/common/dropzone";
 import { processPrefix } from "@/common/processing";
+import { useAppDispatch, useAppSelector } from "@/common/types";
 import { Cardstock, SlotProjectMembers } from "@/common/types";
 import {
   setCardstock,
@@ -38,14 +38,15 @@ import {
   selectProjectSize,
   setSelectedCardback,
 } from "@/features/project/projectSlice";
+import { fetchCardDocuments } from "@/features/search/cardDocumentsSlice";
 
 export function ImportXML() {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const [showXMLModal, setShowXMLModal] = useState(false);
   const handleCloseXMLModal = () => setShowXMLModal(false);
   const handleShowXMLModal = () => setShowXMLModal(true);
-  const projectCardback = useSelector(selectProjectCardback);
-  const projectSize = useSelector(selectProjectSize);
+  const projectCardback = useAppSelector(selectProjectCardback);
+  const projectSize = useAppSelector(selectProjectSize);
   const [useXMLCardback, setUseXMLCardback] = useState<boolean>(false);
   const [useXMLFinishSettings, setUseXMLFinishSettings] =
     useState<boolean>(false);
@@ -154,6 +155,7 @@ export function ImportXML() {
         });
     }
     dispatch(addMembers({ members: newMembers.slice(0, lastNonNullSlot + 1) }));
+    dispatch(fetchCardDocuments());
 
     // update project cardback and finish settings according to user's specification
     if (useXMLCardback && cardback != null) {

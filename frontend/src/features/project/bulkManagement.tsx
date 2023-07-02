@@ -11,12 +11,10 @@ import Dropdown from "react-bootstrap/Dropdown";
 import Form from "react-bootstrap/Form";
 import Modal from "react-bootstrap/Modal";
 import Stack from "react-bootstrap/Stack";
-import { useDispatch, useSelector } from "react-redux";
 
 import { useGetSampleCardsQuery } from "@/app/api";
-import { RootState } from "@/app/store";
-import { AppDispatch } from "@/app/store";
 import { Back, Card } from "@/common/constants";
+import { useAppDispatch, useAppSelector } from "@/common/types";
 import { Faces, SearchQuery } from "@/common/types";
 import { GridSelector } from "@/features/card/gridSelector";
 import {
@@ -40,7 +38,7 @@ function ChangeSelectedImageSelectedImages({
 
   // TODO: this component is fairly messy and should be tidied up
 
-  const dispatch = useDispatch<AppDispatch>();
+  const dispatch = useAppDispatch();
 
   const [
     showChangeSelectedImageSelectedImagesModal,
@@ -56,13 +54,13 @@ function ChangeSelectedImageSelectedImages({
     handleCloseChangeSelectedImageSelectedImagesModal();
   };
 
-  const firstQuery: SearchQuery | null = useSelector((state: RootState) =>
+  const firstQuery: SearchQuery | null = useAppSelector((state) =>
     slots.length > 0 && slots[0] != null
       ? state.project.members[slots[0][1]][slots[0][0]].query
       : null
   );
-  const allSelectedProjectMembersHaveTheSameQuery: boolean = useSelector(
-    (state: RootState) =>
+  const allSelectedProjectMembersHaveTheSameQuery: boolean = useAppSelector(
+    (state) =>
       slots.every(
         ([face, slot]) =>
           (firstQuery?.query == null &&
@@ -78,9 +76,8 @@ function ChangeSelectedImageSelectedImages({
   // TODO: move this selector into searchResultsSlice
   // this is a bit confusing. if the card has a query, use the query's results. if it's a cardback with no query,
   // display the common cardback's results.
-  const cardbacks =
-    useSelector((state: RootState) => state.cardbacks.cardbacks) ?? [];
-  const searchResultsForQueryOrDefault = useSelector((state: RootState) =>
+  const cardbacks = useAppSelector((state) => state.cardbacks.cardbacks) ?? [];
+  const searchResultsForQueryOrDefault = useAppSelector((state) =>
     firstQuery?.query != null
       ? (state.searchResults.searchResults[firstQuery.query] ?? {})[
           firstQuery.card_type
@@ -116,7 +113,7 @@ function ChangeSelectedImageSelectedImages({
 function ChangeSelectedImageQueries({
   slots,
 }: MutateSelectedImageQueriesProps) {
-  const dispatch = useDispatch<AppDispatch>();
+  const dispatch = useAppDispatch();
 
   const [
     showChangeSelectedImageQueriesModal,
@@ -211,7 +208,7 @@ function ChangeSelectedImageQueries({
 }
 
 function DeleteSelectedImages({ slots }: MutateSelectedImageQueriesProps) {
-  const dispatch = useDispatch<AppDispatch>();
+  const dispatch = useAppDispatch();
 
   const slotNumbers = slots.map(([face, slot]) => slot);
   const onClick = () => dispatch(bulkDeleteSlots({ slots: slotNumbers }));
@@ -225,9 +222,9 @@ function DeleteSelectedImages({ slots }: MutateSelectedImageQueriesProps) {
 }
 
 export function SelectedImagesStatus() {
-  const slots = useSelector(selectSelectedSlots);
+  const slots = useAppSelector(selectSelectedSlots);
 
-  const dispatch = useDispatch<AppDispatch>();
+  const dispatch = useAppDispatch();
   const onClick = () =>
     dispatch(bulkSetMemberSelection({ selectedStatus: false, slots }));
 

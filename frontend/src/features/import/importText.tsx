@@ -28,6 +28,7 @@ import {
 } from "@/common/processing";
 import { CardDocument } from "@/common/types";
 import { addMembers, selectProjectSize } from "@/features/project/projectSlice";
+import { fetchCardDocuments } from "@/features/search/cardDocumentsSlice";
 
 export function ImportText() {
   // TODO: add an accordion here for explaining how to search for each different card type with prefixes
@@ -91,6 +92,7 @@ export function ImportText() {
         ),
       })
     );
+    dispatch(fetchCardDocuments());
     handleCloseTextModal();
   };
 
