@@ -6,6 +6,8 @@ runs:
     # not sure atm how to set up brave browser on github actions
     - uses: browser-actions/setup-chrome@latest
     - uses: browser-actions/setup-edge@latest
+      with:
+        edge-version: beta
 
     - name: Set up Python 3.9
       uses: actions/setup-python@v2
