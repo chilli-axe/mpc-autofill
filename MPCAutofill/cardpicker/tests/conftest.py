@@ -5,7 +5,8 @@ from django.core.management import call_command
 
 from cardpicker.models import Card, CardTypes, Source
 from cardpicker.tests.constants import Cards, Sources
-from cardpicker.tests.factories import CardFactory, SourceFactory
+from cardpicker.tests.factories import CardFactory, DFCPairFactory, SourceFactory
+from cardpicker.utils.sanitisation import to_searchable
 
 
 @pytest.fixture()
@@ -28,7 +29,7 @@ def elasticsearch():
 
 
 @pytest.fixture()
-def example_drive_1() -> Source:
+def example_drive_1(db) -> Source:
     return SourceFactory(
         key=Sources.EXAMPLE_DRIVE_1.value.key,
         name=Sources.EXAMPLE_DRIVE_1.value.name,
@@ -39,7 +40,7 @@ def example_drive_1() -> Source:
 
 
 @pytest.fixture()
-def example_drive_2() -> Source:
+def example_drive_2(db) -> Source:
     return SourceFactory(
         key=Sources.EXAMPLE_DRIVE_2.value.key,
         name=Sources.EXAMPLE_DRIVE_2.value.name,
@@ -218,6 +219,25 @@ def all_cards(
     goblin,
 ):
     pass
+
+
+# endregion
+
+# region DFCPair fixtures
+@pytest.fixture()
+def dfc_pairs(db):
+    DFCPairFactory(
+        front=Cards.HUNTMASTER_OF_THE_FELLS.value.name,
+        front_searchable=to_searchable(Cards.HUNTMASTER_OF_THE_FELLS.value.name),
+        back=Cards.RAVAGER_OF_THE_FELLS.value.name,
+        back_searchable=to_searchable(Cards.RAVAGER_OF_THE_FELLS.value.name),
+    )
+    DFCPairFactory(
+        front=Cards.DELVER_OF_SECRETS.value.name,
+        front_searchable=to_searchable(Cards.DELVER_OF_SECRETS.value.name),
+        back=Cards.INSECTILE_ABERRATION.value.name,
+        back_searchable=to_searchable(Cards.INSECTILE_ABERRATION.value.name),
+    )
 
 
 # endregion

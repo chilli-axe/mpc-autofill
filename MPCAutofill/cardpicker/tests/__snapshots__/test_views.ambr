@@ -1,4 +1,4 @@
-# name: TestGetSources.test_get_sources
+# name: TestGetSources.test_get_sources_get_multiple_sources
   dict({
     'results': dict({
       '1': dict({

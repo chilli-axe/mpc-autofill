@@ -33,6 +33,6 @@ class TestGetSources:
     def autouse_populated_database(self, populated_database):
         pass
 
-    def test_get_sources(self, client, snapshot):
+    def test_get_sources_get_multiple_sources(self, client, snapshot):
         response = client.get(reverse(views.get_sources))
         assert response.json() == snapshot

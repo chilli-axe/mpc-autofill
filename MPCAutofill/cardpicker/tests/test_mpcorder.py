@@ -1,8 +1,6 @@
 import textwrap
 from typing import Union
 
-import pytest
-
 from cardpicker.mpcorder import (
     CardbackImage,
     CardImage,
@@ -11,7 +9,6 @@ from cardpicker.mpcorder import (
     MPCOrder,
     ReqTypes,
 )
-from cardpicker.tests.factories import DFCPairFactory
 
 
 class TestMPCOrder:
@@ -39,28 +36,9 @@ class TestMPCOrder:
 
     # endregion
 
-    # region fixtures
-
-    @pytest.fixture()
-    def double_faced_cards(self, db):
-        DFCPairFactory(
-            front="Huntmaster of the Fells",
-            front_searchable="huntmaster of fells",
-            back="Ravager of the Fells",
-            back_searchable="ravager of fells",
-        )
-        DFCPairFactory(
-            front="Delver of Secrets",
-            front_searchable="delver of secrets",
-            back="Insectile Aberration",
-            back_searchable="insectile aberration",
-        )
-
-    # endregion
-
     # region tests
 
-    def test_populate_from_text(self, double_faced_cards):
+    def test_populate_from_text(self, dfc_pairs):
         order = MPCOrder()
         order.from_text(
             textwrap.dedent(
@@ -96,7 +74,7 @@ class TestMPCOrder:
             ),
         )
 
-    def test_populate_from_text_offset(self, double_faced_cards):
+    def test_populate_from_text_offset(self, dfc_pairs):
         order = MPCOrder()
         order.from_text(
             textwrap.dedent(
@@ -135,7 +113,7 @@ class TestMPCOrder:
             ),
         )
 
-    def test_populate_from_text_twice(self, double_faced_cards):
+    def test_populate_from_text_twice(self, dfc_pairs):
         order = MPCOrder()
         order.from_text(
             textwrap.dedent(

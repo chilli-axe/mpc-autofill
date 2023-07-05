@@ -19,8 +19,6 @@ from selenium.webdriver.support.expected_conditions import (
 from selenium.webdriver.support.ui import WebDriverWait
 from webdriver_manager.chrome import ChromeDriverManager
 
-from django.core.management import call_command
-
 from cardpicker.tests.constants import Card, Cards, Decks, Source, Sources
 
 
@@ -199,23 +197,27 @@ class TestFrontend:
         source: Source,
         has_reverse_face: bool = True,
     ):
-        if has_reverse_face:
-            inactive_face = ({"front", "back"} - {active_face}).pop()
-            assert (
-                driver.find_element(By.ID, value=f"slot{slot}-{inactive_face}").is_displayed() is False
-            ), f"Expected the face {inactive_face} for card {card.name} to be hidden!"
+        try:
+            if has_reverse_face:
+                inactive_face = ({"front", "back"} - {active_face}).pop()
+                assert (
+                    driver.find_element(By.ID, value=f"slot{slot}-{inactive_face}").is_displayed() is False
+                ), f"Expected the face {inactive_face} for card {card.name} to be hidden!"
 
-        assert (
-            driver.find_element(By.ID, value=f"slot{slot}-{active_face}").is_displayed() is True
-        ), f"Expected the face {active_face} for card {card.name} to be visible!"
-        assert driver.find_element(By.ID, value=f"slot{slot}-{active_face}-mpccard-name").text == card.name
-        if selected_image is not None and total_images is not None:
-            counter = f"{selected_image}/{total_images}"
             assert (
-                driver.find_element(By.ID, value=f"slot{slot}-{active_face}-mpccard-counter").text
-                or driver.find_element(By.ID, value=f"slot{slot}-{active_face}-mpccard-counter-btn").text
-            ) == counter
-        assert source.name in driver.find_element(By.ID, value=f"slot{slot}-{active_face}-mpccard-source").text
+                driver.find_element(By.ID, value=f"slot{slot}-{active_face}").is_displayed() is True
+            ), f"Expected the face {active_face} for card {card.name} to be visible!"
+            assert driver.find_element(By.ID, value=f"slot{slot}-{active_face}-mpccard-name").text == card.name
+            if selected_image is not None and total_images is not None:
+                counter = f"{selected_image}/{total_images}"
+                assert (
+                    driver.find_element(By.ID, value=f"slot{slot}-{active_face}-mpccard-counter").text
+                    or driver.find_element(By.ID, value=f"slot{slot}-{active_face}-mpccard-counter-btn").text
+                ) == counter
+            assert source.name in driver.find_element(By.ID, value=f"slot{slot}-{active_face}-mpccard-source").text
+        except AssertionError as e:
+            print(e)
+            raise e
 
     @staticmethod
     def assert_search_settings(driver, test_source_rows: list[TestSourceRow]) -> None:
@@ -497,8 +499,7 @@ class TestFrontend:
             source=Sources.EXAMPLE_DRIVE_1.value,
         )
 
-    def test_dfc_search(self, chrome_driver):
-        call_command("update_dfcs")
+    def test_dfc_search(self, chrome_driver, dfc_pairs):
         # set up results page with single result
         self.load_review_page_with_search_string(chrome_driver, "huntmaster of the fells")
 
@@ -843,8 +844,7 @@ class TestFrontend:
 
     # TODO: replicate this test in the new frontend
     @pytest.mark.parametrize("url", [x.value for x in Decks])
-    def test_import_from_url(self, chrome_driver, url):
-        call_command("update_dfcs")
+    def test_import_from_url(self, chrome_driver, url, dfc_pairs):
         chrome_driver.find_element(By.ID, value="uploadCardsBtn").click()
         chrome_driver.find_element(By.ID, value="input_url").click()
         time.sleep(1)
@@ -942,8 +942,7 @@ class TestFrontend:
         assert face_cell.text == "front"
         assert search_query_cell.text == "brainstorm"
 
-    def test_add_cards_to_order_by_text(self, chrome_driver):
-        call_command("update_dfcs")
+    def test_add_cards_to_order_by_text(self, chrome_driver, dfc_pairs):
         self.load_review_page_with_search_string(chrome_driver, "brainstorm")
 
         self.assert_order_qty(chrome_driver, 1)
