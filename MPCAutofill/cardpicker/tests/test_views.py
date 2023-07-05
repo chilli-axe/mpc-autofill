@@ -45,9 +45,9 @@ class TestGetSources:
 
 
 class TestGetDFCPairs:
-    @pytest.fixture(autouse=True)
-    def autouse_populated_database(self, populated_database):
-        pass
+    def test_get_dfc_pairs_get_multiple_rows(self, client, snapshot, dfc_pairs):
+        response = client.get(reverse(views.get_dfc_pairs))
+        assert response.json() == snapshot
 
 
 class TestGetCardbacks:
@@ -55,11 +55,15 @@ class TestGetCardbacks:
     def autouse_populated_database(self, populated_database):
         pass
 
+    def test_get_cardbacks_get_multiple_rows(self, client, snapshot):
+        response = client.get(reverse(views.get_cardbacks))
+        assert response.json() == snapshot
+
 
 class TestGetImportSites:
-    @pytest.fixture(autouse=True)
-    def autouse_populated_database(self, populated_database):
-        pass
+    def test_get_import_sites(self, client, snapshot):
+        response = client.get(reverse(views.get_import_sites))
+        assert response.json() == snapshot
 
 
 class TestPostImportSiteDecklist:
@@ -67,17 +71,34 @@ class TestPostImportSiteDecklist:
     def autouse_populated_database(self, populated_database):
         pass
 
+    # TODO: write tests
+
 
 class TestGetSampleCards:
     @pytest.fixture(autouse=True)
     def autouse_populated_database(self, populated_database):
         pass
 
+    # TODO: write tests
+
 
 class TestGetContributions:
-    @pytest.fixture(autouse=True)
-    def autouse_populated_database(self, populated_database):
-        pass
+    def test_get_contributions_get_multiple_rows(self, client, snapshot, all_sources, all_cards):
+        response = client.get(reverse(views.get_contributions))
+        assert response.json() == snapshot
+
+    def test_get_contributions_get_one_row(self, client, snapshot, example_drive_1, island, island_classical):
+        response = client.get(reverse(views.get_contributions))
+        assert response.json() == snapshot
+
+    def test_get_contributions_get_source_with_no_cards(self, client, snapshot, all_sources):
+        # TODO: I don't think the code is handling this case properly. check out the {null: 0} in the snapshot. fix it!
+        response = client.get(reverse(views.get_contributions))
+        assert response.json() == snapshot
+
+    def test_get_contributions_get_source_with_no_sources(self, client, snapshot, db):
+        response = client.get(reverse(views.get_contributions))
+        assert response.json() == snapshot
 
 
 class TestGetInfo:
@@ -85,8 +106,12 @@ class TestGetInfo:
     def autouse_populated_database(self, populated_database):
         pass
 
+    # TODO: write tests
+
 
 class TestGetSearchEngineHealth:
     @pytest.fixture(autouse=True)
     def autouse_populated_database(self, populated_database):
         pass
+
+    # TODO: write tests
