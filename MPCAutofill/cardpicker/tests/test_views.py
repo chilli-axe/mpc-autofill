@@ -6,6 +6,12 @@ from cardpicker import views
 from cardpicker.tests.constants import Cards
 
 
+class TestPostSearchResults:
+    @pytest.fixture(autouse=True)
+    def autouse_populated_database(self, populated_database):
+        pass
+
+
 class TestPostCards:
     @pytest.fixture(autouse=True)
     def autouse_populated_database(self, populated_database):
@@ -36,3 +42,51 @@ class TestGetSources:
     def test_get_sources_get_multiple_sources(self, client, snapshot):
         response = client.get(reverse(views.get_sources))
         assert response.json() == snapshot
+
+
+class TestGetDFCPairs:
+    @pytest.fixture(autouse=True)
+    def autouse_populated_database(self, populated_database):
+        pass
+
+
+class TestGetCardbacks:
+    @pytest.fixture(autouse=True)
+    def autouse_populated_database(self, populated_database):
+        pass
+
+
+class TestGetImportSites:
+    @pytest.fixture(autouse=True)
+    def autouse_populated_database(self, populated_database):
+        pass
+
+
+class TestPostImportSiteDecklist:
+    @pytest.fixture(autouse=True)
+    def autouse_populated_database(self, populated_database):
+        pass
+
+
+class TestGetSampleCards:
+    @pytest.fixture(autouse=True)
+    def autouse_populated_database(self, populated_database):
+        pass
+
+
+class TestGetContributions:
+    @pytest.fixture(autouse=True)
+    def autouse_populated_database(self, populated_database):
+        pass
+
+
+class TestGetInfo:
+    @pytest.fixture(autouse=True)
+    def autouse_populated_database(self, populated_database):
+        pass
+
+
+class TestGetSearchEngineHealth:
+    @pytest.fixture(autouse=True)
+    def autouse_populated_database(self, populated_database):
+        pass
