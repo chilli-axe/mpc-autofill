@@ -31,6 +31,7 @@ def elasticsearch():
 @pytest.fixture()
 def example_drive_1(db) -> Source:
     return SourceFactory(
+        pk=0,
         key=Sources.EXAMPLE_DRIVE_1.value.key,
         name=Sources.EXAMPLE_DRIVE_1.value.name,
         identifier=Sources.EXAMPLE_DRIVE_1.value.identifier,
@@ -42,6 +43,7 @@ def example_drive_1(db) -> Source:
 @pytest.fixture()
 def example_drive_2(db) -> Source:
     return SourceFactory(
+        pk=1,
         key=Sources.EXAMPLE_DRIVE_2.value.key,
         name=Sources.EXAMPLE_DRIVE_2.value.name,
         identifier=Sources.EXAMPLE_DRIVE_2.value.identifier,
@@ -62,6 +64,7 @@ def all_sources(example_drive_1, example_drive_2):
 @pytest.fixture()
 def brainstorm(example_drive_1) -> Card:
     return CardFactory(
+        pk=0,
         card_type=CardTypes.CARD,
         identifier=Cards.BRAINSTORM.value.identifier,
         name=Cards.BRAINSTORM.value.name,
@@ -73,6 +76,7 @@ def brainstorm(example_drive_1) -> Card:
 @pytest.fixture()
 def island(example_drive_1) -> Card:
     return CardFactory(
+        pk=1,
         card_type=CardTypes.CARD,
         identifier=Cards.ISLAND.value.identifier,
         name=Cards.ISLAND.value.name,
@@ -84,6 +88,7 @@ def island(example_drive_1) -> Card:
 @pytest.fixture()
 def island_classical(example_drive_1) -> Card:
     return CardFactory(
+        pk=2,
         card_type=CardTypes.CARD,
         identifier=Cards.ISLAND_CLASSICAL.value.identifier,
         name=Cards.ISLAND_CLASSICAL.value.name,
@@ -95,6 +100,7 @@ def island_classical(example_drive_1) -> Card:
 @pytest.fixture()
 def mountain(example_drive_1) -> Card:
     return CardFactory(
+        pk=3,
         card_type=CardTypes.CARD,
         identifier=Cards.MOUNTAIN.value.identifier,
         name=Cards.MOUNTAIN.value.name,
@@ -106,6 +112,7 @@ def mountain(example_drive_1) -> Card:
 @pytest.fixture()
 def simple_cube(example_drive_1) -> Card:
     return CardFactory(
+        pk=4,
         card_type=CardTypes.CARDBACK,
         identifier=Cards.SIMPLE_CUBE.value.identifier,
         name=Cards.SIMPLE_CUBE.value.name,
@@ -117,6 +124,7 @@ def simple_cube(example_drive_1) -> Card:
 @pytest.fixture()
 def simple_lotus(example_drive_1) -> Card:
     return CardFactory(
+        pk=5,
         card_type=CardTypes.CARDBACK,
         identifier=Cards.SIMPLE_LOTUS.value.identifier,
         name=Cards.SIMPLE_LOTUS.value.name,
@@ -128,6 +136,7 @@ def simple_lotus(example_drive_1) -> Card:
 @pytest.fixture()
 def huntmaster_of_the_fells(example_drive_1) -> Card:
     return CardFactory(
+        pk=6,
         card_type=CardTypes.CARD,
         identifier=Cards.HUNTMASTER_OF_THE_FELLS.value.identifier,
         name=Cards.HUNTMASTER_OF_THE_FELLS.value.name,
@@ -139,6 +148,7 @@ def huntmaster_of_the_fells(example_drive_1) -> Card:
 @pytest.fixture()
 def ravager_of_the_fells(example_drive_1) -> Card:
     return CardFactory(
+        pk=7,
         card_type=CardTypes.CARD,
         identifier=Cards.RAVAGER_OF_THE_FELLS.value.identifier,
         name=Cards.RAVAGER_OF_THE_FELLS.value.name,
@@ -150,6 +160,7 @@ def ravager_of_the_fells(example_drive_1) -> Card:
 @pytest.fixture()
 def past_in_flames_1(example_drive_1) -> Card:
     return CardFactory(
+        pk=8,
         card_type=CardTypes.CARD,
         identifier=Cards.PAST_IN_FLAMES_1.value.identifier,
         name=Cards.PAST_IN_FLAMES_1.value.name,
@@ -161,6 +172,7 @@ def past_in_flames_1(example_drive_1) -> Card:
 @pytest.fixture()
 def past_in_flames_2(example_drive_2) -> Card:
     return CardFactory(
+        pk=9,
         card_type=CardTypes.CARD,
         identifier=Cards.PAST_IN_FLAMES_2.value.identifier,
         name=Cards.PAST_IN_FLAMES_2.value.name,
@@ -172,6 +184,7 @@ def past_in_flames_2(example_drive_2) -> Card:
 @pytest.fixture()
 def delver_of_secrets(example_drive_1) -> Card:
     return CardFactory(
+        pk=10,
         card_type=CardTypes.CARD,
         identifier=Cards.DELVER_OF_SECRETS.value.identifier,
         name=Cards.DELVER_OF_SECRETS.value.name,
@@ -183,6 +196,7 @@ def delver_of_secrets(example_drive_1) -> Card:
 @pytest.fixture()
 def insectile_aberration(example_drive_1) -> Card:
     return CardFactory(
+        pk=11,
         card_type=CardTypes.CARD,
         identifier=Cards.INSECTILE_ABERRATION.value.identifier,
         name=Cards.INSECTILE_ABERRATION.value.name,
@@ -194,6 +208,7 @@ def insectile_aberration(example_drive_1) -> Card:
 @pytest.fixture()
 def goblin(example_drive_1) -> Card:
     return CardFactory(
+        pk=12,
         card_type=CardTypes.TOKEN,
         identifier=Cards.GOBLIN.value.identifier,
         name=Cards.GOBLIN.value.name,
@@ -227,12 +242,14 @@ def all_cards(
 @pytest.fixture()
 def dfc_pairs(db):
     DFCPairFactory(
+        pk=0,
         front=Cards.HUNTMASTER_OF_THE_FELLS.value.name,
         front_searchable=to_searchable(Cards.HUNTMASTER_OF_THE_FELLS.value.name),
         back=Cards.RAVAGER_OF_THE_FELLS.value.name,
         back_searchable=to_searchable(Cards.RAVAGER_OF_THE_FELLS.value.name),
     )
     DFCPairFactory(
+        pk=1,
         front=Cards.DELVER_OF_SECRETS.value.name,
         front_searchable=to_searchable(Cards.DELVER_OF_SECRETS.value.name),
         back=Cards.INSECTILE_ABERRATION.value.name,

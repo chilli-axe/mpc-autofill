@@ -1,22 +1,22 @@
 # name: TestGetSources.test_get_sources_get_multiple_sources
   dict({
     'results': dict({
-      '1': dict({
+      '0': dict({
         'description': 'Description for example_drive_1',
         'external_link': 'https://drive.google.com/open?id=1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
         'identifier': '1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
         'key': 'example_drive_1',
         'name': 'Example Drive 1',
-        'pk': 1,
+        'pk': 0,
         'source_type': 'Google Drive',
       }),
-      '2': dict({
+      '1': dict({
         'description': 'Description for example_drive_2',
         'external_link': None,
         'identifier': '18wZl7T9DU_lf2X5xYFiyH6pATVy8ZlOd',
         'key': 'example_drive_2',
         'name': 'Example Drive 2',
-        'pk': 2,
+        'pk': 1,
         'source_type': 'Google Drive',
       }),
     }),
@@ -39,7 +39,7 @@
         'size': 100,
         'small_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w400-h400&id=17fopRCNRge72U8Hac8pApHZtEalx5kHy',
         'source': 'example_drive_1',
-        'source_id': 1,
+        'source_id': 0,
         'source_name': 'Example Drive 1',
         'source_type': 'Google Drive',
         'source_verbose': 'Example Drive 1 but verbose',
@@ -58,7 +58,7 @@
         'size': 100,
         'small_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA',
         'source': 'example_drive_1',
-        'source_id': 1,
+        'source_id': 0,
         'source_name': 'Example Drive 1',
         'source_type': 'Google Drive',
         'source_verbose': 'Example Drive 1 but verbose',
@@ -83,7 +83,7 @@
         'size': 100,
         'small_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA',
         'source': 'example_drive_1',
-        'source_id': 1,
+        'source_id': 0,
         'source_name': 'Example Drive 1',
         'source_type': 'Google Drive',
         'source_verbose': 'Example Drive 1 but verbose',
