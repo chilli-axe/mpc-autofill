@@ -1,6 +1,7 @@
 import factory
 
 from cardpicker import models
+from cardpicker.utils.sanitisation import to_searchable
 
 
 class DFCPairFactory(factory.django.DjangoModelFactory):
@@ -22,3 +23,21 @@ class SourceFactory(factory.django.DjangoModelFactory):
     source_type = models.SourceTypeChoices.GOOGLE_DRIVE
     description = factory.LazyAttribute(lambda o: f"Description for {o.key}")
     ordinal = factory.Sequence(lambda n: n)
+
+
+class CardFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.Card
+
+    card_type = models.CardTypes.CARD
+    identifier = factory.Sequence(lambda n: f"card_{n}")
+    name = factory.Sequence(lambda n: f"Card {n}")
+    priority = factory.Sequence(lambda n: n)
+    source = factory.SubFactory(SourceFactory)
+    source_verbose = factory.LazyAttribute(lambda o: f"{o.source.name} but verbose")
+    folder_location = factory.LazyFunction(lambda: "path")
+    dpi = factory.LazyFunction(lambda: 800)
+    searchq = factory.LazyAttribute(lambda o: to_searchable(o.name))
+    searchq_keyword = factory.LazyAttribute(lambda o: to_searchable(o.name))
+    extension = factory.LazyFunction(lambda: "png")
+    size = factory.LazyFunction(lambda: 100)

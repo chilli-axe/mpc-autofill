@@ -21,13 +21,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 from django.core.management import call_command
 
-from cardpicker.tests.constants import (
-    TestCard,
-    TestCards,
-    TestDecks,
-    TestSource,
-    TestSources,
-)
+from cardpicker.tests.constants import Card, Cards, Decks, Source, Sources
 
 
 @dataclass
@@ -38,9 +32,10 @@ class TestSourceRow:
 
 class TestFrontend:
     # region fixtures
-    @pytest.fixture(autouse=True)  # this is only auto-use within the scope of `TestFrontend`
-    def populated_database(self, django_settings, stand_up_database):
-        call_command("update_database")
+
+    @pytest.fixture(autouse=True)
+    def autouse_populated_database(self, populated_database):
+        pass
 
     @pytest.fixture(scope="module")
     def download_folder(self, tmp_path_factory) -> Path:
@@ -86,19 +81,19 @@ class TestFrontend:
                 </details>
                 <fronts>
                     <card>
-                        <id>{TestCards.BRAINSTORM.value.identifier}</id>
+                        <id>{Cards.BRAINSTORM.value.identifier}</id>
                         <slots>0,1,2,3</slots>
-                        <name>{TestCards.BRAINSTORM.value.name}.png</name>
+                        <name>{Cards.BRAINSTORM.value.name}.png</name>
                         <query>brainstorm</query>
                     </card>
                     <card>
-                        <id>{TestCards.ISLAND.value.identifier}</id>
+                        <id>{Cards.ISLAND.value.identifier}</id>
                         <slots>4,5,6</slots>
-                        <name>{TestCards.ISLAND.value.name}.png</name>
+                        <name>{Cards.ISLAND.value.name}.png</name>
                         <query>island</query>
                     </card>
                 </fronts>
-                <cardback>{TestCards.SIMPLE_CUBE.value.identifier}</cardback>
+                <cardback>{Cards.SIMPLE_CUBE.value.identifier}</cardback>
             </order>
             """
         valid_xml_path = str(download_folder / "valid_xml.xml")
@@ -132,11 +127,11 @@ class TestFrontend:
                         <card>
                             <id>invalid</id>
                             <slots>0</slots>
-                            <name>{TestCards.BRAINSTORM.value.name}.png</name>
+                            <name>{Cards.BRAINSTORM.value.name}.png</name>
                             <query>brainstorm</query>
                         </card>
                     </fronts>
-                    <cardback>{TestCards.SIMPLE_CUBE.value.identifier}</cardback>
+                    <cardback>{Cards.SIMPLE_CUBE.value.identifier}</cardback>
                 </order>
                 """
         xml_with_invalid_card_path = str(download_folder / "xml_with_invalid_card.xml")
@@ -198,10 +193,10 @@ class TestFrontend:
         driver,
         slot: Union[int, str],
         active_face: str,
-        card: TestCard,
+        card: Card,
         selected_image: Optional[int],
         total_images: Optional[int],
-        source: TestSource,
+        source: Source,
         has_reverse_face: bool = True,
     ):
         if has_reverse_face:
@@ -257,20 +252,20 @@ class TestFrontend:
                 chrome_driver,
                 slot=i,
                 active_face="front",
-                card=TestCards.BRAINSTORM.value,
+                card=Cards.BRAINSTORM.value,
                 selected_image=1,
                 total_images=1,
-                source=TestSources.EXAMPLE_DRIVE_1.value,
+                source=Sources.EXAMPLE_DRIVE_1.value,
             )
         for i in range(4, 7):
             self.assert_card_state(
                 chrome_driver,
                 slot=i,
                 active_face="front",
-                card=TestCards.ISLAND.value,
+                card=Cards.ISLAND.value,
                 selected_image=1,
                 total_images=2,
-                source=TestSources.EXAMPLE_DRIVE_1.value,
+                source=Sources.EXAMPLE_DRIVE_1.value,
             )
 
         self.generate_and_download_xml(chrome_driver)
@@ -298,48 +293,48 @@ class TestFrontend:
                 driver=chrome_driver,
                 slot=i,
                 active_face="front",
-                card=TestCards.ISLAND.value,
+                card=Cards.ISLAND.value,
                 selected_image=1,
                 total_images=2,
-                source=TestSources.EXAMPLE_DRIVE_1.value,
+                source=Sources.EXAMPLE_DRIVE_1.value,
             )
         chrome_driver.find_element(By.ID, value="slot1-front-next").click()
         self.assert_card_state(
             driver=chrome_driver,
             slot=0,
             active_face="front",
-            card=TestCards.ISLAND.value,
+            card=Cards.ISLAND.value,
             selected_image=1,
             total_images=2,
-            source=TestSources.EXAMPLE_DRIVE_1.value,
+            source=Sources.EXAMPLE_DRIVE_1.value,
         )
         self.assert_card_state(
             driver=chrome_driver,
             slot=1,
             active_face="front",
-            card=TestCards.ISLAND_CLASSICAL.value,
+            card=Cards.ISLAND_CLASSICAL.value,
             selected_image=2,
             total_images=2,
-            source=TestSources.EXAMPLE_DRIVE_1.value,
+            source=Sources.EXAMPLE_DRIVE_1.value,
         )
         chrome_driver.find_element(By.ID, value="slot0-front-prev").click()
         self.assert_card_state(
             driver=chrome_driver,
             slot=0,
             active_face="front",
-            card=TestCards.ISLAND_CLASSICAL.value,
+            card=Cards.ISLAND_CLASSICAL.value,
             selected_image=2,
             total_images=2,
-            source=TestSources.EXAMPLE_DRIVE_1.value,
+            source=Sources.EXAMPLE_DRIVE_1.value,
         )
         self.assert_card_state(
             driver=chrome_driver,
             slot=0,
             active_face="front",
-            card=TestCards.ISLAND_CLASSICAL.value,
+            card=Cards.ISLAND_CLASSICAL.value,
             selected_image=2,
             total_images=2,
-            source=TestSources.EXAMPLE_DRIVE_1.value,
+            source=Sources.EXAMPLE_DRIVE_1.value,
         )
 
         # change version with the `next` button while locking
@@ -348,10 +343,10 @@ class TestFrontend:
                 driver=chrome_driver,
                 slot=i,
                 active_face="front",
-                card=TestCards.PAST_IN_FLAMES_1.value,
+                card=Cards.PAST_IN_FLAMES_1.value,
                 selected_image=1,
                 total_images=2,
-                source=TestSources.EXAMPLE_DRIVE_1.value,
+                source=Sources.EXAMPLE_DRIVE_1.value,
             )
         chrome_driver.find_element(By.ID, value="slot3-front-padlock").click()
         chrome_driver.find_element(By.ID, value="slot3-front-next").click()
@@ -360,10 +355,10 @@ class TestFrontend:
                 driver=chrome_driver,
                 slot=i,
                 active_face="front",
-                card=TestCards.PAST_IN_FLAMES_2.value,
+                card=Cards.PAST_IN_FLAMES_2.value,
                 selected_image=2,
                 total_images=2,
-                source=TestSources.EXAMPLE_DRIVE_2.value,
+                source=Sources.EXAMPLE_DRIVE_2.value,
             )
         chrome_driver.find_element(By.ID, value="slot2-front-prev").click()
         for i in range(2, 4):
@@ -371,26 +366,26 @@ class TestFrontend:
                 driver=chrome_driver,
                 slot=i,
                 active_face="front",
-                card=TestCards.PAST_IN_FLAMES_1.value,
+                card=Cards.PAST_IN_FLAMES_1.value,
                 selected_image=1,
                 total_images=2,
-                source=TestSources.EXAMPLE_DRIVE_1.value,
+                source=Sources.EXAMPLE_DRIVE_1.value,
             )
 
         # change version with the modal view
         chrome_driver.find_element(By.ID, value="slot3-front-mpccard-counter-btn").click()
         time.sleep(1)
-        chrome_driver.find_element(By.ID, value=f"{TestCards.PAST_IN_FLAMES_2.value.identifier}-card-img").click()
+        chrome_driver.find_element(By.ID, value=f"{Cards.PAST_IN_FLAMES_2.value.identifier}-card-img").click()
         time.sleep(1)
         for i in range(2, 4):
             self.assert_card_state(
                 driver=chrome_driver,
                 slot=i,
                 active_face="front",
-                card=TestCards.PAST_IN_FLAMES_2.value,
+                card=Cards.PAST_IN_FLAMES_2.value,
                 selected_image=2,
                 total_images=2,
-                source=TestSources.EXAMPLE_DRIVE_2.value,
+                source=Sources.EXAMPLE_DRIVE_2.value,
             )
 
     # TODO: replicate this test in the new frontend
@@ -406,20 +401,20 @@ class TestFrontend:
             driver=chrome_driver,
             slot=0,
             active_face="front",
-            card=TestCards.PAST_IN_FLAMES_1.value,
+            card=Cards.PAST_IN_FLAMES_1.value,
             selected_image=1,
             total_images=2,
-            source=TestSources.EXAMPLE_DRIVE_1.value,
+            source=Sources.EXAMPLE_DRIVE_1.value,
         )
 
     # TODO: replicate this test in the new frontend
     def test_search_when_all_drives_disabled(self, chrome_driver):
         chrome_driver.find_element(By.ID, value="btn_settings").click()
         time.sleep(1)
-        chrome_driver.find_element(By.ID, value=TestSources.EXAMPLE_DRIVE_1.value.key).find_element(
+        chrome_driver.find_element(By.ID, value=Sources.EXAMPLE_DRIVE_1.value.key).find_element(
             By.XPATH, value="./.."
         ).click()
-        chrome_driver.find_element(By.ID, value=TestSources.EXAMPLE_DRIVE_2.value.key).find_element(
+        chrome_driver.find_element(By.ID, value=Sources.EXAMPLE_DRIVE_2.value.key).find_element(
             By.XPATH, value="./.."
         ).click()
         chrome_driver.find_element(By.ID, value="selectDrivesModal-submit").click()
@@ -447,28 +442,28 @@ class TestFrontend:
                     driver=chrome_driver,
                     slot=i,
                     active_face="front",
-                    card=TestCards.BRAINSTORM.value,
+                    card=Cards.BRAINSTORM.value,
                     selected_image=1,
                     total_images=1,
-                    source=TestSources.EXAMPLE_DRIVE_1.value,
+                    source=Sources.EXAMPLE_DRIVE_1.value,
                 )
             for i in range(4, 7):
                 self.assert_card_state(
                     driver=chrome_driver,
                     slot=i,
                     active_face="front",
-                    card=TestCards.ISLAND.value,
+                    card=Cards.ISLAND.value,
                     selected_image=1,
                     total_images=2,
-                    source=TestSources.EXAMPLE_DRIVE_1.value,
+                    source=Sources.EXAMPLE_DRIVE_1.value,
                 )
 
     @pytest.mark.parametrize(
         "from_query, from_card, to_query, to_card",
         [
-            ("brainstorm", TestCards.BRAINSTORM.value, "mountain", TestCards.MOUNTAIN.value),
-            ("brainstorm", TestCards.BRAINSTORM.value, "t:goblin", TestCards.GOBLIN.value),
-            ("t:goblin", TestCards.GOBLIN.value, "brainstorm", TestCards.BRAINSTORM.value),
+            ("brainstorm", Cards.BRAINSTORM.value, "mountain", Cards.MOUNTAIN.value),
+            ("brainstorm", Cards.BRAINSTORM.value, "t:goblin", Cards.GOBLIN.value),
+            ("t:goblin", Cards.GOBLIN.value, "brainstorm", Cards.BRAINSTORM.value),
         ],
     )
     def test_search_in_place(self, chrome_driver, from_query, from_card, to_query, to_card):
@@ -485,7 +480,7 @@ class TestFrontend:
             card=from_card,
             selected_image=1,
             total_images=1,
-            source=TestSources.EXAMPLE_DRIVE_1.value,
+            source=Sources.EXAMPLE_DRIVE_1.value,
         )
 
         # search in-place
@@ -499,7 +494,7 @@ class TestFrontend:
             card=to_card,
             selected_image=1,
             total_images=1,
-            source=TestSources.EXAMPLE_DRIVE_1.value,
+            source=Sources.EXAMPLE_DRIVE_1.value,
         )
 
     def test_dfc_search(self, chrome_driver):
@@ -513,20 +508,20 @@ class TestFrontend:
             driver=chrome_driver,
             slot=0,
             active_face="front",
-            card=TestCards.HUNTMASTER_OF_THE_FELLS.value,
+            card=Cards.HUNTMASTER_OF_THE_FELLS.value,
             selected_image=1,
             total_images=1,
-            source=TestSources.EXAMPLE_DRIVE_1.value,
+            source=Sources.EXAMPLE_DRIVE_1.value,
         )
         self.toggle_faces(chrome_driver)
         self.assert_card_state(
             driver=chrome_driver,
             slot=0,
             active_face="back",
-            card=TestCards.RAVAGER_OF_THE_FELLS.value,
+            card=Cards.RAVAGER_OF_THE_FELLS.value,
             selected_image=1,
             total_images=1,
-            source=TestSources.EXAMPLE_DRIVE_1.value,
+            source=Sources.EXAMPLE_DRIVE_1.value,
         )
 
     # TODO: replicate this test in the new frontend
@@ -537,20 +532,20 @@ class TestFrontend:
             chrome_driver,
             slot=0,
             active_face="front",
-            card=TestCards.ISLAND.value,
+            card=Cards.ISLAND.value,
             selected_image=1,
             total_images=2,
-            source=TestSources.EXAMPLE_DRIVE_1.value,
+            source=Sources.EXAMPLE_DRIVE_1.value,
         )
         chrome_driver.find_element(By.ID, value="slot0-front-next").click()
         self.assert_card_state(
             chrome_driver,
             slot=0,
             active_face="front",
-            card=TestCards.ISLAND_CLASSICAL.value,
+            card=Cards.ISLAND_CLASSICAL.value,
             selected_image=2,
             total_images=2,
-            source=TestSources.EXAMPLE_DRIVE_1.value,
+            source=Sources.EXAMPLE_DRIVE_1.value,
         )
 
     # TODO: replicate this test in the new frontend
@@ -561,10 +556,10 @@ class TestFrontend:
             driver=chrome_driver,
             slot=0,
             active_face="front",
-            card=TestCards.PAST_IN_FLAMES_1.value,
+            card=Cards.PAST_IN_FLAMES_1.value,
             selected_image=1,
             total_images=2,
-            source=TestSources.EXAMPLE_DRIVE_1.value,
+            source=Sources.EXAMPLE_DRIVE_1.value,
         )
 
     # TODO: replicate this test in the new frontend
@@ -573,7 +568,7 @@ class TestFrontend:
         time.sleep(1)
         action = ActionChains(chrome_driver)
         action.drag_and_drop_by_offset(
-            source=chrome_driver.find_element(By.ID, value=f"{TestSources.EXAMPLE_DRIVE_2.value.key}-row"),
+            source=chrome_driver.find_element(By.ID, value=f"{Sources.EXAMPLE_DRIVE_2.value.key}-row"),
             xoffset=30,
             yoffset=-70,
         ).perform()
@@ -586,17 +581,17 @@ class TestFrontend:
             driver=chrome_driver,
             slot=0,
             active_face="front",
-            card=TestCards.PAST_IN_FLAMES_2.value,
+            card=Cards.PAST_IN_FLAMES_2.value,
             selected_image=1,
             total_images=2,
-            source=TestSources.EXAMPLE_DRIVE_2.value,
+            source=Sources.EXAMPLE_DRIVE_2.value,
         )
 
     # TODO: replicate this test in the new frontend
     def test_disabling_a_drive_saved_by_cookie(self, chrome_driver):
         chrome_driver.find_element(By.ID, value="btn_settings").click()
         time.sleep(1)
-        chrome_driver.find_element(By.ID, value=TestSources.EXAMPLE_DRIVE_2.value.key).find_element(
+        chrome_driver.find_element(By.ID, value=Sources.EXAMPLE_DRIVE_2.value.key).find_element(
             By.XPATH, value="./.."
         ).click()
         chrome_driver.find_element(By.ID, value="selectDrivesModal-submit").click()
@@ -606,8 +601,8 @@ class TestFrontend:
         self.assert_search_settings(
             chrome_driver,
             [
-                TestSourceRow(key=TestSources.EXAMPLE_DRIVE_1.value.key, enabled=True),
-                TestSourceRow(key=TestSources.EXAMPLE_DRIVE_2.value.key, enabled=False),
+                TestSourceRow(key=Sources.EXAMPLE_DRIVE_1.value.key, enabled=True),
+                TestSourceRow(key=Sources.EXAMPLE_DRIVE_2.value.key, enabled=False),
             ],
         )
 
@@ -617,7 +612,7 @@ class TestFrontend:
         time.sleep(1)
         action = ActionChains(chrome_driver)
         action.drag_and_drop_by_offset(
-            source=chrome_driver.find_element(By.ID, value=f"{TestSources.EXAMPLE_DRIVE_2.value.key}-row"),
+            source=chrome_driver.find_element(By.ID, value=f"{Sources.EXAMPLE_DRIVE_2.value.key}-row"),
             xoffset=30,
             yoffset=-70,
         ).perform()
@@ -628,8 +623,8 @@ class TestFrontend:
         self.assert_search_settings(
             chrome_driver,
             [
-                TestSourceRow(key=TestSources.EXAMPLE_DRIVE_2.value.key, enabled=True),
-                TestSourceRow(key=TestSources.EXAMPLE_DRIVE_1.value.key, enabled=True),
+                TestSourceRow(key=Sources.EXAMPLE_DRIVE_2.value.key, enabled=True),
+                TestSourceRow(key=Sources.EXAMPLE_DRIVE_1.value.key, enabled=True),
             ],
         )
 
@@ -642,19 +637,19 @@ class TestFrontend:
             driver=chrome_driver,
             slot=0,
             active_face="back",
-            card=TestCards.SIMPLE_CUBE.value,
+            card=Cards.SIMPLE_CUBE.value,
             selected_image=None,
             total_images=None,
-            source=TestSources.EXAMPLE_DRIVE_1.value,
+            source=Sources.EXAMPLE_DRIVE_1.value,
         )
         self.assert_card_state(
             driver=chrome_driver,
             slot="-",
             active_face="back",
-            card=TestCards.SIMPLE_CUBE.value,
+            card=Cards.SIMPLE_CUBE.value,
             selected_image=1,
             total_images=2,
-            source=TestSources.EXAMPLE_DRIVE_1.value,
+            source=Sources.EXAMPLE_DRIVE_1.value,
             has_reverse_face=False,
         )
 
@@ -663,19 +658,19 @@ class TestFrontend:
             driver=chrome_driver,
             slot=0,
             active_face="back",
-            card=TestCards.SIMPLE_LOTUS.value,
+            card=Cards.SIMPLE_LOTUS.value,
             selected_image=None,
             total_images=None,
-            source=TestSources.EXAMPLE_DRIVE_1.value,
+            source=Sources.EXAMPLE_DRIVE_1.value,
         )
         self.assert_card_state(
             driver=chrome_driver,
             slot="-",
             active_face="back",
-            card=TestCards.SIMPLE_LOTUS.value,
+            card=Cards.SIMPLE_LOTUS.value,
             selected_image=2,
             total_images=2,
-            source=TestSources.EXAMPLE_DRIVE_1.value,
+            source=Sources.EXAMPLE_DRIVE_1.value,
             has_reverse_face=False,
         )
 
@@ -685,10 +680,10 @@ class TestFrontend:
             driver=chrome_driver,
             slot=0,
             active_face="back",
-            card=TestCards.SIMPLE_LOTUS.value,
+            card=Cards.SIMPLE_LOTUS.value,
             selected_image=None,
             total_images=None,
-            source=TestSources.EXAMPLE_DRIVE_1.value,
+            source=Sources.EXAMPLE_DRIVE_1.value,
         )
 
     def test_detailed_view_modal(self, chrome_driver):
@@ -701,17 +696,17 @@ class TestFrontend:
         # assert modal contents
         assert (
             chrome_driver.find_element(By.ID, value="detailedView-img").get_attribute("src")
-            == f"https://drive.google.com/thumbnail?sz=w800-h800&id={TestCards.BRAINSTORM.value.identifier}"
+            == f"https://drive.google.com/thumbnail?sz=w800-h800&id={Cards.BRAINSTORM.value.identifier}"
         )
         source_element = chrome_driver.find_element(By.ID, value="detailedView-source")
-        assert source_element.text == TestSources.EXAMPLE_DRIVE_1.value.name
+        assert source_element.text == Sources.EXAMPLE_DRIVE_1.value.name
         assert (
             source_element.find_element(By.XPATH, value=".//a").get_attribute("href")
-            == f"https://drive.google.com/open?id={TestSources.EXAMPLE_DRIVE_1.value.identifier}"
+            == f"https://drive.google.com/open?id={Sources.EXAMPLE_DRIVE_1.value.identifier}"
         )
         assert chrome_driver.find_element(By.ID, value="detailedView-sourceType").text == "Google Drive"
         assert chrome_driver.find_element(By.ID, value="detailedView-class").text == "Card"
-        assert chrome_driver.find_element(By.ID, value="detailedView-id").text == TestCards.BRAINSTORM.value.identifier
+        assert chrome_driver.find_element(By.ID, value="detailedView-id").text == Cards.BRAINSTORM.value.identifier
 
     def test_delete_card_from_order(self, chrome_driver):
         self.load_review_page_with_search_string(chrome_driver, "2 brainstorm\n1 island")
@@ -723,19 +718,19 @@ class TestFrontend:
                 driver=chrome_driver,
                 slot=i,
                 active_face="front",
-                card=TestCards.BRAINSTORM.value,
+                card=Cards.BRAINSTORM.value,
                 selected_image=1,
                 total_images=1,
-                source=TestSources.EXAMPLE_DRIVE_1.value,
+                source=Sources.EXAMPLE_DRIVE_1.value,
             )
         self.assert_card_state(
             driver=chrome_driver,
             slot=2,
             active_face="front",
-            card=TestCards.ISLAND.value,
+            card=Cards.ISLAND.value,
             selected_image=1,
             total_images=2,
-            source=TestSources.EXAMPLE_DRIVE_1.value,
+            source=Sources.EXAMPLE_DRIVE_1.value,
         )
 
         chrome_driver.find_element(By.ID, value="slot1-front-remove").click()
@@ -748,19 +743,19 @@ class TestFrontend:
             driver=chrome_driver,
             slot=0,
             active_face="front",
-            card=TestCards.BRAINSTORM.value,
+            card=Cards.BRAINSTORM.value,
             selected_image=1,
             total_images=1,
-            source=TestSources.EXAMPLE_DRIVE_1.value,
+            source=Sources.EXAMPLE_DRIVE_1.value,
         )
         self.assert_card_state(
             driver=chrome_driver,
             slot=1,
             active_face="front",
-            card=TestCards.ISLAND.value,
+            card=Cards.ISLAND.value,
             selected_image=1,
             total_images=2,
-            source=TestSources.EXAMPLE_DRIVE_1.value,
+            source=Sources.EXAMPLE_DRIVE_1.value,
         )
 
     def test_delete_multiple_cards_from_order(self, chrome_driver):
@@ -773,20 +768,20 @@ class TestFrontend:
                 driver=chrome_driver,
                 slot=i,
                 active_face="front",
-                card=TestCards.BRAINSTORM.value,
+                card=Cards.BRAINSTORM.value,
                 selected_image=1,
                 total_images=1,
-                source=TestSources.EXAMPLE_DRIVE_1.value,
+                source=Sources.EXAMPLE_DRIVE_1.value,
             )
         for i in range(2, 4):
             self.assert_card_state(
                 driver=chrome_driver,
                 slot=2,
                 active_face="front",
-                card=TestCards.PAST_IN_FLAMES_1.value,
+                card=Cards.PAST_IN_FLAMES_1.value,
                 selected_image=1,
                 total_images=2,
-                source=TestSources.EXAMPLE_DRIVE_1.value,
+                source=Sources.EXAMPLE_DRIVE_1.value,
             )
 
         chrome_driver.find_element(By.ID, value="slot1-front-remove").click()
@@ -800,19 +795,19 @@ class TestFrontend:
             driver=chrome_driver,
             slot=0,
             active_face="front",
-            card=TestCards.BRAINSTORM.value,
+            card=Cards.BRAINSTORM.value,
             selected_image=1,
             total_images=1,
-            source=TestSources.EXAMPLE_DRIVE_1.value,
+            source=Sources.EXAMPLE_DRIVE_1.value,
         )
         self.assert_card_state(
             driver=chrome_driver,
             slot=1,
             active_face="front",
-            card=TestCards.PAST_IN_FLAMES_1.value,
+            card=Cards.PAST_IN_FLAMES_1.value,
             selected_image=1,
             total_images=2,
-            source=TestSources.EXAMPLE_DRIVE_1.value,
+            source=Sources.EXAMPLE_DRIVE_1.value,
         )
 
     # TODO: replicate this test in the new frontend
@@ -838,16 +833,16 @@ class TestFrontend:
 
         # assert the expected images have been downloaded
         for expected_file in [
-            f"{TestCards.BRAINSTORM.value.name}.png",
-            f"{TestCards.ISLAND.value.name}.png",
-            f"{TestCards.HUNTMASTER_OF_THE_FELLS.value.name}.png",
-            f"{TestCards.RAVAGER_OF_THE_FELLS.value.name}.png",
-            f"{TestCards.SIMPLE_CUBE.value.name}.png",
+            f"{Cards.BRAINSTORM.value.name}.png",
+            f"{Cards.ISLAND.value.name}.png",
+            f"{Cards.HUNTMASTER_OF_THE_FELLS.value.name}.png",
+            f"{Cards.RAVAGER_OF_THE_FELLS.value.name}.png",
+            f"{Cards.SIMPLE_CUBE.value.name}.png",
         ]:
             os.path.exists(download_folder / expected_file)
 
     # TODO: replicate this test in the new frontend
-    @pytest.mark.parametrize("url", [x.value for x in TestDecks])
+    @pytest.mark.parametrize("url", [x.value for x in Decks])
     def test_import_from_url(self, chrome_driver, url):
         call_command("update_dfcs")
         chrome_driver.find_element(By.ID, value="uploadCardsBtn").click()
@@ -860,15 +855,15 @@ class TestFrontend:
         # each site might return the cards in the deck in a different order
         brainstorm_slots = [
             self.get_slot_from_id(id_)
-            for id_ in self.get_ids_of_all_cards_with_name(chrome_driver, TestCards.BRAINSTORM.value.name)
+            for id_ in self.get_ids_of_all_cards_with_name(chrome_driver, Cards.BRAINSTORM.value.name)
         ]
         past_in_flames_slots = [
             self.get_slot_from_id(id_)
-            for id_ in self.get_ids_of_all_cards_with_name(chrome_driver, TestCards.PAST_IN_FLAMES_1.value.name)
+            for id_ in self.get_ids_of_all_cards_with_name(chrome_driver, Cards.PAST_IN_FLAMES_1.value.name)
         ]
         delver_of_secrets_slots = [
             self.get_slot_from_id(id_)
-            for id_ in self.get_ids_of_all_cards_with_name(chrome_driver, TestCards.DELVER_OF_SECRETS.value.name)
+            for id_ in self.get_ids_of_all_cards_with_name(chrome_driver, Cards.DELVER_OF_SECRETS.value.name)
         ]
 
         self.assert_order_qty(chrome_driver, 8)
@@ -882,29 +877,29 @@ class TestFrontend:
                 driver=chrome_driver,
                 slot=slot,
                 active_face="front",
-                card=TestCards.BRAINSTORM.value,
+                card=Cards.BRAINSTORM.value,
                 selected_image=1,
                 total_images=1,
-                source=TestSources.EXAMPLE_DRIVE_1.value,
+                source=Sources.EXAMPLE_DRIVE_1.value,
             )
         for slot in past_in_flames_slots:
             self.assert_card_state(
                 driver=chrome_driver,
                 slot=slot,
                 active_face="front",
-                card=TestCards.PAST_IN_FLAMES_1.value,
+                card=Cards.PAST_IN_FLAMES_1.value,
                 selected_image=1,
                 total_images=2,
-                source=TestSources.EXAMPLE_DRIVE_1.value,
+                source=Sources.EXAMPLE_DRIVE_1.value,
             )
         self.assert_card_state(
             driver=chrome_driver,
             slot=delver_of_secrets_slots[0],
             active_face="front",
-            card=TestCards.DELVER_OF_SECRETS.value,
+            card=Cards.DELVER_OF_SECRETS.value,
             selected_image=1,
             total_images=1,
-            source=TestSources.EXAMPLE_DRIVE_1.value,
+            source=Sources.EXAMPLE_DRIVE_1.value,
         )
         self.toggle_faces(chrome_driver)
         for slot in brainstorm_slots + past_in_flames_slots:
@@ -912,19 +907,19 @@ class TestFrontend:
                 driver=chrome_driver,
                 slot=slot,
                 active_face="back",
-                card=TestCards.SIMPLE_CUBE.value,
+                card=Cards.SIMPLE_CUBE.value,
                 selected_image=None,
                 total_images=None,
-                source=TestSources.EXAMPLE_DRIVE_1.value,
+                source=Sources.EXAMPLE_DRIVE_1.value,
             )
         self.assert_card_state(
             driver=chrome_driver,
             slot=delver_of_secrets_slots[0],
             active_face="back",
-            card=TestCards.INSECTILE_ABERRATION.value,
+            card=Cards.INSECTILE_ABERRATION.value,
             selected_image=1,
             total_images=1,
-            source=TestSources.EXAMPLE_DRIVE_1.value,
+            source=Sources.EXAMPLE_DRIVE_1.value,
         )
 
     # TODO: replicate this test in the new frontend
@@ -957,10 +952,10 @@ class TestFrontend:
             driver=chrome_driver,
             slot=0,
             active_face="front",
-            card=TestCards.BRAINSTORM.value,
+            card=Cards.BRAINSTORM.value,
             selected_image=1,
             total_images=1,
-            source=TestSources.EXAMPLE_DRIVE_1.value,
+            source=Sources.EXAMPLE_DRIVE_1.value,
         )
 
         chrome_driver.find_element(By.ID, value="addCardsBtn").click()
@@ -977,10 +972,10 @@ class TestFrontend:
                 driver=chrome_driver,
                 slot=i,
                 active_face="front",
-                card=TestCards.HUNTMASTER_OF_THE_FELLS.value,
+                card=Cards.HUNTMASTER_OF_THE_FELLS.value,
                 selected_image=1,
                 total_images=1,
-                source=TestSources.EXAMPLE_DRIVE_1.value,
+                source=Sources.EXAMPLE_DRIVE_1.value,
             )
         self.toggle_faces(chrome_driver)
         for i in range(1, 3):
@@ -988,10 +983,10 @@ class TestFrontend:
                 driver=chrome_driver,
                 slot=i,
                 active_face="back",
-                card=TestCards.RAVAGER_OF_THE_FELLS.value,
+                card=Cards.RAVAGER_OF_THE_FELLS.value,
                 selected_image=1,
                 total_images=1,
-                source=TestSources.EXAMPLE_DRIVE_1.value,
+                source=Sources.EXAMPLE_DRIVE_1.value,
             )
 
     def test_add_cards_to_order_by_xml(self, chrome_driver, valid_xml):
@@ -1003,10 +998,10 @@ class TestFrontend:
             driver=chrome_driver,
             slot=0,
             active_face="front",
-            card=TestCards.PAST_IN_FLAMES_1.value,
+            card=Cards.PAST_IN_FLAMES_1.value,
             selected_image=1,
             total_images=2,
-            source=TestSources.EXAMPLE_DRIVE_1.value,
+            source=Sources.EXAMPLE_DRIVE_1.value,
         )
 
         chrome_driver.find_element(By.ID, value="addCardsBtn").click()
@@ -1020,20 +1015,20 @@ class TestFrontend:
                 driver=chrome_driver,
                 slot=i,
                 active_face="front",
-                card=TestCards.BRAINSTORM.value,
+                card=Cards.BRAINSTORM.value,
                 selected_image=1,
                 total_images=1,
-                source=TestSources.EXAMPLE_DRIVE_1.value,
+                source=Sources.EXAMPLE_DRIVE_1.value,
             )
         for i in range(5, 8):
             self.assert_card_state(
                 driver=chrome_driver,
                 slot=i,
                 active_face="front",
-                card=TestCards.ISLAND.value,
+                card=Cards.ISLAND.value,
                 selected_image=1,
                 total_images=2,
-                source=TestSources.EXAMPLE_DRIVE_1.value,
+                source=Sources.EXAMPLE_DRIVE_1.value,
             )
 
     # TODO: replicate this test in the new frontend
