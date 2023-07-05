@@ -147,10 +147,11 @@ def summarise_contributions() -> tuple[list[dict[str, Any]], dict[str, int], int
         results_2 = cursor.fetchall()
 
     source_card_count_by_type: dict[str, dict[str, int]] = defaultdict(dict)
-    card_count_by_type: dict[str, int] = defaultdict(int)
+    card_count_by_type: dict[str, int] = {card_type: 0 for card_type in CardTypes}
     for (identifier, card_type, count) in results_2:
-        source_card_count_by_type[identifier][card_type] = count
-        card_count_by_type[card_type] += count
+        if card_type is not None:
+            source_card_count_by_type[identifier][card_type] = count
+            card_count_by_type[card_type] += count
     sources = []
     total_database_size = 0
     for (

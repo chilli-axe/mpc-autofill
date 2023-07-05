@@ -46,6 +46,8 @@
   dict({
     'card_count_by_type': dict({
       'CARD': 2,
+      'CARDBACK': 0,
+      'TOKEN': 0,
     }),
     'sources': list([
       dict({
@@ -67,7 +69,9 @@
 # name: TestGetContributions.test_get_contributions_get_source_with_no_cards
   dict({
     'card_count_by_type': dict({
-      'null': 0,
+      'CARD': 0,
+      'CARDBACK': 0,
+      'TOKEN': 0,
     }),
     'sources': list([
       dict({
@@ -101,6 +105,9 @@
 # name: TestGetContributions.test_get_contributions_get_source_with_no_sources
   dict({
     'card_count_by_type': dict({
+      'CARD': 0,
+      'CARDBACK': 0,
+      'TOKEN': 0,
     }),
     'sources': list([
     ]),

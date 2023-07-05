@@ -92,7 +92,6 @@ class TestGetContributions:
         assert response.json() == snapshot
 
     def test_get_contributions_get_source_with_no_cards(self, client, snapshot, all_sources):
-        # TODO: I don't think the code is handling this case properly. check out the {null: 0} in the snapshot. fix it!
         response = client.get(reverse(views.get_contributions))
         assert response.json() == snapshot
 
