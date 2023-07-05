@@ -1,4 +1,4 @@
-# name: TestGetCardbacks.test_get_cardbacks_get_multiple_rows
+# name: TestGetCardbacks.test_get_multiple_rows
   dict({
     'cardbacks': list([
       '1JtXL6Ca9nQkvhwZZRR9ZuKA9_DzsFf1V',
@@ -6,7 +6,7 @@
     ]),
   })
 # ---
-# name: TestGetContributions.test_get_contributions_get_multiple_rows
+# name: TestGetContributions.test_get_multiple_rows
   dict({
     'card_count_by_type': dict({
       'CARD': 10,
@@ -42,7 +42,7 @@
     'total_database_size': 1300,
   })
 # ---
-# name: TestGetContributions.test_get_contributions_get_one_row
+# name: TestGetContributions.test_get_one_row
   dict({
     'card_count_by_type': dict({
       'CARD': 2,
@@ -66,7 +66,7 @@
     'total_database_size': 200,
   })
 # ---
-# name: TestGetContributions.test_get_contributions_get_source_with_no_cards
+# name: TestGetContributions.test_get_source_with_no_cards
   dict({
     'card_count_by_type': dict({
       'CARD': 0,
@@ -102,7 +102,7 @@
     'total_database_size': 0,
   })
 # ---
-# name: TestGetContributions.test_get_contributions_get_source_with_no_sources
+# name: TestGetContributions.test_with_no_sources
   dict({
     'card_count_by_type': dict({
       'CARD': 0,
@@ -114,7 +114,7 @@
     'total_database_size': 0,
   })
 # ---
-# name: TestGetDFCPairs.test_get_dfc_pairs_get_multiple_rows
+# name: TestGetDFCPairs.test_get_multiple_rows
   dict({
     'dfc_pairs': dict({
       'Delver of Secrets': 'Insectile Aberration',
@@ -122,7 +122,7 @@
     }),
   })
 # ---
-# name: TestGetImportSites.test_get_import_sites
+# name: TestGetImportSites.test_get_multiple_sites
   dict({
     'import_sites': list([
       dict({
@@ -172,7 +172,7 @@
     ]),
   })
 # ---
-# name: TestGetSources.test_get_sources_get_multiple_sources
+# name: TestGetSources.test_get_multiple_sources
   dict({
     'results': dict({
       '0': dict({
@@ -196,7 +196,7 @@
     }),
   })
 # ---
-# name: TestPostCards.test_post_cards_get_multiple_cards
+# name: TestPostCards.test_get_multiple_cards
   dict({
     'results': dict({
       '17fopRCNRge72U8Hac8pApHZtEalx5kHy': dict({
@@ -240,7 +240,7 @@
     }),
   })
 # ---
-# name: TestPostCards.test_post_cards_get_single_card
+# name: TestPostCards.test_get_single_card
   dict({
     'results': dict({
       '1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA': dict({
