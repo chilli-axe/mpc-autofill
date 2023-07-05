@@ -62,8 +62,8 @@ def all_sources(example_drive_1, example_drive_2):
 def brainstorm(example_drive_1) -> Card:
     return CardFactory(
         card_type=CardTypes.CARD,
-        identifier="1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5",
-        name="Brainstorm",
+        identifier=Cards.BRAINSTORM.value.identifier,
+        name=Cards.BRAINSTORM.value.name,
         source=example_drive_1,
         priority=2,
     )
@@ -73,8 +73,8 @@ def brainstorm(example_drive_1) -> Card:
 def island(example_drive_1) -> Card:
     return CardFactory(
         card_type=CardTypes.CARD,
-        identifier="1IDtqSjJ4Yo45AnNA4SplOiN7ewibifMa",
-        name="Island",
+        identifier=Cards.ISLAND.value.identifier,
+        name=Cards.ISLAND.value.name,
         source=example_drive_1,
         priority=7,
     )
@@ -84,8 +84,8 @@ def island(example_drive_1) -> Card:
 def island_classical(example_drive_1) -> Card:
     return CardFactory(
         card_type=CardTypes.CARD,
-        identifier="1HsvTYs1jFGe1c8U1PnNZ9aB8jkAW7KU0",
-        name="Island (William Bradford)",
+        identifier=Cards.ISLAND_CLASSICAL.value.identifier,
+        name=Cards.ISLAND_CLASSICAL.value.name,
         source=example_drive_1,
         priority=6,
     )
@@ -95,8 +95,8 @@ def island_classical(example_drive_1) -> Card:
 def mountain(example_drive_1) -> Card:
     return CardFactory(
         card_type=CardTypes.CARD,
-        identifier="1-dcs0FEE05MTGiYbKqs9HnRdhXkgtIJG",
-        name="Mountain",
+        identifier=Cards.MOUNTAIN.value.identifier,
+        name=Cards.MOUNTAIN.value.name,
         source=example_drive_1,
         priority=7,
     )
@@ -106,8 +106,8 @@ def mountain(example_drive_1) -> Card:
 def simple_cube(example_drive_1) -> Card:
     return CardFactory(
         card_type=CardTypes.CARDBACK,
-        identifier="1JtXL6Ca9nQkvhwZZRR9ZuKA9_DzsFf1V",
-        name="Simple Cube",
+        identifier=Cards.SIMPLE_CUBE.value.identifier,
+        name=Cards.SIMPLE_CUBE.value.name,
         source=example_drive_1,
         priority=17,
     )
@@ -117,8 +117,8 @@ def simple_cube(example_drive_1) -> Card:
 def simple_lotus(example_drive_1) -> Card:
     return CardFactory(
         card_type=CardTypes.CARDBACK,
-        identifier="1oigI6wz0zA--pNMuExKTs40kBNH6VRP_",
-        name="Simple Lotus",
+        identifier=Cards.SIMPLE_LOTUS.value.identifier,
+        name=Cards.SIMPLE_LOTUS.value.name,
         source=example_drive_1,
         priority=7,
     )
@@ -128,8 +128,8 @@ def simple_lotus(example_drive_1) -> Card:
 def huntmaster_of_the_fells(example_drive_1) -> Card:
     return CardFactory(
         card_type=CardTypes.CARD,
-        identifier="1991MWCur9NdAFi-tQQD5YbQj2oqV_WRy",
-        name="Huntmaster of the Fells",
+        identifier=Cards.HUNTMASTER_OF_THE_FELLS.value.identifier,
+        name=Cards.HUNTMASTER_OF_THE_FELLS.value.name,
         source=example_drive_1,
         priority=2,
     )
@@ -139,8 +139,8 @@ def huntmaster_of_the_fells(example_drive_1) -> Card:
 def ravager_of_the_fells(example_drive_1) -> Card:
     return CardFactory(
         card_type=CardTypes.CARD,
-        identifier="1lv8WC1Xf1qxA7VHSc8jOtT5up6FwaBPH",
-        name="Ravager of the Fells",
+        identifier=Cards.RAVAGER_OF_THE_FELLS.value.identifier,
+        name=Cards.RAVAGER_OF_THE_FELLS.value.name,
         source=example_drive_1,
         priority=2,
     )
@@ -150,8 +150,8 @@ def ravager_of_the_fells(example_drive_1) -> Card:
 def past_in_flames_1(example_drive_1) -> Card:
     return CardFactory(
         card_type=CardTypes.CARD,
-        identifier="1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1",
-        name="Past in Flames",
+        identifier=Cards.PAST_IN_FLAMES_1.value.identifier,
+        name=Cards.PAST_IN_FLAMES_1.value.name,
         source=example_drive_1,
         priority=2,
     )
@@ -161,8 +161,8 @@ def past_in_flames_1(example_drive_1) -> Card:
 def past_in_flames_2(example_drive_2) -> Card:
     return CardFactory(
         card_type=CardTypes.CARD,
-        identifier="1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU",
-        name="Past in Flames",
+        identifier=Cards.PAST_IN_FLAMES_2.value.identifier,
+        name=Cards.PAST_IN_FLAMES_2.value.name,
         source=example_drive_2,
         priority=2,
     )
@@ -172,8 +172,8 @@ def past_in_flames_2(example_drive_2) -> Card:
 def delver_of_secrets(example_drive_1) -> Card:
     return CardFactory(
         card_type=CardTypes.CARD,
-        identifier="17fopRCNRge72U8Hac8pApHZtEalx5kHy",
-        name="Delver of Secrets",
+        identifier=Cards.DELVER_OF_SECRETS.value.identifier,
+        name=Cards.DELVER_OF_SECRETS.value.name,
         source=example_drive_1,
         priority=2,
     )
@@ -183,8 +183,8 @@ def delver_of_secrets(example_drive_1) -> Card:
 def insectile_aberration(example_drive_1) -> Card:
     return CardFactory(
         card_type=CardTypes.CARD,
-        identifier="1mO73GTYlieP0kiZEkF58pJSrZTmC9lNh",
-        name="Insectile Aberration",
+        identifier=Cards.INSECTILE_ABERRATION.value.identifier,
+        name=Cards.INSECTILE_ABERRATION.value.name,
         source=example_drive_1,
         priority=2,
     )
@@ -194,8 +194,8 @@ def insectile_aberration(example_drive_1) -> Card:
 def goblin(example_drive_1) -> Card:
     return CardFactory(
         card_type=CardTypes.TOKEN,
-        identifier="1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA",
-        name="Goblin",
+        identifier=Cards.GOBLIN.value.identifier,
+        name=Cards.GOBLIN.value.name,
         source=example_drive_1,
         priority=2,
     )

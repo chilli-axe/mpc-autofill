@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from enum import Enum
-from types import DynamicClassAttribute
 
 from cardpicker.sources.source_types import SourceTypeChoices
 
@@ -26,17 +25,13 @@ class Cards(Enum):
     MOUNTAIN = Card(identifier="1-dcs0FEE05MTGiYbKqs9HnRdhXkgtIJG", name="Mountain")
     SIMPLE_CUBE = Card(identifier="1JtXL6Ca9nQkvhwZZRR9ZuKA9_DzsFf1V", name="Simple Cube")  # default back
     SIMPLE_LOTUS = Card(identifier="1oigI6wz0zA--pNMuExKTs40kBNH6VRP_", name="Simple Lotus")
-    HUNTMASTER_OF_THE_FELLS = Card(identifier="", name="Huntmaster of the Fells")
-    RAVAGER_OF_THE_FELLS = Card(identifier="", name="Ravager of the Fells")
+    HUNTMASTER_OF_THE_FELLS = Card(identifier="1991MWCur9NdAFi-tQQD5YbQj2oqV_WRy", name="Huntmaster of the Fells")
+    RAVAGER_OF_THE_FELLS = Card(identifier="1lv8WC1Xf1qxA7VHSc8jOtT5up6FwaBPH", name="Ravager of the Fells")
     PAST_IN_FLAMES_1 = Card(identifier="1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1", name="Past in Flames")
     PAST_IN_FLAMES_2 = Card(identifier="1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU", name="Past in Flames")
     DELVER_OF_SECRETS = Card(identifier="17fopRCNRge72U8Hac8pApHZtEalx5kHy", name="Delver of Secrets")
     INSECTILE_ABERRATION = Card(identifier="1mO73GTYlieP0kiZEkF58pJSrZTmC9lNh", name="Insectile Aberration")
     GOBLIN = Card(identifier="1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA", name="Goblin")  # token
-
-    @DynamicClassAttribute
-    def value(self) -> Card:
-        return self._value_
 
 
 class Sources(Enum):
@@ -52,10 +47,6 @@ class Sources(Enum):
         identifier="18wZl7T9DU_lf2X5xYFiyH6pATVy8ZlOd",
         source_type=SourceTypeChoices.GOOGLE_DRIVE,
     )
-
-    @DynamicClassAttribute
-    def value(self) -> Source:
-        return self._value_
 
 
 class Decks(str, Enum):
