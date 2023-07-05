@@ -1,267 +1,334 @@
 # name: TestGetCardbacks.test_get_multiple_rows
   dict({
-    'cardbacks': list([
-      '1JtXL6Ca9nQkvhwZZRR9ZuKA9_DzsFf1V',
-      '1oigI6wz0zA--pNMuExKTs40kBNH6VRP_',
-    ]),
+    'json': dict({
+      'cardbacks': list([
+        '1JtXL6Ca9nQkvhwZZRR9ZuKA9_DzsFf1V',
+        '1oigI6wz0zA--pNMuExKTs40kBNH6VRP_',
+      ]),
+    }),
+    'status_code': 200,
   })
 # ---
 # name: TestGetContributions.test_get_multiple_rows
   dict({
-    'card_count_by_type': dict({
-      'CARD': 10,
-      'CARDBACK': 2,
-      'TOKEN': 1,
+    'json': dict({
+      'card_count_by_type': dict({
+        'CARD': 10,
+        'CARDBACK': 2,
+        'TOKEN': 1,
+      }),
+      'sources': list([
+        dict({
+          'avgdpi': '800.00',
+          'description': 'Description for example_drive_1',
+          'external_link': 'https://drive.google.com/open?id=1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
+          'identifier': '1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
+          'name': 'Example Drive 1',
+          'qty_cardbacks': '2',
+          'qty_cards': '9',
+          'qty_tokens': '1',
+          'size': '0.00 GB',
+          'source_type': 'Google Drive',
+        }),
+        dict({
+          'avgdpi': '800.00',
+          'description': 'Description for example_drive_2',
+          'external_link': None,
+          'identifier': '18wZl7T9DU_lf2X5xYFiyH6pATVy8ZlOd',
+          'name': 'Example Drive 2',
+          'qty_cardbacks': '0',
+          'qty_cards': '1',
+          'qty_tokens': '0',
+          'size': '0.00 GB',
+          'source_type': 'Google Drive',
+        }),
+      ]),
+      'total_database_size': 1300,
     }),
-    'sources': list([
-      dict({
-        'avgdpi': '800.00',
-        'description': 'Description for example_drive_1',
-        'external_link': 'https://drive.google.com/open?id=1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
-        'identifier': '1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
-        'name': 'Example Drive 1',
-        'qty_cardbacks': '2',
-        'qty_cards': '9',
-        'qty_tokens': '1',
-        'size': '0.00 GB',
-        'source_type': 'Google Drive',
-      }),
-      dict({
-        'avgdpi': '800.00',
-        'description': 'Description for example_drive_2',
-        'external_link': None,
-        'identifier': '18wZl7T9DU_lf2X5xYFiyH6pATVy8ZlOd',
-        'name': 'Example Drive 2',
-        'qty_cardbacks': '0',
-        'qty_cards': '1',
-        'qty_tokens': '0',
-        'size': '0.00 GB',
-        'source_type': 'Google Drive',
-      }),
-    ]),
-    'total_database_size': 1300,
+    'status_code': 200,
   })
 # ---
 # name: TestGetContributions.test_get_one_row
   dict({
-    'card_count_by_type': dict({
-      'CARD': 2,
-      'CARDBACK': 0,
-      'TOKEN': 0,
-    }),
-    'sources': list([
-      dict({
-        'avgdpi': '800.00',
-        'description': 'Description for example_drive_1',
-        'external_link': 'https://drive.google.com/open?id=1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
-        'identifier': '1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
-        'name': 'Example Drive 1',
-        'qty_cardbacks': '0',
-        'qty_cards': '2',
-        'qty_tokens': '0',
-        'size': '0.00 GB',
-        'source_type': 'Google Drive',
+    'json': dict({
+      'card_count_by_type': dict({
+        'CARD': 2,
+        'CARDBACK': 0,
+        'TOKEN': 0,
       }),
-    ]),
-    'total_database_size': 200,
+      'sources': list([
+        dict({
+          'avgdpi': '800.00',
+          'description': 'Description for example_drive_1',
+          'external_link': 'https://drive.google.com/open?id=1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
+          'identifier': '1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
+          'name': 'Example Drive 1',
+          'qty_cardbacks': '0',
+          'qty_cards': '2',
+          'qty_tokens': '0',
+          'size': '0.00 GB',
+          'source_type': 'Google Drive',
+        }),
+      ]),
+      'total_database_size': 200,
+    }),
+    'status_code': 200,
   })
 # ---
 # name: TestGetContributions.test_get_source_with_no_cards
   dict({
-    'card_count_by_type': dict({
-      'CARD': 0,
-      'CARDBACK': 0,
-      'TOKEN': 0,
+    'json': dict({
+      'card_count_by_type': dict({
+        'CARD': 0,
+        'CARDBACK': 0,
+        'TOKEN': 0,
+      }),
+      'sources': list([
+        dict({
+          'avgdpi': 0,
+          'description': 'Description for example_drive_1',
+          'external_link': 'https://drive.google.com/open?id=1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
+          'identifier': '1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
+          'name': 'Example Drive 1',
+          'qty_cardbacks': '0',
+          'qty_cards': '0',
+          'qty_tokens': '0',
+          'size': '0.00 GB',
+          'source_type': 'Google Drive',
+        }),
+        dict({
+          'avgdpi': 0,
+          'description': 'Description for example_drive_2',
+          'external_link': None,
+          'identifier': '18wZl7T9DU_lf2X5xYFiyH6pATVy8ZlOd',
+          'name': 'Example Drive 2',
+          'qty_cardbacks': '0',
+          'qty_cards': '0',
+          'qty_tokens': '0',
+          'size': '0.00 GB',
+          'source_type': 'Google Drive',
+        }),
+      ]),
+      'total_database_size': 0,
     }),
-    'sources': list([
-      dict({
-        'avgdpi': 0,
-        'description': 'Description for example_drive_1',
-        'external_link': 'https://drive.google.com/open?id=1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
-        'identifier': '1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
-        'name': 'Example Drive 1',
-        'qty_cardbacks': '0',
-        'qty_cards': '0',
-        'qty_tokens': '0',
-        'size': '0.00 GB',
-        'source_type': 'Google Drive',
-      }),
-      dict({
-        'avgdpi': 0,
-        'description': 'Description for example_drive_2',
-        'external_link': None,
-        'identifier': '18wZl7T9DU_lf2X5xYFiyH6pATVy8ZlOd',
-        'name': 'Example Drive 2',
-        'qty_cardbacks': '0',
-        'qty_cards': '0',
-        'qty_tokens': '0',
-        'size': '0.00 GB',
-        'source_type': 'Google Drive',
-      }),
-    ]),
-    'total_database_size': 0,
+    'status_code': 200,
   })
 # ---
 # name: TestGetContributions.test_with_no_sources
   dict({
-    'card_count_by_type': dict({
-      'CARD': 0,
-      'CARDBACK': 0,
-      'TOKEN': 0,
+    'json': dict({
+      'card_count_by_type': dict({
+        'CARD': 0,
+        'CARDBACK': 0,
+        'TOKEN': 0,
+      }),
+      'sources': list([
+      ]),
+      'total_database_size': 0,
     }),
-    'sources': list([
-    ]),
-    'total_database_size': 0,
+    'status_code': 200,
   })
 # ---
 # name: TestGetDFCPairs.test_get_multiple_rows
   dict({
-    'dfc_pairs': dict({
-      'Delver of Secrets': 'Insectile Aberration',
-      'Huntmaster of the Fells': 'Ravager of the Fells',
+    'json': dict({
+      'dfc_pairs': dict({
+        'Delver of Secrets': 'Insectile Aberration',
+        'Huntmaster of the Fells': 'Ravager of the Fells',
+      }),
     }),
+    'status_code': 200,
   })
 # ---
 # name: TestGetImportSites.test_get_multiple_sites
   dict({
-    'import_sites': list([
-      dict({
-        'name': 'Aetherhub',
-        'url': 'https://aetherhub.com',
-      }),
-      dict({
-        'name': 'Archidekt',
-        'url': 'https://archidekt.com',
-      }),
-      dict({
-        'name': 'CubeCobra',
-        'url': 'https://cubecobra.com',
-      }),
-      dict({
-        'name': 'Deckstats',
-        'url': 'https://deckstats.net',
-      }),
-      dict({
-        'name': 'MagicVille',
-        'url': 'https://magic-ville.com',
-      }),
-      dict({
-        'name': 'ManaStack',
-        'url': 'https://manastack.com',
-      }),
-      dict({
-        'name': 'Moxfield',
-        'url': 'https://www.moxfield.com',
-      }),
-      dict({
-        'name': 'MTGGoldfish',
-        'url': 'https://www.mtggoldfish.com',
-      }),
-      dict({
-        'name': 'Scryfall',
-        'url': 'https://scryfall.com',
-      }),
-      dict({
-        'name': 'TappedOut',
-        'url': 'https://tappedout.net',
-      }),
-      dict({
-        'name': 'TCGPlayer',
-        'url': 'https://decks.tcgplayer.com/',
-      }),
-    ]),
+    'json': dict({
+      'import_sites': list([
+        dict({
+          'name': 'Aetherhub',
+          'url': 'https://aetherhub.com',
+        }),
+        dict({
+          'name': 'Archidekt',
+          'url': 'https://archidekt.com',
+        }),
+        dict({
+          'name': 'CubeCobra',
+          'url': 'https://cubecobra.com',
+        }),
+        dict({
+          'name': 'Deckstats',
+          'url': 'https://deckstats.net',
+        }),
+        dict({
+          'name': 'MagicVille',
+          'url': 'https://magic-ville.com',
+        }),
+        dict({
+          'name': 'ManaStack',
+          'url': 'https://manastack.com',
+        }),
+        dict({
+          'name': 'Moxfield',
+          'url': 'https://www.moxfield.com',
+        }),
+        dict({
+          'name': 'MTGGoldfish',
+          'url': 'https://www.mtggoldfish.com',
+        }),
+        dict({
+          'name': 'Scryfall',
+          'url': 'https://scryfall.com',
+        }),
+        dict({
+          'name': 'TappedOut',
+          'url': 'https://tappedout.net',
+        }),
+        dict({
+          'name': 'TCGPlayer',
+          'url': 'https://decks.tcgplayer.com/',
+        }),
+      ]),
+    }),
+    'status_code': 200,
   })
 # ---
 # name: TestGetSources.test_get_multiple_sources
   dict({
-    'results': dict({
-      '0': dict({
-        'description': 'Description for example_drive_1',
-        'external_link': 'https://drive.google.com/open?id=1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
-        'identifier': '1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
-        'key': 'example_drive_1',
-        'name': 'Example Drive 1',
-        'pk': 0,
-        'source_type': 'Google Drive',
-      }),
-      '1': dict({
-        'description': 'Description for example_drive_2',
-        'external_link': None,
-        'identifier': '18wZl7T9DU_lf2X5xYFiyH6pATVy8ZlOd',
-        'key': 'example_drive_2',
-        'name': 'Example Drive 2',
-        'pk': 1,
-        'source_type': 'Google Drive',
+    'json': dict({
+      'results': dict({
+        '0': dict({
+          'description': 'Description for example_drive_1',
+          'external_link': 'https://drive.google.com/open?id=1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
+          'identifier': '1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
+          'key': 'example_drive_1',
+          'name': 'Example Drive 1',
+          'pk': 0,
+          'source_type': 'Google Drive',
+        }),
+        '1': dict({
+          'description': 'Description for example_drive_2',
+          'external_link': None,
+          'identifier': '18wZl7T9DU_lf2X5xYFiyH6pATVy8ZlOd',
+          'key': 'example_drive_2',
+          'name': 'Example Drive 2',
+          'pk': 1,
+          'source_type': 'Google Drive',
+        }),
       }),
     }),
+    'status_code': 200,
   })
 # ---
 # name: TestPostCards.test_get_multiple_cards
   dict({
-    'results': dict({
-      '17fopRCNRge72U8Hac8pApHZtEalx5kHy': dict({
-        'card_type': 'CARD',
-        'date': '5th July, 2023',
-        'download_link': 'https://drive.google.com/uc?id=17fopRCNRge72U8Hac8pApHZtEalx5kHy&export=download',
-        'dpi': 800,
-        'extension': 'png',
-        'identifier': '17fopRCNRge72U8Hac8pApHZtEalx5kHy',
-        'medium_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w800-h800&id=17fopRCNRge72U8Hac8pApHZtEalx5kHy',
-        'name': 'Delver of Secrets',
-        'priority': 2,
-        'searchq': 'delver of secrets',
-        'size': 100,
-        'small_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w400-h400&id=17fopRCNRge72U8Hac8pApHZtEalx5kHy',
-        'source': 'example_drive_1',
-        'source_id': 0,
-        'source_name': 'Example Drive 1',
-        'source_type': 'Google Drive',
-        'source_verbose': 'Example Drive 1 but verbose',
-      }),
-      '1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA': dict({
-        'card_type': 'TOKEN',
-        'date': '5th July, 2023',
-        'download_link': 'https://drive.google.com/uc?id=1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA&export=download',
-        'dpi': 800,
-        'extension': 'png',
-        'identifier': '1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA',
-        'medium_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA',
-        'name': 'Goblin',
-        'priority': 2,
-        'searchq': 'goblin',
-        'size': 100,
-        'small_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA',
-        'source': 'example_drive_1',
-        'source_id': 0,
-        'source_name': 'Example Drive 1',
-        'source_type': 'Google Drive',
-        'source_verbose': 'Example Drive 1 but verbose',
+    'json': dict({
+      'results': dict({
+        '17fopRCNRge72U8Hac8pApHZtEalx5kHy': dict({
+          'card_type': 'CARD',
+          'date': '5th July, 2023',
+          'download_link': 'https://drive.google.com/uc?id=17fopRCNRge72U8Hac8pApHZtEalx5kHy&export=download',
+          'dpi': 800,
+          'extension': 'png',
+          'identifier': '17fopRCNRge72U8Hac8pApHZtEalx5kHy',
+          'medium_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w800-h800&id=17fopRCNRge72U8Hac8pApHZtEalx5kHy',
+          'name': 'Delver of Secrets',
+          'priority': 2,
+          'searchq': 'delver of secrets',
+          'size': 100,
+          'small_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w400-h400&id=17fopRCNRge72U8Hac8pApHZtEalx5kHy',
+          'source': 'example_drive_1',
+          'source_id': 0,
+          'source_name': 'Example Drive 1',
+          'source_type': 'Google Drive',
+          'source_verbose': 'Example Drive 1 but verbose',
+        }),
+        '1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA': dict({
+          'card_type': 'TOKEN',
+          'date': '5th July, 2023',
+          'download_link': 'https://drive.google.com/uc?id=1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA&export=download',
+          'dpi': 800,
+          'extension': 'png',
+          'identifier': '1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA',
+          'medium_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA',
+          'name': 'Goblin',
+          'priority': 2,
+          'searchq': 'goblin',
+          'size': 100,
+          'small_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA',
+          'source': 'example_drive_1',
+          'source_id': 0,
+          'source_name': 'Example Drive 1',
+          'source_type': 'Google Drive',
+          'source_verbose': 'Example Drive 1 but verbose',
+        }),
       }),
     }),
+    'status_code': 200,
   })
 # ---
 # name: TestPostCards.test_get_single_card
   dict({
-    'results': dict({
-      '1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA': dict({
-        'card_type': 'TOKEN',
-        'date': '5th July, 2023',
-        'download_link': 'https://drive.google.com/uc?id=1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA&export=download',
-        'dpi': 800,
-        'extension': 'png',
-        'identifier': '1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA',
-        'medium_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA',
-        'name': 'Goblin',
-        'priority': 2,
-        'searchq': 'goblin',
-        'size': 100,
-        'small_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA',
-        'source': 'example_drive_1',
-        'source_id': 0,
-        'source_name': 'Example Drive 1',
-        'source_type': 'Google Drive',
-        'source_verbose': 'Example Drive 1 but verbose',
+    'json': dict({
+      'results': dict({
+        '1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA': dict({
+          'card_type': 'TOKEN',
+          'date': '5th July, 2023',
+          'download_link': 'https://drive.google.com/uc?id=1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA&export=download',
+          'dpi': 800,
+          'extension': 'png',
+          'identifier': '1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA',
+          'medium_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA',
+          'name': 'Goblin',
+          'priority': 2,
+          'searchq': 'goblin',
+          'size': 100,
+          'small_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA',
+          'source': 'example_drive_1',
+          'source_id': 0,
+          'source_name': 'Example Drive 1',
+          'source_type': 'Google Drive',
+          'source_verbose': 'Example Drive 1 but verbose',
+        }),
       }),
     }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostCards.test_request_card_not_in_the_database
+  dict({
+    'json': dict({
+      'results': dict({
+        '1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA': dict({
+          'card_type': 'TOKEN',
+          'date': '5th July, 2023',
+          'download_link': 'https://drive.google.com/uc?id=1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA&export=download',
+          'dpi': 800,
+          'extension': 'png',
+          'identifier': '1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA',
+          'medium_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA',
+          'name': 'Goblin',
+          'priority': 2,
+          'searchq': 'goblin',
+          'size': 100,
+          'small_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA',
+          'source': 'example_drive_1',
+          'source_id': 0,
+          'source_name': 'Example Drive 1',
+          'source_type': 'Google Drive',
+          'source_verbose': 'Example Drive 1 but verbose',
+        }),
+      }),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostCards.test_response_to_malformed_card_identifier_list
+  dict({
+    'json': dict({
+      'results': dict({
+      }),
+    }),
+    'status_code': 200,
   })
 # ---
