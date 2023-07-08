@@ -193,6 +193,14 @@
     'status_code': 200,
   })
 # ---
+# name: TestGetSearchEngineHealth.test_elasticsearch_healthy
+  dict({
+    'json': dict({
+      'online': True,
+    }),
+    'status_code': 200,
+  })
+# ---
 # name: TestGetSources.test_get_multiple_sources
   dict({
     'json': dict({
@@ -226,7 +234,7 @@
       'results': dict({
         '17fopRCNRge72U8Hac8pApHZtEalx5kHy': dict({
           'card_type': 'CARD',
-          'date': '5th July, 2023',
+          'date': '1st January, 2023',
           'download_link': 'https://drive.google.com/uc?id=17fopRCNRge72U8Hac8pApHZtEalx5kHy&export=download',
           'dpi': 800,
           'extension': 'png',
@@ -245,7 +253,7 @@
         }),
         '1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA': dict({
           'card_type': 'TOKEN',
-          'date': '5th July, 2023',
+          'date': '1st January, 2023',
           'download_link': 'https://drive.google.com/uc?id=1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA&export=download',
           'dpi': 800,
           'extension': 'png',
@@ -273,7 +281,7 @@
       'results': dict({
         '1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA': dict({
           'card_type': 'TOKEN',
-          'date': '5th July, 2023',
+          'date': '1st January, 2023',
           'download_link': 'https://drive.google.com/uc?id=1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA&export=download',
           'dpi': 800,
           'extension': 'png',
@@ -301,7 +309,7 @@
       'results': dict({
         '1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA': dict({
           'card_type': 'TOKEN',
-          'date': '5th July, 2023',
+          'date': '1st January, 2023',
           'download_link': 'https://drive.google.com/uc?id=1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA&export=download',
           'dpi': 800,
           'extension': 'png',
@@ -328,6 +336,187 @@
     'json': dict({
       'results': dict({
       }),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostCards.test_response_to_malformed_json_body
+  dict({
+    'json': dict({
+      'results': dict({
+      }),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostImportSiteDecklist.test_get_request
+  dict({
+    'content': b'Expected POST request.',
+    'status_code': 400,
+  })
+# ---
+# name: TestPostImportSiteDecklist.test_invalid_url
+  dict({
+    'content': b'The specified decklist URL does not match any known import sites.',
+    'status_code': 400,
+  })
+# ---
+# name: TestPostImportSiteDecklist.test_malformed_json_body
+  dict({
+    'content': b'No decklist URL provided.',
+    'status_code': 400,
+  })
+# ---
+# name: TestPostImportSiteDecklist.test_valid_url[https://aetherhub.com/Deck/test-796905]
+  dict({
+    'json': dict({
+      'cards': '''
+        4 Brainstorm
+        3 Past in Flames
+        1 Delver of Secrets
+  
+      ''',
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostImportSiteDecklist.test_valid_url[https://archidekt.com/decks/3380653]
+  dict({
+    'json': dict({
+      'cards': '''
+        1 Delver of Secrets // Insectile Aberration
+        4 Brainstorm
+        3 Past in Flames
+  
+      ''',
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostImportSiteDecklist.test_valid_url[https://cubecobra.com/cube/overview/2fj4]
+  dict({
+    'json': dict({
+      'cards': '''
+        Delver of Secrets
+        Brainstorm
+        Brainstorm
+        Brainstorm
+        Brainstorm
+        Past in Flames
+        Past in Flames
+        Past in Flames
+        
+        
+  
+      ''',
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostImportSiteDecklist.test_valid_url[https://decks.tcgplayer.com/magic/standard/mpc-autofill/test/1398367]
+  dict({
+    'json': dict({
+      'cards': '''
+        1 Delver of Secrets
+        4 Brainstorm
+        3 Past in Flames
+  
+      ''',
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostImportSiteDecklist.test_valid_url[https://deckstats.net/decks/216625/2754468-test]
+  dict({
+    'json': dict({
+      'cards': '''
+        4 Brainstorm
+        1 Delver of Secrets // Insectile Aberration
+        3 Past in Flames
+  
+      ''',
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostImportSiteDecklist.test_valid_url[https://magic-ville.com/fr/decks/showdeck?ref=948045]
+  dict({
+    'json': dict({
+      'cards': '''
+        3 Past in Flames
+        4 Brainstorm
+        1 Delver of Secrets
+  
+      ''',
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostImportSiteDecklist.test_valid_url[https://manastack.com/deck/test-426]
+  dict({
+    'json': dict({
+      'cards': '''
+        4 Brainstorm
+        3 Past in Flames
+        1 Delver of Secrets
+  
+      ''',
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostImportSiteDecklist.test_valid_url[https://scryfall.com/@mpcautofill/decks/71bb2d40-c922-4a01-a63e-7ba2dde29a5c]
+  dict({
+    'json': dict({
+      'cards': '''
+        4 Brainstorm
+        1 Delver of Secrets
+        3 Past in Flames
+        
+  
+      ''',
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostImportSiteDecklist.test_valid_url[https://tappedout.net/mtg-decks/09-10-22-DoY-test]
+  dict({
+    'json': dict({
+      'cards': '''
+        4 Brainstorm
+        1 Delver of Secrets
+        3 Past in Flames
+        
+        
+  
+      ''',
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostImportSiteDecklist.test_valid_url[https://www.moxfield.com/decks/D42-or9pCk-uMi4XzRDziQ]
+  dict({
+    'json': dict({
+      'cards': '''
+        1 Delver of Secrets // Insectile Aberration
+        4 Brainstorm
+        3 Past in Flames
+  
+      ''',
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostImportSiteDecklist.test_valid_url[https://www.mtggoldfish.com/deck/5149750]
+  dict({
+    'json': dict({
+      'cards': '''
+        4 Brainstorm
+        1 Delver of Secrets
+        3 Past in Flames
+        
+  
+      ''',
     }),
     'status_code': 200,
   })

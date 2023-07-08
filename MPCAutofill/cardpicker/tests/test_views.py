@@ -5,11 +5,14 @@ from syrupy import SnapshotAssertion
 from django.urls import reverse
 
 from cardpicker import views
-from cardpicker.tests.constants import Cards
+from cardpicker.tests.constants import Cards, Decks
 
 
 def snapshot_response(response: Response, snapshot: SnapshotAssertion):
-    assert {"status_code": response.status_code, "json": response.json()} == snapshot
+    try:
+        assert {"status_code": response.status_code, "json": response.json()} == snapshot
+    except ValueError:  # non-json response
+        assert {"status_code": response.status_code, "content": response.content} == snapshot
 
 
 class TestPostSearchResults:
@@ -56,6 +59,13 @@ class TestPostCards:
         )
         snapshot_response(response, snapshot)
 
+    def test_response_to_malformed_json_body(self, client, snapshot):
+        # TODO: this should probably return a different response for a malformed json body
+        response = client.post(
+            reverse(views.post_cards), {"test": "i should be a json body but i ain't"}, content_type="application/json"
+        )
+        snapshot_response(response, snapshot)
+
 
 class TestGetSources:
     def test_get_multiple_sources(self, client, snapshot, all_sources):
@@ -90,7 +100,31 @@ class TestPostImportSiteDecklist:
     def autouse_populated_database(self, populated_database):
         pass
 
-    # TODO: write tests
+    @pytest.mark.parametrize("url", [x.value for x in Decks])
+    def test_valid_url(self, client, snapshot, url):
+        response = client.post(reverse(views.post_import_site_decklist), {"url": url}, content_type="application/json")
+        snapshot_response(response, snapshot)
+
+    def test_invalid_url(self, client, snapshot):
+        response = client.post(
+            reverse(views.post_import_site_decklist), {"url": "https://garbage.com"}, content_type="application/json"
+        )
+        snapshot_response(response, snapshot)
+        assert response.status_code == 400
+
+    def test_malformed_json_body(self, client, snapshot):
+        response = client.post(
+            reverse(views.post_import_site_decklist),
+            {"test": "garbage and garbage accessories"},
+            content_type="application/json",
+        )
+        snapshot_response(response, snapshot)
+        assert response.status_code == 400
+
+    def test_get_request(self, client, snapshot):
+        response = client.get(reverse(views.post_import_site_decklist))
+        snapshot_response(response, snapshot)
+        assert response.status_code == 400
 
 
 class TestGetSampleCards:
@@ -128,8 +162,9 @@ class TestGetInfo:
 
 
 class TestGetSearchEngineHealth:
-    @pytest.fixture(autouse=True)
-    def autouse_populated_database(self, populated_database):
-        pass
+    def test_elasticsearch_healthy(self, client, django_settings, elasticsearch, snapshot):
+        response = client.get(reverse(views.get_search_engine_health))
+        snapshot_response(response, snapshot)
+        assert response.json()["online"] is True
 
-    # TODO: write tests
+    # TODO: consider how to test elasticsearch being unhealthy
