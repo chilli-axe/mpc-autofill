@@ -3,7 +3,7 @@ import json
 import time
 from collections import defaultdict
 from datetime import timedelta
-from random import choices
+from random import sample
 from typing import Any, Callable, Optional, TypeVar, Union, cast
 
 from blog.models import BlogPost
@@ -545,13 +545,13 @@ def get_sample_cards(request: HttpRequest) -> HttpResponse:
     selected_identifiers = [
         identifier
         for card_type in CardTypes
-        for identifier in choices(
+        for identifier in sample(
             identifiers[card_type], k=min(4 if card_type == CardTypes.CARD else 1, len(identifiers[card_type]))
         )
     ]
 
     # retrieve the full ORM objects for the selected identifiers and group by type
-    cards = [card.to_dict() for card in Card.objects.filter(pk__in=selected_identifiers).order_by("card_type", "pk")]
+    cards = [card.to_dict() for card in Card.objects.filter(pk__in=selected_identifiers)]
     cards_by_type = {group[0]: list(group[1]) for group in itertools.groupby(cards, key=lambda x: x["card_type"])}
 
     return JsonResponse({"cards": cards_by_type})

@@ -58,6 +58,7 @@ class TestPostCards:
             content_type="application/json",
         )
         snapshot_response(response, snapshot)
+        assert response.status_code == 400
 
     def test_response_to_malformed_json_body(self, client, snapshot):
         # TODO: this should probably return a different response for a malformed json body
@@ -65,6 +66,7 @@ class TestPostCards:
             reverse(views.post_cards), {"test": "i should be a json body but i ain't"}, content_type="application/json"
         )
         snapshot_response(response, snapshot)
+        assert response.status_code == 400
 
 
 class TestGetSources:
@@ -128,11 +130,72 @@ class TestPostImportSiteDecklist:
 
 
 class TestGetSampleCards:
-    @pytest.fixture(autouse=True)
-    def autouse_populated_database(self, populated_database):
-        pass
+    def test_get_five_sample_cards(
+        self,
+        client,
+        django_settings,
+        elasticsearch,
+        all_sources,
+        # the endpoint should consistently return exactly these five cards (in a random order)
+        brainstorm,
+        island,
+        island_classical,
+        past_in_flames_1,
+        goblin,
+        snapshot,
+    ):
+        response = client.get(reverse(views.get_sample_cards))
+        assert response.status_code == 200
+        json_body = response.json()
+        assert set(json_body.keys()) == {"cards"}
+        assert set(json_body["cards"].keys()) == {"CARD", "TOKEN"}
+        # the view returns a list of cards, but the order of the cards is deliberately random
+        # keying the data by card name in this way should result in deterministic snapshotting
+        assert {
+            card_type: {row["name"]: row for row in sorted(cards, key=lambda x: x["name"])}
+            for card_type, cards in json_body["cards"].items()
+        } == snapshot
 
-    # TODO: write tests
+    def test_get_no_cards(self, client, django_settings, elasticsearch, all_sources, snapshot):
+        response = client.get(reverse(views.get_sample_cards))
+        assert response.status_code == 200
+        assert response.json()["cards"] == {"CARD": [], "TOKEN": []}
+
+    def test_get_three_cards_one_token(
+        self,
+        client,
+        django_settings,
+        elasticsearch,
+        all_sources,
+        brainstorm,
+        island,
+        island_classical,
+        goblin,
+        snapshot,
+    ):
+        response = client.get(reverse(views.get_sample_cards))
+        assert response.status_code == 200
+        json_body = response.json()
+        assert len(json_body["cards"]["CARD"]) == 3
+        assert len(json_body["cards"]["TOKEN"]) == 1
+
+    def test_get_four_cards_zero_tokens(
+        self,
+        client,
+        django_settings,
+        elasticsearch,
+        all_sources,
+        brainstorm,
+        island,
+        island_classical,
+        past_in_flames_1,
+        snapshot,
+    ):
+        response = client.get(reverse(views.get_sample_cards))
+        assert response.status_code == 200
+        json_body = response.json()
+        assert len(json_body["cards"]["CARD"]) == 4
+        assert len(json_body["cards"]["TOKEN"]) == 0
 
 
 class TestGetContributions:
