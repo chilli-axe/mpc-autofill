@@ -51,7 +51,6 @@ class TestPostCards:
         snapshot_response(response, snapshot)
 
     def test_response_to_malformed_card_identifier_list(self, client, snapshot):
-        # TODO: this should probably return a different response for a malformed json body
         response = client.post(
             reverse(views.post_cards),
             {"card_identifiers": "i should be a list but i ain't"},
@@ -61,7 +60,6 @@ class TestPostCards:
         assert response.status_code == 400
 
     def test_response_to_malformed_json_body(self, client, snapshot):
-        # TODO: this should probably return a different response for a malformed json body
         response = client.post(
             reverse(views.post_cards), {"test": "i should be a json body but i ain't"}, content_type="application/json"
         )

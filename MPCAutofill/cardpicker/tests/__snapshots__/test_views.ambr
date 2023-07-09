@@ -436,20 +436,14 @@
 # ---
 # name: TestPostCards.test_response_to_malformed_card_identifier_list
   dict({
-    'json': dict({
-      'results': dict({
-      }),
-    }),
-    'status_code': 200,
+    'content': b'Malformed JSON body.',
+    'status_code': 400,
   })
 # ---
 # name: TestPostCards.test_response_to_malformed_json_body
   dict({
-    'json': dict({
-      'results': dict({
-      }),
-    }),
-    'status_code': 200,
+    'content': b'Malformed JSON body.',
+    'status_code': 400,
   })
 # ---
 # name: TestPostImportSiteDecklist.test_get_request

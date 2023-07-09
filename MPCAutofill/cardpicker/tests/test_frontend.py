@@ -842,7 +842,6 @@ class TestFrontend:
         ]:
             os.path.exists(download_folder / expected_file)
 
-    # TODO: replicate this test in the new frontend
     @pytest.mark.parametrize("url", [x.value for x in Decks])
     def test_import_from_url(self, chrome_driver, url, dfc_pairs):
         chrome_driver.find_element(By.ID, value="uploadCardsBtn").click()

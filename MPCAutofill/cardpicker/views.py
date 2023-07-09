@@ -443,11 +443,15 @@ def post_search_results(request: HttpRequest) -> HttpResponse:
 @csrf_exempt
 def post_cards(request: HttpRequest) -> HttpResponse:
     if request.method == "POST":
-        # time.sleep(2)  # TODO: remove these. just for testing.
         json_body = json.loads(request.body)
-        card_identifiers = json_body.get("card_identifiers", [])
-        # if len(card_identifiers) > 100:  # TODO
-        #     card_identifiers = card_identifiers[0:100]
+
+        if "card_identifiers" not in json_body.keys() or not (
+            isinstance((card_identifiers := json_body["card_identifiers"] or []), list)
+            and all([isinstance(x, str) for x in card_identifiers])
+        ):
+            return HttpResponseBadRequest("Malformed JSON body.")
+
+        # TODO: pagination, e.g. only process up to 100 at a time
         results = {x.identifier: x.to_dict() for x in Card.objects.filter(identifier__in=card_identifiers)}
         return JsonResponse({"results": results})
     else:
@@ -554,7 +558,7 @@ def get_sample_cards(request: HttpRequest) -> HttpResponse:
     cards = [card.to_dict() for card in Card.objects.filter(pk__in=selected_identifiers)]
     cards_by_type = {group[0]: list(group[1]) for group in itertools.groupby(cards, key=lambda x: x["card_type"])}
 
-    return JsonResponse({"cards": cards_by_type})
+    return JsonResponse({"cards": {CardTypes.CARD: [], CardTypes.TOKEN: []} | cards_by_type})
 
 
 @csrf_exempt
