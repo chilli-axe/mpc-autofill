@@ -524,7 +524,10 @@ def post_import_site_decklist(request: HttpRequest) -> HttpResponse:
         for site in ImportSites:
             if url.startswith(site.get_base_url()):
                 text = site.retrieve_card_list(url)
-                return JsonResponse({"cards": text})
+                cleaned_text = "\n".join(
+                    [stripped_line for line in text.split("\n") if len(stripped_line := line.strip()) > 0]
+                )
+                return JsonResponse({"cards": cleaned_text})
         return HttpResponseBadRequest("The specified decklist URL does not match any known import sites.")
     else:
         return HttpResponseBadRequest("Expected POST request.")

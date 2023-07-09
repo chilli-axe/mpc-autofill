@@ -20,10 +20,12 @@ class TestPostSearchResults:
     def autouse_populated_database(self, populated_database):
         pass
 
+    # TODO: write tests
+
 
 class TestPostCards:
     @pytest.fixture(autouse=True)
-    def autouse_populated_database(self, populated_database):
+    def autouse_populated_database(self, django_settings, all_sources, all_cards):
         pass
 
     def test_get_single_card(self, client, snapshot):
@@ -81,7 +83,7 @@ class TestGetDFCPairs:
 
 class TestGetCardbacks:
     @pytest.fixture(autouse=True)
-    def autouse_populated_database(self, populated_database):
+    def autouse_populated_database(self, django_settings, all_sources, all_cards):
         pass
 
     def test_get_multiple_rows(self, client, snapshot):
@@ -96,23 +98,19 @@ class TestGetImportSites:
 
 
 class TestPostImportSiteDecklist:
-    @pytest.fixture(autouse=True)
-    def autouse_populated_database(self, populated_database):
-        pass
-
     @pytest.mark.parametrize("url", [x.value for x in Decks])
-    def test_valid_url(self, client, snapshot, url):
+    def test_valid_url(self, client, django_settings, snapshot, url):
         response = client.post(reverse(views.post_import_site_decklist), {"url": url}, content_type="application/json")
         snapshot_response(response, snapshot)
 
-    def test_invalid_url(self, client, snapshot):
+    def test_invalid_url(self, client, django_settings, snapshot):
         response = client.post(
             reverse(views.post_import_site_decklist), {"url": "https://garbage.com"}, content_type="application/json"
         )
         snapshot_response(response, snapshot)
         assert response.status_code == 400
 
-    def test_malformed_json_body(self, client, snapshot):
+    def test_malformed_json_body(self, client, django_settings, snapshot):
         response = client.post(
             reverse(views.post_import_site_decklist),
             {"test": "garbage and garbage accessories"},
@@ -121,7 +119,7 @@ class TestPostImportSiteDecklist:
         snapshot_response(response, snapshot)
         assert response.status_code == 400
 
-    def test_get_request(self, client, snapshot):
+    def test_get_request(self, client, django_settings, snapshot):
         response = client.get(reverse(views.post_import_site_decklist))
         snapshot_response(response, snapshot)
         assert response.status_code == 400
