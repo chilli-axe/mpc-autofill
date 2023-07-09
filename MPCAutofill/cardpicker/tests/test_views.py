@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 import pytest
 from requests import Response
 from syrupy import SnapshotAssertion
@@ -5,7 +7,7 @@ from syrupy import SnapshotAssertion
 from django.urls import reverse
 
 from cardpicker import views
-from cardpicker.tests.constants import Cards, Decks
+from cardpicker.tests.constants import Cards, Decks, Sources
 
 
 def snapshot_response(response: Response, snapshot: SnapshotAssertion):
@@ -16,11 +18,271 @@ def snapshot_response(response: Response, snapshot: SnapshotAssertion):
 
 
 class TestPostSearchResults:
+    BASE_SEARCH_SETTINGS = {
+        "searchTypeSettings": {"fuzzySearch": False},
+        "sourceSettings": {
+            "sources": [[Sources.EXAMPLE_DRIVE_1.value.pk, True], [Sources.EXAMPLE_DRIVE_2.value.pk, True]]
+        },
+        "filterSettings": {"minimumDPI": 0, "maximumDPI": 1500, "maximumSize": 30},
+    }
+
     @pytest.fixture(autouse=True)
     def autouse_populated_database(self, populated_database):
         pass
 
-    # TODO: write tests
+    def test_search_for_single_card(self, client, snapshot):
+        response = client.post(
+            reverse(views.post_search_results),
+            {
+                "searchSettings": self.BASE_SEARCH_SETTINGS,
+                "queries": [{"query": Cards.BRAINSTORM.value.name, "card_type": "CARD"}],
+            },
+            content_type="application/json",
+        )
+        snapshot_response(response, snapshot)
+        assert response.status_code == 200
+        assert response.json()["results"][Cards.BRAINSTORM.value.name]["CARD"] == [Cards.BRAINSTORM.value.identifier]
+
+    def test_search_for_single_cardback(self, client, snapshot):
+        response = client.post(
+            reverse(views.post_search_results),
+            {
+                "searchSettings": self.BASE_SEARCH_SETTINGS,
+                "queries": [{"query": Cards.SIMPLE_LOTUS.value.name, "card_type": "CARDBACK"}],
+            },
+            content_type="application/json",
+        )
+        snapshot_response(response, snapshot)
+        assert response.status_code == 200
+        assert response.json()["results"][Cards.SIMPLE_LOTUS.value.name]["CARDBACK"] == [
+            Cards.SIMPLE_LOTUS.value.identifier
+        ]
+
+    def test_search_for_single_token(self, client, snapshot):
+        response = client.post(
+            reverse(views.post_search_results),
+            {
+                "searchSettings": self.BASE_SEARCH_SETTINGS,
+                "queries": [{"query": Cards.GOBLIN.value.name, "card_type": "TOKEN"}],
+            },
+            content_type="application/json",
+        )
+        snapshot_response(response, snapshot)
+        assert response.status_code == 200
+        assert response.json()["results"][Cards.GOBLIN.value.name]["TOKEN"] == [Cards.GOBLIN.value.identifier]
+
+    def test_complex_search(self, client, snapshot):
+        response = client.post(
+            reverse(views.post_search_results),
+            {
+                "searchSettings": self.BASE_SEARCH_SETTINGS,
+                "queries": [
+                    {"query": Cards.BRAINSTORM.value.name, "card_type": "CARD"},
+                    {"query": Cards.ISLAND.value.name, "card_type": "CARD"},
+                    {"query": Cards.SIMPLE_CUBE.value.name, "card_type": "CARDBACK"},
+                    {"query": Cards.SIMPLE_LOTUS.value.name, "card_type": "CARDBACK"},
+                    {"query": Cards.GOBLIN.value.name, "card_type": "TOKEN"},
+                ],
+            },
+            content_type="application/json",
+        )
+        snapshot_response(response, snapshot)
+        assert response.status_code == 200
+
+    def test_priority_ordering_in_search_results(self, client, snapshot):
+        response = client.post(
+            reverse(views.post_search_results),
+            {
+                "searchSettings": self.BASE_SEARCH_SETTINGS,
+                "queries": [{"query": Cards.ISLAND.value.name, "card_type": "CARD"}],
+            },
+            content_type="application/json",
+        )
+        snapshot_response(response, snapshot)
+        assert response.status_code == 200
+        # `Island` should be before `Island (Classical)` due to priority being given to names with no parentheses
+        assert response.json()["results"][Cards.ISLAND.value.name]["CARD"] == [
+            Cards.ISLAND.value.identifier,
+            Cards.ISLAND_CLASSICAL.value.identifier,
+        ]
+
+    def test_search_for_card_with_versions_from_two_sources(self, client, snapshot):
+        response = client.post(
+            reverse(views.post_search_results),
+            {
+                "searchSettings": self.BASE_SEARCH_SETTINGS,
+                "queries": [{"query": Cards.PAST_IN_FLAMES_1.value.name, "card_type": "CARD"}],
+            },
+            content_type="application/json",
+        )
+        snapshot_response(response, snapshot)
+        assert response.status_code == 200
+        assert response.json()["results"][Cards.PAST_IN_FLAMES_1.value.name]["CARD"] == [
+            Cards.PAST_IN_FLAMES_1.value.identifier,
+            Cards.PAST_IN_FLAMES_2.value.identifier,
+        ]
+
+    def test_search_for_card_with_versions_from_two_sources_under_reversed_search_order(self, client, snapshot):
+        search_settings = deepcopy(self.BASE_SEARCH_SETTINGS)
+        search_settings["sourceSettings"]["sources"] = [
+            [Sources.EXAMPLE_DRIVE_2.value.pk, True],
+            [Sources.EXAMPLE_DRIVE_1.value.pk, True],
+        ]
+        response = client.post(
+            reverse(views.post_search_results),
+            {
+                "searchSettings": search_settings,
+                "queries": [{"query": Cards.PAST_IN_FLAMES_1.value.name, "card_type": "CARD"}],
+            },
+            content_type="application/json",
+        )
+        snapshot_response(response, snapshot)
+        assert response.status_code == 200
+        assert response.json()["results"][Cards.PAST_IN_FLAMES_1.value.name]["CARD"] == [
+            Cards.PAST_IN_FLAMES_2.value.identifier,
+            Cards.PAST_IN_FLAMES_1.value.identifier,
+        ]
+
+    def test_search_for_card_with_versions_from_two_sources_with_one_source_disabled(self, client, snapshot):
+        search_settings = deepcopy(self.BASE_SEARCH_SETTINGS)
+        search_settings["sourceSettings"]["sources"] = [
+            [Sources.EXAMPLE_DRIVE_1.value.pk, True],
+            [Sources.EXAMPLE_DRIVE_2.value.pk, False],
+        ]
+        response = client.post(
+            reverse(views.post_search_results),
+            {
+                "searchSettings": search_settings,
+                "queries": [{"query": Cards.PAST_IN_FLAMES_1.value.name, "card_type": "CARD"}],
+            },
+            content_type="application/json",
+        )
+        snapshot_response(response, snapshot)
+        assert response.status_code == 200
+        assert response.json()["results"][Cards.PAST_IN_FLAMES_1.value.name]["CARD"] == [
+            Cards.PAST_IN_FLAMES_1.value.identifier
+        ]
+
+    def test_search_for_card_with_versions_from_two_sources_with_all_sources_disabled(self, client, snapshot):
+        search_settings = deepcopy(self.BASE_SEARCH_SETTINGS)
+        search_settings["sourceSettings"]["sources"] = [
+            [Sources.EXAMPLE_DRIVE_1.value.pk, False],
+            [Sources.EXAMPLE_DRIVE_2.value.pk, False],
+        ]
+        response = client.post(
+            reverse(views.post_search_results),
+            {
+                "searchSettings": search_settings,
+                "queries": [{"query": Cards.PAST_IN_FLAMES_1.value.name, "card_type": "CARD"}],
+            },
+            content_type="application/json",
+        )
+        snapshot_response(response, snapshot)
+        assert response.status_code == 200
+        assert response.json()["results"][Cards.PAST_IN_FLAMES_1.value.name]["CARD"] == []
+
+    def test_fuzzy_search(self, client, snapshot):
+        search_settings = deepcopy(self.BASE_SEARCH_SETTINGS)
+        search_settings["searchTypeSettings"]["fuzzySearch"] = True
+        response = client.post(
+            reverse(views.post_search_results),
+            {"searchSettings": search_settings, "queries": [{"query": "past in", "card_type": "CARD"}]},
+            content_type="application/json",
+        )
+        snapshot_response(response, snapshot)
+        assert response.status_code == 200
+        assert response.json()["results"]["past in"]["CARD"] == [
+            Cards.PAST_IN_FLAMES_1.value.identifier,
+            Cards.PAST_IN_FLAMES_2.value.identifier,
+        ]
+
+    def test_minimum_dpi_yielding_no_search_results(self, client, snapshot):
+        search_settings = deepcopy(self.BASE_SEARCH_SETTINGS)
+        search_settings["filterSettings"]["minimumDPI"] = 400
+        response = client.post(
+            reverse(views.post_search_results),
+            {
+                "searchSettings": search_settings,
+                "queries": [{"query": Cards.SIMPLE_CUBE.value.name, "card_type": "CARDBACK"}],
+            },
+            content_type="application/json",
+        )
+        snapshot_response(response, snapshot)
+        assert response.status_code == 200
+        assert response.json()["results"][Cards.SIMPLE_CUBE.value.name]["CARDBACK"] == []
+
+    def test_maximum_dpi_yielding_no_search_results(self, client, snapshot):
+        search_settings = deepcopy(self.BASE_SEARCH_SETTINGS)
+        search_settings["filterSettings"]["maximumDPI"] = 200
+        response = client.post(
+            reverse(views.post_search_results),
+            {
+                "searchSettings": search_settings,
+                "queries": [{"query": Cards.SIMPLE_CUBE.value.name, "card_type": "CARDBACK"}],
+            },
+            content_type="application/json",
+        )
+        snapshot_response(response, snapshot)
+        assert response.status_code == 200
+        assert response.json()["results"][Cards.SIMPLE_CUBE.value.name]["CARDBACK"] == []
+
+    def test_minimum_dpi_yielding_fewer_search_results(self, client, snapshot):
+        search_settings = deepcopy(self.BASE_SEARCH_SETTINGS)
+        search_settings["filterSettings"]["minimumDPI"] = 600
+        response = client.post(
+            reverse(views.post_search_results),
+            {
+                "searchSettings": search_settings,
+                "queries": [{"query": Cards.PAST_IN_FLAMES_1.value.name, "card_type": "CARD"}],
+            },
+            content_type="application/json",
+        )
+        snapshot_response(response, snapshot)
+        assert response.status_code == 200
+        assert response.json()["results"][Cards.PAST_IN_FLAMES_1.value.name]["CARD"] == [
+            Cards.PAST_IN_FLAMES_1.value.identifier
+        ]
+
+    def test_maximum_size_yielding_fewer_search_results(self, client, snapshot):
+        search_settings = deepcopy(self.BASE_SEARCH_SETTINGS)
+        search_settings["filterSettings"]["maximumSize"] = 4
+        response = client.post(
+            reverse(views.post_search_results),
+            {
+                "searchSettings": search_settings,
+                "queries": [{"query": Cards.PAST_IN_FLAMES_1.value.name, "card_type": "CARD"}],
+            },
+            content_type="application/json",
+        )
+        snapshot_response(response, snapshot)
+        assert response.status_code == 200
+        assert response.json()["results"][Cards.PAST_IN_FLAMES_1.value.name]["CARD"] == [
+            Cards.PAST_IN_FLAMES_2.value.identifier
+        ]
+
+    @pytest.mark.skip("TODO: implement proper error handling in this view.")
+    @pytest.mark.parametrize(
+        "json_body",
+        [
+            {
+                "searchSettings": BASE_SEARCH_SETTINGS,
+                "queries": {"query_garbage": Cards.BRAINSTORM.value.name, "card_type": "CARD"},
+            },
+            {
+                "searchSettings": BASE_SEARCH_SETTINGS,
+                "queries": {"query": Cards.BRAINSTORM.value.name, "card_type": "garbage"},
+            },
+            {
+                "searchSettings": BASE_SEARCH_SETTINGS,
+                "queries": {"query": Cards.BRAINSTORM.value.name, "card_type_garbage": "CARD"},
+            },
+        ],
+        ids=["invalid query field name", "invalid card type", "invalid card type field name"],
+    )
+    def test_response_to_malformed_json_body(self, client, snapshot, json_body):
+        response = client.post(reverse(views.post_search_results), json_body, content_type="application/json")
+        snapshot_response(response, snapshot)
+        assert response.status_code == 400
 
 
 class TestPostCards:
@@ -52,19 +314,13 @@ class TestPostCards:
         )
         snapshot_response(response, snapshot)
 
-    def test_response_to_malformed_card_identifier_list(self, client, snapshot):
-        response = client.post(
-            reverse(views.post_cards),
-            {"card_identifiers": "i should be a list but i ain't"},
-            content_type="application/json",
-        )
-        snapshot_response(response, snapshot)
-        assert response.status_code == 400
-
-    def test_response_to_malformed_json_body(self, client, snapshot):
-        response = client.post(
-            reverse(views.post_cards), {"test": "i should be a json body but i ain't"}, content_type="application/json"
-        )
+    @pytest.mark.parametrize(
+        "json_body",
+        [{"test": "i should be a json body but i ain't"}, {"card_identifiers": "i should be a list but i ain't"}],
+        ids=["missing card_identifiers entry", "invalid card_identifiers value"],
+    )
+    def test_response_to_malformed_json_body(self, client, snapshot, json_body):
+        response = client.post(reverse(views.post_cards), json_body, content_type="application/json")
         snapshot_response(response, snapshot)
         assert response.status_code == 400
 
@@ -110,12 +366,13 @@ class TestPostImportSiteDecklist:
         snapshot_response(response, snapshot)
         assert response.status_code == 400
 
-    def test_malformed_json_body(self, client, django_settings, snapshot):
-        response = client.post(
-            reverse(views.post_import_site_decklist),
-            {"test": "garbage and garbage accessories"},
-            content_type="application/json",
-        )
+    @pytest.mark.parametrize(
+        "json_body",
+        [{"url": "garbage and garbage accessories"}, {"test": "garbage and garbage accessories"}],
+        ids=["malformed url", "invalid url field name"],
+    )
+    def test_response_to_malformed_json_body(self, client, django_settings, snapshot, json_body):
+        response = client.post(reverse(views.post_import_site_decklist), json_body, content_type="application/json")
         snapshot_response(response, snapshot)
         assert response.status_code == 400
 

@@ -19,7 +19,7 @@
       }),
       'sources': list([
         dict({
-          'avgdpi': '800.00',
+          'avgdpi': '550.00',
           'description': 'Description for example_drive_1',
           'external_link': 'https://drive.google.com/open?id=1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
           'identifier': '1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
@@ -27,11 +27,11 @@
           'qty_cardbacks': '2',
           'qty_cards': '9',
           'qty_tokens': '1',
-          'size': '0.00 GB',
+          'size': '0.05 GB',
           'source_type': 'Google Drive',
         }),
         dict({
-          'avgdpi': '800.00',
+          'avgdpi': '400.00',
           'description': 'Description for example_drive_2',
           'external_link': None,
           'identifier': '18wZl7T9DU_lf2X5xYFiyH6pATVy8ZlOd',
@@ -43,7 +43,7 @@
           'source_type': 'Google Drive',
         }),
       ]),
-      'total_database_size': 1300,
+      'total_database_size': 58000000,
     }),
     'status_code': 200,
   })
@@ -58,7 +58,7 @@
       }),
       'sources': list([
         dict({
-          'avgdpi': '800.00',
+          'avgdpi': '600.00',
           'description': 'Description for example_drive_1',
           'external_link': 'https://drive.google.com/open?id=1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
           'identifier': '1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
@@ -66,11 +66,11 @@
           'qty_cardbacks': '0',
           'qty_cards': '2',
           'qty_tokens': '0',
-          'size': '0.00 GB',
+          'size': '0.01 GB',
           'source_type': 'Google Drive',
         }),
       ]),
-      'total_database_size': 200,
+      'total_database_size': 10000000,
     }),
     'status_code': 200,
   })
@@ -200,14 +200,14 @@
         'card_type': 'CARD',
         'date': '1st January, 2023',
         'download_link': 'https://drive.google.com/uc?id=1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5&export=download',
-        'dpi': 800,
+        'dpi': 600,
         'extension': 'png',
         'identifier': '1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5',
         'medium_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5',
         'name': 'Brainstorm',
         'priority': 2,
         'searchq': 'brainstorm',
-        'size': 100,
+        'size': 5000000,
         'small_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5',
         'source': 'example_drive_1',
         'source_id': 0,
@@ -219,14 +219,14 @@
         'card_type': 'CARD',
         'date': '1st January, 2023',
         'download_link': 'https://drive.google.com/uc?id=1IDtqSjJ4Yo45AnNA4SplOiN7ewibifMa&export=download',
-        'dpi': 800,
+        'dpi': 600,
         'extension': 'png',
         'identifier': '1IDtqSjJ4Yo45AnNA4SplOiN7ewibifMa',
         'medium_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1IDtqSjJ4Yo45AnNA4SplOiN7ewibifMa',
         'name': 'Island',
         'priority': 7,
         'searchq': 'island',
-        'size': 100,
+        'size': 5000000,
         'small_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1IDtqSjJ4Yo45AnNA4SplOiN7ewibifMa',
         'source': 'example_drive_1',
         'source_id': 0,
@@ -238,14 +238,14 @@
         'card_type': 'CARD',
         'date': '1st January, 2023',
         'download_link': 'https://drive.google.com/uc?id=1HsvTYs1jFGe1c8U1PnNZ9aB8jkAW7KU0&export=download',
-        'dpi': 800,
+        'dpi': 600,
         'extension': 'png',
         'identifier': '1HsvTYs1jFGe1c8U1PnNZ9aB8jkAW7KU0',
         'medium_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1HsvTYs1jFGe1c8U1PnNZ9aB8jkAW7KU0',
         'name': 'Island (William Bradford)',
         'priority': 6,
         'searchq': 'island',
-        'size': 100,
+        'size': 5000000,
         'small_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1HsvTYs1jFGe1c8U1PnNZ9aB8jkAW7KU0',
         'source': 'example_drive_1',
         'source_id': 0,
@@ -257,14 +257,14 @@
         'card_type': 'CARD',
         'date': '1st January, 2023',
         'download_link': 'https://drive.google.com/uc?id=1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1&export=download',
-        'dpi': 800,
+        'dpi': 600,
         'extension': 'png',
         'identifier': '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
         'medium_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
         'name': 'Past in Flames',
         'priority': 2,
         'searchq': 'past in flames',
-        'size': 100,
+        'size': 5000000,
         'small_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
         'source': 'example_drive_1',
         'source_id': 0,
@@ -278,14 +278,14 @@
         'card_type': 'TOKEN',
         'date': '1st January, 2023',
         'download_link': 'https://drive.google.com/uc?id=1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA&export=download',
-        'dpi': 800,
+        'dpi': 600,
         'extension': 'png',
         'identifier': '1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA',
         'medium_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA',
         'name': 'Goblin',
         'priority': 2,
         'searchq': 'goblin',
-        'size': 100,
+        'size': 5000000,
         'small_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA',
         'source': 'example_drive_1',
         'source_id': 0,
@@ -339,14 +339,14 @@
           'card_type': 'CARD',
           'date': '1st January, 2023',
           'download_link': 'https://drive.google.com/uc?id=17fopRCNRge72U8Hac8pApHZtEalx5kHy&export=download',
-          'dpi': 800,
+          'dpi': 600,
           'extension': 'png',
           'identifier': '17fopRCNRge72U8Hac8pApHZtEalx5kHy',
           'medium_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w800-h800&id=17fopRCNRge72U8Hac8pApHZtEalx5kHy',
           'name': 'Delver of Secrets',
           'priority': 2,
           'searchq': 'delver of secrets',
-          'size': 100,
+          'size': 5000000,
           'small_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w400-h400&id=17fopRCNRge72U8Hac8pApHZtEalx5kHy',
           'source': 'example_drive_1',
           'source_id': 0,
@@ -358,14 +358,14 @@
           'card_type': 'TOKEN',
           'date': '1st January, 2023',
           'download_link': 'https://drive.google.com/uc?id=1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA&export=download',
-          'dpi': 800,
+          'dpi': 600,
           'extension': 'png',
           'identifier': '1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA',
           'medium_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA',
           'name': 'Goblin',
           'priority': 2,
           'searchq': 'goblin',
-          'size': 100,
+          'size': 5000000,
           'small_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA',
           'source': 'example_drive_1',
           'source_id': 0,
@@ -386,14 +386,14 @@
           'card_type': 'TOKEN',
           'date': '1st January, 2023',
           'download_link': 'https://drive.google.com/uc?id=1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA&export=download',
-          'dpi': 800,
+          'dpi': 600,
           'extension': 'png',
           'identifier': '1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA',
           'medium_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA',
           'name': 'Goblin',
           'priority': 2,
           'searchq': 'goblin',
-          'size': 100,
+          'size': 5000000,
           'small_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA',
           'source': 'example_drive_1',
           'source_id': 0,
@@ -414,14 +414,14 @@
           'card_type': 'TOKEN',
           'date': '1st January, 2023',
           'download_link': 'https://drive.google.com/uc?id=1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA&export=download',
-          'dpi': 800,
+          'dpi': 600,
           'extension': 'png',
           'identifier': '1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA',
           'medium_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA',
           'name': 'Goblin',
           'priority': 2,
           'searchq': 'goblin',
-          'size': 100,
+          'size': 5000000,
           'small_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA',
           'source': 'example_drive_1',
           'source_id': 0,
@@ -434,13 +434,13 @@
     'status_code': 200,
   })
 # ---
-# name: TestPostCards.test_response_to_malformed_card_identifier_list
+# name: TestPostCards.test_response_to_malformed_json_body[invalid card_identifiers value]
   dict({
     'content': b'Malformed JSON body.',
     'status_code': 400,
   })
 # ---
-# name: TestPostCards.test_response_to_malformed_json_body
+# name: TestPostCards.test_response_to_malformed_json_body[missing card_identifiers entry]
   dict({
     'content': b'Malformed JSON body.',
     'status_code': 400,
@@ -458,9 +458,15 @@
     'status_code': 400,
   })
 # ---
-# name: TestPostImportSiteDecklist.test_malformed_json_body
+# name: TestPostImportSiteDecklist.test_response_to_malformed_json_body[invalid url field name]
   dict({
     'content': b'No decklist URL provided.',
+    'status_code': 400,
+  })
+# ---
+# name: TestPostImportSiteDecklist.test_response_to_malformed_json_body[malformed url]
+  dict({
+    'content': b'The specified decklist URL does not match any known import sites.',
     'status_code': 400,
   })
 # ---
@@ -597,6 +603,224 @@
         1 Delver of Secrets
         3 Past in Flames
       ''',
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostSearchResults.test_complex_search
+  dict({
+    'json': dict({
+      'results': dict({
+        'Brainstorm': dict({
+          'CARD': list([
+            '1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5',
+          ]),
+        }),
+        'Goblin': dict({
+          'TOKEN': list([
+            '1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA',
+          ]),
+        }),
+        'Island': dict({
+          'CARD': list([
+            '1IDtqSjJ4Yo45AnNA4SplOiN7ewibifMa',
+            '1HsvTYs1jFGe1c8U1PnNZ9aB8jkAW7KU0',
+          ]),
+        }),
+        'Simple Cube': dict({
+          'CARDBACK': list([
+            '1JtXL6Ca9nQkvhwZZRR9ZuKA9_DzsFf1V',
+          ]),
+        }),
+        'Simple Lotus': dict({
+          'CARDBACK': list([
+            '1oigI6wz0zA--pNMuExKTs40kBNH6VRP_',
+          ]),
+        }),
+      }),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostSearchResults.test_fuzzy_search
+  dict({
+    'json': dict({
+      'results': dict({
+        'past in': dict({
+          'CARD': list([
+            '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
+            '1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
+          ]),
+        }),
+      }),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostSearchResults.test_maximum_dpi_yielding_no_search_results
+  dict({
+    'json': dict({
+      'results': dict({
+        'Simple Cube': dict({
+          'CARDBACK': list([
+          ]),
+        }),
+      }),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostSearchResults.test_maximum_size_yielding_fewer_search_results
+  dict({
+    'json': dict({
+      'results': dict({
+        'Past in Flames': dict({
+          'CARD': list([
+            '1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
+          ]),
+        }),
+      }),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostSearchResults.test_minimum_dpi_yielding_fewer_search_results
+  dict({
+    'json': dict({
+      'results': dict({
+        'Past in Flames': dict({
+          'CARD': list([
+            '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
+          ]),
+        }),
+      }),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostSearchResults.test_minimum_dpi_yielding_no_search_results
+  dict({
+    'json': dict({
+      'results': dict({
+        'Simple Cube': dict({
+          'CARDBACK': list([
+          ]),
+        }),
+      }),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostSearchResults.test_priority_ordering_in_search_results
+  dict({
+    'json': dict({
+      'results': dict({
+        'Island': dict({
+          'CARD': list([
+            '1IDtqSjJ4Yo45AnNA4SplOiN7ewibifMa',
+            '1HsvTYs1jFGe1c8U1PnNZ9aB8jkAW7KU0',
+          ]),
+        }),
+      }),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostSearchResults.test_search_for_card_with_versions_from_two_sources
+  dict({
+    'json': dict({
+      'results': dict({
+        'Past in Flames': dict({
+          'CARD': list([
+            '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
+            '1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
+          ]),
+        }),
+      }),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostSearchResults.test_search_for_card_with_versions_from_two_sources_under_reversed_search_order
+  dict({
+    'json': dict({
+      'results': dict({
+        'Past in Flames': dict({
+          'CARD': list([
+            '1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
+            '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
+          ]),
+        }),
+      }),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostSearchResults.test_search_for_card_with_versions_from_two_sources_with_all_sources_disabled
+  dict({
+    'json': dict({
+      'results': dict({
+        'Past in Flames': dict({
+          'CARD': list([
+          ]),
+        }),
+      }),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostSearchResults.test_search_for_card_with_versions_from_two_sources_with_one_source_disabled
+  dict({
+    'json': dict({
+      'results': dict({
+        'Past in Flames': dict({
+          'CARD': list([
+            '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
+          ]),
+        }),
+      }),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostSearchResults.test_search_for_single_card
+  dict({
+    'json': dict({
+      'results': dict({
+        'Brainstorm': dict({
+          'CARD': list([
+            '1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5',
+          ]),
+        }),
+      }),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostSearchResults.test_search_for_single_cardback
+  dict({
+    'json': dict({
+      'results': dict({
+        'Simple Lotus': dict({
+          'CARDBACK': list([
+            '1oigI6wz0zA--pNMuExKTs40kBNH6VRP_',
+          ]),
+        }),
+      }),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostSearchResults.test_search_for_single_token
+  dict({
+    'json': dict({
+      'results': dict({
+        'Goblin': dict({
+          'TOKEN': list([
+            '1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA',
+          ]),
+        }),
+      }),
     }),
     'status_code': 200,
   })

@@ -390,7 +390,6 @@ class TestFrontend:
                 source=Sources.EXAMPLE_DRIVE_2.value,
             )
 
-    # TODO: replicate this test in the new frontend
     def test_fuzzy_search(self, chrome_driver):
         chrome_driver.find_element(By.ID, value="btn_settings").click()
         time.sleep(1)
@@ -409,7 +408,6 @@ class TestFrontend:
             source=Sources.EXAMPLE_DRIVE_1.value,
         )
 
-    # TODO: replicate this test in the new frontend
     def test_search_when_all_drives_disabled(self, chrome_driver):
         chrome_driver.find_element(By.ID, value="btn_settings").click()
         time.sleep(1)
@@ -525,7 +523,6 @@ class TestFrontend:
             source=Sources.EXAMPLE_DRIVE_1.value,
         )
 
-    # TODO: replicate this test in the new frontend
     def test_priority_ordering(self, chrome_driver):
         self.load_review_page_with_search_string(chrome_driver, "island")
 
@@ -549,7 +546,6 @@ class TestFrontend:
             source=Sources.EXAMPLE_DRIVE_1.value,
         )
 
-    # TODO: replicate this test in the new frontend
     def test_source_default_ordering(self, chrome_driver):
         self.load_review_page_with_search_string(chrome_driver, "past in flames")
 
@@ -563,7 +559,6 @@ class TestFrontend:
             source=Sources.EXAMPLE_DRIVE_1.value,
         )
 
-    # TODO: replicate this test in the new frontend
     def test_source_non_default_ordering(self, chrome_driver):
         chrome_driver.find_element(By.ID, value="btn_settings").click()
         time.sleep(1)
