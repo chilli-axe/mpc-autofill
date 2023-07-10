@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2019-09/schema",
+  "$id": "filter_settings.json",
+  "title": "Filter Settings",
+  "type": "object",
+  "properties": {
+    "minimumDPI": {
+      "type": "number",
+      "description": "The minimum DPI that cards must meet to be included in search results",
+      "minimum": 0
+    },
+    "maximumDPI": {
+      "type": "number",
+      "description": "The maximum DPI that cards can have to be included in search results",
+      "minimum": 0
+    },
+    "maximumSize": {
+      "type": "number",
+      "description": "The maximum filesize that cards can have to be included in search results",
+      "minimum": 0
+    }
+  },
+  "required": ["minimumDPI", "maximumDPI", "maximumSize"],
+  "additionalProperties": false
+}

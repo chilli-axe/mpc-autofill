@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2019-09/schema",
+  "$id": "search_type_settings.json",
+  "title": "Search Type Settings",
+  "type": "object",
+  "properties": {
+    "fuzzySearch": {
+      "description": "Whether fuzzy search is enabled",
+      "type": "boolean"
+    }
+  },
+  "required": ["fuzzySearch"],
+  "additionalProperties": false
+}

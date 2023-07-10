@@ -1,19 +1,16 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { FromSchema } from "json-schema-to-ts";
 import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
 
 import type { AppDispatch, RootState } from "@/app/store";
-import {
-  filterSettingsSchema,
-  searchSettingsSchema,
-  searchTypeSettingsSchema,
-  sourceRowSchema,
-  sourceSettingsSchema,
-} from "@/common/schemas";
-// import {ThunkDispatch} from "redux-thunk";
+export type {
+  FilterSettings,
+  SearchSettings,
+  SearchTypeSettings,
+  SourceRow,
+  SourceSettings,
+} from "@/common/schema_types";
 
 type DispatchFunc = () => AppDispatch;
-type StoreFunc = () => RootState;
 export const useAppDispatch: DispatchFunc = useDispatch;
 export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
 
@@ -157,12 +154,6 @@ export interface BackendState {
   url: string | null;
   // TODO: connection status stuff in here probably
 }
-
-export type SourceRow = FromSchema<typeof sourceRowSchema>;
-export type SearchTypeSettings = FromSchema<typeof searchTypeSettingsSchema>;
-export type FilterSettings = FromSchema<typeof filterSettingsSchema>;
-export type SourceSettings = FromSchema<typeof sourceSettingsSchema>;
-export type SearchSettings = FromSchema<typeof searchSettingsSchema>;
 
 export interface ImportSite {
   name: string;

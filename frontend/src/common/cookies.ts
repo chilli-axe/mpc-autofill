@@ -2,7 +2,7 @@
  * Data API for interacting with anything stored in cookies or local storage.
  */
 
-import Ajv from "ajv";
+import Ajv2019 from "ajv/dist/2019";
 import Cookies from "js-cookie";
 
 import {
@@ -14,7 +14,6 @@ import {
   MinimumDPI,
   SearchSettingsKey,
 } from "@/common/constants";
-import { searchSettingsSchema } from "@/common/schemas";
 import {
   SearchSettings,
   SourceDocument,
@@ -22,7 +21,15 @@ import {
   SourceRow,
 } from "@/common/types";
 
-const ajv = new Ajv();
+import * as SearchSettingsSchema from "../../../common/schemas/search_settings.json";
+const ajv = new Ajv2019({
+  schemas: [
+    require("../../../common/schemas/subschemas/filter_settings.json"),
+    require("../../../common/schemas/subschemas/search_type_settings.json"),
+    require("../../../common/schemas/subschemas/source_row.json"),
+    require("../../../common/schemas/subschemas/source_settings.json"),
+  ],
+});
 
 //# region CSRF
 // TODO: unsure if we still need this.
@@ -51,7 +58,7 @@ export function getLocalStorageSearchSettings(
   const rawSettings = JSON.parse(
     localStorage.getItem(SearchSettingsKey) ?? "{}"
   );
-  const validate = ajv.compile(searchSettingsSchema);
+  const validate = ajv.compile<SearchSettings>(SearchSettingsSchema);
   const rawSettingsValid = validate(rawSettings);
   if (rawSettingsValid) {
     // reconcile against sourceDocuments

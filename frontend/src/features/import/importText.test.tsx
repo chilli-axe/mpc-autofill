@@ -182,6 +182,7 @@ test("importing multiple instances of one card by text into a non-empty project"
             front: {
               query: { query: "my search query", card_type: Card },
               selectedImage: cardDocument1.identifier,
+              selected: false,
             },
             back: null,
           },

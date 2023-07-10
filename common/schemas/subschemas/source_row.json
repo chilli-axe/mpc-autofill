@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2019-09/schema",
+  "$id": "source_row.json",
+  "title": "Source Row",
+  "type": "array",
+  "items": [
+    {
+      "type": "number",
+      "description": "The source's primary key",
+      "minimum": 0
+    },
+    {
+      "type": "boolean",
+      "description": "Whether the source is enabled for searching"
+    }
+  ],
+  "minItems": 2,
+  "maxItems": 2,
+  "additionalProperties": false
+}

@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2019-09/schema",
+  "$id": "search_setting.jsons",
+  "title": "Search Settings",
+  "type": "object",
+  "properties": {
+    "searchTypeSettings": { "$ref": "search_type_settings.json" },
+    "sourceSettings": { "$ref": "source_settings.json" },
+    "filterSettings": { "$ref": "filter_settings.json" }
+  },
+  "required": ["searchTypeSettings", "sourceSettings", "filterSettings"],
+  "additionalProperties": false
+}

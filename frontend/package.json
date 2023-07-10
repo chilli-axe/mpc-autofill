@@ -9,7 +9,8 @@
     "start": "next start",
     "lint": "next lint",
     "test": "jest --silent",
-    "test-update-snapshot": "jest --silent --updateSnapshot"
+    "test-update-snapshot": "jest --silent --updateSnapshot",
+    "generate-schema-types": "npx json2ts -i  \"../common/schemas/*.json\" --cwd ../common/schemas/subschemas > src/common/schema_types.ts"
   },
   "dependencies": {
     "@hello-pangea/dnd": "^16.2.0",
@@ -21,6 +22,7 @@
     "bootswatch": "^5.2.3",
     "file-saver": "^2.0.5",
     "js-cookie": "^3.0.1",
+    "json-schema-to-typescript": "^13.0.2",
     "lil-csv": "^1.4.5",
     "next": "^13.3.0",
     "nextjs-google-analytics": "^2.3.3",
@@ -66,7 +68,6 @@
     "jest-environment-jsdom": "^29.5.0",
     "jsdom": "^21.1.1",
     "jsdom-worker": "^0.3.0",
-    "json-schema-to-ts": "^2.7.2",
     "mini-css-extract-plugin": "^2.7.5",
     "msw": "^1.2.0",
     "next-router-mock": "^0.9.3",

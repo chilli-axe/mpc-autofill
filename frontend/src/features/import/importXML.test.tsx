@@ -372,6 +372,7 @@ test("importing a more complex XML into a non-empty project", async () => {
             front: {
               query: { query: "my search query", card_type: Card },
               selectedImage: cardDocument1.identifier,
+              selected: false,
             },
             back: null,
           },
