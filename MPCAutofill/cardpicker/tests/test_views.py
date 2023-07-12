@@ -264,6 +264,9 @@ class TestPostSearchResults:
         "json_body",
         [
             {},
+            ["test"],
+            {"searchSettings": "test2", "queries": {"query_garbage": Cards.BRAINSTORM.value.name, "card_type": "CARD"}},
+            {"garbage": "test", "searchSettings": BASE_SEARCH_SETTINGS},
             {
                 "searchSettings": BASE_SEARCH_SETTINGS,
                 "queries": {"query_garbage": Cards.BRAINSTORM.value.name, "card_type": "CARD"},
@@ -277,7 +280,15 @@ class TestPostSearchResults:
                 "queries": {"query": Cards.BRAINSTORM.value.name, "card_type_garbage": "CARD"},
             },
         ],
-        ids=["empty json body", "invalid query field name", "invalid card type", "invalid card type field name"],
+        ids=[
+            "empty json body",
+            "gave it an array instead of an object",
+            "search settings not specified",
+            "queries not specified",
+            "invalid query field name",
+            "invalid card type",
+            "invalid card type field name",
+        ],
     )
     def test_response_to_malformed_json_body(self, client, snapshot, json_body):
         response = client.post(reverse(views.post_search_results), json_body, content_type="application/json")

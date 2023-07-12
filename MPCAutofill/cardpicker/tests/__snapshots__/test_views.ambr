@@ -732,6 +732,12 @@
     'status_code': 400,
   })
 # ---
+# name: TestPostSearchResults.test_response_to_malformed_json_body[gave it an array instead of an object]
+  dict({
+    'content': b"The provided JSON body is invalid:\n\n['test'] is not of type 'object'",
+    'status_code': 400,
+  })
+# ---
 # name: TestPostSearchResults.test_response_to_malformed_json_body[invalid card type field name]
   dict({
     'content': b"The provided JSON body is invalid:\n\n{'query': 'Brainstorm', 'card_type_garbage': 'CARD'} is not of type 'array'",
@@ -747,6 +753,18 @@
 # name: TestPostSearchResults.test_response_to_malformed_json_body[invalid query field name]
   dict({
     'content': b"The provided JSON body is invalid:\n\n{'query_garbage': 'Brainstorm', 'card_type': 'CARD'} is not of type 'array'",
+    'status_code': 400,
+  })
+# ---
+# name: TestPostSearchResults.test_response_to_malformed_json_body[queries not specified]
+  dict({
+    'content': b"The provided JSON body is invalid:\n\n'queries' is a required property",
+    'status_code': 400,
+  })
+# ---
+# name: TestPostSearchResults.test_response_to_malformed_json_body[search settings not specified]
+  dict({
+    'content': b"The provided JSON body is invalid:\n\n'test2' is not of type 'object'",
     'status_code': 400,
   })
 # ---
