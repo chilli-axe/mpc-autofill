@@ -295,6 +295,11 @@ class TestPostSearchResults:
         snapshot_response(response, snapshot)
         assert response.status_code == 400
 
+    def test_get_request(self, client, django_settings, snapshot):
+        response = client.get(reverse(views.post_search_results))
+        snapshot_response(response, snapshot)
+        assert response.status_code == 400
+
 
 class TestPostCards:
     @pytest.fixture(autouse=True)
@@ -327,8 +332,8 @@ class TestPostCards:
 
     @pytest.mark.parametrize(
         "json_body",
-        [{"test": "i should be a json body but i ain't"}, {"card_identifiers": "i should be a list but i ain't"}],
-        ids=["missing card_identifiers entry", "invalid card_identifiers value"],
+        [{}, {"test": "i should be a json body but i ain't"}, {"card_identifiers": "i should be a list but i ain't"}],
+        ids=["empty json body", "missing card_identifiers entry", "invalid card_identifiers value"],
     )
     def test_response_to_malformed_json_body(self, client, snapshot, json_body):
         response = client.post(reverse(views.post_cards), json_body, content_type="application/json")
@@ -379,8 +384,8 @@ class TestPostImportSiteDecklist:
 
     @pytest.mark.parametrize(
         "json_body",
-        [{"url": "garbage and garbage accessories"}, {"test": "garbage and garbage accessories"}],
-        ids=["malformed url", "invalid url field name"],
+        [{}, {"url": "garbage and garbage accessories"}, {"test": "garbage and garbage accessories"}],
+        ids=["empty json body", "malformed url", "invalid url field name"],
     )
     def test_response_to_malformed_json_body(self, client, django_settings, snapshot, json_body):
         response = client.post(reverse(views.post_import_site_decklist), json_body, content_type="application/json")

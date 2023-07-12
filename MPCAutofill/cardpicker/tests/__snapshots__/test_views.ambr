@@ -434,15 +434,21 @@
     'status_code': 200,
   })
 # ---
+# name: TestPostCards.test_response_to_malformed_json_body[empty json body]
+  dict({
+    'content': b"Malformed JSON body:\n\n'card_identifiers' is a required property",
+    'status_code': 400,
+  })
+# ---
 # name: TestPostCards.test_response_to_malformed_json_body[invalid card_identifiers value]
   dict({
-    'content': b'Malformed JSON body.',
+    'content': b'Malformed JSON body:\n\n"i should be a list but i ain\'t" is not of type \'array\'',
     'status_code': 400,
   })
 # ---
 # name: TestPostCards.test_response_to_malformed_json_body[missing card_identifiers entry]
   dict({
-    'content': b'Malformed JSON body.',
+    'content': b"Malformed JSON body:\n\n'card_identifiers' is a required property",
     'status_code': 400,
   })
 # ---
@@ -458,9 +464,15 @@
     'status_code': 400,
   })
 # ---
+# name: TestPostImportSiteDecklist.test_response_to_malformed_json_body[empty json body]
+  dict({
+    'content': b"Malformed JSON body:\n\n'url' is a required property",
+    'status_code': 400,
+  })
+# ---
 # name: TestPostImportSiteDecklist.test_response_to_malformed_json_body[invalid url field name]
   dict({
-    'content': b'No decklist URL provided.',
+    'content': b"Malformed JSON body:\n\n'url' is a required property",
     'status_code': 400,
   })
 # ---
@@ -655,6 +667,12 @@
       }),
     }),
     'status_code': 200,
+  })
+# ---
+# name: TestPostSearchResults.test_get_request
+  dict({
+    'content': b'Expected POST request.',
+    'status_code': 400,
   })
 # ---
 # name: TestPostSearchResults.test_maximum_dpi_yielding_no_search_results

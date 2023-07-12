@@ -7,7 +7,7 @@ from random import sample
 from typing import Any, Callable, Optional, TypeVar, Union, cast
 
 from blog.models import BlogPost
-from jsonschema import ValidationError
+from jsonschema import ValidationError, validate
 
 from django.conf import settings
 from django.http import (
@@ -447,14 +447,21 @@ def post_cards(request: HttpRequest) -> HttpResponse:
     if request.method == "POST":
         json_body = json.loads(request.body)
 
-        if "card_identifiers" not in json_body.keys() or not (
-            isinstance((card_identifiers := json_body["card_identifiers"] or []), list)
-            and all([isinstance(x, str) for x in card_identifiers])
-        ):
-            return HttpResponseBadRequest("Malformed JSON body.")
+        try:
+            validate(
+                json_body,
+                schema={
+                    "type": "object",
+                    "properties": {"card_identifiers": {"type": "array", "items": {"type": "string"}}},
+                    "required": ["card_identifiers"],
+                    "additionalProperties": False,
+                },
+            )
+        except ValidationError as e:
+            return HttpResponseBadRequest(f"Malformed JSON body:\n\n{e.message}")
 
         # TODO: pagination, e.g. only process up to 100 at a time
-        results = {x.identifier: x.to_dict() for x in Card.objects.filter(identifier__in=card_identifiers)}
+        results = {x.identifier: x.to_dict() for x in Card.objects.filter(identifier__in=json_body["card_identifiers"])}
         return JsonResponse({"results": results})
     else:
         return HttpResponseBadRequest("Expected POST request.")
@@ -510,7 +517,21 @@ def post_import_site_decklist(request: HttpRequest) -> HttpResponse:
 
     if request.method == "POST":
         json_body = json.loads(request.body)
-        url = json_body.get("url", None)
+
+        try:
+            validate(
+                json_body,
+                schema={
+                    "type": "object",
+                    "properties": {"url": {"type": "string"}},
+                    "required": ["url"],
+                    "additionalProperties": False,
+                },
+            )
+        except ValidationError as e:
+            return HttpResponseBadRequest(f"Malformed JSON body:\n\n{e.message}")
+
+        url = json_body["url"]
         if url is None:
             return HttpResponseBadRequest("No decklist URL provided.")
         for site in ImportSites:
