@@ -10,7 +10,7 @@
     "lint": "next lint",
     "test": "jest --silent",
     "test-update-snapshot": "jest --silent --updateSnapshot",
-    "generate-schema-types": "npx json2ts -i  \"../common/schemas/*.json\" --cwd ../common/schemas/subschemas > src/common/schema_types.ts"
+    "generate-schema-types": "npx json2ts -i  \"../common/schemas/*.json\" --cwd ../common/schemas > src/common/schema_types.ts"
   },
   "dependencies": {
     "@hello-pangea/dnd": "^16.2.0",

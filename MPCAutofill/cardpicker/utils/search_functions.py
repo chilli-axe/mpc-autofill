@@ -316,35 +316,43 @@ def parse_json_body_as_search_data(json_body: dict[str, Any]) -> tuple[SearchSet
     :raises: ValidationError
     """
 
-    search_settings = json_body.get("searchSettings", {})
-    search_query = json_body.get("queries", {})
-
     schema_directory = Path(__file__).parent.parent.parent.parent / "common" / "schemas"
     registry = Registry().with_resources(
         [
+            (schema_name, Resource.from_contents(json.loads((schema_directory / schema_name).read_text())))
+            for schema_name in ["search_query.json", "search_settings.json"]
+        ]
+        + [
             (
-                path.name,
-                Resource.from_contents(json.loads(path.read_text())),
+                "search_queries.json",
+                Resource.from_contents(
+                    {
+                        "$schema": "https://json-schema.org/draft/2019-09/schema",
+                        "$id": "search_queries.json",
+                        "type": "array",
+                        "items": [{"$ref": "search_query.json"}],
+                    }
+                ),
             )
-            for path in [
-                schema_directory / "search_query.json",
-                schema_directory / "subschemas" / "filter_settings.json",
-                schema_directory / "subschemas" / "search_type_settings.json",
-                schema_directory / "subschemas" / "source_row.json",
-                schema_directory / "subschemas" / "source_settings.json",
-            ]
         ]
     )
-    search_settings_schema_validator = Draft201909Validator(
-        json.loads((schema_directory / "search_settings.json").read_text()), registry=registry
-    )
-    search_query_schema_validator = Draft201909Validator(
-        {"type": "array", "items": [{"$ref": "search_query.json"}]}, registry=registry
+    schema_validator = Draft201909Validator(
+        {
+            "$schema": "https://json-schema.org/draft/2019-09/schema",
+            "$id": "search_data",
+            "type": "object",
+            "properties": {
+                "searchSettings": {"$ref": "search_settings.json"},
+                "queries": {"$ref": "search_queries.json"},
+            },
+            "required": ["searchSettings", "queries"],
+            "allowAdditionalProperties": False,
+        },
+        registry=registry,
     )
 
-    # the below two lines can raise ValidationError
-    search_settings_schema_validator.validate(search_settings)
-    search_query_schema_validator.validate(search_query)
+    # the below line may raise ValidationError
+    schema_validator.validate(json_body)
 
     return SearchSettings.from_json_body(json_body), SearchQuery.list_from_json_body(json_body)
 

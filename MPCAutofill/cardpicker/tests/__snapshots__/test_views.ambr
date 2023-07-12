@@ -728,7 +728,7 @@
 # ---
 # name: TestPostSearchResults.test_response_to_malformed_json_body[empty json body]
   dict({
-    'content': b"The provided JSON body is invalid:\n\n'searchTypeSettings' is a required property",
+    'content': b"The provided JSON body is invalid:\n\n'searchSettings' is a required property",
     'status_code': 400,
   })
 # ---

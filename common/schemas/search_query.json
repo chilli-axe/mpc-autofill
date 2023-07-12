@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2019-09/schema",
-  "$id": "queries.json",
+  "$id": "search_query.json",
   "title": "Search Query",
   "type": "object",
   "properties": {

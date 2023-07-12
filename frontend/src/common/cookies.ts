@@ -22,14 +22,7 @@ import {
 } from "@/common/types";
 
 import * as SearchSettingsSchema from "../../../common/schemas/search_settings.json";
-const ajv = new Ajv2019({
-  schemas: [
-    require("../../../common/schemas/subschemas/filter_settings.json"),
-    require("../../../common/schemas/subschemas/search_type_settings.json"),
-    require("../../../common/schemas/subschemas/source_row.json"),
-    require("../../../common/schemas/subschemas/source_settings.json"),
-  ],
-});
+const ajv = new Ajv2019();
 
 //# region CSRF
 // TODO: unsure if we still need this.
