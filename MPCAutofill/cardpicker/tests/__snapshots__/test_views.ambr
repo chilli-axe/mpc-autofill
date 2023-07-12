@@ -726,6 +726,30 @@
     'status_code': 200,
   })
 # ---
+# name: TestPostSearchResults.test_response_to_malformed_json_body[empty json body]
+  dict({
+    'content': b"The provided JSON body is invalid:\n\n'searchTypeSettings' is a required property",
+    'status_code': 400,
+  })
+# ---
+# name: TestPostSearchResults.test_response_to_malformed_json_body[invalid card type field name]
+  dict({
+    'content': b"The provided JSON body is invalid:\n\n{'query': 'Brainstorm', 'card_type_garbage': 'CARD'} is not of type 'array'",
+    'status_code': 400,
+  })
+# ---
+# name: TestPostSearchResults.test_response_to_malformed_json_body[invalid card type]
+  dict({
+    'content': b"The provided JSON body is invalid:\n\n{'query': 'Brainstorm', 'card_type': 'garbage'} is not of type 'array'",
+    'status_code': 400,
+  })
+# ---
+# name: TestPostSearchResults.test_response_to_malformed_json_body[invalid query field name]
+  dict({
+    'content': b"The provided JSON body is invalid:\n\n{'query_garbage': 'Brainstorm', 'card_type': 'CARD'} is not of type 'array'",
+    'status_code': 400,
+  })
+# ---
 # name: TestPostSearchResults.test_search_for_card_with_versions_from_two_sources
   dict({
     'json': dict({

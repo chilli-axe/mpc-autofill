@@ -1,6 +1,8 @@
+import json
 import threading
 from dataclasses import dataclass
 from datetime import timedelta
+from pathlib import Path
 from typing import Any, Callable, Optional, TypeVar, cast
 
 from elasticsearch import Elasticsearch
@@ -8,7 +10,9 @@ from elasticsearch.exceptions import ConnectionError as ElasticConnectionError
 from elasticsearch_dsl.document import Search
 from elasticsearch_dsl.index import Index
 from elasticsearch_dsl.query import Bool, Match, Range, Term, Terms
+from jsonschema import Draft201909Validator
 from Levenshtein import distance
+from referencing import Registry, Resource
 
 from django.conf import settings
 from django.http import HttpRequest
@@ -189,7 +193,6 @@ def search_new(s: Search, source_key: str, page: int = 0) -> dict[str, Any]:
 
 @dataclass(frozen=True, eq=True)
 class SearchSettings:
-    # TODO: would be neat to use json schema for this
     fuzzy_search: bool
     sources: list[str]
     min_dpi: int
@@ -262,7 +265,6 @@ class SearchQuery:
 
         # uniqueness of queries guaranteed
         query_dicts = json_body["queries"]
-        # TODO: use json schema (shared with frontend) to validate this data
         queries = set()
         if query_dicts:
             for query_dict in query_dicts:
@@ -307,6 +309,44 @@ class SearchQuery:
             hits = sorted(hits_iterable, key=lambda x: source_order[x.source])
 
         return [x.identifier for x in hits]
+
+
+def parse_json_body_as_search_data(json_body: dict[str, Any]) -> tuple[SearchSettings, list[SearchQuery]]:
+    """
+    :raises: ValidationError
+    """
+
+    search_settings = json_body.get("searchSettings", {})
+    search_query = json_body.get("queries", {})
+
+    schema_directory = Path(__file__).parent.parent.parent.parent / "common" / "schemas"
+    registry = Registry().with_resources(
+        [
+            (
+                path.name,
+                Resource.from_contents(json.loads(path.read_text())),
+            )
+            for path in [
+                schema_directory / "search_query.json",
+                schema_directory / "subschemas" / "filter_settings.json",
+                schema_directory / "subschemas" / "search_type_settings.json",
+                schema_directory / "subschemas" / "source_row.json",
+                schema_directory / "subschemas" / "source_settings.json",
+            ]
+        ]
+    )
+    search_settings_schema_validator = Draft201909Validator(
+        json.loads((schema_directory / "search_settings.json").read_text()), registry=registry
+    )
+    search_query_schema_validator = Draft201909Validator(
+        {"type": "array", "items": [{"$ref": "search_query.json"}]}, registry=registry
+    )
+
+    # the below two lines can raise ValidationError
+    search_settings_schema_validator.validate(search_settings)
+    search_query_schema_validator.validate(search_query)
+
+    return SearchSettings.from_json_body(json_body), SearchQuery.list_from_json_body(json_body)
 
 
 # endregion

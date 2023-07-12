@@ -1,12 +1,13 @@
+import datetime as dt
 import itertools
 import json
 import time
 from collections import defaultdict
-from datetime import timedelta
 from random import sample
 from typing import Any, Callable, Optional, TypeVar, Union, cast
 
 from blog.models import BlogPost
+from jsonschema import ValidationError
 
 from django.conf import settings
 from django.http import (
@@ -28,9 +29,8 @@ from cardpicker.utils.patreon import get_patreon_campaign_details, get_patrons
 from cardpicker.utils.sanitisation import to_searchable
 from cardpicker.utils.search_functions import (
     SearchExceptions,
-    SearchQuery,
-    SearchSettings,
     build_context,
+    parse_json_body_as_search_data,
     ping_elasticsearch,
     query_es_card,
     query_es_cardback,
@@ -78,7 +78,9 @@ class ErrorWrappers:
 
 
 def index(request: HttpRequest, exception: Optional[str] = None) -> HttpResponse:
-    posts = [x.get_synopsis() for x in BlogPost.objects.filter(date_created__gte=timezone.now() - timedelta(days=14))]
+    posts = [
+        x.get_synopsis() for x in BlogPost.objects.filter(date_created__gte=timezone.now() - dt.timedelta(days=14))
+    ]
     return render(
         request,
         "cardpicker/index.html",
@@ -421,11 +423,11 @@ def post_search_results(request: HttpRequest) -> HttpResponse:
 
     if request.method == "POST":
         json_body = json.loads(request.body)
+
         try:
-            search_settings = SearchSettings.from_json_body(json_body)
-            queries = SearchQuery.list_from_json_body(json_body)
-        except KeyError as e:
-            return HttpResponseBadRequest(f"The provided JSON body is invalid. {e.__class__.__name__}: {str(e)}")
+            search_settings, queries = parse_json_body_as_search_data(json_body)
+        except ValidationError as e:
+            return HttpResponseBadRequest(f"The provided JSON body is invalid:\n\n{e.message}")
 
         if not ping_elasticsearch():
             return HttpResponseServerError("Search engine is offline.")

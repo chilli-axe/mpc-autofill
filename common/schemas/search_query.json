@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2019-09/schema",
+  "$id": "queries.json",
+  "title": "Search Query",
+  "type": "object",
+  "properties": {
+    "query": {
+      "type": ["string", "null"]
+    },
+    "card_type": {
+      "enum": ["CARD", "CARDBACK", "TOKEN"]
+    }
+  },
+  "required": ["query", "card_type"],
+  "additionalProperties": false
+}

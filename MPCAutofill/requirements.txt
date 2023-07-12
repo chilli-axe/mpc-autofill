@@ -14,6 +14,7 @@ django-user-agents~=0.4
 django-widget-tweaks~=1.4
 elasticsearch-dsl>=7.0.0,<8.0.0
 factory-boy~=3.2
+jsonschema~=4.18
 google-api-python-client~=2.86
 google-auth-httplib2~=0.1
 google-auth-oauthlib~=1.0

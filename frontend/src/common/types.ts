@@ -2,8 +2,10 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
 
 import type { AppDispatch, RootState } from "@/app/store";
+import { SearchQuery } from "@/common/schema_types";
 export type {
   FilterSettings,
+  SearchQuery,
   SearchSettings,
   SearchTypeSettings,
   SourceRow,
@@ -158,11 +160,6 @@ export interface BackendState {
 export interface ImportSite {
   name: string;
   url: string;
-}
-
-export interface SearchQuery {
-  query: string | null;
-  card_type: CardType; // TODO: rename this to `cardType` from `card_type`
 }
 
 export interface ProjectMember {

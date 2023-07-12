@@ -260,10 +260,10 @@ class TestPostSearchResults:
             Cards.PAST_IN_FLAMES_2.value.identifier
         ]
 
-    @pytest.mark.skip("TODO: implement proper error handling in this view.")
     @pytest.mark.parametrize(
         "json_body",
         [
+            {},
             {
                 "searchSettings": BASE_SEARCH_SETTINGS,
                 "queries": {"query_garbage": Cards.BRAINSTORM.value.name, "card_type": "CARD"},
@@ -277,7 +277,7 @@ class TestPostSearchResults:
                 "queries": {"query": Cards.BRAINSTORM.value.name, "card_type_garbage": "CARD"},
             },
         ],
-        ids=["invalid query field name", "invalid card type", "invalid card type field name"],
+        ids=["empty json body", "invalid query field name", "invalid card type", "invalid card type field name"],
     )
     def test_response_to_malformed_json_body(self, client, snapshot, json_body):
         response = client.post(reverse(views.post_search_results), json_body, content_type="application/json")
