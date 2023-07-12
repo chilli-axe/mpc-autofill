@@ -479,16 +479,6 @@ def get_dfc_pairs(request: HttpRequest) -> HttpResponse:
 
 
 @csrf_exempt
-def api_function_5(request: HttpRequest) -> HttpResponse:
-    """
-    Return a list of cardstocks.
-    """
-
-    cardstocks = [{"name": "S30", "can_be_foil": True}]  # TODO
-    return JsonResponse({"cardstocks": cardstocks})
-
-
-@csrf_exempt
 def get_cardbacks(request: HttpRequest) -> HttpResponse:
     """
     Return a list of cardbacks.
