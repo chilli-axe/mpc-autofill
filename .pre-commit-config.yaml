@@ -26,28 +26,31 @@ repos:
     hooks:
       - id: mypy
         args: [--config-file, mypy.ini, desktop-tool/, MPCAutofill/]
-        additional_dependencies:
-          [
+        additional_dependencies: [
+            # typing
             "django-stubs[compatible-mypy]",
             "types-Markdown",
             "types-selenium",
             "types-requests",
             "types-chardet",
-            "attrs",
-            "click",
-            "django-crispy-forms",
+            # shared between desktop tool and backend
+            "pytest~=7.3",
+            "ratelimit~=2.2",
+            # desktop tool
+            "attrs~=23.1",
+            "click==8.0.4",
+            "enlighten~=1.11",
+            # backend
+            "django-cors-headers~=3.14",
+            "django-crispy-forms~=1.14",
             "django-elasticsearch-dsl~=7.2",
-            "django-environ",
-            "django-user-agents",
-            "enlighten",
-            "google-api-python-client",
-            "oauth2client",
-            "Markdown",
-            "pytest",
-            "ratelimit",
-            "tqdm",
-            "django-widget-tweaks",
-            "django-cors-headers",
+            "django-environ~=0.10",
+            "django-user-agents~=0.4",
+            "django-widget-tweaks~=1.4",
+            "google-api-python-client~=2.86",
+            "oauth2client~=4.1",
+            "Markdown~=3.4",
+            "tqdm~=4.65",
           ]
         pass_filenames: false
   - repo: https://github.com/pre-commit/mirrors-prettier
