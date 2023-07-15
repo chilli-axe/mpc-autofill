@@ -30,9 +30,6 @@ import {
 import { selectBackendURL } from "@/features/backend/backendSlice";
 
 // dynamic base URL implementation retrieved from https://stackoverflow.com/a/69570628/13021511
-// TODO: i think we need to implement some custom stuff for error handling here
-//       as in to unpack the {name: <name>, message: <message>} json body provided by the backend for errors
-//       https://redux-toolkit.js.org/rtk-query/usage/error-handling
 const dynamicBaseQuery: BaseQueryFn<
   string | FetchArgs,
   unknown,
