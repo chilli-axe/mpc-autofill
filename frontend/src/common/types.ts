@@ -28,6 +28,16 @@ export type ThunkStatus = "idle" | "loading" | "succeeded" | "failed";
 export type CardType = "CARD" | "CARDBACK" | "TOKEN";
 export type Faces = "front" | "back";
 
+export interface APIError {
+  name: string | null;
+  message: string | null;
+}
+
+export interface ThunkStateBase {
+  status: ThunkStatus;
+  error: APIError | null;
+}
+
 export interface CardDocument {
   // This should match the data returned by `to_dict` on the `Card` Django model
   identifier: string;
@@ -53,16 +63,12 @@ export interface CardDocuments {
   [key: string]: CardDocument;
 }
 
-export interface CardDocumentsState {
+export interface CardDocumentsState extends ThunkStateBase {
   cardDocuments: CardDocuments;
-  status: ThunkStatus;
-  error: string | null;
 }
 
-export interface CardbacksState {
+export interface CardbacksState extends ThunkStateBase {
   cardbacks: Array<string>;
-  status: ThunkStatus;
-  error: string | null;
 }
 
 // TODO: create json schemas for these, infer types from them, and see if we can define the schema once between frontend and backend
@@ -82,7 +88,7 @@ export interface SourceDocuments {
   [pk: number]: SourceDocument;
 }
 
-export interface SourceDocumentsState {
+export interface SourceDocumentsState extends ThunkStateBase {
   sourceDocuments?: SourceDocuments; // null indicates the data has not yet loaded from the backend
 }
 
@@ -94,10 +100,8 @@ export interface SearchResults {
   [query: string]: SearchResultsForQuery;
 }
 
-export interface SearchResultsState {
+export interface SearchResultsState extends ThunkStateBase {
   searchResults: SearchResults;
-  status: ThunkStatus;
-  error: string | null;
 }
 
 export interface SourceContribution {
@@ -203,3 +207,7 @@ export type ProcessedLine = [
   ProjectMember | null,
   ProjectMember | null
 ];
+
+export interface ToastsState {
+  errors: { [key: string]: APIError };
+}

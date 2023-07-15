@@ -15,6 +15,8 @@ import {
   getGoogleAnalyticsConsent,
   setGoogleAnalyticsConsent,
 } from "@/common/cookies";
+import { useAppDispatch, useAppSelector } from "@/common/types";
+import { clearError, selectToastsErrors } from "@/features/toasts/toastsSlice";
 import DisableSSR from "@/features/ui/disableSSR";
 
 function GoogleAnalyticsConsentToast() {
@@ -31,11 +33,7 @@ function GoogleAnalyticsConsentToast() {
   };
 
   return (
-    <Toast
-      show={consent == undefined && !interacted}
-      delay={3000}
-      animation={true}
-    >
+    <Toast show={consent == undefined && !interacted} delay={3000}>
       <Toast.Header closeButton={false}>
         <strong className="me-auto">Cookie Usage</strong>
       </Toast.Header>
@@ -69,12 +67,48 @@ function GoogleAnalyticsConsentToast() {
   );
 }
 
+function ErrorMessageToast() {
+  const errors = useAppSelector(selectToastsErrors);
+  const dispatch = useAppDispatch();
+  return (
+    <>
+      {Object.entries(errors).map(([key, error]) => (
+        <Toast
+          show={error != null}
+          delay={7000}
+          autohide
+          key={`${key}-toast`}
+          onClose={() => dispatch(clearError(key))}
+        >
+          <Toast.Header key={`${key}-toast-header`}>
+            <strong className="me-auto" key={`${key}-toast-header-text`}>
+              An Error Occurred
+            </strong>
+          </Toast.Header>
+          <Toast.Body key={`${key}-toast-body`}>
+            <h6 key={`${key}-toast-name`}>{error?.name ?? "Unknown Error"}</h6>
+            <p key={`${key}-toast-body-text1`}>
+              We&apos;re sorry, but an error occurred while handling a request.
+            </p>
+            {error?.message != null && (
+              <p key={`${key}-toast-body-text2`}>
+                Error message:{" "}
+                <i key={`${key}-toast-body-text3`}>{error.message}</i>
+              </p>
+            )}
+          </Toast.Body>
+        </Toast>
+      ))}
+    </>
+  );
+}
+
 export function Toasts() {
   return (
     <DisableSSR>
       <ToastContainer position="top-start">
         <GoogleAnalyticsConsentToast />
-        {/* TODO: error message toasts here */}
+        <ErrorMessageToast />
       </ToastContainer>
     </DisableSSR>
   );

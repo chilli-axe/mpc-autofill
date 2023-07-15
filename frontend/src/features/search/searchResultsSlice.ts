@@ -5,20 +5,30 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 import { APISearch } from "@/app/api";
-import { createAppAsyncThunk, SearchResultsState } from "@/common/types";
+import { AppDispatch } from "@/app/store";
+import {
+  APIError,
+  createAppAsyncThunk,
+  SearchResultsState,
+} from "@/common/types";
 import { selectQueriesWithoutSearchResults } from "@/features/project/projectSlice";
+import { setError } from "@/features/toasts/toastsSlice";
 
-export const fetchCards = createAppAsyncThunk(
-  "searchResults/fetchCards",
-  async (arg, thunkAPI) => {
-    const state = thunkAPI.getState();
+const typePrefix = "searchResults/fetchCards";
+
+export const fetchSearchResults = createAppAsyncThunk(
+  typePrefix,
+  async (arg, { getState, rejectWithValue }) => {
+    const state = getState();
 
     const queriesToSearch = selectQueriesWithoutSearchResults(state);
 
     const backendURL = state.backend.url;
-    return queriesToSearch.length > 0 && backendURL != null
-      ? APISearch(backendURL, state.searchSettings, queriesToSearch)
-      : null;
+    if (queriesToSearch.length > 0 && backendURL != null) {
+      return await APISearch(backendURL, state.searchSettings, queriesToSearch); //.catch(error => rejectWithValue(error));
+    } else {
+      return null;
+    }
   }
 );
 
@@ -40,15 +50,35 @@ export const searchResultsSlice = createSlice({
     },
   },
   extraReducers(builder) {
-    builder.addCase(fetchCards.fulfilled, (state, action) => {
-      state.searchResults = { ...state.searchResults, ...action.payload };
-    });
-    builder.addCase(fetchCards.rejected, (state, action) => {
-      alert("fetching cards broke");
-    });
+    builder
+      .addCase(fetchSearchResults.pending, (state, action) => {
+        state.status = "loading";
+      })
+      .addCase(fetchSearchResults.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.searchResults = { ...state.searchResults, ...action.payload };
+      })
+      .addCase(fetchSearchResults.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = {
+          name: action.error.name ?? null,
+          message: action.error.message ?? null,
+        };
+      });
   },
 });
 export const { addSearchResults, clearSearchResults } =
   searchResultsSlice.actions;
 
 export default searchResultsSlice.reducer;
+
+export async function fetchSearchResultsAndReportError(dispatch: AppDispatch) {
+  try {
+    await dispatch(fetchSearchResults()).unwrap();
+  } catch (error: any) {
+    dispatch(
+      setError([typePrefix, { name: error.name, message: error.message }])
+    );
+    return null;
+  }
+}

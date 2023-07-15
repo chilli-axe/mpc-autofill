@@ -410,7 +410,27 @@ def insert_link(request: HttpRequest) -> HttpResponse:
 # region new API
 
 
+class NewErrorWrappers:
+    """
+    View function decorators which gracefully handle exceptions and allow the exception message to be displayed
+    to the user.
+    """
+
+    @staticmethod
+    def to_json(func: F) -> F:
+        def wrapper(*args: Any, **kwargs: Any) -> Union[F, HttpResponse]:
+            try:
+                return func(*args, **kwargs)
+            except Exception as e:
+                return JsonResponse(
+                    {"name": f"Unhandled {e.__class__.__name__}", "message": str(e.args[0])}, status=500
+                )
+
+        return cast(F, wrapper)
+
+
 @csrf_exempt
+@NewErrorWrappers.to_json
 def post_search_results(request: HttpRequest) -> HttpResponse:
     """
     Return the first page of search results for a given list of queries.
@@ -443,6 +463,7 @@ def post_search_results(request: HttpRequest) -> HttpResponse:
 
 
 @csrf_exempt
+@NewErrorWrappers.to_json
 def post_cards(request: HttpRequest) -> HttpResponse:
     if request.method == "POST":
         json_body = json.loads(request.body)
@@ -468,6 +489,7 @@ def post_cards(request: HttpRequest) -> HttpResponse:
 
 
 @csrf_exempt
+@NewErrorWrappers.to_json
 def get_sources(request: HttpRequest) -> HttpResponse:
     """
     Return a list of sources.
@@ -478,6 +500,7 @@ def get_sources(request: HttpRequest) -> HttpResponse:
 
 
 @csrf_exempt
+@NewErrorWrappers.to_json
 def get_dfc_pairs(request: HttpRequest) -> HttpResponse:
     """
     Return a list of double-faced cards. The unedited names are returned and the frontend is expected to sanitise them.
@@ -488,17 +511,22 @@ def get_dfc_pairs(request: HttpRequest) -> HttpResponse:
 
 
 @csrf_exempt
+@NewErrorWrappers.to_json
 def get_cardbacks(request: HttpRequest) -> HttpResponse:
     """
     Return a list of cardbacks.
     """
 
     # TODO: think about the best way to order these results (after ordering by priority)
+    #       this is causing cardbacks to have slot numbers out of order in the faceted grid picker
+    #       maybe this should be a POST endpoint that expects to be given search settings
+    #       we may also want to include controls on whether filters are applied to search settings or not?
     cardbacks = [x.identifier for x in Card.objects.filter(card_type=CardTypes.CARDBACK).order_by("-priority", "name")]
     return JsonResponse({"cardbacks": cardbacks})
 
 
 @csrf_exempt
+@NewErrorWrappers.to_json
 def get_import_sites(request: HttpRequest) -> HttpResponse:
     """
     Return a list of import sites.
@@ -510,6 +538,7 @@ def get_import_sites(request: HttpRequest) -> HttpResponse:
 
 
 @csrf_exempt
+@NewErrorWrappers.to_json
 def post_import_site_decklist(request: HttpRequest) -> HttpResponse:
     """
     Read the specified import site URL and process & return the associated decklist.
@@ -547,6 +576,7 @@ def post_import_site_decklist(request: HttpRequest) -> HttpResponse:
 
 
 @csrf_exempt
+@NewErrorWrappers.to_json
 def get_sample_cards(request: HttpRequest) -> HttpResponse:
     """
     Return a selection of cards you can query this database for.
@@ -578,6 +608,7 @@ def get_sample_cards(request: HttpRequest) -> HttpResponse:
 
 
 @csrf_exempt
+@NewErrorWrappers.to_json
 def get_contributions(request: HttpRequest) -> HttpResponse:
     """
     Return a summary of contributions to the database.
@@ -591,6 +622,7 @@ def get_contributions(request: HttpRequest) -> HttpResponse:
 
 
 @csrf_exempt
+@NewErrorWrappers.to_json
 def get_info(request: HttpRequest) -> HttpResponse:
     """
     Return a stack of metadata about the server for the frontend to display.
@@ -621,6 +653,8 @@ def get_info(request: HttpRequest) -> HttpResponse:
     )
 
 
+@csrf_exempt
+@NewErrorWrappers.to_json
 def get_search_engine_health(request: HttpRequest) -> HttpResponse:
     return JsonResponse({"online": ping_elasticsearch()})
 

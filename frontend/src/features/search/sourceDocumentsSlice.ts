@@ -5,17 +5,20 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 import { APIGetSources } from "@/app/api";
-import { RootState } from "@/app/store";
+import { AppDispatch, RootState } from "@/app/store";
 import { createAppAsyncThunk, SourceDocumentsState } from "@/common/types";
+import { setError } from "@/features/toasts/toastsSlice";
 
 const initialState = {
   sourceDocuments: undefined,
 } as SourceDocumentsState;
 
+const typePrefix = "sourceDocuments/fetchSourceDocuments";
+
 export const fetchSourceDocuments = createAppAsyncThunk(
-  "sourceDocuments/fetchSourceDocuments",
-  async (arg, thunkAPI) => {
-    const state = thunkAPI.getState();
+  typePrefix,
+  async (arg, { getState }) => {
+    const state = getState();
     return state.backend.url != null ? APIGetSources(state.backend.url) : null;
   }
 );
@@ -29,17 +32,37 @@ export const sourceDocumentsSlice = createSlice({
     },
   },
   extraReducers(builder) {
-    builder.addCase(fetchSourceDocuments.fulfilled, (state, action) => {
-      if (action.payload != null) {
+    builder
+      .addCase(fetchSourceDocuments.pending, (state, action) => {
+        state.status = "loading";
+      })
+      .addCase(fetchSourceDocuments.fulfilled, (state, action) => {
+        state.status = "succeeded";
         state.sourceDocuments = { ...state.sourceDocuments, ...action.payload };
-      }
-    });
-    builder.addCase(fetchSourceDocuments.rejected, (state, action) => {
-      alert("fetching sources broke");
-    });
+      })
+      .addCase(fetchSourceDocuments.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = {
+          name: action.error.name ?? null,
+          message: action.error.message ?? null,
+        };
+      });
   },
 });
 
 export default sourceDocumentsSlice.reducer;
 export const selectSourceDocuments = (state: RootState) =>
   state.sourceDocuments.sourceDocuments;
+
+export async function fetchSourceDocumentsAndReportError(
+  dispatch: AppDispatch
+) {
+  try {
+    await dispatch(fetchSourceDocuments()).unwrap();
+  } catch (error: any) {
+    dispatch(
+      setError([typePrefix, { name: error.name, message: error.message }])
+    );
+    return null;
+  }
+}

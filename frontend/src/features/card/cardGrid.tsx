@@ -15,7 +15,10 @@ import { selectBackendURL } from "@/features/backend/backendSlice";
 import { MemoizedCardDetailedView } from "@/features/card/cardDetailedView";
 import { MemoizedCardSlot } from "@/features/card/cardSlot";
 import { selectProjectMembers } from "@/features/project/projectSlice";
-import { fetchCardDocuments } from "@/features/search/cardDocumentsSlice";
+import {
+  fetchCardDocuments,
+  fetchCardDocumentsAndReportError,
+} from "@/features/search/cardDocumentsSlice";
 import { clearSearchResults } from "@/features/search/searchResultsSlice";
 import { Spinner } from "@/features/ui/spinner";
 
@@ -86,7 +89,7 @@ export function CardGrid() {
     // recalculate search results when search settings change
     if (backendURL != null && searchSettings.sourceSettings.sources != null) {
       dispatch(clearSearchResults());
-      dispatch(fetchCardDocuments());
+      fetchCardDocumentsAndReportError(dispatch);
     }
   }, [stringifiedSearchSettings]);
 

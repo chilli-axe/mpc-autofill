@@ -13,11 +13,9 @@ import Button from "react-bootstrap/Button";
 import Dropdown from "react-bootstrap/Dropdown";
 import Modal from "react-bootstrap/Modal";
 import Table from "react-bootstrap/Table";
-import { ThunkDispatch } from "redux-thunk";
 import styled from "styled-components";
 
 import { useGetDFCPairsQuery } from "@/app/api";
-import { AppDispatch } from "@/app/store";
 import { FaceSeparator, SelectedImageSeparator } from "@/common/constants";
 import { TextFileDropzone } from "@/common/dropzone";
 import {
@@ -26,7 +24,7 @@ import {
 } from "@/common/processing";
 import { useAppDispatch, useAppSelector } from "@/common/types";
 import { addMembers, selectProjectSize } from "@/features/project/projectSlice";
-import { fetchCardDocuments } from "@/features/search/cardDocumentsSlice";
+import { fetchCardDocumentsAndReportError } from "@/features/search/cardDocumentsSlice";
 
 const BorderedTable = styled(Table)`
   border-style: solid;
@@ -197,7 +195,7 @@ export function ImportCSV() {
         ),
       })
     );
-    dispatch(fetchCardDocuments());
+    fetchCardDocumentsAndReportError(dispatch);
     handleCloseCSVModal();
   };
 

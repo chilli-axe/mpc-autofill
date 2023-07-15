@@ -5,12 +5,17 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 import { APIGetCardbacks } from "@/app/api";
+import { AppDispatch } from "@/app/store";
 import { CardbacksState, createAppAsyncThunk } from "@/common/types";
+import { fetchCardDocuments } from "@/features/search/cardDocumentsSlice";
+import { setError } from "@/features/toasts/toastsSlice";
+
+const typePrefix = "cardbacks/fetchCardbacks";
 
 export const fetchCardbacks = createAppAsyncThunk(
-  "cardbacks/fetchCardbacks",
-  async (arg, thunkAPI) => {
-    const state = thunkAPI.getState();
+  typePrefix,
+  async (arg, { getState }) => {
+    const state = getState();
     const backendURL = state.backend.url;
     return backendURL != null ? APIGetCardbacks(backendURL) : null;
   }
@@ -43,11 +48,25 @@ export const cardbackSlice = createSlice({
           state.status = "failed";
         }
       })
-      .addCase(fetchCardbacks.rejected, (state, action) => {
-        state.status = "failed"; // TODO: build some stuff for displaying error messages
-        state.error = ""; // TODO:  // action.error.message ?? null;
+      .addCase(fetchCardDocuments.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = {
+          name: action.error.name ?? null,
+          message: action.error.message ?? null,
+        };
       });
   },
 });
 
 export default cardbackSlice.reducer;
+
+export async function fetchCardbacksAndReportError(dispatch: AppDispatch) {
+  try {
+    await dispatch(fetchCardbacks()).unwrap();
+  } catch (error: any) {
+    dispatch(
+      setError([typePrefix, { name: error.name, message: error.message }])
+    );
+    return null;
+  }
+}

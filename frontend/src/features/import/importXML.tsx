@@ -38,7 +38,7 @@ import {
   selectProjectSize,
   setSelectedCardback,
 } from "@/features/project/projectSlice";
-import { fetchCardDocuments } from "@/features/search/cardDocumentsSlice";
+import { fetchCardDocumentsAndReportError } from "@/features/search/cardDocumentsSlice";
 
 export function ImportXML() {
   const dispatch = useAppDispatch();
@@ -155,7 +155,7 @@ export function ImportXML() {
         });
     }
     dispatch(addMembers({ members: newMembers.slice(0, lastNonNullSlot + 1) }));
-    dispatch(fetchCardDocuments());
+    fetchCardDocumentsAndReportError(dispatch);
 
     // update project cardback and finish settings according to user's specification
     if (useXMLCardback && cardback != null) {

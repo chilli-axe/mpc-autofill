@@ -26,7 +26,7 @@ import {
 } from "@/common/processing";
 import { useAppDispatch, useAppSelector } from "@/common/types";
 import { addMembers, selectProjectSize } from "@/features/project/projectSlice";
-import { fetchCardDocuments } from "@/features/search/cardDocumentsSlice";
+import { fetchCardDocumentsAndReportError } from "@/features/search/cardDocumentsSlice";
 import { Spinner } from "@/features/ui/spinner";
 
 export function ImportURL() {
@@ -64,7 +64,7 @@ export function ImportURL() {
           ),
         })
       );
-      dispatch(fetchCardDocuments());
+      fetchCardDocumentsAndReportError(dispatch);
       handleCloseURLModal();
       setLoading(false);
     }

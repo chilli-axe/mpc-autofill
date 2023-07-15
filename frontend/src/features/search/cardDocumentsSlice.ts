@@ -5,15 +5,19 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 import { APIGetCards } from "@/app/api";
+import { AppDispatch } from "@/app/store";
 import { CardDocumentsState, createAppAsyncThunk } from "@/common/types";
-import { fetchCardbacks } from "@/features/card/cardbackSlice";
+import { fetchCardbacksAndReportError } from "@/features/card/cardbackSlice";
 import { selectUniqueCardIdentifiers } from "@/features/project/projectSlice";
-import { fetchCards } from "@/features/search/searchResultsSlice";
+import { fetchSearchResultsAndReportError } from "@/features/search/searchResultsSlice";
+import { setError } from "@/features/toasts/toastsSlice";
+
+const typePrefix = "cardDocuments/fetchCardDocuments";
 
 // TODO: we should write something to read a page of card IDs from searchResults (100 at a time?) and query the backend for their full data
 export const fetchCardDocuments = createAppAsyncThunk(
-  "cardDocuments/fetchCardDocuments",
-  async (arg, thunkAPI) => {
+  typePrefix,
+  async (arg, { dispatch, getState }) => {
     // TODO: paginate and introduce the concept of a search strategy
     // e.g. retrieve the first image for each selected image first, then fill out search results from top to bottom
     /**
@@ -21,10 +25,10 @@ export const fetchCardDocuments = createAppAsyncThunk(
      * not yet been queried.
      */
 
-    await thunkAPI.dispatch(fetchCards());
-    await thunkAPI.dispatch(fetchCardbacks());
+    await fetchSearchResultsAndReportError(dispatch);
+    await fetchCardbacksAndReportError(dispatch);
 
-    const state = thunkAPI.getState();
+    const state = getState();
 
     const allIdentifiers = selectUniqueCardIdentifiers(state);
     const identifiersWithKnownData = new Set(
@@ -67,10 +71,24 @@ export const cardDocumentsSlice = createSlice({
         state.cardDocuments = { ...state.cardDocuments, ...action.payload };
       })
       .addCase(fetchCardDocuments.rejected, (state, action) => {
-        state.status = "failed"; // TODO: build some stuff for displaying error messages
-        state.error = ""; // TODO: // action.error.message ?? null;
+        state.status = "failed";
+        state.error = {
+          name: action.error.name ?? null,
+          message: action.error.message ?? null,
+        };
       });
   },
 });
 
 export default cardDocumentsSlice.reducer;
+
+export async function fetchCardDocumentsAndReportError(dispatch: AppDispatch) {
+  try {
+    await dispatch(fetchCardDocuments()).unwrap();
+  } catch (error: any) {
+    dispatch(
+      setError([typePrefix, { name: error.name, message: error.message }])
+    );
+    return null;
+  }
+}

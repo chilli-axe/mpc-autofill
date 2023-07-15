@@ -30,6 +30,9 @@ import {
 import { selectBackendURL } from "@/features/backend/backendSlice";
 
 // dynamic base URL implementation retrieved from https://stackoverflow.com/a/69570628/13021511
+// TODO: i think we need to implement some custom stuff for error handling here
+//       as in to unpack the {name: <name>, message: <message>} json body provided by the backend for errors
+//       https://redux-toolkit.js.org/rtk-query/usage/error-handling
 const dynamicBaseQuery: BaseQueryFn<
   string | FetchArgs,
   unknown,
@@ -46,44 +49,6 @@ export const api = createApi({
   baseQuery: dynamicBaseQuery,
   tagTypes: [QueryTags.BackendSpecific, QueryTags.SearchResults],
   endpoints: (builder) => ({
-    getCards: builder.query<CardDocuments, Set<string>>({
-      query: (identifiersToSearch) => ({
-        url: `2/cards/`,
-        method: "POST",
-        body: { card_identifiers: JSON.stringify(identifiersToSearch) },
-      }),
-      providesTags: [QueryTags.BackendSpecific],
-      transformResponse: (response: { results: CardDocuments }, meta, arg) =>
-        response.results,
-    }),
-    getCardbacks: builder.query<Array<string>, void>({
-      query: () => ({ url: `2/cardbacks/`, method: "GET" }),
-      providesTags: [QueryTags.BackendSpecific],
-      transformResponse: (response: { cardbacks: Array<string> }, meta, arg) =>
-        response.cardbacks,
-    }),
-    search: builder.query<
-      SearchResults,
-      { searchSettings: SearchSettings; queries: Array<SearchQuery> }
-    >({
-      query: (input) => ({
-        url: `2/searchResults/`,
-        method: "POST",
-        body: JSON.stringify({
-          searchSettings: input.searchSettings,
-          queries: Array.from(input.queries),
-        }),
-      }),
-      providesTags: [QueryTags.BackendSpecific, QueryTags.SearchResults],
-      transformResponse: (response: { results: SearchResults }, meta, arg) =>
-        response.results,
-    }),
-    getSources: builder.query<SourceDocuments, void>({
-      query: () => ({ url: `2/sources/`, method: "GET" }),
-      providesTags: [QueryTags.BackendSpecific],
-      transformResponse: (response: { results: SourceDocuments }, meta, arg) =>
-        response.results,
-    }),
     getImportSites: builder.query<Array<ImportSite>, void>({
       query: () => ({ url: `2/importSites/`, method: "GET" }),
       providesTags: [QueryTags.BackendSpecific],
@@ -156,10 +121,6 @@ export const api = createApi({
 // We add an extra layer on top of RTK Query's auto-generated hooks
 // to ensure they only fire when a backend is connected.
 const {
-  useGetCardsQuery: useRawGetCardsQuery,
-  useGetCardbacksQuery: useRawGetCardbacksQuery,
-  useSearchQuery: useRawSearchQuery,
-  useGetSourcesQuery: useRawGetSourcesQuery,
   useGetImportSitesQuery: useRawGetImportSitesQuery,
   useQueryImportSiteQuery: useRawQueryImportSiteQuery,
   useGetDFCPairsQuery: useRawGetDFCPairsQuery,
@@ -217,8 +178,12 @@ export async function APIGetCards(
     credentials: "same-origin",
     headers: getCSRFHeader(),
   });
-  const content = await rawResponse.json();
-  return content.results;
+  return rawResponse.json().then((content) => {
+    if (content.results != null) {
+      return content.results;
+    }
+    throw { name: content.name, message: content.message };
+  });
 }
 
 export async function APIGetCardbacks(
@@ -229,8 +194,12 @@ export async function APIGetCardbacks(
     credentials: "same-origin",
     headers: getCSRFHeader(),
   });
-  const content = await rawResponse.json();
-  return content.cardbacks;
+  return rawResponse.json().then((content) => {
+    if (content.cardbacks != null) {
+      return content.cardbacks;
+    }
+    throw { name: content.name, message: content.message };
+  });
 }
 
 export async function APISearch(
@@ -247,8 +216,12 @@ export async function APISearch(
     credentials: "same-origin",
     headers: getCSRFHeader(),
   });
-  const content = await rawResponse.json();
-  return content.results;
+  return rawResponse.json().then((content) => {
+    if (content.results != null) {
+      return content.results;
+    }
+    throw { name: content.name, message: content.message };
+  });
 }
 
 export async function APIGetSources(
@@ -259,6 +232,10 @@ export async function APIGetSources(
     credentials: "same-origin",
     headers: getCSRFHeader(),
   });
-  const content = await rawResponse.json();
-  return content.results;
+  return rawResponse.json().then((content) => {
+    if (content.results != null) {
+      return content.results;
+    }
+    throw { name: content.name, message: content.message };
+  });
 }
