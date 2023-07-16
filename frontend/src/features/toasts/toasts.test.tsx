@@ -10,54 +10,58 @@ import { renderWithProviders } from "@/common/test-utils";
 // these tests assume that the toast appears on any page and therefore render the simplest page possible
 import About from "@/pages/about";
 
-beforeEach(() => {
-  Cookies.remove(GoogleAnalyticsConsentKey);
-  // @ts-ignore
-  delete window.gtag;
-});
-afterEach(() => {
-  Cookies.remove(GoogleAnalyticsConsentKey);
-  // @ts-ignore
-  delete window.gtag;
-});
-
-test("opting into google analytics", async () => {
-  renderWithProviders(<About />);
-  await waitFor(() => {
-    expect(screen.getByText("Cookie Usage")).not.toBeNull();
+describe("google analytics toast", () => {
+  beforeEach(() => {
+    Cookies.remove(GoogleAnalyticsConsentKey);
+    // @ts-ignore
+    delete window.gtag;
+  });
+  afterEach(() => {
+    Cookies.remove(GoogleAnalyticsConsentKey);
+    // @ts-ignore
+    delete window.gtag;
   });
 
-  screen.getByText("That's fine!").click();
-  await waitForElementToBeRemoved(() => screen.getByText("Cookie Usage"));
+  test("opting into google analytics", async () => {
+    renderWithProviders(<About />);
+    await waitFor(() => {
+      expect(screen.getByText("Cookie Usage")).not.toBeNull();
+    });
 
-  // upon reloading the page, google analytics should now be turned on
-  renderWithProviders(<About />);
-  expect(eval("gtag")).toBeDefined();
-});
+    screen.getByText("That's fine!").click();
+    await waitForElementToBeRemoved(() => screen.getByText("Cookie Usage"));
 
-test("opting out of google analytics", async () => {
-  renderWithProviders(<About />);
-  await waitFor(() => {
-    expect(screen.getByText("Cookie Usage")).not.toBeNull();
+    // upon reloading the page, google analytics should now be turned on
+    renderWithProviders(<About />);
+    expect(eval("gtag")).toBeDefined();
   });
 
-  screen.getByText("Opt out").click();
-  await waitForElementToBeRemoved(() => screen.getByText("Cookie Usage"));
+  test("opting out of google analytics", async () => {
+    renderWithProviders(<About />);
+    await waitFor(() => {
+      expect(screen.getByText("Cookie Usage")).not.toBeNull();
+    });
 
-  // upon reloading the page, google analytics should now be turned off
-  renderWithProviders(<About />);
-  expect(() => eval("gtag")).toThrow();
-});
+    screen.getByText("Opt out").click();
+    await waitForElementToBeRemoved(() => screen.getByText("Cookie Usage"));
 
-test("google analytics consent popup does not appear once consent is specified", async () => {
-  renderWithProviders(<About />);
-  await waitFor(() => expect(screen.getByText("Cookie Usage")).not.toBeNull());
+    // upon reloading the page, google analytics should now be turned off
+    renderWithProviders(<About />);
+    expect(() => eval("gtag")).toThrow();
+  });
 
-  screen.getByText("That's fine!").click();
-  await waitForElementToBeRemoved(() => screen.getByText("Cookie Usage"));
+  test("google analytics consent popup does not appear once consent is specified", async () => {
+    renderWithProviders(<About />);
+    await waitFor(() =>
+      expect(screen.getByText("Cookie Usage")).not.toBeNull()
+    );
 
-  // the popup should no longer appear upon page reload
-  await waitFor(() =>
-    expect(screen.queryByText("Cookie Usage")).not.toBeInTheDocument()
-  );
+    screen.getByText("That's fine!").click();
+    await waitForElementToBeRemoved(() => screen.getByText("Cookie Usage"));
+
+    // the popup should no longer appear upon page reload
+    await waitFor(() =>
+      expect(screen.queryByText("Cookie Usage")).not.toBeInTheDocument()
+    );
+  });
 });
