@@ -2,17 +2,24 @@ import React, { useState } from "react";
 import Button from "react-bootstrap/Button";
 import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
+import styled from "styled-components";
 
 import {
   useGetNewCardsFirstPageQuery,
   useGetNewCardsPageQuery,
 } from "@/app/api";
-import { CardDocument, useAppSelector } from "@/common/types";
+import { CardDocument } from "@/common/types";
 import { NewCardsFirstPage } from "@/common/types";
-import { selectBackendURL } from "@/features/backend/backendSlice";
 import { MemoizedCardRenameMe } from "@/features/card/card";
-import { NoBackendDefault } from "@/features/ui/noBackendDefault";
 import { Spinner } from "@/features/ui/spinner";
+
+const InlineHeader = styled.h3`
+  display: inline;
+`;
+
+const InlineParagraph = styled.p`
+  display: inline;
+`;
 
 function NewCard({ cardDocument }: { cardDocument: CardDocument }) {
   /**
@@ -45,8 +52,6 @@ function NewCardsForSource({
     pageCounter,
   ]);
 
-  // style="display: inline" className="orpheus"
-  // style="display: inline" className="text-primary"
   // TODO: detailed view
 
   const loadMoreButton = (
@@ -62,12 +67,13 @@ function NewCardsForSource({
 
   return (
     <>
-      <h3>
+      <InlineHeader className="orpheus">
         <em>{firstPage.source.name}</em>
-      </h3>
-      <div>
+      </InlineHeader>
+      &nbsp;&nbsp;&nbsp;
+      <InlineParagraph className="text-primary">
         {firstPage.hits} new card{firstPage.hits != 1 && "s"}
-      </div>
+      </InlineParagraph>
       <Row xxl={6} lg={4} md={3} sm={2} xs={2} className="g-0">
         {firstPage.cards.map((card) => (
           <NewCard
