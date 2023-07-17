@@ -110,7 +110,8 @@ export function ContributionsPerSource() {
   const contributionsQuery = useGetContributionsQuery();
 
   return contributionsQuery.isSuccess ? (
-    contributionsQuery.isLoading || contributionsQuery.data?.sources == null ? (
+    contributionsQuery.isFetching ||
+    contributionsQuery.data?.sources == null ? (
       <Spinner />
     ) : (
       <TableWrapper>

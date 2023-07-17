@@ -629,6 +629,8 @@ def get_new_cards_first_pages(request: HttpRequest) -> HttpResponse:
             paginator = get_new_cards_paginator(source=source)
             if paginator.count > 0:
                 response_body[source.key] = {
+                    "source": source.to_dict(),
+                    "hits": paginator.count,
                     "pages": paginator.num_pages,
                     "cards": [card.to_dict() for card in paginator.get_page(1).object_list],
                 }

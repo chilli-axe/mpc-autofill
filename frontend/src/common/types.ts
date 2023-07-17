@@ -211,3 +211,16 @@ export type ProcessedLine = [
 export interface ToastsState {
   errors: { [key: string]: APIError };
 }
+
+export type NewCardsPage = Array<CardDocument>;
+
+export interface NewCardsFirstPage {
+  source: SourceDocument;
+  hits: number;
+  pages: number;
+  cards: NewCardsPage;
+}
+
+export interface NewCardsFirstPages {
+  [sourceKey: string]: NewCardsFirstPage;
+}

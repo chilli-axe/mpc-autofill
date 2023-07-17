@@ -63,7 +63,7 @@ def transform_images_into_objects(source: Source, images: list[Image]) -> list[C
             # reasons why an image might be invalid
             assert image.size <= (
                 MAX_SIZE_MB * 1_000_000
-            ), f"Image size is greater than {MAX_SIZE_MB} MB at **int({image.size / 1_000_000})** MB"
+            ), f"Image size is greater than {MAX_SIZE_MB} MB at **{int(image.size / 1_000_000)}** MB"
             assert image.name, "File name is empty string"
             assert "." in image.name[:-1], "File name has no extension"
             name, extension = image.name.rsplit(".", 1)

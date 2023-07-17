@@ -14,7 +14,11 @@ import { GoogleDriveImageAPIURL, QueryTags } from "@/common/constants";
 import { getCSRFHeader } from "@/common/cookies";
 import { processQuery } from "@/common/processing";
 import { formatURL } from "@/common/processing";
-import { useAppSelector } from "@/common/types";
+import {
+  NewCardsFirstPages,
+  NewCardsPage,
+  useAppSelector,
+} from "@/common/types";
 import {
   BackendInfo,
   CardDocument,
@@ -109,6 +113,41 @@ export const api = createApi({
       }),
       keepUnusedDataFor: 1,
     }),
+    getNewCardsFirstPage: builder.query<NewCardsFirstPages, void>({
+      query: () => ({ url: `2/newCardsFirstPages/`, method: "GET" }),
+      providesTags: [QueryTags.BackendSpecific],
+      transformResponse: (
+        response: { results: NewCardsFirstPages },
+        meta,
+        arg
+      ) => response.results,
+    }),
+    getNewCardsPage: builder.query<NewCardsPage, [string, number]>({
+      query: ([sourceKey, page]: [string, number]) => ({
+        url: `2/newCardsPage/`,
+        method: "GET",
+        params: { source: sourceKey, page },
+      }),
+      providesTags: [QueryTags.BackendSpecific],
+      transformResponse: (response: { cards: NewCardsPage }, meta, arg) =>
+        response.cards,
+      // the below code merges each source's pages of results together
+      // check out the docs here https://redux-toolkit.js.org/rtk-query/api/createApi#merge
+      serializeQueryArgs: ({ queryArgs, endpointDefinition, endpointName }) => {
+        return `${endpointName} (${queryArgs[0]})`; // don't include page number in the serialised args
+      },
+      merge: (currentCache, newItems) => {
+        currentCache.push(...newItems);
+      },
+      forceRefetch({ currentArg, previousArg }) {
+        return (
+          currentArg == null ||
+          previousArg == null ||
+          currentArg[0] !== previousArg[0] ||
+          currentArg[1] !== previousArg[1]
+        );
+      },
+    }),
   }),
 });
 
@@ -124,6 +163,8 @@ const {
   useGetSampleCardsQuery: useRawGetSampleCardsQuery,
   useGetContributionsQuery: useRawGetContributionsQuery,
   useGetBackendInfoQuery: useRawGetBackendInfoQuery,
+  useGetNewCardsFirstPageQuery: useRawGetNewCardsFirstPageQuery,
+  useGetNewCardsPageQuery: useRawGetNewCardsPageQuery,
 } = api;
 
 export function useGetImportSitesQuery() {
@@ -158,6 +199,20 @@ export function useGetBackendInfoQuery() {
   const backendURL = useAppSelector(selectBackendURL);
   return useRawGetBackendInfoQuery(undefined, {
     skip: backendURL == null,
+  });
+}
+
+export function useGetNewCardsFirstPageQuery() {
+  const backendURL = useAppSelector(selectBackendURL);
+  return useRawGetNewCardsFirstPageQuery(undefined, {
+    skip: backendURL == null,
+  });
+}
+
+export function useGetNewCardsPageQuery([sourceKey, page]: [string, number]) {
+  const backendURL = useAppSelector(selectBackendURL);
+  return useRawGetNewCardsPageQuery([sourceKey, page], {
+    skip: backendURL == null || page <= 1,
   });
 }
 

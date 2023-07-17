@@ -124,13 +124,13 @@ function CardProportionWrapper({
 
 export const MemoizedCardProportionWrapper = memo(CardProportionWrapper);
 
-interface CardProps {
+interface CardRenameMeProps {
   /** The card image identifier to display. */
-  imageIdentifier: string | undefined;
+  maybeCardDocument: CardDocument | undefined;
   /** If this `Card` is part of a gallery, use this prop to cache the previous image for visual smoothness. */
-  previousImageIdentifier?: string | undefined;
+  maybePreviousCardDocument?: CardDocument | undefined;
   /** If this `Card` is part of a gallery, use this prop to cache the next image for visual smoothness. */
-  nextImageIdentifier?: string | undefined;
+  maybeNextCardDocument?: CardDocument | undefined;
   /** The string to display in the `Card` header. */
   cardHeaderTitle: string;
   /** An element (intended for use with a series of buttons) to include in the `Card` header.  */
@@ -147,10 +147,10 @@ interface CardProps {
   noResultsFound: boolean;
 }
 
-export function Card({
-  imageIdentifier,
-  previousImageIdentifier,
-  nextImageIdentifier,
+export function CardRenameMe({
+  maybeCardDocument,
+  maybePreviousCardDocument,
+  maybeNextCardDocument,
   cardHeaderTitle,
   cardHeaderButtons,
   cardFooter,
@@ -158,23 +158,10 @@ export function Card({
   cardOnClick,
   searchQuery,
   noResultsFound,
-}: CardProps) {
-  const maybeCardDocument = useAppSelector((state) =>
-    imageIdentifier != null
-      ? state.cardDocuments.cardDocuments[imageIdentifier]
-      : undefined
-  );
-
-  const maybePreviousCardDocument = useAppSelector((state) =>
-    previousImageIdentifier != null
-      ? state.cardDocuments.cardDocuments[previousImageIdentifier]
-      : undefined
-  );
-  const maybeNextCardDocument = useAppSelector((state) =>
-    nextImageIdentifier != null
-      ? state.cardDocuments.cardDocuments[nextImageIdentifier]
-      : undefined
-  );
+}: CardRenameMeProps) {
+  /**
+   * This component enables displaying cards with auxiliary information in a flexible, consistent way.
+   */
 
   const cardImageElements =
     maybeCardDocument != null ? (
@@ -185,7 +172,9 @@ export function Card({
           hidden={false}
           small={true}
         />
-        {previousImageIdentifier !== imageIdentifier &&
+        {maybeCardDocument?.identifier != null &&
+          maybePreviousCardDocument?.identifier ===
+            maybeCardDocument?.identifier &&
           maybePreviousCardDocument != null && (
             <MemoizedCardImage
               cardDocument={maybePreviousCardDocument}
@@ -194,7 +183,8 @@ export function Card({
               small={true}
             />
           )}
-        {nextImageIdentifier !== imageIdentifier &&
+        {maybeCardDocument?.identifier != null &&
+          maybeNextCardDocument?.identifier === maybeCardDocument?.identifier &&
           maybeNextCardDocument != null && (
             <MemoizedCardImage
               cardDocument={maybeNextCardDocument}
@@ -253,6 +243,83 @@ export function Card({
         </BSCard.Footer>
       )}
     </BSCard>
+  );
+}
+
+export const MemoizedCardRenameMe = memo(CardRenameMe);
+
+interface CardProps {
+  /** The card image identifier to display. */
+  imageIdentifier: string | undefined;
+  /** If this `Card` is part of a gallery, use this prop to cache the previous image for visual smoothness. */
+  previousImageIdentifier?: string | undefined;
+  /** If this `Card` is part of a gallery, use this prop to cache the next image for visual smoothness. */
+  nextImageIdentifier?: string | undefined;
+  /** The string to display in the `Card` header. */
+  cardHeaderTitle: string;
+  /** An element (intended for use with a series of buttons) to include in the `Card` header.  */
+  cardHeaderButtons?: ReactElement;
+  /** An element (e.g. prev/next buttons) to display in the card footer. If not passed, no footer will be rendered. */
+  cardFooter?: ReactElement;
+  /** A callback function for when the displayed image is clicked. */
+  imageOnClick?: React.MouseEventHandler<HTMLImageElement>;
+  /** A callback function for when the `Card` (the HTML surrounding the image) is clicked. */
+  cardOnClick?: React.MouseEventHandler<HTMLElement>;
+  /** The `SearchQuery` specified when searching for this card. */
+  searchQuery?: SearchQuery | undefined;
+  /** Whether no search results were found when searching for `searchQuery` under the configured search settings. */
+  noResultsFound: boolean;
+}
+
+export function Card({
+  imageIdentifier,
+  previousImageIdentifier,
+  nextImageIdentifier,
+  cardHeaderTitle,
+  cardHeaderButtons,
+  cardFooter,
+  imageOnClick,
+  cardOnClick,
+  searchQuery,
+  noResultsFound,
+}: CardProps) {
+  /**
+   * This component is a thin layer on top of `CardRenameMe` that retrieves `CardDocument` items by their identifiers
+   * from the Redux store (used in the project editor).
+   * We have this layer because search results are returned as a list of image identifiers
+   * (to minimise the quantity of data stored in Elasticsearch), so the full `CardDocument` items must be looked up.
+   */
+
+  const maybeCardDocument = useAppSelector((state) =>
+    imageIdentifier != null
+      ? state.cardDocuments.cardDocuments[imageIdentifier]
+      : undefined
+  );
+
+  const maybePreviousCardDocument = useAppSelector((state) =>
+    previousImageIdentifier != null
+      ? state.cardDocuments.cardDocuments[previousImageIdentifier]
+      : undefined
+  );
+  const maybeNextCardDocument = useAppSelector((state) =>
+    nextImageIdentifier != null
+      ? state.cardDocuments.cardDocuments[nextImageIdentifier]
+      : undefined
+  );
+
+  return (
+    <CardRenameMe
+      maybeCardDocument={maybeCardDocument}
+      maybePreviousCardDocument={maybePreviousCardDocument}
+      maybeNextCardDocument={maybeNextCardDocument}
+      cardHeaderTitle={cardHeaderTitle}
+      cardHeaderButtons={cardHeaderButtons}
+      cardFooter={cardFooter}
+      imageOnClick={imageOnClick}
+      cardOnClick={cardOnClick}
+      searchQuery={searchQuery}
+      noResultsFound={noResultsFound}
+    />
   );
 }
 

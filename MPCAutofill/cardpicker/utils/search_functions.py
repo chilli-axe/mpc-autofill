@@ -360,9 +360,9 @@ def parse_json_body_as_search_data(json_body: dict[str, Any]) -> tuple[SearchSet
 
 
 def get_new_cards_paginator(source: Source) -> Paginator[QuerySet[Card]]:
-    days = 14
+    days = 140
     page_size = 6
-    now = timezone.now()
+    now = dt.datetime(2021, 9, 1)
     cards = Card.objects.filter(source=source, date__lt=now, date__gte=now - dt.timedelta(days=days)).order_by("-date")
     return Paginator(cards, page_size)  # type: ignore  # TODO: `_SupportsPagination`
 
