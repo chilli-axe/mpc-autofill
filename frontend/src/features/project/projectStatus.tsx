@@ -1,10 +1,10 @@
 import React from "react";
 import Alert from "react-bootstrap/Alert";
-import { useSelector } from "react-redux";
 import styled from "styled-components";
 import { UAParser } from "ua-parser-js";
 
 import { ProjectMaxSize, ProjectName } from "@/common/constants";
+import { useAppSelector } from "@/common/types";
 import { bracket, imageSizeToMBString } from "@/common/utils";
 import { SelectedImagesStatus } from "@/features/project/bulkManagement";
 import {
@@ -32,8 +32,8 @@ const SizedIcon = styled.i`
 `;
 
 export function ProjectStatus() {
-  const projectSize = useSelector(selectProjectSize);
-  const projectFileSize = useSelector(selectProjectFileSize);
+  const projectSize = useAppSelector(selectProjectSize);
+  const projectFileSize = useAppSelector(selectProjectFileSize);
 
   return (
     <>

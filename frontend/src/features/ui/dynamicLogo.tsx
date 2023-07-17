@@ -1,14 +1,12 @@
 import Image from "next/image";
 import React, { useCallback, useEffect, useState } from "react";
 import Col from "react-bootstrap/Col";
-import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
-import { useSelector } from "react-redux";
 import styled, { keyframes, StyledComponent } from "styled-components";
 
 import { useGetBackendInfoQuery, useGetSampleCardsQuery } from "@/app/api";
 import { ProjectName } from "@/common/constants";
-import { CardDocument } from "@/common/types";
+import { CardDocument, useAppSelector } from "@/common/types";
 import { selectBackendURL } from "@/features/backend/backendSlice";
 import {
   MemoizedCardImage,
@@ -183,7 +181,7 @@ const SampleCardDocument: CardDocument = {
 
 export function DynamicLogo() {
   // TODO: set up custom hooks for using queries in this way (i.e. not querying until backend URL is specified)
-  const backendURL = useSelector(selectBackendURL);
+  const backendURL = useAppSelector(selectBackendURL);
   const sampleCardsQuery = useGetSampleCardsQuery();
   const backendInfoQuery = useGetBackendInfoQuery();
 

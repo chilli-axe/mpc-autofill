@@ -14,7 +14,16 @@ import {
   sourceDocument3,
 } from "@/common/test-constants";
 
-function buildRoute(route: string) {
+const createError = (name: string) => ({
+  name,
+  message: "A message that describes the error",
+});
+
+function buildRoute(
+  route: string,
+  trailingSlash: boolean = true,
+  wildcard: boolean = false
+) {
   /**
    * Not including the correct leading and trailing slashes can break things.
    * This little helper function ensures the given relative API route is associated
@@ -62,6 +71,11 @@ export const sourceDocumentsThreeResults = rest.get(
       })
     );
   }
+);
+
+export const sourceDocumentsServerError = rest.get(
+  buildRoute("2/sources/"),
+  (req, res, ctx) => res(ctx.status(500), ctx.json(createError("2/sources")))
 );
 
 //# endregion
@@ -141,6 +155,11 @@ export const cardDocumentsSixResults = rest.post(
   }
 );
 
+export const cardDocumentsServerError = rest.post(
+  buildRoute("2/cards/"),
+  (req, res, ctx) => res(ctx.status(500), ctx.json(createError("2/cards")))
+);
+
 //# endregion
 
 //# region cardback
@@ -186,6 +205,11 @@ export const cardbacksTwoOtherResults = rest.get(
       })
     );
   }
+);
+
+export const cardbacksServerError = rest.get(
+  buildRoute("2/cardbacks/"),
+  (req, res, ctx) => res(ctx.status(500), ctx.json(createError("2/cardbacks")))
 );
 
 //# endregion
@@ -328,6 +352,12 @@ export const searchResultsForDFCMatchedCards1And4 = rest.post(
   }
 );
 
+export const searchResultsServerError = rest.post(
+  buildRoute("2/searchResults/"),
+  (req, res, ctx) =>
+    res(ctx.status(500), ctx.json(createError("2/searchResults")))
+);
+
 //# endregion
 
 //# region dfc pairs
@@ -347,6 +377,11 @@ export const dfcPairsMatchingCards1And4 = rest.get(
       ctx.json({ dfc_pairs: { ["my search query"]: cardDocument4.name } })
     );
   }
+);
+
+export const dfcPairsServerError = rest.get(
+  buildRoute("2/DFCPairs/"),
+  (req, res, ctx) => res(ctx.status(500), ctx.json(createError("2/DFCPairs")))
 );
 
 //# endregion
@@ -369,6 +404,12 @@ export const sampleCards = rest.get(
   }
 );
 
+export const sampleCardsServerError = rest.get(
+  buildRoute("2/sampleCards/"),
+  (req, res, ctx) =>
+    res(ctx.status(500), ctx.json(createError("2/sampleCards")))
+);
+
 //# endregion
 
 //# region import sites
@@ -378,6 +419,12 @@ export const importSitesNoResults = rest.get(
   (req, res, ctx) => {
     return res(ctx.status(200), ctx.json({ import_sites: [] }));
   }
+);
+
+export const importSitesServerError = rest.get(
+  buildRoute("2/importSites/"),
+  (req, res, ctx) =>
+    res(ctx.status(500), ctx.json(createError("2/importSites")))
 );
 
 //# endregion
@@ -408,6 +455,20 @@ export const backendInfoNoPatreon = rest.get(
   }
 );
 
+export const backendInfoServerError = rest.get(
+  buildRoute("2/info/"),
+  (req, res, ctx) => res(ctx.status(500), ctx.json(createError("2/info")))
+);
+
+//# endregion
+
+//# region health
+
+export const searchEngineHealthy = rest.get(
+  buildRoute("2/searchEngineHealth/"),
+  (req, res, ctx) => res(ctx.status(200), ctx.json({ online: true }))
+);
+
 //# endregion
 
 //# region presets
@@ -421,6 +482,7 @@ export const defaultHandlers = [
   importSitesNoResults,
   sampleCards,
   backendInfoNoPatreon,
+  searchEngineHealthy,
 ];
 
 //# endregion

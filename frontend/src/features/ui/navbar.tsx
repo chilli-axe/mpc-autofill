@@ -6,12 +6,12 @@ import Container from "react-bootstrap/Container";
 import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
 import NavDropdown from "react-bootstrap/NavDropdown";
-import { useSelector } from "react-redux";
 import styled from "styled-components";
 
 import { useGetBackendInfoQuery } from "@/app/api";
 import { ContentMaxWidth, NavbarLogoHeight } from "@/common/constants";
 import { ProjectName } from "@/common/constants";
+import { useAppSelector } from "@/common/types";
 import { BackendConfig } from "@/features/backend/backend";
 import { selectBackendURL } from "@/features/backend/backendSlice";
 import { SupportBackendModal } from "@/features/support/supportBackend";
@@ -31,7 +31,7 @@ const BoldCollapse = styled(Navbar.Collapse)`
 `;
 
 export default function ProjectNavbar() {
-  const backendURL = useSelector(selectBackendURL);
+  const backendURL = useAppSelector(selectBackendURL);
   const backendInfoQuery = useGetBackendInfoQuery();
 
   const [showBackendConfig, setShowBackendConfig] = useState(false);
@@ -123,6 +123,7 @@ export default function ProjectNavbar() {
                 className="my-xl-0 my-lg-0 my-md-2 my-sm-2 my-2"
                 variant="success"
                 onClick={handleShowBackendConfig}
+                aria-label="configure-server-btn"
               >
                 Configure Server
               </Button>

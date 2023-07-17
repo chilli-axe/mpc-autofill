@@ -13,11 +13,10 @@ import Row from "react-bootstrap/Row";
 import Stack from "react-bootstrap/Stack";
 // @ts-ignore: https://github.com/arnthor3/react-bootstrap-toggle/issues/21
 import Toggle from "react-bootstrap-toggle";
-import { useDispatch, useSelector } from "react-redux";
 
 import { RootState } from "@/app/store";
 import { ToggleButtonHeight } from "@/common/constants";
-import { CardDocument, SourceDocuments } from "@/common/types";
+import { CardDocument, useAppDispatch, useAppSelector } from "@/common/types";
 import { MemoizedCard } from "@/features/card/card";
 import {
   makeAllSourcesInvisible,
@@ -90,9 +89,9 @@ function CardsFacetedBySource({
    * Allow users to toggle whether each source's cards are showed/hidden.
    */
 
-  const dispatch = useDispatch();
-  const sourcesVisible = useSelector(
-    (state: RootState) => state.viewSettings.sourcesVisible
+  const dispatch = useAppDispatch();
+  const sourcesVisible = useAppSelector(
+    (state) => state.viewSettings.sourcesVisible
   );
   return (
     <>
@@ -181,12 +180,12 @@ export function GridSelector({
   handleClose,
   onClick,
 }: GridSelectorProps) {
-  const dispatch = useDispatch();
-  const cardDocuments = useSelector(
-    (state: RootState) => state.cardDocuments.cardDocuments
+  const dispatch = useAppDispatch();
+  const cardDocuments = useAppSelector(
+    (state) => state.cardDocuments.cardDocuments
   );
-  const facetBySource = useSelector(
-    (state: RootState) => state.viewSettings.facetBySource
+  const facetBySource = useAppSelector(
+    (state) => state.viewSettings.facetBySource
   );
   const selectImage = useCallback(
     (identifier: string) => {
@@ -197,7 +196,7 @@ export function GridSelector({
   );
 
   // TODO: move these selectors into a common area where they can be reused
-  const sourceKeyToName = useSelector((state: RootState) => {
+  const sourceKeyToName = useAppSelector((state) => {
     const sourceDocuments = state.sourceDocuments.sourceDocuments;
     return sourceDocuments != null
       ? Object.fromEntries(
@@ -209,7 +208,7 @@ export function GridSelector({
       : {};
   });
   const sourceKeys = Object.keys(sourceKeyToName);
-  const anySourcesCollapsed = useSelector((state: RootState) =>
+  const anySourcesCollapsed = useAppSelector((state) =>
     Object.values(state.viewSettings.sourcesVisible ?? {}).includes(false)
   );
   const cardIdentifiersAndOptionNumbersBySource = useMemo(

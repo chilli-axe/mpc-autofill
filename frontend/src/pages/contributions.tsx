@@ -1,7 +1,6 @@
 import Head from "next/head";
 import React from "react";
 import Alert from "react-bootstrap/Alert";
-import { useSelector } from "react-redux";
 
 import { useGetBackendInfoQuery } from "@/app/api";
 import {
@@ -9,6 +8,7 @@ import {
   MakePlayingCardsURL,
   ProjectName,
 } from "@/common/constants";
+import { useAppSelector } from "@/common/types";
 import { selectBackendURL } from "@/features/backend/backendSlice";
 import {
   ContributionsPerSource,
@@ -75,7 +75,7 @@ function ContributionGuidelines() {
 }
 
 function ContributionsOrDefault() {
-  const backendURL = useSelector(selectBackendURL);
+  const backendURL = useAppSelector(selectBackendURL);
   return (
     <>
       {backendURL != null ? (

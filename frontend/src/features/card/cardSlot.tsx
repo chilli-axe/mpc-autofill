@@ -8,11 +8,14 @@
 
 import React, { memo, useEffect, useState } from "react";
 import Button from "react-bootstrap/Button";
-import { useDispatch, useSelector } from "react-redux";
 
-import { AppDispatch, RootState } from "@/app/store";
 import { Back } from "@/common/constants";
-import { Faces, SearchQuery } from "@/common/types";
+import {
+  Faces,
+  SearchQuery,
+  useAppDispatch,
+  useAppSelector,
+} from "@/common/types";
 import { wrapIndex } from "@/common/utils";
 import { MemoizedCard } from "@/features/card/card";
 import { GridSelector } from "@/features/card/gridSelector";
@@ -52,7 +55,7 @@ export function CardSlotGridSelector({
   show,
   handleClose,
 }: CardSlotGridSelectorProps) {
-  const dispatch = useDispatch<AppDispatch>();
+  const dispatch = useAppDispatch();
   function setSelectedImageFromIdentifier(selectedImage: string): void {
     dispatch(setSelectedImage({ face, slot, selectedImage }));
   }
@@ -84,17 +87,14 @@ export function CardSlot({
   const handleCloseGridSelector = () => setShowGridSelector(false);
   const handleShowGridSelector = () => setShowGridSelector(true);
 
-  const dispatch = useDispatch<AppDispatch>();
+  const dispatch = useAppDispatch();
 
   // TODO: move this selector into searchResultsSlice
   // this is a bit confusing. if the card has a query, use the query's results. if it's a cardback with no query,
   // display the common cardback's results.
-  const cardbacks =
-    useSelector((state: RootState) => state.cardbacks.cardbacks) ?? [];
-  const projectCardback = useSelector(
-    (state: RootState) => state.project.cardback
-  );
-  const searchResultsForQueryOrDefault = useSelector((state: RootState) =>
+  const cardbacks = useAppSelector((state) => state.cardbacks.cardbacks) ?? [];
+  const projectCardback = useAppSelector((state) => state.project.cardback);
+  const searchResultsForQueryOrDefault = useAppSelector((state) =>
     searchQuery?.query != null
       ? (state.searchResults.searchResults[searchQuery.query] ?? {})[
           searchQuery.card_type
@@ -104,8 +104,8 @@ export function CardSlot({
       : []
   );
 
-  const projectMember = useSelector(
-    (state: RootState) => (state.project.members[slot] ?? {})[face]
+  const projectMember = useAppSelector(
+    (state) => (state.project.members[slot] ?? {})[face]
   );
   const selectedImage = projectMember?.selectedImage;
 
@@ -152,8 +152,6 @@ export function CardSlot({
       );
     }
   }, [searchResultsForQueryOrDefault, projectCardback]);
-
-  // const selectedImage = useSelector((state: RootState) => (state.project.members[slot] != null ? (state.project.members[slot][face] != null ? state.project.members[slot][face].selectedImage : null) : null))
 
   const searchResultsForQuery = searchResultsForQueryOrDefault ?? [];
   const selectedImageIndex: number | undefined =

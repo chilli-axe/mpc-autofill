@@ -10,7 +10,6 @@ import Alert from "react-bootstrap/Alert";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import Offcanvas from "react-bootstrap/Offcanvas";
-import { useDispatch, useSelector } from "react-redux";
 
 import { api } from "@/app/api";
 import { ProjectName, QueryTags } from "@/common/constants";
@@ -20,6 +19,7 @@ import {
   setLocalStorageBackendURL,
 } from "@/common/cookies";
 import { standardiseURL } from "@/common/processing";
+import { useAppDispatch, useAppSelector } from "@/common/types";
 import {
   clearURL,
   selectBackendURL,
@@ -86,14 +86,14 @@ async function searchEngineHealthCheck(url: string): Promise<boolean> {
 }
 
 export function BackendConfig({ show, handleClose }: BackendConfigProps) {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   const [validationStatus, setValidationStatus] = useState<
     Array<ValidationState>
   >([]);
   const [validating, setValidating] = useState<boolean>(false);
 
-  const backendURL = useSelector(selectBackendURL);
+  const backendURL = useAppSelector(selectBackendURL);
   const clearBackendURL = () => {
     dispatch(clearURL());
     clearLocalStorageBackendURL();
@@ -153,7 +153,11 @@ export function BackendConfig({ show, handleClose }: BackendConfigProps) {
 
   return (
     <>
-      <Offcanvas show={show} onHide={handleClose}>
+      <Offcanvas
+        show={show}
+        onHide={handleClose}
+        data-testid="backend-offcanvas"
+      >
         <Offcanvas.Header closeButton>
           <Offcanvas.Title>Configure Server</Offcanvas.Title>
         </Offcanvas.Header>
@@ -180,6 +184,7 @@ export function BackendConfig({ show, handleClose }: BackendConfigProps) {
                 onChange={(event) => setLocalBackendURL(event.target.value)}
                 value={localBackendURL}
                 disabled={validating}
+                aria-label="backend-url"
               />
             </Form.Group>
             {validationStatus.length > 0 && (
@@ -204,6 +209,7 @@ export function BackendConfig({ show, handleClose }: BackendConfigProps) {
               variant="primary"
               type="submit"
               disabled={validating || localBackendURL.trim().length == 0}
+              aria-label="submit-backend-url"
             >
               Submit
             </Button>

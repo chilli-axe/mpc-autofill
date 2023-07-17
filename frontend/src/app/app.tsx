@@ -6,12 +6,11 @@
 import React, { useEffect } from "react";
 import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
-import { useDispatch, useSelector } from "react-redux";
-import { ThunkDispatch } from "redux-thunk";
 import styled from "styled-components";
 
 import { RootState } from "@/app/store";
 import { NavbarHeight } from "@/common/constants";
+import { useAppDispatch, useAppSelector } from "@/common/types";
 import { selectBackendURL } from "@/features/backend/backendSlice";
 import { CardGrid } from "@/features/card/cardGrid";
 import { CommonCardback } from "@/features/card/commonCardback";
@@ -19,7 +18,7 @@ import { Export } from "@/features/export/export";
 import { FinishSettings } from "@/features/finishSettings/finishSettings";
 import { Import } from "@/features/import/import";
 import { ProjectStatus } from "@/features/project/projectStatus";
-import { fetchSourceDocuments } from "@/features/search/sourceDocumentsSlice";
+import { fetchSourceDocumentsAndReportError } from "@/features/search/sourceDocumentsSlice";
 import { SearchSettings } from "@/features/searchSettings/searchSettings";
 import { NoBackendDefault } from "@/features/ui/noBackendDefault";
 
@@ -36,13 +35,13 @@ const OverflowCol = styled(Col)`
 function App() {
   // TODO: should we periodically ping the backend to make sure it's still alive?
   //       and is there a better check for whether to show backend data rather than the URL not being null?
-  const backendURL = useSelector(selectBackendURL);
-  const dispatch = useDispatch<ThunkDispatch<any, any, any>>();
+  const backendURL = useAppSelector(selectBackendURL);
+  const dispatch = useAppDispatch();
   const cardback =
-    useSelector((state: RootState) => state.project.cardback) ?? undefined;
+    useAppSelector((state) => state.project.cardback) ?? undefined;
   useEffect(() => {
     if (backendURL != null) {
-      dispatch(fetchSourceDocuments());
+      fetchSourceDocumentsAndReportError(dispatch);
     }
   }, [dispatch, backendURL]);
 

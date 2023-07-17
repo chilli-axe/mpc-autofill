@@ -50,7 +50,8 @@ test("the html structure of a CardSlot with a single search result, no image sel
           {
             front: {
               query: { query: "my search query", card_type: Card },
-              selectedImage: null,
+              selectedImage: undefined,
+              selected: false,
             },
             back: null,
           },
@@ -78,7 +79,8 @@ test("the html structure of a CardSlot with a single search result, slot selecte
           {
             front: {
               query: { query: "my search query", card_type: Card },
-              selectedImage: null,
+              selectedImage: undefined,
+              selected: false,
             },
             back: null,
           },
@@ -337,7 +339,8 @@ test("CardSlot automatically selects the first search result", async () => {
           {
             front: {
               query: { query: "my search query", card_type: Card },
-              selectedImage: null,
+              selectedImage: undefined,
+              selected: false,
             },
             back: null,
           },
@@ -382,8 +385,9 @@ test("CardSlot uses cardbacks as search results for backs with no search query",
           {
             front: null,
             back: {
-              query: null,
+              query: { query: null, card_type: Card },
               selectedImage: cardDocument1.identifier,
+              selected: false,
             },
           },
         ],
@@ -437,14 +441,16 @@ test("double clicking the select button selects all slots for the same query", a
           {
             front: {
               query: { query: "my search query", card_type: Card },
-              selectedImage: null,
+              selectedImage: undefined,
+              selected: false,
             },
             back: null,
           },
           {
             front: {
               query: { query: "my search query", card_type: Card },
-              selectedImage: null,
+              selectedImage: undefined,
+              selected: false,
             },
             back: null,
           },

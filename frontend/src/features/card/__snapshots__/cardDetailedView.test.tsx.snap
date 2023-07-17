@@ -33,11 +33,11 @@ exports[`the html structure of a CardDetailedView 1`] = `
           style="position: relative;"
         >
           <div
-            class="sc-e8045987-2 hXybIN rounded-xl shadow-lg ratio ratio-7x5"
+            class="sc-1473aca0-2 eZLFFB rounded-xl shadow-lg ratio ratio-7x5"
           >
             <img
               alt="Card 1"
-              class="sc-e8045987-1 iUafQq card-img card-img-fade-in"
+              class="sc-1473aca0-1 gPvrki card-img card-img-fade-in"
               data-nimg="fill"
               decoding="async"
               loading="lazy"

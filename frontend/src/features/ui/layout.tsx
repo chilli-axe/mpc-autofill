@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { PropsWithChildren } from "react";
 import Container from "react-bootstrap/Container";
 import SSRProvider from "react-bootstrap/SSRProvider";
-import { Provider, useDispatch, useSelector } from "react-redux";
+import { Provider } from "react-redux";
 import styled from "styled-components";
 
 import store from "@/app/store";
@@ -14,6 +14,7 @@ import {
   setLocalStorageBackendURL,
 } from "@/common/cookies";
 import { standardiseURL } from "@/common/processing";
+import { useAppDispatch, useAppSelector } from "@/common/types";
 import { selectBackendURL, setURL } from "@/features/backend/backendSlice";
 import { Toasts } from "@/features/toasts/toasts";
 import ProjectNavbar from "@/features/ui/navbar";
@@ -26,8 +27,8 @@ function BackendSetter() {
       ? standardiseURL(server.trim())
       : null;
 
-  const dispatch = useDispatch();
-  const backendURL = useSelector(selectBackendURL);
+  const dispatch = useAppDispatch();
+  const backendURL = useAppSelector(selectBackendURL);
   useEffect(() => {
     if (backendURL == null && formattedURL != null) {
       dispatch(setURL(formattedURL));
@@ -67,6 +68,24 @@ interface LayoutProps {
   gutter?: number;
 }
 
+export function LayoutWithoutProvider({
+  gutter = 2,
+  children,
+}: PropsWithChildren<LayoutProps>) {
+  return (
+    <>
+      <Toasts />
+      <BackendSetter />
+      <ProjectNavbar />
+      <ContentContainer fluid className={`g-${gutter}`}>
+        <MaxWidthContainer className={`g-${gutter}`}>
+          {children}
+        </MaxWidthContainer>
+      </ContentContainer>
+    </>
+  );
+}
+
 export default function Layout({
   gutter = 2,
   children,
@@ -77,14 +96,9 @@ export default function Layout({
       {consent === true && <GoogleAnalytics trackPageViews />}
       <SSRProvider>
         <OverscrollProvider store={store}>
-          <Toasts />
-          <BackendSetter />
-          <ProjectNavbar />
-          <ContentContainer fluid className={`g-${gutter}`}>
-            <MaxWidthContainer className={`g-${gutter}`}>
-              {children}
-            </MaxWidthContainer>
-          </ContentContainer>
+          <LayoutWithoutProvider gutter={gutter}>
+            {children}
+          </LayoutWithoutProvider>
         </OverscrollProvider>
       </SSRProvider>
     </>

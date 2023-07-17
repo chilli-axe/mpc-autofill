@@ -14,12 +14,12 @@ import React, { ReactNode, useCallback } from "react";
 import Table from "react-bootstrap/Table";
 // @ts-ignore: https://github.com/arnthor3/react-bootstrap-toggle/issues/21
 import Toggle from "react-bootstrap-toggle";
-import { useSelector } from "react-redux";
 
 import { ToggleButtonHeight } from "@/common/constants";
 import {
   SourceRow,
   SourceSettings as SourceSettingsType,
+  useAppSelector,
 } from "@/common/types";
 import { selectSourceDocuments } from "@/features/search/sourceDocumentsSlice";
 import { Spinner } from "@/features/ui/spinner";
@@ -35,7 +35,7 @@ export function SourceSettings({
   sourceSettings,
   setSourceSettings,
 }: SourceSettingsProps) {
-  const maybeSourceDocuments = useSelector(selectSourceDocuments);
+  const maybeSourceDocuments = useAppSelector(selectSourceDocuments);
 
   const moveSourceToIndex = useCallback(
     (sourceIndex: number, destinationIndex: number) => {

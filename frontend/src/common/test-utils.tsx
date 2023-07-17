@@ -14,6 +14,7 @@ import React, { PropsWithChildren } from "react";
 import { Provider } from "react-redux";
 
 import { RootState, setupStore } from "@/app/store";
+import { localBackendURL } from "@/common/test-constants";
 import { Faces } from "@/common/types";
 
 //# region redux test setup
@@ -154,6 +155,48 @@ function createDtWithFiles(files: File[] = []) {
 
 //# region UI interactions
 
+export async function configureBackend(url: string) {
+  /**
+   * Note: the `ping` function from Ping.js must be mocked in tests where you call this function.
+   * We cannot use MSW to intercept Ping.js because that library works by creating an `Image` with
+   * `src` of the site to ping's `favicon.ico`, and MSW can't intercept requests to load images.
+   */
+
+  await waitFor(() => screen.getByLabelText("configure-server-btn").click());
+
+  const backendOffcanvas = await waitFor(() =>
+    screen.getByTestId("backend-offcanvas")
+  );
+
+  const textField = await waitFor(() =>
+    within(backendOffcanvas).getByLabelText("backend-url")
+  );
+  fireEvent.change(textField, { target: { value: url } });
+  within(backendOffcanvas).getByLabelText("submit-backend-url").click();
+  await waitFor(() =>
+    expect(
+      within(backendOffcanvas).getByText("You're currently connected to", {
+        exact: false,
+      })
+    ).toBeInTheDocument()
+  );
+  within(backendOffcanvas).getByLabelText("Close").click();
+}
+
+export async function configureDefaultBackend() {
+  return await configureBackend(localBackendURL);
+}
+
+export async function getErrorToast(): Promise<HTMLElement> {
+  const errorToast = await waitFor(
+    () => screen.getByText("An Error Occurred").parentElement?.parentElement
+  );
+  if (errorToast == null) {
+    throw new Error("error toast is not present");
+  }
+  return errorToast;
+}
+
 function getAddCardsMenu() {
   return within(screen.getByTestId("right-panel")).getByText("Add Cards", {
     exact: false,
@@ -215,6 +258,15 @@ export async function importXML(
   }
 
   fireEvent.drop(dropzone, createDtWithFiles([file]));
+}
+
+export async function openImportURLModal() {
+  // open the modal and find the text input
+  const addCardsMenu = getAddCardsMenu();
+  addCardsMenu.click();
+  await waitFor(() => screen.getByText("URL", { exact: false }).click());
+  await waitFor(() => expect(screen.getByText("Add Cards — URL")));
+  return screen.getByLabelText("import-url");
 }
 
 async function openGridSelector(

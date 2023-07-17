@@ -15,11 +15,9 @@ import React, {
   useState,
 } from "react";
 import BSCard from "react-bootstrap/Card";
-import { useSelector } from "react-redux";
 import styled from "styled-components";
 
-import { RootState } from "@/app/store";
-import { SearchQuery } from "@/common/types";
+import { SearchQuery, useAppSelector } from "@/common/types";
 import { CardDocument } from "@/common/types";
 import { Spinner } from "@/features/ui/spinner";
 
@@ -161,18 +159,18 @@ export function Card({
   searchQuery,
   noResultsFound,
 }: CardProps) {
-  const maybeCardDocument = useSelector((state: RootState) =>
+  const maybeCardDocument = useAppSelector((state) =>
     imageIdentifier != null
       ? state.cardDocuments.cardDocuments[imageIdentifier]
       : undefined
   );
 
-  const maybePreviousCardDocument = useSelector((state: RootState) =>
+  const maybePreviousCardDocument = useAppSelector((state) =>
     previousImageIdentifier != null
       ? state.cardDocuments.cardDocuments[previousImageIdentifier]
       : undefined
   );
-  const maybeNextCardDocument = useSelector((state: RootState) =>
+  const maybeNextCardDocument = useAppSelector((state) =>
     nextImageIdentifier != null
       ? state.cardDocuments.cardDocuments[nextImageIdentifier]
       : undefined

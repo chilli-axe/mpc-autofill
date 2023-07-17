@@ -9,10 +9,8 @@ import Button from "react-bootstrap/Button";
 import Dropdown from "react-bootstrap/Dropdown";
 import Form from "react-bootstrap/Form";
 import Modal from "react-bootstrap/Modal";
-import { useDispatch, useSelector } from "react-redux";
 
 import { useGetDFCPairsQuery, useGetSampleCardsQuery } from "@/app/api";
-import { AppDispatch } from "@/app/store";
 import {
   Card,
   Cardback,
@@ -26,7 +24,7 @@ import {
   processStringAsMultipleLines,
   stripTextInParentheses,
 } from "@/common/processing";
-import { CardDocument } from "@/common/types";
+import { CardDocument, useAppDispatch, useAppSelector } from "@/common/types";
 import { addMembers, selectProjectSize } from "@/features/project/projectSlice";
 import { fetchCardDocumentsAndReportError } from "@/features/search/cardDocumentsSlice";
 
@@ -35,14 +33,14 @@ export function ImportText() {
   const sampleCardsQuery = useGetSampleCardsQuery();
   const dfcPairsQuery = useGetDFCPairsQuery();
 
-  const dispatch = useDispatch<AppDispatch>();
+  const dispatch = useAppDispatch();
   const [showTextModal, setShowTextModal] = useState(false);
   const handleCloseTextModal = () => setShowTextModal(false);
   const handleShowTextModal = () => setShowTextModal(true);
   const [textModalValue, setTextModalValue] = useState("");
   const [placeholderText, setPlaceholderText] = useState("");
 
-  const projectSize = useSelector(selectProjectSize);
+  const projectSize = useAppSelector(selectProjectSize);
 
   const formatPlaceholderText = (placeholders: {
     [cardType: string]: Array<CardDocument>;

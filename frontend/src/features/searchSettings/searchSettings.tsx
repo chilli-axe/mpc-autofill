@@ -9,9 +9,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
-import { useDispatch, useSelector } from "react-redux";
 
-import { AppDispatch } from "@/app/store";
 import {
   getLocalStorageSearchSettings,
   setLocalStorageSearchSettings,
@@ -20,6 +18,8 @@ import {
   FilterSettings,
   SearchTypeSettings,
   SourceSettings,
+  useAppDispatch,
+  useAppSelector,
 } from "@/common/types";
 import { selectSourceDocuments } from "@/features/search/sourceDocumentsSlice";
 import { FilterSettings as FilterSettingsElement } from "@/features/searchSettings/filterSettings";
@@ -33,11 +33,11 @@ import { SearchTypeSettings as SearchTypeSettingsElement } from "@/features/sear
 import { SourceSettings as SourceSettingsElement } from "@/features/searchSettings/sourceSettings";
 
 export function SearchSettings() {
-  const dispatch = useDispatch<AppDispatch>();
+  const dispatch = useAppDispatch();
   const [show, setShow] = useState(false);
 
   // global state managed in redux
-  const globalSearchSettings = useSelector(selectSearchSettings);
+  const globalSearchSettings = useAppSelector(selectSearchSettings);
 
   // component-level copies of redux state
   const [localSearchTypeSettings, setLocalSearchTypeSettings] =
@@ -47,7 +47,7 @@ export function SearchSettings() {
   const [localFilterSettings, setLocalFilterSettings] =
     useState<FilterSettings>(globalSearchSettings.filterSettings);
 
-  const maybeSourceDocuments = useSelector(selectSourceDocuments);
+  const maybeSourceDocuments = useAppSelector(selectSourceDocuments);
 
   useEffect(() => {
     if (maybeSourceDocuments != null) {

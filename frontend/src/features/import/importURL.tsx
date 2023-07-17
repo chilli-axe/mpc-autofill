@@ -118,6 +118,7 @@ export function ImportURL() {
               onChange={(event) => setURLModalValue(event.target.value.trim())}
               value={URLModalValue}
               disabled={loading || importSitesQuery.data == null}
+              aria-label="import-url"
             />
           </Form.Group>
         </Modal.Body>

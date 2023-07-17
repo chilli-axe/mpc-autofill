@@ -10,12 +10,11 @@ import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import Row from "react-bootstrap/Row";
 import Table from "react-bootstrap/Table";
-import { useSelector } from "react-redux";
 
 import { api } from "@/app/api";
 import { RootState } from "@/app/store";
 import { base64StringToBlob } from "@/common/processing";
-import { CardDocument } from "@/common/types";
+import { CardDocument, useAppSelector } from "@/common/types";
 import { imageSizeToMBString } from "@/common/utils";
 import {
   MemoizedCardImage,
@@ -40,13 +39,13 @@ export function CardDetailedView({
   handleClose,
   cardDocument,
 }: CardDetailedViewProps) {
-  const maybeCardDocument = useSelector((state: RootState) =>
+  const maybeCardDocument = useAppSelector((state) =>
     cardDocument != null
       ? cardDocument
       : state.cardDocuments.cardDocuments[imageIdentifier]
   );
-  const maybeSourceDocuments = useSelector(
-    (state: RootState) => state.sourceDocuments.sourceDocuments
+  const maybeSourceDocuments = useAppSelector(
+    (state) => state.sourceDocuments.sourceDocuments
   );
 
   const [triggerFn, getGoogleDriveImageQuery] =

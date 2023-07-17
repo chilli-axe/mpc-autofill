@@ -4,20 +4,20 @@ import React from "react";
 import Button from "react-bootstrap/Button";
 import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
-import { useSelector } from "react-redux";
 
 import {
   MakePlayingCards,
   MakePlayingCardsURL,
   ProjectName,
 } from "@/common/constants";
+import { useAppSelector } from "@/common/types";
 import { selectBackendURL } from "@/features/backend/backendSlice";
 import { DynamicLogo } from "@/features/ui/dynamicLogo";
 import Footer from "@/features/ui/footer";
 import Layout from "@/features/ui/layout";
 
 function JumpIntoEditorButton() {
-  const backendURL = useSelector(selectBackendURL);
+  const backendURL = useAppSelector(selectBackendURL);
   return (
     <Row className="justify-content-center">
       <Col xl={6} lg={6} md={8} sm={12} xs={12}>
