@@ -1,3 +1,4 @@
+from collections import Counter
 from copy import deepcopy
 
 import pytest
@@ -373,7 +374,10 @@ class TestPostImportSiteDecklist:
     @pytest.mark.parametrize("url", [x.value for x in Decks])
     def test_valid_url(self, client, django_settings, snapshot, url):
         response = client.post(reverse(views.post_import_site_decklist), {"url": url}, content_type="application/json")
-        snapshot_response(response, snapshot)
+        assert response.status_code == 200
+        response_json = response.json()
+        assert "cards" in response_json.keys()
+        assert Counter(response_json["cards"].splitlines()) == snapshot
 
     def test_invalid_url(self, client, django_settings, snapshot):
         response = client.post(

@@ -483,140 +483,80 @@
   })
 # ---
 # name: TestPostImportSiteDecklist.test_valid_url[https://aetherhub.com/Deck/test-796905]
-  dict({
-    'json': dict({
-      'cards': '''
-        4 Brainstorm
-        3 Past in Flames
-        1 Delver of Secrets
-      ''',
-    }),
-    'status_code': 200,
+  Counter({
+    '1 Delver of Secrets': 1,
+    '3 Past in Flames': 1,
+    '4 Brainstorm': 1,
   })
 # ---
 # name: TestPostImportSiteDecklist.test_valid_url[https://archidekt.com/decks/3380653]
-  dict({
-    'json': dict({
-      'cards': '''
-        1 Delver of Secrets // Insectile Aberration
-        4 Brainstorm
-        3 Past in Flames
-      ''',
-    }),
-    'status_code': 200,
+  Counter({
+    '1 Delver of Secrets // Insectile Aberration': 1,
+    '3 Past in Flames': 1,
+    '4 Brainstorm': 1,
   })
 # ---
 # name: TestPostImportSiteDecklist.test_valid_url[https://cubecobra.com/cube/overview/2fj4]
-  dict({
-    'json': dict({
-      'cards': '''
-        Delver of Secrets
-        Brainstorm
-        Brainstorm
-        Brainstorm
-        Brainstorm
-        Past in Flames
-        Past in Flames
-        Past in Flames
-      ''',
-    }),
-    'status_code': 200,
+  Counter({
+    'Brainstorm': 4,
+    'Delver of Secrets': 1,
+    'Past in Flames': 3,
   })
 # ---
 # name: TestPostImportSiteDecklist.test_valid_url[https://decks.tcgplayer.com/magic/standard/mpc-autofill/test/1398367]
-  dict({
-    'json': dict({
-      'cards': '''
-        1 Delver of Secrets
-        4 Brainstorm
-        3 Past in Flames
-      ''',
-    }),
-    'status_code': 200,
+  Counter({
+    '1 Delver of Secrets': 1,
+    '3 Past in Flames': 1,
+    '4 Brainstorm': 1,
   })
 # ---
 # name: TestPostImportSiteDecklist.test_valid_url[https://deckstats.net/decks/216625/2754468-test]
-  dict({
-    'json': dict({
-      'cards': '''
-        4 Brainstorm
-        1 Delver of Secrets // Insectile Aberration
-        3 Past in Flames
-      ''',
-    }),
-    'status_code': 200,
+  Counter({
+    '1 Delver of Secrets // Insectile Aberration': 1,
+    '3 Past in Flames': 1,
+    '4 Brainstorm': 1,
   })
 # ---
 # name: TestPostImportSiteDecklist.test_valid_url[https://magic-ville.com/fr/decks/showdeck?ref=948045]
-  dict({
-    'json': dict({
-      'cards': '''
-        3 Past in Flames
-        4 Brainstorm
-        1 Delver of Secrets
-      ''',
-    }),
-    'status_code': 200,
+  Counter({
+    '1 Delver of Secrets': 1,
+    '3 Past in Flames': 1,
+    '4 Brainstorm': 1,
   })
 # ---
 # name: TestPostImportSiteDecklist.test_valid_url[https://manastack.com/deck/test-426]
-  dict({
-    'json': dict({
-      'cards': '''
-        4 Brainstorm
-        3 Past in Flames
-        1 Delver of Secrets
-      ''',
-    }),
-    'status_code': 200,
+  Counter({
+    '1 Delver of Secrets': 1,
+    '3 Past in Flames': 1,
+    '4 Brainstorm': 1,
   })
 # ---
 # name: TestPostImportSiteDecklist.test_valid_url[https://scryfall.com/@mpcautofill/decks/71bb2d40-c922-4a01-a63e-7ba2dde29a5c]
-  dict({
-    'json': dict({
-      'cards': '''
-        4 Brainstorm
-        1 Delver of Secrets
-        3 Past in Flames
-      ''',
-    }),
-    'status_code': 200,
+  Counter({
+    '1 Delver of Secrets': 1,
+    '3 Past in Flames': 1,
+    '4 Brainstorm': 1,
   })
 # ---
 # name: TestPostImportSiteDecklist.test_valid_url[https://tappedout.net/mtg-decks/09-10-22-DoY-test]
-  dict({
-    'json': dict({
-      'cards': '''
-        4 Brainstorm
-        1 Delver of Secrets
-        3 Past in Flames
-      ''',
-    }),
-    'status_code': 200,
+  Counter({
+    '1 Delver of Secrets': 1,
+    '3 Past in Flames': 1,
+    '4 Brainstorm': 1,
   })
 # ---
 # name: TestPostImportSiteDecklist.test_valid_url[https://www.moxfield.com/decks/D42-or9pCk-uMi4XzRDziQ]
-  dict({
-    'json': dict({
-      'cards': '''
-        1 Delver of Secrets // Insectile Aberration
-        4 Brainstorm
-        3 Past in Flames
-      ''',
-    }),
-    'status_code': 200,
+  Counter({
+    '1 Delver of Secrets // Insectile Aberration': 1,
+    '3 Past in Flames': 1,
+    '4 Brainstorm': 1,
   })
 # ---
 # name: TestPostImportSiteDecklist.test_valid_url[https://www.mtggoldfish.com/deck/5149750]
-  dict({
-    'json': dict({
-      'cards': '''
-        4 Brainstorm
-        1 Delver of Secrets
-        3 Past in Flames
-      ''',
-    }),
-    'status_code': 200,
+  Counter({
+    '1 Delver of Secrets': 1,
+    '3 Past in Flames': 1,
+    '4 Brainstorm': 1,
   })
 # ---
 # name: TestPostSearchResults.test_complex_search
