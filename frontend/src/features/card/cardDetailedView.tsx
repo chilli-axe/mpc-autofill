@@ -72,6 +72,7 @@ export function CardDetailedView({
                   maybeCardDocument={cardDocument}
                   hidden={false}
                   small={false}
+                  showDetailedViewOnClick={false}
                 />
               </MemoizedCardProportionWrapper>
             </div>

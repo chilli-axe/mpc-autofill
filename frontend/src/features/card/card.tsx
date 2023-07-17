@@ -29,11 +29,11 @@ const HiddenImage = styled(Image)`
 
 const VisibleImage = styled(Image)<{
   imageIsLoading?: boolean;
-  small?: boolean;
+  showDetailedViewOnClick?: boolean;
 }>`
   z-index: 1;
   &:hover {
-    cursor: ${(props) => (props.small ? "pointer" : "auto")};
+    cursor: ${(props) => (props.showDetailedViewOnClick ? "pointer" : "auto")};
   }
   opacity: ${(props) => (props.imageIsLoading ? 0 : 1)};
 `;
@@ -42,9 +42,15 @@ interface CardImageProps {
   maybeCardDocument: CardDocument | null;
   hidden: boolean;
   small: boolean;
+  showDetailedViewOnClick: boolean;
 }
 
-function CardImage({ maybeCardDocument, hidden, small }: CardImageProps) {
+function CardImage({
+  maybeCardDocument,
+  hidden,
+  small,
+  showDetailedViewOnClick,
+}: CardImageProps) {
   const [imageLoading, setImageLoading] = useState(true);
   // ensure that the small thumbnail fades in each time the selected image changes
   useEffect(() => setImageLoading(true), [maybeCardDocument?.identifier]);
@@ -56,7 +62,7 @@ function CardImage({ maybeCardDocument, hidden, small }: CardImageProps) {
 
   const dispatch = useAppDispatch();
   const handleShowDetailedView = () => {
-    if (small && maybeCardDocument != null) {
+    if (showDetailedViewOnClick && maybeCardDocument != null) {
       dispatch(
         setSelectedCardAndShowModal([maybeCardDocument, "cardDetailedView"])
       );
@@ -96,7 +102,7 @@ function CardImage({ maybeCardDocument, hidden, small }: CardImageProps) {
             className="card-img card-img-fade-in"
             loading="lazy"
             imageIsLoading={imageLoading}
-            small={small}
+            showDetailedViewOnClick={showDetailedViewOnClick}
             src={
               (small
                 ? maybeCardDocument?.small_thumbnail_url
@@ -186,6 +192,7 @@ export function Card({
           maybeCardDocument={maybeCardDocument}
           hidden={false}
           small={true}
+          showDetailedViewOnClick={cardOnClick == null}
         />
         {maybePreviousCardDocument != null &&
           maybePreviousCardDocument.identifier !==
@@ -194,6 +201,7 @@ export function Card({
               maybeCardDocument={maybePreviousCardDocument}
               hidden={true}
               small={true}
+              showDetailedViewOnClick={false}
             />
           )}
         {maybeNextCardDocument != null &&
@@ -203,6 +211,7 @@ export function Card({
               maybeCardDocument={maybeNextCardDocument}
               hidden={true}
               small={true}
+              showDetailedViewOnClick={false}
             />
           )}
       </>

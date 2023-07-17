@@ -250,6 +250,7 @@ export function DynamicLogo() {
                         }
                         hidden={false}
                         small={true}
+                        showDetailedViewOnClick={true}
                       />
                     </MemoizedCardProportionWrapper>
                   </WrapperElement>

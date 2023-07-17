@@ -426,7 +426,7 @@ exports[`the html structure of a CardSlot's grid selector, cards faceted by sour
 }
 
 .c1:hover {
-  cursor: pointer;
+  cursor: auto;
 }
 
 .c0 {
@@ -755,7 +755,7 @@ exports[`the html structure of a CardSlot's grid selector, cards grouped togethe
 }
 
 .c1:hover {
-  cursor: pointer;
+  cursor: auto;
 }
 
 .c0 {
