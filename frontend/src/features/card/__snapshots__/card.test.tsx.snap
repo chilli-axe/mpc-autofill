@@ -1,6 +1,21 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`the html structure of a Card with a single document 1`] = `
+.c1 {
+  z-index: 1;
+  opacity: 1;
+}
+
+.c1:hover {
+  cursor: pointer;
+}
+
+.c0 {
+  z-index: 0;
+  background: #4e5d6c;
+  border: solid 0px black;
+}
+
 <body>
   <div>
     <div
@@ -17,11 +32,11 @@ exports[`the html structure of a Card with a single document 1`] = `
       </div>
       <div>
         <div
-          class="sc-77165e52-2 kga-drX rounded-lg shadow-lg ratio ratio-7x5"
+          class="c0 rounded-lg shadow-lg ratio ratio-7x5"
         >
           <img
             alt="Card 1"
-            class="sc-77165e52-1 knDYUl card-img card-img-fade-in"
+            class="c1 card-img card-img-fade-in"
             data-nimg="fill"
             decoding="async"
             loading="lazy"
@@ -54,6 +69,12 @@ exports[`the html structure of a Card with a single document 1`] = `
 `;
 
 exports[`the html structure of a Card with no search results 1`] = `
+.c0 {
+  z-index: 0;
+  background: #4e5d6c;
+  border: solid 0px black;
+}
+
 <body>
   <div>
     <div
@@ -70,7 +91,7 @@ exports[`the html structure of a Card with no search results 1`] = `
       </div>
       <div>
         <div
-          class="sc-77165e52-2 kga-drX rounded-lg shadow-lg ratio ratio-7x5"
+          class="c0 rounded-lg shadow-lg ratio ratio-7x5"
         >
           <img
             alt="Card not found"
@@ -109,6 +130,26 @@ exports[`the html structure of a Card with no search results 1`] = `
 `;
 
 exports[`the html structure of a Card with three documents 1`] = `
+.c2 {
+  z-index: 0;
+  opacity: 0;
+}
+
+.c1 {
+  z-index: 1;
+  opacity: 1;
+}
+
+.c1:hover {
+  cursor: pointer;
+}
+
+.c0 {
+  z-index: 0;
+  background: #4e5d6c;
+  border: solid 0px black;
+}
+
 <body>
   <div>
     <div
@@ -125,11 +166,11 @@ exports[`the html structure of a Card with three documents 1`] = `
       </div>
       <div>
         <div
-          class="sc-77165e52-2 kga-drX rounded-lg shadow-lg ratio ratio-7x5"
+          class="c0 rounded-lg shadow-lg ratio ratio-7x5"
         >
           <img
             alt="Card 1"
-            class="sc-77165e52-1 knDYUl card-img card-img-fade-in"
+            class="c1 card-img card-img-fade-in"
             data-nimg="fill"
             decoding="async"
             loading="lazy"
@@ -138,7 +179,7 @@ exports[`the html structure of a Card with three documents 1`] = `
           />
           <img
             alt="Card 2 small"
-            class="sc-77165e52-0 frnrOW card-img"
+            class="c2 card-img"
             data-nimg="fill"
             decoding="async"
             loading="lazy"
@@ -147,7 +188,7 @@ exports[`the html structure of a Card with three documents 1`] = `
           />
           <img
             alt="Card 3 small"
-            class="sc-77165e52-0 frnrOW card-img"
+            class="c2 card-img"
             data-nimg="fill"
             decoding="async"
             loading="lazy"
@@ -180,6 +221,26 @@ exports[`the html structure of a Card with three documents 1`] = `
 `;
 
 exports[`the html structure of a Card with two documents 1`] = `
+.c2 {
+  z-index: 0;
+  opacity: 0;
+}
+
+.c1 {
+  z-index: 1;
+  opacity: 1;
+}
+
+.c1:hover {
+  cursor: pointer;
+}
+
+.c0 {
+  z-index: 0;
+  background: #4e5d6c;
+  border: solid 0px black;
+}
+
 <body>
   <div>
     <div
@@ -196,11 +257,11 @@ exports[`the html structure of a Card with two documents 1`] = `
       </div>
       <div>
         <div
-          class="sc-77165e52-2 kga-drX rounded-lg shadow-lg ratio ratio-7x5"
+          class="c0 rounded-lg shadow-lg ratio ratio-7x5"
         >
           <img
             alt="Card 1"
-            class="sc-77165e52-1 knDYUl card-img card-img-fade-in"
+            class="c1 card-img card-img-fade-in"
             data-nimg="fill"
             decoding="async"
             loading="lazy"
@@ -209,7 +270,7 @@ exports[`the html structure of a Card with two documents 1`] = `
           />
           <img
             alt="Card 2 small"
-            class="sc-77165e52-0 frnrOW card-img"
+            class="c2 card-img"
             data-nimg="fill"
             decoding="async"
             loading="lazy"

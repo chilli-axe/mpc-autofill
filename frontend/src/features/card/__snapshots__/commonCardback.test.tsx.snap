@@ -1,6 +1,21 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`the html structure of a CommonCardback with a single search result 1`] = `
+.c1 {
+  z-index: 1;
+  opacity: 1;
+}
+
+.c1:hover {
+  cursor: pointer;
+}
+
+.c0 {
+  z-index: 0;
+  background: #4e5d6c;
+  border: solid 0px black;
+}
+
 <div
   data-testid="common-cardback"
 >
@@ -18,11 +33,11 @@ exports[`the html structure of a CommonCardback with a single search result 1`] 
     </div>
     <div>
       <div
-        class="sc-77165e52-2 kga-drX rounded-lg shadow-lg ratio ratio-7x5"
+        class="c0 rounded-lg shadow-lg ratio ratio-7x5"
       >
         <img
           alt="Card 1"
-          class="sc-77165e52-1 knDYUl card-img card-img-fade-in"
+          class="c1 card-img card-img-fade-in"
           data-nimg="fill"
           decoding="async"
           loading="lazy"
@@ -65,6 +80,21 @@ exports[`the html structure of a CommonCardback with a single search result 1`] 
 `;
 
 exports[`the html structure of a CommonCardback with multiple search results 1`] = `
+.c1 {
+  z-index: 1;
+  opacity: 1;
+}
+
+.c1:hover {
+  cursor: pointer;
+}
+
+.c0 {
+  z-index: 0;
+  background: #4e5d6c;
+  border: solid 0px black;
+}
+
 <div
   data-testid="common-cardback"
 >
@@ -82,11 +112,11 @@ exports[`the html structure of a CommonCardback with multiple search results 1`]
     </div>
     <div>
       <div
-        class="sc-77165e52-2 kga-drX rounded-lg shadow-lg ratio ratio-7x5"
+        class="c0 rounded-lg shadow-lg ratio ratio-7x5"
       >
         <img
           alt="Card 1"
-          class="sc-77165e52-1 knDYUl card-img card-img-fade-in"
+          class="c1 card-img card-img-fade-in"
           data-nimg="fill"
           decoding="async"
           loading="lazy"

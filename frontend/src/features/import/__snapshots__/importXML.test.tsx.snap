@@ -1,6 +1,33 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`the html structure of XML importer 1`] = `
+.c0 {
+  -webkit-flex: 1;
+  -ms-flex: 1;
+  flex: 1;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-flex-direction: column;
+  -ms-flex-direction: column;
+  flex-direction: column;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  padding: 20px;
+  border-width: 2px;
+  border-radius: 2px;
+  border-color: #eeeeee;
+  border-style: dashed;
+  color: #bdbdbd;
+  outline: none;
+  -webkit-transition: border 0.24s ease-in-out;
+  transition: border 0.24s ease-in-out;
+  cursor: pointer;
+}
+
 <div
   class="modal-dialog"
   data-testid="import-xml"
@@ -100,7 +127,7 @@ exports[`the html structure of XML importer 1`] = `
       >
         <div
           aria-label="import-xml"
-          class="sc-d1c6a457-0 iJszHV"
+          class="c0"
           role="presentation"
           tabindex="0"
         >
