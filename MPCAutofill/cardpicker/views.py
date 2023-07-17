@@ -29,6 +29,7 @@ from cardpicker.utils.sanitisation import to_searchable
 from cardpicker.utils.search_functions import (
     SearchExceptions,
     build_context,
+    get_new_cards_paginator,
     parse_json_body_as_search_data,
     ping_elasticsearch,
     query_es_card,
@@ -617,6 +618,37 @@ def get_contributions(request: HttpRequest) -> HttpResponse:
     return JsonResponse(
         {"sources": sources, "card_count_by_type": card_count_by_type, "total_database_size": total_database_size}
     )
+
+
+@csrf_exempt
+@NewErrorWrappers.to_json
+def get_new_cards_first_pages(request: HttpRequest) -> HttpResponse:
+    if request.method == "GET":
+        response_body: dict[str, dict[str, Any]] = {}
+        for source in Source.objects.all():
+            paginator = get_new_cards_paginator(source=source)
+            if paginator.count > 0:
+                response_body[source.key] = {
+                    "pages": paginator.num_pages,
+                    "cards": [card.to_dict() for card in paginator.get_page(1).object_list],
+                }
+        return JsonResponse({"results": response_body})
+    else:
+        return HttpResponseBadRequest("Expected GET request.")
+
+
+@csrf_exempt
+@NewErrorWrappers.to_json
+def get_new_cards_page(request: HttpRequest) -> HttpResponse:
+    if request.method == "GET":
+        page = int(request.GET.get("page") or "0")
+        source = Source.objects.filter(name=request.GET.get("source"))[0]
+        # TODO: input handling/errors/etc. note that page indexes from 1 in django Paginator.
+
+        paginator = get_new_cards_paginator(source=source)
+        return JsonResponse({"cards": [card.to_dict() for card in paginator.page(page).object_list]})
+    else:
+        return HttpResponseBadRequest("Expected GET request.")
 
 
 @csrf_exempt
