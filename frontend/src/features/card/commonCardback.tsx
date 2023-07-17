@@ -11,7 +11,6 @@ import { Back } from "@/common/constants";
 import { useAppDispatch, useAppSelector } from "@/common/types";
 import { wrapIndex } from "@/common/utils";
 import { MemoizedCard } from "@/features/card/card";
-import { MemoizedCardDetailedView } from "@/features/card/cardDetailedView";
 import { GridSelector } from "@/features/card/gridSelector";
 import {
   bulkReplaceSelectedImage,
@@ -74,11 +73,7 @@ interface CommonCardbackProps {
 export function CommonCardback({ selectedImage }: CommonCardbackProps) {
   const dispatch = useAppDispatch();
 
-  const [showDetailedView, setShowDetailedView] = useState(false);
   const [showGridSelector, setShowGridSelector] = useState(false);
-
-  const handleCloseDetailedView = () => setShowDetailedView(false);
-  const handleShowDetailedView = () => setShowDetailedView(true);
   const handleCloseGridSelector = () => setShowGridSelector(false);
   const handleShowGridSelector = () => setShowGridSelector(true);
 
@@ -176,7 +171,6 @@ export function CommonCardback({ selectedImage }: CommonCardbackProps) {
         nextImageIdentifier={nextImage}
         cardHeaderTitle={cardHeaderTitle}
         cardFooter={cardFooter}
-        imageOnClick={handleShowDetailedView}
         noResultsFound={false}
       />
       {showGridSelector && (
@@ -184,13 +178,6 @@ export function CommonCardback({ selectedImage }: CommonCardbackProps) {
           searchResults={searchResults}
           show={showGridSelector}
           handleClose={handleCloseGridSelector}
-        />
-      )}
-      {selectedImage != null && showDetailedView && (
-        <MemoizedCardDetailedView
-          imageIdentifier={selectedImage}
-          show={showDetailedView}
-          handleClose={handleCloseDetailedView}
         />
       )}
     </div>

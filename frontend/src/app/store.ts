@@ -13,6 +13,7 @@ import searchResultsReducer from "@/features/search/searchResultsSlice";
 import sourceDocumentsReducer from "@/features/search/sourceDocumentsSlice";
 import searchSettingsReducer from "@/features/searchSettings/searchSettingsSlice";
 import toastsReducer, { setError } from "@/features/toasts/toastsSlice";
+import modalReducer from "@/features/ui/modalSlice";
 import viewSettingsReducer from "@/features/viewSettings/viewSettingsSlice";
 
 // Create the root reducer separately so we can extract the RootState type
@@ -28,6 +29,7 @@ const rootReducer = combineReducers({
   project: projectReducer,
   backend: backendReducer,
   toasts: toastsReducer,
+  modal: modalReducer,
 });
 
 const rtkQueryErrorLogger: Middleware =

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import Button from "react-bootstrap/Button";
 import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
@@ -51,8 +51,6 @@ function NewCardsForSource({
     sourceKey,
     pageCounter,
   ]);
-
-  // TODO: detailed view
 
   const loadMoreButton = (
     <div className="d-grid gap-0 mx-auto" style={{ maxWidth: 20 + "%" }}>

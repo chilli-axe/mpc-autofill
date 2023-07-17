@@ -1,13 +1,13 @@
 import { useRouter } from "next/router";
 import { GoogleAnalytics } from "nextjs-google-analytics";
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 import { PropsWithChildren } from "react";
 import Container from "react-bootstrap/Container";
 import SSRProvider from "react-bootstrap/SSRProvider";
 import { Provider } from "react-redux";
 import styled from "styled-components";
 
-import store from "@/app/store";
+import store, { RootState } from "@/app/store";
 import { ContentMaxWidth, NavbarHeight } from "@/common/constants";
 import {
   getGoogleAnalyticsConsent,
@@ -16,7 +16,9 @@ import {
 import { standardiseURL } from "@/common/processing";
 import { useAppDispatch, useAppSelector } from "@/common/types";
 import { selectBackendURL, setURL } from "@/features/backend/backendSlice";
+import { MemoizedCardDetailedView } from "@/features/card/cardDetailedView";
 import { Toasts } from "@/features/toasts/toasts";
+import { hideModal } from "@/features/ui/modalSlice";
 import ProjectNavbar from "@/features/ui/navbar";
 
 function BackendSetter() {
@@ -41,6 +43,27 @@ function BackendSetter() {
   }, [router.isReady, backendURL, formattedURL, dispatch]);
 
   return <></>;
+}
+
+function Modals() {
+  // TODO: move the grid selector into here
+  // TODO: move the developer and patreon support modals into here
+  const [selectedImage, shownModal] = useAppSelector((state: RootState) => [
+    state.modal.card,
+    state.modal.shownModal,
+  ]);
+  const dispatch = useAppDispatch();
+  return (
+    <>
+      {selectedImage != null && (
+        <MemoizedCardDetailedView
+          cardDocument={selectedImage}
+          show={shownModal === "cardDetailedView"}
+          handleClose={() => dispatch(hideModal())}
+        />
+      )}
+    </>
+  );
 }
 
 const OverscrollProvider = styled(Provider)`
@@ -75,6 +98,7 @@ export function LayoutWithoutProvider({
   return (
     <>
       <Toasts />
+      <Modals />
       <BackendSetter />
       <ProjectNavbar />
       <ContentContainer fluid className={`g-${gutter}`}>

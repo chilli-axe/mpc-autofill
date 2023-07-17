@@ -17,8 +17,9 @@ import React, {
 import BSCard from "react-bootstrap/Card";
 import styled from "styled-components";
 
-import { SearchQuery, useAppSelector } from "@/common/types";
+import { SearchQuery, useAppDispatch, useAppSelector } from "@/common/types";
 import { CardDocument } from "@/common/types";
+import { setSelectedCardAndShowModal } from "@/features/ui/modalSlice";
 import { Spinner } from "@/features/ui/spinner";
 
 const HiddenImage = styled(Image)`
@@ -26,27 +27,41 @@ const HiddenImage = styled(Image)`
   opacity: 0;
 `;
 
-const VisibleImage = styled(Image)<{ imageIsLoading?: boolean }>`
+const VisibleImage = styled(Image)<{
+  imageIsLoading?: boolean;
+  small?: boolean;
+}>`
   z-index: 1;
+  &:hover {
+    cursor: ${(props) => (props.small ? "pointer" : "auto")};
+  }
   opacity: ${(props) => (props.imageIsLoading ? 0 : 1)};
 `;
 
 interface CardImageProps {
-  cardDocument: CardDocument | null;
-  onClick?: React.MouseEventHandler<HTMLImageElement>;
+  maybeCardDocument: CardDocument | null;
   hidden: boolean;
   small: boolean;
 }
 
-function CardImage({ cardDocument, onClick, hidden, small }: CardImageProps) {
+function CardImage({ maybeCardDocument, hidden, small }: CardImageProps) {
   const [imageLoading, setImageLoading] = useState(true);
   // ensure that the small thumbnail fades in each time the selected image changes
-  useEffect(() => setImageLoading(true), [cardDocument?.identifier]);
+  useEffect(() => setImageLoading(true), [maybeCardDocument?.identifier]);
   useEffect(() => {
     if (image.current != null && image.current.complete) {
       setImageLoading(false);
     }
-  }, [cardDocument?.identifier]);
+  }, [maybeCardDocument?.identifier]);
+
+  const dispatch = useAppDispatch();
+  const handleShowDetailedView = () => {
+    if (small && maybeCardDocument != null) {
+      dispatch(
+        setSelectedCardAndShowModal([maybeCardDocument, "cardDetailedView"])
+      );
+    }
+  };
 
   // next.js seems to not fire `onLoadingComplete` when opening a page with a cached image
   // this implementation retrieved from https://stackoverflow.com/a/59809184
@@ -61,13 +76,12 @@ function CardImage({ cardDocument, onClick, hidden, small }: CardImageProps) {
           loading="lazy"
           src={
             (small
-              ? cardDocument?.small_thumbnail_url
-              : cardDocument?.medium_thumbnail_url) ?? ""
+              ? maybeCardDocument?.small_thumbnail_url
+              : maybeCardDocument?.medium_thumbnail_url) ?? ""
           }
           onLoadingComplete={(img) => setImageLoading(false)}
-          onClick={onClick}
           // onError={{thumbnail_404(this)}} // TODO
-          alt={cardDocument?.name ?? ""}
+          alt={maybeCardDocument?.name ?? ""}
           fill={true}
         />
       ) : (
@@ -78,14 +92,15 @@ function CardImage({ cardDocument, onClick, hidden, small }: CardImageProps) {
             className="card-img card-img-fade-in"
             loading="lazy"
             imageIsLoading={imageLoading}
+            small={small}
             src={
               (small
-                ? cardDocument?.small_thumbnail_url
-                : cardDocument?.medium_thumbnail_url) ?? ""
+                ? maybeCardDocument?.small_thumbnail_url
+                : maybeCardDocument?.medium_thumbnail_url) ?? ""
             }
             onLoadingComplete={(img) => setImageLoading(false)}
-            onClick={onClick}
-            alt={cardDocument?.name ?? ""}
+            onClick={() => handleShowDetailedView()}
+            alt={maybeCardDocument?.name ?? ""}
             fill={true}
           />
         </>
@@ -137,8 +152,6 @@ interface CardRenameMeProps {
   cardHeaderButtons?: ReactElement;
   /** An element (e.g. prev/next buttons) to display in the card footer. If not passed, no footer will be rendered. */
   cardFooter?: ReactElement;
-  /** A callback function for when the displayed image is clicked. */
-  imageOnClick?: React.MouseEventHandler<HTMLImageElement>;
   /** A callback function for when the `Card` (the HTML surrounding the image) is clicked. */
   cardOnClick?: React.MouseEventHandler<HTMLElement>;
   /** The `SearchQuery` specified when searching for this card. */
@@ -154,7 +167,6 @@ export function CardRenameMe({
   cardHeaderTitle,
   cardHeaderButtons,
   cardFooter,
-  imageOnClick,
   cardOnClick,
   searchQuery,
   noResultsFound,
@@ -167,8 +179,7 @@ export function CardRenameMe({
     maybeCardDocument != null ? (
       <>
         <MemoizedCardImage
-          cardDocument={maybeCardDocument}
-          onClick={imageOnClick}
+          maybeCardDocument={maybeCardDocument}
           hidden={false}
           small={true}
         />
@@ -177,8 +188,7 @@ export function CardRenameMe({
             maybeCardDocument?.identifier &&
           maybePreviousCardDocument != null && (
             <MemoizedCardImage
-              cardDocument={maybePreviousCardDocument}
-              onClick={imageOnClick}
+              maybeCardDocument={maybePreviousCardDocument}
               hidden={true}
               small={true}
             />
@@ -187,8 +197,7 @@ export function CardRenameMe({
           maybeNextCardDocument?.identifier === maybeCardDocument?.identifier &&
           maybeNextCardDocument != null && (
             <MemoizedCardImage
-              cardDocument={maybeNextCardDocument}
-              onClick={imageOnClick}
+              maybeCardDocument={maybeNextCardDocument}
               hidden={true}
               small={true}
             />
@@ -261,8 +270,6 @@ interface CardProps {
   cardHeaderButtons?: ReactElement;
   /** An element (e.g. prev/next buttons) to display in the card footer. If not passed, no footer will be rendered. */
   cardFooter?: ReactElement;
-  /** A callback function for when the displayed image is clicked. */
-  imageOnClick?: React.MouseEventHandler<HTMLImageElement>;
   /** A callback function for when the `Card` (the HTML surrounding the image) is clicked. */
   cardOnClick?: React.MouseEventHandler<HTMLElement>;
   /** The `SearchQuery` specified when searching for this card. */
@@ -278,7 +285,6 @@ export function Card({
   cardHeaderTitle,
   cardHeaderButtons,
   cardFooter,
-  imageOnClick,
   cardOnClick,
   searchQuery,
   noResultsFound,
@@ -315,7 +321,6 @@ export function Card({
       cardHeaderTitle={cardHeaderTitle}
       cardHeaderButtons={cardHeaderButtons}
       cardFooter={cardFooter}
-      imageOnClick={imageOnClick}
       cardOnClick={cardOnClick}
       searchQuery={searchQuery}
       noResultsFound={noResultsFound}

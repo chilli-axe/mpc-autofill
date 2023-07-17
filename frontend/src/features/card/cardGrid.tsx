@@ -3,22 +3,17 @@
  * querying the server for search results as necessary.
  */
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Modal from "react-bootstrap/Modal";
 import Row from "react-bootstrap/Row";
-import { ThunkDispatch } from "redux-thunk";
 import styled from "styled-components";
 
 import { Back, Front } from "@/common/constants";
 import { useAppDispatch, useAppSelector } from "@/common/types";
 import { selectBackendURL } from "@/features/backend/backendSlice";
-import { MemoizedCardDetailedView } from "@/features/card/cardDetailedView";
 import { MemoizedCardSlot } from "@/features/card/cardSlot";
 import { selectProjectMembers } from "@/features/project/projectSlice";
-import {
-  fetchCardDocuments,
-  fetchCardDocumentsAndReportError,
-} from "@/features/search/cardDocumentsSlice";
+import { fetchCardDocumentsAndReportError } from "@/features/search/cardDocumentsSlice";
 import { clearSearchResults } from "@/features/search/searchResultsSlice";
 import { Spinner } from "@/features/ui/spinner";
 
@@ -58,16 +53,6 @@ function CardGridDefault() {
 export function CardGrid() {
   const dispatch = useAppDispatch();
 
-  const [detailedViewSelectedImage, setDetailedViewSelectedImage] = useState<
-    string | null
-  >(null);
-  const [showDetailedView, setShowDetailedView] = useState(false);
-  const handleCloseDetailedView = () => setShowDetailedView(false);
-  const handleShowDetailedView = useCallback((selectedImage: string) => {
-    setDetailedViewSelectedImage(selectedImage);
-    setShowDetailedView(true);
-  }, []);
-
   const fetchingCardData = useAppSelector(
     (state) =>
       state.cardDocuments.status == "loading" ||
@@ -100,7 +85,6 @@ export function CardGrid() {
         searchQuery={slotProjectMember.front?.query}
         face={Front}
         slot={slot}
-        handleShowDetailedView={handleShowDetailedView}
       ></MemoizedCardSlot>
     );
     cardSlotsBacks.push(
@@ -109,7 +93,6 @@ export function CardGrid() {
         searchQuery={slotProjectMember.back?.query}
         face={Back}
         slot={slot}
-        handleShowDetailedView={handleShowDetailedView}
       ></MemoizedCardSlot>
     );
   }
@@ -157,14 +140,6 @@ export function CardGrid() {
           <Spinner />
         </Modal.Body>
       </Modal>
-
-      {detailedViewSelectedImage != null && (
-        <MemoizedCardDetailedView
-          imageIdentifier={detailedViewSelectedImage}
-          show={showDetailedView}
-          handleClose={handleCloseDetailedView}
-        />
-      )}
     </>
   );
 }

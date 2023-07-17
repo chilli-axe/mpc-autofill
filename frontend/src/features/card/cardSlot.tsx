@@ -30,9 +30,6 @@ interface CardSlotProps {
   searchQuery: SearchQuery | undefined;
   face: Faces;
   slot: number;
-  handleShowDetailedView: {
-    (selectedImage: string): void;
-  };
 }
 
 //# region grid selector
@@ -76,12 +73,7 @@ export const MemoizedCardSlotGridSelector = memo(CardSlotGridSelector);
 
 //# region card slot
 
-export function CardSlot({
-  searchQuery,
-  face,
-  slot,
-  handleShowDetailedView,
-}: CardSlotProps) {
+export function CardSlot({ searchQuery, face, slot }: CardSlotProps) {
   const [showGridSelector, setShowGridSelector] = useState(false);
 
   const handleCloseGridSelector = () => setShowGridSelector(false);
@@ -108,12 +100,6 @@ export function CardSlot({
     (state) => (state.project.members[slot] ?? {})[face]
   );
   const selectedImage = projectMember?.selectedImage;
-
-  const handleShowSelectedImageDetailedView = () => {
-    if (selectedImage != null) {
-      handleShowDetailedView(selectedImage);
-    }
-  };
 
   useEffect(() => {
     /**
@@ -278,7 +264,6 @@ export function CardSlot({
         cardHeaderTitle={cardHeaderTitle}
         cardFooter={cardFooter}
         cardHeaderButtons={cardHeaderButtons}
-        imageOnClick={handleShowSelectedImageDetailedView}
         searchQuery={searchQuery}
         noResultsFound={
           searchResultsForQueryOrDefault != null &&

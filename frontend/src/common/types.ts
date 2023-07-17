@@ -49,6 +49,7 @@ export interface CardDocument {
   source_id: number;
   source_verbose: string;
   source_type: string;
+  source_external_link: string | null;
   dpi: number;
   searchq: string;
   extension: string;
@@ -223,4 +224,11 @@ export interface NewCardsFirstPage {
 
 export interface NewCardsFirstPages {
   [sourceKey: string]: NewCardsFirstPage;
+}
+
+export type Modals = "cardDetailedView" | "gridSelector";
+
+export interface ModalState {
+  card: CardDocument | null;
+  shownModal: Modals | null;
 }
