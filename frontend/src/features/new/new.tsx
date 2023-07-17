@@ -10,7 +10,7 @@ import {
 } from "@/app/api";
 import { CardDocument } from "@/common/types";
 import { NewCardsFirstPage } from "@/common/types";
-import { MemoizedCardRenameMe } from "@/features/card/card";
+import { MemoizedCard } from "@/features/card/card";
 import { Spinner } from "@/features/ui/spinner";
 
 const InlineHeader = styled.h3`
@@ -23,12 +23,12 @@ const InlineParagraph = styled.p`
 
 function NewCard({ cardDocument }: { cardDocument: CardDocument }) {
   /**
-   * This component is a thin layer on top of `CardRenameMe` for use in the What's New page.
+   * This component is a thin layer on top of `Card` for use in the What's New page.
    */
 
   return (
     <Col>
-      <MemoizedCardRenameMe
+      <MemoizedCard
         key={`new-cards-${cardDocument.identifier}`}
         maybeCardDocument={cardDocument}
         cardHeaderTitle={cardDocument.date}

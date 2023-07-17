@@ -17,7 +17,7 @@ import {
   useAppSelector,
 } from "@/common/types";
 import { wrapIndex } from "@/common/utils";
-import { MemoizedCard } from "@/features/card/card";
+import { MemoizedEditorCard } from "@/features/card/card";
 import { GridSelector } from "@/features/card/gridSelector";
 import {
   bulkAlignMemberSelection,
@@ -257,7 +257,7 @@ export function CardSlot({ searchQuery, face, slot }: CardSlotProps) {
       style={{ contentVisibility: "auto" }}
       data-testid={`${face}-slot${slot}`}
     >
-      <MemoizedCard
+      <MemoizedEditorCard
         imageIdentifier={selectedImage}
         previousImageIdentifier={previousImage}
         nextImageIdentifier={nextImage}

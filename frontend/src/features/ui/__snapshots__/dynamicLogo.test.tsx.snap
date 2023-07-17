@@ -10,15 +10,15 @@ exports[`the html structure of the dynamic logo, backend configured 1`] = `
         class="col-xl-6 col-lg-7 col-md-8 col-sm-12 col-12"
       >
         <div
-          class="sc-2ae387c7-0 iGZnpC"
+          class="sc-6bf960ab-0 gqUIaO"
         >
           <p
-            class="sc-2ae387c7-1 kdajfA className"
+            class="sc-6bf960ab-1 iyupEw className"
           >
             Test Site
           </p>
           <div
-            class="sc-2ae387c7-2 gqzLSs"
+            class="sc-6bf960ab-2 dtFQCs"
           >
             <img
               alt="logo-arrow"
@@ -30,14 +30,14 @@ exports[`the html structure of the dynamic logo, backend configured 1`] = `
             />
           </div>
           <div
-            class="sc-2ae387c7-3 sc-2ae387c7-4 gzaxS bQArFl"
+            class="sc-6bf960ab-3 sc-6bf960ab-4 EmaqO heMlBR"
           >
             <div
-              class="sc-1473aca0-2 eZLFFB rounded-lg shadow-lg ratio ratio-7x5"
+              class="sc-77165e52-2 kga-drX rounded-lg shadow-lg ratio ratio-7x5"
             >
               <img
                 alt="Card 6"
-                class="sc-1473aca0-1 gPvrki card-img card-img-fade-in"
+                class="sc-77165e52-1 knDYUl card-img card-img-fade-in"
                 data-nimg="fill"
                 decoding="async"
                 loading="lazy"
@@ -47,14 +47,14 @@ exports[`the html structure of the dynamic logo, backend configured 1`] = `
             </div>
           </div>
           <div
-            class="sc-2ae387c7-3 sc-2ae387c7-5 gzaxS hseKBZ"
+            class="sc-6bf960ab-3 sc-6bf960ab-5 EmaqO dTzHmF"
           >
             <div
-              class="sc-1473aca0-2 eZLFFB rounded-lg shadow-lg ratio ratio-7x5"
+              class="sc-77165e52-2 kga-drX rounded-lg shadow-lg ratio ratio-7x5"
             >
               <img
                 alt="Card 1"
-                class="sc-1473aca0-1 gPvrki card-img card-img-fade-in"
+                class="sc-77165e52-1 knDYUl card-img card-img-fade-in"
                 data-nimg="fill"
                 decoding="async"
                 loading="lazy"
@@ -64,14 +64,14 @@ exports[`the html structure of the dynamic logo, backend configured 1`] = `
             </div>
           </div>
           <div
-            class="sc-2ae387c7-3 sc-2ae387c7-6 gzaxS ijiwJv"
+            class="sc-6bf960ab-3 sc-6bf960ab-6 EmaqO RjTqr"
           >
             <div
-              class="sc-1473aca0-2 eZLFFB rounded-lg shadow-lg ratio ratio-7x5"
+              class="sc-77165e52-2 kga-drX rounded-lg shadow-lg ratio ratio-7x5"
             >
               <img
                 alt="Card 2"
-                class="sc-1473aca0-1 gPvrki card-img card-img-fade-in"
+                class="sc-77165e52-1 knDYUl card-img card-img-fade-in"
                 data-nimg="fill"
                 decoding="async"
                 loading="lazy"
@@ -81,14 +81,14 @@ exports[`the html structure of the dynamic logo, backend configured 1`] = `
             </div>
           </div>
           <div
-            class="sc-2ae387c7-3 sc-2ae387c7-7 gzaxS ibZJxJ"
+            class="sc-6bf960ab-3 sc-6bf960ab-7 EmaqO jYSCLl"
           >
             <div
-              class="sc-1473aca0-2 eZLFFB rounded-lg shadow-lg ratio ratio-7x5"
+              class="sc-77165e52-2 kga-drX rounded-lg shadow-lg ratio ratio-7x5"
             >
               <img
                 alt="Card 3"
-                class="sc-1473aca0-1 gPvrki card-img card-img-fade-in"
+                class="sc-77165e52-1 knDYUl card-img card-img-fade-in"
                 data-nimg="fill"
                 decoding="async"
                 loading="lazy"
@@ -98,14 +98,14 @@ exports[`the html structure of the dynamic logo, backend configured 1`] = `
             </div>
           </div>
           <div
-            class="sc-2ae387c7-3 sc-2ae387c7-8 gzaxS AlGdv"
+            class="sc-6bf960ab-3 sc-6bf960ab-8 EmaqO kujjeH"
           >
             <div
-              class="sc-1473aca0-2 eZLFFB rounded-lg shadow-lg ratio ratio-7x5"
+              class="sc-77165e52-2 kga-drX rounded-lg shadow-lg ratio ratio-7x5"
             >
               <img
                 alt="Card 4"
-                class="sc-1473aca0-1 gPvrki card-img card-img-fade-in"
+                class="sc-77165e52-1 knDYUl card-img card-img-fade-in"
                 data-nimg="fill"
                 decoding="async"
                 loading="lazy"
@@ -131,15 +131,15 @@ exports[`the html structure of the dynamic logo, no backend configured 1`] = `
         class="col-xl-6 col-lg-7 col-md-8 col-sm-12 col-12"
       >
         <div
-          class="sc-2ae387c7-0 iGZnpC"
+          class="sc-6bf960ab-0 gqUIaO"
         >
           <p
-            class="sc-2ae387c7-1 kdajfA className"
+            class="sc-6bf960ab-1 iyupEw className"
           >
             MPC Autofill
           </p>
           <div
-            class="sc-2ae387c7-2 gqzLSs"
+            class="sc-6bf960ab-2 dtFQCs"
           >
             <img
               alt="logo-arrow"
@@ -151,10 +151,10 @@ exports[`the html structure of the dynamic logo, no backend configured 1`] = `
             />
           </div>
           <div
-            class="sc-2ae387c7-3 sc-2ae387c7-4 gzaxS bQArFl"
+            class="sc-6bf960ab-3 sc-6bf960ab-4 EmaqO heMlBR"
           >
             <div
-              class="sc-1473aca0-2 kDJykn rounded-lg shadow-lg ratio ratio-7x5"
+              class="sc-77165e52-2 eCckNl rounded-lg shadow-lg ratio ratio-7x5"
             >
               <div
                 class="d-flex justify-content-center align-items-center"
@@ -173,7 +173,7 @@ exports[`the html structure of the dynamic logo, no backend configured 1`] = `
               </div>
               <img
                 alt="Your Design Here"
-                class="sc-1473aca0-1 gPvDIj card-img card-img-fade-in"
+                class="sc-77165e52-1 knDMwk card-img card-img-fade-in"
                 data-nimg="fill"
                 decoding="async"
                 loading="lazy"
@@ -185,10 +185,10 @@ exports[`the html structure of the dynamic logo, no backend configured 1`] = `
             </div>
           </div>
           <div
-            class="sc-2ae387c7-3 sc-2ae387c7-5 gzaxS hseKBZ"
+            class="sc-6bf960ab-3 sc-6bf960ab-5 EmaqO dTzHmF"
           >
             <div
-              class="sc-1473aca0-2 kDJykn rounded-lg shadow-lg ratio ratio-7x5"
+              class="sc-77165e52-2 eCckNl rounded-lg shadow-lg ratio ratio-7x5"
             >
               <div
                 class="d-flex justify-content-center align-items-center"
@@ -207,7 +207,7 @@ exports[`the html structure of the dynamic logo, no backend configured 1`] = `
               </div>
               <img
                 alt="Your Design Here"
-                class="sc-1473aca0-1 gPvDIj card-img card-img-fade-in"
+                class="sc-77165e52-1 knDMwk card-img card-img-fade-in"
                 data-nimg="fill"
                 decoding="async"
                 loading="lazy"
@@ -219,10 +219,10 @@ exports[`the html structure of the dynamic logo, no backend configured 1`] = `
             </div>
           </div>
           <div
-            class="sc-2ae387c7-3 sc-2ae387c7-6 gzaxS ijiwJv"
+            class="sc-6bf960ab-3 sc-6bf960ab-6 EmaqO RjTqr"
           >
             <div
-              class="sc-1473aca0-2 kDJykn rounded-lg shadow-lg ratio ratio-7x5"
+              class="sc-77165e52-2 eCckNl rounded-lg shadow-lg ratio ratio-7x5"
             >
               <div
                 class="d-flex justify-content-center align-items-center"
@@ -241,7 +241,7 @@ exports[`the html structure of the dynamic logo, no backend configured 1`] = `
               </div>
               <img
                 alt="Your Design Here"
-                class="sc-1473aca0-1 gPvDIj card-img card-img-fade-in"
+                class="sc-77165e52-1 knDMwk card-img card-img-fade-in"
                 data-nimg="fill"
                 decoding="async"
                 loading="lazy"
@@ -253,10 +253,10 @@ exports[`the html structure of the dynamic logo, no backend configured 1`] = `
             </div>
           </div>
           <div
-            class="sc-2ae387c7-3 sc-2ae387c7-7 gzaxS ibZJxJ"
+            class="sc-6bf960ab-3 sc-6bf960ab-7 EmaqO jYSCLl"
           >
             <div
-              class="sc-1473aca0-2 kDJykn rounded-lg shadow-lg ratio ratio-7x5"
+              class="sc-77165e52-2 eCckNl rounded-lg shadow-lg ratio ratio-7x5"
             >
               <div
                 class="d-flex justify-content-center align-items-center"
@@ -275,7 +275,7 @@ exports[`the html structure of the dynamic logo, no backend configured 1`] = `
               </div>
               <img
                 alt="Your Design Here"
-                class="sc-1473aca0-1 gPvDIj card-img card-img-fade-in"
+                class="sc-77165e52-1 knDMwk card-img card-img-fade-in"
                 data-nimg="fill"
                 decoding="async"
                 loading="lazy"
@@ -287,10 +287,10 @@ exports[`the html structure of the dynamic logo, no backend configured 1`] = `
             </div>
           </div>
           <div
-            class="sc-2ae387c7-3 sc-2ae387c7-8 gzaxS AlGdv"
+            class="sc-6bf960ab-3 sc-6bf960ab-8 EmaqO kujjeH"
           >
             <div
-              class="sc-1473aca0-2 kDJykn rounded-lg shadow-lg ratio ratio-7x5"
+              class="sc-77165e52-2 eCckNl rounded-lg shadow-lg ratio ratio-7x5"
             >
               <div
                 class="d-flex justify-content-center align-items-center"
@@ -309,7 +309,7 @@ exports[`the html structure of the dynamic logo, no backend configured 1`] = `
               </div>
               <img
                 alt="Your Design Here"
-                class="sc-1473aca0-1 gPvDIj card-img card-img-fade-in"
+                class="sc-77165e52-1 knDMwk card-img card-img-fade-in"
                 data-nimg="fill"
                 decoding="async"
                 loading="lazy"

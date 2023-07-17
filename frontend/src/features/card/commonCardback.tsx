@@ -10,7 +10,7 @@ import Button from "react-bootstrap/Button";
 import { Back } from "@/common/constants";
 import { useAppDispatch, useAppSelector } from "@/common/types";
 import { wrapIndex } from "@/common/utils";
-import { MemoizedCard } from "@/features/card/card";
+import { MemoizedEditorCard } from "@/features/card/card";
 import { GridSelector } from "@/features/card/gridSelector";
 import {
   bulkReplaceSelectedImage,
@@ -165,7 +165,7 @@ export function CommonCardback({ selectedImage }: CommonCardbackProps) {
 
   return (
     <div data-testid="common-cardback">
-      <MemoizedCard
+      <MemoizedEditorCard
         imageIdentifier={selectedImage}
         previousImageIdentifier={previousImage}
         nextImageIdentifier={nextImage}

@@ -81,7 +81,11 @@ function CardImage({ maybeCardDocument, hidden, small }: CardImageProps) {
           }
           onLoadingComplete={(img) => setImageLoading(false)}
           // onError={{thumbnail_404(this)}} // TODO
-          alt={maybeCardDocument?.name ?? ""}
+          alt={
+            maybeCardDocument?.name
+              ? maybeCardDocument?.name + (small ? " small" : " medium")
+              : ""
+          }
           fill={true}
         />
       ) : (
@@ -139,7 +143,7 @@ function CardProportionWrapper({
 
 export const MemoizedCardProportionWrapper = memo(CardProportionWrapper);
 
-interface CardRenameMeProps {
+interface CardProps {
   /** The card image identifier to display. */
   maybeCardDocument: CardDocument | undefined;
   /** If this `Card` is part of a gallery, use this prop to cache the previous image for visual smoothness. */
@@ -160,7 +164,7 @@ interface CardRenameMeProps {
   noResultsFound: boolean;
 }
 
-export function CardRenameMe({
+export function Card({
   maybeCardDocument,
   maybePreviousCardDocument,
   maybeNextCardDocument,
@@ -170,7 +174,7 @@ export function CardRenameMe({
   cardOnClick,
   searchQuery,
   noResultsFound,
-}: CardRenameMeProps) {
+}: CardProps) {
   /**
    * This component enables displaying cards with auxiliary information in a flexible, consistent way.
    */
@@ -183,19 +187,18 @@ export function CardRenameMe({
           hidden={false}
           small={true}
         />
-        {maybeCardDocument?.identifier != null &&
-          maybePreviousCardDocument?.identifier ===
-            maybeCardDocument?.identifier &&
-          maybePreviousCardDocument != null && (
+        {maybePreviousCardDocument != null &&
+          maybePreviousCardDocument.identifier !==
+            maybeCardDocument?.identifier && (
             <MemoizedCardImage
               maybeCardDocument={maybePreviousCardDocument}
               hidden={true}
               small={true}
             />
           )}
-        {maybeCardDocument?.identifier != null &&
-          maybeNextCardDocument?.identifier === maybeCardDocument?.identifier &&
-          maybeNextCardDocument != null && (
+        {maybeNextCardDocument != null &&
+          maybeNextCardDocument.identifier !==
+            maybeCardDocument?.identifier && (
             <MemoizedCardImage
               maybeCardDocument={maybeNextCardDocument}
               hidden={true}
@@ -255,9 +258,9 @@ export function CardRenameMe({
   );
 }
 
-export const MemoizedCardRenameMe = memo(CardRenameMe);
+export const MemoizedCard = memo(Card);
 
-interface CardProps {
+interface EditorCardProps {
   /** The card image identifier to display. */
   imageIdentifier: string | undefined;
   /** If this `Card` is part of a gallery, use this prop to cache the previous image for visual smoothness. */
@@ -278,7 +281,7 @@ interface CardProps {
   noResultsFound: boolean;
 }
 
-export function Card({
+export function EditorCard({
   imageIdentifier,
   previousImageIdentifier,
   nextImageIdentifier,
@@ -288,9 +291,9 @@ export function Card({
   cardOnClick,
   searchQuery,
   noResultsFound,
-}: CardProps) {
+}: EditorCardProps) {
   /**
-   * This component is a thin layer on top of `CardRenameMe` that retrieves `CardDocument` items by their identifiers
+   * This component is a thin layer on top of `Card` that retrieves `CardDocument` items by their identifiers
    * from the Redux store (used in the project editor).
    * We have this layer because search results are returned as a list of image identifiers
    * (to minimise the quantity of data stored in Elasticsearch), so the full `CardDocument` items must be looked up.
@@ -314,7 +317,7 @@ export function Card({
   );
 
   return (
-    <CardRenameMe
+    <Card
       maybeCardDocument={maybeCardDocument}
       maybePreviousCardDocument={maybePreviousCardDocument}
       maybeNextCardDocument={maybeNextCardDocument}
@@ -328,4 +331,4 @@ export function Card({
   );
 }
 
-export const MemoizedCard = memo(Card);
+export const MemoizedEditorCard = memo(EditorCard);

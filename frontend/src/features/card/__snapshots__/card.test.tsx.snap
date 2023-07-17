@@ -17,11 +17,11 @@ exports[`the html structure of a Card with a single document 1`] = `
       </div>
       <div>
         <div
-          class="sc-1473aca0-2 eZLFFB rounded-lg shadow-lg ratio ratio-7x5"
+          class="sc-77165e52-2 kga-drX rounded-lg shadow-lg ratio ratio-7x5"
         >
           <img
             alt="Card 1"
-            class="sc-1473aca0-1 gPvrki card-img card-img-fade-in"
+            class="sc-77165e52-1 knDYUl card-img card-img-fade-in"
             data-nimg="fill"
             decoding="async"
             loading="lazy"
@@ -70,7 +70,7 @@ exports[`the html structure of a Card with no search results 1`] = `
       </div>
       <div>
         <div
-          class="sc-1473aca0-2 eZLFFB rounded-lg shadow-lg ratio ratio-7x5"
+          class="sc-77165e52-2 kga-drX rounded-lg shadow-lg ratio ratio-7x5"
         >
           <img
             alt="Card not found"
@@ -125,11 +125,11 @@ exports[`the html structure of a Card with three documents 1`] = `
       </div>
       <div>
         <div
-          class="sc-1473aca0-2 eZLFFB rounded-lg shadow-lg ratio ratio-7x5"
+          class="sc-77165e52-2 kga-drX rounded-lg shadow-lg ratio ratio-7x5"
         >
           <img
             alt="Card 1"
-            class="sc-1473aca0-1 gPvrki card-img card-img-fade-in"
+            class="sc-77165e52-1 knDYUl card-img card-img-fade-in"
             data-nimg="fill"
             decoding="async"
             loading="lazy"
@@ -137,8 +137,8 @@ exports[`the html structure of a Card with three documents 1`] = `
             style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent;"
           />
           <img
-            alt="Card 2"
-            class="sc-1473aca0-0 bsECfE card-img"
+            alt="Card 2 small"
+            class="sc-77165e52-0 frnrOW card-img"
             data-nimg="fill"
             decoding="async"
             loading="lazy"
@@ -146,8 +146,8 @@ exports[`the html structure of a Card with three documents 1`] = `
             style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent;"
           />
           <img
-            alt="Card 3"
-            class="sc-1473aca0-0 bsECfE card-img"
+            alt="Card 3 small"
+            class="sc-77165e52-0 frnrOW card-img"
             data-nimg="fill"
             decoding="async"
             loading="lazy"
@@ -196,11 +196,11 @@ exports[`the html structure of a Card with two documents 1`] = `
       </div>
       <div>
         <div
-          class="sc-1473aca0-2 eZLFFB rounded-lg shadow-lg ratio ratio-7x5"
+          class="sc-77165e52-2 kga-drX rounded-lg shadow-lg ratio ratio-7x5"
         >
           <img
             alt="Card 1"
-            class="sc-1473aca0-1 gPvrki card-img card-img-fade-in"
+            class="sc-77165e52-1 knDYUl card-img card-img-fade-in"
             data-nimg="fill"
             decoding="async"
             loading="lazy"
@@ -208,8 +208,8 @@ exports[`the html structure of a Card with two documents 1`] = `
             style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent;"
           />
           <img
-            alt="Card 2"
-            class="sc-1473aca0-0 bsECfE card-img"
+            alt="Card 2 small"
+            class="sc-77165e52-0 frnrOW card-img"
             data-nimg="fill"
             decoding="async"
             loading="lazy"
