@@ -1,7 +1,6 @@
 import datetime as dt
 import itertools
 import json
-import time
 from collections import defaultdict
 from random import sample
 from typing import Any, Callable, Optional, TypeVar, Union, cast
@@ -532,7 +531,6 @@ def get_import_sites(request: HttpRequest) -> HttpResponse:
     Return a list of import sites.
     """
 
-    time.sleep(4)
     import_sites = [{"name": x.__name__, "url": x().get_base_url()} for x in ImportSites]
     return JsonResponse({"import_sites": import_sites})
 
@@ -628,8 +626,6 @@ def get_info(request: HttpRequest) -> HttpResponse:
     Return a stack of metadata about the server for the frontend to display.
     It's expected that this route will be called once when the server is connected.
     """
-
-    time.sleep(1)
 
     campaign, tiers = get_patreon_campaign_details()
     members = get_patrons(campaign["id"], tiers) if campaign is not None and tiers is not None else None
