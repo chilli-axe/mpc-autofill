@@ -1,13 +1,15 @@
 import Image from "next/image";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
 import styled, { keyframes, StyledComponent } from "styled-components";
 
-import { useGetBackendInfoQuery, useGetSampleCardsQuery } from "@/app/api";
-import { ProjectName } from "@/common/constants";
+import { useGetSampleCardsQuery } from "@/app/api";
 import { CardDocument, useAppSelector } from "@/common/types";
-import { selectBackendURL } from "@/features/backend/backendSlice";
+import {
+  selectBackendURL,
+  useProjectName,
+} from "@/features/backend/backendSlice";
 import {
   MemoizedCardImage,
   MemoizedCardProportionWrapper,
@@ -182,7 +184,7 @@ const SampleCardDocument: CardDocument = {
 export function DynamicLogo() {
   const backendURL = useAppSelector(selectBackendURL);
   const sampleCardsQuery = useGetSampleCardsQuery();
-  const backendInfoQuery = useGetBackendInfoQuery();
+  const projectName = useProjectName();
 
   // this ignores the initial flash of styled-components not doing the thing on first page load
   const [loading, setLoading] = useState<boolean>(true);
@@ -222,7 +224,7 @@ export function DynamicLogo() {
           <Col xl={6} lg={7} md={8} sm={12} xs={12}>
             <DynamicLogoContainer>
               <DynamicLogoLabel className={lato.className}>
-                {backendInfoQuery.data?.name ?? ProjectName}
+                {projectName}
               </DynamicLogoLabel>
               <DynamicLogoArrowWrapper>
                 <Image

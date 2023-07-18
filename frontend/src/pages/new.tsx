@@ -13,9 +13,6 @@ function NewOrDefault() {
   return backendURL != null ? (
     <>
       <h1>What&apos;s New?</h1>
-      <p>
-        Check out the new cards added to {ProjectName} in the last two weeks.
-      </p>
       <NewCards />
       <Footer />
     </>

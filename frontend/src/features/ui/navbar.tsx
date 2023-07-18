@@ -10,10 +10,12 @@ import styled from "styled-components";
 
 import { useGetBackendInfoQuery } from "@/app/api";
 import { ContentMaxWidth, NavbarLogoHeight } from "@/common/constants";
-import { ProjectName } from "@/common/constants";
 import { useAppSelector } from "@/common/types";
 import { BackendConfig } from "@/features/backend/backend";
-import { selectBackendURL } from "@/features/backend/backendSlice";
+import {
+  selectBackendURL,
+  useProjectName,
+} from "@/features/backend/backendSlice";
 import { SupportBackendModal } from "@/features/support/supportBackend";
 import { SupportDeveloperModal } from "@/features/support/supportDeveloper";
 import DisableSSR from "@/features/ui/disableSSR";
@@ -49,9 +51,7 @@ export default function ProjectNavbar() {
     setShowSupportBackendModal(false);
   const handleShowSupportBackendModal = () => setShowSupportBackendModal(true);
 
-  const name =
-    (backendInfoQuery.isSuccess ? backendInfoQuery.data?.name : null) ??
-    ProjectName;
+  const projectName = useProjectName();
 
   return (
     <DisableSSR>
@@ -70,7 +70,7 @@ export default function ProjectNavbar() {
               height={NavbarLogoHeight}
             />{" "}
             <span className="align-middle">
-              <b>{name}</b>
+              <b>{projectName}</b>
             </span>
           </Navbar.Brand>
           <Navbar.Toggle aria-controls="basic-navbar-nav" />

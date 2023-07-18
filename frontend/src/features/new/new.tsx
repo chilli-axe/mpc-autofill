@@ -10,6 +10,7 @@ import {
 } from "@/app/api";
 import { CardDocument } from "@/common/types";
 import { NewCardsFirstPage } from "@/common/types";
+import { useProjectName } from "@/features/backend/backendSlice";
 import { MemoizedCard } from "@/features/card/card";
 import { Spinner } from "@/features/ui/spinner";
 
@@ -94,21 +95,35 @@ function NewCardsForSource({
 
 export function NewCards() {
   const getNewCardsQuery = useGetNewCardsFirstPageQuery();
+  const projectName = useProjectName();
   return getNewCardsQuery.isFetching || getNewCardsQuery.data == null ? (
     <Spinner />
   ) : (
     <>
-      {Object.entries(getNewCardsQuery.data).map(
-        ([sourceKey, firstPage], index) => (
-          <>
-            {index != 0 && <hr />}
-            <NewCardsForSource
-              key={sourceKey}
-              sourceKey={sourceKey}
-              firstPage={firstPage}
-            />
-          </>
-        )
+      {Object.keys(getNewCardsQuery.data).length > 0 ? (
+        <>
+          <p>
+            Check out the new cards added to {projectName} in the last two
+            weeks.
+          </p>
+          {Object.entries(getNewCardsQuery.data).map(
+            ([sourceKey, firstPage], index) => (
+              <>
+                {index != 0 && <hr />}
+                <NewCardsForSource
+                  key={sourceKey}
+                  sourceKey={sourceKey}
+                  firstPage={firstPage}
+                />
+              </>
+            )
+          )}
+        </>
+      ) : (
+        <p>
+          Looks like nothing was added to {projectName} in the last two weeks.
+          :(
+        </p>
       )}
     </>
   );

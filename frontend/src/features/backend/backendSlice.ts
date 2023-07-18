@@ -4,7 +4,9 @@
 
 import { createSlice } from "@reduxjs/toolkit";
 
+import { useGetBackendInfoQuery } from "@/app/api";
 import { RootState } from "@/app/store";
+import { ProjectName } from "@/common/constants";
 import { BackendState } from "@/common/types";
 
 const initialState: BackendState = {
@@ -29,3 +31,11 @@ export const { setURL, clearURL } = backendSlice.actions;
 export default backendSlice.reducer;
 
 export const selectBackendURL = (state: RootState) => state.backend.url;
+
+export function useProjectName() {
+  const backendInfoQuery = useGetBackendInfoQuery();
+  return (
+    (backendInfoQuery.isSuccess ? backendInfoQuery.data?.name : null) ??
+    ProjectName
+  );
+}

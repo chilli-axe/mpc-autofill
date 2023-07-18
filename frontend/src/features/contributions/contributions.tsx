@@ -6,6 +6,7 @@ import styled from "styled-components";
 import { useGetBackendInfoQuery, useGetContributionsQuery } from "@/app/api";
 import { Card, Cardback, ProjectName, Token } from "@/common/constants";
 import { SourceContribution } from "@/common/types";
+import { useProjectName } from "@/features/backend/backendSlice";
 import { Spinner } from "@/features/ui/spinner";
 
 const TableWrapper = styled.div`
@@ -19,6 +20,7 @@ const AutoLayoutTable = styled(Table)`
 export function ContributionsSummary() {
   const contributionsQuery = useGetContributionsQuery();
   const backendInfoQuery = useGetBackendInfoQuery();
+  const projectName = useProjectName();
 
   const totalImages =
     contributionsQuery.data?.card_count_by_type != null
@@ -44,12 +46,11 @@ export function ContributionsSummary() {
 
   return backendInfoQuery.isSuccess ? (
     <>
-      <h2>{backendInfoQuery.data?.name ?? ""} Contributions</h2>
+      <h2>{projectName} Contributions</h2>
       <p>
-        The {backendInfoQuery.data?.name ?? ""} database tracks{" "}
-        <b>{totalImages.toLocaleString()}</b> images, with a total size of{" "}
-        <b>{formattedDatabaseSize} GB</b> &mdash; comprised of{" "}
-        <b>{formattedImagesByCardType[Card]}</b> cards,{" "}
+        The {projectName} database tracks <b>{totalImages.toLocaleString()}</b>{" "}
+        images, with a total size of <b>{formattedDatabaseSize} GB</b> &mdash;
+        comprised of <b>{formattedImagesByCardType[Card]}</b> cards,{" "}
         <b>{formattedImagesByCardType[Cardback]}</b> cardbacks, and{" "}
         <b>{formattedImagesByCardType[Token]}</b> tokens &mdash; from{" "}
         <b>{(contributionsQuery.data?.sources ?? []).length}</b> sources.
