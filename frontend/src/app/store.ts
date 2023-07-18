@@ -34,7 +34,12 @@ const rootReducer = combineReducers({
 
 const rtkQueryErrorLogger: Middleware =
   (api: MiddlewareAPI) => (next) => (action) => {
-    if (isRejectedWithValue(action) && action.payload?.data != null) {
+    const backendURL = api.getState().backend.url;
+    if (
+      backendURL != null &&
+      isRejectedWithValue(action) &&
+      action.payload?.data != null
+    ) {
       // dispatch the error to the store for displaying in a toast to the user
       api.dispatch(
         setError([
