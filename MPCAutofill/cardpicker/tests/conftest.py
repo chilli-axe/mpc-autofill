@@ -1,3 +1,5 @@
+import datetime as dt
+
 import pytest
 from pytest_elasticsearch import factories
 
@@ -72,6 +74,7 @@ def brainstorm(example_drive_1) -> Card:
         source=example_drive_1,
         priority=2,
         size=Cards.BRAINSTORM.value.size,
+        date=dt.datetime(2023, 1, 1),
     )
 
 
@@ -86,6 +89,7 @@ def island(example_drive_1) -> Card:
         source=example_drive_1,
         priority=7,
         size=Cards.ISLAND.value.size,
+        date=dt.datetime(2023, 1, 1),
     )
 
 
@@ -100,6 +104,7 @@ def island_classical(example_drive_1) -> Card:
         source=example_drive_1,
         priority=6,
         size=Cards.ISLAND_CLASSICAL.value.size,
+        date=dt.datetime(2023, 1, 1),
     )
 
 
@@ -114,6 +119,7 @@ def mountain(example_drive_1) -> Card:
         source=example_drive_1,
         priority=7,
         size=Cards.MOUNTAIN.value.size,
+        date=dt.datetime(2023, 1, 1),
     )
 
 
@@ -128,6 +134,7 @@ def simple_cube(example_drive_1) -> Card:
         source=example_drive_1,
         priority=17,
         size=Cards.SIMPLE_CUBE.value.size,
+        date=dt.datetime(2023, 1, 1),
     )
 
 
@@ -142,6 +149,7 @@ def simple_lotus(example_drive_1) -> Card:
         source=example_drive_1,
         priority=7,
         size=Cards.SIMPLE_LOTUS.value.size,
+        date=dt.datetime(2023, 1, 1),
     )
 
 
@@ -156,6 +164,7 @@ def huntmaster_of_the_fells(example_drive_1) -> Card:
         source=example_drive_1,
         priority=2,
         size=Cards.HUNTMASTER_OF_THE_FELLS.value.size,
+        date=dt.datetime(2023, 1, 1),
     )
 
 
@@ -170,6 +179,7 @@ def ravager_of_the_fells(example_drive_1) -> Card:
         source=example_drive_1,
         priority=2,
         size=Cards.RAVAGER_OF_THE_FELLS.value.size,
+        date=dt.datetime(2023, 1, 1),
     )
 
 
@@ -184,6 +194,7 @@ def past_in_flames_1(example_drive_1) -> Card:
         source=example_drive_1,
         priority=2,
         size=Cards.PAST_IN_FLAMES_1.value.size,
+        date=dt.datetime(2023, 1, 1),
     )
 
 
@@ -198,6 +209,7 @@ def past_in_flames_2(example_drive_2) -> Card:
         source=example_drive_2,
         priority=2,
         size=Cards.PAST_IN_FLAMES_2.value.size,
+        date=dt.datetime(2023, 1, 1),
     )
 
 
@@ -212,6 +224,7 @@ def delver_of_secrets(example_drive_1) -> Card:
         source=example_drive_1,
         priority=2,
         size=Cards.DELVER_OF_SECRETS.value.size,
+        date=dt.datetime(2023, 1, 1),
     )
 
 
@@ -226,6 +239,7 @@ def insectile_aberration(example_drive_1) -> Card:
         source=example_drive_1,
         priority=2,
         size=Cards.INSECTILE_ABERRATION.value.size,
+        date=dt.datetime(2023, 1, 1),
     )
 
 
@@ -240,6 +254,7 @@ def goblin(example_drive_1) -> Card:
         source=example_drive_1,
         priority=2,
         size=Cards.GOBLIN.value.size,
+        date=dt.datetime(2023, 1, 1),
     )
 
 

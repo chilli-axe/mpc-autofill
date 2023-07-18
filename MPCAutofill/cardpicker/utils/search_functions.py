@@ -20,6 +20,7 @@ from django.db.models import QuerySet
 from django.http import HttpRequest
 from django.utils import timezone
 
+from cardpicker.constants import NEW_CARDS_DAYS, NEW_CARDS_PAGE_SIZE
 from cardpicker.documents import CardSearch
 from cardpicker.models import Card, CardTypes, Source
 from cardpicker.utils.sanitisation import to_searchable
@@ -360,11 +361,11 @@ def parse_json_body_as_search_data(json_body: dict[str, Any]) -> tuple[SearchSet
 
 
 def get_new_cards_paginator(source: Source) -> Paginator[QuerySet[Card]]:
-    days = 140
-    page_size = 12
-    now = dt.datetime(2021, 9, 1)
-    cards = Card.objects.filter(source=source, date__lt=now, date__gte=now - dt.timedelta(days=days)).order_by("-date")
-    return Paginator(cards, page_size)  # type: ignore  # TODO: `_SupportsPagination`
+    now = timezone.now()
+    cards = Card.objects.filter(
+        source=source, date__lt=now, date__gte=now - dt.timedelta(days=NEW_CARDS_DAYS)
+    ).order_by("-date")
+    return Paginator(cards, NEW_CARDS_PAGE_SIZE)  # type: ignore  # TODO: `_SupportsPagination`
 
 
 # endregion

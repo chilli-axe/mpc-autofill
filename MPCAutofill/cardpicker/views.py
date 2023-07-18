@@ -643,12 +643,27 @@ def get_new_cards_first_pages(request: HttpRequest) -> HttpResponse:
 @NewErrorWrappers.to_json
 def get_new_cards_page(request: HttpRequest) -> HttpResponse:
     if request.method == "GET":
-        page = int(request.GET.get("page") or "0")
-        source = Source.objects.filter(name=request.GET.get("source"))[0]
-        # TODO: input handling/errors/etc. note that page indexes from 1 in django Paginator.
+        source_key = request.GET.get("source")
+        if not source_key:
+            return HttpResponseBadRequest("Source not specified.")
+        source_q = Source.objects.filter(key=source_key)
 
-        paginator = get_new_cards_paginator(source=source)
-        return JsonResponse({"cards": [card.to_dict() for card in paginator.page(page).object_list]})
+        if source_q.count() == 0:
+            return HttpResponseBadRequest(f"Invalid source key {source_key} specified.")
+        paginator = get_new_cards_paginator(source=source_q[0])
+
+        page = request.GET.get("page")
+        if page is None:
+            return HttpResponseBadRequest("Page not specified.")
+        try:
+            page_int = int(page)
+            if not (paginator.num_pages >= page_int > 0):
+                return HttpResponseBadRequest(
+                    f"Invalid page {page_int} specified - must be between 1 and {paginator.num_pages} for source {source_key}."
+                )
+            return JsonResponse({"cards": [card.to_dict() for card in paginator.page(page).object_list]})
+        except ValueError:
+            return HttpResponseBadRequest("Invalid page specified.")
     else:
         return HttpResponseBadRequest("Expected GET request.")
 

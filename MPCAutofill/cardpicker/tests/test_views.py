@@ -1,6 +1,8 @@
+import datetime as dt
 from collections import Counter
 from copy import deepcopy
 
+import freezegun
 import pytest
 from requests import Response
 from syrupy import SnapshotAssertion
@@ -504,3 +506,118 @@ class TestGetSearchEngineHealth:
         assert response.json()["online"] is True
 
     # TODO: consider how to test elasticsearch being unhealthy
+
+
+class TestNewCardsFirstPages:
+    @pytest.fixture(autouse=True)
+    def autouse_django_settings(self, django_settings):
+        pass
+
+    @pytest.fixture(autouse=True)
+    def six_card_page(self, monkeypatch) -> None:
+        # just to make this more testable with few `Card` fixtures
+        monkeypatch.setattr("cardpicker.utils.search_functions.NEW_CARDS_PAGE_SIZE", 6)
+
+    @freezegun.freeze_time(dt.datetime(2023, 1, 2))
+    def test_basic_case(self, client, all_sources, all_cards, snapshot):
+        response = client.get(reverse(views.get_new_cards_first_pages))
+        snapshot_response(response, snapshot)
+        assert response.status_code == 200
+
+    @freezegun.freeze_time(dt.datetime(2024, 1, 2))
+    def test_no_data_in_date_range(self, client, all_sources, all_cards, snapshot):
+        response = client.get(reverse(views.get_new_cards_first_pages))
+        snapshot_response(response, snapshot)
+        assert response.status_code == 200
+
+    def test_no_cards(self, client, all_sources, snapshot):
+        response = client.get(reverse(views.get_new_cards_first_pages))
+        snapshot_response(response, snapshot)
+        assert response.status_code == 200
+
+    def test_no_sources(self, client, snapshot):
+        response = client.get(reverse(views.get_new_cards_first_pages))
+        snapshot_response(response, snapshot)
+        assert response.status_code == 200
+
+    def test_post_request(self, client, django_settings, snapshot):
+        response = client.post(reverse(views.get_new_cards_first_pages))
+        snapshot_response(response, snapshot)
+        assert response.status_code == 400
+
+
+class TestNewCardsPage:
+    @pytest.fixture(autouse=True)
+    def autouse_populated_database(self, django_settings, all_sources, all_cards):
+        pass
+
+    @pytest.fixture(autouse=True)
+    def six_card_page(self, monkeypatch) -> None:
+        # just to make this more testable with few `Card` fixtures
+        monkeypatch.setattr("cardpicker.utils.search_functions.NEW_CARDS_PAGE_SIZE", 6)
+
+    @freezegun.freeze_time(dt.datetime(2023, 1, 2))
+    def test_get_full_first_page(self, client, snapshot):
+        response = client.get(
+            reverse(views.get_new_cards_page), {"source": Sources.EXAMPLE_DRIVE_1.value.key, "page": 1}
+        )
+        snapshot_response(response, snapshot)
+        assert response.status_code == 200
+
+    @freezegun.freeze_time(dt.datetime(2023, 1, 2))
+    def test_get_partial_first_page(self, client, snapshot):
+        response = client.get(
+            reverse(views.get_new_cards_page), {"source": Sources.EXAMPLE_DRIVE_2.value.key, "page": 1}
+        )
+        snapshot_response(response, snapshot)
+        assert response.status_code == 200
+
+    @freezegun.freeze_time(dt.datetime(2023, 1, 2))
+    def test_get_full_second_page(self, client, snapshot):
+        response = client.get(
+            reverse(views.get_new_cards_page), {"source": Sources.EXAMPLE_DRIVE_1.value.key, "page": 2}
+        )
+        snapshot_response(response, snapshot)
+        assert response.status_code == 200
+
+    @freezegun.freeze_time(dt.datetime(2024, 1, 2))
+    def test_no_data_in_date_range(self, client, snapshot):
+        response = client.get(
+            reverse(views.get_new_cards_page), {"source": Sources.EXAMPLE_DRIVE_1.value.key, "page": 1}
+        )
+        snapshot_response(response, snapshot)
+        assert response.status_code == 200
+
+    def test_post_request(self, client, django_settings, snapshot):
+        response = client.post(reverse(views.get_new_cards_page))
+        snapshot_response(response, snapshot)
+        assert response.status_code == 400
+
+    @freezegun.freeze_time(dt.datetime(2023, 1, 2))
+    @pytest.mark.parametrize(
+        "params",
+        [
+            {},
+            {"source": "garbage", "page": 1},
+            {"source": Sources.EXAMPLE_DRIVE_1.value.key, "page": 0},
+            {"source": Sources.EXAMPLE_DRIVE_1.value.key, "page": -1},
+            {"source": Sources.EXAMPLE_DRIVE_1.value.key, "page": "heck"},
+            {"garbage": Sources.EXAMPLE_DRIVE_1.value.key, "page": 1},
+            {"source": Sources.EXAMPLE_DRIVE_1.value.key, "garbage": 1},
+            {"source": Sources.EXAMPLE_DRIVE_1.value.key, "page": 10},
+        ],
+        ids=[
+            "no params",
+            "invalid source",
+            "zero page",
+            "negative page",
+            "non-number page",
+            "no source field",
+            "no page field",
+            "page out of range for source",
+        ],
+    )
+    def test_response_to_malformed_json_body(self, client, django_settings, snapshot, params):
+        response = client.get(reverse(views.get_new_cards_page), params)
+        snapshot_response(response, snapshot)
+        assert response.status_code == 400
