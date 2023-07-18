@@ -18,6 +18,7 @@ import {
   openImportURLModal,
   renderWithProviders,
 } from "@/common/test-utils";
+import { NewCards } from "@/features/new/new";
 import {
   cardbacksServerError,
   cardbacksTwoOtherResults,
@@ -27,6 +28,7 @@ import {
   defaultHandlers,
   dfcPairsServerError,
   importSitesServerError,
+  newCardsFirstPageServerError,
   sampleCardsServerError,
   searchResultsOneResult,
   searchResultsServerError,
@@ -149,6 +151,11 @@ describe("error reporting toasts", () => {
       <App />
     </LayoutWithoutProvider>
   );
+  const NewCardsWithToasts = () => (
+    <LayoutWithoutProvider>
+      <NewCards />
+    </LayoutWithoutProvider>
+  );
 
   test("/2/searchResults", async () => {
     server.use(
@@ -249,5 +256,18 @@ describe("error reporting toasts", () => {
       // DFC pairs are loaded when the text importer is opened
       await openImportTextModal();
     });
+  });
+
+  test("/2/newCardsFirstPage", async () => {
+    server.use(
+      cardDocumentsThreeResults,
+      cardbacksTwoResults,
+      sourceDocumentsOneResult,
+      searchResultsOneResult,
+      newCardsFirstPageServerError,
+      ...defaultHandlers
+    );
+    renderWithProviders(<NewCardsWithToasts />);
+    await renderAppAndAssertErrorToast("2/newCardsFirstPage");
   });
 });
