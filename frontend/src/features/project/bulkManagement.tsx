@@ -24,6 +24,7 @@ import {
   bulkSetSelectedImage,
   selectSelectedSlots,
 } from "@/features/project/projectSlice";
+import { fetchCardDocumentsAndReportError } from "@/features/search/cardDocumentsSlice";
 
 interface MutateSelectedImageQueriesProps {
   slots: Array<[Faces, number]>;
@@ -119,8 +120,10 @@ function ChangeSelectedImageQueries({
     showChangeSelectedImageQueriesModal,
     setShowChangeSelectedImageQueriesModal,
   ] = useState<boolean>(false);
-  const handleCloseChangeSelectedImageQueriesModal = () =>
+  const handleCloseChangeSelectedImageQueriesModal = () => {
+    fetchCardDocumentsAndReportError(dispatch);
     setShowChangeSelectedImageQueriesModal(false);
+  };
   const handleShowChangeSelectedImageQueriesModal = () =>
     setShowChangeSelectedImageQueriesModal(true);
   const [
