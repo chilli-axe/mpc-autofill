@@ -10,8 +10,7 @@ import Button from "react-bootstrap/Button";
 import { Back } from "@/common/constants";
 import { useAppDispatch, useAppSelector } from "@/common/types";
 import { wrapIndex } from "@/common/utils";
-import { MemoizedCard } from "@/features/card/card";
-import { MemoizedCardDetailedView } from "@/features/card/cardDetailedView";
+import { MemoizedEditorCard } from "@/features/card/card";
 import { GridSelector } from "@/features/card/gridSelector";
 import {
   bulkReplaceSelectedImage,
@@ -74,11 +73,7 @@ interface CommonCardbackProps {
 export function CommonCardback({ selectedImage }: CommonCardbackProps) {
   const dispatch = useAppDispatch();
 
-  const [showDetailedView, setShowDetailedView] = useState(false);
   const [showGridSelector, setShowGridSelector] = useState(false);
-
-  const handleCloseDetailedView = () => setShowDetailedView(false);
-  const handleShowDetailedView = () => setShowDetailedView(true);
   const handleCloseGridSelector = () => setShowGridSelector(false);
   const handleShowGridSelector = () => setShowGridSelector(true);
 
@@ -170,13 +165,12 @@ export function CommonCardback({ selectedImage }: CommonCardbackProps) {
 
   return (
     <div data-testid="common-cardback">
-      <MemoizedCard
+      <MemoizedEditorCard
         imageIdentifier={selectedImage}
         previousImageIdentifier={previousImage}
         nextImageIdentifier={nextImage}
         cardHeaderTitle={cardHeaderTitle}
         cardFooter={cardFooter}
-        imageOnClick={handleShowDetailedView}
         noResultsFound={false}
       />
       {showGridSelector && (
@@ -184,13 +178,6 @@ export function CommonCardback({ selectedImage }: CommonCardbackProps) {
           searchResults={searchResults}
           show={showGridSelector}
           handleClose={handleCloseGridSelector}
-        />
-      )}
-      {selectedImage != null && showDetailedView && (
-        <MemoizedCardDetailedView
-          imageIdentifier={selectedImage}
-          show={showDetailedView}
-          handleClose={handleCloseDetailedView}
         />
       )}
     </div>

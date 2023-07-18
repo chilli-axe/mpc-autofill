@@ -13,18 +13,14 @@ import Dropdown from "react-bootstrap/Dropdown";
 import Form from "react-bootstrap/Form";
 import Modal from "react-bootstrap/Modal";
 
-import {
-  useGetBackendInfoQuery,
-  useGetDFCPairsQuery,
-  useGetImportSitesQuery,
-} from "@/app/api";
+import { useGetDFCPairsQuery, useGetImportSitesQuery } from "@/app/api";
 import { api } from "@/app/api";
-import { ProjectName } from "@/common/constants";
 import {
   convertLinesIntoSlotProjectMembers,
   processStringAsMultipleLines,
 } from "@/common/processing";
 import { useAppDispatch, useAppSelector } from "@/common/types";
+import { useProjectName } from "@/features/backend/backendSlice";
 import { addMembers, selectProjectSize } from "@/features/project/projectSlice";
 import { fetchCardDocumentsAndReportError } from "@/features/search/cardDocumentsSlice";
 import { Spinner } from "@/features/ui/spinner";
@@ -32,7 +28,7 @@ import { Spinner } from "@/features/ui/spinner";
 export function ImportURL() {
   const dfcPairsQuery = useGetDFCPairsQuery();
   const importSitesQuery = useGetImportSitesQuery();
-  const backendInfoQuery = useGetBackendInfoQuery();
+  const projectName = useProjectName();
 
   const projectSize = useAppSelector(selectProjectSize);
   const dispatch = useAppDispatch();
@@ -86,8 +82,7 @@ export function ImportURL() {
         </Modal.Header>
         <Modal.Body>
           Paste a link to a card list hosted on one of the below sites (not
-          affiliated) to import the list into{" "}
-          {backendInfoQuery.data?.name ?? ProjectName}:
+          affiliated) to import the list into {projectName}:
           <br />
           {importSitesQuery.data != null ? (
             <ul>

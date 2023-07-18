@@ -1,18 +1,19 @@
 import Image from "next/image";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
 import styled, { keyframes, StyledComponent } from "styled-components";
 
-import { useGetBackendInfoQuery, useGetSampleCardsQuery } from "@/app/api";
-import { ProjectName } from "@/common/constants";
+import { useGetSampleCardsQuery } from "@/app/api";
 import { CardDocument, useAppSelector } from "@/common/types";
-import { selectBackendURL } from "@/features/backend/backendSlice";
+import {
+  selectBackendURL,
+  useProjectName,
+} from "@/features/backend/backendSlice";
 import {
   MemoizedCardImage,
   MemoizedCardProportionWrapper,
 } from "@/features/card/card";
-import { MemoizedCardDetailedView } from "@/features/card/cardDetailedView";
 import { Spinner } from "@/features/ui/spinner";
 import { lato } from "@/pages/_app";
 
@@ -169,6 +170,7 @@ const SampleCardDocument: CardDocument = {
   source_id: 0,
   source_verbose: "",
   source_type: "drive",
+  source_external_link: null,
   dpi: 300,
   searchq: "",
   extension: "png",
@@ -180,22 +182,13 @@ const SampleCardDocument: CardDocument = {
 };
 
 export function DynamicLogo() {
-  // TODO: set up custom hooks for using queries in this way (i.e. not querying until backend URL is specified)
   const backendURL = useAppSelector(selectBackendURL);
   const sampleCardsQuery = useGetSampleCardsQuery();
-  const backendInfoQuery = useGetBackendInfoQuery();
+  const projectName = useProjectName();
 
   // this ignores the initial flash of styled-components not doing the thing on first page load
   const [loading, setLoading] = useState<boolean>(true);
   useEffect(() => setLoading(false), []);
-
-  const [selectedImage, setSelectedImage] = useState<CardDocument | null>(null);
-  const [showDetailedView, setShowDetailedView] = useState<boolean>(false);
-  const handleCloseDetailedView = () => setShowDetailedView(false);
-  const handleShowDetailedView = useCallback((card: CardDocument) => {
-    setSelectedImage(card);
-    setShowDetailedView(true);
-  }, []);
 
   const displayCards: Array<
     [CardDocument | null, StyledComponent<"div", any>]
@@ -231,7 +224,7 @@ export function DynamicLogo() {
           <Col xl={6} lg={7} md={8} sm={12} xs={12}>
             <DynamicLogoContainer>
               <DynamicLogoLabel className={lato.className}>
-                {backendInfoQuery.data?.name ?? ProjectName}
+                {projectName}
               </DynamicLogoLabel>
               <DynamicLogoArrowWrapper>
                 <Image
@@ -252,32 +245,20 @@ export function DynamicLogo() {
                     >
                       <MemoizedCardImage
                         key={`$logo-card${index}-image`}
-                        cardDocument={
+                        maybeCardDocument={
                           backendURL == null
                             ? SampleCardDocument
                             : maybeCardDocument
                         }
                         hidden={false}
                         small={true}
-                        onClick={() => {
-                          if (maybeCardDocument != null) {
-                            return handleShowDetailedView(maybeCardDocument);
-                          }
-                        }}
+                        showDetailedViewOnClick={true}
                       />
                     </MemoizedCardProportionWrapper>
                   </WrapperElement>
                 )
               )}
             </DynamicLogoContainer>
-            {selectedImage != null && (
-              <MemoizedCardDetailedView
-                imageIdentifier={selectedImage.identifier}
-                show={showDetailedView}
-                handleClose={handleCloseDetailedView}
-                cardDocument={selectedImage}
-              />
-            )}
           </Col>
         </Row>
       )}

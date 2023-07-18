@@ -17,7 +17,7 @@ import {
   useAppSelector,
 } from "@/common/types";
 import { wrapIndex } from "@/common/utils";
-import { MemoizedCard } from "@/features/card/card";
+import { MemoizedEditorCard } from "@/features/card/card";
 import { GridSelector } from "@/features/card/gridSelector";
 import {
   bulkAlignMemberSelection,
@@ -30,9 +30,6 @@ interface CardSlotProps {
   searchQuery: SearchQuery | undefined;
   face: Faces;
   slot: number;
-  handleShowDetailedView: {
-    (selectedImage: string): void;
-  };
 }
 
 //# region grid selector
@@ -76,12 +73,7 @@ export const MemoizedCardSlotGridSelector = memo(CardSlotGridSelector);
 
 //# region card slot
 
-export function CardSlot({
-  searchQuery,
-  face,
-  slot,
-  handleShowDetailedView,
-}: CardSlotProps) {
+export function CardSlot({ searchQuery, face, slot }: CardSlotProps) {
   const [showGridSelector, setShowGridSelector] = useState(false);
 
   const handleCloseGridSelector = () => setShowGridSelector(false);
@@ -108,12 +100,6 @@ export function CardSlot({
     (state) => (state.project.members[slot] ?? {})[face]
   );
   const selectedImage = projectMember?.selectedImage;
-
-  const handleShowSelectedImageDetailedView = () => {
-    if (selectedImage != null) {
-      handleShowDetailedView(selectedImage);
-    }
-  };
 
   useEffect(() => {
     /**
@@ -271,14 +257,13 @@ export function CardSlot({
       style={{ contentVisibility: "auto" }}
       data-testid={`${face}-slot${slot}`}
     >
-      <MemoizedCard
+      <MemoizedEditorCard
         imageIdentifier={selectedImage}
         previousImageIdentifier={previousImage}
         nextImageIdentifier={nextImage}
         cardHeaderTitle={cardHeaderTitle}
         cardFooter={cardFooter}
         cardHeaderButtons={cardHeaderButtons}
-        imageOnClick={handleShowSelectedImageDetailedView}
         searchQuery={searchQuery}
         noResultsFound={
           searchResultsForQueryOrDefault != null &&

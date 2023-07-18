@@ -45,10 +45,6 @@
   transition: opacity 0.2s ease-in-out;
 }
 
-.card-img:hover {
-  cursor: pointer;
-}
-
 .mpccard-hover:hover {
   z-index: 10;
 }

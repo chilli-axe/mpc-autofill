@@ -19,11 +19,7 @@ const createError = (name: string) => ({
   message: "A message that describes the error",
 });
 
-function buildRoute(
-  route: string,
-  trailingSlash: boolean = true,
-  wildcard: boolean = false
-) {
+function buildRoute(route: string) {
   /**
    * Not including the correct leading and trailing slashes can break things.
    * This little helper function ensures the given relative API route is associated
@@ -425,6 +421,57 @@ export const importSitesServerError = rest.get(
   buildRoute("2/importSites/"),
   (req, res, ctx) =>
     res(ctx.status(500), ctx.json(createError("2/importSites")))
+);
+
+//# endregion
+
+//# region what's new
+
+export const newCardsFirstPageWithTwoSources = rest.get(
+  buildRoute("2/newCardsFirstPages"),
+  (req, res, ctx) =>
+    res(
+      ctx.status(200),
+      ctx.json({
+        results: {
+          [sourceDocument1.key]: {
+            source: sourceDocument1,
+            hits: 4,
+            pages: 2,
+            cards: [cardDocument1, cardDocument2],
+          },
+          [sourceDocument2.key]: {
+            source: sourceDocument2,
+            hits: 1,
+            pages: 1,
+            cards: [cardDocument5],
+          },
+        },
+      })
+    )
+);
+
+export const newCardsFirstPageNoResults = rest.get(
+  buildRoute("2/newCardsFirstPages"),
+  (req, res, ctx) =>
+    res(
+      ctx.status(200),
+      ctx.json({
+        results: {},
+      })
+    )
+);
+
+export const newCardsPageForSource1 = rest.get(
+  buildRoute(`2/newCardsPage?source=${sourceDocument1.key}&page=2`),
+  (req, res, ctx) =>
+    res(ctx.status(200), ctx.json({ cards: [cardDocument3, cardDocument4] }))
+);
+
+export const newCardsFirstPageServerError = rest.get(
+  buildRoute("2/newCardsFirstPages"),
+  (req, res, ctx) =>
+    res(ctx.status(500), ctx.json(createError("2/newCardsFirstPage")))
 );
 
 //# endregion

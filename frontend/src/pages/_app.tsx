@@ -7,6 +7,8 @@ import { AppProps } from "next/app";
 // defining this here according to advice in https://github.com/vercel/next.js/issues/43674#issue-1474226764
 import { Lato } from "next/font/google";
 
+import Layout from "@/features/ui/layout";
+
 export const lato = Lato({
   weight: ["300", "400", "700"],
   subsets: ["latin", "latin-ext"],
@@ -14,5 +16,9 @@ export const lato = Lato({
 });
 
 export default function App({ Component, pageProps }: AppProps) {
-  return <Component {...pageProps} />;
+  return (
+    <Layout>
+      <Component {...pageProps} />
+    </Layout>
+  );
 }

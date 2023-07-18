@@ -1,6 +1,21 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`the html structure of a CardDetailedView 1`] = `
+.c1 {
+  z-index: 1;
+  opacity: 1;
+}
+
+.c1:hover {
+  cursor: auto;
+}
+
+.c0 {
+  z-index: 0;
+  background: #4e5d6c;
+  border: solid 0px black;
+}
+
 <div
   class="modal-dialog modal-xl"
   data-testid="detailed-view"
@@ -33,11 +48,11 @@ exports[`the html structure of a CardDetailedView 1`] = `
           style="position: relative;"
         >
           <div
-            class="sc-1473aca0-2 eZLFFB rounded-xl shadow-lg ratio ratio-7x5"
+            class="c0 rounded-xl shadow-lg ratio ratio-7x5"
           >
             <img
               alt="Card 1"
-              class="sc-1473aca0-1 gPvrki card-img card-img-fade-in"
+              class="c1 card-img card-img-fade-in"
               data-nimg="fill"
               decoding="async"
               loading="lazy"

@@ -13,6 +13,7 @@ import searchResultsReducer from "@/features/search/searchResultsSlice";
 import sourceDocumentsReducer from "@/features/search/sourceDocumentsSlice";
 import searchSettingsReducer from "@/features/searchSettings/searchSettingsSlice";
 import toastsReducer, { setError } from "@/features/toasts/toastsSlice";
+import modalReducer from "@/features/ui/modalSlice";
 import viewSettingsReducer from "@/features/viewSettings/viewSettingsSlice";
 
 // Create the root reducer separately so we can extract the RootState type
@@ -28,11 +29,17 @@ const rootReducer = combineReducers({
   project: projectReducer,
   backend: backendReducer,
   toasts: toastsReducer,
+  modal: modalReducer,
 });
 
 const rtkQueryErrorLogger: Middleware =
   (api: MiddlewareAPI) => (next) => (action) => {
-    if (isRejectedWithValue(action) && action.payload?.data != null) {
+    const backendURL = api.getState().backend.url;
+    if (
+      backendURL != null &&
+      isRejectedWithValue(action) &&
+      action.payload?.data != null
+    ) {
       // dispatch the error to the store for displaying in a toast to the user
       api.dispatch(
         setError([

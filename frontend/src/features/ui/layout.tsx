@@ -1,13 +1,13 @@
 import { useRouter } from "next/router";
 import { GoogleAnalytics } from "nextjs-google-analytics";
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 import { PropsWithChildren } from "react";
 import Container from "react-bootstrap/Container";
 import SSRProvider from "react-bootstrap/SSRProvider";
 import { Provider } from "react-redux";
 import styled from "styled-components";
 
-import store from "@/app/store";
+import store, { RootState } from "@/app/store";
 import { ContentMaxWidth, NavbarHeight } from "@/common/constants";
 import {
   getGoogleAnalyticsConsent,
@@ -16,7 +16,9 @@ import {
 import { standardiseURL } from "@/common/processing";
 import { useAppDispatch, useAppSelector } from "@/common/types";
 import { selectBackendURL, setURL } from "@/features/backend/backendSlice";
+import { MemoizedCardDetailedView } from "@/features/card/cardDetailedView";
 import { Toasts } from "@/features/toasts/toasts";
+import { hideModal } from "@/features/ui/modalSlice";
 import ProjectNavbar from "@/features/ui/navbar";
 
 function BackendSetter() {
@@ -43,6 +45,27 @@ function BackendSetter() {
   return <></>;
 }
 
+function Modals() {
+  // TODO: move the grid selector into here
+  // TODO: move the developer and patreon support modals into here
+  const [selectedImage, shownModal] = useAppSelector((state: RootState) => [
+    state.modal.card,
+    state.modal.shownModal,
+  ]);
+  const dispatch = useAppDispatch();
+  return (
+    <>
+      {selectedImage != null && (
+        <MemoizedCardDetailedView
+          cardDocument={selectedImage}
+          show={shownModal === "cardDetailedView"}
+          handleClose={() => dispatch(hideModal())}
+        />
+      )}
+    </>
+  );
+}
+
 const OverscrollProvider = styled(Provider)`
   overscroll-behavior: none;
   overflow-x: hidden;
@@ -64,41 +87,43 @@ const MaxWidthContainer = styled(Container)`
   max-width: ${ContentMaxWidth}px;
 `;
 
-interface LayoutProps {
+interface ProjectContainerProps {
   gutter?: number;
 }
 
-export function LayoutWithoutProvider({
+export function ProjectContainer({
   gutter = 2,
   children,
-}: PropsWithChildren<LayoutProps>) {
+}: PropsWithChildren<ProjectContainerProps>) {
   return (
-    <>
-      <Toasts />
-      <BackendSetter />
-      <ProjectNavbar />
-      <ContentContainer fluid className={`g-${gutter}`}>
-        <MaxWidthContainer className={`g-${gutter}`}>
-          {children}
-        </MaxWidthContainer>
-      </ContentContainer>
-    </>
+    <ContentContainer fluid className={`g-${gutter}`}>
+      <MaxWidthContainer className={`g-${gutter}`}>
+        {children}
+      </MaxWidthContainer>
+    </ContentContainer>
   );
 }
 
-export default function Layout({
-  gutter = 2,
-  children,
-}: PropsWithChildren<LayoutProps>) {
+export function LayoutWithoutProvider({ children }: PropsWithChildren) {
   const consent = getGoogleAnalyticsConsent();
   return (
     <>
       {consent === true && <GoogleAnalytics trackPageViews />}
+      <Toasts />
+      <Modals />
+      <BackendSetter />
+      <ProjectNavbar />
+      {children}
+    </>
+  );
+}
+
+export default function Layout({ children }: PropsWithChildren) {
+  return (
+    <>
       <SSRProvider>
         <OverscrollProvider store={store}>
-          <LayoutWithoutProvider gutter={gutter}>
-            {children}
-          </LayoutWithoutProvider>
+          <LayoutWithoutProvider>{children}</LayoutWithoutProvider>
         </OverscrollProvider>
       </SSRProvider>
     </>

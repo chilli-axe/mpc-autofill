@@ -220,6 +220,7 @@ class Card(models.Model):
             "source_id": self.source.pk,
             "source_verbose": self.source_verbose,
             "source_type": self.get_source_type(),
+            "source_external_link": self.get_source_external_link(),
             "dpi": self.dpi,
             "searchq": self.searchq,
             "extension": self.extension,

@@ -1,7 +1,7 @@
+import datetime as dt
 import json
 import threading
 from dataclasses import dataclass
-from datetime import timedelta
 from pathlib import Path
 from typing import Any, Callable, Optional, TypeVar, cast
 
@@ -15,11 +15,14 @@ from Levenshtein import distance
 from referencing import Registry, Resource
 
 from django.conf import settings
+from django.core.paginator import Paginator
+from django.db.models import QuerySet
 from django.http import HttpRequest
 from django.utils import timezone
 
+from cardpicker.constants import NEW_CARDS_DAYS, NEW_CARDS_PAGE_SIZE
 from cardpicker.documents import CardSearch
-from cardpicker.models import CardTypes, Source
+from cardpicker.models import Card, CardTypes, Source
 from cardpicker.utils.sanitisation import to_searchable
 
 thread_local = threading.local()  # Should only be called once per thread
@@ -156,7 +159,7 @@ def search_database(
 @elastic_connection
 def search_new_elasticsearch_definition() -> Search:
     days = 14
-    dt_from = timezone.now() - timedelta(days=days)
+    dt_from = timezone.now() - dt.timedelta(days=days)
     dt_to = timezone.now()
     return CardSearch().search().filter("range", date={"from": dt_from, "to": dt_to})
 
@@ -355,6 +358,14 @@ def parse_json_body_as_search_data(json_body: dict[str, Any]) -> tuple[SearchSet
     schema_validator.validate(json_body)
 
     return SearchSettings.from_json_body(json_body), SearchQuery.list_from_json_body(json_body)
+
+
+def get_new_cards_paginator(source: Source) -> Paginator[QuerySet[Card]]:
+    now = timezone.now()
+    cards = Card.objects.filter(
+        source=source, date__lt=now, date__gte=now - dt.timedelta(days=NEW_CARDS_DAYS)
+    ).order_by("-date")
+    return Paginator(cards, NEW_CARDS_PAGE_SIZE)  # type: ignore  # TODO: `_SupportsPagination`
 
 
 # endregion

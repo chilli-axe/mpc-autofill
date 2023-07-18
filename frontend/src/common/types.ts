@@ -49,6 +49,7 @@ export interface CardDocument {
   source_id: number;
   source_verbose: string;
   source_type: string;
+  source_external_link: string | null;
   dpi: number;
   searchq: string;
   extension: string;
@@ -210,4 +211,24 @@ export type ProcessedLine = [
 
 export interface ToastsState {
   errors: { [key: string]: APIError };
+}
+
+export type NewCardsPage = Array<CardDocument>;
+
+export interface NewCardsFirstPage {
+  source: SourceDocument;
+  hits: number;
+  pages: number;
+  cards: NewCardsPage;
+}
+
+export interface NewCardsFirstPages {
+  [sourceKey: string]: NewCardsFirstPage;
+}
+
+export type Modals = "cardDetailedView" | "gridSelector";
+
+export interface ModalState {
+  card: CardDocument | null;
+  shownModal: Modals | null;
 }

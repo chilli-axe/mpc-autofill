@@ -17,8 +17,9 @@ import React, {
 import BSCard from "react-bootstrap/Card";
 import styled from "styled-components";
 
-import { SearchQuery, useAppSelector } from "@/common/types";
+import { SearchQuery, useAppDispatch, useAppSelector } from "@/common/types";
 import { CardDocument } from "@/common/types";
+import { setSelectedCardAndShowModal } from "@/features/ui/modalSlice";
 import { Spinner } from "@/features/ui/spinner";
 
 const HiddenImage = styled(Image)`
@@ -26,27 +27,47 @@ const HiddenImage = styled(Image)`
   opacity: 0;
 `;
 
-const VisibleImage = styled(Image)<{ imageIsLoading?: boolean }>`
+const VisibleImage = styled(Image)<{
+  imageIsLoading?: boolean;
+  showDetailedViewOnClick?: boolean;
+}>`
   z-index: 1;
+  &:hover {
+    cursor: ${(props) => (props.showDetailedViewOnClick ? "pointer" : "auto")};
+  }
   opacity: ${(props) => (props.imageIsLoading ? 0 : 1)};
 `;
 
 interface CardImageProps {
-  cardDocument: CardDocument | null;
-  onClick?: React.MouseEventHandler<HTMLImageElement>;
+  maybeCardDocument: CardDocument | null;
   hidden: boolean;
   small: boolean;
+  showDetailedViewOnClick: boolean;
 }
 
-function CardImage({ cardDocument, onClick, hidden, small }: CardImageProps) {
+function CardImage({
+  maybeCardDocument,
+  hidden,
+  small,
+  showDetailedViewOnClick,
+}: CardImageProps) {
   const [imageLoading, setImageLoading] = useState(true);
   // ensure that the small thumbnail fades in each time the selected image changes
-  useEffect(() => setImageLoading(true), [cardDocument?.identifier]);
+  useEffect(() => setImageLoading(true), [maybeCardDocument?.identifier]);
   useEffect(() => {
     if (image.current != null && image.current.complete) {
       setImageLoading(false);
     }
-  }, [cardDocument?.identifier]);
+  }, [maybeCardDocument?.identifier]);
+
+  const dispatch = useAppDispatch();
+  const handleShowDetailedView = () => {
+    if (showDetailedViewOnClick && maybeCardDocument != null) {
+      dispatch(
+        setSelectedCardAndShowModal([maybeCardDocument, "cardDetailedView"])
+      );
+    }
+  };
 
   // next.js seems to not fire `onLoadingComplete` when opening a page with a cached image
   // this implementation retrieved from https://stackoverflow.com/a/59809184
@@ -61,13 +82,16 @@ function CardImage({ cardDocument, onClick, hidden, small }: CardImageProps) {
           loading="lazy"
           src={
             (small
-              ? cardDocument?.small_thumbnail_url
-              : cardDocument?.medium_thumbnail_url) ?? ""
+              ? maybeCardDocument?.small_thumbnail_url
+              : maybeCardDocument?.medium_thumbnail_url) ?? ""
           }
           onLoadingComplete={(img) => setImageLoading(false)}
-          onClick={onClick}
           // onError={{thumbnail_404(this)}} // TODO
-          alt={cardDocument?.name ?? ""}
+          alt={
+            maybeCardDocument?.name
+              ? maybeCardDocument?.name + (small ? " small" : " medium")
+              : ""
+          }
           fill={true}
         />
       ) : (
@@ -78,14 +102,15 @@ function CardImage({ cardDocument, onClick, hidden, small }: CardImageProps) {
             className="card-img card-img-fade-in"
             loading="lazy"
             imageIsLoading={imageLoading}
+            showDetailedViewOnClick={showDetailedViewOnClick}
             src={
               (small
-                ? cardDocument?.small_thumbnail_url
-                : cardDocument?.medium_thumbnail_url) ?? ""
+                ? maybeCardDocument?.small_thumbnail_url
+                : maybeCardDocument?.medium_thumbnail_url) ?? ""
             }
             onLoadingComplete={(img) => setImageLoading(false)}
-            onClick={onClick}
-            alt={cardDocument?.name ?? ""}
+            onClick={() => handleShowDetailedView()}
+            alt={maybeCardDocument?.name ?? ""}
             fill={true}
           />
         </>
@@ -126,19 +151,17 @@ export const MemoizedCardProportionWrapper = memo(CardProportionWrapper);
 
 interface CardProps {
   /** The card image identifier to display. */
-  imageIdentifier: string | undefined;
+  maybeCardDocument: CardDocument | undefined;
   /** If this `Card` is part of a gallery, use this prop to cache the previous image for visual smoothness. */
-  previousImageIdentifier?: string | undefined;
+  maybePreviousCardDocument?: CardDocument | undefined;
   /** If this `Card` is part of a gallery, use this prop to cache the next image for visual smoothness. */
-  nextImageIdentifier?: string | undefined;
+  maybeNextCardDocument?: CardDocument | undefined;
   /** The string to display in the `Card` header. */
   cardHeaderTitle: string;
   /** An element (intended for use with a series of buttons) to include in the `Card` header.  */
   cardHeaderButtons?: ReactElement;
   /** An element (e.g. prev/next buttons) to display in the card footer. If not passed, no footer will be rendered. */
   cardFooter?: ReactElement;
-  /** A callback function for when the displayed image is clicked. */
-  imageOnClick?: React.MouseEventHandler<HTMLImageElement>;
   /** A callback function for when the `Card` (the HTML surrounding the image) is clicked. */
   cardOnClick?: React.MouseEventHandler<HTMLElement>;
   /** The `SearchQuery` specified when searching for this card. */
@@ -148,59 +171,47 @@ interface CardProps {
 }
 
 export function Card({
-  imageIdentifier,
-  previousImageIdentifier,
-  nextImageIdentifier,
+  maybeCardDocument,
+  maybePreviousCardDocument,
+  maybeNextCardDocument,
   cardHeaderTitle,
   cardHeaderButtons,
   cardFooter,
-  imageOnClick,
   cardOnClick,
   searchQuery,
   noResultsFound,
 }: CardProps) {
-  const maybeCardDocument = useAppSelector((state) =>
-    imageIdentifier != null
-      ? state.cardDocuments.cardDocuments[imageIdentifier]
-      : undefined
-  );
-
-  const maybePreviousCardDocument = useAppSelector((state) =>
-    previousImageIdentifier != null
-      ? state.cardDocuments.cardDocuments[previousImageIdentifier]
-      : undefined
-  );
-  const maybeNextCardDocument = useAppSelector((state) =>
-    nextImageIdentifier != null
-      ? state.cardDocuments.cardDocuments[nextImageIdentifier]
-      : undefined
-  );
+  /**
+   * This component enables displaying cards with auxiliary information in a flexible, consistent way.
+   */
 
   const cardImageElements =
     maybeCardDocument != null ? (
       <>
         <MemoizedCardImage
-          cardDocument={maybeCardDocument}
-          onClick={imageOnClick}
+          maybeCardDocument={maybeCardDocument}
           hidden={false}
           small={true}
+          showDetailedViewOnClick={cardOnClick == null}
         />
-        {previousImageIdentifier !== imageIdentifier &&
-          maybePreviousCardDocument != null && (
+        {maybePreviousCardDocument != null &&
+          maybePreviousCardDocument.identifier !==
+            maybeCardDocument?.identifier && (
             <MemoizedCardImage
-              cardDocument={maybePreviousCardDocument}
-              onClick={imageOnClick}
+              maybeCardDocument={maybePreviousCardDocument}
               hidden={true}
               small={true}
+              showDetailedViewOnClick={false}
             />
           )}
-        {nextImageIdentifier !== imageIdentifier &&
-          maybeNextCardDocument != null && (
+        {maybeNextCardDocument != null &&
+          maybeNextCardDocument.identifier !==
+            maybeCardDocument?.identifier && (
             <MemoizedCardImage
-              cardDocument={maybeNextCardDocument}
-              onClick={imageOnClick}
+              maybeCardDocument={maybeNextCardDocument}
               hidden={true}
               small={true}
+              showDetailedViewOnClick={false}
             />
           )}
       </>
@@ -257,3 +268,76 @@ export function Card({
 }
 
 export const MemoizedCard = memo(Card);
+
+interface EditorCardProps {
+  /** The card image identifier to display. */
+  imageIdentifier: string | undefined;
+  /** If this `Card` is part of a gallery, use this prop to cache the previous image for visual smoothness. */
+  previousImageIdentifier?: string | undefined;
+  /** If this `Card` is part of a gallery, use this prop to cache the next image for visual smoothness. */
+  nextImageIdentifier?: string | undefined;
+  /** The string to display in the `Card` header. */
+  cardHeaderTitle: string;
+  /** An element (intended for use with a series of buttons) to include in the `Card` header.  */
+  cardHeaderButtons?: ReactElement;
+  /** An element (e.g. prev/next buttons) to display in the card footer. If not passed, no footer will be rendered. */
+  cardFooter?: ReactElement;
+  /** A callback function for when the `Card` (the HTML surrounding the image) is clicked. */
+  cardOnClick?: React.MouseEventHandler<HTMLElement>;
+  /** The `SearchQuery` specified when searching for this card. */
+  searchQuery?: SearchQuery | undefined;
+  /** Whether no search results were found when searching for `searchQuery` under the configured search settings. */
+  noResultsFound: boolean;
+}
+
+export function EditorCard({
+  imageIdentifier,
+  previousImageIdentifier,
+  nextImageIdentifier,
+  cardHeaderTitle,
+  cardHeaderButtons,
+  cardFooter,
+  cardOnClick,
+  searchQuery,
+  noResultsFound,
+}: EditorCardProps) {
+  /**
+   * This component is a thin layer on top of `Card` that retrieves `CardDocument` items by their identifiers
+   * from the Redux store (used in the project editor).
+   * We have this layer because search results are returned as a list of image identifiers
+   * (to minimise the quantity of data stored in Elasticsearch), so the full `CardDocument` items must be looked up.
+   */
+
+  const maybeCardDocument = useAppSelector((state) =>
+    imageIdentifier != null
+      ? state.cardDocuments.cardDocuments[imageIdentifier]
+      : undefined
+  );
+
+  const maybePreviousCardDocument = useAppSelector((state) =>
+    previousImageIdentifier != null
+      ? state.cardDocuments.cardDocuments[previousImageIdentifier]
+      : undefined
+  );
+  const maybeNextCardDocument = useAppSelector((state) =>
+    nextImageIdentifier != null
+      ? state.cardDocuments.cardDocuments[nextImageIdentifier]
+      : undefined
+  );
+
+  return (
+    <Card
+      maybeCardDocument={maybeCardDocument}
+      maybePreviousCardDocument={maybePreviousCardDocument}
+      maybeNextCardDocument={maybeNextCardDocument}
+      cardHeaderTitle={cardHeaderTitle}
+      cardHeaderButtons={cardHeaderButtons}
+      cardFooter={cardFooter}
+      cardOnClick={cardOnClick}
+      searchQuery={searchQuery}
+      noResultsFound={noResultsFound}
+    />
+  );
+}
+
+export const MemoizedEditorCard = memo(EditorCard);

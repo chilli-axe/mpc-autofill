@@ -1,6 +1,21 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`the html structure of a CardSlot with a single search result, image selected 1`] = `
+.c1 {
+  z-index: 1;
+  opacity: 1;
+}
+
+.c1:hover {
+  cursor: pointer;
+}
+
+.c0 {
+  z-index: 0;
+  background: #4e5d6c;
+  border: solid 0px black;
+}
+
 <div
   data-testid="front-slot0"
 >
@@ -34,11 +49,11 @@ exports[`the html structure of a CardSlot with a single search result, image sel
     </div>
     <div>
       <div
-        class="sc-1473aca0-2 eZLFFB rounded-lg shadow-lg ratio ratio-7x5"
+        class="c0 rounded-lg shadow-lg ratio ratio-7x5"
       >
         <img
           alt="Card 1"
-          class="sc-1473aca0-1 gPvrki card-img card-img-fade-in"
+          class="c1 card-img card-img-fade-in"
           data-nimg="fill"
           decoding="async"
           loading="lazy"
@@ -81,6 +96,21 @@ exports[`the html structure of a CardSlot with a single search result, image sel
 `;
 
 exports[`the html structure of a CardSlot with a single search result, no image selected 1`] = `
+.c1 {
+  z-index: 1;
+  opacity: 1;
+}
+
+.c1:hover {
+  cursor: pointer;
+}
+
+.c0 {
+  z-index: 0;
+  background: #4e5d6c;
+  border: solid 0px black;
+}
+
 <div
   data-testid="front-slot0"
 >
@@ -114,11 +144,11 @@ exports[`the html structure of a CardSlot with a single search result, no image 
     </div>
     <div>
       <div
-        class="sc-1473aca0-2 eZLFFB rounded-lg shadow-lg ratio ratio-7x5"
+        class="c0 rounded-lg shadow-lg ratio ratio-7x5"
       >
         <img
           alt="Card 1"
-          class="sc-1473aca0-1 gPvrki card-img card-img-fade-in"
+          class="c1 card-img card-img-fade-in"
           data-nimg="fill"
           decoding="async"
           loading="lazy"
@@ -161,6 +191,21 @@ exports[`the html structure of a CardSlot with a single search result, no image 
 `;
 
 exports[`the html structure of a CardSlot with a single search result, slot selected 1`] = `
+.c1 {
+  z-index: 1;
+  opacity: 1;
+}
+
+.c1:hover {
+  cursor: pointer;
+}
+
+.c0 {
+  z-index: 0;
+  background: #4e5d6c;
+  border: solid 0px black;
+}
+
 <div
   data-testid="front-slot0"
 >
@@ -194,11 +239,11 @@ exports[`the html structure of a CardSlot with a single search result, slot sele
     </div>
     <div>
       <div
-        class="sc-1473aca0-2 eZLFFB rounded-lg shadow-lg ratio ratio-7x5"
+        class="c0 rounded-lg shadow-lg ratio ratio-7x5"
       >
         <img
           alt="Card 1"
-          class="sc-1473aca0-1 gPvrki card-img card-img-fade-in"
+          class="c1 card-img card-img-fade-in"
           data-nimg="fill"
           decoding="async"
           loading="lazy"
@@ -241,6 +286,26 @@ exports[`the html structure of a CardSlot with a single search result, slot sele
 `;
 
 exports[`the html structure of a CardSlot with multiple search results, image selected 1`] = `
+.c2 {
+  z-index: 0;
+  opacity: 0;
+}
+
+.c1 {
+  z-index: 1;
+  opacity: 1;
+}
+
+.c1:hover {
+  cursor: pointer;
+}
+
+.c0 {
+  z-index: 0;
+  background: #4e5d6c;
+  border: solid 0px black;
+}
+
 <div
   data-testid="front-slot0"
 >
@@ -274,11 +339,11 @@ exports[`the html structure of a CardSlot with multiple search results, image se
     </div>
     <div>
       <div
-        class="sc-1473aca0-2 eZLFFB rounded-lg shadow-lg ratio ratio-7x5"
+        class="c0 rounded-lg shadow-lg ratio ratio-7x5"
       >
         <img
           alt="Card 1"
-          class="sc-1473aca0-1 gPvrki card-img card-img-fade-in"
+          class="c1 card-img card-img-fade-in"
           data-nimg="fill"
           decoding="async"
           loading="lazy"
@@ -286,8 +351,8 @@ exports[`the html structure of a CardSlot with multiple search results, image se
           style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent;"
         />
         <img
-          alt="Card 2"
-          class="sc-1473aca0-0 bsECfE card-img"
+          alt="Card 2 small"
+          class="c2 card-img"
           data-nimg="fill"
           decoding="async"
           loading="lazy"
@@ -295,8 +360,8 @@ exports[`the html structure of a CardSlot with multiple search results, image se
           style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent;"
         />
         <img
-          alt="Card 3"
-          class="sc-1473aca0-0 bsECfE card-img"
+          alt="Card 3 small"
+          class="c2 card-img"
           data-nimg="fill"
           decoding="async"
           loading="lazy"
@@ -355,6 +420,21 @@ exports[`the html structure of a CardSlot with multiple search results, image se
 `;
 
 exports[`the html structure of a CardSlot's grid selector, cards faceted by source 1`] = `
+.c1 {
+  z-index: 1;
+  opacity: 1;
+}
+
+.c1:hover {
+  cursor: auto;
+}
+
+.c0 {
+  z-index: 0;
+  background: #4e5d6c;
+  border: solid 0px black;
+}
+
 <div
   class="modal-dialog modal-lg"
   data-testid="front-slot0-grid-selector"
@@ -481,11 +561,11 @@ exports[`the html structure of a CardSlot's grid selector, cards faceted by sour
             </div>
             <div>
               <div
-                class="sc-1473aca0-2 eZLFFB rounded-lg shadow-lg ratio ratio-7x5"
+                class="c0 rounded-lg shadow-lg ratio ratio-7x5"
               >
                 <img
                   alt="Card 1"
-                  class="sc-1473aca0-1 gPvrki card-img card-img-fade-in"
+                  class="c1 card-img card-img-fade-in"
                   data-nimg="fill"
                   decoding="async"
                   loading="lazy"
@@ -527,11 +607,11 @@ exports[`the html structure of a CardSlot's grid selector, cards faceted by sour
             </div>
             <div>
               <div
-                class="sc-1473aca0-2 eZLFFB rounded-lg shadow-lg ratio ratio-7x5"
+                class="c0 rounded-lg shadow-lg ratio ratio-7x5"
               >
                 <img
                   alt="Card 2"
-                  class="sc-1473aca0-1 gPvrki card-img card-img-fade-in"
+                  class="c1 card-img card-img-fade-in"
                   data-nimg="fill"
                   decoding="async"
                   loading="lazy"
@@ -573,11 +653,11 @@ exports[`the html structure of a CardSlot's grid selector, cards faceted by sour
             </div>
             <div>
               <div
-                class="sc-1473aca0-2 eZLFFB rounded-lg shadow-lg ratio ratio-7x5"
+                class="c0 rounded-lg shadow-lg ratio ratio-7x5"
               >
                 <img
                   alt="Card 3"
-                  class="sc-1473aca0-1 gPvrki card-img card-img-fade-in"
+                  class="c1 card-img card-img-fade-in"
                   data-nimg="fill"
                   decoding="async"
                   loading="lazy"
@@ -619,11 +699,11 @@ exports[`the html structure of a CardSlot's grid selector, cards faceted by sour
             </div>
             <div>
               <div
-                class="sc-1473aca0-2 eZLFFB rounded-lg shadow-lg ratio ratio-7x5"
+                class="c0 rounded-lg shadow-lg ratio ratio-7x5"
               >
                 <img
                   alt="Card 4"
-                  class="sc-1473aca0-1 gPvrki card-img card-img-fade-in"
+                  class="c1 card-img card-img-fade-in"
                   data-nimg="fill"
                   decoding="async"
                   loading="lazy"
@@ -669,6 +749,21 @@ exports[`the html structure of a CardSlot's grid selector, cards faceted by sour
 `;
 
 exports[`the html structure of a CardSlot's grid selector, cards grouped together 1`] = `
+.c1 {
+  z-index: 1;
+  opacity: 1;
+}
+
+.c1:hover {
+  cursor: auto;
+}
+
+.c0 {
+  z-index: 0;
+  background: #4e5d6c;
+  border: solid 0px black;
+}
+
 <div
   class="modal-dialog modal-lg"
   data-testid="front-slot0-grid-selector"
@@ -742,11 +837,11 @@ exports[`the html structure of a CardSlot's grid selector, cards grouped togethe
           </div>
           <div>
             <div
-              class="sc-1473aca0-2 eZLFFB rounded-lg shadow-lg ratio ratio-7x5"
+              class="c0 rounded-lg shadow-lg ratio ratio-7x5"
             >
               <img
                 alt="Card 1"
-                class="sc-1473aca0-1 gPvrki card-img card-img-fade-in"
+                class="c1 card-img card-img-fade-in"
                 data-nimg="fill"
                 decoding="async"
                 loading="lazy"
@@ -788,11 +883,11 @@ exports[`the html structure of a CardSlot's grid selector, cards grouped togethe
           </div>
           <div>
             <div
-              class="sc-1473aca0-2 eZLFFB rounded-lg shadow-lg ratio ratio-7x5"
+              class="c0 rounded-lg shadow-lg ratio ratio-7x5"
             >
               <img
                 alt="Card 2"
-                class="sc-1473aca0-1 gPvrki card-img card-img-fade-in"
+                class="c1 card-img card-img-fade-in"
                 data-nimg="fill"
                 decoding="async"
                 loading="lazy"
@@ -834,11 +929,11 @@ exports[`the html structure of a CardSlot's grid selector, cards grouped togethe
           </div>
           <div>
             <div
-              class="sc-1473aca0-2 eZLFFB rounded-lg shadow-lg ratio ratio-7x5"
+              class="c0 rounded-lg shadow-lg ratio ratio-7x5"
             >
               <img
                 alt="Card 3"
-                class="sc-1473aca0-1 gPvrki card-img card-img-fade-in"
+                class="c1 card-img card-img-fade-in"
                 data-nimg="fill"
                 decoding="async"
                 loading="lazy"
@@ -880,11 +975,11 @@ exports[`the html structure of a CardSlot's grid selector, cards grouped togethe
           </div>
           <div>
             <div
-              class="sc-1473aca0-2 eZLFFB rounded-lg shadow-lg ratio ratio-7x5"
+              class="c0 rounded-lg shadow-lg ratio ratio-7x5"
             >
               <img
                 alt="Card 4"
-                class="sc-1473aca0-1 gPvrki card-img card-img-fade-in"
+                class="c1 card-img card-img-fade-in"
                 data-nimg="fill"
                 decoding="async"
                 loading="lazy"

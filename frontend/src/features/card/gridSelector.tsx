@@ -14,10 +14,9 @@ import Stack from "react-bootstrap/Stack";
 // @ts-ignore: https://github.com/arnthor3/react-bootstrap-toggle/issues/21
 import Toggle from "react-bootstrap-toggle";
 
-import { RootState } from "@/app/store";
 import { ToggleButtonHeight } from "@/common/constants";
 import { CardDocument, useAppDispatch, useAppSelector } from "@/common/types";
-import { MemoizedCard } from "@/features/card/card";
+import { MemoizedEditorCard } from "@/features/card/card";
 import {
   makeAllSourcesInvisible,
   makeAllSourcesVisible,
@@ -64,7 +63,7 @@ function CardsGroupedTogether({
         ([key, value], sourceIndex) => (
           <>
             {value.flatMap(([identifier, index]) => (
-              <MemoizedCard // TODO: paginate or lazy-load these
+              <MemoizedEditorCard // TODO: paginate or lazy-load these
                 imageIdentifier={identifier}
                 cardHeaderTitle={`Option ${index + 1}`}
                 cardOnClick={() => selectImage(identifier)}
@@ -154,7 +153,7 @@ function CardsFacetedBySource({
                 >
                   {cardIdentifiersAndOptionNumbers.map(
                     ([identifier, optionNumber]) => (
-                      <MemoizedCard
+                      <MemoizedEditorCard
                         imageIdentifier={identifier}
                         cardHeaderTitle={`Option ${optionNumber + 1}`}
                         cardOnClick={() => selectImage(identifier)}

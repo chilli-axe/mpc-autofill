@@ -210,6 +210,7 @@
         'size': 5000000,
         'small_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5',
         'source': 'example_drive_1',
+        'source_external_link': 'https://drive.google.com/open?id=1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
         'source_id': 0,
         'source_name': 'Example Drive 1',
         'source_type': 'Google Drive',
@@ -229,6 +230,7 @@
         'size': 5000000,
         'small_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1IDtqSjJ4Yo45AnNA4SplOiN7ewibifMa',
         'source': 'example_drive_1',
+        'source_external_link': 'https://drive.google.com/open?id=1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
         'source_id': 0,
         'source_name': 'Example Drive 1',
         'source_type': 'Google Drive',
@@ -248,6 +250,7 @@
         'size': 5000000,
         'small_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1HsvTYs1jFGe1c8U1PnNZ9aB8jkAW7KU0',
         'source': 'example_drive_1',
+        'source_external_link': 'https://drive.google.com/open?id=1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
         'source_id': 0,
         'source_name': 'Example Drive 1',
         'source_type': 'Google Drive',
@@ -267,6 +270,7 @@
         'size': 5000000,
         'small_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
         'source': 'example_drive_1',
+        'source_external_link': 'https://drive.google.com/open?id=1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
         'source_id': 0,
         'source_name': 'Example Drive 1',
         'source_type': 'Google Drive',
@@ -288,6 +292,7 @@
         'size': 5000000,
         'small_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA',
         'source': 'example_drive_1',
+        'source_external_link': 'https://drive.google.com/open?id=1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
         'source_id': 0,
         'source_name': 'Example Drive 1',
         'source_type': 'Google Drive',
@@ -331,6 +336,568 @@
     'status_code': 200,
   })
 # ---
+# name: TestNewCardsFirstPages.test_basic_case
+  dict({
+    'json': dict({
+      'results': dict({
+        'example_drive_1': dict({
+          'cards': list([
+            dict({
+              'card_type': 'CARD',
+              'date': '1st January, 2023',
+              'download_link': 'https://drive.google.com/uc?id=1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5&export=download',
+              'dpi': 600,
+              'extension': 'png',
+              'identifier': '1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5',
+              'medium_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5',
+              'name': 'Brainstorm',
+              'priority': 2,
+              'searchq': 'brainstorm',
+              'size': 5000000,
+              'small_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5',
+              'source': 'example_drive_1',
+              'source_external_link': 'https://drive.google.com/open?id=1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
+              'source_id': 0,
+              'source_name': 'Example Drive 1',
+              'source_type': 'Google Drive',
+              'source_verbose': 'Example Drive 1 but verbose',
+            }),
+            dict({
+              'card_type': 'CARD',
+              'date': '1st January, 2023',
+              'download_link': 'https://drive.google.com/uc?id=1IDtqSjJ4Yo45AnNA4SplOiN7ewibifMa&export=download',
+              'dpi': 600,
+              'extension': 'png',
+              'identifier': '1IDtqSjJ4Yo45AnNA4SplOiN7ewibifMa',
+              'medium_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1IDtqSjJ4Yo45AnNA4SplOiN7ewibifMa',
+              'name': 'Island',
+              'priority': 7,
+              'searchq': 'island',
+              'size': 5000000,
+              'small_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1IDtqSjJ4Yo45AnNA4SplOiN7ewibifMa',
+              'source': 'example_drive_1',
+              'source_external_link': 'https://drive.google.com/open?id=1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
+              'source_id': 0,
+              'source_name': 'Example Drive 1',
+              'source_type': 'Google Drive',
+              'source_verbose': 'Example Drive 1 but verbose',
+            }),
+            dict({
+              'card_type': 'CARD',
+              'date': '1st January, 2023',
+              'download_link': 'https://drive.google.com/uc?id=1HsvTYs1jFGe1c8U1PnNZ9aB8jkAW7KU0&export=download',
+              'dpi': 600,
+              'extension': 'png',
+              'identifier': '1HsvTYs1jFGe1c8U1PnNZ9aB8jkAW7KU0',
+              'medium_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1HsvTYs1jFGe1c8U1PnNZ9aB8jkAW7KU0',
+              'name': 'Island (William Bradford)',
+              'priority': 6,
+              'searchq': 'island',
+              'size': 5000000,
+              'small_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1HsvTYs1jFGe1c8U1PnNZ9aB8jkAW7KU0',
+              'source': 'example_drive_1',
+              'source_external_link': 'https://drive.google.com/open?id=1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
+              'source_id': 0,
+              'source_name': 'Example Drive 1',
+              'source_type': 'Google Drive',
+              'source_verbose': 'Example Drive 1 but verbose',
+            }),
+            dict({
+              'card_type': 'CARD',
+              'date': '1st January, 2023',
+              'download_link': 'https://drive.google.com/uc?id=1-dcs0FEE05MTGiYbKqs9HnRdhXkgtIJG&export=download',
+              'dpi': 600,
+              'extension': 'png',
+              'identifier': '1-dcs0FEE05MTGiYbKqs9HnRdhXkgtIJG',
+              'medium_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1-dcs0FEE05MTGiYbKqs9HnRdhXkgtIJG',
+              'name': 'Mountain',
+              'priority': 7,
+              'searchq': 'mountain',
+              'size': 5000000,
+              'small_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1-dcs0FEE05MTGiYbKqs9HnRdhXkgtIJG',
+              'source': 'example_drive_1',
+              'source_external_link': 'https://drive.google.com/open?id=1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
+              'source_id': 0,
+              'source_name': 'Example Drive 1',
+              'source_type': 'Google Drive',
+              'source_verbose': 'Example Drive 1 but verbose',
+            }),
+            dict({
+              'card_type': 'CARDBACK',
+              'date': '1st January, 2023',
+              'download_link': 'https://drive.google.com/uc?id=1JtXL6Ca9nQkvhwZZRR9ZuKA9_DzsFf1V&export=download',
+              'dpi': 300,
+              'extension': 'png',
+              'identifier': '1JtXL6Ca9nQkvhwZZRR9ZuKA9_DzsFf1V',
+              'medium_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1JtXL6Ca9nQkvhwZZRR9ZuKA9_DzsFf1V',
+              'name': 'Simple Cube',
+              'priority': 17,
+              'searchq': 'simple cube',
+              'size': 2000000,
+              'small_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1JtXL6Ca9nQkvhwZZRR9ZuKA9_DzsFf1V',
+              'source': 'example_drive_1',
+              'source_external_link': 'https://drive.google.com/open?id=1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
+              'source_id': 0,
+              'source_name': 'Example Drive 1',
+              'source_type': 'Google Drive',
+              'source_verbose': 'Example Drive 1 but verbose',
+            }),
+            dict({
+              'card_type': 'CARDBACK',
+              'date': '1st January, 2023',
+              'download_link': 'https://drive.google.com/uc?id=1oigI6wz0zA--pNMuExKTs40kBNH6VRP_&export=download',
+              'dpi': 300,
+              'extension': 'png',
+              'identifier': '1oigI6wz0zA--pNMuExKTs40kBNH6VRP_',
+              'medium_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1oigI6wz0zA--pNMuExKTs40kBNH6VRP_',
+              'name': 'Simple Lotus',
+              'priority': 7,
+              'searchq': 'simple lotus',
+              'size': 2000000,
+              'small_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1oigI6wz0zA--pNMuExKTs40kBNH6VRP_',
+              'source': 'example_drive_1',
+              'source_external_link': 'https://drive.google.com/open?id=1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
+              'source_id': 0,
+              'source_name': 'Example Drive 1',
+              'source_type': 'Google Drive',
+              'source_verbose': 'Example Drive 1 but verbose',
+            }),
+          ]),
+          'hits': 12,
+          'pages': 2,
+          'source': dict({
+            'description': 'Description for example_drive_1',
+            'external_link': 'https://drive.google.com/open?id=1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
+            'identifier': '1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
+            'key': 'example_drive_1',
+            'name': 'Example Drive 1',
+            'pk': 0,
+            'source_type': 'Google Drive',
+          }),
+        }),
+        'example_drive_2': dict({
+          'cards': list([
+            dict({
+              'card_type': 'CARD',
+              'date': '1st January, 2023',
+              'download_link': 'https://drive.google.com/uc?id=1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU&export=download',
+              'dpi': 400,
+              'extension': 'png',
+              'identifier': '1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
+              'medium_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
+              'name': 'Past in Flames',
+              'priority': 2,
+              'searchq': 'past in flames',
+              'size': 4000000,
+              'small_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
+              'source': 'example_drive_2',
+              'source_external_link': None,
+              'source_id': 1,
+              'source_name': 'Example Drive 2',
+              'source_type': 'Google Drive',
+              'source_verbose': 'Example Drive 2 but verbose',
+            }),
+          ]),
+          'hits': 1,
+          'pages': 1,
+          'source': dict({
+            'description': 'Description for example_drive_2',
+            'external_link': None,
+            'identifier': '18wZl7T9DU_lf2X5xYFiyH6pATVy8ZlOd',
+            'key': 'example_drive_2',
+            'name': 'Example Drive 2',
+            'pk': 1,
+            'source_type': 'Google Drive',
+          }),
+        }),
+      }),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestNewCardsFirstPages.test_no_cards
+  dict({
+    'json': dict({
+      'results': dict({
+      }),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestNewCardsFirstPages.test_no_data_in_date_range
+  dict({
+    'json': dict({
+      'results': dict({
+      }),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestNewCardsFirstPages.test_no_sources
+  dict({
+    'json': dict({
+      'results': dict({
+      }),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestNewCardsFirstPages.test_post_request
+  dict({
+    'content': b'Expected GET request.',
+    'status_code': 400,
+  })
+# ---
+# name: TestNewCardsPage.test_get_full_first_page
+  dict({
+    'json': dict({
+      'cards': list([
+        dict({
+          'card_type': 'CARD',
+          'date': '1st January, 2023',
+          'download_link': 'https://drive.google.com/uc?id=1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5&export=download',
+          'dpi': 600,
+          'extension': 'png',
+          'identifier': '1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5',
+          'medium_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5',
+          'name': 'Brainstorm',
+          'priority': 2,
+          'searchq': 'brainstorm',
+          'size': 5000000,
+          'small_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5',
+          'source': 'example_drive_1',
+          'source_external_link': 'https://drive.google.com/open?id=1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
+          'source_id': 0,
+          'source_name': 'Example Drive 1',
+          'source_type': 'Google Drive',
+          'source_verbose': 'Example Drive 1 but verbose',
+        }),
+        dict({
+          'card_type': 'CARD',
+          'date': '1st January, 2023',
+          'download_link': 'https://drive.google.com/uc?id=1IDtqSjJ4Yo45AnNA4SplOiN7ewibifMa&export=download',
+          'dpi': 600,
+          'extension': 'png',
+          'identifier': '1IDtqSjJ4Yo45AnNA4SplOiN7ewibifMa',
+          'medium_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1IDtqSjJ4Yo45AnNA4SplOiN7ewibifMa',
+          'name': 'Island',
+          'priority': 7,
+          'searchq': 'island',
+          'size': 5000000,
+          'small_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1IDtqSjJ4Yo45AnNA4SplOiN7ewibifMa',
+          'source': 'example_drive_1',
+          'source_external_link': 'https://drive.google.com/open?id=1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
+          'source_id': 0,
+          'source_name': 'Example Drive 1',
+          'source_type': 'Google Drive',
+          'source_verbose': 'Example Drive 1 but verbose',
+        }),
+        dict({
+          'card_type': 'CARD',
+          'date': '1st January, 2023',
+          'download_link': 'https://drive.google.com/uc?id=1HsvTYs1jFGe1c8U1PnNZ9aB8jkAW7KU0&export=download',
+          'dpi': 600,
+          'extension': 'png',
+          'identifier': '1HsvTYs1jFGe1c8U1PnNZ9aB8jkAW7KU0',
+          'medium_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1HsvTYs1jFGe1c8U1PnNZ9aB8jkAW7KU0',
+          'name': 'Island (William Bradford)',
+          'priority': 6,
+          'searchq': 'island',
+          'size': 5000000,
+          'small_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1HsvTYs1jFGe1c8U1PnNZ9aB8jkAW7KU0',
+          'source': 'example_drive_1',
+          'source_external_link': 'https://drive.google.com/open?id=1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
+          'source_id': 0,
+          'source_name': 'Example Drive 1',
+          'source_type': 'Google Drive',
+          'source_verbose': 'Example Drive 1 but verbose',
+        }),
+        dict({
+          'card_type': 'CARD',
+          'date': '1st January, 2023',
+          'download_link': 'https://drive.google.com/uc?id=1-dcs0FEE05MTGiYbKqs9HnRdhXkgtIJG&export=download',
+          'dpi': 600,
+          'extension': 'png',
+          'identifier': '1-dcs0FEE05MTGiYbKqs9HnRdhXkgtIJG',
+          'medium_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1-dcs0FEE05MTGiYbKqs9HnRdhXkgtIJG',
+          'name': 'Mountain',
+          'priority': 7,
+          'searchq': 'mountain',
+          'size': 5000000,
+          'small_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1-dcs0FEE05MTGiYbKqs9HnRdhXkgtIJG',
+          'source': 'example_drive_1',
+          'source_external_link': 'https://drive.google.com/open?id=1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
+          'source_id': 0,
+          'source_name': 'Example Drive 1',
+          'source_type': 'Google Drive',
+          'source_verbose': 'Example Drive 1 but verbose',
+        }),
+        dict({
+          'card_type': 'CARDBACK',
+          'date': '1st January, 2023',
+          'download_link': 'https://drive.google.com/uc?id=1JtXL6Ca9nQkvhwZZRR9ZuKA9_DzsFf1V&export=download',
+          'dpi': 300,
+          'extension': 'png',
+          'identifier': '1JtXL6Ca9nQkvhwZZRR9ZuKA9_DzsFf1V',
+          'medium_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1JtXL6Ca9nQkvhwZZRR9ZuKA9_DzsFf1V',
+          'name': 'Simple Cube',
+          'priority': 17,
+          'searchq': 'simple cube',
+          'size': 2000000,
+          'small_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1JtXL6Ca9nQkvhwZZRR9ZuKA9_DzsFf1V',
+          'source': 'example_drive_1',
+          'source_external_link': 'https://drive.google.com/open?id=1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
+          'source_id': 0,
+          'source_name': 'Example Drive 1',
+          'source_type': 'Google Drive',
+          'source_verbose': 'Example Drive 1 but verbose',
+        }),
+        dict({
+          'card_type': 'CARDBACK',
+          'date': '1st January, 2023',
+          'download_link': 'https://drive.google.com/uc?id=1oigI6wz0zA--pNMuExKTs40kBNH6VRP_&export=download',
+          'dpi': 300,
+          'extension': 'png',
+          'identifier': '1oigI6wz0zA--pNMuExKTs40kBNH6VRP_',
+          'medium_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1oigI6wz0zA--pNMuExKTs40kBNH6VRP_',
+          'name': 'Simple Lotus',
+          'priority': 7,
+          'searchq': 'simple lotus',
+          'size': 2000000,
+          'small_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1oigI6wz0zA--pNMuExKTs40kBNH6VRP_',
+          'source': 'example_drive_1',
+          'source_external_link': 'https://drive.google.com/open?id=1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
+          'source_id': 0,
+          'source_name': 'Example Drive 1',
+          'source_type': 'Google Drive',
+          'source_verbose': 'Example Drive 1 but verbose',
+        }),
+      ]),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestNewCardsPage.test_get_full_second_page
+  dict({
+    'json': dict({
+      'cards': list([
+        dict({
+          'card_type': 'CARD',
+          'date': '1st January, 2023',
+          'download_link': 'https://drive.google.com/uc?id=1991MWCur9NdAFi-tQQD5YbQj2oqV_WRy&export=download',
+          'dpi': 600,
+          'extension': 'png',
+          'identifier': '1991MWCur9NdAFi-tQQD5YbQj2oqV_WRy',
+          'medium_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1991MWCur9NdAFi-tQQD5YbQj2oqV_WRy',
+          'name': 'Huntmaster of the Fells',
+          'priority': 2,
+          'searchq': 'huntmaster of fells',
+          'size': 5000000,
+          'small_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1991MWCur9NdAFi-tQQD5YbQj2oqV_WRy',
+          'source': 'example_drive_1',
+          'source_external_link': 'https://drive.google.com/open?id=1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
+          'source_id': 0,
+          'source_name': 'Example Drive 1',
+          'source_type': 'Google Drive',
+          'source_verbose': 'Example Drive 1 but verbose',
+        }),
+        dict({
+          'card_type': 'CARD',
+          'date': '1st January, 2023',
+          'download_link': 'https://drive.google.com/uc?id=1lv8WC1Xf1qxA7VHSc8jOtT5up6FwaBPH&export=download',
+          'dpi': 600,
+          'extension': 'png',
+          'identifier': '1lv8WC1Xf1qxA7VHSc8jOtT5up6FwaBPH',
+          'medium_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1lv8WC1Xf1qxA7VHSc8jOtT5up6FwaBPH',
+          'name': 'Ravager of the Fells',
+          'priority': 2,
+          'searchq': 'ravager of fells',
+          'size': 5000000,
+          'small_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1lv8WC1Xf1qxA7VHSc8jOtT5up6FwaBPH',
+          'source': 'example_drive_1',
+          'source_external_link': 'https://drive.google.com/open?id=1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
+          'source_id': 0,
+          'source_name': 'Example Drive 1',
+          'source_type': 'Google Drive',
+          'source_verbose': 'Example Drive 1 but verbose',
+        }),
+        dict({
+          'card_type': 'CARD',
+          'date': '1st January, 2023',
+          'download_link': 'https://drive.google.com/uc?id=1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1&export=download',
+          'dpi': 600,
+          'extension': 'png',
+          'identifier': '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
+          'medium_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
+          'name': 'Past in Flames',
+          'priority': 2,
+          'searchq': 'past in flames',
+          'size': 5000000,
+          'small_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
+          'source': 'example_drive_1',
+          'source_external_link': 'https://drive.google.com/open?id=1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
+          'source_id': 0,
+          'source_name': 'Example Drive 1',
+          'source_type': 'Google Drive',
+          'source_verbose': 'Example Drive 1 but verbose',
+        }),
+        dict({
+          'card_type': 'CARD',
+          'date': '1st January, 2023',
+          'download_link': 'https://drive.google.com/uc?id=17fopRCNRge72U8Hac8pApHZtEalx5kHy&export=download',
+          'dpi': 600,
+          'extension': 'png',
+          'identifier': '17fopRCNRge72U8Hac8pApHZtEalx5kHy',
+          'medium_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w800-h800&id=17fopRCNRge72U8Hac8pApHZtEalx5kHy',
+          'name': 'Delver of Secrets',
+          'priority': 2,
+          'searchq': 'delver of secrets',
+          'size': 5000000,
+          'small_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w400-h400&id=17fopRCNRge72U8Hac8pApHZtEalx5kHy',
+          'source': 'example_drive_1',
+          'source_external_link': 'https://drive.google.com/open?id=1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
+          'source_id': 0,
+          'source_name': 'Example Drive 1',
+          'source_type': 'Google Drive',
+          'source_verbose': 'Example Drive 1 but verbose',
+        }),
+        dict({
+          'card_type': 'CARD',
+          'date': '1st January, 2023',
+          'download_link': 'https://drive.google.com/uc?id=1mO73GTYlieP0kiZEkF58pJSrZTmC9lNh&export=download',
+          'dpi': 600,
+          'extension': 'png',
+          'identifier': '1mO73GTYlieP0kiZEkF58pJSrZTmC9lNh',
+          'medium_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1mO73GTYlieP0kiZEkF58pJSrZTmC9lNh',
+          'name': 'Insectile Aberration',
+          'priority': 2,
+          'searchq': 'insectile aberration',
+          'size': 5000000,
+          'small_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1mO73GTYlieP0kiZEkF58pJSrZTmC9lNh',
+          'source': 'example_drive_1',
+          'source_external_link': 'https://drive.google.com/open?id=1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
+          'source_id': 0,
+          'source_name': 'Example Drive 1',
+          'source_type': 'Google Drive',
+          'source_verbose': 'Example Drive 1 but verbose',
+        }),
+        dict({
+          'card_type': 'TOKEN',
+          'date': '1st January, 2023',
+          'download_link': 'https://drive.google.com/uc?id=1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA&export=download',
+          'dpi': 600,
+          'extension': 'png',
+          'identifier': '1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA',
+          'medium_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA',
+          'name': 'Goblin',
+          'priority': 2,
+          'searchq': 'goblin',
+          'size': 5000000,
+          'small_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA',
+          'source': 'example_drive_1',
+          'source_external_link': 'https://drive.google.com/open?id=1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
+          'source_id': 0,
+          'source_name': 'Example Drive 1',
+          'source_type': 'Google Drive',
+          'source_verbose': 'Example Drive 1 but verbose',
+        }),
+      ]),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestNewCardsPage.test_get_partial_first_page
+  dict({
+    'json': dict({
+      'cards': list([
+        dict({
+          'card_type': 'CARD',
+          'date': '1st January, 2023',
+          'download_link': 'https://drive.google.com/uc?id=1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU&export=download',
+          'dpi': 400,
+          'extension': 'png',
+          'identifier': '1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
+          'medium_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
+          'name': 'Past in Flames',
+          'priority': 2,
+          'searchq': 'past in flames',
+          'size': 4000000,
+          'small_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
+          'source': 'example_drive_2',
+          'source_external_link': None,
+          'source_id': 1,
+          'source_name': 'Example Drive 2',
+          'source_type': 'Google Drive',
+          'source_verbose': 'Example Drive 2 but verbose',
+        }),
+      ]),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestNewCardsPage.test_no_data_in_date_range
+  dict({
+    'json': dict({
+      'cards': list([
+      ]),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestNewCardsPage.test_post_request
+  dict({
+    'content': b'Expected GET request.',
+    'status_code': 400,
+  })
+# ---
+# name: TestNewCardsPage.test_response_to_malformed_json_body[invalid source]
+  dict({
+    'content': b'Invalid source key garbage specified.',
+    'status_code': 400,
+  })
+# ---
+# name: TestNewCardsPage.test_response_to_malformed_json_body[negative page]
+  dict({
+    'content': b'Invalid page -1 specified - must be between 1 and 2 for source example_drive_1.',
+    'status_code': 400,
+  })
+# ---
+# name: TestNewCardsPage.test_response_to_malformed_json_body[no page field]
+  dict({
+    'content': b'Page not specified.',
+    'status_code': 400,
+  })
+# ---
+# name: TestNewCardsPage.test_response_to_malformed_json_body[no params]
+  dict({
+    'content': b'Source not specified.',
+    'status_code': 400,
+  })
+# ---
+# name: TestNewCardsPage.test_response_to_malformed_json_body[no source field]
+  dict({
+    'content': b'Source not specified.',
+    'status_code': 400,
+  })
+# ---
+# name: TestNewCardsPage.test_response_to_malformed_json_body[non-number page]
+  dict({
+    'content': b'Invalid page specified.',
+    'status_code': 400,
+  })
+# ---
+# name: TestNewCardsPage.test_response_to_malformed_json_body[page out of range for source]
+  dict({
+    'content': b'Invalid page 10 specified - must be between 1 and 2 for source example_drive_1.',
+    'status_code': 400,
+  })
+# ---
+# name: TestNewCardsPage.test_response_to_malformed_json_body[zero page]
+  dict({
+    'content': b'Invalid page 0 specified - must be between 1 and 2 for source example_drive_1.',
+    'status_code': 400,
+  })
+# ---
 # name: TestPostCards.test_get_multiple_cards
   dict({
     'json': dict({
@@ -349,6 +916,7 @@
           'size': 5000000,
           'small_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w400-h400&id=17fopRCNRge72U8Hac8pApHZtEalx5kHy',
           'source': 'example_drive_1',
+          'source_external_link': 'https://drive.google.com/open?id=1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
           'source_id': 0,
           'source_name': 'Example Drive 1',
           'source_type': 'Google Drive',
@@ -368,6 +936,7 @@
           'size': 5000000,
           'small_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA',
           'source': 'example_drive_1',
+          'source_external_link': 'https://drive.google.com/open?id=1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
           'source_id': 0,
           'source_name': 'Example Drive 1',
           'source_type': 'Google Drive',
@@ -396,6 +965,7 @@
           'size': 5000000,
           'small_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA',
           'source': 'example_drive_1',
+          'source_external_link': 'https://drive.google.com/open?id=1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
           'source_id': 0,
           'source_name': 'Example Drive 1',
           'source_type': 'Google Drive',
@@ -424,6 +994,7 @@
           'size': 5000000,
           'small_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA',
           'source': 'example_drive_1',
+          'source_external_link': 'https://drive.google.com/open?id=1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
           'source_id': 0,
           'source_name': 'Example Drive 1',
           'source_type': 'Google Drive',

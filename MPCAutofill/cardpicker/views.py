@@ -1,7 +1,6 @@
 import datetime as dt
 import itertools
 import json
-import time
 from collections import defaultdict
 from random import sample
 from typing import Any, Callable, Optional, TypeVar, Union, cast
@@ -30,6 +29,7 @@ from cardpicker.utils.sanitisation import to_searchable
 from cardpicker.utils.search_functions import (
     SearchExceptions,
     build_context,
+    get_new_cards_paginator,
     parse_json_body_as_search_data,
     ping_elasticsearch,
     query_es_card,
@@ -532,7 +532,6 @@ def get_import_sites(request: HttpRequest) -> HttpResponse:
     Return a list of import sites.
     """
 
-    time.sleep(4)
     import_sites = [{"name": x.__name__, "url": x().get_base_url()} for x in ImportSites]
     return JsonResponse({"import_sites": import_sites})
 
@@ -623,13 +622,59 @@ def get_contributions(request: HttpRequest) -> HttpResponse:
 
 @csrf_exempt
 @NewErrorWrappers.to_json
+def get_new_cards_first_pages(request: HttpRequest) -> HttpResponse:
+    if request.method == "GET":
+        response_body: dict[str, dict[str, Any]] = {}
+        for source in Source.objects.all():
+            paginator = get_new_cards_paginator(source=source)
+            if paginator.count > 0:
+                response_body[source.key] = {
+                    "source": source.to_dict(),
+                    "hits": paginator.count,
+                    "pages": paginator.num_pages,
+                    "cards": [card.to_dict() for card in paginator.get_page(1).object_list],
+                }
+        return JsonResponse({"results": response_body})
+    else:
+        return HttpResponseBadRequest("Expected GET request.")
+
+
+@csrf_exempt
+@NewErrorWrappers.to_json
+def get_new_cards_page(request: HttpRequest) -> HttpResponse:
+    if request.method == "GET":
+        source_key = request.GET.get("source")
+        if not source_key:
+            return HttpResponseBadRequest("Source not specified.")
+        source_q = Source.objects.filter(key=source_key)
+
+        if source_q.count() == 0:
+            return HttpResponseBadRequest(f"Invalid source key {source_key} specified.")
+        paginator = get_new_cards_paginator(source=source_q[0])
+
+        page = request.GET.get("page")
+        if page is None:
+            return HttpResponseBadRequest("Page not specified.")
+        try:
+            page_int = int(page)
+            if not (paginator.num_pages >= page_int > 0):
+                return HttpResponseBadRequest(
+                    f"Invalid page {page_int} specified - must be between 1 and {paginator.num_pages} for source {source_key}."
+                )
+            return JsonResponse({"cards": [card.to_dict() for card in paginator.page(page).object_list]})
+        except ValueError:
+            return HttpResponseBadRequest("Invalid page specified.")
+    else:
+        return HttpResponseBadRequest("Expected GET request.")
+
+
+@csrf_exempt
+@NewErrorWrappers.to_json
 def get_info(request: HttpRequest) -> HttpResponse:
     """
     Return a stack of metadata about the server for the frontend to display.
     It's expected that this route will be called once when the server is connected.
     """
-
-    time.sleep(1)
 
     campaign, tiers = get_patreon_campaign_details()
     members = get_patrons(campaign["id"], tiers) if campaign is not None and tiers is not None else None

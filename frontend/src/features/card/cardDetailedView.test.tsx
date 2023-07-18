@@ -7,6 +7,7 @@ import {
   expectCardGridSlotState,
   renderWithProviders,
 } from "@/common/test-utils";
+import { LayoutWithoutProvider } from "@/features/ui/layout";
 import {
   cardDocumentsOneResult,
   defaultHandlers,
@@ -24,23 +25,29 @@ test("the html structure of a CardDetailedView", async () => {
     searchResultsOneResult,
     ...defaultHandlers
   );
-  renderWithProviders(<App />, {
-    preloadedState: {
-      backend: localBackend,
-      project: {
-        members: [
-          {
-            front: {
-              query: { query: "my search query", card_type: Card },
-              selectedImage: cardDocument1.identifier,
+  renderWithProviders(
+    <LayoutWithoutProvider>
+      <App />
+    </LayoutWithoutProvider>,
+    {
+      preloadedState: {
+        backend: localBackend,
+        project: {
+          members: [
+            {
+              front: {
+                query: { query: "my search query", card_type: Card },
+                selectedImage: cardDocument1.identifier,
+                selected: false,
+              },
+              back: null,
             },
-            back: null,
-          },
-        ],
-        cardback: null,
+          ],
+          cardback: null,
+        },
       },
-    },
-  });
+    }
+  );
   await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 1);
 
   screen.getByAltText(cardDocument1.name).click();

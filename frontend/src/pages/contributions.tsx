@@ -3,25 +3,22 @@ import React from "react";
 import Alert from "react-bootstrap/Alert";
 
 import { useGetBackendInfoQuery } from "@/app/api";
-import {
-  MakePlayingCards,
-  MakePlayingCardsURL,
-  ProjectName,
-} from "@/common/constants";
+import { MakePlayingCards, MakePlayingCardsURL } from "@/common/constants";
 import { useAppSelector } from "@/common/types";
-import { selectBackendURL } from "@/features/backend/backendSlice";
+import {
+  selectBackendURL,
+  useProjectName,
+} from "@/features/backend/backendSlice";
 import {
   ContributionsPerSource,
   ContributionsSummary,
 } from "@/features/contributions/contributions";
 import Footer from "@/features/ui/footer";
-import Layout from "@/features/ui/layout";
+import { ProjectContainer } from "@/features/ui/layout";
 import { NoBackendDefault } from "@/features/ui/noBackendDefault";
 
 function ContributionGuidelines() {
-  const backendInfoQuery = useGetBackendInfoQuery();
-
-  const name = backendInfoQuery.data?.name ?? ProjectName;
+  const projectName = useProjectName();
 
   return (
     <Alert variant="secondary">
@@ -56,7 +53,7 @@ function ContributionGuidelines() {
         </li>
         <li>
           Prepend the names of any folders you don&apos;t want to be indexed by{" "}
-          {name} with <code>!</code>
+          {projectName} with <code>!</code>
           &mdash; e.g. <code>!Misc and Art</code>
         </li>
         <li>
@@ -93,15 +90,14 @@ function ContributionsOrDefault() {
 }
 
 export default function Contributions() {
+  const projectName = useProjectName();
   return (
-    <>
+    <ProjectContainer>
       <Head>
-        <title>{ProjectName} Contributions</title>
+        <title>{projectName} Contributions</title>
         <meta name="description" content="TODO" /> {/* TODO */}
       </Head>
-      <Layout>
-        <ContributionsOrDefault />
-      </Layout>
-    </>
+      <ContributionsOrDefault />
+    </ProjectContainer>
   );
 }

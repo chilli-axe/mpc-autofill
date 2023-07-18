@@ -1,6 +1,49 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`the html structure of CSV importer 1`] = `
+.c3 {
+  -webkit-flex: 1;
+  -ms-flex: 1;
+  flex: 1;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-flex-direction: column;
+  -ms-flex-direction: column;
+  flex-direction: column;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  padding: 20px;
+  border-width: 2px;
+  border-radius: 2px;
+  border-color: #eeeeee;
+  border-style: dashed;
+  color: #bdbdbd;
+  outline: none;
+  -webkit-transition: border 0.24s ease-in-out;
+  transition: border 0.24s ease-in-out;
+  cursor: pointer;
+}
+
+.c0 {
+  border-style: solid;
+  border-color: #333333;
+  border-width: 1px;
+}
+
+.c1 {
+  width: 20%;
+  text-align: center;
+}
+
+.c2 {
+  width: 20%;
+  text-align: center;
+}
+
 <div
   class="modal-dialog"
   data-testid="import-csv"
@@ -34,31 +77,31 @@ exports[`the html structure of CSV importer 1`] = `
          match the following format:
       </p>
       <table
-        class="sc-ade8747-0 jYCvKn table table-bordered"
+        class="c0 table table-bordered"
       >
         <thead>
           <th
-            class="sc-ade8747-1 bJyblo"
+            class="c1"
           >
             Quantity
           </th>
           <th
-            class="sc-ade8747-1 bJyblo"
+            class="c1"
           >
             Front
           </th>
           <th
-            class="sc-ade8747-1 bJyblo"
+            class="c1"
           >
             Front ID
           </th>
           <th
-            class="sc-ade8747-1 bJyblo"
+            class="c1"
           >
             Back
           </th>
           <th
-            class="sc-ade8747-1 bJyblo"
+            class="c1"
           >
             Back ID
           </th>
@@ -66,53 +109,53 @@ exports[`the html structure of CSV importer 1`] = `
         <tbody>
           <tr>
             <td
-              class="sc-ade8747-2 XmaAX"
+              class="c2"
             />
             <td
-              class="sc-ade8747-2 XmaAX"
+              class="c2"
             />
             <td
-              class="sc-ade8747-2 XmaAX"
+              class="c2"
             />
             <td
-              class="sc-ade8747-2 XmaAX"
+              class="c2"
             />
             <td
-              class="sc-ade8747-2 XmaAX"
-            />
-          </tr>
-          <tr>
-            <td
-              class="sc-ade8747-2 XmaAX"
-            />
-            <td
-              class="sc-ade8747-2 XmaAX"
-            />
-            <td
-              class="sc-ade8747-2 XmaAX"
-            />
-            <td
-              class="sc-ade8747-2 XmaAX"
-            />
-            <td
-              class="sc-ade8747-2 XmaAX"
+              class="c2"
             />
           </tr>
           <tr>
             <td
-              class="sc-ade8747-2 XmaAX"
+              class="c2"
             />
             <td
-              class="sc-ade8747-2 XmaAX"
+              class="c2"
             />
             <td
-              class="sc-ade8747-2 XmaAX"
+              class="c2"
             />
             <td
-              class="sc-ade8747-2 XmaAX"
+              class="c2"
             />
             <td
-              class="sc-ade8747-2 XmaAX"
+              class="c2"
+            />
+          </tr>
+          <tr>
+            <td
+              class="c2"
+            />
+            <td
+              class="c2"
+            />
+            <td
+              class="c2"
+            />
+            <td
+              class="c2"
+            />
+            <td
+              class="c2"
             />
           </tr>
         </tbody>
@@ -155,31 +198,31 @@ exports[`the html structure of CSV importer 1`] = `
       </ul>
       For example:
       <table
-        class="sc-ade8747-0 jYCvKn table table-bordered"
+        class="c0 table table-bordered"
       >
         <thead>
           <th
-            class="sc-ade8747-1 bJyblo"
+            class="c1"
           >
             Quantity
           </th>
           <th
-            class="sc-ade8747-1 bJyblo"
+            class="c1"
           >
             Front
           </th>
           <th
-            class="sc-ade8747-1 bJyblo"
+            class="c1"
           >
             Front ID
           </th>
           <th
-            class="sc-ade8747-1 bJyblo"
+            class="c1"
           >
             Back
           </th>
           <th
-            class="sc-ade8747-1 bJyblo"
+            class="c1"
           >
             Back ID
           </th>
@@ -187,60 +230,60 @@ exports[`the html structure of CSV importer 1`] = `
         <tbody>
           <tr>
             <td
-              class="sc-ade8747-2 XmaAX"
+              class="c2"
             >
               <code>
                 2
               </code>
             </td>
             <td
-              class="sc-ade8747-2 XmaAX"
+              class="c2"
             >
               <code>
                 island
               </code>
             </td>
             <td
-              class="sc-ade8747-2 XmaAX"
+              class="c2"
             >
               <code>
                 1HsvTYs1...
               </code>
             </td>
             <td
-              class="sc-ade8747-2 XmaAX"
+              class="c2"
             >
               <code>
                 forest
               </code>
             </td>
             <td
-              class="sc-ade8747-2 XmaAX"
+              class="c2"
             />
           </tr>
           <tr>
             <td
-              class="sc-ade8747-2 XmaAX"
+              class="c2"
             >
               <code>
                 3
               </code>
             </td>
             <td
-              class="sc-ade8747-2 XmaAX"
+              class="c2"
             >
               <code>
                 t:goblin
               </code>
             </td>
             <td
-              class="sc-ade8747-2 XmaAX"
+              class="c2"
             />
             <td
-              class="sc-ade8747-2 XmaAX"
+              class="c2"
             />
             <td
-              class="sc-ade8747-2 XmaAX"
+              class="c2"
             >
               <code>
                 1JtXL6Ca...
@@ -255,7 +298,7 @@ exports[`the html structure of CSV importer 1`] = `
       >
         <div
           aria-label="import-csv"
-          class="sc-d1c6a457-0 iJszHV"
+          class="c3"
           role="presentation"
           tabindex="0"
         >
