@@ -39,16 +39,6 @@ import About from "@/pages/about";
 import { LayoutWithoutProvider } from "../ui/layout";
 
 describe("google analytics toast", () => {
-  /**
-   * These tests assume that the toast appears on any page and therefore render the simplest page possible
-   * Note: Rendering pages in tests like this is generally not a good idea because the page has
-   * a built-in Redux provider.
-   * a) These tests must render the entire page to properly check whether Google Analytics works or not,
-   *    as otherwise we'd be assuming that the Google Analytics component is rendered in pages
-   * b) These tests don't read/write to Redux state at all, so we don't need to be concerned about state
-   *    persisting between tests (technically it does, but it doesn't matter here)
-   */
-
   beforeEach(() => {
     Cookies.remove(GoogleAnalyticsConsentKey);
     // @ts-ignore
@@ -60,8 +50,14 @@ describe("google analytics toast", () => {
     delete window.gtag;
   });
 
+  const AboutWithToasts = () => (
+    <LayoutWithoutProvider>
+      <About />
+    </LayoutWithoutProvider>
+  );
+
   test("opting into google analytics", async () => {
-    renderWithProviders(<About />);
+    renderWithProviders(<AboutWithToasts />);
     await waitFor(() => {
       expect(screen.getByText("Cookie Usage")).not.toBeNull();
     });
@@ -70,12 +66,12 @@ describe("google analytics toast", () => {
     await waitForElementToBeRemoved(() => screen.getByText("Cookie Usage"));
 
     // upon reloading the page, google analytics should now be turned on
-    renderWithProviders(<About />);
+    renderWithProviders(<AboutWithToasts />);
     expect(eval("gtag")).toBeDefined();
   });
 
   test("opting out of google analytics", async () => {
-    renderWithProviders(<About />);
+    renderWithProviders(<AboutWithToasts />);
     await waitFor(() => {
       expect(screen.getByText("Cookie Usage")).not.toBeNull();
     });
@@ -84,12 +80,12 @@ describe("google analytics toast", () => {
     await waitForElementToBeRemoved(() => screen.getByText("Cookie Usage"));
 
     // upon reloading the page, google analytics should now be turned off
-    renderWithProviders(<About />);
+    renderWithProviders(<AboutWithToasts />);
     expect(() => eval("gtag")).toThrow();
   });
 
   test("google analytics consent popup does not appear once consent is specified", async () => {
-    renderWithProviders(<About />);
+    renderWithProviders(<AboutWithToasts />);
     await waitFor(() =>
       expect(screen.getByText("Cookie Usage")).not.toBeNull()
     );

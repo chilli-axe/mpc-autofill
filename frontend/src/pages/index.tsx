@@ -5,13 +5,12 @@ import Button from "react-bootstrap/Button";
 import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
 
-import {
-  MakePlayingCards,
-  MakePlayingCardsURL,
-  ProjectName,
-} from "@/common/constants";
+import { MakePlayingCards, MakePlayingCardsURL } from "@/common/constants";
 import { useAppSelector } from "@/common/types";
-import { selectBackendURL } from "@/features/backend/backendSlice";
+import {
+  selectBackendURL,
+  useProjectName,
+} from "@/features/backend/backendSlice";
 import { DynamicLogo } from "@/features/ui/dynamicLogo";
 import Footer from "@/features/ui/footer";
 import { ProjectContainer } from "@/features/ui/layout";
@@ -74,10 +73,11 @@ function ProjectOverview() {
 }
 
 export default function Index() {
+  const projectName = useProjectName();
   return (
     <ProjectContainer>
       <Head>
-        <title>{ProjectName}</title>
+        <title>{projectName}</title>
         <meta name="description" content="TODO" /> {/* TODO */}
       </Head>
       <br />

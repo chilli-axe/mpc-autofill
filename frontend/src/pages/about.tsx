@@ -4,6 +4,7 @@ import styled from "styled-components";
 import { useGetBackendInfoQuery } from "@/app/api";
 import { ProjectName } from "@/common/constants";
 import { MakePlayingCards, MakePlayingCardsURL } from "@/common/constants";
+import { useProjectName } from "@/features/backend/backendSlice";
 import Footer from "@/features/ui/footer";
 import { ProjectContainer } from "@/features/ui/layout";
 
@@ -29,11 +30,12 @@ function BackendDescription() {
 }
 
 export default function About() {
+  const projectName = useProjectName();
   return (
     <ProjectContainer>
       <Head>
-        <title>About {ProjectName}</title>
-        <meta name="description" content={`About ${ProjectName}`} />
+        <title>About {projectName}</title>
+        <meta name="description" content={`About ${projectName}`} />
       </Head>
       <h2>About {ProjectName}</h2>
       <p>

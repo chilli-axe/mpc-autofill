@@ -1,8 +1,10 @@
 import Head from "next/head";
 
-import { ProjectName } from "@/common/constants";
 import { useAppSelector } from "@/common/types";
-import { selectBackendURL } from "@/features/backend/backendSlice";
+import {
+  selectBackendURL,
+  useProjectName,
+} from "@/features/backend/backendSlice";
 import { NewCards } from "@/features/new/new";
 import Footer from "@/features/ui/footer";
 import { ProjectContainer } from "@/features/ui/layout";
@@ -22,10 +24,11 @@ function NewOrDefault() {
 }
 
 export default function New() {
+  const projectName = useProjectName();
   return (
     <ProjectContainer>
       <Head>
-        <title>{ProjectName} New Cards</title>
+        <title>{projectName} New Cards</title>
         <meta name="description" content="TODO" /> {/* TODO */}
       </Head>
       <NewOrDefault />

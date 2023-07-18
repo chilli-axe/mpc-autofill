@@ -105,8 +105,10 @@ export function ProjectContainer({
 }
 
 export function LayoutWithoutProvider({ children }: PropsWithChildren) {
+  const consent = getGoogleAnalyticsConsent();
   return (
     <>
+      {consent === true && <GoogleAnalytics trackPageViews />}
       <Toasts />
       <Modals />
       <BackendSetter />
@@ -117,10 +119,8 @@ export function LayoutWithoutProvider({ children }: PropsWithChildren) {
 }
 
 export default function Layout({ children }: PropsWithChildren) {
-  const consent = getGoogleAnalyticsConsent();
   return (
     <>
-      {consent === true && <GoogleAnalytics trackPageViews />}
       <SSRProvider>
         <OverscrollProvider store={store}>
           <LayoutWithoutProvider>{children}</LayoutWithoutProvider>
