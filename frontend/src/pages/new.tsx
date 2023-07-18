@@ -5,7 +5,7 @@ import { useAppSelector } from "@/common/types";
 import { selectBackendURL } from "@/features/backend/backendSlice";
 import { NewCards } from "@/features/new/new";
 import Footer from "@/features/ui/footer";
-import Layout from "@/features/ui/layout";
+import { ProjectContainer } from "@/features/ui/layout";
 import { NoBackendDefault } from "@/features/ui/noBackendDefault";
 
 function NewOrDefault() {
@@ -22,16 +22,13 @@ function NewOrDefault() {
 }
 
 export default function New() {
-  // TODO: looks like we're hitting /info every time we switch to a different page
   return (
-    <>
+    <ProjectContainer>
       <Head>
         <title>{ProjectName} New Cards</title>
         <meta name="description" content="TODO" /> {/* TODO */}
       </Head>
-      <Layout>
-        <NewOrDefault />
-      </Layout>
-    </>
+      <NewOrDefault />
+    </ProjectContainer>
   );
 }

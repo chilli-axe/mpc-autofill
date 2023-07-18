@@ -87,42 +87,43 @@ const MaxWidthContainer = styled(Container)`
   max-width: ${ContentMaxWidth}px;
 `;
 
-interface LayoutProps {
+interface ProjectContainerProps {
   gutter?: number;
 }
 
-export function LayoutWithoutProvider({
+export function ProjectContainer({
   gutter = 2,
   children,
-}: PropsWithChildren<LayoutProps>) {
+}: PropsWithChildren<ProjectContainerProps>) {
+  return (
+    <ContentContainer fluid className={`g-${gutter}`}>
+      <MaxWidthContainer className={`g-${gutter}`}>
+        {children}
+      </MaxWidthContainer>
+    </ContentContainer>
+  );
+}
+
+export function LayoutWithoutProvider({ children }: PropsWithChildren) {
   return (
     <>
       <Toasts />
       <Modals />
       <BackendSetter />
       <ProjectNavbar />
-      <ContentContainer fluid className={`g-${gutter}`}>
-        <MaxWidthContainer className={`g-${gutter}`}>
-          {children}
-        </MaxWidthContainer>
-      </ContentContainer>
+      {children}
     </>
   );
 }
 
-export default function Layout({
-  gutter = 2,
-  children,
-}: PropsWithChildren<LayoutProps>) {
+export default function Layout({ children }: PropsWithChildren) {
   const consent = getGoogleAnalyticsConsent();
   return (
     <>
       {consent === true && <GoogleAnalytics trackPageViews />}
       <SSRProvider>
         <OverscrollProvider store={store}>
-          <LayoutWithoutProvider gutter={gutter}>
-            {children}
-          </LayoutWithoutProvider>
+          <LayoutWithoutProvider>{children}</LayoutWithoutProvider>
         </OverscrollProvider>
       </SSRProvider>
     </>

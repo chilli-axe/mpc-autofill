@@ -15,7 +15,7 @@ import {
   ContributionsSummary,
 } from "@/features/contributions/contributions";
 import Footer from "@/features/ui/footer";
-import Layout from "@/features/ui/layout";
+import { ProjectContainer } from "@/features/ui/layout";
 import { NoBackendDefault } from "@/features/ui/noBackendDefault";
 
 function ContributionGuidelines() {
@@ -94,14 +94,12 @@ function ContributionsOrDefault() {
 
 export default function Contributions() {
   return (
-    <>
+    <ProjectContainer>
       <Head>
         <title>{ProjectName} Contributions</title>
         <meta name="description" content="TODO" /> {/* TODO */}
       </Head>
-      <Layout>
-        <ContributionsOrDefault />
-      </Layout>
-    </>
+      <ContributionsOrDefault />
+    </ProjectContainer>
   );
 }
