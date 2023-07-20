@@ -20,6 +20,7 @@ from django.shortcuts import redirect, render
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 
+from cardpicker.constants import CARDS_PAGE_SIZE
 from cardpicker.forms import InputCSV, InputLink, InputText, InputXML
 from cardpicker.models import Card, CardTypes, DFCPair, Source, summarise_contributions
 from cardpicker.mpcorder import Faces, MPCOrder, ReqTypes
@@ -481,8 +482,10 @@ def post_cards(request: HttpRequest) -> HttpResponse:
         except ValidationError as e:
             return HttpResponseBadRequest(f"Malformed JSON body:\n\n{e.message}")
 
-        # TODO: pagination, e.g. only process up to 100 at a time
-        results = {x.identifier: x.to_dict() for x in Card.objects.filter(identifier__in=json_body["card_identifiers"])}
+        results = {
+            x.identifier: x.to_dict()
+            for x in Card.objects.filter(identifier__in=json_body["card_identifiers"][0:CARDS_PAGE_SIZE])
+        }
         return JsonResponse({"results": results})
     else:
         return HttpResponseBadRequest("Expected POST request.")

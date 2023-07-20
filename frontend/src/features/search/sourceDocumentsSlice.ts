@@ -15,7 +15,7 @@ const initialState = {
 
 const typePrefix = "sourceDocuments/fetchSourceDocuments";
 
-export const fetchSourceDocuments = createAppAsyncThunk(
+const fetchSourceDocuments = createAppAsyncThunk(
   typePrefix,
   async (arg, { getState }) => {
     const state = getState();

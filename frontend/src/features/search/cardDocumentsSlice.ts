@@ -6,7 +6,9 @@ import { createSlice } from "@reduxjs/toolkit";
 
 import { APIGetCards } from "@/app/api";
 import { AppDispatch } from "@/app/store";
+import { CardEndpointPageSize } from "@/common/constants";
 import { CardDocumentsState, createAppAsyncThunk } from "@/common/types";
+import { CardDocuments } from "@/common/types";
 import { fetchCardbacksAndReportError } from "@/features/card/cardbackSlice";
 import { selectUniqueCardIdentifiers } from "@/features/project/projectSlice";
 import { fetchSearchResultsAndReportError } from "@/features/search/searchResultsSlice";
@@ -14,12 +16,9 @@ import { setError } from "@/features/toasts/toastsSlice";
 
 const typePrefix = "cardDocuments/fetchCardDocuments";
 
-// TODO: we should write something to read a page of card IDs from searchResults (100 at a time?) and query the backend for their full data
-export const fetchCardDocuments = createAppAsyncThunk(
+const fetchCardDocuments = createAppAsyncThunk(
   typePrefix,
   async (arg, { dispatch, getState }) => {
-    // TODO: paginate and introduce the concept of a search strategy
-    // e.g. retrieve the first image for each selected image first, then fill out search results from top to bottom
     /**
      * This function queries card documents (entire database rows) from the backend. It only queries cards which have
      * not yet been queried.
@@ -34,15 +33,41 @@ export const fetchCardDocuments = createAppAsyncThunk(
     const identifiersWithKnownData = new Set(
       Object.keys(state.cardDocuments.cardDocuments)
     );
-    const identifiersToSearch = new Set(
-      Array.from(allIdentifiers).filter(
-        (item) => !identifiersWithKnownData.has(item)
+    const identifiersToSearch = Array.from(
+      new Set(
+        Array.from(allIdentifiers).filter(
+          (item) => !identifiersWithKnownData.has(item)
+        )
       )
     );
 
+    const pages = Array.from(
+      Array(Math.ceil(identifiersToSearch.length / CardEndpointPageSize)).keys()
+    );
     const backendURL = state.backend.url;
-    if (identifiersToSearch.size > 0 && backendURL != null) {
-      return APIGetCards(backendURL, identifiersToSearch);
+    if (identifiersToSearch.length > 0 && backendURL != null) {
+      // this block of code looks a bit arcane.
+      // we're dynamically constructing a promise chain according to the number of requests we need to make
+      // to retrieve all database rows corresponding to `identifiersToSearch`.
+      // e.g. say that `identifiersToSearch` contains 1500 identifiers.
+      // two requests will be issued, the first for 1000 cards, and the second for 500 cards
+      // (with the second request only commencing once the first has finished).
+      return pages.reduce(function (
+        promiseChain: Promise<CardDocuments>,
+        page: number
+      ) {
+        return promiseChain.then(async function (previousValue: CardDocuments) {
+          const cards = await APIGetCards(
+            backendURL,
+            identifiersToSearch.slice(
+              page * CardEndpointPageSize,
+              (page + 1) * CardEndpointPageSize
+            )
+          );
+          return { ...previousValue, ...cards };
+        });
+      },
+      Promise.resolve({}));
     }
   }
 );

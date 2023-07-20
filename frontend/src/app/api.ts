@@ -220,7 +220,7 @@ export function useGetNewCardsPageQuery([sourceKey, page]: [string, number]) {
 
 export async function APIGetCards(
   backendURL: string,
-  identifiersToSearch: Set<string>
+  identifiersToSearch: Array<string>
 ): Promise<CardDocuments> {
   const rawResponse = await fetch(formatURL(backendURL, "/2/cards/"), {
     method: "POST",

@@ -7,12 +7,11 @@ import { createSlice } from "@reduxjs/toolkit";
 import { APIGetCardbacks } from "@/app/api";
 import { AppDispatch } from "@/app/store";
 import { CardbacksState, createAppAsyncThunk } from "@/common/types";
-import { fetchCardDocuments } from "@/features/search/cardDocumentsSlice";
 import { setError } from "@/features/toasts/toastsSlice";
 
 const typePrefix = "cardbacks/fetchCardbacks";
 
-export const fetchCardbacks = createAppAsyncThunk(
+const fetchCardbacks = createAppAsyncThunk(
   typePrefix,
   async (arg, { getState }) => {
     const state = getState();
@@ -48,7 +47,7 @@ export const cardbackSlice = createSlice({
           state.status = "failed";
         }
       })
-      .addCase(fetchCardDocuments.rejected, (state, action) => {
+      .addCase(fetchCardbacks.rejected, (state, action) => {
         state.status = "failed";
         state.error = {
           name: action.error.name ?? null,

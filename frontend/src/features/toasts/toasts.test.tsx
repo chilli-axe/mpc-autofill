@@ -186,7 +186,6 @@ describe("error reporting toasts", () => {
   });
 
   test("/2/sources", async () => {
-    // TODO: this test passes when run in a group but fails on its own.
     server.use(
       cardDocumentsThreeResults,
       cardbacksTwoResults,

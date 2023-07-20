@@ -16,7 +16,7 @@ import { setError } from "@/features/toasts/toastsSlice";
 
 const typePrefix = "searchResults/fetchCards";
 
-export const fetchSearchResults = createAppAsyncThunk(
+const fetchSearchResults = createAppAsyncThunk(
   typePrefix,
   async (arg, { getState, rejectWithValue }) => {
     const state = getState();
