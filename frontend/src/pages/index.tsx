@@ -5,7 +5,11 @@ import Button from "react-bootstrap/Button";
 import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
 
-import { MakePlayingCards, MakePlayingCardsURL } from "@/common/constants";
+import {
+  MakePlayingCards,
+  MakePlayingCardsURL,
+  ProjectName,
+} from "@/common/constants";
 import { useAppSelector } from "@/common/types";
 import {
   selectBackendURL,
@@ -43,7 +47,16 @@ function ProjectOverview() {
       <Row>
         <Col lg={6} md={6} sm={12} xs={12}>
           <h1>Self-Service Card Printing for Tabletop Gaming</h1>
-          <p>Body text to accompany heading 1</p>
+          <ul>
+            <li>
+              {ProjectName} is the best way for individuals to have playtest
+              cards professionally printed for casual tabletop gaming.
+            </li>
+            <li>
+              It&apos;s fully open-source software (licensed under GPL-3) and
+              all of its features will always be free.
+            </li>
+          </ul>
         </Col>
         <Col lg={6} md={6} sm={12} xs={12}></Col>
       </Row>
@@ -52,7 +65,20 @@ function ProjectOverview() {
         <Col lg={6} md={6} sm={12} xs={12}></Col>
         <Col lg={6} md={6} sm={12} xs={12}>
           <h1>Community-Driven Card Image Databases</h1>
-          <p>Body text to accompany header 2</p>
+          <ul>
+            <li>
+              Choose your favourite renders and artworks made by your community
+              to bling out your project!
+            </li>
+            <li>
+              Use our rich project editor to fine-tune exactly how you&apos;d
+              like it to turn out.
+            </li>
+            <li>
+              Browse the cards that creators in your community have added to the
+              site recently.
+            </li>
+          </ul>
         </Col>
       </Row>
       <br />
@@ -64,7 +90,16 @@ function ProjectOverview() {
               {MakePlayingCards}
             </a>
           </h1>
-          <p>Body text to accompany heading 3</p>
+          <ul>
+            <li>
+              Our desktop tool will download all the images required for your
+              order and automatically place your order with{" "}
+              <a href={MakePlayingCardsURL} target="_blank">
+                {MakePlayingCards}
+              </a>
+              , who will mail the cards right to your door!
+            </li>
+          </ul>
         </Col>
         <Col lg={6} md={6} sm={12} xs={12}></Col>
       </Row>
