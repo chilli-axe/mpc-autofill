@@ -12,7 +12,10 @@ import { Back, Front } from "@/common/constants";
 import { useAppDispatch, useAppSelector } from "@/common/types";
 import { selectBackendURL } from "@/features/backend/backendSlice";
 import { MemoizedCardSlot } from "@/features/card/cardSlot";
-import { selectProjectMembers } from "@/features/project/projectSlice";
+import {
+  selectProjectMembers,
+  selectProjectSize,
+} from "@/features/project/projectSlice";
 import { fetchCardDocumentsAndReportError } from "@/features/search/cardDocumentsSlice";
 import { clearSearchResults } from "@/features/search/searchResultsSlice";
 import { Spinner } from "@/features/ui/spinner";
@@ -58,6 +61,7 @@ export function CardGrid() {
       state.cardDocuments.status == "loading" ||
       state.searchResults.status === "loading"
   );
+  const projectSize = useAppSelector(selectProjectSize);
 
   const backendURL = useAppSelector(selectBackendURL);
 
@@ -127,7 +131,7 @@ export function CardGrid() {
       >
         {cardSlotsBacks}
       </Row>
-      <Modal show={fetchingCardData} centered>
+      <Modal show={fetchingCardData && projectSize > 0} centered>
         <Modal.Header>
           <Modal.Title
             style={{ textAlign: "center", userSelect: "none" }}
