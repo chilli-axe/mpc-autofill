@@ -519,11 +519,12 @@ def get_cardbacks(request: HttpRequest) -> HttpResponse:
     Return a list of cardbacks.
     """
 
-    # TODO: think about the best way to order these results (after ordering by priority)
-    #       this is causing cardbacks to have slot numbers out of order in the faceted grid picker
-    #       maybe this should be a POST endpoint that expects to be given search settings
-    #       we may also want to include controls on whether filters are applied to search settings or not?
-    cardbacks = [x.identifier for x in Card.objects.filter(card_type=CardTypes.CARDBACK).order_by("-priority", "name")]
+    # TODO: update this to be a POST endpoint that accepts search settings, where search settings can conditionally
+    #       be applied to cardbacks. if they're not applied, return all cardbacks with the below code.
+    cardbacks = [
+        x.identifier
+        for x in Card.objects.filter(card_type=CardTypes.CARDBACK).order_by("-priority", "source__name", "name")
+    ]
     return JsonResponse({"cardbacks": cardbacks})
 
 
