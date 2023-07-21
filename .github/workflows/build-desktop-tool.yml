@@ -24,10 +24,10 @@ jobs:
             TARGET: linux
             OUT_FILE_NAME: autofill
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: browser-actions/setup-chrome@latest
       - name: Set up Python 3.9
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: 3.9
       - name: Install dependencies
@@ -37,7 +37,7 @@ jobs:
       - name: Build with pyinstaller for ${{ matrix.TARGET }}
         run: pyinstaller autofill.spec
       - name: Upload artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           path: ./desktop-tool/dist/${{ matrix.OUT_FILE_NAME }}
           name: autofill-${{ matrix.TARGET }}

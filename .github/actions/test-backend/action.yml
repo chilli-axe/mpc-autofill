@@ -9,7 +9,7 @@ runs:
   steps:
     - uses: browser-actions/setup-chrome@latest
     - name: Set up Python 3.9
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: 3.9
     - name: Install Python dependencies
@@ -30,6 +30,8 @@ runs:
       shell: bash
     - name: Install npm
       uses: actions/setup-node@v3
+      with:
+        node-version: 18.x
     - name: Compile frontend
       working-directory: MPCAutofill
       run: |
