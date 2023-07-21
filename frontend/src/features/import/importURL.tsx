@@ -5,8 +5,6 @@
  * to process the URL when the user hits Submit.
  */
 
-// TODO: make the modal unable to be dismissed while the URL is loading
-
 import React, { useCallback, useState } from "react";
 import Button from "react-bootstrap/Button";
 import Dropdown from "react-bootstrap/Dropdown";
@@ -48,6 +46,7 @@ export function ImportURL() {
     if (trimmedURL.length > 0) {
       setLoading(true);
       const query = await triggerFn(URLModalValue);
+      // TODO: handle errors here
       const processedLines = processStringAsMultipleLines(
         query.data ?? "",
         dfcPairsQuery.data ?? {}
@@ -73,7 +72,7 @@ export function ImportURL() {
         URL
       </Dropdown.Item>
       <Modal
-        show={showURLModal}
+        show={loading || showURLModal}
         onHide={handleCloseURLModal}
         onExited={() => setURLModalValue("")}
       >
@@ -127,8 +126,9 @@ export function ImportURL() {
               await handleSubmitURLModal();
             }}
             disabled={loading || importSitesQuery.isFetching}
+            style={{ width: 5 + "em" }}
           >
-            Submit
+            {loading ? <Spinner size={1.5} /> : "Loading"}
           </Button>
         </Modal.Footer>
       </Modal>
