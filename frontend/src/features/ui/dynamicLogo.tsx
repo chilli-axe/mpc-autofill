@@ -44,6 +44,7 @@ const DynamicLogoLabel = styled.p`
   font-size: min(4em, 10vw);
   text-shadow: 0 4px 15px #000000;
   white-space: nowrap;
+  user-select: none;
 `;
 
 const DynamicLogoArrowKeyframes = keyframes`
@@ -257,7 +258,7 @@ export function DynamicLogo() {
                         }
                         hidden={false}
                         small={true}
-                        showDetailedViewOnClick={true}
+                        showDetailedViewOnClick={backendURL != null}
                       />
                     </MemoizedCardProportionWrapper>
                   </WrapperElement>
