@@ -15,52 +15,7 @@ import {
   SlotProjectMembers,
 } from "@/common/types";
 
-const initialState: Project = {
-  members: [
-    // TODO: clear this initial state. it's just set up like this for easy testing.
-    {
-      front: {
-        query: { query: "island", card_type: Card },
-        selectedImage: undefined,
-        selected: false,
-      },
-      back: null,
-    },
-    {
-      front: {
-        query: { query: "island", card_type: Card },
-        selectedImage: undefined,
-        selected: false,
-      },
-      back: null,
-    },
-    {
-      front: {
-        query: { query: "grim monolith", card_type: Card },
-        selectedImage: undefined,
-        selected: false,
-      },
-      back: null,
-    },
-    {
-      front: {
-        query: { query: "past in flames", card_type: Card },
-        selectedImage: undefined,
-        selected: false,
-      },
-      back: null,
-    },
-    {
-      front: {
-        query: { query: "necropotence", card_type: Card },
-        selectedImage: undefined,
-        selected: false,
-      },
-      back: null,
-    },
-  ],
-  cardback: null,
-};
+const initialState: Project = { members: [], cardback: null };
 
 export const projectSlice = createSlice({
   name: "project",
