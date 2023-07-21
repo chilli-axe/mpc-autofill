@@ -38,6 +38,10 @@ exports[`the html structure of the dynamic logo, backend configured 1`] = `
   font-size: min(4em,10vw);
   text-shadow: 0 4px 15px #000000;
   white-space: nowrap;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
 .c2 {
@@ -233,7 +237,7 @@ exports[`the html structure of the dynamic logo, no backend configured 1`] = `
 }
 
 .c7:hover {
-  cursor: pointer;
+  cursor: auto;
 }
 
 .c5 {
@@ -264,6 +268,10 @@ exports[`the html structure of the dynamic logo, no backend configured 1`] = `
   font-size: min(4em,10vw);
   text-shadow: 0 4px 15px #000000;
   white-space: nowrap;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
 .c2 {
