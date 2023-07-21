@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import React, { useState } from "react";
 import Button from "react-bootstrap/Button";
 import Container from "react-bootstrap/Container";
@@ -52,6 +53,7 @@ export default function ProjectNavbar() {
   const handleShowSupportBackendModal = () => setShowSupportBackendModal(true);
 
   const projectName = useProjectName();
+  const router = useRouter();
 
   return (
     <DisableSSR>
@@ -78,16 +80,28 @@ export default function ProjectNavbar() {
           <BoldCollapse id="basic-navbar-nav">
             <Nav className="me-auto">
               {backendURL != null && (
-                <Nav.Link as={Link} href="/editor">
+                <Nav.Link
+                  as={Link}
+                  href="/editor"
+                  active={router.route === "/editor"}
+                >
                   Editor
                 </Nav.Link>
               )}
               {backendURL != null && (
                 <>
-                  <Nav.Link as={Link} href="/new">
+                  <Nav.Link
+                    as={Link}
+                    href="/new"
+                    active={router.route === "/new"}
+                  >
                     What&apos;s New?
                   </Nav.Link>
-                  <Nav.Link as={Link} href="/contributions">
+                  <Nav.Link
+                    as={Link}
+                    href="/contributions"
+                    active={router.route === "/contributions"}
+                  >
                     Contributions
                   </Nav.Link>
                 </>
