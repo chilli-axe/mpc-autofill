@@ -474,7 +474,9 @@ def post_cards(request: HttpRequest) -> HttpResponse:
                 json_body,
                 schema={
                     "type": "object",
-                    "properties": {"card_identifiers": {"type": "array", "items": {"type": "string"}}},
+                    "properties": {
+                        "card_identifiers": {"type": "array", "items": {"type": "string"}, "maxItems": CARDS_PAGE_SIZE}
+                    },
                     "required": ["card_identifiers"],
                     "additionalProperties": False,
                 },
@@ -482,10 +484,7 @@ def post_cards(request: HttpRequest) -> HttpResponse:
         except ValidationError as e:
             return HttpResponseBadRequest(f"Malformed JSON body:\n\n{e.message}")
 
-        results = {
-            x.identifier: x.to_dict()
-            for x in Card.objects.filter(identifier__in=json_body["card_identifiers"][0:CARDS_PAGE_SIZE])
-        }
+        results = {x.identifier: x.to_dict() for x in Card.objects.filter(identifier__in=json_body["card_identifiers"])}
         return JsonResponse({"results": results})
     else:
         return HttpResponseBadRequest("Expected POST request.")

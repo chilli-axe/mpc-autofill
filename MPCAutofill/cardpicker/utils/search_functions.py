@@ -20,7 +20,11 @@ from django.db.models import QuerySet
 from django.http import HttpRequest
 from django.utils import timezone
 
-from cardpicker.constants import NEW_CARDS_DAYS, NEW_CARDS_PAGE_SIZE
+from cardpicker.constants import (
+    NEW_CARDS_DAYS,
+    NEW_CARDS_PAGE_SIZE,
+    SEARCH_RESULTS_PAGE_SIZE,
+)
 from cardpicker.documents import CardSearch
 from cardpicker.models import Card, CardTypes, Source
 from cardpicker.utils.sanitisation import to_searchable
@@ -334,6 +338,7 @@ def parse_json_body_as_search_data(json_body: dict[str, Any]) -> tuple[SearchSet
                         "$id": "search_queries.json",
                         "type": "array",
                         "items": [{"$ref": "search_query.json"}],
+                        "maxItems": SEARCH_RESULTS_PAGE_SIZE,
                     }
                 ),
             )

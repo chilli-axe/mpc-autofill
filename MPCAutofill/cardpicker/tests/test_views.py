@@ -263,6 +263,39 @@ class TestPostSearchResults:
             Cards.PAST_IN_FLAMES_2.value.identifier
         ]
 
+    def test_page_equal_to_max_size(self, client, monkeypatch, snapshot):
+        monkeypatch.setattr("cardpicker.utils.search_functions.SEARCH_RESULTS_PAGE_SIZE", 2)
+        response = client.post(
+            reverse(views.post_search_results),
+            {
+                "searchSettings": self.BASE_SEARCH_SETTINGS,
+                "queries": [
+                    {"query": Cards.BRAINSTORM.value.name, "card_type": "CARD"},
+                    {"query": Cards.ISLAND.value.name, "card_type": "CARD"},
+                ],
+            },
+            content_type="application/json",
+        )
+        snapshot_response(response, snapshot)
+        assert response.status_code == 200
+
+    def test_page_larger_than_max_size(self, client, monkeypatch, snapshot):
+        monkeypatch.setattr("cardpicker.utils.search_functions.SEARCH_RESULTS_PAGE_SIZE", 2)
+        response = client.post(
+            reverse(views.post_search_results),
+            {
+                "searchSettings": self.BASE_SEARCH_SETTINGS,
+                "queries": [
+                    {"query": Cards.BRAINSTORM.value.name, "card_type": "CARD"},
+                    {"query": Cards.ISLAND.value.name, "card_type": "CARD"},
+                    {"query": Cards.SIMPLE_CUBE.value.name, "card_type": "CARDBACK"},
+                ],
+            },
+            content_type="application/json",
+        )
+        snapshot_response(response, snapshot)
+        assert response.status_code == 400
+
     @pytest.mark.parametrize(
         "json_body",
         [
@@ -332,6 +365,38 @@ class TestPostCards:
             content_type="application/json",
         )
         snapshot_response(response, snapshot)
+
+    def test_page_equal_to_max_size(self, client, monkeypatch, snapshot):
+        monkeypatch.setattr("cardpicker.views.CARDS_PAGE_SIZE", 3)
+        response = client.post(
+            reverse(views.post_cards),
+            {
+                "card_identifiers": [
+                    Cards.GOBLIN.value.identifier,
+                    Cards.DELVER_OF_SECRETS.value.identifier,
+                    Cards.HUNTMASTER_OF_THE_FELLS.value.identifier,
+                ]
+            },
+            content_type="application/json",
+        )
+        snapshot_response(response, snapshot)
+        assert response.status_code == 200
+
+    def test_page_larger_than_max_size(self, client, monkeypatch, snapshot):
+        monkeypatch.setattr("cardpicker.views.CARDS_PAGE_SIZE", 2)
+        response = client.post(
+            reverse(views.post_cards),
+            {
+                "card_identifiers": [
+                    Cards.GOBLIN.value.identifier,
+                    Cards.DELVER_OF_SECRETS.value.identifier,
+                    Cards.HUNTMASTER_OF_THE_FELLS.value.identifier,
+                ]
+            },
+            content_type="application/json",
+        )
+        snapshot_response(response, snapshot)
+        assert response.status_code == 400
 
     @pytest.mark.parametrize(
         "json_body",

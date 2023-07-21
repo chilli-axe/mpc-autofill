@@ -41,9 +41,6 @@ const fetchCardDocuments = createAppAsyncThunk(
       )
     );
 
-    const pages = Array.from(
-      Array(Math.ceil(identifiersToSearch.length / CardEndpointPageSize)).keys()
-    );
     const backendURL = state.backend.url;
     if (identifiersToSearch.length > 0 && backendURL != null) {
       // this block of code looks a bit arcane.
@@ -52,10 +49,11 @@ const fetchCardDocuments = createAppAsyncThunk(
       // e.g. say that `identifiersToSearch` contains 1500 identifiers.
       // two requests will be issued, the first for 1000 cards, and the second for 500 cards
       // (with the second request only commencing once the first has finished).
-      return pages.reduce(function (
-        promiseChain: Promise<CardDocuments>,
-        page: number
-      ) {
+      return Array.from(
+        Array(
+          Math.ceil(identifiersToSearch.length / CardEndpointPageSize)
+        ).keys()
+      ).reduce(function (promiseChain: Promise<CardDocuments>, page: number) {
         return promiseChain.then(async function (previousValue: CardDocuments) {
           const cards = await APIGetCards(
             backendURL,
@@ -66,8 +64,7 @@ const fetchCardDocuments = createAppAsyncThunk(
           );
           return { ...previousValue, ...cards };
         });
-      },
-      Promise.resolve({}));
+      }, Promise.resolve({}));
     }
   }
 );

@@ -74,4 +74,5 @@ export const CardstockFoilCompatibility: { [cardstock in Cardstock]: boolean } =
 export const GoogleDriveImageAPIURL =
   "https://script.google.com/macros/s/AKfycbw8laScKBfxda2Wb0g63gkYDBdy8NWNxINoC4xDOwnCQ3JMFdruam1MdmNmN4wI5k4/exec";
 
+export const SearchResultsEndpointPageSize = 300;
 export const CardEndpointPageSize = 1000;

@@ -6,9 +6,10 @@ import { createSlice } from "@reduxjs/toolkit";
 
 import { APISearch } from "@/app/api";
 import { AppDispatch } from "@/app/store";
+import { SearchResultsEndpointPageSize } from "@/common/constants";
 import {
-  APIError,
   createAppAsyncThunk,
+  SearchResults,
   SearchResultsState,
 } from "@/common/types";
 import { selectQueriesWithoutSearchResults } from "@/features/project/projectSlice";
@@ -25,7 +26,23 @@ const fetchSearchResults = createAppAsyncThunk(
 
     const backendURL = state.backend.url;
     if (queriesToSearch.length > 0 && backendURL != null) {
-      return await APISearch(backendURL, state.searchSettings, queriesToSearch); //.catch(error => rejectWithValue(error));
+      return Array.from(
+        Array(
+          Math.ceil(queriesToSearch.length / SearchResultsEndpointPageSize)
+        ).keys()
+      ).reduce(function (promiseChain: Promise<SearchResults>, page: number) {
+        return promiseChain.then(async function (previousValue: SearchResults) {
+          const cards = await APISearch(
+            backendURL,
+            state.searchSettings,
+            queriesToSearch.slice(
+              page * SearchResultsEndpointPageSize,
+              (page + 1) * SearchResultsEndpointPageSize
+            )
+          );
+          return { ...previousValue, ...cards };
+        });
+      }, Promise.resolve({}));
     } else {
       return null;
     }
