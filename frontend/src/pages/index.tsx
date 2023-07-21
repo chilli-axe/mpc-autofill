@@ -1,6 +1,7 @@
 import Head from "next/head";
 import Link from "next/link";
 import React from "react";
+import Alert from "react-bootstrap/Alert";
 import Button from "react-bootstrap/Button";
 import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
@@ -116,6 +117,16 @@ export default function Index() {
         <meta name="description" content="TODO" /> {/* TODO */}
       </Head>
       <br />
+      <Alert variant="info">
+        Howdy! Thanks for checking out the {ProjectName} public beta &mdash;
+        I&apos;m stoked to be finally getting this into people&apos;s hands and
+        I hope it brings you joy ♥️ Please create an issue on{" "}
+        <a href="https://github.com/chilli-axe/mpc-autofill/issues">
+          the GitHub repo
+        </a>{" "}
+        if you encounter any issues or weird behaviour &mdash; I&apos;ll be
+        addressing feedback, fixing bugs, and continuing to polish the app.
+      </Alert>
       <DynamicLogo />
       <br />
       <JumpIntoEditorButton />
