@@ -14,6 +14,7 @@ import { GoogleAnalyticsConsentKey } from "@/common/constants";
 import {
   configureDefaultBackend,
   getErrorToast,
+  importText,
   openImportTextModal,
   openImportURLModal,
   renderWithProviders,
@@ -168,7 +169,9 @@ describe("error reporting toasts", () => {
     renderWithProviders(<AppWithToasts />, {
       preloadedState: { toasts: { errors: {} } },
     });
-    await renderAppAndAssertErrorToast("2/searchResults");
+    await renderAppAndAssertErrorToast("2/searchResults", async () => {
+      await importText("mountain");
+    });
   });
 
   test("/2/cards", async () => {

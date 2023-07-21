@@ -32,7 +32,7 @@ const fetchSearchResults = createAppAsyncThunk(
         ).keys()
       ).reduce(function (promiseChain: Promise<SearchResults>, page: number) {
         return promiseChain.then(async function (previousValue: SearchResults) {
-          const cards = await APISearch(
+          const searchResults = await APISearch(
             backendURL,
             state.searchSettings,
             queriesToSearch.slice(
@@ -40,7 +40,7 @@ const fetchSearchResults = createAppAsyncThunk(
               (page + 1) * SearchResultsEndpointPageSize
             )
           );
-          return { ...previousValue, ...cards };
+          return { ...previousValue, ...searchResults };
         });
       }, Promise.resolve({}));
     } else {
