@@ -29,8 +29,8 @@ export function SupportDeveloperModal({
       <Modal.Body>
         <h4>A bit about me</h4>
         <p>
-          Hey there! Thanks for checking out {ProjectName}. I&apos;m Nick, the
-          creator and primary developer of this project.
+          Hey there! Thanks for checking out {ProjectName}. I&apos;m Nick /
+          chilli_axe, the creator and primary developer of this project.
         </p>
         <p>
           I&apos;m responsible for this website, the code that image repository
