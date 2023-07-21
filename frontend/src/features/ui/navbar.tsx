@@ -60,6 +60,7 @@ export default function ProjectNavbar() {
         fixed="top"
         variant="dark"
         bg="primary"
+        collapseOnSelect
       >
         <MaxWidthContainer className="justify-content-center align-middle">
           <Navbar.Brand href="/" as={Link}>
