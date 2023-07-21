@@ -4,8 +4,9 @@ import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
 import styled, { keyframes, StyledComponent } from "styled-components";
 
-import { useGetSampleCardsQuery } from "@/app/api";
-import { CardDocument, useAppSelector } from "@/common/types";
+import { api, useGetSampleCardsQuery } from "@/app/api";
+import { QueryTags } from "@/common/constants";
+import { CardDocument, useAppDispatch, useAppSelector } from "@/common/types";
 import {
   selectBackendURL,
   useProjectName,
@@ -183,6 +184,10 @@ const SampleCardDocument: CardDocument = {
 
 export function DynamicLogo() {
   const backendURL = useAppSelector(selectBackendURL);
+  const dispatch = useAppDispatch();
+  useEffect(() => {
+    dispatch(api.util.invalidateTags([QueryTags.SampleCards]));
+  }, []);
   const sampleCardsQuery = useGetSampleCardsQuery();
   const projectName = useProjectName();
 

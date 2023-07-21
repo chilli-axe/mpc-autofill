@@ -12,13 +12,7 @@ import {
 import { RootState } from "@/app/store";
 import { GoogleDriveImageAPIURL, QueryTags } from "@/common/constants";
 import { getCSRFHeader } from "@/common/cookies";
-import { processQuery } from "@/common/processing";
-import { formatURL } from "@/common/processing";
-import {
-  NewCardsFirstPages,
-  NewCardsPage,
-  useAppSelector,
-} from "@/common/types";
+import { formatURL, processQuery } from "@/common/processing";
 import {
   BackendInfo,
   CardDocument,
@@ -26,10 +20,13 @@ import {
   Contributions,
   DFCPairs,
   ImportSite,
+  NewCardsFirstPages,
+  NewCardsPage,
   SearchQuery,
   SearchResults,
   SearchSettings,
   SourceDocuments,
+  useAppSelector,
 } from "@/common/types";
 import { selectBackendURL } from "@/features/backend/backendSlice";
 
@@ -48,7 +45,11 @@ const dynamicBaseQuery: BaseQueryFn<
 export const api = createApi({
   reducerPath: "api",
   baseQuery: dynamicBaseQuery,
-  tagTypes: [QueryTags.BackendSpecific, QueryTags.SearchResults],
+  tagTypes: [
+    QueryTags.BackendSpecific,
+    QueryTags.SearchResults,
+    QueryTags.SampleCards,
+  ],
   endpoints: (builder) => ({
     getImportSites: builder.query<Array<ImportSite>, void>({
       query: () => ({ url: `2/importSites/`, method: "GET" }),
@@ -87,7 +88,7 @@ export const api = createApi({
       void
     >({
       query: () => ({ url: `2/sampleCards/`, method: "GET" }),
-      providesTags: [QueryTags.BackendSpecific],
+      providesTags: [QueryTags.BackendSpecific, QueryTags.SampleCards],
       transformResponse: (
         response: { cards: { [cardType: string]: Array<CardDocument> } },
         meta,
