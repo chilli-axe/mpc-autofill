@@ -232,7 +232,7 @@ export async function APIGetCards(
     headers: getCSRFHeader(),
   });
   return rawResponse.json().then((content) => {
-    if (content.results != null) {
+    if (rawResponse.status === 200 && content.results != null) {
       return content.results;
     }
     throw { name: content.name, message: content.message };
@@ -248,7 +248,7 @@ export async function APIGetCardbacks(
     headers: getCSRFHeader(),
   });
   return rawResponse.json().then((content) => {
-    if (content.cardbacks != null) {
+    if (rawResponse.status === 200 && content.cardbacks != null) {
       return content.cardbacks;
     }
     throw { name: content.name, message: content.message };
@@ -270,7 +270,7 @@ export async function APISearch(
     headers: getCSRFHeader(),
   });
   return rawResponse.json().then((content) => {
-    if (content.results != null) {
+    if (rawResponse.status === 200 && content.results != null) {
       return content.results;
     }
     throw { name: content.name, message: content.message };
@@ -286,7 +286,7 @@ export async function APIGetSources(
     headers: getCSRFHeader(),
   });
   return rawResponse.json().then((content) => {
-    if (content.results != null) {
+    if (rawResponse.status === 200 && content.results != null) {
       return content.results;
     }
     throw { name: content.name, message: content.message };
