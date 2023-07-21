@@ -208,10 +208,10 @@ export const projectSlice = createSlice({
         for (const [slot, projectMember] of state.members.entries()) {
           if (
             projectMember[action.payload.face] != null &&
-            projectMember[action.payload.face]!.query?.query ===
-              selectedMember.query.query &&
-            projectMember[action.payload.face]!.query?.card_type ===
-              selectedMember.query.card_type
+            projectMember[action.payload.face]?.query?.query ===
+              selectedMember.query?.query &&
+            projectMember[action.payload.face]?.query?.card_type ===
+              selectedMember.query?.card_type
           ) {
             projectMember[action.payload.face]!.selected =
               selectedMember.selected;

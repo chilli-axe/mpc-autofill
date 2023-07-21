@@ -1,3 +1,6 @@
+// TODO: add tests for double-click behaviour - both card fronts and backs
+//       (particularly test double-clicking cardbacks to select them all)
+
 import { screen, waitFor } from "@testing-library/react";
 
 import App from "@/app/app";
