@@ -1,5 +1,7 @@
 import Head from "next/head";
+import React from "react";
 
+import { ProjectName } from "@/common/constants";
 import {
   useBackendConfigured,
   useProjectName,
@@ -28,7 +30,10 @@ export default function New() {
     <ProjectContainer>
       <Head>
         <title>{projectName} New Cards</title>
-        <meta name="description" content="TODO" /> {/* TODO */}
+        <meta
+          name="description"
+          content={`Check out the new cards added to ${ProjectName} over the last two weeks.`}
+        />
       </Head>
       <NewOrDefault />
     </ProjectContainer>

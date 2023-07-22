@@ -2,7 +2,11 @@ import Head from "next/head";
 import React from "react";
 import Alert from "react-bootstrap/Alert";
 
-import { MakePlayingCards, MakePlayingCardsURL } from "@/common/constants";
+import {
+  MakePlayingCards,
+  MakePlayingCardsURL,
+  ProjectName,
+} from "@/common/constants";
 import {
   useBackendConfigured,
   useProjectName,
@@ -89,7 +93,10 @@ export default function Contributions() {
     <ProjectContainer>
       <Head>
         <title>{projectName} Contributions</title>
-        <meta name="description" content="TODO" /> {/* TODO */}
+        <meta
+          name="description"
+          content={`A summary of the image contributors connected to ${ProjectName}.`}
+        />
       </Head>
       <ContributionsOrDefault />
     </ProjectContainer>

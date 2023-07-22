@@ -49,8 +49,9 @@ function ProjectOverview() {
           <h1>Self-Service Card Printing for Tabletop Gaming</h1>
           <ul>
             <li>
-              {ProjectName} is the best way for individuals to have playtest
-              cards professionally printed for casual tabletop gaming.
+              {ProjectName} is the easiest way to print professional-quality
+              playtest cards for kitchen-table tabletop gaming with
+              MakePlayingCards (MPC).
             </li>
             <li>
               It&apos;s fully open-source software (licensed under GPL-3) and
@@ -113,7 +114,10 @@ export default function Index() {
     <ProjectContainer>
       <Head>
         <title>{projectName}</title>
-        <meta name="description" content="TODO" /> {/* TODO */}
+        <meta
+          name="description"
+          content="The easiest way to print professional-quality playtest cards for kitchen-table tabletop gaming with MakePlayingCards (MPC)."
+        />
       </Head>
       <br />
       <Alert variant="info">
