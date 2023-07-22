@@ -148,9 +148,11 @@ export function processLine(line: string, dfcPairs: DFCPairs): ProcessedLine {
     frontQuery?.query != null &&
     frontQuery.query in dfcPairs
   ) {
-    // attempt to match to DFC pair
-    // TODO: is it problematic to assume that all DFC pairs are the `Card` type?
-    backQuery = { query: dfcPairs[frontQuery.query], card_type: Card };
+    // match to the card's DFC pair. assume the back is the same card type as the front.
+    backQuery = {
+      query: dfcPairs[frontQuery.query],
+      card_type: frontQuery.card_type,
+    };
   }
 
   return [
