@@ -1,6 +1,7 @@
 import Head from "next/head";
 
 import App from "@/app/app";
+import { ProjectName } from "@/common/constants";
 import { useBackendConfigured } from "@/features/backend/backendSlice";
 import { ProjectContainer } from "@/features/ui/layout";
 import { NoBackendDefault } from "@/features/ui/noBackendDefault";
@@ -17,7 +18,10 @@ export default function Editor() {
       <Head>
         <title>Edit MPC Project</title>{" "}
         {/* TODO: set this to the project title */}
-        <meta name="description" content="Edit MPC Project" />
+        <meta
+          name="description"
+          content={`${ProjectName}&apos;'s rich project editor.`}
+        />
       </Head>
       <AppOrDefault />
     </ProjectContainer>
