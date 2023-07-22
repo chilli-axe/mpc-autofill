@@ -407,17 +407,32 @@ class TestPostCards:
         snapshot_response(response, snapshot)
         assert response.status_code == 400
 
+    def test_get_request(self, client, django_settings, snapshot):
+        response = client.get(reverse(views.post_cards))
+        snapshot_response(response, snapshot)
+        assert response.status_code == 400
+
 
 class TestGetSources:
     def test_get_multiple_sources(self, client, snapshot, all_sources):
         response = client.get(reverse(views.get_sources))
         snapshot_response(response, snapshot)
 
+    def test_post_request(self, client, django_settings, snapshot):
+        response = client.post(reverse(views.get_sources))
+        snapshot_response(response, snapshot)
+        assert response.status_code == 400
+
 
 class TestGetDFCPairs:
     def test_get_multiple_rows(self, client, snapshot, dfc_pairs):
         response = client.get(reverse(views.get_dfc_pairs))
         snapshot_response(response, snapshot)
+
+    def test_post_request(self, client, django_settings, snapshot):
+        response = client.post(reverse(views.get_dfc_pairs))
+        snapshot_response(response, snapshot)
+        assert response.status_code == 400
 
 
 class TestPostCardbacks:
@@ -522,6 +537,11 @@ class TestGetImportSites:
         response = client.get(reverse(views.get_import_sites))
         snapshot_response(response, snapshot)
 
+    def test_post_request(self, client, django_settings, snapshot):
+        response = client.post(reverse(views.get_import_sites))
+        snapshot_response(response, snapshot)
+        assert response.status_code == 400
+
 
 class TestPostImportSiteDecklist:
     @pytest.mark.parametrize("url", [x.value for x in Decks])
@@ -623,23 +643,33 @@ class TestGetSampleCards:
         assert len(json_body["cards"]["CARD"]) == 4
         assert len(json_body["cards"]["TOKEN"]) == 0
 
+    def test_post_request(self, client, django_settings, snapshot):
+        response = client.post(reverse(views.get_sample_cards))
+        snapshot_response(response, snapshot)
+        assert response.status_code == 400
+
 
 class TestGetContributions:
-    def test_get_multiple_rows(self, client, snapshot, all_sources, all_cards):
+    def test_get_multiple_rows(self, client, django_settings, snapshot, all_sources, all_cards):
         response = client.get(reverse(views.get_contributions))
         snapshot_response(response, snapshot)
 
-    def test_get_one_row(self, client, snapshot, example_drive_1, island, island_classical):
+    def test_get_one_row(self, client, snapshot, django_settings, example_drive_1, island, island_classical):
         response = client.get(reverse(views.get_contributions))
         snapshot_response(response, snapshot)
 
-    def test_get_source_with_no_cards(self, client, snapshot, all_sources):
+    def test_get_source_with_no_cards(self, client, django_settings, snapshot, all_sources):
         response = client.get(reverse(views.get_contributions))
         snapshot_response(response, snapshot)
 
-    def test_with_no_sources(self, client, snapshot, db):
+    def test_with_no_sources(self, client, django_settings, snapshot, db):
         response = client.get(reverse(views.get_contributions))
         snapshot_response(response, snapshot)
+
+    def test_post_request(self, client, django_settings, snapshot):
+        response = client.post(reverse(views.get_contributions))
+        snapshot_response(response, snapshot)
+        assert response.status_code == 400
 
 
 class TestGetInfo:
@@ -648,6 +678,10 @@ class TestGetInfo:
         pass
 
     # TODO: write tests
+    def test_post_request(self, client, django_settings, snapshot):
+        response = client.post(reverse(views.get_info))
+        snapshot_response(response, snapshot)
+        assert response.status_code == 400
 
 
 class TestGetSearchEngineHealth:
@@ -657,6 +691,10 @@ class TestGetSearchEngineHealth:
         assert response.json()["online"] is True
 
     # TODO: consider how to test elasticsearch being unhealthy
+    def test_post_request(self, client, django_settings, snapshot):
+        response = client.post(reverse(views.get_search_engine_health))
+        snapshot_response(response, snapshot)
+        assert response.status_code == 400
 
 
 class TestNewCardsFirstPages:

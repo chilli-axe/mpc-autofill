@@ -103,6 +103,12 @@
     'status_code': 200,
   })
 # ---
+# name: TestGetContributions.test_post_request
+  dict({
+    'content': b'Expected GET request.',
+    'status_code': 400,
+  })
+# ---
 # name: TestGetContributions.test_with_no_sources
   dict({
     'json': dict({
@@ -127,6 +133,12 @@
       }),
     }),
     'status_code': 200,
+  })
+# ---
+# name: TestGetDFCPairs.test_post_request
+  dict({
+    'content': b'Expected GET request.',
+    'status_code': 400,
   })
 # ---
 # name: TestGetImportSites.test_get_multiple_sites
@@ -180,6 +192,18 @@
       ]),
     }),
     'status_code': 200,
+  })
+# ---
+# name: TestGetImportSites.test_post_request
+  dict({
+    'content': b'Expected GET request.',
+    'status_code': 400,
+  })
+# ---
+# name: TestGetInfo.test_post_request
+  dict({
+    'content': b'Expected GET request.',
+    'status_code': 400,
   })
 # ---
 # name: TestGetSampleCards.test_get_five_sample_cards
@@ -290,12 +314,24 @@
     }),
   })
 # ---
+# name: TestGetSampleCards.test_post_request
+  dict({
+    'content': b'Expected GET request.',
+    'status_code': 400,
+  })
+# ---
 # name: TestGetSearchEngineHealth.test_elasticsearch_healthy
   dict({
     'json': dict({
       'online': True,
     }),
     'status_code': 200,
+  })
+# ---
+# name: TestGetSearchEngineHealth.test_post_request
+  dict({
+    'content': b'Expected GET request.',
+    'status_code': 400,
   })
 # ---
 # name: TestGetSources.test_get_multiple_sources
@@ -323,6 +359,12 @@
       }),
     }),
     'status_code': 200,
+  })
+# ---
+# name: TestGetSources.test_post_request
+  dict({
+    'content': b'Expected GET request.',
+    'status_code': 400,
   })
 # ---
 # name: TestNewCardsFirstPages.test_basic_case
@@ -1053,6 +1095,12 @@
       }),
     }),
     'status_code': 200,
+  })
+# ---
+# name: TestPostCards.test_get_request
+  dict({
+    'content': b'Expected POST request.',
+    'status_code': 400,
   })
 # ---
 # name: TestPostCards.test_get_single_card

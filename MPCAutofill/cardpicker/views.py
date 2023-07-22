@@ -443,52 +443,51 @@ def post_search_results(request: HttpRequest) -> HttpResponse:
     and it's assumed that `hits` starts from the first hit.
     """
 
-    if request.method == "POST":
-        json_body = json.loads(request.body)
-
-        try:
-            search_settings, queries = parse_json_body_as_search_data(json_body)
-        except ValidationError as e:
-            return HttpResponseBadRequest(f"The provided JSON body is invalid:\n\n{e.message}")
-
-        if not ping_elasticsearch():
-            return HttpResponseServerError("Search engine is offline.")
-
-        results: dict[str, dict[str, list[str]]] = defaultdict(dict)
-        for query in queries:
-            if results[query.query].get(query.card_type, None) is None:
-                hits = query.retrieve_card_identifiers(search_settings=search_settings)
-                results[query.query][query.card_type] = hits
-        return JsonResponse({"results": results})
-    else:
+    if request.method != "POST":
         return HttpResponseBadRequest("Expected POST request.")
+
+    json_body = json.loads(request.body)
+
+    try:
+        search_settings, queries = parse_json_body_as_search_data(json_body)
+    except ValidationError as e:
+        return HttpResponseBadRequest(f"The provided JSON body is invalid:\n\n{e.message}")
+
+    if not ping_elasticsearch():
+        return HttpResponseServerError("Search engine is offline.")
+
+    results: dict[str, dict[str, list[str]]] = defaultdict(dict)
+    for query in queries:
+        if results[query.query].get(query.card_type, None) is None:
+            hits = query.retrieve_card_identifiers(search_settings=search_settings)
+            results[query.query][query.card_type] = hits
+    return JsonResponse({"results": results})
 
 
 @csrf_exempt
 @NewErrorWrappers.to_json
 def post_cards(request: HttpRequest) -> HttpResponse:
-    if request.method == "POST":
-        json_body = json.loads(request.body)
-
-        try:
-            validate(
-                json_body,
-                schema={
-                    "type": "object",
-                    "properties": {
-                        "card_identifiers": {"type": "array", "items": {"type": "string"}, "maxItems": CARDS_PAGE_SIZE}
-                    },
-                    "required": ["card_identifiers"],
-                    "additionalProperties": False,
-                },
-            )
-        except ValidationError as e:
-            return HttpResponseBadRequest(f"Malformed JSON body:\n\n{e.message}")
-
-        results = {x.identifier: x.to_dict() for x in Card.objects.filter(identifier__in=json_body["card_identifiers"])}
-        return JsonResponse({"results": results})
-    else:
+    if request.method != "POST":
         return HttpResponseBadRequest("Expected POST request.")
+
+    json_body = json.loads(request.body)
+    try:
+        validate(
+            json_body,
+            schema={
+                "type": "object",
+                "properties": {
+                    "card_identifiers": {"type": "array", "items": {"type": "string"}, "maxItems": CARDS_PAGE_SIZE}
+                },
+                "required": ["card_identifiers"],
+                "additionalProperties": False,
+            },
+        )
+    except ValidationError as e:
+        return HttpResponseBadRequest(f"Malformed JSON body:\n\n{e.message}")
+
+    results = {x.identifier: x.to_dict() for x in Card.objects.filter(identifier__in=json_body["card_identifiers"])}
+    return JsonResponse({"results": results})
 
 
 @csrf_exempt
@@ -497,6 +496,9 @@ def get_sources(request: HttpRequest) -> HttpResponse:
     """
     Return a list of sources.
     """
+
+    if request.method != "GET":
+        return HttpResponseBadRequest("Expected GET request.")
 
     results = {x.pk: x.to_dict() for x in Source.objects.order_by("ordinal", "pk")}
     return JsonResponse({"results": results})
@@ -509,6 +511,9 @@ def get_dfc_pairs(request: HttpRequest) -> HttpResponse:
     Return a list of double-faced cards. The unedited names are returned and the frontend is expected to sanitise them.
     """
 
+    if request.method != "GET":
+        return HttpResponseBadRequest("Expected GET request.")
+
     dfc_pairs = dict((x.front, x.back) for x in DFCPair.objects.all())
     return JsonResponse({"dfc_pairs": dfc_pairs})
 
@@ -520,17 +525,17 @@ def post_cardbacks(request: HttpRequest) -> HttpResponse:
     Return a list of cardbacks, possibly filtered by the user's search settings.
     """
 
-    if request.method == "POST":
-        try:
-            json_body = json.loads(request.body)
-            search_settings = parse_json_body_as_search_settings(json_body)
-        except ValidationError as e:
-            return HttpResponseBadRequest(f"The provided JSON body is invalid:\n\n{e.message}")
-
-        cardbacks = search_settings.retrieve_cardback_identifiers()
-        return JsonResponse({"cardbacks": cardbacks})
-    else:
+    if request.method != "POST":
         return HttpResponseBadRequest("Expected POST request.")
+
+    try:
+        json_body = json.loads(request.body)
+        search_settings = parse_json_body_as_search_settings(json_body)
+    except ValidationError as e:
+        return HttpResponseBadRequest(f"The provided JSON body is invalid:\n\n{e.message}")
+
+    cardbacks = search_settings.retrieve_cardback_identifiers()
+    return JsonResponse({"cardbacks": cardbacks})
 
 
 @csrf_exempt
@@ -539,6 +544,9 @@ def get_import_sites(request: HttpRequest) -> HttpResponse:
     """
     Return a list of import sites.
     """
+
+    if request.method != "GET":
+        return HttpResponseBadRequest("Expected GET request.")
 
     import_sites = [{"name": x.__name__, "url": x().get_base_url()} for x in ImportSites]
     return JsonResponse({"import_sites": import_sites})
@@ -551,35 +559,34 @@ def post_import_site_decklist(request: HttpRequest) -> HttpResponse:
     Read the specified import site URL and process & return the associated decklist.
     """
 
-    if request.method == "POST":
-        json_body = json.loads(request.body)
-
-        try:
-            validate(
-                json_body,
-                schema={
-                    "type": "object",
-                    "properties": {"url": {"type": "string"}},
-                    "required": ["url"],
-                    "additionalProperties": False,
-                },
-            )
-        except ValidationError as e:
-            return HttpResponseBadRequest(f"Malformed JSON body:\n\n{e.message}")
-
-        url = json_body["url"]
-        if url is None:
-            return HttpResponseBadRequest("No decklist URL provided.")
-        for site in ImportSites:
-            if url.startswith(site.get_base_url()):
-                text = site.retrieve_card_list(url)
-                cleaned_text = "\n".join(
-                    [stripped_line for line in text.split("\n") if len(stripped_line := line.strip()) > 0]
-                )
-                return JsonResponse({"cards": cleaned_text})
-        return HttpResponseBadRequest("The specified decklist URL does not match any known import sites.")
-    else:
+    if request.method != "POST":
         return HttpResponseBadRequest("Expected POST request.")
+
+    json_body = json.loads(request.body)
+    try:
+        validate(
+            json_body,
+            schema={
+                "type": "object",
+                "properties": {"url": {"type": "string"}},
+                "required": ["url"],
+                "additionalProperties": False,
+            },
+        )
+    except ValidationError as e:
+        return HttpResponseBadRequest(f"Malformed JSON body:\n\n{e.message}")
+
+    url = json_body["url"]
+    if url is None:
+        return HttpResponseBadRequest("No decklist URL provided.")
+    for site in ImportSites:
+        if url.startswith(site.get_base_url()):
+            text = site.retrieve_card_list(url)
+            cleaned_text = "\n".join(
+                [stripped_line for line in text.split("\n") if len(stripped_line := line.strip()) > 0]
+            )
+            return JsonResponse({"cards": cleaned_text})
+    return HttpResponseBadRequest("The specified decklist URL does not match any known import sites.")
 
 
 @csrf_exempt
@@ -591,6 +598,9 @@ def get_sample_cards(request: HttpRequest) -> HttpResponse:
 
     TODO: i don't know how to do this in a single query in the Django ORM :(
     """
+
+    if request.method != "GET":
+        return HttpResponseBadRequest("Expected GET request.")
 
     # sample some large number of identifiers from the database
     identifiers = {
@@ -622,6 +632,9 @@ def get_contributions(request: HttpRequest) -> HttpResponse:
     Used by the Contributions page.
     """
 
+    if request.method != "GET":
+        return HttpResponseBadRequest("Expected GET request.")
+
     sources, card_count_by_type, total_database_size = summarise_contributions()
     return JsonResponse(
         {"sources": sources, "card_count_by_type": card_count_by_type, "total_database_size": total_database_size}
@@ -631,49 +644,50 @@ def get_contributions(request: HttpRequest) -> HttpResponse:
 @csrf_exempt
 @NewErrorWrappers.to_json
 def get_new_cards_first_pages(request: HttpRequest) -> HttpResponse:
-    if request.method == "GET":
-        response_body: dict[str, dict[str, Any]] = {}
-        for source in Source.objects.all():
-            paginator = get_new_cards_paginator(source=source)
-            if paginator.count > 0:
-                response_body[source.key] = {
-                    "source": source.to_dict(),
-                    "hits": paginator.count,
-                    "pages": paginator.num_pages,
-                    "cards": [card.to_dict() for card in paginator.get_page(1).object_list],
-                }
-        return JsonResponse({"results": response_body})
-    else:
+    if request.method != "GET":
         return HttpResponseBadRequest("Expected GET request.")
+
+    response_body: dict[str, dict[str, Any]] = {}
+    for source in Source.objects.all():
+        paginator = get_new_cards_paginator(source=source)
+        if paginator.count > 0:
+            response_body[source.key] = {
+                "source": source.to_dict(),
+                "hits": paginator.count,
+                "pages": paginator.num_pages,
+                "cards": [card.to_dict() for card in paginator.get_page(1).object_list],
+            }
+    return JsonResponse({"results": response_body})
 
 
 @csrf_exempt
 @NewErrorWrappers.to_json
 def get_new_cards_page(request: HttpRequest) -> HttpResponse:
-    if request.method == "GET":
-        source_key = request.GET.get("source")
-        if not source_key:
-            return HttpResponseBadRequest("Source not specified.")
-        source_q = Source.objects.filter(key=source_key)
-
-        if source_q.count() == 0:
-            return HttpResponseBadRequest(f"Invalid source key {source_key} specified.")
-        paginator = get_new_cards_paginator(source=source_q[0])
-
-        page = request.GET.get("page")
-        if page is None:
-            return HttpResponseBadRequest("Page not specified.")
-        try:
-            page_int = int(page)
-            if not (paginator.num_pages >= page_int > 0):
-                return HttpResponseBadRequest(
-                    f"Invalid page {page_int} specified - must be between 1 and {paginator.num_pages} for source {source_key}."
-                )
-            return JsonResponse({"cards": [card.to_dict() for card in paginator.page(page).object_list]})
-        except ValueError:
-            return HttpResponseBadRequest("Invalid page specified.")
-    else:
+    if request.method != "GET":
         return HttpResponseBadRequest("Expected GET request.")
+
+    source_key = request.GET.get("source")
+    if not source_key:
+        return HttpResponseBadRequest("Source not specified.")
+    source_q = Source.objects.filter(key=source_key)
+
+    if source_q.count() == 0:
+        return HttpResponseBadRequest(f"Invalid source key {source_key} specified.")
+    paginator = get_new_cards_paginator(source=source_q[0])
+
+    page = request.GET.get("page")
+    if page is None:
+        return HttpResponseBadRequest("Page not specified.")
+    try:
+        page_int = int(page)
+        if not (paginator.num_pages >= page_int > 0):
+            return HttpResponseBadRequest(
+                f"Invalid page {page_int} specified - must be between 1 and {paginator.num_pages} "
+                f"for source {source_key}."
+            )
+        return JsonResponse({"cards": [card.to_dict() for card in paginator.page(page).object_list]})
+    except ValueError:
+        return HttpResponseBadRequest("Invalid page specified.")
 
 
 @csrf_exempt
@@ -683,6 +697,9 @@ def get_info(request: HttpRequest) -> HttpResponse:
     Return a stack of metadata about the server for the frontend to display.
     It's expected that this route will be called once when the server is connected.
     """
+
+    if request.method != "GET":
+        return HttpResponseBadRequest("Expected GET request.")
 
     campaign, tiers = get_patreon_campaign_details()
     members = get_patrons(campaign["id"], tiers) if campaign is not None and tiers is not None else None
@@ -709,6 +726,9 @@ def get_info(request: HttpRequest) -> HttpResponse:
 @csrf_exempt
 @NewErrorWrappers.to_json
 def get_search_engine_health(request: HttpRequest) -> HttpResponse:
+    if request.method != "GET":
+        return HttpResponseBadRequest("Expected GET request.")
+
     return JsonResponse({"online": ping_elasticsearch()})
 
 
