@@ -5,6 +5,7 @@
  */
 
 import React, { useEffect, useState } from "react";
+import { Accordion } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
 import Dropdown from "react-bootstrap/Dropdown";
 import Form from "react-bootstrap/Form";
@@ -14,7 +15,9 @@ import { useGetDFCPairsQuery, useGetSampleCardsQuery } from "@/app/api";
 import {
   Card,
   Cardback,
+  CardTypeSeparator,
   FaceSeparator,
+  ProjectName,
   ReversedCardTypePrefixes,
   SelectedImageSeparator,
   Token,
@@ -25,11 +28,11 @@ import {
   stripTextInParentheses,
 } from "@/common/processing";
 import { CardDocument, useAppDispatch, useAppSelector } from "@/common/types";
+import { toTitleCase } from "@/common/utils";
 import { addMembers, selectProjectSize } from "@/features/project/projectSlice";
 import { fetchCardDocumentsAndReportError } from "@/features/search/cardDocumentsSlice";
 
 export function ImportText() {
-  // TODO: add an accordion here for explaining how to search for each different card type with prefixes
   const sampleCardsQuery = useGetSampleCardsQuery();
   const dfcPairsQuery = useGetDFCPairsQuery();
 
@@ -114,26 +117,70 @@ export function ImportText() {
             Type the names of the cards you&apos;d like to add to your order and
             hit <b>Submit</b>. One card per line.
           </p>
-          <p>
-            Specify both front and back queries by separating them with{" "}
-            <code>{FaceSeparator}</code> — for example,{" "}
-            <code>
-              4x goblin {FaceSeparator} {ReversedCardTypePrefixes[Token]}elf
-            </code>
-            .
-          </p>
-          <p>
-            You may optionally specify the image ID to select with{" "}
-            <code>{SelectedImageSeparator}</code> — for example,{" "}
-            <code>
-              brainstorm{SelectedImageSeparator}
-              1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5
-            </code>
-          </p>
-          <p>
-            If you don&apos;t specify a back query and your front query is a
-            double-faced card, we will automatically query the back for you.
-          </p>
+          <Accordion>
+            <Accordion.Item eventKey="0">
+              <Accordion.Header>Syntax Guide</Accordion.Header>
+              <Accordion.Body>
+                <ul>
+                  <li>
+                    There are three types of images in {ProjectName} &mdash;{" "}
+                    {Card.toLowerCase()}s, {Cardback.toLowerCase()}s, and{" "}
+                    {Token.toLowerCase()}s. If you search for a card, the search
+                    results <b>won&apos;t contain cardbacks or tokens</b>.
+                  </li>
+                  <li>
+                    <b>{toTitleCase(Card)}s</b> are searched for by default.
+                  </li>
+                  <li>
+                    Search for <b>{Token.toLowerCase()}s</b> by putting{" "}
+                    <code>{ReversedCardTypePrefixes[Token]}</code> at the start
+                    of the query &mdash; for example,{" "}
+                    <code>
+                      {ReversedCardTypePrefixes[Token]}your{" "}
+                      {Token.toLowerCase()} name
+                    </code>
+                    .
+                  </li>
+                  <li>
+                    Search for <b>{Cardback.toLowerCase()}s</b> by putting{" "}
+                    <code>{ReversedCardTypePrefixes[Cardback]}</code> at the
+                    start of the query &mdash; for example,{" "}
+                    <code>
+                      {ReversedCardTypePrefixes[Cardback]}your{" "}
+                      {Cardback.toLowerCase()} name
+                    </code>
+                    .
+                  </li>
+                  <li>
+                    You may optionally specify the image ID to select by typing
+                    your search query, <code>{SelectedImageSeparator}</code>,
+                    then the image ID — for example,{" "}
+                    <code>
+                      your {Card.toLowerCase()} name{SelectedImageSeparator}
+                      1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5
+                    </code>
+                    .
+                  </li>
+                  <li>
+                    You may specify queries for both the front and the back by
+                    separating them with <code>{FaceSeparator}</code> — for
+                    example,{" "}
+                    <code>
+                      4x goblin {FaceSeparator}{" "}
+                      {ReversedCardTypePrefixes[Token]}elf
+                    </code>
+                    .
+                  </li>
+                  <li>
+                    If you don&apos;t specify a back query and your front query
+                    is a double-faced card, we will automatically query the back
+                    card for you.
+                  </li>
+                </ul>
+              </Accordion.Body>
+            </Accordion.Item>
+          </Accordion>
+          <br />
           <Form.Group className="mb-3">
             <Form.Control
               as="textarea"
