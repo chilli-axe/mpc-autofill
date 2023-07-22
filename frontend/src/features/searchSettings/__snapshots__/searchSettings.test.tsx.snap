@@ -67,7 +67,7 @@ exports[`the html structure of search settings 1`] = `
           <span
             class="btn toggle-on btn-md flex-centre btn-success"
           >
-            Search Settings Apply to Cardbacks
+            Filters Apply to Cardbacks
           </span>
           <span
             class="btn toggle-off btn-md flex-centre btn-info"
@@ -209,11 +209,6 @@ exports[`the html structure of search settings 1`] = `
               >
                 Source Name
               </th>
-              <th
-                class="prevent-select"
-              >
-                Source Type
-              </th>
               <th />
               <th />
             </tr>
@@ -262,12 +257,6 @@ exports[`the html structure of search settings 1`] = `
                 <a>
                   Source 1
                 </a>
-              </td>
-              <td
-                class="prevent-select"
-                style="vertical-align: middle; width: 30%;"
-              >
-                gdrive
               </td>
               <td
                 style="vertical-align: middle; width: 5%; text-align: center;"
@@ -339,12 +328,6 @@ exports[`the html structure of search settings 1`] = `
                 </a>
               </td>
               <td
-                class="prevent-select"
-                style="vertical-align: middle; width: 30%;"
-              >
-                gdrive
-              </td>
-              <td
                 style="vertical-align: middle; width: 5%; text-align: center;"
               >
                 <div>
@@ -412,12 +395,6 @@ exports[`the html structure of search settings 1`] = `
                 <a>
                   Source 3
                 </a>
-              </td>
-              <td
-                class="prevent-select"
-                style="vertical-align: middle; width: 30%;"
-              >
-                gdrive
               </td>
               <td
                 style="vertical-align: middle; width: 5%; text-align: center;"

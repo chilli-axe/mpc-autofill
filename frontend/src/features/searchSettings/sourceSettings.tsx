@@ -141,13 +141,6 @@ export function SourceSettings({
                 )}
               </td>
               <td
-                key={`${sourceRow[0]}-type-column`}
-                className="prevent-select"
-                style={{ verticalAlign: "middle", width: 30 + "%" }}
-              >
-                {maybeSourceDocuments[sourceRow[0]].source_type}
-              </td>
-              <td
                 key={`${sourceRow[0]}-updown-button-column`}
                 style={{
                   verticalAlign: "middle",
@@ -215,7 +208,6 @@ export function SourceSettings({
                   >
                     <th className="prevent-select">Enabled</th>
                     <th className="prevent-select">Source Name</th>
-                    <th className="prevent-select">Source Type</th>
                     <th />
                     <th />
                   </tr>
