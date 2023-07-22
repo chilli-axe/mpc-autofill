@@ -59,11 +59,13 @@ exports[`the html structure of text importer 1`] = `
                 <li>
                   There are three types of images in 
                   MPC Autofill
-                   — 
+                   —
+                   
                   card
                   s, 
                   cardback
-                  s, and 
+                  s, and
+                   
                   token
                   s. If you search for a card, the search results 
                   <b>
@@ -84,14 +86,17 @@ exports[`the html structure of text importer 1`] = `
                     token
                     s
                   </b>
-                   by putting 
+                   by putting
+                   
                   <code>
                     t:
                   </code>
-                   at the start of the query — for example, 
+                   at the start of the query — for example,
+                   
                   <code>
                     t:
-                    your 
+                    your
+                     
                     token
                      name
                   </code>
@@ -103,14 +108,17 @@ exports[`the html structure of text importer 1`] = `
                     cardback
                     s
                   </b>
-                   by putting 
+                   by putting
+                   
                   <code>
                     b:
                   </code>
-                   at the start of the query — for example, 
+                   at the start of the query — for example,
+                   
                   <code>
                     b:
-                    your 
+                    your
+                     
                     cardback
                      name
                   </code>
@@ -121,9 +129,7 @@ exports[`the html structure of text importer 1`] = `
                   <code>
                     @
                   </code>
-                  , then the image ID
-                   
-                  — for example,
+                  , then the image ID — for example,
                    
                   <code>
                     your 
@@ -135,8 +141,7 @@ exports[`the html structure of text importer 1`] = `
                   .
                 </li>
                 <li>
-                  You may specify queries for both the front and the back by separating them with
-                   
+                  You may specify queries for both the front and the back by separating them with 
                   <code>
                     |
                   </code>

@@ -3,33 +3,17 @@
  * but no backend is configured.
  */
 
-import styled from "styled-components";
-
 import { ProjectName } from "@/common/constants";
-
-const NoBackendDefaultTextWrapper = styled.div`
-  position: absolute;
-  top: 50vh;
-  left: 50vw;
-  transform: translate(-50%, -50%);
-  text-align: center;
-`;
-
-export const NoBackendDefaultText = styled.p`
-  font-size: 1.25em;
-`;
+import { GenericErrorPage } from "@/features/ui/genericErrorPage";
 
 export function NoBackendDefault() {
   return (
-    <NoBackendDefaultTextWrapper>
-      <NoBackendDefaultText>
-        You haven&apos;t configured a server for {ProjectName} to communicate
-        with just yet.
-      </NoBackendDefaultText>
-      <NoBackendDefaultText>
-        Click the <b>Configure Server</b> button in the top-right to get
-        started!
-      </NoBackendDefaultText>
-    </NoBackendDefaultTextWrapper>
+    <GenericErrorPage
+      title="No Server Configured"
+      text={[
+        `You haven't configured a server for ${ProjectName} to communicate with just yet`,
+        "Click the Configure Server button in the top-right to get started!",
+      ]}
+    />
   );
 }
