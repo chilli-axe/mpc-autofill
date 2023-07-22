@@ -657,7 +657,7 @@ class TestFrontend:
             card=Cards.SIMPLE_LOTUS.value,
             selected_image=None,
             total_images=None,
-            source=Sources.EXAMPLE_DRIVE_1.value,
+            source=Sources.EXAMPLE_DRIVE_2.value,
         )
         self.assert_card_state(
             driver=chrome_driver,
@@ -666,7 +666,7 @@ class TestFrontend:
             card=Cards.SIMPLE_LOTUS.value,
             selected_image=2,
             total_images=2,
-            source=Sources.EXAMPLE_DRIVE_1.value,
+            source=Sources.EXAMPLE_DRIVE_2.value,
             has_reverse_face=False,
         )
 
@@ -679,7 +679,7 @@ class TestFrontend:
             card=Cards.SIMPLE_LOTUS.value,
             selected_image=None,
             total_images=None,
-            source=Sources.EXAMPLE_DRIVE_1.value,
+            source=Sources.EXAMPLE_DRIVE_2.value,
         )
 
     def test_detailed_view_modal(self, chrome_driver):
