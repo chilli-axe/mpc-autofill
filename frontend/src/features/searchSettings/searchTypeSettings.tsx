@@ -55,7 +55,7 @@ export function SearchTypeSettings({
             filterCardbacks: !searchTypeSettings.filterCardbacks,
           })
         }
-        on="Search Settings Apply to Cardbacks"
+        on="Filters Apply to Cardbacks"
         onClassName="flex-centre"
         off="Include All Cardbacks"
         offClassName="flex-centre"

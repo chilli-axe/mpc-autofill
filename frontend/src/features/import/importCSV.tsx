@@ -26,6 +26,10 @@ import { useAppDispatch, useAppSelector } from "@/common/types";
 import { addMembers, selectProjectSize } from "@/features/project/projectSlice";
 import { fetchCardDocumentsAndReportError } from "@/features/search/cardDocumentsSlice";
 
+const TableWrapper = styled.div`
+  max-width: 100%;
+  overflow-x: scroll;
+`;
 const BorderedTable = styled(Table)`
   border-style: solid;
   border-color: #333333;
@@ -54,18 +58,20 @@ function CSVFormat() {
   // TODO: some strings are defined in a few places in this file. consolidate them
   return (
     <>
-      <BorderedTable bordered={true}>
-        <thead>
-          <FormattedColumnHeader>Quantity</FormattedColumnHeader>
-          <FormattedColumnHeader>Front</FormattedColumnHeader>
-          <FormattedColumnHeader>Front ID</FormattedColumnHeader>
-          <FormattedColumnHeader>Back</FormattedColumnHeader>
-          <FormattedColumnHeader>Back ID</FormattedColumnHeader>
-        </thead>
-        <tbody>
-          {Array(3).fill(<tr>{Array(5).fill(<FormattedColumnData />)}</tr>)}
-        </tbody>
-      </BorderedTable>
+      <TableWrapper>
+        <BorderedTable bordered={true}>
+          <thead>
+            <FormattedColumnHeader>Quantity</FormattedColumnHeader>
+            <FormattedColumnHeader>Front</FormattedColumnHeader>
+            <FormattedColumnHeader>Front ID</FormattedColumnHeader>
+            <FormattedColumnHeader>Back</FormattedColumnHeader>
+            <FormattedColumnHeader>Back ID</FormattedColumnHeader>
+          </thead>
+          <tbody>
+            {Array(3).fill(<tr>{Array(5).fill(<FormattedColumnData />)}</tr>)}
+          </tbody>
+        </BorderedTable>
+      </TableWrapper>
       Where the columns follow these rules:
       <ul>
         <li>
@@ -94,45 +100,47 @@ function CSVFormat() {
 
 function SampleCSV() {
   return (
-    <BorderedTable bordered={true}>
-      <thead>
-        <FormattedColumnHeader>Quantity</FormattedColumnHeader>
-        <FormattedColumnHeader>Front</FormattedColumnHeader>
-        <FormattedColumnHeader>Front ID</FormattedColumnHeader>
-        <FormattedColumnHeader>Back</FormattedColumnHeader>
-        <FormattedColumnHeader>Back ID</FormattedColumnHeader>
-      </thead>
-      <tbody>
-        <tr>
-          <FormattedColumnData>
-            <code>2</code>
-          </FormattedColumnData>
-          <FormattedColumnData>
-            <code>island</code>
-          </FormattedColumnData>
-          <FormattedColumnData>
-            <code>1HsvTYs1...</code>
-          </FormattedColumnData>
-          <FormattedColumnData>
-            <code>forest</code>
-          </FormattedColumnData>
-          <FormattedColumnData />
-        </tr>
-        <tr>
-          <FormattedColumnData>
-            <code>3</code>
-          </FormattedColumnData>
-          <FormattedColumnData>
-            <code>t:goblin</code>
-          </FormattedColumnData>
-          <FormattedColumnData />
-          <FormattedColumnData />
-          <FormattedColumnData>
-            <code>1JtXL6Ca...</code>
-          </FormattedColumnData>
-        </tr>
-      </tbody>
-    </BorderedTable>
+    <TableWrapper>
+      <BorderedTable bordered={true}>
+        <thead>
+          <FormattedColumnHeader>Quantity</FormattedColumnHeader>
+          <FormattedColumnHeader>Front</FormattedColumnHeader>
+          <FormattedColumnHeader>Front ID</FormattedColumnHeader>
+          <FormattedColumnHeader>Back</FormattedColumnHeader>
+          <FormattedColumnHeader>Back ID</FormattedColumnHeader>
+        </thead>
+        <tbody>
+          <tr>
+            <FormattedColumnData>
+              <code>2</code>
+            </FormattedColumnData>
+            <FormattedColumnData>
+              <code>island</code>
+            </FormattedColumnData>
+            <FormattedColumnData>
+              <code>1HsvTYs1...</code>
+            </FormattedColumnData>
+            <FormattedColumnData>
+              <code>forest</code>
+            </FormattedColumnData>
+            <FormattedColumnData />
+          </tr>
+          <tr>
+            <FormattedColumnData>
+              <code>3</code>
+            </FormattedColumnData>
+            <FormattedColumnData>
+              <code>t:goblin</code>
+            </FormattedColumnData>
+            <FormattedColumnData />
+            <FormattedColumnData />
+            <FormattedColumnData>
+              <code>1JtXL6Ca...</code>
+            </FormattedColumnData>
+          </tr>
+        </tbody>
+      </BorderedTable>
+    </TableWrapper>
   );
 }
 

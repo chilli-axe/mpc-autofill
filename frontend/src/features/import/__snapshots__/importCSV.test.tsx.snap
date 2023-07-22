@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`the html structure of CSV importer 1`] = `
-.c3 {
+.c4 {
   -webkit-flex: 1;
   -ms-flex: 1;
   flex: 1;
@@ -29,17 +29,22 @@ exports[`the html structure of CSV importer 1`] = `
 }
 
 .c0 {
+  max-width: 100%;
+  overflow-x: scroll;
+}
+
+.c1 {
   border-style: solid;
   border-color: #333333;
   border-width: 1px;
 }
 
-.c1 {
+.c2 {
   width: 20%;
   text-align: center;
 }
 
-.c2 {
+.c3 {
   width: 20%;
   text-align: center;
 }
@@ -76,90 +81,94 @@ exports[`the html structure of CSV importer 1`] = `
         </b>
          match the following format:
       </p>
-      <table
-        class="c0 table table-bordered"
+      <div
+        class="c0"
       >
-        <thead>
-          <th
-            class="c1"
-          >
-            Quantity
-          </th>
-          <th
-            class="c1"
-          >
-            Front
-          </th>
-          <th
-            class="c1"
-          >
-            Front ID
-          </th>
-          <th
-            class="c1"
-          >
-            Back
-          </th>
-          <th
-            class="c1"
-          >
-            Back ID
-          </th>
-        </thead>
-        <tbody>
-          <tr>
-            <td
+        <table
+          class="c1 table table-bordered"
+        >
+          <thead>
+            <th
               class="c2"
-            />
-            <td
+            >
+              Quantity
+            </th>
+            <th
               class="c2"
-            />
-            <td
+            >
+              Front
+            </th>
+            <th
               class="c2"
-            />
-            <td
+            >
+              Front ID
+            </th>
+            <th
               class="c2"
-            />
-            <td
+            >
+              Back
+            </th>
+            <th
               class="c2"
-            />
-          </tr>
-          <tr>
-            <td
-              class="c2"
-            />
-            <td
-              class="c2"
-            />
-            <td
-              class="c2"
-            />
-            <td
-              class="c2"
-            />
-            <td
-              class="c2"
-            />
-          </tr>
-          <tr>
-            <td
-              class="c2"
-            />
-            <td
-              class="c2"
-            />
-            <td
-              class="c2"
-            />
-            <td
-              class="c2"
-            />
-            <td
-              class="c2"
-            />
-          </tr>
-        </tbody>
-      </table>
+            >
+              Back ID
+            </th>
+          </thead>
+          <tbody>
+            <tr>
+              <td
+                class="c3"
+              />
+              <td
+                class="c3"
+              />
+              <td
+                class="c3"
+              />
+              <td
+                class="c3"
+              />
+              <td
+                class="c3"
+              />
+            </tr>
+            <tr>
+              <td
+                class="c3"
+              />
+              <td
+                class="c3"
+              />
+              <td
+                class="c3"
+              />
+              <td
+                class="c3"
+              />
+              <td
+                class="c3"
+              />
+            </tr>
+            <tr>
+              <td
+                class="c3"
+              />
+              <td
+                class="c3"
+              />
+              <td
+                class="c3"
+              />
+              <td
+                class="c3"
+              />
+              <td
+                class="c3"
+              />
+            </tr>
+          </tbody>
+        </table>
+      </div>
       Where the columns follow these rules:
       <ul>
         <li>
@@ -197,108 +206,112 @@ exports[`the html structure of CSV importer 1`] = `
         </li>
       </ul>
       For example:
-      <table
-        class="c0 table table-bordered"
+      <div
+        class="c0"
       >
-        <thead>
-          <th
-            class="c1"
-          >
-            Quantity
-          </th>
-          <th
-            class="c1"
-          >
-            Front
-          </th>
-          <th
-            class="c1"
-          >
-            Front ID
-          </th>
-          <th
-            class="c1"
-          >
-            Back
-          </th>
-          <th
-            class="c1"
-          >
-            Back ID
-          </th>
-        </thead>
-        <tbody>
-          <tr>
-            <td
+        <table
+          class="c1 table table-bordered"
+        >
+          <thead>
+            <th
               class="c2"
             >
-              <code>
-                2
-              </code>
-            </td>
-            <td
+              Quantity
+            </th>
+            <th
               class="c2"
             >
-              <code>
-                island
-              </code>
-            </td>
-            <td
+              Front
+            </th>
+            <th
               class="c2"
             >
-              <code>
-                1HsvTYs1...
-              </code>
-            </td>
-            <td
+              Front ID
+            </th>
+            <th
               class="c2"
             >
-              <code>
-                forest
-              </code>
-            </td>
-            <td
-              class="c2"
-            />
-          </tr>
-          <tr>
-            <td
+              Back
+            </th>
+            <th
               class="c2"
             >
-              <code>
-                3
-              </code>
-            </td>
-            <td
-              class="c2"
-            >
-              <code>
-                t:goblin
-              </code>
-            </td>
-            <td
-              class="c2"
-            />
-            <td
-              class="c2"
-            />
-            <td
-              class="c2"
-            >
-              <code>
-                1JtXL6Ca...
-              </code>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+              Back ID
+            </th>
+          </thead>
+          <tbody>
+            <tr>
+              <td
+                class="c3"
+              >
+                <code>
+                  2
+                </code>
+              </td>
+              <td
+                class="c3"
+              >
+                <code>
+                  island
+                </code>
+              </td>
+              <td
+                class="c3"
+              >
+                <code>
+                  1HsvTYs1...
+                </code>
+              </td>
+              <td
+                class="c3"
+              >
+                <code>
+                  forest
+                </code>
+              </td>
+              <td
+                class="c3"
+              />
+            </tr>
+            <tr>
+              <td
+                class="c3"
+              >
+                <code>
+                  3
+                </code>
+              </td>
+              <td
+                class="c3"
+              >
+                <code>
+                  t:goblin
+                </code>
+              </td>
+              <td
+                class="c3"
+              />
+              <td
+                class="c3"
+              />
+              <td
+                class="c3"
+              >
+                <code>
+                  1JtXL6Ca...
+                </code>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
       <hr />
       <div
         class="container"
       >
         <div
           aria-label="import-csv"
-          class="c3"
+          class="c4"
           role="presentation"
           tabindex="0"
         >
