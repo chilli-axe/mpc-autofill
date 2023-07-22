@@ -160,14 +160,14 @@ export const cardDocumentsServerError = rest.post(
 
 //# region cardback
 
-export const cardbacksNoResults = rest.get(
+export const cardbacksNoResults = rest.post(
   buildRoute("2/cardbacks"),
   (req, res, ctx) => {
     return res(ctx.status(200), ctx.json({ cardbacks: [] }));
   }
 );
 
-export const cardbacksOneResult = rest.get(
+export const cardbacksOneResult = rest.post(
   buildRoute("2/cardbacks"),
   (req, res, ctx) => {
     return res(
@@ -179,7 +179,19 @@ export const cardbacksOneResult = rest.get(
   }
 );
 
-export const cardbacksTwoResults = rest.get(
+export const cardbacksOneOtherResult = rest.post(
+  buildRoute("2/cardbacks"),
+  (req, res, ctx) => {
+    return res(
+      ctx.status(200),
+      ctx.json({
+        cardbacks: [cardDocument5.identifier],
+      })
+    );
+  }
+);
+
+export const cardbacksTwoResults = rest.post(
   buildRoute("2/cardbacks"),
   (req, res, ctx) => {
     return res(
@@ -191,7 +203,7 @@ export const cardbacksTwoResults = rest.get(
   }
 );
 
-export const cardbacksTwoOtherResults = rest.get(
+export const cardbacksTwoOtherResults = rest.post(
   buildRoute("2/cardbacks"),
   (req, res, ctx) => {
     return res(
@@ -203,7 +215,7 @@ export const cardbacksTwoOtherResults = rest.get(
   }
 );
 
-export const cardbacksServerError = rest.get(
+export const cardbacksServerError = rest.post(
   buildRoute("2/cardbacks/"),
   (req, res, ctx) => res(ctx.status(500), ctx.json(createError("2/cardbacks")))
 );

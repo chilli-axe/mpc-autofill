@@ -18,7 +18,7 @@ import {
   renderWithProviders,
 } from "@/common/test-utils";
 import {
-  cardbacksOneResult,
+  cardbacksOneOtherResult,
   cardDocumentsSixResults,
   defaultHandlers,
   searchResultsSixResults,
@@ -33,7 +33,7 @@ beforeEach(() => {
 test("the decklist representation of a simple project with no custom backs", async () => {
   server.use(
     cardDocumentsSixResults,
-    cardbacksOneResult,
+    cardbacksOneOtherResult,
     sourceDocumentsThreeResults,
     searchResultsSixResults,
     ...defaultHandlers
@@ -69,7 +69,7 @@ test("the decklist representation of a simple project with no custom backs", asy
 test("the decklist representation of a simple project with a custom back for one card", async () => {
   server.use(
     cardDocumentsSixResults,
-    cardbacksOneResult,
+    cardbacksOneOtherResult,
     sourceDocumentsThreeResults,
     searchResultsSixResults,
     ...defaultHandlers
@@ -106,7 +106,7 @@ test("the decklist representation of a simple project with a custom back for one
 test("the decklist representation of a simple project with multiple instances of a card", async () => {
   server.use(
     cardDocumentsSixResults,
-    cardbacksOneResult,
+    cardbacksOneOtherResult,
     sourceDocumentsThreeResults,
     searchResultsSixResults,
     ...defaultHandlers

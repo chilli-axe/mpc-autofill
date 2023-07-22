@@ -268,7 +268,7 @@ export const projectSelectedImage2: Project = {
 //# region search settings
 
 export const defaultSettings: SearchSettings = {
-  searchTypeSettings: { fuzzySearch: false },
+  searchTypeSettings: { fuzzySearch: false, filterCardbacks: false },
   sourceSettings: {
     sources: [
       [sourceDocument1.pk, true],

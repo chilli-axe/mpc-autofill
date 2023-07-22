@@ -12,9 +12,13 @@
         "fuzzySearch": {
           "description": "Whether fuzzy search is enabled",
           "type": "boolean"
+        },
+        "filterCardbacks": {
+          "description": "Whether search settings apply to cardbacks or not",
+          "type": "boolean"
         }
       },
-      "required": ["fuzzySearch"],
+      "required": ["fuzzySearch", "filterCardbacks"],
       "additionalProperties": false
     },
     "sourceSettings": {

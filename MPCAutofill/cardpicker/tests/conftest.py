@@ -139,14 +139,14 @@ def simple_cube(example_drive_1) -> Card:
 
 
 @pytest.fixture()
-def simple_lotus(example_drive_1) -> Card:
+def simple_lotus(example_drive_2) -> Card:
     return CardFactory(
         pk=Cards.SIMPLE_LOTUS.value.pk,
         card_type=CardTypes.CARDBACK,
         identifier=Cards.SIMPLE_LOTUS.value.identifier,
         name=Cards.SIMPLE_LOTUS.value.name,
         dpi=Cards.SIMPLE_LOTUS.value.dpi,
-        source=example_drive_1,
+        source=example_drive_2,
         priority=7,
         size=Cards.SIMPLE_LOTUS.value.size,
         date=dt.datetime(2023, 1, 1),

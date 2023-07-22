@@ -1,5 +1,6 @@
 /**
- * A toggle to configure how the search engine matches queries to Cards - either precise or fuzzy (forgiving).
+ * A toggle to configure how the search engine matches queries to Cards - either precise or fuzzy (forgiving),
+ * and whether or not search settings should apply to cardbacks.
  * This component forms part of the Search Settings modal.
  */
 
@@ -44,6 +45,26 @@ export function SearchTypeSettings({
         size="md"
         height={ToggleButtonHeight + "px"}
         active={searchTypeSettings.fuzzySearch}
+      />
+      <br />
+      <br />
+      <Toggle
+        onClick={() =>
+          setSearchTypeSettings({
+            ...searchTypeSettings,
+            filterCardbacks: !searchTypeSettings.filterCardbacks,
+          })
+        }
+        on="Search Settings Apply to Cardbacks"
+        onClassName="flex-centre"
+        off="Include All Cardbacks"
+        offClassName="flex-centre"
+        onstyle="success"
+        offstyle="info"
+        width={100 + "%"}
+        size="md"
+        height={ToggleButtonHeight + "px"}
+        active={searchTypeSettings.filterCardbacks}
       />
     </>
   );

@@ -7,6 +7,8 @@ import { createSlice } from "@reduxjs/toolkit";
 import { APIGetCardbacks } from "@/app/api";
 import { AppDispatch, RootState } from "@/app/store";
 import { CardbacksState, createAppAsyncThunk } from "@/common/types";
+import { selectBackendURL } from "@/features/backend/backendSlice";
+import { selectSearchSettings } from "@/features/searchSettings/searchSettingsSlice";
 import { setError } from "@/features/toasts/toastsSlice";
 
 //# region async thunk
@@ -17,8 +19,11 @@ const fetchCardbacks = createAppAsyncThunk(
   typePrefix,
   async (arg, { getState }) => {
     const state = getState();
-    const backendURL = state.backend.url;
-    return backendURL != null ? APIGetCardbacks(backendURL) : null;
+    const backendURL = selectBackendURL(state);
+    const searchSettings = selectSearchSettings(state);
+    return backendURL != null
+      ? APIGetCardbacks(backendURL, searchSettings)
+      : null;
   }
 );
 

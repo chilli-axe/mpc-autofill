@@ -1,14 +1,3 @@
-# name: TestGetCardbacks.test_get_multiple_rows
-  dict({
-    'json': dict({
-      'cardbacks': list([
-        '1JtXL6Ca9nQkvhwZZRR9ZuKA9_DzsFf1V',
-        '1oigI6wz0zA--pNMuExKTs40kBNH6VRP_',
-      ]),
-    }),
-    'status_code': 200,
-  })
-# ---
 # name: TestGetContributions.test_get_multiple_rows
   dict({
     'json': dict({
@@ -19,27 +8,27 @@
       }),
       'sources': list([
         dict({
-          'avgdpi': '550.00',
+          'avgdpi': '572.73',
           'description': 'Description for example_drive_1',
           'external_link': 'https://drive.google.com/open?id=1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
           'identifier': '1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
           'name': 'Example Drive 1',
-          'qty_cardbacks': '2',
+          'qty_cardbacks': '1',
           'qty_cards': '9',
           'qty_tokens': '1',
           'size': '0.05 GB',
           'source_type': 'Google Drive',
         }),
         dict({
-          'avgdpi': '400.00',
+          'avgdpi': '350.00',
           'description': 'Description for example_drive_2',
           'external_link': None,
           'identifier': '18wZl7T9DU_lf2X5xYFiyH6pATVy8ZlOd',
           'name': 'Example Drive 2',
-          'qty_cardbacks': '0',
+          'qty_cardbacks': '1',
           'qty_cards': '1',
           'qty_tokens': '0',
-          'size': '0.00 GB',
+          'size': '0.01 GB',
           'source_type': 'Google Drive',
         }),
       ]),
@@ -443,18 +432,18 @@
               'source_verbose': 'Example Drive 1 but verbose',
             }),
             dict({
-              'card_type': 'CARDBACK',
+              'card_type': 'CARD',
               'date': '1st January, 2023',
-              'download_link': 'https://drive.google.com/uc?id=1oigI6wz0zA--pNMuExKTs40kBNH6VRP_&export=download',
-              'dpi': 300,
+              'download_link': 'https://drive.google.com/uc?id=1991MWCur9NdAFi-tQQD5YbQj2oqV_WRy&export=download',
+              'dpi': 600,
               'extension': 'png',
-              'identifier': '1oigI6wz0zA--pNMuExKTs40kBNH6VRP_',
-              'medium_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1oigI6wz0zA--pNMuExKTs40kBNH6VRP_',
-              'name': 'Simple Lotus',
-              'priority': 7,
-              'searchq': 'simple lotus',
-              'size': 2000000,
-              'small_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1oigI6wz0zA--pNMuExKTs40kBNH6VRP_',
+              'identifier': '1991MWCur9NdAFi-tQQD5YbQj2oqV_WRy',
+              'medium_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1991MWCur9NdAFi-tQQD5YbQj2oqV_WRy',
+              'name': 'Huntmaster of the Fells',
+              'priority': 2,
+              'searchq': 'huntmaster of fells',
+              'size': 5000000,
+              'small_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1991MWCur9NdAFi-tQQD5YbQj2oqV_WRy',
               'source': 'example_drive_1',
               'source_external_link': 'https://drive.google.com/open?id=1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
               'source_id': 0,
@@ -463,7 +452,7 @@
               'source_verbose': 'Example Drive 1 but verbose',
             }),
           ]),
-          'hits': 12,
+          'hits': 11,
           'pages': 2,
           'source': dict({
             'description': 'Description for example_drive_1',
@@ -477,6 +466,26 @@
         }),
         'example_drive_2': dict({
           'cards': list([
+            dict({
+              'card_type': 'CARDBACK',
+              'date': '1st January, 2023',
+              'download_link': 'https://drive.google.com/uc?id=1oigI6wz0zA--pNMuExKTs40kBNH6VRP_&export=download',
+              'dpi': 300,
+              'extension': 'png',
+              'identifier': '1oigI6wz0zA--pNMuExKTs40kBNH6VRP_',
+              'medium_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1oigI6wz0zA--pNMuExKTs40kBNH6VRP_',
+              'name': 'Simple Lotus',
+              'priority': 7,
+              'searchq': 'simple lotus',
+              'size': 2000000,
+              'small_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1oigI6wz0zA--pNMuExKTs40kBNH6VRP_',
+              'source': 'example_drive_2',
+              'source_external_link': None,
+              'source_id': 1,
+              'source_name': 'Example Drive 2',
+              'source_type': 'Google Drive',
+              'source_verbose': 'Example Drive 2 but verbose',
+            }),
             dict({
               'card_type': 'CARD',
               'date': '1st January, 2023',
@@ -498,7 +507,7 @@
               'source_verbose': 'Example Drive 2 but verbose',
             }),
           ]),
-          'hits': 1,
+          'hits': 2,
           'pages': 1,
           'source': dict({
             'description': 'Description for example_drive_2',
@@ -653,35 +662,6 @@
           'source_verbose': 'Example Drive 1 but verbose',
         }),
         dict({
-          'card_type': 'CARDBACK',
-          'date': '1st January, 2023',
-          'download_link': 'https://drive.google.com/uc?id=1oigI6wz0zA--pNMuExKTs40kBNH6VRP_&export=download',
-          'dpi': 300,
-          'extension': 'png',
-          'identifier': '1oigI6wz0zA--pNMuExKTs40kBNH6VRP_',
-          'medium_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1oigI6wz0zA--pNMuExKTs40kBNH6VRP_',
-          'name': 'Simple Lotus',
-          'priority': 7,
-          'searchq': 'simple lotus',
-          'size': 2000000,
-          'small_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1oigI6wz0zA--pNMuExKTs40kBNH6VRP_',
-          'source': 'example_drive_1',
-          'source_external_link': 'https://drive.google.com/open?id=1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
-          'source_id': 0,
-          'source_name': 'Example Drive 1',
-          'source_type': 'Google Drive',
-          'source_verbose': 'Example Drive 1 but verbose',
-        }),
-      ]),
-    }),
-    'status_code': 200,
-  })
-# ---
-# name: TestNewCardsPage.test_get_full_second_page
-  dict({
-    'json': dict({
-      'cards': list([
-        dict({
           'card_type': 'CARD',
           'date': '1st January, 2023',
           'download_link': 'https://drive.google.com/uc?id=1991MWCur9NdAFi-tQQD5YbQj2oqV_WRy&export=download',
@@ -701,6 +681,15 @@
           'source_type': 'Google Drive',
           'source_verbose': 'Example Drive 1 but verbose',
         }),
+      ]),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestNewCardsPage.test_get_full_second_page
+  dict({
+    'json': dict({
+      'cards': list([
         dict({
           'card_type': 'CARD',
           'date': '1st January, 2023',
@@ -811,6 +800,26 @@
     'json': dict({
       'cards': list([
         dict({
+          'card_type': 'CARDBACK',
+          'date': '1st January, 2023',
+          'download_link': 'https://drive.google.com/uc?id=1oigI6wz0zA--pNMuExKTs40kBNH6VRP_&export=download',
+          'dpi': 300,
+          'extension': 'png',
+          'identifier': '1oigI6wz0zA--pNMuExKTs40kBNH6VRP_',
+          'medium_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1oigI6wz0zA--pNMuExKTs40kBNH6VRP_',
+          'name': 'Simple Lotus',
+          'priority': 7,
+          'searchq': 'simple lotus',
+          'size': 2000000,
+          'small_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1oigI6wz0zA--pNMuExKTs40kBNH6VRP_',
+          'source': 'example_drive_2',
+          'source_external_link': None,
+          'source_id': 1,
+          'source_name': 'Example Drive 2',
+          'source_type': 'Google Drive',
+          'source_verbose': 'Example Drive 2 but verbose',
+        }),
+        dict({
           'card_type': 'CARD',
           'date': '1st January, 2023',
           'download_link': 'https://drive.google.com/uc?id=1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU&export=download',
@@ -895,6 +904,105 @@
 # name: TestNewCardsPage.test_response_to_malformed_json_body[zero page]
   dict({
     'content': b'Invalid page 0 specified - must be between 1 and 2 for source example_drive_1.',
+    'status_code': 400,
+  })
+# ---
+# name: TestPostCardbacks.test_get_multiple_rows_filtered_only_source_1
+  dict({
+    'json': dict({
+      'cardbacks': list([
+        '1JtXL6Ca9nQkvhwZZRR9ZuKA9_DzsFf1V',
+      ]),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostCardbacks.test_get_multiple_rows_filtered_only_source_2
+  dict({
+    'json': dict({
+      'cardbacks': list([
+        '1oigI6wz0zA--pNMuExKTs40kBNH6VRP_',
+      ]),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostCardbacks.test_get_multiple_rows_filtered_ordered_sources
+  dict({
+    'json': dict({
+      'cardbacks': list([
+        '1oigI6wz0zA--pNMuExKTs40kBNH6VRP_',
+        '1JtXL6Ca9nQkvhwZZRR9ZuKA9_DzsFf1V',
+      ]),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostCardbacks.test_get_multiple_rows_unfiltered
+  dict({
+    'json': dict({
+      'cardbacks': list([
+        '1JtXL6Ca9nQkvhwZZRR9ZuKA9_DzsFf1V',
+        '1oigI6wz0zA--pNMuExKTs40kBNH6VRP_',
+      ]),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostCardbacks.test_get_request
+  dict({
+    'content': b'Expected POST request.',
+    'status_code': 400,
+  })
+# ---
+# name: TestPostCardbacks.test_maximum_dpi_yielding_no_cardbacks
+  dict({
+    'json': dict({
+      'cardbacks': list([
+      ]),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostCardbacks.test_maximum_size_yielding_no_cardbacks
+  dict({
+    'json': dict({
+      'cardbacks': list([
+      ]),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostCardbacks.test_minimum_dpi_yielding_no_cardbacks
+  dict({
+    'json': dict({
+      'cardbacks': list([
+      ]),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostCardbacks.test_response_to_malformed_json_body[array json body]
+  dict({
+    'content': b"The provided JSON body is invalid:\n\n['test'] is not of type 'object'",
+    'status_code': 400,
+  })
+# ---
+# name: TestPostCardbacks.test_response_to_malformed_json_body[empty json body]
+  dict({
+    'content': b"The provided JSON body is invalid:\n\n'searchSettings' is a required property",
+    'status_code': 400,
+  })
+# ---
+# name: TestPostCardbacks.test_response_to_malformed_json_body[invalid search settings]
+  dict({
+    'content': b"The provided JSON body is invalid:\n\n'test2' is not of type 'object'",
+    'status_code': 400,
+  })
+# ---
+# name: TestPostCardbacks.test_response_to_malformed_json_body[search settings not specified]
+  dict({
+    'content': b"The provided JSON body is invalid:\n\n'searchSettings' is a required property",
     'status_code': 400,
   })
 # ---

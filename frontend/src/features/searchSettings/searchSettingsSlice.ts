@@ -10,6 +10,7 @@ const initialState: SearchSettings = {
   // TODO: this default is redundant through `cookies.ts`. reconsider this
   searchTypeSettings: {
     fuzzySearch: false,
+    filterCardbacks: false,
   },
   sourceSettings: {
     sources: null,

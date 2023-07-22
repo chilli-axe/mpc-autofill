@@ -14,7 +14,9 @@ import {
   SearchResults,
   SearchResultsState,
 } from "@/common/types";
+import { selectBackendURL } from "@/features/backend/backendSlice";
 import { selectQueriesWithoutSearchResults } from "@/features/project/projectSlice";
+import { selectSearchSettings } from "@/features/searchSettings/searchSettingsSlice";
 import { setError } from "@/features/toasts/toastsSlice";
 
 //# region async thunk
@@ -28,7 +30,8 @@ const fetchSearchResults = createAppAsyncThunk(
 
     const queriesToSearch = selectQueriesWithoutSearchResults(state);
 
-    const backendURL = state.backend.url;
+    const backendURL = selectBackendURL(state);
+    const searchSettings = selectSearchSettings(state);
     if (queriesToSearch.length > 0 && backendURL != null) {
       return Array.from(
         Array(
@@ -38,7 +41,7 @@ const fetchSearchResults = createAppAsyncThunk(
         return promiseChain.then(async function (previousValue: SearchResults) {
           const searchResults = await APISearch(
             backendURL,
-            state.searchSettings,
+            searchSettings,
             queriesToSearch.slice(
               page * SearchResultsEndpointPageSize,
               (page + 1) * SearchResultsEndpointPageSize

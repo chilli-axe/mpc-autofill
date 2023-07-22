@@ -32,6 +32,7 @@ from cardpicker.utils.search_functions import (
     build_context,
     get_new_cards_paginator,
     parse_json_body_as_search_data,
+    parse_json_body_as_search_settings,
     ping_elasticsearch,
     query_es_card,
     query_es_cardback,
@@ -514,18 +515,22 @@ def get_dfc_pairs(request: HttpRequest) -> HttpResponse:
 
 @csrf_exempt
 @NewErrorWrappers.to_json
-def get_cardbacks(request: HttpRequest) -> HttpResponse:
+def post_cardbacks(request: HttpRequest) -> HttpResponse:
     """
-    Return a list of cardbacks.
+    Return a list of cardbacks, possibly filtered by the user's search settings.
     """
 
-    # TODO: update this to be a POST endpoint that accepts search settings, where search settings can conditionally
-    #       be applied to cardbacks. if they're not applied, return all cardbacks with the below code.
-    cardbacks = [
-        x.identifier
-        for x in Card.objects.filter(card_type=CardTypes.CARDBACK).order_by("-priority", "source__name", "name")
-    ]
-    return JsonResponse({"cardbacks": cardbacks})
+    if request.method == "POST":
+        try:
+            json_body = json.loads(request.body)
+            search_settings = parse_json_body_as_search_settings(json_body)
+        except ValidationError as e:
+            return HttpResponseBadRequest(f"The provided JSON body is invalid:\n\n{e.message}")
+
+        cardbacks = search_settings.retrieve_cardback_identifiers()
+        return JsonResponse({"cardbacks": cardbacks})
+    else:
+        return HttpResponseBadRequest("Expected POST request.")
 
 
 @csrf_exempt

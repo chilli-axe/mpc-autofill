@@ -74,7 +74,7 @@ export function getLocalStorageSearchSettings(
   } else {
     // default settings
     return {
-      searchTypeSettings: { fuzzySearch: false },
+      searchTypeSettings: { fuzzySearch: false, filterCardbacks: false },
       sourceSettings: {
         sources: Object.values(sourceDocuments).map(
           (sourceDocument: SourceDocument) => [sourceDocument.pk, true]

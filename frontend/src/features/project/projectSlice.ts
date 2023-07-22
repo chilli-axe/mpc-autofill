@@ -144,7 +144,7 @@ export const projectSlice = createSlice({
     },
     setSelectedCardback: (
       state,
-      action: PayloadAction<{ selectedImage: string }>
+      action: PayloadAction<{ selectedImage: string | null }>
     ) => {
       state.cardback = action.payload.selectedImage;
     },

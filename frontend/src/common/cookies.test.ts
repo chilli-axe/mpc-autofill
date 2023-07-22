@@ -35,7 +35,7 @@ test("default settings are returned when cookie data doesn't match schema", () =
 test("cookies with complete source order are respected", () => {
   // setting up some arbitrary non-default settings here
   const settingsWithCompleteSourceOrder = {
-    searchTypeSettings: { fuzzySearch: true },
+    searchTypeSettings: { fuzzySearch: true, filterCardbacks: false },
     sourceSettings: {
       sources: [
         [1, true],
@@ -58,7 +58,7 @@ test("cookies with complete source order are respected", () => {
 
 test("referenced sources that don't exist in database are filtered out", () => {
   const settingsWithCompleteSourceOrder = {
-    searchTypeSettings: { fuzzySearch: false },
+    searchTypeSettings: { fuzzySearch: false, filterCardbacks: false },
     sourceSettings: {
       sources: [
         [1, true],
@@ -92,7 +92,7 @@ test("referenced sources that don't exist in database are filtered out", () => {
 
 test("cookies with incomplete source order are correctly reconciled", () => {
   const settingsWithCompleteSourceOrder = {
-    searchTypeSettings: { fuzzySearch: true },
+    searchTypeSettings: { fuzzySearch: true, filterCardbacks: false },
     sourceSettings: {
       sources: [
         [1, true],
@@ -123,7 +123,7 @@ test("cookies with incomplete source order are correctly reconciled", () => {
 
 test("cookies with incomplete source order plus invalid sources are correctly reconciled", () => {
   const settingsWithCompleteSourceOrder = {
-    searchTypeSettings: { fuzzySearch: true },
+    searchTypeSettings: { fuzzySearch: true, filterCardbacks: false },
     sourceSettings: {
       sources: [
         [6, true],

@@ -20,15 +20,14 @@ def snapshot_response(response: Response, snapshot: SnapshotAssertion):
         assert {"status_code": response.status_code, "content": response.content} == snapshot
 
 
-class TestPostSearchResults:
-    BASE_SEARCH_SETTINGS = {
-        "searchTypeSettings": {"fuzzySearch": False},
-        "sourceSettings": {
-            "sources": [[Sources.EXAMPLE_DRIVE_1.value.pk, True], [Sources.EXAMPLE_DRIVE_2.value.pk, True]]
-        },
-        "filterSettings": {"minimumDPI": 0, "maximumDPI": 1500, "maximumSize": 30},
-    }
+BASE_SEARCH_SETTINGS = {
+    "searchTypeSettings": {"fuzzySearch": False, "filterCardbacks": False},
+    "sourceSettings": {"sources": [[Sources.EXAMPLE_DRIVE_1.value.pk, True], [Sources.EXAMPLE_DRIVE_2.value.pk, True]]},
+    "filterSettings": {"minimumDPI": 0, "maximumDPI": 1500, "maximumSize": 30},
+}
 
+
+class TestPostSearchResults:
     @pytest.fixture(autouse=True)
     def autouse_populated_database(self, populated_database):
         pass
@@ -37,7 +36,7 @@ class TestPostSearchResults:
         response = client.post(
             reverse(views.post_search_results),
             {
-                "searchSettings": self.BASE_SEARCH_SETTINGS,
+                "searchSettings": BASE_SEARCH_SETTINGS,
                 "queries": [{"query": Cards.BRAINSTORM.value.name, "card_type": "CARD"}],
             },
             content_type="application/json",
@@ -50,7 +49,7 @@ class TestPostSearchResults:
         response = client.post(
             reverse(views.post_search_results),
             {
-                "searchSettings": self.BASE_SEARCH_SETTINGS,
+                "searchSettings": BASE_SEARCH_SETTINGS,
                 "queries": [{"query": Cards.SIMPLE_LOTUS.value.name, "card_type": "CARDBACK"}],
             },
             content_type="application/json",
@@ -65,7 +64,7 @@ class TestPostSearchResults:
         response = client.post(
             reverse(views.post_search_results),
             {
-                "searchSettings": self.BASE_SEARCH_SETTINGS,
+                "searchSettings": BASE_SEARCH_SETTINGS,
                 "queries": [{"query": Cards.GOBLIN.value.name, "card_type": "TOKEN"}],
             },
             content_type="application/json",
@@ -78,7 +77,7 @@ class TestPostSearchResults:
         response = client.post(
             reverse(views.post_search_results),
             {
-                "searchSettings": self.BASE_SEARCH_SETTINGS,
+                "searchSettings": BASE_SEARCH_SETTINGS,
                 "queries": [
                     {"query": Cards.BRAINSTORM.value.name, "card_type": "CARD"},
                     {"query": Cards.ISLAND.value.name, "card_type": "CARD"},
@@ -96,7 +95,7 @@ class TestPostSearchResults:
         response = client.post(
             reverse(views.post_search_results),
             {
-                "searchSettings": self.BASE_SEARCH_SETTINGS,
+                "searchSettings": BASE_SEARCH_SETTINGS,
                 "queries": [{"query": Cards.ISLAND.value.name, "card_type": "CARD"}],
             },
             content_type="application/json",
@@ -113,7 +112,7 @@ class TestPostSearchResults:
         response = client.post(
             reverse(views.post_search_results),
             {
-                "searchSettings": self.BASE_SEARCH_SETTINGS,
+                "searchSettings": BASE_SEARCH_SETTINGS,
                 "queries": [{"query": Cards.PAST_IN_FLAMES_1.value.name, "card_type": "CARD"}],
             },
             content_type="application/json",
@@ -126,7 +125,7 @@ class TestPostSearchResults:
         ]
 
     def test_search_for_card_with_versions_from_two_sources_under_reversed_search_order(self, client, snapshot):
-        search_settings = deepcopy(self.BASE_SEARCH_SETTINGS)
+        search_settings = deepcopy(BASE_SEARCH_SETTINGS)
         search_settings["sourceSettings"]["sources"] = [
             [Sources.EXAMPLE_DRIVE_2.value.pk, True],
             [Sources.EXAMPLE_DRIVE_1.value.pk, True],
@@ -147,7 +146,7 @@ class TestPostSearchResults:
         ]
 
     def test_search_for_card_with_versions_from_two_sources_with_one_source_disabled(self, client, snapshot):
-        search_settings = deepcopy(self.BASE_SEARCH_SETTINGS)
+        search_settings = deepcopy(BASE_SEARCH_SETTINGS)
         search_settings["sourceSettings"]["sources"] = [
             [Sources.EXAMPLE_DRIVE_1.value.pk, True],
             [Sources.EXAMPLE_DRIVE_2.value.pk, False],
@@ -167,7 +166,7 @@ class TestPostSearchResults:
         ]
 
     def test_search_for_card_with_versions_from_two_sources_with_all_sources_disabled(self, client, snapshot):
-        search_settings = deepcopy(self.BASE_SEARCH_SETTINGS)
+        search_settings = deepcopy(BASE_SEARCH_SETTINGS)
         search_settings["sourceSettings"]["sources"] = [
             [Sources.EXAMPLE_DRIVE_1.value.pk, False],
             [Sources.EXAMPLE_DRIVE_2.value.pk, False],
@@ -185,7 +184,7 @@ class TestPostSearchResults:
         assert response.json()["results"][Cards.PAST_IN_FLAMES_1.value.name]["CARD"] == []
 
     def test_fuzzy_search(self, client, snapshot):
-        search_settings = deepcopy(self.BASE_SEARCH_SETTINGS)
+        search_settings = deepcopy(BASE_SEARCH_SETTINGS)
         search_settings["searchTypeSettings"]["fuzzySearch"] = True
         response = client.post(
             reverse(views.post_search_results),
@@ -200,7 +199,7 @@ class TestPostSearchResults:
         ]
 
     def test_minimum_dpi_yielding_no_search_results(self, client, snapshot):
-        search_settings = deepcopy(self.BASE_SEARCH_SETTINGS)
+        search_settings = deepcopy(BASE_SEARCH_SETTINGS)
         search_settings["filterSettings"]["minimumDPI"] = 400
         response = client.post(
             reverse(views.post_search_results),
@@ -215,7 +214,7 @@ class TestPostSearchResults:
         assert response.json()["results"][Cards.SIMPLE_CUBE.value.name]["CARDBACK"] == []
 
     def test_maximum_dpi_yielding_no_search_results(self, client, snapshot):
-        search_settings = deepcopy(self.BASE_SEARCH_SETTINGS)
+        search_settings = deepcopy(BASE_SEARCH_SETTINGS)
         search_settings["filterSettings"]["maximumDPI"] = 200
         response = client.post(
             reverse(views.post_search_results),
@@ -230,7 +229,7 @@ class TestPostSearchResults:
         assert response.json()["results"][Cards.SIMPLE_CUBE.value.name]["CARDBACK"] == []
 
     def test_minimum_dpi_yielding_fewer_search_results(self, client, snapshot):
-        search_settings = deepcopy(self.BASE_SEARCH_SETTINGS)
+        search_settings = deepcopy(BASE_SEARCH_SETTINGS)
         search_settings["filterSettings"]["minimumDPI"] = 600
         response = client.post(
             reverse(views.post_search_results),
@@ -247,7 +246,7 @@ class TestPostSearchResults:
         ]
 
     def test_maximum_size_yielding_fewer_search_results(self, client, snapshot):
-        search_settings = deepcopy(self.BASE_SEARCH_SETTINGS)
+        search_settings = deepcopy(BASE_SEARCH_SETTINGS)
         search_settings["filterSettings"]["maximumSize"] = 4
         response = client.post(
             reverse(views.post_search_results),
@@ -268,7 +267,7 @@ class TestPostSearchResults:
         response = client.post(
             reverse(views.post_search_results),
             {
-                "searchSettings": self.BASE_SEARCH_SETTINGS,
+                "searchSettings": BASE_SEARCH_SETTINGS,
                 "queries": [
                     {"query": Cards.BRAINSTORM.value.name, "card_type": "CARD"},
                     {"query": Cards.ISLAND.value.name, "card_type": "CARD"},
@@ -284,7 +283,7 @@ class TestPostSearchResults:
         response = client.post(
             reverse(views.post_search_results),
             {
-                "searchSettings": self.BASE_SEARCH_SETTINGS,
+                "searchSettings": BASE_SEARCH_SETTINGS,
                 "queries": [
                     {"query": Cards.BRAINSTORM.value.name, "card_type": "CARD"},
                     {"query": Cards.ISLAND.value.name, "card_type": "CARD"},
@@ -421,14 +420,101 @@ class TestGetDFCPairs:
         snapshot_response(response, snapshot)
 
 
-class TestGetCardbacks:
+class TestPostCardbacks:
     @pytest.fixture(autouse=True)
-    def autouse_populated_database(self, django_settings, all_sources, all_cards):
+    def autouse_populated_database(self, django_settings, all_sources):
         pass
 
-    def test_get_multiple_rows(self, client, snapshot):
-        response = client.get(reverse(views.get_cardbacks))
+    def test_get_multiple_rows_unfiltered(self, client, snapshot, all_cards):
+        response = client.post(
+            reverse(views.post_cardbacks), {"searchSettings": BASE_SEARCH_SETTINGS}, content_type="application/json"
+        )
         snapshot_response(response, snapshot)
+        assert response.json()["cardbacks"] == [Cards.SIMPLE_CUBE.value.identifier, Cards.SIMPLE_LOTUS.value.identifier]
+
+    def test_get_multiple_rows_filtered_only_source_1(self, client, snapshot, all_cards):
+        search_settings = deepcopy(BASE_SEARCH_SETTINGS)
+        search_settings["searchTypeSettings"]["filterCardbacks"] = True
+        search_settings["sourceSettings"]["sources"] = [
+            [Sources.EXAMPLE_DRIVE_1.value.pk, True],
+            [Sources.EXAMPLE_DRIVE_2.value.pk, False],
+        ]
+        response = client.post(
+            reverse(views.post_cardbacks), {"searchSettings": search_settings}, content_type="application/json"
+        )
+        snapshot_response(response, snapshot)
+        assert response.json()["cardbacks"] == [Cards.SIMPLE_CUBE.value.identifier]
+
+    def test_get_multiple_rows_filtered_only_source_2(self, client, snapshot, all_cards):
+        search_settings = deepcopy(BASE_SEARCH_SETTINGS)
+        search_settings["searchTypeSettings"]["filterCardbacks"] = True
+        search_settings["sourceSettings"]["sources"] = [
+            [Sources.EXAMPLE_DRIVE_1.value.pk, False],
+            [Sources.EXAMPLE_DRIVE_2.value.pk, True],
+        ]
+        response = client.post(
+            reverse(views.post_cardbacks), {"searchSettings": search_settings}, content_type="application/json"
+        )
+        snapshot_response(response, snapshot)
+        assert response.json()["cardbacks"] == [Cards.SIMPLE_LOTUS.value.identifier]
+
+    def test_get_multiple_rows_filtered_ordered_sources(self, client, snapshot, all_cards):
+        search_settings = deepcopy(BASE_SEARCH_SETTINGS)
+        search_settings["searchTypeSettings"]["filterCardbacks"] = True
+        search_settings["sourceSettings"]["sources"] = [
+            [Sources.EXAMPLE_DRIVE_2.value.pk, True],
+            [Sources.EXAMPLE_DRIVE_1.value.pk, True],
+        ]
+        response = client.post(
+            reverse(views.post_cardbacks), {"searchSettings": search_settings}, content_type="application/json"
+        )
+        snapshot_response(response, snapshot)
+        assert response.json()["cardbacks"] == [Cards.SIMPLE_LOTUS.value.identifier, Cards.SIMPLE_CUBE.value.identifier]
+
+    def test_minimum_dpi_yielding_no_cardbacks(self, client, snapshot, all_cards):
+        search_settings = deepcopy(BASE_SEARCH_SETTINGS)
+        search_settings["searchTypeSettings"]["filterCardbacks"] = True
+        search_settings["filterSettings"]["minimumDPI"] = 1200
+        response = client.post(
+            reverse(views.post_cardbacks), {"searchSettings": search_settings}, content_type="application/json"
+        )
+        snapshot_response(response, snapshot)
+        assert len(response.json()["cardbacks"]) == 0
+
+    def test_maximum_dpi_yielding_no_cardbacks(self, client, snapshot, all_cards):
+        search_settings = deepcopy(BASE_SEARCH_SETTINGS)
+        search_settings["searchTypeSettings"]["filterCardbacks"] = True
+        search_settings["filterSettings"]["maximumDPI"] = 200
+        response = client.post(
+            reverse(views.post_cardbacks), {"searchSettings": search_settings}, content_type="application/json"
+        )
+        snapshot_response(response, snapshot)
+        assert len(response.json()["cardbacks"]) == 0
+
+    def test_maximum_size_yielding_no_cardbacks(self, client, snapshot, all_cards):
+        search_settings = deepcopy(BASE_SEARCH_SETTINGS)
+        search_settings["searchTypeSettings"]["filterCardbacks"] = True
+        search_settings["filterSettings"]["maximumDPI"] = 5
+        response = client.post(
+            reverse(views.post_cardbacks), {"searchSettings": search_settings}, content_type="application/json"
+        )
+        snapshot_response(response, snapshot)
+        assert len(response.json()["cardbacks"]) == 0
+
+    @pytest.mark.parametrize(
+        "json_body",
+        [{}, ["test"], {"man": "man"}, {"searchSettings": "test2"}],
+        ids=["empty json body", "array json body", "search settings not specified", "invalid search settings"],
+    )
+    def test_response_to_malformed_json_body(self, client, snapshot, json_body):
+        response = client.post(reverse(views.post_cardbacks), json_body, content_type="application/json")
+        snapshot_response(response, snapshot)
+        assert response.status_code == 400
+
+    def test_get_request(self, client, django_settings, snapshot):
+        response = client.get(reverse(views.post_cardbacks))
+        snapshot_response(response, snapshot)
+        assert response.status_code == 400
 
 
 class TestGetImportSites:

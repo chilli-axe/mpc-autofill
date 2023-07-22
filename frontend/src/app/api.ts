@@ -239,10 +239,14 @@ export async function APIGetCards(
 }
 
 export async function APIGetCardbacks(
-  backendURL: string
+  backendURL: string,
+  searchSettings: SearchSettings
 ): Promise<Array<string>> {
   const rawResponse = await fetch(formatURL(backendURL, "/2/cardbacks/"), {
-    method: "GET",
+    method: "POST",
+    body: JSON.stringify({
+      searchSettings,
+    }),
     credentials: "same-origin",
     headers: getCSRFHeader(),
   });

@@ -201,6 +201,7 @@ def search_new(s: Search, source_key: str, page: int = 0) -> dict[str, Any]:
 @dataclass(frozen=True, eq=True)
 class SearchSettings:
     fuzzy_search: bool
+    filter_cardbacks: bool
     sources: list[str]
     min_dpi: int
     max_dpi: int
@@ -211,7 +212,7 @@ class SearchSettings:
         """
         :param json_body: JSON body from the frontend to read settings from.
         :return: The parsed search settings.
-        :raises: KeyError if data is missing.
+        :raises: KeyError if data is missing. It's expected that `json_body` has been validated against the JSON schema.
         """
 
         search_settings = json_body["searchSettings"]
@@ -220,6 +221,7 @@ class SearchSettings:
         filter_settings = search_settings["filterSettings"]
 
         fuzzy_search = search_type_settings["fuzzySearch"] is True
+        filter_cardbacks = search_type_settings["filterCardbacks"] is True
 
         source_lookup: dict[int, str] = {x.pk: x.key for x in Source.objects.all()}
 
@@ -237,11 +239,39 @@ class SearchSettings:
 
         return cls(
             fuzzy_search=fuzzy_search,
+            filter_cardbacks=filter_cardbacks,
             sources=sources,
             min_dpi=min_dpi,
             max_dpi=max_dpi,
             max_size=max_size,
         )
+
+    def get_source_order(self) -> dict[str, int]:
+        return {x: i for i, x in enumerate(self.sources)}
+
+    def retrieve_cardback_identifiers(self) -> list[str]:
+        """
+        Retrieve the IDs of all cardbacks in the database, possibly filtered by search settings.
+        """
+
+        cardbacks: list[str]
+        order_by = ["-priority", "source__name", "name"]
+        if self.filter_cardbacks:
+            source_order = self.get_source_order()
+            hits_iterable = Card.objects.filter(
+                card_type=CardTypes.CARDBACK,
+                source__key__in=self.sources,
+                dpi__gte=self.min_dpi,
+                dpi__lte=self.max_dpi,
+                size__lte=self.max_size,
+            ).order_by(*order_by)
+            hits = sorted(hits_iterable, key=lambda card: source_order[card.source.key])
+            cardbacks = [card.identifier for card in hits]
+        else:
+            cardbacks = [
+                card.identifier for card in Card.objects.filter(card_type=CardTypes.CARDBACK).order_by(*order_by)
+            ]
+        return cardbacks
 
 
 @dataclass(frozen=True, eq=True)
@@ -283,7 +313,7 @@ class SearchQuery:
     @elastic_connection
     def retrieve_card_identifiers(self, search_settings: SearchSettings) -> list[str]:
         """
-        This is the core search algorithm for MPC Autofill - queries Elasticsearch for `self` given `search_settings`
+        This is the core search function for MPC Autofill - queries Elasticsearch for `self` given `search_settings`
         and returns the list of corresponding `Card` identifiers.
         """
 
@@ -309,7 +339,7 @@ class SearchQuery:
         )
         hits_iterable = s.params(preserve_order=True).scan()
 
-        source_order = {x: i for i, x in enumerate(search_settings.sources)}
+        source_order = search_settings.get_source_order()
         if search_settings.fuzzy_search:
             hits = sorted(hits_iterable, key=lambda x: (source_order[x.source], distance(x.searchq, query_parsed)))
         else:
@@ -318,12 +348,50 @@ class SearchQuery:
         return [x.identifier for x in hits]
 
 
+def get_schema_directory() -> Path:
+    return Path(__file__).parent.parent.parent.parent / "common" / "schemas"
+
+
+def parse_json_body_as_search_settings(json_body: dict[str, Any]) -> SearchSettings:
+    """
+    :raises: ValidationError
+    """
+
+    schema_directory = get_schema_directory()
+    registry = Registry().with_resources(
+        [
+            (
+                "search_settings.json",
+                Resource.from_contents(json.loads((schema_directory / "search_settings.json").read_text())),
+            )
+        ]
+    )
+    schema_validator = Draft201909Validator(
+        {
+            "$schema": "https://json-schema.org/draft/2019-09/schema",
+            "$id": "search_data",
+            "type": "object",
+            "properties": {
+                "searchSettings": {"$ref": "search_settings.json"},
+            },
+            "required": ["searchSettings"],
+            "allowAdditionalProperties": False,
+        },
+        registry=registry,
+    )
+
+    # the below line may raise ValidationError
+    schema_validator.validate(json_body)
+
+    return SearchSettings.from_json_body(json_body)
+
+
 def parse_json_body_as_search_data(json_body: dict[str, Any]) -> tuple[SearchSettings, list[SearchQuery]]:
     """
     :raises: ValidationError
     """
 
-    schema_directory = Path(__file__).parent.parent.parent.parent / "common" / "schemas"
+    schema_directory = get_schema_directory()
     registry = Registry().with_resources(
         [
             (schema_name, Resource.from_contents(json.loads((schema_directory / schema_name).read_text())))

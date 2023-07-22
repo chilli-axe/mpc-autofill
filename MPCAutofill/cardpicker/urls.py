@@ -27,7 +27,7 @@ urlpatterns = [
     path("2/cards/", views.post_cards),
     path("2/sources/", views.get_sources),
     path("2/DFCPairs/", views.get_dfc_pairs),
-    path("2/cardbacks/", views.get_cardbacks),
+    path("2/cardbacks/", views.post_cardbacks),
     path("2/importSites/", views.get_import_sites),
     path("2/importSiteDecklist/", views.post_import_site_decklist),
     path("2/sampleCards/", views.get_sample_cards),

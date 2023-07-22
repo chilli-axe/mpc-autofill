@@ -18,7 +18,7 @@ import {
   renderWithProviders,
 } from "@/common/test-utils";
 import {
-  cardbacksOneResult,
+  cardbacksOneOtherResult,
   cardDocumentsSixResults,
   defaultHandlers,
   searchResultsSixResults,
@@ -33,7 +33,7 @@ beforeEach(() => {
 test("the XML representation of a simple project with no custom backs", async () => {
   server.use(
     cardDocumentsSixResults,
-    cardbacksOneResult,
+    cardbacksOneOtherResult,
     sourceDocumentsThreeResults,
     searchResultsSixResults,
     ...defaultHandlers
@@ -89,7 +89,7 @@ test("the XML representation of a simple project with no custom backs", async ()
 test("the XML representation of a simple project with a custom back for one card", async () => {
   server.use(
     cardDocumentsSixResults,
-    cardbacksOneResult,
+    cardbacksOneOtherResult,
     sourceDocumentsThreeResults,
     searchResultsSixResults,
     ...defaultHandlers
@@ -154,7 +154,7 @@ test("the XML representation of a simple project with a custom back for one card
 test("the XML representation of a simple project with multiple instances of a card", async () => {
   server.use(
     cardDocumentsSixResults,
-    cardbacksOneResult,
+    cardbacksOneOtherResult,
     sourceDocumentsThreeResults,
     searchResultsSixResults,
     ...defaultHandlers

@@ -81,16 +81,28 @@ export function CommonCardback({ selectedImage }: CommonCardbackProps) {
 
   const searchResults = useAppSelector(selectCardbacks);
 
-  // TODO
+  // TODO: avoid repeating this logic between this component and cardSlot
   useEffect(() => {
-    // If no image is selected and there are cardbacks, select the first image in search results
-    if (searchResults.length > 0 && selectedImage == null) {
-      dispatch(
-        setSelectedCardback({
-          selectedImage: searchResults[0],
-        })
-      );
+    let mutatedSelectedImage = selectedImage;
+
+    // If an image is selected and it's not in the search results, deselect the image
+    if (
+      mutatedSelectedImage != null &&
+      !searchResults.includes(mutatedSelectedImage)
+    ) {
+      mutatedSelectedImage = undefined;
     }
+
+    // If no image is selected and there are cardbacks, select the first image in search results
+    if (searchResults.length > 0 && mutatedSelectedImage == null) {
+      mutatedSelectedImage = searchResults[0];
+    }
+
+    dispatch(
+      setSelectedCardback({
+        selectedImage: mutatedSelectedImage ?? null,
+      })
+    );
   }, [dispatch, selectedImage, searchResults]);
 
   const selectedImageIndex: number | undefined =
@@ -172,7 +184,7 @@ export function CommonCardback({ selectedImage }: CommonCardbackProps) {
         nextImageIdentifier={nextImage}
         cardHeaderTitle={cardHeaderTitle}
         cardFooter={cardFooter}
-        noResultsFound={false}
+        noResultsFound={searchResults.length === 0}
       />
       {showGridSelector && (
         <MemoizedCommonCardbackGridSelector

@@ -32,6 +32,10 @@ export interface SearchTypeSettings {
    * Whether fuzzy search is enabled
    */
   fuzzySearch: boolean;
+  /**
+   * Whether search settings apply to cardbacks or not
+   */
+  filterCardbacks: boolean;
 }
 export interface SourceSettings {
   /**
