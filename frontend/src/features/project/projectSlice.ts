@@ -15,6 +15,8 @@ import {
   SlotProjectMembers,
 } from "@/common/types";
 
+//# region slice configuration
+
 const initialState: Project = { members: [], cardback: null };
 
 export const projectSlice = createSlice({
@@ -235,20 +237,29 @@ export const projectSlice = createSlice({
           state.members.splice(index, 1);
         });
     },
-
-    // switchToFront: state => {
-    //   // Redux Toolkit allows us to write "mutating" logic in reducers. It
-    //   // doesn't actually mutate the state because it uses the Immer library,
-    //   // which detects changes to a "draft state" and produces a brand new
-    //   // immutable state based off those changes
-    //   // TODO: make these wrap around
-    //   state.activeFace = "front"
-    // },
-    // switchToBack: state => {
-    //   state.activeFace = "back"
-    // },
   },
 });
+
+export const {
+  setSelectedImage,
+  bulkReplaceSelectedImage,
+  bulkSetSelectedImage,
+  setQuery,
+  bulkSetQuery,
+  setSelectedCardback,
+  addMembers,
+  toggleMemberSelection,
+  bulkSetMemberSelection,
+  bulkAlignMemberSelection,
+  deleteSlot,
+  bulkDeleteSlots,
+} = projectSlice.actions;
+
+export default projectSlice.reducer;
+
+//# endregion
+
+//# region selectors
 
 export const selectProjectMembers = (
   state: RootState
@@ -295,9 +306,6 @@ export const selectProjectMemberQueries = (state: RootState): Set<string> =>
 
 export const selectProjectSize = (state: RootState): number =>
   state.project.members.length;
-
-export const selectProjectCardback = (state: RootState): string | null =>
-  state.project.cardback;
 
 export const selectProjectFileSize = (state: RootState): number => {
   const uniqueCardIdentifiers = new Set<string>();
@@ -364,20 +372,4 @@ export const selectQueriesWithoutSearchResults = (
 export const selectIsProjectEmpty = (state: RootState) =>
   state.project.members.length == 0;
 
-// Action creators are generated for each case reducer function
-export const {
-  setSelectedImage,
-  bulkReplaceSelectedImage,
-  bulkSetSelectedImage,
-  setQuery,
-  bulkSetQuery,
-  setSelectedCardback,
-  addMembers,
-  toggleMemberSelection,
-  bulkSetMemberSelection,
-  bulkAlignMemberSelection,
-  deleteSlot,
-  bulkDeleteSlots,
-} = projectSlice.actions;
-
-export default projectSlice.reducer;
+//# endregion

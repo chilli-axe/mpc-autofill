@@ -16,7 +16,6 @@ import toastsReducer, { setError } from "@/features/toasts/toastsSlice";
 import modalReducer from "@/features/ui/modalSlice";
 import viewSettingsReducer from "@/features/viewSettings/viewSettingsSlice";
 
-// Create the root reducer separately so we can extract the RootState type
 const rootReducer = combineReducers({
   [api.reducerPath]: api.reducer,
   viewSettings: viewSettingsReducer,
@@ -34,6 +33,10 @@ const rootReducer = combineReducers({
 
 const rtkQueryErrorLogger: Middleware =
   (api: MiddlewareAPI) => (next) => (action) => {
+    /**
+     * Whenever a RTK Query API request fails, display the response's error message to the user as a toast.
+     */
+
     const backendURL = api.getState().backend.url;
     if (
       backendURL != null &&
@@ -67,6 +70,6 @@ export const setupStore = (preloadedState?: PreloadedState<RootState>) => {
 const store = setupStore();
 
 export type RootState = ReturnType<typeof rootReducer>;
-export type AppDispatch = typeof store.dispatch; // AppStore['dispatch']
+export type AppDispatch = typeof store.dispatch;
 
 export default store;

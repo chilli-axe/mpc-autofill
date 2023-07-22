@@ -9,6 +9,8 @@ import { RootState } from "@/app/store";
 import { ProjectName } from "@/common/constants";
 import { BackendState } from "@/common/types";
 
+//# region slice configuration
+
 const initialState: BackendState = {
   url: null,
 };
@@ -30,7 +32,15 @@ export const backendSlice = createSlice({
 export const { setURL, clearURL } = backendSlice.actions;
 export default backendSlice.reducer;
 
+//# endregion
+
+//# region selectors
+
 export const selectBackendURL = (state: RootState) => state.backend.url;
+
+//# endregion
+
+//# region hooks
 
 export function useProjectName() {
   const backendInfoQuery = useGetBackendInfoQuery();
@@ -39,3 +49,5 @@ export function useProjectName() {
     ProjectName
   );
 }
+
+//# endregion

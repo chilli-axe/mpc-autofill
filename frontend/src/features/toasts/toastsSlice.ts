@@ -4,6 +4,8 @@ import { RootState } from "@/app/store";
 import { APIError } from "@/common/types";
 import { ToastsState } from "@/common/types";
 
+//# region slice configuration
+
 const initialState: ToastsState = { errors: {} };
 
 export const toastsSlice = createSlice({
@@ -18,6 +20,14 @@ export const toastsSlice = createSlice({
     },
   },
 });
+
 export const { setError, clearError } = toastsSlice.actions;
 export default toastsSlice.reducer;
+
+//# endregion
+
+//# region selectors
+
 export const selectToastsErrors = (state: RootState) => state.toasts.errors;
+
+//# endregion

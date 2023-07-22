@@ -14,6 +14,8 @@ import { selectUniqueCardIdentifiers } from "@/features/project/projectSlice";
 import { fetchSearchResultsAndReportError } from "@/features/search/searchResultsSlice";
 import { setError } from "@/features/toasts/toastsSlice";
 
+//# region async thunk
+
 const typePrefix = "cardDocuments/fetchCardDocuments";
 
 const fetchCardDocuments = createAppAsyncThunk(
@@ -69,6 +71,21 @@ const fetchCardDocuments = createAppAsyncThunk(
   }
 );
 
+export async function fetchCardDocumentsAndReportError(dispatch: AppDispatch) {
+  try {
+    await dispatch(fetchCardDocuments()).unwrap();
+  } catch (error: any) {
+    dispatch(
+      setError([typePrefix, { name: error.name, message: error.message }])
+    );
+    return null;
+  }
+}
+
+//# endregion
+
+//# region slice configuration
+
 const initialState: CardDocumentsState = {
   cardDocuments: {},
   status: "idle",
@@ -104,13 +121,4 @@ export const cardDocumentsSlice = createSlice({
 
 export default cardDocumentsSlice.reducer;
 
-export async function fetchCardDocumentsAndReportError(dispatch: AppDispatch) {
-  try {
-    await dispatch(fetchCardDocuments()).unwrap();
-  } catch (error: any) {
-    dispatch(
-      setError([typePrefix, { name: error.name, message: error.message }])
-    );
-    return null;
-  }
-}
+//# endregion

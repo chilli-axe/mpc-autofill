@@ -2,6 +2,8 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 import { ViewSettingsState } from "@/common/types";
 
+//# region slice configuration
+
 const initialState: ViewSettingsState = {
   frontsVisible: true,
   sourcesVisible: {},
@@ -41,7 +43,6 @@ export const viewSettingsSlice = createSlice({
   },
 });
 
-// Action creators are generated for each case reducer function
 export const {
   switchToFront,
   switchToBack,
@@ -53,3 +54,5 @@ export const {
 } = viewSettingsSlice.actions;
 
 export default viewSettingsSlice.reducer;
+
+//# endregion

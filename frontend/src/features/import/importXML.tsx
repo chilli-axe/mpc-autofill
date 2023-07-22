@@ -28,13 +28,13 @@ import { TextFileDropzone } from "@/common/dropzone";
 import { processPrefix } from "@/common/processing";
 import { useAppDispatch, useAppSelector } from "@/common/types";
 import { Cardstock, SlotProjectMembers } from "@/common/types";
+import { selectProjectCardback } from "@/features/card/cardbackSlice";
 import {
   setCardstock,
   setFoil,
 } from "@/features/finishSettings/finishSettingsSlice";
 import {
   addMembers,
-  selectProjectCardback,
   selectProjectSize,
   setSelectedCardback,
 } from "@/features/project/projectSlice";

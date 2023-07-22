@@ -5,9 +5,11 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 import { APIGetCardbacks } from "@/app/api";
-import { AppDispatch } from "@/app/store";
+import { AppDispatch, RootState } from "@/app/store";
 import { CardbacksState, createAppAsyncThunk } from "@/common/types";
 import { setError } from "@/features/toasts/toastsSlice";
+
+//# region async thunk
 
 const typePrefix = "cardbacks/fetchCardbacks";
 
@@ -19,6 +21,21 @@ const fetchCardbacks = createAppAsyncThunk(
     return backendURL != null ? APIGetCardbacks(backendURL) : null;
   }
 );
+
+export async function fetchCardbacksAndReportError(dispatch: AppDispatch) {
+  try {
+    await dispatch(fetchCardbacks()).unwrap();
+  } catch (error: any) {
+    dispatch(
+      setError([typePrefix, { name: error.name, message: error.message }])
+    );
+    return null;
+  }
+}
+
+//# endregion
+
+//# region slice configuration
 
 const initialState: CardbacksState = {
   cardbacks: [],
@@ -59,13 +76,11 @@ export const cardbackSlice = createSlice({
 
 export default cardbackSlice.reducer;
 
-export async function fetchCardbacksAndReportError(dispatch: AppDispatch) {
-  try {
-    await dispatch(fetchCardbacks()).unwrap();
-  } catch (error: any) {
-    dispatch(
-      setError([typePrefix, { name: error.name, message: error.message }])
-    );
-    return null;
-  }
-}
+//# endregion
+
+//# region selectors
+
+export const selectProjectCardback = (state: RootState): string | undefined =>
+  state.project.cardback ?? undefined;
+
+//# endregion

@@ -4,6 +4,8 @@ import { RootState } from "@/app/store";
 import { CardstockFoilCompatibility } from "@/common/constants";
 import { Cardstock, FinishSettingsState } from "@/common/types";
 
+//# region slice configuration
+
 const initialState: FinishSettingsState = {
   cardstock: "(S30) Standard Smooth",
   foil: false,
@@ -32,8 +34,15 @@ export const finishSettingsSlice = createSlice({
   },
 });
 
-export const selectFinishSettings = (state: RootState): FinishSettingsState =>
-  state.finishSettings;
 export const { setCardstock, setFoil, toggleFoil } =
   finishSettingsSlice.actions;
 export default finishSettingsSlice.reducer;
+
+//# endregion
+
+//# region selectors
+
+export const selectFinishSettings = (state: RootState): FinishSettingsState =>
+  state.finishSettings;
+
+//# endregion

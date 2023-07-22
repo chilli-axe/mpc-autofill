@@ -9,9 +9,7 @@ import { AppDispatch, RootState } from "@/app/store";
 import { createAppAsyncThunk, SourceDocumentsState } from "@/common/types";
 import { setError } from "@/features/toasts/toastsSlice";
 
-const initialState = {
-  sourceDocuments: undefined,
-} as SourceDocumentsState;
+//# region async thunk
 
 const typePrefix = "sourceDocuments/fetchSourceDocuments";
 
@@ -22,6 +20,27 @@ const fetchSourceDocuments = createAppAsyncThunk(
     return state.backend.url != null ? APIGetSources(state.backend.url) : null;
   }
 );
+
+export async function fetchSourceDocumentsAndReportError(
+  dispatch: AppDispatch
+) {
+  try {
+    await dispatch(fetchSourceDocuments()).unwrap();
+  } catch (error: any) {
+    dispatch(
+      setError([typePrefix, { name: error.name, message: error.message }])
+    );
+    return null;
+  }
+}
+
+//# endregion
+
+//# region slice configuration
+
+const initialState = {
+  sourceDocuments: undefined,
+} as SourceDocumentsState;
 
 export const sourceDocumentsSlice = createSlice({
   name: "sourceDocuments",
@@ -51,18 +70,12 @@ export const sourceDocumentsSlice = createSlice({
 });
 
 export default sourceDocumentsSlice.reducer;
+
+//# endregion
+
+//# region selectors
+
 export const selectSourceDocuments = (state: RootState) =>
   state.sourceDocuments.sourceDocuments;
 
-export async function fetchSourceDocumentsAndReportError(
-  dispatch: AppDispatch
-) {
-  try {
-    await dispatch(fetchSourceDocuments()).unwrap();
-  } catch (error: any) {
-    dispatch(
-      setError([typePrefix, { name: error.name, message: error.message }])
-    );
-    return null;
-  }
-}
+//# endregion

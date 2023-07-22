@@ -15,6 +15,8 @@ import {
 import { selectQueriesWithoutSearchResults } from "@/features/project/projectSlice";
 import { setError } from "@/features/toasts/toastsSlice";
 
+//# region async thunk
+
 const typePrefix = "searchResults/fetchCards";
 
 const fetchSearchResults = createAppAsyncThunk(
@@ -48,6 +50,21 @@ const fetchSearchResults = createAppAsyncThunk(
     }
   }
 );
+
+export async function fetchSearchResultsAndReportError(dispatch: AppDispatch) {
+  try {
+    await dispatch(fetchSearchResults()).unwrap();
+  } catch (error: any) {
+    dispatch(
+      setError([typePrefix, { name: error.name, message: error.message }])
+    );
+    return null;
+  }
+}
+
+//# endregion
+
+//# region slice configuration
 
 const initialState: SearchResultsState = {
   searchResults: {},
@@ -84,18 +101,10 @@ export const searchResultsSlice = createSlice({
       });
   },
 });
+
 export const { addSearchResults, clearSearchResults } =
   searchResultsSlice.actions;
 
 export default searchResultsSlice.reducer;
 
-export async function fetchSearchResultsAndReportError(dispatch: AppDispatch) {
-  try {
-    await dispatch(fetchSearchResults()).unwrap();
-  } catch (error: any) {
-    dispatch(
-      setError([typePrefix, { name: error.name, message: error.message }])
-    );
-    return null;
-  }
-}
+//# endregion

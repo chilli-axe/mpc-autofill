@@ -12,6 +12,7 @@ import { RootState } from "@/app/store";
 import { NavbarHeight } from "@/common/constants";
 import { useAppDispatch, useAppSelector } from "@/common/types";
 import { selectBackendURL } from "@/features/backend/backendSlice";
+import { selectProjectCardback } from "@/features/card/cardbackSlice";
 import { CardGrid } from "@/features/card/cardGrid";
 import { CommonCardback } from "@/features/card/commonCardback";
 import { Export } from "@/features/export/export";
@@ -37,8 +38,7 @@ function App() {
   //       and is there a better check for whether to show backend data rather than the URL not being null?
   const backendURL = useAppSelector(selectBackendURL);
   const dispatch = useAppDispatch();
-  const cardback =
-    useAppSelector((state) => state.project.cardback) ?? undefined;
+  const cardback = useAppSelector(selectProjectCardback);
   useEffect(() => {
     if (backendURL != null) {
       fetchSourceDocumentsAndReportError(dispatch);

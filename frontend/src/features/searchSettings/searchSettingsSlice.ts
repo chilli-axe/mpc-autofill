@@ -4,6 +4,8 @@ import { RootState } from "@/app/store";
 import { MaximumDPI, MaximumSize, MinimumDPI } from "@/common/constants";
 import { SearchSettings } from "@/common/types";
 
+//# region slice configuration
+
 const initialState: SearchSettings = {
   // TODO: this default is redundant through `cookies.ts`. reconsider this
   searchTypeSettings: {
@@ -34,7 +36,15 @@ export const searchSettingsSlice = createSlice({
     },
   },
 });
+
 export const { setSearchTypeSettings, setSourceSettings, setFilterSettings } =
   searchSettingsSlice.actions;
 export default searchSettingsSlice.reducer;
+
+//# endregion
+
+//# region selectors
+
 export const selectSearchSettings = (state: RootState) => state.searchSettings;
+
+//# endregion
