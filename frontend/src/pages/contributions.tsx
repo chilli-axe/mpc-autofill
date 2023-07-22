@@ -2,11 +2,9 @@ import Head from "next/head";
 import React from "react";
 import Alert from "react-bootstrap/Alert";
 
-import { useGetBackendInfoQuery } from "@/app/api";
 import { MakePlayingCards, MakePlayingCardsURL } from "@/common/constants";
-import { useAppSelector } from "@/common/types";
 import {
-  selectBackendURL,
+  useBackendConfigured,
   useProjectName,
 } from "@/features/backend/backendSlice";
 import {
@@ -72,20 +70,16 @@ function ContributionGuidelines() {
 }
 
 function ContributionsOrDefault() {
-  const backendURL = useAppSelector(selectBackendURL);
-  return (
+  const backendConfigured = useBackendConfigured();
+  return backendConfigured ? (
     <>
-      {backendURL != null ? (
-        <>
-          <ContributionsSummary />
-          <ContributionGuidelines />
-          <ContributionsPerSource />
-          <Footer />
-        </>
-      ) : (
-        <NoBackendDefault />
-      )}
+      <ContributionsSummary />
+      <ContributionGuidelines />
+      <ContributionsPerSource />
+      <Footer />
     </>
+  ) : (
+    <NoBackendDefault />
   );
 }
 

@@ -6,9 +6,9 @@ import styled, { keyframes, StyledComponent } from "styled-components";
 
 import { api, useGetSampleCardsQuery } from "@/app/api";
 import { QueryTags } from "@/common/constants";
-import { CardDocument, useAppDispatch, useAppSelector } from "@/common/types";
+import { CardDocument, useAppDispatch } from "@/common/types";
 import {
-  selectBackendURL,
+  useBackendConfigured,
   useProjectName,
 } from "@/features/backend/backendSlice";
 import {
@@ -184,11 +184,11 @@ const SampleCardDocument: CardDocument = {
 };
 
 export function DynamicLogo() {
-  const backendURL = useAppSelector(selectBackendURL);
+  const backendConfigured = useBackendConfigured();
   const dispatch = useAppDispatch();
   useEffect(() => {
     dispatch(api.util.invalidateTags([QueryTags.SampleCards]));
-  }, []);
+  }, [dispatch]);
   const sampleCardsQuery = useGetSampleCardsQuery();
   const projectName = useProjectName();
 
@@ -245,20 +245,20 @@ export function DynamicLogo() {
                 ([maybeCardDocument, WrapperElement], index) => (
                   <WrapperElement key={`logo-card${index}-outer-wrapper`}>
                     <MemoizedCardProportionWrapper
-                      bordered={maybeCardDocument == null}
+                      bordered={!backendConfigured}
                       small={true}
                       key={`$logo-card${index}-inner-wrapper`}
                     >
                       <MemoizedCardImage
                         key={`$logo-card${index}-image`}
                         maybeCardDocument={
-                          backendURL == null
-                            ? SampleCardDocument
-                            : maybeCardDocument
+                          backendConfigured
+                            ? maybeCardDocument
+                            : SampleCardDocument
                         }
                         hidden={false}
                         small={true}
-                        showDetailedViewOnClick={backendURL != null}
+                        showDetailedViewOnClick={backendConfigured}
                       />
                     </MemoizedCardProportionWrapper>
                   </WrapperElement>

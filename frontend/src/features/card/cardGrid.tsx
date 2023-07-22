@@ -3,22 +3,27 @@
  * querying the server for search results as necessary.
  */
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect } from "react";
 import Modal from "react-bootstrap/Modal";
 import Row from "react-bootstrap/Row";
 import styled from "styled-components";
 
 import { Back, Front } from "@/common/constants";
 import { useAppDispatch, useAppSelector } from "@/common/types";
-import { selectBackendURL } from "@/features/backend/backendSlice";
+import { useBackendConfigured } from "@/features/backend/backendSlice";
 import { MemoizedCardSlot } from "@/features/card/cardSlot";
 import {
+  selectIsProjectEmpty,
   selectProjectMembers,
-  selectProjectSize,
 } from "@/features/project/projectSlice";
 import { fetchCardDocumentsAndReportError } from "@/features/search/cardDocumentsSlice";
 import { clearSearchResults } from "@/features/search/searchResultsSlice";
+import {
+  selectSearchSettingsSourcesValid,
+  selectStringifiedSearchSettings,
+} from "@/features/searchSettings/searchSettingsSlice";
 import { Spinner } from "@/features/ui/spinner";
+import { selectFrontsVisible } from "@/features/viewSettings/viewSettingsSlice";
 
 const CardGridDefaultBackground = styled.div`
   position: absolute;
@@ -61,26 +66,33 @@ export function CardGrid() {
       state.cardDocuments.status == "loading" ||
       state.searchResults.status === "loading"
   );
-  const projectSize = useAppSelector(selectProjectSize);
+  const isProjectEmpty = useAppSelector(selectIsProjectEmpty);
+  const frontsVisible = useAppSelector(selectFrontsVisible);
+  const searchSettingsSourcesValid = useAppSelector(
+    selectSearchSettingsSourcesValid
+  );
+  const stringifiedSearchSettings = useAppSelector(
+    selectStringifiedSearchSettings
+  );
+  const projectMembers = useAppSelector(selectProjectMembers);
 
-  const backendURL = useAppSelector(selectBackendURL);
+  const backendConfigured = useBackendConfigured();
 
   const cardSlotsFronts = [];
   const cardSlotsBacks = [];
-  const projectMembers = useAppSelector(selectProjectMembers);
-  const searchSettings = useAppSelector((state) => state.searchSettings);
-  const stringifiedSearchSettings = useMemo<string>(
-    () => JSON.stringify(searchSettings),
-    [searchSettings]
-  );
 
   useEffect(() => {
     // recalculate search results when search settings change
-    if (backendURL != null && searchSettings.sourceSettings.sources != null) {
+    if (backendConfigured && searchSettingsSourcesValid) {
       dispatch(clearSearchResults());
       fetchCardDocumentsAndReportError(dispatch);
     }
-  }, [stringifiedSearchSettings]);
+  }, [
+    dispatch,
+    stringifiedSearchSettings,
+    backendConfigured,
+    searchSettingsSourcesValid,
+  ]);
 
   for (const [slot, slotProjectMember] of projectMembers.entries()) {
     cardSlotsFronts.push(
@@ -100,10 +112,6 @@ export function CardGrid() {
       ></MemoizedCardSlot>
     );
   }
-
-  const frontsVisible = useAppSelector(
-    (state) => state.viewSettings.frontsVisible
-  );
 
   // TODO: should we aim to lift state up here and conditionally render rather than hide?
   return (
@@ -131,7 +139,7 @@ export function CardGrid() {
       >
         {cardSlotsBacks}
       </Row>
-      <Modal show={fetchingCardData && projectSize > 0} centered>
+      <Modal show={fetchingCardData && !isProjectEmpty} centered>
         <Modal.Header>
           <Modal.Title
             style={{ textAlign: "center", userSelect: "none" }}

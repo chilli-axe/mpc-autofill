@@ -11,9 +11,11 @@ import { Back } from "@/common/constants";
 import { useAppDispatch, useAppSelector } from "@/common/types";
 import { wrapIndex } from "@/common/utils";
 import { MemoizedEditorCard } from "@/features/card/card";
+import { selectCardbacks } from "@/features/card/cardbackSlice";
 import { GridSelector } from "@/features/card/gridSelector";
 import {
   bulkReplaceSelectedImage,
+  selectProjectCardback,
   setSelectedCardback,
 } from "@/features/project/projectSlice";
 
@@ -33,7 +35,7 @@ export function CommonCardbackGridSelector({
   show,
   handleClose,
 }: CommonCardbackGridSelectorProps) {
-  const projectCardback = useAppSelector((state) => state.project.cardback);
+  const projectCardback = useAppSelector(selectProjectCardback);
   const dispatch = useAppDispatch();
   function setSelectedImageFromIdentifier(selectedImage: string): void {
     if (projectCardback != null) {
@@ -77,8 +79,7 @@ export function CommonCardback({ selectedImage }: CommonCardbackProps) {
   const handleCloseGridSelector = () => setShowGridSelector(false);
   const handleShowGridSelector = () => setShowGridSelector(true);
 
-  // TODO: move this selector somewhere more sensible
-  const searchResults = useAppSelector((state) => state.cardbacks.cardbacks);
+  const searchResults = useAppSelector(selectCardbacks);
 
   // TODO
   useEffect(() => {
@@ -90,7 +91,7 @@ export function CommonCardback({ selectedImage }: CommonCardbackProps) {
         })
       );
     }
-  }, [searchResults]);
+  }, [dispatch, selectedImage, searchResults]);
 
   const selectedImageIndex: number | undefined =
     selectedImage != null ? searchResults.indexOf(selectedImage) : undefined;

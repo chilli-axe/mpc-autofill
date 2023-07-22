@@ -15,7 +15,7 @@ import {
 } from "@/common/cookies";
 import { standardiseURL } from "@/common/processing";
 import { useAppDispatch, useAppSelector } from "@/common/types";
-import { selectBackendURL, setURL } from "@/features/backend/backendSlice";
+import { setURL, useBackendConfigured } from "@/features/backend/backendSlice";
 import { MemoizedCardDetailedView } from "@/features/card/cardDetailedView";
 import { Toasts } from "@/features/toasts/toasts";
 import { hideModal } from "@/features/ui/modalSlice";
@@ -30,9 +30,9 @@ function BackendSetter() {
       : null;
 
   const dispatch = useAppDispatch();
-  const backendURL = useAppSelector(selectBackendURL);
+  const backendConfigured = useBackendConfigured();
   useEffect(() => {
-    if (backendURL == null && formattedURL != null) {
+    if (!backendConfigured && formattedURL != null) {
       dispatch(setURL(formattedURL));
       setLocalStorageBackendURL(formattedURL);
       if (server != null && typeof server == "string" && server.length > 0) {
@@ -40,7 +40,7 @@ function BackendSetter() {
         router.replace({ server }, undefined, { shallow: true });
       }
     }
-  }, [router.isReady, backendURL, formattedURL, dispatch]);
+  }, [router.isReady, backendConfigured, formattedURL, dispatch]);
 
   return <></>;
 }

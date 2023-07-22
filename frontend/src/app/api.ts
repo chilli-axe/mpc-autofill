@@ -26,9 +26,8 @@ import {
   SearchResults,
   SearchSettings,
   SourceDocuments,
-  useAppSelector,
 } from "@/common/types";
-import { selectBackendURL } from "@/features/backend/backendSlice";
+import { useBackendConfigured } from "@/features/backend/backendSlice";
 
 // dynamic base URL implementation retrieved from https://stackoverflow.com/a/69570628/13021511
 const dynamicBaseQuery: BaseQueryFn<
@@ -169,51 +168,51 @@ const {
 } = api;
 
 export function useGetImportSitesQuery() {
-  const backendURL = useAppSelector(selectBackendURL);
+  const backendConfigured = useBackendConfigured();
   return useRawGetImportSitesQuery(undefined, {
-    skip: backendURL == null,
+    skip: !backendConfigured,
   });
 }
 
 export function useGetDFCPairsQuery() {
-  const backendURL = useAppSelector(selectBackendURL);
+  const backendConfigured = useBackendConfigured();
   return useRawGetDFCPairsQuery(undefined, {
-    skip: backendURL == null,
+    skip: !backendConfigured,
   });
 }
 
 export function useGetSampleCardsQuery() {
-  const backendURL = useAppSelector(selectBackendURL);
+  const backendConfigured = useBackendConfigured();
   return useRawGetSampleCardsQuery(undefined, {
-    skip: backendURL == null,
+    skip: !backendConfigured,
   });
 }
 
 export function useGetContributionsQuery() {
-  const backendURL = useAppSelector(selectBackendURL);
+  const backendConfigured = useBackendConfigured();
   return useRawGetContributionsQuery(undefined, {
-    skip: backendURL == null,
+    skip: !backendConfigured,
   });
 }
 
 export function useGetBackendInfoQuery() {
-  const backendURL = useAppSelector(selectBackendURL);
+  const backendConfigured = useBackendConfigured();
   return useRawGetBackendInfoQuery(undefined, {
-    skip: backendURL == null,
+    skip: !backendConfigured,
   });
 }
 
 export function useGetNewCardsFirstPageQuery() {
-  const backendURL = useAppSelector(selectBackendURL);
+  const backendConfigured = useBackendConfigured();
   return useRawGetNewCardsFirstPageQuery(undefined, {
-    skip: backendURL == null,
+    skip: !backendConfigured,
   });
 }
 
 export function useGetNewCardsPageQuery([sourceKey, page]: [string, number]) {
-  const backendURL = useAppSelector(selectBackendURL);
+  const backendConfigured = useBackendConfigured();
   return useRawGetNewCardsPageQuery([sourceKey, page], {
-    skip: backendURL == null || page <= 1,
+    skip: !backendConfigured || page <= 1,
   });
 }
 

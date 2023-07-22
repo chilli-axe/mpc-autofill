@@ -11,10 +11,9 @@ import styled from "styled-components";
 
 import { useGetBackendInfoQuery } from "@/app/api";
 import { ContentMaxWidth, NavbarLogoHeight } from "@/common/constants";
-import { useAppSelector } from "@/common/types";
 import { BackendConfig } from "@/features/backend/backend";
 import {
-  selectBackendURL,
+  useBackendConfigured,
   useProjectName,
 } from "@/features/backend/backendSlice";
 import { SupportBackendModal } from "@/features/support/supportBackend";
@@ -34,7 +33,7 @@ const BoldCollapse = styled(Navbar.Collapse)`
 `;
 
 export default function ProjectNavbar() {
-  const backendURL = useAppSelector(selectBackendURL);
+  const backendConfigured = useBackendConfigured();
   const backendInfoQuery = useGetBackendInfoQuery();
 
   const [showBackendConfig, setShowBackendConfig] = useState(false);
@@ -79,7 +78,7 @@ export default function ProjectNavbar() {
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
           <BoldCollapse id="basic-navbar-nav">
             <Nav className="me-auto">
-              {backendURL != null && (
+              {backendConfigured && (
                 <Nav.Link
                   as={Link}
                   href="/editor"
@@ -88,7 +87,7 @@ export default function ProjectNavbar() {
                   Editor
                 </Nav.Link>
               )}
-              {backendURL != null && (
+              {backendConfigured && (
                 <>
                   <Nav.Link
                     as={Link}

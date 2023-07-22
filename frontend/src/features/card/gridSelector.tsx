@@ -17,9 +17,14 @@ import Toggle from "react-bootstrap-toggle";
 import { ToggleButtonHeight } from "@/common/constants";
 import { CardDocument, useAppDispatch, useAppSelector } from "@/common/types";
 import { MemoizedEditorCard } from "@/features/card/card";
+import { selectCardDocumentsByIdentifier } from "@/features/search/cardDocumentsSlice";
+import { selectSourceNamesByKey } from "@/features/search/sourceDocumentsSlice";
 import {
   makeAllSourcesInvisible,
   makeAllSourcesVisible,
+  selectAnySourcesCollapsed,
+  selectFacetBySource,
+  selectSourcesVisible,
   toggleFacetBySource,
   toggleSourceVisible,
 } from "@/features/viewSettings/viewSettingsSlice";
@@ -44,13 +49,13 @@ interface CardGridDisplayProps {
   selectImage: {
     (identifier: string): void;
   };
-  sourceKeyToName: { [sourceKey: string]: string };
+  sourceNamesByKey: { [sourceKey: string]: string };
 }
 
 function CardsGroupedTogether({
   cardIdentifiersAndOptionNumbersBySource,
   selectImage,
-  sourceKeyToName,
+  sourceNamesByKey,
 }: CardGridDisplayProps) {
   /**
    * Render all images in `cardIdentifiersAndOptionNumbersBySource` in one block -
@@ -81,7 +86,7 @@ function CardsGroupedTogether({
 function CardsFacetedBySource({
   cardIdentifiersAndOptionNumbersBySource,
   selectImage,
-  sourceKeyToName,
+  sourceNamesByKey,
 }: CardGridDisplayProps) {
   /**
    * Render all images in `cardIdentifiersAndOptionNumbersBySource` separated by source.
@@ -89,9 +94,7 @@ function CardsFacetedBySource({
    */
 
   const dispatch = useAppDispatch();
-  const sourcesVisible = useAppSelector(
-    (state) => state.viewSettings.sourcesVisible
-  );
+  const sourcesVisible = useAppSelector(selectSourcesVisible);
   return (
     <>
       {Object.entries(cardIdentifiersAndOptionNumbersBySource).map(
@@ -118,7 +121,7 @@ function CardsFacetedBySource({
                   key={`${sourceKey}-header-title`}
                   style={{ fontStyle: "italic" }}
                 >
-                  {sourceKeyToName[sourceKey]}
+                  {sourceNamesByKey[sourceKey]}
                 </h3>
                 <h6 className="text-primary prevent-select">
                   {cardIdentifiersAndOptionNumbers.length} version
@@ -180,12 +183,10 @@ export function GridSelector({
   onClick,
 }: GridSelectorProps) {
   const dispatch = useAppDispatch();
-  const cardDocuments = useAppSelector(
-    (state) => state.cardDocuments.cardDocuments
+  const cardDocuments = useAppSelector((state) =>
+    selectCardDocumentsByIdentifier(state, imageIdentifiers)
   );
-  const facetBySource = useAppSelector(
-    (state) => state.viewSettings.facetBySource
-  );
+  const facetBySource = useAppSelector(selectFacetBySource);
   const selectImage = useCallback(
     (identifier: string) => {
       onClick(identifier);
@@ -194,22 +195,9 @@ export function GridSelector({
     [onClick, handleClose]
   );
 
-  // TODO: move these selectors into a common area where they can be reused
-  const sourceKeyToName = useAppSelector((state) => {
-    const sourceDocuments = state.sourceDocuments.sourceDocuments;
-    return sourceDocuments != null
-      ? Object.fromEntries(
-          Object.values(sourceDocuments).map((sourceDocument) => [
-            sourceDocument.key,
-            sourceDocument.name,
-          ])
-        )
-      : {};
-  });
-  const sourceKeys = Object.keys(sourceKeyToName);
-  const anySourcesCollapsed = useAppSelector((state) =>
-    Object.values(state.viewSettings.sourcesVisible ?? {}).includes(false)
-  );
+  const sourceNamesByKey = useAppSelector(selectSourceNamesByKey);
+  const sourceKeys = Object.keys(sourceNamesByKey);
+  const anySourcesCollapsed = useAppSelector(selectAnySourcesCollapsed);
   const cardIdentifiersAndOptionNumbersBySource = useMemo(
     () =>
       imageIdentifiers.reduce(
@@ -293,7 +281,7 @@ export function GridSelector({
               cardIdentifiersAndOptionNumbersBySource
             }
             selectImage={selectImage}
-            sourceKeyToName={sourceKeyToName}
+            sourceNamesByKey={sourceNamesByKey}
           />
         ) : (
           <CardsGroupedTogether
@@ -301,7 +289,7 @@ export function GridSelector({
               cardIdentifiersAndOptionNumbersBySource
             }
             selectImage={selectImage}
-            sourceKeyToName={sourceKeyToName}
+            sourceNamesByKey={sourceNamesByKey}
           />
         )}
       </Modal.Body>

@@ -46,5 +46,9 @@ export default searchSettingsSlice.reducer;
 //# region selectors
 
 export const selectSearchSettings = (state: RootState) => state.searchSettings;
+export const selectSearchSettingsSourcesValid = (state: RootState) =>
+  state.searchSettings.sourceSettings.sources != null;
+export const selectStringifiedSearchSettings = (state: RootState) =>
+  JSON.stringify(state.searchSettings);
 
 //# endregion

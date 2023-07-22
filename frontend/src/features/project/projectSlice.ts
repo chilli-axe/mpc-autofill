@@ -11,6 +11,7 @@ import { processPrefix } from "@/common/processing";
 import {
   Faces,
   Project,
+  ProjectMember,
   SearchQuery,
   SlotProjectMembers,
 } from "@/common/types";
@@ -265,6 +266,12 @@ export const selectProjectMembers = (
   state: RootState
 ): Array<SlotProjectMembers> => state.project.members;
 
+export const selectProjectMember = (
+  state: RootState,
+  slot: number,
+  face: Faces
+): ProjectMember | null => (state.project.members[slot] ?? {})[face];
+
 export const selectProjectMemberIdentifiers = (state: RootState): Set<string> =>
   new Set(
     state.project.members.flatMap((x: SlotProjectMembers) =>
@@ -371,5 +378,8 @@ export const selectQueriesWithoutSearchResults = (
 
 export const selectIsProjectEmpty = (state: RootState) =>
   state.project.members.length == 0;
+
+export const selectProjectCardback = (state: RootState): string | undefined =>
+  state.project.cardback ?? undefined;
 
 //# endregion

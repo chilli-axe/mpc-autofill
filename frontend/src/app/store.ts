@@ -4,7 +4,9 @@ import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import { isRejectedWithValue } from "@reduxjs/toolkit";
 
 import { api } from "@/app/api";
-import backendReducer from "@/features/backend/backendSlice";
+import backendReducer, {
+  selectBackendConfigured,
+} from "@/features/backend/backendSlice";
 import cardbacksReducer from "@/features/card/cardbackSlice";
 import finishSettingsReducer from "@/features/finishSettings/finishSettingsSlice";
 import projectReducer from "@/features/project/projectSlice";
@@ -37,9 +39,9 @@ const rtkQueryErrorLogger: Middleware =
      * Whenever a RTK Query API request fails, display the response's error message to the user as a toast.
      */
 
-    const backendURL = api.getState().backend.url;
+    const backendConfigured = selectBackendConfigured(api.getState());
     if (
-      backendURL != null &&
+      backendConfigured &&
       isRejectedWithValue(action) &&
       action.payload?.data != null
     ) {

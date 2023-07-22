@@ -5,10 +5,12 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 import { APISearch } from "@/app/api";
-import { AppDispatch } from "@/app/store";
-import { SearchResultsEndpointPageSize } from "@/common/constants";
+import { AppDispatch, RootState } from "@/app/store";
+import { Back, SearchResultsEndpointPageSize } from "@/common/constants";
 import {
   createAppAsyncThunk,
+  Faces,
+  SearchQuery,
   SearchResults,
   SearchResultsState,
 } from "@/common/types";
@@ -106,5 +108,35 @@ export const { addSearchResults, clearSearchResults } =
   searchResultsSlice.actions;
 
 export default searchResultsSlice.reducer;
+
+//# endregion
+
+//# region selectors
+
+export const selectSearchResultsForQuery = (
+  state: RootState,
+  searchQuery: SearchQuery | undefined
+) =>
+  searchQuery?.query != null
+    ? (state.searchResults.searchResults[searchQuery.query] ?? {})[
+        searchQuery.card_type
+      ]
+    : undefined;
+
+export const selectSearchResultsForQueryOrDefault = (
+  state: RootState,
+  searchQuery: SearchQuery | undefined,
+  face: Faces,
+  cardbacks: Array<string>
+): Array<string> | undefined =>
+  /**
+   * Handle the fallback logic where cardbacks with no query use the common cardback's list of cards.
+   */
+
+  searchQuery?.query != null
+    ? selectSearchResultsForQuery(state, searchQuery)
+    : face === Back
+    ? cardbacks
+    : [];
 
 //# endregion

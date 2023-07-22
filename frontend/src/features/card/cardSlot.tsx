@@ -18,13 +18,17 @@ import {
 } from "@/common/types";
 import { wrapIndex } from "@/common/utils";
 import { MemoizedEditorCard } from "@/features/card/card";
+import { selectCardbacks } from "@/features/card/cardbackSlice";
 import { GridSelector } from "@/features/card/gridSelector";
 import {
   bulkAlignMemberSelection,
   deleteSlot,
+  selectProjectCardback,
+  selectProjectMember,
   setSelectedImage,
   toggleMemberSelection,
 } from "@/features/project/projectSlice";
+import { selectSearchResultsForQueryOrDefault } from "@/features/search/searchResultsSlice";
 
 interface CardSlotProps {
   searchQuery: SearchQuery | undefined;
@@ -81,23 +85,13 @@ export function CardSlot({ searchQuery, face, slot }: CardSlotProps) {
 
   const dispatch = useAppDispatch();
 
-  // TODO: move this selector into searchResultsSlice
-  // this is a bit confusing. if the card has a query, use the query's results. if it's a cardback with no query,
-  // display the common cardback's results.
-  const cardbacks = useAppSelector((state) => state.cardbacks.cardbacks) ?? [];
-  const projectCardback = useAppSelector((state) => state.project.cardback);
+  const cardbacks = useAppSelector(selectCardbacks);
+  const projectCardback = useAppSelector(selectProjectCardback);
   const searchResultsForQueryOrDefault = useAppSelector((state) =>
-    searchQuery?.query != null
-      ? (state.searchResults.searchResults[searchQuery.query] ?? {})[
-          searchQuery.card_type
-        ]
-      : face === Back
-      ? cardbacks
-      : []
+    selectSearchResultsForQueryOrDefault(state, searchQuery, face, cardbacks)
   );
-
-  const projectMember = useAppSelector(
-    (state) => (state.project.members[slot] ?? {})[face]
+  const projectMember = useAppSelector((state) =>
+    selectProjectMember(state, slot, face)
   );
   const selectedImage = projectMember?.selectedImage;
 
@@ -137,7 +131,7 @@ export function CardSlot({ searchQuery, face, slot }: CardSlotProps) {
         })
       );
     }
-  }, [searchResultsForQueryOrDefault, projectCardback]);
+  }, [dispatch, searchResultsForQueryOrDefault, projectCardback]);
 
   const searchResultsForQuery = searchResultsForQueryOrDefault ?? [];
   const selectedImageIndex: number | undefined =

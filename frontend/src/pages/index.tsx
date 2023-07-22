@@ -11,9 +11,8 @@ import {
   MakePlayingCardsURL,
   ProjectName,
 } from "@/common/constants";
-import { useAppSelector } from "@/common/types";
 import {
-  selectBackendURL,
+  useBackendConfigured,
   useProjectName,
 } from "@/features/backend/backendSlice";
 import { DynamicLogo } from "@/features/ui/dynamicLogo";
@@ -21,11 +20,11 @@ import Footer from "@/features/ui/footer";
 import { ProjectContainer } from "@/features/ui/layout";
 
 function JumpIntoEditorButton() {
-  const backendURL = useAppSelector(selectBackendURL);
+  const backendConfigured = useBackendConfigured();
   return (
     <Row className="justify-content-center">
       <Col xl={6} lg={6} md={8} sm={12} xs={12}>
-        {backendURL != null ? (
+        {backendConfigured ? (
           <Link href="/editor" passHref legacyBehavior>
             <div className="d-grid gap-0">
               <Button>Jump into the project editor!</Button>

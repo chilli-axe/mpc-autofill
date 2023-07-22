@@ -78,4 +78,18 @@ export default sourceDocumentsSlice.reducer;
 export const selectSourceDocuments = (state: RootState) =>
   state.sourceDocuments.sourceDocuments;
 
+export const selectSourceNamesByKey = (
+  state: RootState
+): { [sourceKey: string]: string } => {
+  const sourceDocuments = state.sourceDocuments.sourceDocuments;
+  return sourceDocuments != null
+    ? Object.fromEntries(
+        Object.values(sourceDocuments).map((sourceDocument) => [
+          sourceDocument.key,
+          sourceDocument.name,
+        ])
+      )
+    : {};
+};
+
 //# endregion

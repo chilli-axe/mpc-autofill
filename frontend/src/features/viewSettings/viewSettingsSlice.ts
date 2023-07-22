@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
+import { RootState } from "@/app/store";
 import { ViewSettingsState } from "@/common/types";
 
 //# region slice configuration
@@ -54,5 +55,18 @@ export const {
 } = viewSettingsSlice.actions;
 
 export default viewSettingsSlice.reducer;
+
+//# endregion
+
+//# region selectors
+
+export const selectFrontsVisible = (state: RootState) =>
+  state.viewSettings.frontsVisible;
+export const selectSourcesVisible = (state: RootState) =>
+  state.viewSettings.sourcesVisible;
+export const selectFacetBySource = (state: RootState) =>
+  state.viewSettings.facetBySource;
+export const selectAnySourcesCollapsed = (state: RootState) =>
+  Object.values(state.viewSettings.sourcesVisible ?? {}).includes(false);
 
 //# endregion

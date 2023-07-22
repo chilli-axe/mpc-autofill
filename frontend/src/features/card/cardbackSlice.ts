@@ -80,7 +80,7 @@ export default cardbackSlice.reducer;
 
 //# region selectors
 
-export const selectProjectCardback = (state: RootState): string | undefined =>
-  state.project.cardback ?? undefined;
+export const selectCardbacks = (state: RootState) =>
+  state.cardbacks.cardbacks ?? [];
 
 //# endregion

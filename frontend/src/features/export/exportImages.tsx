@@ -10,8 +10,7 @@ import { FunctionThread, Pool, spawn, Worker } from "threads";
 
 import { ProjectName } from "@/common/constants";
 import { base64StringToBlob } from "@/common/processing";
-import { useAppSelector } from "@/common/types";
-import { selectProjectMemberIdentifiers } from "@/features/project/projectSlice";
+import { useCardDocumentsByIdentifier } from "@/features/search/cardDocumentsSlice";
 import { Spinner } from "@/features/ui/spinner";
 
 const StyledProgressBar = styled(ProgressBar)`
@@ -25,20 +24,11 @@ export function ExportImages() {
 
   const [downloading, setDownloading] = useState<boolean>(false);
 
-  const cardIdentifiers = Array.from(
-    useAppSelector(selectProjectMemberIdentifiers)
-  );
-  const cardDocumentsByIdentifier = useAppSelector((state) =>
-    Object.fromEntries(
-      cardIdentifiers.map((identifier) => [
-        identifier,
-        state.cardDocuments.cardDocuments[identifier],
-      ])
-    )
-  );
+  const cardDocumentsByIdentifier = useCardDocumentsByIdentifier();
+  const identifierCount = Object.keys(cardDocumentsByIdentifier).length;
 
   const [downloaded, setDownloaded] = useState<number>(0);
-  const progress = (100 * downloaded) / cardIdentifiers.length;
+  const progress = (100 * downloaded) / identifierCount;
 
   const workerPool = useRef<Pool<FunctionThread> | null>(null);
   const terminate = async () => {
@@ -62,10 +52,9 @@ export function ExportImages() {
 
     // really wish typescript would shut up about this. i clearly set this ref to a non-null value 2 lines up.
     if (workerPool.current != null) {
-      const identifierPool = Array.from(cardIdentifiers);
       let localDownloaded = 0;
 
-      identifierPool.map((identifier) => {
+      Object.keys(cardDocumentsByIdentifier).map((identifier) => {
         if (workerPool.current != null) {
           workerPool.current.queue(async (download) => {
             const cardDocument = cardDocumentsByIdentifier[identifier];
@@ -110,18 +99,18 @@ export function ExportImages() {
               Please don&apos;t close the page until the process is complete.
             </p>
           )}
-          {!downloading && cardIdentifiers.length == 0 && (
+          {!downloading && identifierCount == 0 && (
             <p>
               You&apos;ll be able to download the card images in your project
               here once you&apos;ve added some cards.
             </p>
           )}
-          {!downloading && cardIdentifiers.length > 0 && (
+          {!downloading && identifierCount > 0 && (
             <>
               <p>
                 Click the button below to begin. This will download the{" "}
-                <b>{cardIdentifiers.length}</b> unique image
-                {cardIdentifiers.length != 1 && "s"} in your project.
+                <b>{identifierCount}</b> unique image
+                {identifierCount != 1 && "s"} in your project.
               </p>
               <p>This feature may not work as expected on mobile devices.</p>
               <Alert variant="info">
@@ -132,13 +121,13 @@ export function ExportImages() {
             </>
           )}
           {(downloading ||
-            (downloaded == cardIdentifiers.length && downloaded > 0)) && (
+            (downloaded == identifierCount && downloaded > 0)) && (
             <>
               <StyledProgressBar
                 striped
                 animated={true}
                 now={progress}
-                label={`${downloaded} / ${cardIdentifiers.length}`}
+                label={`${downloaded} / ${identifierCount}`}
                 variant="success"
               />
               <br />
@@ -159,7 +148,7 @@ export function ExportImages() {
             <Button
               variant="primary"
               onClick={downloadImages}
-              disabled={downloading || cardIdentifiers.length == 0}
+              disabled={downloading || identifierCount == 0}
             >
               {downloading ? <Spinner size={1.5} /> : "Download Images"}
             </Button>

@@ -144,12 +144,12 @@ export function BackendConfig({ show, handleClose }: BackendConfigProps) {
   };
 
   useEffect(() => {
-    const backendURL = getLocalStorageBackendURL();
-    if (backendURL != undefined) {
-      dispatch(setURL(backendURL));
+    const localStorageBackendURL = getLocalStorageBackendURL();
+    if (localStorageBackendURL != undefined) {
+      dispatch(setURL(localStorageBackendURL));
       dispatch(api.util.invalidateTags([QueryTags.BackendSpecific]));
     }
-  }, []);
+  }, [dispatch]);
 
   return (
     <>

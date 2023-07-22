@@ -7,7 +7,7 @@ import { createSlice } from "@reduxjs/toolkit";
 import { useGetBackendInfoQuery } from "@/app/api";
 import { RootState } from "@/app/store";
 import { ProjectName } from "@/common/constants";
-import { BackendState } from "@/common/types";
+import { BackendState, useAppSelector } from "@/common/types";
 
 //# region slice configuration
 
@@ -37,10 +37,16 @@ export default backendSlice.reducer;
 //# region selectors
 
 export const selectBackendURL = (state: RootState) => state.backend.url;
+export const selectBackendConfigured = (state: RootState) =>
+  state.backend.url != null;
 
 //# endregion
 
 //# region hooks
+
+export function useBackendConfigured(): boolean {
+  return useAppSelector(selectBackendConfigured);
+}
 
 export function useProjectName() {
   const backendInfoQuery = useGetBackendInfoQuery();

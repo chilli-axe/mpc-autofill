@@ -5,12 +5,20 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 import { APIGetCards } from "@/app/api";
-import { AppDispatch } from "@/app/store";
+import { AppDispatch, RootState } from "@/app/store";
 import { CardEndpointPageSize } from "@/common/constants";
-import { CardDocumentsState, createAppAsyncThunk } from "@/common/types";
+import {
+  CardDocument,
+  CardDocumentsState,
+  createAppAsyncThunk,
+  useAppSelector,
+} from "@/common/types";
 import { CardDocuments } from "@/common/types";
 import { fetchCardbacksAndReportError } from "@/features/card/cardbackSlice";
-import { selectUniqueCardIdentifiers } from "@/features/project/projectSlice";
+import {
+  selectProjectMemberIdentifiers,
+  selectUniqueCardIdentifiers,
+} from "@/features/project/projectSlice";
 import { fetchSearchResultsAndReportError } from "@/features/search/searchResultsSlice";
 import { setError } from "@/features/toasts/toastsSlice";
 
@@ -120,5 +128,43 @@ export const cardDocumentsSlice = createSlice({
 });
 
 export default cardDocumentsSlice.reducer;
+
+//# endregion
+
+//# region selectors
+
+export const selectCardDocumentByIdentifier = (
+  state: RootState,
+  imageIdentifier: string | undefined
+): CardDocument | undefined =>
+  imageIdentifier != null
+    ? state.cardDocuments.cardDocuments[imageIdentifier]
+    : undefined;
+
+export const selectCardDocumentsByIdentifier = (
+  state: RootState,
+  identifiers: Array<string>
+): { [identifier: string]: CardDocument } =>
+  Object.fromEntries(
+    identifiers.map((identifier) => [
+      identifier,
+      state.cardDocuments.cardDocuments[identifier],
+    ])
+  );
+
+//# endregion
+
+//# region hooks
+
+export function useCardDocumentsByIdentifier(): {
+  [identifier: string]: CardDocument;
+} {
+  const identifiers = Array.from(
+    useAppSelector(selectProjectMemberIdentifiers)
+  );
+  return useAppSelector((state) =>
+    selectCardDocumentsByIdentifier(state, identifiers)
+  );
+}
 
 //# endregion

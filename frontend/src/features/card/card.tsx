@@ -17,8 +17,10 @@ import React, {
 import BSCard from "react-bootstrap/Card";
 import styled from "styled-components";
 
+import { RootState } from "@/app/store";
 import { SearchQuery, useAppDispatch, useAppSelector } from "@/common/types";
 import { CardDocument } from "@/common/types";
+import { selectCardDocumentByIdentifier } from "@/features/search/cardDocumentsSlice";
 import { setSelectedCardAndShowModal } from "@/features/ui/modalSlice";
 import { Spinner } from "@/features/ui/spinner";
 
@@ -308,21 +310,14 @@ export function EditorCard({
    * (to minimise the quantity of data stored in Elasticsearch), so the full `CardDocument` items must be looked up.
    */
 
-  const maybeCardDocument = useAppSelector((state) =>
-    imageIdentifier != null
-      ? state.cardDocuments.cardDocuments[imageIdentifier]
-      : undefined
+  const maybeCardDocument = useAppSelector((state: RootState) =>
+    selectCardDocumentByIdentifier(state, imageIdentifier)
   );
-
-  const maybePreviousCardDocument = useAppSelector((state) =>
-    previousImageIdentifier != null
-      ? state.cardDocuments.cardDocuments[previousImageIdentifier]
-      : undefined
+  const maybePreviousCardDocument = useAppSelector((state: RootState) =>
+    selectCardDocumentByIdentifier(state, previousImageIdentifier)
   );
-  const maybeNextCardDocument = useAppSelector((state) =>
-    nextImageIdentifier != null
-      ? state.cardDocuments.cardDocuments[nextImageIdentifier]
-      : undefined
+  const maybeNextCardDocument = useAppSelector((state: RootState) =>
+    selectCardDocumentByIdentifier(state, nextImageIdentifier)
   );
 
   return (

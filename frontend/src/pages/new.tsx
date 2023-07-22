@@ -1,8 +1,7 @@
 import Head from "next/head";
 
-import { useAppSelector } from "@/common/types";
 import {
-  selectBackendURL,
+  useBackendConfigured,
   useProjectName,
 } from "@/features/backend/backendSlice";
 import { NewCards } from "@/features/new/new";
@@ -11,8 +10,8 @@ import { ProjectContainer } from "@/features/ui/layout";
 import { NoBackendDefault } from "@/features/ui/noBackendDefault";
 
 function NewOrDefault() {
-  const backendURL = useAppSelector(selectBackendURL);
-  return backendURL != null ? (
+  const backendConfigured = useBackendConfigured();
+  return backendConfigured ? (
     <>
       <h1>What&apos;s New?</h1>
       <NewCards />

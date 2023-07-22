@@ -8,15 +8,15 @@ import React from "react";
 // @ts-ignore: https://github.com/arnthor3/react-bootstrap-toggle/issues/21
 import Toggle from "react-bootstrap-toggle";
 
-import { RootState } from "@/app/store";
 import { ToggleButtonHeight } from "@/common/constants";
 import { useAppDispatch, useAppSelector } from "@/common/types";
-import { toggleFaces } from "@/features/viewSettings/viewSettingsSlice";
+import {
+  selectFrontsVisible,
+  toggleFaces,
+} from "@/features/viewSettings/viewSettingsSlice";
 
 export function ViewSettings() {
-  const frontsVisible = useAppSelector(
-    (state) => state.viewSettings.frontsVisible
-  );
+  const frontsVisible = useAppSelector(selectFrontsVisible);
   const dispatch = useAppDispatch();
   return (
     <Toggle

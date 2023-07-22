@@ -8,16 +8,15 @@ import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
 import styled from "styled-components";
 
-import { RootState } from "@/app/store";
 import { NavbarHeight } from "@/common/constants";
 import { useAppDispatch, useAppSelector } from "@/common/types";
-import { selectBackendURL } from "@/features/backend/backendSlice";
-import { selectProjectCardback } from "@/features/card/cardbackSlice";
+import { useBackendConfigured } from "@/features/backend/backendSlice";
 import { CardGrid } from "@/features/card/cardGrid";
 import { CommonCardback } from "@/features/card/commonCardback";
 import { Export } from "@/features/export/export";
 import { FinishSettings } from "@/features/finishSettings/finishSettings";
 import { Import } from "@/features/import/import";
+import { selectProjectCardback } from "@/features/project/projectSlice";
 import { ProjectStatus } from "@/features/project/projectStatus";
 import { fetchSourceDocumentsAndReportError } from "@/features/search/sourceDocumentsSlice";
 import { SearchSettings } from "@/features/searchSettings/searchSettings";
@@ -35,19 +34,23 @@ const OverflowCol = styled(Col)`
 
 function App() {
   // TODO: should we periodically ping the backend to make sure it's still alive?
-  //       and is there a better check for whether to show backend data rather than the URL not being null?
-  const backendURL = useAppSelector(selectBackendURL);
+  const backendConfigured = useBackendConfigured();
   const dispatch = useAppDispatch();
   const cardback = useAppSelector(selectProjectCardback);
-  useEffect(() => {
-    if (backendURL != null) {
-      fetchSourceDocumentsAndReportError(dispatch);
-    }
-  }, [dispatch, backendURL]);
+  useEffect(
+    () => {
+      if (backendConfigured) {
+        fetchSourceDocumentsAndReportError(dispatch);
+      }
+    },
+    // it's fine for this useEffect to depend on `backendConfigured` rather than the precise URL
+    // because users cannot switch to a different backend without disconnecting first.
+    [dispatch, backendConfigured]
+  );
 
   return (
     <>
-      {backendURL != null ? (
+      {backendConfigured ? (
         <Row className="g-0">
           <OverflowCol lg={8} md={8} sm={6} xs={6} data-testid="left-panel">
             <CardGrid />
