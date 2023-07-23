@@ -16,6 +16,10 @@ const config = {
   ],
 
   testEnvironment: "jest-environment-jsdom",
+  runtime: "@side/jest-runtime",
+  transform: {
+    "^.+\\.ts$": "@swc/jest",
+  },
   injectGlobals: true,
   testTimeout: 20_000,
 };
