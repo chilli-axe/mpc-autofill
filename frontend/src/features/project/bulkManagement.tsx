@@ -18,6 +18,7 @@ import { useAppDispatch, useAppSelector } from "@/common/types";
 import { Faces } from "@/common/types";
 import { GridSelector } from "@/features/card/gridSelector";
 import {
+  bulkClearQuery,
   bulkDeleteSlots,
   bulkSetMemberSelection,
   bulkSetQuery,
@@ -192,6 +193,17 @@ function ChangeSelectedImageQueries({
   );
 }
 
+function ClearSelectedImageQueries({ slots }: MutateSelectedImageQueriesProps) {
+  const dispatch = useAppDispatch();
+  const onClick = () => dispatch(bulkClearQuery({ slots }));
+  return (
+    <Dropdown.Item onClick={onClick} className="text-decoration-none">
+      <i className="bi bi-slash-circle" style={{ paddingRight: 0.5 + "em" }} />{" "}
+      Clear Query
+    </Dropdown.Item>
+  );
+}
+
 function DeleteSelectedImages({ slots }: MutateSelectedImageQueriesProps) {
   const dispatch = useAppDispatch();
 
@@ -235,6 +247,8 @@ export function SelectedImagesStatus() {
               <Dropdown.Menu>
                 <ChangeSelectedImageSelectedImages slots={slots} />
                 <ChangeSelectedImageQueries slots={slots} />
+                <Dropdown.Divider />
+                <ClearSelectedImageQueries slots={slots} />
                 <DeleteSelectedImages slots={slots} />
               </Dropdown.Menu>
             </Dropdown>

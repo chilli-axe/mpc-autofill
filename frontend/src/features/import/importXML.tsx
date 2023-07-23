@@ -143,7 +143,7 @@ export function ImportXML() {
           };
 
           // apply the uploaded XML's cardback if the card doesn't have a matching back
-          if (newMembers[slot].back == null && cardback != null) {
+          if (newMembers[slot].back == null) {
             newMembers[slot].back = {
               query: { query: null, card_type: Cardback },
               selectedImage: cardback,

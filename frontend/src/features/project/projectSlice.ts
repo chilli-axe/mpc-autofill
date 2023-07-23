@@ -5,7 +5,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 import { RootState } from "@/app/store";
-import { Card, ReversedCardTypePrefixes } from "@/common/constants";
+import { Card, Cardback, ReversedCardTypePrefixes } from "@/common/constants";
 import { Back, Front, ProjectMaxSize } from "@/common/constants";
 import { processPrefix } from "@/common/processing";
 import {
@@ -85,7 +85,6 @@ export const projectSlice = createSlice({
           state.members[slot][action.payload.face]!.selectedImage =
             action.payload.selectedImage;
         }
-        // setSelectedImage(state, {face: action.payload.face, slot: slot, selectedImage: action.payload.selectedImage})
       }
     },
     bulkSetSelectedImage: (
@@ -141,6 +140,31 @@ export const projectSlice = createSlice({
           state.members[slot][face]!.query = newQuery;
           state.members[slot][face]!.selected = false;
         }
+      }
+    },
+    clearQuery: (
+      state,
+      action: PayloadAction<{ face: Faces; slot: number }>
+    ) => {
+      state.members[action.payload.slot][action.payload.face] = {
+        query: {
+          query: null,
+          card_type: action.payload.face === Back ? Cardback : Card,
+        },
+        selectedImage: undefined,
+        selected: false,
+      };
+    },
+    bulkClearQuery: (
+      state,
+      action: PayloadAction<{ slots: Array<[Faces, number]> }>
+    ) => {
+      for (const [face, slot] of action.payload.slots) {
+        state.members[slot][face] = {
+          query: { query: null, card_type: face === Back ? Cardback : Card },
+          selectedImage: undefined,
+          selected: false,
+        };
       }
     },
     setSelectedCardback: (
@@ -248,6 +272,8 @@ export const {
   bulkSetSelectedImage,
   setQuery,
   bulkSetQuery,
+  clearQuery,
+  bulkClearQuery,
   setSelectedCardback,
   addMembers,
   toggleMemberSelection,
