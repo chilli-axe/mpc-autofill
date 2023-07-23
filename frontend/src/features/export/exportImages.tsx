@@ -10,6 +10,8 @@ import { FunctionThread, Pool, spawn, Worker } from "threads";
 
 import { ProjectName } from "@/common/constants";
 import { base64StringToBlob } from "@/common/processing";
+import { useAppSelector } from "@/common/types";
+import { selectIsProjectEmpty } from "@/features/project/projectSlice";
 import { useCardDocumentsByIdentifier } from "@/features/search/cardDocumentsSlice";
 import { Spinner } from "@/features/ui/spinner";
 
@@ -18,6 +20,8 @@ const StyledProgressBar = styled(ProgressBar)`
 `;
 
 export function ExportImages() {
+  const isProjectEmpty = useAppSelector(selectIsProjectEmpty);
+
   const [showImagesModal, setShowImagesModal] = useState(false);
   const handleCloseImagesModal = () => setShowImagesModal(false);
   const handleShowImagesModal = () => setShowImagesModal(true);
@@ -80,7 +84,7 @@ export function ExportImages() {
 
   return (
     <>
-      <Dropdown.Item onClick={handleShowImagesModal}>
+      <Dropdown.Item disabled={isProjectEmpty} onClick={handleShowImagesModal}>
         <i className="bi bi-image" style={{ paddingRight: 0.5 + "em" }} /> Card
         Images
       </Dropdown.Item>

@@ -14,8 +14,10 @@ import {
 import {
   changeImageForSelectedImages,
   changeQueryForSelectedImages,
+  clearQueriesForSelectedImages,
   deleteSelectedImages,
   deselectSlot,
+  expectCardbackSlotState,
   expectCardGridSlotState,
   expectCardSlotToNotExist,
   importText,
@@ -23,6 +25,7 @@ import {
   selectSlot,
 } from "@/common/test-utils";
 import {
+  cardbacksOneOtherResult,
   cardbacksOneResult,
   cardbacksTwoResults,
   cardDocumentsOneResult,
@@ -205,6 +208,91 @@ test("cannot change the images of multiple selected images when they don't share
   await waitFor(() =>
     expect(screen.queryByText("Change Version")).not.toBeInTheDocument()
   );
+});
+
+test("selecting a single card and clearing its front query", async () => {
+  server.use(
+    cardDocumentsOneResult,
+    cardbacksOneResult,
+    sourceDocumentsOneResult,
+    searchResultsOneResult,
+    ...defaultHandlers
+  );
+  renderWithProviders(<App />, {
+    preloadedState: {
+      backend: localBackend,
+      project: {
+        members: [],
+        cardback: cardDocument5.identifier,
+      },
+    },
+  });
+
+  await importText("my search query");
+  await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 1);
+
+  await selectSlot(1, Front);
+  await clearQueriesForSelectedImages();
+  await expectCardGridSlotState(1, Front, null, null, null);
+});
+
+test("selecting a single card and clearing its back query", async () => {
+  server.use(
+    cardDocumentsSixResults,
+    cardbacksOneOtherResult,
+    sourceDocumentsOneResult,
+    searchResultsOneResult,
+    ...defaultHandlers
+  );
+  renderWithProviders(<App />, {
+    preloadedState: {
+      backend: localBackend,
+      project: {
+        members: [],
+        cardback: cardDocument5.identifier,
+      },
+    },
+  });
+
+  await importText("my search query | my search query");
+  await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 1);
+  await expectCardGridSlotState(1, Back, cardDocument1.name, 1, 1);
+  await expectCardbackSlotState(cardDocument5.name, 1, 1);
+
+  await selectSlot(1, Back);
+  await clearQueriesForSelectedImages();
+  // after its query is cleared, slot 1's back has reverted to the project's cardback
+  await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 1);
+  await expectCardGridSlotState(1, Back, cardDocument5.name, 1, 1);
+});
+
+test("selecting multiple cards and clearing their front queries", async () => {
+  server.use(
+    cardDocumentsOneResult,
+    cardbacksOneResult,
+    sourceDocumentsOneResult,
+    searchResultsOneResult,
+    ...defaultHandlers
+  );
+  renderWithProviders(<App />, {
+    preloadedState: {
+      backend: localBackend,
+      project: {
+        members: [],
+        cardback: cardDocument5.identifier,
+      },
+    },
+  });
+
+  await importText("2x my search query");
+  await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 1);
+  await expectCardGridSlotState(2, Front, cardDocument1.name, 1, 1);
+
+  await selectSlot(1, Front);
+  await selectSlot(2, Front);
+  await clearQueriesForSelectedImages();
+  await expectCardGridSlotState(1, Front, null, null, null);
+  await expectCardGridSlotState(2, Front, null, null, null);
 });
 
 test("selecting a single card and deleting it", async () => {

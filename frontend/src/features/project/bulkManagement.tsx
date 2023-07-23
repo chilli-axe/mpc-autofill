@@ -13,18 +13,21 @@ import Modal from "react-bootstrap/Modal";
 import Stack from "react-bootstrap/Stack";
 
 import { useGetSampleCardsQuery } from "@/app/api";
-import { Back, Card } from "@/common/constants";
+import { Card } from "@/common/constants";
 import { useAppDispatch, useAppSelector } from "@/common/types";
-import { Faces, SearchQuery } from "@/common/types";
+import { Faces } from "@/common/types";
 import { GridSelector } from "@/features/card/gridSelector";
 import {
+  bulkClearQuery,
   bulkDeleteSlots,
   bulkSetMemberSelection,
   bulkSetQuery,
   bulkSetSelectedImage,
+  selectAllSelectedProjectMembersHaveTheSameQuery,
   selectSelectedSlots,
 } from "@/features/project/projectSlice";
 import { fetchCardDocumentsAndReportError } from "@/features/search/cardDocumentsSlice";
+import { selectSearchResultsForQueryOrDefault } from "@/features/search/searchResultsSlice";
 
 interface MutateSelectedImageQueriesProps {
   slots: Array<[Faces, number]>;
@@ -55,43 +58,20 @@ function ChangeSelectedImageSelectedImages({
     handleCloseChangeSelectedImageSelectedImagesModal();
   };
 
-  const firstQuery: SearchQuery | null = useAppSelector((state) =>
-    slots.length > 0 && slots[0] != null
-      ? state.project.members[slots[0][1]][slots[0][0]]?.query ?? null
-      : null
-  );
-  const allSelectedProjectMembersHaveTheSameQuery: boolean = useAppSelector(
-    (state) =>
-      slots.every(
-        ([face, slot]) =>
-          (firstQuery?.query == null &&
-            (state.project.members[slot] ?? {})[face]?.query?.query == null) ||
-          (firstQuery != null &&
-            (state.project.members[slot] ?? {})[face]?.query?.query ==
-              firstQuery.query &&
-            (state.project.members[slot] ?? {})[face]?.query?.card_type ==
-              firstQuery.card_type)
-      )
+  const query = useAppSelector((state) =>
+    selectAllSelectedProjectMembersHaveTheSameQuery(state, slots)
   );
 
-  // TODO: move this selector into searchResultsSlice
-  // this is a bit confusing. if the card has a query, use the query's results. if it's a cardback with no query,
-  // display the common cardback's results.
   const cardbacks = useAppSelector((state) => state.cardbacks.cardbacks) ?? [];
+  // calling slots[0] is safe because this component will only be rendered with > 0 slots selected
   const searchResultsForQueryOrDefault = useAppSelector((state) =>
-    firstQuery?.query != null
-      ? (state.searchResults.searchResults[firstQuery.query] ?? {})[
-          firstQuery.card_type
-        ] ?? []
-      : slots.length > 0 && slots[0][0] === Back
-      ? cardbacks
-      : []
+    selectSearchResultsForQueryOrDefault(state, query, slots[0][0], cardbacks)
   );
 
   return (
     <>
-      {searchResultsForQueryOrDefault.length > 1 &&
-        allSelectedProjectMembersHaveTheSameQuery && (
+      {searchResultsForQueryOrDefault != null &&
+        searchResultsForQueryOrDefault.length > 1 && (
           <Dropdown.Item
             className="text-decoration-none"
             onClick={handleShowChangeSelectedImageSelectedImagesModal}
@@ -100,13 +80,15 @@ function ChangeSelectedImageSelectedImages({
             Change Version
           </Dropdown.Item>
         )}
-      <GridSelector
-        testId="bulk-grid-selector"
-        imageIdentifiers={searchResultsForQueryOrDefault}
-        show={showChangeSelectedImageSelectedImagesModal}
-        handleClose={handleCloseChangeSelectedImageSelectedImagesModal}
-        onClick={onSubmit}
-      />
+      {searchResultsForQueryOrDefault != null && (
+        <GridSelector
+          testId="bulk-grid-selector"
+          imageIdentifiers={searchResultsForQueryOrDefault}
+          show={showChangeSelectedImageSelectedImagesModal}
+          handleClose={handleCloseChangeSelectedImageSelectedImagesModal}
+          onClick={onSubmit}
+        />
+      )}
     </>
   );
 }
@@ -121,7 +103,6 @@ function ChangeSelectedImageQueries({
     setShowChangeSelectedImageQueriesModal,
   ] = useState<boolean>(false);
   const handleCloseChangeSelectedImageQueriesModal = () => {
-    fetchCardDocumentsAndReportError(dispatch);
     setShowChangeSelectedImageQueriesModal(false);
   };
   const handleShowChangeSelectedImageQueriesModal = () =>
@@ -138,6 +119,7 @@ function ChangeSelectedImageQueries({
     dispatch(
       bulkSetQuery({ query: changeSelectedImageQueriesModalValue, slots })
     );
+    fetchCardDocumentsAndReportError(dispatch);
     handleCloseChangeSelectedImageQueriesModal();
   };
 
@@ -185,6 +167,7 @@ function ChangeSelectedImageQueries({
                 }
                 value={changeSelectedImageQueriesModalValue}
                 aria-label="change-selected-image-queries-text"
+                required={true}
               />
             </Form.Group>
           </Form>
@@ -207,6 +190,17 @@ function ChangeSelectedImageQueries({
         </Modal.Footer>
       </Modal>
     </>
+  );
+}
+
+function ClearSelectedImageQueries({ slots }: MutateSelectedImageQueriesProps) {
+  const dispatch = useAppDispatch();
+  const onClick = () => dispatch(bulkClearQuery({ slots }));
+  return (
+    <Dropdown.Item onClick={onClick} className="text-decoration-none">
+      <i className="bi bi-slash-circle" style={{ paddingRight: 0.5 + "em" }} />{" "}
+      Clear Query
+    </Dropdown.Item>
   );
 }
 
@@ -247,14 +241,18 @@ export function SelectedImagesStatus() {
           >
             <i className="bi bi-x-lg" />
           </Button>
-          <Dropdown>
-            <Dropdown.Toggle variant="secondary">Modify</Dropdown.Toggle>
-            <Dropdown.Menu>
-              <ChangeSelectedImageSelectedImages slots={slots} />
-              <ChangeSelectedImageQueries slots={slots} />
-              <DeleteSelectedImages slots={slots} />
-            </Dropdown.Menu>
-          </Dropdown>
+          {slots.length > 0 && (
+            <Dropdown>
+              <Dropdown.Toggle variant="secondary">Modify</Dropdown.Toggle>
+              <Dropdown.Menu>
+                <ChangeSelectedImageSelectedImages slots={slots} />
+                <ChangeSelectedImageQueries slots={slots} />
+                <Dropdown.Divider />
+                <ClearSelectedImageQueries slots={slots} />
+                <DeleteSelectedImages slots={slots} />
+              </Dropdown.Menu>
+            </Dropdown>
+          )}
         </Stack>
       </Alert>
     </>

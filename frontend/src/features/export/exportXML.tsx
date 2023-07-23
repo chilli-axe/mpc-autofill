@@ -16,10 +16,12 @@ import {
   CardDocuments,
   FinishSettingsState,
   SlotProjectMembers,
+  useAppSelector,
 } from "@/common/types";
 import { bracket } from "@/common/utils";
 import { selectFinishSettings } from "@/features/finishSettings/finishSettingsSlice";
 import {
+  selectIsProjectEmpty,
   selectProjectMembers,
   selectProjectSize,
 } from "@/features/project/projectSlice";
@@ -202,6 +204,7 @@ export function generateXML(
 
 export function ExportXML() {
   const store = useStore();
+  const isProjectEmpty = useAppSelector(selectIsProjectEmpty);
   const downloadFile = () => {
     const generatedXML = selectGeneratedXML(store.getState() as RootState);
     saveAs(
@@ -211,7 +214,11 @@ export function ExportXML() {
   };
 
   return (
-    <Dropdown.Item onClick={downloadFile} data-testid="export-xml-button">
+    <Dropdown.Item
+      disabled={isProjectEmpty}
+      onClick={downloadFile}
+      data-testid="export-xml-button"
+    >
       <i className="bi bi-file-code" style={{ paddingRight: 0.5 + "em" }} /> XML
     </Dropdown.Item>
   );

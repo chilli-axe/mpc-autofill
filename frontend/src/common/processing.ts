@@ -5,7 +5,7 @@
 import { toByteArray } from "base64-js";
 
 import {
-  Card,
+  Cardback,
   CardTypePrefixes,
   CardTypeSeparator,
   FaceSeparator,
@@ -225,7 +225,7 @@ export function convertLinesIntoSlotProjectMembers(
             selected: false,
           },
           back: {
-            query: backMember?.query,
+            query: backMember?.query ?? { query: null, card_type: Cardback },
             selectedImage: backMember?.selectedImage,
             selected: false,
           },

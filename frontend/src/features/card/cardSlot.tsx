@@ -116,7 +116,7 @@ export function CardSlot({ searchQuery, face, slot }: CardSlotProps) {
         searchResultsForQueryOrDefault.length > 0 &&
         mutatedSelectedImage == null
       ) {
-        if (searchQuery != null) {
+        if (searchQuery?.query != null) {
           mutatedSelectedImage = searchResultsForQueryOrDefault[0];
         } else if (face === Back && projectCardback != null) {
           mutatedSelectedImage = projectCardback;
@@ -131,7 +131,12 @@ export function CardSlot({ searchQuery, face, slot }: CardSlotProps) {
         })
       );
     }
-  }, [dispatch, searchResultsForQueryOrDefault, projectCardback]);
+  }, [
+    dispatch,
+    searchResultsForQueryOrDefault,
+    projectCardback,
+    selectedImage,
+  ]);
 
   const searchResultsForQuery = searchResultsForQueryOrDefault ?? [];
   const selectedImageIndex: number | undefined =

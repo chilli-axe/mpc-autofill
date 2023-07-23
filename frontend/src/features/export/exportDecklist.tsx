@@ -15,8 +15,12 @@ import {
   CardDocuments,
   ProjectMember,
   SlotProjectMembers,
+  useAppSelector,
 } from "@/common/types";
-import { selectProjectMembers } from "@/features/project/projectSlice";
+import {
+  selectIsProjectEmpty,
+  selectProjectMembers,
+} from "@/features/project/projectSlice";
 
 function extractProjectMemberNames(
   projectMembers: Array<SlotProjectMembers>,
@@ -114,6 +118,7 @@ const selectGeneratedDecklist = (state: RootState): string => {
 
 export function ExportDecklist() {
   const store = useStore();
+  const isProjectEmpty = useAppSelector(selectIsProjectEmpty);
   const downloadFile = () => {
     const generatedDecklist = selectGeneratedDecklist(
       store.getState() as RootState
@@ -125,7 +130,11 @@ export function ExportDecklist() {
   };
 
   return (
-    <Dropdown.Item onClick={downloadFile} data-testid="export-decklist-button">
+    <Dropdown.Item
+      disabled={isProjectEmpty}
+      onClick={downloadFile}
+      data-testid="export-decklist-button"
+    >
       <i className="bi bi-card-text" style={{ paddingRight: 0.5 + "em" }} />{" "}
       Decklist
     </Dropdown.Item>

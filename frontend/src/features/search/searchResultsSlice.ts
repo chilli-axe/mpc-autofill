@@ -118,7 +118,7 @@ export default searchResultsSlice.reducer;
 
 export const selectSearchResultsForQuery = (
   state: RootState,
-  searchQuery: SearchQuery | undefined
+  searchQuery: SearchQuery | null | undefined
 ) =>
   searchQuery?.query != null
     ? (state.searchResults.searchResults[searchQuery.query] ?? {})[
@@ -128,7 +128,7 @@ export const selectSearchResultsForQuery = (
 
 export const selectSearchResultsForQueryOrDefault = (
   state: RootState,
-  searchQuery: SearchQuery | undefined,
+  searchQuery: SearchQuery | null | undefined,
   face: Faces,
   cardbacks: Array<string>
 ): Array<string> | undefined =>

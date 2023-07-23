@@ -86,6 +86,12 @@ async function expectCardSlotState(
     await waitFor(() =>
       expect(within(cardElement).getByText(cardName)).toBeInTheDocument()
     );
+  } else {
+    await waitFor(() =>
+      expect(
+        within(cardElement).getByText("Your search query")
+      ).toBeInTheDocument()
+    );
   }
   if (selectedImage != null && totalImages != null) {
     await waitFor(() =>
@@ -349,6 +355,11 @@ export async function changeImageForSelectedImages(cardName: string) {
       .getByAltText(cardName)
       .click()
   );
+}
+
+export async function clearQueriesForSelectedImages() {
+  screen.getByText("Modify").click();
+  await waitFor(() => screen.getByText("Clear Query").click());
 }
 
 export async function deleteSelectedImages() {

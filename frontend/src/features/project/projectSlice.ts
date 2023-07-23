@@ -5,7 +5,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 import { RootState } from "@/app/store";
-import { Card, ReversedCardTypePrefixes } from "@/common/constants";
+import { Card, Cardback, ReversedCardTypePrefixes } from "@/common/constants";
 import { Back, Front, ProjectMaxSize } from "@/common/constants";
 import { processPrefix } from "@/common/processing";
 import {
@@ -14,6 +14,7 @@ import {
   ProjectMember,
   SearchQuery,
   SlotProjectMembers,
+  useAppSelector,
 } from "@/common/types";
 
 //# region slice configuration
@@ -84,7 +85,6 @@ export const projectSlice = createSlice({
           state.members[slot][action.payload.face]!.selectedImage =
             action.payload.selectedImage;
         }
-        // setSelectedImage(state, {face: action.payload.face, slot: slot, selectedImage: action.payload.selectedImage})
       }
     },
     bulkSetSelectedImage: (
@@ -140,6 +140,31 @@ export const projectSlice = createSlice({
           state.members[slot][face]!.query = newQuery;
           state.members[slot][face]!.selected = false;
         }
+      }
+    },
+    clearQuery: (
+      state,
+      action: PayloadAction<{ face: Faces; slot: number }>
+    ) => {
+      state.members[action.payload.slot][action.payload.face] = {
+        query: {
+          query: null,
+          card_type: action.payload.face === Back ? Cardback : Card,
+        },
+        selectedImage: undefined,
+        selected: false,
+      };
+    },
+    bulkClearQuery: (
+      state,
+      action: PayloadAction<{ slots: Array<[Faces, number]> }>
+    ) => {
+      for (const [face, slot] of action.payload.slots) {
+        state.members[slot][face] = {
+          query: { query: null, card_type: face === Back ? Cardback : Card },
+          selectedImage: undefined,
+          selected: false,
+        };
       }
     },
     setSelectedCardback: (
@@ -247,6 +272,8 @@ export const {
   bulkSetSelectedImage,
   setQuery,
   bulkSetQuery,
+  clearQuery,
+  bulkClearQuery,
   setSelectedCardback,
   addMembers,
   toggleMemberSelection,
@@ -281,34 +308,18 @@ export const selectProjectMemberIdentifiers = (state: RootState): Set<string> =>
     )
   );
 
-// TODO: this is a bit disgusting
 export const selectSelectedSlots = (state: RootState): Array<[Faces, number]> =>
-  // @ts-ignore // TODO
-  state.project.members.flatMap((x: SlotProjectMembers, index: number) =>
-    (x.front?.selected === true ? [[Front, index]] : []).concat(
-      x.back?.selected === true ? [[Back, index]] : []
-    )
-  );
-
-// TODO: this is disgusting
-export const selectProjectMemberQueries = (state: RootState): Set<string> =>
-  new Set(
-    state.project.members.flatMap((x: SlotProjectMembers) =>
-      (x.front?.query?.query != null
-        ? [
-            ReversedCardTypePrefixes[x.front.query.card_type] +
-              x.front.query.query,
-          ]
-        : []
-      ).concat(
-        x.back?.query?.query != null
-          ? [
-              ReversedCardTypePrefixes[x.back.query.card_type] +
-                x.back.query.query,
-            ]
-          : []
-      )
-    )
+  state.project.members.reduce(
+    (accumulator: Array<[Faces, number]>, value, index) => {
+      if (value.front?.selected === true) {
+        accumulator.push([Front, index]);
+      }
+      if (value.back?.selected === true) {
+        accumulator.push([Back, index]);
+      }
+      return accumulator;
+    },
+    []
   );
 
 export const selectProjectSize = (state: RootState): number =>
@@ -374,6 +385,34 @@ export const selectQueriesWithoutSearchResults = (
     }
   }
   return queriesToSearch;
+};
+
+export const selectAllSelectedProjectMembersHaveTheSameQuery = (
+  state: RootState,
+  slots: Array<[Faces, number]>
+): SearchQuery | undefined => {
+  /**
+   * If all card slots marked as selected are configured with the same search query, return it;
+   * otherwise, return undefined.
+   */
+
+  const firstQuery = selectProjectMember(
+    state,
+    slots[0][1],
+    slots[0][0]
+  )?.query;
+  return slots.every(
+    ([face, slot]) =>
+      (firstQuery?.query == null &&
+        (state.project.members[slot] ?? {})[face]?.query?.query == null) ||
+      (firstQuery != null &&
+        (state.project.members[slot] ?? {})[face]?.query?.query ==
+          firstQuery.query &&
+        (state.project.members[slot] ?? {})[face]?.query?.card_type ==
+          firstQuery.card_type)
+  )
+    ? firstQuery
+    : undefined;
 };
 
 export const selectIsProjectEmpty = (state: RootState) =>
