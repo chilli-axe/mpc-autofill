@@ -247,7 +247,6 @@ export const projectSlice = createSlice({
       }
     },
     deleteSlot: (state, action: PayloadAction<{ slot: number }>) => {
-      // TODO: this breaks when you add a DFC card then delete the different card from the project.
       state.members.splice(action.payload.slot, 1);
     },
     bulkDeleteSlots: (

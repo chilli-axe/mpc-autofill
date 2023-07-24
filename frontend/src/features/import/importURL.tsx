@@ -44,22 +44,26 @@ export function ImportURL() {
     const trimmedURL = URLModalValue.trim();
     if (trimmedURL.length > 0) {
       setLoading(true);
-      const query = await triggerFn(URLModalValue);
-      // TODO: handle errors here
-      const processedLines = processStringAsMultipleLines(
-        query.data ?? "",
-        dfcPairsQuery.data ?? {}
-      );
-      dispatch(
-        addMembers({
-          members: convertLinesIntoSlotProjectMembers(
-            processedLines,
-            projectSize
-          ),
-        })
-      );
-      handleCloseURLModal();
-      setLoading(false);
+      try {
+        const query = await triggerFn(URLModalValue);
+        const processedLines = processStringAsMultipleLines(
+          query.data ?? "",
+          dfcPairsQuery.data ?? {}
+        );
+        dispatch(
+          addMembers({
+            members: convertLinesIntoSlotProjectMembers(
+              processedLines,
+              projectSize
+            ),
+          })
+        );
+        handleCloseURLModal();
+      } catch (error: any) {
+        alert("error"); // TODO: handle errors here
+      } finally {
+        setLoading(false);
+      }
     }
   }, [URLModalValue]);
 
