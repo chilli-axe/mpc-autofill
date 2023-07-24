@@ -128,9 +128,9 @@ export function ImportURL() {
               await handleSubmitURLModal();
             }}
             disabled={loading || importSitesQuery.isFetching}
-            style={{ width: 5 + "em" }}
+            style={{ width: 4.75 + "em" }}
           >
-            {loading ? <Spinner size={1.5} /> : "Loading"}
+            {loading ? <Spinner size={1.5} /> : "Submit"}
           </Button>
         </Modal.Footer>
       </Modal>
