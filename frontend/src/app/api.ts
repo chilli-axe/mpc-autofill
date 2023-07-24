@@ -224,9 +224,7 @@ export async function APIGetCards(
 ): Promise<CardDocuments> {
   const rawResponse = await fetch(formatURL(backendURL, "/2/cards/"), {
     method: "POST",
-    body: JSON.stringify({
-      card_identifiers: Array.from(identifiersToSearch),
-    }),
+    body: JSON.stringify({ card_identifiers: identifiersToSearch }),
     credentials: "same-origin",
     headers: getCSRFHeader(),
   });
@@ -267,7 +265,7 @@ export async function APISearch(
     method: "POST",
     body: JSON.stringify({
       searchSettings,
-      queries: Array.from(queriesToSearch),
+      queries: queriesToSearch,
     }),
     credentials: "same-origin",
     headers: getCSRFHeader(),

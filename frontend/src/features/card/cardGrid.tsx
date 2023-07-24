@@ -1,27 +1,21 @@
 /**
- * This component displays all `CardSlot`s in the project and is responsible for
- * querying the server for search results as necessary.
+ * This component displays all `CardSlot`s in the project.
  */
 
-import React, { useEffect } from "react";
+import { createSelector } from "@reduxjs/toolkit";
+import React from "react";
 import Modal from "react-bootstrap/Modal";
 import Row from "react-bootstrap/Row";
 import styled from "styled-components";
 
+import { RootState } from "@/app/store";
 import { Back, Front } from "@/common/constants";
-import { useAppDispatch, useAppSelector } from "@/common/types";
-import { useBackendConfigured } from "@/features/backend/backendSlice";
+import { useAppSelector } from "@/common/types";
 import { MemoizedCardSlot } from "@/features/card/cardSlot";
 import {
   selectIsProjectEmpty,
   selectProjectMembers,
 } from "@/features/project/projectSlice";
-import { fetchCardDocumentsAndReportError } from "@/features/search/cardDocumentsSlice";
-import { clearSearchResults } from "@/features/search/searchResultsSlice";
-import {
-  selectSearchSettingsSourcesValid,
-  selectStringifiedSearchSettings,
-} from "@/features/searchSettings/searchSettingsSlice";
 import { Spinner } from "@/features/ui/spinner";
 import { selectFrontsVisible } from "@/features/viewSettings/viewSettingsSlice";
 
@@ -59,8 +53,6 @@ function CardGridDefault() {
 }
 
 export function CardGrid() {
-  const dispatch = useAppDispatch();
-
   const fetchingCardData = useAppSelector(
     (state) =>
       state.cardDocuments.status == "loading" ||
@@ -68,31 +60,10 @@ export function CardGrid() {
   );
   const isProjectEmpty = useAppSelector(selectIsProjectEmpty);
   const frontsVisible = useAppSelector(selectFrontsVisible);
-  const searchSettingsSourcesValid = useAppSelector(
-    selectSearchSettingsSourcesValid
-  );
-  const stringifiedSearchSettings = useAppSelector(
-    selectStringifiedSearchSettings
-  );
   const projectMembers = useAppSelector(selectProjectMembers);
-
-  const backendConfigured = useBackendConfigured();
 
   const cardSlotsFronts = [];
   const cardSlotsBacks = [];
-
-  useEffect(() => {
-    // recalculate search results when search settings change
-    if (backendConfigured && searchSettingsSourcesValid) {
-      dispatch(clearSearchResults());
-      fetchCardDocumentsAndReportError(dispatch);
-    }
-  }, [
-    dispatch,
-    stringifiedSearchSettings,
-    backendConfigured,
-    searchSettingsSourcesValid,
-  ]);
 
   for (const [slot, slotProjectMember] of projectMembers.entries()) {
     cardSlotsFronts.push(

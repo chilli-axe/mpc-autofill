@@ -2,20 +2,19 @@
  * State management for the user's configuration of the project - selected cards and cardbacks.
  */
 
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 import { RootState } from "@/app/store";
-import { Card, Cardback, ReversedCardTypePrefixes } from "@/common/constants";
+import { Card, Cardback } from "@/common/constants";
 import { Back, Front, ProjectMaxSize } from "@/common/constants";
 import { processPrefix } from "@/common/processing";
 import {
   Faces,
   Project,
   ProjectMember,
-  SearchQuery,
   SlotProjectMembers,
-  useAppSelector,
 } from "@/common/types";
+import { selectCardSizesByIdentifier } from "@/features/search/cardDocumentsSlice";
 
 //# region slice configuration
 
@@ -299,121 +298,111 @@ export const selectProjectMember = (
   face: Faces
 ): ProjectMember | null => (state.project.members[slot] ?? {})[face];
 
-export const selectProjectMemberIdentifiers = (state: RootState): Set<string> =>
-  new Set(
-    state.project.members.flatMap((x: SlotProjectMembers) =>
-      (x.front?.selectedImage != null ? [x.front.selectedImage] : []).concat(
-        x.back?.selectedImage != null ? [x.back.selectedImage] : []
+export const selectProjectMemberIdentifiers = createSelector(
+  (state: RootState) => state.project.members,
+  (projectMembers) =>
+    new Set(
+      projectMembers.flatMap((x: SlotProjectMembers) =>
+        (x.front?.selectedImage != null ? [x.front.selectedImage] : []).concat(
+          x.back?.selectedImage != null ? [x.back.selectedImage] : []
+        )
       )
     )
-  );
+);
 
-export const selectSelectedSlots = (state: RootState): Array<[Faces, number]> =>
-  state.project.members.reduce(
-    (accumulator: Array<[Faces, number]>, value, index) => {
-      if (value.front?.selected === true) {
-        accumulator.push([Front, index]);
-      }
-      if (value.back?.selected === true) {
-        accumulator.push([Back, index]);
-      }
-      return accumulator;
-    },
-    []
-  );
+export const selectSelectedSlots = createSelector(
+  (state: RootState) => state.project.members,
+  (projectMembers) =>
+    projectMembers.reduce(
+      (accumulator: Array<[Faces, number]>, value, index) => {
+        if (value.front?.selected === true) {
+          accumulator.push([Front, index]);
+        }
+        if (value.back?.selected === true) {
+          accumulator.push([Back, index]);
+        }
+        return accumulator;
+      },
+      []
+    )
+);
+
+export const selectUniqueCardIdentifiers = createSelector(
+  (state: RootState) => state.project.members,
+  (state: RootState) => state.searchResults.searchResults,
+  (state: RootState) => state.cardbacks.cardbacks,
+  (projectMembers, searchResults, cardbacks) =>
+    new Set(
+      projectMembers
+        .flatMap((slotProjectMembers) =>
+          [Front, Back].flatMap((face) => {
+            const searchQuery = slotProjectMembers[face]?.query;
+            return searchQuery?.query != null &&
+              (
+                (searchResults[searchQuery.query] ?? {})[
+                  searchQuery.card_type
+                ] ?? []
+              ).length > 0
+              ? (searchResults[searchQuery.query] ?? {})[searchQuery.card_type]
+              : [];
+          })
+        )
+        .concat(cardbacks)
+    )
+);
 
 export const selectProjectSize = (state: RootState): number =>
   state.project.members.length;
 
-export const selectProjectFileSize = (state: RootState): number => {
-  const uniqueCardIdentifiers = new Set<string>();
-  for (const slotProjectMembers of state.project.members) {
-    for (const face of [Front, Back]) {
-      const man = slotProjectMembers[face]?.selectedImage;
-      if (man != null) {
-        uniqueCardIdentifiers.add(man);
-      }
-    }
-  }
+export const selectProjectFileSize = createSelector(
+  (state: RootState) =>
+    selectCardSizesByIdentifier(
+      state,
+      Array.from(selectProjectMemberIdentifiers(state))
+    ),
+  (cardSizesByIdentifier: { [identifier: string]: number }): number =>
+    Object.keys(cardSizesByIdentifier).reduce(
+      (accumulator: number, identifier: string) => {
+        return accumulator + (cardSizesByIdentifier[identifier] ?? 0);
+      },
+      0
+    )
+);
 
-  const cardDocuments = state.cardDocuments.cardDocuments;
-  return Array.from(uniqueCardIdentifiers).reduce(
-    (accumulator: number, identifier: string) => {
-      return accumulator + (cardDocuments[identifier] ?? { size: 0 }).size;
-    },
-    0
-  );
-};
+export const selectQueriesWithoutSearchResults = createSelector(
+  (state: RootState) => state.project.members,
+  (state: RootState) => state.searchResults.searchResults,
+  (projectMembers, searchResults) =>
+    projectMembers.flatMap((slotProjectMembers) =>
+      [Front, Back].flatMap((face) => {
+        const searchQuery = slotProjectMembers[face]?.query;
+        return searchQuery?.query != null &&
+          (searchResults[searchQuery.query] ?? {})[searchQuery.card_type] ==
+            null
+          ? [searchQuery]
+          : [];
+      })
+    )
+);
 
-export const selectUniqueCardIdentifiers = (state: RootState): Set<string> => {
-  const allIdentifiers: Set<string> = new Set(state.cardbacks.cardbacks);
-  for (const slotProjectMembers of state.project.members) {
-    for (const face of [Front, Back]) {
-      const projectMember = slotProjectMembers[face];
-      if (
-        projectMember?.query?.query != null &&
-        (
-          (state.searchResults.searchResults[projectMember.query.query] ?? {})[
-            projectMember.query.card_type
-          ] ?? []
-        ).length > 0
-      ) {
-        state.searchResults.searchResults[projectMember.query.query][
-          projectMember.query.card_type
-        ].forEach((x: string) => allIdentifiers.add(x));
-      }
-    }
-  }
-  return allIdentifiers;
-};
-
-export const selectQueriesWithoutSearchResults = (
-  state: RootState
-): Array<SearchQuery> => {
-  const queriesToSearch: Array<SearchQuery> = [];
-  for (const slotProjectMembers of state.project.members) {
-    for (const face of [Front, Back]) {
-      const projectMember = slotProjectMembers[face];
-      if (
-        projectMember?.query?.query != null &&
-        (state.searchResults.searchResults[projectMember.query.query] ?? {})[
-          projectMember.query.card_type
-        ] == null
-      ) {
-        queriesToSearch.push(projectMember.query);
-      }
-    }
-  }
-  return queriesToSearch;
-};
-
-export const selectAllSelectedProjectMembersHaveTheSameQuery = (
-  state: RootState,
-  slots: Array<[Faces, number]>
-): SearchQuery | undefined => {
-  /**
-   * If all card slots marked as selected are configured with the same search query, return it;
-   * otherwise, return undefined.
-   */
-
-  const firstQuery = selectProjectMember(
-    state,
-    slots[0][1],
-    slots[0][0]
-  )?.query;
-  return slots.every(
-    ([face, slot]) =>
-      (firstQuery?.query == null &&
-        (state.project.members[slot] ?? {})[face]?.query?.query == null) ||
-      (firstQuery != null &&
-        (state.project.members[slot] ?? {})[face]?.query?.query ==
-          firstQuery.query &&
-        (state.project.members[slot] ?? {})[face]?.query?.card_type ==
-          firstQuery.card_type)
-  )
-    ? firstQuery
-    : undefined;
-};
+export const selectAllSelectedProjectMembersHaveTheSameQuery = createSelector(
+  (state: RootState, slots: Array<[Faces, number]>) =>
+    slots.length > 0
+      ? selectProjectMember(state, slots[0][1], slots[0][0])?.query
+      : null,
+  (state: RootState, slots: Array<[Faces, number]>) =>
+    slots.map((slot) => selectProjectMember(state, slot[1], slot[0])),
+  (firstQuery, projectMembers) =>
+    projectMembers.every(
+      (projectMember) =>
+        (firstQuery?.query == null && projectMember?.query?.query == null) ||
+        (firstQuery != null &&
+          projectMember?.query?.query == firstQuery.query &&
+          projectMember?.query?.card_type == firstQuery.card_type)
+    )
+      ? firstQuery
+      : undefined
+);
 
 export const selectIsProjectEmpty = (state: RootState) =>
   state.project.members.length == 0;

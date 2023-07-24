@@ -15,7 +15,6 @@ import { useGetDFCPairsQuery, useGetSampleCardsQuery } from "@/app/api";
 import {
   Card,
   Cardback,
-  CardTypeSeparator,
   FaceSeparator,
   ProjectName,
   ReversedCardTypePrefixes,
@@ -30,7 +29,6 @@ import {
 import { CardDocument, useAppDispatch, useAppSelector } from "@/common/types";
 import { toTitleCase } from "@/common/utils";
 import { addMembers, selectProjectSize } from "@/features/project/projectSlice";
-import { fetchCardDocumentsAndReportError } from "@/features/search/cardDocumentsSlice";
 
 export function ImportText() {
   const sampleCardsQuery = useGetSampleCardsQuery();
@@ -93,7 +91,6 @@ export function ImportText() {
         ),
       })
     );
-    fetchCardDocumentsAndReportError(dispatch);
     handleCloseTextModal();
   };
 

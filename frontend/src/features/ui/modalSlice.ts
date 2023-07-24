@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
+import { RootState } from "@/app/store";
 import { CardDocument, Modals, ModalState } from "@/common/types";
 
 //# region slice configuration
@@ -27,5 +28,12 @@ export const modalSlice = createSlice({
 
 export default modalSlice.reducer;
 export const { setSelectedCardAndShowModal, hideModal } = modalSlice.actions;
+
+//# endregion
+
+//# region selectors
+
+export const selectModalCard = (state: RootState) => state.modal.card;
+export const selectShownModal = (state: RootState) => state.modal.shownModal;
 
 //# endregion

@@ -20,7 +20,6 @@ import {
 import { useAppDispatch, useAppSelector } from "@/common/types";
 import { useProjectName } from "@/features/backend/backendSlice";
 import { addMembers, selectProjectSize } from "@/features/project/projectSlice";
-import { fetchCardDocumentsAndReportError } from "@/features/search/cardDocumentsSlice";
 import { Spinner } from "@/features/ui/spinner";
 
 export function ImportURL() {
@@ -59,7 +58,6 @@ export function ImportURL() {
           ),
         })
       );
-      fetchCardDocumentsAndReportError(dispatch);
       handleCloseURLModal();
       setLoading(false);
     }
