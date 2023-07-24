@@ -7,7 +7,7 @@ import SSRProvider from "react-bootstrap/SSRProvider";
 import { Provider } from "react-redux";
 import styled from "styled-components";
 
-import store, { RootState } from "@/app/store";
+import store from "@/app/store";
 import { ContentMaxWidth, NavbarHeight } from "@/common/constants";
 import {
   getGoogleAnalyticsConsent,
@@ -18,7 +18,11 @@ import { useAppDispatch, useAppSelector } from "@/common/types";
 import { setURL, useBackendConfigured } from "@/features/backend/backendSlice";
 import { MemoizedCardDetailedView } from "@/features/card/cardDetailedView";
 import { Toasts } from "@/features/toasts/toasts";
-import { hideModal } from "@/features/ui/modalSlice";
+import {
+  hideModal,
+  selectModalCard,
+  selectShownModal,
+} from "@/features/ui/modalSlice";
 import ProjectNavbar from "@/features/ui/navbar";
 
 function BackendSetter() {
@@ -48,10 +52,8 @@ function BackendSetter() {
 function Modals() {
   // TODO: move the grid selector into here
   // TODO: move the developer and patreon support modals into here
-  const [selectedImage, shownModal] = useAppSelector((state: RootState) => [
-    state.modal.card,
-    state.modal.shownModal,
-  ]);
+  const selectedImage = useAppSelector(selectModalCard);
+  const shownModal = useAppSelector(selectShownModal);
   const dispatch = useAppDispatch();
   return (
     <>

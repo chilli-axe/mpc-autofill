@@ -105,7 +105,10 @@
 # ---
 # name: TestGetContributions.test_post_request
   dict({
-    'content': b'Expected GET request.',
+    'json': dict({
+      'message': 'Expected GET request.',
+      'name': 'Bad request',
+    }),
     'status_code': 400,
   })
 # ---
@@ -137,7 +140,10 @@
 # ---
 # name: TestGetDFCPairs.test_post_request
   dict({
-    'content': b'Expected GET request.',
+    'json': dict({
+      'message': 'Expected GET request.',
+      'name': 'Bad request',
+    }),
     'status_code': 400,
   })
 # ---
@@ -196,13 +202,19 @@
 # ---
 # name: TestGetImportSites.test_post_request
   dict({
-    'content': b'Expected GET request.',
+    'json': dict({
+      'message': 'Expected GET request.',
+      'name': 'Bad request',
+    }),
     'status_code': 400,
   })
 # ---
 # name: TestGetInfo.test_post_request
   dict({
-    'content': b'Expected GET request.',
+    'json': dict({
+      'message': 'Expected GET request.',
+      'name': 'Bad request',
+    }),
     'status_code': 400,
   })
 # ---
@@ -316,7 +328,10 @@
 # ---
 # name: TestGetSampleCards.test_post_request
   dict({
-    'content': b'Expected GET request.',
+    'json': dict({
+      'message': 'Expected GET request.',
+      'name': 'Bad request',
+    }),
     'status_code': 400,
   })
 # ---
@@ -330,7 +345,10 @@
 # ---
 # name: TestGetSearchEngineHealth.test_post_request
   dict({
-    'content': b'Expected GET request.',
+    'json': dict({
+      'message': 'Expected GET request.',
+      'name': 'Bad request',
+    }),
     'status_code': 400,
   })
 # ---
@@ -363,7 +381,10 @@
 # ---
 # name: TestGetSources.test_post_request
   dict({
-    'content': b'Expected GET request.',
+    'json': dict({
+      'message': 'Expected GET request.',
+      'name': 'Bad request',
+    }),
     'status_code': 400,
   })
 # ---
@@ -595,7 +616,10 @@
 # ---
 # name: TestNewCardsFirstPages.test_post_request
   dict({
-    'content': b'Expected GET request.',
+    'json': dict({
+      'message': 'Expected GET request.',
+      'name': 'Bad request',
+    }),
     'status_code': 400,
   })
 # ---
@@ -897,55 +921,82 @@
 # ---
 # name: TestNewCardsPage.test_post_request
   dict({
-    'content': b'Expected GET request.',
+    'json': dict({
+      'message': 'Expected GET request.',
+      'name': 'Bad request',
+    }),
     'status_code': 400,
   })
 # ---
 # name: TestNewCardsPage.test_response_to_malformed_json_body[invalid source]
   dict({
-    'content': b'Invalid source key garbage specified.',
+    'json': dict({
+      'message': 'Invalid source key garbage specified.',
+      'name': 'Bad request',
+    }),
     'status_code': 400,
   })
 # ---
 # name: TestNewCardsPage.test_response_to_malformed_json_body[negative page]
   dict({
-    'content': b'Invalid page -1 specified - must be between 1 and 2 for source example_drive_1.',
+    'json': dict({
+      'message': 'Invalid page -1 specified - must be between 1 and 2 for source example_drive_1.',
+      'name': 'Bad request',
+    }),
     'status_code': 400,
   })
 # ---
 # name: TestNewCardsPage.test_response_to_malformed_json_body[no page field]
   dict({
-    'content': b'Page not specified.',
+    'json': dict({
+      'message': 'Page not specified.',
+      'name': 'Bad request',
+    }),
     'status_code': 400,
   })
 # ---
 # name: TestNewCardsPage.test_response_to_malformed_json_body[no params]
   dict({
-    'content': b'Source not specified.',
+    'json': dict({
+      'message': 'Source not specified.',
+      'name': 'Bad request',
+    }),
     'status_code': 400,
   })
 # ---
 # name: TestNewCardsPage.test_response_to_malformed_json_body[no source field]
   dict({
-    'content': b'Source not specified.',
+    'json': dict({
+      'message': 'Source not specified.',
+      'name': 'Bad request',
+    }),
     'status_code': 400,
   })
 # ---
 # name: TestNewCardsPage.test_response_to_malformed_json_body[non-number page]
   dict({
-    'content': b'Invalid page specified.',
+    'json': dict({
+      'message': 'Invalid page specified.',
+      'name': 'Bad request',
+    }),
     'status_code': 400,
   })
 # ---
 # name: TestNewCardsPage.test_response_to_malformed_json_body[page out of range for source]
   dict({
-    'content': b'Invalid page 10 specified - must be between 1 and 2 for source example_drive_1.',
+    'json': dict({
+      'message': 'Invalid page 10 specified - must be between 1 and 2 for source example_drive_1.',
+      'name': 'Bad request',
+    }),
     'status_code': 400,
   })
 # ---
 # name: TestNewCardsPage.test_response_to_malformed_json_body[zero page]
   dict({
-    'content': b'Invalid page 0 specified - must be between 1 and 2 for source example_drive_1.',
+    'json': dict({
+      'message': 'Invalid page 0 specified - must be between 1 and 2 for source example_drive_1.',
+      'name': 'Bad request',
+    }),
     'status_code': 400,
   })
 # ---
@@ -993,7 +1044,10 @@
 # ---
 # name: TestPostCardbacks.test_get_request
   dict({
-    'content': b'Expected POST request.',
+    'json': dict({
+      'message': 'Expected POST request.',
+      'name': 'Bad request',
+    }),
     'status_code': 400,
   })
 # ---
@@ -1026,25 +1080,53 @@
 # ---
 # name: TestPostCardbacks.test_response_to_malformed_json_body[array json body]
   dict({
-    'content': b"The provided JSON body is invalid:\n\n['test'] is not of type 'object'",
+    'json': dict({
+      'message': '''
+        The provided JSON body is invalid:
+        
+        ['test'] is not of type 'object'
+      ''',
+      'name': 'Bad request',
+    }),
     'status_code': 400,
   })
 # ---
 # name: TestPostCardbacks.test_response_to_malformed_json_body[empty json body]
   dict({
-    'content': b"The provided JSON body is invalid:\n\n'searchSettings' is a required property",
+    'json': dict({
+      'message': '''
+        The provided JSON body is invalid:
+        
+        'searchSettings' is a required property
+      ''',
+      'name': 'Bad request',
+    }),
     'status_code': 400,
   })
 # ---
 # name: TestPostCardbacks.test_response_to_malformed_json_body[invalid search settings]
   dict({
-    'content': b"The provided JSON body is invalid:\n\n'test2' is not of type 'object'",
+    'json': dict({
+      'message': '''
+        The provided JSON body is invalid:
+        
+        'test2' is not of type 'object'
+      ''',
+      'name': 'Bad request',
+    }),
     'status_code': 400,
   })
 # ---
 # name: TestPostCardbacks.test_response_to_malformed_json_body[search settings not specified]
   dict({
-    'content': b"The provided JSON body is invalid:\n\n'searchSettings' is a required property",
+    'json': dict({
+      'message': '''
+        The provided JSON body is invalid:
+        
+        'searchSettings' is a required property
+      ''',
+      'name': 'Bad request',
+    }),
     'status_code': 400,
   })
 # ---
@@ -1099,7 +1181,10 @@
 # ---
 # name: TestPostCards.test_get_request
   dict({
-    'content': b'Expected POST request.',
+    'json': dict({
+      'message': 'Expected POST request.',
+      'name': 'Bad request',
+    }),
     'status_code': 400,
   })
 # ---
@@ -1203,7 +1288,14 @@
 # ---
 # name: TestPostCards.test_page_larger_than_max_size
   dict({
-    'content': b"Malformed JSON body:\n\n['1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA', '17fopRCNRge72U8Hac8pApHZtEalx5kHy', '1991MWCur9NdAFi-tQQD5YbQj2oqV_WRy'] is too long",
+    'json': dict({
+      'message': '''
+        Malformed JSON body:
+        
+        ['1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA', '17fopRCNRge72U8Hac8pApHZtEalx5kHy', '1991MWCur9NdAFi-tQQD5YbQj2oqV_WRy'] is too long
+      ''',
+      'name': 'Bad request',
+    }),
     'status_code': 400,
   })
 # ---
@@ -1238,49 +1330,93 @@
 # ---
 # name: TestPostCards.test_response_to_malformed_json_body[empty json body]
   dict({
-    'content': b"Malformed JSON body:\n\n'card_identifiers' is a required property",
+    'json': dict({
+      'message': '''
+        Malformed JSON body:
+        
+        'card_identifiers' is a required property
+      ''',
+      'name': 'Bad request',
+    }),
     'status_code': 400,
   })
 # ---
 # name: TestPostCards.test_response_to_malformed_json_body[invalid card_identifiers value]
   dict({
-    'content': b'Malformed JSON body:\n\n"i should be a list but i ain\'t" is not of type \'array\'',
+    'json': dict({
+      'message': '''
+        Malformed JSON body:
+        
+        "i should be a list but i ain't" is not of type 'array'
+      ''',
+      'name': 'Bad request',
+    }),
     'status_code': 400,
   })
 # ---
 # name: TestPostCards.test_response_to_malformed_json_body[missing card_identifiers entry]
   dict({
-    'content': b"Malformed JSON body:\n\n'card_identifiers' is a required property",
+    'json': dict({
+      'message': '''
+        Malformed JSON body:
+        
+        'card_identifiers' is a required property
+      ''',
+      'name': 'Bad request',
+    }),
     'status_code': 400,
   })
 # ---
 # name: TestPostImportSiteDecklist.test_get_request
   dict({
-    'content': b'Expected POST request.',
+    'json': dict({
+      'message': 'Expected POST request.',
+      'name': 'Bad request',
+    }),
     'status_code': 400,
   })
 # ---
 # name: TestPostImportSiteDecklist.test_invalid_url
   dict({
-    'content': b'The specified decklist URL does not match any known import sites.',
+    'json': dict({
+      'message': 'The specified decklist URL does not match any known import sites.',
+      'name': 'Bad request',
+    }),
     'status_code': 400,
   })
 # ---
 # name: TestPostImportSiteDecklist.test_response_to_malformed_json_body[empty json body]
   dict({
-    'content': b"Malformed JSON body:\n\n'url' is a required property",
+    'json': dict({
+      'message': '''
+        Malformed JSON body:
+        
+        'url' is a required property
+      ''',
+      'name': 'Bad request',
+    }),
     'status_code': 400,
   })
 # ---
 # name: TestPostImportSiteDecklist.test_response_to_malformed_json_body[invalid url field name]
   dict({
-    'content': b"Malformed JSON body:\n\n'url' is a required property",
+    'json': dict({
+      'message': '''
+        Malformed JSON body:
+        
+        'url' is a required property
+      ''',
+      'name': 'Bad request',
+    }),
     'status_code': 400,
   })
 # ---
 # name: TestPostImportSiteDecklist.test_response_to_malformed_json_body[malformed url]
   dict({
-    'content': b'The specified decklist URL does not match any known import sites.',
+    'json': dict({
+      'message': 'The specified decklist URL does not match any known import sites.',
+      'name': 'Bad request',
+    }),
     'status_code': 400,
   })
 # ---
@@ -1413,7 +1549,10 @@
 # ---
 # name: TestPostSearchResults.test_get_request
   dict({
-    'content': b'Expected POST request.',
+    'json': dict({
+      'message': 'Expected POST request.',
+      'name': 'Bad request',
+    }),
     'status_code': 400,
   })
 # ---
@@ -1493,7 +1632,14 @@
 # ---
 # name: TestPostSearchResults.test_page_larger_than_max_size
   dict({
-    'content': b"The provided JSON body is invalid:\n\n[{'query': 'Brainstorm', 'card_type': 'CARD'}, {'query': 'Island', 'card_type': 'CARD'}, {'query': 'Simple Cube', 'card_type': 'CARDBACK'}] is too long",
+    'json': dict({
+      'message': '''
+        The provided JSON body is invalid:
+        
+        [{'query': 'Brainstorm', 'card_type': 'CARD'}, {'query': 'Island', 'card_type': 'CARD'}, {'query': 'Simple Cube', 'card_type': 'CARDBACK'}] is too long
+      ''',
+      'name': 'Bad request',
+    }),
     'status_code': 400,
   })
 # ---
@@ -1514,43 +1660,92 @@
 # ---
 # name: TestPostSearchResults.test_response_to_malformed_json_body[empty json body]
   dict({
-    'content': b"The provided JSON body is invalid:\n\n'searchSettings' is a required property",
+    'json': dict({
+      'message': '''
+        The provided JSON body is invalid:
+        
+        'searchSettings' is a required property
+      ''',
+      'name': 'Bad request',
+    }),
     'status_code': 400,
   })
 # ---
 # name: TestPostSearchResults.test_response_to_malformed_json_body[gave it an array instead of an object]
   dict({
-    'content': b"The provided JSON body is invalid:\n\n['test'] is not of type 'object'",
+    'json': dict({
+      'message': '''
+        The provided JSON body is invalid:
+        
+        ['test'] is not of type 'object'
+      ''',
+      'name': 'Bad request',
+    }),
     'status_code': 400,
   })
 # ---
 # name: TestPostSearchResults.test_response_to_malformed_json_body[invalid card type field name]
   dict({
-    'content': b"The provided JSON body is invalid:\n\n{'query': 'Brainstorm', 'card_type_garbage': 'CARD'} is not of type 'array'",
+    'json': dict({
+      'message': '''
+        The provided JSON body is invalid:
+        
+        {'query': 'Brainstorm', 'card_type_garbage': 'CARD'} is not of type 'array'
+      ''',
+      'name': 'Bad request',
+    }),
     'status_code': 400,
   })
 # ---
 # name: TestPostSearchResults.test_response_to_malformed_json_body[invalid card type]
   dict({
-    'content': b"The provided JSON body is invalid:\n\n{'query': 'Brainstorm', 'card_type': 'garbage'} is not of type 'array'",
+    'json': dict({
+      'message': '''
+        The provided JSON body is invalid:
+        
+        {'query': 'Brainstorm', 'card_type': 'garbage'} is not of type 'array'
+      ''',
+      'name': 'Bad request',
+    }),
     'status_code': 400,
   })
 # ---
 # name: TestPostSearchResults.test_response_to_malformed_json_body[invalid query field name]
   dict({
-    'content': b"The provided JSON body is invalid:\n\n{'query_garbage': 'Brainstorm', 'card_type': 'CARD'} is not of type 'array'",
+    'json': dict({
+      'message': '''
+        The provided JSON body is invalid:
+        
+        {'query_garbage': 'Brainstorm', 'card_type': 'CARD'} is not of type 'array'
+      ''',
+      'name': 'Bad request',
+    }),
     'status_code': 400,
   })
 # ---
 # name: TestPostSearchResults.test_response_to_malformed_json_body[queries not specified]
   dict({
-    'content': b"The provided JSON body is invalid:\n\n'queries' is a required property",
+    'json': dict({
+      'message': '''
+        The provided JSON body is invalid:
+        
+        'queries' is a required property
+      ''',
+      'name': 'Bad request',
+    }),
     'status_code': 400,
   })
 # ---
 # name: TestPostSearchResults.test_response_to_malformed_json_body[search settings not specified]
   dict({
-    'content': b"The provided JSON body is invalid:\n\n'test2' is not of type 'object'",
+    'json': dict({
+      'message': '''
+        The provided JSON body is invalid:
+        
+        'test2' is not of type 'object'
+      ''',
+      'name': 'Bad request',
+    }),
     'status_code': 400,
   })
 # ---

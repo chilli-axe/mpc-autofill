@@ -2,7 +2,7 @@
  * State management for cards retrieved from the backend.
  */
 
-import { createSlice } from "@reduxjs/toolkit";
+import { createSelector, createSlice } from "@reduxjs/toolkit";
 
 import { APIGetCards } from "@/app/api";
 import { AppDispatch, RootState } from "@/app/store";
@@ -141,16 +141,28 @@ export const selectCardDocumentByIdentifier = (
     ? state.cardDocuments.cardDocuments[imageIdentifier]
     : undefined;
 
-export const selectCardDocumentsByIdentifier = (
-  state: RootState,
-  identifiers: Array<string>
-): { [identifier: string]: CardDocument } =>
-  Object.fromEntries(
-    identifiers.map((identifier) => [
-      identifier,
-      state.cardDocuments.cardDocuments[identifier],
-    ])
-  );
+export const selectCardDocumentsByIdentifier = createSelector(
+  (state: RootState, identifiers: Array<string>) => identifiers,
+  (state: RootState, identifiers: Array<string>) =>
+    state.cardDocuments.cardDocuments,
+  (identifiers, cardDocuments) =>
+    Object.fromEntries(
+      identifiers.map((identifier) => [identifier, cardDocuments[identifier]])
+    )
+);
+
+export const selectCardSizesByIdentifier = createSelector(
+  (state: RootState, identifiers: Array<string>) => identifiers,
+  (state: RootState, identifiers: Array<string>) =>
+    state.cardDocuments.cardDocuments,
+  (identifiers, cardDocuments) =>
+    Object.fromEntries(
+      identifiers.map((identifier) => [
+        identifier,
+        cardDocuments[identifier]?.size ?? 0,
+      ])
+    )
+);
 
 //# endregion
 

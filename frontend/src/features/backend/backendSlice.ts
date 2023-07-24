@@ -38,7 +38,7 @@ export default backendSlice.reducer;
 
 export const selectBackendURL = (state: RootState) => state.backend.url;
 export const selectBackendConfigured = (state: RootState) =>
-  state.backend.url != null;
+  selectBackendURL(state) != null;
 
 //# endregion
 

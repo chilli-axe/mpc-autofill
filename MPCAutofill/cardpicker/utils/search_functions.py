@@ -36,6 +36,11 @@ F = TypeVar("F", bound=Callable[..., Any])
 
 
 class SearchExceptions:
+    class ElasticsearchOfflineException(Exception):
+        def __init__(self) -> None:
+            self.message = "The search engine is offline."
+            super().__init__(self.message)
+
     class IndexNotFoundException(Exception):
         def __init__(self, index: str) -> None:
             self.message = (

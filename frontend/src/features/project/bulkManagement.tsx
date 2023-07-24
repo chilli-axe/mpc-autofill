@@ -26,7 +26,6 @@ import {
   selectAllSelectedProjectMembersHaveTheSameQuery,
   selectSelectedSlots,
 } from "@/features/project/projectSlice";
-import { fetchCardDocumentsAndReportError } from "@/features/search/cardDocumentsSlice";
 import { selectSearchResultsForQueryOrDefault } from "@/features/search/searchResultsSlice";
 
 interface MutateSelectedImageQueriesProps {
@@ -119,7 +118,6 @@ function ChangeSelectedImageQueries({
     dispatch(
       bulkSetQuery({ query: changeSelectedImageQueriesModalValue, slots })
     );
-    fetchCardDocumentsAndReportError(dispatch);
     handleCloseChangeSelectedImageQueriesModal();
   };
 

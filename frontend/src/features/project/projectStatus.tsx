@@ -25,8 +25,6 @@ function MobileAlert() {
   );
 }
 
-// TODO: review the codebase for instances of this https://redux.js.org/usage/deriving-data-selectors#optimizing-selectors-with-memoization
-
 const SizedIcon = styled.i`
   font-size: 1.25rem;
 `;

@@ -126,6 +126,7 @@ export const selectSearchResultsForQuery = (
       ]
     : undefined;
 
+const defaultEmptySearchResults: Array<string> = [];
 export const selectSearchResultsForQueryOrDefault = (
   state: RootState,
   searchQuery: SearchQuery | null | undefined,
@@ -140,6 +141,6 @@ export const selectSearchResultsForQueryOrDefault = (
     ? selectSearchResultsForQuery(state, searchQuery)
     : face === Back
     ? cardbacks
-    : [];
+    : defaultEmptySearchResults;
 
 //# endregion

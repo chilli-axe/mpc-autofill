@@ -4,7 +4,7 @@ from selenium.webdriver import Chrome
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager, ChromeType
-from webdriver_manager.core.utils import OSType, os_name
+from webdriver_manager.core.os_manager import OperationSystemManager, OSType
 
 
 def get_brave_driver(headless: bool = False, binary_location: Optional[str] = None) -> Chrome:
@@ -26,7 +26,7 @@ def get_brave_driver(headless: bool = False, binary_location: Optional[str] = No
             OSType.LINUX: "/usr/bin/brave-browser",
             OSType.MAC: "/Applications/Brave Browser.app/Contents/MacOS/Brave Browser",
             OSType.WIN: "C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe",
-        }[os_name()]
+        }[OperationSystemManager.get_os_name()]
         options.binary_location = default_binary_location
 
     driver = Chrome(service=Service(ChromeDriverManager(chrome_type=ChromeType.BRAVE).install()), options=options)  # type: ignore

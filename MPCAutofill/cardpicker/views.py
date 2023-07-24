@@ -9,13 +9,7 @@ from blog.models import BlogPost
 from jsonschema import ValidationError, validate
 
 from django.conf import settings
-from django.http import (
-    HttpRequest,
-    HttpResponse,
-    HttpResponseBadRequest,
-    HttpResponseServerError,
-    JsonResponse,
-)
+from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
@@ -412,6 +406,10 @@ def insert_link(request: HttpRequest) -> HttpResponse:
 # region new API
 
 
+class BadRequestException(Exception):
+    pass
+
+
 class NewErrorWrappers:
     """
     View function decorators which gracefully handle exceptions and allow the exception message to be displayed
@@ -423,6 +421,10 @@ class NewErrorWrappers:
         def wrapper(*args: Any, **kwargs: Any) -> Union[F, HttpResponse]:
             try:
                 return func(*args, **kwargs)
+            except SearchExceptions.ElasticsearchOfflineException:
+                return JsonResponse({"name": "Search engine is offline", "message": None}, status=500)
+            except BadRequestException as bad_request_exception:
+                return JsonResponse({"name": "Bad request", "message": bad_request_exception.args[0]}, status=400)
             except Exception as e:
                 return JsonResponse(
                     {"name": f"Unhandled {e.__class__.__name__}", "message": str(e.args[0])}, status=500
@@ -444,17 +446,17 @@ def post_search_results(request: HttpRequest) -> HttpResponse:
     """
 
     if request.method != "POST":
-        return HttpResponseBadRequest("Expected POST request.")
+        raise BadRequestException("Expected POST request.")
 
     json_body = json.loads(request.body)
 
     try:
         search_settings, queries = parse_json_body_as_search_data(json_body)
     except ValidationError as e:
-        return HttpResponseBadRequest(f"The provided JSON body is invalid:\n\n{e.message}")
+        raise BadRequestException(f"The provided JSON body is invalid:\n\n{e.message}")
 
     if not ping_elasticsearch():
-        return HttpResponseServerError("Search engine is offline.")
+        raise SearchExceptions.ElasticsearchOfflineException()
 
     results: dict[str, dict[str, list[str]]] = defaultdict(dict)
     for query in queries:
@@ -468,7 +470,7 @@ def post_search_results(request: HttpRequest) -> HttpResponse:
 @NewErrorWrappers.to_json
 def post_cards(request: HttpRequest) -> HttpResponse:
     if request.method != "POST":
-        return HttpResponseBadRequest("Expected POST request.")
+        raise BadRequestException("Expected POST request.")
 
     json_body = json.loads(request.body)
     try:
@@ -484,7 +486,7 @@ def post_cards(request: HttpRequest) -> HttpResponse:
             },
         )
     except ValidationError as e:
-        return HttpResponseBadRequest(f"Malformed JSON body:\n\n{e.message}")
+        raise BadRequestException(f"Malformed JSON body:\n\n{e.message}")
 
     results = {x.identifier: x.to_dict() for x in Card.objects.filter(identifier__in=json_body["card_identifiers"])}
     return JsonResponse({"results": results})
@@ -498,7 +500,7 @@ def get_sources(request: HttpRequest) -> HttpResponse:
     """
 
     if request.method != "GET":
-        return HttpResponseBadRequest("Expected GET request.")
+        raise BadRequestException("Expected GET request.")
 
     results = {x.pk: x.to_dict() for x in Source.objects.order_by("ordinal", "pk")}
     return JsonResponse({"results": results})
@@ -512,7 +514,7 @@ def get_dfc_pairs(request: HttpRequest) -> HttpResponse:
     """
 
     if request.method != "GET":
-        return HttpResponseBadRequest("Expected GET request.")
+        raise BadRequestException("Expected GET request.")
 
     dfc_pairs = dict((x.front, x.back) for x in DFCPair.objects.all())
     return JsonResponse({"dfc_pairs": dfc_pairs})
@@ -526,13 +528,13 @@ def post_cardbacks(request: HttpRequest) -> HttpResponse:
     """
 
     if request.method != "POST":
-        return HttpResponseBadRequest("Expected POST request.")
+        raise BadRequestException("Expected POST request.")
 
     try:
         json_body = json.loads(request.body)
         search_settings = parse_json_body_as_search_settings(json_body)
     except ValidationError as e:
-        return HttpResponseBadRequest(f"The provided JSON body is invalid:\n\n{e.message}")
+        raise BadRequestException(f"The provided JSON body is invalid:\n\n{e.message}")
 
     cardbacks = search_settings.retrieve_cardback_identifiers()
     return JsonResponse({"cardbacks": cardbacks})
@@ -546,7 +548,7 @@ def get_import_sites(request: HttpRequest) -> HttpResponse:
     """
 
     if request.method != "GET":
-        return HttpResponseBadRequest("Expected GET request.")
+        raise BadRequestException("Expected GET request.")
 
     import_sites = [{"name": x.__name__, "url": x().get_base_url()} for x in ImportSites]
     return JsonResponse({"import_sites": import_sites})
@@ -560,7 +562,7 @@ def post_import_site_decklist(request: HttpRequest) -> HttpResponse:
     """
 
     if request.method != "POST":
-        return HttpResponseBadRequest("Expected POST request.")
+        raise BadRequestException("Expected POST request.")
 
     json_body = json.loads(request.body)
     try:
@@ -574,11 +576,11 @@ def post_import_site_decklist(request: HttpRequest) -> HttpResponse:
             },
         )
     except ValidationError as e:
-        return HttpResponseBadRequest(f"Malformed JSON body:\n\n{e.message}")
+        raise BadRequestException(f"Malformed JSON body:\n\n{e.message}")
 
     url = json_body["url"]
     if url is None:
-        return HttpResponseBadRequest("No decklist URL provided.")
+        raise BadRequestException("No decklist URL provided.")
     for site in ImportSites:
         if url.startswith(site.get_base_url()):
             text = site.retrieve_card_list(url)
@@ -586,7 +588,7 @@ def post_import_site_decklist(request: HttpRequest) -> HttpResponse:
                 [stripped_line for line in text.split("\n") if len(stripped_line := line.strip()) > 0]
             )
             return JsonResponse({"cards": cleaned_text})
-    return HttpResponseBadRequest("The specified decklist URL does not match any known import sites.")
+    raise BadRequestException("The specified decklist URL does not match any known import sites.")
 
 
 @csrf_exempt
@@ -600,7 +602,7 @@ def get_sample_cards(request: HttpRequest) -> HttpResponse:
     """
 
     if request.method != "GET":
-        return HttpResponseBadRequest("Expected GET request.")
+        raise BadRequestException("Expected GET request.")
 
     # sample some large number of identifiers from the database
     identifiers = {
@@ -633,7 +635,7 @@ def get_contributions(request: HttpRequest) -> HttpResponse:
     """
 
     if request.method != "GET":
-        return HttpResponseBadRequest("Expected GET request.")
+        raise BadRequestException("Expected GET request.")
 
     sources, card_count_by_type, total_database_size = summarise_contributions()
     return JsonResponse(
@@ -645,7 +647,7 @@ def get_contributions(request: HttpRequest) -> HttpResponse:
 @NewErrorWrappers.to_json
 def get_new_cards_first_pages(request: HttpRequest) -> HttpResponse:
     if request.method != "GET":
-        return HttpResponseBadRequest("Expected GET request.")
+        raise BadRequestException("Expected GET request.")
 
     response_body: dict[str, dict[str, Any]] = {}
     for source in Source.objects.all():
@@ -664,30 +666,30 @@ def get_new_cards_first_pages(request: HttpRequest) -> HttpResponse:
 @NewErrorWrappers.to_json
 def get_new_cards_page(request: HttpRequest) -> HttpResponse:
     if request.method != "GET":
-        return HttpResponseBadRequest("Expected GET request.")
+        raise BadRequestException("Expected GET request.")
 
     source_key = request.GET.get("source")
     if not source_key:
-        return HttpResponseBadRequest("Source not specified.")
+        raise BadRequestException("Source not specified.")
     source_q = Source.objects.filter(key=source_key)
 
     if source_q.count() == 0:
-        return HttpResponseBadRequest(f"Invalid source key {source_key} specified.")
+        raise BadRequestException(f"Invalid source key {source_key} specified.")
     paginator = get_new_cards_paginator(source=source_q[0])
 
     page = request.GET.get("page")
     if page is None:
-        return HttpResponseBadRequest("Page not specified.")
+        raise BadRequestException("Page not specified.")
     try:
         page_int = int(page)
         if not (paginator.num_pages >= page_int > 0):
-            return HttpResponseBadRequest(
+            raise BadRequestException(
                 f"Invalid page {page_int} specified - must be between 1 and {paginator.num_pages} "
                 f"for source {source_key}."
             )
         return JsonResponse({"cards": [card.to_dict() for card in paginator.page(page).object_list]})
     except ValueError:
-        return HttpResponseBadRequest("Invalid page specified.")
+        raise BadRequestException("Invalid page specified.")
 
 
 @csrf_exempt
@@ -699,7 +701,7 @@ def get_info(request: HttpRequest) -> HttpResponse:
     """
 
     if request.method != "GET":
-        return HttpResponseBadRequest("Expected GET request.")
+        raise BadRequestException("Expected GET request.")
 
     campaign, tiers = get_patreon_campaign_details()
     members = get_patrons(campaign["id"], tiers) if campaign is not None and tiers is not None else None
@@ -727,7 +729,7 @@ def get_info(request: HttpRequest) -> HttpResponse:
 @NewErrorWrappers.to_json
 def get_search_engine_health(request: HttpRequest) -> HttpResponse:
     if request.method != "GET":
-        return HttpResponseBadRequest("Expected GET request.")
+        raise BadRequestException("Expected GET request.")
 
     return JsonResponse({"online": ping_elasticsearch()})
 

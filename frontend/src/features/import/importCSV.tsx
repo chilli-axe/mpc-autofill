@@ -24,7 +24,6 @@ import {
 } from "@/common/processing";
 import { useAppDispatch, useAppSelector } from "@/common/types";
 import { addMembers, selectProjectSize } from "@/features/project/projectSlice";
-import { fetchCardDocumentsAndReportError } from "@/features/search/cardDocumentsSlice";
 
 const TableWrapper = styled.div`
   max-width: 100%;
@@ -203,7 +202,6 @@ export function ImportCSV() {
         ),
       })
     );
-    fetchCardDocumentsAndReportError(dispatch);
     handleCloseCSVModal();
   };
 

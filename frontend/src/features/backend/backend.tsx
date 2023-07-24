@@ -144,6 +144,11 @@ export function BackendConfig({ show, handleClose }: BackendConfigProps) {
   };
 
   useEffect(() => {
+    /**
+     * TODO: This could be turned into a Redux listener. The reason I haven't done so here is because it's a bit funky
+     *       in terms of how it interacts with pre-loading the Redux state in tests with a backend URL.
+     */
+
     const localStorageBackendURL = getLocalStorageBackendURL();
     if (localStorageBackendURL != undefined) {
       dispatch(setURL(localStorageBackendURL));

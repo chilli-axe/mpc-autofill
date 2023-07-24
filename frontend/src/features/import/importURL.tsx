@@ -20,7 +20,6 @@ import {
 import { useAppDispatch, useAppSelector } from "@/common/types";
 import { useProjectName } from "@/features/backend/backendSlice";
 import { addMembers, selectProjectSize } from "@/features/project/projectSlice";
-import { fetchCardDocumentsAndReportError } from "@/features/search/cardDocumentsSlice";
 import { Spinner } from "@/features/ui/spinner";
 
 export function ImportURL() {
@@ -45,23 +44,26 @@ export function ImportURL() {
     const trimmedURL = URLModalValue.trim();
     if (trimmedURL.length > 0) {
       setLoading(true);
-      const query = await triggerFn(URLModalValue);
-      // TODO: handle errors here
-      const processedLines = processStringAsMultipleLines(
-        query.data ?? "",
-        dfcPairsQuery.data ?? {}
-      );
-      dispatch(
-        addMembers({
-          members: convertLinesIntoSlotProjectMembers(
-            processedLines,
-            projectSize
-          ),
-        })
-      );
-      fetchCardDocumentsAndReportError(dispatch);
-      handleCloseURLModal();
-      setLoading(false);
+      try {
+        const query = await triggerFn(URLModalValue);
+        const processedLines = processStringAsMultipleLines(
+          query.data ?? "",
+          dfcPairsQuery.data ?? {}
+        );
+        dispatch(
+          addMembers({
+            members: convertLinesIntoSlotProjectMembers(
+              processedLines,
+              projectSize
+            ),
+          })
+        );
+        handleCloseURLModal();
+      } catch (error: any) {
+        alert("error"); // TODO: handle errors here
+      } finally {
+        setLoading(false);
+      }
     }
   }, [URLModalValue]);
 
@@ -126,9 +128,9 @@ export function ImportURL() {
               await handleSubmitURLModal();
             }}
             disabled={loading || importSitesQuery.isFetching}
-            style={{ width: 5 + "em" }}
+            style={{ width: 4.75 + "em" }}
           >
-            {loading ? <Spinner size={1.5} /> : "Loading"}
+            {loading ? <Spinner size={1.5} /> : "Submit"}
           </Button>
         </Modal.Footer>
       </Modal>

@@ -85,7 +85,8 @@ export default cardbackSlice.reducer;
 
 //# region selectors
 
+const defaultEmptyCardbacks: Array<string> = [];
 export const selectCardbacks = (state: RootState) =>
-  state.cardbacks.cardbacks ?? [];
+  state.cardbacks.cardbacks ?? defaultEmptyCardbacks;
 
 //# endregion

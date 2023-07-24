@@ -2,7 +2,7 @@
  * State management for sources retrieved from the backend.
  */
 
-import { createSlice } from "@reduxjs/toolkit";
+import { createSelector, createSlice } from "@reduxjs/toolkit";
 
 import { APIGetSources } from "@/app/api";
 import { AppDispatch, RootState } from "@/app/store";
@@ -78,18 +78,17 @@ export default sourceDocumentsSlice.reducer;
 export const selectSourceDocuments = (state: RootState) =>
   state.sourceDocuments.sourceDocuments;
 
-export const selectSourceNamesByKey = (
-  state: RootState
-): { [sourceKey: string]: string } => {
-  const sourceDocuments = state.sourceDocuments.sourceDocuments;
-  return sourceDocuments != null
-    ? Object.fromEntries(
-        Object.values(sourceDocuments).map((sourceDocument) => [
-          sourceDocument.key,
-          sourceDocument.name,
-        ])
-      )
-    : {};
-};
+export const selectSourceNamesByKey = createSelector(
+  (state: RootState) => state.sourceDocuments.sourceDocuments,
+  (sourceDocuments) =>
+    sourceDocuments != null
+      ? Object.fromEntries(
+          Object.values(sourceDocuments).map((sourceDocument) => [
+            sourceDocument.key,
+            sourceDocument.name,
+          ])
+        )
+      : {}
+);
 
 //# endregion
