@@ -225,7 +225,7 @@ exports[`the html structure of search settings 1`] = `
               tabindex="0"
             >
               <td
-                style="vertical-align: middle; width: 20%;"
+                style="vertical-align: middle; width: 30%;"
               >
                 <div
                   class="btn toggle btn-md btn-primary"
@@ -252,7 +252,7 @@ exports[`the html structure of search settings 1`] = `
                 </div>
               </td>
               <td
-                style="vertical-align: middle; width: 40%;"
+                style="vertical-align: middle; width: 50%;"
               >
                 <a>
                   Source 1
@@ -275,7 +275,7 @@ exports[`the html structure of search settings 1`] = `
                 </div>
               </td>
               <td
-                style="vertical-align: middle; width: 5%; text-align: center;"
+                style="vertical-align: middle; width: 15%; text-align: center;"
               >
                 <i
                   class="bi bi-grip-horizontal"
@@ -294,7 +294,7 @@ exports[`the html structure of search settings 1`] = `
               tabindex="0"
             >
               <td
-                style="vertical-align: middle; width: 20%;"
+                style="vertical-align: middle; width: 30%;"
               >
                 <div
                   class="btn toggle btn-md btn-primary"
@@ -321,7 +321,7 @@ exports[`the html structure of search settings 1`] = `
                 </div>
               </td>
               <td
-                style="vertical-align: middle; width: 40%;"
+                style="vertical-align: middle; width: 50%;"
               >
                 <a>
                   Source 2
@@ -344,7 +344,7 @@ exports[`the html structure of search settings 1`] = `
                 </div>
               </td>
               <td
-                style="vertical-align: middle; width: 5%; text-align: center;"
+                style="vertical-align: middle; width: 15%; text-align: center;"
               >
                 <i
                   class="bi bi-grip-horizontal"
@@ -363,7 +363,7 @@ exports[`the html structure of search settings 1`] = `
               tabindex="0"
             >
               <td
-                style="vertical-align: middle; width: 20%;"
+                style="vertical-align: middle; width: 30%;"
               >
                 <div
                   class="btn toggle btn-md btn-primary"
@@ -390,7 +390,7 @@ exports[`the html structure of search settings 1`] = `
                 </div>
               </td>
               <td
-                style="vertical-align: middle; width: 40%;"
+                style="vertical-align: middle; width: 50%;"
               >
                 <a>
                   Source 3
@@ -413,7 +413,7 @@ exports[`the html structure of search settings 1`] = `
                 </div>
               </td>
               <td
-                style="vertical-align: middle; width: 5%; text-align: center;"
+                style="vertical-align: middle; width: 15%; text-align: center;"
               >
                 <i
                   class="bi bi-grip-horizontal"

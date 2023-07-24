@@ -105,7 +105,7 @@ export function SourceSettings({
             >
               <td
                 key={`${sourceRow[0]}-toggle-column`}
-                style={{ verticalAlign: "middle", width: 20 + "%" }}
+                style={{ verticalAlign: "middle", width: 30 + "%" }}
               >
                 <Toggle
                   key={`${sourceRow[0]}-toggle`}
@@ -124,7 +124,7 @@ export function SourceSettings({
               </td>
               <td
                 key={`${sourceRow[0]}-name-column`}
-                style={{ verticalAlign: "middle", width: 40 + "%" }}
+                style={{ verticalAlign: "middle", width: 50 + "%" }}
               >
                 {maybeSourceDocuments[sourceRow[0]].external_link != null ? (
                   <a
@@ -176,7 +176,7 @@ export function SourceSettings({
                 key={`${sourceRow[0]}-drag-button-column`}
                 style={{
                   verticalAlign: "middle",
-                  width: 5 + "%",
+                  width: 15 + "%",
                   textAlign: "center",
                 }}
               >
