@@ -5,6 +5,8 @@ runs:
   steps:
     # not sure atm how to set up brave browser on github actions
     - uses: browser-actions/setup-chrome@latest
+      with:
+        chrome-version: beta
     - uses: browser-actions/setup-edge@latest
       with:
         edge-version: beta
