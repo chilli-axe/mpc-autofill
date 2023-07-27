@@ -1025,6 +1025,7 @@ class TestFrontend:
             )
 
     # TODO: replicate this test in the new frontend
+    @pytest.mark.skip("this test seems to have broken with chrome 115")
     def test_mobile_banner(self, mobile_chrome_driver):
         assert (
             "It seems like you're on a mobile device!"
