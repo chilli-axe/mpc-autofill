@@ -22,9 +22,8 @@ from src.exc import InvalidStateException
 from src.order import CardImage, CardImageCollection, CardOrder
 from src.processing import ImagePostProcessingConfig
 from src.utils import (
-    TEXT_BOLD,
-    TEXT_END,
     alert_handler,
+    bold,
     exception_retry_skip_handler,
     log_hours_minutes_seconds_elapsed,
 )
@@ -52,11 +51,11 @@ class AutofillDriver:
             driver = self.browser.value(headless=self.headless, binary_location=self.binary_location)
             driver.set_window_size(1200, 900)
             driver.implicitly_wait(5)
-            print(f"Successfully initialised {TEXT_BOLD}{self.browser.name}{TEXT_END} driver.")
+            print(f"Successfully initialised {bold(self.browser.name)} driver.")
         except (AttributeError, ValueError, sl_exc.WebDriverException) as e:
             raise Exception(
                 f"An error occurred while attempting to configure the webdriver for your specified browser. "
-                f"Please make sure you have installed the browser & that it is up to date:\n\n{TEXT_BOLD}{e}{TEXT_END}"
+                f"Please make sure you have installed the browser & that it is up to date:\n\n{bold(e)}"
             )
 
         self.driver = driver
@@ -65,11 +64,7 @@ class AutofillDriver:
         num_images = len(self.order.fronts.cards) + len(self.order.backs.cards)
         status_format = "State: {state}, Action: {action}"
         self.status_bar = self.manager.status_bar(
-            status_format=status_format,
-            state=f"{TEXT_BOLD}{self.state}{TEXT_END}",
-            action=f"{TEXT_BOLD}N/A{TEXT_END}",
-            position=1,
-            autorefresh=True,
+            status_format=status_format, state=bold(self.state), action=bold("N/A"), position=1, autorefresh=True
         )
         self.download_bar = self.manager.counter(
             total=num_images, desc="Images Downloaded", position=2, autorefresh=True
@@ -130,9 +125,7 @@ class AutofillDriver:
     def set_state(self, state: str, action: Optional[str] = None) -> None:
         self.state = state
         self.action = action
-        self.status_bar.update(
-            state=f"{TEXT_BOLD}{self.state}{TEXT_END}", action=f"{TEXT_BOLD}{self.action or 'N/A'}{TEXT_END}"
-        )
+        self.status_bar.update(state=bold(self.state), action=bold(self.action or "N/A"))
         self.status_bar.refresh()
 
     def assert_state(self, expected_state: States) -> None:
@@ -267,15 +260,12 @@ class AutofillDriver:
                 tries += 1
                 if tries >= max_tries:
                     print(
-                        f'Attempted to upload image {TEXT_BOLD}"{image.name}"{TEXT_END} {max_tries} times, '
+                        f"Attempted to upload image {bold(image.name)} {max_tries} times, "
                         f"but no attempt succeeded! Skipping this image."
                     )
                     return None
         else:
-            print(
-                f'Image {TEXT_BOLD}"{image.name}"{TEXT_END} at path {TEXT_BOLD}{image.file_path}{TEXT_END} does '
-                f"not exist!"
-            )
+            print(f"Image {bold(image.name)} at path {bold(image.file_path or 'None')} does not exist!")
             return None
 
     @exception_retry_skip_handler
@@ -484,7 +474,7 @@ class AutofillDriver:
                 input(
                     textwrap.dedent(
                         f"""
-                        The program has been started with {TEXT_BOLD}--skipsetup{TEXT_END}, which will continue
+                        The program has been started with {bold('--skipsetup')}, which will continue
                         uploading cards to an existing project. Please sign in to MPC and select an existing project
                         to continue editing. Once you've signed in and have entered the MPC project editor, return to
                         the console window and press Enter.
@@ -498,15 +488,15 @@ class AutofillDriver:
                     textwrap.dedent(
                         f"""
                         Configuring a new order. If you'd like to continue uploading cards to an existing project,
-                        start the program with the {TEXT_BOLD}--skipsetup{TEXT_END} option (in command prompt or terminal)
+                        start the program with the {bold('--skipsetup')} option (in command prompt or terminal)
                         and follow the printed instructions.
 
                         Windows:
-                            {TEXT_BOLD}autofill-windows.exe --skipsetup{TEXT_END}
+                            {bold('utofill-windows.exe --skipsetup')}
                         macOS:
-                            {TEXT_BOLD}./autofill-macos --skipsetup{TEXT_END}
+                            {bold('./autofill-macos --skipsetup')}
                         Linux:
-                            {TEXT_BOLD}./autofill-linux --skipsetup{TEXT_END}
+                            {bold('./autofill-linux --skipsetup')}
                         """
                     )
                 )

@@ -18,6 +18,10 @@ TEXT_BOLD = "\033[1m"
 TEXT_END = "\033[0m"
 
 
+def bold(text: Any) -> str:
+    return f"{TEXT_BOLD}{text}{TEXT_END}"
+
+
 def text_to_list(input_text: str) -> list[int]:
     """
     Helper function to translate strings like "[2, 4, 5, 6]" into sorted lists.
@@ -64,7 +68,7 @@ def exception_retry_skip_handler(func: F) -> F:
             try:
                 return func(*args, **kwargs)
             except Exception as e:
-                print(f"An uncaught exception occurred:\n{TEXT_BOLD}{e}{TEXT_END}\n")
+                print(f"An uncaught exception occurred:\n{bold(e.args[0])}\n")
                 action = inquirer.select(
                     message="How should the tool proceed?",
                     choices=["Retry this action", "Skip this action"],
