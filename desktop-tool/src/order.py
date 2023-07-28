@@ -71,7 +71,16 @@ class CardImage:
             self.retrieve_card_name()
 
         if self.name is None:
-            self.file_path = None
+            if self.drive_id:
+                # assume png
+                print(
+                    f"The name of the image {TEXT_BOLD}{self.drive_id}{TEXT_END} could not be determined, "
+                    f"meaning that its file extension is unknown. As a result, an assumption is made that the "
+                    f"file extension is {TEXT_BOLD}.png{TEXT_END}."
+                )
+                self.file_path = os.path.join(image_directory(), sanitize(f"{self.drive_id}.png"))
+            else:
+                self.file_path = None
         else:
             file_path = os.path.join(image_directory(), sanitize(self.name))
             if not os.path.isfile(file_path) or os.path.getsize(file_path) <= 0:
@@ -300,8 +309,8 @@ class CardOrder:
             for image in collection.cards:
                 if not image.file_path:
                     raise ValidationException(
-                        f"Image {TEXT_BOLD}{image.name}{TEXT_END} in {TEXT_BOLD}{collection.face}{TEXT_END} "
-                        f"has no file path."
+                        f"The file path for the image in slots {TEXT_BOLD}{image.slots or image.drive_id}{TEXT_END} "
+                        f"of face {TEXT_BOLD}{collection.face}{TEXT_END} could not be determined."
                     )
 
     def __attrs_post_init__(self) -> None:
