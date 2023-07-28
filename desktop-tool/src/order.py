@@ -121,22 +121,30 @@ class CardImage:
         download_bar: enlighten.Counter,
         post_processing_config: Optional[ImagePostProcessingConfig],
     ) -> None:
-        if not self.file_exists() and not self.errored and self.file_path is not None:
-            self.errored = not download_google_drive_file(
-                drive_id=self.drive_id, file_path=self.file_path, post_processing_config=post_processing_config
-            )
+        try:
+            if not self.file_exists() and not self.errored and self.file_path is not None:
+                self.errored = not download_google_drive_file(
+                    drive_id=self.drive_id, file_path=self.file_path, post_processing_config=post_processing_config
+                )
 
-        if self.file_exists() and not self.errored:
-            self.downloaded = True
-        else:
+            if self.file_exists() and not self.errored:
+                self.downloaded = True
+            else:
+                print(
+                    f"Failed to download '{TEXT_BOLD}{self.name}{TEXT_END}' - "
+                    f"allocated to slot/s {TEXT_BOLD}[{', '.join([str(x) for x in self.slots])}]{TEXT_END}.\n"
+                    f"Download link - {TEXT_BOLD}https://drive.google.com/uc?id={self.drive_id}&export=download{TEXT_END}\n"
+                )
+        except Exception as e:
+            # note: python threads die silently if they encounter an exception. if an exception does occur,
+            # log it, but still put the card onto the queue so the main thread doesn't spin its wheels forever waiting.
             print(
-                f"Failed to download '{TEXT_BOLD}{self.name}{TEXT_END}' - "
-                f"allocated to slot/s {TEXT_BOLD}[{', '.join([str(x) for x in self.slots])}]{TEXT_END}.\n"
-                f"Download link - {TEXT_BOLD}https://drive.google.com/uc?id={self.drive_id}&export=download{TEXT_END}\n"
+                f"An uncaught exception occurred when attempting to download '{TEXT_BOLD}{self.name}{TEXT_END}': "
+                f"{TEXT_BOLD}{e}{TEXT_END}"
             )
-        # put card onto queue irrespective of whether it was downloaded successfully or not
-        queue.put(self)
-        download_bar.update()
+        finally:
+            queue.put(self)
+            download_bar.update()
 
     # endregion
 
