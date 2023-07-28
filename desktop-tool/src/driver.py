@@ -52,7 +52,7 @@ class AutofillDriver:
             driver.set_window_size(1200, 900)
             driver.implicitly_wait(5)
             print(f"Successfully initialised {TEXT_BOLD}{self.browser.name}{TEXT_END} driver.")
-        except (ValueError, sl_exc.WebDriverException) as e:
+        except (AttributeError, ValueError, sl_exc.WebDriverException) as e:
             raise Exception(
                 f"An error occurred while attempting to configure the webdriver for your specified browser. "
                 f"Please make sure you have installed the browser and that it is up to date:\n\n{e}"
