@@ -1,9 +1,10 @@
 import time
 from math import floor
-from typing import TYPE_CHECKING, Any, Callable, TypeVar, cast
+from typing import TYPE_CHECKING, Any, Callable, Optional, TypeVar, cast
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
 
+from InquirerPy import inquirer
 from selenium.common.exceptions import NoAlertPresentException, NoSuchWindowException
 
 if TYPE_CHECKING:  # necessary to avoid circular import
@@ -49,6 +50,29 @@ def alert_handler(func: F) -> F:
         except (NoAlertPresentException, NoSuchWindowException):
             pass
         return func(*args, **kwargs)
+
+    return cast(F, wrapper)
+
+
+def exception_retry_skip_handler(func: F) -> F:
+    """
+    Context manager for handling uncaught exceptions by allowing the user to skip or retry the function's logic.
+    """
+
+    def wrapper(*args: Any, **kwargs: dict[str, Any]) -> Optional[F]:
+        while True:
+            try:
+                return func(*args, **kwargs)
+            except Exception as e:
+                print(f"An uncaught exception occurred:\n{TEXT_BOLD}{e}{TEXT_END}\n")
+                action = inquirer.select(
+                    message="How should the tool proceed?",
+                    choices=["Retry this action", "Skip this action"],
+                ).execute()
+                if action == "Retry this action":
+                    continue
+                else:
+                    return None
 
     return cast(F, wrapper)
 

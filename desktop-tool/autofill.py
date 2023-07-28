@@ -125,7 +125,7 @@ def main(
                     skip_setup=skipsetup, post_processing_config=post_processing_config
                 )
     except Exception as e:
-        print(f"An uncaught exception occurred: {TEXT_BOLD}{e}{TEXT_END}")
+        print(f"An uncaught exception occurred:\n{TEXT_BOLD}{e}{TEXT_END}\n")
         input("Press Enter to exit.")
 
 

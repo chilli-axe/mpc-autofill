@@ -148,8 +148,8 @@ class CardImage:
             # note: python threads die silently if they encounter an exception. if an exception does occur,
             # log it, but still put the card onto the queue so the main thread doesn't spin its wheels forever waiting.
             print(
-                f"An uncaught exception occurred when attempting to download '{TEXT_BOLD}{self.name}{TEXT_END}': "
-                f"{TEXT_BOLD}{e}{TEXT_END}"
+                f"An uncaught exception occurred when attempting to download '{TEXT_BOLD}{self.name}{TEXT_END}':\n"
+                f"{TEXT_BOLD}{e}{TEXT_END}\n"
             )
         finally:
             queue.put(self)
