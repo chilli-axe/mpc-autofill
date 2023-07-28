@@ -1,3 +1,4 @@
+import sys
 import time
 from math import floor
 from typing import TYPE_CHECKING, Any, Callable, Optional, TypeVar, cast
@@ -71,10 +72,12 @@ def exception_retry_skip_handler(func: F) -> F:
                 print(f"An uncaught exception occurred:\n{bold(e.args[0])}\n")
                 action = inquirer.select(
                     message="How should the tool proceed?",
-                    choices=["Retry this action", "Skip this action"],
+                    choices=["Retry this action", "Skip this action", "Terminate"],
                 ).execute()
                 if action == "Retry this action":
                     continue
+                elif action == "Terminate":
+                    sys.exit(0)
                 else:
                     return None
 
