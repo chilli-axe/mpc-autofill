@@ -13,7 +13,7 @@ def get_brave_driver(headless: bool = False, binary_location: Optional[str] = No
     options.add_argument("--log-level=3")
     options.add_argument("--disable-dev-shm-usage")
     if headless:
-        options.add_argument("headless")
+        options.add_argument("--headless")
     options.add_experimental_option("excludeSwitches", ["enable-logging"])
     options.add_experimental_option("detach", True)
 
