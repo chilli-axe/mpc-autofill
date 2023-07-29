@@ -30,6 +30,7 @@ const OverflowCol = styled(Col)`
   height: calc(100dvh - ${NavbarHeight}px); // handles the ios address bar
   overflow-y: scroll;
   overscroll-behavior: none;
+  scrollbar-width: thin;
 `;
 
 function App() {
