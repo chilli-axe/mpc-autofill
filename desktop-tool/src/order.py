@@ -78,7 +78,8 @@ class CardImage:
                     f"file extension is unknown. As a result, an assumption is made that the file extension "
                     f"is {bold('.png')}."
                 )
-                self.file_path = os.path.join(image_directory(), sanitize(f"{self.drive_id}.png"))
+                self.name = f"{self.drive_id}.png"
+                self.file_path = os.path.join(image_directory(), sanitize(self.name))
             else:
                 self.file_path = None
         else:
