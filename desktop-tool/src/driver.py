@@ -86,8 +86,8 @@ class AutofillDriver:
 
     # region utils
 
-    @exception_retry_skip_handler
     @alert_handler
+    @exception_retry_skip_handler
     @contextmanager
     def switch_to_frame(self, frame: str) -> Generator[None, None, None]:
         """
@@ -103,8 +103,8 @@ class AutofillDriver:
         if in_frame:
             self.driver.switch_to.default_content()
 
-    @exception_retry_skip_handler
     @alert_handler
+    @exception_retry_skip_handler
     def wait(self) -> None:
         """
         Wait until the loading circle in MPC disappears.
@@ -132,8 +132,8 @@ class AutofillDriver:
         if self.state != expected_state:
             raise InvalidStateException(expected_state, self.state)
 
-    @exception_retry_skip_handler
     @alert_handler
+    @exception_retry_skip_handler
     def execute_javascript(self, js: str, return_: bool = False) -> Any:
         """
         Executes the given JavaScript command in self.driver
@@ -343,8 +343,8 @@ class AutofillDriver:
 
         self.set_state(States.paging_to_fronts)
 
-    @exception_retry_skip_handler
     @alert_handler
+    @exception_retry_skip_handler
     def redefine_order(self) -> None:
         """
         Called when continuing to edit an existing MPC project. Ensures that the MPC project's size and bracket
@@ -492,7 +492,7 @@ class AutofillDriver:
                         and follow the printed instructions.
 
                         Windows:
-                            {bold('utofill-windows.exe --skipsetup')}
+                            {bold('autofill-windows.exe --skipsetup')}
                         macOS:
                             {bold('./autofill-macos --skipsetup')}
                         Linux:
