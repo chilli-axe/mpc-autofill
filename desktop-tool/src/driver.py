@@ -22,9 +22,9 @@ from src.exc import InvalidStateException
 from src.order import CardImage, CardImageCollection, CardOrder
 from src.processing import ImagePostProcessingConfig
 from src.utils import (
-    TEXT_BOLD,
-    TEXT_END,
     alert_handler,
+    bold,
+    exception_retry_skip_handler,
     log_hours_minutes_seconds_elapsed,
 )
 
@@ -51,11 +51,11 @@ class AutofillDriver:
             driver = self.browser.value(headless=self.headless, binary_location=self.binary_location)
             driver.set_window_size(1200, 900)
             driver.implicitly_wait(5)
-            print(f"Successfully initialised {TEXT_BOLD}{self.browser.name}{TEXT_END} driver.")
-        except (ValueError, sl_exc.WebDriverException) as e:
+            print(f"Successfully initialised {bold(self.browser.name)} driver.")
+        except (AttributeError, ValueError, sl_exc.WebDriverException) as e:
             raise Exception(
                 f"An error occurred while attempting to configure the webdriver for your specified browser. "
-                f"Please make sure you have installed the browser and that it is up to date:\n\n{e}"
+                f"Please make sure you have installed the browser & that it is up to date:\n\n{bold(e)}"
             )
 
         self.driver = driver
@@ -64,13 +64,12 @@ class AutofillDriver:
         num_images = len(self.order.fronts.cards) + len(self.order.backs.cards)
         status_format = "State: {state}, Action: {action}"
         self.status_bar = self.manager.status_bar(
-            status_format=status_format,
-            state=f"{TEXT_BOLD}{self.state}{TEXT_END}",
-            action=f"{TEXT_BOLD}N/A{TEXT_END}",
-            position=1,
+            status_format=status_format, state=bold(self.state), action=bold("N/A"), position=1, autorefresh=True
         )
-        self.download_bar = self.manager.counter(total=num_images, desc="Images Downloaded", position=2)
-        self.upload_bar = self.manager.counter(total=num_images, desc="Images Uploaded", position=3)
+        self.download_bar = self.manager.counter(
+            total=num_images, desc="Images Downloaded", position=2, autorefresh=True
+        )
+        self.upload_bar = self.manager.counter(total=num_images, desc="Images Uploaded", position=3, autorefresh=True)
 
         self.status_bar.refresh()
         self.download_bar.refresh()
@@ -88,6 +87,7 @@ class AutofillDriver:
     # region utils
 
     @alert_handler
+    @exception_retry_skip_handler
     @contextmanager
     def switch_to_frame(self, frame: str) -> Generator[None, None, None]:
         """
@@ -104,6 +104,7 @@ class AutofillDriver:
             self.driver.switch_to.default_content()
 
     @alert_handler
+    @exception_retry_skip_handler
     def wait(self) -> None:
         """
         Wait until the loading circle in MPC disappears.
@@ -124,9 +125,7 @@ class AutofillDriver:
     def set_state(self, state: str, action: Optional[str] = None) -> None:
         self.state = state
         self.action = action
-        self.status_bar.update(
-            state=f"{TEXT_BOLD}{self.state}{TEXT_END}", action=f"{TEXT_BOLD}{self.action or 'N/A'}{TEXT_END}"
-        )
+        self.status_bar.update(state=bold(self.state), action=bold(self.action or "N/A"))
         self.status_bar.refresh()
 
     def assert_state(self, expected_state: States) -> None:
@@ -134,16 +133,17 @@ class AutofillDriver:
             raise InvalidStateException(expected_state, self.state)
 
     @alert_handler
+    @exception_retry_skip_handler
     def execute_javascript(self, js: str, return_: bool = False) -> Any:
         """
         Executes the given JavaScript command in self.driver
         This can occasionally fail - e.g.
         "selenium.common.exceptions.JavaScriptException: Message: javascript error: setMode is not defined"
-        # TODO: handle javascript errors?
         """
 
         return self.driver.execute_script(f"javascript:{'return ' if return_ else ''}{js}")  # type: ignore
 
+    @exception_retry_skip_handler
     def next_step(self) -> None:
         """
         Page through to the next step in MPC.
@@ -152,6 +152,7 @@ class AutofillDriver:
         self.wait()
         self.execute_javascript("oDesign.setNextStep();")
 
+    @exception_retry_skip_handler
     def different_images(self) -> None:
         """
         Sets each card in the current face to use different images.
@@ -159,6 +160,7 @@ class AutofillDriver:
 
         self.execute_javascript("setMode('ImageText', 0);")
 
+    @exception_retry_skip_handler
     def same_images(self) -> None:
         """
         Sets each card in the current face to use the same image.
@@ -166,13 +168,16 @@ class AutofillDriver:
 
         self.execute_javascript("setMode('ImageText', 1);")
 
+    @exception_retry_skip_handler
     def is_image_currently_uploading(self) -> bool:
         return self.execute_javascript("oDesignImage.UploadStatus == 'Uploading'", return_=True) is True
 
     @staticmethod
+    @exception_retry_skip_handler
     def get_element_for_slot_js(slot: int) -> str:
         return f'PageLayout.prototype.getElement3("dnImg", "{slot}")'
 
+    @exception_retry_skip_handler
     def get_ssid(self) -> str:
         try:
             return self.driver.current_url.split("?ssid=")[1]
@@ -182,6 +187,7 @@ class AutofillDriver:
                 "Are you sure you have entered MPC's project editor?"
             )
 
+    @exception_retry_skip_handler
     def handle_alert(self) -> None:
         """
         Accepts an alert if one is present.
@@ -196,11 +202,14 @@ class AutofillDriver:
     # endregion
 
     # region uploading
+
+    @exception_retry_skip_handler
     def is_slot_filled(self, slot: int) -> bool:
         return not self.execute_javascript(
             f"PageLayout.prototype.checkEmptyImage({self.get_element_for_slot_js(slot)})", return_=True
         )
 
+    @exception_retry_skip_handler
     def get_all_uploaded_image_pids(self) -> list[str]:
         if pid_string := self.execute_javascript("oDesignImage.dn_getImageList()", return_=True):
             return pid_string.split(";")
@@ -209,6 +218,7 @@ class AutofillDriver:
     def get_number_of_uploaded_images(self) -> int:
         return len(self.get_all_uploaded_image_pids())
 
+    @exception_retry_skip_handler
     def attempt_to_upload_image(self, image: CardImage) -> None:
         """
         A single attempt at uploading `image` to MPC.
@@ -226,6 +236,7 @@ class AutofillDriver:
         while self.is_image_currently_uploading():
             time.sleep(0.5)
 
+    @exception_retry_skip_handler
     def upload_image(self, image: CardImage, max_tries: int = 3) -> Optional[str]:
         """
         Uploads the given CardImage with `max_tries` attempts. Returns the image's PID in MPC.
@@ -249,17 +260,15 @@ class AutofillDriver:
                 tries += 1
                 if tries >= max_tries:
                     print(
-                        f'Attempted to upload image {TEXT_BOLD}"{image.name}"{TEXT_END} {max_tries} times, '
+                        f"Attempted to upload image {bold(image.name)} {max_tries} times, "
                         f"but no attempt succeeded! Skipping this image."
                     )
                     return None
         else:
-            print(
-                f'Image {TEXT_BOLD}"{image.name}"{TEXT_END} at path {TEXT_BOLD}{image.file_path}{TEXT_END} does '
-                f"not exist!"
-            )
+            print(f"Image {bold(image.name)} at path {bold(image.file_path or 'None')} does not exist!")
             return None
 
+    @exception_retry_skip_handler
     def insert_image(self, pid: Optional[str], image: CardImage, slots: Optional[list[int]] = None) -> None:
         """
         Inserts the image identified by `pid` into `image.slots`.
@@ -280,6 +289,7 @@ class AutofillDriver:
                 self.wait()
             self.set_state(self.state)
 
+    @exception_retry_skip_handler
     def upload_and_insert_image(self, image: CardImage) -> None:
         """
         Uploads and inserts `image` into MPC. How this is executed depends on whether the image has already been fully
@@ -303,6 +313,7 @@ class AutofillDriver:
             unfilled_slot_numbers = [image.slots[i] for i in range(len(image.slots)) if slots_filled[i] is False]
             self.insert_image(pid, image, slots=unfilled_slot_numbers)
 
+    @exception_retry_skip_handler
     def upload_and_insert_images(self, images: CardImageCollection) -> None:
         for _ in range(len(images.cards)):
             image: CardImage = images.queue.get()
@@ -314,6 +325,7 @@ class AutofillDriver:
 
     # region define order
 
+    @exception_retry_skip_handler
     def define_order(self) -> None:
         self.assert_state(States.defining_order)
         # Select card stock
@@ -332,6 +344,7 @@ class AutofillDriver:
         self.set_state(States.paging_to_fronts)
 
     @alert_handler
+    @exception_retry_skip_handler
     def redefine_order(self) -> None:
         """
         Called when continuing to edit an existing MPC project. Ensures that the MPC project's size and bracket
@@ -361,6 +374,7 @@ class AutofillDriver:
 
     # region insert fronts
 
+    @exception_retry_skip_handler
     def page_to_fronts(self) -> None:
         self.assert_state(States.paging_to_fronts)
 
@@ -379,6 +393,7 @@ class AutofillDriver:
 
         self.set_state(States.inserting_fronts)
 
+    @exception_retry_skip_handler
     def insert_fronts(self) -> None:
         self.assert_state(States.inserting_fronts)
         self.upload_and_insert_images(self.order.fronts)
@@ -389,6 +404,7 @@ class AutofillDriver:
 
     # region insert backs
 
+    @exception_retry_skip_handler
     def page_to_backs(self, skip_setup: bool) -> None:
         self.assert_state(States.paging_to_backs)
 
@@ -458,7 +474,7 @@ class AutofillDriver:
                 input(
                     textwrap.dedent(
                         f"""
-                        The program has been started with {TEXT_BOLD}--skipsetup{TEXT_END}, which will continue
+                        The program has been started with {bold('--skipsetup')}, which will continue
                         uploading cards to an existing project. Please sign in to MPC and select an existing project
                         to continue editing. Once you've signed in and have entered the MPC project editor, return to
                         the console window and press Enter.
@@ -472,15 +488,15 @@ class AutofillDriver:
                     textwrap.dedent(
                         f"""
                         Configuring a new order. If you'd like to continue uploading cards to an existing project,
-                        start the program with the {TEXT_BOLD}--skipsetup{TEXT_END} option (in command prompt or terminal)
+                        start the program with the {bold('--skipsetup')} option (in command prompt or terminal)
                         and follow the printed instructions.
 
                         Windows:
-                            {TEXT_BOLD}autofill-windows.exe --skipsetup{TEXT_END}
+                            {bold('autofill-windows.exe --skipsetup')}
                         macOS:
-                            {TEXT_BOLD}./autofill-macos --skipsetup{TEXT_END}
+                            {bold('./autofill-macos --skipsetup')}
                         Linux:
-                            {TEXT_BOLD}./autofill-linux --skipsetup{TEXT_END}
+                            {bold('./autofill-linux --skipsetup')}
                         """
                     )
                 )

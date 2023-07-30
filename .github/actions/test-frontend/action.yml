@@ -6,7 +6,7 @@ runs:
     - name: Install npm
       uses: actions/setup-node@v3
       with:
-        node-version: 18.x
+        node-version: 18.15
     - name: Compile frontend
       working-directory: frontend
       run: |

@@ -37,16 +37,12 @@ function doGet(e) {
 """
 
 
-import os
 from enum import Enum
 from functools import partial
 
 from PIL import Image
 
 import src.webdrivers as wd
-
-# Disable logging messages for webdriver_manager
-os.environ["WDM_LOG_LEVEL"] = "0"
 
 
 class States(str, Enum):

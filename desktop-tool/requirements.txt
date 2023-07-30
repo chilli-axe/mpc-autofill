@@ -14,5 +14,5 @@ ratelimit~=2.2
 requests~=2.30
 sanitize-filename~=1.2
 selenium~=4.8
-webdriver-manager~=3.9.0
+webdriver-manager==4.0.0
 wakepy==0.6.0

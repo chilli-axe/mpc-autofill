@@ -10,7 +10,7 @@ from fpdf import FPDF
 from src.constants import THREADS, States
 from src.order import CardOrder
 from src.processing import ImagePostProcessingConfig
-from src.utils import TEXT_BOLD, TEXT_END
+from src.utils import bold
 
 
 @attr.s
@@ -36,7 +36,7 @@ class PdfExporter:
         status_format = "State: {state}"
         self.status_bar = self.manager.status_bar(
             status_format=status_format,
-            state=f"{TEXT_BOLD}{self.state}{TEXT_END}",
+            state=f"{bold(self.state)}",
             position=1,
         )
         self.download_bar = self.manager.counter(total=num_images, desc="Images Downloaded", position=2)
@@ -47,7 +47,7 @@ class PdfExporter:
 
     def set_state(self, state: str) -> None:
         self.state = state
-        self.status_bar.update(state=f"{TEXT_BOLD}{self.state}{TEXT_END}")
+        self.status_bar.update(state=f"{bold(self.state)}")
         self.status_bar.refresh()
 
     def __attrs_post_init__(self) -> None:

@@ -1,9 +1,11 @@
+import sys
 import time
 from math import floor
-from typing import TYPE_CHECKING, Any, Callable, TypeVar, cast
+from typing import TYPE_CHECKING, Any, Callable, Optional, TypeVar, cast
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
 
+from InquirerPy import inquirer
 from selenium.common.exceptions import NoAlertPresentException, NoSuchWindowException
 
 if TYPE_CHECKING:  # necessary to avoid circular import
@@ -15,6 +17,10 @@ F = TypeVar("F", bound=Callable[..., Any])
 
 TEXT_BOLD = "\033[1m"
 TEXT_END = "\033[0m"
+
+
+def bold(text: Any) -> str:
+    return f"{TEXT_BOLD}{text}{TEXT_END}"
 
 
 def text_to_list(input_text: str) -> list[int]:
@@ -49,6 +55,31 @@ def alert_handler(func: F) -> F:
         except (NoAlertPresentException, NoSuchWindowException):
             pass
         return func(*args, **kwargs)
+
+    return cast(F, wrapper)
+
+
+def exception_retry_skip_handler(func: F) -> F:
+    """
+    Context manager for handling uncaught exceptions by allowing the user to skip or retry the function's logic.
+    """
+
+    def wrapper(*args: Any, **kwargs: dict[str, Any]) -> Optional[F]:
+        while True:
+            try:
+                return func(*args, **kwargs)
+            except Exception as e:
+                print(f"An uncaught exception occurred:\n{bold(e.args[0])}\n")
+                action = inquirer.select(
+                    message="How should the tool proceed?",
+                    choices=["Retry this action", "Skip this action", "Terminate"],
+                ).execute()
+                if action == "Retry this action":
+                    continue
+                elif action == "Terminate":
+                    sys.exit(0)
+                else:
+                    return None
 
     return cast(F, wrapper)
 

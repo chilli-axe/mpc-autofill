@@ -32,4 +32,4 @@ selenium~=4.8
 syrupy~=3.0
 tqdm~=4.65
 tzdata
-webdriver-manager==3.5.4
+webdriver-manager==4.0.0

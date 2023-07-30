@@ -22,7 +22,7 @@ from src.io import (
     image_directory,
 )
 from src.processing import ImagePostProcessingConfig
-from src.utils import TEXT_BOLD, TEXT_END, text_to_list, unpack_element
+from src.utils import bold, text_to_list, unpack_element
 
 
 @attr.s
@@ -71,7 +71,17 @@ class CardImage:
             self.retrieve_card_name()
 
         if self.name is None:
-            self.file_path = None
+            if self.drive_id:
+                # assume png
+                print(
+                    f"The name of the image {bold(self.drive_id)} could not be determined, meaning that its "
+                    f"file extension is unknown. As a result, an assumption is made that the file extension "
+                    f"is {bold('.png')}."
+                )
+                self.name = f"{self.drive_id}.png"
+                self.file_path = os.path.join(image_directory(), sanitize(self.name))
+            else:
+                self.file_path = None
         else:
             file_path = os.path.join(image_directory(), sanitize(self.name))
             if not os.path.isfile(file_path) or os.path.getsize(file_path) <= 0:
@@ -121,22 +131,26 @@ class CardImage:
         download_bar: enlighten.Counter,
         post_processing_config: Optional[ImagePostProcessingConfig],
     ) -> None:
-        if not self.file_exists() and not self.errored and self.file_path is not None:
-            self.errored = not download_google_drive_file(
-                drive_id=self.drive_id, file_path=self.file_path, post_processing_config=post_processing_config
-            )
+        try:
+            if not self.file_exists() and not self.errored and self.file_path is not None:
+                self.errored = not download_google_drive_file(
+                    drive_id=self.drive_id, file_path=self.file_path, post_processing_config=post_processing_config
+                )
 
-        if self.file_exists() and not self.errored:
-            self.downloaded = True
-        else:
-            print(
-                f"Failed to download '{TEXT_BOLD}{self.name}{TEXT_END}' - "
-                f"allocated to slot/s {TEXT_BOLD}[{', '.join([str(x) for x in self.slots])}]{TEXT_END}.\n"
-                f"Download link - {TEXT_BOLD}https://drive.google.com/uc?id={self.drive_id}&export=download{TEXT_END}\n"
-            )
-        # put card onto queue irrespective of whether it was downloaded successfully or not
-        queue.put(self)
-        download_bar.update()
+            if self.file_exists() and not self.errored:
+                self.downloaded = True
+            else:
+                print(
+                    f"Failed to download '{bold(self.name)}' - allocated to slot/s {bold(self.slots)}.\n"
+                    f"Download link - {bold(f'https://drive.google.com/uc?id={self.drive_id}&export=download')}\n"
+                )
+        except Exception as e:
+            # note: python threads die silently if they encounter an exception. if an exception does occur,
+            # log it, but still put the card onto the queue so the main thread doesn't spin its wheels forever waiting.
+            print(f"An uncaught exception occurred when attempting to download '{bold(self.name)}':\n{bold(e)}\n")
+        finally:
+            queue.put(self)
+            download_bar.update()
 
     # endregion
 
@@ -167,7 +181,7 @@ class CardImageCollection:
         if slots_missing:
             print(
                 f"Warning - the following slots are empty in your order for the {self.face} face: "
-                f"{TEXT_BOLD}{sorted(slots_missing)}{TEXT_END}"
+                f"{bold(sorted(slots_missing))}"
             )
 
     # endregion
@@ -195,7 +209,7 @@ class CardImageCollection:
         try:
             card_image_collection.validate()
         except ValidationException as e:
-            input(f"There was a problem with your order file:\n\n{TEXT_BOLD}{e}{TEXT_END}\n\nPress Enter to exit.")
+            input(f"There was a problem with your order file:\n{bold(e)}\nPress Enter to exit.")
             sys.exit(0)
         return card_image_collection
 
@@ -227,7 +241,7 @@ class Details:
     def validate(self) -> None:
         if not 0 < self.quantity <= self.bracket:
             raise ValidationException(
-                f"Order quantity {self.quantity} outside allowable range of {TEXT_BOLD}[0, {self.bracket}]{TEXT_END}!"
+                f"Order quantity {self.quantity} outside allowable range of {bold(f'[0, {self.bracket}]')}!"
             )
         if self.bracket not in constants.BRACKETS:
             raise ValidationException(f"Order bracket {self.bracket} not supported!")
@@ -240,7 +254,7 @@ class Details:
         try:
             self.validate()
         except ValidationException as e:
-            input(f"There was a problem with your order file:\n\n{TEXT_BOLD}{e}{TEXT_END}\n\nPress Enter to exit.")
+            input(f"There was a problem with your order file:\n\n{bold(e)}\n\nPress Enter to exit.")
             sys.exit(0)
 
     # endregion
@@ -276,11 +290,11 @@ class CardOrder:
 
     def print_order_overview(self) -> None:
         if self.name is not None:
-            print(f"Successfully parsed card order: {TEXT_BOLD}{self.name}{TEXT_END}")
+            print(f"Successfully parsed card order: {bold(self.name)}")
         print(
-            f"Your order has a total of {TEXT_BOLD}{self.details.quantity}{TEXT_END} cards, in the MPC bracket of up "
-            f"to {TEXT_BOLD}{self.details.bracket}{TEXT_END} cards.\n{TEXT_BOLD}{self.details.stock}{TEXT_END} "
-            f"cardstock ({TEXT_BOLD}{'foil' if self.details.foil else 'nonfoil'}{TEXT_END}).\n "
+            f"Your order has a total of {bold(self.details.quantity)} cards, in the MPC bracket of up "
+            f"to {bold(self.details.bracket)} cards.\n{bold(self.details.stock)} "
+            f"cardstock ({bold('foil' if self.details.foil else 'nonfoil')}.\n "
         )
 
     # endregion
@@ -292,15 +306,15 @@ class CardOrder:
             for image in collection.cards:
                 if not image.file_path:
                     raise ValidationException(
-                        f"Image {TEXT_BOLD}{image.name}{TEXT_END} in {TEXT_BOLD}{collection.face}{TEXT_END} "
-                        f"has no file path."
+                        f"The file path for the image in slots {bold(image.slots or image.drive_id)} "
+                        f"of face {bold(collection.face)} could not be determined."
                     )
 
     def __attrs_post_init__(self) -> None:
         try:
             self.validate()
         except ValidationException as e:
-            input(f"There was a problem with your order file:\n\n{TEXT_BOLD}{e}{TEXT_END}\n\nPress Enter to exit.")
+            input(f"There was a problem with your order file:\n\n{bold(e)}\n\nPress Enter to exit.")
             sys.exit(0)
 
     @classmethod
@@ -319,7 +333,7 @@ class CardOrder:
                 fill_image_id=cardback_elem.text,
             )
         else:
-            print(f"{TEXT_BOLD}Warning{TEXT_END}: Your order file did not contain a common cardback image.")
+            print(f"{bold('Warning')}: Your order file did not contain a common cardback image.")
             backs = CardImageCollection.from_element(
                 element=root_dict[constants.BaseTags.backs], num_slots=details.quantity, face=constants.Faces.back
             )
@@ -337,7 +351,7 @@ class CardOrder:
         except ParseError:
             input("Your XML file contains a syntax error so it can't be processed. Press Enter to exit.")
             sys.exit(0)
-        print(f"Parsing XML file {TEXT_BOLD}{file_name}{TEXT_END}...")
+        print(f"Parsing XML file {bold(file_name)}...")
         order = cls.from_element(xml.getroot(), name=file_name)
         return order
 

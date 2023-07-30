@@ -10,10 +10,11 @@ from webdriver_manager.microsoft import EdgeChromiumDriverManager
 
 def get_edge_driver(headless: bool = False, binary_location: Optional[str] = None) -> ChromiumDriver:
     options: ChromiumOptions = Options()
+    options.add_argument("--no-sandbox")
     options.add_argument("--log-level=3")
     options.add_argument("--disable-dev-shm-usage")
     if headless:
-        options.add_argument("--headless")
+        options.headless = True
     options.add_experimental_option("excludeSwitches", ["enable-logging"])
     options.add_experimental_option("detach", True)
     if binary_location is not None:
