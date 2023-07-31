@@ -473,11 +473,9 @@ class AutofillDriver:
                 self.set_state(States.defining_order, "Awaiting user input")
                 input(
                     textwrap.dedent(
-                        f"""
-                        The program has been started with {bold('--skipsetup')}, which will continue
-                        uploading cards to an existing project. Please sign in to MPC and select an existing project
-                        to continue editing. Once you've signed in and have entered the MPC project editor, return to
-                        the console window and press Enter.
+                        """
+                        Continuing to edit an existing order. Please sign in to MPC and enter the project editor for
+                        your selected project, then return to the console window and press Enter.
                         """
                     )
                 )
@@ -488,15 +486,8 @@ class AutofillDriver:
                     textwrap.dedent(
                         f"""
                         Configuring a new order. If you'd like to continue uploading cards to an existing project,
-                        start the program with the {bold('--skipsetup')} option (in command prompt or terminal)
-                        and follow the printed instructions.
-
-                        Windows:
-                            {bold('autofill-windows.exe --skipsetup')}
-                        macOS:
-                            {bold('./autofill-macos --skipsetup')}
-                        Linux:
-                            {bold('./autofill-linux --skipsetup')}
+                        start the program and answer with {bold('Y')} when asked whether project setup should
+                        be skipped.
                         """
                     )
                 )
@@ -513,7 +504,7 @@ class AutofillDriver:
                 Please review your order and ensure everything has been uploaded correctly before finalising with MPC.
                 If any images failed to download, links to download them will have been printed above.
                 If you need to make any changes to your order, you can do so by adding it to your Saved Projects and
-                editing in your normal browser. Press Enter to close this window - your Chrome window will remain open.
+                editing in your normal browser. Press Enter to close this window - your browser window will remain open.
                 """
             )
         )
