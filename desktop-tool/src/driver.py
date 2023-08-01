@@ -326,6 +326,12 @@ class AutofillDriver:
     # region define order
 
     @exception_retry_skip_handler
+    def is_user_authenticated(self) -> bool:
+        return (
+            len(self.driver.find_elements(By.XPATH, '//a[@href="https://www.makeplayingcards.com/logout.aspx"]')) == 1
+        )
+
+    @exception_retry_skip_handler
     def define_order(self) -> None:
         self.assert_state(States.defining_order)
         # Select card stock
@@ -459,7 +465,12 @@ class AutofillDriver:
 
     # region public
 
-    def execute(self, skip_setup: bool, post_processing_config: Optional[ImagePostProcessingConfig]) -> None:
+    def execute(
+        self,
+        skip_setup: bool,
+        auto_save_threshold: Optional[int],
+        post_processing_config: Optional[ImagePostProcessingConfig],
+    ) -> None:
         t = time.time()
         with ThreadPoolExecutor(max_workers=THREADS) as pool:
             self.order.fronts.download_images(
@@ -468,14 +479,34 @@ class AutofillDriver:
             self.order.backs.download_images(
                 pool=pool, download_bar=self.download_bar, post_processing_config=post_processing_config
             )
+            if any([skip_setup is True, auto_save_threshold is not None]):
+                self.set_state(States.defining_order, "Awaiting user sign-in")
+                input(
+                    textwrap.dedent(
+                        """
+                        The specified inputs require you to sign into your MakePlayingCards account.
+                        Please sign in, then return to the console window and press Enter.
+                        """
+                    )
+                )
+                while not self.is_user_authenticated():
+                    input(
+                        textwrap.dedent(
+                            """
+                            It looks like you're not signed in.
+                            Please sign in, then return to the console window and press Enter.
+                            """
+                        )
+                    )
+                self.driver.get(self.starting_url)
 
             if skip_setup:
                 self.set_state(States.defining_order, "Awaiting user input")
                 input(
                     textwrap.dedent(
                         """
-                        Continuing to edit an existing order. Please sign in to MPC and enter the project editor for
-                        your selected project, then return to the console window and press Enter.
+                        Continuing to edit an existing order. Please enter the project editor for your selected project,
+                        then return to the console window and press Enter.
                         """
                     )
                 )

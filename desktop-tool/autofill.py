@@ -145,7 +145,9 @@ def main(
                 PdfExporter().execute(post_processing_config=post_processing_config)
             else:
                 AutofillDriver(browser=Browsers[browser], binary_location=binary_location).execute(
-                    skip_setup=skipsetup, post_processing_config=post_processing_config
+                    skip_setup=skipsetup,
+                    auto_save_threshold=auto_save_threshold if auto_save else None,
+                    post_processing_config=post_processing_config,
                 )
     except Exception as e:
         print(f"An uncaught exception occurred:\n{TEXT_BOLD}{e}{TEXT_END}\n")
