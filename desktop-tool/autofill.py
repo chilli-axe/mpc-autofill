@@ -16,7 +16,7 @@ from src.utils import TEXT_BOLD, TEXT_END
 os.system("")  # enables ansi escape characters in terminal
 
 
-@click.command()
+@click.command(context_settings={"show_default": True})
 @click.option(
     "--skipsetup",
     prompt="Skip project setup to continue editing an existing MPC project? (Press Enter if you're not sure.)"
@@ -26,9 +26,30 @@ os.system("")  # enables ansi escape characters in terminal
     help=(
         "If this flag is passed, the tool will prompt the user to navigate to an existing MPC project "
         "and will attempt to align the state of the given project XML with the state of the project "
-        "in MakePlayingCards. Note that this has some caveats - refer to the desktop-tool readme for details."
+        "in MakePlayingCards. Note that this has some caveats - refer to the wiki for details."
     ),
     is_flag=True,
+)
+@click.option(
+    "--auto-save",
+    prompt=(
+        "Automatically save this project to your MakePlayingAccounts while the tool is running? "
+        "(Press Enter if you're not sure.)"
+    )
+    if len(sys.argv) == 1
+    else False,
+    default=True,
+    help=(
+        "If this flag is passed, the tool will automatically save your project to your MakePlayingCards after "
+        "processing each batch of cards."
+    ),
+    is_flag=True,
+)
+@click.option(
+    "--auto-save-threshold",
+    type=click.IntRange(1, None),
+    default=5,
+    help="Controls how often the project should be saved in terms of the number of cards uploaded.",
 )
 @click.option(
     "-b",
@@ -76,8 +97,8 @@ os.system("")  # enables ansi escape characters in terminal
 @click.option(
     "--max-dpi",
     default=800,
-    type=click.INT,
-    help="Images above this DPI will be downscaled to it before being uploaded to MPC. Defaults to 800 DPI.",
+    type=click.IntRange(100, 1200),
+    help="Images above this DPI will be downscaled to it before being uploaded to MPC.",
 )
 @click.option(
     "--downscale-alg",
@@ -98,6 +119,8 @@ os.system("")  # enables ansi escape characters in terminal
 # )
 def main(
     skipsetup: bool,
+    auto_save: bool,
+    auto_save_threshold: int,
     browser: str,
     binary_location: Optional[str],
     exportpdf: bool,
@@ -122,7 +145,9 @@ def main(
                 PdfExporter().execute(post_processing_config=post_processing_config)
             else:
                 AutofillDriver(browser=Browsers[browser], binary_location=binary_location).execute(
-                    skip_setup=skipsetup, post_processing_config=post_processing_config
+                    skip_setup=skipsetup,
+                    auto_save_threshold=auto_save_threshold if auto_save else None,
+                    post_processing_config=post_processing_config,
                 )
     except Exception as e:
         print(f"An uncaught exception occurred:\n{TEXT_BOLD}{e}{TEXT_END}\n")
