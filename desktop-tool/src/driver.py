@@ -309,18 +309,19 @@ class AutofillDriver:
             self.set_state(self.state)
 
     @exception_retry_skip_handler
-    def upload_and_insert_image(self, image: CardImage) -> None:
+    def upload_and_insert_image(self, image: CardImage) -> bool:
         """
         Uploads and inserts `image` into MPC. How this is executed depends on whether the image has already been fully
         or partially uploaded, on not uploaded at all:
         * None of the image's slots filled - upload the image and insert it into all slots
         * Some of the image's slots filled - fill the unfilled slots with the image in the first filled
         * All of the image's slots filled - no action required
+        Returns whether any action to modify the MakePlayingCards project state was taken.
         """
 
         slots_filled = [self.is_slot_filled(slot) for slot in image.slots]
         if all(slots_filled):
-            return
+            return False
         elif not any(slots_filled):
             pid = self.upload_image(image)
             self.insert_image(pid, image)
@@ -331,6 +332,7 @@ class AutofillDriver:
             )
             unfilled_slot_numbers = [image.slots[i] for i in range(len(image.slots)) if slots_filled[i] is False]
             self.insert_image(pid, image, slots=unfilled_slot_numbers)
+        return True
 
     @exception_retry_skip_handler
     def upload_and_insert_images(self, images: CardImageCollection, auto_save_threshold: Optional[int]) -> None:
@@ -338,13 +340,14 @@ class AutofillDriver:
         for i in range(image_count):
             image: CardImage = images.queue.get()
             if image.downloaded:
-                self.upload_and_insert_image(image)
+                project_mutated = self.upload_and_insert_image(image)
+                if (
+                    auto_save_threshold is not None
+                    and project_mutated
+                    and ((i % auto_save_threshold) == (auto_save_threshold - 1) or i == (image_count - 1))
+                ):
+                    self.save_project_to_user_account()
             self.upload_bar.update()
-
-            if auto_save_threshold is not None and (
-                (i % auto_save_threshold) == (auto_save_threshold - 1) or i == (image_count - 1)
-            ):
-                self.save_project_to_user_account()
 
     # endregion
 
