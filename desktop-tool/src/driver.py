@@ -1,7 +1,9 @@
+import datetime as dt
 import textwrap
 import time
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
+from pathlib import Path
 from typing import Any, Generator, Optional
 
 import attr
@@ -46,6 +48,7 @@ class AutofillDriver:
     file_path_to_pid_map: dict[str, str] = {}
 
     # region initialisation
+
     def initialise_driver(self) -> None:
         try:
             driver = self.browser.value(headless=self.headless, binary_location=self.binary_location)
@@ -81,6 +84,10 @@ class AutofillDriver:
         self.initialise_driver()
         self.driver.get(self.starting_url)
         self.set_state(States.defining_order)
+
+    def get_project_name(self) -> str:
+        project_name = Path(self.order.name).stem if self.order.name is not None else "Project"
+        return f"{project_name} {dt.date.today().strftime('%Y-%m-%d')}"
 
     # endregion
 
@@ -314,16 +321,22 @@ class AutofillDriver:
             self.insert_image(pid, image, slots=unfilled_slot_numbers)
 
     @exception_retry_skip_handler
-    def upload_and_insert_images(self, images: CardImageCollection) -> None:
-        for _ in range(len(images.cards)):
+    def upload_and_insert_images(self, images: CardImageCollection, auto_save_threshold: Optional[int]) -> None:
+        image_count = len(images.cards)
+        for i in range(image_count):
             image: CardImage = images.queue.get()
             if image.downloaded:
                 self.upload_and_insert_image(image)
             self.upload_bar.update()
 
+            if auto_save_threshold is not None and (
+                (i % auto_save_threshold) == (auto_save_threshold - 1) or i == (image_count - 1)
+            ):
+                self.save_project_to_user_account()
+
     # endregion
 
-    # region define order
+    # region authentication
 
     @exception_retry_skip_handler
     def is_user_authenticated(self) -> bool:
@@ -332,7 +345,37 @@ class AutofillDriver:
         )
 
     @exception_retry_skip_handler
-    def define_order(self) -> None:
+    def authenticate(self) -> None:
+        action = self.action
+        self.set_state(States.defining_order, "Awaiting user sign-in")
+        print(self.get_project_name())
+        input(
+            textwrap.dedent(
+                """
+                The specified inputs require you to sign into your MakePlayingCards account.
+                Please sign in, then return to the console window and press Enter.
+                """
+            )
+        )
+        while not self.is_user_authenticated():
+            input(
+                textwrap.dedent(
+                    """
+                    It looks like you're not signed in.
+                    Please sign in, then return to the console window and press Enter.
+                    """
+                )
+            )
+        print("Sign in successful!")
+        self.set_state(States.defining_order, action)
+        self.driver.get(self.starting_url)
+
+    # endregion
+
+    # region project management
+
+    @exception_retry_skip_handler
+    def define_project(self) -> None:
         self.assert_state(States.defining_order)
         # Select card stock
         stock_dropdown = Select(self.driver.find_element(by=By.ID, value="dro_paper_type"))
@@ -351,7 +394,7 @@ class AutofillDriver:
 
     @alert_handler
     @exception_retry_skip_handler
-    def redefine_order(self) -> None:
+    def redefine_project(self) -> None:
         """
         Called when continuing to edit an existing MPC project. Ensures that the MPC project's size and bracket
         align with the order's size and bracket.
@@ -375,6 +418,17 @@ class AutofillDriver:
             self.different_images()
             self.handle_alert()
         self.set_state(States.inserting_fronts)
+
+    @exception_retry_skip_handler
+    def save_project_to_user_account(self) -> None:
+        self.set_state(self.state, "Saving project to MakePlayingCards account")
+        project_name_element = self.driver.find_element(By.ID, "txt_temporaryname")
+        project_name = self.get_project_name()
+        if project_name_element.text != project_name:
+            project_name_element.clear()
+            project_name_element.send_keys(project_name)
+        self.execute_javascript("oDesign.setTemporarySave();")
+        self.wait()
 
     # endregion
 
@@ -400,9 +454,9 @@ class AutofillDriver:
         self.set_state(States.inserting_fronts)
 
     @exception_retry_skip_handler
-    def insert_fronts(self) -> None:
+    def insert_fronts(self, auto_save_threshold: Optional[int]) -> None:
         self.assert_state(States.inserting_fronts)
-        self.upload_and_insert_images(self.order.fronts)
+        self.upload_and_insert_images(self.order.fronts, auto_save_threshold=auto_save_threshold)
 
         self.set_state(States.paging_to_backs)
 
@@ -445,9 +499,9 @@ class AutofillDriver:
             self.handle_alert()  # potential alert here from switching from same image to different images
         self.set_state(States.inserting_backs)
 
-    def insert_backs(self) -> None:
+    def insert_backs(self, auto_save_threshold: Optional[int]) -> None:
         self.assert_state(States.inserting_backs)
-        self.upload_and_insert_images(self.order.backs)
+        self.upload_and_insert_images(self.order.backs, auto_save_threshold=auto_save_threshold)
 
         self.set_state(States.paging_to_review)
 
@@ -480,25 +534,7 @@ class AutofillDriver:
                 pool=pool, download_bar=self.download_bar, post_processing_config=post_processing_config
             )
             if any([skip_setup is True, auto_save_threshold is not None]):
-                self.set_state(States.defining_order, "Awaiting user sign-in")
-                input(
-                    textwrap.dedent(
-                        """
-                        The specified inputs require you to sign into your MakePlayingCards account.
-                        Please sign in, then return to the console window and press Enter.
-                        """
-                    )
-                )
-                while not self.is_user_authenticated():
-                    input(
-                        textwrap.dedent(
-                            """
-                            It looks like you're not signed in.
-                            Please sign in, then return to the console window and press Enter.
-                            """
-                        )
-                    )
-                self.driver.get(self.starting_url)
+                self.authenticate()
 
             if skip_setup:
                 self.set_state(States.defining_order, "Awaiting user input")
@@ -510,7 +546,7 @@ class AutofillDriver:
                         """
                     )
                 )
-                self.redefine_order()
+                self.redefine_project()
 
             else:
                 print(
@@ -522,11 +558,11 @@ class AutofillDriver:
                         """
                     )
                 )
-                self.define_order()
+                self.define_project()
                 self.page_to_fronts()
-            self.insert_fronts()
+            self.insert_fronts(auto_save_threshold)
             self.page_to_backs(skip_setup)
-            self.insert_backs()
+            self.insert_backs(auto_save_threshold)
             self.page_to_review()
         log_hours_minutes_seconds_elapsed(t)
         input(
