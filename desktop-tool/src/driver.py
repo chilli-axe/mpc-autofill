@@ -3,6 +3,7 @@ import textwrap
 import time
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
+from functools import cached_property
 from pathlib import Path
 from typing import Any, Generator, Optional
 
@@ -85,9 +86,20 @@ class AutofillDriver:
         self.driver.get(self.starting_url)
         self.set_state(States.defining_order)
 
-    def get_project_name(self) -> str:
+    @cached_property
+    def project_name(self) -> str:
+        """
+        Format the name of `self.order` such that it's suitable for naming a MakePlayingCards project with.
+        MakePlayingCards project names seem to have a maximum length of 32 characters.
+        We chop off the appropriate amount of `self.order.name` such that we can still include today's date in the name.
+        """
+
+        today = dt.date.today().strftime("%Y-%m-%d")
+        max_project_name_length = 32 - 1 - len(today)  # include a space
         project_name = Path(self.order.name).stem if self.order.name is not None else "Project"
-        return f"{project_name} {dt.date.today().strftime('%Y-%m-%d')}"
+        if len(project_name) > max_project_name_length:
+            project_name = project_name[0 : max_project_name_length - 3] + "..."
+        return f"{project_name} {today}"
 
     # endregion
 
@@ -348,7 +360,6 @@ class AutofillDriver:
     def authenticate(self) -> None:
         action = self.action
         self.set_state(States.defining_order, "Awaiting user sign-in")
-        print(self.get_project_name())
         input(
             textwrap.dedent(
                 """
@@ -423,10 +434,9 @@ class AutofillDriver:
     def save_project_to_user_account(self) -> None:
         self.set_state(self.state, "Saving project to MakePlayingCards account")
         project_name_element = self.driver.find_element(By.ID, "txt_temporaryname")
-        project_name = self.get_project_name()
-        if project_name_element.text != project_name:
+        if project_name_element.text != self.project_name:
             project_name_element.clear()
-            project_name_element.send_keys(project_name)
+            project_name_element.send_keys(self.project_name)
         self.execute_javascript("oDesign.setTemporarySave();")
         self.wait()
 
