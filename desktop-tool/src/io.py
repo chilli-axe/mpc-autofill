@@ -38,7 +38,7 @@ def safe_get_api_call(
             r_info = rate_limit_get_api_call(url=url, params=params, timeout=timeout)
             r_text = r_info.text
             # validate contents of response
-            if r_info.status_code != 500 and len(r_text) > 0:
+            if r_info.status_code == 200 and len(r_text) > 0:
                 return r_text
         except (requests.exceptions.RequestException, TimeoutError):
             pass
@@ -58,7 +58,7 @@ def safe_post_api_call(
             r_json = r_info.json()
             # validate contents of response
             if (
-                r_info.status_code != 500
+                r_info.status_code == 200
                 and len(expected_keys - r_json.keys()) == 0
                 and not any([bool(r_json[x]) is False for x in expected_keys])
             ):
