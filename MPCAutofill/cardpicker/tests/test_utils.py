@@ -1,31 +1,51 @@
+import pytest
+
 from cardpicker.utils import process_line, to_searchable
 
 
 class TestUtils:
     # region tests
-    def test_to_searchable(self) -> None:
-        # basic case
-        assert to_searchable("Lightning Bolt") == "lightning bolt"
-        assert to_searchable(" Lightning   BOLT ") == "lightning bolt"
-        # punctuation
-        assert to_searchable("Adanto, the First Fort") == "adanto first fort"
-        # brackets removal
-        assert to_searchable("Black Lotus (Masterpiece)") == "black lotus"
-        assert to_searchable("Black Lotus (Masterpiece, But With Punctuation! )") == "black lotus"
-        # accents
-        assert to_searchable("Juzám Djinn") == "juzam djinn"
-        # punctuation with double spaces
-        assert to_searchable(" Expansion _ Explosion") == "expansion explosion"
 
-    def test_process_line(self):
-        # basic cases
-        assert process_line("1 brainstorm") == ("brainstorm", 1)
-        assert process_line("brainstorm") == ("brainstorm", 1)
-        assert process_line("2x brainstorm") == ("brainstorm", 2)
-        # trim whitespace
-        assert process_line("   3      brainstorm  ") == ("brainstorm", 3)
-        # empty cases
-        assert process_line("1") == (None, None)
-        assert process_line("") == (None, None)
+    @pytest.mark.parametrize(
+        "input_string, output",
+        [
+            ("Lightning Bolt", "lightning bolt"),
+            (" Lightning   BOLT ", "lightning bolt"),
+            ("Adanto, the First Fort", "adanto first fort"),
+            # brackets removal
+            ("Black Lotus (Masterpiece)", "black lotus"),
+            ("Black Lotus (Masterpiece, But With Punctuation! )", "black lotus"),
+            ("Juzám Djinn", "juzám djinn"),  # elasticsearch will handle this
+            (" Expansion _ Explosion", "expansion explosion"),
+            ("消灭邪物", "消灭邪物"),
+        ],
+        ids=[
+            "basic case 1",
+            "basic case 2",
+            "punctuation",
+            "brackets removal 1",
+            "brackets removal 2",
+            "accents",
+            "punctuation with double spaces",
+            "foreign language characters",
+        ],
+    )
+    def test_to_searchable(self, input_string, output) -> None:
+        assert to_searchable(input_string) == output
+
+    @pytest.mark.parametrize(
+        "input_string, output",
+        [
+            ("1 brainstorm", ("brainstorm", 1)),
+            ("brainstorm", ("brainstorm", 1)),
+            ("2x brainstorm", ("brainstorm", 2)),
+            ("   3      brainstorm  ", ("brainstorm", 3)),
+            ("1", (None, None)),
+            ("", (None, None)),
+        ],
+        ids=["basic case 1", "basic case 2", "basic case 3", "trim whitespace", "empty case 1", "empty case 2"],
+    )
+    def test_process_line(self, input_string, output):
+        assert process_line(input_string) == output
 
     # endregion
