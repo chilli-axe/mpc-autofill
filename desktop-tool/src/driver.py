@@ -106,6 +106,10 @@ class AutofillDriver:
     # region utils
 
     @alert_handler
+    def switch_to_default_content(self) -> None:
+        self.driver.switch_to.default_content()
+
+    @alert_handler
     @exception_retry_skip_handler
     @contextmanager
     def switch_to_frame(self, frame: str) -> Generator[None, None, None]:
@@ -120,7 +124,7 @@ class AutofillDriver:
             in_frame = False
         yield
         if in_frame:
-            self.driver.switch_to.default_content()
+            self.switch_to_default_content()
 
     @alert_handler
     @exception_retry_skip_handler
@@ -130,7 +134,7 @@ class AutofillDriver:
         """
 
         try:
-            wait_elem = self.driver.find_element(By.ID, value="sysdiv_wait")
+            wait_elem = self.driver.find_element(by=By.ID, value="sysdiv_wait")
             # Wait for the element to become invisible
             while True:
                 try:
@@ -162,6 +166,26 @@ class AutofillDriver:
 
         return self.driver.execute_script(f"javascript:{'return ' if return_ else ''}{js}")  # type: ignore
 
+    def wait_until_javascript_object_is_defined(self, function: str) -> None:
+        """
+        Depending on the order of operations in the MakePlayingCards project editor, some JavaScript functions
+        can occasionally not be loaded by the time we want to execute them.
+        This mostly happens when continuing an existing project with --skipsetup.
+        This function works around this issue by pausing the program execution until required JavaScript functions
+        are loaded.
+        """
+
+        t = time.time()
+        while True:
+            if t > 10:
+                return
+            try:
+                assert self.execute_javascript(f"typeof {function} == undefined", return_=True) is True
+                return
+            except (AssertionError, sl_exc.JavascriptException):
+                print(f"in the loop on {function}")
+                time.sleep(0.5)
+
     @exception_retry_skip_handler
     def next_step(self) -> None:
         """
@@ -169,42 +193,47 @@ class AutofillDriver:
         """
 
         self.wait()
+        self.wait_until_javascript_object_is_defined("oDesign.setNextStep")
         self.execute_javascript("oDesign.setNextStep();")
 
+    @alert_handler
     @exception_retry_skip_handler
     def different_images(self) -> None:
         """
         Sets each card in the current face to use different images.
         """
 
+        self.wait_until_javascript_object_is_defined("setMode")
+        self.wait_until_javascript_object_is_defined("oRenderFeature")  # looks weird but it goes
         self.execute_javascript("setMode('ImageText', 0);")
 
+    @alert_handler
     @exception_retry_skip_handler
     def same_images(self) -> None:
         """
         Sets each card in the current face to use the same image.
         """
 
+        self.wait_until_javascript_object_is_defined("setMode")
+        self.wait_until_javascript_object_is_defined("oRenderFeature")  # looks weird but it goes
         self.execute_javascript("setMode('ImageText', 1);")
 
     @exception_retry_skip_handler
     def is_image_currently_uploading(self) -> bool:
+        self.wait_until_javascript_object_is_defined("oDesignImage.UploadStatus")
         return self.execute_javascript("oDesignImage.UploadStatus == 'Uploading'", return_=True) is True
 
-    @staticmethod
     @exception_retry_skip_handler
-    def get_element_for_slot_js(slot: int) -> str:
+    def get_element_for_slot_js(self, slot: int) -> str:
+        self.wait_until_javascript_object_is_defined("PageLayout.prototype.getElement3")
         return f'PageLayout.prototype.getElement3("dnImg", "{slot}")'
 
     @exception_retry_skip_handler
-    def get_ssid(self) -> str:
+    def get_ssid(self) -> Optional[str]:
         try:
             return self.driver.current_url.split("?ssid=")[1]
         except IndexError:
-            raise Exception(
-                "The SSID of the project cannot be determined from the current URL. "
-                "Are you sure you have entered MPC's project editor?"
-            )
+            return None
 
     @exception_retry_skip_handler
     def handle_alert(self) -> None:
@@ -224,12 +253,14 @@ class AutofillDriver:
 
     @exception_retry_skip_handler
     def is_slot_filled(self, slot: int) -> bool:
+        self.wait_until_javascript_object_is_defined("PageLayout.prototype.checkEmptyImage")
         return not self.execute_javascript(
             f"PageLayout.prototype.checkEmptyImage({self.get_element_for_slot_js(slot)})", return_=True
         )
 
     @exception_retry_skip_handler
     def get_all_uploaded_image_pids(self) -> list[str]:
+        self.wait_until_javascript_object_is_defined("oDesignImage.dn_getImageList")
         if pid_string := self.execute_javascript("oDesignImage.dn_getImageList()", return_=True):
             return pid_string.split(";")
         return []
@@ -293,6 +324,8 @@ class AutofillDriver:
         Inserts the image identified by `pid` into `image.slots`.
         If `slots` is specified, fill the image into those slots instead.
         """
+
+        self.wait_until_javascript_object_is_defined("PageLayout.prototype.applyDragPhoto")
 
         slots_to_fill = image.slots
         if slots is not None:
@@ -362,6 +395,7 @@ class AutofillDriver:
     @exception_retry_skip_handler
     def authenticate(self) -> None:
         action = self.action
+        self.driver.get("https://www.makeplayingcards.com/login.aspx")
         self.set_state(States.defining_order, "Awaiting user sign-in")
         input(
             textwrap.dedent(
@@ -380,7 +414,7 @@ class AutofillDriver:
                     """
                 )
             )
-        print("Sign in successful!")
+        print("Successfully signed in!")
         self.set_state(States.defining_order, action)
         self.driver.get(self.starting_url)
 
@@ -414,32 +448,56 @@ class AutofillDriver:
         align with the order's size and bracket.
         """
 
-        self.assert_state(States.defining_order)
+        self.set_state(States.defining_order, "Awaiting user input")
+        self.driver.get("https://www.makeplayingcards.com/design/dn_temporary_designes.aspx")
+        input(
+            textwrap.dedent(
+                """
+                Continuing to edit an existing order. Please enter the project editor for your selected project,
+                then return to the console window and press Enter.
+                """
+            )
+        )
+        while (ssid := self.get_ssid()) is None:
+            input(
+                textwrap.dedent(
+                    "The SSID of the project cannot be determined from the current URL. "
+                    "Are you sure you're in MPC's project editor?"
+                    "Please enter the editor for your selected project, "
+                    "then return to the console window and press Enter."
+                )
+            )
+        print("Successfully entered the editor for an existing project!")
+        self.set_state(States.defining_order, "Configuring order")
 
         # navigate to insert fronts page
-        ssid = self.get_ssid()
         self.execute_javascript(
             f"oTrackerBar.setFlow('https://www.makeplayingcards.com/products/playingcard/design/dn_playingcards_front_dynamic.aspx?ssid={ssid}');"
         )
         self.wait()
 
+        self.wait_until_javascript_object_is_defined("PageLayout.prototype.renderDesignCount")
         self.execute_javascript("PageLayout.prototype.renderDesignCount()")
         with self.switch_to_frame("sysifm_loginFrame"):
+            self.wait_until_javascript_object_is_defined("displayTotalCount")
             self.execute_javascript("displayTotalCount()")  # display the dropdown for "up to N cards"
             qty_dropdown = Select(self.driver.find_element(by=By.ID, value="dro_total_count"))
             qty_dropdown.select_by_value(str(self.order.details.bracket))
-            self.execute_javascript(f"document.getElementById('txt_card_number').value={self.order.details.quantity};")
+            qty = self.driver.find_element(by=By.ID, value="txt_card_number")
+            qty.clear()
+            qty.send_keys(str(self.order.details.quantity))
             self.different_images()
-            self.handle_alert()
+        self.wait()
         self.set_state(States.inserting_fronts)
 
     @exception_retry_skip_handler
     def save_project_to_user_account(self) -> None:
         self.set_state(self.state, "Saving project to MakePlayingCards account")
-        project_name_element = self.driver.find_element(By.ID, "txt_temporaryname")
+        project_name_element = self.driver.find_element(by=By.ID, value="txt_temporaryname")
         if project_name_element.text != self.project_name:
             project_name_element.clear()
             project_name_element.send_keys(self.project_name)
+        self.wait_until_javascript_object_is_defined("oDesign.setTemporarySave")
         self.execute_javascript("oDesign.setTemporarySave();")
         self.wait()
 
@@ -455,13 +513,16 @@ class AutofillDriver:
         self.file_path_to_pid_map = {}
 
         # Accept current settings and move to next step
+        self.wait_until_javascript_object_is_defined("doPersonalize")
         self.execute_javascript(
             "doPersonalize('https://www.makeplayingcards.com/products/pro_item_process_flow.aspx');"
         )
 
         # Set the desired number of cards, then move to the next step
         with self.switch_to_frame("sysifm_loginFrame"):
-            self.execute_javascript(f"document.getElementById('txt_card_number').value={self.order.details.quantity};")
+            qty = self.driver.find_element(by=By.ID, value="txt_card_number")
+            qty.clear()
+            qty.send_keys(str(self.order.details.quantity))
             self.different_images()
 
         self.set_state(States.inserting_fronts)
@@ -495,6 +556,7 @@ class AutofillDriver:
         if skip_setup:
             # bring up the dialogue for selecting same or different images
             self.wait()
+            self.wait_until_javascript_object_is_defined("PageLayout.prototype.renderDesignCount")
             try:
                 self.execute_javascript("PageLayout.prototype.renderDesignCount()")
             except sl_exc.JavascriptException:  # the dialogue has already been brought up if the above line failed
@@ -509,7 +571,6 @@ class AutofillDriver:
                     self.different_images()
             except NoSuchWindowException:  # TODO: investigate exactly why this happens under --skipsetup. too tired atm
                 pass
-            self.handle_alert()  # potential alert here from switching from same image to different images
         self.set_state(States.inserting_backs)
 
     def insert_backs(self, auto_save_threshold: Optional[int]) -> None:
@@ -550,15 +611,7 @@ class AutofillDriver:
                 self.authenticate()
 
             if skip_setup:
-                self.set_state(States.defining_order, "Awaiting user input")
-                input(
-                    textwrap.dedent(
-                        """
-                        Continuing to edit an existing order. Please enter the project editor for your selected project,
-                        then return to the console window and press Enter.
-                        """
-                    )
-                )
+
                 self.redefine_project()
 
             else:
