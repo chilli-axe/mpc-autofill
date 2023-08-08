@@ -182,8 +182,10 @@ export function index_on_load() {
   base_on_load();
 
   // configure the link to the public beta
-  $("#public-beta-link").href =
-    "https://mpcautofill.github.io?server=" + window.location.origin;
+  $("#public-beta-link").attr(
+    "href",
+    "https://mpcautofill.github.io?server=" + window.location.origin
+  );
 
   configure_textarea_height();
   configure_form_submit_hooks();
