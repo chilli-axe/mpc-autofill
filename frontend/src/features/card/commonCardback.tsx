@@ -12,7 +12,7 @@ import { useAppDispatch, useAppSelector } from "@/common/types";
 import { wrapIndex } from "@/common/utils";
 import { MemoizedEditorCard } from "@/features/card/card";
 import { selectCardbacks } from "@/features/card/cardbackSlice";
-import { GridSelector } from "@/features/card/gridSelector";
+import { GridSelector } from "@/features/modals/gridSelector";
 import {
   bulkReplaceSelectedImage,
   selectProjectCardback,

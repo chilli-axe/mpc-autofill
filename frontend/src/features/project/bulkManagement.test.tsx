@@ -24,6 +24,7 @@ import {
   renderWithProviders,
   selectSlot,
 } from "@/common/test-utils";
+import { LayoutWithoutProvider } from "@/features/ui/layout";
 import {
   cardbacksOneOtherResult,
   cardbacksOneResult,
@@ -48,15 +49,20 @@ test("selecting a single card and changing its query", async () => {
     searchResultsSixResults,
     ...defaultHandlers
   );
-  renderWithProviders(<App />, {
-    preloadedState: {
-      backend: localBackend,
-      project: {
-        members: [],
-        cardback: cardDocument5.identifier,
+  renderWithProviders(
+    <LayoutWithoutProvider>
+      <App />
+    </LayoutWithoutProvider>,
+    {
+      preloadedState: {
+        backend: localBackend,
+        project: {
+          members: [],
+          cardback: cardDocument5.identifier,
+        },
       },
-    },
-  });
+    }
+  );
 
   await importText("query 1");
   await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 1);
@@ -74,15 +80,20 @@ test("selecting multiple cards and changing both of their queries", async () => 
     searchResultsSixResults,
     ...defaultHandlers
   );
-  renderWithProviders(<App />, {
-    preloadedState: {
-      backend: localBackend,
-      project: {
-        members: [],
-        cardback: cardDocument5.identifier,
+  renderWithProviders(
+    <LayoutWithoutProvider>
+      <App />
+    </LayoutWithoutProvider>,
+    {
+      preloadedState: {
+        backend: localBackend,
+        project: {
+          members: [],
+          cardback: cardDocument5.identifier,
+        },
       },
-    },
-  });
+    }
+  );
 
   await importText("2x query 1");
   await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 1);
@@ -103,15 +114,20 @@ test("selecting a single card and changing its selected image", async () => {
     searchResultsThreeResults,
     ...defaultHandlers
   );
-  renderWithProviders(<App />, {
-    preloadedState: {
-      backend: localBackend,
-      project: {
-        members: [],
-        cardback: cardDocument5.identifier,
+  renderWithProviders(
+    <LayoutWithoutProvider>
+      <App />
+    </LayoutWithoutProvider>,
+    {
+      preloadedState: {
+        backend: localBackend,
+        project: {
+          members: [],
+          cardback: cardDocument5.identifier,
+        },
       },
-    },
-  });
+    }
+  );
 
   await importText("my search query");
   await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 3);
@@ -129,15 +145,20 @@ test("selecting multiple cards with the same query and changing both of their se
     searchResultsThreeResults,
     ...defaultHandlers
   );
-  renderWithProviders(<App />, {
-    preloadedState: {
-      backend: localBackend,
-      project: {
-        members: [],
-        cardback: cardDocument5.identifier,
+  renderWithProviders(
+    <LayoutWithoutProvider>
+      <App />
+    </LayoutWithoutProvider>,
+    {
+      preloadedState: {
+        backend: localBackend,
+        project: {
+          members: [],
+          cardback: cardDocument5.identifier,
+        },
       },
-    },
-  });
+    }
+  );
 
   await importText("2x my search query");
   await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 3);
@@ -158,15 +179,20 @@ test("selecting multiple cardbacks and changing both of their selected images", 
     searchResultsThreeResults,
     ...defaultHandlers
   );
-  renderWithProviders(<App />, {
-    preloadedState: {
-      backend: localBackend,
-      project: {
-        members: [],
-        cardback: cardDocument1.identifier,
+  renderWithProviders(
+    <LayoutWithoutProvider>
+      <App />
+    </LayoutWithoutProvider>,
+    {
+      preloadedState: {
+        backend: localBackend,
+        project: {
+          members: [],
+          cardback: cardDocument1.identifier,
+        },
       },
-    },
-  });
+    }
+  );
 
   await importText("2x my search query");
   await expectCardGridSlotState(1, Back, cardDocument1.name, 1, 2);
@@ -187,15 +213,20 @@ test("cannot change the images of multiple selected images when they don't share
     searchResultsSixResults,
     ...defaultHandlers
   );
-  renderWithProviders(<App />, {
-    preloadedState: {
-      backend: localBackend,
-      project: {
-        members: [],
-        cardback: cardDocument5.identifier,
+  renderWithProviders(
+    <LayoutWithoutProvider>
+      <App />
+    </LayoutWithoutProvider>,
+    {
+      preloadedState: {
+        backend: localBackend,
+        project: {
+          members: [],
+          cardback: cardDocument5.identifier,
+        },
       },
-    },
-  });
+    }
+  );
 
   await importText("query 1\nquery 2");
   await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 1);
@@ -218,15 +249,20 @@ test("selecting a single card and clearing its front query", async () => {
     searchResultsOneResult,
     ...defaultHandlers
   );
-  renderWithProviders(<App />, {
-    preloadedState: {
-      backend: localBackend,
-      project: {
-        members: [],
-        cardback: cardDocument5.identifier,
+  renderWithProviders(
+    <LayoutWithoutProvider>
+      <App />
+    </LayoutWithoutProvider>,
+    {
+      preloadedState: {
+        backend: localBackend,
+        project: {
+          members: [],
+          cardback: cardDocument5.identifier,
+        },
       },
-    },
-  });
+    }
+  );
 
   await importText("my search query");
   await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 1);
@@ -244,15 +280,20 @@ test("selecting a single card and clearing its back query", async () => {
     searchResultsOneResult,
     ...defaultHandlers
   );
-  renderWithProviders(<App />, {
-    preloadedState: {
-      backend: localBackend,
-      project: {
-        members: [],
-        cardback: cardDocument5.identifier,
+  renderWithProviders(
+    <LayoutWithoutProvider>
+      <App />
+    </LayoutWithoutProvider>,
+    {
+      preloadedState: {
+        backend: localBackend,
+        project: {
+          members: [],
+          cardback: cardDocument5.identifier,
+        },
       },
-    },
-  });
+    }
+  );
 
   await importText("my search query | my search query");
   await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 1);
@@ -274,15 +315,20 @@ test("selecting multiple cards and clearing their front queries", async () => {
     searchResultsOneResult,
     ...defaultHandlers
   );
-  renderWithProviders(<App />, {
-    preloadedState: {
-      backend: localBackend,
-      project: {
-        members: [],
-        cardback: cardDocument5.identifier,
+  renderWithProviders(
+    <LayoutWithoutProvider>
+      <App />
+    </LayoutWithoutProvider>,
+    {
+      preloadedState: {
+        backend: localBackend,
+        project: {
+          members: [],
+          cardback: cardDocument5.identifier,
+        },
       },
-    },
-  });
+    }
+  );
 
   await importText("2x my search query");
   await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 1);
@@ -303,15 +349,20 @@ test("selecting a single card and deleting it", async () => {
     searchResultsOneResult,
     ...defaultHandlers
   );
-  renderWithProviders(<App />, {
-    preloadedState: {
-      backend: localBackend,
-      project: {
-        members: [],
-        cardback: cardDocument5.identifier,
+  renderWithProviders(
+    <LayoutWithoutProvider>
+      <App />
+    </LayoutWithoutProvider>,
+    {
+      preloadedState: {
+        backend: localBackend,
+        project: {
+          members: [],
+          cardback: cardDocument5.identifier,
+        },
       },
-    },
-  });
+    }
+  );
 
   await importText("my search query");
   await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 1);
@@ -329,15 +380,20 @@ test("selecting multiple cards and deleting them", async () => {
     searchResultsOneResult,
     ...defaultHandlers
   );
-  renderWithProviders(<App />, {
-    preloadedState: {
-      backend: localBackend,
-      project: {
-        members: [],
-        cardback: cardDocument5.identifier,
+  renderWithProviders(
+    <LayoutWithoutProvider>
+      <App />
+    </LayoutWithoutProvider>,
+    {
+      preloadedState: {
+        backend: localBackend,
+        project: {
+          members: [],
+          cardback: cardDocument5.identifier,
+        },
       },
-    },
-  });
+    }
+  );
 
   await importText("2x my search query");
   await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 1);
@@ -358,15 +414,20 @@ test("selecting then clearing the selection", async () => {
     searchResultsOneResult,
     ...defaultHandlers
   );
-  renderWithProviders(<App />, {
-    preloadedState: {
-      backend: localBackend,
-      project: {
-        members: [],
-        cardback: cardDocument5.identifier,
+  renderWithProviders(
+    <LayoutWithoutProvider>
+      <App />
+    </LayoutWithoutProvider>,
+    {
+      preloadedState: {
+        backend: localBackend,
+        project: {
+          members: [],
+          cardback: cardDocument5.identifier,
+        },
       },
-    },
-  });
+    }
+  );
 
   await importText("my search query");
   await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 1);

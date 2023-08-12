@@ -19,7 +19,8 @@ import {
 import { wrapIndex } from "@/common/utils";
 import { MemoizedEditorCard } from "@/features/card/card";
 import { selectCardbacks } from "@/features/card/cardbackSlice";
-import { GridSelector } from "@/features/card/gridSelector";
+import { GridSelector } from "@/features/modals/gridSelector";
+import { setSelectedSlotsAndShowModal } from "@/features/modals/modalsSlice";
 import {
   bulkAlignMemberSelection,
   deleteSlot,
@@ -94,6 +95,10 @@ export function CardSlot({ searchQuery, face, slot }: CardSlotProps) {
     selectProjectMember(state, slot, face)
   );
   const selectedImage = projectMember?.selectedImage;
+
+  const handleShowChangeSelectedImageQueriesModal = () => {
+    dispatch(setSelectedSlotsAndShowModal([[[face, slot]], "changeQuery"]));
+  };
 
   useEffect(() => {
     /**
@@ -264,6 +269,7 @@ export function CardSlot({ searchQuery, face, slot }: CardSlotProps) {
         cardFooter={cardFooter}
         cardHeaderButtons={cardHeaderButtons}
         searchQuery={searchQuery}
+        nameOnClick={handleShowChangeSelectedImageQueriesModal}
         noResultsFound={
           searchResultsForQueryOrDefault != null &&
           searchResultsForQueryOrDefault.length === 0

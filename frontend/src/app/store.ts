@@ -13,6 +13,7 @@ import backendReducer, {
 } from "@/features/backend/backendSlice";
 import cardbacksReducer from "@/features/card/cardbackSlice";
 import finishSettingsReducer from "@/features/finishSettings/finishSettingsSlice";
+import modalsReducer from "@/features/modals/modalsSlice";
 import projectReducer, {
   addMembers,
   bulkSetQuery,
@@ -32,7 +33,6 @@ import searchSettingsReducer, {
   setSourceSettings,
 } from "@/features/searchSettings/searchSettingsSlice";
 import toastsReducer, { setError } from "@/features/toasts/toastsSlice";
-import modalReducer from "@/features/ui/modalSlice";
 import viewSettingsReducer from "@/features/viewSettings/viewSettingsSlice";
 
 const rootReducer = combineReducers({
@@ -47,7 +47,7 @@ const rootReducer = combineReducers({
   project: projectReducer,
   backend: backendReducer,
   toasts: toastsReducer,
-  modal: modalReducer,
+  modals: modalsReducer,
 });
 
 //# region middleware
