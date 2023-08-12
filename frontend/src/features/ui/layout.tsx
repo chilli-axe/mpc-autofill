@@ -1,26 +1,37 @@
 import { useRouter } from "next/router";
 import { GoogleAnalytics } from "nextjs-google-analytics";
-import React, { useEffect } from "react";
+import React, { FormEvent, useEffect, useState } from "react";
 import { PropsWithChildren } from "react";
+import Button from "react-bootstrap/Button";
 import Container from "react-bootstrap/Container";
+import Form from "react-bootstrap/Form";
+import Modal from "react-bootstrap/Modal";
 import SSRProvider from "react-bootstrap/SSRProvider";
 import { Provider } from "react-redux";
 import styled from "styled-components";
 
+import { useGetSampleCardsQuery } from "@/app/api";
 import store from "@/app/store";
-import { ContentMaxWidth, NavbarHeight } from "@/common/constants";
+import { Card, ContentMaxWidth, NavbarHeight } from "@/common/constants";
 import {
   getGoogleAnalyticsConsent,
   setLocalStorageBackendURL,
 } from "@/common/cookies";
 import { standardiseURL } from "@/common/processing";
-import { useAppDispatch, useAppSelector } from "@/common/types";
+import {
+  CardDocument,
+  Slots,
+  useAppDispatch,
+  useAppSelector,
+} from "@/common/types";
 import { setURL, useBackendConfigured } from "@/features/backend/backendSlice";
 import { MemoizedCardDetailedView } from "@/features/card/cardDetailedView";
+import { bulkSetQuery } from "@/features/project/projectSlice";
 import { Toasts } from "@/features/toasts/toasts";
 import {
   hideModal,
   selectModalCard,
+  selectModalSlots,
   selectShownModal,
 } from "@/features/ui/modalSlice";
 import ProjectNavbar from "@/features/ui/navbar";
@@ -49,19 +60,126 @@ function BackendSetter() {
   return <></>;
 }
 
+interface MoveMeProps {
+  slots: Slots;
+  show: boolean;
+  handleClose: {
+    (): void;
+    (event: React.MouseEvent<HTMLButtonElement, MouseEvent>): void;
+  };
+}
+
+function MoveMeIntoMyOwnModule({ slots, show, handleClose }: MoveMeProps) {
+  const dispatch = useAppDispatch();
+
+  // const changeQueriesAndHandleClose = () => {
+  //   handleClose();
+  // }
+
+  const sampleCardsQuery = useGetSampleCardsQuery();
+  const placeholderCardName =
+    sampleCardsQuery.data != null &&
+    (sampleCardsQuery.data ?? {})[Card][0] != null
+      ? sampleCardsQuery.data[Card][0].name
+      : "";
+
+  // const [
+  //   showChangeSelectedImageQueriesModal,
+  //     setShowChangeSelectedImageQueriesModal,
+  //   ] = useState<boolean>(false);
+  //   const handleCloseChangeSelectedImageQueriesModal = () => {
+  //     setShowChangeSelectedImageQueriesModal(false);
+  //   };
+  //   const handleShowChangeSelectedImageQueriesModal = () =>
+  //     setShowChangeSelectedImageQueriesModal(true);
+  const [
+    changeSelectedImageQueriesModalValue,
+    setChangeSelectedImageQueriesModalValue,
+  ] = useState("");
+
+  const handleSubmitChangeSelectedImageQueriesModal = (
+    event: FormEvent<HTMLFormElement>
+  ) => {
+    event.preventDefault(); // to avoid reloading the page
+    dispatch(
+      bulkSetQuery({ query: changeSelectedImageQueriesModalValue, slots })
+    );
+    // TODO: business logic
+    handleClose();
+    // handleCloseChangeSelectedImageQueriesModal();
+  };
+
+  return (
+    <Modal
+      show={show}
+      onHide={handleClose}
+      onExited={() => setChangeSelectedImageQueriesModalValue("")}
+    >
+      <Modal.Header closeButton>
+        <Modal.Title>Change Query</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        Type in a query to update the selected images with and hit <b>Submit</b>
+        .
+        <hr />
+        <Form
+          onSubmit={handleSubmitChangeSelectedImageQueriesModal}
+          id="changeSelectedImageQueriesForm"
+        >
+          <Form.Group className="mb-3">
+            <Form.Control
+              type="text"
+              placeholder={placeholderCardName}
+              onChange={(event) =>
+                setChangeSelectedImageQueriesModalValue(event.target.value)
+              }
+              value={changeSelectedImageQueriesModalValue}
+              aria-label="change-selected-image-queries-text"
+              required={true}
+            />
+          </Form.Group>
+        </Form>
+      </Modal.Body>
+      <Modal.Footer>
+        <Button variant="secondary" onClick={handleClose}>
+          Close
+        </Button>
+        <Button
+          type="submit"
+          form="changeSelectedImageQueriesForm"
+          variant="primary"
+          aria-label="change-selected-image-queries-submit"
+        >
+          Submit
+        </Button>
+      </Modal.Footer>
+    </Modal>
+  );
+}
+
 function Modals() {
   // TODO: move the grid selector into here
   // TODO: move the developer and patreon support modals into here
   const selectedImage = useAppSelector(selectModalCard);
+  const selectedSlots = useAppSelector(selectModalSlots);
   const shownModal = useAppSelector(selectShownModal);
   const dispatch = useAppDispatch();
+  const handleClose = () => dispatch(hideModal());
+
   return (
     <>
       {selectedImage != null && (
         <MemoizedCardDetailedView
           cardDocument={selectedImage}
           show={shownModal === "cardDetailedView"}
-          handleClose={() => dispatch(hideModal())}
+          handleClose={handleClose}
+        />
+      )}
+      {selectedSlots != null && (
+        <MoveMeIntoMyOwnModule
+          slots={selectedSlots}
+          show={shownModal === "changeQuery"}
+          handleClose={handleClose}
         />
       )}
     </>
