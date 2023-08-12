@@ -29,6 +29,7 @@ import {
   toggleMemberSelection,
 } from "@/features/project/projectSlice";
 import { selectSearchResultsForQueryOrDefault } from "@/features/search/searchResultsSlice";
+import { setSelectedSlotsAndShowModal } from "@/features/ui/modalSlice";
 
 interface CardSlotProps {
   searchQuery: SearchQuery | undefined;
@@ -94,6 +95,10 @@ export function CardSlot({ searchQuery, face, slot }: CardSlotProps) {
     selectProjectMember(state, slot, face)
   );
   const selectedImage = projectMember?.selectedImage;
+
+  const handleShowChangeSelectedImageQueriesModal = () => {
+    dispatch(setSelectedSlotsAndShowModal([[[face, slot]], "changeQuery"]));
+  };
 
   useEffect(() => {
     /**
@@ -264,6 +269,7 @@ export function CardSlot({ searchQuery, face, slot }: CardSlotProps) {
         cardFooter={cardFooter}
         cardHeaderButtons={cardHeaderButtons}
         searchQuery={searchQuery}
+        nameOnClick={handleShowChangeSelectedImageQueriesModal}
         noResultsFound={
           searchResultsForQueryOrDefault != null &&
           searchResultsForQueryOrDefault.length === 0

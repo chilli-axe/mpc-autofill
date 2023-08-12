@@ -166,6 +166,8 @@ interface CardProps {
   cardFooter?: ReactElement;
   /** A callback function for when the `Card` (the HTML surrounding the image) is clicked. */
   cardOnClick?: React.MouseEventHandler<HTMLElement>;
+  /** TODO: flesh this out */
+  nameOnClick?: React.MouseEventHandler<HTMLElement>;
   /** The `SearchQuery` specified when searching for this card. */
   searchQuery?: SearchQuery | undefined;
   /** Whether no search results were found when searching for `searchQuery` under the configured search settings. */
@@ -180,6 +182,7 @@ export function Card({
   cardHeaderButtons,
   cardFooter,
   cardOnClick,
+  nameOnClick,
   searchQuery,
   noResultsFound,
 }: CardProps) {
@@ -240,7 +243,7 @@ export function Card({
           {cardImageElements}
         </MemoizedCardProportionWrapper>
         <BSCard.Body className="mb-0 text-center">
-          <BSCard.Subtitle className="mpccard-name">
+          <BSCard.Subtitle className="mpccard-name" onClick={nameOnClick}>
             {maybeCardDocument != null && maybeCardDocument.name}
             {maybeCardDocument == null &&
               searchQuery != undefined &&
@@ -286,6 +289,8 @@ interface EditorCardProps {
   cardFooter?: ReactElement;
   /** A callback function for when the `Card` (the HTML surrounding the image) is clicked. */
   cardOnClick?: React.MouseEventHandler<HTMLElement>;
+  /** TODO: flesh this out */
+  nameOnClick?: React.MouseEventHandler<HTMLElement>;
   /** The `SearchQuery` specified when searching for this card. */
   searchQuery?: SearchQuery | undefined;
   /** Whether no search results were found when searching for `searchQuery` under the configured search settings. */
@@ -300,6 +305,7 @@ export function EditorCard({
   cardHeaderButtons,
   cardFooter,
   cardOnClick,
+  nameOnClick,
   searchQuery,
   noResultsFound,
 }: EditorCardProps) {
@@ -329,6 +335,7 @@ export function EditorCard({
       cardHeaderButtons={cardHeaderButtons}
       cardFooter={cardFooter}
       cardOnClick={cardOnClick}
+      nameOnClick={nameOnClick}
       searchQuery={searchQuery}
       noResultsFound={noResultsFound}
     />
