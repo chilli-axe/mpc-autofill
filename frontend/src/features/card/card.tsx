@@ -40,6 +40,15 @@ const VisibleImage = styled(Image)<{
   opacity: ${(props) => (props.imageIsLoading ? 0 : 1)};
 `;
 
+const OutlinedBSCardSubtitle = styled(BSCard.Subtitle)`
+  outline: solid 1px #ffffff00;
+  transition: outline 0.2s ease-in-out;
+  &:hover {
+    outline-color: #ffffffff;
+    cursor: pointer;
+  }
+`;
+
 interface CardImageProps {
   maybeCardDocument: CardDocument | null;
   hidden: boolean;
@@ -111,7 +120,7 @@ function CardImage({
                 : maybeCardDocument?.medium_thumbnail_url) ?? ""
             }
             onLoadingComplete={(img) => setImageLoading(false)}
-            onClick={() => handleShowDetailedView()}
+            onClick={handleShowDetailedView}
             alt={maybeCardDocument?.name ?? ""}
             fill={true}
           />
@@ -232,6 +241,9 @@ export function Card({
     ) : (
       <Spinner />
     );
+  const BSCardSubtitle: typeof BSCard.Subtitle =
+    nameOnClick != null ? OutlinedBSCardSubtitle : BSCard.Subtitle;
+
   return (
     <BSCard className="mpccard mpccard-hover" onClick={cardOnClick}>
       <BSCard.Header className="pb-0 text-center">
@@ -243,12 +255,12 @@ export function Card({
           {cardImageElements}
         </MemoizedCardProportionWrapper>
         <BSCard.Body className="mb-0 text-center">
-          <BSCard.Subtitle className="mpccard-name" onClick={nameOnClick}>
+          <BSCardSubtitle className="mpccard-name" onClick={nameOnClick}>
             {maybeCardDocument != null && maybeCardDocument.name}
             {maybeCardDocument == null &&
               searchQuery != undefined &&
               searchQuery.query}
-          </BSCard.Subtitle>
+          </BSCardSubtitle>
           <div className="mpccard-spacing">
             <BSCard.Text className="mpccard-source">
               {maybeCardDocument != null &&
