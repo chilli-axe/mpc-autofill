@@ -20,8 +20,8 @@ import styled from "styled-components";
 import { RootState } from "@/app/store";
 import { SearchQuery, useAppDispatch, useAppSelector } from "@/common/types";
 import { CardDocument } from "@/common/types";
+import { setSelectedCardAndShowModal } from "@/features/modals/modalsSlice";
 import { selectCardDocumentByIdentifier } from "@/features/search/cardDocumentsSlice";
-import { setSelectedCardAndShowModal } from "@/features/ui/modalSlice";
 import { Spinner } from "@/features/ui/spinner";
 
 const HiddenImage = styled(Image)`

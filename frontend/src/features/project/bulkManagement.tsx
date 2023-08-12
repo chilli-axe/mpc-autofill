@@ -4,30 +4,25 @@
  * setting their selected versions, or deleting them from the project.
  */
 
-import React, { FormEvent, useState } from "react";
+import React, { useState } from "react";
 import Alert from "react-bootstrap/Alert";
 import Button from "react-bootstrap/Button";
 import Dropdown from "react-bootstrap/Dropdown";
-import Form from "react-bootstrap/Form";
-import Modal from "react-bootstrap/Modal";
 import Stack from "react-bootstrap/Stack";
 
-import { useGetSampleCardsQuery } from "@/app/api";
-import { Card } from "@/common/constants";
 import { useAppDispatch, useAppSelector } from "@/common/types";
 import { Faces } from "@/common/types";
-import { GridSelector } from "@/features/card/gridSelector";
+import { GridSelector } from "@/features/modals/gridSelector";
+import { setSelectedSlotsAndShowModal } from "@/features/modals/modalsSlice";
 import {
   bulkClearQuery,
   bulkDeleteSlots,
   bulkSetMemberSelection,
-  bulkSetQuery,
   bulkSetSelectedImage,
   selectAllSelectedProjectMembersHaveTheSameQuery,
   selectSelectedSlots,
 } from "@/features/project/projectSlice";
 import { selectSearchResultsForQueryOrDefault } from "@/features/search/searchResultsSlice";
-import { setSelectedSlotsAndShowModal } from "@/features/ui/modalSlice";
 
 interface MutateSelectedImageQueriesProps {
   slots: Array<[Faces, number]>;

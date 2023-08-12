@@ -13,7 +13,7 @@ import Table from "react-bootstrap/Table";
 
 import { api } from "@/app/api";
 import { base64StringToBlob } from "@/common/processing";
-import { CardDocument, useAppSelector } from "@/common/types";
+import { CardDocument } from "@/common/types";
 import { imageSizeToMBString } from "@/common/utils";
 import {
   MemoizedCardImage,

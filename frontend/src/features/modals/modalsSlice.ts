@@ -1,16 +1,19 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 import { RootState } from "@/app/store";
-import { CardDocument, Modals, ModalState, Slots } from "@/common/types";
+import { CardDocument, Modals, ModalsState, Slots } from "@/common/types";
 
 //# region slice configuration
 
-const initialState: ModalState = { card: null, slots: null, shownModal: null };
+const initialState: ModalsState = { card: null, slots: null, shownModal: null };
 
-export const modalSlice = createSlice({
-  name: "modal",
+export const modalsSlice = createSlice({
+  name: "modals",
   initialState,
   reducers: {
+    showModal: (state, action: PayloadAction<Modals>) => {
+      state.shownModal = action.payload;
+    },
     setSelectedCardAndShowModal: (
       state,
       action: PayloadAction<[CardDocument, Modals]>
@@ -33,19 +36,20 @@ export const modalSlice = createSlice({
   },
 });
 
-export default modalSlice.reducer;
+export default modalsSlice.reducer;
 export const {
+  showModal,
   setSelectedCardAndShowModal,
   setSelectedSlotsAndShowModal,
   hideModal,
-} = modalSlice.actions;
+} = modalsSlice.actions;
 
 //# endregion
 
 //# region selectors
 
-export const selectModalCard = (state: RootState) => state.modal.card;
-export const selectModalSlots = (state: RootState) => state.modal.slots;
-export const selectShownModal = (state: RootState) => state.modal.shownModal;
+export const selectModalCard = (state: RootState) => state.modals.card;
+export const selectModalSlots = (state: RootState) => state.modals.slots;
+export const selectShownModal = (state: RootState) => state.modals.shownModal;
 
 //# endregion

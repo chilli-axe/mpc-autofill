@@ -228,9 +228,14 @@ export interface NewCardsFirstPages {
 
 export type Slots = Array<[Faces, number]>;
 
-export type Modals = "cardDetailedView" | "gridSelector" | "changeQuery";
+export type Modals =
+  | "cardDetailedView"
+  | "gridSelector"
+  | "changeQuery"
+  | "supportDeveloper"
+  | "supportBackend";
 
-export interface ModalState {
+export interface ModalsState {
   card: CardDocument | null;
   slots: Slots | null;
   shownModal: Modals | null;

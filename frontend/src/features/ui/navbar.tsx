@@ -11,13 +11,13 @@ import styled from "styled-components";
 
 import { useGetBackendInfoQuery } from "@/app/api";
 import { ContentMaxWidth, NavbarLogoHeight } from "@/common/constants";
+import { useAppDispatch } from "@/common/types";
 import { BackendConfig } from "@/features/backend/backend";
 import {
   useBackendConfigured,
   useProjectName,
 } from "@/features/backend/backendSlice";
-import { SupportBackendModal } from "@/features/support/supportBackend";
-import { SupportDeveloperModal } from "@/features/support/supportDeveloper";
+import { showModal } from "@/features/modals/modalsSlice";
 import DisableSSR from "@/features/ui/disableSSR";
 
 const MaxWidthContainer = styled(Container)`
@@ -33,23 +33,21 @@ const BoldCollapse = styled(Navbar.Collapse)`
 `;
 
 export default function ProjectNavbar() {
+  const dispatch = useAppDispatch();
   const backendConfigured = useBackendConfigured();
   const backendInfoQuery = useGetBackendInfoQuery();
 
   const [showBackendConfig, setShowBackendConfig] = useState(false);
-  const [showSupportDeveloperModal, setShowSupportDeveloperModal] =
-    useState(false);
-  const [showSupportBackendModal, setShowSupportBackendModal] = useState(false);
 
   const handleCloseBackendConfig = () => setShowBackendConfig(false);
   const handleShowBackendConfig = () => setShowBackendConfig(true);
-  const handleCloseSupportDeveloperModal = () =>
-    setShowSupportDeveloperModal(false);
-  const handleShowSupportDeveloperModal = () =>
-    setShowSupportDeveloperModal(true);
-  const handleCloseSupportBackendModal = () =>
-    setShowSupportBackendModal(false);
-  const handleShowSupportBackendModal = () => setShowSupportBackendModal(true);
+
+  const handleShowSupportDeveloperModal = () => {
+    dispatch(showModal("supportDeveloper"));
+  };
+  const handleShowSupportBackendModal = () => {
+    dispatch(showModal("supportBackend"));
+  };
 
   const projectName = useProjectName();
   const router = useRouter();
@@ -148,14 +146,6 @@ export default function ProjectNavbar() {
       <BackendConfig
         show={showBackendConfig}
         handleClose={handleCloseBackendConfig}
-      />
-      <SupportDeveloperModal
-        show={showSupportDeveloperModal}
-        handleClose={handleCloseSupportDeveloperModal}
-      />
-      <SupportBackendModal
-        show={showSupportBackendModal}
-        handleClose={handleCloseSupportBackendModal}
       />
     </DisableSSR>
   );
