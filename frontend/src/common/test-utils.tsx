@@ -336,14 +336,18 @@ export async function deselectSlot(slot: number, face: Faces) {
   );
 }
 
-export async function changeQueryForSelectedImages(query: string) {
-  screen.getByText("Modify").click();
-  await waitFor(() => screen.getByText("Change Query").click());
+export async function changeQueries(query: string) {
   const textField = await waitFor(() =>
     screen.getByLabelText("change-selected-image-queries-text")
   );
   fireEvent.change(textField, { target: { value: query } });
   screen.getByLabelText("change-selected-image-queries-submit").click();
+}
+
+export async function changeQueryForSelectedImages(query: string) {
+  screen.getByText("Modify").click();
+  await waitFor(() => screen.getByText("Change Query").click());
+  await changeQueries(query);
 }
 
 export async function changeImageForSelectedImages(cardName: string) {
