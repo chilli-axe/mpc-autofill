@@ -22,10 +22,10 @@ def get_chrome_driver(headless: bool = False, binary_location: Optional[str] = N
         # here, we specifically hardcode the binary location in macOS to work around this issue:
         # https://github.com/seleniumHQ/selenium/issues/12381, which is caused by
         # https://github.com/GoogleChromeLabs/chrome-for-testing/issues/30
-        default_binary_location = {OSType.MAC: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"}.get(
-            OperationSystemManager.get_os_name()
-        )
-        options.binary_location = default_binary_location
+        # the issue is marked as resolved in the selenium repository but still occurs for me on selenium==4.11.2
+        # perhaps something is broken on the webdriver_manager side here
+        if OperationSystemManager.get_os_name() == OSType.MAC:
+            options.binary_location = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
     driver = Chrome(service=Service(ChromeDriverManager().install()), options=options)  # type: ignore
     driver.set_network_conditions(offline=False, latency=5, throughput=5 * 125000)
     return driver

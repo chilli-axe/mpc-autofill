@@ -14,15 +14,10 @@ import {
   setLocalStorageBackendURL,
 } from "@/common/cookies";
 import { standardiseURL } from "@/common/processing";
-import { useAppDispatch, useAppSelector } from "@/common/types";
+import { useAppDispatch } from "@/common/types";
 import { setURL, useBackendConfigured } from "@/features/backend/backendSlice";
-import { MemoizedCardDetailedView } from "@/features/card/cardDetailedView";
+import { Modals } from "@/features/modals/modals";
 import { Toasts } from "@/features/toasts/toasts";
-import {
-  hideModal,
-  selectModalCard,
-  selectShownModal,
-} from "@/features/ui/modalSlice";
 import ProjectNavbar from "@/features/ui/navbar";
 
 function BackendSetter() {
@@ -47,25 +42,6 @@ function BackendSetter() {
   }, [router.isReady, backendConfigured, formattedURL, dispatch]);
 
   return <></>;
-}
-
-function Modals() {
-  // TODO: move the grid selector into here
-  // TODO: move the developer and patreon support modals into here
-  const selectedImage = useAppSelector(selectModalCard);
-  const shownModal = useAppSelector(selectShownModal);
-  const dispatch = useAppDispatch();
-  return (
-    <>
-      {selectedImage != null && (
-        <MemoizedCardDetailedView
-          cardDocument={selectedImage}
-          show={shownModal === "cardDetailedView"}
-          handleClose={() => dispatch(hideModal())}
-        />
-      )}
-    </>
-  );
 }
 
 const OverscrollProvider = styled(Provider)`

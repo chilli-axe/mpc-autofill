@@ -312,7 +312,7 @@ export const searchResultsSixResults = rest.post(
             TOKEN: [],
           },
           "query 3": {
-            CARD: [cardDocument4.identifier],
+            CARD: [cardDocument3.identifier],
             CARDBACK: [],
             TOKEN: [],
           },

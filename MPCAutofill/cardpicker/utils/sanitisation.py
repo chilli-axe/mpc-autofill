@@ -1,6 +1,5 @@
 import re
 import string
-import unicodedata
 from typing import Optional
 
 
@@ -9,8 +8,8 @@ def to_searchable(input_str: str) -> str:
         return ""
 
     # Convert a card name to a search-friendly string
-    # First, convert to unicode to ignore accents and other unusual characters, and convert to lowercase
-    input_str = unicodedata.normalize("NFD", input_str).encode("ascii", "ignore").decode("utf8").lower()
+    # First, convert to lowercase
+    input_str = input_str.lower()
 
     # Remove text inside brackets
     input_str = re.sub("[\(\[].*?[\)\]]", "", input_str)

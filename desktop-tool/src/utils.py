@@ -6,7 +6,11 @@ from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
 
 from InquirerPy import inquirer
-from selenium.common.exceptions import NoAlertPresentException, NoSuchWindowException
+from selenium.common.exceptions import (
+    NoAlertPresentException,
+    NoSuchWindowException,
+    UnexpectedAlertPresentException,
+)
 
 if TYPE_CHECKING:  # necessary to avoid circular import
     from driver import AutofillDriver
@@ -47,14 +51,21 @@ def alert_handler(func: F) -> F:
     Function decorator which accepts an alert in the given Selenium driver if one is raised by the decorated function.
     """
 
-    def wrapper(*args: Any, **kwargs: dict[str, Any]) -> F:
+    def wrapper(*args: Any, **kwargs: dict[str, Any]) -> Optional[F]:
+        autofill_driver: "AutofillDriver" = args[0]
         try:
-            autofill_driver: "AutofillDriver" = args[0]
             alert = autofill_driver.driver.switch_to.alert
             alert.accept()
         except (NoAlertPresentException, NoSuchWindowException):
             pass
-        return func(*args, **kwargs)
+        try:
+            return func(*args, **kwargs)
+        except UnexpectedAlertPresentException:
+            alert = autofill_driver.driver.switch_to.alert
+            alert.accept()
+        except (NoAlertPresentException, NoSuchWindowException):
+            pass
+        return None
 
     return cast(F, wrapper)
 
@@ -69,7 +80,7 @@ def exception_retry_skip_handler(func: F) -> F:
             try:
                 return func(*args, **kwargs)
             except Exception as e:
-                print(f"An uncaught exception occurred:\n{bold(e.args[0])}\n")
+                print(f"An uncaught exception occurred:\n{bold(e)}\n")
                 action = inquirer.select(
                     message="How should the tool proceed?",
                     choices=["Retry this action", "Skip this action", "Terminate"],

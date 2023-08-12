@@ -226,9 +226,17 @@ export interface NewCardsFirstPages {
   [sourceKey: string]: NewCardsFirstPage;
 }
 
-export type Modals = "cardDetailedView" | "gridSelector";
+export type Slots = Array<[Faces, number]>;
 
-export interface ModalState {
+export type Modals =
+  | "cardDetailedView"
+  | "gridSelector"
+  | "changeQuery"
+  | "supportDeveloper"
+  | "supportBackend";
+
+export interface ModalsState {
   card: CardDocument | null;
+  slots: Slots | null;
   shownModal: Modals | null;
 }
