@@ -72,10 +72,6 @@ interface MoveMeProps {
 function MoveMeIntoMyOwnModule({ slots, show, handleClose }: MoveMeProps) {
   const dispatch = useAppDispatch();
 
-  // const changeQueriesAndHandleClose = () => {
-  //   handleClose();
-  // }
-
   const sampleCardsQuery = useGetSampleCardsQuery();
   const placeholderCardName =
     sampleCardsQuery.data != null &&
@@ -83,15 +79,6 @@ function MoveMeIntoMyOwnModule({ slots, show, handleClose }: MoveMeProps) {
       ? sampleCardsQuery.data[Card][0].name
       : "";
 
-  // const [
-  //   showChangeSelectedImageQueriesModal,
-  //     setShowChangeSelectedImageQueriesModal,
-  //   ] = useState<boolean>(false);
-  //   const handleCloseChangeSelectedImageQueriesModal = () => {
-  //     setShowChangeSelectedImageQueriesModal(false);
-  //   };
-  //   const handleShowChangeSelectedImageQueriesModal = () =>
-  //     setShowChangeSelectedImageQueriesModal(true);
   const [
     changeSelectedImageQueriesModalValue,
     setChangeSelectedImageQueriesModalValue,
@@ -104,9 +91,7 @@ function MoveMeIntoMyOwnModule({ slots, show, handleClose }: MoveMeProps) {
     dispatch(
       bulkSetQuery({ query: changeSelectedImageQueriesModalValue, slots })
     );
-    // TODO: business logic
     handleClose();
-    // handleCloseChangeSelectedImageQueriesModal();
   };
 
   return (
@@ -136,6 +121,7 @@ function MoveMeIntoMyOwnModule({ slots, show, handleClose }: MoveMeProps) {
               value={changeSelectedImageQueriesModalValue}
               aria-label="change-selected-image-queries-text"
               required={true}
+              autoFocus={true}
             />
           </Form.Group>
         </Form>
