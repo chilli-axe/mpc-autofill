@@ -175,7 +175,7 @@ function CardsFacetedBySource({
   );
 }
 
-export function GridSelector({
+export function GridSelectorModal({
   testId,
   imageIdentifiers,
   show,

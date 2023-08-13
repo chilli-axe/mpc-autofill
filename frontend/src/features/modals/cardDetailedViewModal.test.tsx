@@ -18,7 +18,7 @@ import { server } from "@/mocks/server";
 
 //# region snapshot tests
 
-test("the html structure of a CardDetailedView", async () => {
+test("the html structure of a CardDetailedViewModal", async () => {
   server.use(
     cardDocumentsOneResult,
     sourceDocumentsOneResult,

@@ -1,7 +1,7 @@
 import React from "react";
 
 import { useAppDispatch, useAppSelector } from "@/common/types";
-import { MemoizedCardDetailedView } from "@/features/modals/cardDetailedView";
+import { MemoizedCardDetailedView } from "@/features/modals/cardDetailedViewModal";
 import { ChangeQueryModal } from "@/features/modals/changeQueryModal";
 import {
   hideModal,

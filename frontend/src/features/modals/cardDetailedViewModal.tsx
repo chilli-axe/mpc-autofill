@@ -31,7 +31,7 @@ interface CardDetailedViewProps {
   };
 }
 
-export function CardDetailedView({
+export function CardDetailedViewModal({
   cardDocument,
   show,
   handleClose,
@@ -166,4 +166,4 @@ export function CardDetailedView({
   );
 }
 
-export const MemoizedCardDetailedView = memo(CardDetailedView);
+export const MemoizedCardDetailedView = memo(CardDetailedViewModal);

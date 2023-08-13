@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`the html structure of a CardDetailedView 1`] = `
+exports[`the html structure of a CardDetailedViewModal 1`] = `
 .c1 {
   z-index: 1;
   opacity: 1;

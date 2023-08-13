@@ -12,7 +12,7 @@ import { useAppDispatch, useAppSelector } from "@/common/types";
 import { wrapIndex } from "@/common/utils";
 import { MemoizedEditorCard } from "@/features/card/card";
 import { selectCardbacks } from "@/features/card/cardbackSlice";
-import { GridSelector } from "@/features/modals/gridSelector";
+import { GridSelectorModal } from "@/features/modals/gridSelectorModal";
 import {
   bulkReplaceSelectedImage,
   selectProjectCardback,
@@ -50,7 +50,7 @@ export function CommonCardbackGridSelector({
     }
   }
   return (
-    <GridSelector
+    <GridSelectorModal
       testId="cardback-grid-selector"
       imageIdentifiers={searchResults}
       show={show}

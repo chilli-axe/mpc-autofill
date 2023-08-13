@@ -10,9 +10,8 @@ import Button from "react-bootstrap/Button";
 import Dropdown from "react-bootstrap/Dropdown";
 import Stack from "react-bootstrap/Stack";
 
-import { useAppDispatch, useAppSelector } from "@/common/types";
-import { Faces } from "@/common/types";
-import { GridSelector } from "@/features/modals/gridSelector";
+import { Slots, useAppDispatch, useAppSelector } from "@/common/types";
+import { GridSelectorModal } from "@/features/modals/gridSelectorModal";
 import { setSelectedSlotsAndShowModal } from "@/features/modals/modalsSlice";
 import {
   bulkClearQuery,
@@ -24,13 +23,7 @@ import {
 } from "@/features/project/projectSlice";
 import { selectSearchResultsForQueryOrDefault } from "@/features/search/searchResultsSlice";
 
-interface MutateSelectedImageQueriesProps {
-  slots: Array<[Faces, number]>;
-}
-
-function ChangeSelectedImageSelectedImages({
-  slots,
-}: MutateSelectedImageQueriesProps) {
+function ChangeSelectedImageSelectedImages({ slots }: { slots: Slots }) {
   /**
    * sorry for the stupid naming convention here 🗿
    */
@@ -76,7 +69,7 @@ function ChangeSelectedImageSelectedImages({
           </Dropdown.Item>
         )}
       {searchResultsForQueryOrDefault != null && (
-        <GridSelector
+        <GridSelectorModal
           testId="bulk-grid-selector"
           imageIdentifiers={searchResultsForQueryOrDefault}
           show={showChangeSelectedImageSelectedImagesModal}
@@ -88,9 +81,7 @@ function ChangeSelectedImageSelectedImages({
   );
 }
 
-function ChangeSelectedImageQueries({
-  slots,
-}: MutateSelectedImageQueriesProps) {
+function ChangeSelectedImageQueries({ slots }: { slots: Slots }) {
   const dispatch = useAppDispatch();
 
   const handleShowChangeSelectedImageQueriesModal = () => {
@@ -113,7 +104,7 @@ function ChangeSelectedImageQueries({
   );
 }
 
-function ClearSelectedImageQueries({ slots }: MutateSelectedImageQueriesProps) {
+function ClearSelectedImageQueries({ slots }: { slots: Slots }) {
   const dispatch = useAppDispatch();
   const onClick = () => dispatch(bulkClearQuery({ slots }));
   return (
@@ -124,7 +115,7 @@ function ClearSelectedImageQueries({ slots }: MutateSelectedImageQueriesProps) {
   );
 }
 
-function DeleteSelectedImages({ slots }: MutateSelectedImageQueriesProps) {
+function DeleteSelectedImages({ slots }: { slots: Slots }) {
   const dispatch = useAppDispatch();
 
   const slotNumbers = slots.map(([face, slot]) => slot);
