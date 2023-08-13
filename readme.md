@@ -1,8 +1,6 @@
 # MPC Autofill
 
-<div text-align="center">
-  <img  width="500px" src="https://i.imgur.com/IUCI2aO.png" alt="MPC Autofill Logo" />
-</div>
+<img align="center" width="500px" src="https://i.imgur.com/IUCI2aO.png" alt="MPC Autofill Logo" />
 
 MPC Autofill is print automation software (leveraging MakePlayingCards) for your tabletop gaming community.
 
