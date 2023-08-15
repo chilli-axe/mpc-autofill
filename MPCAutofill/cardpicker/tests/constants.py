@@ -82,7 +82,7 @@ class Cards(Enum):
     PAST_IN_FLAMES_1 = Card(
         pk=8,
         identifier="1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1",
-        name="Past in Flames",
+        name="Pást in Flames",  # should be included in search results despite having an accent in the name
         dpi=600,
         size=5_000_000,
     )
