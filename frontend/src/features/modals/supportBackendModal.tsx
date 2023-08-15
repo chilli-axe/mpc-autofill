@@ -44,9 +44,13 @@ export function SupportBackendModal({
         ) : (
           <>
             {backendInfoQuery.data.patreon.campaign?.about != null && (
-              <p>{backendInfoQuery.data.patreon.campaign.about}</p>
+              <p
+                dangerouslySetInnerHTML={{
+                  __html: backendInfoQuery.data.patreon.campaign.about,
+                }}
+              />
             )}
-            <Alert variant="secondary">
+            <Alert variant="info">
               <h4>Patron Tiers</h4>
               {Object.values(backendInfoQuery.data.patreon.tiers ?? {}).map(
                 (tier) => (
@@ -54,13 +58,18 @@ export function SupportBackendModal({
                     <h6>
                       {tier.title} (${tier.usd} USD)
                     </h6>
-                    <p>{tier.description}</p>
+                    <p
+                      dangerouslySetInnerHTML={{ __html: tier.description }}
+                    ></p>
                   </h6>
                 )
               )}
               <hr />
               {backendInfoQuery.data.patreon.url != null && (
-                <a href={backendInfoQuery.data.patreon.url}>
+                <a
+                  style={{ textAlign: "center" }}
+                  href={backendInfoQuery.data.patreon.url}
+                >
                   Become a Patron today!
                 </a>
               )}
