@@ -6,7 +6,7 @@ import ratelimit
 import requests
 from bulk_sync import bulk_sync
 
-from cardpicker.constants import DFC_URL, MELD_URL
+from cardpicker.constants import DFC_SCRYFALL_URL, MELD_SCRYFALL_URL
 from cardpicker.models import DFCPair
 from cardpicker.utils.sanitisation import to_searchable
 
@@ -32,7 +32,7 @@ def sync_dfcs() -> None:
     dfc_pairs: list[DFCPair] = []
 
     # query data and construct objects for regular double-faced cards
-    dfc_data = query_scryfall_paginated(DFC_URL)
+    dfc_data = query_scryfall_paginated(DFC_SCRYFALL_URL)
     print(f"Identified {len(dfc_data)} double-faced cards")
     for item in dfc_data:
 
@@ -51,7 +51,7 @@ def sync_dfcs() -> None:
         )
 
     # query data and construct objects for meld pairs
-    meld_data = query_scryfall_paginated(MELD_URL)
+    meld_data = query_scryfall_paginated(MELD_SCRYFALL_URL)
     print(f"Identified {len(meld_data)} meld pieces")
     for item in meld_data:
         if "all_parts" not in item:
