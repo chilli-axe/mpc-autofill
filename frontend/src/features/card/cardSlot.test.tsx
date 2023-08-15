@@ -518,7 +518,7 @@ test("changing a card slot's query", async () => {
   await expectCardGridSlotState(1, Front, cardDocument2.name, 1, 1);
 });
 
-test("changing a card slot's query doesn't affect aa different slot", async () => {
+test("changing a card slot's query doesn't affect a different slot", async () => {
   server.use(
     cardDocumentsThreeResults,
     sourceDocumentsOneResult,

@@ -19,7 +19,7 @@ import {
 import { wrapIndex } from "@/common/utils";
 import { MemoizedEditorCard } from "@/features/card/card";
 import { selectCardbacks } from "@/features/card/cardbackSlice";
-import { GridSelector } from "@/features/modals/gridSelector";
+import { GridSelectorModal } from "@/features/modals/gridSelectorModal";
 import { setSelectedSlotsAndShowModal } from "@/features/modals/modalsSlice";
 import {
   bulkAlignMemberSelection,
@@ -62,7 +62,7 @@ export function CardSlotGridSelector({
     dispatch(setSelectedImage({ face, slot, selectedImage }));
   }
   return (
-    <GridSelector
+    <GridSelectorModal
       testId={`${face}-slot${slot}-grid-selector`}
       imageIdentifiers={searchResultsForQuery}
       show={show}

@@ -31,7 +31,7 @@ interface CardDetailedViewProps {
   };
 }
 
-export function CardDetailedView({
+export function CardDetailedViewModal({
   cardDocument,
   show,
   handleClose,
@@ -85,7 +85,8 @@ export function CardDetailedView({
                       <b>Source Name</b>
                     </td>
                     <td>
-                      {cardDocument.source_external_link != null ? (
+                      {cardDocument.source_external_link != null &&
+                      cardDocument.source_external_link.length > 0 ? (
                         <a
                           href={cardDocument.source_external_link}
                           target="_blank"
@@ -166,4 +167,4 @@ export function CardDetailedView({
   );
 }
 
-export const MemoizedCardDetailedView = memo(CardDetailedView);
+export const MemoizedCardDetailedView = memo(CardDetailedViewModal);
