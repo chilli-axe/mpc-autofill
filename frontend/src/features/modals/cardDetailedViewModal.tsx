@@ -85,7 +85,8 @@ export function CardDetailedViewModal({
                       <b>Source Name</b>
                     </td>
                     <td>
-                      {cardDocument.source_external_link != null ? (
+                      {cardDocument.source_external_link != null &&
+                      cardDocument.source_external_link.length > 0 ? (
                         <a
                           href={cardDocument.source_external_link}
                           target="_blank"

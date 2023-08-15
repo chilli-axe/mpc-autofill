@@ -78,7 +78,8 @@ function SourceContributionRow({ contribution }: SourceContributionRowProps) {
   return (
     <tr key={contribution.name}>
       <td>
-        {contribution.external_link != null ? (
+        {contribution.external_link != null &&
+        contribution.external_link.length > 0 ? (
           <Link href={contribution.external_link} target="_blank">
             {contribution.name}
           </Link>
