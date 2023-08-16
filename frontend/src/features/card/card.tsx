@@ -62,7 +62,7 @@ function CardImage({
   small,
   showDetailedViewOnClick,
 }: CardImageProps) {
-  const [imageLoading, setImageLoading] = useState(true);
+  const [imageLoading, setImageLoading] = useState<boolean>(true);
   // ensure that the small thumbnail fades in each time the selected image changes
   useEffect(() => setImageLoading(true), [maybeCardDocument?.identifier]);
   useEffect(() => {
@@ -175,7 +175,7 @@ interface CardProps {
   cardFooter?: ReactElement;
   /** A callback function for when the `Card` (the HTML surrounding the image) is clicked. */
   cardOnClick?: React.MouseEventHandler<HTMLElement>;
-  /** TODO: flesh this out */
+  /** A callback function for when the card name is clicked. */
   nameOnClick?: React.MouseEventHandler<HTMLElement>;
   /** The `SearchQuery` specified when searching for this card. */
   searchQuery?: SearchQuery | undefined;
@@ -301,7 +301,7 @@ interface EditorCardProps {
   cardFooter?: ReactElement;
   /** A callback function for when the `Card` (the HTML surrounding the image) is clicked. */
   cardOnClick?: React.MouseEventHandler<HTMLElement>;
-  /** TODO: flesh this out */
+  /** A callback function for when the card name is clicked. */
   nameOnClick?: React.MouseEventHandler<HTMLElement>;
   /** The `SearchQuery` specified when searching for this card. */
   searchQuery?: SearchQuery | undefined;

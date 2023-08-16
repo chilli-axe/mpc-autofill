@@ -38,10 +38,11 @@ import {
   selectProjectSize,
   setSelectedCardback,
 } from "@/features/project/projectSlice";
+import { RightPaddedIcon } from "@/features/ui/styledComponents";
 
 export function ImportXML() {
   const dispatch = useAppDispatch();
-  const [showXMLModal, setShowXMLModal] = useState(false);
+  const [showXMLModal, setShowXMLModal] = useState<boolean>(false);
   const handleCloseXMLModal = () => setShowXMLModal(false);
   const handleShowXMLModal = () => setShowXMLModal(true);
   const projectCardback = useAppSelector(selectProjectCardback);
@@ -175,8 +176,7 @@ export function ImportXML() {
   return (
     <>
       <Dropdown.Item onClick={handleShowXMLModal}>
-        <i className="bi bi-file-code" style={{ paddingRight: 0.5 + "em" }} />{" "}
-        XML
+        <RightPaddedIcon bootstrapIconName="file-code" /> XML
       </Dropdown.Item>
       <Modal
         show={showXMLModal}

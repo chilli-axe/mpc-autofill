@@ -1,21 +1,12 @@
 import Link from "next/link";
 import React from "react";
-import Table from "react-bootstrap/Table";
-import styled from "styled-components";
 
 import { useGetBackendInfoQuery, useGetContributionsQuery } from "@/app/api";
 import { Card, Cardback, ProjectName, Token } from "@/common/constants";
 import { SourceContribution } from "@/common/types";
 import { useProjectName } from "@/features/backend/backendSlice";
 import { Spinner } from "@/features/ui/spinner";
-
-const TableWrapper = styled.div`
-  max-width: 100%;
-  overflow-x: scroll;
-`;
-const AutoLayoutTable = styled(Table)`
-  table-layout: auto;
-`;
+import { AutoLayoutTable, TableWrapper } from "@/features/ui/styledComponents";
 
 export function ContributionsSummary() {
   const contributionsQuery = useGetContributionsQuery();

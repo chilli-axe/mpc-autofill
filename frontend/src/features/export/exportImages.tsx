@@ -10,19 +10,22 @@ import { FunctionThread, Pool, spawn, Worker } from "threads";
 
 import { ProjectName } from "@/common/constants";
 import { base64StringToBlob } from "@/common/processing";
-import { useAppSelector } from "@/common/types";
+import { useAppDispatch, useAppSelector } from "@/common/types";
 import { selectIsProjectEmpty } from "@/features/project/projectSlice";
 import { useCardDocumentsByIdentifier } from "@/features/search/cardDocumentsSlice";
+import { setError } from "@/features/toasts/toastsSlice";
 import { Spinner } from "@/features/ui/spinner";
+import { RightPaddedIcon } from "@/features/ui/styledComponents";
 
 const StyledProgressBar = styled(ProgressBar)`
   --bs-progress-bg: #424e5c;
 `;
 
 export function ExportImages() {
+  const dispatch = useAppDispatch();
   const isProjectEmpty = useAppSelector(selectIsProjectEmpty);
 
-  const [showImagesModal, setShowImagesModal] = useState(false);
+  const [showImagesModal, setShowImagesModal] = useState<boolean>(false);
   const handleCloseImagesModal = () => setShowImagesModal(false);
   const handleShowImagesModal = () => setShowImagesModal(true);
 
@@ -63,11 +66,23 @@ export function ExportImages() {
           workerPool.current.queue(async (download) => {
             const cardDocument = cardDocumentsByIdentifier[identifier];
             if (cardDocument != null) {
-              const data = await download(identifier);
-              saveAs(
-                base64StringToBlob(data),
-                `${cardDocument.name} (${cardDocument.identifier}).${cardDocument.extension}`
-              );
+              try {
+                const data = await download(identifier);
+                saveAs(
+                  base64StringToBlob(data),
+                  `${cardDocument.name} (${cardDocument.identifier}).${cardDocument.extension}`
+                );
+              } catch (error) {
+                dispatch(
+                  setError([
+                    `download-${cardDocument.identifier}-failed`,
+                    {
+                      name: "Failed to download image",
+                      message: `Downloading the full`,
+                    },
+                  ])
+                );
+              }
             }
             localDownloaded++;
             setDownloaded(localDownloaded);
@@ -85,8 +100,7 @@ export function ExportImages() {
   return (
     <>
       <Dropdown.Item disabled={isProjectEmpty} onClick={handleShowImagesModal}>
-        <i className="bi bi-image" style={{ paddingRight: 0.5 + "em" }} /> Card
-        Images
+        <RightPaddedIcon bootstrapIconName="image" /> Card Images
       </Dropdown.Item>
       <Modal
         show={showImagesModal}

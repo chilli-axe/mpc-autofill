@@ -250,10 +250,8 @@ export function standardiseURL(url: string): string {
   return (re[1] ?? "https://") + re[2];
 }
 
-// TODO: delete this when remaining API interactions have been moved to RTK query
 export function formatURL(backendURL: string, routeURL: string): string {
-  // TODO: implement this properly
-  return backendURL + routeURL;
+  return new URL(routeURL, backendURL).toString();
 }
 
 export function base64StringToBlob(base64: string): Blob {

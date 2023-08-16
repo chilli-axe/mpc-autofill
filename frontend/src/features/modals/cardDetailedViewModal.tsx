@@ -94,7 +94,7 @@ export function CardDetailedViewModal({
                           {cardDocument.source_name}
                         </a>
                       ) : (
-                        <a>{cardDocument.source_name}</a>
+                        <p>{cardDocument.source_name}</p>
                       )}
                     </td>
                   </tr>

@@ -21,6 +21,7 @@ import {
   selectIsProjectEmpty,
   selectProjectMembers,
 } from "@/features/project/projectSlice";
+import { RightPaddedIcon } from "@/features/ui/styledComponents";
 
 function extractProjectMemberNames(
   projectMembers: Array<SlotProjectMembers>,
@@ -135,8 +136,7 @@ export function ExportDecklist() {
       onClick={downloadFile}
       data-testid="export-decklist-button"
     >
-      <i className="bi bi-card-text" style={{ paddingRight: 0.5 + "em" }} />{" "}
-      Decklist
+      <RightPaddedIcon bootstrapIconName="card-text" /> Decklist
     </Dropdown.Item>
   );
 }

@@ -34,7 +34,7 @@ export function ChangeQueryModal({
   const [
     changeSelectedImageQueriesModalValue,
     setChangeSelectedImageQueriesModalValue,
-  ] = useState("");
+  ] = useState<string>("");
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault(); // to avoid reloading the page

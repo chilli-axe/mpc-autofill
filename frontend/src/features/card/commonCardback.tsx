@@ -75,7 +75,7 @@ interface CommonCardbackProps {
 export function CommonCardback({ selectedImage }: CommonCardbackProps) {
   const dispatch = useAppDispatch();
 
-  const [showGridSelector, setShowGridSelector] = useState(false);
+  const [showGridSelector, setShowGridSelector] = useState<boolean>(false);
   const handleCloseGridSelector = () => setShowGridSelector(false);
   const handleShowGridSelector = () => setShowGridSelector(true);
 

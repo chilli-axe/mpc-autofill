@@ -78,9 +78,9 @@ exports[`the html structure of a CardDetailedViewModal 1`] = `
                   </b>
                 </td>
                 <td>
-                  <a>
+                  <p>
                     Source 1
-                  </a>
+                  </p>
                 </td>
               </tr>
               <tr>

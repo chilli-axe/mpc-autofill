@@ -10,7 +10,10 @@ import styled from "styled-components";
 
 import { NavbarHeight } from "@/common/constants";
 import { useAppDispatch, useAppSelector } from "@/common/types";
-import { useBackendConfigured } from "@/features/backend/backendSlice";
+import {
+  selectBackendURL,
+  useBackendConfigured,
+} from "@/features/backend/backendSlice";
 import { CardGrid } from "@/features/card/cardGrid";
 import { CommonCardback } from "@/features/card/commonCardback";
 import { Export } from "@/features/export/export";
@@ -36,18 +39,14 @@ const OverflowCol = styled(Col)`
 function App() {
   // TODO: should we periodically ping the backend to make sure it's still alive?
   const backendConfigured = useBackendConfigured();
+  const backendURL = useAppSelector(selectBackendURL);
   const dispatch = useAppDispatch();
   const cardback = useAppSelector(selectProjectCardback);
-  useEffect(
-    () => {
-      if (backendConfigured) {
-        fetchSourceDocumentsAndReportError(dispatch);
-      }
-    },
-    // it's fine for this useEffect to depend on `backendConfigured` rather than the precise URL
-    // because users cannot switch to a different backend without disconnecting first.
-    [dispatch, backendConfigured]
-  );
+  useEffect(() => {
+    if (backendConfigured) {
+      fetchSourceDocumentsAndReportError(dispatch);
+    }
+  }, [dispatch, backendURL]);
 
   return (
     <>

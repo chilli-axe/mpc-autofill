@@ -37,7 +37,7 @@ export default function ProjectNavbar() {
   const backendConfigured = useBackendConfigured();
   const backendInfoQuery = useGetBackendInfoQuery();
 
-  const [showBackendConfig, setShowBackendConfig] = useState(false);
+  const [showBackendConfig, setShowBackendConfig] = useState<boolean>(false);
 
   const handleCloseBackendConfig = () => setShowBackendConfig(false);
   const handleShowBackendConfig = () => setShowBackendConfig(true);

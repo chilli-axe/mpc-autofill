@@ -79,7 +79,7 @@ export const MemoizedCardSlotGridSelector = memo(CardSlotGridSelector);
 //# region card slot
 
 export function CardSlot({ searchQuery, face, slot }: CardSlotProps) {
-  const [showGridSelector, setShowGridSelector] = useState(false);
+  const [showGridSelector, setShowGridSelector] = useState<boolean>(false);
 
   const handleCloseGridSelector = () => setShowGridSelector(false);
   const handleShowGridSelector = () => setShowGridSelector(true);
@@ -138,6 +138,9 @@ export function CardSlot({ searchQuery, face, slot }: CardSlotProps) {
     }
   }, [
     dispatch,
+    face,
+    slot,
+    searchQuery?.query,
     searchResultsForQueryOrDefault,
     projectCardback,
     selectedImage,

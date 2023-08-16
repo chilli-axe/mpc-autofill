@@ -31,10 +31,11 @@ import {
 } from "@/features/searchSettings/searchSettingsSlice";
 import { SearchTypeSettings as SearchTypeSettingsElement } from "@/features/searchSettings/searchTypeSettings";
 import { SourceSettings as SourceSettingsElement } from "@/features/searchSettings/sourceSettings";
+import { RightPaddedIcon } from "@/features/ui/styledComponents";
 
 export function SearchSettings() {
   const dispatch = useAppDispatch();
-  const [show, setShow] = useState(false);
+  const [show, setShow] = useState<boolean>(false);
 
   // global state managed in redux
   const globalSearchSettings = useAppSelector(selectSearchSettings);
@@ -87,7 +88,7 @@ export function SearchSettings() {
   return (
     <div className="d-grid gap-0">
       <Button variant="primary" onClick={handleShow}>
-        <i className="bi bi-gear" style={{ paddingRight: 0.5 + "em" }} />
+        <RightPaddedIcon bootstrapIconName="gear" />
         Search Settings
       </Button>
 
