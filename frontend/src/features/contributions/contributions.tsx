@@ -35,25 +35,29 @@ export function ContributionsSummary() {
     ])
   );
 
-  return contributionsQuery.isFetching ||
-    contributionsQuery.data?.sources == null ? (
-    <Spinner />
-  ) : (
+  return (
     <>
-      <h2>{projectName} Contributions</h2>
-      <p>
-        The {projectName} database tracks <b>{totalImages.toLocaleString()}</b>{" "}
-        images, with a total size of <b>{formattedDatabaseSize} GB</b> &mdash;
-        comprised of <b>{formattedImagesByCardType[Card]}</b> cards,{" "}
-        <b>{formattedImagesByCardType[Cardback]}</b> cardbacks, and{" "}
-        <b>{formattedImagesByCardType[Token]}</b> tokens &mdash; from{" "}
-        <b>{(contributionsQuery.data.sources ?? []).length}</b> sources.
-      </p>
-      <p>
-        {ProjectName} databases are typically synced with all sources every day
-        (beginning at midnight UTC) to ensure all changes are recorded in a
-        timely manner.
-      </p>
+      <h1>{projectName} Contributions</h1>
+      {contributionsQuery.data?.sources == null ? (
+        <Spinner />
+      ) : (
+        <>
+          <p>
+            The {projectName} database tracks{" "}
+            <b>{totalImages.toLocaleString()}</b> images, with a total size of{" "}
+            <b>{formattedDatabaseSize} GB</b> &mdash; comprised of{" "}
+            <b>{formattedImagesByCardType[Card]}</b> cards,{" "}
+            <b>{formattedImagesByCardType[Cardback]}</b> cardbacks, and{" "}
+            <b>{formattedImagesByCardType[Token]}</b> tokens &mdash; from{" "}
+            <b>{(contributionsQuery.data.sources ?? []).length}</b> sources.
+          </p>
+          <p>
+            {ProjectName} databases are typically synced with all sources every
+            day (beginning at midnight UTC) to ensure all changes are recorded
+            in a timely manner.
+          </p>
+        </>
+      )}
     </>
   );
 }
