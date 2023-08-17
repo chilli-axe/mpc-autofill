@@ -6,7 +6,7 @@ import Modal from "react-bootstrap/Modal";
 import { useGetSampleCardsQuery } from "@/app/api";
 import { Card } from "@/common/constants";
 import { Slots, useAppDispatch } from "@/common/types";
-import { bulkSetQuery } from "@/features/project/projectSlice";
+import { bulkClearQuery, bulkSetQuery } from "@/features/project/projectSlice";
 
 interface ChangeQueryModalProps {
   slots: Slots;
@@ -38,9 +38,13 @@ export function ChangeQueryModal({
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault(); // to avoid reloading the page
-    dispatch(
-      bulkSetQuery({ query: changeSelectedImageQueriesModalValue, slots })
-    );
+    if (changeSelectedImageQueriesModalValue.length > 0) {
+      dispatch(
+        bulkSetQuery({ query: changeSelectedImageQueriesModalValue, slots })
+      );
+    } else {
+      dispatch(bulkClearQuery({ slots }));
+    }
     handleClose();
   };
 
@@ -54,8 +58,15 @@ export function ChangeQueryModal({
         <Modal.Title>Change Query</Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        Type in a query to update the selected images with and hit <b>Submit</b>
-        .
+        <p>
+          Type in a query to update the{" "}
+          {slots.length > 1 ? "selected images" : "image"} with and hit{" "}
+          <b>Submit</b>.
+        </p>
+        <p>
+          Hit <b>Submit</b> without typing anything to clear{" "}
+          {slots.length > 1 ? "their" : "its"} query.
+        </p>
         <hr />
         <Form onSubmit={handleSubmit} id="changeSelectedImageQueriesForm">
           <Form.Group className="mb-3">
@@ -67,7 +78,6 @@ export function ChangeQueryModal({
               }
               value={changeSelectedImageQueriesModalValue}
               aria-label="change-selected-image-queries-text"
-              required={true}
               autoFocus={true}
             />
           </Form.Group>
