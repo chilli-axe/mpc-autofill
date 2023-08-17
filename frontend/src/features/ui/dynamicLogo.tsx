@@ -63,7 +63,8 @@ const DynamicLogoArrowWrapper = styled.div<{ animated?: boolean }>`
   height: 40%;
   position: absolute;
   left: 50%;
-  transform: translate3d(-50%, 0, 0);
+  transform: translate3d(-50%, -16%, 0);
+  opacity: 0;
   ${(props) =>
     props.animated === true &&
     css`
