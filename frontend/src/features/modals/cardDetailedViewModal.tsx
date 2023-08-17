@@ -5,11 +5,14 @@
  */
 
 import { saveAs } from "file-saver";
-import React, { memo } from "react";
+import React, { memo, useRef, useState } from "react";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
+import OverlayTrigger from "react-bootstrap/OverlayTrigger";
 import Row from "react-bootstrap/Row";
 import Table from "react-bootstrap/Table";
+import Tooltip from "react-bootstrap/Tooltip";
+import styled from "styled-components";
 
 import { api } from "@/app/api";
 import { base64StringToBlob } from "@/common/processing";
@@ -21,6 +24,16 @@ import {
 } from "@/features/card/card";
 import DisableSSR from "@/features/ui/disableSSR";
 import { Spinner } from "@/features/ui/spinner";
+
+const ClickToCopyIdentifier = styled.code`
+  user-select: none;
+  outline: solid 1px #ffffff00;
+  transition: outline 0.2s ease-in-out;
+  &:hover {
+    outline-color: #ffffffff;
+    cursor: pointer;
+  }
+`;
 
 interface CardDetailedViewProps {
   cardDocument: CardDocument;
@@ -38,6 +51,13 @@ export function CardDetailedViewModal({
 }: CardDetailedViewProps) {
   const [triggerFn, getGoogleDriveImageQuery] =
     api.endpoints.getGoogleDriveImage.useLazyQuery();
+
+  const [copied, setCopied] = useState<boolean>(false);
+  const copyIdentifier = () => {
+    navigator.clipboard.writeText(cardDocument.identifier);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1000);
+  };
 
   const downloadImage = async () => {
     const response = await triggerFn(cardDocument.identifier);
@@ -94,7 +114,7 @@ export function CardDetailedViewModal({
                           {cardDocument.source_name}
                         </a>
                       ) : (
-                        <a>{cardDocument.source_name}</a>
+                        <p>{cardDocument.source_name}</p>
                       )}
                     </td>
                   </tr>
@@ -118,7 +138,19 @@ export function CardDetailedViewModal({
                       <b>Identifier</b>
                     </td>
                     <td>
-                      <code>{cardDocument.identifier}</code>
+                      <OverlayTrigger
+                        defaultShow={false}
+                        placement="top"
+                        overlay={
+                          <Tooltip id="image-identifier">
+                            {copied ? "Copied!" : "Click to copy"}
+                          </Tooltip>
+                        }
+                      >
+                        <ClickToCopyIdentifier onClick={copyIdentifier}>
+                          {cardDocument.identifier}
+                        </ClickToCopyIdentifier>
+                      </OverlayTrigger>
                     </td>
                   </tr>
                   <tr>

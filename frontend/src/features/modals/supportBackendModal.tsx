@@ -2,20 +2,10 @@ import React from "react";
 import Alert from "react-bootstrap/Alert";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
-import Table from "react-bootstrap/Table";
-import styled from "styled-components";
 
 import { useGetBackendInfoQuery } from "@/app/api";
 import { Spinner } from "@/features/ui/spinner";
-
-// TODO: move these into a common styling place rather than copy/pasting.
-const TableWrapper = styled.div`
-  max-width: 100%;
-  overflow-x: scroll;
-`;
-const AutoLayoutTable = styled(Table)`
-  table-layout: auto;
-`;
+import { AutoLayoutTable, TableWrapper } from "@/features/ui/styledComponents";
 
 interface SupportBackendModalProps {
   show: boolean;

@@ -1,21 +1,12 @@
 import Link from "next/link";
 import React from "react";
-import Table from "react-bootstrap/Table";
-import styled from "styled-components";
 
 import { useGetBackendInfoQuery, useGetContributionsQuery } from "@/app/api";
 import { Card, Cardback, ProjectName, Token } from "@/common/constants";
 import { SourceContribution } from "@/common/types";
 import { useProjectName } from "@/features/backend/backendSlice";
 import { Spinner } from "@/features/ui/spinner";
-
-const TableWrapper = styled.div`
-  max-width: 100%;
-  overflow-x: scroll;
-`;
-const AutoLayoutTable = styled(Table)`
-  table-layout: auto;
-`;
+import { AutoLayoutTable, TableWrapper } from "@/features/ui/styledComponents";
 
 export function ContributionsSummary() {
   const contributionsQuery = useGetContributionsQuery();
@@ -44,7 +35,10 @@ export function ContributionsSummary() {
     ])
   );
 
-  return backendInfoQuery.isSuccess ? (
+  return contributionsQuery.isFetching ||
+    contributionsQuery.data?.sources == null ? (
+    <Spinner />
+  ) : (
     <>
       <h2>{projectName} Contributions</h2>
       <p>
@@ -53,7 +47,7 @@ export function ContributionsSummary() {
         comprised of <b>{formattedImagesByCardType[Card]}</b> cards,{" "}
         <b>{formattedImagesByCardType[Cardback]}</b> cardbacks, and{" "}
         <b>{formattedImagesByCardType[Token]}</b> tokens &mdash; from{" "}
-        <b>{(contributionsQuery.data?.sources ?? []).length}</b> sources.
+        <b>{(contributionsQuery.data.sources ?? []).length}</b> sources.
       </p>
       <p>
         {ProjectName} databases are typically synced with all sources every day
@@ -61,8 +55,6 @@ export function ContributionsSummary() {
         timely manner.
       </p>
     </>
-  ) : (
-    <br />
   );
 }
 
@@ -111,32 +103,28 @@ function SourceContributionRow({ contribution }: SourceContributionRowProps) {
 export function ContributionsPerSource() {
   const contributionsQuery = useGetContributionsQuery();
 
-  return contributionsQuery.isSuccess ? (
-    contributionsQuery.isFetching ||
+  return contributionsQuery.isFetching ||
     contributionsQuery.data?.sources == null ? (
-      <Spinner />
-    ) : (
-      <TableWrapper>
-        <AutoLayoutTable>
-          <thead>
-            <tr>
-              <th className="prevent-select">Name</th>
-              <th className="prevent-select">Type</th>
-              <th className="prevent-select">Contribution</th>
-            </tr>
-          </thead>
-          <tbody>
-            {contributionsQuery.data.sources.map((contribution) => (
-              <SourceContributionRow
-                key={`${contribution.name}-row`}
-                contribution={contribution}
-              />
-            ))}
-          </tbody>
-        </AutoLayoutTable>
-      </TableWrapper>
-    )
+    <Spinner />
   ) : (
-    <></>
+    <TableWrapper>
+      <AutoLayoutTable>
+        <thead>
+          <tr>
+            <th className="prevent-select">Name</th>
+            <th className="prevent-select">Type</th>
+            <th className="prevent-select">Contribution</th>
+          </tr>
+        </thead>
+        <tbody>
+          {contributionsQuery.data.sources.map((contribution) => (
+            <SourceContributionRow
+              key={`${contribution.name}-row`}
+              contribution={contribution}
+            />
+          ))}
+        </tbody>
+      </AutoLayoutTable>
+    </TableWrapper>
   );
 }

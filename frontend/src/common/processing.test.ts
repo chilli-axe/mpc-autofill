@@ -68,7 +68,7 @@ test("empty prefix is processed correctly", () => {
 });
 
 test("line that doesn't specify quantity is processed correctly", () => {
-  expect(processLine("opt", dfcPairs)).toStrictEqual([
+  expect(processLine("opt", dfcPairs, false)).toStrictEqual([
     1,
     {
       query: { card_type: Card, query: "opt" },
@@ -80,7 +80,7 @@ test("line that doesn't specify quantity is processed correctly", () => {
 });
 
 test("non-dfc line is processed correctly", () => {
-  expect(processLine("3x Lightning Bolt", dfcPairs)).toStrictEqual([
+  expect(processLine("3x Lightning Bolt", dfcPairs, false)).toStrictEqual([
     3,
     {
       query: { card_type: Card, query: "lightning bolt" },
@@ -92,7 +92,7 @@ test("non-dfc line is processed correctly", () => {
 });
 
 test("non-dfc cardback line is processed correctly", () => {
-  expect(processLine("3x b:Black Lotus", dfcPairs)).toStrictEqual([
+  expect(processLine("3x b:Black Lotus", dfcPairs, false)).toStrictEqual([
     3,
     {
       query: { card_type: Cardback, query: "black lotus" },
@@ -104,7 +104,7 @@ test("non-dfc cardback line is processed correctly", () => {
 });
 
 test("manually specified front and back line is processed correctly", () => {
-  expect(processLine("5 Opt | Char", dfcPairs)).toStrictEqual([
+  expect(processLine("5 Opt | Char", dfcPairs, false)).toStrictEqual([
     5,
     {
       query: { card_type: Card, query: "opt" },
@@ -120,7 +120,9 @@ test("manually specified front and back line is processed correctly", () => {
 });
 
 test("line that matches to dfc pair is processed correctly", () => {
-  expect(processLine("2 Huntmaster of the Fells", dfcPairs)).toStrictEqual([
+  expect(
+    processLine("2 Huntmaster of the Fells", dfcPairs, false)
+  ).toStrictEqual([
     2,
     {
       query: { card_type: Card, query: "huntmaster of the fells" },
@@ -135,9 +137,51 @@ test("line that matches to dfc pair is processed correctly", () => {
   ]);
 });
 
+test("line that fuzzy matches to dfc pair is processed correctly", () => {
+  expect(processLine("2 bat", { batman: "ratman" }, true)).toStrictEqual([
+    2,
+    {
+      query: { card_type: Card, query: "bat" },
+      selectedImage: undefined,
+      selected: false,
+    },
+    {
+      query: { card_type: Card, query: "ratman" },
+      selectedImage: undefined,
+      selected: false,
+    },
+  ]);
+});
+
+test("line that doesn't fuzzy match to dfc pair is processed correctly", () => {
+  expect(processLine("2 cat", { batman: "ratman" }, true)).toStrictEqual([
+    2,
+    {
+      query: { card_type: Card, query: "cat" },
+      selectedImage: undefined,
+      selected: false,
+    },
+    null,
+  ]);
+});
+
+test("line that fuzzy matches ambiguously to dfc pair is processed correctly", () => {
+  expect(
+    processLine("2 bat", { batman: "ratman", batwoman: "ratwoman" }, true)
+  ).toStrictEqual([
+    2,
+    {
+      query: { card_type: Card, query: "bat" },
+      selectedImage: undefined,
+      selected: false,
+    },
+    null, // ambiguous -> no match
+  ]);
+});
+
 test("line that matches to dfc pair but a back is also manually specified is processed correctly", () => {
   expect(
-    processLine("2 Huntmaster of the Fells | t:Goblin", dfcPairs)
+    processLine("2 Huntmaster of the Fells | t:Goblin", dfcPairs, false)
   ).toStrictEqual([
     2,
     {
@@ -155,9 +199,13 @@ test("line that matches to dfc pair but a back is also manually specified is pro
 
 test("a card name that's a subset of a DFC pair's front is not matched", () => {
   expect(
-    processStringAsMultipleLines("1 elesh norn\n1 elesh norn, grand cenobite", {
-      "elesh norn": "the argent etchings",
-    })
+    processStringAsMultipleLines(
+      "1 elesh norn\n1 elesh norn, grand cenobite",
+      {
+        "elesh norn": "the argent etchings",
+      },
+      false
+    )
   ).toStrictEqual([
     [
       1,
@@ -185,7 +233,7 @@ test("a card name that's a subset of a DFC pair's front is not matched", () => {
 });
 
 test("line that requests 0 of a card is processed correctly", () => {
-  expect(processLine("0 opt", dfcPairs)).toStrictEqual([
+  expect(processLine("0 opt", dfcPairs, false)).toStrictEqual([
     0,
     {
       query: { card_type: Card, query: "opt" },
@@ -197,7 +245,7 @@ test("line that requests 0 of a card is processed correctly", () => {
 });
 
 test("line that requests -1 of a card is processed correctly", () => {
-  expect(processLine("-1 opt", dfcPairs)).toStrictEqual([
+  expect(processLine("-1 opt", dfcPairs, false)).toStrictEqual([
     1,
     {
       query: { card_type: Card, query: "-1 opt" },
@@ -212,7 +260,8 @@ test("multiple lines processed correctly", () => {
   expect(
     processStringAsMultipleLines(
       "char\n0 lightning bolt\n2x delver of secrets",
-      dfcPairs
+      dfcPairs,
+      false
     )
   ).toStrictEqual([
     [
@@ -241,7 +290,7 @@ test("multiple lines processed correctly", () => {
 });
 
 test("a line specifying the selected image ID for the front is processed correctly", () => {
-  expect(processLine("opt@xyz", dfcPairs)).toStrictEqual([
+  expect(processLine("opt@xyz", dfcPairs, false)).toStrictEqual([
     1,
     {
       query: { card_type: Card, query: "opt" },
@@ -253,7 +302,7 @@ test("a line specifying the selected image ID for the front is processed correct
 });
 
 test("a line specifying the selected image ID for both faces is processed correctly", () => {
-  expect(processLine("2 opt@xyz | char@abcd", dfcPairs)).toStrictEqual([
+  expect(processLine("2 opt@xyz | char@abcd", dfcPairs, false)).toStrictEqual([
     2,
     {
       query: { card_type: Card, query: "opt" },

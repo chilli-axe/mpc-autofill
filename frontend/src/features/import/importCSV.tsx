@@ -2,13 +2,13 @@
  * This component is the CSV-based entrypoint for cards into the project editor.
  * The component displays a CSV schema which the uploaded file should follow.
  * A dropzone is exposed for the user to either drag-and-drop or select their file with.
- * Broadly similar to text-based input, but allows specifying the preferred image for each
- * row (front and back) - the image will be selected if included in the search results.
+ * Supports the same functionality as text-based input, but users might prefer this
+ * for repeatability.
  */
 
 // @ts-ignore // TODO: put a PR into this repo adding types
 import { parse } from "lil-csv";
-import React, { useState } from "react";
+import React, { PropsWithChildren, ReactElement, useState } from "react";
 import Button from "react-bootstrap/Button";
 import Dropdown from "react-bootstrap/Dropdown";
 import Modal from "react-bootstrap/Modal";
@@ -24,11 +24,10 @@ import {
 } from "@/common/processing";
 import { useAppDispatch, useAppSelector } from "@/common/types";
 import { addMembers, selectProjectSize } from "@/features/project/projectSlice";
+import { selectFuzzySearch } from "@/features/searchSettings/searchSettingsSlice";
+import { setError } from "@/features/toasts/toastsSlice";
+import { RightPaddedIcon, TableWrapper } from "@/features/ui/styledComponents";
 
-const TableWrapper = styled.div`
-  max-width: 100%;
-  overflow-x: scroll;
-`;
 const BorderedTable = styled(Table)`
   border-style: solid;
   border-color: #333333;
@@ -44,53 +43,65 @@ const FormattedColumnData = styled.td`
   text-align: center;
 `;
 
-// TODO: typescript enums don't allow for reverse lookup :(
-enum CSVHeaders {
-  quantity = "Quantity",
-  frontQuery = "Front",
-  frontSelectedImage = "Front ID",
-  backQuery = "Back",
-  backSelectedImage = "Back ID",
+const CSVHeaders: { [key: string]: string } = {
+  quantity: "Quantity",
+  frontQuery: "Front",
+  frontSelectedImage: "Front ID",
+  backQuery: "Back",
+  backSelectedImage: "Back ID",
+};
+
+function CSVTable({ children }: PropsWithChildren) {
+  /**
+   * A simple component for representing the CSV format.
+   */
+
+  return (
+    <TableWrapper>
+      <BorderedTable bordered={true}>
+        <thead>
+          {Object.values(CSVHeaders).map((column) => (
+            <FormattedColumnHeader key={column}>{column}</FormattedColumnHeader>
+          ))}
+        </thead>
+        <tbody>{children}</tbody>
+      </BorderedTable>
+    </TableWrapper>
+  );
 }
 
 function CSVFormat() {
-  // TODO: some strings are defined in a few places in this file. consolidate them
+  /**
+   * Instruct the user on how to format their CSV files.
+   */
+
   return (
     <>
-      <TableWrapper>
-        <BorderedTable bordered={true}>
-          <thead>
-            <FormattedColumnHeader>Quantity</FormattedColumnHeader>
-            <FormattedColumnHeader>Front</FormattedColumnHeader>
-            <FormattedColumnHeader>Front ID</FormattedColumnHeader>
-            <FormattedColumnHeader>Back</FormattedColumnHeader>
-            <FormattedColumnHeader>Back ID</FormattedColumnHeader>
-          </thead>
-          <tbody>
-            {Array(3).fill(<tr>{Array(5).fill(<FormattedColumnData />)}</tr>)}
-          </tbody>
-        </BorderedTable>
-      </TableWrapper>
+      <CSVTable>
+        {Array(3).fill(<tr>{Array(5).fill(<FormattedColumnData />)}</tr>)}
+      </CSVTable>
       Where the columns follow these rules:
       <ul>
         <li>
-          <b>Quantity</b>: The quantity to include of this row. Must be greater
-          than 0. Can be blank &mdash; if blank, a quantity of 1 will be
-          assumed.
+          <b>{CSVHeaders.quantity}</b>: The quantity to include of this row.
+          Must be greater than 0. Can be blank &mdash; if blank, a quantity of 1
+          will be assumed.
         </li>
         <li>
-          <b>Front</b>: Search query for card front. <b>Cannot be blank.</b>
+          <b>{CSVHeaders.frontQuery}</b>: Search query for card front.{" "}
+          <b>Cannot be blank.</b>
         </li>
         <li>
-          <b>Front ID</b>: If this image is in the front search results, it will
-          be pre-selected. Can be blank.
+          <b>{CSVHeaders.frontSelectedImage}</b>: If this image is in the front
+          search results, it will be pre-selected. Can be blank.
         </li>
         <li>
-          <b>Front</b>: Search query for card back. Can be blank.
+          <b>{CSVHeaders.backQuery}</b>: Search query for card back. Can be
+          blank.
         </li>
         <li>
-          <b>Front ID</b>: If this image is in the back search results, it will
-          be pre-selected. Can be blank.
+          <b>{CSVHeaders.backSelectedImage}</b>: If this image is in the back
+          search results, it will be pre-selected. Can be blank.
         </li>
       </ul>
     </>
@@ -99,92 +110,85 @@ function CSVFormat() {
 
 function SampleCSV() {
   return (
-    <TableWrapper>
-      <BorderedTable bordered={true}>
-        <thead>
-          <FormattedColumnHeader>Quantity</FormattedColumnHeader>
-          <FormattedColumnHeader>Front</FormattedColumnHeader>
-          <FormattedColumnHeader>Front ID</FormattedColumnHeader>
-          <FormattedColumnHeader>Back</FormattedColumnHeader>
-          <FormattedColumnHeader>Back ID</FormattedColumnHeader>
-        </thead>
-        <tbody>
-          <tr>
-            <FormattedColumnData>
-              <code>2</code>
-            </FormattedColumnData>
-            <FormattedColumnData>
-              <code>island</code>
-            </FormattedColumnData>
-            <FormattedColumnData>
-              <code>1HsvTYs1...</code>
-            </FormattedColumnData>
-            <FormattedColumnData>
-              <code>forest</code>
-            </FormattedColumnData>
-            <FormattedColumnData />
-          </tr>
-          <tr>
-            <FormattedColumnData>
-              <code>3</code>
-            </FormattedColumnData>
-            <FormattedColumnData>
-              <code>t:goblin</code>
-            </FormattedColumnData>
-            <FormattedColumnData />
-            <FormattedColumnData />
-            <FormattedColumnData>
-              <code>1JtXL6Ca...</code>
-            </FormattedColumnData>
-          </tr>
-        </tbody>
-      </BorderedTable>
-    </TableWrapper>
+    <CSVTable>
+      <tr>
+        <FormattedColumnData>
+          <code>2</code>
+        </FormattedColumnData>
+        <FormattedColumnData>
+          <code>island</code>
+        </FormattedColumnData>
+        <FormattedColumnData>
+          <code>1HsvTYs1...</code>
+        </FormattedColumnData>
+        <FormattedColumnData>
+          <code>forest</code>
+        </FormattedColumnData>
+        <FormattedColumnData />
+      </tr>
+      <tr>
+        <FormattedColumnData>
+          <code>3</code>
+        </FormattedColumnData>
+        <FormattedColumnData>
+          <code>t:goblin</code>
+        </FormattedColumnData>
+        <FormattedColumnData />
+        <FormattedColumnData />
+        <FormattedColumnData>
+          <code>1JtXL6Ca...</code>
+        </FormattedColumnData>
+      </tr>
+    </CSVTable>
   );
 }
 
 export function ImportCSV() {
   const dispatch = useAppDispatch();
   const dfcPairsQuery = useGetDFCPairsQuery();
-  const [showCSVModal, setShowCSVModal] = useState(false);
+  const [showCSVModal, setShowCSVModal] = useState<boolean>(false);
   const handleCloseCSVModal = () => setShowCSVModal(false);
   const handleShowCSVModal = () => setShowCSVModal(true);
+
+  const fuzzySearch = useAppSelector(selectFuzzySearch);
 
   const projectSize = useAppSelector(selectProjectSize);
 
   const parseCSVFile = (fileContents: string | ArrayBuffer | null) => {
     if (typeof fileContents !== "string") {
-      alert("invalid CSV file uploaded");
-      // TODO: error messaging to the user that they've uploaded an invalid file
+      dispatch(
+        setError([
+          "invalid-csv-contents",
+          {
+            name: "Invalid CSV file",
+            message:
+              "The contents of the uploaded file did not match the expected text format.",
+          },
+        ])
+      );
       return;
     }
-    const quantityProperty = "quantity";
-    const frontQueryProperty = "frontQuery";
-    const frontSelectedImageProperty = "frontSelectedImage";
-    const backQueryProperty = "backQuery";
-    const backSelectedImageProperty = "backSelectedImage";
 
     const rows = parse(fileContents, {
-      header: {
-        Quantity: quantityProperty,
-        Front: frontQueryProperty,
-        "Front ID": frontSelectedImageProperty,
-        Back: backQueryProperty,
-        "Back ID": backSelectedImageProperty,
-      },
+      header: Object.fromEntries(
+        Object.entries(CSVHeaders).map(([key, value]) => [value, key])
+      ),
     });
-
-    const formatCSVRowAsLine = (x: any): string => {
-      let formattedLine = `${x[quantityProperty] ?? ""} ${
-        x[frontQueryProperty] ?? ""
-      }`;
-      if ((x[frontSelectedImageProperty] ?? "").length > 0) {
-        formattedLine += `${SelectedImageSeparator}${x[frontSelectedImageProperty]}`;
+    const formatCSVRowAsLine = (x: {
+      quantity: string | null;
+      frontQuery: string | null;
+      frontSelectedImage: string | null;
+      backQuery: string | null;
+      backSelectedImage: string | null;
+    }): string => {
+      let formattedLine = `${x.quantity ?? ""} ${x.frontQuery ?? ""}`;
+      if ((x.frontSelectedImage ?? "").length > 0) {
+        formattedLine += `${SelectedImageSeparator}${x.frontSelectedImage}`;
       }
-      if ((x[backQueryProperty] ?? "").length > 0) {
-        formattedLine += ` ${FaceSeparator} ${x[backQueryProperty]}`;
-        if ((x[backSelectedImageProperty] ?? "").length > 0) {
-          formattedLine += `${SelectedImageSeparator}${x[backSelectedImageProperty]}`;
+      if ((x.backQuery ?? "").length > 0) {
+        formattedLine += ` ${FaceSeparator} ${x.backQuery}`;
+        if ((x.backSelectedImage ?? "").length > 0) {
+          formattedLine += `${SelectedImageSeparator}${x.backSelectedImage}`;
         }
       }
       return formattedLine;
@@ -192,7 +196,8 @@ export function ImportCSV() {
 
     const processedLines = processLines(
       rows.map(formatCSVRowAsLine),
-      dfcPairsQuery.data ?? {}
+      dfcPairsQuery.data ?? {},
+      fuzzySearch
     );
     dispatch(
       addMembers({
@@ -208,11 +213,7 @@ export function ImportCSV() {
   return (
     <>
       <Dropdown.Item onClick={handleShowCSVModal}>
-        <i
-          className="bi bi-file-earmark-spreadsheet"
-          style={{ paddingRight: 0.5 + "em" }}
-        />{" "}
-        CSV
+        <RightPaddedIcon bootstrapIconName="file-earmark-spreadsheet" /> CSV
       </Dropdown.Item>
       <Modal
         show={showCSVModal}

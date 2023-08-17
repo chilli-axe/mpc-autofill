@@ -29,7 +29,7 @@ export const sourceDocument1: SourceDocument = {
   key: "source_1",
   name: "Source 1",
   identifier: "id_1",
-  source_type: "gdrive",
+  source_type: "Google Drive",
   external_link: null,
   description: "",
 };
@@ -39,7 +39,7 @@ export const sourceDocument2: SourceDocument = {
   key: "source_2",
   name: "Source 2",
   identifier: "id_2",
-  source_type: "gdrive",
+  source_type: "Google Drive",
   external_link: null,
   description: "",
 };
@@ -49,7 +49,7 @@ export const sourceDocument3: SourceDocument = {
   key: "source_3",
   name: "Source 3",
   identifier: "id_3",
-  source_type: "gdrive",
+  source_type: "Google Drive",
   external_link: null,
   description: "",
 };
@@ -59,7 +59,7 @@ export const sourceDocument4: SourceDocument = {
   key: "source_4",
   name: "Source 4",
   identifier: "id_4",
-  source_type: "gdrive",
+  source_type: "Google Drive",
   external_link: null,
   description: "",
 };

@@ -20,22 +20,25 @@ import {
 import { useAppDispatch, useAppSelector } from "@/common/types";
 import { useProjectName } from "@/features/backend/backendSlice";
 import { addMembers, selectProjectSize } from "@/features/project/projectSlice";
+import { selectFuzzySearch } from "@/features/searchSettings/searchSettingsSlice";
+import { setError } from "@/features/toasts/toastsSlice";
 import { Spinner } from "@/features/ui/spinner";
+import { RightPaddedIcon } from "@/features/ui/styledComponents";
 
 export function ImportURL() {
   const dfcPairsQuery = useGetDFCPairsQuery();
   const importSitesQuery = useGetImportSitesQuery();
   const projectName = useProjectName();
+  const fuzzySearch = useAppSelector(selectFuzzySearch);
 
   const projectSize = useAppSelector(selectProjectSize);
   const dispatch = useAppDispatch();
 
-  // TODO: should probably set up type hints for all `useState` usages throughout the app
-  const [showURLModal, setShowURLModal] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [showURLModal, setShowURLModal] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
   const handleCloseURLModal = () => setShowURLModal(false);
   const handleShowURLModal = () => setShowURLModal(true);
-  const [URLModalValue, setURLModalValue] = useState("");
+  const [URLModalValue, setURLModalValue] = useState<string>("");
 
   const [triggerFn, queryImportSiteQuery] =
     api.endpoints.queryImportSite.useLazyQuery();
@@ -48,7 +51,8 @@ export function ImportURL() {
         const query = await triggerFn(URLModalValue);
         const processedLines = processStringAsMultipleLines(
           query.data ?? "",
-          dfcPairsQuery.data ?? {}
+          dfcPairsQuery.data ?? {},
+          fuzzySearch
         );
         dispatch(
           addMembers({
@@ -60,18 +64,32 @@ export function ImportURL() {
         );
         handleCloseURLModal();
       } catch (error: any) {
-        alert("error"); // TODO: handle errors here
+        dispatch(
+          setError([
+            "url-import-error",
+            {
+              name: "URL Import Error",
+              message: `An unexpected error occurred while processing your decklist: ${error.message}`,
+            },
+          ])
+        );
       } finally {
         setLoading(false);
       }
     }
-  }, [URLModalValue]);
+  }, [
+    dispatch,
+    URLModalValue,
+    dfcPairsQuery.data,
+    projectSize,
+    triggerFn,
+    fuzzySearch,
+  ]);
 
   return (
     <>
       <Dropdown.Item onClick={handleShowURLModal}>
-        <i className="bi bi-link-45deg" style={{ paddingRight: 0.5 + "em" }} />{" "}
-        URL
+        <RightPaddedIcon bootstrapIconName="link-45deg" /> URL
       </Dropdown.Item>
       <Modal
         show={loading || showURLModal}

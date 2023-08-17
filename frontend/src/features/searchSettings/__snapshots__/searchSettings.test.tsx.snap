@@ -1,6 +1,11 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`the html structure of search settings 1`] = `
+.c0 {
+  font-size: 1em;
+  cursor: pointer;
+}
+
 <div
   class="modal-dialog"
   data-testid="search-settings"
@@ -263,14 +268,12 @@ exports[`the html structure of search settings 1`] = `
               >
                 <div>
                   <i
-                    class="bi bi-chevron-double-up"
-                    style="font-size: 1em; cursor: pointer;"
+                    class="c0 bi bi-chevron-double-up"
                   />
                 </div>
                 <div>
                   <i
-                    class="bi bi-chevron-double-down"
-                    style="font-size: 1em; cursor: pointer;"
+                    class="c0 bi bi-chevron-double-down"
                   />
                 </div>
               </td>
@@ -332,14 +335,12 @@ exports[`the html structure of search settings 1`] = `
               >
                 <div>
                   <i
-                    class="bi bi-chevron-double-up"
-                    style="font-size: 1em; cursor: pointer;"
+                    class="c0 bi bi-chevron-double-up"
                   />
                 </div>
                 <div>
                   <i
-                    class="bi bi-chevron-double-down"
-                    style="font-size: 1em; cursor: pointer;"
+                    class="c0 bi bi-chevron-double-down"
                   />
                 </div>
               </td>
@@ -401,14 +402,12 @@ exports[`the html structure of search settings 1`] = `
               >
                 <div>
                   <i
-                    class="bi bi-chevron-double-up"
-                    style="font-size: 1em; cursor: pointer;"
+                    class="c0 bi bi-chevron-double-up"
                   />
                 </div>
                 <div>
                   <i
-                    class="bi bi-chevron-double-down"
-                    style="font-size: 1em; cursor: pointer;"
+                    class="c0 bi bi-chevron-double-down"
                   />
                 </div>
               </td>

@@ -1,6 +1,3 @@
-// TODO: set up the below API calls to use best practices with handling all cases `fetch` can return
-// TODO: read this http://florimond.dev/en/posts/2018/08/restful-api-design-13-best-practices-to-make-your-users-happy/
-// Need to use the React-specific entry point to allow generating React hooks
 import {
   BaseQueryFn,
   createApi,
@@ -40,7 +37,6 @@ const dynamicBaseQuery: BaseQueryFn<
   return rawBaseQuery(args, WebApi, extraOptions);
 };
 
-// TODO: consider splitting the API across multiple files for readability
 export const api = createApi({
   reducerPath: "api",
   baseQuery: dynamicBaseQuery,

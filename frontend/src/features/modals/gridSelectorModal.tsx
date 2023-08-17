@@ -19,6 +19,7 @@ import { CardDocument, useAppDispatch, useAppSelector } from "@/common/types";
 import { MemoizedEditorCard } from "@/features/card/card";
 import { selectCardDocumentsByIdentifier } from "@/features/search/cardDocumentsSlice";
 import { selectSourceNamesByKey } from "@/features/search/sourceDocumentsSlice";
+import { RightPaddedIcon } from "@/features/ui/styledComponents";
 import {
   makeAllSourcesInvisible,
   makeAllSourcesVisible,
@@ -262,11 +263,10 @@ export function GridSelectorModal({
                     )
                   }
                 >
-                  <i
-                    className={`bi bi-arrows-${
+                  <RightPaddedIcon
+                    bootstrapIconName={`arrows-${
                       anySourcesCollapsed ? "expand" : "collapse"
                     }`}
-                    style={{ paddingRight: 0.5 + "em" }}
                   />{" "}
                   {anySourcesCollapsed ? "Expand" : "Collapse"} All
                 </Button>

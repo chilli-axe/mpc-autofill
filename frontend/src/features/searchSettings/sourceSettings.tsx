@@ -14,6 +14,7 @@ import React, { ReactNode, useCallback } from "react";
 import Table from "react-bootstrap/Table";
 // @ts-ignore: https://github.com/arnthor3/react-bootstrap-toggle/issues/21
 import Toggle from "react-bootstrap-toggle";
+import styled from "styled-components";
 
 import { ToggleButtonHeight } from "@/common/constants";
 import {
@@ -23,6 +24,11 @@ import {
 } from "@/common/types";
 import { selectSourceDocuments } from "@/features/search/sourceDocumentsSlice";
 import { Spinner } from "@/features/ui/spinner";
+
+const Chevron = styled.i`
+  font-size: 1em;
+  cursor: pointer;
+`;
 
 interface SourceSettingsProps {
   sourceSettings: SourceSettingsType;
@@ -149,20 +155,18 @@ export function SourceSettings({
                 }}
               >
                 <div>
-                  <i
+                  <Chevron
                     key={`${sourceRow[0]}-up-button`}
                     className="bi bi-chevron-double-up"
-                    style={{ fontSize: 1 + "em", cursor: "pointer" }}
                     onClick={() => {
                       moveSourceToIndex(index, 0);
                     }}
                   />
                 </div>
                 <div>
-                  <i
+                  <Chevron
                     key={`${sourceRow[0]}-down-button`}
                     className="bi bi-chevron-double-down"
-                    style={{ fontSize: 1 + "em", cursor: "pointer" }}
                     onClick={() => {
                       moveSourceToIndex(
                         index,

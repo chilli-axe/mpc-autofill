@@ -16,6 +16,21 @@ exports[`the html structure of a CardDetailedViewModal 1`] = `
   border: solid 0px black;
 }
 
+.c2 {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  outline: solid 1px #ffffff00;
+  -webkit-transition: outline 0.2s ease-in-out;
+  transition: outline 0.2s ease-in-out;
+}
+
+.c2:hover {
+  outline-color: #ffffffff;
+  cursor: pointer;
+}
+
 <div
   class="modal-dialog modal-xl"
   data-testid="detailed-view"
@@ -78,9 +93,9 @@ exports[`the html structure of a CardDetailedViewModal 1`] = `
                   </b>
                 </td>
                 <td>
-                  <a>
+                  <p>
                     Source 1
-                  </a>
+                  </p>
                 </td>
               </tr>
               <tr>
@@ -110,7 +125,9 @@ exports[`the html structure of a CardDetailedViewModal 1`] = `
                   </b>
                 </td>
                 <td>
-                  <code>
+                  <code
+                    class="c2"
+                  >
                     abc123
                   </code>
                 </td>

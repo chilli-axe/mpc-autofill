@@ -1,6 +1,6 @@
 /**
  * This component exposes a bootstrap Alert to display the number of selected images
- * and facilitate operating on the selected images in bulk - updating their queries,
+ * and facilitates operating on the selected images in bulk - updating their queries,
  * setting their selected versions, or deleting them from the project.
  */
 
@@ -22,28 +22,22 @@ import {
   selectSelectedSlots,
 } from "@/features/project/projectSlice";
 import { selectSearchResultsForQueryOrDefault } from "@/features/search/searchResultsSlice";
+import { RightPaddedIcon } from "@/features/ui/styledComponents";
 
 function ChangeSelectedImageSelectedImages({ slots }: { slots: Slots }) {
   /**
    * sorry for the stupid naming convention here 🗿
    */
 
-  // TODO: this component is fairly messy and should be tidied up
-
   const dispatch = useAppDispatch();
 
-  const [
-    showChangeSelectedImageSelectedImagesModal,
-    setShowChangeSelectedImageSelectedImagesModal,
-  ] = useState<boolean>(false);
-  const handleCloseChangeSelectedImageSelectedImagesModal = () =>
-    setShowChangeSelectedImageSelectedImagesModal(false);
-  const handleShowChangeSelectedImageSelectedImagesModal = () =>
-    setShowChangeSelectedImageSelectedImagesModal(true);
+  const [showModal, setShowModal] = useState<boolean>(false);
+  const handleShowModal = () => setShowModal(true);
+  const handleHideModal = () => setShowModal(false);
 
-  const onSubmit = (selectedImage: string): void => {
+  const handleChangeImages = (selectedImage: string): void => {
     dispatch(bulkSetSelectedImage({ selectedImage, slots }));
-    handleCloseChangeSelectedImageSelectedImagesModal();
+    handleHideModal();
   };
 
   const query = useAppSelector((state) =>
@@ -62,19 +56,18 @@ function ChangeSelectedImageSelectedImages({ slots }: { slots: Slots }) {
         searchResultsForQueryOrDefault.length > 1 && (
           <Dropdown.Item
             className="text-decoration-none"
-            onClick={handleShowChangeSelectedImageSelectedImagesModal}
+            onClick={handleShowModal}
           >
-            <i className="bi bi-image" style={{ paddingRight: 0.5 + "em" }} />{" "}
-            Change Version
+            <RightPaddedIcon bootstrapIconName="image" /> Change Version
           </Dropdown.Item>
         )}
       {searchResultsForQueryOrDefault != null && (
         <GridSelectorModal
           testId="bulk-grid-selector"
           imageIdentifiers={searchResultsForQueryOrDefault}
-          show={showChangeSelectedImageSelectedImagesModal}
-          handleClose={handleCloseChangeSelectedImageSelectedImagesModal}
-          onClick={onSubmit}
+          show={showModal}
+          handleClose={handleHideModal}
+          onClick={handleChangeImages}
         />
       )}
     </>
@@ -84,21 +77,14 @@ function ChangeSelectedImageSelectedImages({ slots }: { slots: Slots }) {
 function ChangeSelectedImageQueries({ slots }: { slots: Slots }) {
   const dispatch = useAppDispatch();
 
-  const handleShowChangeSelectedImageQueriesModal = () => {
+  const handleShowModal = () => {
     dispatch(setSelectedSlotsAndShowModal([slots, "changeQuery"]));
   };
 
   return (
     <>
-      <Dropdown.Item
-        className="text-decoration-none"
-        onClick={handleShowChangeSelectedImageQueriesModal}
-      >
-        <i
-          className="bi bi-arrow-repeat"
-          style={{ paddingRight: 0.5 + "em" }}
-        />{" "}
-        Change Query
+      <Dropdown.Item className="text-decoration-none" onClick={handleShowModal}>
+        <RightPaddedIcon bootstrapIconName="arrow-repeat" /> Change Query
       </Dropdown.Item>
     </>
   );
@@ -109,8 +95,7 @@ function ClearSelectedImageQueries({ slots }: { slots: Slots }) {
   const onClick = () => dispatch(bulkClearQuery({ slots }));
   return (
     <Dropdown.Item onClick={onClick} className="text-decoration-none">
-      <i className="bi bi-slash-circle" style={{ paddingRight: 0.5 + "em" }} />{" "}
-      Clear Query
+      <RightPaddedIcon bootstrapIconName="slash-circle" /> Clear Query
     </Dropdown.Item>
   );
 }
@@ -123,8 +108,7 @@ function DeleteSelectedImages({ slots }: { slots: Slots }) {
 
   return (
     <Dropdown.Item onClick={onClick} className="text-decoration-none">
-      <i className="bi bi-x-circle" style={{ paddingRight: 0.5 + "em" }} />{" "}
-      Delete Slots
+      <RightPaddedIcon bootstrapIconName="x-circle" /> Delete Slots
     </Dropdown.Item>
   );
 }
