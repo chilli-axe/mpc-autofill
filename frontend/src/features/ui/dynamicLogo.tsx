@@ -71,7 +71,9 @@ const DynamicLogoArrowWrapper = styled.div<{ animated?: boolean }>`
     `}
 `;
 
-const ImageTransformWrapperBase = styled.div`
+const ImageTransformWrapperBase = styled.div<{
+  animated?: boolean;
+}>`
   position: absolute;
   height: 32.358%;
   width: 32.358%;
@@ -232,7 +234,10 @@ export function DynamicLogo() {
   useEffect(() => setLoading(false), []);
 
   const displayCards: Array<
-    [CardDocument | null, StyledComponent<"div", any>]
+    [
+      CardDocument | null,
+      StyledComponent<typeof ImageTransformWrapperBase, any>
+    ]
   > = [
     [
       sampleCardsQuery.isSuccess ? sampleCardsQuery.data["TOKEN"][0] : null,
