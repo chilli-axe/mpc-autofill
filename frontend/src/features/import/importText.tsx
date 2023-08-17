@@ -29,11 +29,14 @@ import {
 import { CardDocument, useAppDispatch, useAppSelector } from "@/common/types";
 import { toTitleCase } from "@/common/utils";
 import { addMembers, selectProjectSize } from "@/features/project/projectSlice";
+import { selectFuzzySearch } from "@/features/searchSettings/searchSettingsSlice";
 import { RightPaddedIcon } from "@/features/ui/styledComponents";
 
 export function ImportText() {
   const sampleCardsQuery = useGetSampleCardsQuery();
   const dfcPairsQuery = useGetDFCPairsQuery();
+
+  const fuzzySearch = useAppSelector(selectFuzzySearch);
 
   const dispatch = useAppDispatch();
   const [showTextModal, setShowTextModal] = useState<boolean>(false);
@@ -82,7 +85,8 @@ export function ImportText() {
 
     const processedLines = processStringAsMultipleLines(
       textModalValue,
-      dfcPairsQuery.data ?? {}
+      dfcPairsQuery.data ?? {},
+      fuzzySearch
     );
     dispatch(
       addMembers({

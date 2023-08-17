@@ -20,6 +20,7 @@ import {
 import { useAppDispatch, useAppSelector } from "@/common/types";
 import { useProjectName } from "@/features/backend/backendSlice";
 import { addMembers, selectProjectSize } from "@/features/project/projectSlice";
+import { selectFuzzySearch } from "@/features/searchSettings/searchSettingsSlice";
 import { setError } from "@/features/toasts/toastsSlice";
 import { Spinner } from "@/features/ui/spinner";
 import { RightPaddedIcon } from "@/features/ui/styledComponents";
@@ -28,6 +29,7 @@ export function ImportURL() {
   const dfcPairsQuery = useGetDFCPairsQuery();
   const importSitesQuery = useGetImportSitesQuery();
   const projectName = useProjectName();
+  const fuzzySearch = useAppSelector(selectFuzzySearch);
 
   const projectSize = useAppSelector(selectProjectSize);
   const dispatch = useAppDispatch();
@@ -49,7 +51,8 @@ export function ImportURL() {
         const query = await triggerFn(URLModalValue);
         const processedLines = processStringAsMultipleLines(
           query.data ?? "",
-          dfcPairsQuery.data ?? {}
+          dfcPairsQuery.data ?? {},
+          fuzzySearch
         );
         dispatch(
           addMembers({
@@ -74,7 +77,14 @@ export function ImportURL() {
         setLoading(false);
       }
     }
-  }, [dispatch, URLModalValue, dfcPairsQuery.data, projectSize, triggerFn]);
+  }, [
+    dispatch,
+    URLModalValue,
+    dfcPairsQuery.data,
+    projectSize,
+    triggerFn,
+    fuzzySearch,
+  ]);
 
   return (
     <>

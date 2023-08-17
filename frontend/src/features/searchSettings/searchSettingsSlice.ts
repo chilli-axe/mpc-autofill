@@ -47,6 +47,8 @@ export default searchSettingsSlice.reducer;
 //# region selectors
 
 export const selectSearchSettings = (state: RootState) => state.searchSettings;
+export const selectFuzzySearch = (state: RootState) =>
+  state.searchSettings.searchTypeSettings.fuzzySearch;
 export const selectSearchSettingsSourcesValid = (state: RootState) =>
   state.searchSettings.sourceSettings.sources != null;
 

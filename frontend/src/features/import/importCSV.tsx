@@ -24,6 +24,7 @@ import {
 } from "@/common/processing";
 import { useAppDispatch, useAppSelector } from "@/common/types";
 import { addMembers, selectProjectSize } from "@/features/project/projectSlice";
+import { selectFuzzySearch } from "@/features/searchSettings/searchSettingsSlice";
 import { setError } from "@/features/toasts/toastsSlice";
 import { RightPaddedIcon, TableWrapper } from "@/features/ui/styledComponents";
 
@@ -149,6 +150,8 @@ export function ImportCSV() {
   const handleCloseCSVModal = () => setShowCSVModal(false);
   const handleShowCSVModal = () => setShowCSVModal(true);
 
+  const fuzzySearch = useAppSelector(selectFuzzySearch);
+
   const projectSize = useAppSelector(selectProjectSize);
 
   const parseCSVFile = (fileContents: string | ArrayBuffer | null) => {
@@ -193,7 +196,8 @@ export function ImportCSV() {
 
     const processedLines = processLines(
       rows.map(formatCSVRowAsLine),
-      dfcPairsQuery.data ?? {}
+      dfcPairsQuery.data ?? {},
+      fuzzySearch
     );
     dispatch(
       addMembers({
