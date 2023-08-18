@@ -5,6 +5,7 @@ from typing import Type
 from cardpicker.integrations import GameIntegration, ImportSite
 from cardpicker.models import DFCPair
 from cardpicker.sources.source_types import SourceTypeChoices
+from cardpicker.tests.factories import DFCPairFactory
 
 
 @dataclass
@@ -149,7 +150,7 @@ class DummyImportSite(ImportSite):
 class DummyIntegration(GameIntegration):
     @classmethod
     def get_dfc_pairs(cls) -> list[DFCPair]:
-        return []
+        return [DFCPairFactory(front="Ratman", back="Batman"), DFCPairFactory(front="Ratwoman", back="Batwoman")]
 
     @classmethod
     def get_import_sites(cls) -> list[Type[ImportSite]]:

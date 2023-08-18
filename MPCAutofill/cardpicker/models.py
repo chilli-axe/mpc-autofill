@@ -283,9 +283,7 @@ class Tag(models.Model):
 
 class DFCPair(models.Model):
     front = models.CharField(max_length=200, unique=True)
-    front_searchable = models.CharField(max_length=200, unique=True)
-    back = models.CharField(max_length=200, unique=True)
-    back_searchable = models.CharField(max_length=200, unique=True)
+    back = models.CharField(max_length=200)
 
     def __str__(self) -> str:
         return "{} // {}".format(self.front, self.back)

@@ -8,7 +8,6 @@ from django.core.management import call_command
 
 from cardpicker.integrations import GameIntegration
 from cardpicker.models import Card, CardTypes, DFCPair, Source, Tag
-from cardpicker.search.sanitisation import to_searchable
 from cardpicker.tests.constants import Cards, DummyIntegration, Sources
 from cardpicker.tests.factories import (
     CardFactory,
@@ -29,6 +28,7 @@ def django_settings(db, settings):
 def dummy_integration(settings, monkeypatch) -> Type[GameIntegration]:
     settings.GAME = DummyIntegration.__class__.__name__
     monkeypatch.setattr("cardpicker.views.get_configured_game_integration", lambda: DummyIntegration)
+    monkeypatch.setattr("cardpicker.dfc_pairs.get_configured_game_integration", lambda: DummyIntegration)
     return DummyIntegration
 
 
@@ -307,19 +307,9 @@ def all_cards(
 def dfc_pairs(db) -> list[DFCPair]:
     return [
         DFCPairFactory(
-            pk=0,
-            front=Cards.HUNTMASTER_OF_THE_FELLS.value.name,
-            front_searchable=to_searchable(Cards.HUNTMASTER_OF_THE_FELLS.value.name),
-            back=Cards.RAVAGER_OF_THE_FELLS.value.name,
-            back_searchable=to_searchable(Cards.RAVAGER_OF_THE_FELLS.value.name),
+            pk=0, front=Cards.HUNTMASTER_OF_THE_FELLS.value.name, back=Cards.RAVAGER_OF_THE_FELLS.value.name
         ),
-        DFCPairFactory(
-            pk=1,
-            front=Cards.DELVER_OF_SECRETS.value.name,
-            front_searchable=to_searchable(Cards.DELVER_OF_SECRETS.value.name),
-            back=Cards.INSECTILE_ABERRATION.value.name,
-            back_searchable=to_searchable(Cards.INSECTILE_ABERRATION.value.name),
-        ),
+        DFCPairFactory(pk=1, front=Cards.DELVER_OF_SECRETS.value.name, back=Cards.INSECTILE_ABERRATION.value.name),
     ]
 
 

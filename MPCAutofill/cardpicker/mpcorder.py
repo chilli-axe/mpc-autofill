@@ -250,7 +250,7 @@ class MPCOrder(abc.MutableMapping[str, Any]):
     def from_text(self, input_lines: str, offset: int = 0) -> int:
         # TODO: update naming for clarity, add docstring, etc.
         # populates MPCOrder from supplied text input
-        transforms = dict((x.front_searchable, x.back_searchable) for x in DFCPair.objects.all())
+        transforms = dict((to_searchable(x.front), to_searchable(x.back)) for x in DFCPair.objects.all())
         curr_slot = offset
 
         # loop over lines in the input text, and for each, parse it into usable information
@@ -305,7 +305,7 @@ class MPCOrder(abc.MutableMapping[str, Any]):
     def from_csv(self, csv_bytes: bytes) -> int:
         # TODO: as above, these return integer length of the cards added to the order (I think)
         # populates MPCOrder from supplied CSV bytes
-        transforms = dict((x.front_searchable, x.back_searchable) for x in DFCPair.objects.all())
+        transforms = dict((to_searchable(x.front), to_searchable(x.back)) for x in DFCPair.objects.all())
         # TODO: I'm sure this can be cleaned up a lot, the logic here is confusing and unintuitive
         curr_slot = 0
 

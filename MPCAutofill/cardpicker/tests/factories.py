@@ -9,11 +9,10 @@ from cardpicker.search.sanitisation import to_searchable
 class DFCPairFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.DFCPair
+        django_get_or_create = ("front",)
 
     front = factory.Sequence(lambda n: f"Front {n}")
-    front_searchable = factory.Sequence(lambda n: f"front {n}")
     back = factory.Sequence(lambda n: f"Back {n}")
-    back_searchable = factory.Sequence(lambda n: f"back {n}")
 
 
 class SourceFactory(factory.django.DjangoModelFactory):

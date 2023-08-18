@@ -7,7 +7,6 @@ import requests
 
 from cardpicker.integrations.base import GameIntegration, ImportSite
 from cardpicker.models import DFCPair
-from cardpicker.search.sanitisation import to_searchable
 from cardpicker.utils import get_json_endpoint_rate_limited
 
 # region import sites
@@ -266,14 +265,7 @@ class MTG(GameIntegration):
                 continue
             front_name = item["card_faces"][0]["name"]
             back_name = item["card_faces"][1]["name"]
-            dfc_pairs.append(
-                DFCPair(
-                    front=front_name,
-                    front_searchable=to_searchable(front_name),
-                    back=back_name,
-                    back_searchable=to_searchable(back_name),
-                )
-            )
+            dfc_pairs.append(DFCPair(front=front_name, back=back_name))
         return dfc_pairs
 
     @classmethod
@@ -302,14 +294,7 @@ class MTG(GameIntegration):
             if card_part["component"] == "meld_part":
                 is_top = "\n(Melds with " not in item["oracle_text"]
                 card_bit = "Top" if is_top else "Bottom"
-                dfc_pairs.append(
-                    DFCPair(
-                        front=item["name"],
-                        front_searchable=to_searchable(item["name"]),
-                        back=f"{meld_result} ({card_bit})",
-                        back_searchable=to_searchable(f"{meld_result} {card_bit}"),
-                    )
-                )
+                dfc_pairs.append(DFCPair(front=item["name"], back=f"{meld_result} {card_bit}"))
 
         return dfc_pairs
 

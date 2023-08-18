@@ -1,0 +1,6 @@
+# name: TestSyncDFCs.test_comprehensive_snapshot
+  list([
+    <DFCPair: Ratman // Batman>,
+    <DFCPair: Ratwoman // Batwoman>,
+  ])
+# ---
