@@ -6,7 +6,7 @@ from pytest_elasticsearch import factories
 
 from django.core.management import call_command
 
-from cardpicker.integrations import GameIntegration
+from cardpicker.integrations.base import GameIntegration
 from cardpicker.models import Card, CardTypes, DFCPair, Source, Tag
 from cardpicker.tests.constants import Cards, DummyIntegration, Sources
 from cardpicker.tests.factories import (
@@ -25,11 +25,20 @@ def django_settings(db, settings):
 
 
 @pytest.fixture()
-def dummy_integration(settings, monkeypatch) -> Type[GameIntegration]:
-    settings.GAME = DummyIntegration.__class__.__name__
-    monkeypatch.setattr("cardpicker.views.get_configured_game_integration", lambda: DummyIntegration)
-    monkeypatch.setattr("cardpicker.dfc_pairs.get_configured_game_integration", lambda: DummyIntegration)
-    return DummyIntegration
+def integration_setter(settings, monkeypatch):
+    # this uses a neat lil trick i picked up at work for creating "parametrised fixtures"
+    def _setter(integration: Type[GameIntegration]) -> Type[GameIntegration]:
+        settings.GAME = integration.__class__.__name__
+        monkeypatch.setattr("cardpicker.views.get_configured_game_integration", lambda: integration)
+        monkeypatch.setattr("cardpicker.dfc_pairs.get_configured_game_integration", lambda: integration)
+        return integration
+
+    return _setter
+
+
+@pytest.fixture()
+def dummy_integration(integration_setter) -> Type[GameIntegration]:
+    return integration_setter(DummyIntegration)
 
 
 @pytest.fixture(scope="session", autouse=True)
