@@ -381,3 +381,18 @@ class ProjectMember(models.Model):
 
     def to_dict(self) -> dict[str, Any]:
         return {"card_identifier": self.card_id, "query": self.query, "slot": self.slot, "face": self.face}
+
+
+__all__ = [
+    "Faces",
+    "CardTypes",
+    "Cardstocks",
+    "Source",
+    "summarise_contributions",
+    "Card",
+    "Tag",
+    "DFCPair",
+    "get_default_cardback",
+    "Project",
+    "ProjectMember",
+]

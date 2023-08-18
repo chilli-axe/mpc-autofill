@@ -1,10 +1,5 @@
 import pycountry
 
-DFC_SCRYFALL_QUERY = "is:dfc -layout:art_series -(layout:double_faced_token -keyword:transform) -is:reversible"
-MELD_SCRYFALL_QUERY = "is:meld"
-DFC_SCRYFALL_URL = f"https://api.scryfall.com/cards/search?q={DFC_SCRYFALL_QUERY}"
-MELD_SCRYFALL_URL = f"https://api.scryfall.com/cards/search?q={MELD_SCRYFALL_QUERY}"
-
 DATE_FORMAT = "jS F, Y"
 DEFAULT_LANGUAGE = pycountry.languages.get(alpha_2="EN")
 PAGE_SIZE = 10

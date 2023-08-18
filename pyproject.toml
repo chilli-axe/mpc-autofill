@@ -11,6 +11,7 @@ line-length = 120
 
 [tool.ruff]
 line-length = 120
+ignore-init-module-imports = true
 
 # Never enforce `E501` (line length violations).
 ignore = ["E501"]

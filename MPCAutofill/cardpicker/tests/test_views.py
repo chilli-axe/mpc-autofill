@@ -10,7 +10,7 @@ from syrupy import SnapshotAssertion
 from django.urls import reverse
 
 from cardpicker import views
-from cardpicker.tests.constants import Cards, Decks, Sources
+from cardpicker.tests.constants import Cards, DummyImportSite, Sources
 
 
 def snapshot_response(response: Response, snapshot: SnapshotAssertion):
@@ -344,7 +344,7 @@ class TestPostSearchResults:
         assert len(response.json()["results"][Cards.PAST_IN_FLAMES_1.value.name]["CARD"]) == 2
 
     def test_page_equal_to_max_size(self, client, monkeypatch, snapshot):
-        monkeypatch.setattr("cardpicker.utils.search_functions.SEARCH_RESULTS_PAGE_SIZE", 2)
+        monkeypatch.setattr("cardpicker.search.search_functions.SEARCH_RESULTS_PAGE_SIZE", 2)
         response = client.post(
             reverse(views.post_search_results),
             {
@@ -360,7 +360,7 @@ class TestPostSearchResults:
         assert response.status_code == 200
 
     def test_page_larger_than_max_size(self, client, monkeypatch, snapshot):
-        monkeypatch.setattr("cardpicker.utils.search_functions.SEARCH_RESULTS_PAGE_SIZE", 2)
+        monkeypatch.setattr("cardpicker.search.search_functions.SEARCH_RESULTS_PAGE_SIZE", 2)
         response = client.post(
             reverse(views.post_search_results),
             {
@@ -717,7 +717,7 @@ class TestPostCardbacks:
 
 
 class TestGetImportSites:
-    def test_get_multiple_sites(self, client, snapshot):
+    def test_get_multiple_sites(self, client, dummy_integration, snapshot):
         response = client.get(reverse(views.get_import_sites))
         snapshot_response(response, snapshot)
 
@@ -728,9 +728,16 @@ class TestGetImportSites:
 
 
 class TestPostImportSiteDecklist:
-    @pytest.mark.parametrize("url", [x.value for x in Decks])
-    def test_valid_url(self, client, django_settings, snapshot, url):
-        response = client.post(reverse(views.post_import_site_decklist), {"url": url}, content_type="application/json")
+    @pytest.fixture(autouse=True)
+    def autouse_dummy_integration(self, dummy_integration):
+        pass
+
+    def test_valid_url(self, client, django_settings, snapshot):
+        response = client.post(
+            reverse(views.post_import_site_decklist),
+            {"url": DummyImportSite.get_base_url() + "/whatever"},
+            content_type="application/json",
+        )
         assert response.status_code == 200
         response_json = response.json()
         assert "cards" in response_json.keys()
@@ -889,7 +896,7 @@ class TestNewCardsFirstPages:
     @pytest.fixture(autouse=True)
     def six_card_page(self, monkeypatch) -> None:
         # just to make this more testable with few `Card` fixtures
-        monkeypatch.setattr("cardpicker.utils.search_functions.NEW_CARDS_PAGE_SIZE", 6)
+        monkeypatch.setattr("cardpicker.search.search_functions.NEW_CARDS_PAGE_SIZE", 6)
 
     @freezegun.freeze_time(dt.datetime(2023, 1, 2))
     def test_basic_case(self, client, all_sources, all_cards, snapshot):
@@ -927,7 +934,7 @@ class TestNewCardsPage:
     @pytest.fixture(autouse=True)
     def six_card_page(self, monkeypatch) -> None:
         # just to make this more testable with few `Card` fixtures
-        monkeypatch.setattr("cardpicker.utils.search_functions.NEW_CARDS_PAGE_SIZE", 6)
+        monkeypatch.setattr("cardpicker.search.search_functions.NEW_CARDS_PAGE_SIZE", 6)
 
     @freezegun.freeze_time(dt.datetime(2023, 1, 2))
     def test_get_full_first_page(self, client, snapshot):

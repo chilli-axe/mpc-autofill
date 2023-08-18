@@ -9,10 +9,11 @@ from django.db import transaction
 
 from cardpicker.constants import DEFAULT_LANGUAGE, MAX_SIZE_MB
 from cardpicker.models import Card, CardTypes, Source
-from cardpicker.sources.source_types import Folder, Image, SourceType, SourceTypeChoices
+from cardpicker.search.sanitisation import to_searchable
+from cardpicker.sources.api import Folder, Image
+from cardpicker.sources.source_types import SourceType, SourceTypeChoices
 from cardpicker.tags import read_tags_in_database
 from cardpicker.utils import TEXT_BOLD, TEXT_END
-from cardpicker.utils.sanitisation import to_searchable
 
 MAX_WORKERS = 5
 DPI_HEIGHT_RATIO = 300 / 1110  # 300 DPI for image of vertical resolution 1110 pixels
@@ -174,3 +175,6 @@ def update_database(source_key: Optional[str] = None) -> None:
                 if (root_folder := folders[grouped_source.key]) is not None:
                     update_database_for_source(source=grouped_source, source_type=source_type, root_folder=root_folder)
                     print("")
+
+
+__all__ = ["update_database"]

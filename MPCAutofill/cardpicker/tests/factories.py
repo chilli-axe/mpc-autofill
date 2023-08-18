@@ -3,7 +3,7 @@ import datetime as dt
 import factory
 
 from cardpicker import models
-from cardpicker.utils.sanitisation import to_searchable
+from cardpicker.search.sanitisation import to_searchable
 
 
 class DFCPairFactory(factory.django.DjangoModelFactory):

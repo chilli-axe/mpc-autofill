@@ -207,4 +207,4 @@ class SourceTypeChoices(TextChoices):
         return source_type_or_none
 
 
-__all__ = ["Folder", "Image", "SourceType", "SourceTypeChoices", "GoogleDrive", "LocalFile", "AWSS3"]
+__all__ = ["SourceType", "SourceTypeChoices", "GoogleDrive", "LocalFile", "AWSS3"]

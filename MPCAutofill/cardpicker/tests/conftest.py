@@ -1,19 +1,21 @@
 import datetime as dt
+from typing import Type
 
 import pytest
 from pytest_elasticsearch import factories
 
 from django.core.management import call_command
 
+from cardpicker.integrations import GameIntegration
 from cardpicker.models import Card, CardTypes, DFCPair, Source, Tag
-from cardpicker.tests.constants import Cards, Sources
+from cardpicker.search.sanitisation import to_searchable
+from cardpicker.tests.constants import Cards, DummyIntegration, Sources
 from cardpicker.tests.factories import (
     CardFactory,
     DFCPairFactory,
     SourceFactory,
     TagFactory,
 )
-from cardpicker.utils.sanitisation import to_searchable
 
 
 @pytest.fixture()
@@ -21,6 +23,13 @@ def django_settings(db, settings):
     settings.DEBUG = True
     settings.DEFAULT_CARDBACK_FOLDER_PATH = "MPC Autofill Sample 1 / Cardbacks"
     settings.DEFAULT_CARDBACK_IMAGE_NAME = Cards.SIMPLE_CUBE.value.name
+
+
+@pytest.fixture()
+def dummy_integration(settings, monkeypatch) -> Type[GameIntegration]:
+    settings.GAME = DummyIntegration.__class__.__name__
+    monkeypatch.setattr("cardpicker.views.get_configured_game_integration", lambda: DummyIntegration)
+    return DummyIntegration
 
 
 @pytest.fixture(scope="session", autouse=True)

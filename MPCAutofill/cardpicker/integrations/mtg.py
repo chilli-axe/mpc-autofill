@@ -1,41 +1,16 @@
-# TODO: when restructuring & tidying up the repo, move this out of utils.
 import html
 import json
 import re
-from abc import ABC
+from typing import Any, Type
 
 import requests
 
+from cardpicker.integrations.base import GameIntegration, ImportSite
+from cardpicker.models import DFCPair
+from cardpicker.search.sanitisation import to_searchable
+from cardpicker.utils import get_json_endpoint_rate_limited
 
-class InvalidURLException(Exception):
-    def __init__(self, import_site_name: str, url: str):
-        super().__init__(
-            f"There was a problem with importing your list from {import_site_name} at URL {url}. "
-            f"Check that your URL is correct and try again."
-        )
-
-
-class ImportSite(ABC):
-    @staticmethod
-    def get_base_url() -> str:
-        """
-        Returns the base URL for this import site, e.g. "https://google.com"
-        """
-
-        raise NotImplementedError
-
-    @classmethod
-    def retrieve_card_list(cls, url: str) -> str:
-        """
-        Takes a URL pointing to a card list hosted on this class's site, queries the site's API / whatever for
-        the card list, formats it and returns it.
-        """
-
-        raise NotImplementedError
-
-    @classmethod
-    def raise_invalid_url_exception(cls, url: str) -> None:
-        raise InvalidURLException(import_site_name=cls.__name__, url=url)
+# region import sites
 
 
 class Aetherhub(ImportSite):
@@ -257,16 +232,110 @@ class TCGPlayer(ImportSite):
         return card_list
 
 
-ImportSites = [
-    Aetherhub,
-    Archidekt,
-    CubeCobra,
-    Deckstats,
-    MagicVille,
-    ManaStack,
-    Moxfield,
-    MTGGoldfish,
-    Scryfall,
-    TappedOut,
-    TCGPlayer,
-]
+# endregion
+
+
+class MTG(GameIntegration):
+    """
+    Our Magic: The Gathering integration reads DFC pairs from Scryfall and enables reading decklists from some
+    popular deckbuilding sites.
+    """
+
+    DFC_SCRYFALL_QUERY = "is:dfc -layout:art_series -(layout:double_faced_token -keyword:transform) -is:reversible"
+    MELD_SCRYFALL_QUERY = "is:meld"
+    DFC_SCRYFALL_URL = f"https://api.scryfall.com/cards/search?q={DFC_SCRYFALL_QUERY}"
+    MELD_SCRYFALL_URL = f"https://api.scryfall.com/cards/search?q={MELD_SCRYFALL_QUERY}"
+
+    @classmethod
+    def query_scryfall_paginated(cls, url: str) -> list[dict[str, Any]]:
+        response = get_json_endpoint_rate_limited(url)
+        data = response["data"]
+        while response["has_more"]:
+            response = get_json_endpoint_rate_limited(response["next_page"])
+            data += response["data"]
+        return data
+
+    @classmethod
+    def get_double_faced_card_pairs(cls) -> list[DFCPair]:
+        # query data and construct objects for regular double-faced cards
+        dfc_pairs: list[DFCPair] = []
+        dfc_data = cls.query_scryfall_paginated(cls.DFC_SCRYFALL_URL)
+        print(f"Identified {len(dfc_data)} double-faced cards")
+        for item in dfc_data:
+            if item["digital"] is True:
+                continue
+            front_name = item["card_faces"][0]["name"]
+            back_name = item["card_faces"][1]["name"]
+            dfc_pairs.append(
+                DFCPair(
+                    front=front_name,
+                    front_searchable=to_searchable(front_name),
+                    back=back_name,
+                    back_searchable=to_searchable(back_name),
+                )
+            )
+        return dfc_pairs
+
+    @classmethod
+    def get_meld_pairs(cls) -> list[DFCPair]:
+        # query data and construct objects for meld pairs
+
+        dfc_pairs: list[DFCPair] = []
+        meld_data = cls.query_scryfall_paginated(cls.MELD_SCRYFALL_URL)
+        print(f"Identified {len(meld_data)} meld pieces")
+        for item in meld_data:
+            if "all_parts" not in item:
+                card_name = item["name"]
+                print(f"Skipping {card_name} (missing key 'all_parts')")
+                continue
+
+            card_part_singleton_list = list(filter(lambda part: part["name"] == item["name"], item["all_parts"]))
+            meld_result_singleton_list = list(
+                filter(lambda part: part["component"] == "meld_result", item["all_parts"])
+            )
+
+            if len(card_part_singleton_list) != 1 or len(meld_result_singleton_list) != 1:
+                continue
+
+            card_part = card_part_singleton_list.pop()
+            meld_result = meld_result_singleton_list.pop()["name"]
+            if card_part["component"] == "meld_part":
+                is_top = "\n(Melds with " not in item["oracle_text"]
+                card_bit = "Top" if is_top else "Bottom"
+                dfc_pairs.append(
+                    DFCPair(
+                        front=item["name"],
+                        front_searchable=to_searchable(item["name"]),
+                        back=f"{meld_result} ({card_bit})",
+                        back_searchable=to_searchable(f"{meld_result} {card_bit}"),
+                    )
+                )
+
+        return dfc_pairs
+
+    # region implementation of abstract methods
+
+    @classmethod
+    def get_dfc_pairs(cls) -> list[DFCPair]:
+        return cls.get_double_faced_card_pairs() + cls.get_meld_pairs()
+
+    @classmethod
+    def get_import_sites(cls) -> list[Type[ImportSite]]:
+        return [
+            Aetherhub,
+            Archidekt,
+            CubeCobra,
+            Deckstats,
+            MagicVille,
+            ManaStack,
+            Moxfield,
+            MTGGoldfish,
+            Scryfall,
+            TappedOut,
+            TCGPlayer,
+        ]
+
+    # endregion
+
+
+__all__ = ["MTG"]

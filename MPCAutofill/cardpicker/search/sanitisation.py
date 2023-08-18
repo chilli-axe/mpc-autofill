@@ -3,6 +3,13 @@ import string
 from typing import Optional
 
 
+def text_to_list(input_text: str) -> list[int]:
+    # Helper function to translate strings like "[2, 4, 5, 6]" into lists
+    if input_text == "":
+        return []
+    return [int(x) for x in input_text.strip("][").replace(" ", "").split(",")]
+
+
 def fix_whitespace(input_str: str) -> str:
     return " ".join([x for x in input_str.split(" ") if x]).strip()
 
@@ -63,3 +70,6 @@ def process_line(input_str: str) -> tuple[Optional[str], Optional[int]]:
                     return None, None
                 name = " ".join(x for x in input_str[num_idx + 1 :].split(" ") if x)
             return name, qty
+
+
+__all__ = ["text_to_list", "fix_whitespace", "to_searchable", "process_line"]

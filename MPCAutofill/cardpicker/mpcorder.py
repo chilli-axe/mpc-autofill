@@ -12,10 +12,10 @@ from xml.etree.ElementTree import Element
 import chardet
 import defusedxml.ElementTree as ET
 
+from cardpicker.integrations.integrations import get_configured_game_integration
+from cardpicker.integrations.mtg import MTG
 from cardpicker.models import DFCPair
-from cardpicker.utils.link_imports import ImportSites
-from cardpicker.utils.sanitisation import process_line, to_searchable
-from cardpicker.utils.search_functions import text_to_list
+from cardpicker.search.sanitisation import process_line, text_to_list, to_searchable
 
 
 class ParsingErrors:
@@ -463,7 +463,8 @@ class MPCOrder(abc.MutableMapping[str, Any]):
         return qty
 
     def from_link(self, url: str, offset: int = 0) -> int:
-        for site in ImportSites:
+        game_integration = get_configured_game_integration() or MTG  # this default is just for the old frontend
+        for site in game_integration.get_import_sites():
             if url.startswith(site.get_base_url()):
                 return self.from_text(site.retrieve_card_list(url), offset)
         raise ParsingErrors.SiteNotSupportedException(url)
