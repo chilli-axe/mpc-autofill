@@ -9,7 +9,6 @@ from django.db import transaction
 from cardpicker.constants import MAX_SIZE_MB
 from cardpicker.models import Card, CardTypes, Source
 from cardpicker.sources.source_types import Folder, Image, SourceType, SourceTypeChoices
-from cardpicker.tags import Tag
 from cardpicker.utils import TEXT_BOLD, TEXT_END
 from cardpicker.utils.sanitisation import to_searchable
 
@@ -63,17 +62,13 @@ def transform_images_into_objects(source: Source, images: list[Image]) -> list[C
             assert image.size <= (
                 MAX_SIZE_MB * 1_000_000
             ), f"Image size is greater than {MAX_SIZE_MB} MB at **{int(image.size / 1_000_000)}** MB"
-            assert image.name, "File name is empty string"
-            assert "." in image.name[:-1], "File name has no extension"
-            name, extension = image.name.rsplit(".", 1)
-            assert bool(searchable_name := to_searchable(name)), "Searchable file name is empty string"
-            tag_list = Tag.list_from_card_name(name)
-
+            language, name, tags, extension = image.unpacked_name
+            searchable_name = to_searchable(name)
             dpi = 10 * round(int(image.height) * DPI_HEIGHT_RATIO / 10)
             source_verbose = source.name
             priority = 1 if "(" in name and ")" in name else 2
 
-            folder_location = image.folder.get_full_path()
+            folder_location = image.folder.full_path
             if folder_location == settings.DEFAULT_CARDBACK_FOLDER_PATH:
                 if name == settings.DEFAULT_CARDBACK_IMAGE_NAME:
                     priority += 10
@@ -109,7 +104,7 @@ def transform_images_into_objects(source: Source, images: list[Image]) -> list[C
                     extension=extension,
                     date=image.created_time,
                     size=image.size,
-                    tags=tag_list,
+                    tags=tags,
                 )
             )
         except AssertionError as e:
