@@ -12,6 +12,7 @@ services:
   # Postgres database for Django
   postgres:
     image: postgres:13.0-alpine
+    container_name: mpcautofill_postgres
     expose:
       - 5432
     environment:
@@ -24,6 +25,7 @@ services:
   # Elasticsearch used by MPCAutofill
   elasticsearch:
     image: elasticsearch:7.14.1
+    container_name: mpcautofill_elasticsearch
     expose:
       - 9200
     environment:
@@ -35,6 +37,7 @@ services:
   # Unicorn serving Django
   django:
     image: mpcautofill_django
+    container_name: mpcautofill_django
     build:
       context: ..
       dockerfile: ./docker/django/Dockerfile
@@ -50,6 +53,7 @@ services:
   # Nginx serving Django's static files
   nginx:
     image: mpcautofill_nginx
+    container_name: mpcautofill_nginx
     build:
       context: ..
       dockerfile: ./docker/nginx/Dockerfile
@@ -57,7 +61,7 @@ services:
       # Reads from
       - django_static:/MPCAutofill/static
     ports:
-      - 8000:80
+      - "8000:80"
     depends_on:
       - django
 
