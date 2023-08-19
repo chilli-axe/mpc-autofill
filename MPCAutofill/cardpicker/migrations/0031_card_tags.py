@@ -6,9 +6,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ("cardpicker", "0026_remove_token_source_card_card_type_delete_cardback_and_more"),
-    ]
+    dependencies = [("cardpicker", "0030_alter_project_key_alter_source_description")]
 
     operations = [
         migrations.AddField(
