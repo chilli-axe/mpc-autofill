@@ -24,5 +24,4 @@ JetBrains supports this project's development through their [Open Source Develop
 # Documentation
 
 Our docs are available in the repo's [Wiki](https://github.com/chilli-axe/mpc-autofill/wiki).
-<!-- Edit wiki to require PostgreSQL 11+ database -->
- 
+<!-- TODO: Edit wiki to require PostgreSQL 11+ database -->
