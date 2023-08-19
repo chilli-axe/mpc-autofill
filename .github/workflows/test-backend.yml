@@ -12,7 +12,9 @@ jobs:
       postgres:
         image: postgres
         env:
-          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: mpcautofill
+          POSTGRES_PASSWORD: mpcautofill
+          POSTGRES_DB: mpcautofill
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
