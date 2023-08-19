@@ -6,7 +6,7 @@ from .models import Card, DFCPair, Project, ProjectMember, Source
 # Register your models here.
 @admin.register(Card)
 class AdminCard(admin.ModelAdmin[Card]):
-    list_display = ("identifier", "name", "source", "dpi", "date")
+    list_display = ("identifier", "name", "source", "dpi", "date", "tags")
 
 
 @admin.register(DFCPair)
