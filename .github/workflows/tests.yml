@@ -11,9 +11,7 @@ jobs:
       postgres:
         image: postgres
         env:
-          DATABASE_NAME: mpcautofill
-          DATABASE_USER: mpcautofill
-          DATABASE_PASSWORD: mpcautofill
+          POSTGRES_PASSWORD: postgres
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
