@@ -11,6 +11,7 @@ from django.db.models import Q
 from cardpicker.constants import MAX_SIZE_MB
 from cardpicker.models import Card, CardTypes, Source
 from cardpicker.sources.source_types import Folder, Image, SourceType, SourceTypeChoices
+from cardpicker.tags import Tag
 from cardpicker.utils import TEXT_BOLD, TEXT_END
 from cardpicker.utils.sanitisation import to_searchable
 
@@ -68,6 +69,7 @@ def transform_images_into_objects(source: Source, images: list[Image]) -> list[C
             assert "." in image.name[:-1], "File name has no extension"
             name, extension = image.name.rsplit(".", 1)
             assert bool(searchable_name := to_searchable(name)), "Searchable file name is empty string"
+            tag_list = Tag.list_from_card_name(name)
 
             dpi = 10 * round(int(image.height) * DPI_HEIGHT_RATIO / 10)
             source_verbose = source.name
@@ -109,6 +111,7 @@ def transform_images_into_objects(source: Source, images: list[Image]) -> list[C
                     extension=extension,
                     date=image.created_time,
                     size=image.size,
+                    tags=tag_list,
                 )
             )
         except AssertionError as e:
