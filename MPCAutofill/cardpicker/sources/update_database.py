@@ -1,4 +1,3 @@
-import json
 import time
 from concurrent.futures import ThreadPoolExecutor
 from itertools import groupby
