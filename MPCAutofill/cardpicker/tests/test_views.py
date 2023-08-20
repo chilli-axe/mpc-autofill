@@ -23,7 +23,7 @@ def snapshot_response(response: Response, snapshot: SnapshotAssertion):
 BASE_SEARCH_SETTINGS = {
     "searchTypeSettings": {"fuzzySearch": False, "filterCardbacks": False},
     "sourceSettings": {"sources": [[Sources.EXAMPLE_DRIVE_1.value.pk, True], [Sources.EXAMPLE_DRIVE_2.value.pk, True]]},
-    "filterSettings": {"minimumDPI": 0, "maximumDPI": 1500, "maximumSize": 30},
+    "filterSettings": {"minimumDPI": 0, "maximumDPI": 1500, "maximumSize": 30, "language": "en", "tags": []},
 }
 
 
