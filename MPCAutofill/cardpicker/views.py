@@ -5,6 +5,7 @@ from collections import defaultdict
 from random import sample
 from typing import Any, Callable, Optional, TypeVar, Union, cast
 
+import pycountry
 from blog.models import BlogPost
 from jsonschema import ValidationError, validate
 
@@ -15,11 +16,11 @@ from django.shortcuts import redirect, render
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 
-from cardpicker.constants import CARDS_PAGE_SIZE
+from cardpicker.constants import CARDS_PAGE_SIZE, DEFAULT_LANGUAGE
 from cardpicker.forms import InputCSV, InputLink, InputText, InputXML
 from cardpicker.models import Card, CardTypes, DFCPair, Source, summarise_contributions
 from cardpicker.mpcorder import Faces, MPCOrder, ReqTypes
-from cardpicker.tags import Tag
+from cardpicker.tags import Tag, read_tags_in_database
 from cardpicker.utils.link_imports import ImportSites
 from cardpicker.utils.patreon import get_patreon_campaign_details, get_patrons
 from cardpicker.utils.sanitisation import to_searchable
@@ -524,6 +525,44 @@ def get_dfc_pairs(request: HttpRequest) -> HttpResponse:
 
 @csrf_exempt
 @NewErrorWrappers.to_json
+def get_languages(request: HttpRequest) -> HttpResponse:
+    """
+    Return the list of all unique languages among cards in the database.
+    """
+
+    if request.method != "GET":
+        raise BadRequestException("Expected GET request.")
+    return JsonResponse(
+        {
+            "languages": sorted(
+                [
+                    {"name": language.name, "code": row[0]}
+                    for row in Card.objects.order_by().values_list("language").distinct()
+                    if (language := pycountry.languages.get(alpha_2=row[0])) is not None
+                ],
+                # sort like this so DEFAULT_LANGUAGE is first, then the rest of the languages in alphabetical order
+                key=lambda row: "-" if row["code"] == DEFAULT_LANGUAGE.alpha_2 else row["name"],
+            )
+        }
+    )
+
+
+@csrf_exempt
+@NewErrorWrappers.to_json
+def get_tags(request: HttpRequest) -> HttpResponse:
+    """
+    Return a list of all tags that cards can be tagged with.
+    """
+
+    if request.method != "GET":
+        raise BadRequestException("Expected GET request.")
+    read_tags_in_database()
+    # here, mypy thinks that Tag has no method __iter__. this code works fine though.
+    return JsonResponse({"tags": sorted([x.value for x in Tag])})  # type: ignore
+
+
+@csrf_exempt
+@NewErrorWrappers.to_json
 def post_cardbacks(request: HttpRequest) -> HttpResponse:
     """
     Return a list of cardbacks, possibly filtered by the user's search settings.
@@ -606,13 +645,13 @@ def get_sample_cards(request: HttpRequest) -> HttpResponse:
     if request.method != "GET":
         raise BadRequestException("Expected GET request.")
 
-    # sample some large number of identifiers from the database (while avoiding showing NSFW cards here)
+    # sample some large number of identifiers from the database (while avoiding sampling NSFW cards)
     identifiers = {
         card_type: list(
             # mypy does not recognise here that Tag.NSFW.value is valid
-            Card.objects.filter(~Q(tags__contains=[Tag.NSFW.value]), card_type=card_type).values_list(  # type: ignore
-                "id", flat=True
-            )[0:5000]
+            Card.objects.filter(
+                ~Q(tags__overlap=[Tag.NSFW.value]) & Q(card_type=card_type)  # type: ignore
+            ).values_list("id", flat=True)[0:5000]
         )
         for card_type in CardTypes
     }
