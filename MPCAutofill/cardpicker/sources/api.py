@@ -39,7 +39,7 @@ class Folder:
         return f"{self.parent.full_path} / {name}"
 
     @functools.cached_property
-    def unpacked_name(self) -> tuple[pycountry.Languages, str, list[str]]:
+    def unpacked_name(self) -> tuple[pycountry.Languages, str, set[str]]:
         """
         The folder's name is unpacked according to the below schema. For example, consider `<EN> Cards [NSFW]`:
              <EN>              Cards         [NSFW]
@@ -65,11 +65,11 @@ class Folder:
         return language if language != DEFAULT_LANGUAGE else self.parent.language
 
     @functools.cached_property
-    def tags(self) -> list[str]:
+    def tags(self) -> set[str]:
         _, _, tags = self.unpacked_name
         if self.parent is None:
             return tags
-        return list(set(self.parent.tags) | set(tags))
+        return self.parent.tags | tags
 
 
 @dataclass
@@ -82,7 +82,7 @@ class Image:
     folder: Folder
 
     @functools.cached_property
-    def unpacked_name(self) -> tuple[pycountry.Languages, str, list[str], str]:
+    def unpacked_name(self) -> tuple[pycountry.Languages, str, set[str], str]:
         """
         The image's name is unpacked according to the below schema. For example, consider `<EN> Opt [NSFW].png`:
              <EN>             opt          [NSFW]   .      png
@@ -108,9 +108,9 @@ class Image:
         return language if language != DEFAULT_LANGUAGE else self.folder.language
 
     @functools.cached_property
-    def tags(self) -> list[str]:
+    def tags(self) -> set[str]:
         _, _, image_tags, _ = self.unpacked_name
-        return list(set(image_tags) | set(self.folder.tags))
+        return image_tags | self.folder.tags
 
 
 # region google drive API

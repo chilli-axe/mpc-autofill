@@ -271,6 +271,17 @@ class Card(models.Model):
         ordering = ["-priority"]
 
 
+class Tag(models.Model):
+    name = models.CharField(unique=True)
+
+    def __str__(self) -> str:
+        return self.name
+
+    @classmethod
+    def get_tags(cls) -> set[str]:
+        return {x.name for x in Tag.objects.all()}
+
+
 class DFCPair(models.Model):
     front = models.CharField(max_length=200, unique=True)
     front_searchable = models.CharField(max_length=200, unique=True)

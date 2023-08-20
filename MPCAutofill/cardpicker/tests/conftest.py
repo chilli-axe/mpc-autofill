@@ -7,7 +7,12 @@ from django.core.management import call_command
 
 from cardpicker.models import Card, CardTypes, Source
 from cardpicker.tests.constants import Cards, Sources
-from cardpicker.tests.factories import CardFactory, DFCPairFactory, SourceFactory
+from cardpicker.tests.factories import (
+    CardFactory,
+    DFCPairFactory,
+    SourceFactory,
+    TagFactory,
+)
 from cardpicker.utils.sanitisation import to_searchable
 
 
@@ -296,6 +301,17 @@ def dfc_pairs(db):
         back=Cards.INSECTILE_ABERRATION.value.name,
         back_searchable=to_searchable(Cards.INSECTILE_ABERRATION.value.name),
     )
+
+
+# endregion
+
+
+# region tag fixtures
+
+
+@pytest.fixture()
+def tags(db):
+    TagFactory(name="Tag in Data")
 
 
 # endregion

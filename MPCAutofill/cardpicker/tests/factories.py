@@ -45,3 +45,10 @@ class CardFactory(factory.django.DjangoModelFactory):
     extension = factory.LazyFunction(lambda: "png")
     size = factory.LazyFunction(lambda: 100)
     language = factory.LazyAttribute(lambda o: "en")
+
+
+class TagFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.Tag
+
+    name = factory.Sequence(lambda n: f"Tag {n}")

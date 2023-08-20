@@ -9,6 +9,7 @@ from blog.models import BlogPost
 from jsonschema import ValidationError, validate
 
 from django.conf import settings
+from django.db.models import Q
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
@@ -18,6 +19,7 @@ from cardpicker.constants import CARDS_PAGE_SIZE
 from cardpicker.forms import InputCSV, InputLink, InputText, InputXML
 from cardpicker.models import Card, CardTypes, DFCPair, Source, summarise_contributions
 from cardpicker.mpcorder import Faces, MPCOrder, ReqTypes
+from cardpicker.tags import Tag
 from cardpicker.utils.link_imports import ImportSites
 from cardpicker.utils.patreon import get_patreon_campaign_details, get_patrons
 from cardpicker.utils.sanitisation import to_searchable
@@ -604,9 +606,14 @@ def get_sample_cards(request: HttpRequest) -> HttpResponse:
     if request.method != "GET":
         raise BadRequestException("Expected GET request.")
 
-    # sample some large number of identifiers from the database
+    # sample some large number of identifiers from the database (while avoiding showing NSFW cards here)
     identifiers = {
-        card_type: list(Card.objects.filter(card_type=card_type).values_list("id", flat=True)[0:5000])
+        card_type: list(
+            # mypy does not recognise here that Tag.NSFW.value is valid
+            Card.objects.filter(~Q(tags__contains=[Tag.NSFW.value]), card_type=card_type).values_list(  # type: ignore
+                "id", flat=True
+            )[0:5000]
+        )
         for card_type in CardTypes
     }
 

@@ -9,6 +9,7 @@ from django.db import transaction
 from cardpicker.constants import MAX_SIZE_MB
 from cardpicker.models import Card, CardTypes, Source
 from cardpicker.sources.source_types import Folder, Image, SourceType, SourceTypeChoices
+from cardpicker.tags import read_tags_in_database
 from cardpicker.utils import TEXT_BOLD, TEXT_END
 from cardpicker.utils.sanitisation import to_searchable
 
@@ -62,11 +63,12 @@ def transform_images_into_objects(source: Source, images: list[Image]) -> list[C
             assert image.size <= (
                 MAX_SIZE_MB * 1_000_000
             ), f"Image size is greater than {MAX_SIZE_MB} MB at **{int(image.size / 1_000_000)}** MB"
-            language, name, tags, extension = image.unpacked_name
+            language, name, tags, extension = image.unpacked_name  # this can also raise AssertionError
+
             searchable_name = to_searchable(name)
             dpi = 10 * round(int(image.height) * DPI_HEIGHT_RATIO / 10)
             source_verbose = source.name
-            priority = 1 if "(" in name and ")" in name else 2
+            priority = 1 if ("(" in name and ")" in name) or len(tags) > 0 else 2
 
             folder_location = image.folder.full_path
             if folder_location == settings.DEFAULT_CARDBACK_FOLDER_PATH:
@@ -104,7 +106,7 @@ def transform_images_into_objects(source: Source, images: list[Image]) -> list[C
                     extension=extension,
                     date=image.created_time,
                     size=image.size,
-                    tags=tags,
+                    tags=list(tags),
                     language=language.alpha_2.upper(),
                 )
             )
@@ -140,6 +142,7 @@ def update_database(source_key: Optional[str] = None) -> None:
     If `source_key` is specified, only update that source; otherwise, update all sources.
     """
 
+    read_tags_in_database()
     if source_key:
         try:
             source = Source.objects.get(key=source_key)

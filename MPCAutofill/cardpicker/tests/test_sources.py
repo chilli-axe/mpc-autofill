@@ -5,6 +5,7 @@ import pytest
 from cardpicker.models import Card
 from cardpicker.sources.api import Folder, Image
 from cardpicker.sources.update_database import update_database
+from cardpicker.tags import read_tags_in_database
 
 
 class TestAPI:
@@ -13,6 +14,7 @@ class TestAPI:
     FOLDER_A = Folder(id="a", name="Folder A", parent=None)
     FOLDER_B = Folder(id="b", name="Folder B", parent=FOLDER_A)
     FOLDER_C = Folder(id="c", name="Folder C [NSFW]", parent=FOLDER_B)
+    FOLDER_D = Folder(id="d", name="Folder C [Tag in data]", parent=FOLDER_B)
     FOLDER_X = Folder(id="x", name="Folder X [NSFW, Extended, Full Art]", parent=None)
     FOLDER_Y = Folder(id="y", name="Folder Y [full art, Invalid Tag]", parent=None)
     FOLDER_Z = Folder(id="z", name="Folder z [Full Art", parent=None)
@@ -33,6 +35,14 @@ class TestAPI:
     IMAGE_E = Image(
         id="e", name="Image E [invalid tag.png", size=1, created_time=dt.datetime(2023, 1, 1), height=1, folder=FOLDER_A
     )
+    IMAGE_F = Image(
+        id="F",
+        name="Image E [NSFW, tag in data].png",
+        size=1,
+        created_time=dt.datetime(2023, 1, 1),
+        height=1,
+        folder=FOLDER_A,
+    )
 
     # endregion
 
@@ -46,31 +56,35 @@ class TestAPI:
         assert folder.full_path == full_path
 
     @pytest.mark.parametrize(
-        "folder, tags",
+        "folder, expected_tags",
         [
-            (FOLDER_A, []),
-            (FOLDER_B, []),
-            (FOLDER_C, ["NSFW"]),
-            (FOLDER_X, ["NSFW", "EXTENDED", "FULL ART"]),
-            (FOLDER_Y, ["FULL ART"]),
-            (FOLDER_Z, []),
+            (FOLDER_A, set()),
+            (FOLDER_B, set()),
+            (FOLDER_C, {"NSFW"}),
+            (FOLDER_D, {"Tag In Data"}),
+            (FOLDER_X, {"NSFW", "Extended", "Full Art"}),
+            (FOLDER_Y, {"Full Art"}),
+            (FOLDER_Z, set()),
         ],
     )
-    def test_folder_tags(self, folder, tags):
-        assert set(folder.tags) == set(tags)
+    def test_folder_tags(self, django_settings, tags, folder, expected_tags):
+        read_tags_in_database()
+        assert folder.tags == expected_tags
 
     @pytest.mark.parametrize(
-        "image, tags",
+        "image, expected_tags",
         [
-            (IMAGE_A, []),
-            (IMAGE_B, ["NSFW"]),
-            (IMAGE_C, ["NSFW"]),
-            (IMAGE_D, ["NSFW", "FULL ART"]),
-            (IMAGE_E, []),
+            (IMAGE_A, set()),
+            (IMAGE_B, {"NSFW"}),
+            (IMAGE_C, {"NSFW"}),
+            (IMAGE_D, {"NSFW", "Full Art"}),
+            (IMAGE_E, set()),
+            (IMAGE_F, {"NSFW", "Tag In Data"}),
         ],
     )
-    def test_image_tags(self, image, tags):
-        assert set(image.tags) == set(tags)
+    def test_image_tags(self, django_settings, tags, image, expected_tags):
+        read_tags_in_database()
+        assert image.tags == expected_tags
 
 
 # endregion
@@ -79,7 +93,7 @@ class TestAPI:
 class TestUpdateDatabase:
     # region tests
 
-    def test_comprehensive_snapshot(self, snapshot, django_settings, elasticsearch, all_sources):
+    def test_comprehensive_snapshot(self, snapshot, django_settings, elasticsearch, all_sources, tags):
         update_database()
         assert list(Card.objects.all().order_by("identifier")) == snapshot(name="cards")
 
