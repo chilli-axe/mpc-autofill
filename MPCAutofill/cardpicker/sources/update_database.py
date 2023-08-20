@@ -105,6 +105,7 @@ def transform_images_into_objects(source: Source, images: list[Image]) -> list[C
                     date=image.created_time,
                     size=image.size,
                     tags=tags,
+                    language=language.alpha_2.upper(),
                 )
             )
         except AssertionError as e:
