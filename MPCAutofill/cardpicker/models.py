@@ -337,25 +337,13 @@ class Project(models.Model):
                     if (card_identifier := record.get("card_identifier"), None) is not None:
                         card_identifiers.add(card_identifier)
 
-        card_identifiers_to_pk: dict[str, Card] = {
-            x.identifier: x for x in Card.objects.filter(identifier__in=card_identifiers)
-        }
-
-        members: list[ProjectMember] = []
-        for face in Faces:
-            if (face_members := records.get(face, None)) is not None:
-                for query, values in face_members.items():
-                    for value in values:
-                        card_identifier = value.get("card_identifier", None)
-                        members.append(
-                            ProjectMember(
-                                card=card_identifiers_to_pk[card_identifier] if card_identifier is not None else None,
-                                slot=value["slot"],
-                                query=query,
-                                face=face,
-                            )
-                        )
-
+        members: list[ProjectMember] = [
+            ProjectMember(card_id=value.get("card_identifier", None), slot=value["slot"], query=query, face=face)
+            for face in Faces
+            if (face_members := records.get(face, None)) is not None
+            for query, values in face_members.items()
+            for value in values
+        ]
         with transaction.atomic():
             ProjectMember.objects.filter(project=self).delete()
             ProjectMember.objects.bulk_create(members)
@@ -376,7 +364,7 @@ class Project(models.Model):
 
 
 class ProjectMember(models.Model):
-    card = models.ForeignKey(to=Card, on_delete=models.SET_NULL, null=True, blank=True)
+    card_id = models.CharField(max_length=200, null=True, blank=True)
     project = models.ForeignKey(to=Project, on_delete=models.CASCADE)
     query = models.CharField(max_length=200)
     slot = models.IntegerField()
@@ -386,9 +374,4 @@ class ProjectMember(models.Model):
         constraints = [models.UniqueConstraint(fields=["card", "project", "slot", "face"], name="projectmember_unique")]
 
     def to_dict(self) -> dict[str, Any]:
-        return {
-            "card_identifier": self.card.identifier if self.card else None,
-            "query": self.query,
-            "slot": self.slot,
-            "face": self.face,
-        }
+        return {"card_identifier": self.card_id, "query": self.query, "slot": self.slot, "face": self.face}
