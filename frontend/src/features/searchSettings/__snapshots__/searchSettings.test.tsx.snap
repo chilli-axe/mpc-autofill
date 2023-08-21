@@ -2,6 +2,10 @@
 
 exports[`the html structure of search settings 1`] = `
 .c0 {
+  color: black;
+}
+
+.c1 {
   font-size: 1em;
   cursor: pointer;
 }
@@ -166,6 +170,133 @@ exports[`the html structure of search settings 1`] = `
         type="range"
         value="30"
       />
+      <br />
+      <br />
+      Configure the languages and tags to filter the search results on.
+      <br />
+      <br />
+      <label
+        class="form-label"
+        for="selectLanguage"
+      >
+        Select languages
+      </label>
+      <div
+        class="rmsc c0"
+      >
+        <div
+          aria-labelledby="selectLanguage"
+          aria-readonly="true"
+          class="dropdown-container"
+          tabindex="0"
+        >
+          <div
+            class="dropdown-heading"
+          >
+            <div
+              class="dropdown-heading-value"
+            >
+              <span
+                class="gray"
+              >
+                Select...
+              </span>
+            </div>
+            <span
+              style="width: 24px; margin-right: 0.2rem;"
+            >
+              <svg
+                class="spinner"
+                height="24"
+                style="display: inline; vertical-align: middle;"
+                viewBox="0 0 50 50"
+                width="24"
+              >
+                <circle
+                  class="path"
+                  cx="25"
+                  cy="25"
+                  fill="none"
+                  r="20"
+                />
+              </svg>
+            </span>
+            <svg
+              class="dropdown-heading-dropdown-arrow gray"
+              fill="none"
+              height="24"
+              stroke="currentColor"
+              stroke-width="2"
+              width="24"
+            >
+              <path
+                d="M6 9L12 15 18 9"
+              />
+            </svg>
+          </div>
+        </div>
+      </div>
+      <label
+        class="form-label"
+        for="selectLanguage"
+      >
+        Select tags
+      </label>
+      <div
+        class="rmsc c0"
+      >
+        <div
+          aria-labelledby="selectTags"
+          aria-readonly="true"
+          class="dropdown-container"
+          tabindex="0"
+        >
+          <div
+            class="dropdown-heading"
+          >
+            <div
+              class="dropdown-heading-value"
+            >
+              <span
+                class="gray"
+              >
+                Select...
+              </span>
+            </div>
+            <span
+              style="width: 24px; margin-right: 0.2rem;"
+            >
+              <svg
+                class="spinner"
+                height="24"
+                style="display: inline; vertical-align: middle;"
+                viewBox="0 0 50 50"
+                width="24"
+              >
+                <circle
+                  class="path"
+                  cx="25"
+                  cy="25"
+                  fill="none"
+                  r="20"
+                />
+              </svg>
+            </span>
+            <svg
+              class="dropdown-heading-dropdown-arrow gray"
+              fill="none"
+              height="24"
+              stroke="currentColor"
+              stroke-width="2"
+              width="24"
+            >
+              <path
+                d="M6 9L12 15 18 9"
+              />
+            </svg>
+          </div>
+        </div>
+      </div>
       <hr />
       <h5>
         Sources
@@ -268,12 +399,12 @@ exports[`the html structure of search settings 1`] = `
               >
                 <div>
                   <i
-                    class="c0 bi bi-chevron-double-up"
+                    class="c1 bi bi-chevron-double-up"
                   />
                 </div>
                 <div>
                   <i
-                    class="c0 bi bi-chevron-double-down"
+                    class="c1 bi bi-chevron-double-down"
                   />
                 </div>
               </td>
@@ -335,12 +466,12 @@ exports[`the html structure of search settings 1`] = `
               >
                 <div>
                   <i
-                    class="c0 bi bi-chevron-double-up"
+                    class="c1 bi bi-chevron-double-up"
                   />
                 </div>
                 <div>
                   <i
-                    class="c0 bi bi-chevron-double-down"
+                    class="c1 bi bi-chevron-double-down"
                   />
                 </div>
               </td>
@@ -402,12 +533,12 @@ exports[`the html structure of search settings 1`] = `
               >
                 <div>
                   <i
-                    class="c0 bi bi-chevron-double-up"
+                    class="c1 bi bi-chevron-double-up"
                   />
                 </div>
                 <div>
                   <i
-                    class="c0 bi bi-chevron-double-down"
+                    class="c1 bi bi-chevron-double-down"
                   />
                 </div>
               </td>

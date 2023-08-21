@@ -94,6 +94,8 @@ export const cardDocument1: CardDocument = {
   size: 10_000_000,
   small_thumbnail_url: "",
   medium_thumbnail_url: "",
+  language: "EN",
+  tags: [],
 };
 
 export const cardDocument2: CardDocument = {
@@ -115,6 +117,8 @@ export const cardDocument2: CardDocument = {
   size: 10_000_000,
   small_thumbnail_url: "",
   medium_thumbnail_url: "",
+  language: "EN",
+  tags: [],
 };
 
 export const cardDocument3: CardDocument = {
@@ -136,6 +140,8 @@ export const cardDocument3: CardDocument = {
   size: 10_000_000,
   small_thumbnail_url: "",
   medium_thumbnail_url: "",
+  language: "EN",
+  tags: [],
 };
 
 export const cardDocument4: CardDocument = {
@@ -157,6 +163,8 @@ export const cardDocument4: CardDocument = {
   size: 10_000_000,
   small_thumbnail_url: "",
   medium_thumbnail_url: "",
+  language: "EN",
+  tags: [],
 };
 
 export const cardDocument5: CardDocument = {
@@ -178,6 +186,8 @@ export const cardDocument5: CardDocument = {
   size: 10_000_000,
   small_thumbnail_url: "",
   medium_thumbnail_url: "",
+  language: "EN",
+  tags: [],
 };
 
 export const cardDocument6: CardDocument = {
@@ -199,6 +209,8 @@ export const cardDocument6: CardDocument = {
   size: 10_000_000,
   small_thumbnail_url: "",
   medium_thumbnail_url: "",
+  language: "EN",
+  tags: [],
 };
 
 //# endregion
@@ -281,6 +293,8 @@ export const defaultSettings: SearchSettings = {
     minimumDPI: MinimumDPI,
     maximumDPI: MaximumDPI,
     maximumSize: MaximumSize,
+    languages: [],
+    tags: [],
   },
 };
 

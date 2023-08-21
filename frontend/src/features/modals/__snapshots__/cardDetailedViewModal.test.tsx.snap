@@ -135,6 +135,24 @@ exports[`the html structure of a CardDetailedViewModal 1`] = `
               <tr>
                 <td>
                   <b>
+                    Language
+                  </b>
+                </td>
+                <td />
+              </tr>
+              <tr>
+                <td>
+                  <b>
+                    Tags
+                  </b>
+                </td>
+                <td>
+                  Untagged
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <b>
                     Resolution
                   </b>
                 </td>
