@@ -6,7 +6,7 @@ from typing import Optional, Type
 from django.conf import settings
 from django.db import transaction
 
-from cardpicker.constants import MAX_SIZE_MB
+from cardpicker.constants import DEFAULT_LANGUAGE, MAX_SIZE_MB
 from cardpicker.models import Card, CardTypes, Source
 from cardpicker.sources.source_types import Folder, Image, SourceType, SourceTypeChoices
 from cardpicker.tags import read_tags_in_database
@@ -107,7 +107,7 @@ def transform_images_into_objects(source: Source, images: list[Image]) -> list[C
                     date=image.created_time,
                     size=image.size,
                     tags=list(tags),
-                    language=language.alpha_2.upper(),
+                    language=(language or DEFAULT_LANGUAGE).alpha_2.upper(),
                 )
             )
         except AssertionError as e:

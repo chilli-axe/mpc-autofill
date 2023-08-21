@@ -13,7 +13,6 @@ from googleapiclient.discovery import Resource, build
 from googleapiclient.errors import HttpError
 from oauth2client.service_account import ServiceAccountCredentials
 
-from cardpicker.constants import DEFAULT_LANGUAGE
 from cardpicker.tags import Tag
 
 thread_local = threading.local()  # Should only be called once per thread
@@ -39,7 +38,7 @@ class Folder:
         return f"{self.parent.full_path} / {name}"
 
     @functools.cached_property
-    def unpacked_name(self) -> tuple[pycountry.Languages, str, set[str]]:
+    def unpacked_name(self) -> tuple[Optional[pycountry.Languages], str, set[str]]:
         """
         The folder's name is unpacked according to the below schema. For example, consider `<EN> Cards [NSFW]`:
              <EN>              Cards         [NSFW]
@@ -49,20 +48,16 @@ class Folder:
         folder_name_results = re.compile(r"^(?:<(.+)> )?(.*?)$").search(self.name)
         assert folder_name_results is not None
         language_code, name = folder_name_results.groups()
-        language = (
-            (pycountry.languages.get(alpha_2=language_code) or DEFAULT_LANGUAGE)
-            if language_code is not None
-            else DEFAULT_LANGUAGE
-        )
+        language = pycountry.languages.get(alpha_2=language_code) if language_code else None
         name_with_no_tags, tags = Tag.extract_name_and_tags(name)
         return language, name_with_no_tags, tags
 
     @functools.cached_property
-    def language(self) -> pycountry.Languages:
+    def language(self) -> Optional[pycountry.Languages]:
         language, _, _ = self.unpacked_name
         if self.parent is None:
             return language
-        return language if language != DEFAULT_LANGUAGE else self.parent.language
+        return language if language is not None else self.parent.language
 
     @functools.cached_property
     def tags(self) -> set[str]:
@@ -93,11 +88,7 @@ class Image:
         image_name_results = re.compile(r"^(?:<(.+)> )?(.*?)(?:\.(.*?))?$").search(self.name)
         assert image_name_results is not None
         language_code, name, extension = image_name_results.groups()
-        language = (
-            (pycountry.languages.get(alpha_2=language_code) or DEFAULT_LANGUAGE)
-            if language_code is not None
-            else DEFAULT_LANGUAGE
-        )
+        language = pycountry.languages.get(alpha_2=language_code) if language_code else None
         assert extension is not None, "File name has no extension"
         name_with_no_tags, tags = Tag.extract_name_and_tags(name)
         return language, name, tags, extension
@@ -105,7 +96,7 @@ class Image:
     @functools.cached_property
     def language(self) -> pycountry.Languages:
         language, _, _, _ = self.unpacked_name
-        return language if language != DEFAULT_LANGUAGE else self.folder.language
+        return language if language is not None else self.folder.language
 
     @functools.cached_property
     def tags(self) -> set[str]:

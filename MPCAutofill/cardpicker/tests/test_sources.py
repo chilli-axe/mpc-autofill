@@ -11,6 +11,8 @@ from cardpicker.tags import read_tags_in_database
 class TestAPI:
     # region constants
 
+    DEFAULT_DATE = dt.datetime(2023, 1, 1)
+
     FOLDER_A = Folder(id="a", name="Folder A", parent=None)
     FOLDER_B = Folder(id="b", name="Folder B", parent=FOLDER_A)
     FOLDER_C = Folder(id="c", name="Folder C [NSFW]", parent=FOLDER_B)
@@ -18,30 +20,25 @@ class TestAPI:
     FOLDER_X = Folder(id="x", name="Folder X [NSFW, Extended, Full Art]", parent=None)
     FOLDER_Y = Folder(id="y", name="Folder Y [full art, Invalid Tag]", parent=None)
     FOLDER_Z = Folder(id="z", name="Folder z [Full Art", parent=None)
+    FOLDER_FRENCH = Folder(id="french", name="<FR> Folder", parent=None)
 
-    IMAGE_A = Image(id="a", name="Image A.png", size=1, created_time=dt.datetime(2023, 1, 1), height=1, folder=FOLDER_A)
-    IMAGE_B = Image(
-        id="b", name="Image B [NSFW].png", size=1, created_time=dt.datetime(2023, 1, 1), height=1, folder=FOLDER_A
-    )
-    IMAGE_C = Image(id="b", name="Image C.png", size=1, created_time=dt.datetime(2023, 1, 1), height=1, folder=FOLDER_C)
+    IMAGE_A = Image(id="a", name="Image A.png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_A)
+    IMAGE_B = Image(id="b", name="Image B [NSFW].png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_A)
+    IMAGE_C = Image(id="b", name="Image C.png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_C)
     IMAGE_D = Image(
-        id="b",
-        name="Image C [NSFW, full art].png",
-        size=1,
-        created_time=dt.datetime(2023, 1, 1),
-        height=1,
-        folder=FOLDER_C,
+        id="b", name="Image C [NSFW, full art].png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_C
     )
     IMAGE_E = Image(
-        id="e", name="Image E [invalid tag.png", size=1, created_time=dt.datetime(2023, 1, 1), height=1, folder=FOLDER_A
+        id="e", name="Image E [invalid tag.png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_A
     )
     IMAGE_F = Image(
-        id="F",
-        name="Image E [NSFW, tag in data].png",
-        size=1,
-        created_time=dt.datetime(2023, 1, 1),
-        height=1,
-        folder=FOLDER_A,
+        id="F", name="Image E [NSFW, tag in data].png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_A
+    )
+    IMAGE_FRENCH = Image(
+        id="french", name="French.png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_FRENCH
+    )
+    IMAGE_ENGLISH = Image(
+        id="english", name="<EN> English.png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_FRENCH
     )
 
     # endregion
@@ -54,6 +51,19 @@ class TestAPI:
     )
     def test_folder_full_path(self, folder, full_path):
         assert folder.full_path == full_path
+
+    @pytest.mark.parametrize(
+        "folder, expected_language",
+        [
+            (FOLDER_A, None),
+            (FOLDER_FRENCH, "FR"),
+        ],
+    )
+    def test_folder_language(self, folder, expected_language):
+        if expected_language is None:
+            assert folder.language is None
+        else:
+            assert folder.language.alpha_2.lower() == expected_language.lower()
 
     @pytest.mark.parametrize(
         "folder, expected_tags",
@@ -70,6 +80,20 @@ class TestAPI:
     def test_folder_tags(self, django_settings, tags, folder, expected_tags):
         read_tags_in_database()
         assert folder.tags == expected_tags
+
+    @pytest.mark.parametrize(
+        "image, expected_language",
+        [
+            (IMAGE_A, None),
+            (IMAGE_FRENCH, "FR"),
+            (IMAGE_ENGLISH, "EN"),
+        ],
+    )
+    def test_image_language(self, image, expected_language):
+        if expected_language is None:
+            assert image.language is None
+        else:
+            assert image.language.alpha_2.lower() == expected_language.lower()
 
     @pytest.mark.parametrize(
         "image, expected_tags",
