@@ -2,7 +2,6 @@
 Tags for cards.
 """
 
-import functools
 import re
 from typing import Optional
 
@@ -32,15 +31,16 @@ class Tag(str, MultiValueEnum):
         tag_set = set()  # Use set to not have duplicate tags
         tag_parts = re.findall(r"\(([^\(\)]+)\)|\[([^\[\]]+)\]", name)  # Get content of () and []
         cleaned_parts = list(map(lambda x: x[0] if len(x[0]) != 0 else x[1], tag_parts))
-        name_with_no_tags = functools.reduce(
-            lambda mutated_name, tag: mutated_name.replace(f"[{tag}]", "").replace(f"({tag})", "").strip(),
-            [name, *cleaned_parts],
-        )
+        name_with_no_tags = name  # tags will be removed from this name below
         for tag_part in cleaned_parts:
             raw_tags = tag_part.split(",")
             for raw_tag in raw_tags:
                 try:
-                    tag_set.add(Tag(raw_tag.strip().title()))
+                    tag_enum_object = Tag(raw_tag.strip().title())
+                    tag_set.add(tag_enum_object)
+                    name_with_no_tags = (
+                        name_with_no_tags.replace(f"[{raw_tag}]", "").replace(f"({raw_tag})", "").strip()
+                    )
                 except ValueError:
                     pass  # Unknown tag
 
@@ -52,8 +52,8 @@ def read_tags_in_database() -> None:
     Extend the tag recognition system to include tags defined in the `Tag` table.
     """
 
-    for tag in models.Tag.get_tags():
+    for tag, aliases in models.Tag.get_tags().items():
         try:
-            extend_enum(Tag, tag.title(), tag.title())
+            extend_enum(Tag, tag.title(), tag.title(), *[alias.title() for alias in aliases])
         except TypeError:  # aenum will raise this if the tag is already in the enum
             pass

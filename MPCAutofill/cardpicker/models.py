@@ -270,13 +270,15 @@ class Card(models.Model):
 
 class Tag(models.Model):
     name = models.CharField(unique=True)
+    # null=True is just for admin panel
+    aliases = ArrayField(models.CharField(max_length=200), default=list, blank=True)
 
     def __str__(self) -> str:
         return self.name
 
     @classmethod
-    def get_tags(cls) -> set[str]:
-        return {x.name for x in Tag.objects.all()}
+    def get_tags(cls) -> dict[str, list[str]]:
+        return {tag.name: tag.aliases for tag in Tag.objects.all()}
 
 
 class DFCPair(models.Model):

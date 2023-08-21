@@ -17,6 +17,7 @@ class TestAPI:
     FOLDER_B = Folder(id="b", name="Folder B", parent=FOLDER_A)
     FOLDER_C = Folder(id="c", name="Folder C [NSFW]", parent=FOLDER_B)
     FOLDER_D = Folder(id="d", name="Folder C [Tag in data]", parent=FOLDER_B)
+    FOLDER_E = Folder(id="d", name="Folder C [tagindata]", parent=FOLDER_B)  # refers to the tag's alias
     FOLDER_X = Folder(id="x", name="Folder X [NSFW, Extended, Full Art]", parent=None)
     FOLDER_Y = Folder(id="y", name="Folder Y [full art, Invalid Tag]", parent=None)
     FOLDER_Z = Folder(id="z", name="Folder z [Full Art", parent=None)
@@ -72,6 +73,7 @@ class TestAPI:
             (FOLDER_B, set()),
             (FOLDER_C, {"NSFW"}),
             (FOLDER_D, {"Tag In Data"}),
+            (FOLDER_E, {"Tag In Data"}),
             (FOLDER_X, {"NSFW", "Extended", "Full Art"}),
             (FOLDER_Y, {"Full Art"}),
             (FOLDER_Z, set()),
