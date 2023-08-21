@@ -19,7 +19,7 @@ class Migration(migrations.Migration):
                 (
                     "aliases",
                     django.contrib.postgres.fields.ArrayField(
-                        base_field=models.CharField(max_length=20), default=list, size=None
+                        base_field=models.CharField(max_length=200), default=list, size=None
                     ),
                 ),
             ],
