@@ -3,6 +3,10 @@ import string
 from typing import Optional
 
 
+def fix_whitespace(input_str: str) -> str:
+    return " ".join([x for x in input_str.split(" ") if x]).strip()
+
+
 def to_searchable(input_str: str) -> str:
     if not input_str:
         return ""
@@ -28,7 +32,7 @@ def to_searchable(input_str: str) -> str:
     input_str = input_str.translate(str.maketrans("", "", string.digits))
 
     # Fix whitespace
-    input_str = " ".join([x for x in input_str.split(" ") if x]).strip()
+    input_str = fix_whitespace(input_str)
 
     return input_str
 

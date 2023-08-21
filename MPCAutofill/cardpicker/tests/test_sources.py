@@ -16,8 +16,11 @@ class TestAPI:
     FOLDER_A = Folder(id="a", name="Folder A", parent=None)
     FOLDER_B = Folder(id="b", name="Folder B", parent=FOLDER_A)
     FOLDER_C = Folder(id="c", name="Folder C [NSFW]", parent=FOLDER_B)
-    FOLDER_D = Folder(id="d", name="Folder C [Tag in data]", parent=FOLDER_B)
-    FOLDER_E = Folder(id="d", name="Folder C [tagindata]", parent=FOLDER_B)  # refers to the tag's alias
+    FOLDER_D = Folder(id="d", name="Folder D [Tag in data]", parent=FOLDER_B)
+    FOLDER_E = Folder(id="e", name="Folder E [tagindata]", parent=FOLDER_B)  # refers to the tag's alias
+    FOLDER_F = Folder(id="f", name="Folder F [tagindata]", parent=FOLDER_B)  # refers to the tag's alias
+    FOLDER_G = Folder(id="g", name="Folder G [Tag in Data] (Some more words)", parent=FOLDER_B)
+    FOLDER_H = Folder(id="h", name="Folder H [Tag in Data, Some more words]", parent=None)
     FOLDER_X = Folder(id="x", name="Folder X [NSFW, Extended, Full Art]", parent=None)
     FOLDER_Y = Folder(id="y", name="Folder Y [full art, Invalid Tag]", parent=None)
     FOLDER_Z = Folder(id="z", name="Folder z [Full Art", parent=None)
@@ -27,19 +30,26 @@ class TestAPI:
     IMAGE_B = Image(id="b", name="Image B [NSFW].png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_A)
     IMAGE_C = Image(id="b", name="Image C.png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_C)
     IMAGE_D = Image(
-        id="b", name="Image C [NSFW, full art].png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_C
+        id="b", name="Image D [NSFW, full art].png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_C
     )
     IMAGE_E = Image(
         id="e", name="Image E [invalid tag.png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_A
     )
     IMAGE_F = Image(
-        id="F", name="Image E [NSFW, tag in data].png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_A
+        id="F", name="Image F [NSFW, tag in data].png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_A
+    )
+    IMAGE_G = Image(
+        id="G", name="Image G [NSFW] (John Doe).png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_A
     )
     IMAGE_FRENCH = Image(
         id="french", name="French.png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_FRENCH
     )
     IMAGE_ENGLISH = Image(
         id="english", name="<EN> English.png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_FRENCH
+    )
+    IMAGE_NSFW = Image(id="nsfw", name="NSFW [NSFW].png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_A)
+    IMAGE_DOUBLE_NSFW = Image(
+        id="double nsfw", name="NSFW (NSFW) [NSFW].png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_A
     )
 
     # endregion
@@ -84,6 +94,21 @@ class TestAPI:
         assert folder.tags == expected_tags
 
     @pytest.mark.parametrize(
+        "folder, expected_name",
+        [
+            (FOLDER_A, "Folder A"),
+            (FOLDER_B, "Folder B"),
+            (FOLDER_C, "Folder C"),
+            (FOLDER_G, "Folder G (Some more words)"),
+            (FOLDER_H, "Folder H [Some more words]"),
+        ],
+    )
+    def test_folder_name(self, django_settings, tags, folder, expected_name):
+        read_tags_in_database()
+        _, name, _ = folder.unpacked_name
+        assert name == expected_name
+
+    @pytest.mark.parametrize(
         "image, expected_language",
         [
             (IMAGE_A, None),
@@ -111,6 +136,25 @@ class TestAPI:
     def test_image_tags(self, django_settings, tags, image, expected_tags):
         read_tags_in_database()
         assert image.tags == expected_tags
+
+    @pytest.mark.parametrize(
+        "image, expected_name",
+        [
+            (IMAGE_A, "Image A"),
+            (IMAGE_B, "Image B"),
+            (IMAGE_C, "Image C"),
+            (IMAGE_D, "Image D"),
+            (IMAGE_E, "Image E [invalid tag"),
+            (IMAGE_F, "Image F"),
+            (IMAGE_G, "Image G (John Doe)"),
+            (IMAGE_NSFW, "NSFW"),
+            (IMAGE_DOUBLE_NSFW, "NSFW"),
+        ],
+    )
+    def test_image_name(self, django_settings, tags, image, expected_name):
+        read_tags_in_database()
+        _, name, _, _ = image.unpacked_name
+        assert name == expected_name
 
 
 # endregion

@@ -14,6 +14,7 @@ from googleapiclient.errors import HttpError
 from oauth2client.service_account import ServiceAccountCredentials
 
 from cardpicker.tags import Tag
+from cardpicker.utils import sanitisation
 
 thread_local = threading.local()  # Should only be called once per thread
 
@@ -50,7 +51,7 @@ class Folder:
         language_code, name = folder_name_results.groups()
         language = pycountry.languages.get(alpha_2=language_code) if language_code else None
         name_with_no_tags, tags = Tag.extract_name_and_tags(name)
-        return language, name_with_no_tags, tags
+        return language, sanitisation.fix_whitespace(name_with_no_tags), tags
 
     @functools.cached_property
     def language(self) -> Optional[pycountry.Languages]:
@@ -91,7 +92,7 @@ class Image:
         language = pycountry.languages.get(alpha_2=language_code) if language_code else None
         assert extension is not None, "File name has no extension"
         name_with_no_tags, tags = Tag.extract_name_and_tags(name)
-        return language, name, tags, extension
+        return language, sanitisation.fix_whitespace(name_with_no_tags), tags, extension
 
     @functools.cached_property
     def language(self) -> pycountry.Languages:
