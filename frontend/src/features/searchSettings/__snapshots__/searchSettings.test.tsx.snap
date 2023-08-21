@@ -202,25 +202,6 @@ exports[`the html structure of search settings 1`] = `
                 Select...
               </span>
             </div>
-            <span
-              style="width: 24px; margin-right: 0.2rem;"
-            >
-              <svg
-                class="spinner"
-                height="24"
-                style="display: inline; vertical-align: middle;"
-                viewBox="0 0 50 50"
-                width="24"
-              >
-                <circle
-                  class="path"
-                  cx="25"
-                  cy="25"
-                  fill="none"
-                  r="20"
-                />
-              </svg>
-            </span>
             <svg
               class="dropdown-heading-dropdown-arrow gray"
               fill="none"
@@ -263,25 +244,6 @@ exports[`the html structure of search settings 1`] = `
                 Select...
               </span>
             </div>
-            <span
-              style="width: 24px; margin-right: 0.2rem;"
-            >
-              <svg
-                class="spinner"
-                height="24"
-                style="display: inline; vertical-align: middle;"
-                viewBox="0 0 50 50"
-                width="24"
-              >
-                <circle
-                  class="path"
-                  cx="25"
-                  cy="25"
-                  fill="none"
-                  r="20"
-                />
-              </svg>
-            </span>
             <svg
               class="dropdown-heading-dropdown-arrow gray"
               fill="none"
