@@ -57,6 +57,19 @@ exports[`the html structure of a CommonCardback with a single search result 1`] 
           class="mpccard-spacing"
         >
           <p
+            class="mpccard-tags card-text"
+          >
+            <i
+              class="italic"
+            >
+              Untagged
+            </i>
+          </p>
+        </div>
+        <div
+          class="mpccard-spacing"
+        >
+          <p
             class="mpccard-source card-text"
           >
             Source 1 [1200 DPI]
@@ -131,6 +144,19 @@ exports[`the html structure of a CommonCardback with multiple search results 1`]
           class="mpccard-name card-subtitle h6"
         >
           Card 1
+        </div>
+        <div
+          class="mpccard-spacing"
+        >
+          <p
+            class="mpccard-tags card-text"
+          >
+            <i
+              class="italic"
+            >
+              Untagged
+            </i>
+          </p>
         </div>
         <div
           class="mpccard-spacing"
