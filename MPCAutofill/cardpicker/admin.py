@@ -33,4 +33,4 @@ class AdminProject(admin.ModelAdmin[Project]):
 
 @admin.register(ProjectMember)
 class AdminCardProjectMembership(admin.ModelAdmin[ProjectMember]):
-    list_display = ("card", "project", "query", "slot", "face")
+    list_display = ("card_id", "project", "query", "slot", "face")
