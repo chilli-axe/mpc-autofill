@@ -6,9 +6,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ("cardpicker", "0032_card_language"),
-    ]
+    dependencies = [("cardpicker", "0033_card_language")]
 
     operations = [
         migrations.CreateModel(

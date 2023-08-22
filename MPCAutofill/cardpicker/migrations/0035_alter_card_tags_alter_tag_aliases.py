@@ -6,9 +6,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ("cardpicker", "0033_tag"),
-    ]
+    dependencies = [("cardpicker", "0034_tag")]
 
     operations = [
         migrations.AlterField(

@@ -5,9 +5,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ("cardpicker", "0031_card_tags"),
-    ]
+    dependencies = [("cardpicker", "0032_remove_projectmember_card_projectmember_card_id")]
 
     operations = [
         migrations.AddField(
