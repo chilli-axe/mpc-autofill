@@ -274,20 +274,22 @@ class SearchSettings:
         cardbacks: list[str]
         order_by = ["-priority", "source__name", "name"]
         if self.filter_cardbacks:
+            # afaik, `~Q(pk__in=[])` is the best way to have an always-true filter
             language_filter = (
                 Q(language__in=[language.alpha_2.upper() for language in self.languages])
                 if self.languages
-                else ~Q(pk__in=[])  # afaik this is the best way to have an always-true filter
+                else ~Q(pk__in=[])
             )
+            tag_filter = (Q(tags__contains=self.tags) | Q(tags__contained_by=self.tags)) if self.tags else ~Q(pk__in=[])
             source_order = self.get_source_order()
             hits_iterable = Card.objects.filter(
                 language_filter,
+                tag_filter,
                 card_type=CardTypes.CARDBACK,
                 source__key__in=self.sources,
                 dpi__gte=self.min_dpi,
                 dpi__lte=self.max_dpi,
                 size__lte=self.max_size,
-                tags__contained_by=self.tags,
             ).order_by(*order_by)
             hits = sorted(hits_iterable, key=lambda card: source_order[card.source.key])
             cardbacks = [card.identifier for card in hits]

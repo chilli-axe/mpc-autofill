@@ -218,6 +218,15 @@
     'status_code': 400,
   })
 # ---
+# name: TestGetLanguages.test_post_request
+  dict({
+    'json': dict({
+      'message': 'Expected GET request.',
+      'name': 'Bad request',
+    }),
+    'status_code': 400,
+  })
+# ---
 # name: TestGetSampleCards.test_get_five_sample_cards
   dict({
     'CARD': dict({
@@ -274,7 +283,7 @@
         'dpi': 600,
         'extension': 'png',
         'identifier': '1HsvTYs1jFGe1c8U1PnNZ9aB8jkAW7KU0',
-        'language': 'en',
+        'language': 'FR',
         'medium_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1HsvTYs1jFGe1c8U1PnNZ9aB8jkAW7KU0',
         'name': 'Island (William Bradford)',
         'priority': 6,
@@ -297,7 +306,7 @@
         'dpi': 600,
         'extension': 'png',
         'identifier': '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
-        'language': 'en',
+        'language': 'EN',
         'medium_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
         'name': 'Pást in Flames',
         'priority': 2,
@@ -311,6 +320,7 @@
         'source_type': 'Google Drive',
         'source_verbose': 'Example Drive 1 but verbose',
         'tags': list([
+          'Tag in Data',
         ]),
       }),
     }),
@@ -403,6 +413,15 @@
     'status_code': 400,
   })
 # ---
+# name: TestGetTags.test_post_request
+  dict({
+    'json': dict({
+      'message': 'Expected GET request.',
+      'name': 'Bad request',
+    }),
+    'status_code': 400,
+  })
+# ---
 # name: TestNewCardsFirstPages.test_basic_case
   dict({
     'json': dict({
@@ -462,7 +481,7 @@
               'dpi': 600,
               'extension': 'png',
               'identifier': '1HsvTYs1jFGe1c8U1PnNZ9aB8jkAW7KU0',
-              'language': 'en',
+              'language': 'FR',
               'medium_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1HsvTYs1jFGe1c8U1PnNZ9aB8jkAW7KU0',
               'name': 'Island (William Bradford)',
               'priority': 6,
@@ -508,7 +527,7 @@
               'dpi': 300,
               'extension': 'png',
               'identifier': '1JtXL6Ca9nQkvhwZZRR9ZuKA9_DzsFf1V',
-              'language': 'en',
+              'language': 'DE',
               'medium_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1JtXL6Ca9nQkvhwZZRR9ZuKA9_DzsFf1V',
               'name': 'Simple Cube',
               'priority': 17,
@@ -522,6 +541,8 @@
               'source_type': 'Google Drive',
               'source_verbose': 'Example Drive 1 but verbose',
               'tags': list([
+                'Tag in Data',
+                'Another Tag in Data',
               ]),
             }),
             dict({
@@ -569,7 +590,7 @@
               'dpi': 300,
               'extension': 'png',
               'identifier': '1oigI6wz0zA--pNMuExKTs40kBNH6VRP_',
-              'language': 'en',
+              'language': 'EN',
               'medium_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1oigI6wz0zA--pNMuExKTs40kBNH6VRP_',
               'name': 'Simple Lotus',
               'priority': 7,
@@ -583,6 +604,7 @@
               'source_type': 'Google Drive',
               'source_verbose': 'Example Drive 2 but verbose',
               'tags': list([
+                'Tag in Data',
               ]),
             }),
             dict({
@@ -592,7 +614,7 @@
               'dpi': 400,
               'extension': 'png',
               'identifier': '1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
-              'language': 'en',
+              'language': 'DE',
               'medium_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
               'name': 'Past in Flames',
               'priority': 2,
@@ -606,6 +628,8 @@
               'source_type': 'Google Drive',
               'source_verbose': 'Example Drive 2 but verbose',
               'tags': list([
+                'Tag in Data',
+                'Another Tag in Data',
               ]),
             }),
           ]),
@@ -719,7 +743,7 @@
           'dpi': 600,
           'extension': 'png',
           'identifier': '1HsvTYs1jFGe1c8U1PnNZ9aB8jkAW7KU0',
-          'language': 'en',
+          'language': 'FR',
           'medium_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1HsvTYs1jFGe1c8U1PnNZ9aB8jkAW7KU0',
           'name': 'Island (William Bradford)',
           'priority': 6,
@@ -765,7 +789,7 @@
           'dpi': 300,
           'extension': 'png',
           'identifier': '1JtXL6Ca9nQkvhwZZRR9ZuKA9_DzsFf1V',
-          'language': 'en',
+          'language': 'DE',
           'medium_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1JtXL6Ca9nQkvhwZZRR9ZuKA9_DzsFf1V',
           'name': 'Simple Cube',
           'priority': 17,
@@ -779,6 +803,8 @@
           'source_type': 'Google Drive',
           'source_verbose': 'Example Drive 1 but verbose',
           'tags': list([
+            'Tag in Data',
+            'Another Tag in Data',
           ]),
         }),
         dict({
@@ -843,7 +869,7 @@
           'dpi': 600,
           'extension': 'png',
           'identifier': '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
-          'language': 'en',
+          'language': 'EN',
           'medium_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
           'name': 'Pást in Flames',
           'priority': 2,
@@ -857,6 +883,7 @@
           'source_type': 'Google Drive',
           'source_verbose': 'Example Drive 1 but verbose',
           'tags': list([
+            'Tag in Data',
           ]),
         }),
         dict({
@@ -944,7 +971,7 @@
           'dpi': 300,
           'extension': 'png',
           'identifier': '1oigI6wz0zA--pNMuExKTs40kBNH6VRP_',
-          'language': 'en',
+          'language': 'EN',
           'medium_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1oigI6wz0zA--pNMuExKTs40kBNH6VRP_',
           'name': 'Simple Lotus',
           'priority': 7,
@@ -958,6 +985,7 @@
           'source_type': 'Google Drive',
           'source_verbose': 'Example Drive 2 but verbose',
           'tags': list([
+            'Tag in Data',
           ]),
         }),
         dict({
@@ -967,7 +995,7 @@
           'dpi': 400,
           'extension': 'png',
           'identifier': '1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
-          'language': 'en',
+          'language': 'DE',
           'medium_thumbnail_url': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
           'name': 'Past in Flames',
           'priority': 2,
@@ -981,6 +1009,8 @@
           'source_type': 'Google Drive',
           'source_verbose': 'Example Drive 2 but verbose',
           'tags': list([
+            'Tag in Data',
+            'Another Tag in Data',
           ]),
         }),
       ]),
@@ -1078,6 +1108,17 @@
     'status_code': 400,
   })
 # ---
+# name: TestPostCardbacks.test_get_multiple_rows_filtered_one_tag
+  dict({
+    'json': dict({
+      'cardbacks': list([
+        '1JtXL6Ca9nQkvhwZZRR9ZuKA9_DzsFf1V',
+        '1oigI6wz0zA--pNMuExKTs40kBNH6VRP_',
+      ]),
+    }),
+    'status_code': 200,
+  })
+# ---
 # name: TestPostCardbacks.test_get_multiple_rows_filtered_only_source_1
   dict({
     'json': dict({
@@ -1109,12 +1150,54 @@
     'status_code': 200,
   })
 # ---
+# name: TestPostCardbacks.test_get_multiple_rows_filtered_two_languages
+  dict({
+    'json': dict({
+      'cardbacks': list([
+        '1JtXL6Ca9nQkvhwZZRR9ZuKA9_DzsFf1V',
+        '1oigI6wz0zA--pNMuExKTs40kBNH6VRP_',
+      ]),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostCardbacks.test_get_multiple_rows_filtered_two_tags
+  dict({
+    'json': dict({
+      'cardbacks': list([
+        '1JtXL6Ca9nQkvhwZZRR9ZuKA9_DzsFf1V',
+        '1oigI6wz0zA--pNMuExKTs40kBNH6VRP_',
+      ]),
+    }),
+    'status_code': 200,
+  })
+# ---
 # name: TestPostCardbacks.test_get_multiple_rows_unfiltered
   dict({
     'json': dict({
       'cardbacks': list([
         '1JtXL6Ca9nQkvhwZZRR9ZuKA9_DzsFf1V',
         '1oigI6wz0zA--pNMuExKTs40kBNH6VRP_',
+      ]),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostCardbacks.test_get_one_row_filtered_one_language
+  dict({
+    'json': dict({
+      'cardbacks': list([
+        '1oigI6wz0zA--pNMuExKTs40kBNH6VRP_',
+      ]),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostCardbacks.test_get_one_row_filtered_one_tag
+  dict({
+    'json': dict({
+      'cardbacks': list([
+        '1JtXL6Ca9nQkvhwZZRR9ZuKA9_DzsFf1V',
       ]),
     }),
     'status_code': 200,
@@ -1638,6 +1721,79 @@
         'past in': dict({
           'CARD': list([
             '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
+            '1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
+          ]),
+        }),
+      }),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostSearchResults.test_get_multiple_rows_filtered_one_tag
+  dict({
+    'json': dict({
+      'results': dict({
+        'Pást in Flames': dict({
+          'CARD': list([
+            '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
+            '1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
+          ]),
+        }),
+      }),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostSearchResults.test_get_multiple_rows_filtered_two_languages
+  dict({
+    'json': dict({
+      'results': dict({
+        'Pást in Flames': dict({
+          'CARD': list([
+            '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
+            '1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
+          ]),
+        }),
+      }),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostSearchResults.test_get_multiple_rows_filtered_two_tags
+  dict({
+    'json': dict({
+      'results': dict({
+        'Pást in Flames': dict({
+          'CARD': list([
+            '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
+            '1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
+          ]),
+        }),
+      }),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostSearchResults.test_get_one_row_filtered_one_language
+  dict({
+    'json': dict({
+      'results': dict({
+        'Pást in Flames': dict({
+          'CARD': list([
+            '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
+          ]),
+        }),
+      }),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostSearchResults.test_get_one_row_filtered_one_tag
+  dict({
+    'json': dict({
+      'results': dict({
+        'Pást in Flames': dict({
+          'CARD': list([
             '1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
           ]),
         }),

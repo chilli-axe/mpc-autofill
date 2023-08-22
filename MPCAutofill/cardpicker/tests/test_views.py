@@ -262,6 +262,87 @@ class TestPostSearchResults:
             Cards.PAST_IN_FLAMES_2.value.identifier
         ]
 
+    def test_get_one_row_filtered_one_language(self, client, snapshot, past_in_flames_1, past_in_flames_2):
+        search_settings = deepcopy(BASE_SEARCH_SETTINGS)
+        search_settings["filterSettings"]["languages"] = ["EN"]
+        response = client.post(
+            reverse(views.post_search_results),
+            {
+                "searchSettings": search_settings,
+                "queries": [{"query": Cards.PAST_IN_FLAMES_1.value.name, "card_type": "CARD"}],
+            },
+            content_type="application/json",
+        )
+        snapshot_response(response, snapshot)
+        assert response.status_code == 200
+        assert len(response.json()["results"][Cards.PAST_IN_FLAMES_1.value.name]["CARD"]) == 1
+
+    def test_get_multiple_rows_filtered_two_languages(self, client, snapshot, past_in_flames_1, past_in_flames_2):
+        search_settings = deepcopy(BASE_SEARCH_SETTINGS)
+        search_settings["filterSettings"]["languages"] = ["EN", "DE"]
+        response = client.post(
+            reverse(views.post_search_results),
+            {
+                "searchSettings": search_settings,
+                "queries": [{"query": Cards.PAST_IN_FLAMES_1.value.name, "card_type": "CARD"}],
+            },
+            content_type="application/json",
+        )
+        snapshot_response(response, snapshot)
+        assert response.status_code == 200
+        assert len(response.json()["results"][Cards.PAST_IN_FLAMES_1.value.name]["CARD"]) == 2
+
+    def test_get_one_row_filtered_one_tag(
+        self, client, snapshot, past_in_flames_1, past_in_flames_2, another_tag_in_data
+    ):
+        search_settings = deepcopy(BASE_SEARCH_SETTINGS)
+        search_settings["filterSettings"]["tags"] = [another_tag_in_data.name]
+        response = client.post(
+            reverse(views.post_search_results),
+            {
+                "searchSettings": search_settings,
+                "queries": [{"query": Cards.PAST_IN_FLAMES_1.value.name, "card_type": "CARD"}],
+            },
+            content_type="application/json",
+        )
+        snapshot_response(response, snapshot)
+        assert response.status_code == 200
+        assert len(response.json()["results"][Cards.PAST_IN_FLAMES_1.value.name]["CARD"]) == 1
+
+    def test_get_multiple_rows_filtered_one_tag(
+        self, client, snapshot, past_in_flames_1, past_in_flames_2, tag_in_data
+    ):
+        search_settings = deepcopy(BASE_SEARCH_SETTINGS)
+        search_settings["filterSettings"]["tags"] = [tag_in_data.name, tag_in_data.name]
+        response = client.post(
+            reverse(views.post_search_results),
+            {
+                "searchSettings": search_settings,
+                "queries": [{"query": Cards.PAST_IN_FLAMES_1.value.name, "card_type": "CARD"}],
+            },
+            content_type="application/json",
+        )
+        snapshot_response(response, snapshot)
+        assert response.status_code == 200
+        assert len(response.json()["results"][Cards.PAST_IN_FLAMES_1.value.name]["CARD"]) == 2
+
+    def test_get_multiple_rows_filtered_two_tags(
+        self, client, snapshot, past_in_flames_1, past_in_flames_2, tag_in_data, another_tag_in_data
+    ):
+        search_settings = deepcopy(BASE_SEARCH_SETTINGS)
+        search_settings["filterSettings"]["tags"] = [tag_in_data.name, another_tag_in_data.name]
+        response = client.post(
+            reverse(views.post_search_results),
+            {
+                "searchSettings": search_settings,
+                "queries": [{"query": Cards.PAST_IN_FLAMES_1.value.name, "card_type": "CARD"}],
+            },
+            content_type="application/json",
+        )
+        snapshot_response(response, snapshot)
+        assert response.status_code == 200
+        assert len(response.json()["results"][Cards.PAST_IN_FLAMES_1.value.name]["CARD"]) == 2
+
     def test_page_equal_to_max_size(self, client, monkeypatch, snapshot):
         monkeypatch.setattr("cardpicker.utils.search_functions.SEARCH_RESULTS_PAGE_SIZE", 2)
         response = client.post(
@@ -435,6 +516,51 @@ class TestGetDFCPairs:
         assert response.status_code == 400
 
 
+class TestGetLanguages:
+    def test_get_zero_languages(self, client, django_settings):
+        response = client.get(reverse(views.get_languages))
+        assert response.json()["languages"] == []
+
+    def test_get_one_language(self, client, django_settings, island_classical):
+        response = client.get(reverse(views.get_languages))
+        assert response.json()["languages"] == [{"name": "French", "code": "FR"}]
+
+    def test_get_two_languages(self, client, django_settings, island, island_classical):
+        response = client.get(reverse(views.get_languages))
+        assert response.json()["languages"] == [{"name": "English", "code": "EN"}, {"name": "French", "code": "FR"}]
+
+    def test_post_request(self, client, django_settings, snapshot):
+        response = client.post(reverse(views.get_languages))
+        snapshot_response(response, snapshot)
+        assert response.status_code == 400
+
+
+class TestGetTags:
+    def test_get_no_data_tags(self, client, django_settings):
+        response = client.get(reverse(views.get_tags))
+        assert response.json()["tags"] == ["Alt Art", "Extended", "Full Art", "NSFW"]
+
+    def test_get_one_data_tag(self, client, django_settings, tag_in_data):
+        response = client.get(reverse(views.get_tags))
+        assert response.json()["tags"] == ["Alt Art", "Extended", "Full Art", "NSFW", "Tag In Data"]
+
+    def test_get_two_data_tags(self, client, django_settings, tag_in_data, another_tag_in_data):
+        response = client.get(reverse(views.get_tags))
+        assert response.json()["tags"] == [
+            "Alt Art",
+            "Another Tag In Data",
+            "Extended",
+            "Full Art",
+            "NSFW",
+            "Tag In Data",
+        ]
+
+    def test_post_request(self, client, django_settings, snapshot):
+        response = client.post(reverse(views.get_tags))
+        snapshot_response(response, snapshot)
+        assert response.status_code == 400
+
+
 class TestPostCardbacks:
     @pytest.fixture(autouse=True)
     def autouse_populated_database(self, django_settings, all_sources):
@@ -515,6 +641,63 @@ class TestPostCardbacks:
         )
         snapshot_response(response, snapshot)
         assert len(response.json()["cardbacks"]) == 0
+
+    def test_get_one_row_filtered_one_language(self, client, snapshot, simple_cube, simple_lotus):
+        search_settings = deepcopy(BASE_SEARCH_SETTINGS)
+        search_settings["filterSettings"]["languages"] = ["EN"]
+        search_settings["searchTypeSettings"]["filterCardbacks"] = True
+        response = client.post(
+            reverse(views.post_cardbacks), {"searchSettings": search_settings}, content_type="application/json"
+        )
+        snapshot_response(response, snapshot)
+        assert response.status_code == 200
+        assert len(response.json()["cardbacks"]) == 1
+
+    def test_get_multiple_rows_filtered_two_languages(self, client, snapshot, simple_cube, simple_lotus):
+        search_settings = deepcopy(BASE_SEARCH_SETTINGS)
+        search_settings["filterSettings"]["languages"] = ["EN", "DE"]
+        search_settings["searchTypeSettings"]["filterCardbacks"] = True
+        response = client.post(
+            reverse(views.post_cardbacks), {"searchSettings": search_settings}, content_type="application/json"
+        )
+        snapshot_response(response, snapshot)
+        assert response.status_code == 200
+        assert len(response.json()["cardbacks"]) == 2
+
+    def test_get_one_row_filtered_one_tag(self, client, snapshot, simple_cube, simple_lotus, another_tag_in_data):
+        search_settings = deepcopy(BASE_SEARCH_SETTINGS)
+        search_settings["filterSettings"]["tags"] = [another_tag_in_data.name]
+        search_settings["searchTypeSettings"]["filterCardbacks"] = True
+        response = client.post(
+            reverse(views.post_cardbacks), {"searchSettings": search_settings}, content_type="application/json"
+        )
+        snapshot_response(response, snapshot)
+        assert response.status_code == 200
+        assert len(response.json()["cardbacks"]) == 1
+
+    def test_get_multiple_rows_filtered_one_tag(self, client, snapshot, simple_cube, simple_lotus, tag_in_data):
+        search_settings = deepcopy(BASE_SEARCH_SETTINGS)
+        search_settings["filterSettings"]["tags"] = [tag_in_data.name, tag_in_data.name]
+        search_settings["searchTypeSettings"]["filterCardbacks"] = True
+        response = client.post(
+            reverse(views.post_cardbacks), {"searchSettings": search_settings}, content_type="application/json"
+        )
+        snapshot_response(response, snapshot)
+        assert response.status_code == 200
+        assert len(response.json()["cardbacks"]) == 2
+
+    def test_get_multiple_rows_filtered_two_tags(
+        self, client, snapshot, simple_cube, simple_lotus, tag_in_data, another_tag_in_data
+    ):
+        search_settings = deepcopy(BASE_SEARCH_SETTINGS)
+        search_settings["filterSettings"]["tags"] = [tag_in_data.name, another_tag_in_data.name]
+        search_settings["searchTypeSettings"]["filterCardbacks"] = True
+        response = client.post(
+            reverse(views.post_cardbacks), {"searchSettings": search_settings}, content_type="application/json"
+        )
+        snapshot_response(response, snapshot)
+        assert response.status_code == 200
+        assert len(response.json()["cardbacks"]) == 2
 
     @pytest.mark.parametrize(
         "json_body",

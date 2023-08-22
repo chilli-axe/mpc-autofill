@@ -536,11 +536,11 @@ def get_languages(request: HttpRequest) -> HttpResponse:
         {
             "languages": sorted(
                 [
-                    {"name": language.name, "code": row[0]}
+                    {"name": language.name, "code": row[0].upper()}
                     for row in Card.objects.order_by().values_list("language").distinct()
                     if (language := pycountry.languages.get(alpha_2=row[0])) is not None
                 ],
-                # sort like this so DEFAULT_LANGUAGE is first, then the rest of the languages in alphabetical order
+                # sort like this so DEFAULT_LANGUAGE is first, then the rest of the languages are in alphabetical order
                 key=lambda row: "-" if row["code"] == DEFAULT_LANGUAGE.alpha_2 else row["name"],
             )
         }

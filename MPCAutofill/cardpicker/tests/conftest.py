@@ -5,7 +5,7 @@ from pytest_elasticsearch import factories
 
 from django.core.management import call_command
 
-from cardpicker.models import Card, CardTypes, Source
+from cardpicker.models import Card, CardTypes, DFCPair, Source, Tag
 from cardpicker.tests.constants import Cards, Sources
 from cardpicker.tests.factories import (
     CardFactory,
@@ -110,6 +110,7 @@ def island_classical(example_drive_1) -> Card:
         priority=6,
         size=Cards.ISLAND_CLASSICAL.value.size,
         date=dt.datetime(2023, 1, 1),
+        language="FR",
     )
 
 
@@ -129,7 +130,7 @@ def mountain(example_drive_1) -> Card:
 
 
 @pytest.fixture()
-def simple_cube(example_drive_1) -> Card:
+def simple_cube(example_drive_1, tag_in_data, another_tag_in_data) -> Card:
     return CardFactory(
         pk=Cards.SIMPLE_CUBE.value.pk,
         card_type=CardTypes.CARDBACK,
@@ -140,11 +141,13 @@ def simple_cube(example_drive_1) -> Card:
         priority=17,
         size=Cards.SIMPLE_CUBE.value.size,
         date=dt.datetime(2023, 1, 1),
+        tags=[tag_in_data.name, another_tag_in_data.name],
+        language="DE",
     )
 
 
 @pytest.fixture()
-def simple_lotus(example_drive_2) -> Card:
+def simple_lotus(example_drive_2, tag_in_data) -> Card:
     return CardFactory(
         pk=Cards.SIMPLE_LOTUS.value.pk,
         card_type=CardTypes.CARDBACK,
@@ -155,6 +158,8 @@ def simple_lotus(example_drive_2) -> Card:
         priority=7,
         size=Cards.SIMPLE_LOTUS.value.size,
         date=dt.datetime(2023, 1, 1),
+        tags=[tag_in_data.name],
+        language="EN",
     )
 
 
@@ -189,7 +194,7 @@ def ravager_of_the_fells(example_drive_1) -> Card:
 
 
 @pytest.fixture()
-def past_in_flames_1(example_drive_1) -> Card:
+def past_in_flames_1(example_drive_1, tag_in_data) -> Card:
     return CardFactory(
         pk=Cards.PAST_IN_FLAMES_1.value.pk,
         card_type=CardTypes.CARD,
@@ -200,11 +205,13 @@ def past_in_flames_1(example_drive_1) -> Card:
         priority=2,
         size=Cards.PAST_IN_FLAMES_1.value.size,
         date=dt.datetime(2023, 1, 1),
+        tags=[tag_in_data.name],
+        language="EN",
     )
 
 
 @pytest.fixture()
-def past_in_flames_2(example_drive_2) -> Card:
+def past_in_flames_2(example_drive_2, tag_in_data, another_tag_in_data) -> Card:
     return CardFactory(
         pk=Cards.PAST_IN_FLAMES_2.value.pk,
         card_type=CardTypes.CARD,
@@ -215,6 +222,8 @@ def past_in_flames_2(example_drive_2) -> Card:
         priority=2,
         size=Cards.PAST_IN_FLAMES_2.value.size,
         date=dt.datetime(2023, 1, 1),
+        tags=[tag_in_data.name, another_tag_in_data.name],
+        language="DE",
     )
 
 
@@ -278,7 +287,7 @@ def all_cards(
     delver_of_secrets,
     insectile_aberration,
     goblin,
-):
+) -> None:
     pass
 
 
@@ -286,21 +295,23 @@ def all_cards(
 
 # region DFCPair fixtures
 @pytest.fixture()
-def dfc_pairs(db):
-    DFCPairFactory(
-        pk=0,
-        front=Cards.HUNTMASTER_OF_THE_FELLS.value.name,
-        front_searchable=to_searchable(Cards.HUNTMASTER_OF_THE_FELLS.value.name),
-        back=Cards.RAVAGER_OF_THE_FELLS.value.name,
-        back_searchable=to_searchable(Cards.RAVAGER_OF_THE_FELLS.value.name),
-    )
-    DFCPairFactory(
-        pk=1,
-        front=Cards.DELVER_OF_SECRETS.value.name,
-        front_searchable=to_searchable(Cards.DELVER_OF_SECRETS.value.name),
-        back=Cards.INSECTILE_ABERRATION.value.name,
-        back_searchable=to_searchable(Cards.INSECTILE_ABERRATION.value.name),
-    )
+def dfc_pairs(db) -> list[DFCPair]:
+    return [
+        DFCPairFactory(
+            pk=0,
+            front=Cards.HUNTMASTER_OF_THE_FELLS.value.name,
+            front_searchable=to_searchable(Cards.HUNTMASTER_OF_THE_FELLS.value.name),
+            back=Cards.RAVAGER_OF_THE_FELLS.value.name,
+            back_searchable=to_searchable(Cards.RAVAGER_OF_THE_FELLS.value.name),
+        ),
+        DFCPairFactory(
+            pk=1,
+            front=Cards.DELVER_OF_SECRETS.value.name,
+            front_searchable=to_searchable(Cards.DELVER_OF_SECRETS.value.name),
+            back=Cards.INSECTILE_ABERRATION.value.name,
+            back_searchable=to_searchable(Cards.INSECTILE_ABERRATION.value.name),
+        ),
+    ]
 
 
 # endregion
@@ -310,8 +321,13 @@ def dfc_pairs(db):
 
 
 @pytest.fixture()
-def tags(db):
-    TagFactory(name="Tag in Data")
+def tag_in_data(db) -> Tag:
+    return TagFactory(name="Tag in Data")
+
+
+@pytest.fixture()
+def another_tag_in_data(db) -> Tag:
+    return TagFactory(name="Another Tag in Data")
 
 
 # endregion

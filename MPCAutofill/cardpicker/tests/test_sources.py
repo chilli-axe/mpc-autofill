@@ -89,7 +89,7 @@ class TestAPI:
             (FOLDER_Z, set()),
         ],
     )
-    def test_folder_tags(self, django_settings, tags, folder, expected_tags):
+    def test_folder_tags(self, django_settings, tag_in_data, folder, expected_tags):
         read_tags_in_database()
         assert folder.tags == expected_tags
 
@@ -103,7 +103,7 @@ class TestAPI:
             (FOLDER_H, "Folder H [Some more words]"),
         ],
     )
-    def test_folder_name(self, django_settings, tags, folder, expected_name):
+    def test_folder_name(self, django_settings, tag_in_data, folder, expected_name):
         read_tags_in_database()
         _, name, _ = folder.unpacked_name
         assert name == expected_name
@@ -133,7 +133,7 @@ class TestAPI:
             (IMAGE_F, {"NSFW", "Tag In Data"}),
         ],
     )
-    def test_image_tags(self, django_settings, tags, image, expected_tags):
+    def test_image_tags(self, django_settings, tag_in_data, image, expected_tags):
         read_tags_in_database()
         assert image.tags == expected_tags
 
@@ -151,7 +151,7 @@ class TestAPI:
             (IMAGE_DOUBLE_NSFW, "NSFW"),
         ],
     )
-    def test_image_name(self, django_settings, tags, image, expected_name):
+    def test_image_name(self, django_settings, tag_in_data, image, expected_name):
         read_tags_in_database()
         _, name, _, _ = image.unpacked_name
         assert name == expected_name
