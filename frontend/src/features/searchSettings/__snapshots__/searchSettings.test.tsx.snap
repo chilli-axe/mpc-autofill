@@ -219,7 +219,7 @@ exports[`the html structure of search settings 1`] = `
       </div>
       <label
         class="form-label"
-        for="selectLanguage"
+        for="selectTags"
       >
         Select tags
       </label>

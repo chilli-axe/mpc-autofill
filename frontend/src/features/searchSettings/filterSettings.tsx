@@ -135,7 +135,7 @@ export function FilterSettings({
         }}
         labelledBy="selectLanguage"
       />
-      <Form.Label htmlFor="selectLanguage">Select tags</Form.Label>
+      <Form.Label htmlFor="selectTags">Select tags</Form.Label>
       <StyledMultiSelect
         options={tagOptions}
         disableSearch={true}
