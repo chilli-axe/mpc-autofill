@@ -122,7 +122,7 @@ export function FilterSettings({
       <Form.Label htmlFor="selectLanguage">Select languages</Form.Label>
       <StyledMultiSelect
         options={languageOptions}
-        hasSelectAll={false}
+        disableSearch={true}
         isLoading={getLanguagesQuery.isFetching}
         value={filterSettings.languages
           .map((code) => languageOptionsByCode[code])
@@ -138,7 +138,7 @@ export function FilterSettings({
       <Form.Label htmlFor="selectLanguage">Select tags</Form.Label>
       <StyledMultiSelect
         options={tagOptions}
-        hasSelectAll={false}
+        disableSearch={true}
         isLoading={getTagsQuery.isFetching}
         value={filterSettings.tags.map((tag) => ({ label: tag, value: tag }))}
         onChange={(data: Array<{ label: string; value: string }>) => {
