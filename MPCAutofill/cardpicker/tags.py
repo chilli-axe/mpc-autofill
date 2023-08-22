@@ -12,8 +12,8 @@ from cardpicker import models
 
 class Tag(str, MultiValueEnum):
     ALT_ART = "Alt Art", "Alternative Art", "Alternate Art", "Alt"
-    EXTENDED = "Extended", "EXTENDED Art"
-    FULL_ART = "Full Art", "FULL ART", "Fullart", "Full"
+    EXTENDED = "Extended", "Extended Art"
+    FULL_ART = "Full Art", "Fullart", "Full"
     NSFW = "NSFW", "Nsfw"
 
     @staticmethod
