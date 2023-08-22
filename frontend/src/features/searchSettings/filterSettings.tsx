@@ -4,11 +4,14 @@
  * This component forms part of the Search Settings modal.
  */
 
-import React from "react";
+import React, { useState } from "react";
 import Col from "react-bootstrap/Col";
 import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
+import { MultiSelect } from "react-multi-select-component";
+import styled from "styled-components";
 
+import { useGetLanguagesQuery, useGetTagsQuery } from "@/app/api";
 import {
   DPIStep,
   MaximumDPI,
@@ -17,6 +20,10 @@ import {
   SizeStep,
 } from "@/common/constants";
 import { FilterSettings as FilterSettingsType } from "@/common/types";
+
+const StyledMultiSelect = styled(MultiSelect)`
+  color: black;
+`;
 
 interface FilterSettingsProps {
   filterSettings: FilterSettingsType;
@@ -29,6 +36,21 @@ export function FilterSettings({
   filterSettings,
   setFilterSettings,
 }: FilterSettingsProps) {
+  const getLanguagesQuery = useGetLanguagesQuery();
+  const getTagsQuery = useGetTagsQuery();
+
+  const languageOptions = (getLanguagesQuery.data ?? []).map((row) => ({
+    label: row.name,
+    value: row.code,
+  }));
+  const languageOptionsByCode = Object.fromEntries(
+    languageOptions.map((row) => [row.value, row])
+  );
+  const tagOptions = (getTagsQuery.data ?? []).map((tag) => ({
+    label: tag,
+    value: tag,
+  }));
+
   return (
     <>
       <h5>Filters</h5>
@@ -91,6 +113,41 @@ export function FilterSettings({
             maximumSize: parseInt(event.target.value),
           });
         }}
+      />
+      <br />
+      <br />
+      Configure the languages and tags to filter the search results on.
+      <br />
+      <br />
+      <Form.Label htmlFor="selectLanguage">Select languages</Form.Label>
+      <StyledMultiSelect
+        options={languageOptions}
+        disableSearch={true}
+        isLoading={getLanguagesQuery.isFetching}
+        value={filterSettings.languages
+          .map((code) => languageOptionsByCode[code])
+          .filter((row) => row != null)}
+        onChange={(data: Array<{ label: string; value: string }>) => {
+          setFilterSettings({
+            ...filterSettings,
+            languages: data.map((row) => row.value),
+          });
+        }}
+        labelledBy="selectLanguage"
+      />
+      <Form.Label htmlFor="selectTags">Select tags</Form.Label>
+      <StyledMultiSelect
+        options={tagOptions}
+        disableSearch={true}
+        isLoading={getTagsQuery.isFetching}
+        value={filterSettings.tags.map((tag) => ({ label: tag, value: tag }))}
+        onChange={(data: Array<{ label: string; value: string }>) => {
+          setFilterSettings({
+            ...filterSettings,
+            tags: data.map((row) => row.value),
+          });
+        }}
+        labelledBy="selectTags"
       />
     </>
   );

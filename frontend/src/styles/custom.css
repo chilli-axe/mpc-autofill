@@ -76,6 +76,16 @@
   /*outline: 1px solid navy;*/
 }
 
+.mpccard-tags {
+  font-size: 0.9rem;
+  line-height: 0.9rem;
+  height: 1.8rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
 .mpccard-counter,
 .mpccard-counter-btn {
   font-size: 0.85rem;

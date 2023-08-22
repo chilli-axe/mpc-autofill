@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable, Optional, TypeVar, cast
 
+import pycountry
 from elasticsearch import Elasticsearch
 from elasticsearch.exceptions import ConnectionError as ElasticConnectionError
 from elasticsearch_dsl.document import Search
@@ -16,7 +17,7 @@ from referencing import Registry, Resource
 
 from django.conf import settings
 from django.core.paginator import Paginator
-from django.db.models import QuerySet
+from django.db.models import Q, QuerySet
 from django.http import HttpRequest
 from django.utils import timezone
 
@@ -211,6 +212,8 @@ class SearchSettings:
     min_dpi: int
     max_dpi: int
     max_size: int  # number of bytes
+    languages: list[pycountry.Languages]
+    tags: list[str]
 
     @classmethod
     def from_json_body(cls, json_body: dict[str, Any]) -> "SearchSettings":
@@ -242,6 +245,13 @@ class SearchSettings:
         max_dpi = int(filter_settings["maximumDPI"])
         max_size = int(filter_settings["maximumSize"]) * 1_000_000
 
+        languages = [
+            parsed_language
+            for language in filter_settings["languages"]
+            if (parsed_language := pycountry.languages.get(alpha_2=language)) is not None
+        ]
+        tags = filter_settings["tags"]
+
         return cls(
             fuzzy_search=fuzzy_search,
             filter_cardbacks=filter_cardbacks,
@@ -249,6 +259,8 @@ class SearchSettings:
             min_dpi=min_dpi,
             max_dpi=max_dpi,
             max_size=max_size,
+            languages=languages,
+            tags=tags,
         )
 
     def get_source_order(self) -> dict[str, int]:
@@ -262,8 +274,17 @@ class SearchSettings:
         cardbacks: list[str]
         order_by = ["-priority", "source__name", "name"]
         if self.filter_cardbacks:
+            # afaik, `~Q(pk__in=[])` is the best way to have an always-true filter
+            language_filter = (
+                Q(language__in=[language.alpha_2.upper() for language in self.languages])
+                if self.languages
+                else ~Q(pk__in=[])
+            )
+            tag_filter = (Q(tags__contains=self.tags) | Q(tags__contained_by=self.tags)) if self.tags else ~Q(pk__in=[])
             source_order = self.get_source_order()
             hits_iterable = Card.objects.filter(
+                language_filter,
+                tag_filter,
                 card_type=CardTypes.CARDBACK,
                 source__key__in=self.sources,
                 dpi__gte=self.min_dpi,
@@ -342,6 +363,15 @@ class SearchQuery:
             .sort({"priority": {"order": "desc"}})
             .source(fields=["identifier", "source", "searchq"])
         )
+        if search_settings.languages:
+            s = s.filter(
+                Bool(
+                    should=Terms(language=[language.alpha_2 for language in search_settings.languages]),
+                    minimum_should_match=1,
+                )
+            )
+        if search_settings.tags:
+            s = s.filter(Bool(should=Terms(tags=search_settings.tags), minimum_should_match=1))
         hits_iterable = s.params(preserve_order=True).scan()
 
         source_order = search_settings.get_source_order()
@@ -447,3 +477,24 @@ def get_new_cards_paginator(source: Source) -> Paginator[QuerySet[Card]]:
 
 
 # endregion
+
+__all__ = [
+    "get_elasticsearch_connection",
+    "ping_elasticsearch",
+    "elastic_connection",
+    "build_context",
+    "retrieve_search_settings",
+    "text_to_list",
+    "query_es_card",
+    "query_es_cardback",
+    "query_es_token",
+    "search_database",
+    "search_new_elasticsearch_definition",
+    "search_new",
+    "SearchSettings",
+    "SearchQuery",
+    "get_schema_directory",
+    "parse_json_body_as_search_settings",
+    "parse_json_body_as_search_data",
+    "get_new_cards_paginator",
+]

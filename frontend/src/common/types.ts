@@ -58,6 +58,8 @@ export interface CardDocument {
   size: number;
   small_thumbnail_url: string;
   medium_thumbnail_url: string;
+  language: string;
+  tags: Array<string>;
 }
 
 export interface CardDocuments {
@@ -241,4 +243,9 @@ export interface ModalsState {
   card: CardDocument | null;
   slots: Slots | null;
   shownModal: Modals | null;
+}
+
+export interface Language {
+  name: string;
+  code: string;
 }

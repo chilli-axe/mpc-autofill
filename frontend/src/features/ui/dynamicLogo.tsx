@@ -219,6 +219,8 @@ const SampleCardDocument: CardDocument = {
   size: 1,
   small_thumbnail_url: "/logo-blank.png",
   medium_thumbnail_url: "",
+  language: "EN",
+  tags: [],
 };
 
 export function DynamicLogo() {

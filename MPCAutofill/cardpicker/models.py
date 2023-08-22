@@ -12,7 +12,6 @@ from django.utils.translation import gettext_lazy
 
 from cardpicker.constants import DATE_FORMAT
 from cardpicker.sources.source_types import SourceTypeChoices
-from cardpicker.tags import Tag
 
 
 class Faces(models.TextChoices):
@@ -199,14 +198,13 @@ class Card(models.Model):
     extension = models.CharField(max_length=200)
     date = models.DateTimeField(default=datetime.now)
     size = models.IntegerField()
-    tags = ArrayField(
-        models.CharField(max_length=20),
-        default=list,  # Empty list as default
-    )
+    tags = ArrayField(models.CharField(max_length=20), default=list, blank=True)  # null=True is just for admin panel
+    language = models.CharField(max_length=5)
 
     def __str__(self) -> str:
         return (
             f"[{self.source.name}] "
+            f"<{self.language}> "
             f"{self.name} "
             f"[Type: {self.card_type}, "
             f"Identifier: {self.identifier}, "
@@ -235,7 +233,8 @@ class Card(models.Model):
             "download_link": self.get_download_link(),
             "small_thumbnail_url": self.get_small_thumbnail_url(),
             "medium_thumbnail_url": self.get_medium_thumbnail_url(),
-            "tags": self.get_tags(),
+            "tags": self.tags,
+            "language": self.language,
         }
 
     def get_source_key(self) -> str:
@@ -265,14 +264,21 @@ class Card(models.Model):
             self.identifier
         )
 
-    def set_tags(self, tags: list[Tag]) -> None:
-        self.tags = tags
-
-    def get_tags(self) -> list[Tag]:
-        return list(map(Tag, self.tags))
-
     class Meta:
         ordering = ["-priority"]
+
+
+class Tag(models.Model):
+    name = models.CharField(unique=True)
+    # null=True is just for admin panel
+    aliases = ArrayField(models.CharField(max_length=200), default=list, blank=True)
+
+    def __str__(self) -> str:
+        return self.name
+
+    @classmethod
+    def get_tags(cls) -> dict[str, list[str]]:
+        return {tag.name: tag.aliases for tag in Tag.objects.all()}
 
 
 class DFCPair(models.Model):

@@ -44,3 +44,12 @@ class CardFactory(factory.django.DjangoModelFactory):
     searchq_keyword = factory.LazyAttribute(lambda o: to_searchable(o.name))
     extension = factory.LazyFunction(lambda: "png")
     size = factory.LazyFunction(lambda: 100)
+    language = factory.LazyAttribute(lambda o: "en")
+
+
+class TagFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.Tag
+
+    name = factory.Sequence(lambda n: f"Tag {n}")
+    aliases = factory.LazyAttribute(lambda o: [o.name.replace(" ", "")])

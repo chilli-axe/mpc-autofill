@@ -32,7 +32,7 @@ test("the html structure of search settings", async () => {
     searchResultsOneResult,
     ...defaultHandlers
   );
-  renderWithProviders(<App />, {
+  const { container } = renderWithProviders(<App />, {
     preloadedState: {
       backend: localBackend,
       project: { members: [], cardback: null },
@@ -47,6 +47,8 @@ test("the html structure of search settings", async () => {
 
   const searchSettings = await openSearchSettingsModal();
   await waitFor(() => within(searchSettings).getByText(sourceDocument1.name));
+  // the below line waits until all multi-select elements have finished loading
+  await waitFor(() => container.querySelectorAll(".spinner").length === 0);
   expect(searchSettings).toMatchSnapshot();
 });
 

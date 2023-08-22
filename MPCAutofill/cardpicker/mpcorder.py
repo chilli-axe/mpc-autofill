@@ -13,8 +13,9 @@ import chardet
 import defusedxml.ElementTree as ET
 
 from cardpicker.models import DFCPair
-from cardpicker.utils import process_line, text_to_list, to_searchable
 from cardpicker.utils.link_imports import ImportSites
+from cardpicker.utils.sanitisation import process_line, to_searchable
+from cardpicker.utils.search_functions import text_to_list
 
 
 class ParsingErrors:

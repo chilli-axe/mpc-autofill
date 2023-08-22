@@ -17,6 +17,7 @@ import {
   Contributions,
   DFCPairs,
   ImportSite,
+  Language,
   NewCardsFirstPages,
   NewCardsPage,
   SearchQuery,
@@ -77,6 +78,21 @@ export const api = createApi({
           ])
         );
       },
+    }),
+    getLanguages: builder.query<Array<Language>, void>({
+      query: () => ({ url: `2/languages/`, method: "GET" }),
+      providesTags: [QueryTags.BackendSpecific],
+      transformResponse: (
+        response: { languages: Array<Language> },
+        meta,
+        arg
+      ) => response.languages,
+    }),
+    getTags: builder.query<Array<string>, void>({
+      query: () => ({ url: `2/tags/`, method: "GET" }),
+      providesTags: [QueryTags.BackendSpecific],
+      transformResponse: (response: { tags: Array<string> }, meta, arg) =>
+        response.tags,
     }),
     getSampleCards: builder.query<
       { [cardType: string]: Array<CardDocument> },
@@ -156,6 +172,8 @@ const {
   useGetImportSitesQuery: useRawGetImportSitesQuery,
   useQueryImportSiteQuery: useRawQueryImportSiteQuery,
   useGetDFCPairsQuery: useRawGetDFCPairsQuery,
+  useGetLanguagesQuery: useRawGetLanguagesQuery,
+  useGetTagsQuery: useRawGetTagsQuery,
   useGetSampleCardsQuery: useRawGetSampleCardsQuery,
   useGetContributionsQuery: useRawGetContributionsQuery,
   useGetBackendInfoQuery: useRawGetBackendInfoQuery,
@@ -173,6 +191,20 @@ export function useGetImportSitesQuery() {
 export function useGetDFCPairsQuery() {
   const backendConfigured = useBackendConfigured();
   return useRawGetDFCPairsQuery(undefined, {
+    skip: !backendConfigured,
+  });
+}
+
+export function useGetLanguagesQuery() {
+  const backendConfigured = useBackendConfigured();
+  return useRawGetLanguagesQuery(undefined, {
+    skip: !backendConfigured,
+  });
+}
+
+export function useGetTagsQuery() {
+  const backendConfigured = useBackendConfigured();
+  return useRawGetTagsQuery(undefined, {
     skip: !backendConfigured,
   });
 }

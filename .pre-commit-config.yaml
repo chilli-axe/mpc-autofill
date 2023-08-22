@@ -52,6 +52,7 @@ repos:
             "oauth2client~=4.1",
             "Markdown~=3.4",
             "psycopg2-binary~=2.9.6",
+            "pycountry~=22.3.0",
             "tqdm~=4.65",
           ]
         pass_filenames: false

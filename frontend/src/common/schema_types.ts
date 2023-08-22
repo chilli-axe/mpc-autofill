@@ -56,4 +56,12 @@ export interface FilterSettings {
    * The maximum filesize that cards can have to be included in search results
    */
   maximumSize: number;
+  /**
+   * The language the cards have to be written in to be included in search results
+   */
+  languages: string[];
+  /**
+   * The tags which the cards must have to be included in search results
+   */
+  tags: string[];
 }
