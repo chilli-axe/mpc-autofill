@@ -163,7 +163,7 @@ class TestAPI:
 class TestUpdateDatabase:
     # region tests
 
-    def test_comprehensive_snapshot(self, snapshot, django_settings, elasticsearch, all_sources, tags):
+    def test_comprehensive_snapshot(self, snapshot, django_settings, elasticsearch, all_sources, tag_in_data):
         update_database()
         assert list(Card.objects.all().order_by("identifier")) == snapshot(name="cards")
 
