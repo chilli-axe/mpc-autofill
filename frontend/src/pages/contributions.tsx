@@ -79,7 +79,7 @@ function ContributionGuidelines() {
           <ul>
             <li>
               You may specify the language an image is written in inside{" "}
-              <code>{"<>"}</code> angle brackets at the <b>start</b> of the file
+              <code>{"{}"}</code> curly brackets at the <b>start</b> of the file
               name, using the{" "}
               <a href="https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes">
                 <b>ISO-639-1</b> nomenclature

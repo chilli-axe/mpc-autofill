@@ -24,7 +24,7 @@ class TestAPI:
     FOLDER_X = Folder(id="x", name="Folder X [NSFW, Extended, Full Art]", parent=None)
     FOLDER_Y = Folder(id="y", name="Folder Y [full art, Invalid Tag]", parent=None)
     FOLDER_Z = Folder(id="z", name="Folder z [Full Art", parent=None)
-    FOLDER_FRENCH = Folder(id="french", name="<FR> Folder", parent=None)
+    FOLDER_FRENCH = Folder(id="french", name="{FR} Folder", parent=None)
 
     IMAGE_A = Image(id="a", name="Image A.png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_A)
     IMAGE_B = Image(id="b", name="Image B [NSFW].png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_A)
@@ -45,7 +45,7 @@ class TestAPI:
         id="french", name="French.png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_FRENCH
     )
     IMAGE_ENGLISH = Image(
-        id="english", name="<EN> English.png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_FRENCH
+        id="english", name="{EN} English.png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_FRENCH
     )
     IMAGE_NSFW = Image(id="nsfw", name="NSFW [NSFW].png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_A)
     IMAGE_DOUBLE_NSFW = Image(

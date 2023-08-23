@@ -41,12 +41,12 @@ class Folder:
     @functools.cached_property
     def unpacked_name(self) -> tuple[Optional[pycountry.Languages], str, set[str]]:
         """
-        The folder's name is unpacked according to the below schema. For example, consider `<EN> Cards [NSFW]`:
-             <EN>              Cards         [NSFW]
+        The folder's name is unpacked according to the below schema. For example, consider `{EN} Cards [NSFW]`:
+             {EN}              Cards         [NSFW]
         └─ language ──┘ └─ folder name ──┘ └─ tags ──┘
         """
 
-        folder_name_results = re.compile(r"^(?:<(.+)> )?(.*?)$").search(self.name)
+        folder_name_results = re.compile(r"^(?:\{(.+)\} )?(.*?)$").search(self.name)
         assert folder_name_results is not None
         language_code, name = folder_name_results.groups()
         language = pycountry.languages.get(alpha_2=language_code) if language_code else None
@@ -80,13 +80,13 @@ class Image:
     @functools.cached_property
     def unpacked_name(self) -> tuple[pycountry.Languages, str, set[str], str]:
         """
-        The image's name is unpacked according to the below schema. For example, consider `<EN> Opt [NSFW].png`:
-             <EN>             opt          [NSFW]   .      png
+        The image's name is unpacked according to the below schema. For example, consider `{EN} Opt [NSFW].png`:
+             {EN}             opt          [NSFW]   .      png
         └─ language ──┘ └─ card name ──┘ └─ tags ──┘ └─ extension ──┘
         """
 
         assert self.name, "File name is empty string"
-        image_name_results = re.compile(r"^(?:<(.+)> )?(.*?)(?:\.(.*?))?$").search(self.name)
+        image_name_results = re.compile(r"^(?:\{(.+)\} )?(.*?)(?:\.(.*?))?$").search(self.name)
         assert image_name_results is not None
         language_code, name, extension = image_name_results.groups()
         language = pycountry.languages.get(alpha_2=language_code) if language_code else None
