@@ -53,8 +53,7 @@ export function processQuery(query: string): string {
     query
       .toLowerCase()
       .trim()
-      // eslint-disable-next-line
-      .replace(/[~`!@#$%^&*(){}\[\];:"'<,.>?/\\|_+=]/g, "")
+      .replace(/[~`!@#$%^&*(){}\[\];:"'’<,.>?/\\|_+=]/g, "")
   );
 }
 
