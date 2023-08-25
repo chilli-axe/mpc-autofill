@@ -1,4 +1,5 @@
 import time
+from collections import deque
 from concurrent.futures import ThreadPoolExecutor
 from itertools import groupby
 from typing import Optional, Type
@@ -17,8 +18,8 @@ MAX_WORKERS = 5
 DPI_HEIGHT_RATIO = 300 / 1110  # 300 DPI for image of vertical resolution 1110 pixels
 
 
-def add_images_in_folder_to_list(source_type: Type[SourceType], folder: Folder, image_list: list[Image]) -> None:
-    image_list += source_type.get_all_images_inside_folder(folder)
+def add_images_in_folder_to_list(source_type: Type[SourceType], folder: Folder, images: deque[Image]) -> None:
+    images.extend(source_type.get_all_images_inside_folder(folder))
 
 
 def explore_folder(source: Source, source_type: Type[SourceType], root_folder: Folder) -> list[Image]:
@@ -28,14 +29,15 @@ def explore_folder(source: Source, source_type: Type[SourceType], root_folder: F
 
     t0 = time.time()
     print(f"Locating images for source {TEXT_BOLD}{source.name}{TEXT_END}...", end="", flush=True)
-    image_list: list[Image] = []
-    folder_list: list[Folder] = [root_folder]
+    images: deque[Image] = deque()
+    folders: list[Folder] = [root_folder]
     with ThreadPoolExecutor(max_workers=MAX_WORKERS) as pool:
-        while len(folder_list) > 0:
-            folder = folder_list.pop()
-            pool.submit(add_images_in_folder_to_list, source_type=source_type, folder=folder, image_list=image_list)
+        while len(folders) > 0:
+            folder = folders.pop()
+            pool.submit(add_images_in_folder_to_list, source_type=source_type, folder=folder, images=images)
             sub_folders = source_type.get_all_folders_inside_folder(folder)
-            folder_list += list(filter(lambda x: not x.name.startswith("!"), sub_folders))
+            folders += list(filter(lambda x: not x.name.startswith("!"), sub_folders))
+    image_list = list(images)
     print(
         f" and done! Located {TEXT_BOLD}{len(image_list):,}{TEXT_END} images "
         f"in {TEXT_BOLD}{(time.time() - t0):.2f}{TEXT_END} seconds."
