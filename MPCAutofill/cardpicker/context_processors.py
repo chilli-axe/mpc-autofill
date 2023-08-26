@@ -4,7 +4,7 @@ from django.conf import settings
 from django.http import HttpRequest
 
 from cardpicker.forms import InputLink, InputText
-from cardpicker.integrations import get_configured_game_integration
+from cardpicker.integrations.integrations import get_configured_game_integration
 
 
 def add_site_info(request: HttpRequest) -> dict[str, Any]:
