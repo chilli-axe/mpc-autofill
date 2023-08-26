@@ -1,19 +1,20 @@
 import datetime as dt
+from typing import Type
 
 import pytest
 from pytest_elasticsearch import factories
 
 from django.core.management import call_command
 
+from cardpicker.integrations.base import GameIntegration
 from cardpicker.models import Card, CardTypes, DFCPair, Source, Tag
-from cardpicker.tests.constants import Cards, Sources
+from cardpicker.tests.constants import Cards, DummyIntegration, Sources
 from cardpicker.tests.factories import (
     CardFactory,
     DFCPairFactory,
     SourceFactory,
     TagFactory,
 )
-from cardpicker.utils.sanitisation import to_searchable
 
 
 @pytest.fixture()
@@ -21,6 +22,23 @@ def django_settings(db, settings):
     settings.DEBUG = True
     settings.DEFAULT_CARDBACK_FOLDER_PATH = "MPC Autofill Sample 1 / Cardbacks"
     settings.DEFAULT_CARDBACK_IMAGE_NAME = Cards.SIMPLE_CUBE.value.name
+
+
+@pytest.fixture()
+def integration_setter(settings, monkeypatch):
+    # this uses a neat lil trick i picked up at work for creating "parametrised fixtures"
+    def _setter(integration: Type[GameIntegration]) -> Type[GameIntegration]:
+        settings.GAME = integration.__class__.__name__
+        monkeypatch.setattr("cardpicker.views.get_configured_game_integration", lambda: integration)
+        monkeypatch.setattr("cardpicker.dfc_pairs.get_configured_game_integration", lambda: integration)
+        return integration
+
+    return _setter
+
+
+@pytest.fixture()
+def dummy_integration(integration_setter) -> Type[GameIntegration]:
+    return integration_setter(DummyIntegration)
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -298,19 +316,9 @@ def all_cards(
 def dfc_pairs(db) -> list[DFCPair]:
     return [
         DFCPairFactory(
-            pk=0,
-            front=Cards.HUNTMASTER_OF_THE_FELLS.value.name,
-            front_searchable=to_searchable(Cards.HUNTMASTER_OF_THE_FELLS.value.name),
-            back=Cards.RAVAGER_OF_THE_FELLS.value.name,
-            back_searchable=to_searchable(Cards.RAVAGER_OF_THE_FELLS.value.name),
+            pk=0, front=Cards.HUNTMASTER_OF_THE_FELLS.value.name, back=Cards.RAVAGER_OF_THE_FELLS.value.name
         ),
-        DFCPairFactory(
-            pk=1,
-            front=Cards.DELVER_OF_SECRETS.value.name,
-            front_searchable=to_searchable(Cards.DELVER_OF_SECRETS.value.name),
-            back=Cards.INSECTILE_ABERRATION.value.name,
-            back_searchable=to_searchable(Cards.INSECTILE_ABERRATION.value.name),
-        ),
+        DFCPairFactory(pk=1, front=Cards.DELVER_OF_SECRETS.value.name, back=Cards.INSECTILE_ABERRATION.value.name),
     ]
 
 

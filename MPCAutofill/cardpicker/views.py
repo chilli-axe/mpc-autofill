@@ -18,13 +18,12 @@ from django.views.decorators.csrf import csrf_exempt
 
 from cardpicker.constants import CARDS_PAGE_SIZE, DEFAULT_LANGUAGE
 from cardpicker.forms import InputCSV, InputLink, InputText, InputXML
+from cardpicker.integrations.integrations import get_configured_game_integration
+from cardpicker.integrations.patreon import get_patreon_campaign_details, get_patrons
 from cardpicker.models import Card, CardTypes, DFCPair, Source, summarise_contributions
 from cardpicker.mpcorder import Faces, MPCOrder, ReqTypes
-from cardpicker.tags import Tag, read_tags_in_database
-from cardpicker.utils.link_imports import ImportSites
-from cardpicker.utils.patreon import get_patreon_campaign_details, get_patrons
-from cardpicker.utils.sanitisation import to_searchable
-from cardpicker.utils.search_functions import (
+from cardpicker.search.sanitisation import to_searchable
+from cardpicker.search.search_functions import (
     SearchExceptions,
     build_context,
     get_new_cards_paginator,
@@ -38,6 +37,7 @@ from cardpicker.utils.search_functions import (
     search_new,
     search_new_elasticsearch_definition,
 )
+from cardpicker.tags import Tag, read_tags_in_database
 
 from MPCAutofill.settings import PATREON_URL
 
@@ -591,7 +591,11 @@ def get_import_sites(request: HttpRequest) -> HttpResponse:
     if request.method != "GET":
         raise BadRequestException("Expected GET request.")
 
-    import_sites = [{"name": x.__name__, "url": x().get_base_url()} for x in ImportSites]
+    game_integration = get_configured_game_integration()
+    if game_integration is None:
+        return JsonResponse({"import_sites": []})
+
+    import_sites = [{"name": site.__name__, "url": site.get_base_url()} for site in game_integration.get_import_sites()]
     return JsonResponse({"import_sites": import_sites})
 
 
@@ -604,6 +608,10 @@ def post_import_site_decklist(request: HttpRequest) -> HttpResponse:
 
     if request.method != "POST":
         raise BadRequestException("Expected POST request.")
+
+    game_integration = get_configured_game_integration()
+    if game_integration is None:
+        raise BadRequestException("No game integration is configured on this server.")
 
     json_body = json.loads(request.body)
     try:
@@ -619,17 +627,13 @@ def post_import_site_decklist(request: HttpRequest) -> HttpResponse:
     except ValidationError as e:
         raise BadRequestException(f"Malformed JSON body:\n\n{e.message}")
 
-    url = json_body["url"]
-    if url is None:
-        raise BadRequestException("No decklist URL provided.")
-    for site in ImportSites:
-        if url.startswith(site.get_base_url()):
-            text = site.retrieve_card_list(url)
-            cleaned_text = "\n".join(
-                [stripped_line for line in text.split("\n") if len(stripped_line := line.strip()) > 0]
-            )
-            return JsonResponse({"cards": cleaned_text})
-    raise BadRequestException("The specified decklist URL does not match any known import sites.")
+    try:
+        decklist = game_integration.query_import_site(json_body.get("url"))
+        if decklist is None:
+            raise BadRequestException("The specified decklist URL does not match any known import sites.")
+        return JsonResponse({"cards": decklist})
+    except ValueError as e:
+        raise BadRequestException(str(e))
 
 
 @csrf_exempt

@@ -197,6 +197,9 @@ DEFAULT_FROM_EMAIL = "default from email"
 DEFAULT_CARDBACK_FOLDER_PATH = env("DEFAULT_CARDBACK_FOLDER_PATH", default="Chilli_Axe's MTG Renders / 12. Cardbacks")
 DEFAULT_CARDBACK_IMAGE_NAME = env("DEFAULT_CARDBACK_IMAGE_NAME", default="Black Lotus")
 
+# Game integration - see integrations.py for valid options
+GAME = env("GAME", default="")
+
 # PATREON
 PATREON_ACCESS = env("PATREON_ACCESS", default="")
 PATREON_REFRESH = env("PATREON_REFRESH", default="")

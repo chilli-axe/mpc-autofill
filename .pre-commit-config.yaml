@@ -33,6 +33,7 @@ repos:
             "types-selenium",
             "types-requests",
             "types-chardet",
+            "types-jsonschema",
             # shared between desktop tool and backend
             "pytest~=7.3",
             "ratelimit~=2.2",
@@ -49,6 +50,8 @@ repos:
             "django-user-agents~=0.4",
             "django-widget-tweaks~=1.4",
             "google-api-python-client~=2.86",
+            "jsonschema~=4.18.4",
+            "Levenshtein~=0.21.1",
             "oauth2client~=4.1",
             "Markdown~=3.4",
             "psycopg2-binary~=2.9.6",

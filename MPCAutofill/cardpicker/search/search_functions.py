@@ -28,7 +28,7 @@ from cardpicker.constants import (
 )
 from cardpicker.documents import CardSearch
 from cardpicker.models import Card, CardTypes, Source
-from cardpicker.utils.sanitisation import to_searchable
+from cardpicker.search.sanitisation import to_searchable
 
 thread_local = threading.local()  # Should only be called once per thread
 
@@ -102,13 +102,6 @@ def retrieve_search_settings(request: HttpRequest) -> tuple[list[str], bool]:
     if (fuzzy_search_string := request.POST.get("fuzzy_search")) is not None:
         fuzzy_search = fuzzy_search_string == "true"
     return drive_order, fuzzy_search
-
-
-def text_to_list(input_text: str) -> list[int]:
-    # Helper function to translate strings like "[2, 4, 5, 6]" into lists
-    if input_text == "":
-        return []
-    return [int(x) for x in input_text.strip("][").replace(" ", "").split(",")]
 
 
 def query_es_card(drive_order: list[str], fuzzy_search: bool, query: str) -> list[dict[str, Any]]:
@@ -393,7 +386,7 @@ def parse_json_body_as_search_settings(json_body: dict[str, Any]) -> SearchSetti
     """
 
     schema_directory = get_schema_directory()
-    registry = Registry().with_resources(
+    registry = Registry[str]().with_resources(  # TODO: is this type annotation correct?
         [
             (
                 "search_settings.json",
@@ -412,7 +405,7 @@ def parse_json_body_as_search_settings(json_body: dict[str, Any]) -> SearchSetti
             "required": ["searchSettings"],
             "allowAdditionalProperties": False,
         },
-        registry=registry,
+        registry=registry,  # type: ignore  # apparently this is an unexpected keyword argument
     )
 
     # the below line may raise ValidationError
@@ -427,7 +420,7 @@ def parse_json_body_as_search_data(json_body: dict[str, Any]) -> tuple[SearchSet
     """
 
     schema_directory = get_schema_directory()
-    registry = Registry().with_resources(
+    registry = Registry[str]().with_resources(  # TODO: is this type annotation correct?
         [
             (schema_name, Resource.from_contents(json.loads((schema_directory / schema_name).read_text())))
             for schema_name in ["search_query.json", "search_settings.json"]
@@ -459,7 +452,7 @@ def parse_json_body_as_search_data(json_body: dict[str, Any]) -> tuple[SearchSet
             "required": ["searchSettings", "queries"],
             "allowAdditionalProperties": False,
         },
-        registry=registry,
+        registry=registry,  # type: ignore  # apparently this is an unexpected keyword argument
     )
 
     # the below line may raise ValidationError
@@ -479,12 +472,12 @@ def get_new_cards_paginator(source: Source) -> Paginator[QuerySet[Card]]:
 # endregion
 
 __all__ = [
+    "SearchExceptions",
     "get_elasticsearch_connection",
     "ping_elasticsearch",
     "elastic_connection",
     "build_context",
     "retrieve_search_settings",
-    "text_to_list",
     "query_es_card",
     "query_es_cardback",
     "query_es_token",

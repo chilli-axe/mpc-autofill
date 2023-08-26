@@ -1,6 +1,6 @@
 import pytest
 
-from cardpicker.utils import process_line, to_searchable
+from cardpicker.search.sanitisation import process_line, to_searchable
 
 
 class TestUtils:

@@ -3,7 +3,7 @@ import re
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional, Union
+from typing import Optional, Type, Union
 
 import pytest
 from selenium.webdriver import Chrome
@@ -19,7 +19,8 @@ from selenium.webdriver.support.expected_conditions import (
 from selenium.webdriver.support.ui import WebDriverWait
 from webdriver_manager.chrome import ChromeDriverManager
 
-from cardpicker.tests.constants import Card, Cards, Decks, Source, Sources
+from cardpicker.integrations.mtg import MTG
+from cardpicker.tests.constants import Card, Cards, Source, Sources
 
 
 @dataclass
@@ -30,6 +31,10 @@ class TestSourceRow:
 
 class TestFrontend:
     # region fixtures
+
+    @pytest.fixture(autouse=True)
+    def mtg_integration(self, integration_setter) -> Type[MTG]:
+        return integration_setter(MTG)
 
     @pytest.fixture(autouse=True)
     def autouse_populated_database(self, populated_database):
@@ -842,7 +847,25 @@ class TestFrontend:
         ]:
             os.path.exists(download_folder / expected_file)
 
-    @pytest.mark.parametrize("url", [x.value for x in Decks])
+    # note: these tests are hardcoded to the MTG integration.
+    # since writing these tests, the MTG integration has been abstracted to allow for additional integrations.
+    # so these are kept for maintenance of the old frontend until it can be fully decommissioned.
+    @pytest.mark.parametrize(
+        "url",
+        [
+            "https://aetherhub.com/Deck/test-796905",
+            "https://archidekt.com/decks/3380653",
+            "https://cubecobra.com/cube/overview/2fj4",
+            "https://deckstats.net/decks/216625/2754468-test",
+            "https://magic-ville.com/fr/decks/showdeck?ref=948045",
+            "https://manastack.com/deck/test-426",
+            "https://www.moxfield.com/decks/D42-or9pCk-uMi4XzRDziQ",
+            "https://www.mtggoldfish.com/deck/5149750",
+            "https://scryfall.com/@mpcautofill/decks/71bb2d40-c922-4a01-a63e-7ba2dde29a5c",
+            "https://tappedout.net/mtg-decks/09-10-22-DoY-test",
+            "https://decks.tcgplayer.com/magic/standard/mpc-autofill/test/1398367",
+        ],
+    )
     def test_import_from_url(self, chrome_driver, url, dfc_pairs):
         chrome_driver.find_element(By.ID, value="uploadCardsBtn").click()
         chrome_driver.find_element(By.ID, value="input_url").click()

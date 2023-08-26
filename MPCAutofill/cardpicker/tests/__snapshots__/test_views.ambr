@@ -152,48 +152,8 @@
     'json': dict({
       'import_sites': list([
         dict({
-          'name': 'Aetherhub',
-          'url': 'https://aetherhub.com',
-        }),
-        dict({
-          'name': 'Archidekt',
-          'url': 'https://archidekt.com',
-        }),
-        dict({
-          'name': 'CubeCobra',
-          'url': 'https://cubecobra.com',
-        }),
-        dict({
-          'name': 'Deckstats',
-          'url': 'https://deckstats.net',
-        }),
-        dict({
-          'name': 'MagicVille',
-          'url': 'https://magic-ville.com',
-        }),
-        dict({
-          'name': 'ManaStack',
-          'url': 'https://manastack.com',
-        }),
-        dict({
-          'name': 'Moxfield',
-          'url': 'https://www.moxfield.com',
-        }),
-        dict({
-          'name': 'MTGGoldfish',
-          'url': 'https://www.mtggoldfish.com',
-        }),
-        dict({
-          'name': 'Scryfall',
-          'url': 'https://scryfall.com',
-        }),
-        dict({
-          'name': 'TappedOut',
-          'url': 'https://tappedout.net',
-        }),
-        dict({
-          'name': 'TCGPlayer',
-          'url': 'https://decks.tcgplayer.com/',
+          'name': 'DummyImportSite',
+          'url': 'https://dummy-import-site.com',
         }),
       ]),
     }),
@@ -1602,81 +1562,10 @@
     'status_code': 400,
   })
 # ---
-# name: TestPostImportSiteDecklist.test_valid_url[https://aetherhub.com/Deck/test-796905]
+# name: TestPostImportSiteDecklist.test_valid_url
   Counter({
-    '1 Delver of Secrets': 1,
-    '3 Past in Flames': 1,
-    '4 Brainstorm': 1,
-  })
-# ---
-# name: TestPostImportSiteDecklist.test_valid_url[https://archidekt.com/decks/3380653]
-  Counter({
-    '1 Delver of Secrets // Insectile Aberration': 1,
-    '3 Past in Flames': 1,
-    '4 Brainstorm': 1,
-  })
-# ---
-# name: TestPostImportSiteDecklist.test_valid_url[https://cubecobra.com/cube/overview/2fj4]
-  Counter({
-    'Brainstorm': 4,
-    'Delver of Secrets': 1,
-    'Past in Flames': 3,
-  })
-# ---
-# name: TestPostImportSiteDecklist.test_valid_url[https://decks.tcgplayer.com/magic/standard/mpc-autofill/test/1398367]
-  Counter({
-    '1 Delver of Secrets': 1,
-    '3 Past in Flames': 1,
-    '4 Brainstorm': 1,
-  })
-# ---
-# name: TestPostImportSiteDecklist.test_valid_url[https://deckstats.net/decks/216625/2754468-test]
-  Counter({
-    '1 Delver of Secrets // Insectile Aberration': 1,
-    '3 Past in Flames': 1,
-    '4 Brainstorm': 1,
-  })
-# ---
-# name: TestPostImportSiteDecklist.test_valid_url[https://magic-ville.com/fr/decks/showdeck?ref=948045]
-  Counter({
-    '1 Delver of Secrets': 1,
-    '3 Past in Flames': 1,
-    '4 Brainstorm': 1,
-  })
-# ---
-# name: TestPostImportSiteDecklist.test_valid_url[https://manastack.com/deck/test-426]
-  Counter({
-    '1 Delver of Secrets': 1,
-    '3 Past in Flames': 1,
-    '4 Brainstorm': 1,
-  })
-# ---
-# name: TestPostImportSiteDecklist.test_valid_url[https://scryfall.com/@mpcautofill/decks/71bb2d40-c922-4a01-a63e-7ba2dde29a5c]
-  Counter({
-    '1 Delver of Secrets': 1,
-    '3 Past in Flames': 1,
-    '4 Brainstorm': 1,
-  })
-# ---
-# name: TestPostImportSiteDecklist.test_valid_url[https://tappedout.net/mtg-decks/09-10-22-DoY-test]
-  Counter({
-    '1 Delver of Secrets': 1,
-    '3 Past in Flames': 1,
-    '4 Brainstorm': 1,
-  })
-# ---
-# name: TestPostImportSiteDecklist.test_valid_url[https://www.moxfield.com/decks/D42-or9pCk-uMi4XzRDziQ]
-  Counter({
-    '1 Delver of Secrets // Insectile Aberration': 1,
-    '3 Past in Flames': 1,
-    '4 Brainstorm': 1,
-  })
-# ---
-# name: TestPostImportSiteDecklist.test_valid_url[https://www.mtggoldfish.com/deck/5149750]
-  Counter({
-    '1 Delver of Secrets': 1,
-    '3 Past in Flames': 1,
-    '4 Brainstorm': 1,
+    '3 another card': 1,
+    '4 some card': 1,
   })
 # ---
 # name: TestPostSearchResults.test_complex_search
