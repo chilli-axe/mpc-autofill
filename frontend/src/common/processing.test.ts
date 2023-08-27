@@ -79,6 +79,18 @@ test("line that doesn't specify quantity is processed correctly", () => {
   ]);
 });
 
+test("line that doesn't specify quantity but name begins with X is processed correctly", () => {
+  expect(processLine("xenagos the reveler", dfcPairs, false)).toStrictEqual([
+    1,
+    {
+      query: { card_type: Card, query: "xenagos the reveler" },
+      selectedImage: undefined,
+      selected: false,
+    },
+    null,
+  ]);
+});
+
 test("non-dfc line is processed correctly", () => {
   expect(processLine("3x Lightning Bolt", dfcPairs, false)).toStrictEqual([
     3,
