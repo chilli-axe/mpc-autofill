@@ -135,7 +135,9 @@ export function FilterSettings({
         }}
         labelledBy="selectLanguage"
       />
-      <Form.Label htmlFor="selectTags">Select tags</Form.Label>
+      <Form.Label htmlFor="selectTags">
+        Select tags which cards must have
+      </Form.Label>
       <StyledMultiSelect
         options={tagOptions}
         disableSearch={true}
@@ -145,9 +147,36 @@ export function FilterSettings({
           value: tag,
         }))}
         onChange={(data: Array<{ label: string; value: string }>) => {
+          const selectedTags = data.map((row) => row.value);
           setFilterSettings({
             ...filterSettings,
-            includesTags: data.map((row) => row.value),
+            includesTags: selectedTags,
+            excludesTags: filterSettings.excludesTags.filter(
+              (tag) => !selectedTags.includes(tag)
+            ),
+          });
+        }}
+        labelledBy="selectTags"
+      />
+      <Form.Label htmlFor="selectTags">
+        Select tags which cards must <b>not</b> have
+      </Form.Label>
+      <StyledMultiSelect
+        options={tagOptions}
+        disableSearch={true}
+        isLoading={getTagsQuery.isFetching}
+        value={filterSettings.excludesTags.map((tag) => ({
+          label: tag,
+          value: tag,
+        }))}
+        onChange={(data: Array<{ label: string; value: string }>) => {
+          const selectedTags = data.map((row) => row.value);
+          setFilterSettings({
+            ...filterSettings,
+            excludesTags: selectedTags,
+            includesTags: filterSettings.includesTags.filter(
+              (tag) => !selectedTags.includes(tag)
+            ),
           });
         }}
         labelledBy="selectTags"
