@@ -50,7 +50,7 @@ test("cookies with complete source order are respected", () => {
       maximumSize: 15,
       languages: [],
       includesTags: [],
-      excludesTags: [],
+      excludesTags: ["NSFW"],
     },
   };
   window.localStorage.setItem(
@@ -82,7 +82,7 @@ test("referenced sources that don't exist in database are filtered out", () => {
       maximumSize: MaximumSize,
       languages: [],
       includesTags: [],
-      excludesTags: [],
+      excludesTags: ["NSFW"],
     },
   };
   window.localStorage.setItem(
@@ -115,7 +115,7 @@ test("cookies with incomplete source order are correctly reconciled", () => {
       maximumSize: MaximumSize,
       languages: [],
       includesTags: [],
-      excludesTags: [],
+      excludesTags: ["NSFW"],
     },
   };
   window.localStorage.setItem(
@@ -151,7 +151,7 @@ test("cookies with incomplete source order plus invalid sources are correctly re
       maximumSize: MaximumSize,
       languages: [],
       includesTags: [],
-      excludesTags: [],
+      excludesTags: ["NSFW"],
     },
   };
   window.localStorage.setItem(

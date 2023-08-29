@@ -26,7 +26,7 @@ export function getDefaultSearchSettings(
       maximumSize: MaximumSize,
       languages: [],
       includesTags: [],
-      excludesTags: [],
+      excludesTags: ["NSFW"],
     },
   };
 }
