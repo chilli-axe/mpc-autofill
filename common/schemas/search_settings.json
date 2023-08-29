@@ -80,12 +80,19 @@
           },
           "description": "The language the cards have to be written in to be included in search results"
         },
-        "tags": {
+        "includesTags": {
           "type": "array",
           "items": {
             "type": "string"
           },
           "description": "The tags which the cards must have to be included in search results"
+        },
+        "excludesTags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "The tags which the cards must *not* have to be included in search results"
         }
       },
       "required": [
@@ -93,7 +100,8 @@
         "maximumDPI",
         "maximumSize",
         "languages",
-        "tags"
+        "includesTags",
+        "excludesTags"
       ],
       "additionalProperties": false
     }

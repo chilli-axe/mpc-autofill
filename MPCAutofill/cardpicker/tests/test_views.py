@@ -23,7 +23,14 @@ def snapshot_response(response: Response, snapshot: SnapshotAssertion):
 BASE_SEARCH_SETTINGS = {
     "searchTypeSettings": {"fuzzySearch": False, "filterCardbacks": False},
     "sourceSettings": {"sources": [[Sources.EXAMPLE_DRIVE_1.value.pk, True], [Sources.EXAMPLE_DRIVE_2.value.pk, True]]},
-    "filterSettings": {"minimumDPI": 0, "maximumDPI": 1500, "maximumSize": 30, "languages": [], "tags": []},
+    "filterSettings": {
+        "minimumDPI": 0,
+        "maximumDPI": 1500,
+        "maximumSize": 30,
+        "languages": [],
+        "includesTags": [],
+        "excludesTags": [],
+    },
 }
 
 
@@ -292,11 +299,11 @@ class TestPostSearchResults:
         assert response.status_code == 200
         assert len(response.json()["results"][Cards.PAST_IN_FLAMES_1.value.name]["CARD"]) == 2
 
-    def test_get_one_row_filtered_one_tag(
+    def test_get_one_row_filtered_includes_one_tag(
         self, client, snapshot, past_in_flames_1, past_in_flames_2, another_tag_in_data
     ):
         search_settings = deepcopy(BASE_SEARCH_SETTINGS)
-        search_settings["filterSettings"]["tags"] = [another_tag_in_data.name]
+        search_settings["filterSettings"]["includesTags"] = [another_tag_in_data.name]
         response = client.post(
             reverse(views.post_search_results),
             {
@@ -309,11 +316,11 @@ class TestPostSearchResults:
         assert response.status_code == 200
         assert len(response.json()["results"][Cards.PAST_IN_FLAMES_1.value.name]["CARD"]) == 1
 
-    def test_get_multiple_rows_filtered_one_tag(
+    def test_get_multiple_rows_filtered_includes_one_tag(
         self, client, snapshot, past_in_flames_1, past_in_flames_2, tag_in_data
     ):
         search_settings = deepcopy(BASE_SEARCH_SETTINGS)
-        search_settings["filterSettings"]["tags"] = [tag_in_data.name, tag_in_data.name]
+        search_settings["filterSettings"]["includesTags"] = [tag_in_data.name, tag_in_data.name]
         response = client.post(
             reverse(views.post_search_results),
             {
@@ -326,11 +333,11 @@ class TestPostSearchResults:
         assert response.status_code == 200
         assert len(response.json()["results"][Cards.PAST_IN_FLAMES_1.value.name]["CARD"]) == 2
 
-    def test_get_multiple_rows_filtered_two_tags(
+    def test_get_multiple_rows_filtered_includes_two_tags(
         self, client, snapshot, past_in_flames_1, past_in_flames_2, tag_in_data, another_tag_in_data
     ):
         search_settings = deepcopy(BASE_SEARCH_SETTINGS)
-        search_settings["filterSettings"]["tags"] = [tag_in_data.name, another_tag_in_data.name]
+        search_settings["filterSettings"]["includesTags"] = [tag_in_data.name, another_tag_in_data.name]
         response = client.post(
             reverse(views.post_search_results),
             {
@@ -665,9 +672,11 @@ class TestPostCardbacks:
         assert response.status_code == 200
         assert len(response.json()["cardbacks"]) == 2
 
-    def test_get_one_row_filtered_one_tag(self, client, snapshot, simple_cube, simple_lotus, another_tag_in_data):
+    def test_get_one_row_filtered_includes_one_tag(
+        self, client, snapshot, simple_cube, simple_lotus, another_tag_in_data
+    ):
         search_settings = deepcopy(BASE_SEARCH_SETTINGS)
-        search_settings["filterSettings"]["tags"] = [another_tag_in_data.name]
+        search_settings["filterSettings"]["includesTags"] = [another_tag_in_data.name]
         search_settings["searchTypeSettings"]["filterCardbacks"] = True
         response = client.post(
             reverse(views.post_cardbacks), {"searchSettings": search_settings}, content_type="application/json"
@@ -676,9 +685,11 @@ class TestPostCardbacks:
         assert response.status_code == 200
         assert len(response.json()["cardbacks"]) == 1
 
-    def test_get_multiple_rows_filtered_one_tag(self, client, snapshot, simple_cube, simple_lotus, tag_in_data):
+    def test_get_multiple_rows_filtered_includes_one_tag(
+        self, client, snapshot, simple_cube, simple_lotus, tag_in_data
+    ):
         search_settings = deepcopy(BASE_SEARCH_SETTINGS)
-        search_settings["filterSettings"]["tags"] = [tag_in_data.name, tag_in_data.name]
+        search_settings["filterSettings"]["includesTags"] = [tag_in_data.name, tag_in_data.name]
         search_settings["searchTypeSettings"]["filterCardbacks"] = True
         response = client.post(
             reverse(views.post_cardbacks), {"searchSettings": search_settings}, content_type="application/json"
@@ -687,11 +698,11 @@ class TestPostCardbacks:
         assert response.status_code == 200
         assert len(response.json()["cardbacks"]) == 2
 
-    def test_get_multiple_rows_filtered_two_tags(
+    def test_get_multiple_rows_filtered_includes_two_tags(
         self, client, snapshot, simple_cube, simple_lotus, tag_in_data, another_tag_in_data
     ):
         search_settings = deepcopy(BASE_SEARCH_SETTINGS)
-        search_settings["filterSettings"]["tags"] = [tag_in_data.name, another_tag_in_data.name]
+        search_settings["filterSettings"]["includesTags"] = [tag_in_data.name, another_tag_in_data.name]
         search_settings["searchTypeSettings"]["filterCardbacks"] = True
         response = client.post(
             reverse(views.post_cardbacks), {"searchSettings": search_settings}, content_type="application/json"

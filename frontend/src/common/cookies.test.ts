@@ -49,7 +49,8 @@ test("cookies with complete source order are respected", () => {
       maximumDPI: 200,
       maximumSize: 15,
       languages: [],
-      tags: [],
+      includesTags: [],
+      excludesTags: [],
     },
   };
   window.localStorage.setItem(
@@ -80,7 +81,8 @@ test("referenced sources that don't exist in database are filtered out", () => {
       maximumDPI: MaximumDPI,
       maximumSize: MaximumSize,
       languages: [],
-      tags: [],
+      includesTags: [],
+      excludesTags: [],
     },
   };
   window.localStorage.setItem(
@@ -112,7 +114,8 @@ test("cookies with incomplete source order are correctly reconciled", () => {
       maximumDPI: MaximumDPI,
       maximumSize: MaximumSize,
       languages: [],
-      tags: [],
+      includesTags: [],
+      excludesTags: [],
     },
   };
   window.localStorage.setItem(
@@ -147,7 +150,8 @@ test("cookies with incomplete source order plus invalid sources are correctly re
       maximumDPI: MaximumDPI,
       maximumSize: MaximumSize,
       languages: [],
-      tags: [],
+      includesTags: [],
+      excludesTags: [],
     },
   };
   window.localStorage.setItem(

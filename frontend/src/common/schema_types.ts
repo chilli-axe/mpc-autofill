@@ -63,5 +63,9 @@ export interface FilterSettings {
   /**
    * The tags which the cards must have to be included in search results
    */
-  tags: string[];
+  includesTags: string[];
+  /**
+   * The tags which the cards must *not* have to be included in search results
+   */
+  excludesTags: string[];
 }

@@ -140,11 +140,14 @@ export function FilterSettings({
         options={tagOptions}
         disableSearch={true}
         isLoading={getTagsQuery.isFetching}
-        value={filterSettings.tags.map((tag) => ({ label: tag, value: tag }))}
+        value={filterSettings.includesTags.map((tag) => ({
+          label: tag,
+          value: tag,
+        }))}
         onChange={(data: Array<{ label: string; value: string }>) => {
           setFilterSettings({
             ...filterSettings,
-            tags: data.map((row) => row.value),
+            includesTags: data.map((row) => row.value),
           });
         }}
         labelledBy="selectTags"
