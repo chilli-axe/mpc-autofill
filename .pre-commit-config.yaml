@@ -71,6 +71,7 @@ repos:
         types: [file]
         additional_dependencies:
           - eslint@8.24.0
+          - typescript@4.9.4
           - eslint-config-prettier@v8.5.0
           - eslint-config-next@v13.2.4
           - eslint-plugin-promise@v6.0.1
@@ -78,7 +79,7 @@ repos:
           - eslint-plugin-import@v2.26.0
           - eslint-config-standard@v17.0.0
           - eslint-plugin-simple-import-sort@10.0.0
-          - "@typescript-eslint/eslint-plugin@5.48.2"
+          - "@typescript-eslint/eslint-plugin@6.5.0"
           - "@typescript-eslint/parser@5.49.0"
         args:
           - --fix
