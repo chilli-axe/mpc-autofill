@@ -1068,7 +1068,18 @@
     'status_code': 400,
   })
 # ---
-# name: TestPostCardbacks.test_get_multiple_rows_filtered_one_tag
+# name: TestPostCardbacks.test_get_multiple_rows_filtered_includes_one_tag
+  dict({
+    'json': dict({
+      'cardbacks': list([
+        '1JtXL6Ca9nQkvhwZZRR9ZuKA9_DzsFf1V',
+        '1oigI6wz0zA--pNMuExKTs40kBNH6VRP_',
+      ]),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostCardbacks.test_get_multiple_rows_filtered_includes_two_tags
   dict({
     'json': dict({
       'cardbacks': list([
@@ -1121,17 +1132,6 @@
     'status_code': 200,
   })
 # ---
-# name: TestPostCardbacks.test_get_multiple_rows_filtered_two_tags
-  dict({
-    'json': dict({
-      'cardbacks': list([
-        '1JtXL6Ca9nQkvhwZZRR9ZuKA9_DzsFf1V',
-        '1oigI6wz0zA--pNMuExKTs40kBNH6VRP_',
-      ]),
-    }),
-    'status_code': 200,
-  })
-# ---
 # name: TestPostCardbacks.test_get_multiple_rows_unfiltered
   dict({
     'json': dict({
@@ -1143,7 +1143,7 @@
     'status_code': 200,
   })
 # ---
-# name: TestPostCardbacks.test_get_one_row_filtered_one_language
+# name: TestPostCardbacks.test_get_one_row_filtered_excludes_one_tag
   dict({
     'json': dict({
       'cardbacks': list([
@@ -1153,11 +1153,31 @@
     'status_code': 200,
   })
 # ---
-# name: TestPostCardbacks.test_get_one_row_filtered_one_tag
+# name: TestPostCardbacks.test_get_one_row_filtered_includes_one_tag
   dict({
     'json': dict({
       'cardbacks': list([
         '1JtXL6Ca9nQkvhwZZRR9ZuKA9_DzsFf1V',
+      ]),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostCardbacks.test_get_one_row_filtered_includes_one_tag_and_excludes_another
+  dict({
+    'json': dict({
+      'cardbacks': list([
+        '1oigI6wz0zA--pNMuExKTs40kBNH6VRP_',
+      ]),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostCardbacks.test_get_one_row_filtered_one_language
+  dict({
+    'json': dict({
+      'cardbacks': list([
+        '1oigI6wz0zA--pNMuExKTs40kBNH6VRP_',
       ]),
     }),
     'status_code': 200,
@@ -1618,7 +1638,36 @@
     'status_code': 200,
   })
 # ---
-# name: TestPostSearchResults.test_get_multiple_rows_filtered_one_tag
+# name: TestPostSearchResults.test_get_multiple_rows_filtered_includes_one_tag
+  dict({
+    'json': dict({
+      'results': dict({
+        'Pást in Flames': dict({
+          'CARD': list([
+            '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
+            '1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
+          ]),
+        }),
+      }),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostSearchResults.test_get_multiple_rows_filtered_includes_one_tag_and_excludes_another
+  dict({
+    'json': dict({
+      'results': dict({
+        'Pást in Flames': dict({
+          'CARD': list([
+            '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
+          ]),
+        }),
+      }),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostSearchResults.test_get_multiple_rows_filtered_includes_two_tags
   dict({
     'json': dict({
       'results': dict({
@@ -1648,13 +1697,26 @@
     'status_code': 200,
   })
 # ---
-# name: TestPostSearchResults.test_get_multiple_rows_filtered_two_tags
+# name: TestPostSearchResults.test_get_one_row_filtered_excludes_one_tag
+  dict({
+    'json': dict({
+      'results': dict({
+        'Past in Flames': dict({
+          'CARD': list([
+            '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
+          ]),
+        }),
+      }),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostSearchResults.test_get_one_row_filtered_includes_one_tag
   dict({
     'json': dict({
       'results': dict({
         'Pást in Flames': dict({
           'CARD': list([
-            '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
             '1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
           ]),
         }),
@@ -1670,20 +1732,6 @@
         'Pást in Flames': dict({
           'CARD': list([
             '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
-          ]),
-        }),
-      }),
-    }),
-    'status_code': 200,
-  })
-# ---
-# name: TestPostSearchResults.test_get_one_row_filtered_one_tag
-  dict({
-    'json': dict({
-      'results': dict({
-        'Pást in Flames': dict({
-          'CARD': list([
-            '1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
           ]),
         }),
       }),

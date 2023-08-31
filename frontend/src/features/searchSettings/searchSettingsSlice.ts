@@ -25,7 +25,8 @@ export function getDefaultSearchSettings(
       maximumDPI: MaximumDPI,
       maximumSize: MaximumSize,
       languages: [],
-      tags: [],
+      includesTags: [],
+      excludesTags: ["NSFW"],
     },
   };
 }

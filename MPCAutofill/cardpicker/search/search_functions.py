@@ -206,7 +206,8 @@ class SearchSettings:
     max_dpi: int
     max_size: int  # number of bytes
     languages: list[pycountry.Languages]
-    tags: list[str]
+    includes_tags: list[str]
+    excludes_tags: list[str]
 
     @classmethod
     def from_json_body(cls, json_body: dict[str, Any]) -> "SearchSettings":
@@ -243,7 +244,8 @@ class SearchSettings:
             for language in filter_settings["languages"]
             if (parsed_language := pycountry.languages.get(alpha_2=language)) is not None
         ]
-        tags = filter_settings["tags"]
+        includes_tags = filter_settings["includesTags"]
+        excludes_tags = filter_settings["excludesTags"]
 
         return cls(
             fuzzy_search=fuzzy_search,
@@ -253,7 +255,8 @@ class SearchSettings:
             max_dpi=max_dpi,
             max_size=max_size,
             languages=languages,
-            tags=tags,
+            includes_tags=includes_tags,
+            excludes_tags=excludes_tags,
         )
 
     def get_source_order(self) -> dict[str, int]:
@@ -273,11 +276,17 @@ class SearchSettings:
                 if self.languages
                 else ~Q(pk__in=[])
             )
-            tag_filter = (Q(tags__contains=self.tags) | Q(tags__contained_by=self.tags)) if self.tags else ~Q(pk__in=[])
+            includes_tag_filter = (
+                (Q(tags__contains=self.includes_tags) | Q(tags__contained_by=self.includes_tags))
+                if self.includes_tags
+                else ~Q(pk__in=[])
+            )
+            excludes_tag_filter = ~Q(tags__overlap=self.excludes_tags) if self.excludes_tags else ~Q(pk__in=[])
             source_order = self.get_source_order()
             hits_iterable = Card.objects.filter(
                 language_filter,
-                tag_filter,
+                includes_tag_filter,
+                excludes_tag_filter,
                 card_type=CardTypes.CARDBACK,
                 source__key__in=self.sources,
                 dpi__gte=self.min_dpi,
@@ -363,8 +372,10 @@ class SearchQuery:
                     minimum_should_match=1,
                 )
             )
-        if search_settings.tags:
-            s = s.filter(Bool(should=Terms(tags=search_settings.tags), minimum_should_match=1))
+        if search_settings.includes_tags:
+            s = s.filter(Bool(should=Terms(tags=search_settings.includes_tags), minimum_should_match=1))
+        if search_settings.excludes_tags:
+            s = s.filter(Bool(must_not=Terms(tags=search_settings.excludes_tags)))
         hits_iterable = s.params(preserve_order=True).scan()
 
         source_order = search_settings.get_source_order()
