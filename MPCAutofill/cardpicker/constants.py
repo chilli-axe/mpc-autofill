@@ -2,7 +2,6 @@ import pycountry
 
 DATE_FORMAT = "jS F, Y"
 DEFAULT_LANGUAGE = pycountry.languages.get(alpha_2="EN")
-PAGE_SIZE = 10
 
 NEW_CARDS_PAGE_SIZE = 12
 NEW_CARDS_DAYS = 14
