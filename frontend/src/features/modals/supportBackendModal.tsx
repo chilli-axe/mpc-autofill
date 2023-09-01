@@ -59,6 +59,7 @@ export function SupportBackendModal({
                 <a
                   style={{ textAlign: "center" }}
                   href={backendInfoQuery.data.patreon.url}
+                  target="_blank"
                 >
                   Become a Patron today!
                 </a>
