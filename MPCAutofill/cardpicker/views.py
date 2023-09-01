@@ -760,7 +760,7 @@ def get_info(request: HttpRequest) -> HttpResponse:
         {
             "info": {
                 "name": settings.SITE_NAME,
-                "description": "Testing some stuff locally",
+                "description": settings.DESCRIPTION,
                 "email": settings.TARGET_EMAIL,
                 "reddit": settings.REDDIT,
                 "discord": settings.DISCORD,
