@@ -7,7 +7,5 @@ from MPCAutofill.settings import GAME
 
 
 def get_configured_game_integration() -> Optional[Type[GameIntegration]]:
-    integrations: dict[str, Type[GameIntegration]] = {
-        integration.__class__.__name__: integration for integration in [MTG]
-    }
+    integrations: dict[str, Type[GameIntegration]] = {integration.__name__: integration for integration in [MTG]}
     return integrations.get(GAME) if GAME else None
