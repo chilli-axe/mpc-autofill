@@ -22,7 +22,7 @@ export function SupportBackendModal({
   const backendInfoQuery = useGetBackendInfoQuery();
 
   return (
-    <Modal show={show} onHide={handleClose} size="lg">
+    <Modal scrollable show={show} onHide={handleClose} size="lg">
       <Modal.Header closeButton>
         <Modal.Title>
           Support {backendInfoQuery.data?.name ?? "Your Server Manager"}

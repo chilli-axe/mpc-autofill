@@ -92,7 +92,12 @@ export function SearchSettings() {
         Search Settings
       </Button>
 
-      <Modal show={show} onHide={handleSave} data-testid="search-settings">
+      <Modal
+        scrollable
+        show={show}
+        onHide={handleSave}
+        data-testid="search-settings"
+      >
         <Modal.Header closeButton>
           <Modal.Title>Search Settings</Modal.Title>
         </Modal.Header>

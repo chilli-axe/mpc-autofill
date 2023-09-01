@@ -229,7 +229,13 @@ export function GridSelectorModal({
   // TODO: paginate or lazy-load these cards. this is quite slow when you have hundreds of images.
 
   return (
-    <Modal show={show} onHide={handleClose} size="lg" data-testid={testId}>
+    <Modal
+      scrollable
+      show={show}
+      onHide={handleClose}
+      size="lg"
+      data-testid={testId}
+    >
       <Modal.Header closeButton>
         <Modal.Title>Select Version</Modal.Title>
       </Modal.Header>

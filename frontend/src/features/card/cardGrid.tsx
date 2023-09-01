@@ -108,7 +108,7 @@ export function CardGrid() {
       >
         {cardSlotsBacks}
       </Row>
-      <Modal show={fetchingCardData && !isProjectEmpty} centered>
+      <Modal scrollable show={fetchingCardData && !isProjectEmpty} centered>
         <Modal.Header>
           <Modal.Title
             style={{ textAlign: "center", userSelect: "none" }}
