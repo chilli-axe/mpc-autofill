@@ -375,7 +375,9 @@ class ProjectMember(models.Model):
     face = models.CharField(max_length=5, choices=Faces.choices, default=Faces.FRONT)
 
     class Meta:
-        constraints = [models.UniqueConstraint(fields=["card", "project", "slot", "face"], name="projectmember_unique")]
+        constraints = [
+            models.UniqueConstraint(fields=["card_id", "project", "slot", "face"], name="projectmember_unique")
+        ]
 
     def to_dict(self) -> dict[str, Any]:
         return {"card_identifier": self.card_id, "query": self.query, "slot": self.slot, "face": self.face}

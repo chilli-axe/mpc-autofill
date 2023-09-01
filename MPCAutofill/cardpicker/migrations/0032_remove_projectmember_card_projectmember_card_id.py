@@ -10,13 +10,15 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RemoveField(
-            model_name="projectmember",
-            name="card",
-        ),
+        migrations.RemoveConstraint(model_name="projectmember", name="projectmember_unique"),
+        migrations.RemoveField(model_name="projectmember", name="card"),
         migrations.AddField(
+            model_name="projectmember", name="card_id", field=models.CharField(blank=True, max_length=200, null=True)
+        ),
+        migrations.AddConstraint(
             model_name="projectmember",
-            name="card_id",
-            field=models.CharField(blank=True, max_length=200, null=True),
+            constraint=models.UniqueConstraint(
+                fields=("card_id", "project", "slot", "face"), name="projectmember_unique"
+            ),
         ),
     ]
