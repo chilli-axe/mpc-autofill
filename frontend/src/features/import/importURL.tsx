@@ -86,7 +86,10 @@ export function ImportURL() {
     fuzzySearch,
   ]);
 
-  return (
+  return importSitesQuery.isFetching ||
+    (importSitesQuery.data ?? []).length === 0 ? (
+    <></>
+  ) : (
     <>
       <Dropdown.Item onClick={handleShowURLModal}>
         <RightPaddedIcon bootstrapIconName="link-45deg" /> URL
