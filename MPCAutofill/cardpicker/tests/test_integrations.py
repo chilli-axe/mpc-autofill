@@ -9,8 +9,8 @@ from cardpicker.integrations.mtg import MTG
 
 class TestGetIntegration:
     @pytest.mark.parametrize("environment_variable, integration_class", [("MTG", MTG)])
-    def test_get_integration(self, environment_variable, integration_class, monkeypatch):
-        monkeypatch.setattr("MPCAutofill.settings.GAME", environment_variable)
+    def test_get_integration(self, db, environment_variable, integration_class, settings):
+        settings.GAME = environment_variable
         assert get_configured_game_integration() == integration_class
 
 
