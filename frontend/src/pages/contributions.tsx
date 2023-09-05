@@ -88,7 +88,7 @@ function ContributionGuidelines() {
               <ul>
                 <li>
                   For example, if a file was named{" "}
-                  <code>{"<DE>"} Image A.png</code>, we would read the language
+                  <code>{"{DE}"} Image A.png</code>, we would read the language
                   as <b>German</b>.
                 </li>
               </ul>
