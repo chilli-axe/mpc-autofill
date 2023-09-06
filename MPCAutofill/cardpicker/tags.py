@@ -37,13 +37,13 @@ class Tag(str, MultiValueEnum):
             for raw_tag in raw_tags:
                 try:
                     tag_enum_object = Tag(raw_tag.title())
-                    tag_set.add(tag_enum_object)
+                    tag_set.add(tag_enum_object)  # this may raise ValueError
 
                     # this is a little ugly. remove all instances of `raw_tag` inside () or [] in the name.
                     escaped_raw_tag = re.escape(raw_tag)
                     while True:
                         match = re.search(
-                            rf"\(({escaped_raw_tag},? *).*\)|\[({escaped_raw_tag},? *).*\]", name_with_no_tags
+                            rf"\(.*({escaped_raw_tag},? *).*.*?\)|\[.*({escaped_raw_tag},? *).*.*?\]", name_with_no_tags
                         )
                         if match is None or not any(match.groups()):
                             break

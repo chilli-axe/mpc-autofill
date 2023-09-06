@@ -41,6 +41,9 @@ class TestAPI:
     IMAGE_G = Image(
         id="G", name="Image G [NSFW] (John Doe).png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_A
     )
+    IMAGE_H = Image(
+        id="H", name="Image H [A, NSFW, B] (John Doe).png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_A
+    )
     IMAGE_FRENCH = Image(
         id="french", name="French.png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_FRENCH
     )
@@ -131,6 +134,7 @@ class TestAPI:
             (IMAGE_D, {"NSFW", "Full Art"}),
             (IMAGE_E, set()),
             (IMAGE_F, {"NSFW", "Tag In Data"}),
+            (IMAGE_H, {"NSFW"}),
         ],
     )
     def test_image_tags(self, django_settings, tag_in_data, image, expected_tags):
@@ -147,6 +151,7 @@ class TestAPI:
             (IMAGE_E, "Image E [invalid tag"),
             (IMAGE_F, "Image F"),
             (IMAGE_G, "Image G (John Doe)"),
+            (IMAGE_H, "Image H [A, B] (John Doe)"),
             (IMAGE_NSFW, "NSFW"),
             (IMAGE_DOUBLE_NSFW, "NSFW"),
         ],
