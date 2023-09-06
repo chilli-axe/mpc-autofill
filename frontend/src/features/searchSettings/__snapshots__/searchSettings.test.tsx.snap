@@ -11,7 +11,7 @@ exports[`the html structure of search settings 1`] = `
 }
 
 <div
-  class="modal-dialog"
+  class="modal-dialog modal-dialog-scrollable"
   data-testid="search-settings"
 >
   <div
@@ -349,14 +349,19 @@ exports[`the html structure of search settings 1`] = `
           </b>
            to send a source to the top or bottom.
         </li>
-        <li>
-          Click the 
-          <b>
-            table header
-          </b>
-           to enable or disable all sources.
-        </li>
       </ul>
+      <div
+        class="d-grid gap-0"
+      >
+        <button
+          class="btn btn-primary"
+          type="button"
+        >
+          Disable
+           all drives
+        </button>
+      </div>
+      <br />
       <div
         style="height: 215px;"
       >
