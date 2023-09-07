@@ -272,6 +272,7 @@ class Tag(models.Model):
     name = models.CharField(unique=True)
     # null=True is just for admin panel
     aliases = ArrayField(models.CharField(max_length=200), default=list, blank=True)
+    parent = models.ForeignKey(to="Tag", null=True, blank=True, on_delete=models.SET_NULL)
 
     def __str__(self) -> str:
         return self.name
