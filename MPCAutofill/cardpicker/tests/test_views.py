@@ -578,24 +578,23 @@ class TestGetLanguages:
 
 
 class TestGetTags:
-    @pytest.mark.skip("this seems to fail on CI. maybe because tests are not run in a linear order.")
     def test_get_no_data_tags(self, client, django_settings):
         response = client.get(reverse(views.get_tags))
         assert response.json()["tags"] == ["Alt Art", "Extended", "Full Art", "NSFW"]
 
     def test_get_one_data_tag(self, client, django_settings, tag_in_data):
         response = client.get(reverse(views.get_tags))
-        assert response.json()["tags"] == ["Alt Art", "Extended", "Full Art", "NSFW", "Tag In Data"]
+        assert response.json()["tags"] == ["Alt Art", "Extended", "Full Art", "NSFW", "Tag in Data"]
 
     def test_get_two_data_tags(self, client, django_settings, tag_in_data, another_tag_in_data):
         response = client.get(reverse(views.get_tags))
         assert response.json()["tags"] == [
             "Alt Art",
-            "Another Tag In Data",
+            "Another Tag in Data",
             "Extended",
             "Full Art",
             "NSFW",
-            "Tag In Data",
+            "Tag in Data",
         ]
 
     def test_post_request(self, client, django_settings, snapshot):

@@ -14,7 +14,7 @@ from googleapiclient.errors import HttpError
 from oauth2client.service_account import ServiceAccountCredentials
 
 from cardpicker.search import sanitisation
-from cardpicker.tags import Tag
+from cardpicker.tags import Tags
 
 thread_local = threading.local()  # Should only be called once per thread
 
@@ -31,15 +31,13 @@ class Folder:
             return self
         return self.parent.top_level_folder
 
-    @functools.cached_property
-    def full_path(self) -> str:
-        _, name, _ = self.unpacked_name
+    def get_full_path(self, tags: Tags) -> str:
+        _, name, _ = self.unpack_name(tags=tags)
         if self.parent is None:
             return name
-        return f"{self.parent.full_path} / {name}"
+        return f"{self.parent.get_full_path(tags=tags)} / {name}"
 
-    @functools.cached_property
-    def unpacked_name(self) -> tuple[Optional[pycountry.Languages], str, set[str]]:
+    def unpack_name(self, tags: Tags) -> tuple[Optional[pycountry.Languages], str, set[str]]:
         """
         The folder's name is unpacked according to the below schema. For example, consider `{EN} Cards [NSFW]`:
              {EN}              Cards         [NSFW]
@@ -50,22 +48,20 @@ class Folder:
         assert folder_name_results is not None
         language_code, name = folder_name_results.groups()
         language = pycountry.languages.get(alpha_2=language_code) if language_code else None
-        name_with_no_tags, tags = Tag.extract_name_and_tags(name)
-        return language, sanitisation.fix_whitespace(name_with_no_tags), tags
+        name_with_no_tags, extracted_tags = tags.extract_name_and_tags(name)
+        return language, sanitisation.fix_whitespace(name_with_no_tags), extracted_tags
 
-    @functools.cached_property
-    def language(self) -> Optional[pycountry.Languages]:
-        language, _, _ = self.unpacked_name
+    def get_language(self, tags: Tags) -> Optional[pycountry.Languages]:
+        language, _, _ = self.unpack_name(tags=tags)
         if self.parent is None:
             return language
-        return language if language is not None else self.parent.language
+        return language if language is not None else self.parent.get_language(tags=tags)
 
-    @functools.cached_property
-    def tags(self) -> set[str]:
-        _, _, tags = self.unpacked_name
+    def get_tags(self, tags: Tags) -> set[str]:
+        _, _, extracted_tags = self.unpack_name(tags=tags)
         if self.parent is None:
-            return tags
-        return self.parent.tags | tags
+            return extracted_tags
+        return self.parent.get_tags(tags=tags) | extracted_tags
 
 
 @dataclass
@@ -77,8 +73,7 @@ class Image:
     height: int
     folder: Folder
 
-    @functools.cached_property
-    def unpacked_name(self) -> tuple[pycountry.Languages, str, set[str], str]:
+    def unpack_name(self, tags: Tags) -> tuple[pycountry.Languages, str, set[str], str]:
         """
         The image's name is unpacked according to the below schema. For example, consider `{EN} Opt [NSFW].png`:
              {EN}             opt          [NSFW]   .      png
@@ -91,18 +86,16 @@ class Image:
         language_code, name, extension = image_name_results.groups()
         language = pycountry.languages.get(alpha_2=language_code) if language_code else None
         assert extension is not None, "File name has no extension"
-        name_with_no_tags, tags = Tag.extract_name_and_tags(name)
-        return language, sanitisation.fix_whitespace(name_with_no_tags), tags, extension
+        name_with_no_tags, extracted_tags = tags.extract_name_and_tags(name)
+        return language, sanitisation.fix_whitespace(name_with_no_tags), extracted_tags, extension
 
-    @functools.cached_property
-    def language(self) -> pycountry.Languages:
-        language, _, _, _ = self.unpacked_name
-        return language if language is not None else self.folder.language
+    def get_language(self, tags: Tags) -> pycountry.Languages:
+        language, _, _, _ = self.unpack_name(tags=tags)
+        return language if language is not None else self.folder.get_language(tags=tags)
 
-    @functools.cached_property
-    def tags(self) -> set[str]:
-        _, _, image_tags, _ = self.unpacked_name
-        return image_tags | self.folder.tags
+    def get_tags(self, tags: Tags) -> set[str]:
+        _, _, image_tags, _ = self.unpack_name(tags=tags)
+        return image_tags | self.folder.get_tags(tags=tags)
 
 
 # region google drive API

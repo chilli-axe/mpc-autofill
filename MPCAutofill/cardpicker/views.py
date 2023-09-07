@@ -16,7 +16,7 @@ from django.shortcuts import redirect, render
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 
-from cardpicker.constants import CARDS_PAGE_SIZE, DEFAULT_LANGUAGE
+from cardpicker.constants import CARDS_PAGE_SIZE, DEFAULT_LANGUAGE, NSFW
 from cardpicker.forms import InputCSV, InputLink, InputText, InputXML
 from cardpicker.integrations.integrations import get_configured_game_integration
 from cardpicker.integrations.patreon import get_patreon_campaign_details, get_patrons
@@ -37,7 +37,7 @@ from cardpicker.search.search_functions import (
     search_new,
     search_new_elasticsearch_definition,
 )
-from cardpicker.tags import Tag, read_tags_in_database
+from cardpicker.tags import Tags
 
 from MPCAutofill.settings import PATREON_URL
 
@@ -556,9 +556,7 @@ def get_tags(request: HttpRequest) -> HttpResponse:
 
     if request.method != "GET":
         raise BadRequestException("Expected GET request.")
-    read_tags_in_database()
-    # here, mypy thinks that Tag has no method __iter__. this code works fine though.
-    return JsonResponse({"tags": sorted([x.value for x in Tag])})  # type: ignore
+    return JsonResponse({"tags": sorted([tag.name for tag in Tags().tags.values()])})
 
 
 @csrf_exempt
@@ -652,10 +650,7 @@ def get_sample_cards(request: HttpRequest) -> HttpResponse:
     # sample some large number of identifiers from the database (while avoiding sampling NSFW cards)
     identifiers = {
         card_type: list(
-            # mypy does not recognise here that Tag.NSFW.value is valid
-            Card.objects.filter(
-                ~Q(tags__overlap=[Tag.NSFW.value]) & Q(card_type=card_type)  # type: ignore
-            ).values_list("id", flat=True)[0:5000]
+            Card.objects.filter(~Q(tags__overlap=[NSFW]) & Q(card_type=card_type)).values_list("id", flat=True)[0:5000]
         )
         for card_type in CardTypes
     }
