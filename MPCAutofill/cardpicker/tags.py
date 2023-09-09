@@ -55,6 +55,12 @@ class Tags:
                     continue
                 tag_set.add(tag_object.name)
 
+                # `tag_object` also implies all of its parents
+                current_tag = tag_object
+                while current_tag.parent is not None:
+                    tag_set.add(current_tag.parent.name)
+                    current_tag = current_tag.parent
+
                 # this is a little ugly. remove all instances of `raw_tag` inside () or [] in the name.
                 escaped_raw_tag = re.escape(raw_tag)
                 while True:

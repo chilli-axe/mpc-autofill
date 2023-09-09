@@ -312,6 +312,8 @@ def all_cards(
 # endregion
 
 # region DFCPair fixtures
+
+
 @pytest.fixture()
 def dfc_pairs(db) -> list[DFCPair]:
     return [
@@ -331,6 +333,16 @@ def dfc_pairs(db) -> list[DFCPair]:
 @pytest.fixture()
 def tag_in_data(db) -> Tag:
     return TagFactory(name="Tag in Data")
+
+
+@pytest.fixture()
+def child_tag(db, tag_in_data) -> Tag:
+    return TagFactory(name="Child Tag", parent=tag_in_data)
+
+
+@pytest.fixture()
+def grandchild_tag(db, child_tag) -> Tag:
+    return TagFactory(name="Grandchild Tag", parent=child_tag)
 
 
 @pytest.fixture()

@@ -45,6 +45,12 @@ class TestAPI:
         id="H", name="Image H [A, NSFW, B] (John Doe).png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_A
     )
     IMAGE_I = Image(id="I", name="Image A.I.png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_A)
+    IMAGE_J = Image(
+        id="J", name="Image J [Child Tag].png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_A
+    )
+    IMAGE_K = Image(
+        id="K", name="Image K [Grandchild Tag].png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_A
+    )
     IMAGE_FRENCH = Image(
         id="french", name="French.png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_FRENCH
     )
@@ -139,9 +145,11 @@ class TestAPI:
             (IMAGE_E, set()),
             (IMAGE_F, {"NSFW", "Tag in Data"}),
             (IMAGE_H, {"NSFW"}),
+            (IMAGE_J, {"Child Tag", "Tag in Data"}),  # `Tag in Data` is implied by `Child Tag`
+            (IMAGE_K, {"Grandchild Tag", "Child Tag", "Tag in Data"}),  # `Child Tag` is implied by `Grandchild Tag`
         ],
     )
-    def test_image_tags(self, django_settings, tag_in_data, image, expected_tags):
+    def test_image_tags(self, django_settings, grandchild_tag, image, expected_tags):
         tags = Tags()
         assert image.get_tags(tags=tags) == expected_tags
 
