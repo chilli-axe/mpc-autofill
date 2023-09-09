@@ -254,4 +254,5 @@ export interface Tag {
   name: string;
   aliases: Array<string>;
   parent: string | null;
+  children: Array<string>;
 }
