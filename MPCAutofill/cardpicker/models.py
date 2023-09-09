@@ -277,6 +277,9 @@ class Tag(models.Model):
     def __str__(self) -> str:
         return self.name
 
+    def to_dict(self) -> dict[str, Any]:
+        return {"name": self.name, "aliases": self.aliases, "parent": (self.parent.name if self.parent else None)}
+
     @classmethod
     def get_tags(cls) -> dict[str, list[str]]:
         return {tag.name: tag.aliases for tag in Tag.objects.all()}

@@ -249,3 +249,9 @@ export interface Language {
   name: string;
   code: string;
 }
+
+export interface Tag {
+  name: string;
+  aliases: Array<string>;
+  parent: string | null;
+}

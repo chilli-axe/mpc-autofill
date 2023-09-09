@@ -24,6 +24,7 @@ import {
   SearchResults,
   SearchSettings,
   SourceDocuments,
+  Tag,
 } from "@/common/types";
 import { useBackendConfigured } from "@/features/backend/backendSlice";
 
@@ -88,10 +89,10 @@ export const api = createApi({
         arg
       ) => response.languages,
     }),
-    getTags: builder.query<Array<string>, void>({
+    getTags: builder.query<Array<Tag>, void>({
       query: () => ({ url: `2/tags/`, method: "GET" }),
       providesTags: [QueryTags.BackendSpecific],
-      transformResponse: (response: { tags: Array<string> }, meta, arg) =>
+      transformResponse: (response: { tags: Array<Tag> }, meta, arg) =>
         response.tags,
     }),
     getSampleCards: builder.query<

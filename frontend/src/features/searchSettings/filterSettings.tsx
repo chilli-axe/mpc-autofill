@@ -4,7 +4,7 @@
  * This component forms part of the Search Settings modal.
  */
 
-import React, { useState } from "react";
+import React from "react";
 import Col from "react-bootstrap/Col";
 import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
@@ -47,8 +47,8 @@ export function FilterSettings({
     languageOptions.map((row) => [row.value, row])
   );
   const tagOptions = (getTagsQuery.data ?? []).map((tag) => ({
-    label: tag,
-    value: tag,
+    label: tag.name,
+    value: tag.name,
   }));
 
   return (
