@@ -44,6 +44,7 @@ class TestAPI:
     IMAGE_H = Image(
         id="H", name="Image H [A, NSFW, B] (John Doe).png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_A
     )
+    IMAGE_I = Image(id="I", name="Image A.I.png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_A)
     IMAGE_FRENCH = Image(
         id="french", name="French.png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_FRENCH
     )
@@ -155,6 +156,7 @@ class TestAPI:
             (IMAGE_F, "Image F"),
             (IMAGE_G, "Image G (John Doe)"),
             (IMAGE_H, "Image H [A, B] (John Doe)"),
+            (IMAGE_I, "Image A.I"),
             (IMAGE_NSFW, "NSFW"),
             (IMAGE_DOUBLE_NSFW, "NSFW"),
         ],

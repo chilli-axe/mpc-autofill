@@ -81,11 +81,12 @@ class Image:
         """
 
         assert self.name, "File name is empty string"
-        image_name_results = re.compile(r"^(?:\{(.+)\} )?(.*?)(?:\.(.*?))?$").search(self.name)
+        assert "." in self.name, "File name has no extension"
+        extensionless_name, extension = self.name.rsplit(".", 1)
+        image_name_results = re.compile(r"^(?:\{(.+)\} )?(.*?)$").search(extensionless_name)
         assert image_name_results is not None
-        language_code, name, extension = image_name_results.groups()
+        language_code, name = image_name_results.groups()
         language = pycountry.languages.get(alpha_2=language_code) if language_code else None
-        assert extension is not None, "File name has no extension"
         name_with_no_tags, extracted_tags = tags.extract_name_and_tags(name)
         return language, sanitisation.fix_whitespace(name_with_no_tags), extracted_tags, extension
 
@@ -103,10 +104,7 @@ class Image:
 
 
 # If modifying these scopes, delete the file token.pickle.
-SCOPES = [
-    "https://www.googleapis.com/auth/drive.metadata.readonly",
-    "https://www.googleapis.com/auth/drive.readonly",
-]
+SCOPES = ["https://www.googleapis.com/auth/drive.metadata.readonly", "https://www.googleapis.com/auth/drive.readonly"]
 
 SERVICE_ACC_FILENAME = "client_secrets.json"
 
