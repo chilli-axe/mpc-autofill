@@ -6,6 +6,7 @@ from random import sample
 from typing import Any, Callable, Optional, TypeVar, Union, cast
 
 import pycountry
+import sentry_sdk
 from blog.models import BlogPost
 from jsonschema import ValidationError, validate
 
@@ -429,6 +430,7 @@ class NewErrorWrappers:
             except BadRequestException as bad_request_exception:
                 return JsonResponse({"name": "Bad request", "message": bad_request_exception.args[0]}, status=400)
             except Exception as e:
+                sentry_sdk.capture_exception(e)
                 return JsonResponse(
                     {"name": f"Unhandled {e.__class__.__name__}", "message": str(e.args[0])}, status=500
                 )

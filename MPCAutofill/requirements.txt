@@ -30,6 +30,7 @@ python-dotenv~=1.0.0
 ratelimit~=2.2.1
 requests~=2.31.0
 selenium~=4.11.0
+sentry-sdk~=1.30.0
 syrupy~=3.0
 tqdm~=4.65.0
 tzdata
