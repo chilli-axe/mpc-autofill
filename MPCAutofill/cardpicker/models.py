@@ -272,9 +272,18 @@ class Tag(models.Model):
     name = models.CharField(unique=True)
     # null=True is just for admin panel
     aliases = ArrayField(models.CharField(max_length=200), default=list, blank=True)
+    parent = models.ForeignKey(to="Tag", null=True, blank=True, on_delete=models.SET_NULL)
 
     def __str__(self) -> str:
         return self.name
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "name": self.name,
+            "aliases": self.aliases,
+            "parent": (self.parent.name if self.parent else None),
+            "children": [x.name for x in self.tag_set.all()] if self.pk is not None else [],
+        }
 
     @classmethod
     def get_tags(cls) -> dict[str, list[str]]:

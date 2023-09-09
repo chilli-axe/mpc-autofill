@@ -8,6 +8,7 @@ import {
   MakePlayingCardsURL,
   ProjectName,
 } from "@/common/constants";
+import { Tag } from "@/common/types";
 import {
   useBackendConfigured,
   useProjectName,
@@ -46,9 +47,21 @@ function ContributionGuidelines() {
               <li>
                 {projectName} is configured with the following tags:
                 <ul>
-                  {getTagsQuery.data.map((tag: string) => (
-                    <li key={tag}>
-                      <code>{tag}</code>
+                  {getTagsQuery.data.map((tag: Tag) => (
+                    <li key={tag.name}>
+                      <code>{tag.name}</code>
+                      {tag.aliases.length > 0 && (
+                        <>
+                          (with the aliases [
+                          {tag.aliases.map((alias, i) => (
+                            <>
+                              {i > 0 && ", "}
+                              <code>{alias}</code>
+                            </>
+                          ))}
+                          ] )
+                        </>
+                      )}
                     </li>
                   ))}
                 </ul>

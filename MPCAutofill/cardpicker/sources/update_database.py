@@ -12,7 +12,7 @@ from cardpicker.models import Card, CardTypes, Source
 from cardpicker.search.sanitisation import to_searchable
 from cardpicker.sources.api import Folder, Image
 from cardpicker.sources.source_types import SourceType, SourceTypeChoices
-from cardpicker.tags import read_tags_in_database
+from cardpicker.tags import Tags
 from cardpicker.utils import TEXT_BOLD, TEXT_END
 
 MAX_WORKERS = 5
@@ -46,7 +46,7 @@ def explore_folder(source: Source, source_type: Type[SourceType], root_folder: F
     return image_list
 
 
-def transform_images_into_objects(source: Source, images: list[Image]) -> list[Card]:
+def transform_images_into_objects(source: Source, images: list[Image], tags: Tags) -> list[Card]:
     """
     Transform `images`, which are all associated with `source`, into a set of Django ORM objects ready to be
     synchronised to the database.
@@ -66,14 +66,15 @@ def transform_images_into_objects(source: Source, images: list[Image]) -> list[C
             assert image.size <= (
                 MAX_SIZE_MB * 1_000_000
             ), f"Image size is greater than {MAX_SIZE_MB} MB at **{int(image.size / 1_000_000)}** MB"
-            language, name, tags, extension = image.unpacked_name  # this can also raise AssertionError
+            # this can also raise AssertionError
+            language, name, extracted_tags, extension = image.unpack_name(tags=tags)
 
             searchable_name = to_searchable(name)
             dpi = 10 * round(int(image.height) * DPI_HEIGHT_RATIO / 10)
             source_verbose = source.name
-            priority = 1 if ("(" in name and ")" in name) or len(tags) > 0 else 2
+            priority = 1 if ("(" in name and ")" in name) or len(extracted_tags) > 0 else 2
 
-            folder_location = image.folder.full_path
+            folder_location = image.folder.get_full_path(tags=tags)
             if folder_location == settings.DEFAULT_CARDBACK_FOLDER_PATH:
                 if name == settings.DEFAULT_CARDBACK_IMAGE_NAME:
                     priority += 10
@@ -109,7 +110,7 @@ def transform_images_into_objects(source: Source, images: list[Image]) -> list[C
                     extension=extension,
                     date=image.created_time,
                     size=image.size,
-                    tags=list(tags),
+                    tags=list(extracted_tags),
                     language=(language or DEFAULT_LANGUAGE).alpha_2.upper(),
                 )
             )
@@ -133,9 +134,9 @@ def bulk_sync_objects(source: Source, cards: list[Card]) -> None:
     print(f" and done! That took {TEXT_BOLD}{(time.time() - t0):.2f}{TEXT_END} seconds.")
 
 
-def update_database_for_source(source: Source, source_type: Type[SourceType], root_folder: Folder) -> None:
+def update_database_for_source(source: Source, source_type: Type[SourceType], root_folder: Folder, tags: Tags) -> None:
     images = explore_folder(source=source, source_type=source_type, root_folder=root_folder)
-    cards = transform_images_into_objects(source=source, images=images)
+    cards = transform_images_into_objects(source=source, images=images, tags=tags)
     bulk_sync_objects(source=source, cards=cards)
 
 
@@ -145,13 +146,13 @@ def update_database(source_key: Optional[str] = None) -> None:
     If `source_key` is specified, only update that source; otherwise, update all sources.
     """
 
-    read_tags_in_database()
+    tags = Tags()
     if source_key:
         try:
             source = Source.objects.get(key=source_key)
             source_type = SourceTypeChoices.get_source_type(SourceTypeChoices[source.source_type])
             if (root_folder := source_type.get_all_folders([source])[source.key]) is not None:
-                update_database_for_source(source=source, source_type=source_type, root_folder=root_folder)
+                update_database_for_source(source=source, source_type=source_type, root_folder=root_folder, tags=tags)
         except Source.DoesNotExist:
             print(
                 f"Invalid source specified: {TEXT_BOLD}{source_key}{TEXT_END}"
@@ -173,7 +174,9 @@ def update_database(source_key: Optional[str] = None) -> None:
             )
             for grouped_source in grouped_sources:
                 if (root_folder := folders[grouped_source.key]) is not None:
-                    update_database_for_source(source=grouped_source, source_type=source_type, root_folder=root_folder)
+                    update_database_for_source(
+                        source=grouped_source, source_type=source_type, root_folder=root_folder, tags=tags
+                    )
                     print("")
 
 
