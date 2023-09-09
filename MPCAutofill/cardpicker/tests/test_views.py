@@ -581,31 +581,43 @@ class TestGetTags:
     def test_get_no_data_tags(self, client, django_settings):
         response = client.get(reverse(views.get_tags))
         assert response.json()["tags"] == [
-            {"name": "Alt Art", "parent": None, "aliases": ["Alternative Art", "Alternate Art", "Alt"]},
-            {"name": "Extended", "parent": None, "aliases": ["Extended Art"]},
-            {"name": "Full Art", "parent": None, "aliases": ["Fullart", "Full"]},
-            {"name": "NSFW", "parent": None, "aliases": []},
+            {"name": "Alt Art", "parent": None, "aliases": ["Alternative Art", "Alternate Art", "Alt"], "children": []},
+            {"name": "Extended", "parent": None, "aliases": ["Extended Art"], "children": []},
+            {"name": "Full Art", "parent": None, "aliases": ["Fullart", "Full"], "children": []},
+            {"name": "NSFW", "parent": None, "aliases": [], "children": []},
         ]
 
     def test_get_one_data_tag(self, client, django_settings, tag_in_data):
         response = client.get(reverse(views.get_tags))
         assert response.json()["tags"] == [
-            {"name": "Alt Art", "parent": None, "aliases": ["Alternative Art", "Alternate Art", "Alt"]},
-            {"name": "Extended", "parent": None, "aliases": ["Extended Art"]},
-            {"name": "Full Art", "parent": None, "aliases": ["Fullart", "Full"]},
-            {"name": "NSFW", "parent": None, "aliases": []},
-            {"name": "Tag in Data", "parent": None, "aliases": ["TaginData"]},
+            {"name": "Alt Art", "parent": None, "aliases": ["Alternative Art", "Alternate Art", "Alt"], "children": []},
+            {"name": "Extended", "parent": None, "aliases": ["Extended Art"], "children": []},
+            {"name": "Full Art", "parent": None, "aliases": ["Fullart", "Full"], "children": []},
+            {"name": "NSFW", "parent": None, "aliases": [], "children": []},
+            {"name": "Tag in Data", "parent": None, "aliases": ["TaginData"], "children": []},
         ]
 
     def test_get_two_data_tags(self, client, django_settings, tag_in_data, another_tag_in_data):
         response = client.get(reverse(views.get_tags))
         assert response.json()["tags"] == [
-            {"name": "Alt Art", "parent": None, "aliases": ["Alternative Art", "Alternate Art", "Alt"]},
-            {"name": "Another Tag in Data", "parent": None, "aliases": ["AnotherTaginData"]},
-            {"name": "Extended", "parent": None, "aliases": ["Extended Art"]},
-            {"name": "Full Art", "parent": None, "aliases": ["Fullart", "Full"]},
-            {"name": "NSFW", "parent": None, "aliases": []},
-            {"name": "Tag in Data", "parent": None, "aliases": ["TaginData"]},
+            {"name": "Alt Art", "parent": None, "aliases": ["Alternative Art", "Alternate Art", "Alt"], "children": []},
+            {"name": "Another Tag in Data", "parent": None, "aliases": ["AnotherTaginData"], "children": []},
+            {"name": "Extended", "parent": None, "aliases": ["Extended Art"], "children": []},
+            {"name": "Full Art", "parent": None, "aliases": ["Fullart", "Full"], "children": []},
+            {"name": "NSFW", "parent": None, "aliases": [], "children": []},
+            {"name": "Tag in Data", "parent": None, "aliases": ["TaginData"], "children": []},
+        ]
+
+    def test_get_hierarchical_tags(self, client, django_settings, grandchild_tag):
+        response = client.get(reverse(views.get_tags))
+        assert response.json()["tags"] == [
+            {"name": "Alt Art", "parent": None, "aliases": ["Alternative Art", "Alternate Art", "Alt"], "children": []},
+            {"name": "Child Tag", "parent": "Tag in Data", "aliases": ["ChildTag"], "children": ["Grandchild Tag"]},
+            {"name": "Extended", "parent": None, "aliases": ["Extended Art"], "children": []},
+            {"name": "Full Art", "parent": None, "aliases": ["Fullart", "Full"], "children": []},
+            {"name": "Grandchild Tag", "parent": "Child Tag", "aliases": ["GrandchildTag"], "children": []},
+            {"name": "NSFW", "parent": None, "aliases": [], "children": []},
+            {"name": "Tag in Data", "parent": None, "aliases": ["TaginData"], "children": ["Child Tag"]},
         ]
 
     def test_post_request(self, client, django_settings, snapshot):
