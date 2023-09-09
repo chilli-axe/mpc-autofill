@@ -50,6 +50,18 @@ function ContributionGuidelines() {
                   {getTagsQuery.data.map((tag: Tag) => (
                     <li key={tag.name}>
                       <code>{tag.name}</code>
+                      {tag.aliases.length > 0 && (
+                        <>
+                          (with the aliases [
+                          {tag.aliases.map((alias, i) => (
+                            <>
+                              {i > 0 && ", "}
+                              <code>{alias}</code>
+                            </>
+                          ))}
+                          ] )
+                        </>
+                      )}
                     </li>
                   ))}
                 </ul>
