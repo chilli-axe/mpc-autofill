@@ -6,6 +6,7 @@ import re
 from typing import Optional
 
 from cardpicker import models
+from cardpicker.constants import NSFW
 
 
 class Tags:
@@ -16,7 +17,7 @@ class Tags:
                 models.Tag(name="Alt Art", aliases=["Alternative Art", "Alternate Art", "Alt"], parent=None),
                 models.Tag(name="Extended", aliases=["Extended Art"], parent=None),
                 models.Tag(name="Full Art", aliases=["Fullart", "Full"], parent=None),
-                models.Tag(name="NSFW", aliases=[], parent=None),
+                models.Tag(name=NSFW, aliases=[], parent=None),
                 *models.Tag.objects.all(),
             ]
         }
