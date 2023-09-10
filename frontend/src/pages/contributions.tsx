@@ -34,8 +34,7 @@ function ContributionGuidelines() {
       <code>{tag.name}</code>
       {tag.aliases.length > 0 && (
         <>
-          {" "}
-          which has the aliases [
+          , which has the aliases [
           {tag.aliases.map((alias, i) => (
             <>
               {i > 0 && ", "}
@@ -48,7 +47,7 @@ function ContributionGuidelines() {
       {tag.children.length > 0 && (
         <>
           {" "}
-          {tag.aliases.length > 0 ? "and" : "which has"} the sub-tags:
+          {tag.aliases.length > 0 ? "and" : ", which has"} the sub-tags:
           <ul>{tag.children.map(describeTag)}</ul>
         </>
       )}
