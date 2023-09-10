@@ -263,20 +263,6 @@ export function Card({
               searchQuery.query}
           </BSCardSubtitle>
           <div className="mpccard-spacing">
-            <BSCard.Text className="mpccard-tags">
-              {maybeCardDocument != null &&
-              maybeCardDocument.tags.length > 0 ? (
-                maybeCardDocument.tags.map((tag) => (
-                  <Badge key={tag} pill>
-                    {tag}
-                  </Badge>
-                ))
-              ) : (
-                <i className="italic">Untagged</i>
-              )}
-            </BSCard.Text>
-          </div>
-          <div className="mpccard-spacing">
             <BSCard.Text className="mpccard-source">
               {maybeCardDocument != null &&
                 `${maybeCardDocument.source_verbose} [${maybeCardDocument.dpi} DPI]`}

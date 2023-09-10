@@ -84,19 +84,6 @@ exports[`the html structure of a CardSlot with a single search result, image sel
           class="mpccard-spacing"
         >
           <p
-            class="mpccard-tags card-text"
-          >
-            <i
-              class="italic"
-            >
-              Untagged
-            </i>
-          </p>
-        </div>
-        <div
-          class="mpccard-spacing"
-        >
-          <p
             class="mpccard-source card-text"
           >
             Source 1 [1200 DPI]
@@ -203,19 +190,6 @@ exports[`the html structure of a CardSlot with a single search result, no image 
           class="mpccard-spacing"
         >
           <p
-            class="mpccard-tags card-text"
-          >
-            <i
-              class="italic"
-            >
-              Untagged
-            </i>
-          </p>
-        </div>
-        <div
-          class="mpccard-spacing"
-        >
-          <p
             class="mpccard-source card-text"
           >
             Source 1 [1200 DPI]
@@ -317,19 +291,6 @@ exports[`the html structure of a CardSlot with a single search result, slot sele
           class="c2 mpccard-name card-subtitle h6"
         >
           Card 1
-        </div>
-        <div
-          class="mpccard-spacing"
-        >
-          <p
-            class="mpccard-tags card-text"
-          >
-            <i
-              class="italic"
-            >
-              Untagged
-            </i>
-          </p>
         </div>
         <div
           class="mpccard-spacing"
@@ -459,19 +420,6 @@ exports[`the html structure of a CardSlot with multiple search results, image se
           class="c3 mpccard-name card-subtitle h6"
         >
           Card 1
-        </div>
-        <div
-          class="mpccard-spacing"
-        >
-          <p
-            class="mpccard-tags card-text"
-          >
-            <i
-              class="italic"
-            >
-              Untagged
-            </i>
-          </p>
         </div>
         <div
           class="mpccard-spacing"
@@ -684,19 +632,6 @@ exports[`the html structure of a CardSlot's grid selector, cards faceted by sour
                   class="mpccard-spacing"
                 >
                   <p
-                    class="mpccard-tags card-text"
-                  >
-                    <i
-                      class="italic"
-                    >
-                      Untagged
-                    </i>
-                  </p>
-                </div>
-                <div
-                  class="mpccard-spacing"
-                >
-                  <p
                     class="mpccard-source card-text"
                   >
                     Source 1 [1200 DPI]
@@ -738,19 +673,6 @@ exports[`the html structure of a CardSlot's grid selector, cards faceted by sour
                   class="mpccard-name card-subtitle h6"
                 >
                   Card 2
-                </div>
-                <div
-                  class="mpccard-spacing"
-                >
-                  <p
-                    class="mpccard-tags card-text"
-                  >
-                    <i
-                      class="italic"
-                    >
-                      Untagged
-                    </i>
-                  </p>
                 </div>
                 <div
                   class="mpccard-spacing"
@@ -802,19 +724,6 @@ exports[`the html structure of a CardSlot's grid selector, cards faceted by sour
                   class="mpccard-spacing"
                 >
                   <p
-                    class="mpccard-tags card-text"
-                  >
-                    <i
-                      class="italic"
-                    >
-                      Untagged
-                    </i>
-                  </p>
-                </div>
-                <div
-                  class="mpccard-spacing"
-                >
-                  <p
                     class="mpccard-source card-text"
                   >
                     Source 1 [1200 DPI]
@@ -856,19 +765,6 @@ exports[`the html structure of a CardSlot's grid selector, cards faceted by sour
                   class="mpccard-name card-subtitle h6"
                 >
                   Card 4
-                </div>
-                <div
-                  class="mpccard-spacing"
-                >
-                  <p
-                    class="mpccard-tags card-text"
-                  >
-                    <i
-                      class="italic"
-                    >
-                      Untagged
-                    </i>
-                  </p>
                 </div>
                 <div
                   class="mpccard-spacing"
@@ -1012,19 +908,6 @@ exports[`the html structure of a CardSlot's grid selector, cards grouped togethe
                 class="mpccard-spacing"
               >
                 <p
-                  class="mpccard-tags card-text"
-                >
-                  <i
-                    class="italic"
-                  >
-                    Untagged
-                  </i>
-                </p>
-              </div>
-              <div
-                class="mpccard-spacing"
-              >
-                <p
                   class="mpccard-source card-text"
                 >
                   Source 1 [1200 DPI]
@@ -1066,19 +949,6 @@ exports[`the html structure of a CardSlot's grid selector, cards grouped togethe
                 class="mpccard-name card-subtitle h6"
               >
                 Card 2
-              </div>
-              <div
-                class="mpccard-spacing"
-              >
-                <p
-                  class="mpccard-tags card-text"
-                >
-                  <i
-                    class="italic"
-                  >
-                    Untagged
-                  </i>
-                </p>
               </div>
               <div
                 class="mpccard-spacing"
@@ -1130,19 +1000,6 @@ exports[`the html structure of a CardSlot's grid selector, cards grouped togethe
                 class="mpccard-spacing"
               >
                 <p
-                  class="mpccard-tags card-text"
-                >
-                  <i
-                    class="italic"
-                  >
-                    Untagged
-                  </i>
-                </p>
-              </div>
-              <div
-                class="mpccard-spacing"
-              >
-                <p
                   class="mpccard-source card-text"
                 >
                   Source 1 [1200 DPI]
@@ -1184,19 +1041,6 @@ exports[`the html structure of a CardSlot's grid selector, cards grouped togethe
                 class="mpccard-name card-subtitle h6"
               >
                 Card 4
-              </div>
-              <div
-                class="mpccard-spacing"
-              >
-                <p
-                  class="mpccard-tags card-text"
-                >
-                  <i
-                    class="italic"
-                  >
-                    Untagged
-                  </i>
-                </p>
               </div>
               <div
                 class="mpccard-spacing"

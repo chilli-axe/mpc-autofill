@@ -102,19 +102,6 @@ exports[`the html structure of the new cards page with two sources, each with re
                 class="mpccard-spacing"
               >
                 <p
-                  class="mpccard-tags card-text"
-                >
-                  <i
-                    class="italic"
-                  >
-                    Untagged
-                  </i>
-                </p>
-              </div>
-              <div
-                class="mpccard-spacing"
-              >
-                <p
                   class="mpccard-source card-text"
                 >
                   Source 1 [1200 DPI]
@@ -160,19 +147,6 @@ exports[`the html structure of the new cards page with two sources, each with re
                 class="mpccard-name card-subtitle h6"
               >
                 Card 2
-              </div>
-              <div
-                class="mpccard-spacing"
-              >
-                <p
-                  class="mpccard-tags card-text"
-                >
-                  <i
-                    class="italic"
-                  >
-                    Untagged
-                  </i>
-                </p>
               </div>
               <div
                 class="mpccard-spacing"
@@ -254,19 +228,6 @@ exports[`the html structure of the new cards page with two sources, each with re
                 class="mpccard-name card-subtitle h6"
               >
                 Card 5
-              </div>
-              <div
-                class="mpccard-spacing"
-              >
-                <p
-                  class="mpccard-tags card-text"
-                >
-                  <i
-                    class="italic"
-                  >
-                    Untagged
-                  </i>
-                </p>
               </div>
               <div
                 class="mpccard-spacing"
