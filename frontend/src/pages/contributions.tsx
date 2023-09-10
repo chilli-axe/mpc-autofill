@@ -25,6 +25,35 @@ function ContributionGuidelines() {
   const projectName = useProjectName();
   const getTagsQuery = useGetTagsQuery();
 
+  const describeTag = (tag: Tag) => (
+    /**
+     * Recursively generate a user-facing description of how `tag` works.
+     */
+
+    <li key={tag.name}>
+      <code>{tag.name}</code>
+      {tag.aliases.length > 0 && (
+        <>
+          , which has the aliases [
+          {tag.aliases.map((alias, i) => (
+            <>
+              {i > 0 && ", "}
+              <code>{alias}</code>
+            </>
+          ))}
+          ]
+        </>
+      )}
+      {tag.children.length > 0 && (
+        <>
+          {" "}
+          {tag.aliases.length > 0 ? "and" : ", which has"} the sub-tags:
+          <ul>{tag.children.map(describeTag)}</ul>
+        </>
+      )}
+    </li>
+  );
+
   return (
     <Accordion>
       <Accordion.Item eventKey="0">
@@ -46,25 +75,7 @@ function ContributionGuidelines() {
             {!getTagsQuery.isFetching && getTagsQuery.data != null && (
               <li>
                 {projectName} is configured with the following tags:
-                <ul>
-                  {getTagsQuery.data.map((tag: Tag) => (
-                    <li key={tag.name}>
-                      <code>{tag.name}</code>
-                      {tag.aliases.length > 0 && (
-                        <>
-                          (with the aliases [
-                          {tag.aliases.map((alias, i) => (
-                            <>
-                              {i > 0 && ", "}
-                              <code>{alias}</code>
-                            </>
-                          ))}
-                          ] )
-                        </>
-                      )}
-                    </li>
-                  ))}
-                </ul>
+                <ul>{getTagsQuery.data.map(describeTag)}</ul>
               </li>
             )}
             <li>

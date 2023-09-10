@@ -5,6 +5,63 @@ exports[`the html structure of search settings 1`] = `
   color: black;
 }
 
+.c0 .tag {
+  color: black;
+  background-color: #dddddd;
+}
+
+.c0 .tag-remove {
+  color: #666666;
+}
+
+.c0 .dropdown-trigger {
+  border-radius: 0.25rem;
+  background-color: white;
+}
+
+.c0 .dropdown-content {
+  border-radius: 0.25rem;
+}
+
+.c0 .search {
+  background-color: white;
+}
+
+.c0 .search::-webkit-input-placeholder {
+  color: black;
+}
+
+.c0 .search::-moz-placeholder {
+  color: black;
+}
+
+.c0 .search:-ms-input-placeholder {
+  color: black;
+}
+
+.c0 .search::placeholder {
+  color: black;
+}
+
+.c0 .toggle {
+  font: normal normal normal 12px/1 bootstrap-icons;
+  top: 2px;
+  left: 2px;
+}
+
+.c0 .toggle.collapsed::after {
+  content: "";
+}
+
+.c0 .toggle.expanded::after {
+  content: "";
+}
+
+.c0 .root {
+  padding: 0;
+  margin: 0;
+}
+
 .c1 {
   font-size: 1em;
   cursor: pointer;
@@ -182,81 +239,77 @@ exports[`the html structure of search settings 1`] = `
         Select languages
       </label>
       <div
-        class="rmsc c0"
+        class="c0 react-dropdown-tree-select"
+        id="rdts1"
       >
         <div
-          aria-labelledby="selectLanguage"
-          aria-readonly="true"
-          class="dropdown-container"
-          tabindex="0"
+          class="dropdown"
         >
-          <div
-            class="dropdown-heading"
+          <a
+            aria-expanded="false"
+            aria-haspopup="tree"
+            class="dropdown-trigger arrow bottom"
+            id="rdts1_trigger"
+            role="button"
+            tabindex="0"
           >
-            <div
-              class="dropdown-heading-value"
+            <ul
+              class="tag-list"
             >
-              <span
-                class="gray"
+              <li
+                class="tag-item"
               >
-                Select...
-              </span>
-            </div>
-            <svg
-              class="dropdown-heading-dropdown-arrow gray"
-              fill="none"
-              height="24"
-              stroke="currentColor"
-              stroke-width="2"
-              width="24"
-            >
-              <path
-                d="M6 9L12 15 18 9"
-              />
-            </svg>
-          </div>
+                <input
+                  aria-autocomplete="list"
+                  class="search"
+                  placeholder="Choose..."
+                  type="text"
+                />
+              </li>
+            </ul>
+          </a>
         </div>
       </div>
       <label
         class="form-label"
         for="selectTags"
       >
-        Select tags which cards must have
+        Select tags which cards must have 
+        <b>
+          at least one
+        </b>
+         of
       </label>
       <div
-        class="rmsc c0"
+        class="c0 react-dropdown-tree-select"
+        id="rdts2"
       >
         <div
-          aria-labelledby="selectTags"
-          aria-readonly="true"
-          class="dropdown-container"
-          tabindex="0"
+          class="dropdown"
         >
-          <div
-            class="dropdown-heading"
+          <a
+            aria-expanded="false"
+            aria-haspopup="tree"
+            class="dropdown-trigger arrow bottom"
+            id="rdts2_trigger"
+            role="button"
+            tabindex="0"
           >
-            <div
-              class="dropdown-heading-value"
+            <ul
+              class="tag-list"
             >
-              <span
-                class="gray"
+              <li
+                class="tag-item"
               >
-                Select...
-              </span>
-            </div>
-            <svg
-              class="dropdown-heading-dropdown-arrow gray"
-              fill="none"
-              height="24"
-              stroke="currentColor"
-              stroke-width="2"
-              width="24"
-            >
-              <path
-                d="M6 9L12 15 18 9"
-              />
-            </svg>
-          </div>
+                <input
+                  aria-autocomplete="list"
+                  class="search"
+                  placeholder="Choose..."
+                  type="text"
+                />
+              </li>
+            </ul>
+          </a>
         </div>
       </div>
       <label
@@ -270,64 +323,35 @@ exports[`the html structure of search settings 1`] = `
          have
       </label>
       <div
-        class="rmsc c0"
+        class="c0 react-dropdown-tree-select"
+        id="rdts3"
       >
         <div
-          aria-labelledby="selectTags"
-          aria-readonly="true"
-          class="dropdown-container"
-          tabindex="0"
+          class="dropdown"
         >
-          <div
-            class="dropdown-heading"
+          <a
+            aria-expanded="false"
+            aria-haspopup="tree"
+            class="dropdown-trigger arrow bottom"
+            id="rdts3_trigger"
+            role="button"
+            tabindex="0"
           >
-            <div
-              class="dropdown-heading-value"
+            <ul
+              class="tag-list"
             >
-              <span>
-                NSFW
-              </span>
-            </div>
-            <button
-              aria-label="Clear Selected"
-              class="clear-selected-button"
-              type="button"
-            >
-              <svg
-                class="dropdown-search-clear-icon gray"
-                fill="none"
-                height="24"
-                stroke="currentColor"
-                stroke-width="2"
-                width="24"
+              <li
+                class="tag-item"
               >
-                <line
-                  x1="18"
-                  x2="6"
-                  y1="6"
-                  y2="18"
+                <input
+                  aria-autocomplete="list"
+                  class="search"
+                  placeholder="Choose..."
+                  type="text"
                 />
-                <line
-                  x1="6"
-                  x2="18"
-                  y1="6"
-                  y2="18"
-                />
-              </svg>
-            </button>
-            <svg
-              class="dropdown-heading-dropdown-arrow gray"
-              fill="none"
-              height="24"
-              stroke="currentColor"
-              stroke-width="2"
-              width="24"
-            >
-              <path
-                d="M6 9L12 15 18 9"
-              />
-            </svg>
-          </div>
+              </li>
+            </ul>
+          </a>
         </div>
       </div>
       <hr />

@@ -501,8 +501,8 @@
               'source_type': 'Google Drive',
               'source_verbose': 'Example Drive 1 but verbose',
               'tags': list([
-                'Tag in Data',
                 'Another Tag in Data',
+                'Tag in Data',
               ]),
             }),
             dict({
@@ -588,8 +588,8 @@
               'source_type': 'Google Drive',
               'source_verbose': 'Example Drive 2 but verbose',
               'tags': list([
-                'Tag in Data',
                 'Another Tag in Data',
+                'Tag in Data',
               ]),
             }),
           ]),
@@ -763,8 +763,8 @@
           'source_type': 'Google Drive',
           'source_verbose': 'Example Drive 1 but verbose',
           'tags': list([
-            'Tag in Data',
             'Another Tag in Data',
+            'Tag in Data',
           ]),
         }),
         dict({
@@ -969,8 +969,8 @@
           'source_type': 'Google Drive',
           'source_verbose': 'Example Drive 2 but verbose',
           'tags': list([
-            'Tag in Data',
             'Another Tag in Data',
+            'Tag in Data',
           ]),
         }),
       ]),

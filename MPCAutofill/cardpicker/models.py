@@ -233,7 +233,7 @@ class Card(models.Model):
             "download_link": self.get_download_link(),
             "small_thumbnail_url": self.get_small_thumbnail_url(),
             "medium_thumbnail_url": self.get_medium_thumbnail_url(),
-            "tags": self.tags,
+            "tags": sorted(self.tags),
             "language": self.language,
         }
 
@@ -282,7 +282,8 @@ class Tag(models.Model):
             "name": self.name,
             "aliases": self.aliases,
             "parent": (self.parent.name if self.parent else None),
-            "children": [x.name for x in self.tag_set.all()] if self.pk is not None else [],
+            # recursively serialise each child tag
+            "children": [x.to_dict() for x in self.tag_set.order_by("name").all()] if self.pk is not None else [],
         }
 
     @classmethod
