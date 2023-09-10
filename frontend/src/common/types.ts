@@ -252,7 +252,10 @@ export interface Language {
 
 export interface Tag {
   name: string;
+  // label: string;
+  // value: string;
   aliases: Array<string>;
   parent: string | null;
-  children: Array<string>;
+  children: Array<Tag>;
+  // children: Array<string>;
 }

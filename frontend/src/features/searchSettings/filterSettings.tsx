@@ -4,11 +4,14 @@
  * This component forms part of the Search Settings modal.
  */
 
-import React from "react";
+import React, { useCallback, useMemo, useRef, useState } from "react";
 import Col from "react-bootstrap/Col";
 import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
-import DropdownTreeSelect from "react-dropdown-tree-select";
+import DropdownTreeSelect, {
+  TreeData,
+  TreeNode,
+} from "react-dropdown-tree-select";
 require("react-dropdown-tree-select/dist/styles.css");
 import styled from "styled-components";
 
@@ -20,6 +23,7 @@ import {
   MinimumDPI,
   SizeStep,
 } from "@/common/constants";
+import { Tag } from "@/common/types";
 import { FilterSettings as FilterSettingsType } from "@/common/types";
 
 const StyledDropdownTreeSelect = styled(DropdownTreeSelect)`
@@ -46,12 +50,18 @@ const StyledDropdownTreeSelect = styled(DropdownTreeSelect)`
     color: black;
   }
 
+  .toggle {
+    font: normal normal normal 12px/1 bootstrap-icons;
+    top: 2px;
+    left: 2px;
+  }
+
   .toggle.collapsed::after {
-    content: "\\f067";
+    content: "\uF4FA";
   }
 
   .toggle.expanded::after {
-    content: "\\f068";
+    content: "\uF2E6";
   }
 
   color: black;
@@ -81,18 +91,49 @@ export function FilterSettings({
     value: row.code,
     checked: filterSettings.languages.includes(row.code),
   }));
-  const tagOptions = (getTagsQuery.data ?? []).map((tag) => ({
-    label: tag.name,
-    value: tag.name,
-  }));
-  const includesTagsOptions = tagOptions.map((tagOption) => ({
-    ...tagOption,
-    checked: filterSettings.includesTags.includes(tagOption.value),
-  }));
-  const excludesTagsOptions = tagOptions.map((tagOption) => ({
-    ...tagOption,
-    checked: filterSettings.excludesTags.includes(tagOption.value),
-  }));
+
+  const [expandedNodes, setExpandedNodes] = useState<Array<string>>([]);
+  const onNodeToggle = (currentNode: TreeNode): void => {
+    /**
+     * Note that controlling the checked status of tags through the data passed to the dropdown component
+     * necessitates controlling the expanded/collapsed status of tags with children as well.
+     * This appears to be because updating data in Redux forces the component to re-render in
+     * its initial state where everything is collapsed.
+     */
+
+    if (currentNode.expanded && !expandedNodes.includes(currentNode.value)) {
+      setExpandedNodes([...expandedNodes, currentNode.value]);
+    } else if (
+      !currentNode.expanded &&
+      expandedNodes.includes(currentNode.value)
+    ) {
+      setExpandedNodes(
+        expandedNodes.filter((node) => node != currentNode.value)
+      );
+    }
+  };
+
+  const getTagsTree = useCallback(
+    (checkedTags: Array<string>): Array<TreeNode> => {
+      /**
+       * Recursively convert a `Tag` into a data structure usable by react-dropdown-tree-select.
+       */
+
+      const processTag = (tag: Tag): TreeNode => {
+        return {
+          label: tag.name,
+          value: tag.name,
+          checked: checkedTags.includes(tag.name),
+          expanded: expandedNodes.includes(tag.name),
+          children: tag.children.map((childTag) => processTag(childTag)),
+        };
+      };
+      return (getTagsQuery.data ?? []).map((tag) => processTag(tag));
+    },
+    [getTagsQuery.data, expandedNodes]
+  );
+  const includesTagsTree = getTagsTree(filterSettings.includesTags);
+  const excludesTagsTree = getTagsTree(filterSettings.excludesTags);
 
   return (
     <>
@@ -173,10 +214,10 @@ export function FilterSettings({
         }}
       />
       <Form.Label htmlFor="selectTags">
-        Select tags which cards must have
+        Select tags which cards must have <b>at least one</b> of
       </Form.Label>
       <StyledDropdownTreeSelect
-        data={includesTagsOptions}
+        data={includesTagsTree}
         onChange={(currentNode, selectedNodes) => {
           const selectedTags = selectedNodes.map((node) => node.value);
           setFilterSettings({
@@ -187,22 +228,25 @@ export function FilterSettings({
             ),
           });
         }}
+        onNodeToggle={onNodeToggle}
       />
       <Form.Label htmlFor="selectTags">
         Select tags which cards must <b>not</b> have
       </Form.Label>
       <StyledDropdownTreeSelect
-        data={excludesTagsOptions}
+        data={excludesTagsTree}
         onChange={(currentNode, selectedNodes) => {
           const selectedTags = selectedNodes.map((node) => node.value);
           setFilterSettings({
             ...filterSettings,
             excludesTags: selectedTags,
+            // TODO: account for parents here. you shouldn't be able to include a child but exclude a parent.
             includesTags: filterSettings.includesTags.filter(
               (tag) => !selectedTags.includes(tag)
             ),
           });
         }}
+        onNodeToggle={onNodeToggle}
       />
     </>
   );

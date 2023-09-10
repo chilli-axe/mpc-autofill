@@ -282,7 +282,8 @@ class Tag(models.Model):
             "name": self.name,
             "aliases": self.aliases,
             "parent": (self.parent.name if self.parent else None),
-            "children": [x.name for x in self.tag_set.all()] if self.pk is not None else [],
+            # recursively serialise each child tag
+            "children": [x.to_dict() for x in self.tag_set.order_by("name").all()] if self.pk is not None else [],
         }
 
     @classmethod

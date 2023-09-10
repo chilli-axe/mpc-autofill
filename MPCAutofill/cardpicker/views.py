@@ -558,7 +558,9 @@ def get_tags(request: HttpRequest) -> HttpResponse:
 
     if request.method != "GET":
         raise BadRequestException("Expected GET request.")
-    return JsonResponse({"tags": sorted([tag.to_dict() for tag in Tags().tags.values()], key=lambda x: x["name"])})
+    return JsonResponse(
+        {"tags": sorted([tag.to_dict() for tag in Tags().tags.values() if tag.parent is None], key=lambda x: x["name"])}
+    )
 
 
 @csrf_exempt
