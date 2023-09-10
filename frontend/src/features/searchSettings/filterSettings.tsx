@@ -8,7 +8,8 @@ import React from "react";
 import Col from "react-bootstrap/Col";
 import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
-import { MultiSelect } from "react-multi-select-component";
+import DropdownTreeSelect from "react-dropdown-tree-select";
+require("react-dropdown-tree-select/dist/styles.css");
 import styled from "styled-components";
 
 import { useGetLanguagesQuery, useGetTagsQuery } from "@/app/api";
@@ -21,8 +22,44 @@ import {
 } from "@/common/constants";
 import { FilterSettings as FilterSettingsType } from "@/common/types";
 
-const StyledMultiSelect = styled(MultiSelect)`
+const StyledDropdownTreeSelect = styled(DropdownTreeSelect)`
+  .tag {
+    color: black;
+    background-color: #dddddd;
+  }
+  .tag-remove {
+    color: #666666;
+  }
+
+  .dropdown-trigger {
+    border-radius: 0.25rem;
+    background-color: white;
+  }
+  .dropdown-content {
+    border-radius: 0.25rem;
+  }
+
+  .search {
+    background-color: white;
+  }
+  .search::placeholder {
+    color: black;
+  }
+
+  .toggle.collapsed::after {
+    content: "\\f067";
+  }
+
+  .toggle.expanded::after {
+    content: "\\f068";
+  }
+
   color: black;
+
+  .root {
+    padding: 0;
+    margin: 0;
+  }
 `;
 
 interface FilterSettingsProps {
@@ -42,13 +79,19 @@ export function FilterSettings({
   const languageOptions = (getLanguagesQuery.data ?? []).map((row) => ({
     label: row.name,
     value: row.code,
+    checked: filterSettings.languages.includes(row.code),
   }));
-  const languageOptionsByCode = Object.fromEntries(
-    languageOptions.map((row) => [row.value, row])
-  );
   const tagOptions = (getTagsQuery.data ?? []).map((tag) => ({
     label: tag.name,
     value: tag.name,
+  }));
+  const includesTagsOptions = tagOptions.map((tagOption) => ({
+    ...tagOption,
+    checked: filterSettings.includesTags.includes(tagOption.value),
+  }));
+  const excludesTagsOptions = tagOptions.map((tagOption) => ({
+    ...tagOption,
+    checked: filterSettings.excludesTags.includes(tagOption.value),
   }));
 
   return (
@@ -120,34 +163,22 @@ export function FilterSettings({
       <br />
       <br />
       <Form.Label htmlFor="selectLanguage">Select languages</Form.Label>
-      <StyledMultiSelect
-        options={languageOptions}
-        disableSearch={true}
-        isLoading={getLanguagesQuery.isFetching}
-        value={filterSettings.languages
-          .map((code) => languageOptionsByCode[code])
-          .filter((row) => row != null)}
-        onChange={(data: Array<{ label: string; value: string }>) => {
+      <StyledDropdownTreeSelect
+        data={languageOptions}
+        onChange={(currentNode, selectedNodes) => {
           setFilterSettings({
             ...filterSettings,
-            languages: data.map((row) => row.value),
+            languages: selectedNodes.map((row) => row.value),
           });
         }}
-        labelledBy="selectLanguage"
       />
       <Form.Label htmlFor="selectTags">
         Select tags which cards must have
       </Form.Label>
-      <StyledMultiSelect
-        options={tagOptions}
-        disableSearch={true}
-        isLoading={getTagsQuery.isFetching}
-        value={filterSettings.includesTags.map((tag) => ({
-          label: tag,
-          value: tag,
-        }))}
-        onChange={(data: Array<{ label: string; value: string }>) => {
-          const selectedTags = data.map((row) => row.value);
+      <StyledDropdownTreeSelect
+        data={includesTagsOptions}
+        onChange={(currentNode, selectedNodes) => {
+          const selectedTags = selectedNodes.map((node) => node.value);
           setFilterSettings({
             ...filterSettings,
             includesTags: selectedTags,
@@ -156,21 +187,14 @@ export function FilterSettings({
             ),
           });
         }}
-        labelledBy="selectTags"
       />
       <Form.Label htmlFor="selectTags">
         Select tags which cards must <b>not</b> have
       </Form.Label>
-      <StyledMultiSelect
-        options={tagOptions}
-        disableSearch={true}
-        isLoading={getTagsQuery.isFetching}
-        value={filterSettings.excludesTags.map((tag) => ({
-          label: tag,
-          value: tag,
-        }))}
-        onChange={(data: Array<{ label: string; value: string }>) => {
-          const selectedTags = data.map((row) => row.value);
+      <StyledDropdownTreeSelect
+        data={excludesTagsOptions}
+        onChange={(currentNode, selectedNodes) => {
+          const selectedTags = selectedNodes.map((node) => node.value);
           setFilterSettings({
             ...filterSettings,
             excludesTags: selectedTags,
@@ -179,7 +203,6 @@ export function FilterSettings({
             ),
           });
         }}
-        labelledBy="selectTags"
       />
     </>
   );
