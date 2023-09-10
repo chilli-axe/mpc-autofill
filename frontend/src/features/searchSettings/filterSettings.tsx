@@ -4,11 +4,15 @@
  * This component forms part of the Search Settings modal.
  */
 
-import React, { useState } from "react";
+import React, { useCallback, useMemo, useRef, useState } from "react";
 import Col from "react-bootstrap/Col";
 import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
-import { MultiSelect } from "react-multi-select-component";
+import DropdownTreeSelect, {
+  TreeData,
+  TreeNode,
+} from "react-dropdown-tree-select";
+require("react-dropdown-tree-select/dist/styles.css");
 import styled from "styled-components";
 
 import { useGetLanguagesQuery, useGetTagsQuery } from "@/app/api";
@@ -19,10 +23,53 @@ import {
   MinimumDPI,
   SizeStep,
 } from "@/common/constants";
+import { Tag } from "@/common/types";
 import { FilterSettings as FilterSettingsType } from "@/common/types";
 
-const StyledMultiSelect = styled(MultiSelect)`
+const StyledDropdownTreeSelect = styled(DropdownTreeSelect)`
+  .tag {
+    color: black;
+    background-color: #dddddd;
+  }
+  .tag-remove {
+    color: #666666;
+  }
+
+  .dropdown-trigger {
+    border-radius: 0.25rem;
+    background-color: white;
+  }
+  .dropdown-content {
+    border-radius: 0.25rem;
+  }
+
+  .search {
+    background-color: white;
+  }
+  .search::placeholder {
+    color: black;
+  }
+
+  .toggle {
+    font: normal normal normal 12px/1 bootstrap-icons;
+    top: 2px;
+    left: 2px;
+  }
+
+  .toggle.collapsed::after {
+    content: "\uF4FA";
+  }
+
+  .toggle.expanded::after {
+    content: "\uF2E6";
+  }
+
   color: black;
+
+  .root {
+    padding: 0;
+    margin: 0;
+  }
 `;
 
 interface FilterSettingsProps {
@@ -42,14 +89,51 @@ export function FilterSettings({
   const languageOptions = (getLanguagesQuery.data ?? []).map((row) => ({
     label: row.name,
     value: row.code,
+    checked: filterSettings.languages.includes(row.code),
   }));
-  const languageOptionsByCode = Object.fromEntries(
-    languageOptions.map((row) => [row.value, row])
+
+  const [expandedNodes, setExpandedNodes] = useState<Array<string>>([]);
+  const onNodeToggle = (currentNode: TreeNode): void => {
+    /**
+     * Note that controlling the checked status of tags through the data passed to the dropdown component
+     * necessitates controlling the expanded/collapsed status of tags with children as well.
+     * This appears to be because updating data in Redux forces the component to re-render in
+     * its initial state where everything is collapsed.
+     */
+
+    if (currentNode.expanded && !expandedNodes.includes(currentNode.value)) {
+      setExpandedNodes([...expandedNodes, currentNode.value]);
+    } else if (
+      !currentNode.expanded &&
+      expandedNodes.includes(currentNode.value)
+    ) {
+      setExpandedNodes(
+        expandedNodes.filter((node) => node != currentNode.value)
+      );
+    }
+  };
+
+  const getTagsTree = useCallback(
+    (checkedTags: Array<string>): Array<TreeNode> => {
+      /**
+       * Recursively convert a `Tag` into a data structure usable by react-dropdown-tree-select.
+       */
+
+      const processTag = (tag: Tag): TreeNode => {
+        return {
+          label: tag.name,
+          value: tag.name,
+          checked: checkedTags.includes(tag.name),
+          expanded: expandedNodes.includes(tag.name),
+          children: tag.children.map((childTag) => processTag(childTag)),
+        };
+      };
+      return (getTagsQuery.data ?? []).map((tag) => processTag(tag));
+    },
+    [getTagsQuery.data, expandedNodes]
   );
-  const tagOptions = (getTagsQuery.data ?? []).map((tag) => ({
-    label: tag,
-    value: tag,
-  }));
+  const includesTagsTree = getTagsTree(filterSettings.includesTags);
+  const excludesTagsTree = getTagsTree(filterSettings.excludesTags);
 
   return (
     <>
@@ -120,34 +204,22 @@ export function FilterSettings({
       <br />
       <br />
       <Form.Label htmlFor="selectLanguage">Select languages</Form.Label>
-      <StyledMultiSelect
-        options={languageOptions}
-        disableSearch={true}
-        isLoading={getLanguagesQuery.isFetching}
-        value={filterSettings.languages
-          .map((code) => languageOptionsByCode[code])
-          .filter((row) => row != null)}
-        onChange={(data: Array<{ label: string; value: string }>) => {
+      <StyledDropdownTreeSelect
+        data={languageOptions}
+        onChange={(currentNode, selectedNodes) => {
           setFilterSettings({
             ...filterSettings,
-            languages: data.map((row) => row.value),
+            languages: selectedNodes.map((row) => row.value),
           });
         }}
-        labelledBy="selectLanguage"
       />
       <Form.Label htmlFor="selectTags">
-        Select tags which cards must have
+        Select tags which cards must have <b>at least one</b> of
       </Form.Label>
-      <StyledMultiSelect
-        options={tagOptions}
-        disableSearch={true}
-        isLoading={getTagsQuery.isFetching}
-        value={filterSettings.includesTags.map((tag) => ({
-          label: tag,
-          value: tag,
-        }))}
-        onChange={(data: Array<{ label: string; value: string }>) => {
-          const selectedTags = data.map((row) => row.value);
+      <StyledDropdownTreeSelect
+        data={includesTagsTree}
+        onChange={(currentNode, selectedNodes) => {
+          const selectedTags = selectedNodes.map((node) => node.value);
           setFilterSettings({
             ...filterSettings,
             includesTags: selectedTags,
@@ -156,30 +228,25 @@ export function FilterSettings({
             ),
           });
         }}
-        labelledBy="selectTags"
+        onNodeToggle={onNodeToggle}
       />
       <Form.Label htmlFor="selectTags">
         Select tags which cards must <b>not</b> have
       </Form.Label>
-      <StyledMultiSelect
-        options={tagOptions}
-        disableSearch={true}
-        isLoading={getTagsQuery.isFetching}
-        value={filterSettings.excludesTags.map((tag) => ({
-          label: tag,
-          value: tag,
-        }))}
-        onChange={(data: Array<{ label: string; value: string }>) => {
-          const selectedTags = data.map((row) => row.value);
+      <StyledDropdownTreeSelect
+        data={excludesTagsTree}
+        onChange={(currentNode, selectedNodes) => {
+          const selectedTags = selectedNodes.map((node) => node.value);
           setFilterSettings({
             ...filterSettings,
             excludesTags: selectedTags,
+            // TODO: account for parents here. you shouldn't be able to include a child but exclude a parent.
             includesTags: filterSettings.includesTags.filter(
               (tag) => !selectedTags.includes(tag)
             ),
           });
         }}
-        labelledBy="selectTags"
+        onNodeToggle={onNodeToggle}
       />
     </>
   );

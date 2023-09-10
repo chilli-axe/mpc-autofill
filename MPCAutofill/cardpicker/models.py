@@ -233,7 +233,7 @@ class Card(models.Model):
             "download_link": self.get_download_link(),
             "small_thumbnail_url": self.get_small_thumbnail_url(),
             "medium_thumbnail_url": self.get_medium_thumbnail_url(),
-            "tags": self.tags,
+            "tags": sorted(self.tags),
             "language": self.language,
         }
 
@@ -272,9 +272,19 @@ class Tag(models.Model):
     name = models.CharField(unique=True)
     # null=True is just for admin panel
     aliases = ArrayField(models.CharField(max_length=200), default=list, blank=True)
+    parent = models.ForeignKey(to="Tag", null=True, blank=True, on_delete=models.SET_NULL)
 
     def __str__(self) -> str:
         return self.name
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "name": self.name,
+            "aliases": self.aliases,
+            "parent": (self.parent.name if self.parent else None),
+            # recursively serialise each child tag
+            "children": [x.to_dict() for x in self.tag_set.order_by("name").all()] if self.pk is not None else [],
+        }
 
     @classmethod
     def get_tags(cls) -> dict[str, list[str]]:

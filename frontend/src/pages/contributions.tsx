@@ -8,6 +8,7 @@ import {
   MakePlayingCardsURL,
   ProjectName,
 } from "@/common/constants";
+import { Tag } from "@/common/types";
 import {
   useBackendConfigured,
   useProjectName,
@@ -23,6 +24,35 @@ import { NoBackendDefault } from "@/features/ui/noBackendDefault";
 function ContributionGuidelines() {
   const projectName = useProjectName();
   const getTagsQuery = useGetTagsQuery();
+
+  const describeTag = (tag: Tag) => (
+    /**
+     * Recursively generate a user-facing description of how `tag` works.
+     */
+
+    <li key={tag.name}>
+      <code>{tag.name}</code>
+      {tag.aliases.length > 0 && (
+        <>
+          , which has the aliases [
+          {tag.aliases.map((alias, i) => (
+            <>
+              {i > 0 && ", "}
+              <code>{alias}</code>
+            </>
+          ))}
+          ]
+        </>
+      )}
+      {tag.children.length > 0 && (
+        <>
+          {" "}
+          {tag.aliases.length > 0 ? "and" : ", which has"} the sub-tags:
+          <ul>{tag.children.map(describeTag)}</ul>
+        </>
+      )}
+    </li>
+  );
 
   return (
     <Accordion>
@@ -45,13 +75,7 @@ function ContributionGuidelines() {
             {!getTagsQuery.isFetching && getTagsQuery.data != null && (
               <li>
                 {projectName} is configured with the following tags:
-                <ul>
-                  {getTagsQuery.data.map((tag: string) => (
-                    <li key={tag}>
-                      <code>{tag}</code>
-                    </li>
-                  ))}
-                </ul>
+                <ul>{getTagsQuery.data.map(describeTag)}</ul>
               </li>
             )}
             <li>
@@ -88,7 +112,7 @@ function ContributionGuidelines() {
               <ul>
                 <li>
                   For example, if a file was named{" "}
-                  <code>{"<DE>"} Image A.png</code>, we would read the language
+                  <code>{"{DE}"} Image A.png</code>, we would read the language
                   as <b>German</b>.
                 </li>
               </ul>

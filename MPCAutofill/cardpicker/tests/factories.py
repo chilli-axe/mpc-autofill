@@ -51,4 +51,5 @@ class TagFactory(factory.django.DjangoModelFactory):
         model = models.Tag
 
     name = factory.Sequence(lambda n: f"Tag {n}")
+    parent = factory.LazyFunction(lambda: None)
     aliases = factory.LazyAttribute(lambda o: [o.name.replace(" ", "")])

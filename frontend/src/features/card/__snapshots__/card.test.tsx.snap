@@ -56,19 +56,6 @@ exports[`the html structure of a Card with a single document 1`] = `
             class="mpccard-spacing"
           >
             <p
-              class="mpccard-tags card-text"
-            >
-              <i
-                class="italic"
-              >
-                Untagged
-              </i>
-            </p>
-          </div>
-          <div
-            class="mpccard-spacing"
-          >
-            <p
               class="mpccard-source card-text"
             >
               Source 1 [1200 DPI]
@@ -125,19 +112,6 @@ exports[`the html structure of a Card with no search results 1`] = `
             class="mpccard-name card-subtitle h6"
           >
             My Invalid Query
-          </div>
-          <div
-            class="mpccard-spacing"
-          >
-            <p
-              class="mpccard-tags card-text"
-            >
-              <i
-                class="italic"
-              >
-                Untagged
-              </i>
-            </p>
           </div>
           <div
             class="mpccard-spacing"
@@ -234,19 +208,6 @@ exports[`the html structure of a Card with three documents 1`] = `
             class="mpccard-spacing"
           >
             <p
-              class="mpccard-tags card-text"
-            >
-              <i
-                class="italic"
-              >
-                Untagged
-              </i>
-            </p>
-          </div>
-          <div
-            class="mpccard-spacing"
-          >
-            <p
               class="mpccard-source card-text"
             >
               Source 1 [1200 DPI]
@@ -324,19 +285,6 @@ exports[`the html structure of a Card with two documents 1`] = `
             class="mpccard-name card-subtitle h6"
           >
             Card 1
-          </div>
-          <div
-            class="mpccard-spacing"
-          >
-            <p
-              class="mpccard-tags card-text"
-            >
-              <i
-                class="italic"
-              >
-                Untagged
-              </i>
-            </p>
           </div>
           <div
             class="mpccard-spacing"

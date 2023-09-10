@@ -5,7 +5,7 @@ import pytest
 from cardpicker.models import Card
 from cardpicker.sources.api import Folder, Image
 from cardpicker.sources.update_database import update_database
-from cardpicker.tags import read_tags_in_database
+from cardpicker.tags import Tags
 
 
 class TestAPI:
@@ -41,6 +41,16 @@ class TestAPI:
     IMAGE_G = Image(
         id="G", name="Image G [NSFW] (John Doe).png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_A
     )
+    IMAGE_H = Image(
+        id="H", name="Image H [A, NSFW, B] (John Doe).png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_A
+    )
+    IMAGE_I = Image(id="I", name="Image A.I.png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_A)
+    IMAGE_J = Image(
+        id="J", name="Image J [Child Tag].png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_A
+    )
+    IMAGE_K = Image(
+        id="K", name="Image K [Grandchild Tag].png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_A
+    )
     IMAGE_FRENCH = Image(
         id="french", name="French.png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_FRENCH
     )
@@ -60,8 +70,9 @@ class TestAPI:
         "folder, full_path",
         [(FOLDER_A, "Folder A"), (FOLDER_B, "Folder A / Folder B"), (FOLDER_C, "Folder A / Folder B / Folder C")],
     )
-    def test_folder_full_path(self, folder, full_path):
-        assert folder.full_path == full_path
+    def test_folder_full_path(self, django_settings, folder, full_path):
+        tags = Tags()
+        assert folder.get_full_path(tags=tags) == full_path
 
     @pytest.mark.parametrize(
         "folder, expected_language",
@@ -70,11 +81,12 @@ class TestAPI:
             (FOLDER_FRENCH, "FR"),
         ],
     )
-    def test_folder_language(self, folder, expected_language):
+    def test_folder_language(self, django_settings, folder, expected_language):
+        tags = Tags()
         if expected_language is None:
-            assert folder.language is None
+            assert folder.get_language(tags=tags) is None
         else:
-            assert folder.language.alpha_2.lower() == expected_language.lower()
+            assert folder.get_language(tags=tags).alpha_2.lower() == expected_language.lower()
 
     @pytest.mark.parametrize(
         "folder, expected_tags",
@@ -82,16 +94,16 @@ class TestAPI:
             (FOLDER_A, set()),
             (FOLDER_B, set()),
             (FOLDER_C, {"NSFW"}),
-            (FOLDER_D, {"Tag In Data"}),
-            (FOLDER_E, {"Tag In Data"}),
+            (FOLDER_D, {"Tag in Data"}),
+            (FOLDER_E, {"Tag in Data"}),
             (FOLDER_X, {"NSFW", "Extended", "Full Art"}),
             (FOLDER_Y, {"Full Art"}),
             (FOLDER_Z, set()),
         ],
     )
     def test_folder_tags(self, django_settings, tag_in_data, folder, expected_tags):
-        read_tags_in_database()
-        assert folder.tags == expected_tags
+        tags = Tags()
+        assert folder.get_tags(tags=tags) == expected_tags
 
     @pytest.mark.parametrize(
         "folder, expected_name",
@@ -104,8 +116,8 @@ class TestAPI:
         ],
     )
     def test_folder_name(self, django_settings, tag_in_data, folder, expected_name):
-        read_tags_in_database()
-        _, name, _ = folder.unpacked_name
+        tags = Tags()
+        _, name, _ = folder.unpack_name(tags=tags)
         assert name == expected_name
 
     @pytest.mark.parametrize(
@@ -116,11 +128,12 @@ class TestAPI:
             (IMAGE_ENGLISH, "EN"),
         ],
     )
-    def test_image_language(self, image, expected_language):
+    def test_image_language(self, django_settings, image, expected_language):
+        tags = Tags()
         if expected_language is None:
-            assert image.language is None
+            assert image.get_language(tags=tags) is None
         else:
-            assert image.language.alpha_2.lower() == expected_language.lower()
+            assert image.get_language(tags=tags).alpha_2.lower() == expected_language.lower()
 
     @pytest.mark.parametrize(
         "image, expected_tags",
@@ -130,12 +143,15 @@ class TestAPI:
             (IMAGE_C, {"NSFW"}),
             (IMAGE_D, {"NSFW", "Full Art"}),
             (IMAGE_E, set()),
-            (IMAGE_F, {"NSFW", "Tag In Data"}),
+            (IMAGE_F, {"NSFW", "Tag in Data"}),
+            (IMAGE_H, {"NSFW"}),
+            (IMAGE_J, {"Child Tag", "Tag in Data"}),  # `Tag in Data` is implied by `Child Tag`
+            (IMAGE_K, {"Grandchild Tag", "Child Tag", "Tag in Data"}),  # `Child Tag` is implied by `Grandchild Tag`
         ],
     )
-    def test_image_tags(self, django_settings, tag_in_data, image, expected_tags):
-        read_tags_in_database()
-        assert image.tags == expected_tags
+    def test_image_tags(self, django_settings, grandchild_tag, image, expected_tags):
+        tags = Tags()
+        assert image.get_tags(tags=tags) == expected_tags
 
     @pytest.mark.parametrize(
         "image, expected_name",
@@ -147,13 +163,15 @@ class TestAPI:
             (IMAGE_E, "Image E [invalid tag"),
             (IMAGE_F, "Image F"),
             (IMAGE_G, "Image G (John Doe)"),
+            (IMAGE_H, "Image H [A, B] (John Doe)"),
+            (IMAGE_I, "Image A.I"),
             (IMAGE_NSFW, "NSFW"),
             (IMAGE_DOUBLE_NSFW, "NSFW"),
         ],
     )
     def test_image_name(self, django_settings, tag_in_data, image, expected_name):
-        read_tags_in_database()
-        _, name, _, _ = image.unpacked_name
+        tags = Tags()
+        _, name, _, _ = image.unpack_name(tags=tags)
         assert name == expected_name
 
 
