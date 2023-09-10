@@ -233,7 +233,7 @@ class Card(models.Model):
             "download_link": self.get_download_link(),
             "small_thumbnail_url": self.get_small_thumbnail_url(),
             "medium_thumbnail_url": self.get_medium_thumbnail_url(),
-            "tags": self.tags,
+            "tags": sorted(self.tags),
             "language": self.language,
         }
 
