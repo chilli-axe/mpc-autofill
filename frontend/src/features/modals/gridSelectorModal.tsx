@@ -64,7 +64,7 @@ function CardsGroupedTogether({
    */
 
   return (
-    <Row className="g-0" xxl={4} xl={4} lg={3} md={2} sm={2} xs={2}>
+    <Row className="g-0 p-3" xxl={4} xl={4} lg={3} md={2} sm={2} xs={2}>
       {Object.entries(cardIdentifiersAndOptionNumbersBySource).map(
         ([key, value], sourceIndex) => (
           <>
@@ -110,7 +110,7 @@ function CardsFacetedBySource({
               }}
               key={`${sourceKey}-header`}
             >
-              <hr key={`${sourceKey}-top-hr`} />
+              <hr className="mt-0" key={`${sourceKey}-top-hr`} />
               <Stack
                 direction="horizontal"
                 gap={2}
@@ -137,38 +137,37 @@ function CardsFacetedBySource({
                   data-testid={`${sourceKey}-collapse-header`}
                 ></h4>
               </Stack>
+              <hr className="mb-0" key={`${sourceKey}-bottom-hr`} />
             </div>
 
             <Collapse
               in={sourcesVisible[sourceKey] ?? true}
               data-testid={`${sourceKey}-collapse`}
             >
-              <div>
-                <hr key={`${sourceKey}-bottom-hr`} />
-                <Row
-                  className="g-0"
-                  xxl={4}
-                  xl={4}
-                  lg={3}
-                  md={2}
-                  sm={2}
-                  xs={2}
-                  key={`${sourceKey}-row`}
-                >
-                  {cardIdentifiersAndOptionNumbers.map(
-                    ([identifier, optionNumber]) => (
-                      <MemoizedEditorCard
-                        imageIdentifier={identifier}
-                        cardHeaderTitle={`Option ${optionNumber + 1}`}
-                        cardOnClick={() => selectImage(identifier)}
-                        key={`gridSelector-${identifier}`}
-                        noResultsFound={false}
-                      />
-                    )
-                  )}
-                </Row>
-              </div>
+              <Row
+                className="g-0 p-3"
+                xxl={4}
+                xl={4}
+                lg={3}
+                md={2}
+                sm={2}
+                xs={2}
+                key={`${sourceKey}-row`}
+              >
+                {cardIdentifiersAndOptionNumbers.map(
+                  ([identifier, optionNumber]) => (
+                    <MemoizedEditorCard
+                      imageIdentifier={identifier}
+                      cardHeaderTitle={`Option ${optionNumber + 1}`}
+                      cardOnClick={() => selectImage(identifier)}
+                      key={`gridSelector-${identifier}`}
+                      noResultsFound={false}
+                    />
+                  )
+                )}
+              </Row>
             </Collapse>
+            <div className="py-2" />
           </>
         )
       )}
@@ -239,8 +238,8 @@ export function GridSelectorModal({
       <Modal.Header closeButton>
         <Modal.Title>Select Version</Modal.Title>
       </Modal.Header>
-      <Modal.Body>
-        <Row>
+      <Modal.Body className="d-grid p-0">
+        <Row className="p-3" style={{ width: 100 + "%" }}>
           <Col md={8} sm={6}>
             <Toggle
               onClick={() => dispatch(toggleFacetBySource())}
@@ -258,13 +257,12 @@ export function GridSelectorModal({
           </Col>
           {facetBySource && (
             <Col md={4} sm={6}>
-              <div className="d-grid gap-0">
+              <div className="d-grid g-0">
                 <Button
                   onClick={() =>
                     dispatch(
                       anySourcesCollapsed
-                        ? // ? makeAllSourcesInvisible(sourceKeys)
-                          makeAllSourcesVisible()
+                        ? makeAllSourcesVisible()
                         : makeAllSourcesInvisible(sourceKeys)
                     )
                   }
