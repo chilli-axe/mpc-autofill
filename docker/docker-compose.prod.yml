@@ -40,8 +40,14 @@ services:
     depends_on:
       - django
 
+  postgres:
+    expose:
+      - 5432
+    ports: []
   elasticsearch:
-    network_mode: bridge # this is set to `host` in the parent compose file
+    expose:
+      - 5432
+    ports: []
 
 # Persistent storage for containers
 volumes:
