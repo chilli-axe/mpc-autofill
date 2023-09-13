@@ -12,14 +12,7 @@ from cardpicker.constants import NSFW
 class Tags:
     def __init__(self) -> None:
         self.tags = {
-            tag.name.lower(): tag
-            for tag in [
-                models.Tag(name="Alt Art", aliases=["Alternative Art", "Alternate Art", "Alt"], parent=None),
-                models.Tag(name="Extended", aliases=["Extended Art"], parent=None),
-                models.Tag(name="Full Art", aliases=["Fullart", "Full"], parent=None),
-                models.Tag(name=NSFW, aliases=[], parent=None),
-                *models.Tag.objects.all(),
-            ]
+            tag.name.lower(): tag for tag in [models.Tag(name=NSFW, aliases=[], parent=None), *models.Tag.objects.all()]
         }
 
     def extract_name_and_tags(self, name: Optional[str]) -> tuple[str, set[str]]:

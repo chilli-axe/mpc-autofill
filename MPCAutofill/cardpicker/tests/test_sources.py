@@ -101,7 +101,7 @@ class TestAPI:
             (FOLDER_Z, set()),
         ],
     )
-    def test_folder_tags(self, django_settings, tag_in_data, folder, expected_tags):
+    def test_folder_tags(self, django_settings, tag_in_data, extended_tag, full_art_tag, folder, expected_tags):
         tags = Tags()
         assert folder.get_tags(tags=tags) == expected_tags
 
@@ -115,7 +115,7 @@ class TestAPI:
             (FOLDER_H, "Folder H [Some more words]"),
         ],
     )
-    def test_folder_name(self, django_settings, tag_in_data, folder, expected_name):
+    def test_folder_name(self, django_settings, tag_in_data, extended_tag, full_art_tag, folder, expected_name):
         tags = Tags()
         _, name, _ = folder.unpack_name(tags=tags)
         assert name == expected_name
@@ -149,7 +149,7 @@ class TestAPI:
             (IMAGE_K, {"Grandchild Tag", "Child Tag", "Tag in Data"}),  # `Child Tag` is implied by `Grandchild Tag`
         ],
     )
-    def test_image_tags(self, django_settings, grandchild_tag, image, expected_tags):
+    def test_image_tags(self, django_settings, grandchild_tag, extended_tag, full_art_tag, image, expected_tags):
         tags = Tags()
         assert image.get_tags(tags=tags) == expected_tags
 
@@ -169,7 +169,7 @@ class TestAPI:
             (IMAGE_DOUBLE_NSFW, "NSFW"),
         ],
     )
-    def test_image_name(self, django_settings, tag_in_data, image, expected_name):
+    def test_image_name(self, django_settings, tag_in_data, extended_tag, full_art_tag, image, expected_name):
         tags = Tags()
         _, name, _, _ = image.unpack_name(tags=tags)
         assert name == expected_name

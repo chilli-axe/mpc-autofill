@@ -336,6 +336,16 @@ def tag_in_data(db) -> Tag:
 
 
 @pytest.fixture()
+def extended_tag(db) -> Tag:
+    return TagFactory(name="Extended")
+
+
+@pytest.fixture()
+def full_art_tag(db) -> Tag:
+    return TagFactory(name="Full Art")
+
+
+@pytest.fixture()
 def child_tag(db, tag_in_data) -> Tag:
     return TagFactory(name="Child Tag", parent=tag_in_data)
 
