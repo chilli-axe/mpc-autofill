@@ -139,13 +139,13 @@ function CardsFacetedBySource({
               </Stack>
               <hr className="mb-0" key={`${sourceKey}-bottom-hr`} />
             </div>
-
+            <div className="py-2" />
             <Collapse
               in={sourcesVisible[sourceKey] ?? true}
               data-testid={`${sourceKey}-collapse`}
             >
               <Row
-                className="g-0 p-3"
+                className="g-0 px-3"
                 xxl={4}
                 xl={4}
                 lg={3}
