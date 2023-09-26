@@ -1,5 +1,3 @@
-//# region snapshot tests
-
 import { waitFor, within } from "@testing-library/dom";
 
 import App from "@/app/app";
@@ -23,6 +21,8 @@ import {
   sourceDocumentsThreeResults,
 } from "@/mocks/handlers";
 import { server } from "@/mocks/server";
+
+//# region snapshot tests
 
 test("the html structure of search settings", async () => {
   server.use(

@@ -12,6 +12,7 @@ def sync_dfcs() -> None:
     if game_integration is None:
         print("There is no game configured - no DFC pairs have been imported.")
         return
+    print(f"Importing DFC pairs for the game {game_integration.__name__}...")
     dfc_pairs = game_integration.get_dfc_pairs()
     key_fields = ("front",)
     bulk_sync(new_models=dfc_pairs, key_fields=key_fields, filters=None, db_class=DFCPair)

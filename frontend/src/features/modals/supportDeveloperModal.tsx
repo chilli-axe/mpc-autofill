@@ -22,7 +22,7 @@ export function SupportDeveloperModal({
   handleClose,
 }: SupportDeveloperModalProps) {
   return (
-    <Modal show={show} onHide={handleClose}>
+    <Modal scrollable show={show} onHide={handleClose}>
       <Modal.Header closeButton>
         <Modal.Title>Support the Developer</Modal.Title>
       </Modal.Header>

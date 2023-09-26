@@ -246,7 +246,11 @@ export function Card({
     nameOnClick != null ? OutlinedBSCardSubtitle : BSCard.Subtitle;
 
   return (
-    <BSCard className="mpccard mpccard-hover" onClick={cardOnClick}>
+    <BSCard
+      className="mpccard mpccard-hover"
+      onClick={cardOnClick}
+      style={{ contentVisibility: "auto" }}
+    >
       <BSCard.Header className="pb-0 text-center">
         <p className="mpccard-slot">{cardHeaderTitle}</p>
         {cardHeaderButtons}

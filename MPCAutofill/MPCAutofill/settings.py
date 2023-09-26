@@ -45,6 +45,7 @@ TARGET_EMAIL = env("TARGET_EMAIL", default="your_email@somewhere.com")
 DISCORD = env("DISCORD", default="http://mprox.link/discord")
 REDDIT = env("REDDIT", default="https://www.reddit.com/r/mpcproxies/")
 THEME = env("THEME", default="superhero")
+DESCRIPTION = env("DESCRIPTION", default="")
 
 PREPEND_WWW = env("PREPEND_WWW", default=False)
 

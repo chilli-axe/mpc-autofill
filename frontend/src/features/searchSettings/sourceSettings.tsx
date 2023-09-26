@@ -11,6 +11,7 @@ import {
   DropResult,
 } from "@hello-pangea/dnd"; // TODO: look into using `react-dnd` instead as it's a significantly smaller package
 import React, { ReactNode, useCallback } from "react";
+import Button from "react-bootstrap/Button";
 import Table from "react-bootstrap/Table";
 // @ts-ignore: https://github.com/arnthor3/react-bootstrap-toggle/issues/21
 import Toggle from "react-bootstrap-toggle";
@@ -42,6 +43,7 @@ export function SourceSettings({
   setSourceSettings,
 }: SourceSettingsProps) {
   const maybeSourceDocuments = useAppSelector(selectSourceDocuments);
+  const anySourcesEnabled = (sourceSettings.sources ?? []).some((x) => x[1]);
 
   const moveSourceToIndex = useCallback(
     (sourceIndex: number, destinationIndex: number) => {
@@ -84,13 +86,12 @@ export function SourceSettings({
      * Toggle the enabled status of all sources in `localSourceOrder`. If any is enabled, they're all disabled.
      */
 
-    const sourcesOrEmpty = sourceSettings.sources ?? [];
-    const newEnabledStatus = !sourcesOrEmpty.some((x) => x[1]);
-    const updatedSources: Array<SourceRow> = sourcesOrEmpty.map((x) => [
-      x[0],
-      newEnabledStatus,
-    ]);
-    setSourceSettings({ sources: updatedSources });
+    if (sourceSettings.sources != null) {
+      const updatedSources: Array<SourceRow> = sourceSettings.sources.map(
+        (x) => [x[0], !anySourcesEnabled]
+      );
+      setSourceSettings({ sources: updatedSources });
+    }
   }, [sourceSettings.sources, setSourceSettings]);
 
   let sourceTable = <Spinner />;
@@ -206,10 +207,7 @@ export function SourceSettings({
             >
               <Table ref={provided.innerRef} style={{ tableLayout: "auto" }}>
                 <thead>
-                  <tr
-                    style={{ height: ToggleButtonHeight + "px" }}
-                    onClick={toggleAllSourceEnabledStatuses}
-                  >
+                  <tr style={{ height: ToggleButtonHeight + "px" }}>
                     <th className="prevent-select">Enabled</th>
                     <th className="prevent-select">Source Name</th>
                     <th />
@@ -239,10 +237,13 @@ export function SourceSettings({
         <li>
           Use the <b>arrows</b> to send a source to the top or bottom.
         </li>
-        <li>
-          Click the <b>table header</b> to enable or disable all sources.
-        </li>
       </ul>
+      <div className="d-grid gap-0">
+        <Button variant="primary" onClick={toggleAllSourceEnabledStatuses}>
+          {anySourcesEnabled ? "Disable" : "Enable"} all drives
+        </Button>
+      </div>
+      <br />
       {sourceTable}
     </>
   );

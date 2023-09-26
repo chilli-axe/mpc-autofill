@@ -4,14 +4,11 @@
  * This component forms part of the Search Settings modal.
  */
 
-import React, { useCallback, useMemo, useRef, useState } from "react";
+import React, { useCallback, useState } from "react";
 import Col from "react-bootstrap/Col";
 import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
-import DropdownTreeSelect, {
-  TreeData,
-  TreeNode,
-} from "react-dropdown-tree-select";
+import DropdownTreeSelect, { TreeNode } from "react-dropdown-tree-select";
 require("react-dropdown-tree-select/dist/styles.css");
 import styled from "styled-components";
 
