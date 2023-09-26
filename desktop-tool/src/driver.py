@@ -20,7 +20,7 @@ from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.support.expected_conditions import invisibility_of_element
 from selenium.webdriver.support.ui import Select, WebDriverWait
 
-from src.constants import THREADS, Browsers, States, STOCKEN_TO_STOCKDE
+from src.constants import STOCKEN_TO_STOCKDE, THREADS, Browsers, States
 from src.exc import InvalidStateException
 from src.order import CardImage, CardImageCollection, CardOrder
 from src.processing import ImagePostProcessingConfig
@@ -56,11 +56,11 @@ class AutofillDriver:
         try:
             if self.germany:
                 self.base_url = "https://www.printerstudio.de"
-                self.starting_url = f"{self.base_url}/machen/blanko-spielkarten-63x88mm-personalisieren.html" 
+                self.starting_url = f"{self.base_url}/machen/blanko-spielkarten-63x88mm-personalisieren.html"
             else:
                 self.base_url = "https://www.makeplayingcards.com"
                 self.starting_url = f"{self.base_url}/design/custom-blank-card.html"
-           
+
             driver = self.browser.value(headless=self.headless, binary_location=self.binary_location)
             driver.set_window_size(1200, 900)
             driver.implicitly_wait(5)
@@ -397,9 +397,7 @@ class AutofillDriver:
 
     @exception_retry_skip_handler
     def is_user_authenticated(self) -> bool:
-        return (
-            len(self.driver.find_elements(By.XPATH, f'//a[@href="{self.base_url}/logout.aspx"]')) == 1
-        )
+        return len(self.driver.find_elements(By.XPATH, f'//a[@href="{self.base_url}/logout.aspx"]')) == 1
 
     @exception_retry_skip_handler
     def authenticate(self) -> None:
@@ -524,9 +522,7 @@ class AutofillDriver:
 
         # Accept current settings and move to next step
         self.wait_until_javascript_object_is_defined("doPersonalize")
-        self.execute_javascript(
-            f"doPersonalize('{self.base_url}/products/pro_item_process_flow.aspx');"
-        )
+        self.execute_javascript(f"doPersonalize('{self.base_url}/products/pro_item_process_flow.aspx');")
 
         # Set the desired number of cards, then move to the next step
         with self.switch_to_frame("sysifm_loginFrame"):

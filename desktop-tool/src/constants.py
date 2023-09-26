@@ -125,5 +125,5 @@ STOCKEN_TO_STOCKDE = {
     "(S30) Standard Smooth": "Standard (glatt)",
     "(S33) Superior Smooth": "Premium (linen)",
     "(M31) Linen": "Super (glatt)",
-    "(P10) Plastic": "Kunststoff"
+    "(P10) Plastic": "Kunststoff",
 }
