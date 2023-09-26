@@ -473,6 +473,16 @@ export const importSitesNoResults = rest.get(
   }
 );
 
+export const importSitesOneResult = rest.get(
+  buildRoute("2/importSites"),
+  (req, res, ctx) => {
+    return res(
+      ctx.status(200),
+      ctx.json({ import_sites: [{ name: "test", url: "test.com" }] })
+    );
+  }
+);
+
 export const importSitesServerError = rest.get(
   buildRoute("2/importSites/"),
   (req, res, ctx) =>
@@ -584,7 +594,7 @@ export const defaultHandlers = [
   dfcPairsNoResults,
   languagesTwoResults,
   tagsNoResults,
-  importSitesNoResults,
+  importSitesOneResult,
   sampleCards,
   backendInfoNoPatreon,
   searchEngineHealthy,
