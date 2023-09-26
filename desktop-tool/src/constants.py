@@ -121,3 +121,9 @@ DPI_HEIGHT_RATIO = 300 / 1110  # TODO: share this between desktop tool and backe
 
 BRACKETS = [18, 36, 55, 72, 90, 108, 126, 144, 162, 180, 198, 216, 234, 396, 504, 612]
 THREADS = 5  # shared between CardImageCollections
+STOCKEN_TO_STOCKDE = {
+    "(S30) Standard Smooth": "Standard (glatt)",
+    "(S33) Superior Smooth": "Premium (linen)",
+    "(M31) Linen": "Super (glatt)",
+    "(P10) Plastic": "Kunststoff"
+}

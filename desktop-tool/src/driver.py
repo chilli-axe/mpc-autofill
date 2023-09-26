@@ -20,7 +20,7 @@ from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.support.expected_conditions import invisibility_of_element
 from selenium.webdriver.support.ui import Select, WebDriverWait
 
-from src.constants import THREADS, Browsers, States
+from src.constants import THREADS, Browsers, States, STOCKEN_TO_STOCKDE
 from src.exc import InvalidStateException
 from src.order import CardImage, CardImageCollection, CardOrder
 from src.processing import ImagePostProcessingConfig
@@ -38,7 +38,7 @@ class AutofillDriver:
     browser: Browsers = attr.ib(default=Browsers.chrome)
     binary_location: Optional[str] = attr.ib(default=None)  # path to browser executable
     headless: bool = attr.ib(default=False)
-    starting_url: str = attr.ib(init=False, default="https://www.makeplayingcards.com/design/custom-blank-card.html")
+    starting_url: str = attr.ib(init=False, default=None)
     order: CardOrder = attr.ib(default=attr.Factory(CardOrder.from_xml_in_folder))
     state: str = attr.ib(init=False, default=States.initialising)
     action: Optional[str] = attr.ib(init=False, default=None)
@@ -47,11 +47,20 @@ class AutofillDriver:
     download_bar: enlighten.Counter = attr.ib(init=False, default=None)
     upload_bar: enlighten.Counter = attr.ib(init=False, default=None)
     file_path_to_pid_map: dict[str, str] = {}
+    germany: bool = attr.ib(default=False)
+    base_url: str = attr.ib(default=None)
 
     # region initialisation
 
     def initialise_driver(self) -> None:
         try:
+            if self.germany:
+                self.base_url = "https://www.printerstudio.de"
+                self.starting_url = f"{self.base_url}/machen/blanko-spielkarten-63x88mm-personalisieren.html" 
+            else:
+                self.base_url = "https://www.makeplayingcards.com"
+                self.starting_url = f"{self.base_url}/design/custom-blank-card.html"
+           
             driver = self.browser.value(headless=self.headless, binary_location=self.binary_location)
             driver.set_window_size(1200, 900)
             driver.implicitly_wait(5)
@@ -389,13 +398,13 @@ class AutofillDriver:
     @exception_retry_skip_handler
     def is_user_authenticated(self) -> bool:
         return (
-            len(self.driver.find_elements(By.XPATH, '//a[@href="https://www.makeplayingcards.com/logout.aspx"]')) == 1
+            len(self.driver.find_elements(By.XPATH, f'//a[@href="{self.base_url}/logout.aspx"]')) == 1
         )
 
     @exception_retry_skip_handler
     def authenticate(self) -> None:
         action = self.action
-        self.driver.get("https://www.makeplayingcards.com/login.aspx")
+        self.driver.get(f"{self.base_url}/login.aspx")
         self.set_state(States.defining_order, "Awaiting user sign-in")
         input(
             textwrap.dedent(
@@ -426,8 +435,9 @@ class AutofillDriver:
     def define_project(self) -> None:
         self.assert_state(States.defining_order)
         # Select card stock
+        stock_to_select = STOCKEN_TO_STOCKDE[self.order.details.stock] if self.germany else self.order.details.stock
         stock_dropdown = Select(self.driver.find_element(by=By.ID, value="dro_paper_type"))
-        stock_dropdown.select_by_visible_text(self.order.details.stock)
+        stock_dropdown.select_by_visible_text(stock_to_select)
 
         # Select number of cards
         qty_dropdown = Select(self.driver.find_element(by=By.ID, value="dro_choosesize"))
@@ -449,7 +459,7 @@ class AutofillDriver:
         """
 
         self.set_state(States.defining_order, "Awaiting user input")
-        self.driver.get("https://www.makeplayingcards.com/design/dn_temporary_designes.aspx")
+        self.driver.get(f"{self.base_url}/design/dn_temporary_designes.aspx")
         input(
             textwrap.dedent(
                 """
@@ -472,7 +482,7 @@ class AutofillDriver:
 
         # navigate to insert fronts page
         self.execute_javascript(
-            f"oTrackerBar.setFlow('https://www.makeplayingcards.com/products/playingcard/design/dn_playingcards_front_dynamic.aspx?ssid={ssid}');"
+            f"oTrackerBar.setFlow('{self.base_url}/products/playingcard/design/dn_playingcards_front_dynamic.aspx?ssid={ssid}');"
         )
         self.wait()
 
@@ -515,7 +525,7 @@ class AutofillDriver:
         # Accept current settings and move to next step
         self.wait_until_javascript_object_is_defined("doPersonalize")
         self.execute_javascript(
-            "doPersonalize('https://www.makeplayingcards.com/products/pro_item_process_flow.aspx');"
+            f"doPersonalize('{self.base_url}/products/pro_item_process_flow.aspx');"
         )
 
         # Set the desired number of cards, then move to the next step
@@ -590,6 +600,8 @@ class AutofillDriver:
         self.next_step()
 
         self.set_state(States.finished)
+
+    # endregion
 
     # region public
 
