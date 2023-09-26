@@ -13,6 +13,7 @@ import App from "@/app/app";
 import { GoogleAnalyticsConsentKey } from "@/common/constants";
 import {
   configureDefaultBackend,
+  getAddCardsMenu,
   getErrorToast,
   importText,
   openImportTextModal,
@@ -239,8 +240,8 @@ describe("error reporting toasts", () => {
     );
     renderWithProviders(<AppWithToasts />);
     await renderAppAndAssertErrorToast("2/importSites", async () => {
-      // import sites are loaded when the URL importer is opened
-      await openImportURLModal();
+      const addCardsMenu = getAddCardsMenu();
+      addCardsMenu.click();
     });
   });
 
