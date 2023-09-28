@@ -58,6 +58,8 @@ export interface CardDocument {
   size: number;
   small_thumbnail_url: string;
   medium_thumbnail_url: string;
+  language: string;
+  tags: Array<string>;
 }
 
 export interface CardDocuments {
@@ -72,6 +74,8 @@ export interface CardbacksState extends ThunkStateBase {
   cardbacks: Array<string>;
 }
 
+export type SourceType = "Google Drive" | "Local File" | "AWS S3";
+
 // TODO: create json schemas for these, infer types from them, and see if we can define the schema once between frontend and backend
 // TODO: it seems DRF serialisers can accomplish this: https://www.django-rest-framework.org/api-guide/serializers/
 export interface SourceDocument {
@@ -80,7 +84,7 @@ export interface SourceDocument {
   key: string;
   name: string;
   identifier: string;
-  source_type: string; // TODO
+  source_type: SourceType;
   external_link: string | null;
   description: string;
 }
@@ -108,7 +112,7 @@ export interface SearchResultsState extends ThunkStateBase {
 export interface SourceContribution {
   name: string;
   identifier: string;
-  source_type: string; // TODO
+  source_type: SourceType;
   external_link: string;
   description: string;
   qty_cards: string; // formatted by backend
@@ -226,9 +230,32 @@ export interface NewCardsFirstPages {
   [sourceKey: string]: NewCardsFirstPage;
 }
 
-export type Modals = "cardDetailedView" | "gridSelector";
+export type Slots = Array<[Faces, number]>;
 
-export interface ModalState {
+export type Modals =
+  | "cardDetailedView"
+  | "gridSelector"
+  | "changeQuery"
+  | "supportDeveloper"
+  | "supportBackend";
+
+export interface ModalsState {
   card: CardDocument | null;
+  slots: Slots | null;
   shownModal: Modals | null;
+}
+
+export interface Language {
+  name: string;
+  code: string;
+}
+
+export interface Tag {
+  name: string;
+  // label: string;
+  // value: string;
+  aliases: Array<string>;
+  parent: string | null;
+  children: Array<Tag>;
+  // children: Array<string>;
 }

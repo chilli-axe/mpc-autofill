@@ -2,25 +2,36 @@ import { createSlice } from "@reduxjs/toolkit";
 
 import { RootState } from "@/app/store";
 import { MaximumDPI, MaximumSize, MinimumDPI } from "@/common/constants";
-import { SearchSettings } from "@/common/types";
+import {
+  SearchSettings,
+  SourceDocument,
+  SourceDocuments,
+} from "@/common/types";
 
 //# region slice configuration
 
-const initialState: SearchSettings = {
-  // TODO: this default is redundant through `cookies.ts`. reconsider this
-  searchTypeSettings: {
-    fuzzySearch: false,
-    filterCardbacks: false,
-  },
-  sourceSettings: {
-    sources: null,
-  },
-  filterSettings: {
-    minimumDPI: MinimumDPI,
-    maximumDPI: MaximumDPI,
-    maximumSize: MaximumSize,
-  },
-};
+export function getDefaultSearchSettings(
+  sourceDocuments: SourceDocuments
+): SearchSettings {
+  return {
+    searchTypeSettings: { fuzzySearch: false, filterCardbacks: false },
+    sourceSettings: {
+      sources: Object.values(sourceDocuments).map(
+        (sourceDocument: SourceDocument) => [sourceDocument.pk, true]
+      ),
+    },
+    filterSettings: {
+      minimumDPI: MinimumDPI,
+      maximumDPI: MaximumDPI,
+      maximumSize: MaximumSize,
+      languages: [],
+      includesTags: [],
+      excludesTags: ["NSFW"],
+    },
+  };
+}
+
+const initialState = getDefaultSearchSettings({});
 
 export const searchSettingsSlice = createSlice({
   name: "searchSettings",
@@ -47,6 +58,8 @@ export default searchSettingsSlice.reducer;
 //# region selectors
 
 export const selectSearchSettings = (state: RootState) => state.searchSettings;
+export const selectFuzzySearch = (state: RootState) =>
+  state.searchSettings.searchTypeSettings.fuzzySearch;
 export const selectSearchSettingsSourcesValid = (state: RootState) =>
   state.searchSettings.sourceSettings.sources != null;
 

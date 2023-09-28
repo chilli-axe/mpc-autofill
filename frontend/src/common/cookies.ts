@@ -9,17 +9,10 @@ import {
   BackendURLKey,
   CSRFKey,
   GoogleAnalyticsConsentKey,
-  MaximumDPI,
-  MaximumSize,
-  MinimumDPI,
   SearchSettingsKey,
 } from "@/common/constants";
-import {
-  SearchSettings,
-  SourceDocument,
-  SourceDocuments,
-  SourceRow,
-} from "@/common/types";
+import { SearchSettings, SourceDocuments, SourceRow } from "@/common/types";
+import { getDefaultSearchSettings } from "@/features/searchSettings/searchSettingsSlice";
 
 import * as SearchSettingsSchema from "../../../common/schemas/search_settings.json";
 const ajv = new Ajv2019();
@@ -72,20 +65,7 @@ export function getLocalStorageSearchSettings(
       );
     return rawSettings;
   } else {
-    // default settings
-    return {
-      searchTypeSettings: { fuzzySearch: false, filterCardbacks: false },
-      sourceSettings: {
-        sources: Object.values(sourceDocuments).map(
-          (sourceDocument: SourceDocument) => [sourceDocument.pk, true]
-        ),
-      },
-      filterSettings: {
-        minimumDPI: MinimumDPI,
-        maximumDPI: MaximumDPI,
-        maximumSize: MaximumSize,
-      },
-    };
+    return getDefaultSearchSettings(sourceDocuments);
   }
 }
 

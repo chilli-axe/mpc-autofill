@@ -2,11 +2,18 @@ from typing import Any
 
 from django_elasticsearch_dsl import Document, fields
 from django_elasticsearch_dsl.registries import registry
+from elasticsearch_dsl import analyzer
 
 from django.utils import dateformat
 
 from cardpicker.constants import DATE_FORMAT
 from cardpicker.models import Card
+
+# custom elasticsearch analysers are configured here to add the `asciifolding` filter, which handles accents:
+# https://www.elastic.co/guide/en/elasticsearch/reference/7.17/analysis-asciifolding-tokenfilter.html
+# https://www.elastic.co/guide/en/elasticsearch/reference/current/analysis-standard-analyzer.html
+precise_analyser = analyzer("precise_analyser", tokenizer="keyword", filter=["apostrophe", "lowercase", "asciifolding"])
+fuzzy_analyser = analyzer("fuzzy_analyser", tokenizer="standard", filter=["apostrophe", "lowercase", "asciifolding"])
 
 # region new API
 
@@ -17,8 +24,11 @@ from cardpicker.models import Card
 # @registry.register_document
 # class CardSearch(Document):
 #     source = fields.TextField(attr="get_source_key", analyzer="keyword")
-#     searchq_keyword = fields.TextField(analyzer="keyword")
+#     searchq = fields.TextField(analyzer=fuzzy_analyser)
+#     searchq_keyword = fields.TextField(analyzer=precise_analyser)
 #     card_type = fields.KeywordField()
+#     language = fields.TextField(analyzer=precise_analyser)  # case insensitivity is one less thing which can go wrong
+#     tags = fields.KeywordField()  # all elasticsearch fields support arrays by default
 #
 #     class Index:
 #         # name of the elasticsearch index
@@ -28,7 +38,7 @@ from cardpicker.models import Card
 #
 #     class Django:
 #         model = Card
-#         fields = ["identifier", "priority", "dpi", "searchq", "date", "size"]
+#         fields = ["identifier", "priority", "dpi", "date", "size"]
 
 # endregion
 
@@ -44,8 +54,11 @@ class CardSearch(Document):
     download_link = fields.TextField(attr="get_download_link")
     small_thumbnail_url = fields.TextField(attr="get_small_thumbnail_url")
     medium_thumbnail_url = fields.TextField(attr="get_medium_thumbnail_url")
-    searchq_keyword = fields.TextField(analyzer="keyword")
+    searchq = fields.TextField(analyzer=fuzzy_analyser)
+    searchq_keyword = fields.TextField(analyzer=precise_analyser)
     card_type = fields.KeywordField()
+    language = fields.TextField(analyzer=precise_analyser)  # case insensitivity is one less thing which can go wrong
+    tags = fields.KeywordField()  # all elasticsearch fields support arrays by default
 
     class Index:
         # name of the elasticsearch index
@@ -55,7 +68,7 @@ class CardSearch(Document):
 
     class Django:
         model = Card
-        fields = ["identifier", "name", "priority", "source_verbose", "dpi", "extension", "searchq", "date", "size"]
+        fields = ["identifier", "name", "priority", "source_verbose", "dpi", "extension", "date", "size"]
 
     def to_dict(self, **kwargs: Any) -> dict[str, Any]:
         return {

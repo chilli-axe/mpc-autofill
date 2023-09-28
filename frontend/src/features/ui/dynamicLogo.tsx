@@ -2,7 +2,7 @@ import Image from "next/image";
 import React, { useEffect, useState } from "react";
 import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
-import styled, { keyframes, StyledComponent } from "styled-components";
+import styled, { css, keyframes, StyledComponent } from "styled-components";
 
 import { api, useGetSampleCardsQuery } from "@/app/api";
 import { QueryTags } from "@/common/constants";
@@ -58,15 +58,23 @@ const DynamicLogoArrowKeyframes = keyframes`
   }
 `;
 
-const DynamicLogoArrowWrapper = styled.div`
+const DynamicLogoArrowWrapper = styled.div<{ animated?: boolean }>`
   width: 40%;
   height: 40%;
   position: absolute;
   left: 50%;
-  animation: ${DynamicLogoArrowKeyframes} 0.75s ease-out 0.01s forwards;
+  transform: translate3d(-50%, -16%, 0);
+  opacity: 0;
+  ${(props) =>
+    props.animated === true &&
+    css`
+      animation: ${DynamicLogoArrowKeyframes} 0.75s ease-out 0.01s forwards;
+    `}
 `;
 
-const ImageTransformWrapperBase = styled.div`
+const ImageTransformWrapperBase = styled.div<{
+  animated?: boolean;
+}>`
   position: absolute;
   height: 32.358%;
   width: 32.358%;
@@ -95,9 +103,15 @@ const FirstImageTransformKeyframes = keyframes`
   }
 `;
 
-const FirstImageTransformWrapper = styled(ImageTransformWrapperBase)`
+const FirstImageTransformWrapper = styled(ImageTransformWrapperBase)<{
+  animated?: boolean;
+}>`
   z-index: 0;
-  animation: ${FirstImageTransformKeyframes} 1s ease-in-out 0.01s forwards;
+  ${(props) =>
+    props.animated === true &&
+    css`
+      animation: ${FirstImageTransformKeyframes} 1s ease-in-out 0.01s forwards;
+    `}
 `;
 
 const SecondImageTransformKeyframes = keyframes`
@@ -111,9 +125,15 @@ const SecondImageTransformKeyframes = keyframes`
   }
 `;
 
-const SecondImageTransformWrapper = styled(ImageTransformWrapperBase)`
+const SecondImageTransformWrapper = styled(ImageTransformWrapperBase)<{
+  animated?: boolean;
+}>`
   z-index: 1;
-  animation: ${SecondImageTransformKeyframes} 1s ease-in-out 0.01s forwards;
+  ${(props) =>
+    props.animated === true &&
+    css`
+      animation: ${SecondImageTransformKeyframes} 1s ease-in-out 0.01s forwards;
+    `}
 `;
 
 const ThirdImageTransformKeyframes = keyframes`
@@ -125,9 +145,15 @@ const ThirdImageTransformKeyframes = keyframes`
   }
 `;
 
-const ThirdImageTransformWrapper = styled(ImageTransformWrapperBase)`
-  animation: ${ThirdImageTransformKeyframes} 1s ease-in-out 0.01s forwards;
+const ThirdImageTransformWrapper = styled(ImageTransformWrapperBase)<{
+  animated?: boolean;
+}>`
   z-index: 2;
+  ${(props) =>
+    props.animated === true &&
+    css`
+      animation: ${ThirdImageTransformKeyframes} 1s ease-in-out 0.01s forwards;
+    `}
 `;
 
 const FourthImageTransformKeyframes = keyframes`
@@ -141,9 +167,15 @@ const FourthImageTransformKeyframes = keyframes`
   }
 `;
 
-const FourthImageTransformWrapper = styled(ImageTransformWrapperBase)`
-  animation: ${FourthImageTransformKeyframes} 1s ease-in-out 0.01s forwards;
+const FourthImageTransformWrapper = styled(ImageTransformWrapperBase)<{
+  animated?: boolean;
+}>`
   z-index: 3;
+  ${(props) =>
+    props.animated === true &&
+    css`
+      animation: ${FourthImageTransformKeyframes} 1s ease-in-out 0.01s forwards;
+    `}
 `;
 
 const FifthImageTransformKeyframes = keyframes`
@@ -157,9 +189,15 @@ const FifthImageTransformKeyframes = keyframes`
   }
 `;
 
-const FifthImageTransformWrapper = styled(ImageTransformWrapperBase)`
-  animation: ${FifthImageTransformKeyframes} 1s ease-in-out 0.01s forwards;
+const FifthImageTransformWrapper = styled(ImageTransformWrapperBase)<{
+  animated?: boolean;
+}>`
   z-index: 4;
+  ${(props) =>
+    props.animated === true &&
+    css`
+      animation: ${FifthImageTransformKeyframes} 1s ease-in-out 0.01s forwards;
+    `}
 `;
 
 const SampleCardDocument: CardDocument = {
@@ -181,6 +219,8 @@ const SampleCardDocument: CardDocument = {
   size: 1,
   small_thumbnail_url: "/logo-blank.png",
   medium_thumbnail_url: "",
+  language: "EN",
+  tags: [],
 };
 
 export function DynamicLogo() {
@@ -197,7 +237,10 @@ export function DynamicLogo() {
   useEffect(() => setLoading(false), []);
 
   const displayCards: Array<
-    [CardDocument | null, StyledComponent<"div", any>]
+    [
+      CardDocument | null,
+      StyledComponent<typeof ImageTransformWrapperBase, any>
+    ]
   > = [
     [
       sampleCardsQuery.isSuccess ? sampleCardsQuery.data["TOKEN"][0] : null,
@@ -221,6 +264,8 @@ export function DynamicLogo() {
     ],
   ];
 
+  const animated = !backendConfigured || sampleCardsQuery.isSuccess;
+
   return (
     <>
       {loading ? (
@@ -232,7 +277,7 @@ export function DynamicLogo() {
               <DynamicLogoLabel className={lato.className}>
                 {projectName}
               </DynamicLogoLabel>
-              <DynamicLogoArrowWrapper>
+              <DynamicLogoArrowWrapper animated={animated}>
                 <Image
                   src="/arrow.svg"
                   alt="logo-arrow"
@@ -243,7 +288,10 @@ export function DynamicLogo() {
 
               {displayCards.map(
                 ([maybeCardDocument, WrapperElement], index) => (
-                  <WrapperElement key={`logo-card${index}-outer-wrapper`}>
+                  <WrapperElement
+                    key={`logo-card${index}-outer-wrapper`}
+                    animated={animated}
+                  >
                     <MemoizedCardProportionWrapper
                       bordered={!backendConfigured}
                       small={true}

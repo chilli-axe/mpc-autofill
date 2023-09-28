@@ -25,6 +25,7 @@ import {
   selectProjectMembers,
   selectProjectSize,
 } from "@/features/project/projectSlice";
+import { RightPaddedIcon } from "@/features/ui/styledComponents";
 
 interface SlotsByIdentifier {
   [identifier: string]: Set<number>;
@@ -219,7 +220,7 @@ export function ExportXML() {
       onClick={downloadFile}
       data-testid="export-xml-button"
     >
-      <i className="bi bi-file-code" style={{ paddingRight: 0.5 + "em" }} /> XML
+      <RightPaddedIcon bootstrapIconName="file-code" /> XML
     </Dropdown.Item>
   );
 }

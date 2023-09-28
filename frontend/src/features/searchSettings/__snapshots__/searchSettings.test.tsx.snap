@@ -1,8 +1,74 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`the html structure of search settings 1`] = `
+.c0 {
+  color: black;
+}
+
+.c0 .tag {
+  color: black;
+  background-color: #dddddd;
+}
+
+.c0 .tag-remove {
+  color: #666666;
+}
+
+.c0 .dropdown-trigger {
+  border-radius: 0.25rem;
+  background-color: white;
+}
+
+.c0 .dropdown-content {
+  border-radius: 0.25rem;
+}
+
+.c0 .search {
+  background-color: white;
+}
+
+.c0 .search::-webkit-input-placeholder {
+  color: black;
+}
+
+.c0 .search::-moz-placeholder {
+  color: black;
+}
+
+.c0 .search:-ms-input-placeholder {
+  color: black;
+}
+
+.c0 .search::placeholder {
+  color: black;
+}
+
+.c0 .toggle {
+  font: normal normal normal 12px/1 bootstrap-icons;
+  top: 2px;
+  left: 2px;
+}
+
+.c0 .toggle.collapsed::after {
+  content: "";
+}
+
+.c0 .toggle.expanded::after {
+  content: "";
+}
+
+.c0 .root {
+  padding: 0;
+  margin: 0;
+}
+
+.c1 {
+  font-size: 1em;
+  cursor: pointer;
+}
+
 <div
-  class="modal-dialog"
+  class="modal-dialog modal-dialog-scrollable"
   data-testid="search-settings"
 >
   <div
@@ -161,6 +227,133 @@ exports[`the html structure of search settings 1`] = `
         type="range"
         value="30"
       />
+      <br />
+      <br />
+      Configure the languages and tags to filter the search results on.
+      <br />
+      <br />
+      <label
+        class="form-label"
+        for="selectLanguage"
+      >
+        Select languages
+      </label>
+      <div
+        class="c0 react-dropdown-tree-select"
+        id="rdts1"
+      >
+        <div
+          class="dropdown"
+        >
+          <a
+            aria-expanded="false"
+            aria-haspopup="tree"
+            class="dropdown-trigger arrow bottom"
+            id="rdts1_trigger"
+            role="button"
+            tabindex="0"
+          >
+            <ul
+              class="tag-list"
+            >
+              <li
+                class="tag-item"
+              >
+                <input
+                  aria-autocomplete="list"
+                  class="search"
+                  placeholder="Choose..."
+                  type="text"
+                />
+              </li>
+            </ul>
+          </a>
+        </div>
+      </div>
+      <label
+        class="form-label"
+        for="selectTags"
+      >
+        Select tags which cards must have 
+        <b>
+          at least one
+        </b>
+         of
+      </label>
+      <div
+        class="c0 react-dropdown-tree-select"
+        id="rdts2"
+      >
+        <div
+          class="dropdown"
+        >
+          <a
+            aria-expanded="false"
+            aria-haspopup="tree"
+            class="dropdown-trigger arrow bottom"
+            id="rdts2_trigger"
+            role="button"
+            tabindex="0"
+          >
+            <ul
+              class="tag-list"
+            >
+              <li
+                class="tag-item"
+              >
+                <input
+                  aria-autocomplete="list"
+                  class="search"
+                  placeholder="Choose..."
+                  type="text"
+                />
+              </li>
+            </ul>
+          </a>
+        </div>
+      </div>
+      <label
+        class="form-label"
+        for="selectTags"
+      >
+        Select tags which cards must 
+        <b>
+          not
+        </b>
+         have
+      </label>
+      <div
+        class="c0 react-dropdown-tree-select"
+        id="rdts3"
+      >
+        <div
+          class="dropdown"
+        >
+          <a
+            aria-expanded="false"
+            aria-haspopup="tree"
+            class="dropdown-trigger arrow bottom"
+            id="rdts3_trigger"
+            role="button"
+            tabindex="0"
+          >
+            <ul
+              class="tag-list"
+            >
+              <li
+                class="tag-item"
+              >
+                <input
+                  aria-autocomplete="list"
+                  class="search"
+                  placeholder="Choose..."
+                  type="text"
+                />
+              </li>
+            </ul>
+          </a>
+        </div>
+      </div>
       <hr />
       <h5>
         Sources
@@ -180,14 +373,19 @@ exports[`the html structure of search settings 1`] = `
           </b>
            to send a source to the top or bottom.
         </li>
-        <li>
-          Click the 
-          <b>
-            table header
-          </b>
-           to enable or disable all sources.
-        </li>
       </ul>
+      <div
+        class="d-grid gap-0"
+      >
+        <button
+          class="btn btn-primary"
+          type="button"
+        >
+          Disable
+           all drives
+        </button>
+      </div>
+      <br />
       <div
         style="height: 215px;"
       >
@@ -263,14 +461,12 @@ exports[`the html structure of search settings 1`] = `
               >
                 <div>
                   <i
-                    class="bi bi-chevron-double-up"
-                    style="font-size: 1em; cursor: pointer;"
+                    class="c1 bi bi-chevron-double-up"
                   />
                 </div>
                 <div>
                   <i
-                    class="bi bi-chevron-double-down"
-                    style="font-size: 1em; cursor: pointer;"
+                    class="c1 bi bi-chevron-double-down"
                   />
                 </div>
               </td>
@@ -332,14 +528,12 @@ exports[`the html structure of search settings 1`] = `
               >
                 <div>
                   <i
-                    class="bi bi-chevron-double-up"
-                    style="font-size: 1em; cursor: pointer;"
+                    class="c1 bi bi-chevron-double-up"
                   />
                 </div>
                 <div>
                   <i
-                    class="bi bi-chevron-double-down"
-                    style="font-size: 1em; cursor: pointer;"
+                    class="c1 bi bi-chevron-double-down"
                   />
                 </div>
               </td>
@@ -401,14 +595,12 @@ exports[`the html structure of search settings 1`] = `
               >
                 <div>
                   <i
-                    class="bi bi-chevron-double-up"
-                    style="font-size: 1em; cursor: pointer;"
+                    class="c1 bi bi-chevron-double-up"
                   />
                 </div>
                 <div>
                   <i
-                    class="bi bi-chevron-double-down"
-                    style="font-size: 1em; cursor: pointer;"
+                    class="c1 bi bi-chevron-double-down"
                   />
                 </div>
               </td>

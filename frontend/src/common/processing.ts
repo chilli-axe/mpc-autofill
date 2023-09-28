@@ -17,6 +17,7 @@ import {
   ProcessedLine,
   ProjectMember,
   SearchQuery,
+  SearchSettings,
   SlotProjectMembers,
 } from "@/common/types";
 
@@ -52,8 +53,7 @@ export function processQuery(query: string): string {
     query
       .toLowerCase()
       .trim()
-      // eslint-disable-next-line
-      .replace(/[~`!@#$%^&*(){}\[\];:"'<,.>?/\\|_+=]/g, "")
+      .replace(/[~`!@#$%^&*(){}\[\];:"'’<,.>?/\\|_+=]/g, "")
   );
 }
 
@@ -87,7 +87,7 @@ function unpackLine(
    * Unpack `line` into its constituents.
    *
    * Inputs to this function are unpacked according to the below schema. For example, consider `4x opt@1234 | char@xyz`:
-   *      4x                opt        @        1234         |      char       @        xyz
+   *       4x               opt        @        1234         |      char       @        xyz
    * └─ quantity ──┘ └─ front query ──┘ └─ front image ID ──┘ └─ back query ──┘ └─ back image ID ──┘
    *
    * If quantity is not specified, we assume a quantity of 1.
@@ -99,7 +99,7 @@ function unpackLine(
 
   const trimmedLine = line.replace(/\s+/g, " ").trim();
   const re = new RegExp(
-    `^(?:([0-9]*)?[xX]?\\s?(.*?)(?:${SelectedImageSeparator}([A-z0-9_\\-]*))?)?(?:(?:\\s*)${
+    `^(?:([0-9]+[xX]?\\s)?(.*?)(?:${SelectedImageSeparator}([A-z0-9_\\-]*))?)?(?:(?:\\s*)${
       "\\" + FaceSeparator
     }(?:\\s*)(.+?)(?:${SelectedImageSeparator}([A-z0-9_\\-]*))?)?$`,
     "gm"
@@ -109,13 +109,17 @@ function unpackLine(
     return [0, null, null];
   }
   return [
-    parseInt(results[1] ?? "1"),
+    parseInt((results[1] ?? "1").toLowerCase().replace("x", "").trim()),
     [results[2], results[3]],
     [results[4], results[5]],
   ];
 }
 
-export function processLine(line: string, dfcPairs: DFCPairs): ProcessedLine {
+export function processLine(
+  line: string,
+  dfcPairs: DFCPairs,
+  fuzzySearch: boolean
+): ProcessedLine {
   /**
    * Process `line` to identify the search query and the number of instances requested for each face.
    * If no back query is specified, attempt to match the front query to a DFC pair.
@@ -143,16 +147,27 @@ export function processLine(line: string, dfcPairs: DFCPairs): ProcessedLine {
   if (backRawQuery != null && (backRawQuery[0] ?? "").length > 0) {
     backQuery = processPrefix(backRawQuery[0]);
     backSelectedImage = backRawQuery[1] ?? undefined;
-  } else if (
-    frontQuery != null &&
-    frontQuery?.query != null &&
-    frontQuery.query in dfcPairs
-  ) {
-    // match to the card's DFC pair. assume the back is the same card type as the front.
-    backQuery = {
-      query: dfcPairs[frontQuery.query],
-      card_type: frontQuery.card_type,
-    };
+  } else if (frontQuery != null && frontQuery?.query != null) {
+    // typescript isn't smart enough to know that frontQuery.query is not null, so we have to do this
+    const frontQueryQuery = frontQuery.query;
+    let dfcPairMatchFront: string | null = null;
+    if (fuzzySearch) {
+      const matches = Object.keys(dfcPairs).filter((dfcPairFront) =>
+        dfcPairFront.startsWith(frontQueryQuery)
+      );
+      if (matches.length === 1) {
+        dfcPairMatchFront = matches[0];
+      }
+    } else if (frontQueryQuery in dfcPairs) {
+      dfcPairMatchFront = frontQueryQuery;
+    }
+    if (dfcPairMatchFront != null) {
+      // match to the card's DFC pair. assume the back is the same card type as the front.
+      backQuery = {
+        query: dfcPairs[dfcPairMatchFront],
+        card_type: frontQuery.card_type,
+      };
+    }
   }
 
   return [
@@ -172,7 +187,8 @@ export function processLine(line: string, dfcPairs: DFCPairs): ProcessedLine {
 
 export function processLines(
   lines: Array<string>,
-  dfcPairs: DFCPairs
+  dfcPairs: DFCPairs,
+  fuzzySearch: boolean
 ): Array<ProcessedLine> {
   /**
    * Process each line in `lines`, ignoring any lines which don't contain relevant information.
@@ -182,7 +198,11 @@ export function processLines(
     [];
   lines.forEach((line: string) => {
     if (line != null && line.trim().length > 0) {
-      const [quantity, frontMember, backMember] = processLine(line, dfcPairs);
+      const [quantity, frontMember, backMember] = processLine(
+        line,
+        dfcPairs,
+        fuzzySearch
+      );
       if (quantity > 0 && (frontMember != null || backMember != null)) {
         queries.push([quantity, frontMember, backMember]);
       }
@@ -193,9 +213,10 @@ export function processLines(
 
 export function processStringAsMultipleLines(
   lines: string,
-  dfcPairs: DFCPairs
+  dfcPairs: DFCPairs,
+  fuzzySearch: boolean
 ): Array<ProcessedLine> {
-  return processLines(lines.split(/\r?\n|\r|\n/g), dfcPairs);
+  return processLines(lines.split(/\r?\n|\r|\n/g), dfcPairs, fuzzySearch);
 }
 
 export function convertLinesIntoSlotProjectMembers(
@@ -250,10 +271,8 @@ export function standardiseURL(url: string): string {
   return (re[1] ?? "https://") + re[2];
 }
 
-// TODO: delete this when remaining API interactions have been moved to RTK query
 export function formatURL(backendURL: string, routeURL: string): string {
-  // TODO: implement this properly
-  return backendURL + routeURL;
+  return new URL(routeURL, backendURL).toString();
 }
 
 export function base64StringToBlob(base64: string): Blob {

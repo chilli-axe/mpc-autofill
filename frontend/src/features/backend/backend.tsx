@@ -25,6 +25,7 @@ import {
   selectBackendURL,
   setURL,
 } from "@/features/backend/backendSlice";
+import { RightPaddedIcon } from "@/features/ui/styledComponents";
 require("bootstrap-icons/font/bootstrap-icons.css");
 
 interface BackendConfigProps {
@@ -157,70 +158,64 @@ export function BackendConfig({ show, handleClose }: BackendConfigProps) {
   }, [dispatch]);
 
   return (
-    <>
-      <Offcanvas
-        show={show}
-        onHide={handleClose}
-        data-testid="backend-offcanvas"
-      >
-        <Offcanvas.Header closeButton>
-          <Offcanvas.Title>Configure Server</Offcanvas.Title>
-        </Offcanvas.Header>
-        <Offcanvas.Body>
-          {backendURL != null && (
-            <Alert variant="success">
-              You&apos;re currently connected to <b>{backendURL}</b>.
-              <br />
-              <br />
-              <Button variant="danger" onClick={clearBackendURL}>
-                Disconnect
-              </Button>
-            </Alert>
-          )}
-          Enter the URL of the server you&apos;d like to connect {ProjectName}{" "}
-          to and hit <b>Submit</b>.
-          <br />
-          <br />
-          <Form onSubmit={handleSubmit}>
-            <Form.Group className="mb-3" controlId="formURL">
-              <Form.Control
-                type="url"
-                placeholder="https://"
-                onChange={(event) => setLocalBackendURL(event.target.value)}
-                value={localBackendURL}
-                disabled={validating}
-                aria-label="backend-url"
-              />
-            </Form.Group>
-            {validationStatus.length > 0 && (
-              <>
-                <hr />
-                <ul>
-                  {urlValidationStages.map((item, i) => (
-                    <li key={item}>
-                      <i
-                        className={`bi bi-${validationStatus[i] ?? "circle"}`}
-                      />{" "}
-                      {item}
-                      {validationStatus[i] === ValidationState.IN_PROGRESS &&
-                        "..."}
-                    </li>
-                  ))}
-                </ul>
-                <hr />
-              </>
-            )}
-            <Button
-              variant="primary"
-              type="submit"
-              disabled={validating || localBackendURL.trim().length == 0}
-              aria-label="submit-backend-url"
-            >
-              Submit
+    <Offcanvas show={show} onHide={handleClose} data-testid="backend-offcanvas">
+      <Offcanvas.Header closeButton>
+        <Offcanvas.Title>Configure Server</Offcanvas.Title>
+      </Offcanvas.Header>
+      <Offcanvas.Body>
+        {backendURL != null && (
+          <Alert variant="success">
+            You&apos;re currently connected to <b>{backendURL}</b>.
+            <br />
+            <br />
+            <Button variant="danger" onClick={clearBackendURL}>
+              Disconnect
             </Button>
-          </Form>
-        </Offcanvas.Body>
-      </Offcanvas>
-    </>
+          </Alert>
+        )}
+        Enter the URL of the server you&apos;d like to connect {ProjectName} to
+        and hit <b>Submit</b>.
+        <br />
+        <br />
+        <Form onSubmit={handleSubmit}>
+          <Form.Group className="mb-3" controlId="formURL">
+            <Form.Control
+              type="url"
+              placeholder="https://"
+              onChange={(event) => setLocalBackendURL(event.target.value)}
+              value={localBackendURL}
+              disabled={validating}
+              aria-label="backend-url"
+            />
+          </Form.Group>
+          {validationStatus.length > 0 && (
+            <>
+              <hr />
+              <ul>
+                {urlValidationStages.map((item, i) => (
+                  <li key={item}>
+                    <RightPaddedIcon
+                      bootstrapIconName={validationStatus[i] ?? "circle"}
+                    />{" "}
+                    {item}
+                    {validationStatus[i] === ValidationState.IN_PROGRESS &&
+                      "..."}
+                  </li>
+                ))}
+              </ul>
+              <hr />
+            </>
+          )}
+          <Button
+            variant="primary"
+            type="submit"
+            disabled={validating || localBackendURL.trim().length == 0}
+            aria-label="submit-backend-url"
+          >
+            Submit
+          </Button>
+        </Form>
+      </Offcanvas.Body>
+    </Offcanvas>
   );
 }

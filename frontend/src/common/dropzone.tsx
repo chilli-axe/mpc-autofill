@@ -6,6 +6,9 @@ import React, { useCallback } from "react";
 import { DropzoneRootProps, useDropzone } from "react-dropzone";
 import styled from "styled-components";
 
+import { useAppDispatch } from "@/common/types";
+import { setError } from "@/features/toasts/toastsSlice";
+
 const getColor = (props: DropzoneRootProps) => {
   if (props.isDragAccept) {
     return "#00e676";
@@ -48,20 +51,46 @@ export function TextFileDropzone({
   fileUploadCallback,
   label,
 }: StyledDropzoneProps) {
+  const dispatch = useAppDispatch();
+
+  // let the user know when something goes wrong with reading their file
+  const onAbort = useCallback(
+    () =>
+      dispatch(
+        setError([
+          "dropzone-onabort",
+          { name: "File upload error", message: "File reading was stopped." },
+        ])
+      ),
+    []
+  );
+  const onError = useCallback(
+    () =>
+      dispatch(
+        setError([
+          "dropzone-onerror",
+          {
+            name: "File upload error",
+            message: "An error occurred while reading the file.",
+          },
+        ])
+      ),
+    []
+  );
+
   const onDrop = useCallback(
     (acceptedFiles: Array<File>) => {
       acceptedFiles.forEach((file: File) => {
-        // TODO: handle errors correctly
         const reader = new FileReader();
-        reader.onabort = () => console.log("file reading was aborted");
-        reader.onerror = () => console.log("file reading has failed");
+        reader.onabort = onAbort;
+        reader.onerror = onError;
         reader.onload = () => {
           fileUploadCallback(reader.result);
         };
         reader.readAsText(file);
       });
     },
-    [fileUploadCallback]
+    [fileUploadCallback, onAbort, onError]
   );
 
   const { getRootProps, getInputProps, isFocused, isDragAccept, isDragReject } =

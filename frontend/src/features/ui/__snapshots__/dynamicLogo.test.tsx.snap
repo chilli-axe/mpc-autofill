@@ -49,6 +49,10 @@ exports[`the html structure of the dynamic logo, backend configured 1`] = `
   height: 40%;
   position: absolute;
   left: 50%;
+  -webkit-transform: translate3d(-50%,-16%,0);
+  -ms-transform: translate3d(-50%,-16%,0);
+  transform: translate3d(-50%,-16%,0);
+  opacity: 0;
   -webkit-animation: byROxX 0.75s ease-out 0.01s forwards;
   animation: byROxX 0.75s ease-out 0.01s forwards;
 }
@@ -88,21 +92,21 @@ exports[`the html structure of the dynamic logo, backend configured 1`] = `
 }
 
 .c8 {
+  z-index: 2;
   -webkit-animation: dBjIYf 1s ease-in-out 0.01s forwards;
   animation: dBjIYf 1s ease-in-out 0.01s forwards;
-  z-index: 2;
 }
 
 .c9 {
+  z-index: 3;
   -webkit-animation: eJIVD 1s ease-in-out 0.01s forwards;
   animation: eJIVD 1s ease-in-out 0.01s forwards;
-  z-index: 3;
 }
 
 .c10 {
+  z-index: 4;
   -webkit-animation: iZNvIp 1s ease-in-out 0.01s forwards;
   animation: iZNvIp 1s ease-in-out 0.01s forwards;
-  z-index: 4;
 }
 
 <body>
@@ -279,6 +283,10 @@ exports[`the html structure of the dynamic logo, no backend configured 1`] = `
   height: 40%;
   position: absolute;
   left: 50%;
+  -webkit-transform: translate3d(-50%,-16%,0);
+  -ms-transform: translate3d(-50%,-16%,0);
+  transform: translate3d(-50%,-16%,0);
+  opacity: 0;
   -webkit-animation: byROxX 0.75s ease-out 0.01s forwards;
   animation: byROxX 0.75s ease-out 0.01s forwards;
 }
@@ -318,21 +326,21 @@ exports[`the html structure of the dynamic logo, no backend configured 1`] = `
 }
 
 .c9 {
+  z-index: 2;
   -webkit-animation: dBjIYf 1s ease-in-out 0.01s forwards;
   animation: dBjIYf 1s ease-in-out 0.01s forwards;
-  z-index: 2;
 }
 
 .c10 {
+  z-index: 3;
   -webkit-animation: eJIVD 1s ease-in-out 0.01s forwards;
   animation: eJIVD 1s ease-in-out 0.01s forwards;
-  z-index: 3;
 }
 
 .c11 {
+  z-index: 4;
   -webkit-animation: iZNvIp 1s ease-in-out 0.01s forwards;
   animation: iZNvIp 1s ease-in-out 0.01s forwards;
-  z-index: 4;
 }
 
 <body>

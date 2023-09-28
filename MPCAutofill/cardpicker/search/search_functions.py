@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable, Optional, TypeVar, cast
 
+import pycountry
 from elasticsearch import Elasticsearch
 from elasticsearch.exceptions import ConnectionError as ElasticConnectionError
 from elasticsearch_dsl.document import Search
@@ -16,7 +17,7 @@ from referencing import Registry, Resource
 
 from django.conf import settings
 from django.core.paginator import Paginator
-from django.db.models import QuerySet
+from django.db.models import Q, QuerySet
 from django.http import HttpRequest
 from django.utils import timezone
 
@@ -27,7 +28,7 @@ from cardpicker.constants import (
 )
 from cardpicker.documents import CardSearch
 from cardpicker.models import Card, CardTypes, Source
-from cardpicker.utils.sanitisation import to_searchable
+from cardpicker.search.sanitisation import to_searchable
 
 thread_local = threading.local()  # Should only be called once per thread
 
@@ -101,13 +102,6 @@ def retrieve_search_settings(request: HttpRequest) -> tuple[list[str], bool]:
     if (fuzzy_search_string := request.POST.get("fuzzy_search")) is not None:
         fuzzy_search = fuzzy_search_string == "true"
     return drive_order, fuzzy_search
-
-
-def text_to_list(input_text: str) -> list[int]:
-    # Helper function to translate strings like "[2, 4, 5, 6]" into lists
-    if input_text == "":
-        return []
-    return [int(x) for x in input_text.strip("][").replace(" ", "").split(",")]
 
 
 def query_es_card(drive_order: list[str], fuzzy_search: bool, query: str) -> list[dict[str, Any]]:
@@ -211,6 +205,9 @@ class SearchSettings:
     min_dpi: int
     max_dpi: int
     max_size: int  # number of bytes
+    languages: list[pycountry.Languages]
+    includes_tags: list[str]
+    excludes_tags: list[str]
 
     @classmethod
     def from_json_body(cls, json_body: dict[str, Any]) -> "SearchSettings":
@@ -242,6 +239,14 @@ class SearchSettings:
         max_dpi = int(filter_settings["maximumDPI"])
         max_size = int(filter_settings["maximumSize"]) * 1_000_000
 
+        languages = [
+            parsed_language
+            for language in filter_settings["languages"]
+            if (parsed_language := pycountry.languages.get(alpha_2=language)) is not None
+        ]
+        includes_tags = filter_settings["includesTags"]
+        excludes_tags = filter_settings["excludesTags"]
+
         return cls(
             fuzzy_search=fuzzy_search,
             filter_cardbacks=filter_cardbacks,
@@ -249,6 +254,9 @@ class SearchSettings:
             min_dpi=min_dpi,
             max_dpi=max_dpi,
             max_size=max_size,
+            languages=languages,
+            includes_tags=includes_tags,
+            excludes_tags=excludes_tags,
         )
 
     def get_source_order(self) -> dict[str, int]:
@@ -262,8 +270,23 @@ class SearchSettings:
         cardbacks: list[str]
         order_by = ["-priority", "source__name", "name"]
         if self.filter_cardbacks:
+            # afaik, `~Q(pk__in=[])` is the best way to have an always-true filter
+            language_filter = (
+                Q(language__in=[language.alpha_2.upper() for language in self.languages])
+                if self.languages
+                else ~Q(pk__in=[])
+            )
+            includes_tag_filter = (
+                (Q(tags__contains=self.includes_tags) | Q(tags__contained_by=self.includes_tags))
+                if self.includes_tags
+                else ~Q(pk__in=[])
+            )
+            excludes_tag_filter = ~Q(tags__overlap=self.excludes_tags) if self.excludes_tags else ~Q(pk__in=[])
             source_order = self.get_source_order()
             hits_iterable = Card.objects.filter(
+                language_filter,
+                includes_tag_filter,
+                excludes_tag_filter,
                 card_type=CardTypes.CARDBACK,
                 source__key__in=self.sources,
                 dpi__gte=self.min_dpi,
@@ -342,6 +365,17 @@ class SearchQuery:
             .sort({"priority": {"order": "desc"}})
             .source(fields=["identifier", "source", "searchq"])
         )
+        if search_settings.languages:
+            s = s.filter(
+                Bool(
+                    should=Terms(language=[language.alpha_2 for language in search_settings.languages]),
+                    minimum_should_match=1,
+                )
+            )
+        if search_settings.includes_tags:
+            s = s.filter(Bool(should=Terms(tags=search_settings.includes_tags), minimum_should_match=1))
+        if search_settings.excludes_tags:
+            s = s.filter(Bool(must_not=Terms(tags=search_settings.excludes_tags)))
         hits_iterable = s.params(preserve_order=True).scan()
 
         source_order = search_settings.get_source_order()
@@ -363,7 +397,7 @@ def parse_json_body_as_search_settings(json_body: dict[str, Any]) -> SearchSetti
     """
 
     schema_directory = get_schema_directory()
-    registry = Registry().with_resources(
+    registry = Registry[str]().with_resources(  # TODO: is this type annotation correct?
         [
             (
                 "search_settings.json",
@@ -382,7 +416,7 @@ def parse_json_body_as_search_settings(json_body: dict[str, Any]) -> SearchSetti
             "required": ["searchSettings"],
             "allowAdditionalProperties": False,
         },
-        registry=registry,
+        registry=registry,  # type: ignore  # apparently this is an unexpected keyword argument
     )
 
     # the below line may raise ValidationError
@@ -397,7 +431,7 @@ def parse_json_body_as_search_data(json_body: dict[str, Any]) -> tuple[SearchSet
     """
 
     schema_directory = get_schema_directory()
-    registry = Registry().with_resources(
+    registry = Registry[str]().with_resources(  # TODO: is this type annotation correct?
         [
             (schema_name, Resource.from_contents(json.loads((schema_directory / schema_name).read_text())))
             for schema_name in ["search_query.json", "search_settings.json"]
@@ -429,7 +463,7 @@ def parse_json_body_as_search_data(json_body: dict[str, Any]) -> tuple[SearchSet
             "required": ["searchSettings", "queries"],
             "allowAdditionalProperties": False,
         },
-        registry=registry,
+        registry=registry,  # type: ignore  # apparently this is an unexpected keyword argument
     )
 
     # the below line may raise ValidationError
@@ -447,3 +481,24 @@ def get_new_cards_paginator(source: Source) -> Paginator[QuerySet[Card]]:
 
 
 # endregion
+
+__all__ = [
+    "SearchExceptions",
+    "get_elasticsearch_connection",
+    "ping_elasticsearch",
+    "elastic_connection",
+    "build_context",
+    "retrieve_search_settings",
+    "query_es_card",
+    "query_es_cardback",
+    "query_es_token",
+    "search_database",
+    "search_new_elasticsearch_definition",
+    "search_new",
+    "SearchSettings",
+    "SearchQuery",
+    "get_schema_directory",
+    "parse_json_body_as_search_settings",
+    "parse_json_body_as_search_data",
+    "get_new_cards_paginator",
+]

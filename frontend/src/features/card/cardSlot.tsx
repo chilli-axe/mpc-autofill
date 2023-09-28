@@ -19,7 +19,8 @@ import {
 import { wrapIndex } from "@/common/utils";
 import { MemoizedEditorCard } from "@/features/card/card";
 import { selectCardbacks } from "@/features/card/cardbackSlice";
-import { GridSelector } from "@/features/card/gridSelector";
+import { GridSelectorModal } from "@/features/modals/gridSelectorModal";
+import { setSelectedSlotsAndShowModal } from "@/features/modals/modalsSlice";
 import {
   bulkAlignMemberSelection,
   deleteSlot,
@@ -61,7 +62,7 @@ export function CardSlotGridSelector({
     dispatch(setSelectedImage({ face, slot, selectedImage }));
   }
   return (
-    <GridSelector
+    <GridSelectorModal
       testId={`${face}-slot${slot}-grid-selector`}
       imageIdentifiers={searchResultsForQuery}
       show={show}
@@ -78,7 +79,7 @@ export const MemoizedCardSlotGridSelector = memo(CardSlotGridSelector);
 //# region card slot
 
 export function CardSlot({ searchQuery, face, slot }: CardSlotProps) {
-  const [showGridSelector, setShowGridSelector] = useState(false);
+  const [showGridSelector, setShowGridSelector] = useState<boolean>(false);
 
   const handleCloseGridSelector = () => setShowGridSelector(false);
   const handleShowGridSelector = () => setShowGridSelector(true);
@@ -94,6 +95,10 @@ export function CardSlot({ searchQuery, face, slot }: CardSlotProps) {
     selectProjectMember(state, slot, face)
   );
   const selectedImage = projectMember?.selectedImage;
+
+  const handleShowChangeSelectedImageQueriesModal = () => {
+    dispatch(setSelectedSlotsAndShowModal([[[face, slot]], "changeQuery"]));
+  };
 
   useEffect(() => {
     /**
@@ -133,6 +138,9 @@ export function CardSlot({ searchQuery, face, slot }: CardSlotProps) {
     }
   }, [
     dispatch,
+    face,
+    slot,
+    searchQuery?.query,
     searchResultsForQueryOrDefault,
     projectCardback,
     selectedImage,
@@ -252,10 +260,7 @@ export function CardSlot({ searchQuery, face, slot }: CardSlotProps) {
   );
 
   return (
-    <div
-      style={{ contentVisibility: "auto" }}
-      data-testid={`${face}-slot${slot}`}
-    >
+    <div data-testid={`${face}-slot${slot}`}>
       <MemoizedEditorCard
         imageIdentifier={selectedImage}
         previousImageIdentifier={previousImage}
@@ -264,6 +269,7 @@ export function CardSlot({ searchQuery, face, slot }: CardSlotProps) {
         cardFooter={cardFooter}
         cardHeaderButtons={cardHeaderButtons}
         searchQuery={searchQuery}
+        nameOnClick={handleShowChangeSelectedImageQueriesModal}
         noResultsFound={
           searchResultsForQueryOrDefault != null &&
           searchResultsForQueryOrDefault.length === 0

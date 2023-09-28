@@ -2,13 +2,11 @@
  * This component displays all `CardSlot`s in the project.
  */
 
-import { createSelector } from "@reduxjs/toolkit";
 import React from "react";
 import Modal from "react-bootstrap/Modal";
 import Row from "react-bootstrap/Row";
 import styled from "styled-components";
 
-import { RootState } from "@/app/store";
 import { Back, Front } from "@/common/constants";
 import { useAppSelector } from "@/common/types";
 import { MemoizedCardSlot } from "@/features/card/cardSlot";
@@ -110,7 +108,7 @@ export function CardGrid() {
       >
         {cardSlotsBacks}
       </Row>
-      <Modal show={fetchingCardData && !isProjectEmpty} centered>
+      <Modal scrollable show={fetchingCardData && !isProjectEmpty} centered>
         <Modal.Header>
           <Modal.Title
             style={{ textAlign: "center", userSelect: "none" }}

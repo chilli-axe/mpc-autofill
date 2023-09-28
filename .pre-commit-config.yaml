@@ -33,10 +33,12 @@ repos:
             "types-selenium",
             "types-requests",
             "types-chardet",
+            "types-jsonschema",
             # shared between desktop tool and backend
             "pytest~=7.3",
             "ratelimit~=2.2",
             # desktop tool
+            "aenum~=3.1.15",
             "attrs~=23.1",
             "click==8.0.4",
             "enlighten~=1.11",
@@ -48,8 +50,13 @@ repos:
             "django-user-agents~=0.4",
             "django-widget-tweaks~=1.4",
             "google-api-python-client~=2.86",
+            "jsonschema~=4.18.4",
+            "Levenshtein~=0.21.1",
             "oauth2client~=4.1",
             "Markdown~=3.4",
+            "psycopg2-binary~=2.9.6",
+            "pycountry~=22.3.0",
+            "sentry-sdk~=1.30.0",
             "tqdm~=4.65",
           ]
         pass_filenames: false
@@ -65,6 +72,7 @@ repos:
         types: [file]
         additional_dependencies:
           - eslint@8.24.0
+          - typescript@4.9.4
           - eslint-config-prettier@v8.5.0
           - eslint-config-next@v13.2.4
           - eslint-plugin-promise@v6.0.1
@@ -72,7 +80,7 @@ repos:
           - eslint-plugin-import@v2.26.0
           - eslint-config-standard@v17.0.0
           - eslint-plugin-simple-import-sort@10.0.0
-          - "@typescript-eslint/eslint-plugin@5.48.2"
+          - "@typescript-eslint/eslint-plugin@6.5.0"
           - "@typescript-eslint/parser@5.49.0"
         args:
           - --fix

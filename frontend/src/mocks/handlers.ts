@@ -312,7 +312,7 @@ export const searchResultsSixResults = rest.post(
             TOKEN: [],
           },
           "query 3": {
-            CARD: [cardDocument4.identifier],
+            CARD: [cardDocument3.identifier],
             CARDBACK: [],
             TOKEN: [],
           },
@@ -394,6 +394,50 @@ export const dfcPairsServerError = rest.get(
 
 //# endregion
 
+//# region languages
+
+export const languagesNoResults = rest.get(
+  buildRoute("2/languages/"),
+  (req, res, ctx) => {
+    return res(ctx.status(200), ctx.json({ languages: [] }));
+  }
+);
+
+export const languagesTwoResults = rest.get(
+  buildRoute("2/languages/"),
+  (req, res, ctx) => {
+    return res(
+      ctx.status(200),
+      ctx.json({
+        languages: [
+          { name: "English", code: "EN" },
+          { name: "French", code: "FR" },
+        ],
+      })
+    );
+  }
+);
+
+//# endregion
+
+//# region tags
+
+export const tagsNoResults = rest.get(
+  buildRoute("2/tags/"),
+  (req, res, ctx) => {
+    return res(ctx.status(200), ctx.json({ tags: [] }));
+  }
+);
+
+export const tagsTwoResults = rest.get(
+  buildRoute("2/tags/"),
+  (req, res, ctx) => {
+    return res(ctx.status(200), ctx.json({ tags: ["Tag 1", "Tag 2"] }));
+  }
+);
+
+//# endregion
+
 //# region sample cards
 
 export const sampleCards = rest.get(
@@ -426,6 +470,16 @@ export const importSitesNoResults = rest.get(
   buildRoute("2/importSites"),
   (req, res, ctx) => {
     return res(ctx.status(200), ctx.json({ import_sites: [] }));
+  }
+);
+
+export const importSitesOneResult = rest.get(
+  buildRoute("2/importSites"),
+  (req, res, ctx) => {
+    return res(
+      ctx.status(200),
+      ctx.json({ import_sites: [{ name: "test", url: "test.com" }] })
+    );
   }
 );
 
@@ -538,7 +592,9 @@ export const defaultHandlers = [
   cardbacksNoResults,
   searchResultsNoResults,
   dfcPairsNoResults,
-  importSitesNoResults,
+  languagesTwoResults,
+  tagsNoResults,
+  importSitesOneResult,
   sampleCards,
   backendInfoNoPatreon,
   searchEngineHealthy,

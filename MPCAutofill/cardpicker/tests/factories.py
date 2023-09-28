@@ -3,17 +3,16 @@ import datetime as dt
 import factory
 
 from cardpicker import models
-from cardpicker.utils.sanitisation import to_searchable
+from cardpicker.search.sanitisation import to_searchable
 
 
 class DFCPairFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.DFCPair
+        django_get_or_create = ("front",)
 
     front = factory.Sequence(lambda n: f"Front {n}")
-    front_searchable = factory.Sequence(lambda n: f"front {n}")
     back = factory.Sequence(lambda n: f"Back {n}")
-    back_searchable = factory.Sequence(lambda n: f"back {n}")
 
 
 class SourceFactory(factory.django.DjangoModelFactory):
@@ -44,3 +43,13 @@ class CardFactory(factory.django.DjangoModelFactory):
     searchq_keyword = factory.LazyAttribute(lambda o: to_searchable(o.name))
     extension = factory.LazyFunction(lambda: "png")
     size = factory.LazyFunction(lambda: 100)
+    language = factory.LazyAttribute(lambda o: "en")
+
+
+class TagFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.Tag
+
+    name = factory.Sequence(lambda n: f"Tag {n}")
+    parent = factory.LazyFunction(lambda: None)
+    aliases = factory.LazyAttribute(lambda o: [o.name.replace(" ", "")])

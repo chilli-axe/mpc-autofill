@@ -12,6 +12,7 @@ import {
   projectThreeMembersSelectedImage1,
 } from "@/common/test-constants";
 import {
+  changeQueries,
   expectCardbackSlotState,
   expectCardGridSlotState,
   expectCardSlotToNotExist,
@@ -19,6 +20,7 @@ import {
   renderWithProviders,
   selectSlot,
 } from "@/common/test-utils";
+import { LayoutWithoutProvider } from "@/features/ui/layout";
 import {
   cardbacksTwoResults,
   cardDocumentsFourResults,
@@ -27,6 +29,7 @@ import {
   defaultHandlers,
   searchResultsFourResults,
   searchResultsOneResult,
+  searchResultsSixResults,
   searchResultsThreeResults,
   sourceDocumentsOneResult,
   sourceDocumentsThreeResults,
@@ -474,4 +477,131 @@ test("double clicking the select button selects all slots for the same query", a
       "bi-check-square"
     )
   );
+});
+
+test("changing a card slot's query", async () => {
+  server.use(
+    cardDocumentsThreeResults,
+    sourceDocumentsOneResult,
+    searchResultsSixResults,
+    ...defaultHandlers
+  );
+
+  renderWithProviders(
+    <LayoutWithoutProvider>
+      <App />
+    </LayoutWithoutProvider>,
+    {
+      preloadedState: {
+        backend: localBackend,
+        project: {
+          members: [
+            {
+              front: {
+                query: { query: "query 1", card_type: Card },
+                selectedImage: undefined,
+                selected: false,
+              },
+              back: null,
+            },
+          ],
+          cardback: null,
+        },
+      },
+    }
+  );
+
+  await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 1);
+
+  screen.getByText(cardDocument1.name).click();
+  await changeQueries("query 2");
+  await expectCardGridSlotState(1, Front, cardDocument2.name, 1, 1);
+});
+
+test("clearing a card slot's query", async () => {
+  server.use(
+    cardDocumentsThreeResults,
+    sourceDocumentsOneResult,
+    searchResultsSixResults,
+    ...defaultHandlers
+  );
+
+  renderWithProviders(
+    <LayoutWithoutProvider>
+      <App />
+    </LayoutWithoutProvider>,
+    {
+      preloadedState: {
+        backend: localBackend,
+        project: {
+          members: [
+            {
+              front: {
+                query: { query: "query 1", card_type: Card },
+                selectedImage: undefined,
+                selected: false,
+              },
+              back: null,
+            },
+          ],
+          cardback: null,
+        },
+      },
+    }
+  );
+
+  await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 1);
+
+  screen.getByText(cardDocument1.name).click();
+  await changeQueries("");
+  await expectCardGridSlotState(1, Front, null, null, null);
+});
+
+test("changing a card slot's query doesn't affect a different slot", async () => {
+  server.use(
+    cardDocumentsThreeResults,
+    sourceDocumentsOneResult,
+    searchResultsSixResults,
+    ...defaultHandlers
+  );
+
+  renderWithProviders(
+    <LayoutWithoutProvider>
+      <App />
+    </LayoutWithoutProvider>,
+    {
+      preloadedState: {
+        backend: localBackend,
+        project: {
+          members: [
+            {
+              front: {
+                query: { query: "query 1", card_type: Card },
+                selectedImage: undefined,
+                selected: false,
+              },
+              back: null,
+            },
+            {
+              front: {
+                query: { query: "query 2", card_type: Card },
+                selectedImage: undefined,
+                selected: false,
+              },
+              back: null,
+            },
+          ],
+          cardback: null,
+        },
+      },
+    }
+  );
+
+  await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 1);
+  await expectCardGridSlotState(2, Front, cardDocument2.name, 1, 1);
+
+  screen.getByText(cardDocument1.name).click();
+  await changeQueries("query 3");
+  await expectCardGridSlotState(1, Front, cardDocument3.name, 1, 1);
+  await expectCardGridSlotState(2, Front, cardDocument2.name, 1, 1);
 });

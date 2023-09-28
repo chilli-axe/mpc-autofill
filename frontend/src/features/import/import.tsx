@@ -5,6 +5,7 @@ import { ImportCSV } from "@/features/import/importCSV";
 import { ImportText } from "@/features/import/importText";
 import { ImportURL } from "@/features/import/importURL";
 import { ImportXML } from "@/features/import/importXML";
+import { RightPaddedIcon } from "@/features/ui/styledComponents";
 
 export function Import() {
   return (
@@ -12,11 +13,7 @@ export function Import() {
       <Dropdown>
         <div className="d-grid gap-0">
           <Dropdown.Toggle variant="success" id="dropdown-basic">
-            <i
-              className="bi bi-plus-circle"
-              style={{ paddingRight: 0.5 + "em" }}
-            />{" "}
-            Add Cards
+            <RightPaddedIcon bootstrapIconName="plus-circle" /> Add Cards
           </Dropdown.Toggle>
         </div>
         <Dropdown.Menu>

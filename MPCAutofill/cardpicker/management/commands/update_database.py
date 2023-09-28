@@ -5,9 +5,9 @@ from django.core import management
 from django.core.management.base import BaseCommand
 
 from cardpicker.models import Source
+from cardpicker.search.search_functions import ping_elasticsearch
 from cardpicker.sources.update_database import update_database
 from cardpicker.utils import log_hours_minutes_seconds_elapsed
-from cardpicker.utils.search_functions import ping_elasticsearch
 
 
 class Command(BaseCommand):

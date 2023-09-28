@@ -5,15 +5,19 @@
  */
 
 import { saveAs } from "file-saver";
-import React, { memo } from "react";
+import React, { memo, useRef, useState } from "react";
+import Badge from "react-bootstrap/Badge";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
+import OverlayTrigger from "react-bootstrap/OverlayTrigger";
 import Row from "react-bootstrap/Row";
 import Table from "react-bootstrap/Table";
+import Tooltip from "react-bootstrap/Tooltip";
+import styled from "styled-components";
 
-import { api } from "@/app/api";
+import { api, useGetLanguagesQuery } from "@/app/api";
 import { base64StringToBlob } from "@/common/processing";
-import { CardDocument, useAppSelector } from "@/common/types";
+import { CardDocument } from "@/common/types";
 import { imageSizeToMBString } from "@/common/utils";
 import {
   MemoizedCardImage,
@@ -21,6 +25,16 @@ import {
 } from "@/features/card/card";
 import DisableSSR from "@/features/ui/disableSSR";
 import { Spinner } from "@/features/ui/spinner";
+
+const ClickToCopyIdentifier = styled.code`
+  user-select: none;
+  outline: solid 1px #ffffff00;
+  transition: outline 0.2s ease-in-out;
+  &:hover {
+    outline-color: #ffffffff;
+    cursor: pointer;
+  }
+`;
 
 interface CardDetailedViewProps {
   cardDocument: CardDocument;
@@ -31,13 +45,25 @@ interface CardDetailedViewProps {
   };
 }
 
-export function CardDetailedView({
+export function CardDetailedViewModal({
   cardDocument,
   show,
   handleClose,
 }: CardDetailedViewProps) {
   const [triggerFn, getGoogleDriveImageQuery] =
     api.endpoints.getGoogleDriveImage.useLazyQuery();
+
+  const getLanguagesQuery = useGetLanguagesQuery();
+  const languageNameByCode = Object.fromEntries(
+    (getLanguagesQuery.data ?? []).map((row) => [row.code, row.name])
+  );
+
+  const [copied, setCopied] = useState<boolean>(false);
+  const copyIdentifier = () => {
+    navigator.clipboard.writeText(cardDocument.identifier);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1000);
+  };
 
   const downloadImage = async () => {
     const response = await triggerFn(cardDocument.identifier);
@@ -85,7 +111,8 @@ export function CardDetailedView({
                       <b>Source Name</b>
                     </td>
                     <td>
-                      {cardDocument.source_external_link != null ? (
+                      {cardDocument.source_external_link != null &&
+                      cardDocument.source_external_link.length > 0 ? (
                         <a
                           href={cardDocument.source_external_link}
                           target="_blank"
@@ -93,7 +120,7 @@ export function CardDetailedView({
                           {cardDocument.source_name}
                         </a>
                       ) : (
-                        <a>{cardDocument.source_name}</a>
+                        <p>{cardDocument.source_name}</p>
                       )}
                     </td>
                   </tr>
@@ -117,7 +144,39 @@ export function CardDetailedView({
                       <b>Identifier</b>
                     </td>
                     <td>
-                      <code>{cardDocument.identifier}</code>
+                      <OverlayTrigger
+                        defaultShow={false}
+                        placement="top"
+                        overlay={
+                          <Tooltip id="image-identifier">
+                            {copied ? "Copied!" : "Click to copy"}
+                          </Tooltip>
+                        }
+                      >
+                        <ClickToCopyIdentifier onClick={copyIdentifier}>
+                          {cardDocument.identifier}
+                        </ClickToCopyIdentifier>
+                      </OverlayTrigger>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <b>Language</b>
+                    </td>
+                    <td>{languageNameByCode[cardDocument.language]}</td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <b>Tags</b>
+                    </td>
+                    <td>
+                      {cardDocument.tags.length > 0
+                        ? cardDocument.tags.map((tag) => (
+                            <Badge key={tag} pill>
+                              {tag}
+                            </Badge>
+                          ))
+                        : "Untagged"}
                     </td>
                   </tr>
                   <tr>
@@ -166,4 +225,4 @@ export function CardDetailedView({
   );
 }
 
-export const MemoizedCardDetailedView = memo(CardDetailedView);
+export const MemoizedCardDetailedView = memo(CardDetailedViewModal);

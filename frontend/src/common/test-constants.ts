@@ -29,7 +29,7 @@ export const sourceDocument1: SourceDocument = {
   key: "source_1",
   name: "Source 1",
   identifier: "id_1",
-  source_type: "gdrive",
+  source_type: "Google Drive",
   external_link: null,
   description: "",
 };
@@ -39,7 +39,7 @@ export const sourceDocument2: SourceDocument = {
   key: "source_2",
   name: "Source 2",
   identifier: "id_2",
-  source_type: "gdrive",
+  source_type: "Google Drive",
   external_link: null,
   description: "",
 };
@@ -49,7 +49,7 @@ export const sourceDocument3: SourceDocument = {
   key: "source_3",
   name: "Source 3",
   identifier: "id_3",
-  source_type: "gdrive",
+  source_type: "Google Drive",
   external_link: null,
   description: "",
 };
@@ -59,7 +59,7 @@ export const sourceDocument4: SourceDocument = {
   key: "source_4",
   name: "Source 4",
   identifier: "id_4",
-  source_type: "gdrive",
+  source_type: "Google Drive",
   external_link: null,
   description: "",
 };
@@ -94,6 +94,8 @@ export const cardDocument1: CardDocument = {
   size: 10_000_000,
   small_thumbnail_url: "",
   medium_thumbnail_url: "",
+  language: "EN",
+  tags: [],
 };
 
 export const cardDocument2: CardDocument = {
@@ -115,6 +117,8 @@ export const cardDocument2: CardDocument = {
   size: 10_000_000,
   small_thumbnail_url: "",
   medium_thumbnail_url: "",
+  language: "EN",
+  tags: [],
 };
 
 export const cardDocument3: CardDocument = {
@@ -136,6 +140,8 @@ export const cardDocument3: CardDocument = {
   size: 10_000_000,
   small_thumbnail_url: "",
   medium_thumbnail_url: "",
+  language: "EN",
+  tags: [],
 };
 
 export const cardDocument4: CardDocument = {
@@ -157,6 +163,8 @@ export const cardDocument4: CardDocument = {
   size: 10_000_000,
   small_thumbnail_url: "",
   medium_thumbnail_url: "",
+  language: "EN",
+  tags: [],
 };
 
 export const cardDocument5: CardDocument = {
@@ -178,6 +186,8 @@ export const cardDocument5: CardDocument = {
   size: 10_000_000,
   small_thumbnail_url: "",
   medium_thumbnail_url: "",
+  language: "EN",
+  tags: [],
 };
 
 export const cardDocument6: CardDocument = {
@@ -199,6 +209,8 @@ export const cardDocument6: CardDocument = {
   size: 10_000_000,
   small_thumbnail_url: "",
   medium_thumbnail_url: "",
+  language: "EN",
+  tags: [],
 };
 
 //# endregion
@@ -281,6 +293,9 @@ export const defaultSettings: SearchSettings = {
     minimumDPI: MinimumDPI,
     maximumDPI: MaximumDPI,
     maximumSize: MaximumSize,
+    languages: [],
+    includesTags: [],
+    excludesTags: ["NSFW"],
   },
 };
 

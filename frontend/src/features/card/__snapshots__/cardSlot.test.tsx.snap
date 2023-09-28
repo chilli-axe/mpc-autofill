@@ -10,98 +10,14 @@ exports[`the html structure of a CardSlot with a single search result, image sel
   cursor: pointer;
 }
 
-.c0 {
-  z-index: 0;
-  background: #4e5d6c;
-  border: solid 0px black;
+.c2 {
+  outline: solid 1px #ffffff00;
+  -webkit-transition: outline 0.2s ease-in-out;
+  transition: outline 0.2s ease-in-out;
 }
 
-<div
-  data-testid="front-slot0"
->
-  <div
-    class="mpccard mpccard-hover card"
-  >
-    <div
-      class="pb-0 text-center card-header"
-    >
-      <p
-        class="mpccard-slot"
-      >
-        Slot 1
-      </p>
-      <button
-        aria-label="select-front0"
-        class="card-select"
-      >
-        <i
-          class="bi bi-square"
-        />
-      </button>
-      <button
-        class="remove"
-      >
-        <i
-          aria-label="remove-front0"
-          class="bi bi-x-circle"
-        />
-      </button>
-    </div>
-    <div>
-      <div
-        class="c0 rounded-lg shadow-lg ratio ratio-7x5"
-      >
-        <img
-          alt="Card 1"
-          class="c1 card-img card-img-fade-in"
-          data-nimg="fill"
-          decoding="async"
-          loading="lazy"
-          src=""
-          style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent;"
-        />
-      </div>
-      <div
-        class="mb-0 text-center card-body"
-      >
-        <div
-          class="mpccard-name card-subtitle h6"
-        >
-          Card 1
-        </div>
-        <div
-          class="mpccard-spacing"
-        >
-          <p
-            class="mpccard-source card-text"
-          >
-            Source 1 [1200 DPI]
-          </p>
-        </div>
-      </div>
-    </div>
-    <div
-      class="padding-top card-footer"
-      style="padding-top: 50px;"
-    >
-      <p
-        class="mpccard-counter text-center align-middle"
-      >
-        1 / 
-        1
-      </p>
-    </div>
-  </div>
-</div>
-`;
-
-exports[`the html structure of a CardSlot with a single search result, no image selected 1`] = `
-.c1 {
-  z-index: 1;
-  opacity: 1;
-}
-
-.c1:hover {
+.c2:hover {
+  outline-color: #ffffffff;
   cursor: pointer;
 }
 
@@ -160,7 +76,113 @@ exports[`the html structure of a CardSlot with a single search result, no image 
         class="mb-0 text-center card-body"
       >
         <div
-          class="mpccard-name card-subtitle h6"
+          class="c2 mpccard-name card-subtitle h6"
+        >
+          Card 1
+        </div>
+        <div
+          class="mpccard-spacing"
+        >
+          <p
+            class="mpccard-source card-text"
+          >
+            Source 1 [1200 DPI]
+          </p>
+        </div>
+      </div>
+    </div>
+    <div
+      class="padding-top card-footer"
+      style="padding-top: 50px;"
+    >
+      <p
+        class="mpccard-counter text-center align-middle"
+      >
+        1 / 
+        1
+      </p>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`the html structure of a CardSlot with a single search result, no image selected 1`] = `
+.c1 {
+  z-index: 1;
+  opacity: 1;
+}
+
+.c1:hover {
+  cursor: pointer;
+}
+
+.c2 {
+  outline: solid 1px #ffffff00;
+  -webkit-transition: outline 0.2s ease-in-out;
+  transition: outline 0.2s ease-in-out;
+}
+
+.c2:hover {
+  outline-color: #ffffffff;
+  cursor: pointer;
+}
+
+.c0 {
+  z-index: 0;
+  background: #4e5d6c;
+  border: solid 0px black;
+}
+
+<div
+  data-testid="front-slot0"
+>
+  <div
+    class="mpccard mpccard-hover card"
+  >
+    <div
+      class="pb-0 text-center card-header"
+    >
+      <p
+        class="mpccard-slot"
+      >
+        Slot 1
+      </p>
+      <button
+        aria-label="select-front0"
+        class="card-select"
+      >
+        <i
+          class="bi bi-square"
+        />
+      </button>
+      <button
+        class="remove"
+      >
+        <i
+          aria-label="remove-front0"
+          class="bi bi-x-circle"
+        />
+      </button>
+    </div>
+    <div>
+      <div
+        class="c0 rounded-lg shadow-lg ratio ratio-7x5"
+      >
+        <img
+          alt="Card 1"
+          class="c1 card-img card-img-fade-in"
+          data-nimg="fill"
+          decoding="async"
+          loading="lazy"
+          src=""
+          style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent;"
+        />
+      </div>
+      <div
+        class="mb-0 text-center card-body"
+      >
+        <div
+          class="c2 mpccard-name card-subtitle h6"
         >
           Card 1
         </div>
@@ -197,6 +219,17 @@ exports[`the html structure of a CardSlot with a single search result, slot sele
 }
 
 .c1:hover {
+  cursor: pointer;
+}
+
+.c2 {
+  outline: solid 1px #ffffff00;
+  -webkit-transition: outline 0.2s ease-in-out;
+  transition: outline 0.2s ease-in-out;
+}
+
+.c2:hover {
+  outline-color: #ffffffff;
   cursor: pointer;
 }
 
@@ -255,7 +288,7 @@ exports[`the html structure of a CardSlot with a single search result, slot sele
         class="mb-0 text-center card-body"
       >
         <div
-          class="mpccard-name card-subtitle h6"
+          class="c2 mpccard-name card-subtitle h6"
         >
           Card 1
         </div>
@@ -297,6 +330,17 @@ exports[`the html structure of a CardSlot with multiple search results, image se
 }
 
 .c1:hover {
+  cursor: pointer;
+}
+
+.c3 {
+  outline: solid 1px #ffffff00;
+  -webkit-transition: outline 0.2s ease-in-out;
+  transition: outline 0.2s ease-in-out;
+}
+
+.c3:hover {
+  outline-color: #ffffffff;
   cursor: pointer;
 }
 
@@ -373,7 +417,7 @@ exports[`the html structure of a CardSlot with multiple search results, image se
         class="mb-0 text-center card-body"
       >
         <div
-          class="mpccard-name card-subtitle h6"
+          class="c3 mpccard-name card-subtitle h6"
         >
           Card 1
         </div>
@@ -420,23 +464,27 @@ exports[`the html structure of a CardSlot with multiple search results, image se
 `;
 
 exports[`the html structure of a CardSlot's grid selector, cards faceted by source 1`] = `
-.c1 {
+.c2 {
   z-index: 1;
   opacity: 1;
 }
 
-.c1:hover {
+.c2:hover {
   cursor: auto;
 }
 
-.c0 {
+.c1 {
   z-index: 0;
   background: #4e5d6c;
   border: solid 0px black;
 }
 
+.c0 {
+  padding-right: 0.5em;
+}
+
 <div
-  class="modal-dialog modal-lg"
+  class="modal-dialog modal-lg modal-dialog-scrollable"
   data-testid="front-slot0-grid-selector"
 >
   <div
@@ -457,10 +505,11 @@ exports[`the html structure of a CardSlot's grid selector, cards faceted by sour
       />
     </div>
     <div
-      class="modal-body"
+      class="d-grid p-0 modal-body"
     >
       <div
-        class="row"
+        class="p-3 row"
+        style="width: 100%;"
       >
         <div
           class="col-md-8 col-sm-6"
@@ -493,15 +542,14 @@ exports[`the html structure of a CardSlot's grid selector, cards faceted by sour
           class="col-md-4 col-sm-6"
         >
           <div
-            class="d-grid gap-0"
+            class="d-grid g-0"
           >
             <button
               class="btn btn-primary"
               type="button"
             >
               <i
-                class="bi bi-arrows-collapse"
-                style="padding-right: 0.5em;"
+                class="c0 bi bi-arrows-collapse"
               />
                
               Collapse
@@ -515,7 +563,9 @@ exports[`the html structure of a CardSlot's grid selector, cards faceted by sour
         class="sticky-top"
         style="background-color: rgb(78, 93, 107); z-index: 100;"
       >
-        <hr />
+        <hr
+          class="mt-0"
+        />
         <div
           class="d-flex ps-2 pe-2 hstack gap-2"
         >
@@ -538,201 +588,205 @@ exports[`the html structure of a CardSlot's grid selector, cards faceted by sour
             style="transition: all 0.25s 0s;"
           />
         </div>
+        <hr
+          class="mb-0"
+        />
       </div>
       <div
-        class="collapse show"
+        class="py-2"
+      />
+      <div
+        class="g-0 px-3 collapse show row row-cols-xxl-4 row-cols-xl-4 row-cols-lg-3 row-cols-md-2 row-cols-sm-2 row-cols-2"
         data-testid="source_1-collapse"
       >
-        <hr />
         <div
-          class="g-0 row row-cols-xxl-4 row-cols-xl-4 row-cols-lg-3 row-cols-md-2 row-cols-sm-2 row-cols-2"
+          class="mpccard mpccard-hover card"
         >
           <div
-            class="mpccard mpccard-hover card"
+            class="pb-0 text-center card-header"
           >
-            <div
-              class="pb-0 text-center card-header"
+            <p
+              class="mpccard-slot"
             >
-              <p
-                class="mpccard-slot"
-              >
-                Option 1
-              </p>
+              Option 1
+            </p>
+          </div>
+          <div>
+            <div
+              class="c1 rounded-lg shadow-lg ratio ratio-7x5"
+            >
+              <img
+                alt="Card 1"
+                class="c2 card-img card-img-fade-in"
+                data-nimg="fill"
+                decoding="async"
+                loading="lazy"
+                src=""
+                style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent;"
+              />
             </div>
-            <div>
+            <div
+              class="mb-0 text-center card-body"
+            >
               <div
-                class="c0 rounded-lg shadow-lg ratio ratio-7x5"
+                class="mpccard-name card-subtitle h6"
               >
-                <img
-                  alt="Card 1"
-                  class="c1 card-img card-img-fade-in"
-                  data-nimg="fill"
-                  decoding="async"
-                  loading="lazy"
-                  src=""
-                  style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent;"
-                />
+                Card 1
               </div>
               <div
-                class="mb-0 text-center card-body"
+                class="mpccard-spacing"
               >
-                <div
-                  class="mpccard-name card-subtitle h6"
+                <p
+                  class="mpccard-source card-text"
                 >
-                  Card 1
-                </div>
-                <div
-                  class="mpccard-spacing"
-                >
-                  <p
-                    class="mpccard-source card-text"
-                  >
-                    Source 1 [1200 DPI]
-                  </p>
-                </div>
+                  Source 1 [1200 DPI]
+                </p>
               </div>
             </div>
           </div>
+        </div>
+        <div
+          class="mpccard mpccard-hover card"
+        >
           <div
-            class="mpccard mpccard-hover card"
+            class="pb-0 text-center card-header"
           >
-            <div
-              class="pb-0 text-center card-header"
+            <p
+              class="mpccard-slot"
             >
-              <p
-                class="mpccard-slot"
-              >
-                Option 2
-              </p>
+              Option 2
+            </p>
+          </div>
+          <div>
+            <div
+              class="c1 rounded-lg shadow-lg ratio ratio-7x5"
+            >
+              <img
+                alt="Card 2"
+                class="c2 card-img card-img-fade-in"
+                data-nimg="fill"
+                decoding="async"
+                loading="lazy"
+                src=""
+                style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent;"
+              />
             </div>
-            <div>
+            <div
+              class="mb-0 text-center card-body"
+            >
               <div
-                class="c0 rounded-lg shadow-lg ratio ratio-7x5"
+                class="mpccard-name card-subtitle h6"
               >
-                <img
-                  alt="Card 2"
-                  class="c1 card-img card-img-fade-in"
-                  data-nimg="fill"
-                  decoding="async"
-                  loading="lazy"
-                  src=""
-                  style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent;"
-                />
+                Card 2
               </div>
               <div
-                class="mb-0 text-center card-body"
+                class="mpccard-spacing"
               >
-                <div
-                  class="mpccard-name card-subtitle h6"
+                <p
+                  class="mpccard-source card-text"
                 >
-                  Card 2
-                </div>
-                <div
-                  class="mpccard-spacing"
-                >
-                  <p
-                    class="mpccard-source card-text"
-                  >
-                    Source 1 [1200 DPI]
-                  </p>
-                </div>
+                  Source 1 [1200 DPI]
+                </p>
               </div>
             </div>
           </div>
+        </div>
+        <div
+          class="mpccard mpccard-hover card"
+        >
           <div
-            class="mpccard mpccard-hover card"
+            class="pb-0 text-center card-header"
           >
-            <div
-              class="pb-0 text-center card-header"
+            <p
+              class="mpccard-slot"
             >
-              <p
-                class="mpccard-slot"
-              >
-                Option 3
-              </p>
+              Option 3
+            </p>
+          </div>
+          <div>
+            <div
+              class="c1 rounded-lg shadow-lg ratio ratio-7x5"
+            >
+              <img
+                alt="Card 3"
+                class="c2 card-img card-img-fade-in"
+                data-nimg="fill"
+                decoding="async"
+                loading="lazy"
+                src=""
+                style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent;"
+              />
             </div>
-            <div>
+            <div
+              class="mb-0 text-center card-body"
+            >
               <div
-                class="c0 rounded-lg shadow-lg ratio ratio-7x5"
+                class="mpccard-name card-subtitle h6"
               >
-                <img
-                  alt="Card 3"
-                  class="c1 card-img card-img-fade-in"
-                  data-nimg="fill"
-                  decoding="async"
-                  loading="lazy"
-                  src=""
-                  style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent;"
-                />
+                Card 3
               </div>
               <div
-                class="mb-0 text-center card-body"
+                class="mpccard-spacing"
               >
-                <div
-                  class="mpccard-name card-subtitle h6"
+                <p
+                  class="mpccard-source card-text"
                 >
-                  Card 3
-                </div>
-                <div
-                  class="mpccard-spacing"
-                >
-                  <p
-                    class="mpccard-source card-text"
-                  >
-                    Source 1 [1200 DPI]
-                  </p>
-                </div>
+                  Source 1 [1200 DPI]
+                </p>
               </div>
             </div>
           </div>
+        </div>
+        <div
+          class="mpccard mpccard-hover card"
+        >
           <div
-            class="mpccard mpccard-hover card"
+            class="pb-0 text-center card-header"
           >
-            <div
-              class="pb-0 text-center card-header"
+            <p
+              class="mpccard-slot"
             >
-              <p
-                class="mpccard-slot"
-              >
-                Option 4
-              </p>
+              Option 4
+            </p>
+          </div>
+          <div>
+            <div
+              class="c1 rounded-lg shadow-lg ratio ratio-7x5"
+            >
+              <img
+                alt="Card 4"
+                class="c2 card-img card-img-fade-in"
+                data-nimg="fill"
+                decoding="async"
+                loading="lazy"
+                src=""
+                style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent;"
+              />
             </div>
-            <div>
+            <div
+              class="mb-0 text-center card-body"
+            >
               <div
-                class="c0 rounded-lg shadow-lg ratio ratio-7x5"
+                class="mpccard-name card-subtitle h6"
               >
-                <img
-                  alt="Card 4"
-                  class="c1 card-img card-img-fade-in"
-                  data-nimg="fill"
-                  decoding="async"
-                  loading="lazy"
-                  src=""
-                  style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent;"
-                />
+                Card 4
               </div>
               <div
-                class="mb-0 text-center card-body"
+                class="mpccard-spacing"
               >
-                <div
-                  class="mpccard-name card-subtitle h6"
+                <p
+                  class="mpccard-source card-text"
                 >
-                  Card 4
-                </div>
-                <div
-                  class="mpccard-spacing"
-                >
-                  <p
-                    class="mpccard-source card-text"
-                  >
-                    Source 1 [1200 DPI]
-                  </p>
-                </div>
+                  Source 1 [1200 DPI]
+                </p>
               </div>
             </div>
           </div>
         </div>
       </div>
+      <div
+        class="py-2"
+      />
     </div>
     <div
       class="modal-footer"
@@ -765,7 +819,7 @@ exports[`the html structure of a CardSlot's grid selector, cards grouped togethe
 }
 
 <div
-  class="modal-dialog modal-lg"
+  class="modal-dialog modal-lg modal-dialog-scrollable"
   data-testid="front-slot0-grid-selector"
 >
   <div
@@ -786,10 +840,11 @@ exports[`the html structure of a CardSlot's grid selector, cards grouped togethe
       />
     </div>
     <div
-      class="modal-body"
+      class="d-grid p-0 modal-body"
     >
       <div
-        class="row"
+        class="p-3 row"
+        style="width: 100%;"
       >
         <div
           class="col-md-8 col-sm-6"
@@ -821,7 +876,7 @@ exports[`the html structure of a CardSlot's grid selector, cards grouped togethe
       </div>
       <br />
       <div
-        class="g-0 row row-cols-xxl-4 row-cols-xl-4 row-cols-lg-3 row-cols-md-2 row-cols-sm-2 row-cols-2"
+        class="g-0 p-3 row row-cols-xxl-4 row-cols-xl-4 row-cols-lg-3 row-cols-md-2 row-cols-sm-2 row-cols-2"
       >
         <div
           class="mpccard mpccard-hover card"

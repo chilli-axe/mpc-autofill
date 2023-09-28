@@ -19,10 +19,14 @@ function BackendDescription() {
     <>
       {backendInfoQuery.isSuccess &&
         backendInfoQuery.data?.name != null &&
-        backendInfoQuery.data?.description != null && (
+        (backendInfoQuery.data?.description ?? "").length > 0 && (
           <>
             <h2>About {backendInfoQuery.data.name}</h2>
-            <p>{backendInfoQuery.data.description}</p>
+            <p
+              dangerouslySetInnerHTML={{
+                __html: backendInfoQuery.data.description ?? "",
+              }}
+            />
           </>
         )}
     </>

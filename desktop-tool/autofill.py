@@ -117,6 +117,12 @@ os.system("")  # enables ansi escape characters in terminal
 #     help="If this flag is set, non-JPEG images will be converted to JPEG before being uploaded to MPC.",
 #     is_flag=True,
 # )
+@click.option(
+    "--germany",
+    default=False,
+    help="Use printerstudio.de instead of makeplayingcards.com.",
+    is_flag=True,
+)
 def main(
     skipsetup: bool,
     auto_save: bool,
@@ -129,6 +135,7 @@ def main(
     max_dpi: int,
     downscale_alg: str,
     # convert_to_jpeg: bool,
+    germany: bool,
 ) -> None:
     try:
         with keepawake(keep_screen_awake=True) if not allowsleep else nullcontext():
@@ -144,7 +151,7 @@ def main(
             if exportpdf:
                 PdfExporter().execute(post_processing_config=post_processing_config)
             else:
-                AutofillDriver(browser=Browsers[browser], binary_location=binary_location).execute(
+                AutofillDriver(browser=Browsers[browser], binary_location=binary_location, germany=germany).execute(
                     skip_setup=skipsetup,
                     auto_save_threshold=auto_save_threshold if auto_save else None,
                     post_processing_config=post_processing_config,

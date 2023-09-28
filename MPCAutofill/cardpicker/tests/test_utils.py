@@ -1,6 +1,6 @@
 import pytest
 
-from cardpicker.utils import process_line, to_searchable
+from cardpicker.search.sanitisation import process_line, to_searchable
 
 
 class TestUtils:
@@ -17,6 +17,7 @@ class TestUtils:
             ("Black Lotus (Masterpiece, But With Punctuation! )", "black lotus"),
             ("Juzám Djinn", "juzám djinn"),  # elasticsearch will handle this
             (" Expansion _ Explosion", "expansion explosion"),
+            ("Kodama’s Reach", "kodamas reach"),
             ("消灭邪物", "消灭邪物"),
         ],
         ids=[
@@ -27,6 +28,7 @@ class TestUtils:
             "brackets removal 2",
             "accents",
             "punctuation with double spaces",
+            "right apostrophes are handled correctly",
             "foreign language characters",
         ],
     )

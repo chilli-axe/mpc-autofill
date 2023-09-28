@@ -1,60 +1,43 @@
 /**
  * This component exposes a bootstrap Alert to display the number of selected images
- * and facilitate operating on the selected images in bulk - updating their queries,
+ * and facilitates operating on the selected images in bulk - updating their queries,
  * setting their selected versions, or deleting them from the project.
  */
 
-import React, { FormEvent, useState } from "react";
+import React, { useState } from "react";
 import Alert from "react-bootstrap/Alert";
 import Button from "react-bootstrap/Button";
 import Dropdown from "react-bootstrap/Dropdown";
-import Form from "react-bootstrap/Form";
-import Modal from "react-bootstrap/Modal";
 import Stack from "react-bootstrap/Stack";
 
-import { useGetSampleCardsQuery } from "@/app/api";
-import { Card } from "@/common/constants";
-import { useAppDispatch, useAppSelector } from "@/common/types";
-import { Faces } from "@/common/types";
-import { GridSelector } from "@/features/card/gridSelector";
+import { Slots, useAppDispatch, useAppSelector } from "@/common/types";
+import { GridSelectorModal } from "@/features/modals/gridSelectorModal";
+import { setSelectedSlotsAndShowModal } from "@/features/modals/modalsSlice";
 import {
   bulkClearQuery,
   bulkDeleteSlots,
   bulkSetMemberSelection,
-  bulkSetQuery,
   bulkSetSelectedImage,
   selectAllSelectedProjectMembersHaveTheSameQuery,
   selectSelectedSlots,
 } from "@/features/project/projectSlice";
 import { selectSearchResultsForQueryOrDefault } from "@/features/search/searchResultsSlice";
+import { RightPaddedIcon } from "@/features/ui/styledComponents";
 
-interface MutateSelectedImageQueriesProps {
-  slots: Array<[Faces, number]>;
-}
-
-function ChangeSelectedImageSelectedImages({
-  slots,
-}: MutateSelectedImageQueriesProps) {
+function ChangeSelectedImageSelectedImages({ slots }: { slots: Slots }) {
   /**
    * sorry for the stupid naming convention here 🗿
    */
 
-  // TODO: this component is fairly messy and should be tidied up
-
   const dispatch = useAppDispatch();
 
-  const [
-    showChangeSelectedImageSelectedImagesModal,
-    setShowChangeSelectedImageSelectedImagesModal,
-  ] = useState<boolean>(false);
-  const handleCloseChangeSelectedImageSelectedImagesModal = () =>
-    setShowChangeSelectedImageSelectedImagesModal(false);
-  const handleShowChangeSelectedImageSelectedImagesModal = () =>
-    setShowChangeSelectedImageSelectedImagesModal(true);
+  const [showModal, setShowModal] = useState<boolean>(false);
+  const handleShowModal = () => setShowModal(true);
+  const handleHideModal = () => setShowModal(false);
 
-  const onSubmit = (selectedImage: string): void => {
+  const handleChangeImages = (selectedImage: string): void => {
     dispatch(bulkSetSelectedImage({ selectedImage, slots }));
-    handleCloseChangeSelectedImageSelectedImagesModal();
+    handleHideModal();
   };
 
   const query = useAppSelector((state) =>
@@ -73,136 +56,51 @@ function ChangeSelectedImageSelectedImages({
         searchResultsForQueryOrDefault.length > 1 && (
           <Dropdown.Item
             className="text-decoration-none"
-            onClick={handleShowChangeSelectedImageSelectedImagesModal}
+            onClick={handleShowModal}
           >
-            <i className="bi bi-image" style={{ paddingRight: 0.5 + "em" }} />{" "}
-            Change Version
+            <RightPaddedIcon bootstrapIconName="image" /> Change Version
           </Dropdown.Item>
         )}
       {searchResultsForQueryOrDefault != null && (
-        <GridSelector
+        <GridSelectorModal
           testId="bulk-grid-selector"
           imageIdentifiers={searchResultsForQueryOrDefault}
-          show={showChangeSelectedImageSelectedImagesModal}
-          handleClose={handleCloseChangeSelectedImageSelectedImagesModal}
-          onClick={onSubmit}
+          show={showModal}
+          handleClose={handleHideModal}
+          onClick={handleChangeImages}
         />
       )}
     </>
   );
 }
 
-function ChangeSelectedImageQueries({
-  slots,
-}: MutateSelectedImageQueriesProps) {
+function ChangeSelectedImageQueries({ slots }: { slots: Slots }) {
   const dispatch = useAppDispatch();
 
-  const [
-    showChangeSelectedImageQueriesModal,
-    setShowChangeSelectedImageQueriesModal,
-  ] = useState<boolean>(false);
-  const handleCloseChangeSelectedImageQueriesModal = () => {
-    setShowChangeSelectedImageQueriesModal(false);
+  const handleShowModal = () => {
+    dispatch(setSelectedSlotsAndShowModal([slots, "changeQuery"]));
   };
-  const handleShowChangeSelectedImageQueriesModal = () =>
-    setShowChangeSelectedImageQueriesModal(true);
-  const [
-    changeSelectedImageQueriesModalValue,
-    setChangeSelectedImageQueriesModalValue,
-  ] = useState("");
-
-  const handleSubmitChangeSelectedImageQueriesModal = (
-    event: FormEvent<HTMLFormElement>
-  ) => {
-    event.preventDefault(); // to avoid reloading the page
-    dispatch(
-      bulkSetQuery({ query: changeSelectedImageQueriesModalValue, slots })
-    );
-    handleCloseChangeSelectedImageQueriesModal();
-  };
-
-  const sampleCardsQuery = useGetSampleCardsQuery();
-  const placeholderCardName =
-    sampleCardsQuery.data != null &&
-    (sampleCardsQuery.data ?? {})[Card][0] != null
-      ? sampleCardsQuery.data[Card][0].name
-      : "";
 
   return (
     <>
-      <Dropdown.Item
-        className="text-decoration-none"
-        onClick={handleShowChangeSelectedImageQueriesModal}
-      >
-        <i
-          className="bi bi-arrow-repeat"
-          style={{ paddingRight: 0.5 + "em" }}
-        />{" "}
-        Change Query
+      <Dropdown.Item className="text-decoration-none" onClick={handleShowModal}>
+        <RightPaddedIcon bootstrapIconName="arrow-repeat" /> Change Query
       </Dropdown.Item>
-      <Modal
-        show={showChangeSelectedImageQueriesModal}
-        onHide={handleCloseChangeSelectedImageQueriesModal}
-        onExited={() => setChangeSelectedImageQueriesModalValue("")}
-      >
-        <Modal.Header closeButton>
-          <Modal.Title>Change Query</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          Type in a query to update the selected images with and hit{" "}
-          <b>Submit</b>.
-          <hr />
-          <Form
-            onSubmit={handleSubmitChangeSelectedImageQueriesModal}
-            id="changeSelectedImageQueriesForm"
-          >
-            <Form.Group className="mb-3">
-              <Form.Control
-                type="text"
-                placeholder={placeholderCardName}
-                onChange={(event) =>
-                  setChangeSelectedImageQueriesModalValue(event.target.value)
-                }
-                value={changeSelectedImageQueriesModalValue}
-                aria-label="change-selected-image-queries-text"
-                required={true}
-              />
-            </Form.Group>
-          </Form>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button
-            variant="secondary"
-            onClick={handleCloseChangeSelectedImageQueriesModal}
-          >
-            Close
-          </Button>
-          <Button
-            type="submit"
-            form="changeSelectedImageQueriesForm"
-            variant="primary"
-            aria-label="change-selected-image-queries-submit"
-          >
-            Submit
-          </Button>
-        </Modal.Footer>
-      </Modal>
     </>
   );
 }
 
-function ClearSelectedImageQueries({ slots }: MutateSelectedImageQueriesProps) {
+function ClearSelectedImageQueries({ slots }: { slots: Slots }) {
   const dispatch = useAppDispatch();
   const onClick = () => dispatch(bulkClearQuery({ slots }));
   return (
     <Dropdown.Item onClick={onClick} className="text-decoration-none">
-      <i className="bi bi-slash-circle" style={{ paddingRight: 0.5 + "em" }} />{" "}
-      Clear Query
+      <RightPaddedIcon bootstrapIconName="slash-circle" /> Clear Query
     </Dropdown.Item>
   );
 }
 
-function DeleteSelectedImages({ slots }: MutateSelectedImageQueriesProps) {
+function DeleteSelectedImages({ slots }: { slots: Slots }) {
   const dispatch = useAppDispatch();
 
   const slotNumbers = slots.map(([face, slot]) => slot);
@@ -210,8 +108,7 @@ function DeleteSelectedImages({ slots }: MutateSelectedImageQueriesProps) {
 
   return (
     <Dropdown.Item onClick={onClick} className="text-decoration-none">
-      <i className="bi bi-x-circle" style={{ paddingRight: 0.5 + "em" }} />{" "}
-      Delete Slots
+      <RightPaddedIcon bootstrapIconName="x-circle" /> Delete Slots
     </Dropdown.Item>
   );
 }

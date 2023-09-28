@@ -14,14 +14,15 @@ import React, {
   useRef,
   useState,
 } from "react";
+import Badge from "react-bootstrap/Badge";
 import BSCard from "react-bootstrap/Card";
 import styled from "styled-components";
 
 import { RootState } from "@/app/store";
 import { SearchQuery, useAppDispatch, useAppSelector } from "@/common/types";
 import { CardDocument } from "@/common/types";
+import { setSelectedCardAndShowModal } from "@/features/modals/modalsSlice";
 import { selectCardDocumentByIdentifier } from "@/features/search/cardDocumentsSlice";
-import { setSelectedCardAndShowModal } from "@/features/ui/modalSlice";
 import { Spinner } from "@/features/ui/spinner";
 
 const HiddenImage = styled(Image)`
@@ -40,6 +41,15 @@ const VisibleImage = styled(Image)<{
   opacity: ${(props) => (props.imageIsLoading ? 0 : 1)};
 `;
 
+const OutlinedBSCardSubtitle = styled(BSCard.Subtitle)`
+  outline: solid 1px #ffffff00;
+  transition: outline 0.2s ease-in-out;
+  &:hover {
+    outline-color: #ffffffff;
+    cursor: pointer;
+  }
+`;
+
 interface CardImageProps {
   maybeCardDocument: CardDocument | null;
   hidden: boolean;
@@ -53,7 +63,7 @@ function CardImage({
   small,
   showDetailedViewOnClick,
 }: CardImageProps) {
-  const [imageLoading, setImageLoading] = useState(true);
+  const [imageLoading, setImageLoading] = useState<boolean>(true);
   // ensure that the small thumbnail fades in each time the selected image changes
   useEffect(() => setImageLoading(true), [maybeCardDocument?.identifier]);
   useEffect(() => {
@@ -111,7 +121,7 @@ function CardImage({
                 : maybeCardDocument?.medium_thumbnail_url) ?? ""
             }
             onLoadingComplete={(img) => setImageLoading(false)}
-            onClick={() => handleShowDetailedView()}
+            onClick={handleShowDetailedView}
             alt={maybeCardDocument?.name ?? ""}
             fill={true}
           />
@@ -166,6 +176,8 @@ interface CardProps {
   cardFooter?: ReactElement;
   /** A callback function for when the `Card` (the HTML surrounding the image) is clicked. */
   cardOnClick?: React.MouseEventHandler<HTMLElement>;
+  /** A callback function for when the card name is clicked. */
+  nameOnClick?: React.MouseEventHandler<HTMLElement>;
   /** The `SearchQuery` specified when searching for this card. */
   searchQuery?: SearchQuery | undefined;
   /** Whether no search results were found when searching for `searchQuery` under the configured search settings. */
@@ -180,6 +192,7 @@ export function Card({
   cardHeaderButtons,
   cardFooter,
   cardOnClick,
+  nameOnClick,
   searchQuery,
   noResultsFound,
 }: CardProps) {
@@ -229,8 +242,15 @@ export function Card({
     ) : (
       <Spinner />
     );
+  const BSCardSubtitle: typeof BSCard.Subtitle =
+    nameOnClick != null ? OutlinedBSCardSubtitle : BSCard.Subtitle;
+
   return (
-    <BSCard className="mpccard mpccard-hover" onClick={cardOnClick}>
+    <BSCard
+      className="mpccard mpccard-hover"
+      onClick={cardOnClick}
+      style={{ contentVisibility: "auto" }}
+    >
       <BSCard.Header className="pb-0 text-center">
         <p className="mpccard-slot">{cardHeaderTitle}</p>
         {cardHeaderButtons}
@@ -240,12 +260,12 @@ export function Card({
           {cardImageElements}
         </MemoizedCardProportionWrapper>
         <BSCard.Body className="mb-0 text-center">
-          <BSCard.Subtitle className="mpccard-name">
+          <BSCardSubtitle className="mpccard-name" onClick={nameOnClick}>
             {maybeCardDocument != null && maybeCardDocument.name}
             {maybeCardDocument == null &&
               searchQuery != undefined &&
               searchQuery.query}
-          </BSCard.Subtitle>
+          </BSCardSubtitle>
           <div className="mpccard-spacing">
             <BSCard.Text className="mpccard-source">
               {maybeCardDocument != null &&
@@ -286,6 +306,8 @@ interface EditorCardProps {
   cardFooter?: ReactElement;
   /** A callback function for when the `Card` (the HTML surrounding the image) is clicked. */
   cardOnClick?: React.MouseEventHandler<HTMLElement>;
+  /** A callback function for when the card name is clicked. */
+  nameOnClick?: React.MouseEventHandler<HTMLElement>;
   /** The `SearchQuery` specified when searching for this card. */
   searchQuery?: SearchQuery | undefined;
   /** Whether no search results were found when searching for `searchQuery` under the configured search settings. */
@@ -300,6 +322,7 @@ export function EditorCard({
   cardHeaderButtons,
   cardFooter,
   cardOnClick,
+  nameOnClick,
   searchQuery,
   noResultsFound,
 }: EditorCardProps) {
@@ -329,6 +352,7 @@ export function EditorCard({
       cardHeaderButtons={cardHeaderButtons}
       cardFooter={cardFooter}
       cardOnClick={cardOnClick}
+      nameOnClick={nameOnClick}
       searchQuery={searchQuery}
       noResultsFound={noResultsFound}
     />

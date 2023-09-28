@@ -1,19 +1,16 @@
-# This script configures a multi-container setup to serve MPCAutofill and all
-# its dependencies. Simply navigate to the base directory and run
-# "docker-compose up" to get started. Optionally, you can pass "-d" to detach
-# all containers and their outputs to the background. By default, MPCAutofill
-# is served at http://localhost:8000. You can adjust the port near the bottom
-# of this file. Many code templates and inspirations are taken from blog post:
-# https://testdriven.io/blog/dockerizing-django-with-postgres-gunicorn-and-nginx/
+# This docker compose file spins up the database services required by the MPC Autofill backend.
+# It's separated from the docker compose file which spins up the backend itself to enable
+# local development through a Python virtual environment running natively on the dev machine.
 
 version: "3.4"
 
 services:
   # Postgres database for Django
   postgres:
-    image: postgres:13.0-alpine
-    expose:
-      - 5432
+    image: postgres:15.0-alpine
+    container_name: mpcautofill_postgres
+    ports:
+      - "5432:5432"
     environment:
       - POSTGRES_DB=mpcautofill
       - POSTGRES_USER=mpcautofill
@@ -24,45 +21,16 @@ services:
   # Elasticsearch used by MPCAutofill
   elasticsearch:
     image: elasticsearch:7.14.1
-    expose:
-      - 9200
+    container_name: mpcautofill_elasticsearch
+    ports:
+      - "9200:9200"
     environment:
       - discovery.type=single-node
       - logger.level=WARN
     volumes:
       - elaticsearch_data:/usr/share/elasticsearch/data
 
-  # Unicorn serving Django
-  django:
-    image: mpcautofill_django
-    build:
-      context: ..
-      dockerfile: ./docker/django/Dockerfile
-    volumes:
-      # Writes to
-      - django_static:/MPCAutofill/static
-    expose:
-      - 8000
-    depends_on:
-      - postgres
-      - elasticsearch
-
-  # Nginx serving Django's static files
-  nginx:
-    image: mpcautofill_nginx
-    build:
-      context: ..
-      dockerfile: ./docker/nginx/Dockerfile
-    volumes:
-      # Reads from
-      - django_static:/MPCAutofill/static
-    ports:
-      - 8000:80
-    depends_on:
-      - django
-
 # Persistent storage for containers
 volumes:
   postgres_data:
   elaticsearch_data:
-  django_static:

@@ -5,23 +5,26 @@ from collections import defaultdict
 from random import sample
 from typing import Any, Callable, Optional, TypeVar, Union, cast
 
+import pycountry
+import sentry_sdk
 from blog.models import BlogPost
 from jsonschema import ValidationError, validate
 
 from django.conf import settings
+from django.db.models import Q
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 
-from cardpicker.constants import CARDS_PAGE_SIZE
+from cardpicker.constants import CARDS_PAGE_SIZE, DEFAULT_LANGUAGE, NSFW
 from cardpicker.forms import InputCSV, InputLink, InputText, InputXML
+from cardpicker.integrations.integrations import get_configured_game_integration
+from cardpicker.integrations.patreon import get_patreon_campaign_details, get_patrons
 from cardpicker.models import Card, CardTypes, DFCPair, Source, summarise_contributions
 from cardpicker.mpcorder import Faces, MPCOrder, ReqTypes
-from cardpicker.utils.link_imports import ImportSites
-from cardpicker.utils.patreon import get_patreon_campaign_details, get_patrons
-from cardpicker.utils.sanitisation import to_searchable
-from cardpicker.utils.search_functions import (
+from cardpicker.search.sanitisation import to_searchable
+from cardpicker.search.search_functions import (
     SearchExceptions,
     build_context,
     get_new_cards_paginator,
@@ -35,6 +38,7 @@ from cardpicker.utils.search_functions import (
     search_new,
     search_new_elasticsearch_definition,
 )
+from cardpicker.tags import Tags
 
 from MPCAutofill.settings import PATREON_URL
 
@@ -426,6 +430,7 @@ class NewErrorWrappers:
             except BadRequestException as bad_request_exception:
                 return JsonResponse({"name": "Bad request", "message": bad_request_exception.args[0]}, status=400)
             except Exception as e:
+                sentry_sdk.capture_exception(e)
                 return JsonResponse(
                     {"name": f"Unhandled {e.__class__.__name__}", "message": str(e.args[0])}, status=500
                 )
@@ -522,6 +527,44 @@ def get_dfc_pairs(request: HttpRequest) -> HttpResponse:
 
 @csrf_exempt
 @NewErrorWrappers.to_json
+def get_languages(request: HttpRequest) -> HttpResponse:
+    """
+    Return the list of all unique languages among cards in the database.
+    """
+
+    if request.method != "GET":
+        raise BadRequestException("Expected GET request.")
+    return JsonResponse(
+        {
+            "languages": sorted(
+                [
+                    {"name": language.name, "code": row[0].upper()}
+                    for row in Card.objects.order_by().values_list("language").distinct()
+                    if (language := pycountry.languages.get(alpha_2=row[0])) is not None
+                ],
+                # sort like this so DEFAULT_LANGUAGE is first, then the rest of the languages are in alphabetical order
+                key=lambda row: "-" if row["code"] == DEFAULT_LANGUAGE.alpha_2 else row["name"],
+            )
+        }
+    )
+
+
+@csrf_exempt
+@NewErrorWrappers.to_json
+def get_tags(request: HttpRequest) -> HttpResponse:
+    """
+    Return a list of all tags that cards can be tagged with.
+    """
+
+    if request.method != "GET":
+        raise BadRequestException("Expected GET request.")
+    return JsonResponse(
+        {"tags": sorted([tag.to_dict() for tag in Tags().tags.values() if tag.parent is None], key=lambda x: x["name"])}
+    )
+
+
+@csrf_exempt
+@NewErrorWrappers.to_json
 def post_cardbacks(request: HttpRequest) -> HttpResponse:
     """
     Return a list of cardbacks, possibly filtered by the user's search settings.
@@ -550,7 +593,11 @@ def get_import_sites(request: HttpRequest) -> HttpResponse:
     if request.method != "GET":
         raise BadRequestException("Expected GET request.")
 
-    import_sites = [{"name": x.__name__, "url": x().get_base_url()} for x in ImportSites]
+    game_integration = get_configured_game_integration()
+    if game_integration is None:
+        return JsonResponse({"import_sites": []})
+
+    import_sites = [{"name": site.__name__, "url": site.get_base_url()} for site in game_integration.get_import_sites()]
     return JsonResponse({"import_sites": import_sites})
 
 
@@ -563,6 +610,10 @@ def post_import_site_decklist(request: HttpRequest) -> HttpResponse:
 
     if request.method != "POST":
         raise BadRequestException("Expected POST request.")
+
+    game_integration = get_configured_game_integration()
+    if game_integration is None:
+        raise BadRequestException("No game integration is configured on this server.")
 
     json_body = json.loads(request.body)
     try:
@@ -578,17 +629,13 @@ def post_import_site_decklist(request: HttpRequest) -> HttpResponse:
     except ValidationError as e:
         raise BadRequestException(f"Malformed JSON body:\n\n{e.message}")
 
-    url = json_body["url"]
-    if url is None:
-        raise BadRequestException("No decklist URL provided.")
-    for site in ImportSites:
-        if url.startswith(site.get_base_url()):
-            text = site.retrieve_card_list(url)
-            cleaned_text = "\n".join(
-                [stripped_line for line in text.split("\n") if len(stripped_line := line.strip()) > 0]
-            )
-            return JsonResponse({"cards": cleaned_text})
-    raise BadRequestException("The specified decklist URL does not match any known import sites.")
+    try:
+        decklist = game_integration.query_import_site(json_body.get("url"))
+        if decklist is None:
+            raise BadRequestException("The specified decklist URL does not match any known import sites.")
+        return JsonResponse({"cards": decklist})
+    except ValueError as e:
+        raise BadRequestException(str(e))
 
 
 @csrf_exempt
@@ -604,9 +651,11 @@ def get_sample_cards(request: HttpRequest) -> HttpResponse:
     if request.method != "GET":
         raise BadRequestException("Expected GET request.")
 
-    # sample some large number of identifiers from the database
+    # sample some large number of identifiers from the database (while avoiding sampling NSFW cards)
     identifiers = {
-        card_type: list(Card.objects.filter(card_type=card_type).values_list("id", flat=True)[0:5000])
+        card_type: list(
+            Card.objects.filter(~Q(tags__overlap=[NSFW]) & Q(card_type=card_type)).values_list("id", flat=True)[0:5000]
+        )
         for card_type in CardTypes
     }
 
@@ -710,7 +759,7 @@ def get_info(request: HttpRequest) -> HttpResponse:
         {
             "info": {
                 "name": settings.SITE_NAME,
-                "description": "Testing some stuff locally",
+                "description": settings.DESCRIPTION,
                 "email": settings.TARGET_EMAIL,
                 "reddit": settings.REDDIT,
                 "discord": settings.DISCORD,

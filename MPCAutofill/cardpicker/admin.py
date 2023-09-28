@@ -1,12 +1,17 @@
 from django.contrib import admin
 
-from .models import Card, DFCPair, Project, ProjectMember, Source
+from .models import Card, DFCPair, Project, ProjectMember, Source, Tag
 
 
 # Register your models here.
+@admin.register(Tag)
+class AdminTag(admin.ModelAdmin[Tag]):
+    list_display = ("name",)
+
+
 @admin.register(Card)
 class AdminCard(admin.ModelAdmin[Card]):
-    list_display = ("identifier", "name", "source", "dpi", "date")
+    list_display = ("identifier", "name", "source", "dpi", "date", "tags")
 
 
 @admin.register(DFCPair)
@@ -33,4 +38,4 @@ class AdminProject(admin.ModelAdmin[Project]):
 
 @admin.register(ProjectMember)
 class AdminCardProjectMembership(admin.ModelAdmin[ProjectMember]):
-    list_display = ("card", "project", "query", "slot", "face")
+    list_display = ("card_id", "project", "query", "slot", "face")
