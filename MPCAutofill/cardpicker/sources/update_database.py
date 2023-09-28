@@ -1,25 +1,26 @@
 import time
+from collections import deque
 from concurrent.futures import ThreadPoolExecutor
 from itertools import groupby
 from typing import Optional, Type
 
-from bulk_sync import bulk_sync
-
 from django.conf import settings
-from django.db.models import Q
+from django.db import transaction
 
-from cardpicker.constants import MAX_SIZE_MB
+from cardpicker.constants import DEFAULT_LANGUAGE, MAX_SIZE_MB
 from cardpicker.models import Card, CardTypes, Source
-from cardpicker.sources.source_types import Folder, Image, SourceType, SourceTypeChoices
+from cardpicker.search.sanitisation import to_searchable
+from cardpicker.sources.api import Folder, Image
+from cardpicker.sources.source_types import SourceType, SourceTypeChoices
+from cardpicker.tags import Tags
 from cardpicker.utils import TEXT_BOLD, TEXT_END
-from cardpicker.utils.sanitisation import to_searchable
 
 MAX_WORKERS = 5
 DPI_HEIGHT_RATIO = 300 / 1110  # 300 DPI for image of vertical resolution 1110 pixels
 
 
-def add_images_in_folder_to_list(source_type: Type[SourceType], folder: Folder, image_list: list[Image]) -> None:
-    image_list += source_type.get_all_images_inside_folder(folder)
+def add_images_in_folder_to_list(source_type: Type[SourceType], folder: Folder, images: deque[Image]) -> None:
+    images.extend(source_type.get_all_images_inside_folder(folder))
 
 
 def explore_folder(source: Source, source_type: Type[SourceType], root_folder: Folder) -> list[Image]:
@@ -29,14 +30,15 @@ def explore_folder(source: Source, source_type: Type[SourceType], root_folder: F
 
     t0 = time.time()
     print(f"Locating images for source {TEXT_BOLD}{source.name}{TEXT_END}...", end="", flush=True)
-    image_list: list[Image] = []
-    folder_list: list[Folder] = [root_folder]
+    images: deque[Image] = deque()
+    folders: list[Folder] = [root_folder]
     with ThreadPoolExecutor(max_workers=MAX_WORKERS) as pool:
-        while len(folder_list) > 0:
-            folder = folder_list.pop()
-            pool.submit(add_images_in_folder_to_list, source_type=source_type, folder=folder, image_list=image_list)
+        while len(folders) > 0:
+            folder = folders.pop()
+            pool.submit(add_images_in_folder_to_list, source_type=source_type, folder=folder, images=images)
             sub_folders = source_type.get_all_folders_inside_folder(folder)
-            folder_list += list(filter(lambda x: not x.name.startswith("!"), sub_folders))
+            folders += list(filter(lambda x: not x.name.startswith("!"), sub_folders))
+    image_list = list(images)
     print(
         f" and done! Located {TEXT_BOLD}{len(image_list):,}{TEXT_END} images "
         f"in {TEXT_BOLD}{(time.time() - t0):.2f}{TEXT_END} seconds."
@@ -44,7 +46,7 @@ def explore_folder(source: Source, source_type: Type[SourceType], root_folder: F
     return image_list
 
 
-def transform_images_into_objects(source: Source, images: list[Image]) -> list[Card]:
+def transform_images_into_objects(source: Source, images: list[Image], tags: Tags) -> list[Card]:
     """
     Transform `images`, which are all associated with `source`, into a set of Django ORM objects ready to be
     synchronised to the database.
@@ -64,16 +66,15 @@ def transform_images_into_objects(source: Source, images: list[Image]) -> list[C
             assert image.size <= (
                 MAX_SIZE_MB * 1_000_000
             ), f"Image size is greater than {MAX_SIZE_MB} MB at **{int(image.size / 1_000_000)}** MB"
-            assert image.name, "File name is empty string"
-            assert "." in image.name[:-1], "File name has no extension"
-            name, extension = image.name.rsplit(".", 1)
-            assert bool(searchable_name := to_searchable(name)), "Searchable file name is empty string"
+            # this can also raise AssertionError
+            language, name, extracted_tags, extension = image.unpack_name(tags=tags)
 
+            searchable_name = to_searchable(name)
             dpi = 10 * round(int(image.height) * DPI_HEIGHT_RATIO / 10)
             source_verbose = source.name
-            priority = 1 if "(" in name and ")" in name else 2
+            priority = 1 if ("(" in name and ")" in name) or len(extracted_tags) > 0 else 2
 
-            folder_location = image.folder.get_full_path()
+            folder_location = image.folder.get_full_path(tags=tags)
             if folder_location == settings.DEFAULT_CARDBACK_FOLDER_PATH:
                 if name == settings.DEFAULT_CARDBACK_IMAGE_NAME:
                     priority += 10
@@ -109,6 +110,8 @@ def transform_images_into_objects(source: Source, images: list[Image]) -> list[C
                     extension=extension,
                     date=image.created_time,
                     size=image.size,
+                    tags=list(extracted_tags),
+                    language=(language or DEFAULT_LANGUAGE).alpha_2.upper(),
                 )
             )
         except AssertionError as e:
@@ -124,15 +127,16 @@ def transform_images_into_objects(source: Source, images: list[Image]) -> list[C
 
 def bulk_sync_objects(source: Source, cards: list[Card]) -> None:
     print(f"Synchronising objects to database for source {TEXT_BOLD}{source.name}{TEXT_END}...", end="", flush=True)
-    key_fields = ("identifier",)
     t0 = time.time()
-    bulk_sync(new_models=cards, key_fields=key_fields, filters=Q(source_id=source.pk), db_class=Card)
+    with transaction.atomic():  # django-bulk-sync is crushingly slow with postgres
+        Card.objects.filter(source=source).delete()
+        Card.objects.bulk_create(cards)
     print(f" and done! That took {TEXT_BOLD}{(time.time() - t0):.2f}{TEXT_END} seconds.")
 
 
-def update_database_for_source(source: Source, source_type: Type[SourceType], root_folder: Folder) -> None:
+def update_database_for_source(source: Source, source_type: Type[SourceType], root_folder: Folder, tags: Tags) -> None:
     images = explore_folder(source=source, source_type=source_type, root_folder=root_folder)
-    cards = transform_images_into_objects(source=source, images=images)
+    cards = transform_images_into_objects(source=source, images=images, tags=tags)
     bulk_sync_objects(source=source, cards=cards)
 
 
@@ -142,12 +146,13 @@ def update_database(source_key: Optional[str] = None) -> None:
     If `source_key` is specified, only update that source; otherwise, update all sources.
     """
 
+    tags = Tags()
     if source_key:
         try:
             source = Source.objects.get(key=source_key)
             source_type = SourceTypeChoices.get_source_type(SourceTypeChoices[source.source_type])
             if (root_folder := source_type.get_all_folders([source])[source.key]) is not None:
-                update_database_for_source(source=source, source_type=source_type, root_folder=root_folder)
+                update_database_for_source(source=source, source_type=source_type, root_folder=root_folder, tags=tags)
         except Source.DoesNotExist:
             print(
                 f"Invalid source specified: {TEXT_BOLD}{source_key}{TEXT_END}"
@@ -169,5 +174,10 @@ def update_database(source_key: Optional[str] = None) -> None:
             )
             for grouped_source in grouped_sources:
                 if (root_folder := folders[grouped_source.key]) is not None:
-                    update_database_for_source(source=grouped_source, source_type=source_type, root_folder=root_folder)
+                    update_database_for_source(
+                        source=grouped_source, source_type=source_type, root_folder=root_folder, tags=tags
+                    )
                     print("")
+
+
+__all__ = ["update_database"]

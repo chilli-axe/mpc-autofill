@@ -53,8 +53,7 @@ export function processQuery(query: string): string {
     query
       .toLowerCase()
       .trim()
-      // eslint-disable-next-line
-      .replace(/[~`!@#$%^&*(){}\[\];:"'<,.>?/\\|_+=]/g, "")
+      .replace(/[~`!@#$%^&*(){}\[\];:"'’<,.>?/\\|_+=]/g, "")
   );
 }
 
@@ -88,7 +87,7 @@ function unpackLine(
    * Unpack `line` into its constituents.
    *
    * Inputs to this function are unpacked according to the below schema. For example, consider `4x opt@1234 | char@xyz`:
-   *      4x                opt        @        1234         |      char       @        xyz
+   *       4x               opt        @        1234         |      char       @        xyz
    * └─ quantity ──┘ └─ front query ──┘ └─ front image ID ──┘ └─ back query ──┘ └─ back image ID ──┘
    *
    * If quantity is not specified, we assume a quantity of 1.
@@ -100,7 +99,7 @@ function unpackLine(
 
   const trimmedLine = line.replace(/\s+/g, " ").trim();
   const re = new RegExp(
-    `^(?:([0-9]*)?[xX]?\\s?(.*?)(?:${SelectedImageSeparator}([A-z0-9_\\-]*))?)?(?:(?:\\s*)${
+    `^(?:([0-9]+[xX]?\\s)?(.*?)(?:${SelectedImageSeparator}([A-z0-9_\\-]*))?)?(?:(?:\\s*)${
       "\\" + FaceSeparator
     }(?:\\s*)(.+?)(?:${SelectedImageSeparator}([A-z0-9_\\-]*))?)?$`,
     "gm"
@@ -110,7 +109,7 @@ function unpackLine(
     return [0, null, null];
   }
   return [
-    parseInt(results[1] ?? "1"),
+    parseInt((results[1] ?? "1").toLowerCase().replace("x", "").trim()),
     [results[2], results[3]],
     [results[4], results[5]],
   ];

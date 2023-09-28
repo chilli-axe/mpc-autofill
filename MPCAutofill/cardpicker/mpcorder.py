@@ -12,9 +12,10 @@ from xml.etree.ElementTree import Element
 import chardet
 import defusedxml.ElementTree as ET
 
+from cardpicker.integrations.integrations import get_configured_game_integration
+from cardpicker.integrations.mtg import MTG
 from cardpicker.models import DFCPair
-from cardpicker.utils import process_line, text_to_list, to_searchable
-from cardpicker.utils.link_imports import ImportSites
+from cardpicker.search.sanitisation import process_line, text_to_list, to_searchable
 
 
 class ParsingErrors:
@@ -249,7 +250,7 @@ class MPCOrder(abc.MutableMapping[str, Any]):
     def from_text(self, input_lines: str, offset: int = 0) -> int:
         # TODO: update naming for clarity, add docstring, etc.
         # populates MPCOrder from supplied text input
-        transforms = dict((x.front_searchable, x.back_searchable) for x in DFCPair.objects.all())
+        transforms = dict((to_searchable(x.front), to_searchable(x.back)) for x in DFCPair.objects.all())
         curr_slot = offset
 
         # loop over lines in the input text, and for each, parse it into usable information
@@ -304,7 +305,7 @@ class MPCOrder(abc.MutableMapping[str, Any]):
     def from_csv(self, csv_bytes: bytes) -> int:
         # TODO: as above, these return integer length of the cards added to the order (I think)
         # populates MPCOrder from supplied CSV bytes
-        transforms = dict((x.front_searchable, x.back_searchable) for x in DFCPair.objects.all())
+        transforms = dict((to_searchable(x.front), to_searchable(x.back)) for x in DFCPair.objects.all())
         # TODO: I'm sure this can be cleaned up a lot, the logic here is confusing and unintuitive
         curr_slot = 0
 
@@ -462,7 +463,8 @@ class MPCOrder(abc.MutableMapping[str, Any]):
         return qty
 
     def from_link(self, url: str, offset: int = 0) -> int:
-        for site in ImportSites:
+        game_integration = get_configured_game_integration() or MTG  # this default is just for the old frontend
+        for site in game_integration.get_import_sites():
             if url.startswith(site.get_base_url()):
                 return self.from_text(site.retrieve_card_list(url), offset)
         raise ParsingErrors.SiteNotSupportedException(url)

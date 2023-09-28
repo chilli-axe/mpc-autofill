@@ -260,10 +260,7 @@ export function CardSlot({ searchQuery, face, slot }: CardSlotProps) {
   );
 
   return (
-    <div
-      style={{ contentVisibility: "auto" }}
-      data-testid={`${face}-slot${slot}`}
-    >
+    <div data-testid={`${face}-slot${slot}`}>
       <MemoizedEditorCard
         imageIdentifier={selectedImage}
         previousImageIdentifier={previousImage}

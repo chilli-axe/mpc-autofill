@@ -203,7 +203,7 @@ export async function getErrorToast(): Promise<HTMLElement> {
   return errorToast;
 }
 
-function getAddCardsMenu() {
+export function getAddCardsMenu() {
   return within(screen.getByTestId("right-panel")).getByText("Add Cards", {
     exact: false,
   });

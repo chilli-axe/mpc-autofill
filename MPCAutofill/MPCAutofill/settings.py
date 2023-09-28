@@ -14,6 +14,8 @@ import os
 
 import django_stubs_ext
 import environ
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
 
 django_stubs_ext.monkeypatch()  # https://stackoverflow.com/q/67965529
 
@@ -43,6 +45,7 @@ TARGET_EMAIL = env("TARGET_EMAIL", default="your_email@somewhere.com")
 DISCORD = env("DISCORD", default="http://mprox.link/discord")
 REDDIT = env("REDDIT", default="https://www.reddit.com/r/mpcproxies/")
 THEME = env("THEME", default="superhero")
+DESCRIPTION = env("DESCRIPTION", default="")
 
 PREPEND_WWW = env("PREPEND_WWW", default=False)
 
@@ -65,6 +68,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django.contrib.postgres",
     "django_elasticsearch_dsl",
     "crispy_forms",
     "django_user_agents",
@@ -118,11 +122,11 @@ WSGI_APPLICATION = "MPCAutofill.wsgi.application"
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 DATABASES = {
     "default": {
-        "ENGINE": env("DATABASE_ENGINE", default="django.db.backends.sqlite3"),
-        "NAME": env("DATABASE_NAME", default=os.path.join(BASE_DIR, "card_db.db")),
+        "ENGINE": env("DATABASE_ENGINE", default="django.db.backends.postgresql"),
+        "NAME": env("DATABASE_NAME", default="mpcautofill"),
         "USER": env("DATABASE_USER", default="mpcautofill"),
         "PASSWORD": env("DATABASE_PASSWORD", default="mpcautofill"),
-        "HOST": env("DATABASE_HOST", default="postgres"),
+        "HOST": env("DATABASE_HOST", default="localhost"),
         "PORT": env("DATABASE_PORT", default=5432),
     }
 }
@@ -196,9 +200,29 @@ DEFAULT_FROM_EMAIL = "default from email"
 DEFAULT_CARDBACK_FOLDER_PATH = env("DEFAULT_CARDBACK_FOLDER_PATH", default="Chilli_Axe's MTG Renders / 12. Cardbacks")
 DEFAULT_CARDBACK_IMAGE_NAME = env("DEFAULT_CARDBACK_IMAGE_NAME", default="Black Lotus")
 
+# Game integration - see integrations.py for valid options
+GAME = env("GAME", default="")
+
 # PATREON
 PATREON_ACCESS = env("PATREON_ACCESS", default="")
 PATREON_REFRESH = env("PATREON_REFRESH", default="")
 PATREON_CLIENT = env("PATREON_CLIENT", default="")
 PATREON_SECRET = env("PATREON_SECRET", default="")
 PATREON_URL = env("PATREON_URL", default="")
+
+# Sentry
+sentry_sdk.init(
+    dsn="https://4d29db1957fb9b3153aaba66e776b01f@o4505848489246720.ingest.sentry.io/4505848491540480",
+    integrations=[DjangoIntegration()],
+    # If you wish to associate users to errors (assuming you are using
+    # django.contrib.auth) you may enable sending PII data.
+    send_default_pii=True,
+    # Set traces_sample_rate to 1.0 to capture 100%
+    # of transactions for performance monitoring.
+    # We recommend adjusting this value in production.
+    traces_sample_rate=1.0,
+    # Set profiles_sample_rate to 1.0 to profile 100%
+    # of sampled transactions.
+    # We recommend adjusting this value in production.
+    profiles_sample_rate=1.0,
+)

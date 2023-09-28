@@ -5,6 +5,7 @@ from datetime import datetime
 from typing import Any, Optional
 
 from django.contrib.auth.models import User
+from django.contrib.postgres.fields import ArrayField
 from django.db import connection, models, transaction
 from django.utils import dateformat, timezone
 from django.utils.translation import gettext_lazy
@@ -197,10 +198,13 @@ class Card(models.Model):
     extension = models.CharField(max_length=200)
     date = models.DateTimeField(default=datetime.now)
     size = models.IntegerField()
+    tags = ArrayField(models.CharField(max_length=20), default=list, blank=True)  # null=True is just for admin panel
+    language = models.CharField(max_length=5)
 
     def __str__(self) -> str:
         return (
             f"[{self.source.name}] "
+            f"<{self.language}> "
             f"{self.name} "
             f"[Type: {self.card_type}, "
             f"Identifier: {self.identifier}, "
@@ -229,6 +233,8 @@ class Card(models.Model):
             "download_link": self.get_download_link(),
             "small_thumbnail_url": self.get_small_thumbnail_url(),
             "medium_thumbnail_url": self.get_medium_thumbnail_url(),
+            "tags": sorted(self.tags),
+            "language": self.language,
         }
 
     def get_source_key(self) -> str:
@@ -262,11 +268,32 @@ class Card(models.Model):
         ordering = ["-priority"]
 
 
+class Tag(models.Model):
+    name = models.CharField(unique=True)
+    # null=True is just for admin panel
+    aliases = ArrayField(models.CharField(max_length=200), default=list, blank=True)
+    parent = models.ForeignKey(to="Tag", null=True, blank=True, on_delete=models.SET_NULL)
+
+    def __str__(self) -> str:
+        return self.name
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "name": self.name,
+            "aliases": self.aliases,
+            "parent": (self.parent.name if self.parent else None),
+            # recursively serialise each child tag
+            "children": [x.to_dict() for x in self.tag_set.order_by("name").all()] if self.pk is not None else [],
+        }
+
+    @classmethod
+    def get_tags(cls) -> dict[str, list[str]]:
+        return {tag.name: tag.aliases for tag in Tag.objects.all()}
+
+
 class DFCPair(models.Model):
     front = models.CharField(max_length=200, unique=True)
-    front_searchable = models.CharField(max_length=200, unique=True)
-    back = models.CharField(max_length=200, unique=True)
-    back_searchable = models.CharField(max_length=200, unique=True)
+    back = models.CharField(max_length=200)
 
     def __str__(self) -> str:
         return "{} // {}".format(self.front, self.back)
@@ -324,25 +351,13 @@ class Project(models.Model):
                     if (card_identifier := record.get("card_identifier"), None) is not None:
                         card_identifiers.add(card_identifier)
 
-        card_identifiers_to_pk: dict[str, Card] = {
-            x.identifier: x for x in Card.objects.filter(identifier__in=card_identifiers)
-        }
-
-        members: list[ProjectMember] = []
-        for face in Faces:
-            if (face_members := records.get(face, None)) is not None:
-                for query, values in face_members.items():
-                    for value in values:
-                        card_identifier = value.get("card_identifier", None)
-                        members.append(
-                            ProjectMember(
-                                card=card_identifiers_to_pk[card_identifier] if card_identifier is not None else None,
-                                slot=value["slot"],
-                                query=query,
-                                face=face,
-                            )
-                        )
-
+        members: list[ProjectMember] = [
+            ProjectMember(card_id=value.get("card_identifier", None), slot=value["slot"], query=query, face=face)
+            for face in Faces
+            if (face_members := records.get(face, None)) is not None
+            for query, values in face_members.items()
+            for value in values
+        ]
         with transaction.atomic():
             ProjectMember.objects.filter(project=self).delete()
             ProjectMember.objects.bulk_create(members)
@@ -363,19 +378,31 @@ class Project(models.Model):
 
 
 class ProjectMember(models.Model):
-    card = models.ForeignKey(to=Card, on_delete=models.SET_NULL, null=True, blank=True)
+    card_id = models.CharField(max_length=200, null=True, blank=True)
     project = models.ForeignKey(to=Project, on_delete=models.CASCADE)
     query = models.CharField(max_length=200)
     slot = models.IntegerField()
     face = models.CharField(max_length=5, choices=Faces.choices, default=Faces.FRONT)
 
     class Meta:
-        constraints = [models.UniqueConstraint(fields=["card", "project", "slot", "face"], name="projectmember_unique")]
+        constraints = [
+            models.UniqueConstraint(fields=["card_id", "project", "slot", "face"], name="projectmember_unique")
+        ]
 
     def to_dict(self) -> dict[str, Any]:
-        return {
-            "card_identifier": self.card.identifier if self.card else None,
-            "query": self.query,
-            "slot": self.slot,
-            "face": self.face,
-        }
+        return {"card_identifier": self.card_id, "query": self.query, "slot": self.slot, "face": self.face}
+
+
+__all__ = [
+    "Faces",
+    "CardTypes",
+    "Cardstocks",
+    "Source",
+    "summarise_contributions",
+    "Card",
+    "Tag",
+    "DFCPair",
+    "get_default_cardback",
+    "Project",
+    "ProjectMember",
+]

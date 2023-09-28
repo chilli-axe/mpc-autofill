@@ -6,6 +6,7 @@
 
 import { saveAs } from "file-saver";
 import React, { memo, useRef, useState } from "react";
+import Badge from "react-bootstrap/Badge";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import OverlayTrigger from "react-bootstrap/OverlayTrigger";
@@ -14,7 +15,7 @@ import Table from "react-bootstrap/Table";
 import Tooltip from "react-bootstrap/Tooltip";
 import styled from "styled-components";
 
-import { api } from "@/app/api";
+import { api, useGetLanguagesQuery } from "@/app/api";
 import { base64StringToBlob } from "@/common/processing";
 import { CardDocument } from "@/common/types";
 import { imageSizeToMBString } from "@/common/utils";
@@ -51,6 +52,11 @@ export function CardDetailedViewModal({
 }: CardDetailedViewProps) {
   const [triggerFn, getGoogleDriveImageQuery] =
     api.endpoints.getGoogleDriveImage.useLazyQuery();
+
+  const getLanguagesQuery = useGetLanguagesQuery();
+  const languageNameByCode = Object.fromEntries(
+    (getLanguagesQuery.data ?? []).map((row) => [row.code, row.name])
+  );
 
   const [copied, setCopied] = useState<boolean>(false);
   const copyIdentifier = () => {
@@ -151,6 +157,26 @@ export function CardDetailedViewModal({
                           {cardDocument.identifier}
                         </ClickToCopyIdentifier>
                       </OverlayTrigger>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <b>Language</b>
+                    </td>
+                    <td>{languageNameByCode[cardDocument.language]}</td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <b>Tags</b>
+                    </td>
+                    <td>
+                      {cardDocument.tags.length > 0
+                        ? cardDocument.tags.map((tag) => (
+                            <Badge key={tag} pill>
+                              {tag}
+                            </Badge>
+                          ))
+                        : "Untagged"}
                     </td>
                   </tr>
                   <tr>

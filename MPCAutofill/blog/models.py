@@ -83,7 +83,6 @@ class ShowcaseBlogPost(BlogPost):
     It's also probably possible to set up the database crawler to account for this
     """
 
-    cards = models.ManyToManyField("cardpicker.Card", blank=True)
     card_ids = models.CharField(max_length=800, blank=True)
 
     def get_content(self) -> dict[str, Any]:

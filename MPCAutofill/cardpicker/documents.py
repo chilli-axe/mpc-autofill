@@ -12,8 +12,8 @@ from cardpicker.models import Card
 # custom elasticsearch analysers are configured here to add the `asciifolding` filter, which handles accents:
 # https://www.elastic.co/guide/en/elasticsearch/reference/7.17/analysis-asciifolding-tokenfilter.html
 # https://www.elastic.co/guide/en/elasticsearch/reference/current/analysis-standard-analyzer.html
-precise_analyser = analyzer("precise_analyser", tokenizer="keyword", filter=["lowercase", "asciifolding"])
-fuzzy_analyser = analyzer("fuzzy_analyser", tokenizer="standard", filter=["lowercase", "asciifolding"])
+precise_analyser = analyzer("precise_analyser", tokenizer="keyword", filter=["apostrophe", "lowercase", "asciifolding"])
+fuzzy_analyser = analyzer("fuzzy_analyser", tokenizer="standard", filter=["apostrophe", "lowercase", "asciifolding"])
 
 # region new API
 
@@ -27,6 +27,8 @@ fuzzy_analyser = analyzer("fuzzy_analyser", tokenizer="standard", filter=["lower
 #     searchq = fields.TextField(analyzer=fuzzy_analyser)
 #     searchq_keyword = fields.TextField(analyzer=precise_analyser)
 #     card_type = fields.KeywordField()
+#     language = fields.TextField(analyzer=precise_analyser)  # case insensitivity is one less thing which can go wrong
+#     tags = fields.KeywordField()  # all elasticsearch fields support arrays by default
 #
 #     class Index:
 #         # name of the elasticsearch index
@@ -55,6 +57,8 @@ class CardSearch(Document):
     searchq = fields.TextField(analyzer=fuzzy_analyser)
     searchq_keyword = fields.TextField(analyzer=precise_analyser)
     card_type = fields.KeywordField()
+    language = fields.TextField(analyzer=precise_analyser)  # case insensitivity is one less thing which can go wrong
+    tags = fields.KeywordField()  # all elasticsearch fields support arrays by default
 
     class Index:
         # name of the elasticsearch index

@@ -44,7 +44,14 @@ test("cookies with complete source order are respected", () => {
         [2, false],
       ],
     },
-    filterSettings: { minimumDPI: 100, maximumDPI: 200, maximumSize: 15 },
+    filterSettings: {
+      minimumDPI: 100,
+      maximumDPI: 200,
+      maximumSize: 15,
+      languages: [],
+      includesTags: [],
+      excludesTags: ["NSFW"],
+    },
   };
   window.localStorage.setItem(
     SearchSettingsKey,
@@ -73,6 +80,9 @@ test("referenced sources that don't exist in database are filtered out", () => {
       minimumDPI: MinimumDPI,
       maximumDPI: MaximumDPI,
       maximumSize: MaximumSize,
+      languages: [],
+      includesTags: [],
+      excludesTags: ["NSFW"],
     },
   };
   window.localStorage.setItem(
@@ -103,6 +113,9 @@ test("cookies with incomplete source order are correctly reconciled", () => {
       minimumDPI: MinimumDPI,
       maximumDPI: MaximumDPI,
       maximumSize: MaximumSize,
+      languages: [],
+      includesTags: [],
+      excludesTags: ["NSFW"],
     },
   };
   window.localStorage.setItem(
@@ -136,6 +149,9 @@ test("cookies with incomplete source order plus invalid sources are correctly re
       minimumDPI: MinimumDPI,
       maximumDPI: MaximumDPI,
       maximumSize: MaximumSize,
+      languages: [],
+      includesTags: [],
+      excludesTags: ["NSFW"],
     },
   };
   window.localStorage.setItem(

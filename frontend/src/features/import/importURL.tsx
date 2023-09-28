@@ -5,7 +5,7 @@
  * to process the URL when the user hits Submit.
  */
 
-import React, { useCallback, useState } from "react";
+import React, { FormEvent, useCallback, useState } from "react";
 import Button from "react-bootstrap/Button";
 import Dropdown from "react-bootstrap/Dropdown";
 import Form from "react-bootstrap/Form";
@@ -43,50 +43,57 @@ export function ImportURL() {
   const [triggerFn, queryImportSiteQuery] =
     api.endpoints.queryImportSite.useLazyQuery();
 
-  const handleSubmitURLModal = useCallback(async () => {
-    const trimmedURL = URLModalValue.trim();
-    if (trimmedURL.length > 0) {
-      setLoading(true);
-      try {
-        const query = await triggerFn(URLModalValue);
-        const processedLines = processStringAsMultipleLines(
-          query.data ?? "",
-          dfcPairsQuery.data ?? {},
-          fuzzySearch
-        );
-        dispatch(
-          addMembers({
-            members: convertLinesIntoSlotProjectMembers(
-              processedLines,
-              projectSize
-            ),
-          })
-        );
-        handleCloseURLModal();
-      } catch (error: any) {
-        dispatch(
-          setError([
-            "url-import-error",
-            {
-              name: "URL Import Error",
-              message: `An unexpected error occurred while processing your decklist: ${error.message}`,
-            },
-          ])
-        );
-      } finally {
-        setLoading(false);
+  const handleSubmitURLModal = useCallback(
+    async (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault(); // to avoid reloading the page
+      const trimmedURL = URLModalValue.trim();
+      if (trimmedURL.length > 0) {
+        setLoading(true);
+        try {
+          const query = await triggerFn(URLModalValue);
+          const processedLines = processStringAsMultipleLines(
+            query.data ?? "",
+            dfcPairsQuery.data ?? {},
+            fuzzySearch
+          );
+          dispatch(
+            addMembers({
+              members: convertLinesIntoSlotProjectMembers(
+                processedLines,
+                projectSize
+              ),
+            })
+          );
+          handleCloseURLModal();
+        } catch (error: any) {
+          dispatch(
+            setError([
+              "url-import-error",
+              {
+                name: "URL Import Error",
+                message: `An unexpected error occurred while processing your decklist: ${error.message}`,
+              },
+            ])
+          );
+        } finally {
+          setLoading(false);
+        }
       }
-    }
-  }, [
-    dispatch,
-    URLModalValue,
-    dfcPairsQuery.data,
-    projectSize,
-    triggerFn,
-    fuzzySearch,
-  ]);
+    },
+    [
+      dispatch,
+      URLModalValue,
+      dfcPairsQuery.data,
+      projectSize,
+      triggerFn,
+      fuzzySearch,
+    ]
+  );
 
-  return (
+  return importSitesQuery.isFetching ||
+    (importSitesQuery.data ?? []).length === 0 ? (
+    <></>
+  ) : (
     <>
       <Dropdown.Item onClick={handleShowURLModal}>
         <RightPaddedIcon bootstrapIconName="link-45deg" /> URL
@@ -124,27 +131,30 @@ export function ImportURL() {
               <br />
             </>
           )}
-          <Form.Group className="mb-3">
-            <Form.Control
-              type="url"
-              required={true}
-              placeholder="https://"
-              onChange={(event) => setURLModalValue(event.target.value.trim())}
-              value={URLModalValue}
-              disabled={loading || importSitesQuery.data == null}
-              aria-label="import-url"
-            />
-          </Form.Group>
+          <Form id="importURLForm" onSubmit={handleSubmitURLModal}>
+            <Form.Group className="mb-3">
+              <Form.Control
+                type="url"
+                required={true}
+                placeholder="https://"
+                onChange={(event) =>
+                  setURLModalValue(event.target.value.trim())
+                }
+                value={URLModalValue}
+                disabled={loading || importSitesQuery.data == null}
+                aria-label="import-url"
+              />
+            </Form.Group>
+          </Form>
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={handleCloseURLModal}>
             Close
           </Button>
           <Button
+            type="submit"
+            form="importURLForm"
             variant="primary"
-            onClick={async () => {
-              await handleSubmitURLModal();
-            }}
             disabled={loading || importSitesQuery.isFetching}
             style={{ width: 4.75 + "em" }}
           >

@@ -14,6 +14,7 @@ import React, {
   useRef,
   useState,
 } from "react";
+import Badge from "react-bootstrap/Badge";
 import BSCard from "react-bootstrap/Card";
 import styled from "styled-components";
 
@@ -245,7 +246,11 @@ export function Card({
     nameOnClick != null ? OutlinedBSCardSubtitle : BSCard.Subtitle;
 
   return (
-    <BSCard className="mpccard mpccard-hover" onClick={cardOnClick}>
+    <BSCard
+      className="mpccard mpccard-hover"
+      onClick={cardOnClick}
+      style={{ contentVisibility: "auto" }}
+    >
       <BSCard.Header className="pb-0 text-center">
         <p className="mpccard-slot">{cardHeaderTitle}</p>
         {cardHeaderButtons}

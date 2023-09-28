@@ -1,7 +1,11 @@
 from dataclasses import dataclass
 from enum import Enum
+from typing import Type
 
+from cardpicker.integrations.base import GameIntegration, ImportSite
+from cardpicker.models import DFCPair
 from cardpicker.sources.source_types import SourceTypeChoices
+from cardpicker.tests.factories import DFCPairFactory
 
 
 @dataclass
@@ -133,16 +137,21 @@ class Sources(Enum):
     )
 
 
-class Decks(str, Enum):
-    # all of these decks have 4x brainstorm, 3x past in flames, and 1x delver of secrets // insectile aberration
-    AETHER_HUB = "https://aetherhub.com/Deck/test-796905"
-    ARCHIDEKT = "https://archidekt.com/decks/3380653"
-    CUBE_COBRA = "https://cubecobra.com/cube/overview/2fj4"
-    DECK_STATS = "https://deckstats.net/decks/216625/2754468-test"
-    MAGIC_VILLE = "https://magic-ville.com/fr/decks/showdeck?ref=948045"
-    MANA_STACK = "https://manastack.com/deck/test-426"
-    MOXFIELD = "https://www.moxfield.com/decks/D42-or9pCk-uMi4XzRDziQ"
-    MTG_GOLDFISH = "https://www.mtggoldfish.com/deck/5149750"
-    SCRYFALL = "https://scryfall.com/@mpcautofill/decks/71bb2d40-c922-4a01-a63e-7ba2dde29a5c"
-    TAPPED_OUT = "https://tappedout.net/mtg-decks/09-10-22-DoY-test"
-    TCG_PLAYER = "https://decks.tcgplayer.com/magic/standard/mpc-autofill/test/1398367"
+class DummyImportSite(ImportSite):
+    @staticmethod
+    def get_base_url() -> str:
+        return "https://dummy-import-site.com"
+
+    @classmethod
+    def retrieve_card_list(cls, url: str) -> str:
+        return "4 some card\n3 another card"
+
+
+class DummyIntegration(GameIntegration):
+    @classmethod
+    def get_dfc_pairs(cls) -> list[DFCPair]:
+        return [DFCPairFactory(front="Ratman", back="Batman"), DFCPairFactory(front="Ratwoman", back="Batwoman")]
+
+    @classmethod
+    def get_import_sites(cls) -> list[Type[ImportSite]]:
+        return [DummyImportSite]

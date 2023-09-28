@@ -72,9 +72,37 @@
           "type": "number",
           "description": "The maximum filesize that cards can have to be included in search results",
           "minimum": 0
+        },
+        "languages": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "The language the cards have to be written in to be included in search results"
+        },
+        "includesTags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "The tags which the cards must have to be included in search results"
+        },
+        "excludesTags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "The tags which the cards must *not* have to be included in search results"
         }
       },
-      "required": ["minimumDPI", "maximumDPI", "maximumSize"],
+      "required": [
+        "minimumDPI",
+        "maximumDPI",
+        "maximumSize",
+        "languages",
+        "includesTags",
+        "excludesTags"
+      ],
       "additionalProperties": false
     }
   },
