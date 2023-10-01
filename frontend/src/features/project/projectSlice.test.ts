@@ -173,3 +173,86 @@ test("selectQueriesWithoutSearchResults two queries but one has search results",
     selectQueriesWithoutSearchResults(setupStore(state).getState())
   ).toStrictEqual([{ query: "query 2", card_type: "CARD" }]);
 });
+
+test("selectQueriesWithoutSearchResults duplicated query", () => {
+  const state = {
+    project: {
+      members: [
+        {
+          front: {
+            query: {
+              query: "query 1",
+              card_type: "CARD" as CardType,
+            },
+            selectedImage: undefined,
+            selected: false,
+          },
+          back: null,
+        },
+        {
+          front: {
+            query: {
+              query: "query 1",
+              card_type: "CARD" as CardType,
+            },
+            selectedImage: undefined,
+            selected: false,
+          },
+          back: null,
+        },
+      ],
+      cardback: null,
+    },
+    searchResults: {
+      searchResults: {},
+      status: "idle" as ThunkStatus,
+      error: null,
+    },
+  };
+  expect(
+    selectQueriesWithoutSearchResults(setupStore(state).getState())
+  ).toStrictEqual([{ query: "query 1", card_type: "CARD" }]);
+});
+
+test("selectQueriesWithoutSearchResults duplicated query but across multiple types", () => {
+  const state = {
+    project: {
+      members: [
+        {
+          front: {
+            query: {
+              query: "query 1",
+              card_type: "CARD" as CardType,
+            },
+            selectedImage: undefined,
+            selected: false,
+          },
+          back: null,
+        },
+        {
+          front: {
+            query: {
+              query: "query 1",
+              card_type: "TOKEN" as CardType,
+            },
+            selectedImage: undefined,
+            selected: false,
+          },
+          back: null,
+        },
+      ],
+      cardback: null,
+    },
+    searchResults: {
+      searchResults: {},
+      status: "idle" as ThunkStatus,
+      error: null,
+    },
+  };
+  expect(
+    selectQueriesWithoutSearchResults(setupStore(state).getState())
+  ).toStrictEqual([
+    { query: "query 1", card_type: "CARD" },
+    { query: "query 1", card_type: "TOKEN" },
+  ]);
+});
