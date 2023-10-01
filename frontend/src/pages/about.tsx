@@ -63,7 +63,7 @@ export default function About() {
           href="https://github.com/chilli-axe/mpc-autofill/graphs/contributors"
           target="_blank"
         >
-          <img src="https://contrib.rocks/image?repo=chilli-axe/mpc-autofill&columns=5" />
+          <img src="https://contrib.rocks/image?repo=chilli-axe/mpc-autofill&columns=8" />
         </a>
       </CentreAligned>
       <BackendDescription />
