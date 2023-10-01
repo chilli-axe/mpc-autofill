@@ -36,6 +36,7 @@
     "react-dropdown-tree-select": "^2.8.0",
     "react-dropzone": "^14.2.3",
     "react-redux": "^8.1.1",
+    "react-render-if-visible": "^2.1.1",
     "styled-components": "^5.3.9",
     "threads": "^1.7.0",
     "typescript": "^4.9.4",

@@ -13,6 +13,7 @@ import Row from "react-bootstrap/Row";
 import Stack from "react-bootstrap/Stack";
 // @ts-ignore: https://github.com/arnthor3/react-bootstrap-toggle/issues/21
 import Toggle from "react-bootstrap-toggle";
+import RenderIfVisible from "react-render-if-visible";
 
 import { ToggleButtonHeight } from "@/common/constants";
 import { CardDocument, useAppDispatch, useAppSelector } from "@/common/types";
@@ -69,13 +70,18 @@ function CardsGroupedTogether({
         ([key, value], sourceIndex) => (
           <>
             {value.flatMap(([identifier, index]) => (
-              <MemoizedEditorCard // TODO: paginate or lazy-load these
-                imageIdentifier={identifier}
-                cardHeaderTitle={`Option ${index + 1}`}
-                cardOnClick={() => selectImage(identifier)}
-                key={`gridSelector-${identifier}`}
-                noResultsFound={false}
-              />
+              <RenderIfVisible
+                key={`gridSelector-${identifier}-wrapper`}
+                initialVisible={index < 20}
+              >
+                <MemoizedEditorCard
+                  imageIdentifier={identifier}
+                  cardHeaderTitle={`Option ${index + 1}`}
+                  cardOnClick={() => selectImage(identifier)}
+                  key={`gridSelector-${identifier}`}
+                  noResultsFound={false}
+                />
+              </RenderIfVisible>
             ))}
           </>
         )
@@ -156,13 +162,18 @@ function CardsFacetedBySource({
               >
                 {cardIdentifiersAndOptionNumbers.map(
                   ([identifier, optionNumber]) => (
-                    <MemoizedEditorCard
-                      imageIdentifier={identifier}
-                      cardHeaderTitle={`Option ${optionNumber + 1}`}
-                      cardOnClick={() => selectImage(identifier)}
-                      key={`gridSelector-${identifier}`}
-                      noResultsFound={false}
-                    />
+                    <RenderIfVisible
+                      key={`gridSelector-${identifier}-wrapper`}
+                      initialVisible={optionNumber < 20}
+                    >
+                      <MemoizedEditorCard
+                        imageIdentifier={identifier}
+                        cardHeaderTitle={`Option ${optionNumber + 1}`}
+                        cardOnClick={() => selectImage(identifier)}
+                        key={`gridSelector-${identifier}`}
+                        noResultsFound={false}
+                      />
+                    </RenderIfVisible>
                   )
                 )}
               </Row>
