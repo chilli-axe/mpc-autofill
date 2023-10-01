@@ -371,17 +371,26 @@ export const selectProjectFileSize = createSelector(
 export const selectQueriesWithoutSearchResults = createSelector(
   (state: RootState) => state.project.members,
   (state: RootState) => state.searchResults.searchResults,
-  (projectMembers, searchResults) =>
-    projectMembers.flatMap((slotProjectMembers) =>
+  (projectMembers, searchResults) => {
+    const set = new Set<string>();
+    return projectMembers.flatMap((slotProjectMembers) =>
       [Front, Back].flatMap((face) => {
         const searchQuery = slotProjectMembers[face]?.query;
-        return searchQuery?.query != null &&
+        const stringifiedSearchQuery = JSON.stringify(searchQuery ?? "");
+        if (
+          searchQuery?.query != null &&
           (searchResults[searchQuery.query] ?? {})[searchQuery.card_type] ==
-            null
-          ? [searchQuery]
-          : [];
+            null &&
+          !set.has(stringifiedSearchQuery)
+        ) {
+          set.add(stringifiedSearchQuery);
+          return [searchQuery];
+        } else {
+          return [];
+        }
       })
-    )
+    );
+  }
 );
 
 export const selectAllSelectedProjectMembersHaveTheSameQuery = createSelector(
