@@ -284,6 +284,8 @@
         ]),
       }),
     }),
+    'CARDBACK': dict({
+    }),
     'TOKEN': dict({
       'Goblin': dict({
         'card_type': 'TOKEN',
