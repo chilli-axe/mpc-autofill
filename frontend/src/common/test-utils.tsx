@@ -9,7 +9,7 @@ import { within } from "@testing-library/dom";
 import type { RenderOptions } from "@testing-library/react";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import FileSaver from "file-saver";
-import { MemoryRouterProvider } from "next-router-mock/MemoryRouterProvider/next-13";
+import { MemoryRouterProvider } from "next-router-mock/MemoryRouterProvider";
 import React, { PropsWithChildren } from "react";
 import { Provider } from "react-redux";
 
