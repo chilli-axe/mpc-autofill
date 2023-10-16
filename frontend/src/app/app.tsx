@@ -19,7 +19,10 @@ import { CommonCardback } from "@/features/card/commonCardback";
 import { Export } from "@/features/export/export";
 import { FinishSettings } from "@/features/finishSettings/finishSettings";
 import { Import } from "@/features/import/import";
-import { selectProjectCardback } from "@/features/project/projectSlice";
+import {
+  selectIsProjectEmpty,
+  selectProjectCardback,
+} from "@/features/project/projectSlice";
 import { ProjectStatus } from "@/features/project/projectStatus";
 import { fetchSourceDocumentsAndReportError } from "@/features/search/sourceDocumentsSlice";
 import { SearchSettings } from "@/features/searchSettings/searchSettings";
@@ -47,6 +50,21 @@ function App() {
       fetchSourceDocumentsAndReportError(dispatch);
     }
   }, [dispatch, backendURL]);
+
+  // ask the user for confirmation before they close the page if their project has any cards in it
+  const isProjectEmpty = useAppSelector(selectIsProjectEmpty);
+  useEffect(() => {
+    const handler = (event: BeforeUnloadEvent) => {
+      if (!isProjectEmpty) {
+        event.preventDefault();
+        return false;
+      }
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => {
+      window.removeEventListener("beforeunload", handler);
+    };
+  }, [isProjectEmpty]);
 
   return (
     <>
