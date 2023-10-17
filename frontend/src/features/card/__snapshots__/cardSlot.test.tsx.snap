@@ -395,7 +395,7 @@ exports[`the html structure of a CardSlot with multiple search results, image se
           style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent;"
         />
         <img
-          alt="Card 2 small"
+          alt="Card 2"
           class="c2 card-img"
           data-nimg="fill"
           decoding="async"
@@ -404,7 +404,7 @@ exports[`the html structure of a CardSlot with multiple search results, image se
           style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent;"
         />
         <img
-          alt="Card 3 small"
+          alt="Card 3"
           class="c2 card-img"
           data-nimg="fill"
           decoding="async"

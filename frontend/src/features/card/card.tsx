@@ -5,6 +5,7 @@
  * If being used in a gallery, the previous and next images can be cached for visual smoothness.
  */
 
+import { OnLoadingComplete } from "next/dist/shared/lib/get-img-props";
 import Image from "next/image";
 import React, {
   memo,
@@ -14,7 +15,6 @@ import React, {
   useRef,
   useState,
 } from "react";
-import Badge from "react-bootstrap/Badge";
 import BSCard from "react-bootstrap/Card";
 import styled from "styled-components";
 
@@ -33,8 +33,9 @@ const HiddenImage = styled(Image)`
 const VisibleImage = styled(Image)<{
   imageIsLoading?: boolean;
   showDetailedViewOnClick?: boolean;
+  zIndex?: number;
 }>`
-  z-index: 1;
+  z-index: ${(props) => props.zIndex ?? 1};
   &:hover {
     cursor: ${(props) => (props.showDetailedViewOnClick ? "pointer" : "auto")};
   }
@@ -63,16 +64,39 @@ function CardImage({
   small,
   showDetailedViewOnClick,
 }: CardImageProps) {
-  const [imageLoading, setImageLoading] = useState<boolean>(true);
+  const dispatch = useAppDispatch();
+
+  const [imageState, setImageState] = useState<
+    "loading" | "loaded" | "errored"
+  >("loading");
+  const image = useRef<HTMLImageElement>(null);
+
+  const onLoadingComplete: OnLoadingComplete = (img) => {
+    setImageState("loaded");
+  };
+  const onError: React.ReactEventHandler<HTMLImageElement> = (img) => {
+    setImageState("errored");
+  };
+
+  const imageSrc: string | undefined =
+    imageState !== "errored"
+      ? small
+        ? maybeCardDocument?.small_thumbnail_url
+        : maybeCardDocument?.medium_thumbnail_url
+      : small
+      ? "/error_404.png"
+      : "/error_404_med.png";
+  const imageAlt = maybeCardDocument?.name ?? "Unnamed Card";
+
   // ensure that the small thumbnail fades in each time the selected image changes
-  useEffect(() => setImageLoading(true), [maybeCardDocument?.identifier]);
   useEffect(() => {
-    if (image.current != null && image.current.complete) {
-      setImageLoading(false);
-    }
+    // next.js seems to not fire `onLoadingComplete` when opening a page with a cached image
+    // this implementation was retrieved from https://stackoverflow.com/a/59809184
+    setImageState(
+      image.current == null || !image.current.complete ? "loading" : "loaded"
+    );
   }, [maybeCardDocument?.identifier]);
 
-  const dispatch = useAppDispatch();
   const handleShowDetailedView = () => {
     if (showDetailedViewOnClick && maybeCardDocument != null) {
       dispatch(
@@ -81,52 +105,36 @@ function CardImage({
     }
   };
 
-  // next.js seems to not fire `onLoadingComplete` when opening a page with a cached image
-  // this implementation retrieved from https://stackoverflow.com/a/59809184
-  const image = useRef<HTMLImageElement>(null);
-
   return (
     <>
-      {hidden ? (
-        <HiddenImage
-          ref={image}
-          className="card-img"
-          loading="lazy"
-          src={
-            (small
-              ? maybeCardDocument?.small_thumbnail_url
-              : maybeCardDocument?.medium_thumbnail_url) ?? ""
-          }
-          onLoadingComplete={(img) => setImageLoading(false)}
-          // onError={{thumbnail_404(this)}} // TODO
-          alt={
-            maybeCardDocument?.name
-              ? maybeCardDocument?.name + (small ? " small" : " medium")
-              : ""
-          }
-          fill={true}
-        />
-      ) : (
-        <>
-          {imageLoading && <Spinner />}
+      {imageState === "loading" && <Spinner zIndex={2} />}
+      {imageSrc != null &&
+        (hidden ? (
+          <HiddenImage
+            ref={image}
+            className="card-img"
+            loading="lazy"
+            src={imageSrc}
+            onLoadingComplete={onLoadingComplete}
+            onErrorCapture={onError}
+            alt={imageAlt}
+            fill={true}
+          />
+        ) : (
           <VisibleImage
             ref={image}
             className="card-img card-img-fade-in"
             loading="lazy"
-            imageIsLoading={imageLoading}
+            imageIsLoading={imageState === "loading"}
             showDetailedViewOnClick={showDetailedViewOnClick}
-            src={
-              (small
-                ? maybeCardDocument?.small_thumbnail_url
-                : maybeCardDocument?.medium_thumbnail_url) ?? ""
-            }
-            onLoadingComplete={(img) => setImageLoading(false)}
+            src={imageSrc}
+            onLoadingComplete={onLoadingComplete}
+            onErrorCapture={onError}
             onClick={handleShowDetailedView}
-            alt={maybeCardDocument?.name ?? ""}
+            alt={imageAlt}
             fill={true}
           />
-        </>
-      )}
+        ))}
     </>
   );
 }

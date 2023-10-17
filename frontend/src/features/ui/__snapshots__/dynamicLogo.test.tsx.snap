@@ -233,6 +233,7 @@ exports[`the html structure of the dynamic logo, no backend configured 1`] = `
 .c6 {
   width: 4em;
   height: 4em;
+  z-index: 2;
 }
 
 .c7 {
