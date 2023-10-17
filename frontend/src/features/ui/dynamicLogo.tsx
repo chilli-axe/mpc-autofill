@@ -7,6 +7,7 @@ import styled, { css, keyframes, StyledComponent } from "styled-components";
 import { api, useGetSampleCardsQuery } from "@/app/api";
 import { QueryTags } from "@/common/constants";
 import { CardDocument, useAppDispatch } from "@/common/types";
+import { Spinner } from "@/components/spinner";
 import {
   useBackendConfigured,
   useProjectName,
@@ -15,7 +16,6 @@ import {
   MemoizedCardImage,
   MemoizedCardProportionWrapper,
 } from "@/features/card/card";
-import { Spinner } from "@/features/ui/spinner";
 import { lato } from "@/pages/_app";
 
 // note: i'm using transform3d rather than transform bc it apparently fixes animations on ios safari

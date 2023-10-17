@@ -9,12 +9,12 @@ import styled from "styled-components";
 
 import { Back, Front } from "@/common/constants";
 import { useAppSelector } from "@/common/types";
+import { Spinner } from "@/components/spinner";
 import { MemoizedCardSlot } from "@/features/card/cardSlot";
 import {
   selectIsProjectEmpty,
   selectProjectMembers,
 } from "@/features/project/projectSlice";
-import { Spinner } from "@/features/ui/spinner";
 import { selectFrontsVisible } from "@/features/viewSettings/viewSettingsSlice";
 
 const CardGridDefaultBackground = styled.div`

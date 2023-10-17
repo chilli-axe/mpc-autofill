@@ -21,6 +21,7 @@ import {
   useAppDispatch,
   useAppSelector,
 } from "@/common/types";
+import { RightPaddedIcon } from "@/components/icon";
 import { selectSourceDocuments } from "@/features/search/sourceDocumentsSlice";
 import { FilterSettings as FilterSettingsElement } from "@/features/searchSettings/filterSettings";
 import {
@@ -31,7 +32,6 @@ import {
 } from "@/features/searchSettings/searchSettingsSlice";
 import { SearchTypeSettings as SearchTypeSettingsElement } from "@/features/searchSettings/searchTypeSettings";
 import { SourceSettings as SourceSettingsElement } from "@/features/searchSettings/sourceSettings";
-import { RightPaddedIcon } from "@/features/ui/styledComponents";
 
 export function SearchSettings() {
   const dispatch = useAppDispatch();

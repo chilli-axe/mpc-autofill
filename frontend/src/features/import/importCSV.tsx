@@ -8,11 +8,10 @@
 
 // @ts-ignore // TODO: put a PR into this repo adding types
 import { parse } from "lil-csv";
-import React, { PropsWithChildren, ReactElement, useState } from "react";
+import React, { PropsWithChildren, useState } from "react";
 import Button from "react-bootstrap/Button";
 import Dropdown from "react-bootstrap/Dropdown";
 import Modal from "react-bootstrap/Modal";
-import Table from "react-bootstrap/Table";
 import styled from "styled-components";
 
 import { useGetDFCPairsQuery } from "@/app/api";
@@ -23,16 +22,11 @@ import {
   processLines,
 } from "@/common/processing";
 import { useAppDispatch, useAppSelector } from "@/common/types";
+import { RightPaddedIcon } from "@/components/icon";
+import { BorderedTable, TableWrapper } from "@/components/table";
 import { addMembers, selectProjectSize } from "@/features/project/projectSlice";
 import { selectFuzzySearch } from "@/features/searchSettings/searchSettingsSlice";
 import { setError } from "@/features/toasts/toastsSlice";
-import { RightPaddedIcon, TableWrapper } from "@/features/ui/styledComponents";
-
-const BorderedTable = styled(Table)`
-  border-style: solid;
-  border-color: #333333;
-  border-width: 1px;
-`;
 
 const FormattedColumnHeader = styled.th`
   width: 20%;

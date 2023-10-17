@@ -17,11 +17,11 @@ import {
   SlotProjectMembers,
   useAppSelector,
 } from "@/common/types";
+import { RightPaddedIcon } from "@/components/icon";
 import {
   selectIsProjectEmpty,
   selectProjectMembers,
 } from "@/features/project/projectSlice";
-import { RightPaddedIcon } from "@/features/ui/styledComponents";
 
 function extractProjectMemberNames(
   projectMembers: Array<SlotProjectMembers>,

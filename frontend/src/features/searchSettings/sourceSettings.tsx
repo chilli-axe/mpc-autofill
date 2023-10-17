@@ -23,8 +23,8 @@ import {
   SourceSettings as SourceSettingsType,
   useAppSelector,
 } from "@/common/types";
+import { Spinner } from "@/components/spinner";
 import { selectSourceDocuments } from "@/features/search/sourceDocumentsSlice";
-import { Spinner } from "@/features/ui/spinner";
 
 const Chevron = styled.i`
   font-size: 1em;
@@ -92,7 +92,7 @@ export function SourceSettings({
       );
       setSourceSettings({ sources: updatedSources });
     }
-  }, [sourceSettings.sources, setSourceSettings]);
+  }, [sourceSettings.sources, setSourceSettings, anySourcesEnabled]);
 
   let sourceTable = <Spinner />;
   if (maybeSourceDocuments != null) {

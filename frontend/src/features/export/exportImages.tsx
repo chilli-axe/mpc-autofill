@@ -11,11 +11,11 @@ import { FunctionThread, Pool, spawn, Worker } from "threads";
 import { ProjectName } from "@/common/constants";
 import { base64StringToBlob } from "@/common/processing";
 import { useAppDispatch, useAppSelector } from "@/common/types";
+import { RightPaddedIcon } from "@/components/icon";
+import { Spinner } from "@/components/spinner";
 import { selectIsProjectEmpty } from "@/features/project/projectSlice";
 import { useCardDocumentsByIdentifier } from "@/features/search/cardDocumentsSlice";
 import { setError } from "@/features/toasts/toastsSlice";
-import { Spinner } from "@/features/ui/spinner";
-import { RightPaddedIcon } from "@/features/ui/styledComponents";
 
 const StyledProgressBar = styled(ProgressBar)`
   --bs-progress-bg: #424e5c;

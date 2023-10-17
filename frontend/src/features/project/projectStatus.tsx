@@ -25,10 +25,6 @@ function MobileAlert() {
   );
 }
 
-const SizedIcon = styled.i`
-  font-size: 1.25rem;
-`;
-
 export function ProjectStatus() {
   const projectSize = useAppSelector(selectProjectSize);
   const projectFileSize = useAppSelector(selectProjectFileSize);

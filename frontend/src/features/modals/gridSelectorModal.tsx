@@ -17,10 +17,10 @@ import RenderIfVisible from "react-render-if-visible";
 
 import { ToggleButtonHeight } from "@/common/constants";
 import { CardDocument, useAppDispatch, useAppSelector } from "@/common/types";
+import { RightPaddedIcon } from "@/components/icon";
 import { MemoizedEditorCard } from "@/features/card/card";
 import { selectCardDocumentsByIdentifier } from "@/features/search/cardDocumentsSlice";
 import { selectSourceNamesByKey } from "@/features/search/sourceDocumentsSlice";
-import { RightPaddedIcon } from "@/features/ui/styledComponents";
 import {
   makeAllSourcesInvisible,
   makeAllSourcesVisible,

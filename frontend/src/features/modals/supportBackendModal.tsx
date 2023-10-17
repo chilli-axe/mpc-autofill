@@ -4,8 +4,8 @@ import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 
 import { useGetBackendInfoQuery } from "@/app/api";
-import { Spinner } from "@/features/ui/spinner";
-import { AutoLayoutTable, TableWrapper } from "@/features/ui/styledComponents";
+import { Spinner } from "@/components/spinner";
+import { AutoLayoutTable, TableWrapper } from "@/components/table";
 
 interface SupportBackendModalProps {
   show: boolean;

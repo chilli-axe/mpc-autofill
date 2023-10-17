@@ -10,9 +10,9 @@ import {
 } from "@/app/api";
 import { CardDocument } from "@/common/types";
 import { NewCardsFirstPage } from "@/common/types";
+import { Spinner } from "@/components/spinner";
 import { useProjectName } from "@/features/backend/backendSlice";
 import { MemoizedCard } from "@/features/card/card";
-import { Spinner } from "@/features/ui/spinner";
 
 const InlineHeader = styled.h3`
   display: inline;

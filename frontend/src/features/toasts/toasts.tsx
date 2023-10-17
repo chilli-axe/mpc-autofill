@@ -16,8 +16,8 @@ import {
   setGoogleAnalyticsConsent,
 } from "@/common/cookies";
 import { useAppDispatch, useAppSelector } from "@/common/types";
+import DisableSSR from "@/components/disableSSR";
 import { clearError, selectToastsErrors } from "@/features/toasts/toastsSlice";
-import DisableSSR from "@/features/ui/disableSSR";
 
 function GoogleAnalyticsConsentToast() {
   const consent = getGoogleAnalyticsConsent();
