@@ -19,13 +19,13 @@ import {
   useAppSelector,
 } from "@/common/types";
 import { bracket } from "@/common/utils";
+import { RightPaddedIcon } from "@/components/icon";
 import { selectFinishSettings } from "@/features/finishSettings/finishSettingsSlice";
 import {
   selectIsProjectEmpty,
   selectProjectMembers,
   selectProjectSize,
 } from "@/features/project/projectSlice";
-import { RightPaddedIcon } from "@/features/ui/styledComponents";
 
 interface SlotsByIdentifier {
   [identifier: string]: Set<number>;

@@ -669,10 +669,13 @@ def get_sample_cards(request: HttpRequest) -> HttpResponse:
     ]
 
     # retrieve the full ORM objects for the selected identifiers and group by type
-    cards = [card.to_dict() for card in Card.objects.filter(pk__in=selected_identifiers)]
-    cards_by_type = {group[0]: list(group[1]) for group in itertools.groupby(cards, key=lambda x: x["card_type"])}
+    cards = [card.to_dict() for card in Card.objects.filter(pk__in=selected_identifiers).order_by("card_type")]
+    cards_by_type = {
+        card_type: list(grouped_cards_iterable)
+        for card_type, grouped_cards_iterable in itertools.groupby(cards, key=lambda x: x["card_type"])
+    }
 
-    return JsonResponse({"cards": {CardTypes.CARD: [], CardTypes.TOKEN: []} | cards_by_type})
+    return JsonResponse({"cards": {CardTypes.CARD: [], CardTypes.CARDBACK: [], CardTypes.TOKEN: []} | cards_by_type})
 
 
 @csrf_exempt

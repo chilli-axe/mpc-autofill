@@ -5,6 +5,20 @@
     '4 Brainstorm': 1,
   })
 # ---
+# name: TestMTGIntegration.test_valid_url[https://archidekt.com/decks/3380653#test]
+  Counter({
+    '1 Delver of Secrets // Insectile Aberration': 1,
+    '3 Past in Flames': 1,
+    '4 Brainstorm': 1,
+  })
+# ---
+# name: TestMTGIntegration.test_valid_url[https://archidekt.com/decks/3380653/test]
+  Counter({
+    '1 Delver of Secrets // Insectile Aberration': 1,
+    '3 Past in Flames': 1,
+    '4 Brainstorm': 1,
+  })
+# ---
 # name: TestMTGIntegration.test_valid_url[https://archidekt.com/decks/3380653]
   Counter({
     '1 Delver of Secrets // Insectile Aberration': 1,

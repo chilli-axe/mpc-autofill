@@ -20,12 +20,12 @@ import {
 } from "@/common/cookies";
 import { standardiseURL } from "@/common/processing";
 import { useAppDispatch, useAppSelector } from "@/common/types";
+import { RightPaddedIcon } from "@/components/icon";
 import {
   clearURL,
   selectBackendURL,
   setURL,
 } from "@/features/backend/backendSlice";
-import { RightPaddedIcon } from "@/features/ui/styledComponents";
 require("bootstrap-icons/font/bootstrap-icons.css");
 
 interface BackendConfigProps {

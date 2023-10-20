@@ -28,9 +28,9 @@ import {
 } from "@/common/processing";
 import { CardDocument, useAppDispatch, useAppSelector } from "@/common/types";
 import { toTitleCase } from "@/common/utils";
+import { RightPaddedIcon } from "@/components/icon";
 import { addMembers, selectProjectSize } from "@/features/project/projectSlice";
 import { selectFuzzySearch } from "@/features/searchSettings/searchSettingsSlice";
-import { RightPaddedIcon } from "@/features/ui/styledComponents";
 
 export function ImportText() {
   const sampleCardsQuery = useGetSampleCardsQuery();

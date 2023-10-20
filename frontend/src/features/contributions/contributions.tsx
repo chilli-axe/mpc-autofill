@@ -4,9 +4,9 @@ import React from "react";
 import { useGetBackendInfoQuery, useGetContributionsQuery } from "@/app/api";
 import { Card, Cardback, ProjectName, Token } from "@/common/constants";
 import { SourceContribution } from "@/common/types";
+import { Spinner } from "@/components/spinner";
+import { AutoLayoutTable, TableWrapper } from "@/components/table";
 import { useProjectName } from "@/features/backend/backendSlice";
-import { Spinner } from "@/features/ui/spinner";
-import { AutoLayoutTable, TableWrapper } from "@/features/ui/styledComponents";
 
 export function ContributionsSummary() {
   const contributionsQuery = useGetContributionsQuery();

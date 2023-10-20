@@ -18,12 +18,12 @@ import {
   processStringAsMultipleLines,
 } from "@/common/processing";
 import { useAppDispatch, useAppSelector } from "@/common/types";
+import { RightPaddedIcon } from "@/components/icon";
+import { Spinner } from "@/components/spinner";
 import { useProjectName } from "@/features/backend/backendSlice";
 import { addMembers, selectProjectSize } from "@/features/project/projectSlice";
 import { selectFuzzySearch } from "@/features/searchSettings/searchSettingsSlice";
 import { setError } from "@/features/toasts/toastsSlice";
-import { Spinner } from "@/features/ui/spinner";
-import { RightPaddedIcon } from "@/features/ui/styledComponents";
 
 export function ImportURL() {
   const dfcPairsQuery = useGetDFCPairsQuery();

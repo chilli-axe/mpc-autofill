@@ -885,7 +885,7 @@ class TestGetSampleCards:
         assert response.status_code == 200
         json_body = response.json()
         assert set(json_body.keys()) == {"cards"}
-        assert set(json_body["cards"].keys()) == {"CARD", "TOKEN"}
+        assert set(json_body["cards"].keys()) == {"CARD", "CARDBACK", "TOKEN"}
         # the view returns a list of cards, but the order of the cards is deliberately random
         # keying the data by card name in this way should result in deterministic snapshotting
         assert {
@@ -896,7 +896,7 @@ class TestGetSampleCards:
     def test_get_no_cards(self, client, django_settings, elasticsearch, all_sources, snapshot):
         response = client.get(reverse(views.get_sample_cards))
         assert response.status_code == 200
-        assert response.json()["cards"] == {"CARD": [], "TOKEN": []}
+        assert response.json()["cards"] == {"CARD": [], "TOKEN": [], "CARDBACK": []}
 
     def test_get_three_cards_one_token(
         self,

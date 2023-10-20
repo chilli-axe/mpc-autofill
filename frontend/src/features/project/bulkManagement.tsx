@@ -11,6 +11,7 @@ import Dropdown from "react-bootstrap/Dropdown";
 import Stack from "react-bootstrap/Stack";
 
 import { Slots, useAppDispatch, useAppSelector } from "@/common/types";
+import { RightPaddedIcon } from "@/components/icon";
 import { GridSelectorModal } from "@/features/modals/gridSelectorModal";
 import { setSelectedSlotsAndShowModal } from "@/features/modals/modalsSlice";
 import {
@@ -22,7 +23,6 @@ import {
   selectSelectedSlots,
 } from "@/features/project/projectSlice";
 import { selectSearchResultsForQueryOrDefault } from "@/features/search/searchResultsSlice";
-import { RightPaddedIcon } from "@/features/ui/styledComponents";
 
 function ChangeSelectedImageSelectedImages({ slots }: { slots: Slots }) {
   /**

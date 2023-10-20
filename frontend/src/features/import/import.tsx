@@ -1,11 +1,11 @@
 import React from "react";
 import Dropdown from "react-bootstrap/Dropdown";
 
+import { RightPaddedIcon } from "@/components/icon";
 import { ImportCSV } from "@/features/import/importCSV";
 import { ImportText } from "@/features/import/importText";
 import { ImportURL } from "@/features/import/importURL";
 import { ImportXML } from "@/features/import/importXML";
-import { RightPaddedIcon } from "@/features/ui/styledComponents";
 
 export function Import() {
   return (
