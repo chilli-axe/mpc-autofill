@@ -33,15 +33,16 @@ class Archidekt(ImportSite):
 
     @classmethod
     def retrieve_card_list(cls, url: str) -> str:
-        deck_id = url.rsplit("#", 1)[0].split("/")[-1]
+        regex_results = re.compile(rf"^{cls.get_base_url()}/decks/(.+?)(?:[\#\/].*)?$").search(url)
+        if regex_results is None:
+            cls.raise_invalid_url_exception(url)
+            return ""  # only necessary so mypy understands the above function throws an exception
+        deck_id = regex_results.groups()[0]
         response = requests.get(f"{cls.get_base_url()}/api/decks/{deck_id}/small/")
         if response.status_code == 404 or not deck_id:
             cls.raise_invalid_url_exception(url)
         response_json = json.loads(response.content.decode("utf-8"))
-        card_list = ""
-        for x in response_json["cards"]:
-            card_list += f"{x['quantity']} {x['card']['oracleCard']['name']}\n"
-        return card_list
+        return "\n".join([f"{x['quantity']} {x['card']['oracleCard']['name']}" for x in response_json["cards"]])
 
 
 class CubeCobra(ImportSite):
