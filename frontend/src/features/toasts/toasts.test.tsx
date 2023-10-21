@@ -17,7 +17,6 @@ import {
   getErrorToast,
   importText,
   openImportTextModal,
-  openImportURLModal,
   renderWithProviders,
 } from "@/common/test-utils";
 import { NewCards } from "@/features/new/new";

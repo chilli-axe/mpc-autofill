@@ -221,7 +221,9 @@ export async function openImportTextModal() {
 export async function importText(text: string) {
   const textArea = await openImportTextModal();
   fireEvent.change(textArea, { target: { value: text } });
-  screen.getByLabelText("import-text-submit").click();
+  const submitButton = screen.getByLabelText("import-text-submit");
+  await waitFor(() => expect(submitButton).not.toBeDisabled());
+  submitButton.click();
 }
 
 export async function openImportCSVModal() {
@@ -235,6 +237,7 @@ export async function openImportCSVModal() {
 
 export async function importCSV(fileContents: string) {
   const dropzone = await openImportCSVModal();
+  await waitFor(() => expect(dropzone).not.toBeDisabled());
 
   const file = new File([fileContents], "test.csv", { type: "text/csv" });
 
@@ -255,6 +258,7 @@ export async function importXML(
   useXMLCardback: boolean = false
 ) {
   const dropzone = await openImportXMLModal();
+  await waitFor(() => expect(dropzone).not.toBeDisabled());
 
   const file = new File([fileContents], "test.xml", {
     type: "text/xml;charset=utf-8",

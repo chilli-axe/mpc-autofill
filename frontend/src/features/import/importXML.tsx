@@ -230,6 +230,7 @@ export function ImportXML() {
             mimeTypes={{ "text/xml": [".xml"] }}
             fileUploadCallback={parseXMLFile}
             label="import-xml"
+            disabled={false} // this importer has no DFC integration so there's no need to wait for anything
           />
         </Modal.Body>
         <Modal.Footer>

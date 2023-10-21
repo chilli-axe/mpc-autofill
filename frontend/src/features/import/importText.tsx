@@ -47,6 +47,8 @@ export function ImportText() {
 
   const projectSize = useAppSelector(selectProjectSize);
 
+  const disabled = dfcPairsQuery.isFetching;
+
   const formatPlaceholderText = (placeholders: {
     [cardType: string]: Array<CardDocument>;
   }): string => {
@@ -202,6 +204,7 @@ export function ImportText() {
             variant="primary"
             onClick={handleSubmitTextModal}
             aria-label="import-text-submit"
+            disabled={disabled}
           >
             Submit
           </Button>
