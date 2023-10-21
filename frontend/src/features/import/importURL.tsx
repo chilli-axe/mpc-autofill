@@ -43,6 +43,9 @@ export function ImportURL() {
   const [triggerFn, queryImportSiteQuery] =
     api.endpoints.queryImportSite.useLazyQuery();
 
+  const disabled =
+    loading || importSitesQuery.isFetching || dfcPairsQuery.isFetching;
+
   const handleSubmitURLModal = useCallback(
     async (event: FormEvent<HTMLFormElement>) => {
       event.preventDefault(); // to avoid reloading the page
@@ -155,7 +158,7 @@ export function ImportURL() {
             type="submit"
             form="importURLForm"
             variant="primary"
-            disabled={loading || importSitesQuery.isFetching}
+            disabled={disabled}
             style={{ width: 4.75 + "em" }}
           >
             {loading ? <Spinner size={1.5} /> : "Submit"}

@@ -148,6 +148,8 @@ export function ImportCSV() {
 
   const projectSize = useAppSelector(selectProjectSize);
 
+  const disabled = dfcPairsQuery.isFetching;
+
   const parseCSVFile = (fileContents: string | ArrayBuffer | null) => {
     if (typeof fileContents !== "string") {
       dispatch(
@@ -230,6 +232,7 @@ export function ImportCSV() {
             mimeTypes={{ "text/csv": [".csv"] }}
             fileUploadCallback={parseCSVFile}
             label="import-csv"
+            disabled={disabled}
           />
         </Modal.Body>
         <Modal.Footer>
