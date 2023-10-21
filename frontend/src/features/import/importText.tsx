@@ -4,7 +4,7 @@
  * A freeform text area is exposed and the cards are processed when the user hits Submit.
  */
 
-import React, { useEffect, useState } from "react";
+import React, { FormEvent, useEffect, useState } from "react";
 import { Accordion } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
 import Dropdown from "react-bootstrap/Dropdown";
@@ -80,11 +80,12 @@ export function ImportText() {
     }
   }, [sampleCardsQuery.data]);
 
-  const handleSubmitTextModal = () => {
+  const handleSubmitTextModal = (event: FormEvent<HTMLFormElement>) => {
     /**
      * Parse the contents of the modal and add the resultant queries in the desired numbers of instances to the project.
      */
 
+    event.preventDefault(); // to prevent reloading the page
     const processedLines = processStringAsMultipleLines(
       textModalValue,
       dfcPairsQuery.data ?? {},
@@ -184,17 +185,19 @@ export function ImportText() {
             </Accordion.Item>
           </Accordion>
           <br />
-          <Form.Group className="mb-3">
-            <Form.Control
-              as="textarea"
-              rows={12}
-              placeholder={placeholderText}
-              required={true}
-              onChange={(event) => setTextModalValue(event.target.value)}
-              value={textModalValue}
-              aria-label="import-text"
-            />
-          </Form.Group>
+          <Form id="importTextForm" onSubmit={handleSubmitTextModal}>
+            <Form.Group className="mb-3">
+              <Form.Control
+                as="textarea"
+                rows={12}
+                placeholder={placeholderText}
+                required={true}
+                onChange={(event) => setTextModalValue(event.target.value)}
+                value={textModalValue}
+                aria-label="import-text"
+              />
+            </Form.Group>
+          </Form>
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={handleCloseTextModal}>
@@ -202,7 +205,8 @@ export function ImportText() {
           </Button>
           <Button
             variant="primary"
-            onClick={handleSubmitTextModal}
+            form="importTextForm"
+            type="submit"
             aria-label="import-text-submit"
             disabled={disabled}
           >
