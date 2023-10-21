@@ -215,15 +215,16 @@ export async function openImportTextModal() {
   addCardsMenu.click();
   await waitFor(() => screen.getByText("Text", { exact: false }).click());
   await waitFor(() => expect(screen.getByText("Add Cards — Text")));
+  await waitFor(() =>
+    expect(screen.getByLabelText("import-text-submit")).not.toBeDisabled()
+  ); // here, we wait for DFC pairs to be loaded
   return screen.getByLabelText("import-text");
 }
 
 export async function importText(text: string) {
   const textArea = await openImportTextModal();
   fireEvent.change(textArea, { target: { value: text } });
-  const submitButton = screen.getByLabelText("import-text-submit");
-  await waitFor(() => expect(submitButton).not.toBeDisabled());
-  submitButton.click();
+  screen.getByLabelText("import-text-submit").click();
 }
 
 export async function openImportCSVModal() {
@@ -232,12 +233,13 @@ export async function openImportCSVModal() {
   addCardsMenu.click();
   await waitFor(() => screen.getByText("CSV", { exact: false }).click());
   await waitFor(() => expect(screen.getByText("Add Cards — CSV")));
-  return screen.getByLabelText("import-csv");
+  const dropzone = screen.getByLabelText("import-csv");
+  await waitFor(() => expect(dropzone).not.toBeDisabled()); // here, we wait for DFC pairs to be loaded
+  return dropzone;
 }
 
 export async function importCSV(fileContents: string) {
   const dropzone = await openImportCSVModal();
-  await waitFor(() => expect(dropzone).not.toBeDisabled());
 
   const file = new File([fileContents], "test.csv", { type: "text/csv" });
 
@@ -250,7 +252,9 @@ export async function openImportXMLModal() {
   addCardsMenu.click();
   await waitFor(() => screen.getByText("XML", { exact: false }).click());
   await waitFor(() => expect(screen.getByText("Add Cards — XML")));
-  return screen.getByLabelText("import-xml");
+  const dropzone = screen.getByLabelText("import-xml");
+  await waitFor(() => expect(dropzone).not.toBeDisabled()); // here, we wait for DFC pairs to be loaded
+  return dropzone;
 }
 
 export async function importXML(
@@ -258,7 +262,6 @@ export async function importXML(
   useXMLCardback: boolean = false
 ) {
   const dropzone = await openImportXMLModal();
-  await waitFor(() => expect(dropzone).not.toBeDisabled());
 
   const file = new File([fileContents], "test.xml", {
     type: "text/xml;charset=utf-8",
