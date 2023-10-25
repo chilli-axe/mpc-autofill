@@ -20,7 +20,7 @@ from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.support.expected_conditions import invisibility_of_element
 from selenium.webdriver.support.ui import Select, WebDriverWait
 
-from src.constants import STOCKEN_TO_STOCKDE, THREADS, Browsers, States
+from src.constants import THREADS, Browsers, Cardstocks, States, TargetSites
 from src.exc import InvalidStateException
 from src.order import CardImage, CardImageCollection, CardOrder
 from src.processing import ImagePostProcessingConfig
@@ -37,8 +37,8 @@ class AutofillDriver:
     driver: WebDriver = attr.ib(default=None)  # delay initialisation until XML is selected and parsed
     browser: Browsers = attr.ib(default=Browsers.chrome)
     binary_location: Optional[str] = attr.ib(default=None)  # path to browser executable
+    target_site: TargetSites = attr.ib(default=TargetSites.MakePlayingCards)
     headless: bool = attr.ib(default=False)
-    starting_url: str = attr.ib(init=False, default=None)
     order: CardOrder = attr.ib(default=attr.Factory(CardOrder.from_xml_in_folder))
     state: str = attr.ib(init=False, default=States.initialising)
     action: Optional[str] = attr.ib(init=False, default=None)
@@ -47,24 +47,18 @@ class AutofillDriver:
     download_bar: enlighten.Counter = attr.ib(init=False, default=None)
     upload_bar: enlighten.Counter = attr.ib(init=False, default=None)
     file_path_to_pid_map: dict[str, str] = {}
-    germany: bool = attr.ib(default=False)
-    base_url: str = attr.ib(default=None)
 
     # region initialisation
 
     def initialise_driver(self) -> None:
         try:
-            if self.germany:
-                self.base_url = "https://www.printerstudio.de"
-                self.starting_url = f"{self.base_url}/machen/blanko-spielkarten-63x88mm-personalisieren.html"
-            else:
-                self.base_url = "https://www.makeplayingcards.com"
-                self.starting_url = f"{self.base_url}/design/custom-blank-card.html"
-
             driver = self.browser.value(headless=self.headless, binary_location=self.binary_location)
             driver.set_window_size(1200, 900)
             driver.implicitly_wait(5)
-            print(f"Successfully initialised {bold(self.browser.name)} driver.")
+            print(
+                f"Successfully initialised {bold(self.browser.name)} driver "
+                f"targeting {bold(self.target_site.name)}."
+            )
         except (AttributeError, ValueError, sl_exc.WebDriverException) as e:
             raise Exception(
                 f"An error occurred while attempting to configure the webdriver for your specified browser. "
@@ -92,14 +86,14 @@ class AutofillDriver:
         self.configure_bars()
         self.order.print_order_overview()
         self.initialise_driver()
-        self.driver.get(self.starting_url)
+        self.driver.get(f"{self.target_site.value.starting_url}")
         self.set_state(States.defining_order)
 
     @cached_property
     def project_name(self) -> str:
         """
-        Format the name of `self.order` such that it's suitable for naming a MakePlayingCards project with.
-        MakePlayingCards project names seem to have a maximum length of 32 characters.
+        Format the name of `self.order` such that it's suitable for naming a project with.
+        Project names in the MakePlayingCards family of sites seem to have a maximum length of 32 characters.
         We chop off the appropriate amount of `self.order.name` such that we can still include today's date in the name.
         """
 
@@ -139,7 +133,7 @@ class AutofillDriver:
     @exception_retry_skip_handler
     def wait(self) -> None:
         """
-        Wait until the loading circle in MPC disappears.
+        Wait until the loading circle in the targeted site disappears.
         """
 
         try:
@@ -177,7 +171,7 @@ class AutofillDriver:
 
     def wait_until_javascript_object_is_defined(self, function: str) -> None:
         """
-        Depending on the order of operations in the MakePlayingCards project editor, some JavaScript functions
+        Depending on the order of operations in the targeted site's project editor, some JavaScript functions
         can occasionally not be loaded by the time we want to execute them.
         This mostly happens when continuing an existing project with --skipsetup.
         This function works around this issue by pausing the program execution until required JavaScript functions
@@ -198,7 +192,7 @@ class AutofillDriver:
     @exception_retry_skip_handler
     def next_step(self) -> None:
         """
-        Page through to the next step in MPC.
+        Page through to the next step in the targeted site.
         """
 
         self.wait()
@@ -280,7 +274,7 @@ class AutofillDriver:
     @exception_retry_skip_handler
     def attempt_to_upload_image(self, image: CardImage) -> None:
         """
-        A single attempt at uploading `image` to MPC.
+        A single attempt at uploading `image` to the targeted site.
         """
 
         # an image definitely shouldn't be uploading here, but doesn't hurt to make sure
@@ -298,7 +292,7 @@ class AutofillDriver:
     @exception_retry_skip_handler
     def upload_image(self, image: CardImage, max_tries: int = 3) -> Optional[str]:
         """
-        Uploads the given CardImage with `max_tries` attempts. Returns the image's PID in MPC.
+        Uploads the given CardImage with `max_tries` attempts. Returns the image's PID in the targeted site.
         """
 
         if image.file_path is not None and image.file_exists():
@@ -353,12 +347,13 @@ class AutofillDriver:
     @exception_retry_skip_handler
     def upload_and_insert_image(self, image: CardImage) -> bool:
         """
-        Uploads and inserts `image` into MPC. How this is executed depends on whether the image has already been fully
-        or partially uploaded, on not uploaded at all:
+        Uploads and inserts `image` into the targeted site.
+        How this is executed depends on whether the image has already been fully or partially uploaded,
+        or not uploaded at all:
         * None of the image's slots filled - upload the image and insert it into all slots
         * Some of the image's slots filled - fill the unfilled slots with the image in the first filled
         * All of the image's slots filled - no action required
-        Returns whether any action to modify the MakePlayingCards project state was taken.
+        Returns whether any action to modify the targeted site's project state was taken.
         """
 
         slots_filled = [self.is_slot_filled(slot) for slot in image.slots]
@@ -397,17 +392,17 @@ class AutofillDriver:
 
     @exception_retry_skip_handler
     def is_user_authenticated(self) -> bool:
-        return len(self.driver.find_elements(By.XPATH, f'//a[@href="{self.base_url}/logout.aspx"]')) == 1
+        return len(self.driver.find_elements(By.XPATH, f'//a[@href="{self.target_site.value.logout_url}"]')) == 1
 
     @exception_retry_skip_handler
     def authenticate(self) -> None:
         action = self.action
-        self.driver.get(f"{self.base_url}/login.aspx")
+        self.driver.get(f"{self.target_site.value.login_url}")
         self.set_state(States.defining_order, "Awaiting user sign-in")
         input(
             textwrap.dedent(
-                """
-                The specified inputs require you to sign into your MakePlayingCards account.
+                f"""
+                The specified inputs require you to sign into your {self.target_site.name} account.
                 Please sign in, then return to the console window and press Enter.
                 """
             )
@@ -423,7 +418,7 @@ class AutofillDriver:
             )
         print("Successfully signed in!")
         self.set_state(States.defining_order, action)
-        self.driver.get(self.starting_url)
+        self.driver.get(f"{self.target_site.value.starting_url}")
 
     # endregion
 
@@ -433,18 +428,25 @@ class AutofillDriver:
     def define_project(self) -> None:
         self.assert_state(States.defining_order)
         # Select card stock
-        stock_to_select = STOCKEN_TO_STOCKDE[self.order.details.stock] if self.germany else self.order.details.stock
-        stock_dropdown = Select(self.driver.find_element(by=By.ID, value="dro_paper_type"))
+        stock_to_select = self.target_site.value.cardstock_site_name_mapping[Cardstocks(self.order.details.stock)]
+        stock_dropdown = Select(
+            self.driver.find_element(by=By.ID, value=self.target_site.value.cardstock_dropdown_element_id)
+        )
         stock_dropdown.select_by_visible_text(stock_to_select)
 
         # Select number of cards
-        qty_dropdown = Select(self.driver.find_element(by=By.ID, value="dro_choosesize"))
+        qty_dropdown = Select(
+            self.driver.find_element(by=By.ID, value=self.target_site.value.quantity_dropdown_element_id)
+        )
         qty_dropdown.select_by_value(str(self.order.details.bracket))
 
         # Switch the finish to foil if the user ordered foil cards
         if self.order.details.foil:
-            foil_dropdown = Select(self.driver.find_element(by=By.ID, value="dro_product_effect"))
-            foil_dropdown.select_by_value("EF_055")
+            foil_dropdown = Select(
+                self.driver.find_element(by=By.ID, value=self.target_site.value.print_type_dropdown_element_id)
+            )
+            foil_dropdown.select_by_value(self.target_site.value.foil_dropdown_element_value)
+            # TODO: try/except here. printerstudio doesn't do foils.
 
         self.set_state(States.paging_to_fronts)
 
@@ -452,12 +454,12 @@ class AutofillDriver:
     @exception_retry_skip_handler
     def redefine_project(self) -> None:
         """
-        Called when continuing to edit an existing MPC project. Ensures that the MPC project's size and bracket
-        align with the order's size and bracket.
+        Called when continuing to edit an existing project in the targeted site.
+        Ensures that the project's size and bracket align with the order's size and bracket.
         """
 
         self.set_state(States.defining_order, "Awaiting user input")
-        self.driver.get(f"{self.base_url}/design/dn_temporary_designes.aspx")
+        self.driver.get(f"{self.target_site.value.saved_projects_url}")
         input(
             textwrap.dedent(
                 """
@@ -470,7 +472,7 @@ class AutofillDriver:
             input(
                 textwrap.dedent(
                     "The SSID of the project cannot be determined from the current URL. "
-                    "Are you sure you're in MPC's project editor?"
+                    "Are you sure you're in the project editor?"
                     "Please enter the editor for your selected project, "
                     "then return to the console window and press Enter."
                 )
@@ -479,9 +481,7 @@ class AutofillDriver:
         self.set_state(States.defining_order, "Configuring order")
 
         # navigate to insert fronts page
-        self.execute_javascript(
-            f"oTrackerBar.setFlow('{self.base_url}/products/playingcard/design/dn_playingcards_front_dynamic.aspx?ssid={ssid}');"
-        )
+        self.execute_javascript(f"oTrackerBar.setFlow('{self.target_site.value.insert_fronts_url}?ssid={ssid}');")
         self.wait()
 
         self.wait_until_javascript_object_is_defined("PageLayout.prototype.renderDesignCount")
@@ -500,7 +500,7 @@ class AutofillDriver:
 
     @exception_retry_skip_handler
     def save_project_to_user_account(self) -> None:
-        self.set_state(self.state, "Saving project to MakePlayingCards account")
+        self.set_state(self.state, f"Saving project to {self.target_site.name} account")
         project_name_element = self.driver.find_element(by=By.ID, value="txt_temporaryname")
         if project_name_element.text != self.project_name:
             project_name_element.clear()
@@ -522,7 +522,7 @@ class AutofillDriver:
 
         # Accept current settings and move to next step
         self.wait_until_javascript_object_is_defined("doPersonalize")
-        self.execute_javascript(f"doPersonalize('{self.base_url}/products/pro_item_process_flow.aspx');")
+        self.execute_javascript(f"doPersonalize('{self.target_site.value.accept_settings_url}');")
 
         # Set the desired number of cards, then move to the next step
         with self.switch_to_frame("sysifm_loginFrame"):
@@ -641,11 +641,12 @@ class AutofillDriver:
         log_hours_minutes_seconds_elapsed(t)
         input(
             textwrap.dedent(
-                """
-                Please review your order and ensure everything has been uploaded correctly before finalising with MPC.
-                If any images failed to download, links to download them will have been printed above.
-                If you need to make any changes to your order, you can do so by adding it to your Saved Projects and
-                editing in your normal browser. Press Enter to close this window - your browser window will remain open.
+                f"""
+                Please review your order and ensure everything has been uploaded correctly before finalising with
+                {self.target_site.name}. If any images failed to download, links to download them will have been printed
+                above. If you need to make any changes to your order, you can do so by adding it to your Saved Projects
+                and editing in your normal browser. Press Enter to close this window - your browser window will remain
+                open.
                 """
             )
         )

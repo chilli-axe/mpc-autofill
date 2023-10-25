@@ -40,6 +40,7 @@ function doGet(e) {
 from enum import Enum
 from functools import partial
 
+import attr
 from PIL import Image
 
 import src.webdrivers as wd
@@ -116,14 +117,89 @@ class ImageResizeMethods(Enum):
     LANCZOS = Image.LANCZOS
 
 
+@attr.s
+class TargetSite:
+    """
+    A simple dataclass representing a site within the MakePlayingCards group which the desktop tool can target.
+    Any interactions with the site that aren't customisable through this class are presumed to work identically
+    across all sites which the tool can target.
+    """
+
+    # region URLs
+    base_url: str = attr.ib()
+    starting_url_route: str = attr.ib()
+    login_url_route: str = attr.ib(default="login.aspx")
+    logout_url_route: str = attr.ib(default="logout.aspx")
+    saved_projects_url_route: str = attr.ib(default="design/dn_temporary_designes.aspx")
+    insert_fronts_url_route: str = attr.ib(default="products/playingcard/design/dn_playingcards_front_dynamic.aspx")
+    accept_settings_url_route: str = attr.ib(default="products/pro_item_process_flow.aspx")
+    # endregion
+    # region project configuration
+    quantity_dropdown_element_id: str = attr.ib(default="dro_choosesize")
+    cardstock_dropdown_element_id: str = attr.ib(default="dro_paper_type")
+    print_type_dropdown_element_id: str = attr.ib(default="dro_product_effect")
+    foil_dropdown_element_value: str = attr.ib(default="EF_055")
+    cardstock_site_name_mapping: dict[Cardstocks, str] = attr.ib(
+        default={cardstock: cardstock.value for cardstock in Cardstocks}
+    )
+    # endregion
+
+    def format_url(self, url: str) -> str:
+        return f"{self.base_url}/{url}"
+
+    @property
+    def starting_url(self) -> str:
+        return self.format_url(self.starting_url_route)
+
+    @property
+    def login_url(self) -> str:
+        return self.format_url(self.login_url_route)
+
+    @property
+    def logout_url(self) -> str:
+        return self.format_url(self.logout_url_route)
+
+    @property
+    def saved_projects_url(self) -> str:
+        return self.format_url(self.saved_projects_url_route)
+
+    @property
+    def insert_fronts_url(self) -> str:
+        return self.format_url(self.insert_fronts_url_route)
+
+    @property
+    def accept_settings_url(self) -> str:
+        return self.format_url(self.accept_settings_url_route)
+
+
+class TargetSites(Enum):
+    MakePlayingCards = TargetSite(
+        base_url="https://www.makeplayingcards.com", starting_url_route="design/custom-blank-card.html"
+    )
+    PrinterStudio = TargetSite(
+        base_url="https://www.printerstudio.com",
+        starting_url_route="personalized/custom-playing-cards-blank-cards.html",
+        cardstock_site_name_mapping={
+            Cardstocks.S30: "Standard (smooth)",
+            Cardstocks.S33: "Superior (smooth)",
+            Cardstocks.M31: "Premium (linen)",
+            Cardstocks.P10: "Plastic (100%)",
+        },
+    )
+    PrinterStudioDE = TargetSite(
+        base_url="https://www.printerstudio.de",
+        starting_url_route="machen/blanko-spielkarten-63x88mm-personalisieren.html",
+        cardstock_site_name_mapping={
+            Cardstocks.S30: "Standard (glatt)",
+            Cardstocks.S33: "Super (glatt)",
+            Cardstocks.M31: "Premium (linen)",
+            Cardstocks.P10: "Kunststoff",
+        },
+    )
+
+
 DPI_HEIGHT_RATIO = 300 / 1110  # TODO: share this between desktop tool and backend
 
 
 BRACKETS = [18, 36, 55, 72, 90, 108, 126, 144, 162, 180, 198, 216, 234, 396, 504, 612]
 THREADS = 5  # shared between CardImageCollections
-STOCKEN_TO_STOCKDE = {
-    "(S30) Standard Smooth": "Standard (glatt)",
-    "(S33) Superior Smooth": "Premium (linen)",
-    "(M31) Linen": "Super (glatt)",
-    "(P10) Plastic": "Kunststoff",
-}

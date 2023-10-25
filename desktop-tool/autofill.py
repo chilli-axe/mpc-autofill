@@ -1,12 +1,12 @@
 import os
 import sys
 from contextlib import nullcontext
-from typing import Optional
+from typing import Optional, Union
 
 import click
 from wakepy import keepawake
 
-from src.constants import Browsers, ImageResizeMethods
+from src.constants import Browsers, ImageResizeMethods, TargetSites
 from src.driver import AutofillDriver
 from src.pdf_maker import PdfExporter
 from src.processing import ImagePostProcessingConfig
@@ -16,31 +16,37 @@ from src.utils import TEXT_BOLD, TEXT_END
 os.system("")  # enables ansi escape characters in terminal
 
 
+def prompt_if_no_arguments(prompt: str) -> Union[str, bool]:
+    """
+    We only prompt users to specify some flags if the tool was executed with no command-line arguments.
+    """
+
+    return prompt if len(sys.argv) == 1 else False
+
+
 @click.command(context_settings={"show_default": True})
 @click.option(
     "--skipsetup",
-    prompt="Skip project setup to continue editing an existing MPC project? (Press Enter if you're not sure.)"
-    if len(sys.argv) == 1
-    else False,
+    prompt=prompt_if_no_arguments(
+        "Skip project setup to continue editing an existing MPC project? (Press Enter if you're not sure.)"
+    ),
     default=False,
     help=(
         "If this flag is passed, the tool will prompt the user to navigate to an existing MPC project "
         "and will attempt to align the state of the given project XML with the state of the project "
-        "in MakePlayingCards. Note that this has some caveats - refer to the wiki for details."
+        "in the targeted site. Note that this has some caveats - refer to the wiki for details."
     ),
     is_flag=True,
 )
 @click.option(
-    "--auto-save",
-    prompt=(
-        "Automatically save this project to your MakePlayingAccounts while the tool is running? "
+    "--auto-save/--no-auto-save",
+    prompt=prompt_if_no_arguments(
+        "Automatically save this project to your account while the tool is running? "
         "(Press Enter if you're not sure.)"
-    )
-    if len(sys.argv) == 1
-    else False,
+    ),
     default=True,
     help=(
-        "If this flag is passed, the tool will automatically save your project to your MakePlayingCards after "
+        "If this flag is passed, the tool will automatically save your project to your account after "
         "processing each batch of cards."
     ),
     is_flag=True,
@@ -54,9 +60,7 @@ os.system("")  # enables ansi escape characters in terminal
 @click.option(
     "-b",
     "--browser",
-    prompt="Which web browser should the tool run on?  (Press Enter if you're not sure.)"
-    if len(sys.argv) == 1
-    else False,
+    prompt=prompt_if_no_arguments("Which web browser should the tool run on?  (Press Enter if you're not sure.)"),
     default=Browsers.chrome.name,
     type=click.Choice(sorted([browser.name for browser in Browsers]), case_sensitive=False),
     help="The web browser to run the tool on.",
@@ -71,26 +75,30 @@ os.system("")  # enables ansi escape characters in terminal
     ),
 )
 @click.option(
+    "--site",
+    default=TargetSites.MakePlayingCards.name,
+    type=click.Choice(sorted([site.name for site in TargetSites]), case_sensitive=False),
+    help="The card printing site into which your order should be auto-filled.",
+)
+@click.option(
     "--exportpdf",
     default=False,
-    help="Create a PDF export of the card images instead of creating a project for MPC.",
+    help="Create a PDF export of the card images instead of creating a project with a printing site.",
     is_flag=True,
 )
 @click.option(
-    "--allowsleep",
+    "--allowsleep/--disallow-sleep",
     default=False,
     help="Allows the system to fall asleep during execution.",
     is_flag=True,
 )
 @click.option(
-    "--post-process-images",
+    "--image-post-processing/--no-image-post-processing",
     default=True,
-    prompt=(
+    prompt=prompt_if_no_arguments(
         "Should the tool post-process your images to reduce upload times? "
         "By default, images will be downscaled to 800 DPI. (Press Enter if you're not sure.)"
-    )
-    if len(sys.argv) == 1
-    else False,
+    ),
     help="Post-process images to reduce file upload time.",
     is_flag=True,
 )
@@ -117,41 +125,37 @@ os.system("")  # enables ansi escape characters in terminal
 #     help="If this flag is set, non-JPEG images will be converted to JPEG before being uploaded to MPC.",
 #     is_flag=True,
 # )
-@click.option(
-    "--germany",
-    default=False,
-    help="Use printerstudio.de instead of makeplayingcards.com.",
-    is_flag=True,
-)
 def main(
     skipsetup: bool,
     auto_save: bool,
     auto_save_threshold: int,
     browser: str,
     binary_location: Optional[str],
+    site: str,
     exportpdf: bool,
     allowsleep: bool,
-    post_process_images: bool,
+    image_post_processing: bool,
     max_dpi: int,
     downscale_alg: str,
     # convert_to_jpeg: bool,
-    germany: bool,
 ) -> None:
     try:
         with keepawake(keep_screen_awake=True) if not allowsleep else nullcontext():
             if not allowsleep:
                 print("System sleep is being prevented during this execution.")
-            if post_process_images:
+            if image_post_processing:
                 print("Images are being post-processed during this execution.")
             post_processing_config = (
                 ImagePostProcessingConfig(max_dpi=max_dpi, downscale_alg=ImageResizeMethods[downscale_alg])
-                if post_process_images
+                if image_post_processing
                 else None
             )
             if exportpdf:
                 PdfExporter().execute(post_processing_config=post_processing_config)
             else:
-                AutofillDriver(browser=Browsers[browser], binary_location=binary_location, germany=germany).execute(
+                AutofillDriver(
+                    browser=Browsers[browser], target_site=TargetSites[site], binary_location=binary_location
+                ).execute(
                     skip_setup=skipsetup,
                     auto_save_threshold=auto_save_threshold if auto_save else None,
                     post_processing_config=post_processing_config,
