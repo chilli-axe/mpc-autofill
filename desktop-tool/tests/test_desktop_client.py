@@ -890,7 +890,7 @@ def test_pdf_export_complete_separate_faces(monkeypatch, card_order_valid):
 
 
 @pytest.mark.flaky(retries=3, delay=1)
-@pytest.mark.parametrize("browser", [constants.Browsers.chrome])
+@pytest.mark.parametrize("browser", [constants.Browsers.chrome, constants.Browsers.edge])
 @pytest.mark.parametrize(
     "site",
     [
