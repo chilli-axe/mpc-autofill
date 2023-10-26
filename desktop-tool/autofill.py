@@ -21,46 +21,14 @@ def prompt_if_no_arguments(prompt: str) -> Union[str, bool]:
     We only prompt users to specify some flags if the tool was executed with no command-line arguments.
     """
 
-    return prompt if len(sys.argv) == 1 else False
+    return f"{prompt} (Press Enter if you're not sure.)" if len(sys.argv) == 1 else False
 
 
 @click.command(context_settings={"show_default": True})
 @click.option(
-    "--skipsetup",
-    prompt=prompt_if_no_arguments(
-        "Skip project setup to continue editing an existing MPC project? (Press Enter if you're not sure.)"
-    ),
-    default=False,
-    help=(
-        "If this flag is passed, the tool will prompt the user to navigate to an existing MPC project "
-        "and will attempt to align the state of the given project XML with the state of the project "
-        "in the targeted site. Note that this has some caveats - refer to the wiki for details."
-    ),
-    is_flag=True,
-)
-@click.option(
-    "--auto-save/--no-auto-save",
-    prompt=prompt_if_no_arguments(
-        "Automatically save this project to your account while the tool is running? "
-        "(Press Enter if you're not sure.)"
-    ),
-    default=True,
-    help=(
-        "If this flag is passed, the tool will automatically save your project to your account after "
-        "processing each batch of cards."
-    ),
-    is_flag=True,
-)
-@click.option(
-    "--auto-save-threshold",
-    type=click.IntRange(1, None),
-    default=5,
-    help="Controls how often the project should be saved in terms of the number of cards uploaded.",
-)
-@click.option(
     "-b",
     "--browser",
-    prompt=prompt_if_no_arguments("Which web browser should the tool run on?  (Press Enter if you're not sure.)"),
+    prompt=prompt_if_no_arguments("Which web browser should the tool run on?"),
     default=Browsers.chrome.name,
     type=click.Choice(sorted([browser.name for browser in Browsers]), case_sensitive=False),
     help="The web browser to run the tool on.",
@@ -76,9 +44,37 @@ def prompt_if_no_arguments(prompt: str) -> Union[str, bool]:
 )
 @click.option(
     "--site",
+    prompt=prompt_if_no_arguments("Which site should the tool auto-fill your project into?"),
     default=TargetSites.MakePlayingCards.name,
     type=click.Choice(sorted([site.name for site in TargetSites]), case_sensitive=False),
     help="The card printing site into which your order should be auto-filled.",
+)
+@click.option(
+    "--skipsetup",
+    prompt=prompt_if_no_arguments("Skip project setup to continue editing an existing project?"),
+    default=False,
+    help=(
+        "If this flag is passed, the tool will prompt the user to navigate to an existing project "
+        "and will attempt to align the state of the given project XML with the state of the project "
+        "in the targeted site. Note that this has some caveats - refer to the wiki for details."
+    ),
+    is_flag=True,
+)
+@click.option(
+    "--auto-save/--no-auto-save",
+    prompt=prompt_if_no_arguments("Automatically save this project to your account while the tool is running?"),
+    default=True,
+    help=(
+        "If this flag is passed, the tool will automatically save your project to your account after "
+        "processing each batch of cards."
+    ),
+    is_flag=True,
+)
+@click.option(
+    "--auto-save-threshold",
+    type=click.IntRange(1, None),
+    default=5,
+    help="Controls how often the project should be saved in terms of the number of cards uploaded.",
 )
 @click.option(
     "--exportpdf",
@@ -97,7 +93,7 @@ def prompt_if_no_arguments(prompt: str) -> Union[str, bool]:
     default=True,
     prompt=prompt_if_no_arguments(
         "Should the tool post-process your images to reduce upload times? "
-        "By default, images will be downscaled to 800 DPI. (Press Enter if you're not sure.)"
+        "By default, images will be downscaled to 800 DPI."
     ),
     help="Post-process images to reduce file upload time.",
     is_flag=True,
@@ -106,7 +102,7 @@ def prompt_if_no_arguments(prompt: str) -> Union[str, bool]:
     "--max-dpi",
     default=800,
     type=click.IntRange(100, 1200),
-    help="Images above this DPI will be downscaled to it before being uploaded to MPC.",
+    help="Images above this DPI will be downscaled to it before being uploaded to the targeted site.",
 )
 @click.option(
     "--downscale-alg",
@@ -122,7 +118,7 @@ def prompt_if_no_arguments(prompt: str) -> Union[str, bool]:
 #     "--convert-to-jpeg",
 #     default=True,
 #     type=click.BOOL,
-#     help="If this flag is set, non-JPEG images will be converted to JPEG before being uploaded to MPC.",
+#     help="If this flag is set, non-JPEG images will be converted to JPEG before being uploaded to the targeted site.",
 #     is_flag=True,
 # )
 def main(
