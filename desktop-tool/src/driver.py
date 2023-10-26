@@ -402,7 +402,7 @@ class AutofillDriver:
         input(
             textwrap.dedent(
                 f"""
-                The specified inputs require you to sign into your {self.target_site.name} account.
+                The specified inputs require you to sign into your {bold(self.target_site.name)} account.
                 Please sign in, then return to the console window and press Enter.
                 """
             )
@@ -442,11 +442,21 @@ class AutofillDriver:
 
         # Switch the finish to foil if the user ordered foil cards
         if self.order.details.foil:
-            foil_dropdown = Select(
-                self.driver.find_element(by=By.ID, value=self.target_site.value.print_type_dropdown_element_id)
-            )
-            foil_dropdown.select_by_value(self.target_site.value.foil_dropdown_element_value)
-            # TODO: try/except here. printerstudio doesn't do foils.
+            if self.target_site.value.supports_foil:
+                foil_dropdown = Select(
+                    self.driver.find_element(by=By.ID, value=self.target_site.value.print_type_dropdown_element_id)
+                )
+                foil_dropdown.select_by_value(self.target_site.value.foil_dropdown_element_value)
+            else:
+                print(
+                    textwrap.dedent(
+                        f"""
+                        {bold('WARNING')}: Your project is configured to be printed in foil,
+                        but {bold(self.target_site.name)} does not support foil printing.
+                        {bold('Your project will be auto-filled as non-foil.')}
+                        """
+                    )
+                )
 
         self.set_state(States.paging_to_fronts)
 

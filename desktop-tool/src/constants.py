@@ -135,6 +135,7 @@ class TargetSite:
     accept_settings_url_route: str = attr.ib(default="products/pro_item_process_flow.aspx")
     # endregion
     # region project configuration
+    supports_foil: bool = attr.ib(default=True)
     quantity_dropdown_element_id: str = attr.ib(default="dro_choosesize")
     cardstock_dropdown_element_id: str = attr.ib(default="dro_paper_type")
     print_type_dropdown_element_id: str = attr.ib(default="dro_product_effect")
@@ -179,6 +180,7 @@ class TargetSites(Enum):
     PrinterStudio = TargetSite(
         base_url="https://www.printerstudio.com",
         starting_url_route="personalized/custom-playing-cards-blank-cards.html",
+        supports_foil=False,
         cardstock_site_name_mapping={
             Cardstocks.S30: "Standard (smooth)",
             Cardstocks.S33: "Superior (smooth)",
@@ -189,6 +191,7 @@ class TargetSites(Enum):
     PrinterStudioDE = TargetSite(
         base_url="https://www.printerstudio.de",
         starting_url_route="machen/blanko-spielkarten-63x88mm-personalisieren.html",
+        supports_foil=False,
         cardstock_site_name_mapping={
             Cardstocks.S30: "Standard (glatt)",
             Cardstocks.S33: "Super (glatt)",
