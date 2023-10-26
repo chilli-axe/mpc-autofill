@@ -619,7 +619,6 @@ class AutofillDriver:
                 self.authenticate()
 
             if skip_setup:
-
                 self.redefine_project()
 
             else:
