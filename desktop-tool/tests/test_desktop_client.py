@@ -890,8 +890,16 @@ def test_pdf_export_complete_separate_faces(monkeypatch, card_order_valid):
 
 
 @pytest.mark.parametrize("browser", [constants.Browsers.chrome])
-def test_card_order_complete_run_single_cardback(browser, input_enter, card_order_valid):
-    autofill_driver = AutofillDriver(order=card_order_valid, browser=browser, headless=True)
+@pytest.mark.parametrize(
+    "site",
+    [
+        constants.TargetSites.MakePlayingCards,
+        constants.TargetSites.PrinterStudio,
+        constants.TargetSites.PrinterStudioDE,
+    ],
+)
+def test_card_order_complete_run_single_cardback(browser, site, input_enter, card_order_valid):
+    autofill_driver = AutofillDriver(order=card_order_valid, browser=browser, target_site=site, headless=True)
     autofill_driver.execute(skip_setup=False, auto_save_threshold=None, post_processing_config=DEFAULT_POST_PROCESSING)
     assert (
         len(
@@ -904,8 +912,18 @@ def test_card_order_complete_run_single_cardback(browser, input_enter, card_orde
 
 
 @pytest.mark.parametrize("browser", [constants.Browsers.chrome, constants.Browsers.edge])
-def test_card_order_complete_run_multiple_cardbacks(browser, input_enter, card_order_multiple_cardbacks):
-    autofill_driver = AutofillDriver(order=card_order_multiple_cardbacks, browser=browser, headless=True)
+@pytest.mark.parametrize(
+    "site",
+    [
+        constants.TargetSites.MakePlayingCards,
+        constants.TargetSites.PrinterStudio,
+        constants.TargetSites.PrinterStudioDE,
+    ],
+)
+def test_card_order_complete_run_multiple_cardbacks(browser, site, input_enter, card_order_multiple_cardbacks):
+    autofill_driver = AutofillDriver(
+        order=card_order_multiple_cardbacks, browser=browser, target_site=site, headless=True
+    )
     autofill_driver.execute(skip_setup=False, auto_save_threshold=None, post_processing_config=DEFAULT_POST_PROCESSING)
     assert (
         len(
