@@ -472,9 +472,9 @@ class AutofillDriver:
         self.driver.get(f"{self.target_site.value.saved_projects_url}")
         input(
             textwrap.dedent(
-                """
+                f"""
                 Continuing to edit an existing order. Please enter the project editor for your selected project,
-                then return to the console window and press Enter.
+                wait for the page to load {bold('fully')}, then return to the console window and press Enter.
                 """
             )
         )
