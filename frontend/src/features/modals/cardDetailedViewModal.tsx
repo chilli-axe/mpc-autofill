@@ -38,13 +38,15 @@ export function CardDetailedViewModal({
   show,
   handleClose,
 }: CardDetailedViewProps) {
+  //# region queries and hooks
+
   const [triggerFn, getGoogleDriveImageQuery] =
     api.endpoints.getGoogleDriveImage.useLazyQuery();
-
   const getLanguagesQuery = useGetLanguagesQuery();
-  const languageNameByCode = Object.fromEntries(
-    (getLanguagesQuery.data ?? []).map((row) => [row.code, row.name])
-  );
+
+  //# endregion
+
+  //# region callbacks
 
   const downloadImage = async () => {
     const response = await triggerFn(cardDocument.identifier);
@@ -56,6 +58,16 @@ export function CardDetailedViewModal({
       );
     }
   };
+
+  //# endregion
+
+  //# region computed constants
+
+  const languageNameByCode = Object.fromEntries(
+    (getLanguagesQuery.data ?? []).map((row) => [row.code, row.name])
+  );
+
+  //# endregion
 
   return (
     <DisableSSR>

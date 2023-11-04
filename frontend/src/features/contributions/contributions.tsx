@@ -9,9 +9,14 @@ import { AutoLayoutTable, TableWrapper } from "@/components/table";
 import { useProjectName } from "@/features/backend/backendSlice";
 
 export function ContributionsSummary() {
+  //# region queries and hooks
+
   const contributionsQuery = useGetContributionsQuery();
-  const backendInfoQuery = useGetBackendInfoQuery();
   const projectName = useProjectName();
+
+  //# endregion
+
+  //# region computed constants
 
   const totalImages =
     contributionsQuery.data?.card_count_by_type != null
@@ -34,6 +39,8 @@ export function ContributionsSummary() {
       ).toLocaleString(),
     ])
   );
+
+  //# endregion
 
   return (
     <>
@@ -105,7 +112,11 @@ function SourceContributionRow({ contribution }: SourceContributionRowProps) {
 }
 
 export function ContributionsPerSource() {
+  //# region queries and hooks
+
   const contributionsQuery = useGetContributionsQuery();
+
+  //# endregion
 
   return contributionsQuery.isFetching ||
     contributionsQuery.data?.sources == null ? (

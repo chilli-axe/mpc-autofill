@@ -4,7 +4,7 @@
  * A freeform text area is exposed and the cards are processed when the user hits Submit.
  */
 
-import React, { FormEvent, useEffect, useState } from "react";
+import React, { FormEvent, useState } from "react";
 import { Accordion } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
 import Dropdown from "react-bootstrap/Dropdown";
@@ -23,63 +23,37 @@ import {
 } from "@/common/constants";
 import {
   convertLinesIntoSlotProjectMembers,
+  formatPlaceholderText,
   processStringAsMultipleLines,
-  stripTextInParentheses,
 } from "@/common/processing";
-import { CardDocument, useAppDispatch, useAppSelector } from "@/common/types";
+import { useAppDispatch, useAppSelector } from "@/common/types";
 import { toTitleCase } from "@/common/utils";
 import { RightPaddedIcon } from "@/components/icon";
 import { addMembers, selectProjectSize } from "@/features/project/projectSlice";
 import { selectFuzzySearch } from "@/features/searchSettings/searchSettingsSlice";
 
 export function ImportText() {
-  const sampleCardsQuery = useGetSampleCardsQuery();
-  const dfcPairsQuery = useGetDFCPairsQuery();
-
-  const fuzzySearch = useAppSelector(selectFuzzySearch);
+  //# region queries and hooks
 
   const dispatch = useAppDispatch();
-  const [showTextModal, setShowTextModal] = useState<boolean>(false);
-  const handleCloseTextModal = () => setShowTextModal(false);
-  const handleShowTextModal = () => setShowTextModal(true);
-  const [textModalValue, setTextModalValue] = useState<string>("");
-  const [placeholderText, setPlaceholderText] = useState<string>("");
-
+  const sampleCardsQuery = useGetSampleCardsQuery();
+  const dfcPairsQuery = useGetDFCPairsQuery();
+  const fuzzySearch = useAppSelector(selectFuzzySearch);
   const projectSize = useAppSelector(selectProjectSize);
 
-  const disabled = dfcPairsQuery.isFetching;
+  //# endregion
 
-  const formatPlaceholderText = (placeholders: {
-    [cardType: string]: Array<CardDocument>;
-  }): string => {
-    // TODO: check compatibility of `\n` in different browsers. `separator` was previously "&#10;".
+  //# region state
 
-    const separator = "\n";
-    const placeholderTextByCardType: Array<string> = [];
+  const [showTextModal, setShowTextModal] = useState<boolean>(false);
+  const [textModalValue, setTextModalValue] = useState<string>("");
 
-    for (const cardType of [Card, Token, Cardback]) {
-      if (placeholders[cardType] != null) {
-        placeholderTextByCardType.push(
-          placeholders[cardType]
-            .map(
-              (x) =>
-                `${Math.floor(Math.random() * 3) + 1}x ${
-                  ReversedCardTypePrefixes[cardType]
-                }${stripTextInParentheses(x.name)}`
-            )
-            .join(separator)
-        );
-      }
-    }
-    return placeholderTextByCardType.join(separator + separator);
-  };
+  //# endregion
 
-  useEffect(() => {
-    if (sampleCardsQuery.data != undefined) {
-      setPlaceholderText(formatPlaceholderText(sampleCardsQuery.data));
-    }
-  }, [sampleCardsQuery.data]);
+  //# region callbacks
 
+  const handleCloseTextModal = () => setShowTextModal(false);
+  const handleShowTextModal = () => setShowTextModal(true);
   const handleSubmitTextModal = (event: FormEvent<HTMLFormElement>) => {
     /**
      * Parse the contents of the modal and add the resultant queries in the desired numbers of instances to the project.
@@ -101,6 +75,18 @@ export function ImportText() {
     );
     handleCloseTextModal();
   };
+
+  //# endregion
+
+  //# region computed constants
+
+  const disabled = dfcPairsQuery.isFetching;
+  const placeholderText =
+    sampleCardsQuery.data != null
+      ? formatPlaceholderText(sampleCardsQuery.data)
+      : "";
+
+  //# endregion
 
   return (
     <>

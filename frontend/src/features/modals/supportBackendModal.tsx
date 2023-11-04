@@ -19,7 +19,11 @@ export function SupportBackendModal({
   show,
   handleClose,
 }: SupportBackendModalProps) {
+  //# region queries and hooks
+
   const backendInfoQuery = useGetBackendInfoQuery();
+
+  //# endregion
 
   return (
     <Modal scrollable show={show} onHide={handleClose} size="lg">

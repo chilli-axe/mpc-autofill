@@ -24,8 +24,29 @@ import {
 } from "@/features/finishSettings/finishSettingsSlice";
 
 export function FinishSettings() {
-  const finishSettings = useAppSelector(selectFinishSettings);
+  //# region queries and hooks
+
   const dispatch = useAppDispatch();
+  const finishSettings = useAppSelector(selectFinishSettings);
+
+  //# endregion
+
+  //# region callbacks
+
+  const handleSelectFinish: React.ChangeEventHandler<HTMLSelectElement> = (
+    value
+  ) => dispatch(setCardstock(value.target.value as Cardstock));
+  const handleSelectFoil: React.ChangeEventHandler = () =>
+    dispatch(toggleFoil());
+
+  //# endregion
+
+  //# region computed constants
+
+  const toggleFoilDisabled =
+    !CardstockFoilCompatibility[finishSettings.cardstock];
+
+  //# endregion
 
   return (
     <>
@@ -34,9 +55,7 @@ export function FinishSettings() {
           <Form.Select
             value={finishSettings.cardstock}
             style={{ height: ToggleButtonHeight + "px" }}
-            onChange={(value) =>
-              dispatch(setCardstock(value.target.value as Cardstock))
-            }
+            onChange={handleSelectFinish}
           >
             {Cardstocks.map((x) => (
               <option key={x}>{x}</option>
@@ -46,7 +65,7 @@ export function FinishSettings() {
       </Col>
       <Col lg={4} md={12} sm={12} xs={12}>
         <Toggle
-          onClick={() => dispatch(toggleFoil())}
+          onClick={handleSelectFoil}
           on="Foil"
           onClassName="flex-centre"
           off="Non-Foil"
@@ -57,7 +76,7 @@ export function FinishSettings() {
           size="md"
           height={ToggleButtonHeight + "px"}
           active={finishSettings.foil}
-          disabled={!CardstockFoilCompatibility[finishSettings.cardstock]}
+          disabled={toggleFoilDisabled}
         />
       </Col>
     </>

@@ -35,9 +35,16 @@ export function CommonCardbackGridSelector({
   show,
   handleClose,
 }: CommonCardbackGridSelectorProps) {
-  const projectCardback = useAppSelector(selectProjectCardback);
+  //# region queries and hooks
+
   const dispatch = useAppDispatch();
-  function setSelectedImageFromIdentifier(selectedImage: string): void {
+  const projectCardback = useAppSelector(selectProjectCardback);
+
+  //# endregion
+
+  //# region callbacks
+
+  const setSelectedImageFromIdentifier = (selectedImage: string): void => {
     if (projectCardback != null) {
       dispatch(
         bulkReplaceSelectedImage({
@@ -48,7 +55,10 @@ export function CommonCardbackGridSelector({
       );
       dispatch(setSelectedCardback({ selectedImage }));
     }
-  }
+  };
+
+  //# endregion
+
   return (
     <GridSelectorModal
       testId="cardback-grid-selector"
@@ -73,15 +83,48 @@ interface CommonCardbackProps {
 }
 
 export function CommonCardback({ selectedImage }: CommonCardbackProps) {
+  //# region queries and hooks
+
   const dispatch = useAppDispatch();
-
-  const [showGridSelector, setShowGridSelector] = useState<boolean>(false);
-  const handleCloseGridSelector = () => setShowGridSelector(false);
-  const handleShowGridSelector = () => setShowGridSelector(true);
-
   const searchResults = useAppSelector(selectCardbacks);
 
-  // TODO: avoid repeating this logic between this component and cardSlot
+  //# endregion
+
+  //# region state
+
+  const [showGridSelector, setShowGridSelector] = useState<boolean>(false);
+
+  //# endregion
+
+  //# region callbacks
+
+  const handleCloseGridSelector = () => setShowGridSelector(false);
+  const handleShowGridSelector = () => setShowGridSelector(true);
+  const setSelectedImageFromDelta = (delta: number): void => {
+    if (selectedImage != null && selectedImageIndex != null) {
+      const newImage =
+        searchResults[
+          wrapIndex(selectedImageIndex + delta, searchResults.length)
+        ];
+      dispatch(
+        bulkReplaceSelectedImage({
+          currentImage: selectedImage,
+          selectedImage: newImage,
+          face: Back,
+        })
+      );
+      dispatch(
+        setSelectedCardback({
+          selectedImage: newImage,
+        })
+      );
+    }
+  };
+
+  //# endregion
+
+  //# region effects
+
   useEffect(() => {
     let mutatedSelectedImage = selectedImage;
 
@@ -105,6 +148,10 @@ export function CommonCardback({ selectedImage }: CommonCardbackProps) {
     );
   }, [dispatch, selectedImage, searchResults]);
 
+  //# endregion
+
+  //# region computed constants
+
   const selectedImageIndex: number | undefined =
     selectedImage != null ? searchResults.indexOf(selectedImage) : undefined;
   const previousImage: string | undefined =
@@ -115,28 +162,6 @@ export function CommonCardback({ selectedImage }: CommonCardbackProps) {
     selectedImageIndex != null
       ? searchResults[wrapIndex(selectedImageIndex - 1, searchResults.length)]
       : undefined;
-
-  function setSelectedImageFromDelta(delta: number): void {
-    if (selectedImage != null && selectedImageIndex != null) {
-      const newImage =
-        searchResults[
-          wrapIndex(selectedImageIndex + delta, searchResults.length)
-        ];
-      dispatch(
-        bulkReplaceSelectedImage({
-          currentImage: selectedImage,
-          selectedImage: newImage,
-          face: Back,
-        })
-      );
-      dispatch(
-        setSelectedCardback({
-          selectedImage: newImage,
-        })
-      );
-    }
-  }
-
   // TODO: would be good to reuse some of this code
   const cardHeaderTitle = "Cardback";
   const cardFooter = (
@@ -175,6 +200,8 @@ export function CommonCardback({ selectedImage }: CommonCardbackProps) {
       )}
     </>
   );
+
+  //# endregion
 
   return (
     <div data-testid="common-cardback">

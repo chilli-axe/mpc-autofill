@@ -28,14 +28,6 @@ import {
 } from "@/features/backend/backendSlice";
 require("bootstrap-icons/font/bootstrap-icons.css");
 
-interface BackendConfigProps {
-  show: boolean;
-  handleClose: {
-    (): void;
-    (event: React.MouseEvent<HTMLButtonElement, MouseEvent>): void;
-  };
-}
-
 enum ValidationState {
   IN_PROGRESS = "record-circle-fill",
   SUCCEEDED = "check-circle-fill",
@@ -86,24 +78,39 @@ async function searchEngineHealthCheck(url: string): Promise<boolean> {
   return outcome;
 }
 
+interface BackendConfigProps {
+  show: boolean;
+  handleClose: {
+    (): void;
+    (event: React.MouseEvent<HTMLButtonElement, MouseEvent>): void;
+  };
+}
+
 export function BackendConfig({ show, handleClose }: BackendConfigProps) {
+  //# region queries and hooks
   const dispatch = useAppDispatch();
+  const backendURL = useAppSelector(selectBackendURL);
+
+  //# endregion
+
+  //# region state
 
   const [validationStatus, setValidationStatus] = useState<
     Array<ValidationState>
   >([]);
   const [validating, setValidating] = useState<boolean>(false);
+  const [localBackendURL, setLocalBackendURL] = useState<string>("");
 
-  const backendURL = useAppSelector(selectBackendURL);
+  //# endregion
+
+  //# region callbacks
+
   const clearBackendURL = () => {
     dispatch(clearURL());
     clearLocalStorageBackendURL();
     dispatch(api.util.invalidateTags([QueryTags.BackendSpecific]));
     setValidationStatus([]);
   };
-
-  const [localBackendURL, setLocalBackendURL] = useState<string>("");
-
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault(); // to avoid reloading the page
     setValidating(true);
@@ -144,6 +151,10 @@ export function BackendConfig({ show, handleClose }: BackendConfigProps) {
     setValidating(false);
   };
 
+  //# endregion
+
+  //# region effects
+
   useEffect(() => {
     /**
      * TODO: This could be turned into a Redux listener. The reason I haven't done so here is because it's a bit funky
@@ -156,6 +167,8 @@ export function BackendConfig({ show, handleClose }: BackendConfigProps) {
       dispatch(api.util.invalidateTags([QueryTags.BackendSpecific]));
     }
   }, [dispatch]);
+
+  //# endregion
 
   return (
     <Offcanvas show={show} onHide={handleClose} data-testid="backend-offcanvas">

@@ -41,16 +41,27 @@ import {
 } from "@/features/project/projectSlice";
 
 export function ImportXML() {
+  //# region queries and hooks
+
   const dispatch = useAppDispatch();
-  const [showXMLModal, setShowXMLModal] = useState<boolean>(false);
-  const handleCloseXMLModal = () => setShowXMLModal(false);
-  const handleShowXMLModal = () => setShowXMLModal(true);
   const projectCardback = useAppSelector(selectProjectCardback);
   const projectSize = useAppSelector(selectProjectSize);
+
+  //# endregion
+
+  //# region state
+
+  const [showXMLModal, setShowXMLModal] = useState<boolean>(false);
   const [useXMLCardback, setUseXMLCardback] = useState<boolean>(false);
   const [useXMLFinishSettings, setUseXMLFinishSettings] =
     useState<boolean>(false);
 
+  //# endregion
+
+  //# region callbacks
+
+  const handleCloseXMLModal = () => setShowXMLModal(false);
+  const handleShowXMLModal = () => setShowXMLModal(true);
   const parseXMLFile = (fileContents: string | ArrayBuffer | null) => {
     if (typeof fileContents !== "string") {
       alert("invalid CSV file uploaded");
@@ -172,6 +183,8 @@ export function ImportXML() {
 
     handleCloseXMLModal();
   };
+
+  //# endregion
 
   return (
     <>

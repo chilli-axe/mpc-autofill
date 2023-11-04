@@ -13,12 +13,22 @@ import { SupportBackendModal } from "@/features/modals/supportBackendModal";
 import { SupportDeveloperModal } from "@/features/modals/supportDeveloperModal";
 
 export function Modals() {
-  // TODO: move the grid selector into here
+  //# region queries and hooks
+
+  const dispatch = useAppDispatch();
   const selectedImage = useAppSelector(selectModalCard);
   const selectedSlots = useAppSelector(selectModalSlots);
   const shownModal = useAppSelector(selectShownModal);
-  const dispatch = useAppDispatch();
+
+  //# endregion
+
+  //# region callbacks
+
   const handleClose = () => dispatch(hideModal());
+
+  //# endregion
+
+  // TODO: move the grid selector into here
 
   return (
     <>

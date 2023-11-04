@@ -138,18 +138,25 @@ function SampleCSV() {
 }
 
 export function ImportCSV() {
+  //# region queries and hooks
+
   const dispatch = useAppDispatch();
   const dfcPairsQuery = useGetDFCPairsQuery();
-  const [showCSVModal, setShowCSVModal] = useState<boolean>(false);
-  const handleCloseCSVModal = () => setShowCSVModal(false);
-  const handleShowCSVModal = () => setShowCSVModal(true);
-
   const fuzzySearch = useAppSelector(selectFuzzySearch);
-
   const projectSize = useAppSelector(selectProjectSize);
 
-  const disabled = dfcPairsQuery.isFetching;
+  //# endregion
 
+  //# region state
+
+  const [showCSVModal, setShowCSVModal] = useState<boolean>(false);
+
+  //# endregion
+
+  //# region callbacks
+
+  const handleCloseCSVModal = () => setShowCSVModal(false);
+  const handleShowCSVModal = () => setShowCSVModal(true);
   const parseCSVFile = (fileContents: string | ArrayBuffer | null) => {
     if (typeof fileContents !== "string") {
       dispatch(
@@ -205,6 +212,14 @@ export function ImportCSV() {
     );
     handleCloseCSVModal();
   };
+
+  //# endregion
+
+  //# region computed constants
+
+  const disabled = dfcPairsQuery.isFetching;
+
+  //# endregion
 
   return (
     <>

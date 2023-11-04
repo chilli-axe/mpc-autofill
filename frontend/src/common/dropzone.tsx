@@ -64,7 +64,7 @@ export function TextFileDropzone({
           { name: "File upload error", message: "File reading was stopped." },
         ])
       ),
-    []
+    [dispatch]
   );
   const onError = useCallback(
     () =>
@@ -77,9 +77,8 @@ export function TextFileDropzone({
           },
         ])
       ),
-    []
+    [dispatch]
   );
-
   const onDrop = useCallback(
     (acceptedFiles: Array<File>) => {
       acceptedFiles.forEach((file: File) => {

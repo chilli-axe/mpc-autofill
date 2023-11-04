@@ -204,8 +204,15 @@ export function generateXML(
 }
 
 export function ExportXML() {
+  //# region queries and hooks
+
   const store = useStore();
   const isProjectEmpty = useAppSelector(selectIsProjectEmpty);
+
+  //# endregion
+
+  //# region callbacks
+
   const downloadFile = () => {
     const generatedXML = selectGeneratedXML(store.getState() as RootState);
     saveAs(
@@ -213,6 +220,8 @@ export function ExportXML() {
       "cards.xml"
     );
   };
+
+  //# endregion
 
   return (
     <Dropdown.Item

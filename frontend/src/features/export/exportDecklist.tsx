@@ -118,8 +118,15 @@ const selectGeneratedDecklist = (state: RootState): string => {
 };
 
 export function ExportDecklist() {
+  //# region queries and hooks
+
   const store = useStore();
   const isProjectEmpty = useAppSelector(selectIsProjectEmpty);
+
+  //# endregion
+
+  //# region callbacks
+
   const downloadFile = () => {
     const generatedDecklist = selectGeneratedDecklist(
       store.getState() as RootState
@@ -129,6 +136,8 @@ export function ExportDecklist() {
       "decklist.txt" // TODO: use project name here when we eventually track that
     );
   };
+
+  //# endregion
 
   return (
     <Dropdown.Item

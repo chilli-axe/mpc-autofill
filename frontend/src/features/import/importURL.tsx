@@ -26,26 +26,31 @@ import { selectFuzzySearch } from "@/features/searchSettings/searchSettingsSlice
 import { setError } from "@/features/toasts/toastsSlice";
 
 export function ImportURL() {
+  //# region queries and hooks
+
+  const dispatch = useAppDispatch();
   const dfcPairsQuery = useGetDFCPairsQuery();
   const importSitesQuery = useGetImportSitesQuery();
-  const projectName = useProjectName();
-  const fuzzySearch = useAppSelector(selectFuzzySearch);
-
-  const projectSize = useAppSelector(selectProjectSize);
-  const dispatch = useAppDispatch();
-
-  const [showURLModal, setShowURLModal] = useState<boolean>(false);
-  const [loading, setLoading] = useState<boolean>(false);
-  const handleCloseURLModal = () => setShowURLModal(false);
-  const handleShowURLModal = () => setShowURLModal(true);
-  const [URLModalValue, setURLModalValue] = useState<string>("");
-
   const [triggerFn, queryImportSiteQuery] =
     api.endpoints.queryImportSite.useLazyQuery();
+  const projectName = useProjectName();
+  const fuzzySearch = useAppSelector(selectFuzzySearch);
+  const projectSize = useAppSelector(selectProjectSize);
 
-  const disabled =
-    loading || importSitesQuery.isFetching || dfcPairsQuery.isFetching;
+  //# endregion
 
+  //# region state
+
+  const [URLModalValue, setURLModalValue] = useState<string>("");
+  const [showURLModal, setShowURLModal] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
+
+  //# endregion
+
+  //# region callbacks
+
+  const handleCloseURLModal = () => setShowURLModal(false);
+  const handleShowURLModal = () => setShowURLModal(true);
   const handleSubmitURLModal = useCallback(
     async (event: FormEvent<HTMLFormElement>) => {
       event.preventDefault(); // to avoid reloading the page
@@ -92,6 +97,15 @@ export function ImportURL() {
       fuzzySearch,
     ]
   );
+
+  //# endregion
+
+  //# region computed constants
+
+  const disabled =
+    loading || importSitesQuery.isFetching || dfcPairsQuery.isFetching;
+
+  //# endregion
 
   return importSitesQuery.isFetching ||
     (importSitesQuery.data ?? []).length === 0 ? (

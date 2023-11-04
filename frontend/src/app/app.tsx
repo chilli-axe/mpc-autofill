@@ -41,19 +41,28 @@ const OverflowCol = styled(Col)`
 
 function App() {
   // TODO: should we periodically ping the backend to make sure it's still alive?
+  //# region queries and hooks
+
+  const dispatch = useAppDispatch();
   const backendConfigured = useBackendConfigured();
   const backendURL = useAppSelector(selectBackendURL);
-  const dispatch = useAppDispatch();
   const cardback = useAppSelector(selectProjectCardback);
+  const isProjectEmpty = useAppSelector(selectIsProjectEmpty);
+
+  //# endregion
+
+  //# region effects
+
   useEffect(() => {
     if (backendConfigured) {
       fetchSourceDocumentsAndReportError(dispatch);
     }
   }, [dispatch, backendURL]);
-
-  // ask the user for confirmation before they close the page if their project has any cards in it
-  const isProjectEmpty = useAppSelector(selectIsProjectEmpty);
   useEffect(() => {
+    /**
+     * Ask the user for confirmation before they close the page if their project has any cards in it.
+     */
+
     const handler = (event: BeforeUnloadEvent) => {
       if (!isProjectEmpty) {
         event.preventDefault();
@@ -65,6 +74,8 @@ function App() {
       window.removeEventListener("beforeunload", handler);
     };
   }, [isProjectEmpty]);
+
+  //# endregion
 
   return (
     <>

@@ -100,8 +100,13 @@ function CardsFacetedBySource({
    * Allow users to toggle whether each source's cards are showed/hidden.
    */
 
+  //# region queries and hooks
+
   const dispatch = useAppDispatch();
   const sourcesVisible = useAppSelector(selectSourcesVisible);
+
+  //# endregion
+
   return (
     <>
       {Object.entries(cardIdentifiersAndOptionNumbersBySource).map(
@@ -193,11 +198,20 @@ export function GridSelectorModal({
   handleClose,
   onClick,
 }: GridSelectorProps) {
+  //# region queries and hooks
+
   const dispatch = useAppDispatch();
   const cardDocuments = useAppSelector((state) =>
     selectCardDocumentsByIdentifier(state, imageIdentifiers)
   );
   const facetBySource = useAppSelector(selectFacetBySource);
+  const sourceNamesByKey = useAppSelector(selectSourceNamesByKey);
+  const anySourcesCollapsed = useAppSelector(selectAnySourcesCollapsed);
+
+  //# endregion
+
+  //# region callbacks
+
   const selectImage = useCallback(
     (identifier: string) => {
       onClick(identifier);
@@ -206,9 +220,11 @@ export function GridSelectorModal({
     [onClick, handleClose]
   );
 
-  const sourceNamesByKey = useAppSelector(selectSourceNamesByKey);
+  //# endregion
+
+  //# region computed constants
+
   const sourceKeys = Object.keys(sourceNamesByKey);
-  const anySourcesCollapsed = useAppSelector(selectAnySourcesCollapsed);
   const cardIdentifiersAndOptionNumbersBySource = useMemo(
     () =>
       imageIdentifiers.reduce(
@@ -236,7 +252,7 @@ export function GridSelectorModal({
     [cardDocuments, imageIdentifiers]
   );
 
-  // TODO: paginate or lazy-load these cards. this is quite slow when you have hundreds of images.
+  //# endregion
 
   return (
     <Modal
