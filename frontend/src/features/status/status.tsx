@@ -1,9 +1,9 @@
 import React from "react";
 
-import { SelectedImagesStatus } from "@/features/status/bulkManagementStatus";
-import { InvalidIdentifiersStatus } from "@/features/status/invalidIdentifiersStatus";
-import { MobileStatus } from "@/features/status/mobileStatus";
-import { ProjectStatus } from "@/features/status/projectStatus";
+import { SelectedImagesStatus } from "@/features/bulkManagement/bulkManagementStatus";
+import { InvalidIdentifiersStatus } from "@/features/invalidIdentifiers/invalidIdentifiersStatus";
+import { MobileStatus } from "@/features/mobile/mobileStatus";
+import { ProjectStatus } from "@/features/project/projectStatus";
 
 export function Status() {
   return (

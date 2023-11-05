@@ -1,17 +1,17 @@
 import React from "react";
 
 import { useAppDispatch, useAppSelector } from "@/common/types";
-import { MemoizedCardDetailedView } from "@/features/modals/cardDetailedViewModal";
-import { ChangeQueryModal } from "@/features/modals/changeQueryModal";
-import { InvalidIdentifiersModal } from "@/features/modals/invalidIdentifiersModal";
+import { MemoizedCardDetailedView } from "@/features/cardDetailedView/cardDetailedViewModal";
+import { ChangeQueryModal } from "@/features/changeQuery/changeQueryModal";
+import { InvalidIdentifiersModal } from "@/features/invalidIdentifiers/invalidIdentifiersModal";
 import {
   hideModal,
   selectModalCard,
   selectModalSlots,
   selectShownModal,
 } from "@/features/modals/modalsSlice";
-import { SupportBackendModal } from "@/features/modals/supportBackendModal";
-import { SupportDeveloperModal } from "@/features/modals/supportDeveloperModal";
+import { SupportBackendModal } from "@/features/support/supportBackendModal";
+import { SupportDeveloperModal } from "@/features/support/supportDeveloperModal";
 
 export function Modals() {
   //# region queries and hooks

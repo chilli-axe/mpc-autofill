@@ -10,6 +10,7 @@ import styled from "styled-components";
 
 import { NavbarHeight } from "@/common/constants";
 import { useAppDispatch, useAppSelector } from "@/common/types";
+import { NoBackendDefault } from "@/components/noBackendDefault";
 import {
   selectBackendURL,
   useBackendConfigured,
@@ -26,7 +27,6 @@ import {
 import { fetchSourceDocumentsAndReportError } from "@/features/search/sourceDocumentsSlice";
 import { SearchSettings } from "@/features/searchSettings/searchSettings";
 import { Status } from "@/features/status/status";
-import { NoBackendDefault } from "@/features/ui/noBackendDefault";
 
 const OverflowCol = styled(Col)`
   position: relative;

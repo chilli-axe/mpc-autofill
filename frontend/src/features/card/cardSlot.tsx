@@ -19,8 +19,8 @@ import {
 import { wrapIndex } from "@/common/utils";
 import { MemoizedEditorCard } from "@/features/card/card";
 import { selectCardbacks } from "@/features/card/cardbackSlice";
+import { GridSelectorModal } from "@/features/gridSelector/gridSelectorModal";
 import { recordInvalidIdentifier } from "@/features/invalidIdentifiers/invalidIdentifiersSlice";
-import { GridSelectorModal } from "@/features/modals/gridSelectorModal";
 import { setSelectedSlotsAndShowModal } from "@/features/modals/modalsSlice";
 import {
   bulkAlignMemberSelection,

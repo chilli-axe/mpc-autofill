@@ -2,6 +2,7 @@ import Head from "next/head";
 import React from "react";
 
 import { ProjectName } from "@/common/constants";
+import { NoBackendDefault } from "@/components/noBackendDefault";
 import {
   useBackendConfigured,
   useProjectName,
@@ -9,7 +10,6 @@ import {
 import { NewCards } from "@/features/new/new";
 import Footer from "@/features/ui/footer";
 import { ProjectContainer } from "@/features/ui/layout";
-import { NoBackendDefault } from "@/features/ui/noBackendDefault";
 
 function NewOrDefault() {
   const backendConfigured = useBackendConfigured();

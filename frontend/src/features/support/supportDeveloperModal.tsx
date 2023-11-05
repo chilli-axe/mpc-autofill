@@ -7,7 +7,7 @@ import {
   MakePlayingCardsURL,
   ProjectName,
 } from "@/common/constants";
-import { Coffee } from "@/features/ui/coffee";
+import { Coffee } from "@/components/coffee";
 
 interface SupportDeveloperModalProps {
   show: boolean;
