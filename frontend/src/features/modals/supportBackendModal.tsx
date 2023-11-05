@@ -5,11 +5,7 @@ import Modal from "react-bootstrap/Modal";
 
 import { useGetBackendInfoQuery } from "@/app/api";
 import { Spinner } from "@/components/spinner";
-import {
-  AutofillTable,
-  AutoLayoutTable,
-  TableWrapper,
-} from "@/components/table";
+import { AutofillTable } from "@/components/table";
 
 interface SupportBackendModalProps {
   show: boolean;
