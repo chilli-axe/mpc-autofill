@@ -2,257 +2,259 @@ import { setupStore } from "@/app/store";
 import { CardType, ThunkStatus } from "@/common/types";
 import { selectQueriesWithoutSearchResults } from "@/features/project/projectSlice";
 
-test("selectQueriesWithoutSearchResults empty", () => {
-  const state = { project: { members: [], cardback: null } };
-  expect(
-    selectQueriesWithoutSearchResults(setupStore(state).getState())
-  ).toStrictEqual([]);
-});
+describe("selectQueriesWithoutSearchResults tests", () => {
+  test("empty", () => {
+    const state = { project: { members: [], cardback: null } };
+    expect(
+      selectQueriesWithoutSearchResults(setupStore(state).getState())
+    ).toStrictEqual([]);
+  });
 
-test("selectQueriesWithoutSearchResults one query", () => {
-  const state = {
-    project: {
-      members: [
-        {
-          front: {
-            query: {
-              query: "query 1",
-              card_type: "CARD" as CardType,
+  test("one query", () => {
+    const state = {
+      project: {
+        members: [
+          {
+            front: {
+              query: {
+                query: "query 1",
+                card_type: "CARD" as CardType,
+              },
+              selectedImage: undefined,
+              selected: false,
             },
-            selectedImage: undefined,
-            selected: false,
+            back: null,
           },
-          back: null,
-        },
-      ],
-      cardback: null,
-    },
-    searchResults: {
-      searchResults: {},
-      status: "idle" as ThunkStatus,
-      error: null,
-    },
-  };
-  expect(
-    selectQueriesWithoutSearchResults(setupStore(state).getState())
-  ).toStrictEqual([{ query: "query 1", card_type: "CARD" }]);
-});
-
-test("selectQueriesWithoutSearchResults two queries", () => {
-  const state = {
-    project: {
-      members: [
-        {
-          front: {
-            query: {
-              query: "query 1",
-              card_type: "CARD" as CardType,
-            },
-            selectedImage: undefined,
-            selected: false,
-          },
-          back: null,
-        },
-        {
-          front: {
-            query: {
-              query: "query 2",
-              card_type: "CARD" as CardType,
-            },
-            selectedImage: undefined,
-            selected: false,
-          },
-          back: null,
-        },
-      ],
-      cardback: null,
-    },
-    searchResults: {
-      searchResults: {},
-      status: "idle" as ThunkStatus,
-      error: null,
-    },
-  };
-  expect(
-    selectQueriesWithoutSearchResults(setupStore(state).getState())
-  ).toStrictEqual([
-    { query: "query 1", card_type: "CARD" },
-    { query: "query 2", card_type: "CARD" },
-  ]);
-});
-
-test("selectQueriesWithoutSearchResults three queries", () => {
-  const state = {
-    project: {
-      members: [
-        {
-          front: {
-            query: {
-              query: "query 1",
-              card_type: "CARD" as CardType,
-            },
-            selectedImage: undefined,
-            selected: false,
-          },
-          back: null,
-        },
-        {
-          front: {
-            query: {
-              query: "query 2",
-              card_type: "TOKEN" as CardType,
-            },
-            selectedImage: undefined,
-            selected: false,
-          },
-          back: {
-            query: {
-              query: "query 3",
-              card_type: "CARDBACK" as CardType,
-            },
-            selectedImage: undefined,
-            selected: false,
-          },
-        },
-      ],
-      cardback: null,
-    },
-    searchResults: {
-      searchResults: {},
-      status: "idle" as ThunkStatus,
-      error: null,
-    },
-  };
-  expect(
-    selectQueriesWithoutSearchResults(setupStore(state).getState())
-  ).toStrictEqual([
-    { query: "query 1", card_type: "CARD" },
-    { query: "query 2", card_type: "TOKEN" },
-    { query: "query 3", card_type: "CARDBACK" },
-  ]);
-});
-
-test("selectQueriesWithoutSearchResults two queries but one has search results", () => {
-  const state = {
-    project: {
-      members: [
-        {
-          front: {
-            query: {
-              query: "query 1",
-              card_type: "CARD" as CardType,
-            },
-            selectedImage: undefined,
-            selected: false,
-          },
-          back: null,
-        },
-        {
-          front: {
-            query: {
-              query: "query 2",
-              card_type: "CARD" as CardType,
-            },
-            selectedImage: undefined,
-            selected: false,
-          },
-          back: null,
-        },
-      ],
-      cardback: null,
-    },
-    searchResults: {
-      searchResults: {
-        "query 1": { CARD: [], CARDBACK: [], TOKEN: [] },
+        ],
+        cardback: null,
       },
-      status: "idle" as ThunkStatus,
-      error: null,
-    },
-  };
-  expect(
-    selectQueriesWithoutSearchResults(setupStore(state).getState())
-  ).toStrictEqual([{ query: "query 2", card_type: "CARD" }]);
-});
+      searchResults: {
+        searchResults: {},
+        status: "idle" as ThunkStatus,
+        error: null,
+      },
+    };
+    expect(
+      selectQueriesWithoutSearchResults(setupStore(state).getState())
+    ).toStrictEqual([{ query: "query 1", card_type: "CARD" }]);
+  });
 
-test("selectQueriesWithoutSearchResults duplicated query", () => {
-  const state = {
-    project: {
-      members: [
-        {
-          front: {
-            query: {
-              query: "query 1",
-              card_type: "CARD" as CardType,
+  test("two queries", () => {
+    const state = {
+      project: {
+        members: [
+          {
+            front: {
+              query: {
+                query: "query 1",
+                card_type: "CARD" as CardType,
+              },
+              selectedImage: undefined,
+              selected: false,
             },
-            selectedImage: undefined,
-            selected: false,
+            back: null,
           },
-          back: null,
-        },
-        {
-          front: {
-            query: {
-              query: "query 1",
-              card_type: "CARD" as CardType,
+          {
+            front: {
+              query: {
+                query: "query 2",
+                card_type: "CARD" as CardType,
+              },
+              selectedImage: undefined,
+              selected: false,
             },
-            selectedImage: undefined,
-            selected: false,
+            back: null,
           },
-          back: null,
-        },
-      ],
-      cardback: null,
-    },
-    searchResults: {
-      searchResults: {},
-      status: "idle" as ThunkStatus,
-      error: null,
-    },
-  };
-  expect(
-    selectQueriesWithoutSearchResults(setupStore(state).getState())
-  ).toStrictEqual([{ query: "query 1", card_type: "CARD" }]);
-});
+        ],
+        cardback: null,
+      },
+      searchResults: {
+        searchResults: {},
+        status: "idle" as ThunkStatus,
+        error: null,
+      },
+    };
+    expect(
+      selectQueriesWithoutSearchResults(setupStore(state).getState())
+    ).toStrictEqual([
+      { query: "query 1", card_type: "CARD" },
+      { query: "query 2", card_type: "CARD" },
+    ]);
+  });
 
-test("selectQueriesWithoutSearchResults duplicated query but across multiple types", () => {
-  const state = {
-    project: {
-      members: [
-        {
-          front: {
-            query: {
-              query: "query 1",
-              card_type: "CARD" as CardType,
+  test("three queries", () => {
+    const state = {
+      project: {
+        members: [
+          {
+            front: {
+              query: {
+                query: "query 1",
+                card_type: "CARD" as CardType,
+              },
+              selectedImage: undefined,
+              selected: false,
             },
-            selectedImage: undefined,
-            selected: false,
+            back: null,
           },
-          back: null,
-        },
-        {
-          front: {
-            query: {
-              query: "query 1",
-              card_type: "TOKEN" as CardType,
+          {
+            front: {
+              query: {
+                query: "query 2",
+                card_type: "TOKEN" as CardType,
+              },
+              selectedImage: undefined,
+              selected: false,
             },
-            selectedImage: undefined,
-            selected: false,
+            back: {
+              query: {
+                query: "query 3",
+                card_type: "CARDBACK" as CardType,
+              },
+              selectedImage: undefined,
+              selected: false,
+            },
           },
-          back: null,
+        ],
+        cardback: null,
+      },
+      searchResults: {
+        searchResults: {},
+        status: "idle" as ThunkStatus,
+        error: null,
+      },
+    };
+    expect(
+      selectQueriesWithoutSearchResults(setupStore(state).getState())
+    ).toStrictEqual([
+      { query: "query 1", card_type: "CARD" },
+      { query: "query 2", card_type: "TOKEN" },
+      { query: "query 3", card_type: "CARDBACK" },
+    ]);
+  });
+
+  test("two queries but one has search results", () => {
+    const state = {
+      project: {
+        members: [
+          {
+            front: {
+              query: {
+                query: "query 1",
+                card_type: "CARD" as CardType,
+              },
+              selectedImage: undefined,
+              selected: false,
+            },
+            back: null,
+          },
+          {
+            front: {
+              query: {
+                query: "query 2",
+                card_type: "CARD" as CardType,
+              },
+              selectedImage: undefined,
+              selected: false,
+            },
+            back: null,
+          },
+        ],
+        cardback: null,
+      },
+      searchResults: {
+        searchResults: {
+          "query 1": { CARD: [], CARDBACK: [], TOKEN: [] },
         },
-      ],
-      cardback: null,
-    },
-    searchResults: {
-      searchResults: {},
-      status: "idle" as ThunkStatus,
-      error: null,
-    },
-  };
-  expect(
-    selectQueriesWithoutSearchResults(setupStore(state).getState())
-  ).toStrictEqual([
-    { query: "query 1", card_type: "CARD" },
-    { query: "query 1", card_type: "TOKEN" },
-  ]);
+        status: "idle" as ThunkStatus,
+        error: null,
+      },
+    };
+    expect(
+      selectQueriesWithoutSearchResults(setupStore(state).getState())
+    ).toStrictEqual([{ query: "query 2", card_type: "CARD" }]);
+  });
+
+  test("duplicated query", () => {
+    const state = {
+      project: {
+        members: [
+          {
+            front: {
+              query: {
+                query: "query 1",
+                card_type: "CARD" as CardType,
+              },
+              selectedImage: undefined,
+              selected: false,
+            },
+            back: null,
+          },
+          {
+            front: {
+              query: {
+                query: "query 1",
+                card_type: "CARD" as CardType,
+              },
+              selectedImage: undefined,
+              selected: false,
+            },
+            back: null,
+          },
+        ],
+        cardback: null,
+      },
+      searchResults: {
+        searchResults: {},
+        status: "idle" as ThunkStatus,
+        error: null,
+      },
+    };
+    expect(
+      selectQueriesWithoutSearchResults(setupStore(state).getState())
+    ).toStrictEqual([{ query: "query 1", card_type: "CARD" }]);
+  });
+
+  test("duplicated query but across multiple types", () => {
+    const state = {
+      project: {
+        members: [
+          {
+            front: {
+              query: {
+                query: "query 1",
+                card_type: "CARD" as CardType,
+              },
+              selectedImage: undefined,
+              selected: false,
+            },
+            back: null,
+          },
+          {
+            front: {
+              query: {
+                query: "query 1",
+                card_type: "TOKEN" as CardType,
+              },
+              selectedImage: undefined,
+              selected: false,
+            },
+            back: null,
+          },
+        ],
+        cardback: null,
+      },
+      searchResults: {
+        searchResults: {},
+        status: "idle" as ThunkStatus,
+        error: null,
+      },
+    };
+    expect(
+      selectQueriesWithoutSearchResults(setupStore(state).getState())
+    ).toStrictEqual([
+      { query: "query 1", card_type: "CARD" },
+      { query: "query 1", card_type: "TOKEN" },
+    ]);
+  });
 });
