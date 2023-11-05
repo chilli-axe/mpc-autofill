@@ -19,6 +19,7 @@ import {
 import { wrapIndex } from "@/common/utils";
 import { MemoizedEditorCard } from "@/features/card/card";
 import { selectCardbacks } from "@/features/card/cardbackSlice";
+import { recordInvalidIdentifier } from "@/features/invalidIdentifiers/invalidIdentifiersSlice";
 import { GridSelectorModal } from "@/features/modals/gridSelectorModal";
 import { setSelectedSlotsAndShowModal } from "@/features/modals/modalsSlice";
 import {
@@ -162,11 +163,21 @@ export function CardSlot({ searchQuery, face, slot }: CardSlotProps) {
     if (searchResultsForQueryOrDefault != null) {
       let mutatedSelectedImage = selectedImage;
 
-      // If an image is selected and it's not in the search results, deselect the image
+      // If an image is selected and it's not in the search results, deselect the image and let the user know about it
       if (
         mutatedSelectedImage != null &&
         !searchResultsForQueryOrDefault.includes(mutatedSelectedImage)
       ) {
+        if (searchQuery != null && searchResultsForQueryOrDefault.length > 0) {
+          dispatch(
+            recordInvalidIdentifier({
+              slot,
+              face,
+              searchQuery,
+              identifier: mutatedSelectedImage,
+            })
+          );
+        }
         mutatedSelectedImage = undefined;
       }
 
@@ -194,7 +205,7 @@ export function CardSlot({ searchQuery, face, slot }: CardSlotProps) {
     dispatch,
     face,
     slot,
-    searchQuery?.query,
+    searchQuery,
     searchResultsForQueryOrDefault,
     projectCardback,
     selectedImage,

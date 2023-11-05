@@ -3,6 +3,7 @@ import React from "react";
 import { useAppDispatch, useAppSelector } from "@/common/types";
 import { MemoizedCardDetailedView } from "@/features/modals/cardDetailedViewModal";
 import { ChangeQueryModal } from "@/features/modals/changeQueryModal";
+import { InvalidIdentifiersModal } from "@/features/modals/invalidIdentifiersModal";
 import {
   hideModal,
   selectModalCard,
@@ -52,6 +53,10 @@ export function Modals() {
       />
       <SupportBackendModal
         show={shownModal === "supportBackend"}
+        handleClose={handleClose}
+      />
+      <InvalidIdentifiersModal
+        show={shownModal === "invalidIdentifiers"}
         handleClose={handleClose}
       />
     </>

@@ -97,7 +97,7 @@ export function AutofillTable({
                     key={`autofill-table-cell-${rowIndex}/${columnIndex}`}
                     $cols={uniformWidth ? row.length : undefined}
                     $centred={centred}
-                    $bordered={!isLabel}
+                    $bordered={!isLabel && bordered}
                   >
                     {value}
                   </CellElement>
