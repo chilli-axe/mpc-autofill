@@ -15,10 +15,11 @@ import Table from "react-bootstrap/Table";
 import { api, useGetLanguagesQuery } from "@/app/api";
 import { base64StringToBlob } from "@/common/processing";
 import { CardDocument } from "@/common/types";
-import { imageSizeToMBString } from "@/common/utils";
+import { imageSizeToMBString, toTitleCase } from "@/common/utils";
 import { ClickToCopy } from "@/components/clickToCopy";
 import DisableSSR from "@/components/disableSSR";
 import { Spinner } from "@/components/spinner";
+import { AutofillTable } from "@/components/table";
 import {
   MemoizedCardImage,
   MemoizedCardProportionWrapper,
@@ -97,89 +98,56 @@ export function CardDetailedViewModal({
             </div>
             <div className="col-lg-7">
               <h4>{cardDocument.name}</h4>
-              <Table hover>
-                <tbody>
-                  <tr>
-                    <td>
-                      <b>Source Name</b>
-                    </td>
-                    <td>
-                      {cardDocument.source_external_link != null &&
-                      cardDocument.source_external_link.length > 0 ? (
-                        <a
-                          href={cardDocument.source_external_link}
-                          target="_blank"
-                        >
-                          {cardDocument.source_name}
-                        </a>
-                      ) : (
-                        <p>{cardDocument.source_name}</p>
-                      )}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <b>Source Type</b>
-                    </td>
-                    <td>{cardDocument.source_type}</td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <b>Class</b>
-                    </td>
-                    <td>
-                      {cardDocument.card_type.charAt(0).toUpperCase() +
-                        cardDocument.card_type.slice(1).toLowerCase()}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <b>Identifier</b>
-                    </td>
-                    <td>
-                      <ClickToCopy text={cardDocument.identifier} />
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <b>Language</b>
-                    </td>
-                    <td>{languageNameByCode[cardDocument.language]}</td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <b>Tags</b>
-                    </td>
-                    <td>
-                      {cardDocument.tags.length > 0
-                        ? cardDocument.tags.map((tag) => (
-                            <Badge key={tag} pill>
-                              {tag}
-                            </Badge>
-                          ))
-                        : "Untagged"}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <b>Resolution</b>
-                    </td>
-                    <td>{cardDocument.dpi} DPI</td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <b>Date Created</b>
-                    </td>
-                    <td>{cardDocument.date}</td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <b>File Size</b>
-                    </td>
-                    <td>{imageSizeToMBString(cardDocument.size, 2)}</td>
-                  </tr>
-                </tbody>
-              </Table>
+              <AutofillTable
+                headers={[]}
+                data={[
+                  [
+                    "Source Name",
+                    cardDocument.source_external_link != null &&
+                    cardDocument.source_external_link.length > 0 ? (
+                      <a
+                        href={cardDocument.source_external_link}
+                        target="_blank"
+                      >
+                        {cardDocument.source_name}
+                      </a>
+                    ) : (
+                      cardDocument.source_name
+                    ),
+                  ],
+                  ["Source Type", cardDocument.source_type],
+                  ["Class", toTitleCase(cardDocument.card_type)],
+                  [
+                    "Identifier",
+                    <ClickToCopy
+                      key={`${cardDocument.identifier}-click-to-copy`}
+                      text={cardDocument.identifier}
+                    />,
+                  ],
+                  ["Language", languageNameByCode[cardDocument.language]],
+                  [
+                    "Tags",
+                    cardDocument.tags.length > 0 ? (
+                      <>
+                        {cardDocument.tags.map((tag) => (
+                          <Badge key={tag} pill>
+                            {tag}
+                          </Badge>
+                        ))}
+                      </>
+                    ) : (
+                      "Untagged"
+                    ),
+                  ],
+                  ["Resolution", `${cardDocument.dpi} DPI`],
+                  ["Date Created", cardDocument.date],
+                  ["File Size", imageSizeToMBString(cardDocument.size, 2)],
+                ]}
+                hover={true}
+                centred={false}
+                uniformWidth={false}
+                columnLabels={true}
+              />
               <div className="d-grid gap-0">
                 <Button
                   variant="primary"

@@ -8,11 +8,10 @@
 
 // @ts-ignore // TODO: put a PR into this repo adding types
 import { parse } from "lil-csv";
-import React, { PropsWithChildren, useState } from "react";
+import React, { useState } from "react";
 import Button from "react-bootstrap/Button";
 import Dropdown from "react-bootstrap/Dropdown";
 import Modal from "react-bootstrap/Modal";
-import styled from "styled-components";
 
 import { useGetDFCPairsQuery } from "@/app/api";
 import { FaceSeparator, SelectedImageSeparator } from "@/common/constants";
@@ -23,19 +22,10 @@ import {
 } from "@/common/processing";
 import { useAppDispatch, useAppSelector } from "@/common/types";
 import { RightPaddedIcon } from "@/components/icon";
-import { BorderedTable, TableWrapper } from "@/components/table";
+import { AutofillTable } from "@/components/table";
 import { addMembers, selectProjectSize } from "@/features/project/projectSlice";
 import { selectFuzzySearch } from "@/features/searchSettings/searchSettingsSlice";
 import { setError } from "@/features/toasts/toastsSlice";
-
-const FormattedColumnHeader = styled.th`
-  width: 20%;
-  text-align: center;
-`;
-const FormattedColumnData = styled.td`
-  width: 20%;
-  text-align: center;
-`;
 
 const CSVHeaders: { [key: string]: string } = {
   quantity: "Quantity",
@@ -45,25 +35,6 @@ const CSVHeaders: { [key: string]: string } = {
   backSelectedImage: "Back ID",
 };
 
-function CSVTable({ children }: PropsWithChildren) {
-  /**
-   * A simple component for representing the CSV format.
-   */
-
-  return (
-    <TableWrapper>
-      <BorderedTable bordered={true}>
-        <thead>
-          {Object.values(CSVHeaders).map((column) => (
-            <FormattedColumnHeader key={column}>{column}</FormattedColumnHeader>
-          ))}
-        </thead>
-        <tbody>{children}</tbody>
-      </BorderedTable>
-    </TableWrapper>
-  );
-}
-
 function CSVFormat() {
   /**
    * Instruct the user on how to format their CSV files.
@@ -71,9 +42,12 @@ function CSVFormat() {
 
   return (
     <>
-      <CSVTable>
-        {Array(3).fill(<tr>{Array(5).fill(<FormattedColumnData />)}</tr>)}
-      </CSVTable>
+      <AutofillTable
+        headers={Object.values(CSVHeaders)}
+        data={Array(3).fill(Array(5).fill(null))}
+        bordered={true}
+        uniformWidth={true}
+      />
       Where the columns follow these rules:
       <ul>
         <li>
@@ -104,36 +78,26 @@ function CSVFormat() {
 
 function SampleCSV() {
   return (
-    <CSVTable>
-      <tr>
-        <FormattedColumnData>
-          <code>2</code>
-        </FormattedColumnData>
-        <FormattedColumnData>
-          <code>island</code>
-        </FormattedColumnData>
-        <FormattedColumnData>
-          <code>1HsvTYs1...</code>
-        </FormattedColumnData>
-        <FormattedColumnData>
-          <code>forest</code>
-        </FormattedColumnData>
-        <FormattedColumnData />
-      </tr>
-      <tr>
-        <FormattedColumnData>
-          <code>3</code>
-        </FormattedColumnData>
-        <FormattedColumnData>
-          <code>t:goblin</code>
-        </FormattedColumnData>
-        <FormattedColumnData />
-        <FormattedColumnData />
-        <FormattedColumnData>
-          <code>1JtXL6Ca...</code>
-        </FormattedColumnData>
-      </tr>
-    </CSVTable>
+    <AutofillTable
+      headers={Object.values(CSVHeaders)}
+      data={[
+        [
+          <code key="row-1-quantity">2</code>,
+          <code key="row-1-front-query">island</code>,
+          <code key="row-1-front-id">1HsvTYs...</code>,
+          <code key="row-1-back-query">forest</code>,
+          null,
+        ],
+        [
+          <code key="row-2-quantity">3</code>,
+          <code key="row-2-front-query">t:goblin</code>,
+          null,
+          null,
+          <code key="row-2-back-id">1JtXL6C...</code>,
+        ],
+      ]}
+      bordered={true}
+    />
   );
 }
 

@@ -5,7 +5,7 @@ import { useGetBackendInfoQuery, useGetContributionsQuery } from "@/app/api";
 import { Card, Cardback, ProjectName, Token } from "@/common/constants";
 import { SourceContribution } from "@/common/types";
 import { Spinner } from "@/components/spinner";
-import { AutoLayoutTable, TableWrapper } from "@/components/table";
+import { AutofillTable } from "@/components/table";
 import { useProjectName } from "@/features/backend/backendSlice";
 
 export function ContributionsSummary() {
@@ -69,45 +69,28 @@ export function ContributionsSummary() {
   );
 }
 
-interface SourceContributionRowProps {
+function ContributionDescription({
+  contribution,
+}: {
   contribution: SourceContribution;
-}
-
-function SourceContributionRow({ contribution }: SourceContributionRowProps) {
-  /**
-   * Table row for `contribution` in the `ContributionsPerSource` summary table.
-   */
-
+}) {
   return (
-    <tr key={contribution.name}>
-      <td>
-        {contribution.external_link != null &&
-        contribution.external_link.length > 0 ? (
-          <Link href={contribution.external_link} target="_blank">
-            {contribution.name}
-          </Link>
-        ) : (
-          contribution.name
-        )}
-      </td>
-      <td>{contribution.source_type}</td>
-      <td>
-        <b>{contribution.qty_cards}</b> card
-        {contribution.qty_cards != "1" && "s"},{" "}
-        <b>{contribution.qty_cardbacks}</b> cardback
-        {contribution.qty_cardbacks != "1" && "s"}, and{" "}
-        <b>{contribution.qty_tokens}</b> token
-        {contribution.qty_tokens != "1" && "s"}, at{" "}
-        <b>{contribution.avgdpi} DPI</b> on average and a total size of{" "}
-        <b>{contribution.size}</b>.
-        {contribution.description.length > 0 && (
-          <>
-            <br />
-            <i>&quot;{contribution.description}&quot;</i>
-          </>
-        )}
-      </td>
-    </tr>
+    <>
+      <b>{contribution.qty_cards}</b> card
+      {contribution.qty_cards != "1" && "s"},{" "}
+      <b>{contribution.qty_cardbacks}</b> cardback
+      {contribution.qty_cardbacks != "1" && "s"}, and{" "}
+      <b>{contribution.qty_tokens}</b> token
+      {contribution.qty_tokens != "1" && "s"}, at{" "}
+      <b>{contribution.avgdpi} DPI</b> on average and a total size of{" "}
+      <b>{contribution.size}</b>.
+      {contribution.description.length > 0 && (
+        <>
+          <br />
+          <i>&quot;{contribution.description}&quot;</i>
+        </>
+      )}
+    </>
   );
 }
 
@@ -122,24 +105,25 @@ export function ContributionsPerSource() {
     contributionsQuery.data?.sources == null ? (
     <Spinner />
   ) : (
-    <TableWrapper>
-      <AutoLayoutTable>
-        <thead>
-          <tr>
-            <th className="prevent-select">Name</th>
-            <th className="prevent-select">Type</th>
-            <th className="prevent-select">Contribution</th>
-          </tr>
-        </thead>
-        <tbody>
-          {contributionsQuery.data.sources.map((contribution) => (
-            <SourceContributionRow
-              key={`${contribution.name}-row`}
-              contribution={contribution}
-            />
-          ))}
-        </tbody>
-      </AutoLayoutTable>
-    </TableWrapper>
+    <AutofillTable
+      headers={["Name", "Type", "Contribution"]}
+      data={contributionsQuery.data.sources.map((contribution) => [
+        contribution.external_link != null ? (
+          <Link href={contribution.external_link} target="_blank">
+            {contribution.name}
+          </Link>
+        ) : (
+          contribution.name
+        ),
+        contribution.source_type,
+        <ContributionDescription
+          key={`${contribution.name}-description`}
+          contribution={contribution}
+        />,
+      ])}
+      hover={true}
+      centred={false}
+      uniformWidth={false}
+    />
   );
 }
