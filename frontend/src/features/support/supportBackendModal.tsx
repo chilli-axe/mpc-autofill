@@ -5,7 +5,7 @@ import Modal from "react-bootstrap/Modal";
 
 import { useGetBackendInfoQuery } from "@/app/api";
 import { Spinner } from "@/components/spinner";
-import { AutoLayoutTable, TableWrapper } from "@/components/table";
+import { AutofillTable } from "@/components/table";
 
 interface SupportBackendModalProps {
   show: boolean;
@@ -19,7 +19,11 @@ export function SupportBackendModal({
   show,
   handleClose,
 }: SupportBackendModalProps) {
+  //# region queries and hooks
+
   const backendInfoQuery = useGetBackendInfoQuery();
+
+  //# endregion
 
   return (
     <Modal scrollable show={show} onHide={handleClose} size="lg">
@@ -68,26 +72,17 @@ export function SupportBackendModal({
             {backendInfoQuery.data.patreon.members != null && (
               <>
                 <h4>Patrons</h4>
-                <TableWrapper>
-                  <AutoLayoutTable>
-                    <thead>
-                      <tr>
-                        <th className="prevent-select">Name</th>
-                        <th className="prevent-select">Tier</th>
-                        <th className="prevent-select">Patron Since</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {backendInfoQuery.data.patreon.members.map((patron) => (
-                        <tr key={patron.name}>
-                          <td>{patron.name}</td>
-                          <td>{patron.tier}</td>
-                          <td>{patron.date}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </AutoLayoutTable>
-                </TableWrapper>
+                <AutofillTable
+                  headers={["Name", "Tier", "Patron Since"]}
+                  data={backendInfoQuery.data.patreon.members.map((patron) => [
+                    patron.name,
+                    patron.tier,
+                    patron.date,
+                  ])}
+                  centred={true}
+                  hover={true}
+                  uniformWidth={false}
+                />
               </>
             )}
           </>

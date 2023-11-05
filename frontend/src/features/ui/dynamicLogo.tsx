@@ -18,6 +18,8 @@ import {
 } from "@/features/card/card";
 import { lato } from "@/pages/_app";
 
+//# region styled components
+
 // note: i'm using transform3d rather than transform bc it apparently fixes animations on ios safari
 // https://www.reddit.com/r/webdev/comments/iv26y7/iossafari_css_animation_not_working/
 
@@ -200,6 +202,8 @@ const FifthImageTransformWrapper = styled(ImageTransformWrapperBase)<{
     `}
 `;
 
+//# endregion
+
 const SampleCardDocument: CardDocument = {
   identifier: "your-design-here",
   card_type: "CARD",
@@ -224,17 +228,32 @@ const SampleCardDocument: CardDocument = {
 };
 
 export function DynamicLogo() {
-  const backendConfigured = useBackendConfigured();
+  //# region hooks and queries
+
   const dispatch = useAppDispatch();
+  const backendConfigured = useBackendConfigured();
+  const projectName = useProjectName();
+  const sampleCardsQuery = useGetSampleCardsQuery();
+
+  //# endregion
+
+  //# region state
+
+  const [loading, setLoading] = useState<boolean>(true);
+
+  //# endregion
+
+  //# region effects
+
   useEffect(() => {
     dispatch(api.util.invalidateTags([QueryTags.SampleCards]));
   }, [dispatch]);
-  const sampleCardsQuery = useGetSampleCardsQuery();
-  const projectName = useProjectName();
-
   // this ignores the initial flash of styled-components not doing the thing on first page load
-  const [loading, setLoading] = useState<boolean>(true);
   useEffect(() => setLoading(false), []);
+
+  //# endregion
+
+  //# region computed constants
 
   const displayCards: Array<
     [
@@ -263,8 +282,9 @@ export function DynamicLogo() {
       FifthImageTransformWrapper,
     ],
   ];
-
   const animated = !backendConfigured || sampleCardsQuery.isSuccess;
+
+  //# endregion
 
   return (
     <>

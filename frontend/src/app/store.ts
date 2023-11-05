@@ -13,6 +13,7 @@ import backendReducer, {
 } from "@/features/backend/backendSlice";
 import cardbacksReducer from "@/features/card/cardbackSlice";
 import finishSettingsReducer from "@/features/finishSettings/finishSettingsSlice";
+import invalidIdentifiersReducer from "@/features/invalidIdentifiers/invalidIdentifiersSlice";
 import modalsReducer from "@/features/modals/modalsSlice";
 import projectReducer, {
   addMembers,
@@ -48,6 +49,7 @@ const rootReducer = combineReducers({
   backend: backendReducer,
   toasts: toastsReducer,
   modals: modalsReducer,
+  invalidIdentifiers: invalidIdentifiersReducer,
 });
 
 //# region middleware

@@ -113,7 +113,7 @@ export default function Index() {
   return (
     <ProjectContainer>
       <Head>
-        <title>{projectName}</title>
+        <title>{`${projectName}`}</title>
         <meta
           name="description"
           content="The easiest way to print professional-quality playtest cards for kitchen-table tabletop gaming with MakePlayingCards (MPC)."

@@ -295,7 +295,7 @@ class CardOrder:
         if self.name is not None:
             print(f"Successfully parsed card order: {bold(self.name)}")
         print(
-            f"Your order has a total of {bold(self.details.quantity)} cards, in the MPC bracket of up "
+            f"Your order has a total of {bold(self.details.quantity)} cards, in the bracket of up "
             f"to {bold(self.details.bracket)} cards.\n{bold(self.details.stock)} "
             f"cardstock ({bold('foil' if self.details.foil else 'nonfoil')}.\n "
         )

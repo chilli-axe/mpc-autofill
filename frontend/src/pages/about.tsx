@@ -38,7 +38,7 @@ export default function About() {
   return (
     <ProjectContainer>
       <Head>
-        <title>About {projectName}</title>
+        <title>{`About ${projectName}`}</title>
         <meta name="description" content={`About ${projectName}`} />
       </Head>
       <h2>About {ProjectName}</h2>

@@ -22,19 +22,23 @@ export function ChangeQueryModal({
   show,
   handleClose,
 }: ChangeQueryModalProps) {
-  const dispatch = useAppDispatch();
+  //# region queries and hooks
 
+  const dispatch = useAppDispatch();
   const sampleCardsQuery = useGetSampleCardsQuery();
-  const placeholderCardName =
-    sampleCardsQuery.data != null &&
-    (sampleCardsQuery.data ?? {})[Card][0] != null
-      ? sampleCardsQuery.data[Card][0].name
-      : "";
+
+  //# endregion
+
+  //# region state
 
   const [
     changeSelectedImageQueriesModalValue,
     setChangeSelectedImageQueriesModalValue,
   ] = useState<string>("");
+
+  //# endregion
+
+  //# region callbacks
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault(); // to avoid reloading the page
@@ -48,8 +52,21 @@ export function ChangeQueryModal({
     handleClose();
   };
 
+  //# endregion
+
+  //# region computed constants
+
+  const placeholderCardName =
+    sampleCardsQuery.data != null &&
+    (sampleCardsQuery.data ?? {})[Card][0] != null
+      ? sampleCardsQuery.data[Card][0].name
+      : "";
+
+  //# endregion
+
   return (
     <Modal
+      scrollable
       show={show}
       onHide={handleClose}
       onExited={() => setChangeSelectedImageQueriesModalValue("")}

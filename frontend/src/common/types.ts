@@ -237,12 +237,17 @@ export type Modals =
   | "gridSelector"
   | "changeQuery"
   | "supportDeveloper"
-  | "supportBackend";
+  | "supportBackend"
+  | "invalidIdentifiers";
 
 export interface ModalsState {
   card: CardDocument | null;
   slots: Slots | null;
   shownModal: Modals | null;
+}
+
+export interface InvalidIdentifiersState {
+  invalidIdentifiers: Array<{ [face in Faces]: [SearchQuery, string] | null }>;
 }
 
 export interface Language {
@@ -252,10 +257,7 @@ export interface Language {
 
 export interface Tag {
   name: string;
-  // label: string;
-  // value: string;
   aliases: Array<string>;
   parent: string | null;
   children: Array<Tag>;
-  // children: Array<string>;
 }

@@ -10,9 +10,9 @@ pillow==10.0.1
 pre-commit
 pyinstaller~=5.13.0
 pytest~=7.3
+pytest-retry~=1.5
 ratelimit~=2.2.1
 requests~=2.31.0
 sanitize-filename~=1.2.0
-selenium~=4.11.0
-webdriver-manager==4.0.1
+selenium~=4.14.0
 wakepy==0.6.0

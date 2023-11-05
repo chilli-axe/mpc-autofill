@@ -64,12 +64,22 @@ function CardImage({
   small,
   showDetailedViewOnClick,
 }: CardImageProps) {
+  //# region queries and hooks
+
   const dispatch = useAppDispatch();
+
+  //# endregion
+
+  //# region state
 
   const [imageState, setImageState] = useState<
     "loading" | "loaded" | "errored"
   >("loading");
   const image = useRef<HTMLImageElement>(null);
+
+  //# endregion
+
+  //# region callbacks
 
   const onLoadingComplete: OnLoadingComplete = (img) => {
     setImageState("loaded");
@@ -77,6 +87,33 @@ function CardImage({
   const onError: React.ReactEventHandler<HTMLImageElement> = (img) => {
     setImageState("errored");
   };
+  const handleShowDetailedView = () => {
+    if (showDetailedViewOnClick && maybeCardDocument != null) {
+      dispatch(
+        setSelectedCardAndShowModal([maybeCardDocument, "cardDetailedView"])
+      );
+    }
+  };
+
+  //# endregion
+
+  //# region effects
+
+  useEffect(() => {
+    /**
+     * Ensure that the small thumbnail fades in each time the selected image changes.
+     * Next.js seems to not fire `onLoadingComplete` when opening a page with a cached image.
+     * This implementation was retrieved from https://stackoverflow.com/a/59809184
+     */
+
+    setImageState(
+      image.current == null || !image.current.complete ? "loading" : "loaded"
+    );
+  }, [maybeCardDocument?.identifier]);
+
+  //# endregion
+
+  //# region computed constants
 
   const imageSrc: string | undefined =
     imageState !== "errored"
@@ -88,22 +125,7 @@ function CardImage({
       : "/error_404_med.png";
   const imageAlt = maybeCardDocument?.name ?? "Unnamed Card";
 
-  // ensure that the small thumbnail fades in each time the selected image changes
-  useEffect(() => {
-    // next.js seems to not fire `onLoadingComplete` when opening a page with a cached image
-    // this implementation was retrieved from https://stackoverflow.com/a/59809184
-    setImageState(
-      image.current == null || !image.current.complete ? "loading" : "loaded"
-    );
-  }, [maybeCardDocument?.identifier]);
-
-  const handleShowDetailedView = () => {
-    if (showDetailedViewOnClick && maybeCardDocument != null) {
-      dispatch(
-        setSelectedCardAndShowModal([maybeCardDocument, "cardDetailedView"])
-      );
-    }
-  };
+  //# endregion
 
   return (
     <>
@@ -208,6 +230,8 @@ export function Card({
    * This component enables displaying cards with auxiliary information in a flexible, consistent way.
    */
 
+  //# region computed constants
+
   const cardImageElements =
     maybeCardDocument != null ? (
       <>
@@ -252,6 +276,8 @@ export function Card({
     );
   const BSCardSubtitle: typeof BSCard.Subtitle =
     nameOnClick != null ? OutlinedBSCardSubtitle : BSCard.Subtitle;
+
+  //# endregion
 
   return (
     <BSCard
@@ -341,6 +367,8 @@ export function EditorCard({
    * (to minimise the quantity of data stored in Elasticsearch), so the full `CardDocument` items must be looked up.
    */
 
+  //# region queries and hooks
+
   const maybeCardDocument = useAppSelector((state: RootState) =>
     selectCardDocumentByIdentifier(state, imageIdentifier)
   );
@@ -350,6 +378,8 @@ export function EditorCard({
   const maybeNextCardDocument = useAppSelector((state: RootState) =>
     selectCardDocumentByIdentifier(state, nextImageIdentifier)
   );
+
+  //# endregion
 
   return (
     <Card

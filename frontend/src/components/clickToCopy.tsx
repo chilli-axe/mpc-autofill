@@ -14,12 +14,21 @@ const ClickToCopyCode = styled.code`
 `;
 
 export function ClickToCopy({ text }: { text: string }) {
+  //# region state
+
   const [copied, setCopied] = useState<boolean>(false);
+
+  //# endregion
+
+  //# region callbacks
+
   const copyIdentifier = async () => {
     await navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 1000);
   };
+
+  //# endregion
 
   return (
     <OverlayTrigger

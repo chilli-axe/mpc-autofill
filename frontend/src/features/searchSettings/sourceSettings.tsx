@@ -205,6 +205,7 @@ export function SourceSettings({
                 height: sourceRows.length * 59 + ToggleButtonHeight + "px",
               }}
             >
+              {/* TODO: migrate this to AutofillTable at some point? too big a job for right now. */}
               <Table ref={provided.innerRef} style={{ tableLayout: "auto" }}>
                 <thead>
                   <tr style={{ height: ToggleButtonHeight + "px" }}>

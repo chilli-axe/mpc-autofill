@@ -2,7 +2,7 @@
 
 exports[`the html structure of text importer 1`] = `
 <div
-  class="modal-dialog"
+  class="modal-dialog modal-dialog-scrollable"
   data-testid="import-text"
 >
   <div
@@ -165,17 +165,22 @@ exports[`the html structure of text importer 1`] = `
         </div>
       </div>
       <br />
-      <div
-        class="mb-3"
+      <form
+        class=""
+        id="importTextForm"
       >
-        <textarea
-          aria-label="import-text"
-          class="form-control"
-          placeholder=""
-          required=""
-          rows="12"
-        />
-      </div>
+        <div
+          class="mb-3"
+        >
+          <textarea
+            aria-label="import-text"
+            class="form-control"
+            placeholder=""
+            required=""
+            rows="12"
+          />
+        </div>
+      </form>
     </div>
     <div
       class="modal-footer"
@@ -189,7 +194,8 @@ exports[`the html structure of text importer 1`] = `
       <button
         aria-label="import-text-submit"
         class="btn btn-primary"
-        type="button"
+        form="importTextForm"
+        type="submit"
       >
         Submit
       </button>

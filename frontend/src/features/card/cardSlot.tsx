@@ -19,7 +19,8 @@ import {
 import { wrapIndex } from "@/common/utils";
 import { MemoizedEditorCard } from "@/features/card/card";
 import { selectCardbacks } from "@/features/card/cardbackSlice";
-import { GridSelectorModal } from "@/features/modals/gridSelectorModal";
+import { GridSelectorModal } from "@/features/gridSelector/gridSelectorModal";
+import { recordInvalidIdentifier } from "@/features/invalidIdentifiers/invalidIdentifiersSlice";
 import { setSelectedSlotsAndShowModal } from "@/features/modals/modalsSlice";
 import {
   bulkAlignMemberSelection,
@@ -57,10 +58,20 @@ export function CardSlotGridSelector({
   show,
   handleClose,
 }: CardSlotGridSelectorProps) {
+  //# region queries and hooks
+
   const dispatch = useAppDispatch();
-  function setSelectedImageFromIdentifier(selectedImage: string): void {
+
+  //# endregion
+
+  //# region callbacks
+
+  const setSelectedImageFromIdentifier = (selectedImage: string) => {
     dispatch(setSelectedImage({ face, slot, selectedImage }));
-  }
+  };
+
+  //# endregion
+
   return (
     <GridSelectorModal
       testId={`${face}-slot${slot}-grid-selector`}
@@ -79,13 +90,9 @@ export const MemoizedCardSlotGridSelector = memo(CardSlotGridSelector);
 //# region card slot
 
 export function CardSlot({ searchQuery, face, slot }: CardSlotProps) {
-  const [showGridSelector, setShowGridSelector] = useState<boolean>(false);
-
-  const handleCloseGridSelector = () => setShowGridSelector(false);
-  const handleShowGridSelector = () => setShowGridSelector(true);
+  //# region queries and hooks
 
   const dispatch = useAppDispatch();
-
   const cardbacks = useAppSelector(selectCardbacks);
   const projectCardback = useAppSelector(selectProjectCardback);
   const searchResultsForQueryOrDefault = useAppSelector((state) =>
@@ -96,9 +103,57 @@ export function CardSlot({ searchQuery, face, slot }: CardSlotProps) {
   );
   const selectedImage = projectMember?.selectedImage;
 
+  //# endregion
+
+  //# region state
+
+  const [showGridSelector, setShowGridSelector] = useState<boolean>(false);
+
+  //# endregion
+
+  //# region callbacks
+
+  const handleCloseGridSelector = () => setShowGridSelector(false);
+  const handleShowGridSelector = () => setShowGridSelector(true);
   const handleShowChangeSelectedImageQueriesModal = () => {
     dispatch(setSelectedSlotsAndShowModal([[[face, slot]], "changeQuery"]));
   };
+  // TODO: add a confirmation prompt here. yes/no/yes and don't ask again.
+  const deleteThisSlot = () => {
+    dispatch(deleteSlot({ slot }));
+  };
+  const toggleSelectionForThisMember = (
+    event: React.MouseEvent<HTMLButtonElement>
+  ) => {
+    if (event.detail == 2) {
+      // double-click
+      dispatch(bulkAlignMemberSelection({ slot, face }));
+    } else {
+      dispatch(toggleMemberSelection({ slot, face }));
+    }
+  };
+  const setSelectedImageFromDelta = (delta: number): void => {
+    // TODO: docstring
+    if (selectedImageIndex != null) {
+      dispatch(
+        setSelectedImage({
+          face,
+          slot,
+          selectedImage:
+            searchResultsForQuery[
+              wrapIndex(
+                selectedImageIndex + delta,
+                searchResultsForQuery.length
+              )
+            ],
+        })
+      );
+    }
+  };
+
+  //# endregion
+
+  //# region effects
 
   useEffect(() => {
     /**
@@ -108,11 +163,21 @@ export function CardSlot({ searchQuery, face, slot }: CardSlotProps) {
     if (searchResultsForQueryOrDefault != null) {
       let mutatedSelectedImage = selectedImage;
 
-      // If an image is selected and it's not in the search results, deselect the image
+      // If an image is selected and it's not in the search results, deselect the image and let the user know about it
       if (
         mutatedSelectedImage != null &&
         !searchResultsForQueryOrDefault.includes(mutatedSelectedImage)
       ) {
+        if (searchQuery != null && searchResultsForQueryOrDefault.length > 0) {
+          dispatch(
+            recordInvalidIdentifier({
+              slot,
+              face,
+              searchQuery,
+              identifier: mutatedSelectedImage,
+            })
+          );
+        }
         mutatedSelectedImage = undefined;
       }
 
@@ -140,11 +205,15 @@ export function CardSlot({ searchQuery, face, slot }: CardSlotProps) {
     dispatch,
     face,
     slot,
-    searchQuery?.query,
+    searchQuery,
     searchResultsForQueryOrDefault,
     projectCardback,
     selectedImage,
   ]);
+
+  //# endregion
+
+  //# region computed constants
 
   const searchResultsForQuery = searchResultsForQueryOrDefault ?? [];
   const selectedImageIndex: number | undefined =
@@ -163,42 +232,6 @@ export function CardSlot({ searchQuery, face, slot }: CardSlotProps) {
           wrapIndex(selectedImageIndex - 1, searchResultsForQuery.length)
         ]
       : undefined;
-
-  // TODO: add a confirmation prompt here. yes/no/yes and don't ask again.
-  const deleteThisSlot = () => {
-    dispatch(deleteSlot({ slot }));
-  };
-
-  const toggleSelectionForThisMember = (
-    event: React.MouseEvent<HTMLButtonElement>
-  ) => {
-    if (event.detail == 2) {
-      // double-click
-      dispatch(bulkAlignMemberSelection({ slot, face }));
-    } else {
-      dispatch(toggleMemberSelection({ slot, face }));
-    }
-  };
-
-  function setSelectedImageFromDelta(delta: number): void {
-    // TODO: docstring
-    if (selectedImageIndex != null) {
-      dispatch(
-        setSelectedImage({
-          face,
-          slot,
-          selectedImage:
-            searchResultsForQuery[
-              wrapIndex(
-                selectedImageIndex + delta,
-                searchResultsForQuery.length
-              )
-            ],
-        })
-      );
-    }
-  }
-
   const cardHeaderTitle = `Slot ${slot + 1}`;
   const cardHeaderButtons = (
     <>
@@ -258,6 +291,8 @@ export function CardSlot({ searchQuery, face, slot }: CardSlotProps) {
       )}
     </>
   );
+
+  //# endregion
 
   return (
     <div data-testid={`${face}-slot${slot}`}>
