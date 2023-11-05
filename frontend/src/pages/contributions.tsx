@@ -209,7 +209,7 @@ export default function Contributions() {
   return (
     <ProjectContainer>
       <Head>
-        <title>{projectName} Contributions</title>
+        <title>{`${projectName} Contributions`}</title>
         <meta
           name="description"
           content={`A summary of the image contributors connected to ${ProjectName}.`}

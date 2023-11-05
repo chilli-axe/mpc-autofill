@@ -29,7 +29,7 @@ export default function New() {
   return (
     <ProjectContainer>
       <Head>
-        <title>{projectName} New Cards</title>
+        <title>{`${projectName} New Cards`}</title>
         <meta
           name="description"
           content={`Check out the new cards added to ${ProjectName} over the last two weeks.`}
