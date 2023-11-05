@@ -2,7 +2,7 @@
 
 exports[`the html structure of text importer 1`] = `
 <div
-  class="modal-dialog"
+  class="modal-dialog modal-dialog-scrollable"
   data-testid="import-text"
 >
   <div

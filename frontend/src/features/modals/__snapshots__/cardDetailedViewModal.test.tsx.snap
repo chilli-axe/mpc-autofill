@@ -17,6 +17,25 @@ exports[`the html structure of a CardDetailedViewModal 1`] = `
 }
 
 .c2 {
+  max-width: 100%;
+  overflow-x: scroll;
+}
+
+.c3 {
+  table-layout: auto;
+}
+
+.c4 {
+  width: 0%;
+  text-align: left;
+}
+
+.c5 {
+  width: 0%;
+  text-align: left;
+}
+
+.c6 {
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
@@ -26,13 +45,13 @@ exports[`the html structure of a CardDetailedViewModal 1`] = `
   transition: outline 0.2s ease-in-out;
 }
 
-.c2:hover {
+.c6:hover {
   outline-color: #ffffffff;
   cursor: pointer;
 }
 
 <div
-  class="modal-dialog modal-xl"
+  class="modal-dialog modal-xl modal-dialog-scrollable"
   data-testid="detailed-view"
 >
   <div
@@ -82,107 +101,135 @@ exports[`the html structure of a CardDetailedViewModal 1`] = `
           <h4>
             Card 1
           </h4>
-          <table
-            class="table table-hover"
+          <div
+            class="c2"
           >
-            <tbody>
-              <tr>
-                <td>
-                  <b>
-                    Source Name
-                  </b>
-                </td>
-                <td>
-                  <p>
-                    Source 1
-                  </p>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <b>
-                    Source Type
-                  </b>
-                </td>
-                <td>
-                  google drive
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <b>
-                    Class
-                  </b>
-                </td>
-                <td>
-                  Card
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <b>
-                    Identifier
-                  </b>
-                </td>
-                <td>
-                  <code
-                    class="c2"
+            <table
+              class="c3 table table-hover"
+            >
+              <tbody>
+                <tr>
+                  <th
+                    class="c4"
+                    scope="row"
                   >
-                    abc123
-                  </code>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <b>
+                    Source Name
+                  </th>
+                  <td
+                    class="c5"
+                  >
+                    Source 1
+                  </td>
+                </tr>
+                <tr>
+                  <th
+                    class="c4"
+                    scope="row"
+                  >
+                    Source Type
+                  </th>
+                  <td
+                    class="c5"
+                  >
+                    google drive
+                  </td>
+                </tr>
+                <tr>
+                  <th
+                    class="c4"
+                    scope="row"
+                  >
+                    Class
+                  </th>
+                  <td
+                    class="c5"
+                  >
+                    Card
+                  </td>
+                </tr>
+                <tr>
+                  <th
+                    class="c4"
+                    scope="row"
+                  >
+                    Identifier
+                  </th>
+                  <td
+                    class="c5"
+                  >
+                    <code
+                      class="c6"
+                    >
+                      abc123
+                    </code>
+                  </td>
+                </tr>
+                <tr>
+                  <th
+                    class="c4"
+                    scope="row"
+                  >
                     Language
-                  </b>
-                </td>
-                <td />
-              </tr>
-              <tr>
-                <td>
-                  <b>
+                  </th>
+                  <td
+                    class="c5"
+                  />
+                </tr>
+                <tr>
+                  <th
+                    class="c4"
+                    scope="row"
+                  >
                     Tags
-                  </b>
-                </td>
-                <td>
-                  Untagged
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <b>
+                  </th>
+                  <td
+                    class="c5"
+                  >
+                    Untagged
+                  </td>
+                </tr>
+                <tr>
+                  <th
+                    class="c4"
+                    scope="row"
+                  >
                     Resolution
-                  </b>
-                </td>
-                <td>
-                  1200
-                   DPI
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <b>
+                  </th>
+                  <td
+                    class="c5"
+                  >
+                    1200 DPI
+                  </td>
+                </tr>
+                <tr>
+                  <th
+                    class="c4"
+                    scope="row"
+                  >
                     Date Created
-                  </b>
-                </td>
-                <td>
-                  1st January, 2000
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <b>
+                  </th>
+                  <td
+                    class="c5"
+                  >
+                    1st January, 2000
+                  </td>
+                </tr>
+                <tr>
+                  <th
+                    class="c4"
+                    scope="row"
+                  >
                     File Size
-                  </b>
-                </td>
-                <td>
-                  10 MB
-                </td>
-              </tr>
-            </tbody>
-          </table>
+                  </th>
+                  <td
+                    class="c5"
+                  >
+                    10 MB
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
           <div
             class="d-grid gap-0"
           >
