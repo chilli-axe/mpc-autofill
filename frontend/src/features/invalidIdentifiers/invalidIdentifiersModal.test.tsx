@@ -2,6 +2,7 @@ import { waitFor, within } from "@testing-library/dom";
 import { screen } from "@testing-library/react";
 
 import App from "@/app/app";
+import { FaceSeparator, SelectedImageSeparator } from "@/common/constants";
 import { cardDocument5, localBackend } from "@/common/test-constants";
 import {
   expectCardSlotToExist,
@@ -38,7 +39,9 @@ test("invalidIdentifiersModal displays the appropriate data", async () => {
       },
     }
   );
-  await importText("2x query 1@123\n1 query 2|query 3@456");
+  await importText(
+    `2x query 1${SelectedImageSeparator}123\n1 query 2${FaceSeparator}query 3${SelectedImageSeparator}456`
+  );
   await expectCardSlotToExist(1);
   await expectCardSlotToExist(2);
   await expectCardSlotToExist(3);
