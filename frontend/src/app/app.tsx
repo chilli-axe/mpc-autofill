@@ -23,9 +23,9 @@ import {
   selectIsProjectEmpty,
   selectProjectCardback,
 } from "@/features/project/projectSlice";
-import { ProjectStatus } from "@/features/project/projectStatus";
 import { fetchSourceDocumentsAndReportError } from "@/features/search/sourceDocumentsSlice";
 import { SearchSettings } from "@/features/searchSettings/searchSettings";
+import { Status } from "@/features/status/status";
 import { NoBackendDefault } from "@/features/ui/noBackendDefault";
 
 const OverflowCol = styled(Col)`
@@ -57,7 +57,7 @@ function App() {
     if (backendConfigured) {
       fetchSourceDocumentsAndReportError(dispatch);
     }
-  }, [dispatch, backendURL]);
+  }, [dispatch, backendConfigured, backendURL]);
   useEffect(() => {
     /**
      * Ask the user for confirmation before they close the page if their project has any cards in it.
@@ -93,7 +93,7 @@ function App() {
             style={{ zIndex: 1 }}
             className="px-2"
           >
-            <ProjectStatus />
+            <Status />
             <Row className="g-0 pb-3">
               <FinishSettings />
             </Row>
