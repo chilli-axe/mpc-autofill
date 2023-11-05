@@ -16,12 +16,12 @@ export function ProjectStatus() {
 
   return projectSize > 0 ? (
     <Alert variant="secondary">
-      Your project contains <b>{projectSize}</b> card
-      {projectSize !== 1 && "s"}, belongs in the bracket of up to{" "}
-      <b>{bracket(projectSize)}</b> cards, and is{" "}
-      <b>{imageSizeToMBString(projectFileSize, 0)}</b> in total.
-      <br />
-      <br />
+      <p>
+        Your project contains <b>{projectSize}</b> card
+        {projectSize !== 1 && "s"}, belongs in the bracket of up to{" "}
+        <b>{bracket(projectSize)}</b> cards, and is{" "}
+        <b>{imageSizeToMBString(projectFileSize, 0)}</b> in total.
+      </p>
       {projectSize >= ProjectMaxSize && (
         <Alert variant="warning">
           You&apos;ve reached the maximum project size!

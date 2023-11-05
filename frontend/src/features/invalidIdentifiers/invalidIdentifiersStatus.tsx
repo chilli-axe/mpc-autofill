@@ -20,10 +20,10 @@ export function InvalidIdentifiersStatus() {
 
   return invalidIdentifierCount > 0 ? (
     <Alert variant="primary">
-      Your project specified <b>{invalidIdentifierCount}</b> card version
-      {invalidIdentifierCount != 1 && "s"} which couldn&apos;t be found.
-      <br />
-      <br />
+      <p>
+        Your project specified <b>{invalidIdentifierCount}</b> card version
+        {invalidIdentifierCount != 1 ? "s" : ""} which couldn&apos;t be found.
+      </p>
       <div className="d-grid gap-0">
         <Button variant="warning" onClick={handleClick}>
           Review Invalid Cards

@@ -55,20 +55,25 @@ export function InvalidIdentifiersModal({
   return (
     <Modal scrollable show={show} onHide={handleClose}>
       <Modal.Header closeButton>
-        <Modal.Title>Review Invalid Cards</Modal.Title>
+        <Modal.Title>Invalid Cards</Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        Some card versions you specified couldn&apos;t be found. Sorry about
-        that!
-        <br />
-        This typically happens when the creator of the image removed it from
-        their repository (even if they reuploaded it later).
-        <br />
-        The versions we couldn&apos;t find are tabulated below for your
-        reference. The cards in these slots have defaulted to the first versions
-        we found when searching the database.
-        <br />
-        Dismiss this warning by clicking the <b>Acknowledge</b> button below.
+        <p>
+          Some card versions you specified couldn&apos;t be found. Sorry about
+          that!
+        </p>
+        <p>
+          This typically happens when the creator of the image removed it from
+          their repository (even if they reuploaded it later).
+        </p>
+        <p>
+          The versions we couldn&apos;t find are tabulated below for your
+          reference. The cards in these slots have defaulted to the first
+          versions we found when searching the database.
+        </p>
+        <p>
+          Dismiss this warning by clicking the <b>Acknowledge</b> button below.
+        </p>
         <hr />
         <AutofillTable
           headers={headers}
