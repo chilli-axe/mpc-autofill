@@ -66,6 +66,7 @@ export function ChangeQueryModal({
 
   return (
     <Modal
+      scrollable
       show={show}
       onHide={handleClose}
       onExited={() => setChangeSelectedImageQueriesModalValue("")}

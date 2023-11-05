@@ -71,9 +71,9 @@ export async function expectCardSlotToNotExist(slot: number) {
 
 async function expectCardSlotState(
   testId: string,
-  cardName: string | null,
-  selectedImage: number | null,
-  totalImages: number | null
+  cardName?: string,
+  selectedImage?: number,
+  totalImages?: number
 ) {
   /**
    * This function helps with asserting that a particular card slot exists
@@ -105,9 +105,9 @@ async function expectCardSlotState(
 export async function expectCardGridSlotState(
   slot: number,
   face: Faces,
-  cardName: string | null,
-  selectedImage: number | null,
-  totalImages: number | null
+  cardName?: string,
+  selectedImage?: number,
+  totalImages?: number
 ) {
   // note: the specified `slot` should be 1-indexed
   return await expectCardSlotState(
@@ -119,9 +119,9 @@ export async function expectCardGridSlotState(
 }
 
 export async function expectCardbackSlotState(
-  cardName: string | null,
-  selectedImage: number | null,
-  totalImages: number | null
+  cardName?: string,
+  selectedImage?: number,
+  totalImages?: number
 ) {
   return await expectCardSlotState(
     "common-cardback",
@@ -289,7 +289,12 @@ async function openGridSelector(
   totalImages: number
 ) {
   expect(totalImages).toBeGreaterThan(1);
-  await expectCardSlotState(cardSlotTestId, null, selectedImage, totalImages);
+  await expectCardSlotState(
+    cardSlotTestId,
+    undefined,
+    selectedImage,
+    totalImages
+  );
 
   await waitFor(() =>
     within(screen.getByTestId(cardSlotTestId))

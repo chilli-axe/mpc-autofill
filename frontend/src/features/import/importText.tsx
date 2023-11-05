@@ -94,6 +94,7 @@ export function ImportText() {
         <RightPaddedIcon bootstrapIconName="card-text" /> Text
       </Dropdown.Item>
       <Modal
+        scrollable
         show={showTextModal}
         onHide={handleCloseTextModal}
         onExited={() => setTextModalValue("")}

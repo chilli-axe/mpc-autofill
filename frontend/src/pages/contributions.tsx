@@ -9,6 +9,7 @@ import {
   ProjectName,
 } from "@/common/constants";
 import { Tag } from "@/common/types";
+import { NoBackendDefault } from "@/components/noBackendDefault";
 import {
   useBackendConfigured,
   useProjectName,
@@ -19,7 +20,6 @@ import {
 } from "@/features/contributions/contributions";
 import Footer from "@/features/ui/footer";
 import { ProjectContainer } from "@/features/ui/layout";
-import { NoBackendDefault } from "@/features/ui/noBackendDefault";
 
 function ContributionGuidelines() {
   const projectName = useProjectName();

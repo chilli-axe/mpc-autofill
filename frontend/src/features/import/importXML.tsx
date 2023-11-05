@@ -192,6 +192,7 @@ export function ImportXML() {
         <RightPaddedIcon bootstrapIconName="file-code" /> XML
       </Dropdown.Item>
       <Modal
+        scrollable
         show={showXMLModal}
         onHide={handleCloseXMLModal}
         data-testid="import-xml"

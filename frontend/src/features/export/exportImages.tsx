@@ -103,6 +103,7 @@ export function ExportImages() {
         <RightPaddedIcon bootstrapIconName="image" /> Card Images
       </Dropdown.Item>
       <Modal
+        scrollable
         show={showImagesModal}
         onHide={handleCloseImagesModal}
         data-testid="export-images"

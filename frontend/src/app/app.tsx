@@ -10,6 +10,7 @@ import styled from "styled-components";
 
 import { NavbarHeight } from "@/common/constants";
 import { useAppDispatch, useAppSelector } from "@/common/types";
+import { NoBackendDefault } from "@/components/noBackendDefault";
 import {
   selectBackendURL,
   useBackendConfigured,
@@ -23,10 +24,9 @@ import {
   selectIsProjectEmpty,
   selectProjectCardback,
 } from "@/features/project/projectSlice";
-import { ProjectStatus } from "@/features/project/projectStatus";
 import { fetchSourceDocumentsAndReportError } from "@/features/search/sourceDocumentsSlice";
 import { SearchSettings } from "@/features/searchSettings/searchSettings";
-import { NoBackendDefault } from "@/features/ui/noBackendDefault";
+import { Status } from "@/features/status/status";
 
 const OverflowCol = styled(Col)`
   position: relative;
@@ -57,7 +57,7 @@ function App() {
     if (backendConfigured) {
       fetchSourceDocumentsAndReportError(dispatch);
     }
-  }, [dispatch, backendURL]);
+  }, [dispatch, backendConfigured, backendURL]);
   useEffect(() => {
     /**
      * Ask the user for confirmation before they close the page if their project has any cards in it.
@@ -93,7 +93,7 @@ function App() {
             style={{ zIndex: 1 }}
             className="px-2"
           >
-            <ProjectStatus />
+            <Status />
             <Row className="g-0 pb-3">
               <FinishSettings />
             </Row>

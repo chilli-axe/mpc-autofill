@@ -116,6 +116,7 @@ export function ImportURL() {
         <RightPaddedIcon bootstrapIconName="link-45deg" /> URL
       </Dropdown.Item>
       <Modal
+        scrollable
         show={loading || showURLModal}
         onHide={handleCloseURLModal}
         onExited={() => setURLModalValue("")}

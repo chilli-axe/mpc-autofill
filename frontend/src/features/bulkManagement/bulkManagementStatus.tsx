@@ -12,7 +12,7 @@ import Stack from "react-bootstrap/Stack";
 
 import { Slots, useAppDispatch, useAppSelector } from "@/common/types";
 import { RightPaddedIcon } from "@/components/icon";
-import { GridSelectorModal } from "@/features/modals/gridSelectorModal";
+import { GridSelectorModal } from "@/features/gridSelector/gridSelectorModal";
 import { setSelectedSlotsAndShowModal } from "@/features/modals/modalsSlice";
 import {
   bulkClearQuery,
