@@ -191,6 +191,7 @@ export function ImportCSV() {
         <RightPaddedIcon bootstrapIconName="file-earmark-spreadsheet" /> CSV
       </Dropdown.Item>
       <Modal
+        scrollable
         show={showCSVModal}
         onHide={handleCloseCSVModal}
         data-testid="import-csv"
