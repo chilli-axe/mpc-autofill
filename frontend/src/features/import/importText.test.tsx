@@ -10,7 +10,6 @@ import {
   cardDocument4,
   cardDocument5,
   cardDocument6,
-  localBackend,
 } from "@/common/test-constants";
 import {
   expectCardbackSlotState,
@@ -51,7 +50,6 @@ afterEach(() => {
 //# endregion
 
 const preloadedState = {
-  backend: localBackend,
   project: {
     members: [],
     cardback: cardDocument2.identifier,

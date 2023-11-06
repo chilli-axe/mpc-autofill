@@ -8,8 +8,12 @@ import {
   createListenerMiddleware,
   isAnyOf,
 } from "@reduxjs/toolkit";
+import { useEffect } from "react";
 
-import { selectBackendConfigured } from "@/features/backend/backendSlice";
+import {
+  selectBackendConfigured,
+  setURL,
+} from "@/features/backend/backendSlice";
 import {
   addMembers,
   bulkSetQuery,
@@ -17,6 +21,7 @@ import {
 } from "@/features/project/projectSlice";
 import { fetchCardDocumentsAndReportError } from "@/features/search/cardDocumentsSlice";
 import { clearSearchResults } from "@/features/search/searchResultsSlice";
+import { fetchSourceDocumentsAndReportError } from "@/features/search/sourceDocumentsSlice";
 import {
   selectSearchSettingsSourcesValid,
   setFilterSettings,
@@ -40,6 +45,21 @@ const addAppListener = addListener as TypedAddListener<RootState, AppDispatch>;
 //# endregion
 
 //# region listeners
+
+startAppListening({
+  matcher: isAnyOf(setURL),
+  effect: async (action, { getState, dispatch }) => {
+    /**
+     * Fetch sources whenever the backend configuration changes.
+     */
+
+    const state = getState();
+    const isBackendConfigured = selectBackendConfigured(state);
+    if (isBackendConfigured) {
+      await fetchSourceDocumentsAndReportError(dispatch);
+    }
+  },
+});
 
 startAppListening({
   matcher: isAnyOf(setSearchTypeSettings, setSourceSettings, setFilterSettings),

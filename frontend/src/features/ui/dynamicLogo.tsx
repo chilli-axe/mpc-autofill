@@ -291,7 +291,7 @@ export function DynamicLogo() {
       {loading ? (
         <Spinner size={12} />
       ) : (
-        <Row className="justify-content-center">
+        <Row className="justify-content-center" data-testid="dynamic-logo">
           <Col xl={6} lg={7} md={8} sm={12} xs={12}>
             <DynamicLogoContainer>
               <DynamicLogoLabel className={lato.className}>

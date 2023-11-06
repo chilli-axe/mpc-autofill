@@ -5,7 +5,6 @@ import {
   cardDocument2,
   cardDocument3,
   cardDocument4,
-  localBackend,
   sourceDocument1,
 } from "@/common/test-constants";
 import { renderWithProviders } from "@/common/test-utils";
@@ -20,24 +19,24 @@ import { server } from "@/mocks/server";
 
 test("the html structure of the new cards page with two sources, each with result/s", async () => {
   server.use(newCardsFirstPageWithTwoSources, ...defaultHandlers);
-  const rendered = renderWithProviders(<NewCards />, {
-    preloadedState: { backend: localBackend },
-  });
+  const rendered = renderWithProviders(<NewCards />);
   await waitFor(() =>
     expect(screen.getByText(sourceDocument1.name)).toBeInTheDocument()
   );
-  expect(rendered.baseElement).toMatchSnapshot();
+  expect(
+    screen.getByText("Check out the new cards", { exact: false }).parentElement!
+  ).toMatchSnapshot();
 });
 
 test("the html structure of the new cards page with no data", async () => {
   server.use(newCardsFirstPageNoResults, ...defaultHandlers);
-  const rendered = renderWithProviders(<NewCards />, {
-    preloadedState: { backend: localBackend },
-  });
+  const rendered = renderWithProviders(<NewCards />);
   await waitFor(() =>
     expect(screen.getByText(":(", { exact: false })).toBeInTheDocument()
   );
-  expect(rendered.baseElement).toMatchSnapshot();
+  expect(
+    screen.getByText(":(", { exact: false }).parentElement!
+  ).toMatchSnapshot();
 });
 
 test("clicking to show another page of results in the new cards page", async () => {
@@ -46,9 +45,7 @@ test("clicking to show another page of results in the new cards page", async () 
     newCardsPageForSource1,
     ...defaultHandlers
   );
-  renderWithProviders(<NewCards />, {
-    preloadedState: { backend: localBackend },
-  });
+  renderWithProviders(<NewCards />);
   await waitFor(() =>
     expect(screen.getByText(sourceDocument1.name)).toBeInTheDocument()
   );

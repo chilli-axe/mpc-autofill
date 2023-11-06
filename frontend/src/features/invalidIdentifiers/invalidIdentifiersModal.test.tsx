@@ -3,13 +3,12 @@ import { screen } from "@testing-library/react";
 
 import App from "@/app/app";
 import { FaceSeparator, SelectedImageSeparator } from "@/common/constants";
-import { cardDocument5, localBackend } from "@/common/test-constants";
+import { cardDocument5 } from "@/common/test-constants";
 import {
   expectCardSlotToExist,
   importText,
   renderWithProviders,
 } from "@/common/test-utils";
-import { LayoutWithoutProvider } from "@/features/ui/layout";
 import {
   cardDocumentsSixResults,
   defaultHandlers,
@@ -25,20 +24,14 @@ test("invalidIdentifiersModal displays the appropriate data", async () => {
     searchResultsSixResults,
     ...defaultHandlers
   );
-  renderWithProviders(
-    <LayoutWithoutProvider>
-      <App />
-    </LayoutWithoutProvider>,
-    {
-      preloadedState: {
-        backend: localBackend,
-        project: {
-          members: [],
-          cardback: cardDocument5.identifier,
-        },
+  renderWithProviders(<App />, {
+    preloadedState: {
+      project: {
+        members: [],
+        cardback: cardDocument5.identifier,
       },
-    }
-  );
+    },
+  });
   await importText(
     `2x query 1${SelectedImageSeparator}123\n1 query 2${FaceSeparator}query 3${SelectedImageSeparator}456`
   );

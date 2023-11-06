@@ -16,6 +16,8 @@ import { Provider } from "react-redux";
 import { RootState, setupStore } from "@/app/store";
 import { localBackendURL } from "@/common/test-constants";
 import { Faces } from "@/common/types";
+import { setURL } from "@/features/backend/backendSlice";
+import { LayoutWithoutProvider } from "@/features/ui/layout";
 
 //# region redux test setup
 
@@ -33,17 +35,27 @@ export function renderWithProviders(
     // Automatically create a store instance if no store was passed in
     store = setupStore(preloadedState),
     ...renderOptions
-  }: ExtendedRenderOptions = {}
+  }: ExtendedRenderOptions = {},
+  configureLocalBackend: boolean = true
 ) {
   function Wrapper({ children }: PropsWithChildren<{}>): JSX.Element {
     if (store != undefined) {
+      if (configureLocalBackend) {
+        store.dispatch(setURL(localBackendURL));
+      }
       return (
         <MemoryRouterProvider>
-          <Provider store={store}>{children}</Provider>
+          <Provider store={store}>
+            <LayoutWithoutProvider>{children}</LayoutWithoutProvider>
+          </Provider>
         </MemoryRouterProvider>
       );
     } else {
-      return <MemoryRouterProvider>{children}</MemoryRouterProvider>;
+      return (
+        <MemoryRouterProvider>
+          <LayoutWithoutProvider>{children}</LayoutWithoutProvider>
+        </MemoryRouterProvider>
+      );
     }
   }
 
@@ -384,7 +396,7 @@ export async function deleteSelectedImages() {
 }
 
 export async function openSearchSettingsModal() {
-  screen.getByText("Search Settings", { exact: false }).click();
+  screen.getByText(/Search Settings/).click();
   await waitFor(() => expect(screen.getByText("Search Settings")));
   return screen.getByTestId("search-settings");
 }

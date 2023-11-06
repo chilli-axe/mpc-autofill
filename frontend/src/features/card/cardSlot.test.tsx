@@ -6,7 +6,6 @@ import {
   cardDocument1,
   cardDocument2,
   cardDocument3,
-  localBackend,
   projectSelectedImage1,
   projectSelectedImage2,
   projectThreeMembersSelectedImage1,
@@ -20,7 +19,6 @@ import {
   renderWithProviders,
   selectSlot,
 } from "@/common/test-utils";
-import { LayoutWithoutProvider } from "@/features/ui/layout";
 import {
   cardbacksTwoResults,
   cardDocumentsFourResults,
@@ -47,7 +45,6 @@ test("the html structure of a CardSlot with a single search result, no image sel
   );
   renderWithProviders(<App />, {
     preloadedState: {
-      backend: localBackend,
       project: {
         members: [
           {
@@ -76,7 +73,6 @@ test("the html structure of a CardSlot with a single search result, slot selecte
   );
   renderWithProviders(<App />, {
     preloadedState: {
-      backend: localBackend,
       project: {
         members: [
           {
@@ -112,7 +108,6 @@ test("the html structure of a CardSlot with a single search result, image select
 
   renderWithProviders(<App />, {
     preloadedState: {
-      backend: localBackend,
       project: projectSelectedImage1,
     },
   });
@@ -130,7 +125,7 @@ test("the html structure of a CardSlot with multiple search results, image selec
   );
 
   renderWithProviders(<App />, {
-    preloadedState: { backend: localBackend, project: projectSelectedImage1 },
+    preloadedState: { project: projectSelectedImage1 },
   });
 
   await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 3);
@@ -147,7 +142,6 @@ test("the html structure of a CardSlot's grid selector, cards faceted by source"
 
   renderWithProviders(<App />, {
     preloadedState: {
-      backend: localBackend,
       project: projectSelectedImage1,
     },
   });
@@ -166,7 +160,6 @@ test("the html structure of a CardSlot's grid selector, cards grouped together",
 
   renderWithProviders(<App />, {
     preloadedState: {
-      backend: localBackend,
       project: projectSelectedImage1,
       viewSettings: {
         frontsVisible: true,
@@ -191,7 +184,6 @@ test("switching to the next image in a CardSlot", async () => {
   );
   renderWithProviders(<App />, {
     preloadedState: {
-      backend: localBackend,
       project: projectSelectedImage1,
     },
   });
@@ -213,7 +205,6 @@ test("switching to the previous image in a CardSlot", async () => {
   );
   renderWithProviders(<App />, {
     preloadedState: {
-      backend: localBackend,
       project: projectSelectedImage2,
     },
   });
@@ -235,7 +226,6 @@ test("switching images in a CardSlot wraps around", async () => {
   );
   renderWithProviders(<App />, {
     preloadedState: {
-      backend: localBackend,
       project: projectSelectedImage2,
     },
   });
@@ -263,7 +253,6 @@ test("selecting an image in a CardSlot via the grid selector", async () => {
   );
   renderWithProviders(<App />, {
     preloadedState: {
-      backend: localBackend,
       project: projectSelectedImage2,
     },
   });
@@ -290,7 +279,6 @@ test("deleting a CardSlot", async () => {
   );
   renderWithProviders(<App />, {
     preloadedState: {
-      backend: localBackend,
       project: projectSelectedImage1,
     },
   });
@@ -312,7 +300,6 @@ test("deleting multiple CardSlots", async () => {
   );
   renderWithProviders(<App />, {
     preloadedState: {
-      backend: localBackend,
       project: projectThreeMembersSelectedImage1,
     },
   });
@@ -336,7 +323,6 @@ test("CardSlot automatically selects the first search result", async () => {
   );
   renderWithProviders(<App />, {
     preloadedState: {
-      backend: localBackend,
       project: {
         members: [
           {
@@ -365,7 +351,6 @@ test("CardSlot automatically deselects invalid image then selects the first sear
   );
   renderWithProviders(<App />, {
     preloadedState: {
-      backend: localBackend,
       project: projectSelectedImage2, // not in search results
     },
   });
@@ -382,7 +367,6 @@ test("CardSlot uses cardbacks as search results for backs with no search query",
   );
   renderWithProviders(<App />, {
     preloadedState: {
-      backend: localBackend,
       project: {
         members: [
           {
@@ -412,7 +396,6 @@ test("CardSlot defaults to project cardback for backs with no search query", asy
   );
   renderWithProviders(<App />, {
     preloadedState: {
-      backend: localBackend,
       project: {
         members: [
           {
@@ -438,7 +421,6 @@ test("double clicking the select button selects all slots for the same query", a
   );
   renderWithProviders(<App />, {
     preloadedState: {
-      backend: localBackend,
       project: {
         members: [
           {
@@ -487,29 +469,23 @@ test("changing a card slot's query", async () => {
     ...defaultHandlers
   );
 
-  renderWithProviders(
-    <LayoutWithoutProvider>
-      <App />
-    </LayoutWithoutProvider>,
-    {
-      preloadedState: {
-        backend: localBackend,
-        project: {
-          members: [
-            {
-              front: {
-                query: { query: "query 1", card_type: Card },
-                selectedImage: undefined,
-                selected: false,
-              },
-              back: null,
+  renderWithProviders(<App />, {
+    preloadedState: {
+      project: {
+        members: [
+          {
+            front: {
+              query: { query: "query 1", card_type: Card },
+              selectedImage: undefined,
+              selected: false,
             },
-          ],
-          cardback: null,
-        },
+            back: null,
+          },
+        ],
+        cardback: null,
       },
-    }
-  );
+    },
+  });
 
   await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 1);
 
@@ -526,29 +502,23 @@ test("clearing a card slot's query", async () => {
     ...defaultHandlers
   );
 
-  renderWithProviders(
-    <LayoutWithoutProvider>
-      <App />
-    </LayoutWithoutProvider>,
-    {
-      preloadedState: {
-        backend: localBackend,
-        project: {
-          members: [
-            {
-              front: {
-                query: { query: "query 1", card_type: Card },
-                selectedImage: undefined,
-                selected: false,
-              },
-              back: null,
+  renderWithProviders(<App />, {
+    preloadedState: {
+      project: {
+        members: [
+          {
+            front: {
+              query: { query: "query 1", card_type: Card },
+              selectedImage: undefined,
+              selected: false,
             },
-          ],
-          cardback: null,
-        },
+            back: null,
+          },
+        ],
+        cardback: null,
       },
-    }
-  );
+    },
+  });
 
   await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 1);
 
@@ -565,37 +535,31 @@ test("changing a card slot's query doesn't affect a different slot", async () =>
     ...defaultHandlers
   );
 
-  renderWithProviders(
-    <LayoutWithoutProvider>
-      <App />
-    </LayoutWithoutProvider>,
-    {
-      preloadedState: {
-        backend: localBackend,
-        project: {
-          members: [
-            {
-              front: {
-                query: { query: "query 1", card_type: Card },
-                selectedImage: undefined,
-                selected: false,
-              },
-              back: null,
+  renderWithProviders(<App />, {
+    preloadedState: {
+      project: {
+        members: [
+          {
+            front: {
+              query: { query: "query 1", card_type: Card },
+              selectedImage: undefined,
+              selected: false,
             },
-            {
-              front: {
-                query: { query: "query 2", card_type: Card },
-                selectedImage: undefined,
-                selected: false,
-              },
-              back: null,
+            back: null,
+          },
+          {
+            front: {
+              query: { query: "query 2", card_type: Card },
+              selectedImage: undefined,
+              selected: false,
             },
-          ],
-          cardback: null,
-        },
+            back: null,
+          },
+        ],
+        cardback: null,
       },
-    }
-  );
+    },
+  });
 
   await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 1);
   await expectCardGridSlotState(2, Front, cardDocument2.name, 1, 1);

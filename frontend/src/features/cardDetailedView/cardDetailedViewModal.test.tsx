@@ -2,12 +2,11 @@ import { screen, waitFor } from "@testing-library/react";
 
 import App from "@/app/app";
 import { Card, Front } from "@/common/constants";
-import { cardDocument1, localBackend } from "@/common/test-constants";
+import { cardDocument1 } from "@/common/test-constants";
 import {
   expectCardGridSlotState,
   renderWithProviders,
 } from "@/common/test-utils";
-import { LayoutWithoutProvider } from "@/features/ui/layout";
 import {
   cardDocumentsOneResult,
   defaultHandlers,
@@ -25,29 +24,23 @@ test("the html structure of a CardDetailedViewModal", async () => {
     searchResultsOneResult,
     ...defaultHandlers
   );
-  renderWithProviders(
-    <LayoutWithoutProvider>
-      <App />
-    </LayoutWithoutProvider>,
-    {
-      preloadedState: {
-        backend: localBackend,
-        project: {
-          members: [
-            {
-              front: {
-                query: { query: "my search query", card_type: Card },
-                selectedImage: cardDocument1.identifier,
-                selected: false,
-              },
-              back: null,
+  renderWithProviders(<App />, {
+    preloadedState: {
+      project: {
+        members: [
+          {
+            front: {
+              query: { query: "my search query", card_type: Card },
+              selectedImage: cardDocument1.identifier,
+              selected: false,
             },
-          ],
-          cardback: null,
-        },
+            back: null,
+          },
+        ],
+        cardback: null,
       },
-    }
-  );
+    },
+  });
   await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 1);
 
   screen.getByAltText(cardDocument1.name).click();
