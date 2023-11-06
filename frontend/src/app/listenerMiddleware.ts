@@ -8,9 +8,11 @@ import {
   createListenerMiddleware,
   isAnyOf,
 } from "@reduxjs/toolkit";
-import { useEffect } from "react";
 
+import { api } from "@/app/api";
+import { QueryTags } from "@/common/constants";
 import {
+  clearURL,
   selectBackendConfigured,
   setURL,
 } from "@/features/backend/backendSlice";
@@ -50,7 +52,7 @@ startAppListening({
   matcher: isAnyOf(setURL),
   effect: async (action, { getState, dispatch }) => {
     /**
-     * Fetch sources whenever the backend configuration changes.
+     * Fetch sources whenever the backend configuration is set.
      */
 
     const state = getState();
@@ -58,6 +60,17 @@ startAppListening({
     if (isBackendConfigured) {
       await fetchSourceDocumentsAndReportError(dispatch);
     }
+  },
+});
+
+startAppListening({
+  matcher: isAnyOf(setURL, clearURL),
+  effect: async (action, { dispatch }) => {
+    /**
+     * Invalidate previous backend-specific data whenever the backend configuration is updated.
+     */
+
+    dispatch(api.util.invalidateTags([QueryTags.BackendSpecific]));
   },
 });
 
