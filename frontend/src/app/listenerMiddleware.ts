@@ -11,6 +11,7 @@ import {
 
 import { api } from "@/app/api";
 import { QueryTags } from "@/common/constants";
+import { getLocalStorageSearchSettings } from "@/common/cookies";
 import {
   clearURL,
   selectBackendConfigured,
@@ -23,7 +24,11 @@ import {
 } from "@/features/project/projectSlice";
 import { fetchCardDocumentsAndReportError } from "@/features/search/cardDocumentsSlice";
 import { clearSearchResults } from "@/features/search/searchResultsSlice";
-import { fetchSourceDocumentsAndReportError } from "@/features/search/sourceDocumentsSlice";
+import {
+  fetchSourceDocuments,
+  fetchSourceDocumentsAndReportError,
+  selectSourceDocuments,
+} from "@/features/search/sourceDocumentsSlice";
 import {
   selectSearchSettingsSourcesValid,
   setFilterSettings,
@@ -49,7 +54,7 @@ const addAppListener = addListener as TypedAddListener<RootState, AppDispatch>;
 //# region listeners
 
 startAppListening({
-  matcher: isAnyOf(setURL),
+  actionCreator: setURL,
   effect: async (action, { getState, dispatch }) => {
     /**
      * Fetch sources whenever the backend configuration is set.
@@ -59,6 +64,26 @@ startAppListening({
     const isBackendConfigured = selectBackendConfigured(state);
     if (isBackendConfigured) {
       await fetchSourceDocumentsAndReportError(dispatch);
+    }
+  },
+});
+
+startAppListening({
+  actionCreator: fetchSourceDocuments.fulfilled,
+  effect: async (action, { getState, dispatch }) => {
+    /**
+     * Populate search settings in the Redux store from search settings
+     * whenever the list of sources changes.
+     */
+
+    const state = getState();
+    const maybeSourceDocuments = selectSourceDocuments(state);
+    if (maybeSourceDocuments != null) {
+      const localStorageSettings =
+        getLocalStorageSearchSettings(maybeSourceDocuments);
+      dispatch(setSearchTypeSettings(localStorageSettings.searchTypeSettings));
+      dispatch(setSourceSettings(localStorageSettings.sourceSettings));
+      dispatch(setFilterSettings(localStorageSettings.filterSettings));
     }
   },
 });
