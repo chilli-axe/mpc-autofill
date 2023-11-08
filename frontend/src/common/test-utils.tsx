@@ -83,9 +83,9 @@ export async function expectCardSlotToNotExist(slot: number) {
 
 async function expectCardSlotState(
   testId: string,
-  cardName?: string,
-  selectedImage?: number,
-  totalImages?: number
+  cardName?: string | null,
+  selectedImage?: number | null,
+  totalImages?: number | null
 ) {
   /**
    * This function helps with asserting that a particular card slot exists
@@ -117,9 +117,9 @@ async function expectCardSlotState(
 export async function expectCardGridSlotState(
   slot: number,
   face: Faces,
-  cardName?: string,
-  selectedImage?: number,
-  totalImages?: number
+  cardName?: string | null,
+  selectedImage?: number | null,
+  totalImages?: number | null
 ) {
   // note: the specified `slot` should be 1-indexed
   return await expectCardSlotState(
