@@ -17,10 +17,13 @@ import {
   selectBackendConfigured,
   setURL,
 } from "@/features/backend/backendSlice";
+import { fetchCardbacks, selectCardbacks } from "@/features/card/cardbackSlice";
 import {
   addMembers,
   bulkSetQuery,
+  selectProjectCardback,
   setQuery,
+  setSelectedCardback,
 } from "@/features/project/projectSlice";
 import { fetchCardDocumentsAndReportError } from "@/features/search/cardDocumentsSlice";
 import { clearSearchResults } from "@/features/search/searchResultsSlice";
@@ -124,6 +127,34 @@ startAppListening({
      */
 
     await fetchCardDocumentsAndReportError(dispatch);
+  },
+});
+
+startAppListening({
+  actionCreator: fetchCardbacks.fulfilled,
+  effect: async (action, { dispatch, getState }) => {
+    /**
+     * Whenever the list of cardbacks changes, this listener will deselect the cardback
+     * if it's no longer valid, then select the first cardback in the list if there are
+     * any cardbacks if necessary.
+     * Note that this means you can end up with no selected cardback.
+     */
+
+    const state = getState();
+    const currentCardback = selectProjectCardback(state);
+    const cardbacks = selectCardbacks(state);
+
+    let newCardback = currentCardback;
+    if (newCardback != null && !cardbacks.includes(newCardback)) {
+      newCardback = undefined;
+    }
+    if (newCardback == null && cardbacks.length > 0) {
+      newCardback = cardbacks[0];
+    }
+
+    if (newCardback != currentCardback) {
+      dispatch(setSelectedCardback({ selectedImage: newCardback ?? null }));
+    }
   },
 });
 
