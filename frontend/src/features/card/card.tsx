@@ -129,7 +129,7 @@ function CardImage({
 
   return (
     <>
-      {imageState === "loading" && <Spinner zIndex={2} />}
+      {imageState === "loading" && !hidden && <Spinner zIndex={2} />}
       {imageSrc != null &&
         (hidden ? (
           <HiddenImage
