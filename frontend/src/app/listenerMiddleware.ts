@@ -10,23 +10,30 @@ import {
 } from "@reduxjs/toolkit";
 
 import { api } from "@/app/api";
-import { QueryTags } from "@/common/constants";
+import { Back, Front, QueryTags } from "@/common/constants";
 import { getLocalStorageSearchSettings } from "@/common/cookies";
+import { Faces } from "@/common/types";
 import {
   clearURL,
   selectBackendConfigured,
   setURL,
 } from "@/features/backend/backendSlice";
 import { fetchCardbacks, selectCardbacks } from "@/features/card/cardbackSlice";
+import { recordInvalidIdentifier } from "@/features/invalidIdentifiers/invalidIdentifiersSlice";
 import {
   addMembers,
-  bulkSetQuery,
+  clearQueries,
   selectProjectCardback,
-  setQuery,
+  setQueries,
   setSelectedCardback,
+  setSelectedImages,
 } from "@/features/project/projectSlice";
 import { fetchCardDocumentsAndReportError } from "@/features/search/cardDocumentsSlice";
-import { clearSearchResults } from "@/features/search/searchResultsSlice";
+import {
+  clearSearchResults,
+  fetchSearchResults,
+  selectSearchResultsForQueryOrDefault,
+} from "@/features/search/searchResultsSlice";
 import {
   fetchSourceDocuments,
   fetchSourceDocumentsAndReportError,
@@ -120,7 +127,7 @@ startAppListening({
 });
 
 startAppListening({
-  matcher: isAnyOf(addMembers, setQuery, bulkSetQuery),
+  matcher: isAnyOf(addMembers, setQueries),
   effect: async (action, { dispatch }) => {
     /**
      * Fetch card documents whenever new members are added to the project or search results are cleared.
@@ -154,6 +161,115 @@ startAppListening({
 
     if (newCardback != currentCardback) {
       dispatch(setSelectedCardback({ selectedImage: newCardback ?? null }));
+    }
+  },
+});
+
+startAppListening({
+  actionCreator: setQueries,
+  effect: async (action, { dispatch, getState }) => {
+    /**
+     * Whenever a slot's query changes, deselect the currently selected image for that slot,
+     * and if there are search results, select the first of those results.
+     */
+
+    const state = getState();
+    const cardbacks = selectCardbacks(state);
+
+    const { slots }: { slots: Array<[Faces, number]> } = action.payload;
+    for (const [_, [face, slot]] of slots.entries()) {
+      const searchQuery = state.project.members[slot][face]?.query;
+      const searchResultsForQueryOrDefault =
+        selectSearchResultsForQueryOrDefault(
+          state,
+          searchQuery,
+          face,
+          cardbacks
+        ) ?? [];
+      const newSelectedImage =
+        searchQuery?.query != null
+          ? searchResultsForQueryOrDefault[0]
+          : undefined;
+      if (newSelectedImage != null) {
+        dispatch(
+          setSelectedImages({
+            slots: [[face, slot]],
+            selectedImage: newSelectedImage,
+          })
+        );
+      } else {
+        // clearQueries handles the logic of back face cards defaulting to the project cardback
+        dispatch(clearQueries({ slots: [[face, slot]] }));
+      }
+    }
+  },
+});
+
+startAppListening({
+  actionCreator: fetchSearchResults.fulfilled,
+  effect: async (action, { dispatch, getState }) => {
+    /**
+     * Whenever search results change, this listener will inspect each card slot
+     * and ensure that their selected images are valid.
+     */
+
+    const state = getState();
+    const cardbacks = selectCardbacks(state);
+    const projectCardback = selectProjectCardback(state);
+    for (const [slot, slotProjectMember] of state.project.members.entries()) {
+      for (const face of [Front, Back]) {
+        const projectMember = slotProjectMember[face];
+        const searchQuery = projectMember?.query;
+        if (projectMember != null && searchQuery != null) {
+          const searchResultsForQueryOrDefault =
+            selectSearchResultsForQueryOrDefault(
+              state,
+              searchQuery,
+              face,
+              cardbacks
+            );
+          if (searchResultsForQueryOrDefault != null) {
+            let mutatedSelectedImage = projectMember.selectedImage;
+
+            // If an image is selected and it's not in the search results, deselect the image and let the user know about it
+            if (
+              mutatedSelectedImage != null &&
+              !searchResultsForQueryOrDefault.includes(mutatedSelectedImage)
+            ) {
+              if (searchResultsForQueryOrDefault.length > 0) {
+                dispatch(
+                  recordInvalidIdentifier({
+                    slot,
+                    face,
+                    searchQuery,
+                    identifier: mutatedSelectedImage,
+                  })
+                );
+              }
+              mutatedSelectedImage = undefined;
+            }
+
+            // If no image is selected and there are search results, select the first image in search results
+            if (
+              searchResultsForQueryOrDefault.length > 0 &&
+              mutatedSelectedImage == null
+            ) {
+              if (searchQuery?.query != null) {
+                mutatedSelectedImage = searchResultsForQueryOrDefault[0];
+              } else if (face === Back && projectCardback != null) {
+                mutatedSelectedImage = projectCardback;
+              }
+            }
+
+            dispatch(
+              setSelectedImages({
+                slots: [[face, slot]],
+                selectedImage: mutatedSelectedImage,
+              })
+            );
+          }
+        }
+      }
     }
   },
 });

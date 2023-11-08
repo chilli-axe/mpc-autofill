@@ -2,7 +2,7 @@ import { within } from "@testing-library/dom";
 import { screen, waitFor } from "@testing-library/react";
 
 import App from "@/app/app";
-import { Back, Card, Front } from "@/common/constants";
+import { Back, Card, Front, SelectedImageSeparator } from "@/common/constants";
 import {
   cardDocument1,
   cardDocument2,
@@ -174,23 +174,15 @@ test("importing multiple instances of one card by text into a non-empty project"
   renderWithProviders(<App />, {
     preloadedState: {
       ...preloadedState,
-      project: {
-        members: [
-          {
-            front: {
-              query: { query: "my search query", card_type: Card },
-              selectedImage: cardDocument1.identifier,
-              selected: false,
-            },
-            back: null,
-          },
-        ],
-        cardback: cardDocument2.identifier,
-      },
+      project: { members: [], cardback: cardDocument2.identifier },
     },
   });
 
-  // this slot should already exist from our preloaded state
+  // this used to preload the redux state, but with the shift to listeners,
+  // we have to add the first card manually like this.
+  await importText(
+    `1x my search query${SelectedImageSeparator}${cardDocument1.identifier}`
+  );
   await expectCardSlotToExist(1);
   await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 1);
   await expectCardGridSlotState(1, Back, cardDocument2.name, 1, 2);

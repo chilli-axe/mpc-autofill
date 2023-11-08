@@ -1,7 +1,7 @@
 import { screen, waitFor } from "@testing-library/react";
 
 import App from "@/app/app";
-import { Back, Card, Front } from "@/common/constants";
+import { Back, Card, FaceSeparator, Front } from "@/common/constants";
 import {
   cardDocument1,
   cardDocument2,
@@ -15,6 +15,7 @@ import {
   expectCardbackSlotState,
   expectCardGridSlotState,
   expectCardSlotToNotExist,
+  importText,
   openCardSlotGridSelector,
   renderWithProviders,
   selectSlot,
@@ -367,22 +368,11 @@ test("CardSlot uses cardbacks as search results for backs with no search query",
   );
   renderWithProviders(<App />, {
     preloadedState: {
-      project: {
-        members: [
-          {
-            front: null,
-            back: {
-              query: { query: null, card_type: Card },
-              selectedImage: cardDocument1.identifier,
-              selected: false,
-            },
-          },
-        ],
-        cardback: null,
-      },
+      project: { members: [], cardback: null },
     },
   });
 
+  await importText("my search query");
   await expectCardGridSlotState(1, Back, cardDocument1.name, 1, 2);
   await expectCardbackSlotState(cardDocument1.name, 1, 2);
 });
@@ -396,20 +386,13 @@ test("CardSlot defaults to project cardback for backs with no search query", asy
   );
   renderWithProviders(<App />, {
     preloadedState: {
-      project: {
-        members: [
-          {
-            front: null,
-            back: null,
-          },
-        ],
-        cardback: cardDocument1.identifier,
-      },
+      project: { members: [], cardback: cardDocument2.identifier },
     },
   });
 
-  await expectCardGridSlotState(1, Back, cardDocument1.name, 1, 2);
-  await expectCardbackSlotState(cardDocument1.name, 1, 2);
+  await importText(FaceSeparator);
+  await expectCardGridSlotState(1, Back, cardDocument2.name, 2, 2);
+  await expectCardbackSlotState(cardDocument2.name, 2, 2);
 });
 
 test("double clicking the select button selects all slots for the same query", async () => {
