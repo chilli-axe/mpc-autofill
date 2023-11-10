@@ -54,9 +54,7 @@ export function CardGrid() {
   //# region queries and hooks
 
   const fetchingCardData = useAppSelector(
-    (state) =>
-      state.cardDocuments.status == "loading" ||
-      state.searchResults.status === "loading"
+    (state) => state.searchResults.status === "loading"
   );
   const isProjectEmpty = useAppSelector(selectIsProjectEmpty);
   const frontsVisible = useAppSelector(selectFrontsVisible);
