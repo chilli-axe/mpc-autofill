@@ -9,7 +9,6 @@ import {
   cardDocument4,
   cardDocument5,
   cardDocument6,
-  localBackend,
 } from "@/common/test-constants";
 import {
   expectCardbackSlotState,
@@ -34,7 +33,6 @@ import {
 import { server } from "@/mocks/server";
 
 const preloadedState = {
-  backend: localBackend,
   project: {
     members: [],
     cardback: cardDocument2.identifier,

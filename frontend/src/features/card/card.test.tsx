@@ -9,7 +9,7 @@ import { MemoizedEditorCard } from "@/features/card/card";
 test("the html structure of a Card with a single document", () => {
   const rendered = renderWithProviders(
     <MemoizedEditorCard
-      cardHeaderTitle="Card 1"
+      cardHeaderTitle="Slot 1"
       noResultsFound={false}
       imageIdentifier={cardDocument1.identifier}
     />,
@@ -25,13 +25,15 @@ test("the html structure of a Card with a single document", () => {
       },
     }
   );
-  expect(rendered.baseElement).toMatchSnapshot();
+  expect(
+    rendered.getByText("Slot 1").parentElement!.parentElement!
+  ).toMatchSnapshot();
 });
 
 test("the html structure of a Card with two documents", () => {
   const rendered = renderWithProviders(
     <MemoizedEditorCard
-      cardHeaderTitle="Card 2"
+      cardHeaderTitle="Slot 2"
       noResultsFound={false}
       imageIdentifier={cardDocument1.identifier}
       previousImageIdentifier={cardDocument2.identifier}
@@ -49,13 +51,15 @@ test("the html structure of a Card with two documents", () => {
       },
     }
   );
-  expect(rendered.baseElement).toMatchSnapshot();
+  expect(
+    rendered.getByText("Slot 2").parentElement!.parentElement!
+  ).toMatchSnapshot();
 });
 
 test("the html structure of a Card with three documents", () => {
   const rendered = renderWithProviders(
     <MemoizedEditorCard
-      cardHeaderTitle="Card 3"
+      cardHeaderTitle="Slot 3"
       noResultsFound={false}
       imageIdentifier={cardDocument1.identifier}
       previousImageIdentifier={cardDocument2.identifier}
@@ -75,14 +79,16 @@ test("the html structure of a Card with three documents", () => {
       },
     }
   );
-  expect(rendered.baseElement).toMatchSnapshot();
+  expect(
+    rendered.getByText("Slot 3").parentElement!.parentElement!
+  ).toMatchSnapshot();
 });
 
 test("the html structure of a Card with no search results", () => {
   const rendered = renderWithProviders(
     <MemoizedEditorCard
       imageIdentifier={undefined}
-      cardHeaderTitle="Card 1"
+      cardHeaderTitle="Slot 1"
       noResultsFound={true}
       searchQuery={{ query: "My Invalid Query", card_type: "CARD" }}
     />,
@@ -96,5 +102,7 @@ test("the html structure of a Card with no search results", () => {
       },
     }
   );
-  expect(rendered.baseElement).toMatchSnapshot();
+  expect(
+    rendered.getByText("Slot 1").parentElement!.parentElement!
+  ).toMatchSnapshot();
 });

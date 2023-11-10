@@ -11,8 +11,7 @@ import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import Offcanvas from "react-bootstrap/Offcanvas";
 
-import { api } from "@/app/api";
-import { ProjectName, QueryTags } from "@/common/constants";
+import { ProjectName } from "@/common/constants";
 import {
   clearLocalStorageBackendURL,
   getLocalStorageBackendURL,
@@ -108,7 +107,6 @@ export function BackendConfig({ show, handleClose }: BackendConfigProps) {
   const clearBackendURL = () => {
     dispatch(clearURL());
     clearLocalStorageBackendURL();
-    dispatch(api.util.invalidateTags([QueryTags.BackendSpecific]));
     setValidationStatus([]);
   };
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -145,7 +143,6 @@ export function BackendConfig({ show, handleClose }: BackendConfigProps) {
     ) {
       dispatch(setURL(formattedURL));
       setLocalStorageBackendURL(formattedURL);
-      dispatch(api.util.invalidateTags([QueryTags.BackendSpecific]));
       setLocalBackendURL("");
     }
     setValidating(false);
@@ -156,15 +153,9 @@ export function BackendConfig({ show, handleClose }: BackendConfigProps) {
   //# region effects
 
   useEffect(() => {
-    /**
-     * TODO: This could be turned into a Redux listener. The reason I haven't done so here is because it's a bit funky
-     *       in terms of how it interacts with pre-loading the Redux state in tests with a backend URL.
-     */
-
     const localStorageBackendURL = getLocalStorageBackendURL();
     if (localStorageBackendURL != undefined) {
       dispatch(setURL(localStorageBackendURL));
-      dispatch(api.util.invalidateTags([QueryTags.BackendSpecific]));
     }
   }, [dispatch]);
 

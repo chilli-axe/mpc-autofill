@@ -3,7 +3,6 @@ import { waitFor, within } from "@testing-library/react";
 import App from "@/app/app";
 import { Front } from "@/common/constants";
 import {
-  localBackend,
   projectSelectedImage1,
   sourceDocument1,
 } from "@/common/test-constants";
@@ -29,7 +28,6 @@ test("toggling between faceting cards by source vs grouped together works as exp
 
   renderWithProviders(<App />, {
     preloadedState: {
-      backend: localBackend,
       project: projectSelectedImage1,
     },
   });
@@ -59,7 +57,6 @@ test("collapsing a source in the faceted view then expanding it works as expecte
 
   renderWithProviders(<App />, {
     preloadedState: {
-      backend: localBackend,
       project: projectSelectedImage1,
     },
   });
@@ -100,7 +97,6 @@ test("collapsing and expanding all sources works as expected", async () => {
 
   renderWithProviders(<App />, {
     preloadedState: {
-      backend: localBackend,
       project: projectSelectedImage1,
     },
   });

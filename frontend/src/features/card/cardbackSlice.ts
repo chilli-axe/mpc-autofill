@@ -15,7 +15,7 @@ import { setError } from "@/features/toasts/toastsSlice";
 
 const typePrefix = "cardbacks/fetchCardbacks";
 
-const fetchCardbacks = createAppAsyncThunk(
+export const fetchCardbacks = createAppAsyncThunk(
   typePrefix,
   async (arg, { getState }) => {
     const state = getState();

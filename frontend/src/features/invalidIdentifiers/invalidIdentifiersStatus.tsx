@@ -2,13 +2,19 @@ import Alert from "react-bootstrap/Alert";
 import Button from "react-bootstrap/Button";
 
 import { useAppDispatch, useAppSelector } from "@/common/types";
-import { selectInvalidIdentifiersCount } from "@/features/invalidIdentifiers/invalidIdentifiersSlice";
+import { selectInvalidIdentifiers } from "@/features/invalidIdentifiers/invalidIdentifiersSlice";
 import { showModal } from "@/features/modals/modalsSlice";
 export function InvalidIdentifiersStatus() {
   //# region queries and hooks
 
   const dispatch = useAppDispatch();
-  const invalidIdentifierCount = useAppSelector(selectInvalidIdentifiersCount);
+  const invalidIdentifiers = useAppSelector(selectInvalidIdentifiers);
+  const invalidIdentifierCount = invalidIdentifiers.length;
+  const areAnyIdentifiersInvalid =
+    invalidIdentifierCount > 0 &&
+    invalidIdentifiers.some(
+      (entry) => entry?.front != null || entry?.back != null
+    );
 
   //# endregion
 
@@ -18,7 +24,7 @@ export function InvalidIdentifiersStatus() {
 
   //# endregion
 
-  return invalidIdentifierCount > 0 ? (
+  return areAnyIdentifiersInvalid ? (
     <Alert variant="primary">
       <p>
         Your project specified <b>{invalidIdentifierCount}</b> card version

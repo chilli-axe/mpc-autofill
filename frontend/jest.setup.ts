@@ -7,6 +7,9 @@ import "whatwg-fetch";
 import { loadEnvConfig } from "@next/env";
 import { configure as configureDom } from "@testing-library/dom";
 import { configure as configureReact } from "@testing-library/react";
+// TODO: https://github.com/alfg/ping.js/issues/29#issuecomment-487240910
+// @ts-ignore
+import Ping from "ping.js";
 
 import { server } from "@/mocks/server";
 
@@ -30,7 +33,18 @@ export default async () => {
 };
 
 // Establish API mocking before all tests.
-beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
+beforeAll(() => {
+  server.listen({ onUnhandledRequest: "error" });
+
+  // we cannot use MSW to mock this ping out because ping.js works by loading favicon.ico as an image
+  // therefore, we need to mock the ping implementation such that the server is always "alive"
+  // typing these with `any` is pretty lazy but this is just in the test framework so who cares tbh
+  jest
+    .spyOn(Ping.prototype, "ping")
+    .mockImplementation(function (source: any, callback: any) {
+      return callback(null); // null indicates no error -> successful ping
+    });
+});
 
 beforeEach(() => {
   // IntersectionObserver isn't available in test environment
@@ -51,4 +65,8 @@ afterEach(() => {
 });
 
 // Clean up after the tests are finished.
-afterAll(() => server.close());
+afterAll(() => {
+  server.close();
+
+  jest.spyOn(Ping.prototype, "ping").mockRestore();
+});

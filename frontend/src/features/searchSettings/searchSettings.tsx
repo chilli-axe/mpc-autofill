@@ -48,18 +48,6 @@ export function SearchSettings() {
   const [localFilterSettings, setLocalFilterSettings] =
     useState<FilterSettings>(globalSearchSettings.filterSettings);
 
-  const maybeSourceDocuments = useAppSelector(selectSourceDocuments);
-
-  useEffect(() => {
-    if (maybeSourceDocuments != null) {
-      const localStorageSettings =
-        getLocalStorageSearchSettings(maybeSourceDocuments);
-      dispatch(setSearchTypeSettings(localStorageSettings.searchTypeSettings));
-      dispatch(setSourceSettings(localStorageSettings.sourceSettings));
-      dispatch(setFilterSettings(localStorageSettings.filterSettings));
-    }
-  }, [dispatch, maybeSourceDocuments]);
-
   // modal management functions
   const handleClose = () => setShow(false);
 
