@@ -167,11 +167,26 @@ startAppListening({
 
 startAppListening({
   actionCreator: setQueries,
-  effect: async (action, { dispatch, getState }) => {
+  effect: async (action, { dispatch, getState, condition }) => {
     /**
      * Whenever a slot's query changes, deselect the currently selected image for that slot,
      * and if there are search results, select the first of those results.
      */
+
+    // wait for all search results to load (removing this will cause a race condition)
+    await condition((action, currentState) => {
+      const { slots }: { slots: Array<[Faces, number]> } = action.payload;
+      return slots
+        .map(([face, slot]) => {
+          const searchQuery = currentState.project.members[slot][face]?.query;
+          return searchQuery?.query != null
+            ? currentState.searchResults.searchResults[searchQuery.query][
+                searchQuery.card_type
+              ] != null
+            : true;
+        })
+        .every((value) => value);
+    });
 
     const state = getState();
     const cardbacks = selectCardbacks(state);
