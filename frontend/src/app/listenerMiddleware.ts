@@ -113,7 +113,12 @@ startAppListening({
 });
 
 startAppListening({
-  matcher: isAnyOf(setSearchTypeSettings, setSourceSettings, setFilterSettings),
+  predicate: (action, currentState, previousState) => {
+    return (
+      JSON.stringify(currentState.searchSettings) !==
+      JSON.stringify(previousState.searchSettings)
+    );
+  },
   effect: async (action, { getState, dispatch }) => {
     /**
      * Recalculate search results whenever search settings change.
