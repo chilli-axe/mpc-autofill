@@ -19,7 +19,10 @@ import {
   setURL,
 } from "@/features/backend/backendSlice";
 import { fetchCardbacks, selectCardbacks } from "@/features/card/cardbackSlice";
-import { recordInvalidIdentifier } from "@/features/invalidIdentifiers/invalidIdentifiersSlice";
+import {
+  clearInvalidIdentifier,
+  recordInvalidIdentifier,
+} from "@/features/invalidIdentifiers/invalidIdentifiersSlice";
 import {
   addMembers,
   clearQueries,
@@ -193,6 +196,10 @@ startAppListening({
 
     const { slots }: { slots: Array<[Faces, number]> } = action.payload;
     for (const [_, [face, slot]] of slots.entries()) {
+      // the user has specifically opted into changing the query here,
+      // so previous warnings that missing cards were requested for this slot are no longer valid
+      dispatch(clearInvalidIdentifier({ face, slot }));
+
       const searchQuery = state.project.members[slot][face]?.query;
       const searchResultsForQueryOrDefault =
         selectSearchResultsForQueryOrDefault(

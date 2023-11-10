@@ -26,6 +26,15 @@ export const invalidIdentifiersSlice = createSlice({
         [face]: [searchQuery, identifier],
       };
     },
+    clearInvalidIdentifier: (
+      state,
+      action: PayloadAction<{ slot: number; face: Faces }>
+    ) => {
+      state.invalidIdentifiers[action.payload.slot] = {
+        ...state.invalidIdentifiers[action.payload.slot],
+        [action.payload.face]: undefined,
+      };
+    },
     clearInvalidIdentifiers: (state) => {
       state.invalidIdentifiers = [];
     },
@@ -33,8 +42,11 @@ export const invalidIdentifiersSlice = createSlice({
 });
 
 export default invalidIdentifiersSlice.reducer;
-export const { recordInvalidIdentifier, clearInvalidIdentifiers } =
-  invalidIdentifiersSlice.actions;
+export const {
+  recordInvalidIdentifier,
+  clearInvalidIdentifier,
+  clearInvalidIdentifiers,
+} = invalidIdentifiersSlice.actions;
 
 //# endregion
 
