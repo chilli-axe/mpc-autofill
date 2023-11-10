@@ -4,7 +4,7 @@
  * the project cardback (displayed in the right panel of the project editor).
  */
 
-import React, { memo, useEffect, useState } from "react";
+import React, { memo, useState } from "react";
 import Button from "react-bootstrap/Button";
 
 import { Back } from "@/common/constants";
@@ -120,33 +120,6 @@ export function CommonCardback({ selectedImage }: CommonCardbackProps) {
       );
     }
   };
-
-  //# endregion
-
-  //# region effects
-
-  useEffect(() => {
-    let mutatedSelectedImage = selectedImage;
-
-    // If an image is selected and it's not in the search results, deselect the image
-    if (
-      mutatedSelectedImage != null &&
-      !searchResults.includes(mutatedSelectedImage)
-    ) {
-      mutatedSelectedImage = undefined;
-    }
-
-    // If no image is selected and there are cardbacks, select the first image in search results
-    if (searchResults.length > 0 && mutatedSelectedImage == null) {
-      mutatedSelectedImage = searchResults[0];
-    }
-
-    dispatch(
-      setSelectedCardback({
-        selectedImage: mutatedSelectedImage ?? null,
-      })
-    );
-  }, [dispatch, selectedImage, searchResults]);
 
   //# endregion
 

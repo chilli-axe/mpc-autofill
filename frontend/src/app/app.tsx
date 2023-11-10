@@ -54,11 +54,6 @@ function App() {
   //# region effects
 
   useEffect(() => {
-    if (backendConfigured) {
-      fetchSourceDocumentsAndReportError(dispatch);
-    }
-  }, [dispatch, backendConfigured, backendURL]);
-  useEffect(() => {
     /**
      * Ask the user for confirmation before they close the page if their project has any cards in it.
      */

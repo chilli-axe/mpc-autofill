@@ -15,12 +15,12 @@ import { RightPaddedIcon } from "@/components/icon";
 import { GridSelectorModal } from "@/features/gridSelector/gridSelectorModal";
 import { setSelectedSlotsAndShowModal } from "@/features/modals/modalsSlice";
 import {
-  bulkClearQuery,
-  bulkDeleteSlots,
   bulkSetMemberSelection,
-  bulkSetSelectedImage,
+  clearQueries,
+  deleteSlots,
   selectAllSelectedProjectMembersHaveTheSameQuery,
   selectSelectedSlots,
+  setSelectedImages,
 } from "@/features/project/projectSlice";
 import { selectSearchResultsForQueryOrDefault } from "@/features/search/searchResultsSlice";
 
@@ -36,7 +36,7 @@ function ChangeSelectedImageSelectedImages({ slots }: { slots: Slots }) {
   const handleHideModal = () => setShowModal(false);
 
   const handleChangeImages = (selectedImage: string): void => {
-    dispatch(bulkSetSelectedImage({ selectedImage, slots }));
+    dispatch(setSelectedImages({ selectedImage, slots }));
     handleHideModal();
   };
 
@@ -92,7 +92,7 @@ function ChangeSelectedImageQueries({ slots }: { slots: Slots }) {
 
 function ClearSelectedImageQueries({ slots }: { slots: Slots }) {
   const dispatch = useAppDispatch();
-  const onClick = () => dispatch(bulkClearQuery({ slots }));
+  const onClick = () => dispatch(clearQueries({ slots }));
   return (
     <Dropdown.Item onClick={onClick} className="text-decoration-none">
       <RightPaddedIcon bootstrapIconName="slash-circle" /> Clear Query
@@ -104,7 +104,7 @@ function DeleteSelectedImages({ slots }: { slots: Slots }) {
   const dispatch = useAppDispatch();
 
   const slotNumbers = slots.map(([face, slot]) => slot);
-  const onClick = () => dispatch(bulkDeleteSlots({ slots: slotNumbers }));
+  const onClick = () => dispatch(deleteSlots({ slots: slotNumbers }));
 
   return (
     <Dropdown.Item onClick={onClick} className="text-decoration-none">

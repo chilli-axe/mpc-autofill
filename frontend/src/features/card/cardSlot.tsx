@@ -6,10 +6,9 @@
  * card slot for the same slot number in the other face.
  */
 
-import React, { memo, useEffect, useState } from "react";
+import React, { memo, useState } from "react";
 import Button from "react-bootstrap/Button";
 
-import { Back } from "@/common/constants";
 import {
   Faces,
   SearchQuery,
@@ -20,14 +19,12 @@ import { wrapIndex } from "@/common/utils";
 import { MemoizedEditorCard } from "@/features/card/card";
 import { selectCardbacks } from "@/features/card/cardbackSlice";
 import { GridSelectorModal } from "@/features/gridSelector/gridSelectorModal";
-import { recordInvalidIdentifier } from "@/features/invalidIdentifiers/invalidIdentifiersSlice";
 import { setSelectedSlotsAndShowModal } from "@/features/modals/modalsSlice";
 import {
   bulkAlignMemberSelection,
-  deleteSlot,
-  selectProjectCardback,
+  deleteSlots,
   selectProjectMember,
-  setSelectedImage,
+  setSelectedImages,
   toggleMemberSelection,
 } from "@/features/project/projectSlice";
 import { selectSearchResultsForQueryOrDefault } from "@/features/search/searchResultsSlice";
@@ -67,7 +64,7 @@ export function CardSlotGridSelector({
   //# region callbacks
 
   const setSelectedImageFromIdentifier = (selectedImage: string) => {
-    dispatch(setSelectedImage({ face, slot, selectedImage }));
+    dispatch(setSelectedImages({ slots: [[face, slot]], selectedImage }));
   };
 
   //# endregion
@@ -94,7 +91,6 @@ export function CardSlot({ searchQuery, face, slot }: CardSlotProps) {
 
   const dispatch = useAppDispatch();
   const cardbacks = useAppSelector(selectCardbacks);
-  const projectCardback = useAppSelector(selectProjectCardback);
   const searchResultsForQueryOrDefault = useAppSelector((state) =>
     selectSearchResultsForQueryOrDefault(state, searchQuery, face, cardbacks)
   );
@@ -120,7 +116,7 @@ export function CardSlot({ searchQuery, face, slot }: CardSlotProps) {
   };
   // TODO: add a confirmation prompt here. yes/no/yes and don't ask again.
   const deleteThisSlot = () => {
-    dispatch(deleteSlot({ slot }));
+    dispatch(deleteSlots({ slots: [slot] }));
   };
   const toggleSelectionForThisMember = (
     event: React.MouseEvent<HTMLButtonElement>
@@ -136,9 +132,8 @@ export function CardSlot({ searchQuery, face, slot }: CardSlotProps) {
     // TODO: docstring
     if (selectedImageIndex != null) {
       dispatch(
-        setSelectedImage({
-          face,
-          slot,
+        setSelectedImages({
+          slots: [[face, slot]],
           selectedImage:
             searchResultsForQuery[
               wrapIndex(
@@ -150,66 +145,6 @@ export function CardSlot({ searchQuery, face, slot }: CardSlotProps) {
       );
     }
   };
-
-  //# endregion
-
-  //# region effects
-
-  useEffect(() => {
-    /**
-     * Set the selected image according to some initialisation logic (if search results have loaded).
-     */
-
-    if (searchResultsForQueryOrDefault != null) {
-      let mutatedSelectedImage = selectedImage;
-
-      // If an image is selected and it's not in the search results, deselect the image and let the user know about it
-      if (
-        mutatedSelectedImage != null &&
-        !searchResultsForQueryOrDefault.includes(mutatedSelectedImage)
-      ) {
-        if (searchQuery != null && searchResultsForQueryOrDefault.length > 0) {
-          dispatch(
-            recordInvalidIdentifier({
-              slot,
-              face,
-              searchQuery,
-              identifier: mutatedSelectedImage,
-            })
-          );
-        }
-        mutatedSelectedImage = undefined;
-      }
-
-      // If no image is selected and there are search results, select the first image in search results
-      if (
-        searchResultsForQueryOrDefault.length > 0 &&
-        mutatedSelectedImage == null
-      ) {
-        if (searchQuery?.query != null) {
-          mutatedSelectedImage = searchResultsForQueryOrDefault[0];
-        } else if (face === Back && projectCardback != null) {
-          mutatedSelectedImage = projectCardback;
-        }
-      }
-
-      dispatch(
-        setSelectedImage({
-          face,
-          slot,
-          selectedImage: mutatedSelectedImage,
-        })
-      );
-    }
-  }, [
-    dispatch,
-    face,
-    slot,
-    searchQuery,
-    searchResultsForQueryOrDefault,
-    projectCardback,
-    selectedImage,
-  ]);
 
   //# endregion
 

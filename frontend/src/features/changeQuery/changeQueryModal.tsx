@@ -6,7 +6,7 @@ import Modal from "react-bootstrap/Modal";
 import { useGetSampleCardsQuery } from "@/app/api";
 import { Card } from "@/common/constants";
 import { Slots, useAppDispatch } from "@/common/types";
-import { bulkClearQuery, bulkSetQuery } from "@/features/project/projectSlice";
+import { clearQueries, setQueries } from "@/features/project/projectSlice";
 
 interface ChangeQueryModalProps {
   slots: Slots;
@@ -44,10 +44,10 @@ export function ChangeQueryModal({
     event.preventDefault(); // to avoid reloading the page
     if (changeSelectedImageQueriesModalValue.length > 0) {
       dispatch(
-        bulkSetQuery({ query: changeSelectedImageQueriesModalValue, slots })
+        setQueries({ query: changeSelectedImageQueriesModalValue, slots })
       );
     } else {
-      dispatch(bulkClearQuery({ slots }));
+      dispatch(clearQueries({ slots }));
     }
     handleClose();
   };

@@ -5,9 +5,6 @@ import {
   waitForElementToBeRemoved,
 } from "@testing-library/react";
 import Cookies from "js-cookie";
-// TODO: https://github.com/alfg/ping.js/issues/29#issuecomment-487240910
-// @ts-ignore
-import Ping from "ping.js";
 
 import App from "@/app/app";
 import { GoogleAnalyticsConsentKey } from "@/common/constants";
@@ -39,8 +36,6 @@ import {
 import { server } from "@/mocks/server";
 import About from "@/pages/about";
 
-import { LayoutWithoutProvider } from "../ui/layout";
-
 describe("google analytics toast", () => {
   beforeEach(() => {
     Cookies.remove(GoogleAnalyticsConsentKey);
@@ -53,14 +48,8 @@ describe("google analytics toast", () => {
     delete window.gtag;
   });
 
-  const AboutWithToasts = () => (
-    <LayoutWithoutProvider>
-      <About />
-    </LayoutWithoutProvider>
-  );
-
   test("opting into google analytics", async () => {
-    renderWithProviders(<AboutWithToasts />);
+    renderWithProviders(<About />);
     await waitFor(() => {
       expect(screen.getByText("Cookie Usage")).not.toBeNull();
     });
@@ -69,12 +58,12 @@ describe("google analytics toast", () => {
     await waitForElementToBeRemoved(() => screen.getByText("Cookie Usage"));
 
     // upon reloading the page, google analytics should now be turned on
-    renderWithProviders(<AboutWithToasts />);
+    renderWithProviders(<About />);
     expect(eval("gtag")).toBeDefined();
   });
 
   test("opting out of google analytics", async () => {
-    renderWithProviders(<AboutWithToasts />);
+    renderWithProviders(<About />);
     await waitFor(() => {
       expect(screen.getByText("Cookie Usage")).not.toBeNull();
     });
@@ -83,12 +72,12 @@ describe("google analytics toast", () => {
     await waitForElementToBeRemoved(() => screen.getByText("Cookie Usage"));
 
     // upon reloading the page, google analytics should now be turned off
-    renderWithProviders(<AboutWithToasts />);
+    renderWithProviders(<About />);
     expect(() => eval("gtag")).toThrow();
   });
 
   test("google analytics consent popup does not appear once consent is specified", async () => {
-    renderWithProviders(<AboutWithToasts />);
+    renderWithProviders(<About />);
     await waitFor(() =>
       expect(screen.getByText("Cookie Usage")).not.toBeNull()
     );
@@ -104,22 +93,7 @@ describe("google analytics toast", () => {
 });
 
 describe("error reporting toasts", () => {
-  beforeAll(() => {
-    // we cannot use MSW to mock this ping out because ping.js works by loading favicon.ico as an image
-    // therefore, we need to mock the ping implementation such that the server is always "alive"
-    // typing these with `any` is pretty lazy but this is just in the test framework so who cares tbh
-    jest
-      .spyOn(Ping.prototype, "ping")
-      .mockImplementation(function (source: any, callback: any) {
-        return callback(null); // null indicates no error -> successful ping
-      });
-  });
-
-  afterAll(() => {
-    jest.spyOn(Ping.prototype, "ping").mockRestore();
-  });
-
-  async function renderAppAndAssertErrorToast(
+  async function assertErrorToast(
     name: string,
     interactionFn: any | null = null
   ) {
@@ -146,18 +120,6 @@ describe("error reporting toasts", () => {
     );
   }
 
-  // Note: we're assuming that pages will be wrapped in `LayoutWithoutProvider`
-  const AppWithToasts = () => (
-    <LayoutWithoutProvider>
-      <App />
-    </LayoutWithoutProvider>
-  );
-  const NewCardsWithToasts = () => (
-    <LayoutWithoutProvider>
-      <NewCards />
-    </LayoutWithoutProvider>
-  );
-
   test("/2/searchResults", async () => {
     server.use(
       cardDocumentsThreeResults,
@@ -166,10 +128,10 @@ describe("error reporting toasts", () => {
       searchResultsServerError,
       ...defaultHandlers
     );
-    renderWithProviders(<AppWithToasts />, {
+    renderWithProviders(<App />, {
       preloadedState: { toasts: { errors: {} } },
     });
-    await renderAppAndAssertErrorToast("2/searchResults", async () => {
+    await assertErrorToast("2/searchResults", async () => {
       await importText("mountain");
     });
   });
@@ -182,10 +144,10 @@ describe("error reporting toasts", () => {
       searchResultsOneResult,
       ...defaultHandlers
     );
-    renderWithProviders(<AppWithToasts />, {
+    renderWithProviders(<App />, {
       preloadedState: { toasts: { errors: {} } },
     });
-    await renderAppAndAssertErrorToast("2/cards");
+    await assertErrorToast("2/cards");
   });
 
   test("/2/sources", async () => {
@@ -196,8 +158,8 @@ describe("error reporting toasts", () => {
       searchResultsOneResult,
       ...defaultHandlers
     );
-    renderWithProviders(<AppWithToasts />, { preloadedState: {} });
-    await renderAppAndAssertErrorToast("2/sources");
+    renderWithProviders(<App />, { preloadedState: {} });
+    await assertErrorToast("2/sources");
   });
 
   test("/2/DFCPairs", async () => {
@@ -209,8 +171,8 @@ describe("error reporting toasts", () => {
       dfcPairsServerError,
       ...defaultHandlers
     );
-    renderWithProviders(<AppWithToasts />);
-    await renderAppAndAssertErrorToast("2/DFCPairs", async () => {
+    renderWithProviders(<App />);
+    await assertErrorToast("2/DFCPairs", async () => {
       // DFC pairs are loaded when an importer is opened
       await openImportTextModal();
     });
@@ -224,8 +186,8 @@ describe("error reporting toasts", () => {
       searchResultsOneResult,
       ...defaultHandlers
     );
-    renderWithProviders(<AppWithToasts />);
-    await renderAppAndAssertErrorToast("2/cardbacks");
+    renderWithProviders(<App />);
+    await assertErrorToast("2/cardbacks");
   });
 
   test("/2/importSites", async () => {
@@ -237,8 +199,8 @@ describe("error reporting toasts", () => {
       importSitesServerError,
       ...defaultHandlers
     );
-    renderWithProviders(<AppWithToasts />);
-    await renderAppAndAssertErrorToast("2/importSites", async () => {
+    renderWithProviders(<App />);
+    await assertErrorToast("2/importSites", async () => {
       const addCardsMenu = getAddCardsMenu();
       addCardsMenu.click();
     });
@@ -253,8 +215,8 @@ describe("error reporting toasts", () => {
       sampleCardsServerError,
       ...defaultHandlers
     );
-    renderWithProviders(<AppWithToasts />);
-    await renderAppAndAssertErrorToast("2/sampleCards", async () => {
+    renderWithProviders(<App />);
+    await assertErrorToast("2/sampleCards", async () => {
       // DFC pairs are loaded when the text importer is opened
       await openImportTextModal();
     });
@@ -269,7 +231,7 @@ describe("error reporting toasts", () => {
       newCardsFirstPageServerError,
       ...defaultHandlers
     );
-    renderWithProviders(<NewCardsWithToasts />);
-    await renderAppAndAssertErrorToast("2/newCardsFirstPage");
+    renderWithProviders(<NewCards />);
+    await assertErrorToast("2/newCardsFirstPage");
   });
 });

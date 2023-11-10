@@ -23,7 +23,7 @@ import { setError } from "@/features/toasts/toastsSlice";
 
 const typePrefix = "searchResults/fetchCards";
 
-const fetchSearchResults = createAppAsyncThunk(
+export const fetchSearchResults = createAppAsyncThunk(
   typePrefix,
   async (arg, { getState, rejectWithValue }) => {
     const state = getState();
@@ -118,7 +118,7 @@ export default searchResultsSlice.reducer;
 
 export const selectSearchResultsForQuery = (
   state: RootState,
-  searchQuery: SearchQuery | null | undefined
+  searchQuery: SearchQuery | undefined
 ) =>
   searchQuery?.query != null
     ? (state.searchResults.searchResults[searchQuery.query] ?? {})[
@@ -137,7 +137,7 @@ export const selectSearchResultsForQueryOrDefault = (
    * Handle the fallback logic where cardbacks with no query use the common cardback's list of cards.
    */
 
-  searchQuery?.query != null
+  searchQuery?.query != null && searchQuery.query.length > 0
     ? selectSearchResultsForQuery(state, searchQuery)
     : face === Back
     ? cardbacks

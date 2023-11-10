@@ -99,7 +99,7 @@ export function NewCards() {
   return getNewCardsQuery.isFetching || getNewCardsQuery.data == null ? (
     <Spinner />
   ) : (
-    <>
+    <div>
       {Object.keys(getNewCardsQuery.data).length > 0 ? (
         <>
           <p>
@@ -125,6 +125,6 @@ export function NewCards() {
           :(
         </p>
       )}
-    </>
+    </div>
   );
 }

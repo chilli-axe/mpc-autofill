@@ -7,7 +7,6 @@ import {
   cardDocument2,
   cardDocument5,
   cardDocument6,
-  localBackend,
 } from "@/common/test-constants";
 import {
   downloadXML,
@@ -40,7 +39,6 @@ test("the XML representation of a simple project with no custom backs", async ()
   );
   renderWithProviders(<App />, {
     preloadedState: {
-      backend: localBackend,
       project: {
         members: [],
         cardback: cardDocument5.identifier,
@@ -96,7 +94,6 @@ test("the XML representation of a simple project with a custom back for one card
   );
   renderWithProviders(<App />, {
     preloadedState: {
-      backend: localBackend,
       project: {
         members: [],
         cardback: cardDocument5.identifier,
@@ -161,7 +158,6 @@ test("the XML representation of a simple project with multiple instances of a ca
   );
   renderWithProviders(<App />, {
     preloadedState: {
-      backend: localBackend,
       project: {
         members: [],
         cardback: cardDocument5.identifier,

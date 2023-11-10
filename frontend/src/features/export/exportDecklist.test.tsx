@@ -7,7 +7,6 @@ import {
   cardDocument2,
   cardDocument5,
   cardDocument6,
-  localBackend,
 } from "@/common/test-constants";
 import {
   downloadDecklist,
@@ -40,7 +39,6 @@ test("the decklist representation of a simple project with no custom backs", asy
   );
   renderWithProviders(<App />, {
     preloadedState: {
-      backend: localBackend,
       project: {
         members: [],
         cardback: cardDocument5.identifier,
@@ -76,7 +74,6 @@ test("the decklist representation of a simple project with a custom back for one
   );
   renderWithProviders(<App />, {
     preloadedState: {
-      backend: localBackend,
       project: {
         members: [],
         cardback: cardDocument5.identifier,
@@ -113,7 +110,6 @@ test("the decklist representation of a simple project with multiple instances of
   );
   renderWithProviders(<App />, {
     preloadedState: {
-      backend: localBackend,
       project: {
         members: [],
         cardback: cardDocument5.identifier,
