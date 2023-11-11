@@ -34,4 +34,3 @@ sentry-sdk~=1.30.0
 syrupy~=3.0
 tqdm~=4.65.0
 tzdata
-webdriver-manager==4.0.0
