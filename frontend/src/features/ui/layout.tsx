@@ -89,7 +89,9 @@ export function LayoutWithoutProvider({ children }: PropsWithChildren) {
   const consent = getGoogleAnalyticsConsent();
   return (
     <>
-      {consent === true && <GoogleAnalytics trackPageViews />}
+      {consent === true && (
+        <GoogleAnalytics trackPageViews gaMeasurementId="G-JV8WV3FQML" />
+      )}
       <Toasts />
       <Modals />
       <BackendSetter />
