@@ -131,14 +131,16 @@ export default function ProjectNavbar() {
               </NavDropdown>
             </Nav>
             <Nav className="ms-auto d-flex">
-              <Button
-                className="my-xl-0 my-lg-0 my-md-2 my-sm-2 my-2"
-                variant="success"
-                onClick={handleShowBackendConfig}
-                aria-label="configure-server-btn"
-              >
-                Configure Server
-              </Button>
+              {process.env.NEXT_PUBLIC_BACKEND_URL == null && (
+                <Button
+                  className="my-xl-0 my-lg-0 my-md-2 my-sm-2 my-2"
+                  variant="success"
+                  onClick={handleShowBackendConfig}
+                  aria-label="configure-server-btn"
+                >
+                  Configure Server
+                </Button>
+              )}
             </Nav>
           </BoldCollapse>
         </MaxWidthContainer>

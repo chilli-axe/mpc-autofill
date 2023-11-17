@@ -31,7 +31,10 @@ function BackendSetter() {
   const dispatch = useAppDispatch();
   const backendConfigured = useBackendConfigured();
   useEffect(() => {
-    if (formattedURL != null) {
+    if (process.env.NEXT_PUBLIC_BACKEND_URL != null) {
+      dispatch(setURL(process.env.NEXT_PUBLIC_BACKEND_URL));
+      setLocalStorageBackendURL(process.env.NEXT_PUBLIC_BACKEND_URL);
+    } else if (formattedURL != null) {
       dispatch(setURL(formattedURL));
       setLocalStorageBackendURL(formattedURL);
       if (server != null && typeof server == "string" && server.length > 0) {
