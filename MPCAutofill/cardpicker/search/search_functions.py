@@ -17,7 +17,7 @@ from referencing import Registry, Resource
 
 from django.conf import settings
 from django.core.paginator import Paginator
-from django.db.models import Q, QuerySet
+from django.db.models import Q
 from django.http import HttpRequest
 from django.utils import timezone
 
@@ -472,12 +472,12 @@ def parse_json_body_as_search_data(json_body: dict[str, Any]) -> tuple[SearchSet
     return SearchSettings.from_json_body(json_body), SearchQuery.list_from_json_body(json_body)
 
 
-def get_new_cards_paginator(source: Source) -> Paginator[QuerySet[Card]]:
+def get_new_cards_paginator(source: Source) -> Paginator:
     now = timezone.now()
     cards = Card.objects.filter(
         source=source, date__lt=now, date__gte=now - dt.timedelta(days=NEW_CARDS_DAYS)
     ).order_by("-date")
-    return Paginator(cards, NEW_CARDS_PAGE_SIZE)  # type: ignore  # TODO: `_SupportsPagination`
+    return Paginator(cards, NEW_CARDS_PAGE_SIZE)
 
 
 # endregion
