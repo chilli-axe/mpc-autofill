@@ -145,7 +145,9 @@ class Moxfield(ImportSite):
     @classmethod
     def retrieve_card_list(cls, url: str) -> str:
         deck_id = url.split("/")[-1]
-        response = requests.get(f"https://api.moxfield.com/v2/decks/all/{deck_id}")
+        response = requests.get(
+            f"https://api.moxfield.com/v2/decks/all/{deck_id}", headers={"user-agent": "Mozilla/5.0"}
+        )
 
         response_json = json.loads(response.content.decode("utf-8"))
         card_list = ""

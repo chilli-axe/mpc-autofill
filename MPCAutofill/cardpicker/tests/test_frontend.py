@@ -8,7 +8,6 @@ from typing import Optional, Type, Union
 import pytest
 from selenium.webdriver import Chrome
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
@@ -17,7 +16,6 @@ from selenium.webdriver.support.expected_conditions import (
     visibility_of,
 )
 from selenium.webdriver.support.ui import WebDriverWait
-from webdriver_manager.chrome import ChromeDriverManager
 
 from cardpicker.integrations.mtg import MTG
 from cardpicker.tests.constants import Card, Cards, Source, Sources
@@ -49,7 +47,7 @@ class TestFrontend:
         options = Options()
         options.add_argument("--headless=new")
         options.add_experimental_option("prefs", {"download.default_directory": str(download_folder)})
-        driver = Chrome(service=Service(ChromeDriverManager().install()), options=options)
+        driver = Chrome(options=options)
         driver.set_window_size(1440, 900)
         driver.implicitly_wait(0)
         driver.get(live_server.url)
@@ -66,7 +64,7 @@ class TestFrontend:
         options = Options()
         options.add_argument("--headless=new")
         options.add_experimental_option("mobileEmulation", {"deviceName": "iPhone X"})
-        driver = Chrome(service=Service(ChromeDriverManager().install()), options=options)
+        driver = Chrome(options=options)
         driver.implicitly_wait(0)
         driver.get(live_server.url)
         yield driver

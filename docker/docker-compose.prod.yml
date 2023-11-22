@@ -1,9 +1,10 @@
-# This script configures a multi-container setup to serve MPCAutofill and all
+# This script configures a multi-container setup to serve MPC Autofill and all
 # its dependencies. Simply navigate to the base directory and run
 # "docker-compose up" to get started. Optionally, you can pass "-d" to detach
-# all containers and their outputs to the background. By default, MPCAutofill
-# is served at http://localhost:8000. You can adjust the port near the bottom
-# of this file. Many code templates and inspirations are taken from blog post:
+# all containers and their outputs to the background. By default, MPC Autofill
+# is served at http://localhost:3000. You can adjust the port by copying .env.dist
+# as a new file called .env and changing the value of FRONTEND_PORT.
+# Many code templates and inspirations are taken from blog post:
 # https://testdriven.io/blog/dockerizing-django-with-postgres-gunicorn-and-nginx/
 
 version: "3.4"
@@ -16,29 +17,21 @@ services:
     build:
       context: ..
       dockerfile: ./docker/django/Dockerfile
-    volumes:
-      # Writes to
-      - django_static:/MPCAutofill/static
     expose:
       - 8000
     depends_on:
       - postgres
       - elasticsearch
 
-  # Nginx serving Django's static files
+  # nginx serving the frontend
   nginx:
     image: mpcautofill_nginx
     container_name: mpcautofill_nginx
     build:
       context: ..
       dockerfile: ./docker/nginx/Dockerfile
-    volumes:
-      # Reads from
-      - django_static:/MPCAutofill/static
     ports:
-      - "8000:80"
-    depends_on:
-      - django
+      - "${FRONTEND_PORT}:80"
 
   postgres:
     expose:
@@ -48,7 +41,3 @@ services:
     expose:
       - 5432
     ports: []
-
-# Persistent storage for containers
-volumes:
-  django_static:

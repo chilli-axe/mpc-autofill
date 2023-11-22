@@ -92,7 +92,7 @@ MIDDLEWARE = [
 CORS_ALLOWED_ORIGINS = env.list(
     "CORS_ALLOWED_ORIGINS",
     # allow CORS from a frontend app running locally and from the deployed frontend
-    default=["http://127.0.0.1:3000", "http://localhost:3000", "https://mpcautofill.github.io"],
+    default=["http://127.0.0.1", "http://localhost", "https://mpcautofill.github.io", "https://mpcfill.com"],
 )
 
 ROOT_URLCONF = "MPCAutofill.urls"
