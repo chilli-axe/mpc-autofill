@@ -1,7 +1,8 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 import { RootState } from "@/app/store";
-import { ViewSettingsState } from "@/common/types";
+import { Back, Front } from "@/common/constants";
+import { Faces, ViewSettingsState } from "@/common/types";
 
 //# region slice configuration
 
@@ -62,6 +63,8 @@ export default viewSettingsSlice.reducer;
 
 export const selectFrontsVisible = (state: RootState) =>
   state.viewSettings.frontsVisible;
+export const selectActiveFace = (state: RootState): Faces =>
+  state.viewSettings.frontsVisible ? Front : Back;
 export const selectSourcesVisible = (state: RootState) =>
   state.viewSettings.sourcesVisible;
 export const selectFacetBySource = (state: RootState) =>

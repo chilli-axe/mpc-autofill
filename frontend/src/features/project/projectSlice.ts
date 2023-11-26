@@ -251,6 +251,12 @@ export const selectProjectMemberIdentifiers = createSelector(
     )
 );
 
+export const selectAllSlotsForFace = (
+  state: RootState,
+  face: Faces
+): Array<[Faces, number]> =>
+  state.project.members.map((_, index) => [face, index]);
+
 export const selectSelectedSlots = createSelector(
   (state: RootState) => state.project.members,
   (projectMembers) =>
