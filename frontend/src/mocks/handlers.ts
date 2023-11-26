@@ -349,6 +349,11 @@ export const searchResultsForDFCMatchedCards1And4 = rest.post(
             CARDBACK: [],
             TOKEN: [],
           },
+          "card 3": {
+            CARD: [cardDocument3.identifier],
+            CARDBACK: [],
+            TOKEN: [],
+          },
           "card 4": {
             CARD: [cardDocument4.identifier],
             CARDBACK: [],

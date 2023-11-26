@@ -46,6 +46,7 @@ exports[`the html structure of a CardSlot with a single search result, image sel
         class="card-select"
       >
         <i
+          aria-label="front0-unchecked"
           class="bi bi-square"
         />
       </button>
@@ -152,6 +153,7 @@ exports[`the html structure of a CardSlot with a single search result, no image 
         class="card-select"
       >
         <i
+          aria-label="front0-unchecked"
           class="bi bi-square"
         />
       </button>
@@ -258,6 +260,7 @@ exports[`the html structure of a CardSlot with a single search result, slot sele
         class="card-select"
       >
         <i
+          aria-label="front0-checked"
           class="bi bi-check-square"
         />
       </button>
@@ -369,6 +372,7 @@ exports[`the html structure of a CardSlot with multiple search results, image se
         class="card-select"
       >
         <i
+          aria-label="front0-unchecked"
           class="bi bi-square"
         />
       </button>

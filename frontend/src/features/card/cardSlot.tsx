@@ -179,6 +179,9 @@ export function CardSlot({ searchQuery, face, slot }: CardSlotProps) {
           className={`bi bi${
             projectMember?.selected ?? false ? "-check" : ""
           }-square`}
+          aria-label={`${face}${slot}-${
+            projectMember?.selected ?? false ? "" : "un"
+          }checked`}
         ></i>
       </button>
       <button className="remove">

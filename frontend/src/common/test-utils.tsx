@@ -119,15 +119,19 @@ export async function expectCardGridSlotState(
   face: Faces,
   cardName?: string | null,
   selectedImage?: number | null,
-  totalImages?: number | null
+  totalImages?: number | null,
+  slotSelected?: boolean | null
 ) {
+  const testId = `${face}-slot${slot - 1}`;
   // note: the specified `slot` should be 1-indexed
-  return await expectCardSlotState(
-    `${face}-slot${slot - 1}`,
-    cardName,
-    selectedImage,
-    totalImages
-  );
+  await expectCardSlotState(testId, cardName, selectedImage, totalImages);
+  if (slotSelected != null) {
+    const cardElement = screen.getByTestId(testId);
+    const labelText = `${face}${slot - 1}-${slotSelected ? "" : "un"}checked`;
+    await waitFor(() =>
+      expect(within(cardElement).getByLabelText(labelText)).toBeInTheDocument()
+    );
+  }
 }
 
 export async function expectCardbackSlotState(
@@ -358,6 +362,16 @@ export async function deselectSlot(slot: number, face: Faces) {
         .children[0]
     ).toHaveClass("bi-square")
   );
+}
+
+export async function selectSimilar() {
+  screen.getByText("Modify").click();
+  await waitFor(() => screen.getByText("Select Similar").click());
+}
+
+export async function selectAll() {
+  screen.getByText("Modify").click();
+  await waitFor(() => screen.getByText("Select All").click());
 }
 
 export async function changeQueries(query: string) {
