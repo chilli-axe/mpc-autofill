@@ -10,6 +10,7 @@ import {
   Droppable,
   DropResult,
 } from "@hello-pangea/dnd"; // TODO: look into using `react-dnd` instead as it's a significantly smaller package
+import Link from "next/link";
 import React, { ReactNode, useCallback } from "react";
 import Button from "react-bootstrap/Button";
 import Table from "react-bootstrap/Table";
@@ -133,18 +134,18 @@ export function SourceSettings({
                 key={`${sourceRow[0]}-name-column`}
                 style={{ verticalAlign: "middle", width: 50 + "%" }}
               >
-                {maybeSourceDocuments[sourceRow[0]].external_link != null ? (
-                  <a
+                {(maybeSourceDocuments[sourceRow[0]].external_link ?? "")
+                  .length > 0 ? (
+                  <Link
                     href={
-                      maybeSourceDocuments[sourceRow[0]].external_link ??
-                      undefined
+                      maybeSourceDocuments[sourceRow[0]].external_link ?? ""
                     }
                     target="_blank"
                   >
                     {maybeSourceDocuments[sourceRow[0]].name}
-                  </a>
+                  </Link>
                 ) : (
-                  <a>{maybeSourceDocuments[sourceRow[0]].name}</a>
+                  maybeSourceDocuments[sourceRow[0]].name
                 )}
               </td>
               <td
