@@ -68,7 +68,18 @@ class Tags:
                             if start > 0 and end > 0:
                                 name_with_no_tags = name_with_no_tags[0:start] + name_with_no_tags[end:]
 
-        name_with_no_tags = name_with_no_tags.replace("( )", "").replace("()", "").replace("[ ]", "").replace("[]", "")
+        artifacts: list[tuple[str, str]] = [  # remove these extra bits from the name
+            ("( )", ""),
+            ("()", ""),
+            ("[ ]", ""),
+            ("[]", ""),
+            ("[, ", "["),
+            (", ]", "]"),
+            ("(, ", "("),
+            (", )", ")"),
+        ]
+        for artifact, replacement in artifacts:
+            name_with_no_tags = name_with_no_tags.replace(artifact, replacement)
         return name_with_no_tags, tag_set
 
 
