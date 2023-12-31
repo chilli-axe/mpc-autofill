@@ -287,7 +287,7 @@ def input_csv(request: HttpRequest) -> HttpResponse:
             drive_order, fuzzy_search = retrieve_search_settings(request)
             if len(drive_order) == 0:
                 return redirect("index")
-            csvfile = request.FILES["file"].read()
+            csvfile = request.FILES["file"].read()  # type: ignore  # TODO: revisit this and type it properly
 
             # parse the csv file to obtain the order dict and quantity in this order
             order = MPCOrder()
@@ -313,7 +313,7 @@ def input_xml(request: HttpRequest) -> HttpResponse:
                 drive_order, fuzzy_search = retrieve_search_settings(request)
                 if len(drive_order) == 0:
                     return redirect("index")
-                xmlfile = request.FILES["file"].read()
+                xmlfile = request.FILES["file"].read()  # type: ignore  # TODO: revisit this and type it properly
 
                 # parse the XML file to obtain the order dict and quantity in this order
                 order = MPCOrder()
