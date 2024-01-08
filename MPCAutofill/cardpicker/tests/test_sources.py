@@ -51,6 +51,7 @@ class TestAPI:
     IMAGE_K = Image(
         id="K", name="Image K [Grandchild Tag].png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_A
     )
+    IMAGE_L = Image(id="L", name="Image L [NSFW].png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_D)
     IMAGE_FRENCH = Image(
         id="french", name="French.png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_FRENCH
     )
@@ -106,19 +107,34 @@ class TestAPI:
         assert folder.get_tags(tags=tags) == expected_tags
 
     @pytest.mark.parametrize(
-        "folder, expected_name",
+        "folder, expected_language, expected_name, expected_tags",
         [
-            (FOLDER_A, "Folder A"),
-            (FOLDER_B, "Folder B"),
-            (FOLDER_C, "Folder C"),
-            (FOLDER_G, "Folder G (Some more words)"),
-            (FOLDER_H, "Folder H [Some more words]"),
+            (FOLDER_A, None, "Folder A", set()),
+            (FOLDER_B, None, "Folder B", set()),
+            (FOLDER_C, None, "Folder C", {"NSFW"}),
+            (FOLDER_G, None, "Folder G (Some more words)", {"Tag in Data"}),
+            (FOLDER_H, None, "Folder H [Some more words]", {"Tag in Data"}),
         ],
     )
-    def test_folder_name(self, django_settings, tag_in_data, extended_tag, full_art_tag, folder, expected_name):
+    def test_folder_name(
+        self,
+        django_settings,
+        tag_in_data,
+        extended_tag,
+        full_art_tag,
+        folder,
+        expected_language,
+        expected_name,
+        expected_tags,
+    ):
         tags = Tags()
-        _, name, _ = folder.unpack_name(tags=tags)
+        language, name, extracted_tags = folder.unpack_name(tags=tags)
+        if expected_language is None:
+            assert language is None
+        else:
+            assert language.alpha_2.lower() == expected_language.lower()
         assert name == expected_name
+        assert extracted_tags == expected_tags
 
     @pytest.mark.parametrize(
         "image, expected_language",
@@ -154,25 +170,43 @@ class TestAPI:
         assert image.get_tags(tags=tags) == expected_tags
 
     @pytest.mark.parametrize(
-        "image, expected_name",
+        "image, expected_language, expected_name, expected_tags, expected_extension",
         [
-            (IMAGE_A, "Image A"),
-            (IMAGE_B, "Image B"),
-            (IMAGE_C, "Image C"),
-            (IMAGE_D, "Image D"),
-            (IMAGE_E, "Image E [invalid tag"),
-            (IMAGE_F, "Image F"),
-            (IMAGE_G, "Image G (John Doe)"),
-            (IMAGE_H, "Image H [A, B] (John Doe)"),
-            (IMAGE_I, "Image A.I"),
-            (IMAGE_NSFW, "NSFW"),
-            (IMAGE_DOUBLE_NSFW, "NSFW"),
+            (IMAGE_A, None, "Image A", set(), "png"),
+            (IMAGE_B, None, "Image B", {"NSFW"}, "png"),
+            (IMAGE_C, None, "Image C", {"NSFW"}, "png"),  # tag inherited from parent
+            (IMAGE_D, None, "Image D", {"NSFW", "Full Art"}, "png"),
+            (IMAGE_E, None, "Image E [invalid tag", set(), "png"),
+            (IMAGE_F, None, "Image F", {"NSFW", "Tag in Data"}, "png"),
+            (IMAGE_G, None, "Image G (John Doe)", {"NSFW"}, "png"),
+            (IMAGE_H, None, "Image H [A, B] (John Doe)", {"NSFW"}, "png"),
+            (IMAGE_I, None, "Image A.I", set(), "png"),
+            (IMAGE_L, None, "Image L", {"NSFW", "Tag in Data"}, "png"),  # first tag from folder, second from image
+            (IMAGE_NSFW, None, "NSFW", {"NSFW"}, "png"),
+            (IMAGE_DOUBLE_NSFW, None, "NSFW", {"NSFW"}, "png"),
         ],
     )
-    def test_image_name(self, django_settings, tag_in_data, extended_tag, full_art_tag, image, expected_name):
+    def test_unpack_name(
+        self,
+        django_settings,
+        tag_in_data,
+        extended_tag,
+        full_art_tag,
+        image,
+        expected_language,
+        expected_name,
+        expected_tags,
+        expected_extension,
+    ):
         tags = Tags()
-        _, name, _, _ = image.unpack_name(tags=tags)
+        language, name, extracted_tags, extension = image.unpack_name(tags=tags)
+        if expected_language is None:
+            assert language is None
+        else:
+            assert language.alpha_2.lower() == expected_language.lower()
         assert name == expected_name
+        assert extracted_tags == expected_tags
+        assert extension == expected_extension
 
 
 # endregion

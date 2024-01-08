@@ -399,23 +399,16 @@ class AutofillDriver:
         action = self.action
         self.driver.get(f"{self.target_site.value.login_url}")
         self.set_state(States.defining_order, "Awaiting user sign-in")
-        input(
+        print(
             textwrap.dedent(
                 f"""
                 The specified inputs require you to sign into your {bold(self.target_site.name)} account.
-                Please sign in, then return to the console window and press Enter.
+                The tool will automatically resume once you've signed in.
                 """
             )
         )
         while not self.is_user_authenticated():
-            input(
-                textwrap.dedent(
-                    """
-                    It looks like you're not signed in.
-                    Please sign in, then return to the console window and press Enter.
-                    """
-                )
-            )
+            time.sleep(1)
         print("Successfully signed in!")
         self.set_state(States.defining_order, action)
         self.driver.get(f"{self.target_site.value.starting_url}")

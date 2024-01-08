@@ -452,9 +452,7 @@ exports[`the html structure of search settings 1`] = `
               <td
                 style="vertical-align: middle; width: 50%;"
               >
-                <a>
-                  Source 1
-                </a>
+                Source 1
               </td>
               <td
                 style="vertical-align: middle; width: 5%; text-align: center;"
@@ -519,9 +517,7 @@ exports[`the html structure of search settings 1`] = `
               <td
                 style="vertical-align: middle; width: 50%;"
               >
-                <a>
-                  Source 2
-                </a>
+                Source 2
               </td>
               <td
                 style="vertical-align: middle; width: 5%; text-align: center;"
@@ -586,9 +582,7 @@ exports[`the html structure of search settings 1`] = `
               <td
                 style="vertical-align: middle; width: 50%;"
               >
-                <a>
-                  Source 3
-                </a>
+                Source 3
               </td>
               <td
                 style="vertical-align: middle; width: 5%; text-align: center;"

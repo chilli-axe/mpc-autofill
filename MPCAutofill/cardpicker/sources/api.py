@@ -88,7 +88,12 @@ class Image:
         language_code, name = image_name_results.groups()
         language = pycountry.languages.get(alpha_2=language_code) if language_code else None
         name_with_no_tags, extracted_tags = tags.extract_name_and_tags(name)
-        return language, sanitisation.fix_whitespace(name_with_no_tags), extracted_tags, extension
+        return (
+            language,
+            sanitisation.fix_whitespace(name_with_no_tags),
+            extracted_tags | self.folder.get_tags(tags=tags),
+            extension,
+        )
 
     def get_language(self, tags: Tags) -> pycountry.Languages:
         language, _, _, _ = self.unpack_name(tags=tags)

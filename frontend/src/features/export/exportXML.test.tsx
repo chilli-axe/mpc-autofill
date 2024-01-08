@@ -1,7 +1,7 @@
 import FileSaver from "file-saver";
 
 import App from "@/app/app";
-import { Back, Front, S30 } from "@/common/constants";
+import { Back, FaceSeparator, Front, S30 } from "@/common/constants";
 import {
   cardDocument1,
   cardDocument2,
@@ -101,7 +101,7 @@ test("the XML representation of a simple project with a custom back for one card
     },
   });
 
-  await importText("query 1\nquery 2 | t:query 6");
+  await importText(`query 1\nquery 2 ${FaceSeparator} t:query 6`);
   await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 1);
   await expectCardGridSlotState(2, Front, cardDocument2.name, 1, 1);
   await expectCardGridSlotState(2, Back, cardDocument6.name, 1, 1);
@@ -165,7 +165,7 @@ test("the XML representation of a simple project with multiple instances of a ca
     },
   });
 
-  await importText("2x query 1\nquery 2 | query 1");
+  await importText(`2x query 1\nquery 2 ${FaceSeparator} query 1`);
   await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 1);
   await expectCardGridSlotState(2, Front, cardDocument1.name, 1, 1);
   await expectCardGridSlotState(3, Front, cardDocument2.name, 1, 1);

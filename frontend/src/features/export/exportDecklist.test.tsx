@@ -1,7 +1,7 @@
 import FileSaver from "file-saver";
 
 import App from "@/app/app";
-import { Back, Front } from "@/common/constants";
+import { Back, FaceSeparator, Front } from "@/common/constants";
 import {
   cardDocument1,
   cardDocument2,
@@ -81,7 +81,7 @@ test("the decklist representation of a simple project with a custom back for one
     },
   });
 
-  await importText("query 1\nquery 2 | t:query 6");
+  await importText(`query 1\nquery 2 ${FaceSeparator} t:query 6`);
   await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 1);
   await expectCardGridSlotState(2, Front, cardDocument2.name, 1, 1);
   await expectCardGridSlotState(2, Back, cardDocument6.name, 1, 1);
@@ -117,7 +117,7 @@ test("the decklist representation of a simple project with multiple instances of
     },
   });
 
-  await importText("2x query 1\nquery 2 | query 1");
+  await importText(`2x query 1\nquery 2 ${FaceSeparator} query 1`);
   await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 1);
   await expectCardGridSlotState(2, Front, cardDocument1.name, 1, 1);
   await expectCardGridSlotState(3, Front, cardDocument2.name, 1, 1);
@@ -130,7 +130,7 @@ test("the decklist representation of a simple project with multiple instances of
   expect(normaliseString(blob.content[0])).toBe(
     normaliseString(
       `2x ${cardDocument1.name}
-            1x ${cardDocument2.name} | ${cardDocument1.name}`
+            1x ${cardDocument2.name} ${FaceSeparator} ${cardDocument1.name}`
     )
   );
   expect(filename).toBe("decklist.txt");

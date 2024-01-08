@@ -17,7 +17,7 @@ from referencing import Registry, Resource
 
 from django.conf import settings
 from django.core.paginator import Paginator
-from django.db.models import Q
+from django.db.models import Q, QuerySet
 from django.http import HttpRequest
 from django.utils import timezone
 
@@ -343,10 +343,10 @@ class SearchQuery:
         """
         This is the core search function for MPC Autofill - queries Elasticsearch for `self` given `search_settings`
         and returns the list of corresponding `Card` identifiers.
+        Expects that the search index exists. Since this function is called many times, it makes sense to check this
+        once at the call site rather than in the body of this function.
         """
 
-        if not Index(CardSearch.Index.name).exists():
-            raise SearchExceptions.IndexNotFoundException(CardSearch.__name__)
         query_parsed = to_searchable(self.query)
 
         # set up search - match the query and use the AND operator
@@ -379,12 +379,7 @@ class SearchQuery:
         hits_iterable = s.params(preserve_order=True).scan()
 
         source_order = search_settings.get_source_order()
-        if search_settings.fuzzy_search:
-            hits = sorted(hits_iterable, key=lambda x: (source_order[x.source], distance(x.searchq, query_parsed)))
-        else:
-            hits = sorted(hits_iterable, key=lambda x: source_order[x.source])
-
-        return [x.identifier for x in hits]
+        return [result.identifier for result in sorted(hits_iterable, key=lambda result: source_order[result.source])]
 
 
 def get_schema_directory() -> Path:
@@ -472,12 +467,12 @@ def parse_json_body_as_search_data(json_body: dict[str, Any]) -> tuple[SearchSet
     return SearchSettings.from_json_body(json_body), SearchQuery.list_from_json_body(json_body)
 
 
-def get_new_cards_paginator(source: Source) -> Paginator:
+def get_new_cards_paginator(source: Source) -> Paginator[QuerySet[Card]]:
     now = timezone.now()
     cards = Card.objects.filter(
         source=source, date__lt=now, date__gte=now - dt.timedelta(days=NEW_CARDS_DAYS)
     ).order_by("-date")
-    return Paginator(cards, NEW_CARDS_PAGE_SIZE)
+    return Paginator(cards, NEW_CARDS_PAGE_SIZE)  # type: ignore  # TODO: `_SupportsPagination`
 
 
 # endregion

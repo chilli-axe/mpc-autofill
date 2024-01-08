@@ -1,7 +1,7 @@
 import Link from "next/link";
 import React from "react";
 
-import { useGetBackendInfoQuery, useGetContributionsQuery } from "@/app/api";
+import { useGetContributionsQuery } from "@/app/api";
 import { Card, Cardback, ProjectName, Token } from "@/common/constants";
 import { SourceContribution } from "@/common/types";
 import { Spinner } from "@/components/spinner";
