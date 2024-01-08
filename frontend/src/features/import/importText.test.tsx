@@ -2,7 +2,7 @@ import { within } from "@testing-library/dom";
 import { screen, waitFor } from "@testing-library/react";
 
 import App from "@/app/app";
-import { Back, Card, Front, SelectedImageSeparator } from "@/common/constants";
+import { Back, Front, SelectedImageSeparator } from "@/common/constants";
 import {
   cardDocument1,
   cardDocument2,

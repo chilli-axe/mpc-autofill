@@ -1,6 +1,12 @@
 import each from "jest-each";
 
-import { Card, Cardback, Token } from "@/common/constants";
+import {
+  Card,
+  Cardback,
+  FaceSeparator,
+  SelectedImageSeparator,
+  Token,
+} from "@/common/constants";
 import {
   processLine,
   processPrefix,
@@ -116,7 +122,9 @@ test("non-dfc cardback line is processed correctly", () => {
 });
 
 test("manually specified front and back line is processed correctly", () => {
-  expect(processLine("5 Opt | Char", dfcPairs, false)).toStrictEqual([
+  expect(
+    processLine(`5 Opt ${FaceSeparator} Char`, dfcPairs, false)
+  ).toStrictEqual([
     5,
     {
       query: { card_type: Card, query: "opt" },
@@ -193,7 +201,11 @@ test("line that fuzzy matches ambiguously to dfc pair is processed correctly", (
 
 test("line that matches to dfc pair but a back is also manually specified is processed correctly", () => {
   expect(
-    processLine("2 Huntmaster of the Fells | t:Goblin", dfcPairs, false)
+    processLine(
+      `2 Huntmaster of the Fells ${FaceSeparator} t:Goblin`,
+      dfcPairs,
+      false
+    )
   ).toStrictEqual([
     2,
     {
@@ -302,7 +314,9 @@ test("multiple lines processed correctly", () => {
 });
 
 test("a line specifying the selected image ID for the front is processed correctly", () => {
-  expect(processLine("opt@xyz", dfcPairs, false)).toStrictEqual([
+  expect(
+    processLine(`opt${SelectedImageSeparator}xyz`, dfcPairs, false)
+  ).toStrictEqual([
     1,
     {
       query: { card_type: Card, query: "opt" },
@@ -314,7 +328,13 @@ test("a line specifying the selected image ID for the front is processed correct
 });
 
 test("a line specifying the selected image ID for both faces is processed correctly", () => {
-  expect(processLine("2 opt@xyz | char@abcd", dfcPairs, false)).toStrictEqual([
+  expect(
+    processLine(
+      `2 opt${SelectedImageSeparator}xyz ${FaceSeparator} char${SelectedImageSeparator}abcd`,
+      dfcPairs,
+      false
+    )
+  ).toStrictEqual([
     2,
     {
       query: { card_type: Card, query: "opt" },

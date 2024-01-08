@@ -10,6 +10,7 @@ export const Token: CardType = "TOKEN";
 
 export const SelectedImageSeparator = "@";
 export const CardTypeSeparator = ":";
+export const FaceSeparator = "//";
 
 export const CardTypePrefixes: { [prefix: string]: CardType } = {
   "": Card,
@@ -26,7 +27,6 @@ export const ReversedCardTypePrefixes = Object.fromEntries(
 
 export const Front: Faces = "front";
 export const Back: Faces = "back";
-export const FaceSeparator = "|";
 
 export const ToggleButtonHeight = 38; // pixels
 export const NavbarHeight = 50; // pixels - aligns with the natural height of the navbar
