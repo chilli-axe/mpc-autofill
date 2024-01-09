@@ -51,7 +51,7 @@ exports[`the html structure of a CardDetailedViewModal 1`] = `
 }
 
 <div
-  class="modal-dialog modal-xl modal-dialog-scrollable"
+  class="modal-dialog modal-xl"
   data-testid="detailed-view"
 >
   <div

@@ -73,7 +73,6 @@ export function CardDetailedViewModal({
   return (
     <DisableSSR>
       <Modal
-        scrollable
         show={show}
         onHide={handleClose}
         size={"xl"}
