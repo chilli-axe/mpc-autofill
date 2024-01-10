@@ -433,12 +433,11 @@ class AutofillDriver:
                 if (option_value := int(option.get_attribute("value"))) >= self.order.details.quantity
             ]
         )
-        if not bracket_options:
-            raise Exception(
-                f"Your project contains {bold(self.order.details.quantity)} cards - this does not fit into any bracket "
-                f"that {bold(self.target_site.name)} offers! The brackets are: "
-                f"{', '.join([bold(option) for option in bracket_options])}"
-            )
+        assert bracket_options, (
+            f"Your project contains {bold(self.order.details.quantity)} cards - this does not fit into any bracket "
+            f"that {bold(self.target_site.name)} offers! The brackets are: "
+            f"{', '.join([bold(option) for option in bracket_options])}"
+        )
         bracket = bracket_options[0]
         print(
             f"Configuring your project of {bold(self.order.details.quantity)} "
@@ -450,7 +449,10 @@ class AutofillDriver:
     def define_project(self) -> None:
         self.assert_state(States.defining_order)
         # Select card stock
-        stock_to_select = self.target_site.value.cardstock_site_name_mapping[Cardstocks(self.order.details.stock)]
+        stock_to_select = self.target_site.value.cardstock_site_name_mapping.get(Cardstocks(self.order.details.stock))
+        assert (
+            stock_to_select
+        ), f"Cardstock {bold(self.order.details.stock)} is not supported by {bold(self.target_site.name)}!"
         stock_dropdown = Select(
             self.driver.find_element(by=By.ID, value=self.target_site.value.cardstock_dropdown_element_id)
         )

@@ -79,6 +79,8 @@ def exception_retry_skip_handler(func: F) -> F:
         while True:
             try:
                 return func(*args, **kwargs)
+            except AssertionError as e:
+                raise e
             except Exception as e:
                 print(f"An uncaught exception occurred:\n{bold(e)}\n")
                 action = inquirer.select(

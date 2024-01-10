@@ -63,6 +63,7 @@ class Faces(str, Enum):
 
 
 class Cardstocks(str, Enum):
+    S27 = "(S27) Smooth"
     S30 = "(S30) Standard Smooth"
     S33 = "(S33) Superior Smooth"
     M31 = "(M31) Linen"
