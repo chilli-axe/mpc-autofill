@@ -204,5 +204,5 @@ class TargetSites(Enum):
 DPI_HEIGHT_RATIO = 300 / 1110  # TODO: share this between desktop tool and backend
 
 
-BRACKETS = [18, 36, 55, 72, 90, 108, 126, 144, 162, 180, 198, 216, 234, 396, 504, 612]
+PROJECT_MAX_SIZE = 612  # shared between target sites
 THREADS = 5  # shared between CardImageCollections
