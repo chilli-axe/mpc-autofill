@@ -38,9 +38,37 @@ import {
   toggleSourceVisible,
 } from "@/features/viewSettings/viewSettingsSlice";
 
+interface CardGridCardProps {
+  identifier: string;
+  index: number;
+  selectImage: {
+    (identifier: string): void;
+  };
+  selectedImage?: string;
+}
+
+function CardGridCard({
+  identifier,
+  index,
+  selectImage,
+  selectedImage,
+}: CardGridCardProps) {
+  return (
+    <MemoizedEditorCard
+      imageIdentifier={identifier}
+      cardHeaderTitle={`Option ${index + 1}`}
+      cardOnClick={() => selectImage(identifier)}
+      key={`gridSelector-${identifier}`}
+      noResultsFound={false}
+      highlight={identifier === selectedImage}
+    />
+  );
+}
+
 interface GridSelectorProps {
   testId: string;
   imageIdentifiers: Array<string>;
+  selectedImage?: string;
   show: boolean;
   handleClose: {
     (): void;
@@ -58,12 +86,14 @@ interface CardGridDisplayProps {
   selectImage: {
     (identifier: string): void;
   };
+  selectedImage?: string;
   sourceNamesByKey: { [sourceKey: string]: string };
 }
 
 function CardsGroupedTogether({
   cardIdentifiersAndOptionNumbersBySource,
   selectImage,
+  selectedImage,
   sourceNamesByKey,
 }: CardGridDisplayProps) {
   /**
@@ -81,12 +111,11 @@ function CardsGroupedTogether({
                 key={`gridSelector-${identifier}-wrapper`}
                 initialVisible={index < 20}
               >
-                <MemoizedEditorCard
-                  imageIdentifier={identifier}
-                  cardHeaderTitle={`Option ${index + 1}`}
-                  cardOnClick={() => selectImage(identifier)}
-                  key={`gridSelector-${identifier}`}
-                  noResultsFound={false}
+                <CardGridCard
+                  identifier={identifier}
+                  index={index}
+                  selectImage={selectImage}
+                  selectedImage={selectedImage}
                 />
               </RenderIfVisible>
             ))}
@@ -100,6 +129,7 @@ function CardsGroupedTogether({
 function CardsFacetedBySource({
   cardIdentifiersAndOptionNumbersBySource,
   selectImage,
+  selectedImage,
   sourceNamesByKey,
 }: CardGridDisplayProps) {
   /**
@@ -178,12 +208,11 @@ function CardsFacetedBySource({
                       key={`gridSelector-${identifier}-wrapper`}
                       initialVisible={optionNumber < 20}
                     >
-                      <MemoizedEditorCard
-                        imageIdentifier={identifier}
-                        cardHeaderTitle={`Option ${optionNumber + 1}`}
-                        cardOnClick={() => selectImage(identifier)}
-                        key={`gridSelector-${identifier}`}
-                        noResultsFound={false}
+                      <CardGridCard
+                        identifier={identifier}
+                        index={optionNumber}
+                        selectImage={selectImage}
+                        selectedImage={selectedImage}
                       />
                     </RenderIfVisible>
                   )
@@ -201,6 +230,7 @@ function CardsFacetedBySource({
 export function GridSelectorModal({
   testId,
   imageIdentifiers,
+  selectedImage,
   show,
   handleClose,
   onClick,
@@ -389,6 +419,7 @@ export function GridSelectorModal({
               cardIdentifiersAndOptionNumbersBySource
             }
             selectImage={selectImage}
+            selectedImage={selectedImage}
             sourceNamesByKey={sourceNamesByKey}
           />
         ) : (
@@ -397,6 +428,7 @@ export function GridSelectorModal({
               cardIdentifiersAndOptionNumbersBySource
             }
             selectImage={selectImage}
+            selectedImage={selectedImage}
             sourceNamesByKey={sourceNamesByKey}
           />
         )}

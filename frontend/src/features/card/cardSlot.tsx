@@ -43,6 +43,7 @@ interface CardSlotGridSelectorProps {
   face: Faces;
   slot: number;
   searchResultsForQuery: Array<string>;
+  selectedImage?: string;
   show: boolean;
   handleClose: {
     (): void;
@@ -57,6 +58,7 @@ export function CardSlotGridSelector({
   face,
   slot,
   searchResultsForQuery,
+  selectedImage,
   show,
   handleClose,
   setSelectedImageFromIdentifier,
@@ -65,6 +67,7 @@ export function CardSlotGridSelector({
     <GridSelectorModal
       testId={`${face}-slot${slot}-grid-selector`}
       imageIdentifiers={searchResultsForQuery}
+      selectedImage={selectedImage}
       show={show}
       handleClose={handleClose}
       onClick={setSelectedImageFromIdentifier}
@@ -268,6 +271,7 @@ export function CardSlot({ searchQuery, face, slot }: CardSlotProps) {
           face={face}
           slot={slot}
           searchResultsForQuery={searchResultsForQuery}
+          selectedImage={selectedImage}
           show={showGridSelector}
           handleClose={handleCloseGridSelector}
           setSelectedImageFromIdentifier={setSelectedImageFromIdentifier}
