@@ -328,8 +328,12 @@ export function GridSelectorModal({
         <Modal.Title>Select Version</Modal.Title>
       </Modal.Header>
       <Modal.Body className="d-grid p-0">
-        <Form id="jumpToVersionForm" onSubmit={handleSubmitJumpToVersionForm}>
-          <Row className="p-3" style={{ width: 100 + "%" }}>
+        <Form
+          className="p-3"
+          id="jumpToVersionForm"
+          onSubmit={handleSubmitJumpToVersionForm}
+        >
+          <Row>
             <h4>Jump to Version</h4>
             <Col lg={3} md={5}>
               <Form.Label>Specify Option Number</Form.Label>
@@ -359,7 +363,7 @@ export function GridSelectorModal({
               />
             </Col>
           </Row>
-          <div className="d-grid gap-0 ps-3 pe-3">
+          <div className="d-grid gap-0 pt-3">
             <Button
               variant="primary"
               form="jumpToVersionForm"
@@ -372,47 +376,48 @@ export function GridSelectorModal({
           </div>
         </Form>
         <hr />
-        <Row className="p-3" style={{ width: 100 + "%" }}>
-          <h4>Browse Versions</h4>
-          <Col md={8} sm={6}>
-            <Toggle
-              onClick={() => dispatch(toggleFacetBySource())}
-              on="Facet By Source"
-              onClassName="flex-centre"
-              off="Group All Cards Together"
-              offClassName="flex-centre"
-              onstyle="success"
-              offstyle="info"
-              width={100 + "%"}
-              size="md"
-              height={ToggleButtonHeight + "px"}
-              active={facetBySource}
-            />
-          </Col>
-          {facetBySource && (
-            <Col md={4} sm={6}>
-              <div className="d-grid g-0">
-                <Button
-                  onClick={() =>
-                    dispatch(
-                      anySourcesCollapsed
-                        ? makeAllSourcesVisible()
-                        : makeAllSourcesInvisible(sourceKeys)
-                    )
-                  }
-                >
-                  <RightPaddedIcon
-                    bootstrapIconName={`arrows-${
-                      anySourcesCollapsed ? "expand" : "collapse"
-                    }`}
-                  />{" "}
-                  {anySourcesCollapsed ? "Expand" : "Collapse"} All
-                </Button>
-              </div>
+        <div className="px-3 pb-3">
+          <Row>
+            <h4>Browse Versions</h4>
+            <Col md={8} sm={6}>
+              <Toggle
+                onClick={() => dispatch(toggleFacetBySource())}
+                on="Facet By Source"
+                onClassName="flex-centre"
+                off="Group All Cards Together"
+                offClassName="flex-centre"
+                onstyle="success"
+                offstyle="info"
+                width={100 + "%"}
+                size="md"
+                height={ToggleButtonHeight + "px"}
+                active={facetBySource}
+              />
             </Col>
-          )}
-        </Row>
-        <br />
+            {facetBySource && (
+              <Col md={4} sm={6}>
+                <div className="d-grid g-0">
+                  <Button
+                    onClick={() =>
+                      dispatch(
+                        anySourcesCollapsed
+                          ? makeAllSourcesVisible()
+                          : makeAllSourcesInvisible(sourceKeys)
+                      )
+                    }
+                  >
+                    <RightPaddedIcon
+                      bootstrapIconName={`arrows-${
+                        anySourcesCollapsed ? "expand" : "collapse"
+                      }`}
+                    />{" "}
+                    {anySourcesCollapsed ? "Expand" : "Collapse"} All
+                  </Button>
+                </div>
+              </Col>
+            )}
+          </Row>
+        </div>
         {facetBySource ? (
           <CardsFacetedBySource
             cardIdentifiersAndOptionNumbersBySource={
