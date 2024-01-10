@@ -145,12 +145,19 @@ export function CardSlot({ searchQuery, face, slot }: CardSlotProps) {
                 searchResultsForQuery.length
               )
             ],
+          deselect: false,
         })
       );
     }
   };
   const setSelectedImageFromIdentifier = (selectedImage: string) => {
-    dispatch(setSelectedImages({ slots: slotsToModify, selectedImage }));
+    dispatch(
+      setSelectedImages({
+        slots: slotsToModify,
+        selectedImage,
+        deselect: false,
+      })
+    );
   };
 
   //# endregion
