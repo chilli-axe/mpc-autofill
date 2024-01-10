@@ -224,9 +224,6 @@ startAppListening({
             selectedImage: newSelectedImage,
           })
         );
-      } else {
-        // clearQueries handles the logic of back face cards defaulting to the project cardback
-        dispatch(clearQueries({ slots: [[face, slot]] }));
       }
     }
   },
