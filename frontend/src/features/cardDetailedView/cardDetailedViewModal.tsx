@@ -4,16 +4,13 @@
  * some more information (e.g. size, dote uploaded, etc.), and a button to download the full res image.
  */
 
-import { saveAs } from "file-saver";
-import React, { memo } from "react";
+import React, { memo, useState } from "react";
 import Badge from "react-bootstrap/Badge";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import Row from "react-bootstrap/Row";
-import Table from "react-bootstrap/Table";
 
-import { api, useGetLanguagesQuery } from "@/app/api";
-import { base64StringToBlob } from "@/common/processing";
+import { useGetLanguagesQuery } from "@/app/api";
 import { CardDocument } from "@/common/types";
 import { imageSizeToMBString, toTitleCase } from "@/common/utils";
 import { ClickToCopy } from "@/components/clickToCopy";
@@ -24,6 +21,7 @@ import {
   MemoizedCardImage,
   MemoizedCardProportionWrapper,
 } from "@/features/card/card";
+import { useQueueImageDownload } from "@/features/download/downloadImages";
 
 interface CardDetailedViewProps {
   cardDocument: CardDocument;
@@ -41,24 +39,14 @@ export function CardDetailedViewModal({
 }: CardDetailedViewProps) {
   //# region queries and hooks
 
-  const [triggerFn, getGoogleDriveImageQuery] =
-    api.endpoints.getGoogleDriveImage.useLazyQuery();
+  const queueImageDownload = useQueueImageDownload();
   const getLanguagesQuery = useGetLanguagesQuery();
 
   //# endregion
 
-  //# region callbacks
+  //# region state
 
-  const downloadImage = async () => {
-    const response = await triggerFn(cardDocument.identifier);
-    const data = response.data;
-    if (data != null) {
-      saveAs(
-        base64StringToBlob(data),
-        `${cardDocument.name} (${cardDocument.identifier}).${cardDocument.extension}`
-      );
-    }
-  };
+  const [downloading, setDownloading] = useState<string | undefined>(undefined);
 
   //# endregion
 
@@ -151,10 +139,14 @@ export function CardDetailedViewModal({
               <div className="d-grid gap-0">
                 <Button
                   variant="primary"
-                  onClick={downloadImage}
-                  disabled={getGoogleDriveImageQuery.isFetching}
+                  onClick={async () => {
+                    setDownloading(cardDocument.identifier);
+                    await queueImageDownload(cardDocument);
+                    setDownloading(undefined);
+                  }}
+                  disabled={downloading === cardDocument.identifier}
                 >
-                  {getGoogleDriveImageQuery.isFetching ? (
+                  {downloading === cardDocument.identifier ? (
                     <Spinner size={1.5} />
                   ) : (
                     "Download Image"

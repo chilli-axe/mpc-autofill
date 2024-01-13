@@ -1,100 +1,52 @@
-import { saveAs } from "file-saver";
-import React, { useRef, useState } from "react";
+import React, { useState } from "react";
 import { Alert } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
 import Dropdown from "react-bootstrap/Dropdown";
 import Modal from "react-bootstrap/Modal";
 import ProgressBar from "react-bootstrap/ProgressBar";
 import styled from "styled-components";
-import { FunctionThread, Pool, spawn, Worker } from "threads";
 
 import { ProjectName } from "@/common/constants";
-import { base64StringToBlob } from "@/common/processing";
-import { useAppDispatch, useAppSelector } from "@/common/types";
+import { useAppSelector } from "@/common/types";
 import { RightPaddedIcon } from "@/components/icon";
 import { Spinner } from "@/components/spinner";
+import {
+  useDownloadContext,
+  useQueueImageDownload,
+} from "@/features/download/downloadImages";
 import { selectIsProjectEmpty } from "@/features/project/projectSlice";
 import { useCardDocumentsByIdentifier } from "@/features/search/cardDocumentsSlice";
-import { setError } from "@/features/toasts/toastsSlice";
 
 const StyledProgressBar = styled(ProgressBar)`
   --bs-progress-bg: #424e5c;
 `;
 
 export function ExportImages() {
-  const dispatch = useAppDispatch();
   const isProjectEmpty = useAppSelector(selectIsProjectEmpty);
+
+  const queueImageDownload = useQueueImageDownload();
+  const queue = useDownloadContext();
 
   const [showImagesModal, setShowImagesModal] = useState<boolean>(false);
   const handleCloseImagesModal = () => setShowImagesModal(false);
   const handleShowImagesModal = () => setShowImagesModal(true);
 
-  const [downloading, setDownloading] = useState<boolean>(false);
-
   const cardDocumentsByIdentifier = useCardDocumentsByIdentifier();
   const identifierCount = Object.keys(cardDocumentsByIdentifier).length;
 
+  const [downloading, setDownloading] = useState<boolean>(false);
   const [downloaded, setDownloaded] = useState<number>(0);
+  const downloadInProgress =
+    downloading && !(downloaded == identifierCount && downloaded > 0);
   const progress = (100 * downloaded) / identifierCount;
 
-  const workerPool = useRef<Pool<FunctionThread> | null>(null);
-  const terminate = async () => {
-    if (workerPool.current != null) {
-      await workerPool.current.terminate(true);
-      setDownloading(false);
-    }
-  };
-
   const downloadImages = async () => {
-    setDownloading(true);
     setDownloaded(0);
-
-    // @ts-ignore: I don't know what the correct type of workerPool (set in useRef above) is
-    workerPool.current = Pool(
-      () =>
-        // @ts-ignore: passing this a URL is correct. passing it a string breaks it.
-        spawn(new Worker(new URL("./workers/download.ts", import.meta.url))),
-      5
-    );
-
-    // really wish typescript would shut up about this. i clearly set this ref to a non-null value 2 lines up.
-    if (workerPool.current != null) {
-      let localDownloaded = 0;
-
-      Object.keys(cardDocumentsByIdentifier).map((identifier) => {
-        if (workerPool.current != null) {
-          workerPool.current.queue(async (download) => {
-            const cardDocument = cardDocumentsByIdentifier[identifier];
-            if (cardDocument != null) {
-              try {
-                const data = await download(identifier);
-                saveAs(
-                  base64StringToBlob(data),
-                  `${cardDocument.name} (${cardDocument.identifier}).${cardDocument.extension}`
-                );
-              } catch (error) {
-                dispatch(
-                  setError([
-                    `download-${cardDocument.identifier}-failed`,
-                    {
-                      name: "Failed to download image",
-                      message: `Downloading the full`,
-                    },
-                  ])
-                );
-              }
-            }
-            localDownloaded++;
-            setDownloaded(localDownloaded);
-          });
-        }
+    Object.values(cardDocumentsByIdentifier).map((cardDocument) => {
+      queueImageDownload(cardDocument).then(() => {
+        setDownloaded((n) => n + 1);
       });
-
-      await workerPool.current.settled();
-      await workerPool.current.terminate();
-
-      setDownloading(false);
-    }
+    });
   };
 
   return (
@@ -139,8 +91,7 @@ export function ExportImages() {
               </Alert>
             </>
           )}
-          {(downloading ||
-            (downloaded == identifierCount && downloaded > 0)) && (
+          {downloading && (
             <>
               <StyledProgressBar
                 striped
@@ -152,11 +103,20 @@ export function ExportImages() {
               <br />
             </>
           )}
-          {downloading && (
+          {downloadInProgress && (
             <>
               <div className="d-grid gap-0">
-                <Button variant="danger" onClick={terminate}>
-                  Terminate
+                <Button
+                  variant="danger"
+                  onClick={() => {
+                    // clear the queue of waiting images
+                    while (queue.queueWaiting.size() > 0) {
+                      queue.queueWaiting.pop();
+                    }
+                    setDownloading(false);
+                  }}
+                >
+                  Terminate Queued Downloads
                 </Button>
               </div>
               <br />
@@ -166,10 +126,13 @@ export function ExportImages() {
           <div className="d-grid gap-0">
             <Button
               variant="primary"
-              onClick={downloadImages}
-              disabled={downloading || identifierCount == 0}
+              onClick={() => {
+                setDownloading(true);
+                downloadImages();
+              }}
+              disabled={downloadInProgress}
             >
-              {downloading ? <Spinner size={1.5} /> : "Download Images"}
+              {downloadInProgress ? <Spinner size={1.5} /> : "Download Images"}
             </Button>
           </div>
         </Modal.Body>

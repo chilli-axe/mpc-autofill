@@ -1,3 +1,4 @@
+import { Queue } from "async-await-queue";
 import { useRouter } from "next/router";
 import { GoogleAnalytics } from "nextjs-google-analytics";
 import React, { useEffect } from "react";
@@ -16,6 +17,10 @@ import {
 import { standardiseURL } from "@/common/processing";
 import { useAppDispatch } from "@/common/types";
 import { setURL, useBackendConfigured } from "@/features/backend/backendSlice";
+import {
+  DownloadContext,
+  DownloadContextProvider,
+} from "@/features/download/downloadImages";
 import { Modals } from "@/features/modals/modals";
 import { Toasts } from "@/features/toasts/toasts";
 import ProjectNavbar from "@/features/ui/navbar";
@@ -102,11 +107,14 @@ export function LayoutWithoutProvider({ children }: PropsWithChildren) {
 }
 
 export default function Layout({ children }: PropsWithChildren) {
+  const downloadContext: DownloadContext = new Queue(3, 100);
   return (
     <>
       <SSRProvider>
         <OverscrollProvider store={store}>
-          <LayoutWithoutProvider>{children}</LayoutWithoutProvider>
+          <DownloadContextProvider value={downloadContext}>
+            <LayoutWithoutProvider>{children}</LayoutWithoutProvider>
+          </DownloadContextProvider>
         </OverscrollProvider>
       </SSRProvider>
     </>
