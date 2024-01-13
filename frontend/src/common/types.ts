@@ -197,6 +197,7 @@ export interface ViewSettingsState {
 }
 
 export type Cardstock =
+  | "(S27) Smooth"
   | "(S30) Standard Smooth"
   | "(S33) Superior Smooth"
   | "(M31) Linen"

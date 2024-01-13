@@ -1,6 +1,6 @@
 /**
  * A component to the finish settings to configure in MakePlayingCards.
- * At time of writing, this involves choosing from four cardstocks and whether your cards should be foil.
+ * At time of writing, this involves choosing from five cardstocks and whether your cards should be foil.
  */
 
 import React from "react";

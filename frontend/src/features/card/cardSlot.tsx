@@ -23,7 +23,9 @@ import { setSelectedSlotsAndShowModal } from "@/features/modals/modalsSlice";
 import {
   bulkAlignMemberSelection,
   deleteSlots,
+  selectAllSelectedProjectMembersHaveTheSameQuery,
   selectProjectMember,
+  selectSelectedSlots,
   setSelectedImages,
   toggleMemberSelection,
 } from "@/features/project/projectSlice";
@@ -41,10 +43,14 @@ interface CardSlotGridSelectorProps {
   face: Faces;
   slot: number;
   searchResultsForQuery: Array<string>;
+  selectedImage?: string;
   show: boolean;
   handleClose: {
     (): void;
     (event: React.MouseEvent<HTMLButtonElement, MouseEvent>): void;
+  };
+  setSelectedImageFromIdentifier: {
+    (selectedImage: string): void;
   };
 }
 
@@ -52,27 +58,16 @@ export function CardSlotGridSelector({
   face,
   slot,
   searchResultsForQuery,
+  selectedImage,
   show,
   handleClose,
+  setSelectedImageFromIdentifier,
 }: CardSlotGridSelectorProps) {
-  //# region queries and hooks
-
-  const dispatch = useAppDispatch();
-
-  //# endregion
-
-  //# region callbacks
-
-  const setSelectedImageFromIdentifier = (selectedImage: string) => {
-    dispatch(setSelectedImages({ slots: [[face, slot]], selectedImage }));
-  };
-
-  //# endregion
-
   return (
     <GridSelectorModal
       testId={`${face}-slot${slot}-grid-selector`}
       imageIdentifiers={searchResultsForQuery}
+      selectedImage={selectedImage}
       show={show}
       handleClose={handleClose}
       onClick={setSelectedImageFromIdentifier}
@@ -98,6 +93,20 @@ export function CardSlot({ searchQuery, face, slot }: CardSlotProps) {
     selectProjectMember(state, slot, face)
   );
   const selectedImage = projectMember?.selectedImage;
+  const selectedSlots = useAppSelector(selectSelectedSlots);
+  const selectedQuery = useAppSelector((state) =>
+    selectAllSelectedProjectMembersHaveTheSameQuery(state, selectedSlots)
+  );
+  const modifySelectedSlots =
+    selectedSlots.length > 1 &&
+    projectMember?.selected &&
+    selectedQuery != null &&
+    // can't use object equality check here
+    selectedQuery.query === searchQuery?.query &&
+    selectedQuery.card_type === searchQuery?.card_type;
+  const slotsToModify: Array<[Faces, number]> = modifySelectedSlots
+    ? selectedSlots
+    : [[face, slot]];
 
   //# endregion
 
@@ -133,7 +142,7 @@ export function CardSlot({ searchQuery, face, slot }: CardSlotProps) {
     if (selectedImageIndex != null) {
       dispatch(
         setSelectedImages({
-          slots: [[face, slot]],
+          slots: slotsToModify,
           selectedImage:
             searchResultsForQuery[
               wrapIndex(
@@ -141,9 +150,19 @@ export function CardSlot({ searchQuery, face, slot }: CardSlotProps) {
                 searchResultsForQuery.length
               )
             ],
+          deselect: false,
         })
       );
     }
+  };
+  const setSelectedImageFromIdentifier = (selectedImage: string) => {
+    dispatch(
+      setSelectedImages({
+        slots: slotsToModify,
+        selectedImage,
+        deselect: false,
+      })
+    );
   };
 
   //# endregion
@@ -203,7 +222,7 @@ export function CardSlot({ searchQuery, face, slot }: CardSlotProps) {
       {searchResultsForQuery.length > 1 && (
         <>
           <Button
-            variant="outline-info"
+            variant={modifySelectedSlots ? "info" : "outline-info"}
             className="mpccard-counter-btn"
             onClick={handleShowGridSelector}
           >
@@ -211,14 +230,14 @@ export function CardSlot({ searchQuery, face, slot }: CardSlotProps) {
           </Button>
           <div>
             <Button
-              variant="outline-primary"
+              variant={modifySelectedSlots ? "info" : "outline-info"}
               className="prev"
               onClick={() => setSelectedImageFromDelta(-1)}
             >
               &#10094;
             </Button>
             <Button
-              variant="outline-primary"
+              variant={modifySelectedSlots ? "info" : "outline-info"}
               className="next"
               onClick={() => setSelectedImageFromDelta(1)}
             >
@@ -254,8 +273,10 @@ export function CardSlot({ searchQuery, face, slot }: CardSlotProps) {
           face={face}
           slot={slot}
           searchResultsForQuery={searchResultsForQuery}
+          selectedImage={selectedImage}
           show={showGridSelector}
           handleClose={handleCloseGridSelector}
+          setSelectedImageFromIdentifier={setSelectedImageFromIdentifier}
         />
       )}
     </div>

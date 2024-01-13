@@ -68,6 +68,7 @@ export const projectSlice = createSlice({
       action: PayloadAction<{
         selectedImage: string | undefined;
         slots: Array<[Faces, number]>;
+        deselect?: boolean;
       }>
     ) => {
       for (const [face, slot] of action.payload.slots) {
@@ -80,7 +81,9 @@ export const projectSlice = createSlice({
         } else {
           state.members[slot][face]!.selectedImage =
             action.payload.selectedImage;
-          state.members[slot][face]!.selected = false;
+          if (action.payload.deselect) {
+            state.members[slot][face]!.selected = false;
+          }
         }
       }
     },

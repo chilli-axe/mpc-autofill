@@ -450,13 +450,13 @@ exports[`the html structure of a CardSlot with multiple search results, image se
       </button>
       <div>
         <button
-          class="prev btn btn-outline-primary"
+          class="prev btn btn-outline-info"
           type="button"
         >
           ❮
         </button>
         <button
-          class="next btn btn-outline-primary"
+          class="next btn btn-outline-info"
           type="button"
         >
           ❯
@@ -511,58 +511,119 @@ exports[`the html structure of a CardSlot's grid selector, cards faceted by sour
     <div
       class="d-grid p-0 modal-body"
     >
-      <div
-        class="p-3 row"
-        style="width: 100%;"
+      <form
+        class="p-3"
+        id="jumpToVersionForm"
       >
         <div
-          class="col-md-8 col-sm-6"
+          class="row"
         >
+          <h4>
+            Jump to Version
+          </h4>
           <div
-            class="btn toggle btn-md btn-success"
-            role="button"
-            style="width: 100%; height: 38px;"
+            class="col-lg-3 col-md-5"
+          >
+            <label
+              class="form-label"
+            >
+              Specify Option Number
+            </label>
+            <input
+              class="form-control"
+              placeholder="1"
+              type="number"
+              value=""
+            />
+          </div>
+          <div
+            class="col-lg-9 col-md-7"
+          >
+            <label
+              class="form-label"
+            >
+              Specify ID
+            </label>
+            <input
+              class="form-control"
+              placeholder="abc123"
+              type="text"
+              value=""
+            />
+          </div>
+        </div>
+        <div
+          class="d-grid gap-0 pt-3"
+        >
+          <button
+            aria-label="jump-to-version-submit"
+            class="btn btn-primary"
+            disabled=""
+            form="jumpToVersionForm"
+            type="submit"
+          >
+            Submit
+          </button>
+        </div>
+      </form>
+      <hr />
+      <div
+        class="px-3 pb-3"
+      >
+        <div
+          class="row"
+        >
+          <h4>
+            Browse Versions
+          </h4>
+          <div
+            class="col-md-8 col-sm-6"
           >
             <div
-              class="toggle-group"
+              class="btn toggle btn-md btn-success"
+              role="button"
+              style="width: 100%; height: 38px;"
             >
-              <span
-                class="btn toggle-on btn-md flex-centre btn-success"
+              <div
+                class="toggle-group"
               >
-                Facet By Source
-              </span>
-              <span
-                class="btn toggle-off btn-md flex-centre btn-info"
+                <span
+                  class="btn toggle-on btn-md flex-centre btn-success"
+                >
+                  Facet By Source
+                </span>
+                <span
+                  class="btn toggle-off btn-md flex-centre btn-info"
+                >
+                  Group All Cards Together
+                </span>
+                <span
+                  class="toggle-handle btn btn-md btn-default"
+                />
+              </div>
+            </div>
+          </div>
+          <div
+            class="col-md-4 col-sm-6"
+          >
+            <div
+              class="d-grid g-0"
+            >
+              <button
+                class="btn btn-primary"
+                type="button"
               >
-                Group All Cards Together
-              </span>
-              <span
-                class="toggle-handle btn btn-md btn-default"
-              />
+                <i
+                  class="c0 bi bi-arrows-collapse"
+                />
+                 
+                Collapse
+                 All
+              </button>
             </div>
           </div>
         </div>
-        <div
-          class="col-md-4 col-sm-6"
-        >
-          <div
-            class="d-grid g-0"
-          >
-            <button
-              class="btn btn-primary"
-              type="button"
-            >
-              <i
-                class="c0 bi bi-arrows-collapse"
-              />
-               
-              Collapse
-               All
-            </button>
-          </div>
-        </div>
       </div>
-      <br />
       <div
         class="sticky-top"
         style="background-color: rgb(78, 93, 107); z-index: 100;"
@@ -607,7 +668,7 @@ exports[`the html structure of a CardSlot's grid selector, cards faceted by sour
           class="renderIfVisible "
         >
           <div
-            class="mpccard mpccard-hover card"
+            class="mpccard mpccard-highlight card"
           >
             <div
               class="pb-0 text-center card-header"
@@ -862,39 +923,100 @@ exports[`the html structure of a CardSlot's grid selector, cards grouped togethe
     <div
       class="d-grid p-0 modal-body"
     >
-      <div
-        class="p-3 row"
-        style="width: 100%;"
+      <form
+        class="p-3"
+        id="jumpToVersionForm"
       >
         <div
-          class="col-md-8 col-sm-6"
+          class="row"
         >
+          <h4>
+            Jump to Version
+          </h4>
           <div
-            class="btn toggle btn-md off btn-info"
-            role="button"
-            style="width: 100%; height: 38px;"
+            class="col-lg-3 col-md-5"
+          >
+            <label
+              class="form-label"
+            >
+              Specify Option Number
+            </label>
+            <input
+              class="form-control"
+              placeholder="1"
+              type="number"
+              value=""
+            />
+          </div>
+          <div
+            class="col-lg-9 col-md-7"
+          >
+            <label
+              class="form-label"
+            >
+              Specify ID
+            </label>
+            <input
+              class="form-control"
+              placeholder="abc123"
+              type="text"
+              value=""
+            />
+          </div>
+        </div>
+        <div
+          class="d-grid gap-0 pt-3"
+        >
+          <button
+            aria-label="jump-to-version-submit"
+            class="btn btn-primary"
+            disabled=""
+            form="jumpToVersionForm"
+            type="submit"
+          >
+            Submit
+          </button>
+        </div>
+      </form>
+      <hr />
+      <div
+        class="px-3 pb-3"
+      >
+        <div
+          class="row"
+        >
+          <h4>
+            Browse Versions
+          </h4>
+          <div
+            class="col-md-8 col-sm-6"
           >
             <div
-              class="toggle-group"
+              class="btn toggle btn-md off btn-info"
+              role="button"
+              style="width: 100%; height: 38px;"
             >
-              <span
-                class="btn toggle-on btn-md flex-centre btn-success"
+              <div
+                class="toggle-group"
               >
-                Facet By Source
-              </span>
-              <span
-                class="btn toggle-off btn-md flex-centre btn-info"
-              >
-                Group All Cards Together
-              </span>
-              <span
-                class="toggle-handle btn btn-md btn-default"
-              />
+                <span
+                  class="btn toggle-on btn-md flex-centre btn-success"
+                >
+                  Facet By Source
+                </span>
+                <span
+                  class="btn toggle-off btn-md flex-centre btn-info"
+                >
+                  Group All Cards Together
+                </span>
+                <span
+                  class="toggle-handle btn btn-md btn-default"
+                />
+              </div>
             </div>
           </div>
         </div>
       </div>
-      <br />
       <div
         class="g-0 p-3 row row-cols-xxl-4 row-cols-xl-4 row-cols-lg-3 row-cols-md-2 row-cols-sm-2 row-cols-2"
       >
@@ -902,7 +1024,7 @@ exports[`the html structure of a CardSlot's grid selector, cards grouped togethe
           class="renderIfVisible "
         >
           <div
-            class="mpccard mpccard-hover card"
+            class="mpccard mpccard-highlight card"
           >
             <div
               class="pb-0 text-center card-header"

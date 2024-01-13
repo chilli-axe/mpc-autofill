@@ -212,6 +212,8 @@ interface CardProps {
   searchQuery?: SearchQuery | undefined;
   /** Whether no search results were found when searching for `searchQuery` under the configured search settings. */
   noResultsFound: boolean;
+  /** Whether to highlight this card by showing a glowing border around it. */
+  highlight?: boolean;
 }
 
 export function Card({
@@ -225,6 +227,7 @@ export function Card({
   nameOnClick,
   searchQuery,
   noResultsFound,
+  highlight,
 }: CardProps) {
   /**
    * This component enables displaying cards with auxiliary information in a flexible, consistent way.
@@ -281,7 +284,7 @@ export function Card({
 
   return (
     <BSCard
-      className="mpccard mpccard-hover"
+      className={`mpccard ${highlight ? "mpccard-highlight" : "mpccard-hover"}`}
       onClick={cardOnClick}
       style={{ contentVisibility: "auto" }}
     >
@@ -346,6 +349,8 @@ interface EditorCardProps {
   searchQuery?: SearchQuery | undefined;
   /** Whether no search results were found when searching for `searchQuery` under the configured search settings. */
   noResultsFound: boolean;
+  /** Whether to highlight this card by showing a glowing border around it. */
+  highlight?: boolean;
 }
 
 export function EditorCard({
@@ -359,6 +364,7 @@ export function EditorCard({
   nameOnClick,
   searchQuery,
   noResultsFound,
+  highlight,
 }: EditorCardProps) {
   /**
    * This component is a thin layer on top of `Card` that retrieves `CardDocument` items by their identifiers
@@ -393,6 +399,7 @@ export function EditorCard({
       nameOnClick={nameOnClick}
       searchQuery={searchQuery}
       noResultsFound={noResultsFound}
+      highlight={highlight}
     />
   );
 }

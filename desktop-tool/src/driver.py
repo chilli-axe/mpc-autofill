@@ -418,20 +418,48 @@ class AutofillDriver:
     # region project management
 
     @exception_retry_skip_handler
+    def set_bracket(self, dropdown_id: str) -> None:
+        """
+        Configure the project to fit into the smallest
+
+        :raises: If the project size does not fit into any bracket
+        """
+
+        qty_dropdown = Select(self.driver.find_element(by=By.ID, value=dropdown_id))
+        bracket_options = sorted(
+            [
+                option_value
+                for option in qty_dropdown.options
+                if (option_value := int(option.get_attribute("value"))) >= self.order.details.quantity
+            ]
+        )
+        assert bracket_options, (
+            f"Your project contains {bold(self.order.details.quantity)} cards - this does not fit into any bracket "
+            f"that {bold(self.target_site.name)} offers! The brackets are: "
+            f"{', '.join([bold(option) for option in bracket_options])}"
+        )
+        bracket = bracket_options[0]
+        print(
+            f"Configuring your project of {bold(self.order.details.quantity)} "
+            f"in the bracket of up to {bold(bracket)} cards."
+        )
+        qty_dropdown.select_by_value(str(bracket))
+
+    @exception_retry_skip_handler
     def define_project(self) -> None:
         self.assert_state(States.defining_order)
         # Select card stock
-        stock_to_select = self.target_site.value.cardstock_site_name_mapping[Cardstocks(self.order.details.stock)]
+        stock_to_select = self.target_site.value.cardstock_site_name_mapping.get(Cardstocks(self.order.details.stock))
+        assert (
+            stock_to_select
+        ), f"Cardstock {bold(self.order.details.stock)} is not supported by {bold(self.target_site.name)}!"
         stock_dropdown = Select(
             self.driver.find_element(by=By.ID, value=self.target_site.value.cardstock_dropdown_element_id)
         )
         stock_dropdown.select_by_visible_text(stock_to_select)
 
         # Select number of cards
-        qty_dropdown = Select(
-            self.driver.find_element(by=By.ID, value=self.target_site.value.quantity_dropdown_element_id)
-        )
-        qty_dropdown.select_by_value(str(self.order.details.bracket))
+        self.set_bracket(dropdown_id=self.target_site.value.quantity_dropdown_element_id)
 
         # Switch the finish to foil if the user ordered foil cards
         if self.order.details.foil:
@@ -492,8 +520,7 @@ class AutofillDriver:
         with self.switch_to_frame("sysifm_loginFrame"):
             self.wait_until_javascript_object_is_defined("displayTotalCount")
             self.execute_javascript("displayTotalCount()")  # display the dropdown for "up to N cards"
-            qty_dropdown = Select(self.driver.find_element(by=By.ID, value="dro_total_count"))
-            qty_dropdown.select_by_value(str(self.order.details.bracket))
+            self.set_bracket(dropdown_id="dro_total_count")
             qty = self.driver.find_element(by=By.ID, value="txt_card_number")
             qty.clear()
             qty.send_keys(str(self.order.details.quantity))

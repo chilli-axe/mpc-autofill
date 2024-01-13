@@ -75,7 +75,7 @@ function ChangeSelectedImageSelectedImages({ slots }: { slots: Slots }) {
   const handleHideModal = () => setShowModal(false);
 
   const handleChangeImages = (selectedImage: string): void => {
-    dispatch(setSelectedImages({ selectedImage, slots }));
+    dispatch(setSelectedImages({ selectedImage, slots, deselect: true }));
     handleHideModal();
   };
 

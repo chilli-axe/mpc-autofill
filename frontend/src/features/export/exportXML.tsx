@@ -147,6 +147,10 @@ export function generateXML(
   quantityElement.appendChild(doc.createTextNode(projectSize.toString()));
   detailsElement.appendChild(quantityElement);
 
+  // TODO: the `bracket` field should be safe to remove by 2024-07-01
+  //       this commit updates the desktop tool to no longer read it, but i want to ensure
+  //       there's minimal risk of users trying to use XMLs without the field with versions
+  //       of the desktop tool that expect it.
   const bracketElement = doc.createElement("bracket");
   bracketElement.appendChild(
     doc.createTextNode(bracket(projectSize).toString())
