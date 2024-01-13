@@ -101,7 +101,9 @@ export function CardSlot({ searchQuery, face, slot }: CardSlotProps) {
     selectedSlots.length > 1 &&
     projectMember?.selected &&
     selectedQuery != null &&
-    selectedQuery === searchQuery;
+    // can't use object equality check here
+    selectedQuery.query === searchQuery?.query &&
+    selectedQuery.card_type === searchQuery?.card_type;
   const slotsToModify: Array<[Faces, number]> = modifySelectedSlots
     ? selectedSlots
     : [[face, slot]];
