@@ -17,7 +17,7 @@ import { RootState, setupStore } from "@/app/store";
 import { localBackendURL } from "@/common/test-constants";
 import { Faces } from "@/common/types";
 import { setURL } from "@/features/backend/backendSlice";
-import { LayoutWithoutProvider } from "@/features/ui/layout";
+import { LayoutWithoutReduxProvider } from "@/features/ui/layout";
 
 //# region redux test setup
 
@@ -46,14 +46,14 @@ export function renderWithProviders(
       return (
         <MemoryRouterProvider>
           <Provider store={store}>
-            <LayoutWithoutProvider>{children}</LayoutWithoutProvider>
+            <LayoutWithoutReduxProvider>{children}</LayoutWithoutReduxProvider>
           </Provider>
         </MemoryRouterProvider>
       );
     } else {
       return (
         <MemoryRouterProvider>
-          <LayoutWithoutProvider>{children}</LayoutWithoutProvider>
+          <LayoutWithoutReduxProvider>{children}</LayoutWithoutReduxProvider>
         </MemoryRouterProvider>
       );
     }

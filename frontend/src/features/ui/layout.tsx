@@ -90,10 +90,11 @@ export function ProjectContainer({
   );
 }
 
-export function LayoutWithoutProvider({ children }: PropsWithChildren) {
+export function LayoutWithoutReduxProvider({ children }: PropsWithChildren) {
   const consent = getGoogleAnalyticsConsent();
+  const downloadContext: DownloadContext = new Queue(3, 100);
   return (
-    <>
+    <DownloadContextProvider value={downloadContext}>
       {consent === true && (
         <GoogleAnalytics trackPageViews gaMeasurementId="G-JV8WV3FQML" />
       )}
@@ -102,19 +103,16 @@ export function LayoutWithoutProvider({ children }: PropsWithChildren) {
       <BackendSetter />
       <ProjectNavbar />
       {children}
-    </>
+    </DownloadContextProvider>
   );
 }
 
 export default function Layout({ children }: PropsWithChildren) {
-  const downloadContext: DownloadContext = new Queue(3, 100);
   return (
     <>
       <SSRProvider>
         <OverscrollProvider store={store}>
-          <DownloadContextProvider value={downloadContext}>
-            <LayoutWithoutProvider>{children}</LayoutWithoutProvider>
-          </DownloadContextProvider>
+          <LayoutWithoutReduxProvider>{children}</LayoutWithoutReduxProvider>
         </OverscrollProvider>
       </SSRProvider>
     </>
