@@ -8,6 +8,7 @@ from typing import Any, Callable, Optional, TypeVar, Union, cast
 import pycountry
 import sentry_sdk
 from blog.models import BlogPost
+from elasticsearch_dsl.index import Index
 from jsonschema import ValidationError, validate
 
 from django.conf import settings
@@ -18,6 +19,7 @@ from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 
 from cardpicker.constants import CARDS_PAGE_SIZE, DEFAULT_LANGUAGE, NSFW
+from cardpicker.documents import CardSearch
 from cardpicker.forms import InputCSV, InputLink, InputText, InputXML
 from cardpicker.integrations.integrations import get_configured_game_integration
 from cardpicker.integrations.patreon import get_patreon_campaign_details, get_patrons
@@ -462,6 +464,8 @@ def post_search_results(request: HttpRequest) -> HttpResponse:
 
     if not ping_elasticsearch():
         raise SearchExceptions.ElasticsearchOfflineException()
+    if not Index(CardSearch.Index.name).exists():
+        raise SearchExceptions.IndexNotFoundException(CardSearch.__name__)
 
     results: dict[str, dict[str, list[str]]] = defaultdict(dict)
     for query in queries:
@@ -669,10 +673,13 @@ def get_sample_cards(request: HttpRequest) -> HttpResponse:
     ]
 
     # retrieve the full ORM objects for the selected identifiers and group by type
-    cards = [card.to_dict() for card in Card.objects.filter(pk__in=selected_identifiers)]
-    cards_by_type = {group[0]: list(group[1]) for group in itertools.groupby(cards, key=lambda x: x["card_type"])}
+    cards = [card.to_dict() for card in Card.objects.filter(pk__in=selected_identifiers).order_by("card_type")]
+    cards_by_type = {
+        card_type: list(grouped_cards_iterable)
+        for card_type, grouped_cards_iterable in itertools.groupby(cards, key=lambda x: x["card_type"])
+    }
 
-    return JsonResponse({"cards": {CardTypes.CARD: [], CardTypes.TOKEN: []} | cards_by_type})
+    return JsonResponse({"cards": {CardTypes.CARD: [], CardTypes.CARDBACK: [], CardTypes.TOKEN: []} | cards_by_type})
 
 
 @csrf_exempt

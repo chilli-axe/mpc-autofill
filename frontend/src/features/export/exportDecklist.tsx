@@ -17,11 +17,11 @@ import {
   SlotProjectMembers,
   useAppSelector,
 } from "@/common/types";
+import { RightPaddedIcon } from "@/components/icon";
 import {
   selectIsProjectEmpty,
   selectProjectMembers,
 } from "@/features/project/projectSlice";
-import { RightPaddedIcon } from "@/features/ui/styledComponents";
 
 function extractProjectMemberNames(
   projectMembers: Array<SlotProjectMembers>,
@@ -118,8 +118,15 @@ const selectGeneratedDecklist = (state: RootState): string => {
 };
 
 export function ExportDecklist() {
+  //# region queries and hooks
+
   const store = useStore();
   const isProjectEmpty = useAppSelector(selectIsProjectEmpty);
+
+  //# endregion
+
+  //# region callbacks
+
   const downloadFile = () => {
     const generatedDecklist = selectGeneratedDecklist(
       store.getState() as RootState
@@ -129,6 +136,8 @@ export function ExportDecklist() {
       "decklist.txt" // TODO: use project name here when we eventually track that
     );
   };
+
+  //# endregion
 
   return (
     <Dropdown.Item

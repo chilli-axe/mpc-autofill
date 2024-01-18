@@ -19,13 +19,13 @@ import {
   useAppSelector,
 } from "@/common/types";
 import { bracket } from "@/common/utils";
+import { RightPaddedIcon } from "@/components/icon";
 import { selectFinishSettings } from "@/features/finishSettings/finishSettingsSlice";
 import {
   selectIsProjectEmpty,
   selectProjectMembers,
   selectProjectSize,
 } from "@/features/project/projectSlice";
-import { RightPaddedIcon } from "@/features/ui/styledComponents";
 
 interface SlotsByIdentifier {
   [identifier: string]: Set<number>;
@@ -147,6 +147,10 @@ export function generateXML(
   quantityElement.appendChild(doc.createTextNode(projectSize.toString()));
   detailsElement.appendChild(quantityElement);
 
+  // TODO: the `bracket` field should be safe to remove by 2024-07-01
+  //       this commit updates the desktop tool to no longer read it, but i want to ensure
+  //       there's minimal risk of users trying to use XMLs without the field with versions
+  //       of the desktop tool that expect it.
   const bracketElement = doc.createElement("bracket");
   bracketElement.appendChild(
     doc.createTextNode(bracket(projectSize).toString())
@@ -204,8 +208,15 @@ export function generateXML(
 }
 
 export function ExportXML() {
+  //# region queries and hooks
+
   const store = useStore();
   const isProjectEmpty = useAppSelector(selectIsProjectEmpty);
+
+  //# endregion
+
+  //# region callbacks
+
   const downloadFile = () => {
     const generatedXML = selectGeneratedXML(store.getState() as RootState);
     saveAs(
@@ -213,6 +224,8 @@ export function ExportXML() {
       "cards.xml"
     );
   };
+
+  //# endregion
 
   return (
     <Dropdown.Item

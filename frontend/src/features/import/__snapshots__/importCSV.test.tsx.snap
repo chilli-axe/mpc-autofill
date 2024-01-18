@@ -1,11 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`the html structure of CSV importer 1`] = `
-.c0 {
-  max-width: 100%;
-  overflow-x: scroll;
-}
-
 .c4 {
   -webkit-flex: 1;
   -ms-flex: 1;
@@ -33,7 +28,13 @@ exports[`the html structure of CSV importer 1`] = `
   cursor: pointer;
 }
 
+.c0 {
+  max-width: 100%;
+  overflow-x: scroll;
+}
+
 .c1 {
+  table-layout: fixed;
   border-style: solid;
   border-color: #333333;
   border-width: 1px;
@@ -47,10 +48,13 @@ exports[`the html structure of CSV importer 1`] = `
 .c3 {
   width: 20%;
   text-align: center;
+  border-style: solid;
+  border-color: #333333;
+  border-width: 1px;
 }
 
 <div
-  class="modal-dialog"
+  class="modal-dialog modal-dialog-scrollable"
   data-testid="import-csv"
 >
   <div
@@ -85,31 +89,36 @@ exports[`the html structure of CSV importer 1`] = `
         class="c0"
       >
         <table
-          class="c1 table table-bordered"
+          class="c1 table"
         >
           <thead>
             <th
               class="c2"
+              scope="col"
             >
               Quantity
             </th>
             <th
               class="c2"
+              scope="col"
             >
               Front
             </th>
             <th
               class="c2"
+              scope="col"
             >
               Front ID
             </th>
             <th
               class="c2"
+              scope="col"
             >
               Back
             </th>
             <th
               class="c2"
+              scope="col"
             >
               Back ID
             </th>
@@ -211,31 +220,36 @@ exports[`the html structure of CSV importer 1`] = `
         class="c0"
       >
         <table
-          class="c1 table table-bordered"
+          class="c1 table"
         >
           <thead>
             <th
               class="c2"
+              scope="col"
             >
               Quantity
             </th>
             <th
               class="c2"
+              scope="col"
             >
               Front
             </th>
             <th
               class="c2"
+              scope="col"
             >
               Front ID
             </th>
             <th
               class="c2"
+              scope="col"
             >
               Back
             </th>
             <th
               class="c2"
+              scope="col"
             >
               Back ID
             </th>
@@ -260,7 +274,7 @@ exports[`the html structure of CSV importer 1`] = `
                 class="c3"
               >
                 <code>
-                  1HsvTYs1...
+                  1HsvTYs...
                 </code>
               </td>
               <td
@@ -299,7 +313,7 @@ exports[`the html structure of CSV importer 1`] = `
                 class="c3"
               >
                 <code>
-                  1JtXL6Ca...
+                  1JtXL6C...
                 </code>
               </td>
             </tr>

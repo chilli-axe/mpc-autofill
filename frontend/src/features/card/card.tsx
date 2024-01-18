@@ -5,6 +5,7 @@
  * If being used in a gallery, the previous and next images can be cached for visual smoothness.
  */
 
+import { OnLoadingComplete } from "next/dist/shared/lib/get-img-props";
 import Image from "next/image";
 import React, {
   memo,
@@ -14,16 +15,15 @@ import React, {
   useRef,
   useState,
 } from "react";
-import Badge from "react-bootstrap/Badge";
 import BSCard from "react-bootstrap/Card";
 import styled from "styled-components";
 
 import { RootState } from "@/app/store";
 import { SearchQuery, useAppDispatch, useAppSelector } from "@/common/types";
 import { CardDocument } from "@/common/types";
+import { Spinner } from "@/components/spinner";
 import { setSelectedCardAndShowModal } from "@/features/modals/modalsSlice";
 import { selectCardDocumentByIdentifier } from "@/features/search/cardDocumentsSlice";
-import { Spinner } from "@/features/ui/spinner";
 
 const HiddenImage = styled(Image)`
   z-index: 0;
@@ -33,8 +33,9 @@ const HiddenImage = styled(Image)`
 const VisibleImage = styled(Image)<{
   imageIsLoading?: boolean;
   showDetailedViewOnClick?: boolean;
+  zIndex?: number;
 }>`
-  z-index: 1;
+  z-index: ${(props) => props.zIndex ?? 1};
   &:hover {
     cursor: ${(props) => (props.showDetailedViewOnClick ? "pointer" : "auto")};
   }
@@ -63,16 +64,29 @@ function CardImage({
   small,
   showDetailedViewOnClick,
 }: CardImageProps) {
-  const [imageLoading, setImageLoading] = useState<boolean>(true);
-  // ensure that the small thumbnail fades in each time the selected image changes
-  useEffect(() => setImageLoading(true), [maybeCardDocument?.identifier]);
-  useEffect(() => {
-    if (image.current != null && image.current.complete) {
-      setImageLoading(false);
-    }
-  }, [maybeCardDocument?.identifier]);
+  //# region queries and hooks
 
   const dispatch = useAppDispatch();
+
+  //# endregion
+
+  //# region state
+
+  const [imageState, setImageState] = useState<
+    "loading" | "loaded" | "errored"
+  >("loading");
+  const image = useRef<HTMLImageElement>(null);
+
+  //# endregion
+
+  //# region callbacks
+
+  const onLoadingComplete: OnLoadingComplete = (img) => {
+    setImageState("loaded");
+  };
+  const onError: React.ReactEventHandler<HTMLImageElement> = (img) => {
+    setImageState("errored");
+  };
   const handleShowDetailedView = () => {
     if (showDetailedViewOnClick && maybeCardDocument != null) {
       dispatch(
@@ -81,52 +95,68 @@ function CardImage({
     }
   };
 
-  // next.js seems to not fire `onLoadingComplete` when opening a page with a cached image
-  // this implementation retrieved from https://stackoverflow.com/a/59809184
-  const image = useRef<HTMLImageElement>(null);
+  //# endregion
+
+  //# region effects
+
+  useEffect(() => {
+    /**
+     * Ensure that the small thumbnail fades in each time the selected image changes.
+     * Next.js seems to not fire `onLoadingComplete` when opening a page with a cached image.
+     * This implementation was retrieved from https://stackoverflow.com/a/59809184
+     */
+
+    setImageState(
+      image.current == null || !image.current.complete ? "loading" : "loaded"
+    );
+  }, [maybeCardDocument?.identifier]);
+
+  //# endregion
+
+  //# region computed constants
+
+  const imageSrc: string | undefined =
+    imageState !== "errored"
+      ? small
+        ? maybeCardDocument?.small_thumbnail_url
+        : maybeCardDocument?.medium_thumbnail_url
+      : small
+      ? "/error_404.png"
+      : "/error_404_med.png";
+  const imageAlt = maybeCardDocument?.name ?? "Unnamed Card";
+
+  //# endregion
 
   return (
     <>
-      {hidden ? (
-        <HiddenImage
-          ref={image}
-          className="card-img"
-          loading="lazy"
-          src={
-            (small
-              ? maybeCardDocument?.small_thumbnail_url
-              : maybeCardDocument?.medium_thumbnail_url) ?? ""
-          }
-          onLoadingComplete={(img) => setImageLoading(false)}
-          // onError={{thumbnail_404(this)}} // TODO
-          alt={
-            maybeCardDocument?.name
-              ? maybeCardDocument?.name + (small ? " small" : " medium")
-              : ""
-          }
-          fill={true}
-        />
-      ) : (
-        <>
-          {imageLoading && <Spinner />}
+      {imageState === "loading" && !hidden && <Spinner zIndex={2} />}
+      {imageSrc != null &&
+        (hidden ? (
+          <HiddenImage
+            ref={image}
+            className="card-img"
+            loading="lazy"
+            src={imageSrc}
+            onLoadingComplete={onLoadingComplete}
+            onErrorCapture={onError}
+            alt={imageAlt}
+            fill={true}
+          />
+        ) : (
           <VisibleImage
             ref={image}
             className="card-img card-img-fade-in"
             loading="lazy"
-            imageIsLoading={imageLoading}
+            imageIsLoading={imageState === "loading"}
             showDetailedViewOnClick={showDetailedViewOnClick}
-            src={
-              (small
-                ? maybeCardDocument?.small_thumbnail_url
-                : maybeCardDocument?.medium_thumbnail_url) ?? ""
-            }
-            onLoadingComplete={(img) => setImageLoading(false)}
+            src={imageSrc}
+            onLoadingComplete={onLoadingComplete}
+            onErrorCapture={onError}
             onClick={handleShowDetailedView}
-            alt={maybeCardDocument?.name ?? ""}
+            alt={imageAlt}
             fill={true}
           />
-        </>
-      )}
+        ))}
     </>
   );
 }
@@ -182,6 +212,8 @@ interface CardProps {
   searchQuery?: SearchQuery | undefined;
   /** Whether no search results were found when searching for `searchQuery` under the configured search settings. */
   noResultsFound: boolean;
+  /** Whether to highlight this card by showing a glowing border around it. */
+  highlight?: boolean;
 }
 
 export function Card({
@@ -195,10 +227,13 @@ export function Card({
   nameOnClick,
   searchQuery,
   noResultsFound,
+  highlight,
 }: CardProps) {
   /**
    * This component enables displaying cards with auxiliary information in a flexible, consistent way.
    */
+
+  //# region computed constants
 
   const cardImageElements =
     maybeCardDocument != null ? (
@@ -245,9 +280,11 @@ export function Card({
   const BSCardSubtitle: typeof BSCard.Subtitle =
     nameOnClick != null ? OutlinedBSCardSubtitle : BSCard.Subtitle;
 
+  //# endregion
+
   return (
     <BSCard
-      className="mpccard mpccard-hover"
+      className={`mpccard ${highlight ? "mpccard-highlight" : "mpccard-hover"}`}
       onClick={cardOnClick}
       style={{ contentVisibility: "auto" }}
     >
@@ -312,6 +349,8 @@ interface EditorCardProps {
   searchQuery?: SearchQuery | undefined;
   /** Whether no search results were found when searching for `searchQuery` under the configured search settings. */
   noResultsFound: boolean;
+  /** Whether to highlight this card by showing a glowing border around it. */
+  highlight?: boolean;
 }
 
 export function EditorCard({
@@ -325,6 +364,7 @@ export function EditorCard({
   nameOnClick,
   searchQuery,
   noResultsFound,
+  highlight,
 }: EditorCardProps) {
   /**
    * This component is a thin layer on top of `Card` that retrieves `CardDocument` items by their identifiers
@@ -332,6 +372,8 @@ export function EditorCard({
    * We have this layer because search results are returned as a list of image identifiers
    * (to minimise the quantity of data stored in Elasticsearch), so the full `CardDocument` items must be looked up.
    */
+
+  //# region queries and hooks
 
   const maybeCardDocument = useAppSelector((state: RootState) =>
     selectCardDocumentByIdentifier(state, imageIdentifier)
@@ -342,6 +384,8 @@ export function EditorCard({
   const maybeNextCardDocument = useAppSelector((state: RootState) =>
     selectCardDocumentByIdentifier(state, nextImageIdentifier)
   );
+
+  //# endregion
 
   return (
     <Card
@@ -355,6 +399,7 @@ export function EditorCard({
       nameOnClick={nameOnClick}
       searchQuery={searchQuery}
       noResultsFound={noResultsFound}
+      highlight={highlight}
     />
   );
 }

@@ -13,7 +13,7 @@ import { setError } from "@/features/toasts/toastsSlice";
 
 const typePrefix = "sourceDocuments/fetchSourceDocuments";
 
-const fetchSourceDocuments = createAppAsyncThunk(
+export const fetchSourceDocuments = createAppAsyncThunk(
   typePrefix,
   async (arg, { getState }) => {
     const state = getState();

@@ -1,7 +1,13 @@
 import { screen } from "@testing-library/react";
 
 import App from "@/app/app";
-import { Back, Card, Front, S30 } from "@/common/constants";
+import {
+  Back,
+  Card,
+  Front,
+  S30,
+  SelectedImageSeparator,
+} from "@/common/constants";
 import {
   cardDocument1,
   cardDocument2,
@@ -9,12 +15,12 @@ import {
   cardDocument4,
   cardDocument5,
   cardDocument6,
-  localBackend,
 } from "@/common/test-constants";
 import {
   expectCardbackSlotState,
   expectCardGridSlotState,
   expectCardSlotToExist,
+  importText,
   importXML,
   openImportXMLModal,
   renderWithProviders,
@@ -34,7 +40,6 @@ import {
 import { server } from "@/mocks/server";
 
 const preloadedState = {
-  backend: localBackend,
   project: {
     members: [],
     cardback: cardDocument2.identifier,
@@ -367,22 +372,17 @@ test("importing a more complex XML into a non-empty project", async () => {
     preloadedState: {
       ...preloadedState,
       project: {
-        members: [
-          {
-            front: {
-              query: { query: "my search query", card_type: Card },
-              selectedImage: cardDocument1.identifier,
-              selected: false,
-            },
-            back: null,
-          },
-        ],
+        members: [],
         cardback: cardDocument2.identifier,
       },
     },
   });
 
-  // this slot should already exist from our preloaded state
+  // this used to preload the redux state, but with the shift to listeners,
+  // we have to add the first card manually like this.
+  await importText(
+    `1x my search query${SelectedImageSeparator}${cardDocument1.identifier}`
+  );
   await expectCardSlotToExist(1);
   await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 4);
   await expectCardGridSlotState(1, Back, cardDocument2.name, 1, 2);

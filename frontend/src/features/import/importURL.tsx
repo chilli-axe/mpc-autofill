@@ -18,31 +18,39 @@ import {
   processStringAsMultipleLines,
 } from "@/common/processing";
 import { useAppDispatch, useAppSelector } from "@/common/types";
+import { RightPaddedIcon } from "@/components/icon";
+import { Spinner } from "@/components/spinner";
 import { useProjectName } from "@/features/backend/backendSlice";
 import { addMembers, selectProjectSize } from "@/features/project/projectSlice";
 import { selectFuzzySearch } from "@/features/searchSettings/searchSettingsSlice";
 import { setError } from "@/features/toasts/toastsSlice";
-import { Spinner } from "@/features/ui/spinner";
-import { RightPaddedIcon } from "@/features/ui/styledComponents";
 
 export function ImportURL() {
+  //# region queries and hooks
+
+  const dispatch = useAppDispatch();
   const dfcPairsQuery = useGetDFCPairsQuery();
   const importSitesQuery = useGetImportSitesQuery();
-  const projectName = useProjectName();
-  const fuzzySearch = useAppSelector(selectFuzzySearch);
-
-  const projectSize = useAppSelector(selectProjectSize);
-  const dispatch = useAppDispatch();
-
-  const [showURLModal, setShowURLModal] = useState<boolean>(false);
-  const [loading, setLoading] = useState<boolean>(false);
-  const handleCloseURLModal = () => setShowURLModal(false);
-  const handleShowURLModal = () => setShowURLModal(true);
-  const [URLModalValue, setURLModalValue] = useState<string>("");
-
   const [triggerFn, queryImportSiteQuery] =
     api.endpoints.queryImportSite.useLazyQuery();
+  const projectName = useProjectName();
+  const fuzzySearch = useAppSelector(selectFuzzySearch);
+  const projectSize = useAppSelector(selectProjectSize);
 
+  //# endregion
+
+  //# region state
+
+  const [URLModalValue, setURLModalValue] = useState<string>("");
+  const [showURLModal, setShowURLModal] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
+
+  //# endregion
+
+  //# region callbacks
+
+  const handleCloseURLModal = () => setShowURLModal(false);
+  const handleShowURLModal = () => setShowURLModal(true);
   const handleSubmitURLModal = useCallback(
     async (event: FormEvent<HTMLFormElement>) => {
       event.preventDefault(); // to avoid reloading the page
@@ -90,6 +98,15 @@ export function ImportURL() {
     ]
   );
 
+  //# endregion
+
+  //# region computed constants
+
+  const disabled =
+    loading || importSitesQuery.isFetching || dfcPairsQuery.isFetching;
+
+  //# endregion
+
   return importSitesQuery.isFetching ||
     (importSitesQuery.data ?? []).length === 0 ? (
     <></>
@@ -99,6 +116,7 @@ export function ImportURL() {
         <RightPaddedIcon bootstrapIconName="link-45deg" /> URL
       </Dropdown.Item>
       <Modal
+        scrollable
         show={loading || showURLModal}
         onHide={handleCloseURLModal}
         onExited={() => setURLModalValue("")}
@@ -155,7 +173,7 @@ export function ImportURL() {
             type="submit"
             form="importURLForm"
             variant="primary"
-            disabled={loading || importSitesQuery.isFetching}
+            disabled={disabled}
             style={{ width: 4.75 + "em" }}
           >
             {loading ? <Spinner size={1.5} /> : "Submit"}

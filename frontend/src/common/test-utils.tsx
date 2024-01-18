@@ -9,13 +9,15 @@ import { within } from "@testing-library/dom";
 import type { RenderOptions } from "@testing-library/react";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import FileSaver from "file-saver";
-import { MemoryRouterProvider } from "next-router-mock/MemoryRouterProvider/next-13";
+import { MemoryRouterProvider } from "next-router-mock/MemoryRouterProvider";
 import React, { PropsWithChildren } from "react";
 import { Provider } from "react-redux";
 
 import { RootState, setupStore } from "@/app/store";
 import { localBackendURL } from "@/common/test-constants";
 import { Faces } from "@/common/types";
+import { setURL } from "@/features/backend/backendSlice";
+import { LayoutWithoutReduxProvider } from "@/features/ui/layout";
 
 //# region redux test setup
 
@@ -33,17 +35,27 @@ export function renderWithProviders(
     // Automatically create a store instance if no store was passed in
     store = setupStore(preloadedState),
     ...renderOptions
-  }: ExtendedRenderOptions = {}
+  }: ExtendedRenderOptions = {},
+  configureLocalBackend: boolean = true
 ) {
   function Wrapper({ children }: PropsWithChildren<{}>): JSX.Element {
     if (store != undefined) {
+      if (configureLocalBackend) {
+        store.dispatch(setURL(localBackendURL));
+      }
       return (
         <MemoryRouterProvider>
-          <Provider store={store}>{children}</Provider>
+          <Provider store={store}>
+            <LayoutWithoutReduxProvider>{children}</LayoutWithoutReduxProvider>
+          </Provider>
         </MemoryRouterProvider>
       );
     } else {
-      return <MemoryRouterProvider>{children}</MemoryRouterProvider>;
+      return (
+        <MemoryRouterProvider>
+          <LayoutWithoutReduxProvider>{children}</LayoutWithoutReduxProvider>
+        </MemoryRouterProvider>
+      );
     }
   }
 
@@ -71,9 +83,9 @@ export async function expectCardSlotToNotExist(slot: number) {
 
 async function expectCardSlotState(
   testId: string,
-  cardName: string | null,
-  selectedImage: number | null,
-  totalImages: number | null
+  cardName?: string | null,
+  selectedImage?: number | null,
+  totalImages?: number | null
 ) {
   /**
    * This function helps with asserting that a particular card slot exists
@@ -105,23 +117,27 @@ async function expectCardSlotState(
 export async function expectCardGridSlotState(
   slot: number,
   face: Faces,
-  cardName: string | null,
-  selectedImage: number | null,
-  totalImages: number | null
+  cardName?: string | null,
+  selectedImage?: number | null,
+  totalImages?: number | null,
+  slotSelected?: boolean | null
 ) {
+  const testId = `${face}-slot${slot - 1}`;
   // note: the specified `slot` should be 1-indexed
-  return await expectCardSlotState(
-    `${face}-slot${slot - 1}`,
-    cardName,
-    selectedImage,
-    totalImages
-  );
+  await expectCardSlotState(testId, cardName, selectedImage, totalImages);
+  if (slotSelected != null) {
+    const cardElement = screen.getByTestId(testId);
+    const labelText = `${face}${slot - 1}-${slotSelected ? "" : "un"}checked`;
+    await waitFor(() =>
+      expect(within(cardElement).getByLabelText(labelText)).toBeInTheDocument()
+    );
+  }
 }
 
 export async function expectCardbackSlotState(
-  cardName: string | null,
-  selectedImage: number | null,
-  totalImages: number | null
+  cardName?: string,
+  selectedImage?: number,
+  totalImages?: number
 ) {
   return await expectCardSlotState(
     "common-cardback",
@@ -215,6 +231,9 @@ export async function openImportTextModal() {
   addCardsMenu.click();
   await waitFor(() => screen.getByText("Text", { exact: false }).click());
   await waitFor(() => expect(screen.getByText("Add Cards — Text")));
+  await waitFor(() =>
+    expect(screen.getByLabelText("import-text-submit")).not.toBeDisabled()
+  ); // here, we wait for DFC pairs to be loaded
   return screen.getByLabelText("import-text");
 }
 
@@ -230,7 +249,9 @@ export async function openImportCSVModal() {
   addCardsMenu.click();
   await waitFor(() => screen.getByText("CSV", { exact: false }).click());
   await waitFor(() => expect(screen.getByText("Add Cards — CSV")));
-  return screen.getByLabelText("import-csv");
+  const dropzone = screen.getByLabelText("import-csv");
+  await waitFor(() => expect(dropzone).not.toBeDisabled()); // here, we wait for DFC pairs to be loaded
+  return dropzone;
 }
 
 export async function importCSV(fileContents: string) {
@@ -247,7 +268,9 @@ export async function openImportXMLModal() {
   addCardsMenu.click();
   await waitFor(() => screen.getByText("XML", { exact: false }).click());
   await waitFor(() => expect(screen.getByText("Add Cards — XML")));
-  return screen.getByLabelText("import-xml");
+  const dropzone = screen.getByLabelText("import-xml");
+  await waitFor(() => expect(dropzone).not.toBeDisabled()); // here, we wait for DFC pairs to be loaded
+  return dropzone;
 }
 
 export async function importXML(
@@ -282,7 +305,12 @@ async function openGridSelector(
   totalImages: number
 ) {
   expect(totalImages).toBeGreaterThan(1);
-  await expectCardSlotState(cardSlotTestId, null, selectedImage, totalImages);
+  await expectCardSlotState(
+    cardSlotTestId,
+    undefined,
+    selectedImage,
+    totalImages
+  );
 
   await waitFor(() =>
     within(screen.getByTestId(cardSlotTestId))
@@ -336,6 +364,16 @@ export async function deselectSlot(slot: number, face: Faces) {
   );
 }
 
+export async function selectSimilar() {
+  screen.getByText("Modify").click();
+  await waitFor(() => screen.getByText("Select Similar").click());
+}
+
+export async function selectAll() {
+  screen.getByText("Modify").click();
+  await waitFor(() => screen.getByText("Select All").click());
+}
+
 export async function changeQueries(query: string) {
   const textField = await waitFor(() =>
     screen.getByLabelText("change-selected-image-queries-text")
@@ -372,7 +410,7 @@ export async function deleteSelectedImages() {
 }
 
 export async function openSearchSettingsModal() {
-  screen.getByText("Search Settings", { exact: false }).click();
+  screen.getByText(/Search Settings/).click();
   await waitFor(() => expect(screen.getByText("Search Settings")));
   return screen.getByTestId("search-settings");
 }

@@ -4,7 +4,7 @@
   <img width="500px" src="https://i.imgur.com/IUCI2aO.png" alt="MPC Autofill Logo" />
 </p>
 
-MPC Autofill is print automation software (leveraging MakePlayingCards) for your tabletop gaming community.
+MPC Autofill is image aggregation & print automation software for your tabletop gaming community.
 
 ---
 

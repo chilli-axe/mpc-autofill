@@ -113,23 +113,13 @@ export default function Index() {
   return (
     <ProjectContainer>
       <Head>
-        <title>{projectName}</title>
+        <title>{`${projectName}`}</title>
         <meta
           name="description"
           content="The easiest way to print professional-quality playtest cards for kitchen-table tabletop gaming with MakePlayingCards (MPC)."
         />
       </Head>
       <br />
-      <Alert variant="info">
-        Howdy! Thanks for checking out the {ProjectName} public beta &mdash;
-        I&apos;m stoked to be finally getting this into people&apos;s hands and
-        I hope it brings you joy ♥️ Please create an issue on{" "}
-        <a href="https://github.com/chilli-axe/mpc-autofill/issues">
-          the GitHub repo
-        </a>{" "}
-        if you encounter any issues or weird behaviour &mdash; I&apos;ll be
-        addressing feedback, fixing bugs, and continuing to polish the app.
-      </Alert>
       <DynamicLogo />
       <br />
       <JumpIntoEditorButton />

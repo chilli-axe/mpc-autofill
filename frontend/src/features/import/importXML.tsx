@@ -28,6 +28,7 @@ import { TextFileDropzone } from "@/common/dropzone";
 import { processPrefix } from "@/common/processing";
 import { useAppDispatch, useAppSelector } from "@/common/types";
 import { Cardstock, SlotProjectMembers } from "@/common/types";
+import { RightPaddedIcon } from "@/components/icon";
 import {
   setCardstock,
   setFoil,
@@ -38,19 +39,29 @@ import {
   selectProjectSize,
   setSelectedCardback,
 } from "@/features/project/projectSlice";
-import { RightPaddedIcon } from "@/features/ui/styledComponents";
 
 export function ImportXML() {
+  //# region queries and hooks
+
   const dispatch = useAppDispatch();
-  const [showXMLModal, setShowXMLModal] = useState<boolean>(false);
-  const handleCloseXMLModal = () => setShowXMLModal(false);
-  const handleShowXMLModal = () => setShowXMLModal(true);
   const projectCardback = useAppSelector(selectProjectCardback);
   const projectSize = useAppSelector(selectProjectSize);
+
+  //# endregion
+
+  //# region state
+
+  const [showXMLModal, setShowXMLModal] = useState<boolean>(false);
   const [useXMLCardback, setUseXMLCardback] = useState<boolean>(false);
   const [useXMLFinishSettings, setUseXMLFinishSettings] =
     useState<boolean>(false);
 
+  //# endregion
+
+  //# region callbacks
+
+  const handleCloseXMLModal = () => setShowXMLModal(false);
+  const handleShowXMLModal = () => setShowXMLModal(true);
   const parseXMLFile = (fileContents: string | ArrayBuffer | null) => {
     if (typeof fileContents !== "string") {
       alert("invalid CSV file uploaded");
@@ -173,12 +184,15 @@ export function ImportXML() {
     handleCloseXMLModal();
   };
 
+  //# endregion
+
   return (
     <>
       <Dropdown.Item onClick={handleShowXMLModal}>
         <RightPaddedIcon bootstrapIconName="file-code" /> XML
       </Dropdown.Item>
       <Modal
+        scrollable
         show={showXMLModal}
         onHide={handleCloseXMLModal}
         data-testid="import-xml"
@@ -230,6 +244,7 @@ export function ImportXML() {
             mimeTypes={{ "text/xml": [".xml"] }}
             fileUploadCallback={parseXMLFile}
             label="import-xml"
+            disabled={false} // this importer has no DFC integration so there's no need to wait for anything
           />
         </Modal.Body>
         <Modal.Footer>

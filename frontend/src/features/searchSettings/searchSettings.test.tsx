@@ -2,11 +2,7 @@ import { waitFor, within } from "@testing-library/dom";
 
 import App from "@/app/app";
 import { Front } from "@/common/constants";
-import {
-  cardDocument1,
-  localBackend,
-  sourceDocument1,
-} from "@/common/test-constants";
+import { cardDocument1, sourceDocument1 } from "@/common/test-constants";
 import {
   expectCardGridSlotState,
   importText,
@@ -34,7 +30,6 @@ test("the html structure of search settings", async () => {
   );
   const { container } = renderWithProviders(<App />, {
     preloadedState: {
-      backend: localBackend,
       project: { members: [], cardback: null },
     },
   });

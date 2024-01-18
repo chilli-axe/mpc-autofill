@@ -24,29 +24,6 @@ export const projectSlice = createSlice({
   name: "project",
   initialState,
   reducers: {
-    setSelectedImage: (
-      state,
-      action: PayloadAction<{
-        face: Faces;
-        slot: number;
-        selectedImage?: string;
-      }>
-    ) => {
-      // TODO: this is a bit awkward
-      if (state.members[action.payload.slot][action.payload.face] == null) {
-        state.members[action.payload.slot][action.payload.face] = {
-          query: {
-            query: null,
-            card_type: Card,
-          },
-          selectedImage: action.payload.selectedImage,
-          selected: false,
-        };
-      } else {
-        state.members[action.payload.slot][action.payload.face]!.selectedImage =
-          action.payload.selectedImage;
-      }
-    },
     bulkReplaceSelectedImage: (
       state,
       action: PayloadAction<{
@@ -86,11 +63,12 @@ export const projectSlice = createSlice({
         }
       }
     },
-    bulkSetSelectedImage: (
+    setSelectedImages: (
       state,
       action: PayloadAction<{
-        selectedImage: string;
+        selectedImage: string | undefined;
         slots: Array<[Faces, number]>;
+        deselect?: boolean;
       }>
     ) => {
       for (const [face, slot] of action.payload.slots) {
@@ -103,27 +81,13 @@ export const projectSlice = createSlice({
         } else {
           state.members[slot][face]!.selectedImage =
             action.payload.selectedImage;
-          state.members[slot][face]!.selected = false;
+          if (action.payload.deselect) {
+            state.members[slot][face]!.selected = false;
+          }
         }
       }
     },
-    setQuery: (
-      state,
-      action: PayloadAction<{ query: string; face: Faces; slot: number }>
-    ) => {
-      const newQuery = processPrefix(action.payload.query);
-      if (state.members[action.payload.slot][action.payload.face] == null) {
-        state.members[action.payload.slot][action.payload.face] = {
-          query: newQuery,
-          selectedImage: undefined,
-          selected: false,
-        };
-      } else {
-        state.members[action.payload.slot][action.payload.face]!.query =
-          newQuery;
-      }
-    },
-    bulkSetQuery: (
+    setQueries: (
       state,
       action: PayloadAction<{ query: string; slots: Array<[Faces, number]> }>
     ) => {
@@ -141,27 +105,18 @@ export const projectSlice = createSlice({
         }
       }
     },
-    clearQuery: (
-      state,
-      action: PayloadAction<{ face: Faces; slot: number }>
-    ) => {
-      state.members[action.payload.slot][action.payload.face] = {
-        query: {
-          query: null,
-          card_type: action.payload.face === Back ? Cardback : Card,
-        },
-        selectedImage: undefined,
-        selected: false,
-      };
-    },
-    bulkClearQuery: (
+    clearQueries: (
       state,
       action: PayloadAction<{ slots: Array<[Faces, number]> }>
     ) => {
+      const projectCardback = state.cardback;
       for (const [face, slot] of action.payload.slots) {
         state.members[slot][face] = {
           query: { query: null, card_type: face === Back ? Cardback : Card },
-          selectedImage: undefined,
+          selectedImage:
+            face === Back && projectCardback != null
+              ? projectCardback
+              : undefined,
           selected: false,
         };
       }
@@ -246,13 +201,7 @@ export const projectSlice = createSlice({
         }
       }
     },
-    deleteSlot: (state, action: PayloadAction<{ slot: number }>) => {
-      state.members.splice(action.payload.slot, 1);
-    },
-    bulkDeleteSlots: (
-      state,
-      action: PayloadAction<{ slots: Array<number> }>
-    ) => {
+    deleteSlots: (state, action: PayloadAction<{ slots: Array<number> }>) => {
       action.payload.slots
         .sort(function (a, b) {
           return b - a;
@@ -265,20 +214,16 @@ export const projectSlice = createSlice({
 });
 
 export const {
-  setSelectedImage,
   bulkReplaceSelectedImage,
-  bulkSetSelectedImage,
-  setQuery,
-  bulkSetQuery,
-  clearQuery,
-  bulkClearQuery,
+  setSelectedImages,
+  setQueries,
+  clearQueries,
   setSelectedCardback,
   addMembers,
   toggleMemberSelection,
   bulkSetMemberSelection,
   bulkAlignMemberSelection,
-  deleteSlot,
-  bulkDeleteSlots,
+  deleteSlots,
 } = projectSlice.actions;
 
 export default projectSlice.reducer;
@@ -308,6 +253,12 @@ export const selectProjectMemberIdentifiers = createSelector(
       )
     )
 );
+
+export const selectAllSlotsForFace = (
+  state: RootState,
+  face: Faces
+): Array<[Faces, number]> =>
+  state.project.members.map((_, index) => [face, index]);
 
 export const selectSelectedSlots = createSelector(
   (state: RootState) => state.project.members,
@@ -371,17 +322,26 @@ export const selectProjectFileSize = createSelector(
 export const selectQueriesWithoutSearchResults = createSelector(
   (state: RootState) => state.project.members,
   (state: RootState) => state.searchResults.searchResults,
-  (projectMembers, searchResults) =>
-    projectMembers.flatMap((slotProjectMembers) =>
+  (projectMembers, searchResults) => {
+    const set = new Set<string>();
+    return projectMembers.flatMap((slotProjectMembers) =>
       [Front, Back].flatMap((face) => {
         const searchQuery = slotProjectMembers[face]?.query;
-        return searchQuery?.query != null &&
+        const stringifiedSearchQuery = JSON.stringify(searchQuery ?? "");
+        if (
+          searchQuery?.query != null &&
           (searchResults[searchQuery.query] ?? {})[searchQuery.card_type] ==
-            null
-          ? [searchQuery]
-          : [];
+            null &&
+          !set.has(stringifiedSearchQuery)
+        ) {
+          set.add(stringifiedSearchQuery);
+          return [searchQuery];
+        } else {
+          return [];
+        }
       })
-    )
+    );
+  }
 );
 
 export const selectAllSelectedProjectMembersHaveTheSameQuery = createSelector(

@@ -235,19 +235,16 @@ class CardImageCollection:
 @attr.s
 class Details:
     quantity: int = attr.ib(default=0)
-    bracket: int = attr.ib(default=0)
     stock: str = attr.ib(default=constants.Cardstocks.S30.value)
     foil: bool = attr.ib(default=False)
 
     # region initialisation
 
     def validate(self) -> None:
-        if not 0 < self.quantity <= self.bracket:
+        if self.quantity > constants.PROJECT_MAX_SIZE:
             raise ValidationException(
-                f"Order quantity {self.quantity} outside allowable range of {bold(f'[0, {self.bracket}]')}!"
+                f"Order quantity {self.quantity} larger than maximum size of {bold(constants.PROJECT_MAX_SIZE)}!"
             )
-        if self.bracket not in constants.BRACKETS:
-            raise ValidationException(f"Order bracket {self.bracket} not supported!")
         if self.stock not in [x.value for x in constants.Cardstocks]:
             raise ValidationException(f"Order cardstock {self.stock} not supported!")
         if self.stock == constants.Cardstocks.P10 and self.foil is True:
@@ -270,13 +267,10 @@ class Details:
         quantity = 0
         if (quantity_text := details_dict[constants.DetailsTags.quantity].text) is not None:
             quantity = int(quantity_text)
-        bracket = 0
-        if (bracket_text := details_dict[constants.DetailsTags.bracket].text) is not None:
-            bracket = int(bracket_text)
         stock = details_dict[constants.DetailsTags.stock].text or constants.Cardstocks.S30
         foil: bool = details_dict[constants.DetailsTags.foil].text == "true"
 
-        details = cls(quantity=quantity, bracket=bracket, stock=stock, foil=foil)
+        details = cls(quantity=quantity, stock=stock, foil=foil)
         return details
 
     # endregion
@@ -295,9 +289,8 @@ class CardOrder:
         if self.name is not None:
             print(f"Successfully parsed card order: {bold(self.name)}")
         print(
-            f"Your order has a total of {bold(self.details.quantity)} cards, in the MPC bracket of up "
-            f"to {bold(self.details.bracket)} cards.\n{bold(self.details.stock)} "
-            f"cardstock ({bold('foil' if self.details.foil else 'nonfoil')}.\n "
+            f"Your order has a total of {bold(self.details.quantity)} cards."
+            f"\n{bold(self.details.stock)} cardstock ({bold('foil' if self.details.foil else 'nonfoil')}).\n "
         )
 
     # endregion

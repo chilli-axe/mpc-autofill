@@ -44,12 +44,14 @@ interface StyledDropzoneProps {
     (fileContent: string | ArrayBuffer | null): void;
   };
   label: string;
+  disabled: boolean;
 }
 
 export function TextFileDropzone({
   mimeTypes,
   fileUploadCallback,
   label,
+  disabled,
 }: StyledDropzoneProps) {
   const dispatch = useAppDispatch();
 
@@ -62,7 +64,7 @@ export function TextFileDropzone({
           { name: "File upload error", message: "File reading was stopped." },
         ])
       ),
-    []
+    [dispatch]
   );
   const onError = useCallback(
     () =>
@@ -75,9 +77,8 @@ export function TextFileDropzone({
           },
         ])
       ),
-    []
+    [dispatch]
   );
-
   const onDrop = useCallback(
     (acceptedFiles: Array<File>) => {
       acceptedFiles.forEach((file: File) => {
@@ -94,7 +95,7 @@ export function TextFileDropzone({
   );
 
   const { getRootProps, getInputProps, isFocused, isDragAccept, isDragReject } =
-    useDropzone({ onDrop, accept: mimeTypes, maxFiles: 1 });
+    useDropzone({ onDrop, accept: mimeTypes, maxFiles: 1, disabled });
 
   return (
     <div className="container">

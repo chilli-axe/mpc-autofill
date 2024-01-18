@@ -10,6 +10,7 @@ import {
   Droppable,
   DropResult,
 } from "@hello-pangea/dnd"; // TODO: look into using `react-dnd` instead as it's a significantly smaller package
+import Link from "next/link";
 import React, { ReactNode, useCallback } from "react";
 import Button from "react-bootstrap/Button";
 import Table from "react-bootstrap/Table";
@@ -23,8 +24,8 @@ import {
   SourceSettings as SourceSettingsType,
   useAppSelector,
 } from "@/common/types";
+import { Spinner } from "@/components/spinner";
 import { selectSourceDocuments } from "@/features/search/sourceDocumentsSlice";
-import { Spinner } from "@/features/ui/spinner";
 
 const Chevron = styled.i`
   font-size: 1em;
@@ -92,7 +93,7 @@ export function SourceSettings({
       );
       setSourceSettings({ sources: updatedSources });
     }
-  }, [sourceSettings.sources, setSourceSettings]);
+  }, [sourceSettings.sources, setSourceSettings, anySourcesEnabled]);
 
   let sourceTable = <Spinner />;
   if (maybeSourceDocuments != null) {
@@ -133,18 +134,18 @@ export function SourceSettings({
                 key={`${sourceRow[0]}-name-column`}
                 style={{ verticalAlign: "middle", width: 50 + "%" }}
               >
-                {maybeSourceDocuments[sourceRow[0]].external_link != null ? (
-                  <a
+                {(maybeSourceDocuments[sourceRow[0]].external_link ?? "")
+                  .length > 0 ? (
+                  <Link
                     href={
-                      maybeSourceDocuments[sourceRow[0]].external_link ??
-                      undefined
+                      maybeSourceDocuments[sourceRow[0]].external_link ?? ""
                     }
                     target="_blank"
                   >
                     {maybeSourceDocuments[sourceRow[0]].name}
-                  </a>
+                  </Link>
                 ) : (
-                  <a>{maybeSourceDocuments[sourceRow[0]].name}</a>
+                  maybeSourceDocuments[sourceRow[0]].name
                 )}
               </td>
               <td
@@ -205,6 +206,7 @@ export function SourceSettings({
                 height: sourceRows.length * 59 + ToggleButtonHeight + "px",
               }}
             >
+              {/* TODO: migrate this to AutofillTable at some point? too big a job for right now. */}
               <Table ref={provided.innerRef} style={{ tableLayout: "auto" }}>
                 <thead>
                   <tr style={{ height: ToggleButtonHeight + "px" }}>

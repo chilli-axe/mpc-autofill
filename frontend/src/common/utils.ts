@@ -1,4 +1,5 @@
-import { Brackets } from "@/common/constants";
+import { Brackets, ReversedCardTypePrefixes } from "@/common/constants";
+import { SearchQuery } from "@/common/schema_types";
 
 export function wrapIndex(index: number, count: number): number {
   return ((index % count) + count) % count;
@@ -33,4 +34,10 @@ export function bracket(projectSize: number): number {
 
 export function toTitleCase(word: string): string {
   return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+}
+
+export function stringifySearchQuery(searchQuery: SearchQuery): string {
+  return searchQuery.card_type != null
+    ? `${ReversedCardTypePrefixes[searchQuery.card_type]}${searchQuery.query}`
+    : "";
 }

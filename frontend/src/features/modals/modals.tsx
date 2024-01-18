@@ -1,24 +1,35 @@
 import React from "react";
 
 import { useAppDispatch, useAppSelector } from "@/common/types";
-import { MemoizedCardDetailedView } from "@/features/modals/cardDetailedViewModal";
-import { ChangeQueryModal } from "@/features/modals/changeQueryModal";
+import { MemoizedCardDetailedView } from "@/features/cardDetailedView/cardDetailedViewModal";
+import { ChangeQueryModal } from "@/features/changeQuery/changeQueryModal";
+import { InvalidIdentifiersModal } from "@/features/invalidIdentifiers/invalidIdentifiersModal";
 import {
   hideModal,
   selectModalCard,
   selectModalSlots,
   selectShownModal,
 } from "@/features/modals/modalsSlice";
-import { SupportBackendModal } from "@/features/modals/supportBackendModal";
-import { SupportDeveloperModal } from "@/features/modals/supportDeveloperModal";
+import { SupportBackendModal } from "@/features/support/supportBackendModal";
+import { SupportDeveloperModal } from "@/features/support/supportDeveloperModal";
 
 export function Modals() {
-  // TODO: move the grid selector into here
+  //# region queries and hooks
+
+  const dispatch = useAppDispatch();
   const selectedImage = useAppSelector(selectModalCard);
   const selectedSlots = useAppSelector(selectModalSlots);
   const shownModal = useAppSelector(selectShownModal);
-  const dispatch = useAppDispatch();
+
+  //# endregion
+
+  //# region callbacks
+
   const handleClose = () => dispatch(hideModal());
+
+  //# endregion
+
+  // TODO: move the grid selector into here
 
   return (
     <>
@@ -42,6 +53,10 @@ export function Modals() {
       />
       <SupportBackendModal
         show={shownModal === "supportBackend"}
+        handleClose={handleClose}
+      />
+      <InvalidIdentifiersModal
+        show={shownModal === "invalidIdentifiers"}
         handleClose={handleClose}
       />
     </>

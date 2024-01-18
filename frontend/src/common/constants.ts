@@ -10,6 +10,7 @@ export const Token: CardType = "TOKEN";
 
 export const SelectedImageSeparator = "@";
 export const CardTypeSeparator = ":";
+export const FaceSeparator = "//";
 
 export const CardTypePrefixes: { [prefix: string]: CardType } = {
   "": Card,
@@ -26,7 +27,6 @@ export const ReversedCardTypePrefixes = Object.fromEntries(
 
 export const Front: Faces = "front";
 export const Back: Faces = "back";
-export const FaceSeparator = "|";
 
 export const ToggleButtonHeight = 38; // pixels
 export const NavbarHeight = 50; // pixels - aligns with the natural height of the navbar
@@ -57,14 +57,16 @@ export enum QueryTags {
   SampleCards = "sampleCards",
 }
 
+export const S27: Cardstock = "(S27) Smooth";
 export const S30: Cardstock = "(S30) Standard Smooth";
 export const S33: Cardstock = "(S33) Superior Smooth";
 export const M31: Cardstock = "(M31) Linen";
 export const P10: Cardstock = "(P10) Plastic";
-export const Cardstocks: Array<Cardstock> = [S30, S33, M31, P10];
+export const Cardstocks: Array<Cardstock> = [S27, S30, S33, M31, P10];
 
 export const CardstockFoilCompatibility: { [cardstock in Cardstock]: boolean } =
   {
+    [S27]: true,
     [S30]: true,
     [S33]: true,
     [M31]: true,

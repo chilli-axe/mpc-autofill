@@ -19,7 +19,7 @@ RUN apt-get update && \
 RUN rm -rf /etc/cron.*/* && \
     chmod u+s /usr/sbin/cron
 
-# Configure apt with node 16
+# Configure apt with node 18
 RUN curl -sL https://deb.nodesource.com/setup_18.x | bash -
 
 # Install node and npm

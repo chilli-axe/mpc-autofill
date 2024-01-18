@@ -2,6 +2,7 @@ import Head from "next/head";
 import React from "react";
 
 import { ProjectName } from "@/common/constants";
+import { NoBackendDefault } from "@/components/noBackendDefault";
 import {
   useBackendConfigured,
   useProjectName,
@@ -9,7 +10,6 @@ import {
 import { NewCards } from "@/features/new/new";
 import Footer from "@/features/ui/footer";
 import { ProjectContainer } from "@/features/ui/layout";
-import { NoBackendDefault } from "@/features/ui/noBackendDefault";
 
 function NewOrDefault() {
   const backendConfigured = useBackendConfigured();
@@ -29,7 +29,7 @@ export default function New() {
   return (
     <ProjectContainer>
       <Head>
-        <title>{projectName} New Cards</title>
+        <title>{`${projectName} New Cards`}</title>
         <meta
           name="description"
           content={`Check out the new cards added to ${ProjectName} over the last two weeks.`}

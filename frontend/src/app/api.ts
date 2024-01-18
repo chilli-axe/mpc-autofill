@@ -124,7 +124,6 @@ export const api = createApi({
         params: { id: identifier },
         responseHandler: "text",
       }),
-      keepUnusedDataFor: 1,
     }),
     getNewCardsFirstPage: builder.query<NewCardsFirstPages, void>({
       query: () => ({ url: `2/newCardsFirstPages/`, method: "GET" }),

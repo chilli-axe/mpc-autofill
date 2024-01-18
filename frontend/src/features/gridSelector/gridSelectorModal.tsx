@@ -4,22 +4,30 @@
  * Card versions are faceted by source, and all cards for a source can be temporarily hidden.
  */
 
-import React, { useCallback, useMemo } from "react";
+import React, {
+  FormEvent,
+  useCallback,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import Button from "react-bootstrap/Button";
 import Col from "react-bootstrap/Col";
 import Collapse from "react-bootstrap/Collapse";
+import Form from "react-bootstrap/Form";
 import Modal from "react-bootstrap/Modal";
 import Row from "react-bootstrap/Row";
 import Stack from "react-bootstrap/Stack";
 // @ts-ignore: https://github.com/arnthor3/react-bootstrap-toggle/issues/21
 import Toggle from "react-bootstrap-toggle";
+import RenderIfVisible from "react-render-if-visible";
 
 import { ToggleButtonHeight } from "@/common/constants";
 import { CardDocument, useAppDispatch, useAppSelector } from "@/common/types";
+import { RightPaddedIcon } from "@/components/icon";
 import { MemoizedEditorCard } from "@/features/card/card";
 import { selectCardDocumentsByIdentifier } from "@/features/search/cardDocumentsSlice";
 import { selectSourceNamesByKey } from "@/features/search/sourceDocumentsSlice";
-import { RightPaddedIcon } from "@/features/ui/styledComponents";
 import {
   makeAllSourcesInvisible,
   makeAllSourcesVisible,
@@ -30,9 +38,37 @@ import {
   toggleSourceVisible,
 } from "@/features/viewSettings/viewSettingsSlice";
 
+interface CardGridCardProps {
+  identifier: string;
+  index: number;
+  selectImage: {
+    (identifier: string): void;
+  };
+  selectedImage?: string;
+}
+
+function CardGridCard({
+  identifier,
+  index,
+  selectImage,
+  selectedImage,
+}: CardGridCardProps) {
+  return (
+    <MemoizedEditorCard
+      imageIdentifier={identifier}
+      cardHeaderTitle={`Option ${index + 1}`}
+      cardOnClick={() => selectImage(identifier)}
+      key={`gridSelector-${identifier}`}
+      noResultsFound={false}
+      highlight={identifier === selectedImage}
+    />
+  );
+}
+
 interface GridSelectorProps {
   testId: string;
   imageIdentifiers: Array<string>;
+  selectedImage?: string;
   show: boolean;
   handleClose: {
     (): void;
@@ -50,12 +86,14 @@ interface CardGridDisplayProps {
   selectImage: {
     (identifier: string): void;
   };
+  selectedImage?: string;
   sourceNamesByKey: { [sourceKey: string]: string };
 }
 
 function CardsGroupedTogether({
   cardIdentifiersAndOptionNumbersBySource,
   selectImage,
+  selectedImage,
   sourceNamesByKey,
 }: CardGridDisplayProps) {
   /**
@@ -69,13 +107,17 @@ function CardsGroupedTogether({
         ([key, value], sourceIndex) => (
           <>
             {value.flatMap(([identifier, index]) => (
-              <MemoizedEditorCard // TODO: paginate or lazy-load these
-                imageIdentifier={identifier}
-                cardHeaderTitle={`Option ${index + 1}`}
-                cardOnClick={() => selectImage(identifier)}
-                key={`gridSelector-${identifier}`}
-                noResultsFound={false}
-              />
+              <RenderIfVisible
+                key={`gridSelector-${identifier}-wrapper`}
+                initialVisible={index < 20}
+              >
+                <CardGridCard
+                  identifier={identifier}
+                  index={index}
+                  selectImage={selectImage}
+                  selectedImage={selectedImage}
+                />
+              </RenderIfVisible>
             ))}
           </>
         )
@@ -87,6 +129,7 @@ function CardsGroupedTogether({
 function CardsFacetedBySource({
   cardIdentifiersAndOptionNumbersBySource,
   selectImage,
+  selectedImage,
   sourceNamesByKey,
 }: CardGridDisplayProps) {
   /**
@@ -94,8 +137,13 @@ function CardsFacetedBySource({
    * Allow users to toggle whether each source's cards are showed/hidden.
    */
 
+  //# region queries and hooks
+
   const dispatch = useAppDispatch();
   const sourcesVisible = useAppSelector(selectSourcesVisible);
+
+  //# endregion
+
   return (
     <>
       {Object.entries(cardIdentifiersAndOptionNumbersBySource).map(
@@ -156,13 +204,17 @@ function CardsFacetedBySource({
               >
                 {cardIdentifiersAndOptionNumbers.map(
                   ([identifier, optionNumber]) => (
-                    <MemoizedEditorCard
-                      imageIdentifier={identifier}
-                      cardHeaderTitle={`Option ${optionNumber + 1}`}
-                      cardOnClick={() => selectImage(identifier)}
-                      key={`gridSelector-${identifier}`}
-                      noResultsFound={false}
-                    />
+                    <RenderIfVisible
+                      key={`gridSelector-${identifier}-wrapper`}
+                      initialVisible={optionNumber < 20}
+                    >
+                      <CardGridCard
+                        identifier={identifier}
+                        index={optionNumber}
+                        selectImage={selectImage}
+                        selectedImage={selectedImage}
+                      />
+                    </RenderIfVisible>
                   )
                 )}
               </Row>
@@ -178,15 +230,35 @@ function CardsFacetedBySource({
 export function GridSelectorModal({
   testId,
   imageIdentifiers,
+  selectedImage,
   show,
   handleClose,
   onClick,
 }: GridSelectorProps) {
+  //# region queries and hooks
+
   const dispatch = useAppDispatch();
   const cardDocuments = useAppSelector((state) =>
     selectCardDocumentsByIdentifier(state, imageIdentifiers)
   );
   const facetBySource = useAppSelector(selectFacetBySource);
+  const sourceNamesByKey = useAppSelector(selectSourceNamesByKey);
+  const anySourcesCollapsed = useAppSelector(selectAnySourcesCollapsed);
+
+  //# endregion
+
+  //# region state
+
+  const [optionNumber, setOptionNumber] = useState<number | undefined>(
+    undefined
+  );
+  const [imageIdentifier, setImageIdentifier] = useState<string>("");
+  const focusRef = useRef<HTMLInputElement>(null);
+
+  //# endregion
+
+  //# region callbacks
+
   const selectImage = useCallback(
     (identifier: string) => {
       onClick(identifier);
@@ -194,10 +266,22 @@ export function GridSelectorModal({
     },
     [onClick, handleClose]
   );
+  const handleSubmitJumpToVersionForm = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    selectImage(
+      optionNumber ? imageIdentifiers[optionNumber - 1] : imageIdentifier
+    );
+  };
 
-  const sourceNamesByKey = useAppSelector(selectSourceNamesByKey);
+  //# endregion
+
+  //# region computed constants
+
+  const versionToJumpToIsValid =
+    ((optionNumber ?? 0) > 0 &&
+      (optionNumber ?? 0) < imageIdentifiers.length + 1) ||
+    (imageIdentifier !== "" && imageIdentifiers.includes(imageIdentifier));
   const sourceKeys = Object.keys(sourceNamesByKey);
-  const anySourcesCollapsed = useAppSelector(selectAnySourcesCollapsed);
   const cardIdentifiersAndOptionNumbersBySource = useMemo(
     () =>
       imageIdentifiers.reduce(
@@ -225,12 +309,17 @@ export function GridSelectorModal({
     [cardDocuments, imageIdentifiers]
   );
 
-  // TODO: paginate or lazy-load these cards. this is quite slow when you have hundreds of images.
+  //# endregion
 
   return (
     <Modal
       scrollable
       show={show}
+      onEntered={() => {
+        if (focusRef.current) {
+          focusRef.current.focus();
+        }
+      }}
       onHide={handleClose}
       size="lg"
       data-testid={testId}
@@ -239,52 +328,103 @@ export function GridSelectorModal({
         <Modal.Title>Select Version</Modal.Title>
       </Modal.Header>
       <Modal.Body className="d-grid p-0">
-        <Row className="p-3" style={{ width: 100 + "%" }}>
-          <Col md={8} sm={6}>
-            <Toggle
-              onClick={() => dispatch(toggleFacetBySource())}
-              on="Facet By Source"
-              onClassName="flex-centre"
-              off="Group All Cards Together"
-              offClassName="flex-centre"
-              onstyle="success"
-              offstyle="info"
-              width={100 + "%"}
-              size="md"
-              height={ToggleButtonHeight + "px"}
-              active={facetBySource}
-            />
-          </Col>
-          {facetBySource && (
-            <Col md={4} sm={6}>
-              <div className="d-grid g-0">
-                <Button
-                  onClick={() =>
-                    dispatch(
-                      anySourcesCollapsed
-                        ? makeAllSourcesVisible()
-                        : makeAllSourcesInvisible(sourceKeys)
-                    )
-                  }
-                >
-                  <RightPaddedIcon
-                    bootstrapIconName={`arrows-${
-                      anySourcesCollapsed ? "expand" : "collapse"
-                    }`}
-                  />{" "}
-                  {anySourcesCollapsed ? "Expand" : "Collapse"} All
-                </Button>
-              </div>
+        <Form
+          className="p-3"
+          id="jumpToVersionForm"
+          onSubmit={handleSubmitJumpToVersionForm}
+        >
+          <Row>
+            <h4>Jump to Version</h4>
+            <Col lg={3} md={5}>
+              <Form.Label>Specify Option Number</Form.Label>
+              <Form.Control
+                ref={focusRef}
+                type="number"
+                placeholder="1"
+                value={optionNumber}
+                onChange={(event) =>
+                  setOptionNumber(
+                    event.target.value
+                      ? parseInt(event.target.value)
+                      : undefined
+                  )
+                }
+                disabled={Boolean(imageIdentifier)}
+              />
             </Col>
-          )}
-        </Row>
-        <br />
+            <Col lg={9} md={7}>
+              <Form.Label>Specify ID</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder={imageIdentifiers[0]}
+                value={imageIdentifier}
+                onChange={(event) => setImageIdentifier(event.target.value)}
+                disabled={Boolean(optionNumber)}
+              />
+            </Col>
+          </Row>
+          <div className="d-grid gap-0 pt-3">
+            <Button
+              variant="primary"
+              form="jumpToVersionForm"
+              type="submit"
+              aria-label="jump-to-version-submit"
+              disabled={!versionToJumpToIsValid}
+            >
+              Submit
+            </Button>
+          </div>
+        </Form>
+        <hr />
+        <div className="px-3 pb-3">
+          <Row>
+            <h4>Browse Versions</h4>
+            <Col md={8} sm={6}>
+              <Toggle
+                onClick={() => dispatch(toggleFacetBySource())}
+                on="Facet By Source"
+                onClassName="flex-centre"
+                off="Group All Cards Together"
+                offClassName="flex-centre"
+                onstyle="success"
+                offstyle="info"
+                width={100 + "%"}
+                size="md"
+                height={ToggleButtonHeight + "px"}
+                active={facetBySource}
+              />
+            </Col>
+            {facetBySource && (
+              <Col md={4} sm={6}>
+                <div className="d-grid g-0">
+                  <Button
+                    onClick={() =>
+                      dispatch(
+                        anySourcesCollapsed
+                          ? makeAllSourcesVisible()
+                          : makeAllSourcesInvisible(sourceKeys)
+                      )
+                    }
+                  >
+                    <RightPaddedIcon
+                      bootstrapIconName={`arrows-${
+                        anySourcesCollapsed ? "expand" : "collapse"
+                      }`}
+                    />{" "}
+                    {anySourcesCollapsed ? "Expand" : "Collapse"} All
+                  </Button>
+                </div>
+              </Col>
+            )}
+          </Row>
+        </div>
         {facetBySource ? (
           <CardsFacetedBySource
             cardIdentifiersAndOptionNumbersBySource={
               cardIdentifiersAndOptionNumbersBySource
             }
             selectImage={selectImage}
+            selectedImage={selectedImage}
             sourceNamesByKey={sourceNamesByKey}
           />
         ) : (
@@ -293,6 +433,7 @@ export function GridSelectorModal({
               cardIdentifiersAndOptionNumbersBySource
             }
             selectImage={selectImage}
+            selectedImage={selectedImage}
             sourceNamesByKey={sourceNamesByKey}
           />
         )}

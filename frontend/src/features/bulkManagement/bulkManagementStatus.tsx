@@ -10,22 +10,61 @@ import Button from "react-bootstrap/Button";
 import Dropdown from "react-bootstrap/Dropdown";
 import Stack from "react-bootstrap/Stack";
 
-import { Slots, useAppDispatch, useAppSelector } from "@/common/types";
-import { GridSelectorModal } from "@/features/modals/gridSelectorModal";
+import { Faces, Slots, useAppDispatch, useAppSelector } from "@/common/types";
+import { RightPaddedIcon } from "@/components/icon";
+import { GridSelectorModal } from "@/features/gridSelector/gridSelectorModal";
 import { setSelectedSlotsAndShowModal } from "@/features/modals/modalsSlice";
 import {
-  bulkClearQuery,
-  bulkDeleteSlots,
+  bulkAlignMemberSelection,
   bulkSetMemberSelection,
-  bulkSetSelectedImage,
+  clearQueries,
+  deleteSlots,
   selectAllSelectedProjectMembersHaveTheSameQuery,
+  selectAllSlotsForFace,
   selectSelectedSlots,
+  setSelectedImages,
 } from "@/features/project/projectSlice";
 import { selectSearchResultsForQueryOrDefault } from "@/features/search/searchResultsSlice";
-import { RightPaddedIcon } from "@/features/ui/styledComponents";
+import { selectActiveFace } from "@/features/viewSettings/viewSettingsSlice";
+
+function SelectSimilar({ slot }: { slot: [Faces, number] }) {
+  /**
+   * Clicking this is equivalent to double-clicking a CardSlot's checkbox.
+   * If other slots have the same query as `slot`, clicking this will select them all.
+   */
+
+  const dispatch = useAppDispatch();
+  const onClick = () =>
+    dispatch(bulkAlignMemberSelection({ slot: slot[1], face: slot[0] }));
+  return (
+    <Dropdown.Item onClick={onClick} className="text-decoration-none">
+      <RightPaddedIcon bootstrapIconName="arrows-angle-expand" /> Select Similar
+    </Dropdown.Item>
+  );
+}
+
+function SelectAll() {
+  /**
+   * Clicking this selects all slots in the active face.
+   */
+
+  const dispatch = useAppDispatch();
+
+  const face = useAppSelector(selectActiveFace);
+  const slots = useAppSelector((state) => selectAllSlotsForFace(state, face));
+  const onClick = () =>
+    dispatch(bulkSetMemberSelection({ selectedStatus: true, slots: slots }));
+
+  return (
+    <Dropdown.Item onClick={onClick} className="text-decoration-none">
+      <RightPaddedIcon bootstrapIconName="arrows-fullscreen" /> Select All
+    </Dropdown.Item>
+  );
+}
 
 function ChangeSelectedImageSelectedImages({ slots }: { slots: Slots }) {
   /**
+   * Clicking this brings up the grid selector modal for changing the selected images for multiple slots at once.
    * sorry for the stupid naming convention here 🗿
    */
 
@@ -36,7 +75,7 @@ function ChangeSelectedImageSelectedImages({ slots }: { slots: Slots }) {
   const handleHideModal = () => setShowModal(false);
 
   const handleChangeImages = (selectedImage: string): void => {
-    dispatch(bulkSetSelectedImage({ selectedImage, slots }));
+    dispatch(setSelectedImages({ selectedImage, slots, deselect: true }));
     handleHideModal();
   };
 
@@ -75,6 +114,10 @@ function ChangeSelectedImageSelectedImages({ slots }: { slots: Slots }) {
 }
 
 function ChangeSelectedImageQueries({ slots }: { slots: Slots }) {
+  /**
+   * Clicking this brings up the modal for changing the queries for multiple slots at once.
+   */
+
   const dispatch = useAppDispatch();
 
   const handleShowModal = () => {
@@ -91,8 +134,12 @@ function ChangeSelectedImageQueries({ slots }: { slots: Slots }) {
 }
 
 function ClearSelectedImageQueries({ slots }: { slots: Slots }) {
+  /**
+   * Clicking this clears the queries for multiple slots at once.
+   */
+
   const dispatch = useAppDispatch();
-  const onClick = () => dispatch(bulkClearQuery({ slots }));
+  const onClick = () => dispatch(clearQueries({ slots }));
   return (
     <Dropdown.Item onClick={onClick} className="text-decoration-none">
       <RightPaddedIcon bootstrapIconName="slash-circle" /> Clear Query
@@ -101,10 +148,14 @@ function ClearSelectedImageQueries({ slots }: { slots: Slots }) {
 }
 
 function DeleteSelectedImages({ slots }: { slots: Slots }) {
+  /**
+   * Clicking this deletes multiple slots at once.
+   */
+
   const dispatch = useAppDispatch();
 
   const slotNumbers = slots.map(([face, slot]) => slot);
-  const onClick = () => dispatch(bulkDeleteSlots({ slots: slotNumbers }));
+  const onClick = () => dispatch(deleteSlots({ slots: slotNumbers }));
 
   return (
     <Dropdown.Item onClick={onClick} className="text-decoration-none">
@@ -140,6 +191,9 @@ export function SelectedImagesStatus() {
             <Dropdown>
               <Dropdown.Toggle variant="secondary">Modify</Dropdown.Toggle>
               <Dropdown.Menu>
+                {slots.length === 1 && <SelectSimilar slot={slots[0]} />}
+                <SelectAll />
+                <Dropdown.Divider />
                 <ChangeSelectedImageSelectedImages slots={slots} />
                 <ChangeSelectedImageQueries slots={slots} />
                 <Dropdown.Divider />

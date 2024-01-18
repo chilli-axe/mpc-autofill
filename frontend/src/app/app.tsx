@@ -10,6 +10,7 @@ import styled from "styled-components";
 
 import { NavbarHeight } from "@/common/constants";
 import { useAppDispatch, useAppSelector } from "@/common/types";
+import { NoBackendDefault } from "@/components/noBackendDefault";
 import {
   selectBackendURL,
   useBackendConfigured,
@@ -19,11 +20,13 @@ import { CommonCardback } from "@/features/card/commonCardback";
 import { Export } from "@/features/export/export";
 import { FinishSettings } from "@/features/finishSettings/finishSettings";
 import { Import } from "@/features/import/import";
-import { selectProjectCardback } from "@/features/project/projectSlice";
-import { ProjectStatus } from "@/features/project/projectStatus";
+import {
+  selectIsProjectEmpty,
+  selectProjectCardback,
+} from "@/features/project/projectSlice";
 import { fetchSourceDocumentsAndReportError } from "@/features/search/sourceDocumentsSlice";
 import { SearchSettings } from "@/features/searchSettings/searchSettings";
-import { NoBackendDefault } from "@/features/ui/noBackendDefault";
+import { Status } from "@/features/status/status";
 
 const OverflowCol = styled(Col)`
   position: relative;
@@ -38,15 +41,36 @@ const OverflowCol = styled(Col)`
 
 function App() {
   // TODO: should we periodically ping the backend to make sure it's still alive?
+  //# region queries and hooks
+
+  const dispatch = useAppDispatch();
   const backendConfigured = useBackendConfigured();
   const backendURL = useAppSelector(selectBackendURL);
-  const dispatch = useAppDispatch();
   const cardback = useAppSelector(selectProjectCardback);
+  const isProjectEmpty = useAppSelector(selectIsProjectEmpty);
+
+  //# endregion
+
+  //# region effects
+
   useEffect(() => {
-    if (backendConfigured) {
-      fetchSourceDocumentsAndReportError(dispatch);
-    }
-  }, [dispatch, backendURL]);
+    /**
+     * Ask the user for confirmation before they close the page if their project has any cards in it.
+     */
+
+    const handler = (event: BeforeUnloadEvent) => {
+      if (!isProjectEmpty) {
+        event.preventDefault();
+        return false;
+      }
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => {
+      window.removeEventListener("beforeunload", handler);
+    };
+  }, [isProjectEmpty]);
+
+  //# endregion
 
   return (
     <>
@@ -64,7 +88,7 @@ function App() {
             style={{ zIndex: 1 }}
             className="px-2"
           >
-            <ProjectStatus />
+            <Status />
             <Row className="g-0 pb-3">
               <FinishSettings />
             </Row>

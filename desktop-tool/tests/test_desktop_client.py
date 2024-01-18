@@ -48,7 +48,7 @@ def assert_card_image_collections_identical(a: CardImageCollection, b: CardImage
 
 
 def assert_details_identical(a: Details, b: Details) -> None:
-    assert a.quantity == b.quantity and a.bracket == b.bracket and a.stock == b.stock and a.foil == b.foil
+    assert a.quantity == b.quantity and a.stock == b.stock and a.foil == b.foil
 
 
 def assert_orders_identical(a: CardOrder, b: CardOrder) -> None:
@@ -292,7 +292,6 @@ def details_element_valid():
             """
             <details>
                 <quantity>1</quantity>
-                <bracket>18</bracket>
                 <stock>(S30) Standard Smooth</stock>
                 <foil>false</foil>
             </details>
@@ -302,13 +301,12 @@ def details_element_valid():
 
 
 @pytest.fixture()
-def details_element_quantity_greater_than_bracket() -> Generator[ElementTree.Element, None, None]:
+def details_element_quantity_greater_than_max_size() -> Generator[ElementTree.Element, None, None]:
     yield ElementTree.fromstring(
         textwrap.dedent(
             """
             <details>
-                <quantity>19</quantity>
-                <bracket>18</bracket>
+                <quantity>1900</quantity>
                 <stock>(S30) Standard Smooth</stock>
                 <foil>false</foil>
             </details>
@@ -324,24 +322,7 @@ def details_element_invalid_cardstock() -> Generator[ElementTree.Element, None, 
             """
             <details>
                 <quantity>18</quantity>
-                <bracket>18</bracket>
                 <stock>Invalid Cardstock</stock>
-                <foil>false</foil>
-            </details>
-            """
-        )
-    )
-
-
-@pytest.fixture()
-def details_element_invalid_bracket() -> Generator[ElementTree.Element, None, None]:
-    yield ElementTree.fromstring(
-        textwrap.dedent(
-            """
-            <details>
-                <quantity>18</quantity>
-                <bracket>940</bracket>
-                <stock>(S33) Superior Smooth</stock>
                 <foil>false</foil>
             </details>
             """
@@ -361,7 +342,6 @@ def card_order_element_valid() -> Generator[ElementTree.Element, None, None]:
             <order>
                 <details>
                     <quantity>3</quantity>
-                    <bracket>18</bracket>
                     <stock>(S30) Standard Smooth</stock>
                     <foil>false</foil>
                 </details>
@@ -399,7 +379,6 @@ def card_order_element_multiple_cardbacks() -> Generator[ElementTree.Element, No
             <order>
                 <details>
                     <quantity>4</quantity>
-                    <bracket>18</bracket>
                     <stock>(M31) Linen</stock>
                     <foil>false</foil>
                 </details>
@@ -447,7 +426,6 @@ def card_order_element_invalid_quantity() -> Generator[ElementTree.Element, None
             <order>
                 <details>
                     <quantity>5</quantity>
-                    <bracket>18</bracket>
                     <stock>(S33) Superior Smooth</stock>
                     <foil>true</foil>
                 </details>
@@ -480,7 +458,6 @@ def card_order_element_missing_front_image() -> Generator[ElementTree.Element, N
             <order>
                 <details>
                     <quantity>4</quantity>
-                    <bracket>18</bracket>
                     <stock>(S30) Standard Smooth</stock>
                     <foil>false</foil>
                 </details>
@@ -630,25 +607,19 @@ def test_details_valid(details_element_valid):
     details = Details.from_element(details_element_valid)
     assert_details_identical(
         details,
-        Details(quantity=1, bracket=18, stock=constants.Cardstocks.S30, foil=False),
+        Details(quantity=1, stock=constants.Cardstocks.S30, foil=False),
     )
 
 
-def test_details_quantity_greater_than_bracket(input_enter, details_element_quantity_greater_than_bracket):
+def test_details_quantity_greater_than_max_size(input_enter, details_element_quantity_greater_than_max_size):
     with pytest.raises(SystemExit) as exc_info:
-        Details.from_element(details_element_quantity_greater_than_bracket)
+        Details.from_element(details_element_quantity_greater_than_max_size)
     assert exc_info.value.code == 0
 
 
 def test_details_invalid_cardstock(input_enter, details_element_invalid_cardstock):
     with pytest.raises(SystemExit) as exc_info:
         Details.from_element(details_element_invalid_cardstock)
-    assert exc_info.value.code == 0
-
-
-def test_details_invalid_bracket(input_enter, details_element_invalid_bracket):
-    with pytest.raises(SystemExit) as exc_info:
-        Details.from_element(details_element_invalid_bracket)
     assert exc_info.value.code == 0
 
 
@@ -663,7 +634,6 @@ def test_card_order_valid(card_order_valid):
         CardOrder(
             details=Details(
                 quantity=3,
-                bracket=18,
                 stock=constants.Cardstocks.S30,
                 foil=False,
             ),
@@ -710,7 +680,6 @@ def test_card_order_multiple_cardbacks(card_order_multiple_cardbacks):
         CardOrder(
             details=Details(
                 quantity=4,
-                bracket=18,
                 stock=constants.Cardstocks.M31,
                 foil=False,
             ),
@@ -767,7 +736,6 @@ def test_card_order_valid_from_file():
         CardOrder(
             details=Details(
                 quantity=10,
-                bracket=18,
                 stock=constants.Cardstocks.S30,
                 foil=True,
             ),
@@ -889,9 +857,18 @@ def test_pdf_export_complete_separate_faces(monkeypatch, card_order_valid):
 # region test driver.py
 
 
-@pytest.mark.parametrize("browser", [constants.Browsers.chrome])
-def test_card_order_complete_run_single_cardback(browser, input_enter, card_order_valid):
-    autofill_driver = AutofillDriver(order=card_order_valid, browser=browser, headless=True)
+@pytest.mark.flaky(retries=3, delay=1)
+@pytest.mark.parametrize("browser", [constants.Browsers.chrome, constants.Browsers.edge])
+@pytest.mark.parametrize(
+    "site",
+    [
+        constants.TargetSites.MakePlayingCards,
+        constants.TargetSites.PrinterStudio,
+        constants.TargetSites.PrinterStudioDE,
+    ],
+)
+def test_card_order_complete_run_single_cardback(browser, site, input_enter, card_order_valid):
+    autofill_driver = AutofillDriver(order=card_order_valid, browser=browser, target_site=site, headless=True)
     autofill_driver.execute(skip_setup=False, auto_save_threshold=None, post_processing_config=DEFAULT_POST_PROCESSING)
     assert (
         len(
@@ -903,9 +880,20 @@ def test_card_order_complete_run_single_cardback(browser, input_enter, card_orde
     )
 
 
+@pytest.mark.flaky(retries=3, delay=1)
 @pytest.mark.parametrize("browser", [constants.Browsers.chrome, constants.Browsers.edge])
-def test_card_order_complete_run_multiple_cardbacks(browser, input_enter, card_order_multiple_cardbacks):
-    autofill_driver = AutofillDriver(order=card_order_multiple_cardbacks, browser=browser, headless=True)
+@pytest.mark.parametrize(
+    "site",
+    [
+        constants.TargetSites.MakePlayingCards,
+        constants.TargetSites.PrinterStudio,
+        constants.TargetSites.PrinterStudioDE,
+    ],
+)
+def test_card_order_complete_run_multiple_cardbacks(browser, site, input_enter, card_order_multiple_cardbacks):
+    autofill_driver = AutofillDriver(
+        order=card_order_multiple_cardbacks, browser=browser, target_site=site, headless=True
+    )
     autofill_driver.execute(skip_setup=False, auto_save_threshold=None, post_processing_config=DEFAULT_POST_PROCESSING)
     assert (
         len(

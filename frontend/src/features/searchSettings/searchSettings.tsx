@@ -21,6 +21,7 @@ import {
   useAppDispatch,
   useAppSelector,
 } from "@/common/types";
+import { RightPaddedIcon } from "@/components/icon";
 import { selectSourceDocuments } from "@/features/search/sourceDocumentsSlice";
 import { FilterSettings as FilterSettingsElement } from "@/features/searchSettings/filterSettings";
 import {
@@ -31,7 +32,6 @@ import {
 } from "@/features/searchSettings/searchSettingsSlice";
 import { SearchTypeSettings as SearchTypeSettingsElement } from "@/features/searchSettings/searchTypeSettings";
 import { SourceSettings as SourceSettingsElement } from "@/features/searchSettings/sourceSettings";
-import { RightPaddedIcon } from "@/features/ui/styledComponents";
 
 export function SearchSettings() {
   const dispatch = useAppDispatch();
@@ -47,18 +47,6 @@ export function SearchSettings() {
     useState<SourceSettings>(globalSearchSettings.sourceSettings);
   const [localFilterSettings, setLocalFilterSettings] =
     useState<FilterSettings>(globalSearchSettings.filterSettings);
-
-  const maybeSourceDocuments = useAppSelector(selectSourceDocuments);
-
-  useEffect(() => {
-    if (maybeSourceDocuments != null) {
-      const localStorageSettings =
-        getLocalStorageSearchSettings(maybeSourceDocuments);
-      dispatch(setSearchTypeSettings(localStorageSettings.searchTypeSettings));
-      dispatch(setSourceSettings(localStorageSettings.sourceSettings));
-      dispatch(setFilterSettings(localStorageSettings.filterSettings));
-    }
-  }, [dispatch, maybeSourceDocuments]);
 
   // modal management functions
   const handleClose = () => setShow(false);

@@ -5,19 +5,22 @@
 import { toByteArray } from "base64-js";
 
 import {
+  Card,
   Cardback,
   CardTypePrefixes,
   CardTypeSeparator,
   FaceSeparator,
   ProjectMaxSize,
+  ReversedCardTypePrefixes,
   SelectedImageSeparator,
+  Token,
 } from "@/common/constants";
 import {
+  CardDocument,
   DFCPairs,
   ProcessedLine,
   ProjectMember,
   SearchQuery,
-  SearchSettings,
   SlotProjectMembers,
 } from "@/common/types";
 
@@ -278,3 +281,26 @@ export function formatURL(backendURL: string, routeURL: string): string {
 export function base64StringToBlob(base64: string): Blob {
   return new Blob([toByteArray(base64)]);
 }
+
+export const formatPlaceholderText = (placeholders: {
+  [cardType: string]: Array<CardDocument>;
+}): string => {
+  const separator = "\n";
+  const placeholderTextByCardType: Array<string> = [];
+
+  for (const cardType of [Card, Token, Cardback]) {
+    if (placeholders[cardType] != null) {
+      placeholderTextByCardType.push(
+        placeholders[cardType]
+          .map(
+            (x) =>
+              `${Math.floor(Math.random() * 3) + 1}x ${
+                ReversedCardTypePrefixes[cardType]
+              }${stripTextInParentheses(x.name)}`
+          )
+          .join(separator)
+      );
+    }
+  }
+  return placeholderTextByCardType.join(separator + separator);
+};

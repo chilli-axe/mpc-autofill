@@ -2,12 +2,10 @@ const path = require("path");
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  experimental: {
-    appDir: false,
-  },
   output: "export",
   images: { unoptimized: true },
-  compiler: { reactStrictMode: true, styledComponents: true },
+  compiler: { styledComponents: true },
+  reactStrictMode: true,
 
   // the below config for why did you render was retrieved from https://stackoverflow.com/a/72400455/13021511
   webpack(config, { dev, isServer }) {

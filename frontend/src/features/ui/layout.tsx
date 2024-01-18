@@ -1,3 +1,4 @@
+import { Queue } from "async-await-queue";
 import { useRouter } from "next/router";
 import { GoogleAnalytics } from "nextjs-google-analytics";
 import React, { useEffect } from "react";
@@ -16,6 +17,10 @@ import {
 import { standardiseURL } from "@/common/processing";
 import { useAppDispatch } from "@/common/types";
 import { setURL, useBackendConfigured } from "@/features/backend/backendSlice";
+import {
+  DownloadContext,
+  DownloadContextProvider,
+} from "@/features/download/downloadImages";
 import { Modals } from "@/features/modals/modals";
 import { Toasts } from "@/features/toasts/toasts";
 import ProjectNavbar from "@/features/ui/navbar";
@@ -31,7 +36,10 @@ function BackendSetter() {
   const dispatch = useAppDispatch();
   const backendConfigured = useBackendConfigured();
   useEffect(() => {
-    if (!backendConfigured && formattedURL != null) {
+    if (process.env.NEXT_PUBLIC_BACKEND_URL != null) {
+      dispatch(setURL(process.env.NEXT_PUBLIC_BACKEND_URL));
+      setLocalStorageBackendURL(process.env.NEXT_PUBLIC_BACKEND_URL);
+    } else if (formattedURL != null) {
       dispatch(setURL(formattedURL));
       setLocalStorageBackendURL(formattedURL);
       if (server != null && typeof server == "string" && server.length > 0) {
@@ -82,17 +90,20 @@ export function ProjectContainer({
   );
 }
 
-export function LayoutWithoutProvider({ children }: PropsWithChildren) {
+export function LayoutWithoutReduxProvider({ children }: PropsWithChildren) {
   const consent = getGoogleAnalyticsConsent();
+  const downloadContext: DownloadContext = new Queue(3, 100);
   return (
-    <>
-      {consent === true && <GoogleAnalytics trackPageViews />}
+    <DownloadContextProvider value={downloadContext}>
+      {consent === true && (
+        <GoogleAnalytics trackPageViews gaMeasurementId="G-JV8WV3FQML" />
+      )}
       <Toasts />
       <Modals />
       <BackendSetter />
       <ProjectNavbar />
       {children}
-    </>
+    </DownloadContextProvider>
   );
 }
 
@@ -101,7 +112,7 @@ export default function Layout({ children }: PropsWithChildren) {
     <>
       <SSRProvider>
         <OverscrollProvider store={store}>
-          <LayoutWithoutProvider>{children}</LayoutWithoutProvider>
+          <LayoutWithoutReduxProvider>{children}</LayoutWithoutReduxProvider>
         </OverscrollProvider>
       </SSRProvider>
     </>

@@ -11,8 +11,7 @@ import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import Offcanvas from "react-bootstrap/Offcanvas";
 
-import { api } from "@/app/api";
-import { ProjectName, QueryTags } from "@/common/constants";
+import { ProjectName } from "@/common/constants";
 import {
   clearLocalStorageBackendURL,
   getLocalStorageBackendURL,
@@ -20,21 +19,13 @@ import {
 } from "@/common/cookies";
 import { standardiseURL } from "@/common/processing";
 import { useAppDispatch, useAppSelector } from "@/common/types";
+import { RightPaddedIcon } from "@/components/icon";
 import {
   clearURL,
   selectBackendURL,
   setURL,
 } from "@/features/backend/backendSlice";
-import { RightPaddedIcon } from "@/features/ui/styledComponents";
 require("bootstrap-icons/font/bootstrap-icons.css");
-
-interface BackendConfigProps {
-  show: boolean;
-  handleClose: {
-    (): void;
-    (event: React.MouseEvent<HTMLButtonElement, MouseEvent>): void;
-  };
-}
 
 enum ValidationState {
   IN_PROGRESS = "record-circle-fill",
@@ -86,24 +77,38 @@ async function searchEngineHealthCheck(url: string): Promise<boolean> {
   return outcome;
 }
 
+interface BackendConfigProps {
+  show: boolean;
+  handleClose: {
+    (): void;
+    (event: React.MouseEvent<HTMLButtonElement, MouseEvent>): void;
+  };
+}
+
 export function BackendConfig({ show, handleClose }: BackendConfigProps) {
+  //# region queries and hooks
   const dispatch = useAppDispatch();
+  const backendURL = useAppSelector(selectBackendURL);
+
+  //# endregion
+
+  //# region state
 
   const [validationStatus, setValidationStatus] = useState<
     Array<ValidationState>
   >([]);
   const [validating, setValidating] = useState<boolean>(false);
+  const [localBackendURL, setLocalBackendURL] = useState<string>("");
 
-  const backendURL = useAppSelector(selectBackendURL);
+  //# endregion
+
+  //# region callbacks
+
   const clearBackendURL = () => {
     dispatch(clearURL());
     clearLocalStorageBackendURL();
-    dispatch(api.util.invalidateTags([QueryTags.BackendSpecific]));
     setValidationStatus([]);
   };
-
-  const [localBackendURL, setLocalBackendURL] = useState<string>("");
-
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault(); // to avoid reloading the page
     setValidating(true);
@@ -138,24 +143,23 @@ export function BackendConfig({ show, handleClose }: BackendConfigProps) {
     ) {
       dispatch(setURL(formattedURL));
       setLocalStorageBackendURL(formattedURL);
-      dispatch(api.util.invalidateTags([QueryTags.BackendSpecific]));
       setLocalBackendURL("");
     }
     setValidating(false);
   };
 
-  useEffect(() => {
-    /**
-     * TODO: This could be turned into a Redux listener. The reason I haven't done so here is because it's a bit funky
-     *       in terms of how it interacts with pre-loading the Redux state in tests with a backend URL.
-     */
+  //# endregion
 
+  //# region effects
+
+  useEffect(() => {
     const localStorageBackendURL = getLocalStorageBackendURL();
     if (localStorageBackendURL != undefined) {
       dispatch(setURL(localStorageBackendURL));
-      dispatch(api.util.invalidateTags([QueryTags.BackendSpecific]));
     }
   }, [dispatch]);
+
+  //# endregion
 
   return (
     <Offcanvas show={show} onHide={handleClose} data-testid="backend-offcanvas">

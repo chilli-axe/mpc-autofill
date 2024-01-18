@@ -1,7 +1,7 @@
 import { screen } from "@testing-library/react";
 
 import App from "@/app/app";
-import { cardDocument1, localBackend } from "@/common/test-constants";
+import { cardDocument1 } from "@/common/test-constants";
 import {
   expectCardbackSlotState,
   renderWithProviders,
@@ -27,7 +27,6 @@ test("the html structure of a CommonCardback with a single search result", async
 
   renderWithProviders(<App />, {
     preloadedState: {
-      backend: localBackend,
       project: { members: [], cardback: null },
     },
   });
@@ -46,7 +45,6 @@ test("the html structure of a CommonCardback with multiple search results", asyn
 
   renderWithProviders(<App />, {
     preloadedState: {
-      backend: localBackend,
       project: { members: [], cardback: null },
     },
   });
