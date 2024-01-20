@@ -21,9 +21,9 @@ export function ViewSettings() {
   return (
     <Toggle
       onClick={() => dispatch(toggleFaces())}
-      on="Show Fronts"
+      on="Switch to Backs"
       onClassName="flex-centre"
-      off="Show Backs"
+      off="Switch to Fronts"
       offClassName="flex-centre"
       onstyle="info"
       offstyle="info"
