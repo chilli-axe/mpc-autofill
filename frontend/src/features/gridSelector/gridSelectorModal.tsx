@@ -110,6 +110,8 @@ function CardsGroupedTogether({
               <RenderIfVisible
                 key={`gridSelector-${identifier}-wrapper`}
                 initialVisible={index < 20}
+                visibleOffset={500}
+                stayRendered
               >
                 <CardGridCard
                   identifier={identifier}
