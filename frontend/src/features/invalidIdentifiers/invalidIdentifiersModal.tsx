@@ -42,7 +42,7 @@ export function InvalidIdentifiersModal({
               undefined,
             ];
             return [
-              slot,
+              slot + 1, // from the user's perspective, slot numbers are 1-indexed
               toTitleCase(face),
               searchQuery ? (
                 <ClickToCopy text={stringifySearchQuery(searchQuery)} />
