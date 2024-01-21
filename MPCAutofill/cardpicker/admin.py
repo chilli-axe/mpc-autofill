@@ -7,21 +7,25 @@ from .models import Card, DFCPair, Project, ProjectMember, Source, Tag
 @admin.register(Tag)
 class AdminTag(admin.ModelAdmin[Tag]):
     list_display = ("name",)
+    search_fields = ("name",)
 
 
 @admin.register(Card)
 class AdminCard(admin.ModelAdmin[Card]):
     list_display = ("identifier", "name", "source", "dpi", "date", "tags")
+    search_fields = ("identifier", "name")
 
 
 @admin.register(DFCPair)
 class AdminDFCPair(admin.ModelAdmin[DFCPair]):
     list_display = ("front", "back")
+    search_fields = ("front",)
 
 
 @admin.register(Source)
 class AdminSource(admin.ModelAdmin[Source]):
     list_display = ("name", "identifier", "contribution", "description")
+    search_fields = ("name", "identifier")
 
     def contribution(self, obj: Source) -> str:
         qty_all, qty_cards, qty_cardbacks, qty_tokens, avgdpi = obj.count()
