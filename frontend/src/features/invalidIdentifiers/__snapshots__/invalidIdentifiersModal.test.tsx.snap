@@ -109,36 +109,6 @@ exports[`invalidIdentifiersModal displays the appropriate data 1`] = `
             <td
               class="c3"
             >
-              0
-            </td>
-            <td
-              class="c3"
-            >
-              Front
-            </td>
-            <td
-              class="c3"
-            >
-              <code
-                class="c4"
-              >
-                query 1
-              </code>
-            </td>
-            <td
-              class="c3"
-            >
-              <code
-                class="c4"
-              >
-                123
-              </code>
-            </td>
-          </tr>
-          <tr>
-            <td
-              class="c3"
-            >
               1
             </td>
             <td
@@ -170,6 +140,36 @@ exports[`invalidIdentifiersModal displays the appropriate data 1`] = `
               class="c3"
             >
               2
+            </td>
+            <td
+              class="c3"
+            >
+              Front
+            </td>
+            <td
+              class="c3"
+            >
+              <code
+                class="c4"
+              >
+                query 1
+              </code>
+            </td>
+            <td
+              class="c3"
+            >
+              <code
+                class="c4"
+              >
+                123
+              </code>
+            </td>
+          </tr>
+          <tr>
+            <td
+              class="c3"
+            >
+              3
             </td>
             <td
               class="c3"

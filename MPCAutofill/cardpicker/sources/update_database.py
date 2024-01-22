@@ -20,7 +20,10 @@ DPI_HEIGHT_RATIO = 300 / 1110  # 300 DPI for image of vertical resolution 1110 p
 
 
 def add_images_in_folder_to_list(source_type: Type[SourceType], folder: Folder, images: deque[Image]) -> None:
-    images.extend(source_type.get_all_images_inside_folder(folder))
+    try:
+        images.extend(source_type.get_all_images_inside_folder(folder))
+    except Exception as e:
+        print(f"Uncaught exception while adding images in folder to list: **{e}**")
 
 
 def explore_folder(source: Source, source_type: Type[SourceType], root_folder: Folder) -> list[Image]:
@@ -59,6 +62,7 @@ def transform_images_into_objects(source: Source, images: list[Image], tags: Tag
     card_count = 0
     cardback_count = 0
     token_count = 0
+    errors: list[str] = []  # report on all exceptions at the end
 
     for image in images:
         try:
@@ -115,12 +119,23 @@ def transform_images_into_objects(source: Source, images: list[Image], tags: Tag
                 )
             )
         except AssertionError as e:
-            print(f"Skipping image **{image.name}** (identifier **{image.id}**) for the following reason: **{e}**")
+            errors.append(
+                f"Assertion error while processing **{image.name}** (identifier **{image.id}**) will not be indexed "
+                f"for the following reason: **{e}**"
+            )
+        except Exception as e:
+            errors.append(
+                f"Uncaught exception while processing image **{image.name}** (identifier **{image.id}**): **{e}**"
+            )
     print(
         f" and done! Generated {TEXT_BOLD}{card_count:,}{TEXT_END} card/s, {TEXT_BOLD}{cardback_count:,}{TEXT_END} "
         f"cardback/s, and {TEXT_BOLD}{token_count:,}{TEXT_END} token/s in "
         f"{TEXT_BOLD}{(time.time() - t0):.2f}{TEXT_END} seconds."
     )
+    if errors:
+        print("The following cards failed to process:", flush=True)
+        for error in errors:
+            print(f"* {error}", flush=True)
 
     return cards
 
