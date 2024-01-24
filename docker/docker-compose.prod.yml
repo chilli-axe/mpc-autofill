@@ -24,6 +24,14 @@ services:
     depends_on:
       - postgres
       - elasticsearch
+    environment:
+      # Do not change these variables
+      - DATABASE_HOST=postgres
+      - ELASTICSEARCH_HOST=elasticsearch
+      - DEBUG=False
+      - ALLOWED_HOSTS=django-api
+      # These variables may be customised
+      - GAME=MTG
 
   # nginx serving the frontend
   nginx:
@@ -33,7 +41,7 @@ services:
       context: ..
       dockerfile: ./docker/nginx/Dockerfile
     ports:
-      - "${FRONTEND_PORT}:80"
+      - "80:80" # TODO: support ports other than 80
 
   postgres:
     expose:

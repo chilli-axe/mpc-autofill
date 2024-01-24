@@ -19,12 +19,6 @@ RUN apt-get update && \
 RUN rm -rf /etc/cron.*/* && \
     chmod u+s /usr/sbin/cron
 
-# Configure apt with node 18
-RUN curl -sL https://deb.nodesource.com/setup_18.x | bash -
-
-# Install node and npm
-RUN apt-get install -y nodejs
-
 # Copy requirements.txt
 COPY MPCAutofill/requirements.txt /MPCAutofill/
 WORKDIR /MPCAutofill
@@ -33,14 +27,19 @@ WORKDIR /MPCAutofill
 RUN pip3 install gunicorn wheel
 RUN pip3 install -r requirements.txt
 
-# Copy frontend files from repository
-COPY MPCAutofill/cardpicker/frontend /MPCAutofill/cardpicker/frontend
-COPY MPCAutofill/package.json /MPCAutofill/package.json
-COPY MPCAutofill/package-lock.json /MPCAutofill/package-lock.json
-
 # Copy relevant files from repository
 COPY docker /MPCAutofill/docker
+COPY common /MPCAutofill/common
 COPY MPCAutofill /MPCAutofill/MPCAutofill
+
+# Handle environment variables - write out `.env` with the variables passed from the
+# compose file (and overwrite `.env` as copied from the host machine in the process)
+RUN touch /MPCAutofill/MPCAutofill/MPCAutofill/.env
+RUN echo "DATABASE_HOST=$DATABASE_HOST" > /MPCAutofill/MPCAutofill/MPCAutofill/.env  # using > to overwrite the file
+RUN echo "ELASTICSEARCH_HOST=$ELASTICSEARCH_HOST" >> /MPCAutofill/MPCAutofill/MPCAutofill/.env
+RUN echo "DEBUG=$DEBUG" >> /MPCAutofill/MPCAutofill/MPCAutofill/.env
+RUN echo "ALLOWED_HOSTS=$ALLOWED_HOSTS" >> /MPCAutofill/MPCAutofill/MPCAutofill/.env
+RUN echo "GAME=$GAME" >> /MPCAutofill/MPCAutofill/MPCAutofill/.env
 
 # Make sure that all scripts are executable, and in case we
 # checked out under Windows with CRLF, convert line endings
