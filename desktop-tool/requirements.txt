@@ -6,7 +6,7 @@ defusedxml~=0.7.1
 enlighten~=1.11.2
 fpdf2~=2.7.4
 InquirerPy~=0.3.4
-pillow==10.0.1
+pillow==10.2.0
 pre-commit
 pyinstaller~=5.13.0
 pytest~=7.3

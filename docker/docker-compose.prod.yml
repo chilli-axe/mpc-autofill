@@ -7,6 +7,8 @@
 # Many code templates and inspirations are taken from blog post:
 # https://testdriven.io/blog/dockerizing-django-with-postgres-gunicorn-and-nginx/
 
+# Run this file with compose by specifying this file and the base compose file:
+# docker compose -f docker-compose.prod.yml -f docker-compose.yml up
 version: "3.4"
 
 services:
