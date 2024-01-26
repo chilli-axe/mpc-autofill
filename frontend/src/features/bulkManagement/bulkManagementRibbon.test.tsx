@@ -16,6 +16,7 @@ import {
   changeImageForSelectedImages,
   changeQueryForSelectedImages,
   clearQueriesForSelectedImages,
+  clickMoreSelectOptionsDropdown,
   deleteSelectedImages,
   deselectSlot,
   expectCardbackSlotState,
@@ -203,7 +204,7 @@ test("cannot change the images of multiple selected images when they don't share
   await selectSlot(1, Front);
   await selectSlot(2, Front);
 
-  screen.getByText("Modify").click();
+  clickMoreSelectOptionsDropdown();
   await waitFor(() =>
     expect(screen.queryByText("Change Version")).not.toBeInTheDocument()
   );

@@ -30,6 +30,7 @@ export const Back: Faces = "back";
 
 export const ToggleButtonHeight = 38; // pixels
 export const NavbarHeight = 50; // pixels - aligns with the natural height of the navbar
+export const RibbonHeight = 54; // pixels
 export const NavbarLogoHeight = 40; // pixels
 export const ContentMaxWidth = 1200; // pixels - aligns with bootstrap's large breakpoint
 
