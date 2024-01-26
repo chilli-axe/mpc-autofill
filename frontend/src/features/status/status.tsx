@@ -9,7 +9,6 @@ import { SearchStatus } from "@/features/search/searchStatus";
 export function Status() {
   return (
     <>
-      <h2>Edit Project</h2>
       <MobileStatus />
       <SearchStatus />
       <SelectedImagesStatus />
