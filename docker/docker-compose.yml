@@ -28,9 +28,9 @@ services:
       - discovery.type=single-node
       - logger.level=WARN
     volumes:
-      - elaticsearch_data:/usr/share/elasticsearch/data
+      - elasticsearch_data:/usr/share/elasticsearch/data
 
 # Persistent storage for containers
 volumes:
   postgres_data:
-  elaticsearch_data:
+  elasticsearch_data:

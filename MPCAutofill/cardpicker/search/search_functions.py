@@ -268,7 +268,7 @@ class SearchSettings:
         """
 
         cardbacks: list[str]
-        order_by = ["-priority", "source__name", "name"]
+        order_by = ["-priority", "source__ordinal", "source__name", "name"]
         if self.filter_cardbacks:
             # afaik, `~Q(pk__in=[])` is the best way to have an always-true filter
             language_filter = (

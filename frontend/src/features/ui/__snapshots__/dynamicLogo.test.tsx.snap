@@ -42,6 +42,7 @@ exports[`the html structure of the dynamic logo, backend configured 1`] = `
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
+  color: white;
 }
 
 .c2 {
@@ -274,6 +275,7 @@ exports[`the html structure of the dynamic logo, no backend configured 1`] = `
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
+  color: white;
 }
 
 .c2 {

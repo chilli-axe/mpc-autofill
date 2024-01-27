@@ -107,13 +107,25 @@ export function ImportURL() {
 
   //# endregion
 
-  return importSitesQuery.isFetching ||
-    (importSitesQuery.data ?? []).length === 0 ? (
-    <></>
-  ) : (
+  if (
+    !importSitesQuery.isFetching &&
+    (importSitesQuery.data ?? []).length === 0
+  ) {
+    return null;
+  }
+  return (
     <>
-      <Dropdown.Item onClick={handleShowURLModal}>
-        <RightPaddedIcon bootstrapIconName="link-45deg" /> URL
+      <Dropdown.Item
+        onClick={handleShowURLModal}
+        disabled={importSitesQuery.isFetching}
+      >
+        {importSitesQuery.isFetching ? (
+          <Spinner size={1.5} />
+        ) : (
+          <>
+            <RightPaddedIcon bootstrapIconName="link-45deg" /> URL
+          </>
+        )}
       </Dropdown.Item>
       <Modal
         scrollable

@@ -7,6 +7,8 @@
 # Many code templates and inspirations are taken from blog post:
 # https://testdriven.io/blog/dockerizing-django-with-postgres-gunicorn-and-nginx/
 
+# Run this file with compose by specifying this file and the base compose file:
+# docker compose -f docker-compose.prod.yml -f docker-compose.yml up
 version: "3.4"
 
 services:
@@ -22,6 +24,14 @@ services:
     depends_on:
       - postgres
       - elasticsearch
+    environment:
+      # Do not change these variables
+      - DATABASE_HOST=postgres
+      - ELASTICSEARCH_HOST=elasticsearch
+      - DEBUG=False
+      - ALLOWED_HOSTS=django-api
+      # These variables may be customised
+      - GAME=MTG
 
   # nginx serving the frontend
   nginx:
@@ -31,7 +41,7 @@ services:
       context: ..
       dockerfile: ./docker/nginx/Dockerfile
     ports:
-      - "${FRONTEND_PORT}:80"
+      - "80:80" # TODO: support ports other than 80
 
   postgres:
     expose:

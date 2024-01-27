@@ -18,7 +18,6 @@ until curl --silent --output /dev/null http://elasticsearch:9200/_cat/health?h=s
 done
 
 # Gather static files
-npm install && npm run build
 python3 manage.py collectstatic --noinput
 
 # Check if we are running for the first time

@@ -33,24 +33,19 @@ export function InvalidIdentifiersModal({
 
   const headers = ["Slot", "Face", "Query", "Identifier"];
   const data = invalidIdentifiers.flatMap((row, slot) =>
-    row != null
-      ? [Front, Back]
-          .filter((face) => row[face] != null)
-          .map((face) => {
-            const [searchQuery, identifier] = row[face] ?? [
-              undefined,
-              undefined,
-            ];
-            return [
-              slot,
-              toTitleCase(face),
-              searchQuery ? (
-                <ClickToCopy text={stringifySearchQuery(searchQuery)} />
-              ) : undefined,
-              identifier ? <ClickToCopy text={identifier} /> : undefined,
-            ];
-          })
-      : []
+    [Front, Back]
+      .filter((face) => row[face] != null)
+      .map((face) => {
+        const [searchQuery, identifier] = row[face] ?? [undefined, undefined];
+        return [
+          slot + 1, // from the user's perspective, slot numbers are 1-indexed
+          toTitleCase(face),
+          searchQuery ? (
+            <ClickToCopy text={stringifySearchQuery(searchQuery)} />
+          ) : undefined,
+          identifier ? <ClickToCopy text={identifier} /> : undefined,
+        ];
+      })
   );
   return (
     <Modal scrollable show={show} onHide={handleClose}>
