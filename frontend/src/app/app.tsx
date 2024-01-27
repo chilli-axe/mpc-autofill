@@ -8,13 +8,11 @@ import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
 import styled from "styled-components";
 
-import { NavbarHeight } from "@/common/constants";
-import { useAppDispatch, useAppSelector } from "@/common/types";
+import { NavbarHeight, RibbonHeight } from "@/common/constants";
+import { useAppSelector } from "@/common/types";
 import { NoBackendDefault } from "@/components/noBackendDefault";
-import {
-  selectBackendURL,
-  useBackendConfigured,
-} from "@/features/backend/backendSlice";
+import { useBackendConfigured } from "@/features/backend/backendSlice";
+import { SelectedImagesRibbon } from "@/features/bulkManagement/bulkManagementRibbon";
 import { CardGrid } from "@/features/card/cardGrid";
 import { CommonCardback } from "@/features/card/commonCardback";
 import { Export } from "@/features/export/export";
@@ -24,16 +22,20 @@ import {
   selectIsProjectEmpty,
   selectProjectCardback,
 } from "@/features/project/projectSlice";
-import { fetchSourceDocumentsAndReportError } from "@/features/search/sourceDocumentsSlice";
 import { SearchSettings } from "@/features/searchSettings/searchSettings";
 import { Status } from "@/features/status/status";
 
+const FixedHeightRow = styled(Row)`
+  height: ${RibbonHeight}px;
+  box-shadow: 0 -1px 0 rgb(255, 255, 255, 50%) inset;
+`;
+
 const OverflowCol = styled(Col)`
   position: relative;
-  height: calc(
-    100vh - ${NavbarHeight}px
-  ); // for compatibility with older browsers
-  height: calc(100dvh - ${NavbarHeight}px); // handles the ios address bar
+  // define height twice - first as a fallback for older browser compatibility,
+  // then using dvh to account for the ios address bar
+  height: calc(100vh - ${NavbarHeight}px - ${RibbonHeight}px);
+  height: calc(100dvh - ${NavbarHeight}px - ${RibbonHeight}px);
   overflow-y: scroll;
   overscroll-behavior: none;
   scrollbar-width: thin;
@@ -43,9 +45,7 @@ function App() {
   // TODO: should we periodically ping the backend to make sure it's still alive?
   //# region queries and hooks
 
-  const dispatch = useAppDispatch();
   const backendConfigured = useBackendConfigured();
-  const backendURL = useAppSelector(selectBackendURL);
   const cardback = useAppSelector(selectProjectCardback);
   const isProjectEmpty = useAppSelector(selectIsProjectEmpty);
 
@@ -76,6 +76,9 @@ function App() {
     <>
       {backendConfigured ? (
         <Row className="g-0">
+          <FixedHeightRow className="g-0">
+            <SelectedImagesRibbon />
+          </FixedHeightRow>
           <OverflowCol lg={8} md={8} sm={6} xs={6} data-testid="left-panel">
             <CardGrid />
           </OverflowCol>
