@@ -47,6 +47,7 @@ const DynamicLogoLabel = styled.p`
   text-shadow: 0 4px 15px #000000;
   white-space: nowrap;
   user-select: none;
+  color: white;
 `;
 
 const DynamicLogoArrowKeyframes = keyframes`
@@ -262,7 +263,10 @@ export function DynamicLogo() {
     ]
   > = [
     [
-      sampleCardsQuery.isSuccess ? sampleCardsQuery.data["TOKEN"][0] : null,
+      sampleCardsQuery.isSuccess
+        ? sampleCardsQuery.data["TOKEN"][0] ??
+          sampleCardsQuery.data["CARDBACK"][0]
+        : null,
       FirstImageTransformWrapper,
     ],
     [
