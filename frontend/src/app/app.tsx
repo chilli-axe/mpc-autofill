@@ -89,13 +89,13 @@ function App() {
             className="px-2"
           >
             <Status />
-            <Row className="g-0 pb-3">
+            <Row className="g-0 pt-2">
               <FinishSettings />
             </Row>
-            <Row className="g-0">
+            <Row className="g-0 pt-2">
               <SearchSettings />
             </Row>
-            <Row className="g-0 py-3">
+            <Row className="g-0 py-2">
               <Col lg={6} md={12} sm={12} xs={12}>
                 <Import />
               </Col>

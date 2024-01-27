@@ -2,6 +2,7 @@ import Alert from "react-bootstrap/Alert";
 import Button from "react-bootstrap/Button";
 
 import { useAppDispatch, useAppSelector } from "@/common/types";
+import { Jumbotron } from "@/components/jumbotron";
 import {
   selectInvalidIdentifiers,
   selectInvalidIdentifiersCount,
@@ -29,7 +30,7 @@ export function InvalidIdentifiersStatus() {
   //# endregion
 
   return areAnyIdentifiersInvalid ? (
-    <Alert variant="primary">
+    <Jumbotron variant="primary">
       <p>
         Your project specified <b>{invalidIdentifierCount}</b> card version
         {invalidIdentifierCount != 1 ? "s" : ""} which couldn&apos;t be found.
@@ -39,8 +40,6 @@ export function InvalidIdentifiersStatus() {
           Review Invalid Cards
         </Button>
       </div>
-    </Alert>
-  ) : (
-    <></>
-  );
+    </Jumbotron>
+  ) : null;
 }

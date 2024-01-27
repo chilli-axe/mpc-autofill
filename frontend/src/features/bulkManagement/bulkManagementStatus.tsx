@@ -12,6 +12,7 @@ import Stack from "react-bootstrap/Stack";
 
 import { Faces, Slots, useAppDispatch, useAppSelector } from "@/common/types";
 import { RightPaddedIcon } from "@/components/icon";
+import { Jumbotron } from "@/components/jumbotron";
 import { GridSelectorModal } from "@/features/gridSelector/gridSelectorModal";
 import { setSelectedSlotsAndShowModal } from "@/features/modals/modalsSlice";
 import {
@@ -172,38 +173,36 @@ export function SelectedImagesStatus() {
     dispatch(bulkSetMemberSelection({ selectedStatus: false, slots }));
 
   return (
-    <>
-      <Alert
-        variant="primary"
-        style={{ display: slots.length > 0 ? "" : "none" }}
-      >
-        <Stack direction="horizontal" gap={2}>
-          {slots.length} image
-          {slots.length != 1 && "s"} selected.
-          <Button
-            onClick={onClick}
-            className="ms-auto"
-            data-testid="clear-selection"
-          >
-            <i className="bi bi-x-lg" />
-          </Button>
-          {slots.length > 0 && (
-            <Dropdown>
-              <Dropdown.Toggle variant="secondary">Modify</Dropdown.Toggle>
-              <Dropdown.Menu>
-                {slots.length === 1 && <SelectSimilar slot={slots[0]} />}
-                <SelectAll />
-                <Dropdown.Divider />
-                <ChangeSelectedImageSelectedImages slots={slots} />
-                <ChangeSelectedImageQueries slots={slots} />
-                <Dropdown.Divider />
-                <ClearSelectedImageQueries slots={slots} />
-                <DeleteSelectedImages slots={slots} />
-              </Dropdown.Menu>
-            </Dropdown>
-          )}
-        </Stack>
-      </Alert>
-    </>
+    <Jumbotron
+      variant="primary"
+      style={{ display: slots.length > 0 ? "" : "none" }}
+    >
+      <Stack direction="horizontal" gap={2}>
+        {slots.length} image
+        {slots.length != 1 && "s"} selected.
+        <Button
+          onClick={onClick}
+          className="ms-auto"
+          data-testid="clear-selection"
+        >
+          <i className="bi bi-x-lg" />
+        </Button>
+        {slots.length > 0 && (
+          <Dropdown>
+            <Dropdown.Toggle variant="secondary">Modify</Dropdown.Toggle>
+            <Dropdown.Menu>
+              {slots.length === 1 && <SelectSimilar slot={slots[0]} />}
+              <SelectAll />
+              <Dropdown.Divider />
+              <ChangeSelectedImageSelectedImages slots={slots} />
+              <ChangeSelectedImageQueries slots={slots} />
+              <Dropdown.Divider />
+              <ClearSelectedImageQueries slots={slots} />
+              <DeleteSelectedImages slots={slots} />
+            </Dropdown.Menu>
+          </Dropdown>
+        )}
+      </Stack>
+    </Jumbotron>
   );
 }
