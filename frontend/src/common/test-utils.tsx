@@ -364,13 +364,17 @@ export async function deselectSlot(slot: number, face: Faces) {
   );
 }
 
+export function clickMoreSelectOptionsDropdown() {
+  screen.getByTestId("more-select-options").click();
+}
+
 export async function selectSimilar() {
-  screen.getByText("Modify").click();
+  clickMoreSelectOptionsDropdown();
   await waitFor(() => screen.getByText("Select Similar").click());
 }
 
 export async function selectAll() {
-  screen.getByText("Modify").click();
+  clickMoreSelectOptionsDropdown();
   await waitFor(() => screen.getByText("Select All").click());
 }
 
@@ -383,13 +387,13 @@ export async function changeQueries(query: string) {
 }
 
 export async function changeQueryForSelectedImages(query: string) {
-  screen.getByText("Modify").click();
+  clickMoreSelectOptionsDropdown();
   await waitFor(() => screen.getByText("Change Query").click());
   await changeQueries(query);
 }
 
 export async function changeImageForSelectedImages(cardName: string) {
-  screen.getByText("Modify").click();
+  clickMoreSelectOptionsDropdown();
   await waitFor(() => screen.getByText("Change Version").click());
   await waitFor(() => expect(screen.getByText("Option 1")));
   await waitFor(() =>
@@ -400,13 +404,13 @@ export async function changeImageForSelectedImages(cardName: string) {
 }
 
 export async function clearQueriesForSelectedImages() {
-  screen.getByText("Modify").click();
+  clickMoreSelectOptionsDropdown();
   await waitFor(() => screen.getByText("Clear Query").click());
 }
 
 export async function deleteSelectedImages() {
-  screen.getByText("Modify").click();
-  await waitFor(() => screen.getByText("Delete Slots").click());
+  clickMoreSelectOptionsDropdown();
+  await waitFor(() => screen.getByText("Delete Cards").click());
 }
 
 export async function openSearchSettingsModal() {

@@ -4,6 +4,7 @@ import Alert from "react-bootstrap/Alert";
 import { ProjectMaxSize } from "@/common/constants";
 import { useAppSelector } from "@/common/types";
 import { bracket, imageSizeToMBString } from "@/common/utils";
+import { Jumbotron } from "@/components/jumbotron";
 import {
   selectProjectFileSize,
   selectProjectSize,
@@ -15,7 +16,7 @@ export function ProjectStatus() {
   const projectFileSize = useAppSelector(selectProjectFileSize);
 
   return projectSize > 0 ? (
-    <Alert variant="secondary">
+    <Jumbotron variant="secondary">
       <p>
         Your project contains <b>{projectSize}</b> card
         {projectSize !== 1 && "s"}, belongs in the bracket of up to{" "}
@@ -28,8 +29,6 @@ export function ProjectStatus() {
         </Alert>
       )}
       <ViewSettings />
-    </Alert>
-  ) : (
-    <></>
-  );
+    </Jumbotron>
+  ) : null;
 }

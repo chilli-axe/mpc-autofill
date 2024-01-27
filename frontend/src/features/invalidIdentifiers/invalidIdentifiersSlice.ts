@@ -53,8 +53,8 @@ export const {
 //# region selectors
 
 export const selectInvalidIdentifiers = (state: RootState) =>
-  state.invalidIdentifiers.invalidIdentifiers;
+  state.invalidIdentifiers.invalidIdentifiers.filter((item) => item != null);
 export const selectInvalidIdentifiersCount = (state: RootState) =>
-  Object.keys(state.invalidIdentifiers.invalidIdentifiers).length;
+  selectInvalidIdentifiers(state).length;
 
 //# endregion
