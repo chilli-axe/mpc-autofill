@@ -121,7 +121,7 @@ def get_patrons(
             if not tiers:
                 continue
 
-            # Figure out highest paid tier
+            # Figure out highest paid tier for this patron (patrons can subscribe to multiple tiers)
             highest: Optional[SupporterTier] = None
             for t in tiers:
 
