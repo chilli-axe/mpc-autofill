@@ -54,13 +54,19 @@ export function InvalidIdentifiersModal({
       </Modal.Header>
       <Modal.Body>
         <p>
-          Some card versions you specified couldn&apos;t be found. Sorry about
-          that!
+          Some card versions you specified couldn&apos;t be found. This
+          typically happens when:
         </p>
-        <p>
-          This typically happens when the creator of the image removed it from
-          their repository (even if they reuploaded it later).
-        </p>
+        <ul>
+          <li>
+            You had selected an image, then disabled its source in Search
+            Settings, or
+          </li>
+          <li>
+            The creator of the image removed it from their repository (even if
+            they reuploaded it later).
+          </li>
+        </ul>
         <p>
           The versions we couldn&apos;t find are tabulated below for your
           reference. The cards in these slots have defaulted to the first
