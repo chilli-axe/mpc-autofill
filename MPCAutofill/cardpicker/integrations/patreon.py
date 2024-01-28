@@ -133,10 +133,10 @@ def get_patrons(
             # Add member to results
             results.append(
                 Supporter(
-                    name=mem_details.get("full_name", 'Unknown'),
-                    tier=current_tier.get("title", 'Unknown Tier'),
-                    date=mem_details.get("pledge_relationship_start", '2024-01-01')[:10],
-                    usd=current_tier.get("usd", 5)
+                    name=mem_details.get("full_name", "Unknown"),
+                    tier=current_tier.get("title", "Unknown Tier"),
+                    date=mem_details.get("pledge_relationship_start", "2024-01-01")[:10],
+                    usd=current_tier.get("usd", 5),
                 )
             )
 
