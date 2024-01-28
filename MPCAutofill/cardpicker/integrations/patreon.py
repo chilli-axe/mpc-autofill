@@ -77,7 +77,7 @@ def get_patreon_campaign_details() -> tuple[Optional[Campaign], Optional[dict[st
 
 
 def get_patrons(
-    campaign_id: str, campaign_tiers: dict[str, SupporterTier], page: Optional[str] = None
+    campaign_id: str, campaign_tiers: dict[str, SupporterTier], next_page: Optional[str] = None
 ) -> Optional[list[Supporter]]:
     """
     Get our patreon contributors.
@@ -87,27 +87,34 @@ def get_patrons(
     if not PATREON_URL:
         return None
 
-    # Format our request parameters
-    params = {
-        "include": "currently_entitled_tiers",
-        "fields[member]": ",".join(
-            ["full_name", "campaign_lifetime_support_cents", "pledge_relationship_start", "patron_status"]
-        ),
-    }
-    if page:
-        params["page[cursor]"] = page
-
     try:
-        res = requests.get(
-            # https://docs.patreon.com/#get-api-oauth2-v2-campaigns-campaign_id-members
-            f"https://www.patreon.com/api/oauth2/v2/campaigns/{campaign_id}/members",
-            params=params,
-            headers=patreon_header,
-        ).json()
+        req = (
+            requests.get(
+                # https://docs.patreon.com/#get-api-oauth2-v2-campaigns-campaign_id-members
+                f"https://www.patreon.com/api/oauth2/v2/campaigns/{campaign_id}/members",
+                params={
+                    "include": "currently_entitled_tiers",
+                    "fields[member]": ",".join(
+                        ["full_name", "campaign_lifetime_support_cents", "pledge_relationship_start", "patron_status"]
+                    ),
+                },
+                headers=patreon_header,
+            )
+            if next_page is None
+            else requests.get(next_page, headers=patreon_header)
+        )
+        res = req.json()
+
+        # Ready the next page if provided
+        next_page = res.get("links", {}).get("next")
 
         # Return formatted list of patrons
         results: list[Supporter] = []
         for mem in res["data"]:
+
+            # Skip non-active members
+            if mem["attributes"]["patron_status"] != "active_patron":
+                continue
 
             # Skip members with no tiers
             tiers = mem.get("relationships", {}).get("currently_entitled_tiers", {}).get("data", [])
@@ -131,13 +138,6 @@ def get_patrons(
             if not highest:
                 continue
 
-            # Check if there's additional pages of results
-            next_page = res.get("meta", {}).get("pagination", {}).get("cursors", {}).get("next")
-            if next_page:
-                results.extend(
-                    get_patrons(campaign_id=campaign_id, campaign_tiers=campaign_tiers, page=next_page) or []
-                )
-
             # Add member to results
             results.append(
                 Supporter(
@@ -146,6 +146,12 @@ def get_patrons(
                     date=mem["attributes"]["pledge_relationship_start"][:10],
                     usd=highest["usd"],
                 )
+            )
+
+        # Check if there's additional pages of results
+        if next_page:
+            results.extend(
+                get_patrons(campaign_id=campaign_id, campaign_tiers=campaign_tiers, next_page=next_page) or []
             )
 
         # Return sorted results
