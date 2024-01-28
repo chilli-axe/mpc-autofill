@@ -229,6 +229,7 @@ export const projectSelectedImage1: Project = {
     },
   ],
   cardback: null,
+  mostRecentlySelectedSlot: null,
 };
 
 export const projectThreeMembersSelectedImage1: Project = {
@@ -259,6 +260,7 @@ export const projectThreeMembersSelectedImage1: Project = {
     },
   ],
   cardback: null,
+  mostRecentlySelectedSlot: null,
 };
 
 export const projectSelectedImage2: Project = {
@@ -273,6 +275,7 @@ export const projectSelectedImage2: Project = {
     },
   ],
   cardback: null,
+  mostRecentlySelectedSlot: null,
 };
 
 //# endregion
