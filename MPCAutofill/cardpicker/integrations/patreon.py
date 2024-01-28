@@ -107,15 +107,12 @@ def get_patrons(
             ).json()
         )
 
-        # Ready the next page if provided
-        next_page = res.get("links", {}).get("next")
-
         # Return formatted list of patrons
         results: list[Supporter] = []
-        for mem in res["data"]:
+        for mem in res.get("data", []):
 
             # Skip non-active members
-            mem_details = mem["attributes"]
+            mem_details = mem.get("attributes", {})
             if mem_details.get("patron_status") != "active_patron":
                 continue
 
@@ -136,18 +133,21 @@ def get_patrons(
             # Add member to results
             results.append(
                 Supporter(
-                    name=mem["attributes"]["full_name"],
-                    tier=current_tier["title"],
-                    date=mem["attributes"]["pledge_relationship_start"][:10],
-                    usd=current_tier["usd"],
+                    name=mem_details.get("full_name", 'Unknown'),
+                    tier=current_tier.get("title", 'Unknown Tier'),
+                    date=mem_details.get("pledge_relationship_start", '2024-01-01')[:10],
+                    usd=current_tier.get("usd", 5)
                 )
             )
 
-        # Check if there's additional pages of results
+        # Check for additional page results
+        next_page = res.get("links", {}).get("next")
         if next_page:
             results.extend(get_patrons(campaign_id=campaign_id, campaign_tiers=campaign_tiers, page=next_page) or [])
 
-        # Return sorted results
+        # Return sorted results at top-level
+        if page:
+            return results
         return sorted(results, key=lambda item: item["usd"], reverse=True)
 
     # Unable to retrieve patrons
