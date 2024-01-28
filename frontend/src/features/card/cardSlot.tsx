@@ -164,7 +164,7 @@ export function CardSlot({ searchQuery, face, slot }: CardSlotProps) {
       setSelectedImages({
         slots: slotsToModify,
         selectedImage,
-        deselect: false,
+        deselect: true,
       })
     );
   };
