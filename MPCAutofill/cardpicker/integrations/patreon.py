@@ -155,7 +155,7 @@ def get_patrons(
             )
 
         # Return sorted results
-        return sorted(results, key=operator.itemgetter("usd"), reverse=True)
+        return sorted(results, key=lambda item: item["usd"], reverse=True)
 
     # Unable to retrieve patrons
     except KeyError:
