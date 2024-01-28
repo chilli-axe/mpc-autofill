@@ -1,4 +1,3 @@
-import operator
 import platform
 from typing import Optional, TypedDict
 
@@ -14,13 +13,15 @@ patreon_header = {
 
 
 class Campaign(TypedDict):
-    # Campaign data scheme
+    """Patreon 'Campaign' data schema."""
+
     id: str
     about: str
 
 
 class Supporter(TypedDict):
-    # Patron data scheme
+    """Patron 'Supporter' data schema."""
+
     name: str
     tier: str
     date: str
@@ -28,7 +29,8 @@ class Supporter(TypedDict):
 
 
 class SupporterTier(TypedDict):
-    # Patron tiers data scheme
+    """Patron 'Tier' data schema."""
+
     title: str
     description: str
     usd: int
@@ -77,10 +79,11 @@ def get_patreon_campaign_details() -> tuple[Optional[Campaign], Optional[dict[st
 
 
 def get_patrons(
-    campaign_id: str, campaign_tiers: dict[str, SupporterTier], next_page: Optional[str] = None
+    campaign_id: str, campaign_tiers: dict[str, SupporterTier], page: Optional[str] = None
 ) -> Optional[list[Supporter]]:
     """
     Get our patreon contributors.
+    :note: https://docs.patreon.com/#get-api-oauth2-v2-campaigns-campaign_id-members
     :return: List of dictionaries containing patreon contributor info.
     """
 
@@ -88,10 +91,12 @@ def get_patrons(
         return None
 
     try:
-        req = (
-            requests.get(
-                # https://docs.patreon.com/#get-api-oauth2-v2-campaigns-campaign_id-members
-                f"https://www.patreon.com/api/oauth2/v2/campaigns/{campaign_id}/members",
+        # Use page if provided, otherwise build a complete query
+        res = (
+            requests.get(url=page, headers=patreon_header).json()
+            if page
+            else requests.get(
+                url=f"https://www.patreon.com/api/oauth2/v2/campaigns/{campaign_id}/members",
                 params={
                     "include": "currently_entitled_tiers",
                     "fields[member]": ",".join(
@@ -99,11 +104,8 @@ def get_patrons(
                     ),
                 },
                 headers=patreon_header,
-            )
-            if next_page is None
-            else requests.get(next_page, headers=patreon_header)
+            ).json()
         )
-        res = req.json()
 
         # Ready the next page if provided
         next_page = res.get("links", {}).get("next")
@@ -113,46 +115,37 @@ def get_patrons(
         for mem in res["data"]:
 
             # Skip non-active members
-            if mem["attributes"]["patron_status"] != "active_patron":
+            mem_details = mem["attributes"]
+            if mem_details.get("patron_status") != "active_patron":
                 continue
 
-            # Skip members with no tiers
-            tiers = mem.get("relationships", {}).get("currently_entitled_tiers", {}).get("data", [])
-            if not tiers:
+            # Pull subscribed tiers for this member
+            mem_tiers = [
+                campaign_tiers[t["id"]]
+                for t in mem.get("relationships", {}).get("currently_entitled_tiers", {}).get("data", [])
+                if t.get("id") in campaign_tiers
+            ]
+
+            # Skip members with no subscribed tiers
+            if not mem_tiers:
                 continue
 
-            # Figure out highest paid tier for this patron (patrons can subscribe to multiple tiers)
-            highest: Optional[SupporterTier] = None
-            for t in tiers:
-
-                # Skip if tier not recognized
-                if t.get("id", "#") not in campaign_tiers:
-                    continue
-
-                # This tier is highest
-                tier = campaign_tiers[t["id"]]
-                if not highest or highest.get("usd", 0) < t["usd"]:
-                    highest = SupporterTier(**tier)
-
-            # Skip if no highest tier calculated
-            if not highest:
-                continue
+            # Use member's highest subscribed tier
+            current_tier = sorted(mem_tiers, key=lambda item: item["usd"])[0]
 
             # Add member to results
             results.append(
                 Supporter(
                     name=mem["attributes"]["full_name"],
-                    tier=highest["title"],
+                    tier=current_tier["title"],
                     date=mem["attributes"]["pledge_relationship_start"][:10],
-                    usd=highest["usd"],
+                    usd=current_tier["usd"],
                 )
             )
 
         # Check if there's additional pages of results
         if next_page:
-            results.extend(
-                get_patrons(campaign_id=campaign_id, campaign_tiers=campaign_tiers, next_page=next_page) or []
-            )
+            results.extend(get_patrons(campaign_id=campaign_id, campaign_tiers=campaign_tiers, page=next_page) or [])
 
         # Return sorted results
         return sorted(results, key=lambda item: item["usd"], reverse=True)
