@@ -42,6 +42,7 @@ test("the XML representation of a simple project with no custom backs", async ()
       project: {
         members: [],
         cardback: cardDocument5.identifier,
+        mostRecentlySelectedSlot: null,
       },
     },
   });
@@ -97,6 +98,7 @@ test("the XML representation of a simple project with a custom back for one card
       project: {
         members: [],
         cardback: cardDocument5.identifier,
+        mostRecentlySelectedSlot: null,
       },
     },
   });
@@ -161,6 +163,7 @@ test("the XML representation of a simple project with multiple instances of a ca
       project: {
         members: [],
         cardback: cardDocument5.identifier,
+        mostRecentlySelectedSlot: null,
       },
     },
   });

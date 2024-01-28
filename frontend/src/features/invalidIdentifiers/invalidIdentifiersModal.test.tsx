@@ -29,6 +29,7 @@ test("invalidIdentifiersModal displays the appropriate data", async () => {
       project: {
         members: [],
         cardback: cardDocument5.identifier,
+        mostRecentlySelectedSlot: null,
       },
     },
   });

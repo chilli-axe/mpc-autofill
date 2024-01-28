@@ -50,6 +50,7 @@ describe("InvalidIdentifiersStatus tests", () => {
           project: {
             members: [],
             cardback: cardDocument5.identifier,
+            mostRecentlySelectedSlot: null,
           },
         },
       });

@@ -18,7 +18,11 @@ import { selectCardSizesByIdentifier } from "@/features/search/cardDocumentsSlic
 
 //# region slice configuration
 
-const initialState: Project = { members: [], cardback: null };
+const initialState: Project = {
+  members: [],
+  cardback: null,
+  mostRecentlySelectedSlot: null,
+};
 
 export const projectSlice = createSlice({
   name: "project",
@@ -153,8 +157,56 @@ export const projectSlice = createSlice({
       if (
         (state.members[action.payload.slot] ?? {})[action.payload.face] != null
       ) {
-        state.members[action.payload.slot][action.payload.face]!.selected =
+        const newStatus =
           !state.members[action.payload.slot][action.payload.face]!.selected;
+        state.members[action.payload.slot][action.payload.face]!.selected =
+          newStatus;
+        state.mostRecentlySelectedSlot = newStatus
+          ? [action.payload.face, action.payload.slot]
+          : null;
+      }
+    },
+    expandSelection: (
+      state,
+      action: PayloadAction<{ face: Faces; slot: number }>
+    ) => {
+      /**
+       * This is called when shift-clicking on a card slot. It expands the user's selection
+       * between the card they most recently selected and this one - e.g. if the user
+       * selected card 1, then selected card 3 with shift-click, both cards 2 and 3 would
+       * be selected in this action.
+       */
+
+      if (
+        state.members[action.payload.slot][action.payload.face]?.selected ===
+        false
+      ) {
+        if (state.mostRecentlySelectedSlot == null) {
+          // just select this slot
+          if (state.members[action.payload.slot][action.payload.face] != null) {
+            state.members[action.payload.slot][action.payload.face]!.selected =
+              true;
+          }
+          state.mostRecentlySelectedSlot = [
+            action.payload.face,
+            action.payload.slot,
+          ];
+        } else if (action.payload.face === state.mostRecentlySelectedSlot[0]) {
+          // expand selection
+          for (
+            let slot = Math.min(
+              action.payload.slot,
+              state.mostRecentlySelectedSlot[1]
+            );
+            slot <=
+            Math.max(action.payload.slot, state.mostRecentlySelectedSlot[1]);
+            slot++
+          ) {
+            if (state.members[slot][action.payload.face] != null) {
+              state.members[slot][action.payload.face]!.selected = true;
+            }
+          }
+        }
       }
     },
     bulkSetMemberSelection: (
@@ -175,6 +227,7 @@ export const projectSlice = createSlice({
           state.members[slot][face]!.selected = action.payload.selectedStatus;
         }
       }
+      state.mostRecentlySelectedSlot = null;
     },
     bulkAlignMemberSelection: (
       state,
@@ -200,6 +253,7 @@ export const projectSlice = createSlice({
           }
         }
       }
+      state.mostRecentlySelectedSlot = null;
     },
     deleteSlots: (state, action: PayloadAction<{ slots: Array<number> }>) => {
       action.payload.slots
@@ -221,6 +275,7 @@ export const {
   setSelectedCardback,
   addMembers,
   toggleMemberSelection,
+  expandSelection,
   bulkSetMemberSelection,
   bulkAlignMemberSelection,
   deleteSlots,

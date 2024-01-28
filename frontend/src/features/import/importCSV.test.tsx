@@ -36,6 +36,7 @@ const preloadedState = {
   project: {
     members: [],
     cardback: cardDocument2.identifier,
+    mostRecentlySelectedSlot: null,
   },
 };
 

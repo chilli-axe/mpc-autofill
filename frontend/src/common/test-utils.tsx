@@ -336,12 +336,16 @@ export async function openCardSlotGridSelector(
   );
 }
 
-export async function selectSlot(slot: number, face: Faces, count: number = 1) {
+export async function selectSlot(
+  slot: number,
+  face: Faces,
+  clickType: "double" | "shift" | null = null
+) {
   const cardElement = screen.getByTestId(`${face}-slot${slot - 1}`);
   fireEvent.click(
     within(cardElement).getByLabelText(`select-${face}${slot - 1}`)!
       .children[0],
-    { detail: count }
+    { detail: clickType === "double" ? 2 : 1, shiftKey: clickType === "shift" }
   );
   await waitFor(() =>
     expect(

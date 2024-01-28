@@ -43,6 +43,7 @@ const preloadedState = {
   project: {
     members: [],
     cardback: cardDocument2.identifier,
+    mostRecentlySelectedSlot: null,
   },
 };
 
@@ -374,6 +375,7 @@ test("importing a more complex XML into a non-empty project", async () => {
       project: {
         members: [],
         cardback: cardDocument2.identifier,
+        mostRecentlySelectedSlot: null,
       },
     },
   });
