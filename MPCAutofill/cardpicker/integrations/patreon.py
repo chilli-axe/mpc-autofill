@@ -1,3 +1,4 @@
+import operator
 import platform
 from typing import Optional, TypedDict
 
@@ -23,6 +24,7 @@ class Supporter(TypedDict):
     name: str
     tier: str
     date: str
+    usd: int
 
 
 class SupporterTier(TypedDict):
@@ -59,6 +61,9 @@ def get_patreon_campaign_details() -> tuple[Optional[Campaign], Optional[dict[st
         # Properly format campaign tiers
         tiers: dict[str, SupporterTier] = {}
         for tier in res["included"]:
+            # Ignore free tier
+            if tier["attributes"]["amount_cents"] < 1:
+                continue
             # Build dictionary of tiers to reference by ID
             tiers[tier["id"]] = {
                 "title": tier["attributes"]["title"],
@@ -71,7 +76,9 @@ def get_patreon_campaign_details() -> tuple[Optional[Campaign], Optional[dict[st
     return campaign, tiers
 
 
-def get_patrons(campaign_id: str, campaign_tiers: dict[str, SupporterTier]) -> Optional[list[Supporter]]:
+def get_patrons(
+    campaign_id: str, campaign_tiers: dict[str, SupporterTier], page: Optional[str] = None
+) -> Optional[list[Supporter]]:
     """
     Get our patreon contributors.
     :return: List of dictionaries containing patreon contributor info.
@@ -80,29 +87,71 @@ def get_patrons(campaign_id: str, campaign_tiers: dict[str, SupporterTier]) -> O
     if not PATREON_URL:
         return None
 
+    # Format our request parameters
+    params = {
+        "include": "currently_entitled_tiers",
+        "fields[member]": ",".join(
+            ["full_name", "campaign_lifetime_support_cents", "pledge_relationship_start", "patron_status"]
+        ),
+    }
+    if page:
+        params["page[cursor]"] = page
+
     try:
-        members = requests.get(
+        res = requests.get(
             # https://docs.patreon.com/#get-api-oauth2-v2-campaigns-campaign_id-members
-            url=f"https://www.patreon.com/api/oauth2/v2/campaigns/{campaign_id}/members",
-            params={
-                "include": "currently_entitled_tiers",
-                "fields[member]": ",".join(
-                    ["full_name", "campaign_lifetime_support_cents", "pledge_relationship_start", "patron_status"]
-                ),
-            },
+            f"https://www.patreon.com/api/oauth2/v2/campaigns/{campaign_id}/members",
+            params=params,
             headers=patreon_header,
-        ).json()["data"]
+        ).json()
 
         # Return formatted list of patrons
-        return [
-            {
-                "name": mem["attributes"]["full_name"],
-                "tier": campaign_tiers[mem["relationships"]["currently_entitled_tiers"]["data"][0]["id"]]["title"],
-                "date": mem["attributes"]["pledge_relationship_start"][:10],
-            }
-            for mem in members
-            if len(mem["relationships"]["currently_entitled_tiers"]["data"]) > 0
-        ]
+        results: list[Supporter] = []
+        for mem in res["data"]:
+
+            # Skip members with no tiers
+            tiers = mem.get("relationships", {}).get("currently_entitled_tiers", {}).get("data", [])
+            if not tiers:
+                continue
+
+            # Figure out highest paid tier
+            highest: Optional[SupporterTier] = None
+            for t in tiers:
+
+                # Skip if tier not recognized
+                if t.get("id", "#") not in campaign_tiers:
+                    continue
+
+                # This tier is highest
+                tier = campaign_tiers[t["id"]]
+                if not highest or highest.get("usd", 0) < t["usd"]:
+                    highest = SupporterTier(**tier)
+
+            # Skip if no highest tier calculated
+            if not highest:
+                continue
+
+            # Check if there's additional pages of results
+            next_page = res.get("meta", {}).get("pagination", {}).get("cursors", {}).get("next")
+            if next_page:
+                results.extend(
+                    get_patrons(campaign_id=campaign_id, campaign_tiers=campaign_tiers, page=next_page) or []
+                )
+
+            # Add member to results
+            results.append(
+                Supporter(
+                    name=mem["attributes"]["full_name"],
+                    tier=highest["title"],
+                    date=mem["attributes"]["pledge_relationship_start"][:10],
+                    usd=highest["usd"],
+                )
+            )
+
+        # Return sorted results
+        return sorted(results, key=operator.itemgetter("usd"), reverse=True)
+
+    # Unable to retrieve patrons
     except KeyError:
         print("Warning: Cannot locate Patreon campaign. Check Patreon access token!")
         return None
