@@ -30,7 +30,7 @@ test("the html structure of search settings", async () => {
   );
   const { container } = renderWithProviders(<App />, {
     preloadedState: {
-      project: { members: [], cardback: null },
+      project: { members: [], cardback: null, mostRecentlySelectedSlot: null },
     },
   });
 

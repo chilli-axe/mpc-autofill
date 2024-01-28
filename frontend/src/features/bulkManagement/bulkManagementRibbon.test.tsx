@@ -1,6 +1,3 @@
-// TODO: add tests for double-click behaviour - both card fronts and backs
-//       (particularly test double-clicking cardbacks to select them all)
-
 import { screen, waitFor } from "@testing-library/react";
 
 import App from "@/app/app";
@@ -59,6 +56,7 @@ test("selecting a single card and changing its query", async () => {
       project: {
         members: [],
         cardback: cardDocument5.identifier,
+        mostRecentlySelectedSlot: null,
       },
     },
   });
@@ -84,6 +82,7 @@ test("selecting multiple cards and changing both of their queries", async () => 
       project: {
         members: [],
         cardback: cardDocument5.identifier,
+        mostRecentlySelectedSlot: null,
       },
     },
   });
@@ -112,6 +111,7 @@ test("selecting a single card and changing its selected image", async () => {
       project: {
         members: [],
         cardback: cardDocument5.identifier,
+        mostRecentlySelectedSlot: null,
       },
     },
   });
@@ -137,6 +137,7 @@ test("selecting multiple cards with the same query and changing both of their se
       project: {
         members: [],
         cardback: cardDocument5.identifier,
+        mostRecentlySelectedSlot: null,
       },
     },
   });
@@ -165,6 +166,7 @@ test("selecting multiple cardbacks and changing both of their selected images", 
       project: {
         members: [],
         cardback: cardDocument1.identifier,
+        mostRecentlySelectedSlot: null,
       },
     },
   });
@@ -193,6 +195,7 @@ test("cannot change the images of multiple selected images when they don't share
       project: {
         members: [],
         cardback: cardDocument5.identifier,
+        mostRecentlySelectedSlot: null,
       },
     },
   });
@@ -223,6 +226,7 @@ test("selecting a single card and clearing its front query", async () => {
       project: {
         members: [],
         cardback: cardDocument5.identifier,
+        mostRecentlySelectedSlot: null,
       },
     },
   });
@@ -248,6 +252,7 @@ test("selecting a single card and clearing its back query", async () => {
       project: {
         members: [],
         cardback: cardDocument5.identifier,
+        mostRecentlySelectedSlot: null,
       },
     },
   });
@@ -277,6 +282,7 @@ test("selecting multiple cards and clearing their front queries", async () => {
       project: {
         members: [],
         cardback: cardDocument5.identifier,
+        mostRecentlySelectedSlot: null,
       },
     },
   });
@@ -305,6 +311,7 @@ test("selecting a single card and deleting it", async () => {
       project: {
         members: [],
         cardback: cardDocument5.identifier,
+        mostRecentlySelectedSlot: null,
       },
     },
   });
@@ -330,6 +337,7 @@ test("selecting multiple cards and deleting them", async () => {
       project: {
         members: [],
         cardback: cardDocument5.identifier,
+        mostRecentlySelectedSlot: null,
       },
     },
   });
@@ -358,6 +366,7 @@ test("selecting then clearing the selection", async () => {
       project: {
         members: [],
         cardback: cardDocument5.identifier,
+        mostRecentlySelectedSlot: null,
       },
     },
   });
@@ -382,6 +391,7 @@ test("selecting then expanding the selection to similar front images", async () 
       project: {
         members: [],
         cardback: cardDocument5.identifier,
+        mostRecentlySelectedSlot: null,
       },
     },
   });
@@ -414,6 +424,7 @@ test("selecting then expanding the selection to similar back images", async () =
       project: {
         members: [],
         cardback: cardDocument5.identifier,
+        mostRecentlySelectedSlot: null,
       },
     },
   });
@@ -449,6 +460,7 @@ test("selecting then expanding the selection to all front images", async () => {
       project: {
         members: [],
         cardback: cardDocument5.identifier,
+        mostRecentlySelectedSlot: null,
       },
     },
   });
@@ -461,7 +473,6 @@ test("selecting then expanding the selection to all front images", async () => {
   await selectSlot(1, Front);
   await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 1, true);
   await selectAll();
-
   await expectCardGridSlotState(2, Front, cardDocument1.name, 1, 1, true);
   await expectCardGridSlotState(3, Front, cardDocument2.name, 1, 1, true);
 });

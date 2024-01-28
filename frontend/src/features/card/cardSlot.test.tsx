@@ -6,6 +6,7 @@ import {
   cardDocument1,
   cardDocument2,
   cardDocument3,
+  cardDocument5,
   projectSelectedImage1,
   projectSelectedImage2,
   projectThreeMembersSelectedImage1,
@@ -21,9 +22,11 @@ import {
   selectSlot,
 } from "@/common/test-utils";
 import {
+  cardbacksOneOtherResult,
   cardbacksTwoResults,
   cardDocumentsFourResults,
   cardDocumentsOneResult,
+  cardDocumentsSixResults,
   cardDocumentsThreeResults,
   defaultHandlers,
   searchResultsFourResults,
@@ -58,6 +61,7 @@ test("the html structure of a CardSlot with a single search result, no image sel
           },
         ],
         cardback: null,
+        mostRecentlySelectedSlot: null,
       },
     },
   });
@@ -86,6 +90,7 @@ test("the html structure of a CardSlot with a single search result, slot selecte
           },
         ],
         cardback: null,
+        mostRecentlySelectedSlot: null,
       },
     },
   });
@@ -336,6 +341,7 @@ test("CardSlot automatically selects the first search result", async () => {
           },
         ],
         cardback: null,
+        mostRecentlySelectedSlot: null,
       },
     },
   });
@@ -368,7 +374,7 @@ test("CardSlot uses cardbacks as search results for backs with no search query",
   );
   renderWithProviders(<App />, {
     preloadedState: {
-      project: { members: [], cardback: null },
+      project: { members: [], cardback: null, mostRecentlySelectedSlot: null },
     },
   });
 
@@ -386,7 +392,11 @@ test("CardSlot defaults to project cardback for backs with no search query", asy
   );
   renderWithProviders(<App />, {
     preloadedState: {
-      project: { members: [], cardback: cardDocument2.identifier },
+      project: {
+        members: [],
+        cardback: cardDocument2.identifier,
+        mostRecentlySelectedSlot: null,
+      },
     },
   });
 
@@ -424,24 +434,17 @@ test("double clicking the select button selects all slots for the same query", a
           },
         ],
         cardback: null,
+        mostRecentlySelectedSlot: null,
       },
     },
   });
-  await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 1);
-  await expectCardGridSlotState(2, Front, cardDocument1.name, 1, 1);
+  await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 1, false);
+  await expectCardGridSlotState(2, Front, cardDocument1.name, 1, 1, false);
 
   await selectSlot(1, Front);
-  await selectSlot(1, Front, 2);
-  await waitFor(() =>
-    expect(screen.getByLabelText("select-front0").firstChild).toHaveClass(
-      "bi-check-square"
-    )
-  );
-  await waitFor(() =>
-    expect(screen.getByLabelText("select-front1").firstChild).toHaveClass(
-      "bi-check-square"
-    )
-  );
+  await selectSlot(1, Front, "double");
+  await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 1, true);
+  await expectCardGridSlotState(2, Front, cardDocument1.name, 1, 1, true);
 });
 
 test("changing a card slot's query", async () => {
@@ -466,6 +469,7 @@ test("changing a card slot's query", async () => {
           },
         ],
         cardback: null,
+        mostRecentlySelectedSlot: null,
       },
     },
   });
@@ -499,6 +503,7 @@ test("clearing a card slot's query", async () => {
           },
         ],
         cardback: null,
+        mostRecentlySelectedSlot: null,
       },
     },
   });
@@ -540,6 +545,7 @@ test("changing a card slot's query doesn't affect a different slot", async () =>
           },
         ],
         cardback: null,
+        mostRecentlySelectedSlot: null,
       },
     },
   });
@@ -551,4 +557,99 @@ test("changing a card slot's query doesn't affect a different slot", async () =>
   await changeQueries("query 3");
   await expectCardGridSlotState(1, Front, cardDocument3.name, 1, 1);
   await expectCardGridSlotState(2, Front, cardDocument2.name, 1, 1);
+});
+
+test("selecting then shift-clicking to expand the selection downwards", async () => {
+  server.use(
+    cardDocumentsSixResults,
+    cardbacksOneOtherResult,
+    sourceDocumentsOneResult,
+    searchResultsSixResults,
+    ...defaultHandlers
+  );
+  renderWithProviders(<App />, {
+    preloadedState: {
+      project: {
+        members: [],
+        cardback: cardDocument5.identifier,
+        mostRecentlySelectedSlot: null,
+      },
+    },
+  });
+
+  await importText("2x query 1\n1x query 2");
+  await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 1, false);
+  await expectCardGridSlotState(2, Front, cardDocument1.name, 1, 1, false);
+  await expectCardGridSlotState(3, Front, cardDocument2.name, 1, 1, false);
+
+  await selectSlot(1, Front);
+  await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 1, true);
+  await selectSlot(3, Front, "shift");
+  await expectCardGridSlotState(2, Front, cardDocument1.name, 1, 1, true);
+  await expectCardGridSlotState(3, Front, cardDocument2.name, 1, 1, true);
+});
+
+test("selecting then shift-clicking to expand the selection upwards", async () => {
+  server.use(
+    cardDocumentsSixResults,
+    cardbacksOneOtherResult,
+    sourceDocumentsOneResult,
+    searchResultsSixResults,
+    ...defaultHandlers
+  );
+  renderWithProviders(<App />, {
+    preloadedState: {
+      project: {
+        members: [],
+        cardback: cardDocument5.identifier,
+        mostRecentlySelectedSlot: null,
+      },
+    },
+  });
+
+  await importText("2x query 1\n1x query 2");
+  await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 1, false);
+  await expectCardGridSlotState(2, Front, cardDocument1.name, 1, 1, false);
+  await expectCardGridSlotState(3, Front, cardDocument2.name, 1, 1, false);
+
+  await selectSlot(3, Front);
+  await expectCardGridSlotState(3, Front, cardDocument2.name, 1, 1, true);
+  await selectSlot(1, Front, "shift");
+  await expectCardGridSlotState(2, Front, cardDocument1.name, 1, 1, true);
+  await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 1, true);
+});
+
+test("the most recently selected card is tracked correctly", async () => {
+  server.use(
+    cardDocumentsSixResults,
+    cardbacksOneOtherResult,
+    sourceDocumentsOneResult,
+    searchResultsSixResults,
+    ...defaultHandlers
+  );
+  renderWithProviders(<App />, {
+    preloadedState: {
+      project: {
+        members: [],
+        cardback: cardDocument5.identifier,
+        mostRecentlySelectedSlot: null,
+      },
+    },
+  });
+
+  await importText("5x query 1");
+  await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 1, false);
+  await expectCardGridSlotState(2, Front, cardDocument1.name, 1, 1, false);
+  await expectCardGridSlotState(3, Front, cardDocument1.name, 1, 1, false);
+  await expectCardGridSlotState(4, Front, cardDocument1.name, 1, 1, false);
+  await expectCardGridSlotState(5, Front, cardDocument1.name, 1, 1, false);
+
+  await selectSlot(5, Front);
+  await expectCardGridSlotState(5, Front, cardDocument1.name, 1, 1, true);
+  await selectSlot(1, Front);
+  await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 1, true);
+  await selectSlot(3, Front, "shift"); // should select 2 and 3, not 3 and 4
+  await expectCardGridSlotState(2, Front, cardDocument1.name, 1, 1, true);
+  await expectCardGridSlotState(3, Front, cardDocument1.name, 1, 1, true);
+  await expectCardGridSlotState(4, Front, cardDocument1.name, 1, 1, false);
 });

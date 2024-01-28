@@ -4,7 +4,9 @@ import { selectQueriesWithoutSearchResults } from "@/features/project/projectSli
 
 describe("selectQueriesWithoutSearchResults tests", () => {
   test("empty", () => {
-    const state = { project: { members: [], cardback: null } };
+    const state = {
+      project: { members: [], cardback: null, mostRecentlySelectedSlot: null },
+    };
     expect(
       selectQueriesWithoutSearchResults(setupStore(state).getState())
     ).toStrictEqual([]);
@@ -27,6 +29,7 @@ describe("selectQueriesWithoutSearchResults tests", () => {
           },
         ],
         cardback: null,
+        mostRecentlySelectedSlot: null,
       },
       searchResults: {
         searchResults: {},
@@ -67,6 +70,7 @@ describe("selectQueriesWithoutSearchResults tests", () => {
           },
         ],
         cardback: null,
+        mostRecentlySelectedSlot: null,
       },
       searchResults: {
         searchResults: {},
@@ -117,6 +121,7 @@ describe("selectQueriesWithoutSearchResults tests", () => {
           },
         ],
         cardback: null,
+        mostRecentlySelectedSlot: null,
       },
       searchResults: {
         searchResults: {},
@@ -161,6 +166,7 @@ describe("selectQueriesWithoutSearchResults tests", () => {
           },
         ],
         cardback: null,
+        mostRecentlySelectedSlot: null,
       },
       searchResults: {
         searchResults: {
@@ -203,6 +209,7 @@ describe("selectQueriesWithoutSearchResults tests", () => {
           },
         ],
         cardback: null,
+        mostRecentlySelectedSlot: null,
       },
       searchResults: {
         searchResults: {},
@@ -243,6 +250,7 @@ describe("selectQueriesWithoutSearchResults tests", () => {
           },
         ],
         cardback: null,
+        mostRecentlySelectedSlot: null,
       },
       searchResults: {
         searchResults: {},

@@ -272,6 +272,7 @@ class Tag(models.Model):
     name = models.CharField(unique=True)
     # null=True is just for admin panel
     aliases = ArrayField(models.CharField(max_length=200), default=list, blank=True)
+    is_enabled_by_default = models.BooleanField(default=True)
     parent = models.ForeignKey(to="Tag", null=True, blank=True, on_delete=models.SET_NULL)
 
     def __str__(self) -> str:
@@ -281,6 +282,7 @@ class Tag(models.Model):
         return {
             "name": self.name,
             "aliases": self.aliases,
+            "is_enabled_by_default": self.is_enabled_by_default,
             "parent": (self.parent.name if self.parent else None),
             # recursively serialise each child tag
             "children": [x.to_dict() for x in self.tag_set.order_by("name").all()] if self.pk is not None else [],

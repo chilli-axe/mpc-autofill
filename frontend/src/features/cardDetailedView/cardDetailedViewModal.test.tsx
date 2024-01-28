@@ -38,6 +38,7 @@ test("the html structure of a CardDetailedViewModal", async () => {
           },
         ],
         cardback: null,
+        mostRecentlySelectedSlot: null,
       },
     },
   });

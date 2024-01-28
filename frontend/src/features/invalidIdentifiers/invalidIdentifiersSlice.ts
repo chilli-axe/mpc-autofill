@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 import { RootState } from "@/app/store";
 import { Faces, InvalidIdentifiersState, SearchQuery } from "@/common/types";
@@ -52,8 +52,10 @@ export const {
 
 //# region selectors
 
-export const selectInvalidIdentifiers = (state: RootState) =>
-  state.invalidIdentifiers.invalidIdentifiers.filter((item) => item != null);
+export const selectInvalidIdentifiers = createSelector(
+  (state: RootState) => state.invalidIdentifiers.invalidIdentifiers,
+  (invalidIdentifiers) => invalidIdentifiers.filter((item) => item != null)
+);
 export const selectInvalidIdentifiersCount = (state: RootState) =>
   selectInvalidIdentifiers(state).length;
 

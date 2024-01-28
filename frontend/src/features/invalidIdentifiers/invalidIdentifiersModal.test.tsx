@@ -29,6 +29,7 @@ test("invalidIdentifiersModal displays the appropriate data", async () => {
       project: {
         members: [],
         cardback: cardDocument5.identifier,
+        mostRecentlySelectedSlot: null,
       },
     },
   });
@@ -50,7 +51,7 @@ test("invalidIdentifiersModal displays the appropriate data", async () => {
 
   // assert the contents of the modal
   const modalText = screen.getByText(
-    "Some card versions you specified couldn't be found. Sorry about that!",
+    "Some card versions you specified couldn't be found",
     { exact: false }
   );
   expect(modalText.parentElement!.parentElement!).toMatchSnapshot();

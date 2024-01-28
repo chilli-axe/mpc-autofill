@@ -53,7 +53,7 @@ repos:
             "django-widget-tweaks~=1.4.12",
             "google-api-python-client~=2.86",
             "jsonschema~=4.20.0",
-            "Levenshtein~=0.21.1",
+            "Levenshtein~=0.23.0",
             "oauth2client~=4.1",
             "Markdown~=3.4",
             "psycopg2-binary~=2.9.6",

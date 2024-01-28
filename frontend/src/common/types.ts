@@ -184,6 +184,7 @@ export type SlotProjectMembers = {
 export type Project = {
   members: Array<SlotProjectMembers>;
   cardback: string | null;
+  mostRecentlySelectedSlot: Slot | null;
 };
 
 export interface DFCPairs {
@@ -231,7 +232,8 @@ export interface NewCardsFirstPages {
   [sourceKey: string]: NewCardsFirstPage;
 }
 
-export type Slots = Array<[Faces, number]>;
+export type Slot = [Faces, number];
+export type Slots = Array<Slot>;
 
 export type Modals =
   | "cardDetailedView"

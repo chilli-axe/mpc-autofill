@@ -27,7 +27,7 @@ test("the html structure of a CommonCardback with a single search result", async
 
   renderWithProviders(<App />, {
     preloadedState: {
-      project: { members: [], cardback: null },
+      project: { members: [], cardback: null, mostRecentlySelectedSlot: null },
     },
   });
 
@@ -45,7 +45,7 @@ test("the html structure of a CommonCardback with multiple search results", asyn
 
   renderWithProviders(<App />, {
     preloadedState: {
-      project: { members: [], cardback: null },
+      project: { members: [], cardback: null, mostRecentlySelectedSlot: null },
     },
   });
 

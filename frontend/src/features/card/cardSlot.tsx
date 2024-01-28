@@ -23,6 +23,7 @@ import { setSelectedSlotsAndShowModal } from "@/features/modals/modalsSlice";
 import {
   bulkAlignMemberSelection,
   deleteSlots,
+  expandSelection,
   selectAllSelectedProjectMembersHaveTheSameQuery,
   selectProjectMember,
   selectSelectedSlots,
@@ -130,9 +131,12 @@ export function CardSlot({ searchQuery, face, slot }: CardSlotProps) {
   const toggleSelectionForThisMember = (
     event: React.MouseEvent<HTMLButtonElement>
   ) => {
-    if (event.detail == 2) {
+    if (event.detail === 2) {
       // double-click
       dispatch(bulkAlignMemberSelection({ slot, face }));
+    } else if (event.shiftKey) {
+      // shift-click
+      dispatch(expandSelection({ slot, face }));
     } else {
       dispatch(toggleMemberSelection({ slot, face }));
     }
@@ -160,7 +164,7 @@ export function CardSlot({ searchQuery, face, slot }: CardSlotProps) {
       setSelectedImages({
         slots: slotsToModify,
         selectedImage,
-        deselect: false,
+        deselect: true,
       })
     );
   };

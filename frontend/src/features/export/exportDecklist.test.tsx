@@ -42,6 +42,7 @@ test("the decklist representation of a simple project with no custom backs", asy
       project: {
         members: [],
         cardback: cardDocument5.identifier,
+        mostRecentlySelectedSlot: null,
       },
     },
   });
@@ -77,6 +78,7 @@ test("the decklist representation of a simple project with a custom back for one
       project: {
         members: [],
         cardback: cardDocument5.identifier,
+        mostRecentlySelectedSlot: null,
       },
     },
   });
@@ -113,6 +115,7 @@ test("the decklist representation of a simple project with multiple instances of
       project: {
         members: [],
         cardback: cardDocument5.identifier,
+        mostRecentlySelectedSlot: null,
       },
     },
   });

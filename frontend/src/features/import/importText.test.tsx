@@ -53,6 +53,7 @@ const preloadedState = {
   project: {
     members: [],
     cardback: cardDocument2.identifier,
+    mostRecentlySelectedSlot: null,
   },
 };
 
@@ -174,7 +175,11 @@ test("importing multiple instances of one card by text into a non-empty project"
   renderWithProviders(<App />, {
     preloadedState: {
       ...preloadedState,
-      project: { members: [], cardback: cardDocument2.identifier },
+      project: {
+        members: [],
+        cardback: cardDocument2.identifier,
+        mostRecentlySelectedSlot: null,
+      },
     },
   });
 
