@@ -189,6 +189,17 @@ class TargetSites(Enum):
             Cardstocks.P10: "Plastic (100%)",
         },
     )
+    PrinterStudioUK = TargetSite(
+       base_url="https://www.printerstudio.co.uk",
+       starting_url_route="personalised/custom-playing-cards-blank-cards.html",
+       supports_foil=False,
+       cardstock_site_name_mapping={
+           Cardstocks.S30: "Standard (smooth)",
+           Cardstocks.S33: "Superior (smooth)",
+           Cardstocks.M31: "Premium (linen)",
+           Cardstocks.P10: "Plastic (100%)",
+       },
+    )
     PrinterStudioDE = TargetSite(
         base_url="https://www.printerstudio.de",
         starting_url_route="machen/blanko-spielkarten-63x88mm-personalisieren.html",
