@@ -3,7 +3,7 @@ import textwrap
 import time
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
-from functools import cached_property
+from functools import cache
 from pathlib import Path
 from typing import Any, Generator, Optional
 
@@ -34,12 +34,14 @@ from src.utils import (
 
 @attr.s
 class AutofillDriver:
+    # required to construct this class
     driver: WebDriver = attr.ib(default=None)  # delay initialisation until XML is selected and parsed
     browser: Browsers = attr.ib(default=Browsers.chrome)
     binary_location: Optional[str] = attr.ib(default=None)  # path to browser executable
     target_site: TargetSites = attr.ib(default=TargetSites.MakePlayingCards)
     headless: bool = attr.ib(default=False)
-    order: CardOrder = attr.ib(default=attr.Factory(CardOrder.from_xml_in_folder))
+
+    # internal properties (init=False)
     state: str = attr.ib(init=False, default=States.initialising)
     action: Optional[str] = attr.ib(init=False, default=None)
     manager: enlighten.Manager = attr.ib(init=False, default=attr.Factory(enlighten.get_manager))
@@ -68,38 +70,44 @@ class AutofillDriver:
         self.driver = driver
 
     def configure_bars(self) -> None:
-        num_images = len(self.order.fronts.cards) + len(self.order.backs.cards)
+        # set the total for upload/download bars to 0 here, then change the total according to each order
+        # as they're processed
         status_format = "State: {state}, Action: {action}"
         self.status_bar = self.manager.status_bar(
             status_format=status_format, state=bold(self.state), action=bold("N/A"), position=1, autorefresh=True
         )
-        self.download_bar = self.manager.counter(
-            total=num_images, desc="Images Downloaded", position=2, autorefresh=True
-        )
-        self.upload_bar = self.manager.counter(total=num_images, desc="Images Uploaded", position=3, autorefresh=True)
+        self.download_bar = self.manager.counter(total=0, desc="Images Downloaded", position=2, autorefresh=True)
+        self.upload_bar = self.manager.counter(total=0, desc="Images Uploaded", position=3, autorefresh=True)
 
         self.status_bar.refresh()
         self.download_bar.refresh()
         self.upload_bar.refresh()
 
-    def __attrs_post_init__(self) -> None:
-        self.configure_bars()
-        self.order.print_order_overview()
-        self.initialise_driver()
+    def initialise_order(self, order: CardOrder) -> None:
+        num_images = len(order.fronts.cards) + len(order.backs.cards)
+        self.upload_bar.total = num_images
+        self.download_bar.total = num_images
+        order.print_order_overview()
         self.driver.get(f"{self.target_site.value.starting_url}")
         self.set_state(States.defining_order)
 
-    @cached_property
-    def project_name(self) -> str:
+    def __attrs_post_init__(self) -> None:
+        self.configure_bars()
+        self.initialise_driver()
+        self.set_state(States.initialised)
+
+    @cache
+    def get_project_name(self, order_name: Optional[str]) -> str:
         """
-        Format the name of `self.order` such that it's suitable for naming a project with.
+        Format the card order's name such that it's suitable for naming a project with.
         Project names in the MakePlayingCards family of sites seem to have a maximum length of 32 characters.
-        We chop off the appropriate amount of `self.order.name` such that we can still include today's date in the name.
+        We chop off the appropriate amount of the resultant name such that we can still include today's date
+        in the name.
         """
 
         today = dt.date.today().strftime("%Y-%m-%d")
         max_project_name_length = 32 - 1 - len(today)  # include a space
-        project_name = Path(self.order.name).stem if self.order.name is not None else "Project"
+        project_name = Path(order_name).stem if order_name is not None else "Project"
         if len(project_name) > max_project_name_length:
             project_name = project_name[0 : max_project_name_length - 3] + "..."
         return f"{project_name} {today}"
@@ -372,7 +380,9 @@ class AutofillDriver:
         return True
 
     @exception_retry_skip_handler
-    def upload_and_insert_images(self, images: CardImageCollection, auto_save_threshold: Optional[int]) -> None:
+    def upload_and_insert_images(
+        self, order: CardOrder, images: CardImageCollection, auto_save_threshold: Optional[int]
+    ) -> None:
         image_count = len(images.cards)
         for i in range(image_count):
             image: CardImage = images.queue.get()
@@ -383,7 +393,7 @@ class AutofillDriver:
                     and project_mutated
                     and ((i % auto_save_threshold) == (auto_save_threshold - 1) or i == (image_count - 1))
                 ):
-                    self.save_project_to_user_account()
+                    self.save_project_to_user_account(order=order)
             self.upload_bar.update()
 
     # endregion
@@ -418,7 +428,7 @@ class AutofillDriver:
     # region project management
 
     @exception_retry_skip_handler
-    def set_bracket(self, dropdown_id: str) -> None:
+    def set_bracket(self, order: CardOrder, dropdown_id: str) -> None:
         """
         Configure the project to fit into the smallest
 
@@ -430,39 +440,39 @@ class AutofillDriver:
             [
                 option_value
                 for option in qty_dropdown.options
-                if (option_value := int(option.get_attribute("value"))) >= self.order.details.quantity
+                if (option_value := int(option.get_attribute("value"))) >= order.details.quantity
             ]
         )
         assert bracket_options, (
-            f"Your project contains {bold(self.order.details.quantity)} cards - this does not fit into any bracket "
+            f"Your project contains {bold(order.details.quantity)} cards - this does not fit into any bracket "
             f"that {bold(self.target_site.name)} offers! The brackets are: "
             f"{', '.join([bold(option) for option in bracket_options])}"
         )
         bracket = bracket_options[0]
         print(
-            f"Configuring your project of {bold(self.order.details.quantity)} cards "
+            f"Configuring your project of {bold(order.details.quantity)} cards "
             f"in the bracket of up to {bold(bracket)} cards."
         )
         qty_dropdown.select_by_value(str(bracket))
 
     @exception_retry_skip_handler
-    def define_project(self) -> None:
+    def define_project(self, order: CardOrder) -> None:
         self.assert_state(States.defining_order)
         # Select card stock
-        stock_to_select = self.target_site.value.cardstock_site_name_mapping.get(Cardstocks(self.order.details.stock))
+        stock_to_select = self.target_site.value.cardstock_site_name_mapping.get(Cardstocks(order.details.stock))
         assert (
             stock_to_select
-        ), f"Cardstock {bold(self.order.details.stock)} is not supported by {bold(self.target_site.name)}!"
+        ), f"Cardstock {bold(order.details.stock)} is not supported by {bold(self.target_site.name)}!"
         stock_dropdown = Select(
             self.driver.find_element(by=By.ID, value=self.target_site.value.cardstock_dropdown_element_id)
         )
         stock_dropdown.select_by_visible_text(stock_to_select)
 
         # Select number of cards
-        self.set_bracket(dropdown_id=self.target_site.value.quantity_dropdown_element_id)
+        self.set_bracket(order=order, dropdown_id=self.target_site.value.quantity_dropdown_element_id)
 
         # Switch the finish to foil if the user ordered foil cards
-        if self.order.details.foil:
+        if order.details.foil:
             if self.target_site.value.supports_foil:
                 foil_dropdown = Select(
                     self.driver.find_element(by=By.ID, value=self.target_site.value.print_type_dropdown_element_id)
@@ -483,7 +493,7 @@ class AutofillDriver:
 
     @alert_handler
     @exception_retry_skip_handler
-    def redefine_project(self) -> None:
+    def redefine_project(self, order: CardOrder) -> None:
         """
         Called when continuing to edit an existing project in the targeted site.
         Ensures that the project's size and bracket align with the order's size and bracket.
@@ -520,21 +530,22 @@ class AutofillDriver:
         with self.switch_to_frame("sysifm_loginFrame"):
             self.wait_until_javascript_object_is_defined("displayTotalCount")
             self.execute_javascript("displayTotalCount()")  # display the dropdown for "up to N cards"
-            self.set_bracket(dropdown_id="dro_total_count")
+            self.set_bracket(order=order, dropdown_id="dro_total_count")
             qty = self.driver.find_element(by=By.ID, value="txt_card_number")
             qty.clear()
-            qty.send_keys(str(self.order.details.quantity))
+            qty.send_keys(str(order.details.quantity))
             self.different_images()
         self.wait()
         self.set_state(States.inserting_fronts)
 
     @exception_retry_skip_handler
-    def save_project_to_user_account(self) -> None:
+    def save_project_to_user_account(self, order: CardOrder) -> None:
         self.set_state(self.state, f"Saving project to {self.target_site.name} account")
         project_name_element = self.driver.find_element(by=By.ID, value="txt_temporaryname")
-        if project_name_element.text != self.project_name:
+        project_name = self.get_project_name(order_name=order.name)
+        if project_name_element.text != project_name:
             project_name_element.clear()
-            project_name_element.send_keys(self.project_name)
+            project_name_element.send_keys(project_name)
         self.wait_until_javascript_object_is_defined("oDesign.setTemporarySave")
         self.execute_javascript("oDesign.setTemporarySave();")
         self.wait()
@@ -544,7 +555,7 @@ class AutofillDriver:
     # region insert fronts
 
     @exception_retry_skip_handler
-    def page_to_fronts(self) -> None:
+    def page_to_fronts(self, order: CardOrder) -> None:
         self.assert_state(States.paging_to_fronts)
 
         # reset this between fronts and backs
@@ -558,15 +569,15 @@ class AutofillDriver:
         with self.switch_to_frame("sysifm_loginFrame"):
             qty = self.driver.find_element(by=By.ID, value="txt_card_number")
             qty.clear()
-            qty.send_keys(str(self.order.details.quantity))
+            qty.send_keys(str(order.details.quantity))
             self.different_images()
 
         self.set_state(States.inserting_fronts)
 
     @exception_retry_skip_handler
-    def insert_fronts(self, auto_save_threshold: Optional[int]) -> None:
+    def insert_fronts(self, order: CardOrder, auto_save_threshold: Optional[int]) -> None:
         self.assert_state(States.inserting_fronts)
-        self.upload_and_insert_images(self.order.fronts, auto_save_threshold=auto_save_threshold)
+        self.upload_and_insert_images(order=order, images=order.fronts, auto_save_threshold=auto_save_threshold)
 
         self.set_state(States.paging_to_backs)
 
@@ -575,7 +586,7 @@ class AutofillDriver:
     # region insert backs
 
     @exception_retry_skip_handler
-    def page_to_backs(self, skip_setup: bool) -> None:
+    def page_to_backs(self, order: CardOrder, skip_setup: bool) -> None:
         self.assert_state(States.paging_to_backs)
 
         # reset this between fronts and backs
@@ -599,7 +610,7 @@ class AutofillDriver:
                 pass
         with self.switch_to_frame("sysifm_loginFrame"):
             try:
-                if len(self.order.backs.cards) == 1:
+                if len(order.backs.cards) == 1:
                     # Same cardback for every card
                     self.same_images()
                 else:
@@ -609,9 +620,9 @@ class AutofillDriver:
                 pass
         self.set_state(States.inserting_backs)
 
-    def insert_backs(self, auto_save_threshold: Optional[int]) -> None:
+    def insert_backs(self, order: CardOrder, auto_save_threshold: Optional[int]) -> None:
         self.assert_state(States.inserting_backs)
-        self.upload_and_insert_images(self.order.backs, auto_save_threshold=auto_save_threshold)
+        self.upload_and_insert_images(order=order, images=order.backs, auto_save_threshold=auto_save_threshold)
 
         self.set_state(States.paging_to_review)
 
@@ -631,26 +642,27 @@ class AutofillDriver:
 
     # region public
 
-    def execute(
+    def execute_order(
         self,
+        order: CardOrder,
         skip_setup: bool,
         auto_save_threshold: Optional[int],
         post_processing_config: Optional[ImagePostProcessingConfig],
     ) -> None:
         t = time.time()
         with ThreadPoolExecutor(max_workers=THREADS) as pool:
-            self.order.fronts.download_images(
+            order.fronts.download_images(
                 pool=pool, download_bar=self.download_bar, post_processing_config=post_processing_config
             )
-            self.order.backs.download_images(
+            order.backs.download_images(
                 pool=pool, download_bar=self.download_bar, post_processing_config=post_processing_config
             )
             if any([skip_setup is True, auto_save_threshold is not None]):
                 self.authenticate()
 
+            self.initialise_order(order=order)
             if skip_setup:
-                self.redefine_project()
-
+                self.redefine_project(order=order)
             else:
                 print(
                     textwrap.dedent(
@@ -661,11 +673,11 @@ class AutofillDriver:
                         """
                     )
                 )
-                self.define_project()
-                self.page_to_fronts()
-            self.insert_fronts(auto_save_threshold)
-            self.page_to_backs(skip_setup)
-            self.insert_backs(auto_save_threshold)
+                self.define_project(order=order)
+                self.page_to_fronts(order=order)
+            self.insert_fronts(order=order, auto_save_threshold=auto_save_threshold)
+            self.page_to_backs(order=order, skip_setup=skip_setup)
+            self.insert_backs(order=order, auto_save_threshold=auto_save_threshold)
             self.page_to_review()
         log_hours_minutes_seconds_elapsed(t)
         print(

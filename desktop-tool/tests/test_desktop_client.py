@@ -869,8 +869,13 @@ def test_pdf_export_complete_separate_faces(monkeypatch, card_order_valid):
     ],
 )
 def test_card_order_complete_run_single_cardback(browser, site, input_enter, card_order_valid):
-    autofill_driver = AutofillDriver(order=card_order_valid, browser=browser, target_site=site, headless=True)
-    autofill_driver.execute(skip_setup=False, auto_save_threshold=None, post_processing_config=DEFAULT_POST_PROCESSING)
+    autofill_driver = AutofillDriver(browser=browser, target_site=site, headless=True)
+    autofill_driver.execute_order(
+        order=card_order_valid,
+        skip_setup=False,
+        auto_save_threshold=None,
+        post_processing_config=DEFAULT_POST_PROCESSING,
+    )
     assert (
         len(
             WebDriverWait(autofill_driver.driver, 30).until(
@@ -893,10 +898,13 @@ def test_card_order_complete_run_single_cardback(browser, site, input_enter, car
     ],
 )
 def test_card_order_complete_run_multiple_cardbacks(browser, site, input_enter, card_order_multiple_cardbacks):
-    autofill_driver = AutofillDriver(
-        order=card_order_multiple_cardbacks, browser=browser, target_site=site, headless=True
+    autofill_driver = AutofillDriver(browser=browser, target_site=site, headless=True)
+    autofill_driver.execute_order(
+        order=card_order_multiple_cardbacks,
+        skip_setup=False,
+        auto_save_threshold=None,
+        post_processing_config=DEFAULT_POST_PROCESSING,
     )
-    autofill_driver.execute(skip_setup=False, auto_save_threshold=None, post_processing_config=DEFAULT_POST_PROCESSING)
     assert (
         len(
             WebDriverWait(autofill_driver.driver, 30).until(
