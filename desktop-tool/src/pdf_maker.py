@@ -15,7 +15,7 @@ from src.utils import bold
 
 @attr.s
 class PdfExporter:
-    order: CardOrder = attr.ib(default=attr.Factory(CardOrder.from_xml_in_folder))
+    order: CardOrder = attr.ib(default=attr.Factory(lambda: CardOrder.from_xmls_in_folder()[0]))
     state: str = attr.ib(init=False, default=States.initialising)
     pdf: FPDF = attr.ib(default=None)
     card_width_in_inches: float = attr.ib(default=2.73)

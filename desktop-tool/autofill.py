@@ -8,7 +8,7 @@ from wakepy import keepawake
 
 from src.constants import Browsers, ImageResizeMethods, TargetSites
 from src.driver import AutofillDriver
-from src.order import CardOrder
+from src.order import CardOrder, aggregate_and_split_orders
 from src.pdf_maker import PdfExporter
 from src.processing import ImagePostProcessingConfig
 from src.utils import bold
@@ -150,9 +150,14 @@ def main(
             if exportpdf:
                 PdfExporter().execute(post_processing_config=post_processing_config)
             else:
-                card_order = CardOrder.from_xml_in_folder()
+                target_site = TargetSites[site]
+                card_orders = aggregate_and_split_orders(
+                    orders=CardOrder.from_xmls_in_folder(), target_site=target_site
+                )
+                # TODO: temporary hack
+                card_order = card_orders[0]  # bad, obviously
                 AutofillDriver(
-                    browser=Browsers[browser], target_site=TargetSites[site], binary_location=binary_location
+                    browser=Browsers[browser], target_site=target_site, binary_location=binary_location
                 ).execute_order(
                     order=card_order,
                     skip_setup=skipsetup,
