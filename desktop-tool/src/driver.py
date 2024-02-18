@@ -440,7 +440,7 @@ class AutofillDriver:
         )
         bracket = bracket_options[0]
         print(
-            f"Configuring your project of {bold(self.order.details.quantity)} "
+            f"Configuring your project of {bold(self.order.details.quantity)} cards "
             f"in the bracket of up to {bold(bracket)} cards."
         )
         qty_dropdown.select_by_value(str(bracket))
@@ -668,14 +668,13 @@ class AutofillDriver:
             self.insert_backs(auto_save_threshold)
             self.page_to_review()
         log_hours_minutes_seconds_elapsed(t)
-        input(
+        print(
             textwrap.dedent(
                 f"""
                 Please review your order and ensure everything has been uploaded correctly before finalising with
                 {self.target_site.name}. If any images failed to download, links to download them will have been printed
                 above. If you need to make any changes to your order, you can do so by adding it to your Saved Projects
-                and editing in your normal browser. Press Enter to close this window - your browser window will remain
-                open.
+                and editing in your normal browser.
                 """
             )
         )

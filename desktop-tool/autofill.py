@@ -10,7 +10,7 @@ from src.constants import Browsers, ImageResizeMethods, TargetSites
 from src.driver import AutofillDriver
 from src.pdf_maker import PdfExporter
 from src.processing import ImagePostProcessingConfig
-from src.utils import TEXT_BOLD, TEXT_END
+from src.utils import bold
 
 # https://stackoverflow.com/questions/12492810/python-how-can-i-make-the-ansi-escape-codes-to-work-also-in-windows
 os.system("")  # enables ansi escape characters in terminal
@@ -156,8 +156,13 @@ def main(
                     auto_save_threshold=auto_save_threshold if auto_save else None,
                     post_processing_config=post_processing_config,
                 )
+                input(
+                    f"If this software has brought you joy and you'd like to throw a few bucks my way,\n"
+                    f"you can find my tip jar here: {bold('https://www.buymeacoffee.com/chilli.axe')}\n\n"
+                    f"Press Enter to close this window - your browser window will remain open.\n"
+                )
     except Exception as e:
-        print(f"An uncaught exception occurred:\n{TEXT_BOLD}{e}{TEXT_END}\n")
+        print(f"An uncaught exception occurred:\n{bold(e)}\n")
         input("Press Enter to exit.")
 
 
