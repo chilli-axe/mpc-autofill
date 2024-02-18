@@ -28,18 +28,17 @@ DEFAULT_POST_PROCESSING = ImagePostProcessingConfig(max_dpi=800, downscale_alg=c
 
 
 def assert_card_images_identical(a: CardImage, b: CardImage) -> None:
-    assert (
-        a.drive_id == b.drive_id
-        and set(a.slots) == set(b.slots)
-        and a.name == b.name
-        and a.file_path == b.file_path
-        and a.query == b.query
-    )
+    assert a.drive_id == b.drive_id, f"Drive ID {a.drive_id} does not match {b.drive_id}"
+    assert set(a.slots) == set(b.slots), f"Slots {sorted(a.slots)} do not match {sorted(b.slots)}"
+    assert a.name == b.name, f"Name {a.name} does not match {b.name}"
+    assert a.file_path == b.file_path, f"File path {a.file_path} does not match {b.file_path}"
+    assert a.query == b.query, f"Query {a.query} does not match {b.query}"
 
 
 def assert_card_image_collections_identical(a: CardImageCollection, b: CardImageCollection) -> None:
-    assert a.face == b.face and a.num_slots == b.num_slots
-    assert len(a.cards) == len(b.cards)
+    assert a.face == b.face, f"Face {a.face} does not match {b.face}"
+    assert a.num_slots == b.num_slots, f"Number of slots {a.num_slots} does not match {b.num_slots}"
+    assert len(a.cards) == len(b.cards), f"Number of cards {len(a.cards)} does not match {len(b.cards)}"
     for card_image_a, card_image_b in zip(
         sorted(a.cards, key=lambda x: x.drive_id),
         sorted(b.cards, key=lambda x: x.drive_id),
@@ -48,17 +47,19 @@ def assert_card_image_collections_identical(a: CardImageCollection, b: CardImage
 
 
 def assert_details_identical(a: Details, b: Details) -> None:
-    assert a.quantity == b.quantity and a.stock == b.stock and a.foil == b.foil
+    assert a.quantity == b.quantity, f"Quantity {a.quantity} does not match {b.quantity}"
+    assert a.stock == b.stock, f"Stock {a.stock} does not match {b.stock}"
+    assert a.foil == b.foil, f"Foil {a.foil} does not match {b.foil}"
 
 
 def assert_orders_identical(a: CardOrder, b: CardOrder) -> None:
-    assert_details_identical(a.details, b.details)
-    assert_card_image_collections_identical(a.fronts, b.fronts)
-    assert_card_image_collections_identical(a.backs, b.backs)
+    assert_details_identical(a.details, b.details), "Details do not match"
+    assert_card_image_collections_identical(a.fronts, b.fronts), "Fronts do not match"
+    assert_card_image_collections_identical(a.backs, b.backs), "Backs do not match"
 
 
 def assert_file_size(file_path: str, size: int) -> None:
-    assert os.stat(file_path).st_size == size
+    assert os.stat(file_path).st_size == size, f"File size {os.stat(file_path).st_size} does not match {size}"
 
 
 # endregion
@@ -785,6 +786,218 @@ def test_card_order_mangled_xml(input_enter):
 def test_card_order_missing_slots(input_enter, card_order_element_invalid_quantity):
     # just testing that this order parses without error
     CardOrder.from_element(card_order_element_invalid_quantity)
+
+
+@pytest.mark.parametrize(
+    "input_orders, expected_order",
+    [
+        # region two small orders which share the same singleton cardback
+        (
+            # input orders
+            [
+                CardOrder(
+                    details=Details(quantity=2, stock=constants.Cardstocks.S30, foil=False),
+                    fronts=CardImageCollection(
+                        cards=[CardImage(drive_id="1", name="1.png", slots=[0, 1])],
+                        num_slots=2,
+                        face=constants.Faces.front,
+                    ),
+                    backs=CardImageCollection(
+                        cards=[CardImage(drive_id="2", name="2.png", slots=[0, 1])],
+                        num_slots=2,
+                        face=constants.Faces.back,
+                    ),
+                ),
+                CardOrder(
+                    details=Details(quantity=2, stock=constants.Cardstocks.S30, foil=False),
+                    fronts=CardImageCollection(
+                        cards=[
+                            CardImage(drive_id="3", name="3.png", slots=[0]),
+                            CardImage(drive_id="4", name="4.png", slots=[1]),
+                        ],
+                        num_slots=2,
+                        face=constants.Faces.front,
+                    ),
+                    backs=CardImageCollection(
+                        cards=[CardImage(drive_id="2", name="2.png", slots=[0, 1])],
+                        num_slots=2,
+                        face=constants.Faces.back,
+                    ),
+                ),
+            ],
+            # expected order
+            CardOrder(
+                details=Details(quantity=4, stock=constants.Cardstocks.S30, foil=False),
+                fronts=CardImageCollection(
+                    cards=[
+                        CardImage(drive_id="1", name="1.png", slots=[0, 1]),
+                        CardImage(drive_id="3", name="3.png", slots=[2]),
+                        CardImage(drive_id="4", name="4.png", slots=[3]),
+                    ],
+                    num_slots=4,
+                    face=constants.Faces.front,
+                ),
+                backs=CardImageCollection(
+                    cards=[
+                        CardImage(drive_id="2", name="2.png", slots=[0, 1]),
+                        CardImage(drive_id="2", name="2.png", slots=[2, 3]),
+                    ],
+                    num_slots=4,
+                    face=constants.Faces.back,
+                ),
+            ),
+        ),
+        # endregion
+        # region two small orders which do not share the same singleton cardback
+        (
+            # input orders
+            [
+                CardOrder(
+                    details=Details(quantity=2, stock=constants.Cardstocks.S30, foil=False),
+                    fronts=CardImageCollection(
+                        cards=[CardImage(drive_id="1", name="1.png", slots=[0, 1])],
+                        num_slots=2,
+                        face=constants.Faces.front,
+                    ),
+                    backs=CardImageCollection(
+                        cards=[CardImage(drive_id="2", name="2.png", slots=[0, 1])],
+                        num_slots=2,
+                        face=constants.Faces.back,
+                    ),
+                ),
+                CardOrder(
+                    details=Details(quantity=2, stock=constants.Cardstocks.S30, foil=False),
+                    fronts=CardImageCollection(
+                        cards=[
+                            CardImage(drive_id="3", name="3.png", slots=[0]),
+                            CardImage(drive_id="4", name="4.png", slots=[1]),
+                        ],
+                        num_slots=2,
+                        face=constants.Faces.front,
+                    ),
+                    backs=CardImageCollection(
+                        cards=[CardImage(drive_id="5", name="5.png", slots=[0, 1])],
+                        num_slots=2,
+                        face=constants.Faces.back,
+                    ),
+                ),
+            ],
+            # expected order
+            CardOrder(
+                details=Details(quantity=4, stock=constants.Cardstocks.S30, foil=False),
+                fronts=CardImageCollection(
+                    cards=[
+                        CardImage(drive_id="1", name="1.png", slots=[0, 1]),
+                        CardImage(drive_id="3", name="3.png", slots=[2]),
+                        CardImage(drive_id="4", name="4.png", slots=[3]),
+                    ],
+                    num_slots=4,
+                    face=constants.Faces.front,
+                ),
+                backs=CardImageCollection(
+                    cards=[
+                        CardImage(drive_id="2", name="2.png", slots=[0, 1]),
+                        CardImage(drive_id="5", name="5.png", slots=[2, 3]),
+                    ],
+                    num_slots=4,
+                    face=constants.Faces.back,
+                ),
+            ),
+        ),
+        # endregion
+    ],
+    ids=[
+        "two small orders which share the same singleton cardback",
+        "region two small orders which do not share the same singleton cardback",
+    ],
+)
+def test_combine_orders(input_orders: list[CardOrder], expected_order: CardOrder):
+    assert_orders_identical(CardOrder.from_multiple_orders(input_orders), expected_order)
+
+
+@pytest.fixture()
+def monkeypatch_split_every_4_cards(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(src.order, "prompt", lambda _: {"split_choices": "Split every 4 cards"})
+
+
+@pytest.fixture()
+def monkeypatch_let_me_specify_how_to_split_the_cards(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(src.order, "prompt", lambda _: {"split_choices": "Let me specify how to split the cards"})
+
+
+@pytest.mark.parametrize(
+    "user_specified_sizes, expected_sizes",
+    [
+        ("2, 1, 2", [2, 1, 2]),
+        ("2,1,2", [2, 1, 2]),
+        ("2, 3", [2, 3]),
+        ("4, 1", [4, 1]),
+    ],
+)
+def test_get_project_sizes_manually_specifying_sizes(
+    monkeypatch, monkeypatch_let_me_specify_how_to_split_the_cards, user_specified_sizes, expected_sizes
+):
+    order = CardOrder(
+        details=Details(quantity=5, stock=constants.Cardstocks.S30, foil=False),
+        fronts=CardImageCollection(
+            cards=[CardImage(drive_id="1", name="1.png", slots=list(range(5)))],
+            num_slots=5,
+            face=constants.Faces.front,
+        ),
+        backs=CardImageCollection(
+            cards=[CardImage(drive_id="2", name="2.png", slots=list(range(5)))],
+            num_slots=5,
+            face=constants.Faces.back,
+        ),
+    )
+    monkeypatch.setattr(src.constants, "PROJECT_MAX_SIZE", 4)
+    text_inputs = iter([user_specified_sizes])
+    monkeypatch.setattr("builtins.input", lambda _: next(text_inputs))
+    project_sizes = order.get_project_sizes()
+    assert project_sizes == expected_sizes
+
+
+@pytest.mark.parametrize("first_attempted_input", ["5, 0", "6, -1", "egg", "2, 2", "4, 0, 1"])
+def test_get_project_sizes_manually_specifying_sizes_with_an_incorrect_attempt_first(
+    monkeypatch, monkeypatch_let_me_specify_how_to_split_the_cards, first_attempted_input
+):
+    order = CardOrder(
+        details=Details(quantity=5, stock=constants.Cardstocks.S30, foil=False),
+        fronts=CardImageCollection(
+            cards=[CardImage(drive_id="1", name="1.png", slots=list(range(5)))],
+            num_slots=5,
+            face=constants.Faces.front,
+        ),
+        backs=CardImageCollection(
+            cards=[CardImage(drive_id="2", name="2.png", slots=list(range(5)))],
+            num_slots=5,
+            face=constants.Faces.back,
+        ),
+    )
+    monkeypatch.setattr(src.constants, "PROJECT_MAX_SIZE", 4)
+    text_inputs = iter([first_attempted_input, "2, 3"])
+    monkeypatch.setattr("builtins.input", lambda _: next(text_inputs))
+    project_sizes = order.get_project_sizes()
+    assert project_sizes == [2, 3]
+
+
+def test_get_project_sizes_automatically_breaking_on_max_size(monkeypatch, monkeypatch_split_every_4_cards):
+    order = CardOrder(
+        details=Details(quantity=5, stock=constants.Cardstocks.S30, foil=False),
+        fronts=CardImageCollection(
+            cards=[CardImage(drive_id="1", name="1.png", slots=list(range(5)))],
+            num_slots=5,
+            face=constants.Faces.front,
+        ),
+        backs=CardImageCollection(
+            cards=[CardImage(drive_id="2", name="2.png", slots=list(range(5)))],
+            num_slots=5,
+            face=constants.Faces.back,
+        ),
+    )
+    monkeypatch.setattr(src.constants, "PROJECT_MAX_SIZE", 4)
+    project_sizes = order.get_project_sizes()
+    assert project_sizes == [4, 1]
 
 
 # endregion
