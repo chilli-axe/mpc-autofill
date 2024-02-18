@@ -92,7 +92,7 @@ export function ProjectContainer({
 
 export function LayoutWithoutReduxProvider({ children }: PropsWithChildren) {
   const consent = getGoogleAnalyticsConsent();
-  const downloadContext: DownloadContext = new Queue(3, 100);
+  const downloadContext: DownloadContext = new Queue(10, 50);
   return (
     <DownloadContextProvider value={downloadContext}>
       {consent === true && (
