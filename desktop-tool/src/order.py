@@ -333,10 +333,6 @@ class CardOrder:
             backs = CardImageCollection.from_element(
                 element=root_dict[constants.BaseTags.backs], num_slots=details.quantity, face=constants.Faces.back
             )
-        # If the order has a single cardback, set its slots to [0], as it will only be uploaded and inserted into
-        # a single slot
-        if len(backs.cards) == 1:
-            backs.cards[0].slots = [0]
         order = cls(name=name, details=details, fronts=fronts, backs=backs)
         return order
 
