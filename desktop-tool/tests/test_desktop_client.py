@@ -663,7 +663,7 @@ def test_card_order_valid(card_order_valid):
                 cards=[
                     CardImage(
                         drive_id=f"{FILE_PATH}/cards/{TEST_IMAGE}.png",
-                        slots=[0],  # for orders with a single back image, the back image is only assigned to slot 0
+                        slots=[0, 1, 2],
                         name=f"{TEST_IMAGE}.png",  # name retrieved from file on disk
                         file_path=f"{FILE_PATH}/cards/{TEST_IMAGE}.png",
                         query=None,
@@ -765,7 +765,7 @@ def test_card_order_valid_from_file():
                 cards=[
                     CardImage(
                         drive_id="16g2UamJ2jzwNHovLesvsinvd6_qPkZfy",
-                        slots=[0],  # for orders with a single back image, the back image is only assigned to slot 0
+                        slots=list(range(10)),
                         name="MTGA Lotus.png",
                         file_path=f"{FILE_PATH}/cards/MTGA Lotus.png",
                         query=None,

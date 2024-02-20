@@ -330,7 +330,7 @@ class AutofillDriver:
             return None
 
     @exception_retry_skip_handler
-    def insert_image(self, pid: Optional[str], image: CardImage, slots: Optional[list[int]] = None) -> None:
+    def insert_image(self, pid: Optional[str], image: CardImage, slots: list[int]) -> None:
         """
         Inserts the image identified by `pid` into `image.slots`.
         If `slots` is specified, fill the image into those slots instead.
@@ -338,13 +338,9 @@ class AutofillDriver:
 
         self.wait_until_javascript_object_is_defined("PageLayout.prototype.applyDragPhoto")
 
-        slots_to_fill = image.slots
-        if slots is not None:
-            slots_to_fill = slots
-
         if pid:
             self.set_state(self.state, f'Inserting "{image.name}"')
-            for slot in slots_to_fill:
+            for slot in slots:
                 # Insert the card into each slot and wait for the page to load before continuing
                 self.execute_javascript(
                     f'PageLayout.prototype.applyDragPhoto({self.get_element_for_slot_js(slot)}, 0, "{pid}")'
@@ -364,18 +360,23 @@ class AutofillDriver:
         Returns whether any action to modify the targeted site's project state was taken.
         """
 
-        slots_filled = [self.is_slot_filled(slot) for slot in image.slots]
+        valid_slots = [
+            slot
+            for slot in image.slots
+            if self.execute_javascript(self.get_element_for_slot_js(slot=slot), return_=True)
+        ]
+        slots_filled = [self.is_slot_filled(slot) for slot in valid_slots]
         if all(slots_filled):
             return False
         elif not any(slots_filled):
             pid = self.upload_image(image)
-            self.insert_image(pid, image)
+            self.insert_image(pid, image, slots=valid_slots)
         else:
             idx = next(index for index, value in enumerate(slots_filled) if value is True)
             pid = self.execute_javascript(
-                f'{self.get_element_for_slot_js(image.slots[idx])}.getAttribute("pid")', return_=True
+                f'{self.get_element_for_slot_js(valid_slots[idx])}.getAttribute("pid")', return_=True
             )
-            unfilled_slot_numbers = [image.slots[i] for i in range(len(image.slots)) if slots_filled[i] is False]
+            unfilled_slot_numbers = [slot for i, slot in enumerate(valid_slots) if slots_filled[i] is False]
             self.insert_image(pid, image, slots=unfilled_slot_numbers)
         return True
 
