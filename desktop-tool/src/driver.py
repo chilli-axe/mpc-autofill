@@ -596,7 +596,10 @@ class AutofillDriver:
         self.next_step()
         self.wait()
         try:
-            self.driver.find_element(by=By.ID, value="closeBtn").click()
+            close_btn = self.driver.find_element(by=By.ID, value="closeBtn")
+            if close_btn.is_displayed():  # type: ignore  # TODO: because of missing types in selenium i guess?
+                # this may not be clickable after processing one card order
+                close_btn.click()
         except NoSuchElementException:
             pass
         self.next_step()
