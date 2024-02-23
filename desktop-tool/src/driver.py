@@ -9,6 +9,7 @@ from typing import Any, Generator, Optional
 
 import attr
 import enlighten
+from InquirerPy import inquirer
 from selenium.common import exceptions as sl_exc
 from selenium.common.exceptions import (
     NoAlertPresentException,
@@ -46,6 +47,7 @@ class AutofillDriver:
     action: Optional[str] = attr.ib(init=False, default=None)
     manager: enlighten.Manager = attr.ib(init=False, default=attr.Factory(enlighten.get_manager))
     status_bar: enlighten.StatusBar = attr.ib(init=False, default=False)
+    order_progress_bar: enlighten.Counter = attr.ib(init=False, default=None)
     download_bar: enlighten.Counter = attr.ib(init=False, default=None)
     upload_bar: enlighten.Counter = attr.ib(init=False, default=None)
     file_path_to_pid_map: dict[str, str] = {}
@@ -59,7 +61,7 @@ class AutofillDriver:
             driver.implicitly_wait(5)
             print(
                 f"Successfully initialised {bold(self.browser.name)} driver "
-                f"targeting {bold(self.target_site.name)}."
+                f"targeting {bold(self.target_site.name)}.\n"
             )
         except (AttributeError, ValueError, sl_exc.WebDriverException) as e:
             raise Exception(
@@ -69,30 +71,40 @@ class AutofillDriver:
 
         self.driver = driver
 
-    def configure_bars(self) -> None:
+    def initialise_bars(self) -> None:
         # set the total for upload/download bars to 0 here, then change the total according to each order
         # as they're processed
         status_format = "State: {state}, Action: {action}"
         self.status_bar = self.manager.status_bar(
             status_format=status_format, state=bold(self.state), action=bold("N/A"), position=1, autorefresh=True
         )
-        self.download_bar = self.manager.counter(total=0, desc="Images Downloaded", position=2, autorefresh=True)
-        self.upload_bar = self.manager.counter(total=0, desc="Images Uploaded", position=3, autorefresh=True)
-
+        self.order_progress_bar = self.manager.counter(
+            total=0, desc="Projects Auto-Filled", position=2, autorefresh=True
+        )
+        self.download_bar = self.manager.counter(total=0, desc="Images Downloaded   ", position=3, autorefresh=True)
+        self.upload_bar = self.manager.counter(total=0, desc="Images Uploaded     ", position=4, autorefresh=True)
         self.status_bar.refresh()
+        self.order_progress_bar.refresh()
         self.download_bar.refresh()
         self.upload_bar.refresh()
 
-    def initialise_order(self, order: CardOrder) -> None:
+    def configure_bars_for_order(self, order: CardOrder) -> None:
         num_images = len(order.fronts.cards) + len(order.backs.cards)
+        self.set_state(state=States.initialising, action=None)
         self.upload_bar.total = num_images
         self.download_bar.total = num_images
+        self.upload_bar.update(-self.upload_bar.count)
+        self.download_bar.update(-self.download_bar.count)
+        self.upload_bar.refresh()
+        self.download_bar.refresh()
+
+    def initialise_order(self, order: CardOrder) -> None:
         order.print_order_overview()
         self.driver.get(f"{self.target_site.value.starting_url}")
         self.set_state(States.defining_order)
 
     def __attrs_post_init__(self) -> None:
-        self.configure_bars()
+        self.initialise_bars()
         self.initialise_driver()
         self.set_state(States.initialised)
 
@@ -396,6 +408,7 @@ class AutofillDriver:
                 ):
                     self.save_project_to_user_account(order=order)
             self.upload_bar.update()
+            self.upload_bar.refresh()
 
     # endregion
 
@@ -450,10 +463,7 @@ class AutofillDriver:
             f"{', '.join([bold(option) for option in bracket_options])}"
         )
         bracket = bracket_options[0]
-        print(
-            f"Configuring your project of {bold(order.details.quantity)} cards "
-            f"in the bracket of up to {bold(bracket)} cards."
-        )
+        print(f"This project fits into the bracket of up to {bold(bracket)} cards.")
         qty_dropdown.select_by_value(str(bracket))
 
     @exception_retry_skip_handler
@@ -506,7 +516,7 @@ class AutofillDriver:
             textwrap.dedent(
                 f"""
                 Continuing to edit an existing order. Please enter the project editor for your selected project,
-                wait for the page to load {bold('fully')}, then return to the console window and press Enter.
+                wait for the page to load {bold('fully')}, then return to the console window and press {bold('Enter')}.
                 """
             )
         )
@@ -516,7 +526,7 @@ class AutofillDriver:
                     "The SSID of the project cannot be determined from the current URL. "
                     "Are you sure you're in the project editor?"
                     "Please enter the editor for your selected project, "
-                    "then return to the console window and press Enter."
+                    f"then return to the console window and press {bold('Enter')}."
                 )
             )
         print("Successfully entered the editor for an existing project!")
@@ -654,6 +664,7 @@ class AutofillDriver:
         post_processing_config: Optional[ImagePostProcessingConfig],
     ) -> None:
         t = time.time()
+        self.configure_bars_for_order(order=order)
         with ThreadPoolExecutor(max_workers=THREADS) as pool:
             order.fronts.download_images(
                 pool=pool, download_bar=self.download_bar, post_processing_config=post_processing_config
@@ -668,15 +679,7 @@ class AutofillDriver:
             if skip_setup:
                 self.redefine_project(order=order)
             else:
-                print(
-                    textwrap.dedent(
-                        f"""
-                        Configuring a new order. If you'd like to continue uploading cards to an existing project,
-                        start the program and answer with {bold('Y')} when asked whether project setup should
-                        be skipped.
-                        """
-                    )
-                )
+                print("Configuring a new project.")
                 self.define_project(order=order)
                 self.page_to_fronts(order=order)
             self.insert_fronts(order=order, auto_save_threshold=auto_save_threshold)
@@ -687,12 +690,41 @@ class AutofillDriver:
         print(
             textwrap.dedent(
                 f"""
-                Please review your order and ensure everything has been uploaded correctly before finalising with
+                Please review your project and ensure everything has been uploaded correctly before finalising with
                 {self.target_site.name}. If any images failed to download, links to download them will have been printed
                 above. If you need to make any changes to your order, you can do so by adding it to your Saved Projects
                 and editing in your normal browser.
                 """
             )
         )
+
+    def execute_orders(
+        self,
+        orders: list[CardOrder],
+        auto_save_threshold: Optional[int],
+        post_processing_config: Optional[ImagePostProcessingConfig],
+    ) -> None:
+        self.order_progress_bar.total = len(orders)
+        self.order_progress_bar.refresh()
+        for i, order in enumerate(orders, start=1):
+            skip_setup = inquirer.confirm(
+                message=(
+                    "Do you want the tool to continue editing an existing project? (Press Enter if you're not sure.)"
+                ),
+                default=False,
+            ).execute()
+            print(f"Auto-filling project {bold(i)} of {bold(len(orders))}.")
+            self.execute_order(
+                order=order,
+                skip_setup=skip_setup,
+                auto_save_threshold=auto_save_threshold,
+                post_processing_config=post_processing_config,
+            )
+            self.order_progress_bar.update()
+            self.order_progress_bar.refresh()
+            if i < len(orders):
+                if auto_save_threshold is not None:
+                    print("Please add this project to your cart before continuing.")
+                input(f"Press {bold('Enter')} to continue with auto-filling the next project.\n")
 
     # endregion
