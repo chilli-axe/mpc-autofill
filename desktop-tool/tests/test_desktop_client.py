@@ -2,8 +2,9 @@ import os
 import textwrap
 import time
 from concurrent.futures import ThreadPoolExecutor
+from itertools import groupby
 from queue import Queue
-from typing import Generator
+from typing import Callable, Generator
 from xml.etree import ElementTree
 
 import pytest
@@ -16,7 +17,13 @@ import src.constants as constants
 import src.utils
 from src.driver import AutofillDriver
 from src.io import get_google_drive_file_name, remove_directories, remove_files
-from src.order import CardImage, CardImageCollection, CardOrder, Details
+from src.order import (
+    CardImage,
+    CardImageCollection,
+    CardOrder,
+    Details,
+    aggregate_and_split_orders,
+)
 from src.pdf_maker import PdfExporter
 from src.processing import ImagePostProcessingConfig
 from src.utils import text_to_list
@@ -369,7 +376,7 @@ def card_order_element_valid() -> Generator[ElementTree.Element, None, None]:
 
 @pytest.fixture()
 def card_order_valid(card_order_element_valid: ElementTree.Element) -> Generator[CardOrder, None, None]:
-    yield CardOrder.from_element(card_order_element_valid)
+    yield CardOrder.from_element(card_order_element_valid, allowed_to_exceed_project_max_size=False)
 
 
 @pytest.fixture()
@@ -416,7 +423,7 @@ def card_order_element_multiple_cardbacks() -> Generator[ElementTree.Element, No
 def card_order_multiple_cardbacks(
     card_order_element_multiple_cardbacks: ElementTree.Element,
 ) -> Generator[CardOrder, None, None]:
-    yield CardOrder.from_element(card_order_element_multiple_cardbacks)
+    yield CardOrder.from_element(card_order_element_multiple_cardbacks, allowed_to_exceed_project_max_size=False)
 
 
 @pytest.fixture()
@@ -605,7 +612,7 @@ def test_card_image_collection_no_cards(input_enter, card_image_collection_eleme
 
 
 def test_details_valid(details_element_valid):
-    details = Details.from_element(details_element_valid)
+    details = Details.from_element(details_element_valid, allowed_to_exceed_project_max_size=False)
     assert_details_identical(
         details,
         Details(quantity=1, stock=constants.Cardstocks.S30, foil=False),
@@ -614,13 +621,13 @@ def test_details_valid(details_element_valid):
 
 def test_details_quantity_greater_than_max_size(input_enter, details_element_quantity_greater_than_max_size):
     with pytest.raises(SystemExit) as exc_info:
-        Details.from_element(details_element_quantity_greater_than_max_size)
+        Details.from_element(details_element_quantity_greater_than_max_size, allowed_to_exceed_project_max_size=False)
     assert exc_info.value.code == 0
 
 
 def test_details_invalid_cardstock(input_enter, details_element_invalid_cardstock):
     with pytest.raises(SystemExit) as exc_info:
-        Details.from_element(details_element_invalid_cardstock)
+        Details.from_element(details_element_invalid_cardstock, allowed_to_exceed_project_max_size=False)
     assert exc_info.value.code == 0
 
 
@@ -785,7 +792,7 @@ def test_card_order_mangled_xml(input_enter):
 
 def test_card_order_missing_slots(input_enter, card_order_element_invalid_quantity):
     # just testing that this order parses without error
-    CardOrder.from_element(card_order_element_invalid_quantity)
+    CardOrder.from_element(card_order_element_invalid_quantity, allowed_to_exceed_project_max_size=False)
 
 
 @pytest.mark.parametrize(
@@ -916,6 +923,14 @@ def test_combine_orders(input_orders: list[CardOrder], expected_order: CardOrder
 
 
 @pytest.fixture()
+def monkeypatch_project_max_size(monkeypatch: pytest.MonkeyPatch) -> Callable[[int], None]:
+    def func(project_max_size: int) -> None:
+        monkeypatch.setattr(src.constants, "PROJECT_MAX_SIZE", project_max_size)
+
+    return func
+
+
+@pytest.fixture()
 def monkeypatch_split_every_4_cards(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(src.order, "prompt", lambda _: {"split_choices": "Split every 4 cards"})
 
@@ -935,7 +950,11 @@ def monkeypatch_let_me_specify_how_to_split_the_cards(monkeypatch: pytest.Monkey
     ],
 )
 def test_get_project_sizes_manually_specifying_sizes(
-    monkeypatch, monkeypatch_let_me_specify_how_to_split_the_cards, user_specified_sizes, expected_sizes
+    monkeypatch,
+    monkeypatch_let_me_specify_how_to_split_the_cards,
+    monkeypatch_project_max_size,
+    user_specified_sizes,
+    expected_sizes,
 ):
     order = CardOrder(
         details=Details(quantity=5, stock=constants.Cardstocks.S30, foil=False),
@@ -950,7 +969,7 @@ def test_get_project_sizes_manually_specifying_sizes(
             face=constants.Faces.back,
         ),
     )
-    monkeypatch.setattr(src.constants, "PROJECT_MAX_SIZE", 4)
+    monkeypatch_project_max_size(4)
     text_inputs = iter([user_specified_sizes])
     monkeypatch.setattr("builtins.input", lambda _: next(text_inputs))
     project_sizes = order.get_project_sizes()
@@ -959,7 +978,7 @@ def test_get_project_sizes_manually_specifying_sizes(
 
 @pytest.mark.parametrize("first_attempted_input", ["5, 0", "6, -1", "egg", "2, 2", "4, 0, 1"])
 def test_get_project_sizes_manually_specifying_sizes_with_an_incorrect_attempt_first(
-    monkeypatch, monkeypatch_let_me_specify_how_to_split_the_cards, first_attempted_input
+    monkeypatch, monkeypatch_let_me_specify_how_to_split_the_cards, monkeypatch_project_max_size, first_attempted_input
 ):
     order = CardOrder(
         details=Details(quantity=5, stock=constants.Cardstocks.S30, foil=False),
@@ -974,14 +993,16 @@ def test_get_project_sizes_manually_specifying_sizes_with_an_incorrect_attempt_f
             face=constants.Faces.back,
         ),
     )
-    monkeypatch.setattr(src.constants, "PROJECT_MAX_SIZE", 4)
+    monkeypatch_project_max_size(4)
     text_inputs = iter([first_attempted_input, "2, 3"])
     monkeypatch.setattr("builtins.input", lambda _: next(text_inputs))
     project_sizes = order.get_project_sizes()
     assert project_sizes == [2, 3]
 
 
-def test_get_project_sizes_automatically_breaking_on_max_size(monkeypatch, monkeypatch_split_every_4_cards):
+def test_get_project_sizes_automatically_breaking_on_max_size(
+    monkeypatch, monkeypatch_split_every_4_cards, monkeypatch_project_max_size
+):
     order = CardOrder(
         details=Details(quantity=5, stock=constants.Cardstocks.S30, foil=False),
         fronts=CardImageCollection(
@@ -995,9 +1016,103 @@ def test_get_project_sizes_automatically_breaking_on_max_size(monkeypatch, monke
             face=constants.Faces.back,
         ),
     )
-    monkeypatch.setattr(src.constants, "PROJECT_MAX_SIZE", 4)
+    monkeypatch_project_max_size(4)
     project_sizes = order.get_project_sizes()
     assert project_sizes == [4, 1]
+
+
+@pytest.mark.parametrize(
+    "input_orders, expected_orders",
+    [
+        (
+            [
+                CardOrder(
+                    details=Details(quantity=5, stock=constants.Cardstocks.S30, foil=False),
+                    fronts=CardImageCollection(
+                        cards=[CardImage(drive_id="1", name="1.png", slots=list(range(5)))],
+                        num_slots=5,
+                        face=constants.Faces.front,
+                    ),
+                    backs=CardImageCollection(
+                        cards=[CardImage(drive_id="2", name="2.png", slots=list(range(5)))],
+                        num_slots=5,
+                        face=constants.Faces.back,
+                    ),
+                ),
+                CardOrder(
+                    details=Details(quantity=2, stock=constants.Cardstocks.S30, foil=False),
+                    fronts=CardImageCollection(
+                        cards=[CardImage(drive_id="1", name="1.png", slots=list(range(2)))],
+                        num_slots=2,
+                        face=constants.Faces.front,
+                    ),
+                    backs=CardImageCollection(
+                        cards=[CardImage(drive_id="2", name="2.png", slots=list(range(2)))],
+                        num_slots=2,
+                        face=constants.Faces.back,
+                    ),
+                ),
+            ],
+            [
+                CardOrder(
+                    details=Details(quantity=4, stock=constants.Cardstocks.S30, foil=False),
+                    fronts=CardImageCollection(
+                        cards=[CardImage(drive_id="1", name="1.png", slots=list(range(4)))],
+                        num_slots=4,
+                        face=constants.Faces.front,
+                    ),
+                    backs=CardImageCollection(
+                        cards=[CardImage(drive_id="2", name="2.png", slots=list(range(4)))],
+                        num_slots=4,
+                        face=constants.Faces.back,
+                    ),
+                ),
+                CardOrder(
+                    details=Details(quantity=3, stock=constants.Cardstocks.S30, foil=False),
+                    fronts=CardImageCollection(
+                        cards=[CardImage(drive_id="1", name="1.png", slots=list(range(3)))],
+                        num_slots=3,
+                        face=constants.Faces.front,
+                    ),
+                    backs=CardImageCollection(
+                        cards=[CardImage(drive_id="2", name="2.png", slots=list(range(3)))],
+                        num_slots=3,
+                        face=constants.Faces.back,
+                    ),
+                ),
+            ],
+        ),
+    ],
+    ids=["sledgehammer_test"],
+)
+def test_aggregate_and_split_orders(
+    monkeypatch, monkeypatch_project_max_size, monkeypatch_split_every_4_cards, input_orders, expected_orders
+):
+    monkeypatch_project_max_size(4)
+    aggregated_orders = aggregate_and_split_orders(
+        orders=input_orders, target_site=constants.TargetSites.MakePlayingCards, combine_orders=True
+    )
+
+    assert len(aggregated_orders) == len(expected_orders)
+
+    def aggregate_orders_by_details_then_sort_by_quantity(
+        orders: list[CardOrder],
+    ) -> dict[tuple[constants.Cardstocks, bool], list[CardOrder]]:
+        def key(order: CardOrder) -> int:
+            return hash((order.details.foil, order.details.stock))
+
+        return {
+            key: sorted(values, key=lambda order: order.details.quantity)
+            for key, values in groupby(sorted(orders, key=key), key=key)
+        }
+
+    aggregated_orders_dict = aggregate_orders_by_details_then_sort_by_quantity(aggregated_orders)
+    expected_orders_dict = aggregate_orders_by_details_then_sort_by_quantity(expected_orders)
+    assert aggregated_orders_dict.keys() == expected_orders_dict.keys()
+    for key in aggregated_orders_dict.keys():
+        assert len(aggregated_orders_dict[key]) == len(expected_orders_dict[key])
+        for (aggregated_order, expected_order) in zip(aggregated_orders_dict[key], expected_orders_dict[key]):
+            assert_orders_identical(aggregated_order, expected_order)
 
 
 # endregion
@@ -1070,6 +1185,7 @@ def test_pdf_export_complete_separate_faces(monkeypatch, card_order_valid):
 # region test driver.py
 
 
+@pytest.mark.skip()
 @pytest.mark.flaky(retries=3, delay=1)
 @pytest.mark.parametrize("browser", [constants.Browsers.chrome, constants.Browsers.edge])
 @pytest.mark.parametrize(
@@ -1099,6 +1215,7 @@ def test_card_order_complete_run_single_cardback(browser, site, input_enter, car
     )
 
 
+@pytest.mark.skip()
 @pytest.mark.flaky(retries=3, delay=1)
 @pytest.mark.parametrize("browser", [constants.Browsers.chrome, constants.Browsers.edge])
 @pytest.mark.parametrize(

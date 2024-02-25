@@ -305,7 +305,7 @@ class Details:
     # region public
 
     @classmethod
-    def from_element(cls, element: Element) -> "Details":
+    def from_element(cls, element: Element, allowed_to_exceed_project_max_size: bool) -> "Details":
         details_dict = unpack_element(element, [x.value for x in constants.DetailsTags])
         quantity = 0
         if (quantity_text := details_dict[constants.DetailsTags.quantity].text) is not None:
@@ -313,7 +313,12 @@ class Details:
         stock = details_dict[constants.DetailsTags.stock].text or constants.Cardstocks.S30
         foil: bool = details_dict[constants.DetailsTags.foil].text == "true"
 
-        details = cls(quantity=quantity, stock=stock, foil=foil, allowed_to_exceed_project_max_size=True)
+        details = cls(
+            quantity=quantity,
+            stock=stock,
+            foil=foil,
+            allowed_to_exceed_project_max_size=allowed_to_exceed_project_max_size,
+        )
         return details
 
     # endregion
@@ -462,9 +467,13 @@ class CardOrder:
             sys.exit(0)
 
     @classmethod
-    def from_element(cls, element: Element, name: Optional[str] = None) -> "CardOrder":
+    def from_element(
+        cls, element: Element, allowed_to_exceed_project_max_size: bool, name: Optional[str] = None
+    ) -> "CardOrder":
         root_dict = unpack_element(element, [x.value for x in constants.BaseTags])
-        details = Details.from_element(root_dict[constants.BaseTags.details])
+        details = Details.from_element(
+            root_dict[constants.BaseTags.details], allowed_to_exceed_project_max_size=allowed_to_exceed_project_max_size
+        )
         fronts = CardImageCollection.from_element(
             element=root_dict[constants.BaseTags.fronts], num_slots=details.quantity, face=constants.Faces.front
         )
@@ -492,7 +501,7 @@ class CardOrder:
             input("Your XML file contains a syntax error so it can't be processed. Press Enter to exit.")
             sys.exit(0)
         print(f"Parsing XML file {bold(file_name)}...")
-        order = cls.from_element(xml.getroot(), name=file_name)
+        order = cls.from_element(xml.getroot(), name=file_name, allowed_to_exceed_project_max_size=True)
         return order
 
     # endregion
