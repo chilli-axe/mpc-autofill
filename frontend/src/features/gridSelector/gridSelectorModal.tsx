@@ -342,6 +342,7 @@ export function GridSelectorModal({
               <Form.Control
                 ref={focusRef}
                 type="number"
+                pattern="[0-9]*"
                 placeholder="1"
                 value={optionNumber}
                 onChange={(event) =>
