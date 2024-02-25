@@ -531,6 +531,7 @@ exports[`the html structure of a CardSlot's grid selector, cards faceted by sour
             </label>
             <input
               class="form-control"
+              pattern="[0-9]*"
               placeholder="1"
               type="number"
               value=""
@@ -943,6 +944,7 @@ exports[`the html structure of a CardSlot's grid selector, cards grouped togethe
             </label>
             <input
               class="form-control"
+              pattern="[0-9]*"
               placeholder="1"
               type="number"
               value=""
