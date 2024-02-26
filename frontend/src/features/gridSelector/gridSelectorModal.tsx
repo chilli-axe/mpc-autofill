@@ -434,19 +434,22 @@ export function GridSelectorModal({
           <Row>
             <h4>Browse Versions</h4>
             <Col md={8} sm={6}>
-              <Toggle
-                onClick={() => dispatch(toggleFacetBySource())}
-                on="Group By Source"
-                onClassName="flex-centre"
-                off="Group All Cards Together"
-                offClassName="flex-centre"
-                onstyle="success"
-                offstyle="info"
-                width={100 + "%"}
-                size="md"
-                height={ToggleButtonHeight + "px"}
-                active={facetBySource}
-              />
+              <Stack direction="horizontal" gap={2}>
+                <span className="me-auto">Show&nbsp;All&nbsp;Cards...</span>
+                <Toggle
+                  onClick={() => dispatch(toggleFacetBySource())}
+                  on="Grouped By Source"
+                  onClassName="flex-centre"
+                  off="Grouped Together"
+                  offClassName="flex-centre"
+                  onstyle="success"
+                  offstyle="info"
+                  width={100 + "%"}
+                  size="md"
+                  height={ToggleButtonHeight + "px"}
+                  active={facetBySource}
+                />
+              </Stack>
             </Col>
             {facetBySource && (
               <Col md={4} sm={6}>
