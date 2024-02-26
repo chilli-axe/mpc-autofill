@@ -195,6 +195,7 @@ export interface ViewSettingsState {
   frontsVisible: boolean;
   sourcesVisible: { [source: string]: boolean };
   facetBySource: boolean;
+  jumpToVersionVisible: boolean;
 }
 
 export type Cardstock =
