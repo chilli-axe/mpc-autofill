@@ -298,7 +298,7 @@ export function SelectedImagesRibbon() {
       ? [
           "changeSelectedImageSelectedImages",
           "changeSelectedImageQueries",
-          "clearSelectedImageQueries",
+          // "clearSelectedImageQueries",
           "deleteSelectedImages",
         ]
       : []) as Array<OptionKey>),
