@@ -284,8 +284,6 @@ export function SelectedImagesRibbon() {
     }
   };
   const enabledOptions: Array<OptionKey> = [
-    ...((slots.length === 1 ? ["selectSimilar"] : []) as Array<OptionKey>),
-    ...((!isProjectEmpty ? ["selectAll"] : []) as Array<OptionKey>),
     ...((slots.length > 0
       ? [
           "changeSelectedImageSelectedImages",
@@ -294,6 +292,8 @@ export function SelectedImagesRibbon() {
           "deleteSelectedImages",
         ]
       : []) as Array<OptionKey>),
+    ...((slots.length === 1 ? ["selectSimilar"] : []) as Array<OptionKey>),
+    ...((!isProjectEmpty ? ["selectAll"] : []) as Array<OptionKey>),
   ];
 
   const itemRenderer = (item: OptionKey, index: number) =>
