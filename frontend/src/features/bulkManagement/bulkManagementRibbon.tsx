@@ -40,9 +40,12 @@ const RibbonText = styled.p`
   white-space: nowrap;
 `;
 
-const HoverableRibbonText = styled(RibbonText)`
+const HoverableRibbonText = styled(RibbonText)<{
+  danger?: boolean;
+}>`
   &:hover {
-    background-color: rgba(100, 100, 100, 30%);
+    background-color: ${(props) =>
+      props?.danger ? "rgba(255, 50, 50, 30%)" : "rgba(100, 100, 100, 30%)"};
   }
   border-radius: 4px;
   transition: background-color 0.1s ease-in-out;
@@ -52,15 +55,22 @@ const HoverableRibbonText = styled(RibbonText)`
 interface RibbonButtonProps
   extends PropsWithChildren<ButtonHTMLAttributes<HTMLDivElement>> {
   inDropdown: boolean;
+  danger?: boolean;
 }
 
-function RibbonButton({ children, onClick, inDropdown }: RibbonButtonProps) {
+function RibbonButton({
+  children,
+  onClick,
+  inDropdown,
+  danger = false,
+}: RibbonButtonProps) {
   return inDropdown ? (
     <Dropdown.Item onClick={onClick}>{children}</Dropdown.Item>
   ) : (
     <HoverableRibbonText
       onClick={onClick}
       className="px-2 py-1 text-decoration-none"
+      danger={danger}
     >
       {children}
     </HoverableRibbonText>
@@ -229,7 +239,7 @@ function DeleteSelectedImages({
   const onClick = () => dispatch(deleteSlots({ slots: slotNumbers }));
 
   return (
-    <RibbonButton onClick={onClick} inDropdown={inDropdown}>
+    <RibbonButton onClick={onClick} inDropdown={inDropdown} danger>
       <RightPaddedIcon bootstrapIconName="x-circle" /> Delete Cards
     </RibbonButton>
   );
@@ -284,16 +294,16 @@ export function SelectedImagesRibbon() {
     }
   };
   const enabledOptions: Array<OptionKey> = [
-    ...((slots.length === 1 ? ["selectSimilar"] : []) as Array<OptionKey>),
-    ...((!isProjectEmpty ? ["selectAll"] : []) as Array<OptionKey>),
     ...((slots.length > 0
       ? [
           "changeSelectedImageSelectedImages",
           "changeSelectedImageQueries",
-          "clearSelectedImageQueries",
+          // "clearSelectedImageQueries",
           "deleteSelectedImages",
         ]
       : []) as Array<OptionKey>),
+    ...((slots.length === 1 ? ["selectSimilar"] : []) as Array<OptionKey>),
+    ...((!isProjectEmpty ? ["selectAll"] : []) as Array<OptionKey>),
   ];
 
   const itemRenderer = (item: OptionKey, index: number) =>

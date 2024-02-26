@@ -61,6 +61,7 @@ export function CommonCardbackGridSelector({
 
   return (
     <GridSelectorModal
+      title="Select Cardback"
       testId="cardback-grid-selector"
       imageIdentifiers={searchResults}
       selectedImage={projectCardback}

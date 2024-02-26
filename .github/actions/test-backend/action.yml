@@ -28,23 +28,13 @@ runs:
     - name: Start Elasticsearch
       run: sudo systemctl start elasticsearch.service
       shell: bash
-    - name: Install npm
-      uses: actions/setup-node@v3
-      with:
-        node-version: 18.x
-    - name: Compile frontend
-      working-directory: MPCAutofill
-      run: |
-        npm ci
-        npm run build
-      shell: bash
     - name: Write Google Drive API credentials to file
       uses: jsdaniell/create-json@1.1.2
       with:
         name: "client_secrets.json"
         json: ${{ inputs.google-drive-api-key }}
         dir: "MPCAutofill/"
-    - name: Run Django integration tests
+    - name: Run backend tests
       run: |
         cd MPCAutofill && pytest .
       shell: bash

@@ -213,7 +213,7 @@ test("cannot change the images of multiple selected images when they don't share
   );
 });
 
-test("selecting a single card and clearing its front query", async () => {
+test.skip("selecting a single card and clearing its front query", async () => {
   server.use(
     cardDocumentsOneResult,
     cardbacksOneOtherResult,
@@ -239,7 +239,7 @@ test("selecting a single card and clearing its front query", async () => {
   await expectCardGridSlotState(1, Front, null, null, null);
 });
 
-test("selecting a single card and clearing its back query", async () => {
+test.skip("selecting a single card and clearing its back query", async () => {
   server.use(
     cardDocumentsSixResults,
     cardbacksOneOtherResult,
@@ -269,7 +269,7 @@ test("selecting a single card and clearing its back query", async () => {
   await expectCardGridSlotState(1, Back, cardDocument5.name, 1, 1);
 });
 
-test("selecting multiple cards and clearing their front queries", async () => {
+test.skip("selecting multiple cards and clearing their front queries", async () => {
   server.use(
     cardDocumentsOneResult,
     cardbacksOneOtherResult,
