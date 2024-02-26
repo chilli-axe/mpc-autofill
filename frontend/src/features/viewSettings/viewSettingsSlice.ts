@@ -10,6 +10,7 @@ const initialState: ViewSettingsState = {
   frontsVisible: true,
   sourcesVisible: {},
   facetBySource: false, // opt out of the new grid selector UX by default
+  jumpToVersionVisible: false,
 };
 
 export const viewSettingsSlice = createSlice({
@@ -42,6 +43,9 @@ export const viewSettingsSlice = createSlice({
     toggleFacetBySource: (state) => {
       state.facetBySource = !state.facetBySource;
     },
+    toggleJumpToVersionVisible: (state) => {
+      state.jumpToVersionVisible = !state.jumpToVersionVisible;
+    },
   },
 });
 
@@ -53,6 +57,7 @@ export const {
   makeAllSourcesVisible,
   makeAllSourcesInvisible,
   toggleFacetBySource,
+  toggleJumpToVersionVisible,
 } = viewSettingsSlice.actions;
 
 export default viewSettingsSlice.reducer;
@@ -71,5 +76,7 @@ export const selectFacetBySource = (state: RootState) =>
   state.viewSettings.facetBySource;
 export const selectAnySourcesCollapsed = (state: RootState) =>
   Object.values(state.viewSettings.sourcesVisible ?? {}).includes(false);
+export const selectJumpToVersionVisible = (state: RootState) =>
+  state.viewSettings.jumpToVersionVisible;
 
 //# endregion

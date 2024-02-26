@@ -34,8 +34,10 @@ import {
   makeAllSourcesVisible,
   selectAnySourcesCollapsed,
   selectFacetBySource,
+  selectJumpToVersionVisible,
   selectSourcesVisible,
   toggleFacetBySource,
+  toggleJumpToVersionVisible,
   toggleSourceVisible,
 } from "@/features/viewSettings/viewSettingsSlice";
 
@@ -286,12 +288,12 @@ export function GridSelectorModal({
   const facetBySource = useAppSelector(selectFacetBySource);
   const sourceNamesByKey = useAppSelector(selectSourceNamesByKey);
   const anySourcesCollapsed = useAppSelector(selectAnySourcesCollapsed);
+  const jumpToVersionVisible = useAppSelector(selectJumpToVersionVisible);
 
   //# endregion
 
   //# region state
 
-  const [showJumpToVersion, setShowJumpToVersion] = useState<boolean>(false);
   const [optionNumber, setOptionNumber] = useState<number | undefined>(
     undefined
   );
@@ -372,8 +374,8 @@ export function GridSelectorModal({
       </Modal.Header>
       <Modal.Body className="d-grid p-0">
         <AutofillCollapse
-          expanded={showJumpToVersion}
-          onClick={() => setShowJumpToVersion(!showJumpToVersion)}
+          expanded={jumpToVersionVisible}
+          onClick={() => dispatch(toggleJumpToVersionVisible())}
           zIndex={0}
           title={<h4>Jump to Version</h4>}
         >
