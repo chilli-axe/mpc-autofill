@@ -385,7 +385,7 @@ export function GridSelectorModal({
             <Col md={8} sm={6}>
               <Toggle
                 onClick={() => dispatch(toggleFacetBySource())}
-                on="Facet By Source"
+                on="Group By Source"
                 onClassName="flex-centre"
                 off="Group All Cards Together"
                 offClassName="flex-centre"

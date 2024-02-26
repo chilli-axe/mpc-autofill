@@ -39,7 +39,7 @@ test("toggling between faceting cards by source vs grouped together works as exp
     ).toBeInTheDocument()
   );
 
-  within(gridSelector).getByText("Facet By Source").click();
+  within(gridSelector).getByText("Group By Source").click();
   await waitFor(() =>
     expect(
       within(gridSelector).queryByTestId(`${sourceDocument1.key}-collapse`)

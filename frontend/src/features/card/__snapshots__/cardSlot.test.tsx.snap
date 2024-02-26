@@ -591,7 +591,7 @@ exports[`the html structure of a CardSlot's grid selector, cards faceted by sour
                 <span
                   class="btn toggle-on btn-md flex-centre btn-success"
                 >
-                  Facet By Source
+                  Group By Source
                 </span>
                 <span
                   class="btn toggle-off btn-md flex-centre btn-info"
@@ -1004,7 +1004,7 @@ exports[`the html structure of a CardSlot's grid selector, cards grouped togethe
                 <span
                   class="btn toggle-on btn-md flex-centre btn-success"
                 >
-                  Facet By Source
+                  Group By Source
                 </span>
                 <span
                   class="btn toggle-off btn-md flex-centre btn-info"
