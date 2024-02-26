@@ -6,6 +6,7 @@
 
 import React, {
   FormEvent,
+  ReactElement,
   useCallback,
   useMemo,
   useRef,
@@ -91,6 +92,68 @@ interface CardGridDisplayProps {
   sourceNamesByKey: { [sourceKey: string]: string };
 }
 
+interface AutofillCollapseProps {
+  expanded: boolean;
+  onClick: () => void;
+  zIndex: number;
+  title: ReactElement | string;
+  subtitle?: string;
+  children: ReactElement;
+  sticky?: boolean;
+}
+
+/**
+ * bit of a shitty component name sorry
+ * @param children Children to render in the body of this collapsible man
+ * @param expanded Whether this collapsible man is expanded
+ * @param onClick What to do when trying to expand this man
+ * @param zIndex The base z-index of this man
+ * @param title The title of this man
+ * @param subtitle Optionally, the subtitle of this man
+ * @param sticky Whether or not the man's collapse bar is sticky
+ * @constructor
+ */
+function AutofillCollapse({
+  children,
+  expanded,
+  onClick,
+  zIndex,
+  title,
+  subtitle,
+  sticky = false,
+}: AutofillCollapseProps) {
+  return (
+    <>
+      <div
+        className={sticky ? "sticky-top" : ""}
+        onClick={onClick}
+        style={{
+          backgroundColor: "#4E5D6B",
+          zIndex: zIndex + 100,
+        }}
+      >
+        <hr className="mt-0" />
+        <Stack direction="horizontal" gap={2} className="d-flex ps-4 pe-4">
+          {title}
+          {subtitle && (
+            <h6 className="text-primary prevent-select">{subtitle}</h6>
+          )}
+
+          <h4
+            className={`ms-auto bi bi-chevron-left rotate-${
+              expanded ? "" : "neg"
+            }90`}
+            style={{ transition: "all 0.25s 0s" }}
+          ></h4>
+        </Stack>
+        <hr className="mb-0" />
+      </div>
+      <div className="py-2" />
+      <Collapse in={expanded}>{children}</Collapse>
+    </>
+  );
+}
+
 function CardsGroupedTogether({
   cardIdentifiersAndOptionNumbersBySource,
   selectImage,
@@ -103,7 +166,7 @@ function CardsGroupedTogether({
    */
 
   return (
-    <Row className="g-0 p-3" xxl={4} xl={4} lg={3} md={2} sm={2} xs={2}>
+    <Row className="g-0 px-3" xxl={4} xl={4} lg={3} md={2} sm={2} xs={2}>
       {Object.entries(cardIdentifiersAndOptionNumbersBySource).map(
         ([key, value], sourceIndex) => (
           <>
@@ -152,48 +215,23 @@ function CardsFacetedBySource({
       {Object.entries(cardIdentifiersAndOptionNumbersBySource).map(
         ([sourceKey, cardIdentifiersAndOptionNumbers], sourceIndex) => (
           <>
-            <div
-              className="sticky-top"
+            <AutofillCollapse
+              key={sourceKey}
+              expanded={sourcesVisible[sourceKey] ?? true}
               onClick={() => dispatch(toggleSourceVisible(sourceKey))}
-              style={{
-                backgroundColor: "#4E5D6B",
-                zIndex: sourceIndex + 100,
-              }}
-              key={`${sourceKey}-header`}
-            >
-              <hr className="mt-0" key={`${sourceKey}-top-hr`} />
-              <Stack
-                direction="horizontal"
-                gap={2}
-                key={`${sourceKey}-header-inner`}
-                className="d-flex ps-2 pe-2"
-              >
+              zIndex={sourceIndex}
+              title={
                 <h3
                   className="orpheus prevent-select"
-                  key={`${sourceKey}-header-title`}
                   style={{ fontStyle: "italic" }}
                 >
                   {sourceNamesByKey[sourceKey]}
                 </h3>
-                <h6 className="text-primary prevent-select">
-                  {cardIdentifiersAndOptionNumbers.length} version
-                  {cardIdentifiersAndOptionNumbers.length != 1 && "s"}
-                </h6>
-                <h4
-                  key={`${sourceKey}-arrow`}
-                  className={`ms-auto bi bi-chevron-left rotate-${
-                    sourcesVisible[sourceKey] ?? true ? "" : "neg"
-                  }90`}
-                  style={{ transition: "all 0.25s 0s" }}
-                  data-testid={`${sourceKey}-collapse-header`}
-                ></h4>
-              </Stack>
-              <hr className="mb-0" key={`${sourceKey}-bottom-hr`} />
-            </div>
-            <div className="py-2" />
-            <Collapse
-              in={sourcesVisible[sourceKey] ?? true}
-              data-testid={`${sourceKey}-collapse`}
+              }
+              subtitle={`${cardIdentifiersAndOptionNumbers.length} version${
+                cardIdentifiersAndOptionNumbers.length != 1 && "s"
+              }`}
+              sticky
             >
               <Row
                 className="g-0 px-3"
@@ -221,7 +259,7 @@ function CardsFacetedBySource({
                   )
                 )}
               </Row>
-            </Collapse>
+            </AutofillCollapse>
             <div className="py-2" />
           </>
         )
@@ -231,6 +269,7 @@ function CardsFacetedBySource({
 }
 
 export function GridSelectorModal({
+  title = "Select Version",
   testId,
   imageIdentifiers,
   selectedImage,
@@ -252,6 +291,7 @@ export function GridSelectorModal({
 
   //# region state
 
+  const [showJumpToVersion, setShowJumpToVersion] = useState<boolean>(false);
   const [optionNumber, setOptionNumber] = useState<number | undefined>(
     undefined
   );
@@ -331,54 +371,62 @@ export function GridSelectorModal({
         <Modal.Title>{title}</Modal.Title>
       </Modal.Header>
       <Modal.Body className="d-grid p-0">
-        <Form
-          className="p-3"
-          id="jumpToVersionForm"
-          onSubmit={handleSubmitJumpToVersionForm}
+        <AutofillCollapse
+          expanded={showJumpToVersion}
+          onClick={() => setShowJumpToVersion(!showJumpToVersion)}
+          zIndex={0}
+          title={<h4>Jump to Version</h4>}
         >
-          <Row>
-            <h4>Jump to Version</h4>
-            <Col lg={3} md={5}>
-              <Form.Label>Specify Option Number</Form.Label>
-              <Form.Control
-                ref={focusRef}
-                type="number"
-                pattern="[0-9]*"
-                placeholder="1"
-                value={optionNumber}
-                onChange={(event) =>
-                  setOptionNumber(
-                    event.target.value
-                      ? parseInt(event.target.value)
-                      : undefined
-                  )
-                }
-                disabled={Boolean(imageIdentifier)}
-              />
-            </Col>
-            <Col lg={9} md={7}>
-              <Form.Label>Specify ID</Form.Label>
-              <Form.Control
-                type="text"
-                placeholder={imageIdentifiers[0]}
-                value={imageIdentifier}
-                onChange={(event) => setImageIdentifier(event.target.value)}
-                disabled={Boolean(optionNumber)}
-              />
-            </Col>
-          </Row>
-          <div className="d-grid gap-0 pt-3">
-            <Button
-              variant="primary"
-              form="jumpToVersionForm"
-              type="submit"
-              aria-label="jump-to-version-submit"
-              disabled={!versionToJumpToIsValid}
-            >
-              Submit
-            </Button>
-          </div>
-        </Form>
+          <Form
+            className="px-3"
+            id="jumpToVersionForm"
+            onSubmit={handleSubmitJumpToVersionForm}
+          >
+            <Row className="g-0">
+              <Col lg={3} md={5}>
+                <Form.Label>
+                  Specify Option Number, <b>or...</b>
+                </Form.Label>
+                <Form.Control
+                  ref={focusRef}
+                  type="number"
+                  pattern="[0-9]*"
+                  placeholder="1"
+                  value={optionNumber}
+                  onChange={(event) =>
+                    setOptionNumber(
+                      event.target.value
+                        ? parseInt(event.target.value)
+                        : undefined
+                    )
+                  }
+                  disabled={Boolean(imageIdentifier)}
+                />
+              </Col>
+              <Col lg={9} md={7}>
+                <Form.Label>Specify ID</Form.Label>
+                <Form.Control
+                  type="text"
+                  placeholder={imageIdentifiers[0]}
+                  value={imageIdentifier}
+                  onChange={(event) => setImageIdentifier(event.target.value)}
+                  disabled={Boolean(optionNumber)}
+                />
+              </Col>
+            </Row>
+            <div className="d-grid gap-0 pt-3">
+              <Button
+                variant="primary"
+                form="jumpToVersionForm"
+                type="submit"
+                aria-label="jump-to-version-submit"
+                disabled={!versionToJumpToIsValid}
+              >
+                Select This Version
+              </Button>
+            </div>
+          </Form>
+        </AutofillCollapse>
         <hr />
         <div className="px-3 pb-3">
           <Row>
