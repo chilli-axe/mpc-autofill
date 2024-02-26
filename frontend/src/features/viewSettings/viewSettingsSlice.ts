@@ -9,7 +9,7 @@ import { Faces, ViewSettingsState } from "@/common/types";
 const initialState: ViewSettingsState = {
   frontsVisible: true,
   sourcesVisible: {},
-  facetBySource: true, // opt into the new grid selector UX by default
+  facetBySource: false, // opt out of the new grid selector UX by default
 };
 
 export const viewSettingsSlice = createSlice({
