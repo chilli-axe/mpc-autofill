@@ -66,6 +66,7 @@ function CardGridCard({
 }
 
 interface GridSelectorProps {
+  title?: string;
   testId: string;
   imageIdentifiers: Array<string>;
   selectedImage?: string;
@@ -327,7 +328,7 @@ export function GridSelectorModal({
       data-testid={testId}
     >
       <Modal.Header closeButton>
-        <Modal.Title>Select Version</Modal.Title>
+        <Modal.Title>{title}</Modal.Title>
       </Modal.Header>
       <Modal.Body className="d-grid p-0">
         <Form
