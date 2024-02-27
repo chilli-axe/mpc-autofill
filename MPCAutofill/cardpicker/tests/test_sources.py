@@ -62,6 +62,22 @@ class TestAPI:
     IMAGE_DOUBLE_NSFW = Image(
         id="double nsfw", name="NSFW (NSFW) [NSFW].png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_A
     )
+    IMAGE_IMPLICITLY_FRENCH = Image(
+        id="implicitly_french",
+        name="Implicitly French.png",
+        size=1,
+        created_time=DEFAULT_DATE,
+        height=1,
+        folder=FOLDER_FRENCH,
+    )
+    IMAGE_EXPLICITLY_ENGLISH = Image(
+        id="explicitly_english",
+        name="{EN} Explicitly English.png",
+        size=1,
+        created_time=DEFAULT_DATE,
+        height=1,
+        folder=FOLDER_FRENCH,
+    )
 
     # endregion
 
@@ -142,6 +158,8 @@ class TestAPI:
             (IMAGE_A, None),
             (IMAGE_FRENCH, "FR"),
             (IMAGE_ENGLISH, "EN"),
+            (IMAGE_IMPLICITLY_FRENCH, "FR"),
+            (IMAGE_EXPLICITLY_ENGLISH, "EN"),  # despite being in a French folder
         ],
     )
     def test_image_language(self, django_settings, image, expected_language):

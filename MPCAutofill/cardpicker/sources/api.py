@@ -89,7 +89,7 @@ class Image:
         language = pycountry.languages.get(alpha_2=language_code) if language_code else None
         name_with_no_tags, extracted_tags = tags.extract_name_and_tags(name)
         return (
-            language,
+            language or self.folder.get_language(tags=tags),
             sanitisation.fix_whitespace(name_with_no_tags),
             extracted_tags | self.folder.get_tags(tags=tags),
             extension,
@@ -97,11 +97,11 @@ class Image:
 
     def get_language(self, tags: Tags) -> pycountry.Languages:
         language, _, _, _ = self.unpack_name(tags=tags)
-        return language if language is not None else self.folder.get_language(tags=tags)
+        return language
 
     def get_tags(self, tags: Tags) -> set[str]:
         _, _, image_tags, _ = self.unpack_name(tags=tags)
-        return image_tags | self.folder.get_tags(tags=tags)
+        return image_tags
 
 
 # region google drive API
