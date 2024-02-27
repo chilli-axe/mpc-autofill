@@ -135,23 +135,25 @@ function AutofillCollapse({
         }}
       >
         <hr className="mt-0" />
-        <Stack direction="horizontal" gap={2} className="d-flex ps-4 pe-4">
+        <Stack direction="horizontal" gap={2} className="d-flex ps-3 pe-3">
           {title}
           {subtitle && (
             <h6 className="text-primary prevent-select">{subtitle}</h6>
           )}
 
-          <h4
-            className={`ms-auto bi bi-chevron-left rotate-${
-              expanded ? "" : "neg"
-            }90`}
-            style={{ transition: "all 0.25s 0s" }}
-          ></h4>
+          <button className="ms-auto bg-transparent border-0">
+            <h4
+              className={`bi bi-chevron-left rotate-${expanded ? "" : "neg"}90`}
+              style={{ transition: "all 0.25s 0s" }}
+            />
+          </button>
         </Stack>
         <hr className="mb-0" />
       </div>
       <div className="py-2" />
-      <Collapse in={expanded}>{children}</Collapse>
+      <Collapse in={expanded}>
+        <div>{children}</div>
+      </Collapse>
     </>
   );
 }
@@ -231,7 +233,7 @@ function CardsFacetedBySource({
                 </h3>
               }
               subtitle={`${cardIdentifiersAndOptionNumbers.length} version${
-                cardIdentifiersAndOptionNumbers.length != 1 && "s"
+                cardIdentifiersAndOptionNumbers.length != 1 ? "s" : ""
               }`}
               sticky
             >
@@ -379,57 +381,59 @@ export function GridSelectorModal({
           zIndex={0}
           title={<h4>Jump to Version</h4>}
         >
-          <Form
-            className="px-3"
-            id="jumpToVersionForm"
-            onSubmit={handleSubmitJumpToVersionForm}
-          >
-            <Row className="g-0">
-              <Col lg={3} md={5}>
-                <Form.Label>
-                  Specify Option Number, <b>or...</b>
-                </Form.Label>
-                <Form.Control
-                  ref={focusRef}
-                  type="number"
-                  pattern="[0-9]*"
-                  placeholder="1"
-                  value={optionNumber}
-                  onChange={(event) =>
-                    setOptionNumber(
-                      event.target.value
-                        ? parseInt(event.target.value)
-                        : undefined
-                    )
-                  }
-                  disabled={Boolean(imageIdentifier)}
-                />
-              </Col>
-              <Col lg={9} md={7}>
-                <Form.Label>Specify ID</Form.Label>
-                <Form.Control
-                  type="text"
-                  placeholder={imageIdentifiers[0]}
-                  value={imageIdentifier}
-                  onChange={(event) => setImageIdentifier(event.target.value)}
-                  disabled={Boolean(optionNumber)}
-                />
-              </Col>
-            </Row>
-            <div className="d-grid gap-0 pt-3">
-              <Button
-                variant="primary"
-                form="jumpToVersionForm"
-                type="submit"
-                aria-label="jump-to-version-submit"
-                disabled={!versionToJumpToIsValid}
-              >
-                Select This Version
-              </Button>
-            </div>
-          </Form>
+          <>
+            <Form
+              className="px-3"
+              id="jumpToVersionForm"
+              onSubmit={handleSubmitJumpToVersionForm}
+            >
+              <Row className="g-0">
+                <Col lg={3} md={5}>
+                  <Form.Label>
+                    Specify Option Number, <b>or...</b>
+                  </Form.Label>
+                  <Form.Control
+                    ref={focusRef}
+                    type="number"
+                    pattern="[0-9]*"
+                    placeholder="1"
+                    value={optionNumber}
+                    onChange={(event) =>
+                      setOptionNumber(
+                        event.target.value
+                          ? parseInt(event.target.value)
+                          : undefined
+                      )
+                    }
+                    disabled={Boolean(imageIdentifier)}
+                  />
+                </Col>
+                <Col lg={9} md={7}>
+                  <Form.Label>Specify ID</Form.Label>
+                  <Form.Control
+                    type="text"
+                    placeholder={imageIdentifiers[0]}
+                    value={imageIdentifier}
+                    onChange={(event) => setImageIdentifier(event.target.value)}
+                    disabled={Boolean(optionNumber)}
+                  />
+                </Col>
+              </Row>
+              <div className="d-grid gap-0 pt-3">
+                <Button
+                  variant="primary"
+                  form="jumpToVersionForm"
+                  type="submit"
+                  aria-label="jump-to-version-submit"
+                  disabled={!versionToJumpToIsValid}
+                >
+                  Select This Version
+                </Button>
+              </div>
+            </Form>
+            <hr />
+          </>
         </AutofillCollapse>
-        <hr />
         <div className="px-3 pb-3">
           <Row>
             <h4>Browse Versions</h4>

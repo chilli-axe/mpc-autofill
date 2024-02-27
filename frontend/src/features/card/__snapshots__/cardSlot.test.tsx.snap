@@ -515,15 +515,19 @@ exports[`the html structure of a CardSlot's grid selector, cards faceted by sour
           class="mt-0"
         />
         <div
-          class="d-flex ps-4 pe-4 hstack gap-2"
+          class="d-flex ps-3 pe-3 hstack gap-2"
         >
           <h4>
             Jump to Version
           </h4>
-          <h4
-            class="ms-auto bi bi-chevron-left rotate-neg90"
-            style="transition: all 0.25s 0s;"
-          />
+          <button
+            class="ms-auto bg-transparent border-0"
+          >
+            <h4
+              class="bi bi-chevron-left rotate-neg90"
+              style="transition: all 0.25s 0s;"
+            />
+          </button>
         </div>
         <hr
           class="mb-0"
@@ -532,63 +536,67 @@ exports[`the html structure of a CardSlot's grid selector, cards faceted by sour
       <div
         class="py-2"
       />
-      <form
-        class="px-3 collapse"
-        id="jumpToVersionForm"
+      <div
+        class="collapse"
       >
-        <div
-          class="g-0 row"
+        <form
+          class="px-3"
+          id="jumpToVersionForm"
         >
           <div
-            class="col-lg-3 col-md-5"
+            class="g-0 row"
           >
-            <label
-              class="form-label"
+            <div
+              class="col-lg-3 col-md-5"
             >
-              Specify Option Number, 
-              <b>
-                or...
-              </b>
-            </label>
-            <input
-              class="form-control"
-              pattern="[0-9]*"
-              placeholder="1"
-              type="number"
-              value=""
-            />
+              <label
+                class="form-label"
+              >
+                Specify Option Number, 
+                <b>
+                  or...
+                </b>
+              </label>
+              <input
+                class="form-control"
+                pattern="[0-9]*"
+                placeholder="1"
+                type="number"
+                value=""
+              />
+            </div>
+            <div
+              class="col-lg-9 col-md-7"
+            >
+              <label
+                class="form-label"
+              >
+                Specify ID
+              </label>
+              <input
+                class="form-control"
+                placeholder="abc123"
+                type="text"
+                value=""
+              />
+            </div>
           </div>
           <div
-            class="col-lg-9 col-md-7"
+            class="d-grid gap-0 pt-3"
           >
-            <label
-              class="form-label"
+            <button
+              aria-label="jump-to-version-submit"
+              class="btn btn-primary"
+              disabled=""
+              form="jumpToVersionForm"
+              type="submit"
             >
-              Specify ID
-            </label>
-            <input
-              class="form-control"
-              placeholder="abc123"
-              type="text"
-              value=""
-            />
+              Select This Version
+            </button>
           </div>
-        </div>
-        <div
-          class="d-grid gap-0 pt-3"
-        >
-          <button
-            aria-label="jump-to-version-submit"
-            class="btn btn-primary"
-            disabled=""
-            form="jumpToVersionForm"
-            type="submit"
-          >
-            Select This Version
-          </button>
-        </div>
-      </form>
-      <hr />
+        </form>
+        <hr />
+      </div>
       <div
         class="px-3 pb-3"
       >
@@ -903,15 +911,19 @@ exports[`the html structure of a CardSlot's grid selector, cards grouped togethe
           class="mt-0"
         />
         <div
-          class="d-flex ps-4 pe-4 hstack gap-2"
+          class="d-flex ps-3 pe-3 hstack gap-2"
         >
           <h4>
             Jump to Version
           </h4>
-          <h4
-            class="ms-auto bi bi-chevron-left rotate-neg90"
-            style="transition: all 0.25s 0s;"
-          />
+          <button
+            class="ms-auto bg-transparent border-0"
+          >
+            <h4
+              class="bi bi-chevron-left rotate-neg90"
+              style="transition: all 0.25s 0s;"
+            />
+          </button>
         </div>
         <hr
           class="mb-0"
@@ -920,63 +932,67 @@ exports[`the html structure of a CardSlot's grid selector, cards grouped togethe
       <div
         class="py-2"
       />
-      <form
-        class="px-3 collapse"
-        id="jumpToVersionForm"
+      <div
+        class="collapse"
       >
-        <div
-          class="g-0 row"
+        <form
+          class="px-3"
+          id="jumpToVersionForm"
         >
           <div
-            class="col-lg-3 col-md-5"
+            class="g-0 row"
           >
-            <label
-              class="form-label"
+            <div
+              class="col-lg-3 col-md-5"
             >
-              Specify Option Number, 
-              <b>
-                or...
-              </b>
-            </label>
-            <input
-              class="form-control"
-              pattern="[0-9]*"
-              placeholder="1"
-              type="number"
-              value=""
-            />
+              <label
+                class="form-label"
+              >
+                Specify Option Number, 
+                <b>
+                  or...
+                </b>
+              </label>
+              <input
+                class="form-control"
+                pattern="[0-9]*"
+                placeholder="1"
+                type="number"
+                value=""
+              />
+            </div>
+            <div
+              class="col-lg-9 col-md-7"
+            >
+              <label
+                class="form-label"
+              >
+                Specify ID
+              </label>
+              <input
+                class="form-control"
+                placeholder="abc123"
+                type="text"
+                value=""
+              />
+            </div>
           </div>
           <div
-            class="col-lg-9 col-md-7"
+            class="d-grid gap-0 pt-3"
           >
-            <label
-              class="form-label"
+            <button
+              aria-label="jump-to-version-submit"
+              class="btn btn-primary"
+              disabled=""
+              form="jumpToVersionForm"
+              type="submit"
             >
-              Specify ID
-            </label>
-            <input
-              class="form-control"
-              placeholder="abc123"
-              type="text"
-              value=""
-            />
+              Select This Version
+            </button>
           </div>
-        </div>
-        <div
-          class="d-grid gap-0 pt-3"
-        >
-          <button
-            aria-label="jump-to-version-submit"
-            class="btn btn-primary"
-            disabled=""
-            form="jumpToVersionForm"
-            type="submit"
-          >
-            Select This Version
-          </button>
-        </div>
-      </form>
-      <hr />
+        </form>
+        <hr />
+      </div>
       <div
         class="px-3 pb-3"
       >
