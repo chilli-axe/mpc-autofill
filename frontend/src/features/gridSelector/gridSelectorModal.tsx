@@ -6,6 +6,7 @@
 
 import React, {
   FormEvent,
+  PropsWithChildren,
   ReactElement,
   useCallback,
   useMemo,
@@ -158,6 +159,14 @@ function AutofillCollapse({
   );
 }
 
+function CardRow({ children }: PropsWithChildren) {
+  return (
+    <Row className="g-0 px-3" xxl={6} xl={6} lg={4} md={3} sm={2} xs={2}>
+      {children}
+    </Row>
+  );
+}
+
 function CardsGroupedTogether({
   cardIdentifiersAndOptionNumbersBySource,
   selectImage,
@@ -170,7 +179,7 @@ function CardsGroupedTogether({
    */
 
   return (
-    <Row className="g-0 px-3" xxl={4} xl={4} lg={3} md={2} sm={2} xs={2}>
+    <CardRow>
       {Object.entries(cardIdentifiersAndOptionNumbersBySource).map(
         ([key, value], sourceIndex) => (
           <>
@@ -192,7 +201,7 @@ function CardsGroupedTogether({
           </>
         )
       )}
-    </Row>
+    </CardRow>
   );
 }
 
@@ -237,16 +246,7 @@ function CardsFacetedBySource({
               }`}
               sticky
             >
-              <Row
-                className="g-0 px-3"
-                xxl={4}
-                xl={4}
-                lg={3}
-                md={2}
-                sm={2}
-                xs={2}
-                key={`${sourceKey}-row`}
-              >
+              <CardRow key={`${sourceKey}-row`}>
                 {cardIdentifiersAndOptionNumbers.map(
                   ([identifier, optionNumber]) => (
                     <RenderIfVisible
@@ -262,7 +262,7 @@ function CardsFacetedBySource({
                     </RenderIfVisible>
                   )
                 )}
-              </Row>
+              </CardRow>
             </AutofillCollapse>
             <div className="py-2" />
           </>
@@ -368,7 +368,7 @@ export function GridSelectorModal({
         }
       }}
       onHide={handleClose}
-      size="lg"
+      size="xl"
       data-testid={testId}
     >
       <Modal.Header closeButton>

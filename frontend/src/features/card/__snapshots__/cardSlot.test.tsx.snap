@@ -484,7 +484,7 @@ exports[`the html structure of a CardSlot's grid selector, cards faceted by sour
 }
 
 <div
-  class="modal-dialog modal-lg modal-dialog-scrollable"
+  class="modal-dialog modal-xl modal-dialog-scrollable"
   data-testid="front-slot0-grid-selector"
 >
   <div
@@ -645,7 +645,7 @@ exports[`the html structure of a CardSlot's grid selector, cards faceted by sour
         </div>
       </div>
       <div
-        class="g-0 px-3 row row-cols-xxl-4 row-cols-xl-4 row-cols-lg-3 row-cols-md-2 row-cols-sm-2 row-cols-2"
+        class="g-0 px-3 row row-cols-xxl-6 row-cols-xl-6 row-cols-lg-4 row-cols-md-3 row-cols-sm-2 row-cols-2"
       >
         <div
           class="renderIfVisible "
@@ -880,7 +880,7 @@ exports[`the html structure of a CardSlot's grid selector, cards grouped togethe
 }
 
 <div
-  class="modal-dialog modal-lg modal-dialog-scrollable"
+  class="modal-dialog modal-xl modal-dialog-scrollable"
   data-testid="front-slot0-grid-selector"
 >
   <div
@@ -1041,7 +1041,7 @@ exports[`the html structure of a CardSlot's grid selector, cards grouped togethe
         </div>
       </div>
       <div
-        class="g-0 px-3 row row-cols-xxl-4 row-cols-xl-4 row-cols-lg-3 row-cols-md-2 row-cols-sm-2 row-cols-2"
+        class="g-0 px-3 row row-cols-xxl-6 row-cols-xl-6 row-cols-lg-4 row-cols-md-3 row-cols-sm-2 row-cols-2"
       >
         <div
           class="renderIfVisible "
