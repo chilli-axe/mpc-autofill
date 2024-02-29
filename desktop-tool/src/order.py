@@ -24,13 +24,13 @@ from src.io import (
     image_directory,
 )
 from src.processing import ImagePostProcessingConfig
-from src.utils import bold, text_to_list, unpack_element
+from src.utils import bold, text_to_set, unpack_element
 
 
 @attr.s
 class CardImage:
     drive_id: str = attr.ib(default="")
-    slots: list[int] = attr.ib(factory=list)
+    slots: set[int] = attr.ib(factory=set)
     name: Optional[str] = attr.ib(default="")
     file_path: Optional[str] = attr.ib(default="")
     query: Optional[str] = attr.ib(default=None)
@@ -115,9 +115,9 @@ class CardImage:
         drive_id = ""
         if (drive_id_text := card_dict[constants.CardTags.id].text) is not None:
             drive_id = drive_id_text.strip(' "')
-        slots = []
+        slots: set[int] = set()
         if (slots_text := card_dict[constants.CardTags.slots].text) is not None:
-            slots = text_to_list(slots_text)
+            slots = text_to_set(slots_text)
         name = None
         if constants.CardTags.name in card_dict.keys():
             name = card_dict[constants.CardTags.name].text
@@ -143,7 +143,7 @@ class CardImage:
                 self.downloaded = True
             else:
                 print(
-                    f"Failed to download '{bold(self.name)}' - allocated to slot/s {bold(self.slots)}.\n"
+                    f"Failed to download '{bold(self.name)}' - allocated to slot/s {bold(sorted(self.slots))}.\n"
                     f"Download link - {bold(f'https://drive.google.com/uc?id={self.drive_id}&export=download')}\n"
                 )
         except Exception as e:
@@ -161,7 +161,7 @@ class CardImage:
     def offset_slots(self, offset: int) -> "CardImage":
         return CardImage(
             drive_id=self.drive_id,
-            slots=[slot + offset for slot in self.slots],
+            slots={slot + offset for slot in self.slots},
             name=self.name,
             file_path=self.file_path,
             query=self.query,
@@ -173,11 +173,11 @@ class CardImage:
         split_cards: list[Optional["CardImage"]] = [None] * len(splits)
         splits_with_ends = [0, *splits]
         for i in range(0, len(splits_with_ends[:-1])):
-            slots_in_split = [
+            slots_in_split = {
                 slot - splits_with_ends[i]
                 for slot in self.slots
                 if splits_with_ends[i] <= slot < splits_with_ends[i + 1]
-            ]
+            }
             if slots_in_split:
                 split_cards[i] = CardImage(
                     drive_id=self.drive_id,
@@ -246,9 +246,7 @@ class CardImageCollection:
             # fill the remaining slots in this card image collection with a new card image based off the given id
             missing_slots = card_image_collection.all_slots() - card_image_collection.slots()
             if missing_slots:
-                card_image_collection.cards.append(
-                    CardImage(drive_id=fill_image_id.strip(' "'), slots=list(missing_slots))
-                )
+                card_image_collection.cards.append(CardImage(drive_id=fill_image_id.strip(' "'), slots=missing_slots))
 
         # postponing validation from post-init so we don't error for missing slots that `fill_image_id` would fill
         try:
@@ -455,7 +453,7 @@ class CardOrder:
             for image in collection.cards:
                 if not image.file_path:
                     raise ValidationException(
-                        f"The file path for the image in slots {bold(image.slots or image.drive_id)} "
+                        f"The file path for the image in slots {bold(sorted(image.slots) or image.drive_id)} "
                         f"of face {bold(collection.face)} could not be determined."
                     )
 
