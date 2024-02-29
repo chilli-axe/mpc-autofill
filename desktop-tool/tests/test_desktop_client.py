@@ -582,6 +582,20 @@ def test_generate_google_drive_file_path(image_valid_google_drive):
     assert not image_valid_google_drive.file_exists()
 
 
+@pytest.mark.parametrize(
+    "image_a, image_b, expected_result",
+    [
+        (
+            CardImage(drive_id="1", name="a.jpg", slots={1, 2}),
+            CardImage(drive_id="1", name="a.jpg", slots={2, 3}),
+            CardImage(drive_id="1", name="a.jpg", slots={1, 2, 3}),
+        )
+    ],
+)
+def test_combine_images(image_a, image_b, expected_result):
+    assert_card_images_identical(image_a.combine(image_b), expected_result)
+
+
 # endregion
 
 # region test CardImageCollection

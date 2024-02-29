@@ -109,6 +109,16 @@ class CardImage:
 
     # region public
 
+    def combine(self, other: "CardImage") -> "CardImage":
+        assert self.drive_id == other.drive_id
+        return CardImage(
+            drive_id=self.drive_id,
+            slots=self.slots | other.slots,
+            name=self.name,
+            file_path=self.file_path,
+            query=self.query,
+        )
+
     @classmethod
     def from_element(cls, element: Element) -> "CardImage":
         card_dict = unpack_element(element, [x.value for x in constants.DetailsTags])
