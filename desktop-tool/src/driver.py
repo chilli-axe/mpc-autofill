@@ -89,7 +89,7 @@ class AutofillDriver:
         self.upload_bar.refresh()
 
     def configure_bars_for_order(self, order: CardOrder) -> None:
-        num_images = len(order.fronts.cards) + len(order.backs.cards)
+        num_images = len(order.fronts.cards_by_id) + len(order.backs.cards_by_id)
         self.set_state(state=States.initialising, action=None)
         self.upload_bar.total = num_images
         self.download_bar.total = num_images
@@ -398,7 +398,7 @@ class AutofillDriver:
     def upload_and_insert_images(
         self, order: CardOrder, images: CardImageCollection, auto_save_threshold: Optional[int]
     ) -> None:
-        image_count = len(images.cards)
+        image_count = len(images.cards_by_id)
         for i in range(image_count):
             image: CardImage = images.queue.get()
             if image.downloaded:
@@ -626,7 +626,7 @@ class AutofillDriver:
                 pass
         with self.switch_to_frame("sysifm_loginFrame"):
             try:
-                if len(order.backs.cards) == 1:
+                if len(order.backs.cards_by_id) == 1:
                     # Same cardback for every card
                     self.same_images()
                 else:
@@ -709,13 +709,13 @@ class AutofillDriver:
         self.order_progress_bar.total = len(orders)
         self.order_progress_bar.refresh()
         for i, order in enumerate(orders, start=1):
+            print(f"Auto-filling project {bold(i)} of {bold(len(orders))}.")
             skip_setup = inquirer.confirm(
                 message=(
                     "Do you want the tool to continue editing an existing project? (Press Enter if you're not sure.)"
                 ),
                 default=False,
             ).execute()
-            print(f"Auto-filling project {bold(i)} of {bold(len(orders))}.")
             self.execute_order(
                 order=order,
                 skip_setup=skip_setup,

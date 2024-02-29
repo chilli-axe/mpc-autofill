@@ -45,12 +45,11 @@ def assert_card_images_identical(a: CardImage, b: CardImage) -> None:
 def assert_card_image_collections_identical(a: CardImageCollection, b: CardImageCollection) -> None:
     assert a.face == b.face, f"Face {a.face} does not match {b.face}"
     assert a.num_slots == b.num_slots, f"Number of slots {a.num_slots} does not match {b.num_slots}"
-    assert len(a.cards) == len(b.cards), f"Number of cards {len(a.cards)} does not match {len(b.cards)}"
-    for card_image_a, card_image_b in zip(
-        sorted(a.cards, key=lambda x: x.drive_id),
-        sorted(b.cards, key=lambda x: x.drive_id),
-    ):
-        assert_card_images_identical(card_image_a, card_image_b)
+    assert len(a.cards_by_id) == len(
+        b.cards_by_id
+    ), f"Number of cards {len(a.cards_by_id)} does not match {len(b.cards_by_id)}"
+    for card_image_id_a, card_image_id_b in zip(sorted(a.cards_by_id.keys()), sorted(b.cards_by_id.keys())):
+        assert_card_images_identical(a.cards_by_id[card_image_id_a], b.cards_by_id[card_image_id_b])
 
 
 def assert_details_identical(a: Details, b: Details) -> None:
@@ -603,13 +602,13 @@ def test_combine_images(image_a, image_b, expected_result):
 
 def test_card_image_collection_download(card_image_collection_valid, counter, image_google_valid_drive_no_name, pool):
     assert card_image_collection_valid.slots() == {0, 1, 2}
-    assert [x.file_exists() for x in card_image_collection_valid.cards] == [False, True]
+    assert [x.file_exists() for x in card_image_collection_valid.cards_by_id.values()] == [False, True]
     card_image_collection_valid.download_images(
         pool=pool, download_bar=counter, post_processing_config=DEFAULT_POST_PROCESSING
     )
     time.sleep(3)
     pool.shutdown(wait=True, cancel_futures=False)
-    assert all([x.file_exists() for x in card_image_collection_valid.cards])
+    assert all([x.file_exists() for x in card_image_collection_valid.cards_by_id.values()])
 
 
 def test_card_image_collection_no_cards(input_enter, card_image_collection_element_no_cards):
@@ -662,35 +661,35 @@ def test_card_order_valid(card_order_valid):
             fronts=CardImageCollection(
                 face=constants.Faces.front,
                 num_slots=3,
-                cards=[
-                    CardImage(
+                cards_by_id={
+                    SIMPLE_CUBE_ID: CardImage(
                         drive_id=SIMPLE_CUBE_ID,
                         slots={0},
                         name=f"{SIMPLE_CUBE}.png",
                         file_path=f"{FILE_PATH}/cards/{SIMPLE_CUBE} ({SIMPLE_CUBE_ID}).png",  # not on disk
                         query="simple cube",
                     ),
-                    CardImage(
+                    SIMPLE_LOTUS_ID: CardImage(
                         drive_id=SIMPLE_LOTUS_ID,
                         slots={1, 2},
                         name=f"{SIMPLE_LOTUS}.png",
                         file_path=f"{FILE_PATH}/cards/{SIMPLE_LOTUS}.png",  # already exists on disk
                         query="simple lotus",
                     ),
-                ],
+                },
             ),
             backs=CardImageCollection(
                 face=constants.Faces.back,
                 num_slots=3,
-                cards=[
-                    CardImage(
+                cards_by_id={
+                    f"{FILE_PATH}/cards/{TEST_IMAGE}.png": CardImage(
                         drive_id=f"{FILE_PATH}/cards/{TEST_IMAGE}.png",
                         slots={0, 1, 2},
                         name=f"{TEST_IMAGE}.png",  # name retrieved from file on disk
                         file_path=f"{FILE_PATH}/cards/{TEST_IMAGE}.png",
                         query=None,
                     )
-                ],
+                },
             ),
         ),
     )
@@ -708,42 +707,42 @@ def test_card_order_multiple_cardbacks(card_order_multiple_cardbacks):
             fronts=CardImageCollection(
                 face=constants.Faces.front,
                 num_slots=4,
-                cards=[
-                    CardImage(
+                cards_by_id={
+                    f"{FILE_PATH}/cards/{TEST_IMAGE}.png": CardImage(
                         drive_id=f"{FILE_PATH}/cards/{TEST_IMAGE}.png",
                         slots={0, 3},
                         name=f"{TEST_IMAGE}.png",  # name retrieved from file on disk
                         file_path=f"{FILE_PATH}/cards/{TEST_IMAGE}.png",
                         query=None,
                     ),
-                    CardImage(
+                    SIMPLE_LOTUS_ID: CardImage(
                         drive_id=SIMPLE_LOTUS_ID,
                         slots={1, 2},
                         name=f"{SIMPLE_LOTUS}.png",
                         file_path=f"{FILE_PATH}/cards/{SIMPLE_LOTUS}.png",  # already exists on disk
                         query="simple lotus",
                     ),
-                ],
+                },
             ),
             backs=CardImageCollection(
                 face=constants.Faces.back,
                 num_slots=4,
-                cards=[
-                    CardImage(
+                cards_by_id={
+                    SIMPLE_LOTUS_ID: CardImage(
                         drive_id=SIMPLE_LOTUS_ID,
                         slots={1},
                         name=f"{SIMPLE_LOTUS}.png",
                         file_path=f"{FILE_PATH}/cards/{SIMPLE_LOTUS}.png",  # already exists on disk
                         query="simple lotus",
                     ),
-                    CardImage(
+                    SIMPLE_CUBE_ID: CardImage(
                         drive_id=SIMPLE_CUBE_ID,
                         slots={0, 2, 3},
                         name=f"{SIMPLE_CUBE}.png",
                         file_path=f"{FILE_PATH}/cards/{SIMPLE_CUBE} ({SIMPLE_CUBE_ID}).png",  # not on disk
                         query=None,
                     ),
-                ],
+                },
             ),
         ),
     )
@@ -751,7 +750,7 @@ def test_card_order_multiple_cardbacks(card_order_multiple_cardbacks):
 
 def test_card_order_valid_from_file():
     card_order = CardOrder.from_file_name("test_order.xml")
-    for card in [*card_order.fronts.cards, *card_order.backs.cards]:
+    for card in (card_order.fronts.cards_by_id | card_order.backs.cards_by_id).values():
         assert not card.file_exists()
     assert_orders_identical(
         card_order,
@@ -764,35 +763,35 @@ def test_card_order_valid_from_file():
             fronts=CardImageCollection(
                 face=constants.Faces.front,
                 num_slots=10,
-                cards=[
-                    CardImage(
+                cards_by_id={
+                    "1OAw4l9RYbgYrmnyYeR1iVDoIS6_aus49": CardImage(
                         drive_id="1OAw4l9RYbgYrmnyYeR1iVDoIS6_aus49",
                         slots=set(range(9)),
                         name="Island (Unsanctioned).png",
                         file_path=f"{FILE_PATH}/cards/Island (Unsanctioned).png",
                         query="island",
                     ),
-                    CardImage(
+                    "1wlrM7pNHQ5NqS9GY5LWH7Hd04TtNgHI4": CardImage(
                         drive_id="1wlrM7pNHQ5NqS9GY5LWH7Hd04TtNgHI4",
                         slots={9},
                         name="Rite of Flame.png",
                         file_path=f"{FILE_PATH}/cards/Rite of Flame.png",
                         query="rite of flame",
                     ),
-                ],
+                },
             ),
             backs=CardImageCollection(
                 face=constants.Faces.back,
                 num_slots=10,
-                cards=[
-                    CardImage(
+                cards_by_id={
+                    "16g2UamJ2jzwNHovLesvsinvd6_qPkZfy": CardImage(
                         drive_id="16g2UamJ2jzwNHovLesvsinvd6_qPkZfy",
                         slots=set(range(10)),
                         name="MTGA Lotus.png",
                         file_path=f"{FILE_PATH}/cards/MTGA Lotus.png",
                         query=None,
                     )
-                ],
+                },
             ),
         ),
     )
@@ -819,12 +818,12 @@ def test_card_order_missing_slots(input_enter, card_order_element_invalid_quanti
                 CardOrder(
                     details=Details(quantity=2, stock=constants.Cardstocks.S30, foil=False),
                     fronts=CardImageCollection(
-                        cards=[CardImage(drive_id="1", name="1.png", slots={0, 1})],
+                        cards_by_id={"1": CardImage(drive_id="1", name="1.png", slots={0, 1})},
                         num_slots=2,
                         face=constants.Faces.front,
                     ),
                     backs=CardImageCollection(
-                        cards=[CardImage(drive_id="2", name="2.png", slots={0, 1})],
+                        cards_by_id={"2": CardImage(drive_id="2", name="2.png", slots={0, 1})},
                         num_slots=2,
                         face=constants.Faces.back,
                     ),
@@ -832,15 +831,15 @@ def test_card_order_missing_slots(input_enter, card_order_element_invalid_quanti
                 CardOrder(
                     details=Details(quantity=2, stock=constants.Cardstocks.S30, foil=False),
                     fronts=CardImageCollection(
-                        cards=[
-                            CardImage(drive_id="3", name="3.png", slots={0}),
-                            CardImage(drive_id="4", name="4.png", slots={1}),
-                        ],
+                        cards_by_id={
+                            "3": CardImage(drive_id="3", name="3.png", slots={0}),
+                            "4": CardImage(drive_id="4", name="4.png", slots={1}),
+                        },
                         num_slots=2,
                         face=constants.Faces.front,
                     ),
                     backs=CardImageCollection(
-                        cards=[CardImage(drive_id="2", name="2.png", slots={0, 1})],
+                        cards_by_id={"2": CardImage(drive_id="2", name="2.png", slots={0, 1})},
                         num_slots=2,
                         face=constants.Faces.back,
                     ),
@@ -850,19 +849,17 @@ def test_card_order_missing_slots(input_enter, card_order_element_invalid_quanti
             CardOrder(
                 details=Details(quantity=4, stock=constants.Cardstocks.S30, foil=False),
                 fronts=CardImageCollection(
-                    cards=[
-                        CardImage(drive_id="1", name="1.png", slots={0, 1}),
-                        CardImage(drive_id="3", name="3.png", slots={2}),
-                        CardImage(drive_id="4", name="4.png", slots={3}),
-                    ],
+                    cards_by_id={
+                        "1": CardImage(drive_id="1", name="1.png", slots={0, 1}),
+                        "3": CardImage(drive_id="3", name="3.png", slots={2}),
+                        "4": CardImage(drive_id="4", name="4.png", slots={3}),
+                    },
                     num_slots=4,
                     face=constants.Faces.front,
                 ),
                 backs=CardImageCollection(
-                    cards=[
-                        CardImage(drive_id="2", name="2.png", slots={0, 1}),
-                        CardImage(drive_id="2", name="2.png", slots={2, 3}),
-                    ],
+                    # the slots for `2` across both orders will be merged as below
+                    cards_by_id={"2": CardImage(drive_id="2", name="2.png", slots={0, 1, 2, 3})},
                     num_slots=4,
                     face=constants.Faces.back,
                 ),
@@ -876,12 +873,12 @@ def test_card_order_missing_slots(input_enter, card_order_element_invalid_quanti
                 CardOrder(
                     details=Details(quantity=2, stock=constants.Cardstocks.S30, foil=False),
                     fronts=CardImageCollection(
-                        cards=[CardImage(drive_id="1", name="1.png", slots={0, 1})],
+                        cards_by_id={"1": CardImage(drive_id="1", name="1.png", slots={0, 1})},
                         num_slots=2,
                         face=constants.Faces.front,
                     ),
                     backs=CardImageCollection(
-                        cards=[CardImage(drive_id="2", name="2.png", slots={0, 1})],
+                        cards_by_id={"2": CardImage(drive_id="2", name="2.png", slots={0, 1})},
                         num_slots=2,
                         face=constants.Faces.back,
                     ),
@@ -889,15 +886,15 @@ def test_card_order_missing_slots(input_enter, card_order_element_invalid_quanti
                 CardOrder(
                     details=Details(quantity=2, stock=constants.Cardstocks.S30, foil=False),
                     fronts=CardImageCollection(
-                        cards=[
-                            CardImage(drive_id="3", name="3.png", slots={0}),
-                            CardImage(drive_id="4", name="4.png", slots={1}),
-                        ],
+                        cards_by_id={
+                            "3": CardImage(drive_id="3", name="3.png", slots={0}),
+                            "4": CardImage(drive_id="4", name="4.png", slots={1}),
+                        },
                         num_slots=2,
                         face=constants.Faces.front,
                     ),
                     backs=CardImageCollection(
-                        cards=[CardImage(drive_id="5", name="5.png", slots={0, 1})],
+                        cards_by_id={"5": CardImage(drive_id="5", name="5.png", slots={0, 1})},
                         num_slots=2,
                         face=constants.Faces.back,
                     ),
@@ -907,19 +904,19 @@ def test_card_order_missing_slots(input_enter, card_order_element_invalid_quanti
             CardOrder(
                 details=Details(quantity=4, stock=constants.Cardstocks.S30, foil=False),
                 fronts=CardImageCollection(
-                    cards=[
-                        CardImage(drive_id="1", name="1.png", slots={0, 1}),
-                        CardImage(drive_id="3", name="3.png", slots={2}),
-                        CardImage(drive_id="4", name="4.png", slots={3}),
-                    ],
+                    cards_by_id={
+                        "1": CardImage(drive_id="1", name="1.png", slots={0, 1}),
+                        "3": CardImage(drive_id="3", name="3.png", slots={2}),
+                        "4": CardImage(drive_id="4", name="4.png", slots={3}),
+                    },
                     num_slots=4,
                     face=constants.Faces.front,
                 ),
                 backs=CardImageCollection(
-                    cards=[
-                        CardImage(drive_id="2", name="2.png", slots={0, 1}),
-                        CardImage(drive_id="5", name="5.png", slots={2, 3}),
-                    ],
+                    cards_by_id={
+                        "2": CardImage(drive_id="2", name="2.png", slots={0, 1}),
+                        "5": CardImage(drive_id="5", name="5.png", slots={2, 3}),
+                    },
                     num_slots=4,
                     face=constants.Faces.back,
                 ),
@@ -973,12 +970,12 @@ def test_get_project_sizes_manually_specifying_sizes(
     order = CardOrder(
         details=Details(quantity=5, stock=constants.Cardstocks.S30, foil=False),
         fronts=CardImageCollection(
-            cards=[CardImage(drive_id="1", name="1.png", slots=set(range(5)))],
+            cards_by_id={"1": CardImage(drive_id="1", name="1.png", slots=set(range(5)))},
             num_slots=5,
             face=constants.Faces.front,
         ),
         backs=CardImageCollection(
-            cards=[CardImage(drive_id="2", name="2.png", slots=set(range(5)))],
+            cards_by_id={"2": CardImage(drive_id="2", name="2.png", slots=set(range(5)))},
             num_slots=5,
             face=constants.Faces.back,
         ),
@@ -997,12 +994,12 @@ def test_get_project_sizes_manually_specifying_sizes_with_an_incorrect_attempt_f
     order = CardOrder(
         details=Details(quantity=5, stock=constants.Cardstocks.S30, foil=False),
         fronts=CardImageCollection(
-            cards=[CardImage(drive_id="1", name="1.png", slots=set(range(5)))],
+            cards_by_id={"1": CardImage(drive_id="1", name="1.png", slots=set(range(5)))},
             num_slots=5,
             face=constants.Faces.front,
         ),
         backs=CardImageCollection(
-            cards=[CardImage(drive_id="2", name="2.png", slots=set(range(5)))],
+            cards_by_id={"2": CardImage(drive_id="2", name="2.png", slots=set(range(5)))},
             num_slots=5,
             face=constants.Faces.back,
         ),
@@ -1020,12 +1017,12 @@ def test_get_project_sizes_automatically_breaking_on_max_size(
     order = CardOrder(
         details=Details(quantity=5, stock=constants.Cardstocks.S30, foil=False),
         fronts=CardImageCollection(
-            cards=[CardImage(drive_id="1", name="1.png", slots=set(range(5)))],
+            cards_by_id={"1": CardImage(drive_id="1", name="1.png", slots=set(range(5)))},
             num_slots=5,
             face=constants.Faces.front,
         ),
         backs=CardImageCollection(
-            cards=[CardImage(drive_id="2", name="2.png", slots=set(range(5)))],
+            cards_by_id={"2": CardImage(drive_id="2", name="2.png", slots=set(range(5)))},
             num_slots=5,
             face=constants.Faces.back,
         ),
@@ -1043,12 +1040,12 @@ def test_get_project_sizes_automatically_breaking_on_max_size(
                 CardOrder(
                     details=Details(quantity=5, stock=constants.Cardstocks.S30, foil=False),
                     fronts=CardImageCollection(
-                        cards=[CardImage(drive_id="1", name="1.png", slots=set(range(5)))],
+                        cards_by_id={"1": CardImage(drive_id="1", name="1.png", slots=set(range(5)))},
                         num_slots=5,
                         face=constants.Faces.front,
                     ),
                     backs=CardImageCollection(
-                        cards=[CardImage(drive_id="2", name="2.png", slots=set(range(5)))],
+                        cards_by_id={"2": CardImage(drive_id="2", name="2.png", slots=set(range(5)))},
                         num_slots=5,
                         face=constants.Faces.back,
                     ),
@@ -1056,12 +1053,12 @@ def test_get_project_sizes_automatically_breaking_on_max_size(
                 CardOrder(
                     details=Details(quantity=2, stock=constants.Cardstocks.S30, foil=False),
                     fronts=CardImageCollection(
-                        cards=[CardImage(drive_id="1", name="1.png", slots=set(range(2)))],
+                        cards_by_id={"1": CardImage(drive_id="1", name="1.png", slots=set(range(2)))},
                         num_slots=2,
                         face=constants.Faces.front,
                     ),
                     backs=CardImageCollection(
-                        cards=[CardImage(drive_id="2", name="2.png", slots=set(range(2)))],
+                        cards_by_id={"2": CardImage(drive_id="2", name="2.png", slots=set(range(2)))},
                         num_slots=2,
                         face=constants.Faces.back,
                     ),
@@ -1071,12 +1068,12 @@ def test_get_project_sizes_automatically_breaking_on_max_size(
                 CardOrder(
                     details=Details(quantity=4, stock=constants.Cardstocks.S30, foil=False),
                     fronts=CardImageCollection(
-                        cards=[CardImage(drive_id="1", name="1.png", slots=set(range(4)))],
+                        cards_by_id={"1": CardImage(drive_id="1", name="1.png", slots=set(range(4)))},
                         num_slots=4,
                         face=constants.Faces.front,
                     ),
                     backs=CardImageCollection(
-                        cards=[CardImage(drive_id="2", name="2.png", slots=set(range(4)))],
+                        cards_by_id={"2": CardImage(drive_id="2", name="2.png", slots=set(range(4)))},
                         num_slots=4,
                         face=constants.Faces.back,
                     ),
@@ -1084,12 +1081,12 @@ def test_get_project_sizes_automatically_breaking_on_max_size(
                 CardOrder(
                     details=Details(quantity=3, stock=constants.Cardstocks.S30, foil=False),
                     fronts=CardImageCollection(
-                        cards=[CardImage(drive_id="1", name="1.png", slots=set(range(3)))],
+                        cards_by_id={"1": CardImage(drive_id="1", name="1.png", slots=set(range(3)))},
                         num_slots=3,
                         face=constants.Faces.front,
                     ),
                     backs=CardImageCollection(
-                        cards=[CardImage(drive_id="2", name="2.png", slots=set(range(3)))],
+                        cards_by_id={"2": CardImage(drive_id="2", name="2.png", slots=set(range(3)))},
                         num_slots=3,
                         face=constants.Faces.back,
                     ),

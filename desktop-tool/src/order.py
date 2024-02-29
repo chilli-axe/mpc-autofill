@@ -207,16 +207,30 @@ class CardImageCollection:
     A collection of CardImages for one face of a CardOrder.
     """
 
-    cards: list[CardImage] = attr.ib(factory=list)
+    cards_by_id: dict[str, CardImage] = attr.ib(factory=dict)  # keyed by ID
     queue: Queue[CardImage] = attr.ib(init=False, default=attr.Factory(Queue))
     num_slots: int = attr.ib(default=0)
     face: constants.Faces = attr.ib(default=constants.Faces.front)
 
+    def append(self, card: CardImage) -> None:
+        if card.drive_id in self.cards_by_id.keys():
+            self.cards_by_id[card.drive_id] = self.cards_by_id[card.drive_id].combine(card)
+        else:
+            self.cards_by_id[card.drive_id] = card
+
     def combine(self, other: "CardImageCollection") -> "CardImageCollection":
         assert self.face == other.face
-        # TODO: identify identical cards and merge their slots.
         return CardImageCollection(
-            cards=[*self.cards, *[card.offset_slots(self.num_slots) for card in other.cards]],
+            cards_by_id=self.cards_by_id
+            | {
+                drive_id: (
+                    card.offset_slots(self.num_slots).combine(self.cards_by_id[drive_id])
+                    if drive_id in self.cards_by_id.keys()
+                    else card.offset_slots(self.num_slots)
+                )
+                for drive_id, card in other.cards_by_id.items()
+            },
+            # cards_by_id=[*self.cards, *[card.offset_slots(self.num_slots) for card in other.cards]],
             num_slots=self.num_slots + other.num_slots,
             face=self.face,
         )
@@ -227,10 +241,10 @@ class CardImageCollection:
         return set(range(0, self.num_slots))
 
     def slots(self) -> set[int]:
-        return {slot for card in self.cards for slot in card.slots}
+        return {slot for card in self.cards_by_id.values() for slot in card.slots}
 
     def validate(self) -> None:
-        if self.num_slots == 0 or not self.cards:
+        if self.num_slots == 0 or not self.cards_by_id:
             raise ValidationException(f"{self.face} has no images!")
         slots_missing = self.all_slots() - self.slots()
         if slots_missing:
@@ -247,16 +261,20 @@ class CardImageCollection:
     def from_element(
         cls, element: Element, num_slots: int, face: constants.Faces, fill_image_id: Optional[str] = None
     ) -> "CardImageCollection":
-        card_images = []
+        card_images: dict[str, CardImage] = {}
         if element:
             for x in element:
-                card_images.append(CardImage.from_element(x))
-        card_image_collection = cls(cards=card_images, num_slots=num_slots, face=face)
+                card_image = CardImage.from_element(x)
+                if card_image.drive_id in card_images.keys():
+                    card_images[card_image.drive_id] = card_images[card_image.drive_id].combine(card_image)
+                else:
+                    card_images[card_image.drive_id] = card_image
+        card_image_collection = cls(cards_by_id=card_images, num_slots=num_slots, face=face)
         if fill_image_id:
             # fill the remaining slots in this card image collection with a new card image based off the given id
             missing_slots = card_image_collection.all_slots() - card_image_collection.slots()
             if missing_slots:
-                card_image_collection.cards.append(CardImage(drive_id=fill_image_id.strip(' "'), slots=missing_slots))
+                card_image_collection.append(CardImage(drive_id=fill_image_id.strip(' "'), slots=missing_slots))
 
         # postponing validation from post-init so we don't error for missing slots that `fill_image_id` would fill
         try:
@@ -277,7 +295,9 @@ class CardImageCollection:
         bar with each image. Async function.
         """
 
-        pool.map(lambda x: x.download_image(self.queue, download_bar, post_processing_config), self.cards)
+        pool.map(
+            lambda x: x.download_image(self.queue, download_bar, post_processing_config), self.cards_by_id.values()
+        )
 
     # endregion
 
@@ -443,16 +463,16 @@ class CardOrder:
         splits = [sum(raw_splits[: i + 1]) for i in range(len(raw_splits))]
 
         # split each card and assign them to their corresponding order
-        for front_card in self.fronts.cards:
+        for front_card in self.fronts.cards_by_id.values():
             split_cards = front_card.split(splits)
             for i, split_card in enumerate(split_cards):
                 if split_card:
-                    split_orders[i].fronts.cards.append(split_card)
-        for back_card in self.backs.cards:
+                    split_orders[i].fronts.append(split_card)
+        for back_card in self.backs.cards_by_id.values():
             split_cards = back_card.split(splits)
             for i, split_card in enumerate(split_cards):
                 if split_card:
-                    split_orders[i].backs.cards.append(split_card)
+                    split_orders[i].backs.append(split_card)
 
         return split_orders
 
@@ -460,7 +480,7 @@ class CardOrder:
 
     def validate(self) -> None:
         for collection in [self.fronts, self.backs]:
-            for image in collection.cards:
+            for image in collection.cards_by_id.values():
                 if not image.file_path:
                     raise ValidationException(
                         f"The file path for the image in slots {bold(sorted(image.slots) or image.drive_id)} "
