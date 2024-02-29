@@ -372,11 +372,13 @@ class AutofillDriver:
         Returns whether any action to modify the targeted site's project state was taken.
         """
 
-        valid_slots = [
-            slot
-            for slot in image.slots
-            if self.execute_javascript(self.get_element_for_slot_js(slot=slot), return_=True)
-        ]
+        valid_slots = sorted(
+            [
+                slot
+                for slot in image.slots
+                if self.execute_javascript(self.get_element_for_slot_js(slot=slot), return_=True)
+            ]
+        )
         slots_filled = [self.is_slot_filled(slot) for slot in valid_slots]
         if all(slots_filled):
             return False
