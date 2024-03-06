@@ -12,7 +12,7 @@ export function Import() {
     <>
       <Dropdown>
         <div className="d-grid gap-0">
-          <Dropdown.Toggle variant="success" id="dropdown-basic">
+          <Dropdown.Toggle variant="outline-success" id="dropdown-basic">
             <RightPaddedIcon bootstrapIconName="plus-circle" /> Add Cards
           </Dropdown.Toggle>
         </div>

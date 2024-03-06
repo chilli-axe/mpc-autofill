@@ -207,30 +207,26 @@ export function generateXML(
   return formatXML(xml, { collapseContent: true });
 }
 
-export function ExportXML() {
-  //# region queries and hooks
-
+export function useExportXML() {
   const store = useStore();
-  const isProjectEmpty = useAppSelector(selectIsProjectEmpty);
 
-  //# endregion
-
-  //# region callbacks
-
-  const downloadFile = () => {
+  return () => {
     const generatedXML = selectGeneratedXML(store.getState() as RootState);
     saveAs(
       new Blob([generatedXML], { type: "text/xml;charset=utf-8" }),
       "cards.xml"
     );
   };
+}
 
-  //# endregion
+export function ExportXML() {
+  const exportXML = useExportXML();
+  const isProjectEmpty = useAppSelector(selectIsProjectEmpty);
 
   return (
     <Dropdown.Item
       disabled={isProjectEmpty}
-      onClick={downloadFile}
+      onClick={exportXML}
       data-testid="export-xml-button"
     >
       <RightPaddedIcon bootstrapIconName="file-code" /> XML

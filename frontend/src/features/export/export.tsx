@@ -10,14 +10,14 @@ export function Export() {
   return (
     <Dropdown>
       <div className="d-grid gap-0">
-        <Dropdown.Toggle variant="success" id="dropdown-basic">
+        <Dropdown.Toggle variant="secondary" id="dropdown-basic">
           <RightPaddedIcon bootstrapIconName="cloud-arrow-down" /> Download
         </Dropdown.Toggle>
       </div>
       <Dropdown.Menu>
-        <ExportDecklist />
         <ExportXML />
         <ExportImages />
+        <ExportDecklist />
       </Dropdown.Menu>
     </Dropdown>
   );
