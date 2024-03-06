@@ -16,6 +16,7 @@ import { SelectedImagesRibbon } from "@/features/bulkManagement/bulkManagementRi
 import { CardGrid } from "@/features/card/cardGrid";
 import { CommonCardback } from "@/features/card/commonCardback";
 import { Export } from "@/features/export/export";
+import { FinishedMyProject } from "@/features/export/finishedMyProjectModal";
 import { FinishSettings } from "@/features/finishSettings/finishSettings";
 import { Import } from "@/features/import/import";
 import {
@@ -98,15 +99,16 @@ function App() {
             <Row className="g-0 pt-2">
               <SearchSettings />
             </Row>
-            <Row className="g-0 py-2">
-              <Col lg={6} md={12} sm={12} xs={12}>
+            <Row className="g-0 pt-2">
+              <Col lg={7} md={12} sm={12} xs={12}>
                 <Import />
               </Col>
-              <Col lg={6} md={12} sm={12} xs={12}>
+              <Col lg={5} md={12} sm={12} xs={12}>
                 <Export />
               </Col>
+              <FinishedMyProject />
             </Row>
-            <Col className="g-0" lg={{ span: 8, offset: 2 }} md={12}>
+            <Col className="g-0 pt-2" lg={{ span: 8, offset: 2 }} md={12}>
               <CommonCardback selectedImage={cardback} />
             </Col>
           </OverflowCol>
