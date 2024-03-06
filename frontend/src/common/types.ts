@@ -242,7 +242,8 @@ export type Modals =
   | "changeQuery"
   | "supportDeveloper"
   | "supportBackend"
-  | "invalidIdentifiers";
+  | "invalidIdentifiers"
+  | "finishedMyProject";
 
 export interface ModalsState {
   card: CardDocument | null;

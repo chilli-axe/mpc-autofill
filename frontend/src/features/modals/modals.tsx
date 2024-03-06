@@ -3,6 +3,7 @@ import React from "react";
 import { useAppDispatch, useAppSelector } from "@/common/types";
 import { MemoizedCardDetailedView } from "@/features/cardDetailedView/cardDetailedViewModal";
 import { ChangeQueryModal } from "@/features/changeQuery/changeQueryModal";
+import { FinishedMyProjectModal } from "@/features/export/finishedMyProjectModal";
 import { InvalidIdentifiersModal } from "@/features/invalidIdentifiers/invalidIdentifiersModal";
 import {
   hideModal,
@@ -47,6 +48,10 @@ export function Modals() {
           handleClose={handleClose}
         />
       )}
+      <FinishedMyProjectModal
+        show={shownModal === "finishedMyProject"}
+        handleClose={handleClose}
+      />
       <SupportDeveloperModal
         show={shownModal === "supportDeveloper"}
         handleClose={handleClose}
