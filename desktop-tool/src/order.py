@@ -102,7 +102,8 @@ class CardImage:
         self.errored = any([self.errored, self.name is None, self.file_path is None])
 
     def __attrs_post_init__(self) -> None:
-        self.generate_file_path()
+        if not self.file_path:
+            self.generate_file_path()
         self.validate()
 
     # endregion
