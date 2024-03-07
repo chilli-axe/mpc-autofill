@@ -1,3 +1,4 @@
+import socket
 import time
 from collections import deque
 from concurrent.futures import ThreadPoolExecutor
@@ -161,6 +162,8 @@ def update_database(source_key: Optional[str] = None) -> None:
     If `source_key` is specified, only update that source; otherwise, update all sources.
     """
 
+    # try to work around https://github.com/googleapis/google-api-python-client/issues/2186
+    socket.setdefaulttimeout(15 * 60)
     tags = Tags()
     if source_key:
         try:
