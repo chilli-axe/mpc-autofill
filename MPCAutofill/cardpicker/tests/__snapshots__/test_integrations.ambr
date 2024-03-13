@@ -80,6 +80,7 @@
     '1 Delver of Secrets // Insectile Aberration': 1,
     '3 Past in Flames': 1,
     '4 Brainstorm': 1,
+    't:Innistrad Checklist': 1,
   })
 # ---
 # name: TestMTGIntegration.test_valid_url[https://www.mtggoldfish.com/deck/5149750]
