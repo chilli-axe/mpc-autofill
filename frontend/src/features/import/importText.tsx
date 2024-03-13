@@ -4,7 +4,7 @@
  * A freeform text area is exposed and the cards are processed when the user hits Submit.
  */
 
-import React, { FormEvent, useState } from "react";
+import React, { FormEvent, useRef, useState } from "react";
 import { Accordion } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
 import Dropdown from "react-bootstrap/Dropdown";
@@ -47,6 +47,7 @@ export function ImportText() {
 
   const [showTextModal, setShowTextModal] = useState<boolean>(false);
   const [textModalValue, setTextModalValue] = useState<string>("");
+  const focusRef = useRef<HTMLTextAreaElement>(null);
 
   //# endregion
 
@@ -96,6 +97,11 @@ export function ImportText() {
       <Modal
         scrollable
         show={showTextModal}
+        onEntered={() => {
+          if (focusRef.current) {
+            focusRef.current.focus();
+          }
+        }}
         onHide={handleCloseTextModal}
         onExited={() => setTextModalValue("")}
         data-testid="import-text"
@@ -175,6 +181,7 @@ export function ImportText() {
           <Form id="importTextForm" onSubmit={handleSubmitTextModal}>
             <Form.Group className="mb-3">
               <Form.Control
+                ref={focusRef}
                 as="textarea"
                 rows={12}
                 placeholder={placeholderText}
