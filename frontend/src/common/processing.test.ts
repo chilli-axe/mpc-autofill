@@ -8,6 +8,7 @@ import {
   Token,
 } from "@/common/constants";
 import {
+  parseCSVFileAsLines,
   processLine,
   processPrefix,
   processQuery,
@@ -362,6 +363,18 @@ describe("URLs are sanitised correctly", () => {
       "http" + (text.includes("http://") ? "" : "s") + "://127.0.0.1:8000"
     );
   });
+});
+
+test.each([
+  "Quantity,Front,Front ID,Back,Back ID\n2, opt, xyz, char, abcd",
+  "Quantity, Front, Front ID, Back, Back ID\n2, opt, xyz, char, abcd",
+  "Quantity,   Front, Front ID,   Back,  Back ID   \n    2,   opt,  xyz,  char, abcd  ",
+])("CSV is parsed correctly", () => {
+  const csv =
+    "Quantity, Front, Front ID, Back, Back ID\n2, opt, xyz, char, abcd";
+  expect(parseCSVFileAsLines(csv)).toStrictEqual([
+    `2 opt${SelectedImageSeparator}xyz ${FaceSeparator} char${SelectedImageSeparator}abcd`,
+  ]);
 });
 
 // # endregion

@@ -182,3 +182,26 @@ test("importing a more complex CSV into an empty project", async () => {
   await expectCardGridSlotState(3, Back, cardDocument2.name, 1, 2);
   await expectCardbackSlotState(cardDocument2.name, 1, 2);
 });
+
+test("CSV header has spaces", async () => {
+  server.use(
+    cardDocumentsThreeResults,
+    cardbacksTwoOtherResults,
+    sourceDocumentsOneResult,
+    searchResultsThreeResults,
+    ...defaultHandlers
+  );
+  renderWithProviders(<App />, { preloadedState });
+
+  // import a card
+  await importCSV(
+    `Quantity, Front , Front ID
+    ,my search query,${cardDocument3.identifier}`
+  );
+
+  // a card slot should have been created
+  await expectCardSlotToExist(1);
+  await expectCardGridSlotState(1, Front, cardDocument3.name, 3, 3);
+  await expectCardGridSlotState(1, Back, cardDocument2.name, 1, 2);
+  await expectCardbackSlotState(cardDocument2.name, 1, 2);
+});

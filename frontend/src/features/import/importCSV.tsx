@@ -6,18 +6,17 @@
  * for repeatability.
  */
 
-// @ts-ignore // TODO: put a PR into this repo adding types
-import { parse } from "lil-csv";
 import React, { useState } from "react";
 import Button from "react-bootstrap/Button";
 import Dropdown from "react-bootstrap/Dropdown";
 import Modal from "react-bootstrap/Modal";
 
 import { useGetDFCPairsQuery } from "@/app/api";
-import { FaceSeparator, SelectedImageSeparator } from "@/common/constants";
+import { CSVHeaders } from "@/common/constants";
 import { TextFileDropzone } from "@/common/dropzone";
 import {
   convertLinesIntoSlotProjectMembers,
+  parseCSVFileAsLines,
   processLines,
 } from "@/common/processing";
 import { useAppDispatch, useAppSelector } from "@/common/types";
@@ -26,14 +25,6 @@ import { AutofillTable } from "@/components/table";
 import { addMembers, selectProjectSize } from "@/features/project/projectSlice";
 import { selectFuzzySearch } from "@/features/searchSettings/searchSettingsSlice";
 import { setError } from "@/features/toasts/toastsSlice";
-
-const CSVHeaders: { [key: string]: string } = {
-  quantity: "Quantity",
-  frontQuery: "Front",
-  frontSelectedImage: "Front ID",
-  backQuery: "Back",
-  backSelectedImage: "Back ID",
-};
 
 function CSVFormat() {
   /**
@@ -136,33 +127,9 @@ export function ImportCSV() {
       return;
     }
 
-    const rows = parse(fileContents, {
-      header: Object.fromEntries(
-        Object.entries(CSVHeaders).map(([key, value]) => [value, key])
-      ),
-    });
-    const formatCSVRowAsLine = (x: {
-      quantity: string | null;
-      frontQuery: string | null;
-      frontSelectedImage: string | null;
-      backQuery: string | null;
-      backSelectedImage: string | null;
-    }): string => {
-      let formattedLine = `${x.quantity ?? ""} ${x.frontQuery ?? ""}`;
-      if ((x.frontSelectedImage ?? "").length > 0) {
-        formattedLine += `${SelectedImageSeparator}${x.frontSelectedImage}`;
-      }
-      if ((x.backQuery ?? "").length > 0) {
-        formattedLine += ` ${FaceSeparator} ${x.backQuery}`;
-        if ((x.backSelectedImage ?? "").length > 0) {
-          formattedLine += `${SelectedImageSeparator}${x.backSelectedImage}`;
-        }
-      }
-      return formattedLine;
-    };
-
+    const lines = parseCSVFileAsLines(fileContents);
     const processedLines = processLines(
-      rows.map(formatCSVRowAsLine),
+      lines,
       dfcPairsQuery.data ?? {},
       fuzzySearch
     );

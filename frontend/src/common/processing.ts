@@ -3,12 +3,15 @@
  */
 
 import { toByteArray } from "base64-js";
+// @ts-ignore
+import { parse } from "lil-csv";
 
 import {
   Card,
   Cardback,
   CardTypePrefixes,
   CardTypeSeparator,
+  CSVHeaders,
   FaceSeparator,
   ProjectMaxSize,
   ReversedCardTypePrefixes,
@@ -17,6 +20,7 @@ import {
 } from "@/common/constants";
 import {
   CardDocument,
+  CSVRow,
   DFCPairs,
   ProcessedLine,
   ProjectMember,
@@ -303,4 +307,32 @@ export const formatPlaceholderText = (placeholders: {
     }
   }
   return placeholderTextByCardType.join(separator + separator);
+};
+
+export const parseCSVRowAsLine = (rawRow: CSVRow): string => {
+  const row = Object.fromEntries(
+    Object.entries(rawRow).map(([key, value]) => [key.trim(), value?.trim()])
+  );
+  let formattedLine = `${row[CSVHeaders.quantity] ?? ""} ${
+    row[CSVHeaders.frontQuery] ?? ""
+  }`;
+  if ((row[CSVHeaders.frontSelectedImage] ?? "").length > 0) {
+    formattedLine += `${SelectedImageSeparator}${
+      row[CSVHeaders.frontSelectedImage]
+    }`;
+  }
+  if ((row[CSVHeaders.backQuery] ?? "").length > 0) {
+    formattedLine += ` ${FaceSeparator} ${row[CSVHeaders.backQuery]}`;
+    if ((row[CSVHeaders.backSelectedImage] ?? "").length > 0) {
+      formattedLine += `${SelectedImageSeparator}${
+        row[CSVHeaders.backSelectedImage]
+      }`;
+    }
+  }
+  return formattedLine;
+};
+
+export const parseCSVFileAsLines = (fileContents: string): Array<string> => {
+  const rows: Array<CSVRow> = parse(fileContents);
+  return rows.map(parseCSVRowAsLine);
 };
