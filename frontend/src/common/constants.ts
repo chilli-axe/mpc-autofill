@@ -79,3 +79,11 @@ export const GoogleDriveImageAPIURL =
 
 export const SearchResultsEndpointPageSize = 300;
 export const CardEndpointPageSize = 1000;
+
+export enum CSVHeaders {
+  quantity = "Quantity",
+  frontQuery = "Front",
+  frontSelectedImage = "Front ID",
+  backQuery = "Back",
+  backSelectedImage = "Back ID",
+}

@@ -1,5 +1,3 @@
-import each from "jest-each";
-
 import {
   Card,
   Cardback,
@@ -8,6 +6,7 @@ import {
   Token,
 } from "@/common/constants";
 import {
+  parseCSVFileAsLines,
   processLine,
   processPrefix,
   processQuery,
@@ -350,18 +349,30 @@ test("a line specifying the selected image ID for both faces is processed correc
 });
 
 describe("URLs are sanitised correctly", () => {
-  each([
+  test.each([
     "http://127.0.0.1:8000",
     "http://127.0.0.1:8000/",
     "https://127.0.0.1:8000",
     "127.0.0.1:8000",
     "127.0.0.1:8000/",
     "127.0.0.1:8000/path",
-  ]).test("%s", (text) => {
+  ])("%s", (text) => {
     expect(standardiseURL(text)).toBe(
       "http" + (text.includes("http://") ? "" : "s") + "://127.0.0.1:8000"
     );
   });
+});
+
+test.each([
+  "Quantity,Front,Front ID,Back,Back ID\n2, opt, xyz, char, abcd",
+  "Quantity, Front, Front ID, Back, Back ID\n2, opt, xyz, char, abcd",
+  "Quantity,   Front, Front ID,   Back,  Back ID   \n    2,   opt,  xyz,  char, abcd  ",
+])("CSV is parsed correctly", () => {
+  const csv =
+    "Quantity, Front, Front ID, Back, Back ID\n2, opt, xyz, char, abcd";
+  expect(parseCSVFileAsLines(csv)).toStrictEqual([
+    `2 opt${SelectedImageSeparator}xyz ${FaceSeparator} char${SelectedImageSeparator}abcd`,
+  ]);
 });
 
 // # endregion

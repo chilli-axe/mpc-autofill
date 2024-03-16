@@ -5,7 +5,7 @@
  * to process the URL when the user hits Submit.
  */
 
-import React, { FormEvent, useCallback, useState } from "react";
+import React, { FormEvent, useCallback, useRef, useState } from "react";
 import Button from "react-bootstrap/Button";
 import Dropdown from "react-bootstrap/Dropdown";
 import Form from "react-bootstrap/Form";
@@ -44,6 +44,7 @@ export function ImportURL() {
   const [URLModalValue, setURLModalValue] = useState<string>("");
   const [showURLModal, setShowURLModal] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
+  const focusRef = useRef<HTMLInputElement>(null);
 
   //# endregion
 
@@ -130,6 +131,11 @@ export function ImportURL() {
       <Modal
         scrollable
         show={loading || showURLModal}
+        onEntered={() => {
+          if (focusRef.current) {
+            focusRef.current.focus();
+          }
+        }}
         onHide={handleCloseURLModal}
         onExited={() => setURLModalValue("")}
       >
@@ -164,6 +170,7 @@ export function ImportURL() {
           <Form id="importURLForm" onSubmit={handleSubmitURLModal}>
             <Form.Group className="mb-3">
               <Form.Control
+                ref={focusRef}
                 type="url"
                 required={true}
                 placeholder="https://"

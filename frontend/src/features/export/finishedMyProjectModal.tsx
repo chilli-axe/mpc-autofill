@@ -224,7 +224,7 @@ export function FinishedMyProjectModal({ show, handleClose }: ExitModal) {
               style={{ backgroundColor: "#d99a07" }}
               className="text-center"
             >
-              <b>Are you on macOS or Linux</b> There&apos;s another step before
+              <b>Are you on macOS or Linux?</b> There&apos;s another step before
               you can double-click it - check out the wiki (linked above) for
               details.
             </Alert>

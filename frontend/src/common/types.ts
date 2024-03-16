@@ -2,6 +2,7 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
 
 import type { AppDispatch, RootState } from "@/app/store";
+import { CSVHeaders } from "@/common/constants";
 import { SearchQuery } from "@/common/schema_types";
 export type {
   FilterSettings,
@@ -266,3 +267,7 @@ export interface Tag {
   parent: string | null;
   children: Array<Tag>;
 }
+
+export type CSVRow = {
+  [column in CSVHeaders]?: string;
+};
