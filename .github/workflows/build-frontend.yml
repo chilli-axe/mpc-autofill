@@ -30,6 +30,7 @@ jobs:
         uses: dmnemec/copy_file_to_another_repo_action@main
         env:
           API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
+          NEXT_PUBLIC_IMAGE_CDN_URL: ${{ secrets.NEXT_PUBLIC_IMAGE_CDN_URL }}
         with:
           source_file: "frontend/out/."
           destination_repo: "mpcautofill/mpcautofill.github.io"
