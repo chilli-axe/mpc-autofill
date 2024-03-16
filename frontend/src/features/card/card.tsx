@@ -115,11 +115,21 @@ function CardImage({
 
   //# region computed constants
 
+  // TODO: always point at image server once it's stable
+  const imageCDNURL = process.env.NEXT_PUBLIC_IMAGE_CDN_URL;
+  const smallThumbnailURL =
+    imageCDNURL != null
+      ? `${imageCDNURL}/images/google_drive/small/${maybeCardDocument?.identifier}.jpg`
+      : maybeCardDocument?.small_thumbnail_url;
+  const mediumThumbnailURL =
+    imageCDNURL != null
+      ? `${imageCDNURL}/images/google_drive/large/${maybeCardDocument?.identifier}.jpg`
+      : maybeCardDocument?.medium_thumbnail_url;
   const imageSrc: string | undefined =
     imageState !== "errored"
       ? small
-        ? maybeCardDocument?.small_thumbnail_url
-        : maybeCardDocument?.medium_thumbnail_url
+        ? smallThumbnailURL
+        : mediumThumbnailURL
       : small
       ? "/error_404.png"
       : "/error_404_med.png";

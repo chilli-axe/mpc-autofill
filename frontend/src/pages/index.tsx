@@ -120,6 +120,21 @@ export default function Index() {
         />
       </Head>
       <br />
+      {process.env.NEXT_PUBLIC_IMAGE_CDN_URL != null && (
+        <Alert variant="info">
+          Howdy! I&apos;m testing an experimental feature for image loading at
+          the moment.
+          <br />
+          If you noticed any issues, please create an issue on{" "}
+          <a
+            href="https://github.com/chilli-axe/mpc-autofill/issues"
+            target="_blank"
+          >
+            the GitHub repo
+          </a>
+          . Thanks for your patience!
+        </Alert>
+      )}
       <DynamicLogo />
       <br />
       <JumpIntoEditorButton />
