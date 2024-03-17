@@ -116,13 +116,14 @@ function CardImage({
   //# region computed constants
 
   // TODO: always point at image server once it's stable
+  // TODO: introduce the concept of source types which need to go through the CDN
   const imageCDNURL = process.env.NEXT_PUBLIC_IMAGE_CDN_URL;
   const smallThumbnailURL =
-    imageCDNURL != null
+    imageCDNURL != null && maybeCardDocument?.source_type
       ? `${imageCDNURL}/images/google_drive/small/${maybeCardDocument?.identifier}.jpg`
       : maybeCardDocument?.small_thumbnail_url;
   const mediumThumbnailURL =
-    imageCDNURL != null
+    imageCDNURL != null && maybeCardDocument?.source_type
       ? `${imageCDNURL}/images/google_drive/large/${maybeCardDocument?.identifier}.jpg`
       : maybeCardDocument?.medium_thumbnail_url;
   const imageSrc: string | undefined =

@@ -214,7 +214,7 @@ const SampleCardDocument: CardDocument = {
   source_name: "",
   source_id: 0,
   source_verbose: "",
-  source_type: "drive",
+  source_type: undefined,
   source_external_link: null,
   dpi: 300,
   searchq: "",

@@ -49,7 +49,7 @@ export interface CardDocument {
   source_name: string;
   source_id: number;
   source_verbose: string;
-  source_type: string;
+  source_type?: SourceType;
   source_external_link: string | null;
   dpi: number;
   searchq: string;
