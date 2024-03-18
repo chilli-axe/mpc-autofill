@@ -85,7 +85,11 @@ function CardImage({
     setImageState("loaded");
   };
   const onError: React.ReactEventHandler<HTMLImageElement> = (img) => {
-    setImageState("errored");
+    img.preventDefault();
+    img.currentTarget.onerror = null;
+    if (imageState !== "errored") {
+      setImageState("errored");
+    }
   };
   const handleShowDetailedView = () => {
     if (showDetailedViewOnClick && maybeCardDocument != null) {
@@ -116,23 +120,18 @@ function CardImage({
   //# region computed constants
 
   // TODO: always point at image server once it's stable
+  // TODO: introduce the concept of source types which need to go through the CDN
   const imageCDNURL = process.env.NEXT_PUBLIC_IMAGE_CDN_URL;
   const smallThumbnailURL =
-    imageCDNURL != null
+    imageCDNURL != null && maybeCardDocument?.source_type
       ? `${imageCDNURL}/images/google_drive/small/${maybeCardDocument?.identifier}.jpg`
       : maybeCardDocument?.small_thumbnail_url;
   const mediumThumbnailURL =
-    imageCDNURL != null
+    imageCDNURL != null && maybeCardDocument?.source_type
       ? `${imageCDNURL}/images/google_drive/large/${maybeCardDocument?.identifier}.jpg`
       : maybeCardDocument?.medium_thumbnail_url;
-  const imageSrc: string | undefined =
-    imageState !== "errored"
-      ? small
-        ? smallThumbnailURL
-        : mediumThumbnailURL
-      : small
-      ? "/error_404.png"
-      : "/error_404_med.png";
+  const imageSrc = small ? smallThumbnailURL : mediumThumbnailURL;
+  const errorImageSrc = small ? "/error_404.png" : "/error_404_med.png";
   const imageAlt = maybeCardDocument?.name ?? "Unnamed Card";
 
   //# endregion
@@ -153,19 +152,32 @@ function CardImage({
             fill={true}
           />
         ) : (
-          <VisibleImage
-            ref={image}
-            className="card-img card-img-fade-in"
-            loading="lazy"
-            imageIsLoading={imageState === "loading"}
-            showDetailedViewOnClick={showDetailedViewOnClick}
-            src={imageSrc}
-            onLoadingComplete={onLoadingComplete}
-            onErrorCapture={onError}
-            onClick={handleShowDetailedView}
-            alt={imageAlt}
-            fill={true}
-          />
+          <>
+            {imageState === "errored" ? (
+              <VisibleImage
+                ref={image}
+                className="card-img card-img-fade-in"
+                loading="lazy"
+                src={errorImageSrc}
+                alt={""}
+                fill={true}
+              />
+            ) : (
+              <VisibleImage
+                ref={image}
+                className="card-img card-img-fade-in"
+                loading="lazy"
+                imageIsLoading={imageState === "loading"}
+                showDetailedViewOnClick={showDetailedViewOnClick}
+                src={imageSrc}
+                onLoadingComplete={onLoadingComplete}
+                onErrorCapture={onError}
+                onClick={handleShowDetailedView}
+                alt={imageAlt}
+                fill={true}
+              />
+            )}
+          </>
         ))}
     </>
   );
