@@ -73,6 +73,7 @@ def assert_file_size(file_path: str, size: int) -> None:
 # region constants
 
 FILE_PATH = os.path.abspath(os.path.dirname(__file__))
+CARDS_FILE_PATH = os.path.join(FILE_PATH, "cards")
 SIMPLE_CUBE = "Simple Cube"
 SIMPLE_CUBE_ID = "1JtXL6Ca9nQkvhwZZRR9ZuKA9_DzsFf1V"
 SIMPLE_LOTUS = "Simple Lotus"
@@ -118,7 +119,7 @@ def image_element_local_file() -> Generator[ElementTree.Element, None, None]:
         textwrap.dedent(  # file exists in /src/cards
             f"""
             <card>
-                <id>{FILE_PATH}/cards/{TEST_IMAGE}.png</id>
+                <id>{os.path.join(CARDS_FILE_PATH, TEST_IMAGE)}.png</id>
                 <slots>0</slots>
                 <name>{TEST_IMAGE}.png</name>
                 <query>test image</query>
@@ -366,7 +367,7 @@ def card_order_element_valid() -> Generator[ElementTree.Element, None, None]:
                         <query>simple lotus</query>
                     </card>
                 </fronts>
-                <cardback>{FILE_PATH}/cards/{TEST_IMAGE}.png</cardback>
+                <cardback>{os.path.join(CARDS_FILE_PATH, TEST_IMAGE)}.png</cardback>
             </order>
             """
         )
@@ -391,7 +392,7 @@ def card_order_element_multiple_cardbacks() -> Generator[ElementTree.Element, No
                 </details>
                 <fronts>
                     <card>
-                        <id>{FILE_PATH}/cards/{TEST_IMAGE}.png</id>
+                        <id>{os.path.join(CARDS_FILE_PATH, TEST_IMAGE)}.png</id>
                         <slots>0,3</slots>
                         <name></name>
                         <query></query>
@@ -450,7 +451,7 @@ def card_order_element_invalid_quantity() -> Generator[ElementTree.Element, None
                         <query>simple lotus</query>
                     </card>
                 </fronts>
-                <cardback>{FILE_PATH}/cards/{TEST_IMAGE}.png</cardback>
+                <cardback>{os.path.join(CARDS_FILE_PATH, TEST_IMAGE)}.png</cardback>
             </order>
             """
         )
@@ -482,7 +483,7 @@ def card_order_element_missing_front_image() -> Generator[ElementTree.Element, N
                         <query>simple lotus</query>
                     </card>
                 </fronts>
-                <cardback>{FILE_PATH}/cards/{TEST_IMAGE}.png</cardback>
+                <cardback>{os.path.join(CARDS_FILE_PATH, TEST_IMAGE)}.png</cardback>
             </order>
             """
         )
@@ -585,9 +586,11 @@ def test_generate_google_drive_file_path(image_valid_google_drive):
     "image_a, image_b, expected_result",
     [
         (
-            CardImage(drive_id="1", name="a.jpg", file_path=f"{FILE_PATH}/cards/a (1).jpg", slots={1, 2}),
-            CardImage(drive_id="1", name="a.jpg", file_path=f"{FILE_PATH}/cards/a (1).jpg", slots={2, 3}),
-            CardImage(drive_id="1", name="a.jpg", file_path=f"{FILE_PATH}/cards/a (1).jpg", slots={1, 2, 3}),
+            CardImage(drive_id="1", name="a.jpg", file_path=os.path.join(CARDS_FILE_PATH, "a (1).jpg"), slots={1, 2}),
+            CardImage(drive_id="1", name="a.jpg", file_path=os.path.join(CARDS_FILE_PATH, "a (1).jpg"), slots={2, 3}),
+            CardImage(
+                drive_id="1", name="a.jpg", file_path=os.path.join(CARDS_FILE_PATH, "a (1).jpg"), slots={1, 2, 3}
+            ),
         )
     ],
 )
@@ -666,14 +669,14 @@ def test_card_order_valid(card_order_valid):
                         drive_id=SIMPLE_CUBE_ID,
                         slots={0},
                         name=f"{SIMPLE_CUBE}.png",
-                        file_path=f"{FILE_PATH}/cards/{SIMPLE_CUBE} ({SIMPLE_CUBE_ID}).png",  # not on disk
+                        file_path=os.path.join(CARDS_FILE_PATH, f"{SIMPLE_CUBE} ({SIMPLE_CUBE_ID}).png"),  # not on disk
                         query="simple cube",
                     ),
                     SIMPLE_LOTUS_ID: CardImage(
                         drive_id=SIMPLE_LOTUS_ID,
                         slots={1, 2},
                         name=f"{SIMPLE_LOTUS}.png",
-                        file_path=f"{FILE_PATH}/cards/{SIMPLE_LOTUS}.png",  # already exists on disk
+                        file_path=os.path.join(CARDS_FILE_PATH, f"{SIMPLE_LOTUS}.png"),  # already exists on disk
                         query="simple lotus",
                     ),
                 },
@@ -682,11 +685,11 @@ def test_card_order_valid(card_order_valid):
                 face=constants.Faces.back,
                 num_slots=3,
                 cards_by_id={
-                    f"{FILE_PATH}/cards/{TEST_IMAGE}.png": CardImage(
-                        drive_id=f"{FILE_PATH}/cards/{TEST_IMAGE}.png",
+                    os.path.join(CARDS_FILE_PATH, f"{TEST_IMAGE}.png"): CardImage(
+                        drive_id=os.path.join(CARDS_FILE_PATH, f"{TEST_IMAGE}.png"),
                         slots={0, 1, 2},
                         name=f"{TEST_IMAGE}.png",  # name retrieved from file on disk
-                        file_path=f"{FILE_PATH}/cards/{TEST_IMAGE}.png",
+                        file_path=os.path.join(CARDS_FILE_PATH, f"{TEST_IMAGE}.png"),
                         query=None,
                     )
                 },
@@ -708,18 +711,18 @@ def test_card_order_multiple_cardbacks(card_order_multiple_cardbacks):
                 face=constants.Faces.front,
                 num_slots=4,
                 cards_by_id={
-                    f"{FILE_PATH}/cards/{TEST_IMAGE}.png": CardImage(
-                        drive_id=f"{FILE_PATH}/cards/{TEST_IMAGE}.png",
+                    os.path.join(CARDS_FILE_PATH, "{TEST_IMAGE}.png"): CardImage(
+                        drive_id=os.path.join(CARDS_FILE_PATH, f"{TEST_IMAGE}.png"),
                         slots={0, 3},
                         name=f"{TEST_IMAGE}.png",  # name retrieved from file on disk
-                        file_path=f"{FILE_PATH}/cards/{TEST_IMAGE}.png",
+                        file_path=os.path.join(CARDS_FILE_PATH, f"{TEST_IMAGE}.png"),
                         query=None,
                     ),
                     SIMPLE_LOTUS_ID: CardImage(
                         drive_id=SIMPLE_LOTUS_ID,
                         slots={1, 2},
                         name=f"{SIMPLE_LOTUS}.png",
-                        file_path=f"{FILE_PATH}/cards/{SIMPLE_LOTUS}.png",  # already exists on disk
+                        file_path=os.path.join(CARDS_FILE_PATH, f"{SIMPLE_LOTUS}.png"),  # already exists on disk
                         query="simple lotus",
                     ),
                 },
@@ -732,14 +735,14 @@ def test_card_order_multiple_cardbacks(card_order_multiple_cardbacks):
                         drive_id=SIMPLE_LOTUS_ID,
                         slots={1},
                         name=f"{SIMPLE_LOTUS}.png",
-                        file_path=f"{FILE_PATH}/cards/{SIMPLE_LOTUS}.png",  # already exists on disk
+                        file_path=os.path.join(CARDS_FILE_PATH, f"{SIMPLE_LOTUS}.png"),  # already exists on disk
                         query="simple lotus",
                     ),
                     SIMPLE_CUBE_ID: CardImage(
                         drive_id=SIMPLE_CUBE_ID,
                         slots={0, 2, 3},
                         name=f"{SIMPLE_CUBE}.png",
-                        file_path=f"{FILE_PATH}/cards/{SIMPLE_CUBE} ({SIMPLE_CUBE_ID}).png",  # not on disk
+                        file_path=os.path.join(CARDS_FILE_PATH, f"{SIMPLE_CUBE} ({SIMPLE_CUBE_ID}).png"),  # not on disk
                         query=None,
                     ),
                 },
@@ -768,14 +771,18 @@ def test_card_order_valid_from_file():
                         drive_id="1OAw4l9RYbgYrmnyYeR1iVDoIS6_aus49",
                         slots=set(range(9)),
                         name="Island (Unsanctioned).png",
-                        file_path=f"{FILE_PATH}/cards/Island (Unsanctioned) (1OAw4l9RYbgYrmnyYeR1iVDoIS6_aus49).png",
+                        file_path=os.path.join(
+                            CARDS_FILE_PATH, "Island (Unsanctioned) (1OAw4l9RYbgYrmnyYeR1iVDoIS6_aus49).png"
+                        ),
                         query="island",
                     ),
                     "1wlrM7pNHQ5NqS9GY5LWH7Hd04TtNgHI4": CardImage(
                         drive_id="1wlrM7pNHQ5NqS9GY5LWH7Hd04TtNgHI4",
                         slots={9},
                         name="Rite of Flame.png",
-                        file_path=f"{FILE_PATH}/cards/Rite of Flame (1wlrM7pNHQ5NqS9GY5LWH7Hd04TtNgHI4).png",
+                        file_path=os.path.join(
+                            CARDS_FILE_PATH, "Rite of Flame (1wlrM7pNHQ5NqS9GY5LWH7Hd04TtNgHI4).png"
+                        ),
                         query="rite of flame",
                     ),
                 },
@@ -788,7 +795,7 @@ def test_card_order_valid_from_file():
                         drive_id="16g2UamJ2jzwNHovLesvsinvd6_qPkZfy",
                         slots=set(range(10)),
                         name="MTGA Lotus.png",
-                        file_path=f"{FILE_PATH}/cards/MTGA Lotus (16g2UamJ2jzwNHovLesvsinvd6_qPkZfy).png",
+                        file_path=os.path.join(CARDS_FILE_PATH, "MTGA Lotus (16g2UamJ2jzwNHovLesvsinvd6_qPkZfy).png"),
                         query=None,
                     )
                 },
@@ -820,7 +827,10 @@ def test_card_order_missing_slots(input_enter, card_order_element_invalid_quanti
                     fronts=CardImageCollection(
                         cards_by_id={
                             "1": CardImage(
-                                drive_id="1", name="1.png", file_path=f"{FILE_PATH}/cards/1 (1).png", slots={0, 1}
+                                drive_id="1",
+                                name="1.png",
+                                file_path=os.path.join(CARDS_FILE_PATH, "1 (1).png"),
+                                slots={0, 1},
                             )
                         },
                         num_slots=2,
@@ -829,7 +839,10 @@ def test_card_order_missing_slots(input_enter, card_order_element_invalid_quanti
                     backs=CardImageCollection(
                         cards_by_id={
                             "2": CardImage(
-                                drive_id="2", name="2.png", file_path=f"{FILE_PATH}/cards/2 (2).png", slots={0, 1}
+                                drive_id="2",
+                                name="2.png",
+                                file_path=os.path.join(CARDS_FILE_PATH, "2 (2).png"),
+                                slots={0, 1},
                             )
                         },
                         num_slots=2,
@@ -841,10 +854,16 @@ def test_card_order_missing_slots(input_enter, card_order_element_invalid_quanti
                     fronts=CardImageCollection(
                         cards_by_id={
                             "3": CardImage(
-                                drive_id="3", name="3.png", file_path=f"{FILE_PATH}/cards/3 (3).png", slots={0}
+                                drive_id="3",
+                                name="3.png",
+                                file_path=os.path.join(CARDS_FILE_PATH, "3 (3).png"),
+                                slots={0},
                             ),
                             "4": CardImage(
-                                drive_id="4", name="4.png", file_path=f"{FILE_PATH}/cards/4 (4).png", slots={1}
+                                drive_id="4",
+                                name="4.png",
+                                file_path=os.path.join(CARDS_FILE_PATH, "4 (4).png"),
+                                slots={1},
                             ),
                         },
                         num_slots=2,
@@ -853,7 +872,10 @@ def test_card_order_missing_slots(input_enter, card_order_element_invalid_quanti
                     backs=CardImageCollection(
                         cards_by_id={
                             "2": CardImage(
-                                drive_id="2", name="2.png", file_path=f"{FILE_PATH}/cards/2 (2).png", slots={0, 1}
+                                drive_id="2",
+                                name="2.png",
+                                file_path=os.path.join(CARDS_FILE_PATH, "2 (2).png"),
+                                slots={0, 1},
                             )
                         },
                         num_slots=2,
@@ -867,10 +889,17 @@ def test_card_order_missing_slots(input_enter, card_order_element_invalid_quanti
                 fronts=CardImageCollection(
                     cards_by_id={
                         "1": CardImage(
-                            drive_id="1", name="1.png", file_path=f"{FILE_PATH}/cards/1 (1).png", slots={0, 1}
+                            drive_id="1",
+                            name="1.png",
+                            file_path=os.path.join(CARDS_FILE_PATH, "1 (1).png"),
+                            slots={0, 1},
                         ),
-                        "3": CardImage(drive_id="3", name="3.png", file_path=f"{FILE_PATH}/cards/3 (3).png", slots={2}),
-                        "4": CardImage(drive_id="4", name="4.png", file_path=f"{FILE_PATH}/cards/4 (4).png", slots={3}),
+                        "3": CardImage(
+                            drive_id="3", name="3.png", file_path=os.path.join(CARDS_FILE_PATH, "3 (3).png"), slots={2}
+                        ),
+                        "4": CardImage(
+                            drive_id="4", name="4.png", file_path=os.path.join(CARDS_FILE_PATH, "4 (4).png"), slots={3}
+                        ),
                     },
                     num_slots=4,
                     face=constants.Faces.front,
@@ -879,7 +908,10 @@ def test_card_order_missing_slots(input_enter, card_order_element_invalid_quanti
                     # the slots for `2` across both orders will be merged as below
                     cards_by_id={
                         "2": CardImage(
-                            drive_id="2", name="2.png", file_path=f"{FILE_PATH}/cards/2 (2).png", slots={0, 1, 2, 3}
+                            drive_id="2",
+                            name="2.png",
+                            file_path=os.path.join(CARDS_FILE_PATH, "2 (2).png"),
+                            slots={0, 1, 2, 3},
                         )
                     },
                     num_slots=4,
@@ -897,7 +929,10 @@ def test_card_order_missing_slots(input_enter, card_order_element_invalid_quanti
                     fronts=CardImageCollection(
                         cards_by_id={
                             "1": CardImage(
-                                drive_id="1", name="1.png", file_path=f"{FILE_PATH}/cards/1 (1).png", slots={0, 1}
+                                drive_id="1",
+                                name="1.png",
+                                file_path=os.path.join(CARDS_FILE_PATH, "1 (1).png"),
+                                slots={0, 1},
                             )
                         },
                         num_slots=2,
@@ -906,7 +941,10 @@ def test_card_order_missing_slots(input_enter, card_order_element_invalid_quanti
                     backs=CardImageCollection(
                         cards_by_id={
                             "2": CardImage(
-                                drive_id="2", name="2.png", file_path=f"{FILE_PATH}/cards/2 (2).png", slots={0, 1}
+                                drive_id="2",
+                                name="2.png",
+                                file_path=os.path.join(CARDS_FILE_PATH, "2 (2).png"),
+                                slots={0, 1},
                             )
                         },
                         num_slots=2,
@@ -918,10 +956,16 @@ def test_card_order_missing_slots(input_enter, card_order_element_invalid_quanti
                     fronts=CardImageCollection(
                         cards_by_id={
                             "3": CardImage(
-                                drive_id="3", name="3.png", file_path=f"{FILE_PATH}/cards/3 (3).png", slots={0}
+                                drive_id="3",
+                                name="3.png",
+                                file_path=os.path.join(CARDS_FILE_PATH, "3 (3).png"),
+                                slots={0},
                             ),
                             "4": CardImage(
-                                drive_id="4", name="4.png", file_path=f"{FILE_PATH}/cards/4 (4).png", slots={1}
+                                drive_id="4",
+                                name="4.png",
+                                file_path=os.path.join(CARDS_FILE_PATH, "4 (4).png"),
+                                slots={1},
                             ),
                         },
                         num_slots=2,
@@ -930,7 +974,10 @@ def test_card_order_missing_slots(input_enter, card_order_element_invalid_quanti
                     backs=CardImageCollection(
                         cards_by_id={
                             "5": CardImage(
-                                drive_id="5", name="5.png", file_path=f"{FILE_PATH}/cards/5 (5).png", slots={0, 1}
+                                drive_id="5",
+                                name="5.png",
+                                file_path=os.path.join(CARDS_FILE_PATH, "5 (5).png"),
+                                slots={0, 1},
                             )
                         },
                         num_slots=2,
@@ -944,10 +991,17 @@ def test_card_order_missing_slots(input_enter, card_order_element_invalid_quanti
                 fronts=CardImageCollection(
                     cards_by_id={
                         "1": CardImage(
-                            drive_id="1", name="1.png", file_path=f"{FILE_PATH}/cards/1 (1).png", slots={0, 1}
+                            drive_id="1",
+                            name="1.png",
+                            file_path=os.path.join(CARDS_FILE_PATH, "1 (1).png"),
+                            slots={0, 1},
                         ),
-                        "3": CardImage(drive_id="3", name="3.png", file_path=f"{FILE_PATH}/cards/3 (3).png", slots={2}),
-                        "4": CardImage(drive_id="4", name="4.png", file_path=f"{FILE_PATH}/cards/4 (4).png", slots={3}),
+                        "3": CardImage(
+                            drive_id="3", name="3.png", file_path=os.path.join(CARDS_FILE_PATH, "3 (3).png"), slots={2}
+                        ),
+                        "4": CardImage(
+                            drive_id="4", name="4.png", file_path=os.path.join(CARDS_FILE_PATH, "4 (4).png"), slots={3}
+                        ),
                     },
                     num_slots=4,
                     face=constants.Faces.front,
@@ -955,10 +1009,16 @@ def test_card_order_missing_slots(input_enter, card_order_element_invalid_quanti
                 backs=CardImageCollection(
                     cards_by_id={
                         "2": CardImage(
-                            drive_id="2", name="2.png", file_path=f"{FILE_PATH}/cards/2 (2).png", slots={0, 1}
+                            drive_id="2",
+                            name="2.png",
+                            file_path=os.path.join(CARDS_FILE_PATH, "2 (2).png"),
+                            slots={0, 1},
                         ),
                         "5": CardImage(
-                            drive_id="5", name="5.png", file_path=f"{FILE_PATH}/cards/5 (5).png", slots={2, 3}
+                            drive_id="5",
+                            name="5.png",
+                            file_path=os.path.join(CARDS_FILE_PATH, "5 (5).png"),
+                            slots={2, 3},
                         ),
                     },
                     num_slots=4,
@@ -1016,7 +1076,10 @@ def test_get_project_sizes_manually_specifying_sizes(
         fronts=CardImageCollection(
             cards_by_id={
                 "1": CardImage(
-                    drive_id="1", name="1.png", file_path=f"{FILE_PATH}/cards/1 (1).png", slots=set(range(5))
+                    drive_id="1",
+                    name="1.png",
+                    file_path=os.path.join(CARDS_FILE_PATH, "1 (1).png"),
+                    slots=set(range(5)),
                 )
             },
             num_slots=5,
@@ -1025,7 +1088,10 @@ def test_get_project_sizes_manually_specifying_sizes(
         backs=CardImageCollection(
             cards_by_id={
                 "2": CardImage(
-                    drive_id="2", name="2.png", file_path=f"{FILE_PATH}/cards/2 (2).png", slots=set(range(5))
+                    drive_id="2",
+                    name="2.png",
+                    file_path=os.path.join(CARDS_FILE_PATH, "2 (2).png"),
+                    slots=set(range(5)),
                 )
             },
             num_slots=5,
@@ -1048,7 +1114,10 @@ def test_get_project_sizes_manually_specifying_sizes_with_an_incorrect_attempt_f
         fronts=CardImageCollection(
             cards_by_id={
                 "1": CardImage(
-                    drive_id="1", name="1.png", file_path=f"{FILE_PATH}/cards/1 (1).png", slots=set(range(5))
+                    drive_id="1",
+                    name="1.png",
+                    file_path=os.path.join(CARDS_FILE_PATH, "1 (1).png"),
+                    slots=set(range(5)),
                 )
             },
             num_slots=5,
@@ -1057,7 +1126,10 @@ def test_get_project_sizes_manually_specifying_sizes_with_an_incorrect_attempt_f
         backs=CardImageCollection(
             cards_by_id={
                 "2": CardImage(
-                    drive_id="2", name="2.png", file_path=f"{FILE_PATH}/cards/2 (2).png", slots=set(range(5))
+                    drive_id="2",
+                    name="2.png",
+                    file_path=os.path.join(CARDS_FILE_PATH, "2 (2).png"),
+                    slots=set(range(5)),
                 )
             },
             num_slots=5,
@@ -1079,7 +1151,10 @@ def test_get_project_sizes_automatically_breaking_on_max_size(
         fronts=CardImageCollection(
             cards_by_id={
                 "1": CardImage(
-                    drive_id="1", name="1.png", file_path=f"{FILE_PATH}/cards/1 (1).png", slots=set(range(5))
+                    drive_id="1",
+                    name="1.png",
+                    file_path=os.path.join(CARDS_FILE_PATH, "1 (1).png"),
+                    slots=set(range(5)),
                 )
             },
             num_slots=5,
@@ -1088,7 +1163,10 @@ def test_get_project_sizes_automatically_breaking_on_max_size(
         backs=CardImageCollection(
             cards_by_id={
                 "2": CardImage(
-                    drive_id="2", name="2.png", file_path=f"{FILE_PATH}/cards/2 (2).png", slots=set(range(5))
+                    drive_id="2",
+                    name="2.png",
+                    file_path=os.path.join(CARDS_FILE_PATH, "2 (2).png"),
+                    slots=set(range(5)),
                 )
             },
             num_slots=5,
@@ -1112,7 +1190,7 @@ def test_get_project_sizes_automatically_breaking_on_max_size(
                             "1": CardImage(
                                 drive_id="1",
                                 name="1.png",
-                                file_path=f"{FILE_PATH}/cards/1 (1).png",
+                                file_path=os.path.join(CARDS_FILE_PATH, "1 (1).png"),
                                 slots=set(range(5)),
                             )
                         },
@@ -1124,7 +1202,7 @@ def test_get_project_sizes_automatically_breaking_on_max_size(
                             "2": CardImage(
                                 drive_id="2",
                                 name="2.png",
-                                file_path=f"{FILE_PATH}/cards/2 (2).png",
+                                file_path=os.path.join(CARDS_FILE_PATH, "2 (2).png"),
                                 slots=set(range(5)),
                             )
                         },
@@ -1139,7 +1217,7 @@ def test_get_project_sizes_automatically_breaking_on_max_size(
                             "1": CardImage(
                                 drive_id="1",
                                 name="1.png",
-                                file_path=f"{FILE_PATH}/cards/1 (1).png",
+                                file_path=os.path.join(CARDS_FILE_PATH, "1 (1).png"),
                                 slots=set(range(2)),
                             )
                         },
@@ -1151,7 +1229,7 @@ def test_get_project_sizes_automatically_breaking_on_max_size(
                             "2": CardImage(
                                 drive_id="2",
                                 name="2.png",
-                                file_path=f"{FILE_PATH}/cards/2 (2).png",
+                                file_path=os.path.join(CARDS_FILE_PATH, "2 (2).png"),
                                 slots=set(range(2)),
                             )
                         },
@@ -1168,7 +1246,7 @@ def test_get_project_sizes_automatically_breaking_on_max_size(
                             "1": CardImage(
                                 drive_id="1",
                                 name="1.png",
-                                file_path=f"{FILE_PATH}/cards/1 (1).png",
+                                file_path=os.path.join(CARDS_FILE_PATH, "1 (1).png"),
                                 slots=set(range(4)),
                             )
                         },
@@ -1180,7 +1258,7 @@ def test_get_project_sizes_automatically_breaking_on_max_size(
                             "2": CardImage(
                                 drive_id="2",
                                 name="2.png",
-                                file_path=f"{FILE_PATH}/cards/2 (2).png",
+                                file_path=os.path.join(CARDS_FILE_PATH, "2 (2).png"),
                                 slots=set(range(4)),
                             )
                         },
@@ -1195,7 +1273,7 @@ def test_get_project_sizes_automatically_breaking_on_max_size(
                             "1": CardImage(
                                 drive_id="1",
                                 name="1.png",
-                                file_path=f"{FILE_PATH}/cards/1 (1).png",
+                                file_path=os.path.join(CARDS_FILE_PATH, "1 (1).png"),
                                 slots=set(range(3)),
                             )
                         },
@@ -1207,7 +1285,7 @@ def test_get_project_sizes_automatically_breaking_on_max_size(
                             "2": CardImage(
                                 drive_id="2",
                                 name="2.png",
-                                file_path=f"{FILE_PATH}/cards/2 (2).png",
+                                file_path=os.path.join(CARDS_FILE_PATH, "2 (2).png"),
                                 slots=set(range(3)),
                             )
                         },
