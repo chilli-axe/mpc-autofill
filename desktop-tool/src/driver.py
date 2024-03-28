@@ -344,15 +344,14 @@ class AutofillDriver:
     @exception_retry_skip_handler
     def insert_image(self, pid: Optional[str], image: CardImage, slots: list[int]) -> None:
         """
-        Inserts the image identified by `pid` into `image.slots`.
-        If `slots` is specified, fill the image into those slots instead.
+        Inserts the image identified by `pid` into `slots`.
         """
 
         self.wait_until_javascript_object_is_defined("PageLayout.prototype.applyDragPhoto")
 
         if pid:
-            self.set_state(self.state, f'Inserting "{image.name}"')
-            for slot in slots:
+            for i, slot in enumerate(slots, start=1):
+                self.set_state(state=self.state, action=f"Inserting {image.name} into slot {slot+1} ({i}/{len(slots)})")
                 # Insert the card into each slot and wait for the page to load before continuing
                 self.execute_javascript(
                     f'PageLayout.prototype.applyDragPhoto({self.get_element_for_slot_js(slot)}, 0, "{pid}")'
