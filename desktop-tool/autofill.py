@@ -8,6 +8,7 @@ from wakepy import keepawake
 
 from src.constants import Browsers, ImageResizeMethods, TargetSites
 from src.driver import AutofillDriver
+from src.order import CardOrder, aggregate_and_split_orders
 from src.pdf_maker import PdfExporter
 from src.processing import ImagePostProcessingConfig
 from src.utils import bold
@@ -48,17 +49,6 @@ def prompt_if_no_arguments(prompt: str) -> Union[str, bool]:
     default=TargetSites.MakePlayingCards.name,
     type=click.Choice(sorted([site.name for site in TargetSites]), case_sensitive=False),
     help="The card printing site into which your order should be auto-filled.",
-)
-@click.option(
-    "--skipsetup",
-    prompt=prompt_if_no_arguments("Skip project setup to continue editing an existing project?"),
-    default=False,
-    help=(
-        "If this flag is passed, the tool will prompt the user to navigate to an existing project "
-        "and will attempt to align the state of the given project XML with the state of the project "
-        "in the targeted site. Note that this has some caveats - refer to the wiki for details."
-    ),
-    is_flag=True,
 )
 @click.option(
     "--auto-save/--no-auto-save",
@@ -114,6 +104,12 @@ def prompt_if_no_arguments(prompt: str) -> Union[str, bool]:
         "\nhttps://pillow.readthedocs.io/en/latest/handbook/concepts.html#filters-comparison-table"
     ),
 )
+@click.option(
+    "--combine-orders/--no-combine-orders",
+    default=True,
+    help="If True, compatible orders will be combined into a single order where possible.",
+    is_flag=True,
+)
 # @click.option(  # TODO: finish implementing jpeg conversion
 #     "--convert-to-jpeg",
 #     default=True,
@@ -122,7 +118,6 @@ def prompt_if_no_arguments(prompt: str) -> Union[str, bool]:
 #     is_flag=True,
 # )
 def main(
-    skipsetup: bool,
     auto_save: bool,
     auto_save_threshold: int,
     browser: str,
@@ -133,6 +128,7 @@ def main(
     image_post_processing: bool,
     max_dpi: int,
     downscale_alg: str,
+    combine_orders: bool,
     # convert_to_jpeg: bool,
 ) -> None:
     try:
@@ -149,17 +145,21 @@ def main(
             if exportpdf:
                 PdfExporter().execute(post_processing_config=post_processing_config)
             else:
+                target_site = TargetSites[site]
+                card_orders = aggregate_and_split_orders(
+                    orders=CardOrder.from_xmls_in_folder(), target_site=target_site, combine_orders=combine_orders
+                )
                 AutofillDriver(
-                    browser=Browsers[browser], target_site=TargetSites[site], binary_location=binary_location
-                ).execute(
-                    skip_setup=skipsetup,
+                    browser=Browsers[browser], target_site=target_site, binary_location=binary_location
+                ).execute_orders(
+                    orders=card_orders,
                     auto_save_threshold=auto_save_threshold if auto_save else None,
                     post_processing_config=post_processing_config,
                 )
                 input(
                     f"If this software has brought you joy and you'd like to throw a few bucks my way,\n"
                     f"you can find my tip jar here: {bold('https://www.buymeacoffee.com/chilli.axe')}\n\n"
-                    f"Press Enter to close this window - your browser window will remain open.\n"
+                    f"Press {bold('Enter')} to close this window - your browser window will remain open.\n"
                 )
     except Exception as e:
         print(f"An uncaught exception occurred:\n{bold(e)}\n")

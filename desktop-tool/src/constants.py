@@ -48,6 +48,7 @@ import src.webdrivers as wd
 
 class States(str, Enum):
     initialising = "Initialising"
+    initialised = "Initialised"
     defining_order = "Defining Order"
     paging_to_fronts = "Paging to Fronts"
     paging_to_backs = "Paging to Backs"
