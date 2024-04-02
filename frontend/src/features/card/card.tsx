@@ -51,6 +51,15 @@ const OutlinedBSCardSubtitle = styled(BSCard.Subtitle)`
   }
 `;
 
+export function getImageKey(
+  cardDocument: CardDocument,
+  small: boolean
+): string {
+  return `${cardDocument.identifier}-${
+    small ? "small" : "large"
+  }-${cardDocument.source_type?.toLowerCase().replace(" ", "_")}`;
+}
+
 interface CardImageProps {
   maybeCardDocument: CardDocument | null;
   hidden: boolean;
@@ -73,8 +82,12 @@ function CardImage({
   //# region state
 
   const [imageState, setImageState] = useState<
-    "loading" | "loaded" | "errored"
-  >("loading");
+    | "loading-from-bucket"
+    | "loading-from-fallback"
+    | "loaded-from-bucket"
+    | "loaded-from-fallback"
+    | "errored"
+  >("loading-from-bucket");
   const image = useRef<HTMLImageElement>(null);
 
   //# endregion
@@ -82,14 +95,20 @@ function CardImage({
   //# region callbacks
 
   const onLoadingComplete: OnLoadingComplete = (img) => {
-    setImageState("loaded");
+    if (imageState === "loading-from-bucket") {
+      setImageState("loaded-from-bucket");
+    } else if (imageState === "loading-from-fallback") {
+      setImageState("loaded-from-fallback");
+    }
   };
   const onError: React.ReactEventHandler<HTMLImageElement> = (img) => {
     img.preventDefault();
     img.currentTarget.onerror = null;
-    if (imageState !== "errored") {
-      setImageState("errored");
-    }
+    setImageState((value) =>
+      value === "loading-from-bucket" || value === "loaded-from-bucket"
+        ? "loading-from-fallback"
+        : "errored"
+    );
   };
   const handleShowDetailedView = () => {
     if (showDetailedViewOnClick && maybeCardDocument != null) {
@@ -111,7 +130,9 @@ function CardImage({
      */
 
     setImageState(
-      image.current == null || !image.current.complete ? "loading" : "loaded"
+      image.current == null || !image.current.complete
+        ? "loading-from-bucket"
+        : "loaded-from-bucket"
     );
   }, [maybeCardDocument?.identifier]);
 
@@ -119,26 +140,47 @@ function CardImage({
 
   //# region computed constants
 
-  // TODO: always point at image server once it's stable
-  // TODO: introduce the concept of source types which need to go through the CDN
-  const imageCDNURL = process.env.NEXT_PUBLIC_IMAGE_CDN_URL;
-  const smallThumbnailURL =
-    imageCDNURL != null && maybeCardDocument?.source_type
-      ? `${imageCDNURL}/images/google_drive/small/${maybeCardDocument?.identifier}.jpg`
-      : maybeCardDocument?.small_thumbnail_url;
-  const mediumThumbnailURL =
-    imageCDNURL != null && maybeCardDocument?.source_type
-      ? `${imageCDNURL}/images/google_drive/large/${maybeCardDocument?.identifier}.jpg`
-      : maybeCardDocument?.medium_thumbnail_url;
-  const imageSrc = small ? smallThumbnailURL : mediumThumbnailURL;
+  // attempt to load directly from bucket first
+  const imageBucketURL = process.env.NEXT_PUBLIC_IMAGE_BUCKET_URL;
+  const imageBucketURLValid =
+    imageBucketURL != null && !!maybeCardDocument?.source_type;
+
+  const loadFromBucket =
+    imageBucketURLValid &&
+    (imageState === "loading-from-bucket" ||
+      imageState === "loaded-from-bucket");
+  const imageKey = maybeCardDocument && getImageKey(maybeCardDocument, small);
+  const thumbnailBucketURL = `${imageBucketURL}/${imageKey}`;
+
+  // if image is unavailable in bucket, fall back on loading from worker if possible
+  const imageWorkerURL = process.env.NEXT_PUBLIC_IMAGE_WORKER_URL;
+  const imageWorkerURLValid =
+    imageWorkerURL != null && !!maybeCardDocument?.source_type;
+
+  const smallThumbnailURL = imageWorkerURLValid
+    ? `${imageWorkerURL}/images/google_drive/small/${maybeCardDocument?.identifier}.jpg`
+    : maybeCardDocument?.small_thumbnail_url;
+  const mediumThumbnailURL = imageWorkerURLValid
+    ? `${imageWorkerURL}/images/google_drive/large/${maybeCardDocument?.identifier}.jpg`
+    : maybeCardDocument?.medium_thumbnail_url;
+  const thumbnailFallbackURL = small ? smallThumbnailURL : mediumThumbnailURL;
+  const imageSrc = loadFromBucket ? thumbnailBucketURL : thumbnailFallbackURL;
+
+  // if loading from fallback fails, display a 404 error image
   const errorImageSrc = small ? "/error_404.png" : "/error_404_med.png";
+
+  // a few other computed constants
   const imageAlt = maybeCardDocument?.name ?? "Unnamed Card";
+  const imageIsLoading =
+    imageState === "loading-from-bucket" ||
+    imageState === "loading-from-fallback";
+  const showSpinner = imageIsLoading && !hidden;
 
   //# endregion
 
   return (
     <>
-      {imageState === "loading" && !hidden && <Spinner zIndex={2} />}
+      {showSpinner && <Spinner zIndex={2} />}
       {imageSrc != null &&
         (hidden ? (
           <HiddenImage
@@ -167,7 +209,7 @@ function CardImage({
                 ref={image}
                 className="card-img card-img-fade-in"
                 loading="lazy"
-                imageIsLoading={imageState === "loading"}
+                imageIsLoading={imageIsLoading}
                 showDetailedViewOnClick={showDetailedViewOnClick}
                 src={imageSrc}
                 onLoadingComplete={onLoadingComplete}
