@@ -11,7 +11,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: macos-13
+          - os: macos-latest
           - os: windows-latest
           - os: ubuntu-latest
     steps:
