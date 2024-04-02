@@ -10,6 +10,11 @@ runs:
     - uses: browser-actions/setup-edge@latest
       with:
         edge-version: stable
+    - name: Fix macOS Chromedriver
+      if: runner.os == 'macOS'
+      run: |
+        rm /usr/local/bin/chromedriver
+      shell: bash
 
     - name: Set up Python 3.9
       uses: actions/setup-python@v4
