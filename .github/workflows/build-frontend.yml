@@ -26,7 +26,8 @@ jobs:
           npx next export
         env:
           NEXT_PUBLIC_GA_MEASUREMENT_ID: ${{ secrets.NEXT_PUBLIC_GA_MEASUREMENT_ID }}
-          NEXT_PUBLIC_IMAGE_CDN_URL: ${{ secrets.NEXT_PUBLIC_IMAGE_CDN_URL }}
+          NEXT_PUBLIC_IMAGE_BUCKET_URL: ${{ secrets.NEXT_PUBLIC_IMAGE_BUCKET_URL }}
+          NEXT_PUBLIC_IMAGE_WORKER_URL: ${{ secrets.NEXT_PUBLIC_IMAGE_WORKER_URL }}
       - name: Publish frontend to GitHub Pages repo
         uses: dmnemec/copy_file_to_another_repo_action@main
         env:
