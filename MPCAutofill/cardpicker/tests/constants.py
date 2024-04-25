@@ -139,8 +139,8 @@ class Sources(Enum):
 
 class DummyImportSite(ImportSite):
     @staticmethod
-    def get_base_url() -> str:
-        return "https://dummy-import-site.com"
+    def get_host_names() -> list[str]:
+        return ["dummy-import-site.com"]
 
     @classmethod
     def retrieve_card_list(cls, url: str) -> str:

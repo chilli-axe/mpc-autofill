@@ -1,9 +1,7 @@
 import html
-import json
 import re
 from typing import Any, Type
-
-import requests
+from urllib.parse import parse_qs, urlparse
 
 from cardpicker.integrations.base import GameIntegration, ImportSite
 from cardpicker.models import DFCPair
@@ -14,81 +12,84 @@ from cardpicker.utils import get_json_endpoint_rate_limited
 
 class Aetherhub(ImportSite):
     @staticmethod
-    def get_base_url() -> str:
-        return "https://aetherhub.com"
+    def get_host_names() -> list[str]:
+        return ["aetherhub.com", "www.aetherhub.com"]
 
     @classmethod
     def retrieve_card_list(cls, url: str) -> str:
-        deck_id = url.split("-")[-1]
-        response = requests.get(f"{cls.get_base_url()}/Deck/MtgoDeckExport/{deck_id}")
-        if response.status_code == 404 or not deck_id:
-            cls.raise_invalid_url_exception(url)
-        return response.content.decode("utf-8")
+        path = urlparse(url).path
+        deck_id = path.split("-")[-1]
+        if not deck_id:
+            raise cls.InvalidURLException(url)
+        return cls.request(path=f"Deck/MtgoDeckExport/{deck_id}").text
 
 
 class Archidekt(ImportSite):
     @staticmethod
-    def get_base_url() -> str:
-        return "https://archidekt.com"
+    def get_host_names() -> list[str]:
+        return ["archidekt.com", "www.archidekt.com"]
 
     @classmethod
     def retrieve_card_list(cls, url: str) -> str:
-        regex_results = re.compile(rf"^{cls.get_base_url()}/decks/(.+?)(?:[\#\/].*)?$").search(url)
+        path = urlparse(url).path
+        regex_results = re.compile(r"^/decks/(.+?)(?:[\#\/].*)?$").search(path)
         if regex_results is None:
-            cls.raise_invalid_url_exception(url)
-            return ""  # only necessary so mypy understands the above function throws an exception
+            raise cls.InvalidURLException(url)
         deck_id = regex_results.groups()[0]
-        response = requests.get(f"{cls.get_base_url()}/api/decks/{deck_id}/small/")
-        if response.status_code == 404 or not deck_id:
-            cls.raise_invalid_url_exception(url)
-        response_json = json.loads(response.content.decode("utf-8"))
+        if not deck_id:
+            raise cls.InvalidURLException(url)
+        response_json = cls.request(path=f"api/decks/{deck_id}/small/").json()
         return "\n".join([f"{x['quantity']} {x['card']['oracleCard']['name']}" for x in response_json["cards"]])
 
 
 class CubeCobra(ImportSite):
     @staticmethod
-    def get_base_url() -> str:
-        return "https://cubecobra.com"
+    def get_host_names() -> list[str]:
+        return ["cubecobra.com", "www.cubecobra.com"]
 
     @classmethod
     def retrieve_card_list(cls, url: str) -> str:
-        cube_id = url.split("/")[-1]
-        response = requests.get(
-            f"{cls.get_base_url()}/cube/download/plaintext/{cube_id}"
-            f"?primary=Color%20Category"
-            f"&secondary=Types-Multicolor&tertiary=Mana%20Value"
-            f"&quaternary=Alphabetical"
-            f"&showother=false"
+        path = urlparse(url).path
+        cube_id = path.split("/")[-1]
+        response = cls.request(
+            path=(
+                f"cube/download/plaintext/{cube_id}"
+                f"?primary=Color%20Category"
+                f"&secondary=Types-Multicolor&tertiary=Mana%20Value"
+                f"&quaternary=Alphabetical"
+                f"&showother=false"
+            ),
+            is_response_valid=lambda r: urlparse(r.url).path != "/404",
         )
-        if response.url == "https://cubecobra.com/404" or not cube_id:  # cubecobra returns code 200 for 404 page
-            cls.raise_invalid_url_exception(url)
         # filter out lines like `# mainboard` and `# maybeboard` which were recently introduced by cubecobra
-        return "\n".join([x for x in response.content.decode("utf-8").split("\n") if not x.startswith("# ")])
+        return "\n".join([x for x in response.text.split("\n") if not x.startswith("# ")])
 
 
 class Deckstats(ImportSite):
     @staticmethod
-    def get_base_url() -> str:
-        return "https://deckstats.net"
+    def get_host_names() -> list[str]:
+        return ["deckstats.net", "www.deckstats.net"]
 
     @classmethod
     def retrieve_card_list(cls, url: str) -> str:
-        regex_results = re.compile(rf"^{cls.get_base_url()}/decks/(\d*)/(\d*)").search(url)
+        path = urlparse(url).path
+        regex_results = re.compile(r"^/decks/(\d*)/(\d*)").search(path)
         if regex_results is None:
-            cls.raise_invalid_url_exception(url)
-            return ""  # only necessary so mypy understands the above function throws an exception
+            raise cls.InvalidURLException(url)
         owner_id, deck_id = regex_results.groups()
-        response = requests.get(
-            f"{cls.get_base_url()}/api.php"
-            f"?action=get_deck"
-            f"&id_type=saved"
-            f"&owner_id={owner_id}"
-            f"&id={deck_id}"
-            f"&response_type=list"
+        if not owner_id or not deck_id:
+            raise cls.InvalidURLException(url)
+        response = cls.request(
+            path=(
+                f"api.php"
+                f"?action=get_deck"
+                f"&id_type=saved"
+                f"&owner_id={owner_id}"
+                f"&id={deck_id}"
+                f"&response_type=list"
+            )
         )
-        if response.status_code == 404 or not owner_id or not deck_id:
-            cls.raise_invalid_url_exception(url)
-        card_list = json.loads(response.content.decode("utf-8"))["list"]
+        card_list = response.json()["list"]
         for x in [
             "//Main\n",
             "//Sideboard\n",
@@ -104,52 +105,54 @@ class Deckstats(ImportSite):
 
 class MagicVille(ImportSite):
     @staticmethod
-    def get_base_url() -> str:
-        return "https://magic-ville.com"
+    def get_host_names() -> list[str]:
+        return ["magic-ville.com", "www.magic-ville.com"]
 
     @classmethod
     def retrieve_card_list(cls, url: str) -> str:
-        deck_id = url.strip("#").split("=")[-1]
-        response = requests.get(f"{cls.get_base_url()}/fr/decks/dl_appr?ref={deck_id}&save=1")
-        card_list = response.content.decode("utf-8")
+        qs = parse_qs(url)
+        if len(qs) != 1 or len(qs[(key := list(qs.keys()).pop())]) != 1:
+            raise cls.InvalidURLException(url)
+        deck_id = qs[key].pop()
+        response = cls.request(path=f"fr/decks/dl_appr?ref={deck_id}&save=1")
+        card_list = response.text
         for x in ["// www.magic-ville.com deck file\r\n", "SB: "]:
             card_list = card_list.replace(x, "")
-        if not deck_id or not card_list:
-            cls.raise_invalid_url_exception(url)
+        if not card_list:
+            raise cls.InvalidURLException(url)
         return card_list
 
 
 class ManaStack(ImportSite):
     @staticmethod
-    def get_base_url() -> str:
-        return "https://manastack.com"
+    def get_host_names() -> list[str]:
+        return ["manastack.com"]  # www. is explicitly not valid
 
     @classmethod
     def retrieve_card_list(cls, url: str) -> str:
-        deck_id = url.split("/")[-1]
-        response = requests.get(f"{cls.get_base_url()}/api/deck/list?slug={deck_id}")
-        if response.status_code == 404 or not deck_id:
-            cls.raise_invalid_url_exception(url)
-        response_json = json.loads(response.content.decode("utf-8"))
-        card_list = ""
-        for x in response_json["list"]["cards"]:
-            card_list += f"{x['count']} {x['card']['name']}\n"
+        path = urlparse(url).path
+        deck_id = path.split("/")[-1]
+        if not deck_id:
+            raise cls.InvalidURLException(url)
+        response = cls.request(path=f"api/deck/list?slug={deck_id}")
+        response_json = response.json()
+        card_list = "\n".join([f"{item['count']} {item['card']['name']}" for item in response_json["list"]["cards"]])
         return card_list
 
 
 class Moxfield(ImportSite):
     @staticmethod
-    def get_base_url() -> str:
-        return "https://www.moxfield.com"
+    def get_host_names() -> list[str]:
+        return ["www.moxfield.com", "moxfield.com"]  # moxfield prefers www.
 
     @classmethod
     def retrieve_card_list(cls, url: str) -> str:
-        deck_id = url.split("/")[-1]
-        response = requests.get(
-            f"https://api.moxfield.com/v2/decks/all/{deck_id}", headers={"x-requested-by": "mpcautofill"}
+        path = urlparse(url).path
+        deck_id = path.split("/")[-1]
+        response = cls.request(
+            path=f"v2/decks/all/{deck_id}", netloc="api.moxfield.com", headers={"x-requested-by": "mpcautofill"}
         )
-
-        response_json = json.loads(response.content.decode("utf-8"))
+        response_json = response.json()
         card_list = ""
         for category in [
             "commanders",
@@ -158,9 +161,9 @@ class Moxfield(ImportSite):
             "sideboard",
             "maybeboard",
         ]:
-            for name, info in response_json[category].items():
+            for name, info in response_json.get(category, {}).items():
                 card_list += f"{info['quantity']} {name}\n"
-        for token in response_json["tokens"]:
+        for token in response_json.get("tokens", []):
             if token["layout"] == "token":
                 card_list += f"t:{token['name']}\n"
         return card_list
@@ -168,62 +171,62 @@ class Moxfield(ImportSite):
 
 class MTGGoldfish(ImportSite):
     @staticmethod
-    def get_base_url() -> str:
-        return "https://www.mtggoldfish.com"
+    def get_host_names() -> list[str]:
+        return ["www.mtggoldfish.com", "mtggoldfish.com"]  # mtggoldfish prefers www.
 
     @classmethod
     def retrieve_card_list(cls, url: str) -> str:
-        deck_id = url.split("#")[0].split("/")[-1]
-        response = requests.get(f"{cls.get_base_url()}/deck/download/{deck_id}")
-        if response.status_code == 404 or not deck_id:
-            cls.raise_invalid_url_exception(url)
-        return response.content.decode("utf-8")
+        path = urlparse(url).path
+        deck_id = path.split("#")[0].split("/")[-1]
+        if not deck_id:
+            raise cls.InvalidURLException(url)
+        response = cls.request(path=f"deck/download/{deck_id}")
+        return response.text
 
 
 class Scryfall(ImportSite):
     @staticmethod
-    def get_base_url() -> str:
-        return "https://scryfall.com"
+    def get_host_names() -> list[str]:
+        return ["scryfall.com", "www.scryfall.com"]
 
     @classmethod
     def retrieve_card_list(cls, url: str) -> str:
-        deck_id = url.rsplit("#", 1)[0].split("/")[-1]
-        response = requests.get(f"https://api.scryfall.com/decks/{deck_id}/export/text")
-        if response.status_code == 404 or not deck_id:
-            cls.raise_invalid_url_exception(url)
-        card_list = response.content.decode("utf-8")
-        for x in ["// Sideboard"]:
-            card_list = card_list.replace(x, "")
+        path = urlparse(url).path
+        deck_id = path.rsplit("#", 1)[0].split("/")[-1]
+        if not deck_id:
+            raise cls.InvalidURLException(url)
+        response = cls.request(path=f"decks/{deck_id}/export/text", netloc="api.scryfall.com")
+        card_list = response.text
+        for line_to_remove in ["// Sideboard"]:
+            card_list = card_list.replace(line_to_remove, "")
         return card_list
 
 
 class TappedOut(ImportSite):
     @staticmethod
-    def get_base_url() -> str:
-        return "https://tappedout.net"
+    def get_host_names() -> list[str]:
+        return ["tappedout.net", "www.tappedout.net"]
 
     @classmethod
     def retrieve_card_list(cls, url: str) -> str:
-        response = requests.get(url + "?fmt=txt")
-        if response.status_code == 404:
-            cls.raise_invalid_url_exception(url)
+        path = urlparse(url).path
+        response = cls.request(path=f"{path}?fmt=txt")
         card_list = response.content.decode("utf-8")
-        for x in ["Sideboard:\r\n"]:
-            card_list = card_list.replace(x, "")
+        for line_to_remove in ["Sideboard:\r\n"]:
+            card_list = card_list.replace(line_to_remove, "")
         return card_list
 
 
 class TCGPlayer(ImportSite):
     @staticmethod
-    def get_base_url() -> str:
-        return "https://decks.tcgplayer.com/"
+    def get_host_names() -> list[str]:
+        return ["decks.tcgplayer.com"]  # www. is explicitly not valid
 
     @classmethod
     def retrieve_card_list(cls, url: str) -> str:
         # TCGPlayer doesn't expose a useful API, so we need to parse the html directly
-        response = requests.get(url)
-        if response.status_code == 404:
-            cls.raise_invalid_url_exception(url)
+        path = urlparse(url).path
+        response = cls.request(path=path)
         card_tuple = re.findall(
             '<span class="subdeck-group__card-qty">(.+?)</span> ' '<span class="subdeck-group__card-name">(.+?)</span>',
             response.text,
