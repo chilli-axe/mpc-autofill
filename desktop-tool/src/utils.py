@@ -27,14 +27,14 @@ def bold(text: Any) -> str:
     return f"{TEXT_BOLD}{text}{TEXT_END}"
 
 
-def text_to_list(input_text: str) -> list[int]:
+def text_to_set(input_text: str) -> set[int]:
     """
-    Helper function to translate strings like "[2, 4, 5, 6]" into sorted lists.
+    Helper function to translate strings like "[2, 4, 5, 6]" into sets.
     """
 
     if not input_text:
-        return []
-    return sorted([int(x) for x in input_text.strip("][").replace(" ", "").split(",")])
+        return set()
+    return set([int(x) for x in input_text.strip("][").replace(" ", "").split(",")])
 
 
 def unpack_element(element: ElementTree.Element, tags: list[str]) -> dict[str, ElementTree.Element]:
