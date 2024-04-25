@@ -7,6 +7,10 @@ import requests
 from cardpicker.models import DFCPair
 
 
+def default_is_response_valid(response: requests.Response) -> bool:
+    return response.status_code == 200
+
+
 class ImportSite(ABC):
     """
     Abstract base class for an import site integration. These should facilitate importing a list of cards
@@ -31,10 +35,6 @@ class ImportSite(ABC):
         """
 
         ...
-
-    @staticmethod
-    def default_is_response_valid(response: requests.Response) -> bool:
-        return response.status_code == 200
 
     @classmethod
     def request(
