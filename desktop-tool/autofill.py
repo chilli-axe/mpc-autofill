@@ -158,7 +158,7 @@ def main(
                 )
                 input(
                     f"If this software has brought you joy and you'd like to throw a few bucks my way,\n"
-                    f"you can find my tip jar here: {bold('https://www.buymeacoffee.com/chilli.axe')}\n\n"
+                    f"you can find my tip jar here: {bold('https://www.buymeacoffee.com/chilli.axe')} Thank you!\n\n"
                     f"Press {bold('Enter')} to close this window - your browser window will remain open.\n"
                 )
     except Exception as e:

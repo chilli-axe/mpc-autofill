@@ -554,7 +554,7 @@ class CardOrder:
         else:
             xml_select_string = (
                 "Multiple XML files found. Please select any number of them to process.\n"
-                "Select a file by pressing Space, then confirm your selection by pressing Enter."
+                "Select files by pressing Space, then confirm your selection by pressing Enter."
             )
             questions = {
                 "type": "list",

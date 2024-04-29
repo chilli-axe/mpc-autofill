@@ -1,13 +1,46 @@
-import base64
+import io
 import os
 import sys
+import threading
+from pathlib import Path
 from typing import Any, Optional
 
 import ratelimit
 import requests
+from googleapiclient.discovery import Resource, build
+from googleapiclient.errors import HttpError
+from googleapiclient.http import MediaIoBaseDownload
+from oauth2client.service_account import ServiceAccountCredentials
 
 import src.constants as constants
 from src.processing import ImagePostProcessingConfig, post_process_image
+
+thread_local = threading.local()  # Should only be called once per thread
+
+
+# region Google Drive API
+
+
+def find_or_create_google_drive_service() -> Resource:
+    if (service := getattr(thread_local, "google_drive_service", None)) is None:
+        creds = ServiceAccountCredentials.from_json_keyfile_name(
+            str(Path(os.path.abspath(__file__)).parent.parent / constants.SERVICE_ACC_FILENAME), scopes=constants.SCOPES
+        )
+        service = build("drive", "v3", credentials=creds, static_discovery=False)
+        thread_local.google_drive_service = service
+    return service
+
+
+@ratelimit.sleep_and_retry  # type: ignore  # `ratelimit` does not implement decorator typing correctly
+@ratelimit.limits(calls=20_000, period=100)  # type: ignore  # `ratelimit` does not implement decorator typing correctly
+def execute_google_drive_api_call(service: Resource) -> Optional[dict[str, Any]]:
+    try:
+        return service.execute()
+    except HttpError:
+        return None
+
+
+# endregion
 
 # region network IO
 
@@ -78,9 +111,8 @@ def get_google_drive_file_name(drive_id: str) -> Optional[str]:
 
     if not drive_id:
         return None
-    response = safe_post_api_call(
-        url=constants.GoogleScriptsAPIs.image_name, data={"id": drive_id}, timeout=30, expected_keys={"name"}
-    )
+    service = find_or_create_google_drive_service()
+    response = execute_google_drive_api_call(service.files().get(fileId=drive_id))
     return response["name"] if response is not None else None
 
 
@@ -132,18 +164,26 @@ def download_google_drive_file(
     Returns whether the request was successful or not.
     """
 
-    response = safe_get_api_call(url=constants.GoogleScriptsAPIs.image_content, params={"id": drive_id}, timeout=5 * 60)
-    if response is not None and len(response) > 0:
-        file_bytes = base64.b64decode(response)
-        if post_processing_config is not None:
-            processed_image = post_process_image(raw_image=file_bytes, config=post_processing_config)
-            processed_image.save(file_path)
-        else:
-            # Save the bytes directly to disk - avoid reading in pillow in case any quality degradation occurs
-            with open(file_path, "wb") as f:
-                f.write(file_bytes)
-        return True
-    return False
+    service = find_or_create_google_drive_service()
+    request = service.files().get_media(fileId=drive_id)
+    file = io.BytesIO()
+    downloader = MediaIoBaseDownload(file, request)
+    try:
+        done = False
+        while done is False:
+            _, done = downloader.next_chunk()
+        file_bytes = file.getvalue()
+    except HttpError:
+        return False
+
+    if post_processing_config is not None:
+        processed_image = post_process_image(raw_image=file_bytes, config=post_processing_config)
+        processed_image.save(file_path)
+    else:
+        # Save the bytes directly to disk - avoid reading in pillow in case any quality degradation occurs
+        with open(file_path, "wb") as f:
+            f.write(file_bytes)
+    return True
 
 
 # endregion
