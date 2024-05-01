@@ -623,9 +623,13 @@ def aggregate_and_split_orders(
             CardOrder.from_multiple_orders(list(grouped_orders))
             for _, grouped_orders in groupby(sorted(orders, key=key), key=key)
         ]
-    aggregated_and_split_orders = [
-        aggregated_and_split_order
-        for aggregated_order in aggregated_orders
-        for aggregated_and_split_order in aggregated_order.split()
-    ]
+    aggregated_and_split_orders = sorted(
+        [
+            aggregated_and_split_order
+            for aggregated_order in aggregated_orders
+            for aggregated_and_split_order in aggregated_order.split()
+        ],
+        key=lambda o: (o.details.stock, o.details.foil, o.details.quantity),
+    )
+
     return aggregated_and_split_orders
