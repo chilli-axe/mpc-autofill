@@ -1,3 +1,4 @@
+import logging
 import os
 from concurrent.futures import ThreadPoolExecutor
 from typing import Optional
@@ -139,7 +140,7 @@ class PdfExporter:
         else:
             self.export()
 
-        print(f"Finished exporting files! They should be accessible at {self.save_path}.")
+        logging.info(f"Finished exporting files! They should be accessible at {self.save_path}.")
 
     def export(self) -> None:
         for slot in sorted(self.paths_by_slot.keys()):

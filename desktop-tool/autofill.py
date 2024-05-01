@@ -1,3 +1,4 @@
+import logging
 import os
 import sys
 from contextlib import nullcontext
@@ -8,6 +9,7 @@ from wakepy import keepawake
 
 from src.constants import Browsers, ImageResizeMethods, TargetSites
 from src.driver import AutofillDriver
+from src.logging import configure_loggers
 from src.order import CardOrder, aggregate_and_split_orders
 from src.pdf_maker import PdfExporter
 from src.processing import ImagePostProcessingConfig
@@ -110,6 +112,12 @@ def prompt_if_no_arguments(prompt: str) -> Union[str, bool]:
     help="If True, compatible orders will be combined into a single order where possible.",
     is_flag=True,
 )
+@click.option(
+    "--debug-logs/--no-debug-logs",
+    default=True,
+    help="If True, debug logs about the tool's actions will be logged to autofill_log.txt in the tool's directory.",
+    is_flag=True,
+)
 # @click.option(  # TODO: finish implementing jpeg conversion
 #     "--convert-to-jpeg",
 #     default=True,
@@ -129,14 +137,16 @@ def main(
     max_dpi: int,
     downscale_alg: str,
     combine_orders: bool,
+    debug_logs: bool,
     # convert_to_jpeg: bool,
 ) -> None:
+    configure_loggers(log_debug_to_file=debug_logs)
     try:
         with keepawake(keep_screen_awake=True) if not allowsleep else nullcontext():
             if not allowsleep:
-                print("System sleep is being prevented during this execution.")
+                logging.info("System sleep is being prevented during this execution.")
             if image_post_processing:
-                print("Images are being post-processed during this execution.")
+                logging.info("Images are being post-processed during this execution.")
             post_processing_config = (
                 ImagePostProcessingConfig(max_dpi=max_dpi, downscale_alg=ImageResizeMethods[downscale_alg])
                 if image_post_processing
@@ -162,7 +172,8 @@ def main(
                     f"Press {bold('Enter')} to close this window - your browser window will remain open.\n"
                 )
     except Exception as e:
-        print(f"An uncaught exception occurred:\n{bold(e)}\n")
+        logging.exception("Uncaught exception")
+        logging.info(f"An uncaught exception occurred:\n{bold(e)}\n")
         input("Press Enter to exit.")
 
 

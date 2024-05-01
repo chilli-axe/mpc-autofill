@@ -1,3 +1,4 @@
+import logging
 import sys
 import time
 from math import floor
@@ -82,7 +83,8 @@ def exception_retry_skip_handler(func: F) -> F:
             except AssertionError as e:
                 raise e
             except Exception as e:
-                print(f"An uncaught exception occurred:\n{bold(e)}\n")
+                logging.exception("Uncaught exception")
+                logging.info(f"An uncaught exception occurred:\n{bold(e)}\n")
                 action = inquirer.select(
                     message="How should the tool proceed?",
                     choices=["Retry this action", "Skip this action", "Terminate"],
@@ -106,7 +108,9 @@ def time_to_hours_minutes_seconds(t: float) -> tuple[int, int, int]:
 
 def log_hours_minutes_seconds_elapsed(t0: float) -> None:
     hours, mins, secs = time_to_hours_minutes_seconds(time.time() - t0)
-    print("Elapsed time: ", end="")
-    if hours > 0:
-        print(f"{hours} hour{'s' if hours != 1 else ''}, ", end="")
-    print(f"{mins} minute{'s' if mins != 1 else ''} and {secs} second{'s' if secs != 1 else ''}.")
+    time_elapsed_string = (
+        "Elapsed time: "
+        + (f"{hours} hour{'s' if hours != 1 else ''}, " if hours > 0 else "")
+        + f"{mins} minute{'s' if mins != 1 else ''} and {secs} second{'s' if secs != 1 else ''}."
+    )
+    logging.info(time_elapsed_string)

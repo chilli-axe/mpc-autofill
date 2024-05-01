@@ -1,3 +1,4 @@
+import logging
 import os
 import sys
 from concurrent.futures import ThreadPoolExecutor
@@ -76,7 +77,7 @@ class CardImage:
         if self.name is None:
             if self.drive_id:
                 # assume png
-                print(
+                logging.info(
                     f"The name of the image {bold(self.drive_id)} could not be determined, meaning that its "
                     f"file extension is unknown. As a result, an assumption is made that the file extension "
                     f"is {bold('.png')}."
@@ -154,14 +155,14 @@ class CardImage:
             if self.file_exists() and not self.errored:
                 self.downloaded = True
             else:
-                print(
+                logging.info(
                     f"Failed to download '{bold(self.name)}' - allocated to slot/s {bold(sorted(self.slots))}.\n"
                     f"Download link - {bold(f'https://drive.google.com/uc?id={self.drive_id}&export=download')}\n"
                 )
         except Exception as e:
             # note: python threads die silently if they encounter an exception. if an exception does occur,
             # log it, but still put the card onto the queue so the main thread doesn't spin its wheels forever waiting.
-            print(
+            logging.info(
                 f"An uncaught exception occurred when attempting to download '{bold(self.name)}':\n{bold(e)}\n"
                 f"Download link - {bold(f'https://drive.google.com/uc?id={self.drive_id}&export=download')}\n"
             )
@@ -250,7 +251,7 @@ class CardImageCollection:
             raise ValidationException(f"{self.face} has no images!")
         slots_missing = self.all_slots() - self.slots()
         if slots_missing:
-            print(
+            logging.info(
                 f"Warning - the following slots are empty in your order for the {self.face} face: "
                 f"{bold(sorted(slots_missing))}"
             )
@@ -426,12 +427,12 @@ class CardOrder:
                     assert sum(project_sizes) == self.details.quantity
                     break
                 except (ValueError, AssertionError):
-                    print(
+                    logging.info(
                         f"There was a problem with your proposed splits (perhaps they didn't sum to "
                         f"{bold(self.details.quantity)}); please try again."
                     )
                     pass
-        print(
+        logging.info(
             f"The tool will produce {bold(len(project_sizes))} projects! They'll be sized as follows:\n"
             f"{', '.join(['Project ' + bold(i) + ': ' + bold(project_size) + ' cards' for i, project_size in enumerate(project_sizes, start=1)])}"
         )
@@ -517,7 +518,7 @@ class CardOrder:
                 fill_image_id=cardback_elem.text,
             )
         else:
-            print(f"{bold('Warning')}: Your order file did not contain a common cardback image.")
+            logging.info(f"{bold('Warning')}: Your order file did not contain a common cardback image.")
             backs = CardImageCollection.from_element(
                 element=root_dict[constants.BaseTags.backs], num_slots=details.quantity, face=constants.Faces.back
             )
@@ -532,7 +533,7 @@ class CardOrder:
             input("Your XML file contains a syntax error so it can't be processed. Press Enter to exit.")
             sys.exit(0)
         file_name = Path(file_path).stem
-        print(f"Parsing XML file {bold(file_name)}...")
+        logging.info(f"Parsing XML file {bold(file_name)}...")
         order = cls.from_element(xml.getroot(), name=file_name, allowed_to_exceed_project_max_size=True)
         return order
 
