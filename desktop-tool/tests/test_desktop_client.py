@@ -752,7 +752,7 @@ def test_card_order_multiple_cardbacks(card_order_multiple_cardbacks):
 
 
 def test_card_order_valid_from_file():
-    card_order = CardOrder.from_file_name("test_order.xml")
+    card_order = CardOrder.from_file_path("test_order.xml")
     for card in (card_order.fronts.cards_by_id | card_order.backs.cards_by_id).values():
         assert not card.file_exists()
     assert_orders_identical(
@@ -806,7 +806,7 @@ def test_card_order_valid_from_file():
 
 def test_card_order_mangled_xml(input_enter):
     with pytest.raises(SystemExit) as exc_info:
-        CardOrder.from_file_name("mangled.xml")  # file is missing closing ">" at end
+        CardOrder.from_file_path("mangled.xml")  # file is missing closing ">" at end
     assert exc_info.value.code == 0
 
 

@@ -4,6 +4,7 @@ from concurrent.futures import ThreadPoolExecutor
 from functools import reduce
 from glob import glob
 from itertools import groupby
+from pathlib import Path
 from queue import Queue
 from typing import Optional
 from xml.etree.ElementTree import Element, ParseError
@@ -374,6 +375,7 @@ class CardOrder:
         # users should never hit this assertion because we group by details before combining
         assert self.is_combinable(other=other)
         return CardOrder(
+            name=f"Combined {self.details.stock} ({'foil' if self.details.foil else 'nonfoil'})",
             # assume that stock and foil finish are identical because the two orders are combinable
             details=Details(
                 foil=self.details.foil,
@@ -523,12 +525,13 @@ class CardOrder:
         return order
 
     @classmethod
-    def from_file_name(cls, file_name: str) -> "CardOrder":
+    def from_file_path(cls, file_path: str) -> "CardOrder":
         try:
-            xml = defused_parse(file_name)
+            xml = defused_parse(file_path)
         except ParseError:
             input("Your XML file contains a syntax error so it can't be processed. Press Enter to exit.")
             sys.exit(0)
+        file_name = Path(file_path).stem
         print(f"Parsing XML file {bold(file_name)}...")
         order = cls.from_element(xml.getroot(), name=file_name, allowed_to_exceed_project_max_size=True)
         return order
@@ -550,7 +553,7 @@ class CardOrder:
             input("No XML files found in this directory. Press enter to exit.")
             sys.exit(0)
         elif len(xml_glob) == 1:
-            file_names = [xml_glob[0]]
+            file_paths = [xml_glob[0]]
         else:
             xml_select_string = (
                 "Multiple XML files found. Please select any number of them to process.\n"
@@ -564,8 +567,8 @@ class CardOrder:
                 "multiselect": True,
             }
             answers = prompt(questions)
-            file_names = answers["xml_choice"]
-        return [cls.from_file_name(file_name) for file_name in file_names]
+            file_paths = answers["xml_choice"]
+        return [cls.from_file_path(file_path) for file_path in file_paths]
 
     @classmethod
     def from_multiple_orders(cls, orders: list["CardOrder"]) -> "CardOrder":
@@ -576,11 +579,9 @@ class CardOrder:
         assert len(orders) > 0, "Attempted to produce a CardOrder from multiple CardOrders but none were given!"
         return reduce(lambda a, b: a.combine(b), orders)
 
-    def print_order_overview(self) -> None:
-        if self.name is not None:
-            print(f"Successfully parsed project: {bold(self.name)}")
-        print(
-            f"This project has a total of {bold(self.details.quantity)} cards.\n"
+    def get_overview(self) -> str:
+        return (
+            f"Total of {bold(self.details.quantity)} cards. "
             f"{bold(self.details.stock)} cardstock ({bold('foil' if self.details.foil else 'nonfoil')}). "
         )
 

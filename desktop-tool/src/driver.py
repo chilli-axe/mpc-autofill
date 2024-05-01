@@ -4,7 +4,6 @@ import time
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
 from functools import cache
-from pathlib import Path
 from typing import Any, Generator, Optional
 
 import attr
@@ -99,7 +98,8 @@ class AutofillDriver:
         self.download_bar.refresh()
 
     def initialise_order(self, order: CardOrder) -> None:
-        order.print_order_overview()
+        print(f"Auto-filling {bold(order.name or 'Unnamed Project')}")
+        print("  " + order.get_overview())
         self.driver.get(f"{self.target_site.value.starting_url}")
         self.set_state(States.defining_order)
 
@@ -120,7 +120,7 @@ class AutofillDriver:
 
         today = dt.date.today().strftime("%Y-%m-%d")
         max_project_name_length = 32 - 1 - len(today)  # include a space
-        project_name = Path(order_name).stem if order_name is not None else "Project"
+        project_name = order_name if order_name is not None else "Project"
         if len(project_name) > max_project_name_length:
             project_name = project_name[0 : max_project_name_length - 3] + "..."
         return f"{project_name} {today}"
@@ -708,6 +708,11 @@ class AutofillDriver:
         auto_save_threshold: Optional[int],
         post_processing_config: Optional[ImagePostProcessingConfig],
     ) -> None:
+        print(f"{bold(len(orders))} projects are scheduled to be auto-filled. They are:")
+        for i, order in enumerate(orders, start=1):
+            print(f"{i}. {bold(order.name or 'Unnamed Project')}")
+            print("  " + order.get_overview())
+
         self.order_progress_bar.total = len(orders)
         self.order_progress_bar.refresh()
         for i, order in enumerate(orders, start=1):
