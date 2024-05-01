@@ -422,6 +422,8 @@ class AutofillDriver:
 
     @exception_retry_skip_handler
     def authenticate(self) -> None:
+        if self.is_user_authenticated():
+            return
         action = self.action
         self.driver.get(f"{self.target_site.value.login_url}")
         self.set_state(States.defining_order, "Awaiting user sign-in")
