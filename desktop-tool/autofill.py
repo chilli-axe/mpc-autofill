@@ -114,7 +114,7 @@ def prompt_if_no_arguments(prompt: str) -> Union[str, bool]:
 )
 @click.option(
     "--debug-logs/--no-debug-logs",
-    default=True,
+    default=False,
     help="If True, debug logs about the tool's actions will be logged to autofill_log.txt in the tool's directory.",
     is_flag=True,
 )
