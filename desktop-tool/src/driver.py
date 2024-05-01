@@ -108,8 +108,9 @@ class AutofillDriver:
         self.initialise_driver()
         self.set_state(States.initialised)
 
+    @staticmethod
     @cache
-    def get_project_name(self, order_name: Optional[str]) -> str:
+    def get_project_name(order_name: Optional[str]) -> str:
         """
         Format the card order's name such that it's suitable for naming a project with.
         Project names in the MakePlayingCards family of sites seem to have a maximum length of 32 characters.
