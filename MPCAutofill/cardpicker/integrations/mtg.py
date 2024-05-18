@@ -38,7 +38,7 @@ class Archidekt(ImportSite):
         deck_id = regex_results.groups()[0]
         if not deck_id:
             raise cls.InvalidURLException(url)
-        response_json = cls.request(path=f"api/decks/{deck_id}/small/").json()
+        response_json = cls.request(path=f"api/decks/{deck_id}/").json()
         return "\n".join([f"{x['quantity']} {x['card']['oracleCard']['name']}" for x in response_json["cards"]])
 
 
