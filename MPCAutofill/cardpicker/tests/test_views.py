@@ -856,7 +856,7 @@ class TestPostImportSiteDecklist:
     def test_valid_url(self, client, django_settings, snapshot):
         response = client.post(
             reverse(views.post_import_site_decklist),
-            {"url": DummyImportSite.get_base_url() + "/whatever"},
+            {"url": f"https://{DummyImportSite.get_host_names()[0]}/whatever"},
             content_type="application/json",
         )
         assert response.status_code == 200

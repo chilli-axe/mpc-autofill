@@ -1,6 +1,10 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`the html structure of a CardDetailedViewModal 1`] = `
+.c7 {
+  padding-right: 0.5em;
+}
+
 .c1 {
   z-index: 1;
   opacity: 1;
@@ -237,6 +241,10 @@ exports[`the html structure of a CardDetailedViewModal 1`] = `
               class="btn btn-primary"
               type="button"
             >
+              <i
+                class="c7 bi bi-cloud-arrow-down"
+              />
+               
               Download Image
             </button>
           </div>

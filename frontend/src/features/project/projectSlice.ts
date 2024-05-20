@@ -293,8 +293,8 @@ export const selectProjectMembers = (
 
 export const selectProjectMember = (
   state: RootState,
-  slot: number,
-  face: Faces
+  face: Faces,
+  slot: number
 ): ProjectMember | null => (state.project.members[slot] ?? {})[face];
 
 export const selectProjectMemberIdentifiers = createSelector(
@@ -401,11 +401,9 @@ export const selectQueriesWithoutSearchResults = createSelector(
 
 export const selectAllSelectedProjectMembersHaveTheSameQuery = createSelector(
   (state: RootState, slots: Array<[Faces, number]>) =>
-    slots.length > 0
-      ? selectProjectMember(state, slots[0][1], slots[0][0])?.query
-      : null,
+    slots.length > 0 ? selectProjectMember(state, ...slots[0])?.query : null,
   (state: RootState, slots: Array<[Faces, number]>) =>
-    slots.map((slot) => selectProjectMember(state, slot[1], slot[0])),
+    slots.map((slot) => selectProjectMember(state, ...slot)),
   (firstQuery, projectMembers) =>
     projectMembers.every(
       (projectMember) =>

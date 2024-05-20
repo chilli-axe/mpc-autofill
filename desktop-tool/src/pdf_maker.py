@@ -1,3 +1,4 @@
+import logging
 import os
 from concurrent.futures import ThreadPoolExecutor
 from typing import Optional
@@ -15,7 +16,7 @@ from src.utils import bold
 
 @attr.s
 class PdfExporter:
-    order: CardOrder = attr.ib(default=attr.Factory(CardOrder.from_xml_in_folder))
+    order: CardOrder = attr.ib(default=attr.Factory(lambda: CardOrder.from_xmls_in_folder()[0]))
     state: str = attr.ib(init=False, default=States.initialising)
     pdf: FPDF = attr.ib(default=None)
     card_width_in_inches: float = attr.ib(default=2.73)
@@ -32,7 +33,7 @@ class PdfExporter:
     processed_bar: enlighten.Counter = attr.ib(init=False, default=None)
 
     def configure_bars(self) -> None:
-        num_images = len(self.order.fronts.cards) + len(self.order.backs.cards)
+        num_images = len(self.order.fronts.cards_by_id) + len(self.order.backs.cards_by_id)
         status_format = "State: {state}"
         self.status_bar = self.manager.status_bar(
             status_format=status_format,
@@ -117,12 +118,12 @@ class PdfExporter:
             self.order.backs.download_images(pool, self.download_bar, post_processing_config)
 
         backs_by_slots = {}
-        for card in self.order.backs.cards:
+        for card in self.order.backs.cards_by_id.values():
             for slot in card.slots:
                 backs_by_slots[slot] = card.file_path
 
         fronts_by_slots = {}
-        for card in self.order.fronts.cards:
+        for card in self.order.fronts.cards_by_id.values():
             for slot in card.slots:
                 fronts_by_slots[slot] = card.file_path
 
@@ -139,7 +140,7 @@ class PdfExporter:
         else:
             self.export()
 
-        print(f"Finished exporting files! They should be accessible at {self.save_path}.")
+        logging.info(f"Finished exporting files! They should be accessible at {self.save_path}.")
 
     def export(self) -> None:
         for slot in sorted(self.paths_by_slot.keys()):

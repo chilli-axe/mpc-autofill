@@ -221,7 +221,10 @@ def get_import_sites(request: HttpRequest) -> HttpResponse:
     if game_integration is None:
         return JsonResponse({"import_sites": []})
 
-    import_sites = [{"name": site.__name__, "url": site.get_base_url()} for site in game_integration.get_import_sites()]
+    import_sites = [
+        {"name": site.__name__, "url": f"https://{site.get_host_names()[0]}"}
+        for site in game_integration.get_import_sites()
+    ]
     return JsonResponse({"import_sites": import_sites})
 
 

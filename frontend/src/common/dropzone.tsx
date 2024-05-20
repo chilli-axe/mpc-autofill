@@ -7,7 +7,7 @@ import { DropzoneRootProps, useDropzone } from "react-dropzone";
 import styled from "styled-components";
 
 import { useAppDispatch } from "@/common/types";
-import { setError } from "@/features/toasts/toastsSlice";
+import { setNotification } from "@/features/toasts/toastsSlice";
 
 const getColor = (props: DropzoneRootProps) => {
   if (props.isDragAccept) {
@@ -59,9 +59,13 @@ export function TextFileDropzone({
   const onAbort = useCallback(
     () =>
       dispatch(
-        setError([
+        setNotification([
           "dropzone-onabort",
-          { name: "File upload error", message: "File reading was stopped." },
+          {
+            name: "File upload error",
+            message: "File reading was stopped.",
+            level: "error",
+          },
         ])
       ),
     [dispatch]
@@ -69,11 +73,12 @@ export function TextFileDropzone({
   const onError = useCallback(
     () =>
       dispatch(
-        setError([
+        setNotification([
           "dropzone-onerror",
           {
             name: "File upload error",
             message: "An error occurred while reading the file.",
+            level: "error",
           },
         ])
       ),

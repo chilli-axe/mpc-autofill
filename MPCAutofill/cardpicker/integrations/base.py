@@ -1,15 +1,14 @@
 from abc import ABC, abstractmethod
-from typing import Optional, Type
+from typing import Any, Callable, Optional, Type
+from urllib.parse import urljoin, urlparse
+
+import requests
 
 from cardpicker.models import DFCPair
 
 
-class InvalidURLException(Exception):
-    def __init__(self, import_site_name: str, url: str):
-        super().__init__(
-            f"There was a problem with importing your list from {import_site_name} at URL {url}. "
-            f"Check that your URL is correct and try again."
-        )
+def default_is_response_valid(response: requests.Response) -> bool:
+    return response.status_code == 200
 
 
 class ImportSite(ABC):
@@ -20,9 +19,9 @@ class ImportSite(ABC):
 
     @staticmethod
     @abstractmethod
-    def get_base_url() -> str:
+    def get_host_names() -> list[str]:
         """
-        Returns the base URL for this import site, e.g. "https://google.com"
+        Returns the host names for this import site, e.g. ["google.com", "www.google.com"].
         """
 
         ...
@@ -38,8 +37,26 @@ class ImportSite(ABC):
         ...
 
     @classmethod
-    def raise_invalid_url_exception(cls, url: str) -> None:
-        raise InvalidURLException(import_site_name=cls.__name__, url=url)
+    def request(
+        cls,
+        path: str,
+        method: str = "GET",
+        is_response_valid: Callable[[requests.Response], bool] = default_is_response_valid,
+        netloc: Optional[str] = None,
+        headers: Optional[dict[str, Any]] = None,
+    ) -> requests.Response:
+        url = urljoin(f"https://{netloc or cls.get_host_names()[0]}", path)
+        response = requests.request(url=url, method=method, headers=headers)
+        if not is_response_valid(response):
+            raise cls.InvalidURLException(url)
+        return response
+
+    class InvalidURLException(Exception):
+        def __init__(self, url: str):
+            super().__init__(
+                f"There was a problem with importing your list from {self.__class__.__name__} at URL {url}. "
+                f"Check that your URL is correct and try again."
+            )
 
 
 class GameIntegration(ABC):
@@ -66,8 +83,9 @@ class GameIntegration(ABC):
     def query_import_site(cls, url: Optional[str]) -> Optional[str]:
         if url is None:
             raise ValueError("No decklist URL provided.")
+        netloc = urlparse(url).netloc
         for site in cls.get_import_sites():
-            if url.startswith(site.get_base_url()):
+            if netloc in site.get_host_names():
                 text = site.retrieve_card_list(url)
                 cleaned_text = "\n".join(
                     [stripped_line for line in text.split("\n") if len(stripped_line := line.strip()) > 0]
@@ -77,4 +95,4 @@ class GameIntegration(ABC):
         return None
 
 
-__all__ = ["InvalidURLException", "ImportSite", "GameIntegration"]
+__all__ = ["ImportSite", "GameIntegration"]

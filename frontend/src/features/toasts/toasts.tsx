@@ -15,9 +15,13 @@ import {
   getGoogleAnalyticsConsent,
   setGoogleAnalyticsConsent,
 } from "@/common/cookies";
-import { useAppDispatch, useAppSelector } from "@/common/types";
+import { Notification, useAppDispatch, useAppSelector } from "@/common/types";
 import DisableSSR from "@/components/disableSSR";
-import { clearError, selectToastsErrors } from "@/features/toasts/toastsSlice";
+import { RightPaddedIcon } from "@/components/icon";
+import {
+  clearNotification,
+  selectToastsNotifications,
+} from "@/features/toasts/toastsSlice";
 
 function GoogleAnalyticsConsentToast() {
   const consent = getGoogleAnalyticsConsent();
@@ -67,36 +71,68 @@ function GoogleAnalyticsConsentToast() {
   );
 }
 
-function ErrorMessageToast() {
-  const errors = useAppSelector(selectToastsErrors);
-  const dispatch = useAppDispatch();
+interface NotificationBodyProps {
+  notification: Notification;
+}
+
+function InfoToastBody({ notification }: NotificationBodyProps) {
   return (
     <>
-      {Object.entries(errors).map(([key, error]) => (
+      <Toast.Header>
+        <RightPaddedIcon bootstrapIconName="info-circle" />
+        <strong className="me-auto">{notification.name}</strong>
+      </Toast.Header>
+      <Toast.Body>
+        {notification.message != null && <p>{notification.message}</p>}
+      </Toast.Body>
+    </>
+  );
+}
+
+function ErrorToastBody({ notification }: NotificationBodyProps) {
+  return (
+    <>
+      <Toast.Header>
+        <RightPaddedIcon bootstrapIconName="exclamation-triangle" />
+        <strong className="me-auto">An Error Occurred</strong>
+      </Toast.Header>
+      <Toast.Body>
+        <h6>{notification.name ?? "Unknown Error"}</h6>
+        <p>We&apos;re sorry, but an error occurred while handling a request.</p>
+        {notification.message != null && (
+          <p>
+            Error message: <i>{notification.message}</i>
+          </p>
+        )}
+      </Toast.Body>
+    </>
+  );
+}
+
+function NotificationToastBody({ notification }: NotificationBodyProps) {
+  switch (notification.level) {
+    case "info":
+      return <InfoToastBody notification={notification} />;
+    case "error":
+      return <ErrorToastBody notification={notification} />;
+  }
+}
+
+function NotificationToast() {
+  const notifications = useAppSelector(selectToastsNotifications);
+  const dispatch = useAppDispatch();
+
+  return (
+    <>
+      {Object.entries(notifications).map(([key, notification]) => (
         <Toast
-          show={error != null}
+          show={notification != null}
           delay={7000}
           autohide
           key={`${key}-toast`}
-          onClose={() => dispatch(clearError(key))}
+          onClose={() => dispatch(clearNotification(key))}
         >
-          <Toast.Header key={`${key}-toast-header`}>
-            <strong className="me-auto" key={`${key}-toast-header-text`}>
-              An Error Occurred
-            </strong>
-          </Toast.Header>
-          <Toast.Body key={`${key}-toast-body`}>
-            <h6 key={`${key}-toast-name`}>{error?.name ?? "Unknown Error"}</h6>
-            <p key={`${key}-toast-body-text1`}>
-              We&apos;re sorry, but an error occurred while handling a request.
-            </p>
-            {error?.message != null && (
-              <p key={`${key}-toast-body-text2`}>
-                Error message:{" "}
-                <i key={`${key}-toast-body-text3`}>{error.message}</i>
-              </p>
-            )}
-          </Toast.Body>
+          <NotificationToastBody notification={notification} />
         </Toast>
       ))}
     </>
@@ -106,9 +142,9 @@ function ErrorMessageToast() {
 export function Toasts() {
   return (
     <DisableSSR>
-      <ToastContainer position="top-start">
+      <ToastContainer position="top-start" className="p-3">
         <GoogleAnalyticsConsentToast />
-        <ErrorMessageToast />
+        <NotificationToast />
       </ToastContainer>
     </DisableSSR>
   );

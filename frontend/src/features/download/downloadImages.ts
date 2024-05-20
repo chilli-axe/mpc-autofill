@@ -5,7 +5,7 @@ import { createContext, useContext } from "react";
 import { api } from "@/app/api";
 import { base64StringToBlob } from "@/common/processing";
 import { CardDocument, useAppDispatch } from "@/common/types";
-import { setError } from "@/features/toasts/toastsSlice";
+import { setNotification } from "@/features/toasts/toastsSlice";
 
 export type DownloadContext = Queue;
 
@@ -45,11 +45,12 @@ export function useQueueImageDownload(): (
       })
       .catch((e) => {
         dispatch(
-          setError([
+          setNotification([
             `download-${cardDocument.identifier}-failed`,
             {
               name: `Failed to download ${cardDocument.name} (${cardDocument.identifier})`,
               message: e.toString(),
+              level: "error",
             },
           ])
         );

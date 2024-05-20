@@ -17,6 +17,7 @@ import styled from "styled-components";
 import { Faces, Slots, useAppDispatch, useAppSelector } from "@/common/types";
 import { RightPaddedIcon } from "@/components/icon";
 import { OverflowList } from "@/components/OverflowList";
+import { useQueueImageDownload } from "@/features/download/downloadImages";
 import { GridSelectorModal } from "@/features/gridSelector/gridSelectorModal";
 import { setSelectedSlotsAndShowModal } from "@/features/modals/modalsSlice";
 import {
@@ -27,10 +28,13 @@ import {
   selectAllSelectedProjectMembersHaveTheSameQuery,
   selectAllSlotsForFace,
   selectIsProjectEmpty,
+  selectProjectMember,
   selectSelectedSlots,
   setSelectedImages,
 } from "@/features/project/projectSlice";
+import { useCardDocumentsByIdentifier } from "@/features/search/cardDocumentsSlice";
 import { selectSearchResultsForQueryOrDefault } from "@/features/search/searchResultsSlice";
+import { setNotification } from "@/features/toasts/toastsSlice";
 import { selectActiveFace } from "@/features/viewSettings/viewSettingsSlice";
 
 const RibbonText = styled.p`
@@ -222,6 +226,52 @@ function ClearSelectedImageQueries({
   );
 }
 
+function DownloadSelectedImages({
+  slots,
+  inDropdown,
+}: {
+  slots: Slots;
+  inDropdown: boolean;
+}) {
+  /**
+   * Clicking this enqueues downloads for the selected iamegs.
+   */
+
+  const dispatch = useAppDispatch();
+  const cardDocumentsByIdentifier = useCardDocumentsByIdentifier();
+  const queueImageDownload = useQueueImageDownload();
+  const identifiers = useAppSelector((state) =>
+    slots.map((slot) => selectProjectMember(state, ...slot)?.selectedImage)
+  );
+
+  const onClick = () => {
+    let n = 0;
+    identifiers.map((identifier) => {
+      if (identifier && cardDocumentsByIdentifier[identifier]) {
+        queueImageDownload(cardDocumentsByIdentifier[identifier]);
+        n++;
+      }
+    });
+    dispatch(bulkSetMemberSelection({ selectedStatus: false, slots }));
+    dispatch(
+      setNotification([
+        Math.random().toString(),
+        {
+          name: "Enqueued Downloads",
+          message: `Enqueued ${n} image download${n != 1 ? "s" : ""}!`,
+          level: "info",
+        },
+      ])
+    );
+  };
+
+  return (
+    <RibbonButton onClick={onClick} inDropdown={inDropdown}>
+      <RightPaddedIcon bootstrapIconName="cloud-arrow-down" /> Download Images
+    </RibbonButton>
+  );
+}
+
 function DeleteSelectedImages({
   slots,
   inDropdown,
@@ -258,6 +308,7 @@ type OptionKey =
   | "changeSelectedImageSelectedImages"
   | "changeSelectedImageQueries"
   | "clearSelectedImageQueries"
+  | "downloadSelectedImages"
   | "deleteSelectedImages";
 
 export function SelectedImagesRibbon() {
@@ -289,6 +340,8 @@ export function SelectedImagesRibbon() {
         return (
           <ClearSelectedImageQueries slots={slots} inDropdown={inDropdown} />
         );
+      case "downloadSelectedImages":
+        return <DownloadSelectedImages slots={slots} inDropdown={inDropdown} />;
       case "deleteSelectedImages":
         return <DeleteSelectedImages slots={slots} inDropdown={inDropdown} />;
     }
@@ -299,6 +352,7 @@ export function SelectedImagesRibbon() {
           "changeSelectedImageSelectedImages",
           "changeSelectedImageQueries",
           // "clearSelectedImageQueries",
+          "downloadSelectedImages",
           "deleteSelectedImages",
         ]
       : []) as Array<OptionKey>),

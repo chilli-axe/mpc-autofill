@@ -91,7 +91,7 @@ export function CardSlot({ searchQuery, face, slot }: CardSlotProps) {
     selectSearchResultsForQueryOrDefault(state, searchQuery, face, cardbacks)
   );
   const projectMember = useAppSelector((state) =>
-    selectProjectMember(state, slot, face)
+    selectProjectMember(state, face, slot)
   );
   const selectedImage = projectMember?.selectedImage;
   const selectedSlots = useAppSelector(selectSelectedSlots);

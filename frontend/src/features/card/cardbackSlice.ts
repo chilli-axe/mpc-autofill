@@ -9,7 +9,7 @@ import { AppDispatch, RootState } from "@/app/store";
 import { CardbacksState, createAppAsyncThunk } from "@/common/types";
 import { selectBackendURL } from "@/features/backend/backendSlice";
 import { selectSearchSettings } from "@/features/searchSettings/searchSettingsSlice";
-import { setError } from "@/features/toasts/toastsSlice";
+import { setNotification } from "@/features/toasts/toastsSlice";
 
 //# region async thunk
 
@@ -32,7 +32,10 @@ export async function fetchCardbacksAndReportError(dispatch: AppDispatch) {
     await dispatch(fetchCardbacks()).unwrap();
   } catch (error: any) {
     dispatch(
-      setError([typePrefix, { name: error.name, message: error.message }])
+      setNotification([
+        typePrefix,
+        { name: error.name, message: error.message, level: "error" },
+      ])
     );
     return null;
   }
@@ -74,6 +77,7 @@ export const cardbackSlice = createSlice({
         state.error = {
           name: action.error.name ?? null,
           message: action.error.message ?? null,
+          level: "error",
         };
       });
   },

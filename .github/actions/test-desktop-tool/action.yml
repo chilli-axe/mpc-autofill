@@ -15,7 +15,6 @@ runs:
       run: |
         rm /usr/local/bin/chromedriver
       shell: bash
-
     - name: Set up Python 3.9
       uses: actions/setup-python@v4
       with:
@@ -26,6 +25,12 @@ runs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
       shell: bash
+    - name: Write Google Drive API credentials to file
+      uses: jsdaniell/create-json@1.1.2
+      with:
+        name: "client_secrets.json"
+        json: ${{ inputs.google-drive-api-key }}
+        dir: "desktop-tool/"
     - name: Run tests
       working-directory: desktop-tool
       run: pytest .

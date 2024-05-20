@@ -17,7 +17,7 @@ import {
 import { selectBackendURL } from "@/features/backend/backendSlice";
 import { selectQueriesWithoutSearchResults } from "@/features/project/projectSlice";
 import { selectSearchSettings } from "@/features/searchSettings/searchSettingsSlice";
-import { setError } from "@/features/toasts/toastsSlice";
+import { setNotification } from "@/features/toasts/toastsSlice";
 
 //# region async thunk
 
@@ -61,7 +61,10 @@ export async function fetchSearchResultsAndReportError(dispatch: AppDispatch) {
     await dispatch(fetchSearchResults()).unwrap();
   } catch (error: any) {
     dispatch(
-      setError([typePrefix, { name: error.name, message: error.message }])
+      setNotification([
+        typePrefix,
+        { name: error.name, message: error.message, level: "error" },
+      ])
     );
     return null;
   }
@@ -102,6 +105,7 @@ export const searchResultsSlice = createSlice({
         state.error = {
           name: action.error.name ?? null,
           message: action.error.message ?? null,
+          level: "error",
         };
       });
   },

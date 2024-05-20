@@ -29,14 +29,15 @@ export type ThunkStatus = "idle" | "loading" | "succeeded" | "failed";
 export type CardType = "CARD" | "CARDBACK" | "TOKEN";
 export type Faces = "front" | "back";
 
-export interface APIError {
+export interface Notification {
   name: string | null;
   message: string | null;
+  level: "info" | "error";
 }
 
 export interface ThunkStateBase {
   status: ThunkStatus;
-  error: APIError | null;
+  error: Notification | null;
 }
 
 export interface CardDocument {
@@ -218,7 +219,7 @@ export type ProcessedLine = [
 ];
 
 export interface ToastsState {
-  errors: { [key: string]: APIError };
+  notifications: { [key: string]: Notification };
 }
 
 export type NewCardsPage = Array<CardDocument>;
