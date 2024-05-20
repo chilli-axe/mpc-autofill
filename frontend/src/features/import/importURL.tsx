@@ -23,7 +23,7 @@ import { Spinner } from "@/components/spinner";
 import { useProjectName } from "@/features/backend/backendSlice";
 import { addMembers, selectProjectSize } from "@/features/project/projectSlice";
 import { selectFuzzySearch } from "@/features/searchSettings/searchSettingsSlice";
-import { setError } from "@/features/toasts/toastsSlice";
+import { setNotification } from "@/features/toasts/toastsSlice";
 
 export function ImportURL() {
   //# region queries and hooks
@@ -76,11 +76,12 @@ export function ImportURL() {
           handleCloseURLModal();
         } catch (error: any) {
           dispatch(
-            setError([
+            setNotification([
               "url-import-error",
               {
                 name: "URL Import Error",
                 message: `An unexpected error occurred while processing your decklist: ${error.message}`,
+                level: "error",
               },
             ])
           );

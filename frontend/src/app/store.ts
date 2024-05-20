@@ -17,7 +17,7 @@ import cardDocumentsReducer from "@/features/search/cardDocumentsSlice";
 import searchResultsReducer from "@/features/search/searchResultsSlice";
 import sourceDocumentsReducer from "@/features/search/sourceDocumentsSlice";
 import searchSettingsReducer from "@/features/searchSettings/searchSettingsSlice";
-import toastsReducer, { setError } from "@/features/toasts/toastsSlice";
+import toastsReducer, { setNotification } from "@/features/toasts/toastsSlice";
 import viewSettingsReducer from "@/features/viewSettings/viewSettingsSlice";
 
 const rootReducer = combineReducers({
@@ -52,11 +52,12 @@ const rtkQueryErrorLogger: Middleware =
     ) {
       // dispatch the error to the store for displaying in a toast to the user
       api.dispatch(
-        setError([
+        setNotification([
           action.type,
           {
             name: action.payload.data.name,
             message: action.payload.data.message,
+            level: "error",
           },
         ])
       );

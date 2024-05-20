@@ -1,33 +1,34 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 import { RootState } from "@/app/store";
-import { APIError } from "@/common/types";
+import { Notification } from "@/common/types";
 import { ToastsState } from "@/common/types";
 
 //# region slice configuration
 
-const initialState: ToastsState = { errors: {} };
+const initialState: ToastsState = { notifications: {} };
 
 export const toastsSlice = createSlice({
   name: "toasts",
   initialState,
   reducers: {
-    setError: (state, action: PayloadAction<[string, APIError]>) => {
-      state.errors[action.payload[0]] = action.payload[1];
+    setNotification: (state, action: PayloadAction<[string, Notification]>) => {
+      state.notifications[action.payload[0]] = action.payload[1];
     },
-    clearError: (state, action: PayloadAction<string>) => {
-      delete state.errors[action.payload];
+    clearNotification: (state, action: PayloadAction<string>) => {
+      delete state.notifications[action.payload];
     },
   },
 });
 
-export const { setError, clearError } = toastsSlice.actions;
+export const { setNotification, clearNotification } = toastsSlice.actions;
 export default toastsSlice.reducer;
 
 //# endregion
 
 //# region selectors
 
-export const selectToastsErrors = (state: RootState) => state.toasts.errors;
+export const selectToastsNotifications = (state: RootState) =>
+  state.toasts.notifications;
 
 //# endregion

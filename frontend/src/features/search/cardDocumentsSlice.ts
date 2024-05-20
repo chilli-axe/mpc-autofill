@@ -20,7 +20,7 @@ import {
   selectUniqueCardIdentifiers,
 } from "@/features/project/projectSlice";
 import { fetchSearchResultsAndReportError } from "@/features/search/searchResultsSlice";
-import { setError } from "@/features/toasts/toastsSlice";
+import { setNotification } from "@/features/toasts/toastsSlice";
 
 //# region async thunk
 
@@ -37,7 +37,7 @@ const fetchCardDocuments = createAppAsyncThunk(
     await fetchSearchResultsAndReportError(dispatch);
     await fetchCardbacksAndReportError(dispatch);
 
-    const state = getState();
+    const state: RootState = getState();
 
     const allIdentifiers = selectUniqueCardIdentifiers(state);
     const identifiersWithKnownData = new Set(
@@ -84,7 +84,10 @@ export async function fetchCardDocumentsAndReportError(dispatch: AppDispatch) {
     await dispatch(fetchCardDocuments()).unwrap();
   } catch (error: any) {
     dispatch(
-      setError([typePrefix, { name: error.name, message: error.message }])
+      setNotification([
+        typePrefix,
+        { name: error.name, message: error.message, level: "error" },
+      ])
     );
     return null;
   }
@@ -122,6 +125,7 @@ export const cardDocumentsSlice = createSlice({
         state.error = {
           name: action.error.name ?? null,
           message: action.error.message ?? null,
+          level: "error",
         };
       });
   },

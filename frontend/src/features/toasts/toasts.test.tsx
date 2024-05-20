@@ -129,7 +129,7 @@ describe("error reporting toasts", () => {
       ...defaultHandlers
     );
     renderWithProviders(<App />, {
-      preloadedState: { toasts: { errors: {} } },
+      preloadedState: { toasts: { notifications: {} } },
     });
     await assertErrorToast("2/searchResults", async () => {
       await importText("mountain");
@@ -145,7 +145,7 @@ describe("error reporting toasts", () => {
       ...defaultHandlers
     );
     renderWithProviders(<App />, {
-      preloadedState: { toasts: { errors: {} } },
+      preloadedState: { toasts: { notifications: {} } },
     });
     await assertErrorToast("2/cards");
   });

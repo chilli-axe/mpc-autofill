@@ -24,7 +24,7 @@ import { RightPaddedIcon } from "@/components/icon";
 import { AutofillTable } from "@/components/table";
 import { addMembers, selectProjectSize } from "@/features/project/projectSlice";
 import { selectFuzzySearch } from "@/features/searchSettings/searchSettingsSlice";
-import { setError } from "@/features/toasts/toastsSlice";
+import { setNotification } from "@/features/toasts/toastsSlice";
 
 function CSVFormat() {
   /**
@@ -115,12 +115,13 @@ export function ImportCSV() {
   const parseCSVFile = (fileContents: string | ArrayBuffer | null) => {
     if (typeof fileContents !== "string") {
       dispatch(
-        setError([
+        setNotification([
           "invalid-csv-contents",
           {
             name: "Invalid CSV file",
             message:
               "The contents of the uploaded file did not match the expected text format.",
+            level: "error",
           },
         ])
       );

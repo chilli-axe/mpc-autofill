@@ -7,7 +7,7 @@ import { createSelector, createSlice } from "@reduxjs/toolkit";
 import { APIGetSources } from "@/app/api";
 import { AppDispatch, RootState } from "@/app/store";
 import { createAppAsyncThunk, SourceDocumentsState } from "@/common/types";
-import { setError } from "@/features/toasts/toastsSlice";
+import { setNotification } from "@/features/toasts/toastsSlice";
 
 //# region async thunk
 
@@ -28,7 +28,10 @@ export async function fetchSourceDocumentsAndReportError(
     await dispatch(fetchSourceDocuments()).unwrap();
   } catch (error: any) {
     dispatch(
-      setError([typePrefix, { name: error.name, message: error.message }])
+      setNotification([
+        typePrefix,
+        { name: error.name, message: error.message, level: "error" },
+      ])
     );
     return null;
   }
@@ -64,6 +67,7 @@ export const sourceDocumentsSlice = createSlice({
         state.error = {
           name: action.error.name ?? null,
           message: action.error.message ?? null,
+          level: "error",
         };
       });
   },
