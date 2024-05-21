@@ -13,6 +13,7 @@ import {
   Project,
   ProjectMember,
   SlotProjectMembers,
+  Slots,
 } from "@/common/types";
 import { selectCardSizesByIdentifier } from "@/features/search/cardDocumentsSlice";
 
@@ -332,6 +333,11 @@ export const selectSelectedSlots = createSelector(
     )
 );
 
+/**
+ * as in, this doesn't select the unique IDs of the selected cards in the project,
+ * but it selects the unique IDs across all search results for everything searched for so far.
+ * @param state
+ */
 export const selectUniqueCardIdentifiers = createSelector(
   (state: RootState) => state.project.members,
   (state: RootState) => state.searchResults.searchResults,
@@ -354,6 +360,24 @@ export const selectUniqueCardIdentifiers = createSelector(
         )
         .concat(cardbacks)
     )
+);
+/**
+ * Return the unique card IDs currently selected in `slots`.
+ */
+export const selectUniqueCardIdentifiersInSlots = createSelector(
+  (state: RootState, slots: Slots) =>
+    slots.map(
+      (slot) => state.project.members[slot[1]]?.[slot[0]]?.selectedImage
+    ),
+  (identifiers) => {
+    const set = new Set<string>();
+    identifiers.map((identifier) => {
+      if (identifier != null) {
+        set.add(identifier);
+      }
+    });
+    return set;
+  }
 );
 
 export const selectProjectSize = (state: RootState): number =>

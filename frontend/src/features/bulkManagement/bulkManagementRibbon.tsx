@@ -30,6 +30,7 @@ import {
   selectIsProjectEmpty,
   selectProjectMember,
   selectSelectedSlots,
+  selectUniqueCardIdentifiersInSlots,
   setSelectedImages,
 } from "@/features/project/projectSlice";
 import { useCardDocumentsByIdentifier } from "@/features/search/cardDocumentsSlice";
@@ -241,13 +242,13 @@ function DownloadSelectedImages({
   const cardDocumentsByIdentifier = useCardDocumentsByIdentifier();
   const queueImageDownload = useQueueImageDownload();
   const identifiers = useAppSelector((state) =>
-    slots.map((slot) => selectProjectMember(state, ...slot)?.selectedImage)
+    selectUniqueCardIdentifiersInSlots(state, slots)
   );
 
   const onClick = () => {
     let n = 0;
-    identifiers.map((identifier) => {
-      if (identifier && cardDocumentsByIdentifier[identifier]) {
+    identifiers.forEach((identifier) => {
+      if (cardDocumentsByIdentifier[identifier]) {
         queueImageDownload(cardDocumentsByIdentifier[identifier]);
         n++;
       }
