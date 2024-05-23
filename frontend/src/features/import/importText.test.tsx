@@ -1,5 +1,5 @@
 import { within } from "@testing-library/dom";
-import { screen, waitFor } from "@testing-library/react";
+import { fireEvent, screen, waitFor } from "@testing-library/react";
 
 import App from "@/app/app";
 import { Back, Front, SelectedImageSeparator } from "@/common/constants";
@@ -291,4 +291,49 @@ test("the placeholder text of the text importer", async () => {
 4x b:${cardDocument5.name}`
     )
   );
+});
+
+test("the textbox should clear itself after submitting a list", async () => {
+  server.use(
+    cardDocumentsThreeResults,
+    cardbacksTwoOtherResults,
+    sourceDocumentsOneResult,
+    searchResultsOneResult,
+    ...defaultHandlers
+  );
+  renderWithProviders(<App />, { preloadedState });
+
+  await expectCardbackSlotState(cardDocument2.name, 1, 2);
+
+  // import a card
+  await importText("my search query");
+
+  // a card slot should have been created
+  await expectCardSlotToExist(1);
+
+  // open the window again and assert that the textbox is empty
+  const textArea = await openImportTextModal();
+  expect(textArea.textContent).toEqual("");
+});
+
+test("the textbox should not clear itself until the form has been submitted", async () => {
+  server.use(
+    cardDocumentsThreeResults,
+    cardbacksTwoOtherResults,
+    sourceDocumentsOneResult,
+    searchResultsOneResult,
+    ...defaultHandlers
+  );
+  renderWithProviders(<App />, { preloadedState });
+
+  await expectCardbackSlotState(cardDocument2.name, 1, 2);
+
+  // open the window and set some text
+  const textArea = await openImportTextModal();
+  fireEvent.change(textArea, { target: { value: "big test" } });
+
+  // close the window and reopen it
+  screen.getByLabelText("import-text-close").click();
+  const textArea2 = await openImportTextModal();
+  expect(textArea2.textContent).toEqual("big test");
 });
