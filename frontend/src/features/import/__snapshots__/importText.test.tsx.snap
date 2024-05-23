@@ -186,6 +186,7 @@ exports[`the html structure of text importer 1`] = `
       class="modal-footer"
     >
       <button
+        aria-label="import-text-close"
         class="btn btn-secondary"
         type="button"
       >

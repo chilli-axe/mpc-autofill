@@ -74,6 +74,7 @@ export function ImportText() {
         ),
       })
     );
+    setTextModalValue(""); // safe to delete the user's data now that it has been processed
     handleCloseTextModal();
   };
 
@@ -103,7 +104,6 @@ export function ImportText() {
           }
         }}
         onHide={handleCloseTextModal}
-        onExited={() => setTextModalValue("")}
         data-testid="import-text"
       >
         <Modal.Header closeButton>
@@ -194,7 +194,11 @@ export function ImportText() {
           </Form>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={handleCloseTextModal}>
+          <Button
+            variant="secondary"
+            aria-label="import-text-close"
+            onClick={handleCloseTextModal}
+          >
             Close
           </Button>
           <Button
