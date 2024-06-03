@@ -5,6 +5,8 @@ import Table from "react-bootstrap/Table";
 
 // TODO: there's a lot of repetition in these styles. needs to be cleaned up later.
 
+type Alignment = "left" | "center" | "right";
+
 const TableWrapper = styled.div`
   max-width: 100%;
   overflow-x: scroll;
@@ -26,19 +28,19 @@ const BorderedTable = styled(Table)<{
 
 const ColumnHeader = styled.th<{
   $cols?: number | undefined;
-  $centred?: boolean;
+  $alignment?: Alignment;
 }>`
   width: ${(props) => (props.$cols != null ? 100 / (props.$cols ?? 1) : 0)}%;
-  text-align: ${(props) => (props.$centred ? "center" : "left")};
+  text-align: ${(props) => props.$alignment};
 `;
 
 const ColumnData = styled.td<{
   $cols?: number | undefined;
-  $centred?: boolean;
+  $alignment?: Alignment;
   $bordered?: boolean;
 }>`
   width: ${(props) => (props.$cols != null ? 100 / (props.$cols ?? 1) : 0)}%;
-  text-align: ${(props) => (props.$centred ? "center" : "left")};
+  text-align: ${(props) => props.$alignment};
   ${(props) =>
     props.$bordered &&
     css`
@@ -52,7 +54,7 @@ export function AutofillTable({
   headers,
   data,
   bordered = false,
-  centred = true,
+  alignment = "center",
   uniformWidth = true,
   hover = false,
   columnLabels = false,
@@ -60,7 +62,7 @@ export function AutofillTable({
   headers: Array<string>;
   data: Array<Array<string | number | React.ReactElement | null | undefined>>;
   bordered?: boolean;
-  centred?: boolean;
+  alignment?: Alignment | Array<Alignment>;
   uniformWidth?: boolean;
   hover?: boolean;
   columnLabels?: boolean;
@@ -81,6 +83,11 @@ export function AutofillTable({
                   scope="col"
                   $cols={uniformWidth ? headers.length : undefined}
                   $centred={centred}
+                  $alignment={
+                    Array.isArray(alignment)
+                      ? alignment[headerIndex]
+                      : alignment
+                  }
                 >
                   {header}
                 </ColumnHeader>
@@ -99,7 +106,11 @@ export function AutofillTable({
                     scope={isLabel ? "row" : undefined}
                     key={`autofill-table-cell-${rowIndex}/${columnIndex}`}
                     $cols={uniformWidth ? row.length : undefined}
-                    $centred={centred}
+                    $alignment={
+                      Array.isArray(alignment)
+                        ? alignment[columnIndex]
+                        : alignment
+                    }
                     $bordered={!isLabel && bordered}
                   >
                     {value}

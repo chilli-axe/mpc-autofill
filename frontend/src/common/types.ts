@@ -62,7 +62,7 @@ export type Faces = "front" | "back";
 export interface Notification {
   name: string | null;
   message: string | null;
-  level: "info" | "error";
+  level: "info" | "warning" | "error";
 }
 
 export interface ThunkStateBase {
@@ -187,7 +187,8 @@ export type Modals =
   | "supportDeveloper"
   | "supportBackend"
   | "invalidIdentifiers"
-  | "finishedMyProject";
+  | "finishedMyProject"
+  | "manageLocalFiles";
 
 export type NoPropModals = Exclude<
   Modals,

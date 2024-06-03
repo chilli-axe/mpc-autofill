@@ -127,7 +127,7 @@ export function CardDetailedViewModal({
                   ["File Size", imageSizeToMBString(cardDocument.size, 2)],
                 ]}
                 hover={true}
-                centred={false}
+                alignment={"left"}
                 uniformWidth={false}
                 columnLabels={true}
               />

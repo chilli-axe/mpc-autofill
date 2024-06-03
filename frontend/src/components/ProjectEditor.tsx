@@ -20,6 +20,7 @@ import { Export } from "@/features/export/Export";
 import { FinishedMyProject } from "@/features/export/FinishedMyProjectModal";
 import { FinishSettings } from "@/features/finishSettings/FinishSettings";
 import { Import } from "@/features/import/Import";
+import { ManageLocalFiles } from "@/features/localFiles/manageLocalFiles";
 import { SearchSettings } from "@/features/searchSettings/SearchSettings";
 import { Status } from "@/features/status/Status";
 import { useBackendConfigured } from "@/store/slices/backendSlice";
@@ -90,6 +91,7 @@ function ProjectEditor() {
               <FinishSettings />
             </Row>
             <Row className="g-0 pt-2">
+              <ManageLocalFiles />
               <SearchSettings />
             </Row>
             <Row className="g-0 pt-2">

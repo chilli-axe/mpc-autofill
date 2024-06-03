@@ -121,7 +121,7 @@ export function ContributionsPerSource() {
         />,
       ])}
       hover={true}
-      centred={false}
+      alignment={"left"}
       uniformWidth={false}
     />
   );
