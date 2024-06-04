@@ -222,3 +222,13 @@ export type CSVRow = {
 };
 
 export type SourceRow = [number, boolean];
+
+export interface DirectoryIndex {
+  handle: FileSystemDirectoryHandle;
+  index:
+    | {
+        fuse: Fuse<CardDocument>;
+        size: number;
+      }
+    | undefined;
+}

@@ -1,8 +1,10 @@
 import React, { createContext, useContext } from "react";
 
+import { DirectoryIndex } from "@/common/types";
+
 export type LocalFilesContext = [
-  File[],
-  React.Dispatch<React.SetStateAction<File[]>>
+  Array<DirectoryIndex>,
+  React.Dispatch<React.SetStateAction<Array<DirectoryIndex>>>
 ];
 
 const localFilesContext = createContext<LocalFilesContext | undefined>(

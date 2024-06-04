@@ -1,3 +1,6 @@
+import Fuse from "fuse.js";
+import { imageDimensionsFromData } from "image-dimensions";
+import { filetypemime } from "magic-bytes.js";
 import React from "react";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
@@ -5,7 +8,12 @@ import Row from "react-bootstrap/Row";
 import styled from "styled-components";
 
 import { MakePlayingCards, MakePlayingCardsURL } from "@/common/constants";
-import { useAppDispatch } from "@/common/types";
+import {
+  CardDocument,
+  CardType,
+  DirectoryIndex,
+  useAppDispatch,
+} from "@/common/types";
 import { RightPaddedIcon } from "@/components/icon";
 import { AutofillTable } from "@/components/table";
 import { useProjectName } from "@/features/backend/backendSlice";
@@ -25,6 +33,64 @@ const TableButton = styled.i`
   cursor: pointer;
 `;
 
+async function listAllFilesAndDirs(
+  dirHandle: FileSystemDirectoryHandle
+): Promise<Array<CardDocument>> {
+  const files: Array<CardDocument> = [];
+  // @ts-ignore  // TODO: is this a problem with my typescript target?
+  for await (let [name, handle] of dirHandle) {
+    if (handle.kind === "directory") {
+      files.push(...(await listAllFilesAndDirs(handle)));
+    } else {
+      const file: File = await handle.getFile();
+      const size = file.size;
+      const data = new Uint8Array(await file.arrayBuffer());
+      const fileType = filetypemime(data);
+      const isImage = fileType.some((mimeType) =>
+        mimeType.startsWith("image/")
+      );
+      if (isImage) {
+        const dimensions = imageDimensionsFromData(data);
+        const height = dimensions?.height ?? 0;
+        const cardType: CardType = dirHandle.name.startsWith("Cardback")
+          ? "CARDBACK"
+          : dirHandle.name.startsWith("Token")
+          ? "TOKEN"
+          : "CARD";
+        const url = URL.createObjectURL(file);
+        // TODO: when we reindex or remove directories, we need to release these: URL.revokeObjectURL(objectURL)
+
+        const DPI_HEIGHT_RATIO = 300 / 1110;
+        const dpi = 10 * Math.round((height * DPI_HEIGHT_RATIO) / 10);
+
+        const cardDocument: CardDocument = {
+          identifier: name, // TODO: how do we guarantee uniqueness across nested directories?
+          card_type: cardType,
+          name: name,
+          priority: 0,
+          date: file.lastModified.toString(), // TODO
+          source: dirHandle.name,
+          source_id: -1, // TODO: make this nullable
+          source_name: dirHandle.name, // TODO: relative path
+          source_verbose: dirHandle.name, // TODO: relative path
+          source_external_link: null,
+          dpi: dpi,
+          searchq: name,
+          extension: "", // TODO: just do the naive thing i suppose!
+          download_link: "", // TODO: should be null
+          size: size,
+          small_thumbnail_url: url,
+          medium_thumbnail_url: url,
+          language: "English",
+          tags: [],
+        };
+        files.push(cardDocument);
+      }
+    }
+  }
+  return files;
+}
+
 export function ManageLocalFilesModal({
   show,
   handleClose,
@@ -33,28 +99,40 @@ export function ManageLocalFilesModal({
   const dispatch = useAppDispatch();
   const projectName = useProjectName();
 
-  const indexDirectory = (directory: File): void => {
-    // TODO: decide how we should index files in directories
-    //   consider using https://github.com/nextapps-de/flexsearch
+  const indexDirectory = async (
+    handle: FileSystemDirectoryHandle
+  ): Promise<DirectoryIndex> => {
+    const theMen = await listAllFilesAndDirs(handle);
+    const fuseIndex = Fuse.createIndex<CardDocument>(["name"], theMen);
+    const fuse = new Fuse<CardDocument>(theMen, {}, fuseIndex);
+    const directoryIndex = {
+      handle: handle,
+      index: {
+        fuse: fuse,
+        size: theMen.length,
+      },
+    };
     dispatch(
       setNotification([
         Math.random().toString(),
         {
-          name: `Synchronised ${directory.name}`,
-          message: null, // TODO: indicate how many images were indexed
+          name: `Synchronised ${handle.name}`,
+          message: `Indexed ${theMen.length} cards.`,
           level: "info",
         },
       ])
     );
+    return directoryIndex;
   };
 
   const addDirectory = async () => {
     try {
       // @ts-ignore
-      const dirHandle = await window.showDirectoryPicker();
-      setLocalFiles([...localFiles, dirHandle]);
-      indexDirectory(dirHandle);
+      const handle = await window.showDirectoryPicker();
+      const directoryIndex = await indexDirectory(handle);
+      setLocalFiles([...localFiles, directoryIndex]);
     } catch {
+      // TODO: catch specific errors from `showDirectoryPicker`
       // RIP firefox :(
       dispatch(
         setNotification([
@@ -103,12 +181,13 @@ export function ManageLocalFilesModal({
           <>
             <br />
             <AutofillTable
-              headers={["Directory", "Sync", "Remove"]}
+              headers={["Directory", "Indexed Cards", "Sync", "Remove"]}
               data={localFiles.map((item, i) => [
-                <code key={`${i}-name`}>{item.name}</code>,
+                <code key={`${i}-name`}>{item.handle.name}</code>,
+                item.index?.size,
                 <TableButton
                   key={`${i}-sync`}
-                  onClick={() => indexDirectory(localFiles[i])}
+                  onClick={() => indexDirectory(localFiles[i].handle)}
                   className="bi bi-arrow-repeat"
                 />,
                 <TableButton
@@ -117,7 +196,7 @@ export function ManageLocalFilesModal({
                   className="bi bi-x-lg"
                 />,
               ])}
-              alignment={["left", "center", "center"]}
+              alignment={["left", "center", "center", "center"]}
               uniformWidth={false}
               bordered={true}
             />

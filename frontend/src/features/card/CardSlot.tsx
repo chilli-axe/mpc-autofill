@@ -8,6 +8,7 @@
 
 import React, { memo, useState } from "react";
 
+import { RootState } from "@/app/store";
 import {
   Faces,
   SearchQuery,
@@ -18,6 +19,8 @@ import { wrapIndex } from "@/common/utils";
 import { MemoizedEditorCard } from "@/features/card/Card";
 import { CardFooter } from "@/features/card/CardFooter";
 import { GridSelectorModal } from "@/features/gridSelector/GridSelectorModal";
+import { useLocalFilesContext } from "@/features/localFiles/localFilesContext";
+import { selectCardDocumentByIdentifier } from "@/features/search/cardDocumentsSlice";
 import { showChangeQueryModal } from "@/store/slices/modalsSlice";
 import {
   bulkAlignMemberSelection,
@@ -111,6 +114,14 @@ export function CardSlot({ searchQuery, face, slot }: CardSlotProps) {
   const slotsToModify: Array<[Faces, number]> = modifySelectedSlots
     ? selectedSlots
     : [[face, slot]];
+
+  const [directoryIndexes, setDirectoryIndexes] = useLocalFilesContext();
+  const localResults = directoryIndexes.flatMap((directoryIndex) =>
+    directoryIndex.index && searchQuery?.query
+      ? directoryIndex.index.fuse.search(searchQuery.query)
+      : []
+  );
+  // alert(JSON.stringify(localResults))
 
   //# endregion
 
@@ -219,12 +230,25 @@ export function CardSlot({ searchQuery, face, slot }: CardSlotProps) {
 
   //# endregion
 
+  // TODO: this is just a temporary hack for releasing some dopamine before i sign off for the night. remove later
+  const maybeCardDocument = useAppSelector((state: RootState) =>
+    localResults.length > 0
+      ? localResults[0].item
+      : selectCardDocumentByIdentifier(state, selectedImage)
+  );
+  const maybePreviousCardDocument = useAppSelector((state: RootState) =>
+    selectCardDocumentByIdentifier(state, previousImage)
+  );
+  const maybeNextCardDocument = useAppSelector((state: RootState) =>
+    selectCardDocumentByIdentifier(state, nextImage)
+  );
+
   return (
     <div data-testid={`${face}-slot${slot}`}>
-      <MemoizedEditorCard
-        imageIdentifier={selectedImage}
-        previousImageIdentifier={previousImage}
-        nextImageIdentifier={nextImage}
+      <Card
+        maybeCardDocument={maybeCardDocument}
+        maybePreviousCardDocument={maybePreviousCardDocument}
+        maybeNextCardDocument={maybeNextCardDocument}
         cardHeaderTitle={cardHeaderTitle}
         cardFooter={cardFooter}
         cardHeaderButtons={cardHeaderButtons}
