@@ -131,27 +131,29 @@ export function CardDetailedViewModal({
                 uniformWidth={false}
                 columnLabels={true}
               />
-              <div className="d-grid gap-0">
-                <Button
-                  variant="primary"
-                  onClick={async () => {
-                    queueImageDownload(cardDocument);
-                    dispatch(
-                      setNotification([
-                        Math.random().toString(),
-                        {
-                          name: "Enqueued Downloads",
-                          message: `Enqueued 1 image download!`,
-                          level: "info",
-                        },
-                      ])
-                    );
-                  }}
-                >
-                  <RightPaddedIcon bootstrapIconName="cloud-arrow-down" />{" "}
-                  Download Image
-                </Button>
-              </div>
+              {cardDocument.source_type === "Google Drive" && (
+                <div className="d-grid gap-0">
+                  <Button
+                    variant="primary"
+                    onClick={async () => {
+                      queueImageDownload(cardDocument);
+                      dispatch(
+                        setNotification([
+                          Math.random().toString(),
+                          {
+                            name: "Enqueued Downloads",
+                            message: `Enqueued 1 image download!`,
+                            level: "info",
+                          },
+                        ])
+                      );
+                    }}
+                  >
+                    <RightPaddedIcon bootstrapIconName="cloud-arrow-down" />{" "}
+                    Download Image
+                  </Button>
+                </div>
+              )}
               <AddCardToProjectForm cardDocument={cardDocument} />
             </div>
           </Row>

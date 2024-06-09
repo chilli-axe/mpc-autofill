@@ -73,6 +73,7 @@ async function listAllFilesAndDirs(
           source_id: -1, // TODO: make this nullable
           source_name: dirHandle.name, // TODO: relative path
           source_verbose: dirHandle.name, // TODO: relative path
+          source_type: "Local File",
           source_external_link: null,
           dpi: dpi,
           searchq: name,
@@ -184,9 +185,10 @@ export function ManageLocalFilesModal({
               headers={["Directory", "Indexed Cards", "Remove"]}
               data={[
                 [
-                  <code>{directoryIndex.handle.name}</code>,
+                  <code key={"silly1"}>{directoryIndex.handle.name}</code>,
                   directoryIndex.index?.size,
                   <TableButton
+                    key={"silly2"}
                     onClick={() => clearDirectoryChoice()}
                     className="bi bi-x-lg"
                   />,
