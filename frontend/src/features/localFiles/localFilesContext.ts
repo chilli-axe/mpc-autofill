@@ -3,8 +3,8 @@ import React, { createContext, useContext } from "react";
 import { DirectoryIndex } from "@/common/types";
 
 export type LocalFilesContext = [
-  Array<DirectoryIndex>,
-  React.Dispatch<React.SetStateAction<Array<DirectoryIndex>>>
+  DirectoryIndex | null,
+  React.Dispatch<React.SetStateAction<DirectoryIndex | null>>
 ];
 
 const localFilesContext = createContext<LocalFilesContext | undefined>(

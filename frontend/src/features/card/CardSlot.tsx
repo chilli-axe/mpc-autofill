@@ -115,13 +115,11 @@ export function CardSlot({ searchQuery, face, slot }: CardSlotProps) {
     ? selectedSlots
     : [[face, slot]];
 
-  const [directoryIndexes, setDirectoryIndexes] = useLocalFilesContext();
-  const localResults = directoryIndexes.flatMap((directoryIndex) =>
-    directoryIndex.index && searchQuery?.query
-      ? directoryIndex.index.fuse.search(searchQuery.query)
-      : []
-  );
-  // alert(JSON.stringify(localResults))
+  const [directoryIndex, setDirectoryIndex] = useLocalFilesContext();
+  const localResults =
+    directoryIndex?.index && searchQuery?.query
+      ? directoryIndex?.index.fuse.search(searchQuery.query)
+      : [];
 
   //# endregion
 

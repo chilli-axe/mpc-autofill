@@ -95,21 +95,21 @@ export function ManageLocalFilesModal({
   show,
   handleClose,
 }: ManageLocalFilesModalProps) {
-  const [localFiles, setLocalFiles] = useLocalFilesContext();
+  const [directoryIndex, setDirectoryIndex] = useLocalFilesContext();
   const dispatch = useAppDispatch();
   const projectName = useProjectName();
 
   const indexDirectory = async (
     handle: FileSystemDirectoryHandle
   ): Promise<DirectoryIndex> => {
-    const theMen = await listAllFilesAndDirs(handle);
-    const fuseIndex = Fuse.createIndex<CardDocument>(["name"], theMen);
-    const fuse = new Fuse<CardDocument>(theMen, {}, fuseIndex);
-    const directoryIndex = {
+    const cardDocuments = await listAllFilesAndDirs(handle);
+    const fuseIndex = Fuse.createIndex<CardDocument>(["name"], cardDocuments);
+    const fuse = new Fuse<CardDocument>(cardDocuments, {}, fuseIndex);
+    const newDirectoryIndex = {
       handle: handle,
       index: {
         fuse: fuse,
-        size: theMen.length,
+        size: cardDocuments.length,
       },
     };
     dispatch(
@@ -117,20 +117,20 @@ export function ManageLocalFilesModal({
         Math.random().toString(),
         {
           name: `Synchronised ${handle.name}`,
-          message: `Indexed ${theMen.length} cards.`,
+          message: `Indexed ${cardDocuments.length} cards.`,
           level: "info",
         },
       ])
     );
-    return directoryIndex;
+    return newDirectoryIndex;
   };
 
-  const addDirectory = async () => {
+  const chooseDirectory = async () => {
     try {
       // @ts-ignore
       const handle = await window.showDirectoryPicker();
-      const directoryIndex = await indexDirectory(handle);
-      setLocalFiles([...localFiles, directoryIndex]);
+      const newDirectoryIndex = await indexDirectory(handle);
+      setDirectoryIndex(newDirectoryIndex);
     } catch {
       // TODO: catch specific errors from `showDirectoryPicker`
       // RIP firefox :(
@@ -148,8 +148,8 @@ export function ManageLocalFilesModal({
     }
   };
 
-  const removeDirectory = (i: number): void => {
-    setLocalFiles([...localFiles.slice(0, i), ...localFiles.slice(i + 1)]);
+  const clearDirectoryChoice = (): void => {
+    setDirectoryIndex(null);
   };
 
   return (
@@ -171,31 +171,27 @@ export function ManageLocalFilesModal({
           without being indexed by {projectName}.
         </p>
         <Row className="g-0 pt-2">
-          <Button variant="outline-success" onClick={addDirectory}>
+          <Button variant="outline-success" onClick={chooseDirectory}>
             <RightPaddedIcon bootstrapIconName="plus-circle" />
-            Add Directory
+            Choose Directory
           </Button>
         </Row>
 
-        {localFiles.length > 0 && (
+        {directoryIndex != null && (
           <>
             <br />
             <AutofillTable
-              headers={["Directory", "Indexed Cards", "Sync", "Remove"]}
-              data={localFiles.map((item, i) => [
-                <code key={`${i}-name`}>{item.handle.name}</code>,
-                item.index?.size,
-                <TableButton
-                  key={`${i}-sync`}
-                  onClick={() => indexDirectory(localFiles[i].handle)}
-                  className="bi bi-arrow-repeat"
-                />,
-                <TableButton
-                  key={`${i}-remove`}
-                  onClick={() => removeDirectory(i)}
-                  className="bi bi-x-lg"
-                />,
-              ])}
+              headers={["Directory", "Indexed Cards", "Remove"]}
+              data={[
+                [
+                  <code>{directoryIndex.handle.name}</code>,
+                  directoryIndex.index?.size,
+                  <TableButton
+                    onClick={() => clearDirectoryChoice()}
+                    className="bi bi-x-lg"
+                  />,
+                ],
+              ]}
               alignment={["left", "center", "center", "center"]}
               uniformWidth={false}
               bordered={true}

@@ -15,7 +15,7 @@ import {
   setLocalStorageBackendURL,
 } from "@/common/cookies";
 import { standardiseURL } from "@/common/processing";
-import { useAppDispatch, useAppSelector } from "@/common/types";
+import { DirectoryIndex, useAppDispatch, useAppSelector } from "@/common/types";
 import {
   DownloadContext,
   DownloadContextProvider,
@@ -113,7 +113,9 @@ export function ProjectContainer({
 export function LayoutWithoutReduxProvider({ children }: PropsWithChildren) {
   const consent = getGoogleAnalyticsConsent();
   const downloadContext: DownloadContext = new Queue(10, 50);
-  const localFilesContext: LocalFilesContext = useState<Array<File>>([]);
+  const localFilesContext: LocalFilesContext = useState<DirectoryIndex | null>(
+    null
+  );
   return (
     <DownloadContextProvider value={downloadContext}>
       <LocalFilesContextProvider value={localFilesContext}>
