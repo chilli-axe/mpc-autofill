@@ -14,6 +14,7 @@ from src.order import CardOrder, aggregate_and_split_orders
 from src.pdf_maker import PdfExporter
 from src.processing import ImagePostProcessingConfig
 from src.utils import bold
+from src.web_server import WebServer
 
 # https://stackoverflow.com/questions/12492810/python-how-can-i-make-the-ansi-escape-codes-to-work-also-in-windows
 os.system("")  # enables ansi escape characters in terminal
@@ -159,8 +160,12 @@ def main(
                 card_orders = aggregate_and_split_orders(
                     orders=CardOrder.from_xmls_in_folder(), target_site=target_site, combine_orders=combine_orders
                 )
+                web_server = WebServer()
                 AutofillDriver(
-                    browser=Browsers[browser], target_site=target_site, binary_location=binary_location
+                    browser=Browsers[browser],
+                    target_site=target_site,
+                    binary_location=binary_location,
+                    starting_url=web_server.server_url(),
                 ).execute_orders(
                     orders=card_orders,
                     auto_save_threshold=auto_save_threshold if auto_save else None,

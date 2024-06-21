@@ -44,6 +44,7 @@ class AutofillDriver:
     binary_location: Optional[str] = attr.ib(default=None)  # path to browser executable
     target_site: TargetSites = attr.ib(default=TargetSites.MakePlayingCards)
     headless: bool = attr.ib(default=False)
+    starting_url: str = attr.ib(default="data:")
 
     # internal properties (init=False)
     state: str = attr.ib(init=False, default=States.initialising)
@@ -62,10 +63,8 @@ class AutofillDriver:
             driver = self.browser.value(headless=self.headless, binary_location=self.binary_location)
             driver.set_window_size(1200, 900)
             driver.implicitly_wait(5)
-            driver.get("https://github.com/chilli-axe/mpc-autofill/wiki/Desktop-Tool-Landing")
-            WebDriverWait(driver, 10).until(
-                visibility_of_element_located((By.ID, "wiki-pages-box-heading"))
-            )
+            driver.get(self.starting_url)
+            WebDriverWait(driver, 10).until(visibility_of_element_located((By.TAG_NAME, "body")))
             logging.info(
                 f"Successfully initialised {bold(self.browser.name)} driver "
                 f"targeting {bold(self.target_site.name)}.\n"

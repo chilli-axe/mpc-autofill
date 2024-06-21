@@ -175,3 +175,5 @@ DPI_HEIGHT_RATIO = 300 / 1110  # TODO: share this between desktop tool and backe
 
 PROJECT_MAX_SIZE = 612  # shared between target sites
 THREADS = 5  # shared between CardImageCollections
+
+POST_LAUNCH_HTML_FILENAME = "post-launch.html"
