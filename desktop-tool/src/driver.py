@@ -18,7 +18,10 @@ from selenium.common.exceptions import (
 )
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webdriver import WebDriver
-from selenium.webdriver.support.expected_conditions import invisibility_of_element
+from selenium.webdriver.support.expected_conditions import (
+    invisibility_of_element,
+    visibility_of_element_located,
+)
 from selenium.webdriver.support.ui import Select, WebDriverWait
 
 from src.constants import THREADS, Browsers, Cardstocks, States, TargetSites
@@ -59,6 +62,10 @@ class AutofillDriver:
             driver = self.browser.value(headless=self.headless, binary_location=self.binary_location)
             driver.set_window_size(1200, 900)
             driver.implicitly_wait(5)
+            driver.get("https://github.com/chilli-axe/mpc-autofill/wiki/Desktop-Tool-Landing")
+            WebDriverWait(driver, 10).until(
+                visibility_of_element_located((By.ID, "wiki-pages-box-heading"))
+            )
             logging.info(
                 f"Successfully initialised {bold(self.browser.name)} driver "
                 f"targeting {bold(self.target_site.name)}.\n"
