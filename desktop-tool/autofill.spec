@@ -6,7 +6,7 @@ block_cipher = None
 
 a = Analysis(['autofill.py'],
              binaries=collect_dynamic_libs('ansicon') + collect_dynamic_libs('enlighten'),
-             datas=[('client_secrets.json', '.')],
+             datas=[('client_secrets.json', '.'), ('post-launch.html', '.')],
              hiddenimports=['colorama', 'jinxed.terminfo.vtwin10', 'wakepy._linux._jeepney_dbus'],
              hookspath=[],
              runtime_hooks=[],
