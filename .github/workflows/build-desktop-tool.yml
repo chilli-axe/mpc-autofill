@@ -14,8 +14,11 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: macos-13 # TODO: revert back to macos-latest when https://github.com/actions/setup-python/issues/852 is fixed
-            TARGET: macos
+          - os: macos-latest
+            TARGET: macos-arm
+            OUT_FILE_NAME: autofill
+          - os: macos-latest-large
+            TARGET: macos-intel
             OUT_FILE_NAME: autofill
           - os: windows-latest
             TARGET: windows

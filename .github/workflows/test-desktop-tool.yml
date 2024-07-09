@@ -11,7 +11,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: macos-13 # TODO: revert back to macos-latest when https://github.com/actions/setup-python/issues/852 is fixed
+          - os: macos-latest
           - os: windows-latest
           - os: ubuntu-latest
     steps:
