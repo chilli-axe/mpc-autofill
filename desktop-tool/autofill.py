@@ -1,3 +1,11 @@
+# nuitka-project: --mode=onefile
+# nuitka-project: --include-data-files=client_secrets.json=client_secrets.json
+# nuitka-project: --include-data-files=post-launch.html=post-launch.html
+# nuitka-project: --noinclude-pytest-mode=nofollow
+# nuitka-project: --windows-icon-from-ico=favicon.ico
+# nuitka-project-if: {OS} == "Linux":
+#    nuitka-project: --include-module=wakepy._linux._jeepney_dbus
+
 import logging
 import os
 import sys
@@ -31,7 +39,7 @@ def prompt_if_no_arguments(prompt: str) -> Union[str, bool]:
 
 
 @click.command(context_settings={"show_default": True})
-@click.option("-d", "--directory", default=None, help=("The directory to search for order XML files."))
+@click.option("-d", "--directory", default=None, help="The directory to search for order XML files.")
 @click.option(
     "-b",
     "--browser",
@@ -185,6 +193,7 @@ def main(
     )
     try:
         with keepawake(keep_screen_awake=True) if not allowsleep else nullcontext():
+            logger.info("MPC Autofill desktop tool has successfully initialised!")
             if not allowsleep:
                 logger.info("System sleep is being prevented during this execution.")
             if image_post_processing:
@@ -231,4 +240,10 @@ def main(
 
 
 if __name__ == "__main__":
+    click.echo(
+        "▙▗▌▛▀▖▞▀▖ ▞▀▖   ▐     ▗▀▖▗▜▜ \n"
+        "▌▘▌▙▄▘▌   ▙▄▌▌ ▌▜▀ ▞▀▖▐  ▄▐▐ \n"
+        "▌ ▌▌  ▌ ▖ ▌ ▌▌ ▌▐ ▖▌ ▌▜▀ ▐▐▐ \n"
+        "▘ ▘▘  ▝▀  ▘ ▘▝▀▘ ▀ ▝▀ ▐  ▀▘▘▘\n"
+    )
     main()
