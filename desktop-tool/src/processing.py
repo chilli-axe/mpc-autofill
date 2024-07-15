@@ -1,9 +1,11 @@
 import io
 from dataclasses import dataclass
-
-from PIL import Image
+from typing import TYPE_CHECKING
 
 from src.constants import DPI_HEIGHT_RATIO, ImageResizeMethods
+
+if TYPE_CHECKING:
+    from PIL import Image
 
 
 @dataclass
@@ -13,7 +15,9 @@ class ImagePostProcessingConfig:
     # jpeg: bool
 
 
-def post_process_image(raw_image: bytes, config: ImagePostProcessingConfig) -> Image:
+def post_process_image(raw_image: bytes, config: ImagePostProcessingConfig) -> "Image":
+    from PIL import Image
+
     img = Image.open(io.BytesIO(raw_image))
 
     # downscale the image to `max_dpi`
