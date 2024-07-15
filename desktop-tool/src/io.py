@@ -1,6 +1,5 @@
 import io
 import os
-import sys
 import threading
 from pathlib import Path
 from typing import Any, Optional
@@ -125,9 +124,7 @@ def get_google_drive_file_name(drive_id: str) -> Optional[str]:
 
 
 # TODO: migrate to Pathlib
-DEFAULT_WORKING_DIRECTORY: str = (
-    os.path.dirname(os.path.realpath(sys.executable)) if getattr(sys, "frozen", False) else os.getcwd()
-)
+DEFAULT_WORKING_DIRECTORY: str = os.getcwd()
 
 
 def get_image_directory(working_directory: str) -> str:
