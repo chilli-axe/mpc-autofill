@@ -47,6 +47,8 @@ jobs:
           script-name: autofill.py
           onefile: true
           include-data-files: client_secrets.json=client_secrets.json
+          macos-create-app-bundle: true
+          macos-app-version: 1.0  # TODO: can we identify the build version from the commit tag?
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
