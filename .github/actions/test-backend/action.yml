@@ -29,7 +29,7 @@ runs:
       run: sudo systemctl start elasticsearch.service
       shell: bash
     - name: Write Google Drive API credentials to file
-      uses: jsdaniell/create-json@1.2.3
+      uses: jsdaniell/create-json@v1.2.3
       with:
         name: "client_secrets.json"
         json: ${{ inputs.google-drive-api-key }}
