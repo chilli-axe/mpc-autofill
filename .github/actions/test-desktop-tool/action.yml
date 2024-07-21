@@ -7,9 +7,9 @@ runs:
     - uses: browser-actions/setup-chrome@latest
       with:
         chrome-version: stable
-    - uses: browser-actions/setup-edge@beta
+    - uses: browser-actions/setup-edge@latest
       with:
-        edge-version: stable
+        edge-version: beta # beta version seems to work more consistently for linux CI
     - name: Fix macOS Chromedriver
       if: runner.os == 'macOS'
       run: |
