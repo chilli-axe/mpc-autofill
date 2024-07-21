@@ -7,7 +7,7 @@ runs:
     - uses: browser-actions/setup-chrome@latest
       with:
         chrome-version: stable
-    - uses: browser-actions/setup-edge@latest
+    - uses: browser-actions/setup-edge@beta
       with:
         edge-version: stable
     - name: Fix macOS Chromedriver
