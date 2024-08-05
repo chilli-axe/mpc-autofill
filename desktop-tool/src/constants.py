@@ -102,6 +102,9 @@ class TargetSite:
         default={cardstock: cardstock.value for cardstock in Cardstocks}
     )
     # endregion
+    # region save states
+    saved_successfully_text: str = attr.ib(default="Saved successfully")
+    # endregion
 
     def format_url(self, url: str) -> str:
         return f"{self.base_url}/{url}"
@@ -161,6 +164,7 @@ class TargetSites(Enum):
         base_url="https://www.printerstudio.de",
         starting_url_route="machen/blanko-spielkarten-63x88mm-personalisieren.html",
         supports_foil=False,
+        saved_successfully_text="Speicherung erfolgreich",
         cardstock_site_name_mapping={
             Cardstocks.S30: "Standard (glatt)",
             Cardstocks.S33: "Super (glatt)",

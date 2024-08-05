@@ -20,6 +20,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.support.expected_conditions import (
     invisibility_of_element,
+    text_to_be_present_in_element,
     visibility_of_element_located,
 )
 from selenium.webdriver.support.ui import Select, WebDriverWait
@@ -166,27 +167,36 @@ class AutofillDriver:
 
     @alert_handler
     @exception_retry_skip_handler
-    def wait(self) -> None:
+    def wait(self) -> bool:
         """
         Wait until the loading circle in the targeted site disappears.
+        If the frontend locks up while loading, this function will attempt to resolve this
+        with a page refresh (and the return value indicates if a refresh occurred).
         """
 
+        wait_timeout_seconds = 30
         logging.debug("Waiting until MPC loading circle disappears...")
         try:
             wait_elem = self.driver.find_element(by=By.ID, value="sysdiv_wait")
             # Wait for the element to become invisible
             while True:
                 try:
-                    WebDriverWait(self.driver, 100, poll_frequency=0.1).until(invisibility_of_element(wait_elem))
+                    WebDriverWait(self.driver, wait_timeout_seconds, poll_frequency=0.1).until(
+                        invisibility_of_element(wait_elem)
+                    )
                 except sl_exc.TimeoutException:
-                    logging.debug("Timed out while waiting for the loading circle to disappear.")
-                    continue
+                    logging.info(
+                        f"Waited for longer than {wait_timeout_seconds}s for the {self.target_site.name} page "
+                        f"to respond - attempting to resolve with a page refresh..."
+                    )
+                    self.driver.refresh()
+                    return True
                 logging.debug("The loading circle has disappeared!")
                 break
         except (sl_exc.NoSuchElementException, sl_exc.NoSuchFrameException, sl_exc.WebDriverException) as e:
             logging.debug("Attempted to locate the loading circle but encountered an exception:")
             logging.debug(e)
-            return
+        return False
 
     def set_state(self, state: str, action: Optional[str] = None) -> None:
         self.state = state
@@ -373,7 +383,7 @@ class AutofillDriver:
             return None
 
     @exception_retry_skip_handler
-    def insert_image(self, pid: Optional[str], image: CardImage, slots: list[int]) -> None:
+    def insert_image(self, pid: Optional[str], image: CardImage, slots: list[int], max_tries: int = 3) -> None:
         """
         Inserts the image identified by `pid` into `slots`.
         """
@@ -382,15 +392,28 @@ class AutofillDriver:
         self.wait_until_javascript_object_is_defined("PageLayout.prototype.applyDragPhoto")
 
         if pid:
-            logging.debug(f"Inserting {image.name} into slots {slots}...")
+            logging.debug(f'Inserting "{image.name}" into slots {slots}...')
             for i, slot in enumerate(slots, start=1):
                 logging.debug(f"Inserting into slot {slot}...")
-                self.set_state(state=self.state, action=f"Inserting {image.name} into slot {slot+1} ({i}/{len(slots)})")
-                # Insert the card into each slot and wait for the page to load before continuing
-                self.execute_javascript(
-                    f'PageLayout.prototype.applyDragPhoto({self.get_element_for_slot_js(slot)}, 0, "{pid}")'
+                self.set_state(
+                    state=self.state, action=f'Inserting "{image.name}" into slot {slot+1} ({i}/{len(slots)})'
                 )
-                self.wait()
+                # Insert the card into each slot and wait for the page to load before continuing
+                tries = 0
+                page_refreshed_while_inserting_image = True
+                while page_refreshed_while_inserting_image:
+                    self.execute_javascript(
+                        f'PageLayout.prototype.applyDragPhoto({self.get_element_for_slot_js(slot)}, 0, "{pid}")'
+                    )
+
+                    page_refreshed_while_inserting_image = self.wait()
+                    tries += 1
+                    if tries >= max_tries:
+                        logging.warning(
+                            f"Attempted to insert image {bold(image.name)} {max_tries} times, "
+                            f"but no attempt succeeded! Skipping this image."
+                        )
+                        break
             logging.debug(f"All done inserting {image.name} into slots {slots}!")
             self.set_state(self.state)
         else:
@@ -624,6 +647,20 @@ class AutofillDriver:
         self.wait_until_javascript_object_is_defined("oDesign.setTemporarySave")
         self.execute_javascript("oDesign.setTemporarySave();")
         self.wait()
+
+        wait_timeout_seconds = 15
+        try:
+            WebDriverWait(self.driver, wait_timeout_seconds).until(
+                text_to_be_present_in_element(
+                    (By.ID, "div_temporarysavestatus"), self.target_site.value.saved_successfully_text
+                )
+            )
+        except sl_exc.TimeoutException:
+            logging.info(
+                f"Waited for longer than {wait_timeout_seconds}s for the {self.target_site.name} page to respond - "
+                "attempting to resolve with a page refresh..."
+            )
+            self.driver.refresh()
         logging.debug("Finished saving the project to the user's account!")
 
     # endregion
@@ -775,7 +812,7 @@ class AutofillDriver:
         auto_save_threshold: Optional[int],
         post_processing_config: Optional[ImagePostProcessingConfig],
     ) -> None:
-        logging.info(f"{bold(len(orders))} projects are scheduled to be auto-filled. They are:")
+        logging.info(f"{bold(len(orders))} project/s are scheduled to be auto-filled. They are:")
         for i, order in enumerate(orders, start=1):
             logging.info(f"{i}. {bold(order.name or 'Unnamed Project')}")
             logging.info("  " + order.get_overview())
