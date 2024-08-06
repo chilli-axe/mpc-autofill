@@ -111,7 +111,7 @@ function PlatformDownload({
   platformName,
   icon,
 }: {
-  downloadURLSuffix: "windows.exe" | "macos" | "linux";
+  downloadURLSuffix: "windows.exe" | "macos-intel" | "macos-arm" | "linux";
   platformName: string;
   icon: string;
 }) {
@@ -144,21 +144,28 @@ function DesktopToolDownload() {
         !
       </p>
       <Row gap={2}>
-        <Col sm={4}>
+        <Col sm={3}>
           <PlatformDownload
             platformName="Windows"
             downloadURLSuffix="windows.exe"
             icon="windows"
           />
         </Col>
-        <Col sm={4}>
+        <Col sm={3}>
           <PlatformDownload
-            platformName="macOS"
-            downloadURLSuffix="macos"
+            platformName="macOS — Intel"
+            downloadURLSuffix="macos-intel"
             icon="apple"
           />
         </Col>
-        <Col sm={4}>
+        <Col sm={3}>
+          <PlatformDownload
+            platformName="macOS — ARM"
+            downloadURLSuffix="macos-arm"
+            icon="apple"
+          />
+        </Col>
+        <Col sm={3}>
           <PlatformDownload
             platformName="Linux"
             downloadURLSuffix="linux"
