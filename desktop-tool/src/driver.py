@@ -646,9 +646,8 @@ class AutofillDriver:
             project_name_element.send_keys(project_name)
         self.wait_until_javascript_object_is_defined("oDesign.setTemporarySave")
         self.execute_javascript("oDesign.setTemporarySave();")
-        self.wait()
 
-        wait_timeout_seconds = 15
+        wait_timeout_seconds = 30
         try:
             WebDriverWait(self.driver, wait_timeout_seconds).until(
                 text_to_be_present_in_element(
