@@ -9,14 +9,14 @@ runs:
         chrome-version: stable
     - uses: browser-actions/setup-edge@latest
       with:
-        edge-version: stable
+        edge-version: beta # beta version seems to work more consistently for linux CI
     - name: Fix macOS Chromedriver
       if: runner.os == 'macOS'
       run: |
         rm /usr/local/bin/chromedriver
       shell: bash
     - name: Set up Python 3.9
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: 3.9
     - name: Install Python dependencies
@@ -26,7 +26,7 @@ runs:
         pip install -r requirements.txt
       shell: bash
     - name: Write Google Drive API credentials to file
-      uses: jsdaniell/create-json@1.1.2
+      uses: jsdaniell/create-json@v1.2.3
       with:
         name: "client_secrets.json"
         json: ${{ inputs.google-drive-api-key }}

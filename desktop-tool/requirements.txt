@@ -18,5 +18,5 @@ pytest-retry~=1.5
 ratelimit~=2.2.1
 requests~=2.31.0
 sanitize-filename~=1.2.0
-selenium~=4.19.0
+selenium~=4.23
 wakepy==0.6.0

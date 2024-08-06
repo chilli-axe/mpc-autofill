@@ -9,7 +9,7 @@ runs:
   steps:
     - uses: browser-actions/setup-chrome@latest
     - name: Set up Python 3.9
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: 3.9
     - name: Install Python dependencies
@@ -29,7 +29,7 @@ runs:
       run: sudo systemctl start elasticsearch.service
       shell: bash
     - name: Write Google Drive API credentials to file
-      uses: jsdaniell/create-json@1.1.2
+      uses: jsdaniell/create-json@v1.2.3
       with:
         name: "client_secrets.json"
         json: ${{ inputs.google-drive-api-key }}
