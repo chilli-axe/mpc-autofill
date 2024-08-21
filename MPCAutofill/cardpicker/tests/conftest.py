@@ -3,7 +3,10 @@ from typing import Type
 
 import pytest
 from pytest_elasticsearch import factories
+from testcontainers.elasticsearch import ElasticSearchContainer
+from testcontainers.postgres import PostgresContainer
 
+from django.conf import settings as conf_settings
 from django.core.management import call_command
 
 from cardpicker.integrations.base import GameIntegration
@@ -15,6 +18,37 @@ from cardpicker.tests.factories import (
     SourceFactory,
     TagFactory,
 )
+
+POSTGRES_PORT = 47000
+ELASTICSEARCH_PORT = 9300  # this is the default expected by `elasticsearch_nooproc`
+
+
+@pytest.fixture(scope="session")
+def postgres_container():
+    postgres = PostgresContainer("postgres:16.0-alpine").with_bind_ports(5432, POSTGRES_PORT)
+    postgres.start()
+    yield postgres
+    postgres.stop()
+
+
+@pytest.fixture(scope="session")
+def elasticsearch_container():
+    elasticsearch = ElasticSearchContainer("elasticsearch:7.17.23", mem_limit="1G").with_bind_ports(
+        9200, ELASTICSEARCH_PORT
+    )
+    elasticsearch.start()
+    yield elasticsearch
+    elasticsearch.stop()
+
+
+@pytest.fixture(scope="session")
+def django_db_modify_db_settings(postgres_container):
+    # customise settings to point to testcontainers db
+    conf_settings.DATABASES["default"]["HOST"] = postgres_container.get_container_host_ip()
+    conf_settings.DATABASES["default"]["PORT"] = POSTGRES_PORT
+    conf_settings.DATABASES["default"]["NAME"] = postgres_container.dbname
+    conf_settings.DATABASES["default"]["USER"] = postgres_container.username
+    conf_settings.DATABASES["default"]["PASSWORD"] = postgres_container.password
 
 
 @pytest.fixture()
@@ -42,11 +76,11 @@ def dummy_integration(integration_setter) -> Type[GameIntegration]:
 
 
 @pytest.fixture(scope="session", autouse=True)
-def elasticsearch():
-    """
-    This fixture expects elasticsearch to be running on your machine.
-    """
-
+def elasticsearch(elasticsearch_container):
+    conf_settings.ELASTICSEARCH_DSL["default"][
+        "hosts"
+    ] = f"{elasticsearch_container.get_container_host_ip()}:{ELASTICSEARCH_PORT}"
+    conf_settings.ELASTICSEARCH_PORT = ELASTICSEARCH_PORT
     return factories.elasticsearch("elasticsearch_nooproc")
 
 
