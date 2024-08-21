@@ -13,7 +13,7 @@ jobs:
         include:
           - os: macos-latest
           - os: windows-latest
-          - os: ubuntu-latest
+    #          - os: ubuntu-latest  # https://github.com/browser-actions/setup-edge/issues/516
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/test-desktop-tool
