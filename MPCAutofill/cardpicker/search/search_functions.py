@@ -54,7 +54,7 @@ class SearchExceptions:
 
 def get_elasticsearch_connection() -> Elasticsearch:
     if (es := getattr(thread_local, "elasticsearch", None)) is None:
-        es = Elasticsearch([settings.ELASTICSEARCH_HOST], port=9200)
+        es = Elasticsearch([settings.ELASTICSEARCH_HOST], port=settings.ELASTICSEARCH_PORT)
     return es
 
 
