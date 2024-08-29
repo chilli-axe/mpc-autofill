@@ -47,6 +47,15 @@ jobs:
           script-name: autofill.py
           include-data-files: client_secrets.json=client_secrets.json
           macos-app-version: 1.0 # TODO: can we identify the build version from the commit tag?
+      - name: Run UPX
+        uses: crazy-max/ghaction-upx@v3
+        with:
+          version: latest
+          files: |
+            desktop-tool/build/*.exe
+            desktop-tool/build/*.bin
+            desktop-tool/build/*.app/**/*
+          args: -fq
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
