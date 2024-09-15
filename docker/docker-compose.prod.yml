@@ -40,6 +40,8 @@ services:
     build:
       context: ..
       dockerfile: ./docker/nginx/Dockerfile
+    depends_on:
+      - django
     ports:
       - "80:80" # TODO: support ports other than 80
 
