@@ -8,7 +8,9 @@ COPY common /common
 WORKDIR /frontend
 
 # Point frontend at the correct URL to communicate with the backend
-RUN echo "NEXT_PUBLIC_BACKEND_URL=http://localhost:80" > /frontend/.env.local
+RUN if ! grep -q "^NEXT_PUBLIC_BACKEND_URL=" /frontend/.env /frontend/.env.local 2>/dev/null; then \
+    echo "NEXT_PUBLIC_BACKEND_URL=http://localhost:80" > /frontend/.env.local; \
+fi
 
 # install npm
 RUN apk add --update npm
