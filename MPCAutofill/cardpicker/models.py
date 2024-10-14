@@ -80,11 +80,11 @@ class Source(models.Model):
         ordering = ["ordinal"]
 
     def to_dict(self, count: bool = False) -> dict[str, Any]:
+        # note: `identifier` should not be exposed here.
         source_dict = {
             "pk": self.pk,
             "key": self.key,
             "name": self.name,
-            "identifier": self.identifier,
             "source_type": SourceTypeChoices[self.source_type].label,
             "external_link": self.external_link,
             "description": self.description,
@@ -166,10 +166,10 @@ def summarise_contributions() -> tuple[list[dict[str, Any]], dict[str, int], int
         total_count,
         total_size,
     ) in results_1:
+        # note: `identifier` should not be exposed here.
         sources.append(
             {
                 "name": name,
-                "identifier": identifier,
                 "source_type": SourceTypeChoices[source_type].label,
                 "external_link": external_link,
                 "description": description,

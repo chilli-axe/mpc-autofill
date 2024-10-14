@@ -24,6 +24,7 @@ class SourceFactory(factory.django.DjangoModelFactory):
     source_type = models.SourceTypeChoices.GOOGLE_DRIVE
     description = factory.LazyAttribute(lambda o: f"Description for {o.key}")
     ordinal = factory.Sequence(lambda n: n)
+    external_link = factory.LazyAttribute(lambda o: f"https://example.com/{o.identifier}")
 
 
 class CardFactory(factory.django.DjangoModelFactory):

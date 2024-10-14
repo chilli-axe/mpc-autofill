@@ -11,6 +11,7 @@ from django.urls import reverse
 
 from cardpicker import views
 from cardpicker.tests.constants import Cards, DummyImportSite, Sources
+from cardpicker.tests.factories import SourceFactory
 
 
 def snapshot_response(response: Response, snapshot: SnapshotAssertion):
@@ -541,6 +542,15 @@ class TestGetSources:
         response = client.get(reverse(views.get_sources))
         snapshot_response(response, snapshot)
 
+    def test_get_source_with_private_identifier(self, client, db):
+        source = SourceFactory(identifier="secret", external_link=None)
+        response = client.get(reverse(views.get_sources))
+        response_json = response.json()
+        assert len(response_json["results"]) == 1
+        serialised_source = response_json["results"][str(source.pk)]
+        for value in serialised_source.values():
+            assert "secret" not in str(value)
+
     def test_post_request(self, client, django_settings, snapshot):
         response = client.post(reverse(views.get_sources))
         snapshot_response(response, snapshot)
@@ -977,6 +987,15 @@ class TestGetContributions:
     def test_with_no_sources(self, client, django_settings, snapshot, db):
         response = client.get(reverse(views.get_contributions))
         snapshot_response(response, snapshot)
+
+    def test_get_contribution_with_private_identifier(self, client, db):
+        SourceFactory(identifier="secret", external_link=None)
+        response = client.get(reverse(views.get_contributions))
+        response_json = response.json()
+        assert len(response_json["sources"]) == 1
+        serialised_source = response_json["sources"][0]
+        for value in serialised_source.values():
+            assert "secret" not in str(value)
 
     def test_post_request(self, client, django_settings, snapshot):
         response = client.post(reverse(views.get_contributions))
