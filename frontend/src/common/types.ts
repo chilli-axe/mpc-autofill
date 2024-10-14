@@ -85,7 +85,6 @@ export interface SourceDocument {
   pk: number;
   key: string;
   name: string;
-  identifier: string;
   source_type: SourceType;
   external_link: string | null;
   description: string;
