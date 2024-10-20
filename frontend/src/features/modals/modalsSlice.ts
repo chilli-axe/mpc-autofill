@@ -1,13 +1,19 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { PayloadAction } from "@reduxjs/toolkit";
 
 import { RootState } from "@/app/store";
-import { CardDocument, Modals, ModalsState, Slots } from "@/common/types";
+import {
+  CardDocument,
+  createAppSlice,
+  Modals,
+  ModalsState,
+  Slots,
+} from "@/common/types";
 
 //# region slice configuration
 
 const initialState: ModalsState = { card: null, slots: null, shownModal: null };
 
-export const modalsSlice = createSlice({
+export const modalsSlice = createAppSlice({
   name: "modals",
   initialState,
   reducers: {

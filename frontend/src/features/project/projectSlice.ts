@@ -2,13 +2,14 @@
  * State management for the user's configuration of the project - selected cards and cardbacks.
  */
 
-import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSelector, PayloadAction } from "@reduxjs/toolkit";
 
 import { RootState } from "@/app/store";
 import { Card, Cardback } from "@/common/constants";
 import { Back, Front, ProjectMaxSize } from "@/common/constants";
 import { processPrefix } from "@/common/processing";
 import {
+  createAppSlice,
   Faces,
   Project,
   ProjectMember,
@@ -25,7 +26,7 @@ const initialState: Project = {
   mostRecentlySelectedSlot: null,
 };
 
-export const projectSlice = createSlice({
+export const projectSlice = createAppSlice({
   name: "project",
   initialState,
   reducers: {

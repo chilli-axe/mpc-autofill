@@ -1,7 +1,11 @@
-import { createAsyncThunk } from "@reduxjs/toolkit";
-import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
+import {
+  asyncThunkCreator,
+  buildCreateSlice,
+  createAsyncThunk,
+} from "@reduxjs/toolkit";
+import { useDispatch, useSelector, useStore } from "react-redux";
 
-import type { AppDispatch, RootState } from "@/app/store";
+import type { AppDispatch, AppStore, RootState } from "@/app/store";
 import { CSVHeaders } from "@/common/constants";
 import { SearchQuery } from "@/common/schema_types";
 export type {
@@ -13,15 +17,17 @@ export type {
   SourceSettings,
 } from "@/common/schema_types";
 
-type DispatchFunc = () => AppDispatch;
-export const useAppDispatch: DispatchFunc = useDispatch;
-export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
+export const useAppDispatch = useDispatch.withTypes<AppDispatch>();
+export const useAppSelector = useSelector.withTypes<RootState>();
+export const useAppStore = useStore.withTypes<AppStore>();
+export const createAppSlice = buildCreateSlice({
+  creators: { asyncThunk: asyncThunkCreator },
+});
 
 export const createAppAsyncThunk = createAsyncThunk.withTypes<{
   state: RootState;
   dispatch: AppDispatch;
   rejectValue: string;
-  extra: { s: string; n: number };
 }>();
 
 export type ThunkStatus = "idle" | "loading" | "succeeded" | "failed";

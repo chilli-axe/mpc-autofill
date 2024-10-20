@@ -6,7 +6,6 @@
 import { saveAs } from "file-saver";
 import React from "react";
 import Dropdown from "react-bootstrap/Dropdown";
-import { useStore } from "react-redux";
 
 import { RootState } from "@/app/store";
 import { Back, Card, FaceSeparator, Front } from "@/common/constants";
@@ -16,6 +15,7 @@ import {
   ProjectMember,
   SlotProjectMembers,
   useAppSelector,
+  useAppStore,
 } from "@/common/types";
 import { RightPaddedIcon } from "@/components/icon";
 import {
@@ -120,7 +120,7 @@ const selectGeneratedDecklist = (state: RootState): string => {
 export function ExportDecklist() {
   //# region queries and hooks
 
-  const store = useStore();
+  const store = useAppStore();
   const isProjectEmpty = useAppSelector(selectIsProjectEmpty);
 
   //# endregion
@@ -128,9 +128,7 @@ export function ExportDecklist() {
   //# region callbacks
 
   const downloadFile = () => {
-    const generatedDecklist = selectGeneratedDecklist(
-      store.getState() as RootState
-    );
+    const generatedDecklist = selectGeneratedDecklist(store.getState());
     saveAs(
       new Blob([generatedDecklist], { type: "text/plain;charset=utf-8" }),
       "decklist.txt" // TODO: use project name here when we eventually track that

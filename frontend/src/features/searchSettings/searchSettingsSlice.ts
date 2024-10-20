@@ -1,8 +1,7 @@
-import { createSlice } from "@reduxjs/toolkit";
-
 import { RootState } from "@/app/store";
 import { MaximumDPI, MaximumSize, MinimumDPI } from "@/common/constants";
 import {
+  createAppSlice,
   SearchSettings,
   SourceDocument,
   SourceDocuments,
@@ -33,7 +32,7 @@ export function getDefaultSearchSettings(
 
 const initialState = getDefaultSearchSettings({});
 
-export const searchSettingsSlice = createSlice({
+export const searchSettingsSlice = createAppSlice({
   name: "searchSettings",
   initialState,
   reducers: {

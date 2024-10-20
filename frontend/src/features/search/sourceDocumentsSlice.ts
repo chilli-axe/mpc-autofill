@@ -2,11 +2,15 @@
  * State management for sources retrieved from the backend.
  */
 
-import { createSelector, createSlice } from "@reduxjs/toolkit";
+import { createSelector } from "@reduxjs/toolkit";
 
 import { APIGetSources } from "@/app/api";
 import { AppDispatch, RootState } from "@/app/store";
-import { createAppAsyncThunk, SourceDocumentsState } from "@/common/types";
+import {
+  createAppAsyncThunk,
+  createAppSlice,
+  SourceDocumentsState,
+} from "@/common/types";
 import { setNotification } from "@/features/toasts/toastsSlice";
 
 //# region async thunk
@@ -45,7 +49,7 @@ const initialState = {
   sourceDocuments: undefined,
 } as SourceDocumentsState;
 
-export const sourceDocumentsSlice = createSlice({
+export const sourceDocumentsSlice = createAppSlice({
   name: "sourceDocuments",
   initialState,
   reducers: {
@@ -53,7 +57,7 @@ export const sourceDocumentsSlice = createSlice({
       state.sourceDocuments = { ...state.sourceDocuments, ...action.payload };
     },
   },
-  extraReducers(builder) {
+  extraReducers: (builder) => {
     builder
       .addCase(fetchSourceDocuments.pending, (state, action) => {
         state.status = "loading";

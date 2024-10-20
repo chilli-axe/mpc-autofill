@@ -2,13 +2,12 @@
  * State management for search results - what images are returned for what search queries.
  */
 
-import { createSlice } from "@reduxjs/toolkit";
-
 import { APISearch } from "@/app/api";
 import { AppDispatch, RootState } from "@/app/store";
 import { Back, SearchResultsEndpointPageSize } from "@/common/constants";
 import {
   createAppAsyncThunk,
+  createAppSlice,
   Faces,
   SearchQuery,
   SearchResults,
@@ -25,7 +24,7 @@ const typePrefix = "searchResults/fetchCards";
 
 export const fetchSearchResults = createAppAsyncThunk(
   typePrefix,
-  async (arg, { getState, rejectWithValue }) => {
+  async (arg, { getState }) => {
     const state = getState();
 
     const queriesToSearch = selectQueriesWithoutSearchResults(state);
@@ -80,7 +79,7 @@ const initialState: SearchResultsState = {
   error: null,
 };
 
-export const searchResultsSlice = createSlice({
+export const searchResultsSlice = createAppSlice({
   name: "searchResults",
   initialState,
   reducers: {
@@ -91,7 +90,7 @@ export const searchResultsSlice = createSlice({
       state.searchResults = {};
     },
   },
-  extraReducers(builder) {
+  extraReducers: (builder) => {
     builder
       .addCase(fetchSearchResults.pending, (state, action) => {
         state.status = "loading";

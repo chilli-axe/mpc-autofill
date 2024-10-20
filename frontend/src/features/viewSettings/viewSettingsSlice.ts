@@ -1,8 +1,8 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { PayloadAction } from "@reduxjs/toolkit";
 
 import { RootState } from "@/app/store";
 import { Back, Front } from "@/common/constants";
-import { Faces, ViewSettingsState } from "@/common/types";
+import { createAppSlice, Faces, ViewSettingsState } from "@/common/types";
 
 //# region slice configuration
 
@@ -13,7 +13,7 @@ const initialState: ViewSettingsState = {
   jumpToVersionVisible: false,
 };
 
-export const viewSettingsSlice = createSlice({
+export const viewSettingsSlice = createAppSlice({
   name: "viewSettings",
   initialState,
   reducers: {

@@ -2,12 +2,10 @@
  * State management for the backend that the app should communicate with as configured by the user.
  */
 
-import { createSlice } from "@reduxjs/toolkit";
-
 import { useGetBackendInfoQuery } from "@/app/api";
 import { RootState } from "@/app/store";
 import { ProjectName } from "@/common/constants";
-import { BackendState, useAppSelector } from "@/common/types";
+import { BackendState, createAppSlice, useAppSelector } from "@/common/types";
 
 //# region slice configuration
 
@@ -15,7 +13,7 @@ const initialState: BackendState = {
   url: null,
 };
 
-export const backendSlice = createSlice({
+export const backendSlice = createAppSlice({
   name: "backend",
   initialState,
   reducers: {
