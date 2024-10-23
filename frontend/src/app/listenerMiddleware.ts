@@ -2,7 +2,6 @@
  * Retrieved from https://redux-toolkit.js.org/api/createListenerMiddleware
  */
 
-import type { TypedAddListener, TypedStartListening } from "@reduxjs/toolkit";
 import {
   addListener,
   createListenerMiddleware,
@@ -25,7 +24,6 @@ import {
 } from "@/features/invalidIdentifiers/invalidIdentifiersSlice";
 import {
   addMembers,
-  clearQueries,
   selectProjectCardback,
   setQueries,
   setSelectedCardback,
@@ -55,12 +53,12 @@ import type { AppDispatch, RootState } from "./store";
 
 export const listenerMiddleware = createListenerMiddleware();
 
-export type AppStartListening = TypedStartListening<RootState, AppDispatch>;
+const startAppListening = listenerMiddleware.startListening.withTypes<
+  RootState,
+  AppDispatch
+>();
 
-const startAppListening =
-  listenerMiddleware.startListening as AppStartListening;
-
-const addAppListener = addListener as TypedAddListener<RootState, AppDispatch>;
+const addAppListener = addListener.withTypes<RootState, AppDispatch>();
 
 //# endregion
 
@@ -128,7 +126,7 @@ startAppListening({
     const isBackendConfigured = selectBackendConfigured(state);
     const searchSettingsSourcesValid = selectSearchSettingsSourcesValid(state);
     if (isBackendConfigured && searchSettingsSourcesValid) {
-      await dispatch(clearSearchResults());
+      dispatch(clearSearchResults());
       await fetchCardDocumentsAndReportError(dispatch);
     }
   },
@@ -182,18 +180,22 @@ startAppListening({
      */
 
     // wait for all search results to load (removing this will cause a race condition)
-    await condition((action, currentState) => {
-      const { slots }: { slots: Array<[Faces, number]> } = action.payload;
-      return slots
-        .map(([face, slot]) => {
-          const searchQuery = currentState.project.members[slot][face]?.query;
-          return searchQuery?.query != null
-            ? currentState.searchResults.searchResults[searchQuery.query][
-                searchQuery.card_type
-              ] != null
-            : true;
-        })
-        .every((value) => value);
+    await condition((action, currentState): boolean => {
+      if (setQueries.match(action)) {
+        const { slots }: { slots: Array<[Faces, number]> } = action.payload;
+        return slots
+          .map(([face, slot]) => {
+            const searchQuery = currentState.project.members[slot][face]?.query;
+            return searchQuery?.query != null
+              ? currentState.searchResults.searchResults[searchQuery.query][
+                  searchQuery.card_type
+                ] != null
+              : true;
+          })
+          .every((value) => value);
+      } else {
+        return true;
+      }
     });
 
     const state = getState();

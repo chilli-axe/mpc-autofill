@@ -7,11 +7,11 @@
 import { saveAs } from "file-saver";
 import React from "react";
 import Dropdown from "react-bootstrap/Dropdown";
-import { useStore } from "react-redux";
 import formatXML from "xml-formatter";
 
 import { RootState } from "@/app/store";
 import { Back, Front, ReversedCardTypePrefixes } from "@/common/constants";
+import { useAppStore } from "@/common/types";
 import {
   CardDocuments,
   FinishSettingsState,
@@ -208,10 +208,10 @@ export function generateXML(
 }
 
 export function useExportXML() {
-  const store = useStore();
+  const store = useAppStore();
 
   return () => {
-    const generatedXML = selectGeneratedXML(store.getState() as RootState);
+    const generatedXML = selectGeneratedXML(store.getState());
     saveAs(
       new Blob([generatedXML], { type: "text/xml;charset=utf-8" }),
       "cards.xml"

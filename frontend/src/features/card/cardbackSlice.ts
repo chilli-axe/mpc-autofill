@@ -2,11 +2,13 @@
  * State management for cardbacks retrieved from the backend.
  */
 
-import { createSlice } from "@reduxjs/toolkit";
-
 import { APIGetCardbacks } from "@/app/api";
 import { AppDispatch, RootState } from "@/app/store";
-import { CardbacksState, createAppAsyncThunk } from "@/common/types";
+import {
+  CardbacksState,
+  createAppAsyncThunk,
+  createAppSlice,
+} from "@/common/types";
 import { selectBackendURL } from "@/features/backend/backendSlice";
 import { selectSearchSettings } from "@/features/searchSettings/searchSettingsSlice";
 import { setNotification } from "@/features/toasts/toastsSlice";
@@ -51,7 +53,7 @@ const initialState: CardbacksState = {
   error: null,
 };
 
-export const cardbackSlice = createSlice({
+export const cardbackSlice = createAppSlice({
   name: "cardbacks",
   initialState,
   reducers: {
@@ -59,7 +61,7 @@ export const cardbackSlice = createSlice({
       state.cardbacks = [...action.payload];
     },
   },
-  extraReducers(builder) {
+  extraReducers: (builder) => {
     builder
       .addCase(fetchCardbacks.pending, (state, action) => {
         state.status = "loading";

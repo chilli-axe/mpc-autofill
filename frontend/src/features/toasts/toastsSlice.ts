@@ -1,14 +1,14 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { PayloadAction } from "@reduxjs/toolkit";
 
 import { RootState } from "@/app/store";
-import { Notification } from "@/common/types";
+import { createAppSlice, Notification } from "@/common/types";
 import { ToastsState } from "@/common/types";
 
 //# region slice configuration
 
 const initialState: ToastsState = { notifications: {} };
 
-export const toastsSlice = createSlice({
+export const toastsSlice = createAppSlice({
   name: "toasts",
   initialState,
   reducers: {

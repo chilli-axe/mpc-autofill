@@ -3,7 +3,6 @@
  * Retrieved from https://redux.js.org/usage/writing-tests
  */
 
-import type { PreloadedState } from "@reduxjs/toolkit";
 import { Store } from "@reduxjs/toolkit";
 import { within } from "@testing-library/dom";
 import type { RenderOptions } from "@testing-library/react";
@@ -24,7 +23,7 @@ import { LayoutWithoutReduxProvider } from "@/features/ui/layout";
 // This type interface extends the default options for render from RTL, as well
 // as allows the user to specify other things such as initialState, store.
 interface ExtendedRenderOptions extends Omit<RenderOptions, "queries"> {
-  preloadedState?: PreloadedState<RootState>;
+  preloadedState?: Partial<RootState>;
   store?: Store;
 }
 

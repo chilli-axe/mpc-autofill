@@ -2,7 +2,7 @@
  * State management for cards retrieved from the backend.
  */
 
-import { createSelector, createSlice } from "@reduxjs/toolkit";
+import { createSelector } from "@reduxjs/toolkit";
 
 import { APIGetCards } from "@/app/api";
 import { AppDispatch, RootState } from "@/app/store";
@@ -11,6 +11,7 @@ import {
   CardDocument,
   CardDocumentsState,
   createAppAsyncThunk,
+  createAppSlice,
   useAppSelector,
 } from "@/common/types";
 import { CardDocuments } from "@/common/types";
@@ -37,7 +38,7 @@ const fetchCardDocuments = createAppAsyncThunk(
     await fetchSearchResultsAndReportError(dispatch);
     await fetchCardbacksAndReportError(dispatch);
 
-    const state: RootState = getState();
+    const state = getState();
 
     const allIdentifiers = selectUniqueCardIdentifiers(state);
     const identifiersWithKnownData = new Set(
@@ -103,7 +104,7 @@ const initialState: CardDocumentsState = {
   error: null,
 };
 
-export const cardDocumentsSlice = createSlice({
+export const cardDocumentsSlice = createAppSlice({
   name: "cardDocuments",
   initialState,
   reducers: {
@@ -111,7 +112,7 @@ export const cardDocumentsSlice = createSlice({
       state.cardDocuments = { ...state.cardDocuments, ...action.payload };
     },
   },
-  extraReducers(builder) {
+  extraReducers: (builder) => {
     builder
       .addCase(fetchCardDocuments.pending, (state, action) => {
         state.status = "loading";

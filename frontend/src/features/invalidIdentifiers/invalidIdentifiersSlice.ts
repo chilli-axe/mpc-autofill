@@ -1,13 +1,18 @@
-import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSelector, PayloadAction } from "@reduxjs/toolkit";
 
 import { RootState } from "@/app/store";
-import { Faces, InvalidIdentifiersState, SearchQuery } from "@/common/types";
+import {
+  createAppSlice,
+  Faces,
+  InvalidIdentifiersState,
+  SearchQuery,
+} from "@/common/types";
 
 //# region slice configuration
 
 const initialState: InvalidIdentifiersState = { invalidIdentifiers: [] };
 
-export const invalidIdentifiersSlice = createSlice({
+export const invalidIdentifiersSlice = createAppSlice({
   name: "invalidIdentifiers",
   initialState,
   reducers: {

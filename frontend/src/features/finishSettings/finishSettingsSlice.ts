@@ -1,8 +1,8 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { PayloadAction } from "@reduxjs/toolkit";
 
 import { RootState } from "@/app/store";
 import { CardstockFoilCompatibility } from "@/common/constants";
-import { Cardstock, FinishSettingsState } from "@/common/types";
+import { Cardstock, createAppSlice, FinishSettingsState } from "@/common/types";
 
 //# region slice configuration
 
@@ -11,7 +11,7 @@ const initialState: FinishSettingsState = {
   foil: false,
 };
 
-export const finishSettingsSlice = createSlice({
+export const finishSettingsSlice = createAppSlice({
   name: "finishSettings",
   initialState,
   reducers: {

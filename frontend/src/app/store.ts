@@ -1,7 +1,10 @@
-import type { PreloadedState } from "@reduxjs/toolkit";
-import type { Middleware, MiddlewareAPI } from "@reduxjs/toolkit";
-import { combineReducers, configureStore } from "@reduxjs/toolkit";
-import { isRejectedWithValue } from "@reduxjs/toolkit";
+import { isAction, MiddlewareAPI } from "@reduxjs/toolkit";
+import {
+  combineReducers,
+  configureStore,
+  isRejectedWithValue,
+  Tuple,
+} from "@reduxjs/toolkit";
 
 import { api } from "@/app/api";
 import { listenerMiddleware } from "@/app/listenerMiddleware";
@@ -38,25 +41,36 @@ const rootReducer = combineReducers({
 
 //# region middleware
 
-const rtkQueryErrorLogger: Middleware =
-  (api: MiddlewareAPI) => (next) => (action) => {
+const rtkQueryErrorLogger =
+  (api: MiddlewareAPI) =>
+  (next: (action: unknown) => unknown) =>
+  (action: unknown) => {
     /**
      * Whenever a RTK Query API request fails, display the response's error message to the user as a toast.
      */
+
+    if (!isAction(action)) {
+      return;
+    }
 
     const backendConfigured = selectBackendConfigured(api.getState());
     if (
       backendConfigured &&
       isRejectedWithValue(action) &&
-      action.payload?.data != null
+      action.payload != null
     ) {
       // dispatch the error to the store for displaying in a toast to the user
+      const data = (
+        action.payload as {
+          data?: { name?: string | null; message?: string | null };
+        }
+      )?.data;
       api.dispatch(
         setNotification([
           action.type,
           {
-            name: action.payload.data.name,
-            message: action.payload.data.message,
+            name: data?.name ?? null,
+            message: data?.message ?? null,
             level: "error",
           },
         ])
@@ -68,20 +82,21 @@ const rtkQueryErrorLogger: Middleware =
 
 //# endregion
 
-export const setupStore = (preloadedState?: PreloadedState<RootState>) => {
+export const setupStore = (preloadedState?: Partial<RootState>) => {
   return configureStore({
     reducer: rootReducer,
     preloadedState,
     middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware()
         .prepend(listenerMiddleware.middleware)
-        .concat([api.middleware, rtkQueryErrorLogger]),
+        .concat(new Tuple(api.middleware, rtkQueryErrorLogger)),
   });
 };
 
 const store = setupStore();
 
+export type AppStore = ReturnType<typeof setupStore>;
 export type RootState = ReturnType<typeof rootReducer>;
-export type AppDispatch = typeof store.dispatch;
+export type AppDispatch = AppStore["dispatch"];
 
 export default store;
