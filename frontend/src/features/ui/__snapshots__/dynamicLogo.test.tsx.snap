@@ -54,8 +54,8 @@ exports[`the html structure of the dynamic logo, backend configured 1`] = `
   -ms-transform: translate3d(-50%,-16%,0);
   transform: translate3d(-50%,-16%,0);
   opacity: 0;
-  -webkit-animation: byROxX 0.75s ease-out 0.01s forwards;
-  animation: byROxX 0.75s ease-out 0.01s forwards;
+  -webkit-animation: eOZAMF 0.75s ease-out 0.01s forwards;
+  animation: eOZAMF 0.75s ease-out 0.01s forwards;
 }
 
 .c3 {
@@ -82,32 +82,32 @@ exports[`the html structure of the dynamic logo, backend configured 1`] = `
 
 .c4 {
   z-index: 0;
-  -webkit-animation: hFPpNl 1s ease-in-out 0.01s forwards;
-  animation: hFPpNl 1s ease-in-out 0.01s forwards;
+  -webkit-animation: bGJjOD 1s ease-in-out 0.01s forwards;
+  animation: bGJjOD 1s ease-in-out 0.01s forwards;
 }
 
 .c7 {
   z-index: 1;
-  -webkit-animation: blxrvv 1s ease-in-out 0.01s forwards;
-  animation: blxrvv 1s ease-in-out 0.01s forwards;
+  -webkit-animation: oyYHp 1s ease-in-out 0.01s forwards;
+  animation: oyYHp 1s ease-in-out 0.01s forwards;
 }
 
 .c8 {
   z-index: 2;
-  -webkit-animation: dBjIYf 1s ease-in-out 0.01s forwards;
-  animation: dBjIYf 1s ease-in-out 0.01s forwards;
+  -webkit-animation: hNfKvJ 1s ease-in-out 0.01s forwards;
+  animation: hNfKvJ 1s ease-in-out 0.01s forwards;
 }
 
 .c9 {
   z-index: 3;
-  -webkit-animation: eJIVD 1s ease-in-out 0.01s forwards;
-  animation: eJIVD 1s ease-in-out 0.01s forwards;
+  -webkit-animation: fZMtLp 1s ease-in-out 0.01s forwards;
+  animation: fZMtLp 1s ease-in-out 0.01s forwards;
 }
 
 .c10 {
   z-index: 4;
-  -webkit-animation: iZNvIp 1s ease-in-out 0.01s forwards;
-  animation: iZNvIp 1s ease-in-out 0.01s forwards;
+  -webkit-animation: wzgiT 1s ease-in-out 0.01s forwards;
+  animation: wzgiT 1s ease-in-out 0.01s forwards;
 }
 
 <div
@@ -287,8 +287,8 @@ exports[`the html structure of the dynamic logo, no backend configured 1`] = `
   -ms-transform: translate3d(-50%,-16%,0);
   transform: translate3d(-50%,-16%,0);
   opacity: 0;
-  -webkit-animation: byROxX 0.75s ease-out 0.01s forwards;
-  animation: byROxX 0.75s ease-out 0.01s forwards;
+  -webkit-animation: eOZAMF 0.75s ease-out 0.01s forwards;
+  animation: eOZAMF 0.75s ease-out 0.01s forwards;
 }
 
 .c3 {
@@ -315,32 +315,32 @@ exports[`the html structure of the dynamic logo, no backend configured 1`] = `
 
 .c4 {
   z-index: 0;
-  -webkit-animation: hFPpNl 1s ease-in-out 0.01s forwards;
-  animation: hFPpNl 1s ease-in-out 0.01s forwards;
+  -webkit-animation: bGJjOD 1s ease-in-out 0.01s forwards;
+  animation: bGJjOD 1s ease-in-out 0.01s forwards;
 }
 
 .c8 {
   z-index: 1;
-  -webkit-animation: blxrvv 1s ease-in-out 0.01s forwards;
-  animation: blxrvv 1s ease-in-out 0.01s forwards;
+  -webkit-animation: oyYHp 1s ease-in-out 0.01s forwards;
+  animation: oyYHp 1s ease-in-out 0.01s forwards;
 }
 
 .c9 {
   z-index: 2;
-  -webkit-animation: dBjIYf 1s ease-in-out 0.01s forwards;
-  animation: dBjIYf 1s ease-in-out 0.01s forwards;
+  -webkit-animation: hNfKvJ 1s ease-in-out 0.01s forwards;
+  animation: hNfKvJ 1s ease-in-out 0.01s forwards;
 }
 
 .c10 {
   z-index: 3;
-  -webkit-animation: eJIVD 1s ease-in-out 0.01s forwards;
-  animation: eJIVD 1s ease-in-out 0.01s forwards;
+  -webkit-animation: fZMtLp 1s ease-in-out 0.01s forwards;
+  animation: fZMtLp 1s ease-in-out 0.01s forwards;
 }
 
 .c11 {
   z-index: 4;
-  -webkit-animation: iZNvIp 1s ease-in-out 0.01s forwards;
-  animation: iZNvIp 1s ease-in-out 0.01s forwards;
+  -webkit-animation: wzgiT 1s ease-in-out 0.01s forwards;
+  animation: wzgiT 1s ease-in-out 0.01s forwards;
 }
 
 <div

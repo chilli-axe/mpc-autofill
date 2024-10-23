@@ -50,11 +50,11 @@ exports[`the html structure of search settings 1`] = `
 }
 
 .c0 .toggle.collapsed::after {
-  content: "";
+  content: "\\uF4FA";
 }
 
 .c0 .toggle.expanded::after {
-  content: "";
+  content: "\\uF2E6";
 }
 
 .c0 .root {
