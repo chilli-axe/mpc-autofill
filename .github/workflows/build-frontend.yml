@@ -15,7 +15,7 @@ jobs:
       - name: Install npm
         uses: actions/setup-node@v3
         with:
-          node-version: 18.15
+          node-version: 18.17
       - name: Install packages and run tests
         working-directory: frontend
         run: |
