@@ -7,6 +7,7 @@ import { Store } from "@reduxjs/toolkit";
 import { within } from "@testing-library/dom";
 import type { RenderOptions } from "@testing-library/react";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import FileSaver from "file-saver";
 import { MemoryRouterProvider } from "next-router-mock/MemoryRouterProvider";
 import React, { PropsWithChildren } from "react";
@@ -148,32 +149,6 @@ export async function expectCardbackSlotState(
 
 //# endregion
 
-//# region react-dropzone
-
-function createDtWithFiles(files: File[] = []) {
-  /**
-   * Copy/pasted from react-dropzone test source code.
-   *
-   * createDtWithFiles creates a mock data transfer object that can be used for drop events
-   * @param {File[]} files
-   */
-
-  return {
-    dataTransfer: {
-      files,
-      items: files.map((file) => ({
-        kind: "file",
-        size: file.size,
-        type: file.type,
-        getAsFile: () => file,
-      })),
-      types: ["Files"],
-    },
-  };
-}
-
-//# endregion
-
 //# region UI interactions
 
 export async function configureBackend(url: string) {
@@ -250,15 +225,14 @@ export async function openImportCSVModal() {
   await waitFor(() => expect(screen.getByText("Add Cards — CSV")));
   const dropzone = screen.getByLabelText("import-csv");
   await waitFor(() => expect(dropzone).not.toBeDisabled()); // here, we wait for DFC pairs to be loaded
-  return dropzone;
+  return dropzone.querySelector("input")!;
 }
 
 export async function importCSV(fileContents: string) {
+  const user = userEvent.setup();
   const dropzone = await openImportCSVModal();
-
   const file = new File([fileContents], "test.csv", { type: "text/csv" });
-
-  fireEvent.drop(dropzone, createDtWithFiles([file]));
+  await user.upload(dropzone, [file]);
 }
 
 export async function openImportXMLModal() {
@@ -269,13 +243,14 @@ export async function openImportXMLModal() {
   await waitFor(() => expect(screen.getByText("Add Cards — XML")));
   const dropzone = screen.getByLabelText("import-xml");
   await waitFor(() => expect(dropzone).not.toBeDisabled()); // here, we wait for DFC pairs to be loaded
-  return dropzone;
+  return dropzone.querySelector("input")!;
 }
 
 export async function importXML(
   fileContents: string,
   useXMLCardback: boolean = false
 ) {
+  const user = userEvent.setup();
   const dropzone = await openImportXMLModal();
 
   const file = new File([fileContents], "test.xml", {
@@ -285,7 +260,7 @@ export async function importXML(
     await waitFor(() => screen.getByText("Retain Selected Cardback").click());
   }
 
-  fireEvent.drop(dropzone, createDtWithFiles([file]));
+  await user.upload(dropzone, [file]);
 }
 
 export async function openImportURLModal() {
