@@ -165,7 +165,6 @@ export interface BackendInfo {
   email: string | null;
   reddit: string | null;
   discord: string | null;
-  patreon: PatreonInfo;
 }
 
 export interface BackendState {

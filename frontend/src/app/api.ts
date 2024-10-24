@@ -20,6 +20,7 @@ import {
   Language,
   NewCardsFirstPages,
   NewCardsPage,
+  PatreonInfo,
   SearchQuery,
   SearchResults,
   SearchSettings,
@@ -117,6 +118,12 @@ export const api = createApi({
       transformResponse: (response: { info: BackendInfo }, meta, arg) =>
         response.info,
     }),
+    getPatreon: builder.query<PatreonInfo, void>({
+      query: () => ({ url: `2/patreon/`, method: "GET" }),
+      providesTags: [QueryTags.BackendSpecific],
+      transformResponse: (response: { patreon: PatreonInfo }, meta, arg) =>
+        response.patreon,
+    }),
     getGoogleDriveImage: builder.query<string, string>({
       query: (identifier: string) => ({
         url: GoogleDriveImageAPIURL,
@@ -177,6 +184,7 @@ const {
   useGetSampleCardsQuery: useRawGetSampleCardsQuery,
   useGetContributionsQuery: useRawGetContributionsQuery,
   useGetBackendInfoQuery: useRawGetBackendInfoQuery,
+  useGetPatreonQuery: useRawGetPatreonQuery,
   useGetNewCardsFirstPageQuery: useRawGetNewCardsFirstPageQuery,
   useGetNewCardsPageQuery: useRawGetNewCardsPageQuery,
 } = api;
@@ -226,6 +234,13 @@ export function useGetContributionsQuery() {
 export function useGetBackendInfoQuery() {
   const backendConfigured = useBackendConfigured();
   return useRawGetBackendInfoQuery(undefined, {
+    skip: !backendConfigured,
+  });
+}
+
+export function useGetPatreonQuery() {
+  const backendConfigured = useBackendConfigured();
+  return useRawGetPatreonQuery(undefined, {
     skip: !backendConfigured,
   });
 }

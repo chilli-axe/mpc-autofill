@@ -382,9 +382,6 @@ def get_info(request: HttpRequest) -> HttpResponse:
     if request.method != "GET":
         raise BadRequestException("Expected GET request.")
 
-    campaign, tiers = get_patreon_campaign_details()
-    members = get_patrons(campaign["id"], tiers) if campaign is not None and tiers is not None else None
-
     return JsonResponse(
         {
             "info": {
@@ -393,13 +390,28 @@ def get_info(request: HttpRequest) -> HttpResponse:
                 "email": settings.TARGET_EMAIL,
                 "reddit": settings.REDDIT,
                 "discord": settings.DISCORD,
-                "patreon": {
-                    "url": settings.PATREON_URL,
-                    "members": members,
-                    "tiers": tiers,
-                    "campaign": campaign,
-                },
             }
+        }
+    )
+
+
+@csrf_exempt
+@NewErrorWrappers.to_json
+def get_patreon(request: HttpRequest) -> HttpResponse:
+    if request.method != "GET":
+        raise BadRequestException("Expected GET request.")
+
+    campaign, tiers = get_patreon_campaign_details()
+    members = get_patrons(campaign["id"], tiers) if campaign is not None and tiers is not None else None
+
+    return JsonResponse(
+        {
+            "patreon": {
+                "url": settings.PATREON_URL,
+                "members": members,
+                "tiers": tiers,
+                "campaign": campaign,
+            },
         }
     )
 
