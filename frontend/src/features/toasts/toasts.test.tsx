@@ -39,17 +39,18 @@ import About from "@/pages/about";
 describe("google analytics toast", () => {
   beforeEach(() => {
     Cookies.remove(GoogleAnalyticsConsentKey);
-    // @ts-ignore
-    delete window.gtag;
   });
   afterEach(() => {
-    Cookies.remove(GoogleAnalyticsConsentKey);
-    // @ts-ignore
-    delete window.gtag;
+    const googleAnalyticsScript = document.querySelector(
+      "#nextjs-google-analytics"
+    );
+    if (googleAnalyticsScript != null) {
+      googleAnalyticsScript.remove();
+    }
   });
 
   test("opting into google analytics", async () => {
-    renderWithProviders(<About />);
+    const { container, rerender } = renderWithProviders(<About />);
     await waitFor(() => {
       expect(screen.getByText("Cookie Usage")).not.toBeNull();
     });
@@ -58,12 +59,14 @@ describe("google analytics toast", () => {
     await waitForElementToBeRemoved(() => screen.getByText("Cookie Usage"));
 
     // upon reloading the page, google analytics should now be turned on
-    renderWithProviders(<About />);
-    expect(eval("gtag")).toBeDefined();
+    rerender(<About />);
+    expect(
+      container.parentElement!.querySelector("#nextjs-google-analytics")
+    ).toBeInTheDocument();
   });
 
   test("opting out of google analytics", async () => {
-    renderWithProviders(<About />);
+    const { container, rerender } = renderWithProviders(<About />);
     await waitFor(() => {
       expect(screen.getByText("Cookie Usage")).not.toBeNull();
     });
@@ -72,8 +75,10 @@ describe("google analytics toast", () => {
     await waitForElementToBeRemoved(() => screen.getByText("Cookie Usage"));
 
     // upon reloading the page, google analytics should now be turned off
-    renderWithProviders(<About />);
-    expect(() => eval("gtag")).toThrow();
+    rerender(<About />);
+    expect(
+      container.parentElement!.querySelector("#nextjs-google-analytics")
+    ).not.toBeInTheDocument();
   });
 
   test("google analytics consent popup does not appear once consent is specified", async () => {
