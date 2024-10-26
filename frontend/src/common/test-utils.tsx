@@ -6,7 +6,7 @@
 import { Store } from "@reduxjs/toolkit";
 import { within } from "@testing-library/dom";
 import type { RenderOptions } from "@testing-library/react";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import FileSaver from "file-saver";
 import { MemoryRouterProvider } from "next-router-mock/MemoryRouterProvider";
@@ -167,7 +167,11 @@ export async function configureBackend(url: string) {
   const textField = await waitFor(() =>
     within(backendOffcanvas).getByLabelText("backend-url")
   );
-  fireEvent.change(textField, { target: { value: url } });
+  const user = userEvent.setup();
+  await user.clear(textField);
+  if (url !== "") {
+    await user.type(textField, url);
+  }
   within(backendOffcanvas).getByLabelText("submit-backend-url").click();
   await waitFor(() =>
     expect(
@@ -213,7 +217,11 @@ export async function openImportTextModal() {
 
 export async function importText(text: string) {
   const textArea = await openImportTextModal();
-  fireEvent.change(textArea, { target: { value: text } });
+  const user = userEvent.setup();
+  await user.clear(textArea);
+  if (text !== "") {
+    await user.type(textArea, text);
+  }
   screen.getByLabelText("import-text-submit").click();
 }
 
@@ -316,11 +324,19 @@ export async function selectSlot(
   clickType: "double" | "shift" | null = null
 ) {
   const cardElement = screen.getByTestId(`${face}-slot${slot - 1}`);
-  fireEvent.click(
-    within(cardElement).getByLabelText(`select-${face}${slot - 1}`)!
-      .children[0],
-    { detail: clickType === "double" ? 2 : 1, shiftKey: clickType === "shift" }
-  );
+  const user = userEvent.setup();
+  const element = within(cardElement).getByLabelText(
+    `select-${face}${slot - 1}`
+  )!.children[0];
+  if (clickType === "double") {
+    await user.dblClick(element);
+  } else if (clickType === "shift") {
+    await user.keyboard("{Shift>}");
+    await user.click(element);
+    await user.keyboard("{/Shift}");
+  } else {
+    await user.click(element);
+  }
   await waitFor(() =>
     expect(
       within(cardElement).getByLabelText(`select-${face}${slot - 1}`)!
@@ -331,7 +347,8 @@ export async function selectSlot(
 
 export async function deselectSlot(slot: number, face: Faces) {
   const cardElement = screen.getByTestId(`${face}-slot${slot - 1}`);
-  fireEvent.click(
+  const user = userEvent.setup();
+  await user.click(
     within(cardElement).getByLabelText(`select-${face}${slot - 1}`)!.children[0]
   );
   await waitFor(() =>
@@ -360,7 +377,11 @@ export async function changeQueries(query: string) {
   const textField = await waitFor(() =>
     screen.getByLabelText("change-selected-image-queries-text")
   );
-  fireEvent.change(textField, { target: { value: query } });
+  const user = userEvent.setup();
+  await user.clear(textField);
+  if (query !== "") {
+    await user.type(textField, query);
+  }
   screen.getByLabelText("change-selected-image-queries-submit").click();
 }
 

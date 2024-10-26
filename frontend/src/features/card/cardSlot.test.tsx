@@ -171,6 +171,7 @@ test("the html structure of a CardSlot's grid selector, cards grouped together",
         frontsVisible: true,
         facetBySource: false,
         sourcesVisible: {},
+        jumpToVersionVisible: false,
       },
     },
   });

@@ -1,5 +1,6 @@
 import { within } from "@testing-library/dom";
-import { fireEvent, screen, waitFor } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 
 import App from "@/app/app";
 import { Back, Front, SelectedImageSeparator } from "@/common/constants";
@@ -330,7 +331,9 @@ test("the textbox should not clear itself until the form has been submitted", as
 
   // open the window and set some text
   const textArea = await openImportTextModal();
-  fireEvent.change(textArea, { target: { value: "big test" } });
+  const user = userEvent.setup();
+  await user.clear(textArea);
+  await user.type(textArea, "big test");
 
   // close the window and reopen it
   screen.getByLabelText("import-text-close").click();
