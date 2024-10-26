@@ -2,8 +2,8 @@ from typing import Optional, Type
 
 from django.conf import settings
 
-from cardpicker.integrations.base import GameIntegration
-from cardpicker.integrations.mtg import MTG
+from cardpicker.integrations.game.base import GameIntegration
+from cardpicker.integrations.game.mtg import MTG
 
 
 def get_configured_game_integration() -> Optional[Type[GameIntegration]]:

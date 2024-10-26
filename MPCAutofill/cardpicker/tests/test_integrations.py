@@ -3,8 +3,8 @@ from enum import Enum
 
 import pytest
 
+from cardpicker.integrations.game.mtg import MTG
 from cardpicker.integrations.integrations import get_configured_game_integration
-from cardpicker.integrations.mtg import MTG
 
 
 class TestGetIntegration:

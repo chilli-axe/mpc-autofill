@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Type
 
-from cardpicker.integrations.base import GameIntegration, ImportSite
+from cardpicker.integrations.game.base import GameIntegration, ImportSite
 from cardpicker.models import DFCPair
 from cardpicker.sources.source_types import SourceTypeChoices
 from cardpicker.tests.factories import DFCPairFactory

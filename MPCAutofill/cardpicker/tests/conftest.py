@@ -9,7 +9,7 @@ from testcontainers.postgres import PostgresContainer
 from django.conf import settings as conf_settings
 from django.core.management import call_command
 
-from cardpicker.integrations.base import GameIntegration
+from cardpicker.integrations.game.base import GameIntegration
 from cardpicker.models import Card, CardTypes, DFCPair, Source, Tag
 from cardpicker.tests.constants import Cards, DummyIntegration, Sources
 from cardpicker.tests.factories import (

@@ -3,7 +3,7 @@ import re
 from typing import Any, Type
 from urllib.parse import parse_qs, urlparse
 
-from cardpicker.integrations.base import GameIntegration, ImportSite
+from cardpicker.integrations.game.base import GameIntegration, ImportSite
 from cardpicker.models import DFCPair
 from cardpicker.utils import get_json_endpoint_rate_limited
 
