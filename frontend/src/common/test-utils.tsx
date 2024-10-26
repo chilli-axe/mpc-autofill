@@ -6,7 +6,7 @@
 import { Store } from "@reduxjs/toolkit";
 import { within } from "@testing-library/dom";
 import type { RenderOptions } from "@testing-library/react";
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import FileSaver from "file-saver";
 import { MemoryRouterProvider } from "next-router-mock/MemoryRouterProvider";
@@ -327,7 +327,7 @@ export async function selectSlot(
     `select-${face}${slot - 1}`
   )!.children[0];
   if (clickType === "double") {
-    await user.dblClick(element);
+    fireEvent.click(element, { detail: 2 });
   } else if (clickType === "shift") {
     await user.keyboard("{Shift>}");
     await user.click(element);
