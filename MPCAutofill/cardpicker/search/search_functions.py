@@ -99,6 +99,32 @@ class SearchSettings:
         :raises: KeyError if data is missing. It's expected that `json_body` has been validated against the JSON schema.
         """
 
+        schema_directory = get_schema_directory()
+        registry = Registry[str]().with_resources(  # TODO: is this type annotation correct?
+            [
+                (
+                    "search_settings.json",
+                    Resource.from_contents(json.loads((schema_directory / "search_settings.json").read_text())),
+                )
+            ]
+        )
+        schema_validator = Draft201909Validator(
+            {
+                "$schema": "https://json-schema.org/draft/2019-09/schema",
+                "$id": "search_data",
+                "type": "object",
+                "properties": {
+                    "searchSettings": {"$ref": "search_settings.json"},
+                },
+                "required": ["searchSettings"],
+                "allowAdditionalProperties": False,
+            },
+            registry=registry,  # type: ignore  # apparently this is an unexpected keyword argument
+        )
+
+        # the below line may raise ValidationError
+        schema_validator.validate(json_body)
+
         search_settings = json_body["searchSettings"]
         search_type_settings = search_settings["searchTypeSettings"]
         source_settings = search_settings["sourceSettings"]
@@ -210,6 +236,46 @@ class SearchQuery:
         :raises: KeyError if no queries are specified.
         """
 
+        schema_directory = get_schema_directory()
+        registry = Registry[str]().with_resources(  # TODO: is this type annotation correct?
+            [
+                (
+                    "search_query.json",
+                    Resource.from_contents(json.loads((schema_directory / "search_query.json").read_text())),
+                )
+            ]
+            + [
+                (
+                    "search_queries.json",
+                    Resource.from_contents(
+                        {
+                            "$schema": "https://json-schema.org/draft/2019-09/schema",
+                            "$id": "search_queries.json",
+                            "type": "array",
+                            "items": [{"$ref": "search_query.json"}],
+                            "maxItems": SEARCH_RESULTS_PAGE_SIZE,
+                        }
+                    ),
+                )
+            ]
+        )
+        schema_validator = Draft201909Validator(
+            {
+                "$schema": "https://json-schema.org/draft/2019-09/schema",
+                "$id": "search_data",
+                "type": "object",
+                "properties": {
+                    "queries": {"$ref": "search_queries.json"},
+                },
+                "required": ["searchSettings", "queries"],
+                "allowAdditionalProperties": False,
+            },
+            registry=registry,  # type: ignore  # apparently this is an unexpected keyword argument
+        )
+
+        # the below line may raise ValidationError
+        schema_validator.validate(json_body)
+
         # uniqueness of queries guaranteed
         query_dicts = json_body["queries"]
         queries = set()
@@ -268,87 +334,6 @@ def get_schema_directory() -> Path:
     return Path(__file__).parent.parent.parent.parent / "common" / "schemas"
 
 
-def parse_json_body_as_search_settings(json_body: dict[str, Any]) -> SearchSettings:
-    """
-    :raises: ValidationError
-    """
-
-    schema_directory = get_schema_directory()
-    registry = Registry[str]().with_resources(  # TODO: is this type annotation correct?
-        [
-            (
-                "search_settings.json",
-                Resource.from_contents(json.loads((schema_directory / "search_settings.json").read_text())),
-            )
-        ]
-    )
-    schema_validator = Draft201909Validator(
-        {
-            "$schema": "https://json-schema.org/draft/2019-09/schema",
-            "$id": "search_data",
-            "type": "object",
-            "properties": {
-                "searchSettings": {"$ref": "search_settings.json"},
-            },
-            "required": ["searchSettings"],
-            "allowAdditionalProperties": False,
-        },
-        registry=registry,  # type: ignore  # apparently this is an unexpected keyword argument
-    )
-
-    # the below line may raise ValidationError
-    schema_validator.validate(json_body)
-
-    return SearchSettings.from_json_body(json_body)
-
-
-def parse_json_body_as_search_data(json_body: dict[str, Any]) -> tuple[SearchSettings, list[SearchQuery]]:
-    """
-    :raises: ValidationError
-    """
-
-    schema_directory = get_schema_directory()
-    registry = Registry[str]().with_resources(  # TODO: is this type annotation correct?
-        [
-            (schema_name, Resource.from_contents(json.loads((schema_directory / schema_name).read_text())))
-            for schema_name in ["search_query.json", "search_settings.json"]
-        ]
-        + [
-            (
-                "search_queries.json",
-                Resource.from_contents(
-                    {
-                        "$schema": "https://json-schema.org/draft/2019-09/schema",
-                        "$id": "search_queries.json",
-                        "type": "array",
-                        "items": [{"$ref": "search_query.json"}],
-                        "maxItems": SEARCH_RESULTS_PAGE_SIZE,
-                    }
-                ),
-            )
-        ]
-    )
-    schema_validator = Draft201909Validator(
-        {
-            "$schema": "https://json-schema.org/draft/2019-09/schema",
-            "$id": "search_data",
-            "type": "object",
-            "properties": {
-                "searchSettings": {"$ref": "search_settings.json"},
-                "queries": {"$ref": "search_queries.json"},
-            },
-            "required": ["searchSettings", "queries"],
-            "allowAdditionalProperties": False,
-        },
-        registry=registry,  # type: ignore  # apparently this is an unexpected keyword argument
-    )
-
-    # the below line may raise ValidationError
-    schema_validator.validate(json_body)
-
-    return SearchSettings.from_json_body(json_body), SearchQuery.list_from_json_body(json_body)
-
-
 def get_new_cards_paginator(source: Source) -> Paginator[QuerySet[Card]]:
     now = timezone.now()
     cards = Card.objects.filter(
@@ -367,7 +352,5 @@ __all__ = [
     "SearchSettings",
     "SearchQuery",
     "get_schema_directory",
-    "parse_json_body_as_search_settings",
-    "parse_json_body_as_search_data",
     "get_new_cards_paginator",
 ]

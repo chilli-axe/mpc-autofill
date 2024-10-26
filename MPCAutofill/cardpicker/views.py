@@ -21,9 +21,9 @@ from cardpicker.integrations.patreon import get_patreon_campaign_details, get_pa
 from cardpicker.models import Card, CardTypes, DFCPair, Source, summarise_contributions
 from cardpicker.search.search_functions import (
     SearchExceptions,
+    SearchQuery,
+    SearchSettings,
     get_new_cards_paginator,
-    parse_json_body_as_search_data,
-    parse_json_body_as_search_settings,
     ping_elasticsearch,
 )
 from cardpicker.tags import Tags
@@ -78,7 +78,8 @@ def post_search_results(request: HttpRequest) -> HttpResponse:
     json_body = json.loads(request.body)
 
     try:
-        search_settings, queries = parse_json_body_as_search_data(json_body)
+        search_settings = SearchSettings.from_json_body(json_body)
+        queries = SearchQuery.list_from_json_body(json_body)
     except ValidationError as e:
         raise BadRequestException(f"The provided JSON body is invalid:\n\n{e.message}")
 
@@ -199,7 +200,7 @@ def post_cardbacks(request: HttpRequest) -> HttpResponse:
 
     try:
         json_body = json.loads(request.body)
-        search_settings = parse_json_body_as_search_settings(json_body)
+        search_settings = SearchSettings.from_json_body(json_body)
     except ValidationError as e:
         raise BadRequestException(f"The provided JSON body is invalid:\n\n{e.message}")
 
