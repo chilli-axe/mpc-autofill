@@ -62,9 +62,9 @@ export function SupportDeveloperModal({
         </p>
         <h4>Where does my donation go?</h4>
         <p>
-          I don&apos;t host any {ProjectName} servers, just the website
-          you&apos;re on right now &mdash; which GitHub allows me to host for
-          free.
+          I don&apos;t host any {ProjectName} servers, just
+          https://mpcautofill.github.io &mdash; which GitHub allows me to host
+          for free.
         </p>
         <p>Any donation goes towards:</p>
         <ul>
