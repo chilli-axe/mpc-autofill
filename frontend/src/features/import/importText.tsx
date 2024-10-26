@@ -55,11 +55,11 @@ export function ImportText() {
 
   const handleCloseTextModal = () => setShowTextModal(false);
   const handleShowTextModal = () => setShowTextModal(true);
-  const handleSubmitTextModal = (event: FormEvent<HTMLFormElement>) => {
-    /**
-     * Parse the contents of the modal and add the resultant queries in the desired numbers of instances to the project.
-     */
 
+  /**
+   * Parse the contents of the modal and add the resultant queries in the desired numbers of instances to the project.
+   */
+  const handleSubmitTextModal = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault(); // to prevent reloading the page
     const processedLines = processStringAsMultipleLines(
       textModalValue,

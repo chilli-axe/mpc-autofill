@@ -54,11 +54,10 @@ function App() {
 
   //# region effects
 
+  /**
+   * Ask the user for confirmation before they close the page if their project has any cards in it.
+   */
   useEffect(() => {
-    /**
-     * Ask the user for confirmation before they close the page if their project has any cards in it.
-     */
-
     const handler = (event: BeforeUnloadEvent) => {
       if (!isProjectEmpty) {
         event.preventDefault();

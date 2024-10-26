@@ -81,17 +81,16 @@ export async function expectCardSlotToNotExist(slot: number) {
   );
 }
 
+/**
+ * This function helps with asserting that a particular card slot exists
+ * and has the expected image selected.
+ */
 async function expectCardSlotState(
   testId: string,
   cardName?: string | null,
   selectedImage?: number | null,
   totalImages?: number | null
 ) {
-  /**
-   * This function helps with asserting that a particular card slot exists
-   * and has the expected image selected.
-   */
-
   await waitFor(() => expect(screen.getByTestId(testId)).toBeInTheDocument());
   const cardElement = screen.getByTestId(testId);
   if (cardName != null) {
@@ -151,13 +150,12 @@ export async function expectCardbackSlotState(
 
 //# region UI interactions
 
+/**
+ * Note: the `ping` function from Ping.js must be mocked in tests where you call this function.
+ * We cannot use MSW to intercept Ping.js because that library works by creating an `Image` with
+ * `src` of the site to ping's `favicon.ico`, and MSW can't intercept requests to load images.
+ */
 export async function configureBackend(url: string) {
-  /**
-   * Note: the `ping` function from Ping.js must be mocked in tests where you call this function.
-   * We cannot use MSW to intercept Ping.js because that library works by creating an `Image` with
-   * `src` of the site to ping's `favicon.ico`, and MSW can't intercept requests to load images.
-   */
-
   await waitFor(() => screen.getByLabelText("configure-server-btn").click());
 
   const backendOffcanvas = await waitFor(() =>
@@ -451,11 +449,10 @@ export async function downloadDecklist() {
 
 //# region misc
 
+/**
+ * Pretty gross, but useful for asserting that generated XMLs are as expected.
+ */
 export function normaliseString(text: string): string {
-  /**
-   * Pretty gross, but useful for asserting that generated XMLs are as expected.
-   */
-
   return text.replaceAll(" ", "").replaceAll("\n", "").replaceAll("\r", "");
 }
 

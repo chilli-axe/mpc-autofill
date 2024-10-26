@@ -90,14 +90,14 @@ export function FilterSettings({
   }));
 
   const [expandedNodes, setExpandedNodes] = useState<Array<string>>([]);
-  const onNodeToggle = (currentNode: TreeNode): void => {
-    /**
-     * Note that controlling the checked status of tags through the data passed to the dropdown component
-     * necessitates controlling the expanded/collapsed status of tags with children as well.
-     * This appears to be because updating data in Redux forces the component to re-render in
-     * its initial state where everything is collapsed.
-     */
 
+  /**
+   * Note that controlling the checked status of tags through the data passed to the dropdown component
+   * necessitates controlling the expanded/collapsed status of tags with children as well.
+   * This appears to be because updating data in Redux forces the component to re-render in
+   * its initial state where everything is collapsed.
+   */
+  const onNodeToggle = (currentNode: TreeNode): void => {
     if (currentNode.expanded && !expandedNodes.includes(currentNode.value)) {
       setExpandedNodes([...expandedNodes, currentNode.value]);
     } else if (
@@ -110,12 +110,11 @@ export function FilterSettings({
     }
   };
 
+  /**
+   * Recursively convert a `Tag` into a data structure usable by react-dropdown-tree-select.
+   */
   const getTagsTree = useCallback(
     (checkedTags: Array<string>): Array<TreeNode> => {
-      /**
-       * Recursively convert a `Tag` into a data structure usable by react-dropdown-tree-select.
-       */
-
       const processTag = (tag: Tag): TreeNode => {
         return {
           label: tag.name,

@@ -66,11 +66,10 @@ const addAppListener = addListener.withTypes<RootState, AppDispatch>();
 
 startAppListening({
   actionCreator: setURL,
+  /**
+   * Fetch sources whenever the backend configuration is set.
+   */
   effect: async (action, { getState, dispatch }) => {
-    /**
-     * Fetch sources whenever the backend configuration is set.
-     */
-
     const state = getState();
     const isBackendConfigured = selectBackendConfigured(state);
     if (isBackendConfigured) {
@@ -81,12 +80,11 @@ startAppListening({
 
 startAppListening({
   actionCreator: fetchSourceDocuments.fulfilled,
+  /**
+   * Populate search settings in the Redux store from search settings
+   * whenever the list of sources changes.
+   */
   effect: async (action, { getState, dispatch }) => {
-    /**
-     * Populate search settings in the Redux store from search settings
-     * whenever the list of sources changes.
-     */
-
     const state = getState();
     const maybeSourceDocuments = selectSourceDocuments(state);
     if (maybeSourceDocuments != null) {
@@ -101,11 +99,10 @@ startAppListening({
 
 startAppListening({
   matcher: isAnyOf(setURL, clearURL),
+  /**
+   * Invalidate previous backend-specific data whenever the backend configuration is updated.
+   */
   effect: async (action, { dispatch }) => {
-    /**
-     * Invalidate previous backend-specific data whenever the backend configuration is updated.
-     */
-
     dispatch(api.util.invalidateTags([QueryTags.BackendSpecific]));
   },
 });
@@ -117,11 +114,10 @@ startAppListening({
       JSON.stringify(previousState.searchSettings)
     );
   },
+  /**
+   * Recalculate search results whenever search settings change.
+   */
   effect: async (action, { getState, dispatch }) => {
-    /**
-     * Recalculate search results whenever search settings change.
-     */
-
     const state = getState();
     const isBackendConfigured = selectBackendConfigured(state);
     const searchSettingsSourcesValid = selectSearchSettingsSourcesValid(state);
@@ -134,25 +130,23 @@ startAppListening({
 
 startAppListening({
   matcher: isAnyOf(addMembers, setQueries),
+  /**
+   * Fetch card documents whenever new members are added to the project or search results are cleared.
+   */
   effect: async (action, { dispatch }) => {
-    /**
-     * Fetch card documents whenever new members are added to the project or search results are cleared.
-     */
-
     await fetchCardDocumentsAndReportError(dispatch);
   },
 });
 
 startAppListening({
   actionCreator: fetchCardbacks.fulfilled,
+  /**
+   * Whenever the list of cardbacks changes, this listener will deselect the cardback
+   * if it's no longer valid, then select the first cardback in the list if there are
+   * any cardbacks if necessary.
+   * Note that this means you can end up with no selected cardback.
+   */
   effect: async (action, { dispatch, getState }) => {
-    /**
-     * Whenever the list of cardbacks changes, this listener will deselect the cardback
-     * if it's no longer valid, then select the first cardback in the list if there are
-     * any cardbacks if necessary.
-     * Note that this means you can end up with no selected cardback.
-     */
-
     const state = getState();
     const currentCardback = selectProjectCardback(state);
     const cardbacks = selectCardbacks(state);
@@ -173,12 +167,11 @@ startAppListening({
 
 startAppListening({
   actionCreator: setQueries,
+  /**
+   * Whenever a slot's query changes, deselect the currently selected image for that slot,
+   * and if there are search results, select the first of those results.
+   */
   effect: async (action, { dispatch, getState, condition }) => {
-    /**
-     * Whenever a slot's query changes, deselect the currently selected image for that slot,
-     * and if there are search results, select the first of those results.
-     */
-
     // wait for all search results to load (removing this will cause a race condition)
     await condition((action, currentState): boolean => {
       if (setQueries.match(action)) {
@@ -233,12 +226,11 @@ startAppListening({
 
 startAppListening({
   actionCreator: fetchSearchResults.fulfilled,
+  /**
+   * Whenever search results change, this listener will inspect each card slot
+   * and ensure that their selected images are valid.
+   */
   effect: async (action, { dispatch, getState }) => {
-    /**
-     * Whenever search results change, this listener will inspect each card slot
-     * and ensure that their selected images are valid.
-     */
-
     const state = getState();
     const cardbacks = selectCardbacks(state);
     const projectCardback = selectProjectCardback(state);

@@ -82,6 +82,10 @@ function RibbonButton({
   );
 }
 
+/**
+ * Clicking this is equivalent to double-clicking a CardSlot's checkbox.
+ * If other slots have the same query as `slot`, clicking this will select them all.
+ */
 function SelectSimilar({
   slot,
   inDropdown,
@@ -89,11 +93,6 @@ function SelectSimilar({
   slot: [Faces, number];
   inDropdown: boolean;
 }) {
-  /**
-   * Clicking this is equivalent to double-clicking a CardSlot's checkbox.
-   * If other slots have the same query as `slot`, clicking this will select them all.
-   */
-
   const dispatch = useAppDispatch();
   const onClick = () =>
     dispatch(bulkAlignMemberSelection({ slot: slot[1], face: slot[0] }));
@@ -104,11 +103,10 @@ function SelectSimilar({
   );
 }
 
+/**
+ * Clicking this selects all slots in the active face.
+ */
 function SelectAll({ inDropdown }: { inDropdown: boolean }) {
-  /**
-   * Clicking this selects all slots in the active face.
-   */
-
   const dispatch = useAppDispatch();
 
   const face = useAppSelector(selectActiveFace);
@@ -123,6 +121,10 @@ function SelectAll({ inDropdown }: { inDropdown: boolean }) {
   );
 }
 
+/**
+ * Clicking this brings up the grid selector modal for changing the selected images for multiple slots at once.
+ * sorry for the stupid naming convention here 🗿
+ */
 function ChangeSelectedImageSelectedImages({
   slots,
   inDropdown,
@@ -130,11 +132,6 @@ function ChangeSelectedImageSelectedImages({
   slots: Slots;
   inDropdown: boolean;
 }) {
-  /**
-   * Clicking this brings up the grid selector modal for changing the selected images for multiple slots at once.
-   * sorry for the stupid naming convention here 🗿
-   */
-
   const dispatch = useAppDispatch();
 
   const [showModal, setShowModal] = useState<boolean>(false);
@@ -183,6 +180,9 @@ function ChangeSelectedImageSelectedImages({
   ) : null;
 }
 
+/**
+ * Clicking this brings up the modal for changing the queries for multiple slots at once.
+ */
 function ChangeSelectedImageQueries({
   slots,
   inDropdown,
@@ -190,10 +190,6 @@ function ChangeSelectedImageQueries({
   slots: Slots;
   inDropdown: boolean;
 }) {
-  /**
-   * Clicking this brings up the modal for changing the queries for multiple slots at once.
-   */
-
   const dispatch = useAppDispatch();
 
   const handleShowModal = () => {
@@ -207,6 +203,9 @@ function ChangeSelectedImageQueries({
   );
 }
 
+/**
+ * Clicking this clears the queries for multiple slots at once.
+ */
 function ClearSelectedImageQueries({
   slots,
   inDropdown,
@@ -214,10 +213,6 @@ function ClearSelectedImageQueries({
   slots: Slots;
   inDropdown: boolean;
 }) {
-  /**
-   * Clicking this clears the queries for multiple slots at once.
-   */
-
   const dispatch = useAppDispatch();
   const onClick = () => dispatch(clearQueries({ slots }));
   return (
@@ -227,6 +222,9 @@ function ClearSelectedImageQueries({
   );
 }
 
+/**
+ * Clicking this enqueues downloads for the selected images.
+ */
 function DownloadSelectedImages({
   slots,
   inDropdown,
@@ -234,10 +232,6 @@ function DownloadSelectedImages({
   slots: Slots;
   inDropdown: boolean;
 }) {
-  /**
-   * Clicking this enqueues downloads for the selected iamegs.
-   */
-
   const dispatch = useAppDispatch();
   const cardDocumentsByIdentifier = useCardDocumentsByIdentifier();
   const queueImageDownload = useQueueImageDownload();
@@ -273,6 +267,9 @@ function DownloadSelectedImages({
   );
 }
 
+/**
+ * Clicking this deletes multiple slots at once.
+ */
 function DeleteSelectedImages({
   slots,
   inDropdown,
@@ -280,10 +277,6 @@ function DeleteSelectedImages({
   slots: Slots;
   inDropdown: boolean;
 }) {
-  /**
-   * Clicking this deletes multiple slots at once.
-   */
-
   const dispatch = useAppDispatch();
 
   const slotNumbers = slots.map(([face, slot]) => slot);

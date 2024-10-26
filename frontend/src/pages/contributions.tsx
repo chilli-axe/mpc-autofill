@@ -25,11 +25,10 @@ function ContributionGuidelines() {
   const projectName = useProjectName();
   const getTagsQuery = useGetTagsQuery();
 
+  /**
+   * Recursively generate a user-facing description of how `tag` works.
+   */
   const describeTag = (tag: Tag) => (
-    /**
-     * Recursively generate a user-facing description of how `tag` works.
-     */
-
     <li key={tag.name}>
       <code>{tag.name}</code>
       {tag.aliases.length > 0 && (

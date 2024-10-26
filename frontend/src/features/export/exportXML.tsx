@@ -35,14 +35,13 @@ interface SlotsByIdentifierAndFace {
   back: SlotsByIdentifier;
 }
 
+/**
+ * Aggregate cards in project by (face, selected image) => a list of slots.
+ */
 function aggregateSlotsByIdentifierAndFace(
   projectMembers: Array<SlotProjectMembers>,
   cardback: string | null
 ): SlotsByIdentifierAndFace {
-  /**
-   * Aggregate cards in project by (face, selected image) => a list of slots.
-   */
-
   const orderMap: SlotsByIdentifierAndFace = { front: {}, back: {} };
   for (const [slot, projectMember] of projectMembers.entries()) {
     for (const face of [Front, Back]) {
@@ -63,16 +62,15 @@ function aggregateSlotsByIdentifierAndFace(
   return orderMap;
 }
 
+/**
+ * Create an XML element representing the card `identifier`, which is included in the project at `slots`.
+ */
 function createCardElement(
   cardDocuments: CardDocuments,
   doc: XMLDocument,
   identifier: string,
   slots: Set<number>
 ): Element | null {
-  /**
-   * Create an XML element representing the card `identifier`, which is included in the project at `slots`.
-   */
-
   const maybeCardDocument = cardDocuments[identifier];
   if (maybeCardDocument == null) {
     return null;
@@ -122,6 +120,10 @@ const selectGeneratedXML = (state: RootState): string => {
   );
 };
 
+/**
+ * Generate an XML representation of the project, suitable for re-importing into MPC Autofill
+ * and suitable for uploading through the desktop tool.
+ */
 export function generateXML(
   projectMembers: Array<SlotProjectMembers>,
   cardDocuments: CardDocuments,
@@ -129,11 +131,6 @@ export function generateXML(
   projectSize: number,
   finishSettings: FinishSettingsState
 ): string {
-  /**
-   * Generate an XML representation of the project, suitable for re-importing into MPC Autofill
-   * and suitable for uploading through the desktop tool.
-   */
-
   const orderMap = aggregateSlotsByIdentifierAndFace(projectMembers, cardback);
 
   // top level XML doc element, attach everything to this

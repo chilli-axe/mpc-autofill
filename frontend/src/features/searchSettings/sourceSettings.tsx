@@ -56,22 +56,20 @@ export function SourceSettings({
     [sourceSettings.sources, setSourceSettings]
   );
 
+  /**
+   * Update `localSourceOrder` according to the drag and drop result.
+   */
   const onDragEnd = (result: DropResult) => {
-    /**
-     * Update `localSourceOrder` according to the drag and drop result.
-     */
-
     if (result.destination != null) {
       moveSourceToIndex(result.source.index, result.destination.index);
     }
   };
 
+  /**
+   * Toggle the enabled status of the source at `index` in `localSourceOrder`.
+   */
   const toggleSpecificSourceEnabledStatus = useCallback(
     (index: number) => {
-      /**
-       * Toggle the enabled status of the source at `index` in `localSourceOrder`.
-       */
-
       const updatedSources = [...(sourceSettings.sources ?? [])];
       updatedSources[index] = [
         updatedSources[index][0],
@@ -82,11 +80,10 @@ export function SourceSettings({
     [sourceSettings.sources, setSourceSettings]
   );
 
+  /**
+   * Toggle the enabled status of all sources in `localSourceOrder`. If any is enabled, they're all disabled.
+   */
   const toggleAllSourceEnabledStatuses = useCallback(() => {
-    /**
-     * Toggle the enabled status of all sources in `localSourceOrder`. If any is enabled, they're all disabled.
-     */
-
     if (sourceSettings.sources != null) {
       const updatedSources: Array<SourceRow> = sourceSettings.sources.map(
         (x) => [x[0], !anySourcesEnabled]

@@ -41,14 +41,13 @@ const rootReducer = combineReducers({
 
 //# region middleware
 
+/**
+ * Whenever a RTK Query API request fails, display the response's error message to the user as a toast.
+ */
 const rtkQueryErrorLogger =
   (api: MiddlewareAPI) =>
   (next: (action: unknown) => unknown) =>
   (action: unknown) => {
-    /**
-     * Whenever a RTK Query API request fails, display the response's error message to the user as a toast.
-     */
-
     if (!isAction(action)) {
       return;
     }

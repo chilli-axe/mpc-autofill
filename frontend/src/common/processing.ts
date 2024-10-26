@@ -28,32 +28,29 @@ import {
   SlotProjectMembers,
 } from "@/common/types";
 
+/**
+ * Clean any instances of doubled-up whitespace from `text`.
+ */
 export function sanitiseWhitespace(text: string): string {
-  /**
-   * Clean any instances of doubled-up whitespace from `text`.
-   */
-
   const re = / +(?= )/g;
   return text.replaceAll(re, "").trim();
 }
 
+/**
+ * Remove all text within (parentheses) from `text`.
+ * Does not handle (nested (parentheses)). TODO: update this function to do this
+ */
 export function stripTextInParentheses(text: string): string {
-  /**
-   * Remove all text within (parentheses) from `text`.
-   * Does not handle (nested (parentheses)). TODO: update this function to do this
-   */
-
   const re = /[([].*?[)\]]/g;
   return sanitiseWhitespace(text.replaceAll(re, ""));
 }
 
+/**
+ * Process `query` by converting to lowercase, removing all punctuation, and sanitising whitespace.
+ * Note that hyphens are not removed due to how Elasticsearch's classic tokenizer works:
+ * https://www.elastic.co/guide/en/elasticsearch/reference/7.17/analysis-classic-tokenizer.html
+ */
 export function processQuery(query: string): string {
-  /**
-   * Process `query` by converting to lowercase, removing all punctuation, and sanitising whitespace.
-   * Note that hyphens are not removed due to how Elasticsearch's classic tokenizer works:
-   * https://www.elastic.co/guide/en/elasticsearch/reference/7.17/analysis-classic-tokenizer.html
-   */
-
   // TODO: remove any numbers from the front
   // escaping \[ is technically unnecessary, but I think it's more readable to escape it
   return sanitiseWhitespace(
@@ -64,12 +61,11 @@ export function processQuery(query: string): string {
   );
 }
 
+/**
+ * Identify the prefix of a query. For example, `query`="t:goblin" would yield
+ *   {query: "goblin", card_type: TOKEN}.
+ */
 export function processPrefix(query: string): SearchQuery {
-  /**
-   * Identify the prefix of a query. For example, `query`="t:goblin" would yield
-   *   {query: "goblin", card_type: TOKEN}.
-   */
-
   for (const [prefix, cardType] of Object.entries(CardTypePrefixes)) {
     if (
       prefix !== "" &&
@@ -87,23 +83,22 @@ export function processPrefix(query: string): SearchQuery {
   return { query: processQuery(query), card_type: CardTypePrefixes[""] };
 }
 
+/**
+ * Unpack `line` into its constituents.
+ *
+ * Inputs to this function are unpacked according to the below schema. For example, consider `4x opt@1234 | char@xyz`:
+ *       4x               opt        @        1234         |      char       @        xyz
+ * └─ quantity ──┘ └─ front query ──┘ └─ front image ID ──┘ └─ back query ──┘ └─ back image ID ──┘
+ *
+ * If quantity is not specified, we assume a quantity of 1.
+ * Specifying a back query is optional.
+ * Specifying an image ID (for each face) is optional.
+ *
+ * (sorry for jamming this much stuff into one regex 🗿)
+ */
 function unpackLine(
   line: string
 ): [number, [string, string | null] | null, [string, string | null] | null] {
-  /**
-   * Unpack `line` into its constituents.
-   *
-   * Inputs to this function are unpacked according to the below schema. For example, consider `4x opt@1234 | char@xyz`:
-   *       4x               opt        @        1234         |      char       @        xyz
-   * └─ quantity ──┘ └─ front query ──┘ └─ front image ID ──┘ └─ back query ──┘ └─ back image ID ──┘
-   *
-   * If quantity is not specified, we assume a quantity of 1.
-   * Specifying a back query is optional.
-   * Specifying an image ID (for each face) is optional.
-   *
-   * (sorry for jamming this much stuff into one regex 🗿)
-   */
-
   const trimmedLine = line.replace(/\s+/g, " ").trim();
   const re = new RegExp(
     `^(?:([0-9]+[xX]?\\s)?(.*?)(?:${SelectedImageSeparator}([A-z0-9_\\-]*))?)?(?:(?:\\s*)${
@@ -122,24 +117,23 @@ function unpackLine(
   ];
 }
 
+/**
+ * Process `line` to identify the search query and the number of instances requested for each face.
+ * If no back query is specified, attempt to match the front query to a DFC pair.
+ * For example, `line`="3x t:goblin" would yield:
+ *   [3, {query: {query: "goblin", card_type: TOKEN, selectedImage: null}}, null].
+ * Another example is `line`="3x forest | b:elf" would yield:
+ *   [
+ *     3,
+ *     {query: {query: "forest", card_type: CARD}, selectedImage: null},
+ *     {query: {query: "elf", card_type: TOKEN}, selectedImage: null},
+ *   ].
+ */
 export function processLine(
   line: string,
   dfcPairs: DFCPairs,
   fuzzySearch: boolean
 ): ProcessedLine {
-  /**
-   * Process `line` to identify the search query and the number of instances requested for each face.
-   * If no back query is specified, attempt to match the front query to a DFC pair.
-   * For example, `line`="3x t:goblin" would yield:
-   *   [3, {query: {query: "goblin", card_type: TOKEN, selectedImage: null}}, null].
-   * Another example is `line`="3x forest | b:elf" would yield:
-   *   [
-   *     3,
-   *     {query: {query: "forest", card_type: CARD}, selectedImage: null},
-   *     {query: {query: "elf", card_type: TOKEN}, selectedImage: null},
-   *   ].
-   */
-
   const [quantity, frontRawQuery, backRawQuery] = unpackLine(line);
 
   let frontQuery: SearchQuery | null = null;
@@ -192,15 +186,14 @@ export function processLine(
   ];
 }
 
+/**
+ * Process each line in `lines`, ignoring any lines which don't contain relevant information.
+ */
 export function processLines(
   lines: Array<string>,
   dfcPairs: DFCPairs,
   fuzzySearch: boolean
 ): Array<ProcessedLine> {
-  /**
-   * Process each line in `lines`, ignoring any lines which don't contain relevant information.
-   */
-
   const queries: Array<[number, ProjectMember | null, ProjectMember | null]> =
     [];
   lines.forEach((line: string) => {
@@ -226,17 +219,16 @@ export function processStringAsMultipleLines(
   return processLines(lines.split(/\r?\n|\r|\n/g), dfcPairs, fuzzySearch);
 }
 
+/**
+ * This function converts `lines` into a format ready to be added to the Redux store.
+ * The project max size is respected here in addition to in the `addMembers` action
+ * to avoid doing unnecessary processing work if a large list of `ProcessedLine` items
+ * is given.
+ */
 export function convertLinesIntoSlotProjectMembers(
   lines: Array<ProcessedLine>,
   memberCount: number
 ): Array<SlotProjectMembers> {
-  /**
-   * This function converts `lines` into a format ready to be added to the Redux store.
-   * The project max size is respected here in addition to in the `addMembers` action
-   * to avoid doing unnecessary processing work if a large list of `ProcessedLine` items
-   * is given.
-   */
-
   let newMembers: Array<SlotProjectMembers> = [];
   for (const [quantity, frontMember, backMember] of lines) {
     const cappedQuantity = Math.min(
@@ -267,13 +259,12 @@ export function convertLinesIntoSlotProjectMembers(
   return newMembers;
 }
 
+/**
+ * Standardise `url` in the following ways:
+ * 1. Ensure a http prefix is included, defaulting to `https://` if not specified
+ * 2. Trim any trailing slash and path
+ */
 export function standardiseURL(url: string): string {
-  /**
-   * Standardise `url` in the following ways:
-   * 1. Ensure a http prefix is included, defaulting to `https://` if not specified
-   * 2. Trim any trailing slash and path
-   */
-
   const re = [...url.matchAll(/^(https?:\/\/)?(.*?)(?:\/.*)?$/gm)][0];
   return (re[1] ?? "https://") + re[2];
 }

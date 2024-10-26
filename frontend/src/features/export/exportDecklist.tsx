@@ -23,14 +23,13 @@ import {
   selectProjectMembers,
 } from "@/features/project/projectSlice";
 
+/**
+ * Retrieve the names of each card (note: excludes cardbacks and tokens) in the project.
+ */
 function extractProjectMemberNames(
   projectMembers: Array<SlotProjectMembers>,
   cardDocuments: CardDocuments
 ): Array<[string | null, string | null]> {
-  /**
-   * Retrieve the names of each card (note: excludes cardbacks and tokens) in the project.
-   */
-
   function extractProjectMemberName(
     projectMember: ProjectMember | null
   ): string | null {
@@ -51,14 +50,13 @@ function extractProjectMemberNames(
   ]);
 }
 
+/**
+ * Convert each image's front and back names into a single string.
+ * e.g. [["goblin", null], ["mountain", "island"]] => ["goblin", "mountain | island"]
+ */
 function stringifyCardNames(
   projectMemberNames: Array<[string | null, string | null]>
 ): Array<string> {
-  /**
-   * Convert each image's front and back names into a single string.
-   * e.g. [["goblin", null], ["mountain", "island"]] => ["goblin", "mountain | island"]
-   */
-
   return projectMemberNames
     .map((item: [string | null, string | null]) =>
       item[0] != null
@@ -70,14 +68,13 @@ function stringifyCardNames(
     .filter((line): line is string => line != null && line.length > 0);
 }
 
+/**
+ * Count the occurrences of each item in `stringifiedCardNames` and prefix the item with its count.
+ * e.g. ["goblin", "goblin"] => ["2x goblin"]
+ */
 function aggregateIntoQuantities(
   stringifiedCardNames: Array<string>
 ): Array<string> {
-  /**
-   * Count the occurrences of each item in `stringifiedCardNames` and prefix the item with its count.
-   * e.g. ["goblin", "goblin"] => ["2x goblin"]
-   */
-
   const aggregated: { [name: string]: number } = stringifiedCardNames.reduce(
     (accumulator: { [name: string]: number }, value) => {
       if (!Object.prototype.hasOwnProperty.call(accumulator, value)) {
@@ -93,15 +90,14 @@ function aggregateIntoQuantities(
     .map((key: string) => `${aggregated[key]}x ${key}`);
 }
 
+/**
+ * Generate a decklist representation of the project, suitable for uploading to deckbuilding websites
+ * or sending to a friend. Only includes cards, not cardbacks or tokens.
+ */
 export function generateDecklist(
   projectMembers: Array<SlotProjectMembers>,
   cardDocuments: CardDocuments
 ): string {
-  /**
-   * Generate a decklist representation of the project, suitable for uploading to deckbuilding websites
-   * or sending to a friend. Only includes cards, not cardbacks or tokens.
-   */
-
   const projectMemberNames = extractProjectMemberNames(
     projectMembers,
     cardDocuments

@@ -32,15 +32,14 @@ export function getCSRFHeader(): HeadersInit | undefined {
 
 //# region search settings
 
+/**
+ * Get search settings from localStorage data. If valid data is retrieved,
+ * ensure that all `sourceDocuments` are included in the returned settings,
+ * with any new sources that weren't previously included added to the end and enabled.
+ */
 export function getLocalStorageSearchSettings(
   sourceDocuments: SourceDocuments
 ): SearchSettings {
-  /**
-   * Get search settings from localStorage data. If valid data is retrieved,
-   * ensure that all `sourceDocuments` are included in the returned settings,
-   * with any new sources that weren't previously included added to the end and enabled.
-   */
-
   const rawSettings = JSON.parse(
     localStorage.getItem(SearchSettingsKey) ?? "{}"
   );

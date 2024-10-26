@@ -26,11 +26,10 @@ import { addMembers, selectProjectSize } from "@/features/project/projectSlice";
 import { selectFuzzySearch } from "@/features/searchSettings/searchSettingsSlice";
 import { setNotification } from "@/features/toasts/toastsSlice";
 
+/**
+ * Instruct the user on how to format their CSV files.
+ */
 function CSVFormat() {
-  /**
-   * Instruct the user on how to format their CSV files.
-   */
-
   return (
     <>
       <AutofillTable

@@ -122,13 +122,12 @@ function CardImage({
 
   //# region effects
 
+  /**
+   * Ensure that the small thumbnail fades in each time the selected image changes.
+   * Next.js seems to not fire `onLoadingComplete` when opening a page with a cached image.
+   * This implementation was retrieved from https://stackoverflow.com/a/59809184
+   */
   useEffect(() => {
-    /**
-     * Ensure that the small thumbnail fades in each time the selected image changes.
-     * Next.js seems to not fire `onLoadingComplete` when opening a page with a cached image.
-     * This implementation was retrieved from https://stackoverflow.com/a/59809184
-     */
-
     setImageState(
       image.current == null || !image.current.complete
         ? "loading-from-bucket"
@@ -280,6 +279,9 @@ interface CardProps {
   highlight?: boolean;
 }
 
+/**
+ * This component enables displaying cards with auxiliary information in a flexible, consistent way.
+ */
 export function Card({
   maybeCardDocument,
   maybePreviousCardDocument,
@@ -293,10 +295,6 @@ export function Card({
   noResultsFound,
   highlight,
 }: CardProps) {
-  /**
-   * This component enables displaying cards with auxiliary information in a flexible, consistent way.
-   */
-
   //# region computed constants
 
   const cardImageElements =
@@ -417,6 +415,12 @@ interface EditorCardProps {
   highlight?: boolean;
 }
 
+/**
+ * This component is a thin layer on top of `Card` that retrieves `CardDocument` items by their identifiers
+ * from the Redux store (used in the project editor).
+ * We have this layer because search results are returned as a list of image identifiers
+ * (to minimise the quantity of data stored in Elasticsearch), so the full `CardDocument` items must be looked up.
+ */
 export function EditorCard({
   imageIdentifier,
   previousImageIdentifier,
@@ -430,13 +434,6 @@ export function EditorCard({
   noResultsFound,
   highlight,
 }: EditorCardProps) {
-  /**
-   * This component is a thin layer on top of `Card` that retrieves `CardDocument` items by their identifiers
-   * from the Redux store (used in the project editor).
-   * We have this layer because search results are returned as a list of image identifiers
-   * (to minimise the quantity of data stored in Elasticsearch), so the full `CardDocument` items must be looked up.
-   */
-
   //# region queries and hooks
 
   const maybeCardDocument = useAppSelector((state: RootState) =>

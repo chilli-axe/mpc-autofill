@@ -19,13 +19,12 @@ const createError = (name: string) => ({
   message: "A message that describes the error",
 });
 
+/**
+ * Not including the correct leading and trailing slashes can break things.
+ * This little helper function ensures the given relative API route is associated
+ * with the local backend URL correctly.
+ */
 function buildRoute(route: string) {
-  /**
-   * Not including the correct leading and trailing slashes can break things.
-   * This little helper function ensures the given relative API route is associated
-   * with the local backend URL correctly.
-   */
-
   const re = /^\/?(.*?)\/?$/g;
   return `${localBackend.url}/${(re.exec(route) ?? ["", ""])[1]}/`;
 }

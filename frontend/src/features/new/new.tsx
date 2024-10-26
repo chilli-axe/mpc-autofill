@@ -22,11 +22,10 @@ const InlineParagraph = styled.p`
   display: inline;
 `;
 
+/**
+ * This component is a thin layer on top of `Card` for use in the What's New page.
+ */
 function NewCard({ cardDocument }: { cardDocument: CardDocument }) {
-  /**
-   * This component is a thin layer on top of `Card` for use in the What's New page.
-   */
-
   return (
     <Col>
       <MemoizedCard

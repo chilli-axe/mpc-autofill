@@ -167,17 +167,16 @@ function CardRow({ children }: PropsWithChildren) {
   );
 }
 
+/**
+ * Render all images in `cardIdentifiersAndOptionNumbersBySource` in one block -
+ * i.e. not separated by source.
+ */
 function CardsGroupedTogether({
   cardIdentifiersAndOptionNumbersBySource,
   selectImage,
   selectedImage,
   sourceNamesByKey,
 }: CardGridDisplayProps) {
-  /**
-   * Render all images in `cardIdentifiersAndOptionNumbersBySource` in one block -
-   * i.e. not separated by source.
-   */
-
   return (
     <CardRow>
       {Object.entries(cardIdentifiersAndOptionNumbersBySource).map(
@@ -205,17 +204,16 @@ function CardsGroupedTogether({
   );
 }
 
+/**
+ * Render all images in `cardIdentifiersAndOptionNumbersBySource` separated by source.
+ * Allow users to toggle whether each source's cards are showed/hidden.
+ */
 function CardsFacetedBySource({
   cardIdentifiersAndOptionNumbersBySource,
   selectImage,
   selectedImage,
   sourceNamesByKey,
 }: CardGridDisplayProps) {
-  /**
-   * Render all images in `cardIdentifiersAndOptionNumbersBySource` separated by source.
-   * Allow users to toggle whether each source's cards are showed/hidden.
-   */
-
   //# region queries and hooks
 
   const dispatch = useAppDispatch();

@@ -133,14 +133,13 @@ export const projectSlice = createAppSlice({
     ) => {
       state.cardback = action.payload.selectedImage;
     },
+    /**
+     * ProjectMaxSize (612 cards at time of writing) is primarily enforced at this layer.
+     */
     addMembers: (
       state,
       action: PayloadAction<{ members: Array<SlotProjectMembers> }>
     ) => {
-      /**
-       * ProjectMaxSize (612 cards at time of writing) is primarily enforced at this layer.
-       */
-
       state.members = [
         ...state.members,
         ...action.payload.members.slice(
@@ -168,17 +167,16 @@ export const projectSlice = createAppSlice({
           : null;
       }
     },
+    /**
+     * This is called when shift-clicking on a card slot. It expands the user's selection
+     * between the card they most recently selected and this one - e.g. if the user
+     * selected card 1, then selected card 3 with shift-click, both cards 2 and 3 would
+     * be selected in this action.
+     */
     expandSelection: (
       state,
       action: PayloadAction<{ face: Faces; slot: number }>
     ) => {
-      /**
-       * This is called when shift-clicking on a card slot. It expands the user's selection
-       * between the card they most recently selected and this one - e.g. if the user
-       * selected card 1, then selected card 3 with shift-click, both cards 2 and 3 would
-       * be selected in this action.
-       */
-
       if (
         state.members[action.payload.slot][action.payload.face]?.selected ===
         false

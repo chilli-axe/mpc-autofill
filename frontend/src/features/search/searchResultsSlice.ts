@@ -130,16 +130,16 @@ export const selectSearchResultsForQuery = (
     : undefined;
 
 const defaultEmptySearchResults: Array<string> = [];
+
+/**
+ * Handle the fallback logic where cardbacks with no query use the common cardback's list of cards.
+ */
 export const selectSearchResultsForQueryOrDefault = (
   state: RootState,
   searchQuery: SearchQuery | null | undefined,
   face: Faces,
   cardbacks: Array<string>
 ): Array<string> | undefined =>
-  /**
-   * Handle the fallback logic where cardbacks with no query use the common cardback's list of cards.
-   */
-
   searchQuery?.query != null && searchQuery.query.length > 0
     ? selectSearchResultsForQuery(state, searchQuery)
     : face === Back

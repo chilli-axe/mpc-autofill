@@ -29,16 +29,15 @@ const typePrefix = "cardDocuments/fetchCardDocuments";
 
 const fetchCardDocuments = createAppAsyncThunk(
   typePrefix,
+  /**
+   * This function queries card documents (entire database rows) from the backend. It only queries cards which have
+   * not yet been queried.
+   */
   async (arg, { dispatch, getState }) => {
-    /**
-     * This function queries card documents (entire database rows) from the backend. It only queries cards which have
-     * not yet been queried.
-     */
-
     await fetchSearchResultsAndReportError(dispatch);
     await fetchCardbacksAndReportError(dispatch);
 
-    const state = getState();
+    const state = getState() as RootState;
 
     const allIdentifiers = selectUniqueCardIdentifiers(state);
     const identifiersWithKnownData = new Set(
