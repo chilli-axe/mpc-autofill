@@ -17,6 +17,7 @@ import {
   Slots,
 } from "@/common/types";
 import { selectCardSizesByIdentifier } from "@/features/search/cardDocumentsSlice";
+import { selectActiveFace } from "@/features/viewSettings/viewSettingsSlice";
 
 //# region slice configuration
 
@@ -309,11 +310,12 @@ export const selectProjectMemberIdentifiers = createSelector(
     )
 );
 
-export const selectAllSlotsForFace = (
-  state: RootState,
-  face: Faces
-): Array<[Faces, number]> =>
-  state.project.members.map((_, index) => [face, index]);
+export const selectAllSlotsForActiveFace = createSelector(
+  (state: RootState) => selectProjectSize(state),
+  (state: RootState) => selectActiveFace(state),
+  (projectSize, face): Array<[Faces, number]> =>
+    Array.from({ length: projectSize }, (_, index) => [face, index])
+);
 
 export const selectSelectedSlots = createSelector(
   (state: RootState) => state.project.members,
@@ -440,7 +442,7 @@ export const selectAllSelectedProjectMembersHaveTheSameQuery = createSelector(
 );
 
 export const selectIsProjectEmpty = (state: RootState) =>
-  state.project.members.length == 0;
+  selectProjectSize(state) == 0;
 
 export const selectProjectCardback = (state: RootState): string | undefined =>
   state.project.cardback ?? undefined;

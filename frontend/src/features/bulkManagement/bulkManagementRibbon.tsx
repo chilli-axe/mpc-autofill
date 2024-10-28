@@ -26,7 +26,7 @@ import {
   clearQueries,
   deleteSlots,
   selectAllSelectedProjectMembersHaveTheSameQuery,
-  selectAllSlotsForFace,
+  selectAllSlotsForActiveFace,
   selectIsProjectEmpty,
   selectProjectMember,
   selectSelectedSlots,
@@ -109,8 +109,7 @@ function SelectSimilar({
 function SelectAll({ inDropdown }: { inDropdown: boolean }) {
   const dispatch = useAppDispatch();
 
-  const face = useAppSelector(selectActiveFace);
-  const slots = useAppSelector((state) => selectAllSlotsForFace(state, face));
+  const slots = useAppSelector(selectAllSlotsForActiveFace);
   const onClick = () =>
     dispatch(bulkSetMemberSelection({ selectedStatus: true, slots: slots }));
 
