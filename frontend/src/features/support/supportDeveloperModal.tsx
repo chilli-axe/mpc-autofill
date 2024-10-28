@@ -33,8 +33,9 @@ export function SupportDeveloperModal({
           chilli_axe, the creator and primary developer of this project.
         </p>
         <p>
-          I&apos;m responsible for this website, the code that image repository
-          servers run on, and the desktop tool that automates{" "}
+          I&apos;m responsible for the software development of this project
+          &mdash; this website, the code that image repository servers run on,
+          and the desktop tool that automates{" "}
           <a href={MakePlayingCardsURL} target="_blank">
             {MakePlayingCards}
           </a>
@@ -62,9 +63,9 @@ export function SupportDeveloperModal({
         </p>
         <h4>Where does my donation go?</h4>
         <p>
-          I don&apos;t host any {ProjectName} servers, just
-          https://mpcautofill.github.io &mdash; which GitHub allows me to host
-          for free.
+          I don&apos;t host any {ProjectName} servers, just{" "}
+          <a href={"https://mpcautofill.github.io"}>mpcautofill.github.io</a>{" "}
+          &mdash; which GitHub allows me to host for free.
         </p>
         <p>Any donation goes towards:</p>
         <ul>
