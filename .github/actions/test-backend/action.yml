@@ -4,6 +4,9 @@ inputs:
   google-drive-api-key:
     description: Your Google Drive API key, required for running the database crawler
     required: true
+  moxfield-secret:
+    description: Your Moxfield API secret, required for pulling data from Moxfield
+    required: true
 runs:
   using: composite
   steps:
@@ -27,3 +30,5 @@ runs:
       run: |
         cd MPCAutofill && pytest .
       shell: bash
+      env:
+        MOXFIELD_SECRET: ${{ inputs.moxfield-secret }}
