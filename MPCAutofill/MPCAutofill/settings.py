@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 
 import os
 import sys
+from typing import Optional
 
 import django_stubs_ext
 import environ
@@ -47,6 +48,9 @@ DISCORD = env("DISCORD", default="https://discord.gg/magicproxies")
 REDDIT = env("REDDIT", default="https://www.reddit.com/r/mpcproxies/")
 THEME = env("THEME", default="superhero")
 DESCRIPTION = env("DESCRIPTION", default="")
+
+# Integration secrets
+MOXFIELD_SECRET: Optional[str] = env("MOXFIELD_SECRET", default=None)
 
 PREPEND_WWW = env("PREPEND_WWW", default=False)
 

@@ -1,9 +1,15 @@
+import time
 from collections import Counter
+from concurrent.futures import ThreadPoolExecutor
 from enum import Enum
+from typing import Optional
 
 import pytest
+import requests_mock
 
-from cardpicker.integrations.game.mtg import MTG
+from django.conf import settings as conf_settings
+
+from cardpicker.integrations.game.mtg import MTG, Moxfield
 from cardpicker.integrations.integrations import get_configured_game_integration
 
 
@@ -44,6 +50,19 @@ class TestMTGIntegration:
 
     # endregion
 
+    # region fixtures
+
+    @pytest.fixture()
+    def moxfield_secret_setter(self):
+        def _callable(moxfield_secret: Optional[str]):
+            conf_settings.MOXFIELD_SECRET = moxfield_secret
+
+        old_secret = conf_settings.MOXFIELD_SECRET
+        yield _callable
+        conf_settings.MOXFIELD_SECRET = old_secret
+
+    # endregion
+
     # region tests
 
     def test_get_double_faced_card_pairs(self):
@@ -57,5 +76,32 @@ class TestMTGIntegration:
         decklist = MTG.query_import_site(url)
         assert decklist
         assert Counter(decklist.splitlines()) == snapshot
+
+    @pytest.mark.parametrize(
+        "moxfield_secret, is_moxfield_enabled",
+        [
+            (None, False),
+            ("", False),
+            ("lorem ipsum", True),
+        ],
+    )
+    def test_moxfield_enabled(self, moxfield_secret_setter, moxfield_secret, is_moxfield_enabled):
+        moxfield_secret_setter(moxfield_secret)
+        import_sites = MTG.get_import_sites()
+        if is_moxfield_enabled:
+            assert Moxfield in import_sites
+        else:
+            assert Moxfield not in import_sites
+
+    def test_moxfield_rate_limit(self, monkeypatch):
+        with requests_mock.Mocker() as mock:
+            mock.get("https://api.moxfield.com/v2/decks/all/D42-or9pCk-uMi4XzRDziQ", json={})
+
+            with ThreadPoolExecutor(max_workers=3) as pool:
+                t0 = time.time()
+                pool.map(lambda _: [Moxfield.retrieve_card_list(self.Decks.MOXFIELD.value) for _ in range(2)], range(3))
+            t1 = time.time()
+            t = t1 - t0
+            assert t > 5  # one second between calls
 
     # endregion

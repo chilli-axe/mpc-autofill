@@ -3,6 +3,10 @@ import re
 from typing import Any, Type
 from urllib.parse import parse_qs, urlparse
 
+import ratelimit
+
+from django.conf import settings
+
 from cardpicker.integrations.game.base import GameIntegration, ImportSite
 from cardpicker.models import DFCPair
 from cardpicker.utils import get_json_endpoint_rate_limited
@@ -145,12 +149,15 @@ class Moxfield(ImportSite):
     def get_host_names() -> list[str]:
         return ["www.moxfield.com", "moxfield.com"]  # moxfield prefers www.
 
+    # Note: requests to the Moxfield API must be rate limited to one request per second.
     @classmethod
+    @ratelimit.sleep_and_retry  # type: ignore  # `ratelimit` does not implement decorator typing correctly
+    @ratelimit.limits(calls=1, period=1)  # type: ignore  # `ratelimit` does not implement decorator typing correctly
     def retrieve_card_list(cls, url: str) -> str:
         path = urlparse(url).path
         deck_id = path.split("/")[-1]
         response = cls.request(
-            path=f"v2/decks/all/{deck_id}", netloc="api.moxfield.com", headers={"x-requested-by": "mpcautofill"}
+            path=f"v2/decks/all/{deck_id}", netloc="api.moxfield.com", headers={"User-Agent": settings.MOXFIELD_SECRET}
         )
         response_json = response.json()
         card_list = ""
@@ -319,7 +326,7 @@ class MTG(GameIntegration):
             Deckstats,
             MagicVille,
             ManaStack,
-            Moxfield,
+            *([Moxfield] if settings.MOXFIELD_SECRET else []),
             MTGGoldfish,
             Scryfall,
             TappedOut,
