@@ -1,6 +1,6 @@
 import pytest
 
-from cardpicker.search.sanitisation import process_line, to_searchable
+from cardpicker.search.sanitisation import to_searchable
 
 
 class TestUtils:
@@ -34,20 +34,5 @@ class TestUtils:
     )
     def test_to_searchable(self, input_string, output) -> None:
         assert to_searchable(input_string) == output
-
-    @pytest.mark.parametrize(
-        "input_string, output",
-        [
-            ("1 brainstorm", ("brainstorm", 1)),
-            ("brainstorm", ("brainstorm", 1)),
-            ("2x brainstorm", ("brainstorm", 2)),
-            ("   3      brainstorm  ", ("brainstorm", 3)),
-            ("1", (None, None)),
-            ("", (None, None)),
-        ],
-        ids=["basic case 1", "basic case 2", "basic case 3", "trim whitespace", "empty case 1", "empty case 2"],
-    )
-    def test_process_line(self, input_string, output):
-        assert process_line(input_string) == output
 
     # endregion
