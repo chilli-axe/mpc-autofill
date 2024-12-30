@@ -56,13 +56,7 @@ describe("InvalidIdentifiersStatus tests", () => {
       });
       await importText(query);
       await expectCardSlotToExist(1);
-      await expectCardGridSlotState(
-        1,
-        Front,
-        problematicImageCount > 0 ? "Your search query" : cardDocument1.name,
-        1,
-        1
-      );
+      await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 1);
       await waitFor(() =>
         expect(
           screen.queryAllByText("Your project specified", { exact: false })

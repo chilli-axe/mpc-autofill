@@ -15,7 +15,12 @@ const config = {
     "next-router-mock",
   ],
 
-  testEnvironment: "jest-environment-jsdom",
+  // https://mswjs.io/docs/migrations/1.x-to-2.x#requestresponsetextencoder-is-not-defined-jest
+  testEnvironment: "jest-fixed-jsdom",
+  // https://mswjs.io/docs/migrations/1.x-to-2.x#cannot-find-module-mswnode-jsdom
+  testEnvironmentOptions: {
+    customExportConditions: [""],
+  },
   runtime: "@side/jest-runtime",
   transform: {
     "^.+\\.ts$": "@swc/jest",
