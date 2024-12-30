@@ -93,15 +93,15 @@ async function expectCardSlotState(
 ) {
   await waitFor(() => expect(screen.getByTestId(testId)).toBeInTheDocument());
   const cardElement = screen.getByTestId(testId);
-  if (cardName != null) {
-    await waitFor(() =>
-      expect(within(cardElement).getByText(cardName)).toBeInTheDocument()
-    );
-  } else {
+  if (cardName === null) {
     await waitFor(() =>
       expect(
         within(cardElement).getByText("Your search query")
       ).toBeInTheDocument()
+    );
+  } else if (cardName !== undefined) {
+    await waitFor(() =>
+      expect(within(cardElement).getByText(cardName)).toBeInTheDocument()
     );
   }
   if (selectedImage != null && totalImages != null) {
