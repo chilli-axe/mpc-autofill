@@ -9,7 +9,7 @@ import Navbar from "react-bootstrap/Navbar";
 import NavDropdown from "react-bootstrap/NavDropdown";
 import styled from "styled-components";
 
-import { useGetBackendInfoQuery } from "@/app/api";
+import { useGetBackendInfoQuery, useGetPatreonQuery } from "@/app/api";
 import { ContentMaxWidth, NavbarLogoHeight } from "@/common/constants";
 import { useAppDispatch } from "@/common/types";
 import DisableSSR from "@/components/disableSSR";
@@ -36,6 +36,7 @@ export default function ProjectNavbar() {
   const dispatch = useAppDispatch();
   const backendConfigured = useBackendConfigured();
   const backendInfoQuery = useGetBackendInfoQuery();
+  const patreonQuery = useGetPatreonQuery();
 
   const [showBackendConfig, setShowBackendConfig] = useState<boolean>(false);
 
@@ -121,8 +122,7 @@ export default function ProjectNavbar() {
                   <i className="bi bi-code" /> Support the Developer
                 </NavDropdown.Item>
                 {backendInfoQuery.data?.name != null &&
-                  (backendInfoQuery.data?.patreon?.url ?? "").trim().length >
-                    0 && (
+                  (patreonQuery.data?.url ?? "").trim().length > 0 && (
                     <NavDropdown.Item onClick={handleShowSupportBackendModal}>
                       <i className="bi bi-server" /> Support{" "}
                       {backendInfoQuery.data.name}
