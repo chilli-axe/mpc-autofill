@@ -172,6 +172,18 @@ class TargetSites(Enum):
             Cardstocks.P10: "Kunststoff",
         },
     )
+    PrinterStudioES = TargetSite(
+        base_url="https://www.printerstudio.es",
+        starting_url_route="personalizado/tarjetas-personalizadas-en-blanco.html",
+        supports_foil=False,
+        saved_successfully_text="Guardado satisfactoriamente",
+        cardstock_site_name_mapping={
+            Cardstocks.S30: "Estándar (suave)",
+            Cardstocks.S33: "Superior (suave)",
+            Cardstocks.M31: "De priméra calidad (lino)",
+            Cardstocks.P10: "Plástico (suave)",
+        },
+    )
 
 
 DPI_HEIGHT_RATIO = 300 / 1110  # TODO: share this between desktop tool and backend
