@@ -174,3 +174,4 @@ MPCAutofill/drives.csv
 /static/
 *.woff
 *.woff2
+frontend/public/mockServiceWorker.js
