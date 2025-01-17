@@ -1,6 +1,5 @@
 import { screen } from "@testing-library/react";
 
-import App from "@/app/app";
 import {
   Back,
   Card,
@@ -25,6 +24,7 @@ import {
   openImportXMLModal,
   renderWithProviders,
 } from "@/common/test-utils";
+import ProjectEditor from "@/components/ProjectEditor";
 import {
   cardbacksTwoOtherResults,
   cardDocumentsSixResults,
@@ -50,7 +50,7 @@ const preloadedState = {
 //# region snapshot tests
 
 test("the html structure of XML importer", async () => {
-  renderWithProviders(<App />, { preloadedState });
+  renderWithProviders(<ProjectEditor />, { preloadedState });
 
   await openImportXMLModal();
 
@@ -67,7 +67,7 @@ test("importing one card by XML into an empty project", async () => {
     searchResultsOneResult,
     ...defaultHandlers
   );
-  renderWithProviders(<App />, { preloadedState });
+  renderWithProviders(<ProjectEditor />, { preloadedState });
 
   await expectCardbackSlotState(cardDocument2.name, 1, 2);
 
@@ -107,7 +107,7 @@ test("importing multiple instances of one card by XML into an empty project", as
     searchResultsOneResult,
     ...defaultHandlers
   );
-  renderWithProviders(<App />, { preloadedState });
+  renderWithProviders(<ProjectEditor />, { preloadedState });
 
   await expectCardbackSlotState(cardDocument2.name, 1, 2);
 
@@ -150,7 +150,7 @@ test("importing one specific card version by XML into an empty project", async (
     searchResultsThreeResults,
     ...defaultHandlers
   );
-  renderWithProviders(<App />, { preloadedState });
+  renderWithProviders(<ProjectEditor />, { preloadedState });
 
   await expectCardbackSlotState(cardDocument2.name, 1, 2);
 
@@ -190,7 +190,7 @@ test("importing one card of each type into an empty project", async () => {
     searchResultsSixResults,
     ...defaultHandlers
   );
-  renderWithProviders(<App />, { preloadedState });
+  renderWithProviders(<ProjectEditor />, { preloadedState });
 
   await expectCardbackSlotState(cardDocument2.name, 1, 2);
 
@@ -248,7 +248,7 @@ test("importing a more complex XML into an empty project", async () => {
     searchResultsFourResults,
     ...defaultHandlers
   );
-  renderWithProviders(<App />, { preloadedState });
+  renderWithProviders(<ProjectEditor />, { preloadedState });
 
   await expectCardbackSlotState(cardDocument2.name, 1, 2);
 
@@ -308,7 +308,7 @@ test("importing an XML with gaps into an empty project", async () => {
     searchResultsFourResults,
     ...defaultHandlers
   );
-  renderWithProviders(<App />, { preloadedState });
+  renderWithProviders(<ProjectEditor />, { preloadedState });
 
   await expectCardbackSlotState(cardDocument2.name, 1, 2);
 
@@ -369,7 +369,7 @@ test("importing a more complex XML into a non-empty project", async () => {
     searchResultsFourResults,
     ...defaultHandlers
   );
-  renderWithProviders(<App />, {
+  renderWithProviders(<ProjectEditor />, {
     preloadedState: {
       ...preloadedState,
       project: {
@@ -446,7 +446,7 @@ test("import an XML and retain its cardback", async () => {
     searchResultsOneResult,
     ...defaultHandlers
   );
-  renderWithProviders(<App />, { preloadedState });
+  renderWithProviders(<ProjectEditor />, { preloadedState });
 
   await expectCardbackSlotState(cardDocument2.name, 1, 2);
 

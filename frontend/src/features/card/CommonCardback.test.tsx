@@ -1,11 +1,11 @@
 import { screen } from "@testing-library/react";
 
-import App from "@/app/app";
 import { cardDocument1 } from "@/common/test-constants";
 import {
   expectCardbackSlotState,
   renderWithProviders,
 } from "@/common/test-utils";
+import ProjectEditor from "@/components/ProjectEditor";
 import {
   cardbacksOneResult,
   cardbacksTwoResults,
@@ -25,7 +25,7 @@ test("the html structure of a CommonCardback with a single search result", async
     ...defaultHandlers
   );
 
-  renderWithProviders(<App />, {
+  renderWithProviders(<ProjectEditor />, {
     preloadedState: {
       project: { members: [], cardback: null, mostRecentlySelectedSlot: null },
     },
@@ -43,7 +43,7 @@ test("the html structure of a CommonCardback with multiple search results", asyn
     ...defaultHandlers
   );
 
-  renderWithProviders(<App />, {
+  renderWithProviders(<ProjectEditor />, {
     preloadedState: {
       project: { members: [], cardback: null, mostRecentlySelectedSlot: null },
     },

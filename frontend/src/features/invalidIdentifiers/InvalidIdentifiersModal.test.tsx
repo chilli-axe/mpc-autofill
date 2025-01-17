@@ -1,7 +1,6 @@
 import { waitFor, within } from "@testing-library/dom";
 import { screen } from "@testing-library/react";
 
-import App from "@/app/app";
 import { FaceSeparator, SelectedImageSeparator } from "@/common/constants";
 import { cardDocument5 } from "@/common/test-constants";
 import {
@@ -9,6 +8,7 @@ import {
   importText,
   renderWithProviders,
 } from "@/common/test-utils";
+import ProjectEditor from "@/components/ProjectEditor";
 import {
   cardDocumentsSixResults,
   defaultHandlers,
@@ -24,7 +24,7 @@ test("invalidIdentifiersModal displays the appropriate data", async () => {
     searchResultsSixResults,
     ...defaultHandlers
   );
-  renderWithProviders(<App />, {
+  renderWithProviders(<ProjectEditor />, {
     preloadedState: {
       project: {
         members: [],

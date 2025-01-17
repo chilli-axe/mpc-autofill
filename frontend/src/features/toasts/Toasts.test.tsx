@@ -6,7 +6,6 @@ import {
 } from "@testing-library/react";
 import Cookies from "js-cookie";
 
-import App from "@/app/app";
 import { GoogleAnalyticsConsentKey } from "@/common/constants";
 import {
   configureDefaultBackend,
@@ -16,6 +15,7 @@ import {
   openImportTextModal,
   renderWithProviders,
 } from "@/common/test-utils";
+import ProjectEditor from "@/components/ProjectEditor";
 import { NewCards } from "@/features/new/New";
 import {
   cardbacksServerError,
@@ -133,7 +133,7 @@ describe("error reporting toasts", () => {
       searchResultsServerError,
       ...defaultHandlers
     );
-    renderWithProviders(<App />, {
+    renderWithProviders(<ProjectEditor />, {
       preloadedState: { toasts: { notifications: {} } },
     });
     await assertErrorToast("2/searchResults", async () => {
@@ -149,7 +149,7 @@ describe("error reporting toasts", () => {
       searchResultsOneResult,
       ...defaultHandlers
     );
-    renderWithProviders(<App />, {
+    renderWithProviders(<ProjectEditor />, {
       preloadedState: { toasts: { notifications: {} } },
     });
     await assertErrorToast("2/cards");
@@ -163,7 +163,7 @@ describe("error reporting toasts", () => {
       searchResultsOneResult,
       ...defaultHandlers
     );
-    renderWithProviders(<App />, { preloadedState: {} });
+    renderWithProviders(<ProjectEditor />, { preloadedState: {} });
     await assertErrorToast("2/sources");
   });
 
@@ -176,7 +176,7 @@ describe("error reporting toasts", () => {
       dfcPairsServerError,
       ...defaultHandlers
     );
-    renderWithProviders(<App />);
+    renderWithProviders(<ProjectEditor />);
     await assertErrorToast("2/DFCPairs", async () => {
       // DFC pairs are loaded when an importer is opened
       await openImportTextModal();
@@ -191,7 +191,7 @@ describe("error reporting toasts", () => {
       searchResultsOneResult,
       ...defaultHandlers
     );
-    renderWithProviders(<App />);
+    renderWithProviders(<ProjectEditor />);
     await assertErrorToast("2/cardbacks");
   });
 
@@ -204,7 +204,7 @@ describe("error reporting toasts", () => {
       importSitesServerError,
       ...defaultHandlers
     );
-    renderWithProviders(<App />);
+    renderWithProviders(<ProjectEditor />);
     await assertErrorToast("2/importSites", async () => {
       const addCardsMenu = getAddCardsMenu();
       addCardsMenu.click();
@@ -220,7 +220,7 @@ describe("error reporting toasts", () => {
       sampleCardsServerError,
       ...defaultHandlers
     );
-    renderWithProviders(<App />);
+    renderWithProviders(<ProjectEditor />);
     await assertErrorToast("2/sampleCards", async () => {
       // DFC pairs are loaded when the text importer is opened
       await openImportTextModal();

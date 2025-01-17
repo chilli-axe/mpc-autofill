@@ -1,6 +1,5 @@
 import { screen, waitFor } from "@testing-library/react";
 
-import App from "@/app/app";
 import { Back, FaceSeparator, Front } from "@/common/constants";
 import {
   cardDocument1,
@@ -25,6 +24,7 @@ import {
   selectSimilar,
   selectSlot,
 } from "@/common/test-utils";
+import ProjectEditor from "@/components/ProjectEditor";
 import {
   cardbacksOneOtherResult,
   cardbacksOneResult,
@@ -51,7 +51,7 @@ test("selecting a single card and changing its query", async () => {
     searchResultsSixResults,
     ...defaultHandlers
   );
-  renderWithProviders(<App />, {
+  renderWithProviders(<ProjectEditor />, {
     preloadedState: {
       project: {
         members: [],
@@ -77,7 +77,7 @@ test("selecting multiple cards and changing both of their queries", async () => 
     searchResultsSixResults,
     ...defaultHandlers
   );
-  renderWithProviders(<App />, {
+  renderWithProviders(<ProjectEditor />, {
     preloadedState: {
       project: {
         members: [],
@@ -106,7 +106,7 @@ test("selecting a single card and changing its selected image", async () => {
     searchResultsThreeResults,
     ...defaultHandlers
   );
-  renderWithProviders(<App />, {
+  renderWithProviders(<ProjectEditor />, {
     preloadedState: {
       project: {
         members: [],
@@ -132,7 +132,7 @@ test("selecting multiple cards with the same query and changing both of their se
     searchResultsThreeResults,
     ...defaultHandlers
   );
-  renderWithProviders(<App />, {
+  renderWithProviders(<ProjectEditor />, {
     preloadedState: {
       project: {
         members: [],
@@ -161,7 +161,7 @@ test("selecting multiple cardbacks and changing both of their selected images", 
     searchResultsThreeResults,
     ...defaultHandlers
   );
-  renderWithProviders(<App />, {
+  renderWithProviders(<ProjectEditor />, {
     preloadedState: {
       project: {
         members: [],
@@ -190,7 +190,7 @@ test("cannot change the images of multiple selected images when they don't share
     searchResultsSixResults,
     ...defaultHandlers
   );
-  renderWithProviders(<App />, {
+  renderWithProviders(<ProjectEditor />, {
     preloadedState: {
       project: {
         members: [],
@@ -221,7 +221,7 @@ test.skip("selecting a single card and clearing its front query", async () => {
     searchResultsOneResult,
     ...defaultHandlers
   );
-  renderWithProviders(<App />, {
+  renderWithProviders(<ProjectEditor />, {
     preloadedState: {
       project: {
         members: [],
@@ -247,7 +247,7 @@ test.skip("selecting a single card and clearing its back query", async () => {
     searchResultsOneResult,
     ...defaultHandlers
   );
-  renderWithProviders(<App />, {
+  renderWithProviders(<ProjectEditor />, {
     preloadedState: {
       project: {
         members: [],
@@ -277,7 +277,7 @@ test.skip("selecting multiple cards and clearing their front queries", async () 
     searchResultsOneResult,
     ...defaultHandlers
   );
-  renderWithProviders(<App />, {
+  renderWithProviders(<ProjectEditor />, {
     preloadedState: {
       project: {
         members: [],
@@ -306,7 +306,7 @@ test("selecting a single card and deleting it", async () => {
     searchResultsOneResult,
     ...defaultHandlers
   );
-  renderWithProviders(<App />, {
+  renderWithProviders(<ProjectEditor />, {
     preloadedState: {
       project: {
         members: [],
@@ -332,7 +332,7 @@ test("selecting multiple cards and deleting them", async () => {
     searchResultsOneResult,
     ...defaultHandlers
   );
-  renderWithProviders(<App />, {
+  renderWithProviders(<ProjectEditor />, {
     preloadedState: {
       project: {
         members: [],
@@ -361,7 +361,7 @@ test("selecting then clearing the selection", async () => {
     searchResultsOneResult,
     ...defaultHandlers
   );
-  renderWithProviders(<App />, {
+  renderWithProviders(<ProjectEditor />, {
     preloadedState: {
       project: {
         members: [],
@@ -386,7 +386,7 @@ test("selecting then expanding the selection to similar front images", async () 
     searchResultsSixResults,
     ...defaultHandlers
   );
-  renderWithProviders(<App />, {
+  renderWithProviders(<ProjectEditor />, {
     preloadedState: {
       project: {
         members: [],
@@ -419,7 +419,7 @@ test("selecting then expanding the selection to similar back images", async () =
     dfcPairsMatchingCards1And4,
     ...defaultHandlers
   );
-  renderWithProviders(<App />, {
+  renderWithProviders(<ProjectEditor />, {
     preloadedState: {
       project: {
         members: [],
@@ -455,7 +455,7 @@ test("selecting then expanding the selection to all front images", async () => {
     searchResultsSixResults,
     ...defaultHandlers
   );
-  renderWithProviders(<App />, {
+  renderWithProviders(<ProjectEditor />, {
     preloadedState: {
       project: {
         members: [],

@@ -1,6 +1,5 @@
 import FileSaver from "file-saver";
 
-import App from "@/app/app";
 import { Back, FaceSeparator, Front } from "@/common/constants";
 import {
   cardDocument1,
@@ -16,6 +15,7 @@ import {
   normaliseString,
   renderWithProviders,
 } from "@/common/test-utils";
+import ProjectEditor from "@/components/ProjectEditor";
 import {
   cardbacksOneOtherResult,
   cardDocumentsSixResults,
@@ -37,7 +37,7 @@ test("the decklist representation of a simple project with no custom backs", asy
     searchResultsSixResults,
     ...defaultHandlers
   );
-  renderWithProviders(<App />, {
+  renderWithProviders(<ProjectEditor />, {
     preloadedState: {
       project: {
         members: [],
@@ -73,7 +73,7 @@ test("the decklist representation of a simple project with a custom back for one
     searchResultsSixResults,
     ...defaultHandlers
   );
-  renderWithProviders(<App />, {
+  renderWithProviders(<ProjectEditor />, {
     preloadedState: {
       project: {
         members: [],
@@ -110,7 +110,7 @@ test("the decklist representation of a simple project with multiple instances of
     searchResultsSixResults,
     ...defaultHandlers
   );
-  renderWithProviders(<App />, {
+  renderWithProviders(<ProjectEditor />, {
     preloadedState: {
       project: {
         members: [],

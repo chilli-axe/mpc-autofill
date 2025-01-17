@@ -1,7 +1,6 @@
 import { waitFor } from "@testing-library/dom";
 import { screen } from "@testing-library/react";
 
-import App from "@/app/app";
 import { Front, SelectedImageSeparator } from "@/common/constants";
 import { cardDocument1, cardDocument5 } from "@/common/test-constants";
 import {
@@ -10,6 +9,7 @@ import {
   importText,
   renderWithProviders,
 } from "@/common/test-utils";
+import ProjectEditor from "@/components/ProjectEditor";
 import {
   cardDocumentsOneResult,
   defaultHandlers,
@@ -45,7 +45,7 @@ describe("InvalidIdentifiersStatus tests", () => {
         searchResultsOneResult,
         ...defaultHandlers
       );
-      renderWithProviders(<App />, {
+      renderWithProviders(<ProjectEditor />, {
         preloadedState: {
           project: {
             members: [],

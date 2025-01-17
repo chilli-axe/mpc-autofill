@@ -2,7 +2,6 @@ import { within } from "@testing-library/dom";
 import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
-import App from "@/app/app";
 import { Back, Front, SelectedImageSeparator } from "@/common/constants";
 import {
   cardDocument1,
@@ -21,6 +20,7 @@ import {
   openImportTextModal,
   renderWithProviders,
 } from "@/common/test-utils";
+import ProjectEditor from "@/components/ProjectEditor";
 import {
   cardbacksTwoOtherResults,
   cardDocumentsFourResults,
@@ -61,7 +61,7 @@ const preloadedState = {
 //# region snapshot tests
 
 test("the html structure of text importer", async () => {
-  renderWithProviders(<App />, { preloadedState });
+  renderWithProviders(<ProjectEditor />, { preloadedState });
 
   await openImportTextModal();
 
@@ -78,7 +78,7 @@ test("importing one card by text into an empty project", async () => {
     searchResultsOneResult,
     ...defaultHandlers
   );
-  renderWithProviders(<App />, { preloadedState });
+  renderWithProviders(<ProjectEditor />, { preloadedState });
 
   await expectCardbackSlotState(cardDocument2.name, 1, 2);
 
@@ -100,7 +100,7 @@ test("importing multiple instances of one card by text into an empty project", a
     searchResultsOneResult,
     ...defaultHandlers
   );
-  renderWithProviders(<App />, { preloadedState });
+  renderWithProviders(<ProjectEditor />, { preloadedState });
 
   await expectCardbackSlotState(cardDocument2.name, 1, 2);
 
@@ -125,7 +125,7 @@ test("importing multiple instances of one card without an x by text into an empt
     searchResultsOneResult,
     ...defaultHandlers
   );
-  renderWithProviders(<App />, { preloadedState });
+  renderWithProviders(<ProjectEditor />, { preloadedState });
 
   // import two instances of a card without an x
   await importText("2 my search query");
@@ -148,7 +148,7 @@ test("importing multiple instances of one card with a capital X by text into an 
     searchResultsOneResult,
     ...defaultHandlers
   );
-  renderWithProviders(<App />, { preloadedState });
+  renderWithProviders(<ProjectEditor />, { preloadedState });
 
   await expectCardbackSlotState(cardDocument2.name, 1, 2);
 
@@ -173,7 +173,7 @@ test("importing multiple instances of one card by text into a non-empty project"
     searchResultsOneResult,
     ...defaultHandlers
   );
-  renderWithProviders(<App />, {
+  renderWithProviders(<ProjectEditor />, {
     preloadedState: {
       ...preloadedState,
       project: {
@@ -214,7 +214,7 @@ test("importing one card of each type into an empty project", async () => {
     searchResultsSixResults,
     ...defaultHandlers
   );
-  renderWithProviders(<App />, { preloadedState });
+  renderWithProviders(<ProjectEditor />, { preloadedState });
 
   await expectCardbackSlotState(cardDocument2.name, 1, 2);
 
@@ -243,7 +243,7 @@ test("importing one DFC-paired card by text into an empty project", async () => 
     dfcPairsMatchingCards1And4,
     ...defaultHandlers
   );
-  renderWithProviders(<App />, { preloadedState });
+  renderWithProviders(<ProjectEditor />, { preloadedState });
 
   await expectCardbackSlotState(cardDocument2.name, 1, 2);
 
@@ -265,7 +265,7 @@ test("importing an empty string by text into an empty project", async () => {
     searchResultsOneResult,
     ...defaultHandlers
   );
-  renderWithProviders(<App />, { preloadedState });
+  renderWithProviders(<ProjectEditor />, { preloadedState });
 
   await importText("");
 
@@ -274,7 +274,7 @@ test("importing an empty string by text into an empty project", async () => {
 
 test("the placeholder text of the text importer", async () => {
   server.use(sampleCards, ...defaultHandlers);
-  renderWithProviders(<App />, { preloadedState });
+  renderWithProviders(<ProjectEditor />, { preloadedState });
 
   await openImportTextModal();
   await waitFor(() =>
@@ -302,7 +302,7 @@ test("the textbox should clear itself after submitting a list", async () => {
     searchResultsOneResult,
     ...defaultHandlers
   );
-  renderWithProviders(<App />, { preloadedState });
+  renderWithProviders(<ProjectEditor />, { preloadedState });
 
   await expectCardbackSlotState(cardDocument2.name, 1, 2);
 
@@ -325,7 +325,7 @@ test("the textbox should not clear itself until the form has been submitted", as
     searchResultsOneResult,
     ...defaultHandlers
   );
-  renderWithProviders(<App />, { preloadedState });
+  renderWithProviders(<ProjectEditor />, { preloadedState });
 
   await expectCardbackSlotState(cardDocument2.name, 1, 2);
 

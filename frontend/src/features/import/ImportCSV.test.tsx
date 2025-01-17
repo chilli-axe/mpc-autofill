@@ -1,6 +1,5 @@
 import { screen } from "@testing-library/react";
 
-import App from "@/app/app";
 import { Back, Front } from "@/common/constants";
 import {
   cardDocument1,
@@ -18,6 +17,7 @@ import {
   openImportCSVModal,
   renderWithProviders,
 } from "@/common/test-utils";
+import ProjectEditor from "@/components/ProjectEditor";
 import {
   cardbacksTwoOtherResults,
   cardDocumentsSixResults,
@@ -43,7 +43,7 @@ const preloadedState = {
 //# region snapshot tests
 
 test("the html structure of CSV importer", async () => {
-  renderWithProviders(<App />, { preloadedState });
+  renderWithProviders(<ProjectEditor />, { preloadedState });
 
   await openImportCSVModal();
 
@@ -60,7 +60,7 @@ test("importing one card by CSV into an empty project", async () => {
     searchResultsOneResult,
     ...defaultHandlers
   );
-  renderWithProviders(<App />, { preloadedState });
+  renderWithProviders(<ProjectEditor />, { preloadedState });
 
   // import a card
   await importCSV(
@@ -83,7 +83,7 @@ test("importing multiple instances of one card by CSV into an empty project", as
     searchResultsOneResult,
     ...defaultHandlers
   );
-  renderWithProviders(<App />, { preloadedState });
+  renderWithProviders(<ProjectEditor />, { preloadedState });
 
   // import two instances of a card
   await importCSV(
@@ -109,7 +109,7 @@ test("importing one specific card version by CSV into an empty project", async (
     searchResultsThreeResults,
     ...defaultHandlers
   );
-  renderWithProviders(<App />, { preloadedState });
+  renderWithProviders(<ProjectEditor />, { preloadedState });
 
   // import a card
   await importCSV(
@@ -132,7 +132,7 @@ test("importing one card of each type into an empty project", async () => {
     searchResultsSixResults,
     ...defaultHandlers
   );
-  renderWithProviders(<App />, { preloadedState });
+  renderWithProviders(<ProjectEditor />, { preloadedState });
 
   // import one card of each type
   await importCSV(
@@ -161,7 +161,7 @@ test("importing a more complex CSV into an empty project", async () => {
     searchResultsFourResults,
     ...defaultHandlers
   );
-  renderWithProviders(<App />, { preloadedState });
+  renderWithProviders(<ProjectEditor />, { preloadedState });
 
   // import a few cards
   await importCSV(
@@ -191,7 +191,7 @@ test("CSV header has spaces", async () => {
     searchResultsThreeResults,
     ...defaultHandlers
   );
-  renderWithProviders(<App />, { preloadedState });
+  renderWithProviders(<ProjectEditor />, { preloadedState });
 
   // import a card
   await importCSV(

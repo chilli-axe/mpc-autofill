@@ -1,12 +1,12 @@
 import { screen, waitFor } from "@testing-library/react";
 
-import App from "@/app/app";
 import { Card, Front } from "@/common/constants";
 import { cardDocument1 } from "@/common/test-constants";
 import {
   expectCardGridSlotState,
   renderWithProviders,
 } from "@/common/test-utils";
+import ProjectEditor from "@/components/ProjectEditor";
 import {
   cardDocumentsOneResult,
   defaultHandlers,
@@ -24,7 +24,7 @@ test("the html structure of a CardDetailedViewModal", async () => {
     searchResultsOneResult,
     ...defaultHandlers
   );
-  renderWithProviders(<App />, {
+  renderWithProviders(<ProjectEditor />, {
     preloadedState: {
       project: {
         members: [

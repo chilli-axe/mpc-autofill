@@ -1,6 +1,5 @@
 import { waitFor, within } from "@testing-library/dom";
 
-import App from "@/app/app";
 import { Front } from "@/common/constants";
 import { cardDocument1, sourceDocument1 } from "@/common/test-constants";
 import {
@@ -9,6 +8,7 @@ import {
   openSearchSettingsModal,
   renderWithProviders,
 } from "@/common/test-utils";
+import ProjectEditor from "@/components/ProjectEditor";
 import {
   cardbacksOneResult,
   cardDocumentsOneResult,
@@ -28,7 +28,7 @@ test("the html structure of search settings", async () => {
     searchResultsOneResult,
     ...defaultHandlers
   );
-  const { container } = renderWithProviders(<App />, {
+  const { container } = renderWithProviders(<ProjectEditor />, {
     preloadedState: {
       project: { members: [], cardback: null, mostRecentlySelectedSlot: null },
     },

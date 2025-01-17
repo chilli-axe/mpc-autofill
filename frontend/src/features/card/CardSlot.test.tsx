@@ -1,6 +1,5 @@
 import { screen, waitFor } from "@testing-library/react";
 
-import App from "@/app/app";
 import { Back, Card, FaceSeparator, Front } from "@/common/constants";
 import {
   cardDocument1,
@@ -21,6 +20,7 @@ import {
   renderWithProviders,
   selectSlot,
 } from "@/common/test-utils";
+import ProjectEditor from "@/components/ProjectEditor";
 import {
   cardbacksOneOtherResult,
   cardbacksTwoResults,
@@ -47,7 +47,7 @@ test("the html structure of a CardSlot with a single search result, no image sel
     searchResultsOneResult,
     ...defaultHandlers
   );
-  renderWithProviders(<App />, {
+  renderWithProviders(<ProjectEditor />, {
     preloadedState: {
       project: {
         members: [
@@ -76,7 +76,7 @@ test("the html structure of a CardSlot with a single search result, slot selecte
     searchResultsOneResult,
     ...defaultHandlers
   );
-  renderWithProviders(<App />, {
+  renderWithProviders(<ProjectEditor />, {
     preloadedState: {
       project: {
         members: [
@@ -112,7 +112,7 @@ test("the html structure of a CardSlot with a single search result, image select
     ...defaultHandlers
   );
 
-  renderWithProviders(<App />, {
+  renderWithProviders(<ProjectEditor />, {
     preloadedState: {
       project: projectSelectedImage1,
     },
@@ -130,7 +130,7 @@ test("the html structure of a CardSlot with multiple search results, image selec
     ...defaultHandlers
   );
 
-  renderWithProviders(<App />, {
+  renderWithProviders(<ProjectEditor />, {
     preloadedState: { project: projectSelectedImage1 },
   });
 
@@ -146,7 +146,7 @@ test("the html structure of a CardSlot's grid selector, cards faceted by source"
     ...defaultHandlers
   );
 
-  renderWithProviders(<App />, {
+  renderWithProviders(<ProjectEditor />, {
     preloadedState: {
       project: projectSelectedImage1,
     },
@@ -164,7 +164,7 @@ test("the html structure of a CardSlot's grid selector, cards grouped together",
     ...defaultHandlers
   );
 
-  renderWithProviders(<App />, {
+  renderWithProviders(<ProjectEditor />, {
     preloadedState: {
       project: projectSelectedImage1,
       viewSettings: {
@@ -189,7 +189,7 @@ test("switching to the next image in a CardSlot", async () => {
     searchResultsThreeResults,
     ...defaultHandlers
   );
-  renderWithProviders(<App />, {
+  renderWithProviders(<ProjectEditor />, {
     preloadedState: {
       project: projectSelectedImage1,
     },
@@ -210,7 +210,7 @@ test("switching to the previous image in a CardSlot", async () => {
     searchResultsThreeResults,
     ...defaultHandlers
   );
-  renderWithProviders(<App />, {
+  renderWithProviders(<ProjectEditor />, {
     preloadedState: {
       project: projectSelectedImage2,
     },
@@ -231,7 +231,7 @@ test("switching images in a CardSlot wraps around", async () => {
     searchResultsThreeResults,
     ...defaultHandlers
   );
-  renderWithProviders(<App />, {
+  renderWithProviders(<ProjectEditor />, {
     preloadedState: {
       project: projectSelectedImage2,
     },
@@ -258,7 +258,7 @@ test("selecting an image in a CardSlot via the grid selector", async () => {
     searchResultsThreeResults,
     ...defaultHandlers
   );
-  renderWithProviders(<App />, {
+  renderWithProviders(<ProjectEditor />, {
     preloadedState: {
       project: projectSelectedImage2,
     },
@@ -284,7 +284,7 @@ test("deleting a CardSlot", async () => {
     searchResultsThreeResults,
     ...defaultHandlers
   );
-  renderWithProviders(<App />, {
+  renderWithProviders(<ProjectEditor />, {
     preloadedState: {
       project: projectSelectedImage1,
     },
@@ -305,7 +305,7 @@ test("deleting multiple CardSlots", async () => {
     searchResultsThreeResults,
     ...defaultHandlers
   );
-  renderWithProviders(<App />, {
+  renderWithProviders(<ProjectEditor />, {
     preloadedState: {
       project: projectThreeMembersSelectedImage1,
     },
@@ -328,7 +328,7 @@ test("CardSlot automatically selects the first search result", async () => {
     searchResultsThreeResults,
     ...defaultHandlers
   );
-  renderWithProviders(<App />, {
+  renderWithProviders(<ProjectEditor />, {
     preloadedState: {
       project: {
         members: [
@@ -357,7 +357,7 @@ test("CardSlot automatically deselects invalid image then selects the first sear
     searchResultsOneResult,
     ...defaultHandlers
   );
-  renderWithProviders(<App />, {
+  renderWithProviders(<ProjectEditor />, {
     preloadedState: {
       project: projectSelectedImage2, // not in search results
     },
@@ -373,7 +373,7 @@ test("CardSlot uses cardbacks as search results for backs with no search query",
     sourceDocumentsOneResult,
     ...defaultHandlers
   );
-  renderWithProviders(<App />, {
+  renderWithProviders(<ProjectEditor />, {
     preloadedState: {
       project: { members: [], cardback: null, mostRecentlySelectedSlot: null },
     },
@@ -391,7 +391,7 @@ test("CardSlot defaults to project cardback for backs with no search query", asy
     sourceDocumentsOneResult,
     ...defaultHandlers
   );
-  renderWithProviders(<App />, {
+  renderWithProviders(<ProjectEditor />, {
     preloadedState: {
       project: {
         members: [],
@@ -413,7 +413,7 @@ test("double clicking the select button selects all slots for the same query", a
     searchResultsOneResult,
     ...defaultHandlers
   );
-  renderWithProviders(<App />, {
+  renderWithProviders(<ProjectEditor />, {
     preloadedState: {
       project: {
         members: [
@@ -456,7 +456,7 @@ test("changing a card slot's query", async () => {
     ...defaultHandlers
   );
 
-  renderWithProviders(<App />, {
+  renderWithProviders(<ProjectEditor />, {
     preloadedState: {
       project: {
         members: [
@@ -490,7 +490,7 @@ test("clearing a card slot's query", async () => {
     ...defaultHandlers
   );
 
-  renderWithProviders(<App />, {
+  renderWithProviders(<ProjectEditor />, {
     preloadedState: {
       project: {
         members: [
@@ -524,7 +524,7 @@ test("changing a card slot's query doesn't affect a different slot", async () =>
     ...defaultHandlers
   );
 
-  renderWithProviders(<App />, {
+  renderWithProviders(<ProjectEditor />, {
     preloadedState: {
       project: {
         members: [
@@ -568,7 +568,7 @@ test("selecting then shift-clicking to expand the selection downwards", async ()
     searchResultsSixResults,
     ...defaultHandlers
   );
-  renderWithProviders(<App />, {
+  renderWithProviders(<ProjectEditor />, {
     preloadedState: {
       project: {
         members: [],
@@ -598,7 +598,7 @@ test("selecting then shift-clicking to expand the selection upwards", async () =
     searchResultsSixResults,
     ...defaultHandlers
   );
-  renderWithProviders(<App />, {
+  renderWithProviders(<ProjectEditor />, {
     preloadedState: {
       project: {
         members: [],
@@ -628,7 +628,7 @@ test("the most recently selected card is tracked correctly", async () => {
     searchResultsSixResults,
     ...defaultHandlers
   );
-  renderWithProviders(<App />, {
+  renderWithProviders(<ProjectEditor />, {
     preloadedState: {
       project: {
         members: [],

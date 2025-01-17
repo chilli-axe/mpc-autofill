@@ -5,7 +5,6 @@
 
 import { waitFor, within } from "@testing-library/react";
 
-import App from "@/app/app";
 import { Front } from "@/common/constants";
 import {
   projectSelectedImage1,
@@ -15,6 +14,7 @@ import {
   openCardSlotGridSelector,
   renderWithProviders,
 } from "@/common/test-utils";
+import ProjectEditor from "@/components/ProjectEditor";
 import {
   cardDocumentsThreeResults,
   defaultHandlers,
@@ -31,7 +31,7 @@ test.skip("toggling between faceting cards by source vs grouped together works a
     ...defaultHandlers
   );
 
-  renderWithProviders(<App />, {
+  renderWithProviders(<ProjectEditor />, {
     preloadedState: {
       project: projectSelectedImage1,
     },
@@ -60,7 +60,7 @@ test.skip("collapsing a source in the faceted view then expanding it works as ex
     ...defaultHandlers
   );
 
-  renderWithProviders(<App />, {
+  renderWithProviders(<ProjectEditor />, {
     preloadedState: {
       project: projectSelectedImage1,
     },
@@ -100,7 +100,7 @@ test.skip("collapsing and expanding all sources works as expected", async () => 
     ...defaultHandlers
   );
 
-  renderWithProviders(<App />, {
+  renderWithProviders(<ProjectEditor />, {
     preloadedState: {
       project: projectSelectedImage1,
     },

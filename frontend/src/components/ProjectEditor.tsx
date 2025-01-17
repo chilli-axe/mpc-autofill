@@ -42,7 +42,7 @@ const OverflowCol = styled(Col)`
   scrollbar-width: thin;
 `;
 
-function App() {
+function ProjectEditor() {
   // TODO: should we periodically ping the backend to make sure it's still alive?
   //# region queries and hooks
 
@@ -119,4 +119,4 @@ function App() {
   );
 }
 
-export default App;
+export default ProjectEditor;
