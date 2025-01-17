@@ -10,21 +10,21 @@ import styled from "styled-components";
 
 import { NavbarHeight, RibbonHeight } from "@/common/constants";
 import { useAppSelector } from "@/common/types";
-import { NoBackendDefault } from "@/components/noBackendDefault";
+import { NoBackendDefault } from "@/components/NoBackendDefault";
 import { useBackendConfigured } from "@/features/backend/backendSlice";
-import { SelectedImagesRibbon } from "@/features/bulkManagement/bulkManagementRibbon";
-import { CardGrid } from "@/features/card/cardGrid";
-import { CommonCardback } from "@/features/card/commonCardback";
-import { Export } from "@/features/export/export";
-import { FinishedMyProject } from "@/features/export/finishedMyProjectModal";
-import { FinishSettings } from "@/features/finishSettings/finishSettings";
-import { Import } from "@/features/import/import";
+import { SelectedImagesRibbon } from "@/features/bulkManagement/SelectedImagesRibbon";
+import { CardGrid } from "@/features/card/CardGrid";
+import { CommonCardback } from "@/features/card/CommonCardback";
+import { Export } from "@/features/export/Export";
+import { FinishedMyProject } from "@/features/export/FinishedMyProjectModal";
+import { FinishSettings } from "@/features/finishSettings/FinishSettings";
+import { Import } from "@/features/import/Import";
 import {
   selectIsProjectEmpty,
   selectProjectCardback,
 } from "@/features/project/projectSlice";
-import { SearchSettings } from "@/features/searchSettings/searchSettings";
-import { Status } from "@/features/status/status";
+import { SearchSettings } from "@/features/searchSettings/SearchSettings";
+import { Status } from "@/features/status/Status";
 
 const FixedHeightRow = styled(Row)`
   height: ${RibbonHeight}px;

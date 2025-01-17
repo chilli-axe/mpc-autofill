@@ -15,9 +15,9 @@ import {
   useBackendConfigured,
   useProjectName,
 } from "@/features/backend/backendSlice";
-import { DynamicLogo } from "@/features/ui/dynamicLogo";
-import Footer from "@/features/ui/footer";
-import { ProjectContainer } from "@/features/ui/layout";
+import { DynamicLogo } from "@/features/ui/DynamicLogo";
+import Footer from "@/features/ui/Footer";
+import { ProjectContainer } from "@/features/ui/Layout";
 
 function JumpIntoEditorButton() {
   const backendConfigured = useBackendConfigured();

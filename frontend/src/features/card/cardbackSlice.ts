@@ -10,7 +10,7 @@ import {
   createAppSlice,
 } from "@/common/types";
 import { selectBackendURL } from "@/features/backend/backendSlice";
-import { selectSearchSettings } from "@/features/searchSettings/searchSettingsSlice";
+import { selectSearchSettings } from "@/features/searchSettings/SearchSettingsSlice";
 import { setNotification } from "@/features/toasts/toastsSlice";
 
 //# region async thunk

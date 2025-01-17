@@ -1,4 +1,4 @@
-import { GenericErrorPage } from "@/features/ui/genericErrorPage";
+import { GenericErrorPage } from "@/features/ui/GenericErrorPage";
 
 export default function Custom404() {
   return (

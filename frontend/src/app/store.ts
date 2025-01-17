@@ -12,14 +12,14 @@ import backendReducer, {
   selectBackendConfigured,
 } from "@/features/backend/backendSlice";
 import cardbacksReducer from "@/features/card/cardbackSlice";
-import finishSettingsReducer from "@/features/finishSettings/finishSettingsSlice";
+import finishSettingsReducer from "@/features/finishSettings/FinishSettingsSlice";
 import invalidIdentifiersReducer from "@/features/invalidIdentifiers/invalidIdentifiersSlice";
 import modalsReducer from "@/features/modals/modalsSlice";
 import projectReducer from "@/features/project/projectSlice";
 import cardDocumentsReducer from "@/features/search/cardDocumentsSlice";
 import searchResultsReducer from "@/features/search/searchResultsSlice";
 import sourceDocumentsReducer from "@/features/search/sourceDocumentsSlice";
-import searchSettingsReducer from "@/features/searchSettings/searchSettingsSlice";
+import searchSettingsReducer from "@/features/searchSettings/SearchSettingsSlice";
 import toastsReducer, { setNotification } from "@/features/toasts/toastsSlice";
 import viewSettingsReducer from "@/features/viewSettings/viewSettingsSlice";
 

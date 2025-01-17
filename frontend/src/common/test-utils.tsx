@@ -17,7 +17,7 @@ import { RootState, setupStore } from "@/app/store";
 import { localBackendURL } from "@/common/test-constants";
 import { Faces } from "@/common/types";
 import { setURL } from "@/features/backend/backendSlice";
-import { LayoutWithoutReduxProvider } from "@/features/ui/layout";
+import { LayoutWithoutReduxProvider } from "@/features/ui/Layout";
 
 //# region redux test setup
 

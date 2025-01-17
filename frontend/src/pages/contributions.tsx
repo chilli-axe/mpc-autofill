@@ -9,7 +9,7 @@ import {
   ProjectName,
 } from "@/common/constants";
 import { Tag } from "@/common/types";
-import { NoBackendDefault } from "@/components/noBackendDefault";
+import { NoBackendDefault } from "@/components/NoBackendDefault";
 import {
   useBackendConfigured,
   useProjectName,
@@ -17,9 +17,9 @@ import {
 import {
   ContributionsPerSource,
   ContributionsSummary,
-} from "@/features/contributions/contributions";
-import Footer from "@/features/ui/footer";
-import { ProjectContainer } from "@/features/ui/layout";
+} from "@/features/contributions/Contributions";
+import Footer from "@/features/ui/Footer";
+import { ProjectContainer } from "@/features/ui/Layout";
 
 function ContributionGuidelines() {
   const projectName = useProjectName();

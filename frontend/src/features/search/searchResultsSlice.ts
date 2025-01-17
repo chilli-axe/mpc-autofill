@@ -15,7 +15,7 @@ import {
 } from "@/common/types";
 import { selectBackendURL } from "@/features/backend/backendSlice";
 import { selectQueriesWithoutSearchResults } from "@/features/project/projectSlice";
-import { selectSearchSettings } from "@/features/searchSettings/searchSettingsSlice";
+import { selectSearchSettings } from "@/features/searchSettings/SearchSettingsSlice";
 import { setNotification } from "@/features/toasts/toastsSlice";
 
 //# region async thunk

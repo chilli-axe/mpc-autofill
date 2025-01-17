@@ -2,14 +2,14 @@ import Head from "next/head";
 import React from "react";
 
 import { ProjectName } from "@/common/constants";
-import { NoBackendDefault } from "@/components/noBackendDefault";
+import { NoBackendDefault } from "@/components/NoBackendDefault";
 import {
   useBackendConfigured,
   useProjectName,
 } from "@/features/backend/backendSlice";
-import { NewCards } from "@/features/new/new";
-import Footer from "@/features/ui/footer";
-import { ProjectContainer } from "@/features/ui/layout";
+import { NewCards } from "@/features/new/New";
+import Footer from "@/features/ui/Footer";
+import { ProjectContainer } from "@/features/ui/Layout";
 
 function NewOrDefault() {
   const backendConfigured = useBackendConfigured();

@@ -45,7 +45,7 @@ import {
   setFilterSettings,
   setSearchTypeSettings,
   setSourceSettings,
-} from "@/features/searchSettings/searchSettingsSlice";
+} from "@/features/searchSettings/SearchSettingsSlice";
 
 import type { AppDispatch, RootState } from "./store";
 

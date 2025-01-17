@@ -13,15 +13,14 @@ import Row from "react-bootstrap/Row";
 import { useGetLanguagesQuery } from "@/app/api";
 import { CardDocument, useAppDispatch } from "@/common/types";
 import { imageSizeToMBString, toTitleCase } from "@/common/utils";
-import { ClickToCopy } from "@/components/clickToCopy";
-import DisableSSR from "@/components/disableSSR";
+import { AutofillTable } from "@/components/AutofillTable";
+import { ClickToCopy } from "@/components/ClickToCopy";
+import DisableSSR from "@/components/DisableSSR";
 import { RightPaddedIcon } from "@/components/icon";
-import { Spinner } from "@/components/spinner";
-import { AutofillTable } from "@/components/table";
 import {
   MemoizedCardImage,
   MemoizedCardProportionWrapper,
-} from "@/features/card/card";
+} from "@/features/card/Card";
 import { useQueueImageDownload } from "@/features/download/downloadImages";
 import { setNotification } from "@/features/toasts/toastsSlice";
 

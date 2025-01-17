@@ -2,9 +2,9 @@ import Head from "next/head";
 
 import App from "@/app/app";
 import { ProjectName } from "@/common/constants";
-import { NoBackendDefault } from "@/components/noBackendDefault";
+import { NoBackendDefault } from "@/components/NoBackendDefault";
 import { useBackendConfigured } from "@/features/backend/backendSlice";
-import { ProjectContainer } from "@/features/ui/layout";
+import { ProjectContainer } from "@/features/ui/Layout";
 require("bootstrap-icons/font/bootstrap-icons.css");
 
 function AppOrDefault() {
