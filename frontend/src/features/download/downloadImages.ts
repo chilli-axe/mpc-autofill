@@ -2,10 +2,10 @@ import { Queue } from "async-await-queue";
 import { saveAs } from "file-saver";
 import { createContext, useContext } from "react";
 
-import { api } from "@/app/api";
 import { base64StringToBlob } from "@/common/processing";
 import { CardDocument, useAppDispatch } from "@/common/types";
 import { setNotification } from "@/features/toasts/toastsSlice";
+import { api } from "@/store/api";
 
 export type DownloadContext = Queue;
 

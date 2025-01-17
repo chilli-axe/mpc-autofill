@@ -1,12 +1,12 @@
 import Link from "next/link";
 import React from "react";
 
-import { useGetContributionsQuery } from "@/app/api";
 import { Card, Cardback, ProjectName, Token } from "@/common/constants";
 import { SourceContribution } from "@/common/types";
 import { AutofillTable } from "@/components/AutofillTable";
 import { Spinner } from "@/components/Spinner";
 import { useProjectName } from "@/features/backend/backendSlice";
+import { useGetContributionsQuery } from "@/store/api";
 
 export function ContributionsSummary() {
   //# region queries and hooks

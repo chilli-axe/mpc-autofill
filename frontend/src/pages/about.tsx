@@ -1,12 +1,12 @@
 import Head from "next/head";
 import styled from "styled-components";
 
-import { useGetBackendInfoQuery } from "@/app/api";
 import { ProjectName } from "@/common/constants";
 import { MakePlayingCards, MakePlayingCardsURL } from "@/common/constants";
 import { useProjectName } from "@/features/backend/backendSlice";
 import Footer from "@/features/ui/Footer";
 import { ProjectContainer } from "@/features/ui/Layout";
+import { useGetBackendInfoQuery } from "@/store/api";
 const CentreAligned = styled.div`
   text-align: center;
 `;

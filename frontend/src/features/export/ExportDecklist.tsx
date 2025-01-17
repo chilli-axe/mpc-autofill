@@ -7,7 +7,6 @@ import { saveAs } from "file-saver";
 import React from "react";
 import Dropdown from "react-bootstrap/Dropdown";
 
-import { RootState } from "@/app/store";
 import { Back, Card, FaceSeparator, Front } from "@/common/constants";
 import { stripTextInParentheses } from "@/common/processing";
 import {
@@ -22,6 +21,7 @@ import {
   selectIsProjectEmpty,
   selectProjectMembers,
 } from "@/features/project/projectSlice";
+import { RootState } from "@/store/store";
 
 /**
  * Retrieve the names of each card (note: excludes cardbacks and tokens) in the project.

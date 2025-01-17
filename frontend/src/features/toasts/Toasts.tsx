@@ -1,5 +1,5 @@
 /**
- * This component is a container for the various toast alerts the app needs to raise.
+ * This component is a container for the various toast alerts the store needs to raise.
  */
 
 import Link from "next/link";

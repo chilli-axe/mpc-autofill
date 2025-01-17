@@ -11,7 +11,6 @@ import Dropdown from "react-bootstrap/Dropdown";
 import Form from "react-bootstrap/Form";
 import Modal from "react-bootstrap/Modal";
 
-import { useGetDFCPairsQuery, useGetSampleCardsQuery } from "@/app/api";
 import {
   Card,
   Cardback,
@@ -31,6 +30,7 @@ import { toTitleCase } from "@/common/utils";
 import { RightPaddedIcon } from "@/components/icon";
 import { addMembers, selectProjectSize } from "@/features/project/projectSlice";
 import { selectFuzzySearch } from "@/features/searchSettings/SearchSettingsSlice";
+import { useGetDFCPairsQuery, useGetSampleCardsQuery } from "@/store/api";
 
 export function ImportText() {
   //# region queries and hooks

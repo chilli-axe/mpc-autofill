@@ -1,8 +1,8 @@
 import { PayloadAction } from "@reduxjs/toolkit";
 
-import { RootState } from "@/app/store";
 import { createAppSlice, Notification } from "@/common/types";
 import { ToastsState } from "@/common/types";
+import { RootState } from "@/store/store";
 
 //# region slice configuration
 

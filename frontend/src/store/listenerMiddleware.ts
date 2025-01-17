@@ -8,7 +8,6 @@ import {
   isAnyOf,
 } from "@reduxjs/toolkit";
 
-import { api } from "@/app/api";
 import { Back, Front, QueryTags } from "@/common/constants";
 import { getLocalStorageSearchSettings } from "@/common/cookies";
 import { Faces } from "@/common/types";
@@ -46,6 +45,7 @@ import {
   setSearchTypeSettings,
   setSourceSettings,
 } from "@/features/searchSettings/SearchSettingsSlice";
+import { api } from "@/store/api";
 
 import type { AppDispatch, RootState } from "./store";
 

@@ -5,9 +5,9 @@ import {
 } from "@reduxjs/toolkit";
 import { useDispatch, useSelector, useStore } from "react-redux";
 
-import type { AppDispatch, AppStore, RootState } from "@/app/store";
 import { CSVHeaders } from "@/common/constants";
 import { SearchQuery } from "@/common/schema_types";
+import type { AppDispatch, AppStore, RootState } from "@/store/store";
 export type {
   FilterSettings,
   SearchQuery,

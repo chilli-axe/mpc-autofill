@@ -1,6 +1,6 @@
-import { setupStore } from "@/app/store";
 import { CardType, ThunkStatus } from "@/common/types";
 import { selectQueriesWithoutSearchResults } from "@/features/project/projectSlice";
+import { setupStore } from "@/store/store";
 
 describe("selectQueriesWithoutSearchResults tests", () => {
   test("empty", () => {

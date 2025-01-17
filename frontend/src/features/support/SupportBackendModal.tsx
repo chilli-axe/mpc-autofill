@@ -3,9 +3,9 @@ import Alert from "react-bootstrap/Alert";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 
-import { useGetBackendInfoQuery } from "@/app/api";
 import { AutofillTable } from "@/components/AutofillTable";
 import { Spinner } from "@/components/Spinner";
+import { useGetBackendInfoQuery } from "@/store/api";
 
 interface SupportBackendModalProps {
   show: boolean;

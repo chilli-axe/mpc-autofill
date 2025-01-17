@@ -2,8 +2,6 @@
  * State management for search results - what images are returned for what search queries.
  */
 
-import { APISearch } from "@/app/api";
-import { AppDispatch, RootState } from "@/app/store";
 import { Back, SearchResultsEndpointPageSize } from "@/common/constants";
 import {
   createAppAsyncThunk,
@@ -17,6 +15,8 @@ import { selectBackendURL } from "@/features/backend/backendSlice";
 import { selectQueriesWithoutSearchResults } from "@/features/project/projectSlice";
 import { selectSearchSettings } from "@/features/searchSettings/SearchSettingsSlice";
 import { setNotification } from "@/features/toasts/toastsSlice";
+import { APISearch } from "@/store/api";
+import { AppDispatch, RootState } from "@/store/store";
 
 //# region async thunk
 

@@ -4,8 +4,6 @@
 
 import { createSelector } from "@reduxjs/toolkit";
 
-import { APIGetCards } from "@/app/api";
-import { AppDispatch, RootState } from "@/app/store";
 import { CardEndpointPageSize } from "@/common/constants";
 import {
   CardDocument,
@@ -22,6 +20,8 @@ import {
 } from "@/features/project/projectSlice";
 import { fetchSearchResultsAndReportError } from "@/features/search/searchResultsSlice";
 import { setNotification } from "@/features/toasts/toastsSlice";
+import { APIGetCards } from "@/store/api";
+import { AppDispatch, RootState } from "@/store/store";
 
 //# region async thunk
 

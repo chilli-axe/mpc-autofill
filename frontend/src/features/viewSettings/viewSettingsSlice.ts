@@ -1,8 +1,8 @@
 import { PayloadAction } from "@reduxjs/toolkit";
 
-import { RootState } from "@/app/store";
 import { Back, Front } from "@/common/constants";
 import { createAppSlice, Faces, ViewSettingsState } from "@/common/types";
+import { RootState } from "@/store/store";
 
 //# region slice configuration
 

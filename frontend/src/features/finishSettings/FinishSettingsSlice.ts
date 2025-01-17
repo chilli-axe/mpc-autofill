@@ -1,8 +1,8 @@
 import { PayloadAction } from "@reduxjs/toolkit";
 
-import { RootState } from "@/app/store";
 import { CardstockFoilCompatibility } from "@/common/constants";
 import { Cardstock, createAppSlice, FinishSettingsState } from "@/common/types";
+import { RootState } from "@/store/store";
 
 //# region slice configuration
 

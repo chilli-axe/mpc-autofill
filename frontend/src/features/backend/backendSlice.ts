@@ -1,11 +1,11 @@
 /**
- * State management for the backend that the app should communicate with as configured by the user.
+ * State management for the backend that the store should communicate with as configured by the user.
  */
 
-import { useGetBackendInfoQuery } from "@/app/api";
-import { RootState } from "@/app/store";
 import { ProjectName } from "@/common/constants";
 import { BackendState, createAppSlice, useAppSelector } from "@/common/types";
+import { useGetBackendInfoQuery } from "@/store/api";
+import { RootState } from "@/store/store";
 
 //# region slice configuration
 

@@ -4,7 +4,6 @@ import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
 import styled, { css, keyframes, StyledComponent } from "styled-components";
 
-import { api, useGetSampleCardsQuery } from "@/app/api";
 import { QueryTags } from "@/common/constants";
 import { CardDocument, useAppDispatch } from "@/common/types";
 import { Spinner } from "@/components/Spinner";
@@ -17,6 +16,7 @@ import {
   MemoizedCardProportionWrapper,
 } from "@/features/card/Card";
 import { lato } from "@/pages/_app";
+import { api, useGetSampleCardsQuery } from "@/store/api";
 
 //# region styled components
 

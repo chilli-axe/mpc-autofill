@@ -11,8 +11,6 @@ import Dropdown from "react-bootstrap/Dropdown";
 import Form from "react-bootstrap/Form";
 import Modal from "react-bootstrap/Modal";
 
-import { useGetDFCPairsQuery, useGetImportSitesQuery } from "@/app/api";
-import { api } from "@/app/api";
 import {
   convertLinesIntoSlotProjectMembers,
   processStringAsMultipleLines,
@@ -24,6 +22,8 @@ import { useProjectName } from "@/features/backend/backendSlice";
 import { addMembers, selectProjectSize } from "@/features/project/projectSlice";
 import { selectFuzzySearch } from "@/features/searchSettings/SearchSettingsSlice";
 import { setNotification } from "@/features/toasts/toastsSlice";
+import { useGetDFCPairsQuery, useGetImportSitesQuery } from "@/store/api";
+import { api } from "@/store/api";
 
 export function ImportURL() {
   //# region queries and hooks

@@ -11,7 +11,6 @@ import Button from "react-bootstrap/Button";
 import Dropdown from "react-bootstrap/Dropdown";
 import Modal from "react-bootstrap/Modal";
 
-import { useGetDFCPairsQuery } from "@/app/api";
 import { CSVHeaders } from "@/common/constants";
 import { TextFileDropzone } from "@/common/dropzone";
 import {
@@ -25,6 +24,7 @@ import { RightPaddedIcon } from "@/components/icon";
 import { addMembers, selectProjectSize } from "@/features/project/projectSlice";
 import { selectFuzzySearch } from "@/features/searchSettings/SearchSettingsSlice";
 import { setNotification } from "@/features/toasts/toastsSlice";
+import { useGetDFCPairsQuery } from "@/store/api";
 
 /**
  * Instruct the user on how to format their CSV files.

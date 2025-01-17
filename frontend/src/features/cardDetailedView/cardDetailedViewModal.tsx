@@ -10,7 +10,6 @@ import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import Row from "react-bootstrap/Row";
 
-import { useGetLanguagesQuery } from "@/app/api";
 import { CardDocument, useAppDispatch } from "@/common/types";
 import { imageSizeToMBString, toTitleCase } from "@/common/utils";
 import { AutofillTable } from "@/components/AutofillTable";
@@ -23,6 +22,7 @@ import {
 } from "@/features/card/Card";
 import { useQueueImageDownload } from "@/features/download/downloadImages";
 import { setNotification } from "@/features/toasts/toastsSlice";
+import { useGetLanguagesQuery } from "@/store/api";
 
 interface CardDetailedViewProps {
   cardDocument: CardDocument;

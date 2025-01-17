@@ -18,12 +18,12 @@ import React, {
 import BSCard from "react-bootstrap/Card";
 import styled from "styled-components";
 
-import { RootState } from "@/app/store";
 import { SearchQuery, useAppDispatch, useAppSelector } from "@/common/types";
 import { CardDocument } from "@/common/types";
 import { Spinner } from "@/components/Spinner";
 import { setSelectedCardAndShowModal } from "@/features/modals/modalsSlice";
 import { selectCardDocumentByIdentifier } from "@/features/search/cardDocumentsSlice";
+import { RootState } from "@/store/store";
 
 const HiddenImage = styled(Image)`
   z-index: 0;

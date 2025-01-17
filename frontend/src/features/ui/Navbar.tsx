@@ -9,7 +9,6 @@ import Navbar from "react-bootstrap/Navbar";
 import NavDropdown from "react-bootstrap/NavDropdown";
 import styled from "styled-components";
 
-import { useGetBackendInfoQuery } from "@/app/api";
 import { ContentMaxWidth, NavbarLogoHeight } from "@/common/constants";
 import { useAppDispatch } from "@/common/types";
 import DisableSSR from "@/components/DisableSSR";
@@ -19,6 +18,7 @@ import {
   useProjectName,
 } from "@/features/backend/backendSlice";
 import { showModal } from "@/features/modals/modalsSlice";
+import { useGetBackendInfoQuery } from "@/store/api";
 
 const MaxWidthContainer = styled(Container)`
   max-width: ${ContentMaxWidth}px;

@@ -3,10 +3,10 @@ import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import Modal from "react-bootstrap/Modal";
 
-import { useGetSampleCardsQuery } from "@/app/api";
 import { Card } from "@/common/constants";
 import { Slots, useAppDispatch } from "@/common/types";
 import { clearQueries, setQueries } from "@/features/project/projectSlice";
+import { useGetSampleCardsQuery } from "@/store/api";
 
 interface ChangeQueryModalProps {
   slots: Slots;

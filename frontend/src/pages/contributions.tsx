@@ -2,7 +2,6 @@ import Head from "next/head";
 import React from "react";
 import { Accordion } from "react-bootstrap";
 
-import { useGetTagsQuery } from "@/app/api";
 import {
   MakePlayingCards,
   MakePlayingCardsURL,
@@ -20,6 +19,7 @@ import {
 } from "@/features/contributions/Contributions";
 import Footer from "@/features/ui/Footer";
 import { ProjectContainer } from "@/features/ui/Layout";
+import { useGetTagsQuery } from "@/store/api";
 
 function ContributionGuidelines() {
   const projectName = useProjectName();

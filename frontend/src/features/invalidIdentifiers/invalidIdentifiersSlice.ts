@@ -1,12 +1,12 @@
 import { createSelector, PayloadAction } from "@reduxjs/toolkit";
 
-import { RootState } from "@/app/store";
 import {
   createAppSlice,
   Faces,
   InvalidIdentifiersState,
   SearchQuery,
 } from "@/common/types";
+import { RootState } from "@/store/store";
 
 //# region slice configuration
 

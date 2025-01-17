@@ -4,7 +4,6 @@
 
 import { createSelector, PayloadAction } from "@reduxjs/toolkit";
 
-import { RootState } from "@/app/store";
 import { Card, Cardback } from "@/common/constants";
 import { Back, Front, ProjectMaxSize } from "@/common/constants";
 import { processPrefix } from "@/common/processing";
@@ -18,6 +17,7 @@ import {
 } from "@/common/types";
 import { selectCardSizesByIdentifier } from "@/features/search/cardDocumentsSlice";
 import { selectActiveFace } from "@/features/viewSettings/viewSettingsSlice";
+import { RootState } from "@/store/store";
 
 //# region slice configuration
 

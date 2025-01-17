@@ -1,4 +1,3 @@
-import { RootState } from "@/app/store";
 import { MaximumDPI, MaximumSize, MinimumDPI } from "@/common/constants";
 import {
   createAppSlice,
@@ -6,6 +5,7 @@ import {
   SourceDocument,
   SourceDocuments,
 } from "@/common/types";
+import { RootState } from "@/store/store";
 
 //# region slice configuration
 

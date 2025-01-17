@@ -12,7 +12,6 @@ import DropdownTreeSelect, { TreeNode } from "react-dropdown-tree-select";
 require("react-dropdown-tree-select/dist/styles.css");
 import styled from "styled-components";
 
-import { useGetLanguagesQuery, useGetTagsQuery } from "@/app/api";
 import {
   DPIStep,
   MaximumDPI,
@@ -22,6 +21,7 @@ import {
 } from "@/common/constants";
 import { Tag } from "@/common/types";
 import { FilterSettings as FilterSettingsType } from "@/common/types";
+import { useGetLanguagesQuery, useGetTagsQuery } from "@/store/api";
 
 const StyledDropdownTreeSelect = styled(DropdownTreeSelect)`
   .tag {

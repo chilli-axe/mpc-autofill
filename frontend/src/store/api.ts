@@ -6,7 +6,6 @@ import {
   FetchBaseQueryError,
 } from "@reduxjs/toolkit/query/react";
 
-import { RootState } from "@/app/store";
 import { GoogleDriveImageAPIURL, QueryTags } from "@/common/constants";
 import { getCSRFHeader } from "@/common/cookies";
 import { formatURL, processQuery } from "@/common/processing";
@@ -27,6 +26,7 @@ import {
   Tag,
 } from "@/common/types";
 import { useBackendConfigured } from "@/features/backend/backendSlice";
+import { RootState } from "@/store/store";
 
 // dynamic base URL implementation retrieved from https://stackoverflow.com/a/69570628/13021511
 const dynamicBaseQuery: BaseQueryFn<

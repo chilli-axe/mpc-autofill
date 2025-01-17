@@ -9,7 +9,6 @@ import React from "react";
 import Dropdown from "react-bootstrap/Dropdown";
 import formatXML from "xml-formatter";
 
-import { RootState } from "@/app/store";
 import { Back, Front, ReversedCardTypePrefixes } from "@/common/constants";
 import { useAppStore } from "@/common/types";
 import {
@@ -26,6 +25,7 @@ import {
   selectProjectMembers,
   selectProjectSize,
 } from "@/features/project/projectSlice";
+import { RootState } from "@/store/store";
 
 interface SlotsByIdentifier {
   [identifier: string]: Set<number>;

@@ -4,15 +4,15 @@ import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
 import styled from "styled-components";
 
-import {
-  useGetNewCardsFirstPageQuery,
-  useGetNewCardsPageQuery,
-} from "@/app/api";
 import { CardDocument } from "@/common/types";
 import { NewCardsFirstPage } from "@/common/types";
 import { Spinner } from "@/components/Spinner";
 import { useProjectName } from "@/features/backend/backendSlice";
 import { MemoizedCard } from "@/features/card/Card";
+import {
+  useGetNewCardsFirstPageQuery,
+  useGetNewCardsPageQuery,
+} from "@/store/api";
 
 const InlineHeader = styled.h3`
   display: inline;

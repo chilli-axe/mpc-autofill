@@ -8,7 +8,6 @@ import SSRProvider from "react-bootstrap/SSRProvider";
 import { Provider } from "react-redux";
 import styled from "styled-components";
 
-import store from "@/app/store";
 import { ContentMaxWidth, NavbarHeight } from "@/common/constants";
 import {
   getGoogleAnalyticsConsent,
@@ -24,6 +23,7 @@ import {
 import { Modals } from "@/features/modals/Modals";
 import { Toasts } from "@/features/toasts/Toasts";
 import ProjectNavbar from "@/features/ui/Navbar";
+import store from "@/store/store";
 
 function BackendSetter() {
   const router = useRouter();

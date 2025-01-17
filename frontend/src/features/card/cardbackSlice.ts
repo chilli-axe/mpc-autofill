@@ -2,8 +2,6 @@
  * State management for cardbacks retrieved from the backend.
  */
 
-import { APIGetCardbacks } from "@/app/api";
-import { AppDispatch, RootState } from "@/app/store";
 import {
   CardbacksState,
   createAppAsyncThunk,
@@ -12,6 +10,8 @@ import {
 import { selectBackendURL } from "@/features/backend/backendSlice";
 import { selectSearchSettings } from "@/features/searchSettings/SearchSettingsSlice";
 import { setNotification } from "@/features/toasts/toastsSlice";
+import { APIGetCardbacks } from "@/store/api";
+import { AppDispatch, RootState } from "@/store/store";
 
 //# region async thunk
 

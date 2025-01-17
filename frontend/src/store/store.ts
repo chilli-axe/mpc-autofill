@@ -6,8 +6,6 @@ import {
   Tuple,
 } from "@reduxjs/toolkit";
 
-import { api } from "@/app/api";
-import { listenerMiddleware } from "@/app/listenerMiddleware";
 import backendReducer, {
   selectBackendConfigured,
 } from "@/features/backend/backendSlice";
@@ -22,6 +20,8 @@ import sourceDocumentsReducer from "@/features/search/sourceDocumentsSlice";
 import searchSettingsReducer from "@/features/searchSettings/SearchSettingsSlice";
 import toastsReducer, { setNotification } from "@/features/toasts/toastsSlice";
 import viewSettingsReducer from "@/features/viewSettings/viewSettingsSlice";
+import { api } from "@/store/api";
+import { listenerMiddleware } from "@/store/listenerMiddleware";
 
 const rootReducer = combineReducers({
   [api.reducerPath]: api.reducer,
