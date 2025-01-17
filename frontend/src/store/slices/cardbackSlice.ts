@@ -7,10 +7,10 @@ import {
   createAppAsyncThunk,
   createAppSlice,
 } from "@/common/types";
-import { selectBackendURL } from "@/features/backend/backendSlice";
-import { selectSearchSettings } from "@/features/searchSettings/SearchSettingsSlice";
-import { setNotification } from "@/features/toasts/toastsSlice";
 import { APIGetCardbacks } from "@/store/api";
+import { selectBackendURL } from "@/store/slices/backendSlice";
+import { selectSearchSettings } from "@/store/slices/SearchSettingsSlice";
+import { setNotification } from "@/store/slices/toastsSlice";
 import { AppDispatch, RootState } from "@/store/store";
 
 //# region async thunk

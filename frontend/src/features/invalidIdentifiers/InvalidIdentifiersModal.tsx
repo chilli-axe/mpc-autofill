@@ -10,7 +10,7 @@ import { ClickToCopy } from "@/components/ClickToCopy";
 import {
   clearInvalidIdentifiers,
   selectInvalidIdentifiers,
-} from "@/features/invalidIdentifiers/invalidIdentifiersSlice";
+} from "@/store/slices/invalidIdentifiersSlice";
 
 interface InvalidIdentifiersModalProps {
   show: boolean;

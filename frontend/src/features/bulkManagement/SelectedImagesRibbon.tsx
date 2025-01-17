@@ -19,7 +19,8 @@ import { RightPaddedIcon } from "@/components/icon";
 import { OverflowList } from "@/components/OverflowList";
 import { useQueueImageDownload } from "@/features/download/downloadImages";
 import { GridSelectorModal } from "@/features/gridSelector/GridSelectorModal";
-import { setSelectedSlotsAndShowModal } from "@/features/modals/modalsSlice";
+import { useCardDocumentsByIdentifier } from "@/store/slices/cardDocumentsSlice";
+import { setSelectedSlotsAndShowModal } from "@/store/slices/modalsSlice";
 import {
   bulkAlignMemberSelection,
   bulkSetMemberSelection,
@@ -32,11 +33,10 @@ import {
   selectSelectedSlots,
   selectUniqueCardIdentifiersInSlots,
   setSelectedImages,
-} from "@/features/project/projectSlice";
-import { useCardDocumentsByIdentifier } from "@/features/search/cardDocumentsSlice";
-import { selectSearchResultsForQueryOrDefault } from "@/features/search/searchResultsSlice";
-import { setNotification } from "@/features/toasts/toastsSlice";
-import { selectActiveFace } from "@/features/viewSettings/viewSettingsSlice";
+} from "@/store/slices/projectSlice";
+import { selectSearchResultsForQueryOrDefault } from "@/store/slices/searchResultsSlice";
+import { setNotification } from "@/store/slices/toastsSlice";
+import { selectActiveFace } from "@/store/slices/viewSettingsSlice";
 
 const RibbonText = styled.p`
   font-size: 0.9em;

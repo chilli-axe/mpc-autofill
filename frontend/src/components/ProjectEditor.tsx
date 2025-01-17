@@ -11,7 +11,6 @@ import styled from "styled-components";
 import { NavbarHeight, RibbonHeight } from "@/common/constants";
 import { useAppSelector } from "@/common/types";
 import { NoBackendDefault } from "@/components/NoBackendDefault";
-import { useBackendConfigured } from "@/features/backend/backendSlice";
 import { SelectedImagesRibbon } from "@/features/bulkManagement/SelectedImagesRibbon";
 import { CardGrid } from "@/features/card/CardGrid";
 import { CommonCardback } from "@/features/card/CommonCardback";
@@ -19,12 +18,13 @@ import { Export } from "@/features/export/Export";
 import { FinishedMyProject } from "@/features/export/FinishedMyProjectModal";
 import { FinishSettings } from "@/features/finishSettings/FinishSettings";
 import { Import } from "@/features/import/Import";
+import { SearchSettings } from "@/features/searchSettings/SearchSettings";
+import { Status } from "@/features/status/Status";
+import { useBackendConfigured } from "@/store/slices/backendSlice";
 import {
   selectIsProjectEmpty,
   selectProjectCardback,
-} from "@/features/project/projectSlice";
-import { SearchSettings } from "@/features/searchSettings/SearchSettings";
-import { Status } from "@/features/status/Status";
+} from "@/store/slices/projectSlice";
 
 const FixedHeightRow = styled(Row)`
   height: ${RibbonHeight}px;

@@ -3,8 +3,8 @@ import Head from "next/head";
 import { ProjectName } from "@/common/constants";
 import { NoBackendDefault } from "@/components/NoBackendDefault";
 import ProjectEditor from "@/components/ProjectEditor";
-import { useBackendConfigured } from "@/features/backend/backendSlice";
 import { ProjectContainer } from "@/features/ui/Layout";
+import { useBackendConfigured } from "@/store/slices/backendSlice";
 require("bootstrap-icons/font/bootstrap-icons.css");
 
 function ProjectEditorOrDefault() {

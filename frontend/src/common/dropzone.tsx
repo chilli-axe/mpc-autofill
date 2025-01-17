@@ -7,7 +7,7 @@ import { DropzoneRootProps, useDropzone } from "react-dropzone";
 import styled from "styled-components";
 
 import { useAppDispatch } from "@/common/types";
-import { setNotification } from "@/features/toasts/toastsSlice";
+import { setNotification } from "@/store/slices/toastsSlice";
 
 const getColor = (props: DropzoneRootProps) => {
   if (props.isDragAccept) {

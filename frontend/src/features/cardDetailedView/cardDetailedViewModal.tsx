@@ -21,8 +21,8 @@ import {
   MemoizedCardProportionWrapper,
 } from "@/features/card/Card";
 import { useQueueImageDownload } from "@/features/download/downloadImages";
-import { setNotification } from "@/features/toasts/toastsSlice";
 import { useGetLanguagesQuery } from "@/store/api";
+import { setNotification } from "@/store/slices/toastsSlice";
 
 interface CardDetailedViewProps {
   cardDocument: CardDocument;

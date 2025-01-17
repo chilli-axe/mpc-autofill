@@ -25,7 +25,7 @@ import {
   SourceDocuments,
   Tag,
 } from "@/common/types";
-import { useBackendConfigured } from "@/features/backend/backendSlice";
+import { useBackendConfigured } from "@/store/slices/backendSlice";
 import { RootState } from "@/store/store";
 
 // dynamic base URL implementation retrieved from https://stackoverflow.com/a/69570628/13021511

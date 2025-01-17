@@ -29,16 +29,13 @@ import { processPrefix } from "@/common/processing";
 import { useAppDispatch, useAppSelector } from "@/common/types";
 import { Cardstock, SlotProjectMembers } from "@/common/types";
 import { RightPaddedIcon } from "@/components/icon";
-import {
-  setCardstock,
-  setFoil,
-} from "@/features/finishSettings/FinishSettingsSlice";
+import { setCardstock, setFoil } from "@/store/slices/FinishSettingsSlice";
 import {
   addMembers,
   selectProjectCardback,
   selectProjectSize,
   setSelectedCardback,
-} from "@/features/project/projectSlice";
+} from "@/store/slices/projectSlice";
 
 export function ImportXML() {
   //# region queries and hooks

@@ -10,10 +10,10 @@ import { MakePlayingCards, MakePlayingCardsURL } from "@/common/constants";
 import { useAppDispatch, useAppSelector } from "@/common/types";
 import { Coffee } from "@/components/Coffee";
 import { RightPaddedIcon } from "@/components/icon";
-import { useProjectName } from "@/features/backend/backendSlice";
 import { useExportXML } from "@/features/export/ExportXML";
-import { showModal } from "@/features/modals/modalsSlice";
-import { selectIsProjectEmpty } from "@/features/project/projectSlice";
+import { useProjectName } from "@/store/slices/backendSlice";
+import { showModal } from "@/store/slices/modalsSlice";
+import { selectIsProjectEmpty } from "@/store/slices/projectSlice";
 
 interface ExitModal {
   show: boolean;

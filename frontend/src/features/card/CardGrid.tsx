@@ -14,8 +14,8 @@ import { MemoizedCardSlot } from "@/features/card/CardSlot";
 import {
   selectIsProjectEmpty,
   selectProjectMembers,
-} from "@/features/project/projectSlice";
-import { selectFrontsVisible } from "@/features/viewSettings/viewSettingsSlice";
+} from "@/store/slices/projectSlice";
+import { selectFrontsVisible } from "@/store/slices/viewSettingsSlice";
 
 const CardGridDefaultBackground = styled.div`
   position: absolute;

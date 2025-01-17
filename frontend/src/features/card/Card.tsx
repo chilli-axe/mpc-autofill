@@ -21,8 +21,8 @@ import styled from "styled-components";
 import { SearchQuery, useAppDispatch, useAppSelector } from "@/common/types";
 import { CardDocument } from "@/common/types";
 import { Spinner } from "@/components/Spinner";
-import { setSelectedCardAndShowModal } from "@/features/modals/modalsSlice";
-import { selectCardDocumentByIdentifier } from "@/features/search/cardDocumentsSlice";
+import { selectCardDocumentByIdentifier } from "@/store/slices/cardDocumentsSlice";
+import { setSelectedCardAndShowModal } from "@/store/slices/modalsSlice";
 import { RootState } from "@/store/store";
 
 const HiddenImage = styled(Image)`

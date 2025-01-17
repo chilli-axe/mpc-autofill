@@ -19,12 +19,12 @@ import {
 } from "@/common/types";
 import { bracket } from "@/common/utils";
 import { RightPaddedIcon } from "@/components/icon";
-import { selectFinishSettings } from "@/features/finishSettings/FinishSettingsSlice";
+import { selectFinishSettings } from "@/store/slices/FinishSettingsSlice";
 import {
   selectIsProjectEmpty,
   selectProjectMembers,
   selectProjectSize,
-} from "@/features/project/projectSlice";
+} from "@/store/slices/projectSlice";
 import { RootState } from "@/store/store";
 
 interface SlotsByIdentifier {

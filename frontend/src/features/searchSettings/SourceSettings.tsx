@@ -25,7 +25,7 @@ import {
   useAppSelector,
 } from "@/common/types";
 import { Spinner } from "@/components/Spinner";
-import { selectSourceDocuments } from "@/features/search/sourceDocumentsSlice";
+import { selectSourceDocuments } from "@/store/slices/sourceDocumentsSlice";
 
 const Chevron = styled.i`
   font-size: 1em;

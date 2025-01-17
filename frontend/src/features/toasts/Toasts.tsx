@@ -21,7 +21,7 @@ import { RightPaddedIcon } from "@/components/icon";
 import {
   clearNotification,
   selectToastsNotifications,
-} from "@/features/toasts/toastsSlice";
+} from "@/store/slices/toastsSlice";
 
 function GoogleAnalyticsConsentToast() {
   const consent = getGoogleAnalyticsConsent();

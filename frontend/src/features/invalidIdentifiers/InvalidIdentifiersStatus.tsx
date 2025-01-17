@@ -5,8 +5,8 @@ import { Jumbotron } from "@/components/Jumbotron";
 import {
   selectInvalidIdentifiers,
   selectInvalidIdentifiersCount,
-} from "@/features/invalidIdentifiers/invalidIdentifiersSlice";
-import { showModal } from "@/features/modals/modalsSlice";
+} from "@/store/slices/invalidIdentifiersSlice";
+import { showModal } from "@/store/slices/modalsSlice";
 
 export function InvalidIdentifiersStatus() {
   //# region queries and hooks

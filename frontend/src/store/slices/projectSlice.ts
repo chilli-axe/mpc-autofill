@@ -15,8 +15,8 @@ import {
   SlotProjectMembers,
   Slots,
 } from "@/common/types";
-import { selectCardSizesByIdentifier } from "@/features/search/cardDocumentsSlice";
-import { selectActiveFace } from "@/features/viewSettings/viewSettingsSlice";
+import { selectCardSizesByIdentifier } from "@/store/slices/cardDocumentsSlice";
+import { selectActiveFace } from "@/store/slices/viewSettingsSlice";
 import { RootState } from "@/store/store";
 
 //# region slice configuration

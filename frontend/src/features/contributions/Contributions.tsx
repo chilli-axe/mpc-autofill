@@ -5,8 +5,8 @@ import { Card, Cardback, ProjectName, Token } from "@/common/constants";
 import { SourceContribution } from "@/common/types";
 import { AutofillTable } from "@/components/AutofillTable";
 import { Spinner } from "@/components/Spinner";
-import { useProjectName } from "@/features/backend/backendSlice";
 import { useGetContributionsQuery } from "@/store/api";
+import { useProjectName } from "@/store/slices/backendSlice";
 
 export function ContributionsSummary() {
   //# region queries and hooks

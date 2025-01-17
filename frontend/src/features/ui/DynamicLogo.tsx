@@ -8,15 +8,15 @@ import { QueryTags } from "@/common/constants";
 import { CardDocument, useAppDispatch } from "@/common/types";
 import { Spinner } from "@/components/Spinner";
 import {
-  useBackendConfigured,
-  useProjectName,
-} from "@/features/backend/backendSlice";
-import {
   MemoizedCardImage,
   MemoizedCardProportionWrapper,
 } from "@/features/card/Card";
 import { lato } from "@/pages/_app";
 import { api, useGetSampleCardsQuery } from "@/store/api";
+import {
+  useBackendConfigured,
+  useProjectName,
+} from "@/store/slices/backendSlice";
 
 //# region styled components
 

@@ -10,16 +10,16 @@ import {
 import { Tag } from "@/common/types";
 import { NoBackendDefault } from "@/components/NoBackendDefault";
 import {
-  useBackendConfigured,
-  useProjectName,
-} from "@/features/backend/backendSlice";
-import {
   ContributionsPerSource,
   ContributionsSummary,
 } from "@/features/contributions/Contributions";
 import Footer from "@/features/ui/Footer";
 import { ProjectContainer } from "@/features/ui/Layout";
 import { useGetTagsQuery } from "@/store/api";
+import {
+  useBackendConfigured,
+  useProjectName,
+} from "@/store/slices/backendSlice";
 
 function ContributionGuidelines() {
   const projectName = useProjectName();

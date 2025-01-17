@@ -12,7 +12,7 @@ import {
   SearchSettingsKey,
 } from "@/common/constants";
 import { SearchSettings, SourceDocuments, SourceRow } from "@/common/types";
-import { getDefaultSearchSettings } from "@/features/searchSettings/SearchSettingsSlice";
+import { getDefaultSearchSettings } from "@/store/slices/SearchSettingsSlice";
 
 import * as SearchSettingsSchema from "../../../common/schemas/search_settings.json";
 const ajv = new Ajv2019();

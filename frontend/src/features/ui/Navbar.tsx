@@ -13,12 +13,12 @@ import { ContentMaxWidth, NavbarLogoHeight } from "@/common/constants";
 import { useAppDispatch } from "@/common/types";
 import DisableSSR from "@/components/DisableSSR";
 import { BackendConfig } from "@/features/backend/BackendConfig";
+import { useGetBackendInfoQuery } from "@/store/api";
 import {
   useBackendConfigured,
   useProjectName,
-} from "@/features/backend/backendSlice";
-import { showModal } from "@/features/modals/modalsSlice";
-import { useGetBackendInfoQuery } from "@/store/api";
+} from "@/store/slices/backendSlice";
+import { showModal } from "@/store/slices/modalsSlice";
 
 const MaxWidthContainer = styled(Container)`
   max-width: ${ContentMaxWidth}px;

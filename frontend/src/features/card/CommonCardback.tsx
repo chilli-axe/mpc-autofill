@@ -11,13 +11,13 @@ import { Back } from "@/common/constants";
 import { useAppDispatch, useAppSelector } from "@/common/types";
 import { wrapIndex } from "@/common/utils";
 import { MemoizedEditorCard } from "@/features/card/Card";
-import { selectCardbacks } from "@/features/card/cardbackSlice";
 import { GridSelectorModal } from "@/features/gridSelector/GridSelectorModal";
+import { selectCardbacks } from "@/store/slices/cardbackSlice";
 import {
   bulkReplaceSelectedImage,
   selectProjectCardback,
   setSelectedCardback,
-} from "@/features/project/projectSlice";
+} from "@/store/slices/projectSlice";
 
 //# region grid selector
 

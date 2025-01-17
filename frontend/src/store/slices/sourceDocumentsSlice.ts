@@ -9,8 +9,8 @@ import {
   createAppSlice,
   SourceDocumentsState,
 } from "@/common/types";
-import { setNotification } from "@/features/toasts/toastsSlice";
 import { APIGetSources } from "@/store/api";
+import { setNotification } from "@/store/slices/toastsSlice";
 import { AppDispatch, RootState } from "@/store/store";
 
 //# region async thunk

@@ -4,8 +4,8 @@ import { createContext, useContext } from "react";
 
 import { base64StringToBlob } from "@/common/processing";
 import { CardDocument, useAppDispatch } from "@/common/types";
-import { setNotification } from "@/features/toasts/toastsSlice";
 import { api } from "@/store/api";
+import { setNotification } from "@/store/slices/toastsSlice";
 
 export type DownloadContext = Queue;
 

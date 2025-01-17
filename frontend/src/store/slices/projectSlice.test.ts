@@ -1,5 +1,5 @@
 import { CardType, ThunkStatus } from "@/common/types";
-import { selectQueriesWithoutSearchResults } from "@/features/project/projectSlice";
+import { selectQueriesWithoutSearchResults } from "@/store/slices/projectSlice";
 import { setupStore } from "@/store/store";
 
 describe("selectQueriesWithoutSearchResults tests", () => {

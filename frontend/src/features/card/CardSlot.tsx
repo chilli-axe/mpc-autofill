@@ -17,9 +17,9 @@ import {
 } from "@/common/types";
 import { wrapIndex } from "@/common/utils";
 import { MemoizedEditorCard } from "@/features/card/Card";
-import { selectCardbacks } from "@/features/card/cardbackSlice";
 import { GridSelectorModal } from "@/features/gridSelector/GridSelectorModal";
-import { setSelectedSlotsAndShowModal } from "@/features/modals/modalsSlice";
+import { selectCardbacks } from "@/store/slices/cardbackSlice";
+import { setSelectedSlotsAndShowModal } from "@/store/slices/modalsSlice";
 import {
   bulkAlignMemberSelection,
   deleteSlots,
@@ -29,8 +29,8 @@ import {
   selectSelectedSlots,
   setSelectedImages,
   toggleMemberSelection,
-} from "@/features/project/projectSlice";
-import { selectSearchResultsForQueryOrDefault } from "@/features/search/searchResultsSlice";
+} from "@/store/slices/projectSlice";
+import { selectSearchResultsForQueryOrDefault } from "@/store/slices/searchResultsSlice";
 
 interface CardSlotProps {
   searchQuery: SearchQuery | undefined;

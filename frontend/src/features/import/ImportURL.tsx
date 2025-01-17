@@ -18,12 +18,12 @@ import {
 import { useAppDispatch, useAppSelector } from "@/common/types";
 import { RightPaddedIcon } from "@/components/icon";
 import { Spinner } from "@/components/Spinner";
-import { useProjectName } from "@/features/backend/backendSlice";
-import { addMembers, selectProjectSize } from "@/features/project/projectSlice";
-import { selectFuzzySearch } from "@/features/searchSettings/SearchSettingsSlice";
-import { setNotification } from "@/features/toasts/toastsSlice";
 import { useGetDFCPairsQuery, useGetImportSitesQuery } from "@/store/api";
 import { api } from "@/store/api";
+import { useProjectName } from "@/store/slices/backendSlice";
+import { addMembers, selectProjectSize } from "@/store/slices/projectSlice";
+import { selectFuzzySearch } from "@/store/slices/SearchSettingsSlice";
+import { setNotification } from "@/store/slices/toastsSlice";
 
 export function ImportURL() {
   //# region queries and hooks

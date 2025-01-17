@@ -5,8 +5,8 @@ import Modal from "react-bootstrap/Modal";
 
 import { Card } from "@/common/constants";
 import { Slots, useAppDispatch } from "@/common/types";
-import { clearQueries, setQueries } from "@/features/project/projectSlice";
 import { useGetSampleCardsQuery } from "@/store/api";
+import { clearQueries, setQueries } from "@/store/slices/projectSlice";
 
 interface ChangeQueryModalProps {
   slots: Slots;

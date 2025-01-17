@@ -21,7 +21,7 @@ import {
   selectFinishSettings,
   setCardstock,
   toggleFoil,
-} from "@/features/finishSettings/FinishSettingsSlice";
+} from "@/store/slices/FinishSettingsSlice";
 
 export function FinishSettings() {
   //# region queries and hooks

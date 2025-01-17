@@ -24,7 +24,7 @@ import {
   clearURL,
   selectBackendURL,
   setURL,
-} from "@/features/backend/backendSlice";
+} from "@/store/slices/backendSlice";
 require("bootstrap-icons/font/bootstrap-icons.css");
 
 enum ValidationState {

@@ -20,7 +20,7 @@ import { RightPaddedIcon } from "@/components/icon";
 import {
   selectIsProjectEmpty,
   selectProjectMembers,
-} from "@/features/project/projectSlice";
+} from "@/store/slices/projectSlice";
 import { RootState } from "@/store/store";
 
 /**

@@ -22,16 +22,16 @@ import {
   useAppSelector,
 } from "@/common/types";
 import { RightPaddedIcon } from "@/components/icon";
-import { selectSourceDocuments } from "@/features/search/sourceDocumentsSlice";
 import { FilterSettings as FilterSettingsElement } from "@/features/searchSettings/FilterSettings";
+import { SearchTypeSettings as SearchTypeSettingsElement } from "@/features/searchSettings/SearchTypeSettings";
+import { SourceSettings as SourceSettingsElement } from "@/features/searchSettings/SourceSettings";
 import {
   selectSearchSettings,
   setFilterSettings,
   setSearchTypeSettings,
   setSourceSettings,
-} from "@/features/searchSettings/SearchSettingsSlice";
-import { SearchTypeSettings as SearchTypeSettingsElement } from "@/features/searchSettings/SearchTypeSettings";
-import { SourceSettings as SourceSettingsElement } from "@/features/searchSettings/SourceSettings";
+} from "@/store/slices/SearchSettingsSlice";
+import { selectSourceDocuments } from "@/store/slices/sourceDocumentsSlice";
 
 export function SearchSettings() {
   const dispatch = useAppDispatch();

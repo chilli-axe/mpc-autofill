@@ -14,8 +14,8 @@ import {
   useDownloadContext,
   useQueueImageDownload,
 } from "@/features/download/downloadImages";
-import { selectIsProjectEmpty } from "@/features/project/projectSlice";
-import { useCardDocumentsByIdentifier } from "@/features/search/cardDocumentsSlice";
+import { useCardDocumentsByIdentifier } from "@/store/slices/cardDocumentsSlice";
+import { selectIsProjectEmpty } from "@/store/slices/projectSlice";
 
 const StyledProgressBar = styled(ProgressBar)`
   --bs-progress-bg: #424e5c;

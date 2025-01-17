@@ -5,14 +5,14 @@ import { MemoizedCardDetailedView } from "@/features/cardDetailedView/cardDetail
 import { ChangeQueryModal } from "@/features/changeQuery/ChangeQueryModal";
 import { FinishedMyProjectModal } from "@/features/export/FinishedMyProjectModal";
 import { InvalidIdentifiersModal } from "@/features/invalidIdentifiers/InvalidIdentifiersModal";
+import { SupportBackendModal } from "@/features/support/SupportBackendModal";
+import { SupportDeveloperModal } from "@/features/support/SupportDeveloperModal";
 import {
   hideModal,
   selectModalCard,
   selectModalSlots,
   selectShownModal,
-} from "@/features/modals/modalsSlice";
-import { SupportBackendModal } from "@/features/support/SupportBackendModal";
-import { SupportDeveloperModal } from "@/features/support/SupportDeveloperModal";
+} from "@/store/slices/modalsSlice";
 
 export function Modals() {
   //# region queries and hooks

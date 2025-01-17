@@ -28,8 +28,8 @@ import { ToggleButtonHeight } from "@/common/constants";
 import { CardDocument, useAppDispatch, useAppSelector } from "@/common/types";
 import { RightPaddedIcon } from "@/components/icon";
 import { MemoizedEditorCard } from "@/features/card/Card";
-import { selectCardDocumentsByIdentifier } from "@/features/search/cardDocumentsSlice";
-import { selectSourceNamesByKey } from "@/features/search/sourceDocumentsSlice";
+import { selectCardDocumentsByIdentifier } from "@/store/slices/cardDocumentsSlice";
+import { selectSourceNamesByKey } from "@/store/slices/sourceDocumentsSlice";
 import {
   makeAllSourcesInvisible,
   makeAllSourcesVisible,
@@ -40,7 +40,7 @@ import {
   toggleFacetBySource,
   toggleJumpToVersionVisible,
   toggleSourceVisible,
-} from "@/features/viewSettings/viewSettingsSlice";
+} from "@/store/slices/viewSettingsSlice";
 
 interface CardGridCardProps {
   identifier: string;

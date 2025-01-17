@@ -6,22 +6,22 @@ import {
   Tuple,
 } from "@reduxjs/toolkit";
 
-import backendReducer, {
-  selectBackendConfigured,
-} from "@/features/backend/backendSlice";
-import cardbacksReducer from "@/features/card/cardbackSlice";
-import finishSettingsReducer from "@/features/finishSettings/FinishSettingsSlice";
-import invalidIdentifiersReducer from "@/features/invalidIdentifiers/invalidIdentifiersSlice";
-import modalsReducer from "@/features/modals/modalsSlice";
-import projectReducer from "@/features/project/projectSlice";
-import cardDocumentsReducer from "@/features/search/cardDocumentsSlice";
-import searchResultsReducer from "@/features/search/searchResultsSlice";
-import sourceDocumentsReducer from "@/features/search/sourceDocumentsSlice";
-import searchSettingsReducer from "@/features/searchSettings/SearchSettingsSlice";
-import toastsReducer, { setNotification } from "@/features/toasts/toastsSlice";
-import viewSettingsReducer from "@/features/viewSettings/viewSettingsSlice";
 import { api } from "@/store/api";
 import { listenerMiddleware } from "@/store/listenerMiddleware";
+import backendReducer, {
+  selectBackendConfigured,
+} from "@/store/slices/backendSlice";
+import cardbacksReducer from "@/store/slices/cardbackSlice";
+import cardDocumentsReducer from "@/store/slices/cardDocumentsSlice";
+import finishSettingsReducer from "@/store/slices/FinishSettingsSlice";
+import invalidIdentifiersReducer from "@/store/slices/invalidIdentifiersSlice";
+import modalsReducer from "@/store/slices/modalsSlice";
+import projectReducer from "@/store/slices/projectSlice";
+import searchResultsReducer from "@/store/slices/searchResultsSlice";
+import searchSettingsReducer from "@/store/slices/SearchSettingsSlice";
+import sourceDocumentsReducer from "@/store/slices/sourceDocumentsSlice";
+import toastsReducer, { setNotification } from "@/store/slices/toastsSlice";
+import viewSettingsReducer from "@/store/slices/viewSettingsSlice";
 
 const rootReducer = combineReducers({
   [api.reducerPath]: api.reducer,

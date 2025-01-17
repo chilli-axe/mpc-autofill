@@ -7,12 +7,12 @@ import styled from "styled-components";
 import { CardDocument } from "@/common/types";
 import { NewCardsFirstPage } from "@/common/types";
 import { Spinner } from "@/components/Spinner";
-import { useProjectName } from "@/features/backend/backendSlice";
 import { MemoizedCard } from "@/features/card/Card";
 import {
   useGetNewCardsFirstPageQuery,
   useGetNewCardsPageQuery,
 } from "@/store/api";
+import { useProjectName } from "@/store/slices/backendSlice";
 
 const InlineHeader = styled.h3`
   display: inline;

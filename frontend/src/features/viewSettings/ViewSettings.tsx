@@ -13,7 +13,7 @@ import { useAppDispatch, useAppSelector } from "@/common/types";
 import {
   selectFrontsVisible,
   toggleFaces,
-} from "@/features/viewSettings/viewSettingsSlice";
+} from "@/store/slices/viewSettingsSlice";
 
 export function ViewSettings() {
   const frontsVisible = useAppSelector(selectFrontsVisible);

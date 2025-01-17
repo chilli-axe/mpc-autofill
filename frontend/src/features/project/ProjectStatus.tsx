@@ -5,11 +5,11 @@ import { ProjectMaxSize } from "@/common/constants";
 import { useAppSelector } from "@/common/types";
 import { bracket, imageSizeToMBString } from "@/common/utils";
 import { Jumbotron } from "@/components/Jumbotron";
+import { ViewSettings } from "@/features/viewSettings/ViewSettings";
 import {
   selectProjectFileSize,
   selectProjectSize,
-} from "@/features/project/projectSlice";
-import { ViewSettings } from "@/features/viewSettings/ViewSettings";
+} from "@/store/slices/projectSlice";
 
 export function ProjectStatus() {
   const projectSize = useAppSelector(selectProjectSize);

@@ -11,41 +11,41 @@ import {
 import { Back, Front, QueryTags } from "@/common/constants";
 import { getLocalStorageSearchSettings } from "@/common/cookies";
 import { Faces } from "@/common/types";
+import { api } from "@/store/api";
 import {
   clearURL,
   selectBackendConfigured,
   setURL,
-} from "@/features/backend/backendSlice";
-import { fetchCardbacks, selectCardbacks } from "@/features/card/cardbackSlice";
+} from "@/store/slices/backendSlice";
+import { fetchCardbacks, selectCardbacks } from "@/store/slices/cardbackSlice";
+import { fetchCardDocumentsAndReportError } from "@/store/slices/cardDocumentsSlice";
 import {
   clearInvalidIdentifier,
   recordInvalidIdentifier,
-} from "@/features/invalidIdentifiers/invalidIdentifiersSlice";
+} from "@/store/slices/invalidIdentifiersSlice";
 import {
   addMembers,
   selectProjectCardback,
   setQueries,
   setSelectedCardback,
   setSelectedImages,
-} from "@/features/project/projectSlice";
-import { fetchCardDocumentsAndReportError } from "@/features/search/cardDocumentsSlice";
+} from "@/store/slices/projectSlice";
 import {
   clearSearchResults,
   fetchSearchResults,
   selectSearchResultsForQueryOrDefault,
-} from "@/features/search/searchResultsSlice";
-import {
-  fetchSourceDocuments,
-  fetchSourceDocumentsAndReportError,
-  selectSourceDocuments,
-} from "@/features/search/sourceDocumentsSlice";
+} from "@/store/slices/searchResultsSlice";
 import {
   selectSearchSettingsSourcesValid,
   setFilterSettings,
   setSearchTypeSettings,
   setSourceSettings,
-} from "@/features/searchSettings/SearchSettingsSlice";
-import { api } from "@/store/api";
+} from "@/store/slices/SearchSettingsSlice";
+import {
+  fetchSourceDocuments,
+  fetchSourceDocumentsAndReportError,
+  selectSourceDocuments,
+} from "@/store/slices/sourceDocumentsSlice";
 
 import type { AppDispatch, RootState } from "./store";
 

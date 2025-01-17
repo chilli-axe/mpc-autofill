@@ -21,10 +21,10 @@ import {
 import { useAppDispatch, useAppSelector } from "@/common/types";
 import { AutofillTable } from "@/components/AutofillTable";
 import { RightPaddedIcon } from "@/components/icon";
-import { addMembers, selectProjectSize } from "@/features/project/projectSlice";
-import { selectFuzzySearch } from "@/features/searchSettings/SearchSettingsSlice";
-import { setNotification } from "@/features/toasts/toastsSlice";
 import { useGetDFCPairsQuery } from "@/store/api";
+import { addMembers, selectProjectSize } from "@/store/slices/projectSlice";
+import { selectFuzzySearch } from "@/store/slices/SearchSettingsSlice";
+import { setNotification } from "@/store/slices/toastsSlice";
 
 /**
  * Instruct the user on how to format their CSV files.

@@ -3,13 +3,13 @@ import React from "react";
 
 import { ProjectName } from "@/common/constants";
 import { NoBackendDefault } from "@/components/NoBackendDefault";
-import {
-  useBackendConfigured,
-  useProjectName,
-} from "@/features/backend/backendSlice";
 import { NewCards } from "@/features/new/New";
 import Footer from "@/features/ui/Footer";
 import { ProjectContainer } from "@/features/ui/Layout";
+import {
+  useBackendConfigured,
+  useProjectName,
+} from "@/store/slices/backendSlice";
 
 function NewOrDefault() {
   const backendConfigured = useBackendConfigured();

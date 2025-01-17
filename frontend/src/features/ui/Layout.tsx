@@ -15,7 +15,6 @@ import {
 } from "@/common/cookies";
 import { standardiseURL } from "@/common/processing";
 import { useAppDispatch } from "@/common/types";
-import { setURL, useBackendConfigured } from "@/features/backend/backendSlice";
 import {
   DownloadContext,
   DownloadContextProvider,
@@ -23,6 +22,7 @@ import {
 import { Modals } from "@/features/modals/Modals";
 import { Toasts } from "@/features/toasts/Toasts";
 import ProjectNavbar from "@/features/ui/Navbar";
+import { setURL, useBackendConfigured } from "@/store/slices/backendSlice";
 import store from "@/store/store";
 
 function BackendSetter() {

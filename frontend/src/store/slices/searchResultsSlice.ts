@@ -11,11 +11,11 @@ import {
   SearchResults,
   SearchResultsState,
 } from "@/common/types";
-import { selectBackendURL } from "@/features/backend/backendSlice";
-import { selectQueriesWithoutSearchResults } from "@/features/project/projectSlice";
-import { selectSearchSettings } from "@/features/searchSettings/SearchSettingsSlice";
-import { setNotification } from "@/features/toasts/toastsSlice";
 import { APISearch } from "@/store/api";
+import { selectBackendURL } from "@/store/slices/backendSlice";
+import { selectQueriesWithoutSearchResults } from "@/store/slices/projectSlice";
+import { selectSearchSettings } from "@/store/slices/SearchSettingsSlice";
+import { setNotification } from "@/store/slices/toastsSlice";
 import { AppDispatch, RootState } from "@/store/store";
 
 //# region async thunk

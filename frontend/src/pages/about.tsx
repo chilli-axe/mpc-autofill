@@ -3,10 +3,10 @@ import styled from "styled-components";
 
 import { ProjectName } from "@/common/constants";
 import { MakePlayingCards, MakePlayingCardsURL } from "@/common/constants";
-import { useProjectName } from "@/features/backend/backendSlice";
 import Footer from "@/features/ui/Footer";
 import { ProjectContainer } from "@/features/ui/Layout";
 import { useGetBackendInfoQuery } from "@/store/api";
+import { useProjectName } from "@/store/slices/backendSlice";
 const CentreAligned = styled.div`
   text-align: center;
 `;

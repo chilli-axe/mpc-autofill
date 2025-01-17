@@ -13,14 +13,14 @@ import {
   useAppSelector,
 } from "@/common/types";
 import { CardDocuments } from "@/common/types";
-import { fetchCardbacksAndReportError } from "@/features/card/cardbackSlice";
+import { APIGetCards } from "@/store/api";
+import { fetchCardbacksAndReportError } from "@/store/slices/cardbackSlice";
 import {
   selectProjectMemberIdentifiers,
   selectUniqueCardIdentifiers,
-} from "@/features/project/projectSlice";
-import { fetchSearchResultsAndReportError } from "@/features/search/searchResultsSlice";
-import { setNotification } from "@/features/toasts/toastsSlice";
-import { APIGetCards } from "@/store/api";
+} from "@/store/slices/projectSlice";
+import { fetchSearchResultsAndReportError } from "@/store/slices/searchResultsSlice";
+import { setNotification } from "@/store/slices/toastsSlice";
 import { AppDispatch, RootState } from "@/store/store";
 
 //# region async thunk
