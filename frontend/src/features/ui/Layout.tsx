@@ -59,14 +59,14 @@ const OverscrollProvider = styled(Provider)`
 `;
 
 const ContentContainer = styled(Container)`
+  overflow-y: scroll;
+  overflow-x: hidden;
   top: ${NavbarHeight}px;
   position: fixed;
   height: calc(
     100vh - ${NavbarHeight}px
   ); // for compatibility with older browsers
   height: calc(100dvh - ${NavbarHeight}px); // handles the ios address bar
-  overflow-y: scroll;
-  overflow-x: hidden;
 `;
 
 const MaxWidthContainer = styled(Container)`
