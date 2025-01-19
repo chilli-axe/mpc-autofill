@@ -157,13 +157,13 @@ exports[`the html structure of a CommonCardback with multiple search results 1`]
       </button>
       <div>
         <button
-          class="prev btn btn-outline-primary"
+          class="prev btn btn-outline-info"
           type="button"
         >
           ❮
         </button>
         <button
-          class="next btn btn-outline-primary"
+          class="next btn btn-outline-info"
           type="button"
         >
           ❯

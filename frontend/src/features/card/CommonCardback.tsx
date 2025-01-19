@@ -5,12 +5,12 @@
  */
 
 import React, { memo, useState } from "react";
-import Button from "react-bootstrap/Button";
 
 import { Back } from "@/common/constants";
 import { useAppDispatch, useAppSelector } from "@/common/types";
 import { wrapIndex } from "@/common/utils";
 import { MemoizedEditorCard } from "@/features/card/Card";
+import { CardFooter } from "@/features/card/CardFooter";
 import { GridSelectorModal } from "@/features/gridSelector/GridSelectorModal";
 import { selectCardbacks } from "@/store/slices/cardbackSlice";
 import {
@@ -44,16 +44,16 @@ export function CommonCardbackGridSelector({
 
   //# region callbacks
 
-  const setSelectedImageFromIdentifier = (selectedImage: string): void => {
+  const setSelectedImageFromIdentifier = (image: string): void => {
     if (projectCardback != null) {
       dispatch(
         bulkReplaceSelectedImage({
           currentImage: projectCardback,
-          selectedImage,
+          selectedImage: image,
           face: Back,
         })
       );
-      dispatch(setSelectedCardback({ selectedImage }));
+      dispatch(setSelectedCardback({ selectedImage: image }));
     }
   };
 
@@ -102,22 +102,18 @@ export function CommonCardback({ selectedImage }: CommonCardbackProps) {
 
   const handleCloseGridSelector = () => setShowGridSelector(false);
   const handleShowGridSelector = () => setShowGridSelector(true);
-  const setSelectedImageFromDelta = (delta: number): void => {
+  const setSelectedImageFromIdentifier = (image: string): void => {
     if (selectedImage != null && selectedImageIndex != null) {
-      const newImage =
-        searchResults[
-          wrapIndex(selectedImageIndex + delta, searchResults.length)
-        ];
       dispatch(
         bulkReplaceSelectedImage({
           currentImage: selectedImage,
-          selectedImage: newImage,
+          selectedImage: image,
           face: Back,
         })
       );
       dispatch(
         setSelectedCardback({
-          selectedImage: newImage,
+          selectedImage: image,
         })
       );
     }
@@ -137,43 +133,15 @@ export function CommonCardback({ selectedImage }: CommonCardbackProps) {
     selectedImageIndex != null
       ? searchResults[wrapIndex(selectedImageIndex - 1, searchResults.length)]
       : undefined;
-  // TODO: would be good to reuse some of this code
   const cardHeaderTitle = "Cardback";
   const cardFooter = (
-    <>
-      {searchResults.length === 1 && (
-        <p className="mpccard-counter text-center align-middle">
-          1 / {searchResults.length}
-        </p>
-      )}
-      {searchResults.length > 1 && (
-        <>
-          <Button
-            variant="outline-info"
-            className="mpccard-counter-btn"
-            onClick={handleShowGridSelector}
-          >
-            {(selectedImageIndex ?? 0) + 1} / {searchResults.length}
-          </Button>
-          <div>
-            <Button
-              variant="outline-primary"
-              className="prev"
-              onClick={() => setSelectedImageFromDelta(-1)}
-            >
-              &#10094;
-            </Button>
-            <Button
-              variant="outline-primary"
-              className="next"
-              onClick={() => setSelectedImageFromDelta(1)}
-            >
-              &#10095;
-            </Button>
-          </div>
-        </>
-      )}
-    </>
+    <CardFooter
+      searchResults={searchResults}
+      selectedImageIndex={selectedImageIndex}
+      selected={false}
+      setSelectedImageFromIdentifier={setSelectedImageFromIdentifier}
+      handleShowGridSelector={handleShowGridSelector}
+    />
   );
 
   //# endregion

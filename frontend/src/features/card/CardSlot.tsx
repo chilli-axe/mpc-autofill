@@ -7,7 +7,6 @@
  */
 
 import React, { memo, useState } from "react";
-import Button from "react-bootstrap/Button";
 
 import {
   Faces,
@@ -17,6 +16,7 @@ import {
 } from "@/common/types";
 import { wrapIndex } from "@/common/utils";
 import { MemoizedEditorCard } from "@/features/card/Card";
+import { CardFooter } from "@/features/card/CardFooter";
 import { GridSelectorModal } from "@/features/gridSelector/GridSelectorModal";
 import { selectCardbacks } from "@/store/slices/cardbackSlice";
 import { setSelectedSlotsAndShowModal } from "@/store/slices/modalsSlice";
@@ -141,24 +141,7 @@ export function CardSlot({ searchQuery, face, slot }: CardSlotProps) {
       dispatch(toggleMemberSelection({ slot, face }));
     }
   };
-  const setSelectedImageFromDelta = (delta: number): void => {
-    // TODO: docstring
-    if (selectedImageIndex != null) {
-      dispatch(
-        setSelectedImages({
-          slots: slotsToModify,
-          selectedImage:
-            searchResultsForQuery[
-              wrapIndex(
-                selectedImageIndex + delta,
-                searchResultsForQuery.length
-              )
-            ],
-          deselect: false,
-        })
-      );
-    }
-  };
+
   const setSelectedImageFromIdentifier = (selectedImage: string) => {
     dispatch(
       setSelectedImages({
@@ -217,40 +200,13 @@ export function CardSlot({ searchQuery, face, slot }: CardSlotProps) {
     </>
   );
   const cardFooter = (
-    <>
-      {searchResultsForQuery.length === 1 && (
-        <p className="mpccard-counter text-center align-middle">
-          1 / {searchResultsForQuery.length}
-        </p>
-      )}
-      {searchResultsForQuery.length > 1 && (
-        <>
-          <Button
-            variant={modifySelectedSlots ? "info" : "outline-info"}
-            className="mpccard-counter-btn"
-            onClick={handleShowGridSelector}
-          >
-            {(selectedImageIndex ?? 0) + 1} / {searchResultsForQuery.length}
-          </Button>
-          <div>
-            <Button
-              variant={modifySelectedSlots ? "info" : "outline-info"}
-              className="prev"
-              onClick={() => setSelectedImageFromDelta(-1)}
-            >
-              &#10094;
-            </Button>
-            <Button
-              variant={modifySelectedSlots ? "info" : "outline-info"}
-              className="next"
-              onClick={() => setSelectedImageFromDelta(1)}
-            >
-              &#10095;
-            </Button>
-          </div>
-        </>
-      )}
-    </>
+    <CardFooter
+      searchResults={searchResultsForQuery}
+      selectedImageIndex={selectedImageIndex}
+      selected={projectMember?.selected ?? false}
+      setSelectedImageFromIdentifier={setSelectedImageFromIdentifier}
+      handleShowGridSelector={handleShowGridSelector}
+    />
   );
 
   //# endregion

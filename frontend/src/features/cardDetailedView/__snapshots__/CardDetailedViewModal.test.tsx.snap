@@ -1,25 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`the html structure of a CardDetailedViewModal 1`] = `
-.c7 {
-  padding-right: 0.5em;
-}
-
-.c1 {
-  z-index: 1;
-  opacity: 1;
-}
-
-.c1:hover {
-  cursor: auto;
-}
-
-.c0 {
-  z-index: 0;
-  background: #4e5d6c;
-  border: solid 0px black;
-}
-
 .c2 {
   max-width: 100%;
   overflow-x: scroll;
@@ -52,6 +33,25 @@ exports[`the html structure of a CardDetailedViewModal 1`] = `
 .c6:hover {
   outline-color: #ffffffff;
   cursor: pointer;
+}
+
+.c7 {
+  padding-right: 0.5em;
+}
+
+.c1 {
+  z-index: 1;
+  opacity: 1;
+}
+
+.c1:hover {
+  cursor: auto;
+}
+
+.c0 {
+  z-index: 0;
+  background: #4e5d6c;
+  border: solid 0px black;
 }
 
 <div
@@ -177,7 +177,9 @@ exports[`the html structure of a CardDetailedViewModal 1`] = `
                   </th>
                   <td
                     class="c5"
-                  />
+                  >
+                    English
+                  </td>
                 </tr>
                 <tr>
                   <th
