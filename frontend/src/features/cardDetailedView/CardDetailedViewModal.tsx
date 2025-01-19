@@ -4,7 +4,7 @@
  * some more information (e.g. size, dote uploaded, etc.), and a button to download the full res image.
  */
 
-import React, { memo, useState } from "react";
+import React, { memo } from "react";
 import Badge from "react-bootstrap/Badge";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
@@ -16,6 +16,7 @@ import { AutofillTable } from "@/components/AutofillTable";
 import { ClickToCopy } from "@/components/ClickToCopy";
 import DisableSSR from "@/components/DisableSSR";
 import { RightPaddedIcon } from "@/components/icon";
+import { AddCardToProjectForm } from "@/features/card/AddCardToProjectForm";
 import {
   MemoizedCardImage,
   MemoizedCardProportionWrapper,
@@ -153,6 +154,7 @@ export function CardDetailedViewModal({
                   Download Image
                 </Button>
               </div>
+              <AddCardToProjectForm cardDocument={cardDocument} />
             </div>
           </Row>
         </Modal.Body>

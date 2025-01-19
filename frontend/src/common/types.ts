@@ -49,7 +49,7 @@ export interface ThunkStateBase {
 export interface CardDocument {
   // This should match the data returned by `to_dict` on the `Card` Django model
   identifier: string;
-  card_type: string;
+  card_type: CardType;
   name: string;
   priority: number;
   source: string;
