@@ -96,6 +96,13 @@ export default function ProjectNavbar() {
                   </Nav.Link>
                   <Nav.Link
                     as={Link}
+                    href="/explore"
+                    active={router.route === "/explore"}
+                  >
+                    Explore
+                  </Nav.Link>
+                  <Nav.Link
+                    as={Link}
                     href="/contributions"
                     active={router.route === "/contributions"}
                   >

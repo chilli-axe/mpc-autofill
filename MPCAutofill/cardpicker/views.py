@@ -24,6 +24,7 @@ from cardpicker.search.search_functions import (
     SearchQuery,
     SearchSettings,
     get_new_cards_paginator,
+    get_search,
     ping_elasticsearch,
 )
 from cardpicker.tags import Tags
@@ -94,6 +95,49 @@ def post_search_results(request: HttpRequest) -> HttpResponse:
             hits = query.retrieve_card_identifiers(search_settings=search_settings)
             results[query.query][query.card_type] = hits
     return JsonResponse({"results": results})
+
+
+@csrf_exempt
+@NewErrorWrappers.to_json
+def post_search_results_2(request: HttpRequest) -> HttpResponse:
+    """
+    Return the first page of search results for a given list of queries.
+    Each query should be of the form {card name, card type}.
+    This function should also accept a set of search settings in a standard format.
+    Return a dictionary of search results of the following form:
+    {(card name, card type): {"num_hits": num_hits, "hits": [list of Card identifiers]}
+    and it's assumed that `hits` starts from the first hit.
+    """
+
+    if request.method != "POST":
+        raise BadRequestException("Expected POST request.")
+
+    json_body = json.loads(request.body)
+
+    try:
+        search_settings = SearchSettings.from_json_body(json_body)
+        SearchQuery.list_from_json_body(json_body)
+    except ValidationError as e:
+        raise BadRequestException(f"The provided JSON body is invalid:\n\n{e.message}")
+
+    if not ping_elasticsearch():
+        raise SearchExceptions.ElasticsearchOfflineException()
+    if not Index(CardSearch.Index.name).exists():
+        raise SearchExceptions.IndexNotFoundException(CardSearch.__name__)
+
+    defaultdict(dict)
+    s = get_search(search_settings=search_settings, search_query=None).sort(
+        {
+            "date": {
+                "order": "desc",
+            },
+            "searchq_keyword": {
+                "order": "asc",
+            },
+        }
+    )[0:20]
+    men = s.execute()
+    return JsonResponse({"results": men})
 
 
 @csrf_exempt

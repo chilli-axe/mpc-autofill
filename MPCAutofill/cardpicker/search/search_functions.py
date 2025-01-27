@@ -210,6 +210,38 @@ class SearchSettings:
         return cardbacks
 
 
+def get_search(search_settings: SearchSettings, search_query: Optional["SearchQuery"]) -> CardSearch:
+    # set up search - match the query and use the AND operator
+
+    s = (
+        CardSearch.search()
+        .filter(Bool(should=Terms(source=search_settings.sources), minimum_should_match=1))
+        .filter(Range(dpi={"gte": search_settings.min_dpi, "lte": search_settings.max_dpi}))
+        .filter(Range(size={"lte": search_settings.max_size}))
+        .source(fields=["identifier", "source", "searchq"])
+    )
+    if search_query is not None:
+        query_parsed = to_searchable(search_query.query)
+        if search_settings.fuzzy_search:
+            match = Match(searchq_fuzzy={"query": query_parsed, "operator": "AND"})
+        else:
+            match = Match(searchq_precise={"query": query_parsed, "operator": "AND"})
+        s = s.query(match).filter(Term(card_type=search_query.card_type))
+
+    if search_settings.languages:
+        s = s.filter(
+            Bool(
+                should=Terms(language=[language.alpha_2 for language in search_settings.languages]),
+                minimum_should_match=1,
+            )
+        )
+    if search_settings.includes_tags:
+        s = s.filter(Bool(should=Terms(tags=search_settings.includes_tags), minimum_should_match=1))
+    if search_settings.excludes_tags:
+        s = s.filter(Bool(must_not=Terms(tags=search_settings.excludes_tags)))
+    return s
+
+
 @dataclass(frozen=True, eq=True)
 class SearchQuery:
     query: str
@@ -295,37 +327,12 @@ class SearchQuery:
         once at the call site rather than in the body of this function.
         """
 
-        query_parsed = to_searchable(self.query)
-
-        # set up search - match the query and use the AND operator
-        if search_settings.fuzzy_search:
-            match = Match(searchq_fuzzy={"query": query_parsed, "operator": "AND"})
-        else:
-            match = Match(searchq_precise={"query": query_parsed, "operator": "AND"})
-
-        s = (
-            CardSearch.search()
-            .filter(Term(card_type=self.card_type))
-            .filter(Bool(should=Terms(source=search_settings.sources), minimum_should_match=1))
-            .filter(Range(dpi={"gte": search_settings.min_dpi, "lte": search_settings.max_dpi}))
-            .filter(Range(size={"lte": search_settings.max_size}))
-            .query(match)
+        hits_iterable = (
+            get_search(search_settings=search_settings, search_query=self)
             .sort({"priority": {"order": "desc"}})
-            .source(fields=["identifier", "source", "searchq"])
+            .params(preserve_order=True)
+            .scan()
         )
-        if search_settings.languages:
-            s = s.filter(
-                Bool(
-                    should=Terms(language=[language.alpha_2 for language in search_settings.languages]),
-                    minimum_should_match=1,
-                )
-            )
-        if search_settings.includes_tags:
-            s = s.filter(Bool(should=Terms(tags=search_settings.includes_tags), minimum_should_match=1))
-        if search_settings.excludes_tags:
-            s = s.filter(Bool(must_not=Terms(tags=search_settings.excludes_tags)))
-        hits_iterable = s.params(preserve_order=True).scan()
-
         source_order = search_settings.get_source_order()
         return [result.identifier for result in sorted(hits_iterable, key=lambda result: source_order[result.source])]
 

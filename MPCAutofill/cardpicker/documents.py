@@ -16,6 +16,7 @@ class CardSearch(Document):
     source = fields.TextField(attr="get_source_key", analyzer="keyword")
     searchq_fuzzy = fields.TextField(attr="searchq", analyzer=fuzzy_analyser)
     searchq_precise = fields.TextField(attr="searchq", analyzer=precise_analyser)
+    searchq_keyword = fields.KeywordField(attr="searchq")
     card_type = fields.KeywordField()
     language = fields.TextField(analyzer=precise_analyser)  # case insensitivity is one less thing which can go wrong
     tags = fields.KeywordField()  # all elasticsearch fields support arrays by default
