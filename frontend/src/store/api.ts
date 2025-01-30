@@ -160,6 +160,20 @@ export const api = createApi({
         );
       },
     }),
+    postExploreSearch: builder.query<
+      Array<string>,
+      { searchSettings: SearchSettings; query: SearchQuery }
+    >({
+      query: ({ searchSettings, query }) => ({
+        url: `2/exploreSearch/`,
+        method: "POST",
+        body: JSON.stringify({ searchSettings, query }),
+      }),
+      providesTags: [QueryTags.BackendSpecific],
+      transformResponse: (response: { results: Array<string> }, meta, arg) =>
+        response.results,
+      keepUnusedDataFor: 0.0,
+    }),
   }),
 });
 
@@ -179,6 +193,7 @@ const {
   useGetBackendInfoQuery: useRawGetBackendInfoQuery,
   useGetNewCardsFirstPageQuery: useRawGetNewCardsFirstPageQuery,
   useGetNewCardsPageQuery: useRawGetNewCardsPageQuery,
+  usePostExploreSearchQuery: useRawPostExploreSearchQuery,
 } = api;
 
 export function useGetImportSitesQuery() {
@@ -244,6 +259,22 @@ export function useGetNewCardsPageQuery([sourceKey, page]: [string, number]) {
   });
 }
 
+export function usePostExploreSearchQuery({
+  searchSettings,
+  query,
+}: {
+  searchSettings: SearchSettings;
+  query: SearchQuery;
+}) {
+  const backendConfigured = useBackendConfigured();
+  return useRawPostExploreSearchQuery(
+    { searchSettings, query },
+    {
+      skip: !backendConfigured,
+    }
+  );
+}
+
 //# endregion
 
 export async function APIGetCards(
@@ -284,12 +315,12 @@ export async function APIGetCardbacks(
   });
 }
 
-export async function APISearch(
+export async function APIEditorSearch(
   backendURL: string,
   searchSettings: SearchSettings,
   queriesToSearch: Array<SearchQuery>
 ): Promise<SearchResults> {
-  const rawResponse = await fetch(formatURL(backendURL, "/2/searchResults/"), {
+  const rawResponse = await fetch(formatURL(backendURL, "/2/editorSearch/"), {
     method: "POST",
     body: JSON.stringify({
       searchSettings,

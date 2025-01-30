@@ -11,7 +11,7 @@ import {
   SearchResults,
   SearchResultsState,
 } from "@/common/types";
-import { APISearch } from "@/store/api";
+import { APIEditorSearch } from "@/store/api";
 import { selectBackendURL } from "@/store/slices/backendSlice";
 import { selectQueriesWithoutSearchResults } from "@/store/slices/projectSlice";
 import { selectSearchSettings } from "@/store/slices/SearchSettingsSlice";
@@ -38,7 +38,7 @@ export const fetchSearchResults = createAppAsyncThunk(
         ).keys()
       ).reduce(function (promiseChain: Promise<SearchResults>, page: number) {
         return promiseChain.then(async function (previousValue: SearchResults) {
-          const searchResults = await APISearch(
+          const searchResults = await APIEditorSearch(
             backendURL,
             searchSettings,
             queriesToSearch.slice(

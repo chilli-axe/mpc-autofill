@@ -42,7 +42,7 @@ class TestPostSearchResults:
 
     def test_search_for_single_card(self, client, snapshot):
         response = client.post(
-            reverse(views.post_search_results),
+            reverse(views.post_editor_search),
             {
                 "searchSettings": BASE_SEARCH_SETTINGS,
                 "queries": [{"query": Cards.BRAINSTORM.value.name, "card_type": "CARD"}],
@@ -55,7 +55,7 @@ class TestPostSearchResults:
 
     def test_search_for_single_cardback(self, client, snapshot):
         response = client.post(
-            reverse(views.post_search_results),
+            reverse(views.post_editor_search),
             {
                 "searchSettings": BASE_SEARCH_SETTINGS,
                 "queries": [{"query": Cards.SIMPLE_LOTUS.value.name, "card_type": "CARDBACK"}],
@@ -70,7 +70,7 @@ class TestPostSearchResults:
 
     def test_search_for_single_token(self, client, snapshot):
         response = client.post(
-            reverse(views.post_search_results),
+            reverse(views.post_editor_search),
             {
                 "searchSettings": BASE_SEARCH_SETTINGS,
                 "queries": [{"query": Cards.GOBLIN.value.name, "card_type": "TOKEN"}],
@@ -83,7 +83,7 @@ class TestPostSearchResults:
 
     def test_complex_search(self, client, snapshot):
         response = client.post(
-            reverse(views.post_search_results),
+            reverse(views.post_editor_search),
             {
                 "searchSettings": BASE_SEARCH_SETTINGS,
                 "queries": [
@@ -101,7 +101,7 @@ class TestPostSearchResults:
 
     def test_priority_ordering_in_search_results(self, client, snapshot):
         response = client.post(
-            reverse(views.post_search_results),
+            reverse(views.post_editor_search),
             {
                 "searchSettings": BASE_SEARCH_SETTINGS,
                 "queries": [{"query": Cards.ISLAND.value.name, "card_type": "CARD"}],
@@ -118,7 +118,7 @@ class TestPostSearchResults:
 
     def test_search_for_card_with_versions_from_two_sources(self, client, snapshot):
         response = client.post(
-            reverse(views.post_search_results),
+            reverse(views.post_editor_search),
             {
                 "searchSettings": BASE_SEARCH_SETTINGS,
                 "queries": [{"query": Cards.PAST_IN_FLAMES_1.value.name, "card_type": "CARD"}],
@@ -139,7 +139,7 @@ class TestPostSearchResults:
             [Sources.EXAMPLE_DRIVE_1.value.pk, True],
         ]
         response = client.post(
-            reverse(views.post_search_results),
+            reverse(views.post_editor_search),
             {
                 "searchSettings": search_settings,
                 "queries": [{"query": Cards.PAST_IN_FLAMES_1.value.name, "card_type": "CARD"}],
@@ -160,7 +160,7 @@ class TestPostSearchResults:
             [Sources.EXAMPLE_DRIVE_2.value.pk, False],
         ]
         response = client.post(
-            reverse(views.post_search_results),
+            reverse(views.post_editor_search),
             {
                 "searchSettings": search_settings,
                 "queries": [{"query": Cards.PAST_IN_FLAMES_1.value.name, "card_type": "CARD"}],
@@ -180,7 +180,7 @@ class TestPostSearchResults:
             [Sources.EXAMPLE_DRIVE_2.value.pk, False],
         ]
         response = client.post(
-            reverse(views.post_search_results),
+            reverse(views.post_editor_search),
             {
                 "searchSettings": search_settings,
                 "queries": [{"query": Cards.PAST_IN_FLAMES_1.value.name, "card_type": "CARD"}],
@@ -195,7 +195,7 @@ class TestPostSearchResults:
         search_settings = deepcopy(BASE_SEARCH_SETTINGS)
         search_settings["searchTypeSettings"]["fuzzySearch"] = True
         response = client.post(
-            reverse(views.post_search_results),
+            reverse(views.post_editor_search),
             {"searchSettings": search_settings, "queries": [{"query": "past in", "card_type": "CARD"}]},
             content_type="application/json",
         )
@@ -210,7 +210,7 @@ class TestPostSearchResults:
         search_settings = deepcopy(BASE_SEARCH_SETTINGS)
         search_settings["filterSettings"]["minimumDPI"] = 400
         response = client.post(
-            reverse(views.post_search_results),
+            reverse(views.post_editor_search),
             {
                 "searchSettings": search_settings,
                 "queries": [{"query": Cards.SIMPLE_CUBE.value.name, "card_type": "CARDBACK"}],
@@ -225,7 +225,7 @@ class TestPostSearchResults:
         search_settings = deepcopy(BASE_SEARCH_SETTINGS)
         search_settings["filterSettings"]["maximumDPI"] = 200
         response = client.post(
-            reverse(views.post_search_results),
+            reverse(views.post_editor_search),
             {
                 "searchSettings": search_settings,
                 "queries": [{"query": Cards.SIMPLE_CUBE.value.name, "card_type": "CARDBACK"}],
@@ -240,7 +240,7 @@ class TestPostSearchResults:
         search_settings = deepcopy(BASE_SEARCH_SETTINGS)
         search_settings["filterSettings"]["minimumDPI"] = 600
         response = client.post(
-            reverse(views.post_search_results),
+            reverse(views.post_editor_search),
             {
                 "searchSettings": search_settings,
                 "queries": [{"query": Cards.PAST_IN_FLAMES_1.value.name, "card_type": "CARD"}],
@@ -257,7 +257,7 @@ class TestPostSearchResults:
         search_settings = deepcopy(BASE_SEARCH_SETTINGS)
         search_settings["filterSettings"]["maximumSize"] = 4
         response = client.post(
-            reverse(views.post_search_results),
+            reverse(views.post_editor_search),
             {
                 "searchSettings": search_settings,
                 "queries": [{"query": Cards.PAST_IN_FLAMES_1.value.name, "card_type": "CARD"}],
@@ -274,7 +274,7 @@ class TestPostSearchResults:
         search_settings = deepcopy(BASE_SEARCH_SETTINGS)
         search_settings["filterSettings"]["languages"] = ["EN"]
         response = client.post(
-            reverse(views.post_search_results),
+            reverse(views.post_editor_search),
             {
                 "searchSettings": search_settings,
                 "queries": [{"query": Cards.PAST_IN_FLAMES_1.value.name, "card_type": "CARD"}],
@@ -289,7 +289,7 @@ class TestPostSearchResults:
         search_settings = deepcopy(BASE_SEARCH_SETTINGS)
         search_settings["filterSettings"]["languages"] = ["EN", "DE"]
         response = client.post(
-            reverse(views.post_search_results),
+            reverse(views.post_editor_search),
             {
                 "searchSettings": search_settings,
                 "queries": [{"query": Cards.PAST_IN_FLAMES_1.value.name, "card_type": "CARD"}],
@@ -306,7 +306,7 @@ class TestPostSearchResults:
         search_settings = deepcopy(BASE_SEARCH_SETTINGS)
         search_settings["filterSettings"]["includesTags"] = [another_tag_in_data.name]
         response = client.post(
-            reverse(views.post_search_results),
+            reverse(views.post_editor_search),
             {
                 "searchSettings": search_settings,
                 "queries": [{"query": Cards.PAST_IN_FLAMES_1.value.name, "card_type": "CARD"}],
@@ -323,7 +323,7 @@ class TestPostSearchResults:
         search_settings = deepcopy(BASE_SEARCH_SETTINGS)
         search_settings["filterSettings"]["excludesTags"] = [another_tag_in_data.name]
         response = client.post(
-            reverse(views.post_search_results),
+            reverse(views.post_editor_search),
             {
                 "searchSettings": search_settings,
                 "queries": [{"query": Cards.PAST_IN_FLAMES_2.value.name, "card_type": "CARD"}],
@@ -340,7 +340,7 @@ class TestPostSearchResults:
         search_settings = deepcopy(BASE_SEARCH_SETTINGS)
         search_settings["filterSettings"]["includesTags"] = [tag_in_data.name]
         response = client.post(
-            reverse(views.post_search_results),
+            reverse(views.post_editor_search),
             {
                 "searchSettings": search_settings,
                 "queries": [{"query": Cards.PAST_IN_FLAMES_1.value.name, "card_type": "CARD"}],
@@ -358,7 +358,7 @@ class TestPostSearchResults:
         search_settings["filterSettings"]["includesTags"] = [tag_in_data.name]
         search_settings["filterSettings"]["excludesTags"] = [another_tag_in_data.name]
         response = client.post(
-            reverse(views.post_search_results),
+            reverse(views.post_editor_search),
             {
                 "searchSettings": search_settings,
                 "queries": [{"query": Cards.PAST_IN_FLAMES_1.value.name, "card_type": "CARD"}],
@@ -375,7 +375,7 @@ class TestPostSearchResults:
         search_settings = deepcopy(BASE_SEARCH_SETTINGS)
         search_settings["filterSettings"]["includesTags"] = [tag_in_data.name, another_tag_in_data.name]
         response = client.post(
-            reverse(views.post_search_results),
+            reverse(views.post_editor_search),
             {
                 "searchSettings": search_settings,
                 "queries": [{"query": Cards.PAST_IN_FLAMES_1.value.name, "card_type": "CARD"}],
@@ -389,7 +389,7 @@ class TestPostSearchResults:
     def test_page_equal_to_max_size(self, client, monkeypatch, snapshot):
         monkeypatch.setattr("cardpicker.search.search_functions.SEARCH_RESULTS_PAGE_SIZE", 2)
         response = client.post(
-            reverse(views.post_search_results),
+            reverse(views.post_editor_search),
             {
                 "searchSettings": BASE_SEARCH_SETTINGS,
                 "queries": [
@@ -405,7 +405,7 @@ class TestPostSearchResults:
     def test_page_larger_than_max_size(self, client, monkeypatch, snapshot):
         monkeypatch.setattr("cardpicker.search.search_functions.SEARCH_RESULTS_PAGE_SIZE", 2)
         response = client.post(
-            reverse(views.post_search_results),
+            reverse(views.post_editor_search),
             {
                 "searchSettings": BASE_SEARCH_SETTINGS,
                 "queries": [
@@ -450,12 +450,12 @@ class TestPostSearchResults:
         ],
     )
     def test_response_to_malformed_json_body(self, client, snapshot, json_body):
-        response = client.post(reverse(views.post_search_results), json_body, content_type="application/json")
+        response = client.post(reverse(views.post_editor_search), json_body, content_type="application/json")
         snapshot_response(response, snapshot)
         assert response.status_code == 400
 
     def test_get_request(self, client, django_settings, snapshot):
-        response = client.get(reverse(views.post_search_results))
+        response = client.get(reverse(views.post_editor_search))
         snapshot_response(response, snapshot)
         assert response.status_code == 400
 

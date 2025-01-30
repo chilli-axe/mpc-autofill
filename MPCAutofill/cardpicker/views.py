@@ -63,7 +63,7 @@ class NewErrorWrappers:
 
 @csrf_exempt
 @NewErrorWrappers.to_json
-def post_search_results(request: HttpRequest) -> HttpResponse:
+def post_editor_search(request: HttpRequest) -> HttpResponse:
     """
     Return the first page of search results for a given list of queries.
     Each query should be of the form {card name, card type}.
@@ -99,14 +99,12 @@ def post_search_results(request: HttpRequest) -> HttpResponse:
 
 @csrf_exempt
 @NewErrorWrappers.to_json
-def post_search_results_2(request: HttpRequest) -> HttpResponse:
+def post_explore_search(request: HttpRequest) -> HttpResponse:
     """
-    Return the first page of search results for a given list of queries.
-    Each query should be of the form {card name, card type}.
-    This function should also accept a set of search settings in a standard format.
-    Return a dictionary of search results of the following form:
-    {(card name, card type): {"num_hits": num_hits, "hits": [list of Card identifiers]}
-    and it's assumed that `hits` starts from the first hit.
+    TODO:
+    - get page token off json body
+    - return page token in response
+    - get search query off json body
     """
 
     if request.method != "POST":
@@ -116,7 +114,7 @@ def post_search_results_2(request: HttpRequest) -> HttpResponse:
 
     try:
         search_settings = SearchSettings.from_json_body(json_body)
-        SearchQuery.list_from_json_body(json_body)
+        search_query = SearchQuery.from_json_body(json_body["query"])  # TODO: bad and hacked in, obviously
     except ValidationError as e:
         raise BadRequestException(f"The provided JSON body is invalid:\n\n{e.message}")
 
@@ -125,8 +123,7 @@ def post_search_results_2(request: HttpRequest) -> HttpResponse:
     if not Index(CardSearch.Index.name).exists():
         raise SearchExceptions.IndexNotFoundException(CardSearch.__name__)
 
-    defaultdict(dict)
-    s = get_search(search_settings=search_settings, search_query=None).sort(
+    s = get_search(search_settings=search_settings, search_query=search_query).sort(
         {
             "date": {
                 "order": "desc",
@@ -136,7 +133,7 @@ def post_search_results_2(request: HttpRequest) -> HttpResponse:
             },
         }
     )[0:20]
-    men = s.execute()
+    men = [man.identifier for man in s.execute()]
     return JsonResponse({"results": men})
 
 

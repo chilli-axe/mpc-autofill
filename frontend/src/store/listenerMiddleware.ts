@@ -15,10 +15,15 @@ import { api } from "@/store/api";
 import {
   clearURL,
   selectBackendConfigured,
+  selectBackendURL,
   setURL,
 } from "@/store/slices/backendSlice";
 import { fetchCardbacks, selectCardbacks } from "@/store/slices/cardbackSlice";
-import { fetchCardDocumentsAndReportError } from "@/store/slices/cardDocumentsSlice";
+import {
+  addCardDocuments,
+  fetchCardDocumentsAndReportError,
+  theManHimself,
+} from "@/store/slices/cardDocumentsSlice";
 import {
   clearInvalidIdentifier,
   recordInvalidIdentifier,
@@ -125,6 +130,15 @@ startAppListening({
       dispatch(clearSearchResults());
       await fetchCardDocumentsAndReportError(dispatch);
     }
+  },
+});
+
+startAppListening({
+  matcher: api.endpoints.postExploreSearch.matchFulfilled,
+  effect: async (action, { getState, dispatch }) => {
+    const state = getState();
+    const docs = await theManHimself(action.payload, selectBackendURL(state));
+    dispatch(addCardDocuments(docs));
   },
 });
 

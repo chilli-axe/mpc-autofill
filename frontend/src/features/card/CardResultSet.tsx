@@ -27,7 +27,7 @@ import {
 interface CardGridCardProps {
   identifier: string;
   index: number;
-  selectImage: {
+  selectImage?: {
     (identifier: string): void;
   };
   selectedImage?: string;
@@ -43,7 +43,7 @@ function CardGridCard({
     <MemoizedEditorCard
       imageIdentifier={identifier}
       cardHeaderTitle={`Option ${index + 1}`}
-      cardOnClick={() => selectImage(identifier)}
+      cardOnClick={selectImage && (() => selectImage(identifier))}
       key={`gridSelector-${identifier}`}
       noResultsFound={false}
       highlight={identifier === selectedImage}
@@ -63,7 +63,7 @@ interface CardGridDisplayProps {
   cardIdentifiersAndOptionNumbersBySource: {
     [sourceKey: string]: Array<[string, number]>;
   };
-  selectImage: {
+  selectImage?: {
     (identifier: string): void;
   };
   selectedImage?: string;
@@ -182,7 +182,7 @@ export function CardResultSet({
   headerText: string;
   imageIdentifiers: Array<string>;
   selectedImage?: string;
-  handleClick: { (identifier: string): void };
+  handleClick?: { (identifier: string): void };
 }) {
   const dispatch = useAppDispatch();
 
@@ -221,6 +221,8 @@ export function CardResultSet({
       ),
     [cardDocuments, imageIdentifiers]
   );
+
+  console.log(cardDocuments);
 
   return (
     <>
