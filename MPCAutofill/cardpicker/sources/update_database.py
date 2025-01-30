@@ -111,7 +111,6 @@ def transform_images_into_objects(source: Source, images: list[Image], tags: Tag
                     folder_location=folder_location,
                     dpi=dpi,
                     searchq=searchable_name,  # search-friendly card name
-                    searchq_keyword=searchable_name,  # for keyword search
                     extension=extension,
                     date=image.created_time,
                     size=image.size,

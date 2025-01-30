@@ -41,7 +41,6 @@ class CardFactory(factory.django.DjangoModelFactory):
     folder_location = factory.LazyFunction(lambda: "path")
     dpi = factory.LazyFunction(lambda: 800)
     searchq = factory.LazyAttribute(lambda o: to_searchable(o.name))
-    searchq_keyword = factory.LazyAttribute(lambda o: to_searchable(o.name))
     extension = factory.LazyFunction(lambda: "png")
     size = factory.LazyFunction(lambda: 100)
     language = factory.LazyAttribute(lambda o: "en")

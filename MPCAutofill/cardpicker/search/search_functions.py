@@ -299,9 +299,9 @@ class SearchQuery:
 
         # set up search - match the query and use the AND operator
         if search_settings.fuzzy_search:
-            match = Match(searchq={"query": query_parsed, "operator": "AND"})
+            match = Match(searchq_fuzzy={"query": query_parsed, "operator": "AND"})
         else:
-            match = Match(searchq_keyword={"query": query_parsed, "operator": "AND"})
+            match = Match(searchq_precise={"query": query_parsed, "operator": "AND"})
 
         s = (
             CardSearch.search()

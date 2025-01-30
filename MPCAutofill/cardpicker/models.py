@@ -194,7 +194,6 @@ class Card(models.Model):
     folder_location = models.CharField(max_length=300)
     dpi = models.IntegerField(default=0)
     searchq = models.CharField(max_length=200)
-    searchq_keyword = models.CharField(max_length=200)
     extension = models.CharField(max_length=200)
     date = models.DateTimeField(default=datetime.now)
     size = models.IntegerField()
