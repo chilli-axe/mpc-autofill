@@ -134,15 +134,6 @@ startAppListening({
 });
 
 startAppListening({
-  matcher: api.endpoints.postExploreSearch.matchFulfilled,
-  effect: async (action, { getState, dispatch }) => {
-    const state = getState();
-    const docs = await theManHimself(action.payload, selectBackendURL(state));
-    dispatch(addCardDocuments(docs));
-  },
-});
-
-startAppListening({
   matcher: isAnyOf(addMembers, setQueries),
   /**
    * Fetch card documents whenever new members are added to the project or search results are cleared.

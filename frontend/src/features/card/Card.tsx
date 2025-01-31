@@ -16,6 +16,7 @@ import React, {
   useState,
 } from "react";
 import BSCard from "react-bootstrap/Card";
+import Col from "react-bootstrap/Col";
 import styled from "styled-components";
 
 import { SearchQuery, useAppDispatch, useAppSelector } from "@/common/types";
@@ -466,3 +467,19 @@ export function EditorCard({
 }
 
 export const MemoizedEditorCard = memo(EditorCard);
+
+/**
+ * This component is a thin layer on top of `Card` for use in the What's New page.
+ */
+export function DatedCard({ cardDocument }: { cardDocument: CardDocument }) {
+  return (
+    <Col>
+      <MemoizedCard
+        key={`new-cards-${cardDocument.identifier}`}
+        maybeCardDocument={cardDocument}
+        cardHeaderTitle={cardDocument.date}
+        noResultsFound={false}
+      />
+    </Col>
+  );
+}

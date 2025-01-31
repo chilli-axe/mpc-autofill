@@ -132,9 +132,11 @@ def post_explore_search(request: HttpRequest) -> HttpResponse:
                 "order": "asc",
             },
         }
-    )[0:20]
-    men = [man.identifier for man in s.execute()]
-    return JsonResponse({"results": men})
+    )
+    s.extra(track_total_hits=True).count()
+    card_ids = [man.identifier for man in s[0:60].execute()]  # TODO: plumb through page token, obviously
+    cards = [card.to_dict() for card in Card.objects.filter(identifier__in=card_ids)]
+    return JsonResponse({"results": cards})
 
 
 @csrf_exempt

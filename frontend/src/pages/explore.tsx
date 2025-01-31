@@ -3,8 +3,8 @@ import React, { useState } from "react";
 import Col from "react-bootstrap/Col";
 import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
+import { useDebounce } from "use-debounce";
 
-import { ProjectName } from "@/common/constants";
 import { processPrefix } from "@/common/processing";
 import {
   FilterSettings,
@@ -13,9 +13,9 @@ import {
   SourceSettings,
   useAppSelector,
 } from "@/common/types";
-import { RightPaddedIcon } from "@/components/icon";
 import { NoBackendDefault } from "@/components/NoBackendDefault";
-import { CardResultSet } from "@/features/card/CardResultSet";
+import { Spinner } from "@/components/Spinner";
+import { DatedCard } from "@/features/card/Card";
 import { FilterSettings as FilterSettingsElement } from "@/features/searchSettings/FilterSettings";
 import { SearchTypeSettings as SearchTypeSettingsElement } from "@/features/searchSettings/SearchTypeSettings";
 import { SourceSettings as SourceSettingsElement } from "@/features/searchSettings/SourceSettings";
@@ -25,7 +25,6 @@ import { usePostExploreSearchQuery } from "@/store/api";
 import { useBackendConfigured } from "@/store/slices/backendSlice";
 import { getDefaultSearchSettings } from "@/store/slices/SearchSettingsSlice";
 import { selectSourceDocuments } from "@/store/slices/sourceDocumentsSlice";
-require("bootstrap-icons/font/bootstrap-icons.css");
 
 function ExploreOrDefault() {
   // TODO: investigate performance of below
@@ -43,9 +42,10 @@ function ExploreOrDefault() {
     filterSettings: localFilterSettings,
     sourceSettings: localSourceSettings,
   };
+  const [debouncedQuery] = useDebounce(query, 1000);
   const postExploreSearchQuery = usePostExploreSearchQuery({
     searchSettings,
-    query: processPrefix(query),
+    query: processPrefix(debouncedQuery),
   });
 
   const backendConfigured = useBackendConfigured();
@@ -79,11 +79,19 @@ function ExploreOrDefault() {
         </Col>
       </Row>
       <hr />
-      <CardResultSet
-        headerText="Results"
-        imageIdentifiers={postExploreSearchQuery.data ?? []}
-        handleClick={undefined}
-      />
+      <Row xxl={6} lg={4} md={3} sm={2} xs={2} className="g-0">
+        {postExploreSearchQuery.isFetching && (
+          // TODO: fix styling
+          <Spinner size={6} />
+        )}
+        {!postExploreSearchQuery.isFetching &&
+          postExploreSearchQuery.data?.map((card) => (
+            <DatedCard
+              cardDocument={card}
+              key={`explore-card-${card.identifier}`}
+            />
+          ))}
+      </Row>
     </>
   ) : (
     <NoBackendDefault />
