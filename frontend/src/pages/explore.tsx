@@ -6,7 +6,7 @@ import Row from "react-bootstrap/Row";
 import styled from "styled-components";
 import { useDebounce } from "use-debounce";
 
-import { Card } from "@/common/constants";
+import { Card, RibbonHeight } from "@/common/constants";
 import { processPrefix } from "@/common/processing";
 import {
   FilterSettings,
@@ -16,6 +16,7 @@ import {
 } from "@/common/types";
 import { NoBackendDefault } from "@/components/NoBackendDefault";
 import { OverflowCol } from "@/components/OverflowCol";
+import { Ribbon } from "@/components/Ribbon";
 import { Spinner } from "@/components/Spinner";
 import { DatedCard } from "@/features/card/Card";
 import { FilterSettings as FilterSettingsElement } from "@/features/searchSettings/FilterSettings";
@@ -152,10 +153,21 @@ function ExploreOrDefault() {
 
         <Col style={{ position: "relative" }}>
           {displaySpinner && <Spinner size={6} zIndex={3} />}
-          <OverflowCol disabled={displaySpinner} scrollable={!displaySpinner}>
-            <h3>
-              {resultCount} result{resultCount !== 1 ? "s" : ""}
-            </h3>
+          <Ribbon className="mx-0">
+            {!displaySpinner && (
+              <div className="text-center align-content-center">
+                <span>
+                  <b>{resultCount.toLocaleString()}</b> result
+                  {resultCount !== 1 ? "s" : ""}
+                </span>
+              </div>
+            )}
+          </Ribbon>
+          <OverflowCol
+            disabled={displaySpinner}
+            scrollable={!displaySpinner}
+            heightDelta={RibbonHeight}
+          >
             <BlurrableRow
               xxl={4}
               lg={4}

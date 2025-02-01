@@ -12,6 +12,7 @@ import { RibbonHeight } from "@/common/constants";
 import { useAppSelector } from "@/common/types";
 import { NoBackendDefault } from "@/components/NoBackendDefault";
 import { OverflowCol } from "@/components/OverflowCol";
+import { Ribbon } from "@/components/Ribbon";
 import { SelectedImagesRibbon } from "@/features/bulkManagement/SelectedImagesRibbon";
 import { CardGrid } from "@/features/card/CardGrid";
 import { CommonCardback } from "@/features/card/CommonCardback";
@@ -26,11 +27,6 @@ import {
   selectIsProjectEmpty,
   selectProjectCardback,
 } from "@/store/slices/projectSlice";
-
-const FixedHeightRow = styled(Row)`
-  height: ${RibbonHeight}px;
-  box-shadow: 0 -1px 0 rgb(255, 255, 255, 50%) inset;
-`;
 
 function ProjectEditor() {
   // TODO: should we periodically ping the backend to make sure it's still alive?
@@ -66,9 +62,9 @@ function ProjectEditor() {
     <>
       {backendConfigured ? (
         <Row className="g-0">
-          <FixedHeightRow className="g-0">
+          <Ribbon className="g-0">
             <SelectedImagesRibbon />
-          </FixedHeightRow>
+          </Ribbon>
           <OverflowCol
             lg={8}
             md={8}
