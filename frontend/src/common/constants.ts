@@ -87,3 +87,6 @@ export enum CSVHeaders {
   backQuery = "Back",
   backSelectedImage = "Back ID",
 }
+
+export const ExploreDebounceMS = 700;
+export const ExplorePageSize = 60;
