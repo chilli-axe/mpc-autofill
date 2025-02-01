@@ -13,6 +13,7 @@ import { StyledDropdownTreeSelect } from "@/common/StyledDropdownTreeSelect";
 import {
   CardType,
   FilterSettings,
+  SearchSettings,
   SearchTypeSettings,
   SourceSettings,
   useAppSelector,
@@ -51,7 +52,9 @@ function ExploreOrDefault() {
   const maybeSourceDocuments = useAppSelector(selectSourceDocuments);
   const backendConfigured = useBackendConfigured();
 
-  const defaultSettings = getDefaultSearchSettings(maybeSourceDocuments ?? []);
+  const defaultSettings: SearchSettings = getDefaultSearchSettings(
+    maybeSourceDocuments ?? []
+  );
 
   // pagination state
   const [pageStart, setPageStart] = useState<number>(0);
@@ -59,15 +62,18 @@ function ExploreOrDefault() {
   // input state
   const [query, setQuery] = useState<string>("");
   const [cardTypes, setCardTypes] = useState<Array<CardType>>([]);
-  const [localSearchTypeSettings, setLocalSearchTypeSettings] =
+  const [searchTypeSettings, setSearchTypeSettings] =
     useState<SearchTypeSettings>(defaultSettings.searchTypeSettings);
 
-  const [localFilterSettings, setLocalFilterSettings] =
-    useState<FilterSettings>(defaultSettings.filterSettings);
+  const [filterSettings, setFilterSettings] = useState<FilterSettings>(
+    defaultSettings.filterSettings
+  );
 
-  const [localSourceSettings, setLocalSourceSettings] =
-    useState<SourceSettings>(defaultSettings.sourceSettings);
+  const [sourceSettings, setSourceSettings] = useState<SourceSettings>(
+    defaultSettings.sourceSettings
+  );
 
+  // ensure pagination is reset when any filters change
   function updateInputAndResetPageStart<T>(setter: { (value: T): void }) {
     return (value: T): void => {
       setPageStart(0);
@@ -78,19 +84,17 @@ function ExploreOrDefault() {
   const setCardTypesAndResetPageStart =
     updateInputAndResetPageStart(setCardTypes);
   const setLocalSearchTypeSettingsAndResetPageStart =
-    updateInputAndResetPageStart(setLocalSearchTypeSettings);
-  const setLocalFilterSettingsAndResetPageStart = updateInputAndResetPageStart(
-    setLocalFilterSettings
-  );
-  const setLocalSourceSettingsAndResetPageStart = updateInputAndResetPageStart(
-    setLocalSourceSettings
-  );
+    updateInputAndResetPageStart(setSearchTypeSettings);
+  const setLocalFilterSettingsAndResetPageStart =
+    updateInputAndResetPageStart(setFilterSettings);
+  const setLocalSourceSettingsAndResetPageStart =
+    updateInputAndResetPageStart(setSourceSettings);
 
   // TODO: review this later. check redux object refs are stable so this triggers predictably.
   useEffect(() => {
     // handle race condition - reconfigure source settings when source documents are accessible.
     if (maybeSourceDocuments !== undefined) {
-      setLocalSourceSettings(getDefaultSourceSettings(maybeSourceDocuments));
+      setSourceSettings(getDefaultSourceSettings(maybeSourceDocuments));
     }
   }, [maybeSourceDocuments]);
 
@@ -103,16 +107,16 @@ function ExploreOrDefault() {
 
   const exploreSearch = {
     searchSettings: {
-      searchTypeSettings: localSearchTypeSettings,
-      filterSettings: localFilterSettings,
-      sourceSettings: localSourceSettings,
+      searchTypeSettings: searchTypeSettings,
+      filterSettings: filterSettings,
+      sourceSettings: sourceSettings,
     },
     query: query,
     cardTypes: cardTypes,
     pageStart: pageStart,
     pageSize: PAGE_SIZE,
   };
-  // debounced state
+  // debounced filters to avoid spamming webserver
   function equalityFn<T>(left: T, right: T): boolean {
     return JSON.stringify(left) === JSON.stringify(right);
   }
@@ -125,6 +129,8 @@ function ExploreOrDefault() {
   const postExploreSearchQuery = usePostExploreSearchQuery(
     debouncedExploreSearch
   );
+
+  // pagination stuff
   const resultCount = postExploreSearchQuery.data?.count ?? 0;
   const currentPageSize = postExploreSearchQuery.data?.cards?.length ?? 0;
   const multiplePagesExist = resultCount !== currentPageSize;
@@ -173,18 +179,18 @@ function ExploreOrDefault() {
           />
           <hr />
           <SearchTypeSettingsElement
-            searchTypeSettings={localSearchTypeSettings}
+            searchTypeSettings={searchTypeSettings}
             setSearchTypeSettings={setLocalSearchTypeSettingsAndResetPageStart}
             enableFiltersApplyToCardbacks={false}
           />
           <hr />
           <FilterSettingsElement
-            filterSettings={localFilterSettings}
+            filterSettings={filterSettings}
             setFilterSettings={setLocalFilterSettingsAndResetPageStart}
           />
           <hr />
           <SourceSettingsElement
-            sourceSettings={localSourceSettings}
+            sourceSettings={sourceSettings}
             setSourceSettings={setLocalSourceSettingsAndResetPageStart}
             enableReorderingSources={false}
           />
