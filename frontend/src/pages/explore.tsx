@@ -216,7 +216,9 @@ function ExploreOrDefault() {
         </OverflowCol>
 
         <Col style={{ position: "relative" }} lg={8} md={8} sm={6} xs={6}>
-          {displaySpinner && <Spinner size={6} zIndex={3} />}
+          {displaySpinner && (
+            <Spinner size={6} zIndex={3} positionAbsolute={true} />
+          )}
           <OverflowCol
             disabled={displaySpinner}
             scrollable={!displaySpinner}
