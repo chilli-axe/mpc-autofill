@@ -11,6 +11,7 @@ import Row from "react-bootstrap/Row";
 import DropdownTreeSelect, { TreeNode } from "react-dropdown-tree-select";
 require("react-dropdown-tree-select/dist/styles.css");
 
+import Container from "react-bootstrap/Container";
 import styled from "styled-components";
 
 import {
@@ -134,7 +135,7 @@ export function FilterSettings({
   const excludesTagsTree = getTagsTree(filterSettings.excludesTags);
 
   return (
-    <>
+    <Container className="px-1">
       <h5>Filters</h5>
       Configure the DPI (dots per inch) and file size ranges the search results
       must be within.
@@ -246,6 +247,6 @@ export function FilterSettings({
         }}
         onNodeToggle={onNodeToggle}
       />
-    </>
+    </Container>
   );
 }

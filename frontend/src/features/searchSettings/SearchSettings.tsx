@@ -8,12 +8,10 @@
 
 import React, { useCallback, useEffect, useState } from "react";
 import Button from "react-bootstrap/Button";
+import Container from "react-bootstrap/Container";
 import Modal from "react-bootstrap/Modal";
 
-import {
-  getLocalStorageSearchSettings,
-  setLocalStorageSearchSettings,
-} from "@/common/cookies";
+import { setLocalStorageSearchSettings } from "@/common/cookies";
 import {
   FilterSettings,
   SearchTypeSettings,
@@ -31,7 +29,6 @@ import {
   setSearchTypeSettings,
   setSourceSettings,
 } from "@/store/slices/SearchSettingsSlice";
-import { selectSourceDocuments } from "@/store/slices/sourceDocumentsSlice";
 
 export function SearchSettings() {
   const dispatch = useAppDispatch();

@@ -13,6 +13,7 @@ import {
 import Link from "next/link";
 import React, { ReactNode, useCallback } from "react";
 import Button from "react-bootstrap/Button";
+import Container from "react-bootstrap/Container";
 import Table from "react-bootstrap/Table";
 // @ts-ignore: https://github.com/arnthor3/react-bootstrap-toggle/issues/21
 import Toggle from "react-bootstrap-toggle";
@@ -235,7 +236,7 @@ export function SourceSettings({
   }
 
   return (
-    <>
+    <Container className="px-1">
       <h5>Sources</h5>
       Configure the sources to include in the search results.
       {enableReorderingSources && (
@@ -256,6 +257,6 @@ export function SourceSettings({
       </div>
       <br />
       {sourceTable}
-    </>
+    </Container>
   );
 }

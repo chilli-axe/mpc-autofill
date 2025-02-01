@@ -125,7 +125,7 @@ function ExploreOrDefault() {
           style={{ zIndex: 1 }}
           className="px-2"
         >
-          <Form.Label htmlFor="searchQueryText">Search Query</Form.Label>
+          <h5>Search Query</h5>
           <Form.Control
             onChange={(event) => setQuery(event.target.value.trim())}
             aria-describedby="searchQueryText"

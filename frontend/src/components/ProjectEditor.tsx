@@ -69,7 +69,14 @@ function ProjectEditor() {
           <FixedHeightRow className="g-0">
             <SelectedImagesRibbon />
           </FixedHeightRow>
-          <OverflowCol lg={8} md={8} sm={6} xs={6} data-testid="left-panel">
+          <OverflowCol
+            lg={8}
+            md={8}
+            sm={6}
+            xs={6}
+            data-testid="left-panel"
+            heightDelta={RibbonHeight}
+          >
             <CardGrid />
           </OverflowCol>
           <OverflowCol
@@ -80,6 +87,7 @@ function ProjectEditor() {
             xs={6}
             style={{ zIndex: 1 }}
             className="px-2"
+            heightDelta={RibbonHeight}
           >
             <Status />
             <Row className="g-0 pt-2">

@@ -5,6 +5,7 @@
  */
 
 import React from "react";
+import Container from "react-bootstrap/Container";
 // @ts-ignore: https://github.com/arnthor3/react-bootstrap-toggle/issues/21
 import Toggle from "react-bootstrap-toggle";
 
@@ -25,7 +26,7 @@ export function SearchTypeSettings({
   enableFiltersApplyToCardbacks = true,
 }: SearchTypeSettingsProps) {
   return (
-    <>
+    <Container className="px-1">
       <h5>Search Type</h5>
       Configure how closely the search results should match your query.
       <br />
@@ -72,6 +73,6 @@ export function SearchTypeSettings({
           />
         </>
       )}
-    </>
+    </Container>
   );
 }
