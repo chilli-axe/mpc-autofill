@@ -5,11 +5,10 @@ import Row from "react-bootstrap/Row";
 import styled from "styled-components";
 import { useDebounce } from "use-debounce";
 
-import { Card, NavbarHeight, RibbonHeight } from "@/common/constants";
+import { Card } from "@/common/constants";
 import { processPrefix } from "@/common/processing";
 import {
   FilterSettings,
-  SearchSettings,
   SearchTypeSettings,
   SourceSettings,
   useAppSelector,
@@ -40,33 +39,57 @@ export const BlurrableRow = styled(Row)<BlurrableRowProps>`
   pointer-events: ${(props) => (props.disabled === true ? "none" : undefined)};
 `;
 
+const TYPING_DEBOUNCE_MS = 700;
+const SEARCH_SETTING_DEBOUNCE_MS = 300;
+
 function ExploreOrDefault() {
-  // TODO: investigate performance of below
-  const maybeSourceDocuments = useAppSelector(selectSourceDocuments); // TODO: race condition
-  const [query, setQuery] = useState<string>("");
+  const maybeSourceDocuments = useAppSelector(selectSourceDocuments);
+  const backendConfigured = useBackendConfigured();
+
   const defaultSettings = getDefaultSearchSettings(maybeSourceDocuments ?? []);
+
+  // input state
+  const [query, setQuery] = useState<string>("");
   const [localSearchTypeSettings, setLocalSearchTypeSettings] =
     useState<SearchTypeSettings>(defaultSettings.searchTypeSettings);
-  const [localSourceSettings, setLocalSourceSettings] =
-    useState<SourceSettings>(defaultSettings.sourceSettings);
+
   const [localFilterSettings, setLocalFilterSettings] =
     useState<FilterSettings>(defaultSettings.filterSettings);
-  const searchSettings: SearchSettings | undefined =
-    maybeSourceDocuments !== undefined
-      ? {
-          searchTypeSettings: localSearchTypeSettings,
-          filterSettings: localFilterSettings,
-          sourceSettings: localSourceSettings,
-        }
-      : undefined;
+
+  const [localSourceSettings, setLocalSourceSettings] =
+    useState<SourceSettings>(defaultSettings.sourceSettings);
+
+  // TODO: review this later. check object refs are stable so this triggers predictably.
   useEffect(() => {
-    // alert("effectin")
+    // handle race condition - reconfigure source settings when source documents are accessible.
     if (maybeSourceDocuments !== undefined) {
       setLocalSourceSettings(getDefaultSourceSettings(maybeSourceDocuments));
     }
   }, [maybeSourceDocuments]);
 
-  const [debouncedQuery, debouncedQueryState] = useDebounce(query, 700);
+  // debounced state
+  function equalityFn<T>(left: T, right: T): boolean {
+    return JSON.stringify(left) === JSON.stringify(right);
+  }
+  const [debouncedQuery, debouncedQueryState] = useDebounce(
+    query,
+    TYPING_DEBOUNCE_MS
+  );
+  const [
+    debouncedLocalSearchTypeSettings,
+    debouncedLocalSearchTypeSettingsState,
+  ] = useDebounce(localSearchTypeSettings, SEARCH_SETTING_DEBOUNCE_MS, {
+    equalityFn,
+  });
+  const [debouncedLocalFilterSettings, debouncedLocalFilterSettingsState] =
+    useDebounce(localFilterSettings, SEARCH_SETTING_DEBOUNCE_MS, {
+      equalityFn,
+    });
+  const [debouncedLocalSourceSettings, debouncedLocalSourceSettingsState] =
+    useDebounce(localSourceSettings, SEARCH_SETTING_DEBOUNCE_MS, {
+      equalityFn,
+    });
+
   const getSampleCardsQuery = useGetSampleCardsQuery();
   const placeholderCardName =
     getSampleCardsQuery.data != null &&
@@ -75,14 +98,21 @@ function ExploreOrDefault() {
       : "";
 
   const postExploreSearchQuery = usePostExploreSearchQuery({
-    searchSettings,
+    searchSettings: {
+      searchTypeSettings: debouncedLocalSearchTypeSettings,
+      filterSettings: debouncedLocalFilterSettings,
+      sourceSettings: debouncedLocalSourceSettings,
+    },
     query: processPrefix(debouncedQuery),
   });
   const resultCount = postExploreSearchQuery.data?.count ?? 0;
   const displaySpinner =
-    debouncedQueryState.isPending() || postExploreSearchQuery.isFetching;
+    debouncedQueryState.isPending() ||
+    debouncedLocalSearchTypeSettingsState.isPending() ||
+    debouncedLocalSourceSettingsState.isPending() ||
+    debouncedLocalFilterSettingsState.isPending() ||
+    postExploreSearchQuery.isFetching;
 
-  const backendConfigured = useBackendConfigured();
   return backendConfigured ? (
     <>
       <Row className="g-0">

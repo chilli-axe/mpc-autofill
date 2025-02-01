@@ -261,14 +261,14 @@ export function usePostExploreSearchQuery({
   searchSettings,
   query,
 }: {
-  searchSettings: SearchSettings | undefined;
+  searchSettings: SearchSettings;
   query: SearchQuery;
 }) {
   const backendConfigured = useBackendConfigured();
   return useRawPostExploreSearchQuery(
-    { searchSettings, query }, // @ts-ignore // TODO: fix this.
+    { searchSettings, query },
     {
-      skip: !backendConfigured || searchSettings === undefined,
+      skip: !backendConfigured,
     }
   );
 }
