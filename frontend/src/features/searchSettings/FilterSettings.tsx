@@ -164,6 +164,7 @@ export function FilterSettings({
             languages: selectedNodes.map((row) => row.value),
           });
         }}
+        inlineSearchInput
       />
       <Form.Label htmlFor="selectTags">
         Select tags which cards must have <b>at least one</b> of
@@ -181,6 +182,7 @@ export function FilterSettings({
           });
         }}
         onNodeToggle={onNodeToggle}
+        inlineSearchInput
       />
       <Form.Label htmlFor="selectTags">
         Select tags which cards must <b>not</b> have
@@ -199,6 +201,7 @@ export function FilterSettings({
           });
         }}
         onNodeToggle={onNodeToggle}
+        inlineSearchInput
       />
     </Container>
   );

@@ -25,6 +25,9 @@ export const StyledDropdownTreeSelect = styled(DropdownTreeSelect)`
   .search::placeholder {
     color: black;
   }
+  .placeholder {
+    color: gray;
+  }
 
   .toggle {
     font: normal normal normal 12px/1 bootstrap-icons;

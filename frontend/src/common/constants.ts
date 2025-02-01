@@ -1,3 +1,4 @@
+import { SortBy } from "@/common/schema_types";
 import { Cardstock, CardType, Faces } from "@/common/types";
 
 export const ProjectName = "MPC Autofill";
@@ -90,3 +91,10 @@ export enum CSVHeaders {
 
 export const ExploreDebounceMS = 700;
 export const ExplorePageSize = 60;
+
+export const SortByOptions: { [option in SortBy]: string } = {
+  date_descending: "Date (Newest-Oldest)",
+  date_ascending: "Date (Oldest-Newest)",
+  name_ascending: "Name (A-Z)",
+  name_descending: "Name (Z-A)",
+};

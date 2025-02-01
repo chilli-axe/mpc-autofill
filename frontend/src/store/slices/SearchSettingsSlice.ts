@@ -21,10 +21,14 @@ export function getDefaultSourceSettings(
 }
 
 export function getDefaultSearchSettings(
-  sourceDocuments: SourceDocuments
+  sourceDocuments: SourceDocuments,
+  fuzzySearchByDefault: boolean = false
 ): SearchSettings {
   return {
-    searchTypeSettings: { fuzzySearch: false, filterCardbacks: false },
+    searchTypeSettings: {
+      fuzzySearch: fuzzySearchByDefault,
+      filterCardbacks: false,
+    },
     sourceSettings: getDefaultSourceSettings(sourceDocuments),
     filterSettings: {
       minimumDPI: MinimumDPI,

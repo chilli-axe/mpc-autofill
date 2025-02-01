@@ -11,7 +11,9 @@ import {
   ExploreDebounceMS,
   ExplorePageSize,
   RibbonHeight,
+  SortByOptions,
 } from "@/common/constants";
+import { ExploreSearch, SortBy } from "@/common/schema_types";
 import { StyledDropdownTreeSelect } from "@/common/StyledDropdownTreeSelect";
 import {
   CardType,
@@ -30,6 +32,7 @@ import { DatedCard } from "@/features/card/Card";
 import { FilterSettings as FilterSettingsElement } from "@/features/searchSettings/FilterSettings";
 import { SearchTypeSettings as SearchTypeSettingsElement } from "@/features/searchSettings/SearchTypeSettings";
 import { SourceSettings as SourceSettingsElement } from "@/features/searchSettings/SourceSettings";
+import { GenericErrorPage } from "@/features/ui/GenericErrorPage";
 import { useGetSampleCardsQuery, usePostExploreSearchQuery } from "@/store/api";
 import { useBackendConfigured } from "@/store/slices/backendSlice";
 import {
@@ -43,13 +46,15 @@ export function Explore() {
   const backendConfigured = useBackendConfigured();
 
   const defaultSettings: SearchSettings = getDefaultSearchSettings(
-    maybeSourceDocuments ?? []
+    maybeSourceDocuments ?? [],
+    true
   );
 
   // pagination state
   const [pageStart, setPageStart] = useState<number>(0);
 
   // input state
+  const [sortBy, setSortBy] = useState<SortBy>("date_descending");
   const [query, setQuery] = useState<string>("");
   const [cardTypes, setCardTypes] = useState<Array<CardType>>([]);
   const [searchTypeSettings, setSearchTypeSettings] =
@@ -70,14 +75,16 @@ export function Explore() {
       setter(value);
     };
   }
+  const setSortByAndResetPageStart = updateInputAndResetPageStart(setSortBy);
   const setQueryAndResetPageStart = updateInputAndResetPageStart(setQuery);
   const setCardTypesAndResetPageStart =
     updateInputAndResetPageStart(setCardTypes);
-  const setLocalSearchTypeSettingsAndResetPageStart =
-    updateInputAndResetPageStart(setSearchTypeSettings);
-  const setLocalFilterSettingsAndResetPageStart =
+  const setSearchTypeSettingsAndResetPageStart = updateInputAndResetPageStart(
+    setSearchTypeSettings
+  );
+  const setFilterSettingsAndResetPageStart =
     updateInputAndResetPageStart(setFilterSettings);
-  const setLocalSourceSettingsAndResetPageStart =
+  const setSourceSettingsAndResetPageStart =
     updateInputAndResetPageStart(setSourceSettings);
 
   // TODO: review this later. check redux object refs are stable so this triggers predictably.
@@ -95,15 +102,16 @@ export function Explore() {
       ? getSampleCardsQuery.data[Card][0].name
       : "";
 
-  const exploreSearch = {
+  const exploreSearch: ExploreSearch = {
+    sortBy,
     searchSettings: {
       searchTypeSettings: searchTypeSettings,
       filterSettings: filterSettings,
       sourceSettings: sourceSettings,
     },
-    query: query,
-    cardTypes: cardTypes,
-    pageStart: pageStart,
+    query,
+    cardTypes,
+    pageStart,
     pageSize: ExplorePageSize,
   };
   // debounced filters to avoid spamming webserver
@@ -131,6 +139,8 @@ export function Explore() {
   const displaySpinner =
     debouncedExploreSearchState.isPending() ||
     postExploreSearchQuery.isFetching;
+  const noResults =
+    postExploreSearchQuery.data?.cards?.length === 0 && !displaySpinner;
 
   return backendConfigured ? (
     <>
@@ -143,6 +153,20 @@ export function Explore() {
           style={{ zIndex: 1 }}
           className="px-2"
         >
+          <h5>Sort By</h5>
+          <StyledDropdownTreeSelect
+            data={Object.entries(SortByOptions).map(([value, label]) => ({
+              value,
+              label,
+              checked: value === sortBy,
+            }))}
+            onChange={(currentNode, selectedNodes) =>
+              setSortByAndResetPageStart(currentNode.value as SortBy)
+            }
+            mode="radioSelect"
+            inlineSearchInput
+          />
+          <hr />
           <h5>Search Query</h5>
           <Form.Control
             onChange={(event) =>
@@ -166,22 +190,23 @@ export function Explore() {
                 selectedNodes.map((item) => item.value as CardType)
               )
             }
+            inlineSearchInput
           />
           <hr />
           <SearchTypeSettingsElement
             searchTypeSettings={searchTypeSettings}
-            setSearchTypeSettings={setLocalSearchTypeSettingsAndResetPageStart}
+            setSearchTypeSettings={setSearchTypeSettingsAndResetPageStart}
             enableFiltersApplyToCardbacks={false}
           />
           <hr />
           <FilterSettingsElement
             filterSettings={filterSettings}
-            setFilterSettings={setLocalFilterSettingsAndResetPageStart}
+            setFilterSettings={setFilterSettingsAndResetPageStart}
           />
           <hr />
           <SourceSettingsElement
             sourceSettings={sourceSettings}
-            setSourceSettings={setLocalSourceSettingsAndResetPageStart}
+            setSourceSettings={setSourceSettingsAndResetPageStart}
             enableReorderingSources={false}
           />
         </OverflowCol>
@@ -189,6 +214,12 @@ export function Explore() {
         <Col style={{ position: "relative" }} lg={8} md={8} sm={6} xs={6}>
           {displaySpinner && (
             <Spinner size={6} zIndex={3} positionAbsolute={true} />
+          )}
+          {noResults && (
+            <GenericErrorPage
+              title="No results :("
+              text={["Your search didn't match any results."]}
+            />
           )}
           <OverflowCol
             disabled={displaySpinner}

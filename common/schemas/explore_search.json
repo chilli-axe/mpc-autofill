@@ -1,9 +1,23 @@
 {
+  "$defs": {
+    "sortBy": {
+      "type": "string",
+      "enum": [
+        "name_ascending",
+        "name_descending",
+        "date_ascending",
+        "date_descending"
+      ]
+    }
+  },
   "$schema": "https://json-schema.org/draft/2019-09/schema",
   "$id": "search_query.json",
   "title": "Explore Search",
   "type": "object",
   "properties": {
+    "sortBy": {
+      "$ref": "#/$defs/sortBy"
+    },
     "query": {
       "type": ["string", "null"]
     },
@@ -24,6 +38,13 @@
       "type": "number"
     }
   },
-  "required": ["query", "cardTypes", "searchSettings", "pageStart", "pageSize"],
+  "required": [
+    "sortBy",
+    "query",
+    "cardTypes",
+    "searchSettings",
+    "pageStart",
+    "pageSize"
+  ],
   "additionalProperties": false
 }

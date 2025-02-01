@@ -124,16 +124,36 @@ def post_explore_search(request: HttpRequest) -> HttpResponse:
     if not Index(CardSearch.Index.name).exists():
         raise SearchExceptions.IndexNotFoundException(CardSearch.__name__)
 
-    s = get_search(search_settings=search_settings, query=query, card_types=card_types).sort(
-        {
+    sort: dict[str, dict[str, str]] = {
+        "name_ascending": {
+            "searchq_keyword": {
+                "order": "asc",
+            },
+        },
+        "name_descending": {
+            "searchq_keyword": {
+                "order": "desc",
+            },
+        },
+        "date_ascending": {
+            "date": {
+                "order": "asc",
+            },
+            "searchq_keyword": {
+                "order": "asc",
+            },
+        },
+        "date_descending": {
             "date": {
                 "order": "desc",
             },
             "searchq_keyword": {
                 "order": "asc",
             },
-        }
-    )
+        },
+    }[json_body["sortBy"]]
+
+    s = get_search(search_settings=search_settings, query=query, card_types=card_types).sort(sort)
     count = s.extra(track_total_hits=True).count()
     card_ids = [man.identifier for man in s[page_start : page_start + page_size].execute()]
     # TODO: the below code feels inefficient but is set up this way to ensure sorting from elasticsearch is respected.

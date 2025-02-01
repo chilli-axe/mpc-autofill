@@ -5,9 +5,14 @@
  * and run json-schema-to-typescript to regenerate this file.
  */
 
-export type SearchSettings = SearchSettings;
+export type SortBy =
+  | "name_ascending"
+  | "name_descending"
+  | "date_ascending"
+  | "date_descending";
 
 export interface ExploreSearch {
+  sortBy: SortBy;
   query: string | null;
   cardTypes: ("CARD" | "CARDBACK" | "TOKEN")[];
   searchSettings: SearchSettings;
