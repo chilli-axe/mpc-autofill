@@ -11,6 +11,7 @@ import { useDebounce } from "use-debounce";
 import { Card, CardTypePrefixes, RibbonHeight } from "@/common/constants";
 import { StyledDropdownTreeSelect } from "@/common/StyledDropdownTreeSelect";
 import {
+  CardType,
   FilterSettings,
   SearchTypeSettings,
   SourceSettings,
@@ -43,8 +44,7 @@ export const BlurrableRow = styled(Row)<BlurrableRowProps>`
   pointer-events: ${(props) => (props.disabled === true ? "none" : undefined)};
 `;
 
-const TYPING_DEBOUNCE_MS = 700;
-const SEARCH_SETTING_DEBOUNCE_MS = 300;
+const DEBOUNCE_MS = 700;
 const PAGE_SIZE = 60;
 
 function ExploreOrDefault() {
@@ -58,7 +58,7 @@ function ExploreOrDefault() {
 
   // input state
   const [query, setQuery] = useState<string>("");
-  const [cardTypes, setCardTypes] = useState<Array<string>>([]);
+  const [cardTypes, setCardTypes] = useState<Array<CardType>>([]);
   const [localSearchTypeSettings, setLocalSearchTypeSettings] =
     useState<SearchTypeSettings>(defaultSettings.searchTypeSettings);
 
@@ -86,46 +86,13 @@ function ExploreOrDefault() {
     setLocalSourceSettings
   );
 
-  // TODO: review this later. check object refs are stable so this triggers predictably.
+  // TODO: review this later. check redux object refs are stable so this triggers predictably.
   useEffect(() => {
     // handle race condition - reconfigure source settings when source documents are accessible.
     if (maybeSourceDocuments !== undefined) {
       setLocalSourceSettings(getDefaultSourceSettings(maybeSourceDocuments));
     }
   }, [maybeSourceDocuments]);
-
-  // debounced state
-  // TODO: consider rolling these all up into one object
-  function equalityFn<T>(left: T, right: T): boolean {
-    return JSON.stringify(left) === JSON.stringify(right);
-  }
-  const [debouncedPageStart, debouncedPageStartState] = useDebounce(
-    pageStart,
-    SEARCH_SETTING_DEBOUNCE_MS
-  );
-  const [debouncedQuery, debouncedQueryState] = useDebounce(
-    query,
-    TYPING_DEBOUNCE_MS
-  );
-  const [debouncedCardTypes, debouncedCardTypesState] = useDebounce(
-    cardTypes,
-    SEARCH_SETTING_DEBOUNCE_MS,
-    { equalityFn }
-  );
-  const [
-    debouncedLocalSearchTypeSettings,
-    debouncedLocalSearchTypeSettingsState,
-  ] = useDebounce(localSearchTypeSettings, SEARCH_SETTING_DEBOUNCE_MS, {
-    equalityFn,
-  });
-  const [debouncedLocalFilterSettings, debouncedLocalFilterSettingsState] =
-    useDebounce(localFilterSettings, SEARCH_SETTING_DEBOUNCE_MS, {
-      equalityFn,
-    });
-  const [debouncedLocalSourceSettings, debouncedLocalSourceSettingsState] =
-    useDebounce(localSourceSettings, SEARCH_SETTING_DEBOUNCE_MS, {
-      equalityFn,
-    });
 
   const getSampleCardsQuery = useGetSampleCardsQuery();
   const placeholderCardName =
@@ -134,17 +101,30 @@ function ExploreOrDefault() {
       ? getSampleCardsQuery.data[Card][0].name
       : "";
 
-  const postExploreSearchQuery = usePostExploreSearchQuery({
+  const exploreSearch = {
     searchSettings: {
-      searchTypeSettings: debouncedLocalSearchTypeSettings,
-      filterSettings: debouncedLocalFilterSettings,
-      sourceSettings: debouncedLocalSourceSettings,
+      searchTypeSettings: localSearchTypeSettings,
+      filterSettings: localFilterSettings,
+      sourceSettings: localSourceSettings,
     },
-    query: debouncedQuery,
-    cardTypes: debouncedCardTypes,
-    pageStart: debouncedPageStart,
+    query: query,
+    cardTypes: cardTypes,
+    pageStart: pageStart,
     pageSize: PAGE_SIZE,
-  });
+  };
+  // debounced state
+  function equalityFn<T>(left: T, right: T): boolean {
+    return JSON.stringify(left) === JSON.stringify(right);
+  }
+  const [debouncedExploreSearch, debouncedExploreSearchState] = useDebounce(
+    exploreSearch,
+    DEBOUNCE_MS,
+    { equalityFn }
+  );
+
+  const postExploreSearchQuery = usePostExploreSearchQuery(
+    debouncedExploreSearch
+  );
   const resultCount = postExploreSearchQuery.data?.count ?? 0;
   const currentPageSize = postExploreSearchQuery.data?.cards?.length ?? 0;
   const multiplePagesExist = resultCount !== currentPageSize;
@@ -153,12 +133,7 @@ function ExploreOrDefault() {
     multiplePagesExist && pageStart + PAGE_SIZE < resultCount;
 
   const displaySpinner =
-    debouncedPageStartState.isPending() ||
-    debouncedQueryState.isPending() ||
-    debouncedCardTypesState.isPending() ||
-    debouncedLocalSearchTypeSettingsState.isPending() ||
-    debouncedLocalSourceSettingsState.isPending() ||
-    debouncedLocalFilterSettingsState.isPending() ||
+    debouncedExploreSearchState.isPending() ||
     postExploreSearchQuery.isFetching;
 
   return backendConfigured ? (
@@ -192,7 +167,7 @@ function ExploreOrDefault() {
             }))}
             onChange={(currentNode, selectedNodes) =>
               setCardTypesAndResetPageStart(
-                selectedNodes.map((item) => item.value)
+                selectedNodes.map((item) => item.value as CardType)
               )
             }
           />

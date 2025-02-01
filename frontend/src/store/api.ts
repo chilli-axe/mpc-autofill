@@ -9,6 +9,7 @@ import {
 import { GoogleDriveImageAPIURL, QueryTags } from "@/common/constants";
 import { getCSRFHeader } from "@/common/cookies";
 import { formatURL, processQuery } from "@/common/processing";
+import { ExploreSearch } from "@/common/schema_types";
 import {
   BackendInfo,
   CardDocument,
@@ -162,24 +163,12 @@ export const api = createApi({
     }),
     postExploreSearch: builder.query<
       { cards: Array<CardDocument>; count: number },
-      {
-        searchSettings: SearchSettings;
-        query: string;
-        cardTypes: Array<string>;
-        pageStart: number;
-        pageSize: number;
-      }
+      ExploreSearch
     >({
-      query: ({ searchSettings, query, cardTypes, pageStart, pageSize }) => ({
+      query: (exploreSearch) => ({
         url: `2/exploreSearch/`,
         method: "POST",
-        body: JSON.stringify({
-          searchSettings,
-          query,
-          cardTypes,
-          pageStart,
-          pageSize,
-        }),
+        body: JSON.stringify(exploreSearch),
       }),
       providesTags: [QueryTags.BackendSpecific],
       keepUnusedDataFor: 0.0, // never cache results
@@ -269,26 +258,11 @@ export function useGetNewCardsPageQuery([sourceKey, page]: [string, number]) {
   });
 }
 
-export function usePostExploreSearchQuery({
-  searchSettings,
-  cardTypes,
-  query,
-  pageStart,
-  pageSize,
-}: {
-  searchSettings: SearchSettings;
-  query: string;
-  cardTypes: Array<string>;
-  pageStart: number;
-  pageSize: number;
-}) {
+export function usePostExploreSearchQuery(exploreSearch: ExploreSearch) {
   const backendConfigured = useBackendConfigured();
-  return useRawPostExploreSearchQuery(
-    { searchSettings, query, cardTypes, pageStart, pageSize },
-    {
-      skip: !backendConfigured,
-    }
-  );
+  return useRawPostExploreSearchQuery(exploreSearch, {
+    skip: !backendConfigured,
+  });
 }
 
 //# endregion

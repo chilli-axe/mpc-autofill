@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2019-09/schema",
+  "$id": "search_query.json",
+  "title": "Explore Search",
+  "type": "object",
+  "properties": {
+    "query": {
+      "type": ["string", "null"]
+    },
+    "cardTypes": {
+      "type": "array",
+      "items": {
+        "enum": ["CARD", "CARDBACK", "TOKEN"]
+      }
+    },
+    "searchSettings": {
+      "$ref": "./search_settings.json",
+      "tsType": "SearchSettings"
+    },
+    "pageStart": {
+      "type": "number"
+    },
+    "pageSize": {
+      "type": "number"
+    }
+  },
+  "required": ["query", "cardTypes", "searchSettings", "pageStart", "pageSize"],
+  "additionalProperties": false
+}
