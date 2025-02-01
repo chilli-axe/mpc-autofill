@@ -1,5 +1,6 @@
 import Head from "next/head";
 import React, { useEffect, useState } from "react";
+import Col from "react-bootstrap/Col";
 import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
 import styled from "styled-components";
@@ -149,36 +150,30 @@ function ExploreOrDefault() {
           />
         </OverflowCol>
 
-        <OverflowCol
-          lg={8}
-          md={8}
-          sm={6}
-          xs={6}
-          disabled={displaySpinner}
-          scrollable={!displaySpinner}
-        >
+        <Col style={{ position: "relative" }}>
           {displaySpinner && <Spinner size={6} zIndex={3} />}
-
-          <h3>
-            {resultCount} result{resultCount !== 1 ? "s" : ""}
-          </h3>
-          <BlurrableRow
-            xxl={4}
-            lg={4}
-            md={3}
-            sm={2}
-            xs={2}
-            className="g-0"
-            disabled={displaySpinner}
-          >
-            {postExploreSearchQuery.data?.cards?.map((card) => (
-              <DatedCard
-                cardDocument={card}
-                key={`explore-card-${card.identifier}`}
-              />
-            ))}
-          </BlurrableRow>
-        </OverflowCol>
+          <OverflowCol disabled={displaySpinner} scrollable={!displaySpinner}>
+            <h3>
+              {resultCount} result{resultCount !== 1 ? "s" : ""}
+            </h3>
+            <BlurrableRow
+              xxl={4}
+              lg={4}
+              md={3}
+              sm={2}
+              xs={2}
+              className="g-0"
+              disabled={displaySpinner}
+            >
+              {postExploreSearchQuery.data?.cards?.map((card) => (
+                <DatedCard
+                  cardDocument={card}
+                  key={`explore-card-${card.identifier}`}
+                />
+              ))}
+            </BlurrableRow>
+          </OverflowCol>
+        </Col>
       </Row>
     </>
   ) : (
