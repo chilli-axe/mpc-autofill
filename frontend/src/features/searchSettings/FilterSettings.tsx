@@ -8,11 +8,10 @@ import React, { useCallback, useState } from "react";
 import Col from "react-bootstrap/Col";
 import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
-import DropdownTreeSelect, { TreeNode } from "react-dropdown-tree-select";
+import { TreeNode } from "react-dropdown-tree-select";
 require("react-dropdown-tree-select/dist/styles.css");
 
 import Container from "react-bootstrap/Container";
-import styled from "styled-components";
 
 import {
   DPIStep,
@@ -21,56 +20,10 @@ import {
   MinimumDPI,
   SizeStep,
 } from "@/common/constants";
+import { StyledDropdownTreeSelect } from "@/common/StyledDropdownTreeSelect";
 import { Tag } from "@/common/types";
 import { FilterSettings as FilterSettingsType } from "@/common/types";
 import { useGetLanguagesQuery, useGetTagsQuery } from "@/store/api";
-
-const StyledDropdownTreeSelect = styled(DropdownTreeSelect)`
-  .tag {
-    color: black;
-    background-color: #dddddd;
-  }
-  .tag-remove {
-    color: #666666;
-  }
-
-  .dropdown-trigger {
-    border-radius: 0.25rem;
-    background-color: white;
-  }
-  .dropdown-content {
-    border-radius: 0.25rem;
-  }
-
-  .search {
-    background-color: white;
-    color: black;
-  }
-  .search::placeholder {
-    color: black;
-  }
-
-  .toggle {
-    font: normal normal normal 12px/1 bootstrap-icons;
-    top: 2px;
-    left: 2px;
-  }
-
-  .toggle.collapsed::after {
-    content: "\F4FA";
-  }
-
-  .toggle.expanded::after {
-    content: "\F2E6";
-  }
-
-  color: black;
-
-  .root {
-    padding: 0;
-    margin: 0;
-  }
-`;
 
 interface FilterSettingsProps {
   filterSettings: FilterSettingsType;

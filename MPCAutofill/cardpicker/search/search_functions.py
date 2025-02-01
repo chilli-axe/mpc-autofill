@@ -8,7 +8,7 @@ from typing import Any, Callable, Optional, TypeVar, cast
 import pycountry
 from elasticsearch import Elasticsearch
 from elasticsearch.exceptions import ConnectionError as ElasticConnectionError
-from elasticsearch_dsl.query import Bool, Match, Range, Term, Terms
+from elasticsearch_dsl.query import Bool, Match, Range, Terms
 from jsonschema import Draft201909Validator
 from referencing import Registry, Resource
 
@@ -210,7 +210,7 @@ class SearchSettings:
         return cardbacks
 
 
-def get_search(search_settings: SearchSettings, search_query: Optional["SearchQuery"]) -> CardSearch:
+def get_search(search_settings: SearchSettings, query: Optional[str], card_types: list[CardTypes]) -> CardSearch:
     # set up search - match the query and use the AND operator
 
     s = (
@@ -220,14 +220,20 @@ def get_search(search_settings: SearchSettings, search_query: Optional["SearchQu
         .filter(Range(size={"lte": search_settings.max_size}))
         .source(fields=["identifier", "source", "searchq"])
     )
-    if search_query is not None:
-        query_parsed = to_searchable(search_query.query)
+    if query:
+        query_parsed = to_searchable(query)
         if search_settings.fuzzy_search:
             match = Match(searchq_fuzzy={"query": query_parsed, "operator": "AND"})
         else:
             match = Match(searchq_precise={"query": query_parsed, "operator": "AND"})
-        s = s.query(match).filter(Term(card_type=search_query.card_type))
-
+        s = s.query(match)
+    if card_types:
+        s = s.filter(
+            Bool(
+                should=Terms(card_type=card_types),
+                minimum_should_match=1,
+            )
+        )
     if search_settings.languages:
         s = s.filter(
             Bool(
@@ -328,7 +334,7 @@ class SearchQuery:
         """
 
         hits_iterable = (
-            get_search(search_settings=search_settings, search_query=self)
+            get_search(search_settings=search_settings, query=self.query, card_types=[self.card_type])
             .sort({"priority": {"order": "desc"}})
             .params(preserve_order=True)
             .scan()

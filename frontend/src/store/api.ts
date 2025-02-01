@@ -164,15 +164,22 @@ export const api = createApi({
       { cards: Array<CardDocument>; count: number },
       {
         searchSettings: SearchSettings;
-        query: SearchQuery;
+        query: string;
+        cardTypes: Array<string>;
         pageStart: number;
         pageSize: number;
       }
     >({
-      query: ({ searchSettings, query, pageStart, pageSize }) => ({
+      query: ({ searchSettings, query, cardTypes, pageStart, pageSize }) => ({
         url: `2/exploreSearch/`,
         method: "POST",
-        body: JSON.stringify({ searchSettings, query, pageStart, pageSize }),
+        body: JSON.stringify({
+          searchSettings,
+          query,
+          cardTypes,
+          pageStart,
+          pageSize,
+        }),
       }),
       providesTags: [QueryTags.BackendSpecific],
       keepUnusedDataFor: 0.0, // never cache results
@@ -264,18 +271,20 @@ export function useGetNewCardsPageQuery([sourceKey, page]: [string, number]) {
 
 export function usePostExploreSearchQuery({
   searchSettings,
+  cardTypes,
   query,
   pageStart,
   pageSize,
 }: {
   searchSettings: SearchSettings;
-  query: SearchQuery;
+  query: string;
+  cardTypes: Array<string>;
   pageStart: number;
   pageSize: number;
 }) {
   const backendConfigured = useBackendConfigured();
   return useRawPostExploreSearchQuery(
-    { searchSettings, query, pageStart, pageSize },
+    { searchSettings, query, cardTypes, pageStart, pageSize },
     {
       skip: !backendConfigured,
     }

@@ -110,7 +110,8 @@ def post_explore_search(request: HttpRequest) -> HttpResponse:
 
     try:
         search_settings = SearchSettings.from_json_body(json_body)
-        search_query = SearchQuery.from_json_body(json_body["query"])  # TODO: bad and hacked in, obviously
+        query = json_body["query"]  # TODO: bad and hacked in, obviously
+        card_types = json_body["cardTypes"]  # TODO
         page_start = json_body["pageStart"]  # TODO: bad and hacked in, obviously
         page_size = json_body["pageSize"]  # TODO: bad and hacked in, obviously
         if page_size > MAX_PAGE_SIZE:
@@ -123,7 +124,7 @@ def post_explore_search(request: HttpRequest) -> HttpResponse:
     if not Index(CardSearch.Index.name).exists():
         raise SearchExceptions.IndexNotFoundException(CardSearch.__name__)
 
-    s = get_search(search_settings=search_settings, search_query=search_query).sort(
+    s = get_search(search_settings=search_settings, query=query, card_types=card_types).sort(
         {
             "date": {
                 "order": "desc",

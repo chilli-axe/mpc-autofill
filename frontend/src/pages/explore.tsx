@@ -4,11 +4,12 @@ import Button from "react-bootstrap/Button";
 import Col from "react-bootstrap/Col";
 import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
+import { TreeNode } from "react-dropdown-tree-select";
 import styled from "styled-components";
 import { useDebounce } from "use-debounce";
 
-import { Card, RibbonHeight } from "@/common/constants";
-import { processPrefix } from "@/common/processing";
+import { Card, CardTypePrefixes, RibbonHeight } from "@/common/constants";
+import { StyledDropdownTreeSelect } from "@/common/StyledDropdownTreeSelect";
 import {
   FilterSettings,
   SearchTypeSettings,
@@ -57,6 +58,7 @@ function ExploreOrDefault() {
 
   // input state
   const [query, setQuery] = useState<string>("");
+  const [cardTypes, setCardTypes] = useState<Array<string>>([]);
   const [localSearchTypeSettings, setLocalSearchTypeSettings] =
     useState<SearchTypeSettings>(defaultSettings.searchTypeSettings);
 
@@ -73,6 +75,8 @@ function ExploreOrDefault() {
     };
   }
   const setQueryAndResetPageStart = updateInputAndResetPageStart(setQuery);
+  const setCardTypesAndResetPageStart =
+    updateInputAndResetPageStart(setCardTypes);
   const setLocalSearchTypeSettingsAndResetPageStart =
     updateInputAndResetPageStart(setLocalSearchTypeSettings);
   const setLocalFilterSettingsAndResetPageStart = updateInputAndResetPageStart(
@@ -91,6 +95,7 @@ function ExploreOrDefault() {
   }, [maybeSourceDocuments]);
 
   // debounced state
+  // TODO: consider rolling these all up into one object
   function equalityFn<T>(left: T, right: T): boolean {
     return JSON.stringify(left) === JSON.stringify(right);
   }
@@ -101,6 +106,11 @@ function ExploreOrDefault() {
   const [debouncedQuery, debouncedQueryState] = useDebounce(
     query,
     TYPING_DEBOUNCE_MS
+  );
+  const [debouncedCardTypes, debouncedCardTypesState] = useDebounce(
+    cardTypes,
+    SEARCH_SETTING_DEBOUNCE_MS,
+    { equalityFn }
   );
   const [
     debouncedLocalSearchTypeSettings,
@@ -130,7 +140,8 @@ function ExploreOrDefault() {
       filterSettings: debouncedLocalFilterSettings,
       sourceSettings: debouncedLocalSourceSettings,
     },
-    query: processPrefix(debouncedQuery),
+    query: debouncedQuery,
+    cardTypes: debouncedCardTypes,
     pageStart: debouncedPageStart,
     pageSize: PAGE_SIZE,
   });
@@ -144,6 +155,7 @@ function ExploreOrDefault() {
   const displaySpinner =
     debouncedPageStartState.isPending() ||
     debouncedQueryState.isPending() ||
+    debouncedCardTypesState.isPending() ||
     debouncedLocalSearchTypeSettingsState.isPending() ||
     debouncedLocalSourceSettingsState.isPending() ||
     debouncedLocalFilterSettingsState.isPending() ||
@@ -167,6 +179,22 @@ function ExploreOrDefault() {
             }
             aria-describedby="searchQueryText"
             placeholder={placeholderCardName}
+          />
+          <Form.Label htmlFor="selectTags">
+            Select tags which card types to include
+          </Form.Label>
+          <StyledDropdownTreeSelect
+            data={Object.values(CardTypePrefixes).map((cardType) => ({
+              label:
+                cardType[0].toUpperCase() + cardType.slice(1).toLowerCase(),
+              value: cardType,
+              checked: cardTypes.includes(cardType),
+            }))}
+            onChange={(currentNode, selectedNodes) =>
+              setCardTypesAndResetPageStart(
+                selectedNodes.map((item) => item.value)
+              )
+            }
           />
           <hr />
           <SearchTypeSettingsElement
