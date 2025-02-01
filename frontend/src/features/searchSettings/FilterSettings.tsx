@@ -10,6 +10,7 @@ import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
 import DropdownTreeSelect, { TreeNode } from "react-dropdown-tree-select";
 require("react-dropdown-tree-select/dist/styles.css");
+
 import styled from "styled-components";
 
 import {
@@ -42,6 +43,7 @@ const StyledDropdownTreeSelect = styled(DropdownTreeSelect)`
 
   .search {
     background-color: white;
+    color: black;
   }
   .search::placeholder {
     color: black;
@@ -54,11 +56,11 @@ const StyledDropdownTreeSelect = styled(DropdownTreeSelect)`
   }
 
   .toggle.collapsed::after {
-    content: "\uF4FA";
+    content: "\F4FA";
   }
 
   .toggle.expanded::after {
-    content: "\uF2E6";
+    content: "\F2E6";
   }
 
   color: black;
