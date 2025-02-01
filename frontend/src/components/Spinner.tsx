@@ -10,6 +10,9 @@ const SpinnerDimensions = styled.div<SpinnerProps>`
   width: ${(props) => props.size ?? 4}em;
   height: ${(props) => props.size ?? 4}em;
   z-index: ${(props) => props.zIndex};
+  position: absolute;
+  top: calc(50% - ${(props) => props.size ?? 4}em / 2);
+  left: calc(50% - ${(props) => props.size ?? 4}em / 2);
 `;
 
 export function Spinner({ size = 4, zIndex = 0 }: SpinnerProps) {

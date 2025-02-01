@@ -161,7 +161,7 @@ export const api = createApi({
       },
     }),
     postExploreSearch: builder.query<
-      Array<CardDocument>,
+      { cards: Array<CardDocument>; count: number },
       { searchSettings: SearchSettings; query: SearchQuery }
     >({
       query: ({ searchSettings, query }) => ({
@@ -170,11 +170,6 @@ export const api = createApi({
         body: JSON.stringify({ searchSettings, query }),
       }),
       providesTags: [QueryTags.BackendSpecific],
-      transformResponse: (
-        response: { results: Array<CardDocument> },
-        meta,
-        arg
-      ) => response.results,
       keepUnusedDataFor: 0.0, // never cache results
     }),
   }),
@@ -266,14 +261,14 @@ export function usePostExploreSearchQuery({
   searchSettings,
   query,
 }: {
-  searchSettings: SearchSettings;
+  searchSettings: SearchSettings | undefined;
   query: SearchQuery;
 }) {
   const backendConfigured = useBackendConfigured();
   return useRawPostExploreSearchQuery(
-    { searchSettings, query },
+    { searchSettings, query }, // @ts-ignore // TODO: fix this.
     {
-      skip: !backendConfigured,
+      skip: !backendConfigured || searchSettings === undefined,
     }
   );
 }

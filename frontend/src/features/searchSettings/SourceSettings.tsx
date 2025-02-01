@@ -37,11 +37,13 @@ interface SourceSettingsProps {
   setSourceSettings: {
     (newSourceSettings: SourceSettingsType): void;
   };
+  enableReorderingSources?: boolean;
 }
 
 export function SourceSettings({
   sourceSettings,
   setSourceSettings,
+  enableReorderingSources = true,
 }: SourceSettingsProps) {
   const maybeSourceDocuments = useAppSelector(selectSourceDocuments);
   const anySourcesEnabled = (sourceSettings.sources ?? []).some((x) => x[1]);
@@ -100,6 +102,7 @@ export function SourceSettings({
           key={sourceRow[0]}
           draggableId={sourceRow[0].toString()}
           index={index}
+          isDragDisabled={!enableReorderingSources}
         >
           {(provided, snapshot) => (
             <tr
@@ -153,27 +156,31 @@ export function SourceSettings({
                   textAlign: "center",
                 }}
               >
-                <div>
-                  <Chevron
-                    key={`${sourceRow[0]}-up-button`}
-                    className="bi bi-chevron-double-up"
-                    onClick={() => {
-                      moveSourceToIndex(index, 0);
-                    }}
-                  />
-                </div>
-                <div>
-                  <Chevron
-                    key={`${sourceRow[0]}-down-button`}
-                    className="bi bi-chevron-double-down"
-                    onClick={() => {
-                      moveSourceToIndex(
-                        index,
-                        (sourceSettings.sources ?? []).length - 1
-                      );
-                    }}
-                  />
-                </div>
+                {enableReorderingSources && (
+                  <>
+                    <div>
+                      <Chevron
+                        key={`${sourceRow[0]}-up-button`}
+                        className="bi bi-chevron-double-up"
+                        onClick={() => {
+                          moveSourceToIndex(index, 0);
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <Chevron
+                        key={`${sourceRow[0]}-down-button`}
+                        className="bi bi-chevron-double-down"
+                        onClick={() => {
+                          moveSourceToIndex(
+                            index,
+                            (sourceSettings.sources ?? []).length - 1
+                          );
+                        }}
+                      />
+                    </div>
+                  </>
+                )}
               </td>
               <td
                 key={`${sourceRow[0]}-drag-button-column`}
@@ -183,11 +190,13 @@ export function SourceSettings({
                   textAlign: "center",
                 }}
               >
-                <i
-                  key={`${sourceRow[0]}-drag-button`}
-                  className="bi bi-grip-horizontal"
-                  style={{ fontSize: 2 + "em" }}
-                />
+                {enableReorderingSources && (
+                  <i
+                    key={`${sourceRow[0]}-drag-button`}
+                    className="bi bi-grip-horizontal"
+                    style={{ fontSize: 2 + "em" }}
+                  />
+                )}
               </td>
             </tr>
           )}
@@ -229,15 +238,18 @@ export function SourceSettings({
     <>
       <h5>Sources</h5>
       Configure the sources to include in the search results.
-      <ul>
-        <li>
-          <b>Drag & drop</b> them to change the order they&apos;re searched in.
-        </li>
-        <li>
-          Use the <b>arrows</b> to send a source to the top or bottom.
-        </li>
-      </ul>
-      <div className="d-grid gap-0">
+      {enableReorderingSources && (
+        <ul>
+          <li>
+            <b>Drag & drop</b> them to change the order they&apos;re searched
+            in.
+          </li>
+          <li>
+            Use the <b>arrows</b> to send a source to the top or bottom.
+          </li>
+        </ul>
+      )}
+      <div className="d-grid gap-0 mt-3">
         <Button variant="primary" onClick={toggleAllSourceEnabledStatuses}>
           {anySourcesEnabled ? "Disable" : "Enable"} all drives
         </Button>

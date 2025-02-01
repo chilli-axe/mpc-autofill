@@ -133,10 +133,12 @@ def post_explore_search(request: HttpRequest) -> HttpResponse:
             },
         }
     )
-    s.extra(track_total_hits=True).count()
+    count = s.extra(track_total_hits=True).count()
     card_ids = [man.identifier for man in s[0:60].execute()]  # TODO: plumb through page token, obviously
-    cards = [card.to_dict() for card in Card.objects.filter(identifier__in=card_ids)]
-    return JsonResponse({"results": cards})
+    # TODO: the below code feels inefficient but is set up this way to ensure sorting from elasticsearch is respected.
+    card_id_object_dict = {card.identifier: card.to_dict() for card in Card.objects.filter(identifier__in=card_ids)}
+    cards = [card_id_object_dict[card_id] for card_id in card_ids]
+    return JsonResponse({"cards": cards, "count": count})
 
 
 @csrf_exempt

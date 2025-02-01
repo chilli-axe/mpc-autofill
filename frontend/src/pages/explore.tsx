@@ -1,10 +1,11 @@
 import Head from "next/head";
-import React, { useState } from "react";
-import Col from "react-bootstrap/Col";
+import React, { useEffect, useState } from "react";
 import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
+import styled from "styled-components";
 import { useDebounce } from "use-debounce";
 
+import { Card, NavbarHeight, RibbonHeight } from "@/common/constants";
 import { processPrefix } from "@/common/processing";
 import {
   FilterSettings,
@@ -14,17 +15,30 @@ import {
   useAppSelector,
 } from "@/common/types";
 import { NoBackendDefault } from "@/components/NoBackendDefault";
+import { OverflowCol } from "@/components/OverflowCol";
 import { Spinner } from "@/components/Spinner";
 import { DatedCard } from "@/features/card/Card";
 import { FilterSettings as FilterSettingsElement } from "@/features/searchSettings/FilterSettings";
 import { SearchTypeSettings as SearchTypeSettingsElement } from "@/features/searchSettings/SearchTypeSettings";
 import { SourceSettings as SourceSettingsElement } from "@/features/searchSettings/SourceSettings";
-import Footer from "@/features/ui/Footer";
 import { ProjectContainer } from "@/features/ui/Layout";
+import { useGetSampleCardsQuery } from "@/store/api";
 import { usePostExploreSearchQuery } from "@/store/api";
 import { useBackendConfigured } from "@/store/slices/backendSlice";
-import { getDefaultSearchSettings } from "@/store/slices/SearchSettingsSlice";
+import {
+  getDefaultSearchSettings,
+  getDefaultSourceSettings,
+} from "@/store/slices/SearchSettingsSlice";
 import { selectSourceDocuments } from "@/store/slices/sourceDocumentsSlice";
+
+interface BlurrableRowProps {
+  disabled?: boolean;
+}
+
+export const BlurrableRow = styled(Row)<BlurrableRowProps>`
+  filter: ${(props) => (props.disabled === true ? "blur(8px)" : undefined)};
+  pointer-events: ${(props) => (props.disabled === true ? "none" : undefined)};
+`;
 
 function ExploreOrDefault() {
   // TODO: investigate performance of below
@@ -37,60 +51,104 @@ function ExploreOrDefault() {
     useState<SourceSettings>(defaultSettings.sourceSettings);
   const [localFilterSettings, setLocalFilterSettings] =
     useState<FilterSettings>(defaultSettings.filterSettings);
-  const searchSettings: SearchSettings = {
-    searchTypeSettings: localSearchTypeSettings,
-    filterSettings: localFilterSettings,
-    sourceSettings: localSourceSettings,
-  };
-  const [debouncedQuery] = useDebounce(query, 1000);
+  const searchSettings: SearchSettings | undefined =
+    maybeSourceDocuments !== undefined
+      ? {
+          searchTypeSettings: localSearchTypeSettings,
+          filterSettings: localFilterSettings,
+          sourceSettings: localSourceSettings,
+        }
+      : undefined;
+  useEffect(() => {
+    // alert("effectin")
+    if (maybeSourceDocuments !== undefined) {
+      setLocalSourceSettings(getDefaultSourceSettings(maybeSourceDocuments));
+    }
+  }, [maybeSourceDocuments]);
+
+  const [debouncedQuery, debouncedQueryState] = useDebounce(query, 700);
+  const getSampleCardsQuery = useGetSampleCardsQuery();
+  const placeholderCardName =
+    getSampleCardsQuery.data != null &&
+    (getSampleCardsQuery.data ?? {})[Card][0] != null
+      ? getSampleCardsQuery.data[Card][0].name
+      : "";
+
   const postExploreSearchQuery = usePostExploreSearchQuery({
     searchSettings,
     query: processPrefix(debouncedQuery),
   });
+  const resultCount = postExploreSearchQuery.data?.count ?? 0;
+  const displaySpinner =
+    debouncedQueryState.isPending() || postExploreSearchQuery.isFetching;
 
   const backendConfigured = useBackendConfigured();
   return backendConfigured ? (
     <>
-      <h1>Explore</h1>
-      <Form.Label htmlFor="searchQueryText">Search Query</Form.Label>
-      <Form.Control
-        onChange={(event) => setQuery(event.target.value.trim())}
-        aria-describedby="searchQueryText"
-      />
-      <br />
-      <Row>
-        <Col>
+      <Row className="g-0">
+        <OverflowCol
+          lg={4}
+          md={4}
+          sm={6}
+          xs={6}
+          style={{ zIndex: 1 }}
+          className="px-2"
+        >
+          <Form.Label htmlFor="searchQueryText">Search Query</Form.Label>
+          <Form.Control
+            onChange={(event) => setQuery(event.target.value.trim())}
+            aria-describedby="searchQueryText"
+            placeholder={placeholderCardName}
+          />
+          <hr />
           <SearchTypeSettingsElement
             searchTypeSettings={localSearchTypeSettings}
             setSearchTypeSettings={setLocalSearchTypeSettings}
+            enableFiltersApplyToCardbacks={false}
           />
-        </Col>
-        <Col>
+          <hr />
           <FilterSettingsElement
             filterSettings={localFilterSettings}
             setFilterSettings={setLocalFilterSettings}
           />
-        </Col>
-        <Col>
+          <hr />
           <SourceSettingsElement
             sourceSettings={localSourceSettings}
             setSourceSettings={setLocalSourceSettings}
+            enableReorderingSources={false}
           />
-        </Col>
-      </Row>
-      <hr />
-      <Row xxl={6} lg={4} md={3} sm={2} xs={2} className="g-0">
-        {postExploreSearchQuery.isFetching && (
-          // TODO: fix styling
-          <Spinner size={6} />
-        )}
-        {!postExploreSearchQuery.isFetching &&
-          postExploreSearchQuery.data?.map((card) => (
-            <DatedCard
-              cardDocument={card}
-              key={`explore-card-${card.identifier}`}
-            />
-          ))}
+        </OverflowCol>
+
+        <OverflowCol
+          lg={8}
+          md={8}
+          sm={6}
+          xs={6}
+          disabled={displaySpinner}
+          scrollable={!displaySpinner}
+        >
+          {displaySpinner && <Spinner size={6} zIndex={3} />}
+
+          <h3>
+            {resultCount} result{resultCount !== 1 ? "s" : ""}
+          </h3>
+          <BlurrableRow
+            xxl={4}
+            lg={4}
+            md={3}
+            sm={2}
+            xs={2}
+            className="g-0"
+            disabled={displaySpinner}
+          >
+            {postExploreSearchQuery.data?.cards?.map((card) => (
+              <DatedCard
+                cardDocument={card}
+                key={`explore-card-${card.identifier}`}
+              />
+            ))}
+          </BlurrableRow>
+        </OverflowCol>
       </Row>
     </>
   ) : (
@@ -109,7 +167,6 @@ export default function Explore() {
         />
       </Head>
       <ExploreOrDefault />
-      <Footer />
     </ProjectContainer>
   );
 }

@@ -37,7 +37,7 @@ export function AddCardToProjectForm({
     event.preventDefault(); // to prevent reloading the page
 
     const prefix = ReversedCardTypePrefixes[cardDocument.card_type];
-    const lineString = `${quantity} ${prefix}${cardDocument.name}${SelectedImageSeparator}${cardDocument.identifier}`;
+    const lineString = `${quantity} ${prefix}${cardDocument.searchq}${SelectedImageSeparator}${cardDocument.identifier}`;
     const line = processLine(lineString, dfcPairsQuery.data ?? {}, fuzzySearch);
 
     dispatch(

@@ -16,11 +16,13 @@ interface SearchTypeSettingsProps {
   setSearchTypeSettings: {
     (newSearchTypeSettings: SearchTypeSettingsType): void;
   };
+  enableFiltersApplyToCardbacks?: boolean;
 }
 
 export function SearchTypeSettings({
   searchTypeSettings,
   setSearchTypeSettings,
+  enableFiltersApplyToCardbacks = true,
 }: SearchTypeSettingsProps) {
   return (
     <>
@@ -46,26 +48,30 @@ export function SearchTypeSettings({
         height={ToggleButtonHeight + "px"}
         active={searchTypeSettings.fuzzySearch}
       />
-      <br />
-      <br />
-      <Toggle
-        onClick={() =>
-          setSearchTypeSettings({
-            ...searchTypeSettings,
-            filterCardbacks: !searchTypeSettings.filterCardbacks,
-          })
-        }
-        on="Filters Apply to Cardbacks"
-        onClassName="flex-centre"
-        off="Include All Cardbacks"
-        offClassName="flex-centre"
-        onstyle="success"
-        offstyle="info"
-        width={100 + "%"}
-        size="md"
-        height={ToggleButtonHeight + "px"}
-        active={searchTypeSettings.filterCardbacks}
-      />
+      {enableFiltersApplyToCardbacks && (
+        <>
+          <br />
+          <br />
+          <Toggle
+            onClick={() =>
+              setSearchTypeSettings({
+                ...searchTypeSettings,
+                filterCardbacks: !searchTypeSettings.filterCardbacks,
+              })
+            }
+            on="Filters Apply to Cardbacks"
+            onClassName="flex-centre"
+            off="Include All Cardbacks"
+            offClassName="flex-centre"
+            onstyle="success"
+            offstyle="info"
+            width={100 + "%"}
+            size="md"
+            height={ToggleButtonHeight + "px"}
+            active={searchTypeSettings.filterCardbacks}
+          />
+        </>
+      )}
     </>
   );
 }

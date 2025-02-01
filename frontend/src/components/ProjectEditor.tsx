@@ -8,9 +8,10 @@ import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
 import styled from "styled-components";
 
-import { NavbarHeight, RibbonHeight } from "@/common/constants";
+import { RibbonHeight } from "@/common/constants";
 import { useAppSelector } from "@/common/types";
 import { NoBackendDefault } from "@/components/NoBackendDefault";
+import { OverflowCol } from "@/components/OverflowCol";
 import { SelectedImagesRibbon } from "@/features/bulkManagement/SelectedImagesRibbon";
 import { CardGrid } from "@/features/card/CardGrid";
 import { CommonCardback } from "@/features/card/CommonCardback";
@@ -29,17 +30,6 @@ import {
 const FixedHeightRow = styled(Row)`
   height: ${RibbonHeight}px;
   box-shadow: 0 -1px 0 rgb(255, 255, 255, 50%) inset;
-`;
-
-const OverflowCol = styled(Col)`
-  position: relative;
-  // define height twice - first as a fallback for older browser compatibility,
-  // then using dvh to account for the ios address bar
-  height: calc(100vh - ${NavbarHeight}px - ${RibbonHeight}px);
-  height: calc(100dvh - ${NavbarHeight}px - ${RibbonHeight}px);
-  overflow-y: scroll;
-  overscroll-behavior: none;
-  scrollbar-width: thin;
 `;
 
 function ProjectEditor() {

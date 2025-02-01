@@ -18,6 +18,7 @@ class CardSearch(Document):
     searchq_precise = fields.TextField(attr="searchq", analyzer=precise_analyser)
     searchq_keyword = fields.KeywordField(attr="searchq")
     card_type = fields.KeywordField()
+    date = fields.DateField()
     language = fields.TextField(analyzer=precise_analyser)  # case insensitivity is one less thing which can go wrong
     tags = fields.KeywordField()  # all elasticsearch fields support arrays by default
 
@@ -29,4 +30,4 @@ class CardSearch(Document):
 
     class Django:
         model = Card
-        fields = ["identifier", "priority", "dpi", "date", "size"]
+        fields = ["identifier", "priority", "dpi", "size"]
