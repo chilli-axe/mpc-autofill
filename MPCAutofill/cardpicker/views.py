@@ -97,16 +97,12 @@ def post_editor_search(request: HttpRequest) -> HttpResponse:
     return JsonResponse({"results": results})
 
 
+MAX_PAGE_SIZE = 100  # TODO: move this into the appropriate place.
+
+
 @csrf_exempt
 @NewErrorWrappers.to_json
 def post_explore_search(request: HttpRequest) -> HttpResponse:
-    """
-    TODO:
-    - get page token off json body
-    - return page token in response
-    - get search query off json body
-    """
-
     if request.method != "POST":
         raise BadRequestException("Expected POST request.")
 
@@ -115,6 +111,10 @@ def post_explore_search(request: HttpRequest) -> HttpResponse:
     try:
         search_settings = SearchSettings.from_json_body(json_body)
         search_query = SearchQuery.from_json_body(json_body["query"])  # TODO: bad and hacked in, obviously
+        page_start = json_body["pageStart"]  # TODO: bad and hacked in, obviously
+        page_size = json_body["pageSize"]  # TODO: bad and hacked in, obviously
+        if page_size > MAX_PAGE_SIZE:
+            raise ValidationError(f"Invalid page size {page_size}. Must be less than {MAX_PAGE_SIZE}.")
     except ValidationError as e:
         raise BadRequestException(f"The provided JSON body is invalid:\n\n{e.message}")
 
@@ -134,7 +134,7 @@ def post_explore_search(request: HttpRequest) -> HttpResponse:
         }
     )
     count = s.extra(track_total_hits=True).count()
-    card_ids = [man.identifier for man in s[0:60].execute()]  # TODO: plumb through page token, obviously
+    card_ids = [man.identifier for man in s[page_start : page_start + page_size].execute()]
     # TODO: the below code feels inefficient but is set up this way to ensure sorting from elasticsearch is respected.
     card_id_object_dict = {card.identifier: card.to_dict() for card in Card.objects.filter(identifier__in=card_ids)}
     cards = [card_id_object_dict[card_id] for card_id in card_ids]
