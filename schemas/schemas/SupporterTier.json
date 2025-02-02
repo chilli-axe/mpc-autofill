@@ -1,0 +1,12 @@
+{
+  "title": "Supporter Tier",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "title": { "type": "string" },
+    "description": { "type": "string" },
+    "usd": { "type": "number" }
+  },
+  "required": ["title", "description", "usd"],
+  "additionalProperties": false
+}

@@ -5,27 +5,61 @@ from random import sample
 from typing import Any, Callable, TypeVar, Union, cast
 
 import pycountry
-import sentry_sdk
 from elasticsearch_dsl.index import Index
-from jsonschema import ValidationError, validate
+from pydantic import ValidationError
 
 from django.conf import settings
 from django.db.models import Q
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
-from cardpicker.constants import CARDS_PAGE_SIZE, DEFAULT_LANGUAGE, NSFW
+from cardpicker.constants import (
+    CARDS_PAGE_SIZE,
+    DEFAULT_LANGUAGE,
+    NSFW,
+    SEARCH_RESULTS_PAGE_SIZE,
+)
 from cardpicker.documents import CardSearch
 from cardpicker.integrations.integrations import get_configured_game_integration
 from cardpicker.integrations.patreon import get_patreon_campaign_details, get_patrons
 from cardpicker.models import Card, CardTypes, DFCPair, Source, summarise_contributions
+from cardpicker.schema_types import CardbacksRequest, CardbacksResponse
+from cardpicker.schema_types import Cards as SampleCards
+from cardpicker.schema_types import (
+    CardsRequest,
+    CardsResponse,
+    ContributionsResponse,
+    DFCPairsResponse,
+    EditorSearchRequest,
+    EditorSearchResponse,
+    ErrorResponse,
+    ExploreSearchRequest,
+    ExploreSearchResponse,
+    ImportSite,
+    ImportSiteDecklistRequest,
+    ImportSiteDecklistResponse,
+    ImportSitesResponse,
+    Info,
+    InfoResponse,
+    Language,
+    LanguagesResponse,
+    NewCardsFirstPage,
+    NewCardsFirstPagesResponse,
+    NewCardsPageResponse,
+    Patreon,
+    SampleCardsResponse,
+    SearchEngineHealthResponse,
+    SortBy,
+    SourcesResponse,
+    TagsResponse,
+)
 from cardpicker.search.search_functions import (
     SearchExceptions,
-    SearchQuery,
-    SearchSettings,
     get_new_cards_paginator,
     get_search,
     ping_elasticsearch,
+    retrieve_card_identifiers,
+    retrieve_cardback_identifiers,
 )
 from cardpicker.tags import Tags
 
@@ -37,7 +71,7 @@ class BadRequestException(Exception):
     pass
 
 
-class NewErrorWrappers:
+class ErrorWrappers:
     """
     View function decorators which gracefully handle exceptions and allow the exception message to be displayed
     to the user.
@@ -48,21 +82,30 @@ class NewErrorWrappers:
         def wrapper(*args: Any, **kwargs: Any) -> Union[F, HttpResponse]:
             try:
                 return func(*args, **kwargs)
-            except SearchExceptions.ElasticsearchOfflineException:
-                return JsonResponse({"name": "Search engine is offline", "message": None}, status=500)
-            except BadRequestException as bad_request_exception:
-                return JsonResponse({"name": "Bad request", "message": bad_request_exception.args[0]}, status=400)
-            except Exception as e:
-                sentry_sdk.capture_exception(e)
-                return JsonResponse(
-                    {"name": f"Unhandled {e.__class__.__name__}", "message": str(e.args[0])}, status=500
+            except ValidationError as e:
+                # send pydantic validation errors to client
+                error = ErrorResponse(
+                    name="Schema error/s",
+                    message="See `errors` field for detailed breakdown.",
+                    errors=[dict(item) for item in e.errors()],
                 )
+                return JsonResponse(error.model_dump(), status=400)
+            except SearchExceptions.ElasticsearchOfflineException:
+                error = ErrorResponse(name="Search engine is offline", message=None)
+                return JsonResponse(error.model_dump(), status=500)
+            except BadRequestException as bad_request_exception:
+                error = ErrorResponse(name="Bad request", message=bad_request_exception.args[0])
+                return JsonResponse(error.model_dump(), status=400)
+            except Exception as e:
+                # sentry_sdk.capture_exception(e)
+                error = ErrorResponse(name=f"Unhandled {e.__class__.__name__}", message=str(e.args[0]))
+                return JsonResponse(error.model_dump(), status=500)
 
         return cast(F, wrapper)
 
 
 @csrf_exempt
-@NewErrorWrappers.to_json
+@ErrorWrappers.to_json
 def post_editor_search(request: HttpRequest) -> HttpResponse:
     """
     Return the first page of search results for a given list of queries.
@@ -76,120 +119,90 @@ def post_editor_search(request: HttpRequest) -> HttpResponse:
     if request.method != "POST":
         raise BadRequestException("Expected POST request.")
 
-    json_body = json.loads(request.body)
-
-    try:
-        search_settings = SearchSettings.from_json_body(json_body)
-        queries = SearchQuery.list_from_json_body(json_body)
-    except ValidationError as e:
-        raise BadRequestException(f"The provided JSON body is invalid:\n\n{e.message}")
-
+    editor_search_request = EditorSearchRequest.model_validate(json.loads(request.body))
     if not ping_elasticsearch():
         raise SearchExceptions.ElasticsearchOfflineException()
     if not Index(CardSearch.Index.name).exists():
         raise SearchExceptions.IndexNotFoundException(CardSearch.__name__)
 
+    if len(editor_search_request.queries) > SEARCH_RESULTS_PAGE_SIZE:
+        raise BadRequestException(
+            f"Invalid query count {len(editor_search_request.queries)}. "
+            f"Must be less than or equal to {SEARCH_RESULTS_PAGE_SIZE}."
+        )
+
     results: dict[str, dict[str, list[str]]] = defaultdict(dict)
-    for query in queries:
-        if results[query.query].get(query.card_type, None) is None:
-            hits = query.retrieve_card_identifiers(search_settings=search_settings)
-            results[query.query][query.card_type] = hits
-    return JsonResponse({"results": results})
+    for query, card_type in sorted({(item.query, item.cardType) for item in editor_search_request.queries}):
+        if query is not None and results[query].get(card_type.value, None) is None:
+            hits = retrieve_card_identifiers(
+                query=query, card_type=card_type, search_settings=editor_search_request.searchSettings
+            )
+            results[query][card_type.value] = hits
+    return JsonResponse(EditorSearchResponse(results=results).model_dump())
 
 
 MAX_PAGE_SIZE = 100  # TODO: move this into the appropriate place.
 
 
 @csrf_exempt
-@NewErrorWrappers.to_json
+@ErrorWrappers.to_json
 def post_explore_search(request: HttpRequest) -> HttpResponse:
     if request.method != "POST":
         raise BadRequestException("Expected POST request.")
 
-    json_body = json.loads(request.body)
-
-    try:
-        search_settings = SearchSettings.from_json_body(json_body)
-        query = json_body["query"]  # TODO: bad and hacked in, obviously
-        card_types = json_body["cardTypes"]  # TODO
-        page_start = json_body["pageStart"]  # TODO: bad and hacked in, obviously
-        page_size = json_body["pageSize"]  # TODO: bad and hacked in, obviously
-        if page_size > MAX_PAGE_SIZE:
-            raise ValidationError(f"Invalid page size {page_size}. Must be less than {MAX_PAGE_SIZE}.")
-    except ValidationError as e:
-        raise BadRequestException(f"The provided JSON body is invalid:\n\n{e.message}")
-
+    explore_search_request = ExploreSearchRequest.model_validate(json.loads(request.body))
+    if explore_search_request.pageSize > MAX_PAGE_SIZE:
+        raise BadRequestException(
+            f"Invalid page size {explore_search_request.pageSize}. Must be less than or equal to {MAX_PAGE_SIZE}."
+        )
     if not ping_elasticsearch():
         raise SearchExceptions.ElasticsearchOfflineException()
     if not Index(CardSearch.Index.name).exists():
         raise SearchExceptions.IndexNotFoundException(CardSearch.__name__)
 
     sort: dict[str, dict[str, str]] = {
-        "name_ascending": {
-            "searchq_keyword": {
-                "order": "asc",
-            },
-        },
-        "name_descending": {
-            "searchq_keyword": {
-                "order": "desc",
-            },
-        },
-        "date_ascending": {
-            "date": {
-                "order": "asc",
-            },
-            "searchq_keyword": {
-                "order": "asc",
-            },
-        },
-        "date_descending": {
-            "date": {
-                "order": "desc",
-            },
-            "searchq_keyword": {
-                "order": "asc",
-            },
-        },
-    }[json_body["sortBy"]]
+        SortBy.nameAscending: {"searchq_keyword": {"order": "asc"}},
+        SortBy.nameDescending: {"searchq_keyword": {"order": "desc"}},
+        SortBy.dateAscending: {"date": {"order": "asc"}, "searchq_keyword": {"order": "asc"}},
+        SortBy.dateDescending: {"date": {"order": "desc"}, "searchq_keyword": {"order": "asc"}},
+    }[explore_search_request.sortBy]
 
-    s = get_search(search_settings=search_settings, query=query, card_types=card_types).sort(sort)
+    s = get_search(
+        search_settings=explore_search_request.searchSettings,
+        query=explore_search_request.query,
+        card_types=explore_search_request.cardTypes,
+    ).sort(sort)
     count = s.extra(track_total_hits=True).count()
-    card_ids = [man.identifier for man in s[page_start : page_start + page_size].execute()]
+
+    s_sliced = s[explore_search_request.pageStart : explore_search_request.pageStart + explore_search_request.pageSize]
+    card_ids = [man.identifier for man in s_sliced.execute()]
     # TODO: the below code feels inefficient but is set up this way to ensure sorting from elasticsearch is respected.
-    card_id_object_dict = {card.identifier: card.to_dict() for card in Card.objects.filter(identifier__in=card_ids)}
+    card_id_object_dict = {card.identifier: card.serialise() for card in Card.objects.filter(identifier__in=card_ids)}
     cards = [card_id_object_dict[card_id] for card_id in card_ids]
-    return JsonResponse({"cards": cards, "count": count})
+    return JsonResponse(ExploreSearchResponse(cards=cards, count=count).model_dump())
 
 
 @csrf_exempt
-@NewErrorWrappers.to_json
+@ErrorWrappers.to_json
 def post_cards(request: HttpRequest) -> HttpResponse:
     if request.method != "POST":
         raise BadRequestException("Expected POST request.")
 
-    json_body = json.loads(request.body)
-    try:
-        validate(
-            json_body,
-            schema={
-                "type": "object",
-                "properties": {
-                    "card_identifiers": {"type": "array", "items": {"type": "string"}, "maxItems": CARDS_PAGE_SIZE}
-                },
-                "required": ["card_identifiers"],
-                "additionalProperties": False,
-            },
+    cards_request = CardsRequest.model_validate(json.loads(request.body))
+    if len(cards_request.cardIdentifiers) > CARDS_PAGE_SIZE:
+        raise BadRequestException(
+            f"Invalid card count {len(cards_request.cardIdentifiers)}. "
+            f"Must be less than or equal to {CARDS_PAGE_SIZE}."
         )
-    except ValidationError as e:
-        raise BadRequestException(f"Malformed JSON body:\n\n{e.message}")
 
-    results = {x.identifier: x.to_dict() for x in Card.objects.filter(identifier__in=json_body["card_identifiers"])}
-    return JsonResponse({"results": results})
+    results = {
+        card.identifier: card.serialise() for card in Card.objects.filter(identifier__in=cards_request.cardIdentifiers)
+    }
+    return JsonResponse(CardsResponse(results=results).model_dump())
 
 
 @csrf_exempt
-@NewErrorWrappers.to_json
+@ErrorWrappers.to_json
 def get_sources(request: HttpRequest) -> HttpResponse:
     """
     Return a list of sources.
@@ -198,12 +211,12 @@ def get_sources(request: HttpRequest) -> HttpResponse:
     if request.method != "GET":
         raise BadRequestException("Expected GET request.")
 
-    results = {x.pk: x.to_dict() for x in Source.objects.order_by("ordinal", "pk")}
-    return JsonResponse({"results": results})
+    results = {str(source.pk): source.serialise() for source in Source.objects.order_by("ordinal", "pk")}
+    return JsonResponse(SourcesResponse(results=results).model_dump())
 
 
 @csrf_exempt
-@NewErrorWrappers.to_json
+@ErrorWrappers.to_json
 def get_dfc_pairs(request: HttpRequest) -> HttpResponse:
     """
     Return a list of double-faced cards. The unedited names are returned and the frontend is expected to sanitise them.
@@ -212,12 +225,12 @@ def get_dfc_pairs(request: HttpRequest) -> HttpResponse:
     if request.method != "GET":
         raise BadRequestException("Expected GET request.")
 
-    dfc_pairs = dict((x.front, x.back) for x in DFCPair.objects.all())
-    return JsonResponse({"dfc_pairs": dfc_pairs})
+    dfc_pairs = {x.front: x.back for x in DFCPair.objects.all()}
+    return JsonResponse(DFCPairsResponse(dfcPairs=dfc_pairs).model_dump())
 
 
 @csrf_exempt
-@NewErrorWrappers.to_json
+@ErrorWrappers.to_json
 def get_languages(request: HttpRequest) -> HttpResponse:
     """
     Return the list of all unique languages among cards in the database.
@@ -226,22 +239,22 @@ def get_languages(request: HttpRequest) -> HttpResponse:
     if request.method != "GET":
         raise BadRequestException("Expected GET request.")
     return JsonResponse(
-        {
-            "languages": sorted(
+        LanguagesResponse(
+            languages=sorted(
                 [
-                    {"name": language.name, "code": row[0].upper()}
+                    Language(name=language.name, code=row[0].upper())
                     for row in Card.objects.order_by().values_list("language").distinct()
                     if (language := pycountry.languages.get(alpha_2=row[0])) is not None
                 ],
                 # sort like this so DEFAULT_LANGUAGE is first, then the rest of the languages are in alphabetical order
-                key=lambda row: "-" if row["code"] == DEFAULT_LANGUAGE.alpha_2 else row["name"],
+                key=lambda language: "-" if language.code == DEFAULT_LANGUAGE.alpha_2 else language.name,
             )
-        }
+        ).model_dump()
     )
 
 
 @csrf_exempt
-@NewErrorWrappers.to_json
+@ErrorWrappers.to_json
 def get_tags(request: HttpRequest) -> HttpResponse:
     """
     Return a list of all tags that cards can be tagged with.
@@ -250,12 +263,14 @@ def get_tags(request: HttpRequest) -> HttpResponse:
     if request.method != "GET":
         raise BadRequestException("Expected GET request.")
     return JsonResponse(
-        {"tags": sorted([tag.to_dict() for tag in Tags().tags.values() if tag.parent is None], key=lambda x: x["name"])}
+        TagsResponse(
+            tags=sorted([tag.serialise() for tag in Tags().tags.values() if tag.parent is None], key=lambda x: x.name)
+        ).model_dump()
     )
 
 
 @csrf_exempt
-@NewErrorWrappers.to_json
+@ErrorWrappers.to_json
 def post_cardbacks(request: HttpRequest) -> HttpResponse:
     """
     Return a list of cardbacks, possibly filtered by the user's search settings.
@@ -264,18 +279,13 @@ def post_cardbacks(request: HttpRequest) -> HttpResponse:
     if request.method != "POST":
         raise BadRequestException("Expected POST request.")
 
-    try:
-        json_body = json.loads(request.body)
-        search_settings = SearchSettings.from_json_body(json_body)
-    except ValidationError as e:
-        raise BadRequestException(f"The provided JSON body is invalid:\n\n{e.message}")
-
-    cardbacks = search_settings.retrieve_cardback_identifiers()
-    return JsonResponse({"cardbacks": cardbacks})
+    cardbacks_request = CardbacksRequest.model_validate(json.loads(request.body))
+    cardbacks = retrieve_cardback_identifiers(search_settings=cardbacks_request.searchSettings)
+    return JsonResponse(CardbacksResponse(cardbacks=cardbacks).model_dump())
 
 
 @csrf_exempt
-@NewErrorWrappers.to_json
+@ErrorWrappers.to_json
 def get_import_sites(request: HttpRequest) -> HttpResponse:
     """
     Return a list of import sites.
@@ -286,17 +296,17 @@ def get_import_sites(request: HttpRequest) -> HttpResponse:
 
     game_integration = get_configured_game_integration()
     if game_integration is None:
-        return JsonResponse({"import_sites": []})
+        return JsonResponse(ImportSitesResponse(importSites=[]).model_dump())
 
     import_sites = [
-        {"name": site.__name__, "url": f"https://{site.get_host_names()[0]}"}
+        ImportSite(name=site.__name__, url=f"https://{site.get_host_names()[0]}")
         for site in game_integration.get_import_sites()
     ]
-    return JsonResponse({"import_sites": import_sites})
+    return JsonResponse(ImportSitesResponse(importSites=import_sites).model_dump())
 
 
 @csrf_exempt
-@NewErrorWrappers.to_json
+@ErrorWrappers.to_json
 def post_import_site_decklist(request: HttpRequest) -> HttpResponse:
     """
     Read the specified import site URL and process & return the associated decklist.
@@ -309,31 +319,18 @@ def post_import_site_decklist(request: HttpRequest) -> HttpResponse:
     if game_integration is None:
         raise BadRequestException("No game integration is configured on this server.")
 
-    json_body = json.loads(request.body)
+    import_site_decklist_request = ImportSiteDecklistRequest.model_validate(json.loads(request.body))
     try:
-        validate(
-            json_body,
-            schema={
-                "type": "object",
-                "properties": {"url": {"type": "string"}},
-                "required": ["url"],
-                "additionalProperties": False,
-            },
-        )
-    except ValidationError as e:
-        raise BadRequestException(f"Malformed JSON body:\n\n{e.message}")
-
-    try:
-        decklist = game_integration.query_import_site(json_body.get("url"))
+        decklist = game_integration.query_import_site(url=import_site_decklist_request.url)
         if decklist is None:
             raise BadRequestException("The specified decklist URL does not match any known import sites.")
-        return JsonResponse({"cards": decklist})
+        return JsonResponse(ImportSiteDecklistResponse(cards=decklist).model_dump())
     except ValueError as e:
         raise BadRequestException(str(e))
 
 
 @csrf_exempt
-@NewErrorWrappers.to_json
+@ErrorWrappers.to_json
 def get_sample_cards(request: HttpRequest) -> HttpResponse:
     """
     Return a selection of cards you can query this database for.
@@ -363,17 +360,20 @@ def get_sample_cards(request: HttpRequest) -> HttpResponse:
     ]
 
     # retrieve the full ORM objects for the selected identifiers and group by type
-    cards = [card.to_dict() for card in Card.objects.filter(pk__in=selected_identifiers).order_by("card_type")]
+    cards = [card.serialise() for card in Card.objects.filter(pk__in=selected_identifiers).order_by("card_type")]
     cards_by_type = {
         card_type: list(grouped_cards_iterable)
-        for card_type, grouped_cards_iterable in itertools.groupby(cards, key=lambda x: x["card_type"])
+        for card_type, grouped_cards_iterable in itertools.groupby(cards, key=lambda x: x.cardType)
     }
 
-    return JsonResponse({"cards": {CardTypes.CARD: [], CardTypes.CARDBACK: [], CardTypes.TOKEN: []} | cards_by_type})
+    sample_cards_response = SampleCardsResponse(
+        cards=SampleCards(**({CardTypes.CARD: [], CardTypes.CARDBACK: [], CardTypes.TOKEN: []} | cards_by_type))
+    )
+    return JsonResponse(sample_cards_response.model_dump())
 
 
 @csrf_exempt
-@NewErrorWrappers.to_json
+@ErrorWrappers.to_json
 def get_contributions(request: HttpRequest) -> HttpResponse:
     """
     Return a summary of contributions to the database.
@@ -385,31 +385,33 @@ def get_contributions(request: HttpRequest) -> HttpResponse:
 
     sources, card_count_by_type, total_database_size = summarise_contributions()
     return JsonResponse(
-        {"sources": sources, "card_count_by_type": card_count_by_type, "total_database_size": total_database_size}
+        ContributionsResponse(
+            sources=sources, cardCountByType=card_count_by_type, totalDatabaseSize=total_database_size
+        ).model_dump()
     )
 
 
 @csrf_exempt
-@NewErrorWrappers.to_json
+@ErrorWrappers.to_json
 def get_new_cards_first_pages(request: HttpRequest) -> HttpResponse:
     if request.method != "GET":
         raise BadRequestException("Expected GET request.")
 
-    response_body: dict[str, dict[str, Any]] = {}
+    results: dict[str, NewCardsFirstPage] = {}
     for source in Source.objects.all():
         paginator = get_new_cards_paginator(source=source)
         if paginator.count > 0:
-            response_body[source.key] = {
-                "source": source.to_dict(),
-                "hits": paginator.count,
-                "pages": paginator.num_pages,
-                "cards": [card.to_dict() for card in paginator.get_page(1).object_list],
-            }
-    return JsonResponse({"results": response_body})
+            results[source.key] = NewCardsFirstPage(
+                source=source.serialise(),
+                hits=paginator.count,
+                pages=paginator.num_pages,
+                cards=[card.serialise() for card in paginator.get_page(1).object_list],
+            )
+    return JsonResponse(NewCardsFirstPagesResponse(results=results).model_dump())
 
 
 @csrf_exempt
-@NewErrorWrappers.to_json
+@ErrorWrappers.to_json
 def get_new_cards_page(request: HttpRequest) -> HttpResponse:
     if request.method != "GET":
         raise BadRequestException("Expected GET request.")
@@ -433,13 +435,15 @@ def get_new_cards_page(request: HttpRequest) -> HttpResponse:
                 f"Invalid page {page_int} specified - must be between 1 and {paginator.num_pages} "
                 f"for source {source_key}."
             )
-        return JsonResponse({"cards": [card.to_dict() for card in paginator.page(page).object_list]})
+        return JsonResponse(
+            NewCardsPageResponse(cards=[card.serialise() for card in paginator.page(page).object_list]).model_dump()
+        )
     except ValueError:
         raise BadRequestException("Invalid page specified.")
 
 
 @csrf_exempt
-@NewErrorWrappers.to_json
+@ErrorWrappers.to_json
 def get_info(request: HttpRequest) -> HttpResponse:
     """
     Return a stack of metadata about the server for the frontend to display.
@@ -450,31 +454,31 @@ def get_info(request: HttpRequest) -> HttpResponse:
         raise BadRequestException("Expected GET request.")
 
     campaign, tiers = get_patreon_campaign_details()
-    members = get_patrons(campaign["id"], tiers) if campaign is not None and tiers is not None else None
+    members = get_patrons(campaign.id, tiers) if campaign is not None and tiers is not None else None
 
     return JsonResponse(
-        {
-            "info": {
-                "name": settings.SITE_NAME,
-                "description": settings.DESCRIPTION,
-                "email": settings.TARGET_EMAIL,
-                "reddit": settings.REDDIT,
-                "discord": settings.DISCORD,
-                "patreon": {
-                    "url": settings.PATREON_URL,
-                    "members": members,
-                    "tiers": tiers,
-                    "campaign": campaign,
-                },
-            }
-        }
+        InfoResponse(
+            info=Info(
+                name=settings.SITE_NAME,
+                description=settings.DESCRIPTION,
+                email=settings.TARGET_EMAIL,
+                reddit=settings.REDDIT,
+                discord=settings.DISCORD,
+                patreon=Patreon(
+                    url=settings.PATREON_URL,
+                    members=members or [],
+                    tiers=tiers,
+                    campaign=campaign,
+                ),
+            )
+        ).model_dump()
     )
 
 
 @csrf_exempt
-@NewErrorWrappers.to_json
+@ErrorWrappers.to_json
 def get_search_engine_health(request: HttpRequest) -> HttpResponse:
     if request.method != "GET":
         raise BadRequestException("Expected GET request.")
 
-    return JsonResponse({"online": ping_elasticsearch()})
+    return JsonResponse(SearchEngineHealthResponse(online=ping_elasticsearch()).model_dump())

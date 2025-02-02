@@ -11,7 +11,7 @@ import {
   DropResult,
 } from "@hello-pangea/dnd"; // TODO: look into using `react-dnd` instead as it's a significantly smaller package
 import Link from "next/link";
-import React, { ReactNode, useCallback } from "react";
+import React, { ReactNode, useCallback, useMemo } from "react";
 import Button from "react-bootstrap/Button";
 import Container from "react-bootstrap/Container";
 import Table from "react-bootstrap/Table";
@@ -25,6 +25,7 @@ import {
   SourceSettings as SourceSettingsType,
   useAppSelector,
 } from "@/common/types";
+import { getSourceRowsFromSourceSettings } from "@/common/utils";
 import { Spinner } from "@/components/Spinner";
 import { selectSourceDocuments } from "@/store/slices/sourceDocumentsSlice";
 
@@ -46,6 +47,11 @@ export function SourceSettings({
   setSourceSettings,
   enableReorderingSources = true,
 }: SourceSettingsProps) {
+  const sourceRows = useMemo(
+    () => getSourceRowsFromSourceSettings(sourceSettings),
+    [sourceSettings]
+  );
+
   const maybeSourceDocuments = useAppSelector(selectSourceDocuments);
   const anySourcesEnabled = (sourceSettings.sources ?? []).some((x) => x[1]);
 
@@ -87,17 +93,18 @@ export function SourceSettings({
    * Toggle the enabled status of all sources in `localSourceOrder`. If any is enabled, they're all disabled.
    */
   const toggleAllSourceEnabledStatuses = useCallback(() => {
-    if (sourceSettings.sources != null) {
-      const updatedSources: Array<SourceRow> = sourceSettings.sources.map(
-        (x) => [x[0], !anySourcesEnabled]
-      );
+    if (sourceRows.length > 0) {
+      const updatedSources: Array<SourceRow> = sourceRows.map((x) => [
+        x[0],
+        !anySourcesEnabled,
+      ]);
       setSourceSettings({ sources: updatedSources });
     }
-  }, [sourceSettings.sources, setSourceSettings, anySourcesEnabled]);
+  }, [sourceRows, setSourceSettings, anySourcesEnabled]);
 
   let sourceTable = <Spinner />;
   if (maybeSourceDocuments != null) {
-    const sourceRows: Array<ReactNode> = (sourceSettings.sources ?? []).map(
+    const draggableSourceRows: Array<ReactNode> = sourceRows.map(
       (sourceRow, index) => (
         <Draggable
           key={sourceRow[0]}
@@ -135,12 +142,10 @@ export function SourceSettings({
                 key={`${sourceRow[0]}-name-column`}
                 style={{ verticalAlign: "middle", width: 50 + "%" }}
               >
-                {(maybeSourceDocuments[sourceRow[0]].external_link ?? "")
+                {(maybeSourceDocuments[sourceRow[0]].externalLink ?? "")
                   .length > 0 ? (
                   <Link
-                    href={
-                      maybeSourceDocuments[sourceRow[0]].external_link ?? ""
-                    }
+                    href={maybeSourceDocuments[sourceRow[0]].externalLink ?? ""}
                     target="_blank"
                   >
                     {maybeSourceDocuments[sourceRow[0]].name}
@@ -210,7 +215,8 @@ export function SourceSettings({
           {(provided, snapshot) => (
             <div
               style={{
-                height: sourceRows.length * 59 + ToggleButtonHeight + "px",
+                height:
+                  draggableSourceRows.length * 59 + ToggleButtonHeight + "px",
               }}
             >
               {/* TODO: migrate this to AutofillTable at some point? too big a job for right now. */}
@@ -224,7 +230,7 @@ export function SourceSettings({
                   </tr>
                 </thead>
                 <tbody>
-                  {sourceRows}
+                  {draggableSourceRows}
                   {provided.placeholder}
                 </tbody>
               </Table>

@@ -20,7 +20,7 @@ describe("selectQueriesWithoutSearchResults tests", () => {
             front: {
               query: {
                 query: "query 1",
-                card_type: "CARD" as CardType,
+                cardType: "CARD" as CardType,
               },
               selectedImage: undefined,
               selected: false,
@@ -39,7 +39,7 @@ describe("selectQueriesWithoutSearchResults tests", () => {
     };
     expect(
       selectQueriesWithoutSearchResults(setupStore(state).getState())
-    ).toStrictEqual([{ query: "query 1", card_type: "CARD" }]);
+    ).toStrictEqual([{ query: "query 1", cardType: "CARD" }]);
   });
 
   test("two queries", () => {
@@ -50,7 +50,7 @@ describe("selectQueriesWithoutSearchResults tests", () => {
             front: {
               query: {
                 query: "query 1",
-                card_type: "CARD" as CardType,
+                cardType: "CARD" as CardType,
               },
               selectedImage: undefined,
               selected: false,
@@ -61,7 +61,7 @@ describe("selectQueriesWithoutSearchResults tests", () => {
             front: {
               query: {
                 query: "query 2",
-                card_type: "CARD" as CardType,
+                cardType: "CARD" as CardType,
               },
               selectedImage: undefined,
               selected: false,
@@ -81,8 +81,8 @@ describe("selectQueriesWithoutSearchResults tests", () => {
     expect(
       selectQueriesWithoutSearchResults(setupStore(state).getState())
     ).toStrictEqual([
-      { query: "query 1", card_type: "CARD" },
-      { query: "query 2", card_type: "CARD" },
+      { query: "query 1", cardType: "CARD" },
+      { query: "query 2", cardType: "CARD" },
     ]);
   });
 
@@ -94,7 +94,7 @@ describe("selectQueriesWithoutSearchResults tests", () => {
             front: {
               query: {
                 query: "query 1",
-                card_type: "CARD" as CardType,
+                cardType: "CARD" as CardType,
               },
               selectedImage: undefined,
               selected: false,
@@ -105,7 +105,7 @@ describe("selectQueriesWithoutSearchResults tests", () => {
             front: {
               query: {
                 query: "query 2",
-                card_type: "TOKEN" as CardType,
+                cardType: "TOKEN" as CardType,
               },
               selectedImage: undefined,
               selected: false,
@@ -113,7 +113,7 @@ describe("selectQueriesWithoutSearchResults tests", () => {
             back: {
               query: {
                 query: "query 3",
-                card_type: "CARDBACK" as CardType,
+                cardType: "CARDBACK" as CardType,
               },
               selectedImage: undefined,
               selected: false,
@@ -132,9 +132,9 @@ describe("selectQueriesWithoutSearchResults tests", () => {
     expect(
       selectQueriesWithoutSearchResults(setupStore(state).getState())
     ).toStrictEqual([
-      { query: "query 1", card_type: "CARD" },
-      { query: "query 2", card_type: "TOKEN" },
-      { query: "query 3", card_type: "CARDBACK" },
+      { query: "query 1", cardType: "CARD" },
+      { query: "query 2", cardType: "TOKEN" },
+      { query: "query 3", cardType: "CARDBACK" },
     ]);
   });
 
@@ -146,7 +146,7 @@ describe("selectQueriesWithoutSearchResults tests", () => {
             front: {
               query: {
                 query: "query 1",
-                card_type: "CARD" as CardType,
+                cardType: "CARD" as CardType,
               },
               selectedImage: undefined,
               selected: false,
@@ -157,7 +157,7 @@ describe("selectQueriesWithoutSearchResults tests", () => {
             front: {
               query: {
                 query: "query 2",
-                card_type: "CARD" as CardType,
+                cardType: "CARD" as CardType,
               },
               selectedImage: undefined,
               selected: false,
@@ -178,7 +178,7 @@ describe("selectQueriesWithoutSearchResults tests", () => {
     };
     expect(
       selectQueriesWithoutSearchResults(setupStore(state).getState())
-    ).toStrictEqual([{ query: "query 2", card_type: "CARD" }]);
+    ).toStrictEqual([{ query: "query 2", cardType: "CARD" }]);
   });
 
   test("duplicated query", () => {
@@ -189,7 +189,7 @@ describe("selectQueriesWithoutSearchResults tests", () => {
             front: {
               query: {
                 query: "query 1",
-                card_type: "CARD" as CardType,
+                cardType: "CARD" as CardType,
               },
               selectedImage: undefined,
               selected: false,
@@ -200,7 +200,7 @@ describe("selectQueriesWithoutSearchResults tests", () => {
             front: {
               query: {
                 query: "query 1",
-                card_type: "CARD" as CardType,
+                cardType: "CARD" as CardType,
               },
               selectedImage: undefined,
               selected: false,
@@ -219,7 +219,7 @@ describe("selectQueriesWithoutSearchResults tests", () => {
     };
     expect(
       selectQueriesWithoutSearchResults(setupStore(state).getState())
-    ).toStrictEqual([{ query: "query 1", card_type: "CARD" }]);
+    ).toStrictEqual([{ query: "query 1", cardType: "CARD" }]);
   });
 
   test("duplicated query but across multiple types", () => {
@@ -230,7 +230,7 @@ describe("selectQueriesWithoutSearchResults tests", () => {
             front: {
               query: {
                 query: "query 1",
-                card_type: "CARD" as CardType,
+                cardType: "CARD" as CardType,
               },
               selectedImage: undefined,
               selected: false,
@@ -241,7 +241,7 @@ describe("selectQueriesWithoutSearchResults tests", () => {
             front: {
               query: {
                 query: "query 1",
-                card_type: "TOKEN" as CardType,
+                cardType: "TOKEN" as CardType,
               },
               selectedImage: undefined,
               selected: false,
@@ -261,8 +261,8 @@ describe("selectQueriesWithoutSearchResults tests", () => {
     expect(
       selectQueriesWithoutSearchResults(setupStore(state).getState())
     ).toStrictEqual([
-      { query: "query 1", card_type: "CARD" },
-      { query: "query 1", card_type: "TOKEN" },
+      { query: "query 1", cardType: "CARD" },
+      { query: "query 1", cardType: "TOKEN" },
     ]);
   });
 });

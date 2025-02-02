@@ -90,7 +90,7 @@ test("the html structure of a Card with no search results", () => {
       imageIdentifier={undefined}
       cardHeaderTitle="Slot 1"
       noResultsFound={true}
-      searchQuery={{ query: "My Invalid Query", card_type: "CARD" }}
+      searchQuery={{ query: "My Invalid Query", cardType: "CARD" }}
     />,
     {
       preloadedState: {

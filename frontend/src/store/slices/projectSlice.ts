@@ -59,7 +59,7 @@ export const projectSlice = createAppSlice({
           state.members[slot][action.payload.face] = {
             query: {
               query: null,
-              card_type: Card,
+              cardType: Card,
             },
             selectedImage: action.payload.selectedImage,
             selected: false,
@@ -81,7 +81,7 @@ export const projectSlice = createAppSlice({
       for (const [face, slot] of action.payload.slots) {
         if (state.members[slot][face] == null) {
           state.members[slot][face] = {
-            query: { query: null, card_type: Card },
+            query: { query: null, cardType: Card },
             selectedImage: action.payload.selectedImage,
             selected: false,
           };
@@ -119,7 +119,7 @@ export const projectSlice = createAppSlice({
       const projectCardback = state.cardback;
       for (const [face, slot] of action.payload.slots) {
         state.members[slot][face] = {
-          query: { query: null, card_type: face === Back ? Cardback : Card },
+          query: { query: null, cardType: face === Back ? Cardback : Card },
           selectedImage:
             face === Back && projectCardback != null
               ? projectCardback
@@ -220,7 +220,7 @@ export const projectSlice = createAppSlice({
       for (const [face, slot] of action.payload.slots) {
         if (state.members[slot][face] == null) {
           state.members[slot][face] = {
-            query: { query: null, card_type: Card },
+            query: { query: null, cardType: Card },
             selectedImage: undefined,
             selected: action.payload.selectedStatus,
           };
@@ -246,8 +246,8 @@ export const projectSlice = createAppSlice({
             projectMember[action.payload.face] != null &&
             projectMember[action.payload.face]?.query?.query ===
               selectedMember.query?.query &&
-            projectMember[action.payload.face]?.query?.card_type ===
-              selectedMember.query?.card_type
+            projectMember[action.payload.face]?.query?.cardType ===
+              selectedMember.query?.cardType
           ) {
             projectMember[action.payload.face]!.selected =
               selectedMember.selected;
@@ -352,10 +352,10 @@ export const selectUniqueCardIdentifiers = createSelector(
             return searchQuery?.query != null &&
               (
                 (searchResults[searchQuery.query] ?? {})[
-                  searchQuery.card_type
+                  searchQuery.cardType
                 ] ?? []
               ).length > 0
-              ? (searchResults[searchQuery.query] ?? {})[searchQuery.card_type]
+              ? (searchResults[searchQuery.query] ?? {})[searchQuery.cardType]
               : [];
           })
         )
@@ -410,7 +410,7 @@ export const selectQueriesWithoutSearchResults = createSelector(
         const stringifiedSearchQuery = JSON.stringify(searchQuery ?? "");
         if (
           searchQuery?.query != null &&
-          (searchResults[searchQuery.query] ?? {})[searchQuery.card_type] ==
+          (searchResults[searchQuery.query] ?? {})[searchQuery.cardType] ==
             null &&
           !set.has(stringifiedSearchQuery)
         ) {
@@ -435,7 +435,7 @@ export const selectAllSelectedProjectMembersHaveTheSameQuery = createSelector(
         (firstQuery?.query == null && projectMember?.query?.query == null) ||
         (firstQuery != null &&
           projectMember?.query?.query == firstQuery.query &&
-          projectMember?.query?.card_type == firstQuery.card_type)
+          projectMember?.query?.cardType == firstQuery.cardType)
     )
       ? firstQuery
       : undefined

@@ -186,7 +186,7 @@ startAppListening({
             const searchQuery = currentState.project.members[slot][face]?.query;
             return searchQuery?.query != null
               ? currentState.searchResults.searchResults[searchQuery.query][
-                  searchQuery.card_type
+                  searchQuery.cardType
                 ] != null
               : true;
           })

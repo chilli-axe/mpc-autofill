@@ -1,0 +1,14 @@
+{
+  "title": "Tag",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "name": { "type": "string" },
+    "aliases": { "type": "array", "items": { "type": "string" } },
+    "isEnabledByDefault": { "type": "boolean" },
+    "parent": { "type": ["string", "null"] },
+    "children": { "type": "array", "items": { "$ref": "#" } }
+  },
+  "required": ["name", "parent", "children"],
+  "additionalProperties": false
+}

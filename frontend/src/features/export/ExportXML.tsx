@@ -102,7 +102,7 @@ function createCardElement(
   const queryElement = doc.createElement("query");
   queryElement.appendChild(
     doc.createTextNode(
-      ReversedCardTypePrefixes[maybeCardDocument.card_type] +
+      ReversedCardTypePrefixes[maybeCardDocument.cardType] +
         maybeCardDocument.searchq
     )
   );

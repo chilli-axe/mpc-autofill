@@ -260,6 +260,7 @@ exports[`the html structure of a CardDetailedViewModal 1`] = `
                 class="col-lg-2 col-md-3"
               >
                 <input
+                  alt="Quantity of card to add to project"
                   class="form-control"
                   max="611"
                   min="1"

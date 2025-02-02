@@ -1,0 +1,13 @@
+{
+  "title": "Supporter",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "name": { "type": "string" },
+    "tier": { "type": "string" },
+    "date": { "type": "string" },
+    "usd": { "type": "number" }
+  },
+  "required": ["name", "tier", "date", "usd"],
+  "additionalProperties": false
+}

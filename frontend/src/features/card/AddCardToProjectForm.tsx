@@ -36,7 +36,7 @@ export function AddCardToProjectForm({
   const handleAddToProject = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault(); // to prevent reloading the page
 
-    const prefix = ReversedCardTypePrefixes[cardDocument.card_type];
+    const prefix = ReversedCardTypePrefixes[cardDocument.cardType];
     const lineString = `${quantity} ${prefix}${cardDocument.searchq}${SelectedImageSeparator}${cardDocument.identifier}`;
     const line = processLine(lineString, dfcPairsQuery.data ?? {}, fuzzySearch);
 
@@ -72,6 +72,7 @@ export function AddCardToProjectForm({
             max={maxQuantity}
             value={atMaxCapacity ? 0 : quantity}
             disabled={atMaxCapacity}
+            alt="Quantity of card to add to project"
             onChange={(event) => {
               if (event.target.value) {
                 setQuantity(parseInt(event.target.value));

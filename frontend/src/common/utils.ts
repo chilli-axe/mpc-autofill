@@ -1,5 +1,5 @@
 import { Brackets, ReversedCardTypePrefixes } from "@/common/constants";
-import { SearchQuery } from "@/common/schema_types";
+import { SearchQuery, SourceRow, SourceSettings } from "@/common/types";
 
 export function wrapIndex(index: number, count: number): number {
   return ((index % count) + count) % count;
@@ -35,7 +35,16 @@ export function toTitleCase(word: string): string {
 }
 
 export function stringifySearchQuery(searchQuery: SearchQuery): string {
-  return searchQuery.card_type != null
-    ? `${ReversedCardTypePrefixes[searchQuery.card_type]}${searchQuery.query}`
+  return searchQuery.cardType != null
+    ? `${ReversedCardTypePrefixes[searchQuery.cardType]}${searchQuery.query}`
     : "";
+}
+
+export function getSourceRowsFromSourceSettings(
+  sourceSettings: SourceSettings
+): Array<SourceRow> {
+  return (sourceSettings.sources ?? []).map((item) => [
+    Number(item[0]),
+    item[1] === true,
+  ]);
 }

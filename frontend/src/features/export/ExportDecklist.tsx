@@ -39,7 +39,7 @@ function extractProjectMemberNames(
         cardDocuments,
         projectMember.selectedImage
       ) &&
-      cardDocuments[projectMember.selectedImage].card_type === Card
+      cardDocuments[projectMember.selectedImage].cardType === Card
       ? stripTextInParentheses(cardDocuments[projectMember.selectedImage].name)
       : null;
   }

@@ -125,7 +125,7 @@ export const selectSearchResultsForQuery = (
 ) =>
   searchQuery?.query != null
     ? (state.searchResults.searchResults[searchQuery.query] ?? {})[
-        searchQuery.card_type
+        searchQuery.cardType
       ]
     : undefined;
 

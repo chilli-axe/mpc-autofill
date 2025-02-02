@@ -53,7 +53,7 @@ test("the html structure of a CardSlot with a single search result, no image sel
         members: [
           {
             front: {
-              query: { query: "my search query", card_type: Card },
+              query: { query: "my search query", cardType: Card },
               selectedImage: undefined,
               selected: false,
             },
@@ -82,7 +82,7 @@ test("the html structure of a CardSlot with a single search result, slot selecte
         members: [
           {
             front: {
-              query: { query: "my search query", card_type: Card },
+              query: { query: "my search query", cardType: Card },
               selectedImage: undefined,
               selected: false,
             },
@@ -334,7 +334,7 @@ test("CardSlot automatically selects the first search result", async () => {
         members: [
           {
             front: {
-              query: { query: "my search query", card_type: Card },
+              query: { query: "my search query", cardType: Card },
               selectedImage: undefined,
               selected: false,
             },
@@ -419,7 +419,7 @@ test("double clicking the select button selects all slots for the same query", a
         members: [
           {
             front: {
-              query: { query: "my search query", card_type: Card },
+              query: { query: "my search query", cardType: Card },
               selectedImage: undefined,
               selected: false,
             },
@@ -427,7 +427,7 @@ test("double clicking the select button selects all slots for the same query", a
           },
           {
             front: {
-              query: { query: "my search query", card_type: Card },
+              query: { query: "my search query", cardType: Card },
               selectedImage: undefined,
               selected: false,
             },
@@ -462,7 +462,7 @@ test("changing a card slot's query", async () => {
         members: [
           {
             front: {
-              query: { query: "query 1", card_type: Card },
+              query: { query: "query 1", cardType: Card },
               selectedImage: undefined,
               selected: false,
             },
@@ -496,7 +496,7 @@ test("clearing a card slot's query", async () => {
         members: [
           {
             front: {
-              query: { query: "query 1", card_type: Card },
+              query: { query: "query 1", cardType: Card },
               selectedImage: undefined,
               selected: false,
             },
@@ -530,7 +530,7 @@ test("changing a card slot's query doesn't affect a different slot", async () =>
         members: [
           {
             front: {
-              query: { query: "query 1", card_type: Card },
+              query: { query: "query 1", cardType: Card },
               selectedImage: undefined,
               selected: false,
             },
@@ -538,7 +538,7 @@ test("changing a card slot's query doesn't affect a different slot", async () =>
           },
           {
             front: {
-              query: { query: "query 2", card_type: Card },
+              query: { query: "query 2", cardType: Card },
               selectedImage: undefined,
               selected: false,
             },

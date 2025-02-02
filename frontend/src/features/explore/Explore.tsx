@@ -13,7 +13,7 @@ import {
   RibbonHeight,
   SortByOptions,
 } from "@/common/constants";
-import { ExploreSearch, SortBy } from "@/common/schema_types";
+import { ExploreSearchRequest, SortBy } from "@/common/schema_types";
 import { StyledDropdownTreeSelect } from "@/common/StyledDropdownTreeSelect";
 import {
   CardType,
@@ -54,7 +54,7 @@ export function Explore() {
   const [pageStart, setPageStart] = useState<number>(0);
 
   // input state
-  const [sortBy, setSortBy] = useState<SortBy>("date_descending");
+  const [sortBy, setSortBy] = useState<SortBy>(SortBy.DateDescending);
   const [query, setQuery] = useState<string>("");
   const [cardTypes, setCardTypes] = useState<Array<CardType>>([]);
   const [searchTypeSettings, setSearchTypeSettings] =
@@ -102,7 +102,7 @@ export function Explore() {
       ? getSampleCardsQuery.data[Card][0].name
       : "";
 
-  const exploreSearch: ExploreSearch = {
+  const exploreSearchRequest: ExploreSearchRequest = {
     sortBy,
     searchSettings: {
       searchTypeSettings: searchTypeSettings,
@@ -118,14 +118,11 @@ export function Explore() {
   function equalityFn<T>(left: T, right: T): boolean {
     return JSON.stringify(left) === JSON.stringify(right);
   }
-  const [debouncedExploreSearch, debouncedExploreSearchState] = useDebounce(
-    exploreSearch,
-    ExploreDebounceMS,
-    { equalityFn }
-  );
+  const [debouncedExploreSearchRequest, debouncedExploreSearchRequestState] =
+    useDebounce(exploreSearchRequest, ExploreDebounceMS, { equalityFn });
 
   const postExploreSearchQuery = usePostExploreSearchQuery(
-    debouncedExploreSearch
+    debouncedExploreSearchRequest
   );
 
   // pagination stuff
@@ -137,7 +134,7 @@ export function Explore() {
     multiplePagesExist && pageStart + ExplorePageSize < resultCount;
 
   const displaySpinner =
-    debouncedExploreSearchState.isPending() ||
+    debouncedExploreSearchRequestState.isPending() ||
     postExploreSearchQuery.isFetching;
   const noResults =
     postExploreSearchQuery.data?.cards?.length === 0 && !displaySpinner;

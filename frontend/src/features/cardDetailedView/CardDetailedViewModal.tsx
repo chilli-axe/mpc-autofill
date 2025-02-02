@@ -88,20 +88,17 @@ export function CardDetailedViewModal({
                 data={[
                   [
                     "Source Name",
-                    cardDocument.source_external_link != null &&
-                    cardDocument.source_external_link.length > 0 ? (
-                      <a
-                        href={cardDocument.source_external_link}
-                        target="_blank"
-                      >
-                        {cardDocument.source_name}
+                    cardDocument.sourceExternalLink != null &&
+                    cardDocument.sourceExternalLink.length > 0 ? (
+                      <a href={cardDocument.sourceExternalLink} target="_blank">
+                        {cardDocument.sourceName}
                       </a>
                     ) : (
-                      cardDocument.source_name
+                      cardDocument.sourceName
                     ),
                   ],
-                  ["Source Type", cardDocument.source_type],
-                  ["Class", toTitleCase(cardDocument.card_type)],
+                  ["Source Type", cardDocument.sourceType],
+                  ["Class", toTitleCase(cardDocument.cardType)],
                   [
                     "Identifier",
                     <ClickToCopy

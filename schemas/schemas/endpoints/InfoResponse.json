@@ -1,0 +1,53 @@
+{
+  "title": "Info Response",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "info": {
+      "type": "object",
+      "properties": {
+        "name": { "type": ["string", "null"] },
+        "description": { "type": ["string", "null"] },
+        "email": { "type": ["string", "null"] },
+        "reddit": { "type": ["string", "null"] },
+        "discord": { "type": ["string", "null"] },
+        "patreon": {
+          "type": ["object", "null"],
+          "properties": {
+            "url": { "type": ["string", "null"] },
+            "members": {
+              "type": "array",
+              "items": {
+                "$ref": "../Supporter.json"
+              }
+            },
+            "tiers": {
+              "type": ["object", "null"],
+              "patternProperties": {
+                ".*": {
+                  "$ref": "../SupporterTier.json"
+                }
+              }
+            },
+            "campaign": {
+              "$ref": "../Campaign.json"
+            }
+          },
+          "required": ["url", "members", "tiers", "campaign"],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "name",
+        "description",
+        "email",
+        "reddit",
+        "discord",
+        "patreon"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": ["info"],
+  "additionalProperties": false
+}

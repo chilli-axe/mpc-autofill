@@ -13,7 +13,7 @@ fuzzy_analyser = analyzer("fuzzy_analyser", tokenizer="standard", filter=["apost
 
 @registry.register_document
 class CardSearch(Document):
-    source = fields.TextField(attr="get_source_key", analyzer="keyword")
+    source_pk = fields.TextField(attr="get_source_pk", analyzer="keyword")
     searchq_fuzzy = fields.TextField(attr="searchq", analyzer=fuzzy_analyser)
     searchq_precise = fields.TextField(attr="searchq", analyzer=precise_analyser)
     searchq_keyword = fields.KeywordField(attr="searchq")

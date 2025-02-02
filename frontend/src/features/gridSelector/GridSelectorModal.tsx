@@ -172,7 +172,7 @@ export function GridSelectorModal({
           </>
         </AutofillCollapse>
         <CardResultSet
-          headerText="Select Version"
+          headerText="Browse Versions"
           imageIdentifiers={imageIdentifiers}
           handleClick={selectImage}
           selectedImage={selectedImage}

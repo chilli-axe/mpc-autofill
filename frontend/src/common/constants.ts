@@ -1,13 +1,12 @@
-import { SortBy } from "@/common/schema_types";
-import { Cardstock, CardType, Faces } from "@/common/types";
-
+import { CardType as CardTypeSchema } from "@/common/schema_types";
+import { Cardstock, CardType, Faces, SortBy } from "@/common/types";
 export const ProjectName = "MPC Autofill";
 export const MakePlayingCards = "MakePlayingCards.com";
 export const MakePlayingCardsURL = "https://www.makeplayingcards.com";
 
-export const Card: CardType = "CARD";
-export const Cardback: CardType = "CARDBACK";
-export const Token: CardType = "TOKEN";
+export const Card: CardType = CardTypeSchema.Card;
+export const Cardback: CardType = CardTypeSchema.Cardback;
+export const Token: CardType = CardTypeSchema.Token;
 
 export const SelectedImageSeparator = "@";
 export const CardTypeSeparator = ":";
@@ -93,8 +92,8 @@ export const ExploreDebounceMS = 700;
 export const ExplorePageSize = 60;
 
 export const SortByOptions: { [option in SortBy]: string } = {
-  date_descending: "Date (Newest-Oldest)",
-  date_ascending: "Date (Oldest-Newest)",
-  name_ascending: "Name (A-Z)",
-  name_descending: "Name (Z-A)",
+  dateDescending: "Date (Newest-Oldest)",
+  dateAscending: "Date (Oldest-Newest)",
+  nameAscending: "Name (A-Z)",
+  nameDescending: "Name (Z-A)",
 };

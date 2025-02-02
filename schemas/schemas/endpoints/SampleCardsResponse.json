@@ -1,0 +1,26 @@
+{
+  "title": "Sample Cards Response",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "cards": {
+      "type": "object",
+      "properties": {
+        "CARD": {
+          "type": "array",
+          "items": { "$ref": "../Card.json" }
+        },
+        "CARDBACK": {
+          "type": "array",
+          "items": { "$ref": "../Card.json" }
+        },
+        "TOKEN": {
+          "type": "array",
+          "items": { "$ref": "../Card.json" }
+        }
+      },
+      "required": ["CARD", "CARDBACK", "TOKEN"]
+    }
+  },
+  "required": ["cards"]
+}

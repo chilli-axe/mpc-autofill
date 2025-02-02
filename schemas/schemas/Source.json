@@ -1,0 +1,28 @@
+{
+  "title": "Source",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "pk": {
+      "type": "integer",
+      "description": "Primary key"
+    },
+    "key": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "sourceType": {
+      "$ref": "./SourceType.json"
+    },
+    "externalLink": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    }
+  },
+  "required": ["pk", "key", "name", "sourceType", "description"],
+  "additionalProperties": false
+}
