@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Button from "react-bootstrap/Button";
 import Col from "react-bootstrap/Col";
 import Form from "react-bootstrap/Form";
@@ -139,6 +139,17 @@ export function Explore() {
   const noResults =
     postExploreSearchQuery.data?.cards?.length === 0 && !displaySpinner;
 
+  // form stuff
+  const sortByOptions = useMemo(
+    () =>
+      Object.entries(SortByOptions).map(([value, label]) => ({
+        value,
+        label,
+        checked: value === sortBy,
+      })),
+    [sortBy]
+  );
+
   return backendConfigured ? (
     <>
       <Row className="g-0">
@@ -152,11 +163,7 @@ export function Explore() {
         >
           <h5>Sort By</h5>
           <StyledDropdownTreeSelect
-            data={Object.entries(SortByOptions).map(([value, label]) => ({
-              value,
-              label,
-              checked: value === sortBy,
-            }))}
+            data={sortByOptions}
             onChange={(currentNode, selectedNodes) =>
               setSortByAndResetPageStart(currentNode.value as SortBy)
             }

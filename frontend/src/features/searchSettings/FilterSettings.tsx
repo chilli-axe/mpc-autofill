@@ -4,7 +4,7 @@
  * This component forms part of the Search Settings modal.
  */
 
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import Col from "react-bootstrap/Col";
 import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
@@ -39,11 +39,15 @@ export function FilterSettings({
   const getLanguagesQuery = useGetLanguagesQuery();
   const getTagsQuery = useGetTagsQuery();
 
-  const languageOptions = (getLanguagesQuery.data ?? []).map((row) => ({
-    label: row.name,
-    value: row.code,
-    checked: filterSettings.languages.includes(row.code),
-  }));
+  const languageOptions = useMemo(
+    () =>
+      (getLanguagesQuery.data ?? []).map((row) => ({
+        label: row.name,
+        value: row.code,
+        checked: filterSettings.languages.includes(row.code),
+      })),
+    [getLanguagesQuery.data, filterSettings.languages]
+  );
 
   const [expandedNodes, setExpandedNodes] = useState<Array<string>>([]);
 
@@ -53,18 +57,25 @@ export function FilterSettings({
    * This appears to be because updating data in Redux forces the component to re-render in
    * its initial state where everything is collapsed.
    */
-  const onNodeToggle = (currentNode: TreeNode): void => {
-    if (currentNode.expanded && !expandedNodes.includes(currentNode.value)) {
-      setExpandedNodes([...expandedNodes, currentNode.value]);
-    } else if (
-      !currentNode.expanded &&
-      expandedNodes.includes(currentNode.value)
-    ) {
-      setExpandedNodes(
-        expandedNodes.filter((node) => node != currentNode.value)
-      );
-    }
-  };
+  const onNodeToggle = useMemo(
+    () =>
+      (currentNode: TreeNode): void => {
+        if (
+          currentNode.expanded &&
+          !expandedNodes.includes(currentNode.value)
+        ) {
+          setExpandedNodes([...expandedNodes, currentNode.value]);
+        } else if (
+          !currentNode.expanded &&
+          expandedNodes.includes(currentNode.value)
+        ) {
+          setExpandedNodes(
+            expandedNodes.filter((node) => node != currentNode.value)
+          );
+        }
+      },
+    [expandedNodes]
+  );
 
   /**
    * Recursively convert a `Tag` into a data structure usable by react-dropdown-tree-select.
@@ -84,8 +95,14 @@ export function FilterSettings({
     },
     [getTagsQuery.data, expandedNodes]
   );
-  const includesTagsTree = getTagsTree(filterSettings.includesTags);
-  const excludesTagsTree = getTagsTree(filterSettings.excludesTags);
+  const includesTagsTree = useMemo(
+    () => getTagsTree(filterSettings.includesTags),
+    [getTagsTree, filterSettings.includesTags]
+  );
+  const excludesTagsTree = useMemo(
+    () => getTagsTree(filterSettings.excludesTags),
+    [getTagsTree, filterSettings.excludesTags]
+  );
 
   return (
     <Container className="px-1">
