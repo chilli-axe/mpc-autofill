@@ -1600,6 +1600,1433 @@
     'status_code': 400,
   })
 # ---
+# name: TestPostEditorSearchResults.test_complex_search
+  dict({
+    'json': dict({
+      'results': dict({
+        'Brainstorm': dict({
+          'CARD': list([
+            '1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5',
+          ]),
+        }),
+        'Goblin': dict({
+          'TOKEN': list([
+            '1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA',
+          ]),
+        }),
+        'Island': dict({
+          'CARD': list([
+            '1IDtqSjJ4Yo45AnNA4SplOiN7ewibifMa',
+            '1HsvTYs1jFGe1c8U1PnNZ9aB8jkAW7KU0',
+          ]),
+        }),
+        'Simple Cube': dict({
+          'CARDBACK': list([
+            '1JtXL6Ca9nQkvhwZZRR9ZuKA9_DzsFf1V',
+          ]),
+        }),
+        'Simple Lotus': dict({
+          'CARDBACK': list([
+            '1oigI6wz0zA--pNMuExKTs40kBNH6VRP_',
+          ]),
+        }),
+      }),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostEditorSearchResults.test_fuzzy_search
+  dict({
+    'json': dict({
+      'results': dict({
+        'past in': dict({
+          'CARD': list([
+            '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
+            '1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
+          ]),
+        }),
+      }),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostEditorSearchResults.test_get_multiple_rows_filtered_includes_one_tag
+  dict({
+    'json': dict({
+      'results': dict({
+        'Pást in Flames': dict({
+          'CARD': list([
+            '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
+            '1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
+          ]),
+        }),
+      }),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostEditorSearchResults.test_get_multiple_rows_filtered_includes_one_tag_and_excludes_another
+  dict({
+    'json': dict({
+      'results': dict({
+        'Pást in Flames': dict({
+          'CARD': list([
+            '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
+          ]),
+        }),
+      }),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostEditorSearchResults.test_get_multiple_rows_filtered_includes_two_tags
+  dict({
+    'json': dict({
+      'results': dict({
+        'Pást in Flames': dict({
+          'CARD': list([
+            '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
+            '1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
+          ]),
+        }),
+      }),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostEditorSearchResults.test_get_multiple_rows_filtered_two_languages
+  dict({
+    'json': dict({
+      'results': dict({
+        'Pást in Flames': dict({
+          'CARD': list([
+            '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
+            '1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
+          ]),
+        }),
+      }),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostEditorSearchResults.test_get_one_row_filtered_excludes_one_tag
+  dict({
+    'json': dict({
+      'results': dict({
+        'Past in Flames': dict({
+          'CARD': list([
+            '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
+          ]),
+        }),
+      }),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostEditorSearchResults.test_get_one_row_filtered_includes_one_tag
+  dict({
+    'json': dict({
+      'results': dict({
+        'Pást in Flames': dict({
+          'CARD': list([
+            '1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
+          ]),
+        }),
+      }),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostEditorSearchResults.test_get_one_row_filtered_one_language
+  dict({
+    'json': dict({
+      'results': dict({
+        'Pást in Flames': dict({
+          'CARD': list([
+            '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
+          ]),
+        }),
+      }),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostEditorSearchResults.test_get_request
+  dict({
+    'json': dict({
+      'errors': None,
+      'message': 'Expected POST request.',
+      'name': 'Bad request',
+    }),
+    'status_code': 400,
+  })
+# ---
+# name: TestPostEditorSearchResults.test_maximum_dpi_yielding_no_search_results
+  dict({
+    'json': dict({
+      'results': dict({
+        'Simple Cube': dict({
+          'CARDBACK': list([
+          ]),
+        }),
+      }),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostEditorSearchResults.test_maximum_size_yielding_fewer_search_results
+  dict({
+    'json': dict({
+      'results': dict({
+        'Pást in Flames': dict({
+          'CARD': list([
+            '1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
+          ]),
+        }),
+      }),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostEditorSearchResults.test_minimum_dpi_yielding_fewer_search_results
+  dict({
+    'json': dict({
+      'results': dict({
+        'Pást in Flames': dict({
+          'CARD': list([
+            '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
+          ]),
+        }),
+      }),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostEditorSearchResults.test_minimum_dpi_yielding_no_search_results
+  dict({
+    'json': dict({
+      'results': dict({
+        'Simple Cube': dict({
+          'CARDBACK': list([
+          ]),
+        }),
+      }),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostEditorSearchResults.test_page_equal_to_max_size
+  dict({
+    'json': dict({
+      'results': dict({
+        'Brainstorm': dict({
+          'CARD': list([
+            '1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5',
+          ]),
+        }),
+        'Island': dict({
+          'CARD': list([
+            '1IDtqSjJ4Yo45AnNA4SplOiN7ewibifMa',
+            '1HsvTYs1jFGe1c8U1PnNZ9aB8jkAW7KU0',
+          ]),
+        }),
+      }),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostEditorSearchResults.test_page_larger_than_max_size
+  dict({
+    'json': dict({
+      'errors': None,
+      'message': 'Invalid query count 3. Must be less than or equal to 2.',
+      'name': 'Bad request',
+    }),
+    'status_code': 400,
+  })
+# ---
+# name: TestPostEditorSearchResults.test_priority_ordering_in_search_results
+  dict({
+    'json': dict({
+      'results': dict({
+        'Island': dict({
+          'CARD': list([
+            '1IDtqSjJ4Yo45AnNA4SplOiN7ewibifMa',
+            '1HsvTYs1jFGe1c8U1PnNZ9aB8jkAW7KU0',
+          ]),
+        }),
+      }),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostEditorSearchResults.test_response_to_malformed_json_body[empty json body]
+  dict({
+    'json': dict({
+      'errors': list([
+        dict({
+          'input': dict({
+          }),
+          'loc': list([
+            'queries',
+          ]),
+          'msg': 'Field required',
+          'type': 'missing',
+          'url': 'https://errors.pydantic.dev/2.10/v/missing',
+        }),
+        dict({
+          'input': dict({
+          }),
+          'loc': list([
+            'searchSettings',
+          ]),
+          'msg': 'Field required',
+          'type': 'missing',
+          'url': 'https://errors.pydantic.dev/2.10/v/missing',
+        }),
+      ]),
+      'message': 'See `errors` field for detailed breakdown.',
+      'name': 'Schema error/s',
+    }),
+    'status_code': 400,
+  })
+# ---
+# name: TestPostEditorSearchResults.test_response_to_malformed_json_body[gave it an array instead of an object]
+  dict({
+    'json': dict({
+      'errors': list([
+        dict({
+          'ctx': dict({
+            'class_name': 'EditorSearchRequest',
+          }),
+          'input': list([
+            'test',
+          ]),
+          'loc': list([
+          ]),
+          'msg': 'Input should be a valid dictionary or instance of EditorSearchRequest',
+          'type': 'model_type',
+          'url': 'https://errors.pydantic.dev/2.10/v/model_type',
+        }),
+      ]),
+      'message': 'See `errors` field for detailed breakdown.',
+      'name': 'Schema error/s',
+    }),
+    'status_code': 400,
+  })
+# ---
+# name: TestPostEditorSearchResults.test_response_to_malformed_json_body[invalid card type field name]
+  dict({
+    'json': dict({
+      'errors': list([
+        dict({
+          'input': dict({
+            'card_type_garbage': 'CARD',
+            'query': 'Brainstorm',
+          }),
+          'loc': list([
+            'queries',
+          ]),
+          'msg': 'Input should be a valid list',
+          'type': 'list_type',
+          'url': 'https://errors.pydantic.dev/2.10/v/list_type',
+        }),
+      ]),
+      'message': 'See `errors` field for detailed breakdown.',
+      'name': 'Schema error/s',
+    }),
+    'status_code': 400,
+  })
+# ---
+# name: TestPostEditorSearchResults.test_response_to_malformed_json_body[invalid card type]
+  dict({
+    'json': dict({
+      'errors': list([
+        dict({
+          'input': dict({
+            'cardType': 'garbage',
+            'query': 'Brainstorm',
+          }),
+          'loc': list([
+            'queries',
+          ]),
+          'msg': 'Input should be a valid list',
+          'type': 'list_type',
+          'url': 'https://errors.pydantic.dev/2.10/v/list_type',
+        }),
+      ]),
+      'message': 'See `errors` field for detailed breakdown.',
+      'name': 'Schema error/s',
+    }),
+    'status_code': 400,
+  })
+# ---
+# name: TestPostEditorSearchResults.test_response_to_malformed_json_body[invalid query field name]
+  dict({
+    'json': dict({
+      'errors': list([
+        dict({
+          'input': dict({
+            'cardType': 'CARD',
+            'query_garbage': 'Brainstorm',
+          }),
+          'loc': list([
+            'queries',
+          ]),
+          'msg': 'Input should be a valid list',
+          'type': 'list_type',
+          'url': 'https://errors.pydantic.dev/2.10/v/list_type',
+        }),
+      ]),
+      'message': 'See `errors` field for detailed breakdown.',
+      'name': 'Schema error/s',
+    }),
+    'status_code': 400,
+  })
+# ---
+# name: TestPostEditorSearchResults.test_response_to_malformed_json_body[queries not specified]
+  dict({
+    'json': dict({
+      'errors': list([
+        dict({
+          'input': dict({
+            'garbage': 'test',
+            'searchSettings': dict({
+              'filterSettings': dict({
+                'excludesTags': list([
+                ]),
+                'includesTags': list([
+                ]),
+                'languages': list([
+                ]),
+                'maximumDPI': 1500,
+                'maximumSize': 30,
+                'minimumDPI': 0,
+              }),
+              'searchTypeSettings': dict({
+                'filterCardbacks': False,
+                'fuzzySearch': False,
+              }),
+              'sourceSettings': dict({
+                'sources': list([
+                  list([
+                    0,
+                    True,
+                  ]),
+                  list([
+                    1,
+                    True,
+                  ]),
+                ]),
+              }),
+            }),
+          }),
+          'loc': list([
+            'queries',
+          ]),
+          'msg': 'Field required',
+          'type': 'missing',
+          'url': 'https://errors.pydantic.dev/2.10/v/missing',
+        }),
+      ]),
+      'message': 'See `errors` field for detailed breakdown.',
+      'name': 'Schema error/s',
+    }),
+    'status_code': 400,
+  })
+# ---
+# name: TestPostEditorSearchResults.test_response_to_malformed_json_body[search settings not specified]
+  dict({
+    'json': dict({
+      'errors': list([
+        dict({
+          'input': dict({
+            'cardType': 'CARD',
+            'query_garbage': 'Brainstorm',
+          }),
+          'loc': list([
+            'queries',
+          ]),
+          'msg': 'Input should be a valid list',
+          'type': 'list_type',
+          'url': 'https://errors.pydantic.dev/2.10/v/list_type',
+        }),
+        dict({
+          'ctx': dict({
+            'class_name': 'SearchSettings',
+          }),
+          'input': 'test2',
+          'loc': list([
+            'searchSettings',
+          ]),
+          'msg': 'Input should be a valid dictionary or instance of SearchSettings',
+          'type': 'model_type',
+          'url': 'https://errors.pydantic.dev/2.10/v/model_type',
+        }),
+      ]),
+      'message': 'See `errors` field for detailed breakdown.',
+      'name': 'Schema error/s',
+    }),
+    'status_code': 400,
+  })
+# ---
+# name: TestPostEditorSearchResults.test_search_for_card_with_versions_from_two_sources
+  dict({
+    'json': dict({
+      'results': dict({
+        'Pást in Flames': dict({
+          'CARD': list([
+            '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
+            '1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
+          ]),
+        }),
+      }),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostEditorSearchResults.test_search_for_card_with_versions_from_two_sources_under_reversed_search_order
+  dict({
+    'json': dict({
+      'results': dict({
+        'Pást in Flames': dict({
+          'CARD': list([
+            '1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
+            '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
+          ]),
+        }),
+      }),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostEditorSearchResults.test_search_for_card_with_versions_from_two_sources_with_all_sources_disabled
+  dict({
+    'json': dict({
+      'results': dict({
+        'Pást in Flames': dict({
+          'CARD': list([
+          ]),
+        }),
+      }),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostEditorSearchResults.test_search_for_card_with_versions_from_two_sources_with_one_source_disabled
+  dict({
+    'json': dict({
+      'results': dict({
+        'Pást in Flames': dict({
+          'CARD': list([
+            '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
+          ]),
+        }),
+      }),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostEditorSearchResults.test_search_for_single_card
+  dict({
+    'json': dict({
+      'results': dict({
+        'Brainstorm': dict({
+          'CARD': list([
+            '1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5',
+          ]),
+        }),
+      }),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostEditorSearchResults.test_search_for_single_cardback
+  dict({
+    'json': dict({
+      'results': dict({
+        'Simple Lotus': dict({
+          'CARDBACK': list([
+            '1oigI6wz0zA--pNMuExKTs40kBNH6VRP_',
+          ]),
+        }),
+      }),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostEditorSearchResults.test_search_for_single_token
+  dict({
+    'json': dict({
+      'results': dict({
+        'Goblin': dict({
+          'TOKEN': list([
+            '1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA',
+          ]),
+        }),
+      }),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostExploreSearchResults.test_explore_search[filter to cardback + token]
+  dict({
+    'json': dict({
+      'cards': list([
+        dict({
+          'cardType': 'TOKEN',
+          'date': '31st December, 2022',
+          'downloadLink': 'https://drive.google.com/uc?id=1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA&export=download',
+          'dpi': 600,
+          'extension': 'png',
+          'identifier': '1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA',
+          'language': 'en',
+          'mediumThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA',
+          'name': 'Goblin',
+          'priority': 2,
+          'searchq': 'goblin',
+          'size': 5000000,
+          'smallThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA',
+          'source': 'example_drive_1',
+          'sourceExternalLink': 'https://drive.google.com/open?id=1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
+          'sourceId': 0,
+          'sourceName': 'Example Drive 1',
+          'sourceType': 'Google Drive',
+          'sourceVerbose': 'Example Drive 1 but verbose',
+          'tags': list([
+          ]),
+        }),
+        dict({
+          'cardType': 'CARDBACK',
+          'date': '31st December, 2022',
+          'downloadLink': 'https://drive.google.com/uc?id=1JtXL6Ca9nQkvhwZZRR9ZuKA9_DzsFf1V&export=download',
+          'dpi': 300,
+          'extension': 'png',
+          'identifier': '1JtXL6Ca9nQkvhwZZRR9ZuKA9_DzsFf1V',
+          'language': 'DE',
+          'mediumThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1JtXL6Ca9nQkvhwZZRR9ZuKA9_DzsFf1V',
+          'name': 'Simple Cube',
+          'priority': 17,
+          'searchq': 'simple cube',
+          'size': 2000000,
+          'smallThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1JtXL6Ca9nQkvhwZZRR9ZuKA9_DzsFf1V',
+          'source': 'example_drive_1',
+          'sourceExternalLink': 'https://drive.google.com/open?id=1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
+          'sourceId': 0,
+          'sourceName': 'Example Drive 1',
+          'sourceType': 'Google Drive',
+          'sourceVerbose': 'Example Drive 1 but verbose',
+          'tags': list([
+            'Another Tag in Data',
+            'Tag in Data',
+          ]),
+        }),
+        dict({
+          'cardType': 'CARDBACK',
+          'date': '31st December, 2022',
+          'downloadLink': 'https://drive.google.com/uc?id=1oigI6wz0zA--pNMuExKTs40kBNH6VRP_&export=download',
+          'dpi': 300,
+          'extension': 'png',
+          'identifier': '1oigI6wz0zA--pNMuExKTs40kBNH6VRP_',
+          'language': 'EN',
+          'mediumThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1oigI6wz0zA--pNMuExKTs40kBNH6VRP_',
+          'name': 'Simple Lotus',
+          'priority': 7,
+          'searchq': 'simple lotus',
+          'size': 2000000,
+          'smallThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1oigI6wz0zA--pNMuExKTs40kBNH6VRP_',
+          'source': 'example_drive_2',
+          'sourceExternalLink': 'https://example.com/18wZl7T9DU_lf2X5xYFiyH6pATVy8ZlOd',
+          'sourceId': 1,
+          'sourceName': 'Example Drive 2',
+          'sourceType': 'Google Drive',
+          'sourceVerbose': 'Example Drive 2 but verbose',
+          'tags': list([
+            'Tag in Data',
+          ]),
+        }),
+      ]),
+      'count': 3,
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostExploreSearchResults.test_explore_search[no query + filter to card]
+  dict({
+    'json': dict({
+      'cards': list([
+        dict({
+          'cardType': 'CARD',
+          'date': '31st December, 2022',
+          'downloadLink': 'https://drive.google.com/uc?id=1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5&export=download',
+          'dpi': 600,
+          'extension': 'png',
+          'identifier': '1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5',
+          'language': 'en',
+          'mediumThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5',
+          'name': 'Brainstorm',
+          'priority': 2,
+          'searchq': 'brainstorm',
+          'size': 5000000,
+          'smallThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5',
+          'source': 'example_drive_1',
+          'sourceExternalLink': 'https://drive.google.com/open?id=1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
+          'sourceId': 0,
+          'sourceName': 'Example Drive 1',
+          'sourceType': 'Google Drive',
+          'sourceVerbose': 'Example Drive 1 but verbose',
+          'tags': list([
+          ]),
+        }),
+        dict({
+          'cardType': 'CARD',
+          'date': '31st December, 2022',
+          'downloadLink': 'https://drive.google.com/uc?id=17fopRCNRge72U8Hac8pApHZtEalx5kHy&export=download',
+          'dpi': 600,
+          'extension': 'png',
+          'identifier': '17fopRCNRge72U8Hac8pApHZtEalx5kHy',
+          'language': 'en',
+          'mediumThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w800-h800&id=17fopRCNRge72U8Hac8pApHZtEalx5kHy',
+          'name': 'Delver of Secrets',
+          'priority': 2,
+          'searchq': 'delver of secrets',
+          'size': 5000000,
+          'smallThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w400-h400&id=17fopRCNRge72U8Hac8pApHZtEalx5kHy',
+          'source': 'example_drive_1',
+          'sourceExternalLink': 'https://drive.google.com/open?id=1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
+          'sourceId': 0,
+          'sourceName': 'Example Drive 1',
+          'sourceType': 'Google Drive',
+          'sourceVerbose': 'Example Drive 1 but verbose',
+          'tags': list([
+          ]),
+        }),
+        dict({
+          'cardType': 'CARD',
+          'date': '31st December, 2022',
+          'downloadLink': 'https://drive.google.com/uc?id=1991MWCur9NdAFi-tQQD5YbQj2oqV_WRy&export=download',
+          'dpi': 600,
+          'extension': 'png',
+          'identifier': '1991MWCur9NdAFi-tQQD5YbQj2oqV_WRy',
+          'language': 'en',
+          'mediumThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1991MWCur9NdAFi-tQQD5YbQj2oqV_WRy',
+          'name': 'Huntmaster of the Fells',
+          'priority': 2,
+          'searchq': 'huntmaster of fells',
+          'size': 5000000,
+          'smallThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1991MWCur9NdAFi-tQQD5YbQj2oqV_WRy',
+          'source': 'example_drive_1',
+          'sourceExternalLink': 'https://drive.google.com/open?id=1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
+          'sourceId': 0,
+          'sourceName': 'Example Drive 1',
+          'sourceType': 'Google Drive',
+          'sourceVerbose': 'Example Drive 1 but verbose',
+          'tags': list([
+          ]),
+        }),
+        dict({
+          'cardType': 'CARD',
+          'date': '31st December, 2022',
+          'downloadLink': 'https://drive.google.com/uc?id=1mO73GTYlieP0kiZEkF58pJSrZTmC9lNh&export=download',
+          'dpi': 600,
+          'extension': 'png',
+          'identifier': '1mO73GTYlieP0kiZEkF58pJSrZTmC9lNh',
+          'language': 'en',
+          'mediumThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1mO73GTYlieP0kiZEkF58pJSrZTmC9lNh',
+          'name': 'Insectile Aberration',
+          'priority': 2,
+          'searchq': 'insectile aberration',
+          'size': 5000000,
+          'smallThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1mO73GTYlieP0kiZEkF58pJSrZTmC9lNh',
+          'source': 'example_drive_1',
+          'sourceExternalLink': 'https://drive.google.com/open?id=1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
+          'sourceId': 0,
+          'sourceName': 'Example Drive 1',
+          'sourceType': 'Google Drive',
+          'sourceVerbose': 'Example Drive 1 but verbose',
+          'tags': list([
+          ]),
+        }),
+        dict({
+          'cardType': 'CARD',
+          'date': '31st December, 2022',
+          'downloadLink': 'https://drive.google.com/uc?id=1HsvTYs1jFGe1c8U1PnNZ9aB8jkAW7KU0&export=download',
+          'dpi': 600,
+          'extension': 'png',
+          'identifier': '1HsvTYs1jFGe1c8U1PnNZ9aB8jkAW7KU0',
+          'language': 'FR',
+          'mediumThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1HsvTYs1jFGe1c8U1PnNZ9aB8jkAW7KU0',
+          'name': 'Island (William Bradford)',
+          'priority': 6,
+          'searchq': 'island',
+          'size': 5000000,
+          'smallThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1HsvTYs1jFGe1c8U1PnNZ9aB8jkAW7KU0',
+          'source': 'example_drive_1',
+          'sourceExternalLink': 'https://drive.google.com/open?id=1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
+          'sourceId': 0,
+          'sourceName': 'Example Drive 1',
+          'sourceType': 'Google Drive',
+          'sourceVerbose': 'Example Drive 1 but verbose',
+          'tags': list([
+          ]),
+        }),
+        dict({
+          'cardType': 'CARD',
+          'date': '31st December, 2022',
+          'downloadLink': 'https://drive.google.com/uc?id=1IDtqSjJ4Yo45AnNA4SplOiN7ewibifMa&export=download',
+          'dpi': 600,
+          'extension': 'png',
+          'identifier': '1IDtqSjJ4Yo45AnNA4SplOiN7ewibifMa',
+          'language': 'en',
+          'mediumThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1IDtqSjJ4Yo45AnNA4SplOiN7ewibifMa',
+          'name': 'Island',
+          'priority': 7,
+          'searchq': 'island',
+          'size': 5000000,
+          'smallThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1IDtqSjJ4Yo45AnNA4SplOiN7ewibifMa',
+          'source': 'example_drive_1',
+          'sourceExternalLink': 'https://drive.google.com/open?id=1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
+          'sourceId': 0,
+          'sourceName': 'Example Drive 1',
+          'sourceType': 'Google Drive',
+          'sourceVerbose': 'Example Drive 1 but verbose',
+          'tags': list([
+          ]),
+        }),
+        dict({
+          'cardType': 'CARD',
+          'date': '31st December, 2022',
+          'downloadLink': 'https://drive.google.com/uc?id=1-dcs0FEE05MTGiYbKqs9HnRdhXkgtIJG&export=download',
+          'dpi': 600,
+          'extension': 'png',
+          'identifier': '1-dcs0FEE05MTGiYbKqs9HnRdhXkgtIJG',
+          'language': 'en',
+          'mediumThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1-dcs0FEE05MTGiYbKqs9HnRdhXkgtIJG',
+          'name': 'Mountain',
+          'priority': 7,
+          'searchq': 'mountain',
+          'size': 5000000,
+          'smallThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1-dcs0FEE05MTGiYbKqs9HnRdhXkgtIJG',
+          'source': 'example_drive_1',
+          'sourceExternalLink': 'https://drive.google.com/open?id=1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
+          'sourceId': 0,
+          'sourceName': 'Example Drive 1',
+          'sourceType': 'Google Drive',
+          'sourceVerbose': 'Example Drive 1 but verbose',
+          'tags': list([
+          ]),
+        }),
+        dict({
+          'cardType': 'CARD',
+          'date': '31st December, 2022',
+          'downloadLink': 'https://drive.google.com/uc?id=1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU&export=download',
+          'dpi': 400,
+          'extension': 'png',
+          'identifier': '1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
+          'language': 'DE',
+          'mediumThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
+          'name': 'Past in Flames',
+          'priority': 2,
+          'searchq': 'past in flames',
+          'size': 4000000,
+          'smallThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
+          'source': 'example_drive_2',
+          'sourceExternalLink': 'https://example.com/18wZl7T9DU_lf2X5xYFiyH6pATVy8ZlOd',
+          'sourceId': 1,
+          'sourceName': 'Example Drive 2',
+          'sourceType': 'Google Drive',
+          'sourceVerbose': 'Example Drive 2 but verbose',
+          'tags': list([
+            'Another Tag in Data',
+            'Tag in Data',
+          ]),
+        }),
+        dict({
+          'cardType': 'CARD',
+          'date': '31st December, 2022',
+          'downloadLink': 'https://drive.google.com/uc?id=1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1&export=download',
+          'dpi': 600,
+          'extension': 'png',
+          'identifier': '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
+          'language': 'EN',
+          'mediumThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
+          'name': 'Pást in Flames',
+          'priority': 2,
+          'searchq': 'pást in flames',
+          'size': 5000000,
+          'smallThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
+          'source': 'example_drive_1',
+          'sourceExternalLink': 'https://drive.google.com/open?id=1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
+          'sourceId': 0,
+          'sourceName': 'Example Drive 1',
+          'sourceType': 'Google Drive',
+          'sourceVerbose': 'Example Drive 1 but verbose',
+          'tags': list([
+            'Tag in Data',
+          ]),
+        }),
+        dict({
+          'cardType': 'CARD',
+          'date': '31st December, 2022',
+          'downloadLink': 'https://drive.google.com/uc?id=1lv8WC1Xf1qxA7VHSc8jOtT5up6FwaBPH&export=download',
+          'dpi': 600,
+          'extension': 'png',
+          'identifier': '1lv8WC1Xf1qxA7VHSc8jOtT5up6FwaBPH',
+          'language': 'en',
+          'mediumThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1lv8WC1Xf1qxA7VHSc8jOtT5up6FwaBPH',
+          'name': 'Ravager of the Fells',
+          'priority': 2,
+          'searchq': 'ravager of fells',
+          'size': 5000000,
+          'smallThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1lv8WC1Xf1qxA7VHSc8jOtT5up6FwaBPH',
+          'source': 'example_drive_1',
+          'sourceExternalLink': 'https://drive.google.com/open?id=1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
+          'sourceId': 0,
+          'sourceName': 'Example Drive 1',
+          'sourceType': 'Google Drive',
+          'sourceVerbose': 'Example Drive 1 but verbose',
+          'tags': list([
+          ]),
+        }),
+      ]),
+      'count': 10,
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostExploreSearchResults.test_explore_search[no query + no filter to card type]
+  dict({
+    'json': dict({
+      'cards': list([
+        dict({
+          'cardType': 'CARD',
+          'date': '31st December, 2022',
+          'downloadLink': 'https://drive.google.com/uc?id=1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5&export=download',
+          'dpi': 600,
+          'extension': 'png',
+          'identifier': '1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5',
+          'language': 'en',
+          'mediumThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5',
+          'name': 'Brainstorm',
+          'priority': 2,
+          'searchq': 'brainstorm',
+          'size': 5000000,
+          'smallThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5',
+          'source': 'example_drive_1',
+          'sourceExternalLink': 'https://drive.google.com/open?id=1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
+          'sourceId': 0,
+          'sourceName': 'Example Drive 1',
+          'sourceType': 'Google Drive',
+          'sourceVerbose': 'Example Drive 1 but verbose',
+          'tags': list([
+          ]),
+        }),
+        dict({
+          'cardType': 'CARD',
+          'date': '31st December, 2022',
+          'downloadLink': 'https://drive.google.com/uc?id=17fopRCNRge72U8Hac8pApHZtEalx5kHy&export=download',
+          'dpi': 600,
+          'extension': 'png',
+          'identifier': '17fopRCNRge72U8Hac8pApHZtEalx5kHy',
+          'language': 'en',
+          'mediumThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w800-h800&id=17fopRCNRge72U8Hac8pApHZtEalx5kHy',
+          'name': 'Delver of Secrets',
+          'priority': 2,
+          'searchq': 'delver of secrets',
+          'size': 5000000,
+          'smallThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w400-h400&id=17fopRCNRge72U8Hac8pApHZtEalx5kHy',
+          'source': 'example_drive_1',
+          'sourceExternalLink': 'https://drive.google.com/open?id=1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
+          'sourceId': 0,
+          'sourceName': 'Example Drive 1',
+          'sourceType': 'Google Drive',
+          'sourceVerbose': 'Example Drive 1 but verbose',
+          'tags': list([
+          ]),
+        }),
+        dict({
+          'cardType': 'TOKEN',
+          'date': '31st December, 2022',
+          'downloadLink': 'https://drive.google.com/uc?id=1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA&export=download',
+          'dpi': 600,
+          'extension': 'png',
+          'identifier': '1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA',
+          'language': 'en',
+          'mediumThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA',
+          'name': 'Goblin',
+          'priority': 2,
+          'searchq': 'goblin',
+          'size': 5000000,
+          'smallThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA',
+          'source': 'example_drive_1',
+          'sourceExternalLink': 'https://drive.google.com/open?id=1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
+          'sourceId': 0,
+          'sourceName': 'Example Drive 1',
+          'sourceType': 'Google Drive',
+          'sourceVerbose': 'Example Drive 1 but verbose',
+          'tags': list([
+          ]),
+        }),
+        dict({
+          'cardType': 'CARD',
+          'date': '31st December, 2022',
+          'downloadLink': 'https://drive.google.com/uc?id=1991MWCur9NdAFi-tQQD5YbQj2oqV_WRy&export=download',
+          'dpi': 600,
+          'extension': 'png',
+          'identifier': '1991MWCur9NdAFi-tQQD5YbQj2oqV_WRy',
+          'language': 'en',
+          'mediumThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1991MWCur9NdAFi-tQQD5YbQj2oqV_WRy',
+          'name': 'Huntmaster of the Fells',
+          'priority': 2,
+          'searchq': 'huntmaster of fells',
+          'size': 5000000,
+          'smallThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1991MWCur9NdAFi-tQQD5YbQj2oqV_WRy',
+          'source': 'example_drive_1',
+          'sourceExternalLink': 'https://drive.google.com/open?id=1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
+          'sourceId': 0,
+          'sourceName': 'Example Drive 1',
+          'sourceType': 'Google Drive',
+          'sourceVerbose': 'Example Drive 1 but verbose',
+          'tags': list([
+          ]),
+        }),
+        dict({
+          'cardType': 'CARD',
+          'date': '31st December, 2022',
+          'downloadLink': 'https://drive.google.com/uc?id=1mO73GTYlieP0kiZEkF58pJSrZTmC9lNh&export=download',
+          'dpi': 600,
+          'extension': 'png',
+          'identifier': '1mO73GTYlieP0kiZEkF58pJSrZTmC9lNh',
+          'language': 'en',
+          'mediumThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1mO73GTYlieP0kiZEkF58pJSrZTmC9lNh',
+          'name': 'Insectile Aberration',
+          'priority': 2,
+          'searchq': 'insectile aberration',
+          'size': 5000000,
+          'smallThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1mO73GTYlieP0kiZEkF58pJSrZTmC9lNh',
+          'source': 'example_drive_1',
+          'sourceExternalLink': 'https://drive.google.com/open?id=1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
+          'sourceId': 0,
+          'sourceName': 'Example Drive 1',
+          'sourceType': 'Google Drive',
+          'sourceVerbose': 'Example Drive 1 but verbose',
+          'tags': list([
+          ]),
+        }),
+        dict({
+          'cardType': 'CARD',
+          'date': '31st December, 2022',
+          'downloadLink': 'https://drive.google.com/uc?id=1HsvTYs1jFGe1c8U1PnNZ9aB8jkAW7KU0&export=download',
+          'dpi': 600,
+          'extension': 'png',
+          'identifier': '1HsvTYs1jFGe1c8U1PnNZ9aB8jkAW7KU0',
+          'language': 'FR',
+          'mediumThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1HsvTYs1jFGe1c8U1PnNZ9aB8jkAW7KU0',
+          'name': 'Island (William Bradford)',
+          'priority': 6,
+          'searchq': 'island',
+          'size': 5000000,
+          'smallThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1HsvTYs1jFGe1c8U1PnNZ9aB8jkAW7KU0',
+          'source': 'example_drive_1',
+          'sourceExternalLink': 'https://drive.google.com/open?id=1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
+          'sourceId': 0,
+          'sourceName': 'Example Drive 1',
+          'sourceType': 'Google Drive',
+          'sourceVerbose': 'Example Drive 1 but verbose',
+          'tags': list([
+          ]),
+        }),
+        dict({
+          'cardType': 'CARD',
+          'date': '31st December, 2022',
+          'downloadLink': 'https://drive.google.com/uc?id=1IDtqSjJ4Yo45AnNA4SplOiN7ewibifMa&export=download',
+          'dpi': 600,
+          'extension': 'png',
+          'identifier': '1IDtqSjJ4Yo45AnNA4SplOiN7ewibifMa',
+          'language': 'en',
+          'mediumThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1IDtqSjJ4Yo45AnNA4SplOiN7ewibifMa',
+          'name': 'Island',
+          'priority': 7,
+          'searchq': 'island',
+          'size': 5000000,
+          'smallThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1IDtqSjJ4Yo45AnNA4SplOiN7ewibifMa',
+          'source': 'example_drive_1',
+          'sourceExternalLink': 'https://drive.google.com/open?id=1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
+          'sourceId': 0,
+          'sourceName': 'Example Drive 1',
+          'sourceType': 'Google Drive',
+          'sourceVerbose': 'Example Drive 1 but verbose',
+          'tags': list([
+          ]),
+        }),
+        dict({
+          'cardType': 'CARD',
+          'date': '31st December, 2022',
+          'downloadLink': 'https://drive.google.com/uc?id=1-dcs0FEE05MTGiYbKqs9HnRdhXkgtIJG&export=download',
+          'dpi': 600,
+          'extension': 'png',
+          'identifier': '1-dcs0FEE05MTGiYbKqs9HnRdhXkgtIJG',
+          'language': 'en',
+          'mediumThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1-dcs0FEE05MTGiYbKqs9HnRdhXkgtIJG',
+          'name': 'Mountain',
+          'priority': 7,
+          'searchq': 'mountain',
+          'size': 5000000,
+          'smallThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1-dcs0FEE05MTGiYbKqs9HnRdhXkgtIJG',
+          'source': 'example_drive_1',
+          'sourceExternalLink': 'https://drive.google.com/open?id=1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
+          'sourceId': 0,
+          'sourceName': 'Example Drive 1',
+          'sourceType': 'Google Drive',
+          'sourceVerbose': 'Example Drive 1 but verbose',
+          'tags': list([
+          ]),
+        }),
+        dict({
+          'cardType': 'CARD',
+          'date': '31st December, 2022',
+          'downloadLink': 'https://drive.google.com/uc?id=1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU&export=download',
+          'dpi': 400,
+          'extension': 'png',
+          'identifier': '1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
+          'language': 'DE',
+          'mediumThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
+          'name': 'Past in Flames',
+          'priority': 2,
+          'searchq': 'past in flames',
+          'size': 4000000,
+          'smallThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
+          'source': 'example_drive_2',
+          'sourceExternalLink': 'https://example.com/18wZl7T9DU_lf2X5xYFiyH6pATVy8ZlOd',
+          'sourceId': 1,
+          'sourceName': 'Example Drive 2',
+          'sourceType': 'Google Drive',
+          'sourceVerbose': 'Example Drive 2 but verbose',
+          'tags': list([
+            'Another Tag in Data',
+            'Tag in Data',
+          ]),
+        }),
+        dict({
+          'cardType': 'CARD',
+          'date': '31st December, 2022',
+          'downloadLink': 'https://drive.google.com/uc?id=1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1&export=download',
+          'dpi': 600,
+          'extension': 'png',
+          'identifier': '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
+          'language': 'EN',
+          'mediumThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
+          'name': 'Pást in Flames',
+          'priority': 2,
+          'searchq': 'pást in flames',
+          'size': 5000000,
+          'smallThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
+          'source': 'example_drive_1',
+          'sourceExternalLink': 'https://drive.google.com/open?id=1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
+          'sourceId': 0,
+          'sourceName': 'Example Drive 1',
+          'sourceType': 'Google Drive',
+          'sourceVerbose': 'Example Drive 1 but verbose',
+          'tags': list([
+            'Tag in Data',
+          ]),
+        }),
+        dict({
+          'cardType': 'CARD',
+          'date': '31st December, 2022',
+          'downloadLink': 'https://drive.google.com/uc?id=1lv8WC1Xf1qxA7VHSc8jOtT5up6FwaBPH&export=download',
+          'dpi': 600,
+          'extension': 'png',
+          'identifier': '1lv8WC1Xf1qxA7VHSc8jOtT5up6FwaBPH',
+          'language': 'en',
+          'mediumThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1lv8WC1Xf1qxA7VHSc8jOtT5up6FwaBPH',
+          'name': 'Ravager of the Fells',
+          'priority': 2,
+          'searchq': 'ravager of fells',
+          'size': 5000000,
+          'smallThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1lv8WC1Xf1qxA7VHSc8jOtT5up6FwaBPH',
+          'source': 'example_drive_1',
+          'sourceExternalLink': 'https://drive.google.com/open?id=1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
+          'sourceId': 0,
+          'sourceName': 'Example Drive 1',
+          'sourceType': 'Google Drive',
+          'sourceVerbose': 'Example Drive 1 but verbose',
+          'tags': list([
+          ]),
+        }),
+        dict({
+          'cardType': 'CARDBACK',
+          'date': '31st December, 2022',
+          'downloadLink': 'https://drive.google.com/uc?id=1JtXL6Ca9nQkvhwZZRR9ZuKA9_DzsFf1V&export=download',
+          'dpi': 300,
+          'extension': 'png',
+          'identifier': '1JtXL6Ca9nQkvhwZZRR9ZuKA9_DzsFf1V',
+          'language': 'DE',
+          'mediumThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1JtXL6Ca9nQkvhwZZRR9ZuKA9_DzsFf1V',
+          'name': 'Simple Cube',
+          'priority': 17,
+          'searchq': 'simple cube',
+          'size': 2000000,
+          'smallThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1JtXL6Ca9nQkvhwZZRR9ZuKA9_DzsFf1V',
+          'source': 'example_drive_1',
+          'sourceExternalLink': 'https://drive.google.com/open?id=1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
+          'sourceId': 0,
+          'sourceName': 'Example Drive 1',
+          'sourceType': 'Google Drive',
+          'sourceVerbose': 'Example Drive 1 but verbose',
+          'tags': list([
+            'Another Tag in Data',
+            'Tag in Data',
+          ]),
+        }),
+        dict({
+          'cardType': 'CARDBACK',
+          'date': '31st December, 2022',
+          'downloadLink': 'https://drive.google.com/uc?id=1oigI6wz0zA--pNMuExKTs40kBNH6VRP_&export=download',
+          'dpi': 300,
+          'extension': 'png',
+          'identifier': '1oigI6wz0zA--pNMuExKTs40kBNH6VRP_',
+          'language': 'EN',
+          'mediumThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1oigI6wz0zA--pNMuExKTs40kBNH6VRP_',
+          'name': 'Simple Lotus',
+          'priority': 7,
+          'searchq': 'simple lotus',
+          'size': 2000000,
+          'smallThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1oigI6wz0zA--pNMuExKTs40kBNH6VRP_',
+          'source': 'example_drive_2',
+          'sourceExternalLink': 'https://example.com/18wZl7T9DU_lf2X5xYFiyH6pATVy8ZlOd',
+          'sourceId': 1,
+          'sourceName': 'Example Drive 2',
+          'sourceType': 'Google Drive',
+          'sourceVerbose': 'Example Drive 2 but verbose',
+          'tags': list([
+            'Tag in Data',
+          ]),
+        }),
+      ]),
+      'count': 13,
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostExploreSearchResults.test_explore_search[query + filter to card]
+  dict({
+    'json': dict({
+      'cards': list([
+        dict({
+          'cardType': 'CARD',
+          'date': '31st December, 2022',
+          'downloadLink': 'https://drive.google.com/uc?id=1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5&export=download',
+          'dpi': 600,
+          'extension': 'png',
+          'identifier': '1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5',
+          'language': 'en',
+          'mediumThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5',
+          'name': 'Brainstorm',
+          'priority': 2,
+          'searchq': 'brainstorm',
+          'size': 5000000,
+          'smallThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5',
+          'source': 'example_drive_1',
+          'sourceExternalLink': 'https://drive.google.com/open?id=1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
+          'sourceId': 0,
+          'sourceName': 'Example Drive 1',
+          'sourceType': 'Google Drive',
+          'sourceVerbose': 'Example Drive 1 but verbose',
+          'tags': list([
+          ]),
+        }),
+      ]),
+      'count': 1,
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostExploreSearchResults.test_explore_search[query + filter to cardback]
+  dict({
+    'json': dict({
+      'cards': list([
+        dict({
+          'cardType': 'CARDBACK',
+          'date': '31st December, 2022',
+          'downloadLink': 'https://drive.google.com/uc?id=1oigI6wz0zA--pNMuExKTs40kBNH6VRP_&export=download',
+          'dpi': 300,
+          'extension': 'png',
+          'identifier': '1oigI6wz0zA--pNMuExKTs40kBNH6VRP_',
+          'language': 'EN',
+          'mediumThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1oigI6wz0zA--pNMuExKTs40kBNH6VRP_',
+          'name': 'Simple Lotus',
+          'priority': 7,
+          'searchq': 'simple lotus',
+          'size': 2000000,
+          'smallThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1oigI6wz0zA--pNMuExKTs40kBNH6VRP_',
+          'source': 'example_drive_2',
+          'sourceExternalLink': 'https://example.com/18wZl7T9DU_lf2X5xYFiyH6pATVy8ZlOd',
+          'sourceId': 1,
+          'sourceName': 'Example Drive 2',
+          'sourceType': 'Google Drive',
+          'sourceVerbose': 'Example Drive 2 but verbose',
+          'tags': list([
+            'Tag in Data',
+          ]),
+        }),
+      ]),
+      'count': 1,
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostExploreSearchResults.test_explore_search[query + filter to token]
+  dict({
+    'json': dict({
+      'cards': list([
+        dict({
+          'cardType': 'TOKEN',
+          'date': '31st December, 2022',
+          'downloadLink': 'https://drive.google.com/uc?id=1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA&export=download',
+          'dpi': 600,
+          'extension': 'png',
+          'identifier': '1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA',
+          'language': 'en',
+          'mediumThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA',
+          'name': 'Goblin',
+          'priority': 2,
+          'searchq': 'goblin',
+          'size': 5000000,
+          'smallThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA',
+          'source': 'example_drive_1',
+          'sourceExternalLink': 'https://drive.google.com/open?id=1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
+          'sourceId': 0,
+          'sourceName': 'Example Drive 1',
+          'sourceType': 'Google Drive',
+          'sourceVerbose': 'Example Drive 1 but verbose',
+          'tags': list([
+          ]),
+        }),
+      ]),
+      'count': 1,
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostExploreSearchResults.test_explore_search[sort by name ascending]
+  dict({
+    'json': dict({
+      'cards': list([
+        dict({
+          'cardType': 'CARDBACK',
+          'date': '31st December, 2022',
+          'downloadLink': 'https://drive.google.com/uc?id=1JtXL6Ca9nQkvhwZZRR9ZuKA9_DzsFf1V&export=download',
+          'dpi': 300,
+          'extension': 'png',
+          'identifier': '1JtXL6Ca9nQkvhwZZRR9ZuKA9_DzsFf1V',
+          'language': 'DE',
+          'mediumThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1JtXL6Ca9nQkvhwZZRR9ZuKA9_DzsFf1V',
+          'name': 'Simple Cube',
+          'priority': 17,
+          'searchq': 'simple cube',
+          'size': 2000000,
+          'smallThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1JtXL6Ca9nQkvhwZZRR9ZuKA9_DzsFf1V',
+          'source': 'example_drive_1',
+          'sourceExternalLink': 'https://drive.google.com/open?id=1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
+          'sourceId': 0,
+          'sourceName': 'Example Drive 1',
+          'sourceType': 'Google Drive',
+          'sourceVerbose': 'Example Drive 1 but verbose',
+          'tags': list([
+            'Another Tag in Data',
+            'Tag in Data',
+          ]),
+        }),
+        dict({
+          'cardType': 'CARDBACK',
+          'date': '31st December, 2022',
+          'downloadLink': 'https://drive.google.com/uc?id=1oigI6wz0zA--pNMuExKTs40kBNH6VRP_&export=download',
+          'dpi': 300,
+          'extension': 'png',
+          'identifier': '1oigI6wz0zA--pNMuExKTs40kBNH6VRP_',
+          'language': 'EN',
+          'mediumThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1oigI6wz0zA--pNMuExKTs40kBNH6VRP_',
+          'name': 'Simple Lotus',
+          'priority': 7,
+          'searchq': 'simple lotus',
+          'size': 2000000,
+          'smallThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1oigI6wz0zA--pNMuExKTs40kBNH6VRP_',
+          'source': 'example_drive_2',
+          'sourceExternalLink': 'https://example.com/18wZl7T9DU_lf2X5xYFiyH6pATVy8ZlOd',
+          'sourceId': 1,
+          'sourceName': 'Example Drive 2',
+          'sourceType': 'Google Drive',
+          'sourceVerbose': 'Example Drive 2 but verbose',
+          'tags': list([
+            'Tag in Data',
+          ]),
+        }),
+      ]),
+      'count': 2,
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostExploreSearchResults.test_explore_search[sort by name descending]
+  dict({
+    'json': dict({
+      'cards': list([
+        dict({
+          'cardType': 'CARDBACK',
+          'date': '31st December, 2022',
+          'downloadLink': 'https://drive.google.com/uc?id=1oigI6wz0zA--pNMuExKTs40kBNH6VRP_&export=download',
+          'dpi': 300,
+          'extension': 'png',
+          'identifier': '1oigI6wz0zA--pNMuExKTs40kBNH6VRP_',
+          'language': 'EN',
+          'mediumThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1oigI6wz0zA--pNMuExKTs40kBNH6VRP_',
+          'name': 'Simple Lotus',
+          'priority': 7,
+          'searchq': 'simple lotus',
+          'size': 2000000,
+          'smallThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1oigI6wz0zA--pNMuExKTs40kBNH6VRP_',
+          'source': 'example_drive_2',
+          'sourceExternalLink': 'https://example.com/18wZl7T9DU_lf2X5xYFiyH6pATVy8ZlOd',
+          'sourceId': 1,
+          'sourceName': 'Example Drive 2',
+          'sourceType': 'Google Drive',
+          'sourceVerbose': 'Example Drive 2 but verbose',
+          'tags': list([
+            'Tag in Data',
+          ]),
+        }),
+        dict({
+          'cardType': 'CARDBACK',
+          'date': '31st December, 2022',
+          'downloadLink': 'https://drive.google.com/uc?id=1JtXL6Ca9nQkvhwZZRR9ZuKA9_DzsFf1V&export=download',
+          'dpi': 300,
+          'extension': 'png',
+          'identifier': '1JtXL6Ca9nQkvhwZZRR9ZuKA9_DzsFf1V',
+          'language': 'DE',
+          'mediumThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1JtXL6Ca9nQkvhwZZRR9ZuKA9_DzsFf1V',
+          'name': 'Simple Cube',
+          'priority': 17,
+          'searchq': 'simple cube',
+          'size': 2000000,
+          'smallThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1JtXL6Ca9nQkvhwZZRR9ZuKA9_DzsFf1V',
+          'source': 'example_drive_1',
+          'sourceExternalLink': 'https://drive.google.com/open?id=1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
+          'sourceId': 0,
+          'sourceName': 'Example Drive 1',
+          'sourceType': 'Google Drive',
+          'sourceVerbose': 'Example Drive 1 but verbose',
+          'tags': list([
+            'Another Tag in Data',
+            'Tag in Data',
+          ]),
+        }),
+      ]),
+      'count': 2,
+    }),
+    'status_code': 200,
+  })
+# ---
 # name: TestPostImportSiteDecklist.test_get_request
   dict({
     'json': dict({
@@ -1677,574 +3104,5 @@
   Counter({
     '3 another card': 1,
     '4 some card': 1,
-  })
-# ---
-# name: TestPostSearchResults.test_complex_search
-  dict({
-    'json': dict({
-      'results': dict({
-        'Brainstorm': dict({
-          'CARD': list([
-            '1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5',
-          ]),
-        }),
-        'Goblin': dict({
-          'TOKEN': list([
-            '1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA',
-          ]),
-        }),
-        'Island': dict({
-          'CARD': list([
-            '1IDtqSjJ4Yo45AnNA4SplOiN7ewibifMa',
-            '1HsvTYs1jFGe1c8U1PnNZ9aB8jkAW7KU0',
-          ]),
-        }),
-        'Simple Cube': dict({
-          'CARDBACK': list([
-            '1JtXL6Ca9nQkvhwZZRR9ZuKA9_DzsFf1V',
-          ]),
-        }),
-        'Simple Lotus': dict({
-          'CARDBACK': list([
-            '1oigI6wz0zA--pNMuExKTs40kBNH6VRP_',
-          ]),
-        }),
-      }),
-    }),
-    'status_code': 200,
-  })
-# ---
-# name: TestPostSearchResults.test_fuzzy_search
-  dict({
-    'json': dict({
-      'results': dict({
-        'past in': dict({
-          'CARD': list([
-            '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
-            '1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
-          ]),
-        }),
-      }),
-    }),
-    'status_code': 200,
-  })
-# ---
-# name: TestPostSearchResults.test_get_multiple_rows_filtered_includes_one_tag
-  dict({
-    'json': dict({
-      'results': dict({
-        'Pást in Flames': dict({
-          'CARD': list([
-            '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
-            '1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
-          ]),
-        }),
-      }),
-    }),
-    'status_code': 200,
-  })
-# ---
-# name: TestPostSearchResults.test_get_multiple_rows_filtered_includes_one_tag_and_excludes_another
-  dict({
-    'json': dict({
-      'results': dict({
-        'Pást in Flames': dict({
-          'CARD': list([
-            '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
-          ]),
-        }),
-      }),
-    }),
-    'status_code': 200,
-  })
-# ---
-# name: TestPostSearchResults.test_get_multiple_rows_filtered_includes_two_tags
-  dict({
-    'json': dict({
-      'results': dict({
-        'Pást in Flames': dict({
-          'CARD': list([
-            '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
-            '1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
-          ]),
-        }),
-      }),
-    }),
-    'status_code': 200,
-  })
-# ---
-# name: TestPostSearchResults.test_get_multiple_rows_filtered_two_languages
-  dict({
-    'json': dict({
-      'results': dict({
-        'Pást in Flames': dict({
-          'CARD': list([
-            '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
-            '1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
-          ]),
-        }),
-      }),
-    }),
-    'status_code': 200,
-  })
-# ---
-# name: TestPostSearchResults.test_get_one_row_filtered_excludes_one_tag
-  dict({
-    'json': dict({
-      'results': dict({
-        'Past in Flames': dict({
-          'CARD': list([
-            '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
-          ]),
-        }),
-      }),
-    }),
-    'status_code': 200,
-  })
-# ---
-# name: TestPostSearchResults.test_get_one_row_filtered_includes_one_tag
-  dict({
-    'json': dict({
-      'results': dict({
-        'Pást in Flames': dict({
-          'CARD': list([
-            '1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
-          ]),
-        }),
-      }),
-    }),
-    'status_code': 200,
-  })
-# ---
-# name: TestPostSearchResults.test_get_one_row_filtered_one_language
-  dict({
-    'json': dict({
-      'results': dict({
-        'Pást in Flames': dict({
-          'CARD': list([
-            '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
-          ]),
-        }),
-      }),
-    }),
-    'status_code': 200,
-  })
-# ---
-# name: TestPostSearchResults.test_get_request
-  dict({
-    'json': dict({
-      'errors': None,
-      'message': 'Expected POST request.',
-      'name': 'Bad request',
-    }),
-    'status_code': 400,
-  })
-# ---
-# name: TestPostSearchResults.test_maximum_dpi_yielding_no_search_results
-  dict({
-    'json': dict({
-      'results': dict({
-        'Simple Cube': dict({
-          'CARDBACK': list([
-          ]),
-        }),
-      }),
-    }),
-    'status_code': 200,
-  })
-# ---
-# name: TestPostSearchResults.test_maximum_size_yielding_fewer_search_results
-  dict({
-    'json': dict({
-      'results': dict({
-        'Pást in Flames': dict({
-          'CARD': list([
-            '1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
-          ]),
-        }),
-      }),
-    }),
-    'status_code': 200,
-  })
-# ---
-# name: TestPostSearchResults.test_minimum_dpi_yielding_fewer_search_results
-  dict({
-    'json': dict({
-      'results': dict({
-        'Pást in Flames': dict({
-          'CARD': list([
-            '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
-          ]),
-        }),
-      }),
-    }),
-    'status_code': 200,
-  })
-# ---
-# name: TestPostSearchResults.test_minimum_dpi_yielding_no_search_results
-  dict({
-    'json': dict({
-      'results': dict({
-        'Simple Cube': dict({
-          'CARDBACK': list([
-          ]),
-        }),
-      }),
-    }),
-    'status_code': 200,
-  })
-# ---
-# name: TestPostSearchResults.test_page_equal_to_max_size
-  dict({
-    'json': dict({
-      'results': dict({
-        'Brainstorm': dict({
-          'CARD': list([
-            '1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5',
-          ]),
-        }),
-        'Island': dict({
-          'CARD': list([
-            '1IDtqSjJ4Yo45AnNA4SplOiN7ewibifMa',
-            '1HsvTYs1jFGe1c8U1PnNZ9aB8jkAW7KU0',
-          ]),
-        }),
-      }),
-    }),
-    'status_code': 200,
-  })
-# ---
-# name: TestPostSearchResults.test_page_larger_than_max_size
-  dict({
-    'json': dict({
-      'errors': None,
-      'message': 'Invalid query count 3. Must be less than or equal to 2.',
-      'name': 'Bad request',
-    }),
-    'status_code': 400,
-  })
-# ---
-# name: TestPostSearchResults.test_priority_ordering_in_search_results
-  dict({
-    'json': dict({
-      'results': dict({
-        'Island': dict({
-          'CARD': list([
-            '1IDtqSjJ4Yo45AnNA4SplOiN7ewibifMa',
-            '1HsvTYs1jFGe1c8U1PnNZ9aB8jkAW7KU0',
-          ]),
-        }),
-      }),
-    }),
-    'status_code': 200,
-  })
-# ---
-# name: TestPostSearchResults.test_response_to_malformed_json_body[empty json body]
-  dict({
-    'json': dict({
-      'errors': list([
-        dict({
-          'input': dict({
-          }),
-          'loc': list([
-            'queries',
-          ]),
-          'msg': 'Field required',
-          'type': 'missing',
-          'url': 'https://errors.pydantic.dev/2.10/v/missing',
-        }),
-        dict({
-          'input': dict({
-          }),
-          'loc': list([
-            'searchSettings',
-          ]),
-          'msg': 'Field required',
-          'type': 'missing',
-          'url': 'https://errors.pydantic.dev/2.10/v/missing',
-        }),
-      ]),
-      'message': 'See `errors` field for detailed breakdown.',
-      'name': 'Schema error/s',
-    }),
-    'status_code': 400,
-  })
-# ---
-# name: TestPostSearchResults.test_response_to_malformed_json_body[gave it an array instead of an object]
-  dict({
-    'json': dict({
-      'errors': list([
-        dict({
-          'ctx': dict({
-            'class_name': 'EditorSearchRequest',
-          }),
-          'input': list([
-            'test',
-          ]),
-          'loc': list([
-          ]),
-          'msg': 'Input should be a valid dictionary or instance of EditorSearchRequest',
-          'type': 'model_type',
-          'url': 'https://errors.pydantic.dev/2.10/v/model_type',
-        }),
-      ]),
-      'message': 'See `errors` field for detailed breakdown.',
-      'name': 'Schema error/s',
-    }),
-    'status_code': 400,
-  })
-# ---
-# name: TestPostSearchResults.test_response_to_malformed_json_body[invalid card type field name]
-  dict({
-    'json': dict({
-      'errors': list([
-        dict({
-          'input': dict({
-            'card_type_garbage': 'CARD',
-            'query': 'Brainstorm',
-          }),
-          'loc': list([
-            'queries',
-          ]),
-          'msg': 'Input should be a valid list',
-          'type': 'list_type',
-          'url': 'https://errors.pydantic.dev/2.10/v/list_type',
-        }),
-      ]),
-      'message': 'See `errors` field for detailed breakdown.',
-      'name': 'Schema error/s',
-    }),
-    'status_code': 400,
-  })
-# ---
-# name: TestPostSearchResults.test_response_to_malformed_json_body[invalid card type]
-  dict({
-    'json': dict({
-      'errors': list([
-        dict({
-          'input': dict({
-            'cardType': 'garbage',
-            'query': 'Brainstorm',
-          }),
-          'loc': list([
-            'queries',
-          ]),
-          'msg': 'Input should be a valid list',
-          'type': 'list_type',
-          'url': 'https://errors.pydantic.dev/2.10/v/list_type',
-        }),
-      ]),
-      'message': 'See `errors` field for detailed breakdown.',
-      'name': 'Schema error/s',
-    }),
-    'status_code': 400,
-  })
-# ---
-# name: TestPostSearchResults.test_response_to_malformed_json_body[invalid query field name]
-  dict({
-    'json': dict({
-      'errors': list([
-        dict({
-          'input': dict({
-            'cardType': 'CARD',
-            'query_garbage': 'Brainstorm',
-          }),
-          'loc': list([
-            'queries',
-          ]),
-          'msg': 'Input should be a valid list',
-          'type': 'list_type',
-          'url': 'https://errors.pydantic.dev/2.10/v/list_type',
-        }),
-      ]),
-      'message': 'See `errors` field for detailed breakdown.',
-      'name': 'Schema error/s',
-    }),
-    'status_code': 400,
-  })
-# ---
-# name: TestPostSearchResults.test_response_to_malformed_json_body[queries not specified]
-  dict({
-    'json': dict({
-      'errors': list([
-        dict({
-          'input': dict({
-            'garbage': 'test',
-            'searchSettings': dict({
-              'filterSettings': dict({
-                'excludesTags': list([
-                ]),
-                'includesTags': list([
-                ]),
-                'languages': list([
-                ]),
-                'maximumDPI': 1500,
-                'maximumSize': 30,
-                'minimumDPI': 0,
-              }),
-              'searchTypeSettings': dict({
-                'filterCardbacks': False,
-                'fuzzySearch': False,
-              }),
-              'sourceSettings': dict({
-                'sources': list([
-                  list([
-                    0,
-                    True,
-                  ]),
-                  list([
-                    1,
-                    True,
-                  ]),
-                ]),
-              }),
-            }),
-          }),
-          'loc': list([
-            'queries',
-          ]),
-          'msg': 'Field required',
-          'type': 'missing',
-          'url': 'https://errors.pydantic.dev/2.10/v/missing',
-        }),
-      ]),
-      'message': 'See `errors` field for detailed breakdown.',
-      'name': 'Schema error/s',
-    }),
-    'status_code': 400,
-  })
-# ---
-# name: TestPostSearchResults.test_response_to_malformed_json_body[search settings not specified]
-  dict({
-    'json': dict({
-      'errors': list([
-        dict({
-          'input': dict({
-            'cardType': 'CARD',
-            'query_garbage': 'Brainstorm',
-          }),
-          'loc': list([
-            'queries',
-          ]),
-          'msg': 'Input should be a valid list',
-          'type': 'list_type',
-          'url': 'https://errors.pydantic.dev/2.10/v/list_type',
-        }),
-        dict({
-          'ctx': dict({
-            'class_name': 'SearchSettings',
-          }),
-          'input': 'test2',
-          'loc': list([
-            'searchSettings',
-          ]),
-          'msg': 'Input should be a valid dictionary or instance of SearchSettings',
-          'type': 'model_type',
-          'url': 'https://errors.pydantic.dev/2.10/v/model_type',
-        }),
-      ]),
-      'message': 'See `errors` field for detailed breakdown.',
-      'name': 'Schema error/s',
-    }),
-    'status_code': 400,
-  })
-# ---
-# name: TestPostSearchResults.test_search_for_card_with_versions_from_two_sources
-  dict({
-    'json': dict({
-      'results': dict({
-        'Pást in Flames': dict({
-          'CARD': list([
-            '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
-            '1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
-          ]),
-        }),
-      }),
-    }),
-    'status_code': 200,
-  })
-# ---
-# name: TestPostSearchResults.test_search_for_card_with_versions_from_two_sources_under_reversed_search_order
-  dict({
-    'json': dict({
-      'results': dict({
-        'Pást in Flames': dict({
-          'CARD': list([
-            '1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
-            '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
-          ]),
-        }),
-      }),
-    }),
-    'status_code': 200,
-  })
-# ---
-# name: TestPostSearchResults.test_search_for_card_with_versions_from_two_sources_with_all_sources_disabled
-  dict({
-    'json': dict({
-      'results': dict({
-        'Pást in Flames': dict({
-          'CARD': list([
-          ]),
-        }),
-      }),
-    }),
-    'status_code': 200,
-  })
-# ---
-# name: TestPostSearchResults.test_search_for_card_with_versions_from_two_sources_with_one_source_disabled
-  dict({
-    'json': dict({
-      'results': dict({
-        'Pást in Flames': dict({
-          'CARD': list([
-            '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
-          ]),
-        }),
-      }),
-    }),
-    'status_code': 200,
-  })
-# ---
-# name: TestPostSearchResults.test_search_for_single_card
-  dict({
-    'json': dict({
-      'results': dict({
-        'Brainstorm': dict({
-          'CARD': list([
-            '1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5',
-          ]),
-        }),
-      }),
-    }),
-    'status_code': 200,
-  })
-# ---
-# name: TestPostSearchResults.test_search_for_single_cardback
-  dict({
-    'json': dict({
-      'results': dict({
-        'Simple Lotus': dict({
-          'CARDBACK': list([
-            '1oigI6wz0zA--pNMuExKTs40kBNH6VRP_',
-          ]),
-        }),
-      }),
-    }),
-    'status_code': 200,
-  })
-# ---
-# name: TestPostSearchResults.test_search_for_single_token
-  dict({
-    'json': dict({
-      'results': dict({
-        'Goblin': dict({
-          'TOKEN': list([
-            '1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA',
-          ]),
-        }),
-      }),
-    }),
-    'status_code': 200,
   })
 # ---

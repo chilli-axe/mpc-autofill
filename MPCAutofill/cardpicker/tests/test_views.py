@@ -35,7 +35,7 @@ BASE_SEARCH_SETTINGS = {
 }
 
 
-class TestPostSearchResults:
+class TestPostEditorSearchResults:
     @pytest.fixture(autouse=True)
     def autouse_populated_database(self, populated_database):
         pass
@@ -452,6 +452,213 @@ class TestPostSearchResults:
     def test_response_to_malformed_json_body(self, client, snapshot, json_body):
         response = client.post(reverse(views.post_editor_search), json_body, content_type="application/json")
         snapshot_response(response, snapshot)
+        assert response.status_code == 400
+
+    def test_get_request(self, client, django_settings, snapshot):
+        response = client.get(reverse(views.post_editor_search))
+        snapshot_response(response, snapshot)
+        assert response.status_code == 400
+
+
+class TestPostExploreSearchResults:
+    @pytest.fixture(autouse=True)
+    def autouse_populated_database(self, populated_database):
+        pass
+
+    @pytest.mark.parametrize(
+        "query, card_types, sort_by, expected_cards",
+        [
+            pytest.param(
+                None,
+                [],
+                "dateDescending",
+                [
+                    Cards.BRAINSTORM.value,
+                    Cards.DELVER_OF_SECRETS.value,
+                    Cards.GOBLIN.value,
+                    Cards.HUNTMASTER_OF_THE_FELLS.value,
+                    Cards.INSECTILE_ABERRATION.value,
+                    Cards.ISLAND_CLASSICAL.value,
+                    Cards.ISLAND.value,
+                    Cards.MOUNTAIN.value,
+                    Cards.PAST_IN_FLAMES_2.value,
+                    Cards.PAST_IN_FLAMES_1.value,
+                    Cards.RAVAGER_OF_THE_FELLS.value,
+                    Cards.SIMPLE_CUBE.value,
+                    Cards.SIMPLE_LOTUS.value,
+                ],
+                id="no query + no filter to card type",
+            ),
+            pytest.param(
+                None,
+                ["CARD"],
+                "dateDescending",
+                [
+                    Cards.BRAINSTORM.value,
+                    Cards.DELVER_OF_SECRETS.value,
+                    Cards.HUNTMASTER_OF_THE_FELLS.value,
+                    Cards.INSECTILE_ABERRATION.value,
+                    Cards.ISLAND_CLASSICAL.value,
+                    Cards.ISLAND.value,
+                    Cards.MOUNTAIN.value,
+                    Cards.PAST_IN_FLAMES_2.value,
+                    Cards.PAST_IN_FLAMES_1.value,
+                    Cards.RAVAGER_OF_THE_FELLS.value,
+                ],
+                id="no query + filter to card",
+            ),
+            pytest.param(
+                Cards.BRAINSTORM.value.name,
+                ["CARD"],
+                "dateDescending",
+                [Cards.BRAINSTORM.value],
+                id="query + filter to card",
+            ),
+            pytest.param(
+                Cards.SIMPLE_LOTUS.value.name,
+                ["CARDBACK"],
+                "dateDescending",
+                [Cards.SIMPLE_LOTUS.value],
+                id="query + filter to cardback",
+            ),
+            pytest.param(
+                Cards.GOBLIN.value.name, ["TOKEN"], "dateDescending", [Cards.GOBLIN.value], id="query + filter to token"
+            ),
+            pytest.param(
+                None,
+                ["CARDBACK", "TOKEN"],
+                "nameAscending",
+                [Cards.GOBLIN.value, Cards.SIMPLE_CUBE.value, Cards.SIMPLE_LOTUS.value],
+                id="filter to cardback + token",
+            ),
+            pytest.param(
+                None,
+                ["CARDBACK"],
+                "nameAscending",
+                [Cards.SIMPLE_CUBE.value, Cards.SIMPLE_LOTUS.value],
+                id="sort by name ascending",
+            ),
+            pytest.param(
+                None,
+                ["CARDBACK"],
+                "nameDescending",
+                [Cards.SIMPLE_LOTUS.value, Cards.SIMPLE_CUBE.value],
+                id="sort by name descending",
+            ),
+        ],
+    )
+    def test_explore_search(self, client, snapshot, query, card_types, sort_by, expected_cards):
+        response = client.post(
+            reverse(views.post_explore_search),
+            {
+                "searchSettings": BASE_SEARCH_SETTINGS,
+                "query": query,
+                "cardTypes": card_types,
+                "sortBy": sort_by,
+                "pageSize": 20,
+                "pageStart": 0,
+            },
+            content_type="application/json",
+        )
+        snapshot_response(response, snapshot)
+        assert response.status_code == 200
+        response_json = response.json()
+        assert response_json["count"] == len(expected_cards)
+        assert [item["identifier"] for item in response_json["cards"]] == [
+            expected_card.identifier for expected_card in expected_cards
+        ]
+
+    @pytest.mark.parametrize(
+        "page_start, page_size, expected_cards",
+        [
+            pytest.param(
+                0,
+                3,
+                [Cards.BRAINSTORM.value, Cards.DELVER_OF_SECRETS.value, Cards.GOBLIN.value],
+                id="first page",
+            ),
+            pytest.param(
+                3,
+                3,
+                [Cards.HUNTMASTER_OF_THE_FELLS.value, Cards.INSECTILE_ABERRATION.value, Cards.ISLAND_CLASSICAL.value],
+                id="second page",
+            ),
+            pytest.param(
+                6,
+                3,
+                [Cards.ISLAND.value, Cards.MOUNTAIN.value, Cards.PAST_IN_FLAMES_2.value],
+                id="third page",
+            ),
+            pytest.param(
+                9,
+                3,
+                [Cards.PAST_IN_FLAMES_1.value, Cards.RAVAGER_OF_THE_FELLS.value, Cards.SIMPLE_CUBE.value],
+                id="fourth page",
+            ),
+            pytest.param(
+                12,
+                3,
+                [Cards.SIMPLE_LOTUS.value],
+                id="fifth page",
+            ),
+            pytest.param(
+                13,
+                3,
+                [],
+                id="sixth? page - does not exist",
+            ),
+            pytest.param(
+                100,
+                3,
+                [],
+                id="page start 100 - greater than number of results",
+            ),
+        ],
+    )
+    def test_explore_search_pagination(self, client, monkeypatch, page_start, page_size, expected_cards):
+        monkeypatch.setattr("cardpicker.views.MAX_PAGE_SIZE", 3)
+        response = client.post(
+            reverse(views.post_explore_search),
+            {
+                "searchSettings": BASE_SEARCH_SETTINGS,
+                "query": None,
+                "cardTypes": [],
+                "sortBy": "dateDescending",
+                "pageSize": page_size,
+                "pageStart": page_start,
+            },
+            content_type="application/json",
+        )
+        assert response.status_code == 200
+        response_json = response.json()
+        assert response_json["count"] == 13
+        assert [item["identifier"] for item in response_json["cards"]] == [
+            expected_card.identifier for expected_card in expected_cards
+        ]
+
+    @pytest.mark.parametrize(
+        "page_start, page_size",
+        [
+            pytest.param(-1, 3, id="negative page start"),
+            pytest.param(0, 0, id="page size zero"),
+            pytest.param(0, -1, id="page size negative"),
+            pytest.param(0, 4, id="page size greater than max page size"),
+        ],
+    )
+    def test_explore_search_invalid_pagination(self, client, monkeypatch, page_start, page_size):
+        monkeypatch.setattr("cardpicker.views.MAX_PAGE_SIZE", 3)
+        response = client.post(
+            reverse(views.post_explore_search),
+            {
+                "searchSettings": BASE_SEARCH_SETTINGS,
+                "query": None,
+                "cardTypes": [],
+                "sortBy": "dateDescending",
+                "pageSize": page_size,
+                "pageStart": page_start,
+            },
+            content_type="application/json",
+        )
         assert response.status_code == 400
 
     def test_get_request(self, client, django_settings, snapshot):

@@ -151,7 +151,9 @@ def post_explore_search(request: HttpRequest) -> HttpResponse:
         raise BadRequestException("Expected POST request.")
 
     explore_search_request = ExploreSearchRequest.model_validate(json.loads(request.body))
-    if explore_search_request.pageSize > MAX_PAGE_SIZE:
+    if explore_search_request.pageStart < 0:
+        raise BadRequestException(f"Invalid page start {explore_search_request.pageStart}. Must be greater than zero.")
+    if not (0 < explore_search_request.pageSize <= MAX_PAGE_SIZE):
         raise BadRequestException(
             f"Invalid page size {explore_search_request.pageSize}. Must be less than or equal to {MAX_PAGE_SIZE}."
         )
