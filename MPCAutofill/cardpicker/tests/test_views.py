@@ -387,7 +387,7 @@ class TestPostEditorSearchResults:
         assert len(response.json()["results"][Cards.PAST_IN_FLAMES_1.value.name]["CARD"]) == 2
 
     def test_page_equal_to_max_size(self, client, monkeypatch, snapshot):
-        monkeypatch.setattr("cardpicker.views.SEARCH_RESULTS_PAGE_SIZE", 2)
+        monkeypatch.setattr("cardpicker.views.EDITOR_SEARCH_MAX_QUERIES", 2)
         response = client.post(
             reverse(views.post_editor_search),
             {
@@ -403,7 +403,7 @@ class TestPostEditorSearchResults:
         assert response.status_code == 200
 
     def test_page_larger_than_max_size(self, client, monkeypatch, snapshot):
-        monkeypatch.setattr("cardpicker.views.SEARCH_RESULTS_PAGE_SIZE", 2)
+        monkeypatch.setattr("cardpicker.views.EDITOR_SEARCH_MAX_QUERIES", 2)
         response = client.post(
             reverse(views.post_editor_search),
             {
@@ -616,7 +616,7 @@ class TestPostExploreSearchResults:
         ],
     )
     def test_explore_search_pagination(self, client, monkeypatch, page_start, page_size, expected_cards):
-        monkeypatch.setattr("cardpicker.views.MAX_PAGE_SIZE", 3)
+        monkeypatch.setattr("cardpicker.views.EXPLORE_SEARCH_MAX_PAGE_SIZE", 3)
         response = client.post(
             reverse(views.post_explore_search),
             {
@@ -646,7 +646,7 @@ class TestPostExploreSearchResults:
         ],
     )
     def test_explore_search_invalid_pagination(self, client, monkeypatch, page_start, page_size):
-        monkeypatch.setattr("cardpicker.views.MAX_PAGE_SIZE", 3)
+        monkeypatch.setattr("cardpicker.views.EXPLORE_SEARCH_MAX_PAGE_SIZE", 3)
         response = client.post(
             reverse(views.post_explore_search),
             {

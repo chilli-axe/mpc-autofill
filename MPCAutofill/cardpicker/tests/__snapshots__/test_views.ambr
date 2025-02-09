@@ -3027,6 +3027,16 @@
     'status_code': 200,
   })
 # ---
+# name: TestPostExploreSearchResults.test_get_request
+  dict({
+    'json': dict({
+      'errors': None,
+      'message': 'Expected POST request.',
+      'name': 'Bad request',
+    }),
+    'status_code': 400,
+  })
+# ---
 # name: TestPostImportSiteDecklist.test_get_request
   dict({
     'json': dict({

@@ -16,8 +16,9 @@ from django.views.decorators.csrf import csrf_exempt
 from cardpicker.constants import (
     CARDS_PAGE_SIZE,
     DEFAULT_LANGUAGE,
+    EDITOR_SEARCH_MAX_QUERIES,
+    EXPLORE_SEARCH_MAX_PAGE_SIZE,
     NSFW,
-    SEARCH_RESULTS_PAGE_SIZE,
 )
 from cardpicker.documents import CardSearch
 from cardpicker.integrations.integrations import get_configured_game_integration
@@ -125,10 +126,10 @@ def post_editor_search(request: HttpRequest) -> HttpResponse:
     if not Index(CardSearch.Index.name).exists():
         raise SearchExceptions.IndexNotFoundException(CardSearch.__name__)
 
-    if len(editor_search_request.queries) > SEARCH_RESULTS_PAGE_SIZE:
+    if len(editor_search_request.queries) > EDITOR_SEARCH_MAX_QUERIES:
         raise BadRequestException(
             f"Invalid query count {len(editor_search_request.queries)}. "
-            f"Must be less than or equal to {SEARCH_RESULTS_PAGE_SIZE}."
+            f"Must be less than or equal to {EDITOR_SEARCH_MAX_QUERIES}."
         )
 
     results: dict[str, dict[str, list[str]]] = defaultdict(dict)
@@ -141,9 +142,6 @@ def post_editor_search(request: HttpRequest) -> HttpResponse:
     return JsonResponse(EditorSearchResponse(results=results).model_dump())
 
 
-MAX_PAGE_SIZE = 100  # TODO: move this into the appropriate place.
-
-
 @csrf_exempt
 @ErrorWrappers.to_json
 def post_explore_search(request: HttpRequest) -> HttpResponse:
@@ -153,9 +151,9 @@ def post_explore_search(request: HttpRequest) -> HttpResponse:
     explore_search_request = ExploreSearchRequest.model_validate(json.loads(request.body))
     if explore_search_request.pageStart < 0:
         raise BadRequestException(f"Invalid page start {explore_search_request.pageStart}. Must be greater than zero.")
-    if not (0 < explore_search_request.pageSize <= MAX_PAGE_SIZE):
+    if not (0 < explore_search_request.pageSize <= EXPLORE_SEARCH_MAX_PAGE_SIZE):
         raise BadRequestException(
-            f"Invalid page size {explore_search_request.pageSize}. Must be less than or equal to {MAX_PAGE_SIZE}."
+            f"Invalid page size {explore_search_request.pageSize}. Must be less than or equal to {EXPLORE_SEARCH_MAX_PAGE_SIZE}."
         )
     if not ping_elasticsearch():
         raise SearchExceptions.ElasticsearchOfflineException()
