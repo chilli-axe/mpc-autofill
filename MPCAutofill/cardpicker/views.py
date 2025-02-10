@@ -177,7 +177,10 @@ def post_explore_search(request: HttpRequest) -> HttpResponse:
     s_sliced = s[explore_search_request.pageStart : explore_search_request.pageStart + explore_search_request.pageSize]
     card_ids = [man.identifier for man in s_sliced.execute()]
     # TODO: the below code feels inefficient but is set up this way to ensure sorting from elasticsearch is respected.
-    card_id_object_dict = {card.identifier: card.serialise() for card in Card.objects.filter(identifier__in=card_ids)}
+    card_id_object_dict = {
+        card.identifier: card.serialise()
+        for card in Card.objects.select_related("source").filter(identifier__in=card_ids)
+    }
     cards = [card_id_object_dict[card_id] for card_id in card_ids]
     return JsonResponse(ExploreSearchResponse(cards=cards, count=count).model_dump())
 
@@ -196,7 +199,8 @@ def post_cards(request: HttpRequest) -> HttpResponse:
         )
 
     results = {
-        card.identifier: card.serialise() for card in Card.objects.filter(identifier__in=cards_request.cardIdentifiers)
+        card.identifier: card.serialise()
+        for card in Card.objects.select_related("source").filter(identifier__in=cards_request.cardIdentifiers)
     }
     return JsonResponse(CardsResponse(results=results).model_dump())
 
@@ -360,7 +364,10 @@ def get_sample_cards(request: HttpRequest) -> HttpResponse:
     ]
 
     # retrieve the full ORM objects for the selected identifiers and group by type
-    cards = [card.serialise() for card in Card.objects.filter(pk__in=selected_identifiers).order_by("card_type")]
+    cards = [
+        card.serialise()
+        for card in Card.objects.select_related("source").filter(pk__in=selected_identifiers).order_by("card_type")
+    ]
     cards_by_type = {
         card_type: list(grouped_cards_iterable)
         for card_type, grouped_cards_iterable in itertools.groupby(cards, key=lambda x: x.cardType)
