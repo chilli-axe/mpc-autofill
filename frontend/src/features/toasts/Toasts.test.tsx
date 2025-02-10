@@ -125,7 +125,7 @@ describe("error reporting toasts", () => {
     );
   }
 
-  test("/2/searchResults", async () => {
+  test("/2/editorSearch", async () => {
     server.use(
       cardDocumentsThreeResults,
       cardbacksTwoResults,
@@ -136,7 +136,7 @@ describe("error reporting toasts", () => {
     renderWithProviders(<ProjectEditor />, {
       preloadedState: { toasts: { notifications: {} } },
     });
-    await assertErrorToast("2/searchResults", async () => {
+    await assertErrorToast("2/editorSearch", async () => {
       await importText("mountain");
     });
   });

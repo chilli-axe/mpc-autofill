@@ -1,0 +1,15 @@
+{
+  "title": "DFC Pairs Response",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "dfcPairs": {
+      "type": "object",
+      "patternProperties": {
+        ".*": { "type": "string" }
+      }
+    }
+  },
+  "required": ["dfcPairs"],
+  "additionalProperties": false
+}

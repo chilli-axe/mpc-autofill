@@ -7,6 +7,7 @@ from tqdm import tqdm
 from django.db.models import TextChoices
 from django.utils.translation import gettext_lazy
 
+from cardpicker.schema_types import SourceType as SchemaSourceType
 from cardpicker.sources.api import (
     Folder,
     Image,
@@ -196,14 +197,25 @@ class SourceTypeChoices(TextChoices):
     Unique identifier for a Source type.
     """
 
-    GOOGLE_DRIVE = ("GOOGLE_DRIVE", gettext_lazy("Google Drive"))
-    LOCAL_FILE = ("LOCAL_FILE", gettext_lazy("Local File"))
-    AWS_S3 = ("AWS_S3", gettext_lazy("AWS S3"))
+    GOOGLE_DRIVE = (
+        SchemaSourceType.GoogleDrive.value.upper().replace(" ", "_"),
+        gettext_lazy(SchemaSourceType.GoogleDrive.value),
+    )
+    LOCAL_FILE = (
+        SchemaSourceType.LocalFile.value.upper().replace(" ", "_"),
+        gettext_lazy(SchemaSourceType.LocalFile.value),
+    )
+    AWS_S3 = (SchemaSourceType.AWSS3.value.upper().replace(" ", "_"), gettext_lazy(SchemaSourceType.AWSS3.value))
 
-    def get_source_type(self) -> Type[SourceType]:
-        source_type_or_none = {x.get_identifier(): x for x in [GoogleDrive, LocalFile, AWSS3]}.get(self)
+    @classmethod
+    def from_source_type_schema(cls, source_type: SchemaSourceType) -> "SourceTypeChoices":
+        return SourceTypeChoices[source_type.value.upper().replace(" ", "_")]
+
+    @classmethod
+    def get_source_type(cls, source_type: "SourceTypeChoices") -> Type[SourceType]:
+        source_type_or_none = {x.get_identifier(): x for x in [GoogleDrive, LocalFile, AWSS3]}.get(source_type)
         if source_type_or_none is None:
-            raise Exception(f"Incorrect configuration of source types means {self} isn't mapped")
+            raise Exception(f"Incorrect configuration of source types means {source_type} isn't mapped")
         return source_type_or_none
 
 

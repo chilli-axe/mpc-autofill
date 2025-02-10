@@ -8,9 +8,11 @@ import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
 import styled from "styled-components";
 
-import { NavbarHeight, RibbonHeight } from "@/common/constants";
+import { RibbonHeight } from "@/common/constants";
 import { useAppSelector } from "@/common/types";
 import { NoBackendDefault } from "@/components/NoBackendDefault";
+import { OverflowCol } from "@/components/OverflowCol";
+import { Ribbon } from "@/components/Ribbon";
 import { SelectedImagesRibbon } from "@/features/bulkManagement/SelectedImagesRibbon";
 import { CardGrid } from "@/features/card/CardGrid";
 import { CommonCardback } from "@/features/card/CommonCardback";
@@ -25,22 +27,6 @@ import {
   selectIsProjectEmpty,
   selectProjectCardback,
 } from "@/store/slices/projectSlice";
-
-const FixedHeightRow = styled(Row)`
-  height: ${RibbonHeight}px;
-  box-shadow: 0 -1px 0 rgb(255, 255, 255, 50%) inset;
-`;
-
-const OverflowCol = styled(Col)`
-  position: relative;
-  // define height twice - first as a fallback for older browser compatibility,
-  // then using dvh to account for the ios address bar
-  height: calc(100vh - ${NavbarHeight}px - ${RibbonHeight}px);
-  height: calc(100dvh - ${NavbarHeight}px - ${RibbonHeight}px);
-  overflow-y: scroll;
-  overscroll-behavior: none;
-  scrollbar-width: thin;
-`;
 
 function ProjectEditor() {
   // TODO: should we periodically ping the backend to make sure it's still alive?
@@ -76,10 +62,17 @@ function ProjectEditor() {
     <>
       {backendConfigured ? (
         <Row className="g-0">
-          <FixedHeightRow className="g-0">
+          <Ribbon className="g-0">
             <SelectedImagesRibbon />
-          </FixedHeightRow>
-          <OverflowCol lg={8} md={8} sm={6} xs={6} data-testid="left-panel">
+          </Ribbon>
+          <OverflowCol
+            lg={8}
+            md={8}
+            sm={6}
+            xs={6}
+            data-testid="left-panel"
+            heightDelta={RibbonHeight}
+          >
             <CardGrid />
           </OverflowCol>
           <OverflowCol
@@ -90,6 +83,7 @@ function ProjectEditor() {
             xs={6}
             style={{ zIndex: 1 }}
             className="px-2"
+            heightDelta={RibbonHeight}
           >
             <Status />
             <Row className="g-0 pt-2">

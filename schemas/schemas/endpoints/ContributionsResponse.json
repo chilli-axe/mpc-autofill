@@ -1,0 +1,25 @@
+{
+  "title": "Contributions Response",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "sources": {
+      "type": "array",
+      "items": {
+        "$ref": "../SourceContribution.json"
+      }
+    },
+    "cardCountByType": {
+      "type": "object",
+      "propertyNames": { "$ref": "../CardType.json" },
+      "patternProperties": {
+        ".*": { "type": "integer" }
+      }
+    },
+    "totalDatabaseSize": {
+      "type": "integer"
+    }
+  },
+  "required": ["sources", "cardCountByType", "totalDatabaseSize"],
+  "additionalProperties": false
+}

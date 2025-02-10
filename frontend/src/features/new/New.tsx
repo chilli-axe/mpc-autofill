@@ -1,13 +1,11 @@
-import React, { useCallback, useState } from "react";
+import React, { useState } from "react";
 import Button from "react-bootstrap/Button";
-import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
 import styled from "styled-components";
 
-import { CardDocument } from "@/common/types";
 import { NewCardsFirstPage } from "@/common/types";
 import { Spinner } from "@/components/Spinner";
-import { MemoizedCard } from "@/features/card/Card";
+import { DatedCard } from "@/features/card/Card";
 import {
   useGetNewCardsFirstPageQuery,
   useGetNewCardsPageQuery,
@@ -21,22 +19,6 @@ const InlineHeader = styled.h3`
 const InlineParagraph = styled.p`
   display: inline;
 `;
-
-/**
- * This component is a thin layer on top of `Card` for use in the What's New page.
- */
-function NewCard({ cardDocument }: { cardDocument: CardDocument }) {
-  return (
-    <Col>
-      <MemoizedCard
-        key={`new-cards-${cardDocument.identifier}`}
-        maybeCardDocument={cardDocument}
-        cardHeaderTitle={cardDocument.date}
-        noResultsFound={false}
-      />
-    </Col>
-  );
-}
 
 function NewCardsForSource({
   sourceKey,
@@ -74,13 +56,13 @@ function NewCardsForSource({
       </InlineParagraph>
       <Row xxl={6} lg={4} md={3} sm={2} xs={2} className="g-0">
         {firstPage.cards.map((card) => (
-          <NewCard
+          <DatedCard
             cardDocument={card}
             key={`whats-new-card-${card.identifier}`}
           />
         ))}
         {(getNewCardsPageQuery.data ?? []).map((card) => (
-          <NewCard
+          <DatedCard
             cardDocument={card}
             key={`whats-new-card-${card.identifier}`}
           />

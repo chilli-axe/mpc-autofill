@@ -15,10 +15,15 @@ import { api } from "@/store/api";
 import {
   clearURL,
   selectBackendConfigured,
+  selectBackendURL,
   setURL,
 } from "@/store/slices/backendSlice";
 import { fetchCardbacks, selectCardbacks } from "@/store/slices/cardbackSlice";
-import { fetchCardDocumentsAndReportError } from "@/store/slices/cardDocumentsSlice";
+import {
+  addCardDocuments,
+  fetchCardDocumentsAndReportError,
+  theManHimself,
+} from "@/store/slices/cardDocumentsSlice";
 import {
   clearInvalidIdentifier,
   recordInvalidIdentifier,
@@ -181,7 +186,7 @@ startAppListening({
             const searchQuery = currentState.project.members[slot][face]?.query;
             return searchQuery?.query != null
               ? currentState.searchResults.searchResults[searchQuery.query][
-                  searchQuery.card_type
+                  searchQuery.cardType
                 ] != null
               : true;
           })

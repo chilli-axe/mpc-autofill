@@ -31,7 +31,7 @@ function ContributionGuidelines() {
   const describeTag = (tag: Tag) => (
     <li key={tag.name}>
       <code>{tag.name}</code>
-      {tag.aliases.length > 0 && (
+      {tag.aliases !== undefined && tag.aliases.length > 0 && (
         <>
           , which has the aliases [
           {tag.aliases.map((alias, i) => (
@@ -46,7 +46,10 @@ function ContributionGuidelines() {
       {tag.children.length > 0 && (
         <>
           {" "}
-          {tag.aliases.length > 0 ? "and" : ", which has"} the sub-tags:
+          {tag.aliases !== undefined && tag.aliases.length > 0
+            ? "and"
+            : ", which has"}{" "}
+          the sub-tags:
           <ul>{tag.children.map(describeTag)}</ul>
         </>
       )}

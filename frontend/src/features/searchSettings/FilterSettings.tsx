@@ -4,14 +4,14 @@
  * This component forms part of the Search Settings modal.
  */
 
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import Col from "react-bootstrap/Col";
 import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
-import DropdownTreeSelect, { TreeNode } from "react-dropdown-tree-select";
+import { TreeNode } from "react-dropdown-tree-select";
 require("react-dropdown-tree-select/dist/styles.css");
 
-import styled from "styled-components";
+import Container from "react-bootstrap/Container";
 
 import {
   DPIStep,
@@ -20,56 +20,10 @@ import {
   MinimumDPI,
   SizeStep,
 } from "@/common/constants";
+import { StyledDropdownTreeSelect } from "@/common/StyledDropdownTreeSelect";
 import { Tag } from "@/common/types";
 import { FilterSettings as FilterSettingsType } from "@/common/types";
 import { useGetLanguagesQuery, useGetTagsQuery } from "@/store/api";
-
-const StyledDropdownTreeSelect = styled(DropdownTreeSelect)`
-  .tag {
-    color: black;
-    background-color: #dddddd;
-  }
-  .tag-remove {
-    color: #666666;
-  }
-
-  .dropdown-trigger {
-    border-radius: 0.25rem;
-    background-color: white;
-  }
-  .dropdown-content {
-    border-radius: 0.25rem;
-  }
-
-  .search {
-    background-color: white;
-    color: black;
-  }
-  .search::placeholder {
-    color: black;
-  }
-
-  .toggle {
-    font: normal normal normal 12px/1 bootstrap-icons;
-    top: 2px;
-    left: 2px;
-  }
-
-  .toggle.collapsed::after {
-    content: "\F4FA";
-  }
-
-  .toggle.expanded::after {
-    content: "\F2E6";
-  }
-
-  color: black;
-
-  .root {
-    padding: 0;
-    margin: 0;
-  }
-`;
 
 interface FilterSettingsProps {
   filterSettings: FilterSettingsType;
@@ -85,11 +39,15 @@ export function FilterSettings({
   const getLanguagesQuery = useGetLanguagesQuery();
   const getTagsQuery = useGetTagsQuery();
 
-  const languageOptions = (getLanguagesQuery.data ?? []).map((row) => ({
-    label: row.name,
-    value: row.code,
-    checked: filterSettings.languages.includes(row.code),
-  }));
+  const languageOptions = useMemo(
+    () =>
+      (getLanguagesQuery.data ?? []).map((row) => ({
+        label: row.name,
+        value: row.code,
+        checked: filterSettings.languages.includes(row.code),
+      })),
+    [getLanguagesQuery.data, filterSettings.languages]
+  );
 
   const [expandedNodes, setExpandedNodes] = useState<Array<string>>([]);
 
@@ -99,18 +57,25 @@ export function FilterSettings({
    * This appears to be because updating data in Redux forces the component to re-render in
    * its initial state where everything is collapsed.
    */
-  const onNodeToggle = (currentNode: TreeNode): void => {
-    if (currentNode.expanded && !expandedNodes.includes(currentNode.value)) {
-      setExpandedNodes([...expandedNodes, currentNode.value]);
-    } else if (
-      !currentNode.expanded &&
-      expandedNodes.includes(currentNode.value)
-    ) {
-      setExpandedNodes(
-        expandedNodes.filter((node) => node != currentNode.value)
-      );
-    }
-  };
+  const onNodeToggle = useMemo(
+    () =>
+      (currentNode: TreeNode): void => {
+        if (
+          currentNode.expanded &&
+          !expandedNodes.includes(currentNode.value)
+        ) {
+          setExpandedNodes([...expandedNodes, currentNode.value]);
+        } else if (
+          !currentNode.expanded &&
+          expandedNodes.includes(currentNode.value)
+        ) {
+          setExpandedNodes(
+            expandedNodes.filter((node) => node != currentNode.value)
+          );
+        }
+      },
+    [expandedNodes]
+  );
 
   /**
    * Recursively convert a `Tag` into a data structure usable by react-dropdown-tree-select.
@@ -130,11 +95,17 @@ export function FilterSettings({
     },
     [getTagsQuery.data, expandedNodes]
   );
-  const includesTagsTree = getTagsTree(filterSettings.includesTags);
-  const excludesTagsTree = getTagsTree(filterSettings.excludesTags);
+  const includesTagsTree = useMemo(
+    () => getTagsTree(filterSettings.includesTags),
+    [getTagsTree, filterSettings.includesTags]
+  );
+  const excludesTagsTree = useMemo(
+    () => getTagsTree(filterSettings.excludesTags),
+    [getTagsTree, filterSettings.excludesTags]
+  );
 
   return (
-    <>
+    <Container className="px-1">
       <h5>Filters</h5>
       Configure the DPI (dots per inch) and file size ranges the search results
       must be within.
@@ -210,6 +181,7 @@ export function FilterSettings({
             languages: selectedNodes.map((row) => row.value),
           });
         }}
+        inlineSearchInput
       />
       <Form.Label htmlFor="selectTags">
         Select tags which cards must have <b>at least one</b> of
@@ -227,6 +199,7 @@ export function FilterSettings({
           });
         }}
         onNodeToggle={onNodeToggle}
+        inlineSearchInput
       />
       <Form.Label htmlFor="selectTags">
         Select tags which cards must <b>not</b> have
@@ -245,7 +218,8 @@ export function FilterSettings({
           });
         }}
         onNodeToggle={onNodeToggle}
+        inlineSearchInput
       />
-    </>
+    </Container>
   );
 }

@@ -30,7 +30,7 @@ test("the html structure of a CardDetailedViewModal", async () => {
         members: [
           {
             front: {
-              query: { query: "my search query", card_type: Card },
+              query: { query: "my search query", cardType: Card },
               selectedImage: cardDocument1.identifier,
               selected: false,
             },
@@ -46,6 +46,7 @@ test("the html structure of a CardDetailedViewModal", async () => {
 
   screen.getByAltText(cardDocument1.name).click();
   await waitFor(() => expect(screen.getByText("Card Details")));
+  await waitFor(() => expect(screen.getByText("English")));
 
   expect(screen.getByTestId("detailed-view")).toMatchSnapshot();
 });

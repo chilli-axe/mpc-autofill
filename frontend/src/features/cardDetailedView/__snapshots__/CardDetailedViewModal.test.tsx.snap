@@ -250,6 +250,45 @@ exports[`the html structure of a CardDetailedViewModal 1`] = `
               Download Image
             </button>
           </div>
+          <form
+            class=""
+          >
+            <div
+              class="g-0 pt-3 row"
+            >
+              <div
+                class="col-lg-2 col-md-3"
+              >
+                <input
+                  alt="Quantity of card to add to project"
+                  class="form-control"
+                  max="611"
+                  min="1"
+                  pattern="[0-9]*"
+                  placeholder="1"
+                  type="number"
+                  value="1"
+                />
+              </div>
+              <div
+                class="col-lg-10 col-md-9"
+              >
+                <div
+                  class="d-grid gap-0"
+                >
+                  <button
+                    class="btn btn-success"
+                    type="submit"
+                  >
+                    <i
+                      class="c7 bi bi-plus-circle"
+                    />
+                     Add to Project
+                  </button>
+                </div>
+              </div>
+            </div>
+          </form>
         </div>
       </div>
     </div>

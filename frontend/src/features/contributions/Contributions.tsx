@@ -19,23 +19,22 @@ export function ContributionsSummary() {
   //# region computed constants
 
   const totalImages =
-    contributionsQuery.data?.card_count_by_type != null
-      ? Object.values(contributionsQuery.data.card_count_by_type).reduce(
+    contributionsQuery.data?.cardCountByType != null
+      ? Object.values(contributionsQuery.data.cardCountByType).reduce(
           (a, b) => a + b,
           0
         )
       : 0;
   const formattedDatabaseSize = (
     Math.round(
-      ((contributionsQuery.data?.total_database_size ?? 0) / 1_000_000_000) *
-        100
+      ((contributionsQuery.data?.totalDatabaseSize ?? 0) / 1_000_000_000) * 100
     ) / 100
   ).toLocaleString();
   const formattedImagesByCardType = Object.fromEntries(
     [Card, Cardback, Token].map((cardType) => [
       cardType,
       (
-        (contributionsQuery.data?.card_count_by_type ?? {})[cardType] ?? 0
+        (contributionsQuery.data?.cardCountByType ?? {})[cardType] ?? 0
       ).toLocaleString(),
     ])
   );
@@ -76,12 +75,12 @@ function ContributionDescription({
 }) {
   return (
     <>
-      <b>{contribution.qty_cards}</b> card
-      {contribution.qty_cards != "1" && "s"},{" "}
-      <b>{contribution.qty_cardbacks}</b> cardback
-      {contribution.qty_cardbacks != "1" && "s"}, and{" "}
-      <b>{contribution.qty_tokens}</b> token
-      {contribution.qty_tokens != "1" && "s"}, at{" "}
+      <b>{contribution.qtyCards}</b> card
+      {contribution.qtyCards != "1" && "s"}, <b>{contribution.qtyCardbacks}</b>{" "}
+      cardback
+      {contribution.qtyCardbacks != "1" && "s"}, and{" "}
+      <b>{contribution.qtyTokens}</b> token
+      {contribution.qtyTokens != "1" && "s"}, at{" "}
       <b>{contribution.avgdpi} DPI</b> on average and a total size of{" "}
       <b>{contribution.size}</b>.
       {contribution.description.length > 0 && (
@@ -108,14 +107,14 @@ export function ContributionsPerSource() {
     <AutofillTable
       headers={["Name", "Type", "Contribution"]}
       data={contributionsQuery.data.sources.map((contribution) => [
-        contribution.external_link != null ? (
-          <Link href={contribution.external_link} target="_blank">
+        contribution.externalLink != null ? (
+          <Link href={contribution.externalLink} target="_blank">
             {contribution.name}
           </Link>
         ) : (
           contribution.name
         ),
-        contribution.source_type,
+        contribution.sourceType,
         <ContributionDescription
           key={`${contribution.name}-description`}
           contribution={contribution}

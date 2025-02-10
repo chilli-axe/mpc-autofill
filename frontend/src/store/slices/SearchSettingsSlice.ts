@@ -4,21 +4,32 @@ import {
   SearchSettings,
   SourceDocument,
   SourceDocuments,
+  SourceSettings,
 } from "@/common/types";
 import { RootState } from "@/store/store";
 
 //# region slice configuration
 
-export function getDefaultSearchSettings(
+export function getDefaultSourceSettings(
   sourceDocuments: SourceDocuments
+): SourceSettings {
+  return {
+    sources: Object.values(sourceDocuments).map(
+      (sourceDocument: SourceDocument) => [sourceDocument.pk, true]
+    ),
+  };
+}
+
+export function getDefaultSearchSettings(
+  sourceDocuments: SourceDocuments,
+  fuzzySearchByDefault: boolean = false
 ): SearchSettings {
   return {
-    searchTypeSettings: { fuzzySearch: false, filterCardbacks: false },
-    sourceSettings: {
-      sources: Object.values(sourceDocuments).map(
-        (sourceDocument: SourceDocument) => [sourceDocument.pk, true]
-      ),
+    searchTypeSettings: {
+      fuzzySearch: fuzzySearchByDefault,
+      filterCardbacks: false,
     },
+    sourceSettings: getDefaultSourceSettings(sourceDocuments),
     filterSettings: {
       minimumDPI: MinimumDPI,
       maximumDPI: MaximumDPI,

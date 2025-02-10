@@ -1,0 +1,16 @@
+{
+  "title": "Source Settings",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "sources": {
+      "description": "The list of sources in the order they should be searched",
+      "type": "array",
+      "items": {
+        "$ref": "./SourceRow.json"
+      }
+    }
+  },
+  "required": ["sources"],
+  "additionalProperties": false
+}

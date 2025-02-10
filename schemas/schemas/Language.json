@@ -1,0 +1,11 @@
+{
+  "title": "Language",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "name": { "type": "string" },
+    "code": { "type": "string" }
+  },
+  "required": ["name", "code"],
+  "additionalProperties": false
+}

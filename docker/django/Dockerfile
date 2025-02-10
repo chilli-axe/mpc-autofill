@@ -29,7 +29,6 @@ RUN pip3 install -r requirements.txt
 
 # Copy relevant files from repository
 COPY docker /MPCAutofill/docker
-COPY common /MPCAutofill/common
 COPY MPCAutofill /MPCAutofill/MPCAutofill
 
 # Handle environment variables - write out `.env` with the variables passed from the

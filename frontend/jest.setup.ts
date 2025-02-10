@@ -27,7 +27,7 @@ global.matchMedia =
     };
   };
 
-export default async () => {
+const defaultExport = async () => {
   const projectDir = process.cwd();
   loadEnvConfig(projectDir);
 };
@@ -70,3 +70,5 @@ afterAll(() => {
 
   jest.spyOn(Ping.prototype, "ping").mockRestore();
 });
+
+export default defaultExport;

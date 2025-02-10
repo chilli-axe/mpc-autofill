@@ -27,6 +27,35 @@ import { AppDispatch, RootState } from "@/store/store";
 
 const typePrefix = "cardDocuments/fetchCardDocuments";
 
+// TODO: rename, obviously.
+export const theManHimself = async (
+  identifiersToSearch: Array<string>,
+  backendURL: string | null
+) => {
+  if (identifiersToSearch.length > 0 && backendURL != null) {
+    // this block of code looks a bit arcane.
+    // we're dynamically constructing a promise chain according to the number of requests we need to make
+    // to retrieve all database rows corresponding to `identifiersToSearch`.
+    // e.g. say that `identifiersToSearch` contains 1500 identifiers.
+    // two requests will be issued, the first for 1000 cards, and the second for 500 cards
+    // (with the second request only commencing once the first has finished).
+    return Array.from(
+      Array(Math.ceil(identifiersToSearch.length / CardEndpointPageSize)).keys()
+    ).reduce(function (promiseChain: Promise<CardDocuments>, page: number) {
+      return promiseChain.then(async function (previousValue: CardDocuments) {
+        const cards = await APIGetCards(
+          backendURL,
+          identifiersToSearch.slice(
+            page * CardEndpointPageSize,
+            (page + 1) * CardEndpointPageSize
+          )
+        );
+        return { ...previousValue, ...cards };
+      });
+    }, Promise.resolve({}));
+  }
+};
+
 const fetchCardDocuments = createAppAsyncThunk(
   typePrefix,
   /**
@@ -34,6 +63,7 @@ const fetchCardDocuments = createAppAsyncThunk(
    * not yet been queried.
    */
   async (arg, { dispatch, getState }) => {
+    // TODO: can we access RTK Query data (i.e. explore page search results) within this thunk??????????????????????????
     await fetchSearchResultsAndReportError(dispatch);
     await fetchCardbacksAndReportError(dispatch);
 
@@ -52,30 +82,7 @@ const fetchCardDocuments = createAppAsyncThunk(
     );
 
     const backendURL = state.backend.url;
-    if (identifiersToSearch.length > 0 && backendURL != null) {
-      // this block of code looks a bit arcane.
-      // we're dynamically constructing a promise chain according to the number of requests we need to make
-      // to retrieve all database rows corresponding to `identifiersToSearch`.
-      // e.g. say that `identifiersToSearch` contains 1500 identifiers.
-      // two requests will be issued, the first for 1000 cards, and the second for 500 cards
-      // (with the second request only commencing once the first has finished).
-      return Array.from(
-        Array(
-          Math.ceil(identifiersToSearch.length / CardEndpointPageSize)
-        ).keys()
-      ).reduce(function (promiseChain: Promise<CardDocuments>, page: number) {
-        return promiseChain.then(async function (previousValue: CardDocuments) {
-          const cards = await APIGetCards(
-            backendURL,
-            identifiersToSearch.slice(
-              page * CardEndpointPageSize,
-              (page + 1) * CardEndpointPageSize
-            )
-          );
-          return { ...previousValue, ...cards };
-        });
-      }, Promise.resolve({}));
-    }
+    return await theManHimself(identifiersToSearch, backendURL);
   }
 );
 
@@ -131,6 +138,7 @@ export const cardDocumentsSlice = createAppSlice({
   },
 });
 
+export const { addCardDocuments } = cardDocumentsSlice.actions;
 export default cardDocumentsSlice.reducer;
 
 //# endregion

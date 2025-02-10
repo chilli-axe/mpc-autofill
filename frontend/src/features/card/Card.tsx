@@ -16,6 +16,7 @@ import React, {
   useState,
 } from "react";
 import BSCard from "react-bootstrap/Card";
+import Col from "react-bootstrap/Col";
 import styled from "styled-components";
 
 import { SearchQuery, useAppDispatch, useAppSelector } from "@/common/types";
@@ -57,7 +58,7 @@ export function getImageKey(
 ): string {
   return `${cardDocument.identifier}-${
     small ? "small" : "large"
-  }-${cardDocument.source_type?.toLowerCase().replace(" ", "_")}`;
+  }-${cardDocument.sourceType?.toLowerCase().replace(" ", "_")}`;
 }
 
 interface CardImageProps {
@@ -142,7 +143,7 @@ function CardImage({
   // attempt to load directly from bucket first
   const imageBucketURL = process.env.NEXT_PUBLIC_IMAGE_BUCKET_URL;
   const imageBucketURLValid =
-    imageBucketURL != null && !!maybeCardDocument?.source_type;
+    imageBucketURL != null && !!maybeCardDocument?.sourceType;
 
   const loadFromBucket =
     imageBucketURLValid &&
@@ -154,14 +155,14 @@ function CardImage({
   // if image is unavailable in bucket, fall back on loading from worker if possible
   const imageWorkerURL = process.env.NEXT_PUBLIC_IMAGE_WORKER_URL;
   const imageWorkerURLValid =
-    imageWorkerURL != null && !!maybeCardDocument?.source_type;
+    imageWorkerURL != null && !!maybeCardDocument?.sourceType;
 
   const smallThumbnailURL = imageWorkerURLValid
     ? `${imageWorkerURL}/images/google_drive/small/${maybeCardDocument?.identifier}.jpg`
-    : maybeCardDocument?.small_thumbnail_url;
+    : maybeCardDocument?.smallThumbnailUrl;
   const mediumThumbnailURL = imageWorkerURLValid
     ? `${imageWorkerURL}/images/google_drive/large/${maybeCardDocument?.identifier}.jpg`
-    : maybeCardDocument?.medium_thumbnail_url;
+    : maybeCardDocument?.mediumThumbnailUrl;
   const thumbnailFallbackURL = small ? smallThumbnailURL : mediumThumbnailURL;
   const imageSrc = loadFromBucket ? thumbnailBucketURL : thumbnailFallbackURL;
 
@@ -368,7 +369,7 @@ export function Card({
           <div className="mpccard-spacing">
             <BSCard.Text className="mpccard-source">
               {maybeCardDocument != null &&
-                `${maybeCardDocument.source_verbose} [${maybeCardDocument.dpi} DPI]`}
+                `${maybeCardDocument.sourceVerbose} [${maybeCardDocument.dpi} DPI]`}
               {maybeCardDocument == null &&
                 searchQuery != undefined &&
                 "Your search query"}
@@ -466,3 +467,19 @@ export function EditorCard({
 }
 
 export const MemoizedEditorCard = memo(EditorCard);
+
+/**
+ * This component is a thin layer on top of `Card` for use in the What's New page.
+ */
+export function DatedCard({ cardDocument }: { cardDocument: CardDocument }) {
+  return (
+    <Col>
+      <MemoizedCard
+        key={`new-cards-${cardDocument.identifier}`}
+        maybeCardDocument={cardDocument}
+        cardHeaderTitle={cardDocument.date}
+        noResultsFound={false}
+      />
+    </Col>
+  );
+}

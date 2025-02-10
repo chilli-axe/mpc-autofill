@@ -4,7 +4,7 @@
  * some more information (e.g. size, dote uploaded, etc.), and a button to download the full res image.
  */
 
-import React, { memo, useState } from "react";
+import React, { memo } from "react";
 import Badge from "react-bootstrap/Badge";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
@@ -16,6 +16,7 @@ import { AutofillTable } from "@/components/AutofillTable";
 import { ClickToCopy } from "@/components/ClickToCopy";
 import DisableSSR from "@/components/DisableSSR";
 import { RightPaddedIcon } from "@/components/icon";
+import { AddCardToProjectForm } from "@/features/card/AddCardToProjectForm";
 import {
   MemoizedCardImage,
   MemoizedCardProportionWrapper,
@@ -87,20 +88,17 @@ export function CardDetailedViewModal({
                 data={[
                   [
                     "Source Name",
-                    cardDocument.source_external_link != null &&
-                    cardDocument.source_external_link.length > 0 ? (
-                      <a
-                        href={cardDocument.source_external_link}
-                        target="_blank"
-                      >
-                        {cardDocument.source_name}
+                    cardDocument.sourceExternalLink != null &&
+                    cardDocument.sourceExternalLink.length > 0 ? (
+                      <a href={cardDocument.sourceExternalLink} target="_blank">
+                        {cardDocument.sourceName}
                       </a>
                     ) : (
-                      cardDocument.source_name
+                      cardDocument.sourceName
                     ),
                   ],
-                  ["Source Type", cardDocument.source_type],
-                  ["Class", toTitleCase(cardDocument.card_type)],
+                  ["Source Type", cardDocument.sourceType],
+                  ["Class", toTitleCase(cardDocument.cardType)],
                   [
                     "Identifier",
                     <ClickToCopy
@@ -153,6 +151,7 @@ export function CardDetailedViewModal({
                   Download Image
                 </Button>
               </div>
+              <AddCardToProjectForm cardDocument={cardDocument} />
             </div>
           </Row>
         </Modal.Body>

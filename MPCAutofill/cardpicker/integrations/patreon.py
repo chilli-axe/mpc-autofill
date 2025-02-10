@@ -1,7 +1,9 @@
 import platform
-from typing import Optional, TypedDict
+from typing import Optional
 
 import requests
+
+from cardpicker.schema_types import CampaignClass, Supporter, SupporterTier
 
 from MPCAutofill.settings import PATREON_ACCESS, PATREON_URL
 
@@ -12,31 +14,7 @@ patreon_header = {
 }
 
 
-class Campaign(TypedDict):
-    """Patreon 'Campaign' data schema."""
-
-    id: str
-    about: str
-
-
-class Supporter(TypedDict):
-    """Patron 'Supporter' data schema."""
-
-    name: str
-    tier: str
-    date: str
-    usd: int
-
-
-class SupporterTier(TypedDict):
-    """Patron 'Tier' data schema."""
-
-    title: str
-    description: str
-    usd: int
-
-
-def get_patreon_campaign_details() -> tuple[Optional[Campaign], Optional[dict[str, SupporterTier]]]:
+def get_patreon_campaign_details() -> tuple[Optional[CampaignClass], Optional[dict[str, SupporterTier]]]:
     """
     Get needed patreon campaign details.
     :return: Campaign ID, list of dictionaries containing supporter tier info.
@@ -58,7 +36,7 @@ def get_patreon_campaign_details() -> tuple[Optional[Campaign], Optional[dict[st
         ).json()
 
         # Properly format campaign details
-        campaign: Campaign = {"id": res["data"][0]["id"], "about": res["data"][0]["attributes"]["summary"]}
+        campaign = CampaignClass(id=res["data"][0]["id"], about=res["data"][0]["attributes"]["summary"])
 
         # Properly format campaign tiers
         tiers: dict[str, SupporterTier] = {}
@@ -67,11 +45,11 @@ def get_patreon_campaign_details() -> tuple[Optional[Campaign], Optional[dict[st
             if tier["attributes"]["amount_cents"] < 1:
                 continue
             # Build dictionary of tiers to reference by ID
-            tiers[tier["id"]] = {
-                "title": tier["attributes"]["title"],
-                "description": tier["attributes"]["description"],
-                "usd": round(tier["attributes"]["amount_cents"] / 100),
-            }
+            tiers[tier["id"]] = SupporterTier(
+                title=tier["attributes"]["title"],
+                description=tier["attributes"]["description"],
+                usd=round(tier["attributes"]["amount_cents"] / 100),
+            )
     except KeyError:
         print("Warning: Cannot locate Patreon campaign. Check Patreon access token!")
         return None, None
@@ -128,15 +106,15 @@ def get_patrons(
                 continue
 
             # Use member's highest subscribed tier
-            current_tier = sorted(mem_tiers, key=lambda item: item["usd"])[0]
+            current_tier = sorted(mem_tiers, key=lambda item: item.usd)[0]
 
             # Add member to results
             results.append(
                 Supporter(
                     name=mem_details.get("full_name", "Unknown"),
-                    tier=current_tier.get("title", "Unknown Tier"),
+                    tier=current_tier.title or "Unknown Tier",
                     date=mem_details.get("pledge_relationship_start", "2024-01-01")[:10],
-                    usd=current_tier.get("usd", 5),
+                    usd=current_tier.usd or 5,
                 )
             )
 
@@ -148,7 +126,7 @@ def get_patrons(
         # Return sorted results at top-level
         if page:
             return results
-        return sorted(results, key=lambda item: item["usd"], reverse=True)
+        return sorted(results, key=lambda item: item.usd, reverse=True)
 
     # Unable to retrieve patrons
     except KeyError:
@@ -156,4 +134,4 @@ def get_patrons(
         return None
 
 
-__all__ = ["Campaign", "Supporter", "SupporterTier", "get_patreon_campaign_details", "get_patrons"]
+__all__ = ["get_patreon_campaign_details", "get_patrons"]

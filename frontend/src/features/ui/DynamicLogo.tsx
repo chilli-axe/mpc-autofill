@@ -5,6 +5,7 @@ import Row from "react-bootstrap/Row";
 import styled, { css, keyframes, StyledComponent } from "styled-components";
 
 import { QueryTags } from "@/common/constants";
+import { CardType } from "@/common/schema_types";
 import { CardDocument, useAppDispatch } from "@/common/types";
 import { Spinner } from "@/components/Spinner";
 import {
@@ -207,23 +208,23 @@ const FifthImageTransformWrapper = styled(ImageTransformWrapperBase)<{
 
 const SampleCardDocument: CardDocument = {
   identifier: "your-design-here",
-  card_type: "CARD",
+  cardType: CardType.Card,
   name: "Your Design Here",
   priority: 0,
   source: "",
-  source_name: "",
-  source_id: 0,
-  source_verbose: "",
-  source_type: undefined,
-  source_external_link: null,
+  sourceName: "",
+  sourceId: 0,
+  sourceVerbose: "",
+  sourceType: undefined,
+  sourceExternalLink: undefined,
   dpi: 300,
   searchq: "",
   extension: "png",
   date: "1st January, 2000",
-  download_link: "",
+  downloadLink: "",
   size: 1,
-  small_thumbnail_url: "/logo-blank.png",
-  medium_thumbnail_url: "",
+  smallThumbnailUrl: "/logo-blank.png",
+  mediumThumbnailUrl: "",
   language: "EN",
   tags: [],
 };

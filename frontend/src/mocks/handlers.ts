@@ -190,12 +190,12 @@ export const cardbacksServerError = http.post(buildRoute("2/cardbacks/"), () =>
 //# region search results
 
 export const searchResultsNoResults = http.post(
-  buildRoute("2/searchResults/"),
+  buildRoute("2/editorSearch/"),
   () => HttpResponse.json({ results: {} }, { status: 200 })
 );
 
 export const searchResultsOneResult = http.post(
-  buildRoute("2/searchResults/"),
+  buildRoute("2/editorSearch/"),
   () =>
     HttpResponse.json(
       {
@@ -211,8 +211,25 @@ export const searchResultsOneResult = http.post(
     )
 );
 
+export const searchResultsOneResultCorrectSearchq = http.post(
+  buildRoute("2/editorSearch/"),
+  () =>
+    HttpResponse.json(
+      {
+        results: {
+          [cardDocument1.searchq]: {
+            CARD: [cardDocument1.identifier],
+            CARDBACK: [],
+            TOKEN: [],
+          },
+        },
+      },
+      { status: 200 }
+    )
+);
+
 export const searchResultsThreeResults = http.post(
-  buildRoute("2/searchResults/"),
+  buildRoute("2/editorSearch/"),
   () =>
     HttpResponse.json(
       {
@@ -233,7 +250,7 @@ export const searchResultsThreeResults = http.post(
 );
 
 export const searchResultsFourResults = http.post(
-  buildRoute("2/searchResults/"),
+  buildRoute("2/editorSearch/"),
   () =>
     HttpResponse.json(
       {
@@ -255,7 +272,7 @@ export const searchResultsFourResults = http.post(
 );
 
 export const searchResultsSixResults = http.post(
-  buildRoute("2/searchResults/"),
+  buildRoute("2/editorSearch/"),
   () =>
     HttpResponse.json(
       {
@@ -297,7 +314,7 @@ export const searchResultsSixResults = http.post(
 );
 
 export const searchResultsForDFCMatchedCards1And4 = http.post(
-  buildRoute("2/searchResults/"),
+  buildRoute("2/editorSearch/"),
   () =>
     HttpResponse.json(
       {
@@ -324,8 +341,8 @@ export const searchResultsForDFCMatchedCards1And4 = http.post(
 );
 
 export const searchResultsServerError = http.post(
-  buildRoute("2/searchResults/"),
-  () => HttpResponse.json(createError("2/searchResults"), { status: 200 })
+  buildRoute("2/editorSearch/"),
+  () => HttpResponse.json(createError("2/editorSearch"), { status: 200 })
 );
 
 //# endregion
@@ -333,14 +350,14 @@ export const searchResultsServerError = http.post(
 //# region dfc pairs
 
 export const dfcPairsNoResults = http.get(buildRoute("2/DFCPairs/"), () =>
-  HttpResponse.json({ dfc_pairs: {} }, { status: 200 })
+  HttpResponse.json({ dfcPairs: {} }, { status: 200 })
 );
 
 export const dfcPairsMatchingCards1And4 = http.get(
   buildRoute("2/DFCPairs/"),
   () =>
     HttpResponse.json(
-      { dfc_pairs: { ["my search query"]: cardDocument4.name } },
+      { dfcPairs: { ["my search query"]: cardDocument4.name } },
       { status: 200 }
     )
 );
@@ -408,12 +425,12 @@ export const sampleCardsServerError = http.get(
 //# region import sites
 
 export const importSitesNoResults = http.get(buildRoute("2/importSites"), () =>
-  HttpResponse.json({ import_sites: [] }, { status: 200 })
+  HttpResponse.json({ importSites: [] }, { status: 200 })
 );
 
 export const importSitesOneResult = http.get(buildRoute("2/importSites"), () =>
   HttpResponse.json(
-    { import_sites: [{ name: "test", url: "test.com" }] },
+    { importSites: [{ name: "test", url: "test.com" }] },
     { status: 200 }
   )
 );

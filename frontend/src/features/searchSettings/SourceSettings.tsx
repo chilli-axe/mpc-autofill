@@ -11,8 +11,9 @@ import {
   DropResult,
 } from "@hello-pangea/dnd"; // TODO: look into using `react-dnd` instead as it's a significantly smaller package
 import Link from "next/link";
-import React, { ReactNode, useCallback } from "react";
+import React, { ReactNode, useCallback, useMemo } from "react";
 import Button from "react-bootstrap/Button";
+import Container from "react-bootstrap/Container";
 import Table from "react-bootstrap/Table";
 // @ts-ignore: https://github.com/arnthor3/react-bootstrap-toggle/issues/21
 import Toggle from "react-bootstrap-toggle";
@@ -24,6 +25,7 @@ import {
   SourceSettings as SourceSettingsType,
   useAppSelector,
 } from "@/common/types";
+import { getSourceRowsFromSourceSettings } from "@/common/utils";
 import { Spinner } from "@/components/Spinner";
 import { selectSourceDocuments } from "@/store/slices/sourceDocumentsSlice";
 
@@ -37,12 +39,19 @@ interface SourceSettingsProps {
   setSourceSettings: {
     (newSourceSettings: SourceSettingsType): void;
   };
+  enableReorderingSources?: boolean;
 }
 
 export function SourceSettings({
   sourceSettings,
   setSourceSettings,
+  enableReorderingSources = true,
 }: SourceSettingsProps) {
+  const sourceRows = useMemo(
+    () => getSourceRowsFromSourceSettings(sourceSettings),
+    [sourceSettings]
+  );
+
   const maybeSourceDocuments = useAppSelector(selectSourceDocuments);
   const anySourcesEnabled = (sourceSettings.sources ?? []).some((x) => x[1]);
 
@@ -84,22 +93,24 @@ export function SourceSettings({
    * Toggle the enabled status of all sources in `localSourceOrder`. If any is enabled, they're all disabled.
    */
   const toggleAllSourceEnabledStatuses = useCallback(() => {
-    if (sourceSettings.sources != null) {
-      const updatedSources: Array<SourceRow> = sourceSettings.sources.map(
-        (x) => [x[0], !anySourcesEnabled]
-      );
+    if (sourceRows.length > 0) {
+      const updatedSources: Array<SourceRow> = sourceRows.map((x) => [
+        x[0],
+        !anySourcesEnabled,
+      ]);
       setSourceSettings({ sources: updatedSources });
     }
-  }, [sourceSettings.sources, setSourceSettings, anySourcesEnabled]);
+  }, [sourceRows, setSourceSettings, anySourcesEnabled]);
 
   let sourceTable = <Spinner />;
   if (maybeSourceDocuments != null) {
-    const sourceRows: Array<ReactNode> = (sourceSettings.sources ?? []).map(
+    const draggableSourceRows: Array<ReactNode> = sourceRows.map(
       (sourceRow, index) => (
         <Draggable
           key={sourceRow[0]}
           draggableId={sourceRow[0].toString()}
           index={index}
+          isDragDisabled={!enableReorderingSources}
         >
           {(provided, snapshot) => (
             <tr
@@ -131,12 +142,10 @@ export function SourceSettings({
                 key={`${sourceRow[0]}-name-column`}
                 style={{ verticalAlign: "middle", width: 50 + "%" }}
               >
-                {(maybeSourceDocuments[sourceRow[0]].external_link ?? "")
+                {(maybeSourceDocuments[sourceRow[0]].externalLink ?? "")
                   .length > 0 ? (
                   <Link
-                    href={
-                      maybeSourceDocuments[sourceRow[0]].external_link ?? ""
-                    }
+                    href={maybeSourceDocuments[sourceRow[0]].externalLink ?? ""}
                     target="_blank"
                   >
                     {maybeSourceDocuments[sourceRow[0]].name}
@@ -153,27 +162,31 @@ export function SourceSettings({
                   textAlign: "center",
                 }}
               >
-                <div>
-                  <Chevron
-                    key={`${sourceRow[0]}-up-button`}
-                    className="bi bi-chevron-double-up"
-                    onClick={() => {
-                      moveSourceToIndex(index, 0);
-                    }}
-                  />
-                </div>
-                <div>
-                  <Chevron
-                    key={`${sourceRow[0]}-down-button`}
-                    className="bi bi-chevron-double-down"
-                    onClick={() => {
-                      moveSourceToIndex(
-                        index,
-                        (sourceSettings.sources ?? []).length - 1
-                      );
-                    }}
-                  />
-                </div>
+                {enableReorderingSources && (
+                  <>
+                    <div>
+                      <Chevron
+                        key={`${sourceRow[0]}-up-button`}
+                        className="bi bi-chevron-double-up"
+                        onClick={() => {
+                          moveSourceToIndex(index, 0);
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <Chevron
+                        key={`${sourceRow[0]}-down-button`}
+                        className="bi bi-chevron-double-down"
+                        onClick={() => {
+                          moveSourceToIndex(
+                            index,
+                            (sourceSettings.sources ?? []).length - 1
+                          );
+                        }}
+                      />
+                    </div>
+                  </>
+                )}
               </td>
               <td
                 key={`${sourceRow[0]}-drag-button-column`}
@@ -183,11 +196,13 @@ export function SourceSettings({
                   textAlign: "center",
                 }}
               >
-                <i
-                  key={`${sourceRow[0]}-drag-button`}
-                  className="bi bi-grip-horizontal"
-                  style={{ fontSize: 2 + "em" }}
-                />
+                {enableReorderingSources && (
+                  <i
+                    key={`${sourceRow[0]}-drag-button`}
+                    className="bi bi-grip-horizontal"
+                    style={{ fontSize: 2 + "em" }}
+                  />
+                )}
               </td>
             </tr>
           )}
@@ -200,7 +215,8 @@ export function SourceSettings({
           {(provided, snapshot) => (
             <div
               style={{
-                height: sourceRows.length * 59 + ToggleButtonHeight + "px",
+                height:
+                  draggableSourceRows.length * 59 + ToggleButtonHeight + "px",
               }}
             >
               {/* TODO: migrate this to AutofillTable at some point? too big a job for right now. */}
@@ -214,7 +230,7 @@ export function SourceSettings({
                   </tr>
                 </thead>
                 <tbody>
-                  {sourceRows}
+                  {draggableSourceRows}
                   {provided.placeholder}
                 </tbody>
               </Table>
@@ -226,24 +242,27 @@ export function SourceSettings({
   }
 
   return (
-    <>
+    <Container className="px-1">
       <h5>Sources</h5>
       Configure the sources to include in the search results.
-      <ul>
-        <li>
-          <b>Drag & drop</b> them to change the order they&apos;re searched in.
-        </li>
-        <li>
-          Use the <b>arrows</b> to send a source to the top or bottom.
-        </li>
-      </ul>
-      <div className="d-grid gap-0">
+      {enableReorderingSources && (
+        <ul>
+          <li>
+            <b>Drag & drop</b> them to change the order they&apos;re searched
+            in.
+          </li>
+          <li>
+            Use the <b>arrows</b> to send a source to the top or bottom.
+          </li>
+        </ul>
+      )}
+      <div className="d-grid gap-0 mt-3">
         <Button variant="primary" onClick={toggleAllSourceEnabledStatuses}>
           {anySourcesEnabled ? "Disable" : "Enable"} all drives
         </Button>
       </div>
       <br />
       {sourceTable}
-    </>
+    </Container>
   );
 }
