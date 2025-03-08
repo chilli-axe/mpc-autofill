@@ -25,9 +25,9 @@ class Faces(models.TextChoices):
 
 
 class CardTypes(models.TextChoices):
-    CARD = (CardType.CARD.name, gettext_lazy(CardType.CARD.value))
-    CARDBACK = (CardType.CARDBACK.name, gettext_lazy(CardType.CARDBACK.value))
-    TOKEN = (CardType.TOKEN.name, gettext_lazy(CardType.TOKEN.value))
+    CARD = (CardType.CARD.name, gettext_lazy(CardType.CARD.value.title()))
+    CARDBACK = (CardType.CARDBACK.name, gettext_lazy(CardType.CARDBACK.value.title()))
+    TOKEN = (CardType.TOKEN.name, gettext_lazy(CardType.TOKEN.value.title()))
 
 
 class Cardstocks(models.TextChoices):
