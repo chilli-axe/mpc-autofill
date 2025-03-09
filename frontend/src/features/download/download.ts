@@ -74,7 +74,6 @@ export function useDoFileDownload(): (
         return false;
       })
       .then((isSuccess) => {
-        console.log(isSuccess);
         dispatch(
           stopDownload({
             id: downloadId,

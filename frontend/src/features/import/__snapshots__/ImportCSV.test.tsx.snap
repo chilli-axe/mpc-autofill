@@ -92,36 +92,38 @@ exports[`the html structure of CSV importer 1`] = `
           class="c1 table"
         >
           <thead>
-            <th
-              class="c2"
-              scope="col"
-            >
-              Quantity
-            </th>
-            <th
-              class="c2"
-              scope="col"
-            >
-              Front
-            </th>
-            <th
-              class="c2"
-              scope="col"
-            >
-              Front ID
-            </th>
-            <th
-              class="c2"
-              scope="col"
-            >
-              Back
-            </th>
-            <th
-              class="c2"
-              scope="col"
-            >
-              Back ID
-            </th>
+            <tr>
+              <th
+                class="c2"
+                scope="col"
+              >
+                Quantity
+              </th>
+              <th
+                class="c2"
+                scope="col"
+              >
+                Front
+              </th>
+              <th
+                class="c2"
+                scope="col"
+              >
+                Front ID
+              </th>
+              <th
+                class="c2"
+                scope="col"
+              >
+                Back
+              </th>
+              <th
+                class="c2"
+                scope="col"
+              >
+                Back ID
+              </th>
+            </tr>
           </thead>
           <tbody>
             <tr>
@@ -223,36 +225,38 @@ exports[`the html structure of CSV importer 1`] = `
           class="c1 table"
         >
           <thead>
-            <th
-              class="c2"
-              scope="col"
-            >
-              Quantity
-            </th>
-            <th
-              class="c2"
-              scope="col"
-            >
-              Front
-            </th>
-            <th
-              class="c2"
-              scope="col"
-            >
-              Front ID
-            </th>
-            <th
-              class="c2"
-              scope="col"
-            >
-              Back
-            </th>
-            <th
-              class="c2"
-              scope="col"
-            >
-              Back ID
-            </th>
+            <tr>
+              <th
+                class="c2"
+                scope="col"
+              >
+                Quantity
+              </th>
+              <th
+                class="c2"
+                scope="col"
+              >
+                Front
+              </th>
+              <th
+                class="c2"
+                scope="col"
+              >
+                Front ID
+              </th>
+              <th
+                class="c2"
+                scope="col"
+              >
+                Back
+              </th>
+              <th
+                class="c2"
+                scope="col"
+              >
+                Back ID
+              </th>
+            </tr>
           </thead>
           <tbody>
             <tr>

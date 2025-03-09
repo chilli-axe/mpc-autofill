@@ -315,28 +315,51 @@ export function SelectedImagesRibbon() {
   const renderOption = (key: OptionKey, inDropdown: boolean): ReactElement => {
     switch (key) {
       case "selectSimilar":
-        return <SelectSimilar slot={slots[0]} inDropdown={inDropdown} />;
+        return (
+          <SelectSimilar key={key} slot={slots[0]} inDropdown={inDropdown} />
+        );
       case "selectAll":
-        return <SelectAll inDropdown={inDropdown} />;
+        return <SelectAll key={key} inDropdown={inDropdown} />;
       case "changeSelectedImageSelectedImages":
         return (
           <ChangeSelectedImageSelectedImages
+            key={key}
             slots={slots}
             inDropdown={inDropdown}
           />
         );
       case "changeSelectedImageQueries":
         return (
-          <ChangeSelectedImageQueries slots={slots} inDropdown={inDropdown} />
+          <ChangeSelectedImageQueries
+            key={key}
+            slots={slots}
+            inDropdown={inDropdown}
+          />
         );
       case "clearSelectedImageQueries":
         return (
-          <ClearSelectedImageQueries slots={slots} inDropdown={inDropdown} />
+          <ClearSelectedImageQueries
+            key={key}
+            slots={slots}
+            inDropdown={inDropdown}
+          />
         );
       case "downloadSelectedImages":
-        return <DownloadSelectedImages slots={slots} inDropdown={inDropdown} />;
+        return (
+          <DownloadSelectedImages
+            key={key}
+            slots={slots}
+            inDropdown={inDropdown}
+          />
+        );
       case "deleteSelectedImages":
-        return <DeleteSelectedImages slots={slots} inDropdown={inDropdown} />;
+        return (
+          <DeleteSelectedImages
+            key={key}
+            slots={slots}
+            inDropdown={inDropdown}
+          />
+        );
     }
   };
   const enabledOptions: Array<OptionKey> = [

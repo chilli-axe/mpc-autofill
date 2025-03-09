@@ -78,7 +78,7 @@ export function FileDownloadEntry({
   );
   const downloadStatusIcon =
     status === undefined ? (
-      <Spinner size={2} />
+      <Spinner size={1.5} />
     ) : (
       <DownloadStatusIcon
         className={

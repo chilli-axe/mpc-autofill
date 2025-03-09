@@ -73,16 +73,18 @@ export function AutofillTable({
       >
         {headers.length > 0 && (
           <thead>
-            {headers.map((header, headerIndex) => (
-              <ColumnHeader
-                key={`autofill-table-header-${headerIndex}`}
-                scope="col"
-                $cols={uniformWidth ? headers.length : undefined}
-                $centred={centred}
-              >
-                {header}
-              </ColumnHeader>
-            ))}
+            <tr>
+              {headers.map((header, headerIndex) => (
+                <ColumnHeader
+                  key={`autofill-table-header-${headerIndex}`}
+                  scope="col"
+                  $cols={uniformWidth ? headers.length : undefined}
+                  $centred={centred}
+                >
+                  {header}
+                </ColumnHeader>
+              ))}
+            </tr>
           </thead>
         )}
         <tbody>

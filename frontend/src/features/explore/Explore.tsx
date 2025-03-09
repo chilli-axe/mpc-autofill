@@ -179,8 +179,8 @@ export function Explore() {
             aria-describedby="searchQueryText"
             placeholder={placeholderCardName}
           />
-          <Form.Label htmlFor="selectTags">
-            Select tags which card types to include
+          <Form.Label htmlFor="selectTypes">
+            Select which card types to include
           </Form.Label>
           <StyledDropdownTreeSelect
             data={Object.values(CardTypePrefixes).map((cardType) => ({

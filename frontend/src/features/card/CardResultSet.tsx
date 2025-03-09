@@ -93,6 +93,7 @@ function CardsGroupedTogether({
                 stayRendered
               >
                 <CardGridCard
+                  key={`gridSelector-${identifier}-card`}
                   identifier={identifier}
                   index={index}
                   selectImage={selectImage}
@@ -221,8 +222,6 @@ export function CardResultSet({
       ),
     [cardDocuments, imageIdentifiers]
   );
-
-  console.log(cardDocuments);
 
   return (
     <>

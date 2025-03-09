@@ -84,30 +84,32 @@ exports[`invalidIdentifiersModal displays the appropriate data 1`] = `
         class="c1 table table-hover"
       >
         <thead>
-          <th
-            class="c2"
-            scope="col"
-          >
-            Slot
-          </th>
-          <th
-            class="c2"
-            scope="col"
-          >
-            Face
-          </th>
-          <th
-            class="c2"
-            scope="col"
-          >
-            Query
-          </th>
-          <th
-            class="c2"
-            scope="col"
-          >
-            Identifier
-          </th>
+          <tr>
+            <th
+              class="c2"
+              scope="col"
+            >
+              Slot
+            </th>
+            <th
+              class="c2"
+              scope="col"
+            >
+              Face
+            </th>
+            <th
+              class="c2"
+              scope="col"
+            >
+              Query
+            </th>
+            <th
+              class="c2"
+              scope="col"
+            >
+              Identifier
+            </th>
+          </tr>
         </thead>
         <tbody>
           <tr>
