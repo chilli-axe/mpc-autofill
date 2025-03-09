@@ -2,8 +2,11 @@
  * State management for search results - what images are returned for what search queries.
  */
 
+import { createSelector } from "@reduxjs/toolkit";
+
 import { Back, SearchResultsEndpointPageSize } from "@/common/constants";
 import {
+  CardType,
   createAppAsyncThunk,
   createAppSlice,
   Faces,
@@ -13,6 +16,7 @@ import {
 } from "@/common/types";
 import { APIEditorSearch } from "@/store/api";
 import { selectBackendURL } from "@/store/slices/backendSlice";
+import { selectCardbacks } from "@/store/slices/cardbackSlice";
 import { selectQueriesWithoutSearchResults } from "@/store/slices/projectSlice";
 import { selectSearchSettings } from "@/store/slices/searchSettingsSlice";
 import { setNotification } from "@/store/slices/toastsSlice";
@@ -119,31 +123,48 @@ export default searchResultsSlice.reducer;
 
 //# region selectors
 
-export const selectSearchResultsForQuery = (
-  state: RootState,
-  searchQuery: SearchQuery | undefined
-) =>
-  searchQuery?.query != null
-    ? (state.searchResults.searchResults[searchQuery.query] ?? {})[
-        searchQuery.cardType
-      ]
-    : undefined;
-
 const defaultEmptySearchResults: Array<string> = [];
 
 /**
  * Handle the fallback logic where cardbacks with no query use the common cardback's list of cards.
  */
-export const selectSearchResultsForQueryOrDefault = (
-  state: RootState,
-  searchQuery: SearchQuery | null | undefined,
-  face: Faces,
-  cardbacks: Array<string>
-): Array<string> | undefined =>
-  searchQuery?.query != null && searchQuery.query.length > 0
-    ? selectSearchResultsForQuery(state, searchQuery)
-    : face === Back
-    ? cardbacks
-    : defaultEmptySearchResults;
+export const selectSearchResultsForQueryOrDefault = createSelector(
+  (
+    state: RootState,
+    query: string | null | undefined,
+    cardType: CardType | undefined,
+    face: Faces
+  ) => state.searchResults.searchResults,
+  (
+    state: RootState,
+    query: string | null | undefined,
+    cardType: CardType | undefined,
+    face: Faces
+  ) => query,
+  (
+    state: RootState,
+    query: string | null | undefined,
+    cardType: CardType | undefined,
+    face: Faces
+  ) => cardType,
+  (
+    state: RootState,
+    query: string | null | undefined,
+    cardType: CardType | undefined,
+    face: Faces
+  ) => face,
+  (
+    state: RootState,
+    query: string | null | undefined,
+    cardType: CardType | undefined,
+    face: Faces
+  ) => selectCardbacks(state),
+  (searchResults, query, cardType, face, cardbacks) =>
+    query != null && query.length > 0 && cardType !== undefined
+      ? (searchResults[query] ?? {})[cardType]
+      : face === Back
+      ? cardbacks
+      : defaultEmptySearchResults
+);
 
 //# endregion

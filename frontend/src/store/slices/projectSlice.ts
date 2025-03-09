@@ -15,7 +15,10 @@ import {
   SlotProjectMembers,
   Slots,
 } from "@/common/types";
-import { selectCardSizesByIdentifier } from "@/store/slices/cardDocumentsSlice";
+import {
+  getCardSizesByIdentifier,
+  selectCardSizesByIdentifier,
+} from "@/store/slices/cardDocumentsSlice";
 import { selectActiveFace } from "@/store/slices/viewSettingsSlice";
 import { RootState } from "@/store/store";
 
@@ -292,22 +295,31 @@ export const selectProjectMembers = (
   state: RootState
 ): Array<SlotProjectMembers> => state.project.members;
 
-export const selectProjectMember = (
-  state: RootState,
+const getProjectMember = (
+  members: Array<SlotProjectMembers>,
   face: Faces,
   slot: number
-): ProjectMember | null => (state.project.members[slot] ?? {})[face];
+) => (members[slot] ?? {})[face];
+
+export const selectProjectMember = createSelector(
+  (state: RootState, face: Faces, slot: number) => state.project.members,
+  (state: RootState, face: Faces, slot: number) => face,
+  (state: RootState, face: Faces, slot: number) => slot,
+  getProjectMember
+);
+
+const getProjectMemberIdentifiers = (members: Array<SlotProjectMembers>) =>
+  new Set(
+    members.flatMap((x: SlotProjectMembers) =>
+      (x.front?.selectedImage != null ? [x.front.selectedImage] : []).concat(
+        x.back?.selectedImage != null ? [x.back.selectedImage] : []
+      )
+    )
+  );
 
 export const selectProjectMemberIdentifiers = createSelector(
   (state: RootState) => state.project.members,
-  (projectMembers) =>
-    new Set(
-      projectMembers.flatMap((x: SlotProjectMembers) =>
-        (x.front?.selectedImage != null ? [x.front.selectedImage] : []).concat(
-          x.back?.selectedImage != null ? [x.back.selectedImage] : []
-        )
-      )
-    )
+  getProjectMemberIdentifiers
 );
 
 export const selectAllSlotsForActiveFace = createSelector(
@@ -366,13 +378,12 @@ export const selectUniqueCardIdentifiers = createSelector(
  * Return the unique card IDs currently selected in `slots`.
  */
 export const selectUniqueCardIdentifiersInSlots = createSelector(
-  (state: RootState, slots: Slots) =>
-    slots.map(
-      (slot) => state.project.members[slot[1]]?.[slot[0]]?.selectedImage
-    ),
-  (identifiers) => {
+  (state: RootState, slots: Slots) => state.project.members,
+  (state: RootState, slots: Slots) => slots,
+  (members, slots) => {
     const set = new Set<string>();
-    identifiers.map((identifier) => {
+    slots.map((slot) => {
+      const identifier = members[slot[1]]?.[slot[0]]?.selectedImage;
       if (identifier != null) {
         set.add(identifier);
       }
@@ -385,18 +396,21 @@ export const selectProjectSize = (state: RootState): number =>
   state.project.members.length;
 
 export const selectProjectFileSize = createSelector(
-  (state: RootState) =>
-    selectCardSizesByIdentifier(
-      state,
-      Array.from(selectProjectMemberIdentifiers(state))
-    ),
-  (cardSizesByIdentifier: { [identifier: string]: number }): number =>
-    Object.keys(cardSizesByIdentifier).reduce(
+  (state: RootState) => state.project.members,
+  (state: RootState) => state.cardDocuments.cardDocuments,
+  (members, cardDocuments): number => {
+    const cardSizesByIdentifier: { [identifier: string]: number } =
+      getCardSizesByIdentifier(
+        Array.from(getProjectMemberIdentifiers(members)),
+        cardDocuments
+      );
+    return Object.keys(cardSizesByIdentifier).reduce(
       (accumulator: number, identifier: string) => {
         return accumulator + (cardSizesByIdentifier[identifier] ?? 0);
       },
       0
-    )
+    );
+  }
 );
 
 export const selectQueriesWithoutSearchResults = createSelector(
@@ -425,12 +439,15 @@ export const selectQueriesWithoutSearchResults = createSelector(
 );
 
 export const selectAllSelectedProjectMembersHaveTheSameQuery = createSelector(
+  (state: RootState, slots: Slots) => state.project.members,
+  (state: RootState, slots: Slots) => slots,
   (state: RootState, slots: Array<[Faces, number]>) =>
     slots.length > 0 ? selectProjectMember(state, ...slots[0])?.query : null,
-  (state: RootState, slots: Array<[Faces, number]>) =>
-    slots.map((slot) => selectProjectMember(state, ...slot)),
-  (firstQuery, projectMembers) =>
-    projectMembers.every(
+  (members, slots, firstQuery) => {
+    const projectMembers = slots.map((slot) =>
+      getProjectMember(members, ...slot)
+    );
+    return projectMembers.every(
       (projectMember) =>
         (firstQuery?.query == null && projectMember?.query?.query == null) ||
         (firstQuery != null &&
@@ -438,7 +455,8 @@ export const selectAllSelectedProjectMembersHaveTheSameQuery = createSelector(
           projectMember?.query?.cardType == firstQuery.cardType)
     )
       ? firstQuery
-      : undefined
+      : undefined;
+  }
 );
 
 export const selectIsProjectEmpty = (state: RootState) =>

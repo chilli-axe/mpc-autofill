@@ -12,7 +12,7 @@ import { CardDocument, useAppDispatch, useAppSelector } from "@/common/types";
 import { AutofillCollapse } from "@/components/AutofillCollapse";
 import { RightPaddedIcon } from "@/components/icon";
 import { MemoizedEditorCard } from "@/features/card/Card";
-import { selectCardDocumentsByIdentifier } from "@/store/slices/cardDocumentsSlice";
+import { selectCardDocumentsByIdentifiers } from "@/store/slices/cardDocumentsSlice";
 import { selectSourceNamesByKey } from "@/store/slices/sourceDocumentsSlice";
 import {
   makeAllSourcesInvisible,
@@ -194,7 +194,7 @@ export function CardResultSet({
 
   // TODO: memoizing on array prop? this doesn't work does it?
   const cardDocuments = useAppSelector((state) =>
-    selectCardDocumentsByIdentifier(state, imageIdentifiers)
+    selectCardDocumentsByIdentifiers(state, imageIdentifiers)
   );
   const cardIdentifiersAndOptionNumbersBySource = useMemo(
     () =>

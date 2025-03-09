@@ -36,7 +36,6 @@ import {
 } from "@/store/slices/projectSlice";
 import { selectSearchResultsForQueryOrDefault } from "@/store/slices/searchResultsSlice";
 import { setNotification } from "@/store/slices/toastsSlice";
-import { selectActiveFace } from "@/store/slices/viewSettingsSlice";
 
 const RibbonText = styled.p`
   font-size: 0.9em;
@@ -146,14 +145,13 @@ function ChangeSelectedImageSelectedImages({
     selectAllSelectedProjectMembersHaveTheSameQuery(state, slots)
   );
 
-  const cardbacks = useAppSelector((state) => state.cardbacks.cardbacks) ?? [];
   const searchResultsForQueryOrDefault = useAppSelector((state) =>
     slots.length > 0
       ? selectSearchResultsForQueryOrDefault(
           state,
-          query,
-          slots[0][0],
-          cardbacks
+          query?.query,
+          query?.cardType,
+          slots[0][0]
         )
       : undefined
   );

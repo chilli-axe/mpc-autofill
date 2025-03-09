@@ -61,7 +61,9 @@ export const selectInvalidIdentifiers = createSelector(
   (state: RootState) => state.invalidIdentifiers.invalidIdentifiers,
   (invalidIdentifiers) => invalidIdentifiers.filter((item) => item != null)
 );
-export const selectInvalidIdentifiersCount = (state: RootState) =>
-  selectInvalidIdentifiers(state).length;
+export const selectInvalidIdentifiersCount = createSelector(
+  (state: RootState) => selectInvalidIdentifiers(state),
+  (invalidIdentifiers) => invalidIdentifiers.length
+);
 
 //# endregion

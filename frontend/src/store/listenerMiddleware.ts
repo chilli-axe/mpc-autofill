@@ -197,7 +197,6 @@ startAppListening({
     });
 
     const state = getState();
-    const cardbacks = selectCardbacks(state);
 
     const { slots }: { slots: Array<[Faces, number]> } = action.payload;
     for (const [_, [face, slot]] of slots.entries()) {
@@ -209,9 +208,9 @@ startAppListening({
       const searchResultsForQueryOrDefault =
         selectSearchResultsForQueryOrDefault(
           state,
-          searchQuery,
-          face,
-          cardbacks
+          searchQuery?.query,
+          searchQuery?.cardType,
+          face
         ) ?? [];
       const newSelectedImage =
         searchQuery?.query != null
@@ -247,9 +246,9 @@ startAppListening({
           const searchResultsForQueryOrDefault =
             selectSearchResultsForQueryOrDefault(
               state,
-              searchQuery,
-              face,
-              cardbacks
+              searchQuery?.query,
+              searchQuery?.cardType,
+              face
             );
           if (searchResultsForQueryOrDefault != null) {
             let mutatedSelectedImage = projectMember.selectedImage;

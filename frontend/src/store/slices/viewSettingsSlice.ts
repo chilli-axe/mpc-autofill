@@ -1,4 +1,4 @@
-import { PayloadAction } from "@reduxjs/toolkit";
+import { createSelector, PayloadAction } from "@reduxjs/toolkit";
 
 import { Back, Front } from "@/common/constants";
 import { createAppSlice, Faces, ViewSettingsState } from "@/common/types";
@@ -74,8 +74,10 @@ export const selectSourcesVisible = (state: RootState) =>
   state.viewSettings.sourcesVisible;
 export const selectFacetBySource = (state: RootState) =>
   state.viewSettings.facetBySource;
-export const selectAnySourcesCollapsed = (state: RootState) =>
-  Object.values(state.viewSettings.sourcesVisible ?? {}).includes(false);
+export const selectAnySourcesCollapsed = createSelector(
+  (state: RootState) => state.viewSettings.sourcesVisible,
+  (sourcesVisible) => Object.values(sourcesVisible ?? {}).includes(false)
+);
 export const selectJumpToVersionVisible = (state: RootState) =>
   state.viewSettings.jumpToVersionVisible;
 

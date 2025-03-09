@@ -20,7 +20,7 @@ import Row from "react-bootstrap/Row";
 import { CardDocument, useAppDispatch, useAppSelector } from "@/common/types";
 import { AutofillCollapse } from "@/components/AutofillCollapse";
 import { CardResultSet } from "@/features/card/CardResultSet";
-import { selectCardDocumentsByIdentifier } from "@/store/slices/cardDocumentsSlice";
+import { selectCardDocumentsByIdentifiers } from "@/store/slices/cardDocumentsSlice";
 import {
   selectJumpToVersionVisible,
   toggleJumpToVersionVisible,

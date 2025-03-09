@@ -86,9 +86,13 @@ export function CardSlot({ searchQuery, face, slot }: CardSlotProps) {
   //# region queries and hooks
 
   const dispatch = useAppDispatch();
-  const cardbacks = useAppSelector(selectCardbacks);
   const searchResultsForQueryOrDefault = useAppSelector((state) =>
-    selectSearchResultsForQueryOrDefault(state, searchQuery, face, cardbacks)
+    selectSearchResultsForQueryOrDefault(
+      state,
+      searchQuery?.query,
+      searchQuery?.cardType,
+      face
+    )
   );
   const projectMember = useAppSelector((state) =>
     selectProjectMember(state, face, slot)

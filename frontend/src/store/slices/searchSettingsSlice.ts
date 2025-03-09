@@ -1,3 +1,5 @@
+import { createSelector } from "@reduxjs/toolkit";
+
 import { MaximumDPI, MaximumSize, MinimumDPI } from "@/common/constants";
 import {
   createAppSlice,
@@ -70,7 +72,9 @@ export default searchSettingsSlice.reducer;
 export const selectSearchSettings = (state: RootState) => state.searchSettings;
 export const selectFuzzySearch = (state: RootState) =>
   state.searchSettings.searchTypeSettings.fuzzySearch;
-export const selectSearchSettingsSourcesValid = (state: RootState) =>
-  state.searchSettings.sourceSettings.sources != null;
+export const selectSearchSettingsSourcesValid = createSelector(
+  (state: RootState) => state.searchSettings.sourceSettings.sources,
+  (sources) => sources != null
+);
 
 //# endregion

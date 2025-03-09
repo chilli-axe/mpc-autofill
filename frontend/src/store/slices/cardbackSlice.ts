@@ -2,6 +2,8 @@
  * State management for cardbacks retrieved from the backend.
  */
 
+import { createSelector } from "@reduxjs/toolkit";
+
 import {
   CardbacksState,
   createAppAsyncThunk,
@@ -92,7 +94,9 @@ export default cardbackSlice.reducer;
 //# region selectors
 
 const defaultEmptyCardbacks: Array<string> = [];
-export const selectCardbacks = (state: RootState) =>
-  state.cardbacks.cardbacks ?? defaultEmptyCardbacks;
+export const selectCardbacks = createSelector(
+  (state: RootState) => state.cardbacks.cardbacks,
+  (cardbacks) => cardbacks ?? defaultEmptyCardbacks
+);
 
 //# endregion

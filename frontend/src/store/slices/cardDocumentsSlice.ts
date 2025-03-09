@@ -145,15 +145,15 @@ export default cardDocumentsSlice.reducer;
 
 //# region selectors
 
-export const selectCardDocumentByIdentifier = (
-  state: RootState,
-  imageIdentifier: string | undefined
-): CardDocument | undefined =>
-  imageIdentifier != null
-    ? state.cardDocuments.cardDocuments[imageIdentifier]
-    : undefined;
+export const selectCardDocumentByIdentifier = createSelector(
+  (state: RootState, imageIdentifier: string | undefined) => imageIdentifier,
+  (state: RootState, imageIdentifier: string | undefined) =>
+    state.cardDocuments.cardDocuments,
+  (imageIdentifier, cardDocuments) =>
+    imageIdentifier != null ? cardDocuments[imageIdentifier] : undefined
+);
 
-export const selectCardDocumentsByIdentifier = createSelector(
+export const selectCardDocumentsByIdentifiers = createSelector(
   (state: RootState, identifiers: Array<string>) => identifiers,
   (state: RootState, identifiers: Array<string>) =>
     state.cardDocuments.cardDocuments,
@@ -163,17 +163,22 @@ export const selectCardDocumentsByIdentifier = createSelector(
     )
 );
 
+export const getCardSizesByIdentifier = (
+  identifiers: Array<string>,
+  cardDocuments: CardDocuments
+) =>
+  Object.fromEntries(
+    identifiers.map((identifier) => [
+      identifier,
+      cardDocuments[identifier]?.size ?? 0,
+    ])
+  );
+
 export const selectCardSizesByIdentifier = createSelector(
   (state: RootState, identifiers: Array<string>) => identifiers,
   (state: RootState, identifiers: Array<string>) =>
     state.cardDocuments.cardDocuments,
-  (identifiers, cardDocuments) =>
-    Object.fromEntries(
-      identifiers.map((identifier) => [
-        identifier,
-        cardDocuments[identifier]?.size ?? 0,
-      ])
-    )
+  getCardSizesByIdentifier
 );
 
 //# endregion
@@ -187,7 +192,7 @@ export function useCardDocumentsByIdentifier(): {
     useAppSelector(selectProjectMemberIdentifiers)
   );
   return useAppSelector((state) =>
-    selectCardDocumentsByIdentifier(state, identifiers)
+    selectCardDocumentsByIdentifiers(state, identifiers)
   );
 }
 
