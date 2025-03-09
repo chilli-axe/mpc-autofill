@@ -146,6 +146,27 @@ export interface FinishSettingsState {
   foil: boolean;
 }
 
+export type FileDownloadStatus = "success" | "failed" | "terminated";
+export type FileDownloadType = "image" | "xml" | "text";
+
+export interface FileDownload {
+  name: string;
+  type: FileDownloadType;
+  enqueuedTimestamp: string; // can't store dates in redux y'see
+  startedTimestamp?: string; // can't store dates in redux y'see
+  completedTimestamp?: string; // can't store dates in redux y'see
+  status?: FileDownloadStatus;
+}
+
+export interface EnqueueFileDownload
+  extends Omit<FileDownload, "completedTimestamp" | "status"> {
+  id: string;
+}
+
+export interface FileDownloadsState {
+  [id: string]: FileDownload;
+}
+
 export type ProcessedLine = [
   number,
   ProjectMember | null,

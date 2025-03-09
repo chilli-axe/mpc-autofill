@@ -22,7 +22,7 @@ import { useGetDFCPairsQuery, useGetImportSitesQuery } from "@/store/api";
 import { api } from "@/store/api";
 import { useProjectName } from "@/store/slices/backendSlice";
 import { addMembers, selectProjectSize } from "@/store/slices/projectSlice";
-import { selectFuzzySearch } from "@/store/slices/SearchSettingsSlice";
+import { selectFuzzySearch } from "@/store/slices/searchSettingsSlice";
 import { setNotification } from "@/store/slices/toastsSlice";
 
 export function ImportURL() {

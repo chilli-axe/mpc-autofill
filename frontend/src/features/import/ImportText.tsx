@@ -30,7 +30,7 @@ import { toTitleCase } from "@/common/utils";
 import { RightPaddedIcon } from "@/components/icon";
 import { useGetDFCPairsQuery, useGetSampleCardsQuery } from "@/store/api";
 import { addMembers, selectProjectSize } from "@/store/slices/projectSlice";
-import { selectFuzzySearch } from "@/store/slices/SearchSettingsSlice";
+import { selectFuzzySearch } from "@/store/slices/searchSettingsSlice";
 
 export function ImportText() {
   //# region queries and hooks

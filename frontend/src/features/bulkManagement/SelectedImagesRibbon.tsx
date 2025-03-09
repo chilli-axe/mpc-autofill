@@ -17,7 +17,7 @@ import styled from "styled-components";
 import { Faces, Slots, useAppDispatch, useAppSelector } from "@/common/types";
 import { RightPaddedIcon } from "@/components/icon";
 import { OverflowList } from "@/components/OverflowList";
-import { useQueueImageDownload } from "@/features/download/downloadImages";
+import { useDoImageDownload } from "@/features/download/downloadImages";
 import { GridSelectorModal } from "@/features/gridSelector/GridSelectorModal";
 import { useCardDocumentsByIdentifier } from "@/store/slices/cardDocumentsSlice";
 import { setSelectedSlotsAndShowModal } from "@/store/slices/modalsSlice";
@@ -233,7 +233,7 @@ function DownloadSelectedImages({
 }) {
   const dispatch = useAppDispatch();
   const cardDocumentsByIdentifier = useCardDocumentsByIdentifier();
-  const queueImageDownload = useQueueImageDownload();
+  const queueImageDownload = useDoImageDownload();
   const identifiers = useAppSelector((state) =>
     selectUniqueCardIdentifiersInSlots(state, slots)
   );

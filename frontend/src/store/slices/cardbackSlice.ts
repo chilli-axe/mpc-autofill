@@ -9,7 +9,7 @@ import {
 } from "@/common/types";
 import { APIGetCardbacks } from "@/store/api";
 import { selectBackendURL } from "@/store/slices/backendSlice";
-import { selectSearchSettings } from "@/store/slices/SearchSettingsSlice";
+import { selectSearchSettings } from "@/store/slices/searchSettingsSlice";
 import { setNotification } from "@/store/slices/toastsSlice";
 import { AppDispatch, RootState } from "@/store/store";
 

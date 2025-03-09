@@ -18,7 +18,7 @@ import { useAppDispatch } from "@/common/types";
 import {
   DownloadContext,
   DownloadContextProvider,
-} from "@/features/download/downloadImages";
+} from "@/features/download/download";
 import { Modals } from "@/features/modals/Modals";
 import { Toasts } from "@/features/toasts/Toasts";
 import ProjectNavbar from "@/features/ui/Navbar";

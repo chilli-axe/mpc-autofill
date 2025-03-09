@@ -13,6 +13,7 @@ import { ContentMaxWidth, NavbarLogoHeight } from "@/common/constants";
 import { useAppDispatch } from "@/common/types";
 import DisableSSR from "@/components/DisableSSR";
 import { BackendConfig } from "@/features/backend/BackendConfig";
+import { DownloadManager } from "@/features/download/DownloadManager";
 import { useGetBackendInfoQuery } from "@/store/api";
 import {
   useBackendConfigured,
@@ -138,15 +139,20 @@ export default function ProjectNavbar() {
               </NavDropdown>
             </Nav>
             <Nav className="ms-auto d-flex">
+              <Nav.Link className="p-0">
+                <DownloadManager />
+              </Nav.Link>
               {process.env.NEXT_PUBLIC_BACKEND_URL == null && (
-                <Button
-                  className="my-xl-0 my-lg-0 my-md-2 my-sm-2 my-2"
-                  variant="success"
-                  onClick={handleShowBackendConfig}
-                  aria-label="configure-server-btn"
-                >
-                  Configure Server
-                </Button>
+                <Nav.Link>
+                  <Button
+                    className="my-xl-0 my-lg-0 my-md-2 my-sm-2 my-2"
+                    variant="success"
+                    onClick={handleShowBackendConfig}
+                    aria-label="configure-server-btn"
+                  >
+                    Configure Server
+                  </Button>
+                </Nav.Link>
               )}
             </Nav>
           </BoldCollapse>

@@ -13,12 +13,13 @@ import backendReducer, {
 } from "@/store/slices/backendSlice";
 import cardbacksReducer from "@/store/slices/cardbackSlice";
 import cardDocumentsReducer from "@/store/slices/cardDocumentsSlice";
-import finishSettingsReducer from "@/store/slices/FinishSettingsSlice";
+import fileDownloadsReducer from "@/store/slices/fileDownloadsSlice";
+import finishSettingsReducer from "@/store/slices/finishSettingsSlice";
 import invalidIdentifiersReducer from "@/store/slices/invalidIdentifiersSlice";
 import modalsReducer from "@/store/slices/modalsSlice";
 import projectReducer from "@/store/slices/projectSlice";
 import searchResultsReducer from "@/store/slices/searchResultsSlice";
-import searchSettingsReducer from "@/store/slices/SearchSettingsSlice";
+import searchSettingsReducer from "@/store/slices/searchSettingsSlice";
 import sourceDocumentsReducer from "@/store/slices/sourceDocumentsSlice";
 import toastsReducer, { setNotification } from "@/store/slices/toastsSlice";
 import viewSettingsReducer from "@/store/slices/viewSettingsSlice";
@@ -37,6 +38,7 @@ const rootReducer = combineReducers({
   toasts: toastsReducer,
   modals: modalsReducer,
   invalidIdentifiers: invalidIdentifiersReducer,
+  fileDownloads: fileDownloadsReducer,
 });
 
 //# region middleware

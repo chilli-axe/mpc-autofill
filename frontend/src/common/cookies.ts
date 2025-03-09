@@ -14,7 +14,7 @@ import {
 import { Convert } from "@/common/schema_types";
 import { SearchSettings, SourceDocuments, SourceRow } from "@/common/types";
 import { getSourceRowsFromSourceSettings } from "@/common/utils";
-import { getDefaultSearchSettings } from "@/store/slices/SearchSettingsSlice";
+import { getDefaultSearchSettings } from "@/store/slices/searchSettingsSlice";
 
 // import * as SearchSettingsSchema from "../../../schemas/schemas/SearchSettings.json";
 

@@ -29,7 +29,7 @@ import { processPrefix } from "@/common/processing";
 import { useAppDispatch, useAppSelector } from "@/common/types";
 import { Cardstock, SlotProjectMembers } from "@/common/types";
 import { RightPaddedIcon } from "@/components/icon";
-import { setCardstock, setFoil } from "@/store/slices/FinishSettingsSlice";
+import { setCardstock, setFoil } from "@/store/slices/finishSettingsSlice";
 import {
   addMembers,
   selectProjectCardback,

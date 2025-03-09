@@ -23,7 +23,7 @@ import { AutofillTable } from "@/components/AutofillTable";
 import { RightPaddedIcon } from "@/components/icon";
 import { useGetDFCPairsQuery } from "@/store/api";
 import { addMembers, selectProjectSize } from "@/store/slices/projectSlice";
-import { selectFuzzySearch } from "@/store/slices/SearchSettingsSlice";
+import { selectFuzzySearch } from "@/store/slices/searchSettingsSlice";
 import { setNotification } from "@/store/slices/toastsSlice";
 
 /**

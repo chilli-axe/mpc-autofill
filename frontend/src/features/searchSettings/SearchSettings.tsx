@@ -28,7 +28,7 @@ import {
   setFilterSettings,
   setSearchTypeSettings,
   setSourceSettings,
-} from "@/store/slices/SearchSettingsSlice";
+} from "@/store/slices/searchSettingsSlice";
 
 export function SearchSettings() {
   const dispatch = useAppDispatch();

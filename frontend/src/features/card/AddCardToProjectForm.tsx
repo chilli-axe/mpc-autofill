@@ -17,7 +17,7 @@ import { CardDocument, useAppDispatch, useAppSelector } from "@/common/types";
 import { RightPaddedIcon } from "@/components/icon";
 import { useGetDFCPairsQuery } from "@/store/api";
 import { addMembers, selectProjectSize } from "@/store/slices/projectSlice";
-import { selectFuzzySearch } from "@/store/slices/SearchSettingsSlice";
+import { selectFuzzySearch } from "@/store/slices/searchSettingsSlice";
 import { setNotification } from "@/store/slices/toastsSlice";
 
 export function AddCardToProjectForm({

@@ -1,4 +1,4 @@
-import React, { useId } from "react";
+import React from "react";
 import Alert from "react-bootstrap/Alert";
 import Button from "react-bootstrap/Button";
 import Col from "react-bootstrap/Col";
@@ -10,7 +10,7 @@ import { MakePlayingCards, MakePlayingCardsURL } from "@/common/constants";
 import { useAppDispatch, useAppSelector } from "@/common/types";
 import { Coffee } from "@/components/Coffee";
 import { RightPaddedIcon } from "@/components/icon";
-import { useExportXML } from "@/features/export/ExportXML";
+import { useDownloadXML } from "@/features/download/downloadXML";
 import { useProjectName } from "@/store/slices/backendSlice";
 import { showModal } from "@/store/slices/modalsSlice";
 import { selectIsProjectEmpty } from "@/store/slices/projectSlice";
@@ -79,7 +79,7 @@ const DownloadButtonLink = styled.a`
 `;
 
 function ProjectDownload() {
-  const exportXML = useExportXML();
+  const downloadXML = useDownloadXML();
   const projectName = useProjectName();
   return (
     <>
@@ -94,7 +94,7 @@ function ProjectDownload() {
       </p>
       <Row>
         <Col md={{ span: 8, offset: 2 }} sm={12}>
-          <DownloadButton onClick={exportXML}>
+          <DownloadButton onClick={downloadXML}>
             <DownloadButtonLink>
               <h1 className="bi bi-file-code"></h1>
               <h4>Download Project as XML</h4>

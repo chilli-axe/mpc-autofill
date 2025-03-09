@@ -38,7 +38,7 @@ import { useBackendConfigured } from "@/store/slices/backendSlice";
 import {
   getDefaultSearchSettings,
   getDefaultSourceSettings,
-} from "@/store/slices/SearchSettingsSlice";
+} from "@/store/slices/searchSettingsSlice";
 import { selectSourceDocuments } from "@/store/slices/sourceDocumentsSlice";
 
 export function Explore() {

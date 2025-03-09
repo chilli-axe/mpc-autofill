@@ -21,7 +21,7 @@ import {
   MemoizedCardImage,
   MemoizedCardProportionWrapper,
 } from "@/features/card/Card";
-import { useQueueImageDownload } from "@/features/download/downloadImages";
+import { useDoImageDownload } from "@/features/download/downloadImages";
 import { useGetLanguagesQuery } from "@/store/api";
 import { setNotification } from "@/store/slices/toastsSlice";
 
@@ -42,7 +42,7 @@ export function CardDetailedViewModal({
   //# region queries and hooks
 
   const dispatch = useAppDispatch();
-  const queueImageDownload = useQueueImageDownload();
+  const queueImageDownload = useDoImageDownload();
   const getLanguagesQuery = useGetLanguagesQuery();
 
   //# endregion
