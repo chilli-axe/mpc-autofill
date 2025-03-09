@@ -15,19 +15,11 @@ import { api } from "@/store/api";
 import {
   clearURL,
   selectBackendConfigured,
-  selectBackendURL,
   setURL,
 } from "@/store/slices/backendSlice";
 import { fetchCardbacks, selectCardbacks } from "@/store/slices/cardbackSlice";
-import {
-  addCardDocuments,
-  fetchCardDocumentsAndReportError,
-  theManHimself,
-} from "@/store/slices/cardDocumentsSlice";
-import {
-  clearInvalidIdentifier,
-  recordInvalidIdentifier,
-} from "@/store/slices/invalidIdentifiersSlice";
+import { fetchCardDocumentsAndReportError } from "@/store/slices/cardDocumentsSlice";
+import { recordInvalidIdentifier } from "@/store/slices/invalidIdentifiersSlice";
 import {
   addMembers,
   selectProjectCardback,
@@ -200,10 +192,6 @@ startAppListening({
 
     const { slots }: { slots: Array<[Faces, number]> } = action.payload;
     for (const [_, [face, slot]] of slots.entries()) {
-      // the user has specifically opted into changing the query here,
-      // so previous warnings that missing cards were requested for this slot are no longer valid
-      dispatch(clearInvalidIdentifier({ face, slot }));
-
       const searchQuery = state.project.members[slot][face]?.query;
       const searchResultsForQueryOrDefault =
         selectSearchResultsForQueryOrDefault(
@@ -236,7 +224,6 @@ startAppListening({
    */
   effect: async (action, { dispatch, getState }) => {
     const state = getState();
-    const cardbacks = selectCardbacks(state);
     const projectCardback = selectProjectCardback(state);
     for (const [slot, slotProjectMember] of state.project.members.entries()) {
       for (const face of [Front, Back]) {

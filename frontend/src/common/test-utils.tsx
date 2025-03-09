@@ -302,6 +302,25 @@ async function openGridSelector(
   return screen.getByTestId(gridSelectorTestId);
 }
 
+export async function openChangeQueryModal(
+  cardSlotTestId: string,
+  cardName: string
+) {
+  await waitFor(() =>
+    within(screen.getByTestId(cardSlotTestId)).getByText(cardName).click()
+  );
+  return screen.getByTestId("change-query-modal");
+}
+
+export async function changeQuery(
+  cardSlotTestId: string,
+  cardName: string,
+  newQuery: string
+) {
+  const modal = await openChangeQueryModal(cardSlotTestId, cardName);
+  await changeQueries(newQuery);
+}
+
 export async function openCardSlotGridSelector(
   slot: number,
   face: Faces,

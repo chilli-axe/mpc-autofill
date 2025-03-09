@@ -27,8 +27,7 @@ import { AppDispatch, RootState } from "@/store/store";
 
 const typePrefix = "cardDocuments/fetchCardDocuments";
 
-// TODO: rename, obviously.
-export const theManHimself = async (
+export const getCardDocumentRequestPromiseChain = async (
   identifiersToSearch: Array<string>,
   backendURL: string | null
 ) => {
@@ -82,7 +81,10 @@ const fetchCardDocuments = createAppAsyncThunk(
     );
 
     const backendURL = state.backend.url;
-    return await theManHimself(identifiersToSearch, backendURL);
+    return await getCardDocumentRequestPromiseChain(
+      identifiersToSearch,
+      backendURL
+    );
   }
 );
 

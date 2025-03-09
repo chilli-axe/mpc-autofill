@@ -1,9 +1,14 @@
 import { waitFor } from "@testing-library/dom";
 import { screen } from "@testing-library/react";
 
-import { Front, SelectedImageSeparator } from "@/common/constants";
-import { cardDocument1, cardDocument5 } from "@/common/test-constants";
+import { Card, Front, SelectedImageSeparator } from "@/common/constants";
 import {
+  cardDocument1,
+  cardDocument2,
+  cardDocument5,
+} from "@/common/test-constants";
+import {
+  changeQuery,
   expectCardGridSlotState,
   expectCardSlotToExist,
   importText,
@@ -12,8 +17,10 @@ import {
 import ProjectEditor from "@/components/ProjectEditor";
 import {
   cardDocumentsOneResult,
+  cardDocumentsThreeResults,
   defaultHandlers,
   searchResultsOneResult,
+  searchResultsSixResults,
   sourceDocumentsOneResult,
 } from "@/mocks/handlers";
 import { server } from "@/mocks/server";
@@ -75,4 +82,43 @@ describe("InvalidIdentifiersStatus tests", () => {
       }
     }
   );
+  test("invalid identifiers status is not displayed when changing query", async () => {
+    server.use(
+      cardDocumentsThreeResults,
+      sourceDocumentsOneResult,
+      searchResultsSixResults,
+      ...defaultHandlers
+    );
+    renderWithProviders(<ProjectEditor />, {
+      preloadedState: {
+        project: {
+          members: [
+            {
+              front: {
+                query: { query: "query 1", cardType: Card },
+                selectedImage: cardDocument1.identifier,
+                selected: false,
+              },
+              back: null,
+            },
+          ],
+          cardback: cardDocument5.identifier,
+          mostRecentlySelectedSlot: null,
+        },
+      },
+    });
+    await expectCardSlotToExist(1);
+    await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 1);
+    // change query - type in "query 2"
+    await changeQuery("front-slot0", cardDocument1.name, "query 2");
+    // expect the slot to have changed from card 1 to card 2
+    await expectCardGridSlotState(1, Front, cardDocument2.name, 1, 1);
+
+    // expect the invalid card warning to *not* have been raised
+    await waitFor(() =>
+      expect(
+        screen.queryAllByText("Your project specified", { exact: false }).length
+      ).toBe(0)
+    );
+  });
 });

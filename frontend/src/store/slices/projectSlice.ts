@@ -111,6 +111,7 @@ export const projectSlice = createAppSlice({
           };
         } else {
           state.members[slot][face]!.query = newQuery;
+          state.members[slot][face]!.selectedImage = undefined;
           state.members[slot][face]!.selected = false;
         }
       }

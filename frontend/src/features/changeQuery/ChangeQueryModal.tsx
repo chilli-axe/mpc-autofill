@@ -70,6 +70,7 @@ export function ChangeQueryModal({
       show={show}
       onHide={handleClose}
       onExited={() => setChangeSelectedImageQueriesModalValue("")}
+      data-testid="change-query-modal"
     >
       <Modal.Header closeButton>
         <Modal.Title>Change Query</Modal.Title>
