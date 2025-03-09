@@ -3,7 +3,7 @@
  * Synchronised with queue used for downloads (as reading from this queue across the app seems hard).
  */
 
-import { PayloadAction } from "@reduxjs/toolkit";
+import { createSelector, PayloadAction } from "@reduxjs/toolkit";
 
 import {
   createAppSlice,
@@ -78,23 +78,24 @@ export default fileDownloadsSlice.reducer;
 
 //# region selectors
 
-export const selectSortedFileDownloads = (
-  state: RootState
-): Array<{ id: string; fileDownload: FileDownload }> =>
-  Object.entries(state.fileDownloads)
-    .map(([id, fileDownload]) => ({ id, fileDownload }))
-    .sort((a, b) => {
-      const aActive = a.fileDownload.status === undefined;
-      const bActive = b.fileDownload.status === undefined;
-      return aActive && bActive
-        ? // sort active downloads by name
-          b.fileDownload.name.localeCompare(a.fileDownload.name)
-        : !aActive && !bActive
-        ? // sort completed downloads by completed timestamp
-          new Date(b.fileDownload.completedTimestamp!).getTime() -
-          new Date(a.fileDownload.completedTimestamp!).getTime()
-        : // active downloads should be included first, and completed downloads second
-          Number(bActive) - Number(aActive);
-    });
+export const selectSortedFileDownloads = createSelector(
+  (state: RootState) => state.fileDownloads,
+  (fileDownloads) =>
+    Object.entries(fileDownloads)
+      .map(([id, fileDownload]) => ({ id, fileDownload }))
+      .sort((a, b) => {
+        const aActive = a.fileDownload.status === undefined;
+        const bActive = b.fileDownload.status === undefined;
+        return aActive && bActive
+          ? // sort active downloads by name
+            b.fileDownload.name.localeCompare(a.fileDownload.name)
+          : !aActive && !bActive
+          ? // sort completed downloads by completed timestamp
+            new Date(b.fileDownload.completedTimestamp!).getTime() -
+            new Date(a.fileDownload.completedTimestamp!).getTime()
+          : // active downloads should be included first, and completed downloads second
+            Number(bActive) - Number(aActive);
+      })
+);
 
 //# endregion
