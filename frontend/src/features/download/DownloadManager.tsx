@@ -1,10 +1,11 @@
 import React from "react";
 import Button from "react-bootstrap/Button";
 import Card from "react-bootstrap/Card";
-import Dropdown from "react-bootstrap/Dropdown";
+import Offcanvas from "react-bootstrap/Offcanvas";
 import Stack from "react-bootstrap/Stack";
 import styled from "styled-components";
 
+import { NavbarLogoHeight } from "@/common/constants";
 import { FileDownload, useAppSelector } from "@/common/types";
 import { toTitleCase } from "@/common/utils";
 import { RightPaddedIcon } from "@/components/icon";
@@ -16,11 +17,11 @@ function DownloadIcon() {
   return <i className="bi bi-cloud-arrow-down text-white" />;
 }
 
-const FontSizeTwoI = styled.i`
-  font-size: 2em;
+const DownloadStatusIcon = styled.i`
+  font-size: 1.5em;
 `;
 
-const DownloadDropdownToggle = styled(Dropdown.Toggle)`
+const DownloadDropdownToggle = styled(Button)`
   border: 0;
   background-color: transparent;
   :hover {
@@ -42,12 +43,9 @@ const DownloadDropdownToggle = styled(Dropdown.Toggle)`
   border-radius: 4px;
   transition: background-color 0.1s ease-in-out;
   cursor: pointer;
-`;
-
-const MinWidthDropdownMenu = styled(Dropdown.Menu)`
-  min-width: 30em;
-  max-height: 30em;
-  overflow-y: scroll;
+  width: ${NavbarLogoHeight}px;
+  height: ${NavbarLogoHeight}px;
+  position: relative;
 `;
 
 const FixedHeightStack = styled(Stack)`
@@ -67,7 +65,7 @@ export function FileDownloadEntry({
     : null;
   const downloadState =
     status === undefined ? "Downloading..." : toTitleCase(status);
-  const leftHandSideIcon = (
+  const downloadTypeIcon = (
     <RightPaddedIcon
       bootstrapIconName={
         {
@@ -78,11 +76,11 @@ export function FileDownloadEntry({
       }
     />
   );
-  const rightHandSideIcon =
+  const downloadStatusIcon =
     status === undefined ? (
       <Spinner size={2} />
     ) : (
-      <FontSizeTwoI
+      <DownloadStatusIcon
         className={
           "bi bi-" +
           {
@@ -94,32 +92,30 @@ export function FileDownloadEntry({
       />
     );
   return (
-    <Dropdown.Item>
-      <Card>
-        <Card.Body className="p-1">
-          <FixedHeightStack direction="horizontal" gap={0}>
-            <div className="px-2 py-0">
-              <Card.Title as="p" className="mb-0">
-                {leftHandSideIcon}
-                {name}
-              </Card.Title>
-              <Card.Subtitle as="p" className="text-muted">
-                {downloadState}
-                {formattedTimestamp && " — " + formattedTimestamp}
-              </Card.Subtitle>
-            </div>
-            <div className="px-2 py-0 ms-auto">{rightHandSideIcon}</div>
-          </FixedHeightStack>
-        </Card.Body>
-      </Card>
-    </Dropdown.Item>
+    <Card className="my-1">
+      <Card.Body className="p-1">
+        <FixedHeightStack direction="horizontal" gap={0}>
+          <div className="px-2 py-0">
+            <Card.Title as="p" className="mb-0">
+              {downloadTypeIcon}
+              {name}
+            </Card.Title>
+            <Card.Subtitle as="p" className="text-muted">
+              {downloadState}
+              {formattedTimestamp && " — " + formattedTimestamp}
+            </Card.Subtitle>
+          </div>
+          <div className="px-2 py-0 ms-auto">{downloadStatusIcon}</div>
+        </FixedHeightStack>
+      </Card.Body>
+    </Card>
   );
 }
 
 export function TerminateQueuedDownloads() {
   const terminateQueuedDownloads = useTerminateQueuedDownloads();
   return (
-    <div className="d-grid gap-0 mx-3 mt-2">
+    <div className="d-grid gap-0">
       <Button variant="danger" onClick={terminateQueuedDownloads}>
         Terminate Queued Downloads
       </Button>
@@ -127,7 +123,55 @@ export function TerminateQueuedDownloads() {
   );
 }
 
-export function DownloadManager() {
+interface OpenDownloadManagerButtonProps {
+  handleClick: {
+    (): void;
+    (event: React.MouseEvent<HTMLButtonElement, MouseEvent>): void;
+  };
+}
+
+export function OpenDownloadManagerButton({
+  handleClick,
+}: OpenDownloadManagerButtonProps) {
+  const fileDownloads = useAppSelector(selectSortedFileDownloads);
+  const enqueuedCount = fileDownloads.filter(
+    (item) => item.fileDownload.startedTimestamp === undefined
+  ).length;
+  const activeCount = fileDownloads.filter(
+    (item) =>
+      item.fileDownload.completedTimestamp === undefined &&
+      item.fileDownload.startedTimestamp !== undefined
+  ).length;
+
+  return (
+    <DownloadDropdownToggle
+      onClick={handleClick}
+      id="dropdown-basic"
+      className="m-0"
+      style={{ width: 40 + "px", height: 40 + "px", position: "relative" }}
+    >
+      <DownloadIcon />
+      <span
+        className={`position-absolute top-0 start-100 translate-middle-x badge rounded-pill text-bg-${
+          enqueuedCount + activeCount > 0 ? "success" : "secondary"
+        }`}
+      >
+        {enqueuedCount + activeCount}{" "}
+        <span className="visually-hidden">downloads</span>
+      </span>
+    </DownloadDropdownToggle>
+  );
+}
+
+interface DownloadManagerProps {
+  show: boolean;
+  handleClose: {
+    (): void;
+    (event: React.MouseEvent<HTMLButtonElement, MouseEvent>): void;
+  };
+}
+
+export function DownloadManager({ show, handleClose }: DownloadManagerProps) {
   const fileDownloads = useAppSelector(selectSortedFileDownloads);
   const enqueuedCount = fileDownloads.filter(
     (item) => item.fileDownload.startedTimestamp === undefined
@@ -140,29 +184,21 @@ export function DownloadManager() {
   const completedCount = fileDownloads.length - enqueuedCount - activeCount;
 
   return (
-    <Dropdown autoClose="outside">
-      <DownloadDropdownToggle
-        id="dropdown-basic"
-        className="m-0"
-        style={{ width: 40 + "px", height: 40 + "px" }}
-      >
-        <DownloadIcon />
-
-        {enqueuedCount + activeCount > 0 && (
-          <span className="position-absolute top-0 start-100 translate-middle-x badge rounded-pill text-bg-secondary">
-            {enqueuedCount + activeCount}{" "}
-            <span className="visually-hidden">downloads</span>
-          </span>
-        )}
-      </DownloadDropdownToggle>
-      <MinWidthDropdownMenu align="end">
-        <Dropdown.Header>File Downloads</Dropdown.Header>
-        <Dropdown.Item href="">
+    <Offcanvas
+      show={show}
+      onHide={handleClose}
+      data-testid="download-manager-offcanvas"
+    >
+      <Offcanvas.Header closeButton>
+        <Offcanvas.Title>File Downloads</Offcanvas.Title>
+      </Offcanvas.Header>
+      <Offcanvas.Body>
+        <p>
           <b>{enqueuedCount}</b> enqueued, <b>{activeCount}</b> active, and{" "}
           <b>{completedCount}</b> completed.
-        </Dropdown.Item>
+        </p>
         {enqueuedCount > 0 && <TerminateQueuedDownloads />}
-        {fileDownloads.length > 0 && <Dropdown.Divider />}
+        {fileDownloads.length > 0 && <hr />}
         {fileDownloads.map(({ id, fileDownload }) => (
           <FileDownloadEntry
             key={id}
@@ -174,7 +210,7 @@ export function DownloadManager() {
             status={fileDownload.status}
           />
         ))}
-      </MinWidthDropdownMenu>
-    </Dropdown>
+      </Offcanvas.Body>
+    </Offcanvas>
   );
 }

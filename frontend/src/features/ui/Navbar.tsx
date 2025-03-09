@@ -13,7 +13,10 @@ import { ContentMaxWidth, NavbarLogoHeight } from "@/common/constants";
 import { useAppDispatch } from "@/common/types";
 import DisableSSR from "@/components/DisableSSR";
 import { BackendConfig } from "@/features/backend/BackendConfig";
-import { DownloadManager } from "@/features/download/DownloadManager";
+import {
+  DownloadManager,
+  OpenDownloadManagerButton,
+} from "@/features/download/DownloadManager";
 import { useGetBackendInfoQuery } from "@/store/api";
 import {
   useBackendConfigured,
@@ -38,10 +41,12 @@ export default function ProjectNavbar() {
   const backendConfigured = useBackendConfigured();
   const backendInfoQuery = useGetBackendInfoQuery();
 
-  const [showBackendConfig, setShowBackendConfig] = useState<boolean>(false);
-
-  const handleCloseBackendConfig = () => setShowBackendConfig(false);
-  const handleShowBackendConfig = () => setShowBackendConfig(true);
+  const [shownOffcanvas, setShownOffcanvas] = useState<
+    "backendConfig" | "downloadManager" | null
+  >(null);
+  const handleCloseOffcanvas = () => setShownOffcanvas(null);
+  const handleShowBackendConfig = () => setShownOffcanvas("backendConfig");
+  const handleShowDownloadManager = () => setShownOffcanvas("downloadManager");
 
   const handleShowSupportDeveloperModal = () => {
     dispatch(showModal("supportDeveloper"));
@@ -140,7 +145,9 @@ export default function ProjectNavbar() {
             </Nav>
             <Nav className="ms-auto d-flex">
               <Nav.Link className="p-0">
-                <DownloadManager />
+                <OpenDownloadManagerButton
+                  handleClick={handleShowDownloadManager}
+                />
               </Nav.Link>
               {process.env.NEXT_PUBLIC_BACKEND_URL == null && (
                 <Nav.Link>
@@ -159,8 +166,12 @@ export default function ProjectNavbar() {
         </MaxWidthContainer>
       </NoVerticalPaddingNavbar>
       <BackendConfig
-        show={showBackendConfig}
-        handleClose={handleCloseBackendConfig}
+        show={shownOffcanvas === "backendConfig"}
+        handleClose={handleCloseOffcanvas}
+      />
+      <DownloadManager
+        show={shownOffcanvas === "downloadManager"}
+        handleClose={handleCloseOffcanvas}
       />
     </DisableSSR>
   );
