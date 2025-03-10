@@ -201,7 +201,8 @@ export type Modals =
   | "supportDeveloper"
   | "supportBackend"
   | "invalidIdentifiers"
-  | "finishedMyProject";
+  | "finishedMyProject"
+  | "PDFGenerator";
 
 export type NoPropModals = Exclude<
   Modals,
