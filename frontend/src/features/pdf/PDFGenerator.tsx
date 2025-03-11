@@ -1,4 +1,13 @@
+import {
+  Document,
+  Page,
+  PDFViewer,
+  StyleSheet,
+  Text,
+  View,
+} from "@react-pdf/renderer";
 import { useState } from "react";
+import React from "react";
 import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
@@ -6,8 +15,22 @@ import Row from "react-bootstrap/Row";
 import Toggle from "react-bootstrap-toggle";
 
 import { ToggleButtonHeight } from "@/common/constants";
-import { PageSizes, useAppSelector } from "@/common/types";
+import { PageSizes, SlotProjectMembers, useAppSelector } from "@/common/types";
 import { selectProjectMembers } from "@/store/slices/projectSlice";
+
+// Create styles
+const styles = StyleSheet.create({
+  page: {
+    flexDirection: "row",
+    backgroundColor: "#E4E4E4",
+  },
+  section: {
+    margin: 10,
+    padding: 10,
+    flexGrow: 1,
+  },
+});
+
 interface PDFPreviewProps {
   pageSize: PageSizes;
   includeCorners: boolean;
@@ -16,16 +39,34 @@ interface PDFPreviewProps {
   cardSpacingCM: number;
 }
 
-function PDFPreview({
+function PDFDocument({
   pageSize,
   includeCorners,
   includeCutLines,
   includeBleedEdge,
   cardSpacingCM,
-}: PDFPreviewProps) {
-  const projectMembers = useAppSelector(selectProjectMembers);
+  projectMembers,
+}: PDFPreviewProps & { projectMembers: Array<SlotProjectMembers> }) {
+  return (
+    <Document>
+      <Page size="A4" style={styles.page}>
+        {projectMembers.map((member) => (
+          <View style={styles.section}>
+            <Text>{member.front.selectedImage}</Text>
+          </View>
+        ))}
+      </Page>
+    </Document>
+  );
+}
 
-  return <div>world</div>;
+function PDFPreview(props: PDFPreviewProps) {
+  const projectMembers = useAppSelector(selectProjectMembers); // TODO: not in redux context?
+  return (
+    <PDFViewer width="100%" showToolbar={false}>
+      <PDFDocument {...props} projectMembers={projectMembers} />
+    </PDFViewer>
+  );
 }
 
 export function PDFGenerator() {
