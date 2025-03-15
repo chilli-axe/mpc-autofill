@@ -142,7 +142,7 @@ function NotificationToast() {
 export function Toasts() {
   return (
     <DisableSSR>
-      <ToastContainer position="top-start" className="p-3">
+      <ToastContainer position="bottom-start" className="p-3">
         <GoogleAnalyticsConsentToast />
         <NotificationToast />
       </ToastContainer>

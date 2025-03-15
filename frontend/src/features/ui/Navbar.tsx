@@ -17,7 +17,7 @@ import {
   DownloadManager,
   OpenDownloadManagerButton,
 } from "@/features/download/DownloadManager";
-import { useGetBackendInfoQuery } from "@/store/api";
+import { useGetBackendInfoQuery, useGetPatreonQuery } from "@/store/api";
 import {
   useBackendConfigured,
   useProjectName,
@@ -40,6 +40,7 @@ export default function ProjectNavbar() {
   const dispatch = useAppDispatch();
   const backendConfigured = useBackendConfigured();
   const backendInfoQuery = useGetBackendInfoQuery();
+  const patreonQuery = useGetPatreonQuery();
 
   const [shownOffcanvas, setShownOffcanvas] = useState<
     "backendConfig" | "downloadManager" | null
@@ -134,8 +135,7 @@ export default function ProjectNavbar() {
                   <i className="bi bi-code" /> Support the Developer
                 </NavDropdown.Item>
                 {backendInfoQuery.data?.name != null &&
-                  (backendInfoQuery.data?.patreon?.url ?? "").trim().length >
-                    0 && (
+                  (patreonQuery.data?.url ?? "").trim().length > 0 && (
                     <NavDropdown.Item onClick={handleShowSupportBackendModal}>
                       <i className="bi bi-server" /> Support{" "}
                       {backendInfoQuery.data.name}

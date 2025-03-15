@@ -31,6 +31,8 @@ import {
   NewCardsFirstPage,
   NewCardsFirstPagesResponse,
   NewCardsPageResponse,
+  Patreon,
+  PatreonResponse,
   SampleCardsResponse,
   SourcesResponse,
   Tag,
@@ -122,6 +124,12 @@ export const api = createApi({
       providesTags: [QueryTags.BackendSpecific],
       transformResponse: (response: InfoResponse, meta, arg) => response.info,
     }),
+    getPatreon: builder.query<Patreon, void>({
+      query: () => ({ url: `2/patreon/`, method: "GET" }),
+      providesTags: [QueryTags.BackendSpecific],
+      transformResponse: (response: PatreonResponse, meta, arg) =>
+        response.patreon,
+    }),
     getGoogleDriveImage: builder.query<string, string>({
       query: (identifier: string) => ({
         url: GoogleDriveImageAPIURL,
@@ -194,6 +202,7 @@ const {
   useGetSampleCardsQuery: useRawGetSampleCardsQuery,
   useGetContributionsQuery: useRawGetContributionsQuery,
   useGetBackendInfoQuery: useRawGetBackendInfoQuery,
+  useGetPatreonQuery: useRawGetPatreonQuery,
   useGetNewCardsFirstPageQuery: useRawGetNewCardsFirstPageQuery,
   useGetNewCardsPageQuery: useRawGetNewCardsPageQuery,
   usePostExploreSearchQuery: useRawPostExploreSearchQuery,
@@ -244,6 +253,13 @@ export function useGetContributionsQuery() {
 export function useGetBackendInfoQuery() {
   const backendConfigured = useBackendConfigured();
   return useRawGetBackendInfoQuery(undefined, {
+    skip: !backendConfigured,
+  });
+}
+
+export function useGetPatreonQuery() {
+  const backendConfigured = useBackendConfigured();
+  return useRawGetPatreonQuery(undefined, {
     skip: !backendConfigured,
   });
 }
