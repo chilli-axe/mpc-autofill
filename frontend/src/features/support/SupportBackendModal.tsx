@@ -5,7 +5,7 @@ import Modal from "react-bootstrap/Modal";
 
 import { AutofillTable } from "@/components/AutofillTable";
 import { Spinner } from "@/components/Spinner";
-import { useGetBackendInfoQuery } from "@/store/api";
+import { useGetBackendInfoQuery, useGetPatreonQuery } from "@/store/api";
 
 interface SupportBackendModalProps {
   show: boolean;
@@ -22,6 +22,7 @@ export function SupportBackendModal({
   //# region queries and hooks
 
   const backendInfoQuery = useGetBackendInfoQuery();
+  const patreonQuery = useGetPatreonQuery();
 
   //# endregion
 
@@ -33,48 +34,44 @@ export function SupportBackendModal({
         </Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        {backendInfoQuery?.data?.patreon == null ? (
+        {patreonQuery?.data === undefined ? (
           <Spinner />
         ) : (
           <>
-            {backendInfoQuery.data.patreon.campaign?.about != null && (
+            {patreonQuery.data.campaign?.about != null && (
               <p
                 dangerouslySetInnerHTML={{
-                  __html: backendInfoQuery.data.patreon.campaign.about,
+                  __html: patreonQuery.data.campaign.about,
                 }}
               />
             )}
             <Alert variant="info">
               <h4>Patron Tiers</h4>
-              {Object.values(backendInfoQuery.data.patreon.tiers ?? {}).map(
-                (tier) => (
-                  <h6 key={`patreon-tier-${tier.title}`}>
-                    <h6>
-                      {tier.title} (${tier.usd} USD)
-                    </h6>
-                    <p
-                      dangerouslySetInnerHTML={{ __html: tier.description }}
-                    ></p>
+              {Object.values(patreonQuery.data.tiers ?? {}).map((tier) => (
+                <h6 key={`patreon-tier-${tier.title}`}>
+                  <h6>
+                    {tier.title} (${tier.usd} USD)
                   </h6>
-                )
-              )}
+                  <p dangerouslySetInnerHTML={{ __html: tier.description }}></p>
+                </h6>
+              ))}
               <hr />
-              {backendInfoQuery.data.patreon.url != null && (
+              {patreonQuery.data.url != null && (
                 <a
                   style={{ textAlign: "center" }}
-                  href={backendInfoQuery.data.patreon.url}
+                  href={patreonQuery.data.url}
                   target="_blank"
                 >
                   Become a Patron today!
                 </a>
               )}
             </Alert>
-            {backendInfoQuery.data.patreon.members != null && (
+            {patreonQuery.data.members != null && (
               <>
                 <h4>Patrons</h4>
                 <AutofillTable
                   headers={["Name", "Tier", "Patron Since"]}
-                  data={backendInfoQuery.data.patreon.members.map((patron) => [
+                  data={patreonQuery.data.members.map((patron) => [
                     patron.name,
                     patron.tier,
                     patron.date,

@@ -1,6 +1,7 @@
 import { http, HttpResponse } from "msw";
 
 import { Card, Cardback, Token } from "@/common/constants";
+import { Campaign, Supporter, SupporterTier } from "@/common/schema_types";
 import {
   cardDocument1,
   cardDocument2,
@@ -497,7 +498,7 @@ export const newCardsFirstPageServerError = http.get(
 
 //# region backend info
 
-export const backendInfoNoPatreon = http.get(buildRoute("2/info"), () =>
+export const backendInfo = http.get(buildRoute("2/info"), () =>
   HttpResponse.json(
     {
       info: {
@@ -506,12 +507,19 @@ export const backendInfoNoPatreon = http.get(buildRoute("2/info"), () =>
         email: "test@test.com",
         reddit: "reddit.com",
         discord: "discord.com",
-        patreon: {
-          url: "",
-          members: null,
-          tiers: null,
-          campaign: null,
-        },
+      },
+    },
+    { status: 200 }
+  )
+);
+export const patreon = http.get(buildRoute("2/patreon"), () =>
+  HttpResponse.json(
+    {
+      patreon: {
+        campaign: null,
+        members: [],
+        tiers: null,
+        url: null,
       },
     },
     { status: 200 }
@@ -545,7 +553,8 @@ export const defaultHandlers = [
   tagsNoResults,
   importSitesOneResult,
   sampleCards,
-  backendInfoNoPatreon,
+  backendInfo,
+  patreon,
   searchEngineHealthy,
 ];
 

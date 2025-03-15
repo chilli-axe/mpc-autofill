@@ -1,0 +1,34 @@
+{
+  "title": "Patreon Response",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "patreon": {
+      "type": "object",
+      "properties": {
+        "url": { "type": ["string", "null"] },
+        "members": {
+          "type": "array",
+          "items": {
+            "$ref": "../Supporter.json"
+          }
+        },
+        "tiers": {
+          "type": ["object", "null"],
+          "patternProperties": {
+            ".*": {
+              "$ref": "../SupporterTier.json"
+            }
+          }
+        },
+        "campaign": {
+          "$ref": "../Campaign.json"
+        }
+      },
+      "required": ["url", "members", "tiers", "campaign"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["patreon"],
+  "additionalProperties": false
+}

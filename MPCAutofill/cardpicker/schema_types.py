@@ -614,101 +614,11 @@ class ImportSitesResponse(BaseModel):
         return result
 
 
-class CampaignClass(BaseModel):
-    about: str
-    id: str
-
-    @staticmethod
-    def from_dict(obj: Any) -> "CampaignClass":
-        assert isinstance(obj, dict)
-        about = from_str(obj.get("about"))
-        id = from_str(obj.get("id"))
-        return CampaignClass(about, id)
-
-    def to_dict(self) -> dict:
-        result: dict = {}
-        result["about"] = from_str(self.about)
-        result["id"] = from_str(self.id)
-        return result
-
-
-class Supporter(BaseModel):
-    date: str
-    name: str
-    tier: str
-    usd: float
-
-    @staticmethod
-    def from_dict(obj: Any) -> "Supporter":
-        assert isinstance(obj, dict)
-        date = from_str(obj.get("date"))
-        name = from_str(obj.get("name"))
-        tier = from_str(obj.get("tier"))
-        usd = from_float(obj.get("usd"))
-        return Supporter(date, name, tier, usd)
-
-    def to_dict(self) -> dict:
-        result: dict = {}
-        result["date"] = from_str(self.date)
-        result["name"] = from_str(self.name)
-        result["tier"] = from_str(self.tier)
-        result["usd"] = to_float(self.usd)
-        return result
-
-
-class SupporterTier(BaseModel):
-    description: str
-    title: str
-    usd: float
-
-    @staticmethod
-    def from_dict(obj: Any) -> "SupporterTier":
-        assert isinstance(obj, dict)
-        description = from_str(obj.get("description"))
-        title = from_str(obj.get("title"))
-        usd = from_float(obj.get("usd"))
-        return SupporterTier(description, title, usd)
-
-    def to_dict(self) -> dict:
-        result: dict = {}
-        result["description"] = from_str(self.description)
-        result["title"] = from_str(self.title)
-        result["usd"] = to_float(self.usd)
-        return result
-
-
-class Patreon(BaseModel):
-    members: List[Supporter]
-    campaign: Optional[CampaignClass] = None
-    tiers: Optional[Dict[str, SupporterTier]] = None
-    url: Optional[str] = None
-
-    @staticmethod
-    def from_dict(obj: Any) -> "Patreon":
-        assert isinstance(obj, dict)
-        members = from_list(Supporter.from_dict, obj.get("members"))
-        campaign = from_union([from_none, CampaignClass.from_dict], obj.get("campaign"))
-        tiers = from_union([from_none, lambda x: from_dict(SupporterTier.from_dict, x)], obj.get("tiers"))
-        url = from_union([from_none, from_str], obj.get("url"))
-        return Patreon(members, campaign, tiers, url)
-
-    def to_dict(self) -> dict:
-        result: dict = {}
-        result["members"] = from_list(lambda x: to_class(Supporter, x), self.members)
-        result["campaign"] = from_union([from_none, lambda x: to_class(CampaignClass, x)], self.campaign)
-        result["tiers"] = from_union(
-            [from_none, lambda x: from_dict(lambda x: to_class(SupporterTier, x), x)], self.tiers
-        )
-        result["url"] = from_union([from_none, from_str], self.url)
-        return result
-
-
 class Info(BaseModel):
     description: Optional[str] = None
     discord: Optional[str] = None
     email: Optional[str] = None
     name: Optional[str] = None
-    patreon: Optional[Patreon] = None
     reddit: Optional[str] = None
 
     @staticmethod
@@ -718,9 +628,8 @@ class Info(BaseModel):
         discord = from_union([from_none, from_str], obj.get("discord"))
         email = from_union([from_none, from_str], obj.get("email"))
         name = from_union([from_none, from_str], obj.get("name"))
-        patreon = from_union([from_none, Patreon.from_dict], obj.get("patreon"))
         reddit = from_union([from_none, from_str], obj.get("reddit"))
-        return Info(description, discord, email, name, patreon, reddit)
+        return Info(description, discord, email, name, reddit)
 
     def to_dict(self) -> dict:
         result: dict = {}
@@ -728,7 +637,6 @@ class Info(BaseModel):
         result["discord"] = from_union([from_none, from_str], self.discord)
         result["email"] = from_union([from_none, from_str], self.email)
         result["name"] = from_union([from_none, from_str], self.name)
-        result["patreon"] = from_union([from_none, lambda x: to_class(Patreon, x)], self.patreon)
         result["reddit"] = from_union([from_none, from_str], self.reddit)
         return result
 
@@ -865,6 +773,110 @@ class NewCardsPageResponse(BaseModel):
     def to_dict(self) -> dict:
         result: dict = {}
         result["cards"] = from_list(lambda x: to_class(Card, x), self.cards)
+        return result
+
+
+class CampaignClass(BaseModel):
+    about: str
+    id: str
+
+    @staticmethod
+    def from_dict(obj: Any) -> "CampaignClass":
+        assert isinstance(obj, dict)
+        about = from_str(obj.get("about"))
+        id = from_str(obj.get("id"))
+        return CampaignClass(about, id)
+
+    def to_dict(self) -> dict:
+        result: dict = {}
+        result["about"] = from_str(self.about)
+        result["id"] = from_str(self.id)
+        return result
+
+
+class Supporter(BaseModel):
+    date: str
+    name: str
+    tier: str
+    usd: float
+
+    @staticmethod
+    def from_dict(obj: Any) -> "Supporter":
+        assert isinstance(obj, dict)
+        date = from_str(obj.get("date"))
+        name = from_str(obj.get("name"))
+        tier = from_str(obj.get("tier"))
+        usd = from_float(obj.get("usd"))
+        return Supporter(date, name, tier, usd)
+
+    def to_dict(self) -> dict:
+        result: dict = {}
+        result["date"] = from_str(self.date)
+        result["name"] = from_str(self.name)
+        result["tier"] = from_str(self.tier)
+        result["usd"] = to_float(self.usd)
+        return result
+
+
+class SupporterTier(BaseModel):
+    description: str
+    title: str
+    usd: float
+
+    @staticmethod
+    def from_dict(obj: Any) -> "SupporterTier":
+        assert isinstance(obj, dict)
+        description = from_str(obj.get("description"))
+        title = from_str(obj.get("title"))
+        usd = from_float(obj.get("usd"))
+        return SupporterTier(description, title, usd)
+
+    def to_dict(self) -> dict:
+        result: dict = {}
+        result["description"] = from_str(self.description)
+        result["title"] = from_str(self.title)
+        result["usd"] = to_float(self.usd)
+        return result
+
+
+class Patreon(BaseModel):
+    members: List[Supporter]
+    campaign: Optional[CampaignClass] = None
+    tiers: Optional[Dict[str, SupporterTier]] = None
+    url: Optional[str] = None
+
+    @staticmethod
+    def from_dict(obj: Any) -> "Patreon":
+        assert isinstance(obj, dict)
+        members = from_list(Supporter.from_dict, obj.get("members"))
+        campaign = from_union([from_none, CampaignClass.from_dict], obj.get("campaign"))
+        tiers = from_union([from_none, lambda x: from_dict(SupporterTier.from_dict, x)], obj.get("tiers"))
+        url = from_union([from_none, from_str], obj.get("url"))
+        return Patreon(members, campaign, tiers, url)
+
+    def to_dict(self) -> dict:
+        result: dict = {}
+        result["members"] = from_list(lambda x: to_class(Supporter, x), self.members)
+        result["campaign"] = from_union([from_none, lambda x: to_class(CampaignClass, x)], self.campaign)
+        result["tiers"] = from_union(
+            [from_none, lambda x: from_dict(lambda x: to_class(SupporterTier, x), x)], self.tiers
+        )
+        result["url"] = from_union([from_none, from_str], self.url)
+        return result
+
+
+class PatreonResponse(BaseModel):
+    patreon: Patreon
+
+    @staticmethod
+    def from_dict(obj: Any) -> "PatreonResponse":
+        assert isinstance(obj, dict)
+        patreon = Patreon.from_dict(obj.get("patreon"))
+        return PatreonResponse(patreon)
+
+    def to_dict(self) -> dict:
+        result: dict = {}
+        result["patreon"] = to_class(Patreon, self.patreon)
         return result
 
 
@@ -1301,6 +1313,14 @@ def NewCardsPageResponsefromdict(s: Any) -> NewCardsPageResponse:
 
 def NewCardsPageResponsetodict(x: NewCardsPageResponse) -> Any:
     return to_class(NewCardsPageResponse, x)
+
+
+def PatreonResponsefromdict(s: Any) -> PatreonResponse:
+    return PatreonResponse.from_dict(s)
+
+
+def PatreonResponsetodict(x: PatreonResponse) -> Any:
+    return to_class(PatreonResponse, x)
 
 
 def SampleCardsResponsefromdict(s: Any) -> SampleCardsResponse:

@@ -2,7 +2,7 @@
 
 // To parse this data:
 //
-//   import { Convert, Campaign, Card, CardType, FilterSettings, ImportSite, Language, NewCardsFirstPage, SearchQuery, SearchSettings, SearchTypeSettings, SortBy, Source, SourceContribution, SourceSettings, SourceType, Supporter, SupporterTier, Tag, CardbacksRequest, CardbacksResponse, CardsRequest, CardsResponse, ContributionsResponse, DFCPairsResponse, EditorSearchRequest, EditorSearchResponse, ErrorResponse, ExploreSearchRequest, ExploreSearchResponse, ImportSiteDecklistRequest, ImportSiteDecklistResponse, ImportSitesResponse, InfoResponse, LanguagesResponse, NewCardsFirstPagesResponse, NewCardsPageResponse, SampleCardsResponse, SearchEngineHealthResponse, SourcesResponse, TagsResponse } from "./file";
+//   import { Convert, Campaign, Card, CardType, FilterSettings, ImportSite, Language, NewCardsFirstPage, SearchQuery, SearchSettings, SearchTypeSettings, SortBy, Source, SourceContribution, SourceSettings, SourceType, Supporter, SupporterTier, Tag, CardbacksRequest, CardbacksResponse, CardsRequest, CardsResponse, ContributionsResponse, DFCPairsResponse, EditorSearchRequest, EditorSearchResponse, ErrorResponse, ExploreSearchRequest, ExploreSearchResponse, ImportSiteDecklistRequest, ImportSiteDecklistResponse, ImportSitesResponse, InfoResponse, LanguagesResponse, NewCardsFirstPagesResponse, NewCardsPageResponse, PatreonResponse, SampleCardsResponse, SearchEngineHealthResponse, SourcesResponse, TagsResponse } from "./file";
 //
 //   const campaign = Convert.toCampaign(json);
 //   const card = Convert.toCard(json);
@@ -41,6 +41,7 @@
 //   const languagesResponse = Convert.toLanguagesResponse(json);
 //   const newCardsFirstPagesResponse = Convert.toNewCardsFirstPagesResponse(json);
 //   const newCardsPageResponse = Convert.toNewCardsPageResponse(json);
+//   const patreonResponse = Convert.toPatreonResponse(json);
 //   const sampleCardsResponse = Convert.toSampleCardsResponse(json);
 //   const searchEngineHealthResponse = Convert.toSearchEngineHealthResponse(json);
 //   const sourcesResponse = Convert.toSourcesResponse(json);
@@ -243,33 +244,7 @@ export interface Info {
   discord: null | string;
   email: null | string;
   name: null | string;
-  patreon: Patreon | null;
   reddit: null | string;
-}
-
-export interface Patreon {
-  campaign: Campaign | null;
-  members: Supporter[];
-  tiers: { [key: string]: SupporterTier } | null;
-  url: null | string;
-}
-
-export interface Campaign {
-  about: string;
-  id: string;
-}
-
-export interface Supporter {
-  date: string;
-  name: string;
-  tier: string;
-  usd: number;
-}
-
-export interface SupporterTier {
-  description: string;
-  title: string;
-  usd: number;
 }
 
 export interface LanguagesResponse {
@@ -306,6 +281,35 @@ export interface Source {
 
 export interface NewCardsPageResponse {
   cards: Card[];
+}
+
+export interface PatreonResponse {
+  patreon: Patreon;
+}
+
+export interface Patreon {
+  campaign: Campaign | null;
+  members: Supporter[];
+  tiers: { [key: string]: SupporterTier } | null;
+  url: null | string;
+}
+
+export interface Campaign {
+  about: string;
+  id: string;
+}
+
+export interface Supporter {
+  date: string;
+  name: string;
+  tier: string;
+  usd: number;
+}
+
+export interface SupporterTier {
+  description: string;
+  title: string;
+  usd: number;
 }
 
 export interface SampleCardsResponse {
@@ -679,6 +683,14 @@ export class Convert {
     value: NewCardsPageResponse
   ): string {
     return JSON.stringify(uncast(value, r("NewCardsPageResponse")), null, 2);
+  }
+
+  public static toPatreonResponse(json: string): PatreonResponse {
+    return cast(JSON.parse(json), r("PatreonResponse"));
+  }
+
+  public static patreonResponseToJson(value: PatreonResponse): string {
+    return JSON.stringify(uncast(value, r("PatreonResponse")), null, 2);
   }
 
   public static toSampleCardsResponse(json: string): SampleCardsResponse {
@@ -1103,41 +1115,7 @@ const typeMap: any = {
       { json: "discord", js: "discord", typ: u(null, "") },
       { json: "email", js: "email", typ: u(null, "") },
       { json: "name", js: "name", typ: u(null, "") },
-      { json: "patreon", js: "patreon", typ: u(r("Patreon"), null) },
       { json: "reddit", js: "reddit", typ: u(null, "") },
-    ],
-    false
-  ),
-  Patreon: o(
-    [
-      { json: "campaign", js: "campaign", typ: u(r("Campaign"), null) },
-      { json: "members", js: "members", typ: a(r("Supporter")) },
-      { json: "tiers", js: "tiers", typ: u(m(r("SupporterTier")), null) },
-      { json: "url", js: "url", typ: u(null, "") },
-    ],
-    false
-  ),
-  Campaign: o(
-    [
-      { json: "about", js: "about", typ: "" },
-      { json: "id", js: "id", typ: "" },
-    ],
-    false
-  ),
-  Supporter: o(
-    [
-      { json: "date", js: "date", typ: "" },
-      { json: "name", js: "name", typ: "" },
-      { json: "tier", js: "tier", typ: "" },
-      { json: "usd", js: "usd", typ: 3.14 },
-    ],
-    false
-  ),
-  SupporterTier: o(
-    [
-      { json: "description", js: "description", typ: "" },
-      { json: "title", js: "title", typ: "" },
-      { json: "usd", js: "usd", typ: 3.14 },
     ],
     false
   ),
@@ -1178,6 +1156,43 @@ const typeMap: any = {
   ),
   NewCardsPageResponse: o(
     [{ json: "cards", js: "cards", typ: a(r("Card")) }],
+    false
+  ),
+  PatreonResponse: o(
+    [{ json: "patreon", js: "patreon", typ: r("Patreon") }],
+    false
+  ),
+  Patreon: o(
+    [
+      { json: "campaign", js: "campaign", typ: u(r("Campaign"), null) },
+      { json: "members", js: "members", typ: a(r("Supporter")) },
+      { json: "tiers", js: "tiers", typ: u(m(r("SupporterTier")), null) },
+      { json: "url", js: "url", typ: u(null, "") },
+    ],
+    false
+  ),
+  Campaign: o(
+    [
+      { json: "about", js: "about", typ: "" },
+      { json: "id", js: "id", typ: "" },
+    ],
+    false
+  ),
+  Supporter: o(
+    [
+      { json: "date", js: "date", typ: "" },
+      { json: "name", js: "name", typ: "" },
+      { json: "tier", js: "tier", typ: "" },
+      { json: "usd", js: "usd", typ: 3.14 },
+    ],
+    false
+  ),
+  SupporterTier: o(
+    [
+      { json: "description", js: "description", typ: "" },
+      { json: "title", js: "title", typ: "" },
+      { json: "usd", js: "usd", typ: 3.14 },
+    ],
     false
   ),
   SampleCardsResponse: o(
