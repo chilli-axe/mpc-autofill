@@ -181,6 +181,13 @@ exports[`the html structure of text importer 1`] = `
           />
         </div>
       </form>
+      <p
+        class="text-sm-end my-0"
+      >
+        <i>
+          Hint: Submit with Control+Enter.
+        </i>
+      </p>
     </div>
     <div
       class="modal-footer"

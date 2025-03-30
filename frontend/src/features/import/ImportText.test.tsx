@@ -340,3 +340,29 @@ test("the textbox should not clear itself until the form has been submitted", as
   const textArea2 = await openImportTextModal();
   expect(textArea2.textContent).toEqual("big test");
 });
+
+test("pressing ctrl+enter while focused on the textarea should submit the form", async () => {
+  server.use(
+    cardDocumentsThreeResults,
+    cardbacksTwoOtherResults,
+    sourceDocumentsOneResult,
+    searchResultsOneResult,
+    ...defaultHandlers
+  );
+  renderWithProviders(<ProjectEditor />, { preloadedState });
+
+  await expectCardbackSlotState(cardDocument2.name, 1, 2);
+
+  // import a card
+  const textArea = await openImportTextModal();
+  const user = userEvent.setup();
+  await user.clear(textArea);
+  await user.type(textArea, "my search query");
+  await user.keyboard("{Control>}{Enter}");
+
+  // a card slot should have been created
+  await expectCardSlotToExist(1);
+  await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 1);
+  await expectCardGridSlotState(1, Back, cardDocument2.name, 1, 2);
+  await expectCardbackSlotState(cardDocument2.name, 1, 2); // should not have changed
+});

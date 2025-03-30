@@ -4,7 +4,13 @@
  * A freeform text area is exposed and the cards are processed when the user hits Submit.
  */
 
-import React, { FormEvent, useRef, useState } from "react";
+import React, {
+  FormEvent,
+  KeyboardEvent,
+  KeyboardEventHandler,
+  useRef,
+  useState,
+} from "react";
 import { Accordion } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
 import Dropdown from "react-bootstrap/Dropdown";
@@ -76,6 +82,12 @@ export function ImportText() {
     );
     setTextModalValue(""); // safe to delete the user's data now that it has been processed
     handleCloseTextModal();
+  };
+
+  const onKeyDown: KeyboardEventHandler = (e: KeyboardEvent): void => {
+    if (e.ctrlKey && e.code === "Enter" && focusRef.current?.form) {
+      focusRef.current.form.requestSubmit();
+    }
   };
 
   //# endregion
@@ -183,6 +195,7 @@ export function ImportText() {
               <Form.Control
                 ref={focusRef}
                 as="textarea"
+                onKeyDown={onKeyDown}
                 rows={12}
                 placeholder={placeholderText}
                 required={true}
@@ -192,6 +205,9 @@ export function ImportText() {
               />
             </Form.Group>
           </Form>
+          <p className="text-sm-end my-0">
+            <i>Hint: Submit with Control+Enter.</i>
+          </p>
         </Modal.Body>
         <Modal.Footer>
           <Button
