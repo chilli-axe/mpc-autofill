@@ -51,7 +51,7 @@ export function ContributionsSummary() {
           <p>
             The {projectName} database tracks{" "}
             <b>{totalImages.toLocaleString()}</b> images, with a total size of{" "}
-            <b>{formattedDatabaseSize} GB</b> &mdash; comprised of{" "}
+            <b>{formattedDatabaseSize} GB</b> &mdash; comprising{" "}
             <b>{formattedImagesByCardType[Card]}</b> cards,{" "}
             <b>{formattedImagesByCardType[Cardback]}</b> cardbacks, and{" "}
             <b>{formattedImagesByCardType[Token]}</b> tokens &mdash; from{" "}
