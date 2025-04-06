@@ -5,12 +5,12 @@ import Row from "react-bootstrap/Row";
 import Stack from "react-bootstrap/Stack";
 // @ts-ignore: https://github.com/arnthor3/react-bootstrap-toggle/issues/21
 import Toggle from "react-bootstrap-toggle";
-import RenderIfVisible from "react-render-if-visible";
 
 import { ToggleButtonHeight } from "@/common/constants";
 import { CardDocument, useAppDispatch, useAppSelector } from "@/common/types";
 import { AutofillCollapse } from "@/components/AutofillCollapse";
 import { RightPaddedIcon } from "@/components/icon";
+import { RenderIfVisible } from "@/components/RenderIfVisible";
 import { MemoizedEditorCard } from "@/features/card/Card";
 import { selectCardDocumentsByIdentifiers } from "@/store/slices/cardDocumentsSlice";
 import { selectSourceNamesByKey } from "@/store/slices/sourceDocumentsSlice";
@@ -154,6 +154,7 @@ function CardsFacetedBySource({
                     <RenderIfVisible
                       key={`gridSelector-${identifier}-wrapper`}
                       initialVisible={optionNumber < 20}
+                      stayRendered
                     >
                       <CardGridCard
                         identifier={identifier}
