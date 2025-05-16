@@ -233,7 +233,13 @@ class TCGPlayer(ImportSite):
     def retrieve_card_list(cls, url: str) -> str:
         # TCGPlayer doesn't expose a useful API, so we need to parse the html directly
         path = urlparse(url).path
-        response = cls.request(path=path)
+        response = cls.request(
+            path=path,
+            # TCGPlayer now requires that `User-Agent` is passed through.
+            # the TCGPlayer deckbuilder is no longer supported, so this bandaid solution will only live
+            # until the deckbuilder is fully killed off. see PR #292 on GitHub.
+            headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:132.0) Gecko/20100101 Firefox/132.0"},
+        )
         card_tuple = re.findall(
             '<span class="subdeck-group__card-qty">(.+?)</span> ' '<span class="subdeck-group__card-name">(.+?)</span>',
             response.text,
