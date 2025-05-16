@@ -46,7 +46,6 @@ class TestMTGIntegration:
         SCRYFALL_WITH_WWW = "https://www.scryfall.com/@mpcautofill/decks/71bb2d40-c922-4a01-a63e-7ba2dde29a5c"
         TAPPEDOUT = "https://tappedout.net/mtg-decks/09-10-22-DoY-test"
         TAPPEDOUT_WITH_WWW = "https://www.tappedout.net/mtg-decks/09-10-22-DoY-test"
-        TCGPLAYER = "https://decks.tcgplayer.com/magic/standard/mpc-autofill/test/1398367"
 
     # endregion
 

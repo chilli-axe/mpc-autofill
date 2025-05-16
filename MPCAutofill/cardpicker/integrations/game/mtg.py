@@ -1,4 +1,3 @@
-import html
 import re
 from typing import Any, Type
 from urllib.parse import parse_qs, urlparse
@@ -224,32 +223,6 @@ class TappedOut(ImportSite):
         return card_list
 
 
-class TCGPlayer(ImportSite):
-    @staticmethod
-    def get_host_names() -> list[str]:
-        return ["decks.tcgplayer.com"]  # www. is explicitly not valid
-
-    @classmethod
-    def retrieve_card_list(cls, url: str) -> str:
-        # TCGPlayer doesn't expose a useful API, so we need to parse the html directly
-        path = urlparse(url).path
-        response = cls.request(
-            path=path,
-            # TCGPlayer now requires that `User-Agent` is passed through.
-            # the TCGPlayer deckbuilder is no longer supported, so this bandaid solution will only live
-            # until the deckbuilder is fully killed off. see PR #292 on GitHub.
-            headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:132.0) Gecko/20100101 Firefox/132.0"},
-        )
-        card_tuple = re.findall(
-            '<span class="subdeck-group__card-qty">(.+?)</span> ' '<span class="subdeck-group__card-name">(.+?)</span>',
-            response.text,
-        )
-        card_list = ""
-        for qty, name in card_tuple:
-            card_list += "{} {}\n".format(qty, html.unescape(name))
-        return card_list
-
-
 # endregion
 
 
@@ -336,7 +309,6 @@ class MTG(GameIntegration):
             MTGGoldfish,
             Scryfall,
             TappedOut,
-            TCGPlayer,
         ]
 
     # endregion
