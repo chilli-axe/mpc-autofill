@@ -32,7 +32,7 @@ class CardFactory(factory.django.DjangoModelFactory):
         model = models.Card
 
     card_type = models.CardTypes.CARD
-    date = factory.LazyFunction(lambda: dt.datetime(2023, 1, 1))  # for snapshot consistency
+    date_created = factory.LazyFunction(lambda: dt.datetime(2023, 1, 1))  # for snapshot consistency
     identifier = factory.Sequence(lambda n: f"card_{n}")
     name = factory.Sequence(lambda n: f"Card {n}")
     priority = factory.Sequence(lambda n: n)

@@ -112,7 +112,7 @@ def transform_images_into_objects(source: Source, images: list[Image], tags: Tag
                     dpi=dpi,
                     searchq=searchable_name,  # search-friendly card name
                     extension=extension,
-                    date=image.created_time,
+                    date_created=image.created_time,
                     size=image.size,
                     tags=list(extracted_tags),
                     language=(language or DEFAULT_LANGUAGE).alpha_2.upper(),

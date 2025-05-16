@@ -193,7 +193,7 @@ class Card(models.Model):
     dpi = models.IntegerField(default=0)
     searchq = models.CharField(max_length=200)
     extension = models.CharField(max_length=200)
-    date = models.DateTimeField(default=datetime.now)
+    date_created = models.DateTimeField(default=datetime.now)
     size = models.IntegerField()
     tags = ArrayField(models.CharField(max_length=20), default=list, blank=True)  # null=True is just for admin panel
     language = models.CharField(max_length=5)
@@ -205,7 +205,7 @@ class Card(models.Model):
             f"{self.name} "
             f"[Type: {self.card_type}, "
             f"Identifier: {self.identifier}, "
-            f"Uploaded: {self.date.strftime('%d/%m/%Y')}, "
+            f"Uploaded: {self.date_created.strftime('%d/%m/%Y')}, "
             f"Priority: {self.priority}]"
         )
 
@@ -225,7 +225,7 @@ class Card(models.Model):
             dpi=self.dpi,
             searchq=self.searchq,
             extension=self.extension,
-            date=dateformat.format(self.date, DATE_FORMAT),
+            date=dateformat.format(self.date_created, DATE_FORMAT),
             size=self.size,
             downloadLink=self.get_download_link() or "",
             smallThumbnailUrl=self.get_small_thumbnail_url() or "",
