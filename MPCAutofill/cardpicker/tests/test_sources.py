@@ -26,47 +26,156 @@ class TestAPI:
     FOLDER_Z = Folder(id="z", name="Folder z [Full Art", parent=None)
     FOLDER_FRENCH = Folder(id="french", name="{FR} Folder", parent=None)
 
-    IMAGE_A = Image(id="a", name="Image A.png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_A)
-    IMAGE_B = Image(id="b", name="Image B [NSFW].png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_A)
-    IMAGE_C = Image(id="b", name="Image C.png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_C)
+    IMAGE_A = Image(
+        id="a",
+        name="Image A.png",
+        size=1,
+        created_time=DEFAULT_DATE,
+        modified_time=DEFAULT_DATE,
+        height=1,
+        folder=FOLDER_A,
+    )
+    IMAGE_B = Image(
+        id="b",
+        name="Image B [NSFW].png",
+        size=1,
+        created_time=DEFAULT_DATE,
+        modified_time=DEFAULT_DATE,
+        height=1,
+        folder=FOLDER_A,
+    )
+    IMAGE_C = Image(
+        id="b",
+        name="Image C.png",
+        size=1,
+        created_time=DEFAULT_DATE,
+        modified_time=DEFAULT_DATE,
+        height=1,
+        folder=FOLDER_C,
+    )
     IMAGE_D = Image(
-        id="b", name="Image D [NSFW, full art].png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_C
+        id="b",
+        name="Image D [NSFW, full art].png",
+        size=1,
+        created_time=DEFAULT_DATE,
+        modified_time=DEFAULT_DATE,
+        height=1,
+        folder=FOLDER_C,
     )
     IMAGE_E = Image(
-        id="e", name="Image E [invalid tag.png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_A
+        id="e",
+        name="Image E [invalid tag.png",
+        size=1,
+        created_time=DEFAULT_DATE,
+        modified_time=DEFAULT_DATE,
+        height=1,
+        folder=FOLDER_A,
     )
     IMAGE_F = Image(
-        id="F", name="Image F [NSFW, tag in data].png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_A
+        id="F",
+        name="Image F [NSFW, tag in data].png",
+        size=1,
+        created_time=DEFAULT_DATE,
+        modified_time=DEFAULT_DATE,
+        height=1,
+        folder=FOLDER_A,
     )
     IMAGE_G = Image(
-        id="G", name="Image G [NSFW] (John Doe).png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_A
+        id="G",
+        name="Image G [NSFW] (John Doe).png",
+        size=1,
+        created_time=DEFAULT_DATE,
+        modified_time=DEFAULT_DATE,
+        height=1,
+        folder=FOLDER_A,
     )
     IMAGE_H = Image(
-        id="H", name="Image H [A, NSFW, B] (John Doe).png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_A
+        id="H",
+        name="Image H [A, NSFW, B] (John Doe).png",
+        size=1,
+        created_time=DEFAULT_DATE,
+        modified_time=DEFAULT_DATE,
+        height=1,
+        folder=FOLDER_A,
     )
-    IMAGE_I = Image(id="I", name="Image A.I.png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_A)
+    IMAGE_I = Image(
+        id="I",
+        name="Image A.I.png",
+        size=1,
+        created_time=DEFAULT_DATE,
+        modified_time=DEFAULT_DATE,
+        height=1,
+        folder=FOLDER_A,
+    )
     IMAGE_J = Image(
-        id="J", name="Image J [Child Tag].png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_A
+        id="J",
+        name="Image J [Child Tag].png",
+        size=1,
+        created_time=DEFAULT_DATE,
+        modified_time=DEFAULT_DATE,
+        height=1,
+        folder=FOLDER_A,
     )
     IMAGE_K = Image(
-        id="K", name="Image K [Grandchild Tag].png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_A
+        id="K",
+        name="Image K [Grandchild Tag].png",
+        size=1,
+        created_time=DEFAULT_DATE,
+        modified_time=DEFAULT_DATE,
+        height=1,
+        folder=FOLDER_A,
     )
-    IMAGE_L = Image(id="L", name="Image L [NSFW].png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_D)
+    IMAGE_L = Image(
+        id="L",
+        name="Image L [NSFW].png",
+        size=1,
+        created_time=DEFAULT_DATE,
+        modified_time=DEFAULT_DATE,
+        height=1,
+        folder=FOLDER_D,
+    )
     IMAGE_FRENCH = Image(
-        id="french", name="French.png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_FRENCH
+        id="french",
+        name="French.png",
+        size=1,
+        created_time=DEFAULT_DATE,
+        modified_time=DEFAULT_DATE,
+        height=1,
+        folder=FOLDER_FRENCH,
     )
     IMAGE_ENGLISH = Image(
-        id="english", name="{EN} English.png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_FRENCH
+        id="english",
+        name="{EN} English.png",
+        size=1,
+        created_time=DEFAULT_DATE,
+        modified_time=DEFAULT_DATE,
+        height=1,
+        folder=FOLDER_FRENCH,
     )
-    IMAGE_NSFW = Image(id="nsfw", name="NSFW [NSFW].png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_A)
+    IMAGE_NSFW = Image(
+        id="nsfw",
+        name="NSFW [NSFW].png",
+        size=1,
+        created_time=DEFAULT_DATE,
+        modified_time=DEFAULT_DATE,
+        height=1,
+        folder=FOLDER_A,
+    )
     IMAGE_DOUBLE_NSFW = Image(
-        id="double nsfw", name="NSFW (NSFW) [NSFW].png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_A
+        id="double nsfw",
+        name="NSFW (NSFW) [NSFW].png",
+        size=1,
+        created_time=DEFAULT_DATE,
+        modified_time=DEFAULT_DATE,
+        height=1,
+        folder=FOLDER_A,
     )
     IMAGE_IMPLICITLY_FRENCH = Image(
         id="implicitly_french",
         name="Implicitly French.png",
         size=1,
         created_time=DEFAULT_DATE,
+        modified_time=DEFAULT_DATE,
         height=1,
         folder=FOLDER_FRENCH,
     )
@@ -75,6 +184,7 @@ class TestAPI:
         name="{EN} Explicitly English.png",
         size=1,
         created_time=DEFAULT_DATE,
+        modified_time=DEFAULT_DATE,
         height=1,
         folder=FOLDER_FRENCH,
     )

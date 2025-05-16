@@ -194,6 +194,7 @@ class Card(models.Model):
     searchq = models.CharField(max_length=200)
     extension = models.CharField(max_length=200)
     date_created = models.DateTimeField(default=datetime.now)
+    date_modified = models.DateTimeField(default=datetime.now)
     size = models.IntegerField()
     tags = ArrayField(models.CharField(max_length=20), default=list, blank=True)  # null=True is just for admin panel
     language = models.CharField(max_length=5)

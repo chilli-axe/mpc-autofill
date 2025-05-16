@@ -151,7 +151,7 @@ class GoogleDrive(SourceType):
                     "mimeType contains 'image/jpeg') and "
                     f"'{folder.id}' in parents",
                     fields="nextPageToken, files("
-                    "id, name, trashed, size, parents, createdTime, imageMediaMetadata"
+                    "id, name, trashed, size, parents, createdTime, modifiedTime, imageMediaMetadata"
                     ")",
                     pageSize=500,
                     pageToken=page_token,
@@ -168,6 +168,7 @@ class GoogleDrive(SourceType):
                             id=item["id"],
                             name=item["name"],
                             created_time=item["createdTime"],
+                            modified_time=item["modifiedTime"],
                             folder=folder,
                             height=item["imageMediaMetadata"]["height"],
                             size=int(item["size"]),

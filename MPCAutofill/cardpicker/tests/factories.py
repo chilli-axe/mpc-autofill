@@ -33,6 +33,7 @@ class CardFactory(factory.django.DjangoModelFactory):
 
     card_type = models.CardTypes.CARD
     date_created = factory.LazyFunction(lambda: dt.datetime(2023, 1, 1))  # for snapshot consistency
+    date_modified = factory.LazyAttribute(lambda o: o.date_created)
     identifier = factory.Sequence(lambda n: f"card_{n}")
     name = factory.Sequence(lambda n: f"Card {n}")
     priority = factory.Sequence(lambda n: n)

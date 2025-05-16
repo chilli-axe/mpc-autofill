@@ -19,6 +19,7 @@ class CardSearch(Document):
     searchq_keyword = fields.KeywordField(attr="searchq")
     card_type = fields.KeywordField()
     date_created = fields.DateField()
+    date_modified = fields.DateField()
     language = fields.TextField(analyzer=precise_analyser)  # case insensitivity is one less thing which can go wrong
     tags = fields.KeywordField()  # all elasticsearch fields support arrays by default
 
