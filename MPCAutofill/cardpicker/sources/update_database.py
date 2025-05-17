@@ -144,9 +144,44 @@ def transform_images_into_objects(source: Source, images: list[Image], tags: Tag
 def bulk_sync_objects(source: Source, cards: list[Card]) -> None:
     print(f"Synchronising objects to database for source {TEXT_BOLD}{source.name}{TEXT_END}...", end="", flush=True)
     t0 = time.time()
-    with transaction.atomic():  # django-bulk-sync is crushingly slow with postgres
-        Card.objects.filter(source=source).delete()
-        Card.objects.bulk_create(cards)
+
+    incoming = {card.identifier: card for card in cards}
+    incoming_ids = set(incoming.keys())
+    existing = {card.identifier: card for card in Card.objects.filter(source=source)}
+    existing_ids = set(existing.keys())
+
+    created = [incoming[identifier] for identifier in incoming_ids - existing_ids]
+    updated = [
+        incoming[identifier]
+        for identifier in (incoming_ids & existing_ids)
+        if incoming[identifier].date_modified > existing[identifier].date_modified
+    ]
+    deleted_ids = existing_ids - incoming_ids
+
+    with transaction.atomic():
+        Card.objects.bulk_create(created)
+        Card.objects.bulk_update(
+            updated,
+            # update every field except for `identifier`
+            [
+                "card_type",
+                "name",
+                "priority",
+                "source",
+                "source_verbose",
+                "folder_location",
+                "dpi",
+                "searchq",
+                "extension",
+                "date_created",
+                "date_modified",
+                "size",
+                "tags",
+                "language",
+            ],
+            batch_size=1000,
+        )
+        Card.objects.filter(identifier__in=deleted_ids).delete()
     print(f" and done! That took {TEXT_BOLD}{(time.time() - t0):.2f}{TEXT_END} seconds.")
 
 

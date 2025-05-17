@@ -5,6 +5,8 @@ from attr import define
 from tqdm import tqdm
 
 from django.db.models import TextChoices
+from django.utils.dateparse import parse_datetime
+from django.utils.timezone import now
 from django.utils.translation import gettext_lazy
 
 from cardpicker.schema_types import SourceType as SchemaSourceType
@@ -167,8 +169,8 @@ class GoogleDrive(SourceType):
                         Image(
                             id=item["id"],
                             name=item["name"],
-                            created_time=item["createdTime"],
-                            modified_time=item["modifiedTime"],
+                            created_time=parse_datetime(item["createdTime"]) or now(),
+                            modified_time=parse_datetime(item["modifiedTime"]) or now(),
                             folder=folder,
                             height=item["imageMediaMetadata"]["height"],
                             size=int(item["size"]),

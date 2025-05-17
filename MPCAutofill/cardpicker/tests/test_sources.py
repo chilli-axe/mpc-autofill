@@ -347,7 +347,6 @@ class TestUpdateDatabase:
         update_database()
         assert list(Card.objects.all().order_by("identifier")) == snapshot(name="cards")
 
-    @pytest.mark.skip("we turned off upsert at time of writing because it's extremely slow with postgres")
     def test_upsert(self, django_settings, elasticsearch, all_sources):
         update_database()
         pk_to_identifier_1 = {x.pk: x.identifier for x in Card.objects.all()}
