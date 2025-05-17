@@ -151,11 +151,11 @@ def bulk_sync_objects(source: Source, cards: list[Card]) -> None:
     existing_ids = set(existing.keys())
 
     created = [incoming[identifier] for identifier in incoming_ids - existing_ids]
-    updated = [
-        incoming[identifier]
-        for identifier in (incoming_ids & existing_ids)
-        if incoming[identifier].date_modified > existing[identifier].date_modified
-    ]
+    updated: list[Card] = []
+    for identifier in incoming_ids & existing_ids:
+        if incoming[identifier].date_modified > existing[identifier].date_modified:
+            incoming[identifier].pk = existing[identifier].pk  # this must be explicitly set for bulk_update.
+            updated.append(incoming[identifier])
     deleted_ids = existing_ids - incoming_ids
 
     with transaction.atomic():
@@ -182,7 +182,10 @@ def bulk_sync_objects(source: Source, cards: list[Card]) -> None:
             batch_size=1000,
         )
         Card.objects.filter(identifier__in=deleted_ids).delete()
-    print(f" and done! That took {TEXT_BOLD}{(time.time() - t0):.2f}{TEXT_END} seconds.")
+    print(
+        f" and done! That took {TEXT_BOLD}{(time.time() - t0):.2f}{TEXT_END} seconds.\n"
+        f"Created {len(created)}, updated {len(updated)}, and deleted {len(deleted_ids)} cards."
+    )
 
 
 def update_database_for_source(source: Source, source_type: Type[SourceType], root_folder: Folder, tags: Tags) -> None:

@@ -220,7 +220,7 @@ const SampleCardDocument: CardDocument = {
   dpi: 300,
   searchq: "",
   extension: "png",
-  date: "1st January, 2000",
+  dateCreated: "1st January, 2000",
   downloadLink: "",
   size: 1,
   smallThumbnailUrl: "/logo-blank.png",

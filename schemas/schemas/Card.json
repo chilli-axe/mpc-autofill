@@ -42,7 +42,7 @@
     "extension": {
       "type": "string"
     },
-    "date": {
+    "dateCreated": {
       "description": "Created date - formatted by backend",
       "type": "string"
     },
@@ -80,7 +80,7 @@
     "dpi",
     "searchq",
     "extension",
-    "date",
+    "dateCreated",
     "downloadLink",
     "size",
     "smallThumbnailUrl",

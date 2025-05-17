@@ -232,7 +232,7 @@ class SourceType(str, Enum):
 
 class Card(BaseModel):
     cardType: CardType
-    date: str
+    dateCreated: str
     """Created date - formatted by backend"""
 
     downloadLink: str
@@ -258,7 +258,7 @@ class Card(BaseModel):
     def from_dict(obj: Any) -> "Card":
         assert isinstance(obj, dict)
         cardType = CardType(obj.get("cardType"))
-        date = from_str(obj.get("date"))
+        dateCreated = from_str(obj.get("dateCreated"))
         downloadLink = from_str(obj.get("downloadLink"))
         dpi = from_int(obj.get("dpi"))
         extension = from_str(obj.get("extension"))
@@ -279,7 +279,7 @@ class Card(BaseModel):
         sourceType = from_union([SourceType, from_none], obj.get("sourceType"))
         return Card(
             cardType,
-            date,
+            dateCreated,
             downloadLink,
             dpi,
             extension,
@@ -303,7 +303,7 @@ class Card(BaseModel):
     def to_dict(self) -> dict:
         result: dict = {}
         result["cardType"] = to_enum(CardType, self.cardType)
-        result["date"] = from_str(self.date)
+        result["dateCreated"] = from_str(self.dateCreated)
         result["downloadLink"] = from_str(self.downloadLink)
         result["dpi"] = from_int(self.dpi)
         result["extension"] = from_str(self.extension)
