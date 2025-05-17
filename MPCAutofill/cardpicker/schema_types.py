@@ -235,6 +235,9 @@ class Card(BaseModel):
     dateCreated: str
     """Created date - formatted by backend"""
 
+    dateModified: str
+    """Modified date - formatted by backend"""
+
     downloadLink: str
     dpi: int
     extension: str
@@ -259,6 +262,7 @@ class Card(BaseModel):
         assert isinstance(obj, dict)
         cardType = CardType(obj.get("cardType"))
         dateCreated = from_str(obj.get("dateCreated"))
+        dateModified = from_str(obj.get("dateModified"))
         downloadLink = from_str(obj.get("downloadLink"))
         dpi = from_int(obj.get("dpi"))
         extension = from_str(obj.get("extension"))
@@ -280,6 +284,7 @@ class Card(BaseModel):
         return Card(
             cardType,
             dateCreated,
+            dateModified,
             downloadLink,
             dpi,
             extension,
@@ -304,6 +309,7 @@ class Card(BaseModel):
         result: dict = {}
         result["cardType"] = to_enum(CardType, self.cardType)
         result["dateCreated"] = from_str(self.dateCreated)
+        result["dateModified"] = from_str(self.dateModified)
         result["downloadLink"] = from_str(self.downloadLink)
         result["dpi"] = from_int(self.dpi)
         result["extension"] = from_str(self.extension)

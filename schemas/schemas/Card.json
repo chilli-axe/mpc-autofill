@@ -46,6 +46,10 @@
       "description": "Created date - formatted by backend",
       "type": "string"
     },
+    "dateModified": {
+      "description": "Modified date - formatted by backend",
+      "type": "string"
+    },
     "downloadLink": {
       "type": "string"
     },
@@ -81,6 +85,7 @@
     "searchq",
     "extension",
     "dateCreated",
+    "dateModified",
     "downloadLink",
     "size",
     "smallThumbnailUrl",

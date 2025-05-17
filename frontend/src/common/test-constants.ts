@@ -85,6 +85,7 @@ export const cardDocument1: CardDocument = {
   searchq: "card 1",
   extension: "png",
   dateCreated: "1st January, 2000", // formatted by backend
+  dateModified: "1st January, 2000", // formatted by backend
   downloadLink: "",
   size: 10_000_000,
   smallThumbnailUrl: "",
@@ -108,6 +109,7 @@ export const cardDocument2: CardDocument = {
   searchq: "card 2",
   extension: "png",
   dateCreated: "1st January, 2000", // formatted by backend
+  dateModified: "1st January, 2000", // formatted by backend
   downloadLink: "",
   size: 10_000_000,
   smallThumbnailUrl: "",
@@ -131,6 +133,7 @@ export const cardDocument3: CardDocument = {
   searchq: "card 3",
   extension: "png",
   dateCreated: "1st January, 2000", // formatted by backend
+  dateModified: "1st January, 2000", // formatted by backend
   downloadLink: "",
   size: 10_000_000,
   smallThumbnailUrl: "",
@@ -154,6 +157,7 @@ export const cardDocument4: CardDocument = {
   searchq: "card 4",
   extension: "png",
   dateCreated: "1st January, 2000", // formatted by backend
+  dateModified: "1st January, 2000", // formatted by backend
   downloadLink: "",
   size: 10_000_000,
   smallThumbnailUrl: "",
@@ -177,6 +181,7 @@ export const cardDocument5: CardDocument = {
   searchq: "card 5",
   extension: "png",
   dateCreated: "1st January, 2000", // formatted by backend
+  dateModified: "1st January, 2000", // formatted by backend
   downloadLink: "",
   size: 10_000_000,
   smallThumbnailUrl: "",
@@ -200,6 +205,7 @@ export const cardDocument6: CardDocument = {
   searchq: "card 6",
   extension: "png",
   dateCreated: "1st January, 2000", // formatted by backend
+  dateModified: "1st January, 2000", // formatted by backend
   downloadLink: "",
   size: 10_000_000,
   smallThumbnailUrl: "",

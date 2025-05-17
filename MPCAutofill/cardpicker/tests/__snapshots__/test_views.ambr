@@ -193,6 +193,7 @@
       'Brainstorm': dict({
         'cardType': 'CARD',
         'dateCreated': '1st January, 2023',
+        'dateModified': '1st January, 2023',
         'downloadLink': 'https://drive.google.com/uc?id=1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5&export=download',
         'dpi': 600,
         'extension': 'png',
@@ -216,6 +217,7 @@
       'Island': dict({
         'cardType': 'CARD',
         'dateCreated': '1st January, 2023',
+        'dateModified': '1st January, 2023',
         'downloadLink': 'https://drive.google.com/uc?id=1IDtqSjJ4Yo45AnNA4SplOiN7ewibifMa&export=download',
         'dpi': 600,
         'extension': 'png',
@@ -239,6 +241,7 @@
       'Island (William Bradford)': dict({
         'cardType': 'CARD',
         'dateCreated': '1st January, 2023',
+        'dateModified': '1st January, 2023',
         'downloadLink': 'https://drive.google.com/uc?id=1HsvTYs1jFGe1c8U1PnNZ9aB8jkAW7KU0&export=download',
         'dpi': 600,
         'extension': 'png',
@@ -262,6 +265,7 @@
       'Pást in Flames': dict({
         'cardType': 'CARD',
         'dateCreated': '1st January, 2023',
+        'dateModified': '1st January, 2023',
         'downloadLink': 'https://drive.google.com/uc?id=1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1&export=download',
         'dpi': 600,
         'extension': 'png',
@@ -290,6 +294,7 @@
       'Goblin': dict({
         'cardType': 'TOKEN',
         'dateCreated': '1st January, 2023',
+        'dateModified': '1st January, 2023',
         'downloadLink': 'https://drive.google.com/uc?id=1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA&export=download',
         'dpi': 600,
         'extension': 'png',
@@ -395,6 +400,7 @@
             dict({
               'cardType': 'CARD',
               'dateCreated': '1st January, 2023',
+              'dateModified': '1st January, 2023',
               'downloadLink': 'https://drive.google.com/uc?id=1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5&export=download',
               'dpi': 600,
               'extension': 'png',
@@ -418,6 +424,7 @@
             dict({
               'cardType': 'CARD',
               'dateCreated': '1st January, 2023',
+              'dateModified': '1st January, 2023',
               'downloadLink': 'https://drive.google.com/uc?id=17fopRCNRge72U8Hac8pApHZtEalx5kHy&export=download',
               'dpi': 600,
               'extension': 'png',
@@ -441,6 +448,7 @@
             dict({
               'cardType': 'TOKEN',
               'dateCreated': '1st January, 2023',
+              'dateModified': '1st January, 2023',
               'downloadLink': 'https://drive.google.com/uc?id=1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA&export=download',
               'dpi': 600,
               'extension': 'png',
@@ -464,6 +472,7 @@
             dict({
               'cardType': 'CARD',
               'dateCreated': '1st January, 2023',
+              'dateModified': '1st January, 2023',
               'downloadLink': 'https://drive.google.com/uc?id=1991MWCur9NdAFi-tQQD5YbQj2oqV_WRy&export=download',
               'dpi': 600,
               'extension': 'png',
@@ -487,6 +496,7 @@
             dict({
               'cardType': 'CARD',
               'dateCreated': '1st January, 2023',
+              'dateModified': '1st January, 2023',
               'downloadLink': 'https://drive.google.com/uc?id=1mO73GTYlieP0kiZEkF58pJSrZTmC9lNh&export=download',
               'dpi': 600,
               'extension': 'png',
@@ -510,6 +520,7 @@
             dict({
               'cardType': 'CARD',
               'dateCreated': '1st January, 2023',
+              'dateModified': '1st January, 2023',
               'downloadLink': 'https://drive.google.com/uc?id=1IDtqSjJ4Yo45AnNA4SplOiN7ewibifMa&export=download',
               'dpi': 600,
               'extension': 'png',
@@ -547,6 +558,7 @@
             dict({
               'cardType': 'CARD',
               'dateCreated': '1st January, 2023',
+              'dateModified': '1st January, 2023',
               'downloadLink': 'https://drive.google.com/uc?id=1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU&export=download',
               'dpi': 400,
               'extension': 'png',
@@ -572,6 +584,7 @@
             dict({
               'cardType': 'CARDBACK',
               'dateCreated': '1st January, 2023',
+              'dateModified': '1st January, 2023',
               'downloadLink': 'https://drive.google.com/uc?id=1oigI6wz0zA--pNMuExKTs40kBNH6VRP_&export=download',
               'dpi': 300,
               'extension': 'png',
@@ -654,6 +667,7 @@
         dict({
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
+          'dateModified': '1st January, 2023',
           'downloadLink': 'https://drive.google.com/uc?id=1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5&export=download',
           'dpi': 600,
           'extension': 'png',
@@ -677,6 +691,7 @@
         dict({
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
+          'dateModified': '1st January, 2023',
           'downloadLink': 'https://drive.google.com/uc?id=17fopRCNRge72U8Hac8pApHZtEalx5kHy&export=download',
           'dpi': 600,
           'extension': 'png',
@@ -700,6 +715,7 @@
         dict({
           'cardType': 'TOKEN',
           'dateCreated': '1st January, 2023',
+          'dateModified': '1st January, 2023',
           'downloadLink': 'https://drive.google.com/uc?id=1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA&export=download',
           'dpi': 600,
           'extension': 'png',
@@ -723,6 +739,7 @@
         dict({
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
+          'dateModified': '1st January, 2023',
           'downloadLink': 'https://drive.google.com/uc?id=1991MWCur9NdAFi-tQQD5YbQj2oqV_WRy&export=download',
           'dpi': 600,
           'extension': 'png',
@@ -746,6 +763,7 @@
         dict({
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
+          'dateModified': '1st January, 2023',
           'downloadLink': 'https://drive.google.com/uc?id=1mO73GTYlieP0kiZEkF58pJSrZTmC9lNh&export=download',
           'dpi': 600,
           'extension': 'png',
@@ -769,6 +787,7 @@
         dict({
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
+          'dateModified': '1st January, 2023',
           'downloadLink': 'https://drive.google.com/uc?id=1IDtqSjJ4Yo45AnNA4SplOiN7ewibifMa&export=download',
           'dpi': 600,
           'extension': 'png',
@@ -801,6 +820,7 @@
         dict({
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
+          'dateModified': '1st January, 2023',
           'downloadLink': 'https://drive.google.com/uc?id=1HsvTYs1jFGe1c8U1PnNZ9aB8jkAW7KU0&export=download',
           'dpi': 600,
           'extension': 'png',
@@ -824,6 +844,7 @@
         dict({
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
+          'dateModified': '1st January, 2023',
           'downloadLink': 'https://drive.google.com/uc?id=1-dcs0FEE05MTGiYbKqs9HnRdhXkgtIJG&export=download',
           'dpi': 600,
           'extension': 'png',
@@ -847,6 +868,7 @@
         dict({
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
+          'dateModified': '1st January, 2023',
           'downloadLink': 'https://drive.google.com/uc?id=1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1&export=download',
           'dpi': 600,
           'extension': 'png',
@@ -871,6 +893,7 @@
         dict({
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
+          'dateModified': '1st January, 2023',
           'downloadLink': 'https://drive.google.com/uc?id=1lv8WC1Xf1qxA7VHSc8jOtT5up6FwaBPH&export=download',
           'dpi': 600,
           'extension': 'png',
@@ -894,6 +917,7 @@
         dict({
           'cardType': 'CARDBACK',
           'dateCreated': '1st January, 2023',
+          'dateModified': '1st January, 2023',
           'downloadLink': 'https://drive.google.com/uc?id=1JtXL6Ca9nQkvhwZZRR9ZuKA9_DzsFf1V&export=download',
           'dpi': 300,
           'extension': 'png',
@@ -928,6 +952,7 @@
         dict({
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
+          'dateModified': '1st January, 2023',
           'downloadLink': 'https://drive.google.com/uc?id=1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU&export=download',
           'dpi': 400,
           'extension': 'png',
@@ -953,6 +978,7 @@
         dict({
           'cardType': 'CARDBACK',
           'dateCreated': '1st January, 2023',
+          'dateModified': '1st January, 2023',
           'downloadLink': 'https://drive.google.com/uc?id=1oigI6wz0zA--pNMuExKTs40kBNH6VRP_&export=download',
           'dpi': 300,
           'extension': 'png',
@@ -1327,6 +1353,7 @@
         '17fopRCNRge72U8Hac8pApHZtEalx5kHy': dict({
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
+          'dateModified': '1st January, 2023',
           'downloadLink': 'https://drive.google.com/uc?id=17fopRCNRge72U8Hac8pApHZtEalx5kHy&export=download',
           'dpi': 600,
           'extension': 'png',
@@ -1350,6 +1377,7 @@
         '1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA': dict({
           'cardType': 'TOKEN',
           'dateCreated': '1st January, 2023',
+          'dateModified': '1st January, 2023',
           'downloadLink': 'https://drive.google.com/uc?id=1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA&export=download',
           'dpi': 600,
           'extension': 'png',
@@ -1392,6 +1420,7 @@
         '1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA': dict({
           'cardType': 'TOKEN',
           'dateCreated': '1st January, 2023',
+          'dateModified': '1st January, 2023',
           'downloadLink': 'https://drive.google.com/uc?id=1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA&export=download',
           'dpi': 600,
           'extension': 'png',
@@ -1424,6 +1453,7 @@
         '17fopRCNRge72U8Hac8pApHZtEalx5kHy': dict({
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
+          'dateModified': '1st January, 2023',
           'downloadLink': 'https://drive.google.com/uc?id=17fopRCNRge72U8Hac8pApHZtEalx5kHy&export=download',
           'dpi': 600,
           'extension': 'png',
@@ -1447,6 +1477,7 @@
         '1991MWCur9NdAFi-tQQD5YbQj2oqV_WRy': dict({
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
+          'dateModified': '1st January, 2023',
           'downloadLink': 'https://drive.google.com/uc?id=1991MWCur9NdAFi-tQQD5YbQj2oqV_WRy&export=download',
           'dpi': 600,
           'extension': 'png',
@@ -1470,6 +1501,7 @@
         '1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA': dict({
           'cardType': 'TOKEN',
           'dateCreated': '1st January, 2023',
+          'dateModified': '1st January, 2023',
           'downloadLink': 'https://drive.google.com/uc?id=1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA&export=download',
           'dpi': 600,
           'extension': 'png',
@@ -1512,6 +1544,7 @@
         '1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA': dict({
           'cardType': 'TOKEN',
           'dateCreated': '1st January, 2023',
+          'dateModified': '1st January, 2023',
           'downloadLink': 'https://drive.google.com/uc?id=1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA&export=download',
           'dpi': 600,
           'extension': 'png',
@@ -2176,6 +2209,7 @@
         dict({
           'cardType': 'TOKEN',
           'dateCreated': '1st January, 2023',
+          'dateModified': '1st January, 2023',
           'downloadLink': 'https://drive.google.com/uc?id=1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA&export=download',
           'dpi': 600,
           'extension': 'png',
@@ -2199,6 +2233,7 @@
         dict({
           'cardType': 'CARDBACK',
           'dateCreated': '1st January, 2023',
+          'dateModified': '1st January, 2023',
           'downloadLink': 'https://drive.google.com/uc?id=1JtXL6Ca9nQkvhwZZRR9ZuKA9_DzsFf1V&export=download',
           'dpi': 300,
           'extension': 'png',
@@ -2224,6 +2259,7 @@
         dict({
           'cardType': 'CARDBACK',
           'dateCreated': '1st January, 2023',
+          'dateModified': '1st January, 2023',
           'downloadLink': 'https://drive.google.com/uc?id=1oigI6wz0zA--pNMuExKTs40kBNH6VRP_&export=download',
           'dpi': 300,
           'extension': 'png',
@@ -2258,6 +2294,7 @@
         dict({
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
+          'dateModified': '1st January, 2023',
           'downloadLink': 'https://drive.google.com/uc?id=1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5&export=download',
           'dpi': 600,
           'extension': 'png',
@@ -2281,6 +2318,7 @@
         dict({
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
+          'dateModified': '1st January, 2023',
           'downloadLink': 'https://drive.google.com/uc?id=17fopRCNRge72U8Hac8pApHZtEalx5kHy&export=download',
           'dpi': 600,
           'extension': 'png',
@@ -2304,6 +2342,7 @@
         dict({
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
+          'dateModified': '1st January, 2023',
           'downloadLink': 'https://drive.google.com/uc?id=1991MWCur9NdAFi-tQQD5YbQj2oqV_WRy&export=download',
           'dpi': 600,
           'extension': 'png',
@@ -2327,6 +2366,7 @@
         dict({
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
+          'dateModified': '1st January, 2023',
           'downloadLink': 'https://drive.google.com/uc?id=1mO73GTYlieP0kiZEkF58pJSrZTmC9lNh&export=download',
           'dpi': 600,
           'extension': 'png',
@@ -2350,6 +2390,7 @@
         dict({
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
+          'dateModified': '1st January, 2023',
           'downloadLink': 'https://drive.google.com/uc?id=1HsvTYs1jFGe1c8U1PnNZ9aB8jkAW7KU0&export=download',
           'dpi': 600,
           'extension': 'png',
@@ -2373,6 +2414,7 @@
         dict({
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
+          'dateModified': '1st January, 2023',
           'downloadLink': 'https://drive.google.com/uc?id=1IDtqSjJ4Yo45AnNA4SplOiN7ewibifMa&export=download',
           'dpi': 600,
           'extension': 'png',
@@ -2396,6 +2438,7 @@
         dict({
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
+          'dateModified': '1st January, 2023',
           'downloadLink': 'https://drive.google.com/uc?id=1-dcs0FEE05MTGiYbKqs9HnRdhXkgtIJG&export=download',
           'dpi': 600,
           'extension': 'png',
@@ -2419,6 +2462,7 @@
         dict({
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
+          'dateModified': '1st January, 2023',
           'downloadLink': 'https://drive.google.com/uc?id=1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU&export=download',
           'dpi': 400,
           'extension': 'png',
@@ -2444,6 +2488,7 @@
         dict({
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
+          'dateModified': '1st January, 2023',
           'downloadLink': 'https://drive.google.com/uc?id=1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1&export=download',
           'dpi': 600,
           'extension': 'png',
@@ -2468,6 +2513,7 @@
         dict({
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
+          'dateModified': '1st January, 2023',
           'downloadLink': 'https://drive.google.com/uc?id=1lv8WC1Xf1qxA7VHSc8jOtT5up6FwaBPH&export=download',
           'dpi': 600,
           'extension': 'png',
@@ -2501,6 +2547,7 @@
         dict({
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
+          'dateModified': '1st January, 2023',
           'downloadLink': 'https://drive.google.com/uc?id=1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5&export=download',
           'dpi': 600,
           'extension': 'png',
@@ -2524,6 +2571,7 @@
         dict({
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
+          'dateModified': '1st January, 2023',
           'downloadLink': 'https://drive.google.com/uc?id=17fopRCNRge72U8Hac8pApHZtEalx5kHy&export=download',
           'dpi': 600,
           'extension': 'png',
@@ -2547,6 +2595,7 @@
         dict({
           'cardType': 'TOKEN',
           'dateCreated': '1st January, 2023',
+          'dateModified': '1st January, 2023',
           'downloadLink': 'https://drive.google.com/uc?id=1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA&export=download',
           'dpi': 600,
           'extension': 'png',
@@ -2570,6 +2619,7 @@
         dict({
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
+          'dateModified': '1st January, 2023',
           'downloadLink': 'https://drive.google.com/uc?id=1991MWCur9NdAFi-tQQD5YbQj2oqV_WRy&export=download',
           'dpi': 600,
           'extension': 'png',
@@ -2593,6 +2643,7 @@
         dict({
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
+          'dateModified': '1st January, 2023',
           'downloadLink': 'https://drive.google.com/uc?id=1mO73GTYlieP0kiZEkF58pJSrZTmC9lNh&export=download',
           'dpi': 600,
           'extension': 'png',
@@ -2616,6 +2667,7 @@
         dict({
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
+          'dateModified': '1st January, 2023',
           'downloadLink': 'https://drive.google.com/uc?id=1HsvTYs1jFGe1c8U1PnNZ9aB8jkAW7KU0&export=download',
           'dpi': 600,
           'extension': 'png',
@@ -2639,6 +2691,7 @@
         dict({
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
+          'dateModified': '1st January, 2023',
           'downloadLink': 'https://drive.google.com/uc?id=1IDtqSjJ4Yo45AnNA4SplOiN7ewibifMa&export=download',
           'dpi': 600,
           'extension': 'png',
@@ -2662,6 +2715,7 @@
         dict({
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
+          'dateModified': '1st January, 2023',
           'downloadLink': 'https://drive.google.com/uc?id=1-dcs0FEE05MTGiYbKqs9HnRdhXkgtIJG&export=download',
           'dpi': 600,
           'extension': 'png',
@@ -2685,6 +2739,7 @@
         dict({
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
+          'dateModified': '1st January, 2023',
           'downloadLink': 'https://drive.google.com/uc?id=1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU&export=download',
           'dpi': 400,
           'extension': 'png',
@@ -2710,6 +2765,7 @@
         dict({
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
+          'dateModified': '1st January, 2023',
           'downloadLink': 'https://drive.google.com/uc?id=1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1&export=download',
           'dpi': 600,
           'extension': 'png',
@@ -2734,6 +2790,7 @@
         dict({
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
+          'dateModified': '1st January, 2023',
           'downloadLink': 'https://drive.google.com/uc?id=1lv8WC1Xf1qxA7VHSc8jOtT5up6FwaBPH&export=download',
           'dpi': 600,
           'extension': 'png',
@@ -2757,6 +2814,7 @@
         dict({
           'cardType': 'CARDBACK',
           'dateCreated': '1st January, 2023',
+          'dateModified': '1st January, 2023',
           'downloadLink': 'https://drive.google.com/uc?id=1JtXL6Ca9nQkvhwZZRR9ZuKA9_DzsFf1V&export=download',
           'dpi': 300,
           'extension': 'png',
@@ -2782,6 +2840,7 @@
         dict({
           'cardType': 'CARDBACK',
           'dateCreated': '1st January, 2023',
+          'dateModified': '1st January, 2023',
           'downloadLink': 'https://drive.google.com/uc?id=1oigI6wz0zA--pNMuExKTs40kBNH6VRP_&export=download',
           'dpi': 300,
           'extension': 'png',
@@ -2816,6 +2875,7 @@
         dict({
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
+          'dateModified': '1st January, 2023',
           'downloadLink': 'https://drive.google.com/uc?id=1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5&export=download',
           'dpi': 600,
           'extension': 'png',
@@ -2849,6 +2909,7 @@
         dict({
           'cardType': 'CARDBACK',
           'dateCreated': '1st January, 2023',
+          'dateModified': '1st January, 2023',
           'downloadLink': 'https://drive.google.com/uc?id=1oigI6wz0zA--pNMuExKTs40kBNH6VRP_&export=download',
           'dpi': 300,
           'extension': 'png',
@@ -2883,6 +2944,7 @@
         dict({
           'cardType': 'TOKEN',
           'dateCreated': '1st January, 2023',
+          'dateModified': '1st January, 2023',
           'downloadLink': 'https://drive.google.com/uc?id=1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA&export=download',
           'dpi': 600,
           'extension': 'png',
@@ -2916,6 +2978,7 @@
         dict({
           'cardType': 'CARDBACK',
           'dateCreated': '1st January, 2023',
+          'dateModified': '1st January, 2023',
           'downloadLink': 'https://drive.google.com/uc?id=1JtXL6Ca9nQkvhwZZRR9ZuKA9_DzsFf1V&export=download',
           'dpi': 300,
           'extension': 'png',
@@ -2941,6 +3004,7 @@
         dict({
           'cardType': 'CARDBACK',
           'dateCreated': '1st January, 2023',
+          'dateModified': '1st January, 2023',
           'downloadLink': 'https://drive.google.com/uc?id=1oigI6wz0zA--pNMuExKTs40kBNH6VRP_&export=download',
           'dpi': 300,
           'extension': 'png',
@@ -2975,6 +3039,7 @@
         dict({
           'cardType': 'CARDBACK',
           'dateCreated': '1st January, 2023',
+          'dateModified': '1st January, 2023',
           'downloadLink': 'https://drive.google.com/uc?id=1oigI6wz0zA--pNMuExKTs40kBNH6VRP_&export=download',
           'dpi': 300,
           'extension': 'png',
@@ -2999,6 +3064,7 @@
         dict({
           'cardType': 'CARDBACK',
           'dateCreated': '1st January, 2023',
+          'dateModified': '1st January, 2023',
           'downloadLink': 'https://drive.google.com/uc?id=1JtXL6Ca9nQkvhwZZRR9ZuKA9_DzsFf1V&export=download',
           'dpi': 300,
           'extension': 'png',

@@ -227,6 +227,7 @@ class Card(models.Model):
             searchq=self.searchq,
             extension=self.extension,
             dateCreated=dateformat.format(self.date_created, DATE_FORMAT),
+            dateModified=dateformat.format(self.date_modified, DATE_FORMAT),
             size=self.size,
             downloadLink=self.get_download_link() or "",
             smallThumbnailUrl=self.get_small_thumbnail_url() or "",
