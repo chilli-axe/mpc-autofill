@@ -19,6 +19,7 @@ class SourceFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.Source
 
+    identifier = factory.Sequence(lambda n: f"source_{n}")
     key = factory.Sequence(lambda n: f"source_{n}")
     name = factory.Sequence(lambda n: f"Source {n}")
     source_type = models.SourceTypeChoices.GOOGLE_DRIVE
