@@ -70,6 +70,7 @@ class Image:
     name: str
     size: int
     created_time: dt.datetime
+    modified_time: dt.datetime
     height: int
     folder: Folder
 

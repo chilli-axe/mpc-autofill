@@ -1,17 +1,23 @@
 import datetime as dt
 
+import freezegun
 import pytest
 
+from django.core import management
+from django.utils.timezone import make_aware, make_naive
+
+from cardpicker.documents import CardSearch
 from cardpicker.models import Card
 from cardpicker.sources.api import Folder, Image
-from cardpicker.sources.update_database import update_database
+from cardpicker.sources.update_database import bulk_sync_objects, update_database
 from cardpicker.tags import Tags
+from cardpicker.tests import factories
+
+DEFAULT_DATE = dt.datetime(2023, 1, 1)
 
 
 class TestAPI:
     # region constants
-
-    DEFAULT_DATE = dt.datetime(2023, 1, 1)
 
     FOLDER_A = Folder(id="a", name="Folder A", parent=None)
     FOLDER_B = Folder(id="b", name="Folder B", parent=FOLDER_A)
@@ -26,47 +32,156 @@ class TestAPI:
     FOLDER_Z = Folder(id="z", name="Folder z [Full Art", parent=None)
     FOLDER_FRENCH = Folder(id="french", name="{FR} Folder", parent=None)
 
-    IMAGE_A = Image(id="a", name="Image A.png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_A)
-    IMAGE_B = Image(id="b", name="Image B [NSFW].png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_A)
-    IMAGE_C = Image(id="b", name="Image C.png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_C)
+    IMAGE_A = Image(
+        id="a",
+        name="Image A.png",
+        size=1,
+        created_time=DEFAULT_DATE,
+        modified_time=DEFAULT_DATE,
+        height=1,
+        folder=FOLDER_A,
+    )
+    IMAGE_B = Image(
+        id="b",
+        name="Image B [NSFW].png",
+        size=1,
+        created_time=DEFAULT_DATE,
+        modified_time=DEFAULT_DATE,
+        height=1,
+        folder=FOLDER_A,
+    )
+    IMAGE_C = Image(
+        id="b",
+        name="Image C.png",
+        size=1,
+        created_time=DEFAULT_DATE,
+        modified_time=DEFAULT_DATE,
+        height=1,
+        folder=FOLDER_C,
+    )
     IMAGE_D = Image(
-        id="b", name="Image D [NSFW, full art].png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_C
+        id="b",
+        name="Image D [NSFW, full art].png",
+        size=1,
+        created_time=DEFAULT_DATE,
+        modified_time=DEFAULT_DATE,
+        height=1,
+        folder=FOLDER_C,
     )
     IMAGE_E = Image(
-        id="e", name="Image E [invalid tag.png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_A
+        id="e",
+        name="Image E [invalid tag.png",
+        size=1,
+        created_time=DEFAULT_DATE,
+        modified_time=DEFAULT_DATE,
+        height=1,
+        folder=FOLDER_A,
     )
     IMAGE_F = Image(
-        id="F", name="Image F [NSFW, tag in data].png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_A
+        id="F",
+        name="Image F [NSFW, tag in data].png",
+        size=1,
+        created_time=DEFAULT_DATE,
+        modified_time=DEFAULT_DATE,
+        height=1,
+        folder=FOLDER_A,
     )
     IMAGE_G = Image(
-        id="G", name="Image G [NSFW] (John Doe).png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_A
+        id="G",
+        name="Image G [NSFW] (John Doe).png",
+        size=1,
+        created_time=DEFAULT_DATE,
+        modified_time=DEFAULT_DATE,
+        height=1,
+        folder=FOLDER_A,
     )
     IMAGE_H = Image(
-        id="H", name="Image H [A, NSFW, B] (John Doe).png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_A
+        id="H",
+        name="Image H [A, NSFW, B] (John Doe).png",
+        size=1,
+        created_time=DEFAULT_DATE,
+        modified_time=DEFAULT_DATE,
+        height=1,
+        folder=FOLDER_A,
     )
-    IMAGE_I = Image(id="I", name="Image A.I.png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_A)
+    IMAGE_I = Image(
+        id="I",
+        name="Image A.I.png",
+        size=1,
+        created_time=DEFAULT_DATE,
+        modified_time=DEFAULT_DATE,
+        height=1,
+        folder=FOLDER_A,
+    )
     IMAGE_J = Image(
-        id="J", name="Image J [Child Tag].png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_A
+        id="J",
+        name="Image J [Child Tag].png",
+        size=1,
+        created_time=DEFAULT_DATE,
+        modified_time=DEFAULT_DATE,
+        height=1,
+        folder=FOLDER_A,
     )
     IMAGE_K = Image(
-        id="K", name="Image K [Grandchild Tag].png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_A
+        id="K",
+        name="Image K [Grandchild Tag].png",
+        size=1,
+        created_time=DEFAULT_DATE,
+        modified_time=DEFAULT_DATE,
+        height=1,
+        folder=FOLDER_A,
     )
-    IMAGE_L = Image(id="L", name="Image L [NSFW].png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_D)
+    IMAGE_L = Image(
+        id="L",
+        name="Image L [NSFW].png",
+        size=1,
+        created_time=DEFAULT_DATE,
+        modified_time=DEFAULT_DATE,
+        height=1,
+        folder=FOLDER_D,
+    )
     IMAGE_FRENCH = Image(
-        id="french", name="French.png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_FRENCH
+        id="french",
+        name="French.png",
+        size=1,
+        created_time=DEFAULT_DATE,
+        modified_time=DEFAULT_DATE,
+        height=1,
+        folder=FOLDER_FRENCH,
     )
     IMAGE_ENGLISH = Image(
-        id="english", name="{EN} English.png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_FRENCH
+        id="english",
+        name="{EN} English.png",
+        size=1,
+        created_time=DEFAULT_DATE,
+        modified_time=DEFAULT_DATE,
+        height=1,
+        folder=FOLDER_FRENCH,
     )
-    IMAGE_NSFW = Image(id="nsfw", name="NSFW [NSFW].png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_A)
+    IMAGE_NSFW = Image(
+        id="nsfw",
+        name="NSFW [NSFW].png",
+        size=1,
+        created_time=DEFAULT_DATE,
+        modified_time=DEFAULT_DATE,
+        height=1,
+        folder=FOLDER_A,
+    )
     IMAGE_DOUBLE_NSFW = Image(
-        id="double nsfw", name="NSFW (NSFW) [NSFW].png", size=1, created_time=DEFAULT_DATE, height=1, folder=FOLDER_A
+        id="double nsfw",
+        name="NSFW (NSFW) [NSFW].png",
+        size=1,
+        created_time=DEFAULT_DATE,
+        modified_time=DEFAULT_DATE,
+        height=1,
+        folder=FOLDER_A,
     )
     IMAGE_IMPLICITLY_FRENCH = Image(
         id="implicitly_french",
         name="Implicitly French.png",
         size=1,
         created_time=DEFAULT_DATE,
+        modified_time=DEFAULT_DATE,
         height=1,
         folder=FOLDER_FRENCH,
     )
@@ -75,6 +190,7 @@ class TestAPI:
         name="{EN} Explicitly English.png",
         size=1,
         created_time=DEFAULT_DATE,
+        modified_time=DEFAULT_DATE,
         height=1,
         folder=FOLDER_FRENCH,
     )
@@ -237,12 +353,94 @@ class TestUpdateDatabase:
         update_database()
         assert list(Card.objects.all().order_by("identifier")) == snapshot(name="cards")
 
-    @pytest.mark.skip("we turned off upsert at time of writing because it's extremely slow with postgres")
     def test_upsert(self, django_settings, elasticsearch, all_sources):
         update_database()
         pk_to_identifier_1 = {x.pk: x.identifier for x in Card.objects.all()}
         update_database()
         pk_to_identifier_2 = {x.pk: x.identifier for x in Card.objects.all()}
         assert pk_to_identifier_1 == pk_to_identifier_2
+
+    @pytest.mark.parametrize(
+        "existing_cards, incoming_cards",
+        [
+            pytest.param(
+                [],
+                [],
+                id="no changes to empty database",
+            ),
+            pytest.param(
+                [("existing", "Existing Card", DEFAULT_DATE)],
+                [("existing", "Existing Card", DEFAULT_DATE)],
+                id="no changes to populated database",
+            ),
+            pytest.param(
+                [],
+                [("created", "Created Card", DEFAULT_DATE)],
+                id="create one card",
+            ),
+            pytest.param(
+                [("updated", "Card to Update", DEFAULT_DATE)],
+                [("updated", "Updated Card", DEFAULT_DATE + dt.timedelta(days=1))],
+                id="update one card",
+            ),
+            pytest.param(
+                [("deleted", "Card to Delete", DEFAULT_DATE)],
+                [],
+                id="delete one card",
+            ),
+            pytest.param(
+                [("updated", "Card to Update", DEFAULT_DATE), ("deleted", "Card to Delete", DEFAULT_DATE)],
+                [
+                    ("created", "Created Card", DEFAULT_DATE),
+                    ("updated", "Updated Card", DEFAULT_DATE + dt.timedelta(days=1)),
+                ],
+                id="create + update + delete",
+            ),
+            pytest.param(
+                [("existing", "Existing Card", DEFAULT_DATE)],
+                [("existing", "Existing Card", DEFAULT_DATE), ("created", "Created Card", DEFAULT_DATE)],
+                id="create one card while another card exists and is not modified",
+            ),
+        ],
+    )
+    @freezegun.freeze_time(DEFAULT_DATE)
+    def test_bulk_sync_objects(self, django_settings, elasticsearch, example_drive_1, existing_cards, incoming_cards):
+        # arrange - set up database and elasticsearch according to `existing_cards`
+        source = factories.SourceFactory()
+        for (identifier, searchq, date_modified) in existing_cards:
+            factories.CardFactory(
+                identifier=identifier,
+                searchq=searchq,
+                date_created=make_aware(DEFAULT_DATE),
+                date_modified=make_aware(date_modified),
+                source=source,
+            )
+        management.call_command("search_index", "--rebuild", "-f")
+
+        # act
+        bulk_sync_objects(
+            source=source,
+            cards=[
+                Card(
+                    identifier=identifier,
+                    searchq=searchq,
+                    date_created=make_aware(DEFAULT_DATE),
+                    date_modified=make_aware(date_modified),
+                    source=source,
+                    # not strictly relevant for this test, but values for these non-nullable fields are required.
+                    size=0,
+                )
+                for (identifier, searchq, date_modified) in incoming_cards
+            ],
+        )
+
+        # assert - database and elasticsearch should now match `incoming_cards`
+        assert {(card.identifier, card.searchq, make_naive(card.date_modified)) for card in Card.objects.all()} == set(
+            incoming_cards
+        )
+        assert {
+            (result.identifier, result.searchq_keyword, make_naive(result.date_modified))
+            for result in CardSearch().search().scan()
+        } == set(incoming_cards)
 
     # endregion

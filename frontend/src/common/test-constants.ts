@@ -84,7 +84,8 @@ export const cardDocument1: CardDocument = {
   dpi: 1200,
   searchq: "card 1",
   extension: "png",
-  date: "1st January, 2000", // formatted by backend
+  dateCreated: "1st January, 2000", // formatted by backend
+  dateModified: "1st January, 2000", // formatted by backend
   downloadLink: "",
   size: 10_000_000,
   smallThumbnailUrl: "",
@@ -107,7 +108,8 @@ export const cardDocument2: CardDocument = {
   dpi: 1200,
   searchq: "card 2",
   extension: "png",
-  date: "1st January, 2000", // formatted by backend
+  dateCreated: "1st January, 2000", // formatted by backend
+  dateModified: "1st January, 2000", // formatted by backend
   downloadLink: "",
   size: 10_000_000,
   smallThumbnailUrl: "",
@@ -130,7 +132,8 @@ export const cardDocument3: CardDocument = {
   dpi: 1200,
   searchq: "card 3",
   extension: "png",
-  date: "1st January, 2000", // formatted by backend
+  dateCreated: "1st January, 2000", // formatted by backend
+  dateModified: "1st January, 2000", // formatted by backend
   downloadLink: "",
   size: 10_000_000,
   smallThumbnailUrl: "",
@@ -153,7 +156,8 @@ export const cardDocument4: CardDocument = {
   dpi: 1200,
   searchq: "card 4",
   extension: "png",
-  date: "1st January, 2000", // formatted by backend
+  dateCreated: "1st January, 2000", // formatted by backend
+  dateModified: "1st January, 2000", // formatted by backend
   downloadLink: "",
   size: 10_000_000,
   smallThumbnailUrl: "",
@@ -176,7 +180,8 @@ export const cardDocument5: CardDocument = {
   dpi: 1200,
   searchq: "card 5",
   extension: "png",
-  date: "1st January, 2000", // formatted by backend
+  dateCreated: "1st January, 2000", // formatted by backend
+  dateModified: "1st January, 2000", // formatted by backend
   downloadLink: "",
   size: 10_000_000,
   smallThumbnailUrl: "",
@@ -199,7 +204,8 @@ export const cardDocument6: CardDocument = {
   dpi: 1200,
   searchq: "card 6",
   extension: "png",
-  date: "1st January, 2000", // formatted by backend
+  dateCreated: "1st January, 2000", // formatted by backend
+  dateModified: "1st January, 2000", // formatted by backend
   downloadLink: "",
   size: 10_000_000,
   smallThumbnailUrl: "",

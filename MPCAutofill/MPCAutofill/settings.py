@@ -217,7 +217,7 @@ PATREON_SECRET = env("PATREON_SECRET", default="")
 PATREON_URL = env("PATREON_URL", default="")
 
 # Sentry
-if len(sys.argv) >= 2 and sys.argv[1] != "runserver":
+if len(sys.argv) >= 2 and sys.argv[1] != "runserver" and env("DJANGO_DEBUG", default=False) is False:
     sentry_sdk.init(
         dsn="https://4d29db1957fb9b3153aaba66e776b01f@o4505848489246720.ingest.sentry.io/4505848491540480",
         integrations=[DjangoIntegration()],

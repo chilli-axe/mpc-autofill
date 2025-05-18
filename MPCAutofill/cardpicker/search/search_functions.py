@@ -204,8 +204,8 @@ def retrieve_cardback_identifiers(search_settings: SearchSettings) -> list[str]:
 def get_new_cards_paginator(source: Source) -> Paginator[QuerySet[Card]]:
     now = timezone.now()
     cards = Card.objects.filter(
-        source=source, date__lt=now, date__gte=now - dt.timedelta(days=NEW_CARDS_DAYS)
-    ).order_by("-date", "name")
+        source=source, date_created__lt=now, date_created__gte=now - dt.timedelta(days=NEW_CARDS_DAYS)
+    ).order_by("-date_created", "name")
     return Paginator(cards, NEW_CARDS_PAGE_SIZE)  # type: ignore  # TODO: `_SupportsPagination`
 
 

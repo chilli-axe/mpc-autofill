@@ -225,6 +225,19 @@ exports[`the html structure of a CardDetailedViewModal 1`] = `
                     class="c4"
                     scope="row"
                   >
+                    Date Modified
+                  </th>
+                  <td
+                    class="c5"
+                  >
+                    1st January, 2000
+                  </td>
+                </tr>
+                <tr>
+                  <th
+                    class="c4"
+                    scope="row"
+                  >
                     File Size
                   </th>
                   <td

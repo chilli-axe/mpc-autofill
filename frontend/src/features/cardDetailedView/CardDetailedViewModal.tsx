@@ -122,7 +122,8 @@ export function CardDetailedViewModal({
                     ),
                   ],
                   ["Resolution", `${cardDocument.dpi} DPI`],
-                  ["Date Created", cardDocument.date],
+                  ["Date Created", cardDocument.dateCreated],
+                  ["Date Modified", cardDocument.dateModified],
                   ["File Size", imageSizeToMBString(cardDocument.size, 2)],
                 ]}
                 hover={true}

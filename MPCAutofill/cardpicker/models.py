@@ -193,7 +193,8 @@ class Card(models.Model):
     dpi = models.IntegerField(default=0)
     searchq = models.CharField(max_length=200)
     extension = models.CharField(max_length=200)
-    date = models.DateTimeField(default=datetime.now)
+    date_created = models.DateTimeField(default=datetime.now)
+    date_modified = models.DateTimeField(default=datetime.now)
     size = models.IntegerField()
     tags = ArrayField(models.CharField(max_length=20), default=list, blank=True)  # null=True is just for admin panel
     language = models.CharField(max_length=5)
@@ -205,7 +206,7 @@ class Card(models.Model):
             f"{self.name} "
             f"[Type: {self.card_type}, "
             f"Identifier: {self.identifier}, "
-            f"Uploaded: {self.date.strftime('%d/%m/%Y')}, "
+            f"Uploaded: {self.date_created.strftime('%d/%m/%Y')}, "
             f"Priority: {self.priority}]"
         )
 
@@ -225,7 +226,8 @@ class Card(models.Model):
             dpi=self.dpi,
             searchq=self.searchq,
             extension=self.extension,
-            date=dateformat.format(self.date, DATE_FORMAT),
+            dateCreated=dateformat.format(self.date_created, DATE_FORMAT),
+            dateModified=dateformat.format(self.date_modified, DATE_FORMAT),
             size=self.size,
             downloadLink=self.get_download_link() or "",
             smallThumbnailUrl=self.get_small_thumbnail_url() or "",
@@ -361,8 +363,18 @@ class Project(models.Model):
                     if (card_identifier := record.get("card_identifier"), None) is not None:
                         card_identifiers.add(card_identifier)
 
+        card_identifiers_to_pk: dict[str, Card] = {
+            x.identifier: x for x in Card.objects.filter(identifier__in=card_identifiers)
+        }
         members: list[ProjectMember] = [
-            ProjectMember(card_id=value.get("card_identifier", None), slot=value["slot"], query=query, face=face)
+            ProjectMember(
+                card=card_identifiers_to_pk[card_identifier]
+                if (card_identifier := value.get("card_identifier", None)) is not None
+                else None,
+                slot=value["slot"],
+                query=query,
+                face=face,
+            )
             for face in Faces
             if (face_members := records.get(face, None)) is not None
             for query, values in face_members.items()
@@ -388,19 +400,22 @@ class Project(models.Model):
 
 
 class ProjectMember(models.Model):
-    card_id = models.CharField(max_length=200, null=True, blank=True)
+    card = models.ForeignKey(to=Card, on_delete=models.SET_NULL, null=True, blank=True)
     project = models.ForeignKey(to=Project, on_delete=models.CASCADE)
     query = models.CharField(max_length=200)
     slot = models.IntegerField()
     face = models.CharField(max_length=5, choices=Faces.choices, default=Faces.FRONT)
 
     class Meta:
-        constraints = [
-            models.UniqueConstraint(fields=["card_id", "project", "slot", "face"], name="projectmember_unique")
-        ]
+        constraints = [models.UniqueConstraint(fields=["card", "project", "slot", "face"], name="projectmember_unique")]
 
     def to_dict(self) -> dict[str, Any]:
-        return {"card_identifier": self.card_id, "query": self.query, "slot": self.slot, "face": self.face}
+        return {
+            "card_identifier": self.card.identifier if self.card else None,
+            "query": self.query,
+            "slot": self.slot,
+            "face": self.face,
+        }
 
 
 __all__ = [

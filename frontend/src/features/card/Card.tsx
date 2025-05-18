@@ -477,7 +477,7 @@ export function DatedCard({ cardDocument }: { cardDocument: CardDocument }) {
       <MemoizedCard
         key={`new-cards-${cardDocument.identifier}`}
         maybeCardDocument={cardDocument}
-        cardHeaderTitle={cardDocument.date}
+        cardHeaderTitle={cardDocument.dateCreated}
         noResultsFound={false}
       />
     </Col>

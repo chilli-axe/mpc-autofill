@@ -9,6 +9,7 @@ from django.conf import settings
 from django.db import transaction
 
 from cardpicker.constants import DEFAULT_LANGUAGE, MAX_SIZE_MB
+from cardpicker.documents import CardSearch
 from cardpicker.models import Card, CardTypes, Source
 from cardpicker.search.sanitisation import to_searchable
 from cardpicker.sources.api import Folder, Image
@@ -112,7 +113,8 @@ def transform_images_into_objects(source: Source, images: list[Image], tags: Tag
                     dpi=dpi,
                     searchq=searchable_name,  # search-friendly card name
                     extension=extension,
-                    date=image.created_time,
+                    date_created=image.created_time,
+                    date_modified=image.modified_time,
                     size=image.size,
                     tags=list(extracted_tags),
                     language=(language or DEFAULT_LANGUAGE).alpha_2.upper(),
@@ -143,10 +145,59 @@ def transform_images_into_objects(source: Source, images: list[Image], tags: Tag
 def bulk_sync_objects(source: Source, cards: list[Card]) -> None:
     print(f"Synchronising objects to database for source {TEXT_BOLD}{source.name}{TEXT_END}...", end="", flush=True)
     t0 = time.time()
-    with transaction.atomic():  # django-bulk-sync is crushingly slow with postgres
-        Card.objects.filter(source=source).delete()
-        Card.objects.bulk_create(cards)
-    print(f" and done! That took {TEXT_BOLD}{(time.time() - t0):.2f}{TEXT_END} seconds.")
+
+    incoming = {card.identifier: card for card in cards}
+    incoming_ids = set(incoming.keys())
+    existing = {card.identifier: card for card in Card.objects.filter(source=source)}
+    existing_ids = set(existing.keys())
+
+    created = [incoming[identifier] for identifier in incoming_ids - existing_ids]
+    updated: list[Card] = []
+    for identifier in incoming_ids & existing_ids:
+        if incoming[identifier].date_modified > existing[identifier].date_modified:
+            incoming[identifier].pk = existing[identifier].pk  # this must be explicitly set for bulk_update.
+            updated.append(incoming[identifier])
+    deleted_ids = existing_ids - incoming_ids
+    deleted = [existing[identifier] for identifier in deleted_ids]
+
+    with transaction.atomic():
+        if created:
+            Card.objects.bulk_create(created)
+            CardSearch().update(list(created), action="index")
+        if updated:
+            Card.objects.bulk_update(
+                updated,
+                # update every field except for `identifier`
+                [
+                    "card_type",
+                    "name",
+                    "priority",
+                    "source",
+                    "source_verbose",
+                    "folder_location",
+                    "dpi",
+                    "searchq",
+                    "extension",
+                    "date_created",
+                    "date_modified",
+                    "size",
+                    "tags",
+                    "language",
+                ],
+                batch_size=1000,
+            )
+            # as per this thread https://github.com/django-es/django-elasticsearch-dsl/issues/224#issuecomment-551955511
+            # action type "index" is used for indexing new objects as well as updating existing objects
+            CardSearch().update(list(updated), action="index")
+        if deleted_ids:
+            Card.objects.filter(identifier__in=deleted_ids).delete()
+            CardSearch().update(list(deleted), action="delete")
+    print(
+        f" and done! That took {TEXT_BOLD}{(time.time() - t0):.2f}{TEXT_END} seconds.\n"
+        f"Created {TEXT_BOLD}{len(created)}{TEXT_END}, "
+        f"updated {TEXT_BOLD}{len(updated)}{TEXT_END}, "
+        f"and deleted {TEXT_BOLD}{len(deleted_ids)}{TEXT_END} cards."
+    )
 
 
 def update_database_for_source(source: Source, source_type: Type[SourceType], root_folder: Folder, tags: Tags) -> None:
