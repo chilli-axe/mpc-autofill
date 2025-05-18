@@ -221,6 +221,7 @@ const SampleCardDocument: CardDocument = {
   searchq: "",
   extension: "png",
   dateCreated: "1st January, 2000",
+  dateModified: "1st January, 2000",
   downloadLink: "",
   size: 1,
   smallThumbnailUrl: "/logo-blank.png",
