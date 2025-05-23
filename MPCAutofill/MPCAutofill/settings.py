@@ -59,7 +59,9 @@ PREPEND_WWW = env("PREPEND_WWW", default=False)
 
 # SESSION_COOKIE_SECURE = True
 # CSRF_COOKIE_SECURE = True
-CSRF_TRUSTED_ORIGINS = ["http://localhost:8000", "http://127.0.0.1:8000"]  # required for Docker with Django 4.x+
+CSRF_TRUSTED_ORIGINS = env(
+    "CSRF_TRUSTED_ORIGINS", default=["http://localhost:8000", "http://127.0.0.1:8000"]
+)  # required for Docker with Django 4.x+
 
 # Application definition
 
