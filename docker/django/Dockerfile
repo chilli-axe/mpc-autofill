@@ -39,6 +39,7 @@ RUN echo "ELASTICSEARCH_HOST=$ELASTICSEARCH_HOST" >> /MPCAutofill/MPCAutofill/MP
 RUN echo "DEBUG=$DEBUG" >> /MPCAutofill/MPCAutofill/MPCAutofill/.env
 RUN echo "ALLOWED_HOSTS=$ALLOWED_HOSTS" >> /MPCAutofill/MPCAutofill/MPCAutofill/.env
 RUN echo "GAME=$GAME" >> /MPCAutofill/MPCAutofill/MPCAutofill/.env
+RUN echo "MOXFIELD_SECRET=$MOXFIELD_SECRET" >> /MPCAutofill/MPCAutofill/MPCAutofill/.env
 
 # Make sure that all scripts are executable, and in case we
 # checked out under Windows with CRLF, convert line endings

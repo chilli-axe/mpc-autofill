@@ -31,4 +31,5 @@ sentry-sdk~=1.30.0
 syrupy~=3.0
 testcontainers[postgres,elasticsearch]
 tqdm~=4.65.0
+whitenoise~=6.9.0
 tzdata

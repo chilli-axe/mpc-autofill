@@ -28,6 +28,7 @@ services:
       - ALLOWED_HOSTS=django-api
       # These variables may be customised
       - GAME=MTG
+      - MOXFIELD_SECRET=
 
   # nginx serving the frontend
   nginx:
