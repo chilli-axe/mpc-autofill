@@ -369,51 +369,62 @@ class TestUpdateDatabase:
                 id="no changes to empty database",
             ),
             pytest.param(
-                [("existing", "Existing Card", DEFAULT_DATE)],
-                [("existing", "Existing Card", DEFAULT_DATE)],
+                [("existing", "Existing Card", DEFAULT_DATE, tuple())],
+                [("existing", "Existing Card", DEFAULT_DATE, tuple())],
                 id="no changes to populated database",
             ),
             pytest.param(
                 [],
-                [("created", "Created Card", DEFAULT_DATE)],
+                [("created", "Created Card", DEFAULT_DATE, tuple())],
                 id="create one card",
             ),
             pytest.param(
-                [("updated", "Card to Update", DEFAULT_DATE)],
-                [("updated", "Updated Card", DEFAULT_DATE + dt.timedelta(days=1))],
+                [("updated", "Card to Update", DEFAULT_DATE, tuple())],
+                [("updated", "Updated Card", DEFAULT_DATE + dt.timedelta(days=1), tuple())],
                 id="update one card",
             ),
             pytest.param(
-                [("deleted", "Card to Delete", DEFAULT_DATE)],
+                [("updated", "Card to Update (Tag in Data)", DEFAULT_DATE, tuple())],
+                [("updated", "Updated Card (Tag in Data)", DEFAULT_DATE, ("Tag in Data",))],
+                id="update one card - changes to tags but not modified on source side",
+            ),
+            pytest.param(
+                [("deleted", "Card to Delete", DEFAULT_DATE, tuple())],
                 [],
                 id="delete one card",
             ),
             pytest.param(
-                [("updated", "Card to Update", DEFAULT_DATE), ("deleted", "Card to Delete", DEFAULT_DATE)],
+                [("updated", "Card to Update", DEFAULT_DATE, set()), ("deleted", "Card to Delete", DEFAULT_DATE, [])],
                 [
-                    ("created", "Created Card", DEFAULT_DATE),
-                    ("updated", "Updated Card", DEFAULT_DATE + dt.timedelta(days=1)),
+                    ("created", "Created Card", DEFAULT_DATE, tuple()),
+                    ("updated", "Updated Card", DEFAULT_DATE + dt.timedelta(days=1), tuple()),
                 ],
                 id="create + update + delete",
             ),
             pytest.param(
-                [("existing", "Existing Card", DEFAULT_DATE)],
-                [("existing", "Existing Card", DEFAULT_DATE), ("created", "Created Card", DEFAULT_DATE)],
+                [("existing", "Existing Card", DEFAULT_DATE, tuple())],
+                [
+                    ("existing", "Existing Card", DEFAULT_DATE, tuple()),
+                    ("created", "Created Card", DEFAULT_DATE, tuple()),
+                ],
                 id="create one card while another card exists and is not modified",
             ),
         ],
     )
     @freezegun.freeze_time(DEFAULT_DATE)
-    def test_bulk_sync_objects(self, django_settings, elasticsearch, example_drive_1, existing_cards, incoming_cards):
+    def test_bulk_sync_objects(
+        self, django_settings, elasticsearch, tag_in_data, example_drive_1, existing_cards, incoming_cards
+    ):
         # arrange - set up database and elasticsearch according to `existing_cards`
         source = factories.SourceFactory()
-        for (identifier, searchq, date_modified) in existing_cards:
+        for (identifier, searchq, date_modified, tags) in existing_cards:
             factories.CardFactory(
                 identifier=identifier,
                 searchq=searchq,
                 date_created=make_aware(DEFAULT_DATE),
                 date_modified=make_aware(date_modified),
                 source=source,
+                tags=list(tags),
             )
         management.call_command("search_index", "--rebuild", "-f")
 
@@ -427,19 +438,21 @@ class TestUpdateDatabase:
                     date_created=make_aware(DEFAULT_DATE),
                     date_modified=make_aware(date_modified),
                     source=source,
+                    tags=list(tags),
                     # not strictly relevant for this test, but values for these non-nullable fields are required.
                     size=0,
                 )
-                for (identifier, searchq, date_modified) in incoming_cards
+                for (identifier, searchq, date_modified, tags) in incoming_cards
             ],
         )
 
         # assert - database and elasticsearch should now match `incoming_cards`
-        assert {(card.identifier, card.searchq, make_naive(card.date_modified)) for card in Card.objects.all()} == set(
-            incoming_cards
-        )
         assert {
-            (result.identifier, result.searchq_keyword, make_naive(result.date_modified))
+            (card.identifier, card.searchq, make_naive(card.date_modified), tuple(sorted(card.tags)))
+            for card in Card.objects.all()
+        } == set(incoming_cards)
+        assert {
+            (result.identifier, result.searchq_keyword, make_naive(result.date_modified), tuple(sorted(result.tags)))
             for result in CardSearch().search().scan()
         } == set(incoming_cards)
 

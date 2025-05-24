@@ -154,7 +154,13 @@ def bulk_sync_objects(source: Source, cards: list[Card]) -> None:
     created = [incoming[identifier] for identifier in incoming_ids - existing_ids]
     updated: list[Card] = []
     for identifier in incoming_ids & existing_ids:
-        if incoming[identifier].date_modified > existing[identifier].date_modified:
+        if (
+            # if an update has been recorded on the source's end...
+            (incoming[identifier].date_modified > existing[identifier].date_modified)
+            # or if the card's tag has changed
+            | (set(incoming[identifier].tags) != set(existing[identifier].tags))
+        ):
+            # record an update for this card
             incoming[identifier].pk = existing[identifier].pk  # this must be explicitly set for bulk_update.
             updated.append(incoming[identifier])
     deleted_ids = existing_ids - incoming_ids
