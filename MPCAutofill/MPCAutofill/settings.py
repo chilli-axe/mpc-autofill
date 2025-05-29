@@ -60,7 +60,13 @@ PREPEND_WWW = env("PREPEND_WWW", default=False)
 # SESSION_COOKIE_SECURE = True
 # CSRF_COOKIE_SECURE = True
 CSRF_TRUSTED_ORIGINS = env(
-    "CSRF_TRUSTED_ORIGINS", default=["http://localhost:8000", "http://127.0.0.1:8000"]
+    "CSRF_TRUSTED_ORIGINS",
+    default=[
+        "http://localhost",
+        "http://127.0.0.1",
+        "http://localhost:8000",
+        "http://127.0.0.1:8000",
+    ],
 )  # required for Docker with Django 4.x+
 
 # Application definition
@@ -68,6 +74,7 @@ CSRF_TRUSTED_ORIGINS = env(
 INSTALLED_APPS = [
     "cardpicker.apps.CardpickerConfig",
     "accounts",
+    "django_q",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -236,3 +243,19 @@ if len(sys.argv) >= 2 and sys.argv[1] != "runserver" and env("DJANGO_DEBUG", def
         # We recommend adjusting this value in production.
         profiles_sample_rate=1.0,
     )
+
+# django-q2
+Q_CLUSTER = {
+    "name": "DjangoORM",
+    "workers": 8,
+    "recycle": 500,
+    "timeout": 60 * 60 * 12,  # 12 hours - extreme upper limit
+    "retry": 60 * 60 * 12 + 1,  # must be longer than timeout
+    "max_attempts": 1,
+    "compress": True,
+    "save_limit": 250,
+    "queue_limit": 500,
+    "cpu_affinity": 1,
+    "label": "Django Q2",
+    "orm": "default",
+}
