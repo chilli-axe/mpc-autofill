@@ -15,8 +15,28 @@ services:
     build:
       context: ..
       dockerfile: ./docker/django/Dockerfile
+      target: webserver
     expose:
       - 8000
+    depends_on:
+      - postgres
+      - elasticsearch
+    environment:
+      # Do not change these variables
+      - DATABASE_HOST=postgres
+      - ELASTICSEARCH_HOST=elasticsearch
+      - DEBUG=False
+      - ALLOWED_HOSTS=django-api
+      # These variables may be customised
+      - GAME=MTG
+      - MOXFIELD_SECRET=
+  worker:
+    image: mpcautofill_worker
+    container_name: mpcautofill_worker
+    build:
+      context: ..
+      dockerfile: ./docker/django/Dockerfile
+      target: worker
     depends_on:
       - postgres
       - elasticsearch
