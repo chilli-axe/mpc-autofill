@@ -1,5 +1,4 @@
-# Docker to serve Django via Unicorn and run
-# cron to regularly update the card database
+# Docker to serve Django via Unicorn
 FROM ubuntu:22.04
 
 # Keeps Python from generating .pyc files in the container
@@ -12,12 +11,8 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         dos2unix \
         python3-pip python3-dev \
-        gcc netcat curl cron libpq-dev \
+        gcc netcat curl libpq-dev \
     && rm -rf /var/lib/apt/lists/*
-# Cron: Clean system tasks and allow start as unprivileged user
-# This is a bit hacky but should be fine in Docker environment
-RUN rm -rf /etc/cron.*/* && \
-    chmod u+s /usr/sbin/cron
 
 # Copy requirements.txt
 COPY MPCAutofill/requirements.txt /MPCAutofill/
@@ -50,9 +45,6 @@ RUN chmod +x docker/django/*.sh && \
 # if they missed to install any of the mandatory files.
 RUN ./docker/django/check_client_secrets.sh && \
     ./docker/django/check_drives.sh
-
-# Install cronjobs
-RUN cp docker/django/crontab.txt /etc/crontab
 
 # Create a non-root user and add permission to access the /MPCAutofill folder
 RUN adduser -u 5678 --disabled-password --gecos "" mpcautofill && \
