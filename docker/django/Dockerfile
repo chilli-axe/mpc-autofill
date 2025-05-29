@@ -1,5 +1,5 @@
 # Docker to serve Django via Unicorn
-FROM ubuntu:22.04
+FROM ubuntu:22.04 AS builder
 
 # Keeps Python from generating .pyc files in the container
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -57,8 +57,16 @@ RUN ./docker/django/copy_env_file.sh
 # Prepare folder for static files (create now as user for permissions)
 RUN mkdir -p static
 
-# Prepare to start
+
+FROM builder AS webserver
+
 EXPOSE 8000
 WORKDIR /MPCAutofill/MPCAutofill
 ENTRYPOINT ["/MPCAutofill/docker/django/entrypoint.sh"]
 CMD ["gunicorn", "MPCAutofill.wsgi:application", "--bind", "0.0.0.0:8000"]
+
+FROM builder AS worker
+
+WORKDIR /MPCAutofill/MPCAutofill
+ENTRYPOINT ["/MPCAutofill/docker/django/entrypoint.sh"]
+CMD ["python3", "manage.py", "qcluster"]
