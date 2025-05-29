@@ -237,3 +237,19 @@ if len(sys.argv) >= 2 and sys.argv[1] != "runserver" and env("DJANGO_DEBUG", def
         # We recommend adjusting this value in production.
         profiles_sample_rate=1.0,
     )
+
+# django-q2
+Q_CLUSTER = {
+    "name": "DjangoORM",
+    "workers": 8,
+    "recycle": 500,
+    "timeout": 60 * 60 * 12,  # 12 hours - extreme upper limit
+    "retry": 60 * 60 * 12 + 1,  # must be longer than timeout
+    "max_attempts": 1,
+    "compress": True,
+    "save_limit": 250,
+    "queue_limit": 500,
+    "cpu_affinity": 1,
+    "label": "Django Q2",
+    "orm": "default",
+}
