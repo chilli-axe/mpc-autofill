@@ -23,6 +23,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ("cardpicker", "0042_remove_projectmember_projectmember_unique_and_more"),
+        ("django_q", "0018_task_success_index"),  # manually added migration dependency
     ]
 
     operations = [
