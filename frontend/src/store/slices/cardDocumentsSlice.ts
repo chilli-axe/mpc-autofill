@@ -62,9 +62,10 @@ const fetchCardDocuments = createAppAsyncThunk(
    * not yet been queried.
    */
   async (arg, { dispatch, getState }) => {
-    // TODO: can we access RTK Query data (i.e. explore page search results) within this thunk??????????????????????????
     await fetchSearchResultsAndReportError(dispatch);
-    await fetchCardbacksAndReportError(dispatch);
+    if (getState().cardbacks.cardbacks.length === 0) {
+      await fetchCardbacksAndReportError(dispatch);
+    }
 
     const state = getState() as RootState;
 

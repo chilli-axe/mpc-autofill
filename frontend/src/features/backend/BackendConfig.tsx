@@ -150,17 +150,6 @@ export function BackendConfig({ show, handleClose }: BackendConfigProps) {
 
   //# endregion
 
-  //# region effects
-
-  useEffect(() => {
-    const localStorageBackendURL = getLocalStorageBackendURL();
-    if (localStorageBackendURL != undefined) {
-      dispatch(setURL(localStorageBackendURL));
-    }
-  }, [dispatch]);
-
-  //# endregion
-
   return (
     <Offcanvas show={show} onHide={handleClose} data-testid="backend-offcanvas">
       <Offcanvas.Header closeButton>

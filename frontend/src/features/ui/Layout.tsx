@@ -11,10 +11,11 @@ import styled from "styled-components";
 import { ContentMaxWidth, NavbarHeight } from "@/common/constants";
 import {
   getGoogleAnalyticsConsent,
+  getLocalStorageBackendURL,
   setLocalStorageBackendURL,
 } from "@/common/cookies";
 import { standardiseURL } from "@/common/processing";
-import { useAppDispatch } from "@/common/types";
+import { useAppDispatch, useAppSelector } from "@/common/types";
 import {
   DownloadContext,
   DownloadContextProvider,
@@ -22,7 +23,11 @@ import {
 import { Modals } from "@/features/modals/Modals";
 import { Toasts } from "@/features/toasts/Toasts";
 import ProjectNavbar from "@/features/ui/Navbar";
-import { setURL, useBackendConfigured } from "@/store/slices/backendSlice";
+import {
+  selectBackendURL,
+  setURL,
+  useBackendConfigured,
+} from "@/store/slices/backendSlice";
 import store from "@/store/store";
 
 function BackendSetter() {
@@ -35,10 +40,18 @@ function BackendSetter() {
 
   const dispatch = useAppDispatch();
   const backendConfigured = useBackendConfigured();
+  const backendURL = useAppSelector(selectBackendURL);
   useEffect(() => {
-    if (process.env.NEXT_PUBLIC_BACKEND_URL != null) {
-      dispatch(setURL(process.env.NEXT_PUBLIC_BACKEND_URL));
-      setLocalStorageBackendURL(process.env.NEXT_PUBLIC_BACKEND_URL);
+    const envURL = process.env.NEXT_PUBLIC_BACKEND_URL;
+    const localStorageBackendURL = getLocalStorageBackendURL();
+    if (
+      localStorageBackendURL != undefined &&
+      backendURL !== localStorageBackendURL
+    ) {
+      // TODO: stale value here
+      dispatch(setURL(localStorageBackendURL));
+    } else if (envURL != null && envURL !== localStorageBackendURL) {
+      setLocalStorageBackendURL(envURL);
     } else if (formattedURL != null) {
       dispatch(setURL(formattedURL));
       setLocalStorageBackendURL(formattedURL);
@@ -47,7 +60,7 @@ function BackendSetter() {
         router.replace({ server }, undefined, { shallow: true });
       }
     }
-  }, [router.isReady, backendConfigured, formattedURL, dispatch]);
+  }, [router.isReady, backendConfigured, formattedURL, dispatch, backendURL]);
 
   return <></>;
 }
