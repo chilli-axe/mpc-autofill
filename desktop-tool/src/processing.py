@@ -1,15 +1,9 @@
 import io
-import logging
 from dataclasses import dataclass
 
 from PIL import Image, ImageOps
 
-from src.constants import (
-    BORDER_INCHES,
-    CARD_WIDTH_INCHES,
-    DPI_HEIGHT_RATIO,
-    ImageResizeMethods,
-)
+from src.constants import DPI_HEIGHT_RATIO, ImageResizeMethods
 
 
 @dataclass
@@ -26,15 +20,6 @@ def _add_black_border(image: Image.Image, border_size: int) -> Image.Image:
 
 def post_process_image(raw_image: bytes, config: ImagePostProcessingConfig) -> Image.Image:
     img = Image.open(io.BytesIO(raw_image))
-
-    # Automatically add a 1/8 inch black border
-    pixel_width, _ = img.size
-    # Assuming standard card dimensions to calculate DPI for the border
-    if pixel_width > 0:
-        effective_dpi = pixel_width / CARD_WIDTH_INCHES
-        border_pixels = round(effective_dpi * BORDER_INCHES)
-        img = _add_black_border(img, border_pixels)
-        logging.info(f"Added {border_pixels}px black border for printing.")
 
     # downscale the image to `max_dpi`
     img_dpi = 10 * round(int(img.height) * DPI_HEIGHT_RATIO / 10)

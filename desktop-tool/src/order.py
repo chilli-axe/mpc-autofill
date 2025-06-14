@@ -1,4 +1,5 @@
 import logging
+import math
 import os
 import re
 import sys
@@ -580,8 +581,8 @@ class CardOrder:
             "name": "input_method",
             "message": "How would you like to create your order?",
             "choices": [
-                {"name": "From one or more XML files", "value": "xml"},
-                {"name": "By selecting a .txt file with the decklist", "value": "decklist"},
+                {"name": "From an XML file (MPC autofill)", "value": "xml"},
+                {"name": "From a text file (Scryfall downloader)", "value": "decklist"},
             ],
         }
         answers = prompt(questions)
@@ -598,21 +599,22 @@ class CardOrder:
         elif len(xml_glob) == 1:
             file_paths = [xml_glob[0]]
         else:
-            xml_select_string = (
-                "Multiple XML files found. Please select any number of them to process.\n"
-                "Select files by pressing Space, then confirm your selection by pressing Enter."
-            )
+            xml_select_string = "Multiple XML files found. Please select which one to process."
             questions = {
-                "type": "checkbox",
+                "type": "list",
                 "name": "xml_choice",
                 "message": xml_select_string,
                 "choices": [{"name": os.path.basename(p), "value": p} for p in xml_glob],
             }
             answers = prompt(questions)
-            file_paths = answers["xml_choice"]
+            selected_file = answers.get("xml_choice")
+            if selected_file:
+                file_paths = [selected_file]
+            else:
+                file_paths = []
 
         if not file_paths:
-            input("No XML files selected. Press enter to exit.")
+            input("No XML file selected. Press enter to exit.")
             sys.exit(0)
 
         return [cls.from_file_path(file_path) for file_path in file_paths]
@@ -642,6 +644,35 @@ class CardOrder:
 
         def _add_black_border(image: Image.Image, border_size: int) -> Image.Image:
             return ImageOps.expand(image, border=border_size, fill="black")
+
+        def _fetch_and_prepare_image(url: str, card_name: str) -> Optional[str]:
+            """Downloads an image from a URL, adds a border, saves it locally, and returns the file path."""
+            try:
+                safe_name = sanitize(card_name)
+                file_name = f"{safe_name}.png"
+                save_path = os.path.join(image_directory(), file_name)
+
+                if os.path.exists(save_path):
+                    logging.info(f"  Using existing image for: {card_name}")
+                    return save_path
+
+                logging.info(f"  Fetching and bordering: {card_name}")
+                response = requests.get(url)
+                response.raise_for_status()
+                img = Image.open(BytesIO(response.content))
+
+                pixel_width, _ = img.size
+                if pixel_width > 0:
+                    effective_dpi = pixel_width / constants.CARD_WIDTH_INCHES
+                    border_pixels = math.ceil(effective_dpi * constants.BORDER_INCHES)
+                    img = _add_black_border(img, border_pixels)
+
+                img.save(save_path, "PNG")
+                return save_path
+
+            except (requests.exceptions.RequestException, IOError) as e:
+                logging.error(f"  Error processing image for '{card_name}': {e}. Skipping.")
+                return None
 
         # Get User Inputs
         print("\nA file dialog will now open. Please select a decklist .txt file.")
@@ -752,55 +783,54 @@ class CardOrder:
                         and len(card_data["card_faces"]) > 1
                     ):
                         face_front, face_back = card_data["card_faces"][0], card_data["card_faces"][1]
-                        url_front, url_back = face_front.get("image_uris", {}).get("png"), face_back.get(
-                            "image_uris", {}
-                        ).get("png")
+                        url_front = face_front.get("image_uris", {}).get("png")
+                        url_back = face_back.get("image_uris", {}).get("png")
 
-                        if url_front and url_back:
+                        if url_front:
                             logging.info(f"  Found DFC: {name}")
-                            for _ in range(card_qty):
-                                fronts.append(
-                                    CardImage(
-                                        image_url=url_front,
-                                        name=f"{sanitize(face_front.get('name'))}.png",
-                                        slots={current_slot},
+                            front_path = _fetch_and_prepare_image(url_front, face_front.get("name"))
+                            back_path = None
+                            if url_back:
+                                back_path = _fetch_and_prepare_image(url_back, face_back.get("name"))
+                            else:
+                                final_messages.append(f"Back face missing for '{name}'. It will be left blank.")
+
+                            if front_path:
+                                for _ in range(card_qty):
+                                    fronts.append(
+                                        CardImage(
+                                            file_path=front_path,
+                                            name=os.path.basename(front_path),
+                                            slots={current_slot},
+                                        )
                                     )
-                                )
-                                backs.append(
-                                    CardImage(
-                                        image_url=url_back,
-                                        name=f"{sanitize(face_back.get('name'))}.png",
-                                        slots={current_slot},
-                                    )
-                                )
-                                current_slot += 1
-                        elif url_front:
-                            final_messages.append(f"Back face missing for '{name}'. It will be left blank.")
-                            for _ in range(card_qty):
-                                fronts.append(
-                                    CardImage(
-                                        image_url=url_front,
-                                        name=f"{sanitize(face_front.get('name'))}.png",
-                                        slots={current_slot},
-                                    )
-                                )
-                                backs.append(
-                                    CardImage(name="MISSING_BACK.png", slots={current_slot})
-                                )  # Blank placeholder
-                                current_slot += 1
+                                    if back_path:
+                                        backs.append(
+                                            CardImage(
+                                                file_path=back_path,
+                                                name=os.path.basename(back_path),
+                                                slots={current_slot},
+                                            )
+                                        )
+                                    else:
+                                        backs.append(CardImage(name="MISSING_BACK.png", slots={current_slot}))
+                                    current_slot += 1
+
                     else:
                         image_url = card_data.get("image_uris", {}).get("png")
                         if image_url:
                             logging.info(f"  Found SFC: {name} (layout: {layout})")
-                            for _ in range(card_qty):
-                                fronts.append(
-                                    CardImage(
-                                        image_url=image_url,
-                                        name=f"{sanitize(card_data.get('name'))}.png",
-                                        slots={current_slot},
+                            image_path = _fetch_and_prepare_image(image_url, card_data.get("name"))
+                            if image_path:
+                                for _ in range(card_qty):
+                                    fronts.append(
+                                        CardImage(
+                                            file_path=image_path,
+                                            name=os.path.basename(image_path),
+                                            slots={current_slot},
+                                        )
                                     )
-                                )
-                                current_slot += 1
+                                    current_slot += 1
             except (requests.exceptions.RequestException, ValueError) as e:
                 logging.error(f"  Error finding '{name}': {e}. Skipping.")
 
@@ -823,16 +853,18 @@ class CardOrder:
                     final_messages.append(
                         f"Meld result data missing for '{card_info['data']['name']}'. Back will be left blank."
                     )
-                    for _ in range(card_info["qty"]):
-                        fronts.append(
-                            CardImage(
-                                image_url=card_info["data"]["image_uris"]["png"],
-                                name=f"{sanitize(card_info['data']['name'])}.png",
-                                slots={current_slot},
-                            )
-                        )
-                        backs.append(CardImage(name="MISSING_BACK.png", slots={current_slot}))  # Blank placeholder
-                        current_slot += 1
+                    image_url = card_info["data"].get("image_uris", {}).get("png")
+                    if image_url:
+                        front_path = _fetch_and_prepare_image(image_url, card_info["data"]["name"])
+                        if front_path:
+                            for _ in range(card_info["qty"]):
+                                fronts.append(
+                                    CardImage(
+                                        file_path=front_path, name=os.path.basename(front_path), slots={current_slot}
+                                    )
+                                )
+                                backs.append(CardImage(name="MISSING_BACK.png", slots={current_slot}))
+                                current_slot += 1
 
             for result_uri, group in meld_groups.items():
                 try:
@@ -860,8 +892,8 @@ class CardOrder:
                         Image.Transpose.ROTATE_90
                     )
 
-                    border_top = round((top_half.size[0] / constants.CARD_HEIGHT_INCHES) * constants.BORDER_INCHES)
-                    border_bottom = round(
+                    border_top = math.ceil((top_half.size[0] / constants.CARD_HEIGHT_INCHES) * constants.BORDER_INCHES)
+                    border_bottom = math.ceil(
                         (bottom_half.size[0] / constants.CARD_HEIGHT_INCHES) * constants.BORDER_INCHES
                     )
 
@@ -878,39 +910,48 @@ class CardOrder:
                         card_data, qty = card_info["data"], card_info["qty"]
                         back_path = back_paths.get(card_data["id"])
 
-                        for _ in range(qty):
-                            fronts.append(
-                                CardImage(
-                                    image_url=card_data["image_uris"]["png"],
-                                    name=f"{sanitize(card_data['name'])}.png",
-                                    slots={current_slot},
-                                )
-                            )
-                            if back_path:
-                                backs.append(
+                        image_url = card_data.get("image_uris", {}).get("png")
+                        if not image_url:
+                            continue
+
+                        front_path = _fetch_and_prepare_image(image_url, card_data["name"])
+
+                        if front_path:
+                            for _ in range(qty):
+                                fronts.append(
                                     CardImage(
-                                        file_path=back_path, name=os.path.basename(back_path), slots={current_slot}
+                                        file_path=front_path, name=os.path.basename(front_path), slots={current_slot}
                                     )
                                 )
-                            else:
-                                backs.append(CardImage(name="MISSING_BACK.png", slots={current_slot}))
-                            current_slot += 1
+                                if back_path:
+                                    backs.append(
+                                        CardImage(
+                                            file_path=back_path, name=os.path.basename(back_path), slots={current_slot}
+                                        )
+                                    )
+                                else:
+                                    backs.append(CardImage(name="MISSING_BACK.png", slots={current_slot}))
+                                current_slot += 1
                 except Exception as e:
                     card_names = [c["data"]["name"] for c in group["cards_to_add"]]
                     final_messages.append(
                         f"Could not process meld back for: {', '.join(card_names)}. Backs will be left blank. Reason: {e}"
                     )
                     for card_info in group["cards_to_add"]:
-                        for _ in range(card_info["qty"]):
-                            fronts.append(
-                                CardImage(
-                                    image_url=card_info["data"]["image_uris"]["png"],
-                                    name=f"{sanitize(card_info['data']['name'])}.png",
-                                    slots={current_slot},
-                                )
-                            )
-                            backs.append(CardImage(name="MISSING_BACK.png", slots={current_slot}))
-                            current_slot += 1
+                        image_url = card_info["data"].get("image_uris", {}).get("png")
+                        if image_url:
+                            front_path = _fetch_and_prepare_image(image_url, card_info["data"]["name"])
+                            if front_path:
+                                for _ in range(card_info["qty"]):
+                                    fronts.append(
+                                        CardImage(
+                                            file_path=front_path,
+                                            name=os.path.basename(front_path),
+                                            slots={current_slot},
+                                        )
+                                    )
+                                    backs.append(CardImage(name="MISSING_BACK.png", slots={current_slot}))
+                                    current_slot += 1
 
         # Finalize and create order
         total_quantity = current_slot
