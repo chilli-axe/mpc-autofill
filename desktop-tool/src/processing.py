@@ -1,7 +1,7 @@
 import io
 from dataclasses import dataclass
 
-from PIL import Image
+from PIL import Image, ImageOps
 
 from src.constants import DPI_HEIGHT_RATIO, ImageResizeMethods
 
@@ -13,7 +13,12 @@ class ImagePostProcessingConfig:
     # jpeg: bool
 
 
-def post_process_image(raw_image: bytes, config: ImagePostProcessingConfig) -> Image:
+def _add_black_border(image: Image.Image, border_size: int) -> Image.Image:
+    """Adds a black border to a given Pillow image object."""
+    return ImageOps.expand(image, border=border_size, fill="black")
+
+
+def post_process_image(raw_image: bytes, config: ImagePostProcessingConfig) -> Image.Image:
     img = Image.open(io.BytesIO(raw_image))
 
     # downscale the image to `max_dpi`

@@ -193,4 +193,32 @@ def download_google_drive_file(
     return True
 
 
+def download_image_from_url(
+    url: str, file_path: str, post_processing_config: Optional[ImagePostProcessingConfig]
+) -> bool:
+    """
+    Download an image from a URL to the specified `file_path`.
+    Returns whether the request was successful or not.
+    """
+    logging.debug(f"Downloading image from {url}...")
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        file_bytes = response.content
+    except requests.exceptions.RequestException as e:
+        logging.error(f"Encountered an error while downloading image from {url}: {e}")
+        return False
+
+    if post_processing_config is not None:
+        logging.debug(f"Post-processing image from {url}...")
+        processed_image = post_process_image(raw_image=file_bytes, config=post_processing_config)
+        processed_image.save(file_path)
+    else:
+        # Save the bytes directly to disk
+        with open(file_path, "wb") as f:
+            f.write(file_bytes)
+    logging.debug(f"Finished downloading image from {url}!")
+    return True
+
+
 # endregion
