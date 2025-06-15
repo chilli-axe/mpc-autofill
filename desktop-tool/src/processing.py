@@ -21,11 +21,12 @@ def _add_black_border(image: Image.Image, border_size: int) -> Image.Image:
 def post_process_image(raw_image: bytes, config: ImagePostProcessingConfig) -> Image.Image:
     img = Image.open(io.BytesIO(raw_image))
 
-    # downscale the image to `max_dpi`
-    img_dpi = 10 * round(int(img.height) * DPI_HEIGHT_RATIO / 10)
-    if img_dpi > config.max_dpi:
-        new_height = round((config.max_dpi / img_dpi) * img.height)
-        new_width = round((config.max_dpi / img_dpi) * img.width)
-        img = img.resize((new_width, new_height), config.downscale_alg.value)
+    # downscale the image to `max_dpi` if a valid max_dpi is provided
+    if config and config.max_dpi is not None:
+        img_dpi = 10 * round(int(img.height) * DPI_HEIGHT_RATIO / 10)
+        if img_dpi > config.max_dpi:
+            new_height = round((config.max_dpi / img_dpi) * img.height)
+            new_width = round((config.max_dpi / img_dpi) * img.width)
+            img = img.resize((new_width, new_height), config.downscale_alg.value)
 
     return img

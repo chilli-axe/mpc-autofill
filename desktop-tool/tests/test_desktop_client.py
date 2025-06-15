@@ -1,3 +1,4 @@
+import io
 import os
 import textwrap
 import time
@@ -498,7 +499,7 @@ def card_order_element_missing_front_image() -> Generator[ElementTree.Element, N
 # region test processing.py
 
 
-def test_post_process_image_with_none_dpi():
+def test_post_process_image_with_no_dpi():
     """
     Tests that post_process_image returns the image unchanged when the
     config is provided but max_dpi is None. This covers the final
@@ -507,14 +508,20 @@ def test_post_process_image_with_none_dpi():
     # Create a dummy image that is larger than any potential DPI
     img = Image.new("RGB", (1000, 1200), color="red")
 
+    byte_arr = io.BytesIO()
+    img.save(byte_arr, format="PNG")
+    raw_image = byte_arr.getvalue()
+
     # Create a config with max_dpi set to None
     config = ImagePostProcessingConfig(max_dpi=None, downscale_alg=constants.ImageResizeMethods.LANCZOS)
 
     # Process the image
-    processed_img = post_process_image(img, config)
+    processed_img = post_process_image(raw_image, config)
 
     # The image should be identical to the original
-    assert img == processed_img
+    assert img.mode == processed_img.mode
+    assert img.size == processed_img.size
+    assert img.tobytes() == processed_img.tobytes()
 
 
 # endregion
