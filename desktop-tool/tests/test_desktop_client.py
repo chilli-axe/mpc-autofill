@@ -9,6 +9,7 @@ from xml.etree import ElementTree
 
 import pytest
 from enlighten import Counter
+from PIL import Image
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
@@ -25,7 +26,7 @@ from src.order import (
     aggregate_and_split_orders,
 )
 from src.pdf_maker import PdfExporter
-from src.processing import ImagePostProcessingConfig
+from src.processing import ImagePostProcessingConfig, post_process_image
 from src.utils import text_to_set
 
 DEFAULT_POST_PROCESSING = ImagePostProcessingConfig(max_dpi=800, downscale_alg=constants.ImageResizeMethods.LANCZOS)
@@ -491,6 +492,30 @@ def card_order_element_missing_front_image() -> Generator[ElementTree.Element, N
 
 
 # endregion
+
+# endregion
+
+# region test processing.py
+
+
+def test_post_process_image_with_none_dpi():
+    """
+    Tests that post_process_image returns the image unchanged when the
+    config is provided but max_dpi is None. This covers the final
+    untested branch in the function.
+    """
+    # Create a dummy image that is larger than any potential DPI
+    img = Image.new("RGB", (1000, 1200), color="red")
+
+    # Create a config with max_dpi set to None
+    config = ImagePostProcessingConfig(max_dpi=None, downscale_alg=constants.ImageResizeMethods.LANCZOS)
+
+    # Process the image
+    processed_img = post_process_image(img, config)
+
+    # The image should be identical to the original
+    assert img == processed_img
+
 
 # endregion
 
@@ -1454,6 +1479,238 @@ def test_card_order_complete_run_multiple_cardbacks(browser, site, input_enter, 
         )
         == 4
     )
+
+
+# endregion
+
+# region Fixtures for New Tests
+
+
+@pytest.fixture()
+def card_order_element_missing_details() -> ElementTree.Element:
+    """Provides a CardOrder element that is missing the <details> tag."""
+    return ElementTree.fromstring(
+        textwrap.dedent(
+            """
+            <order>
+                <fronts>
+                    <card>
+                        <id>some_id</id>
+                        <slots>0</slots>
+                        <name>a.png</name>
+                    </card>
+                </fronts>
+                <cardback>some_cardback</cardback>
+            </order>
+            """
+        )
+    )
+
+
+@pytest.fixture()
+def card_order_element_front_slot_out_of_bounds() -> ElementTree.Element:
+    """Provides a CardOrder where a front card has a slot index greater than the quantity."""
+    return ElementTree.fromstring(
+        textwrap.dedent(
+            """
+            <order>
+                <details>
+                    <quantity>2</quantity>
+                    <stock>(S30) Standard Smooth</stock>
+                    <foil>false</foil>
+                </details>
+                <fronts>
+                    <card>
+                        <id>some_id</id>
+                        <slots>0,2</slots>
+                        <name>a.png</name>
+                    </card>
+                </fronts>
+                <cardback>some_cardback</cardback>
+            </order>
+            """
+        )
+    )
+
+
+@pytest.fixture()
+def card_image_collection_element_invalid_slots() -> ElementTree.Element:
+    """Provides a CardImageCollection where a card's slots are out of bounds."""
+    return ElementTree.fromstring(
+        textwrap.dedent(
+            """
+            <fronts>
+                <card>
+                    <id>a</id>
+                    <slots>0,3</slots>
+                    <name>a.png</name>
+                </card>
+            </fronts>
+            """
+        )
+    )
+
+
+# endregion
+
+# region New Test Cases
+
+
+def test_card_order_missing_details(input_enter, card_order_element_missing_details):
+    """
+    Tests that parsing a CardOrder with a missing <details> tag exits gracefully.
+    This covers the error handling path in `CardOrder.from_element`.
+    """
+    with pytest.raises(SystemExit) as exc_info:
+        CardOrder.from_element(card_order_element_missing_details, allowed_to_exceed_project_max_size=False)
+    assert exc_info.value.code == 0
+
+
+def test_card_order_front_slot_out_of_bounds(input_enter, card_order_element_front_slot_out_of_bounds):
+    """
+    Tests that an order is rejected if a front card has a slot index
+    equal to or greater than the order quantity.
+    This covers error handling in `CardOrder.from_element`.
+    """
+    with pytest.raises(SystemExit) as exc_info:
+        CardOrder.from_element(card_order_element_front_slot_out_of_bounds, allowed_to_exceed_project_max_size=False)
+    assert exc_info.value.code == 0
+
+
+def test_card_image_collection_invalid_slots(input_enter, card_image_collection_element_invalid_slots):
+    """
+    Tests that a CardImageCollection is rejected if a card's slots exceed the
+    total number of slots for the collection.
+    This covers error checking in `CardImageCollection.from_element`.
+    """
+    with pytest.raises(SystemExit) as exc_info:
+        CardImageCollection.from_element(
+            card_image_collection_element_invalid_slots, face=constants.Faces.front, num_slots=3
+        )
+    assert exc_info.value.code == 0
+
+
+def test_aggregate_orders_with_different_details(monkeypatch_project_max_size):
+    """
+    Tests that orders with different details (stock, foil) are not combined,
+    even if `combine_orders` is True.
+    """
+    monkeypatch_project_max_size(10)
+    orders = [
+        CardOrder(
+            details=Details(quantity=2, stock=constants.Cardstocks.S30, foil=False),
+            fronts=CardImageCollection(num_slots=2),
+            backs=CardImageCollection(num_slots=2),
+        ),
+        CardOrder(
+            details=Details(quantity=2, stock=constants.Cardstocks.S33, foil=False),
+            fronts=CardImageCollection(num_slots=2),
+            backs=CardImageCollection(num_slots=2),
+        ),
+    ]
+    aggregated = aggregate_and_split_orders(
+        orders, target_site=constants.TargetSites.MakePlayingCards, combine_orders=True
+    )
+    # The orders should not have been combined
+    assert len(aggregated) == 2
+    assert sorted([o.details.quantity for o in aggregated]) == [2, 2]
+
+
+def test_aggregate_orders_no_combine(monkeypatch_project_max_size):
+    """
+    Tests that orders are not combined when `combine_orders` is False.
+    """
+    monkeypatch_project_max_size(10)
+    orders = [
+        CardOrder(
+            details=Details(quantity=2, stock=constants.Cardstocks.S30, foil=False),
+            fronts=CardImageCollection(num_slots=2),
+            backs=CardImageCollection(num_slots=2),
+        ),
+        CardOrder(
+            details=Details(quantity=3, stock=constants.Cardstocks.S30, foil=False),
+            fronts=CardImageCollection(num_slots=3),
+            backs=CardImageCollection(num_slots=3),
+        ),
+    ]
+    aggregated = aggregate_and_split_orders(
+        orders, target_site=constants.TargetSites.MakePlayingCards, combine_orders=False
+    )
+    # The orders should remain separate
+    assert len(aggregated) == 2
+    assert sorted([o.details.quantity for o in aggregated]) == [2, 3]
+
+
+# endregion
+
+# region test io.py
+
+
+def test_download_image_from_scryfall_success(monkeypatch):
+    """
+    Tests the successful download of an image from Scryfall by mocking the web request.
+    """
+
+    class MockResponse:
+        status_code = 200
+        content = b"test_image_data"
+
+    # Mock requests.get to return a successful response
+    monkeypatch.setattr("src.io.requests.get", lambda url: MockResponse())
+
+    # Mock open and write to prevent actual file creation
+    mock_file = open(os.path.join(CARDS_FILE_PATH, "scryfall_test.png"), "wb")
+    monkeypatch.setattr("builtins.open", lambda path, mode: mock_file)
+
+    result = src.io.download_image_from_scryfall("http://fake-scryfall-url.com/image", "scryfall_test.png")
+
+    assert result is True
+
+
+def test_download_image_from_scryfall_failure(monkeypatch):
+    """
+    Tests the failure path when downloading an image from Scryfall.
+    """
+
+    class MockResponse:
+        status_code = 404
+
+    # Mock requests.get to return a failure response
+    monkeypatch.setattr("src.io.requests.get", lambda url: MockResponse())
+
+    result = src.io.download_image_from_scryfall("http://fake-scryfall-url.com/notfound", "scryfall_test_fail.png")
+
+    assert result is False
+
+
+def test_remove_files_os_error(monkeypatch):
+    """
+    Tests that an OSError during file removal is caught and handled.
+    """
+
+    def raise_os_error(path):
+        raise OSError("Permission denied")
+
+    # Make os.remove raise an OSError
+    monkeypatch.setattr("src.io.os.remove", raise_os_error)
+
+    # This should now execute without crashing
+    remove_files(["non_existent_file.txt"])
+
+
+def test_remove_directories_os_error(monkeypatch):
+    """
+    Tests that an OSError during directory removal is caught and handled.
+    """
+
+    def raise_os_error(path):
+        raise OSError("Directory not empty")
+
+    # Make os.rmdir raise an OSError
+    monkeypatch.setattr("src.io.os.rmdir", raise_os_error)
+
+    # This should now execute without crashing
+    remove_directories(["non_existent_dir"])
 
 
 # endregion
