@@ -3,12 +3,14 @@ import os
 import textwrap
 import time
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import contextmanager
 from itertools import groupby
 from queue import Queue
 from typing import Callable, Generator
 from xml.etree import ElementTree
 
 import pytest
+import requests
 from enlighten import Counter
 from PIL import Image
 from selenium.webdriver.common.by import By
@@ -18,7 +20,12 @@ from selenium.webdriver.support.wait import WebDriverWait
 import src.constants as constants
 import src.utils
 from src.driver import AutofillDriver
-from src.io import get_google_drive_file_name, remove_directories, remove_files
+from src.io import (
+    download_image_from_url,
+    get_google_drive_file_name,
+    remove_directories,
+    remove_files,
+)
 from src.order import (
     CardImage,
     CardImageCollection,
@@ -49,7 +56,7 @@ def assert_card_image_collections_identical(a: CardImageCollection, b: CardImage
     assert a.num_slots == b.num_slots, f"Number of slots {a.num_slots} does not match {b.num_slots}"
     assert len(a.cards_by_id) == len(
         b.cards_by_id
-    ), f"Number of cards {len(a.cards_by_id)} does not match {len(b.cards_by_id)}"
+    ), f"Number of cards {len(a.cards_by_id)} do not match {len(b.cards_by_id)}"
     for card_image_id_a, card_image_id_b in zip(sorted(a.cards_by_id.keys()), sorted(b.cards_by_id.keys())):
         assert_card_images_identical(a.cards_by_id[card_image_id_a], b.cards_by_id[card_image_id_b])
 
@@ -1658,20 +1665,34 @@ def test_download_image_from_scryfall_success(monkeypatch):
     Tests the successful download of an image from Scryfall by mocking the web request.
     """
 
-    class MockResponse:
+    class MockSuccessResponse:
         status_code = 200
         content = b"test_image_data"
 
+        def raise_for_status(self):
+            pass
+
     # Mock requests.get to return a successful response
-    monkeypatch.setattr("src.io.requests.get", lambda url: MockResponse())
+    monkeypatch.setattr("src.io.requests.get", lambda url, **kwargs: MockSuccessResponse())
 
     # Mock open and write to prevent actual file creation
-    mock_file = open(os.path.join(CARDS_FILE_PATH, "scryfall_test.png"), "wb")
-    monkeypatch.setattr("builtins.open", lambda path, mode: mock_file)
+    mock_file_storage = io.BytesIO()
 
-    result = src.io.download_image_from_scryfall("http://fake-scryfall-url.com/image", "scryfall_test.png")
+    @contextmanager
+    def mock_open_cm(path, mode):
+        try:
+            yield mock_file_storage
+        finally:
+            pass
+
+    monkeypatch.setattr("builtins.open", mock_open_cm)
+
+    result = download_image_from_url(
+        "http://fake-scryfall-url.com/image", "scryfall_test.png", post_processing_config=None
+    )
 
     assert result is True
+    assert mock_file_storage.getvalue() == b"test_image_data"
 
 
 def test_download_image_from_scryfall_failure(monkeypatch):
@@ -1679,13 +1700,17 @@ def test_download_image_from_scryfall_failure(monkeypatch):
     Tests the failure path when downloading an image from Scryfall.
     """
 
-    class MockResponse:
+    class MockFailureResponse:
         status_code = 404
+        content = b""
+
+        def raise_for_status(self):
+            raise requests.exceptions.HTTPError("404 Not Found")
 
     # Mock requests.get to return a failure response
-    monkeypatch.setattr("src.io.requests.get", lambda url: MockResponse())
+    monkeypatch.setattr("src.io.requests.get", lambda url, **kwargs: MockFailureResponse())
 
-    result = src.io.download_image_from_scryfall("http://fake-scryfall-url.com/notfound", "scryfall_test_fail.png")
+    result = download_image_from_url("http://fake-scryfall-url.com/notfound", "scryfall_test_fail.png", None)
 
     assert result is False
 
