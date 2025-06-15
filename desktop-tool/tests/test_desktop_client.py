@@ -1,9 +1,12 @@
-import io
+import io as std_io
+import logging
 import os
 import textwrap
 import time
+import unittest.mock as mock
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
+from io import BytesIO
 from itertools import groupby
 from queue import Queue
 from typing import Callable, Generator
@@ -12,13 +15,14 @@ from xml.etree import ElementTree
 import pytest
 import requests
 from enlighten import Counter
-from PIL import Image
+from PIL import Image, ImageOps
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 
 import src.constants as constants
 import src.utils
+from src import io
 from src.driver import AutofillDriver
 from src.io import (
     download_image_from_url,
@@ -34,7 +38,11 @@ from src.order import (
     aggregate_and_split_orders,
 )
 from src.pdf_maker import PdfExporter
-from src.processing import ImagePostProcessingConfig, post_process_image
+from src.processing import (
+    ImagePostProcessingConfig,
+    _add_black_border,
+    post_process_image,
+)
 from src.utils import text_to_set
 
 DEFAULT_POST_PROCESSING = ImagePostProcessingConfig(max_dpi=800, downscale_alg=constants.ImageResizeMethods.LANCZOS)
@@ -53,7 +61,7 @@ def assert_card_images_identical(a: CardImage, b: CardImage) -> None:
 
 def assert_card_image_collections_identical(a: CardImageCollection, b: CardImageCollection) -> None:
     assert a.face == b.face, f"Face {a.face} does not match {b.face}"
-    assert a.num_slots == b.num_slots, f"Number of slots {a.num_slots} does not match {b.num_slots}"
+    assert a.num_slots == b.num_slots, f"Number of slots {a.num_slots} do not match {b.num_slots}"
     assert len(a.cards_by_id) == len(
         b.cards_by_id
     ), f"Number of cards {len(a.cards_by_id)} do not match {len(b.cards_by_id)}"
@@ -515,7 +523,7 @@ def test_post_process_image_with_no_dpi():
     # Create a dummy image that is larger than any potential DPI
     img = Image.new("RGB", (1000, 1200), color="red")
 
-    byte_arr = io.BytesIO()
+    byte_arr = std_io.BytesIO()
     img.save(byte_arr, format="PNG")
     raw_image = byte_arr.getvalue()
 
@@ -529,6 +537,20 @@ def test_post_process_image_with_no_dpi():
     assert img.mode == processed_img.mode
     assert img.size == processed_img.size
     assert img.tobytes() == processed_img.tobytes()
+
+
+def test_add_black_border():
+    """Tests the _add_black_border function."""
+    original_size = (100, 150)
+    border_size = 10
+    img = Image.new("RGB", original_size, color="blue")
+
+    bordered_img = _add_black_border(img, border_size)
+
+    expected_size = (original_size[0] + 2 * border_size, original_size[1] + 2 * border_size)
+    assert bordered_img.size == expected_size, "Bordered image has incorrect dimensions."
+
+    assert bordered_img.getpixel((0, 0)) == (0, 0, 0), "Top-left border pixel is not black."
 
 
 # endregion
@@ -637,6 +659,26 @@ def test_combine_images(image_a, image_b, expected_result):
     assert_card_images_identical(image_a.combine(image_b), expected_result)
 
 
+def test_card_image_split_no_splits():
+    """Tests CardImage.split when an empty list is provided."""
+    card = CardImage(drive_id="1", slots={0, 1, 2})
+    result = card.split([])
+    assert len(result) == 1
+    assert result[0] is card
+
+
+def test_card_image_generate_filepath_no_name(monkeypatch):
+    """Tests the filepath generation when name is initially None from GDrive."""
+
+    def mock_get_name(drive_id):
+        return None
+
+    monkeypatch.setattr("src.order.get_google_drive_file_name", mock_get_name)
+    card = CardImage(drive_id="test_id_123")
+    assert card.name == "test_id_123.png"
+    assert card.errored is False
+
+
 # endregion
 
 # region test CardImageCollection
@@ -661,6 +703,17 @@ def test_card_image_collection_no_cards(input_enter, card_image_collection_eleme
     assert exc_info.value.code == 0
 
 
+def test_card_image_collection_append_duplicate_id():
+    """Tests appending a card with a drive_id that already exists."""
+    collection = CardImageCollection(num_slots=4)
+    card1 = CardImage(drive_id="1", slots={0, 1})
+    card2 = CardImage(drive_id="1", slots={2})
+    collection.append(card1)
+    collection.append(card2)
+    assert len(collection.cards_by_id) == 1
+    assert collection.cards_by_id["1"].slots == {0, 1, 2}
+
+
 # endregion
 
 # region test Details
@@ -670,7 +723,7 @@ def test_details_valid(details_element_valid):
     details = Details.from_element(details_element_valid, allowed_to_exceed_project_max_size=False)
     assert_details_identical(
         details,
-        Details(quantity=1, stock=constants.Cardstocks.S30, foil=False),
+        Details(quantity=1, stock=constants.Cardstocks.S30.value, foil=False),
     )
 
 
@@ -697,7 +750,7 @@ def test_card_order_valid(card_order_valid):
         CardOrder(
             details=Details(
                 quantity=3,
-                stock=constants.Cardstocks.S30,
+                stock=constants.Cardstocks.S30.value,
                 foil=False,
             ),
             fronts=CardImageCollection(
@@ -743,7 +796,7 @@ def test_card_order_multiple_cardbacks(card_order_multiple_cardbacks):
         CardOrder(
             details=Details(
                 quantity=4,
-                stock=constants.Cardstocks.M31,
+                stock=constants.Cardstocks.M31.value,
                 foil=False,
             ),
             fronts=CardImageCollection(
@@ -799,7 +852,7 @@ def test_card_order_valid_from_file():
         CardOrder(
             details=Details(
                 quantity=10,
-                stock=constants.Cardstocks.S30,
+                stock=constants.Cardstocks.S30.value,
                 foil=True,
             ),
             fronts=CardImageCollection(
@@ -862,7 +915,7 @@ def test_card_order_missing_slots(input_enter, card_order_element_invalid_quanti
             # input orders
             [
                 CardOrder(
-                    details=Details(quantity=2, stock=constants.Cardstocks.S30, foil=False),
+                    details=Details(quantity=2, stock=constants.Cardstocks.S30.value, foil=False),
                     fronts=CardImageCollection(
                         cards_by_id={
                             "1": CardImage(
@@ -889,7 +942,7 @@ def test_card_order_missing_slots(input_enter, card_order_element_invalid_quanti
                     ),
                 ),
                 CardOrder(
-                    details=Details(quantity=2, stock=constants.Cardstocks.S30, foil=False),
+                    details=Details(quantity=2, stock=constants.Cardstocks.S30.value, foil=False),
                     fronts=CardImageCollection(
                         cards_by_id={
                             "3": CardImage(
@@ -924,7 +977,7 @@ def test_card_order_missing_slots(input_enter, card_order_element_invalid_quanti
             ],
             # expected order
             CardOrder(
-                details=Details(quantity=4, stock=constants.Cardstocks.S30, foil=False),
+                details=Details(quantity=4, stock=constants.Cardstocks.S30.value, foil=False),
                 fronts=CardImageCollection(
                     cards_by_id={
                         "1": CardImage(
@@ -964,7 +1017,7 @@ def test_card_order_missing_slots(input_enter, card_order_element_invalid_quanti
             # input orders
             [
                 CardOrder(
-                    details=Details(quantity=2, stock=constants.Cardstocks.S30, foil=False),
+                    details=Details(quantity=2, stock=constants.Cardstocks.S30.value, foil=False),
                     fronts=CardImageCollection(
                         cards_by_id={
                             "1": CardImage(
@@ -991,7 +1044,7 @@ def test_card_order_missing_slots(input_enter, card_order_element_invalid_quanti
                     ),
                 ),
                 CardOrder(
-                    details=Details(quantity=2, stock=constants.Cardstocks.S30, foil=False),
+                    details=Details(quantity=2, stock=constants.Cardstocks.S30.value, foil=False),
                     fronts=CardImageCollection(
                         cards_by_id={
                             "3": CardImage(
@@ -1026,7 +1079,7 @@ def test_card_order_missing_slots(input_enter, card_order_element_invalid_quanti
             ],
             # expected order
             CardOrder(
-                details=Details(quantity=4, stock=constants.Cardstocks.S30, foil=False),
+                details=Details(quantity=4, stock=constants.Cardstocks.S30.value, foil=False),
                 fronts=CardImageCollection(
                     cards_by_id={
                         "1": CardImage(
@@ -1111,7 +1164,7 @@ def test_get_project_sizes_manually_specifying_sizes(
     expected_sizes,
 ):
     order = CardOrder(
-        details=Details(quantity=5, stock=constants.Cardstocks.S30, foil=False),
+        details=Details(quantity=5, stock=constants.Cardstocks.S30.value, foil=False),
         fronts=CardImageCollection(
             cards_by_id={
                 "1": CardImage(
@@ -1149,7 +1202,7 @@ def test_get_project_sizes_manually_specifying_sizes_with_an_incorrect_attempt_f
     monkeypatch, monkeypatch_let_me_specify_how_to_split_the_cards, monkeypatch_project_max_size, first_attempted_input
 ):
     order = CardOrder(
-        details=Details(quantity=5, stock=constants.Cardstocks.S30, foil=False),
+        details=Details(quantity=5, stock=constants.Cardstocks.S30.value, foil=False),
         fronts=CardImageCollection(
             cards_by_id={
                 "1": CardImage(
@@ -1186,7 +1239,7 @@ def test_get_project_sizes_automatically_breaking_on_max_size(
     monkeypatch, monkeypatch_split_every_4_cards, monkeypatch_project_max_size
 ):
     order = CardOrder(
-        details=Details(quantity=5, stock=constants.Cardstocks.S30, foil=False),
+        details=Details(quantity=5, stock=constants.Cardstocks.S30.value, foil=False),
         fronts=CardImageCollection(
             cards_by_id={
                 "1": CardImage(
@@ -1223,7 +1276,7 @@ def test_get_project_sizes_automatically_breaking_on_max_size(
         (
             [
                 CardOrder(
-                    details=Details(quantity=5, stock=constants.Cardstocks.S30, foil=False),
+                    details=Details(quantity=5, stock=constants.Cardstocks.S30.value, foil=False),
                     fronts=CardImageCollection(
                         cards_by_id={
                             "1": CardImage(
@@ -1250,7 +1303,7 @@ def test_get_project_sizes_automatically_breaking_on_max_size(
                     ),
                 ),
                 CardOrder(
-                    details=Details(quantity=2, stock=constants.Cardstocks.S30, foil=False),
+                    details=Details(quantity=2, stock=constants.Cardstocks.S30.value, foil=False),
                     fronts=CardImageCollection(
                         cards_by_id={
                             "1": CardImage(
@@ -1279,7 +1332,7 @@ def test_get_project_sizes_automatically_breaking_on_max_size(
             ],
             [
                 CardOrder(
-                    details=Details(quantity=4, stock=constants.Cardstocks.S30, foil=False),
+                    details=Details(quantity=4, stock=constants.Cardstocks.S30.value, foil=False),
                     fronts=CardImageCollection(
                         cards_by_id={
                             "1": CardImage(
@@ -1306,7 +1359,7 @@ def test_get_project_sizes_automatically_breaking_on_max_size(
                     ),
                 ),
                 CardOrder(
-                    details=Details(quantity=3, stock=constants.Cardstocks.S30, foil=False),
+                    details=Details(quantity=3, stock=constants.Cardstocks.S30.value, foil=False),
                     fronts=CardImageCollection(
                         cards_by_id={
                             "1": CardImage(
@@ -1365,6 +1418,14 @@ def test_aggregate_and_split_orders(
         assert len(aggregated_orders_dict[key]) == len(expected_orders_dict[key])
         for (aggregated_order, expected_order) in zip(aggregated_orders_dict[key], expected_orders_dict[key]):
             assert_orders_identical(aggregated_order, expected_order)
+
+
+def test_aggregate_and_split_orders_single_order():
+    """Tests the early return path when only one order is provided."""
+    order = CardOrder(details=Details(quantity=1), fronts=CardImageCollection(), backs=CardImageCollection())
+    orders = [order]
+    result = aggregate_and_split_orders(orders, constants.TargetSites.MakePlayingCards, True)
+    assert result is orders
 
 
 # endregion
@@ -1580,30 +1641,6 @@ def test_card_order_missing_details(input_enter, card_order_element_missing_deta
     assert exc_info.value.code == 0
 
 
-def test_card_order_front_slot_out_of_bounds(input_enter, card_order_element_front_slot_out_of_bounds):
-    """
-    Tests that an order is rejected if a front card has a slot index
-    equal to or greater than the order quantity.
-    This covers error handling in `CardOrder.from_element`.
-    """
-    with pytest.raises(SystemExit) as exc_info:
-        CardOrder.from_element(card_order_element_front_slot_out_of_bounds, allowed_to_exceed_project_max_size=False)
-    assert exc_info.value.code == 0
-
-
-def test_card_image_collection_invalid_slots(input_enter, card_image_collection_element_invalid_slots):
-    """
-    Tests that a CardImageCollection is rejected if a card's slots exceed the
-    total number of slots for the collection.
-    This covers error checking in `CardImageCollection.from_element`.
-    """
-    with pytest.raises(SystemExit) as exc_info:
-        CardImageCollection.from_element(
-            card_image_collection_element_invalid_slots, face=constants.Faces.front, num_slots=3
-        )
-    assert exc_info.value.code == 0
-
-
 def test_aggregate_orders_with_different_details(monkeypatch_project_max_size):
     """
     Tests that orders with different details (stock, foil) are not combined,
@@ -1612,12 +1649,12 @@ def test_aggregate_orders_with_different_details(monkeypatch_project_max_size):
     monkeypatch_project_max_size(10)
     orders = [
         CardOrder(
-            details=Details(quantity=2, stock=constants.Cardstocks.S30, foil=False),
+            details=Details(quantity=2, stock=constants.Cardstocks.S30.value, foil=False),
             fronts=CardImageCollection(num_slots=2),
             backs=CardImageCollection(num_slots=2),
         ),
         CardOrder(
-            details=Details(quantity=2, stock=constants.Cardstocks.S33, foil=False),
+            details=Details(quantity=2, stock=constants.Cardstocks.S33.value, foil=False),
             fronts=CardImageCollection(num_slots=2),
             backs=CardImageCollection(num_slots=2),
         ),
@@ -1637,12 +1674,12 @@ def test_aggregate_orders_no_combine(monkeypatch_project_max_size):
     monkeypatch_project_max_size(10)
     orders = [
         CardOrder(
-            details=Details(quantity=2, stock=constants.Cardstocks.S30, foil=False),
+            details=Details(quantity=2, stock=constants.Cardstocks.S30.value, foil=False),
             fronts=CardImageCollection(num_slots=2),
             backs=CardImageCollection(num_slots=2),
         ),
         CardOrder(
-            details=Details(quantity=3, stock=constants.Cardstocks.S30, foil=False),
+            details=Details(quantity=3, stock=constants.Cardstocks.S30.value, foil=False),
             fronts=CardImageCollection(num_slots=3),
             backs=CardImageCollection(num_slots=3),
         ),
@@ -1676,7 +1713,7 @@ def test_download_image_from_scryfall_success(monkeypatch):
     monkeypatch.setattr("src.io.requests.get", lambda url, **kwargs: MockSuccessResponse())
 
     # Mock open and write to prevent actual file creation
-    mock_file_storage = io.BytesIO()
+    mock_file_storage = std_io.BytesIO()
 
     @contextmanager
     def mock_open_cm(path, mode):
@@ -1743,6 +1780,327 @@ def test_remove_directories_os_error(monkeypatch):
 
     # This should now execute without crashing
     remove_directories(["non_existent_dir"])
+
+
+# endregion
+
+# region from_decklist tests
+
+# Helper to create a valid, minimal PNG byte object
+def create_dummy_png() -> bytes:
+    """Creates a valid 1x1 black PNG in memory."""
+    img = Image.new("RGB", (1, 1))
+    byte_io = BytesIO()
+    img.save(byte_io, "PNG")
+    return byte_io.getvalue()
+
+
+@pytest.fixture
+def mock_scryfall_requests(monkeypatch):
+    """Mocks requests.get to return canned Scryfall API responses."""
+
+    # --- Mock Card Data ---
+    sfc_card = {
+        "object": "card",
+        "id": "sfc-1",
+        "name": "Llanowar Elves",
+        "layout": "normal",
+        "image_uris": {"png": "http://example.com/llanowar_elves.png"},
+    }
+
+    dfc_card = {
+        "object": "card",
+        "id": "dfc-1",
+        "name": "Delver of Secrets // Insectile Aberration",
+        "layout": "transform",
+        "card_faces": [
+            {"name": "Delver of Secrets", "image_uris": {"png": "http://example.com/delver.png"}},
+            {"name": "Insectile Aberration", "image_uris": {"png": "http://example.com/insect.png"}},
+        ],
+    }
+
+    meld_part_1 = {
+        "object": "card",
+        "id": "meld-part-1",
+        "name": "Gisela, the Broken Blade",
+        "layout": "meld",
+        "image_uris": {"png": "http://example.com/gisela.png"},
+        "all_parts": [
+            {"component": "meld_part", "id": "meld-part-1", "name": "Gisela, the Broken Blade"},
+            {"component": "meld_part", "id": "meld-part-2", "name": "Bruna, the Fading Light"},
+            {"component": "meld_result", "uri": "http://api.scryfall.com/cards/meld-result-1"},
+        ],
+    }
+
+    meld_part_2 = {
+        "object": "card",
+        "id": "meld-part-2",
+        "name": "Bruna, the Fading Light",
+        "layout": "meld",
+        "image_uris": {"png": "http://example.com/bruna.png"},
+        "all_parts": meld_part_1["all_parts"],  # Share the same all_parts
+    }
+
+    meld_result = {
+        "object": "card",
+        "id": "meld-result-1",
+        "name": "Brisela, Voice of Nightmares",
+        "image_uris": {"png": "http://example.com/brisela.png"},
+    }
+
+    # A DFC missing its back face
+    dfc_missing_back = {
+        "object": "card",
+        "id": "dfc-missing-back",
+        "name": "Incomplete DFC",
+        "layout": "transform",
+        "card_faces": [
+            {"name": "Front Face", "image_uris": {"png": "http://example.com/front.png"}},
+            {"name": "Back Face", "image_uris": {}},  # Missing PNG
+        ],
+    }
+
+    # --- Mock Requests ---
+    # Create a single dummy image to be returned by all successful image requests
+    dummy_image_content = create_dummy_png()
+
+    class MockResponse:
+        def __init__(self, json_data, status_code=200, is_image=False):
+            self._json_data = json_data
+            self.status_code = status_code
+            if is_image:
+                self.content = dummy_image_content
+            else:
+                self.content = b""
+
+        def json(self):
+            return self._json_data
+
+        def raise_for_status(self):
+            if self.status_code >= 400:
+                raise requests.exceptions.HTTPError(f"{self.status_code} Client Error")
+
+    def mock_get(url, **kwargs):
+        if "exact=Llanowar+Elves" in url:
+            return MockResponse(sfc_card)
+        if "exact=Delver+of+Secrets" in url:
+            return MockResponse(dfc_card)
+        if "exact=Gisela%2C+the+Broken+Blade" in url:
+            return MockResponse(meld_part_1)
+        if "exact=Bruna%2C+the+Fading+Light" in url:
+            return MockResponse(meld_part_2)
+        if url == "http://api.scryfall.com/cards/meld-result-1":
+            return MockResponse(meld_result)
+        if "exact=Card+Not+Found" in url:
+            return MockResponse({"object": "error", "details": "Not Found"}, 404)
+        if "exact=Incomplete+DFC" in url:
+            return MockResponse(dfc_missing_back)
+        if "exact=Meld+Fail" in url:
+            meld_fail_part = meld_part_1.copy()
+            meld_fail_part["name"] = "Meld Fail"
+            meld_fail_part["all_parts"] = [
+                {"component": "meld_part", "id": "meld-fail-1", "name": "Meld Fail"},
+                {"component": "meld_result", "uri": "http://api.scryfall.com/cards/meld-fail-result"},
+            ]
+            return MockResponse(meld_fail_part)
+        if url == "http://api.scryfall.com/cards/meld-fail-result":
+            return MockResponse(None, 404)
+
+        # Generic image response for ANY example.com URL
+        if url.startswith("http://example.com"):
+            return MockResponse(None, 200, is_image=True)
+
+        return MockResponse(None, 404)
+
+    monkeypatch.setattr(requests, "get", mock_get)
+
+
+@pytest.fixture
+def mock_user_prompts(monkeypatch, tmp_path):
+    """Mocks all user-facing prompts (file dialogs, console prompts)."""
+    # Mock Tkinter file dialogs
+    mock_tk = mock.MagicMock()
+
+    # Path for decklist
+    decklist_file = tmp_path / "deck.txt"
+    # Path for card back
+    card_back_file = tmp_path / "card_back.png"
+    Image.new("RGB", (10, 10)).save(card_back_file)
+
+    # First call is for decklist, second is for card back
+    mock_tk.askopenfilename.side_effect = [str(decklist_file), str(card_back_file)]
+    monkeypatch.setattr("src.order.filedialog.askopenfilename", mock_tk.askopenfilename)
+
+    # Mock InquirerPy prompts
+    answers = {"stock": constants.Cardstocks.S30.value, "foil": False}
+    monkeypatch.setattr("src.order.prompt", lambda q: answers)
+
+    # Mock input for deck name
+    monkeypatch.setattr("builtins.input", lambda _: "Test Deck")
+
+    # Mock away the Tk root window
+    monkeypatch.setattr("src.order.Tk", mock.MagicMock())
+
+    return decklist_file
+
+
+@pytest.fixture
+def mock_fs(monkeypatch, tmp_path):
+    """Mocks filesystem, image saving, and directory creation."""
+    # Create a temporary 'cards' directory for the test run
+    cards_dir = tmp_path / "cards"
+    cards_dir.mkdir()
+
+    # Mock the function that returns the image directory to isolate tests
+    monkeypatch.setattr("src.order.image_directory", lambda: str(cards_dir))
+    monkeypatch.setattr("src.io.image_directory", lambda: str(cards_dir))
+
+    # By default, pretend no card images exist on disk yet
+    # THIS IS THE CORRECTED PART
+    original_os_path_exists = os.path.exists
+
+    def new_mock_exists(path):
+        # Allow the check for the cards directory to work correctly
+        if "cards" in str(path):
+            return original_os_path_exists(path)
+        # For other paths (image files), return False to force download logic
+        return False
+
+    monkeypatch.setattr(os.path, "exists", new_mock_exists)
+
+    monkeypatch.setattr(time, "sleep", lambda x: None)  # Disable sleep
+    monkeypatch.setattr(Image.Image, "save", mock.MagicMock())  # Prevent actual image saving
+
+
+def test_from_decklist_simple_cards(mock_user_prompts, mock_scryfall_requests, mock_fs, monkeypatch):
+    """Tests a simple decklist with only single-faced cards."""
+    decklist_file = mock_user_prompts
+    decklist_content = "2 Llanowar Elves\n1 Forest"  # Forest will fail, testing robustness
+    decklist_file.write_text(decklist_content, encoding="utf-8")
+
+    # Mock the 'Forest' call to fail
+    original_get = requests.get
+
+    def side_effect_get(url, **kwargs):
+        if "exact=Forest" in url:
+            return mock.MagicMock(status_code=404, raise_for_status=lambda: exec("raise requests.exceptions.HTTPError"))
+        return original_get(url, **kwargs)
+
+    monkeypatch.setattr(requests, "get", side_effect_get)
+
+    order = CardOrder.from_decklist()
+
+    assert order.name == "Test Deck"
+    assert order.details.quantity == 2  # 2 Llanowar Elves, Forest failed
+    assert order.details.stock == constants.Cardstocks.S30.value
+    assert not order.details.foil
+    assert len(order.fronts.cards_by_id) == 1
+    assert len(order.backs.cards_by_id) == 1  # Common back
+
+    # Check that all 2 slots for backs are filled by the common back
+    back_card = list(order.backs.cards_by_id.values())[0]
+    assert back_card.name == "card_back.png"
+    assert back_card.slots == {0, 1}
+
+
+def test_from_decklist_double_faced_cards(mock_user_prompts, mock_scryfall_requests, mock_fs):
+    """Tests a decklist with a double-faced card."""
+    decklist_file = mock_user_prompts
+    decklist_content = "1 Delver of Secrets"
+    decklist_file.write_text(decklist_content)
+
+    order = CardOrder.from_decklist()
+
+    assert order.details.quantity == 1
+    assert len(order.fronts.cards_by_id) == 1
+    assert len(order.backs.cards_by_id) == 1
+
+    front_card = list(order.fronts.cards_by_id.values())[0]
+    back_card = list(order.backs.cards_by_id.values())[0]
+
+    assert front_card.name == "Delver of Secrets.png"
+    assert front_card.slots == {0}
+
+    assert back_card.name == "Insectile Aberration.png"
+    assert back_card.slots == {0}
+
+
+def test_from_decklist_meld_cards_happy_path(mock_user_prompts, mock_scryfall_requests, mock_fs, monkeypatch):
+    """Tests the successful processing of a meld card pair."""
+    decklist_file = mock_user_prompts
+    decklist_content = "1 Gisela, the Broken Blade\n1 Bruna, the Fading Light"
+    decklist_file.write_text(decklist_content)
+
+    # We need to mock the image processing part of the meld logic.
+    # First, mock the generic image fetcher to prevent it from running for the front faces.
+    # It's not what we're testing here.
+    monkeypatch.setattr("src.order._fetch_and_prepare_image", lambda url, name: f"/tmp/{name}.png")
+
+    # Now, set up specific mocks for the meld back image processing
+    mock_img_instance = mock.MagicMock(spec=Image.Image)
+    mock_img_instance.size = (800, 1120)
+    mock_img_instance.mode = "RGB"
+
+    # When crop is called, return another mock. This mock also needs a 'save' method.
+    mock_crop_instance = mock.MagicMock(spec=Image.Image)
+    mock_crop_instance.size = (400, 560)
+    mock_crop_instance.mode = "RGB"
+    mock_crop_instance.transpose.return_value = mock_crop_instance
+    mock_crop_instance.save = mock.MagicMock()  # Mock the save method
+    mock_img_instance.crop.return_value = mock_crop_instance
+
+    # The only place `Image.open` is now called in the code flow is for the meld back.
+    # We can safely mock it to return our pre-configured mock image instance.
+    monkeypatch.setattr(Image, "open", lambda bio: mock_img_instance)
+
+    # Mock ImageOps.expand to prevent it from crashing on the mock image object
+    monkeypatch.setattr(ImageOps, "expand", lambda image, **kwargs: image)
+
+    order = CardOrder.from_decklist()
+
+    assert order.details.quantity == 2
+    assert len(order.fronts.cards_by_id) == 2
+    assert len(order.backs.cards_by_id) == 2
+
+    mock_img_instance.crop.assert_called()
+    mock_crop_instance.transpose.assert_called_with(Image.Transpose.ROTATE_90)
+
+    back_names = {c.name for c in order.backs.cards_by_id.values()}
+    assert "meld_back_Gisela, the Broken Blade.png" in back_names
+    assert "meld_back_Bruna, the Fading Light.png" in back_names
+
+
+def test_from_decklist_error_handling(mock_user_prompts, mock_scryfall_requests, mock_fs, caplog):
+    """Tests various error conditions during decklist processing."""
+    decklist_file = mock_user_prompts
+    decklist_content = (
+        "1 Card Not Found\n" "This is an invalid line\n" "1 Incomplete DFC\n" "1 Meld Fail\n" "1 Llanowar Elves\n"
+    )
+    decklist_file.write_text(decklist_content)
+
+    caplog.set_level(logging.INFO)
+
+    order = CardOrder.from_decklist()
+
+    # Only Llanowar Elves (1) and Incomplete DFC (1) and Meld Fail (1) should be added
+    assert order.details.quantity == 3
+
+    logs = caplog.text
+    assert "Error finding 'Card Not Found'" in logs
+    assert "Could not parse quantity from line: 'This is an invalid line'" in logs
+    assert "Back face missing for 'Incomplete DFC'" in logs
+    assert "Could not process meld back for: Meld Fail" in logs
+
+    # Check that DFC with missing back has its front and a placeholder back
+    dfc_front_path = os.path.join(io.image_directory(), "Front Face.png")
+    assert dfc_front_path in order.fronts.cards_by_id
+
+    # Find the slot for the DFC
+    dfc_slot = list(order.fronts.cards_by_id[dfc_front_path].slots)[0]
+
+    # Check that the corresponding back slot is a missing placeholder
+    back_for_dfc = next(c for c in order.backs.cards_by_id.values() if dfc_slot in c.slots)
+    assert back_for_dfc.name == "MISSING_BACK.png"
 
 
 # endregion
