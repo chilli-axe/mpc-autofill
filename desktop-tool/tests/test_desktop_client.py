@@ -99,6 +99,36 @@ TEST_IMAGE = "test_image"
 
 # endregion
 
+
+@pytest.fixture(scope="session", autouse=True)
+def manage_test_image_files():
+    """
+    This session-scoped fixture ensures that dummy image files required by
+    the tests exist before any tests are run, and cleans them up afterwards.
+    This resolves failures caused by missing test assets.
+    """
+    # Define paths for the dummy files
+    cards_dir = os.path.join(FILE_PATH, "cards")
+    test_image_path = os.path.join(cards_dir, f"{TEST_IMAGE}.png")
+    simple_lotus_path = os.path.join(cards_dir, f"{SIMPLE_LOTUS}.png")
+
+    # Create the directory if it doesn't exist
+    os.makedirs(cards_dir, exist_ok=True)
+
+    # Create dummy 1x1 pixel image files
+    dummy_image = Image.new("RGB", (1, 1), color="red")
+    dummy_image.save(test_image_path)
+    dummy_image.save(simple_lotus_path)
+
+    yield  # This allows the tests to run
+
+    # Teardown: Clean up the created files after the test session finishes
+    if os.path.exists(test_image_path):
+        os.remove(test_image_path)
+    if os.path.exists(simple_lotus_path):
+        os.remove(simple_lotus_path)
+
+
 # region fixtures
 
 
