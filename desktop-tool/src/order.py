@@ -21,7 +21,7 @@ import enlighten
 import requests
 from defusedxml.ElementTree import parse as defused_parse
 from InquirerPy import prompt
-from PIL import Image, ImageOps
+from PIL import Image
 from sanitize_filename import sanitize
 
 from src import constants
@@ -34,7 +34,7 @@ from src.io import (
     get_google_drive_file_name,
     image_directory,
 )
-from src.processing import ImagePostProcessingConfig
+from src.processing import ImagePostProcessingConfig, _add_black_border
 from src.utils import bold, text_to_set, unpack_element
 
 
@@ -641,38 +641,7 @@ class CardOrder:
         """
         SCRYFALL_API_BASE_URL = "https://api.scryfall.com"
         REQUEST_DELAY = 1
-
-        def _add_black_border(image: Image.Image, border_size: int) -> Image.Image:
-            return ImageOps.expand(image, border=border_size, fill="black")
-
-        def _fetch_and_prepare_image(url: str, card_name: str) -> Optional[str]:
-            """Downloads an image from a URL, adds a border, saves it locally, and returns the file path."""
-            try:
-                safe_name = sanitize(card_name)
-                file_name = f"{safe_name}.png"
-                save_path = os.path.join(image_directory(), file_name)
-
-                if os.path.exists(save_path):
-                    logging.info(f"  Using existing image for: {card_name}")
-                    return save_path
-
-                logging.info(f"  Fetching and bordering: {card_name}")
-                response = requests.get(url)
-                response.raise_for_status()
-                img = Image.open(BytesIO(response.content))
-
-                pixel_width, _ = img.size
-                if pixel_width > 0:
-                    effective_dpi = pixel_width / constants.CARD_WIDTH_INCHES
-                    border_pixels = math.ceil(effective_dpi * constants.BORDER_INCHES)
-                    img = _add_black_border(img, border_pixels)
-
-                img.save(save_path, "PNG")
-                return save_path
-
-            except (requests.exceptions.RequestException, IOError) as e:
-                logging.error(f"  Error processing image for '{card_name}': {e}. Skipping.")
-                return None
+        blank_back_slots = set()
 
         # Get User Inputs
         print("\nA file dialog will now open. Please select a decklist .txt file.")
@@ -715,7 +684,6 @@ class CardOrder:
         current_slot = 0
 
         meld_cards_in_deck = []
-        final_messages = []
 
         print("\nParsing decklist and fetching from Scryfall...")
         for line in deck_lines:
@@ -793,7 +761,7 @@ class CardOrder:
                             if url_back:
                                 back_path = _fetch_and_prepare_image(url_back, face_back.get("name"))
                             else:
-                                final_messages.append(f"Back face missing for '{name}'. It will be left blank.")
+                                logging.warning(f"Back face missing for '{name}'. It will be left blank.")
 
                             if front_path:
                                 for _ in range(card_qty):
@@ -813,7 +781,7 @@ class CardOrder:
                                             )
                                         )
                                     else:
-                                        backs.append(CardImage(name="MISSING_BACK.png", slots={current_slot}))
+                                        blank_back_slots.add(current_slot)
                                     current_slot += 1
 
                     else:
@@ -850,7 +818,7 @@ class CardOrder:
                         }
                     meld_groups[result_part["uri"]]["cards_to_add"].append(card_info)
                 else:
-                    final_messages.append(
+                    logging.warning(
                         f"Meld result data missing for '{card_info['data']['name']}'. Back will be left blank."
                     )
                     image_url = card_info["data"].get("image_uris", {}).get("png")
@@ -863,7 +831,7 @@ class CardOrder:
                                         file_path=front_path, name=os.path.basename(front_path), slots={current_slot}
                                     )
                                 )
-                                backs.append(CardImage(name="MISSING_BACK.png", slots={current_slot}))
+                                blank_back_slots.add(current_slot)
                                 current_slot += 1
 
             for result_uri, group in meld_groups.items():
@@ -892,9 +860,9 @@ class CardOrder:
                         Image.Transpose.ROTATE_90
                     )
 
-                    border_top = math.ceil((top_half.size[0] / constants.CARD_HEIGHT_INCHES) * constants.BORDER_INCHES)
+                    border_top = math.ceil((top_half.size[0] / constants.CARD_WIDTH_INCHES) * constants.BORDER_INCHES)
                     border_bottom = math.ceil(
-                        (bottom_half.size[0] / constants.CARD_HEIGHT_INCHES) * constants.BORDER_INCHES
+                        (bottom_half.size[0] / constants.CARD_WIDTH_INCHES) * constants.BORDER_INCHES
                     )
 
                     top_path = os.path.join(image_directory(), f"meld_back_{sanitize(meld_parts_data[0]['name'])}.png")
@@ -930,11 +898,11 @@ class CardOrder:
                                         )
                                     )
                                 else:
-                                    backs.append(CardImage(name="MISSING_BACK.png", slots={current_slot}))
+                                    blank_back_slots.add(current_slot)
                                 current_slot += 1
                 except Exception as e:
                     card_names = [c["data"]["name"] for c in group["cards_to_add"]]
-                    final_messages.append(
+                    logging.error(
                         f"Could not process meld back for: {', '.join(card_names)}. Backs will be left blank. Reason: {e}"
                     )
                     for card_info in group["cards_to_add"]:
@@ -950,7 +918,7 @@ class CardOrder:
                                             slots={current_slot},
                                         )
                                     )
-                                    backs.append(CardImage(name="MISSING_BACK.png", slots={current_slot}))
+                                    blank_back_slots.add(current_slot)
                                     current_slot += 1
 
         # Finalize and create order
@@ -962,7 +930,7 @@ class CardOrder:
         fronts.num_slots, backs.num_slots = total_quantity, total_quantity
 
         if card_back_path:
-            slots_for_common_back = set(range(total_quantity)) - backs.slots()
+            slots_for_common_back = set(range(total_quantity)) - backs.slots() - blank_back_slots
             if slots_for_common_back:
                 backs.append(
                     CardImage(
@@ -977,12 +945,6 @@ class CardOrder:
             allowed_to_exceed_project_max_size=True,
         )
         deck_name = sanitize(input("\nEnter a name for this deck/order: ").strip()) or "Decklist Order"
-
-        if final_messages:
-            print("\n--- Notes on your order ---")
-            for msg in final_messages:
-                print(f"- {msg}")
-            print("--------------------------")
 
         return cls(name=deck_name, details=details, fronts=fronts, backs=backs)
 
@@ -1034,3 +996,33 @@ def aggregate_and_split_orders(
     )
 
     return aggregated_and_split_orders
+
+
+def _fetch_and_prepare_image(url: str, card_name: str) -> Optional[str]:
+    """Downloads an image from a URL, adds a border, saves it locally, and returns the file path."""
+    try:
+        safe_name = sanitize(card_name)
+        file_name = f"{safe_name}.png"
+        save_path = os.path.join(image_directory(), file_name)
+
+        if os.path.exists(save_path):
+            logging.info(f"  Using existing image for: {card_name}")
+            return save_path
+
+        logging.info(f"  Fetching and bordering: {card_name}")
+        response = requests.get(url)
+        response.raise_for_status()
+        img = Image.open(BytesIO(response.content))
+
+        pixel_width, _ = img.size
+        if pixel_width > 0:
+            effective_dpi = pixel_width / constants.CARD_WIDTH_INCHES
+            border_pixels = math.ceil(effective_dpi * constants.BORDER_INCHES)
+            img = _add_black_border(img, border_pixels)
+
+        img.save(save_path, "PNG")
+        return save_path
+
+    except (requests.exceptions.RequestException, IOError) as e:
+        logging.error(f"  Error processing image for '{card_name}': {e}. Skipping.")
+        return None
