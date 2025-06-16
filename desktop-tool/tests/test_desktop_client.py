@@ -99,6 +99,8 @@ TEST_IMAGE = "test_image"
 
 # endregion
 
+# region fixtures
+
 
 @pytest.fixture(scope="session", autouse=True)
 def manage_test_image_files():
@@ -127,9 +129,6 @@ def manage_test_image_files():
         os.remove(test_image_path)
     if os.path.exists(simple_lotus_path):
         os.remove(simple_lotus_path)
-
-
-# region fixtures
 
 
 @pytest.fixture(autouse=True)
@@ -282,6 +281,248 @@ def image_google_valid_drive_no_name(
     yield card_image
     if card_image.file_path is not None and os.path.exists(card_image.file_path):
         os.unlink(card_image.file_path)  # image is downloaded from Google Drive in test
+
+
+@pytest.fixture()
+def card_order_element_missing_details() -> ElementTree.Element:
+    """Provides a CardOrder element that is missing the <details> tag."""
+    return ElementTree.fromstring(
+        textwrap.dedent(
+            """
+            <order>
+                <fronts>
+                    <card>
+                        <id>some_id</id>
+                        <slots>0</slots>
+                        <name>a.png</name>
+                    </card>
+                </fronts>
+                <cardback>some_cardback</cardback>
+            </order>
+            """
+        )
+    )
+
+
+@pytest.fixture()
+def card_order_element_front_slot_out_of_bounds() -> ElementTree.Element:
+    """Provides a CardOrder where a front card has a slot index greater than the quantity."""
+    return ElementTree.fromstring(
+        textwrap.dedent(
+            """
+            <order>
+                <details>
+                    <quantity>2</quantity>
+                    <stock>(S30) Standard Smooth</stock>
+                    <foil>false</foil>
+                </details>
+                <fronts>
+                    <card>
+                        <id>some_id</id>
+                        <slots>0,2</slots>
+                        <name>a.png</name>
+                    </card>
+                </fronts>
+                <cardback>some_cardback</cardback>
+            </order>
+            """
+        )
+    )
+
+
+@pytest.fixture()
+def card_image_collection_element_invalid_slots() -> ElementTree.Element:
+    """Provides a CardImageCollection where a card's slots are out of bounds."""
+    return ElementTree.fromstring(
+        textwrap.dedent(
+            """
+            <fronts>
+                <card>
+                    <id>a</id>
+                    <slots>0,3</slots>
+                    <name>a.png</name>
+                </card>
+            </fronts>
+            """
+        )
+    )
+
+
+@pytest.fixture
+def mock_scryfall_requests(monkeypatch):
+    """Mocks requests.get to return canned Scryfall API responses."""
+
+    # --- Mock Card Data ---
+    sfc_card = {
+        "object": "card",
+        "id": "sfc-1",
+        "name": "Llanowar Elves",
+        "layout": "normal",
+        "image_uris": {"png": "http://example.com/llanowar_elves.png"},
+    }
+
+    dfc_card = {
+        "object": "card",
+        "id": "dfc-1",
+        "name": "Delver of Secrets // Insectile Aberration",
+        "layout": "transform",
+        "card_faces": [
+            {"name": "Delver of Secrets", "image_uris": {"png": "http://example.com/delver.png"}},
+            {"name": "Insectile Aberration", "image_uris": {"png": "http://example.com/insect.png"}},
+        ],
+    }
+
+    meld_part_1 = {
+        "object": "card",
+        "id": "meld-part-1",
+        "name": "Gisela, the Broken Blade",
+        "layout": "meld",
+        "image_uris": {"png": "http://example.com/gisela.png"},
+        "all_parts": [
+            {"component": "meld_part", "id": "meld-part-1", "name": "Gisela, the Broken Blade"},
+            {"component": "meld_part", "id": "meld-part-2", "name": "Bruna, the Fading Light"},
+            {"component": "meld_result", "uri": "http://api.scryfall.com/cards/meld-result-1"},
+        ],
+    }
+
+    meld_part_2 = {
+        "object": "card",
+        "id": "meld-part-2",
+        "name": "Bruna, the Fading Light",
+        "layout": "meld",
+        "image_uris": {"png": "http://example.com/bruna.png"},
+        "all_parts": meld_part_1["all_parts"],  # Share the same all_parts
+    }
+
+    meld_result = {
+        "object": "card",
+        "id": "meld-result-1",
+        "name": "Brisela, Voice of Nightmares",
+        "image_uris": {"png": "http://example.com/brisela.png"},
+    }
+
+    # A DFC missing its back face
+    dfc_missing_back = {
+        "object": "card",
+        "id": "dfc-missing-back",
+        "name": "Incomplete DFC",
+        "layout": "transform",
+        "card_faces": [
+            {"name": "Front Face", "image_uris": {"png": "http://example.com/front.png"}},
+            {"name": "Back Face", "image_uris": {}},  # Missing PNG
+        ],
+    }
+
+    # --- Mock Requests ---
+    # Create a single dummy image to be returned by all successful image requests
+    dummy_image_content = create_dummy_png()
+
+    class MockResponse:
+        def __init__(self, json_data, status_code=200, is_image=False):
+            self._json_data = json_data
+            self.status_code = status_code
+            if is_image:
+                self.content = dummy_image_content
+            else:
+                self.content = b""
+
+        def json(self):
+            return self._json_data
+
+        def raise_for_status(self):
+            if self.status_code >= 400:
+                raise requests.exceptions.HTTPError(f"{self.status_code} Client Error")
+
+    def mock_get(url, **kwargs):
+        if "exact=Llanowar+Elves" in url:
+            return MockResponse(sfc_card)
+        if "exact=Delver+of+Secrets" in url:
+            return MockResponse(dfc_card)
+        if "exact=Gisela%2C+the+Broken+Blade" in url:
+            return MockResponse(meld_part_1)
+        if "exact=Bruna%2C+the+Fading+Light" in url:
+            return MockResponse(meld_part_2)
+        if url == "http://api.scryfall.com/cards/meld-result-1":
+            return MockResponse(meld_result)
+        if "exact=Card+Not+Found" in url:
+            return MockResponse({"object": "error", "details": "Not Found"}, 404)
+        if "exact=Incomplete+DFC" in url:
+            return MockResponse(dfc_missing_back)
+        if "exact=Meld+Fail" in url:
+            meld_fail_part = meld_part_1.copy()
+            meld_fail_part["name"] = "Meld Fail"
+            meld_fail_part["all_parts"] = [
+                {"component": "meld_part", "id": "meld-fail-1", "name": "Meld Fail"},
+                {"component": "meld_result", "uri": "http://api.scryfall.com/cards/meld-fail-result"},
+            ]
+            return MockResponse(meld_fail_part)
+        if url == "http://api.scryfall.com/cards/meld-fail-result":
+            return MockResponse(None, 404)
+
+        # Generic image response for ANY example.com URL
+        if url.startswith("http://example.com"):
+            return MockResponse(None, 200, is_image=True)
+
+        return MockResponse(None, 404)
+
+    monkeypatch.setattr(requests, "get", mock_get)
+
+
+@pytest.fixture
+def mock_user_prompts(monkeypatch, tmp_path):
+    """Mocks all user-facing prompts (file dialogs, console prompts)."""
+    # Mock Tkinter file dialogs
+    mock_tk = mock.MagicMock()
+
+    # Path for decklist
+    decklist_file = tmp_path / "deck.txt"
+    # Path for card back
+    card_back_file = tmp_path / "card_back.png"
+    Image.new("RGB", (10, 10)).save(card_back_file)
+
+    # First call is for decklist, second is for card back
+    mock_tk.askopenfilename.side_effect = [str(decklist_file), str(card_back_file)]
+    monkeypatch.setattr("src.order.filedialog.askopenfilename", mock_tk.askopenfilename)
+
+    # Mock InquirerPy prompts
+    answers = {"stock": constants.Cardstocks.S30.value, "foil": False}
+    monkeypatch.setattr("src.order.prompt", lambda q: answers)
+
+    # Mock input for deck name
+    monkeypatch.setattr("builtins.input", lambda _: "Test Deck")
+
+    # Mock away the Tk root window
+    monkeypatch.setattr("src.order.Tk", mock.MagicMock())
+
+    return decklist_file
+
+
+@pytest.fixture
+def mock_fs(monkeypatch, tmp_path):
+    """Mocks filesystem, image saving, and directory creation."""
+    # Create a temporary 'cards' directory for the test run
+    cards_dir = tmp_path / "cards"
+    cards_dir.mkdir()
+
+    # Mock the function that returns the image directory to isolate tests
+    monkeypatch.setattr("src.order.image_directory", lambda: str(cards_dir))
+    monkeypatch.setattr("src.io.image_directory", lambda: str(cards_dir))
+
+    # By default, pretend no card images exist on disk yet
+    # THIS IS THE CORRECTED PART
+    original_os_path_exists = os.path.exists
+
+    def new_mock_exists(path):
+        # Allow the check for the cards directory to work correctly
+        if "cards" in str(path):
+            return original_os_path_exists(path)
+        # For other paths (image files), return False to force download logic
+        return False
+
+    monkeypatch.setattr(os.path, "exists", new_mock_exists)
+
+    monkeypatch.setattr(time, "sleep", lambda x: None)  # Disable sleep
+    monkeypatch.setattr(Image.Image, "save", mock.MagicMock())  # Prevent actual image saving
 
 
 # endregion
@@ -539,16 +780,13 @@ def card_order_element_missing_front_image() -> Generator[ElementTree.Element, N
 
 # endregion
 
-# endregion
-
 # region test processing.py
 
 
 def test_post_process_image_with_no_dpi():
     """
     Tests that post_process_image returns the image unchanged when the
-    config is provided but max_dpi is None. This covers the final
-    untested branch in the function.
+    config is provided but max_dpi is None.
     """
     # Create a dummy image that is larger than any potential DPI
     img = Image.new("RGB", (1000, 1200), color="red")
@@ -1458,6 +1696,65 @@ def test_aggregate_and_split_orders_single_order():
     assert result is orders
 
 
+def test_card_order_missing_details(input_enter, card_order_element_missing_details):
+    """
+    Tests that parsing a CardOrder with a missing <details> tag exits gracefully.
+    """
+    with pytest.raises(SystemExit) as exc_info:
+        CardOrder.from_element(card_order_element_missing_details, allowed_to_exceed_project_max_size=False)
+    assert exc_info.value.code == 0
+
+
+def test_aggregate_orders_with_different_details(monkeypatch_project_max_size):
+    """
+    Tests that orders with different details (stock, foil) are not combined,
+    even if `combine_orders` is True.
+    """
+    monkeypatch_project_max_size(10)
+    orders = [
+        CardOrder(
+            details=Details(quantity=2, stock=constants.Cardstocks.S30.value, foil=False),
+            fronts=CardImageCollection(num_slots=2),
+            backs=CardImageCollection(num_slots=2),
+        ),
+        CardOrder(
+            details=Details(quantity=2, stock=constants.Cardstocks.S33.value, foil=False),
+            fronts=CardImageCollection(num_slots=2),
+            backs=CardImageCollection(num_slots=2),
+        ),
+    ]
+    aggregated = aggregate_and_split_orders(
+        orders, target_site=constants.TargetSites.MakePlayingCards, combine_orders=True
+    )
+    # The orders should not have been combined
+    assert len(aggregated) == 2
+    assert sorted([o.details.quantity for o in aggregated]) == [2, 2]
+
+
+def test_aggregate_orders_no_combine(monkeypatch_project_max_size):
+    """
+    Tests that orders are not combined when `combine_orders` is False.
+    """
+    monkeypatch_project_max_size(10)
+    orders = [
+        CardOrder(
+            details=Details(quantity=2, stock=constants.Cardstocks.S30.value, foil=False),
+            fronts=CardImageCollection(num_slots=2),
+            backs=CardImageCollection(num_slots=2),
+        ),
+        CardOrder(
+            details=Details(quantity=3, stock=constants.Cardstocks.S30.value, foil=False),
+            fronts=CardImageCollection(num_slots=3),
+            backs=CardImageCollection(num_slots=3),
+        ),
+    ]
+    aggregated = aggregate_and_split_orders(
+        orders, target_site=constants.TargetSites.MakePlayingCards, combine_orders=False
+    )
+    assert len(aggregated) == 2
+    assert sorted([o.details.quantity for o in aggregated]) == [2, 3]
+
+
 # endregion
 
 # region test PdfExporter
@@ -1588,143 +1885,7 @@ def test_card_order_complete_run_multiple_cardbacks(browser, site, input_enter, 
 
 # endregion
 
-# region Fixtures for New Tests
-
-
-@pytest.fixture()
-def card_order_element_missing_details() -> ElementTree.Element:
-    """Provides a CardOrder element that is missing the <details> tag."""
-    return ElementTree.fromstring(
-        textwrap.dedent(
-            """
-            <order>
-                <fronts>
-                    <card>
-                        <id>some_id</id>
-                        <slots>0</slots>
-                        <name>a.png</name>
-                    </card>
-                </fronts>
-                <cardback>some_cardback</cardback>
-            </order>
-            """
-        )
-    )
-
-
-@pytest.fixture()
-def card_order_element_front_slot_out_of_bounds() -> ElementTree.Element:
-    """Provides a CardOrder where a front card has a slot index greater than the quantity."""
-    return ElementTree.fromstring(
-        textwrap.dedent(
-            """
-            <order>
-                <details>
-                    <quantity>2</quantity>
-                    <stock>(S30) Standard Smooth</stock>
-                    <foil>false</foil>
-                </details>
-                <fronts>
-                    <card>
-                        <id>some_id</id>
-                        <slots>0,2</slots>
-                        <name>a.png</name>
-                    </card>
-                </fronts>
-                <cardback>some_cardback</cardback>
-            </order>
-            """
-        )
-    )
-
-
-@pytest.fixture()
-def card_image_collection_element_invalid_slots() -> ElementTree.Element:
-    """Provides a CardImageCollection where a card's slots are out of bounds."""
-    return ElementTree.fromstring(
-        textwrap.dedent(
-            """
-            <fronts>
-                <card>
-                    <id>a</id>
-                    <slots>0,3</slots>
-                    <name>a.png</name>
-                </card>
-            </fronts>
-            """
-        )
-    )
-
-
-# endregion
-
-# region New Test Cases
-
-
-def test_card_order_missing_details(input_enter, card_order_element_missing_details):
-    """
-    Tests that parsing a CardOrder with a missing <details> tag exits gracefully.
-    This covers the error handling path in `CardOrder.from_element`.
-    """
-    with pytest.raises(SystemExit) as exc_info:
-        CardOrder.from_element(card_order_element_missing_details, allowed_to_exceed_project_max_size=False)
-    assert exc_info.value.code == 0
-
-
-def test_aggregate_orders_with_different_details(monkeypatch_project_max_size):
-    """
-    Tests that orders with different details (stock, foil) are not combined,
-    even if `combine_orders` is True.
-    """
-    monkeypatch_project_max_size(10)
-    orders = [
-        CardOrder(
-            details=Details(quantity=2, stock=constants.Cardstocks.S30.value, foil=False),
-            fronts=CardImageCollection(num_slots=2),
-            backs=CardImageCollection(num_slots=2),
-        ),
-        CardOrder(
-            details=Details(quantity=2, stock=constants.Cardstocks.S33.value, foil=False),
-            fronts=CardImageCollection(num_slots=2),
-            backs=CardImageCollection(num_slots=2),
-        ),
-    ]
-    aggregated = aggregate_and_split_orders(
-        orders, target_site=constants.TargetSites.MakePlayingCards, combine_orders=True
-    )
-    # The orders should not have been combined
-    assert len(aggregated) == 2
-    assert sorted([o.details.quantity for o in aggregated]) == [2, 2]
-
-
-def test_aggregate_orders_no_combine(monkeypatch_project_max_size):
-    """
-    Tests that orders are not combined when `combine_orders` is False.
-    """
-    monkeypatch_project_max_size(10)
-    orders = [
-        CardOrder(
-            details=Details(quantity=2, stock=constants.Cardstocks.S30.value, foil=False),
-            fronts=CardImageCollection(num_slots=2),
-            backs=CardImageCollection(num_slots=2),
-        ),
-        CardOrder(
-            details=Details(quantity=3, stock=constants.Cardstocks.S30.value, foil=False),
-            fronts=CardImageCollection(num_slots=3),
-            backs=CardImageCollection(num_slots=3),
-        ),
-    ]
-    aggregated = aggregate_and_split_orders(
-        orders, target_site=constants.TargetSites.MakePlayingCards, combine_orders=False
-    )
-    # The orders should remain separate
-    assert len(aggregated) == 2
-    assert sorted([o.details.quantity for o in aggregated]) == [2, 3]
-
-
-# endregion
-
-# region test io.py
+# region test scryfall downloader
 
 
 def test_download_image_from_scryfall_success(monkeypatch):
@@ -1790,10 +1951,8 @@ def test_remove_files_os_error(monkeypatch):
     def raise_os_error(path):
         raise OSError("Permission denied")
 
-    # Make os.remove raise an OSError
     monkeypatch.setattr("src.io.os.remove", raise_os_error)
 
-    # This should now execute without crashing
     remove_files(["non_existent_file.txt"])
 
 
@@ -1805,16 +1964,14 @@ def test_remove_directories_os_error(monkeypatch):
     def raise_os_error(path):
         raise OSError("Directory not empty")
 
-    # Make os.rmdir raise an OSError
     monkeypatch.setattr("src.io.os.rmdir", raise_os_error)
 
-    # This should now execute without crashing
     remove_directories(["non_existent_dir"])
 
 
 # endregion
 
-# region from_decklist tests
+# region test from_decklist
 
 # Helper to create a valid, minimal PNG byte object
 def create_dummy_png() -> bytes:
@@ -1825,190 +1982,12 @@ def create_dummy_png() -> bytes:
     return byte_io.getvalue()
 
 
-@pytest.fixture
-def mock_scryfall_requests(monkeypatch):
-    """Mocks requests.get to return canned Scryfall API responses."""
-
-    # --- Mock Card Data ---
-    sfc_card = {
-        "object": "card",
-        "id": "sfc-1",
-        "name": "Llanowar Elves",
-        "layout": "normal",
-        "image_uris": {"png": "http://example.com/llanowar_elves.png"},
-    }
-
-    dfc_card = {
-        "object": "card",
-        "id": "dfc-1",
-        "name": "Delver of Secrets // Insectile Aberration",
-        "layout": "transform",
-        "card_faces": [
-            {"name": "Delver of Secrets", "image_uris": {"png": "http://example.com/delver.png"}},
-            {"name": "Insectile Aberration", "image_uris": {"png": "http://example.com/insect.png"}},
-        ],
-    }
-
-    meld_part_1 = {
-        "object": "card",
-        "id": "meld-part-1",
-        "name": "Gisela, the Broken Blade",
-        "layout": "meld",
-        "image_uris": {"png": "http://example.com/gisela.png"},
-        "all_parts": [
-            {"component": "meld_part", "id": "meld-part-1", "name": "Gisela, the Broken Blade"},
-            {"component": "meld_part", "id": "meld-part-2", "name": "Bruna, the Fading Light"},
-            {"component": "meld_result", "uri": "http://api.scryfall.com/cards/meld-result-1"},
-        ],
-    }
-
-    meld_part_2 = {
-        "object": "card",
-        "id": "meld-part-2",
-        "name": "Bruna, the Fading Light",
-        "layout": "meld",
-        "image_uris": {"png": "http://example.com/bruna.png"},
-        "all_parts": meld_part_1["all_parts"],  # Share the same all_parts
-    }
-
-    meld_result = {
-        "object": "card",
-        "id": "meld-result-1",
-        "name": "Brisela, Voice of Nightmares",
-        "image_uris": {"png": "http://example.com/brisela.png"},
-    }
-
-    # A DFC missing its back face
-    dfc_missing_back = {
-        "object": "card",
-        "id": "dfc-missing-back",
-        "name": "Incomplete DFC",
-        "layout": "transform",
-        "card_faces": [
-            {"name": "Front Face", "image_uris": {"png": "http://example.com/front.png"}},
-            {"name": "Back Face", "image_uris": {}},  # Missing PNG
-        ],
-    }
-
-    # --- Mock Requests ---
-    # Create a single dummy image to be returned by all successful image requests
-    dummy_image_content = create_dummy_png()
-
-    class MockResponse:
-        def __init__(self, json_data, status_code=200, is_image=False):
-            self._json_data = json_data
-            self.status_code = status_code
-            if is_image:
-                self.content = dummy_image_content
-            else:
-                self.content = b""
-
-        def json(self):
-            return self._json_data
-
-        def raise_for_status(self):
-            if self.status_code >= 400:
-                raise requests.exceptions.HTTPError(f"{self.status_code} Client Error")
-
-    def mock_get(url, **kwargs):
-        if "exact=Llanowar+Elves" in url:
-            return MockResponse(sfc_card)
-        if "exact=Delver+of+Secrets" in url:
-            return MockResponse(dfc_card)
-        if "exact=Gisela%2C+the+Broken+Blade" in url:
-            return MockResponse(meld_part_1)
-        if "exact=Bruna%2C+the+Fading+Light" in url:
-            return MockResponse(meld_part_2)
-        if url == "http://api.scryfall.com/cards/meld-result-1":
-            return MockResponse(meld_result)
-        if "exact=Card+Not+Found" in url:
-            return MockResponse({"object": "error", "details": "Not Found"}, 404)
-        if "exact=Incomplete+DFC" in url:
-            return MockResponse(dfc_missing_back)
-        if "exact=Meld+Fail" in url:
-            meld_fail_part = meld_part_1.copy()
-            meld_fail_part["name"] = "Meld Fail"
-            meld_fail_part["all_parts"] = [
-                {"component": "meld_part", "id": "meld-fail-1", "name": "Meld Fail"},
-                {"component": "meld_result", "uri": "http://api.scryfall.com/cards/meld-fail-result"},
-            ]
-            return MockResponse(meld_fail_part)
-        if url == "http://api.scryfall.com/cards/meld-fail-result":
-            return MockResponse(None, 404)
-
-        # Generic image response for ANY example.com URL
-        if url.startswith("http://example.com"):
-            return MockResponse(None, 200, is_image=True)
-
-        return MockResponse(None, 404)
-
-    monkeypatch.setattr(requests, "get", mock_get)
-
-
-@pytest.fixture
-def mock_user_prompts(monkeypatch, tmp_path):
-    """Mocks all user-facing prompts (file dialogs, console prompts)."""
-    # Mock Tkinter file dialogs
-    mock_tk = mock.MagicMock()
-
-    # Path for decklist
-    decklist_file = tmp_path / "deck.txt"
-    # Path for card back
-    card_back_file = tmp_path / "card_back.png"
-    Image.new("RGB", (10, 10)).save(card_back_file)
-
-    # First call is for decklist, second is for card back
-    mock_tk.askopenfilename.side_effect = [str(decklist_file), str(card_back_file)]
-    monkeypatch.setattr("src.order.filedialog.askopenfilename", mock_tk.askopenfilename)
-
-    # Mock InquirerPy prompts
-    answers = {"stock": constants.Cardstocks.S30.value, "foil": False}
-    monkeypatch.setattr("src.order.prompt", lambda q: answers)
-
-    # Mock input for deck name
-    monkeypatch.setattr("builtins.input", lambda _: "Test Deck")
-
-    # Mock away the Tk root window
-    monkeypatch.setattr("src.order.Tk", mock.MagicMock())
-
-    return decklist_file
-
-
-@pytest.fixture
-def mock_fs(monkeypatch, tmp_path):
-    """Mocks filesystem, image saving, and directory creation."""
-    # Create a temporary 'cards' directory for the test run
-    cards_dir = tmp_path / "cards"
-    cards_dir.mkdir()
-
-    # Mock the function that returns the image directory to isolate tests
-    monkeypatch.setattr("src.order.image_directory", lambda: str(cards_dir))
-    monkeypatch.setattr("src.io.image_directory", lambda: str(cards_dir))
-
-    # By default, pretend no card images exist on disk yet
-    # THIS IS THE CORRECTED PART
-    original_os_path_exists = os.path.exists
-
-    def new_mock_exists(path):
-        # Allow the check for the cards directory to work correctly
-        if "cards" in str(path):
-            return original_os_path_exists(path)
-        # For other paths (image files), return False to force download logic
-        return False
-
-    monkeypatch.setattr(os.path, "exists", new_mock_exists)
-
-    monkeypatch.setattr(time, "sleep", lambda x: None)  # Disable sleep
-    monkeypatch.setattr(Image.Image, "save", mock.MagicMock())  # Prevent actual image saving
-
-
 def test_from_decklist_simple_cards(mock_user_prompts, mock_scryfall_requests, mock_fs, monkeypatch):
     """Tests a simple decklist with only single-faced cards."""
     decklist_file = mock_user_prompts
-    decklist_content = "2 Llanowar Elves\n1 Forest"  # Forest will fail, testing robustness
+    decklist_content = "2 Llanowar Elves\n1 Forest"
     decklist_file.write_text(decklist_content, encoding="utf-8")
 
-    # Mock the 'Forest' call to fail
     original_get = requests.get
 
     def side_effect_get(url, **kwargs):
@@ -2021,13 +2000,12 @@ def test_from_decklist_simple_cards(mock_user_prompts, mock_scryfall_requests, m
     order = CardOrder.from_decklist()
 
     assert order.name == "Test Deck"
-    assert order.details.quantity == 2  # 2 Llanowar Elves, Forest failed
+    assert order.details.quantity == 2
     assert order.details.stock == constants.Cardstocks.S30.value
     assert not order.details.foil
     assert len(order.fronts.cards_by_id) == 1
-    assert len(order.backs.cards_by_id) == 1  # Common back
+    assert len(order.backs.cards_by_id) == 1
 
-    # Check that all 2 slots for backs are filled by the common back
     back_card = list(order.backs.cards_by_id.values())[0]
     assert back_card.name == "card_back.png"
     assert back_card.slots == {0, 1}
@@ -2061,29 +2039,21 @@ def test_from_decklist_meld_cards_happy_path(mock_user_prompts, mock_scryfall_re
     decklist_content = "1 Gisela, the Broken Blade\n1 Bruna, the Fading Light"
     decklist_file.write_text(decklist_content)
 
-    # We need to mock the image processing part of the meld logic.
-    # First, mock the generic image fetcher to prevent it from running for the front faces.
-    # It's not what we're testing here.
     monkeypatch.setattr("src.order._fetch_and_prepare_image", lambda url, name: f"/tmp/{name}.png")
 
-    # Now, set up specific mocks for the meld back image processing
     mock_img_instance = mock.MagicMock(spec=Image.Image)
     mock_img_instance.size = (800, 1120)
     mock_img_instance.mode = "RGB"
 
-    # When crop is called, return another mock. This mock also needs a 'save' method.
     mock_crop_instance = mock.MagicMock(spec=Image.Image)
     mock_crop_instance.size = (400, 560)
     mock_crop_instance.mode = "RGB"
     mock_crop_instance.transpose.return_value = mock_crop_instance
-    mock_crop_instance.save = mock.MagicMock()  # Mock the save method
+    mock_crop_instance.save = mock.MagicMock()
     mock_img_instance.crop.return_value = mock_crop_instance
 
-    # The only place `Image.open` is now called in the code flow is for the meld back.
-    # We can safely mock it to return our pre-configured mock image instance.
     monkeypatch.setattr(Image, "open", lambda bio: mock_img_instance)
 
-    # Mock ImageOps.expand to prevent it from crashing on the mock image object
     monkeypatch.setattr(ImageOps, "expand", lambda image, **kwargs: image)
 
     order = CardOrder.from_decklist()
@@ -2112,7 +2082,6 @@ def test_from_decklist_error_handling(mock_user_prompts, mock_scryfall_requests,
 
     order = CardOrder.from_decklist()
 
-    # Only Llanowar Elves (1) and Incomplete DFC (1) and Meld Fail (1) should be added
     assert order.details.quantity == 3
 
     logs = caplog.text

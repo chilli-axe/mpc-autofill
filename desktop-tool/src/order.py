@@ -38,36 +38,6 @@ from src.processing import ImagePostProcessingConfig, _add_black_border
 from src.utils import bold, text_to_set, unpack_element
 
 
-def _fetch_and_prepare_image(url: str, card_name: str) -> Optional[str]:
-    """Downloads an image from a URL, adds a border, saves it locally, and returns the file path."""
-    try:
-        safe_name = sanitize(card_name)
-        file_name = f"{safe_name}.png"
-        save_path = os.path.join(image_directory(), file_name)
-
-        if os.path.exists(save_path):
-            logging.info(f"  Using existing image for: {card_name}")
-            return save_path
-
-        logging.info(f"  Fetching and bordering: {card_name}")
-        response = requests.get(url)
-        response.raise_for_status()
-        img = Image.open(BytesIO(response.content))
-
-        pixel_width, _ = img.size
-        if pixel_width > 0:
-            effective_dpi = pixel_width / constants.CARD_WIDTH_INCHES
-            border_pixels = math.ceil(effective_dpi * constants.BORDER_INCHES)
-            img = _add_black_border(img, border_pixels)
-
-        img.save(save_path, "PNG")
-        return save_path
-
-    except (requests.exceptions.RequestException, IOError) as e:
-        logging.error(f"  Error processing image for '{card_name}': {e}. Skipping.")
-        return None
-
-
 @attr.s
 class CardImage:
     drive_id: Optional[str] = attr.ib(default=None)
@@ -1026,3 +996,33 @@ def aggregate_and_split_orders(
     )
 
     return aggregated_and_split_orders
+
+
+def _fetch_and_prepare_image(url: str, card_name: str) -> Optional[str]:
+    """Downloads an image from a URL, adds a border, saves it locally, and returns the file path."""
+    try:
+        safe_name = sanitize(card_name)
+        file_name = f"{safe_name}.png"
+        save_path = os.path.join(image_directory(), file_name)
+
+        if os.path.exists(save_path):
+            logging.info(f"  Using existing image for: {card_name}")
+            return save_path
+
+        logging.info(f"  Fetching and bordering: {card_name}")
+        response = requests.get(url)
+        response.raise_for_status()
+        img = Image.open(BytesIO(response.content))
+
+        pixel_width, _ = img.size
+        if pixel_width > 0:
+            effective_dpi = pixel_width / constants.CARD_WIDTH_INCHES
+            border_pixels = math.ceil(effective_dpi * constants.BORDER_INCHES)
+            img = _add_black_border(img, border_pixels)
+
+        img.save(save_path, "PNG")
+        return save_path
+
+    except (requests.exceptions.RequestException, IOError) as e:
+        logging.error(f"  Error processing image for '{card_name}': {e}. Skipping.")
+        return None
