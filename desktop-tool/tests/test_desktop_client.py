@@ -2091,16 +2091,23 @@ def test_from_decklist_error_handling(mock_user_prompts, mock_scryfall_requests,
     assert "Back face missing for 'Incomplete DFC'" in logs
     assert "Could not process meld back for: Meld Fail" in logs
 
-    # Check that DFC with missing back has its front and a placeholder back
+    # Check that DFC with missing back has its front and no back
     dfc_front_path = os.path.join(io.image_directory(), "Front Face.png")
     assert dfc_front_path in order.fronts.cards_by_id
-
-    # Find the slot for the DFC
     dfc_slot = list(order.fronts.cards_by_id[dfc_front_path].slots)[0]
+    assert not any(dfc_slot in c.slots for c in order.backs.cards_by_id.values())
 
-    # Check that the corresponding back slot is a missing placeholder
-    back_for_dfc = next(c for c in order.backs.cards_by_id.values() if dfc_slot in c.slots)
-    assert back_for_dfc.name == "MISSING_BACK.png"
+    # Check that Meld Fail card also has no back
+    meld_fail_front_path = os.path.join(io.image_directory(), "Meld Fail.png")
+    assert meld_fail_front_path in order.fronts.cards_by_id
+    meld_fail_slot = list(order.fronts.cards_by_id[meld_fail_front_path].slots)[0]
+    assert not any(meld_fail_slot in c.slots for c in order.backs.cards_by_id.values())
+
+    # Check that Llanowar Elves has the common card back
+    llanowar_front_path = os.path.join(io.image_directory(), "Llanowar Elves.png")
+    assert llanowar_front_path in order.fronts.cards_by_id
+    llanowar_slot = list(order.fronts.cards_by_id[llanowar_front_path].slots)[0]
+    assert any(llanowar_slot in c.slots for c in order.backs.cards_by_id.values())
 
 
 # endregion

@@ -671,6 +671,7 @@ class CardOrder:
         """
         SCRYFALL_API_BASE_URL = "https://api.scryfall.com"
         REQUEST_DELAY = 1
+        blank_back_slots = set()
 
         # Get User Inputs
         print("\nA file dialog will now open. Please select a decklist .txt file.")
@@ -810,7 +811,7 @@ class CardOrder:
                                             )
                                         )
                                     else:
-                                        backs.append(CardImage(name="MISSING_BACK.png", slots={current_slot}))
+                                        blank_back_slots.add(current_slot)
                                     current_slot += 1
 
                     else:
@@ -860,7 +861,7 @@ class CardOrder:
                                         file_path=front_path, name=os.path.basename(front_path), slots={current_slot}
                                     )
                                 )
-                                backs.append(CardImage(name="MISSING_BACK.png", slots={current_slot}))
+                                blank_back_slots.add(current_slot)
                                 current_slot += 1
 
             for result_uri, group in meld_groups.items():
@@ -889,9 +890,9 @@ class CardOrder:
                         Image.Transpose.ROTATE_90
                     )
 
-                    border_top = math.ceil((top_half.size[0] / constants.CARD_HEIGHT_INCHES) * constants.BORDER_INCHES)
+                    border_top = math.ceil((top_half.size[0] / constants.CARD_WIDTH_INCHES) * constants.BORDER_INCHES)
                     border_bottom = math.ceil(
-                        (bottom_half.size[0] / constants.CARD_HEIGHT_INCHES) * constants.BORDER_INCHES
+                        (bottom_half.size[0] / constants.CARD_WIDTH_INCHES) * constants.BORDER_INCHES
                     )
 
                     top_path = os.path.join(image_directory(), f"meld_back_{sanitize(meld_parts_data[0]['name'])}.png")
@@ -927,7 +928,7 @@ class CardOrder:
                                         )
                                     )
                                 else:
-                                    backs.append(CardImage(name="MISSING_BACK.png", slots={current_slot}))
+                                    blank_back_slots.add(current_slot)
                                 current_slot += 1
                 except Exception as e:
                     card_names = [c["data"]["name"] for c in group["cards_to_add"]]
@@ -947,7 +948,7 @@ class CardOrder:
                                             slots={current_slot},
                                         )
                                     )
-                                    backs.append(CardImage(name="MISSING_BACK.png", slots={current_slot}))
+                                    blank_back_slots.add(current_slot)
                                     current_slot += 1
 
         # Finalize and create order
@@ -959,7 +960,7 @@ class CardOrder:
         fronts.num_slots, backs.num_slots = total_quantity, total_quantity
 
         if card_back_path:
-            slots_for_common_back = set(range(total_quantity)) - backs.slots()
+            slots_for_common_back = set(range(total_quantity)) - backs.slots() - blank_back_slots
             if slots_for_common_back:
                 backs.append(
                     CardImage(
