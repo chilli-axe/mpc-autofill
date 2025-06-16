@@ -1,19 +1,27 @@
 import logging
+import math
 import os
+import re
 import sys
+import time
 from concurrent.futures import ThreadPoolExecutor
 from functools import reduce
 from glob import glob
+from io import BytesIO
 from itertools import groupby
 from pathlib import Path
 from queue import Queue
+from tkinter import Tk, filedialog
 from typing import Optional
+from urllib.parse import quote_plus
 from xml.etree.ElementTree import Element, ParseError
 
 import attr
 import enlighten
+import requests
 from defusedxml.ElementTree import parse as defused_parse
 from InquirerPy import prompt
+from PIL import Image
 from sanitize_filename import sanitize
 
 from src import constants
@@ -21,17 +29,19 @@ from src.exc import ValidationException
 from src.io import (
     CURRDIR,
     download_google_drive_file,
+    download_image_from_url,
     file_exists,
     get_google_drive_file_name,
     image_directory,
 )
-from src.processing import ImagePostProcessingConfig
+from src.processing import ImagePostProcessingConfig, _add_black_border
 from src.utils import bold, text_to_set, unpack_element
 
 
 @attr.s
 class CardImage:
-    drive_id: str = attr.ib(default="")
+    drive_id: Optional[str] = attr.ib(default=None)
+    image_url: Optional[str] = attr.ib(default=None)
     slots: set[int] = attr.ib(factory=set)
     name: Optional[str] = attr.ib(default="")
     file_path: Optional[str] = attr.ib(default="")
@@ -55,7 +65,7 @@ class CardImage:
         Retrieves the file's name based on Google Drive ID. `None` indicates that the file on GDrive is invalid.
         """
 
-        if not self.name:
+        if not self.name and self.drive_id:
             self.name = get_google_drive_file_name(drive_id=self.drive_id)
 
     def generate_file_path(self) -> None:
@@ -66,7 +76,7 @@ class CardImage:
         * Otherwise, use `self.name` with `self.drive_id` in parentheses in the `cards` directory as the file path.
         """
 
-        if file_exists(self.drive_id):
+        if self.drive_id and file_exists(self.drive_id):
             self.file_path = self.drive_id
             self.name = os.path.basename(self.file_path)
             return
@@ -113,14 +123,13 @@ class CardImage:
     # region public
 
     def combine(self, other: "CardImage") -> "CardImage":
-        assert self.drive_id == other.drive_id
-        return CardImage(
-            drive_id=self.drive_id,
-            slots=self.slots | other.slots,
-            name=self.name,
-            file_path=self.file_path,
-            query=self.query,
-        )
+        # Assert that all identifying fields are identical before combining.
+        assert self.drive_id == other.drive_id, f"Drive IDs do not match for {self.name}"
+        assert self.image_url == other.image_url, f"Image URLs do not match for {self.name}"
+        assert self.file_path == other.file_path, f"File paths do not match for {self.name}"
+
+        # If they are identical, combine their slots.
+        return attr.evolve(self, slots=self.slots | other.slots)
 
     @classmethod
     def from_element(cls, element: Element) -> "CardImage":
@@ -148,23 +157,34 @@ class CardImage:
     ) -> None:
         try:
             if not self.file_exists() and not self.errored and self.file_path is not None:
-                self.errored = not download_google_drive_file(
-                    drive_id=self.drive_id, file_path=self.file_path, post_processing_config=post_processing_config
-                )
+                if self.image_url:
+                    # Download from URL
+                    self.errored = not download_image_from_url(
+                        url=self.image_url, file_path=self.file_path, post_processing_config=post_processing_config
+                    )
+                elif self.drive_id:
+                    # Download from Google Drive
+                    self.errored = not download_google_drive_file(
+                        drive_id=self.drive_id, file_path=self.file_path, post_processing_config=post_processing_config
+                    )
 
             if self.file_exists() and not self.errored:
                 self.downloaded = True
             else:
+                download_link = self.image_url or (
+                    self.drive_id and f"https://drive.google.com/uc?id={self.drive_id}&export=download"
+                )
                 logging.info(
                     f"Failed to download '{bold(self.name)}' - allocated to slot/s {bold(sorted(self.slots))}.\n"
-                    f"Download link - {bold(f'https://drive.google.com/uc?id={self.drive_id}&export=download')}\n"
+                    f"Download link - {bold(download_link)}\n"
                 )
         except Exception as e:
-            # note: python threads die silently if they encounter an exception. if an exception does occur,
-            # log it, but still put the card onto the queue so the main thread doesn't spin its wheels forever waiting.
+            download_link = self.image_url or (
+                self.drive_id and f"https://drive.google.com/uc?id={self.drive_id}&export=download"
+            )
             logging.info(
                 f"An uncaught exception occurred when attempting to download '{bold(self.name)}':\n{bold(e)}\n"
-                f"Download link - {bold(f'https://drive.google.com/uc?id={self.drive_id}&export=download')}\n"
+                f"Download link - {bold(download_link)}\n"
             )
         finally:
             queue.put(self)
@@ -216,10 +236,14 @@ class CardImageCollection:
     face: constants.Faces = attr.ib(default=constants.Faces.front)
 
     def append(self, card: CardImage) -> None:
-        if card.drive_id in self.cards_by_id.keys():
-            self.cards_by_id[card.drive_id] = self.cards_by_id[card.drive_id].combine(card)
-        else:
-            self.cards_by_id[card.drive_id] = card
+        key = card.drive_id or card.image_url or card.file_path
+
+        if key:
+            if key in self.cards_by_id:
+                self.cards_by_id[key] = self.cards_by_id[key].combine(card)
+            else:
+                # Copy the card to avoid side effects
+                self.cards_by_id[key] = attr.evolve(card)
 
     def combine(self, other: "CardImageCollection") -> "CardImageCollection":
         assert self.face == other.face
@@ -268,10 +292,12 @@ class CardImageCollection:
         if element:
             for x in element:
                 card_image = CardImage.from_element(x)
-                if card_image.drive_id in card_images.keys():
-                    card_images[card_image.drive_id] = card_images[card_image.drive_id].combine(card_image)
-                else:
-                    card_images[card_image.drive_id] = card_image
+                key = card_image.drive_id
+                if key is not None:
+                    if key in card_images:
+                        card_images[key] = card_images[key].combine(card_image)
+                    else:
+                        card_images[key] = card_image
         card_image_collection = cls(cards_by_id=card_images, num_slots=num_slots, face=face)
         if fill_image_id:
             # fill the remaining slots in this card image collection with a new card image based off the given id
@@ -549,6 +575,23 @@ class CardOrder:
         The primary public entry point to this class.
         """
 
+        # Ask user for input method
+        questions = {
+            "type": "list",
+            "name": "input_method",
+            "message": "How would you like to create your order?",
+            "choices": [
+                {"name": "From an XML file (MPC autofill)", "value": "xml"},
+                {"name": "From a text file (Scryfall downloader)", "value": "decklist"},
+            ],
+        }
+        answers = prompt(questions)
+        input_method = answers["input_method"]
+
+        if input_method == "decklist":
+            # Create a single order from a decklist and return it in a list
+            return [cls.from_decklist()]
+
         xml_glob = sorted(glob(os.path.join(CURRDIR, "*.xml")))
         if len(xml_glob) <= 0:
             input("No XML files found in this directory. Press enter to exit.")
@@ -556,19 +599,24 @@ class CardOrder:
         elif len(xml_glob) == 1:
             file_paths = [xml_glob[0]]
         else:
-            xml_select_string = (
-                "Multiple XML files found. Please select any number of them to process.\n"
-                "Select files by pressing Space, then confirm your selection by pressing Enter."
-            )
+            xml_select_string = "Multiple XML files found. Please select which one to process."
             questions = {
                 "type": "list",
                 "name": "xml_choice",
                 "message": xml_select_string,
-                "choices": xml_glob,
-                "multiselect": True,
+                "choices": [{"name": os.path.basename(p), "value": p} for p in xml_glob],
             }
             answers = prompt(questions)
-            file_paths = answers["xml_choice"]
+            selected_file = answers.get("xml_choice")
+            if selected_file:
+                file_paths = [selected_file]
+            else:
+                file_paths = []
+
+        if not file_paths:
+            input("No XML file selected. Press enter to exit.")
+            sys.exit(0)
+
         return [cls.from_file_path(file_path) for file_path in file_paths]
 
     @classmethod
@@ -585,6 +633,320 @@ class CardOrder:
             f"Total of {bold(self.details.quantity)} cards. "
             f"{bold(self.details.stock)} cardstock ({bold('foil' if self.details.foil else 'nonfoil')}). "
         )
+
+    @classmethod
+    def from_decklist(cls) -> "CardOrder":
+        """
+        Creates a CardOrder by prompting the user to select a decklist file and provide order details.
+        """
+        SCRYFALL_API_BASE_URL = "https://api.scryfall.com"
+        REQUEST_DELAY = 1
+        blank_back_slots = set()
+
+        # Get User Inputs
+        print("\nA file dialog will now open. Please select a decklist .txt file.")
+        root = Tk()
+        root.attributes("-topmost", True)
+        root.withdraw()
+        decklist_path = filedialog.askopenfilename(
+            parent=root, title="Please select your decklist .txt file", filetypes=[("Text files", "*.txt")]
+        )
+
+        if not decklist_path:
+            input("No decklist file selected. Press enter to exit.")
+            sys.exit(0)
+
+        with open(decklist_path, "r", encoding="utf-8") as f:
+            deck_lines = f.readlines()
+
+        details_answers = prompt(
+            [
+                {
+                    "type": "list",
+                    "name": "stock",
+                    "message": "Select cardstock:",
+                    "choices": [s.value for s in constants.Cardstocks],
+                },
+                {"type": "confirm", "name": "foil", "message": "Are the cards foil?"},
+            ]
+        )
+
+        print("\nA file dialog will now open. Please select a common card back for this order.")
+        card_back_path = filedialog.askopenfilename(parent=root, title="Please select a common card back image")
+        root.destroy()
+        if not card_back_path:
+            input("\nNo card back selected. Exiting program.")
+            sys.exit(0)
+
+        # Fetch all card data and defer meld cards
+        fronts = CardImageCollection(face=constants.Faces.front)
+        backs = CardImageCollection(face=constants.Faces.back)
+        current_slot = 0
+
+        meld_cards_in_deck = []
+
+        print("\nParsing decklist and fetching from Scryfall...")
+        for line in deck_lines:
+            line = line.strip()
+            if not line:
+                continue
+
+            try:
+                qty_str, rest_of_line = line.split(" ", 1)
+                card_qty = int(qty_str)
+            except ValueError:
+                logging.warning(f"Could not parse quantity from line: '{line}'. Skipping.")
+                continue
+
+            set_code, number, name = None, None, ""
+            set_regex = re.compile(r"\s+\(([^)]+)\)\s+([\w\d-]+)")
+            set_match = set_regex.search(rest_of_line)
+
+            if set_match:
+                name = rest_of_line[: set_match.start()].strip()
+                set_code = set_match.group(1)
+                number = set_match.group(2)
+            else:
+                name = re.split(r"\s*(\/\/|\*F\*|\s\()", rest_of_line, 1)[0].strip()
+
+            if not name:
+                logging.warning(f"Could not parse card name from line: '{line}'. Skipping.")
+                continue
+
+            api_url = ""
+            if set_code and number:
+                search_query = f'++!"{name}" set:{set_code} cn:"{number}"'
+                api_url = f"{SCRYFALL_API_BASE_URL}/cards/search?q={quote_plus(search_query)}"
+            else:
+                api_url = f"{SCRYFALL_API_BASE_URL}/cards/named?exact={quote_plus(name)}"
+
+            try:
+                time.sleep(REQUEST_DELAY)
+                response = requests.get(api_url)
+                response.raise_for_status()
+                json_response = response.json()
+
+                card_data = None
+                if (
+                    "object" in json_response
+                    and json_response["object"] == "list"
+                    and json_response.get("total_cards", 0) > 0
+                ):
+                    card_data = json_response["data"][0]
+                elif "object" in json_response and json_response["object"] == "card":
+                    card_data = json_response
+
+                if not card_data:
+                    raise ValueError(f"Card not found on Scryfall for query: {name}")
+
+                layout = card_data.get("layout", "normal")
+
+                if layout == "meld":
+                    logging.info(f"  Deferring Meld Part: {name}")
+                    meld_cards_in_deck.append({"data": card_data, "qty": card_qty})
+                else:
+                    if (
+                        layout in ["transform", "modal_dfc", "double_faced_token", "reversible_card"]
+                        and "card_faces" in card_data
+                        and len(card_data["card_faces"]) > 1
+                    ):
+                        face_front, face_back = card_data["card_faces"][0], card_data["card_faces"][1]
+                        url_front = face_front.get("image_uris", {}).get("png")
+                        url_back = face_back.get("image_uris", {}).get("png")
+
+                        if url_front:
+                            logging.info(f"  Found DFC: {name}")
+                            front_path = _fetch_and_prepare_image(url_front, face_front.get("name"))
+                            back_path = None
+                            if url_back:
+                                back_path = _fetch_and_prepare_image(url_back, face_back.get("name"))
+                            else:
+                                logging.warning(f"Back face missing for '{name}'. It will be left blank.")
+
+                            if front_path:
+                                for _ in range(card_qty):
+                                    fronts.append(
+                                        CardImage(
+                                            file_path=front_path,
+                                            name=os.path.basename(front_path),
+                                            slots={current_slot},
+                                        )
+                                    )
+                                    if back_path:
+                                        backs.append(
+                                            CardImage(
+                                                file_path=back_path,
+                                                name=os.path.basename(back_path),
+                                                slots={current_slot},
+                                            )
+                                        )
+                                    else:
+                                        blank_back_slots.add(current_slot)
+                                    current_slot += 1
+
+                    else:
+                        image_url = card_data.get("image_uris", {}).get("png")
+                        if image_url:
+                            logging.info(f"  Found SFC: {name} (layout: {layout})")
+                            image_path = _fetch_and_prepare_image(image_url, card_data.get("name"))
+                            if image_path:
+                                for _ in range(card_qty):
+                                    fronts.append(
+                                        CardImage(
+                                            file_path=image_path,
+                                            name=os.path.basename(image_path),
+                                            slots={current_slot},
+                                        )
+                                    )
+                                    current_slot += 1
+            except (requests.exceptions.RequestException, ValueError) as e:
+                logging.error(f"  Error finding '{name}': {e}. Skipping.")
+
+        # Group and process deferred meld cards
+        if meld_cards_in_deck:
+            logging.info("\nProcessing meld cards...")
+            meld_groups = {}
+            for card_info in meld_cards_in_deck:
+                result_part = next(
+                    (p for p in card_info["data"].get("all_parts", []) if p.get("component") == "meld_result"), None
+                )
+                if result_part and result_part.get("uri"):
+                    if result_part["uri"] not in meld_groups:
+                        meld_groups[result_part["uri"]] = {
+                            "all_parts": card_info["data"]["all_parts"],
+                            "cards_to_add": [],
+                        }
+                    meld_groups[result_part["uri"]]["cards_to_add"].append(card_info)
+                else:
+                    logging.warning(
+                        f"Meld result data missing for '{card_info['data']['name']}'. Back will be left blank."
+                    )
+                    image_url = card_info["data"].get("image_uris", {}).get("png")
+                    if image_url:
+                        front_path = _fetch_and_prepare_image(image_url, card_info["data"]["name"])
+                        if front_path:
+                            for _ in range(card_info["qty"]):
+                                fronts.append(
+                                    CardImage(
+                                        file_path=front_path, name=os.path.basename(front_path), slots={current_slot}
+                                    )
+                                )
+                                blank_back_slots.add(current_slot)
+                                current_slot += 1
+
+            for result_uri, group in meld_groups.items():
+                try:
+                    meld_parts_data = [p for p in group["all_parts"] if p.get("component") == "meld_part"]
+                    if len(meld_parts_data) != 2:
+                        raise ValueError(f"Expected 2 meld parts, but found {len(meld_parts_data)}")
+
+                    logging.info(
+                        f"  Processing meld group for: {meld_parts_data[0]['name']} & {meld_parts_data[1]['name']}"
+                    )
+                    result_res = requests.get(result_uri)
+                    result_data = result_res.json()
+                    result_image_url = result_data.get("image_uris", {}).get("png")
+                    if not result_image_url:
+                        raise ValueError("Meld result has no png image_uri")
+
+                    meld_image_response = requests.get(result_image_url)
+                    meld_image_response.raise_for_status()
+                    img = Image.open(BytesIO(meld_image_response.content))
+
+                    width, height = img.size
+                    top_half = img.crop((0, 0, width, height // 2))
+                    bottom_half = img.crop((0, height // 2, width, height))
+                    top_half, bottom_half = top_half.transpose(Image.Transpose.ROTATE_90), bottom_half.transpose(
+                        Image.Transpose.ROTATE_90
+                    )
+
+                    border_top = math.ceil((top_half.size[0] / constants.CARD_WIDTH_INCHES) * constants.BORDER_INCHES)
+                    border_bottom = math.ceil(
+                        (bottom_half.size[0] / constants.CARD_WIDTH_INCHES) * constants.BORDER_INCHES
+                    )
+
+                    top_path = os.path.join(image_directory(), f"meld_back_{sanitize(meld_parts_data[0]['name'])}.png")
+                    bottom_path = os.path.join(
+                        image_directory(), f"meld_back_{sanitize(meld_parts_data[1]['name'])}.png"
+                    )
+                    _add_black_border(top_half, border_top).save(top_path)
+                    _add_black_border(bottom_half, border_bottom).save(bottom_path)
+
+                    back_paths = {meld_parts_data[0]["id"]: top_path, meld_parts_data[1]["id"]: bottom_path}
+
+                    for card_info in group["cards_to_add"]:
+                        card_data, qty = card_info["data"], card_info["qty"]
+                        back_path = back_paths.get(card_data["id"])
+
+                        image_url = card_data.get("image_uris", {}).get("png")
+                        if not image_url:
+                            continue
+
+                        front_path = _fetch_and_prepare_image(image_url, card_data["name"])
+
+                        if front_path:
+                            for _ in range(qty):
+                                fronts.append(
+                                    CardImage(
+                                        file_path=front_path, name=os.path.basename(front_path), slots={current_slot}
+                                    )
+                                )
+                                if back_path:
+                                    backs.append(
+                                        CardImage(
+                                            file_path=back_path, name=os.path.basename(back_path), slots={current_slot}
+                                        )
+                                    )
+                                else:
+                                    blank_back_slots.add(current_slot)
+                                current_slot += 1
+                except Exception as e:
+                    card_names = [c["data"]["name"] for c in group["cards_to_add"]]
+                    logging.error(
+                        f"Could not process meld back for: {', '.join(card_names)}. Backs will be left blank. Reason: {e}"
+                    )
+                    for card_info in group["cards_to_add"]:
+                        image_url = card_info["data"].get("image_uris", {}).get("png")
+                        if image_url:
+                            front_path = _fetch_and_prepare_image(image_url, card_info["data"]["name"])
+                            if front_path:
+                                for _ in range(card_info["qty"]):
+                                    fronts.append(
+                                        CardImage(
+                                            file_path=front_path,
+                                            name=os.path.basename(front_path),
+                                            slots={current_slot},
+                                        )
+                                    )
+                                    blank_back_slots.add(current_slot)
+                                    current_slot += 1
+
+        # Finalize and create order
+        total_quantity = current_slot
+        if total_quantity == 0:
+            input("Could not find any cards from the provided decklist. Press enter to exit.")
+            sys.exit(0)
+
+        fronts.num_slots, backs.num_slots = total_quantity, total_quantity
+
+        if card_back_path:
+            slots_for_common_back = set(range(total_quantity)) - backs.slots() - blank_back_slots
+            if slots_for_common_back:
+                backs.append(
+                    CardImage(
+                        file_path=card_back_path, name=os.path.basename(card_back_path), slots=slots_for_common_back
+                    )
+                )
+
+        details = Details(
+            quantity=total_quantity,
+            stock=details_answers["stock"],
+            foil=details_answers["foil"],
+            allowed_to_exceed_project_max_size=True,
+        )
+        deck_name = sanitize(input("\nEnter a name for this deck/order: ").strip()) or "Decklist Order"
+
+        return cls(name=deck_name, details=details, fronts=fronts, backs=backs)
 
     # endregion
 
@@ -634,3 +996,33 @@ def aggregate_and_split_orders(
     )
 
     return aggregated_and_split_orders
+
+
+def _fetch_and_prepare_image(url: str, card_name: str) -> Optional[str]:
+    """Downloads an image from a URL, adds a border, saves it locally, and returns the file path."""
+    try:
+        safe_name = sanitize(card_name)
+        file_name = f"{safe_name}.png"
+        save_path = os.path.join(image_directory(), file_name)
+
+        if os.path.exists(save_path):
+            logging.info(f"  Using existing image for: {card_name}")
+            return save_path
+
+        logging.info(f"  Fetching and bordering: {card_name}")
+        response = requests.get(url)
+        response.raise_for_status()
+        img = Image.open(BytesIO(response.content))
+
+        pixel_width, _ = img.size
+        if pixel_width > 0:
+            effective_dpi = pixel_width / constants.CARD_WIDTH_INCHES
+            border_pixels = math.ceil(effective_dpi * constants.BORDER_INCHES)
+            img = _add_black_border(img, border_pixels)
+
+        img.save(save_path, "PNG")
+        return save_path
+
+    except (requests.exceptions.RequestException, IOError) as e:
+        logging.error(f"  Error processing image for '{card_name}': {e}. Skipping.")
+        return None
