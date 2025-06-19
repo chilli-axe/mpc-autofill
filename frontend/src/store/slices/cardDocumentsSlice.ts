@@ -14,6 +14,7 @@ import {
 } from "@/common/types";
 import { CardDocuments } from "@/common/types";
 import { APIGetCards } from "@/store/api";
+import { selectBackendURL } from "@/store/slices/backendSlice";
 import { fetchCardbacksAndReportError } from "@/store/slices/cardbackSlice";
 import {
   selectProjectMemberIdentifiers,
@@ -81,7 +82,7 @@ const fetchCardDocuments = createAppAsyncThunk(
       )
     );
 
-    const backendURL = state.backend.url;
+    const backendURL = selectBackendURL(state);
     return await getCardDocumentRequestPromiseChain(
       identifiersToSearch,
       backendURL
