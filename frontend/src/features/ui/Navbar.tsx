@@ -9,7 +9,11 @@ import Navbar from "react-bootstrap/Navbar";
 import NavDropdown from "react-bootstrap/NavDropdown";
 import styled from "styled-components";
 
-import { ContentMaxWidth, NavbarLogoHeight } from "@/common/constants";
+import {
+  ContentMaxWidth,
+  NavbarHeight,
+  NavbarLogoHeight,
+} from "@/common/constants";
 import { useAppDispatch } from "@/common/types";
 import DisableSSR from "@/components/DisableSSR";
 import { BackendConfig } from "@/features/backend/BackendConfig";
@@ -30,10 +34,12 @@ const MaxWidthContainer = styled(Container)`
 
 const NoVerticalPaddingNavbar = styled(Navbar)`
   --bs-navbar-padding-y: 0px;
+  height: ${NavbarHeight}px;
 `;
 
 const BoldCollapse = styled(Navbar.Collapse)`
   font-weight: bold;
+  height: ${NavbarHeight}px;
 `;
 
 export default function ProjectNavbar() {
@@ -84,16 +90,14 @@ export default function ProjectNavbar() {
           <BoldCollapse id="basic-navbar-nav">
             <Nav className="me-auto">
               {backendConfigured && (
-                <Nav.Link
-                  as={Link}
-                  href="/editor"
-                  active={router.route === "/editor"}
-                >
-                  Editor
-                </Nav.Link>
-              )}
-              {backendConfigured && (
                 <>
+                  <Nav.Link
+                    as={Link}
+                    href="/editor"
+                    active={router.route === "/editor"}
+                  >
+                    Editor
+                  </Nav.Link>
                   <Nav.Link
                     as={Link}
                     href="/new"
@@ -144,7 +148,7 @@ export default function ProjectNavbar() {
               </NavDropdown>
             </Nav>
             <Nav className="ms-auto d-flex">
-              <Nav.Link className="p-0">
+              <Nav.Link>
                 <OpenDownloadManagerButton
                   handleClick={handleShowDownloadManager}
                 />

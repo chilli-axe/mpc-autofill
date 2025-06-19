@@ -148,7 +148,6 @@ export function OpenDownloadManagerButton({
       onClick={handleClick}
       id="dropdown-basic"
       className="m-0"
-      style={{ width: 40 + "px", height: 40 + "px", position: "relative" }}
     >
       <DownloadIcon />
       <span
