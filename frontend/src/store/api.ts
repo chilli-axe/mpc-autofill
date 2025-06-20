@@ -46,10 +46,7 @@ import {
   SearchSettings,
   SourceDocuments,
 } from "@/common/types";
-import {
-  selectBackendURL,
-  useBackendConfigured,
-} from "@/store/slices/backendSlice";
+import { useBackendConfigured } from "@/store/slices/backendSlice";
 import { RootState } from "@/store/store";
 
 // dynamic base URL implementation retrieved from https://stackoverflow.com/a/69570628/13021511
@@ -58,7 +55,7 @@ const dynamicBaseQuery: BaseQueryFn<
   unknown,
   FetchBaseQueryError
 > = async (args, WebApi, extraOptions) => {
-  const baseUrl = selectBackendURL(WebApi.getState() as RootState);
+  const baseUrl = (WebApi.getState() as RootState).backend.url;
   const rawBaseQuery = fetchBaseQuery({ baseUrl: baseUrl ?? undefined });
   return rawBaseQuery(args, WebApi, extraOptions);
 };

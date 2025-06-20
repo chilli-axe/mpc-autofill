@@ -10,7 +10,6 @@ import {
   SourceDocumentsState,
 } from "@/common/types";
 import { APIGetSources } from "@/store/api";
-import { selectBackendURL } from "@/store/slices/backendSlice";
 import { setNotification } from "@/store/slices/toastsSlice";
 import { AppDispatch, RootState } from "@/store/store";
 
@@ -22,8 +21,7 @@ export const fetchSourceDocuments = createAppAsyncThunk(
   typePrefix,
   async (arg, { getState }) => {
     const state = getState();
-    const backendURL = selectBackendURL(state);
-    return backendURL != null ? APIGetSources(backendURL) : null;
+    return state.backend.url != null ? APIGetSources(state.backend.url) : null;
   }
 );
 

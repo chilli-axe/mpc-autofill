@@ -33,10 +33,7 @@ export default backendSlice.reducer;
 
 //# region selectors
 
-const getHardcodedBackendURL = (): string | undefined =>
-  process.env.NEXT_PUBLIC_BACKEND_URL;
-export const selectBackendURL = (state: RootState) =>
-  getHardcodedBackendURL() ?? state.backend.url;
+export const selectBackendURL = (state: RootState) => state.backend.url;
 export const selectBackendConfigured = (state: RootState) =>
   selectBackendURL(state) != null;
 

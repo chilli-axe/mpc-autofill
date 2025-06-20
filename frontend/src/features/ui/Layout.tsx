@@ -42,6 +42,7 @@ function BackendSetter() {
   const backendConfigured = useBackendConfigured();
   const backendURL = useAppSelector(selectBackendURL);
   useEffect(() => {
+    const envURL = process.env.NEXT_PUBLIC_BACKEND_URL;
     const localStorageBackendURL = getLocalStorageBackendURL();
     if (
       localStorageBackendURL != undefined &&
@@ -49,6 +50,8 @@ function BackendSetter() {
     ) {
       // TODO: stale value here
       dispatch(setURL(localStorageBackendURL));
+    } else if (envURL != null && envURL !== localStorageBackendURL) {
+      setLocalStorageBackendURL(envURL);
     } else if (formattedURL != null) {
       dispatch(setURL(formattedURL));
       setLocalStorageBackendURL(formattedURL);
