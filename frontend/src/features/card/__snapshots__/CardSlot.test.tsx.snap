@@ -651,9 +651,7 @@ exports[`the html structure of a CardSlot's grid selector, cards faceted by sour
           class="renderIfVisible "
           style="height: 300px;"
         >
-          <div
-            style="overflow: auto;"
-          >
+          <div>
             <div
               class="mpccard mpccard-highlight card"
             >
@@ -706,9 +704,7 @@ exports[`the html structure of a CardSlot's grid selector, cards faceted by sour
           class="renderIfVisible "
           style="height: 300px;"
         >
-          <div
-            style="overflow: auto;"
-          >
+          <div>
             <div
               class="mpccard mpccard-hover card"
             >
@@ -761,9 +757,7 @@ exports[`the html structure of a CardSlot's grid selector, cards faceted by sour
           class="renderIfVisible "
           style="height: 300px;"
         >
-          <div
-            style="overflow: auto;"
-          >
+          <div>
             <div
               class="mpccard mpccard-hover card"
             >
@@ -816,9 +810,7 @@ exports[`the html structure of a CardSlot's grid selector, cards faceted by sour
           class="renderIfVisible "
           style="height: 300px;"
         >
-          <div
-            style="overflow: auto;"
-          >
+          <div>
             <div
               class="mpccard mpccard-hover card"
             >
@@ -1067,9 +1059,7 @@ exports[`the html structure of a CardSlot's grid selector, cards grouped togethe
           class="renderIfVisible "
           style="height: 300px;"
         >
-          <div
-            style="overflow: auto;"
-          >
+          <div>
             <div
               class="mpccard mpccard-highlight card"
             >
@@ -1122,9 +1112,7 @@ exports[`the html structure of a CardSlot's grid selector, cards grouped togethe
           class="renderIfVisible "
           style="height: 300px;"
         >
-          <div
-            style="overflow: auto;"
-          >
+          <div>
             <div
               class="mpccard mpccard-hover card"
             >
@@ -1177,9 +1165,7 @@ exports[`the html structure of a CardSlot's grid selector, cards grouped togethe
           class="renderIfVisible "
           style="height: 300px;"
         >
-          <div
-            style="overflow: auto;"
-          >
+          <div>
             <div
               class="mpccard mpccard-hover card"
             >
@@ -1232,9 +1218,7 @@ exports[`the html structure of a CardSlot's grid selector, cards grouped togethe
           class="renderIfVisible "
           style="height: 300px;"
         >
-          <div
-            style="overflow: auto;"
-          >
+          <div>
             <div
               class="mpccard mpccard-hover card"
             >

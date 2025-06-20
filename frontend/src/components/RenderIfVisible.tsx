@@ -132,7 +132,7 @@ export const RenderIfVisible = ({
       className: rootClasses,
       style: rootStyle,
     },
-    <div ref={innerRef} style={{ overflow: "auto" }}>
+    <div ref={innerRef}>
       {isVisible || (stayRendered && wasVisible.current) ? (
         <>{children}</>
       ) : (
