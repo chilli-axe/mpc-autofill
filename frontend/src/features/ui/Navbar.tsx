@@ -34,12 +34,10 @@ const MaxWidthContainer = styled(Container)`
 
 const NoVerticalPaddingNavbar = styled(Navbar)`
   --bs-navbar-padding-y: 0px;
-  height: ${NavbarHeight}px;
 `;
 
 const BoldCollapse = styled(Navbar.Collapse)`
   font-weight: bold;
-  height: ${NavbarHeight}px;
 `;
 
 export default function ProjectNavbar() {
@@ -148,15 +146,15 @@ export default function ProjectNavbar() {
               </NavDropdown>
             </Nav>
             <Nav className="ms-auto d-flex">
-              <Nav.Link>
+              <Nav.Link className="m-0 py-0">
                 <OpenDownloadManagerButton
                   handleClick={handleShowDownloadManager}
                 />
               </Nav.Link>
               {process.env.NEXT_PUBLIC_BACKEND_URL == null && (
-                <Nav.Link>
+                <Nav.Link className="m-0 py-0">
                   <Button
-                    className="my-xl-0 my-lg-0 my-md-2 my-sm-2 my-2"
+                    className="my-0"
                     variant="success"
                     onClick={handleShowBackendConfig}
                     aria-label="configure-server-btn"
