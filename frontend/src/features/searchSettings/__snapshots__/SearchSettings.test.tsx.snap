@@ -399,230 +399,226 @@ exports[`the html structure of search settings 1`] = `
           </button>
         </div>
         <br />
-        <div
-          style="height: 215px;"
+        <table
+          class="table"
+          style="table-layout: auto;"
         >
-          <table
-            class="table"
-            style="table-layout: auto;"
-          >
-            <thead>
-              <tr
-                style="height: 38px;"
+          <thead>
+            <tr
+              style="height: 38px;"
+            >
+              <th
+                class="prevent-select"
               >
-                <th
-                  class="prevent-select"
-                >
-                  Enabled
-                </th>
-                <th
-                  class="prevent-select"
-                >
-                  Source Name
-                </th>
-                <th />
-                <th />
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                aria-describedby="rfd-hidden-text-:r0:-hidden-text-:r1:"
-                data-rfd-drag-handle-context-id=":r0:"
-                data-rfd-drag-handle-draggable-id="0"
-                data-rfd-draggable-context-id=":r0:"
-                data-rfd-draggable-id="0"
-                draggable="false"
-                role="button"
-                tabindex="0"
+                Enabled
+              </th>
+              <th
+                class="prevent-select"
               >
-                <td
-                  style="vertical-align: middle; width: 30%;"
+                Source Name
+              </th>
+              <th />
+              <th />
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              aria-describedby="rfd-hidden-text-:r0:-hidden-text-:r1:"
+              data-rfd-drag-handle-context-id=":r0:"
+              data-rfd-drag-handle-draggable-id="0"
+              data-rfd-draggable-context-id=":r0:"
+              data-rfd-draggable-id="0"
+              draggable="false"
+              role="button"
+              tabindex="0"
+            >
+              <td
+                style="vertical-align: middle; width: 30%;"
+              >
+                <div
+                  class="btn toggle btn-md btn-primary"
+                  role="button"
+                  style="width: 80%; height: 38px;"
                 >
                   <div
-                    class="btn toggle btn-md btn-primary"
-                    role="button"
-                    style="width: 80%; height: 38px;"
+                    class="toggle-group"
                   >
-                    <div
-                      class="toggle-group"
+                    <span
+                      class="btn toggle-on btn-md flex-centre prevent-select btn-primary"
                     >
-                      <span
-                        class="btn toggle-on btn-md flex-centre prevent-select btn-primary"
-                      >
-                        On
-                      </span>
-                      <span
-                        class="btn toggle-off btn-md flex-centre prevent-select btn-secondary"
-                      >
-                        Off
-                      </span>
-                      <span
-                        class="toggle-handle btn btn-md btn-default"
-                      />
-                    </div>
-                  </div>
-                </td>
-                <td
-                  style="vertical-align: middle; width: 50%;"
-                >
-                  Source 1
-                </td>
-                <td
-                  style="vertical-align: middle; width: 5%; text-align: center;"
-                >
-                  <div>
-                    <i
-                      class="c1 bi bi-chevron-double-up"
+                      On
+                    </span>
+                    <span
+                      class="btn toggle-off btn-md flex-centre prevent-select btn-secondary"
+                    >
+                      Off
+                    </span>
+                    <span
+                      class="toggle-handle btn btn-md btn-default"
                     />
                   </div>
-                  <div>
-                    <i
-                      class="c1 bi bi-chevron-double-down"
-                    />
-                  </div>
-                </td>
-                <td
-                  style="vertical-align: middle; width: 15%; text-align: center;"
-                >
-                  <i
-                    class="bi bi-grip-horizontal"
-                    style="font-size: 2em;"
-                  />
-                </td>
-              </tr>
-              <tr
-                aria-describedby="rfd-hidden-text-:r0:-hidden-text-:r1:"
-                data-rfd-drag-handle-context-id=":r0:"
-                data-rfd-drag-handle-draggable-id="1"
-                data-rfd-draggable-context-id=":r0:"
-                data-rfd-draggable-id="1"
-                draggable="false"
-                role="button"
-                tabindex="0"
+                </div>
+              </td>
+              <td
+                style="vertical-align: middle; width: 50%;"
               >
-                <td
-                  style="vertical-align: middle; width: 30%;"
+                Source 1
+              </td>
+              <td
+                style="vertical-align: middle; width: 5%; text-align: center;"
+              >
+                <div>
+                  <i
+                    class="c1 bi bi-chevron-double-up"
+                  />
+                </div>
+                <div>
+                  <i
+                    class="c1 bi bi-chevron-double-down"
+                  />
+                </div>
+              </td>
+              <td
+                style="vertical-align: middle; width: 15%; text-align: center;"
+              >
+                <i
+                  class="bi bi-grip-horizontal"
+                  style="font-size: 2em;"
+                />
+              </td>
+            </tr>
+            <tr
+              aria-describedby="rfd-hidden-text-:r0:-hidden-text-:r1:"
+              data-rfd-drag-handle-context-id=":r0:"
+              data-rfd-drag-handle-draggable-id="1"
+              data-rfd-draggable-context-id=":r0:"
+              data-rfd-draggable-id="1"
+              draggable="false"
+              role="button"
+              tabindex="0"
+            >
+              <td
+                style="vertical-align: middle; width: 30%;"
+              >
+                <div
+                  class="btn toggle btn-md btn-primary"
+                  role="button"
+                  style="width: 80%; height: 38px;"
                 >
                   <div
-                    class="btn toggle btn-md btn-primary"
-                    role="button"
-                    style="width: 80%; height: 38px;"
+                    class="toggle-group"
                   >
-                    <div
-                      class="toggle-group"
+                    <span
+                      class="btn toggle-on btn-md flex-centre prevent-select btn-primary"
                     >
-                      <span
-                        class="btn toggle-on btn-md flex-centre prevent-select btn-primary"
-                      >
-                        On
-                      </span>
-                      <span
-                        class="btn toggle-off btn-md flex-centre prevent-select btn-secondary"
-                      >
-                        Off
-                      </span>
-                      <span
-                        class="toggle-handle btn btn-md btn-default"
-                      />
-                    </div>
-                  </div>
-                </td>
-                <td
-                  style="vertical-align: middle; width: 50%;"
-                >
-                  Source 2
-                </td>
-                <td
-                  style="vertical-align: middle; width: 5%; text-align: center;"
-                >
-                  <div>
-                    <i
-                      class="c1 bi bi-chevron-double-up"
+                      On
+                    </span>
+                    <span
+                      class="btn toggle-off btn-md flex-centre prevent-select btn-secondary"
+                    >
+                      Off
+                    </span>
+                    <span
+                      class="toggle-handle btn btn-md btn-default"
                     />
                   </div>
-                  <div>
-                    <i
-                      class="c1 bi bi-chevron-double-down"
-                    />
-                  </div>
-                </td>
-                <td
-                  style="vertical-align: middle; width: 15%; text-align: center;"
-                >
-                  <i
-                    class="bi bi-grip-horizontal"
-                    style="font-size: 2em;"
-                  />
-                </td>
-              </tr>
-              <tr
-                aria-describedby="rfd-hidden-text-:r0:-hidden-text-:r1:"
-                data-rfd-drag-handle-context-id=":r0:"
-                data-rfd-drag-handle-draggable-id="2"
-                data-rfd-draggable-context-id=":r0:"
-                data-rfd-draggable-id="2"
-                draggable="false"
-                role="button"
-                tabindex="0"
+                </div>
+              </td>
+              <td
+                style="vertical-align: middle; width: 50%;"
               >
-                <td
-                  style="vertical-align: middle; width: 30%;"
+                Source 2
+              </td>
+              <td
+                style="vertical-align: middle; width: 5%; text-align: center;"
+              >
+                <div>
+                  <i
+                    class="c1 bi bi-chevron-double-up"
+                  />
+                </div>
+                <div>
+                  <i
+                    class="c1 bi bi-chevron-double-down"
+                  />
+                </div>
+              </td>
+              <td
+                style="vertical-align: middle; width: 15%; text-align: center;"
+              >
+                <i
+                  class="bi bi-grip-horizontal"
+                  style="font-size: 2em;"
+                />
+              </td>
+            </tr>
+            <tr
+              aria-describedby="rfd-hidden-text-:r0:-hidden-text-:r1:"
+              data-rfd-drag-handle-context-id=":r0:"
+              data-rfd-drag-handle-draggable-id="2"
+              data-rfd-draggable-context-id=":r0:"
+              data-rfd-draggable-id="2"
+              draggable="false"
+              role="button"
+              tabindex="0"
+            >
+              <td
+                style="vertical-align: middle; width: 30%;"
+              >
+                <div
+                  class="btn toggle btn-md btn-primary"
+                  role="button"
+                  style="width: 80%; height: 38px;"
                 >
                   <div
-                    class="btn toggle btn-md btn-primary"
-                    role="button"
-                    style="width: 80%; height: 38px;"
+                    class="toggle-group"
                   >
-                    <div
-                      class="toggle-group"
+                    <span
+                      class="btn toggle-on btn-md flex-centre prevent-select btn-primary"
                     >
-                      <span
-                        class="btn toggle-on btn-md flex-centre prevent-select btn-primary"
-                      >
-                        On
-                      </span>
-                      <span
-                        class="btn toggle-off btn-md flex-centre prevent-select btn-secondary"
-                      >
-                        Off
-                      </span>
-                      <span
-                        class="toggle-handle btn btn-md btn-default"
-                      />
-                    </div>
-                  </div>
-                </td>
-                <td
-                  style="vertical-align: middle; width: 50%;"
-                >
-                  Source 3
-                </td>
-                <td
-                  style="vertical-align: middle; width: 5%; text-align: center;"
-                >
-                  <div>
-                    <i
-                      class="c1 bi bi-chevron-double-up"
+                      On
+                    </span>
+                    <span
+                      class="btn toggle-off btn-md flex-centre prevent-select btn-secondary"
+                    >
+                      Off
+                    </span>
+                    <span
+                      class="toggle-handle btn btn-md btn-default"
                     />
                   </div>
-                  <div>
-                    <i
-                      class="c1 bi bi-chevron-double-down"
-                    />
-                  </div>
-                </td>
-                <td
-                  style="vertical-align: middle; width: 15%; text-align: center;"
-                >
+                </div>
+              </td>
+              <td
+                style="vertical-align: middle; width: 50%;"
+              >
+                Source 3
+              </td>
+              <td
+                style="vertical-align: middle; width: 5%; text-align: center;"
+              >
+                <div>
                   <i
-                    class="bi bi-grip-horizontal"
-                    style="font-size: 2em;"
+                    class="c1 bi bi-chevron-double-up"
                   />
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+                </div>
+                <div>
+                  <i
+                    class="c1 bi bi-chevron-double-down"
+                  />
+                </div>
+              </td>
+              <td
+                style="vertical-align: middle; width: 15%; text-align: center;"
+              >
+                <i
+                  class="bi bi-grip-horizontal"
+                  style="font-size: 2em;"
+                />
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
     <div

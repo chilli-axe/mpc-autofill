@@ -213,28 +213,21 @@ export function SourceSettings({
       <DragDropContext onDragEnd={onDragEnd}>
         <Droppable droppableId="source-order">
           {(provided, snapshot) => (
-            <div
-              style={{
-                height:
-                  draggableSourceRows.length * 59 + ToggleButtonHeight + "px",
-              }}
-            >
+            <Table ref={provided.innerRef} style={{ tableLayout: "auto" }}>
               {/* TODO: migrate this to AutofillTable at some point? too big a job for right now. */}
-              <Table ref={provided.innerRef} style={{ tableLayout: "auto" }}>
-                <thead>
-                  <tr style={{ height: ToggleButtonHeight + "px" }}>
-                    <th className="prevent-select">Enabled</th>
-                    <th className="prevent-select">Source Name</th>
-                    <th />
-                    <th />
-                  </tr>
-                </thead>
-                <tbody>
-                  {draggableSourceRows}
-                  {provided.placeholder}
-                </tbody>
-              </Table>
-            </div>
+              <thead>
+                <tr style={{ height: ToggleButtonHeight + "px" }}>
+                  <th className="prevent-select">Enabled</th>
+                  <th className="prevent-select">Source Name</th>
+                  <th />
+                  <th />
+                </tr>
+              </thead>
+              <tbody>
+                {draggableSourceRows}
+                {provided.placeholder}
+              </tbody>
+            </Table>
           )}
         </Droppable>
       </DragDropContext>
