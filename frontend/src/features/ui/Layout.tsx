@@ -52,6 +52,9 @@ function BackendSetter() {
       dispatch(setURL(localStorageBackendURL));
     } else if (envURL != null && envURL !== localStorageBackendURL) {
       setLocalStorageBackendURL(envURL);
+      if (!backendConfigured) {
+        dispatch(setURL(envURL));
+      }
     } else if (formattedURL != null) {
       dispatch(setURL(formattedURL));
       setLocalStorageBackendURL(formattedURL);
