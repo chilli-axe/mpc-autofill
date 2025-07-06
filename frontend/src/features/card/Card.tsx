@@ -468,16 +468,27 @@ export function EditorCard({
 
 export const MemoizedEditorCard = memo(EditorCard);
 
+interface DatedCardProps {
+  cardDocument: CardDocument;
+  headerDate: "created" | "modified";
+}
 /**
  * This component is a thin layer on top of `Card` for use in the What's New page.
  */
-export function DatedCard({ cardDocument }: { cardDocument: CardDocument }) {
+export function DatedCard({
+  cardDocument,
+  headerDate = "created",
+}: DatedCardProps) {
   return (
     <Col>
       <MemoizedCard
         key={`new-cards-${cardDocument.identifier}`}
         maybeCardDocument={cardDocument}
-        cardHeaderTitle={cardDocument.dateCreated}
+        cardHeaderTitle={
+          headerDate === "created"
+            ? cardDocument.dateCreated
+            : cardDocument.dateModified
+        }
         noResultsFound={false}
       />
     </Col>

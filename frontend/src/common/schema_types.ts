@@ -211,8 +211,10 @@ export interface ExploreSearchRequest {
 }
 
 export enum SortBy {
-  DateAscending = "dateAscending",
-  DateDescending = "dateDescending",
+  DateCreatedAscending = "dateCreatedAscending",
+  DateCreatedDescending = "dateCreatedDescending",
+  DateModifiedAscending = "dateModifiedAscending",
+  DateModifiedDescending = "dateModifiedDescending",
   NameAscending = "nameAscending",
   NameDescending = "nameDescending",
 }
@@ -1252,8 +1254,10 @@ const typeMap: any = {
   CardType: ["CARD", "CARDBACK", "TOKEN"],
   SourceType: ["AWS S3", "Google Drive", "Local File"],
   SortBy: [
-    "dateAscending",
-    "dateDescending",
+    "dateCreatedAscending",
+    "dateCreatedDescending",
+    "dateModifiedAscending",
+    "dateModifiedDescending",
     "nameAscending",
     "nameDescending",
   ],

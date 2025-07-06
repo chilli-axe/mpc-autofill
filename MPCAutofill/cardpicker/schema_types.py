@@ -503,8 +503,10 @@ class ErrorResponse(BaseModel):
 
 
 class SortBy(str, Enum):
-    dateAscending = "dateAscending"
-    dateDescending = "dateDescending"
+    dateCreatedAscending = "dateCreatedAscending"
+    dateCreatedDescending = "dateCreatedDescending"
+    dateModifiedAscending = "dateModifiedAscending"
+    dateModifiedDescending = "dateModifiedDescending"
     nameAscending = "nameAscending"
     nameDescending = "nameDescending"
 

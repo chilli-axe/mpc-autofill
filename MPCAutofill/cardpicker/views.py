@@ -164,8 +164,10 @@ def post_explore_search(request: HttpRequest) -> HttpResponse:
     sort: dict[str, dict[str, str]] = {
         SortBy.nameAscending: {"searchq_keyword": {"order": "asc"}},
         SortBy.nameDescending: {"searchq_keyword": {"order": "desc"}},
-        SortBy.dateAscending: {"date_created": {"order": "asc"}, "searchq_keyword": {"order": "asc"}},
-        SortBy.dateDescending: {"date_created": {"order": "desc"}, "searchq_keyword": {"order": "asc"}},
+        SortBy.dateCreatedAscending: {"date_created": {"order": "asc"}, "searchq_keyword": {"order": "asc"}},
+        SortBy.dateCreatedDescending: {"date_created": {"order": "desc"}, "searchq_keyword": {"order": "asc"}},
+        SortBy.dateModifiedAscending: {"date_modified": {"order": "asc"}, "searchq_keyword": {"order": "asc"}},
+        SortBy.dateModifiedDescending: {"date_modified": {"order": "desc"}, "searchq_keyword": {"order": "asc"}},
     }[explore_search_request.sortBy]
 
     s = get_search(

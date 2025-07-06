@@ -54,7 +54,7 @@ export function Explore() {
   const [pageStart, setPageStart] = useState<number>(0);
 
   // input state
-  const [sortBy, setSortBy] = useState<SortBy>(SortBy.DateDescending);
+  const [sortBy, setSortBy] = useState<SortBy>(SortBy.DateCreatedDescending);
   const [query, setQuery] = useState<string>("");
   const [cardTypes, setCardTypes] = useState<Array<CardType>>([]);
   const [searchTypeSettings, setSearchTypeSettings] =
@@ -242,6 +242,12 @@ export function Explore() {
               {postExploreSearchQuery.data?.cards?.map((card) => (
                 <DatedCard
                   cardDocument={card}
+                  headerDate={
+                    sortBy === SortBy.DateModifiedAscending ||
+                    sortBy === SortBy.DateModifiedDescending
+                      ? "modified"
+                      : "created"
+                  }
                   key={`explore-card-${card.identifier}`}
                 />
               ))}

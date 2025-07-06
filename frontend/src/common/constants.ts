@@ -92,8 +92,10 @@ export const ExploreDebounceMS = 700;
 export const ExplorePageSize = 60;
 
 export const SortByOptions: { [option in SortBy]: string } = {
-  dateDescending: "Date (Newest-Oldest)",
-  dateAscending: "Date (Oldest-Newest)",
+  dateCreatedDescending: "Date Created (Newest-Oldest)",
+  dateCreatedAscending: "Date Created (Oldest-Newest)",
+  dateModifiedDescending: "Date Modified (Newest-Oldest)",
+  dateModifiedAscending: "Date Modified (Oldest-Newest)",
   nameAscending: "Name (A-Z)",
   nameDescending: "Name (Z-A)",
 };
