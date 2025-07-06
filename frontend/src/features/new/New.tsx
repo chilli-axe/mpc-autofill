@@ -58,12 +58,14 @@ function NewCardsForSource({
         {firstPage.cards.map((card) => (
           <DatedCard
             cardDocument={card}
+            headerDate="created"
             key={`whats-new-card-${card.identifier}`}
           />
         ))}
         {(getNewCardsPageQuery.data ?? []).map((card) => (
           <DatedCard
             cardDocument={card}
+            headerDate="created"
             key={`whats-new-card-${card.identifier}`}
           />
         ))}
