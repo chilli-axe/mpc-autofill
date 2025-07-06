@@ -471,7 +471,7 @@ class TestPostExploreSearchResults:
             pytest.param(
                 None,
                 [],
-                "dateDescending",
+                "dateCreatedDescending",
                 [
                     Cards.BRAINSTORM.value,
                     Cards.DELVER_OF_SECRETS.value,
@@ -492,7 +492,7 @@ class TestPostExploreSearchResults:
             pytest.param(
                 None,
                 ["CARD"],
-                "dateDescending",
+                "dateCreatedDescending",
                 [
                     Cards.BRAINSTORM.value,
                     Cards.DELVER_OF_SECRETS.value,
@@ -510,19 +510,23 @@ class TestPostExploreSearchResults:
             pytest.param(
                 Cards.BRAINSTORM.value.name,
                 ["CARD"],
-                "dateDescending",
+                "dateCreatedDescending",
                 [Cards.BRAINSTORM.value],
                 id="query + filter to card",
             ),
             pytest.param(
                 Cards.SIMPLE_LOTUS.value.name,
                 ["CARDBACK"],
-                "dateDescending",
+                "dateCreatedDescending",
                 [Cards.SIMPLE_LOTUS.value],
                 id="query + filter to cardback",
             ),
             pytest.param(
-                Cards.GOBLIN.value.name, ["TOKEN"], "dateDescending", [Cards.GOBLIN.value], id="query + filter to token"
+                Cards.GOBLIN.value.name,
+                ["TOKEN"],
+                "dateCreatedDescending",
+                [Cards.GOBLIN.value],
+                id="query + filter to token",
             ),
             pytest.param(
                 None,
@@ -623,7 +627,7 @@ class TestPostExploreSearchResults:
                 "searchSettings": BASE_SEARCH_SETTINGS,
                 "query": None,
                 "cardTypes": [],
-                "sortBy": "dateDescending",
+                "sortBy": "dateCreatedDescending",
                 "pageSize": page_size,
                 "pageStart": page_start,
             },
@@ -653,7 +657,7 @@ class TestPostExploreSearchResults:
                 "searchSettings": BASE_SEARCH_SETTINGS,
                 "query": None,
                 "cardTypes": [],
-                "sortBy": "dateDescending",
+                "sortBy": "dateCreatedDescending",
                 "pageSize": page_size,
                 "pageStart": page_start,
             },
