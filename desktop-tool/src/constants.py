@@ -181,3 +181,8 @@ PROJECT_MAX_SIZE = 612  # shared between target sites
 THREADS = 5  # shared between CardImageCollections
 
 POST_LAUNCH_HTML_FILENAME = "post-launch.html"
+
+# Card physical dimensions for border calculation
+CARD_WIDTH_INCHES = 2.5
+CARD_HEIGHT_INCHES = 3.5
+BORDER_INCHES = 0.125
