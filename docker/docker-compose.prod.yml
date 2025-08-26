@@ -7,10 +7,6 @@
 # Many code templates and inspirations are taken from blog post:
 # https://testdriven.io/blog/dockerizing-django-with-postgres-gunicorn-and-nginx/
 
-# Run this file with compose by specifying this file and the base compose file:
-# docker compose -f docker-compose.prod.yml -f docker-compose.yml up
-version: "3.4"
-
 services:
   # Unicorn serving Django
   django:
@@ -19,6 +15,7 @@ services:
     build:
       context: ..
       dockerfile: ./docker/django/Dockerfile
+      target: webserver
     expose:
       - 8000
     depends_on:
@@ -32,6 +29,26 @@ services:
       - ALLOWED_HOSTS=django-api
       # These variables may be customised
       - GAME=MTG
+      - MOXFIELD_SECRET=
+  worker:
+    image: mpcautofill_worker
+    container_name: mpcautofill_worker
+    build:
+      context: ..
+      dockerfile: ./docker/django/Dockerfile
+      target: worker
+    depends_on:
+      - postgres
+      - elasticsearch
+    environment:
+      # Do not change these variables
+      - DATABASE_HOST=postgres
+      - ELASTICSEARCH_HOST=elasticsearch
+      - DEBUG=False
+      - ALLOWED_HOSTS=django-api
+      # These variables may be customised
+      - GAME=MTG
+      - MOXFIELD_SECRET=
 
   # nginx serving the frontend
   nginx:
@@ -40,14 +57,30 @@ services:
     build:
       context: ..
       dockerfile: ./docker/nginx/Dockerfile
+    depends_on:
+      - django
     ports:
       - "80:80" # TODO: support ports other than 80
 
   postgres:
+    extends:
+      file: docker-compose.yml
+      service: postgres
     expose:
       - 5432
     ports: []
   elasticsearch:
+    extends:
+      file: docker-compose.yml
+      service: elasticsearch
     expose:
       - 5432
     ports: []
+    environment:
+      - discovery.type=single-node
+      - logger.level=WARN
+
+# Persistent storage for containers
+volumes:
+  postgres_data:
+  elasticsearch_data:

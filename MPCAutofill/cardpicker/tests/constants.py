@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Type
 
-from cardpicker.integrations.base import GameIntegration, ImportSite
+from cardpicker.integrations.game.base import GameIntegration, ImportSite
 from cardpicker.models import DFCPair
 from cardpicker.sources.source_types import SourceTypeChoices
 from cardpicker.tests.factories import DFCPairFactory
@@ -118,6 +118,24 @@ class Cards(Enum):
         dpi=600,
         size=5_000_000,
     )
+
+    @classmethod
+    def get_all_cards(cls) -> list[Card]:
+        return [
+            cls.BRAINSTORM.value,
+            cls.DELVER_OF_SECRETS.value,
+            cls.GOBLIN.value,
+            cls.HUNTMASTER_OF_THE_FELLS.value,
+            cls.INSECTILE_ABERRATION.value,
+            cls.ISLAND_CLASSICAL.value,
+            cls.ISLAND.value,
+            cls.MOUNTAIN.value,
+            cls.PAST_IN_FLAMES_2.value,
+            cls.PAST_IN_FLAMES_1.value,
+            cls.RAVAGER_OF_THE_FELLS.value,
+            cls.SIMPLE_CUBE.value,
+            cls.SIMPLE_LOTUS.value,
+        ]
 
 
 class Sources(Enum):

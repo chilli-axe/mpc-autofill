@@ -1,0 +1,15 @@
+{
+  "title": "Import Sites Response",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "importSites": {
+      "type": "array",
+      "items": {
+        "$ref": "../ImportSite.json"
+      }
+    }
+  },
+  "required": ["importSites"],
+  "additionalProperties": false
+}

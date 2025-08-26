@@ -1,0 +1,14 @@
+{
+  "title": "New Cards First Page",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+
+  "properties": {
+    "source": { "$ref": "./Source.json" },
+    "hits": { "type": "integer" },
+    "pages": { "type": "integer" },
+    "cards": { "type": "array", "items": { "$ref": "./Card.json" } }
+  },
+  "required": ["source", "hits", "pages", "cards"],
+  "additionalProperties": false
+}

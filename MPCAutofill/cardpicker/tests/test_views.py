@@ -11,6 +11,7 @@ from django.urls import reverse
 
 from cardpicker import views
 from cardpicker.tests.constants import Cards, DummyImportSite, Sources
+from cardpicker.tests.factories import SourceFactory
 
 
 def snapshot_response(response: Response, snapshot: SnapshotAssertion):
@@ -34,17 +35,17 @@ BASE_SEARCH_SETTINGS = {
 }
 
 
-class TestPostSearchResults:
+class TestPostEditorSearchResults:
     @pytest.fixture(autouse=True)
     def autouse_populated_database(self, populated_database):
         pass
 
     def test_search_for_single_card(self, client, snapshot):
         response = client.post(
-            reverse(views.post_search_results),
+            reverse(views.post_editor_search),
             {
                 "searchSettings": BASE_SEARCH_SETTINGS,
-                "queries": [{"query": Cards.BRAINSTORM.value.name, "card_type": "CARD"}],
+                "queries": [{"query": Cards.BRAINSTORM.value.name, "cardType": "CARD"}],
             },
             content_type="application/json",
         )
@@ -54,10 +55,10 @@ class TestPostSearchResults:
 
     def test_search_for_single_cardback(self, client, snapshot):
         response = client.post(
-            reverse(views.post_search_results),
+            reverse(views.post_editor_search),
             {
                 "searchSettings": BASE_SEARCH_SETTINGS,
-                "queries": [{"query": Cards.SIMPLE_LOTUS.value.name, "card_type": "CARDBACK"}],
+                "queries": [{"query": Cards.SIMPLE_LOTUS.value.name, "cardType": "CARDBACK"}],
             },
             content_type="application/json",
         )
@@ -69,10 +70,10 @@ class TestPostSearchResults:
 
     def test_search_for_single_token(self, client, snapshot):
         response = client.post(
-            reverse(views.post_search_results),
+            reverse(views.post_editor_search),
             {
                 "searchSettings": BASE_SEARCH_SETTINGS,
-                "queries": [{"query": Cards.GOBLIN.value.name, "card_type": "TOKEN"}],
+                "queries": [{"query": Cards.GOBLIN.value.name, "cardType": "TOKEN"}],
             },
             content_type="application/json",
         )
@@ -82,15 +83,15 @@ class TestPostSearchResults:
 
     def test_complex_search(self, client, snapshot):
         response = client.post(
-            reverse(views.post_search_results),
+            reverse(views.post_editor_search),
             {
                 "searchSettings": BASE_SEARCH_SETTINGS,
                 "queries": [
-                    {"query": Cards.BRAINSTORM.value.name, "card_type": "CARD"},
-                    {"query": Cards.ISLAND.value.name, "card_type": "CARD"},
-                    {"query": Cards.SIMPLE_CUBE.value.name, "card_type": "CARDBACK"},
-                    {"query": Cards.SIMPLE_LOTUS.value.name, "card_type": "CARDBACK"},
-                    {"query": Cards.GOBLIN.value.name, "card_type": "TOKEN"},
+                    {"query": Cards.BRAINSTORM.value.name, "cardType": "CARD"},
+                    {"query": Cards.ISLAND.value.name, "cardType": "CARD"},
+                    {"query": Cards.SIMPLE_CUBE.value.name, "cardType": "CARDBACK"},
+                    {"query": Cards.SIMPLE_LOTUS.value.name, "cardType": "CARDBACK"},
+                    {"query": Cards.GOBLIN.value.name, "cardType": "TOKEN"},
                 ],
             },
             content_type="application/json",
@@ -100,10 +101,10 @@ class TestPostSearchResults:
 
     def test_priority_ordering_in_search_results(self, client, snapshot):
         response = client.post(
-            reverse(views.post_search_results),
+            reverse(views.post_editor_search),
             {
                 "searchSettings": BASE_SEARCH_SETTINGS,
-                "queries": [{"query": Cards.ISLAND.value.name, "card_type": "CARD"}],
+                "queries": [{"query": Cards.ISLAND.value.name, "cardType": "CARD"}],
             },
             content_type="application/json",
         )
@@ -117,10 +118,10 @@ class TestPostSearchResults:
 
     def test_search_for_card_with_versions_from_two_sources(self, client, snapshot):
         response = client.post(
-            reverse(views.post_search_results),
+            reverse(views.post_editor_search),
             {
                 "searchSettings": BASE_SEARCH_SETTINGS,
-                "queries": [{"query": Cards.PAST_IN_FLAMES_1.value.name, "card_type": "CARD"}],
+                "queries": [{"query": Cards.PAST_IN_FLAMES_1.value.name, "cardType": "CARD"}],
             },
             content_type="application/json",
         )
@@ -138,10 +139,10 @@ class TestPostSearchResults:
             [Sources.EXAMPLE_DRIVE_1.value.pk, True],
         ]
         response = client.post(
-            reverse(views.post_search_results),
+            reverse(views.post_editor_search),
             {
                 "searchSettings": search_settings,
-                "queries": [{"query": Cards.PAST_IN_FLAMES_1.value.name, "card_type": "CARD"}],
+                "queries": [{"query": Cards.PAST_IN_FLAMES_1.value.name, "cardType": "CARD"}],
             },
             content_type="application/json",
         )
@@ -159,10 +160,10 @@ class TestPostSearchResults:
             [Sources.EXAMPLE_DRIVE_2.value.pk, False],
         ]
         response = client.post(
-            reverse(views.post_search_results),
+            reverse(views.post_editor_search),
             {
                 "searchSettings": search_settings,
-                "queries": [{"query": Cards.PAST_IN_FLAMES_1.value.name, "card_type": "CARD"}],
+                "queries": [{"query": Cards.PAST_IN_FLAMES_1.value.name, "cardType": "CARD"}],
             },
             content_type="application/json",
         )
@@ -179,10 +180,10 @@ class TestPostSearchResults:
             [Sources.EXAMPLE_DRIVE_2.value.pk, False],
         ]
         response = client.post(
-            reverse(views.post_search_results),
+            reverse(views.post_editor_search),
             {
                 "searchSettings": search_settings,
-                "queries": [{"query": Cards.PAST_IN_FLAMES_1.value.name, "card_type": "CARD"}],
+                "queries": [{"query": Cards.PAST_IN_FLAMES_1.value.name, "cardType": "CARD"}],
             },
             content_type="application/json",
         )
@@ -194,8 +195,8 @@ class TestPostSearchResults:
         search_settings = deepcopy(BASE_SEARCH_SETTINGS)
         search_settings["searchTypeSettings"]["fuzzySearch"] = True
         response = client.post(
-            reverse(views.post_search_results),
-            {"searchSettings": search_settings, "queries": [{"query": "past in", "card_type": "CARD"}]},
+            reverse(views.post_editor_search),
+            {"searchSettings": search_settings, "queries": [{"query": "past in", "cardType": "CARD"}]},
             content_type="application/json",
         )
         snapshot_response(response, snapshot)
@@ -209,10 +210,10 @@ class TestPostSearchResults:
         search_settings = deepcopy(BASE_SEARCH_SETTINGS)
         search_settings["filterSettings"]["minimumDPI"] = 400
         response = client.post(
-            reverse(views.post_search_results),
+            reverse(views.post_editor_search),
             {
                 "searchSettings": search_settings,
-                "queries": [{"query": Cards.SIMPLE_CUBE.value.name, "card_type": "CARDBACK"}],
+                "queries": [{"query": Cards.SIMPLE_CUBE.value.name, "cardType": "CARDBACK"}],
             },
             content_type="application/json",
         )
@@ -224,10 +225,10 @@ class TestPostSearchResults:
         search_settings = deepcopy(BASE_SEARCH_SETTINGS)
         search_settings["filterSettings"]["maximumDPI"] = 200
         response = client.post(
-            reverse(views.post_search_results),
+            reverse(views.post_editor_search),
             {
                 "searchSettings": search_settings,
-                "queries": [{"query": Cards.SIMPLE_CUBE.value.name, "card_type": "CARDBACK"}],
+                "queries": [{"query": Cards.SIMPLE_CUBE.value.name, "cardType": "CARDBACK"}],
             },
             content_type="application/json",
         )
@@ -239,10 +240,10 @@ class TestPostSearchResults:
         search_settings = deepcopy(BASE_SEARCH_SETTINGS)
         search_settings["filterSettings"]["minimumDPI"] = 600
         response = client.post(
-            reverse(views.post_search_results),
+            reverse(views.post_editor_search),
             {
                 "searchSettings": search_settings,
-                "queries": [{"query": Cards.PAST_IN_FLAMES_1.value.name, "card_type": "CARD"}],
+                "queries": [{"query": Cards.PAST_IN_FLAMES_1.value.name, "cardType": "CARD"}],
             },
             content_type="application/json",
         )
@@ -256,10 +257,10 @@ class TestPostSearchResults:
         search_settings = deepcopy(BASE_SEARCH_SETTINGS)
         search_settings["filterSettings"]["maximumSize"] = 4
         response = client.post(
-            reverse(views.post_search_results),
+            reverse(views.post_editor_search),
             {
                 "searchSettings": search_settings,
-                "queries": [{"query": Cards.PAST_IN_FLAMES_1.value.name, "card_type": "CARD"}],
+                "queries": [{"query": Cards.PAST_IN_FLAMES_1.value.name, "cardType": "CARD"}],
             },
             content_type="application/json",
         )
@@ -273,10 +274,10 @@ class TestPostSearchResults:
         search_settings = deepcopy(BASE_SEARCH_SETTINGS)
         search_settings["filterSettings"]["languages"] = ["EN"]
         response = client.post(
-            reverse(views.post_search_results),
+            reverse(views.post_editor_search),
             {
                 "searchSettings": search_settings,
-                "queries": [{"query": Cards.PAST_IN_FLAMES_1.value.name, "card_type": "CARD"}],
+                "queries": [{"query": Cards.PAST_IN_FLAMES_1.value.name, "cardType": "CARD"}],
             },
             content_type="application/json",
         )
@@ -288,10 +289,10 @@ class TestPostSearchResults:
         search_settings = deepcopy(BASE_SEARCH_SETTINGS)
         search_settings["filterSettings"]["languages"] = ["EN", "DE"]
         response = client.post(
-            reverse(views.post_search_results),
+            reverse(views.post_editor_search),
             {
                 "searchSettings": search_settings,
-                "queries": [{"query": Cards.PAST_IN_FLAMES_1.value.name, "card_type": "CARD"}],
+                "queries": [{"query": Cards.PAST_IN_FLAMES_1.value.name, "cardType": "CARD"}],
             },
             content_type="application/json",
         )
@@ -305,10 +306,10 @@ class TestPostSearchResults:
         search_settings = deepcopy(BASE_SEARCH_SETTINGS)
         search_settings["filterSettings"]["includesTags"] = [another_tag_in_data.name]
         response = client.post(
-            reverse(views.post_search_results),
+            reverse(views.post_editor_search),
             {
                 "searchSettings": search_settings,
-                "queries": [{"query": Cards.PAST_IN_FLAMES_1.value.name, "card_type": "CARD"}],
+                "queries": [{"query": Cards.PAST_IN_FLAMES_1.value.name, "cardType": "CARD"}],
             },
             content_type="application/json",
         )
@@ -322,10 +323,10 @@ class TestPostSearchResults:
         search_settings = deepcopy(BASE_SEARCH_SETTINGS)
         search_settings["filterSettings"]["excludesTags"] = [another_tag_in_data.name]
         response = client.post(
-            reverse(views.post_search_results),
+            reverse(views.post_editor_search),
             {
                 "searchSettings": search_settings,
-                "queries": [{"query": Cards.PAST_IN_FLAMES_2.value.name, "card_type": "CARD"}],
+                "queries": [{"query": Cards.PAST_IN_FLAMES_2.value.name, "cardType": "CARD"}],
             },
             content_type="application/json",
         )
@@ -339,10 +340,10 @@ class TestPostSearchResults:
         search_settings = deepcopy(BASE_SEARCH_SETTINGS)
         search_settings["filterSettings"]["includesTags"] = [tag_in_data.name]
         response = client.post(
-            reverse(views.post_search_results),
+            reverse(views.post_editor_search),
             {
                 "searchSettings": search_settings,
-                "queries": [{"query": Cards.PAST_IN_FLAMES_1.value.name, "card_type": "CARD"}],
+                "queries": [{"query": Cards.PAST_IN_FLAMES_1.value.name, "cardType": "CARD"}],
             },
             content_type="application/json",
         )
@@ -357,10 +358,10 @@ class TestPostSearchResults:
         search_settings["filterSettings"]["includesTags"] = [tag_in_data.name]
         search_settings["filterSettings"]["excludesTags"] = [another_tag_in_data.name]
         response = client.post(
-            reverse(views.post_search_results),
+            reverse(views.post_editor_search),
             {
                 "searchSettings": search_settings,
-                "queries": [{"query": Cards.PAST_IN_FLAMES_1.value.name, "card_type": "CARD"}],
+                "queries": [{"query": Cards.PAST_IN_FLAMES_1.value.name, "cardType": "CARD"}],
             },
             content_type="application/json",
         )
@@ -374,10 +375,10 @@ class TestPostSearchResults:
         search_settings = deepcopy(BASE_SEARCH_SETTINGS)
         search_settings["filterSettings"]["includesTags"] = [tag_in_data.name, another_tag_in_data.name]
         response = client.post(
-            reverse(views.post_search_results),
+            reverse(views.post_editor_search),
             {
                 "searchSettings": search_settings,
-                "queries": [{"query": Cards.PAST_IN_FLAMES_1.value.name, "card_type": "CARD"}],
+                "queries": [{"query": Cards.PAST_IN_FLAMES_1.value.name, "cardType": "CARD"}],
             },
             content_type="application/json",
         )
@@ -386,14 +387,14 @@ class TestPostSearchResults:
         assert len(response.json()["results"][Cards.PAST_IN_FLAMES_1.value.name]["CARD"]) == 2
 
     def test_page_equal_to_max_size(self, client, monkeypatch, snapshot):
-        monkeypatch.setattr("cardpicker.search.search_functions.SEARCH_RESULTS_PAGE_SIZE", 2)
+        monkeypatch.setattr("cardpicker.views.EDITOR_SEARCH_MAX_QUERIES", 2)
         response = client.post(
-            reverse(views.post_search_results),
+            reverse(views.post_editor_search),
             {
                 "searchSettings": BASE_SEARCH_SETTINGS,
                 "queries": [
-                    {"query": Cards.BRAINSTORM.value.name, "card_type": "CARD"},
-                    {"query": Cards.ISLAND.value.name, "card_type": "CARD"},
+                    {"query": Cards.BRAINSTORM.value.name, "cardType": "CARD"},
+                    {"query": Cards.ISLAND.value.name, "cardType": "CARD"},
                 ],
             },
             content_type="application/json",
@@ -402,15 +403,15 @@ class TestPostSearchResults:
         assert response.status_code == 200
 
     def test_page_larger_than_max_size(self, client, monkeypatch, snapshot):
-        monkeypatch.setattr("cardpicker.search.search_functions.SEARCH_RESULTS_PAGE_SIZE", 2)
+        monkeypatch.setattr("cardpicker.views.EDITOR_SEARCH_MAX_QUERIES", 2)
         response = client.post(
-            reverse(views.post_search_results),
+            reverse(views.post_editor_search),
             {
                 "searchSettings": BASE_SEARCH_SETTINGS,
                 "queries": [
-                    {"query": Cards.BRAINSTORM.value.name, "card_type": "CARD"},
-                    {"query": Cards.ISLAND.value.name, "card_type": "CARD"},
-                    {"query": Cards.SIMPLE_CUBE.value.name, "card_type": "CARDBACK"},
+                    {"query": Cards.BRAINSTORM.value.name, "cardType": "CARD"},
+                    {"query": Cards.ISLAND.value.name, "cardType": "CARD"},
+                    {"query": Cards.SIMPLE_CUBE.value.name, "cardType": "CARDBACK"},
                 ],
             },
             content_type="application/json",
@@ -423,15 +424,15 @@ class TestPostSearchResults:
         [
             {},
             ["test"],
-            {"searchSettings": "test2", "queries": {"query_garbage": Cards.BRAINSTORM.value.name, "card_type": "CARD"}},
+            {"searchSettings": "test2", "queries": {"query_garbage": Cards.BRAINSTORM.value.name, "cardType": "CARD"}},
             {"garbage": "test", "searchSettings": BASE_SEARCH_SETTINGS},
             {
                 "searchSettings": BASE_SEARCH_SETTINGS,
-                "queries": {"query_garbage": Cards.BRAINSTORM.value.name, "card_type": "CARD"},
+                "queries": {"query_garbage": Cards.BRAINSTORM.value.name, "cardType": "CARD"},
             },
             {
                 "searchSettings": BASE_SEARCH_SETTINGS,
-                "queries": {"query": Cards.BRAINSTORM.value.name, "card_type": "garbage"},
+                "queries": {"query": Cards.BRAINSTORM.value.name, "cardType": "garbage"},
             },
             {
                 "searchSettings": BASE_SEARCH_SETTINGS,
@@ -449,12 +450,223 @@ class TestPostSearchResults:
         ],
     )
     def test_response_to_malformed_json_body(self, client, snapshot, json_body):
-        response = client.post(reverse(views.post_search_results), json_body, content_type="application/json")
+        response = client.post(reverse(views.post_editor_search), json_body, content_type="application/json")
         snapshot_response(response, snapshot)
         assert response.status_code == 400
 
     def test_get_request(self, client, django_settings, snapshot):
-        response = client.get(reverse(views.post_search_results))
+        response = client.get(reverse(views.post_editor_search))
+        snapshot_response(response, snapshot)
+        assert response.status_code == 400
+
+
+class TestPostExploreSearchResults:
+    @pytest.fixture(autouse=True)
+    def autouse_populated_database(self, populated_database):
+        pass
+
+    @pytest.mark.parametrize(
+        "query, card_types, sort_by, expected_cards",
+        [
+            pytest.param(
+                None,
+                [],
+                "dateCreatedDescending",
+                [
+                    Cards.BRAINSTORM.value,
+                    Cards.DELVER_OF_SECRETS.value,
+                    Cards.GOBLIN.value,
+                    Cards.HUNTMASTER_OF_THE_FELLS.value,
+                    Cards.INSECTILE_ABERRATION.value,
+                    Cards.ISLAND_CLASSICAL.value,
+                    Cards.ISLAND.value,
+                    Cards.MOUNTAIN.value,
+                    Cards.PAST_IN_FLAMES_2.value,
+                    Cards.PAST_IN_FLAMES_1.value,
+                    Cards.RAVAGER_OF_THE_FELLS.value,
+                    Cards.SIMPLE_CUBE.value,
+                    Cards.SIMPLE_LOTUS.value,
+                ],
+                id="no query + no filter to card type",
+            ),
+            pytest.param(
+                None,
+                ["CARD"],
+                "dateCreatedDescending",
+                [
+                    Cards.BRAINSTORM.value,
+                    Cards.DELVER_OF_SECRETS.value,
+                    Cards.HUNTMASTER_OF_THE_FELLS.value,
+                    Cards.INSECTILE_ABERRATION.value,
+                    Cards.ISLAND_CLASSICAL.value,
+                    Cards.ISLAND.value,
+                    Cards.MOUNTAIN.value,
+                    Cards.PAST_IN_FLAMES_2.value,
+                    Cards.PAST_IN_FLAMES_1.value,
+                    Cards.RAVAGER_OF_THE_FELLS.value,
+                ],
+                id="no query + filter to card",
+            ),
+            pytest.param(
+                Cards.BRAINSTORM.value.name,
+                ["CARD"],
+                "dateCreatedDescending",
+                [Cards.BRAINSTORM.value],
+                id="query + filter to card",
+            ),
+            pytest.param(
+                Cards.SIMPLE_LOTUS.value.name,
+                ["CARDBACK"],
+                "dateCreatedDescending",
+                [Cards.SIMPLE_LOTUS.value],
+                id="query + filter to cardback",
+            ),
+            pytest.param(
+                Cards.GOBLIN.value.name,
+                ["TOKEN"],
+                "dateCreatedDescending",
+                [Cards.GOBLIN.value],
+                id="query + filter to token",
+            ),
+            pytest.param(
+                None,
+                ["CARDBACK", "TOKEN"],
+                "nameAscending",
+                [Cards.GOBLIN.value, Cards.SIMPLE_CUBE.value, Cards.SIMPLE_LOTUS.value],
+                id="filter to cardback + token",
+            ),
+            pytest.param(
+                None,
+                ["CARDBACK"],
+                "nameAscending",
+                [Cards.SIMPLE_CUBE.value, Cards.SIMPLE_LOTUS.value],
+                id="sort by name ascending",
+            ),
+            pytest.param(
+                None,
+                ["CARDBACK"],
+                "nameDescending",
+                [Cards.SIMPLE_LOTUS.value, Cards.SIMPLE_CUBE.value],
+                id="sort by name descending",
+            ),
+        ],
+    )
+    def test_explore_search(self, client, snapshot, query, card_types, sort_by, expected_cards):
+        response = client.post(
+            reverse(views.post_explore_search),
+            {
+                "searchSettings": BASE_SEARCH_SETTINGS,
+                "query": query,
+                "cardTypes": card_types,
+                "sortBy": sort_by,
+                "pageSize": 20,
+                "pageStart": 0,
+            },
+            content_type="application/json",
+        )
+        snapshot_response(response, snapshot)
+        assert response.status_code == 200
+        response_json = response.json()
+        assert response_json["count"] == len(expected_cards)
+        assert [item["identifier"] for item in response_json["cards"]] == [
+            expected_card.identifier for expected_card in expected_cards
+        ]
+
+    @pytest.mark.parametrize(
+        "page_start, page_size, expected_cards",
+        [
+            pytest.param(
+                0,
+                3,
+                [Cards.BRAINSTORM.value, Cards.DELVER_OF_SECRETS.value, Cards.GOBLIN.value],
+                id="first page",
+            ),
+            pytest.param(
+                3,
+                3,
+                [Cards.HUNTMASTER_OF_THE_FELLS.value, Cards.INSECTILE_ABERRATION.value, Cards.ISLAND_CLASSICAL.value],
+                id="second page",
+            ),
+            pytest.param(
+                6,
+                3,
+                [Cards.ISLAND.value, Cards.MOUNTAIN.value, Cards.PAST_IN_FLAMES_2.value],
+                id="third page",
+            ),
+            pytest.param(
+                9,
+                3,
+                [Cards.PAST_IN_FLAMES_1.value, Cards.RAVAGER_OF_THE_FELLS.value, Cards.SIMPLE_CUBE.value],
+                id="fourth page",
+            ),
+            pytest.param(
+                12,
+                3,
+                [Cards.SIMPLE_LOTUS.value],
+                id="fifth page",
+            ),
+            pytest.param(
+                13,
+                3,
+                [],
+                id="sixth? page - does not exist",
+            ),
+            pytest.param(
+                100,
+                3,
+                [],
+                id="page start 100 - greater than number of results",
+            ),
+        ],
+    )
+    def test_explore_search_pagination(self, client, monkeypatch, page_start, page_size, expected_cards):
+        monkeypatch.setattr("cardpicker.views.EXPLORE_SEARCH_MAX_PAGE_SIZE", 3)
+        response = client.post(
+            reverse(views.post_explore_search),
+            {
+                "searchSettings": BASE_SEARCH_SETTINGS,
+                "query": None,
+                "cardTypes": [],
+                "sortBy": "dateCreatedDescending",
+                "pageSize": page_size,
+                "pageStart": page_start,
+            },
+            content_type="application/json",
+        )
+        assert response.status_code == 200
+        response_json = response.json()
+        assert response_json["count"] == 13
+        assert [item["identifier"] for item in response_json["cards"]] == [
+            expected_card.identifier for expected_card in expected_cards
+        ]
+
+    @pytest.mark.parametrize(
+        "page_start, page_size",
+        [
+            pytest.param(-1, 3, id="negative page start"),
+            pytest.param(0, 0, id="page size zero"),
+            pytest.param(0, -1, id="page size negative"),
+            pytest.param(0, 4, id="page size greater than max page size"),
+        ],
+    )
+    def test_explore_search_invalid_pagination(self, client, monkeypatch, page_start, page_size):
+        monkeypatch.setattr("cardpicker.views.EXPLORE_SEARCH_MAX_PAGE_SIZE", 3)
+        response = client.post(
+            reverse(views.post_explore_search),
+            {
+                "searchSettings": BASE_SEARCH_SETTINGS,
+                "query": None,
+                "cardTypes": [],
+                "sortBy": "dateCreatedDescending",
+                "pageSize": page_size,
+                "pageStart": page_start,
+            },
+            content_type="application/json",
+        )
+        assert response.status_code == 400
+
+    def test_get_request(self, client, django_settings, snapshot):
+        response = client.get(reverse(views.post_editor_search))
         snapshot_response(response, snapshot)
         assert response.status_code == 400
 
@@ -467,7 +679,7 @@ class TestPostCards:
     def test_get_single_card(self, client, snapshot):
         response = client.post(
             reverse(views.post_cards),
-            {"card_identifiers": [Cards.GOBLIN.value.identifier]},
+            {"cardIdentifiers": [Cards.GOBLIN.value.identifier]},
             content_type="application/json",
         )
         snapshot_response(response, snapshot)
@@ -475,7 +687,7 @@ class TestPostCards:
     def test_get_multiple_cards(self, client, snapshot):
         response = client.post(
             reverse(views.post_cards),
-            {"card_identifiers": [Cards.GOBLIN.value.identifier, Cards.DELVER_OF_SECRETS.value.identifier]},
+            {"cardIdentifiers": [Cards.GOBLIN.value.identifier, Cards.DELVER_OF_SECRETS.value.identifier]},
             content_type="application/json",
         )
         snapshot_response(response, snapshot)
@@ -483,7 +695,7 @@ class TestPostCards:
     def test_request_card_not_in_the_database(self, client, snapshot):
         response = client.post(
             reverse(views.post_cards),
-            {"card_identifiers": [Cards.GOBLIN.value.identifier, "i don't exist in the database"]},
+            {"cardIdentifiers": [Cards.GOBLIN.value.identifier, "i don't exist in the database"]},
             content_type="application/json",
         )
         snapshot_response(response, snapshot)
@@ -493,7 +705,7 @@ class TestPostCards:
         response = client.post(
             reverse(views.post_cards),
             {
-                "card_identifiers": [
+                "cardIdentifiers": [
                     Cards.GOBLIN.value.identifier,
                     Cards.DELVER_OF_SECRETS.value.identifier,
                     Cards.HUNTMASTER_OF_THE_FELLS.value.identifier,
@@ -509,7 +721,7 @@ class TestPostCards:
         response = client.post(
             reverse(views.post_cards),
             {
-                "card_identifiers": [
+                "cardIdentifiers": [
                     Cards.GOBLIN.value.identifier,
                     Cards.DELVER_OF_SECRETS.value.identifier,
                     Cards.HUNTMASTER_OF_THE_FELLS.value.identifier,
@@ -522,7 +734,7 @@ class TestPostCards:
 
     @pytest.mark.parametrize(
         "json_body",
-        [{}, {"test": "i should be a json body but i ain't"}, {"card_identifiers": "i should be a list but i ain't"}],
+        [{}, {"test": "i should be a json body but i ain't"}, {"cardIdentifiers": "i should be a list but i ain't"}],
         ids=["empty json body", "missing card_identifiers entry", "invalid card_identifiers value"],
     )
     def test_response_to_malformed_json_body(self, client, snapshot, json_body):
@@ -540,6 +752,15 @@ class TestGetSources:
     def test_get_multiple_sources(self, client, snapshot, all_sources):
         response = client.get(reverse(views.get_sources))
         snapshot_response(response, snapshot)
+
+    def test_get_source_with_private_identifier(self, client, db):
+        source = SourceFactory(identifier="secret", external_link=None)
+        response = client.get(reverse(views.get_sources))
+        response_json = response.json()
+        assert len(response_json["results"]) == 1
+        serialised_source = response_json["results"][str(source.pk)]
+        for value in serialised_source.values():
+            assert "secret" not in str(value)
 
     def test_post_request(self, client, django_settings, snapshot):
         response = client.post(reverse(views.get_sources))
@@ -581,19 +802,19 @@ class TestGetTags:
     def test_get_no_data_tags(self, client, django_settings):
         response = client.get(reverse(views.get_tags))
         assert response.json()["tags"] == [
-            {"name": "NSFW", "parent": None, "aliases": [], "children": [], "is_enabled_by_default": True},
+            {"name": "NSFW", "parent": None, "aliases": [], "children": [], "isEnabledByDefault": True},
         ]
 
     def test_get_one_data_tag(self, client, django_settings, tag_in_data):
         response = client.get(reverse(views.get_tags))
         assert response.json()["tags"] == [
-            {"name": "NSFW", "parent": None, "aliases": [], "children": [], "is_enabled_by_default": True},
+            {"name": "NSFW", "parent": None, "aliases": [], "children": [], "isEnabledByDefault": True},
             {
                 "name": "Tag in Data",
                 "parent": None,
                 "aliases": ["TaginData"],
                 "children": [],
-                "is_enabled_by_default": True,
+                "isEnabledByDefault": True,
             },
         ]
 
@@ -605,39 +826,39 @@ class TestGetTags:
                 "parent": None,
                 "aliases": ["AnotherTaginData"],
                 "children": [],
-                "is_enabled_by_default": True,
+                "isEnabledByDefault": True,
             },
-            {"name": "NSFW", "parent": None, "aliases": [], "children": [], "is_enabled_by_default": True},
+            {"name": "NSFW", "parent": None, "aliases": [], "children": [], "isEnabledByDefault": True},
             {
                 "name": "Tag in Data",
                 "parent": None,
                 "aliases": ["TaginData"],
                 "children": [],
-                "is_enabled_by_default": True,
+                "isEnabledByDefault": True,
             },
         ]
 
     def test_get_hierarchical_tags(self, client, django_settings, grandchild_tag):
         response = client.get(reverse(views.get_tags))
         assert response.json()["tags"] == [
-            {"name": "NSFW", "parent": None, "aliases": [], "is_enabled_by_default": True, "children": []},
+            {"name": "NSFW", "parent": None, "aliases": [], "isEnabledByDefault": True, "children": []},
             {
                 "name": "Tag in Data",
                 "parent": None,
                 "aliases": ["TaginData"],
-                "is_enabled_by_default": True,
+                "isEnabledByDefault": True,
                 "children": [
                     {
                         "name": "Child Tag",
                         "parent": "Tag in Data",
                         "aliases": ["ChildTag"],
-                        "is_enabled_by_default": True,
+                        "isEnabledByDefault": True,
                         "children": [
                             {
                                 "name": "Grandchild Tag",
                                 "parent": "Child Tag",
                                 "aliases": ["GrandchildTag"],
-                                "is_enabled_by_default": True,
+                                "isEnabledByDefault": True,
                                 "children": [],
                             }
                         ],
@@ -977,6 +1198,15 @@ class TestGetContributions:
     def test_with_no_sources(self, client, django_settings, snapshot, db):
         response = client.get(reverse(views.get_contributions))
         snapshot_response(response, snapshot)
+
+    def test_get_contribution_with_private_identifier(self, client, db):
+        SourceFactory(identifier="secret", external_link=None)
+        response = client.get(reverse(views.get_contributions))
+        response_json = response.json()
+        assert len(response_json["sources"]) == 1
+        serialised_source = response_json["sources"][0]
+        for value in serialised_source.values():
+            assert "secret" not in str(value)
 
     def test_post_request(self, client, django_settings, snapshot):
         response = client.post(reverse(views.get_contributions))

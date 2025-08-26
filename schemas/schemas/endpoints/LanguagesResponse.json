@@ -1,0 +1,15 @@
+{
+  "title": "Languages Response",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "languages": {
+      "type": "array",
+      "items": {
+        "$ref": "../Language.json"
+      }
+    }
+  },
+  "required": ["languages"],
+  "additionalProperties": false
+}

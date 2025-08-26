@@ -3,28 +3,28 @@
  * Retrieved from https://redux.js.org/usage/writing-tests
  */
 
-import type { PreloadedState } from "@reduxjs/toolkit";
 import { Store } from "@reduxjs/toolkit";
 import { within } from "@testing-library/dom";
 import type { RenderOptions } from "@testing-library/react";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import FileSaver from "file-saver";
 import { MemoryRouterProvider } from "next-router-mock/MemoryRouterProvider";
 import React, { PropsWithChildren } from "react";
 import { Provider } from "react-redux";
 
-import { RootState, setupStore } from "@/app/store";
 import { localBackendURL } from "@/common/test-constants";
 import { Faces } from "@/common/types";
-import { setURL } from "@/features/backend/backendSlice";
-import { LayoutWithoutReduxProvider } from "@/features/ui/layout";
+import { LayoutWithoutReduxProvider } from "@/features/ui/Layout";
+import { setURL } from "@/store/slices/backendSlice";
+import { RootState, setupStore } from "@/store/store";
 
 //# region redux test setup
 
 // This type interface extends the default options for render from RTL, as well
 // as allows the user to specify other things such as initialState, store.
 interface ExtendedRenderOptions extends Omit<RenderOptions, "queries"> {
-  preloadedState?: PreloadedState<RootState>;
+  preloadedState?: Partial<RootState>;
   store?: Store;
 }
 
@@ -81,28 +81,27 @@ export async function expectCardSlotToNotExist(slot: number) {
   );
 }
 
+/**
+ * This function helps with asserting that a particular card slot exists
+ * and has the expected image selected.
+ */
 async function expectCardSlotState(
   testId: string,
   cardName?: string | null,
   selectedImage?: number | null,
   totalImages?: number | null
 ) {
-  /**
-   * This function helps with asserting that a particular card slot exists
-   * and has the expected image selected.
-   */
-
   await waitFor(() => expect(screen.getByTestId(testId)).toBeInTheDocument());
   const cardElement = screen.getByTestId(testId);
-  if (cardName != null) {
-    await waitFor(() =>
-      expect(within(cardElement).getByText(cardName)).toBeInTheDocument()
-    );
-  } else {
+  if (cardName === null) {
     await waitFor(() =>
       expect(
         within(cardElement).getByText("Your search query")
       ).toBeInTheDocument()
+    );
+  } else if (cardName !== undefined) {
+    await waitFor(() =>
+      expect(within(cardElement).getByText(cardName)).toBeInTheDocument()
     );
   }
   if (selectedImage != null && totalImages != null) {
@@ -149,41 +148,14 @@ export async function expectCardbackSlotState(
 
 //# endregion
 
-//# region react-dropzone
-
-function createDtWithFiles(files: File[] = []) {
-  /**
-   * Copy/pasted from react-dropzone test source code.
-   *
-   * createDtWithFiles creates a mock data transfer object that can be used for drop events
-   * @param {File[]} files
-   */
-
-  return {
-    dataTransfer: {
-      files,
-      items: files.map((file) => ({
-        kind: "file",
-        size: file.size,
-        type: file.type,
-        getAsFile: () => file,
-      })),
-      types: ["Files"],
-    },
-  };
-}
-
-//# endregion
-
 //# region UI interactions
 
+/**
+ * Note: the `ping` function from Ping.js must be mocked in tests where you call this function.
+ * We cannot use MSW to intercept Ping.js because that library works by creating an `Image` with
+ * `src` of the site to ping's `favicon.ico`, and MSW can't intercept requests to load images.
+ */
 export async function configureBackend(url: string) {
-  /**
-   * Note: the `ping` function from Ping.js must be mocked in tests where you call this function.
-   * We cannot use MSW to intercept Ping.js because that library works by creating an `Image` with
-   * `src` of the site to ping's `favicon.ico`, and MSW can't intercept requests to load images.
-   */
-
   await waitFor(() => screen.getByLabelText("configure-server-btn").click());
 
   const backendOffcanvas = await waitFor(() =>
@@ -193,7 +165,11 @@ export async function configureBackend(url: string) {
   const textField = await waitFor(() =>
     within(backendOffcanvas).getByLabelText("backend-url")
   );
-  fireEvent.change(textField, { target: { value: url } });
+  const user = userEvent.setup();
+  await user.clear(textField);
+  if (url !== "") {
+    await user.type(textField, url);
+  }
   within(backendOffcanvas).getByLabelText("submit-backend-url").click();
   await waitFor(() =>
     expect(
@@ -239,7 +215,11 @@ export async function openImportTextModal() {
 
 export async function importText(text: string) {
   const textArea = await openImportTextModal();
-  fireEvent.change(textArea, { target: { value: text } });
+  const user = userEvent.setup();
+  await user.clear(textArea);
+  if (text !== "") {
+    await user.type(textArea, text);
+  }
   screen.getByLabelText("import-text-submit").click();
 }
 
@@ -251,15 +231,14 @@ export async function openImportCSVModal() {
   await waitFor(() => expect(screen.getByText("Add Cards — CSV")));
   const dropzone = screen.getByLabelText("import-csv");
   await waitFor(() => expect(dropzone).not.toBeDisabled()); // here, we wait for DFC pairs to be loaded
-  return dropzone;
+  return dropzone.querySelector("input")!;
 }
 
 export async function importCSV(fileContents: string) {
+  const user = userEvent.setup();
   const dropzone = await openImportCSVModal();
-
   const file = new File([fileContents], "test.csv", { type: "text/csv" });
-
-  fireEvent.drop(dropzone, createDtWithFiles([file]));
+  await user.upload(dropzone, [file]);
 }
 
 export async function openImportXMLModal() {
@@ -270,13 +249,14 @@ export async function openImportXMLModal() {
   await waitFor(() => expect(screen.getByText("Add Cards — XML")));
   const dropzone = screen.getByLabelText("import-xml");
   await waitFor(() => expect(dropzone).not.toBeDisabled()); // here, we wait for DFC pairs to be loaded
-  return dropzone;
+  return dropzone.querySelector("input")!;
 }
 
 export async function importXML(
   fileContents: string,
   useXMLCardback: boolean = false
 ) {
+  const user = userEvent.setup();
   const dropzone = await openImportXMLModal();
 
   const file = new File([fileContents], "test.xml", {
@@ -286,7 +266,7 @@ export async function importXML(
     await waitFor(() => screen.getByText("Retain Selected Cardback").click());
   }
 
-  fireEvent.drop(dropzone, createDtWithFiles([file]));
+  await user.upload(dropzone, [file]);
 }
 
 export async function openImportURLModal() {
@@ -322,6 +302,25 @@ async function openGridSelector(
   return screen.getByTestId(gridSelectorTestId);
 }
 
+export async function openChangeQueryModal(
+  cardSlotTestId: string,
+  cardName: string
+) {
+  await waitFor(() =>
+    within(screen.getByTestId(cardSlotTestId)).getByText(cardName).click()
+  );
+  return screen.getByTestId("change-query-modal");
+}
+
+export async function changeQuery(
+  cardSlotTestId: string,
+  cardName: string,
+  newQuery: string
+) {
+  const modal = await openChangeQueryModal(cardSlotTestId, cardName);
+  await changeQueries(newQuery);
+}
+
 export async function openCardSlotGridSelector(
   slot: number,
   face: Faces,
@@ -342,11 +341,19 @@ export async function selectSlot(
   clickType: "double" | "shift" | null = null
 ) {
   const cardElement = screen.getByTestId(`${face}-slot${slot - 1}`);
-  fireEvent.click(
-    within(cardElement).getByLabelText(`select-${face}${slot - 1}`)!
-      .children[0],
-    { detail: clickType === "double" ? 2 : 1, shiftKey: clickType === "shift" }
-  );
+  const user = userEvent.setup();
+  const element = within(cardElement).getByLabelText(
+    `select-${face}${slot - 1}`
+  )!.children[0];
+  if (clickType === "double") {
+    fireEvent.click(element, { detail: 2 });
+  } else if (clickType === "shift") {
+    await user.keyboard("{Shift>}");
+    await user.click(element);
+    await user.keyboard("{/Shift}");
+  } else {
+    await user.click(element);
+  }
   await waitFor(() =>
     expect(
       within(cardElement).getByLabelText(`select-${face}${slot - 1}`)!
@@ -357,7 +364,8 @@ export async function selectSlot(
 
 export async function deselectSlot(slot: number, face: Faces) {
   const cardElement = screen.getByTestId(`${face}-slot${slot - 1}`);
-  fireEvent.click(
+  const user = userEvent.setup();
+  await user.click(
     within(cardElement).getByLabelText(`select-${face}${slot - 1}`)!.children[0]
   );
   await waitFor(() =>
@@ -386,7 +394,11 @@ export async function changeQueries(query: string) {
   const textField = await waitFor(() =>
     screen.getByLabelText("change-selected-image-queries-text")
   );
-  fireEvent.change(textField, { target: { value: query } });
+  const user = userEvent.setup();
+  await user.clear(textField);
+  if (query !== "") {
+    await user.type(textField, query);
+  }
   screen.getByLabelText("change-selected-image-queries-submit").click();
 }
 
@@ -456,11 +468,10 @@ export async function downloadDecklist() {
 
 //# region misc
 
+/**
+ * Pretty gross, but useful for asserting that generated XMLs are as expected.
+ */
 export function normaliseString(text: string): string {
-  /**
-   * Pretty gross, but useful for asserting that generated XMLs are as expected.
-   */
-
   return text.replaceAll(" ", "").replaceAll("\n", "").replaceAll("\r", "");
 }
 

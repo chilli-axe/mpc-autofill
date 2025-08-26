@@ -1,7 +1,6 @@
 import time
 from typing import Any, Optional
 
-from django.core import management
 from django.core.management.base import BaseCommand
 
 from cardpicker.models import Source
@@ -23,6 +22,4 @@ class Command(BaseCommand):
         drive: Optional[str] = kwargs.get("drive", None)
         t0 = time.time()
         update_database(source_key=drive)
-        management.call_command("search_index", "--rebuild", "-f")
-        print("")
         log_hours_minutes_seconds_elapsed(t0)

@@ -3,10 +3,13 @@ from typing import Type
 
 import pytest
 from pytest_elasticsearch import factories
+from testcontainers.elasticsearch import ElasticSearchContainer
+from testcontainers.postgres import PostgresContainer
 
+from django.conf import settings as conf_settings
 from django.core.management import call_command
 
-from cardpicker.integrations.base import GameIntegration
+from cardpicker.integrations.game.base import GameIntegration
 from cardpicker.models import Card, CardTypes, DFCPair, Source, Tag
 from cardpicker.tests.constants import Cards, DummyIntegration, Sources
 from cardpicker.tests.factories import (
@@ -16,12 +19,44 @@ from cardpicker.tests.factories import (
     TagFactory,
 )
 
+POSTGRES_PORT = 47000
+ELASTICSEARCH_PORT = 9300  # this is the default expected by `elasticsearch_nooproc`
+
+
+@pytest.fixture(scope="session")
+def postgres_container():
+    postgres = PostgresContainer("postgres:16.0-alpine").with_bind_ports(5432, POSTGRES_PORT)
+    postgres.start()
+    yield postgres
+    postgres.stop()
+
+
+@pytest.fixture(scope="session")
+def elasticsearch_container():
+    elasticsearch = ElasticSearchContainer("elasticsearch:7.17.23", mem_limit="1G").with_bind_ports(
+        9200, ELASTICSEARCH_PORT
+    )
+    elasticsearch.start()
+    yield elasticsearch
+    elasticsearch.stop()
+
+
+@pytest.fixture(scope="session")
+def django_db_modify_db_settings(postgres_container):
+    # customise settings to point to testcontainers db
+    conf_settings.DATABASES["default"]["HOST"] = postgres_container.get_container_host_ip()
+    conf_settings.DATABASES["default"]["PORT"] = POSTGRES_PORT
+    conf_settings.DATABASES["default"]["NAME"] = postgres_container.dbname
+    conf_settings.DATABASES["default"]["USER"] = postgres_container.username
+    conf_settings.DATABASES["default"]["PASSWORD"] = postgres_container.password
+
 
 @pytest.fixture()
 def django_settings(db, settings):
     settings.DEBUG = True
     settings.DEFAULT_CARDBACK_FOLDER_PATH = "MPC Autofill Sample 1 / Cardbacks"
     settings.DEFAULT_CARDBACK_IMAGE_NAME = Cards.SIMPLE_CUBE.value.name
+    settings.TIME_ZONE = "UTC"
 
 
 @pytest.fixture()
@@ -42,11 +77,11 @@ def dummy_integration(integration_setter) -> Type[GameIntegration]:
 
 
 @pytest.fixture(scope="session", autouse=True)
-def elasticsearch():
-    """
-    This fixture expects elasticsearch to be running on your machine.
-    """
-
+def elasticsearch(elasticsearch_container):
+    conf_settings.ELASTICSEARCH_DSL["default"][
+        "hosts"
+    ] = f"{elasticsearch_container.get_container_host_ip()}:{ELASTICSEARCH_PORT}"
+    conf_settings.ELASTICSEARCH_PORT = ELASTICSEARCH_PORT
     return factories.elasticsearch("elasticsearch_nooproc")
 
 
@@ -97,7 +132,7 @@ def brainstorm(example_drive_1) -> Card:
         source=example_drive_1,
         priority=2,
         size=Cards.BRAINSTORM.value.size,
-        date=dt.datetime(2023, 1, 1),
+        date_created=dt.datetime(2023, 1, 1),
     )
 
 
@@ -112,7 +147,7 @@ def island(example_drive_1) -> Card:
         source=example_drive_1,
         priority=7,
         size=Cards.ISLAND.value.size,
-        date=dt.datetime(2023, 1, 1),
+        date_created=dt.datetime(2023, 1, 1),
     )
 
 
@@ -127,7 +162,7 @@ def island_classical(example_drive_1) -> Card:
         source=example_drive_1,
         priority=6,
         size=Cards.ISLAND_CLASSICAL.value.size,
-        date=dt.datetime(2023, 1, 1),
+        date_created=dt.datetime(2023, 1, 1),
         language="FR",
     )
 
@@ -143,7 +178,7 @@ def mountain(example_drive_1) -> Card:
         source=example_drive_1,
         priority=7,
         size=Cards.MOUNTAIN.value.size,
-        date=dt.datetime(2023, 1, 1),
+        date_created=dt.datetime(2023, 1, 1),
     )
 
 
@@ -158,7 +193,7 @@ def simple_cube(example_drive_1, tag_in_data, another_tag_in_data) -> Card:
         source=example_drive_1,
         priority=17,
         size=Cards.SIMPLE_CUBE.value.size,
-        date=dt.datetime(2023, 1, 1),
+        date_created=dt.datetime(2023, 1, 1),
         tags=[tag_in_data.name, another_tag_in_data.name],
         language="DE",
     )
@@ -175,7 +210,7 @@ def simple_lotus(example_drive_2, tag_in_data) -> Card:
         source=example_drive_2,
         priority=7,
         size=Cards.SIMPLE_LOTUS.value.size,
-        date=dt.datetime(2023, 1, 1),
+        date_created=dt.datetime(2023, 1, 1),
         tags=[tag_in_data.name],
         language="EN",
     )
@@ -192,7 +227,7 @@ def huntmaster_of_the_fells(example_drive_1) -> Card:
         source=example_drive_1,
         priority=2,
         size=Cards.HUNTMASTER_OF_THE_FELLS.value.size,
-        date=dt.datetime(2023, 1, 1),
+        date_created=dt.datetime(2023, 1, 1),
     )
 
 
@@ -207,7 +242,7 @@ def ravager_of_the_fells(example_drive_1) -> Card:
         source=example_drive_1,
         priority=2,
         size=Cards.RAVAGER_OF_THE_FELLS.value.size,
-        date=dt.datetime(2023, 1, 1),
+        date_created=dt.datetime(2023, 1, 1),
     )
 
 
@@ -222,7 +257,7 @@ def past_in_flames_1(example_drive_1, tag_in_data) -> Card:
         source=example_drive_1,
         priority=2,
         size=Cards.PAST_IN_FLAMES_1.value.size,
-        date=dt.datetime(2023, 1, 1),
+        date_created=dt.datetime(2023, 1, 1),
         tags=[tag_in_data.name],
         language="EN",
     )
@@ -239,7 +274,7 @@ def past_in_flames_2(example_drive_2, tag_in_data, another_tag_in_data) -> Card:
         source=example_drive_2,
         priority=2,
         size=Cards.PAST_IN_FLAMES_2.value.size,
-        date=dt.datetime(2023, 1, 1),
+        date_created=dt.datetime(2023, 1, 1),
         tags=[tag_in_data.name, another_tag_in_data.name],
         language="DE",
     )
@@ -256,7 +291,7 @@ def delver_of_secrets(example_drive_1) -> Card:
         source=example_drive_1,
         priority=2,
         size=Cards.DELVER_OF_SECRETS.value.size,
-        date=dt.datetime(2023, 1, 1),
+        date_created=dt.datetime(2023, 1, 1),
     )
 
 
@@ -271,7 +306,7 @@ def insectile_aberration(example_drive_1) -> Card:
         source=example_drive_1,
         priority=2,
         size=Cards.INSECTILE_ABERRATION.value.size,
-        date=dt.datetime(2023, 1, 1),
+        date_created=dt.datetime(2023, 1, 1),
     )
 
 
@@ -286,7 +321,7 @@ def goblin(example_drive_1) -> Card:
         source=example_drive_1,
         priority=2,
         size=Cards.GOBLIN.value.size,
-        date=dt.datetime(2023, 1, 1),
+        date_created=dt.datetime(2023, 1, 1),
     )
 
 

@@ -19,11 +19,13 @@ class SourceFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.Source
 
+    identifier = factory.Sequence(lambda n: f"source_{n}")
     key = factory.Sequence(lambda n: f"source_{n}")
     name = factory.Sequence(lambda n: f"Source {n}")
     source_type = models.SourceTypeChoices.GOOGLE_DRIVE
     description = factory.LazyAttribute(lambda o: f"Description for {o.key}")
     ordinal = factory.Sequence(lambda n: n)
+    external_link = factory.LazyAttribute(lambda o: f"https://example.com/{o.identifier}")
 
 
 class CardFactory(factory.django.DjangoModelFactory):
@@ -31,7 +33,8 @@ class CardFactory(factory.django.DjangoModelFactory):
         model = models.Card
 
     card_type = models.CardTypes.CARD
-    date = factory.LazyFunction(lambda: dt.datetime(2023, 1, 1))  # for snapshot consistency
+    date_created = factory.LazyFunction(lambda: dt.datetime(2023, 1, 1))  # for snapshot consistency
+    date_modified = factory.LazyAttribute(lambda o: o.date_created)
     identifier = factory.Sequence(lambda n: f"card_{n}")
     name = factory.Sequence(lambda n: f"Card {n}")
     priority = factory.Sequence(lambda n: n)
@@ -40,7 +43,6 @@ class CardFactory(factory.django.DjangoModelFactory):
     folder_location = factory.LazyFunction(lambda: "path")
     dpi = factory.LazyFunction(lambda: 800)
     searchq = factory.LazyAttribute(lambda o: to_searchable(o.name))
-    searchq_keyword = factory.LazyAttribute(lambda o: to_searchable(o.name))
     extension = factory.LazyFunction(lambda: "png")
     size = factory.LazyFunction(lambda: 100)
     language = factory.LazyAttribute(lambda o: "en")

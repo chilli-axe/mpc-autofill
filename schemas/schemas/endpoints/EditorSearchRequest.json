@@ -1,0 +1,19 @@
+{
+  "title": "Editor Search Request",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "queries": {
+      "type": "array",
+      "items": {
+        "$ref": "../SearchQuery.json"
+      },
+      "uniqueItems": true
+    },
+    "searchSettings": {
+      "$ref": "../SearchSettings.json"
+    }
+  },
+  "required": ["queries", "searchSettings"],
+  "additionalProperties": false
+}

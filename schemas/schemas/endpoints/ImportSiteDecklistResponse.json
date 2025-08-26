@@ -1,0 +1,12 @@
+{
+  "title": "Import Site Decklist Response",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "cards": {
+      "type": "string"
+    }
+  },
+  "required": ["cards"],
+  "additionalProperties": false
+}

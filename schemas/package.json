@@ -1,0 +1,18 @@
+{
+  "dependencies": {
+    "node": "^21.6.1",
+    "quicktype-core": "^23.0.171",
+    "tsx": "^4.19.3",
+    "typescript": "^5.3.3"
+  },
+  "scripts": {
+    "build": "npx tsx ./quicktype.ts"
+  },
+  "devDependencies": {
+    "@eslint/js": "*",
+    "@types/node": "^22.13.1",
+    "eslint": "*",
+    "globals": "*",
+    "typescript-eslint": "*"
+  }
+}

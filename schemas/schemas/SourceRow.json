@@ -1,0 +1,16 @@
+{
+  "title": "Source Row",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "array",
+  "items": [
+    {
+      "type": "integer",
+      "description": "The source's primary key",
+      "minimum": 0
+    },
+    {
+      "type": "boolean",
+      "description": "Whether the source is enabled for searching"
+    }
+  ]
+}

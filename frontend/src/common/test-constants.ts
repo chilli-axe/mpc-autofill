@@ -3,12 +3,11 @@
  */
 
 import { Card, MaximumDPI, MaximumSize, MinimumDPI } from "@/common/constants";
+import { CardType as CardTypeSchema, SourceType } from "@/common/schema_types";
 import {
   BackendState,
   CardDocument,
-  CardDocumentsState,
   Project,
-  SearchResultsState,
   SearchSettings,
   SourceDocument,
   SourceDocuments,
@@ -28,9 +27,8 @@ export const sourceDocument1: SourceDocument = {
   pk: 0,
   key: "source_1",
   name: "Source 1",
-  identifier: "id_1",
-  source_type: "Google Drive",
-  external_link: null,
+  sourceType: SourceType.GoogleDrive,
+  externalLink: undefined,
   description: "",
 };
 
@@ -38,9 +36,8 @@ export const sourceDocument2: SourceDocument = {
   pk: 1,
   key: "source_2",
   name: "Source 2",
-  identifier: "id_2",
-  source_type: "Google Drive",
-  external_link: null,
+  sourceType: SourceType.GoogleDrive,
+  externalLink: undefined,
   description: "",
 };
 
@@ -48,9 +45,8 @@ export const sourceDocument3: SourceDocument = {
   pk: 2,
   key: "source_3",
   name: "Source 3",
-  identifier: "id_3",
-  source_type: "Google Drive",
-  external_link: null,
+  sourceType: SourceType.GoogleDrive,
+  externalLink: undefined,
   description: "",
 };
 
@@ -58,9 +54,8 @@ export const sourceDocument4: SourceDocument = {
   pk: 3,
   key: "source_4",
   name: "Source 4",
-  identifier: "id_4",
-  source_type: "Google Drive",
-  external_link: null,
+  sourceType: SourceType.GoogleDrive,
+  externalLink: undefined,
   description: "",
 };
 
@@ -77,138 +72,144 @@ export const sourceDocuments: SourceDocuments = {
 
 export const cardDocument1: CardDocument = {
   identifier: "abc123",
-  card_type: "CARD",
+  cardType: CardTypeSchema.Card,
   name: "Card 1",
   priority: 0,
   source: sourceDocument1.key,
-  source_name: sourceDocument1.name,
-  source_id: sourceDocument1.pk,
-  source_verbose: sourceDocument1.name,
-  source_type: "Google Drive",
-  source_external_link: null,
+  sourceName: sourceDocument1.name,
+  sourceId: sourceDocument1.pk,
+  sourceVerbose: sourceDocument1.name,
+  sourceType: SourceType.GoogleDrive,
+  sourceExternalLink: undefined,
   dpi: 1200,
   searchq: "card 1",
   extension: "png",
-  date: "1st January, 2000", // formatted by backend
-  download_link: "",
+  dateCreated: "1st January, 2000", // formatted by backend
+  dateModified: "1st January, 2000", // formatted by backend
+  downloadLink: "",
   size: 10_000_000,
-  small_thumbnail_url: "",
-  medium_thumbnail_url: "",
+  smallThumbnailUrl: "",
+  mediumThumbnailUrl: "",
   language: "EN",
   tags: [],
 };
 
 export const cardDocument2: CardDocument = {
   identifier: "abc1234",
-  card_type: "CARD",
+  cardType: CardTypeSchema.Card,
   name: "Card 2",
   priority: 0,
   source: sourceDocument1.key,
-  source_name: sourceDocument1.name,
-  source_id: sourceDocument1.pk,
-  source_verbose: sourceDocument1.name,
-  source_type: "Google Drive",
-  source_external_link: null,
+  sourceName: sourceDocument1.name,
+  sourceId: sourceDocument1.pk,
+  sourceVerbose: sourceDocument1.name,
+  sourceType: SourceType.GoogleDrive,
+  sourceExternalLink: undefined,
   dpi: 1200,
   searchq: "card 2",
   extension: "png",
-  date: "1st January, 2000", // formatted by backend
-  download_link: "",
+  dateCreated: "1st January, 2000", // formatted by backend
+  dateModified: "1st January, 2000", // formatted by backend
+  downloadLink: "",
   size: 10_000_000,
-  small_thumbnail_url: "",
-  medium_thumbnail_url: "",
+  smallThumbnailUrl: "",
+  mediumThumbnailUrl: "",
   language: "EN",
   tags: [],
 };
 
 export const cardDocument3: CardDocument = {
   identifier: "abc12345",
-  card_type: "CARD",
+  cardType: CardTypeSchema.Card,
   name: "Card 3",
   priority: 0,
   source: sourceDocument1.key,
-  source_name: sourceDocument1.name,
-  source_id: sourceDocument1.pk,
-  source_verbose: sourceDocument1.name,
-  source_type: "Google Drive",
-  source_external_link: null,
+  sourceName: sourceDocument1.name,
+  sourceId: sourceDocument1.pk,
+  sourceVerbose: sourceDocument1.name,
+  sourceType: SourceType.GoogleDrive,
+  sourceExternalLink: undefined,
   dpi: 1200,
   searchq: "card 3",
   extension: "png",
-  date: "1st January, 2000", // formatted by backend
-  download_link: "",
+  dateCreated: "1st January, 2000", // formatted by backend
+  dateModified: "1st January, 2000", // formatted by backend
+  downloadLink: "",
   size: 10_000_000,
-  small_thumbnail_url: "",
-  medium_thumbnail_url: "",
+  smallThumbnailUrl: "",
+  mediumThumbnailUrl: "",
   language: "EN",
   tags: [],
 };
 
 export const cardDocument4: CardDocument = {
   identifier: "abc123456",
-  card_type: "CARD",
+  cardType: CardTypeSchema.Card,
   name: "Card 4",
   priority: 0,
   source: sourceDocument1.key,
-  source_name: sourceDocument1.name,
-  source_id: sourceDocument1.pk,
-  source_verbose: sourceDocument1.name,
-  source_type: "Google Drive",
-  source_external_link: null,
+  sourceName: sourceDocument1.name,
+  sourceId: sourceDocument1.pk,
+  sourceVerbose: sourceDocument1.name,
+  sourceType: SourceType.GoogleDrive,
+  sourceExternalLink: undefined,
   dpi: 1200,
   searchq: "card 4",
   extension: "png",
-  date: "1st January, 2000", // formatted by backend
-  download_link: "",
+  dateCreated: "1st January, 2000", // formatted by backend
+  dateModified: "1st January, 2000", // formatted by backend
+  downloadLink: "",
   size: 10_000_000,
-  small_thumbnail_url: "",
-  medium_thumbnail_url: "",
+  smallThumbnailUrl: "",
+  mediumThumbnailUrl: "",
   language: "EN",
   tags: [],
 };
 
 export const cardDocument5: CardDocument = {
   identifier: "abc1234567",
-  card_type: "CARDBACK",
+  cardType: CardTypeSchema.Cardback,
   name: "Card 5",
   priority: 0,
   source: sourceDocument2.key,
-  source_name: sourceDocument2.name,
-  source_id: sourceDocument2.pk,
-  source_verbose: `${sourceDocument2.name} Cardbacks`,
-  source_type: "Google Drive",
-  source_external_link: null,
+  sourceName: sourceDocument2.name,
+  sourceId: sourceDocument2.pk,
+  sourceVerbose: `${sourceDocument2.name} Cardbacks`,
+  sourceType: SourceType.GoogleDrive,
+  sourceExternalLink: undefined,
   dpi: 1200,
   searchq: "card 5",
   extension: "png",
-  date: "1st January, 2000", // formatted by backend
-  download_link: "",
+  dateCreated: "1st January, 2000", // formatted by backend
+  dateModified: "1st January, 2000", // formatted by backend
+  downloadLink: "",
   size: 10_000_000,
-  small_thumbnail_url: "",
-  medium_thumbnail_url: "",
+  smallThumbnailUrl: "",
+  mediumThumbnailUrl: "",
   language: "EN",
   tags: [],
 };
 
 export const cardDocument6: CardDocument = {
   identifier: "abc12345678",
-  card_type: "TOKEN",
+  cardType: CardTypeSchema.Token,
   name: "Card 6",
   priority: 0,
   source: sourceDocument3.key,
-  source_name: sourceDocument3.name,
-  source_id: sourceDocument3.pk,
-  source_verbose: `${sourceDocument3.name} Tokens`,
-  source_type: "Google Drive",
-  source_external_link: null,
+  sourceName: sourceDocument3.name,
+  sourceId: sourceDocument3.pk,
+  sourceVerbose: `${sourceDocument3.name} Tokens`,
+  sourceType: SourceType.GoogleDrive,
+  sourceExternalLink: undefined,
   dpi: 1200,
   searchq: "card 6",
   extension: "png",
-  date: "1st January, 2000", // formatted by backend
-  download_link: "",
+  dateCreated: "1st January, 2000", // formatted by backend
+  dateModified: "1st January, 2000", // formatted by backend
+  downloadLink: "",
   size: 10_000_000,
-  small_thumbnail_url: "",
-  medium_thumbnail_url: "",
+  smallThumbnailUrl: "",
+  mediumThumbnailUrl: "",
   language: "EN",
   tags: [],
 };
@@ -221,7 +222,7 @@ export const projectSelectedImage1: Project = {
   members: [
     {
       front: {
-        query: { query: "my search query", card_type: Card },
+        query: { query: "my search query", cardType: Card },
         selectedImage: cardDocument1.identifier,
         selected: false,
       },
@@ -236,7 +237,7 @@ export const projectThreeMembersSelectedImage1: Project = {
   members: [
     {
       front: {
-        query: { query: "my search query", card_type: Card },
+        query: { query: "my search query", cardType: Card },
         selectedImage: cardDocument1.identifier,
         selected: false,
       },
@@ -244,7 +245,7 @@ export const projectThreeMembersSelectedImage1: Project = {
     },
     {
       front: {
-        query: { query: "my search query", card_type: Card },
+        query: { query: "my search query", cardType: Card },
         selectedImage: cardDocument1.identifier,
         selected: false,
       },
@@ -252,7 +253,7 @@ export const projectThreeMembersSelectedImage1: Project = {
     },
     {
       front: {
-        query: { query: "my search query", card_type: Card },
+        query: { query: "my search query", cardType: Card },
         selectedImage: cardDocument1.identifier,
         selected: false,
       },
@@ -267,7 +268,7 @@ export const projectSelectedImage2: Project = {
   members: [
     {
       front: {
-        query: { query: "my search query", card_type: Card },
+        query: { query: "my search query", cardType: Card },
         selectedImage: cardDocument2.identifier,
         selected: false,
       },

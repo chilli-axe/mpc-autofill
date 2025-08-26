@@ -33,7 +33,6 @@ repos:
             "types-selenium",
             "types-requests",
             "types-chardet",
-            "types-jsonschema",
             # shared between desktop tool and backend
             "pytest~=7.3",
             "ratelimit~=2.2",
@@ -47,13 +46,14 @@ repos:
             "django-elasticsearch-dsl~=7.3.0",
             "django-bulk-sync~=3.3.0",
             "django-environ~=0.10.0",
+            "django-q2~=1.8.0",
             "google-api-python-client~=2.86",
-            "jsonschema~=4.20.0",
             "Levenshtein~=0.23.0",
             "oauth2client~=4.1",
             "Markdown~=3.4",
             "psycopg2-binary~=2.9.6",
             "pycountry~=22.3.0",
+            "pydantic~=2.10.0",
             "sentry-sdk~=1.30.0",
             "tqdm~=4.65",
           ]
@@ -72,7 +72,7 @@ repos:
           - eslint@8.24.0
           - typescript@4.9.4
           - eslint-config-prettier@v8.5.0
-          - eslint-config-next@v13.2.4
+          - eslint-config-next@v14.2.16
           - eslint-plugin-promise@v6.0.1
           - eslint-plugin-n@v15.3.0
           - eslint-plugin-import@v2.26.0

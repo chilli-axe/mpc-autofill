@@ -1,0 +1,15 @@
+{
+  "title": "Tags Response",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "tags": {
+      "type": "array",
+      "items": {
+        "$ref": "../Tag.json"
+      }
+    }
+  },
+  "required": ["tags"],
+  "additionalProperties": false
+}

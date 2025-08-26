@@ -1,0 +1,97 @@
+{
+  "title": "Card",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "identifier": {
+      "type": "string"
+    },
+    "cardType": {
+      "$ref": "./CardType.json"
+    },
+    "name": {
+      "type": "string"
+    },
+    "priority": {
+      "type": "integer"
+    },
+    "source": {
+      "type": "string"
+    },
+    "sourceName": {
+      "type": "string"
+    },
+    "sourceId": {
+      "type": "integer"
+    },
+    "sourceVerbose": {
+      "type": "string"
+    },
+    "sourceType": {
+      "$ref": "./SourceType.json"
+    },
+    "sourceExternalLink": {
+      "type": "string"
+    },
+    "dpi": {
+      "type": "integer"
+    },
+    "searchq": {
+      "type": "string"
+    },
+    "extension": {
+      "type": "string"
+    },
+    "dateCreated": {
+      "description": "Created date - formatted by backend",
+      "type": "string"
+    },
+    "dateModified": {
+      "description": "Modified date - formatted by backend",
+      "type": "string"
+    },
+    "downloadLink": {
+      "type": "string"
+    },
+    "size": {
+      "type": "integer"
+    },
+    "smallThumbnailUrl": {
+      "type": "string"
+    },
+    "mediumThumbnailUrl": {
+      "type": "string"
+    },
+    "language": {
+      "type": "string"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "identifier",
+    "cardType",
+    "name",
+    "priority",
+    "source",
+    "sourceName",
+    "sourceId",
+    "sourceVerbose",
+    "dpi",
+    "searchq",
+    "extension",
+    "dateCreated",
+    "dateModified",
+    "downloadLink",
+    "size",
+    "smallThumbnailUrl",
+    "mediumThumbnailUrl",
+    "language",
+    "tags"
+  ],
+  "additionalProperties": false
+}

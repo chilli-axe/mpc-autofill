@@ -15,13 +15,19 @@ const config = {
     "next-router-mock",
   ],
 
-  testEnvironment: "jest-environment-jsdom",
+  // https://mswjs.io/docs/migrations/1.x-to-2.x#requestresponsetextencoder-is-not-defined-jest
+  testEnvironment: "jest-fixed-jsdom",
+  // https://mswjs.io/docs/migrations/1.x-to-2.x#cannot-find-module-mswnode-jsdom
+  testEnvironmentOptions: {
+    customExportConditions: [""],
+  },
   runtime: "@side/jest-runtime",
   transform: {
     "^.+\\.ts$": "@swc/jest",
   },
   injectGlobals: true,
   testTimeout: 20_000,
+  maxWorkers: 4,
 };
 
 // createJestConfig is exported this way to ensure that next/jest can load the Next.js config which is async

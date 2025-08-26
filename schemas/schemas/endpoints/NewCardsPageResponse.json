@@ -1,0 +1,15 @@
+{
+  "title": "New Cards Page Response",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "cards": {
+      "type": "array",
+      "items": {
+        "$ref": "../Card.json"
+      }
+    }
+  },
+  "required": ["cards"],
+  "additionalProperties": false
+}
