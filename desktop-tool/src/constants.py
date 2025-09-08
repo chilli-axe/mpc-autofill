@@ -172,7 +172,17 @@ class TargetSites(Enum):
             Cardstocks.P10: "Kunststoff",
         },
     )
-
+    PrinterStudioFR = TargetSite(
+        base_url="https://www.printerstudio.fr",
+        starting_url_route="personnalise/cartes-de-jeu-sur-mesure-cartes-blanches.html",
+        supports_foil=False,
+        cardstock_site_name_mapping={
+            Cardstocks.S30: "Standard (lisse)",
+            Cardstocks.S33: "Superieur (lisse)",
+            Cardstocks.M31: "Premium (lin)",
+            Cardstocks.P10: "Plastic (100%)",
+        },
+    )
 
 DPI_HEIGHT_RATIO = 300 / 1110  # TODO: share this between desktop tool and backend
 
