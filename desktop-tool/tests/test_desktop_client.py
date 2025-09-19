@@ -15,6 +15,7 @@ from selenium.webdriver.support.wait import WebDriverWait
 
 import src
 import src.constants as constants
+from src.constants import OrderFulfilmentMethod
 from src.driver import AutofillDriver
 from src.exc import ValidationException
 from src.formatting import text_to_set
@@ -1426,7 +1427,7 @@ def test_card_order_complete_run_single_cardback(browser, site, input_enter, car
     autofill_driver = AutofillDriver(browser=browser, target_site=site, headless=True)
     autofill_driver.execute_order(
         order=card_order_valid,
-        skip_setup=False,
+        fulfilment_method=OrderFulfilmentMethod.new_project,
         auto_save_threshold=None,
         post_processing_config=DEFAULT_POST_PROCESSING,
     )
@@ -1455,7 +1456,7 @@ def test_card_order_complete_run_multiple_cardbacks(browser, site, input_enter, 
     autofill_driver = AutofillDriver(browser=browser, target_site=site, headless=True)
     autofill_driver.execute_order(
         order=card_order_multiple_cardbacks,
-        skip_setup=False,
+        fulfilment_method=OrderFulfilmentMethod.new_project,
         auto_save_threshold=None,
         post_processing_config=DEFAULT_POST_PROCESSING,
     )

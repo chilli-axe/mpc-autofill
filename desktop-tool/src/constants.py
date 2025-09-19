@@ -7,6 +7,15 @@ from PIL import Image
 import src.webdrivers as wd
 
 
+class OrderFulfilmentMethod(str, Enum):
+    new_project = "Create a new project (default)"
+    append_to_project = "Add more cards to an existing project"
+    continue_project = "Continue editing an existing project"
+
+    def __str__(self) -> str:
+        return self.value
+
+
 class States(str, Enum):
     initialising = "Initialising"
     initialised = "Initialised"

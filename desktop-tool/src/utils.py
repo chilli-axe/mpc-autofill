@@ -7,6 +7,7 @@ from xml.etree.ElementTree import Element
 
 from InquirerPy import inquirer
 from selenium.common.exceptions import (
+    JavascriptException,
     NoAlertPresentException,
     NoSuchWindowException,
     UnexpectedAlertPresentException,
@@ -79,6 +80,16 @@ def exception_retry_skip_handler(func: F) -> F:
                     sys.exit(0)
                 else:
                     return None
+
+    return cast(F, wrapper)
+
+
+def ignore_javascript_errors(func: F) -> F:
+    def wrapper(*args: Any, **kwargs: dict[str, Any]) -> Optional[F]:
+        try:
+            return func(*args, **kwargs)
+        except JavascriptException:
+            return None
 
     return cast(F, wrapper)
 

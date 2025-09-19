@@ -16,6 +16,7 @@ from InquirerPy import prompt
 from sanitize_filename import sanitize
 
 from src import constants
+from src.constants import PROJECT_MAX_SIZE
 from src.exc import ValidationException
 from src.formatting import bold, text_to_set
 from src.io import (
@@ -146,7 +147,7 @@ class CardImage:
 
     def download_image(
         self,
-        queue: Queue["CardImage"],
+        queue: Queue[tuple[str, bool]],
         download_bar: enlighten.Counter,
         post_processing_config: Optional[ImagePostProcessingConfig],
     ) -> None:
@@ -171,7 +172,7 @@ class CardImage:
                 f"Download link - {bold(f'https://drive.google.com/uc?id={self.drive_id}&export=download')}\n"
             )
         finally:
-            queue.put(self)
+            queue.put((self.drive_id, self.downloaded))
             download_bar.update()
             download_bar.refresh()
 
@@ -179,6 +180,15 @@ class CardImage:
         return CardImage(
             drive_id=self.drive_id,
             slots={slot + offset for slot in self.slots},
+            name=self.name,
+            file_path=self.file_path,
+            query=self.query,
+        )
+
+    def truncate(self) -> "CardImage":
+        return CardImage(
+            drive_id=self.drive_id,
+            slots={slot for slot in self.slots if slot < PROJECT_MAX_SIZE},
             name=self.name,
             file_path=self.file_path,
             query=self.query,
@@ -215,7 +225,7 @@ class CardImageCollection:
     """
 
     cards_by_id: dict[str, CardImage] = attr.ib(factory=dict)  # keyed by ID
-    queue: Queue[CardImage] = attr.ib(init=False, default=attr.Factory(Queue))
+    queue: Queue[tuple[str, bool]] = attr.ib(default=attr.Factory(Queue))
     num_slots: int = attr.ib(default=0)
     face: constants.Faces = attr.ib(default=constants.Faces.front)
 
@@ -246,6 +256,15 @@ class CardImageCollection:
             cards_by_id={drive_id: card.offset_slots(offset=offset) for drive_id, card in self.cards_by_id.items()},
             num_slots=self.num_slots + offset,
             face=self.face,
+            queue=self.queue,
+        )
+
+    def truncate(self) -> "CardImageCollection":
+        return CardImageCollection(
+            cards_by_id={drive_id: card.truncate() for drive_id, card in self.cards_by_id.items()},
+            num_slots=self.num_slots,
+            face=self.face,
+            queue=self.queue,
         )
 
     # region initialisation
@@ -369,17 +388,30 @@ class CardOrder:
     fronts: CardImageCollection = attr.ib(default=None)
     backs: CardImageCollection = attr.ib(default=None)
 
-    def offset_slots(self, offset: int) -> "CardOrder":
+    def offset_slots(self, offset: int, allowed_to_exceed_project_max_size: bool) -> "CardOrder":
         return CardOrder(
             name=self.name,
             details=Details(
-                quantity=self.details.quantity + offset,
+                quantity=min(self.details.quantity + offset, PROJECT_MAX_SIZE),
                 stock=self.details.stock,
                 foil=self.details.foil,
-                allowed_to_exceed_project_max_size=self.details.allowed_to_exceed_project_max_size,
+                allowed_to_exceed_project_max_size=allowed_to_exceed_project_max_size,
             ),
             fronts=self.fronts.offset_slots(offset=offset),
             backs=self.backs.offset_slots(offset=offset),
+        )
+
+    def truncate(self) -> "CardOrder":
+        return CardOrder(
+            name=self.name,
+            details=Details(
+                quantity=min(self.details.quantity, PROJECT_MAX_SIZE),
+                stock=self.details.stock,
+                foil=self.details.foil,
+                allowed_to_exceed_project_max_size=False,
+            ),
+            fronts=self.fronts.truncate(),
+            backs=self.backs.truncate(),
         )
 
     def is_combinable(self, other: "CardOrder") -> bool:

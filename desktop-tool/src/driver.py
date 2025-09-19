@@ -10,11 +10,7 @@ import attr
 import enlighten
 from InquirerPy import inquirer
 from selenium.common import exceptions as sl_exc
-from selenium.common.exceptions import (
-    NoAlertPresentException,
-    NoSuchElementException,
-    NoSuchWindowException,
-)
+from selenium.common.exceptions import NoAlertPresentException, NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.support.expected_conditions import (
@@ -24,7 +20,15 @@ from selenium.webdriver.support.expected_conditions import (
 )
 from selenium.webdriver.support.ui import Select, WebDriverWait
 
-from src.constants import THREADS, Browsers, Cardstocks, States, TargetSites
+from src.constants import (
+    PROJECT_MAX_SIZE,
+    THREADS,
+    Browsers,
+    Cardstocks,
+    OrderFulfilmentMethod,
+    States,
+    TargetSites,
+)
 from src.exc import InvalidStateException
 from src.formatting import bold
 from src.logging import logger
@@ -33,6 +37,7 @@ from src.processing import ImagePostProcessingConfig
 from src.utils import (
     alert_handler,
     exception_retry_skip_handler,
+    ignore_javascript_errors,
     log_hours_minutes_seconds_elapsed,
 )
 
@@ -212,9 +217,7 @@ class AutofillDriver:
         if self.state != expected_state:
             raise InvalidStateException(expected_state, self.state)
 
-    @alert_handler
-    @exception_retry_skip_handler
-    def execute_javascript(self, js: str, return_: bool = False) -> Any:
+    def raw_execute_javascript(self, js: str, return_: bool = False) -> Any:
         """
         Executes the given JavaScript command in self.driver
         This can occasionally fail - e.g.
@@ -222,6 +225,11 @@ class AutofillDriver:
         """
 
         return self.driver.execute_script(f"javascript:{'return ' if return_ else ''}{js}")  # type: ignore
+
+    @alert_handler
+    @exception_retry_skip_handler
+    def execute_javascript(self, js: str, return_: bool = False) -> Any:
+        return self.raw_execute_javascript(js=js, return_=return_)
 
     def wait_until_javascript_object_is_defined(self, function: str) -> None:
         """
@@ -239,7 +247,7 @@ class AutofillDriver:
                 logger.debug(f"Waited {elapsed} seconds for {function} to be defined - just going to power on.")
                 return
             try:
-                assert self.execute_javascript(f"typeof {function} == undefined", return_=True) is False
+                assert self.execute_javascript(f"typeof {function} == 'undefined'", return_=True) is False
                 return
             except (AssertionError, sl_exc.JavascriptException):
                 logger.debug(f"Waiting for {function} to be defined...")
@@ -257,6 +265,7 @@ class AutofillDriver:
 
     @alert_handler
     @exception_retry_skip_handler
+    @ignore_javascript_errors
     def different_images(self) -> None:
         """
         Sets each card in the current face to use different images.
@@ -265,10 +274,11 @@ class AutofillDriver:
         logger.debug("Configuring the site with different images for each card in this face.")
         self.wait_until_javascript_object_is_defined("setMode")
         self.wait_until_javascript_object_is_defined("oRenderFeature")  # looks weird but it goes
-        self.execute_javascript("setMode('ImageText', 0);")
+        self.raw_execute_javascript("setMode('ImageText', 0);")
 
     @alert_handler
     @exception_retry_skip_handler
+    @ignore_javascript_errors
     def same_images(self) -> None:
         """
         Sets each card in the current face to use the same image.
@@ -277,11 +287,11 @@ class AutofillDriver:
         logger.debug("Configuring the site with the same image for each card in this face.")
         self.wait_until_javascript_object_is_defined("setMode")
         self.wait_until_javascript_object_is_defined("oRenderFeature")  # looks weird but it goes
-        self.execute_javascript("setMode('ImageText', 1);")
+        self.raw_execute_javascript("setMode('ImageText', 1);")
 
     @exception_retry_skip_handler
     def is_image_currently_uploading(self) -> bool:
-        self.wait_until_javascript_object_is_defined("oDesignImage.UploadStatus")
+        self.wait_until_javascript_object_is_defined("oDesignImage")
         return self.execute_javascript("oDesignImage.UploadStatus == 'Uploading'", return_=True) is True
 
     @exception_retry_skip_handler
@@ -450,7 +460,7 @@ class AutofillDriver:
             return False
         elif not any(slots_filled):
             logger.debug("No valid slots are filled.")
-            pid = self.upload_image(image)
+            pid = self.upload_image(image=image)
             self.insert_image(pid, image, slots=valid_slots)
         else:
             logger.debug("Some valid slots are filled - filling all slots with the image of the first filled one.")
@@ -469,9 +479,9 @@ class AutofillDriver:
         image_count = len(images.cards_by_id)
         logger.debug(f"Inserting {image_count} images into face {images.face}...")
         for i in range(image_count):
-            image: CardImage = images.queue.get()
-            if image.downloaded:
-                project_mutated = self.upload_and_insert_image(image)
+            drive_id, downloaded = images.queue.get()
+            if downloaded:
+                project_mutated = self.upload_and_insert_image(images.cards_by_id[drive_id])
                 if (
                     auto_save_threshold is not None
                     and project_mutated
@@ -518,29 +528,29 @@ class AutofillDriver:
     # region project management
 
     @exception_retry_skip_handler
-    def set_bracket(self, order: CardOrder, dropdown_id: str) -> None:
+    def set_bracket(self, quantity: int, dropdown_id: str) -> None:
         """
         Configure the project to fit into the smallest
 
         :raises: If the project size does not fit into any bracket
         """
 
-        logger.debug(f"Configuring the bracket for the order containing {order.details.quantity} cards...")
+        logger.debug(f"Configuring the bracket for the order containing {quantity} cards...")
         qty_dropdown = Select(self.driver.find_element(by=By.ID, value=dropdown_id))
         bracket_options = sorted(
             [
                 option_value
                 for option in qty_dropdown.options
-                if (option_value := int(option.get_attribute("value"))) >= order.details.quantity
+                if (option_value := int(option.get_attribute("value"))) >= quantity
             ]
         )
         assert bracket_options, (
-            f"Your project contains {bold(order.details.quantity)} cards - this does not fit into any bracket "
+            f"Your project contains {bold(quantity)} cards - this does not fit into any bracket "
             f"that {bold(self.target_site.name)} offers! The brackets are: "
             f"{', '.join([bold(option) for option in bracket_options])}"
         )
         bracket = bracket_options[0]
-        logger.debug(f"The smallest bracket for {order.details.quantity} cards is {bracket}.")
+        logger.debug(f"The smallest bracket for {quantity} cards is {bracket}.")
         logger.info(f"This project fits into the bracket of up to {bold(bracket)} cards.")
         qty_dropdown.select_by_value(str(bracket))
         logger.debug("Finished configuring the order's bracket!")
@@ -563,7 +573,9 @@ class AutofillDriver:
 
         # Select number of cards
         logger.debug("Selecting the number of cards...")
-        self.set_bracket(order=order, dropdown_id=self.target_site.value.quantity_dropdown_element_id)
+        self.set_bracket(
+            quantity=order.details.quantity, dropdown_id=self.target_site.value.quantity_dropdown_element_id
+        )
 
         # Switch the finish to foil if the user ordered foil cards
         if order.details.foil:
@@ -589,11 +601,13 @@ class AutofillDriver:
 
     @alert_handler
     @exception_retry_skip_handler
-    def redefine_project(self, order: CardOrder) -> None:
+    def redefine_project(self, order: CardOrder, fulfilment_method: OrderFulfilmentMethod) -> CardOrder:
         """
         Called when continuing to edit an existing project in the targeted site.
         Ensures that the project's size and bracket align with the order's size and bracket.
         """
+
+        new_order = order
 
         logger.debug("Redefining the project...")
         self.set_state(States.defining_order, "Awaiting user input")
@@ -601,8 +615,10 @@ class AutofillDriver:
         input(
             textwrap.dedent(
                 f"""
-                Continuing to edit an existing order. Please enter the project editor for your selected project,
-                wait for the page to load {bold('fully')}, then return to the console window and press {bold('Enter')}.
+                Please find your project in the {bold('My saved projects')} table
+                and click the {bold('Continue to edit')} button next to it.
+                Wait for the page to load {bold('fully')}, then return to the
+                console window and press {bold('Enter')}.
                 """
             )
         )
@@ -629,16 +645,39 @@ class AutofillDriver:
         with self.switch_to_frame("sysifm_loginFrame"):
             logger.debug("Executing displayTotalCount()...")
             self.wait_until_javascript_object_is_defined("displayTotalCount")
+
+            # read the current project size and calculate the new projcet size
+            # truncate the project if it would exceed the max size
+            qty_element = self.driver.find_element(by=By.ID, value="txt_card_number")
+            new_project_size = order.details.quantity
+            if fulfilment_method == OrderFulfilmentMethod.append_to_project:
+                current_project_size = int(qty_element.get_attribute("value"))  # type: ignore
+                new_project_size += current_project_size
+
+                if new_project_size > PROJECT_MAX_SIZE:
+                    logger.warning(
+                        f"{bold('Warning')}: After adding this order to the existing {self.target_site.name} project,"
+                        f"your project would consist of {new_project_size} cards, exceeding the maximum"
+                        f"allowable size of {PROJECT_MAX_SIZE} cards."
+                        f"Any cards which fall outside this max allowable project size will be {bold('ignored')}."
+                    )
+                    new_project_size = min(new_project_size, PROJECT_MAX_SIZE)
+
+                new_order = order.offset_slots(
+                    offset=current_project_size, allowed_to_exceed_project_max_size=True
+                ).truncate()
+
+            # do the work of editing the project's bracket and quantity
+            logger.debug(f"Changing the project size from {current_project_size} to {new_project_size}...")
             self.execute_javascript("displayTotalCount()")  # display the dropdown for "up to N cards"
-            self.set_bracket(order=order, dropdown_id="dro_total_count")
-            qty = self.driver.find_element(by=By.ID, value="txt_card_number")
-            qty.clear()
-            qty.send_keys(str(order.details.quantity))
-            logger.debug(f"Changing the project size to {order.details.quantity}...")
+            self.set_bracket(quantity=new_project_size, dropdown_id="dro_total_count")
+            qty_element.clear()
+            qty_element.send_keys(str(new_project_size))
             self.different_images()
         self.wait()
         self.set_state(States.inserting_fronts)
         logger.debug("Finished redefining the project!")
+        return new_order
 
     @exception_retry_skip_handler
     def save_project_to_user_account(self, order: CardOrder) -> None:
@@ -704,7 +743,7 @@ class AutofillDriver:
     # region insert backs
 
     @exception_retry_skip_handler
-    def page_to_backs(self, order: CardOrder, skip_setup: bool) -> None:
+    def page_to_backs(self, order: CardOrder) -> None:
         logger.debug("Paging to backs...")
         self.assert_state(States.paging_to_backs)
 
@@ -721,28 +760,18 @@ class AutofillDriver:
         except NoSuchElementException:
             pass
         self.next_step()
+        self.wait()
 
-        if skip_setup:
-            logger.debug(
-                "The order is configured with skip_setup - attempting to bring up same/different images dialogue"
-            )
-            # bring up the dialogue for selecting same or different images
-            self.wait()
-            self.wait_until_javascript_object_is_defined("PageLayout.prototype.renderDesignCount")
-            try:
-                self.execute_javascript("PageLayout.prototype.renderDesignCount()")
-            except sl_exc.JavascriptException:  # the dialogue has already been brought up if the above line failed
-                pass
+        logger.debug("Executing renderDesignCount()...")
+        self.wait_until_javascript_object_is_defined("PageLayout.prototype.renderDesignCount")
+        self.execute_javascript("PageLayout.prototype.renderDesignCount()")
         with self.switch_to_frame("sysifm_loginFrame"):
-            try:
-                if len(order.backs.cards_by_id) == 1:
-                    # Same cardback for every card
-                    self.same_images()
-                else:
-                    # Different cardbacks
-                    self.different_images()
-            except NoSuchWindowException:  # TODO: investigate exactly why this happens under --skipsetup. too tired atm
-                pass
+            if len(order.backs.cards_by_id) == 1:
+                # Same cardback for every card
+                self.same_images()
+            else:
+                # Different cardbacks
+                self.different_images()
         self.set_state(States.inserting_backs)
         logger.debug("Finished paging to backs!")
 
@@ -771,7 +800,7 @@ class AutofillDriver:
     def execute_order(
         self,
         order: CardOrder,
-        skip_setup: bool,
+        fulfilment_method: OrderFulfilmentMethod,
         auto_save_threshold: Optional[int],
         post_processing_config: Optional[ImagePostProcessingConfig],
     ) -> None:
@@ -784,18 +813,25 @@ class AutofillDriver:
             order.backs.download_images(
                 pool=pool, download_bar=self.download_bar, post_processing_config=post_processing_config
             )
-            if any([skip_setup is True, auto_save_threshold is not None]):
+            if any(
+                [
+                    fulfilment_method == OrderFulfilmentMethod.append_to_project,
+                    fulfilment_method == OrderFulfilmentMethod.continue_project,
+                    auto_save_threshold is not None,
+                ]
+            ):
                 self.authenticate()
 
             self.initialise_order(order=order)
-            if skip_setup:
-                self.redefine_project(order=order)
-            else:
+            if fulfilment_method == OrderFulfilmentMethod.new_project:
                 logger.info("Configuring a new project.")
                 self.define_project(order=order)
                 self.page_to_fronts(order=order)
+            else:
+                order = self.redefine_project(order=order, fulfilment_method=fulfilment_method)
+
             self.insert_fronts(order=order, auto_save_threshold=auto_save_threshold)
-            self.page_to_backs(order=order, skip_setup=skip_setup)
+            self.page_to_backs(order=order)
             self.insert_backs(order=order, auto_save_threshold=auto_save_threshold)
             self.page_to_review()
         log_hours_minutes_seconds_elapsed(t)
@@ -824,16 +860,21 @@ class AutofillDriver:
         self.order_progress_bar.total = len(orders)
         self.order_progress_bar.refresh()
         for i, order in enumerate(orders, start=1):
-            skip_setup = inquirer.confirm(
-                message=(
-                    "Do you want the tool to continue editing an existing project? (Press Enter if you're not sure.)"
-                ),
-                default=False,
             logger.info(f"Auto-filling project {bold(i)} of {bold(len(orders))}.")
+
+            fulfilment_method: OrderFulfilmentMethod = inquirer.select(
+                message="How would you like to upload this order?",
+                choices=[
+                    OrderFulfilmentMethod.new_project,
+                    OrderFulfilmentMethod.append_to_project,
+                    OrderFulfilmentMethod.continue_project,
+                ],
+                default=OrderFulfilmentMethod.new_project,
             ).execute()
+
             self.execute_order(
                 order=order,
-                skip_setup=skip_setup,
+                fulfilment_method=fulfilment_method,
                 auto_save_threshold=auto_save_threshold,
                 post_processing_config=post_processing_config,
             )
