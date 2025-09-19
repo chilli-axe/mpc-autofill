@@ -1,4 +1,3 @@
-import logging
 import sys
 import time
 from math import floor
@@ -13,29 +12,14 @@ from selenium.common.exceptions import (
     UnexpectedAlertPresentException,
 )
 
+from src.formatting import bold
+from src.logging import logger
+
 if TYPE_CHECKING:  # necessary to avoid circular import
     from driver import AutofillDriver
 
 # https://mypy.readthedocs.io/en/stable/generics.html#declaring-decorators
 F = TypeVar("F", bound=Callable[..., Any])
-
-
-TEXT_BOLD = "\033[1m"
-TEXT_END = "\033[0m"
-
-
-def bold(text: Any) -> str:
-    return f"{TEXT_BOLD}{text}{TEXT_END}"
-
-
-def text_to_set(input_text: str) -> set[int]:
-    """
-    Helper function to translate strings like "[2, 4, 5, 6]" into sets.
-    """
-
-    if not input_text:
-        return set()
-    return set([int(x) for x in input_text.strip("][").replace(" ", "").split(",")])
 
 
 def unpack_element(element: ElementTree.Element, tags: list[str]) -> dict[str, ElementTree.Element]:
@@ -83,8 +67,8 @@ def exception_retry_skip_handler(func: F) -> F:
             except AssertionError as e:
                 raise e
             except Exception as e:
-                logging.exception("Uncaught exception")
-                logging.info(f"An uncaught exception occurred:\n{bold(e)}\n")
+                logger.exception("Uncaught exception")
+                logger.info(f"An uncaught exception occurred:\n{bold(e)}\n")
                 action = inquirer.select(
                     message="How should the tool proceed?",
                     choices=["Retry this action", "Skip this action", "Terminate"],
@@ -113,4 +97,4 @@ def log_hours_minutes_seconds_elapsed(t0: float) -> None:
         + (f"{hours} hour{'s' if hours != 1 else ''}, " if hours > 0 else "")
         + f"{mins} minute{'s' if mins != 1 else ''} and {secs} second{'s' if secs != 1 else ''}."
     )
-    logging.info(time_elapsed_string)
+    logger.info(time_elapsed_string)

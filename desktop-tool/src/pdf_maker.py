@@ -1,4 +1,3 @@
-import logging
 import os
 from concurrent.futures import ThreadPoolExecutor
 from typing import Optional
@@ -9,9 +8,10 @@ import InquirerPy
 from fpdf import FPDF
 
 from src.constants import THREADS, States
+from src.formatting import bold
+from src.logging import logger
 from src.order import CardOrder
 from src.processing import ImagePostProcessingConfig
-from src.utils import bold
 
 
 @attr.s
@@ -140,7 +140,7 @@ class PdfExporter:
         else:
             self.export()
 
-        logging.info(f"Finished exporting files! They should be accessible at {self.save_path}.")
+        logger.info(f"Finished exporting files! They should be accessible at {self.save_path}.")
 
     def export(self) -> None:
         for slot in sorted(self.paths_by_slot.keys()):

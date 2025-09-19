@@ -1,5 +1,4 @@
 import io
-import logging
 import os
 import sys
 import threading
@@ -14,6 +13,7 @@ from googleapiclient.http import MediaIoBaseDownload
 from oauth2client.service_account import ServiceAccountCredentials
 
 import src.constants as constants
+from src.logging import logger
 from src.processing import ImagePostProcessingConfig, post_process_image
 
 thread_local = threading.local()  # Should only be called once per thread
@@ -24,12 +24,12 @@ thread_local = threading.local()  # Should only be called once per thread
 
 def find_or_create_google_drive_service() -> Resource:
     if (service := getattr(thread_local, "google_drive_service", None)) is None:
-        logging.debug("Getting Google Drive API credentials...")
+        logger.debug("Getting Google Drive API credentials...")
         creds = ServiceAccountCredentials.from_json_keyfile_name(
             str(Path(os.path.abspath(__file__)).parent.parent / constants.SERVICE_ACC_FILENAME), scopes=constants.SCOPES
         )
         service = build("drive", "v3", credentials=creds, static_discovery=False, cache_discovery=False)
-        logging.debug("Finished getting Google Drive API credentials - saving to thread local storage.")
+        logger.debug("Finished getting Google Drive API credentials - saving to thread local storage.")
         thread_local.google_drive_service = service
     return service
 
@@ -174,7 +174,7 @@ def download_google_drive_file(
     Returns whether the request was successful or not.
     """
 
-    logging.debug(f"Downloading Google Drive image {drive_id}...")
+    logger.debug(f"Downloading Google Drive image {drive_id}...")
     service = find_or_create_google_drive_service()
     request = service.files().get_media(fileId=drive_id)
     file = io.BytesIO()
@@ -185,18 +185,18 @@ def download_google_drive_file(
             _, done = downloader.next_chunk()
         file_bytes = file.getvalue()
     except HttpError:
-        logging.exception(f"Encountered a HTTP error while downloading Google Drive image {drive_id}")
+        logger.exception(f"Encountered a HTTP error while downloading Google Drive image {drive_id}")
         return False
 
     if post_processing_config is not None:
-        logging.debug(f"Post-processing {drive_id}...")
+        logger.debug(f"Post-processing {drive_id}...")
         processed_image = post_process_image(raw_image=file_bytes, config=post_processing_config)
         processed_image.save(file_path)
     else:
         # Save the bytes directly to disk - avoid reading in pillow in case any quality degradation occurs
         with open(file_path, "wb") as f:
             f.write(file_bytes)
-    logging.debug(f"Finished downloading Google Drive image {drive_id}!")
+    logger.debug(f"Finished downloading Google Drive image {drive_id}!")
     return True
 
 

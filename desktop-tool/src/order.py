@@ -1,4 +1,3 @@
-import logging
 import os
 import sys
 from concurrent.futures import ThreadPoolExecutor
@@ -18,14 +17,16 @@ from sanitize_filename import sanitize
 
 from src import constants
 from src.exc import ValidationException
+from src.formatting import bold, text_to_set
 from src.io import (
     download_google_drive_file,
     file_exists,
     get_google_drive_file_name,
     get_image_directory,
 )
+from src.logging import logger
 from src.processing import ImagePostProcessingConfig
-from src.utils import bold, text_to_set, unpack_element
+from src.utils import unpack_element
 
 
 @attr.s
@@ -81,7 +82,7 @@ class CardImage:
         if self.name is None:
             if self.drive_id:
                 # assume png
-                logging.info(
+                logger.info(
                     f"The name of the image {bold(self.drive_id)} could not be determined, meaning that its "
                     f"file extension is unknown. As a result, an assumption is made that the file extension "
                     f"is {bold('.png')}."
@@ -158,14 +159,14 @@ class CardImage:
             if self.file_exists() and not self.errored:
                 self.downloaded = True
             else:
-                logging.info(
+                logger.info(
                     f"Failed to download '{bold(self.name)}' - allocated to slot/s {bold(sorted(self.slots))}.\n"
                     f"Download link - {bold(f'https://drive.google.com/uc?id={self.drive_id}&export=download')}\n"
                 )
         except Exception as e:
             # note: python threads die silently if they encounter an exception. if an exception does occur,
             # log it, but still put the card onto the queue so the main thread doesn't spin its wheels forever waiting.
-            logging.info(
+            logger.info(
                 f"An uncaught exception occurred when attempting to download '{bold(self.name)}':\n{bold(e)}\n"
                 f"Download link - {bold(f'https://drive.google.com/uc?id={self.drive_id}&export=download')}\n"
             )
@@ -260,7 +261,7 @@ class CardImageCollection:
             raise ValidationException(f"{self.face} has no images!")
         slots_missing = self.all_slots() - self.slots()
         if slots_missing:
-            logging.info(
+            logger.info(
                 f"Warning - the following slots are empty in your order for the {self.face} face: "
                 f"{bold(sorted(slots_missing))}"
             )
@@ -446,12 +447,12 @@ class CardOrder:
                     assert sum(project_sizes) == self.details.quantity
                     break
                 except (ValueError, AssertionError):
-                    logging.info(
+                    logger.info(
                         f"There was a problem with your proposed splits (perhaps they didn't sum to "
                         f"{bold(self.details.quantity)}); please try again."
                     )
                     pass
-        logging.info(
+        logger.info(
             f"The tool will produce {bold(len(project_sizes))} projects! They'll be sized as follows:\n"
             f"{', '.join(['Project ' + bold(i) + ': ' + bold(project_size) + ' cards' for i, project_size in enumerate(project_sizes, start=1)])}"
         )
@@ -539,7 +540,7 @@ class CardOrder:
                 fill_image_id=cardback_elem.text,
             )
         else:
-            logging.info(f"{bold('Warning')}: Your order file did not contain a common cardback image.")
+            logger.info(f"{bold('Warning')}: Your order file did not contain a common cardback image.")
             backs = CardImageCollection.from_element(
                 element=root_dict[constants.BaseTags.backs],
                 working_directory=working_directory,
@@ -559,7 +560,7 @@ class CardOrder:
                 "Your XML file contains a syntax error so it can't be processed. Press Enter to exit."
             )
         file_name = Path(file_path).stem
-        logging.info(f"Parsing XML file {bold(file_name)}...")
+        logger.info(f"Parsing XML file {bold(file_name)}...")
         order = cls.from_element(
             element=xml.getroot(),
             working_directory=working_directory,

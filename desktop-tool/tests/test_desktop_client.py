@@ -13,10 +13,11 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 
+import src
 import src.constants as constants
-import src.utils
 from src.driver import AutofillDriver
 from src.exc import ValidationException
+from src.formatting import text_to_set
 from src.io import get_google_drive_file_name, remove_directories, remove_files
 from src.order import (
     CardImage,
@@ -27,7 +28,6 @@ from src.order import (
 )
 from src.pdf_maker import PdfExporter
 from src.processing import ImagePostProcessingConfig
-from src.utils import text_to_set
 
 DEFAULT_POST_PROCESSING = ImagePostProcessingConfig(max_dpi=800, downscale_alg=constants.ImageResizeMethods.LANCZOS)
 

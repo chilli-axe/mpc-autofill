@@ -10,12 +10,12 @@ from wakepy import keepawake
 from src.constants import Browsers, ImageResizeMethods, TargetSites
 from src.driver import AutofillDriver
 from src.exc import ValidationException
+from src.formatting import bold
 from src.io import DEFAULT_WORKING_DIRECTORY, create_image_directory_if_not_exists
-from src.logging import configure_loggers
+from src.logging import configure_loggers, logger
 from src.order import CardOrder, aggregate_and_split_orders
 from src.pdf_maker import PdfExporter
 from src.processing import ImagePostProcessingConfig
-from src.utils import bold
 from src.web_server import WebServer
 
 # https://stackoverflow.com/questions/12492810/python-how-can-i-make-the-ansi-escape-codes-to-work-also-in-windows
@@ -81,7 +81,7 @@ def prompt_if_no_arguments(prompt: str) -> Union[str, bool]:
 @click.option(
     "--allowsleep/--disallow-sleep",
     default=False,
-    help="Allows the system to fall asleep during execution.",
+    help="Controls whether the system is allowed to fall asleep during execution.",
     is_flag=True,
 )
 @click.option(
@@ -117,7 +117,24 @@ def prompt_if_no_arguments(prompt: str) -> Union[str, bool]:
     is_flag=True,
 )
 @click.option(
-    "--debug-logs/--no-debug-logs",
+    "--log-level",
+    default=logging.getLevelName(logging.INFO),
+    type=click.Choice(
+        [
+            logging.getLevelName(logging.CRITICAL),
+            logging.getLevelName(logging.FATAL),
+            logging.getLevelName(logging.ERROR),
+            logging.getLevelName(logging.WARNING),
+            logging.getLevelName(logging.WARN),
+            logging.getLevelName(logging.INFO),
+            logging.getLevelName(logging.DEBUG),
+            logging.getLevelName(logging.NOTSET),
+        ]
+    ),
+    help="Controls the level of logs written to standard output.",
+)
+@click.option(
+    "--write-debug-logs",
     default=False,
     help="If True, debug logs about the tool's actions will be logged to autofill_log.txt in the tool's directory.",
     is_flag=True,
@@ -142,7 +159,8 @@ def main(
     max_dpi: int,
     downscale_alg: str,
     combine_orders: bool,
-    debug_logs: bool,
+    log_level: str,
+    write_debug_logs: bool,
     # convert_to_jpeg: bool,
 ) -> None:
     working_directory: str = DEFAULT_WORKING_DIRECTORY
@@ -160,13 +178,17 @@ def main(
             f"Binary location was specified but is not a directory (or it doesn't exist): {bold(binary_location)}"
         )
 
-    configure_loggers(working_directory=working_directory, log_debug_to_file=debug_logs)
+    configure_loggers(
+        working_directory=working_directory,
+        log_debug_to_file=write_debug_logs,
+        stdout_log_level=logging.getLevelName(log_level),
+    )
     try:
         with keepawake(keep_screen_awake=True) if not allowsleep else nullcontext():
             if not allowsleep:
-                logging.info("System sleep is being prevented during this execution.")
+                logger.info("System sleep is being prevented during this execution.")
             if image_post_processing:
-                logging.info("Images are being post-processed during this execution.")
+                logger.info("Images are being post-processed during this execution.")
             post_processing_config = (
                 ImagePostProcessingConfig(max_dpi=max_dpi, downscale_alg=ImageResizeMethods[downscale_alg])
                 if image_post_processing
@@ -203,8 +225,8 @@ def main(
         input(f"There was a problem with your order file:\n\n{bold(e)}\n\nPress Enter to exit.")
         sys.exit(0)
     except Exception as e:
-        logging.exception("Uncaught exception")
-        logging.info(f"An uncaught exception occurred:\n{bold(e)}\n")
+        logger.exception("Uncaught exception")
+        logger.info(f"An uncaught exception occurred:\n{bold(e)}\n")
         input("Press Enter to exit.")
 
 

@@ -1,5 +1,4 @@
 import datetime as dt
-import logging
 import textwrap
 import time
 from concurrent.futures import ThreadPoolExecutor
@@ -27,11 +26,12 @@ from selenium.webdriver.support.ui import Select, WebDriverWait
 
 from src.constants import THREADS, Browsers, Cardstocks, States, TargetSites
 from src.exc import InvalidStateException
+from src.formatting import bold
+from src.logging import logger
 from src.order import CardImage, CardImageCollection, CardOrder
 from src.processing import ImagePostProcessingConfig
 from src.utils import (
     alert_handler,
-    bold,
     exception_retry_skip_handler,
     log_hours_minutes_seconds_elapsed,
 )
@@ -66,7 +66,7 @@ class AutofillDriver:
             driver.implicitly_wait(5)
             driver.get(self.starting_url)
             WebDriverWait(driver, 10).until(visibility_of_element_located((By.TAG_NAME, "body")))
-            logging.info(
+            logger.info(
                 f"Successfully initialised {bold(self.browser.name)} driver "
                 f"targeting {bold(self.target_site.name)}.\n"
             )
@@ -106,8 +106,8 @@ class AutofillDriver:
         self.download_bar.refresh()
 
     def initialise_order(self, order: CardOrder) -> None:
-        logging.info(f"Auto-filling {bold(order.name or 'Unnamed Project')}")
-        logging.info("  " + order.get_overview())
+        logger.info(f"Auto-filling {bold(order.name or 'Unnamed Project')}")
+        logger.info("  " + order.get_overview())
         self.driver.get(f"{self.target_site.value.starting_url}")
         self.set_state(States.defining_order)
 
@@ -149,21 +149,21 @@ class AutofillDriver:
         Context manager for switching to `frame`.
         """
 
-        logging.debug(f"Switching to frame {frame}...")
+        logger.debug(f"Switching to frame {frame}...")
         in_frame = True
         try:
             self.driver.switch_to.frame(frame)
-            logging.debug(f"Successfully switched to frame {frame}.")
+            logger.debug(f"Successfully switched to frame {frame}.")
         except (sl_exc.NoSuchFrameException, sl_exc.NoSuchElementException) as e:
             in_frame = False
-            logging.debug("Tried to switch to the frame but encountered an exception:")
-            logging.warning(e)
+            logger.debug("Tried to switch to the frame but encountered an exception:")
+            logger.warning(e)
         yield
         if in_frame:
-            logging.debug(f"Switching out of frame {frame}.")
+            logger.debug(f"Switching out of frame {frame}.")
             self.switch_to_default_content()
         else:
-            logging.debug(f"Couldn't switch to {frame} earlier so there's nothing to do here.")
+            logger.debug(f"Couldn't switch to {frame} earlier so there's nothing to do here.")
 
     @alert_handler
     @exception_retry_skip_handler
@@ -175,7 +175,7 @@ class AutofillDriver:
         """
 
         wait_timeout_seconds = 30
-        logging.debug("Waiting until MPC loading circle disappears...")
+        logger.debug("Waiting until MPC loading circle disappears...")
         try:
             wait_elem = self.driver.find_element(by=By.ID, value="sysdiv_wait")
             # Wait for the element to become invisible
@@ -185,17 +185,21 @@ class AutofillDriver:
                         invisibility_of_element(wait_elem)
                     )
                 except sl_exc.TimeoutException:
-                    logging.info(
+                    logger.info(
                         f"Waited for longer than {wait_timeout_seconds}s for the {self.target_site.name} page "
                         f"to respond - attempting to resolve with a page refresh..."
                     )
                     self.driver.refresh()
                     return True
-                logging.debug("The loading circle has disappeared!")
+                logger.debug("The loading circle has disappeared!")
                 break
-        except (sl_exc.NoSuchElementException, sl_exc.NoSuchFrameException, sl_exc.WebDriverException) as e:
-            logging.debug("Attempted to locate the loading circle but encountered an exception:")
-            logging.debug(e)
+        except sl_exc.NoSuchElementException:
+            # The system called this function when the loading circle wasn't present
+            # No worries, just exit here
+            return False
+        except (sl_exc.NoSuchFrameException, sl_exc.WebDriverException) as e:
+            logger.debug("Attempted to locate the loading circle but encountered an exception:")
+            logger.debug(e)
         return False
 
     def set_state(self, state: str, action: Optional[str] = None) -> None:
@@ -230,14 +234,15 @@ class AutofillDriver:
 
         t = time.time()
         while True:
-            if t > 10:
-                logging.debug(f"Waited {t} seconds for {function} to be defined - just going to power on.")
+            elapsed = time.time() - t
+            if elapsed > 10:
+                logger.debug(f"Waited {elapsed} seconds for {function} to be defined - just going to power on.")
                 return
             try:
-                assert self.execute_javascript(f"typeof {function} == undefined", return_=True) is True
+                assert self.execute_javascript(f"typeof {function} == undefined", return_=True) is False
                 return
             except (AssertionError, sl_exc.JavascriptException):
-                logging.debug(f"Waiting for {function} to be defined...")
+                logger.debug(f"Waiting for {function} to be defined...")
                 time.sleep(0.5)
 
     @exception_retry_skip_handler
@@ -257,7 +262,7 @@ class AutofillDriver:
         Sets each card in the current face to use different images.
         """
 
-        logging.debug("Configuring the site with different images for each card in this face.")
+        logger.debug("Configuring the site with different images for each card in this face.")
         self.wait_until_javascript_object_is_defined("setMode")
         self.wait_until_javascript_object_is_defined("oRenderFeature")  # looks weird but it goes
         self.execute_javascript("setMode('ImageText', 0);")
@@ -269,7 +274,7 @@ class AutofillDriver:
         Sets each card in the current face to use the same image.
         """
 
-        logging.debug("Configuring the site with the same image for each card in this face.")
+        logger.debug("Configuring the site with the same image for each card in this face.")
         self.wait_until_javascript_object_is_defined("setMode")
         self.wait_until_javascript_object_is_defined("oRenderFeature")  # looks weird but it goes
         self.execute_javascript("setMode('ImageText', 1);")
@@ -330,22 +335,22 @@ class AutofillDriver:
         A single attempt at uploading `image` to the targeted site.
         """
 
-        logging.debug(f"Attempting to upload {image.name}...")
+        logger.debug(f"Attempting to upload {image.name}...")
         # an image definitely shouldn't be uploading here, but doesn't hurt to make sure
         while self.is_image_currently_uploading():
-            logging.debug("Waiting until the currently uploading image is done...")
+            logger.debug("Waiting until the currently uploading image is done...")
             time.sleep(0.5)
 
         # send the image contents to mpc
-        logging.debug("Sending image contents to the targeted site...")
+        logger.debug("Sending image contents to the targeted site...")
         self.driver.find_element(by=By.ID, value="uploadId").send_keys(image.file_path)
         time.sleep(1)
 
         # wait for the image to finish uploading
-        logging.debug("Waiting until the image has finished uploading...")
+        logger.debug("Waiting until the image has finished uploading...")
         while self.is_image_currently_uploading():
             time.sleep(0.5)
-        logging.debug(f"Finished uploading {image.name}!")
+        logger.debug(f"Finished uploading {image.name}!")
 
     @exception_retry_skip_handler
     def upload_image(self, image: CardImage, max_tries: int = 3) -> Optional[str]:
@@ -356,7 +361,7 @@ class AutofillDriver:
         if image.file_path is not None and image.file_exists():
             if image.file_path in self.file_path_to_pid_map.keys():
                 pid = self.file_path_to_pid_map[image.file_path]
-                logging.debug(f"Image {image.name} has already been uploaded - reusing its PID ({pid})")
+                logger.debug(f"Image {image.name} has already been uploaded - reusing its PID ({pid})")
                 return pid
 
             self.set_state(self.state, f'Uploading "{image.name}"')
@@ -364,7 +369,7 @@ class AutofillDriver:
 
             tries = 0
             while True:
-                logging.debug(f"Commencing attempt {tries+1} of uploading {image.name}...")
+                logger.debug(f"Commencing attempt {tries+1} of uploading {image.name}...")
                 self.attempt_to_upload_image(image)
                 if self.get_number_of_uploaded_images() > get_number_of_uploaded_images:
                     # a new image has been uploaded - assume the last image in the editor is the one we just uploaded
@@ -373,13 +378,13 @@ class AutofillDriver:
                     return pid
                 tries += 1
                 if tries >= max_tries:
-                    logging.warning(
+                    logger.warning(
                         f"Attempted to upload image {bold(image.name)} {max_tries} times, "
                         f"but no attempt succeeded! Skipping this image."
                     )
                     return None
         else:
-            logging.warning(f"Image {bold(image.name)} at path {bold(image.file_path or 'None')} does not exist!")
+            logger.warning(f"Image {bold(image.name)} at path {bold(image.file_path or 'None')} does not exist!")
             return None
 
     @exception_retry_skip_handler
@@ -388,13 +393,13 @@ class AutofillDriver:
         Inserts the image identified by `pid` into `slots`.
         """
 
-        logging.debug("Waiting until we can insert images...")
+        logger.debug("Waiting until we can insert images...")
         self.wait_until_javascript_object_is_defined("PageLayout.prototype.applyDragPhoto")
 
         if pid:
-            logging.debug(f'Inserting "{image.name}" into slots {slots}...')
+            logger.debug(f'Inserting "{image.name}" into slots {slots}...')
             for i, slot in enumerate(slots, start=1):
-                logging.debug(f"Inserting into slot {slot}...")
+                logger.debug(f"Inserting into slot {slot}...")
                 self.set_state(
                     state=self.state, action=f'Inserting "{image.name}" into slot {slot+1} ({i}/{len(slots)})'
                 )
@@ -409,15 +414,15 @@ class AutofillDriver:
                     page_refreshed_while_inserting_image = self.wait()
                     tries += 1
                     if tries >= max_tries:
-                        logging.warning(
+                        logger.warning(
                             f"Attempted to insert image {bold(image.name)} {max_tries} times, "
                             f"but no attempt succeeded! Skipping this image."
                         )
                         break
-            logging.debug(f"All done inserting {image.name} into slots {slots}!")
+            logger.debug(f"All done inserting {image.name} into slots {slots}!")
             self.set_state(self.state)
         else:
-            logging.debug(f"No PID for {image.name} - skipping this image")
+            logger.debug(f"No PID for {image.name} - skipping this image")
 
     @exception_retry_skip_handler
     def upload_and_insert_image(self, image: CardImage) -> bool:
@@ -439,16 +444,16 @@ class AutofillDriver:
             ]
         )
         slots_filled = [self.is_slot_filled(slot) for slot in valid_slots]
-        logging.debug(f"Image {image.name} has valid slots {valid_slots}")
+        logger.debug(f"Image {image.name} has valid slots {valid_slots}")
         if all(slots_filled):
-            logging.debug("All valid slots are filled - no work to do here!")
+            logger.debug("All valid slots are filled - no work to do here!")
             return False
         elif not any(slots_filled):
-            logging.debug("No valid slots are are filled.")
+            logger.debug("No valid slots are filled.")
             pid = self.upload_image(image)
             self.insert_image(pid, image, slots=valid_slots)
         else:
-            logging.debug("Some valid slots are filled - filling all slots with the image of the first filled one.")
+            logger.debug("Some valid slots are filled - filling all slots with the image of the first filled one.")
             idx = next(index for index, value in enumerate(slots_filled) if value is True)
             pid = self.execute_javascript(
                 f'{self.get_element_for_slot_js(valid_slots[idx])}.getAttribute("pid")', return_=True
@@ -462,7 +467,7 @@ class AutofillDriver:
         self, order: CardOrder, images: CardImageCollection, auto_save_threshold: Optional[int]
     ) -> None:
         image_count = len(images.cards_by_id)
-        logging.debug(f"Inserting {image_count} images into face {images.face}...")
+        logger.debug(f"Inserting {image_count} images into face {images.face}...")
         for i in range(image_count):
             image: CardImage = images.queue.get()
             if image.downloaded:
@@ -475,7 +480,7 @@ class AutofillDriver:
                     self.save_project_to_user_account(order=order)
             self.upload_bar.update()
             self.upload_bar.refresh()
-        logging.debug(f"Finished inserting {image_count} images into face {images.face}!")
+        logger.debug(f"Finished inserting {image_count} images into face {images.face}!")
 
     # endregion
 
@@ -489,11 +494,11 @@ class AutofillDriver:
     def authenticate(self) -> None:
         if self.is_user_authenticated():
             return
-        logging.debug("Attempting to authenticate the user with the targeted site...")
+        logger.debug("Attempting to authenticate the user with the targeted site...")
         action = self.action
         self.driver.get(f"{self.target_site.value.login_url}")
         self.set_state(States.defining_order, "Awaiting user sign-in")
-        logging.info(
+        logger.info(
             textwrap.dedent(
                 f"""
                 The specified inputs require you to sign into your {bold(self.target_site.name)} account.
@@ -503,10 +508,10 @@ class AutofillDriver:
         )
         while not self.is_user_authenticated():
             time.sleep(1)
-        logging.info("Successfully signed in!")
+        logger.info("Successfully signed in!")
         self.set_state(States.defining_order, action)
         self.driver.get(f"{self.target_site.value.starting_url}")
-        logging.debug("Finished authenticating the user with the targeted site!")
+        logger.debug("Finished authenticating the user with the targeted site!")
 
     # endregion
 
@@ -520,7 +525,7 @@ class AutofillDriver:
         :raises: If the project size does not fit into any bracket
         """
 
-        logging.debug(f"Configuring the bracket for the order containing {order.details.quantity} cards...")
+        logger.debug(f"Configuring the bracket for the order containing {order.details.quantity} cards...")
         qty_dropdown = Select(self.driver.find_element(by=By.ID, value=dropdown_id))
         bracket_options = sorted(
             [
@@ -535,18 +540,18 @@ class AutofillDriver:
             f"{', '.join([bold(option) for option in bracket_options])}"
         )
         bracket = bracket_options[0]
-        logging.debug(f"The smallest bracket for {order.details.quantity} cards is {bracket}.")
-        logging.info(f"This project fits into the bracket of up to {bold(bracket)} cards.")
+        logger.debug(f"The smallest bracket for {order.details.quantity} cards is {bracket}.")
+        logger.info(f"This project fits into the bracket of up to {bold(bracket)} cards.")
         qty_dropdown.select_by_value(str(bracket))
-        logging.debug("Finished configuring the order's bracket!")
+        logger.debug("Finished configuring the order's bracket!")
 
     @exception_retry_skip_handler
     def define_project(self, order: CardOrder) -> None:
-        logging.debug("Defining the project...")
+        logger.debug("Defining the project...")
         self.assert_state(States.defining_order)
 
         # Select card stock
-        logging.debug(f"Selecting cardstock {order.details.stock}...")
+        logger.debug(f"Selecting cardstock {order.details.stock}...")
         stock_to_select = self.target_site.value.cardstock_site_name_mapping.get(Cardstocks(order.details.stock))
         assert (
             stock_to_select
@@ -557,19 +562,19 @@ class AutofillDriver:
         stock_dropdown.select_by_visible_text(stock_to_select)
 
         # Select number of cards
-        logging.debug("Selecting the number of cards...")
+        logger.debug("Selecting the number of cards...")
         self.set_bracket(order=order, dropdown_id=self.target_site.value.quantity_dropdown_element_id)
 
         # Switch the finish to foil if the user ordered foil cards
         if order.details.foil:
             if self.target_site.value.supports_foil:
-                logging.debug("Selecting foil finish...")
+                logger.debug("Selecting foil finish...")
                 foil_dropdown = Select(
                     self.driver.find_element(by=By.ID, value=self.target_site.value.print_type_dropdown_element_id)
                 )
                 foil_dropdown.select_by_value(self.target_site.value.foil_dropdown_element_value)
             else:
-                logging.warning(
+                logger.warning(
                     textwrap.dedent(
                         f"""
                         {bold('WARNING')}: Your project is configured to be printed in foil,
@@ -579,7 +584,7 @@ class AutofillDriver:
                     )
                 )
 
-        logging.debug("Finished defining the project!")
+        logger.debug("Finished defining the project!")
         self.set_state(States.paging_to_fronts)
 
     @alert_handler
@@ -590,7 +595,7 @@ class AutofillDriver:
         Ensures that the project's size and bracket align with the order's size and bracket.
         """
 
-        logging.debug("Redefining the project...")
+        logger.debug("Redefining the project...")
         self.set_state(States.defining_order, "Awaiting user input")
         self.driver.get(f"{self.target_site.value.saved_projects_url}")
         input(
@@ -610,34 +615,34 @@ class AutofillDriver:
                     f"then return to the console window and press {bold('Enter')}."
                 )
             )
-        logging.info("Successfully entered the editor for an existing project!")
+        logger.info("Successfully entered the editor for an existing project!")
         self.set_state(States.defining_order, "Configuring order")
 
         # navigate to insert fronts page
-        logging.debug("Navigating to insert fronts page...")
+        logger.debug("Navigating to insert fronts page...")
         self.execute_javascript(f"oTrackerBar.setFlow('{self.target_site.value.insert_fronts_url}?ssid={ssid}');")
         self.wait()
 
-        logging.debug("Executing renderDesignCount()...")
+        logger.debug("Executing renderDesignCount()...")
         self.wait_until_javascript_object_is_defined("PageLayout.prototype.renderDesignCount")
         self.execute_javascript("PageLayout.prototype.renderDesignCount()")
         with self.switch_to_frame("sysifm_loginFrame"):
-            logging.debug("Executing displayTotalCount()...")
+            logger.debug("Executing displayTotalCount()...")
             self.wait_until_javascript_object_is_defined("displayTotalCount")
             self.execute_javascript("displayTotalCount()")  # display the dropdown for "up to N cards"
             self.set_bracket(order=order, dropdown_id="dro_total_count")
-            logging.debug(f"Changing the project size to {order.details.quantity}...")
             qty = self.driver.find_element(by=By.ID, value="txt_card_number")
             qty.clear()
             qty.send_keys(str(order.details.quantity))
+            logger.debug(f"Changing the project size to {order.details.quantity}...")
             self.different_images()
         self.wait()
         self.set_state(States.inserting_fronts)
-        logging.debug("Finished redefining the project!")
+        logger.debug("Finished redefining the project!")
 
     @exception_retry_skip_handler
     def save_project_to_user_account(self, order: CardOrder) -> None:
-        logging.debug("Saving the project to the user's account...")
+        logger.debug("Saving the project to the user's account...")
         self.set_state(self.state, f"Saving project to {self.target_site.name} account")
         project_name_element = self.driver.find_element(by=By.ID, value="txt_temporaryname")
         project_name = self.get_project_name(order_name=order.name)
@@ -655,12 +660,12 @@ class AutofillDriver:
                 )
             )
         except sl_exc.TimeoutException:
-            logging.info(
+            logger.info(
                 f"Waited for longer than {wait_timeout_seconds}s for the {self.target_site.name} page to respond - "
                 "attempting to resolve with a page refresh..."
             )
             self.driver.refresh()
-        logging.debug("Finished saving the project to the user's account!")
+        logger.debug("Finished saving the project to the user's account!")
 
     # endregion
 
@@ -668,7 +673,7 @@ class AutofillDriver:
 
     @exception_retry_skip_handler
     def page_to_fronts(self, order: CardOrder) -> None:
-        logging.debug("Paging to fronts...")
+        logger.debug("Paging to fronts...")
         self.assert_state(States.paging_to_fronts)
 
         # reset this between fronts and backs
@@ -686,7 +691,7 @@ class AutofillDriver:
             self.different_images()
 
         self.set_state(States.inserting_fronts)
-        logging.debug("Finished paging to fronts!")
+        logger.debug("Finished paging to fronts!")
 
     @exception_retry_skip_handler
     def insert_fronts(self, order: CardOrder, auto_save_threshold: Optional[int]) -> None:
@@ -700,7 +705,7 @@ class AutofillDriver:
 
     @exception_retry_skip_handler
     def page_to_backs(self, order: CardOrder, skip_setup: bool) -> None:
-        logging.debug("Paging to backs...")
+        logger.debug("Paging to backs...")
         self.assert_state(States.paging_to_backs)
 
         # reset this between fronts and backs
@@ -718,7 +723,7 @@ class AutofillDriver:
         self.next_step()
 
         if skip_setup:
-            logging.debug(
+            logger.debug(
                 "The order is configured with skip_setup - attempting to bring up same/different images dialogue"
             )
             # bring up the dialogue for selecting same or different images
@@ -739,7 +744,7 @@ class AutofillDriver:
             except NoSuchWindowException:  # TODO: investigate exactly why this happens under --skipsetup. too tired atm
                 pass
         self.set_state(States.inserting_backs)
-        logging.debug("Finished paging to backs!")
+        logger.debug("Finished paging to backs!")
 
     def insert_backs(self, order: CardOrder, auto_save_threshold: Optional[int]) -> None:
         self.assert_state(States.inserting_backs)
@@ -786,7 +791,7 @@ class AutofillDriver:
             if skip_setup:
                 self.redefine_project(order=order)
             else:
-                logging.info("Configuring a new project.")
+                logger.info("Configuring a new project.")
                 self.define_project(order=order)
                 self.page_to_fronts(order=order)
             self.insert_fronts(order=order, auto_save_threshold=auto_save_threshold)
@@ -794,7 +799,7 @@ class AutofillDriver:
             self.insert_backs(order=order, auto_save_threshold=auto_save_threshold)
             self.page_to_review()
         log_hours_minutes_seconds_elapsed(t)
-        logging.info(
+        logger.info(
             textwrap.dedent(
                 f"""
                 Please review your project and ensure everything has been uploaded correctly before finalising with
@@ -811,20 +816,20 @@ class AutofillDriver:
         auto_save_threshold: Optional[int],
         post_processing_config: Optional[ImagePostProcessingConfig],
     ) -> None:
-        logging.info(f"{bold(len(orders))} project/s are scheduled to be auto-filled. They are:")
+        logger.info(f"{bold(len(orders))} project/s are scheduled to be auto-filled. They are:")
         for i, order in enumerate(orders, start=1):
-            logging.info(f"{i}. {bold(order.name or 'Unnamed Project')}")
-            logging.info("  " + order.get_overview())
+            logger.info(f"{i}. {bold(order.name or 'Unnamed Project')}")
+            logger.info("  " + order.get_overview())
 
         self.order_progress_bar.total = len(orders)
         self.order_progress_bar.refresh()
         for i, order in enumerate(orders, start=1):
-            logging.info(f"Auto-filling project {bold(i)} of {bold(len(orders))}.")
             skip_setup = inquirer.confirm(
                 message=(
                     "Do you want the tool to continue editing an existing project? (Press Enter if you're not sure.)"
                 ),
                 default=False,
+            logger.info(f"Auto-filling project {bold(i)} of {bold(len(orders))}.")
             ).execute()
             self.execute_order(
                 order=order,
@@ -836,7 +841,7 @@ class AutofillDriver:
             self.order_progress_bar.refresh()
             if i < len(orders):
                 if auto_save_threshold is not None:
-                    logging.info("Please add this project to your cart before continuing.")
+                    logger.info("Please add this project to your cart before continuing.")
                 input(f"Press {bold('Enter')} to continue with auto-filling the next project.\n")
 
     # endregion
