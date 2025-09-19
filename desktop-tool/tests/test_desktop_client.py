@@ -16,6 +16,7 @@ from selenium.webdriver.support.wait import WebDriverWait
 import src.constants as constants
 import src.utils
 from src.driver import AutofillDriver
+from src.exc import ValidationException
 from src.io import get_google_drive_file_name, remove_directories, remove_files
 from src.order import (
     CardImage,
@@ -88,7 +89,7 @@ TEST_IMAGE = "test_image"
 @pytest.fixture(autouse=True)
 def monkeypatch_current_working_directory(request, monkeypatch) -> None:
     monkeypatch.setattr(os, "getcwd", lambda: FILE_PATH)
-    monkeypatch.setattr(src.io, "CURRDIR", FILE_PATH)
+    monkeypatch.setattr(src.io, "DEFAULT_WORKING_DIRECTORY", FILE_PATH)
     monkeypatch.chdir(FILE_PATH)
 
 
@@ -131,7 +132,7 @@ def image_element_local_file() -> Generator[ElementTree.Element, None, None]:
 
 @pytest.fixture()
 def image_local_file(image_element_local_file: ElementTree.Element) -> Generator[CardImage, None, None]:
-    card_image = CardImage.from_element(image_element_local_file)
+    card_image = CardImage.from_element(working_directory=FILE_PATH, element=image_element_local_file)
     yield card_image
 
 
@@ -155,7 +156,7 @@ def image_element_invalid_google_drive() -> Generator[ElementTree.Element, None,
 def image_invalid_google_drive(
     image_element_invalid_google_drive: ElementTree.Element,
 ) -> Generator[CardImage, None, None]:
-    card_image = CardImage.from_element(image_element_invalid_google_drive)
+    card_image = CardImage.from_element(working_directory=FILE_PATH, element=image_element_invalid_google_drive)
     yield card_image
 
 
@@ -177,7 +178,7 @@ def image_element_valid_google_drive() -> Generator[ElementTree.Element, None, N
 
 @pytest.fixture()
 def image_valid_google_drive(image_element_valid_google_drive: ElementTree.Element) -> Generator[CardImage, None, None]:
-    card_image = CardImage.from_element(image_element_valid_google_drive)
+    card_image = CardImage.from_element(working_directory=FILE_PATH, element=image_element_valid_google_drive)
     if card_image.file_path is not None and os.path.exists(card_image.file_path):
         os.unlink(card_image.file_path)
     yield card_image
@@ -205,7 +206,7 @@ def image_element_valid_google_drive_on_disk() -> Generator[ElementTree.Element,
 def image_valid_google_drive_on_disk(
     image_element_valid_google_drive_on_disk: ElementTree.Element,
 ) -> Generator[CardImage, None, None]:
-    card_image = CardImage.from_element(image_element_valid_google_drive_on_disk)
+    card_image = CardImage.from_element(working_directory=FILE_PATH, element=image_element_valid_google_drive_on_disk)
     yield card_image
 
 
@@ -229,7 +230,7 @@ def image_element_google_valid_drive_no_name() -> Generator[ElementTree.Element,
 def image_google_valid_drive_no_name(
     image_element_google_valid_drive_no_name: ElementTree.Element,
 ) -> Generator[CardImage, None, None]:
-    card_image = CardImage.from_element(image_element_google_valid_drive_no_name)
+    card_image = CardImage.from_element(working_directory=FILE_PATH, element=image_element_google_valid_drive_no_name)
     if card_image.file_path is not None and os.path.exists(card_image.file_path):
         os.unlink(card_image.file_path)
     yield card_image
@@ -270,6 +271,7 @@ def card_image_collection_valid(
     card_image_collection_element_valid: ElementTree.Element,
 ) -> Generator[CardImageCollection, None, None]:
     card_image_collection = CardImageCollection.from_element(
+        working_directory=FILE_PATH,
         element=card_image_collection_element_valid,
         num_slots=1,
         face=constants.Faces.front,
@@ -376,7 +378,9 @@ def card_order_element_valid() -> Generator[ElementTree.Element, None, None]:
 
 @pytest.fixture()
 def card_order_valid(card_order_element_valid: ElementTree.Element) -> Generator[CardOrder, None, None]:
-    yield CardOrder.from_element(card_order_element_valid, allowed_to_exceed_project_max_size=False)
+    yield CardOrder.from_element(
+        working_directory=FILE_PATH, element=card_order_element_valid, allowed_to_exceed_project_max_size=False
+    )
 
 
 @pytest.fixture()
@@ -423,7 +427,11 @@ def card_order_element_multiple_cardbacks() -> Generator[ElementTree.Element, No
 def card_order_multiple_cardbacks(
     card_order_element_multiple_cardbacks: ElementTree.Element,
 ) -> Generator[CardOrder, None, None]:
-    yield CardOrder.from_element(card_order_element_multiple_cardbacks, allowed_to_exceed_project_max_size=False)
+    yield CardOrder.from_element(
+        working_directory=FILE_PATH,
+        element=card_order_element_multiple_cardbacks,
+        allowed_to_exceed_project_max_size=False,
+    )
 
 
 @pytest.fixture()
@@ -615,11 +623,13 @@ def test_card_image_collection_download(card_image_collection_valid, counter, im
 
 
 def test_card_image_collection_no_cards(input_enter, card_image_collection_element_no_cards):
-    with pytest.raises(SystemExit) as exc_info:
+    with pytest.raises(ValidationException):
         CardImageCollection.from_element(
-            card_image_collection_element_no_cards, face=constants.Faces.front, num_slots=3
+            working_directory=FILE_PATH,
+            element=card_image_collection_element_no_cards,
+            face=constants.Faces.front,
+            num_slots=3,
         )
-    assert exc_info.value.code == 0
 
 
 # endregion
@@ -628,7 +638,7 @@ def test_card_image_collection_no_cards(input_enter, card_image_collection_eleme
 
 
 def test_details_valid(details_element_valid):
-    details = Details.from_element(details_element_valid, allowed_to_exceed_project_max_size=False)
+    details = Details.from_element(element=details_element_valid, allowed_to_exceed_project_max_size=False)
     assert_details_identical(
         details,
         Details(quantity=1, stock=constants.Cardstocks.S30, foil=False),
@@ -636,15 +646,13 @@ def test_details_valid(details_element_valid):
 
 
 def test_details_quantity_greater_than_max_size(input_enter, details_element_quantity_greater_than_max_size):
-    with pytest.raises(SystemExit) as exc_info:
+    with pytest.raises(ValidationException):
         Details.from_element(details_element_quantity_greater_than_max_size, allowed_to_exceed_project_max_size=False)
-    assert exc_info.value.code == 0
 
 
 def test_details_invalid_cardstock(input_enter, details_element_invalid_cardstock):
-    with pytest.raises(SystemExit) as exc_info:
+    with pytest.raises(ValidationException):
         Details.from_element(details_element_invalid_cardstock, allowed_to_exceed_project_max_size=False)
-    assert exc_info.value.code == 0
 
 
 # endregion
@@ -752,7 +760,7 @@ def test_card_order_multiple_cardbacks(card_order_multiple_cardbacks):
 
 
 def test_card_order_valid_from_file():
-    card_order = CardOrder.from_file_path("test_order.xml")
+    card_order = CardOrder.from_file_path(working_directory=FILE_PATH, file_path="test_order.xml")
     for card in (card_order.fronts.cards_by_id | card_order.backs.cards_by_id).values():
         assert not card.file_exists()
     assert_orders_identical(
@@ -805,14 +813,19 @@ def test_card_order_valid_from_file():
 
 
 def test_card_order_mangled_xml(input_enter):
-    with pytest.raises(SystemExit) as exc_info:
-        CardOrder.from_file_path("mangled.xml")  # file is missing closing ">" at end
-    assert exc_info.value.code == 0
+    with pytest.raises(ValidationException):
+        CardOrder.from_file_path(
+            working_directory=FILE_PATH, file_path="mangled.xml"
+        )  # file is missing closing ">" at end
 
 
 def test_card_order_missing_slots(input_enter, card_order_element_invalid_quantity):
     # just testing that this order parses without error
-    CardOrder.from_element(card_order_element_invalid_quantity, allowed_to_exceed_project_max_size=False)
+    CardOrder.from_element(
+        working_directory=FILE_PATH,
+        element=card_order_element_invalid_quantity,
+        allowed_to_exceed_project_max_size=False,
+    )
 
 
 @pytest.mark.parametrize(
@@ -1324,7 +1337,7 @@ def test_aggregate_and_split_orders(
     assert aggregated_orders_dict.keys() == expected_orders_dict.keys()
     for key in aggregated_orders_dict.keys():
         assert len(aggregated_orders_dict[key]) == len(expected_orders_dict[key])
-        for (aggregated_order, expected_order) in zip(aggregated_orders_dict[key], expected_orders_dict[key]):
+        for aggregated_order, expected_order in zip(aggregated_orders_dict[key], expected_orders_dict[key]):
             assert_orders_identical(aggregated_order, expected_order)
 
 

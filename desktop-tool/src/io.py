@@ -124,14 +124,21 @@ def get_google_drive_file_name(drive_id: str) -> Optional[str]:
 # region file IO
 
 
-CURRDIR: str = os.path.dirname(os.path.realpath(sys.executable)) if getattr(sys, "frozen", False) else os.getcwd()
+# TODO: migrate to Pathlib
+DEFAULT_WORKING_DIRECTORY: str = (
+    os.path.dirname(os.path.realpath(sys.executable)) if getattr(sys, "frozen", False) else os.getcwd()
+)
 
 
-def image_directory() -> str:
-    cards_folder = os.path.join(CURRDIR, "cards")
-    if not os.path.exists(cards_folder):
-        os.mkdir(cards_folder)
-    return cards_folder
+def get_image_directory(working_directory: str) -> str:
+    return os.path.join(working_directory, "cards")
+
+
+def create_image_directory_if_not_exists(working_directory: str) -> bool:
+    if not os.path.exists(get_image_directory(working_directory=working_directory)):
+        os.mkdir(get_image_directory(working_directory=working_directory))
+        return True
+    return False
 
 
 def file_exists(file_path: Optional[str]) -> bool:

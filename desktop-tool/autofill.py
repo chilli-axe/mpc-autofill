@@ -9,6 +9,8 @@ from wakepy import keepawake
 
 from src.constants import Browsers, ImageResizeMethods, TargetSites
 from src.driver import AutofillDriver
+from src.exc import ValidationException
+from src.io import DEFAULT_WORKING_DIRECTORY, create_image_directory_if_not_exists
 from src.logging import configure_loggers
 from src.order import CardOrder, aggregate_and_split_orders
 from src.pdf_maker import PdfExporter
@@ -29,6 +31,7 @@ def prompt_if_no_arguments(prompt: str) -> Union[str, bool]:
 
 
 @click.command(context_settings={"show_default": True})
+@click.option("-d", "--directory", default=None, help=("The directory to search for order XML files."))
 @click.option(
     "-b",
     "--browser",
@@ -130,6 +133,7 @@ def main(
     auto_save: bool,
     auto_save_threshold: int,
     browser: str,
+    directory: Optional[str],
     binary_location: Optional[str],
     site: str,
     exportpdf: bool,
@@ -141,7 +145,22 @@ def main(
     debug_logs: bool,
     # convert_to_jpeg: bool,
 ) -> None:
-    configure_loggers(log_debug_to_file=debug_logs)
+    working_directory: str = DEFAULT_WORKING_DIRECTORY
+    if directory:
+        if not os.path.isdir(directory):
+            raise Exception(
+                "Working directory was specified but is not a directory (or it doesn't exist): "
+                f"{bold(working_directory)}"
+            )
+        working_directory = directory
+    create_image_directory_if_not_exists(working_directory=working_directory)
+
+    if binary_location and not os.path.isdir(binary_location):
+        raise Exception(
+            f"Binary location was specified but is not a directory (or it doesn't exist): {bold(binary_location)}"
+        )
+
+    configure_loggers(working_directory=working_directory, log_debug_to_file=debug_logs)
     try:
         with keepawake(keep_screen_awake=True) if not allowsleep else nullcontext():
             if not allowsleep:
@@ -154,11 +173,15 @@ def main(
                 else None
             )
             if exportpdf:
-                PdfExporter().execute(post_processing_config=post_processing_config)
+                PdfExporter(order=CardOrder.from_xmls_in_folder(working_directory=working_directory)[0]).execute(
+                    post_processing_config=post_processing_config
+                )
             else:
                 target_site = TargetSites[site]
                 card_orders = aggregate_and_split_orders(
-                    orders=CardOrder.from_xmls_in_folder(), target_site=target_site, combine_orders=combine_orders
+                    orders=CardOrder.from_xmls_in_folder(working_directory=working_directory),
+                    target_site=target_site,
+                    combine_orders=combine_orders,
                 )
                 web_server = WebServer()
                 AutofillDriver(
@@ -176,6 +199,9 @@ def main(
                     f"you can find my tip jar here: {bold('https://www.buymeacoffee.com/chilli.axe')} Thank you!\n\n"
                     f"Press {bold('Enter')} to close this window - your browser window will remain open.\n"
                 )
+    except ValidationException as e:
+        input(f"There was a problem with your order file:\n\n{bold(e)}\n\nPress Enter to exit.")
+        sys.exit(0)
     except Exception as e:
         logging.exception("Uncaught exception")
         logging.info(f"An uncaught exception occurred:\n{bold(e)}\n")
