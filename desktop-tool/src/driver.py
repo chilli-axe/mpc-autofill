@@ -399,11 +399,20 @@ class AutofillDriver:
             return False
 
     @exception_retry_skip_handler
-    def insert_image(self, image: CardImage, slots: list[int], max_tries: int = 3) -> bool:
+    def insert_image(self, image: CardImage, max_tries: int = 3) -> bool:
         """
         Inserts the image identified by `pid` into `slots`.
         Returns whether the project state was mutated by doing this.
         """
+
+        valid_slots = sorted(
+            [
+                slot
+                for slot in image.slots
+                if self.execute_javascript(self.get_element_for_slot_js(slot=slot), return_=True)
+            ]
+        )
+        logger.debug(f"Image {image.name} has valid slots {valid_slots}")
 
         logger.debug("Waiting until we can insert images...")
         self.wait_until_javascript_object_is_defined("PageLayout.prototype.applyDragPhoto")
@@ -411,8 +420,8 @@ class AutofillDriver:
         state_mutated = False
 
         if image.pid:
-            logger.debug(f'Inserting "{image.name}" into slots {slots}...')
-            for i, slot in enumerate(slots, start=1):
+            logger.debug(f'Inserting "{image.name}" into slots {valid_slots}...')
+            for i, slot in enumerate(valid_slots, start=1):
                 logger.debug(f"Inserting into slot {slot}...")
 
                 pid_of_image_in_slot = self.get_pid_of_image_in_slot(slot=slot)
@@ -422,7 +431,7 @@ class AutofillDriver:
 
                 state_mutated = True
                 self.set_state(
-                    state=self.state, action=f'Inserting "{image.name}" into slot {slot+1} ({i}/{len(slots)})'
+                    state=self.state, action=f'Inserting "{image.name}" into slot {slot+1} ({i}/{len(valid_slots)})'
                 )
                 # Insert the card into each slot and wait for the page to load before continuing
                 tries = 0
@@ -440,7 +449,7 @@ class AutofillDriver:
                             f"but no attempt succeeded! Skipping this image."
                         )
                         break
-            logger.debug(f"All done inserting {image.name} into slots {slots}!")
+            logger.debug(f"All done inserting {image.name} into slots {valid_slots}!")
             self.set_state(self.state)
         else:
             logger.debug(f"No PID for {image.name} - skipping this image")
@@ -454,16 +463,8 @@ class AutofillDriver:
         Returns whether the project state was mutated.
         """
 
-        valid_slots = sorted(
-            [
-                slot
-                for slot in image.slots
-                if self.execute_javascript(self.get_element_for_slot_js(slot=slot), return_=True)
-            ]
-        )
-        logger.debug(f"Image {image.name} has valid slots {valid_slots}")
         self.upload_image(image=image)
-        return self.insert_image(image=image, slots=valid_slots)
+        return self.insert_image(image=image)
 
     @exception_retry_skip_handler
     def upload_and_insert_images(
@@ -746,15 +747,34 @@ class AutofillDriver:
         self.next_step()
         self.wait()
 
+        try:
+            is_same_images = order.details.quantity > 1 and self.raw_execute_javascript(
+                js=f"{self.get_element_for_slot_js(1)} === null", return_=True
+            )
+        except sl_exc.JavascriptException:
+            is_same_images = True
+
+        changed_from_single_to_different_images = False
         self.render_design_count()
         with self.switch_to_frame("sysifm_loginFrame"):
-            if len(order.backs.cards_by_id) == 1:
+            if is_same_images and len(order.backs.cards_by_id) == 1:
                 # Same cardback for every card
                 self.same_images()
             else:
                 # Different cardbacks
                 self.different_images()
+                if is_same_images:
+                    changed_from_single_to_different_images = True
+
         self.set_state(States.inserting_backs)
+
+        if changed_from_single_to_different_images:
+            pid = self.get_pid_of_image_in_slot(slot=0)
+            slots: set[int] = set(range(1, order.details.quantity)) - set().union(
+                *(card.slots for card in order.backs.cards_by_id.values())
+            )
+            self.insert_image(image=CardImage(slots=slots, name="Cardback", pid=pid))
+
         logger.debug("Finished paging to backs!")
 
     def insert_backs(self, order: CardOrder, auto_save_threshold: Optional[int]) -> None:

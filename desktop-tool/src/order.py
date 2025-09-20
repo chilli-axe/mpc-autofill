@@ -39,7 +39,7 @@ class CardImage:
     file_path: Optional[str] = attr.ib(default="")
     query: Optional[str] = attr.ib(default=None)
 
-    pid: Optional[str] = attr.ib(init=False, default=None)
+    pid: Optional[str] = attr.ib(default=None)
 
     downloaded: bool = attr.ib(init=False, default=False)
     uploaded: bool = attr.ib(init=False, default=False)
