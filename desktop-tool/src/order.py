@@ -1,3 +1,4 @@
+import hashlib
 import os
 import sys
 from concurrent.futures import ThreadPoolExecutor
@@ -6,7 +7,7 @@ from glob import glob
 from itertools import groupby
 from pathlib import Path
 from queue import Queue
-from typing import Optional
+from typing import Optional, cast
 from xml.etree.ElementTree import Element, ParseError
 
 import attr
@@ -37,6 +38,8 @@ class CardImage:
     name: Optional[str] = attr.ib(default="")
     file_path: Optional[str] = attr.ib(default="")
     query: Optional[str] = attr.ib(default=None)
+
+    pid: Optional[str] = attr.ib(init=False, default=None)
 
     downloaded: bool = attr.ib(init=False, default=False)
     uploaded: bool = attr.ib(init=False, default=False)
@@ -103,6 +106,18 @@ class CardImage:
             self.file_path = file_path
 
         self.validate()
+
+    def generate_pid(self) -> None:
+        """
+        The MakePlayingCards frontend uses SHA-1 for computing image PIDs (which are treated as image's unique IDs
+        in their system's logic).
+        """
+
+        if self.pid or (not self.file_exists()):
+            return
+
+        with open(cast(str, self.file_path), "rb") as f:
+            self.pid = hashlib.sha1(f.read()).hexdigest().upper()
 
     # endregion
 
