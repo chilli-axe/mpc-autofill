@@ -5,16 +5,103 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta http-equiv="X-UA-Compatible" content="ie=edge">
         <title>MPC Autofill</title>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                background: #f7f9fc;
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: #333;
+                line-height: 1.6;
+                padding: 20px;
+            }
+
+            .container {
+                background: white;
+                max-width: 500px;
+                width: 100%;
+                padding: 40px;
+                border-radius: 8px;
+                border: 1px solid #e1e5e9;
+            }
+
+            .header {
+                text-align: center;
+                margin-bottom: 30px;
+            }
+
+            .status {
+                background: #e8f5e8;
+                color: #2d5a2d;
+                padding: 8px 16px;
+                border-radius: 4px;
+                font-size: 0.9rem;
+                font-weight: 500;
+                display: inline-block;
+                margin-bottom: 20px;
+            }
+
+            h1 {
+                font-size: 1.8rem;
+                color: #1a73e8;
+                font-weight: 600;
+                margin-bottom: 25px;
+            }
+
+            p {
+                font-size: 1rem;
+                margin-bottom: 20px;
+                color: #5f6368;
+            }
+
+            a {
+                color: #1a73e8;
+                text-decoration: none;
+            }
+
+            .note {
+                background: #f8f9fa;
+                padding: 20px;
+                border-radius: 4px;
+                border-left: 4px solid #1a73e8;
+                margin: 20px 0;
+            }
+
+            .footer {
+                text-align: center;
+                margin-top: 30px;
+                padding-top: 20px;
+                border-top: 1px solid #e1e5e9;
+                color: #9aa0a6;
+                font-size: 0.9rem;
+            }
+        </style>
     </head>
     <body>
-        <h1>Congratulations!</h1>
-        <p>
-            MPC Autofill has started up successfully, please look back at your terminal
-            application to answer a few questions so the upload process can begin.
-        </p>
-        <p>
-            If you have more questions about using MPC Autofill, check out
-            <a href="https://github.com/chilli-axe/mpc-autofill/wiki/Desktop-Tool">the documentation</a>.
-        </p>
+        <div class="container">
+            <div class="header">
+                <div class="status">✓ Ready</div>
+                <h1>Awaiting Your Input</h1>
+            </div>
+            <div>
+                <p>
+                    MPC Autofill has started up successfully. Please look back at your terminal
+                    application to answer a few questions so the upload process can begin.
+                </p>
+            </div>
+            <p class="note">
+                If you have more questions about using MPC Autofill, check out
+                <a href="https://github.com/chilli-axe/mpc-autofill/wiki/Desktop-Tool">the documentation</a>.
+            </p>
+            <div class="footer">MPC Autofill Desktop Tool</div>
+        </div>
     </body>
 </html>
