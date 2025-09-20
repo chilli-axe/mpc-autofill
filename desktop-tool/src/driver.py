@@ -60,7 +60,6 @@ class AutofillDriver:
     order_progress_bar: enlighten.Counter = attr.ib(init=False, default=None)
     download_bar: enlighten.Counter = attr.ib(init=False, default=None)
     upload_bar: enlighten.Counter = attr.ib(init=False, default=None)
-    file_path_to_pid_map: dict[str, str] = {}
 
     # region initialisation
 
@@ -289,6 +288,14 @@ class AutofillDriver:
         self.wait_until_javascript_object_is_defined("oRenderFeature")  # looks weird but it goes
         self.raw_execute_javascript("setMode('ImageText', 1);")
 
+    @alert_handler
+    @exception_retry_skip_handler
+    @ignore_javascript_errors
+    def render_design_count(self) -> None:
+        logger.debug("Rendering design count...")
+        self.wait_until_javascript_object_is_defined("PageLayout.prototype.renderDesignCount")
+        self.raw_execute_javascript("PageLayout.prototype.renderDesignCount()")
+
     @exception_retry_skip_handler
     def is_image_currently_uploading(self) -> bool:
         self.wait_until_javascript_object_is_defined("oDesignImage")
@@ -323,11 +330,8 @@ class AutofillDriver:
     # region uploading
 
     @exception_retry_skip_handler
-    def is_slot_filled(self, slot: int) -> bool:
-        self.wait_until_javascript_object_is_defined("PageLayout.prototype.checkEmptyImage")
-        return not self.execute_javascript(
-            f"PageLayout.prototype.checkEmptyImage({self.get_element_for_slot_js(slot)})", return_=True
-        )
+    def get_pid_of_image_in_slot(self, slot: int) -> Optional[str]:
+        return self.execute_javascript(f"{self.get_element_for_slot_js(slot)}.getAttribute('pid')", return_=True)
 
     @exception_retry_skip_handler
     def get_all_uploaded_image_pids(self) -> list[str]:
@@ -363,16 +367,16 @@ class AutofillDriver:
         logger.debug(f"Finished uploading {image.name}!")
 
     @exception_retry_skip_handler
-    def upload_image(self, image: CardImage, max_tries: int = 3) -> Optional[str]:
+    def upload_image(self, image: CardImage, max_tries: int = 3) -> bool:
         """
-        Uploads the given CardImage with `max_tries` attempts. Returns the image's PID in the targeted site.
+        Uploads the given CardImage with `max_tries` attempts. Returns whether the image was uploaded.
         """
 
         if image.file_path is not None and image.file_exists():
-            if image.file_path in self.file_path_to_pid_map.keys():
-                pid = self.file_path_to_pid_map[image.file_path]
-                logger.debug(f"Image {image.name} has already been uploaded - reusing its PID ({pid})")
-                return pid
+            image.generate_pid()
+            if image.pid in self.get_all_uploaded_image_pids():
+                logger.debug(f"Image {image.name} has already been uploaded")
+                return False
 
             self.set_state(self.state, f'Uploading "{image.name}"')
             get_number_of_uploaded_images = self.get_number_of_uploaded_images()
@@ -382,34 +386,41 @@ class AutofillDriver:
                 logger.debug(f"Commencing attempt {tries+1} of uploading {image.name}...")
                 self.attempt_to_upload_image(image)
                 if self.get_number_of_uploaded_images() > get_number_of_uploaded_images:
-                    # a new image has been uploaded - assume the last image in the editor is the one we just uploaded
-                    pid = self.get_all_uploaded_image_pids()[-1]
-                    self.file_path_to_pid_map[image.file_path] = pid
-                    return pid
+                    return True
                 tries += 1
                 if tries >= max_tries:
                     logger.warning(
                         f"Attempted to upload image {bold(image.name)} {max_tries} times, "
                         f"but no attempt succeeded! Skipping this image."
                     )
-                    return None
+                    return False
         else:
             logger.warning(f"Image {bold(image.name)} at path {bold(image.file_path or 'None')} does not exist!")
-            return None
+            return False
 
     @exception_retry_skip_handler
-    def insert_image(self, pid: Optional[str], image: CardImage, slots: list[int], max_tries: int = 3) -> None:
+    def insert_image(self, image: CardImage, slots: list[int], max_tries: int = 3) -> bool:
         """
         Inserts the image identified by `pid` into `slots`.
+        Returns whether the project state was mutated by doing this.
         """
 
         logger.debug("Waiting until we can insert images...")
         self.wait_until_javascript_object_is_defined("PageLayout.prototype.applyDragPhoto")
 
-        if pid:
+        state_mutated = False
+
+        if image.pid:
             logger.debug(f'Inserting "{image.name}" into slots {slots}...')
             for i, slot in enumerate(slots, start=1):
                 logger.debug(f"Inserting into slot {slot}...")
+
+                pid_of_image_in_slot = self.get_pid_of_image_in_slot(slot=slot)
+                if pid_of_image_in_slot == image.pid:
+                    # image is already assigned to slot - no work to do.
+                    continue
+
+                state_mutated = True
                 self.set_state(
                     state=self.state, action=f'Inserting "{image.name}" into slot {slot+1} ({i}/{len(slots)})'
                 )
@@ -418,7 +429,7 @@ class AutofillDriver:
                 page_refreshed_while_inserting_image = True
                 while page_refreshed_while_inserting_image:
                     self.execute_javascript(
-                        f'PageLayout.prototype.applyDragPhoto({self.get_element_for_slot_js(slot)}, 0, "{pid}")'
+                        f'PageLayout.prototype.applyDragPhoto({self.get_element_for_slot_js(slot)}, 0, "{image.pid}")'
                     )
 
                     page_refreshed_while_inserting_image = self.wait()
@@ -434,16 +445,13 @@ class AutofillDriver:
         else:
             logger.debug(f"No PID for {image.name} - skipping this image")
 
+        return state_mutated
+
     @exception_retry_skip_handler
     def upload_and_insert_image(self, image: CardImage) -> bool:
         """
         Uploads and inserts `image` into the targeted site.
-        How this is executed depends on whether the image has already been fully or partially uploaded,
-        or not uploaded at all:
-        * None of the image's slots filled - upload the image and insert it into all slots
-        * Some of the image's slots filled - fill the unfilled slots with the image in the first filled
-        * All of the image's slots filled - no action required
-        Returns whether any action to modify the targeted site's project state was taken.
+        Returns whether the project state was mutated.
         """
 
         valid_slots = sorted(
@@ -453,24 +461,9 @@ class AutofillDriver:
                 if self.execute_javascript(self.get_element_for_slot_js(slot=slot), return_=True)
             ]
         )
-        slots_filled = [self.is_slot_filled(slot) for slot in valid_slots]
         logger.debug(f"Image {image.name} has valid slots {valid_slots}")
-        if all(slots_filled):
-            logger.debug("All valid slots are filled - no work to do here!")
-            return False
-        elif not any(slots_filled):
-            logger.debug("No valid slots are filled.")
-            pid = self.upload_image(image=image)
-            self.insert_image(pid, image, slots=valid_slots)
-        else:
-            logger.debug("Some valid slots are filled - filling all slots with the image of the first filled one.")
-            idx = next(index for index, value in enumerate(slots_filled) if value is True)
-            pid = self.execute_javascript(
-                f'{self.get_element_for_slot_js(valid_slots[idx])}.getAttribute("pid")', return_=True
-            )
-            unfilled_slot_numbers = [slot for i, slot in enumerate(valid_slots) if slots_filled[i] is False]
-            self.insert_image(pid, image, slots=unfilled_slot_numbers)
-        return True
+        self.upload_image(image=image)
+        return self.insert_image(image=image, slots=valid_slots)
 
     @exception_retry_skip_handler
     def upload_and_insert_images(
@@ -639,9 +632,7 @@ class AutofillDriver:
         self.execute_javascript(f"oTrackerBar.setFlow('{self.target_site.value.insert_fronts_url}?ssid={ssid}');")
         self.wait()
 
-        logger.debug("Executing renderDesignCount()...")
-        self.wait_until_javascript_object_is_defined("PageLayout.prototype.renderDesignCount")
-        self.execute_javascript("PageLayout.prototype.renderDesignCount()")
+        self.render_design_count()
         with self.switch_to_frame("sysifm_loginFrame"):
             logger.debug("Executing displayTotalCount()...")
             self.wait_until_javascript_object_is_defined("displayTotalCount")
@@ -649,11 +640,10 @@ class AutofillDriver:
             # read the current project size and calculate the new projcet size
             # truncate the project if it would exceed the max size
             qty_element = self.driver.find_element(by=By.ID, value="txt_card_number")
+            current_project_size = int(qty_element.get_attribute("value"))  # type: ignore
             new_project_size = order.details.quantity
             if fulfilment_method == OrderFulfilmentMethod.append_to_project:
-                current_project_size = int(qty_element.get_attribute("value"))  # type: ignore
                 new_project_size += current_project_size
-
                 if new_project_size > PROJECT_MAX_SIZE:
                     logger.warning(
                         f"{bold('Warning')}: After adding this order to the existing {self.target_site.name} project,"
@@ -715,9 +705,6 @@ class AutofillDriver:
         logger.debug("Paging to fronts...")
         self.assert_state(States.paging_to_fronts)
 
-        # reset this between fronts and backs
-        self.file_path_to_pid_map = {}
-
         # Accept current settings and move to next step
         self.wait_until_javascript_object_is_defined("doPersonalize")
         self.execute_javascript(f"doPersonalize('{self.target_site.value.accept_settings_url}');")
@@ -747,9 +734,6 @@ class AutofillDriver:
         logger.debug("Paging to backs...")
         self.assert_state(States.paging_to_backs)
 
-        # reset this between fronts and backs
-        self.file_path_to_pid_map = {}
-
         self.next_step()
         self.wait()
         try:
@@ -762,9 +746,7 @@ class AutofillDriver:
         self.next_step()
         self.wait()
 
-        logger.debug("Executing renderDesignCount()...")
-        self.wait_until_javascript_object_is_defined("PageLayout.prototype.renderDesignCount")
-        self.execute_javascript("PageLayout.prototype.renderDesignCount()")
+        self.render_design_count()
         with self.switch_to_frame("sysifm_loginFrame"):
             if len(order.backs.cards_by_id) == 1:
                 # Same cardback for every card
