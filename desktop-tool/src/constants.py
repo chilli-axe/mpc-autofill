@@ -197,13 +197,15 @@ class TargetSites(Enum):
         base_url="https://www.printerstudio.fr",
         starting_url_route="personnalise/cartes-de-jeu-sur-mesure-cartes-blanches.html",
         supports_foil=False,
+        saved_successfully_text="Enregistré avec succès",
         cardstock_site_name_mapping={
             Cardstocks.S30: "Standard (lisse)",
-            Cardstocks.S33: "Superieur (lisse)",
+            Cardstocks.S33: "Supérieur (lisse)",
             Cardstocks.M31: "Premium (lin)",
-            Cardstocks.P10: "Plastic (100%)",
+            Cardstocks.P10: "Plastique (100%)",
         },
     )
+
 
 DPI_HEIGHT_RATIO = 300 / 1110  # TODO: share this between desktop tool and backend
 
