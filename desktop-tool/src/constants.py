@@ -2,7 +2,6 @@ from enum import Enum
 from functools import partial
 
 import attr
-from PIL import Image
 
 import src.webdrivers as wd
 
@@ -76,12 +75,12 @@ SERVICE_ACC_FILENAME = "client_secrets.json"
 
 
 class ImageResizeMethods(Enum):
-    NEAREST = Image.NEAREST
-    BOX = Image.BOX
-    BILINEAR = Image.BILINEAR
-    HAMMING = Image.HAMMING
-    BICUBIC = Image.BICUBIC
-    LANCZOS = Image.LANCZOS
+    NEAREST = 0
+    BOX = 4
+    BILINEAR = 2
+    HAMMING = 5
+    BICUBIC = 3
+    LANCZOS = 1
 
 
 @attr.s

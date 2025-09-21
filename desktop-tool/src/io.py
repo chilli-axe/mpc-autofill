@@ -126,7 +126,11 @@ def get_google_drive_file_name(drive_id: str) -> Optional[str]:
 
 # TODO: migrate to Pathlib
 DEFAULT_WORKING_DIRECTORY: str = (
-    os.path.dirname(os.path.realpath(sys.executable)) if getattr(sys, "frozen", False) else os.getcwd()
+    # nuitka magic
+    os.path.dirname(sys.argv[0])
+    if "__compiled__" in globals()
+    # if running through a normal python interpreter
+    else os.getcwd()
 )
 
 
