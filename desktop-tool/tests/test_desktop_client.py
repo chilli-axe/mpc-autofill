@@ -1421,6 +1421,7 @@ def test_pdf_export_complete_separate_faces(monkeypatch, card_order_valid):
         constants.TargetSites.PrinterStudio,
         constants.TargetSites.PrinterStudioDE,
         constants.TargetSites.PrinterStudioUK,
+        constants.TargetSites.PrinterStudioES,
         constants.TargetSites.PrinterStudioFR,
     ],
 )
@@ -1451,6 +1452,7 @@ def test_card_order_complete_run_single_cardback(browser, site, input_enter, car
         constants.TargetSites.PrinterStudio,
         constants.TargetSites.PrinterStudioDE,
         constants.TargetSites.PrinterStudioUK,
+        constants.TargetSites.PrinterStudioES,
         constants.TargetSites.PrinterStudioFR,
     ],
 )
