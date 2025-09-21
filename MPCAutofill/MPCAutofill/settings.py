@@ -59,13 +59,22 @@ PREPEND_WWW = env("PREPEND_WWW", default=False)
 
 # SESSION_COOKIE_SECURE = True
 # CSRF_COOKIE_SECURE = True
-CSRF_TRUSTED_ORIGINS = ["http://localhost:8000", "http://127.0.0.1:8000"]  # required for Docker with Django 4.x+
+CSRF_TRUSTED_ORIGINS = env(
+    "CSRF_TRUSTED_ORIGINS",
+    default=[
+        "http://localhost",
+        "http://127.0.0.1",
+        "http://localhost:8000",
+        "http://127.0.0.1:8000",
+    ],
+)  # required for Docker with Django 4.x+
 
 # Application definition
 
 INSTALLED_APPS = [
     "cardpicker.apps.CardpickerConfig",
     "accounts",
+    "django_q",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -81,6 +90,7 @@ MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.gzip.GZipMiddleware",
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -217,7 +227,7 @@ PATREON_SECRET = env("PATREON_SECRET", default="")
 PATREON_URL = env("PATREON_URL", default="")
 
 # Sentry
-if len(sys.argv) >= 2 and sys.argv[1] != "runserver":
+if len(sys.argv) >= 2 and sys.argv[1] != "runserver" and env("DJANGO_DEBUG", default=False) is False:
     sentry_sdk.init(
         dsn="https://4d29db1957fb9b3153aaba66e776b01f@o4505848489246720.ingest.sentry.io/4505848491540480",
         integrations=[DjangoIntegration()],
@@ -233,3 +243,19 @@ if len(sys.argv) >= 2 and sys.argv[1] != "runserver":
         # We recommend adjusting this value in production.
         profiles_sample_rate=1.0,
     )
+
+# django-q2
+Q_CLUSTER = {
+    "name": "DjangoORM",
+    "workers": 8,
+    "recycle": 500,
+    "timeout": 60 * 60 * 12,  # 12 hours - extreme upper limit
+    "retry": 60 * 60 * 12 + 1,  # must be longer than timeout
+    "max_attempts": 1,
+    "compress": True,
+    "save_limit": 250,
+    "queue_limit": 500,
+    "cpu_affinity": 1,
+    "label": "Django Q2",
+    "orm": "default",
+}

@@ -1,0 +1,17 @@
+{
+  "title": "New Cards First Pages Response",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "results": {
+      "type": "object",
+      "patternProperties": {
+        ".*": {
+          "$ref": "../NewCardsFirstPage.json"
+        }
+      }
+    }
+  },
+  "required": ["results"],
+  "additionalProperties": false
+}

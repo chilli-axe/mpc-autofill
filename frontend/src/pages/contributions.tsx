@@ -2,24 +2,24 @@ import Head from "next/head";
 import React from "react";
 import { Accordion } from "react-bootstrap";
 
-import { useGetTagsQuery } from "@/app/api";
 import {
   MakePlayingCards,
   MakePlayingCardsURL,
   ProjectName,
 } from "@/common/constants";
 import { Tag } from "@/common/types";
-import { NoBackendDefault } from "@/components/noBackendDefault";
-import {
-  useBackendConfigured,
-  useProjectName,
-} from "@/features/backend/backendSlice";
+import { NoBackendDefault } from "@/components/NoBackendDefault";
 import {
   ContributionsPerSource,
   ContributionsSummary,
-} from "@/features/contributions/contributions";
-import Footer from "@/features/ui/footer";
-import { ProjectContainer } from "@/features/ui/layout";
+} from "@/features/contributions/Contributions";
+import Footer from "@/features/ui/Footer";
+import { ProjectContainer } from "@/features/ui/Layout";
+import { useGetTagsQuery } from "@/store/api";
+import {
+  useBackendConfigured,
+  useProjectName,
+} from "@/store/slices/backendSlice";
 
 function ContributionGuidelines() {
   const projectName = useProjectName();
@@ -31,7 +31,7 @@ function ContributionGuidelines() {
   const describeTag = (tag: Tag) => (
     <li key={tag.name}>
       <code>{tag.name}</code>
-      {tag.aliases.length > 0 && (
+      {tag.aliases !== undefined && tag.aliases.length > 0 && (
         <>
           , which has the aliases [
           {tag.aliases.map((alias, i) => (
@@ -46,7 +46,10 @@ function ContributionGuidelines() {
       {tag.children.length > 0 && (
         <>
           {" "}
-          {tag.aliases.length > 0 ? "and" : ", which has"} the sub-tags:
+          {tag.aliases !== undefined && tag.aliases.length > 0
+            ? "and"
+            : ", which has"}{" "}
+          the sub-tags:
           <ul>{tag.children.map(describeTag)}</ul>
         </>
       )}

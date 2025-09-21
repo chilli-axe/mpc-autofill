@@ -1,0 +1,26 @@
+{
+  "title": "Editor Search Response",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "results": {
+      "type": "object",
+      "patternProperties": {
+        ".*": {
+          "type": "object",
+          "propertyNames": {
+            "enum": ["CARD", "CARDBACK", "TOKEN"]
+          },
+          "patternProperties": {
+            ".*": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        }
+      }
+    }
+  },
+  "required": ["results"],
+  "additionalProperties": false
+}

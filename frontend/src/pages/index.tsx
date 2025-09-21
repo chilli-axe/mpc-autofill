@@ -1,7 +1,6 @@
 import Head from "next/head";
 import Link from "next/link";
 import React from "react";
-import Alert from "react-bootstrap/Alert";
 import Button from "react-bootstrap/Button";
 import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
@@ -11,13 +10,13 @@ import {
   MakePlayingCardsURL,
   ProjectName,
 } from "@/common/constants";
+import { DynamicLogo } from "@/features/ui/DynamicLogo";
+import Footer from "@/features/ui/Footer";
+import { ProjectContainer } from "@/features/ui/Layout";
 import {
   useBackendConfigured,
   useProjectName,
-} from "@/features/backend/backendSlice";
-import { DynamicLogo } from "@/features/ui/dynamicLogo";
-import Footer from "@/features/ui/footer";
-import { ProjectContainer } from "@/features/ui/layout";
+} from "@/store/slices/backendSlice";
 
 function JumpIntoEditorButton() {
   const backendConfigured = useBackendConfigured();
@@ -120,21 +119,6 @@ export default function Index() {
         />
       </Head>
       <br />
-      {process.env.NEXT_PUBLIC_IMAGE_CDN_URL != null && (
-        <Alert variant="info">
-          Howdy! I&apos;m testing an experimental feature for image loading at
-          the moment.
-          <br />
-          If you noticed any issues, please create an issue on{" "}
-          <a
-            href="https://github.com/chilli-axe/mpc-autofill/issues"
-            target="_blank"
-          >
-            the GitHub repo
-          </a>
-          . Thanks for your patience!
-        </Alert>
-      )}
       <DynamicLogo />
       <br />
       <JumpIntoEditorButton />

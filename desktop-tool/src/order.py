@@ -1,4 +1,4 @@
-import logging
+import hashlib
 import os
 import sys
 from concurrent.futures import ThreadPoolExecutor
@@ -7,7 +7,7 @@ from glob import glob
 from itertools import groupby
 from pathlib import Path
 from queue import Queue
-from typing import Optional
+from typing import Optional, cast
 from xml.etree.ElementTree import Element, ParseError
 
 import attr
@@ -17,16 +17,18 @@ from InquirerPy import prompt
 from sanitize_filename import sanitize
 
 from src import constants
+from src.constants import PROJECT_MAX_SIZE
 from src.exc import ValidationException
+from src.formatting import bold, text_to_set
 from src.io import (
-    CURRDIR,
     download_google_drive_file,
     file_exists,
     get_google_drive_file_name,
-    image_directory,
+    get_image_directory,
 )
+from src.logging import logger
 from src.processing import ImagePostProcessingConfig
-from src.utils import bold, text_to_set, unpack_element
+from src.utils import unpack_element
 
 
 @attr.s
@@ -36,6 +38,8 @@ class CardImage:
     name: Optional[str] = attr.ib(default="")
     file_path: Optional[str] = attr.ib(default="")
     query: Optional[str] = attr.ib(default=None)
+
+    pid: Optional[str] = attr.ib(default=None)
 
     downloaded: bool = attr.ib(init=False, default=False)
     uploaded: bool = attr.ib(init=False, default=False)
@@ -58,13 +62,18 @@ class CardImage:
         if not self.name:
             self.name = get_google_drive_file_name(drive_id=self.drive_id)
 
-    def generate_file_path(self) -> None:
+    def generate_file_path(self, working_directory: str) -> None:
         """
         Sets `self.file_path` according to the following logic:
         * If `self.drive_id` points to a valid file in the user's file system, use it as the file path
         * If a file with `self.name` exists in the `cards` directory, use the path to that file as the file path
         * Otherwise, use `self.name` with `self.drive_id` in parentheses in the `cards` directory as the file path.
         """
+
+        if self.file_path:
+            return
+
+        image_directory = get_image_directory(working_directory=working_directory)
 
         if file_exists(self.drive_id):
             self.file_path = self.drive_id
@@ -77,24 +86,38 @@ class CardImage:
         if self.name is None:
             if self.drive_id:
                 # assume png
-                logging.info(
+                logger.info(
                     f"The name of the image {bold(self.drive_id)} could not be determined, meaning that its "
                     f"file extension is unknown. As a result, an assumption is made that the file extension "
                     f"is {bold('.png')}."
                 )
                 self.name = f"{self.drive_id}.png"
-                self.file_path = os.path.join(image_directory(), sanitize(self.name))
+                self.file_path = os.path.join(image_directory, sanitize(self.name))
             else:
                 self.file_path = None
         else:
-            file_path = os.path.join(image_directory(), sanitize(self.name))
+            file_path = os.path.join(image_directory, sanitize(self.name))
             if not os.path.isfile(file_path) or os.path.getsize(file_path) <= 0:
                 # The filepath without ID in parentheses doesn't exist - change the filepath to contain the ID instead
                 name_split = self.name.rsplit(".", 1)
                 file_path = os.path.join(
-                    image_directory(), sanitize(f"{name_split[0]} ({self.drive_id}).{name_split[1]}")
+                    image_directory, sanitize(f"{name_split[0]} ({self.drive_id}).{name_split[1]}")
                 )
             self.file_path = file_path
+
+        self.validate()
+
+    def generate_pid(self) -> None:
+        """
+        The MakePlayingCards frontend uses SHA-1 for computing image PIDs (which are treated as image's unique IDs
+        in their system's logic).
+        """
+
+        if self.pid or (not self.file_exists()):
+            return
+
+        with open(cast(str, self.file_path), "rb") as f:
+            self.pid = hashlib.sha1(f.read()).hexdigest().upper()
 
     # endregion
 
@@ -102,11 +125,6 @@ class CardImage:
 
     def validate(self) -> None:
         self.errored = any([self.errored, self.name is None, self.file_path is None])
-
-    def __attrs_post_init__(self) -> None:
-        if not self.file_path:
-            self.generate_file_path()
-        self.validate()
 
     # endregion
 
@@ -123,7 +141,7 @@ class CardImage:
         )
 
     @classmethod
-    def from_element(cls, element: Element) -> "CardImage":
+    def from_element(cls, element: Element, working_directory: str) -> "CardImage":
         card_dict = unpack_element(element, [x.value for x in constants.DetailsTags])
         drive_id = ""
         if (drive_id_text := card_dict[constants.CardTags.id].text) is not None:
@@ -138,11 +156,13 @@ class CardImage:
         if constants.CardTags.query in card_dict.keys():
             query = card_dict[constants.CardTags.query].text
         card_image = cls(drive_id=drive_id, slots=slots, name=name, query=query)
+        card_image.generate_file_path(working_directory=working_directory)
+        card_image.validate()
         return card_image
 
     def download_image(
         self,
-        queue: Queue["CardImage"],
+        queue: Queue[tuple[str, bool]],
         download_bar: enlighten.Counter,
         post_processing_config: Optional[ImagePostProcessingConfig],
     ) -> None:
@@ -155,19 +175,19 @@ class CardImage:
             if self.file_exists() and not self.errored:
                 self.downloaded = True
             else:
-                logging.info(
+                logger.info(
                     f"Failed to download '{bold(self.name)}' - allocated to slot/s {bold(sorted(self.slots))}.\n"
                     f"Download link - {bold(f'https://drive.google.com/uc?id={self.drive_id}&export=download')}\n"
                 )
         except Exception as e:
             # note: python threads die silently if they encounter an exception. if an exception does occur,
             # log it, but still put the card onto the queue so the main thread doesn't spin its wheels forever waiting.
-            logging.info(
+            logger.info(
                 f"An uncaught exception occurred when attempting to download '{bold(self.name)}':\n{bold(e)}\n"
                 f"Download link - {bold(f'https://drive.google.com/uc?id={self.drive_id}&export=download')}\n"
             )
         finally:
-            queue.put(self)
+            queue.put((self.drive_id, self.downloaded))
             download_bar.update()
             download_bar.refresh()
 
@@ -175,6 +195,15 @@ class CardImage:
         return CardImage(
             drive_id=self.drive_id,
             slots={slot + offset for slot in self.slots},
+            name=self.name,
+            file_path=self.file_path,
+            query=self.query,
+        )
+
+    def truncate(self) -> "CardImage":
+        return CardImage(
+            drive_id=self.drive_id,
+            slots={slot for slot in self.slots if slot < PROJECT_MAX_SIZE},
             name=self.name,
             file_path=self.file_path,
             query=self.query,
@@ -211,7 +240,7 @@ class CardImageCollection:
     """
 
     cards_by_id: dict[str, CardImage] = attr.ib(factory=dict)  # keyed by ID
-    queue: Queue[CardImage] = attr.ib(init=False, default=attr.Factory(Queue))
+    queue: Queue[tuple[str, bool]] = attr.ib(default=attr.Factory(Queue))
     num_slots: int = attr.ib(default=0)
     face: constants.Faces = attr.ib(default=constants.Faces.front)
 
@@ -233,9 +262,24 @@ class CardImageCollection:
                 )
                 for drive_id, card in other.cards_by_id.items()
             },
-            # cards_by_id=[*self.cards, *[card.offset_slots(self.num_slots) for card in other.cards]],
             num_slots=self.num_slots + other.num_slots,
             face=self.face,
+        )
+
+    def offset_slots(self, offset: int) -> "CardImageCollection":
+        return CardImageCollection(
+            cards_by_id={drive_id: card.offset_slots(offset=offset) for drive_id, card in self.cards_by_id.items()},
+            num_slots=self.num_slots + offset,
+            face=self.face,
+            queue=self.queue,
+        )
+
+    def truncate(self) -> "CardImageCollection":
+        return CardImageCollection(
+            cards_by_id={drive_id: card.truncate() for drive_id, card in self.cards_by_id.items()},
+            num_slots=self.num_slots,
+            face=self.face,
+            queue=self.queue,
         )
 
     # region initialisation
@@ -251,7 +295,7 @@ class CardImageCollection:
             raise ValidationException(f"{self.face} has no images!")
         slots_missing = self.all_slots() - self.slots()
         if slots_missing:
-            logging.info(
+            logger.info(
                 f"Warning - the following slots are empty in your order for the {self.face} face: "
                 f"{bold(sorted(slots_missing))}"
             )
@@ -262,12 +306,17 @@ class CardImageCollection:
 
     @classmethod
     def from_element(
-        cls, element: Element, num_slots: int, face: constants.Faces, fill_image_id: Optional[str] = None
+        cls,
+        element: Element,
+        working_directory: str,
+        num_slots: int,
+        face: constants.Faces,
+        fill_image_id: Optional[str] = None,
     ) -> "CardImageCollection":
         card_images: dict[str, CardImage] = {}
         if element:
             for x in element:
-                card_image = CardImage.from_element(x)
+                card_image = CardImage.from_element(element=x, working_directory=working_directory)
                 if card_image.drive_id in card_images.keys():
                     card_images[card_image.drive_id] = card_images[card_image.drive_id].combine(card_image)
                 else:
@@ -277,14 +326,12 @@ class CardImageCollection:
             # fill the remaining slots in this card image collection with a new card image based off the given id
             missing_slots = card_image_collection.all_slots() - card_image_collection.slots()
             if missing_slots:
-                card_image_collection.append(CardImage(drive_id=fill_image_id.strip(' "'), slots=missing_slots))
+                fill_image = CardImage(drive_id=fill_image_id.strip(' "'), slots=missing_slots)
+                fill_image.generate_file_path(working_directory=working_directory)
+                card_image_collection.append(fill_image)
 
         # postponing validation from post-init so we don't error for missing slots that `fill_image_id` would fill
-        try:
-            card_image_collection.validate()
-        except ValidationException as e:
-            input(f"There was a problem with your order file:\n{bold(e)}\nPress Enter to exit.")
-            sys.exit(0)
+        card_image_collection.validate()
         return card_image_collection
 
     def download_images(
@@ -324,13 +371,6 @@ class Details:
         if self.stock == constants.Cardstocks.P10 and self.foil is True:
             raise ValidationException(f"Order cardstock {self.stock} is not supported in foil!")
 
-    def __attrs_post_init__(self) -> None:
-        try:
-            self.validate()
-        except ValidationException as e:
-            input(f"There was a problem with your order file:\n\n{bold(e)}\n\nPress Enter to exit.")
-            sys.exit(0)
-
     # endregion
 
     # region public
@@ -350,6 +390,7 @@ class Details:
             foil=foil,
             allowed_to_exceed_project_max_size=allowed_to_exceed_project_max_size,
         )
+        details.validate()
         return details
 
     # endregion
@@ -361,6 +402,32 @@ class CardOrder:
     details: Details = attr.ib(default=None)
     fronts: CardImageCollection = attr.ib(default=None)
     backs: CardImageCollection = attr.ib(default=None)
+
+    def offset_slots(self, offset: int, allowed_to_exceed_project_max_size: bool) -> "CardOrder":
+        return CardOrder(
+            name=self.name,
+            details=Details(
+                quantity=min(self.details.quantity + offset, PROJECT_MAX_SIZE),
+                stock=self.details.stock,
+                foil=self.details.foil,
+                allowed_to_exceed_project_max_size=allowed_to_exceed_project_max_size,
+            ),
+            fronts=self.fronts.offset_slots(offset=offset),
+            backs=self.backs.offset_slots(offset=offset),
+        )
+
+    def truncate(self) -> "CardOrder":
+        return CardOrder(
+            name=self.name,
+            details=Details(
+                quantity=min(self.details.quantity, PROJECT_MAX_SIZE),
+                stock=self.details.stock,
+                foil=self.details.foil,
+                allowed_to_exceed_project_max_size=False,
+            ),
+            fronts=self.fronts.truncate(),
+            backs=self.backs.truncate(),
+        )
 
     def is_combinable(self, other: "CardOrder") -> bool:
         return self.details.foil == other.details.foil and self.details.stock == other.details.stock
@@ -427,12 +494,12 @@ class CardOrder:
                     assert sum(project_sizes) == self.details.quantity
                     break
                 except (ValueError, AssertionError):
-                    logging.info(
+                    logger.info(
                         f"There was a problem with your proposed splits (perhaps they didn't sum to "
                         f"{bold(self.details.quantity)}); please try again."
                     )
                     pass
-        logging.info(
+        logger.info(
             f"The tool will produce {bold(len(project_sizes))} projects! They'll be sized as follows:\n"
             f"{', '.join(['Project ' + bold(i) + ': ' + bold(project_size) + ' cards' for i, project_size in enumerate(project_sizes, start=1)])}"
         )
@@ -491,50 +558,62 @@ class CardOrder:
                         f"of face {bold(collection.face)} could not be determined."
                     )
 
-    def __attrs_post_init__(self) -> None:
-        try:
-            self.validate()
-        except ValidationException as e:
-            input(f"There was a problem with your order file:\n\n{bold(e)}\n\nPress Enter to exit.")
-            sys.exit(0)
-
     @classmethod
     def from_element(
-        cls, element: Element, allowed_to_exceed_project_max_size: bool, name: Optional[str] = None
+        cls,
+        element: Element,
+        working_directory: str,
+        allowed_to_exceed_project_max_size: bool,
+        name: Optional[str] = None,
     ) -> "CardOrder":
         root_dict = unpack_element(element, [x.value for x in constants.BaseTags])
         details = Details.from_element(
-            root_dict[constants.BaseTags.details], allowed_to_exceed_project_max_size=allowed_to_exceed_project_max_size
+            element=root_dict[constants.BaseTags.details],
+            allowed_to_exceed_project_max_size=allowed_to_exceed_project_max_size,
         )
         fronts = CardImageCollection.from_element(
-            element=root_dict[constants.BaseTags.fronts], num_slots=details.quantity, face=constants.Faces.front
+            element=root_dict[constants.BaseTags.fronts],
+            working_directory=working_directory,
+            num_slots=details.quantity,
+            face=constants.Faces.front,
         )
         cardback_elem = root_dict[constants.BaseTags.cardback]
         if cardback_elem.text is not None:
             backs = CardImageCollection.from_element(
                 element=root_dict[constants.BaseTags.backs],
+                working_directory=working_directory,
                 num_slots=details.quantity,
                 face=constants.Faces.back,
                 fill_image_id=cardback_elem.text,
             )
         else:
-            logging.info(f"{bold('Warning')}: Your order file did not contain a common cardback image.")
+            logger.info(f"{bold('Warning')}: Your order file did not contain a common cardback image.")
             backs = CardImageCollection.from_element(
-                element=root_dict[constants.BaseTags.backs], num_slots=details.quantity, face=constants.Faces.back
+                element=root_dict[constants.BaseTags.backs],
+                working_directory=working_directory,
+                num_slots=details.quantity,
+                face=constants.Faces.back,
             )
         order = cls(name=name, details=details, fronts=fronts, backs=backs)
+        order.validate()
         return order
 
     @classmethod
-    def from_file_path(cls, file_path: str) -> "CardOrder":
+    def from_file_path(cls, working_directory: str, file_path: str) -> "CardOrder":
         try:
             xml = defused_parse(file_path)
         except ParseError:
-            input("Your XML file contains a syntax error so it can't be processed. Press Enter to exit.")
-            sys.exit(0)
+            raise ValidationException(
+                "Your XML file contains a syntax error so it can't be processed. Press Enter to exit."
+            )
         file_name = Path(file_path).stem
-        logging.info(f"Parsing XML file {bold(file_name)}...")
-        order = cls.from_element(xml.getroot(), name=file_name, allowed_to_exceed_project_max_size=True)
+        logger.info(f"Parsing XML file {bold(file_name)}...")
+        order = cls.from_element(
+            element=xml.getroot(),
+            working_directory=working_directory,
+            name=file_name,
+            allowed_to_exceed_project_max_size=True,
+        )
         return order
 
     # endregion
@@ -542,14 +621,14 @@ class CardOrder:
     # region public
 
     @classmethod
-    def from_xmls_in_folder(cls) -> list["CardOrder"]:
+    def from_xmls_in_folder(cls, working_directory: str) -> list["CardOrder"]:
         """
         Reads some number of XMLs from the current directory, offering a choice if multiple are detected,
         and populates them with the contents of the selected files.
         The primary public entry point to this class.
         """
 
-        xml_glob = sorted(glob(os.path.join(CURRDIR, "*.xml")))
+        xml_glob = sorted(glob(os.path.join(working_directory, "*.xml")))
         if len(xml_glob) <= 0:
             input("No XML files found in this directory. Press enter to exit.")
             sys.exit(0)
@@ -569,7 +648,9 @@ class CardOrder:
             }
             answers = prompt(questions)
             file_paths = answers["xml_choice"]
-        return [cls.from_file_path(file_path) for file_path in file_paths]
+        return [
+            cls.from_file_path(working_directory=working_directory, file_path=file_path) for file_path in file_paths
+        ]
 
     @classmethod
     def from_multiple_orders(cls, orders: list["CardOrder"]) -> "CardOrder":

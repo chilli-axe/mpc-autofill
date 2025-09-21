@@ -1,4 +1,4 @@
-from src.utils import bold
+from src.formatting import bold
 
 
 class InvalidStateException(Exception):

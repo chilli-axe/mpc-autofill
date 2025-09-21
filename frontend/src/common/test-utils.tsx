@@ -13,11 +13,11 @@ import { MemoryRouterProvider } from "next-router-mock/MemoryRouterProvider";
 import React, { PropsWithChildren } from "react";
 import { Provider } from "react-redux";
 
-import { RootState, setupStore } from "@/app/store";
 import { localBackendURL } from "@/common/test-constants";
 import { Faces } from "@/common/types";
-import { setURL } from "@/features/backend/backendSlice";
-import { LayoutWithoutReduxProvider } from "@/features/ui/layout";
+import { LayoutWithoutReduxProvider } from "@/features/ui/Layout";
+import { setURL } from "@/store/slices/backendSlice";
+import { RootState, setupStore } from "@/store/store";
 
 //# region redux test setup
 
@@ -300,6 +300,25 @@ async function openGridSelector(
   await waitFor(() => expect(screen.getByText("Option 1")));
 
   return screen.getByTestId(gridSelectorTestId);
+}
+
+export async function openChangeQueryModal(
+  cardSlotTestId: string,
+  cardName: string
+) {
+  await waitFor(() =>
+    within(screen.getByTestId(cardSlotTestId)).getByText(cardName).click()
+  );
+  return screen.getByTestId("change-query-modal");
+}
+
+export async function changeQuery(
+  cardSlotTestId: string,
+  cardName: string,
+  newQuery: string
+) {
+  const modal = await openChangeQueryModal(cardSlotTestId, cardName);
+  await changeQueries(newQuery);
 }
 
 export async function openCardSlotGridSelector(

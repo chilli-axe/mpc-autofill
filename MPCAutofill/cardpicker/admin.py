@@ -12,7 +12,7 @@ class AdminTag(admin.ModelAdmin[Tag]):
 
 @admin.register(Card)
 class AdminCard(admin.ModelAdmin[Card]):
-    list_display = ("identifier", "name", "source", "dpi", "date", "tags")
+    list_display = ("identifier", "name", "source", "dpi", "date_created", "tags")
     search_fields = ("identifier", "name")
 
 

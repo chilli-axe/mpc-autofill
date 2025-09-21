@@ -2,7 +2,7 @@
  * Data API for interacting with anything stored in cookies or local storage.
  */
 
-import Ajv2019 from "ajv/dist/2019";
+// import Ajv2020 from "ajv/dist/2020";
 import Cookies from "js-cookie";
 
 import {
@@ -11,11 +11,14 @@ import {
   GoogleAnalyticsConsentKey,
   SearchSettingsKey,
 } from "@/common/constants";
+import { Convert } from "@/common/schema_types";
 import { SearchSettings, SourceDocuments, SourceRow } from "@/common/types";
-import { getDefaultSearchSettings } from "@/features/searchSettings/searchSettingsSlice";
+import { getSourceRowsFromSourceSettings } from "@/common/utils";
+import { getDefaultSearchSettings } from "@/store/slices/searchSettingsSlice";
 
-import * as SearchSettingsSchema from "../../../common/schemas/search_settings.json";
-const ajv = new Ajv2019();
+// import * as SearchSettingsSchema from "../../../schemas/schemas/SearchSettings.json";
+
+// const ajv = new Ajv2020();
 
 //# region CSRF
 // TODO: unsure if we still need this.
@@ -40,30 +43,36 @@ export function getCSRFHeader(): HeadersInit | undefined {
 export function getLocalStorageSearchSettings(
   sourceDocuments: SourceDocuments
 ): SearchSettings {
-  const rawSettings = JSON.parse(
-    localStorage.getItem(SearchSettingsKey) ?? "{}"
-  );
-  const validate = ajv.compile<SearchSettings>(SearchSettingsSchema);
-  const rawSettingsValid = validate(rawSettings);
-  if (rawSettingsValid) {
+  const serialisedRawSettings = localStorage.getItem(SearchSettingsKey) ?? "{}";
+  try {
+    const searchSettings = Convert.toSearchSettings(serialisedRawSettings);
+    // great, the user has valid search settings stored in their browser local storage.
     // reconcile against sourceDocuments
     const sourceInDatabaseSet: Set<number> = new Set(
-      Object.values(sourceDocuments).map((sourceDocument) => sourceDocument.pk)
+      Object.values(sourceDocuments).map((sourceDocument) =>
+        parseInt(sourceDocument.pk)
+      )
     );
-    const sources: Array<SourceRow> = rawSettings.sourceSettings.sources ?? [];
+    // types have to be narrowed here because quicktype doesn't support our SourceRow data structure :(
+    const sources: Array<SourceRow> = getSourceRowsFromSourceSettings(
+      searchSettings.sourceSettings
+    );
     const sourceInLocalStorageSet: Set<number> = new Set(
       sources.map((row) => row[0])
     );
     // one fat line of reconciliation, good luck reading this future nick! i wrote this at 12:26am.
-    rawSettings.sourceSettings.sources = sources
+    searchSettings.sourceSettings.sources = sources
       .filter((row: SourceRow) => sourceInDatabaseSet.has(row[0]))
       .concat(
         Array.from(sourceInDatabaseSet)
           .filter((pk: number) => !sourceInLocalStorageSet.has(pk))
           .map((pk: number) => [pk, true])
       );
-    return rawSettings;
-  } else {
+    return searchSettings;
+  } catch (e) {
+    // quicktype will throw an error if the user's stored settings do not match the schema
+    // e.g. upon first page load
+    // just return the default settings
     return getDefaultSearchSettings(sourceDocuments);
   }
 }

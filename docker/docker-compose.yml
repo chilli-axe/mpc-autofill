@@ -2,8 +2,6 @@
 # It's separated from the docker compose file which spins up the backend itself to enable
 # local development through a Python virtual environment running natively on the dev machine.
 
-version: "3.4"
-
 services:
   # Postgres database for Django
   postgres:
@@ -27,6 +25,7 @@ services:
     environment:
       - discovery.type=single-node
       - logger.level=WARN
+      - "ES_JAVA_OPTS=-Xms2048m -Xmx2048m"
     volumes:
       - elasticsearch_data:/usr/share/elasticsearch/data
 

@@ -1,0 +1,45 @@
+{
+  "title": "Source Contribution",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "sourceType": {
+      "$ref": "./SourceType.json"
+    },
+    "externalLink": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "qtyCards": {
+      "type": "string"
+    },
+    "qtyCardbacks": {
+      "type": "string"
+    },
+    "qtyTokens": {
+      "type": "string"
+    },
+    "avgdpi": {
+      "type": "string"
+    },
+    "size": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "name",
+    "sourceType",
+    "description",
+    "qtyCards",
+    "qtyCardbacks",
+    "qtyTokens",
+    "avgdpi",
+    "size"
+  ],
+  "additionalProperties": false
+}

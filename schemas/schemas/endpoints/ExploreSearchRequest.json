@@ -1,0 +1,39 @@
+{
+  "title": "Explore Search Request",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "sortBy": {
+      "$ref": "../SortBy.json"
+    },
+    "query": {
+      "type": ["string", "null"]
+    },
+    "cardTypes": {
+      "type": "array",
+      "items": {
+        "$ref": "../CardType.json"
+      }
+    },
+    "searchSettings": {
+      "$ref": "../SearchSettings.json"
+    },
+    "pageStart": {
+      "type": "integer"
+    },
+    "pageSize": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100
+    }
+  },
+  "required": [
+    "sortBy",
+    "query",
+    "cardTypes",
+    "searchSettings",
+    "pageStart",
+    "pageSize"
+  ],
+  "additionalProperties": false
+}

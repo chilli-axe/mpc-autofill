@@ -1,0 +1,6 @@
+{
+  "title": "Source Type",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "string",
+  "enum": ["Google Drive", "Local File", "AWS S3"]
+}

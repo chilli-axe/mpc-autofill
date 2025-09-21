@@ -3,6 +3,7 @@ from typing import Any, Callable, Optional, Type
 from urllib.parse import urljoin, urlparse
 
 import requests
+import sentry_sdk
 
 from cardpicker.models import DFCPair
 
@@ -48,6 +49,7 @@ class ImportSite(ABC):
         url = urljoin(f"https://{netloc or cls.get_host_names()[0]}", path)
         response = requests.request(url=url, method=method, headers=headers)
         if not is_response_valid(response):
+            sentry_sdk.capture_message(response.text)
             raise cls.InvalidURLException(url)
         return response
 

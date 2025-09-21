@@ -1,0 +1,360 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`the html structure of CSV importer 1`] = `
+.c0 {
+  max-width: 100%;
+  overflow-x: scroll;
+}
+
+.c1 {
+  table-layout: fixed;
+  border-style: solid;
+  border-color: #333333;
+  border-width: 1px;
+}
+
+.c2 {
+  width: 20%;
+  text-align: center;
+}
+
+.c3 {
+  width: 20%;
+  text-align: center;
+  border-style: solid;
+  border-color: #333333;
+  border-width: 1px;
+}
+
+.c4 {
+  -webkit-flex: 1;
+  -ms-flex: 1;
+  flex: 1;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-flex-direction: column;
+  -ms-flex-direction: column;
+  flex-direction: column;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  padding: 20px;
+  border-width: 2px;
+  border-radius: 2px;
+  border-color: #eeeeee;
+  border-style: dashed;
+  color: #bdbdbd;
+  outline: none;
+  -webkit-transition: border 0.24s ease-in-out;
+  transition: border 0.24s ease-in-out;
+  cursor: pointer;
+}
+
+<div
+  class="modal-dialog modal-dialog-scrollable"
+  data-testid="import-csv"
+>
+  <div
+    class="modal-content"
+  >
+    <div
+      class="modal-header"
+    >
+      <div
+        class="modal-title h4"
+      >
+        Add Cards — CSV
+      </div>
+      <button
+        aria-label="Close"
+        class="btn-close"
+        type="button"
+      />
+    </div>
+    <div
+      class="modal-body"
+    >
+      <p>
+        Upload a CSV file of cards to add to the project. The file must
+         
+        <b>
+          exactly
+        </b>
+         match the following format:
+      </p>
+      <div
+        class="c0"
+      >
+        <table
+          class="c1 table"
+        >
+          <thead>
+            <tr>
+              <th
+                class="c2"
+                scope="col"
+              >
+                Quantity
+              </th>
+              <th
+                class="c2"
+                scope="col"
+              >
+                Front
+              </th>
+              <th
+                class="c2"
+                scope="col"
+              >
+                Front ID
+              </th>
+              <th
+                class="c2"
+                scope="col"
+              >
+                Back
+              </th>
+              <th
+                class="c2"
+                scope="col"
+              >
+                Back ID
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td
+                class="c3"
+              />
+              <td
+                class="c3"
+              />
+              <td
+                class="c3"
+              />
+              <td
+                class="c3"
+              />
+              <td
+                class="c3"
+              />
+            </tr>
+            <tr>
+              <td
+                class="c3"
+              />
+              <td
+                class="c3"
+              />
+              <td
+                class="c3"
+              />
+              <td
+                class="c3"
+              />
+              <td
+                class="c3"
+              />
+            </tr>
+            <tr>
+              <td
+                class="c3"
+              />
+              <td
+                class="c3"
+              />
+              <td
+                class="c3"
+              />
+              <td
+                class="c3"
+              />
+              <td
+                class="c3"
+              />
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      Where the columns follow these rules:
+      <ul>
+        <li>
+          <b>
+            Quantity
+          </b>
+          : The quantity to include of this row. Must be greater than 0. Can be blank — if blank, a quantity of 1 will be assumed.
+        </li>
+        <li>
+          <b>
+            Front
+          </b>
+          : Search query for card front.
+           
+          <b>
+            Cannot be blank.
+          </b>
+        </li>
+        <li>
+          <b>
+            Front ID
+          </b>
+          : If this image is in the front search results, it will be pre-selected. Can be blank.
+        </li>
+        <li>
+          <b>
+            Back
+          </b>
+          : Search query for card back. Can be blank.
+        </li>
+        <li>
+          <b>
+            Back ID
+          </b>
+          : If this image is in the back search results, it will be pre-selected. Can be blank.
+        </li>
+      </ul>
+      For example:
+      <div
+        class="c0"
+      >
+        <table
+          class="c1 table"
+        >
+          <thead>
+            <tr>
+              <th
+                class="c2"
+                scope="col"
+              >
+                Quantity
+              </th>
+              <th
+                class="c2"
+                scope="col"
+              >
+                Front
+              </th>
+              <th
+                class="c2"
+                scope="col"
+              >
+                Front ID
+              </th>
+              <th
+                class="c2"
+                scope="col"
+              >
+                Back
+              </th>
+              <th
+                class="c2"
+                scope="col"
+              >
+                Back ID
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td
+                class="c3"
+              >
+                <code>
+                  2
+                </code>
+              </td>
+              <td
+                class="c3"
+              >
+                <code>
+                  island
+                </code>
+              </td>
+              <td
+                class="c3"
+              >
+                <code>
+                  1HsvTYs...
+                </code>
+              </td>
+              <td
+                class="c3"
+              >
+                <code>
+                  forest
+                </code>
+              </td>
+              <td
+                class="c3"
+              />
+            </tr>
+            <tr>
+              <td
+                class="c3"
+              >
+                <code>
+                  3
+                </code>
+              </td>
+              <td
+                class="c3"
+              >
+                <code>
+                  t:goblin
+                </code>
+              </td>
+              <td
+                class="c3"
+              />
+              <td
+                class="c3"
+              />
+              <td
+                class="c3"
+              >
+                <code>
+                  1JtXL6C...
+                </code>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <hr />
+      <div
+        class="container"
+      >
+        <div
+          aria-label="import-csv"
+          class="c4"
+          role="presentation"
+          tabindex="0"
+        >
+          <input
+            accept="text/csv,.csv"
+            multiple=""
+            style="display: none;"
+            tabindex="-1"
+            type="file"
+          />
+          Drag and drop a file here, or click to select a file.
+        </div>
+      </div>
+    </div>
+    <div
+      class="modal-footer"
+    >
+      <button
+        class="btn btn-secondary"
+        type="button"
+      >
+        Close
+      </button>
+    </div>
+  </div>
+</div>
+`;

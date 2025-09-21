@@ -1,0 +1,52 @@
+{
+  "title": "Filter Settings",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "minimumDPI": {
+      "type": "integer",
+      "description": "The minimum DPI that cards must meet to be included in search results",
+      "minimum": 0
+    },
+    "maximumDPI": {
+      "type": "integer",
+      "description": "The maximum DPI that cards can have to be included in search results",
+      "minimum": 0
+    },
+    "maximumSize": {
+      "type": "integer",
+      "description": "The maximum filesize that cards can have to be included in search results",
+      "minimum": 0
+    },
+    "languages": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "The language the cards have to be written in to be included in search results"
+    },
+    "includesTags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "The tags which the cards must have to be included in search results"
+    },
+    "excludesTags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "The tags which the cards must *not* have to be included in search results"
+    }
+  },
+  "required": [
+    "minimumDPI",
+    "maximumDPI",
+    "maximumSize",
+    "languages",
+    "includesTags",
+    "excludesTags"
+  ],
+  "additionalProperties": false
+}

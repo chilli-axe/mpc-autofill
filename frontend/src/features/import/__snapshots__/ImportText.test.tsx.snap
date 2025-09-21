@@ -1,0 +1,213 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`the html structure of text importer 1`] = `
+<div
+  class="modal-dialog modal-dialog-scrollable"
+  data-testid="import-text"
+>
+  <div
+    class="modal-content"
+  >
+    <div
+      class="modal-header"
+    >
+      <div
+        class="modal-title h4"
+      >
+        Add Cards — Text
+      </div>
+      <button
+        aria-label="Close"
+        class="btn-close"
+        type="button"
+      />
+    </div>
+    <div
+      class="modal-body"
+    >
+      <p>
+        Type the names of the cards you'd like to add to your order and hit 
+        <b>
+          Submit
+        </b>
+        . One card per line.
+      </p>
+      <div
+        class="accordion"
+      >
+        <div
+          class="accordion-item"
+        >
+          <h2
+            class="accordion-header"
+          >
+            <button
+              aria-expanded="false"
+              class="accordion-button collapsed"
+              type="button"
+            >
+              Syntax Guide
+            </button>
+          </h2>
+          <div
+            class="accordion-collapse collapse"
+          >
+            <div
+              class="accordion-body"
+            >
+              <ul>
+                <li>
+                  There are three types of images in 
+                  MPC Autofill
+                   —
+                   
+                  card
+                  s, 
+                  cardback
+                  s, and
+                   
+                  token
+                  s. If you search for a card, the search results 
+                  <b>
+                    won't contain cardbacks or tokens
+                  </b>
+                  .
+                </li>
+                <li>
+                  <b>
+                    Card
+                    s
+                  </b>
+                   are searched for by default.
+                </li>
+                <li>
+                  Search for 
+                  <b>
+                    token
+                    s
+                  </b>
+                   by putting
+                   
+                  <code>
+                    t:
+                  </code>
+                   at the start of the query — for example,
+                   
+                  <code>
+                    t:
+                    your
+                     
+                    token
+                     name
+                  </code>
+                  .
+                </li>
+                <li>
+                  Search for 
+                  <b>
+                    cardback
+                    s
+                  </b>
+                   by putting
+                   
+                  <code>
+                    b:
+                  </code>
+                   at the start of the query — for example,
+                   
+                  <code>
+                    b:
+                    your
+                     
+                    cardback
+                     name
+                  </code>
+                  .
+                </li>
+                <li>
+                  You may optionally specify the image ID to select by typing your search query, 
+                  <code>
+                    @
+                  </code>
+                  , then the image ID — for example,
+                   
+                  <code>
+                    your 
+                    card
+                     name
+                    @
+                    1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5
+                  </code>
+                  .
+                </li>
+                <li>
+                  You may specify queries for both the front and the back by separating them with 
+                  <code>
+                    //
+                  </code>
+                   — for example,
+                   
+                  <code>
+                    4x goblin 
+                    //
+                     
+                    t:
+                    elf
+                  </code>
+                  .
+                </li>
+                <li>
+                  If you don't specify a back query and your front query is a double-faced card, we will automatically query the back card for you.
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+      <br />
+      <form
+        class=""
+        id="importTextForm"
+      >
+        <div
+          class="mb-3"
+        >
+          <textarea
+            aria-label="import-text"
+            class="form-control"
+            placeholder=""
+            required=""
+            rows="12"
+          />
+        </div>
+      </form>
+      <p
+        class="text-sm-end my-0"
+      >
+        <i>
+          Hint: Submit with Control+Enter.
+        </i>
+      </p>
+    </div>
+    <div
+      class="modal-footer"
+    >
+      <button
+        aria-label="import-text-close"
+        class="btn btn-secondary"
+        type="button"
+      >
+        Close
+      </button>
+      <button
+        aria-label="import-text-submit"
+        class="btn btn-primary"
+        form="importTextForm"
+        type="submit"
+      >
+        Submit
+      </button>
+    </div>
+  </div>
+</div>
+`;

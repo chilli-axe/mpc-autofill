@@ -63,7 +63,7 @@ export function processQuery(query: string): string {
 
 /**
  * Identify the prefix of a query. For example, `query`="t:goblin" would yield
- *   {query: "goblin", card_type: TOKEN}.
+ *   {query: "goblin", cardType: TOKEN}.
  */
 export function processPrefix(query: string): SearchQuery {
   for (const [prefix, cardType] of Object.entries(CardTypePrefixes)) {
@@ -76,11 +76,11 @@ export function processPrefix(query: string): SearchQuery {
     ) {
       return {
         query: processQuery(query.trimStart().slice(prefix.length + 1)),
-        card_type: cardType,
+        cardType: cardType,
       };
     }
   }
-  return { query: processQuery(query), card_type: CardTypePrefixes[""] };
+  return { query: processQuery(query), cardType: CardTypePrefixes[""] };
 }
 
 /**
@@ -121,12 +121,12 @@ function unpackLine(
  * Process `line` to identify the search query and the number of instances requested for each face.
  * If no back query is specified, attempt to match the front query to a DFC pair.
  * For example, `line`="3x t:goblin" would yield:
- *   [3, {query: {query: "goblin", card_type: TOKEN, selectedImage: null}}, null].
+ *   [3, {query: {query: "goblin", cardType: TOKEN, selectedImage: null}}, null].
  * Another example is `line`="3x forest | b:elf" would yield:
  *   [
  *     3,
- *     {query: {query: "forest", card_type: CARD}, selectedImage: null},
- *     {query: {query: "elf", card_type: TOKEN}, selectedImage: null},
+ *     {query: {query: "forest", cardType: CARD}, selectedImage: null},
+ *     {query: {query: "elf", cardType: TOKEN}, selectedImage: null},
  *   ].
  */
 export function processLine(
@@ -166,7 +166,7 @@ export function processLine(
       // match to the card's DFC pair. assume the back is the same card type as the front.
       backQuery = {
         query: dfcPairs[dfcPairMatchFront],
-        card_type: frontQuery.card_type,
+        cardType: frontQuery.cardType,
       };
     }
   }
@@ -245,7 +245,7 @@ export function convertLinesIntoSlotProjectMembers(
             selected: false,
           },
           back: {
-            query: backMember?.query ?? { query: null, card_type: Cardback },
+            query: backMember?.query ?? { query: null, cardType: Cardback },
             selectedImage: backMember?.selectedImage,
             selected: false,
           },

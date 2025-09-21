@@ -5,8 +5,11 @@ from attr import define
 from tqdm import tqdm
 
 from django.db.models import TextChoices
+from django.utils.dateparse import parse_datetime
+from django.utils.timezone import now
 from django.utils.translation import gettext_lazy
 
+from cardpicker.schema_types import SourceType as SchemaSourceType
 from cardpicker.sources.api import (
     Folder,
     Image,
@@ -150,7 +153,7 @@ class GoogleDrive(SourceType):
                     "mimeType contains 'image/jpeg') and "
                     f"'{folder.id}' in parents",
                     fields="nextPageToken, files("
-                    "id, name, trashed, size, parents, createdTime, imageMediaMetadata"
+                    "id, name, trashed, size, parents, createdTime, modifiedTime, imageMediaMetadata"
                     ")",
                     pageSize=500,
                     pageToken=page_token,
@@ -166,7 +169,8 @@ class GoogleDrive(SourceType):
                         Image(
                             id=item["id"],
                             name=item["name"],
-                            created_time=item["createdTime"],
+                            created_time=parse_datetime(item["createdTime"]) or now(),
+                            modified_time=parse_datetime(item["modifiedTime"]) or now(),
                             folder=folder,
                             height=item["imageMediaMetadata"]["height"],
                             size=int(item["size"]),
@@ -196,14 +200,25 @@ class SourceTypeChoices(TextChoices):
     Unique identifier for a Source type.
     """
 
-    GOOGLE_DRIVE = ("GOOGLE_DRIVE", gettext_lazy("Google Drive"))
-    LOCAL_FILE = ("LOCAL_FILE", gettext_lazy("Local File"))
-    AWS_S3 = ("AWS_S3", gettext_lazy("AWS S3"))
+    GOOGLE_DRIVE = (
+        SchemaSourceType.GoogleDrive.value.upper().replace(" ", "_"),
+        gettext_lazy(SchemaSourceType.GoogleDrive.value),
+    )
+    LOCAL_FILE = (
+        SchemaSourceType.LocalFile.value.upper().replace(" ", "_"),
+        gettext_lazy(SchemaSourceType.LocalFile.value),
+    )
+    AWS_S3 = (SchemaSourceType.AWSS3.value.upper().replace(" ", "_"), gettext_lazy(SchemaSourceType.AWSS3.value))
 
-    def get_source_type(self) -> Type[SourceType]:
-        source_type_or_none = {x.get_identifier(): x for x in [GoogleDrive, LocalFile, AWSS3]}.get(self)
+    @classmethod
+    def from_source_type_schema(cls, source_type: SchemaSourceType) -> "SourceTypeChoices":
+        return SourceTypeChoices[source_type.value.upper().replace(" ", "_")]
+
+    @classmethod
+    def get_source_type(cls, source_type: "SourceTypeChoices") -> Type[SourceType]:
+        source_type_or_none = {x.get_identifier(): x for x in [GoogleDrive, LocalFile, AWSS3]}.get(source_type)
         if source_type_or_none is None:
-            raise Exception(f"Incorrect configuration of source types means {self} isn't mapped")
+            raise Exception(f"Incorrect configuration of source types means {source_type} isn't mapped")
         return source_type_or_none
 
 

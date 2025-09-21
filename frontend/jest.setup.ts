@@ -10,11 +10,14 @@ import { configure as configureReact } from "@testing-library/react";
 // TODO: https://github.com/alfg/ping.js/issues/29#issuecomment-487240910
 // @ts-ignore
 import Ping from "ping.js";
+import ResizeObserver from "resize-observer-polyfill";
 
 import { server } from "@/mocks/server";
 
 configureReact({ asyncUtilTimeout: 10_000 });
 configureDom({ asyncUtilTimeout: 10_000 });
+
+global.ResizeObserver = ResizeObserver;
 
 // retrieved from https://stackoverflow.com/a/68539103/13021511
 global.matchMedia =
@@ -27,7 +30,7 @@ global.matchMedia =
     };
   };
 
-export default async () => {
+const defaultExport = async () => {
   const projectDir = process.cwd();
   loadEnvConfig(projectDir);
 };
@@ -70,3 +73,5 @@ afterAll(() => {
 
   jest.spyOn(Ping.prototype, "ping").mockRestore();
 });
+
+export default defaultExport;
