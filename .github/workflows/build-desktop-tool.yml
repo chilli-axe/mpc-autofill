@@ -48,6 +48,7 @@ jobs:
           nuitka-version: main
           working-directory: desktop-tool
           script-name: autofill.py
+          mode: onefile
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
