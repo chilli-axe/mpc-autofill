@@ -3,8 +3,17 @@
 # nuitka-project: --include-data-files=post-launch.html=post-launch.html
 # nuitka-project: --noinclude-pytest-mode=nofollow
 # nuitka-project: --windows-icon-from-ico=favicon.ico
+# nuitka-project-if: {OS} == "Windows":
+#    nuitka-project: --noinclude-data-files=selenium/webdriver/common/macos/selenium-manager
+#    nuitka-project: --noinclude-data-files=selenium/webdriver/common/linux/selenium-manager
+# nuitka-project-if: {OS} == "Darwin":
+#    nuitka-project: --noinclude-data-files=selenium/webdriver/common/windows/selenium-manager.exe
+#    nuitka-project: --noinclude-data-files=selenium/webdriver/common/linux/selenium-manager
 # nuitka-project-if: {OS} == "Linux":
 #    nuitka-project: --include-module=wakepy._linux._jeepney_dbus
+#    nuitka-project: --noinclude-data-files=selenium/webdriver/common/windows/selenium-manager.exe
+#    nuitka-project: --noinclude-data-files=selenium/webdriver/common/macos/selenium-manager
+
 
 import logging
 import os
