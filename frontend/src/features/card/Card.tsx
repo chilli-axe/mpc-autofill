@@ -23,7 +23,7 @@ import { SearchQuery, useAppDispatch, useAppSelector } from "@/common/types";
 import { CardDocument } from "@/common/types";
 import { Spinner } from "@/components/Spinner";
 import { selectCardDocumentByIdentifier } from "@/store/slices/cardDocumentsSlice";
-import { setSelectedCardAndShowModal } from "@/store/slices/modalsSlice";
+import { showCardDetailedViewModal } from "@/store/slices/modalsSlice";
 import { RootState } from "@/store/store";
 
 const HiddenImage = styled(Image)`
@@ -113,9 +113,7 @@ function CardImage({
   };
   const handleShowDetailedView = () => {
     if (showDetailedViewOnClick && maybeCardDocument != null) {
-      dispatch(
-        setSelectedCardAndShowModal([maybeCardDocument, "cardDetailedView"])
-      );
+      dispatch(showCardDetailedViewModal({ card: maybeCardDocument }));
     }
   };
 

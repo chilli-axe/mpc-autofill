@@ -189,11 +189,27 @@ export type Modals =
   | "invalidIdentifiers"
   | "finishedMyProject";
 
-export interface ModalsState {
-  card: Card | null;
-  slots: Slots | null;
-  shownModal: Modals | null;
+export type NoPropModals = Exclude<
+  Modals,
+  "cardDetailedView" | "gridSelector" | "changeQuery"
+>;
+
+export interface CardDetailedViewModalState {
+  card: Card;
 }
+
+export interface ChangeQueryModalState {
+  slots: Slots;
+}
+
+export type ModalsState = {
+  shownModal: Modals | null;
+  props:
+    | { cardDetailedView: CardDetailedViewModalState }
+    | { gridSelector: null } // TODO
+    | { changeQuery: ChangeQueryModalState }
+    | null;
+};
 
 export interface InvalidIdentifiersState {
   invalidIdentifiers: Array<{ [face in Faces]: [SearchQuery, string] | null }>;

@@ -20,7 +20,7 @@ import { OverflowList } from "@/components/OverflowList";
 import { useDoImageDownload } from "@/features/download/downloadImages";
 import { GridSelectorModal } from "@/features/gridSelector/GridSelectorModal";
 import { useCardDocumentsByIdentifier } from "@/store/slices/cardDocumentsSlice";
-import { setSelectedSlotsAndShowModal } from "@/store/slices/modalsSlice";
+import { showChangeQueryModal } from "@/store/slices/modalsSlice";
 import {
   bulkAlignMemberSelection,
   bulkSetMemberSelection,
@@ -29,7 +29,6 @@ import {
   selectAllSelectedProjectMembersHaveTheSameQuery,
   selectAllSlotsForActiveFace,
   selectIsProjectEmpty,
-  selectProjectMember,
   selectSelectedSlots,
   selectUniqueCardIdentifiersInSlots,
   setSelectedImages,
@@ -190,7 +189,7 @@ function ChangeSelectedImageQueries({
   const dispatch = useAppDispatch();
 
   const handleShowModal = () => {
-    dispatch(setSelectedSlotsAndShowModal([slots, "changeQuery"]));
+    dispatch(showChangeQueryModal({ slots: slots, query: null }));
   };
 
   return (
