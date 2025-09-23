@@ -25,8 +25,8 @@ class TestMTGIntegration:
 
     class Decks(Enum):
         # all of these decks have 4x brainstorm, 3x past in flames, and 1x delver of secrets // insectile aberration
-        AETHERHUB = "https://aetherhub.com/Deck/test-796905"
-        AETHERHUB_WITH_WWW = "https://www.aetherhub.com/Deck/test-796905"
+        # AETHERHUB = "https://aetherhub.com/Deck/test-796905"
+        # AETHERHUB_WITH_WWW = "https://www.aetherhub.com/Deck/test-796905"
         ARCHIDEKT = "https://archidekt.com/decks/3380653"
         ARCHIDEKT_WITH_WWW = "https://www.archidekt.com/decks/3380653"
         ARCHIDEKT_WITH_HASH = "https://archidekt.com/decks/3380653#test"
