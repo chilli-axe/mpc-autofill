@@ -16,16 +16,12 @@ jobs:
         include:
           - os: macos-latest
             TARGET: macos-arm
-            OUT_FILE_NAME: autofill
           - os: macos-13
             TARGET: macos-intel
-            OUT_FILE_NAME: autofill
           - os: windows-latest
             TARGET: windows
-            OUT_FILE_NAME: autofill.exe
           - os: ubuntu-latest
             TARGET: linux
-            OUT_FILE_NAME: autofill
     steps:
       - uses: actions/checkout@v4
       - uses: browser-actions/setup-chrome@latest
@@ -37,16 +33,27 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+      - name: Install imageio for Nutika .ico conversion
+        run: |
+          python -m pip install imageio
       - name: Write Google Drive API credentials to file
         uses: jsdaniell/create-json@v1.2.3
         with:
           name: "client_secrets.json"
           json: ${{ secrets.GOOGLE_DRIVE_API_KEY }}
           dir: "desktop-tool/"
-      - name: Build with pyinstaller for ${{ matrix.TARGET }}
-        run: pyinstaller autofill.spec
+      - name: Build with Nuitka for ${{ matrix.TARGET }}
+        uses: Nuitka/Nuitka-Action@main
+        with:
+          nuitka-version: main
+          working-directory: desktop-tool
+          script-name: autofill.py
+          mode: onefile
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          path: ./desktop-tool/dist/${{ matrix.OUT_FILE_NAME }}
-          name: autofill-${{ matrix.TARGET }}
+          name: ${{ matrix.TARGET }} Build
+          path: |
+            desktop-tool/build/*.exe
+            desktop-tool/build/*.bin
+            desktop-tool/build/*.app/**/*

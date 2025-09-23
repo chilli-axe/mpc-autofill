@@ -82,9 +82,3 @@ repos:
           - "@typescript-eslint/parser@5.49.0"
         args:
           - --fix
-  - repo: https://github.com/Riverside-Healthcare/djLint
-    rev: v1.17.2
-    hooks:
-      - id: djlint-django
-        args:
-          - --reformat

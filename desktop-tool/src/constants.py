@@ -2,9 +2,17 @@ from enum import Enum
 from functools import partial
 
 import attr
-from PIL import Image
 
 import src.webdrivers as wd
+
+
+class OrderFulfilmentMethod(str, Enum):
+    new_project = "Create a new project (default)"
+    append_to_project = "Add more cards to an existing project"
+    continue_project = "Continue editing an existing project"
+
+    def __str__(self) -> str:
+        return self.value
 
 
 class States(str, Enum):
@@ -67,12 +75,12 @@ SERVICE_ACC_FILENAME = "client_secrets.json"
 
 
 class ImageResizeMethods(Enum):
-    NEAREST = Image.NEAREST
-    BOX = Image.BOX
-    BILINEAR = Image.BILINEAR
-    HAMMING = Image.HAMMING
-    BICUBIC = Image.BICUBIC
-    LANCZOS = Image.LANCZOS
+    NEAREST = 0
+    BOX = 4
+    BILINEAR = 2
+    HAMMING = 5
+    BICUBIC = 3
+    LANCZOS = 1
 
 
 @attr.s
@@ -170,6 +178,30 @@ class TargetSites(Enum):
             Cardstocks.S33: "Super (glatt)",
             Cardstocks.M31: "Premium (linen)",
             Cardstocks.P10: "Kunststoff",
+        },
+    )
+    PrinterStudioES = TargetSite(
+        base_url="https://www.printerstudio.es",
+        starting_url_route="personalizado/tarjetas-personalizadas-en-blanco.html",
+        supports_foil=False,
+        saved_successfully_text="Guardado satisfactoriamente",
+        cardstock_site_name_mapping={
+            Cardstocks.S30: "Estándar (suave)",
+            Cardstocks.S33: "Superior (suave)",
+            Cardstocks.M31: "De priméra calidad (lino)",
+            Cardstocks.P10: "Plástico (suave)",
+        },
+    )
+    PrinterStudioFR = TargetSite(
+        base_url="https://www.printerstudio.fr",
+        starting_url_route="personnalise/cartes-de-jeu-sur-mesure-cartes-blanches.html",
+        supports_foil=False,
+        saved_successfully_text="Enregistré avec succès",
+        cardstock_site_name_mapping={
+            Cardstocks.S30: "Standard (lisse)",
+            Cardstocks.S33: "Supérieur (lisse)",
+            Cardstocks.M31: "Premium (lin)",
+            Cardstocks.P10: "Plastique (100%)",
         },
     )
 
