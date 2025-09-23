@@ -111,7 +111,11 @@ function PlatformDownload({
   platformName,
   icon,
 }: {
-  downloadURLSuffix: "windows.exe" | "macos-intel" | "macos-arm" | "linux";
+  downloadURLSuffix:
+    | "windows.exe"
+    | "macos-intel.command"
+    | "macos-arm.command"
+    | "linux.bin";
   platformName: string;
   icon: string;
 }) {
@@ -154,21 +158,21 @@ function DesktopToolDownload() {
         <Col sm={3}>
           <PlatformDownload
             platformName="macOS — Intel"
-            downloadURLSuffix="macos-intel"
+            downloadURLSuffix="macos-intel.command"
             icon="apple"
           />
         </Col>
         <Col sm={3}>
           <PlatformDownload
             platformName="macOS — ARM"
-            downloadURLSuffix="macos-arm"
+            downloadURLSuffix="macos-arm.command"
             icon="apple"
           />
         </Col>
         <Col sm={3}>
           <PlatformDownload
             platformName="Linux"
-            downloadURLSuffix="linux"
+            downloadURLSuffix="linux.bin"
             icon="ubuntu"
           />
         </Col>
@@ -227,14 +231,6 @@ export function FinishedMyProjectModal({ show, handleClose }: ExitModal) {
               </a>{" "}
               for more detailed instructions.
             </p>
-            <Alert
-              style={{ backgroundColor: "#d99a07" }}
-              className="text-center"
-            >
-              <b>Are you on macOS or Linux?</b> There&apos;s another step before
-              you can double-click it - check out the wiki (linked above) for
-              details.
-            </Alert>
           </BigLI>
         </BigOL>
         <hr />
