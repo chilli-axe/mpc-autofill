@@ -1,3 +1,5 @@
+import { within } from "@testing-library/dom";
+
 import { Card, Front } from "@/common/constants";
 import {
   cardDocument1,
@@ -5,9 +7,10 @@ import {
   cardDocument5,
 } from "@/common/test-constants";
 import {
-  changeQuery,
+  changeQueries,
   expectCardGridSlotState,
   expectCardSlotToExist,
+  openChangeQueryModal,
   renderWithProviders,
 } from "@/common/test-utils";
 import ProjectEditor from "@/components/ProjectEditor";
@@ -48,7 +51,11 @@ describe("ChangeQueryModal tests", () => {
     await expectCardSlotToExist(1);
     await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 1);
     // change query - type in "query 2"
-    await changeQuery("front-slot0", cardDocument1.name, "query 2");
+    const modal = await openChangeQueryModal("front-slot0", cardDocument1.name);
+    expect(
+      within(modal).getByLabelText("change-selected-image-queries-text")
+    ).toHaveValue("query 1");
+    await changeQueries("query 2");
     // expect the slot to have changed from card 1 to card 2
     await expectCardGridSlotState(1, Front, cardDocument2.name, 1, 1);
   });

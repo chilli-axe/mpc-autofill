@@ -199,6 +199,7 @@ export interface CardDetailedViewModalState {
 }
 
 export interface ChangeQueryModalState {
+  query: string | null;
   slots: Slots;
 }
 

@@ -44,6 +44,7 @@ export function Modals() {
           {"changeQuery" in modalProps && (
             <ChangeQueryModal
               slots={modalProps.changeQuery.slots}
+              query={modalProps.changeQuery.query}
               show={shownModal === "changeQuery"}
               handleClose={handleClose}
             />
