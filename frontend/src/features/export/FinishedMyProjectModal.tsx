@@ -226,7 +226,10 @@ export function FinishedMyProjectModal({ show, handleClose }: ExitModal) {
             <p>
               It&apos;ll ask you a few questions when it starts up, then you get
               to sit back and watch the magic happen. Check out our wiki{" "}
-              <a href="https://github.com/chilli-axe/mpc-autofill/wiki/Desktop-Tool">
+              <a
+                href="https://github.com/chilli-axe/mpc-autofill/wiki/Desktop-Tool"
+                target="_blank"
+              >
                 here
               </a>{" "}
               for more detailed instructions.
