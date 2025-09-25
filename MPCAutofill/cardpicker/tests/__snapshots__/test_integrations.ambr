@@ -1,17 +1,3 @@
-# name: TestMTGIntegration.test_valid_url[aetherhub]
-  Counter({
-    '1 Delver of Secrets': 1,
-    '3 Past in Flames': 1,
-    '4 Brainstorm': 1,
-  })
-# ---
-# name: TestMTGIntegration.test_valid_url[aetherhub_with_www]
-  Counter({
-    '1 Delver of Secrets': 1,
-    '3 Past in Flames': 1,
-    '4 Brainstorm': 1,
-  })
-# ---
 # name: TestMTGIntegration.test_valid_url[archidekt_with_hash]
   Counter({
     '1 Delver of Secrets // Insectile Aberration': 1,
