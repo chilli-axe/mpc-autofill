@@ -16,6 +16,7 @@ import { AutofillTable } from "@/components/AutofillTable";
 import { ClickToCopy } from "@/components/ClickToCopy";
 import DisableSSR from "@/components/DisableSSR";
 import { RightPaddedIcon } from "@/components/icon";
+import { AddCardToFavorites } from "@/features/card/AddCardToFavorites";
 import { AddCardToProjectForm } from "@/features/card/AddCardToProjectForm";
 import {
   MemoizedCardImage,
@@ -152,6 +153,7 @@ export function CardDetailedViewModal({
                   Download Image
                 </Button>
               </div>
+              <AddCardToFavorites cardDocument={cardDocument} />
               <AddCardToProjectForm cardDocument={cardDocument} />
             </div>
           </Row>

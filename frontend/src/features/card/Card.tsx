@@ -21,8 +21,10 @@ import styled from "styled-components";
 
 import { SearchQuery, useAppDispatch, useAppSelector } from "@/common/types";
 import { CardDocument } from "@/common/types";
+import { Icon } from "@/components/icon";
 import { Spinner } from "@/components/Spinner";
 import { selectCardDocumentByIdentifier } from "@/store/slices/cardDocumentsSlice";
+import { selectIsFavoriteRender } from "@/store/slices/favoritesSlice";
 import { showCardDetailedViewModal } from "@/store/slices/modalsSlice";
 import { RootState } from "@/store/store";
 
@@ -50,6 +52,17 @@ const OutlinedBSCardSubtitle = styled(BSCard.Subtitle)`
     outline-color: #ffffffff;
     cursor: pointer;
   }
+`;
+
+const CardIcon = styled(Icon)`
+  width: auto;
+  height: auto;
+  top: unset;
+  left: unset;
+  bottom: 8px;
+  right: 8px;
+  z-index: 2;
+  -webkit-text-stroke: 2px black;
 `;
 
 export function getImageKey(
@@ -174,6 +187,14 @@ function CardImage({
     imageState === "loading-from-fallback";
   const showSpinner = imageIsLoading && !hidden;
 
+  const isFavorite = useAppSelector((state: RootState) =>
+    selectIsFavoriteRender(
+      state,
+      maybeCardDocument?.searchq ?? "",
+      maybeCardDocument?.identifier ?? ""
+    )
+  );
+
   //# endregion
 
   return (
@@ -203,19 +224,22 @@ function CardImage({
                 fill={true}
               />
             ) : (
-              <VisibleImage
-                ref={image}
-                className="card-img card-img-fade-in"
-                loading="lazy"
-                imageIsLoading={imageIsLoading}
-                showDetailedViewOnClick={showDetailedViewOnClick}
-                src={imageSrc}
-                onLoadingComplete={onLoadingComplete}
-                onErrorCapture={onError}
-                onClick={handleShowDetailedView}
-                alt={imageAlt}
-                fill={true}
-              />
+              <>
+                {isFavorite && <CardIcon bootstrapIconName="heart-fill" />}
+                <VisibleImage
+                  ref={image}
+                  className="card-img card-img-fade-in"
+                  loading="lazy"
+                  imageIsLoading={imageIsLoading}
+                  showDetailedViewOnClick={showDetailedViewOnClick}
+                  src={imageSrc}
+                  onLoadingComplete={onLoadingComplete}
+                  onErrorCapture={onError}
+                  onClick={handleShowDetailedView}
+                  alt={imageAlt}
+                  fill={true}
+                />
+              </>
             )}
           </>
         ))}

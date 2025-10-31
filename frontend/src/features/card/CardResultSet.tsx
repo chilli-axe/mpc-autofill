@@ -60,9 +60,7 @@ function CardRow({ children }: PropsWithChildren) {
 }
 
 interface CardGridDisplayProps {
-  cardIdentifiersAndOptionNumbersBySource: {
-    [sourceKey: string]: Array<[string, number]>;
-  };
+  imageIdentifiers: Array<string>;
   selectImage?: {
     (identifier: string): void;
   };
@@ -75,35 +73,29 @@ interface CardGridDisplayProps {
  * i.e. not separated by source.
  */
 function CardsGroupedTogether({
-  cardIdentifiersAndOptionNumbersBySource,
+  imageIdentifiers,
   selectImage,
   selectedImage,
   sourceNamesByKey,
 }: CardGridDisplayProps) {
   return (
     <CardRow>
-      {Object.entries(cardIdentifiersAndOptionNumbersBySource).map(
-        ([key, value], sourceIndex) => (
-          <>
-            {value.flatMap(([identifier, index]) => (
-              <RenderIfVisible
-                key={`gridSelector-${identifier}-wrapper`}
-                initialVisible={index < 20}
-                visibleOffset={500}
-                stayRendered
-              >
-                <CardGridCard
-                  key={`gridSelector-${identifier}-card`}
-                  identifier={identifier}
-                  index={index}
-                  selectImage={selectImage}
-                  selectedImage={selectedImage}
-                />
-              </RenderIfVisible>
-            ))}
-          </>
-        )
-      )}
+      {imageIdentifiers.map((identifier, index) => (
+        <RenderIfVisible
+          key={`gridSelector-${identifier}-wrapper`}
+          initialVisible={index < 20}
+          visibleOffset={500}
+          stayRendered
+        >
+          <CardGridCard
+            key={`gridSelector-${identifier}-card`}
+            identifier={identifier}
+            index={index}
+            selectImage={selectImage}
+            selectedImage={selectedImage}
+          />
+        </RenderIfVisible>
+      ))}
     </CardRow>
   );
 }
@@ -113,7 +105,7 @@ function CardsGroupedTogether({
  * Allow users to toggle whether each source's cards are showed/hidden.
  */
 function CardsFacetedBySource({
-  cardIdentifiersAndOptionNumbersBySource,
+  imageIdentifiers,
   selectImage,
   selectedImage,
   sourceNamesByKey,
@@ -124,6 +116,37 @@ function CardsFacetedBySource({
   const sourcesVisible = useAppSelector(selectSourcesVisible);
 
   //# endregion
+
+  // TODO: memoizing on array prop? this doesn't work does it?
+  const cardDocuments = useAppSelector((state) =>
+    selectCardDocumentsByIdentifiers(state, imageIdentifiers)
+  );
+  const cardIdentifiersAndOptionNumbersBySource = useMemo(
+    () =>
+      imageIdentifiers.reduce(
+        (
+          accumulator: { [sourceKey: string]: Array<[string, number]> },
+          value,
+          currentIndex
+        ) => {
+          const cardDocument: CardDocument | null = cardDocuments[value];
+          if (cardDocument != null) {
+            if (
+              !Object.prototype.hasOwnProperty.call(
+                accumulator,
+                cardDocument.source
+              )
+            ) {
+              accumulator[cardDocument.source] = [];
+            }
+            accumulator[cardDocument.source].push([value, currentIndex]);
+          }
+          return accumulator;
+        },
+        {}
+      ),
+    [cardDocuments, imageIdentifiers]
+  );
 
   return (
     <>
@@ -193,37 +216,6 @@ export function CardResultSet({
   const sourceKeys = Object.keys(sourceNamesByKey);
   const anySourcesCollapsed = useAppSelector(selectAnySourcesCollapsed);
 
-  // TODO: memoizing on array prop? this doesn't work does it?
-  const cardDocuments = useAppSelector((state) =>
-    selectCardDocumentsByIdentifiers(state, imageIdentifiers)
-  );
-  const cardIdentifiersAndOptionNumbersBySource = useMemo(
-    () =>
-      imageIdentifiers.reduce(
-        (
-          accumulator: { [sourceKey: string]: Array<[string, number]> },
-          value,
-          currentIndex
-        ) => {
-          const cardDocument: CardDocument | null = cardDocuments[value];
-          if (cardDocument != null) {
-            if (
-              !Object.prototype.hasOwnProperty.call(
-                accumulator,
-                cardDocument.source
-              )
-            ) {
-              accumulator[cardDocument.source] = [];
-            }
-            accumulator[cardDocument.source].push([value, currentIndex]);
-          }
-          return accumulator;
-        },
-        {}
-      ),
-    [cardDocuments, imageIdentifiers]
-  );
-
   return (
     <>
       <div className="px-3 pb-3">
@@ -273,18 +265,14 @@ export function CardResultSet({
       </div>
       {facetBySource ? (
         <CardsFacetedBySource
-          cardIdentifiersAndOptionNumbersBySource={
-            cardIdentifiersAndOptionNumbersBySource
-          }
+          imageIdentifiers={imageIdentifiers}
           selectImage={handleClick}
           selectedImage={selectedImage}
           sourceNamesByKey={sourceNamesByKey}
         />
       ) : (
         <CardsGroupedTogether
-          cardIdentifiersAndOptionNumbersBySource={
-            cardIdentifiersAndOptionNumbersBySource
-          }
+          imageIdentifiers={imageIdentifiers}
           selectImage={handleClick}
           selectedImage={selectedImage}
           sourceNamesByKey={sourceNamesByKey}

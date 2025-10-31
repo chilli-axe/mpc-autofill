@@ -91,7 +91,7 @@ export interface SourceDocumentsState extends ThunkStateBase {
 }
 
 export type SearchResultsForQuery = {
-  [cardType in CardType]: Array<string>;
+  [cardType in CardType]?: Array<string>;
 };
 
 export interface SearchResults {

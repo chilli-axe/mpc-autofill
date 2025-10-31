@@ -9,7 +9,11 @@ import {
 } from "@reduxjs/toolkit";
 
 import { Back, Front, QueryTags } from "@/common/constants";
-import { getLocalStorageSearchSettings } from "@/common/cookies";
+import {
+  getLocalStorageFavorites,
+  getLocalStorageSearchSettings,
+  setLocalStorageFavorites,
+} from "@/common/cookies";
 import { Faces } from "@/common/types";
 import { api } from "@/store/api";
 import {
@@ -19,6 +23,13 @@ import {
 } from "@/store/slices/backendSlice";
 import { fetchCardbacks, selectCardbacks } from "@/store/slices/cardbackSlice";
 import { fetchCardDocumentsAndReportError } from "@/store/slices/cardDocumentsSlice";
+import {
+  clearFavoriteRenders,
+  removeFavoriteRender,
+  setAllFavoriteRenders,
+  setFavoriteRender,
+  toggleFavoriteRender,
+} from "@/store/slices/favoritesSlice";
 import { recordInvalidIdentifier } from "@/store/slices/invalidIdentifiersSlice";
 import {
   addMembers,
@@ -64,13 +75,18 @@ const addAppListener = addListener.withTypes<RootState, AppDispatch>();
 startAppListening({
   actionCreator: setURL,
   /**
-   * Fetch sources whenever the backend configuration is set.
+   * Fetch sources and load favorites from localStorage whenever the backend configuration is set.
    */
   effect: async (action, { getState, dispatch }) => {
     const state = getState();
     const isBackendConfigured = selectBackendConfigured(state);
     if (isBackendConfigured) {
       await fetchSourceDocumentsAndReportError(dispatch);
+      // Load favorites from localStorage on app initialization
+      const favorites = getLocalStorageFavorites();
+      if (Object.keys(favorites).length > 0) {
+        dispatch(setAllFavoriteRenders(favorites));
+      }
     }
   },
 });
@@ -280,6 +296,23 @@ startAppListening({
         }
       }
     }
+  },
+});
+
+startAppListening({
+  matcher: isAnyOf(
+    setFavoriteRender,
+    removeFavoriteRender,
+    toggleFavoriteRender,
+    clearFavoriteRenders,
+    setAllFavoriteRenders
+  ),
+  /**
+   * Save favorites to localStorage whenever they change.
+   */
+  effect: async (action, { getState }) => {
+    const state = getState();
+    setLocalStorageFavorites(state.favorites.favoriteRenders);
   },
 });
 
