@@ -22,6 +22,8 @@ import { selectSearchSettings } from "@/store/slices/searchSettingsSlice";
 import { setNotification } from "@/store/slices/toastsSlice";
 import { AppDispatch, RootState } from "@/store/store";
 
+import { selectFavoriteIdentifiersSet } from "./favoritesSlice";
+
 //# region async thunk
 
 const typePrefix = "searchResults/fetchCards";
@@ -32,6 +34,7 @@ export const fetchSearchResults = createAppAsyncThunk(
     const state = getState();
 
     const queriesToSearch = selectQueriesWithoutSearchResults(state);
+    const favoriteIdentifiersSet = selectFavoriteIdentifiersSet(state);
 
     const backendURL = selectBackendURL(state);
     const searchSettings = selectSearchSettings(state);
@@ -48,7 +51,8 @@ export const fetchSearchResults = createAppAsyncThunk(
             queriesToSearch.slice(
               page * SearchResultsEndpointPageSize,
               (page + 1) * SearchResultsEndpointPageSize
-            )
+            ),
+            favoriteIdentifiersSet
           );
           return { ...previousValue, ...searchResults };
         });
