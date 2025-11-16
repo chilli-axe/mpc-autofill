@@ -263,6 +263,20 @@ exports[`the html structure of a CardDetailedViewModal 1`] = `
               Download Image
             </button>
           </div>
+          <div
+            class="d-grid gap-0 pt-3"
+          >
+            <button
+              class="btn btn-outline-info"
+              type="button"
+            >
+              <i
+                class="c7 bi bi-heart"
+              />
+               
+              Add to Favorites
+            </button>
+          </div>
           <form
             class=""
           >
