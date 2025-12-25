@@ -11,27 +11,23 @@ exports[`the html structure of the new cards page with no data 1`] = `
 `;
 
 exports[`the html structure of the new cards page with two sources, each with result/s 1`] = `
-.c3 {
-  z-index: 1;
-  opacity: 1;
+.emotion-0 {
+  display: inline;
 }
 
-.c3:hover {
-  cursor: pointer;
-}
-
-.c2 {
+.emotion-2 {
   z-index: 0;
   background: #4e5d6c;
   border: solid 0px black;
 }
 
-.c0 {
-  display: inline;
+.emotion-3 {
+  z-index: 1;
+  opacity: 1;
 }
 
-.c1 {
-  display: inline;
+.emotion-3:hover {
+  cursor: pointer;
 }
 
 <div>
@@ -41,7 +37,7 @@ exports[`the html structure of the new cards page with two sources, each with re
      in the last two weeks.
   </p>
   <h3
-    class="c0 orpheus"
+    class="orpheus emotion-0"
   >
     <em>
       Source 1
@@ -49,7 +45,7 @@ exports[`the html structure of the new cards page with two sources, each with re
   </h3>
      
   <p
-    class="c1 text-primary"
+    class="text-primary emotion-0"
   >
     4
      new card
@@ -75,11 +71,11 @@ exports[`the html structure of the new cards page with two sources, each with re
         </div>
         <div>
           <div
-            class="c2 rounded-lg shadow-lg ratio ratio-7x5"
+            class="rounded-lg shadow-lg ratio ratio-7x5 emotion-2"
           >
             <img
               alt="Card 1"
-              class="c3 card-img card-img-fade-in"
+              class="card-img card-img-fade-in emotion-3"
               data-nimg="fill"
               decoding="async"
               loading="lazy"
@@ -125,11 +121,11 @@ exports[`the html structure of the new cards page with two sources, each with re
         </div>
         <div>
           <div
-            class="c2 rounded-lg shadow-lg ratio ratio-7x5"
+            class="rounded-lg shadow-lg ratio ratio-7x5 emotion-2"
           >
             <img
               alt="Card 2"
-              class="c3 card-img card-img-fade-in"
+              class="card-img card-img-fade-in emotion-3"
               data-nimg="fill"
               decoding="async"
               loading="lazy"
@@ -173,7 +169,7 @@ exports[`the html structure of the new cards page with two sources, each with re
   </div>
   <hr />
   <h3
-    class="c0 orpheus"
+    class="orpheus emotion-0"
   >
     <em>
       Source 2
@@ -181,7 +177,7 @@ exports[`the html structure of the new cards page with two sources, each with re
   </h3>
      
   <p
-    class="c1 text-primary"
+    class="text-primary emotion-0"
   >
     1
      new card
@@ -206,11 +202,11 @@ exports[`the html structure of the new cards page with two sources, each with re
         </div>
         <div>
           <div
-            class="c2 rounded-lg shadow-lg ratio ratio-7x5"
+            class="rounded-lg shadow-lg ratio ratio-7x5 emotion-2"
           >
             <img
               alt="Card 5"
-              class="c3 card-img card-img-fade-in"
+              class="card-img card-img-fade-in emotion-3"
               data-nimg="fill"
               decoding="async"
               loading="lazy"

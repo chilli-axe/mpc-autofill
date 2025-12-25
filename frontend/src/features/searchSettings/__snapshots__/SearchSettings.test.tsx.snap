@@ -1,73 +1,73 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`the html structure of search settings 1`] = `
-.c0 {
+.emotion-0 {
   color: black;
 }
 
-.c0 .tag {
+.emotion-0 .tag {
   color: black;
   background-color: #dddddd;
 }
 
-.c0 .tag-remove {
+.emotion-0 .tag-remove {
   color: #666666;
 }
 
-.c0 .dropdown-trigger {
+.emotion-0 .dropdown-trigger {
   border-radius: 0.25rem;
   background-color: white;
 }
 
-.c0 .dropdown-content {
+.emotion-0 .dropdown-content {
   border-radius: 0.25rem;
 }
 
-.c0 .search {
+.emotion-0 .search {
   background-color: white;
   color: black;
 }
 
-.c0 .search::-webkit-input-placeholder {
+.emotion-0 .search::-webkit-input-placeholder {
   color: black;
 }
 
-.c0 .search::-moz-placeholder {
+.emotion-0 .search::-moz-placeholder {
   color: black;
 }
 
-.c0 .search:-ms-input-placeholder {
+.emotion-0 .search:-ms-input-placeholder {
   color: black;
 }
 
-.c0 .search::placeholder {
+.emotion-0 .search::placeholder {
   color: black;
 }
 
-.c0 .placeholder {
+.emotion-0 .placeholder {
   color: gray;
 }
 
-.c0 .toggle {
+.emotion-0 .toggle {
   font: normal normal normal 12px/1 bootstrap-icons;
   top: 2px;
   left: 2px;
 }
 
-.c0 .toggle.collapsed::after {
-  content: "\\F4FA";
+.emotion-0 .toggle.collapsed::after {
+  content: "F4FA";
 }
 
-.c0 .toggle.expanded::after {
-  content: "\\F2E6";
+.emotion-0 .toggle.expanded::after {
+  content: "F2E6";
 }
 
-.c0 .root {
+.emotion-0 .root {
   padding: 0;
   margin: 0;
 }
 
-.c1 {
+.emotion-3 {
   font-size: 1em;
   cursor: pointer;
 }
@@ -251,7 +251,7 @@ exports[`the html structure of search settings 1`] = `
           Select languages
         </label>
         <div
-          class="c0 react-dropdown-tree-select"
+          class="emotion-0 react-dropdown-tree-select"
           id="rdts1"
         >
           <div
@@ -292,7 +292,7 @@ exports[`the html structure of search settings 1`] = `
            of
         </label>
         <div
-          class="c0 react-dropdown-tree-select"
+          class="emotion-0 react-dropdown-tree-select"
           id="rdts2"
         >
           <div
@@ -333,7 +333,7 @@ exports[`the html structure of search settings 1`] = `
            have
         </label>
         <div
-          class="c0 react-dropdown-tree-select"
+          class="emotion-0 react-dropdown-tree-select"
           id="rdts3"
         >
           <div
@@ -469,12 +469,12 @@ exports[`the html structure of search settings 1`] = `
               >
                 <div>
                   <i
-                    class="c1 bi bi-chevron-double-up"
+                    class="bi bi-chevron-double-up emotion-3"
                   />
                 </div>
                 <div>
                   <i
-                    class="c1 bi bi-chevron-double-down"
+                    class="bi bi-chevron-double-down emotion-3"
                   />
                 </div>
               </td>
@@ -534,12 +534,12 @@ exports[`the html structure of search settings 1`] = `
               >
                 <div>
                   <i
-                    class="c1 bi bi-chevron-double-up"
+                    class="bi bi-chevron-double-up emotion-3"
                   />
                 </div>
                 <div>
                   <i
-                    class="c1 bi bi-chevron-double-down"
+                    class="bi bi-chevron-double-down emotion-3"
                   />
                 </div>
               </td>
@@ -599,12 +599,12 @@ exports[`the html structure of search settings 1`] = `
               >
                 <div>
                   <i
-                    class="c1 bi bi-chevron-double-up"
+                    class="bi bi-chevron-double-up emotion-3"
                   />
                 </div>
                 <div>
                   <i
-                    class="c1 bi bi-chevron-double-down"
+                    class="bi bi-chevron-double-down emotion-3"
                   />
                 </div>
               </td>

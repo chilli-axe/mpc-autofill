@@ -5,6 +5,7 @@
  * If being used in a gallery, the previous and next images can be cached for visual smoothness.
  */
 
+import styled from "@emotion/styled";
 import { OnLoadingComplete } from "next/dist/shared/lib/get-img-props";
 import Image from "next/image";
 import React, {
@@ -17,7 +18,6 @@ import React, {
 } from "react";
 import BSCard from "react-bootstrap/Card";
 import Col from "react-bootstrap/Col";
-import styled from "styled-components";
 
 import { SearchQuery, useAppDispatch, useAppSelector } from "@/common/types";
 import { CardDocument } from "@/common/types";

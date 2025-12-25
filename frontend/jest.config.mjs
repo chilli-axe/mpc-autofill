@@ -28,6 +28,9 @@ const config = {
   injectGlobals: true,
   testTimeout: 20_000,
   maxWorkers: 4,
+  snapshotSerializers: [
+    "@emotion/jest/serializer" /* if needed other snapshotSerializers should go here */,
+  ],
 };
 
 // createJestConfig is exported this way to ensure that next/jest can load the Next.js config which is async

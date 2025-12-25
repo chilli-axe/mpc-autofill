@@ -1,9 +1,9 @@
+import styled from "@emotion/styled";
 import React from "react";
 import Button from "react-bootstrap/Button";
 import Card from "react-bootstrap/Card";
 import Offcanvas from "react-bootstrap/Offcanvas";
 import Stack from "react-bootstrap/Stack";
-import styled from "styled-components";
 
 import { NavbarLogoHeight } from "@/common/constants";
 import { FileDownload, useAppSelector } from "@/common/types";

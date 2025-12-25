@@ -1,26 +1,41 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`the html structure of a CardDetailedViewModal 1`] = `
-.c2 {
+.emotion-0 {
+  z-index: 0;
+  background: #4e5d6c;
+  border: solid 0px black;
+}
+
+.emotion-1 {
+  z-index: 1;
+  opacity: 1;
+}
+
+.emotion-1:hover {
+  cursor: auto;
+}
+
+.emotion-2 {
   max-width: 100%;
   overflow-x: scroll;
 }
 
-.c3 {
+.emotion-3 {
   table-layout: auto;
 }
 
-.c4 {
+.emotion-4 {
   width: 0%;
   text-align: left;
 }
 
-.c5 {
+.emotion-5 {
   width: 0%;
   text-align: left;
 }
 
-.c6 {
+.emotion-12 {
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
@@ -30,28 +45,13 @@ exports[`the html structure of a CardDetailedViewModal 1`] = `
   transition: outline 0.2s ease-in-out;
 }
 
-.c6:hover {
+.emotion-12:hover {
   outline-color: #ffffffff;
   cursor: pointer;
 }
 
-.c7 {
+.emotion-25 {
   padding-right: 0.5em;
-}
-
-.c1 {
-  z-index: 1;
-  opacity: 1;
-}
-
-.c1:hover {
-  cursor: auto;
-}
-
-.c0 {
-  z-index: 0;
-  background: #4e5d6c;
-  border: solid 0px black;
 }
 
 <div
@@ -86,11 +86,11 @@ exports[`the html structure of a CardDetailedViewModal 1`] = `
           style="position: relative;"
         >
           <div
-            class="c0 rounded-xl shadow-lg ratio ratio-7x5"
+            class="rounded-xl shadow-lg ratio ratio-7x5 emotion-0"
           >
             <img
               alt="Card 1"
-              class="c1 card-img card-img-fade-in"
+              class="card-img card-img-fade-in emotion-1"
               data-nimg="fill"
               decoding="async"
               loading="lazy"
@@ -106,63 +106,63 @@ exports[`the html structure of a CardDetailedViewModal 1`] = `
             Card 1
           </h4>
           <div
-            class="c2"
+            class="emotion-2"
           >
             <table
-              class="c3 table table-hover"
+              class="emotion-3 table table-hover"
             >
               <tbody>
                 <tr>
                   <th
-                    class="c4"
+                    class="emotion-4"
                     scope="row"
                   >
                     Source Name
                   </th>
                   <td
-                    class="c5"
+                    class="emotion-5"
                   >
                     Source 1
                   </td>
                 </tr>
                 <tr>
                   <th
-                    class="c4"
+                    class="emotion-4"
                     scope="row"
                   >
                     Source Type
                   </th>
                   <td
-                    class="c5"
+                    class="emotion-5"
                   >
                     Google Drive
                   </td>
                 </tr>
                 <tr>
                   <th
-                    class="c4"
+                    class="emotion-4"
                     scope="row"
                   >
                     Class
                   </th>
                   <td
-                    class="c5"
+                    class="emotion-5"
                   >
                     Card
                   </td>
                 </tr>
                 <tr>
                   <th
-                    class="c4"
+                    class="emotion-4"
                     scope="row"
                   >
                     Identifier
                   </th>
                   <td
-                    class="c5"
+                    class="emotion-5"
                   >
                     <code
-                      class="c6"
+                      class="emotion-12"
                     >
                       abc123
                     </code>
@@ -170,78 +170,78 @@ exports[`the html structure of a CardDetailedViewModal 1`] = `
                 </tr>
                 <tr>
                   <th
-                    class="c4"
+                    class="emotion-4"
                     scope="row"
                   >
                     Language
                   </th>
                   <td
-                    class="c5"
+                    class="emotion-5"
                   >
                     English
                   </td>
                 </tr>
                 <tr>
                   <th
-                    class="c4"
+                    class="emotion-4"
                     scope="row"
                   >
                     Tags
                   </th>
                   <td
-                    class="c5"
+                    class="emotion-5"
                   >
                     Untagged
                   </td>
                 </tr>
                 <tr>
                   <th
-                    class="c4"
+                    class="emotion-4"
                     scope="row"
                   >
                     Resolution
                   </th>
                   <td
-                    class="c5"
+                    class="emotion-5"
                   >
                     1200 DPI
                   </td>
                 </tr>
                 <tr>
                   <th
-                    class="c4"
+                    class="emotion-4"
                     scope="row"
                   >
                     Date Created
                   </th>
                   <td
-                    class="c5"
+                    class="emotion-5"
                   >
                     1st January, 2000
                   </td>
                 </tr>
                 <tr>
                   <th
-                    class="c4"
+                    class="emotion-4"
                     scope="row"
                   >
                     Date Modified
                   </th>
                   <td
-                    class="c5"
+                    class="emotion-5"
                   >
                     1st January, 2000
                   </td>
                 </tr>
                 <tr>
                   <th
-                    class="c4"
+                    class="emotion-4"
                     scope="row"
                   >
                     File Size
                   </th>
                   <td
-                    class="c5"
+                    class="emotion-5"
                   >
                     10 MB
                   </td>
@@ -257,7 +257,7 @@ exports[`the html structure of a CardDetailedViewModal 1`] = `
               type="button"
             >
               <i
-                class="c7 bi bi-cloud-arrow-down"
+                class="bi bi-cloud-arrow-down emotion-25"
               />
                
               Download Image
@@ -294,7 +294,7 @@ exports[`the html structure of a CardDetailedViewModal 1`] = `
                     type="submit"
                   >
                     <i
-                      class="c7 bi bi-plus-circle"
+                      class="bi bi-plus-circle emotion-25"
                     />
                      Add to Project
                   </button>

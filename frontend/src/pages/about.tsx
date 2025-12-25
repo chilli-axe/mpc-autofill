@@ -1,5 +1,5 @@
+import styled from "@emotion/styled";
 import Head from "next/head";
-import styled from "styled-components";
 
 import { ProjectName } from "@/common/constants";
 import { MakePlayingCards, MakePlayingCardsURL } from "@/common/constants";

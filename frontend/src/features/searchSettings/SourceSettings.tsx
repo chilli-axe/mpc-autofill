@@ -4,6 +4,7 @@
  * This component forms part of the Search Settings modal.
  */
 
+import styled from "@emotion/styled";
 import {
   DragDropContext,
   Draggable,
@@ -17,7 +18,6 @@ import Container from "react-bootstrap/Container";
 import Table from "react-bootstrap/Table";
 // @ts-ignore: https://github.com/arnthor3/react-bootstrap-toggle/issues/21
 import Toggle from "react-bootstrap-toggle";
-import styled from "styled-components";
 
 import { ToggleButtonHeight } from "@/common/constants";
 import {

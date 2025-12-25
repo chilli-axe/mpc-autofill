@@ -1,6 +1,5 @@
 // The below can be used in a Jest global setup file or similar for your testing set-up
 import "@testing-library/jest-dom";
-import "jest-styled-components";
 // Polyfill "window.fetch" used in the React component.
 import "whatwg-fetch";
 

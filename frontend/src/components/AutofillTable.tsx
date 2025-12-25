@@ -1,6 +1,7 @@
+import { css } from "@emotion/react";
+import styled from "@emotion/styled";
 import React from "react";
 import Table from "react-bootstrap/Table";
-import styled, { css } from "styled-components";
 
 // TODO: there's a lot of repetition in these styles. needs to be cleaned up later.
 

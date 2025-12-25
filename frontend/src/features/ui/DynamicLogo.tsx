@@ -1,8 +1,9 @@
+import { css, keyframes } from "@emotion/react";
+import styled, { StyledComponent } from "@emotion/styled";
 import Image from "next/image";
 import React, { useEffect, useState } from "react";
 import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
-import styled, { css, keyframes, StyledComponent } from "styled-components";
 
 import { QueryTags } from "@/common/constants";
 import { CardType } from "@/common/schema_types";

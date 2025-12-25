@@ -3,10 +3,10 @@
  * drop into a page (as the only component). Must be wrapped with a Redux provider.
  */
 
+import styled from "@emotion/styled";
 import React, { useEffect } from "react";
 import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
-import styled from "styled-components";
 
 import { RibbonHeight } from "@/common/constants";
 import { useAppSelector } from "@/common/types";

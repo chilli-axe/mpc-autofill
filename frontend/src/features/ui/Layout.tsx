@@ -1,3 +1,4 @@
+import styled from "@emotion/styled";
 import { Queue } from "async-await-queue";
 import { useRouter } from "next/router";
 import { GoogleAnalytics } from "nextjs-google-analytics";
@@ -6,7 +7,6 @@ import { PropsWithChildren } from "react";
 import Container from "react-bootstrap/Container";
 import SSRProvider from "react-bootstrap/SSRProvider";
 import { Provider } from "react-redux";
-import styled from "styled-components";
 
 import { ContentMaxWidth, NavbarHeight } from "@/common/constants";
 import {

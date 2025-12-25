@@ -1,41 +1,133 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`the html structure of the dynamic logo, backend configured 1`] = `
-.c6 {
-  z-index: 1;
-  opacity: 1;
+@keyframes animation-0 {
+  0% {
+    -webkit-transform: translate3d(-50%, 16%, 0);
+    -moz-transform: translate3d(-50%, 16%, 0);
+    -ms-transform: translate3d(-50%, 16%, 0);
+    transform: translate3d(-50%, 16%, 0);
+    opacity: 0;
+  }
+
+  100% {
+    -webkit-transform: translate3d(-50%, 0, 0);
+    -moz-transform: translate3d(-50%, 0, 0);
+    -ms-transform: translate3d(-50%, 0, 0);
+    transform: translate3d(-50%, 0, 0);
+    opacity: 1;
+  }
 }
 
-.c6:hover {
-  cursor: pointer;
+@keyframes animation-1 {
+  0% {
+    -webkit-transform: translate3d(0, 0, 0);
+    -moz-transform: translate3d(0, 0, 0);
+    -ms-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+    rotate: 0;
+  }
+
+  100% {
+    -webkit-transform: translate3d(-120%, -27%, 0);
+    -moz-transform: translate3d(-120%, -27%, 0);
+    -ms-transform: translate3d(-120%, -27%, 0);
+    transform: translate3d(-120%, -27%, 0);
+    rotate: -40deg;
+  }
 }
 
-.c5 {
-  z-index: 0;
-  background: #4e5d6c;
-  border: solid 0px black;
+@keyframes animation-2 {
+  0% {
+    -webkit-transform: translate3d(0, 0, 0);
+    -moz-transform: translate3d(0, 0, 0);
+    -ms-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+    rotate: 0;
+  }
+
+  100% {
+    -webkit-transform: translate3d(-60%, 0, 0);
+    -moz-transform: translate3d(-60%, 0, 0);
+    -ms-transform: translate3d(-60%, 0, 0);
+    transform: translate3d(-60%, 0, 0);
+    rotate: -20deg;
+  }
 }
 
-.c0 {
+@keyframes animation-3 {
+  0% {
+    -webkit-transform: translate3d(0, 0, 0);
+    -moz-transform: translate3d(0, 0, 0);
+    -ms-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+  }
+
+  100% {
+    -webkit-transform: translate3d(0, 6%, 0);
+    -moz-transform: translate3d(0, 6%, 0);
+    -ms-transform: translate3d(0, 6%, 0);
+    transform: translate3d(0, 6%, 0);
+  }
+}
+
+@keyframes animation-4 {
+  0% {
+    -webkit-transform: translate3d(0, 0, 0);
+    -moz-transform: translate3d(0, 0, 0);
+    -ms-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+    rotate: 0;
+  }
+
+  100% {
+    -webkit-transform: translate3d(60%, 0, 0);
+    -moz-transform: translate3d(60%, 0, 0);
+    -ms-transform: translate3d(60%, 0, 0);
+    transform: translate3d(60%, 0, 0);
+    rotate: 20deg;
+  }
+}
+
+@keyframes animation-5 {
+  0% {
+    -webkit-transform: translate3d(0, 0, 0);
+    -moz-transform: translate3d(0, 0, 0);
+    -ms-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+    rotate: 0;
+  }
+
+  100% {
+    -webkit-transform: translate3d(120%, -27%, 0);
+    -moz-transform: translate3d(120%, -27%, 0);
+    -ms-transform: translate3d(120%, -27%, 0);
+    transform: translate3d(120%, -27%, 0);
+    rotate: 40deg;
+  }
+}
+
+.emotion-0 {
   position: relative;
   width: 85%;
   left: 7.5%;
-  aspect-ratio: 1 / 1;
-  background: linear-gradient(#4692f0,#183251);
+  aspect-ratio: 1/1;
+  background: linear-gradient(#4692f0, #183251);
   border-radius: 50%;
-  box-shadow: 0 0 0 4px black,0 1rem 2rem rgba(0,0,0,0.4);
+  box-shadow: 0 0 0 4px black,0 1rem 2rem rgba(0, 0, 0, 0.4);
 }
 
-.c1 {
+.emotion-1 {
   position: absolute;
   font-weight: bold;
   top: 19.3548%;
   left: 50%;
   z-index: 10;
-  -webkit-transform: translate3d(-50%,0,0);
-  -ms-transform: translate3d(-50%,0,0);
-  transform: translate3d(-50%,0,0);
-  font-size: min(4em,10vw);
+  -webkit-transform: translate3d(-50%, 0, 0);
+  -moz-transform: translate3d(-50%, 0, 0);
+  -ms-transform: translate3d(-50%, 0, 0);
+  transform: translate3d(-50%, 0, 0);
+  font-size: min(4em, 10vw);
   text-shadow: 0 4px 15px #000000;
   white-space: nowrap;
   -webkit-user-select: none;
@@ -45,34 +137,35 @@ exports[`the html structure of the dynamic logo, backend configured 1`] = `
   color: white;
 }
 
-.c2 {
+.emotion-2 {
   width: 40%;
   height: 40%;
   position: absolute;
   left: 50%;
-  -webkit-transform: translate3d(-50%,-16%,0);
-  -ms-transform: translate3d(-50%,-16%,0);
-  transform: translate3d(-50%,-16%,0);
+  -webkit-transform: translate3d(-50%, -16%, 0);
+  -moz-transform: translate3d(-50%, -16%, 0);
+  -ms-transform: translate3d(-50%, -16%, 0);
+  transform: translate3d(-50%, -16%, 0);
   opacity: 0;
-  -webkit-animation: eOZAMF 0.75s ease-out 0.01s forwards;
-  animation: eOZAMF 0.75s ease-out 0.01s forwards;
+  -webkit-animation: animation-0 0.75s ease-out 0.01s forwards;
+  animation: animation-0 0.75s ease-out 0.01s forwards;
 }
 
-.c3 {
+.emotion-3 {
   position: absolute;
   height: 32.358%;
   width: 32.358%;
   left: 33.871%;
   top: 33.871%;
-  -webkit-transition-property: height,width,top,left,z-index;
   transition-property: height,width,top,left,z-index;
-  -webkit-transition-duration: 0.15s;
   transition-duration: 0.15s;
-  -webkit-transition-timing-function: ease-in-out;
   transition-timing-function: ease-in-out;
+  z-index: 0;
+  -webkit-animation: animation-1 1s ease-in-out 0.01s forwards;
+  animation: animation-1 1s ease-in-out 0.01s forwards;
 }
 
-.c3:hover {
+.emotion-3:hover {
   height: 40%;
   width: 40%;
   top: 20%;
@@ -80,34 +173,107 @@ exports[`the html structure of the dynamic logo, backend configured 1`] = `
   z-index: 20;
 }
 
-.c4 {
+.emotion-4 {
   z-index: 0;
-  -webkit-animation: bGJjOD 1s ease-in-out 0.01s forwards;
-  animation: bGJjOD 1s ease-in-out 0.01s forwards;
+  background: #4e5d6c;
+  border: solid 0px black;
 }
 
-.c7 {
+.emotion-5 {
   z-index: 1;
-  -webkit-animation: oyYHp 1s ease-in-out 0.01s forwards;
-  animation: oyYHp 1s ease-in-out 0.01s forwards;
+  opacity: 1;
 }
 
-.c8 {
+.emotion-5:hover {
+  cursor: pointer;
+}
+
+.emotion-6 {
+  position: absolute;
+  height: 32.358%;
+  width: 32.358%;
+  left: 33.871%;
+  top: 33.871%;
+  transition-property: height,width,top,left,z-index;
+  transition-duration: 0.15s;
+  transition-timing-function: ease-in-out;
+  z-index: 1;
+  -webkit-animation: animation-2 1s ease-in-out 0.01s forwards;
+  animation: animation-2 1s ease-in-out 0.01s forwards;
+}
+
+.emotion-6:hover {
+  height: 40%;
+  width: 40%;
+  top: 20%;
+  left: 30%;
+  z-index: 20;
+}
+
+.emotion-9 {
+  position: absolute;
+  height: 32.358%;
+  width: 32.358%;
+  left: 33.871%;
+  top: 33.871%;
+  transition-property: height,width,top,left,z-index;
+  transition-duration: 0.15s;
+  transition-timing-function: ease-in-out;
   z-index: 2;
-  -webkit-animation: hNfKvJ 1s ease-in-out 0.01s forwards;
-  animation: hNfKvJ 1s ease-in-out 0.01s forwards;
+  -webkit-animation: animation-3 1s ease-in-out 0.01s forwards;
+  animation: animation-3 1s ease-in-out 0.01s forwards;
 }
 
-.c9 {
+.emotion-9:hover {
+  height: 40%;
+  width: 40%;
+  top: 20%;
+  left: 30%;
+  z-index: 20;
+}
+
+.emotion-12 {
+  position: absolute;
+  height: 32.358%;
+  width: 32.358%;
+  left: 33.871%;
+  top: 33.871%;
+  transition-property: height,width,top,left,z-index;
+  transition-duration: 0.15s;
+  transition-timing-function: ease-in-out;
   z-index: 3;
-  -webkit-animation: fZMtLp 1s ease-in-out 0.01s forwards;
-  animation: fZMtLp 1s ease-in-out 0.01s forwards;
+  -webkit-animation: animation-4 1s ease-in-out 0.01s forwards;
+  animation: animation-4 1s ease-in-out 0.01s forwards;
 }
 
-.c10 {
+.emotion-12:hover {
+  height: 40%;
+  width: 40%;
+  top: 20%;
+  left: 30%;
+  z-index: 20;
+}
+
+.emotion-15 {
+  position: absolute;
+  height: 32.358%;
+  width: 32.358%;
+  left: 33.871%;
+  top: 33.871%;
+  transition-property: height,width,top,left,z-index;
+  transition-duration: 0.15s;
+  transition-timing-function: ease-in-out;
   z-index: 4;
-  -webkit-animation: wzgiT 1s ease-in-out 0.01s forwards;
-  animation: wzgiT 1s ease-in-out 0.01s forwards;
+  -webkit-animation: animation-5 1s ease-in-out 0.01s forwards;
+  animation: animation-5 1s ease-in-out 0.01s forwards;
+}
+
+.emotion-15:hover {
+  height: 40%;
+  width: 40%;
+  top: 20%;
+  left: 30%;
+  z-index: 20;
 }
 
 <div
@@ -118,15 +284,15 @@ exports[`the html structure of the dynamic logo, backend configured 1`] = `
     class="col-xl-6 col-lg-7 col-md-8 col-sm-12 col-12"
   >
     <div
-      class="c0"
+      class="emotion-0"
     >
       <p
-        class="c1 className"
+        class="className emotion-1"
       >
         Test Site
       </p>
       <div
-        class="c2"
+        class="emotion-2"
       >
         <img
           alt="logo-arrow"
@@ -138,14 +304,14 @@ exports[`the html structure of the dynamic logo, backend configured 1`] = `
         />
       </div>
       <div
-        class="c3 c4"
+        class="emotion-3"
       >
         <div
-          class="c5 rounded-lg shadow-lg ratio ratio-7x5"
+          class="rounded-lg shadow-lg ratio ratio-7x5 emotion-4"
         >
           <img
             alt="Card 6"
-            class="c6 card-img card-img-fade-in"
+            class="card-img card-img-fade-in emotion-5"
             data-nimg="fill"
             decoding="async"
             loading="lazy"
@@ -155,14 +321,14 @@ exports[`the html structure of the dynamic logo, backend configured 1`] = `
         </div>
       </div>
       <div
-        class="c3 c7"
+        class="emotion-6"
       >
         <div
-          class="c5 rounded-lg shadow-lg ratio ratio-7x5"
+          class="rounded-lg shadow-lg ratio ratio-7x5 emotion-4"
         >
           <img
             alt="Card 1"
-            class="c6 card-img card-img-fade-in"
+            class="card-img card-img-fade-in emotion-5"
             data-nimg="fill"
             decoding="async"
             loading="lazy"
@@ -172,14 +338,14 @@ exports[`the html structure of the dynamic logo, backend configured 1`] = `
         </div>
       </div>
       <div
-        class="c3 c8"
+        class="emotion-9"
       >
         <div
-          class="c5 rounded-lg shadow-lg ratio ratio-7x5"
+          class="rounded-lg shadow-lg ratio ratio-7x5 emotion-4"
         >
           <img
             alt="Card 2"
-            class="c6 card-img card-img-fade-in"
+            class="card-img card-img-fade-in emotion-5"
             data-nimg="fill"
             decoding="async"
             loading="lazy"
@@ -189,14 +355,14 @@ exports[`the html structure of the dynamic logo, backend configured 1`] = `
         </div>
       </div>
       <div
-        class="c3 c9"
+        class="emotion-12"
       >
         <div
-          class="c5 rounded-lg shadow-lg ratio ratio-7x5"
+          class="rounded-lg shadow-lg ratio ratio-7x5 emotion-4"
         >
           <img
             alt="Card 3"
-            class="c6 card-img card-img-fade-in"
+            class="card-img card-img-fade-in emotion-5"
             data-nimg="fill"
             decoding="async"
             loading="lazy"
@@ -206,14 +372,14 @@ exports[`the html structure of the dynamic logo, backend configured 1`] = `
         </div>
       </div>
       <div
-        class="c3 c10"
+        class="emotion-15"
       >
         <div
-          class="c5 rounded-lg shadow-lg ratio ratio-7x5"
+          class="rounded-lg shadow-lg ratio ratio-7x5 emotion-4"
         >
           <img
             alt="Card 4"
-            class="c6 card-img card-img-fade-in"
+            class="card-img card-img-fade-in emotion-5"
             data-nimg="fill"
             decoding="async"
             loading="lazy"
@@ -228,47 +394,133 @@ exports[`the html structure of the dynamic logo, backend configured 1`] = `
 `;
 
 exports[`the html structure of the dynamic logo, no backend configured 1`] = `
-.c6 {
-  width: 4em;
-  height: 4em;
-  z-index: 2;
+@keyframes animation-0 {
+  0% {
+    -webkit-transform: translate3d(-50%, 16%, 0);
+    -moz-transform: translate3d(-50%, 16%, 0);
+    -ms-transform: translate3d(-50%, 16%, 0);
+    transform: translate3d(-50%, 16%, 0);
+    opacity: 0;
+  }
+
+  100% {
+    -webkit-transform: translate3d(-50%, 0, 0);
+    -moz-transform: translate3d(-50%, 0, 0);
+    -ms-transform: translate3d(-50%, 0, 0);
+    transform: translate3d(-50%, 0, 0);
+    opacity: 1;
+  }
 }
 
-.c7 {
-  z-index: 1;
-  opacity: 0;
+@keyframes animation-1 {
+  0% {
+    -webkit-transform: translate3d(0, 0, 0);
+    -moz-transform: translate3d(0, 0, 0);
+    -ms-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+    rotate: 0;
+  }
+
+  100% {
+    -webkit-transform: translate3d(-120%, -27%, 0);
+    -moz-transform: translate3d(-120%, -27%, 0);
+    -ms-transform: translate3d(-120%, -27%, 0);
+    transform: translate3d(-120%, -27%, 0);
+    rotate: -40deg;
+  }
 }
 
-.c7:hover {
-  cursor: auto;
+@keyframes animation-2 {
+  0% {
+    -webkit-transform: translate3d(0, 0, 0);
+    -moz-transform: translate3d(0, 0, 0);
+    -ms-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+    rotate: 0;
+  }
+
+  100% {
+    -webkit-transform: translate3d(-60%, 0, 0);
+    -moz-transform: translate3d(-60%, 0, 0);
+    -ms-transform: translate3d(-60%, 0, 0);
+    transform: translate3d(-60%, 0, 0);
+    rotate: -20deg;
+  }
 }
 
-.c5 {
-  z-index: 0;
-  background: #4e5d6c;
-  border: solid 2px black;
+@keyframes animation-3 {
+  0% {
+    -webkit-transform: translate3d(0, 0, 0);
+    -moz-transform: translate3d(0, 0, 0);
+    -ms-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+  }
+
+  100% {
+    -webkit-transform: translate3d(0, 6%, 0);
+    -moz-transform: translate3d(0, 6%, 0);
+    -ms-transform: translate3d(0, 6%, 0);
+    transform: translate3d(0, 6%, 0);
+  }
 }
 
-.c0 {
+@keyframes animation-4 {
+  0% {
+    -webkit-transform: translate3d(0, 0, 0);
+    -moz-transform: translate3d(0, 0, 0);
+    -ms-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+    rotate: 0;
+  }
+
+  100% {
+    -webkit-transform: translate3d(60%, 0, 0);
+    -moz-transform: translate3d(60%, 0, 0);
+    -ms-transform: translate3d(60%, 0, 0);
+    transform: translate3d(60%, 0, 0);
+    rotate: 20deg;
+  }
+}
+
+@keyframes animation-5 {
+  0% {
+    -webkit-transform: translate3d(0, 0, 0);
+    -moz-transform: translate3d(0, 0, 0);
+    -ms-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+    rotate: 0;
+  }
+
+  100% {
+    -webkit-transform: translate3d(120%, -27%, 0);
+    -moz-transform: translate3d(120%, -27%, 0);
+    -ms-transform: translate3d(120%, -27%, 0);
+    transform: translate3d(120%, -27%, 0);
+    rotate: 40deg;
+  }
+}
+
+.emotion-0 {
   position: relative;
   width: 85%;
   left: 7.5%;
-  aspect-ratio: 1 / 1;
-  background: linear-gradient(#4692f0,#183251);
+  aspect-ratio: 1/1;
+  background: linear-gradient(#4692f0, #183251);
   border-radius: 50%;
-  box-shadow: 0 0 0 4px black,0 1rem 2rem rgba(0,0,0,0.4);
+  box-shadow: 0 0 0 4px black,0 1rem 2rem rgba(0, 0, 0, 0.4);
 }
 
-.c1 {
+.emotion-1 {
   position: absolute;
   font-weight: bold;
   top: 19.3548%;
   left: 50%;
   z-index: 10;
-  -webkit-transform: translate3d(-50%,0,0);
-  -ms-transform: translate3d(-50%,0,0);
-  transform: translate3d(-50%,0,0);
-  font-size: min(4em,10vw);
+  -webkit-transform: translate3d(-50%, 0, 0);
+  -moz-transform: translate3d(-50%, 0, 0);
+  -ms-transform: translate3d(-50%, 0, 0);
+  transform: translate3d(-50%, 0, 0);
+  font-size: min(4em, 10vw);
   text-shadow: 0 4px 15px #000000;
   white-space: nowrap;
   -webkit-user-select: none;
@@ -278,34 +530,35 @@ exports[`the html structure of the dynamic logo, no backend configured 1`] = `
   color: white;
 }
 
-.c2 {
+.emotion-2 {
   width: 40%;
   height: 40%;
   position: absolute;
   left: 50%;
-  -webkit-transform: translate3d(-50%,-16%,0);
-  -ms-transform: translate3d(-50%,-16%,0);
-  transform: translate3d(-50%,-16%,0);
+  -webkit-transform: translate3d(-50%, -16%, 0);
+  -moz-transform: translate3d(-50%, -16%, 0);
+  -ms-transform: translate3d(-50%, -16%, 0);
+  transform: translate3d(-50%, -16%, 0);
   opacity: 0;
-  -webkit-animation: eOZAMF 0.75s ease-out 0.01s forwards;
-  animation: eOZAMF 0.75s ease-out 0.01s forwards;
+  -webkit-animation: animation-0 0.75s ease-out 0.01s forwards;
+  animation: animation-0 0.75s ease-out 0.01s forwards;
 }
 
-.c3 {
+.emotion-3 {
   position: absolute;
   height: 32.358%;
   width: 32.358%;
   left: 33.871%;
   top: 33.871%;
-  -webkit-transition-property: height,width,top,left,z-index;
   transition-property: height,width,top,left,z-index;
-  -webkit-transition-duration: 0.15s;
   transition-duration: 0.15s;
-  -webkit-transition-timing-function: ease-in-out;
   transition-timing-function: ease-in-out;
+  z-index: 0;
+  -webkit-animation: animation-1 1s ease-in-out 0.01s forwards;
+  animation: animation-1 1s ease-in-out 0.01s forwards;
 }
 
-.c3:hover {
+.emotion-3:hover {
   height: 40%;
   width: 40%;
   top: 20%;
@@ -313,34 +566,113 @@ exports[`the html structure of the dynamic logo, no backend configured 1`] = `
   z-index: 20;
 }
 
-.c4 {
+.emotion-4 {
   z-index: 0;
-  -webkit-animation: bGJjOD 1s ease-in-out 0.01s forwards;
-  animation: bGJjOD 1s ease-in-out 0.01s forwards;
+  background: #4e5d6c;
+  border: solid 2px black;
 }
 
-.c8 {
-  z-index: 1;
-  -webkit-animation: oyYHp 1s ease-in-out 0.01s forwards;
-  animation: oyYHp 1s ease-in-out 0.01s forwards;
-}
-
-.c9 {
+.emotion-5 {
+  width: 4em;
+  height: 4em;
   z-index: 2;
-  -webkit-animation: hNfKvJ 1s ease-in-out 0.01s forwards;
-  animation: hNfKvJ 1s ease-in-out 0.01s forwards;
 }
 
-.c10 {
+.emotion-6 {
+  z-index: 1;
+  opacity: 0;
+}
+
+.emotion-6:hover {
+  cursor: auto;
+}
+
+.emotion-7 {
+  position: absolute;
+  height: 32.358%;
+  width: 32.358%;
+  left: 33.871%;
+  top: 33.871%;
+  transition-property: height,width,top,left,z-index;
+  transition-duration: 0.15s;
+  transition-timing-function: ease-in-out;
+  z-index: 1;
+  -webkit-animation: animation-2 1s ease-in-out 0.01s forwards;
+  animation: animation-2 1s ease-in-out 0.01s forwards;
+}
+
+.emotion-7:hover {
+  height: 40%;
+  width: 40%;
+  top: 20%;
+  left: 30%;
+  z-index: 20;
+}
+
+.emotion-11 {
+  position: absolute;
+  height: 32.358%;
+  width: 32.358%;
+  left: 33.871%;
+  top: 33.871%;
+  transition-property: height,width,top,left,z-index;
+  transition-duration: 0.15s;
+  transition-timing-function: ease-in-out;
+  z-index: 2;
+  -webkit-animation: animation-3 1s ease-in-out 0.01s forwards;
+  animation: animation-3 1s ease-in-out 0.01s forwards;
+}
+
+.emotion-11:hover {
+  height: 40%;
+  width: 40%;
+  top: 20%;
+  left: 30%;
+  z-index: 20;
+}
+
+.emotion-15 {
+  position: absolute;
+  height: 32.358%;
+  width: 32.358%;
+  left: 33.871%;
+  top: 33.871%;
+  transition-property: height,width,top,left,z-index;
+  transition-duration: 0.15s;
+  transition-timing-function: ease-in-out;
   z-index: 3;
-  -webkit-animation: fZMtLp 1s ease-in-out 0.01s forwards;
-  animation: fZMtLp 1s ease-in-out 0.01s forwards;
+  -webkit-animation: animation-4 1s ease-in-out 0.01s forwards;
+  animation: animation-4 1s ease-in-out 0.01s forwards;
 }
 
-.c11 {
+.emotion-15:hover {
+  height: 40%;
+  width: 40%;
+  top: 20%;
+  left: 30%;
+  z-index: 20;
+}
+
+.emotion-19 {
+  position: absolute;
+  height: 32.358%;
+  width: 32.358%;
+  left: 33.871%;
+  top: 33.871%;
+  transition-property: height,width,top,left,z-index;
+  transition-duration: 0.15s;
+  transition-timing-function: ease-in-out;
   z-index: 4;
-  -webkit-animation: wzgiT 1s ease-in-out 0.01s forwards;
-  animation: wzgiT 1s ease-in-out 0.01s forwards;
+  -webkit-animation: animation-5 1s ease-in-out 0.01s forwards;
+  animation: animation-5 1s ease-in-out 0.01s forwards;
+}
+
+.emotion-19:hover {
+  height: 40%;
+  width: 40%;
+  top: 20%;
+  left: 30%;
+  z-index: 20;
 }
 
 <div
@@ -351,15 +683,15 @@ exports[`the html structure of the dynamic logo, no backend configured 1`] = `
     class="col-xl-6 col-lg-7 col-md-8 col-sm-12 col-12"
   >
     <div
-      class="c0"
+      class="emotion-0"
     >
       <p
-        class="c1 className"
+        class="className emotion-1"
       >
         MPC Autofill
       </p>
       <div
-        class="c2"
+        class="emotion-2"
       >
         <img
           alt="logo-arrow"
@@ -371,16 +703,16 @@ exports[`the html structure of the dynamic logo, no backend configured 1`] = `
         />
       </div>
       <div
-        class="c3 c4"
+        class="emotion-3"
       >
         <div
-          class="c5 rounded-lg shadow-lg ratio ratio-7x5"
+          class="rounded-lg shadow-lg ratio ratio-7x5 emotion-4"
         >
           <div
             class="d-flex justify-content-center align-items-center"
           >
             <div
-              class="c6 spinner-border"
+              class="spinner-border emotion-5"
               role="status"
               size="4"
             >
@@ -393,7 +725,7 @@ exports[`the html structure of the dynamic logo, no backend configured 1`] = `
           </div>
           <img
             alt="Your Design Here"
-            class="c7 card-img card-img-fade-in"
+            class="card-img card-img-fade-in emotion-6"
             data-nimg="fill"
             decoding="async"
             loading="lazy"
@@ -405,16 +737,16 @@ exports[`the html structure of the dynamic logo, no backend configured 1`] = `
         </div>
       </div>
       <div
-        class="c3 c8"
+        class="emotion-7"
       >
         <div
-          class="c5 rounded-lg shadow-lg ratio ratio-7x5"
+          class="rounded-lg shadow-lg ratio ratio-7x5 emotion-4"
         >
           <div
             class="d-flex justify-content-center align-items-center"
           >
             <div
-              class="c6 spinner-border"
+              class="spinner-border emotion-5"
               role="status"
               size="4"
             >
@@ -427,7 +759,7 @@ exports[`the html structure of the dynamic logo, no backend configured 1`] = `
           </div>
           <img
             alt="Your Design Here"
-            class="c7 card-img card-img-fade-in"
+            class="card-img card-img-fade-in emotion-6"
             data-nimg="fill"
             decoding="async"
             loading="lazy"
@@ -439,16 +771,16 @@ exports[`the html structure of the dynamic logo, no backend configured 1`] = `
         </div>
       </div>
       <div
-        class="c3 c9"
+        class="emotion-11"
       >
         <div
-          class="c5 rounded-lg shadow-lg ratio ratio-7x5"
+          class="rounded-lg shadow-lg ratio ratio-7x5 emotion-4"
         >
           <div
             class="d-flex justify-content-center align-items-center"
           >
             <div
-              class="c6 spinner-border"
+              class="spinner-border emotion-5"
               role="status"
               size="4"
             >
@@ -461,7 +793,7 @@ exports[`the html structure of the dynamic logo, no backend configured 1`] = `
           </div>
           <img
             alt="Your Design Here"
-            class="c7 card-img card-img-fade-in"
+            class="card-img card-img-fade-in emotion-6"
             data-nimg="fill"
             decoding="async"
             loading="lazy"
@@ -473,16 +805,16 @@ exports[`the html structure of the dynamic logo, no backend configured 1`] = `
         </div>
       </div>
       <div
-        class="c3 c10"
+        class="emotion-15"
       >
         <div
-          class="c5 rounded-lg shadow-lg ratio ratio-7x5"
+          class="rounded-lg shadow-lg ratio ratio-7x5 emotion-4"
         >
           <div
             class="d-flex justify-content-center align-items-center"
           >
             <div
-              class="c6 spinner-border"
+              class="spinner-border emotion-5"
               role="status"
               size="4"
             >
@@ -495,7 +827,7 @@ exports[`the html structure of the dynamic logo, no backend configured 1`] = `
           </div>
           <img
             alt="Your Design Here"
-            class="c7 card-img card-img-fade-in"
+            class="card-img card-img-fade-in emotion-6"
             data-nimg="fill"
             decoding="async"
             loading="lazy"
@@ -507,16 +839,16 @@ exports[`the html structure of the dynamic logo, no backend configured 1`] = `
         </div>
       </div>
       <div
-        class="c3 c11"
+        class="emotion-19"
       >
         <div
-          class="c5 rounded-lg shadow-lg ratio ratio-7x5"
+          class="rounded-lg shadow-lg ratio ratio-7x5 emotion-4"
         >
           <div
             class="d-flex justify-content-center align-items-center"
           >
             <div
-              class="c6 spinner-border"
+              class="spinner-border emotion-5"
               role="status"
               size="4"
             >
@@ -529,7 +861,7 @@ exports[`the html structure of the dynamic logo, no backend configured 1`] = `
           </div>
           <img
             alt="Your Design Here"
-            class="c7 card-img card-img-fade-in"
+            class="card-img card-img-fade-in emotion-6"
             data-nimg="fill"
             decoding="async"
             loading="lazy"

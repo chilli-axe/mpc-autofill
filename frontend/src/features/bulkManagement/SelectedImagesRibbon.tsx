@@ -4,6 +4,7 @@
  * setting their selected versions, or deleting them from the project.
  */
 
+import styled from "@emotion/styled";
 import React, {
   ButtonHTMLAttributes,
   PropsWithChildren,
@@ -12,7 +13,6 @@ import React, {
 } from "react";
 import Dropdown from "react-bootstrap/Dropdown";
 import Stack from "react-bootstrap/Stack";
-import styled from "styled-components";
 
 import { Faces, Slots, useAppDispatch, useAppSelector } from "@/common/types";
 import { RightPaddedIcon } from "@/components/icon";

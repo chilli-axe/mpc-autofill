@@ -1,30 +1,30 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`the html structure of a CardSlot with a single search result, image selected 1`] = `
-.c1 {
+.emotion-0 {
+  z-index: 0;
+  background: #4e5d6c;
+  border: solid 0px black;
+}
+
+.emotion-1 {
   z-index: 1;
   opacity: 1;
 }
 
-.c1:hover {
+.emotion-1:hover {
   cursor: pointer;
 }
 
-.c2 {
+.emotion-2 {
   outline: solid 1px #ffffff00;
   -webkit-transition: outline 0.2s ease-in-out;
   transition: outline 0.2s ease-in-out;
 }
 
-.c2:hover {
+.emotion-2:hover {
   outline-color: #ffffffff;
   cursor: pointer;
-}
-
-.c0 {
-  z-index: 0;
-  background: #4e5d6c;
-  border: solid 0px black;
 }
 
 <div
@@ -61,11 +61,11 @@ exports[`the html structure of a CardSlot with a single search result, image sel
     </div>
     <div>
       <div
-        class="c0 rounded-lg shadow-lg ratio ratio-7x5"
+        class="rounded-lg shadow-lg ratio ratio-7x5 emotion-0"
       >
         <img
           alt="Card 1"
-          class="c1 card-img card-img-fade-in"
+          class="card-img card-img-fade-in emotion-1"
           data-nimg="fill"
           decoding="async"
           loading="lazy"
@@ -77,7 +77,7 @@ exports[`the html structure of a CardSlot with a single search result, image sel
         class="mb-0 text-center card-body"
       >
         <div
-          class="c2 mpccard-name card-subtitle h6"
+          class="mpccard-name emotion-2 card-subtitle h6"
         >
           Card 1
         </div>
@@ -108,30 +108,30 @@ exports[`the html structure of a CardSlot with a single search result, image sel
 `;
 
 exports[`the html structure of a CardSlot with a single search result, no image selected 1`] = `
-.c1 {
+.emotion-0 {
+  z-index: 0;
+  background: #4e5d6c;
+  border: solid 0px black;
+}
+
+.emotion-1 {
   z-index: 1;
   opacity: 1;
 }
 
-.c1:hover {
+.emotion-1:hover {
   cursor: pointer;
 }
 
-.c2 {
+.emotion-2 {
   outline: solid 1px #ffffff00;
   -webkit-transition: outline 0.2s ease-in-out;
   transition: outline 0.2s ease-in-out;
 }
 
-.c2:hover {
+.emotion-2:hover {
   outline-color: #ffffffff;
   cursor: pointer;
-}
-
-.c0 {
-  z-index: 0;
-  background: #4e5d6c;
-  border: solid 0px black;
 }
 
 <div
@@ -168,11 +168,11 @@ exports[`the html structure of a CardSlot with a single search result, no image 
     </div>
     <div>
       <div
-        class="c0 rounded-lg shadow-lg ratio ratio-7x5"
+        class="rounded-lg shadow-lg ratio ratio-7x5 emotion-0"
       >
         <img
           alt="Card 1"
-          class="c1 card-img card-img-fade-in"
+          class="card-img card-img-fade-in emotion-1"
           data-nimg="fill"
           decoding="async"
           loading="lazy"
@@ -184,7 +184,7 @@ exports[`the html structure of a CardSlot with a single search result, no image 
         class="mb-0 text-center card-body"
       >
         <div
-          class="c2 mpccard-name card-subtitle h6"
+          class="mpccard-name emotion-2 card-subtitle h6"
         >
           Card 1
         </div>
@@ -215,30 +215,30 @@ exports[`the html structure of a CardSlot with a single search result, no image 
 `;
 
 exports[`the html structure of a CardSlot with a single search result, slot selected 1`] = `
-.c1 {
+.emotion-0 {
+  z-index: 0;
+  background: #4e5d6c;
+  border: solid 0px black;
+}
+
+.emotion-1 {
   z-index: 1;
   opacity: 1;
 }
 
-.c1:hover {
+.emotion-1:hover {
   cursor: pointer;
 }
 
-.c2 {
+.emotion-2 {
   outline: solid 1px #ffffff00;
   -webkit-transition: outline 0.2s ease-in-out;
   transition: outline 0.2s ease-in-out;
 }
 
-.c2:hover {
+.emotion-2:hover {
   outline-color: #ffffffff;
   cursor: pointer;
-}
-
-.c0 {
-  z-index: 0;
-  background: #4e5d6c;
-  border: solid 0px black;
 }
 
 <div
@@ -275,11 +275,11 @@ exports[`the html structure of a CardSlot with a single search result, slot sele
     </div>
     <div>
       <div
-        class="c0 rounded-lg shadow-lg ratio ratio-7x5"
+        class="rounded-lg shadow-lg ratio ratio-7x5 emotion-0"
       >
         <img
           alt="Card 1"
-          class="c1 card-img card-img-fade-in"
+          class="card-img card-img-fade-in emotion-1"
           data-nimg="fill"
           decoding="async"
           loading="lazy"
@@ -291,7 +291,7 @@ exports[`the html structure of a CardSlot with a single search result, slot sele
         class="mb-0 text-center card-body"
       >
         <div
-          class="c2 mpccard-name card-subtitle h6"
+          class="mpccard-name emotion-2 card-subtitle h6"
         >
           Card 1
         </div>
@@ -322,35 +322,35 @@ exports[`the html structure of a CardSlot with a single search result, slot sele
 `;
 
 exports[`the html structure of a CardSlot with multiple search results, image selected 1`] = `
-.c2 {
+.emotion-0 {
   z-index: 0;
-  opacity: 0;
+  background: #4e5d6c;
+  border: solid 0px black;
 }
 
-.c1 {
+.emotion-1 {
   z-index: 1;
   opacity: 1;
 }
 
-.c1:hover {
+.emotion-1:hover {
   cursor: pointer;
 }
 
-.c3 {
+.emotion-2 {
+  z-index: 0;
+  opacity: 0;
+}
+
+.emotion-4 {
   outline: solid 1px #ffffff00;
   -webkit-transition: outline 0.2s ease-in-out;
   transition: outline 0.2s ease-in-out;
 }
 
-.c3:hover {
+.emotion-4:hover {
   outline-color: #ffffffff;
   cursor: pointer;
-}
-
-.c0 {
-  z-index: 0;
-  background: #4e5d6c;
-  border: solid 0px black;
 }
 
 <div
@@ -387,11 +387,11 @@ exports[`the html structure of a CardSlot with multiple search results, image se
     </div>
     <div>
       <div
-        class="c0 rounded-lg shadow-lg ratio ratio-7x5"
+        class="rounded-lg shadow-lg ratio ratio-7x5 emotion-0"
       >
         <img
           alt="Card 1"
-          class="c1 card-img card-img-fade-in"
+          class="card-img card-img-fade-in emotion-1"
           data-nimg="fill"
           decoding="async"
           loading="lazy"
@@ -400,7 +400,7 @@ exports[`the html structure of a CardSlot with multiple search results, image se
         />
         <img
           alt="Card 2"
-          class="c2 card-img"
+          class="card-img emotion-2"
           data-nimg="fill"
           decoding="async"
           loading="lazy"
@@ -409,7 +409,7 @@ exports[`the html structure of a CardSlot with multiple search results, image se
         />
         <img
           alt="Card 3"
-          class="c2 card-img"
+          class="card-img emotion-2"
           data-nimg="fill"
           decoding="async"
           loading="lazy"
@@ -421,7 +421,7 @@ exports[`the html structure of a CardSlot with multiple search results, image se
         class="mb-0 text-center card-body"
       >
         <div
-          class="c3 mpccard-name card-subtitle h6"
+          class="mpccard-name emotion-4 card-subtitle h6"
         >
           Card 1
         </div>
@@ -468,19 +468,19 @@ exports[`the html structure of a CardSlot with multiple search results, image se
 `;
 
 exports[`the html structure of a CardSlot's grid selector, cards faceted by source 1`] = `
-.c1 {
+.emotion-0 {
+  z-index: 0;
+  background: #4e5d6c;
+  border: solid 0px black;
+}
+
+.emotion-1 {
   z-index: 1;
   opacity: 1;
 }
 
-.c1:hover {
+.emotion-1:hover {
   cursor: auto;
-}
-
-.c0 {
-  z-index: 0;
-  background: #4e5d6c;
-  border: solid 0px black;
 }
 
 <div
@@ -666,11 +666,11 @@ exports[`the html structure of a CardSlot's grid selector, cards faceted by sour
               </div>
               <div>
                 <div
-                  class="c0 rounded-lg shadow-lg ratio ratio-7x5"
+                  class="rounded-lg shadow-lg ratio ratio-7x5 emotion-0"
                 >
                   <img
                     alt="Card 1"
-                    class="c1 card-img card-img-fade-in"
+                    class="card-img card-img-fade-in emotion-1"
                     data-nimg="fill"
                     decoding="async"
                     loading="lazy"
@@ -719,11 +719,11 @@ exports[`the html structure of a CardSlot's grid selector, cards faceted by sour
               </div>
               <div>
                 <div
-                  class="c0 rounded-lg shadow-lg ratio ratio-7x5"
+                  class="rounded-lg shadow-lg ratio ratio-7x5 emotion-0"
                 >
                   <img
                     alt="Card 2"
-                    class="c1 card-img card-img-fade-in"
+                    class="card-img card-img-fade-in emotion-1"
                     data-nimg="fill"
                     decoding="async"
                     loading="lazy"
@@ -772,11 +772,11 @@ exports[`the html structure of a CardSlot's grid selector, cards faceted by sour
               </div>
               <div>
                 <div
-                  class="c0 rounded-lg shadow-lg ratio ratio-7x5"
+                  class="rounded-lg shadow-lg ratio ratio-7x5 emotion-0"
                 >
                   <img
                     alt="Card 3"
-                    class="c1 card-img card-img-fade-in"
+                    class="card-img card-img-fade-in emotion-1"
                     data-nimg="fill"
                     decoding="async"
                     loading="lazy"
@@ -825,11 +825,11 @@ exports[`the html structure of a CardSlot's grid selector, cards faceted by sour
               </div>
               <div>
                 <div
-                  class="c0 rounded-lg shadow-lg ratio ratio-7x5"
+                  class="rounded-lg shadow-lg ratio ratio-7x5 emotion-0"
                 >
                   <img
                     alt="Card 4"
-                    class="c1 card-img card-img-fade-in"
+                    class="card-img card-img-fade-in emotion-1"
                     data-nimg="fill"
                     decoding="async"
                     loading="lazy"
@@ -876,19 +876,19 @@ exports[`the html structure of a CardSlot's grid selector, cards faceted by sour
 `;
 
 exports[`the html structure of a CardSlot's grid selector, cards grouped together 1`] = `
-.c1 {
+.emotion-0 {
+  z-index: 0;
+  background: #4e5d6c;
+  border: solid 0px black;
+}
+
+.emotion-1 {
   z-index: 1;
   opacity: 1;
 }
 
-.c1:hover {
+.emotion-1:hover {
   cursor: auto;
-}
-
-.c0 {
-  z-index: 0;
-  background: #4e5d6c;
-  border: solid 0px black;
 }
 
 <div
@@ -1074,11 +1074,11 @@ exports[`the html structure of a CardSlot's grid selector, cards grouped togethe
               </div>
               <div>
                 <div
-                  class="c0 rounded-lg shadow-lg ratio ratio-7x5"
+                  class="rounded-lg shadow-lg ratio ratio-7x5 emotion-0"
                 >
                   <img
                     alt="Card 1"
-                    class="c1 card-img card-img-fade-in"
+                    class="card-img card-img-fade-in emotion-1"
                     data-nimg="fill"
                     decoding="async"
                     loading="lazy"
@@ -1127,11 +1127,11 @@ exports[`the html structure of a CardSlot's grid selector, cards grouped togethe
               </div>
               <div>
                 <div
-                  class="c0 rounded-lg shadow-lg ratio ratio-7x5"
+                  class="rounded-lg shadow-lg ratio ratio-7x5 emotion-0"
                 >
                   <img
                     alt="Card 2"
-                    class="c1 card-img card-img-fade-in"
+                    class="card-img card-img-fade-in emotion-1"
                     data-nimg="fill"
                     decoding="async"
                     loading="lazy"
@@ -1180,11 +1180,11 @@ exports[`the html structure of a CardSlot's grid selector, cards grouped togethe
               </div>
               <div>
                 <div
-                  class="c0 rounded-lg shadow-lg ratio ratio-7x5"
+                  class="rounded-lg shadow-lg ratio ratio-7x5 emotion-0"
                 >
                   <img
                     alt="Card 3"
-                    class="c1 card-img card-img-fade-in"
+                    class="card-img card-img-fade-in emotion-1"
                     data-nimg="fill"
                     decoding="async"
                     loading="lazy"
@@ -1233,11 +1233,11 @@ exports[`the html structure of a CardSlot's grid selector, cards grouped togethe
               </div>
               <div>
                 <div
-                  class="c0 rounded-lg shadow-lg ratio ratio-7x5"
+                  class="rounded-lg shadow-lg ratio ratio-7x5 emotion-0"
                 >
                   <img
                     alt="Card 4"
-                    class="c1 card-img card-img-fade-in"
+                    class="card-img card-img-fade-in emotion-1"
                     data-nimg="fill"
                     decoding="async"
                     loading="lazy"

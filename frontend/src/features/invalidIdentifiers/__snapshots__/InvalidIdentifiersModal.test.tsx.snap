@@ -1,26 +1,26 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`invalidIdentifiersModal displays the appropriate data 1`] = `
-.c0 {
+.emotion-0 {
   max-width: 100%;
   overflow-x: scroll;
 }
 
-.c1 {
+.emotion-1 {
   table-layout: auto;
 }
 
-.c2 {
+.emotion-2 {
   width: 0%;
   text-align: left;
 }
 
-.c3 {
+.emotion-6 {
   width: 0%;
   text-align: left;
 }
 
-.c4 {
+.emotion-9 {
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
@@ -30,7 +30,7 @@ exports[`invalidIdentifiersModal displays the appropriate data 1`] = `
   transition: outline 0.2s ease-in-out;
 }
 
-.c4:hover {
+.emotion-9:hover {
   outline-color: #ffffffff;
   cursor: pointer;
 }
@@ -78,33 +78,33 @@ exports[`invalidIdentifiersModal displays the appropriate data 1`] = `
     </p>
     <hr />
     <div
-      class="c0"
+      class="emotion-0"
     >
       <table
-        class="c1 table table-hover"
+        class="emotion-1 table table-hover"
       >
         <thead>
           <tr>
             <th
-              class="c2"
+              class="emotion-2"
               scope="col"
             >
               Slot
             </th>
             <th
-              class="c2"
+              class="emotion-2"
               scope="col"
             >
               Face
             </th>
             <th
-              class="c2"
+              class="emotion-2"
               scope="col"
             >
               Query
             </th>
             <th
-              class="c2"
+              class="emotion-2"
               scope="col"
             >
               Identifier
@@ -114,29 +114,29 @@ exports[`invalidIdentifiersModal displays the appropriate data 1`] = `
         <tbody>
           <tr>
             <td
-              class="c3"
+              class="emotion-6"
             >
               1
             </td>
             <td
-              class="c3"
+              class="emotion-6"
             >
               Front
             </td>
             <td
-              class="c3"
+              class="emotion-6"
             >
               <code
-                class="c4"
+                class="emotion-9"
               >
                 query 1
               </code>
             </td>
             <td
-              class="c3"
+              class="emotion-6"
             >
               <code
-                class="c4"
+                class="emotion-9"
               >
                 123
               </code>
@@ -144,29 +144,29 @@ exports[`invalidIdentifiersModal displays the appropriate data 1`] = `
           </tr>
           <tr>
             <td
-              class="c3"
+              class="emotion-6"
             >
               2
             </td>
             <td
-              class="c3"
+              class="emotion-6"
             >
               Front
             </td>
             <td
-              class="c3"
+              class="emotion-6"
             >
               <code
-                class="c4"
+                class="emotion-9"
               >
                 query 1
               </code>
             </td>
             <td
-              class="c3"
+              class="emotion-6"
             >
               <code
-                class="c4"
+                class="emotion-9"
               >
                 123
               </code>
@@ -174,29 +174,29 @@ exports[`invalidIdentifiersModal displays the appropriate data 1`] = `
           </tr>
           <tr>
             <td
-              class="c3"
+              class="emotion-6"
             >
               3
             </td>
             <td
-              class="c3"
+              class="emotion-6"
             >
               Back
             </td>
             <td
-              class="c3"
+              class="emotion-6"
             >
               <code
-                class="c4"
+                class="emotion-9"
               >
                 query 3
               </code>
             </td>
             <td
-              class="c3"
+              class="emotion-6"
             >
               <code
-                class="c4"
+                class="emotion-9"
               >
                 456
               </code>
