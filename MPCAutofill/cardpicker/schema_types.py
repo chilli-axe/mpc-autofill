@@ -238,7 +238,6 @@ class Card(BaseModel):
     dateModified: str
     """Modified date - formatted by backend"""
 
-    downloadLink: str
     dpi: int
     extension: str
     identifier: str
@@ -263,7 +262,6 @@ class Card(BaseModel):
         cardType = CardType(obj.get("cardType"))
         dateCreated = from_str(obj.get("dateCreated"))
         dateModified = from_str(obj.get("dateModified"))
-        downloadLink = from_str(obj.get("downloadLink"))
         dpi = from_int(obj.get("dpi"))
         extension = from_str(obj.get("extension"))
         identifier = from_str(obj.get("identifier"))
@@ -285,7 +283,6 @@ class Card(BaseModel):
             cardType,
             dateCreated,
             dateModified,
-            downloadLink,
             dpi,
             extension,
             identifier,
@@ -310,7 +307,6 @@ class Card(BaseModel):
         result["cardType"] = to_enum(CardType, self.cardType)
         result["dateCreated"] = from_str(self.dateCreated)
         result["dateModified"] = from_str(self.dateModified)
-        result["downloadLink"] = from_str(self.downloadLink)
         result["dpi"] = from_int(self.dpi)
         result["extension"] = from_str(self.extension)
         result["identifier"] = from_str(self.identifier)

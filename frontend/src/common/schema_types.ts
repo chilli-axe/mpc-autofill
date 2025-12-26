@@ -127,7 +127,6 @@ export interface Card {
    * Modified date - formatted by backend
    */
   dateModified: string;
-  downloadLink: string;
   dpi: number;
   extension: string;
   identifier: string;
@@ -992,7 +991,6 @@ const typeMap: any = {
       { json: "cardType", js: "cardType", typ: r("CardType") },
       { json: "dateCreated", js: "dateCreated", typ: "" },
       { json: "dateModified", js: "dateModified", typ: "" },
-      { json: "downloadLink", js: "downloadLink", typ: "" },
       { json: "dpi", js: "dpi", typ: 0 },
       { json: "extension", js: "extension", typ: "" },
       { json: "identifier", js: "identifier", typ: "" },

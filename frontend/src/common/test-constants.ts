@@ -86,7 +86,6 @@ export const cardDocument1: CardDocument = {
   extension: "png",
   dateCreated: "1st January, 2000", // formatted by backend
   dateModified: "1st January, 2000", // formatted by backend
-  downloadLink: "",
   size: 10_000_000,
   smallThumbnailUrl: "",
   mediumThumbnailUrl: "",
@@ -110,7 +109,6 @@ export const cardDocument2: CardDocument = {
   extension: "png",
   dateCreated: "1st January, 2000", // formatted by backend
   dateModified: "1st January, 2000", // formatted by backend
-  downloadLink: "",
   size: 10_000_000,
   smallThumbnailUrl: "",
   mediumThumbnailUrl: "",
@@ -134,7 +132,6 @@ export const cardDocument3: CardDocument = {
   extension: "png",
   dateCreated: "1st January, 2000", // formatted by backend
   dateModified: "1st January, 2000", // formatted by backend
-  downloadLink: "",
   size: 10_000_000,
   smallThumbnailUrl: "",
   mediumThumbnailUrl: "",
@@ -158,7 +155,6 @@ export const cardDocument4: CardDocument = {
   extension: "png",
   dateCreated: "1st January, 2000", // formatted by backend
   dateModified: "1st January, 2000", // formatted by backend
-  downloadLink: "",
   size: 10_000_000,
   smallThumbnailUrl: "",
   mediumThumbnailUrl: "",
@@ -182,7 +178,6 @@ export const cardDocument5: CardDocument = {
   extension: "png",
   dateCreated: "1st January, 2000", // formatted by backend
   dateModified: "1st January, 2000", // formatted by backend
-  downloadLink: "",
   size: 10_000_000,
   smallThumbnailUrl: "",
   mediumThumbnailUrl: "",
@@ -206,7 +201,6 @@ export const cardDocument6: CardDocument = {
   extension: "png",
   dateCreated: "1st January, 2000", // formatted by backend
   dateModified: "1st January, 2000", // formatted by backend
-  downloadLink: "",
   size: 10_000_000,
   smallThumbnailUrl: "",
   mediumThumbnailUrl: "",

@@ -32,15 +32,6 @@ class SourceType:
         raise NotImplementedError
 
     @staticmethod
-    def get_download_link(identifier: str) -> Optional[str]:
-        """
-        Return the download link for a Card, Cardback, or Token object identified by `identifier`.
-        Return None if providing a download link isn't possible or doesn't make sense.
-        """
-
-        raise NotImplementedError
-
-    @staticmethod
     def get_small_thumbnail_url(identifier: str) -> str:
         """
         Return the small thumbnail URL for a Card, Cardback, or Token object identified by `identifier`.
@@ -89,10 +80,6 @@ class GoogleDrive(SourceType):
     @staticmethod
     def get_identifier() -> "SourceTypeChoices":
         return SourceTypeChoices.GOOGLE_DRIVE
-
-    @staticmethod
-    def get_download_link(identifier: str) -> Optional[str]:
-        return f"https://drive.google.com/uc?id={identifier}&export=download"
 
     @staticmethod
     def get_small_thumbnail_url(identifier: str) -> str:
