@@ -37,6 +37,7 @@ export type {
   SupporterTier,
   Tag,
 } from "@/common/schema_types";
+import Fuse from "fuse.js";
 
 export const useAppDispatch = useDispatch.withTypes<AppDispatch>();
 export const useAppSelector = useSelector.withTypes<RootState>();
@@ -227,7 +228,7 @@ export interface DirectoryIndex {
   handle: FileSystemDirectoryHandle;
   index:
     | {
-        fuse: Fuse<CardDocument>;
+        fuse: Fuse<Card>;
         size: number;
       }
     | undefined;

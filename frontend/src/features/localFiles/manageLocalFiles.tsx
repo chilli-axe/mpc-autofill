@@ -1,3 +1,4 @@
+import styled from "@emotion/styled";
 import Fuse from "fuse.js";
 import { imageDimensionsFromData } from "image-dimensions";
 import { filetypemime } from "magic-bytes.js";
@@ -5,21 +6,21 @@ import React from "react";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import Row from "react-bootstrap/Row";
-import styled from "styled-components";
 
 import { MakePlayingCards, MakePlayingCardsURL } from "@/common/constants";
+import { CardType as CardTypeSchema, SourceType } from "@/common/schema_types";
 import {
   CardDocument,
   CardType,
   DirectoryIndex,
   useAppDispatch,
 } from "@/common/types";
+import { AutofillTable } from "@/components/AutofillTable";
 import { RightPaddedIcon } from "@/components/icon";
-import { AutofillTable } from "@/components/table";
-import { useProjectName } from "@/features/backend/backendSlice";
 import { useLocalFilesContext } from "@/features/localFiles/localFilesContext";
-import { showModal } from "@/features/modals/modalsSlice";
-import { setNotification } from "@/features/toasts/toastsSlice";
+import { useProjectName } from "@/store/slices/backendSlice";
+import { showModal } from "@/store/slices/modalsSlice";
+import { setNotification } from "@/store/slices/toastsSlice";
 
 interface ManageLocalFilesModalProps {
   show: boolean;
@@ -53,10 +54,10 @@ async function listAllFilesAndDirs(
         const dimensions = imageDimensionsFromData(data);
         const height = dimensions?.height ?? 0;
         const cardType: CardType = dirHandle.name.startsWith("Cardback")
-          ? "CARDBACK"
+          ? CardTypeSchema.Cardback
           : dirHandle.name.startsWith("Token")
-          ? "TOKEN"
-          : "CARD";
+          ? CardTypeSchema.Token
+          : CardTypeSchema.Card;
         const url = URL.createObjectURL(file);
         // TODO: when we reindex or remove directories, we need to release these: URL.revokeObjectURL(objectURL)
 
@@ -65,23 +66,24 @@ async function listAllFilesAndDirs(
 
         const cardDocument: CardDocument = {
           identifier: name, // TODO: how do we guarantee uniqueness across nested directories?
-          card_type: cardType,
+          cardType: cardType,
           name: name,
           priority: 0,
-          date: file.lastModified.toString(), // TODO
+          dateCreated: new Date(file.lastModified).toLocaleDateString(), // TODO
+          dateModified: new Date(file.lastModified).toLocaleDateString(),
           source: dirHandle.name,
-          source_id: -1, // TODO: make this nullable
-          source_name: dirHandle.name, // TODO: relative path
-          source_verbose: dirHandle.name, // TODO: relative path
-          source_type: "Local File",
-          source_external_link: null,
+          sourceId: -1, // TODO: make this nullable
+          sourceName: dirHandle.name, // TODO: relative path
+          sourceVerbose: dirHandle.name, // TODO: relative path
+          sourceType: SourceType.LocalFile,
+          sourceExternalLink: undefined,
           dpi: dpi,
           searchq: name,
           extension: "", // TODO: just do the naive thing i suppose!
-          download_link: "", // TODO: should be null
+          downloadLink: "", // TODO: should be null
           size: size,
-          small_thumbnail_url: url,
-          medium_thumbnail_url: url,
+          smallThumbnailUrl: url,
+          mediumThumbnailUrl: url,
           language: "English",
           tags: [],
         };
@@ -130,7 +132,7 @@ export function ManageLocalFilesModal({
     try {
       // @ts-ignore
       const handle = await window.showDirectoryPicker();
-      const newDirectoryIndex = await indexDirectory(handle);
+      const newDirectoryIndex = await indexDirectory(handle); // TODO: should we show a spinner while indexing?
       setDirectoryIndex(newDirectoryIndex);
     } catch {
       // TODO: catch specific errors from `showDirectoryPicker`

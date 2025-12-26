@@ -30,7 +30,7 @@ const typePrefix = "cardDocuments/fetchCardDocuments";
 export const getCardDocumentRequestPromiseChain = async (
   identifiersToSearch: Array<string>,
   backendURL: string | null
-) => {
+): Promise<CardDocuments> => {
   if (identifiersToSearch.length > 0 && backendURL != null) {
     // this block of code looks a bit arcane.
     // we're dynamically constructing a promise chain according to the number of requests we need to make
@@ -52,6 +52,8 @@ export const getCardDocumentRequestPromiseChain = async (
         return { ...previousValue, ...cards };
       });
     }, Promise.resolve({}));
+  } else {
+    return {};
   }
 };
 

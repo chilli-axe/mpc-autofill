@@ -131,7 +131,7 @@ export function CardDetailedViewModal({
                 uniformWidth={false}
                 columnLabels={true}
               />
-              {cardDocument.source_type === "Google Drive" && (
+              {cardDocument.sourceType === "Google Drive" && (
                 <div className="d-grid gap-0">
                   <Button
                     variant="primary"

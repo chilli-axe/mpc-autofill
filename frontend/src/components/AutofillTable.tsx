@@ -82,7 +82,6 @@ export function AutofillTable({
                   key={`autofill-table-header-${headerIndex}`}
                   scope="col"
                   $cols={uniformWidth ? headers.length : undefined}
-                  $centred={centred}
                   $alignment={
                     Array.isArray(alignment)
                       ? alignment[headerIndex]
