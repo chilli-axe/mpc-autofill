@@ -93,6 +93,12 @@ export const searchResultsSlice = createAppSlice({
     clearSearchResults: (state) => {
       state.searchResults = {};
     },
+    setDirectoryHandle: (state, action) => {
+      state.directoryHandle = action.payload;
+    },
+    clearDirectoryHandle: (state) => {
+      state.directoryHandle = undefined;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -114,8 +120,12 @@ export const searchResultsSlice = createAppSlice({
   },
 });
 
-export const { addSearchResults, clearSearchResults } =
-  searchResultsSlice.actions;
+export const {
+  addSearchResults,
+  clearSearchResults,
+  setDirectoryHandle,
+  clearDirectoryHandle,
+} = searchResultsSlice.actions;
 
 export default searchResultsSlice.reducer;
 
