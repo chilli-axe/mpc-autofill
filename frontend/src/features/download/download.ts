@@ -29,6 +29,7 @@ export const downloadFile = async (
   fileName: string,
   localFilesService: LocalFilesService
 ) => {
+  const fileContentsIsURL = fileContents instanceof URL;
   if (localFilesService.getDirectoryHandle() !== undefined) {
     const fileHandle = await localFilesService
       .getDirectoryHandle()!
@@ -36,10 +37,17 @@ export const downloadFile = async (
         create: true,
       });
     const writable = await fileHandle.createWritable();
-    await writable.write(fileContents);
+    // TODO: handle URL here
+    if (fileContentsIsURL) {
+      await fetch(fileContents.href)
+        .then((response) => response.blob())
+        .then((blob) => writable.write(blob));
+    } else {
+      await writable.write(fileContents);
+    }
     await writable.close();
   } else {
-    saveAs(fileContents, fileName);
+    saveAs(fileContentsIsURL ? fileContents.href : fileContents, fileName);
   }
 };
 

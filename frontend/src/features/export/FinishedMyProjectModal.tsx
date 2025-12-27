@@ -10,7 +10,10 @@ import { MakePlayingCards, MakePlayingCardsURL } from "@/common/constants";
 import { useAppDispatch, useAppSelector } from "@/common/types";
 import { Coffee } from "@/components/Coffee";
 import { RightPaddedIcon } from "@/components/icon";
+import { downloadFile, useDoFileDownload } from "@/features/download/download";
 import { useDownloadXML } from "@/features/download/downloadXML";
+import { useLocalFilesContext } from "@/features/localFiles/localFilesContext";
+import { LocalFilesService } from "@/features/localFiles/localFilesService";
 import { useProjectName } from "@/store/slices/backendSlice";
 import { showModal } from "@/store/slices/modalsSlice";
 import { selectIsProjectEmpty } from "@/store/slices/projectSlice";
@@ -78,6 +81,29 @@ const DownloadButtonLink = styled.a`
   }
 `;
 
+async function downloadDesktopTool(
+  url: string,
+  fileName: string,
+  localFilesService: LocalFilesService
+) {
+  await downloadFile(url, fileName, localFilesService);
+  return true;
+}
+
+export function useDownloadDesktopTool() {
+  const doFileDownload = useDoFileDownload();
+  const localFilesService = useLocalFilesContext();
+  return (url: string, fileName: string) =>
+    Promise.resolve(
+      doFileDownload(
+        "desktop-tool",
+        fileName,
+        (): Promise<boolean> =>
+          downloadDesktopTool(url, fileName, localFilesService)
+      )
+    );
+}
+
 function ProjectDownload() {
   const downloadXML = useDownloadXML();
   const projectName = useProjectName();
@@ -120,10 +146,15 @@ function PlatformDownload({
   icon: string;
 }) {
   const assetURL = `https://github.com/chilli-axe/mpc-autofill/releases/latest/download/autofill-${downloadURLSuffix}`;
+  const downloadDesktopTool = useDownloadDesktopTool();
   return (
     <>
       <DownloadButton>
-        <DownloadButtonLink href={assetURL} target="_blank">
+        <DownloadButtonLink
+          onClick={() =>
+            downloadDesktopTool(new URL(assetURL), downloadURLSuffix)
+          }
+        >
           <h1 className={`bi bi-${icon}`}></h1>
           <h4>{platformName}</h4>
         </DownloadButtonLink>
