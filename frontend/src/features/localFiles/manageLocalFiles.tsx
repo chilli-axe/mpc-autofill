@@ -5,7 +5,7 @@ import Modal from "react-bootstrap/Modal";
 import Row from "react-bootstrap/Row";
 
 import { MakePlayingCards, MakePlayingCardsURL } from "@/common/constants";
-import { useAppDispatch, useAppSelector } from "@/common/types";
+import { useAppDispatch } from "@/common/types";
 import { AutofillTable } from "@/components/AutofillTable";
 import { RightPaddedIcon } from "@/components/icon";
 import { useProjectName } from "@/store/slices/backendSlice";
@@ -32,8 +32,6 @@ export function ManageLocalFilesModal({
 }: ManageLocalFilesModalProps) {
   const localFilesService = useLocalFilesContext();
 
-  console.log("localFilesService", localFilesService);
-
   const dispatch = useAppDispatch();
   const projectName = useProjectName();
 
@@ -42,6 +40,7 @@ export function ManageLocalFilesModal({
       // @ts-ignore
       const handle = await window.showDirectoryPicker({ mode: "readwrite" });
       localFilesService.setDirectoryHandle(handle);
+      await localFilesService.indexDirectory(dispatch);
       // dispatch(setDirectoryHandle(handle));
     } catch (e) {
       // TODO: catch specific errors from `showDirectoryPicker`
