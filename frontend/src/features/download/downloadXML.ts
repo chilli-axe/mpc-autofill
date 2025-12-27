@@ -4,7 +4,6 @@
  * through the desktop tool CLI.
  */
 
-import { saveAs } from "file-saver";
 import formatXML from "xml-formatter";
 
 import { Back, Front, ReversedCardTypePrefixes } from "@/common/constants";
@@ -15,7 +14,7 @@ import {
   SlotProjectMembers,
 } from "@/common/types";
 import { bracket } from "@/common/utils";
-import { useDoFileDownload } from "@/features/download/download";
+import { downloadFile, useDoFileDownload } from "@/features/download/download";
 import { selectFinishSettings } from "@/store/slices/finishSettingsSlice";
 import {
   selectProjectMembers,
@@ -74,7 +73,7 @@ function createCardElement(
   const cardElement = doc.createElement("card");
 
   const identifierElement = doc.createElement("id");
-  identifierElement.appendChild(doc.createTextNode(identifier));
+  identifierElement.appendChild(doc.createTextNode(identifier)); // TODO: include relative path to file
   cardElement.appendChild(identifierElement);
 
   const slotsElement = doc.createElement("slots");
@@ -202,9 +201,10 @@ export function generateXML(
 
 async function downloadXML(state: RootState) {
   const generatedXML = selectGeneratedXML(state);
-  saveAs(
+  await downloadFile(
     new Blob([generatedXML], { type: "text/xml;charset=utf-8" }),
-    "cards.xml"
+    "cards.xml",
+    state.searchResults.directoryHandle
   );
   return true;
 }

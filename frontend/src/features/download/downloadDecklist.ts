@@ -3,8 +3,6 @@
  * suitable for uploading to deckbuilding websites or sending to a friend.
  */
 
-import { saveAs } from "file-saver";
-
 import { Back, Card, FaceSeparator, Front } from "@/common/constants";
 import { stripTextInParentheses } from "@/common/processing";
 import {
@@ -13,7 +11,7 @@ import {
   SlotProjectMembers,
   useAppStore,
 } from "@/common/types";
-import { useDoFileDownload } from "@/features/download/download";
+import { downloadFile, useDoFileDownload } from "@/features/download/download";
 import { selectProjectMembers } from "@/store/slices/projectSlice";
 import { RootState } from "@/store/store";
 
@@ -109,9 +107,10 @@ const selectGeneratedDecklist = (state: RootState): string => {
 
 async function downloadDecklist(state: RootState) {
   const decklist = selectGeneratedDecklist(state);
-  saveAs(
+  await downloadFile(
     new Blob([decklist], { type: "text/plain;charset=utf-8" }),
-    "decklist.txt" // TODO: use project name here when we eventually track that
+    "decklist.txt", // TODO: use project name here when we eventually track that
+    state.searchResults.directoryHandle
   );
   return true;
 }

@@ -1,4 +1,5 @@
 import { Queue } from "async-await-queue";
+import { saveAs } from "file-saver";
 import { createContext, useContext } from "react";
 
 import { FileDownloadType, useAppDispatch } from "@/common/types";
@@ -21,6 +22,23 @@ export function useDownloadContext(): DownloadContext {
   }
   return context;
 }
+
+export const downloadFile = async (
+  fileContents: any,
+  fileName: string,
+  directoryHandle?: FileSystemDirectoryHandle
+) => {
+  if (directoryHandle !== undefined) {
+    const fileHandle = await directoryHandle.getFileHandle(fileName, {
+      create: true,
+    });
+    const writable = await fileHandle.createWritable();
+    await writable.write(fileContents);
+    await writable.close();
+  } else {
+    saveAs(fileContents, fileName);
+  }
+};
 
 /**
  * This hook returns a function you can call to wrap file downloading functions.
