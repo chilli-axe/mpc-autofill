@@ -95,6 +95,7 @@ export default cardbackSlice.reducer;
 
 const defaultEmptyCardbacks: Array<string> = [];
 export const selectCardbacks = createSelector(
+  // TODO: produces a warning in console for returning input w/ no modifications
   (state: RootState) => state.cardbacks.cardbacks,
   (cardbacks) => cardbacks ?? defaultEmptyCardbacks
 );
