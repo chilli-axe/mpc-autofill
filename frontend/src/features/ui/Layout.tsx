@@ -20,10 +20,6 @@ import {
   DownloadContext,
   DownloadContextProvider,
 } from "@/features/download/download";
-import {
-  LocalFilesContext,
-  LocalFilesContextProvider,
-} from "@/features/localFiles/localFilesContext";
 import { Modals } from "@/features/modals/Modals";
 import { Toasts } from "@/features/toasts/Toasts";
 import ProjectNavbar from "@/features/ui/Navbar";
@@ -113,21 +109,16 @@ export function ProjectContainer({
 export function LayoutWithoutReduxProvider({ children }: PropsWithChildren) {
   const consent = getGoogleAnalyticsConsent();
   const downloadContext: DownloadContext = new Queue(10, 50);
-  const localFilesContext: LocalFilesContext = useState<DirectoryIndex | null>(
-    null
-  );
   return (
     <DownloadContextProvider value={downloadContext}>
-      <LocalFilesContextProvider value={localFilesContext}>
-        {consent === true && (
-          <GoogleAnalytics trackPageViews gaMeasurementId="G-JV8WV3FQML" />
-        )}
-        <Toasts />
-        <Modals />
-        <BackendSetter />
-        <ProjectNavbar />
-        {children}
-      </LocalFilesContextProvider>
+      {consent === true && (
+        <GoogleAnalytics trackPageViews gaMeasurementId="G-JV8WV3FQML" />
+      )}
+      <Toasts />
+      <Modals />
+      <BackendSetter />
+      <ProjectNavbar />
+      {children}
     </DownloadContextProvider>
   );
 }

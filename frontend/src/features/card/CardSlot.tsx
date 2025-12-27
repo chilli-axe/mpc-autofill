@@ -18,7 +18,6 @@ import { wrapIndex } from "@/common/utils";
 import { MemoizedCard } from "@/features/card/Card";
 import { CardFooter } from "@/features/card/CardFooter";
 import { GridSelectorModal } from "@/features/gridSelector/GridSelectorModal";
-import { useLocalFilesContext } from "@/features/localFiles/localFilesContext";
 import { selectCardDocumentByIdentifier } from "@/store/slices/cardDocumentsSlice";
 import { showChangeQueryModal } from "@/store/slices/modalsSlice";
 import {
@@ -114,12 +113,6 @@ export function CardSlot({ searchQuery, face, slot }: CardSlotProps) {
   const slotsToModify: Array<[Faces, number]> = modifySelectedSlots
     ? selectedSlots
     : [[face, slot]];
-
-  const [directoryIndex, _] = useLocalFilesContext();
-  const localResults =
-    directoryIndex?.index && searchQuery?.query
-      ? directoryIndex?.index.fuse.search(searchQuery.query)
-      : [];
 
   //# endregion
 
@@ -229,12 +222,8 @@ export function CardSlot({ searchQuery, face, slot }: CardSlotProps) {
   //# endregion
 
   // TODO: this is just a temporary hack for releasing some dopamine before i sign off for the night. remove later
-  const maybeCardDocument = useAppSelector(
-    (state: RootState) =>
-      localResults.length > 0
-        ? localResults[0].item
-        : selectCardDocumentByIdentifier(state, selectedImage)
-    // selectCardDocumentByIdentifier(state, selectedImage)
+  const maybeCardDocument = useAppSelector((state: RootState) =>
+    selectCardDocumentByIdentifier(state, selectedImage)
   );
   const maybePreviousCardDocument = useAppSelector((state: RootState) =>
     selectCardDocumentByIdentifier(state, previousImage)
