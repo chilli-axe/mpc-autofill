@@ -27,7 +27,7 @@
     "bootstrap-icons": "^1.10.3",
     "bootswatch": "^5.2.3",
     "file-saver": "^2.0.5",
-    "image-dimensions": "^2.5.0",
+    "image-size": "^2.0.2",
     "js-cookie": "^3.0.1",
     "lil-csv": "^1.4.5",
     "magic-bytes.js": "^1.12.1",

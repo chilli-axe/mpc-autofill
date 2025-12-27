@@ -1,5 +1,5 @@
 import { create, insertMultiple } from "@orama/orama";
-import { imageDimensionsFromData } from "image-dimensions";
+import { imageSize } from "image-size";
 import { filetypeextension, filetypemime } from "magic-bytes.js";
 
 import { CardType as CardTypeSchema } from "@/common/schema_types";
@@ -29,8 +29,8 @@ async function listAllFilesAndDirs(
         mimeType.startsWith("image/")
       );
       if (isImage) {
-        const dimensions = imageDimensionsFromData(data);
-        const height = dimensions?.height ?? 0;
+        const dimensions = imageSize(data);
+        const height = dimensions.height ?? 0;
         const cardType: CardType = dirHandle.name.startsWith("Cardback")
           ? CardTypeSchema.Cardback
           : dirHandle.name.startsWith("Token")
