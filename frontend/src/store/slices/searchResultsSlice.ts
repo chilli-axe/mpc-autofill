@@ -2,16 +2,26 @@
  * State management for search results - what images are returned for what search queries.
  */
 
+import { Orama, search } from "@orama/orama";
 import { createSelector } from "@reduxjs/toolkit";
 
 import { Back, SearchResultsEndpointPageSize } from "@/common/constants";
 import {
+  CardType as CardTypeSchema,
+  SearchSettings,
+  SourceType,
+} from "@/common/schema_types";
+import {
+  CardDocument,
   CardType,
   createAppAsyncThunk,
   createAppSlice,
+  DirectoryIndex,
   Faces,
+  OramaCardDocument,
   SearchQuery,
   SearchResults,
+  SearchResultsForQuery,
   SearchResultsState,
 } from "@/common/types";
 import { APIEditorSearch } from "@/store/api";
@@ -28,7 +38,7 @@ const typePrefix = "searchResults/fetchCards";
 
 export const fetchSearchResults = createAppAsyncThunk(
   typePrefix,
-  async (arg, { getState }) => {
+  async (arg: Orama<OramaCardDocument> | undefined, { getState, dispatch }) => {
     const state = getState();
 
     const queriesToSearch = selectQueriesWithoutSearchResults(state);
@@ -59,9 +69,12 @@ export const fetchSearchResults = createAppAsyncThunk(
   }
 );
 
-export async function fetchSearchResultsAndReportError(dispatch: AppDispatch) {
+export async function fetchSearchResultsAndReportError(
+  dispatch: AppDispatch,
+  oramaDb: Orama<OramaCardDocument> | undefined
+) {
   try {
-    await dispatch(fetchSearchResults()).unwrap();
+    await dispatch(fetchSearchResults(oramaDb)).unwrap();
   } catch (error: any) {
     dispatch(
       setNotification([
