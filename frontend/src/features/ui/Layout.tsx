@@ -15,11 +15,13 @@ import {
   setLocalStorageBackendURL,
 } from "@/common/cookies";
 import { standardiseURL } from "@/common/processing";
-import { DirectoryIndex, useAppDispatch, useAppSelector } from "@/common/types";
+import { useAppDispatch, useAppSelector } from "@/common/types";
 import {
   DownloadContext,
   DownloadContextProvider,
 } from "@/features/download/download";
+import { LocalFilesContextProvider } from "@/features/localFiles/localFilesContext";
+import { localFilesService } from "@/features/localFiles/localFilesService";
 import { Modals } from "@/features/modals/Modals";
 import { Toasts } from "@/features/toasts/Toasts";
 import ProjectNavbar from "@/features/ui/Navbar";
@@ -111,14 +113,16 @@ export function LayoutWithoutReduxProvider({ children }: PropsWithChildren) {
   const downloadContext: DownloadContext = new Queue(10, 50);
   return (
     <DownloadContextProvider value={downloadContext}>
-      {consent === true && (
-        <GoogleAnalytics trackPageViews gaMeasurementId="G-JV8WV3FQML" />
-      )}
-      <Toasts />
-      <Modals />
-      <BackendSetter />
-      <ProjectNavbar />
-      {children}
+      <LocalFilesContextProvider value={localFilesService}>
+        {consent === true && (
+          <GoogleAnalytics trackPageViews gaMeasurementId="G-JV8WV3FQML" />
+        )}
+        <Toasts />
+        <Modals />
+        <BackendSetter />
+        <ProjectNavbar />
+        {children}
+      </LocalFilesContextProvider>
     </DownloadContextProvider>
   );
 }

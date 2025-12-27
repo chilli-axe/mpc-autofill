@@ -10,9 +10,9 @@ import { AutofillTable } from "@/components/AutofillTable";
 import { RightPaddedIcon } from "@/components/icon";
 import { useProjectName } from "@/store/slices/backendSlice";
 import { showModal } from "@/store/slices/modalsSlice";
-import { setDirectoryHandle } from "@/store/slices/searchResultsSlice";
 import { setNotification } from "@/store/slices/toastsSlice";
-import { RootState } from "@/store/store";
+
+import { useLocalFilesContext } from "./localFilesContext";
 
 interface ManageLocalFilesModalProps {
   show: boolean;
@@ -30,21 +30,23 @@ export function ManageLocalFilesModal({
   show,
   handleClose,
 }: ManageLocalFilesModalProps) {
+  const localFilesService = useLocalFilesContext();
+
+  console.log("localFilesService", localFilesService);
+
   const dispatch = useAppDispatch();
   const projectName = useProjectName();
-
-  const directoryHandle = useAppSelector(
-    (state: RootState) => state.searchResults.directoryHandle
-  );
 
   const chooseDirectory = async () => {
     try {
       // @ts-ignore
       const handle = await window.showDirectoryPicker({ mode: "readwrite" });
-      dispatch(setDirectoryHandle(handle));
-    } catch {
+      localFilesService.setDirectoryHandle(handle);
+      // dispatch(setDirectoryHandle(handle));
+    } catch (e) {
       // TODO: catch specific errors from `showDirectoryPicker`
       // RIP firefox :(
+      console.log(e);
       dispatch(
         setNotification([
           Math.random().toString(),
@@ -84,14 +86,16 @@ export function ManageLocalFilesModal({
           </Button>
         </Row>
 
-        {directoryHandle !== undefined && (
+        {localFilesService.getDirectoryHandle() !== undefined && (
           <>
             <br />
             <AutofillTable
               headers={["Directory", "Indexed Cards", "Remove"]}
               data={[
                 [
-                  <code key={"silly1"}>{directoryHandle.name}</code>,
+                  <code key={"silly1"}>
+                    {localFilesService.getDirectoryHandle()!.name}
+                  </code>,
                   0,
                   <TableButton key="" className="bi bi-x-lg" />,
                   // directoryIndex.index?.size,

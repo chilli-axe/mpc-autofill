@@ -101,7 +101,6 @@ export interface SearchResults {
 
 export interface SearchResultsState extends ThunkStateBase {
   searchResults: SearchResults;
-  directoryHandle?: FileSystemDirectoryHandle; // TODO: this is DEFINITELY the wrong place to put this. Move into its own slice!
 }
 
 export interface BackendState {

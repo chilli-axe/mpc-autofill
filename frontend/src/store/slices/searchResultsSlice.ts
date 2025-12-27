@@ -24,6 +24,7 @@ import {
   SearchResultsForQuery,
   SearchResultsState,
 } from "@/common/types";
+import { LocalFilesService } from "@/features/localFiles/localFilesService";
 import { APIEditorSearch } from "@/store/api";
 import { selectBackendURL } from "@/store/slices/backendSlice";
 import { selectCardbacks } from "@/store/slices/cardbackSlice";
@@ -101,8 +102,14 @@ const search2 = (
 
 export const fetchSearchResults = createAppAsyncThunk(
   typePrefix,
-  async (arg: Orama<OramaCardDocument> | undefined, { getState, dispatch }) => {
+  async (
+    arg: Orama<OramaCardDocument> | undefined,
+    { getState, dispatch, extra }
+  ) => {
     const state = getState();
+    const { localFilesService } = extra as {
+      localFilesService: LocalFilesService;
+    };
 
     const queriesToSearch = selectQueriesWithoutSearchResults(state); // TODO: is there an edge case here when a local directory is added?
 
@@ -128,7 +135,7 @@ export const fetchSearchResults = createAppAsyncThunk(
         });
       }, Promise.resolve({}));
       console.log("fetchSearchResults: remoteResults", remoteResults);
-      if (state.searchResults.directoryHandle) {
+      if (localFilesService.directoryHandle) {
         if (arg) {
           const localResults: SearchResults = {};
           for (const searchQuery of queriesToSearch) {
@@ -206,12 +213,6 @@ export const searchResultsSlice = createAppSlice({
     clearSearchResults: (state) => {
       state.searchResults = {};
     },
-    setDirectoryHandle: (state, action) => {
-      state.directoryHandle = action.payload;
-    },
-    clearDirectoryHandle: (state) => {
-      state.directoryHandle = undefined;
-    },
   },
   extraReducers: (builder) => {
     builder
@@ -233,12 +234,8 @@ export const searchResultsSlice = createAppSlice({
   },
 });
 
-export const {
-  addSearchResults,
-  clearSearchResults,
-  setDirectoryHandle,
-  clearDirectoryHandle,
-} = searchResultsSlice.actions;
+export const { addSearchResults, clearSearchResults } =
+  searchResultsSlice.actions;
 
 export default searchResultsSlice.reducer;
 

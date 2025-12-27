@@ -12,6 +12,8 @@ import {
   useAppStore,
 } from "@/common/types";
 import { downloadFile, useDoFileDownload } from "@/features/download/download";
+import { useLocalFilesContext } from "@/features/localFiles/localFilesContext";
+import { LocalFilesService } from "@/features/localFiles/localFilesService";
 import { selectProjectMembers } from "@/store/slices/projectSlice";
 import { RootState } from "@/store/store";
 
@@ -105,12 +107,15 @@ const selectGeneratedDecklist = (state: RootState): string => {
   );
 };
 
-async function downloadDecklist(state: RootState) {
+async function downloadDecklist(
+  state: RootState,
+  localFilesService: LocalFilesService
+) {
   const decklist = selectGeneratedDecklist(state);
   await downloadFile(
     new Blob([decklist], { type: "text/plain;charset=utf-8" }),
     "decklist.txt", // TODO: use project name here when we eventually track that
-    state.searchResults.directoryHandle
+    localFilesService
   );
   return true;
 }
@@ -118,12 +123,14 @@ async function downloadDecklist(state: RootState) {
 export function useDownloadDecklist() {
   const store = useAppStore();
   const doFileDownload = useDoFileDownload();
+  const localFilesService = useLocalFilesContext();
   return () =>
     Promise.resolve(
       doFileDownload(
         "text",
         "decklist.txt",
-        (): Promise<boolean> => downloadDecklist(store.getState())
+        (): Promise<boolean> =>
+          downloadDecklist(store.getState(), localFilesService)
       )
     );
 }

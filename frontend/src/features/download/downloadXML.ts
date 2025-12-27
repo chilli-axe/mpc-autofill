@@ -15,6 +15,8 @@ import {
 } from "@/common/types";
 import { bracket } from "@/common/utils";
 import { downloadFile, useDoFileDownload } from "@/features/download/download";
+import { useLocalFilesContext } from "@/features/localFiles/localFilesContext";
+import { LocalFilesService } from "@/features/localFiles/localFilesService";
 import { selectFinishSettings } from "@/store/slices/finishSettingsSlice";
 import {
   selectProjectMembers,
@@ -73,7 +75,7 @@ function createCardElement(
   const cardElement = doc.createElement("card");
 
   const identifierElement = doc.createElement("id");
-  identifierElement.appendChild(doc.createTextNode(identifier)); // TODO: include relative path to file
+  identifierElement.appendChild(doc.createTextNode(identifier));
   cardElement.appendChild(identifierElement);
 
   const slotsElement = doc.createElement("slots");
@@ -199,12 +201,15 @@ export function generateXML(
   return formatXML(xml, { collapseContent: true });
 }
 
-async function downloadXML(state: RootState) {
+async function downloadXML(
+  state: RootState,
+  localFilesService: LocalFilesService
+) {
   const generatedXML = selectGeneratedXML(state);
   await downloadFile(
     new Blob([generatedXML], { type: "text/xml;charset=utf-8" }),
     "cards.xml",
-    state.searchResults.directoryHandle
+    localFilesService
   );
   return true;
 }
@@ -212,12 +217,13 @@ async function downloadXML(state: RootState) {
 export function useDownloadXML() {
   const store = useAppStore();
   const doFileDownload = useDoFileDownload();
+  const localFilesService = useLocalFilesContext();
   return () =>
     Promise.resolve(
       doFileDownload(
         "xml",
         "cards.xml",
-        (): Promise<boolean> => downloadXML(store.getState())
+        (): Promise<boolean> => downloadXML(store.getState(), localFilesService)
       )
     );
 }

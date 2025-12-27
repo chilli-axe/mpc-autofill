@@ -6,6 +6,7 @@ import {
   Tuple,
 } from "@reduxjs/toolkit";
 
+import { localFilesService } from "@/features/localFiles/localFilesService";
 import { api } from "@/store/api";
 import { listenerMiddleware } from "@/store/listenerMiddleware";
 import backendReducer, {
@@ -88,7 +89,11 @@ export const setupStore = (preloadedState?: Partial<RootState>) => {
     reducer: rootReducer,
     preloadedState,
     middleware: (getDefaultMiddleware) =>
-      getDefaultMiddleware()
+      getDefaultMiddleware({
+        thunk: {
+          extraArgument: { localFilesService },
+        },
+      })
         .prepend(listenerMiddleware.middleware)
         .concat(new Tuple(api.middleware, rtkQueryErrorLogger)),
   });

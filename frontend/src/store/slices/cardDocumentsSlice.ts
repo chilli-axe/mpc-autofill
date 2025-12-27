@@ -25,6 +25,7 @@ import {
   useAppSelector,
 } from "@/common/types";
 import { CardDocuments } from "@/common/types";
+import { LocalFilesService } from "@/features/localFiles/localFilesService";
 import { APIGetCards } from "@/store/api";
 import { fetchCardbacksAndReportError } from "@/store/slices/cardbackSlice";
 import {
@@ -204,8 +205,11 @@ const fetchCardDocuments = createAppAsyncThunk(
    * This function queries card documents (entire database rows) from the backend. It only queries cards which have
    * not yet been queried.
    */
-  async (arg, { dispatch, getState }) => {
-    const directoryHandle = getState().searchResults.directoryHandle;
+  async (arg, { dispatch, getState, extra }) => {
+    const { localFilesService } = extra as {
+      localFilesService: LocalFilesService;
+    };
+    const directoryHandle = localFilesService.getDirectoryHandle();
     const oramaDb =
       directoryHandle !== undefined
         ? (await indexDirectory(directoryHandle, dispatch)).index?.oramaDb

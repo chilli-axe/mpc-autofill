@@ -3,6 +3,7 @@ import { saveAs } from "file-saver";
 import { createContext, useContext } from "react";
 
 import { FileDownloadType, useAppDispatch } from "@/common/types";
+import { LocalFilesService } from "@/features/localFiles/localFilesService";
 import {
   enqueueDownload,
   startDownload,
@@ -26,12 +27,14 @@ export function useDownloadContext(): DownloadContext {
 export const downloadFile = async (
   fileContents: any,
   fileName: string,
-  directoryHandle?: FileSystemDirectoryHandle
+  localFilesService: LocalFilesService
 ) => {
-  if (directoryHandle !== undefined) {
-    const fileHandle = await directoryHandle.getFileHandle(fileName, {
-      create: true,
-    });
+  if (localFilesService.getDirectoryHandle() !== undefined) {
+    const fileHandle = await localFilesService
+      .getDirectoryHandle()!
+      .getFileHandle(fileName, {
+        create: true,
+      });
     const writable = await fileHandle.createWritable();
     await writable.write(fileContents);
     await writable.close();
