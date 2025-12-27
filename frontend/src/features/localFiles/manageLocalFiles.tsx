@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import React from "react";
+import React, { useReducer } from "react";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import Row from "react-bootstrap/Row";
@@ -31,6 +31,9 @@ export function ManageLocalFilesModal({
   handleClose,
 }: ManageLocalFilesModalProps) {
   const localFilesService = useLocalFilesContext();
+  const directoryHandle = localFilesService.getDirectoryHandle();
+  const directoryIndex = localFilesService.getDirectoryIndex();
+  const [_, forceUpdate] = useReducer((x) => x + 1, 0);
 
   const dispatch = useAppDispatch();
   const projectName = useProjectName();
@@ -41,7 +44,7 @@ export function ManageLocalFilesModal({
       const handle = await window.showDirectoryPicker({ mode: "readwrite" });
       localFilesService.setDirectoryHandle(handle);
       await localFilesService.indexDirectory(dispatch);
-      // dispatch(setDirectoryHandle(handle));
+      forceUpdate();
     } catch (e) {
       // TODO: catch specific errors from `showDirectoryPicker`
       // RIP firefox :(
@@ -54,6 +57,23 @@ export function ManageLocalFilesModal({
             message:
               "Your browser doesn't support opening local folders. Sorry about that!",
             level: "warning",
+          },
+        ])
+      );
+    }
+  };
+
+  const clearDirectoryChoice = async () => {
+    localFilesService.setDirectoryHandle(undefined);
+    forceUpdate();
+    if (directoryHandle !== undefined) {
+      dispatch(
+        setNotification([
+          Math.random().toString(),
+          {
+            name: `Removed ${directoryHandle.name}`,
+            message: null,
+            level: "info",
           },
         ])
       );
@@ -85,24 +105,20 @@ export function ManageLocalFilesModal({
           </Button>
         </Row>
 
-        {localFilesService.getDirectoryHandle() !== undefined && (
+        {directoryHandle !== undefined && (
           <>
             <br />
             <AutofillTable
               headers={["Directory", "Indexed Cards", "Remove"]}
               data={[
                 [
-                  <code key={"silly1"}>
-                    {localFilesService.getDirectoryHandle()!.name}
-                  </code>,
-                  0,
-                  <TableButton key="" className="bi bi-x-lg" />,
-                  // directoryIndex.index?.size,
-                  // <TableButton
-                  //   key={"silly2"}
-                  //   onClick={() => clearDirectoryChoice()}
-                  //   className="bi bi-x-lg"
-                  // />,
+                  <code key={"silly1"}>{directoryHandle.name}</code>,
+                  directoryIndex?.index?.size,
+                  <TableButton
+                    key={"silly2"}
+                    onClick={() => clearDirectoryChoice()}
+                    className="bi bi-x-lg"
+                  />,
                 ],
               ]}
               alignment={["left", "center", "center", "center"]}

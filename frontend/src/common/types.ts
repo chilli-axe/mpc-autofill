@@ -227,9 +227,7 @@ export type SourceRow = [number, boolean];
 export const OramaSchema = {
   id: "string" as SearchableType,
   name: "string" as SearchableType,
-  cardType: "string", // TODO: enum
-  // date_created: "string",  // TODO: :(
-  // date_modified: "string",  // TODO: :(
+  cardType: "enum",
   extension: "string",
   url: "string",
   language: "string",

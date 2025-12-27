@@ -2,26 +2,21 @@
  * State management for search results - what images are returned for what search queries.
  */
 
-import { Orama, search } from "@orama/orama";
+import { Orama } from "@orama/orama";
 import { createSelector } from "@reduxjs/toolkit";
 
 import { Back, SearchResultsEndpointPageSize } from "@/common/constants";
 import {
   CardType as CardTypeSchema,
   SearchSettings,
-  SourceType,
 } from "@/common/schema_types";
 import {
-  CardDocument,
   CardType,
   createAppAsyncThunk,
   createAppSlice,
-  DirectoryIndex,
   Faces,
   OramaCardDocument,
-  SearchQuery,
   SearchResults,
-  SearchResultsForQuery,
   SearchResultsState,
 } from "@/common/types";
 import { LocalFilesService } from "@/features/localFiles/localFilesService";
@@ -65,41 +60,6 @@ const mergeSearchResults = (
   return mergedResults;
 };
 
-const search2 = (
-  oramaDb: Orama<OramaCardDocument>,
-  searchSettings: SearchSettings,
-  query: string | undefined,
-  cardTypes: Array<CardType>
-): Array<string> => {
-  const includesTags = searchSettings.filterSettings.includesTags.length > 0;
-  const excludesTags = searchSettings.filterSettings.includesTags.length > 0;
-  const hits = search(oramaDb, {
-    term: query,
-    properties: ["name"],
-    exact: !searchSettings.searchTypeSettings.fuzzySearch,
-    where: {
-      ...(includesTags
-        ? {
-            tags: {
-              containsAny: searchSettings.filterSettings.includesTags,
-              // ...(excludesTags ? {nin: searchSettings.filterSettings.excludesTags} : {}),
-            },
-          }
-        : {}),
-      dpi: {
-        between: [
-          searchSettings.filterSettings.minimumDPI,
-          searchSettings.filterSettings.maximumDPI,
-        ],
-      },
-      // size: {
-      //   lte: searchSettings.filterSettings.maximumSize
-      // }
-    },
-  }).hits as Array<OramaCardDocument>;
-  return hits.map((cardDocument) => cardDocument.id);
-};
-
 export const fetchSearchResults = createAppAsyncThunk(
   typePrefix,
   async (
@@ -134,39 +94,14 @@ export const fetchSearchResults = createAppAsyncThunk(
           return { ...previousValue, ...searchResults };
         });
       }, Promise.resolve({}));
-      console.log("fetchSearchResults: remoteResults", remoteResults);
       if (localFilesService.directoryHandle) {
-        if (arg) {
-          const localResults: SearchResults = {};
-          for (const searchQuery of queriesToSearch) {
-            if (searchQuery.query) {
-              if (
-                !Object.prototype.hasOwnProperty.call(
-                  localResults,
-                  searchQuery.query
-                )
-              ) {
-                localResults[searchQuery.query] = {
-                  CARD: [],
-                  CARDBACK: [],
-                  TOKEN: [],
-                };
-              }
-
-              localResults[searchQuery.query][searchQuery.cardType] = search2(
-                arg,
-                searchSettings,
-                searchQuery.query,
-                [searchQuery.cardType]
-              );
-            }
-          }
-          console.log("fetchSearchResults: localResults", localResults);
-          // return localResults;
-          const mergedResults = mergeSearchResults(localResults, remoteResults);
-          console.log("fetchSearchResults: mergedResults", mergedResults);
-          return mergedResults;
-        }
+        const localResults = localFilesService.searchBig(
+          searchSettings,
+          queriesToSearch
+        );
+        const mergedResults = mergeSearchResults(localResults, remoteResults);
+        console.log("fetchSearchResults: mergedResults", mergedResults);
+        return mergedResults;
       }
       return remoteResults;
     } else {
