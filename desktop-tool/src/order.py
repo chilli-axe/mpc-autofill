@@ -76,7 +76,7 @@ class CardImage:
         image_directory = get_image_directory(working_directory=working_directory)
 
         if file_exists(self.drive_id):
-            self.file_path = self.drive_id
+            self.file_path = os.path.abspath(self.drive_id)
             self.name = os.path.basename(self.file_path)
             return
 

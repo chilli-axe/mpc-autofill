@@ -180,8 +180,8 @@ class AutofillDriver:
 
         wait_timeout_seconds = 30
         logger.debug("Waiting until MPC loading circle disappears...")
-        wait_elem = self.driver.find_element(by=By.ID, value="sysdiv_wait")
         try:
+            wait_elem = self.driver.find_element(by=By.ID, value="sysdiv_wait")
             WebDriverWait(self.driver, wait_timeout_seconds, poll_frequency=0.1).until(
                 invisibility_of_element(wait_elem)
             )
