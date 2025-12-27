@@ -37,7 +37,7 @@ export type {
   SupporterTier,
   Tag,
 } from "@/common/schema_types";
-import Fuse from "fuse.js";
+import { Orama, Schema, SearchableType } from "@orama/orama";
 
 export const useAppDispatch = useDispatch.withTypes<AppDispatch>();
 export const useAppSelector = useSelector.withTypes<RootState>();
@@ -228,8 +228,8 @@ export interface DirectoryIndex {
   handle: FileSystemDirectoryHandle;
   index:
     | {
-        fuse: Fuse<Card>;
-        size: number;
+        oramaDb: Orama<OramaCardDocument>;
+        size: number; // TODO: really necessary?
       }
     | undefined;
 }
