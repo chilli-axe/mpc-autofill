@@ -52,6 +52,13 @@ const OutlinedBSCardSubtitle = styled(BSCard.Subtitle)`
   }
 `;
 
+type ImageState =
+  | "loading-from-bucket"
+  | "loading-from-fallback"
+  | "loaded-from-bucket"
+  | "loaded-from-fallback"
+  | "errored";
+
 export function getImageKey(
   cardDocument: CardDocument,
   small: boolean
@@ -60,6 +67,41 @@ export function getImageKey(
     small ? "small" : "large"
   }-${cardDocument.sourceType?.toLowerCase().replace(" ", "_")}`;
 }
+
+const getImageSrc = (
+  cardDocument: CardDocument | null,
+  small: boolean,
+  imageState: ImageState
+): string | undefined => {
+  // attempt to load directly from bucket first
+  const imageBucketURL = process.env.NEXT_PUBLIC_IMAGE_BUCKET_URL;
+  // TODO: support other source types through CDN here
+  const imageBucketURLValid =
+    imageBucketURL != null && !!(cardDocument?.sourceType === "Google Drive");
+
+  const loadFromBucket =
+    imageBucketURLValid &&
+    (imageState === "loading-from-bucket" ||
+      imageState === "loaded-from-bucket");
+  const imageKey = cardDocument && getImageKey(cardDocument, small);
+  const thumbnailBucketURL = `${imageBucketURL}/${imageKey}`;
+
+  // if image is unavailable in bucket, fall back on loading from worker if possible
+  const imageWorkerURL = process.env.NEXT_PUBLIC_IMAGE_WORKER_URL;
+  const imageWorkerURLValid =
+    imageWorkerURL != null && !!(cardDocument?.sourceType === "Google Drive");
+
+  const smallThumbnailURL = imageWorkerURLValid
+    ? `${imageWorkerURL}/images/google_drive/small/${cardDocument?.identifier}.jpg`
+    : cardDocument?.smallThumbnailUrl;
+  const mediumThumbnailURL = imageWorkerURLValid
+    ? `${imageWorkerURL}/images/google_drive/large/${cardDocument?.identifier}.jpg`
+    : cardDocument?.mediumThumbnailUrl;
+
+  const thumbnailFallbackURL = small ? smallThumbnailURL : mediumThumbnailURL;
+  const imageSrc = loadFromBucket ? thumbnailBucketURL : thumbnailFallbackURL;
+  return imageSrc;
+};
 
 interface CardImageProps {
   maybeCardDocument: CardDocument | null;
@@ -82,13 +124,9 @@ function CardImage({
 
   //# region state
 
-  const [imageState, setImageState] = useState<
-    | "loading-from-bucket"
-    | "loading-from-fallback"
-    | "loaded-from-bucket"
-    | "loaded-from-fallback"
-    | "errored"
-  >("loading-from-bucket");
+  const [imageState, setImageState] = useState<ImageState>(
+    "loading-from-bucket"
+  );
   const image = useRef<HTMLImageElement>(null);
 
   //# endregion
@@ -138,34 +176,7 @@ function CardImage({
 
   //# region computed constants
 
-  // attempt to load directly from bucket first
-  const imageBucketURL = process.env.NEXT_PUBLIC_IMAGE_BUCKET_URL;
-  // TODO: support other source types through CDN here
-  const imageBucketURLValid =
-    imageBucketURL != null &&
-    !!(maybeCardDocument?.sourceType === "Google Drive");
-
-  const loadFromBucket =
-    imageBucketURLValid &&
-    (imageState === "loading-from-bucket" ||
-      imageState === "loaded-from-bucket");
-  const imageKey = maybeCardDocument && getImageKey(maybeCardDocument, small);
-  const thumbnailBucketURL = `${imageBucketURL}/${imageKey}`;
-
-  // if image is unavailable in bucket, fall back on loading from worker if possible
-  const imageWorkerURL = process.env.NEXT_PUBLIC_IMAGE_WORKER_URL;
-  const imageWorkerURLValid =
-    imageWorkerURL != null &&
-    !!(maybeCardDocument?.sourceType === "Google Drive");
-
-  const smallThumbnailURL = imageWorkerURLValid
-    ? `${imageWorkerURL}/images/google_drive/small/${maybeCardDocument?.identifier}.jpg`
-    : maybeCardDocument?.smallThumbnailUrl;
-  const mediumThumbnailURL = imageWorkerURLValid
-    ? `${imageWorkerURL}/images/google_drive/large/${maybeCardDocument?.identifier}.jpg`
-    : maybeCardDocument?.mediumThumbnailUrl;
-  const thumbnailFallbackURL = small ? smallThumbnailURL : mediumThumbnailURL;
-  const imageSrc = loadFromBucket ? thumbnailBucketURL : thumbnailFallbackURL;
+  const imageSrc = getImageSrc(maybeCardDocument, small, imageState);
 
   // if loading from fallback fails, display a 404 error image
   const errorImageSrc = small ? "/error_404.png" : "/error_404_med.png";
