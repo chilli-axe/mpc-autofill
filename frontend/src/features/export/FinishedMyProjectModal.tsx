@@ -82,18 +82,18 @@ const DownloadButtonLink = styled.a`
 `;
 
 async function downloadDesktopTool(
-  url: string,
+  url: URL,
   fileName: string,
   localFilesService: LocalFilesService
 ) {
-  await downloadFile(url, fileName, localFilesService);
+  await downloadFile(undefined, url, fileName, localFilesService);
   return true;
 }
 
 export function useDownloadDesktopTool() {
   const doFileDownload = useDoFileDownload();
   const localFilesService = useLocalFilesContext();
-  return (url: string, fileName: string) =>
+  return (url: URL, fileName: string) =>
     Promise.resolve(
       doFileDownload(
         "desktop-tool",
@@ -132,27 +132,32 @@ function ProjectDownload() {
   );
 }
 
+type Platform = "windows" | "macos-intel" | "macos-arm" | "linux";
+const FileNameByPlatform: { [platform in Platform]: string } = {
+  // TODO: can we remove this from our frontend code?
+  windows: "autofill-windows.exe",
+  "macos-intel": "autofill-macos-intel.command",
+  "macos-arm": "autofill-macos-arm.command",
+  linux: "autofill-linux.bin",
+};
+
 function PlatformDownload({
-  downloadURLSuffix,
+  platform,
   platformName,
   icon,
 }: {
-  downloadURLSuffix:
-    | "windows.exe"
-    | "macos-intel.command"
-    | "macos-arm.command"
-    | "linux.bin";
+  platform: Platform;
   platformName: string;
   icon: string;
 }) {
-  const assetURL = `https://github.com/chilli-axe/mpc-autofill/releases/latest/download/autofill-${downloadURLSuffix}`;
+  const assetURL = `https://download.mpcautofill.com/?platform=${platform}`;
   const downloadDesktopTool = useDownloadDesktopTool();
   return (
     <>
       <DownloadButton>
         <DownloadButtonLink
           onClick={() =>
-            downloadDesktopTool(new URL(assetURL), downloadURLSuffix)
+            downloadDesktopTool(new URL(assetURL), FileNameByPlatform[platform])
           }
         >
           <h1 className={`bi bi-${icon}`}></h1>
@@ -182,28 +187,28 @@ function DesktopToolDownload() {
         <Col sm={3}>
           <PlatformDownload
             platformName="Windows"
-            downloadURLSuffix="windows.exe"
+            platform="windows"
             icon="windows"
           />
         </Col>
         <Col sm={3}>
           <PlatformDownload
             platformName="macOS — Intel"
-            downloadURLSuffix="macos-intel.command"
+            platform="macos-intel"
             icon="apple"
           />
         </Col>
         <Col sm={3}>
           <PlatformDownload
             platformName="macOS — ARM"
-            downloadURLSuffix="macos-arm.command"
+            platform="macos-arm"
             icon="apple"
           />
         </Col>
         <Col sm={3}>
           <PlatformDownload
             platformName="Linux"
-            downloadURLSuffix="linux.bin"
+            platform="linux"
             icon="ubuntu"
           />
         </Col>

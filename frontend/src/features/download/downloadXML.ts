@@ -208,6 +208,7 @@ async function downloadXML(
   const generatedXML = selectGeneratedXML(state);
   await downloadFile(
     new Blob([generatedXML], { type: "text/xml;charset=utf-8" }),
+    undefined,
     "cards.xml",
     localFilesService
   );

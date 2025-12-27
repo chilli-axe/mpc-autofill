@@ -11,6 +11,8 @@ import {
 } from "@/store/slices/fileDownloadsSlice";
 import { setNotification } from "@/store/slices/toastsSlice";
 
+import { useLocalFilesContext } from "../localFiles/localFilesContext";
+
 export type DownloadContext = Queue<symbol>;
 
 const downloadContext = createContext<DownloadContext | undefined>(undefined);
@@ -25,12 +27,23 @@ export function useDownloadContext(): DownloadContext {
 }
 
 export const downloadFile = async (
-  fileContents: any,
+  fileContents: any | undefined,
+  fileURL: URL | undefined,
   fileName: string,
   localFilesService: LocalFilesService
 ) => {
-  const fileContentsIsURL = fileContents instanceof URL;
-  if (localFilesService.getDirectoryHandle() !== undefined) {
+  if (fileContents !== undefined && fileURL !== undefined) {
+    throw new Error("cannot specify fileContents and fileURL");
+  } else if (fileContents === undefined && fileURL === undefined) {
+    throw new Error("cannot specify neither fileContents nor fileURL");
+  }
+  const fetchedFileContents =
+    fileURL !== undefined
+      ? await fetch(fileURL.href).then((response) => response.blob())
+      : fileContents;
+
+  // const fileContentsIsURL = fileContents instanceof URL;
+  if (localFilesService.hasDirectoryHandle()) {
     const fileHandle = await localFilesService
       .getDirectoryHandle()!
       .getFileHandle(fileName, {
@@ -38,16 +51,18 @@ export const downloadFile = async (
       });
     const writable = await fileHandle.createWritable();
     // TODO: handle URL here
-    if (fileContentsIsURL) {
-      await fetch(fileContents.href)
-        .then((response) => response.blob())
-        .then((blob) => writable.write(blob));
-    } else {
-      await writable.write(fileContents);
-    }
+    await writable.write(fetchedFileContents);
+    // if (fileContentsIsURL) {
+    //   await fetch(fileContents.href)
+    //     .then((response) => response.blob())
+    //     .then((blob) => writable.write(blob));
+    // } else {
+    //   await writable.write(fileContents);
+    // }
     await writable.close();
   } else {
-    saveAs(fileContentsIsURL ? fileContents.href : fileContents, fileName);
+    // saveAs(fileContentsIsURL ? fileContents.href : fileContents, fileName);
+    saveAs(fetchedFileContents, fileName);
   }
 };
 
@@ -66,6 +81,7 @@ export function useDoFileDownload(): (
   callable: () => Promise<boolean>
 ) => Promise<void> {
   const queue = useDownloadContext();
+  const localFilesService = useLocalFilesContext();
   const dispatch = useAppDispatch();
   return (type, name, callable) => {
     const downloadId = Math.random().toString();
@@ -86,6 +102,19 @@ export function useDoFileDownload(): (
             id: downloadId,
             startedTimestamp: new Date().toString(),
           })
+        );
+        dispatch(
+          setNotification([
+            `download-${downloadId}-started`,
+            {
+              name: "Download Started",
+              message: `Started downloading ${name} to ${
+                localFilesService.getDirectoryHandle()?.name ??
+                "Downloads folder"
+              }...`,
+              level: "info",
+            },
+          ])
         );
         return await callable();
       })
@@ -110,6 +139,21 @@ export function useDoFileDownload(): (
             completedTimestamp: new Date().toString(),
           })
         );
+        if (isSuccess) {
+          dispatch(
+            setNotification([
+              `download-${downloadId}-finished`,
+              {
+                name: "Download Finished",
+                message: `Finished downloading ${name} to ${
+                  localFilesService.getDirectoryHandle()?.name ??
+                  "Downloads folder"
+                }!`,
+                level: "info",
+              },
+            ])
+          );
+        }
       })
       .finally(() => queue.end(jobHash));
   };

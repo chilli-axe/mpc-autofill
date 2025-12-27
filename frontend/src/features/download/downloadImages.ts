@@ -20,6 +20,7 @@ export function useDoImageDownload(): (
       if (data != null) {
         await downloadFile(
           base64StringToBlob(data),
+          undefined,
           `${cardDocument.name} (${cardDocument.identifier}).${cardDocument.extension}`,
           localFilesService
         );

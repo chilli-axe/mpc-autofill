@@ -114,6 +114,7 @@ async function downloadDecklist(
   const decklist = selectGeneratedDecklist(state);
   await downloadFile(
     new Blob([decklist], { type: "text/plain;charset=utf-8" }),
+    undefined,
     "decklist.txt", // TODO: use project name here when we eventually track that
     localFilesService
   );

@@ -42,7 +42,7 @@ const getOramaCardDocument = async (
     const dpi = 10 * Math.round((height * DPI_HEIGHT_RATIO) / 10);
 
     const oramaCardDocument: OramaCardDocument = {
-      id: file.name, // TODO: include full file path in id! this should flow through to generated XMLs.
+      id: `./${file.name}`, // TODO: recursively include full file path in id! this should flow through to generated XMLs.
       cardType: cardType,
       name: file.name,
       source: dirHandle.name,
@@ -114,6 +114,10 @@ export class LocalFilesService {
   constructor() {
     this.directoryHandle = undefined;
     this.directoryIndex = undefined;
+  }
+
+  hasDirectoryHandle(): boolean {
+    return this.directoryHandle !== undefined;
   }
 
   getDirectoryHandle(): FileSystemDirectoryHandle | undefined {
