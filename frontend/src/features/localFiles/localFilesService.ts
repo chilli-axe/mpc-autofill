@@ -3,6 +3,7 @@ import { search } from "@orama/orama";
 import { imageSize } from "image-size";
 import { filetypeextension, filetypemime } from "magic-bytes.js";
 
+import { removeFileExtension, toSearchable } from "@/common/processing";
 import {
   CardType as CardTypeSchema,
   SearchQuery,
@@ -19,9 +20,11 @@ import { setNotification } from "@/store/slices/toastsSlice";
 import { AppDispatch } from "@/store/store";
 
 const getOramaCardDocument = async (
-  file: File,
-  dirHandle: FileSystemDirectoryHandle
+  fileHandle: FileSystemFileHandle,
+  dirHandle: FileSystemDirectoryHandle,
+  absoluteParentDirHandle: FileSystemDirectoryHandle
 ): Promise<OramaCardDocument | null> => {
+  const file = await fileHandle.getFile();
   const size = file.size;
   const data = new Uint8Array(await file.arrayBuffer());
   const fileType = filetypemime(data);
@@ -41,10 +44,15 @@ const getOramaCardDocument = async (
     const DPI_HEIGHT_RATIO = 300 / 1110;
     const dpi = 10 * Math.round((height * DPI_HEIGHT_RATIO) / 10);
 
+    const resolved = await absoluteParentDirHandle.resolve(fileHandle);
+    const filePath = `./${resolved?.join("/")}`;
+    const name = removeFileExtension(file.name);
+
     const oramaCardDocument: OramaCardDocument = {
-      id: `./${file.name}`, // TODO: recursively include full file path in id! this should flow through to generated XMLs.
+      id: filePath,
       cardType: cardType,
-      name: file.name,
+      name: name,
+      searchq: toSearchable(name),
       source: dirHandle.name,
       dpi: dpi,
       extension: filetypeextension(data)[0],
@@ -60,15 +68,21 @@ const getOramaCardDocument = async (
 };
 
 async function listAllFilesAndDirs(
-  dirHandle: FileSystemDirectoryHandle
+  dirHandle: FileSystemDirectoryHandle,
+  absoluteParentDirHandle: FileSystemDirectoryHandle
 ): Promise<Array<OramaCardDocument>> {
   const files: Array<OramaCardDocument> = [];
   for await (const [name, handle] of dirHandle) {
     if (handle instanceof FileSystemDirectoryHandle) {
-      files.push(...(await listAllFilesAndDirs(handle)));
+      files.push(
+        ...(await listAllFilesAndDirs(handle, absoluteParentDirHandle))
+      );
     } else if (handle instanceof FileSystemFileHandle) {
-      const file = await handle.getFile();
-      const oramaCardDocument = await getOramaCardDocument(file, dirHandle);
+      const oramaCardDocument = await getOramaCardDocument(
+        handle,
+        dirHandle,
+        absoluteParentDirHandle
+      );
       if (oramaCardDocument !== null) {
         files.push(oramaCardDocument);
       }
@@ -84,7 +98,7 @@ const indexDirectory = async (
   const db = create({
     schema: OramaSchema,
   });
-  const oramaCardDocuments = await listAllFilesAndDirs(handle);
+  const oramaCardDocuments = await listAllFilesAndDirs(handle, handle);
   insertMultiple(db, oramaCardDocuments);
   const newDirectoryIndex = {
     handle: handle,
@@ -153,7 +167,7 @@ export class LocalFilesService {
     // const excludesTags = searchSettings.filterSettings.includesTags.length > 0;
     const hits = search(this.directoryIndex?.index?.oramaDb, {
       term: query,
-      properties: ["name"],
+      properties: ["searchq"],
       exact: !searchSettings.searchTypeSettings.fuzzySearch,
       where: {
         cardType: {

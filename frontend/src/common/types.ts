@@ -227,6 +227,7 @@ export type SourceRow = [number, boolean];
 export const OramaSchema = {
   id: "string" as SearchableType,
   name: "string" as SearchableType,
+  searchq: "string" as SearchableType,
   cardType: "enum",
   extension: "string",
   url: "string",
@@ -239,6 +240,7 @@ export const OramaSchema = {
 export type OramaCardDocument = Pick<
   Card,
   | "name"
+  | "searchq"
   | "source"
   | "cardType"
   | "extension"

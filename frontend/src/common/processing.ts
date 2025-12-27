@@ -327,3 +327,21 @@ export const parseCSVFileAsLines = (fileContents: string): Array<string> => {
   const rows: Array<CSVRow> = parse(fileContents);
   return rows.map(parseCSVRowAsLine);
 };
+
+export const removeFileExtension = (fileName: string): string =>
+  fileName.replace(/^(.+?)(?:\..+)?$/, "$1");
+
+export const toSearchable = (inputString: string): string =>
+  inputString
+    .trim()
+    .toLowerCase()
+    .replace(/[\(\[].*?[\)\]]/, "")
+    .replace("-", " ")
+    .replace(" the ", " ")
+    .replace("’", "'")
+    .replace(/!\"#$%&'()*\+,-.\/:;<=>?@\[\]^_`{|}~\//, "") // remove punctuation
+    .replace(/0123456789/, "") // remove digits
+    .replace(/^the (.*$)/, "$1") // remove "the " at start of string
+    .split(" ")
+    .map((word) => word.trim())
+    .join(" ");
