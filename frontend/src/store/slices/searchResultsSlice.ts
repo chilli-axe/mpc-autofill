@@ -36,17 +36,81 @@ import { AppDispatch, RootState } from "@/store/store";
 
 const typePrefix = "searchResults/fetchCards";
 
+const mergeSearchResults = (
+  a: SearchResults,
+  b: SearchResults
+): SearchResults => {
+  const mergedResults: SearchResults = structuredClone(a);
+  for (const [query, searchResultsForQuery] of Object.entries(b)) {
+    if (Object.prototype.hasOwnProperty.call(mergedResults, query)) {
+      for (const [cardType, searchResults] of Object.entries(
+        searchResultsForQuery
+      ) as Array<[CardType, Array<string>]>) {
+        if (
+          Object.prototype.hasOwnProperty.call(mergedResults[query], cardType)
+        ) {
+          mergedResults[query][cardType] = [
+            ...mergedResults[query][cardType],
+            ...searchResults,
+          ];
+        } else {
+          mergedResults[query][cardType] = [...searchResults];
+        }
+      }
+    } else {
+      mergedResults[query] = structuredClone(searchResultsForQuery);
+    }
+  }
+  return mergedResults;
+};
+
+const search2 = (
+  oramaDb: Orama<OramaCardDocument>,
+  searchSettings: SearchSettings,
+  query: string | undefined,
+  cardTypes: Array<CardType>
+): Array<string> => {
+  const includesTags = searchSettings.filterSettings.includesTags.length > 0;
+  const excludesTags = searchSettings.filterSettings.includesTags.length > 0;
+  const hits = search(oramaDb, {
+    term: query,
+    properties: ["name"],
+    exact: !searchSettings.searchTypeSettings.fuzzySearch,
+    where: {
+      ...(includesTags
+        ? {
+            tags: {
+              containsAny: searchSettings.filterSettings.includesTags,
+              // ...(excludesTags ? {nin: searchSettings.filterSettings.excludesTags} : {}),
+            },
+          }
+        : {}),
+      dpi: {
+        between: [
+          searchSettings.filterSettings.minimumDPI,
+          searchSettings.filterSettings.maximumDPI,
+        ],
+      },
+      // size: {
+      //   lte: searchSettings.filterSettings.maximumSize
+      // }
+    },
+  }).hits as Array<OramaCardDocument>;
+  return hits.map((cardDocument) => cardDocument.id);
+};
+
 export const fetchSearchResults = createAppAsyncThunk(
   typePrefix,
   async (arg: Orama<OramaCardDocument> | undefined, { getState, dispatch }) => {
     const state = getState();
 
-    const queriesToSearch = selectQueriesWithoutSearchResults(state);
+    const queriesToSearch = selectQueriesWithoutSearchResults(state); // TODO: is there an edge case here when a local directory is added?
 
     const backendURL = selectBackendURL(state);
+
     const searchSettings = selectSearchSettings(state);
     if (queriesToSearch.length > 0 && backendURL != null) {
-      return Array.from(
+      const remoteResults: SearchResults = await Array.from(
         Array(
           Math.ceil(queriesToSearch.length / SearchResultsEndpointPageSize)
         ).keys()
@@ -63,6 +127,41 @@ export const fetchSearchResults = createAppAsyncThunk(
           return { ...previousValue, ...searchResults };
         });
       }, Promise.resolve({}));
+      console.log("fetchSearchResults: remoteResults", remoteResults);
+      if (state.searchResults.directoryHandle) {
+        if (arg) {
+          const localResults: SearchResults = {};
+          for (const searchQuery of queriesToSearch) {
+            if (searchQuery.query) {
+              if (
+                !Object.prototype.hasOwnProperty.call(
+                  localResults,
+                  searchQuery.query
+                )
+              ) {
+                localResults[searchQuery.query] = {
+                  CARD: [],
+                  CARDBACK: [],
+                  TOKEN: [],
+                };
+              }
+
+              localResults[searchQuery.query][searchQuery.cardType] = search2(
+                arg,
+                searchSettings,
+                searchQuery.query,
+                [searchQuery.cardType]
+              );
+            }
+          }
+          console.log("fetchSearchResults: localResults", localResults);
+          // return localResults;
+          const mergedResults = mergeSearchResults(localResults, remoteResults);
+          console.log("fetchSearchResults: mergedResults", mergedResults);
+          return mergedResults;
+        }
+      }
+      return remoteResults;
     } else {
       return null;
     }
@@ -76,6 +175,7 @@ export async function fetchSearchResultsAndReportError(
   try {
     await dispatch(fetchSearchResults(oramaDb)).unwrap();
   } catch (error: any) {
+    console.log(error);
     dispatch(
       setNotification([
         typePrefix,

@@ -154,6 +154,50 @@ const indexDirectory = async (
   return newDirectoryIndex; // @ts-ignore TODO: can we serialise/deserialise our index as it's needed to improve performance?
 };
 
+const getLocalCardDocuments = (
+  oramaDb: Orama<OramaCardDocument>,
+  identifiersToSearch: Array<string>
+): CardDocuments => {
+  return Object.fromEntries(
+    identifiersToSearch.reduce(
+      (accumulated: Array<[string, CardDocument]>, identifier: string) => {
+        const oramaCardDocument = getByID(oramaDb, identifier) as
+          | OramaCardDocument
+          | undefined;
+        if (oramaCardDocument !== undefined) {
+          accumulated.push([
+            oramaCardDocument.id,
+            {
+              identifier: oramaCardDocument.id,
+              cardType: oramaCardDocument.cardType,
+              name: oramaCardDocument.name,
+              priority: 0,
+              source: oramaCardDocument.source,
+              sourceName: oramaCardDocument.source,
+              sourceId: 0,
+              sourceVerbose: oramaCardDocument.source,
+              sourceType: SourceType.LocalFile,
+              sourceExternalLink: undefined,
+              dpi: oramaCardDocument.dpi,
+              searchq: oramaCardDocument.name,
+              extension: oramaCardDocument.extension,
+              dateCreated: "1st January, 2000", // TODO
+              dateModified: "1st January, 2000", // TODO
+              size: oramaCardDocument.size,
+              smallThumbnailUrl: oramaCardDocument.url,
+              mediumThumbnailUrl: oramaCardDocument.url,
+              language: "EN", // TODO
+              tags: oramaCardDocument.tags,
+            },
+          ]);
+        }
+        return accumulated;
+      },
+      [] as Array<[string, CardDocument]>
+    )
+  );
+};
+
 const fetchCardDocuments = createAppAsyncThunk(
   typePrefix,
   /**
@@ -186,10 +230,18 @@ const fetchCardDocuments = createAppAsyncThunk(
     );
 
     const backendURL = state.backend.url;
-    return await getCardDocumentRequestPromiseChain(
+    const remoteCardDocuments = await getCardDocumentRequestPromiseChain(
       identifiersToSearch,
       backendURL
     );
+    if (oramaDb) {
+      const localCardDocuments = getLocalCardDocuments(
+        oramaDb,
+        identifiersToSearch
+      ); // TODO: passing `identifiersToSearch` feels wrong here.
+      return { ...localCardDocuments, ...remoteCardDocuments };
+    }
+    return remoteCardDocuments;
   }
 );
 
