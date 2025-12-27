@@ -225,6 +225,32 @@ export type CSVRow = {
 
 export type SourceRow = [number, boolean];
 
+export const OramaSchema = {
+  id: "string" as SearchableType,
+  name: "string" as SearchableType,
+  cardType: "string", // TODO: enum
+  // date_created: "string",  // TODO: :(
+  // date_modified: "string",  // TODO: :(
+  extension: "string",
+  url: "string",
+  language: "string",
+  tags: "enum[]", // enum allows using "not contained in" filters
+  dpi: "number",
+  size: "number",
+} as Schema<OramaCardDocument>;
+
+export type OramaCardDocument = Pick<
+  Card,
+  | "name"
+  | "source"
+  | "cardType"
+  | "extension"
+  | "language"
+  | "tags"
+  | "dpi"
+  | "size"
+> & { id: string; url: string };
+
 export interface DirectoryIndex {
   handle: FileSystemDirectoryHandle;
   index:
