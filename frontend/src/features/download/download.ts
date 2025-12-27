@@ -103,19 +103,6 @@ export function useDoFileDownload(): (
             startedTimestamp: new Date().toString(),
           })
         );
-        dispatch(
-          setNotification([
-            `download-${downloadId}-started`,
-            {
-              name: "Download Started",
-              message: `Started downloading ${name} to ${
-                localFilesService.getDirectoryHandle()?.name ??
-                "Downloads folder"
-              }...`,
-              level: "info",
-            },
-          ])
-        );
         return await callable();
       })
       .catch((reason) => {
@@ -139,21 +126,6 @@ export function useDoFileDownload(): (
             completedTimestamp: new Date().toString(),
           })
         );
-        if (isSuccess) {
-          dispatch(
-            setNotification([
-              `download-${downloadId}-finished`,
-              {
-                name: "Download Finished",
-                message: `Finished downloading ${name} to ${
-                  localFilesService.getDirectoryHandle()?.name ??
-                  "Downloads folder"
-                }!`,
-                level: "info",
-              },
-            ])
-          );
-        }
       })
       .finally(() => queue.end(jobHash));
   };

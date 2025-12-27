@@ -17,6 +17,8 @@ import { LocalFilesService } from "@/features/localFiles/localFilesService";
 import { useProjectName } from "@/store/slices/backendSlice";
 import { showModal } from "@/store/slices/modalsSlice";
 import { selectIsProjectEmpty } from "@/store/slices/projectSlice";
+import { setNotification } from "@/store/slices/toastsSlice";
+import { AppDispatch } from "@/store/store";
 
 interface ExitModal {
   show: boolean;
@@ -82,15 +84,41 @@ const DownloadButtonLink = styled.a`
 `;
 
 async function downloadDesktopTool(
+  dispatch: AppDispatch,
   url: URL,
   fileName: string,
   localFilesService: LocalFilesService
 ) {
+  dispatch(
+    setNotification([
+      Math.random().toString(),
+      {
+        name: "Download Started",
+        message: `Started downloading the Desktop Tool to ${
+          localFilesService.getDirectoryHandle()?.name ?? "Downloads folder"
+        }!`,
+        level: "info",
+      },
+    ])
+  );
   await downloadFile(undefined, url, fileName, localFilesService);
+  dispatch(
+    setNotification([
+      Math.random().toString(),
+      {
+        name: "Download Complete",
+        message: `Successfully downloaded the Desktop Tool to ${
+          localFilesService.getDirectoryHandle()?.name ?? "Downloads folder"
+        }!`,
+        level: "info",
+      },
+    ])
+  );
   return true;
 }
 
 export function useDownloadDesktopTool() {
+  const dispatch = useAppDispatch();
   const doFileDownload = useDoFileDownload();
   const localFilesService = useLocalFilesContext();
   return (url: URL, fileName: string) =>
@@ -99,7 +127,7 @@ export function useDownloadDesktopTool() {
         "desktop-tool",
         fileName,
         (): Promise<boolean> =>
-          downloadDesktopTool(url, fileName, localFilesService)
+          downloadDesktopTool(dispatch, url, fileName, localFilesService)
       )
     );
 }
