@@ -91,8 +91,8 @@ const getLocalCardDocuments = (
               dateCreated: "1st January, 2000", // TODO
               dateModified: "1st January, 2000", // TODO
               size: oramaCardDocument.size,
-              smallThumbnailUrl: oramaCardDocument.url,
-              mediumThumbnailUrl: oramaCardDocument.url,
+              smallThumbnailUrl: undefined,
+              mediumThumbnailUrl: undefined,
               language: "EN", // TODO
               tags: oramaCardDocument.tags,
             },
@@ -111,17 +111,20 @@ const fetchCardDocuments = createAppAsyncThunk(
    * This function queries card documents (entire database rows) from the backend. It only queries cards which have
    * not yet been queried.
    */
-  async (arg, { dispatch, getState, extra }) => {
+  async (
+    arg: { refreshCardbacks?: boolean } | undefined,
+    { dispatch, getState, extra }
+  ) => {
     const { localFilesService } = extra as {
       localFilesService: LocalFilesService;
     };
     const directoryHandle = localFilesService.getDirectoryHandle();
     const oramaDb =
       directoryHandle !== undefined
-        ? localFilesService.directoryIndex?.index?.oramaDb
+        ? localFilesService.getDirectoryIndex()?.index?.oramaDb
         : undefined;
     await fetchSearchResultsAndReportError(dispatch, oramaDb);
-    if (getState().cardbacks.cardbacks.length === 0) {
+    if (arg?.refreshCardbacks || getState().cardbacks.cardbacks.length === 0) {
       await fetchCardbacksAndReportError(dispatch);
     }
 
@@ -155,9 +158,12 @@ const fetchCardDocuments = createAppAsyncThunk(
   }
 );
 
-export async function fetchCardDocumentsAndReportError(dispatch: AppDispatch) {
+export async function fetchCardDocumentsAndReportError(
+  dispatch: AppDispatch,
+  arg?: { refreshCardbacks?: boolean }
+) {
   try {
-    await dispatch(fetchCardDocuments()).unwrap();
+    await dispatch(fetchCardDocuments(arg)).unwrap();
   } catch (error: any) {
     dispatch(
       setNotification([

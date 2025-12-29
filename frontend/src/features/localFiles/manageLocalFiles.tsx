@@ -42,7 +42,7 @@ export function ManageLocalFilesModal({
     try {
       // @ts-ignore
       const handle = await window.showDirectoryPicker({ mode: "readwrite" });
-      localFilesService.setDirectoryHandle(handle);
+      localFilesService.setDirectoryHandle(handle, dispatch);
       await localFilesService.indexDirectory(dispatch);
       forceUpdate();
     } catch (e) {
@@ -64,7 +64,7 @@ export function ManageLocalFilesModal({
   };
 
   const clearDirectoryChoice = async () => {
-    localFilesService.setDirectoryHandle(undefined);
+    localFilesService.setDirectoryHandle(undefined, dispatch);
     forceUpdate();
     if (directoryHandle !== undefined) {
       dispatch(

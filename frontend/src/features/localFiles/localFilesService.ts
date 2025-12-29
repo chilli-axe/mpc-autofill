@@ -3,6 +3,7 @@ import { getByID, search } from "@orama/orama";
 import { imageSize } from "image-size";
 import { filetypeextension, filetypemime } from "magic-bytes.js";
 
+import { QueryTags } from "@/common/constants";
 import { removeFileExtension, toSearchable } from "@/common/processing";
 import {
   CardType as CardTypeSchema,
@@ -16,6 +17,9 @@ import {
   OramaSchema,
   SearchResults,
 } from "@/common/types";
+import { api } from "@/store/api";
+import { fetchCardDocumentsAndReportError } from "@/store/slices/cardDocumentsSlice";
+import { clearSearchResults } from "@/store/slices/searchResultsSlice";
 import { setNotification } from "@/store/slices/toastsSlice";
 import { AppDispatch } from "@/store/store";
 
@@ -32,9 +36,15 @@ const getOramaCardDocument = async (
   if (isImage) {
     const dimensions = imageSize(data);
     const height = dimensions.height ?? 0;
-    const cardType: CardType = dirHandle.name.startsWith("Cardback")
+    console.log(
+      dirHandle.name,
+      dirHandle.name.toLowerCase().startsWith("cardback")
+    );
+    const cardType: CardType = dirHandle.name
+      .toLowerCase()
+      .startsWith("cardback")
       ? CardTypeSchema.Cardback
-      : dirHandle.name.startsWith("Token")
+      : dirHandle.name.toLowerCase().startsWith("token")
       ? CardTypeSchema.Token
       : CardTypeSchema.Card;
 
@@ -136,7 +146,8 @@ export class LocalFilesService {
   }
 
   public setDirectoryHandle(
-    directoryHandle: FileSystemDirectoryHandle | undefined
+    directoryHandle: FileSystemDirectoryHandle | undefined,
+    dispatch: AppDispatch
   ) {
     this.directoryHandle = directoryHandle;
   }
@@ -147,6 +158,9 @@ export class LocalFilesService {
         this.directoryHandle,
         dispatch
       );
+      dispatch(api.util.invalidateTags([QueryTags.BackendSpecific]));
+      dispatch(clearSearchResults());
+      fetchCardDocumentsAndReportError(dispatch, { refreshCardbacks: true });
     }
   }
 
@@ -167,7 +181,8 @@ export class LocalFilesService {
     const hits = search(this.directoryIndex?.index?.oramaDb, {
       term: query,
       properties: ["searchq"],
-      exact: !searchSettings.searchTypeSettings.fuzzySearch,
+      exact:
+        query !== undefined && !searchSettings.searchTypeSettings.fuzzySearch,
       where: {
         cardType: {
           in: cardTypes,
@@ -224,6 +239,13 @@ export class LocalFilesService {
       }
     }
     return localResults;
+  }
+
+  public searchCardbacks(
+    searchSettings: SearchSettings
+  ): Array<string> | undefined {
+    // TODO: what about cardbacks not filtered?
+    return this.search(searchSettings, undefined, [CardTypeSchema.Cardback]);
   }
 
   public getByID(identifier: string): OramaCardDocument | undefined {

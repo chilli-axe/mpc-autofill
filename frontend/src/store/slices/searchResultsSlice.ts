@@ -94,7 +94,7 @@ export const fetchSearchResults = createAppAsyncThunk(
           return { ...previousValue, ...searchResults };
         });
       }, Promise.resolve({}));
-      if (localFilesService.directoryHandle) {
+      if (localFilesService.hasDirectoryHandle()) {
         const localResults = localFilesService.searchBig(
           searchSettings,
           queriesToSearch

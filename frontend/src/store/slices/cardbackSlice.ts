@@ -9,6 +9,7 @@ import {
   createAppAsyncThunk,
   createAppSlice,
 } from "@/common/types";
+import { LocalFilesService } from "@/features/localFiles/localFilesService";
 import { APIGetCardbacks } from "@/store/api";
 import { selectBackendURL } from "@/store/slices/backendSlice";
 import { selectSearchSettings } from "@/store/slices/searchSettingsSlice";
@@ -21,13 +22,32 @@ const typePrefix = "cardbacks/fetchCardbacks";
 
 export const fetchCardbacks = createAppAsyncThunk(
   typePrefix,
-  async (arg, { getState }) => {
+  async (arg, { getState, extra }) => {
     const state = getState();
+    const { localFilesService } = extra as {
+      // TODO: move this extra type into types.ts
+      localFilesService: LocalFilesService;
+    };
     const backendURL = selectBackendURL(state);
     const searchSettings = selectSearchSettings(state);
-    return backendURL != null
-      ? APIGetCardbacks(backendURL, searchSettings)
-      : null;
+    if (backendURL != null) {
+      return APIGetCardbacks(backendURL, searchSettings).then(
+        (remoteResults) => {
+          console.log("in the big handler");
+          if (localFilesService.hasDirectoryHandle()) {
+            console.log("understand we want to search local cardbacks");
+            const localResults =
+              localFilesService.searchCardbacks(searchSettings);
+            console.log("localResults", localResults);
+            return [...(localResults ?? []), ...remoteResults];
+          } else {
+            return remoteResults;
+          }
+        }
+      );
+    } else {
+      return null;
+    }
   }
 );
 

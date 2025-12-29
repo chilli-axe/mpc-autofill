@@ -17,7 +17,11 @@ import {
   selectBackendConfigured,
   setURL,
 } from "@/store/slices/backendSlice";
-import { fetchCardbacks, selectCardbacks } from "@/store/slices/cardbackSlice";
+import {
+  fetchCardbacks,
+  fetchCardbacksAndReportError,
+  selectCardbacks,
+} from "@/store/slices/cardbackSlice";
 import { fetchCardDocumentsAndReportError } from "@/store/slices/cardDocumentsSlice";
 import { recordInvalidIdentifier } from "@/store/slices/invalidIdentifiersSlice";
 import {
@@ -120,7 +124,10 @@ startAppListening({
     const searchSettingsSourcesValid = selectSearchSettingsSourcesValid(state);
     if (isBackendConfigured && searchSettingsSourcesValid) {
       dispatch(clearSearchResults());
-      await fetchCardDocumentsAndReportError(dispatch);
+      await fetchCardDocumentsAndReportError(dispatch, {
+        refreshCardbacks:
+          state.searchSettings.searchTypeSettings.filterCardbacks,
+      });
     }
   },
 });
@@ -130,7 +137,8 @@ startAppListening({
   /**
    * Fetch card documents whenever new members are added to the project or search results are cleared.
    */
-  effect: async (action, { dispatch }) => {
+  effect: async (action, { dispatch, getState }) => {
+    const state = getState();
     await fetchCardDocumentsAndReportError(dispatch);
   },
 });
