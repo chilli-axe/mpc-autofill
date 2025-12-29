@@ -14,6 +14,7 @@ import React, {
 import Dropdown from "react-bootstrap/Dropdown";
 import Stack from "react-bootstrap/Stack";
 
+import { SourceType } from "@/common/schema_types";
 import { Faces, Slots, useAppDispatch, useAppSelector } from "@/common/types";
 import { RightPaddedIcon } from "@/components/icon";
 import { OverflowList } from "@/components/OverflowList";
@@ -28,6 +29,7 @@ import {
   deleteSlots,
   selectAllSelectedProjectMembersHaveTheSameQuery,
   selectAllSlotsForActiveFace,
+  selectAnySelectedImagesDownloadable,
   selectIsProjectEmpty,
   selectSelectedSlots,
   selectUniqueCardIdentifiersInSlots,
@@ -238,7 +240,11 @@ function DownloadSelectedImages({
   const onClick = () => {
     let n = 0;
     identifiers.forEach((identifier) => {
-      if (cardDocumentsByIdentifier[identifier]) {
+      if (
+        cardDocumentsByIdentifier[identifier] &&
+        cardDocumentsByIdentifier[identifier].sourceType ===
+          SourceType.GoogleDrive
+      ) {
         queueImageDownload(cardDocumentsByIdentifier[identifier]);
         n++;
       }
@@ -304,6 +310,9 @@ type OptionKey =
 export function SelectedImagesRibbon() {
   const slots = useAppSelector(selectSelectedSlots);
   const isProjectEmpty = useAppSelector(selectIsProjectEmpty);
+  const anySelectedImagesDownloadable = useAppSelector((state) =>
+    selectAnySelectedImagesDownloadable(state, slots)
+  );
 
   const dispatch = useAppDispatch();
   const onClick = () =>
@@ -361,13 +370,13 @@ export function SelectedImagesRibbon() {
   };
   const enabledOptions: Array<OptionKey> = [
     ...((slots.length > 0
-      ? [
-          "changeSelectedImageSelectedImages",
-          "changeSelectedImageQueries",
-          // "clearSelectedImageQueries",
-          "downloadSelectedImages",
-          "deleteSelectedImages",
-        ]
+      ? ["changeSelectedImageSelectedImages", "changeSelectedImageQueries"]
+      : []) as Array<OptionKey>),
+    ...((slots.length > 0 && anySelectedImagesDownloadable
+      ? ["downloadSelectedImages"]
+      : []) as Array<OptionKey>),
+    ...((slots.length > 0 && !isProjectEmpty
+      ? ["deleteSelectedImages"]
       : []) as Array<OptionKey>),
     ...((slots.length === 1 ? ["selectSimilar"] : []) as Array<OptionKey>),
     ...((!isProjectEmpty ? ["selectAll"] : []) as Array<OptionKey>),
