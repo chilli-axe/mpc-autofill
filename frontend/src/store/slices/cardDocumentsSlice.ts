@@ -87,7 +87,7 @@ const getLocalCardDocuments = (
               sourceType: SourceType.LocalFile,
               sourceExternalLink: undefined,
               dpi: oramaCardDocument.dpi,
-              searchq: oramaCardDocument.name,
+              searchq: oramaCardDocument.searchq,
               extension: oramaCardDocument.extension,
               dateCreated: "1st January, 2000", // TODO
               dateModified: "1st January, 2000", // TODO
