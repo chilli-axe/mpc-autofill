@@ -44,7 +44,8 @@ function BackendSetter() {
   const backendConfigured = useBackendConfigured();
   const backendURL = useAppSelector(selectBackendURL);
   useEffect(() => {
-    const envURL = process.env.NEXT_PUBLIC_BACKEND_URL;
+    const rawEnvURL = process.env.NEXT_PUBLIC_BACKEND_URL;
+    const envURL = (rawEnvURL?.length ?? 0) > 0 ? rawEnvURL : undefined; // treat zero-length URL as invalid
     const localStorageBackendURL = getLocalStorageBackendURL();
     if (
       localStorageBackendURL != undefined &&

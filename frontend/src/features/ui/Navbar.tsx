@@ -151,7 +151,7 @@ export default function ProjectNavbar() {
                   handleClick={handleShowDownloadManager}
                 />
               </Nav.Link>
-              {process.env.NEXT_PUBLIC_BACKEND_URL == null && (
+              {(process.env.NEXT_PUBLIC_BACKEND_URL ?? "") === "" && (
                 <Nav.Link className="m-0 py-0">
                   <Button
                     className="my-0"
