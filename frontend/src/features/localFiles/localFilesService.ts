@@ -1,5 +1,5 @@
 import { create, insertMultiple } from "@orama/orama";
-import { search } from "@orama/orama";
+import { getByID, search } from "@orama/orama";
 import { imageSize } from "image-size";
 import { filetypeextension, filetypemime } from "magic-bytes.js";
 
@@ -37,9 +37,6 @@ const getOramaCardDocument = async (
       : dirHandle.name.startsWith("Token")
       ? CardTypeSchema.Token
       : CardTypeSchema.Card;
-    // TODO: can we store file handles on `CardDocument`, then tie our URL lifecycles to image showing?
-    const url = URL.createObjectURL(file);
-    // TODO: when we reindex or remove directories, we need to release these: URL.revokeObjectURL(objectURL)
 
     const DPI_HEIGHT_RATIO = 300 / 1110;
     const dpi = 10 * Math.round((height * DPI_HEIGHT_RATIO) / 10);
@@ -57,7 +54,7 @@ const getOramaCardDocument = async (
       dpi: dpi,
       extension: filetypeextension(data)[0],
       size: size,
-      url: url,
+      fileHandle: fileHandle,
       language: "English",
       tags: [],
     };
@@ -122,27 +119,29 @@ const indexDirectory = async (
 };
 
 export class LocalFilesService {
-  directoryHandle: FileSystemDirectoryHandle | undefined;
-  directoryIndex: DirectoryIndex | undefined;
+  private directoryHandle: FileSystemDirectoryHandle | undefined;
+  private directoryIndex: DirectoryIndex | undefined;
 
   constructor() {
     this.directoryHandle = undefined;
     this.directoryIndex = undefined;
   }
 
-  hasDirectoryHandle(): boolean {
+  public hasDirectoryHandle(): boolean {
     return this.directoryHandle !== undefined;
   }
 
-  getDirectoryHandle(): FileSystemDirectoryHandle | undefined {
+  public getDirectoryHandle(): FileSystemDirectoryHandle | undefined {
     return this.directoryHandle;
   }
 
-  setDirectoryHandle(directoryHandle: FileSystemDirectoryHandle | undefined) {
+  public setDirectoryHandle(
+    directoryHandle: FileSystemDirectoryHandle | undefined
+  ) {
     this.directoryHandle = directoryHandle;
   }
 
-  async indexDirectory(dispatch: AppDispatch) {
+  public async indexDirectory(dispatch: AppDispatch) {
     if (this.directoryHandle !== undefined) {
       this.directoryIndex = await indexDirectory(
         this.directoryHandle,
@@ -151,11 +150,11 @@ export class LocalFilesService {
     }
   }
 
-  getDirectoryIndex(): DirectoryIndex | undefined {
+  public getDirectoryIndex(): DirectoryIndex | undefined {
     return this.directoryIndex;
   }
 
-  search(
+  public search(
     searchSettings: SearchSettings,
     query: string | undefined,
     cardTypes: Array<CardType>
@@ -195,7 +194,8 @@ export class LocalFilesService {
     return hits.map((cardDocument) => cardDocument.id);
   }
 
-  searchBig(
+  public searchBig(
+    // TODO: rename lmao
     searchSettings: SearchSettings,
     searchQueries: Array<SearchQuery>
   ): SearchResults {
@@ -224,6 +224,15 @@ export class LocalFilesService {
       }
     }
     return localResults;
+  }
+
+  public getByID(identifier: string): OramaCardDocument | undefined {
+    if (this.directoryIndex?.index?.oramaDb) {
+      return getByID(this.directoryIndex.index.oramaDb, identifier) as
+        | OramaCardDocument
+        | undefined;
+    }
+    return undefined;
   }
 }
 

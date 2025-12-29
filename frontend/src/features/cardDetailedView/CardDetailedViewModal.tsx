@@ -74,7 +74,7 @@ export function CardDetailedViewModal({
             >
               <MemoizedCardProportionWrapper small={false}>
                 <MemoizedCardImage
-                  maybeCardDocument={cardDocument}
+                  cardDocument={cardDocument}
                   hidden={false}
                   small={false}
                   showDetailedViewOnClick={false}

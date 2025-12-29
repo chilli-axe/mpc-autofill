@@ -15,7 +15,7 @@ import {
   useAppSelector,
 } from "@/common/types";
 import { wrapIndex } from "@/common/utils";
-import { MemoizedCard } from "@/features/card/Card";
+import { MemoizedEditorCard } from "@/features/card/Card";
 import { CardFooter } from "@/features/card/CardFooter";
 import { GridSelectorModal } from "@/features/gridSelector/GridSelectorModal";
 import { selectCardDocumentByIdentifier } from "@/store/slices/cardDocumentsSlice";
@@ -221,23 +221,12 @@ export function CardSlot({ searchQuery, face, slot }: CardSlotProps) {
 
   //# endregion
 
-  // TODO: this is just a temporary hack for releasing some dopamine before i sign off for the night. remove later
-  const maybeCardDocument = useAppSelector((state: RootState) =>
-    selectCardDocumentByIdentifier(state, selectedImage)
-  );
-  const maybePreviousCardDocument = useAppSelector((state: RootState) =>
-    selectCardDocumentByIdentifier(state, previousImage)
-  );
-  const maybeNextCardDocument = useAppSelector((state: RootState) =>
-    selectCardDocumentByIdentifier(state, nextImage)
-  );
-
   return (
     <div data-testid={`${face}-slot${slot}`}>
-      <MemoizedCard
-        maybeCardDocument={maybeCardDocument}
-        maybePreviousCardDocument={maybePreviousCardDocument}
-        maybeNextCardDocument={maybeNextCardDocument}
+      <MemoizedEditorCard
+        imageIdentifier={selectedImage}
+        previousImageIdentifier={previousImage}
+        nextImageIdentifier={nextImage}
         cardHeaderTitle={cardHeaderTitle}
         cardFooter={cardFooter}
         cardHeaderButtons={cardHeaderButtons}

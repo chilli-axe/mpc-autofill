@@ -7,7 +7,7 @@ import { useDispatch, useSelector, useStore } from "react-redux";
 
 import { CSVHeaders } from "@/common/constants";
 import {
-  Card,
+  Card as CardSchema,
   CardType as CardTypeSchema,
   SearchQuery,
   Source,
@@ -16,7 +16,6 @@ import type { AppDispatch, AppStore, RootState } from "@/store/store";
 export type {
   Campaign,
   CardbacksRequest,
-  Card as CardDocument,
   ErrorResponse,
   FilterSettings,
   ImportSite,
@@ -53,6 +52,15 @@ export const createAppAsyncThunk = createAsyncThunk.withTypes<{
 }>();
 
 export type ThunkStatus = "idle" | "loading" | "succeeded" | "failed";
+
+export type Card = Omit<
+  CardSchema,
+  "smallThumbnailUrl" | "mediumThumbnailUrl"
+> & {
+  smallThumbnailUrl: string | undefined;
+  mediumThumbnailUrl: string | undefined;
+};
+export type CardDocument = Card;
 
 export type CardType =
   | CardTypeSchema.Card
@@ -248,7 +256,7 @@ export type OramaCardDocument = Pick<
   | "tags"
   | "dpi"
   | "size"
-> & { id: string; url: string };
+> & { id: string; fileHandle: FileSystemFileHandle };
 
 export interface DirectoryIndex {
   handle: FileSystemDirectoryHandle;
