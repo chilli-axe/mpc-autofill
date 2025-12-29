@@ -20,7 +20,7 @@ import { Export } from "@/features/export/Export";
 import { FinishedMyProject } from "@/features/export/FinishedMyProjectModal";
 import { FinishSettings } from "@/features/finishSettings/FinishSettings";
 import { Import } from "@/features/import/Import";
-import { ManageLocalFiles } from "@/features/localFiles/manageLocalFiles";
+import { ManageLocalFiles } from "@/features/localFiles/ManageLocalFilesModal";
 import { SearchSettings } from "@/features/searchSettings/SearchSettings";
 import { Status } from "@/features/status/Status";
 import { useBackendConfigured } from "@/store/slices/backendSlice";

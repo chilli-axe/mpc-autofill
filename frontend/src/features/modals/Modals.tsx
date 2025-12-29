@@ -5,7 +5,7 @@ import { MemoizedCardDetailedView } from "@/features/cardDetailedView/CardDetail
 import { ChangeQueryModal } from "@/features/changeQuery/ChangeQueryModal";
 import { FinishedMyProjectModal } from "@/features/export/FinishedMyProjectModal";
 import { InvalidIdentifiersModal } from "@/features/invalidIdentifiers/InvalidIdentifiersModal";
-import { ManageLocalFilesModal } from "@/features/localFiles/manageLocalFiles";
+import { ManageLocalFilesModal } from "@/features/localFiles/ManageLocalFilesModal";
 import { SupportBackendModal } from "@/features/support/SupportBackendModal";
 import { SupportDeveloperModal } from "@/features/support/SupportDeveloperModal";
 import {
