@@ -89,6 +89,9 @@
     "ts-loader": "^9.4.2",
     "whatwg-fetch": "^3.6.2"
   },
+  "optionalDependencies": {
+    "@rollup/rollup-linux-x64-musl": "4.9.5"
+  },
   "msw": {
     "workerDirectory": "public"
   }
