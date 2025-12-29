@@ -220,7 +220,7 @@ startAppListening({
 });
 
 startAppListening({
-  actionCreator: fetchSearchResults.fulfilled,
+  matcher: isAnyOf(fetchSearchResults.fulfilled, fetchCardbacks.fulfilled),
   /**
    * Whenever search results change, this listener will inspect each card slot
    * and ensure that their selected images are valid.
