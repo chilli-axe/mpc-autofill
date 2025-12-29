@@ -23,6 +23,7 @@ import { RightPaddedIcon } from "@/components/icon";
 import { FilterSettings as FilterSettingsElement } from "@/features/searchSettings/FilterSettings";
 import { SearchTypeSettings as SearchTypeSettingsElement } from "@/features/searchSettings/SearchTypeSettings";
 import { SourceSettings as SourceSettingsElement } from "@/features/searchSettings/SourceSettings";
+import { selectBackendConfigured } from "@/store/slices/backendSlice";
 import {
   selectSearchSettings,
   setFilterSettings,
@@ -33,6 +34,7 @@ import {
 export function SearchSettings() {
   const dispatch = useAppDispatch();
   const [show, setShow] = useState<boolean>(false);
+  const backendConfigured = useAppSelector(selectBackendConfigured);
 
   // global state managed in redux
   const globalSearchSettings = useAppSelector(selectSearchSettings);
@@ -96,11 +98,15 @@ export function SearchSettings() {
             filterSettings={localFilterSettings}
             setFilterSettings={setLocalFilterSettings}
           />
-          <hr />
-          <SourceSettingsElement
-            sourceSettings={localSourceSettings}
-            setSourceSettings={setLocalSourceSettings}
-          />
+          {backendConfigured && (
+            <>
+              <hr />
+              <SourceSettingsElement
+                sourceSettings={localSourceSettings}
+                setSourceSettings={setLocalSourceSettings}
+              />
+            </>
+          )}
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={handleClose}>
