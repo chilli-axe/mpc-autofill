@@ -13,6 +13,7 @@ import {
   createAppAsyncThunk,
   createAppSlice,
   OramaCardDocument,
+  OramaSchema,
   useAppSelector,
 } from "@/common/types";
 import { CardDocuments } from "@/common/types";
@@ -62,7 +63,7 @@ export const getCardDocumentRequestPromiseChain = async (
 };
 
 const getLocalCardDocuments = (
-  oramaDb: Orama<OramaCardDocument>,
+  oramaDb: Orama<typeof OramaSchema>,
   identifiersToSearch: Array<string>
 ): CardDocuments => {
   return Object.fromEntries(

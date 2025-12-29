@@ -242,7 +242,7 @@ export const OramaSchema = {
   tags: "enum[]", // enum allows using "not contained in" filters
   dpi: "number",
   size: "number",
-} as Schema<OramaCardDocument>;
+} as const;
 
 export type OramaCardDocument = Pick<
   Card,
@@ -261,7 +261,7 @@ export interface DirectoryIndex {
   handle: FileSystemDirectoryHandle;
   index:
     | {
-        oramaDb: Orama<OramaCardDocument>;
+        oramaDb: Orama<typeof OramaSchema>;
         size: number; // TODO: really necessary?
       }
     | undefined;

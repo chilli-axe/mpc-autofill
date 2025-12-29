@@ -15,7 +15,7 @@ import {
   createAppAsyncThunk,
   createAppSlice,
   Faces,
-  OramaCardDocument,
+  OramaSchema,
   SearchResults,
   SearchResultsState,
 } from "@/common/types";
@@ -62,7 +62,7 @@ const mergeSearchResults = (
 
 export const fetchSearchResults = createAppAsyncThunk(
   typePrefix,
-  async (arg: Orama<OramaCardDocument> | undefined, { getState, extra }) => {
+  async (arg: Orama<typeof OramaSchema> | undefined, { getState, extra }) => {
     const state = getState();
     const { localFilesService } = extra as {
       localFilesService: LocalFilesService;
@@ -107,7 +107,7 @@ export const fetchSearchResults = createAppAsyncThunk(
 
 export async function fetchSearchResultsAndReportError(
   dispatch: AppDispatch,
-  oramaDb: Orama<OramaCardDocument> | undefined
+  oramaDb: Orama<typeof OramaSchema> | undefined
 ) {
   try {
     await dispatch(fetchSearchResults(oramaDb)).unwrap();

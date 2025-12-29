@@ -205,6 +205,7 @@ export class LocalFilesService {
         //   lte: searchSettings.filterSettings.maximumSize
         // }
       },
+      // @ts-ignore // TODO
     }).hits as Array<OramaCardDocument>;
     return hits.map((cardDocument) => cardDocument.id);
   }

@@ -12,6 +12,7 @@ import React, {
   memo,
   PropsWithChildren,
   ReactElement,
+  Ref,
   useEffect,
   useRef,
   useState,
@@ -102,7 +103,7 @@ const useImageSrc = (
   onLoadingComplete: OnLoadingComplete;
   onError: React.ReactEventHandler<HTMLImageElement>;
   imageIsLoading: boolean;
-  imageRef: Ref;
+  imageRef: Ref<HTMLImageElement>;
   imageState: string;
 } => {
   const [imageState, setImageState] = useState<ImageState>(
@@ -400,6 +401,8 @@ export function Card({
     ) : (
       <Spinner />
     );
+
+  // @ts-ignore // TODO
   const BSCardSubtitle: typeof BSCard.Subtitle =
     nameOnClick != null ? OutlinedBSCardSubtitle : BSCard.Subtitle;
 
