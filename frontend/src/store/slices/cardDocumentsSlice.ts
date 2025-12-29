@@ -143,18 +143,15 @@ const fetchCardDocuments = createAppAsyncThunk(
     );
 
     const backendURL = state.backend.url;
+
+    const localCardDocuments = oramaDb
+      ? getLocalCardDocuments(oramaDb, identifiersToSearch)
+      : {};
     const remoteCardDocuments = await getCardDocumentRequestPromiseChain(
       identifiersToSearch,
       backendURL
     );
-    if (oramaDb) {
-      const localCardDocuments = getLocalCardDocuments(
-        oramaDb,
-        identifiersToSearch
-      ); // TODO: passing `identifiersToSearch` feels wrong here.
-      return { ...localCardDocuments, ...remoteCardDocuments };
-    }
-    return remoteCardDocuments;
+    return { ...localCardDocuments, ...remoteCardDocuments };
   }
 );
 

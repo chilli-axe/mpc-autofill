@@ -87,15 +87,15 @@ export default function ProjectNavbar() {
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
           <BoldCollapse id="basic-navbar-nav">
             <Nav className="me-auto">
+              <Nav.Link
+                as={Link}
+                href="/editor"
+                active={router.route === "/editor"}
+              >
+                Editor
+              </Nav.Link>
               {backendConfigured && (
                 <>
-                  <Nav.Link
-                    as={Link}
-                    href="/editor"
-                    active={router.route === "/editor"}
-                  >
-                    Editor
-                  </Nav.Link>
                   <Nav.Link
                     as={Link}
                     href="/new"

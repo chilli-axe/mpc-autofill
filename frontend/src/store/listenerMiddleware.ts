@@ -120,15 +120,10 @@ startAppListening({
    */
   effect: async (action, { getState, dispatch }) => {
     const state = getState();
-    const isBackendConfigured = selectBackendConfigured(state);
-    const searchSettingsSourcesValid = selectSearchSettingsSourcesValid(state);
-    if (isBackendConfigured && searchSettingsSourcesValid) {
-      dispatch(clearSearchResults());
-      await fetchCardDocumentsAndReportError(dispatch, {
-        refreshCardbacks:
-          state.searchSettings.searchTypeSettings.filterCardbacks,
-      });
-    }
+    dispatch(clearSearchResults());
+    await fetchCardDocumentsAndReportError(dispatch, {
+      refreshCardbacks: state.searchSettings.searchTypeSettings.filterCardbacks,
+    });
   },
 });
 

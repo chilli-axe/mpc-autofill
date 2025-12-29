@@ -30,24 +30,16 @@ export const fetchCardbacks = createAppAsyncThunk(
     };
     const backendURL = selectBackendURL(state);
     const searchSettings = selectSearchSettings(state);
-    if (backendURL != null) {
-      return APIGetCardbacks(backendURL, searchSettings).then(
-        (remoteResults) => {
-          console.log("in the big handler");
-          if (localFilesService.hasDirectoryHandle()) {
-            console.log("understand we want to search local cardbacks");
-            const localResults =
-              localFilesService.searchCardbacks(searchSettings);
-            console.log("localResults", localResults);
-            return [...(localResults ?? []), ...remoteResults];
-          } else {
-            return remoteResults;
-          }
-        }
-      );
-    } else {
-      return null;
-    }
+
+    const localResults: Array<string> =
+      (localFilesService.hasDirectoryHandle()
+        ? localFilesService.searchCardbacks(searchSettings)
+        : undefined) ?? [];
+    const remoteResults: Array<string> =
+      backendURL != null
+        ? await APIGetCardbacks(backendURL, searchSettings)
+        : [];
+    return [...(localResults ?? []), ...remoteResults];
   }
 );
 

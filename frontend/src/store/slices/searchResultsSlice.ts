@@ -62,51 +62,46 @@ const mergeSearchResults = (
 
 export const fetchSearchResults = createAppAsyncThunk(
   typePrefix,
-  async (
-    arg: Orama<OramaCardDocument> | undefined,
-    { getState, dispatch, extra }
-  ) => {
+  async (arg: Orama<OramaCardDocument> | undefined, { getState, extra }) => {
     const state = getState();
     const { localFilesService } = extra as {
       localFilesService: LocalFilesService;
     };
 
     const queriesToSearch = selectQueriesWithoutSearchResults(state); // TODO: is there an edge case here when a local directory is added?
-
     const backendURL = selectBackendURL(state);
-
     const searchSettings = selectSearchSettings(state);
-    if (queriesToSearch.length > 0 && backendURL != null) {
-      const remoteResults: SearchResults = await Array.from(
-        Array(
-          Math.ceil(queriesToSearch.length / SearchResultsEndpointPageSize)
-        ).keys()
-      ).reduce(function (promiseChain: Promise<SearchResults>, page: number) {
-        return promiseChain.then(async function (previousValue: SearchResults) {
-          const searchResults = await APIEditorSearch(
-            backendURL,
-            searchSettings,
-            queriesToSearch.slice(
-              page * SearchResultsEndpointPageSize,
-              (page + 1) * SearchResultsEndpointPageSize
-            )
-          );
-          return { ...previousValue, ...searchResults };
-        });
-      }, Promise.resolve({}));
-      if (localFilesService.hasDirectoryHandle()) {
-        const localResults = localFilesService.searchBig(
-          searchSettings,
-          queriesToSearch
-        );
-        const mergedResults = mergeSearchResults(localResults, remoteResults);
-        console.log("fetchSearchResults: mergedResults", mergedResults);
-        return mergedResults;
-      }
-      return remoteResults;
-    } else {
-      return null;
-    }
+
+    const localResults: SearchResults = localFilesService.hasDirectoryHandle()
+      ? localFilesService.searchBig(searchSettings, queriesToSearch)
+      : {};
+    const remoteResults: SearchResults =
+      queriesToSearch.length > 0 && backendURL != null
+        ? await Array.from(
+            Array(
+              Math.ceil(queriesToSearch.length / SearchResultsEndpointPageSize)
+            ).keys()
+          ).reduce(function (
+            promiseChain: Promise<SearchResults>,
+            page: number
+          ) {
+            return promiseChain.then(async function (
+              previousValue: SearchResults
+            ) {
+              const searchResults = await APIEditorSearch(
+                backendURL,
+                searchSettings,
+                queriesToSearch.slice(
+                  page * SearchResultsEndpointPageSize,
+                  (page + 1) * SearchResultsEndpointPageSize
+                )
+              );
+              return { ...previousValue, ...searchResults };
+            });
+          },
+          Promise.resolve({}))
+        : {};
+    return mergeSearchResults(localResults, remoteResults);
   }
 );
 
