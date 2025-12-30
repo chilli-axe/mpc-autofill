@@ -123,6 +123,7 @@ export function ContributionsPerSource() {
       hover={true}
       alignment={"left"}
       uniformWidth={false}
+      variant="default"
     />
   );
 }

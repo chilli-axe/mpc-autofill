@@ -58,6 +58,7 @@ export function AutofillTable({
   uniformWidth = true,
   hover = false,
   columnLabels = false,
+  variant = "secondary",
 }: {
   headers: Array<string>;
   data: Array<Array<string | number | React.ReactElement | null | undefined>>;
@@ -66,6 +67,7 @@ export function AutofillTable({
   uniformWidth?: boolean;
   hover?: boolean;
   columnLabels?: boolean;
+  variant?: string;
 }) {
   return (
     <TableWrapper>
@@ -73,7 +75,7 @@ export function AutofillTable({
         $uniformWidth={uniformWidth}
         $bordered={bordered}
         hover={hover}
-        variant="secondary"
+        variant={variant}
       >
         {headers.length > 0 && (
           <thead>

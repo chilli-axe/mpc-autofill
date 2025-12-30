@@ -18,7 +18,6 @@ import { wrapIndex } from "@/common/utils";
 import { MemoizedEditorCard } from "@/features/card/Card";
 import { CardFooter } from "@/features/card/CardFooter";
 import { GridSelectorModal } from "@/features/gridSelector/GridSelectorModal";
-import { selectCardDocumentByIdentifier } from "@/store/slices/cardDocumentsSlice";
 import { showChangeQueryModal } from "@/store/slices/modalsSlice";
 import {
   bulkAlignMemberSelection,
@@ -31,7 +30,6 @@ import {
   toggleMemberSelection,
 } from "@/store/slices/projectSlice";
 import { selectSearchResultsForQueryOrDefault } from "@/store/slices/searchResultsSlice";
-import { RootState } from "@/store/store";
 
 interface CardSlotProps {
   searchQuery: SearchQuery | undefined;
@@ -134,7 +132,6 @@ export function CardSlot({ searchQuery, face, slot }: CardSlotProps) {
       })
     );
   };
-  // TODO: add a confirmation prompt here. yes/no/yes and don't ask again.
   const deleteThisSlot = () => {
     dispatch(deleteSlots({ slots: [slot] }));
   };

@@ -213,7 +213,11 @@ export function SourceSettings({
       <DragDropContext onDragEnd={onDragEnd}>
         <Droppable droppableId="source-order">
           {(provided, snapshot) => (
-            <Table ref={provided.innerRef} style={{ tableLayout: "auto" }}>
+            <Table
+              variant="secondary"
+              ref={provided.innerRef}
+              style={{ tableLayout: "auto" }}
+            >
               {/* TODO: migrate this to AutofillTable at some point? too big a job for right now. */}
               <thead>
                 <tr style={{ height: ToggleButtonHeight + "px" }}>
