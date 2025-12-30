@@ -1,4 +1,6 @@
 // Bootswatch variables
+$blue: #4c9be8;
+$primary: $blue;
 @import "~bootswatch/dist/superhero/variables";
 
 // Configuration
@@ -49,4 +51,7 @@
 
 // Bootswatch
 @import "~bootswatch/dist/superhero/bootswatch";
+.offcanvas {
+  background-color: $secondary;
+}
 @import "~react-bootstrap-toggle/dist/bootstrap2-toggle.css";

@@ -73,6 +73,7 @@ export function AutofillTable({
         $uniformWidth={uniformWidth}
         $bordered={bordered}
         hover={hover}
+        variant="secondary"
       >
         {headers.length > 0 && (
           <thead>

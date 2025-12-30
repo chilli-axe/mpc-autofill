@@ -208,19 +208,21 @@ export function ImportXML() {
             </a>{" "}
             expects a file in this format.
           </p>
-          <Toggle
-            onClick={() => setUseXMLCardback(!useXMLCardback)}
-            on="Use XML Cardback"
-            onClassName="flex-centre"
-            off="Retain Selected Cardback"
-            offClassName="flex-centre"
-            onstyle="success"
-            offstyle="info"
-            width={100 + "%"}
-            size="md"
-            height={ToggleButtonHeight + "px"}
-            active={useXMLCardback}
-          />
+          <div className="px-0">
+            <Toggle
+              onClick={() => setUseXMLCardback(!useXMLCardback)}
+              on="Use XML Cardback"
+              onClassName="flex-centre"
+              off="Retain Selected Cardback"
+              offClassName="flex-centre"
+              onstyle="success"
+              offstyle="info"
+              width={100 + "%"}
+              size="md"
+              height={ToggleButtonHeight + "px"}
+              active={useXMLCardback}
+            />
+          </div>
           <div className="pt-3">
             <Toggle
               onClick={() => setUseXMLFinishSettings(!useXMLFinishSettings)}
