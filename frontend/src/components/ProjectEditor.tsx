@@ -3,14 +3,12 @@
  * drop into a page (as the only component). Must be wrapped with a Redux provider.
  */
 
-import styled from "@emotion/styled";
 import React, { useEffect } from "react";
 import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
 
 import { RibbonHeight } from "@/common/constants";
 import { useAppSelector } from "@/common/types";
-import { NoBackendDefault } from "@/components/NoBackendDefault";
 import { OverflowCol } from "@/components/OverflowCol";
 import { Ribbon } from "@/components/Ribbon";
 import { SelectedImagesRibbon } from "@/features/bulkManagement/SelectedImagesRibbon";

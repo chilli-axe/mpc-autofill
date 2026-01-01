@@ -8,7 +8,11 @@ import { useRemoteBackendConfigured } from "@/store/slices/backendSlice";
 
 function ExploreOrDefault() {
   const remoteBackendConfigured = useRemoteBackendConfigured();
-  return remoteBackendConfigured ? <ExploreComponent /> : <NoBackendDefault />;
+  return remoteBackendConfigured ? (
+    <ExploreComponent />
+  ) : (
+    <NoBackendDefault requirement="remote" />
+  );
 }
 
 export default function Explore() {

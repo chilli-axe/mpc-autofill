@@ -202,7 +202,7 @@ function ContributionsOrDefault() {
       <Footer />
     </>
   ) : (
-    <NoBackendDefault />
+    <NoBackendDefault requirement="remote" />
   );
 }
 

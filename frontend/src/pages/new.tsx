@@ -20,7 +20,7 @@ function NewOrDefault() {
       <Footer />
     </>
   ) : (
-    <NoBackendDefault />
+    <NoBackendDefault requirement="remote" />
   );
 }
 

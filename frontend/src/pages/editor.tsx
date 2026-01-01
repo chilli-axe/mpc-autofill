@@ -9,7 +9,11 @@ require("bootstrap-icons/font/bootstrap-icons.css");
 
 function ProjectEditorOrDefault() {
   const anyBackendConfigured = useAnyBackendConfigured();
-  return anyBackendConfigured ? <ProjectEditor /> : <NoBackendDefault />;
+  return anyBackendConfigured ? (
+    <ProjectEditor />
+  ) : (
+    <NoBackendDefault requirement="any" />
+  );
 }
 
 export default function Editor() {

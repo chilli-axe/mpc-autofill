@@ -295,6 +295,6 @@ export function Explore() {
       </Row>
     </>
   ) : (
-    <NoBackendDefault />
+    <NoBackendDefault requirement="remote" />
   );
 }
