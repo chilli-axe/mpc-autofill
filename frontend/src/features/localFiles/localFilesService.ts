@@ -68,6 +68,7 @@ const getOramaCardDocument = async (
       fileHandle: fileHandle,
       language: "English",
       tags: [],
+      lastModified: new Date(file.lastModified),
     };
     return oramaCardDocument;
   } else {

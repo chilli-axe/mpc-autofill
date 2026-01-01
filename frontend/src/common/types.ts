@@ -254,7 +254,7 @@ export type OramaCardDocument = Pick<
   | "tags"
   | "dpi"
   | "size"
-> & { id: string; fileHandle: FileSystemFileHandle };
+> & { id: string; fileHandle: FileSystemFileHandle; lastModified: Date };
 
 export interface DirectoryIndex {
   handle: FileSystemDirectoryHandle;

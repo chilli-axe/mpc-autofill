@@ -73,6 +73,14 @@ const getLocalCardDocuments = (
           | OramaCardDocument
           | undefined;
         if (oramaCardDocument !== undefined) {
+          const lastModified =
+            oramaCardDocument.lastModified.toLocaleDateString(undefined, {
+              weekday: undefined,
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            });
+
           accumulated.push([
             oramaCardDocument.id,
             {
@@ -89,8 +97,8 @@ const getLocalCardDocuments = (
               dpi: oramaCardDocument.dpi,
               searchq: oramaCardDocument.searchq,
               extension: oramaCardDocument.extension,
-              dateCreated: "1st January, 2000", // TODO
-              dateModified: "1st January, 2000", // TODO
+              dateCreated: lastModified,
+              dateModified: lastModified,
               size: oramaCardDocument.size,
               smallThumbnailUrl: undefined,
               mediumThumbnailUrl: undefined,
