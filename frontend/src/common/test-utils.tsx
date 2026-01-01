@@ -173,7 +173,7 @@ export async function configureBackend(url: string) {
   within(backendOffcanvas).getByLabelText("submit-backend-url").click();
   await waitFor(() =>
     expect(
-      within(backendOffcanvas).getByText("You're currently connected to", {
+      within(backendOffcanvas).getByText("You're connected to", {
         exact: false,
       })
     ).toBeInTheDocument()

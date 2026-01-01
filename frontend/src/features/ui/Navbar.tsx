@@ -16,6 +16,7 @@ import {
 } from "@/common/constants";
 import { useAppDispatch } from "@/common/types";
 import DisableSSR from "@/components/DisableSSR";
+import { RightPaddedIcon } from "@/components/icon";
 import { BackendConfig } from "@/features/backend/BackendConfig";
 import {
   DownloadManager,
@@ -162,7 +163,8 @@ export default function ProjectNavbar() {
                   onClick={handleShowBackendConfig}
                   aria-label="configure-server-btn"
                 >
-                  Configure Sources
+                  <RightPaddedIcon bootstrapIconName="database" />
+                  Sources
                 </Button>
               </Nav.Link>
             </Nav>

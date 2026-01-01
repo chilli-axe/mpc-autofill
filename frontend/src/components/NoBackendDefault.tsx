@@ -18,8 +18,8 @@ export function NoBackendDefault({ requirement }: NoBackendDefaultProps) {
         <GenericErrorPage
           title="No Server Configured"
           text={[
-            `You haven't configured a backend server for ${ProjectName} just yet.`,
-            "Click the Configure Sources button in the top-right to get started!",
+            `You haven't configured a server for ${ProjectName} just yet.`,
+            "Click the Sources button in the top-right to get started!",
           ]}
         />
       );
@@ -29,7 +29,7 @@ export function NoBackendDefault({ requirement }: NoBackendDefaultProps) {
           title="No Sources Configured"
           text={[
             `You haven't configured any sources for ${ProjectName} just yet.`,
-            "Click the Configure Sources button in the top-right to get started!",
+            "Click the Sources button in the top-right to get started!",
           ]}
         />
       );

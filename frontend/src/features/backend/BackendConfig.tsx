@@ -2,13 +2,14 @@
  * This component allows users to configure which backend server the frontend should retrieve data from.
  */
 
+import styled from "@emotion/styled";
 // TODO: https://github.com/alfg/ping.js/issues/29#issuecomment-487240910
 // @ts-ignore
-import styled from "@emotion/styled";
 import Ping from "ping.js";
-import React, { FormEvent, useReducer, useState } from "react";
+import React, { FormEvent, useState } from "react";
 import Alert from "react-bootstrap/Alert";
 import Button from "react-bootstrap/Button";
+import Col from "react-bootstrap/Col";
 import Form from "react-bootstrap/Form";
 import Offcanvas from "react-bootstrap/Offcanvas";
 import Row from "react-bootstrap/Row";
@@ -167,12 +168,15 @@ const RemoteBackendConfig = () => {
       <h4>Server</h4>
       {backendURL != null && (
         <Alert variant="success">
-          You&apos;re currently connected to <b>{backendURL}</b>.
+          You&apos;re connected to <b>{backendURL}</b>.
           <br />
           <br />
-          <Button variant="danger" onClick={clearBackendURL}>
-            Disconnect
-          </Button>
+          <div className="d-grid gap-0">
+            <Button variant="danger" onClick={clearBackendURL}>
+              <RightPaddedIcon bootstrapIconName="eject" />
+              Disconnect
+            </Button>
+          </div>
         </Alert>
       )}
       Enter the URL of the server you&apos;d like to connect {ProjectName} to
@@ -192,7 +196,6 @@ const RemoteBackendConfig = () => {
         </Form.Group>
         {validationStatus.length > 0 && (
           <>
-            <hr />
             <ul>
               {urlValidationStages.map((item, i) => (
                 <li key={item}>
@@ -204,7 +207,6 @@ const RemoteBackendConfig = () => {
                 </li>
               ))}
             </ul>
-            <hr />
           </>
         )}
         <Button
@@ -233,7 +235,6 @@ const LocalBackendConfig = () => {
       const handle = await window.showDirectoryPicker({ mode: "readwrite" });
       localFilesService.setDirectoryHandle(handle, dispatch);
       await localFilesService.indexDirectory(dispatch, forceUpdate);
-      forceUpdate();
     } catch (e) {
       // TODO: catch specific errors from `showDirectoryPicker`
       // RIP firefox :(
@@ -271,6 +272,35 @@ const LocalBackendConfig = () => {
   return (
     <>
       <h4>Local Folder</h4>
+      {directoryHandle !== undefined && (
+        <Alert variant="success">
+          You&apos;re connected to <b>{directoryHandle.name}</b>, with{" "}
+          <b>{directoryIndex?.index?.size ?? 0}</b> images indexed.
+          <Row className="gx-1 pt-2">
+            <Col xs={6}>
+              <div className="d-grid gap-0">
+                <Button
+                  variant="primary"
+                  onClick={() =>
+                    localFilesService.indexDirectory(dispatch, forceUpdate)
+                  }
+                >
+                  <RightPaddedIcon bootstrapIconName="arrow-repeat" />
+                  Synchronise
+                </Button>
+              </div>
+            </Col>
+            <Col xs={6}>
+              <div className="d-grid gap-0">
+                <Button variant="danger" onClick={clearDirectoryChoice}>
+                  <RightPaddedIcon bootstrapIconName="eject" />
+                  Disconnect
+                </Button>
+              </div>
+            </Col>
+          </Row>
+        </Alert>
+      )}
       <p>
         Choose a folder on your computer you&apos;d like to connect{" "}
         {ProjectName} to.
@@ -291,35 +321,16 @@ const LocalBackendConfig = () => {
       <p>
         This feature only works in <b>Google Chrome</b>.
       </p>
-      <Row className="g-0 pt-2">
-        <Button variant="outline-success" onClick={chooseDirectory}>
+      <Row className="g-0">
+        <Button
+          variant="outline-primary"
+          onClick={chooseDirectory}
+          disabled={directoryHandle !== undefined}
+        >
           <RightPaddedIcon bootstrapIconName="plus-circle" />
           Choose Folder
         </Button>
       </Row>
-
-      {directoryHandle !== undefined && (
-        <>
-          <br />
-          <AutofillTable
-            headers={["Directory", "Indexed Cards", "Remove"]}
-            data={[
-              [
-                <code key={"silly1"}>{directoryHandle.name}</code>,
-                directoryIndex?.index?.size,
-                <TableButton
-                  key={"silly2"}
-                  onClick={() => clearDirectoryChoice()}
-                  className="bi bi-x-lg"
-                />,
-              ],
-            ]}
-            alignment={["left", "center", "center", "center"]}
-            uniformWidth={false}
-            bordered={true}
-          />
-        </>
-      )}
     </>
   );
 };
