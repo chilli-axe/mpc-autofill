@@ -2,18 +2,15 @@
  * State management for cards retrieved from the backend.
  */
 
-import { getByID, Orama } from "@orama/orama";
 import { createSelector } from "@reduxjs/toolkit";
 
 import { CardEndpointPageSize } from "@/common/constants";
-import { SourceType } from "@/common/schema_types";
 import {
   CardDocument,
   CardDocumentsState,
   createAppAsyncThunk,
   createAppSlice,
   OramaCardDocument,
-  OramaSchema,
   useAppSelector,
 } from "@/common/types";
 import { CardDocuments } from "@/common/types";
@@ -62,58 +59,6 @@ export const getCardDocumentRequestPromiseChain = async (
   }
 };
 
-const getLocalCardDocuments = (
-  oramaDb: Orama<typeof OramaSchema>,
-  identifiersToSearch: Array<string>
-): CardDocuments => {
-  return Object.fromEntries(
-    identifiersToSearch.reduce(
-      (accumulated: Array<[string, CardDocument]>, identifier: string) => {
-        const oramaCardDocument = getByID(oramaDb, identifier) as
-          | OramaCardDocument
-          | undefined;
-        if (oramaCardDocument !== undefined) {
-          const lastModified =
-            oramaCardDocument.lastModified.toLocaleDateString(undefined, {
-              weekday: undefined,
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-            });
-
-          accumulated.push([
-            oramaCardDocument.id,
-            {
-              identifier: oramaCardDocument.id,
-              cardType: oramaCardDocument.cardType,
-              name: oramaCardDocument.name,
-              priority: 0,
-              source: oramaCardDocument.source,
-              sourceName: oramaCardDocument.source,
-              sourceId: 0,
-              sourceVerbose: oramaCardDocument.source,
-              sourceType: SourceType.LocalFile,
-              sourceExternalLink: undefined,
-              dpi: oramaCardDocument.dpi,
-              searchq: oramaCardDocument.searchq,
-              extension: oramaCardDocument.extension,
-              dateCreated: lastModified,
-              dateModified: lastModified,
-              size: oramaCardDocument.size,
-              smallThumbnailUrl: undefined,
-              mediumThumbnailUrl: undefined,
-              language: "EN", // TODO
-              tags: oramaCardDocument.tags,
-            },
-          ]);
-        }
-        return accumulated;
-      },
-      [] as Array<[string, CardDocument]>
-    )
-  );
-};
-
 const fetchCardDocuments = createAppAsyncThunk(
   typePrefix,
   /**
@@ -154,7 +99,7 @@ const fetchCardDocuments = createAppAsyncThunk(
     const backendURL = state.backend.url;
 
     const localCardDocuments = oramaDb
-      ? getLocalCardDocuments(oramaDb, identifiersToSearch)
+      ? localFilesService.getLocalCardDocuments(oramaDb, identifiersToSearch)
       : {};
     const remoteCardDocuments = await getCardDocumentRequestPromiseChain(
       identifiersToSearch,

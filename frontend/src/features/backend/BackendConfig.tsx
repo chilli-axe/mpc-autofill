@@ -294,7 +294,7 @@ const LocalBackendConfig = () => {
       <Row className="g-0 pt-2">
         <Button variant="outline-success" onClick={chooseDirectory}>
           <RightPaddedIcon bootstrapIconName="plus-circle" />
-          Choose Directory
+          Choose Folder
         </Button>
       </Row>
 

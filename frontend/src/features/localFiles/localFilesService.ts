@@ -1,4 +1,4 @@
-import { create, insertMultiple } from "@orama/orama";
+import { create, insertMultiple, Orama } from "@orama/orama";
 import { getByID, search } from "@orama/orama";
 import { imageSize } from "image-size";
 import { filetypeextension, filetypemime } from "magic-bytes.js";
@@ -10,8 +10,11 @@ import {
   CardType as CardTypeSchema,
   SearchQuery,
   SearchSettings,
+  SourceType,
 } from "@/common/schema_types";
 import {
+  CardDocument,
+  CardDocuments,
   CardType,
   DirectoryIndex,
   OramaCardDocument,
@@ -21,6 +24,7 @@ import {
 import { api } from "@/store/api";
 import { fetchCardDocumentsAndReportError } from "@/store/slices/cardDocumentsSlice";
 import { clearSearchResults } from "@/store/slices/searchResultsSlice";
+import { getDefaultSearchSettings } from "@/store/slices/searchSettingsSlice";
 import { setNotification } from "@/store/slices/toastsSlice";
 import { AppDispatch } from "@/store/store";
 
@@ -177,8 +181,9 @@ export class LocalFilesService {
   public search(
     searchSettings: SearchSettings,
     query: string | undefined,
-    cardTypes: Array<CardType>
-  ): Array<string> | undefined {
+    cardTypes: Array<CardType>,
+    limit?: number
+  ): Array<{ id: string; document: OramaCardDocument }> | undefined {
     if (this.directoryIndex?.index?.oramaDb === undefined) {
       return undefined;
     }
@@ -187,6 +192,7 @@ export class LocalFilesService {
     const hits = search(this.directoryIndex?.index?.oramaDb, {
       term: query,
       properties: ["searchq"],
+      limit: limit,
       exact:
         query !== undefined && !searchSettings.searchTypeSettings.fuzzySearch,
       where: {
@@ -212,8 +218,20 @@ export class LocalFilesService {
         // }
       },
       // @ts-ignore // TODO
-    }).hits as Array<OramaCardDocument>;
-    return hits.map((cardDocument) => cardDocument.id);
+    }).hits as Array<{ id: string; document: OramaCardDocument }>;
+    return hits;
+  }
+
+  public searchIdentifiers(
+    searchSettings: SearchSettings,
+    query: string | undefined,
+    cardTypes: Array<CardType>,
+    limit?: number
+  ): Array<string> | undefined {
+    const results = this.search(searchSettings, query, cardTypes, limit);
+    return results !== undefined
+      ? results.map((cardDocument) => cardDocument.id)
+      : undefined;
   }
 
   public searchBig(
@@ -234,7 +252,7 @@ export class LocalFilesService {
           };
         }
 
-        const localResultsForQuery = localFilesService.search(
+        const localResultsForQuery = localFilesService.searchIdentifiers(
           searchSettings,
           searchQuery.query,
           [searchQuery.cardType]
@@ -252,7 +270,32 @@ export class LocalFilesService {
     searchSettings: SearchSettings
   ): Array<string> | undefined {
     // TODO: what about cardbacks not filtered?
-    return this.search(searchSettings, undefined, [CardTypeSchema.Cardback]);
+    return this.searchIdentifiers(searchSettings, undefined, [
+      CardTypeSchema.Cardback,
+    ]);
+  }
+
+  public getLocalCardDocuments(
+    oramaDb: Orama<typeof OramaSchema>,
+    identifiersToSearch: Array<string>
+  ): CardDocuments {
+    return Object.fromEntries(
+      identifiersToSearch.reduce(
+        (accumulated: Array<[string, CardDocument]>, identifier: string) => {
+          const oramaCardDocument = getByID(oramaDb, identifier) as
+            | OramaCardDocument
+            | undefined;
+          if (oramaCardDocument !== undefined) {
+            accumulated.push([
+              oramaCardDocument.id,
+              this.translateOramaCardDocumentToCardDocument(oramaCardDocument),
+            ]);
+          }
+          return accumulated;
+        },
+        [] as Array<[string, CardDocument]>
+      )
+    );
   }
 
   public getByID(identifier: string): OramaCardDocument | undefined {
@@ -262,6 +305,73 @@ export class LocalFilesService {
         | undefined;
     }
     return undefined;
+  }
+
+  public translateOramaCardDocumentToCardDocument(
+    oramaCardDocument: OramaCardDocument
+  ): CardDocument {
+    console.log("oramaCardDocument", oramaCardDocument);
+    const lastModified = oramaCardDocument.lastModified.toLocaleDateString(
+      undefined,
+      {
+        weekday: undefined,
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      }
+    );
+    return {
+      identifier: oramaCardDocument.id,
+      cardType: oramaCardDocument.cardType,
+      name: oramaCardDocument.name,
+      priority: 0,
+      source: oramaCardDocument.source,
+      sourceName: oramaCardDocument.source,
+      sourceId: 0,
+      sourceVerbose: oramaCardDocument.source,
+      sourceType: SourceType.LocalFile,
+      sourceExternalLink: undefined,
+      dpi: oramaCardDocument.dpi,
+      searchq: oramaCardDocument.searchq,
+      extension: oramaCardDocument.extension,
+      dateCreated: lastModified,
+      dateModified: lastModified,
+      size: oramaCardDocument.size,
+      smallThumbnailUrl: undefined,
+      mediumThumbnailUrl: undefined,
+      language: "EN", // TODO
+      tags: oramaCardDocument.tags,
+    };
+  }
+
+  public getSampleCards():
+    | { [cardType in CardType]: Array<CardDocument> }
+    | undefined {
+    return this.hasDirectoryHandle()
+      ? (Object.fromEntries(
+          [
+            CardTypeSchema.Card,
+            CardTypeSchema.Cardback,
+            CardTypeSchema.Token,
+          ].map((cardType) => [
+            cardType,
+            localFilesService.hasDirectoryHandle()
+              ? localFilesService
+                  .search(
+                    getDefaultSearchSettings([], false),
+                    undefined,
+                    [cardType],
+                    cardType === CardTypeSchema.Card ? 4 : 1
+                  )
+                  ?.map((result) =>
+                    this.translateOramaCardDocumentToCardDocument(
+                      result.document
+                    )
+                  )
+              : [],
+          ])
+        ) as { [cardType in CardType]: Array<CardDocument> })
+      : undefined;
   }
 }
 
