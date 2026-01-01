@@ -315,8 +315,9 @@ const LocalBackendConfig = () => {
           <a href={MakePlayingCardsURL} target="_blank">
             {MakePlayingCards}
           </a>
-          .<li>Any files you download will go into this folder.</li>
+          .
         </li>
+        <li>Any files you download will go into this folder.</li>
       </ul>
       <p>
         This feature only works in <b>Google Chrome</b>.
