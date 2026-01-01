@@ -8,9 +8,9 @@ import {
 import { standardiseURL } from "@/common/processing";
 import { useAppDispatch, useAppSelector } from "@/common/types";
 import {
-  selectBackendURL,
+  selectRemoteBackendURL,
   setURL,
-  useBackendConfigured,
+  useRemoteBackendConfigured,
 } from "@/store/slices/backendSlice";
 
 export const getEnvURL = (): string | undefined => {
@@ -27,8 +27,8 @@ export function BackendSetter() {
       : null;
 
   const dispatch = useAppDispatch();
-  const backendConfigured = useBackendConfigured();
-  const backendURL = useAppSelector(selectBackendURL);
+  const backendConfigured = useRemoteBackendConfigured();
+  const backendURL = useAppSelector(selectRemoteBackendURL);
   useEffect(() => {
     const envURL = getEnvURL();
     const localStorageBackendURL = getLocalStorageBackendURL();

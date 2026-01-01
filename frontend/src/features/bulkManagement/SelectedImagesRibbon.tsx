@@ -368,7 +368,7 @@ export function SelectedImagesRibbon() {
         );
     }
   };
-  const enabledOptions: Array<OptionKey> = [
+  const validOptions: Array<OptionKey> = [
     ...((slots.length > 0
       ? ["changeSelectedImageSelectedImages", "changeSelectedImageQueries"]
       : []) as Array<OptionKey>),
@@ -417,7 +417,7 @@ export function SelectedImagesRibbon() {
       )}
       <div className="ms-auto" />
       <OverflowList
-        items={enabledOptions}
+        items={validOptions}
         itemRenderer={itemRenderer}
         overflowRenderer={overflowRenderer}
         minVisibleItems={0}

@@ -34,7 +34,7 @@ import { SearchTypeSettings as SearchTypeSettingsElement } from "@/features/sear
 import { SourceSettings as SourceSettingsElement } from "@/features/searchSettings/SourceSettings";
 import { GenericErrorPage } from "@/features/ui/GenericErrorPage";
 import { useGetSampleCardsQuery, usePostExploreSearchQuery } from "@/store/api";
-import { useBackendConfigured } from "@/store/slices/backendSlice";
+import { useRemoteBackendConfigured } from "@/store/slices/backendSlice";
 import {
   getDefaultSearchSettings,
   getDefaultSourceSettings,
@@ -43,7 +43,7 @@ import { selectSourceDocuments } from "@/store/slices/sourceDocumentsSlice";
 
 export function Explore() {
   const maybeSourceDocuments = useAppSelector(selectSourceDocuments);
-  const backendConfigured = useBackendConfigured();
+  const remoteBackendConfigured = useRemoteBackendConfigured();
 
   const defaultSettings: SearchSettings = getDefaultSearchSettings(
     maybeSourceDocuments ?? [],
@@ -150,7 +150,7 @@ export function Explore() {
     [sortBy]
   );
 
-  return backendConfigured ? (
+  return remoteBackendConfigured ? (
     <>
       <Row className="g-0">
         <OverflowCol

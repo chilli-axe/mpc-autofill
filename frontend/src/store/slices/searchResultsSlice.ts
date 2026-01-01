@@ -21,7 +21,7 @@ import {
 } from "@/common/types";
 import { LocalFilesService } from "@/features/localFiles/localFilesService";
 import { APIEditorSearch } from "@/store/api";
-import { selectBackendURL } from "@/store/slices/backendSlice";
+import { selectRemoteBackendURL } from "@/store/slices/backendSlice";
 import { selectCardbacks } from "@/store/slices/cardbackSlice";
 import { selectQueriesWithoutSearchResults } from "@/store/slices/projectSlice";
 import { selectSearchSettings } from "@/store/slices/searchSettingsSlice";
@@ -69,7 +69,7 @@ export const fetchSearchResults = createAppAsyncThunk(
     };
 
     const queriesToSearch = selectQueriesWithoutSearchResults(state); // TODO: is there an edge case here when a local directory is added?
-    const backendURL = selectBackendURL(state);
+    const backendURL = selectRemoteBackendURL(state);
     const searchSettings = selectSearchSettings(state);
 
     const localResults: SearchResults = localFilesService.hasDirectoryHandle()

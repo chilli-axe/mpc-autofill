@@ -218,7 +218,7 @@ async function downloadXML(
 export function useDownloadXML() {
   const store = useAppStore();
   const doFileDownload = useDoFileDownload();
-  const localFilesService = useLocalFilesContext();
+  const { localFilesService } = useLocalFilesContext();
   return () =>
     Promise.resolve(
       doFileDownload(

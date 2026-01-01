@@ -196,8 +196,7 @@ export type Modals =
   | "supportDeveloper"
   | "supportBackend"
   | "invalidIdentifiers"
-  | "finishedMyProject"
-  | "manageLocalFiles";
+  | "finishedMyProject";
 
 export type NoPropModals = Exclude<
   Modals,

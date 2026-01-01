@@ -3,6 +3,7 @@ import { saveAs } from "file-saver";
 import { createContext, useContext } from "react";
 
 import { FileDownloadType, useAppDispatch } from "@/common/types";
+import { useLocalFilesContext } from "@/features/localFiles/localFilesContext";
 import { LocalFilesService } from "@/features/localFiles/localFilesService";
 import {
   enqueueDownload,
@@ -10,8 +11,6 @@ import {
   stopDownload,
 } from "@/store/slices/fileDownloadsSlice";
 import { setNotification } from "@/store/slices/toastsSlice";
-
-import { useLocalFilesContext } from "../localFiles/localFilesContext";
 
 export type DownloadContext = Queue<symbol>;
 
@@ -81,7 +80,7 @@ export function useDoFileDownload(): (
   callable: () => Promise<boolean>
 ) => Promise<void> {
   const queue = useDownloadContext();
-  const localFilesService = useLocalFilesContext();
+  const { localFilesService } = useLocalFilesContext();
   const dispatch = useAppDispatch();
   return (type, name, callable) => {
     const downloadId = Math.random().toString();

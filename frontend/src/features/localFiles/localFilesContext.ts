@@ -1,13 +1,22 @@
-import { createContext, useContext } from "react";
+import {
+  createContext,
+  DispatchWithoutAction,
+  useContext,
+  useReducer,
+} from "react";
 
 import { LocalFilesService } from "@/features/localFiles/localFilesService";
 
-const localFilesContext = createContext<LocalFilesService | undefined>(
+type LocalFilesContext = {
+  localFilesService: LocalFilesService;
+  forceUpdate: DispatchWithoutAction;
+};
+const localFilesContext = createContext<LocalFilesContext | undefined>(
   undefined
 );
 export const LocalFilesContextProvider = localFilesContext.Provider;
 
-export function useLocalFilesContext(): LocalFilesService {
+export function useLocalFilesContext(): LocalFilesContext {
   const context = useContext(localFilesContext);
   if (!context) {
     throw new Error("Attempted to use localFilesContext outside of provider");

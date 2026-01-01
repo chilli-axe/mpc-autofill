@@ -4,22 +4,18 @@ import React from "react";
 import { NoBackendDefault } from "@/components/NoBackendDefault";
 import { Explore as ExploreComponent } from "@/features/explore/Explore";
 import { ProjectContainer } from "@/features/ui/Layout";
-import { useBackendConfigured } from "@/store/slices/backendSlice";
+import { useRemoteBackendConfigured } from "@/store/slices/backendSlice";
 
 function ExploreOrDefault() {
-  const backendConfigured = useBackendConfigured();
-  return backendConfigured ? <ExploreComponent /> : <NoBackendDefault />;
+  const remoteBackendConfigured = useRemoteBackendConfigured();
+  return remoteBackendConfigured ? <ExploreComponent /> : <NoBackendDefault />;
 }
 
 export default function Explore() {
   return (
     <ProjectContainer gutter={0}>
       <Head>
-        <title>Explore</title>{" "}
-        <meta
-          name="description"
-          // content={`${ProjectName}&apos;'s rich project editor.`}
-        />
+        <title>Explore</title> <meta name="description" />
       </Head>
       <ExploreOrDefault />
     </ProjectContainer>

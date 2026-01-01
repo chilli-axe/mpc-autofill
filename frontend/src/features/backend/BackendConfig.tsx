@@ -4,27 +4,35 @@
 
 // TODO: https://github.com/alfg/ping.js/issues/29#issuecomment-487240910
 // @ts-ignore
+import styled from "@emotion/styled";
 import Ping from "ping.js";
-import React, { FormEvent, useEffect, useState } from "react";
+import React, { FormEvent, useReducer, useState } from "react";
 import Alert from "react-bootstrap/Alert";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import Offcanvas from "react-bootstrap/Offcanvas";
+import Row from "react-bootstrap/Row";
 
 import { ProjectName } from "@/common/constants";
+import { MakePlayingCards, MakePlayingCardsURL } from "@/common/constants";
 import {
   clearLocalStorageBackendURL,
-  getLocalStorageBackendURL,
   setLocalStorageBackendURL,
 } from "@/common/cookies";
 import { standardiseURL } from "@/common/processing";
 import { useAppDispatch, useAppSelector } from "@/common/types";
+import { AutofillTable } from "@/components/AutofillTable";
 import { RightPaddedIcon } from "@/components/icon";
+import { getEnvURL } from "@/features/backend/BackendSetter";
+import { useLocalFilesContext } from "@/features/localFiles/localFilesContext";
 import {
   clearURL,
-  selectBackendURL,
+  selectRemoteBackendURL,
   setURL,
 } from "@/store/slices/backendSlice";
+import { useProjectName } from "@/store/slices/backendSlice";
+import { setNotification } from "@/store/slices/toastsSlice";
+
 require("bootstrap-icons/font/bootstrap-icons.css");
 
 enum ValidationState {
@@ -77,6 +85,10 @@ async function searchEngineHealthCheck(url: string): Promise<boolean> {
   return outcome;
 }
 
+const TableButton = styled.i`
+  cursor: pointer;
+`;
+
 interface BackendConfigProps {
   show: boolean;
   handleClose: {
@@ -85,10 +97,10 @@ interface BackendConfigProps {
   };
 }
 
-export function BackendConfig({ show, handleClose }: BackendConfigProps) {
+const RemoteBackendConfig = () => {
   //# region queries and hooks
   const dispatch = useAppDispatch();
-  const backendURL = useAppSelector(selectBackendURL);
+  const backendURL = useAppSelector(selectRemoteBackendURL);
 
   //# endregion
 
@@ -151,63 +163,182 @@ export function BackendConfig({ show, handleClose }: BackendConfigProps) {
   //# endregion
 
   return (
+    <>
+      <h4>Server</h4>
+      {backendURL != null && (
+        <Alert variant="success">
+          You&apos;re currently connected to <b>{backendURL}</b>.
+          <br />
+          <br />
+          <Button variant="danger" onClick={clearBackendURL}>
+            Disconnect
+          </Button>
+        </Alert>
+      )}
+      Enter the URL of the server you&apos;d like to connect {ProjectName} to
+      and hit <b>Submit</b>.
+      <br />
+      <br />
+      <Form onSubmit={handleSubmit}>
+        <Form.Group className="mb-3" controlId="formURL">
+          <Form.Control
+            type="url"
+            placeholder="https://"
+            onChange={(event) => setLocalBackendURL(event.target.value)}
+            value={localBackendURL}
+            disabled={validating}
+            aria-label="backend-url"
+          />
+        </Form.Group>
+        {validationStatus.length > 0 && (
+          <>
+            <hr />
+            <ul>
+              {urlValidationStages.map((item, i) => (
+                <li key={item}>
+                  <RightPaddedIcon
+                    bootstrapIconName={validationStatus[i] ?? "circle"}
+                  />{" "}
+                  {item}
+                  {validationStatus[i] === ValidationState.IN_PROGRESS && "..."}
+                </li>
+              ))}
+            </ul>
+            <hr />
+          </>
+        )}
+        <Button
+          variant="primary"
+          type="submit"
+          disabled={validating || localBackendURL.trim().length == 0}
+          aria-label="submit-backend-url"
+        >
+          Submit
+        </Button>
+      </Form>
+    </>
+  );
+};
+
+const LocalBackendConfig = () => {
+  const { localFilesService, forceUpdate } = useLocalFilesContext();
+  const directoryHandle = localFilesService.getDirectoryHandle();
+  const directoryIndex = localFilesService.getDirectoryIndex();
+
+  const dispatch = useAppDispatch();
+
+  const chooseDirectory = async () => {
+    try {
+      // @ts-ignore
+      const handle = await window.showDirectoryPicker({ mode: "readwrite" });
+      localFilesService.setDirectoryHandle(handle, dispatch);
+      await localFilesService.indexDirectory(dispatch, forceUpdate);
+      forceUpdate();
+    } catch (e) {
+      // TODO: catch specific errors from `showDirectoryPicker`
+      // RIP firefox :(
+      console.log(e);
+      dispatch(
+        setNotification([
+          Math.random().toString(),
+          {
+            name: "Opening Local Folders is Unsupported",
+            message:
+              "Your browser doesn't support opening local folders. Sorry about that!",
+            level: "warning",
+          },
+        ])
+      );
+    }
+  };
+
+  const clearDirectoryChoice = async () => {
+    localFilesService.setDirectoryHandle(undefined, dispatch);
+    forceUpdate();
+    if (directoryHandle !== undefined) {
+      dispatch(
+        setNotification([
+          Math.random().toString(),
+          {
+            name: `Removed ${directoryHandle.name}`,
+            message: null,
+            level: "info",
+          },
+        ])
+      );
+    }
+  };
+  return (
+    <>
+      <h4>Local Folder</h4>
+      <p>
+        Choose a folder on your computer you&apos;d like to connect{" "}
+        {ProjectName} to.
+      </p>
+      <ul>
+        <li>
+          Image files in this folder are searchable in the {ProjectName} editor.
+        </li>
+        <li>
+          You can generate XML files referring to images in this folder to
+          upload to{" "}
+          <a href={MakePlayingCardsURL} target="_blank">
+            {MakePlayingCards}
+          </a>
+          .<li>Any files you download will go into this folder.</li>
+        </li>
+      </ul>
+      <p>
+        This feature only works in <b>Google Chrome</b>.
+      </p>
+      <Row className="g-0 pt-2">
+        <Button variant="outline-success" onClick={chooseDirectory}>
+          <RightPaddedIcon bootstrapIconName="plus-circle" />
+          Choose Directory
+        </Button>
+      </Row>
+
+      {directoryHandle !== undefined && (
+        <>
+          <br />
+          <AutofillTable
+            headers={["Directory", "Indexed Cards", "Remove"]}
+            data={[
+              [
+                <code key={"silly1"}>{directoryHandle.name}</code>,
+                directoryIndex?.index?.size,
+                <TableButton
+                  key={"silly2"}
+                  onClick={() => clearDirectoryChoice()}
+                  className="bi bi-x-lg"
+                />,
+              ],
+            ]}
+            alignment={["left", "center", "center", "center"]}
+            uniformWidth={false}
+            bordered={true}
+          />
+        </>
+      )}
+    </>
+  );
+};
+
+export function BackendConfig({ show, handleClose }: BackendConfigProps) {
+  const envURL = getEnvURL();
+  return (
     <Offcanvas show={show} onHide={handleClose} data-testid="backend-offcanvas">
       <Offcanvas.Header closeButton>
-        <Offcanvas.Title>Configure Server</Offcanvas.Title>
+        <Offcanvas.Title>Configure Sources</Offcanvas.Title>
       </Offcanvas.Header>
       <Offcanvas.Body>
-        {backendURL != null && (
-          <Alert variant="success">
-            You&apos;re currently connected to <b>{backendURL}</b>.
-            <br />
-            <br />
-            <Button variant="danger" onClick={clearBackendURL}>
-              Disconnect
-            </Button>
-          </Alert>
+        {envURL === undefined && (
+          <>
+            <RemoteBackendConfig />
+            <hr />
+          </>
         )}
-        Enter the URL of the server you&apos;d like to connect {ProjectName} to
-        and hit <b>Submit</b>.
-        <br />
-        <br />
-        <Form onSubmit={handleSubmit}>
-          <Form.Group className="mb-3" controlId="formURL">
-            <Form.Control
-              type="url"
-              placeholder="https://"
-              onChange={(event) => setLocalBackendURL(event.target.value)}
-              value={localBackendURL}
-              disabled={validating}
-              aria-label="backend-url"
-            />
-          </Form.Group>
-          {validationStatus.length > 0 && (
-            <>
-              <hr />
-              <ul>
-                {urlValidationStages.map((item, i) => (
-                  <li key={item}>
-                    <RightPaddedIcon
-                      bootstrapIconName={validationStatus[i] ?? "circle"}
-                    />{" "}
-                    {item}
-                    {validationStatus[i] === ValidationState.IN_PROGRESS &&
-                      "..."}
-                  </li>
-                ))}
-              </ul>
-              <hr />
-            </>
-          )}
-          <Button
-            variant="primary"
-            type="submit"
-            disabled={validating || localBackendURL.trim().length == 0}
-            aria-label="submit-backend-url"
-          >
-            Submit
-          </Button>
-        </Form>
+        <LocalBackendConfig />
       </Offcanvas.Body>
     </Offcanvas>
   );

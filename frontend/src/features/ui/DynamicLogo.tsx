@@ -16,8 +16,8 @@ import {
 import { lato } from "@/pages/_app";
 import { api, useGetSampleCardsQuery } from "@/store/api";
 import {
-  useBackendConfigured,
   useProjectName,
+  useRemoteBackendConfigured,
 } from "@/store/slices/backendSlice";
 
 //# region styled components
@@ -234,7 +234,7 @@ export function DynamicLogo() {
   //# region hooks and queries
 
   const dispatch = useAppDispatch();
-  const backendConfigured = useBackendConfigured();
+  const remoteBackendConfigured = useRemoteBackendConfigured();
   const projectName = useProjectName();
   const sampleCardsQuery = useGetSampleCardsQuery();
 
@@ -288,7 +288,7 @@ export function DynamicLogo() {
       FifthImageTransformWrapper,
     ],
   ];
-  const animated = !backendConfigured || sampleCardsQuery.isSuccess;
+  const animated = !remoteBackendConfigured || sampleCardsQuery.isSuccess;
 
   //# endregion
 
@@ -319,20 +319,20 @@ export function DynamicLogo() {
                     animated={animated}
                   >
                     <MemoizedCardProportionWrapper
-                      bordered={!backendConfigured}
+                      bordered={!remoteBackendConfigured}
                       small={true}
                       key={`$logo-card${index}-inner-wrapper`}
                     >
                       <MemoizedCardImage
                         key={`$logo-card${index}-image`}
                         cardDocument={
-                          backendConfigured
+                          remoteBackendConfigured
                             ? maybeCardDocument ?? SampleCardDocument
                             : SampleCardDocument
                         }
                         hidden={false}
                         small={true}
-                        showDetailedViewOnClick={backendConfigured}
+                        showDetailedViewOnClick={remoteBackendConfigured}
                       />
                     </MemoizedCardProportionWrapper>
                   </WrapperElement>

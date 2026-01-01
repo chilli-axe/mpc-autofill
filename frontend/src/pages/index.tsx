@@ -14,16 +14,16 @@ import { DynamicLogo } from "@/features/ui/DynamicLogo";
 import Footer from "@/features/ui/Footer";
 import { ProjectContainer } from "@/features/ui/Layout";
 import {
-  useBackendConfigured,
+  useAnyBackendConfigured,
   useProjectName,
 } from "@/store/slices/backendSlice";
 
 function JumpIntoEditorButton() {
-  const backendConfigured = useBackendConfigured();
+  const anyBackendConfigured = useAnyBackendConfigured();
   return (
     <Row className="justify-content-center">
       <Col xl={6} lg={6} md={8} sm={12} xs={12}>
-        {backendConfigured ? (
+        {anyBackendConfigured ? (
           <Link href="/editor" passHref legacyBehavior>
             <div className="d-grid gap-0">
               <Button>Jump into the project editor!</Button>
@@ -31,7 +31,7 @@ function JumpIntoEditorButton() {
           </Link>
         ) : (
           <p style={{ textAlign: "center" }}>
-            Click the <b>Configure Server</b> button in the top-right to get
+            Click the <b>Configure Sources</b> button in the top-right to get
             started!
           </p>
         )}

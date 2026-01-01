@@ -77,7 +77,7 @@ const useLocalFileImageSrc = (
   cardDocument: CardDocument,
   setImageState: (imageState: ImageState) => void
 ): string | undefined => {
-  const localFilesService = useLocalFilesContext();
+  const { localFilesService } = useLocalFilesContext();
   const [blobURL, setBlobURL] = useState<string | undefined>(undefined);
   useEffect(() => {
     const oramaCardDocument = localFilesService.getByID(

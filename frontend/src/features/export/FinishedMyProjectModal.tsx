@@ -120,7 +120,7 @@ async function downloadDesktopTool(
 export function useDownloadDesktopTool() {
   const dispatch = useAppDispatch();
   const doFileDownload = useDoFileDownload();
-  const localFilesService = useLocalFilesContext();
+  const { localFilesService } = useLocalFilesContext();
   return (url: URL, fileName: string) =>
     Promise.resolve(
       doFileDownload(

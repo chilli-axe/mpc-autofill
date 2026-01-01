@@ -11,7 +11,7 @@ export function useDoImageDownload(): (
   // TODO: this function will need to be updated when we update the frontend to support multiple image repo backends
   const [triggerFn, getGoogleDriveImageQuery] =
     api.endpoints.getGoogleDriveImage.useLazyQuery();
-  const localFilesService = useLocalFilesContext();
+  const { localFilesService } = useLocalFilesContext();
 
   async function doImageDownload(cardDocument: CardDocument): Promise<boolean> {
     try {

@@ -7,13 +7,13 @@ import { NewCards } from "@/features/new/New";
 import Footer from "@/features/ui/Footer";
 import { ProjectContainer } from "@/features/ui/Layout";
 import {
-  useBackendConfigured,
   useProjectName,
+  useRemoteBackendConfigured,
 } from "@/store/slices/backendSlice";
 
 function NewOrDefault() {
-  const backendConfigured = useBackendConfigured();
-  return backendConfigured ? (
+  const remoteBackendConfigured = useRemoteBackendConfigured();
+  return remoteBackendConfigured ? (
     <>
       <h1>What&apos;s New?</h1>
       <NewCards />

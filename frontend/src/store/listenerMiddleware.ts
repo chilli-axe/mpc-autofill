@@ -14,7 +14,7 @@ import { Faces } from "@/common/types";
 import { api } from "@/store/api";
 import {
   clearURL,
-  selectBackendConfigured,
+  selectRemoteBackendConfigured,
   setURL,
 } from "@/store/slices/backendSlice";
 import {
@@ -72,7 +72,7 @@ startAppListening({
    */
   effect: async (action, { getState, dispatch }) => {
     const state = getState();
-    const isBackendConfigured = selectBackendConfigured(state);
+    const isBackendConfigured = selectRemoteBackendConfigured(state);
     if (isBackendConfigured) {
       await fetchSourceDocumentsAndReportError(dispatch);
     }

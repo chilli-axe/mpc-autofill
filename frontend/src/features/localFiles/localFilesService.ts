@@ -2,6 +2,7 @@ import { create, insertMultiple } from "@orama/orama";
 import { getByID, search } from "@orama/orama";
 import { imageSize } from "image-size";
 import { filetypeextension, filetypemime } from "magic-bytes.js";
+import { DispatchWithoutAction } from "react";
 
 import { QueryTags } from "@/common/constants";
 import { removeFileExtension, toSearchable } from "@/common/processing";
@@ -152,7 +153,10 @@ export class LocalFilesService {
     this.directoryHandle = directoryHandle;
   }
 
-  public async indexDirectory(dispatch: AppDispatch) {
+  public async indexDirectory(
+    dispatch: AppDispatch,
+    forceUpdate: DispatchWithoutAction
+  ) {
     if (this.directoryHandle !== undefined) {
       this.directoryIndex = await indexDirectory(
         this.directoryHandle,
@@ -161,6 +165,7 @@ export class LocalFilesService {
       dispatch(api.util.invalidateTags([QueryTags.BackendSpecific]));
       dispatch(clearSearchResults());
       fetchCardDocumentsAndReportError(dispatch, { refreshCardbacks: true });
+      forceUpdate();
     }
   }
 

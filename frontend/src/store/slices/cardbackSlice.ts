@@ -11,7 +11,7 @@ import {
 } from "@/common/types";
 import { LocalFilesService } from "@/features/localFiles/localFilesService";
 import { APIGetCardbacks } from "@/store/api";
-import { selectBackendURL } from "@/store/slices/backendSlice";
+import { selectRemoteBackendURL } from "@/store/slices/backendSlice";
 import { selectSearchSettings } from "@/store/slices/searchSettingsSlice";
 import { setNotification } from "@/store/slices/toastsSlice";
 import { AppDispatch, RootState } from "@/store/store";
@@ -28,7 +28,7 @@ export const fetchCardbacks = createAppAsyncThunk(
       // TODO: move this extra type into types.ts
       localFilesService: LocalFilesService;
     };
-    const backendURL = selectBackendURL(state);
+    const backendURL = selectRemoteBackendURL(state);
     const searchSettings = selectSearchSettings(state);
 
     const localResults: Array<string> =

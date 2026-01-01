@@ -23,8 +23,9 @@ import {
 } from "@/features/download/DownloadManager";
 import { useGetBackendInfoQuery, useGetPatreonQuery } from "@/store/api";
 import {
-  useBackendConfigured,
+  useAnyBackendConfigured,
   useProjectName,
+  useRemoteBackendConfigured,
 } from "@/store/slices/backendSlice";
 import { showModal } from "@/store/slices/modalsSlice";
 
@@ -42,7 +43,8 @@ const BoldCollapse = styled(Navbar.Collapse)`
 
 export default function ProjectNavbar() {
   const dispatch = useAppDispatch();
-  const backendConfigured = useBackendConfigured();
+  const remoteBackendConfigured = useRemoteBackendConfigured();
+  const anyBackendConfigured = useAnyBackendConfigured();
   const backendInfoQuery = useGetBackendInfoQuery();
   const patreonQuery = useGetPatreonQuery();
 
@@ -87,14 +89,16 @@ export default function ProjectNavbar() {
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
           <BoldCollapse id="basic-navbar-nav">
             <Nav className="me-auto">
-              <Nav.Link
-                as={Link}
-                href="/editor"
-                active={router.route === "/editor"}
-              >
-                Editor
-              </Nav.Link>
-              {backendConfigured && (
+              {anyBackendConfigured && (
+                <Nav.Link
+                  as={Link}
+                  href="/editor"
+                  active={router.route === "/editor"}
+                >
+                  Editor
+                </Nav.Link>
+              )}
+              {remoteBackendConfigured && (
                 <>
                   <Nav.Link
                     as={Link}
@@ -151,18 +155,16 @@ export default function ProjectNavbar() {
                   handleClick={handleShowDownloadManager}
                 />
               </Nav.Link>
-              {(process.env.NEXT_PUBLIC_BACKEND_URL ?? "") === "" && (
-                <Nav.Link className="m-0 py-0">
-                  <Button
-                    className="my-0"
-                    variant="success"
-                    onClick={handleShowBackendConfig}
-                    aria-label="configure-server-btn"
-                  >
-                    Configure Server
-                  </Button>
-                </Nav.Link>
-              )}
+              <Nav.Link className="m-0 py-0">
+                <Button
+                  className="my-0"
+                  variant="success"
+                  onClick={handleShowBackendConfig}
+                  aria-label="configure-server-btn"
+                >
+                  Configure Sources
+                </Button>
+              </Nav.Link>
             </Nav>
           </BoldCollapse>
         </MaxWidthContainer>

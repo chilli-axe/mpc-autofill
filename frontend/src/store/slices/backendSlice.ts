@@ -4,6 +4,7 @@
 
 import { ProjectName } from "@/common/constants";
 import { BackendState, createAppSlice, useAppSelector } from "@/common/types";
+import { useLocalFilesContext } from "@/features/localFiles/localFilesContext";
 import { useGetBackendInfoQuery } from "@/store/api";
 import { RootState } from "@/store/store";
 
@@ -33,17 +34,28 @@ export default backendSlice.reducer;
 
 //# region selectors
 
-export const selectBackendURL = (state: RootState) => state.backend.url;
-export const selectBackendConfigured = (state: RootState) =>
-  selectBackendURL(state) != null;
+export const selectRemoteBackendURL = (state: RootState) => state.backend.url;
+export const selectRemoteBackendConfigured = (state: RootState) =>
+  selectRemoteBackendURL(state) != null;
 
 //# endregion
 
 //# region hooks
 
-export function useBackendConfigured(): boolean {
-  return useAppSelector(selectBackendConfigured);
-}
+export const useRemoteBackendConfigured = (): boolean => {
+  return useAppSelector(selectRemoteBackendConfigured);
+};
+
+export const useLocalBackendConfigured = (): boolean => {
+  const { localFilesService } = useLocalFilesContext();
+  return localFilesService.hasDirectoryHandle();
+};
+
+export const useAnyBackendConfigured = (): boolean => {
+  const remoteBackendConfigured = useRemoteBackendConfigured();
+  const localBackendConfigured = useLocalBackendConfigured();
+  return remoteBackendConfigured || localBackendConfigured;
+};
 
 export function useProjectName() {
   const backendInfoQuery = useGetBackendInfoQuery();

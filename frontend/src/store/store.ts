@@ -10,7 +10,7 @@ import { localFilesService } from "@/features/localFiles/localFilesService";
 import { api } from "@/store/api";
 import { listenerMiddleware } from "@/store/listenerMiddleware";
 import backendReducer, {
-  selectBackendConfigured,
+  selectRemoteBackendConfigured,
 } from "@/store/slices/backendSlice";
 import cardbacksReducer from "@/store/slices/cardbackSlice";
 import cardDocumentsReducer from "@/store/slices/cardDocumentsSlice";
@@ -55,7 +55,7 @@ const rtkQueryErrorLogger =
       return;
     }
 
-    const backendConfigured = selectBackendConfigured(api.getState());
+    const backendConfigured = selectRemoteBackendConfigured(api.getState());
     if (
       backendConfigured &&
       isRejectedWithValue(action) &&

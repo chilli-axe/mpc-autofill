@@ -124,7 +124,7 @@ async function downloadDecklist(
 export function useDownloadDecklist() {
   const store = useAppStore();
   const doFileDownload = useDoFileDownload();
-  const localFilesService = useLocalFilesContext();
+  const { localFilesService } = useLocalFilesContext();
   return () =>
     Promise.resolve(
       doFileDownload(

@@ -11,8 +11,8 @@ export function NoBackendDefault() {
     <GenericErrorPage
       title="No Server Configured"
       text={[
-        `You haven't configured a server for ${ProjectName} to communicate with just yet.`,
-        "Click the Configure Server button in the top-right to get started!",
+        `You haven't configured any sources for ${ProjectName} just yet.`,
+        "Click the Configure Sources button in the top-right to get started!",
       ]}
     />
   );

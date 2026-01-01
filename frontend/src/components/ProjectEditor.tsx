@@ -20,10 +20,9 @@ import { Export } from "@/features/export/Export";
 import { FinishedMyProject } from "@/features/export/FinishedMyProjectModal";
 import { FinishSettings } from "@/features/finishSettings/FinishSettings";
 import { Import } from "@/features/import/Import";
-import { ManageLocalFiles } from "@/features/localFiles/ManageLocalFilesModal";
 import { SearchSettings } from "@/features/searchSettings/SearchSettings";
 import { Status } from "@/features/status/Status";
-import { useBackendConfigured } from "@/store/slices/backendSlice";
+import { useRemoteBackendConfigured } from "@/store/slices/backendSlice";
 import {
   selectIsProjectEmpty,
   selectProjectCardback,
@@ -33,7 +32,6 @@ function ProjectEditor() {
   // TODO: should we periodically ping the backend to make sure it's still alive?
   //# region queries and hooks
 
-  const backendConfigured = useBackendConfigured();
   const cardback = useAppSelector(selectProjectCardback);
   const isProjectEmpty = useAppSelector(selectIsProjectEmpty);
 
@@ -89,7 +87,6 @@ function ProjectEditor() {
           <FinishSettings />
         </Row>
         <Row className="g-0 pt-2">
-          <ManageLocalFiles />
           <SearchSettings />
         </Row>
         <Row className="g-0 pt-2">
