@@ -83,21 +83,6 @@ export function processPrefix(query: string): SearchQuery {
   return { query: processQuery(query), cardType: CardTypePrefixes[""] };
 }
 
-const getPhrasesNotAllowedInIdentifiers = (): Array<string> => [
-  SelectedImageSeparator,
-  FaceSeparator,
-];
-
-const getPhrasesNotAllowedInIdentifiersNegativeLookahead = (): string =>
-  // super naive and hardcoded for the // separator case
-  // https://tc39.es/proposal-regex-escaping/ my beloved
-  `(?!${getPhrasesNotAllowedInIdentifiers()
-    .map((phrase: string) => phrase.replaceAll("/", "/"))
-    .join("|")})`;
-
-const getIdentifierCaptureGroup = (): string =>
-  `(${getPhrasesNotAllowedInIdentifiersNegativeLookahead()}(.*))`;
-
 /**
  * Unpack `line` into its constituents.
  *
@@ -115,15 +100,12 @@ function unpackLine(
   line: string
 ): [number, [string, string | null] | null, [string, string | null] | null] {
   const trimmedLine = line.replace(/\s+/g, " ").trim();
-  const identifierCaptureGroup = getIdentifierCaptureGroup();
   const re = new RegExp(
-    `^(?:([0-9]+[xX]?\\s)?(.*?)(?:${SelectedImageSeparator}${identifierCaptureGroup})?)?(?:(?:\\s*)${
+    `^(?:([0-9]+[xX]?\\s)?(.*?)(?:${SelectedImageSeparator}([A-z0-9_\\-]*))?)?(?:(?:\\s*)${
       "\\" + FaceSeparator
-    }(?:\\s*)(.+?)(?:${SelectedImageSeparator}${identifierCaptureGroup})?)?$`,
+    }(?:\\s*)(.+?)(?:${SelectedImageSeparator}([A-z0-9_\\-]*))?)?$`,
     "gm"
   );
-  console.log("re", re);
-  console.log("line", line);
   const results = re.exec(trimmedLine);
   if (results == null) {
     return [0, null, null];
