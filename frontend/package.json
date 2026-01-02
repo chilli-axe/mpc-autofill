@@ -65,7 +65,6 @@
     "@types/react-dom": "^18.3.1",
     "@typescript-eslint/eslint-plugin": "^5.57.0",
     "@typescript-eslint/parser": "^5.57.0",
-    "@welldone-software/why-did-you-render": "^7.0.1",
     "autoprefixer": "^10.4.14",
     "eslint": "^8.39.0",
     "eslint-config-next": "^14.2.16",
