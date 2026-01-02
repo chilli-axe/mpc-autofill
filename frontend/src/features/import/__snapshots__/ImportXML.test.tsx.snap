@@ -72,26 +72,30 @@ exports[`the html structure of XML importer 1`] = `
         expects a file in this format.
       </p>
       <div
-        class="btn toggle btn-md off btn-info"
-        role="button"
-        style="width: 100%; height: 38px;"
+        class="px-0"
       >
         <div
-          class="toggle-group"
+          class="btn toggle btn-md off btn-info"
+          role="button"
+          style="width: 100%; height: 38px;"
         >
-          <span
-            class="btn toggle-on btn-md flex-centre btn-success"
+          <div
+            class="toggle-group"
           >
-            Use XML Cardback
-          </span>
-          <span
-            class="btn toggle-off btn-md flex-centre btn-info"
-          >
-            Retain Selected Cardback
-          </span>
-          <span
-            class="toggle-handle btn btn-md btn-default"
-          />
+            <span
+              class="btn toggle-on btn-md flex-centre btn-success"
+            >
+              Use XML Cardback
+            </span>
+            <span
+              class="btn toggle-off btn-md flex-centre btn-info"
+            >
+              Retain Selected Cardback
+            </span>
+            <span
+              class="toggle-handle btn btn-md btn-default"
+            />
+          </div>
         </div>
       </div>
       <div
@@ -134,7 +138,7 @@ exports[`the html structure of XML importer 1`] = `
           <input
             accept="text/xml,.xml"
             multiple=""
-            style="display: none;"
+            style="border: 0px; clip: rect(0px, 0px, 0px, 0px); clip-path: inset(50%); height: 1px; margin: 0px -1px -1px 0px; overflow: hidden; padding: 0px; position: absolute; width: 1px; white-space: nowrap;"
             tabindex="-1"
             type="file"
           />

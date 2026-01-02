@@ -369,9 +369,9 @@ exports[`the html structure of search settings 1`] = `
         class="px-1 container"
       >
         <h5>
-          Sources
+          Contributors
         </h5>
-        Configure the sources to include in the search results.
+        Configure the contributors to include in the search results.
         <ul>
           <li>
             <b>
@@ -400,7 +400,7 @@ exports[`the html structure of search settings 1`] = `
         </div>
         <br />
         <table
-          class="table"
+          class="table table-secondary"
           style="table-layout: auto;"
         >
           <thead>
@@ -410,12 +410,12 @@ exports[`the html structure of search settings 1`] = `
               <th
                 class="prevent-select"
               >
-                Enabled
+                Active
               </th>
               <th
                 class="prevent-select"
               >
-                Source Name
+                Name
               </th>
               <th />
               <th />
@@ -423,10 +423,10 @@ exports[`the html structure of search settings 1`] = `
           </thead>
           <tbody>
             <tr
-              aria-describedby="rfd-hidden-text-:r0:-hidden-text-:r1:"
-              data-rfd-drag-handle-context-id=":r0:"
+              aria-describedby="rfd-hidden-text-:r4:-hidden-text-:r5:"
+              data-rfd-drag-handle-context-id=":r4:"
               data-rfd-drag-handle-draggable-id="0"
-              data-rfd-draggable-context-id=":r0:"
+              data-rfd-draggable-context-id=":r4:"
               data-rfd-draggable-id="0"
               draggable="false"
               role="button"
@@ -488,10 +488,10 @@ exports[`the html structure of search settings 1`] = `
               </td>
             </tr>
             <tr
-              aria-describedby="rfd-hidden-text-:r0:-hidden-text-:r1:"
-              data-rfd-drag-handle-context-id=":r0:"
+              aria-describedby="rfd-hidden-text-:r4:-hidden-text-:r5:"
+              data-rfd-drag-handle-context-id=":r4:"
               data-rfd-drag-handle-draggable-id="1"
-              data-rfd-draggable-context-id=":r0:"
+              data-rfd-draggable-context-id=":r4:"
               data-rfd-draggable-id="1"
               draggable="false"
               role="button"
@@ -553,10 +553,10 @@ exports[`the html structure of search settings 1`] = `
               </td>
             </tr>
             <tr
-              aria-describedby="rfd-hidden-text-:r0:-hidden-text-:r1:"
-              data-rfd-drag-handle-context-id=":r0:"
+              aria-describedby="rfd-hidden-text-:r4:-hidden-text-:r5:"
+              data-rfd-drag-handle-context-id=":r4:"
               data-rfd-drag-handle-draggable-id="2"
-              data-rfd-draggable-context-id=":r0:"
+              data-rfd-draggable-context-id=":r4:"
               data-rfd-draggable-id="2"
               draggable="false"
               role="button"

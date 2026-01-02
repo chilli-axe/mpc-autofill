@@ -81,7 +81,7 @@ exports[`invalidIdentifiersModal displays the appropriate data 1`] = `
       class="emotion-0"
     >
       <table
-        class="emotion-1 table table-hover"
+        class="emotion-1 table table-secondary table-hover"
       >
         <thead>
           <tr>

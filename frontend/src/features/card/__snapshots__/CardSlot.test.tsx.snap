@@ -32,6 +32,7 @@ exports[`the html structure of a CardSlot with a single search result, image sel
 >
   <div
     class="mpccard mpccard-hover card"
+    style="content-visibility: auto;"
   >
     <div
       class="pb-0 text-center card-header"
@@ -139,6 +140,7 @@ exports[`the html structure of a CardSlot with a single search result, no image 
 >
   <div
     class="mpccard mpccard-hover card"
+    style="content-visibility: auto;"
   >
     <div
       class="pb-0 text-center card-header"
@@ -246,6 +248,7 @@ exports[`the html structure of a CardSlot with a single search result, slot sele
 >
   <div
     class="mpccard mpccard-hover card"
+    style="content-visibility: auto;"
   >
     <div
       class="pb-0 text-center card-header"
@@ -358,6 +361,7 @@ exports[`the html structure of a CardSlot with multiple search results, image se
 >
   <div
     class="mpccard mpccard-hover card"
+    style="content-visibility: auto;"
   >
     <div
       class="pb-0 text-center card-header"
@@ -654,6 +658,7 @@ exports[`the html structure of a CardSlot's grid selector, cards faceted by sour
           <div>
             <div
               class="mpccard mpccard-highlight card"
+              style="content-visibility: auto;"
             >
               <div
                 class="pb-0 text-center card-header"
@@ -707,6 +712,7 @@ exports[`the html structure of a CardSlot's grid selector, cards faceted by sour
           <div>
             <div
               class="mpccard mpccard-hover card"
+              style="content-visibility: auto;"
             >
               <div
                 class="pb-0 text-center card-header"
@@ -760,6 +766,7 @@ exports[`the html structure of a CardSlot's grid selector, cards faceted by sour
           <div>
             <div
               class="mpccard mpccard-hover card"
+              style="content-visibility: auto;"
             >
               <div
                 class="pb-0 text-center card-header"
@@ -813,6 +820,7 @@ exports[`the html structure of a CardSlot's grid selector, cards faceted by sour
           <div>
             <div
               class="mpccard mpccard-hover card"
+              style="content-visibility: auto;"
             >
               <div
                 class="pb-0 text-center card-header"
@@ -1062,6 +1070,7 @@ exports[`the html structure of a CardSlot's grid selector, cards grouped togethe
           <div>
             <div
               class="mpccard mpccard-highlight card"
+              style="content-visibility: auto;"
             >
               <div
                 class="pb-0 text-center card-header"
@@ -1115,6 +1124,7 @@ exports[`the html structure of a CardSlot's grid selector, cards grouped togethe
           <div>
             <div
               class="mpccard mpccard-hover card"
+              style="content-visibility: auto;"
             >
               <div
                 class="pb-0 text-center card-header"
@@ -1168,6 +1178,7 @@ exports[`the html structure of a CardSlot's grid selector, cards grouped togethe
           <div>
             <div
               class="mpccard mpccard-hover card"
+              style="content-visibility: auto;"
             >
               <div
                 class="pb-0 text-center card-header"
@@ -1221,6 +1232,7 @@ exports[`the html structure of a CardSlot's grid selector, cards grouped togethe
           <div>
             <div
               class="mpccard mpccard-hover card"
+              style="content-visibility: auto;"
             >
               <div
                 class="pb-0 text-center card-header"

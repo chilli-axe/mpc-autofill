@@ -109,7 +109,7 @@ exports[`the html structure of a CardDetailedViewModal 1`] = `
             class="emotion-2"
           >
             <table
-              class="emotion-3 table table-hover"
+              class="emotion-3 table table-secondary table-hover"
             >
               <tbody>
                 <tr>

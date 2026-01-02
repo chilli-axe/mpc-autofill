@@ -21,6 +21,7 @@ exports[`the html structure of a CommonCardback with a single search result 1`] 
 >
   <div
     class="mpccard mpccard-hover card"
+    style="content-visibility: auto;"
   >
     <div
       class="pb-0 text-center card-header"
@@ -100,6 +101,7 @@ exports[`the html structure of a CommonCardback with multiple search results 1`]
 >
   <div
     class="mpccard mpccard-hover card"
+    style="content-visibility: auto;"
   >
     <div
       class="pb-0 text-center card-header"
