@@ -11,6 +11,7 @@ export const Token: CardType = CardTypeSchema.Token;
 export const SelectedImageSeparator = "@";
 export const CardTypeSeparator = ":";
 export const FaceSeparator = "//";
+export const FaceSeparatorRegexEscaped = "//";
 
 export const CardTypePrefixes: { [prefix: string]: CardType } = {
   "": Card,

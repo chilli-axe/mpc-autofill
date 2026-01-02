@@ -13,6 +13,7 @@ import {
   CardTypeSeparator,
   CSVHeaders,
   FaceSeparator,
+  FaceSeparatorRegexEscaped,
   ProjectMaxSize,
   ReversedCardTypePrefixes,
   SelectedImageSeparator,
@@ -83,6 +84,36 @@ export function processPrefix(query: string): SearchQuery {
   return { query: processQuery(query), cardType: CardTypePrefixes[""] };
 }
 
+const getPhrasesNotAllowedInIdentifiers = (): Array<string> => [
+  SelectedImageSeparator,
+  FaceSeparatorRegexEscaped,
+];
+
+const getPhrasesNotAllowedInIdentifiersNegativeLookahead = (): string =>
+  `(?!.*?(?:${getPhrasesNotAllowedInIdentifiers().join("|")})).*`;
+
+const trimLine = (line: string): string => line.replace(/\s+/g, " ").trim();
+
+/**
+ * Extract the quantity component of `line`, which follows one of these forms:
+ * * `<quantity - numeric> <query>`
+ * * `<quantity - numeric>x <query>`
+ * * `<query>` (quantity is assumed to be 1 in this case)
+ * @param line
+ * @returns Tuple of the form [quantity, remainder of the string]
+ */
+const extractQuantity = (line: string): [number, string] => {
+  const re = /^([0-9]+[xX]?\s+)?(.*)$/g;
+  const results = re.exec(trimLine(line));
+  if (results == null) {
+    return [0, ""];
+  }
+  const quantity = parseInt(
+    (results[1] ?? "1").toLowerCase().replace("x", "").trim()
+  );
+  return [quantity, results[2]];
+};
+
 /**
  * Unpack `line` into its constituents.
  *
@@ -93,27 +124,29 @@ export function processPrefix(query: string): SearchQuery {
  * If quantity is not specified, we assume a quantity of 1.
  * Specifying a back query is optional.
  * Specifying an image ID (for each face) is optional.
- *
- * (sorry for jamming this much stuff into one regex 🗿)
  */
 function unpackLine(
   line: string
 ): [number, [string, string | null] | null, [string, string | null] | null] {
-  const trimmedLine = line.replace(/\s+/g, " ").trim();
-  const re = new RegExp(
-    `^(?:([0-9]+[xX]?\\s)?(.*?)(?:${SelectedImageSeparator}([A-z0-9_\\-]*))?)?(?:(?:\\s*)${
-      "\\" + FaceSeparator
-    }(?:\\s*)(.+?)(?:${SelectedImageSeparator}([A-z0-9_\\-]*))?)?$`,
+  const [quantity, trimmedLine] = extractQuantity(line);
+
+  const [frontLine, backLine] = trimmedLine.split(` ${FaceSeparator} `);
+
+  const faceLineRegex = new RegExp(
+    `^(.+?)(?:${SelectedImageSeparator}(${getPhrasesNotAllowedInIdentifiersNegativeLookahead()}))?$`,
     "gm"
   );
-  const results = re.exec(trimmedLine);
-  if (results == null) {
+  const frontLineResults = [...frontLine.matchAll(faceLineRegex)][0];
+  const backLineResults =
+    backLine !== undefined ? [...backLine.matchAll(faceLineRegex)][0] : null;
+
+  if (frontLineResults === null) {
     return [0, null, null];
   }
   return [
-    parseInt((results[1] ?? "1").toLowerCase().replace("x", "").trim()),
-    [results[2], results[3]],
-    [results[4], results[5]],
+    quantity,
+    [frontLineResults[1], frontLineResults[2]],
+    backLineResults !== null ? [backLineResults[1], backLineResults[2]] : null,
   ];
 }
 

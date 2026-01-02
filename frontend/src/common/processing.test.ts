@@ -15,7 +15,8 @@ import {
   standardiseURL,
   stripTextInParentheses,
 } from "@/common/processing";
-import { DFCPairs } from "@/common/types";
+import { CardType } from "@/common/schema_types";
+import { DFCPairs, ProcessedLine } from "@/common/types";
 
 // # region constants
 
@@ -346,6 +347,87 @@ test("a line specifying the selected image ID for both faces is processed correc
       selected: false,
     },
   ]);
+});
+
+describe("file path-like identifier handling", () => {
+  test.each([
+    {
+      line: "opt@./some/path/opt.png",
+      expectedResult: [
+        1,
+        {
+          query: {
+            query: "opt",
+            cardType: CardType.Card,
+          },
+          selectedImage: "./some/path/opt.png",
+          selected: false,
+        },
+        null,
+      ],
+    },
+    {
+      line: "opt@./some/path/opt.png // char",
+      expectedResult: [
+        1,
+        {
+          query: {
+            query: "opt",
+            cardType: CardType.Card,
+          },
+          selectedImage: "./some/path/opt.png",
+          selected: false,
+        },
+        {
+          query: {
+            query: "char",
+            cardType: CardType.Card,
+          },
+          selectedImage: undefined,
+          selected: false,
+        },
+      ],
+    },
+    {
+      line: "opt@./some/path/opt.png // char@./some/other/path/char.jpg",
+      expectedResult: [
+        1,
+        {
+          query: {
+            query: "opt",
+            cardType: CardType.Card,
+          },
+          selectedImage: "./some/path/opt.png",
+          selected: false,
+        },
+        {
+          query: {
+            query: "char",
+            cardType: CardType.Card,
+          },
+          selectedImage: "./some/other/path/char.jpg",
+          selected: false,
+        },
+      ],
+    },
+    {
+      line: "opt@./some path with spaces/opt.png",
+      expectedResult: [
+        1,
+        {
+          query: {
+            query: "opt",
+            cardType: CardType.Card,
+          },
+          selectedImage: "./some path with spaces/opt.png",
+          selected: false,
+        },
+        null,
+      ],
+    },
+  ])("%s", ({ line, expectedResult }) => {
+    expect(processLine(line, {}, false)).toStrictEqual(expectedResult);
+  });
 });
 
 describe("URLs are sanitised correctly", () => {
