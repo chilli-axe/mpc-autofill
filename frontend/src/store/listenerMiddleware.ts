@@ -50,6 +50,19 @@ import {
 
 import type { AppDispatch, RootState } from "./store";
 
+export const recalculateSearchResults = async (
+  state: RootState,
+  dispatch: AppDispatch,
+  refreshCardbacks?: boolean
+) => {
+  dispatch(clearSearchResults());
+  await fetchCardDocumentsAndReportError(dispatch, {
+    refreshCardbacks:
+      refreshCardbacks ??
+      state.searchSettings.searchTypeSettings.filterCardbacks,
+  });
+};
+
 //# region boilerplate
 
 export const listenerMiddleware = createListenerMiddleware();
@@ -72,9 +85,11 @@ startAppListening({
    */
   effect: async (action, { getState, dispatch }) => {
     const state = getState();
-    const isBackendConfigured = selectRemoteBackendConfigured(state);
-    if (isBackendConfigured) {
-      await fetchSourceDocumentsAndReportError(dispatch);
+    const isRemoteBackendConfigured = selectRemoteBackendConfigured(state);
+    if (isRemoteBackendConfigured) {
+      await fetchSourceDocumentsAndReportError(dispatch).then(() =>
+        fetchCardbacksAndReportError(dispatch)
+      );
     }
   },
 });
@@ -120,10 +135,7 @@ startAppListening({
    */
   effect: async (action, { getState, dispatch }) => {
     const state = getState();
-    dispatch(clearSearchResults());
-    await fetchCardDocumentsAndReportError(dispatch, {
-      refreshCardbacks: state.searchSettings.searchTypeSettings.filterCardbacks,
-    });
+    await recalculateSearchResults(state, dispatch);
   },
 });
 

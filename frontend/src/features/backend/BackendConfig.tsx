@@ -21,7 +21,7 @@ import {
   setLocalStorageBackendURL,
 } from "@/common/cookies";
 import { standardiseURL } from "@/common/processing";
-import { useAppDispatch, useAppSelector } from "@/common/types";
+import { useAppDispatch, useAppSelector, useAppStore } from "@/common/types";
 import { AutofillTable } from "@/components/AutofillTable";
 import { RightPaddedIcon } from "@/components/icon";
 import { getEnvURL } from "@/features/backend/BackendSetter";
@@ -228,13 +228,18 @@ const LocalBackendConfig = () => {
   const directoryIndex = localFilesService.getDirectoryIndex();
 
   const dispatch = useAppDispatch();
+  const store = useAppStore();
 
   const chooseDirectory = async () => {
     try {
       // @ts-ignore
       const handle = await window.showDirectoryPicker({ mode: "readwrite" });
-      localFilesService.setDirectoryHandle(handle, dispatch);
-      await localFilesService.indexDirectory(dispatch, forceUpdate);
+      await localFilesService.setDirectoryHandle(
+        handle,
+        store.getState(),
+        dispatch,
+        forceUpdate
+      );
     } catch (e) {
       // TODO: catch specific errors from `showDirectoryPicker`
       // RIP firefox :(
@@ -254,7 +259,7 @@ const LocalBackendConfig = () => {
   };
 
   const clearDirectoryChoice = async () => {
-    localFilesService.setDirectoryHandle(undefined, dispatch);
+    localFilesService.clearDirectoryHandle(store.getState(), dispatch);
     forceUpdate();
     if (directoryHandle !== undefined) {
       dispatch(

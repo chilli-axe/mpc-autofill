@@ -112,7 +112,6 @@ export async function fetchSearchResultsAndReportError(
   try {
     await dispatch(fetchSearchResults(oramaDb)).unwrap();
   } catch (error: any) {
-    console.log(error);
     dispatch(
       setNotification([
         typePrefix,

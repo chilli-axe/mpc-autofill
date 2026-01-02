@@ -22,11 +22,13 @@ import {
   SearchResults,
 } from "@/common/types";
 import { api } from "@/store/api";
+import { recalculateSearchResults } from "@/store/listenerMiddleware";
+import { useRemoteBackendConfigured } from "@/store/slices/backendSlice";
 import { fetchCardDocumentsAndReportError } from "@/store/slices/cardDocumentsSlice";
 import { clearSearchResults } from "@/store/slices/searchResultsSlice";
 import { getDefaultSearchSettings } from "@/store/slices/searchSettingsSlice";
 import { setNotification } from "@/store/slices/toastsSlice";
-import { AppDispatch } from "@/store/store";
+import { AppDispatch, RootState } from "@/store/store";
 
 const getOramaCardDocument = async (
   fileHandle: FileSystemFileHandle,
@@ -41,10 +43,6 @@ const getOramaCardDocument = async (
   if (isImage) {
     const dimensions = imageSize(data);
     const height = dimensions.height ?? 0;
-    console.log(
-      dirHandle.name,
-      dirHandle.name.toLowerCase().startsWith("cardback")
-    );
     const cardType: CardType = dirHandle.name
       .toLowerCase()
       .startsWith("cardback")
@@ -151,11 +149,20 @@ export class LocalFilesService {
     return this.directoryHandle;
   }
 
-  public setDirectoryHandle(
+  public async setDirectoryHandle(
     directoryHandle: FileSystemDirectoryHandle | undefined,
-    dispatch: AppDispatch
+    state: RootState,
+    dispatch: AppDispatch,
+    forceUpdate: DispatchWithoutAction
   ) {
     this.directoryHandle = directoryHandle;
+    await this.indexDirectory(dispatch, forceUpdate);
+    await recalculateSearchResults(state, dispatch, true);
+  }
+
+  public async clearDirectoryHandle(state: RootState, dispatch: AppDispatch) {
+    this.directoryHandle = undefined;
+    await recalculateSearchResults(state, dispatch, true);
   }
 
   public async indexDirectory(
@@ -310,7 +317,6 @@ export class LocalFilesService {
   public translateOramaCardDocumentToCardDocument(
     oramaCardDocument: OramaCardDocument
   ): CardDocument {
-    console.log("oramaCardDocument", oramaCardDocument);
     const lastModified = oramaCardDocument.lastModified.toLocaleDateString(
       undefined,
       {
