@@ -366,16 +366,14 @@ export const removeFileExtension = (fileName: string): string =>
   fileName.replace(/^(.+?)(?:\..+)?$/, "$1");
 
 export const toSearchable = (inputString: string): string =>
-  inputString
-    .toLowerCase()
-    .replaceAll(/[\(\[].*?[\)\]]/g, "")
-    .replace("-", " ")
-    .replace(" the ", " ")
-    .replace("’", "'")
-    .replaceAll(/!\"#$%&'()*\+,-.\/:;<=>?@\[\]^_`{|}~\//g, "") // remove punctuation
-    .replaceAll(/0123456789/g, "") // remove digits
-    .replaceAll(/^the (.*$)/g, "$1") // remove "the " at start of string
-    .split(" ")
-    .map((word) => word.trim())
-    .join(" ")
-    .trim();
+  sanitiseWhitespace(
+    inputString
+      .toLowerCase()
+      .replaceAll(/[\(\[].*?[\)\]]/g, "")
+      .replace("-", " ")
+      .replace(" the ", " ")
+      .replace("’", "'")
+      .replaceAll(/[!"#\$%&'\(\)\*\+,-\.\/:;<=>\?@\[\]\^_`{\|}~\/]/g, "") // remove punctuation
+      .replaceAll(/[0123456789]/g, "") // remove digits
+      .replaceAll(/^the (.*$)/g, "$1") // remove "the " at start of string
+  );

@@ -14,6 +14,7 @@ import {
   sanitiseWhitespace,
   standardiseURL,
   stripTextInParentheses,
+  toSearchable,
 } from "@/common/processing";
 import { CardType } from "@/common/schema_types";
 import { DFCPairs, ProcessedLine } from "@/common/types";
@@ -427,6 +428,25 @@ describe("file path-like identifier handling", () => {
     },
   ])("%s", ({ line, expectedResult }) => {
     expect(processLine(line, {}, false)).toStrictEqual(expectedResult);
+  });
+});
+
+describe("toSearchable", () => {
+  test.each([
+    { input: "Lightning Bolt", expectedOutput: "lightning bolt" },
+    { input: " Lightning   BOLT ", expectedOutput: "lightning bolt" },
+    { input: "Adanto, the First Fort", expectedOutput: "adanto first fort" },
+    { input: "Black Lotus (Masterpiece)", expectedOutput: "black lotus" }, // brackets removal
+    {
+      input: "Black Lotus (Masterpiece, But With Punctuation! )",
+      expectedOutput: "black lotus",
+    },
+    { input: "Juzám Djinn", expectedOutput: "juzám djinn" }, // orama will handle this
+    { input: " Expansion _ Explosion", expectedOutput: "expansion explosion" },
+    { input: "Kodama’s Reach", expectedOutput: "kodamas reach" },
+    { input: "消灭邪物", expectedOutput: "消灭邪物" },
+  ])("%s", ({ input, expectedOutput }) => {
+    expect(toSearchable(input)).toStrictEqual(expectedOutput);
   });
 });
 
