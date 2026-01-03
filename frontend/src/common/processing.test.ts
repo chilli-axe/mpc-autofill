@@ -17,7 +17,7 @@ import {
   toSearchable,
 } from "@/common/processing";
 import { CardType } from "@/common/schema_types";
-import { DFCPairs, ProcessedLine } from "@/common/types";
+import { DFCPairs } from "@/common/types";
 
 // # region constants
 
@@ -124,7 +124,7 @@ test("non-dfc cardback line is processed correctly", () => {
 
 test("manually specified front and back line is processed correctly", () => {
   expect(
-    processLine(`5 Opt ${FaceSeparator} Char`, dfcPairs, false)
+    processLine(`5 Opt${FaceSeparator}Char`, dfcPairs, false)
   ).toStrictEqual([
     5,
     {
@@ -203,7 +203,7 @@ test("line that fuzzy matches ambiguously to dfc pair is processed correctly", (
 test("line that matches to dfc pair but a back is also manually specified is processed correctly", () => {
   expect(
     processLine(
-      `2 Huntmaster of the Fells ${FaceSeparator} t:Goblin`,
+      `2 Huntmaster of the Fells${FaceSeparator}t:Goblin`,
       dfcPairs,
       false
     )
@@ -331,7 +331,7 @@ test("a line specifying the selected image ID for the front is processed correct
 test("a line specifying the selected image ID for both faces is processed correctly", () => {
   expect(
     processLine(
-      `2 opt${SelectedImageSeparator}xyz ${FaceSeparator} char${SelectedImageSeparator}abcd`,
+      `2 opt${SelectedImageSeparator}xyz${FaceSeparator}char${SelectedImageSeparator}abcd`,
       dfcPairs,
       false
     )
@@ -473,7 +473,7 @@ test.each([
   const csv =
     "Quantity, Front, Front ID, Back, Back ID\n2, opt, xyz, char, abcd";
   expect(parseCSVFileAsLines(csv)).toStrictEqual([
-    `2 opt${SelectedImageSeparator}xyz ${FaceSeparator} char${SelectedImageSeparator}abcd`,
+    `2 opt${SelectedImageSeparator}xyz${FaceSeparator}char${SelectedImageSeparator}abcd`,
   ]);
 });
 

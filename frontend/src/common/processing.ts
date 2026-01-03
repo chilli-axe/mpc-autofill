@@ -130,7 +130,7 @@ function unpackLine(
 ): [number, [string, string | null] | null, [string, string | null] | null] {
   const [quantity, trimmedLine] = extractQuantity(line);
 
-  const [frontLine, backLine] = trimmedLine.split(` ${FaceSeparator} `);
+  const [frontLine, backLine] = trimmedLine.split(FaceSeparator);
 
   const faceLineRegex = new RegExp(
     `^(.+?)(?:${SelectedImageSeparator}(${getPhrasesNotAllowedInIdentifiersNegativeLookahead()}))?$`,
@@ -145,8 +145,10 @@ function unpackLine(
   }
   return [
     quantity,
-    [frontLineResults[1], frontLineResults[2]],
-    backLineResults !== null ? [backLineResults[1], backLineResults[2]] : null,
+    [frontLineResults[1]?.trim(), frontLineResults[2]?.trim()],
+    backLineResults !== null
+      ? [backLineResults[1]?.trim(), backLineResults[2]?.trim()]
+      : null,
   ];
 }
 
@@ -347,7 +349,7 @@ export const parseCSVRowAsLine = (rawRow: CSVRow): string => {
     }`;
   }
   if ((row[CSVHeaders.backQuery] ?? "").length > 0) {
-    formattedLine += ` ${FaceSeparator} ${row[CSVHeaders.backQuery]}`;
+    formattedLine += `${FaceSeparator}${row[CSVHeaders.backQuery]}`;
     if ((row[CSVHeaders.backSelectedImage] ?? "").length > 0) {
       formattedLine += `${SelectedImageSeparator}${
         row[CSVHeaders.backSelectedImage]

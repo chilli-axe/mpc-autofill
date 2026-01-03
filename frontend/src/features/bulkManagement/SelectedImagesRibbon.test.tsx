@@ -257,7 +257,7 @@ test.skip("selecting a single card and clearing its back query", async () => {
     },
   });
 
-  await importText(`my search query ${FaceSeparator} my search query`);
+  await importText(`my search query${FaceSeparator}my search query`);
   await expectCardGridSlotState(1, Front, cardDocument1.name, 1, 1);
   await expectCardGridSlotState(1, Back, cardDocument1.name, 1, 1);
   await expectCardbackSlotState(cardDocument5.name, 1, 1);

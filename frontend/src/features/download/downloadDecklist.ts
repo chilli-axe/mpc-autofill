@@ -55,7 +55,7 @@ function stringifyCardNames(
     .map((item: [string | null, string | null]) =>
       item[0] != null
         ? item[1] != null
-          ? `${item[0]} ${FaceSeparator} ${item[1]}`
+          ? `${item[0]}${FaceSeparator}${item[1]}`
           : item[0]
         : ""
     )

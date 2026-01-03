@@ -143,13 +143,13 @@ exports[`the html structure of text importer 1`] = `
                 <li>
                   You may specify queries for both the front and the back by separating them with 
                   <code>
-                    //
+                    // 
                   </code>
                    — for example,
                    
                   <code>
                     4x goblin 
-                    //
+                    // 
                      
                     t:
                     elf
