@@ -1,7 +1,3 @@
-/**
- * Retrieved from https://redux-toolkit.js.org/api/createListenerMiddleware
- */
-
 import {
   addListener,
   createListenerMiddleware,
@@ -11,6 +7,8 @@ import {
 import { Back, Front, QueryTags } from "@/common/constants";
 import { getLocalStorageSearchSettings } from "@/common/cookies";
 import { Faces } from "@/common/types";
+import { Tag } from "@/common/types";
+import { localFilesService } from "@/features/localFiles/localFilesService";
 import { api } from "@/store/api";
 import {
   clearURL,
@@ -37,7 +35,6 @@ import {
   selectSearchResultsForQueryOrDefault,
 } from "@/store/slices/searchResultsSlice";
 import {
-  selectSearchSettingsSourcesValid,
   setFilterSettings,
   setSearchTypeSettings,
   setSourceSettings,

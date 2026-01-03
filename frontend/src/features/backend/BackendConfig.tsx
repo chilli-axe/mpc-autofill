@@ -15,23 +15,23 @@ import Offcanvas from "react-bootstrap/Offcanvas";
 import Row from "react-bootstrap/Row";
 
 import { ProjectName } from "@/common/constants";
-import { MakePlayingCards, MakePlayingCardsURL } from "@/common/constants";
 import {
   clearLocalStorageBackendURL,
   setLocalStorageBackendURL,
 } from "@/common/cookies";
 import { standardiseURL } from "@/common/processing";
 import { useAppDispatch, useAppSelector, useAppStore } from "@/common/types";
-import { AutofillTable } from "@/components/AutofillTable";
 import { RightPaddedIcon } from "@/components/icon";
+import { MakePlayingCardsLink } from "@/components/MakePlayingCardsLink";
 import { getEnvURL } from "@/features/backend/BackendSetter";
 import { useLocalFilesContext } from "@/features/localFiles/localFilesContext";
+import { useGetTagsQuery } from "@/store/api";
+import { recalculateSearchResults } from "@/store/listenerMiddleware";
 import {
   clearURL,
   selectRemoteBackendURL,
   setURL,
 } from "@/store/slices/backendSlice";
-import { useProjectName } from "@/store/slices/backendSlice";
 import { setNotification } from "@/store/slices/toastsSlice";
 
 require("bootstrap-icons/font/bootstrap-icons.css");
@@ -101,6 +101,7 @@ interface BackendConfigProps {
 const RemoteBackendConfig = () => {
   //# region queries and hooks
   const dispatch = useAppDispatch();
+  const store = useAppStore();
   const backendURL = useAppSelector(selectRemoteBackendURL);
 
   //# endregion
@@ -121,6 +122,7 @@ const RemoteBackendConfig = () => {
     dispatch(clearURL());
     clearLocalStorageBackendURL();
     setValidationStatus([]);
+    recalculateSearchResults(store.getState(), dispatch, true);
   };
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault(); // to avoid reloading the page
@@ -226,6 +228,7 @@ const LocalBackendConfig = () => {
   const { localFilesService, forceUpdate } = useLocalFilesContext();
   const directoryHandle = localFilesService.getDirectoryHandle();
   const directoryIndex = localFilesService.getDirectoryIndex();
+  const getTagsQuery = useGetTagsQuery();
 
   const dispatch = useAppDispatch();
   const store = useAppStore();
@@ -238,7 +241,8 @@ const LocalBackendConfig = () => {
         handle,
         store.getState(),
         dispatch,
-        forceUpdate
+        forceUpdate,
+        getTagsQuery.data
       );
     } catch (e) {
       // TODO: catch specific errors from `showDirectoryPicker`
@@ -287,7 +291,11 @@ const LocalBackendConfig = () => {
                 <Button
                   variant="primary"
                   onClick={() =>
-                    localFilesService.indexDirectory(dispatch, forceUpdate)
+                    localFilesService.indexDirectory(
+                      dispatch,
+                      forceUpdate,
+                      getTagsQuery.data
+                    )
                   }
                 >
                   <RightPaddedIcon bootstrapIconName="arrow-repeat" />
@@ -316,11 +324,7 @@ const LocalBackendConfig = () => {
         </li>
         <li>
           You can generate XML files referring to images in this folder to
-          upload to{" "}
-          <a href={MakePlayingCardsURL} target="_blank">
-            {MakePlayingCards}
-          </a>
-          .
+          upload to <MakePlayingCardsLink />.
         </li>
         <li>Any files you download will go into this folder.</li>
       </ul>

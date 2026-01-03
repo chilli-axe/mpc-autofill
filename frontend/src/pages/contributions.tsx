@@ -2,12 +2,9 @@ import Head from "next/head";
 import React from "react";
 import { Accordion } from "react-bootstrap";
 
-import {
-  MakePlayingCards,
-  MakePlayingCardsURL,
-  ProjectName,
-} from "@/common/constants";
+import { ProjectName } from "@/common/constants";
 import { Tag } from "@/common/types";
+import { MakePlayingCardsLink } from "@/components/MakePlayingCardsLink";
 import { NoBackendDefault } from "@/components/NoBackendDefault";
 import {
   ContributionsPerSource,
@@ -177,12 +174,8 @@ function ContributionGuidelines() {
             <li>
               Limit your files to less than <b>30 MB</b> per image &mdash; this
               is the maximum that Google Scripts can return in one request and
-              the maximum that{" "}
-              <a href={MakePlayingCardsURL} target="_blank">
-                {MakePlayingCards}
-              </a>{" "}
-              accepts, meaning the desktop client won&apos;t work with images
-              that exceed this limit.
+              the maximum that <MakePlayingCardsLink /> accepts, meaning the
+              desktop client won&apos;t work with images that exceed this limit.
             </li>
           </ul>
         </Accordion.Body>

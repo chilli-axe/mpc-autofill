@@ -11,6 +11,7 @@ import {
   SearchQuery,
   SearchSettings,
   SourceType,
+  Tag,
 } from "@/common/schema_types";
 import {
   CardDocument,
@@ -104,7 +105,8 @@ async function listAllFilesAndDirs(
 
 const indexDirectory = async (
   handle: FileSystemDirectoryHandle,
-  dispatch: AppDispatch
+  dispatch: AppDispatch,
+  tags: Array<Tag> | undefined
 ): Promise<DirectoryIndex> => {
   const db = create({
     schema: OramaSchema,
@@ -153,10 +155,11 @@ export class LocalFilesService {
     directoryHandle: FileSystemDirectoryHandle | undefined,
     state: RootState,
     dispatch: AppDispatch,
-    forceUpdate: DispatchWithoutAction
+    forceUpdate: DispatchWithoutAction,
+    tags: Array<Tag> | undefined
   ) {
     this.directoryHandle = directoryHandle;
-    await this.indexDirectory(dispatch, forceUpdate);
+    await this.indexDirectory(dispatch, forceUpdate, tags);
     await recalculateSearchResults(state, dispatch, true);
   }
 
@@ -167,12 +170,14 @@ export class LocalFilesService {
 
   public async indexDirectory(
     dispatch: AppDispatch,
-    forceUpdate: DispatchWithoutAction
+    forceUpdate: DispatchWithoutAction,
+    tags: Array<Tag> | undefined
   ) {
     if (this.directoryHandle !== undefined) {
       this.directoryIndex = await indexDirectory(
         this.directoryHandle,
-        dispatch
+        dispatch,
+        tags
       );
       dispatch(api.util.invalidateTags([QueryTags.BackendSpecific]));
       dispatch(clearSearchResults());
@@ -195,11 +200,11 @@ export class LocalFilesService {
       return undefined;
     }
     const includesTags = searchSettings.filterSettings.includesTags.length > 0;
-    // const excludesTags = searchSettings.filterSettings.includesTags.length > 0;
+    const excludesTags = searchSettings.filterSettings.includesTags.length > 0;
     const hits = search(this.directoryIndex?.index?.oramaDb, {
       term: query,
       properties: ["searchq"],
-      limit: limit,
+      limit: limit ?? 1_000_000, // some arbitrary upper limit. if undefined, orama limits to 10 results.
       exact:
         query !== undefined && !searchSettings.searchTypeSettings.fuzzySearch,
       where: {
@@ -210,7 +215,13 @@ export class LocalFilesService {
           ? {
               tags: {
                 containsAny: searchSettings.filterSettings.includesTags,
-                // ...(excludesTags ? {nin: searchSettings.filterSettings.excludesTags} : {}),
+                ...(excludesTags
+                  ? {
+                      not: {
+                        containsAny: searchSettings.filterSettings.excludesTags,
+                      },
+                    }
+                  : {}),
               },
             }
           : {}),
@@ -220,9 +231,9 @@ export class LocalFilesService {
             searchSettings.filterSettings.maximumDPI,
           ],
         },
-        // size: {
-        //   lte: searchSettings.filterSettings.maximumSize
-        // }
+        size: {
+          lte: searchSettings.filterSettings.maximumSize * 1_000_000,
+        },
       },
       // @ts-ignore // TODO
     }).hits as Array<{ id: string; document: OramaCardDocument }>;

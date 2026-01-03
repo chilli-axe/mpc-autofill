@@ -5,11 +5,8 @@ import Button from "react-bootstrap/Button";
 import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
 
-import {
-  MakePlayingCards,
-  MakePlayingCardsURL,
-  ProjectName,
-} from "@/common/constants";
+import { ProjectName } from "@/common/constants";
+import { MakePlayingCardsLink } from "@/components/MakePlayingCardsLink";
 import { DynamicLogo } from "@/features/ui/DynamicLogo";
 import Footer from "@/features/ui/Footer";
 import { ProjectContainer } from "@/features/ui/Layout";
@@ -84,19 +81,14 @@ function ProjectOverview() {
       <Row>
         <Col lg={6} md={6} sm={12} xs={12}>
           <h1>
-            Automatic Ordering with{" "}
-            <a href={MakePlayingCardsURL} target="_blank">
-              {MakePlayingCards}
-            </a>
+            Automatic Ordering with <MakePlayingCardsLink />
           </h1>
           <ul>
             <li>
               Our desktop tool will download all the images required for your
               order and automatically place your order with{" "}
-              <a href={MakePlayingCardsURL} target="_blank">
-                {MakePlayingCards}
-              </a>
-              , who will mail the cards right to your door!
+              <MakePlayingCardsLink />, who will mail the cards right to your
+              door!
             </li>
           </ul>
         </Col>
