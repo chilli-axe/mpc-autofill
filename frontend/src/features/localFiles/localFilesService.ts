@@ -22,86 +22,226 @@ import {
   OramaSchema,
   SearchResults,
 } from "@/common/types";
+import { extractNameAndTags } from "@/features/localFiles/tags";
 import { api } from "@/store/api";
 import { recalculateSearchResults } from "@/store/listenerMiddleware";
-import { useRemoteBackendConfigured } from "@/store/slices/backendSlice";
 import { fetchCardDocumentsAndReportError } from "@/store/slices/cardDocumentsSlice";
 import { clearSearchResults } from "@/store/slices/searchResultsSlice";
 import { getDefaultSearchSettings } from "@/store/slices/searchSettingsSlice";
 import { setNotification } from "@/store/slices/toastsSlice";
 import { AppDispatch, RootState } from "@/store/store";
 
-const getOramaCardDocument = async (
-  fileHandle: FileSystemFileHandle,
-  dirHandle: FileSystemDirectoryHandle,
-  absoluteParentDirHandle: FileSystemDirectoryHandle
-): Promise<OramaCardDocument | null> => {
-  const file = await fileHandle.getFile();
-  const size = file.size;
-  const data = new Uint8Array(await file.arrayBuffer());
-  const fileType = filetypemime(data);
-  const isImage = fileType.some((mimeType) => mimeType.startsWith("image/"));
-  if (isImage) {
-    const dimensions = imageSize(data);
-    const height = dimensions.height ?? 0;
-    const cardType: CardType = dirHandle.name
-      .toLowerCase()
-      .startsWith("cardback")
-      ? CardTypeSchema.Cardback
-      : dirHandle.name.toLowerCase().startsWith("token")
-      ? CardTypeSchema.Token
-      : CardTypeSchema.Card;
-
-    const DPI_HEIGHT_RATIO = 300 / 1110;
-    const dpi = 10 * Math.round((height * DPI_HEIGHT_RATIO) / 10);
-
-    const resolved = await absoluteParentDirHandle.resolve(fileHandle);
-    const filePath = `./${resolved?.join("/")}`;
-    const name = removeFileExtension(file.name);
-
-    const oramaCardDocument: OramaCardDocument = {
-      id: filePath,
-      cardType: cardType,
-      name: name,
-      searchq: toSearchable(name),
-      source: dirHandle.name,
-      dpi: dpi,
-      extension: filetypeextension(data)[0],
-      size: size,
-      fileHandle: fileHandle,
-      language: "English",
-      tags: [],
-      lastModified: new Date(file.lastModified),
-    };
-    return oramaCardDocument;
-  } else {
-    return null;
-  }
+const extractLanguage = (name: string): [string | undefined, string] => {
+  const languageRegex = /^(?:\{(.+)\} )?(.*?)$/g;
+  const results = [...name.matchAll(languageRegex)][0];
+  const languageCode: string | undefined = results[1]; // TODO: match against valid language codes here
+  const remainderOfName = results[2];
+  return [languageCode, remainderOfName];
 };
 
-async function listAllFilesAndDirs(
-  dirHandle: FileSystemDirectoryHandle,
-  absoluteParentDirHandle: FileSystemDirectoryHandle
-): Promise<Array<OramaCardDocument>> {
-  const files: Array<OramaCardDocument> = [];
-  for await (const [name, handle] of dirHandle) {
-    if (handle instanceof FileSystemDirectoryHandle) {
-      files.push(
-        ...(await listAllFilesAndDirs(handle, absoluteParentDirHandle))
+class Folder {
+  handle: FileSystemDirectoryHandle;
+  name: string;
+  parent: Folder | undefined;
+
+  constructor(
+    handle: FileSystemDirectoryHandle,
+    name: string,
+    parent: Folder | undefined
+  ) {
+    this.handle = handle;
+    this.name = name;
+    this.parent = parent;
+  }
+
+  getAbsoluteParent(): FileSystemDirectoryHandle {
+    if (this.parent === undefined) {
+      return this.handle;
+    }
+    return this.parent.getAbsoluteParent();
+  }
+
+  unpackName(tags: Map<string, Tag>): {
+    language: string | undefined;
+    name: string;
+    tags: Set<string>;
+  } {
+    const [language, name] = extractLanguage(this.name);
+    const [nameWithNoTags, extractedTags] = extractNameAndTags(name, tags);
+    return {
+      language,
+      name: nameWithNoTags,
+      tags: extractedTags,
+    };
+  }
+
+  getLanguage(tags: Map<string, Tag>): string | undefined {
+    const { language } = this.unpackName(tags);
+    if (this.parent === undefined) {
+      return language;
+    }
+    return language ?? this.parent.getLanguage(tags);
+  }
+
+  getTags(tags: Map<string, Tag>): Set<string> {
+    const { tags: extractedTags } = this.unpackName(tags);
+    if (this.parent === undefined) {
+      return extractedTags;
+    }
+    return extractedTags.union(this.parent.getTags(tags));
+  }
+}
+
+class Image {
+  handle: FileSystemFileHandle;
+  name: string;
+  extension: string;
+  size: number;
+  modifiedTime: Date;
+  height: number;
+  folder: Folder;
+
+  constructor(
+    handle: FileSystemFileHandle,
+    name: string,
+    extension: string,
+    size: number,
+    modifiedTime: Date,
+    height: number,
+    folder: Folder
+  ) {
+    this.handle = handle;
+    this.name = name;
+    this.extension = extension;
+    this.size = size;
+    this.modifiedTime = modifiedTime;
+    this.height = height;
+    this.folder = folder;
+  }
+
+  unpackName(tags: Map<string, Tag>): {
+    language: string | undefined;
+    name: string;
+    tags: Set<string>;
+  } {
+    const [language, name] = extractLanguage(this.name);
+    const [nameWithNoTags, extractedTags] = extractNameAndTags(name, tags);
+    return {
+      language: language ?? this.folder.getLanguage(tags),
+      name: nameWithNoTags,
+      tags: extractedTags.union(this.folder.getTags(tags)),
+    };
+  }
+
+  getCardType(): CardType {
+    return this.folder.handle.name.toLowerCase().startsWith("cardback")
+      ? CardTypeSchema.Cardback
+      : this.folder.handle.name.toLowerCase().startsWith("token")
+      ? CardTypeSchema.Token
+      : CardTypeSchema.Card;
+  }
+
+  async getResolvedPath(): Promise<Array<string> | null> {
+    return await this.folder.getAbsoluteParent().resolve(this.handle);
+  }
+
+  async getOramaCardDocument(
+    tags: Map<string, Tag>
+  ): Promise<OramaCardDocument> {
+    const { language, name, tags: extractedTags } = this.unpackName(tags);
+    const resolvedPath = await this.getResolvedPath();
+    // fall back on setting filepath to random string if unable to resolve. realistically this should never happen.
+    const filePath = resolvedPath
+      ? `./${resolvedPath.join("/")}`
+      : Math.random().toString();
+
+    return {
+      id: filePath,
+      cardType: this.getCardType(),
+      name: name,
+      searchq: toSearchable(this.name),
+      source: this.folder.name, // TODO: verbose naming?
+      dpi: 10 * Math.round((this.height * 300) / 1110 / 10), // TODO: NaN?
+      extension: this.extension,
+      size: this.size,
+      fileHandle: this.handle,
+      language: language ?? "English", // TODO: data type
+      tags: Array.from(extractedTags),
+      lastModified: this.modifiedTime,
+    };
+  }
+}
+
+const getAllImagesInFolder = async (folder: Folder): Promise<Array<Image>> => {
+  const images: Array<Image> = [];
+  for await (const [name, handle] of folder.handle) {
+    if (handle instanceof FileSystemFileHandle) {
+      const file = await handle.getFile();
+      const data = new Uint8Array(await file.arrayBuffer());
+
+      const fileType = filetypemime(data);
+      const isImage = fileType.some((mimeType) =>
+        mimeType.startsWith("image/")
       );
-    } else if (handle instanceof FileSystemFileHandle) {
-      const oramaCardDocument = await getOramaCardDocument(
-        handle,
-        dirHandle,
-        absoluteParentDirHandle
-      );
-      if (oramaCardDocument !== null) {
-        files.push(oramaCardDocument);
+
+      if (isImage) {
+        const dimensions = imageSize(data);
+        const height = dimensions.height;
+
+        images.push(
+          new Image(
+            handle,
+            removeFileExtension(handle.name),
+            filetypeextension(data)[0],
+            file.size,
+            new Date(file.lastModified),
+            height,
+            folder
+          )
+        );
       }
     }
   }
-  return files;
-}
+  return images;
+};
+const getAllFoldersInFolder = async (
+  folder: Folder
+): Promise<Array<Folder>> => {
+  const folders: Array<Folder> = [];
+  for await (const [name, handle] of folder.handle) {
+    if (handle instanceof FileSystemDirectoryHandle) {
+      folders.push(new Folder(handle, handle.name, folder));
+    }
+  }
+  return folders;
+};
+
+const exploreFolder = async (
+  absoluteParentDirHandle: FileSystemDirectoryHandle
+): Promise<Array<Image>> => {
+  const folders: Array<Folder> = [
+    new Folder(
+      absoluteParentDirHandle,
+      absoluteParentDirHandle.name,
+      undefined
+    ),
+  ];
+  const images: Array<Image> = [];
+  while (folders.length > 0) {
+    const folder = folders.pop();
+    if (folder !== undefined) {
+      const imagesInFolder: Array<Image> = await getAllImagesInFolder(folder);
+      const subfolders: Array<Folder> = await getAllFoldersInFolder(folder);
+      images.push(...imagesInFolder);
+      folders.push(
+        ...subfolders.filter((folder) => !folder.name.startsWith("!"))
+      );
+    } else {
+      break;
+    }
+  }
+  return images;
+};
 
 const indexDirectory = async (
   handle: FileSystemDirectoryHandle,
@@ -111,7 +251,14 @@ const indexDirectory = async (
   const db = create({
     schema: OramaSchema,
   });
-  const oramaCardDocuments = await listAllFilesAndDirs(handle, handle);
+  const tagsMap = new Map(
+    (tags ?? []).map((tag) => [tag.name.toLowerCase(), tag])
+  );
+  const oramaCardDocuments = await Promise.all(
+    (
+      await exploreFolder(handle)
+    ).map((image) => image.getOramaCardDocument(tagsMap))
+  );
   insertMultiple(db, oramaCardDocuments);
   const newDirectoryIndex = {
     handle: handle,
@@ -200,7 +347,7 @@ export class LocalFilesService {
       return undefined;
     }
     const includesTags = searchSettings.filterSettings.includesTags.length > 0;
-    const excludesTags = searchSettings.filterSettings.includesTags.length > 0;
+    const excludesTags = searchSettings.filterSettings.excludesTags.length > 0;
     const hits = search(this.directoryIndex?.index?.oramaDb, {
       term: query,
       properties: ["searchq"],
