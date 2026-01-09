@@ -5,11 +5,14 @@ import { LocalFilesService } from "@/features/localFiles/localFilesService";
 import { setNotification } from "@/store/slices/toastsSlice";
 import { AppDispatch } from "@/store/store";
 
+import { useLocalFilesServiceDirectoryHandle } from "../localFiles/localFilesHooks";
+
 async function downloadDesktopTool(
   dispatch: AppDispatch,
   url: URL,
   fileName: string,
-  localFilesService: LocalFilesService
+  localFilesService: LocalFilesService,
+  directoryHandleName?: string
 ) {
   dispatch(
     setNotification([
@@ -17,7 +20,7 @@ async function downloadDesktopTool(
       {
         name: "Download Started",
         message: `Started downloading the Desktop Tool to ${
-          localFilesService.getDirectoryHandle()?.name ?? "Downloads folder"
+          directoryHandleName ?? "Downloads folder"
         }!`,
         level: "info",
       },
@@ -30,7 +33,7 @@ async function downloadDesktopTool(
       {
         name: "Download Complete",
         message: `Successfully downloaded the Desktop Tool to ${
-          localFilesService.getDirectoryHandle()?.name ?? "Downloads folder"
+          directoryHandleName ?? "Downloads folder"
         }!`,
         level: "info",
       },
@@ -43,11 +46,18 @@ export function useDownloadDesktopTool() {
   const dispatch = useAppDispatch();
   const doFileDownload = useDoFileDownload();
   const { localFilesService } = useLocalFilesContext();
+  const directoryHandle = useLocalFilesServiceDirectoryHandle();
   return (url: URL, fileName: string) =>
     doFileDownload(
       "desktop-tool",
       fileName,
       (): Promise<boolean> =>
-        downloadDesktopTool(dispatch, url, fileName, localFilesService)
+        downloadDesktopTool(
+          dispatch,
+          url,
+          fileName,
+          localFilesService,
+          directoryHandle?.name
+        )
     );
 }

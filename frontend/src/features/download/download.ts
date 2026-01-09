@@ -41,26 +41,18 @@ export const downloadFile = async (
       ? await fetch(fileURL.href).then((response) => response.blob())
       : fileContents;
 
-  // const fileContentsIsURL = fileContents instanceof URL;
-  if (localFilesService.hasDirectoryHandle()) {
+  if (await localFilesService.hasDirectoryHandle()) {
     const fileHandle = await localFilesService
-      .getDirectoryHandle()!
-      .getFileHandle(fileName, {
-        create: true,
-      });
+      .getDirectoryHandle()
+      .then((handle) =>
+        handle!.getFileHandle(fileName, {
+          create: true,
+        })
+      );
     const writable = await fileHandle.createWritable();
-    // TODO: handle URL here
     await writable.write(fetchedFileContents);
-    // if (fileContentsIsURL) {
-    //   await fetch(fileContents.href)
-    //     .then((response) => response.blob())
-    //     .then((blob) => writable.write(blob));
-    // } else {
-    //   await writable.write(fileContents);
-    // }
     await writable.close();
   } else {
-    // saveAs(fileContentsIsURL ? fileContents.href : fileContents, fileName);
     saveAs(fetchedFileContents, fileName);
   }
 };

@@ -34,6 +34,11 @@ import {
 } from "@/store/slices/backendSlice";
 import { setNotification } from "@/store/slices/toastsSlice";
 
+import {
+  useLocalFilesServiceDirectoryHandle,
+  useLocalFilesServiceDirectoryIndexSize,
+} from "../localFiles/localFilesHooks";
+
 require("bootstrap-icons/font/bootstrap-icons.css");
 
 enum ValidationState {
@@ -226,8 +231,8 @@ const RemoteBackendConfig = () => {
 
 const LocalBackendConfig = () => {
   const { localFilesService, forceUpdate } = useLocalFilesContext();
-  const directoryHandle = localFilesService.getDirectoryHandle();
-  const directoryIndex = localFilesService.getDirectoryIndex();
+  const directoryHandle = useLocalFilesServiceDirectoryHandle();
+  const directoryIndexSize = useLocalFilesServiceDirectoryIndexSize();
   const getTagsQuery = useGetTagsQuery();
 
   const dispatch = useAppDispatch();
@@ -263,7 +268,7 @@ const LocalBackendConfig = () => {
   };
 
   const clearDirectoryChoice = async () => {
-    localFilesService.clearDirectoryHandle(store.getState(), dispatch);
+    await localFilesService.clearDirectoryHandle(store.getState(), dispatch);
     forceUpdate();
     if (directoryHandle !== undefined) {
       dispatch(
@@ -284,13 +289,13 @@ const LocalBackendConfig = () => {
       {directoryHandle !== undefined && (
         <Alert variant="success">
           You&apos;re connected to <b>{directoryHandle.name}</b>, with{" "}
-          <b>{directoryIndex?.index?.size ?? 0}</b> images indexed.
+          <b>{directoryIndexSize ?? 0}</b> images indexed.
           <Row className="gx-1 pt-2">
             <Col xs={6}>
               <div className="d-grid gap-0">
                 <Button
                   variant="primary"
-                  onClick={() =>
+                  onClick={async () =>
                     localFilesService.indexDirectory(
                       dispatch,
                       forceUpdate,

@@ -379,3 +379,11 @@ export const toSearchable = (inputString: string): string =>
       .replaceAll(/[0123456789]/g, "") // remove digits
       .replaceAll(/^the (.*$)/g, "$1") // remove "the " at start of string
   );
+
+export const extractLanguage = (name: string): [string | undefined, string] => {
+  const languageRegex = /^(?:\{(.+)\} )?(.*?)$/g;
+  const results = [...name.matchAll(languageRegex)][0];
+  const languageCode: string | undefined = results[1]; // TODO: match against valid language codes here
+  const remainderOfName = results[2];
+  return [languageCode, remainderOfName];
+};

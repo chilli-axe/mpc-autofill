@@ -2,14 +2,9 @@
  * State management for search results - what images are returned for what search queries.
  */
 
-import { Orama } from "@orama/orama";
 import { createSelector } from "@reduxjs/toolkit";
 
 import { Back, SearchResultsEndpointPageSize } from "@/common/constants";
-import {
-  CardType as CardTypeSchema,
-  SearchSettings,
-} from "@/common/schema_types";
 import {
   CardType,
   createAppAsyncThunk,
@@ -62,7 +57,10 @@ const mergeSearchResults = (
 
 export const fetchSearchResults = createAppAsyncThunk(
   typePrefix,
-  async (arg: Orama<typeof OramaSchema> | undefined, { getState, extra }) => {
+  /**
+   * concurrently resolve local and remote searches
+   */
+  async (arg, { getState, extra }) => {
     const state = getState();
     const { localFilesService } = extra as {
       localFilesService: LocalFilesService;
@@ -72,12 +70,13 @@ export const fetchSearchResults = createAppAsyncThunk(
     const backendURL = selectRemoteBackendURL(state);
     const searchSettings = selectSearchSettings(state);
 
-    const localResults: SearchResults = localFilesService.hasDirectoryHandle()
+    const hasDirectoryHandle = await localFilesService.hasDirectoryHandle();
+    const localResultsPromise: Promise<SearchResults> = hasDirectoryHandle
       ? localFilesService.searchBig(searchSettings, queriesToSearch)
-      : {};
-    const remoteResults: SearchResults =
+      : new Promise(async (resolve) => resolve({}));
+    const remoteResultsPromise: Promise<SearchResults> =
       queriesToSearch.length > 0 && backendURL != null
-        ? await Array.from(
+        ? Array.from(
             Array(
               Math.ceil(queriesToSearch.length / SearchResultsEndpointPageSize)
             ).keys()
@@ -100,17 +99,17 @@ export const fetchSearchResults = createAppAsyncThunk(
             });
           },
           Promise.resolve({}))
-        : {};
-    return mergeSearchResults(localResults, remoteResults);
+        : new Promise(async (resolve) => resolve({}));
+    return await Promise.all([localResultsPromise, remoteResultsPromise]).then(
+      ([localResults, remoteResults]) =>
+        mergeSearchResults(localResults, remoteResults)
+    );
   }
 );
 
-export async function fetchSearchResultsAndReportError(
-  dispatch: AppDispatch,
-  oramaDb: Orama<typeof OramaSchema> | undefined
-) {
+export async function fetchSearchResultsAndReportError(dispatch: AppDispatch) {
   try {
-    await dispatch(fetchSearchResults(oramaDb)).unwrap();
+    await dispatch(fetchSearchResults()).unwrap();
   } catch (error: any) {
     dispatch(
       setNotification([

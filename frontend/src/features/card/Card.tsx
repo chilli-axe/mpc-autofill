@@ -80,17 +80,17 @@ const useLocalFileImageSrc = (
   const { localFilesService } = useLocalFilesContext();
   const [blobURL, setBlobURL] = useState<string | undefined>(undefined);
   useEffect(() => {
-    const oramaCardDocument = localFilesService.getByID(
-      cardDocument?.identifier
-    );
-    if (oramaCardDocument !== undefined) {
-      (async () => {
+    (async () => {
+      const oramaCardDocument = await localFilesService.getByID(
+        cardDocument?.identifier
+      );
+      if (oramaCardDocument !== undefined) {
         setImageState("loading-from-local-file");
         const file = await oramaCardDocument.fileHandle.getFile();
         const url = URL.createObjectURL(file);
         setBlobURL(url);
-      })();
-    }
+      }
+    })();
   }, []);
   return blobURL;
 };
@@ -115,7 +115,7 @@ const useImageSrc = (
   const imageIsLoading =
     imageState === "loading-from-bucket" ||
     imageState === "loading-from-fallback" ||
-    imageState === "loaded-from-local-file";
+    imageState === "loading-from-local-file";
 
   /**
    * Ensure that the small thumbnail fades in each time the selected image changes.

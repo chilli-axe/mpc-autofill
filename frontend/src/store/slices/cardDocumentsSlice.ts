@@ -72,12 +72,7 @@ const fetchCardDocuments = createAppAsyncThunk(
     const { localFilesService } = extra as {
       localFilesService: LocalFilesService;
     };
-    const directoryHandle = localFilesService.getDirectoryHandle();
-    const oramaDb =
-      directoryHandle !== undefined
-        ? localFilesService.getDirectoryIndex()?.index?.oramaDb
-        : undefined;
-    await fetchSearchResultsAndReportError(dispatch, oramaDb);
+    await fetchSearchResultsAndReportError(dispatch);
     if (arg?.refreshCardbacks || getState().cardbacks.cardbacks.length === 0) {
       await fetchCardbacksAndReportError(dispatch);
     }
@@ -97,15 +92,17 @@ const fetchCardDocuments = createAppAsyncThunk(
     );
 
     const backendURL = state.backend.url;
-
-    const localCardDocuments = oramaDb
-      ? localFilesService.getLocalCardDocuments(oramaDb, identifiersToSearch)
-      : {};
-    const remoteCardDocuments = await getCardDocumentRequestPromiseChain(
-      identifiersToSearch,
-      backendURL
+    const localResultsPromise: Promise<CardDocuments> =
+      (await localFilesService.hasDirectoryHandle())
+        ? localFilesService.getLocalCardDocuments(identifiersToSearch)
+        : new Promise(async (resolve) => resolve({}));
+    const remoteResultsPromise: Promise<CardDocuments> =
+      backendURL != null
+        ? getCardDocumentRequestPromiseChain(identifiersToSearch, backendURL)
+        : new Promise(async (resolve) => resolve({}));
+    return await Promise.all([localResultsPromise, remoteResultsPromise]).then(
+      ([localResults, remoteResults]) => ({ ...localResults, ...remoteResults })
     );
-    return { ...localCardDocuments, ...remoteCardDocuments };
   }
 );
 

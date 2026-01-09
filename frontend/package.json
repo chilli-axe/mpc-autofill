@@ -27,6 +27,7 @@
     "bootstrap": "^5.2.3",
     "bootstrap-icons": "^1.10.3",
     "bootswatch": "^5.3.8",
+    "comlink": "^4.4.2",
     "file-saver": "^2.0.5",
     "image-size": "^2.0.2",
     "js-cookie": "^3.0.1",

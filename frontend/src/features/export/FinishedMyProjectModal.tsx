@@ -17,6 +17,7 @@ import { selectIsProjectEmpty } from "@/store/slices/projectSlice";
 
 import { useDownloadDesktopTool } from "../download/downloadDesktopTool";
 import { useLocalFilesContext } from "../localFiles/localFilesContext";
+import { useLocalFilesServiceDirectoryHandle } from "../localFiles/localFilesHooks";
 
 interface ExitModal {
   show: boolean;
@@ -83,7 +84,7 @@ const DownloadButtonLink = styled.a`
 
 const LocalFilesInstructions = () => {
   const { localFilesService } = useLocalFilesContext();
-  const directoryHandle = localFilesService.getDirectoryHandle();
+  const directoryHandle = useLocalFilesServiceDirectoryHandle();
   return (
     directoryHandle !== undefined && (
       <Alert variant="primary" className="text-center">
@@ -97,7 +98,7 @@ const LocalFilesInstructions = () => {
 
 const RunDesktopToolInstructions = () => {
   const { localFilesService } = useLocalFilesContext();
-  const directoryHandle = localFilesService.getDirectoryHandle();
+  const directoryHandle = useLocalFilesServiceDirectoryHandle();
   return (
     <>
       {directoryHandle !== undefined ? (

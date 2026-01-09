@@ -1,7 +1,7 @@
 import styled from "@emotion/styled";
 import { Queue } from "async-await-queue";
 import { GoogleAnalytics } from "nextjs-google-analytics";
-import React, { useReducer } from "react";
+import React, { useEffect, useReducer } from "react";
 import { PropsWithChildren } from "react";
 import Container from "react-bootstrap/Container";
 import SSRProvider from "react-bootstrap/SSRProvider";
@@ -63,10 +63,15 @@ export function ProjectContainer({
 export function LayoutWithoutReduxProvider({ children }: PropsWithChildren) {
   const consent = getGoogleAnalyticsConsent();
   const downloadContext: DownloadContext = new Queue(10, 50);
-  const [_, forceUpdate] = useReducer((x) => x + 1, 0);
+  const [forceUpdateValue, forceUpdate] = useReducer((x: number) => x + 1, 0);
+  useEffect(() => {
+    localFilesService.initialiseWorker();
+  }, []);
   return (
     <DownloadContextProvider value={downloadContext}>
-      <LocalFilesContextProvider value={{ localFilesService, forceUpdate }}>
+      <LocalFilesContextProvider
+        value={{ localFilesService, forceUpdate, forceUpdateValue }}
+      >
         {consent === true && (
           <GoogleAnalytics trackPageViews gaMeasurementId="G-JV8WV3FQML" />
         )}

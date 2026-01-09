@@ -10,6 +10,7 @@ import { LocalFilesService } from "@/features/localFiles/localFilesService";
 type LocalFilesContext = {
   localFilesService: LocalFilesService;
   forceUpdate: DispatchWithoutAction;
+  forceUpdateValue: number;
 };
 const localFilesContext = createContext<LocalFilesContext | undefined>(
   undefined

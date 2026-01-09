@@ -32,8 +32,8 @@ export const fetchCardbacks = createAppAsyncThunk(
     const searchSettings = selectSearchSettings(state);
 
     const localResults: Array<string> =
-      (localFilesService.hasDirectoryHandle()
-        ? localFilesService.searchCardbacks(searchSettings)
+      ((await localFilesService.hasDirectoryHandle())
+        ? await localFilesService.searchCardbacks(searchSettings)
         : undefined) ?? [];
     const remoteResults: Array<string> =
       backendURL != null
