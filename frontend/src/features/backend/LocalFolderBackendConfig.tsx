@@ -35,11 +35,29 @@ export const LocalFolderBackendConfig = () => {
   const steps: Array<BackendConfigStep> = [
     {
       label: "Choosing directory",
-      callable: async () => ({
-        success: true,
-        // @ts-ignore
-        nextArg: await window.showDirectoryPicker({ mode: "readwrite" }),
-      }),
+      callable: async () => {
+        try {
+          // @ts-ignore
+          const handle: FileSystemDirectoryHandle =
+            await window.showDirectoryPicker({ mode: "readwrite" });
+          return { success: true, nextArg: handle };
+        } catch (error) {
+          if (!(error instanceof DOMException)) {
+            dispatch(
+              setNotification([
+                Math.random().toString(),
+                {
+                  name: "Opening Local Folders is Unsupported",
+                  message:
+                    "Your browser doesn't support opening local folders. Sorry about that!",
+                  level: "warning",
+                },
+              ])
+            );
+          }
+          return { success: false };
+        }
+      },
     },
     {
       label: "Indexing files",
@@ -59,26 +77,7 @@ export const LocalFolderBackendConfig = () => {
   const dispatch = useAppDispatch();
   const store = useAppStore();
 
-  const chooseDirectory = async () => {
-    try {
-      await evaluateSteps(steps, setValidationStatus);
-    } catch (e) {
-      // TODO: catch specific errors from `showDirectoryPicker`
-      // RIP firefox :(
-      console.log(e);
-      dispatch(
-        setNotification([
-          Math.random().toString(),
-          {
-            name: "Opening Local Folders is Unsupported",
-            message:
-              "Your browser doesn't support opening local folders. Sorry about that!",
-            level: "warning",
-          },
-        ])
-      );
-    }
-  };
+  const chooseDirectory = async () => evaluateSteps(steps, setValidationStatus);
 
   const clearDirectoryChoice = async () => {
     await localFilesService.clearDirectoryHandle(store.getState(), dispatch);
