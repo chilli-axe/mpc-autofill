@@ -18,7 +18,7 @@ export const getEnvURL = (): string | undefined => {
   return (rawEnvURL?.length ?? 0) > 0 ? rawEnvURL : undefined; // treat zero-length URL as invalid
 };
 
-export function BackendSetter() {
+export function useBackendSetter() {
   const router = useRouter();
   const { server } = router.query;
   const formattedURL: string | null =
@@ -52,6 +52,4 @@ export function BackendSetter() {
       }
     }
   }, [router.isReady, backendConfigured, formattedURL, dispatch, backendURL]);
-
-  return <></>;
 }

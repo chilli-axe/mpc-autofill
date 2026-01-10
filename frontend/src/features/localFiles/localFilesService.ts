@@ -39,9 +39,6 @@ export class LocalFilesService {
     this.worker = wrap<LocalFilesServiceWorker>(worker);
   }
 
-  // this is really awkward sorry. going to duplicate all public method definitions on localFilesService
-  // and plumb through to the worker.
-  // 2025-01-10 - above comment is no longer strictly correct. this layer now has all the redux store interactions.
   public async hasDirectoryHandle(): Promise<boolean> {
     return this.worker?.hasDirectoryHandle() ?? false;
   }
@@ -84,12 +81,27 @@ export class LocalFilesService {
     if (this.worker === undefined) {
       throw new Error("localFilesService was not initialised!");
     }
+    const notificationId = Math.random().toString();
+    if (await this.worker.hasDirectoryHandle()) {
+      dispatch(
+        setNotification([
+          notificationId,
+          {
+            name: `Synchronising ${
+              (await this.worker.getDirectoryHandle())!.name
+            }`,
+            message: "This may take a while...",
+            level: "info",
+          },
+        ])
+      );
+    }
     const indexDirectoryResult = await this.worker.indexDirectory(tags);
     if (indexDirectoryResult !== undefined) {
       const { handle, size } = indexDirectoryResult;
       dispatch(
         setNotification([
-          Math.random().toString(),
+          notificationId, // overwrite the name/message for the existing toast rather than making a new one
           {
             name: `Synchronised ${handle.name}`,
             message: `Indexed ${size} cards.`,

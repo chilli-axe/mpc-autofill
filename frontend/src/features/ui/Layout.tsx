@@ -9,6 +9,7 @@ import { Provider } from "react-redux";
 
 import { ContentMaxWidth, NavbarHeight } from "@/common/constants";
 import { getGoogleAnalyticsConsent } from "@/common/cookies";
+import { useBackendSetter } from "@/features/backend/useBackendSetter";
 import {
   DownloadContext,
   DownloadContextProvider,
@@ -19,8 +20,6 @@ import { Modals } from "@/features/modals/Modals";
 import { Toasts } from "@/features/toasts/Toasts";
 import ProjectNavbar from "@/features/ui/Navbar";
 import store from "@/store/store";
-
-import { BackendSetter } from "../backend/BackendSetter";
 
 const OverscrollProvider = styled(Provider)`
   overscroll-behavior: none;
@@ -64,6 +63,7 @@ export function LayoutWithoutReduxProvider({ children }: PropsWithChildren) {
   const consent = getGoogleAnalyticsConsent();
   const downloadContext: DownloadContext = new Queue(10, 50);
   const [forceUpdateValue, forceUpdate] = useReducer((x: number) => x + 1, 0);
+  useBackendSetter();
   useEffect(() => {
     localFilesService.initialiseWorker();
   }, []);
@@ -77,7 +77,6 @@ export function LayoutWithoutReduxProvider({ children }: PropsWithChildren) {
         )}
         <Toasts />
         <Modals />
-        <BackendSetter />
         <ProjectNavbar />
         {children}
       </LocalFilesContextProvider>
