@@ -37,8 +37,8 @@ export const LocalFolderBackendConfig = () => {
       label: "Choosing directory",
       callable: async () => {
         try {
-          // @ts-ignore
           const handle: FileSystemDirectoryHandle =
+            // @ts-ignore
             await window.showDirectoryPicker({ mode: "readwrite" });
           return { success: true, nextArg: handle };
         } catch (error) {

@@ -255,8 +255,7 @@ const indexDirectory = async (
       size: oramaCardDocuments.length,
     },
   };
-  // @ts-ignore // TODO: fix properly.
-  return newDirectoryIndex; // @ts-ignore TODO: can we serialise/deserialise our index as it's needed to improve performance?
+  return newDirectoryIndex;
 };
 
 export class LocalFilesService {
@@ -412,10 +411,13 @@ export class LocalFilesService {
   public searchCardbacks(
     searchSettings: SearchSettings
   ): Array<string> | undefined {
-    // TODO: what about cardbacks not filtered?
-    return this.searchIdentifiers(searchSettings, undefined, [
-      CardTypeSchema.Cardback,
-    ]);
+    return this.searchIdentifiers(
+      searchSettings.searchTypeSettings.filterCardbacks
+        ? searchSettings
+        : getDefaultSearchSettings([], false),
+      undefined,
+      [CardTypeSchema.Cardback]
+    );
   }
 
   public getLocalCardDocuments(

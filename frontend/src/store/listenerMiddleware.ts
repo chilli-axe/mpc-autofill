@@ -50,13 +50,11 @@ import type { AppDispatch, RootState } from "./store";
 export const recalculateSearchResults = async (
   state: RootState,
   dispatch: AppDispatch,
-  refreshCardbacks?: boolean
+  refreshCardbacks: boolean
 ) => {
   dispatch(clearSearchResults());
   await fetchCardDocumentsAndReportError(dispatch, {
-    refreshCardbacks:
-      refreshCardbacks ??
-      state.searchSettings.searchTypeSettings.filterCardbacks,
+    refreshCardbacks,
   });
 };
 
@@ -130,9 +128,13 @@ startAppListening({
   /**
    * Recalculate search results whenever search settings change.
    */
-  effect: async (action, { getState, dispatch }) => {
+  effect: async (action, { getState, dispatch, getOriginalState }) => {
     const state = getState();
-    await recalculateSearchResults(state, dispatch);
+    const originalState = getOriginalState();
+    const refreshCardbacks =
+      state.searchSettings.searchTypeSettings.filterCardbacks ||
+      originalState.searchSettings.searchTypeSettings.filterCardbacks;
+    await recalculateSearchResults(state, dispatch, refreshCardbacks);
   },
 });
 
