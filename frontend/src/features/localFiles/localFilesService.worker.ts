@@ -323,32 +323,42 @@ export class LocalFilesService {
       exact:
         query !== undefined && !searchSettings.searchTypeSettings.fuzzySearch,
       where: {
-        cardType: {
-          in: cardTypes,
-        },
-        ...(includesTags
-          ? {
-              tags: {
-                containsAny: searchSettings.filterSettings.includesTags,
-                ...(excludesTags
-                  ? {
-                      not: {
-                        containsAny: searchSettings.filterSettings.excludesTags,
-                      },
-                    }
-                  : {}),
-              },
-            }
-          : {}),
-        dpi: {
-          between: [
-            searchSettings.filterSettings.minimumDPI,
-            searchSettings.filterSettings.maximumDPI,
-          ],
-        },
-        size: {
-          lte: searchSettings.filterSettings.maximumSize * 1_000_000,
-        },
+        and: [
+          { cardType: { in: cardTypes } },
+          ...(includesTags
+            ? [
+                {
+                  tags: {
+                    containsAny: searchSettings.filterSettings.includesTags,
+                  },
+                },
+              ]
+            : []),
+          ...(excludesTags
+            ? [
+                {
+                  not: {
+                    tags: {
+                      containsAny: searchSettings.filterSettings.excludesTags,
+                    },
+                  },
+                },
+              ]
+            : []),
+          {
+            dpi: {
+              between: [
+                searchSettings.filterSettings.minimumDPI,
+                searchSettings.filterSettings.maximumDPI,
+              ],
+            },
+          },
+          {
+            size: {
+              lte: searchSettings.filterSettings.maximumSize * 1_000_000,
+            },
+          },
+        ],
       },
       // @ts-ignore // TODO
     }).hits as Array<{ id: string; document: OramaCardDocument }>;

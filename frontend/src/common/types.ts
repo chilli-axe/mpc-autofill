@@ -236,8 +236,8 @@ export const OramaSchema = {
   name: "string" as SearchableType,
   searchq: "string" as SearchableType,
   cardType: "enum",
-  extension: "string",
-  language: "string",
+  extension: "enum",
+  language: "enum",
   tags: "enum[]", // enum allows using "not contained in" filters
   dpi: "number",
   size: "number",
