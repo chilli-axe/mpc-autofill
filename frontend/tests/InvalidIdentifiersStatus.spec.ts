@@ -18,11 +18,10 @@ import {
 import { test } from "../playwright.setup";
 import {
   changeQuery,
-  configureDefaultBackend,
   expectCardGridSlotState,
   expectCardSlotToExist,
   importText,
-  navigateToEditor,
+  loadPageWithDefaultBackend,
 } from "./test-utils";
 
 test.describe("InvalidIdentifiersStatus tests", () => {
@@ -56,9 +55,7 @@ test.describe("InvalidIdentifiersStatus tests", () => {
         searchResultsOneResult,
         ...defaultHandlers
       );
-      await page.goto("/");
-      await configureDefaultBackend(page);
-      await navigateToEditor(page);
+      await loadPageWithDefaultBackend(page);
 
       await importText(page, query);
       await expectCardSlotToExist(page, 1);
@@ -91,9 +88,7 @@ test.describe("InvalidIdentifiersStatus tests", () => {
       searchResultsSixResults,
       ...defaultHandlers
     );
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     await importText(
       page,

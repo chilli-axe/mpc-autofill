@@ -5,7 +5,6 @@ import {
   cardDocument1,
   cardDocument2,
   cardDocument3,
-  cardDocument5,
 } from "@/common/test-constants";
 import {
   cardbacksOneOtherResult,
@@ -23,15 +22,12 @@ import {
 import { test } from "../playwright.setup";
 import {
   changeQueries,
-  configureDefaultBackend,
   expectCardbackSlotState,
   expectCardGridSlotState,
   expectCardSlotToExist,
   expectCardSlotToNotExist,
   importText,
-  navigateToEditor,
-  openCardSlotGridSelector,
-  openChangeQueryModal,
+  loadPageWithDefaultBackend,
   selectSlot,
 } from "./test-utils";
 
@@ -46,9 +42,7 @@ test.describe("CardSlot", () => {
       searchResultsThreeResults,
       ...defaultHandlers
     );
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     await importText(
       page,
@@ -71,9 +65,7 @@ test.describe("CardSlot", () => {
       searchResultsThreeResults,
       ...defaultHandlers
     );
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     await importText(
       page,
@@ -96,9 +88,7 @@ test.describe("CardSlot", () => {
       searchResultsThreeResults,
       ...defaultHandlers
     );
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     await importText(
       page,
@@ -127,9 +117,7 @@ test.describe("CardSlot", () => {
       searchResultsThreeResults,
       ...defaultHandlers
     );
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     await importText(
       page,
@@ -154,9 +142,7 @@ test.describe("CardSlot", () => {
       searchResultsThreeResults,
       ...defaultHandlers
     );
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     await importText(
       page,
@@ -176,9 +162,7 @@ test.describe("CardSlot", () => {
       searchResultsThreeResults,
       ...defaultHandlers
     );
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     await importText(
       page,
@@ -206,9 +190,7 @@ test.describe("CardSlot", () => {
       sourceDocumentsOneResult,
       ...defaultHandlers
     );
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     await importText(page, "my search query");
     await expectCardGridSlotState(page, 1, "back", cardDocument1.name, 1, 2);
@@ -225,9 +207,7 @@ test.describe("CardSlot", () => {
       sourceDocumentsOneResult,
       ...defaultHandlers
     );
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     // Set cardback first
     await page
@@ -252,9 +232,7 @@ test.describe("CardSlot", () => {
       searchResultsOneResult,
       ...defaultHandlers
     );
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     await importText(
       page,
@@ -279,9 +257,7 @@ test.describe("CardSlot", () => {
       searchResultsSixResults,
       ...defaultHandlers
     );
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     await importText(
       page,
@@ -301,9 +277,7 @@ test.describe("CardSlot", () => {
       searchResultsSixResults,
       ...defaultHandlers
     );
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     await importText(
       page,
@@ -333,9 +307,7 @@ test.describe("CardSlot", () => {
       searchResultsSixResults,
       ...defaultHandlers
     );
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     await importText(
       page,
@@ -362,9 +334,7 @@ test.describe("CardSlot", () => {
       searchResultsSixResults,
       ...defaultHandlers
     );
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     await importText(page, "2x query 1\n1x query 2");
 
@@ -390,9 +360,7 @@ test.describe("CardSlot", () => {
       searchResultsSixResults,
       ...defaultHandlers
     );
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     await importText(page, "2x query 1\n1x query 2");
 
@@ -418,9 +386,7 @@ test.describe("CardSlot", () => {
       searchResultsSixResults,
       ...defaultHandlers
     );
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     await importText(page, "5x query 1");
 
@@ -446,9 +412,7 @@ test.describe("CardSlot", () => {
       searchResultsThreeResults,
       ...defaultHandlers
     );
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     await importText(page, "my search query");
 
@@ -465,9 +429,7 @@ test.describe("CardSlot", () => {
       searchResultsOneResult,
       ...defaultHandlers
     );
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     // Import with an invalid identifier (cardDocument2 is not in search results)
     await importText(
@@ -490,9 +452,7 @@ test.describe("CardSlot", () => {
       searchResultsSixResults,
       ...defaultHandlers
     );
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     await importText(page, "2x query 1\n1x query 2");
 

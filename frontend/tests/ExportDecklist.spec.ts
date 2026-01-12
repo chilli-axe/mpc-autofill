@@ -17,12 +17,11 @@ import {
 
 import { test } from "../playwright.setup";
 import {
-  configureDefaultBackend,
   downloadDecklist,
   expectCardbackSlotState,
   expectCardGridSlotState,
   importText,
-  navigateToEditor,
+  loadPageWithDefaultBackend,
   normaliseString,
 } from "./test-utils";
 
@@ -38,9 +37,7 @@ test.describe("ExportDecklist", () => {
       searchResultsSixResults,
       ...defaultHandlers
     );
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     await importText(page, "query 1\nquery 2\nt:query 5");
     await expectCardGridSlotState(page, 1, "front", cardDocument1.name, 1, 1);
@@ -70,9 +67,7 @@ test.describe("ExportDecklist", () => {
       searchResultsSixResults,
       ...defaultHandlers
     );
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     await importText(page, `query 1\nquery 2${FaceSeparator}t:query 6`);
     await expectCardGridSlotState(page, 1, "front", cardDocument1.name, 1, 1);
@@ -103,9 +98,7 @@ test.describe("ExportDecklist", () => {
       searchResultsSixResults,
       ...defaultHandlers
     );
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     await importText(page, `2x query 1\nquery 2${FaceSeparator}query 1`);
     await expectCardGridSlotState(page, 1, "front", cardDocument1.name, 1, 1);

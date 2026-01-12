@@ -13,7 +13,7 @@ import {
 } from "@/mocks/handlers";
 
 import { test } from "../playwright.setup";
-import { configureDefaultBackend, navigateToNew } from "./test-utils";
+import { loadPageWithDefaultBackend } from "./test-utils";
 
 test.describe("NewCards", () => {
   test("clicking to show another page of results in the new cards page", async ({
@@ -25,9 +25,7 @@ test.describe("NewCards", () => {
       newCardsPageForSource1,
       ...defaultHandlers
     );
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToNew(page);
+    loadPageWithDefaultBackend(page, "new");
 
     await expect(page.getByText(cardDocument1.name)).toBeVisible();
     await expect(page.getByText(cardDocument2.name)).toBeVisible();

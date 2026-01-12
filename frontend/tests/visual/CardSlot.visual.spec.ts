@@ -16,10 +16,9 @@ import {
 
 import { test } from "../../playwright.setup";
 import {
-  configureDefaultBackend,
   expectCardGridSlotState,
   importText,
-  navigateToEditor,
+  loadPageWithDefaultBackend,
   openCardSlotGridSelector,
   selectSlot,
 } from "../test-utils";
@@ -35,9 +34,7 @@ test.describe("CardSlot visual tests", () => {
       searchResultsOneResult,
       ...defaultHandlers
     );
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     await importText(page, "my search query");
     await expectCardGridSlotState(page, 1, "front", cardDocument1.name, 1, 1);
@@ -55,9 +52,7 @@ test.describe("CardSlot visual tests", () => {
       searchResultsOneResult,
       ...defaultHandlers
     );
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     await importText(page, "my search query");
     await expectCardGridSlotState(page, 1, "front", cardDocument1.name, 1, 1);
@@ -77,9 +72,7 @@ test.describe("CardSlot visual tests", () => {
       searchResultsOneResult,
       ...defaultHandlers
     );
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     await importText(
       page,
@@ -100,9 +93,7 @@ test.describe("CardSlot visual tests", () => {
       searchResultsThreeResults,
       ...defaultHandlers
     );
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     await importText(
       page,
@@ -123,9 +114,7 @@ test.describe("CardSlot visual tests", () => {
       searchResultsFourResults,
       ...defaultHandlers
     );
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     await importText(
       page,
@@ -149,9 +138,7 @@ test.describe("CardSlot visual tests", () => {
       searchResultsFourResults,
       ...defaultHandlers
     );
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     await importText(
       page,

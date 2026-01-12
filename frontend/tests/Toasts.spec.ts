@@ -20,12 +20,10 @@ import {
 
 import { test } from "../playwright.setup";
 import {
-  configureDefaultBackend,
   getAddCardsMenu,
   getErrorToast,
   importText,
-  navigateToEditor,
-  navigateToNew,
+  loadPageWithDefaultBackend,
   openImportTextModal,
 } from "./test-utils";
 
@@ -94,9 +92,7 @@ test.describe("error reporting toasts", () => {
     interactionFn: (() => Promise<void>) | null = null
   ) {
     network.use(...handlers, ...defaultHandlers);
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     // Do any extra setup the test needs to do to trigger the error
     if (interactionFn != null) {
@@ -245,9 +241,7 @@ test.describe("error reporting toasts", () => {
       newCardsFirstPageServerError,
       ...defaultHandlers
     );
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToNew(page);
+    await loadPageWithDefaultBackend(page, "new");
 
     const errorToast = await getErrorToast(page);
     await expect(errorToast).toBeVisible();

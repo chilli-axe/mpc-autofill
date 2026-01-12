@@ -1,6 +1,5 @@
 import { expect } from "@playwright/test";
 
-import { FaceSeparator } from "@/common/constants";
 import {
   cardDocument1,
   cardDocument2,
@@ -28,14 +27,12 @@ import { test } from "../playwright.setup";
 import {
   changeImageForSelectedImages,
   changeQueryForSelectedImages,
-  configureDefaultBackend,
   deleteSelectedImages,
   deselectSlot,
-  expectCardbackSlotState,
   expectCardGridSlotState,
   expectCardSlotToNotExist,
   importText,
-  navigateToEditor,
+  loadPageWithDefaultBackend,
   selectAll,
   selectSimilar,
   selectSlot,
@@ -53,9 +50,7 @@ test.describe("SelectedImagesRibbon", () => {
       searchResultsSixResults,
       ...defaultHandlers
     );
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     await importText(page, "query 1");
     await expectCardGridSlotState(page, 1, "front", cardDocument1.name, 1, 1);
@@ -76,9 +71,7 @@ test.describe("SelectedImagesRibbon", () => {
       searchResultsSixResults,
       ...defaultHandlers
     );
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     await importText(page, "2x query 1");
     await expectCardGridSlotState(page, 1, "front", cardDocument1.name, 1, 1);
@@ -102,9 +95,7 @@ test.describe("SelectedImagesRibbon", () => {
       searchResultsThreeResults,
       ...defaultHandlers
     );
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     await importText(page, "my search query");
     await expectCardGridSlotState(page, 1, "front", cardDocument1.name, 1, 3);
@@ -125,9 +116,7 @@ test.describe("SelectedImagesRibbon", () => {
       searchResultsThreeResults,
       ...defaultHandlers
     );
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     await importText(page, "2x my search query");
     await expectCardGridSlotState(page, 1, "front", cardDocument1.name, 1, 3);
@@ -151,9 +140,7 @@ test.describe("SelectedImagesRibbon", () => {
       searchResultsThreeResults,
       ...defaultHandlers
     );
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     await importText(page, "2x my search query");
     await expectCardGridSlotState(page, 1, "back", cardDocument1.name, 1, 2);
@@ -177,9 +164,7 @@ test.describe("SelectedImagesRibbon", () => {
       searchResultsSixResults,
       ...defaultHandlers
     );
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     await importText(page, "query 1\nquery 2");
     await expectCardGridSlotState(page, 1, "front", cardDocument1.name, 1, 1);
@@ -199,9 +184,7 @@ test.describe("SelectedImagesRibbon", () => {
       searchResultsOneResult,
       ...defaultHandlers
     );
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     await importText(page, "my search query");
     await expectCardGridSlotState(page, 1, "front", cardDocument1.name, 1, 1);
@@ -222,9 +205,7 @@ test.describe("SelectedImagesRibbon", () => {
       searchResultsOneResult,
       ...defaultHandlers
     );
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     await importText(page, "2x my search query");
     await expectCardGridSlotState(page, 1, "front", cardDocument1.name, 1, 1);
@@ -245,9 +226,7 @@ test.describe("SelectedImagesRibbon", () => {
       searchResultsOneResult,
       ...defaultHandlers
     );
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     await importText(page, "my search query");
     await expectCardGridSlotState(page, 1, "front", cardDocument1.name, 1, 1);
@@ -267,9 +246,7 @@ test.describe("SelectedImagesRibbon", () => {
       searchResultsSixResults,
       ...defaultHandlers
     );
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     await importText(page, "2x query 1\n1x query 2");
 
@@ -297,9 +274,7 @@ test.describe("SelectedImagesRibbon", () => {
       dfcPairsMatchingCards1And4,
       ...defaultHandlers
     );
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     await importText(page, "1x my search query\n2x card 3");
     // slot 1 uses dfc-pair matching to pair cards 1 and 4, while slots 2 and 3 display card 3 and use the project back
@@ -333,9 +308,7 @@ test.describe("SelectedImagesRibbon", () => {
       searchResultsSixResults,
       ...defaultHandlers
     );
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     await importText(page, "2x query 1\n1x query 2");
 

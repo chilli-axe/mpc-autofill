@@ -8,11 +8,7 @@ import {
 } from "@/mocks/handlers";
 
 import { test } from "../../playwright.setup";
-import {
-  configureDefaultBackend,
-  navigateToEditor,
-  openImportTextModal,
-} from "../test-utils";
+import { loadPageWithDefaultBackend, openImportTextModal } from "../test-utils";
 
 test.describe("ImportText visual tests", () => {
   test("import text modal structure", async ({ page, network }) => {
@@ -23,9 +19,7 @@ test.describe("ImportText visual tests", () => {
       ...defaultHandlers
     );
     page.addInitScript({ content: "Math.random = () => 1;" });
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     await openImportTextModal(page);
 

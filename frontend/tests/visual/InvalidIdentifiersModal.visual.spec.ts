@@ -11,10 +11,9 @@ import {
 
 import { test } from "../../playwright.setup";
 import {
-  configureDefaultBackend,
   expectCardSlotToExist,
   importText,
-  navigateToEditor,
+  loadPageWithDefaultBackend,
 } from "../test-utils";
 
 test.describe("InvalidIdentifiersModal visual tests", () => {
@@ -28,9 +27,7 @@ test.describe("InvalidIdentifiersModal visual tests", () => {
       searchResultsSixResults,
       ...defaultHandlers
     );
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     await importText(
       page,

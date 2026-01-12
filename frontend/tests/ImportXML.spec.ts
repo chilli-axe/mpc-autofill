@@ -24,13 +24,12 @@ import {
 
 import { test } from "../playwright.setup";
 import {
-  configureDefaultBackend,
   expectCardbackSlotState,
   expectCardGridSlotStates,
   expectCardSlotToExist,
   importText,
   importXML,
-  navigateToEditor,
+  loadPageWithDefaultBackend,
 } from "./test-utils";
 
 test.describe("ImportXML", () => {
@@ -45,9 +44,7 @@ test.describe("ImportXML", () => {
       searchResultsOneResult,
       ...defaultHandlers
     );
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     await expectCardbackSlotState(page, cardDocument2.name, 1, 2);
 
@@ -105,9 +102,7 @@ test.describe("ImportXML", () => {
       searchResultsOneResult,
       ...defaultHandlers
     );
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     await expectCardbackSlotState(page, cardDocument2.name, 1, 2);
 
@@ -177,9 +172,7 @@ test.describe("ImportXML", () => {
       searchResultsThreeResults,
       ...defaultHandlers
     );
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     await expectCardbackSlotState(page, cardDocument2.name, 1, 2);
 
@@ -237,9 +230,7 @@ test.describe("ImportXML", () => {
       searchResultsSixResults,
       ...defaultHandlers
     );
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     await expectCardbackSlotState(page, cardDocument2.name, 1, 2);
 
@@ -333,9 +324,7 @@ test.describe("ImportXML", () => {
       searchResultsFourResults,
       ...defaultHandlers
     );
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     await expectCardbackSlotState(page, cardDocument2.name, 1, 2);
 
@@ -431,9 +420,7 @@ test.describe("ImportXML", () => {
       searchResultsFourResults,
       ...defaultHandlers
     );
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     await expectCardbackSlotState(page, cardDocument2.name, 1, 2);
 
@@ -531,9 +518,7 @@ test.describe("ImportXML", () => {
       searchResultsFourResults,
       ...defaultHandlers
     );
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     // this used to preload the redux state, but with the shift to listeners,
     // we have to add the first card manually like this.
@@ -652,9 +637,7 @@ test.describe("ImportXML", () => {
       searchResultsOneResult,
       ...defaultHandlers
     );
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     await expectCardbackSlotState(page, cardDocument2.name, 1, 2);
 

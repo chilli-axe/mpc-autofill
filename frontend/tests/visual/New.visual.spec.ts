@@ -8,7 +8,7 @@ import {
 } from "@/mocks/handlers";
 
 import { test } from "../../playwright.setup";
-import { configureDefaultBackend, navigateToNew } from "../test-utils";
+import { loadPageWithDefaultBackend } from "../test-utils";
 
 test.describe("New cards page visual tests", () => {
   test("new cards page with two sources, each with results", async ({
@@ -16,9 +16,7 @@ test.describe("New cards page visual tests", () => {
     network,
   }) => {
     network.use(newCardsFirstPageWithTwoSources, ...defaultHandlers);
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToNew(page);
+    await loadPageWithDefaultBackend(page, "new");
 
     await expect(
       page.getByText(sourceDocument1.name, { exact: true })
@@ -31,9 +29,7 @@ test.describe("New cards page visual tests", () => {
 
   test("new cards page with no data", async ({ page, network }) => {
     network.use(newCardsFirstPageNoResults, ...defaultHandlers);
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToNew(page);
+    await loadPageWithDefaultBackend(page, "new");
 
     await expect(page.getByText(":(", { exact: false })).toBeVisible();
 

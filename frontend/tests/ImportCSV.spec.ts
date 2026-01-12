@@ -23,12 +23,10 @@ import {
 
 import { test } from "../playwright.setup";
 import {
-  configureDefaultBackend,
   expectCardbackSlotState,
   expectCardGridSlotStates,
-  expectCardSlotToExist,
   importCSV,
-  navigateToEditor,
+  loadPageWithDefaultBackend,
 } from "./test-utils";
 
 test.describe("ImportCSV", () => {
@@ -43,9 +41,7 @@ test.describe("ImportCSV", () => {
       searchResultsOneResult,
       ...defaultHandlers
     );
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     await importCSV(
       page,
@@ -86,9 +82,7 @@ test.describe("ImportCSV", () => {
       searchResultsOneResult,
       ...defaultHandlers
     );
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     await importCSV(
       page,
@@ -141,9 +135,7 @@ test.describe("ImportCSV", () => {
       searchResultsThreeResults,
       ...defaultHandlers
     );
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     await importCSV(
       page,
@@ -184,9 +176,7 @@ test.describe("ImportCSV", () => {
       searchResultsSixResults,
       ...defaultHandlers
     );
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     await importCSV(
       page,
@@ -251,9 +241,7 @@ test.describe("ImportCSV", () => {
       searchResultsFourResults,
       ...defaultHandlers
     );
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     await importCSV(
       page,
@@ -316,9 +304,7 @@ test.describe("ImportCSV", () => {
       searchResultsThreeResults,
       ...defaultHandlers
     );
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     await importCSV(
       page,

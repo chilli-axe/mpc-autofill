@@ -11,10 +11,9 @@ import {
 
 import { test } from "../../playwright.setup";
 import {
-  configureDefaultBackend,
   expectCardGridSlotState,
   importText,
-  navigateToEditor,
+  loadPageWithDefaultBackend,
   openSearchSettingsModal,
 } from "../test-utils";
 
@@ -27,9 +26,7 @@ test.describe("SearchSettings visual tests", () => {
       searchResultsOneResult,
       ...defaultHandlers
     );
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     // Wait for sources to be fetched by importing a card
     await importText(page, "my search query");

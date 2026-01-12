@@ -11,10 +11,9 @@ import {
 
 import { test } from "../../playwright.setup";
 import {
-  configureDefaultBackend,
   expectCardGridSlotState,
   importText,
-  navigateToEditor,
+  loadPageWithDefaultBackend,
 } from "../test-utils";
 
 test.describe("CardDetailedViewModal visual tests", () => {
@@ -25,9 +24,7 @@ test.describe("CardDetailedViewModal visual tests", () => {
       searchResultsOneResult,
       ...defaultHandlers
     );
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     await importText(
       page,

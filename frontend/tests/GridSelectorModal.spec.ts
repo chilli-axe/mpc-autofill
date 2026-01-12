@@ -10,9 +10,8 @@ import {
 
 import { test } from "../playwright.setup";
 import {
-  configureDefaultBackend,
   importText,
-  navigateToEditor,
+  loadPageWithDefaultBackend,
   openCardSlotGridSelector,
 } from "./test-utils";
 
@@ -27,9 +26,7 @@ test.describe("GridSelectorModal tests", () => {
       searchResultsThreeResults,
       ...defaultHandlers
     );
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     // Import a card to get the grid selector available
     await importText(page, "my search query");
@@ -61,9 +58,7 @@ test.describe("GridSelectorModal tests", () => {
       searchResultsThreeResults,
       ...defaultHandlers
     );
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     // Import a card to get the grid selector available
     await importText(page, "my search query");
@@ -94,9 +89,7 @@ test.describe("GridSelectorModal tests", () => {
       searchResultsThreeResults,
       ...defaultHandlers
     );
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     // Import a card to get the grid selector available
     await importText(page, "my search query");

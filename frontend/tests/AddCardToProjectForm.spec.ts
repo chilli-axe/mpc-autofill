@@ -12,10 +12,9 @@ import {
 
 import { test } from "../playwright.setup";
 import {
-  configureDefaultBackend,
   expectCardGridSlotStates,
   importText,
-  navigateToEditor,
+  loadPageWithDefaultBackend,
 } from "./test-utils";
 
 test.describe("AddCardToProjectForm tests", () => {
@@ -31,9 +30,7 @@ test.describe("AddCardToProjectForm tests", () => {
         searchResultsOneResultCorrectSearchq,
         ...defaultHandlers
       );
-      await page.goto("/");
-      await configureDefaultBackend(page);
-      await navigateToEditor(page);
+      await loadPageWithDefaultBackend(page);
 
       // Add initial card to project
       await importText(

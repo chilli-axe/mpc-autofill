@@ -2,9 +2,6 @@ import { expect, Page } from "@playwright/test";
 import { readFile } from "fs/promises";
 
 export const configureBackend = async (page: Page, url: string) => {
-  // this sorta doesn't belong here, but easy way to make sure this runs in every test
-  await page.getByRole("button", { name: "Opt out" }).click();
-
   await page.getByLabel("configure-server-btn").click();
   await page.getByRole("textbox", { name: "backend-url" }).click();
   await page.getByRole("textbox", { name: "backend-url" }).fill(url);
@@ -20,6 +17,15 @@ export const configureBackend = async (page: Page, url: string) => {
 
 export const configureDefaultBackend = async (page: Page) =>
   configureBackend(page, "http://127.0.0.1:8000");
+
+export const loadPageWithDefaultBackend = async (
+  page: Page,
+  pageName: string = "editor"
+) => {
+  await page.goto(`/${pageName}?server=http://127.0.0.1:8000`);
+  // this sorta doesn't belong here, but easy way to make sure this runs in almost all tests
+  await page.getByRole("button", { name: "Opt out" }).click();
+};
 
 export const navigateToEditor = async (page: Page) =>
   page.getByRole("link", { name: "Editor" }).click();

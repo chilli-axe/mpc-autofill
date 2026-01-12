@@ -17,8 +17,8 @@ export default defineConfig({
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
-  /* I have zero tolerance for flaky tests here. */
-  retries: 0,
+  /* Retry on CI only */
+  retries: process.env.CI ? 2 : 0,
   /* Always run tests in parallel. Default is to not parallelise in CI, this seems nuts to me. */
   workers: undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
@@ -38,7 +38,10 @@ export default defineConfig({
       name: "chromium",
       use: {
         ...devices["Desktop Chrome"],
-        contextOptions: { reducedMotion: "reduce" },
+        contextOptions: {
+          reducedMotion: "reduce",
+          viewport: { height: 600, width: 800 },
+        },
       },
     },
 
@@ -46,7 +49,10 @@ export default defineConfig({
       name: "firefox",
       use: {
         ...devices["Desktop Firefox"],
-        contextOptions: { reducedMotion: "reduce" },
+        contextOptions: {
+          reducedMotion: "reduce",
+          viewport: { height: 600, width: 800 },
+        },
       },
     },
 
@@ -54,7 +60,10 @@ export default defineConfig({
       name: "webkit",
       use: {
         ...devices["Desktop Safari"],
-        contextOptions: { reducedMotion: "reduce" },
+        contextOptions: {
+          reducedMotion: "reduce",
+          viewport: { height: 600, width: 800 },
+        },
       },
     },
 

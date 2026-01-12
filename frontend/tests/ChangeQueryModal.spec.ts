@@ -16,11 +16,10 @@ import {
 import { test } from "../playwright.setup";
 import {
   changeQueries,
-  configureDefaultBackend,
   expectCardGridSlotState,
   expectCardSlotToExist,
   importText,
-  navigateToEditor,
+  loadPageWithDefaultBackend,
   openChangeQueryModal,
 } from "./test-utils";
 
@@ -32,9 +31,7 @@ test.describe("ChangeQueryModal tests", () => {
       searchResultsSixResults,
       ...defaultHandlers
     );
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     await importText(
       page,

@@ -26,13 +26,12 @@ import {
 
 import { test } from "../playwright.setup";
 import {
-  configureDefaultBackend,
   expectCardbackSlotState,
   expectCardGridSlotStates,
   expectCardSlotToExist,
   expectCardSlotToNotExist,
   importText,
-  navigateToEditor,
+  loadPageWithDefaultBackend,
   openImportTextModal,
 } from "./test-utils";
 
@@ -48,9 +47,7 @@ test.describe("ImportText", () => {
       searchResultsOneResult,
       ...defaultHandlers
     );
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
     await importText(page, "my search query");
     await expectCardGridSlotStates(
       page,
@@ -86,9 +83,7 @@ test.describe("ImportText", () => {
     );
 
     // import two instances of a card
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     await expectCardbackSlotState(page, cardDocument2.name, 1, 2);
 
@@ -140,9 +135,7 @@ test.describe("ImportText", () => {
       searchResultsOneResult,
       ...defaultHandlers
     );
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     // import two instances of a card without an x
     await importText(page, "2 my search query");
@@ -193,9 +186,7 @@ test.describe("ImportText", () => {
       searchResultsOneResult,
       ...defaultHandlers
     );
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     await expectCardbackSlotState(page, cardDocument2.name, 1, 2);
 
@@ -248,9 +239,7 @@ test.describe("ImportText", () => {
       searchResultsOneResult,
       ...defaultHandlers
     );
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     // this used to preload the redux state, but with the shift to listeners,
     // we have to add the first card manually like this.
@@ -327,9 +316,7 @@ test.describe("ImportText", () => {
       searchResultsSixResults,
       ...defaultHandlers
     );
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     await expectCardbackSlotState(page, cardDocument2.name, 1, 2);
 
@@ -397,9 +384,7 @@ test.describe("ImportText", () => {
       dfcPairsMatchingCards1And4,
       ...defaultHandlers
     );
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     await expectCardbackSlotState(page, cardDocument2.name, 1, 2);
 
@@ -440,9 +425,7 @@ test.describe("ImportText", () => {
       searchResultsOneResult,
       ...defaultHandlers
     );
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     await importText(page, "");
 
@@ -455,9 +438,7 @@ test.describe("ImportText", () => {
   }) => {
     network.use(sampleCards, ...defaultHandlers);
     page.addInitScript({ content: "Math.random = () => 1;" });
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     await openImportTextModal(page);
     await expect(page.getByTestId("import-text")).toMatchAriaSnapshot(`
@@ -481,9 +462,7 @@ test.describe("ImportText", () => {
       searchResultsOneResult,
       ...defaultHandlers
     );
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     await expectCardbackSlotState(page, cardDocument2.name, 1, 2);
 
@@ -511,9 +490,7 @@ test.describe("ImportText", () => {
       searchResultsOneResult,
       ...defaultHandlers
     );
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     await expectCardbackSlotState(page, cardDocument2.name, 1, 2);
 
@@ -540,9 +517,7 @@ test.describe("ImportText", () => {
       searchResultsOneResult,
       ...defaultHandlers
     );
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     await expectCardbackSlotState(page, cardDocument2.name, 1, 2);
 

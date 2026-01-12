@@ -11,9 +11,8 @@ import {
 
 import { test } from "../../playwright.setup";
 import {
-  configureDefaultBackend,
   expectCardbackSlotState,
-  navigateToEditor,
+  loadPageWithDefaultBackend,
 } from "../test-utils";
 
 test.describe("CommonCardback visual tests", () => {
@@ -27,9 +26,7 @@ test.describe("CommonCardback visual tests", () => {
       cardbacksOneResult,
       ...defaultHandlers
     );
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     await expectCardbackSlotState(page, cardDocument1.name, 1, 1);
 
@@ -46,9 +43,7 @@ test.describe("CommonCardback visual tests", () => {
       cardbacksTwoResults,
       ...defaultHandlers
     );
-    await page.goto("/");
-    await configureDefaultBackend(page);
-    await navigateToEditor(page);
+    await loadPageWithDefaultBackend(page);
 
     await expectCardbackSlotState(page, cardDocument1.name, 1, 2);
 
