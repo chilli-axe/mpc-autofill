@@ -24,7 +24,7 @@ runs:
       shell: bash
     - name: Run Playwright tests
       run: |
-        npx playwright test
+        npm run test-e2e
       shell: bash
     - name: Upload Playwright report
       uses: actions/upload-artifact@v4

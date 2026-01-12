@@ -10,6 +10,7 @@
     "start": "next start",
     "lint": "next lint",
     "test": "jest --silent --logHeapUsage",
+    "test-e2e": "npx playwright test",
     "test-update-snapshot": "jest --silent --updateSnapshot",
     "generate-schema-types": "npx json2ts -i  \"../common/schemas/*.json\" --cwd ../common/schemas > src/common/schema_types.ts"
   },
