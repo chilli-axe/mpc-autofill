@@ -15,7 +15,7 @@ import {
 
 //# region backend
 
-export const localBackendURL = "https://127.0.0.1:8000";
+export const localBackendURL = "http://127.0.0.1:8000";
 export const localBackend: BackendState = { url: localBackendURL };
 export const noBackend: BackendState = { url: null };
 

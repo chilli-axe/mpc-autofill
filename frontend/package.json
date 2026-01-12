@@ -51,6 +51,8 @@
   },
   "devDependencies": {
     "@emotion/jest": "^11.14.2",
+    "@msw/playwright": "^0.4.5",
+    "@playwright/test": "^1.57.0",
     "@side/jest-runtime": "^1.1.0",
     "@swc/core": "^1.3.70",
     "@swc/jest": "^0.2.39",
