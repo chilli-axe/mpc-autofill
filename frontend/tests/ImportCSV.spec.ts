@@ -1,5 +1,3 @@
-import { expect } from "@playwright/test";
-
 import {
   cardDocument1,
   cardDocument2,

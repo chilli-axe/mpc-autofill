@@ -23,8 +23,11 @@ export const loadPageWithDefaultBackend = async (
   pageName: string = "editor"
 ) => {
   await page.goto(`/${pageName}?server=http://127.0.0.1:8000`);
-  // this sorta doesn't belong here, but easy way to make sure this runs in almost all tests
-  await page.getByRole("button", { name: "Opt out" }).click();
+
+  // Wait for cookie consent toast to appear and dismiss it
+  const optOutButton = page.getByRole("button", { name: "Opt out" });
+  await optOutButton.waitFor({ state: "visible" });
+  await optOutButton.click();
 };
 
 export const navigateToEditor = async (page: Page) =>
@@ -33,9 +36,19 @@ export const navigateToEditor = async (page: Page) =>
 export const navigateToNew = async (page: Page) =>
   page.getByRole("link", { name: "What's New?" }).click();
 
-export const openImportTextModal = async (page: Page) => {
+export const openAddCardsDropdown = async (page: Page) => {
+  const textButton = page.getByRole("button", { name: " Text" });
+  await expect(textButton).not.toBeVisible();
+
   await page.getByRole("button", { name: "Add Cards", exact: false }).click();
-  await page.getByRole("button", { name: "Text", exact: false }).click();
+};
+
+export const openImportTextModal = async (page: Page) => {
+  await openAddCardsDropdown(page);
+  const textButton = page.getByRole("button", { name: " Text" });
+  await textButton.waitFor({ state: "visible" });
+
+  await textButton.click();
 };
 
 export const importText = async (page: Page, text: string) => {
@@ -138,7 +151,7 @@ export const expectCardGridSlotStates = async (
 };
 
 export const openImportCSVModal = async (page: Page) => {
-  await page.getByRole("button", { name: "Add Cards", exact: false }).click();
+  await openAddCardsDropdown(page);
   await page.getByRole("button", { name: "CSV", exact: false }).click();
 };
 
@@ -160,7 +173,7 @@ export const importCSV = async (page: Page, fileContents: string) => {
 };
 
 export const openImportXMLModal = async (page: Page) => {
-  await page.getByRole("button", { name: "Add Cards", exact: false }).click();
+  await openAddCardsDropdown(page);
   await page.getByRole("button", { name: "XML", exact: false }).click();
 };
 
