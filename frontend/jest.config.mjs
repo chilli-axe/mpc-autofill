@@ -23,9 +23,10 @@ const customJestConfig = {
   injectGlobals: true,
   testTimeout: 20_000,
   maxWorkers: 4,
-  snapshotSerializers: [
-    "@emotion/jest/serializer" /* if needed other snapshotSerializers should go here */,
-  ],
+  // Ignore Playwright tests directory
+  testPathIgnorePatterns: ["/node_modules/", "/tests/"],
+  // Only match Jest test files (not Playwright .spec.ts files)
+  testMatch: ["**/*.test.ts", "**/*.test.tsx"],
 };
 
 const createJestConfig = nextJest({
