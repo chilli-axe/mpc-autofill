@@ -17,8 +17,8 @@ export default defineConfig({
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
-  /* Retry on CI only */
-  retries: process.env.CI ? 2 : 0,
+  /* I have zero tolerance for flaky tests here. */
+  retries: 0,
   /* Always run tests in parallel. Default is to not parallelise in CI, this seems nuts to me. */
   workers: undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
@@ -36,17 +36,26 @@ export default defineConfig({
   projects: [
     {
       name: "chromium",
-      use: { ...devices["Desktop Chrome"] },
+      use: {
+        ...devices["Desktop Chrome"],
+        contextOptions: { reducedMotion: "reduce" },
+      },
     },
 
     {
       name: "firefox",
-      use: { ...devices["Desktop Firefox"] },
+      use: {
+        ...devices["Desktop Firefox"],
+        contextOptions: { reducedMotion: "reduce" },
+      },
     },
 
     {
       name: "webkit",
-      use: { ...devices["Desktop Safari"] },
+      use: {
+        ...devices["Desktop Safari"],
+        contextOptions: { reducedMotion: "reduce" },
+      },
     },
 
     /* Test against mobile viewports. */
@@ -75,5 +84,9 @@ export default defineConfig({
     command: "npm run dev",
     url: "http://localhost:3000",
     reuseExistingServer: !process.env.CI,
+    env: {
+      NEXT_PUBLIC_IMAGE_WORKER_URL: "https://cdn.mpcautofill.com",
+      NEXT_PUBLIC_IMAGE_BUCKET_URL: "https://img.mpcautofill.com",
+    },
   },
 });
