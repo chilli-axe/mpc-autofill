@@ -14,7 +14,15 @@ test.describe("DynamicLogo visual tests", () => {
 
     await expect(page.getByAltText(cardDocument1.name)).toBeVisible();
 
-    await expect(page.getByTestId("dynamic-logo")).toHaveScreenshot();
+    await expect(page.getByTestId("dynamic-logo")).toMatchAriaSnapshot(`
+      - paragraph: Test Site
+      - img "logo-arrow"
+      - img "Card 6"
+      - img "Card 1"
+      - img "Card 2"
+      - img "Card 3"
+      - img "Card 4"
+    `);
   });
 
   test("dynamic logo, no backend configured", async ({ page, network }) => {
@@ -24,8 +32,14 @@ test.describe("DynamicLogo visual tests", () => {
     // Wait for the default "Your Design Here" images to load
     await expect(page.getByAltText("Your Design Here").first()).toBeVisible();
 
-    await expect(page.getByTestId("dynamic-logo")).toHaveScreenshot({
-      maxDiffPixelRatio: 0.05,
-    });
+    await expect(page.getByTestId("dynamic-logo")).toMatchAriaSnapshot(`
+      - paragraph: MPC Autofill
+      - img "logo-arrow"
+      - img "Your Design Here"
+      - img "Your Design Here"
+      - img "Your Design Here"
+      - img "Your Design Here"
+      - img "Your Design Here"
+    `);
   });
 });

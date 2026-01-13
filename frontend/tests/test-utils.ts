@@ -31,10 +31,10 @@ export const loadPageWithDefaultBackend = async (
 };
 
 export const navigateToEditor = async (page: Page) =>
-  page.getByRole("link", { name: "Editor" }).click();
+  await page.getByRole("link", { name: "Editor" }).click();
 
 export const navigateToNew = async (page: Page) =>
-  page.getByRole("link", { name: "What's New?" }).click();
+  await page.getByRole("link", { name: "What's New?" }).click();
 
 export const openAddCardsDropdown = async (page: Page) => {
   const textButton = page.getByRole("button", { name: " Text" });
@@ -52,7 +52,7 @@ export const openAddCardsDropdown = async (page: Page) => {
 
 export const openImportTextModal = async (page: Page) => {
   await openAddCardsDropdown(page);
-  const textButton = page.getByRole("button", { name: " Text" }).click();
+  const textButton = await page.getByRole("button", { name: " Text" }).click();
 };
 
 export const importText = async (page: Page, text: string) => {
@@ -130,7 +130,7 @@ type CardSlotAssertion = {
 };
 
 export const toggleFace = async (page: Page) =>
-  page.getByRole("button", { name: "Switch to", exact: false }).click();
+  await page.getByRole("button", { name: "Switch to", exact: false }).click();
 
 export const expectCardGridSlotStates = async (
   page: Page,

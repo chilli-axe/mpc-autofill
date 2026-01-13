@@ -30,7 +30,13 @@ test.describe("CommonCardback visual tests", () => {
 
     await expectCardbackSlotState(page, cardDocument1.name, 1, 1);
 
-    await expect(page.getByTestId("common-cardback")).toHaveScreenshot();
+    await expect(page.getByTestId("common-cardback")).toMatchAriaSnapshot(`
+      - paragraph: Cardback
+      - img "Card 1"
+      - text: Card 1
+      - paragraph: /Source 1 \\[\\d+ DPI\\]/
+      - paragraph: 1 / 1
+    `);
   });
 
   test("common cardback with multiple search results", async ({
@@ -47,6 +53,14 @@ test.describe("CommonCardback visual tests", () => {
 
     await expectCardbackSlotState(page, cardDocument1.name, 1, 2);
 
-    await expect(page.getByTestId("common-cardback")).toHaveScreenshot();
+    await expect(page.getByTestId("common-cardback")).toMatchAriaSnapshot(`
+      - paragraph: Cardback
+      - img "Card 1"
+      - text: Card 1
+      - paragraph: /Source 1 \\[\\d+ DPI\\]/
+      - button "1 / 2"
+      - button "❮"
+      - button "❯"
+    `);
   });
 });
