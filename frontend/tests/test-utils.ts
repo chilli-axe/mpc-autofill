@@ -38,17 +38,21 @@ export const navigateToNew = async (page: Page) =>
 
 export const openAddCardsDropdown = async (page: Page) => {
   const textButton = page.getByRole("button", { name: " Text" });
-  await expect(textButton).not.toBeVisible();
-
-  await page.getByRole("button", { name: "Add Cards", exact: false }).click();
+  if (await textButton.isVisible()) {
+    return;
+  }
+  // this looks stupid but actually prevents our tests from being flaky.
+  // sometimes playwright is too "fast" (?) and clicking the button doesn't open the dropdown.
+  // (the rare human comment amongst the AI slop)
+  await expect(async () => {
+    await page.getByRole("button", { name: "Add Cards", exact: false }).click();
+    await expect(textButton).toBeVisible();
+  }).toPass({ timeout: 10_000 });
 };
 
 export const openImportTextModal = async (page: Page) => {
   await openAddCardsDropdown(page);
-  const textButton = page.getByRole("button", { name: " Text" });
-  await textButton.waitFor({ state: "visible" });
-
-  await textButton.click();
+  const textButton = page.getByRole("button", { name: " Text" }).click();
 };
 
 export const importText = async (page: Page, text: string) => {

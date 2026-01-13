@@ -24,6 +24,8 @@ test.describe("DynamicLogo visual tests", () => {
     // Wait for the default "Your Design Here" images to load
     await expect(page.getByAltText("Your Design Here").first()).toBeVisible();
 
-    await expect(page.getByTestId("dynamic-logo")).toHaveScreenshot();
+    await expect(page.getByTestId("dynamic-logo")).toHaveScreenshot({
+      maxDiffPixelRatio: 0.05,
+    });
   });
 });

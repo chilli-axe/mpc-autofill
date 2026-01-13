@@ -440,30 +440,4 @@ test.describe("CardSlot", () => {
     // Should automatically deselect the invalid image and select the first result
     await expectCardGridSlotState(page, 1, "front", cardDocument1.name, 1, 1);
   });
-
-  test("selecting then shift-clicking to expand the selection upwards (already migrated)", async ({
-    page,
-    network,
-  }) => {
-    network.use(
-      cardDocumentsSixResults,
-      cardbacksOneOtherResult,
-      sourceDocumentsOneResult,
-      searchResultsSixResults,
-      ...defaultHandlers
-    );
-    await loadPageWithDefaultBackend(page);
-
-    await importText(page, "2x query 1\n1x query 2");
-
-    await selectSlot(page, 3, "front");
-    await selectSlot(page, 1, "front", "shift");
-
-    const element1 = page.getByLabel("select-front0").locator("*").first();
-    const element2 = page.getByLabel("select-front1").locator("*").first();
-    const element3 = page.getByLabel("select-front2").locator("*").first();
-    await expect(element1).toHaveClass(/bi-check-square/);
-    await expect(element2).toHaveClass(/bi-check-square/);
-    await expect(element3).toHaveClass(/bi-check-square/);
-  });
 });
