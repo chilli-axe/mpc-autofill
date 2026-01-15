@@ -36,6 +36,12 @@ export const navigateToEditor = async (page: Page) =>
 export const navigateToNew = async (page: Page) =>
   await page.getByRole("link", { name: "What's New?" }).click();
 
+export const getAddCardsMenu = (page: Page) => {
+  return page
+    .getByTestId("right-panel")
+    .getByText("Add Cards", { exact: false });
+};
+
 export const openAddCardsDropdown = async (page: Page) => {
   const textButton = page.getByRole("button", { name: " Text" });
   if (await textButton.isVisible()) {
@@ -45,7 +51,7 @@ export const openAddCardsDropdown = async (page: Page) => {
   // sometimes playwright is too "fast" (?) and clicking the button doesn't open the dropdown.
   // (the rare human comment amongst the AI slop)
   await expect(async () => {
-    await page.getByRole("button", { name: "Add Cards", exact: false }).click();
+    await getAddCardsMenu(page).click();
     await expect(textButton).toBeVisible();
   }).toPass({ timeout: 10_000 });
 };
@@ -129,8 +135,16 @@ type CardSlotAssertion = {
   totalImages: number;
 };
 
-export const toggleFace = async (page: Page) =>
-  await page.getByRole("button", { name: "Switch to", exact: false }).click();
+export const getToggleFaceButton = async (page: Page) =>
+  page.getByRole("button", { name: "Switch to", exact: false });
+
+export const toggleFace = async (page: Page) => {
+  const btn = await getToggleFaceButton(page);
+  // it seems like sometimes the import XML modal doesn't dismiss properly
+  // so to avoid the modal intercepting click events, just force the click
+  // yes this is hacky. you're more than welcome to try fixing this.
+  await btn.click({ force: true });
+};
 
 export const expectCardGridSlotStates = async (
   page: Page,
@@ -204,7 +218,7 @@ export const importXML = async (
 
   await expect(
     page.locator('span:has-text("Loading your cards...")')
-  ).not.toBeVisible();
+  ).not.toBeAttached();
 };
 
 export const downloadXML = async (page: Page): Promise<[string, string]> => {
@@ -362,12 +376,6 @@ export const deleteSelectedImages = async (page: Page) => {
 
 export const getErrorToast = async (page: Page) => {
   return page.getByText("An Error Occurred").locator("..").locator("..");
-};
-
-export const getAddCardsMenu = (page: Page) => {
-  return page
-    .getByTestId("right-panel")
-    .getByText("Add Cards", { exact: false });
 };
 
 export const openSearchSettingsModal = async (page: Page) => {

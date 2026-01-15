@@ -629,7 +629,7 @@ test.describe("ImportXML", () => {
     await expectCardbackSlotState(page, cardDocument2.name, 1, 2);
   });
 
-  test("import an XML and retain its cardback", async ({ page, network }) => {
+  test("import an XML and use its cardback", async ({ page, network }) => {
     network.use(
       cardDocumentsThreeResults,
       cardbacksTwoOtherResults,
