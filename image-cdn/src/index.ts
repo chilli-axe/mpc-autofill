@@ -200,7 +200,7 @@ const processAndEnqueue = async (env: Env, ctx: ExecutionContext, cursor: string
   }
 };
 
-export default {
+const defaultExport = {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
     if (url.pathname.startsWith("/images/")) {
@@ -222,3 +222,5 @@ export default {
     await processAndEnqueue(env, ctx, cursor);
   },
 };
+
+export default defaultExport;
