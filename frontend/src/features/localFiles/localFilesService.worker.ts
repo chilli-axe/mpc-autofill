@@ -316,7 +316,7 @@ export class LocalFilesService {
     const includesTags = searchSettings.filterSettings.includesTags.length > 0;
     const excludesTags = searchSettings.filterSettings.excludesTags.length > 0;
     const hits = search(this.directoryIndex?.index?.oramaDb, {
-      term: query,
+      term: query ? toSearchable(query) : undefined,
       properties: ["searchq"],
       limit: limit ?? 1_000_000, // some arbitrary upper limit. if undefined, orama limits to 10 results.
       exact:
