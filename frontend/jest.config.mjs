@@ -4,21 +4,13 @@ import nextJest from "next/jest.js";
 /** @type {import('jest').Config} */
 const customJestConfig = {
   // Add more setup options before each test is run
-  setupFilesAfterEnv: [
-    "<rootDir>/jest.setup.ts",
-    "jsdom-worker",
-    "next-router-mock",
-  ],
+  setupFilesAfterEnv: ["<rootDir>/jest.setup.ts"],
 
   // https://mswjs.io/docs/migrations/1.x-to-2.x#requestresponsetextencoder-is-not-defined-jest
   testEnvironment: "jest-fixed-jsdom",
   // https://mswjs.io/docs/migrations/1.x-to-2.x#cannot-find-module-mswnode-jsdom
   testEnvironmentOptions: {
     customExportConditions: [""],
-  },
-  runtime: "@side/jest-runtime",
-  transform: {
-    "^.+\\.ts$": "@swc/jest",
   },
   injectGlobals: true,
   testTimeout: 20_000,
