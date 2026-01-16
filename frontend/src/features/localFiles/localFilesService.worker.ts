@@ -21,34 +21,22 @@ import {
   CardDocuments,
   CardType,
   DirectoryIndex,
+  LocalDirectoryHandleMixin,
+  LocalFileHandleMixin,
   OramaCardDocument,
   OramaSchema,
+  RemoteFileHandleMixin,
   SearchResults,
 } from "@/common/types";
 import { extractNameAndTags } from "@/features/localFiles/tags";
 import { getDefaultSearchSettings } from "@/store/slices/searchSettingsSlice";
 
 class Folder {
-  handle: FileSystemDirectoryHandle;
-  name: string;
-  parent: Folder | undefined;
-
   constructor(
-    handle: FileSystemDirectoryHandle,
-    name: string,
-    parent: Folder | undefined
-  ) {
-    this.handle = handle;
-    this.name = name;
-    this.parent = parent;
-  }
-
-  getAbsoluteParent(): FileSystemDirectoryHandle {
-    if (this.parent === undefined) {
-      return this.handle;
-    }
-    return this.parent.getAbsoluteParent();
-  }
+    public readonly params: LocalDirectoryHandleMixin | RemoteFileHandleMixin,
+    public readonly name: string,
+    public readonly parent: Folder | undefined
+  ) {}
 
   unpackName(tags: Map<string, Tag>): {
     language: string | undefined;
@@ -79,34 +67,26 @@ class Folder {
     }
     return extractedTags.union(this.parent.getTags(tags));
   }
+
+  getFullPath(tags: Map<string, Tag>): Array<string> {
+    const { name } = this.unpackName(tags);
+    if (this.parent === undefined) {
+      return [name];
+    }
+    return [...this.parent.getFullPath(tags), name];
+  }
 }
 
 class Image {
-  handle: FileSystemFileHandle;
-  name: string;
-  extension: string;
-  size: number;
-  modifiedTime: Date;
-  height: number;
-  folder: Folder;
-
   constructor(
-    handle: FileSystemFileHandle,
-    name: string,
-    extension: string,
-    size: number,
-    modifiedTime: Date,
-    height: number,
-    folder: Folder
-  ) {
-    this.handle = handle;
-    this.name = name;
-    this.extension = extension;
-    this.size = size;
-    this.modifiedTime = modifiedTime;
-    this.height = height;
-    this.folder = folder;
-  }
+    public readonly params: LocalFileHandleMixin | RemoteFileHandleMixin,
+    public readonly name: string,
+    public readonly extension: string,
+    public readonly size: number,
+    public readonly modifiedTime: Date,
+    public readonly height: number,
+    public readonly folder: Folder
+  ) {}
 
   unpackName(tags: Map<string, Tag>): {
     language: string | undefined;
@@ -123,22 +103,27 @@ class Image {
   }
 
   getCardType(): CardType {
-    return this.folder.handle.name.toLowerCase().startsWith("cardback")
+    return this.folder.name.toLowerCase().startsWith("cardback")
       ? CardTypeSchema.Cardback
-      : this.folder.handle.name.toLowerCase().startsWith("token")
+      : this.folder.name.toLowerCase().startsWith("token")
       ? CardTypeSchema.Token
       : CardTypeSchema.Card;
   }
 
-  async getResolvedPath(): Promise<Array<string> | null> {
-    return await this.folder.getAbsoluteParent().resolve(this.handle);
+  async getFullPath(tags: Map<string, Tag>): Promise<Array<string> | null> {
+    return [
+      ...this.folder.getFullPath(tags),
+      this.params.fileHandle
+        ? this.params.fileHandle.name
+        : this.params.identifier,
+    ];
   }
 
   async getOramaCardDocument(
     tags: Map<string, Tag>
   ): Promise<OramaCardDocument> {
     const { language, name, tags: extractedTags } = this.unpackName(tags);
-    const resolvedPath = await this.getResolvedPath();
+    const resolvedPath = await this.getFullPath(tags);
     // fall back on setting filepath to random string if unable to resolve. realistically this should never happen.
     const filePath = resolvedPath
       ? `./${resolvedPath.join("/")}`
@@ -153,7 +138,7 @@ class Image {
       dpi: 10 * Math.round((this.height * 300) / 1110 / 10), // TODO: NaN?
       extension: this.extension,
       size: this.size,
-      fileHandle: this.handle,
+      params: this.params,
       language: language ?? "English", // TODO: data type
       tags: Array.from(extractedTags),
       lastModified: this.modifiedTime,
@@ -161,76 +146,101 @@ class Image {
   }
 }
 
-const getAllImagesInFolder = async (folder: Folder): Promise<Array<Image>> => {
-  const images: Array<Image> = [];
-  for await (const [name, handle] of folder.handle) {
-    if (handle instanceof FileSystemFileHandle) {
-      const file = await handle.getFile();
-      const data = new Uint8Array(await file.arrayBuffer());
+abstract class Explorer {
+  abstract getSourceType(): SourceType;
+  abstract getAllFoldersInsideFolder(folder: Folder): Promise<Array<Folder>>;
+  abstract getAllImagesInsideFolder(folder: Folder): Promise<Array<Image>>;
 
-      const fileType = filetypemime(data);
-      const isImage = fileType.some((mimeType) =>
-        mimeType.startsWith("image/")
-      );
-
-      if (isImage) {
-        const dimensions = imageSize(data);
-        const height = dimensions.height;
-
-        images.push(
-          new Image(
-            handle,
-            removeFileExtension(handle.name),
-            filetypeextension(data)[0],
-            file.size,
-            new Date(file.lastModified),
-            height,
-            folder
-          )
+  async exploreFolder(folder: Folder): Promise<Array<Image>> {
+    const folders: Array<Folder> = [folder];
+    const images: Array<Image> = [];
+    while (folders.length > 0) {
+      const folder = folders.pop();
+      if (folder !== undefined) {
+        const imagesInFolder: Array<Image> =
+          await this.getAllImagesInsideFolder(folder);
+        const subfolders: Array<Folder> = await this.getAllFoldersInsideFolder(
+          folder
         );
+        images.push(...imagesInFolder);
+        folders.push(
+          ...subfolders.filter((folder) => !folder.name.startsWith("!"))
+        );
+      } else {
+        break;
       }
     }
+    return images;
   }
-  return images;
-};
-const getAllFoldersInFolder = async (
-  folder: Folder
-): Promise<Array<Folder>> => {
-  const folders: Array<Folder> = [];
-  for await (const [name, handle] of folder.handle) {
-    if (handle instanceof FileSystemDirectoryHandle) {
-      folders.push(new Folder(handle, handle.name, folder));
-    }
-  }
-  return folders;
-};
+}
 
-const exploreFolder = async (
-  absoluteParentDirHandle: FileSystemDirectoryHandle
-): Promise<Array<Image>> => {
-  const folders: Array<Folder> = [
-    new Folder(
-      absoluteParentDirHandle,
-      absoluteParentDirHandle.name,
-      undefined
-    ),
-  ];
-  const images: Array<Image> = [];
-  while (folders.length > 0) {
-    const folder = folders.pop();
-    if (folder !== undefined) {
-      const imagesInFolder: Array<Image> = await getAllImagesInFolder(folder);
-      const subfolders: Array<Folder> = await getAllFoldersInFolder(folder);
-      images.push(...imagesInFolder);
-      folders.push(
-        ...subfolders.filter((folder) => !folder.name.startsWith("!"))
-      );
-    } else {
-      break;
-    }
+class LocalFilesExplorer extends Explorer {
+  getSourceType(): SourceType.LocalFile {
+    return SourceType.LocalFile;
   }
-  return images;
-};
+
+  async getAllFoldersInsideFolder(folder: Folder): Promise<Array<Folder>> {
+    const folders: Array<Folder> = [];
+    if (folder.params.sourceType === this.getSourceType()) {
+      for await (const [name, handle] of folder.params.fileHandle) {
+        if (handle instanceof FileSystemDirectoryHandle) {
+          folders.push(
+            new Folder(
+              {
+                fileHandle: handle,
+                identifier: undefined,
+                sourceType: folder.params.sourceType,
+              },
+              handle.name,
+              folder
+            )
+          );
+        }
+      }
+    }
+    return folders;
+  }
+
+  async getAllImagesInsideFolder(folder: Folder): Promise<Array<Image>> {
+    const images: Array<Image> = [];
+    if (folder.params.sourceType === this.getSourceType()) {
+      folder.params.fileHandle;
+      for await (const [name, handle] of folder.params.fileHandle) {
+        if (handle instanceof FileSystemFileHandle) {
+          const file = await handle.getFile();
+          const data = new Uint8Array(await file.arrayBuffer());
+
+          const fileType = filetypemime(data);
+          const isImage = fileType.some((mimeType) =>
+            mimeType.startsWith("image/")
+          );
+
+          if (isImage) {
+            const dimensions = imageSize(data);
+            const height = dimensions.height;
+
+            images.push(
+              new Image(
+                {
+                  fileHandle: handle,
+                  identifier: undefined,
+                  sourceType: folder.params.sourceType,
+                },
+                removeFileExtension(handle.name),
+                filetypeextension(data)[0],
+                file.size,
+                new Date(file.lastModified),
+                height,
+                folder
+              )
+            );
+          }
+        }
+      }
+    }
+    return images;
+  }
+}
 
 const indexDirectory = async (
   handle: FileSystemDirectoryHandle,
@@ -244,7 +254,17 @@ const indexDirectory = async (
   );
   const oramaCardDocuments = await Promise.all(
     (
-      await exploreFolder(handle)
+      await new LocalFilesExplorer().exploreFolder(
+        new Folder(
+          {
+            fileHandle: handle,
+            identifier: undefined,
+            sourceType: SourceType.LocalFile,
+          },
+          handle.name,
+          undefined
+        )
+      )
     ).map((image) => image.getOramaCardDocument(tagsMap))
   );
   insertMultiple(db, oramaCardDocuments);
@@ -479,7 +499,7 @@ export class LocalFilesService {
       sourceName: oramaCardDocument.source,
       sourceId: 0,
       sourceVerbose: oramaCardDocument.source,
-      sourceType: SourceType.LocalFile,
+      sourceType: oramaCardDocument.params.sourceType,
       sourceExternalLink: undefined,
       dpi: oramaCardDocument.dpi,
       searchq: oramaCardDocument.searchq,

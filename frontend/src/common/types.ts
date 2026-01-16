@@ -11,6 +11,7 @@ import {
   CardType as CardTypeSchema,
   SearchQuery,
   Source,
+  SourceType,
 } from "@/common/schema_types";
 import type { AppDispatch, AppStore, RootState } from "@/store/store";
 export type {
@@ -37,6 +38,10 @@ export type {
   Tag,
 } from "@/common/schema_types";
 import { Orama, Schema, SearchableType } from "@orama/orama";
+
+export const assertNever = (value: never) => {
+  throw new Error("Unexpected value: " + value);
+};
 
 export const useAppDispatch = useDispatch.withTypes<AppDispatch>();
 export const useAppSelector = useSelector.withTypes<RootState>();
@@ -243,6 +248,27 @@ export const OramaSchema = {
   size: "number",
 } as const;
 
+// TODO: rename these.
+export type LocalFileHandleMixin = {
+  sourceType: SourceType.LocalFile;
+  identifier: undefined;
+  fileHandle: FileSystemFileHandle;
+};
+
+export type LocalDirectoryHandleMixin = {
+  sourceType: SourceType.LocalFile;
+  identifier: undefined;
+  fileHandle: FileSystemDirectoryHandle;
+};
+
+export type RemoteFileHandleMixin = {
+  sourceType: SourceType.GoogleDrive | SourceType.AwsS3;
+  identifier: string;
+  fileHandle: undefined;
+};
+
+export type FileHandleMixin = LocalFileHandleMixin | RemoteFileHandleMixin;
+
 export type OramaCardDocument = Pick<
   Card,
   | "name"
@@ -254,7 +280,7 @@ export type OramaCardDocument = Pick<
   | "tags"
   | "dpi"
   | "size"
-> & { id: string; fileHandle: FileSystemFileHandle; lastModified: Date };
+> & { id: string; lastModified: Date } & { params: FileHandleMixin };
 
 export interface DirectoryIndex {
   handle: FileSystemDirectoryHandle;

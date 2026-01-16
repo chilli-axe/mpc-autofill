@@ -20,6 +20,7 @@ import React, {
 import BSCard from "react-bootstrap/Card";
 import Col from "react-bootstrap/Col";
 
+import { SourceType } from "@/common/schema_types";
 import { SearchQuery, useAppDispatch, useAppSelector } from "@/common/types";
 import { CardDocument } from "@/common/types";
 import { Spinner } from "@/components/Spinner";
@@ -84,14 +85,14 @@ const useLocalFileImageSrc = (
       const oramaCardDocument = await localFilesService.getByID(
         cardDocument?.identifier
       );
-      if (oramaCardDocument !== undefined) {
+      if (oramaCardDocument?.params.sourceType === SourceType.LocalFile) {
         setImageState("loading-from-local-file");
-        const file = await oramaCardDocument.fileHandle.getFile();
+        const file = await oramaCardDocument.params.fileHandle.getFile();
         const url = URL.createObjectURL(file);
         setBlobURL(url);
       }
     })();
-  }, []);
+  }, [cardDocument?.identifier, localFilesService, setImageState]);
   return blobURL;
 };
 
