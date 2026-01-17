@@ -79,6 +79,6 @@ jobs:
         id: upload-signed-artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.TARGET }} Build
+          name: ${{ matrix.TARGET }} Signed Build
           path: |
             desktop-tool/build/autofill.${{ matrix.EXTENSION }}
