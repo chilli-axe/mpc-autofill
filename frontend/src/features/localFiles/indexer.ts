@@ -1,6 +1,5 @@
 import { create, insertMultiple } from "@orama/orama";
-import { imageSize } from "image-size";
-import { filetypeextension, filetypemime } from "magic-bytes.js";
+import { imageDimensionsFromStream, ImageType } from "image-dimensions";
 
 import {
   extractLanguage,
@@ -223,21 +222,11 @@ export class LocalFilesIndexer extends Indexer {
   async getAllImagesInsideFolder(folder: Folder): Promise<Array<Image>> {
     const images: Array<Image> = [];
     if (folder.params.sourceType === this.getSourceType()) {
-      folder.params.fileHandle;
       for await (const [name, handle] of folder.params.fileHandle) {
         if (handle instanceof FileSystemFileHandle) {
           const file = await handle.getFile();
-          const data = new Uint8Array(await file.arrayBuffer());
-
-          const fileType = filetypemime(data);
-          const isImage = fileType.some((mimeType) =>
-            mimeType.startsWith("image/")
-          );
-
-          if (isImage) {
-            const dimensions = imageSize(data);
-            const height = dimensions.height;
-
+          const dimensions = await imageDimensionsFromStream(file.stream());
+          if (dimensions !== undefined) {
             images.push(
               new Image(
                 {
@@ -246,10 +235,10 @@ export class LocalFilesIndexer extends Indexer {
                   sourceType: folder.params.sourceType,
                 },
                 removeFileExtension(handle.name),
-                filetypeextension(data)[0],
+                dimensions.type,
                 file.size,
                 new Date(file.lastModified),
-                height,
+                dimensions.height,
                 folder
               )
             );
