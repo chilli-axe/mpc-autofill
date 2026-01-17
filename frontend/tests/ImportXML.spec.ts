@@ -1,5 +1,3 @@
-import { expect } from "@playwright/test";
-
 import { S30, SelectedImageSeparator } from "@/common/constants";
 import {
   cardDocument1,
@@ -51,22 +49,22 @@ test.describe("ImportXML", () => {
     await importXML(
       page,
       `<order>
-      <details>
-        <quantity>1</quantity>
-        <bracket>18</bracket>
-        <stock>${S30}</stock>
-        <foil>false</foil>
-      </details>
-      <fronts>
-        <card>
-          <id>${cardDocument1.identifier}</id>
-          <slots>0</slots>
-          <name>${cardDocument1.name}</name>
-          <query>my search query</query>
-        </card>
-      </fronts>
-      <cardback>${cardDocument3.identifier}</cardback>
-    </order>`
+        <details>
+          <quantity>1</quantity>
+          <bracket>18</bracket>
+          <stock>${S30}</stock>
+          <foil>false</foil>
+        </details>
+        <fronts>
+          <card>
+            <id>${cardDocument1.identifier}</id>
+            <slots>0</slots>
+            <name>${cardDocument1.name}</name>
+            <query>my search query</query>
+          </card>
+        </fronts>
+        <cardback>${cardDocument3.identifier}</cardback>
+      </order>`
     );
 
     await expectCardGridSlotStates(
@@ -109,22 +107,22 @@ test.describe("ImportXML", () => {
     await importXML(
       page,
       `<order>
-      <details>
-        <quantity>2</quantity>
-        <bracket>18</bracket>
-        <stock>${S30}</stock>
-        <foil>false</foil>
-      </details>
-      <fronts>
-        <card>
-          <id>${cardDocument1.identifier}</id>
-          <slots>0,1</slots>
-          <name>${cardDocument1.name}</name>
-          <query>my search query</query>
-        </card>
-      </fronts>
-      <cardback>${cardDocument2.identifier}</cardback>
-    </order>`
+        <details>
+          <quantity>2</quantity>
+          <bracket>18</bracket>
+          <stock>${S30}</stock>
+          <foil>false</foil>
+        </details>
+        <fronts>
+          <card>
+            <id>${cardDocument1.identifier}</id>
+            <slots>0,1</slots>
+            <name>${cardDocument1.name}</name>
+            <query>my search query</query>
+          </card>
+        </fronts>
+        <cardback>${cardDocument2.identifier}</cardback>
+      </order>`
     );
 
     await expectCardGridSlotStates(
@@ -179,22 +177,22 @@ test.describe("ImportXML", () => {
     await importXML(
       page,
       `<order>
-      <details>
-        <quantity>1</quantity>
-        <bracket>18</bracket>
-        <stock>${S30}</stock>
-        <foil>false</foil>
-      </details>
-      <fronts>
-        <card>
-          <id>${cardDocument3.identifier}</id>
-          <slots>0</slots>
-          <name>${cardDocument3.name}</name>
-          <query>my search query</query>
-        </card>
-      </fronts>
-      <cardback>${cardDocument2.identifier}</cardback>
-    </order>`
+        <details>
+          <quantity>1</quantity>
+          <bracket>18</bracket>
+          <stock>${S30}</stock>
+          <foil>false</foil>
+        </details>
+        <fronts>
+          <card>
+            <id>${cardDocument3.identifier}</id>
+            <slots>0</slots>
+            <name>${cardDocument3.name}</name>
+            <query>my search query</query>
+          </card>
+        </fronts>
+        <cardback>${cardDocument2.identifier}</cardback>
+      </order>`
     );
 
     await expectCardGridSlotStates(
@@ -237,34 +235,34 @@ test.describe("ImportXML", () => {
     await importXML(
       page,
       `<order>
-      <details>
-        <quantity>3</quantity>
-        <bracket>18</bracket>
-        <stock>${S30}</stock>
-        <foil>false</foil>
-      </details>
-      <fronts>
-        <card>
-          <id>${cardDocument1.identifier}</id>
-          <slots>0</slots>
-          <name>${cardDocument1.name}</name>
-          <query>query 1</query>
-        </card>
-        <card>
-          <id>${cardDocument6.identifier}</id>
-          <slots>1</slots>
-          <name>${cardDocument6.name}</name>
-          <query>t:query 6</query>
-        </card>
-        <card>
-          <id>${cardDocument5.identifier}</id>
-          <slots>2</slots>
-          <name>${cardDocument5.name}</name>
-          <query>b:query 5</query>
-        </card>
-      </fronts>
-      <cardback>${cardDocument3.identifier}</cardback>
-    </order>`
+        <details>
+          <quantity>3</quantity>
+          <bracket>18</bracket>
+          <stock>${S30}</stock>
+          <foil>false</foil>
+        </details>
+        <fronts>
+          <card>
+            <id>${cardDocument1.identifier}</id>
+            <slots>0</slots>
+            <name>${cardDocument1.name}</name>
+            <query>query 1</query>
+          </card>
+          <card>
+            <id>${cardDocument6.identifier}</id>
+            <slots>1</slots>
+            <name>${cardDocument6.name}</name>
+            <query>t:query 6</query>
+          </card>
+          <card>
+            <id>${cardDocument5.identifier}</id>
+            <slots>2</slots>
+            <name>${cardDocument5.name}</name>
+            <query>b:query 5</query>
+          </card>
+        </fronts>
+        <cardback>${cardDocument3.identifier}</cardback>
+      </order>`
     );
 
     await expectCardGridSlotStates(
@@ -331,36 +329,36 @@ test.describe("ImportXML", () => {
     await importXML(
       page,
       `<order>
-      <details>
-        <quantity>3</quantity>
-        <bracket>18</bracket>
-        <stock>${S30}</stock>
-        <foil>false</foil>
-      </details>
-      <fronts>
-        <card>
-          <id>${cardDocument3.identifier}</id>
-          <slots>0,1</slots>
-          <name>${cardDocument3.name}</name>
-          <query>my search query</query>
-        </card>
-        <card>
-          <id>${cardDocument1.identifier}</id>
-          <slots>2</slots>
-          <name>${cardDocument1.name}</name>
-          <query>my search query</query>
-        </card>
-      </fronts>
-      <backs>
-        <card>
-          <id>${cardDocument4.identifier}</id>
-          <slots>0,1</slots>
-          <name>${cardDocument4.name}</name>
-          <query>my search query</query>
-        </card>
-      </backs>
-      <cardback>${cardDocument2.identifier}</cardback>
-    </order>`
+        <details>
+          <quantity>3</quantity>
+          <bracket>18</bracket>
+          <stock>${S30}</stock>
+          <foil>false</foil>
+        </details>
+        <fronts>
+          <card>
+            <id>${cardDocument3.identifier}</id>
+            <slots>0,1</slots>
+            <name>${cardDocument3.name}</name>
+            <query>my search query</query>
+          </card>
+          <card>
+            <id>${cardDocument1.identifier}</id>
+            <slots>2</slots>
+            <name>${cardDocument1.name}</name>
+            <query>my search query</query>
+          </card>
+        </fronts>
+        <backs>
+          <card>
+            <id>${cardDocument4.identifier}</id>
+            <slots>0,1</slots>
+            <name>${cardDocument4.name}</name>
+            <query>my search query</query>
+          </card>
+        </backs>
+        <cardback>${cardDocument2.identifier}</cardback>
+      </order>`
     );
 
     await expectCardGridSlotStates(
@@ -427,36 +425,36 @@ test.describe("ImportXML", () => {
     await importXML(
       page,
       `<order>
-      <details>
-        <quantity>4</quantity>
-        <bracket>18</bracket>
-        <stock>${S30}</stock>
-        <foil>false</foil>
-      </details>
-      <fronts>
-        <card>
-          <id>${cardDocument3.identifier}</id>
-          <slots>0,1</slots>
-          <name>${cardDocument3.name}</name>
-          <query>my search query</query>
-        </card>
-        <card>
-          <id>${cardDocument1.identifier}</id>
-          <slots>3</slots>
-          <name>${cardDocument1.name}</name>
-          <query>my search query</query>
-        </card>
-      </fronts>
-      <backs>
-        <card>
-          <id>${cardDocument4.identifier}</id>
-          <slots>0,3</slots>
-          <name>${cardDocument4.name}</name>
-          <query>my search query</query>
-        </card>
-      </backs>
-      <cardback>${cardDocument2.identifier}</cardback>
-    </order>`
+        <details>
+          <quantity>4</quantity>
+          <bracket>18</bracket>
+          <stock>${S30}</stock>
+          <foil>false</foil>
+        </details>
+        <fronts>
+          <card>
+            <id>${cardDocument3.identifier}</id>
+            <slots>0,1</slots>
+            <name>${cardDocument3.name}</name>
+            <query>my search query</query>
+          </card>
+          <card>
+            <id>${cardDocument1.identifier}</id>
+            <slots>3</slots>
+            <name>${cardDocument1.name}</name>
+            <query>my search query</query>
+          </card>
+        </fronts>
+        <backs>
+          <card>
+            <id>${cardDocument4.identifier}</id>
+            <slots>0,3</slots>
+            <name>${cardDocument4.name}</name>
+            <query>my search query</query>
+          </card>
+        </backs>
+        <cardback>${cardDocument2.identifier}</cardback>
+      </order>`
     );
 
     await expectCardSlotToExist(page, 1);
@@ -520,8 +518,6 @@ test.describe("ImportXML", () => {
     );
     await loadPageWithDefaultBackend(page);
 
-    // this used to preload the redux state, but with the shift to listeners,
-    // we have to add the first card manually like this.
     await importText(
       page,
       `1x my search query${SelectedImageSeparator}${cardDocument1.identifier}`
@@ -551,36 +547,36 @@ test.describe("ImportXML", () => {
     await importXML(
       page,
       `<order>
-      <details>
-        <quantity>3</quantity>
-        <bracket>18</bracket>
-        <stock>${S30}</stock>
-        <foil>false</foil>
-      </details>
-      <fronts>
-        <card>
-          <id>${cardDocument3.identifier}</id>
-          <slots>0,1</slots>
-          <name>${cardDocument3.name}</name>
-          <query>my search query</query>
-        </card>
-        <card>
-          <id>${cardDocument1.identifier}</id>
-          <slots>2</slots>
-          <name>${cardDocument1.name}</name>
-          <query>my search query</query>
-        </card>
-      </fronts>
-      <backs>
-        <card>
-          <id>${cardDocument4.identifier}</id>
-          <slots>0,1</slots>
-          <name>${cardDocument4.name}</name>
-          <query>my search query</query>
-        </card>
-      </backs>
-      <cardback>${cardDocument3.identifier}</cardback>
-    </order>`
+        <details>
+          <quantity>3</quantity>
+          <bracket>18</bracket>
+          <stock>${S30}</stock>
+          <foil>false</foil>
+        </details>
+        <fronts>
+          <card>
+            <id>${cardDocument3.identifier}</id>
+            <slots>0,1</slots>
+            <name>${cardDocument3.name}</name>
+            <query>my search query</query>
+          </card>
+          <card>
+            <id>${cardDocument1.identifier}</id>
+            <slots>2</slots>
+            <name>${cardDocument1.name}</name>
+            <query>my search query</query>
+          </card>
+        </fronts>
+        <backs>
+          <card>
+            <id>${cardDocument4.identifier}</id>
+            <slots>0,1</slots>
+            <name>${cardDocument4.name}</name>
+            <query>my search query</query>
+          </card>
+        </backs>
+        <cardback>${cardDocument3.identifier}</cardback>
+      </order>`
     );
 
     await expectCardGridSlotStates(
@@ -644,22 +640,22 @@ test.describe("ImportXML", () => {
     await importXML(
       page,
       `<order>
-      <details>
-        <quantity>1</quantity>
-        <bracket>18</bracket>
-        <stock>${S30}</stock>
-        <foil>false</foil>
-      </details>
-      <fronts>
-        <card>
-          <id>${cardDocument1.identifier}</id>
-          <slots>0</slots>
-          <name>${cardDocument1.name}</name>
-          <query>my search query</query>
-        </card>
-      </fronts>
-      <cardback>${cardDocument3.identifier}</cardback>
-    </order>`,
+        <details>
+          <quantity>1</quantity>
+          <bracket>18</bracket>
+          <stock>${S30}</stock>
+          <foil>false</foil>
+        </details>
+        <fronts>
+          <card>
+            <id>${cardDocument1.identifier}</id>
+            <slots>0</slots>
+            <name>${cardDocument1.name}</name>
+            <query>my search query</query>
+          </card>
+        </fronts>
+        <cardback>${cardDocument3.identifier}</cardback>
+      </order>`,
       true
     );
 

@@ -15,7 +15,7 @@ from selenium.webdriver.support.wait import WebDriverWait
 
 import src
 import src.constants as constants
-from src.constants import OrderFulfilmentMethod
+from src.constants import OrderFulfilmentMethod, SourceType
 from src.driver import AutofillDriver
 from src.exc import ValidationException
 from src.formatting import text_to_set
@@ -117,6 +117,23 @@ def input_enter(monkeypatch: pytest.MonkeyPatch) -> None:
 # region CardImage
 @pytest.fixture()
 def image_element_local_file() -> Generator[ElementTree.Element, None, None]:
+    yield ElementTree.fromstring(
+        textwrap.dedent(  # file exists in /src/cards
+            f"""
+            <card>
+                <id>{os.path.join(CARDS_FILE_PATH, TEST_IMAGE)}.png</id>
+                <sourceType>{SourceType.LOCAL_FILE}</sourceType>
+                <slots>0</slots>
+                <name>{TEST_IMAGE}.png</name>
+                <query>test image</query>
+            </card>
+            """
+        )
+    )
+
+
+@pytest.fixture()
+def image_element_local_file_inferred_type() -> Generator[ElementTree.Element, None, None]:
     yield ElementTree.fromstring(
         textwrap.dedent(  # file exists in /src/cards
             f"""
@@ -530,6 +547,12 @@ def test_card_image_drive_id_file_exists(image_local_file: CardImage):
     assert image_local_file.file_exists()
 
 
+def test_generate_file_path_infer_local_file(image_element_local_file_inferred_type):
+    image = CardImage.from_element(working_directory=FILE_PATH, element=image_element_local_file_inferred_type)
+    assert image.file_exists()
+    assert image.source_type == SourceType.LOCAL_FILE
+
+
 def test_download_google_drive_image_default_post_processing(
     image_valid_google_drive: CardImage, counter: Counter, queue: Queue[CardImage]
 ):
@@ -539,6 +562,15 @@ def test_download_google_drive_image_default_post_processing(
     assert image_valid_google_drive.file_exists() is True
     assert image_valid_google_drive.errored is False
     assert_file_size(image_valid_google_drive.file_path, 152990)
+
+
+def test_download_local_file_is_no_op(image_local_file: CardImage, counter: Counter, queue: Queue[CardImage]):
+    assert image_local_file.file_exists() is True
+    file_size = os.stat(image_local_file.file_path).st_size
+    image_local_file.download_image(download_bar=counter, queue=queue, post_processing_config=DEFAULT_POST_PROCESSING)
+    assert image_local_file.file_exists() is True
+    assert image_local_file.errored is False
+    assert_file_size(image_local_file.file_path, file_size)
 
 
 def test_download_google_drive_image_downscaled(

@@ -6,6 +6,16 @@ import attr
 import src.webdrivers as wd
 
 
+class SourceType:
+    AWS_S3 = "AWS S3"
+    GOOGLE_DRIVE = "Google Drive"
+    LOCAL_FILE = "Local File"
+
+    @staticmethod
+    def get_all() -> list[str]:
+        return [SourceType.AWS_S3, SourceType.GOOGLE_DRIVE, SourceType.LOCAL_FILE]
+
+
 class OrderFulfilmentMethod(str, Enum):
     new_project = "Create a new project (default)"
     append_to_project = "Add more cards to an existing project"
@@ -50,13 +60,13 @@ class BaseTags(str, Enum):
 
 class DetailsTags(str, Enum):
     quantity = "quantity"
-    bracket = "bracket"
     stock = "stock"
     foil = "foil"
 
 
 class CardTags(str, Enum):
     id = "id"
+    source_type = "sourceType"
     slots = "slots"
     name = "name"
     query = "query"

@@ -115,7 +115,7 @@ export class Image {
       const resolvedPath = await this.getFullPath(tags);
       // fall back on setting filepath to random string if unable to resolve. realistically this should never happen.
       const filePath = resolvedPath
-        ? `./${resolvedPath.join("/")}`
+        ? `./${resolvedPath.slice(1).join("/")}`
         : Math.random().toString();
       return filePath;
     }

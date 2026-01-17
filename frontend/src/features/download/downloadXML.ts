@@ -7,6 +7,7 @@
 import formatXML from "xml-formatter";
 
 import { Back, Front, ReversedCardTypePrefixes } from "@/common/constants";
+import { SourceType } from "@/common/schema_types";
 import { useAppStore } from "@/common/types";
 import {
   CardDocuments,
@@ -78,6 +79,14 @@ function createCardElement(
   identifierElement.appendChild(doc.createTextNode(identifier));
   cardElement.appendChild(identifierElement);
 
+  const sourceTypeElement = doc.createElement("sourceType");
+  sourceTypeElement.appendChild(
+    doc.createTextNode(
+      cardDocuments[identifier].sourceType ?? SourceType.GoogleDrive
+    )
+  );
+  cardElement.appendChild(sourceTypeElement);
+
   const slotsElement = doc.createElement("slots");
   slotsElement.appendChild(
     doc.createTextNode(
@@ -140,16 +149,6 @@ export function generateXML(
   const quantityElement = doc.createElement("quantity");
   quantityElement.appendChild(doc.createTextNode(projectSize.toString()));
   detailsElement.appendChild(quantityElement);
-
-  // TODO: the `bracket` field should be safe to remove by 2024-07-01
-  //       this commit updates the desktop tool to no longer read it, but i want to ensure
-  //       there's minimal risk of users trying to use XMLs without the field with versions
-  //       of the desktop tool that expect it.
-  const bracketElement = doc.createElement("bracket");
-  bracketElement.appendChild(
-    doc.createTextNode(bracket(projectSize).toString())
-  );
-  detailsElement.appendChild(bracketElement);
 
   const stockElement = doc.createElement("stock");
   stockElement.appendChild(doc.createTextNode(finishSettings.cardstock));
