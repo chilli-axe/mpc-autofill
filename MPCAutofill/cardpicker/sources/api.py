@@ -19,6 +19,14 @@ from cardpicker.tags import Tags
 thread_local = threading.local()  # Should only be called once per thread
 
 
+def extract_language(name: str) -> tuple[Optional[pycountry.Languages], str]:
+    results = re.compile(r"^(?:\{(.+)\} )?(.*?)$").search(name)
+    assert results is not None
+    language_code, remainder_of_name = results.groups()
+    language = pycountry.languages.get(alpha_2=language_code) if language_code else None
+    return (language, remainder_of_name)
+
+
 @dataclass
 class Folder:
     id: str
@@ -44,10 +52,7 @@ class Folder:
         └─ language ──┘ └─ folder name ──┘ └─ tags ──┘
         """
 
-        folder_name_results = re.compile(r"^(?:\{(.+)\} )?(.*?)$").search(self.name)
-        assert folder_name_results is not None
-        language_code, name = folder_name_results.groups()
-        language = pycountry.languages.get(alpha_2=language_code) if language_code else None
+        language, name = extract_language(self.name)
         name_with_no_tags, extracted_tags = tags.extract_name_and_tags(name)
         return language, sanitisation.fix_whitespace(name_with_no_tags), extracted_tags
 
@@ -83,26 +88,16 @@ class Image:
 
         assert self.name, "File name is empty string"
         assert "." in self.name, "File name has no extension"
-        extensionless_name, extension = self.name.rsplit(".", 1)
-        image_name_results = re.compile(r"^(?:\{(.+)\} )?(.*?)$").search(extensionless_name)
-        assert image_name_results is not None
-        language_code, name = image_name_results.groups()
-        language = pycountry.languages.get(alpha_2=language_code) if language_code else None
-        name_with_no_tags, extracted_tags = tags.extract_name_and_tags(name)
+        name_with_no_extension, extension = self.name.rsplit(".", 1)
+        language, name_with_no_language = extract_language(name_with_no_extension)
+        name_with_no_tags, extracted_tags = tags.extract_name_and_tags(name_with_no_language)
+        final_name = sanitisation.fix_whitespace(name_with_no_tags)
         return (
             language or self.folder.get_language(tags=tags),
-            sanitisation.fix_whitespace(name_with_no_tags),
+            final_name,
             extracted_tags | self.folder.get_tags(tags=tags),
             extension,
         )
-
-    def get_language(self, tags: Tags) -> pycountry.Languages:
-        language, _, _, _ = self.unpack_name(tags=tags)
-        return language
-
-    def get_tags(self, tags: Tags) -> set[str]:
-        _, _, image_tags, _ = self.unpack_name(tags=tags)
-        return image_tags
 
 
 # region google drive API

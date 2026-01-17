@@ -80,7 +80,7 @@ export function InvalidIdentifiersModal({
           headers={headers}
           data={data}
           uniformWidth={false}
-          centred={false}
+          alignment={"left"}
           hover={true}
         />
       </Modal.Body>

@@ -93,7 +93,7 @@ export interface SearchTypeSettings {
    */
   filterCardbacks: boolean;
   /**
-   * Whether fuzzy search is enabled
+   * Whether fuzzy search is active
    */
   fuzzySearch: boolean;
 }

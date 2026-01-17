@@ -15,7 +15,7 @@ import {
 
 //# region backend
 
-export const localBackendURL = "https://127.0.0.1:8000";
+export const localBackendURL = "http://127.0.0.1:8000";
 export const localBackend: BackendState = { url: localBackendURL };
 export const noBackend: BackendState = { url: null };
 
@@ -71,7 +71,7 @@ export const sourceDocuments: SourceDocuments = {
 //# region cards
 
 export const cardDocument1: CardDocument = {
-  identifier: "abc123",
+  identifier: "1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5",
   cardType: CardTypeSchema.Card,
   name: "Card 1",
   priority: 0,
@@ -82,7 +82,7 @@ export const cardDocument1: CardDocument = {
   sourceType: SourceType.GoogleDrive,
   sourceExternalLink: undefined,
   dpi: 1200,
-  searchq: "card 1",
+  searchq: "card one",
   extension: "png",
   dateCreated: "1st January, 2000", // formatted by backend
   dateModified: "1st January, 2000", // formatted by backend
@@ -94,7 +94,7 @@ export const cardDocument1: CardDocument = {
 };
 
 export const cardDocument2: CardDocument = {
-  identifier: "abc1234",
+  identifier: "1IDtqSjJ4Yo45AnNA4SplOiN7ewibifMa",
   cardType: CardTypeSchema.Card,
   name: "Card 2",
   priority: 0,
@@ -117,7 +117,7 @@ export const cardDocument2: CardDocument = {
 };
 
 export const cardDocument3: CardDocument = {
-  identifier: "abc12345",
+  identifier: "1HsvTYs1jFGe1c8U1PnNZ9aB8jkAW7KU0",
   cardType: CardTypeSchema.Card,
   name: "Card 3",
   priority: 0,
@@ -140,7 +140,7 @@ export const cardDocument3: CardDocument = {
 };
 
 export const cardDocument4: CardDocument = {
-  identifier: "abc123456",
+  identifier: "1-dcs0FEE05MTGiYbKqs9HnRdhXkgtIJG",
   cardType: CardTypeSchema.Card,
   name: "Card 4",
   priority: 0,
@@ -163,7 +163,7 @@ export const cardDocument4: CardDocument = {
 };
 
 export const cardDocument5: CardDocument = {
-  identifier: "abc1234567",
+  identifier: "1JtXL6Ca9nQkvhwZZRR9ZuKA9_DzsFf1V",
   cardType: CardTypeSchema.Cardback,
   name: "Card 5",
   priority: 0,
@@ -186,7 +186,7 @@ export const cardDocument5: CardDocument = {
 };
 
 export const cardDocument6: CardDocument = {
-  identifier: "abc12345678",
+  identifier: "1oigI6wz0zA--pNMuExKTs40kBNH6VRP_",
   cardType: CardTypeSchema.Token,
   name: "Card 6",
   priority: 0,

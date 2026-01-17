@@ -2,7 +2,7 @@
  * A modal which allows users to control how the backend searches the database in various ways:
  *   a) Select precise or fuzzy (forgiving) search type
  *   b) Configure the allowable range for DPI and maximum file size
- *   c) Re-order the Sources to search and choose which Sources are enabled.
+ *   c) Re-order the Sources to search and choose which Sources are active.
  * A button is exposed in the right-hand panel of the main GUI to show this modal.
  */
 
@@ -23,6 +23,7 @@ import { RightPaddedIcon } from "@/components/icon";
 import { FilterSettings as FilterSettingsElement } from "@/features/searchSettings/FilterSettings";
 import { SearchTypeSettings as SearchTypeSettingsElement } from "@/features/searchSettings/SearchTypeSettings";
 import { SourceSettings as SourceSettingsElement } from "@/features/searchSettings/SourceSettings";
+import { selectRemoteBackendConfigured } from "@/store/slices/backendSlice";
 import {
   selectSearchSettings,
   setFilterSettings,
@@ -33,6 +34,7 @@ import {
 export function SearchSettings() {
   const dispatch = useAppDispatch();
   const [show, setShow] = useState<boolean>(false);
+  const remoteBackendConfigured = useAppSelector(selectRemoteBackendConfigured);
 
   // global state managed in redux
   const globalSearchSettings = useAppSelector(selectSearchSettings);
@@ -96,11 +98,15 @@ export function SearchSettings() {
             filterSettings={localFilterSettings}
             setFilterSettings={setLocalFilterSettings}
           />
-          <hr />
-          <SourceSettingsElement
-            sourceSettings={localSourceSettings}
-            setSourceSettings={setLocalSourceSettings}
-          />
+          {remoteBackendConfigured && (
+            <>
+              <hr />
+              <SourceSettingsElement
+                sourceSettings={localSourceSettings}
+                setSourceSettings={setLocalSourceSettings}
+              />
+            </>
+          )}
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={handleClose}>

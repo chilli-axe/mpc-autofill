@@ -4,7 +4,6 @@
  * through the desktop tool CLI.
  */
 
-import { saveAs } from "file-saver";
 import formatXML from "xml-formatter";
 
 import { Back, Front, ReversedCardTypePrefixes } from "@/common/constants";
@@ -15,7 +14,9 @@ import {
   SlotProjectMembers,
 } from "@/common/types";
 import { bracket } from "@/common/utils";
-import { useDoFileDownload } from "@/features/download/download";
+import { downloadFile, useDoFileDownload } from "@/features/download/download";
+import { useLocalFilesContext } from "@/features/localFiles/localFilesContext";
+import { LocalFilesService } from "@/features/localFiles/localFilesService";
 import { selectFinishSettings } from "@/store/slices/finishSettingsSlice";
 import {
   selectProjectMembers,
@@ -200,11 +201,16 @@ export function generateXML(
   return formatXML(xml, { collapseContent: true });
 }
 
-async function downloadXML(state: RootState) {
+async function downloadXML(
+  state: RootState,
+  localFilesService: LocalFilesService
+) {
   const generatedXML = selectGeneratedXML(state);
-  saveAs(
+  await downloadFile(
     new Blob([generatedXML], { type: "text/xml;charset=utf-8" }),
-    "cards.xml"
+    undefined,
+    "cards.xml",
+    localFilesService
   );
   return true;
 }
@@ -212,12 +218,13 @@ async function downloadXML(state: RootState) {
 export function useDownloadXML() {
   const store = useAppStore();
   const doFileDownload = useDoFileDownload();
+  const { localFilesService } = useLocalFilesContext();
   return () =>
     Promise.resolve(
       doFileDownload(
         "xml",
         "cards.xml",
-        (): Promise<boolean> => downloadXML(store.getState())
+        (): Promise<boolean> => downloadXML(store.getState(), localFilesService)
       )
     );
 }

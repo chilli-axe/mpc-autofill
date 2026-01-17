@@ -16,11 +16,24 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 22.15
-      - name: Install packages and run tests
+      - name: Install packages
         working-directory: frontend
         run: |
           npm ci
+      - name: Install Playwright Browsers
+        run: |
+          npx playwright install --with-deps
+        shell: bash
+      - name: Run Jest tests
+        working-directory: frontend
+        run: |
           npm run test
+        shell: bash
+      - name: Run Playwright tests
+        run: |
+          npm run test-e2e
+        working-directory: frontend
+        shell: bash
       - name: Build frontend
         working-directory: frontend
         run: |

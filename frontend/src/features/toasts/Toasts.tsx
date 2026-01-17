@@ -82,9 +82,27 @@ function InfoToastBody({ notification }: NotificationBodyProps) {
         <RightPaddedIcon bootstrapIconName="info-circle" />
         <strong className="me-auto">{notification.name}</strong>
       </Toast.Header>
-      <Toast.Body>
-        {notification.message != null && <p>{notification.message}</p>}
-      </Toast.Body>
+      {notification.message && (
+        <Toast.Body>
+          <p>{notification.message}</p>
+        </Toast.Body>
+      )}
+    </>
+  );
+}
+
+function WarningToastBody({ notification }: NotificationBodyProps) {
+  return (
+    <>
+      <Toast.Header>
+        <RightPaddedIcon bootstrapIconName="exclamation-triangle" />
+        <strong className="me-auto">{notification.name}</strong>
+      </Toast.Header>
+      {notification.message && (
+        <Toast.Body>
+          <p>{notification.message}</p>
+        </Toast.Body>
+      )}
     </>
   );
 }
@@ -93,7 +111,7 @@ function ErrorToastBody({ notification }: NotificationBodyProps) {
   return (
     <>
       <Toast.Header>
-        <RightPaddedIcon bootstrapIconName="exclamation-triangle" />
+        <RightPaddedIcon bootstrapIconName="exclamation-circle" />
         <strong className="me-auto">An Error Occurred</strong>
       </Toast.Header>
       <Toast.Body>
@@ -113,6 +131,8 @@ function NotificationToastBody({ notification }: NotificationBodyProps) {
   switch (notification.level) {
     case "info":
       return <InfoToastBody notification={notification} />;
+    case "warning":
+      return <WarningToastBody notification={notification} />;
     case "error":
       return <ErrorToastBody notification={notification} />;
   }

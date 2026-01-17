@@ -118,7 +118,7 @@ class SearchTypeSettings(BaseModel):
     """Whether search settings apply to cardbacks or not"""
 
     fuzzySearch: bool
-    """Whether fuzzy search is enabled"""
+    """Whether fuzzy search is active"""
 
     @staticmethod
     def from_dict(obj: Any) -> "SearchTypeSettings":

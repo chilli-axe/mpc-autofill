@@ -73,7 +73,7 @@ const putImage = async (env: Env, imageURL: string, imageKey: string, isResync: 
   if (isResync || !imageExists) {
     await fetch(imageURL)
       .then(async (response) => {
-        if (response.ok && response.body) {
+        if (response.ok && response.body && response.headers.get("content-length") != null) {
           console.log(`Successfully fetched ${imageKey}`);
           if (isResync && imageExists) {
             console.log("Resyncing - deleting the existing object before re-saving");
@@ -108,10 +108,6 @@ const handleImageRequest = async (url: URL, request: Request, env: Env, ctx: Exe
   switch (request.method) {
     case "GET":
       return getImage(env, ctx, imageURL, imageKey);
-    case "PUT":
-      // TODO: remove the PUT case after I've created subscriptions for all images in the database.
-      ctx.waitUntil(putImage(env, imageURL, imageKey, true));
-      return new Response(`Caching ${imageKey}!`, { status: 200 });
     default:
       return new Response(`Invalid method ${request.method}. GET or PUT expected.`, { status: 400 });
   }
@@ -152,8 +148,10 @@ const checkAndPossiblyUpdateTheThumbnailsForAnObject = async (
     method: "GET",
   });
   if (response.status !== 200) {
-    console.log(`Received response code ${response.status} when querying modifiedTime for ${identifier}`);
-    if (response.status === 404) {
+    const responseStatusWas404 = response.status === 404;
+    response.body?.cancel();
+    console.log(`Received response code ${response.status} when querying modifiedTime for ${identifier}`, response.body);
+    if (responseStatusWas404) {
       console.log(`Removing ${identifier} from system following 404...`);
       for (const size of ["small", "large"] as Array<ImageSize>) {
         const imageKey = getImageKey("google_drive", size, identifier);
@@ -202,7 +200,7 @@ const processAndEnqueue = async (env: Env, ctx: ExecutionContext, cursor: string
   }
 };
 
-export default {
+const defaultExport = {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
     if (url.pathname.startsWith("/images/")) {
@@ -224,3 +222,5 @@ export default {
     await processAndEnqueue(env, ctx, cursor);
   },
 };
+
+export default defaultExport;

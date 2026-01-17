@@ -281,9 +281,11 @@ class TestAPI:
     def test_image_language(self, django_settings, image, expected_language):
         tags = Tags()
         if expected_language is None:
-            assert image.get_language(tags=tags) is None
+            language, _, _, _ = image.unpack_name(tags=tags)
+            assert language is None
         else:
-            assert image.get_language(tags=tags).alpha_2.lower() == expected_language.lower()
+            language, _, _, _ = image.unpack_name(tags=tags)
+            assert language.alpha_2.lower() == expected_language.lower()
 
     @pytest.mark.parametrize(
         "image, expected_tags",
@@ -301,7 +303,8 @@ class TestAPI:
     )
     def test_image_tags(self, django_settings, grandchild_tag, extended_tag, full_art_tag, image, expected_tags):
         tags = Tags()
-        assert image.get_tags(tags=tags) == expected_tags
+        _, _, extracted_tags, _ = image.unpack_name(tags=tags)
+        assert extracted_tags == expected_tags
 
     @pytest.mark.parametrize(
         "image, expected_language, expected_name, expected_tags, expected_extension",

@@ -2,7 +2,6 @@
  * Data API for interacting with anything stored in cookies or local storage.
  */
 
-// import Ajv2020 from "ajv/dist/2020";
 import Cookies from "js-cookie";
 
 import {
@@ -15,10 +14,6 @@ import { Convert } from "@/common/schema_types";
 import { SearchSettings, SourceDocuments, SourceRow } from "@/common/types";
 import { getSourceRowsFromSourceSettings } from "@/common/utils";
 import { getDefaultSearchSettings } from "@/store/slices/searchSettingsSlice";
-
-// import * as SearchSettingsSchema from "../../../schemas/schemas/SearchSettings.json";
-
-// const ajv = new Ajv2020();
 
 //# region CSRF
 // TODO: unsure if we still need this.
