@@ -11,7 +11,7 @@ export const useLocalFilesServiceDirectoryHandle = ():
   >(undefined);
   const { localFilesService, forceUpdateValue } = useLocalFilesContext();
   useEffect(() => {
-    localFilesService.getDirectoryHandle().then(setDirectoryHandle);
+    localFilesService.getLocalFilesDirectoryHandle().then(setDirectoryHandle);
   }, [localFilesService, forceUpdateValue]);
   return directoryHandle;
 };

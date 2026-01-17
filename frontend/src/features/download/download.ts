@@ -41,9 +41,9 @@ export const downloadFile = async (
       ? await fetch(fileURL.href).then((response) => response.blob())
       : fileContents;
 
-  if (await localFilesService.hasDirectoryHandle()) {
+  if (await localFilesService.hasLocalFilesDirectoryHandle()) {
     const fileHandle = await localFilesService
-      .getDirectoryHandle()
+      .getLocalFilesDirectoryHandle()
       .then((handle) =>
         handle!.getFileHandle(fileName, {
           create: true,

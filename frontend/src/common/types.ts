@@ -248,26 +248,25 @@ export const OramaSchema = {
   size: "number",
 } as const;
 
-// TODO: rename these.
-export type LocalFileHandleMixin = {
+export type LocalFileHandleParams = {
   sourceType: SourceType.LocalFile;
   identifier: undefined;
   fileHandle: FileSystemFileHandle;
 };
 
-export type LocalDirectoryHandleMixin = {
+export type LocalDirectoryHandleParams = {
   sourceType: SourceType.LocalFile;
   identifier: undefined;
   fileHandle: FileSystemDirectoryHandle;
 };
 
-export type RemoteFileHandleMixin = {
+export type RemoteFileHandleParams = {
   sourceType: SourceType.GoogleDrive | SourceType.AwsS3;
   identifier: string;
   fileHandle: undefined;
 };
 
-export type FileHandleMixin = LocalFileHandleMixin | RemoteFileHandleMixin;
+export type FileHandleParams = LocalFileHandleParams | RemoteFileHandleParams;
 
 export type OramaCardDocument = Pick<
   Card,
@@ -280,14 +279,14 @@ export type OramaCardDocument = Pick<
   | "tags"
   | "dpi"
   | "size"
-> & { id: string; lastModified: Date } & { params: FileHandleMixin };
+> & { id: string; lastModified: Date } & { params: FileHandleParams };
 
-export interface DirectoryIndex {
-  handle: FileSystemDirectoryHandle;
-  index:
-    | {
-        oramaDb: Orama<typeof OramaSchema>;
-        size: number; // TODO: really necessary?
-      }
-    | undefined;
+export interface OramaIndex {
+  oramaDb: Orama<typeof OramaSchema>;
+  size: number;
+}
+
+export interface LocalFilesIndex {
+  fileHandle: FileSystemDirectoryHandle;
+  index: OramaIndex | undefined;
 }

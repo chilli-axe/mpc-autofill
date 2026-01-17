@@ -93,8 +93,8 @@ const fetchCardDocuments = createAppAsyncThunk(
 
     const backendURL = state.backend.url;
     const localResultsPromise: Promise<CardDocuments> =
-      (await localFilesService.hasDirectoryHandle())
-        ? localFilesService.getLocalCardDocuments(identifiersToSearch)
+      (await localFilesService.hasLocalFilesDirectoryHandle())
+        ? localFilesService.getCardDocuments(identifiersToSearch)
         : new Promise(async (resolve) => resolve({}));
     const remoteResultsPromise: Promise<CardDocuments> =
       backendURL != null

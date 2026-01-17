@@ -32,7 +32,7 @@ export const fetchCardbacks = createAppAsyncThunk(
     const searchSettings = selectSearchSettings(state);
 
     const localResults: Array<string> =
-      ((await localFilesService.hasDirectoryHandle())
+      ((await localFilesService.hasLocalFilesDirectoryHandle())
         ? await localFilesService.searchCardbacks(searchSettings)
         : undefined) ?? [];
     const remoteResults: Array<string> =

@@ -70,10 +70,12 @@ export const fetchSearchResults = createAppAsyncThunk(
     const backendURL = selectRemoteBackendURL(state);
     const searchSettings = selectSearchSettings(state);
 
-    const hasDirectoryHandle = await localFilesService.hasDirectoryHandle();
-    const localResultsPromise: Promise<SearchResults> = hasDirectoryHandle
-      ? localFilesService.searchBig(searchSettings, queriesToSearch)
-      : new Promise(async (resolve) => resolve({}));
+    const hasLocalFilesDirectoryHandle =
+      await localFilesService.hasLocalFilesDirectoryHandle();
+    const localResultsPromise: Promise<SearchResults> =
+      hasLocalFilesDirectoryHandle
+        ? localFilesService.editorSearch(searchSettings, queriesToSearch)
+        : new Promise(async (resolve) => resolve({}));
     const remoteResultsPromise: Promise<SearchResults> =
       queriesToSearch.length > 0 && backendURL != null
         ? Array.from(

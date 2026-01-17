@@ -39,18 +39,18 @@ export class LocalFilesService {
     this.worker = wrap<LocalFilesServiceWorker>(worker);
   }
 
-  public async hasDirectoryHandle(): Promise<boolean> {
-    return this.worker?.hasDirectoryHandle() ?? false;
+  public async hasLocalFilesDirectoryHandle(): Promise<boolean> {
+    return this.worker?.hasLocalFilesDirectoryHandle() ?? false;
   }
 
-  public async getDirectoryHandle(): Promise<
+  public async getLocalFilesDirectoryHandle(): Promise<
     FileSystemDirectoryHandle | undefined
   > {
-    return this.worker?.getDirectoryHandle();
+    return this.worker?.getLocalFilesDirectoryHandle();
   }
 
   public async setDirectoryHandle(
-    directoryHandle: FileSystemDirectoryHandle | undefined,
+    directoryHandle: FileSystemDirectoryHandle,
     state: RootState,
     dispatch: AppDispatch,
     forceUpdate: DispatchWithoutAction,
@@ -59,17 +59,19 @@ export class LocalFilesService {
     if (this.worker === undefined) {
       throw new Error("localFilesService was not initialised!");
     }
-    await this.worker.setDirectoryHandle(directoryHandle, tags);
+    await this.worker.setLocalFilesDirectoryHandle(directoryHandle, tags);
     await this.indexDirectory(dispatch, forceUpdate, tags);
     await recalculateSearchResults(state, dispatch, true);
   }
+
+  // directory handle stuff below
 
   public async clearDirectoryHandle(state: RootState, dispatch: AppDispatch) {
     if (this.worker === undefined) {
       throw new Error("localFilesService was not initialised!");
     }
     return this.worker
-      .clearDirectoryHandle()
+      .clearLocalFilesIndex()
       .then(() => recalculateSearchResults(state, dispatch, true));
   }
 
@@ -77,18 +79,18 @@ export class LocalFilesService {
     dispatch: AppDispatch,
     forceUpdate: DispatchWithoutAction,
     tags: Array<Tag> | undefined
-  ): Promise<{ handle: FileSystemDirectoryHandle; size: number } | undefined> {
+  ) {
     if (this.worker === undefined) {
       throw new Error("localFilesService was not initialised!");
     }
     const notificationId = Math.random().toString();
-    if (await this.worker.hasDirectoryHandle()) {
+    if (await this.worker.hasLocalFilesDirectoryHandle()) {
       dispatch(
         setNotification([
           notificationId,
           {
             name: `Synchronising ${
-              (await this.worker.getDirectoryHandle())!.name
+              (await this.worker.getLocalFilesDirectoryHandle())!.name
             }`,
             message: "This may take a while...",
             level: "info",
@@ -114,13 +116,13 @@ export class LocalFilesService {
       fetchCardDocumentsAndReportError(dispatch, { refreshCardbacks: true });
       forceUpdate();
     }
-
-    return indexDirectoryResult;
   }
 
   public async getDirectoryIndexSize(): Promise<number | undefined> {
-    return this.worker?.getDirectoryIndexSize();
+    return this.worker?.getLocalFilesIndexSize();
   }
+
+  // search stuff below
 
   public async search(
     searchSettings: SearchSettings,
@@ -134,7 +136,7 @@ export class LocalFilesService {
     return this.worker.search(searchSettings, query, cardTypes, limit);
   }
 
-  public async searchIdentifiers(
+  public async retrieveCardIdentifiers(
     searchSettings: SearchSettings,
     query: string | undefined,
     cardTypes: Array<CardType>,
@@ -143,14 +145,14 @@ export class LocalFilesService {
     if (this.worker === undefined) {
       throw new Error("localFilesService was not initialised!");
     }
-    return this.worker.searchIdentifiers(
+    return this.worker.retrieveCardIdentifiers(
       searchSettings,
       query,
       cardTypes,
       limit
     );
   }
-  public async searchBig(
+  public async editorSearch(
     // TODO: rename lmao
     searchSettings: SearchSettings,
     searchQueries: Array<SearchQuery>
@@ -158,7 +160,7 @@ export class LocalFilesService {
     if (this.worker === undefined) {
       throw new Error("localFilesService was not initialised!");
     }
-    return this.worker.searchBig(searchSettings, searchQueries);
+    return this.worker.editorSearch(searchSettings, searchQueries);
   }
 
   public async searchCardbacks(
@@ -167,16 +169,16 @@ export class LocalFilesService {
     if (this.worker === undefined) {
       throw new Error("localFilesService was not initialised!");
     }
-    return this.worker.searchCardbacks(searchSettings);
+    return this.worker.retrieveCardbackIdentifiers(searchSettings);
   }
 
-  public async getLocalCardDocuments(
+  public async getCardDocuments(
     identifiersToSearch: Array<string>
   ): Promise<CardDocuments> {
     if (this.worker === undefined) {
       throw new Error("localFilesService was not initialised!");
     }
-    return this.worker.getLocalCardDocuments(identifiersToSearch);
+    return this.worker.getCardDocuments(identifiersToSearch);
   }
 
   public async getByID(
