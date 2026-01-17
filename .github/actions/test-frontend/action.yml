@@ -6,15 +6,31 @@ runs:
     - name: Install npm
       uses: actions/setup-node@v4
       with:
-        node-version: 18.17
+        node-version: 22.15
     - name: Compile frontend
       working-directory: frontend
       run: |
         npm ci
         npm run build
       shell: bash
-    - name: Run frontend tests
+    - name: Install Playwright Browsers
+      run: |
+        npx playwright install --with-deps
+      shell: bash
+    - name: Run Jest tests
       working-directory: frontend
       run: |
         npm run test
       shell: bash
+    - name: Run Playwright tests
+      run: |
+        npm run test-e2e
+      working-directory: frontend
+      shell: bash
+    - name: Upload Playwright report
+      uses: actions/upload-artifact@v4
+      if: ${{ !cancelled() }}
+      with:
+        name: playwright-report
+        path: playwright-report/
+        retention-days: 30

@@ -299,10 +299,10 @@ class MTG(GameIntegration):
     @classmethod
     def get_import_sites(cls) -> list[Type[ImportSite]]:
         return [
-            Aetherhub,
+            # Aetherhub,  # broken by Cloudflare bot protection + they don't offer an API
             Archidekt,
             CubeCobra,
-            Deckstats,
+            # Deckstats,  # broken by Cloudflare bot protection
             MagicVille,
             ManaStack,
             *([Moxfield] if settings.MOXFIELD_SECRET else []),

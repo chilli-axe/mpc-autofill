@@ -1,6 +1,5 @@
 // The below can be used in a Jest global setup file or similar for your testing set-up
 import "@testing-library/jest-dom";
-import "jest-styled-components";
 // Polyfill "window.fetch" used in the React component.
 import "whatwg-fetch";
 
@@ -10,14 +9,11 @@ import { configure as configureReact } from "@testing-library/react";
 // TODO: https://github.com/alfg/ping.js/issues/29#issuecomment-487240910
 // @ts-ignore
 import Ping from "ping.js";
-import ResizeObserver from "resize-observer-polyfill";
 
 import { server } from "@/mocks/server";
 
 configureReact({ asyncUtilTimeout: 10_000 });
 configureDom({ asyncUtilTimeout: 10_000 });
-
-global.ResizeObserver = ResizeObserver;
 
 // retrieved from https://stackoverflow.com/a/68539103/13021511
 global.matchMedia =
@@ -57,7 +53,6 @@ beforeEach(() => {
     unobserve: () => null,
     disconnect: () => null,
   });
-  window.IntersectionObserver = mockIntersectionObserver;
 });
 
 // Reset any request handlers that we may add during the tests,

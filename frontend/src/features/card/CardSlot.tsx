@@ -18,8 +18,7 @@ import { wrapIndex } from "@/common/utils";
 import { MemoizedEditorCard } from "@/features/card/Card";
 import { CardFooter } from "@/features/card/CardFooter";
 import { GridSelectorModal } from "@/features/gridSelector/GridSelectorModal";
-import { selectCardbacks } from "@/store/slices/cardbackSlice";
-import { setSelectedSlotsAndShowModal } from "@/store/slices/modalsSlice";
+import { showChangeQueryModal } from "@/store/slices/modalsSlice";
 import {
   bulkAlignMemberSelection,
   deleteSlots,
@@ -126,9 +125,13 @@ export function CardSlot({ searchQuery, face, slot }: CardSlotProps) {
   const handleCloseGridSelector = () => setShowGridSelector(false);
   const handleShowGridSelector = () => setShowGridSelector(true);
   const handleShowChangeSelectedImageQueriesModal = () => {
-    dispatch(setSelectedSlotsAndShowModal([[[face, slot]], "changeQuery"]));
+    dispatch(
+      showChangeQueryModal({
+        slots: [[face, slot]],
+        query: searchQuery?.query ?? null,
+      })
+    );
   };
-  // TODO: add a confirmation prompt here. yes/no/yes and don't ask again.
   const deleteThisSlot = () => {
     dispatch(deleteSlots({ slots: [slot] }));
   };

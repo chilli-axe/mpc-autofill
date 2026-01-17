@@ -10,6 +10,7 @@ import { clearQueries, setQueries } from "@/store/slices/projectSlice";
 
 interface ChangeQueryModalProps {
   slots: Slots;
+  query: string | null;
   show: boolean;
   handleClose: {
     (): void;
@@ -19,6 +20,7 @@ interface ChangeQueryModalProps {
 
 export function ChangeQueryModal({
   slots,
+  query,
   show,
   handleClose,
 }: ChangeQueryModalProps) {
@@ -31,14 +33,23 @@ export function ChangeQueryModal({
 
   //# region state
 
+  // cooked up here: https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes
+  const [prevShow, setPrevShow] = useState(show);
   const [
     changeSelectedImageQueriesModalValue,
     setChangeSelectedImageQueriesModalValue,
-  ] = useState<string>("");
+  ] = useState<string>(query ?? "");
 
   //# endregion
 
   //# region callbacks
+
+  if (show !== prevShow) {
+    setPrevShow(show);
+    if (!prevShow && show) {
+      setChangeSelectedImageQueriesModalValue(query ?? "");
+    }
+  }
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault(); // to avoid reloading the page
@@ -82,7 +93,7 @@ export function ChangeQueryModal({
           <b>Submit</b>.
         </p>
         <p>
-          Hit <b>Submit</b> without typing anything to clear{" "}
+          Clear the textbox and hit <b>Submit</b> to clear{" "}
           {slots.length > 1 ? "their" : "its"} query.
         </p>
         <hr />
@@ -94,6 +105,7 @@ export function ChangeQueryModal({
               onChange={(event) =>
                 setChangeSelectedImageQueriesModalValue(event.target.value)
               }
+              onFocus={(event) => event.target.select()}
               value={changeSelectedImageQueriesModalValue}
               aria-label="change-selected-image-queries-text"
               autoFocus={true}

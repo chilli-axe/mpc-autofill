@@ -188,6 +188,7 @@ def main(
                 f"{bold(working_directory)}"
             )
         working_directory = directory
+    os.chdir(working_directory)
     create_image_directory_if_not_exists(working_directory=working_directory)
 
     if binary_location and not os.path.isdir(binary_location):

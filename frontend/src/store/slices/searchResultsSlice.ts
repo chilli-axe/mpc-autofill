@@ -10,12 +10,13 @@ import {
   createAppAsyncThunk,
   createAppSlice,
   Faces,
-  SearchQuery,
+  OramaSchema,
   SearchResults,
   SearchResultsState,
 } from "@/common/types";
+import { LocalFilesService } from "@/features/localFiles/localFilesService";
 import { APIEditorSearch } from "@/store/api";
-import { selectBackendURL } from "@/store/slices/backendSlice";
+import { selectRemoteBackendURL } from "@/store/slices/backendSlice";
 import { selectCardbacks } from "@/store/slices/cardbackSlice";
 import { selectQueriesWithoutSearchResults } from "@/store/slices/projectSlice";
 import { selectSearchSettings } from "@/store/slices/searchSettingsSlice";
@@ -26,36 +27,85 @@ import { AppDispatch, RootState } from "@/store/store";
 
 const typePrefix = "searchResults/fetchCards";
 
+const mergeSearchResults = (
+  a: SearchResults,
+  b: SearchResults
+): SearchResults => {
+  const mergedResults: SearchResults = structuredClone(a);
+  for (const [query, searchResultsForQuery] of Object.entries(b)) {
+    if (Object.prototype.hasOwnProperty.call(mergedResults, query)) {
+      for (const [cardType, searchResults] of Object.entries(
+        searchResultsForQuery
+      ) as Array<[CardType, Array<string>]>) {
+        if (
+          Object.prototype.hasOwnProperty.call(mergedResults[query], cardType)
+        ) {
+          mergedResults[query][cardType] = [
+            ...mergedResults[query][cardType],
+            ...searchResults,
+          ];
+        } else {
+          mergedResults[query][cardType] = [...searchResults];
+        }
+      }
+    } else {
+      mergedResults[query] = structuredClone(searchResultsForQuery);
+    }
+  }
+  return mergedResults;
+};
+
 export const fetchSearchResults = createAppAsyncThunk(
   typePrefix,
-  async (arg, { getState }) => {
+  /**
+   * concurrently resolve local and remote searches
+   */
+  async (arg, { getState, extra }) => {
     const state = getState();
+    const { localFilesService } = extra as {
+      localFilesService: LocalFilesService;
+    };
 
-    const queriesToSearch = selectQueriesWithoutSearchResults(state);
-
-    const backendURL = selectBackendURL(state);
+    const queriesToSearch = selectQueriesWithoutSearchResults(state); // TODO: is there an edge case here when a local directory is added?
+    const backendURL = selectRemoteBackendURL(state);
     const searchSettings = selectSearchSettings(state);
-    if (queriesToSearch.length > 0 && backendURL != null) {
-      return Array.from(
-        Array(
-          Math.ceil(queriesToSearch.length / SearchResultsEndpointPageSize)
-        ).keys()
-      ).reduce(function (promiseChain: Promise<SearchResults>, page: number) {
-        return promiseChain.then(async function (previousValue: SearchResults) {
-          const searchResults = await APIEditorSearch(
-            backendURL,
-            searchSettings,
-            queriesToSearch.slice(
-              page * SearchResultsEndpointPageSize,
-              (page + 1) * SearchResultsEndpointPageSize
-            )
-          );
-          return { ...previousValue, ...searchResults };
-        });
-      }, Promise.resolve({}));
-    } else {
-      return null;
-    }
+
+    const hasLocalFilesDirectoryHandle =
+      await localFilesService.hasLocalFilesDirectoryHandle();
+    const localResultsPromise: Promise<SearchResults> =
+      hasLocalFilesDirectoryHandle
+        ? localFilesService.editorSearch(searchSettings, queriesToSearch)
+        : new Promise(async (resolve) => resolve({}));
+    const remoteResultsPromise: Promise<SearchResults> =
+      queriesToSearch.length > 0 && backendURL != null
+        ? Array.from(
+            Array(
+              Math.ceil(queriesToSearch.length / SearchResultsEndpointPageSize)
+            ).keys()
+          ).reduce(function (
+            promiseChain: Promise<SearchResults>,
+            page: number
+          ) {
+            return promiseChain.then(async function (
+              previousValue: SearchResults
+            ) {
+              const searchResults = await APIEditorSearch(
+                backendURL,
+                searchSettings,
+                queriesToSearch.slice(
+                  page * SearchResultsEndpointPageSize,
+                  (page + 1) * SearchResultsEndpointPageSize
+                )
+              );
+              return { ...previousValue, ...searchResults };
+            });
+          },
+          Promise.resolve({}))
+        : new Promise(async (resolve) => resolve({}));
+    return await Promise.all([localResultsPromise, remoteResultsPromise]).then(
+      ([localResults, remoteResults]) =>
+        mergeSearchResults(localResults, remoteResults)
+    );
   }
 );
 

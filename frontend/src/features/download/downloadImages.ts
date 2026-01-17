@@ -1,8 +1,7 @@
-import { saveAs } from "file-saver";
-
 import { base64StringToBlob } from "@/common/processing";
-import { CardDocument } from "@/common/types";
-import { useDoFileDownload } from "@/features/download/download";
+import { CardDocument, useAppSelector } from "@/common/types";
+import { downloadFile, useDoFileDownload } from "@/features/download/download";
+import { useLocalFilesContext } from "@/features/localFiles/localFilesContext";
 import { api } from "@/store/api";
 
 export function useDoImageDownload(): (
@@ -12,15 +11,18 @@ export function useDoImageDownload(): (
   // TODO: this function will need to be updated when we update the frontend to support multiple image repo backends
   const [triggerFn, getGoogleDriveImageQuery] =
     api.endpoints.getGoogleDriveImage.useLazyQuery();
+  const { localFilesService } = useLocalFilesContext();
 
   async function doImageDownload(cardDocument: CardDocument): Promise<boolean> {
     try {
       const response = await triggerFn(cardDocument.identifier);
       const data = response.data;
       if (data != null) {
-        saveAs(
+        await downloadFile(
           base64StringToBlob(data),
-          `${cardDocument.name} (${cardDocument.identifier}).${cardDocument.extension}`
+          undefined,
+          `${cardDocument.name} (${cardDocument.identifier}).${cardDocument.extension}`,
+          localFilesService
         );
       } else {
         return Promise.reject(

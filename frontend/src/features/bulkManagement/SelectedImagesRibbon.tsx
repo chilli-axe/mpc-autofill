@@ -4,6 +4,7 @@
  * setting their selected versions, or deleting them from the project.
  */
 
+import styled from "@emotion/styled";
 import React, {
   ButtonHTMLAttributes,
   PropsWithChildren,
@@ -12,15 +13,15 @@ import React, {
 } from "react";
 import Dropdown from "react-bootstrap/Dropdown";
 import Stack from "react-bootstrap/Stack";
-import styled from "styled-components";
 
+import { SourceType } from "@/common/schema_types";
 import { Faces, Slots, useAppDispatch, useAppSelector } from "@/common/types";
 import { RightPaddedIcon } from "@/components/icon";
 import { OverflowList } from "@/components/OverflowList";
 import { useDoImageDownload } from "@/features/download/downloadImages";
 import { GridSelectorModal } from "@/features/gridSelector/GridSelectorModal";
 import { useCardDocumentsByIdentifier } from "@/store/slices/cardDocumentsSlice";
-import { setSelectedSlotsAndShowModal } from "@/store/slices/modalsSlice";
+import { showChangeQueryModal } from "@/store/slices/modalsSlice";
 import {
   bulkAlignMemberSelection,
   bulkSetMemberSelection,
@@ -28,8 +29,8 @@ import {
   deleteSlots,
   selectAllSelectedProjectMembersHaveTheSameQuery,
   selectAllSlotsForActiveFace,
+  selectAnySelectedImagesDownloadable,
   selectIsProjectEmpty,
-  selectProjectMember,
   selectSelectedSlots,
   selectUniqueCardIdentifiersInSlots,
   setSelectedImages,
@@ -190,7 +191,7 @@ function ChangeSelectedImageQueries({
   const dispatch = useAppDispatch();
 
   const handleShowModal = () => {
-    dispatch(setSelectedSlotsAndShowModal([slots, "changeQuery"]));
+    dispatch(showChangeQueryModal({ slots: slots, query: null }));
   };
 
   return (
@@ -239,7 +240,11 @@ function DownloadSelectedImages({
   const onClick = () => {
     let n = 0;
     identifiers.forEach((identifier) => {
-      if (cardDocumentsByIdentifier[identifier]) {
+      if (
+        cardDocumentsByIdentifier[identifier] &&
+        cardDocumentsByIdentifier[identifier].sourceType ===
+          SourceType.GoogleDrive
+      ) {
         queueImageDownload(cardDocumentsByIdentifier[identifier]);
         n++;
       }
@@ -305,6 +310,9 @@ type OptionKey =
 export function SelectedImagesRibbon() {
   const slots = useAppSelector(selectSelectedSlots);
   const isProjectEmpty = useAppSelector(selectIsProjectEmpty);
+  const anySelectedImagesDownloadable = useAppSelector((state) =>
+    selectAnySelectedImagesDownloadable(state, slots)
+  );
 
   const dispatch = useAppDispatch();
   const onClick = () =>
@@ -360,15 +368,15 @@ export function SelectedImagesRibbon() {
         );
     }
   };
-  const enabledOptions: Array<OptionKey> = [
+  const validOptions: Array<OptionKey> = [
     ...((slots.length > 0
-      ? [
-          "changeSelectedImageSelectedImages",
-          "changeSelectedImageQueries",
-          // "clearSelectedImageQueries",
-          "downloadSelectedImages",
-          "deleteSelectedImages",
-        ]
+      ? ["changeSelectedImageSelectedImages", "changeSelectedImageQueries"]
+      : []) as Array<OptionKey>),
+    ...((slots.length > 0 && anySelectedImagesDownloadable
+      ? ["downloadSelectedImages"]
+      : []) as Array<OptionKey>),
+    ...((slots.length > 0 && !isProjectEmpty
+      ? ["deleteSelectedImages"]
       : []) as Array<OptionKey>),
     ...((slots.length === 1 ? ["selectSimilar"] : []) as Array<OptionKey>),
     ...((!isProjectEmpty ? ["selectAll"] : []) as Array<OptionKey>),
@@ -409,7 +417,7 @@ export function SelectedImagesRibbon() {
       )}
       <div className="ms-auto" />
       <OverflowList
-        items={enabledOptions}
+        items={validOptions}
         itemRenderer={itemRenderer}
         overflowRenderer={overflowRenderer}
         minVisibleItems={0}

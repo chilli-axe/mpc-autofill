@@ -9,8 +9,7 @@ import { SupportBackendModal } from "@/features/support/SupportBackendModal";
 import { SupportDeveloperModal } from "@/features/support/SupportDeveloperModal";
 import {
   hideModal,
-  selectModalCard,
-  selectModalSlots,
+  selectModalProps,
   selectShownModal,
 } from "@/store/slices/modalsSlice";
 
@@ -18,8 +17,7 @@ export function Modals() {
   //# region queries and hooks
 
   const dispatch = useAppDispatch();
-  const selectedImage = useAppSelector(selectModalCard);
-  const selectedSlots = useAppSelector(selectModalSlots);
+  const modalProps = useAppSelector(selectModalProps);
   const shownModal = useAppSelector(selectShownModal);
 
   //# endregion
@@ -34,19 +32,24 @@ export function Modals() {
 
   return (
     <>
-      {selectedImage != null && (
-        <MemoizedCardDetailedView
-          cardDocument={selectedImage}
-          show={shownModal === "cardDetailedView"}
-          handleClose={handleClose}
-        />
-      )}
-      {selectedSlots != null && (
-        <ChangeQueryModal
-          slots={selectedSlots}
-          show={shownModal === "changeQuery"}
-          handleClose={handleClose}
-        />
+      {modalProps !== null && (
+        <>
+          {"cardDetailedView" in modalProps && (
+            <MemoizedCardDetailedView
+              cardDocument={modalProps.cardDetailedView.card}
+              show={shownModal === "cardDetailedView"}
+              handleClose={handleClose}
+            />
+          )}
+          {"changeQuery" in modalProps && (
+            <ChangeQueryModal
+              slots={modalProps.changeQuery.slots}
+              query={modalProps.changeQuery.query}
+              show={shownModal === "changeQuery"}
+              handleClose={handleClose}
+            />
+          )}
+        </>
       )}
       <FinishedMyProjectModal
         show={shownModal === "finishedMyProject"}

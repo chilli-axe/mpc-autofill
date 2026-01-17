@@ -1,5 +1,5 @@
+import styled from "@emotion/styled";
 import DropdownTreeSelect from "react-dropdown-tree-select";
-import styled from "styled-components";
 
 export const StyledDropdownTreeSelect = styled(DropdownTreeSelect)`
   .tag {

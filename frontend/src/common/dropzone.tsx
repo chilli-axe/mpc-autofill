@@ -2,9 +2,9 @@
  * A small wrapper around the `react-dropzone` Dropzone for consistent presentation.
  */
 
+import styled from "@emotion/styled";
 import React, { useCallback } from "react";
 import { DropzoneRootProps, useDropzone } from "react-dropzone";
-import styled from "styled-components";
 
 import { useAppDispatch } from "@/common/types";
 import { setNotification } from "@/store/slices/toastsSlice";

@@ -1,8 +1,8 @@
+import styled from "@emotion/styled";
 import Head from "next/head";
-import styled from "styled-components";
 
 import { ProjectName } from "@/common/constants";
-import { MakePlayingCards, MakePlayingCardsURL } from "@/common/constants";
+import { MakePlayingCardsLink } from "@/components/MakePlayingCardsLink";
 import Footer from "@/features/ui/Footer";
 import { ProjectContainer } from "@/features/ui/Layout";
 import { useGetBackendInfoQuery } from "@/store/api";
@@ -75,9 +75,7 @@ export default function About() {
       <p>
         {ProjectName} does not condone or support the resale (or other
         commercial use) of cards printed with this website in any way. As per{" "}
-        <a href={MakePlayingCardsURL} target="_blank">
-          {MakePlayingCards}
-        </a>
+        <MakePlayingCardsLink />
         &apos;s user agreement, users acknowledge that they{" "}
         <i>
           &quot;...own all copyrights for [card images used in orders] or have
@@ -86,10 +84,7 @@ export default function About() {
       </p>
       <p>
         {ProjectName} is not affiliated with, produced by, or endorsed by{" "}
-        <a href={MakePlayingCardsURL} target="_blank">
-          {MakePlayingCards}
-        </a>{" "}
-        or any other commercial entities.
+        <MakePlayingCardsLink /> or any other commercial entities.
       </p>
       <h2>Privacy Policy</h2>
       <b>Last updated: 11th April, 2023</b>

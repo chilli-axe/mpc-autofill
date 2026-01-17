@@ -1,38 +1,38 @@
 import { PayloadAction } from "@reduxjs/toolkit";
 
 import {
-  CardDocument,
+  CardDetailedViewModalState,
+  ChangeQueryModalState,
   createAppSlice,
-  Modals,
   ModalsState,
-  Slots,
+  NoPropModals,
 } from "@/common/types";
 import { RootState } from "@/store/store";
 
 //# region slice configuration
 
-const initialState: ModalsState = { card: null, slots: null, shownModal: null };
+const initialState: ModalsState = { props: null, shownModal: null };
 
 export const modalsSlice = createAppSlice({
   name: "modals",
   initialState,
   reducers: {
-    showModal: (state, action: PayloadAction<Modals>) => {
+    showModal: (state, action: PayloadAction<NoPropModals>) => {
       state.shownModal = action.payload;
     },
-    setSelectedCardAndShowModal: (
+    showCardDetailedViewModal: (
       state,
-      action: PayloadAction<[CardDocument, Modals]>
+      action: PayloadAction<CardDetailedViewModalState>
     ) => {
-      state.card = action.payload[0];
-      state.shownModal = action.payload[1];
+      state.shownModal = "cardDetailedView";
+      state.props = { cardDetailedView: action.payload };
     },
-    setSelectedSlotsAndShowModal: (
+    showChangeQueryModal: (
       state,
-      action: PayloadAction<[Slots, Modals]>
+      action: PayloadAction<ChangeQueryModalState>
     ) => {
-      state.slots = action.payload[0];
-      state.shownModal = action.payload[1];
+      state.shownModal = "changeQuery";
+      state.props = { changeQuery: action.payload };
     },
     hideModal: (state) => {
       // we deliberately keep the current modal data on state here in order for the modal to continue being rendered,
@@ -45,8 +45,8 @@ export const modalsSlice = createAppSlice({
 export default modalsSlice.reducer;
 export const {
   showModal,
-  setSelectedCardAndShowModal,
-  setSelectedSlotsAndShowModal,
+  showCardDetailedViewModal,
+  showChangeQueryModal,
   hideModal,
 } = modalsSlice.actions;
 
@@ -54,8 +54,7 @@ export const {
 
 //# region selectors
 
-export const selectModalCard = (state: RootState) => state.modals.card;
-export const selectModalSlots = (state: RootState) => state.modals.slots;
+export const selectModalProps = (state: RootState) => state.modals.props;
 export const selectShownModal = (state: RootState) => state.modals.shownModal;
 
 //# endregion

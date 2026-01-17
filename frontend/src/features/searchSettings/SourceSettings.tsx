@@ -1,9 +1,10 @@
 /**
- * A table of Card Sources (retrieved from backend) which facilitates controlling the order the Sources are
- * searched in and whether each Source is enabled.
+ * A table of Contributors (retrieved from backend) which facilitates controlling the order the Contributors are
+ * searched in and whether each Contributor is active.
  * This component forms part of the Search Settings modal.
  */
 
+import styled from "@emotion/styled";
 import {
   DragDropContext,
   Draggable,
@@ -17,7 +18,6 @@ import Container from "react-bootstrap/Container";
 import Table from "react-bootstrap/Table";
 // @ts-ignore: https://github.com/arnthor3/react-bootstrap-toggle/issues/21
 import Toggle from "react-bootstrap-toggle";
-import styled from "styled-components";
 
 import { ToggleButtonHeight } from "@/common/constants";
 import {
@@ -53,7 +53,7 @@ export function SourceSettings({
   );
 
   const maybeSourceDocuments = useAppSelector(selectSourceDocuments);
-  const anySourcesEnabled = (sourceSettings.sources ?? []).some((x) => x[1]);
+  const anySourcesActive = (sourceSettings.sources ?? []).some((x) => x[1]);
 
   const moveSourceToIndex = useCallback(
     (sourceIndex: number, destinationIndex: number) => {
@@ -75,9 +75,9 @@ export function SourceSettings({
   };
 
   /**
-   * Toggle the enabled status of the source at `index` in `localSourceOrder`.
+   * Toggle the active status of the source at `index` in `localSourceOrder`.
    */
-  const toggleSpecificSourceEnabledStatus = useCallback(
+  const toggleSpecificSourceActiveStatus = useCallback(
     (index: number) => {
       const updatedSources = [...(sourceSettings.sources ?? [])];
       updatedSources[index] = [
@@ -90,17 +90,17 @@ export function SourceSettings({
   );
 
   /**
-   * Toggle the enabled status of all sources in `localSourceOrder`. If any is enabled, they're all disabled.
+   * Toggle the active status of all sources in `localSourceOrder`. If any is active, they're all inactive.
    */
-  const toggleAllSourceEnabledStatuses = useCallback(() => {
+  const toggleAllSourceActiveness = useCallback(() => {
     if (sourceRows.length > 0) {
       const updatedSources: Array<SourceRow> = sourceRows.map((x) => [
         x[0],
-        !anySourcesEnabled,
+        !anySourcesActive,
       ]);
       setSourceSettings({ sources: updatedSources });
     }
-  }, [sourceRows, setSourceSettings, anySourcesEnabled]);
+  }, [sourceRows, setSourceSettings, anySourcesActive]);
 
   let sourceTable = <Spinner />;
   if (maybeSourceDocuments != null) {
@@ -135,7 +135,7 @@ export function SourceSettings({
                   width={80 + "%"}
                   height={ToggleButtonHeight + "px"}
                   active={sourceRow[1]}
-                  onClick={() => toggleSpecificSourceEnabledStatus(index)}
+                  onClick={() => toggleSpecificSourceActiveStatus(index)}
                 />
               </td>
               <td
@@ -213,12 +213,16 @@ export function SourceSettings({
       <DragDropContext onDragEnd={onDragEnd}>
         <Droppable droppableId="source-order">
           {(provided, snapshot) => (
-            <Table ref={provided.innerRef} style={{ tableLayout: "auto" }}>
+            <Table
+              variant="secondary"
+              ref={provided.innerRef}
+              style={{ tableLayout: "auto" }}
+            >
               {/* TODO: migrate this to AutofillTable at some point? too big a job for right now. */}
               <thead>
                 <tr style={{ height: ToggleButtonHeight + "px" }}>
-                  <th className="prevent-select">Enabled</th>
-                  <th className="prevent-select">Source Name</th>
+                  <th className="prevent-select">Active</th>
+                  <th className="prevent-select">Name</th>
                   <th />
                   <th />
                 </tr>
@@ -236,8 +240,8 @@ export function SourceSettings({
 
   return (
     <Container className="px-1">
-      <h5>Sources</h5>
-      Configure the sources to include in the search results.
+      <h5>Contributors</h5>
+      Configure the contributors to include in the search results.
       {enableReorderingSources && (
         <ul>
           <li>
@@ -250,8 +254,8 @@ export function SourceSettings({
         </ul>
       )}
       <div className="d-grid gap-0 mt-3">
-        <Button variant="primary" onClick={toggleAllSourceEnabledStatuses}>
-          {anySourcesEnabled ? "Disable" : "Enable"} all drives
+        <Button variant="primary" onClick={toggleAllSourceActiveness}>
+          {anySourcesActive ? "Disable" : "Enable"} all drives
         </Button>
       </div>
       <br />

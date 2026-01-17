@@ -1,5 +1,5 @@
+import styled from "@emotion/styled";
 import Col from "react-bootstrap/Col";
-import styled from "styled-components";
 
 import { NavbarHeight, RibbonHeight } from "@/common/constants";
 

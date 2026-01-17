@@ -1,5 +1,5 @@
+import styled from "@emotion/styled";
 import Row from "react-bootstrap/Row";
-import styled from "styled-components";
 
 import { RibbonHeight } from "@/common/constants";
 

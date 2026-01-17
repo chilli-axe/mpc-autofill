@@ -25,16 +25,16 @@ class TestMTGIntegration:
 
     class Decks(Enum):
         # all of these decks have 4x brainstorm, 3x past in flames, and 1x delver of secrets // insectile aberration
-        AETHERHUB = "https://aetherhub.com/Deck/test-796905"
-        AETHERHUB_WITH_WWW = "https://www.aetherhub.com/Deck/test-796905"
+        # AETHERHUB = "https://aetherhub.com/Deck/test-796905"
+        # AETHERHUB_WITH_WWW = "https://www.aetherhub.com/Deck/test-796905"
         ARCHIDEKT = "https://archidekt.com/decks/3380653"
         ARCHIDEKT_WITH_WWW = "https://www.archidekt.com/decks/3380653"
         ARCHIDEKT_WITH_HASH = "https://archidekt.com/decks/3380653#test"
         ARCHIDEKT_WITH_SLASH = "https://archidekt.com/decks/3380653/test"
         CUBECOBRA = "https://cubecobra.com/cube/overview/2fj4"
         CUBECOBRA_WITH_WWW = "https://www.cubecobra.com/cube/overview/2fj4"
-        DECKSTATS = "https://deckstats.net/decks/216625/2754468-test"
-        DECKSTATS_WITH_WWW = "https://www.deckstats.net/decks/216625/2754468-test"
+        # DECKSTATS = "https://deckstats.net/decks/216625/2754468-test"
+        # DECKSTATS_WITH_WWW = "https://www.deckstats.net/decks/216625/2754468-test"
         MAGICVILLE = "https://magic-ville.com/fr/decks/showdeck?ref=948045"
         MAGICVILLE_WITH_WWW = "https://www.magic-ville.com/fr/decks/showdeck?ref=948045"
         MANASTACK = "https://manastack.com/deck/test-426"

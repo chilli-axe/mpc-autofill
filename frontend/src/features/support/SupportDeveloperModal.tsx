@@ -2,12 +2,9 @@ import React from "react";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 
-import {
-  MakePlayingCards,
-  MakePlayingCardsURL,
-  ProjectName,
-} from "@/common/constants";
+import { ProjectName } from "@/common/constants";
 import { Coffee } from "@/components/Coffee";
+import { MakePlayingCardsLink } from "@/components/MakePlayingCardsLink";
 
 interface SupportDeveloperModalProps {
   show: boolean;
@@ -35,11 +32,8 @@ export function SupportDeveloperModal({
         <p>
           I&apos;m responsible for the software development of this project
           &mdash; this website, the code that image repository servers run on,
-          and the desktop tool that automates{" "}
-          <a href={MakePlayingCardsURL} target="_blank">
-            {MakePlayingCards}
-          </a>
-          .
+          thumbnail cloud infrastructure, and the desktop tool that automates{" "}
+          <MakePlayingCardsLink />.
         </p>
         <p>
           I started developing {ProjectName} in early 2020 while I was in uni to
@@ -63,9 +57,10 @@ export function SupportDeveloperModal({
         </p>
         <h4>Where does my donation go?</h4>
         <p>
-          I don&apos;t host any {ProjectName} servers, just{" "}
+          I don&apos;t host any {ProjectName} servers &mdash; just{" "}
           <a href={"https://mpcautofill.github.io"}>mpcautofill.github.io</a>{" "}
-          &mdash; which GitHub allows me to host for free.
+          (which GitHub allows me to host for free) and some cloud
+          infrastructure in CloudFlare.
         </p>
         <p>Any donation goes towards:</p>
         <ul>

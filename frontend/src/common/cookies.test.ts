@@ -123,7 +123,7 @@ test("cookies with incomplete source order are correctly reconciled", () => {
     JSON.stringify(settingsWithCompleteSourceOrder)
   );
 
-  // sources 2 and 3 should be added onto the end and enabled
+  // sources 2 and 3 should be added onto the end and active
   expect(
     getLocalStorageSearchSettings(sourceDocuments).sourceSettings.sources
   ).toStrictEqual([
@@ -159,7 +159,7 @@ test("cookies with incomplete source order plus invalid sources are correctly re
     JSON.stringify(settingsWithCompleteSourceOrder)
   );
 
-  // sources 2 and 3 should be added onto the end and enabled
+  // sources 2 and 3 should be added onto the end and active
   expect(
     getLocalStorageSearchSettings(sourceDocuments).sourceSettings.sources
   ).toStrictEqual([

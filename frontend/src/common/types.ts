@@ -7,16 +7,16 @@ import { useDispatch, useSelector, useStore } from "react-redux";
 
 import { CSVHeaders } from "@/common/constants";
 import {
-  Card,
+  Card as CardSchema,
   CardType as CardTypeSchema,
   SearchQuery,
   Source,
+  SourceType,
 } from "@/common/schema_types";
 import type { AppDispatch, AppStore, RootState } from "@/store/store";
 export type {
   Campaign,
   CardbacksRequest,
-  Card as CardDocument,
   ErrorResponse,
   FilterSettings,
   ImportSite,
@@ -37,6 +37,11 @@ export type {
   SupporterTier,
   Tag,
 } from "@/common/schema_types";
+import { Orama, Schema, SearchableType } from "@orama/orama";
+
+export const assertNever = (value: never) => {
+  throw new Error("Unexpected value: " + value);
+};
 
 export const useAppDispatch = useDispatch.withTypes<AppDispatch>();
 export const useAppSelector = useSelector.withTypes<RootState>();
@@ -53,6 +58,15 @@ export const createAppAsyncThunk = createAsyncThunk.withTypes<{
 
 export type ThunkStatus = "idle" | "loading" | "succeeded" | "failed";
 
+export type Card = Omit<
+  CardSchema,
+  "smallThumbnailUrl" | "mediumThumbnailUrl"
+> & {
+  smallThumbnailUrl: string | undefined;
+  mediumThumbnailUrl: string | undefined;
+};
+export type CardDocument = Card;
+
 export type CardType =
   | CardTypeSchema.Card
   | CardTypeSchema.Cardback
@@ -62,7 +76,7 @@ export type Faces = "front" | "back";
 export interface Notification {
   name: string | null;
   message: string | null;
-  level: "info" | "error";
+  level: "info" | "warning" | "error";
 }
 
 export interface ThunkStateBase {
@@ -147,7 +161,7 @@ export interface FinishSettingsState {
 }
 
 export type FileDownloadStatus = "success" | "failed" | "terminated";
-export type FileDownloadType = "image" | "xml" | "text";
+export type FileDownloadType = "image" | "xml" | "text" | "desktop-tool";
 
 export interface FileDownload {
   name: string;
@@ -189,11 +203,28 @@ export type Modals =
   | "invalidIdentifiers"
   | "finishedMyProject";
 
-export interface ModalsState {
-  card: Card | null;
-  slots: Slots | null;
-  shownModal: Modals | null;
+export type NoPropModals = Exclude<
+  Modals,
+  "cardDetailedView" | "gridSelector" | "changeQuery"
+>;
+
+export interface CardDetailedViewModalState {
+  card: Card;
 }
+
+export interface ChangeQueryModalState {
+  query: string | null;
+  slots: Slots;
+}
+
+export type ModalsState = {
+  shownModal: Modals | null;
+  props:
+    | { cardDetailedView: CardDetailedViewModalState }
+    | { gridSelector: null } // TODO
+    | { changeQuery: ChangeQueryModalState }
+    | null;
+};
 
 export interface InvalidIdentifiersState {
   invalidIdentifiers: Array<{ [face in Faces]: [SearchQuery, string] | null }>;
@@ -204,3 +235,58 @@ export type CSVRow = {
 };
 
 export type SourceRow = [number, boolean];
+
+export const OramaSchema = {
+  id: "string" as SearchableType,
+  name: "string" as SearchableType,
+  searchq: "string" as SearchableType,
+  cardType: "enum",
+  extension: "enum",
+  language: "enum",
+  tags: "enum[]", // enum allows using "not contained in" filters
+  dpi: "number",
+  size: "number",
+} as const;
+
+export type LocalFileHandleParams = {
+  sourceType: SourceType.LocalFile;
+  identifier: undefined;
+  fileHandle: FileSystemFileHandle;
+};
+
+export type LocalDirectoryHandleParams = {
+  sourceType: SourceType.LocalFile;
+  identifier: undefined;
+  fileHandle: FileSystemDirectoryHandle;
+};
+
+export type RemoteFileHandleParams = {
+  sourceType: SourceType.GoogleDrive | SourceType.AwsS3;
+  identifier: string;
+  fileHandle: undefined;
+};
+
+export type FileHandleParams = LocalFileHandleParams | RemoteFileHandleParams;
+
+export type OramaCardDocument = Pick<
+  Card,
+  | "name"
+  | "searchq"
+  | "source"
+  | "cardType"
+  | "extension"
+  | "language"
+  | "tags"
+  | "dpi"
+  | "size"
+> & { id: string; lastModified: Date } & { params: FileHandleParams };
+
+export interface OramaIndex {
+  oramaDb: Orama<typeof OramaSchema>;
+  size: number;
+}
+
+export interface LocalFilesIndex {
+  fileHandle: FileSystemDirectoryHandle;
+  index: OramaIndex | undefined;
+}
