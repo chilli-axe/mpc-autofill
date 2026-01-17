@@ -441,7 +441,7 @@ describe("toSearchable", () => {
       input: "Black Lotus (Masterpiece, But With Punctuation! )",
       expectedOutput: "black lotus",
     },
-    { input: "Juzám Djinn", expectedOutput: "juzám djinn" }, // orama will handle this
+    { input: "Juzám Djinn", expectedOutput: "juzam djinn" }, // orama will NOT handle this
     { input: " Expansion _ Explosion", expectedOutput: "expansion explosion" },
     { input: "Kodama’s Reach", expectedOutput: "kodamas reach" },
     { input: "消灭邪物", expectedOutput: "消灭邪物" },
