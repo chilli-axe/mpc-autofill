@@ -60,7 +60,10 @@ jobs:
           name: ${{ matrix.TARGET }} Unsigned Build
           path: |
             desktop-tool/build/autofill.${{ matrix.EXTENSION }}
+
+      # sign Windows executables with SignPath
       - name: Submit signing request
+        if: ${{ matrix.TARGET == 'windows' }}
         id: submit-signing-request
         uses: signpath/github-action-submit-signing-request@v2
         with:
@@ -72,6 +75,7 @@ jobs:
           wait-for-completion: true
           output-artifact-directory: desktop-tool/build/
       - name: Upload signed artifact to GitHub
+        if: ${{ matrix.TARGET == 'windows' }}
         id: upload-signed-artifact
         uses: actions/upload-artifact@v4
         with:
