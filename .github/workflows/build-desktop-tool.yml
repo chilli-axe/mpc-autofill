@@ -44,7 +44,7 @@ jobs:
         env:
           MACOS_SIGN_CERTIFICATE_BASE64: ${{ secrets.MACOS_SIGN_CERTIFICATE_BASE64 }}
           MACOS_SIGN_CERTIFICATE_PASSWORD: ${{ secrets.MACOS_SIGN_CERTIFICATE_PASSWORD }}
-          MACOS_DEVELOPER_PROFILE_BASE64: ${{ secrets.MACOS_DEVELOPER_PROFILE_BASE64 }}
+          MACOS_NOTARY_KEY_BASE64: ${{ secrets.MACOS_NOTARY_KEY_BASE64 }}
           KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
         run: |
           # create variables
