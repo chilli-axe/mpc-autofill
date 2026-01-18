@@ -68,9 +68,9 @@ jobs:
 
           # create notarisation profile
           xcrun notarytool store-credentials "${{ secrets.MACOS_NOTARY_PROFILE_NAME }}" \
-            --key "$KEY_PATH" \
-            --key-id "$MACOS_NOTARY_KEY_ID" \
-            --issuer "$MACOS_NOTARY_ISSUER_ID" \
+            --key "$NOTARY_KEY_PATH" \
+            --key-id "{{ secrets.$MACOS_NOTARY_KEY_ID}}" \
+            --issuer "${{ secrets.MACOS_NOTARY_ISSUER_ID}}" \
             --keychain $KEYCHAIN_PATH
       - name: Install dependencies
         run: |
