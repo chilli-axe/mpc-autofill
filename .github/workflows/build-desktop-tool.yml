@@ -87,7 +87,7 @@ jobs:
           mode: onefile
           macos-sign-notarization: true
           macos-sign-identity: ${{ secrets.MACOS_SIGN_IDENTITY }}
-          macos-sign-keyring-filename: $RUNNER_TEMP/build_certificate.p12
+          macos-sign-keyring-filename: "$RUNNER_TEMP/build_certificate.p12"
           macos-sign-keyring-password: ${{ secrets.MACOS_SIGN_CERTIFICATE_PASSWORD }}
       - name: Upload unsigned artifact for SignPath
         id: upload-unsigned-artifact
