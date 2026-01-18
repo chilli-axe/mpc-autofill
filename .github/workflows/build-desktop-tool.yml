@@ -127,7 +127,7 @@ jobs:
         if: ${{ (matrix.TARGET == 'macos-arm') || (matrix.TARGET == 'macos-intel') }}
         run: |
           # create a zip archive suitable for notarization
-          /usr/bin/ditto -c -k --keepParent "desktop-tool/build/${{ matrix.FILENAME }}" "desktop-tool/build/compressed.zip"
+          /usr/bin/ditto -c -k "desktop-tool/build/${{ matrix.FILENAME }}" "desktop-tool/build/compressed.zip"
 
           # invoke notarytool
           xcrun notarytool submit "desktop-tool/build/compressed.zip" --keychain-profile ${{ secrets.MACOS_NOTARY_PROFILE_NAME }} --wait
