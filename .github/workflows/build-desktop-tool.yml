@@ -92,7 +92,7 @@ jobs:
           working-directory: desktop-tool
           script-name: autofill.py
           mode: onefile
-          output-filename: ${{ matrix.FILENAME }}
+          output-file: ${{ matrix.FILENAME }}
           macos-sign-notarization: true
           macos-sign-identity: ${{ secrets.MACOS_SIGN_IDENTITY }}
           macos-sign-keyring-filename: "${{ runner.temp }}/app-signing.keychain-db"
