@@ -39,7 +39,7 @@ jobs:
           python-version: 3.13
 
       # retrieved from https://docs.github.com/en/actions/how-tos/deploy/deploy-to-third-party-platforms/sign-xcode-applications#add-a-step-to-your-workflow
-      - name: Install the Apple certificate and provisioning profile
+      - name: Install the Apple certificate and notarisation profile
         if: ${{ (matrix.TARGET == 'macos-arm') || (matrix.TARGET == 'macos-intel') }}
         env:
           MACOS_SIGN_CERTIFICATE_BASE64: ${{ secrets.MACOS_SIGN_CERTIFICATE_BASE64 }}
@@ -66,8 +66,8 @@ jobs:
           security set-key-partition-list -S apple-tool:,apple: -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
           security list-keychain -d user -s $KEYCHAIN_PATH
 
-          # create notary profile
-          xcrun notarytool store-credentials "$MACOS_NOTARY_PROFILE_NAME" \
+          # create notarisation profile
+          xcrun notarytool store-credentials "${{ secrets.MACOS_NOTARY_PROFILE_NAME }}" \
             --key "$KEY_PATH" \
             --key-id "$MACOS_NOTARY_KEY_ID" \
             --issuer "$MACOS_NOTARY_ISSUER_ID" \
@@ -99,7 +99,7 @@ jobs:
           macos-sign-keyring-password: ${{ secrets.KEYCHAIN_PASSWORD }}
           macos-signed-app-name: com.ndepaola.mpc-autofill-${{ matrix.TARGET }}
           macos-target-arch: ${{ matrix.MACOS_ARCH }}
-      - name: Upload unsigned artifact for SignPath
+      - name: Upload unsigned artifact
         id: upload-unsigned-artifact
         uses: actions/upload-artifact@v4
         with:
@@ -108,7 +108,7 @@ jobs:
             desktop-tool/build/${{ matrix.FILENAME }}
 
       # sign Windows executables with SignPath
-      - name: Submit signing request
+      - name: Sign Windows executable with SignPath
         if: ${{ matrix.TARGET == 'windows' }}
         id: submit-signing-request
         uses: signpath/github-action-submit-signing-request@v2
@@ -120,8 +120,24 @@ jobs:
           github-artifact-id: "${{ steps.upload-unsigned-artifact.outputs.artifact-id }}"
           wait-for-completion: true
           output-artifact-directory: desktop-tool/build/
+
+      # notarise macOS executables
+      - name: Notarise macOS executable
+        id: submit-notarisation-request
+        if: ${{ (matrix.TARGET == 'macos-arm') || (matrix.TARGET == 'macos-intel') }}
+        run: |
+          # create a zip archive suitable for notarization
+          /usr/bin/ditto -c -k --keepParent "desktop-tool/build/${{ matrix.FILENAME }}" "desktop-tool/build/compressed.zip"
+
+          # invoke notarytool
+          xcrun notarytool submit "desktop-tool/build/compressed.zip" --keychain-profile ${{ secrets.MACOS_NOTARY_PROFILE_NAME }} --wait
+
+          # unpack zip and overwrite unsigned executable
+          /usr/bin/ditto -c -k "desktop-tool/build/compressed.zip" "desktop-tool/build/"
+          mv desktop-tool/build/compressed/${{ matrix.FILENAME }} desktop-tool/build/${{ matrix.FILENAME }}
+
       - name: Upload signed artifact to GitHub
-        if: ${{ matrix.TARGET == 'windows' }}
+        if: ${{ (matrix.TARGET == 'macos-arm') || (matrix.TARGET == 'macos-intel') || (matrix.TARGET == 'windows') }}
         id: upload-signed-artifact
         uses: actions/upload-artifact@v4
         with:
