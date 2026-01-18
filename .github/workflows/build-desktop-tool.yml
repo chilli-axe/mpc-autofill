@@ -33,6 +33,38 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: 3.13
+
+      # retrieved from https://docs.github.com/en/actions/how-tos/deploy/deploy-to-third-party-platforms/sign-xcode-applications#add-a-step-to-your-workflow
+      - name: Install the Apple certificate and provisioning profile
+        if: ${{ (matrix.TARGET == 'macos-arm') || (matrix.TARGET == 'macos-intel') }}
+        env:
+          MACOS_SIGN_CERTIFICATE_BASE64: ${{ secrets.MACOS_SIGN_CERTIFICATE_BASE64 }}
+          MACOS_SIGN_CERTIFICATE_PASSWORD: ${{ secrets.MACOS_SIGN_CERTIFICATE_PASSWORD }}
+          MACOS_DEVELOPER_PROFILE_BASE64: ${{ secrets.MACOS_DEVELOPER_PROFILE_BASE64 }}
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+        run: |
+          # create variables
+          CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
+          PP_PATH=$RUNNER_TEMP/build_pp.mobileprovision
+          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+
+          # import certificate and provisioning profile from secrets
+          echo -n "$MACOS_SIGN_CERTIFICATE_BASE64" | base64 --decode -o $CERTIFICATE_PATH
+          echo -n "$MACOS_DEVELOPER_PROFILE_BASE64" | base64 --decode -o $PP_PATH
+
+          # create temporary keychain
+          security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+
+          # import certificate to keychain
+          security import $CERTIFICATE_PATH -P "$MACOS_SIGN_CERTIFICATE_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
+          security set-key-partition-list -S apple-tool:,apple: -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security list-keychain -d user -s $KEYCHAIN_PATH
+
+          # apply provisioning profile
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
@@ -53,6 +85,10 @@ jobs:
           working-directory: desktop-tool
           script-name: autofill.py
           mode: onefile
+          macos-sign-notarization: true
+          macos-sign-identity: ${{ secrets.MACOS_SIGN_IDENTITY }}
+          macos-sign-keyring-filename: $RUNNER_TEMP/build_certificate.p12
+          macos-sign-keyring-password: ${{ secrets.MACOS_SIGN_CERTIFICATE_PASSWORD }}
       - name: Upload unsigned artifact for SignPath
         id: upload-unsigned-artifact
         uses: actions/upload-artifact@v4
