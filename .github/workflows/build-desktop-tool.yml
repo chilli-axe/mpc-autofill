@@ -15,17 +15,21 @@ jobs:
       matrix:
         include:
           - os: macos-latest
+            FILENAME: autofill-macos-arm.command
             TARGET: macos-arm
-            EXTENSION: bin
+            MACOS_ARCH: arm64
           - os: macos-15
             TARGET: macos-intel
-            EXTENSION: bin
+            FILENAME: autofill-macos-intel.command
+            MACOS_ARCH: x86_64
           - os: windows-latest
+            FILENAME: autofill-windows.exe
             TARGET: windows
-            EXTENSION: exe
+            MACOS_ARCH: ""
           - os: ubuntu-latest
+            FILENAME: autofill-linux.bin
             TARGET: linux
-            EXTENSION: bin
+            MACOS_ARCH: ""
     steps:
       - uses: actions/checkout@v4
       - uses: browser-actions/setup-chrome@latest
@@ -45,12 +49,12 @@ jobs:
         run: |
           # create variables
           CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
-          PP_PATH=$RUNNER_TEMP/build_pp.provisionprofile
+          NOTARY_KEY_PATH=$RUNNER_TEMP/build_key.p8
           KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
 
           # import certificate and provisioning profile from secrets
           echo -n "$MACOS_SIGN_CERTIFICATE_BASE64" | base64 --decode -o $CERTIFICATE_PATH
-          echo -n "$MACOS_DEVELOPER_PROFILE_BASE64" | base64 --decode -o $PP_PATH
+          echo -n "$MACOS_NOTARY_KEY_BASE64" | base64 --decode -o $NOTARY_KEY_PATH
 
           # create temporary keychain
           security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
@@ -62,9 +66,12 @@ jobs:
           security set-key-partition-list -S apple-tool:,apple: -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
           security list-keychain -d user -s $KEYCHAIN_PATH
 
-          # apply provisioning profile
-          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-          cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles
+          # create notary profile
+          xcrun notarytool store-credentials "$MACOS_NOTARY_PROFILE_NAME" \
+            --key "$KEY_PATH" \
+            --key-id "$MACOS_NOTARY_KEY_ID" \
+            --issuer "$MACOS_NOTARY_ISSUER_ID" \
+            --keychain $KEYCHAIN_PATH
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
@@ -85,17 +92,20 @@ jobs:
           working-directory: desktop-tool
           script-name: autofill.py
           mode: onefile
+          output-filename: ${{ matrix.FILENAME }}
           macos-sign-notarization: true
           macos-sign-identity: ${{ secrets.MACOS_SIGN_IDENTITY }}
           macos-sign-keyring-filename: "${{ runner.temp }}/app-signing.keychain-db"
           macos-sign-keyring-password: ${{ secrets.KEYCHAIN_PASSWORD }}
+          macos-signed-app-name: com.ndepaola.mpc-autofill-${{ matrix.TARGET }}
+          macos-target-arch: ${{ matrix.MACOS_ARCH }}
       - name: Upload unsigned artifact for SignPath
         id: upload-unsigned-artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.TARGET }} Unsigned Build
           path: |
-            desktop-tool/build/autofill.${{ matrix.EXTENSION }}
+            desktop-tool/build/${{ matrix.FILENAME }}
 
       # sign Windows executables with SignPath
       - name: Submit signing request
@@ -117,4 +127,4 @@ jobs:
         with:
           name: ${{ matrix.TARGET }} Signed Build
           path: |
-            desktop-tool/build/autofill.${{ matrix.EXTENSION }}
+            desktop-tool/build/${{ matrix.FILENAME }}
