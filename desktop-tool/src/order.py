@@ -17,7 +17,7 @@ from InquirerPy import prompt
 from sanitize_filename import sanitize
 
 from src import constants
-from src.constants import PROJECT_MAX_SIZE
+from src.constants import PROJECT_MAX_SIZE, SourceType
 from src.exc import ValidationException
 from src.formatting import bold, text_to_set
 from src.io import (
@@ -34,6 +34,7 @@ from src.utils import unpack_element
 @attr.s
 class CardImage:
     drive_id: str = attr.ib(default="")
+    source_type: str = attr.ib(default=SourceType.GOOGLE_DRIVE)
     slots: set[int] = attr.ib(factory=set)
     name: Optional[str] = attr.ib(default="")
     file_path: Optional[str] = attr.ib(default="")
@@ -78,32 +79,34 @@ class CardImage:
         if file_exists(self.drive_id):
             self.file_path = os.path.abspath(self.drive_id)
             self.name = os.path.basename(self.file_path)
+            self.source_type = SourceType.LOCAL_FILE
             return
 
         if not self.name:
             self.retrieve_card_name()
 
-        if self.name is None:
-            if self.drive_id:
-                # assume png
-                logger.info(
-                    f"The name of the image {bold(self.drive_id)} could not be determined, meaning that its "
-                    f"file extension is unknown. As a result, an assumption is made that the file extension "
-                    f"is {bold('.png')}."
-                )
-                self.name = f"{self.drive_id}.png"
-                self.file_path = os.path.join(image_directory, sanitize(self.name))
+        if self.source_type == SourceType.GOOGLE_DRIVE:
+            if self.name is None:
+                if self.drive_id:
+                    # assume png
+                    logger.info(
+                        f"The name of the image {bold(self.drive_id)} could not be determined, meaning that its "
+                        f"file extension is unknown. As a result, an assumption is made that the file extension "
+                        f"is {bold('.png')}."
+                    )
+                    self.name = f"{self.drive_id}.png"
+                    self.file_path = os.path.join(image_directory, sanitize(self.name))
+                else:
+                    self.file_path = None
             else:
-                self.file_path = None
-        else:
-            file_path = os.path.join(image_directory, sanitize(self.name))
-            if not os.path.isfile(file_path) or os.path.getsize(file_path) <= 0:
-                # The filepath without ID in parentheses doesn't exist - change the filepath to contain the ID instead
-                name_split = self.name.rsplit(".", 1)
-                file_path = os.path.join(
-                    image_directory, sanitize(f"{name_split[0]} ({self.drive_id}).{name_split[1]}")
-                )
-            self.file_path = file_path
+                file_path = os.path.join(image_directory, sanitize(self.name))
+                if not os.path.isfile(file_path) or os.path.getsize(file_path) <= 0:
+                    # The filepath without ID in parentheses doesn't exist - change the filepath to contain the ID instead
+                    name_split = self.name.rsplit(".", 1)
+                    file_path = os.path.join(
+                        image_directory, sanitize(f"{name_split[0]} ({self.drive_id}).{name_split[1]}")
+                    )
+                self.file_path = file_path
 
         self.validate()
 
@@ -124,7 +127,9 @@ class CardImage:
     # region initialisation
 
     def validate(self) -> None:
-        self.errored = any([self.errored, self.name is None, self.file_path is None])
+        self.errored = any(
+            [self.errored, self.name is None, self.file_path is None, self.source_type not in SourceType.get_all()]
+        )
 
     # endregion
 
@@ -134,6 +139,7 @@ class CardImage:
         assert self.drive_id == other.drive_id
         return CardImage(
             drive_id=self.drive_id,
+            source_type=self.source_type,
             slots=self.slots | other.slots,
             name=self.name,
             file_path=self.file_path,
@@ -146,6 +152,12 @@ class CardImage:
         drive_id = ""
         if (drive_id_text := card_dict[constants.CardTags.id].text) is not None:
             drive_id = drive_id_text.strip(' "')
+        source_type = SourceType.GOOGLE_DRIVE
+        if (
+            constants.CardTags.source_type in card_dict.keys()
+            and card_dict[constants.CardTags.source_type].text in SourceType.get_all()
+        ):
+            source_type = card_dict[constants.CardTags.source_type].text or SourceType.GOOGLE_DRIVE
         slots: set[int] = set()
         if (slots_text := card_dict[constants.CardTags.slots].text) is not None:
             slots = text_to_set(slots_text)
@@ -155,7 +167,7 @@ class CardImage:
         query = None
         if constants.CardTags.query in card_dict.keys():
             query = card_dict[constants.CardTags.query].text
-        card_image = cls(drive_id=drive_id, slots=slots, name=name, query=query)
+        card_image = cls(drive_id=drive_id, source_type=source_type, slots=slots, name=name, query=query)
         card_image.generate_file_path(working_directory=working_directory)
         card_image.validate()
         return card_image
@@ -167,18 +179,24 @@ class CardImage:
         post_processing_config: Optional[ImagePostProcessingConfig],
     ) -> None:
         try:
-            if not self.file_exists() and not self.errored and self.file_path is not None:
-                self.errored = not download_google_drive_file(
-                    drive_id=self.drive_id, file_path=self.file_path, post_processing_config=post_processing_config
-                )
+            if self.source_type == SourceType.LOCAL_FILE:
+                if self.file_exists() and not self.errored:
+                    self.downloaded = True
+                else:
+                    logger.info(f"Local file '{bold(self.name)}' does not exist at path:\n{bold(self.drive_id)}\n")
+            elif self.source_type == SourceType.GOOGLE_DRIVE:
+                if not self.file_exists() and not self.errored and self.file_path is not None:
+                    self.errored = not download_google_drive_file(
+                        drive_id=self.drive_id, file_path=self.file_path, post_processing_config=post_processing_config
+                    )
 
-            if self.file_exists() and not self.errored:
-                self.downloaded = True
-            else:
-                logger.info(
-                    f"Failed to download '{bold(self.name)}' - allocated to slot/s {bold(sorted(self.slots))}.\n"
-                    f"Download link - {bold(f'https://drive.google.com/uc?id={self.drive_id}&export=download')}\n"
-                )
+                if self.file_exists() and not self.errored:
+                    self.downloaded = True
+                else:
+                    logger.info(
+                        f"Failed to download '{bold(self.name)}' - allocated to slot/s {bold(sorted(self.slots))}.\n"
+                        f"Download link - {bold(f'https://drive.google.com/uc?id={self.drive_id}&export=download')}\n"
+                    )
         except Exception as e:
             # note: python threads die silently if they encounter an exception. if an exception does occur,
             # log it, but still put the card onto the queue so the main thread doesn't spin its wheels forever waiting.
@@ -194,6 +212,7 @@ class CardImage:
     def offset_slots(self, offset: int) -> "CardImage":
         return CardImage(
             drive_id=self.drive_id,
+            source_type=self.source_type,
             slots={slot + offset for slot in self.slots},
             name=self.name,
             file_path=self.file_path,
@@ -203,6 +222,7 @@ class CardImage:
     def truncate(self) -> "CardImage":
         return CardImage(
             drive_id=self.drive_id,
+            source_type=self.source_type,
             slots={slot for slot in self.slots if slot < PROJECT_MAX_SIZE},
             name=self.name,
             file_path=self.file_path,
@@ -223,6 +243,7 @@ class CardImage:
             if slots_in_split:
                 split_cards[i] = CardImage(
                     drive_id=self.drive_id,
+                    source_type=self.source_type,
                     slots=slots_in_split,
                     name=self.name,
                     file_path=self.file_path,
@@ -549,15 +570,6 @@ class CardOrder:
 
     # region initialisation
 
-    def validate(self) -> None:
-        for collection in [self.fronts, self.backs]:
-            for image in collection.cards_by_id.values():
-                if not image.file_path:
-                    raise ValidationException(
-                        f"The file path for the image in slots {bold(sorted(image.slots) or image.drive_id)} "
-                        f"of face {bold(collection.face)} could not be determined."
-                    )
-
     @classmethod
     def from_element(
         cls,
@@ -595,7 +607,6 @@ class CardOrder:
                 face=constants.Faces.back,
             )
         order = cls(name=name, details=details, fronts=fronts, backs=backs)
-        order.validate()
         return order
 
     @classmethod

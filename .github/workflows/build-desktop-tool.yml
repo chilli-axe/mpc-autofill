@@ -16,12 +16,16 @@ jobs:
         include:
           - os: macos-latest
             TARGET: macos-arm
+            EXTENSION: bin
           - os: macos-15
             TARGET: macos-intel
+            EXTENSION: bin
           - os: windows-latest
             TARGET: windows
+            EXTENSION: exe
           - os: ubuntu-latest
             TARGET: linux
+            EXTENSION: bin
     steps:
       - uses: actions/checkout@v4
       - uses: browser-actions/setup-chrome@latest
@@ -49,11 +53,32 @@ jobs:
           working-directory: desktop-tool
           script-name: autofill.py
           mode: onefile
-      - name: Upload artifact
+      - name: Upload unsigned artifact for SignPath
+        id: upload-unsigned-artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.TARGET }} Build
+          name: ${{ matrix.TARGET }} Unsigned Build
           path: |
-            desktop-tool/build/*.exe
-            desktop-tool/build/*.bin
-            desktop-tool/build/*.app/**/*
+            desktop-tool/build/autofill.${{ matrix.EXTENSION }}
+
+      # sign Windows executables with SignPath
+      - name: Submit signing request
+        if: ${{ matrix.TARGET == 'windows' }}
+        id: submit-signing-request
+        uses: signpath/github-action-submit-signing-request@v2
+        with:
+          api-token: "${{ secrets.SIGNPATH_API_TOKEN }}"
+          organization-id: "061f342a-ba1a-404b-b7f8-e08c8f6d9792"
+          project-slug: "mpc-autofill"
+          signing-policy-slug: "test-signing"
+          github-artifact-id: "${{ steps.upload-unsigned-artifact.outputs.artifact-id }}"
+          wait-for-completion: true
+          output-artifact-directory: desktop-tool/build/
+      - name: Upload signed artifact to GitHub
+        if: ${{ matrix.TARGET == 'windows' }}
+        id: upload-signed-artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.TARGET }} Signed Build
+          path: |
+            desktop-tool/build/autofill.${{ matrix.EXTENSION }}

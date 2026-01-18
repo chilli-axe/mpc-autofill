@@ -1,6 +1,7 @@
 import { expect } from "@playwright/test";
 
 import { FaceSeparator, S30 } from "@/common/constants";
+import { SourceType } from "@/common/schema_types";
 import {
   cardDocument1,
   cardDocument2,
@@ -49,28 +50,29 @@ test.describe("ExportXML", () => {
     expect(normaliseString(content)).toBe(
       normaliseString(
         `<order>
-              <details>
-                <quantity>2</quantity>
-                <bracket>18</bracket>
-                <stock>${S30}</stock>
-                <foil>false</foil>
-              </details>
-              <fronts>
-                <card>
-                    <id>${cardDocument1.identifier}</id>
-                    <slots>0</slots>
-                    <name>${cardDocument1.name}.${cardDocument1.extension}</name>
-                    <query>card one</query>
-                </card>
-                <card>
-                    <id>${cardDocument2.identifier}</id>
-                    <slots>1</slots>
-                    <name>${cardDocument2.name}.${cardDocument2.extension}</name>
-                    <query>card 2</query>
-                  </card>
-              </fronts>
-              <cardback>${cardDocument5.identifier}</cardback>
-            </order>`
+          <details>
+            <quantity>2</quantity>
+            <stock>${S30}</stock>
+            <foil>false</foil>
+          </details>
+          <fronts>
+            <card>
+                <id>${cardDocument1.identifier}</id>
+                <sourceType>${SourceType.GoogleDrive}</sourceType>
+                <slots>0</slots>
+                <name>${cardDocument1.name}.${cardDocument1.extension}</name>
+                <query>card one</query>
+            </card>
+            <card>
+                <id>${cardDocument2.identifier}</id>
+                <sourceType>${SourceType.GoogleDrive}</sourceType>
+                <slots>1</slots>
+                <name>${cardDocument2.name}.${cardDocument2.extension}</name>
+                <query>card 2</query>
+              </card>
+          </fronts>
+          <cardback>${cardDocument5.identifier}</cardback>
+        </order>`
       )
     );
     expect(filename).toBe("cards.xml");
@@ -100,36 +102,38 @@ test.describe("ExportXML", () => {
     expect(normaliseString(content)).toBe(
       normaliseString(
         `<order>
-              <details>
-                <quantity>2</quantity>
-                <bracket>18</bracket>
-                <stock>${S30}</stock>
-                <foil>false</foil>
-              </details>
-              <fronts>
-                <card>
-                    <id>${cardDocument1.identifier}</id>
-                    <slots>0</slots>
-                    <name>${cardDocument1.name}.${cardDocument1.extension}</name>
-                    <query>card one</query>
-                </card>
-                <card>
-                    <id>${cardDocument2.identifier}</id>
-                    <slots>1</slots>
-                    <name>${cardDocument2.name}.${cardDocument2.extension}</name>
-                    <query>card 2</query>
-                  </card>
-              </fronts>
-              <backs>
-                <card>
-                    <id>${cardDocument6.identifier}</id>
-                    <slots>1</slots>
-                    <name>${cardDocument6.name}.${cardDocument6.extension}</name>
-                    <query>t:card 6</query>
-                </card>
-              </backs>
-              <cardback>${cardDocument5.identifier}</cardback>
-            </order>`
+          <details>
+            <quantity>2</quantity>
+            <stock>${S30}</stock>
+            <foil>false</foil>
+          </details>
+          <fronts>
+            <card>
+              <id>${cardDocument1.identifier}</id>
+              <sourceType>${SourceType.GoogleDrive}</sourceType>
+              <slots>0</slots>
+              <name>${cardDocument1.name}.${cardDocument1.extension}</name>
+              <query>${cardDocument1.searchq}</query>
+            </card>
+            <card>
+              <id>${cardDocument2.identifier}</id>
+              <sourceType>${SourceType.GoogleDrive}</sourceType>
+              <slots>1</slots>
+              <name>${cardDocument2.name}.${cardDocument2.extension}</name>
+              <query>${cardDocument2.searchq}</query>
+              </card>
+          </fronts>
+          <backs>
+            <card>
+              <id>${cardDocument6.identifier}</id>
+              <sourceType>${SourceType.GoogleDrive}</sourceType>
+              <slots>1</slots>
+              <name>${cardDocument6.name}.${cardDocument6.extension}</name>
+              <query>t:${cardDocument6.searchq}</query>
+            </card>
+          </backs>
+          <cardback>${cardDocument5.identifier}</cardback>
+        </order>`
       )
     );
     expect(filename).toBe("cards.xml");
@@ -160,36 +164,38 @@ test.describe("ExportXML", () => {
     expect(normaliseString(content)).toBe(
       normaliseString(
         `<order>
-              <details>
-                <quantity>3</quantity>
-                <bracket>18</bracket>
-                <stock>${S30}</stock>
-                <foil>false</foil>
-              </details>
-              <fronts>
-                <card>
-                    <id>${cardDocument1.identifier}</id>
-                    <slots>0,1</slots>
-                    <name>${cardDocument1.name}.${cardDocument1.extension}</name>
-                    <query>card one</query>
-                </card>
-                <card>
-                    <id>${cardDocument2.identifier}</id>
-                    <slots>2</slots>
-                    <name>${cardDocument2.name}.${cardDocument2.extension}</name>
-                    <query>card 2</query>
-                  </card>
-              </fronts>
-              <backs>
-                <card>
-                  <id>${cardDocument1.identifier}</id>
-                  <slots>2</slots>
-                  <name>${cardDocument1.name}.${cardDocument1.extension}</name>
-                  <query>card one</query>
-                </card>
-              </backs>
-              <cardback>${cardDocument5.identifier}</cardback>
-            </order>`
+          <details>
+            <quantity>3</quantity>
+            <stock>${S30}</stock>
+            <foil>false</foil>
+          </details>
+          <fronts>
+            <card>
+              <id>${cardDocument1.identifier}</id>
+              <sourceType>${SourceType.GoogleDrive}</sourceType>
+              <slots>0,1</slots>
+              <name>${cardDocument1.name}.${cardDocument1.extension}</name>
+              <query>card one</query>
+            </card>
+            <card>
+              <id>${cardDocument2.identifier}</id>
+              <sourceType>${SourceType.GoogleDrive}</sourceType>
+              <slots>2</slots>
+              <name>${cardDocument2.name}.${cardDocument2.extension}</name>
+              <query>card 2</query>
+              </card>
+          </fronts>
+          <backs>
+            <card>
+              <id>${cardDocument1.identifier}</id>
+              <sourceType>${SourceType.GoogleDrive}</sourceType>
+              <slots>2</slots>
+              <name>${cardDocument1.name}.${cardDocument1.extension}</name>
+              <query>card one</query>
+            </card>
+          </backs>
+          <cardback>${cardDocument5.identifier}</cardback>
+        </order>`
       )
     );
     expect(filename).toEqual("cards.xml");

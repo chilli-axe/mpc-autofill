@@ -7,9 +7,9 @@ runs:
     - uses: browser-actions/setup-chrome@latest
       with:
         chrome-version: stable
-    - uses: browser-actions/setup-edge@latest
-      with:
-        edge-version: beta
+    # - uses: browser-actions/setup-edge@latest
+    #   with:
+    #     edge-version: beta
     - name: Fix macOS Chromedriver
       if: runner.os == 'macOS'
       run: |
