@@ -44,7 +44,7 @@ jobs:
           KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
         run: |
           # create variables
-          CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
+          CERTIFICATE_PATH=./build_certificate.p12
           PP_PATH=$RUNNER_TEMP/build_pp.mobileprovision
           KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
 
@@ -87,7 +87,7 @@ jobs:
           mode: onefile
           macos-sign-notarization: true
           macos-sign-identity: ${{ secrets.MACOS_SIGN_IDENTITY }}
-          macos-sign-keyring-filename: "$RUNNER_TEMP/build_certificate.p12"
+          macos-sign-keyring-filename: build_certificate.p12
           macos-sign-keyring-password: ${{ secrets.MACOS_SIGN_CERTIFICATE_PASSWORD }}
       - name: Upload unsigned artifact for SignPath
         id: upload-unsigned-artifact
