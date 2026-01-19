@@ -38,6 +38,7 @@ jobs:
         with:
           python-version: 3.13
 
+      # setup macOS runners for signing and notarisation
       # retrieved from https://docs.github.com/en/actions/how-tos/deploy/deploy-to-third-party-platforms/sign-xcode-applications#add-a-step-to-your-workflow
       - name: Install the Apple certificate and notarisation profile
         if: ${{ (matrix.TARGET == 'macos-arm') || (matrix.TARGET == 'macos-intel') }}
@@ -72,6 +73,8 @@ jobs:
             --key-id "${{ secrets.MACOS_NOTARY_KEY_ID }}" \
             --issuer "${{ secrets.MACOS_NOTARY_ISSUER_ID }}" \
             --keychain $KEYCHAIN_PATH
+
+      # install dependencies and build
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
@@ -107,6 +110,17 @@ jobs:
           path: |
             desktop-tool/build/${{ matrix.FILENAME }}
 
+      # notarise macOS executables
+      - name: Notarise macOS executable
+        id: submit-notarisation-request
+        if: ${{ (matrix.TARGET == 'macos-arm') || (matrix.TARGET == 'macos-intel') }}
+        run: |
+          # create a zip archive suitable for notarization
+          /usr/bin/ditto -c -k "build/${{ matrix.FILENAME }}" "build/compressed.zip"
+
+          # invoke notarytool
+          xcrun notarytool submit "build/compressed.zip" --keychain-profile ${{ secrets.MACOS_NOTARY_PROFILE_NAME }} --wait
+
       # sign Windows executables with SignPath
       - name: Sign Windows executable with SignPath
         if: ${{ matrix.TARGET == 'windows' }}
@@ -120,23 +134,6 @@ jobs:
           github-artifact-id: "${{ steps.upload-unsigned-artifact.outputs.artifact-id }}"
           wait-for-completion: true
           output-artifact-directory: desktop-tool/build/
-
-      # notarise macOS executables
-      - name: Notarise macOS executable
-        id: submit-notarisation-request
-        if: ${{ (matrix.TARGET == 'macos-arm') || (matrix.TARGET == 'macos-intel') }}
-        run: |
-          # some debugging stuff
-          ls -l
-          ls -l "build"
-          ls -l "build/${{ matrix.FILENAME }}"
-
-          # create a zip archive suitable for notarization
-          /usr/bin/ditto -c -k "build/${{ matrix.FILENAME }}" "build/compressed.zip"
-
-          # invoke notarytool
-          xcrun notarytool submit "build/compressed.zip" --keychain-profile ${{ secrets.MACOS_NOTARY_PROFILE_NAME }} --wait
-
       - name: Upload signed artifact to GitHub
         if: ${{ matrix.TARGET == 'windows' }}
         id: upload-signed-artifact
