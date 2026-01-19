@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import Enum, member
 from functools import partial
 
 import attr
@@ -73,9 +73,9 @@ class CardTags(str, Enum):
 
 
 class Browsers(Enum):
-    chrome = partial(wd.get_chrome_driver)
-    brave = partial(wd.get_brave_driver)
-    edge = partial(wd.get_edge_driver)
+    chrome = member(partial(wd.get_chrome_driver))
+    brave = member(partial(wd.get_brave_driver))
+    edge = member(partial(wd.get_edge_driver))
     # TODO: add support for firefox
 
 

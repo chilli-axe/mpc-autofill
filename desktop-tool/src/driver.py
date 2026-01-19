@@ -65,7 +65,7 @@ class AutofillDriver:
 
     def initialise_driver(self) -> None:
         try:
-            driver = self.browser.value(headless=self.headless, binary_location=self.binary_location)
+            driver = self.browser.value(headless=self.headless, binary_location=self.binary_location)  # type: ignore  # TODO
             driver.set_window_size(1200, 900)
             driver.implicitly_wait(5)
             driver.get(self.starting_url)
