@@ -137,12 +137,8 @@ jobs:
           # invoke notarytool
           xcrun notarytool submit "build/compressed.zip" --keychain-profile ${{ secrets.MACOS_NOTARY_PROFILE_NAME }} --wait
 
-          # unpack zip and overwrite unsigned executable
-          /usr/bin/ditto -c -k "build/compressed.zip" "build/"
-          mv build/compressed/${{ matrix.FILENAME }} build/${{ matrix.FILENAME }}
-
       - name: Upload signed artifact to GitHub
-        if: ${{ (matrix.TARGET == 'macos-arm') || (matrix.TARGET == 'macos-intel') || (matrix.TARGET == 'windows') }}
+        if: ${{ matrix.TARGET == 'windows' }}
         id: upload-signed-artifact
         uses: actions/upload-artifact@v4
         with:
