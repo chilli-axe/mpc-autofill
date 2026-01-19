@@ -126,6 +126,10 @@ jobs:
         id: submit-notarisation-request
         if: ${{ (matrix.TARGET == 'macos-arm') || (matrix.TARGET == 'macos-intel') }}
         run: |
+          # some debugging stuff
+          ls -l
+          ls -l "desktop-tool/build/${{ matrix.FILENAME }}"
+
           # create a zip archive suitable for notarization
           /usr/bin/ditto -c -k "desktop-tool/build/${{ matrix.FILENAME }}" "desktop-tool/build/compressed.zip"
 
