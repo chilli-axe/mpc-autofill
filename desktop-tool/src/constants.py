@@ -1,4 +1,4 @@
-from enum import Enum, member
+from enum import Enum, StrEnum, member
 from functools import partial
 
 import attr
@@ -16,7 +16,7 @@ class SourceType:
         return [SourceType.AWS_S3, SourceType.GOOGLE_DRIVE, SourceType.LOCAL_FILE]
 
 
-class OrderFulfilmentMethod(str, Enum):
+class OrderFulfilmentMethod(StrEnum):
     new_project = "Create a new project (default)"
     append_to_project = "Add more cards to an existing project"
     continue_project = "Continue editing an existing project"
@@ -25,7 +25,7 @@ class OrderFulfilmentMethod(str, Enum):
         return self.value
 
 
-class States(str, Enum):
+class States(StrEnum):
     initialising = "Initialising"
     initialised = "Initialised"
     defining_order = "Defining Order"
@@ -37,12 +37,12 @@ class States(str, Enum):
     finished = "Finished"
 
 
-class Faces(str, Enum):
+class Faces(StrEnum):
     front = "Front"
     back = "Back"
 
 
-class Cardstocks(str, Enum):
+class Cardstocks(StrEnum):
     S27 = "(S27) Smooth"
     S30 = "(S30) Standard Smooth"
     S33 = "(S33) Superior Smooth"
@@ -50,7 +50,7 @@ class Cardstocks(str, Enum):
     P10 = "(P10) Plastic"
 
 
-class BaseTags(str, Enum):
+class BaseTags(StrEnum):
     details = "details"
     fronts = "fronts"
     backs = "backs"
@@ -58,13 +58,13 @@ class BaseTags(str, Enum):
     filepath = "filepath"
 
 
-class DetailsTags(str, Enum):
+class DetailsTags(StrEnum):
     quantity = "quantity"
     stock = "stock"
     foil = "foil"
 
 
-class CardTags(str, Enum):
+class CardTags(StrEnum):
     id = "id"
     source_type = "sourceType"
     slots = "slots"
