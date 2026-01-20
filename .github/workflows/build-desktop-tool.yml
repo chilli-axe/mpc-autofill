@@ -75,10 +75,16 @@ jobs:
             --keychain $KEYCHAIN_PATH
 
       # install dependencies and build
-      - name: Install dependencies
+      - name: Install dependencies - non-macOS
+        if: ${{ !((matrix.TARGET == 'macos-arm') || (matrix.TARGET == 'macos-intel')) }}
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+      - name: Install dependencies - macOS
+        if: ${{ (matrix.TARGET == 'macos-arm') || (matrix.TARGET == 'macos-intel') }}
+        run: |
+          arch -${{ matrix.MACOS_ARCH }} python -m pip install --upgrade pip
+          arch -${{ matrix.MACOS_ARCH }} pip install -r requirements.txt
       - name: Install imageio for Nutika .ico conversion
         run: |
           python -m pip install imageio
