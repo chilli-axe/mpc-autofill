@@ -178,7 +178,7 @@ const useImageSrc = (
   const imageBucketURL = process.env.NEXT_PUBLIC_IMAGE_BUCKET_URL;
   // TODO: support other source types through CDN here
   const imageBucketURLValid =
-    !!imageBucketURL && !!(cardDocument.sourceType === "Google Drive");
+    imageBucketURL != null && !!(cardDocument.sourceType === "Google Drive");
 
   const loadFromBucket =
     imageBucketURLValid &&
@@ -190,7 +190,7 @@ const useImageSrc = (
   // if image is unavailable in bucket, fall back on loading from worker if possible
   const imageWorkerURL = process.env.NEXT_PUBLIC_IMAGE_WORKER_URL;
   const imageWorkerURLValid =
-    !!imageWorkerURL && !!(cardDocument?.sourceType === "Google Drive");
+    imageWorkerURL != null && !!(cardDocument?.sourceType === "Google Drive");
 
   const smallThumbnailURL = imageWorkerURLValid
     ? `${imageWorkerURL}/images/google_drive/small/${cardDocument?.identifier}.jpg`
