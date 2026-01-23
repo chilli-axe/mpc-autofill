@@ -1,21 +1,25 @@
 import React from "react";
 import Dropdown from "react-bootstrap/Dropdown";
 
+import { SourceType } from "@/common/schema_types";
 import { useAppDispatch, useAppSelector } from "@/common/types";
 import { RightPaddedIcon } from "@/components/icon";
 import { useDoImageDownload } from "@/features/download/downloadImages";
 import { useCardDocumentsByIdentifier } from "@/store/slices/cardDocumentsSlice";
-import { selectIsProjectEmpty } from "@/store/slices/projectSlice";
+import { selectAnyImagesDownloadable } from "@/store/slices/projectSlice";
 import { setNotification } from "@/store/slices/toastsSlice";
 
 export function ExportImages() {
   const dispatch = useAppDispatch();
-  const isProjectEmpty = useAppSelector(selectIsProjectEmpty);
+  const anyImagesDownloadable = useAppSelector(selectAnyImagesDownloadable);
   const queueImageDownload = useDoImageDownload();
   const cardDocumentsByIdentifier = useCardDocumentsByIdentifier();
   const downloadImages = async () => {
-    Object.values(cardDocumentsByIdentifier).map(queueImageDownload);
-    const n = Object.values(cardDocumentsByIdentifier).length;
+    const cardDocuments = Object.values(cardDocumentsByIdentifier).filter(
+      (cardDocument) => cardDocument.sourceType === SourceType.GoogleDrive
+    );
+    cardDocuments.map(queueImageDownload);
+    const n = cardDocuments.length;
     dispatch(
       setNotification([
         Math.random().toString(),
@@ -29,7 +33,7 @@ export function ExportImages() {
   };
 
   return (
-    <Dropdown.Item disabled={isProjectEmpty} onClick={downloadImages}>
+    <Dropdown.Item disabled={!anyImagesDownloadable} onClick={downloadImages}>
       <RightPaddedIcon bootstrapIconName="image" /> Card Images
     </Dropdown.Item>
   );

@@ -4,7 +4,7 @@
   "type": "object",
   "properties": {
     "fuzzySearch": {
-      "description": "Whether fuzzy search is enabled",
+      "description": "Whether fuzzy search is active",
       "type": "boolean"
     },
     "filterCardbacks": {

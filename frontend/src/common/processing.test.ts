@@ -14,7 +14,9 @@ import {
   sanitiseWhitespace,
   standardiseURL,
   stripTextInParentheses,
+  toSearchable,
 } from "@/common/processing";
+import { CardType } from "@/common/schema_types";
 import { DFCPairs } from "@/common/types";
 
 // # region constants
@@ -122,7 +124,7 @@ test("non-dfc cardback line is processed correctly", () => {
 
 test("manually specified front and back line is processed correctly", () => {
   expect(
-    processLine(`5 Opt ${FaceSeparator} Char`, dfcPairs, false)
+    processLine(`5 Opt${FaceSeparator}Char`, dfcPairs, false)
   ).toStrictEqual([
     5,
     {
@@ -201,7 +203,7 @@ test("line that fuzzy matches ambiguously to dfc pair is processed correctly", (
 test("line that matches to dfc pair but a back is also manually specified is processed correctly", () => {
   expect(
     processLine(
-      `2 Huntmaster of the Fells ${FaceSeparator} t:Goblin`,
+      `2 Huntmaster of the Fells${FaceSeparator}t:Goblin`,
       dfcPairs,
       false
     )
@@ -329,7 +331,7 @@ test("a line specifying the selected image ID for the front is processed correct
 test("a line specifying the selected image ID for both faces is processed correctly", () => {
   expect(
     processLine(
-      `2 opt${SelectedImageSeparator}xyz ${FaceSeparator} char${SelectedImageSeparator}abcd`,
+      `2 opt${SelectedImageSeparator}xyz${FaceSeparator}char${SelectedImageSeparator}abcd`,
       dfcPairs,
       false
     )
@@ -346,6 +348,106 @@ test("a line specifying the selected image ID for both faces is processed correc
       selected: false,
     },
   ]);
+});
+
+describe("file path-like identifier handling", () => {
+  test.each([
+    {
+      line: "opt@./some/path/opt.png",
+      expectedResult: [
+        1,
+        {
+          query: {
+            query: "opt",
+            cardType: CardType.Card,
+          },
+          selectedImage: "./some/path/opt.png",
+          selected: false,
+        },
+        null,
+      ],
+    },
+    {
+      line: "opt@./some/path/opt.png // char",
+      expectedResult: [
+        1,
+        {
+          query: {
+            query: "opt",
+            cardType: CardType.Card,
+          },
+          selectedImage: "./some/path/opt.png",
+          selected: false,
+        },
+        {
+          query: {
+            query: "char",
+            cardType: CardType.Card,
+          },
+          selectedImage: undefined,
+          selected: false,
+        },
+      ],
+    },
+    {
+      line: "opt@./some/path/opt.png // char@./some/other/path/char.jpg",
+      expectedResult: [
+        1,
+        {
+          query: {
+            query: "opt",
+            cardType: CardType.Card,
+          },
+          selectedImage: "./some/path/opt.png",
+          selected: false,
+        },
+        {
+          query: {
+            query: "char",
+            cardType: CardType.Card,
+          },
+          selectedImage: "./some/other/path/char.jpg",
+          selected: false,
+        },
+      ],
+    },
+    {
+      line: "opt@./some path with spaces/opt.png",
+      expectedResult: [
+        1,
+        {
+          query: {
+            query: "opt",
+            cardType: CardType.Card,
+          },
+          selectedImage: "./some path with spaces/opt.png",
+          selected: false,
+        },
+        null,
+      ],
+    },
+  ])("%s", ({ line, expectedResult }) => {
+    expect(processLine(line, {}, false)).toStrictEqual(expectedResult);
+  });
+});
+
+describe("toSearchable", () => {
+  test.each([
+    { input: "Lightning Bolt", expectedOutput: "lightning bolt" },
+    { input: " Lightning   BOLT ", expectedOutput: "lightning bolt" },
+    { input: "Adanto, the First Fort", expectedOutput: "adanto first fort" },
+    { input: "Black Lotus (Masterpiece)", expectedOutput: "black lotus" }, // brackets removal
+    {
+      input: "Black Lotus (Masterpiece, But With Punctuation! )",
+      expectedOutput: "black lotus",
+    },
+    { input: "Juzám Djinn", expectedOutput: "juzam djinn" }, // orama will NOT handle this
+    { input: " Expansion _ Explosion", expectedOutput: "expansion explosion" },
+    { input: "Kodama’s Reach", expectedOutput: "kodamas reach" },
+    { input: "消灭邪物", expectedOutput: "消灭邪物" },
+  ])("%s", ({ input, expectedOutput }) => {
+    expect(toSearchable(input)).toStrictEqual(expectedOutput);
+  });
 });
 
 describe("URLs are sanitised correctly", () => {
@@ -371,7 +473,7 @@ test.each([
   const csv =
     "Quantity, Front, Front ID, Back, Back ID\n2, opt, xyz, char, abcd";
   expect(parseCSVFileAsLines(csv)).toStrictEqual([
-    `2 opt${SelectedImageSeparator}xyz ${FaceSeparator} char${SelectedImageSeparator}abcd`,
+    `2 opt${SelectedImageSeparator}xyz${FaceSeparator}char${SelectedImageSeparator}abcd`,
   ]);
 });
 

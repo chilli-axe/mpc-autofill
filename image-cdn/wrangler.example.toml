@@ -1,0 +1,52 @@
+# You need to modify this file by setting the following four fields.
+# The setup process for creating your Google API fields is described in the wiki:
+# 1. account_id - this is the UUID of your Cloudflare account.
+# 2. GOOGLE_CLIENT_ID - looks like `1234567890.apps.googleusercontent.com`
+# 3. GOOGLE_CLIENT_SECRET
+# 4. GOOGLE_REFRESH_TOKEN - prefixed with 1/
+# 5. WORKER_DOMAIN - will likely end in `workers.dev` unless you've put a custom domain in front of this Worker.
+
+name = "image-cdn"
+main = "src/index.ts"
+compatibility_date = "2024-03-14"
+
+account_id = ""  # Set this with your account ID
+workers_dev = true
+
+# Bind an R2 Bucket. Use R2 to store arbitrarily large blobs of data, such as files.
+# Docs: https://developers.cloudflare.com/r2/api/workers/workers-api-usage/
+[[r2_buckets]]
+binding = "thumbnails"
+bucket_name = "thumbnails"
+
+[triggers]
+crons = ["0 0 * * *"]
+
+[[queues.producers]]
+queue = "thumbnail-refresh"
+binding = "thumbnailRefreshQueue"
+
+[[queues.consumers]]
+queue = "thumbnail-refresh"
+max_batch_size = 1
+
+[observability]
+enabled = true
+
+[vars]
+# Set these env vars
+WORKER_DOMAIN = ""
+GOOGLE_CLIENT_ID = ""
+GOOGLE_CLIENT_SECRET = ""
+GOOGLE_REFRESH_TOKEN = ""
+
+[[ratelimits]]
+name = "GOOGLE_DRIVE_RATE_LIMITER"
+# An identifier you define, that is unique to your Cloudflare account.
+# Must be an integer.
+namespace_id = "1001"
+
+# Limit: the number of tokens allowed within a given period in a single
+# Cloudflare location
+# Period: the duration of the period, in seconds. Must be either 10 or 60
+simple = { limit = 12000, period = 10 }

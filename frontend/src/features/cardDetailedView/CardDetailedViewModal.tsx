@@ -75,7 +75,7 @@ export function CardDetailedViewModal({
             >
               <MemoizedCardProportionWrapper small={false}>
                 <MemoizedCardImage
-                  maybeCardDocument={cardDocument}
+                  cardDocument={cardDocument}
                   hidden={false}
                   small={false}
                   showDetailedViewOnClick={false}
@@ -128,31 +128,33 @@ export function CardDetailedViewModal({
                   ["File Size", imageSizeToMBString(cardDocument.size, 2)],
                 ]}
                 hover={true}
-                centred={false}
+                alignment={"left"}
                 uniformWidth={false}
                 columnLabels={true}
               />
-              <div className="d-grid gap-0">
-                <Button
-                  variant="primary"
-                  onClick={async () => {
-                    queueImageDownload(cardDocument);
-                    dispatch(
-                      setNotification([
-                        Math.random().toString(),
-                        {
-                          name: "Enqueued Downloads",
-                          message: `Enqueued 1 image download!`,
-                          level: "info",
-                        },
-                      ])
-                    );
-                  }}
-                >
-                  <RightPaddedIcon bootstrapIconName="cloud-arrow-down" />{" "}
-                  Download Image
-                </Button>
-              </div>
+              {cardDocument.sourceType === "Google Drive" && (
+                <div className="d-grid gap-0">
+                  <Button
+                    variant="primary"
+                    onClick={async () => {
+                      queueImageDownload(cardDocument);
+                      dispatch(
+                        setNotification([
+                          Math.random().toString(),
+                          {
+                            name: "Enqueued Downloads",
+                            message: `Enqueued 1 image download!`,
+                            level: "info",
+                          },
+                        ])
+                      );
+                    }}
+                  >
+                    <RightPaddedIcon bootstrapIconName="cloud-arrow-down" />{" "}
+                    Download Image
+                  </Button>
+                </div>
+              )}
               <AddCardToFavorites cardDocument={cardDocument} />
               <AddCardToProjectForm cardDocument={cardDocument} />
             </div>

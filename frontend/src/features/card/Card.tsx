@@ -5,20 +5,22 @@
  * If being used in a gallery, the previous and next images can be cached for visual smoothness.
  */
 
+import styled from "@emotion/styled";
 import { OnLoadingComplete } from "next/dist/shared/lib/get-img-props";
 import Image from "next/image";
 import React, {
   memo,
   PropsWithChildren,
   ReactElement,
+  Ref,
   useEffect,
   useRef,
   useState,
 } from "react";
 import BSCard from "react-bootstrap/Card";
 import Col from "react-bootstrap/Col";
-import styled from "styled-components";
 
+import { SourceType } from "@/common/schema_types";
 import { SearchQuery, useAppDispatch, useAppSelector } from "@/common/types";
 import { CardDocument } from "@/common/types";
 import { Icon } from "@/components/icon";
@@ -27,6 +29,8 @@ import { selectCardDocumentByIdentifier } from "@/store/slices/cardDocumentsSlic
 import { selectIsFavoriteRender } from "@/store/slices/favoritesSlice";
 import { showCardDetailedViewModal } from "@/store/slices/modalsSlice";
 import { RootState } from "@/store/store";
+
+import { useLocalFilesContext } from "../localFiles/localFilesContext";
 
 const HiddenImage = styled(Image)`
   z-index: 0;
@@ -65,6 +69,15 @@ const CardIcon = styled(Icon)`
   -webkit-text-stroke: 2px black;
 `;
 
+type ImageState =
+  | "loading-from-bucket"
+  | "loading-from-fallback"
+  | "loading-from-local-file"
+  | "loaded-from-bucket"
+  | "loaded-from-fallback"
+  | "loaded-from-local-file"
+  | "errored";
+
 export function getImageKey(
   cardDocument: CardDocument,
   small: boolean
@@ -74,45 +87,70 @@ export function getImageKey(
   }-${cardDocument.sourceType?.toLowerCase().replace(" ", "_")}`;
 }
 
-interface CardImageProps {
-  maybeCardDocument: CardDocument | null;
-  hidden: boolean;
-  small: boolean;
-  showDetailedViewOnClick: boolean;
-}
+const useLocalFileImageSrc = (
+  cardDocument: CardDocument,
+  setImageState: (imageState: ImageState) => void
+): string | undefined => {
+  const { localFilesService } = useLocalFilesContext();
+  const [blobURL, setBlobURL] = useState<string | undefined>(undefined);
+  useEffect(() => {
+    (async () => {
+      const oramaCardDocument = await localFilesService.getByID(
+        cardDocument?.identifier
+      );
+      if (oramaCardDocument?.params.sourceType === SourceType.LocalFile) {
+        setImageState("loading-from-local-file");
+        const file = await oramaCardDocument.params.fileHandle.getFile();
+        const url = URL.createObjectURL(file);
+        setBlobURL(url);
+      }
+    })();
+  }, [cardDocument?.identifier, localFilesService, setImageState]);
+  return blobURL;
+};
 
-function CardImage({
-  maybeCardDocument,
-  hidden,
-  small,
-  showDetailedViewOnClick,
-}: CardImageProps) {
-  //# region queries and hooks
+const useImageSrc = (
+  cardDocument: CardDocument,
+  small: boolean
+): {
+  imageSrc: string | undefined;
+  onLoadingComplete: OnLoadingComplete;
+  onError: React.ReactEventHandler<HTMLImageElement>;
+  imageIsLoading: boolean;
+  imageRef: Ref<HTMLImageElement>;
+  imageState: string;
+} => {
+  const [imageState, setImageState] = useState<ImageState>(
+    "loading-from-bucket"
+  );
+  const imageRef = useRef<HTMLImageElement>(null);
+  const localFileImageSrc = useLocalFileImageSrc(cardDocument, setImageState);
 
-  const dispatch = useAppDispatch();
+  const imageIsLoading =
+    imageState === "loading-from-bucket" ||
+    imageState === "loading-from-fallback" ||
+    imageState === "loading-from-local-file";
 
-  //# endregion
-
-  //# region state
-
-  const [imageState, setImageState] = useState<
-    | "loading-from-bucket"
-    | "loading-from-fallback"
-    | "loaded-from-bucket"
-    | "loaded-from-fallback"
-    | "errored"
-  >("loading-from-bucket");
-  const image = useRef<HTMLImageElement>(null);
-
-  //# endregion
-
-  //# region callbacks
+  /**
+   * Ensure that the small thumbnail fades in each time the selected image changes.
+   * Next.js seems to not fire `onLoadingComplete` when opening a page with a cached image.
+   * This implementation was retrieved from https://stackoverflow.com/a/59809184
+   */
+  useEffect(() => {
+    setImageState(
+      imageRef.current == null || !imageRef.current.complete
+        ? "loading-from-bucket"
+        : "loaded-from-bucket"
+    );
+  }, [cardDocument.identifier]);
 
   const onLoadingComplete: OnLoadingComplete = (img) => {
     if (imageState === "loading-from-bucket") {
       setImageState("loaded-from-bucket");
     } else if (imageState === "loading-from-fallback") {
       setImageState("loaded-from-fallback");
+    } else if (imageState === "loading-from-local-file") {
+      setImageState("loaded-from-local-file");
     }
   };
   const onError: React.ReactEventHandler<HTMLImageElement> = (img) => {
@@ -124,74 +162,97 @@ function CardImage({
         : "errored"
     );
   };
-  const handleShowDetailedView = () => {
-    if (showDetailedViewOnClick && maybeCardDocument != null) {
-      dispatch(showCardDetailedViewModal({ card: maybeCardDocument }));
-    }
-  };
 
-  //# endregion
-
-  //# region effects
-
-  /**
-   * Ensure that the small thumbnail fades in each time the selected image changes.
-   * Next.js seems to not fire `onLoadingComplete` when opening a page with a cached image.
-   * This implementation was retrieved from https://stackoverflow.com/a/59809184
-   */
-  useEffect(() => {
-    setImageState(
-      image.current == null || !image.current.complete
-        ? "loading-from-bucket"
-        : "loaded-from-bucket"
-    );
-  }, [maybeCardDocument?.identifier]);
-
-  //# endregion
-
-  //# region computed constants
+  if (localFileImageSrc !== undefined) {
+    return {
+      imageSrc: localFileImageSrc,
+      onLoadingComplete,
+      onError,
+      imageIsLoading,
+      imageRef,
+      imageState,
+    };
+  }
 
   // attempt to load directly from bucket first
   const imageBucketURL = process.env.NEXT_PUBLIC_IMAGE_BUCKET_URL;
+  // TODO: support other source types through CDN here
   const imageBucketURLValid =
-    !!imageBucketURL && !!maybeCardDocument?.sourceType;
+    !!imageBucketURL && !!(cardDocument.sourceType === "Google Drive");
 
   const loadFromBucket =
     imageBucketURLValid &&
     (imageState === "loading-from-bucket" ||
       imageState === "loaded-from-bucket");
-  const imageKey = maybeCardDocument && getImageKey(maybeCardDocument, small);
+  const imageKey = getImageKey(cardDocument, small);
   const thumbnailBucketURL = `${imageBucketURL}/${imageKey}`;
 
   // if image is unavailable in bucket, fall back on loading from worker if possible
   const imageWorkerURL = process.env.NEXT_PUBLIC_IMAGE_WORKER_URL;
   const imageWorkerURLValid =
-    !!imageWorkerURL && !!maybeCardDocument?.sourceType;
+    !!imageWorkerURL && !!(cardDocument?.sourceType === "Google Drive");
 
   const smallThumbnailURL = imageWorkerURLValid
-    ? `${imageWorkerURL}/images/google_drive/small/${maybeCardDocument?.identifier}.jpg`
-    : maybeCardDocument?.smallThumbnailUrl;
+    ? `${imageWorkerURL}/images/google_drive/small/${cardDocument?.identifier}.jpg`
+    : cardDocument?.smallThumbnailUrl;
   const mediumThumbnailURL = imageWorkerURLValid
-    ? `${imageWorkerURL}/images/google_drive/large/${maybeCardDocument?.identifier}.jpg`
-    : maybeCardDocument?.mediumThumbnailUrl;
+    ? `${imageWorkerURL}/images/google_drive/large/${cardDocument?.identifier}.jpg`
+    : cardDocument?.mediumThumbnailUrl;
+
   const thumbnailFallbackURL = small ? smallThumbnailURL : mediumThumbnailURL;
   const imageSrc = loadFromBucket ? thumbnailBucketURL : thumbnailFallbackURL;
+
+  return {
+    imageSrc,
+    onLoadingComplete,
+    onError,
+    imageIsLoading,
+    imageRef,
+    imageState,
+  };
+};
+
+interface CardImageProps {
+  cardDocument: CardDocument;
+  hidden: boolean;
+  small: boolean;
+  showDetailedViewOnClick: boolean;
+}
+
+function CardImage({
+  cardDocument, // cardDocument reference *must* be stable at call site for memoization to work!
+  hidden,
+  small,
+  showDetailedViewOnClick,
+}: CardImageProps) {
+  const dispatch = useAppDispatch();
+  const handleShowDetailedView = () => {
+    if (showDetailedViewOnClick) {
+      dispatch(showCardDetailedViewModal({ card: cardDocument }));
+    }
+  };
+
+  const {
+    imageSrc,
+    onLoadingComplete,
+    onError,
+    imageIsLoading,
+    imageRef,
+    imageState,
+  } = useImageSrc(cardDocument, small);
 
   // if loading from fallback fails, display a 404 error image
   const errorImageSrc = small ? "/error_404.png" : "/error_404_med.png";
 
   // a few other computed constants
-  const imageAlt = maybeCardDocument?.name ?? "Unnamed Card";
-  const imageIsLoading =
-    imageState === "loading-from-bucket" ||
-    imageState === "loading-from-fallback";
+  const imageAlt = cardDocument.name ?? "Unnamed Card";
   const showSpinner = imageIsLoading && !hidden;
 
   const isFavorite = useAppSelector((state: RootState) =>
     selectIsFavoriteRender(
       state,
-      maybeCardDocument?.searchq ?? "",
-      maybeCardDocument?.identifier ?? ""
+      cardDocument?.searchq ?? "",
+      cardDocument?.identifier ?? ""
     )
   );
 
@@ -203,7 +264,7 @@ function CardImage({
       {imageSrc != null &&
         (hidden ? (
           <HiddenImage
-            ref={image}
+            ref={imageRef}
             className="card-img"
             loading="lazy"
             src={imageSrc}
@@ -216,7 +277,7 @@ function CardImage({
           <>
             {imageState === "errored" ? (
               <VisibleImage
-                ref={image}
+                ref={imageRef}
                 className="card-img card-img-fade-in"
                 loading="lazy"
                 src={errorImageSrc}
@@ -227,7 +288,7 @@ function CardImage({
               <>
                 {isFavorite && <CardIcon bootstrapIconName="heart-fill" />}
                 <VisibleImage
-                  ref={image}
+                  ref={imageRef}
                   className="card-img card-img-fade-in"
                   loading="lazy"
                   imageIsLoading={imageIsLoading}
@@ -306,6 +367,7 @@ interface CardProps {
  * This component enables displaying cards with auxiliary information in a flexible, consistent way.
  */
 export function Card({
+  // CardDocument references must be stable for memoization to work!
   maybeCardDocument,
   maybePreviousCardDocument,
   maybeNextCardDocument,
@@ -323,32 +385,34 @@ export function Card({
   const cardImageElements =
     maybeCardDocument != null ? (
       <>
-        <MemoizedCardImage
-          maybeCardDocument={maybeCardDocument}
-          hidden={false}
-          small={true}
-          showDetailedViewOnClick={cardOnClick == null}
-        />
-        {maybePreviousCardDocument != null &&
-          maybePreviousCardDocument.identifier !==
-            maybeCardDocument?.identifier && (
-            <MemoizedCardImage
-              maybeCardDocument={maybePreviousCardDocument}
-              hidden={true}
-              small={true}
-              showDetailedViewOnClick={false}
-            />
-          )}
-        {maybeNextCardDocument != null &&
-          maybeNextCardDocument.identifier !==
-            maybeCardDocument?.identifier && (
-            <MemoizedCardImage
-              maybeCardDocument={maybeNextCardDocument}
-              hidden={true}
-              small={true}
-              showDetailedViewOnClick={false}
-            />
-          )}
+        {[
+          maybeCardDocument,
+          ...(maybePreviousCardDocument &&
+          maybePreviousCardDocument?.identifier !==
+            maybeCardDocument?.identifier
+            ? [maybePreviousCardDocument]
+            : []),
+          ...(maybeNextCardDocument &&
+          maybeNextCardDocument?.identifier !== maybeCardDocument?.identifier
+            ? [maybeNextCardDocument]
+            : []),
+        ].map(
+          (cardDocument) =>
+            cardDocument !== undefined && (
+              <MemoizedCardImage
+                key={cardDocument.identifier}
+                cardDocument={cardDocument}
+                hidden={
+                  cardDocument?.identifier !== maybeCardDocument.identifier
+                }
+                small={true}
+                showDetailedViewOnClick={
+                  cardDocument?.identifier === maybeCardDocument.identifier &&
+                  cardOnClick == null
+                }
+              />
+            )
+        )}
       </>
     ) : noResultsFound ? (
       <Image
@@ -362,6 +426,8 @@ export function Card({
     ) : (
       <Spinner />
     );
+
+  // @ts-ignore // TODO
   const BSCardSubtitle: typeof BSCard.Subtitle =
     nameOnClick != null ? OutlinedBSCardSubtitle : BSCard.Subtitle;
 
@@ -472,7 +538,7 @@ export function EditorCard({
   //# endregion
 
   return (
-    <Card
+    <MemoizedCard
       maybeCardDocument={maybeCardDocument}
       maybePreviousCardDocument={maybePreviousCardDocument}
       maybeNextCardDocument={maybeNextCardDocument}

@@ -65,7 +65,7 @@ class AutofillDriver:
 
     def initialise_driver(self) -> None:
         try:
-            driver = self.browser.value(headless=self.headless, binary_location=self.binary_location)
+            driver = self.browser.value(headless=self.headless, binary_location=self.binary_location)  # type: ignore  # TODO
             driver.set_window_size(1200, 900)
             driver.implicitly_wait(5)
             driver.get(self.starting_url)
@@ -182,25 +182,21 @@ class AutofillDriver:
         logger.debug("Waiting until MPC loading circle disappears...")
         try:
             wait_elem = self.driver.find_element(by=By.ID, value="sysdiv_wait")
-            # Wait for the element to become invisible
-            while True:
-                try:
-                    WebDriverWait(self.driver, wait_timeout_seconds, poll_frequency=0.1).until(
-                        invisibility_of_element(wait_elem)
-                    )
-                except sl_exc.TimeoutException:
-                    logger.info(
-                        f"Waited for longer than {wait_timeout_seconds}s for the {self.target_site.name} page "
-                        f"to respond - attempting to resolve with a page refresh..."
-                    )
-                    self.driver.refresh()
-                    return True
-                logger.debug("The loading circle has disappeared!")
-                break
+            WebDriverWait(self.driver, wait_timeout_seconds, poll_frequency=0.1).until(
+                invisibility_of_element(wait_elem)
+            )
+            logger.debug("The loading circle has disappeared!")
+        except sl_exc.TimeoutException:
+            logger.info(
+                f"Waited for longer than {wait_timeout_seconds}s for the {self.target_site.name} page "
+                f"to respond - attempting to resolve with a page refresh..."
+            )
+            self.driver.refresh()
+            return True
         except sl_exc.NoSuchElementException:
             # The system called this function when the loading circle wasn't present
             # No worries, just exit here
-            return False
+            pass
         except (sl_exc.NoSuchFrameException, sl_exc.WebDriverException) as e:
             logger.debug("Attempted to locate the loading circle but encountered an exception:")
             logger.debug(e)

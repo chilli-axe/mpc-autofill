@@ -10,7 +10,7 @@
     },
     {
       "type": "boolean",
-      "description": "Whether the source is enabled for searching"
+      "description": "Whether the source is active for searching"
     }
   ]
 }

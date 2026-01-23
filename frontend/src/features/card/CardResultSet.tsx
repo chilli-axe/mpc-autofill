@@ -163,7 +163,7 @@ function CardsFacetedBySource({
                   className="orpheus prevent-select"
                   style={{ fontStyle: "italic" }}
                 >
-                  {sourceNamesByKey[sourceKey]}
+                  {sourceNamesByKey[sourceKey] ?? sourceKey}
                 </h3>
               }
               subtitle={`${cardIdentifiersAndOptionNumbers.length} version${

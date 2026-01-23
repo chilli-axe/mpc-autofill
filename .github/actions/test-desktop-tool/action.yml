@@ -7,18 +7,18 @@ runs:
     - uses: browser-actions/setup-chrome@latest
       with:
         chrome-version: stable
-    - uses: browser-actions/setup-edge@latest
-      with:
-        edge-version: beta
+    # - uses: browser-actions/setup-edge@latest
+    #   with:
+    #     edge-version: beta
     - name: Fix macOS Chromedriver
       if: runner.os == 'macOS'
       run: |
         rm /usr/local/bin/chromedriver
       shell: bash
-    - name: Set up Python 3.9
+    - name: Set up Python 3.13
       uses: actions/setup-python@v5
       with:
-        python-version: 3.9
+        python-version: 3.13
     - name: Install Python dependencies
       working-directory: desktop-tool
       run: |

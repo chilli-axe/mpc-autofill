@@ -4,10 +4,10 @@
  * through the desktop tool CLI.
  */
 
-import { saveAs } from "file-saver";
 import formatXML from "xml-formatter";
 
 import { Back, Front, ReversedCardTypePrefixes } from "@/common/constants";
+import { SourceType } from "@/common/schema_types";
 import { useAppStore } from "@/common/types";
 import {
   CardDocuments,
@@ -15,7 +15,9 @@ import {
   SlotProjectMembers,
 } from "@/common/types";
 import { bracket } from "@/common/utils";
-import { useDoFileDownload } from "@/features/download/download";
+import { downloadFile, useDoFileDownload } from "@/features/download/download";
+import { useLocalFilesContext } from "@/features/localFiles/localFilesContext";
+import { LocalFilesService } from "@/features/localFiles/localFilesService";
 import { selectFinishSettings } from "@/store/slices/finishSettingsSlice";
 import {
   selectProjectMembers,
@@ -76,6 +78,14 @@ function createCardElement(
   const identifierElement = doc.createElement("id");
   identifierElement.appendChild(doc.createTextNode(identifier));
   cardElement.appendChild(identifierElement);
+
+  const sourceTypeElement = doc.createElement("sourceType");
+  sourceTypeElement.appendChild(
+    doc.createTextNode(
+      cardDocuments[identifier].sourceType ?? SourceType.GoogleDrive
+    )
+  );
+  cardElement.appendChild(sourceTypeElement);
 
   const slotsElement = doc.createElement("slots");
   slotsElement.appendChild(
@@ -140,16 +150,6 @@ export function generateXML(
   quantityElement.appendChild(doc.createTextNode(projectSize.toString()));
   detailsElement.appendChild(quantityElement);
 
-  // TODO: the `bracket` field should be safe to remove by 2024-07-01
-  //       this commit updates the desktop tool to no longer read it, but i want to ensure
-  //       there's minimal risk of users trying to use XMLs without the field with versions
-  //       of the desktop tool that expect it.
-  const bracketElement = doc.createElement("bracket");
-  bracketElement.appendChild(
-    doc.createTextNode(bracket(projectSize).toString())
-  );
-  detailsElement.appendChild(bracketElement);
-
   const stockElement = doc.createElement("stock");
   stockElement.appendChild(doc.createTextNode(finishSettings.cardstock));
   detailsElement.appendChild(stockElement);
@@ -200,11 +200,16 @@ export function generateXML(
   return formatXML(xml, { collapseContent: true });
 }
 
-async function downloadXML(state: RootState) {
+async function downloadXML(
+  state: RootState,
+  localFilesService: LocalFilesService
+) {
   const generatedXML = selectGeneratedXML(state);
-  saveAs(
+  await downloadFile(
     new Blob([generatedXML], { type: "text/xml;charset=utf-8" }),
-    "cards.xml"
+    undefined,
+    "cards.xml",
+    localFilesService
   );
   return true;
 }
@@ -212,12 +217,13 @@ async function downloadXML(state: RootState) {
 export function useDownloadXML() {
   const store = useAppStore();
   const doFileDownload = useDoFileDownload();
+  const { localFilesService } = useLocalFilesContext();
   return () =>
     Promise.resolve(
       doFileDownload(
         "xml",
         "cards.xml",
-        (): Promise<boolean> => downloadXML(store.getState())
+        (): Promise<boolean> => downloadXML(store.getState(), localFilesService)
       )
     );
 }

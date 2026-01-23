@@ -31,6 +31,18 @@ function buildRoute(route: string) {
   return `${localBackend.url}/${(re.exec(route) ?? ["", ""])[1]}`;
 }
 
+/**
+ * Re-route ping.js favicon request to frontend for E2E tests
+ */
+export const favicon = http.get(buildRoute("favicon.ico"), async () => {
+  const image = await fetch("http://localhost:3000/favicon.ico").then((res) =>
+    res.arrayBuffer()
+  );
+  return HttpResponse.arrayBuffer(image, {
+    headers: { "content-type": "image/png" },
+  });
+});
+
 //# region source
 
 export const sourceDocumentsNoResults = http.get(buildRoute("2/sources/"), () =>
@@ -481,12 +493,19 @@ export const newCardsFirstPageNoResults = http.get(
 );
 
 export const newCardsPageForSource1 = http.get(
-  buildRoute(`2/newCardsPage?source=${sourceDocument1.key}&page=2`),
-  () =>
-    HttpResponse.json(
-      { cards: [cardDocument3, cardDocument4] },
-      { status: 200 }
-    )
+  buildRoute(`2/newCardsPage`),
+  ({ request }) => {
+    const url = new URL(request.url);
+    const source = url.searchParams.get("source");
+    const page = url.searchParams.get("page");
+    if (source === sourceDocument1.key && page === "2") {
+      return HttpResponse.json(
+        { cards: [cardDocument3, cardDocument4] },
+        { status: 200 }
+      );
+    }
+    return HttpResponse.json(null, { status: 404 });
+  }
 );
 
 export const newCardsFirstPageServerError = http.get(
@@ -544,6 +563,7 @@ export const searchEngineHealthy = http.get(
 //# region presets
 
 export const defaultHandlers = [
+  favicon,
   sourceDocumentsNoResults,
   cardDocumentsNoResults,
   cardbacksNoResults,

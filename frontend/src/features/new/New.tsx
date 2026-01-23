@@ -1,7 +1,7 @@
+import styled from "@emotion/styled";
 import React, { useState } from "react";
 import Button from "react-bootstrap/Button";
 import Row from "react-bootstrap/Row";
-import styled from "styled-components";
 
 import { NewCardsFirstPage } from "@/common/types";
 import { Spinner } from "@/components/Spinner";

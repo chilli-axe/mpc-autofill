@@ -1,7 +1,3 @@
-/**
- * Retrieved from https://redux-toolkit.js.org/api/createListenerMiddleware
- */
-
 import {
   addListener,
   createListenerMiddleware,
@@ -15,13 +11,19 @@ import {
   setLocalStorageFavorites,
 } from "@/common/cookies";
 import { Faces } from "@/common/types";
+import { Tag } from "@/common/types";
+import { localFilesService } from "@/features/localFiles/localFilesService";
 import { api } from "@/store/api";
 import {
   clearURL,
-  selectBackendConfigured,
+  selectRemoteBackendConfigured,
   setURL,
 } from "@/store/slices/backendSlice";
-import { fetchCardbacks, selectCardbacks } from "@/store/slices/cardbackSlice";
+import {
+  fetchCardbacks,
+  fetchCardbacksAndReportError,
+  selectCardbacks,
+} from "@/store/slices/cardbackSlice";
 import { fetchCardDocumentsAndReportError } from "@/store/slices/cardDocumentsSlice";
 import {
   clearFavoriteRenders,
@@ -44,7 +46,6 @@ import {
   selectSearchResultsForQueryOrDefault,
 } from "@/store/slices/searchResultsSlice";
 import {
-  selectSearchSettingsSourcesValid,
   setFilterSettings,
   setSearchTypeSettings,
   setSourceSettings,
@@ -56,6 +57,17 @@ import {
 } from "@/store/slices/sourceDocumentsSlice";
 
 import type { AppDispatch, RootState } from "./store";
+
+export const recalculateSearchResults = async (
+  state: RootState,
+  dispatch: AppDispatch,
+  refreshCardbacks: boolean
+) => {
+  dispatch(clearSearchResults());
+  await fetchCardDocumentsAndReportError(dispatch, {
+    refreshCardbacks,
+  });
+};
 
 //# region boilerplate
 
@@ -79,9 +91,11 @@ startAppListening({
    */
   effect: async (action, { getState, dispatch }) => {
     const state = getState();
-    const isBackendConfigured = selectBackendConfigured(state);
-    if (isBackendConfigured) {
-      await fetchSourceDocumentsAndReportError(dispatch);
+    const isRemoteBackendConfigured = selectRemoteBackendConfigured(state);
+    if (isRemoteBackendConfigured) {
+      await fetchSourceDocumentsAndReportError(dispatch).then(() =>
+        fetchCardbacksAndReportError(dispatch)
+      );
       // Load favorites from localStorage on app initialization
       const favorites = getLocalStorageFavorites();
       if (Object.keys(favorites).length > 0) {
@@ -130,14 +144,13 @@ startAppListening({
   /**
    * Recalculate search results whenever search settings change.
    */
-  effect: async (action, { getState, dispatch }) => {
+  effect: async (action, { getState, dispatch, getOriginalState }) => {
     const state = getState();
-    const isBackendConfigured = selectBackendConfigured(state);
-    const searchSettingsSourcesValid = selectSearchSettingsSourcesValid(state);
-    if (isBackendConfigured && searchSettingsSourcesValid) {
-      dispatch(clearSearchResults());
-      await fetchCardDocumentsAndReportError(dispatch);
-    }
+    const originalState = getOriginalState();
+    const refreshCardbacks =
+      state.searchSettings.searchTypeSettings.filterCardbacks ||
+      originalState.searchSettings.searchTypeSettings.filterCardbacks;
+    await recalculateSearchResults(state, dispatch, refreshCardbacks);
   },
 });
 
@@ -146,7 +159,8 @@ startAppListening({
   /**
    * Fetch card documents whenever new members are added to the project or search results are cleared.
    */
-  effect: async (action, { dispatch }) => {
+  effect: async (action, { dispatch, getState }) => {
+    const state = getState();
     await fetchCardDocumentsAndReportError(dispatch);
   },
 });
@@ -233,7 +247,7 @@ startAppListening({
 });
 
 startAppListening({
-  actionCreator: fetchSearchResults.fulfilled,
+  matcher: isAnyOf(fetchSearchResults.fulfilled, fetchCardbacks.fulfilled),
   /**
    * Whenever search results change, this listener will inspect each card slot
    * and ensure that their selected images are valid.

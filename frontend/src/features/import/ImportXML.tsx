@@ -18,8 +18,6 @@ import Toggle from "react-bootstrap-toggle";
 import {
   Cardback,
   Cardstocks,
-  MakePlayingCards,
-  MakePlayingCardsURL,
   ProjectMaxSize,
   ProjectName,
   ToggleButtonHeight,
@@ -29,6 +27,7 @@ import { processPrefix } from "@/common/processing";
 import { useAppDispatch, useAppSelector } from "@/common/types";
 import { Cardstock, SlotProjectMembers } from "@/common/types";
 import { RightPaddedIcon } from "@/components/icon";
+import { MakePlayingCardsLink } from "@/components/MakePlayingCardsLink";
 import { setCardstock, setFoil } from "@/store/slices/finishSettingsSlice";
 import {
   addMembers,
@@ -202,25 +201,23 @@ export function ImportXML() {
           <p>
             The {ProjectName} website can generate an XML file representing your
             project, and the {ProjectName} desktop tool which auto-fills your
-            order into{" "}
-            <a href={MakePlayingCardsURL} target="_blank">
-              {MakePlayingCards}
-            </a>{" "}
-            expects a file in this format.
+            order into <MakePlayingCardsLink /> expects a file in this format.
           </p>
-          <Toggle
-            onClick={() => setUseXMLCardback(!useXMLCardback)}
-            on="Use XML Cardback"
-            onClassName="flex-centre"
-            off="Retain Selected Cardback"
-            offClassName="flex-centre"
-            onstyle="success"
-            offstyle="info"
-            width={100 + "%"}
-            size="md"
-            height={ToggleButtonHeight + "px"}
-            active={useXMLCardback}
-          />
+          <div className="px-0">
+            <Toggle
+              onClick={() => setUseXMLCardback(!useXMLCardback)}
+              on="Use XML Cardback"
+              onClassName="flex-centre"
+              off="Retain Selected Cardback"
+              offClassName="flex-centre"
+              onstyle="success"
+              offstyle="info"
+              width={100 + "%"}
+              size="md"
+              height={ToggleButtonHeight + "px"}
+              active={useXMLCardback}
+            />
+          </div>
           <div className="pt-3">
             <Toggle
               onClick={() => setUseXMLFinishSettings(!useXMLFinishSettings)}

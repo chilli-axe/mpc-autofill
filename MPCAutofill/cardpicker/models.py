@@ -229,7 +229,6 @@ class Card(models.Model):
             dateCreated=dateformat.format(self.date_created, DATE_FORMAT),
             dateModified=dateformat.format(self.date_modified, DATE_FORMAT),
             size=self.size,
-            downloadLink=self.get_download_link() or "",
             smallThumbnailUrl=self.get_small_thumbnail_url() or "",
             mediumThumbnailUrl=self.get_medium_thumbnail_url() or "",
             tags=sorted(self.tags),
@@ -253,9 +252,6 @@ class Card(models.Model):
 
     def get_source_type_choices(self) -> SourceTypeChoices:
         return SourceTypeChoices.from_source_type_schema(self.get_source_type())
-
-    def get_download_link(self) -> Optional[str]:
-        return SourceTypeChoices.get_source_type(self.get_source_type_choices()).get_download_link(self.identifier)
 
     def get_small_thumbnail_url(self) -> Optional[str]:
         return SourceTypeChoices.get_source_type(self.get_source_type_choices()).get_small_thumbnail_url(

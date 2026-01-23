@@ -4,23 +4,16 @@
  * Card versions are faceted by source, and all cards for a source can be temporarily hidden.
  */
 
-import React, {
-  FormEvent,
-  useCallback,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import React, { FormEvent, useCallback, useRef, useState } from "react";
 import Button from "react-bootstrap/Button";
 import Col from "react-bootstrap/Col";
 import Form from "react-bootstrap/Form";
 import Modal from "react-bootstrap/Modal";
 import Row from "react-bootstrap/Row";
 
-import { CardDocument, useAppDispatch, useAppSelector } from "@/common/types";
+import { useAppDispatch, useAppSelector } from "@/common/types";
 import { AutofillCollapse } from "@/components/AutofillCollapse";
 import { CardResultSet } from "@/features/card/CardResultSet";
-import { selectCardDocumentsByIdentifiers } from "@/store/slices/cardDocumentsSlice";
 import {
   selectJumpToVersionVisible,
   toggleJumpToVersionVisible,

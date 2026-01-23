@@ -1,7 +1,7 @@
+import styled from "@emotion/styled";
 import React, { useState } from "react";
 import OverlayTrigger from "react-bootstrap/OverlayTrigger";
 import Tooltip from "react-bootstrap/Tooltip";
-import styled from "styled-components";
 
 const ClickToCopyCode = styled.code`
   user-select: none;

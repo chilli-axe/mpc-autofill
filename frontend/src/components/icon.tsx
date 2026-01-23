@@ -1,6 +1,6 @@
+import styled from "@emotion/styled";
 import classnames from "classnames";
 import React from "react";
-import styled from "styled-components";
 
 export const RightPaddedI = styled.i`
   padding-right: 0.5em;

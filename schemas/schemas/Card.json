@@ -50,9 +50,6 @@
       "description": "Modified date - formatted by backend",
       "type": "string"
     },
-    "downloadLink": {
-      "type": "string"
-    },
     "size": {
       "type": "integer"
     },
@@ -86,7 +83,6 @@
     "extension",
     "dateCreated",
     "dateModified",
-    "downloadLink",
     "size",
     "smallThumbnailUrl",
     "mediumThumbnailUrl",

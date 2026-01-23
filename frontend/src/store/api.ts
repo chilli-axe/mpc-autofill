@@ -47,7 +47,7 @@ import {
   SearchSettings,
   SourceDocuments,
 } from "@/common/types";
-import { useBackendConfigured } from "@/store/slices/backendSlice";
+import { useRemoteBackendConfigured } from "@/store/slices/backendSlice";
 import { RootState } from "@/store/store";
 
 // dynamic base URL implementation retrieved from https://stackoverflow.com/a/69570628/13021511
@@ -210,81 +210,81 @@ const {
 } = api;
 
 export function useGetImportSitesQuery() {
-  const backendConfigured = useBackendConfigured();
+  const remoteBackendConfigured = useRemoteBackendConfigured();
   return useRawGetImportSitesQuery(undefined, {
-    skip: !backendConfigured,
+    skip: !remoteBackendConfigured,
   });
 }
 
 export function useGetDFCPairsQuery() {
-  const backendConfigured = useBackendConfigured();
+  const remoteBackendConfigured = useRemoteBackendConfigured();
   return useRawGetDFCPairsQuery(undefined, {
-    skip: !backendConfigured,
+    skip: !remoteBackendConfigured,
   });
 }
 
 export function useGetLanguagesQuery() {
-  const backendConfigured = useBackendConfigured();
+  const remoteBackendConfigured = useRemoteBackendConfigured();
   return useRawGetLanguagesQuery(undefined, {
-    skip: !backendConfigured,
+    skip: !remoteBackendConfigured,
   });
 }
 
 export function useGetTagsQuery() {
-  const backendConfigured = useBackendConfigured();
+  const remoteBackendConfigured = useRemoteBackendConfigured();
   return useRawGetTagsQuery(undefined, {
-    skip: !backendConfigured,
+    skip: !remoteBackendConfigured,
   });
 }
 
 export function useGetSampleCardsQuery() {
-  const backendConfigured = useBackendConfigured();
+  const remoteBackendConfigured = useRemoteBackendConfigured();
   return useRawGetSampleCardsQuery(undefined, {
-    skip: !backendConfigured,
+    skip: !remoteBackendConfigured,
   });
 }
 
 export function useGetContributionsQuery() {
-  const backendConfigured = useBackendConfigured();
+  const remoteBackendConfigured = useRemoteBackendConfigured();
   return useRawGetContributionsQuery(undefined, {
-    skip: !backendConfigured,
+    skip: !remoteBackendConfigured,
   });
 }
 
 export function useGetBackendInfoQuery() {
-  const backendConfigured = useBackendConfigured();
+  const remoteBackendConfigured = useRemoteBackendConfigured();
   return useRawGetBackendInfoQuery(undefined, {
-    skip: !backendConfigured,
+    skip: !remoteBackendConfigured,
   });
 }
 
 export function useGetPatreonQuery() {
-  const backendConfigured = useBackendConfigured();
+  const remoteBackendConfigured = useRemoteBackendConfigured();
   return useRawGetPatreonQuery(undefined, {
-    skip: !backendConfigured,
+    skip: !remoteBackendConfigured,
   });
 }
 
 export function useGetNewCardsFirstPageQuery() {
-  const backendConfigured = useBackendConfigured();
+  const remoteBackendConfigured = useRemoteBackendConfigured();
   return useRawGetNewCardsFirstPageQuery(undefined, {
-    skip: !backendConfigured,
+    skip: !remoteBackendConfigured,
   });
 }
 
 export function useGetNewCardsPageQuery([sourceKey, page]: [string, number]) {
-  const backendConfigured = useBackendConfigured();
+  const remoteBackendConfigured = useRemoteBackendConfigured();
   return useRawGetNewCardsPageQuery([sourceKey, page], {
-    skip: !backendConfigured || page <= 1,
+    skip: !remoteBackendConfigured || page <= 1,
   });
 }
 
 export function usePostExploreSearchQuery(
   exploreSearchRequest: ExploreSearchRequest
 ) {
-  const backendConfigured = useBackendConfigured();
+  const remoteBackendConfigured = useRemoteBackendConfigured();
   return useRawPostExploreSearchQuery(exploreSearchRequest, {
-    skip: !backendConfigured,
+    skip: !remoteBackendConfigured,
   });
 }
 

@@ -2,10 +2,10 @@
  * This component displays all `CardSlot`s in the project.
  */
 
+import styled from "@emotion/styled";
 import React from "react";
 import Modal from "react-bootstrap/Modal";
 import Row from "react-bootstrap/Row";
-import styled from "styled-components";
 
 import { Back, Front } from "@/common/constants";
 import { useAppSelector } from "@/common/types";

@@ -1,0 +1,66 @@
+
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Photopea-api-demo-1</title>
+	</head>
+	<body>
+        <!-- Render Photopea as iframe -->
+        <!-- TODO: add style="display: none" -->
+		<iframe id="photopea" src="https://www.photopea.com?p=%7B%22files%22:%5B%22https://i.imgur.com/R6xOBld.jpg%22%5D,%22environment%22:%7B%7D%7D" width="400px" height="400px" ></iframe>
+
+		<script>
+            // When the Photopea script has loaded, send a script to Photopea to do some work
+            // TODO: injecting our full script into this environment seems tricky?
+            let wnd = document.getElementById("photopea").contentWindow;
+            let state = "loading";
+            let messageIndex = 0;
+
+            const getMessages = async () => {
+                return [
+                    // TODO: stuff we need to do here:
+                    // 1. open PSD file
+                    // 2. send fonts - e.g. resources
+                    // 3. send art
+                    // 4. send & run script
+                    "app.activeDocument.resizeCanvas(100,100,AnchorPosition.MIDDLECENTER);",
+                    "app.activeDocument.resizeCanvas(200,200,AnchorPosition.MIDDLECENTER);",
+                    "app.activeDocument.resizeCanvas(300,300,AnchorPosition.MIDDLECENTER);",
+                    "app.activeDocument.resizeCanvas(400,400,AnchorPosition.MIDDLECENTER);",
+                    "app.activeDocument.resizeCanvas(500,500,AnchorPosition.MIDDLECENTER);",
+                    "app.activeDocument.resizeCanvas(600,600,AnchorPosition.MIDDLECENTER);",
+                ];
+            }
+
+            const messages = await getMessages();
+
+
+            const postMessage = (e) => {
+                wnd.postMessage(messages[messageIndex], "https://www.photopea.com");
+                messageIndex++;
+            }
+            const onPhotopeaFinishedProcessing = (e) => {
+                console.log("done?");
+            }
+
+            const onMessage = (e) => {
+                if (e.data == "done") {
+                    if (state === "loading") {
+                        state = "ready";
+                    } else if (state === "ready") {
+                        if (messageIndex < messages.length) {
+                            postMessage(e);
+                        } else {
+                            onPhotopeaFinishedProcessing(e);
+                        }
+                    }
+				}
+            }
+
+			window.addEventListener("message", onMessage);
+		</script>
+	</body>
+</html>

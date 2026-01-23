@@ -1,8 +1,11 @@
+import { css } from "@emotion/react";
+import styled from "@emotion/styled";
 import React from "react";
 import Table from "react-bootstrap/Table";
-import styled, { css } from "styled-components";
 
 // TODO: there's a lot of repetition in these styles. needs to be cleaned up later.
+
+type Alignment = "left" | "center" | "right";
 
 const TableWrapper = styled.div`
   max-width: 100%;
@@ -25,19 +28,19 @@ const BorderedTable = styled(Table)<{
 
 const ColumnHeader = styled.th<{
   $cols?: number | undefined;
-  $centred?: boolean;
+  $alignment?: Alignment;
 }>`
   width: ${(props) => (props.$cols != null ? 100 / (props.$cols ?? 1) : 0)}%;
-  text-align: ${(props) => (props.$centred ? "center" : "left")};
+  text-align: ${(props) => props.$alignment};
 `;
 
 const ColumnData = styled.td<{
   $cols?: number | undefined;
-  $centred?: boolean;
+  $alignment?: Alignment;
   $bordered?: boolean;
 }>`
   width: ${(props) => (props.$cols != null ? 100 / (props.$cols ?? 1) : 0)}%;
-  text-align: ${(props) => (props.$centred ? "center" : "left")};
+  text-align: ${(props) => props.$alignment};
   ${(props) =>
     props.$bordered &&
     css`
@@ -51,18 +54,20 @@ export function AutofillTable({
   headers,
   data,
   bordered = false,
-  centred = true,
+  alignment = "center",
   uniformWidth = true,
   hover = false,
   columnLabels = false,
+  variant = "secondary",
 }: {
   headers: Array<string>;
   data: Array<Array<string | number | React.ReactElement | null | undefined>>;
   bordered?: boolean;
-  centred?: boolean;
+  alignment?: Alignment | Array<Alignment>;
   uniformWidth?: boolean;
   hover?: boolean;
   columnLabels?: boolean;
+  variant?: string;
 }) {
   return (
     <TableWrapper>
@@ -70,6 +75,7 @@ export function AutofillTable({
         $uniformWidth={uniformWidth}
         $bordered={bordered}
         hover={hover}
+        variant={variant}
       >
         {headers.length > 0 && (
           <thead>
@@ -79,7 +85,11 @@ export function AutofillTable({
                   key={`autofill-table-header-${headerIndex}`}
                   scope="col"
                   $cols={uniformWidth ? headers.length : undefined}
-                  $centred={centred}
+                  $alignment={
+                    Array.isArray(alignment)
+                      ? alignment[headerIndex]
+                      : alignment
+                  }
                 >
                   {header}
                 </ColumnHeader>
@@ -98,7 +108,11 @@ export function AutofillTable({
                     scope={isLabel ? "row" : undefined}
                     key={`autofill-table-cell-${rowIndex}/${columnIndex}`}
                     $cols={uniformWidth ? row.length : undefined}
-                    $centred={centred}
+                    $alignment={
+                      Array.isArray(alignment)
+                        ? alignment[columnIndex]
+                        : alignment
+                    }
                     $bordered={!isLabel && bordered}
                   >
                     {value}

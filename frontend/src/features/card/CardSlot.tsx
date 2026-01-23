@@ -132,7 +132,6 @@ export function CardSlot({ searchQuery, face, slot }: CardSlotProps) {
       })
     );
   };
-  // TODO: add a confirmation prompt here. yes/no/yes and don't ask again.
   const deleteThisSlot = () => {
     dispatch(deleteSlots({ slots: [slot] }));
   };

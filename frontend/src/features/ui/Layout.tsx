@@ -1,72 +1,25 @@
+import styled from "@emotion/styled";
 import { Queue } from "async-await-queue";
-import { useRouter } from "next/router";
 import { GoogleAnalytics } from "nextjs-google-analytics";
-import React, { useEffect } from "react";
+import React, { useEffect, useReducer } from "react";
 import { PropsWithChildren } from "react";
 import Container from "react-bootstrap/Container";
 import SSRProvider from "react-bootstrap/SSRProvider";
 import { Provider } from "react-redux";
-import styled from "styled-components";
 
 import { ContentMaxWidth, NavbarHeight } from "@/common/constants";
-import {
-  getGoogleAnalyticsConsent,
-  getLocalStorageBackendURL,
-  setLocalStorageBackendURL,
-} from "@/common/cookies";
-import { standardiseURL } from "@/common/processing";
-import { useAppDispatch, useAppSelector } from "@/common/types";
+import { getGoogleAnalyticsConsent } from "@/common/cookies";
+import { useBackendSetter } from "@/features/backend/useBackendSetter";
 import {
   DownloadContext,
   DownloadContextProvider,
 } from "@/features/download/download";
+import { LocalFilesContextProvider } from "@/features/localFiles/localFilesContext";
+import { localFilesService } from "@/features/localFiles/localFilesService";
 import { Modals } from "@/features/modals/Modals";
 import { Toasts } from "@/features/toasts/Toasts";
 import ProjectNavbar from "@/features/ui/Navbar";
-import {
-  selectBackendURL,
-  setURL,
-  useBackendConfigured,
-} from "@/store/slices/backendSlice";
 import store from "@/store/store";
-
-function BackendSetter() {
-  const router = useRouter();
-  const { server } = router.query;
-  const formattedURL: string | null =
-    server != null && typeof server == "string" && server.length > 0
-      ? standardiseURL(server.trim())
-      : null;
-
-  const dispatch = useAppDispatch();
-  const backendConfigured = useBackendConfigured();
-  const backendURL = useAppSelector(selectBackendURL);
-  useEffect(() => {
-    const envURL = process.env.NEXT_PUBLIC_BACKEND_URL;
-    const localStorageBackendURL = getLocalStorageBackendURL();
-    if (
-      localStorageBackendURL != undefined &&
-      backendURL !== localStorageBackendURL
-    ) {
-      // TODO: stale value here
-      dispatch(setURL(localStorageBackendURL));
-    } else if (envURL != null && envURL !== localStorageBackendURL) {
-      setLocalStorageBackendURL(envURL);
-      if (!backendConfigured) {
-        dispatch(setURL(envURL));
-      }
-    } else if (formattedURL != null) {
-      dispatch(setURL(formattedURL));
-      setLocalStorageBackendURL(formattedURL);
-      if (server != null && typeof server == "string" && server.length > 0) {
-        // @ts-ignore  // TODO
-        router.replace({ server }, undefined, { shallow: true });
-      }
-    }
-  }, [router.isReady, backendConfigured, formattedURL, dispatch, backendURL]);
-
-  return <></>;
-}
 
 const OverscrollProvider = styled(Provider)`
   overscroll-behavior: none;
@@ -109,16 +62,24 @@ export function ProjectContainer({
 export function LayoutWithoutReduxProvider({ children }: PropsWithChildren) {
   const consent = getGoogleAnalyticsConsent();
   const downloadContext: DownloadContext = new Queue(10, 50);
+  const [forceUpdateValue, forceUpdate] = useReducer((x: number) => x + 1, 0);
+  useBackendSetter();
+  useEffect(() => {
+    localFilesService.initialiseWorker();
+  }, []);
   return (
     <DownloadContextProvider value={downloadContext}>
-      {consent === true && (
-        <GoogleAnalytics trackPageViews gaMeasurementId="G-JV8WV3FQML" />
-      )}
-      <Toasts />
-      <Modals />
-      <BackendSetter />
-      <ProjectNavbar />
-      {children}
+      <LocalFilesContextProvider
+        value={{ localFilesService, forceUpdate, forceUpdateValue }}
+      >
+        {consent === true && (
+          <GoogleAnalytics trackPageViews gaMeasurementId="G-JV8WV3FQML" />
+        )}
+        <Toasts />
+        <Modals />
+        <ProjectNavbar />
+        {children}
+      </LocalFilesContextProvider>
     </DownloadContextProvider>
   );
 }

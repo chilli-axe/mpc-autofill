@@ -3,8 +3,6 @@
  * suitable for uploading to deckbuilding websites or sending to a friend.
  */
 
-import { saveAs } from "file-saver";
-
 import { Back, Card, FaceSeparator, Front } from "@/common/constants";
 import { stripTextInParentheses } from "@/common/processing";
 import {
@@ -13,7 +11,9 @@ import {
   SlotProjectMembers,
   useAppStore,
 } from "@/common/types";
-import { useDoFileDownload } from "@/features/download/download";
+import { downloadFile, useDoFileDownload } from "@/features/download/download";
+import { useLocalFilesContext } from "@/features/localFiles/localFilesContext";
+import { LocalFilesService } from "@/features/localFiles/localFilesService";
 import { selectProjectMembers } from "@/store/slices/projectSlice";
 import { RootState } from "@/store/store";
 
@@ -55,7 +55,7 @@ function stringifyCardNames(
     .map((item: [string | null, string | null]) =>
       item[0] != null
         ? item[1] != null
-          ? `${item[0]} ${FaceSeparator} ${item[1]}`
+          ? `${item[0]}${FaceSeparator}${item[1]}`
           : item[0]
         : ""
     )
@@ -107,11 +107,16 @@ const selectGeneratedDecklist = (state: RootState): string => {
   );
 };
 
-async function downloadDecklist(state: RootState) {
+async function downloadDecklist(
+  state: RootState,
+  localFilesService: LocalFilesService
+) {
   const decklist = selectGeneratedDecklist(state);
-  saveAs(
+  await downloadFile(
     new Blob([decklist], { type: "text/plain;charset=utf-8" }),
-    "decklist.txt" // TODO: use project name here when we eventually track that
+    undefined,
+    "decklist.txt", // TODO: use project name here when we eventually track that
+    localFilesService
   );
   return true;
 }
@@ -119,12 +124,14 @@ async function downloadDecklist(state: RootState) {
 export function useDownloadDecklist() {
   const store = useAppStore();
   const doFileDownload = useDoFileDownload();
+  const { localFilesService } = useLocalFilesContext();
   return () =>
     Promise.resolve(
       doFileDownload(
         "text",
         "decklist.txt",
-        (): Promise<boolean> => downloadDecklist(store.getState())
+        (): Promise<boolean> =>
+          downloadDecklist(store.getState(), localFilesService)
       )
     );
 }

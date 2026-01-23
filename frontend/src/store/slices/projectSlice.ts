@@ -7,7 +7,9 @@ import { createSelector, PayloadAction } from "@reduxjs/toolkit";
 import { Card, Cardback } from "@/common/constants";
 import { Back, Front, ProjectMaxSize } from "@/common/constants";
 import { processPrefix } from "@/common/processing";
+import { SourceType } from "@/common/schema_types";
 import {
+  CardDocuments,
   createAppSlice,
   Faces,
   Project,
@@ -460,6 +462,39 @@ export const selectAllSelectedProjectMembersHaveTheSameQuery = createSelector(
 
 export const selectIsProjectEmpty = (state: RootState) =>
   selectProjectSize(state) == 0;
+
+const anyImagesDownloadable = (
+  projectMembers: Array<ProjectMember | null>,
+  cardDocuments: CardDocuments
+) =>
+  projectMembers.some(
+    (member) =>
+      member?.selectedImage !== undefined &&
+      cardDocuments[member.selectedImage]?.sourceType === SourceType.GoogleDrive
+  );
+
+export const selectAnyImagesDownloadable = createSelector(
+  (state: RootState) => state.project.members,
+  (state: RootState) => state.cardDocuments.cardDocuments,
+  (state: RootState) => selectIsProjectEmpty(state),
+  (members, cardDocuments, isProjectEmpty) =>
+    !isProjectEmpty &&
+    members.some((slotMember) =>
+      anyImagesDownloadable([slotMember.front, slotMember.back], cardDocuments)
+    )
+);
+
+export const selectAnySelectedImagesDownloadable = createSelector(
+  (state: RootState, slots: Slots) => state.project.members,
+  (state: RootState, slots: Slots) => state.cardDocuments.cardDocuments,
+  (state: RootState, slots: Slots) => slots,
+  (members, cardDocuments, slots) => {
+    const projectMembers = slots.map((slot) =>
+      getProjectMember(members, ...slot)
+    );
+    return anyImagesDownloadable(projectMembers, cardDocuments);
+  }
+);
 
 export const selectProjectCardback = (state: RootState): string | undefined =>
   state.project.cardback ?? undefined;

@@ -5,25 +5,22 @@ import Button from "react-bootstrap/Button";
 import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
 
-import {
-  MakePlayingCards,
-  MakePlayingCardsURL,
-  ProjectName,
-} from "@/common/constants";
+import { ProjectName } from "@/common/constants";
+import { MakePlayingCardsLink } from "@/components/MakePlayingCardsLink";
 import { DynamicLogo } from "@/features/ui/DynamicLogo";
 import Footer from "@/features/ui/Footer";
 import { ProjectContainer } from "@/features/ui/Layout";
 import {
-  useBackendConfigured,
+  useAnyBackendConfigured,
   useProjectName,
 } from "@/store/slices/backendSlice";
 
 function JumpIntoEditorButton() {
-  const backendConfigured = useBackendConfigured();
+  const anyBackendConfigured = useAnyBackendConfigured();
   return (
     <Row className="justify-content-center">
       <Col xl={6} lg={6} md={8} sm={12} xs={12}>
-        {backendConfigured ? (
+        {anyBackendConfigured ? (
           <Link href="/editor" passHref legacyBehavior>
             <div className="d-grid gap-0">
               <Button>Jump into the project editor!</Button>
@@ -31,8 +28,7 @@ function JumpIntoEditorButton() {
           </Link>
         ) : (
           <p style={{ textAlign: "center" }}>
-            Click the <b>Configure Server</b> button in the top-right to get
-            started!
+            Click the <b>Configure</b> button in the top-right to get started!
           </p>
         )}
       </Col>
@@ -85,19 +81,14 @@ function ProjectOverview() {
       <Row>
         <Col lg={6} md={6} sm={12} xs={12}>
           <h1>
-            Automatic Ordering with{" "}
-            <a href={MakePlayingCardsURL} target="_blank">
-              {MakePlayingCards}
-            </a>
+            Automatic Ordering with <MakePlayingCardsLink />
           </h1>
           <ul>
             <li>
               Our desktop tool will download all the images required for your
               order and automatically place your order with{" "}
-              <a href={MakePlayingCardsURL} target="_blank">
-                {MakePlayingCards}
-              </a>
-              , who will mail the cards right to your door!
+              <MakePlayingCardsLink />, who will mail the cards right to your
+              door!
             </li>
           </ul>
         </Col>

@@ -1,7 +1,10 @@
 import { Queue } from "async-await-queue";
+import { saveAs } from "file-saver";
 import { createContext, useContext } from "react";
 
 import { FileDownloadType, useAppDispatch } from "@/common/types";
+import { useLocalFilesContext } from "@/features/localFiles/localFilesContext";
+import { LocalFilesService } from "@/features/localFiles/localFilesService";
 import {
   enqueueDownload,
   startDownload,
@@ -22,6 +25,38 @@ export function useDownloadContext(): DownloadContext {
   return context;
 }
 
+export const downloadFile = async (
+  fileContents: any | undefined,
+  fileURL: URL | undefined,
+  fileName: string,
+  localFilesService: LocalFilesService
+) => {
+  if (fileContents !== undefined && fileURL !== undefined) {
+    throw new Error("cannot specify fileContents and fileURL");
+  } else if (fileContents === undefined && fileURL === undefined) {
+    throw new Error("cannot specify neither fileContents nor fileURL");
+  }
+  const fetchedFileContents =
+    fileURL !== undefined
+      ? await fetch(fileURL.href).then((response) => response.blob())
+      : fileContents;
+
+  if (await localFilesService.hasLocalFilesDirectoryHandle()) {
+    const fileHandle = await localFilesService
+      .getLocalFilesDirectoryHandle()
+      .then((handle) =>
+        handle!.getFileHandle(fileName, {
+          create: true,
+        })
+      );
+    const writable = await fileHandle.createWritable();
+    await writable.write(fetchedFileContents);
+    await writable.close();
+  } else {
+    saveAs(fetchedFileContents, fileName);
+  }
+};
+
 /**
  * This hook returns a function you can call to wrap file downloading functions.
  * Wrapping the function like this hooks your download into the download manager system.
@@ -37,6 +72,7 @@ export function useDoFileDownload(): (
   callable: () => Promise<boolean>
 ) => Promise<void> {
   const queue = useDownloadContext();
+  const { localFilesService } = useLocalFilesContext();
   const dispatch = useAppDispatch();
   return (type, name, callable) => {
     const downloadId = Math.random().toString();

@@ -15,24 +15,76 @@ jobs:
       matrix:
         include:
           - os: macos-latest
+            FILENAME: autofill-macos-arm.command
             TARGET: macos-arm
-          - os: macos-13
+            MACOS_ARCH: arm64
+          - os: macos-15
             TARGET: macos-intel
+            FILENAME: autofill-macos-intel.command
+            MACOS_ARCH: x86_64
           - os: windows-latest
+            FILENAME: autofill-windows.exe
             TARGET: windows
+            MACOS_ARCH: ""
           - os: ubuntu-latest
+            FILENAME: autofill-linux.bin
             TARGET: linux
+            MACOS_ARCH: ""
     steps:
       - uses: actions/checkout@v4
       - uses: browser-actions/setup-chrome@latest
-      - name: Set up Python 3.9
+      - name: Set up Python 3.13
         uses: actions/setup-python@v5
         with:
-          python-version: 3.9
-      - name: Install dependencies
+          python-version: 3.13
+
+      # setup macOS runners for signing and notarisation
+      # retrieved from https://docs.github.com/en/actions/how-tos/deploy/deploy-to-third-party-platforms/sign-xcode-applications#add-a-step-to-your-workflow
+      - name: Install the Apple certificate and notarisation profile
+        if: ${{ (matrix.TARGET == 'macos-arm') || (matrix.TARGET == 'macos-intel') }}
+        env:
+          MACOS_SIGN_CERTIFICATE_BASE64: ${{ secrets.MACOS_SIGN_CERTIFICATE_BASE64 }}
+          MACOS_SIGN_CERTIFICATE_PASSWORD: ${{ secrets.MACOS_SIGN_CERTIFICATE_PASSWORD }}
+          MACOS_NOTARY_KEY_BASE64: ${{ secrets.MACOS_NOTARY_KEY_BASE64 }}
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+        run: |
+          # create variables
+          CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
+          NOTARY_KEY_PATH=$RUNNER_TEMP/build_key.p8
+          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+
+          # import certificate and provisioning profile from secrets
+          echo -n "$MACOS_SIGN_CERTIFICATE_BASE64" | base64 --decode -o $CERTIFICATE_PATH
+          echo -n "$MACOS_NOTARY_KEY_BASE64" | base64 --decode -o $NOTARY_KEY_PATH
+
+          # create temporary keychain
+          security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+
+          # import certificate to keychain
+          security import $CERTIFICATE_PATH -P "$MACOS_SIGN_CERTIFICATE_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
+          security set-key-partition-list -S apple-tool:,apple: -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security list-keychain -d user -s $KEYCHAIN_PATH
+
+          # create notarisation profile
+          xcrun notarytool store-credentials "${{ secrets.MACOS_NOTARY_PROFILE_NAME }}" \
+            --key "$NOTARY_KEY_PATH" \
+            --key-id "${{ secrets.MACOS_NOTARY_KEY_ID }}" \
+            --issuer "${{ secrets.MACOS_NOTARY_ISSUER_ID }}" \
+            --keychain $KEYCHAIN_PATH
+
+      # install dependencies and build
+      - name: Install dependencies - non-macOS
+        if: ${{ !((matrix.TARGET == 'macos-arm') || (matrix.TARGET == 'macos-intel')) }}
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+      - name: Install dependencies - macOS
+        if: ${{ (matrix.TARGET == 'macos-arm') || (matrix.TARGET == 'macos-intel') }}
+        run: |
+          arch -${{ matrix.MACOS_ARCH }} python -m pip install --upgrade pip
+          arch -${{ matrix.MACOS_ARCH }} pip install -r requirements.txt
       - name: Install imageio for Nutika .ico conversion
         run: |
           python -m pip install imageio
@@ -49,11 +101,50 @@ jobs:
           working-directory: desktop-tool
           script-name: autofill.py
           mode: onefile
-      - name: Upload artifact
+          output-file: ${{ matrix.FILENAME }}
+          macos-sign-notarization: true
+          macos-sign-identity: ${{ secrets.MACOS_SIGN_IDENTITY }}
+          macos-sign-keyring-filename: "${{ runner.temp }}/app-signing.keychain-db"
+          macos-sign-keyring-password: ${{ secrets.KEYCHAIN_PASSWORD }}
+          macos-signed-app-name: com.ndepaola.mpc-autofill-${{ matrix.TARGET }}
+          macos-target-arch: ${{ matrix.MACOS_ARCH }}
+      - name: Upload unsigned artifact
+        id: upload-unsigned-artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.TARGET }} Build
+          name: ${{ matrix.TARGET }} Unsigned Build
           path: |
-            desktop-tool/build/*.exe
-            desktop-tool/build/*.bin
-            desktop-tool/build/*.app/**/*
+            desktop-tool/build/${{ matrix.FILENAME }}
+
+      # notarise macOS executables
+      - name: Notarise macOS executable
+        id: submit-notarisation-request
+        if: ${{ (matrix.TARGET == 'macos-arm') || (matrix.TARGET == 'macos-intel') }}
+        run: |
+          # create a zip archive suitable for notarization
+          /usr/bin/ditto -c -k "build/${{ matrix.FILENAME }}" "build/compressed.zip"
+
+          # invoke notarytool
+          xcrun notarytool submit "build/compressed.zip" --keychain-profile ${{ secrets.MACOS_NOTARY_PROFILE_NAME }} --wait
+
+      # sign Windows executables with SignPath
+      - name: Sign Windows executable with SignPath
+        if: ${{ matrix.TARGET == 'windows' }}
+        id: submit-signing-request
+        uses: signpath/github-action-submit-signing-request@v2
+        with:
+          api-token: "${{ secrets.SIGNPATH_API_TOKEN }}"
+          organization-id: "061f342a-ba1a-404b-b7f8-e08c8f6d9792"
+          project-slug: "mpc-autofill"
+          signing-policy-slug: "test-signing"
+          github-artifact-id: "${{ steps.upload-unsigned-artifact.outputs.artifact-id }}"
+          wait-for-completion: true
+          output-artifact-directory: desktop-tool/build/
+      - name: Upload signed artifact to GitHub
+        if: ${{ matrix.TARGET == 'windows' }}
+        id: upload-signed-artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.TARGET }} Signed Build
+          path: |
+            desktop-tool/build/${{ matrix.FILENAME }}
