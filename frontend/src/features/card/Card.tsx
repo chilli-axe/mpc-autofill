@@ -286,7 +286,9 @@ function CardImage({
               />
             ) : (
               <>
-                {isFavorite && <CardIcon bootstrapIconName="heart-fill" />}
+                {isFavorite && small && (
+                  <CardIcon bootstrapIconName="heart-fill" />
+                )}
                 <VisibleImage
                   ref={imageRef}
                   className="card-img card-img-fade-in"
