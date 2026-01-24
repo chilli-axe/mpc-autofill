@@ -333,8 +333,7 @@ export async function APIGetCardbacks(
 export async function APIEditorSearch(
   backendURL: string,
   searchSettings: SearchSettings,
-  queriesToSearch: Array<SearchQuery>,
-  favoriteIdentifiersSet: Set<string>
+  queriesToSearch: Array<SearchQuery>
 ): Promise<SearchResults> {
   const rawResponse = await fetch(formatURL(backendURL, "/2/editorSearch/"), {
     method: "POST",
@@ -347,39 +346,7 @@ export async function APIEditorSearch(
   });
   return rawResponse.json().then((content) => {
     if (rawResponse.status === 200 && content.results != null) {
-      const results = content.results as EditorSearchResponse["results"];
-
-      // Sort identifiers within each card type, prioritizing favorites
-      const sortIdentifiersByFavorites = (identifiers: string[]): string[] => {
-        return [...identifiers].sort((a, b) => {
-          const aIsFavorite = favoriteIdentifiersSet.has(a);
-          const bIsFavorite = favoriteIdentifiersSet.has(b);
-
-          if (aIsFavorite && !bIsFavorite) return -1;
-          if (!aIsFavorite && bIsFavorite) return 1;
-          return 0;
-        });
-      };
-
-      // Sort identifiers for all card types within a query
-      const sortCardTypesForQuery = (
-        cardTypeResults: SearchResultsForQuery
-      ): SearchResultsForQuery => {
-        const sorted: SearchResultsForQuery = {};
-        for (const [cardType, identifiers] of Object.entries(cardTypeResults)) {
-          sorted[cardType as keyof SearchResultsForQuery] =
-            sortIdentifiersByFavorites(identifiers);
-        }
-        return sorted;
-      };
-
-      // Sort all queries and their card types
-      const sortedResults: SearchResults = {};
-      for (const [query, cardTypeResults] of Object.entries(results)) {
-        sortedResults[query] = sortCardTypesForQuery(cardTypeResults);
-      }
-
-      return sortedResults;
+      return content.results as EditorSearchResponse["results"];
     }
     throw { name: content.name, message: content.message };
   });

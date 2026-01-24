@@ -121,12 +121,6 @@ export const selectFavoriteRenders = (
   state: RootState
 ): FavoritesState["favoriteRenders"] => state.favorites.favoriteRenders;
 
-export const selectFavoriteRenderBySearchq = createSelector(
-  (state: RootState, searchq: string) => searchq,
-  (state: RootState) => state.favorites.favoriteRenders,
-  (searchq, favoriteRenders) => favoriteRenders[searchq] ?? []
-);
-
 export const selectIsFavoriteRender = createSelector(
   (state: RootState, searchq: string, identifier: string) => ({
     searchq,

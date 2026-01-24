@@ -28,6 +28,7 @@ import { fetchCardDocumentsAndReportError } from "@/store/slices/cardDocumentsSl
 import {
   clearFavoriteRenders,
   removeFavoriteRender,
+  selectFavoriteIdentifiersSet,
   setAllFavoriteRenders,
   setFavoriteRender,
   toggleFavoriteRender,
@@ -57,6 +58,17 @@ import {
 } from "@/store/slices/sourceDocumentsSlice";
 
 import type { AppDispatch, RootState } from "./store";
+
+/**
+ * Helper function to select the first favorited card from results, or the first card if none are favorited.
+ */
+const selectFirstFavoritedOrFirst = (
+  results: string[],
+  favoriteIdentifiersSet: Set<string>
+): string | undefined => {
+  const firstFavorite = results.find((id) => favoriteIdentifiersSet.has(id));
+  return firstFavorite ?? results[0];
+};
 
 export const recalculateSearchResults = async (
   state: RootState,
@@ -219,6 +231,7 @@ startAppListening({
     });
 
     const state = getState();
+    const favoriteIdentifiersSet = selectFavoriteIdentifiersSet(state);
 
     const { slots }: { slots: Array<[Faces, number]> } = action.payload;
     for (const [_, [face, slot]] of slots.entries()) {
@@ -232,7 +245,10 @@ startAppListening({
         ) ?? [];
       const newSelectedImage =
         searchQuery?.query != null
-          ? searchResultsForQueryOrDefault[0]
+          ? selectFirstFavoritedOrFirst(
+              searchResultsForQueryOrDefault,
+              favoriteIdentifiersSet
+            )
           : undefined;
       if (newSelectedImage != null) {
         dispatch(
@@ -255,6 +271,7 @@ startAppListening({
   effect: async (action, { dispatch, getState }) => {
     const state = getState();
     const projectCardback = selectProjectCardback(state);
+    const favoriteIdentifiersSet = selectFavoriteIdentifiersSet(state);
     for (const [slot, slotProjectMember] of state.project.members.entries()) {
       for (const face of [Front, Back]) {
         const projectMember = slotProjectMember[face];
@@ -288,13 +305,16 @@ startAppListening({
               mutatedSelectedImage = undefined;
             }
 
-            // If no image is selected and there are search results, select the first image in search results
+            // If no image is selected and there are search results, select the first favorited image or the first image
             if (
               searchResultsForQueryOrDefault.length > 0 &&
               mutatedSelectedImage == null
             ) {
               if (searchQuery?.query != null) {
-                mutatedSelectedImage = searchResultsForQueryOrDefault[0];
+                mutatedSelectedImage = selectFirstFavoritedOrFirst(
+                  searchResultsForQueryOrDefault,
+                  favoriteIdentifiersSet
+                );
               } else if (face === Back && projectCardback != null) {
                 mutatedSelectedImage = projectCardback;
               }

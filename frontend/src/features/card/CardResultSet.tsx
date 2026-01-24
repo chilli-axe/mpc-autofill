@@ -66,49 +66,65 @@ interface CardGridDisplayProps {
   };
   selectedImage?: string;
   sourceNamesByKey: { [sourceKey: string]: string };
+  favoriteIdentifiers?: Array<string>;
+  originalIndexMap?: Map<string, number>;
 }
 
 /**
- * Render all images in `cardIdentifiersAndOptionNumbersBySource` in one block -
- * i.e. not separated by source.
+ * Render all images in a single grid.
+ * Expects imageIdentifiers to already be sorted (favorites first) by the parent.
+ * Option numbers reflect original indices (for consistency with external references).
  */
 function CardsGroupedTogether({
   imageIdentifiers,
   selectImage,
   selectedImage,
-  sourceNamesByKey,
+  originalIndexMap,
 }: CardGridDisplayProps) {
   return (
     <CardRow>
-      {imageIdentifiers.map((identifier, index) => (
-        <RenderIfVisible
-          key={`gridSelector-${identifier}-wrapper`}
-          initialVisible={index < 20}
-          visibleOffset={500}
-          stayRendered
-        >
-          <CardGridCard
-            key={`gridSelector-${identifier}-card`}
-            identifier={identifier}
-            index={index}
-            selectImage={selectImage}
-            selectedImage={selectedImage}
-          />
-        </RenderIfVisible>
-      ))}
+      {imageIdentifiers.map((identifier, visualIndex) => {
+        const originalIndex = originalIndexMap?.get(identifier) ?? visualIndex;
+        return (
+          <RenderIfVisible
+            key={`gridSelector-${identifier}-wrapper`}
+            initialVisible={visualIndex < 20}
+            visibleOffset={500}
+            stayRendered
+          >
+            <CardGridCard
+              identifier={identifier}
+              index={originalIndex}
+              selectImage={selectImage}
+              selectedImage={selectedImage}
+            />
+          </RenderIfVisible>
+        );
+      })}
     </CardRow>
   );
 }
 
+const FAVORITES_SOURCE_KEY = "__favorites__";
+
+interface Section {
+  key: string;
+  title: React.ReactNode;
+  items: Array<[string, number]>;
+}
+
 /**
- * Render all images in `cardIdentifiersAndOptionNumbersBySource` separated by source.
- * Allow users to toggle whether each source's cards are showed/hidden.
+ * Render all images separated by source in collapsible sections.
+ * Favorites are shown in a separate collapsible section before the source sections.
+ * Option numbers reflect original indices (for consistency with external references).
  */
 function CardsFacetedBySource({
   imageIdentifiers,
   selectImage,
   selectedImage,
   sourceNamesByKey,
+  favoriteIdentifiers = [],
+  originalIndexMap,
 }: CardGridDisplayProps) {
   //# region queries and hooks
 
@@ -117,83 +133,108 @@ function CardsFacetedBySource({
 
   //# endregion
 
+  const favoriteSet = useMemo(
+    () => new Set(favoriteIdentifiers),
+    [favoriteIdentifiers]
+  );
+
   // TODO: memoizing on array prop? this doesn't work does it?
   const cardDocuments = useAppSelector((state) =>
     selectCardDocumentsByIdentifiers(state, imageIdentifiers)
   );
-  const cardIdentifiersAndOptionNumbersBySource = useMemo(
-    () =>
-      imageIdentifiers.reduce(
-        (
-          accumulator: { [sourceKey: string]: Array<[string, number]> },
-          value,
-          currentIndex
-        ) => {
-          const cardDocument: CardDocument | null = cardDocuments[value];
-          if (cardDocument != null) {
-            if (
-              !Object.prototype.hasOwnProperty.call(
-                accumulator,
-                cardDocument.source
-              )
-            ) {
-              accumulator[cardDocument.source] = [];
-            }
-            accumulator[cardDocument.source].push([value, currentIndex]);
-          }
-          return accumulator;
-        },
-        {}
-      ),
-    [cardDocuments, imageIdentifiers]
-  );
+
+  // Build unified sections array: favorites first, then sources
+  const sections: Section[] = useMemo(() => {
+    const favoriteItems: Array<[string, number]> = [];
+    const bySource: { [sourceKey: string]: Array<[string, number]> } = {};
+
+    imageIdentifiers.forEach((identifier, visualIndex) => {
+      // Use original index if available, otherwise fall back to visual index
+      const originalIndex = originalIndexMap?.get(identifier) ?? visualIndex;
+
+      if (favoriteSet.has(identifier)) {
+        favoriteItems.push([identifier, originalIndex]);
+      }
+
+      const cardDocument: CardDocument | null = cardDocuments[identifier];
+      if (cardDocument != null) {
+        if (
+          !Object.prototype.hasOwnProperty.call(bySource, cardDocument.source)
+        ) {
+          bySource[cardDocument.source] = [];
+        }
+        bySource[cardDocument.source].push([identifier, originalIndex]);
+      }
+    });
+
+    const result: Section[] = [];
+
+    if (favoriteItems.length > 0) {
+      result.push({
+        key: FAVORITES_SOURCE_KEY,
+        title: "Favorites",
+        items: favoriteItems,
+      });
+    }
+
+    for (const [sourceKey, items] of Object.entries(bySource)) {
+      result.push({
+        key: sourceKey,
+        title: sourceNamesByKey[sourceKey] ?? sourceKey,
+        items,
+      });
+    }
+
+    return result;
+  }, [
+    cardDocuments,
+    imageIdentifiers,
+    favoriteSet,
+    sourceNamesByKey,
+    originalIndexMap,
+  ]);
 
   return (
     <>
-      {Object.entries(cardIdentifiersAndOptionNumbersBySource).map(
-        ([sourceKey, cardIdentifiersAndOptionNumbers], sourceIndex) => (
-          <>
-            <AutofillCollapse
-              key={sourceKey}
-              expanded={sourcesVisible[sourceKey] ?? true}
-              onClick={() => dispatch(toggleSourceVisible(sourceKey))}
-              zIndex={sourceIndex}
-              title={
-                <h3
-                  className="orpheus prevent-select"
-                  style={{ fontStyle: "italic" }}
+      {sections.map((section, sectionIndex) => (
+        <React.Fragment key={section.key}>
+          <AutofillCollapse
+            expanded={sourcesVisible[section.key] ?? true}
+            onClick={() => dispatch(toggleSourceVisible(section.key))}
+            zIndex={sectionIndex}
+            title={
+              <h3
+                className="orpheus prevent-select"
+                style={{ fontStyle: "italic" }}
+              >
+                {section.title}
+              </h3>
+            }
+            subtitle={`${section.items.length} version${
+              section.items.length != 1 ? "s" : ""
+            }`}
+            sticky
+          >
+            <CardRow>
+              {section.items.map(([identifier, optionNumber]) => (
+                <RenderIfVisible
+                  key={`gridSelector-${identifier}-wrapper`}
+                  initialVisible={optionNumber < 20}
+                  stayRendered
                 >
-                  {sourceNamesByKey[sourceKey] ?? sourceKey}
-                </h3>
-              }
-              subtitle={`${cardIdentifiersAndOptionNumbers.length} version${
-                cardIdentifiersAndOptionNumbers.length != 1 ? "s" : ""
-              }`}
-              sticky
-            >
-              <CardRow key={`${sourceKey}-row`}>
-                {cardIdentifiersAndOptionNumbers.map(
-                  ([identifier, optionNumber]) => (
-                    <RenderIfVisible
-                      key={`gridSelector-${identifier}-wrapper`}
-                      initialVisible={optionNumber < 20}
-                      stayRendered
-                    >
-                      <CardGridCard
-                        identifier={identifier}
-                        index={optionNumber}
-                        selectImage={selectImage}
-                        selectedImage={selectedImage}
-                      />
-                    </RenderIfVisible>
-                  )
-                )}
-              </CardRow>
-            </AutofillCollapse>
-            <div className="py-2" />
-          </>
-        )
-      )}
+                  <CardGridCard
+                    identifier={identifier}
+                    index={optionNumber}
+                    selectImage={selectImage}
+                    selectedImage={selectedImage}
+                  />
+                </RenderIfVisible>
+              ))}
+            </CardRow>
+          </AutofillCollapse>
+          <div className="py-2" />
+        </React.Fragment>
+      ))}
     </>
   );
 }
@@ -203,18 +244,22 @@ export function CardResultSet({
   imageIdentifiers,
   selectedImage,
   handleClick,
+  favoriteIdentifiers = [],
+  originalIndexMap,
 }: {
   headerText: string;
   imageIdentifiers: Array<string>;
   selectedImage?: string;
   handleClick?: { (identifier: string): void };
+  favoriteIdentifiers?: Array<string>;
+  originalIndexMap?: Map<string, number>;
 }) {
   const dispatch = useAppDispatch();
 
   const facetBySource = useAppSelector(selectFacetBySource);
   const sourceNamesByKey = useAppSelector(selectSourceNamesByKey);
-  const sourceKeys = Object.keys(sourceNamesByKey);
   const anySourcesCollapsed = useAppSelector(selectAnySourcesCollapsed);
+  const sourceKeys = [FAVORITES_SOURCE_KEY, ...Object.keys(sourceNamesByKey)];
 
   return (
     <>
@@ -269,6 +314,8 @@ export function CardResultSet({
           selectImage={handleClick}
           selectedImage={selectedImage}
           sourceNamesByKey={sourceNamesByKey}
+          favoriteIdentifiers={favoriteIdentifiers}
+          originalIndexMap={originalIndexMap}
         />
       ) : (
         <CardsGroupedTogether
@@ -276,6 +323,7 @@ export function CardResultSet({
           selectImage={handleClick}
           selectedImage={selectedImage}
           sourceNamesByKey={sourceNamesByKey}
+          originalIndexMap={originalIndexMap}
         />
       )}
     </>

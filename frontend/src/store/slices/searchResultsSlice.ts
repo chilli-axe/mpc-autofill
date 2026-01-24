@@ -23,8 +23,6 @@ import { selectSearchSettings } from "@/store/slices/searchSettingsSlice";
 import { setNotification } from "@/store/slices/toastsSlice";
 import { AppDispatch, RootState } from "@/store/store";
 
-import { selectFavoriteIdentifiersSet } from "./favoritesSlice";
-
 //# region async thunk
 
 const typePrefix = "searchResults/fetchCards";
@@ -68,7 +66,6 @@ export const fetchSearchResults = createAppAsyncThunk(
     const queriesToSearch = selectQueriesWithoutSearchResults(state); // TODO: is there an edge case here when a local directory is added?
     const backendURL = selectRemoteBackendURL(state);
     const searchSettings = selectSearchSettings(state);
-    const favoriteIdentifiersSet = selectFavoriteIdentifiersSet(state);
 
     const hasLocalFilesDirectoryHandle =
       await localFilesService.hasLocalFilesDirectoryHandle();
@@ -95,8 +92,7 @@ export const fetchSearchResults = createAppAsyncThunk(
                 queriesToSearch.slice(
                   page * SearchResultsEndpointPageSize,
                   (page + 1) * SearchResultsEndpointPageSize
-                ),
-                favoriteIdentifiersSet
+                )
               );
               return { ...previousValue, ...searchResults };
             });
