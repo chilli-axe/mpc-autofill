@@ -23,6 +23,7 @@ const openDetailedView = async (page: any, cardName: string) => {
 
 const closeDetailedView = async (page: any) => {
   await page.getByTestId("detailed-view").getByLabel("Close").click();
+  await expect(page.getByText("Card Details")).not.toBeVisible();
 };
 
 test.describe("AddCardToFavorites tests", () => {
