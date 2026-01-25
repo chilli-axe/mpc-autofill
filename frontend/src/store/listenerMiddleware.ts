@@ -5,7 +5,11 @@ import {
 } from "@reduxjs/toolkit";
 
 import { Back, Front, QueryTags } from "@/common/constants";
-import { getLocalStorageSearchSettings } from "@/common/cookies";
+import {
+  getLocalStorageFavorites,
+  getLocalStorageSearchSettings,
+  setLocalStorageFavorites,
+} from "@/common/cookies";
 import { Faces } from "@/common/types";
 import { Tag } from "@/common/types";
 import { localFilesService } from "@/features/localFiles/localFilesService";
@@ -21,6 +25,14 @@ import {
   selectCardbacks,
 } from "@/store/slices/cardbackSlice";
 import { fetchCardDocumentsAndReportError } from "@/store/slices/cardDocumentsSlice";
+import {
+  clearFavoriteRenders,
+  removeFavoriteRender,
+  selectFavoriteIdentifiersSet,
+  setAllFavoriteRenders,
+  setFavoriteRender,
+  toggleFavoriteRender,
+} from "@/store/slices/favoritesSlice";
 import { recordInvalidIdentifier } from "@/store/slices/invalidIdentifiersSlice";
 import {
   addMembers,
@@ -46,6 +58,17 @@ import {
 } from "@/store/slices/sourceDocumentsSlice";
 
 import type { AppDispatch, RootState } from "./store";
+
+/**
+ * Helper function to select the first favorited card from results, or the first card if none are favorited.
+ */
+const selectFirstFavoritedOrFirst = (
+  results: string[],
+  favoriteIdentifiersSet: Set<string>
+): string | undefined => {
+  const firstFavorite = results.find((id) => favoriteIdentifiersSet.has(id));
+  return firstFavorite ?? results[0];
+};
 
 export const recalculateSearchResults = async (
   state: RootState,
@@ -76,7 +99,7 @@ const addAppListener = addListener.withTypes<RootState, AppDispatch>();
 startAppListening({
   actionCreator: setURL,
   /**
-   * Fetch sources whenever the backend configuration is set.
+   * Fetch sources and load favorites from localStorage whenever the backend configuration is set.
    */
   effect: async (action, { getState, dispatch }) => {
     const state = getState();
@@ -85,6 +108,11 @@ startAppListening({
       await fetchSourceDocumentsAndReportError(dispatch).then(() =>
         fetchCardbacksAndReportError(dispatch)
       );
+      // Load favorites from localStorage on app initialization
+      const favorites = getLocalStorageFavorites();
+      if (Object.keys(favorites).length > 0) {
+        dispatch(setAllFavoriteRenders(favorites));
+      }
     }
   },
 });
@@ -203,6 +231,7 @@ startAppListening({
     });
 
     const state = getState();
+    const favoriteIdentifiersSet = selectFavoriteIdentifiersSet(state);
 
     const { slots }: { slots: Array<[Faces, number]> } = action.payload;
     for (const [_, [face, slot]] of slots.entries()) {
@@ -216,7 +245,10 @@ startAppListening({
         ) ?? [];
       const newSelectedImage =
         searchQuery?.query != null
-          ? searchResultsForQueryOrDefault[0]
+          ? selectFirstFavoritedOrFirst(
+              searchResultsForQueryOrDefault,
+              favoriteIdentifiersSet
+            )
           : undefined;
       if (newSelectedImage != null) {
         dispatch(
@@ -239,6 +271,7 @@ startAppListening({
   effect: async (action, { dispatch, getState }) => {
     const state = getState();
     const projectCardback = selectProjectCardback(state);
+    const favoriteIdentifiersSet = selectFavoriteIdentifiersSet(state);
     for (const [slot, slotProjectMember] of state.project.members.entries()) {
       for (const face of [Front, Back]) {
         const projectMember = slotProjectMember[face];
@@ -272,13 +305,16 @@ startAppListening({
               mutatedSelectedImage = undefined;
             }
 
-            // If no image is selected and there are search results, select the first image in search results
+            // If no image is selected and there are search results, select the first favorited image or the first image
             if (
               searchResultsForQueryOrDefault.length > 0 &&
               mutatedSelectedImage == null
             ) {
               if (searchQuery?.query != null) {
-                mutatedSelectedImage = searchResultsForQueryOrDefault[0];
+                mutatedSelectedImage = selectFirstFavoritedOrFirst(
+                  searchResultsForQueryOrDefault,
+                  favoriteIdentifiersSet
+                );
               } else if (face === Back && projectCardback != null) {
                 mutatedSelectedImage = projectCardback;
               }
@@ -294,6 +330,23 @@ startAppListening({
         }
       }
     }
+  },
+});
+
+startAppListening({
+  matcher: isAnyOf(
+    setFavoriteRender,
+    removeFavoriteRender,
+    toggleFavoriteRender,
+    clearFavoriteRenders,
+    setAllFavoriteRenders
+  ),
+  /**
+   * Save favorites to localStorage whenever they change.
+   */
+  effect: async (action, { getState }) => {
+    const state = getState();
+    setLocalStorageFavorites(state.favorites.favoriteRenders);
   },
 });
 

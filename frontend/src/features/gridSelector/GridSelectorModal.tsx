@@ -4,7 +4,13 @@
  * Card versions are faceted by source, and all cards for a source can be temporarily hidden.
  */
 
-import React, { FormEvent, useCallback, useRef, useState } from "react";
+import React, {
+  FormEvent,
+  useCallback,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import Button from "react-bootstrap/Button";
 import Col from "react-bootstrap/Col";
 import Form from "react-bootstrap/Form";
@@ -14,6 +20,7 @@ import Row from "react-bootstrap/Row";
 import { useAppDispatch, useAppSelector } from "@/common/types";
 import { AutofillCollapse } from "@/components/AutofillCollapse";
 import { CardResultSet } from "@/features/card/CardResultSet";
+import { selectFavoriteIdentifiersSet } from "@/store/slices/favoritesSlice";
 import {
   selectJumpToVersionVisible,
   toggleJumpToVersionVisible,
@@ -32,6 +39,7 @@ interface GridSelectorProps {
   onClick: {
     (identifier: string): void;
   };
+  searchq?: string;
 }
 
 export function GridSelectorModal({
@@ -42,12 +50,16 @@ export function GridSelectorModal({
   show,
   handleClose,
   onClick,
+  searchq,
 }: GridSelectorProps) {
   //# region queries and hooks
 
   const dispatch = useAppDispatch();
 
   const jumpToVersionVisible = useAppSelector(selectJumpToVersionVisible);
+
+  // Get favorites for sorting (must match CardResultSet's sorting logic)
+  const favoriteIdentifiersSet = useAppSelector(selectFavoriteIdentifiersSet);
 
   //# endregion
 
@@ -61,6 +73,43 @@ export function GridSelectorModal({
 
   //# endregion
 
+  //# region computed constants
+
+  // Filter favorites to only those in current results
+  const favoriteIdentifiersInResults = useMemo(() => {
+    const imageIdentifiersSet = new Set(imageIdentifiers);
+    return Array.from(favoriteIdentifiersSet).filter((id) =>
+      imageIdentifiersSet.has(id)
+    );
+  }, [favoriteIdentifiersSet, imageIdentifiers]);
+
+  // Sort identifiers with favorites first (for display order)
+  const sortedIdentifiers = useMemo(() => {
+    const favoriteSet = new Set(favoriteIdentifiersInResults);
+    return [...imageIdentifiers].sort((a, b) => {
+      const aIsFavorite = favoriteSet.has(a);
+      const bIsFavorite = favoriteSet.has(b);
+      if (aIsFavorite && !bIsFavorite) return -1;
+      if (!aIsFavorite && bIsFavorite) return 1;
+      return 0;
+    });
+  }, [imageIdentifiers, favoriteIdentifiersInResults]);
+
+  // Map from identifier to original index (for consistent option numbering)
+  const originalIndexMap = useMemo(() => {
+    const map = new Map<string, number>();
+    imageIdentifiers.forEach((id, index) => map.set(id, index));
+    return map;
+  }, [imageIdentifiers]);
+
+  // Validation uses original array length and indices
+  const versionToJumpToIsValid =
+    ((optionNumber ?? 0) > 0 &&
+      (optionNumber ?? 0) < imageIdentifiers.length + 1) ||
+    (imageIdentifier !== "" && imageIdentifiers.includes(imageIdentifier));
+
+  //# endregion
+
   //# region callbacks
 
   const selectImage = useCallback(
@@ -70,21 +119,13 @@ export function GridSelectorModal({
     },
     [onClick, handleClose]
   );
+  // "Jump to Version" uses original array indices
   const handleSubmitJumpToVersionForm = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     selectImage(
       optionNumber ? imageIdentifiers[optionNumber - 1] : imageIdentifier
     );
   };
-
-  //# endregion
-
-  //# region computed constants
-
-  const versionToJumpToIsValid =
-    ((optionNumber ?? 0) > 0 &&
-      (optionNumber ?? 0) < imageIdentifiers.length + 1) ||
-    (imageIdentifier !== "" && imageIdentifiers.includes(imageIdentifier));
 
   //# endregion
 
@@ -166,9 +207,11 @@ export function GridSelectorModal({
         </AutofillCollapse>
         <CardResultSet
           headerText="Browse Versions"
-          imageIdentifiers={imageIdentifiers}
+          imageIdentifiers={sortedIdentifiers}
           handleClick={selectImage}
           selectedImage={selectedImage}
+          favoriteIdentifiers={favoriteIdentifiersInResults}
+          originalIndexMap={originalIndexMap}
         />
       </Modal.Body>
       <Modal.Footer>

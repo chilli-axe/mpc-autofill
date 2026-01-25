@@ -43,6 +43,7 @@ import {
   DFCPairs,
   SearchQuery,
   SearchResults,
+  SearchResultsForQuery,
   SearchSettings,
   SourceDocuments,
 } from "@/common/types";
@@ -345,7 +346,7 @@ export async function APIEditorSearch(
   });
   return rawResponse.json().then((content) => {
     if (rawResponse.status === 200 && content.results != null) {
-      return content.results; // TODO: (content as EditorSearchResponse).results;
+      return content.results as EditorSearchResponse["results"];
     }
     throw { name: content.name, message: content.message };
   });
