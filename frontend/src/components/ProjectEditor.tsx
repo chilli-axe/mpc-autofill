@@ -8,7 +8,7 @@ import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
 
 import { RibbonHeight } from "@/common/constants";
-import { useAppSelector } from "@/common/types";
+import { useAppDispatch, useAppSelector } from "@/common/types";
 import { OverflowCol } from "@/components/OverflowCol";
 import { Ribbon } from "@/components/Ribbon";
 import { SelectedImagesRibbon } from "@/features/bulkManagement/SelectedImagesRibbon";
@@ -20,7 +20,6 @@ import { FinishSettings } from "@/features/finishSettings/FinishSettings";
 import { Import } from "@/features/import/Import";
 import { SearchSettings } from "@/features/searchSettings/SearchSettings";
 import { Status } from "@/features/status/Status";
-import { useRemoteBackendConfigured } from "@/store/slices/backendSlice";
 import {
   selectIsProjectEmpty,
   selectProjectCardback,
