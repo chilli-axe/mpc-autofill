@@ -11,7 +11,10 @@ import {
   SearchResults,
 } from "@/common/types";
 import { api } from "@/store/api";
-import { recalculateSearchResults } from "@/store/listenerMiddleware";
+import {
+  loadFavourites,
+  recalculateSearchResults,
+} from "@/store/listenerMiddleware";
 import { fetchCardDocumentsAndReportError } from "@/store/slices/cardDocumentsSlice";
 import { clearSearchResults } from "@/store/slices/searchResultsSlice";
 import { setNotification } from "@/store/slices/toastsSlice";
@@ -59,6 +62,7 @@ export class LocalFilesService {
     if (this.worker === undefined) {
       throw new Error("localFilesService was not initialised!");
     }
+    loadFavourites(dispatch);
     await this.worker.setLocalFilesDirectoryHandle(directoryHandle, tags);
     await this.indexDirectory(dispatch, forceUpdate, tags);
     await recalculateSearchResults(state, dispatch, true);

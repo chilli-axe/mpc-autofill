@@ -81,6 +81,22 @@ export const recalculateSearchResults = async (
   });
 };
 
+export const loadFavourites = (dispatch: AppDispatch) => {
+  const favorites = getLocalStorageFavorites();
+  if (Object.keys(favorites).length > 0) {
+    dispatch(setAllFavoriteRenders(favorites));
+  }
+};
+
+export const fetchSources = async (state: RootState, dispatch: AppDispatch) => {
+  const isRemoteBackendConfigured = selectRemoteBackendConfigured(state);
+  if (isRemoteBackendConfigured) {
+    await fetchSourceDocumentsAndReportError(dispatch).then(() =>
+      fetchCardbacksAndReportError(dispatch)
+    );
+  }
+};
+
 //# region boilerplate
 
 export const listenerMiddleware = createListenerMiddleware();
@@ -103,17 +119,8 @@ startAppListening({
    */
   effect: async (action, { getState, dispatch }) => {
     const state = getState();
-    // Load favorites from localStorage on app initialization
-    const favorites = getLocalStorageFavorites();
-    if (Object.keys(favorites).length > 0) {
-      dispatch(setAllFavoriteRenders(favorites));
-    }
-    const isRemoteBackendConfigured = selectRemoteBackendConfigured(state);
-    if (isRemoteBackendConfigured) {
-      await fetchSourceDocumentsAndReportError(dispatch).then(() =>
-        fetchCardbacksAndReportError(dispatch)
-      );
-    }
+    loadFavourites(dispatch);
+    fetchSources(state, dispatch);
   },
 });
 
