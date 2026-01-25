@@ -15,6 +15,7 @@ runs:
       shell: bash
     - name: Install Playwright Browsers
       run: |
+        npm install
         npx playwright install --with-deps
       shell: bash
     - name: Run Jest tests
