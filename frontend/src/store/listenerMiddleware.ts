@@ -6,13 +6,10 @@ import {
 
 import { Back, Front, QueryTags } from "@/common/constants";
 import {
-  getLocalStorageFavorites,
   getLocalStorageSearchSettings,
   setLocalStorageFavorites,
 } from "@/common/cookies";
 import { Faces } from "@/common/types";
-import { Tag } from "@/common/types";
-import { localFilesService } from "@/features/localFiles/localFilesService";
 import { api } from "@/store/api";
 import {
   clearURL,
@@ -81,13 +78,6 @@ export const recalculateSearchResults = async (
   });
 };
 
-export const loadFavourites = (dispatch: AppDispatch) => {
-  const favorites = getLocalStorageFavorites();
-  if (Object.keys(favorites).length > 0) {
-    dispatch(setAllFavoriteRenders(favorites));
-  }
-};
-
 export const fetchSources = async (state: RootState, dispatch: AppDispatch) => {
   const isRemoteBackendConfigured = selectRemoteBackendConfigured(state);
   if (isRemoteBackendConfigured) {
@@ -119,7 +109,6 @@ startAppListening({
    */
   effect: async (action, { getState, dispatch }) => {
     const state = getState();
-    loadFavourites(dispatch);
     fetchSources(state, dispatch);
   },
 });

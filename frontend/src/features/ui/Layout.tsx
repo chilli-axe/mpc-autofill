@@ -8,7 +8,11 @@ import SSRProvider from "react-bootstrap/SSRProvider";
 import { Provider } from "react-redux";
 
 import { ContentMaxWidth, NavbarHeight } from "@/common/constants";
-import { getGoogleAnalyticsConsent } from "@/common/cookies";
+import {
+  getGoogleAnalyticsConsent,
+  getLocalStorageFavorites,
+} from "@/common/cookies";
+import { useAppDispatch } from "@/common/types";
 import { useBackendSetter } from "@/features/backend/useBackendSetter";
 import {
   DownloadContext,
@@ -19,6 +23,7 @@ import { localFilesService } from "@/features/localFiles/localFilesService";
 import { Modals } from "@/features/modals/Modals";
 import { Toasts } from "@/features/toasts/Toasts";
 import ProjectNavbar from "@/features/ui/Navbar";
+import { setAllFavoriteRenders } from "@/store/slices/favoritesSlice";
 import store from "@/store/store";
 
 const OverscrollProvider = styled(Provider)`
@@ -64,9 +69,19 @@ export function LayoutWithoutReduxProvider({ children }: PropsWithChildren) {
   const downloadContext: DownloadContext = new Queue(10, 50);
   const [forceUpdateValue, forceUpdate] = useReducer((x: number) => x + 1, 0);
   useBackendSetter();
+  const dispatch = useAppDispatch();
+
+  /**
+   * Initialise local files service webworker andoad favourites on app init.
+   */
   useEffect(() => {
+    const favorites = getLocalStorageFavorites();
+    if (Object.keys(favorites).length > 0) {
+      dispatch(setAllFavoriteRenders(favorites));
+    }
     localFilesService.initialiseWorker();
   }, []);
+
   return (
     <DownloadContextProvider value={downloadContext}>
       <LocalFilesContextProvider
