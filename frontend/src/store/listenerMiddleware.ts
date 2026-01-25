@@ -103,16 +103,16 @@ startAppListening({
    */
   effect: async (action, { getState, dispatch }) => {
     const state = getState();
+    // Load favorites from localStorage on app initialization
+    const favorites = getLocalStorageFavorites();
+    if (Object.keys(favorites).length > 0) {
+      dispatch(setAllFavoriteRenders(favorites));
+    }
     const isRemoteBackendConfigured = selectRemoteBackendConfigured(state);
     if (isRemoteBackendConfigured) {
       await fetchSourceDocumentsAndReportError(dispatch).then(() =>
         fetchCardbacksAndReportError(dispatch)
       );
-      // Load favorites from localStorage on app initialization
-      const favorites = getLocalStorageFavorites();
-      if (Object.keys(favorites).length > 0) {
-        dispatch(setAllFavoriteRenders(favorites));
-      }
     }
   },
 });
@@ -187,6 +187,7 @@ startAppListening({
    */
   effect: async (action, { dispatch, getState }) => {
     const state = getState();
+    const favoriteIdentifiersSet = selectFavoriteIdentifiersSet(state);
     const currentCardback = selectProjectCardback(state);
     const cardbacks = selectCardbacks(state);
 
@@ -195,7 +196,10 @@ startAppListening({
       newCardback = undefined;
     }
     if (newCardback == null && cardbacks.length > 0) {
-      newCardback = cardbacks[0];
+      newCardback = selectFirstFavoritedOrFirst(
+        cardbacks,
+        favoriteIdentifiersSet
+      );
     }
 
     if (newCardback != currentCardback) {
