@@ -15,7 +15,9 @@ runs:
       shell: bash
     - name: Install Playwright Browsers
       run: |
+        npm install
         npx playwright install --with-deps
+      working-directory: frontend
       shell: bash
     - name: Run Jest tests
       working-directory: frontend
