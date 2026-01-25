@@ -364,14 +364,12 @@ export const selectUniqueCardIdentifiers = createSelector(
         .flatMap((slotProjectMembers) =>
           [Front, Back].flatMap((face) => {
             const searchQuery = slotProjectMembers[face]?.query;
-            return searchQuery?.query != null &&
-              (
-                (searchResults[searchQuery.query] ?? {})[
-                  searchQuery.cardType
-                ] ?? []
-              ).length > 0
-              ? (searchResults[searchQuery.query] ?? {})[searchQuery.cardType]
-              : [];
+
+            if (!searchQuery?.query || !searchResults[searchQuery.query]) {
+              return [];
+            }
+
+            return searchResults[searchQuery.query][searchQuery.cardType] ?? [];
           })
         )
         .concat(cardbacks)

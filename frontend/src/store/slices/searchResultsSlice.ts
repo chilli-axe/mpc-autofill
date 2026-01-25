@@ -37,16 +37,13 @@ const mergeSearchResults = (
       for (const [cardType, searchResults] of Object.entries(
         searchResultsForQuery
       ) as Array<[CardType, Array<string>]>) {
-        if (
-          Object.prototype.hasOwnProperty.call(mergedResults[query], cardType)
-        ) {
-          mergedResults[query][cardType] = [
-            ...mergedResults[query][cardType],
-            ...searchResults,
-          ];
-        } else {
-          mergedResults[query][cardType] = [...searchResults];
-        }
+        // initialize the array if it doesn't exist
+        mergedResults[query][cardType] ??= [];
+        // merge the arrays
+        mergedResults[query][cardType] = [
+          ...mergedResults[query][cardType],
+          ...searchResults,
+        ];
       }
     } else {
       mergedResults[query] = structuredClone(searchResultsForQuery);

@@ -28,7 +28,7 @@ function JumpIntoEditorButton() {
           </Link>
         ) : (
           <p style={{ textAlign: "center" }}>
-            Click the <b>Configure</b> button in the top-right to get started!
+            Click the <b>Sources</b> button in the top-right to get started!
           </p>
         )}
       </Col>

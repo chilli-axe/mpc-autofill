@@ -44,6 +44,7 @@ export const SizeStep = 1;
 
 export const CSRFKey = "csrftoken";
 export const SearchSettingsKey = "searchSettings";
+export const FavoritesKey = "favorites";
 export const GoogleAnalyticsConsentKey = "googleAnalyticsConsent";
 export const BackendURLKey = "backendURL";
 

@@ -14,6 +14,7 @@ import backendReducer, {
 } from "@/store/slices/backendSlice";
 import cardbacksReducer from "@/store/slices/cardbackSlice";
 import cardDocumentsReducer from "@/store/slices/cardDocumentsSlice";
+import favoritesReducer from "@/store/slices/favoritesSlice";
 import fileDownloadsReducer from "@/store/slices/fileDownloadsSlice";
 import finishSettingsReducer from "@/store/slices/finishSettingsSlice";
 import invalidIdentifiersReducer from "@/store/slices/invalidIdentifiersSlice";
@@ -40,6 +41,7 @@ const rootReducer = combineReducers({
   modals: modalsReducer,
   invalidIdentifiers: invalidIdentifiersReducer,
   fileDownloads: fileDownloadsReducer,
+  favorites: favoritesReducer,
 });
 
 //# region middleware
