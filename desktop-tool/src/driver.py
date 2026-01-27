@@ -14,6 +14,7 @@ from selenium.common.exceptions import NoAlertPresentException, NoSuchElementExc
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.support.expected_conditions import (
+    presence_of_element_located,
     invisibility_of_element,
     text_to_be_present_in_element,
     visibility_of_element_located,
@@ -202,6 +203,11 @@ class AutofillDriver:
             logger.debug(e)
         return False
 
+    def wait_for_selector(self, selector: str, timeout_seconds: int = 30) -> None:
+        WebDriverWait(self.driver, timeout_seconds, poll_frequency=0.2).until(
+            presence_of_element_located((By.CSS_SELECTOR, selector))
+        )
+
     def set_state(self, state: str, action: Optional[str] = None) -> None:
         self.state = state
         self.action = action
@@ -320,6 +326,178 @@ class AutofillDriver:
             alert.accept()
         except NoAlertPresentException:
             pass
+
+    # endregion
+
+    # region DriveThruCards
+
+    def wait_for_cloudflare_challenge(self, timeout_seconds: int = 300) -> None:
+        """
+        Wait for the Cloudflare challenge to be completed by waiting for site content to appear.
+        Checks multiple indicators that the actual site has loaded.
+        """
+        self.set_state(States.defining_order, "Waiting for site to load")
+        logger.info(
+            "Waiting for DriveThruCards to load...\n"
+            "If you see a Cloudflare captcha, please complete it."
+        )
+
+        start_time = time.time()
+        while time.time() - start_time < timeout_seconds:
+            try:
+                # Check page title - Cloudflare shows "Just a moment..." 
+                title = self.driver.title.lower()
+                if "just a moment" in title or "attention required" in title:
+                    time.sleep(1)
+                    continue
+                
+                # Check if we're on the actual DriveThruCards site
+                # Look for any of these indicators that the real site has loaded
+                page_source = self.driver.page_source
+                
+                # DriveThruCards specific indicators
+                site_indicators = [
+                    "drivethrucards",
+                    "Log In",  # The login button text
+                    "data-cy=\"login\"",  # The login button attribute
+                    "OneBookShelf",  # Parent company
+                ]
+                
+                if any(indicator in page_source for indicator in site_indicators):
+                    logger.info("Site loaded successfully!")
+                    time.sleep(2)  # Give page time to fully render
+                    return
+                    
+            except Exception as e:
+                logger.debug(f"Error checking page: {e}")
+            time.sleep(1)
+
+        logger.warning(f"Timeout after {timeout_seconds}s waiting for site to load. Attempting to continue anyway.")
+
+    def is_dtc_user_authenticated(self) -> bool:
+        """Check if the user is logged in to DriveThruCards."""
+        selectors = self.target_site.value.selectors
+        try:
+            # Look for logout link or account link as indicator of being logged in
+            logged_in_elements = self.driver.find_elements(
+                By.CSS_SELECTOR, selectors.logged_in_indicator_selector
+            )
+            return len(logged_in_elements) > 0
+        except Exception:
+            return False
+
+    def authenticate_dtc(self) -> None:
+        """
+        Handle DriveThruCards login flow.
+        Two-step process: click login button, then click "Go to Log in" link.
+        Waits for user to complete authentication.
+        """
+        selectors = self.target_site.value.selectors
+
+        if self.is_dtc_user_authenticated():
+            logger.info("Already logged in to DriveThruCards.")
+            return
+
+        self.set_state(States.defining_order, "Awaiting DriveThruCards login")
+        logger.info("Please log in to your DriveThruCards account.")
+
+        # Step 1: Try to find and click the login button
+        try:
+            login_button = WebDriverWait(self.driver, 10).until(
+                presence_of_element_located((By.CSS_SELECTOR, selectors.login_button_selector))
+            )
+            logger.info("Clicking the login button...")
+            login_button.click()
+            time.sleep(2)  # Wait for modal/dialog to appear
+        except Exception as e:
+            logger.debug(f"Could not find/click login button: {e}")
+            logger.info(
+                "Could not find login button automatically.\n"
+                "Please click the login button manually."
+            )
+
+        # Step 2: Try to find and click the "Go to Log in" link
+        try:
+            go_to_login_link = WebDriverWait(self.driver, 10).until(
+                presence_of_element_located((By.CSS_SELECTOR, selectors.go_to_login_selector))
+            )
+            logger.info("Clicking 'Go to Log in' link...")
+            go_to_login_link.click()
+            time.sleep(2)  # Wait for login page to load
+        except Exception as e:
+            logger.debug(f"Could not find/click 'Go to Log in' link: {e}")
+            logger.info(
+                "Could not find 'Go to Log in' link automatically.\n"
+                "Please navigate to the login page manually."
+            )
+
+        logger.info(
+            "Please complete the login process in the browser window.\n"
+            "The tool will automatically continue once you're logged in."
+        )
+
+        # Wait for user to complete login (timeout after 5 minutes)
+        timeout_seconds = 300
+        start_time = time.time()
+        while time.time() - start_time < timeout_seconds:
+            time.sleep(2)
+            if self.is_dtc_user_authenticated():
+                logger.info("Successfully logged in to DriveThruCards!")
+                time.sleep(1)  # Give the page a moment to settle
+                return
+
+        logger.warning(
+            f"Login timeout after {timeout_seconds}s. "
+            "Please ensure you're logged in before continuing."
+        )
+
+    def execute_drive_thru_cards_order(self, order: CardOrder, pdf_path: str) -> None:
+        t = time.time()
+        selectors = self.target_site.value.selectors
+        self.set_state(States.defining_order, "Opening DriveThruCards")
+        self.driver.get(self.target_site.value.starting_url)
+
+        # Handle Cloudflare challenge if present
+        self.wait_for_cloudflare_challenge()
+
+        # Handle login
+        self.authenticate_dtc()
+
+        if selectors.quantity_selector:
+            try:
+                self.wait_for_selector(selectors.quantity_selector)
+                quantity_input = self.driver.find_element(By.CSS_SELECTOR, selectors.quantity_selector)
+                quantity_input.clear()
+                quantity_input.send_keys(str(order.details.quantity))
+            except sl_exc.WebDriverException as exc:
+                logger.warning(f"Failed to set DriveThruCards quantity automatically: {exc}")
+
+        self.set_state(States.inserting_fronts, "Uploading PDF")
+        self.wait_for_selector(selectors.pdf_upload_input_selector)
+        upload_inputs = self.driver.find_elements(By.CSS_SELECTOR, selectors.pdf_upload_input_selector)
+        if len(upload_inputs) <= selectors.pdf_upload_input_index:
+            raise Exception(
+                f"DriveThruCards PDF upload input not found at index {selectors.pdf_upload_input_index} "
+                f"using selector {selectors.pdf_upload_input_selector}."
+            )
+        upload_inputs[selectors.pdf_upload_input_index].send_keys(pdf_path)
+        logger.info("DriveThruCards PDF uploaded. Please confirm the preview and continue checkout.")
+
+        if selectors.continue_selector:
+            try:
+                self.wait_for_selector(selectors.continue_selector)
+                self.driver.find_element(By.CSS_SELECTOR, selectors.continue_selector).click()
+            except sl_exc.WebDriverException:
+                logger.warning("DriveThruCards continue button could not be clicked automatically.")
+
+        if selectors.add_to_cart_selector:
+            try:
+                self.wait_for_selector(selectors.add_to_cart_selector)
+                self.driver.find_element(By.CSS_SELECTOR, selectors.add_to_cart_selector).click()
+            except sl_exc.WebDriverException:
+                logger.warning("DriveThruCards add-to-cart button could not be clicked automatically.")
+
+        log_hours_minutes_seconds_elapsed(t)
 
     # endregion
 

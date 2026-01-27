@@ -1,6 +1,8 @@
 # nuitka-project: --mode=onefile
 # nuitka-project: --include-data-files=client_secrets.json=client_secrets.json
 # nuitka-project: --include-data-files=post-launch.html=post-launch.html
+# nuitka-project: --include-data-files=assets/icc/USWebCoatedSWOP.icc=assets/icc/USWebCoatedSWOP.icc
+# nuitka-project: --include-data-files=assets/icc/Adobe-Color-Profile-EULA.pdf=assets/icc/Adobe-Color-Profile-EULA.pdf
 # nuitka-project: --noinclude-pytest-mode=nofollow
 # nuitka-project: --windows-icon-from-ico=favicon.ico
 # nuitka-project-if: {OS} == "Windows":
@@ -17,8 +19,11 @@
 
 import logging
 import os
+import shutil
+import subprocess
 import sys
 from contextlib import nullcontext
+from pathlib import Path
 from typing import Optional, Union
 
 import click
@@ -31,7 +36,7 @@ from src.formatting import bold
 from src.io import DEFAULT_WORKING_DIRECTORY, create_image_directory_if_not_exists
 from src.logging import configure_loggers, logger
 from src.order import CardOrder, aggregate_and_split_orders
-from src.pdf_maker import PdfExporter
+from src.pdf_maker import PdfExporter, PdfXConversionConfig, get_ghostscript_path, get_ghostscript_version
 from src.processing import ImagePostProcessingConfig
 from src.web_server import WebServer
 
@@ -45,6 +50,86 @@ def prompt_if_no_arguments(prompt: str) -> Union[str, bool]:
     """
 
     return f"{prompt} (Press Enter if you're not sure.)" if len(sys.argv) == 1 else False
+
+
+def get_default_dtc_icc_profile() -> Optional[str]:
+    if "__compiled__" in globals():
+        candidate = Path(sys.argv[0]).resolve().parent / "assets/icc/USWebCoatedSWOP.icc"
+    else:
+        candidate = Path(__file__).resolve().parent / "assets/icc/USWebCoatedSWOP.icc"
+    return str(candidate) if candidate.is_file() else None
+
+
+def ensure_ghostscript_available() -> str:
+    while True:
+        gs_path = get_ghostscript_path()
+        if gs_path:
+            version = get_ghostscript_version(gs_path)
+            if version:
+                logger.info(f"Ghostscript detected: {bold(version)} at {bold(gs_path)}")
+            else:
+                logger.info(f"Ghostscript detected at {bold(gs_path)}")
+            return gs_path
+
+        logger.info(
+            "DriveThruCards export requires Ghostscript for PDF/X-1a compliance."
+        )
+
+        should_install = click.confirm("Install Ghostscript now?", default=True)
+        if should_install:
+            if sys.platform.startswith("darwin"):
+                if shutil.which("brew") is None:
+                    logger.info("Homebrew not found. Please install Homebrew, then re-run.")
+                else:
+                    logger.info("Installing Ghostscript via Homebrew...")
+                    result = subprocess.run(["brew", "install", "ghostscript"], check=False)
+                    if result.returncode != 0:
+                        logger.warning("Ghostscript installation via Homebrew failed.")
+            elif sys.platform.startswith("win"):
+                if shutil.which("winget") is None:
+                    logger.info(
+                        "winget not found. Please install Ghostscript from "
+                        "https://ghostscript.com/releases/gsdnld.html and ensure it's on PATH."
+                    )
+                else:
+                    logger.info("Installing Ghostscript via winget...")
+                    result = subprocess.run(
+                        ["winget", "install", "--id", "ArtifexSoftware.Ghostscript", "--accept-source-agreements"],
+                        check=False,
+                    )
+                    if result.returncode != 0:
+                        logger.warning("Ghostscript installation via winget failed.")
+            else:
+                if shutil.which("sudo") is None:
+                    logger.info(
+                        "sudo not found. Please install Ghostscript with your package manager manually."
+                    )
+                elif shutil.which("apt") is not None:
+                    logger.info("Installing Ghostscript via apt...")
+                    result = subprocess.run(["sudo", "apt", "install", "-y", "ghostscript"], check=False)
+                    if result.returncode != 0:
+                        logger.warning("Ghostscript installation via apt failed.")
+                elif shutil.which("dnf") is not None:
+                    logger.info("Installing Ghostscript via dnf...")
+                    result = subprocess.run(["sudo", "dnf", "install", "-y", "ghostscript"], check=False)
+                    if result.returncode != 0:
+                        logger.warning("Ghostscript installation via dnf failed.")
+                elif shutil.which("yum") is not None:
+                    logger.info("Installing Ghostscript via yum...")
+                    result = subprocess.run(["sudo", "yum", "install", "-y", "ghostscript"], check=False)
+                    if result.returncode != 0:
+                        logger.warning("Ghostscript installation via yum failed.")
+                else:
+                    logger.info("No supported package manager found. Please install Ghostscript manually.")
+        else:
+            logger.info(
+                "Please install Ghostscript, then return here to continue.\n"
+                "macOS: brew install ghostscript\n"
+                "Windows: https://ghostscript.com/releases/gsdnld.html\n"
+                "Linux: use your package manager (e.g., apt install ghostscript)."
+            )
+
+        input("Press Enter to re-check for Ghostscript, or Ctrl+C to exit.")
 
 
 @click.command(context_settings={"show_default": True})
@@ -128,6 +213,11 @@ def prompt_if_no_arguments(prompt: str) -> Union[str, bool]:
     ),
 )
 @click.option(
+    "--dtc-icc-profile",
+    default=None,
+    help="Optional ICC profile path to embed in DriveThruCards exports.",
+)
+@click.option(
     "--combine-orders/--no-combine-orders",
     default=True,
     help="If True, compatible orders will be combined into a single order where possible.",
@@ -175,6 +265,7 @@ def main(
     image_post_processing: bool,
     max_dpi: int,
     downscale_alg: str,
+    dtc_icc_profile: Optional[str],
     combine_orders: bool,
     log_level: str,
     write_debug_logs: bool,
@@ -208,17 +299,59 @@ def main(
                 logger.info("System sleep is being prevented during this execution.")
             if image_post_processing:
                 logger.info("Images are being post-processed during this execution.")
+            target_site = TargetSites[site]
             post_processing_config = (
                 ImagePostProcessingConfig(max_dpi=max_dpi, downscale_alg=ImageResizeMethods[downscale_alg])
                 if image_post_processing
                 else None
             )
-            if exportpdf:
+            if target_site == TargetSites.DriveThruCards:
+                ensure_ghostscript_available()
+                using_default_icc = dtc_icc_profile is None
+                resolved_icc_profile = dtc_icc_profile or get_default_dtc_icc_profile()
+                if resolved_icc_profile is None:
+                    raise Exception(
+                        "Default DriveThruCards ICC profile was not found. "
+                        "Ensure assets/icc/USWebCoatedSWOP.icc is available or pass --dtc-icc-profile."
+                    )
+                if resolved_icc_profile and not os.path.isfile(resolved_icc_profile):
+                    raise Exception(
+                        f"DriveThruCards ICC profile path does not exist or is not a file: {bold(resolved_icc_profile)}"
+                    )
+                icc_source = "bundled default" if using_default_icc else "user-provided"
+                logger.info(f"DriveThruCards ICC profile ({icc_source}): {bold(resolved_icc_profile)}")
+                # Keep images as RGB JPEG during PDF generation - fpdf can embed these directly
+                # with DCT compression. Ghostscript will handle CMYK conversion with the ICC 
+                # profile during PDF/X-1a conversion, which produces better results than 
+                # pre-converting to CMYK (which fpdf re-encodes with FlateDecode, bloating file size).
+                dtc_post_processing_config = ImagePostProcessingConfig(
+                    max_dpi=300,
+                    downscale_alg=ImageResizeMethods[downscale_alg],
+                    output_format="JPEG",
+                    convert_to_cmyk=False,  # Let Ghostscript handle CMYK conversion
+                )
+                orders = CardOrder.from_xmls_in_folder(working_directory=working_directory)
+                for i, order in enumerate(orders, start=1):
+                    exporter = PdfExporter(
+                        order=order,
+                        export_mode="drive_thru_cards",
+                        pdfx_config=PdfXConversionConfig(icc_profile_path=resolved_icc_profile),
+                    )
+                    pdf_paths = exporter.execute(post_processing_config=dtc_post_processing_config)
+                    dtc_pdf_path = next((path for path in reversed(pdf_paths) if path.endswith("_pdfx.pdf")), pdf_paths[0])
+                    AutofillDriver(
+                        browser=Browsers[browser],
+                        target_site=target_site,
+                        binary_location=binary_location,
+                        starting_url=target_site.value.starting_url,
+                    ).execute_drive_thru_cards_order(order=order, pdf_path=dtc_pdf_path)
+                    if i < len(orders):
+                        input(f"Press {bold('Enter')} to continue with the next DriveThruCards order.\n")
+            elif exportpdf:
                 PdfExporter(order=CardOrder.from_xmls_in_folder(working_directory=working_directory)[0]).execute(
                     post_processing_config=post_processing_config
                 )
             else:
-                target_site = TargetSites[site]
                 card_orders = aggregate_and_split_orders(
                     orders=CardOrder.from_xmls_in_folder(working_directory=working_directory),
                     target_site=target_site,
