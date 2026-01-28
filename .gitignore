@@ -57,6 +57,7 @@ coverage.xml
 .pytest_cache/
 desktop-tool/export/
 desktop-tool/tests/export/
+desktop-tool/tests/cards/
 
 cover/
 
@@ -178,3 +179,6 @@ MPCAutofill/drives.csv
 frontend/public/mockServiceWorker.js
 /image-cdn/node_modules/*
 /image-cdn/.wrangler/*
+
+# Plan files
+*.plan.md
