@@ -17,6 +17,8 @@ from src.formatting import bold
 from src.logging import logger
 from src.order import CardOrder
 from src.processing import (
+    DTC_CARD_HEIGHT_INCHES,
+    DTC_CARD_WIDTH_INCHES,
     ImagePostProcessingConfig,
     calculate_dtc_target_pixel_size,
     post_process_image,
@@ -66,7 +68,7 @@ def convert_pdf_to_pdfx(
         gs_path,
         "-dBATCH",
         "-dNOPAUSE",
-        "-dSAFER",
+        "-dNOSAFER",  # Allow file system access for ICC profile and output
         "-sDEVICE=pdfwrite",
         "-dCompatibilityLevel=1.3",
         "-dPDFX",
@@ -82,6 +84,7 @@ def convert_pdf_to_pdfx(
         cmd.append(f"-sOutputICCProfile={config.icc_profile_path}")
     cmd.append(source_path)
 
+    logger.debug(f"Ghostscript command: {' '.join(cmd)}")
     result = subprocess.run(cmd, capture_output=True, text=True)
     if result.returncode != 0:
         logger.warning(
@@ -136,8 +139,9 @@ class PdfExporter:
 
     def __attrs_post_init__(self) -> None:
         if self.export_mode == "drive_thru_cards":
-            self.card_width_in_inches = 63 / 25.4
-            self.card_height_in_inches = 88 / 25.4
+            # DriveThruCards Premium Euro Poker requires 2.73" x 3.71" with bleed
+            self.card_width_in_inches = DTC_CARD_WIDTH_INCHES
+            self.card_height_in_inches = DTC_CARD_HEIGHT_INCHES
             self.separate_faces = False
             self.number_of_cards_per_file = max(1, self.order.details.quantity)
         else:
@@ -259,7 +263,7 @@ class PdfExporter:
 
     def execute(self, post_processing_config: Optional[ImagePostProcessingConfig]) -> list[str]:
         if self.export_mode == "drive_thru_cards" and post_processing_config is not None:
-            # Calculate exact pixel dimensions for the target DPI at DTC card size (63x88mm)
+            # Calculate exact pixel dimensions for the target DPI at DTC card size (2.73" x 3.71")
             post_processing_config.target_pixel_size = calculate_dtc_target_pixel_size(
                 post_processing_config.max_dpi
             )

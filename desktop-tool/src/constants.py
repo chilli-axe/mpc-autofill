@@ -161,9 +161,10 @@ class DriveThruCardsSelectors:
     add_to_cart_selector: str = attr.ib(default="")
     continue_selector: str = attr.ib(default="")
     # Login selectors - two step process: click login button, then click "Go to Log in" link
-    login_button_selector: str = attr.ib(default="button[data-cy='login'], button[aria-label='Log In']")
+    login_button_selector: str = attr.ib(default="button[data-cy='login']")
     go_to_login_selector: str = attr.ib(default="a[href='/en/']")
-    logged_in_indicator_selector: str = attr.ib(default="button[data-cy='logout'], button[aria-label='Log Out'], a[href*='logout'], a[href*='account'], .my-account")
+    # Publisher Tools link only appears when logged in as a publisher
+    logged_in_indicator_selector: str = attr.ib(default="a[href*='pub_tools.php']")
 
 
 @attr.s

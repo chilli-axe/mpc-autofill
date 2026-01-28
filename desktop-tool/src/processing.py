@@ -9,19 +9,20 @@ from src.logging import logger
 if TYPE_CHECKING:
     from PIL import Image
 
-# DriveThruCards physical card dimensions in mm
-DTC_CARD_WIDTH_MM = 63
-DTC_CARD_HEIGHT_MM = 88
+# DriveThruCards physical card dimensions (Premium Euro Poker with bleed)
+# DriveThruCards requires 2.73" x 3.71" which includes bleed area
+DTC_CARD_WIDTH_INCHES = 2.73
+DTC_CARD_HEIGHT_INCHES = 3.71
 MM_PER_INCH = 25.4
 
 
 def calculate_dtc_target_pixel_size(target_dpi: int) -> Tuple[int, int]:
     """
     Calculate the target pixel dimensions for DriveThruCards at the specified DPI.
-    Card size is 63mm x 88mm.
+    Card size is 2.73" x 3.71" (Premium Euro Poker with bleed).
     """
-    width = max(1, round((DTC_CARD_WIDTH_MM / MM_PER_INCH) * target_dpi))
-    height = max(1, round((DTC_CARD_HEIGHT_MM / MM_PER_INCH) * target_dpi))
+    width = max(1, round(DTC_CARD_WIDTH_INCHES * target_dpi))
+    height = max(1, round(DTC_CARD_HEIGHT_INCHES * target_dpi))
     return (width, height)
 
 
@@ -83,7 +84,7 @@ def post_process_image(raw_image: bytes, config: ImagePostProcessingConfig) -> T
     if config.target_pixel_size:
         target_width, target_height = config.target_pixel_size
         if img.width != target_width or img.height != target_height:
-            # For DTC, force exact pixel size to guarantee 300 DPI at 63x88mm.
+            # For DTC, force exact pixel size to guarantee 300 DPI at 2.73" x 3.71".
             img = img.resize((target_width, target_height), config.downscale_alg.value)
     else:
         img_dpi = 10 * round(int(img.height) * DPI_HEIGHT_RATIO / 10)
@@ -134,7 +135,7 @@ def _build_save_kwargs(
     if config.embed_dpi_metadata and config.target_pixel_size:
         # Calculate DPI from target pixel size and DTC card dimensions
         target_width, target_height = config.target_pixel_size
-        dpi_x = round(target_width / (DTC_CARD_WIDTH_MM / MM_PER_INCH))
-        dpi_y = round(target_height / (DTC_CARD_HEIGHT_MM / MM_PER_INCH))
+        dpi_x = round(target_width / DTC_CARD_WIDTH_INCHES)
+        dpi_y = round(target_height / DTC_CARD_HEIGHT_INCHES)
         save_kwargs["dpi"] = (dpi_x, dpi_y)
     return save_kwargs

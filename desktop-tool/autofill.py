@@ -338,7 +338,14 @@ def main(
                         pdfx_config=PdfXConversionConfig(icc_profile_path=resolved_icc_profile),
                     )
                     pdf_paths = exporter.execute(post_processing_config=dtc_post_processing_config)
-                    dtc_pdf_path = next((path for path in reversed(pdf_paths) if path.endswith("_pdfx.pdf")), pdf_paths[0])
+                    # Only use the Ghostscript PDF/X-1a output - no fallback
+                    dtc_pdf_path = next((path for path in reversed(pdf_paths) if path.endswith("_pdfx.pdf")), None)
+                    if dtc_pdf_path is None:
+                        logger.error(
+                            "Ghostscript PDF/X-1a conversion failed. Cannot proceed with DriveThruCards upload.\n"
+                            "Please fix the Ghostscript conversion issue and try again."
+                        )
+                        continue
                     AutofillDriver(
                         browser=Browsers[browser],
                         target_site=target_site,
