@@ -25,12 +25,11 @@ import { SearchQuery, useAppDispatch, useAppSelector } from "@/common/types";
 import { CardDocument } from "@/common/types";
 import { Icon } from "@/components/icon";
 import { Spinner } from "@/components/Spinner";
+import { useClientSearchContext } from "@/features/clientSearch/clientSearchContext";
 import { selectCardDocumentByIdentifier } from "@/store/slices/cardDocumentsSlice";
 import { selectIsFavoriteRender } from "@/store/slices/favoritesSlice";
 import { showCardDetailedViewModal } from "@/store/slices/modalsSlice";
 import { RootState } from "@/store/store";
-
-import { useLocalFilesContext } from "../localFiles/localFilesContext";
 
 const HiddenImage = styled(Image)`
   z-index: 0;
@@ -91,11 +90,11 @@ const useLocalFileImageSrc = (
   cardDocument: CardDocument,
   setImageState: (imageState: ImageState) => void
 ): string | undefined => {
-  const { localFilesService } = useLocalFilesContext();
+  const { clientSearchService } = useClientSearchContext();
   const [blobURL, setBlobURL] = useState<string | undefined>(undefined);
   useEffect(() => {
     (async () => {
-      const oramaCardDocument = await localFilesService.getByID(
+      const oramaCardDocument = await clientSearchService.getByID(
         cardDocument?.identifier
       );
       if (oramaCardDocument?.params.sourceType === SourceType.LocalFile) {
@@ -105,7 +104,7 @@ const useLocalFileImageSrc = (
         setBlobURL(url);
       }
     })();
-  }, [cardDocument?.identifier, localFilesService, setImageState]);
+  }, [cardDocument?.identifier, clientSearchService, setImageState]);
   return blobURL;
 };
 

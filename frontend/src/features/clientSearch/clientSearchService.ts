@@ -17,26 +17,26 @@ import { clearSearchResults } from "@/store/slices/searchResultsSlice";
 import { setNotification } from "@/store/slices/toastsSlice";
 import { AppDispatch, RootState } from "@/store/store";
 
-import { LocalFilesServiceWorker } from "./localFilesService.worker";
+import { ClientSearchServiceWorker } from "./clientSearchService.worker";
 
 /**
  * work around next.js limitation where workers cannot be initialised at the module level
  * because of SSR hydration
  */
-export class LocalFilesService {
-  worker: Remote<LocalFilesServiceWorker> | undefined;
+export class ClientSearchService {
+  worker: Remote<ClientSearchServiceWorker> | undefined;
   constructor() {
     this.worker = undefined;
   }
 
   public initialiseWorker() {
     const worker = new Worker(
-      new URL("./localFilesService.worker.ts", import.meta.url),
+      new URL("./clientSearchService.worker.ts", import.meta.url),
       {
         type: "module",
       }
     );
-    this.worker = wrap<LocalFilesServiceWorker>(worker);
+    this.worker = wrap<ClientSearchServiceWorker>(worker);
   }
 
   public async hasLocalFilesDirectoryHandle(): Promise<boolean> {
@@ -57,7 +57,7 @@ export class LocalFilesService {
     tags: Array<Tag> | undefined
   ) {
     if (this.worker === undefined) {
-      throw new Error("localFilesService was not initialised!");
+      throw new Error("clientSearchService was not initialised!");
     }
     await this.worker.setLocalFilesDirectoryHandle(directoryHandle, tags);
     await this.indexDirectory(dispatch, forceUpdate, tags);
@@ -68,7 +68,7 @@ export class LocalFilesService {
 
   public async clearDirectoryHandle(state: RootState, dispatch: AppDispatch) {
     if (this.worker === undefined) {
-      throw new Error("localFilesService was not initialised!");
+      throw new Error("clientSearchService was not initialised!");
     }
     return this.worker
       .clearLocalFilesIndex()
@@ -81,7 +81,7 @@ export class LocalFilesService {
     tags: Array<Tag> | undefined
   ) {
     if (this.worker === undefined) {
-      throw new Error("localFilesService was not initialised!");
+      throw new Error("clientSearchService was not initialised!");
     }
     const notificationId = Math.random().toString();
     if (await this.worker.hasLocalFilesDirectoryHandle()) {
@@ -131,7 +131,7 @@ export class LocalFilesService {
     limit?: number
   ): Promise<Array<{ id: string; document: OramaCardDocument }> | undefined> {
     if (this.worker === undefined) {
-      throw new Error("localFilesService was not initialised!");
+      throw new Error("clientSearchService was not initialised!");
     }
     return this.worker.search(searchSettings, query, cardTypes, limit);
   }
@@ -143,7 +143,7 @@ export class LocalFilesService {
     limit?: number
   ): Promise<Array<string> | undefined> {
     if (this.worker === undefined) {
-      throw new Error("localFilesService was not initialised!");
+      throw new Error("clientSearchService was not initialised!");
     }
     return this.worker.retrieveCardIdentifiers(
       searchSettings,
@@ -158,7 +158,7 @@ export class LocalFilesService {
     searchQueries: Array<SearchQuery>
   ): Promise<SearchResults> {
     if (this.worker === undefined) {
-      throw new Error("localFilesService was not initialised!");
+      throw new Error("clientSearchService was not initialised!");
     }
     return this.worker.editorSearch(searchSettings, searchQueries);
   }
@@ -167,7 +167,7 @@ export class LocalFilesService {
     searchSettings: SearchSettings
   ): Promise<Array<string> | undefined> {
     if (this.worker === undefined) {
-      throw new Error("localFilesService was not initialised!");
+      throw new Error("clientSearchService was not initialised!");
     }
     return this.worker.retrieveCardbackIdentifiers(searchSettings);
   }
@@ -176,7 +176,7 @@ export class LocalFilesService {
     identifiersToSearch: Array<string>
   ): Promise<CardDocuments> {
     if (this.worker === undefined) {
-      throw new Error("localFilesService was not initialised!");
+      throw new Error("clientSearchService was not initialised!");
     }
     return this.worker.getCardDocuments(identifiersToSearch);
   }
@@ -185,7 +185,7 @@ export class LocalFilesService {
     identifier: string
   ): Promise<OramaCardDocument | undefined> {
     if (this.worker === undefined) {
-      throw new Error("localFilesService was not initialised!");
+      throw new Error("clientSearchService was not initialised!");
     }
     return this.worker.getByID(identifier);
   }
@@ -194,7 +194,7 @@ export class LocalFilesService {
     oramaCardDocument: OramaCardDocument
   ): Promise<CardDocument> {
     if (this.worker === undefined) {
-      throw new Error("localFilesService was not initialised!");
+      throw new Error("clientSearchService was not initialised!");
     }
     return this.worker.translateOramaCardDocumentToCardDocument(
       oramaCardDocument
@@ -205,10 +205,10 @@ export class LocalFilesService {
     { [cardType in CardType]: Array<CardDocument> } | undefined
   > {
     if (this.worker === undefined) {
-      throw new Error("localFilesService was not initialised!");
+      throw new Error("clientSearchService was not initialised!");
     }
     return this.worker.getSampleCards();
   }
 }
 
-export const localFilesService = new LocalFilesService();
+export const clientSearchService = new ClientSearchService();
