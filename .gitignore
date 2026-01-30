@@ -58,6 +58,7 @@ coverage.xml
 desktop-tool/export/
 desktop-tool/tests/export/
 desktop-tool/tests/cards/
+desktop-tool/TODO.md
 
 cover/
 
@@ -148,6 +149,7 @@ dmypy.json
 cython_debug/
 
 .idea
+.cursor/
 .DS_Store
 MPCAutofill/card_db.db
 MPCAutofill/build
@@ -182,3 +184,6 @@ frontend/public/mockServiceWorker.js
 
 # Plan files
 *.plan.md
+
+# Claude Code
+claude.md
