@@ -103,6 +103,11 @@ def save_processed_image(
     config: ImagePostProcessingConfig,
     icc_profile_bytes: Optional[bytes] = None,
 ) -> None:
+    # Remove XMP data if it's present in the image info to avoid "XMP data is too long" error.
+    # JPEG format has a 64KB limit for XMP metadata in a single APP1 segment.
+    if "xmp" in img.info:
+        img.info.pop("xmp")
+
     img.save(file_path, **_build_save_kwargs(config=config, icc_profile_bytes=icc_profile_bytes))
 
 
@@ -111,6 +116,10 @@ def save_processed_image_to_bytes(
     config: ImagePostProcessingConfig,
     icc_profile_bytes: Optional[bytes] = None,
 ) -> bytes:
+    # Remove XMP data if it's present in the image info to avoid "XMP data is too long" error.
+    if "xmp" in img.info:
+        img.info.pop("xmp")
+
     output = io.BytesIO()
     img.save(output, **_build_save_kwargs(config=config, icc_profile_bytes=icc_profile_bytes))
     output.seek(0)
