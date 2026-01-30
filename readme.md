@@ -17,6 +17,18 @@ MPC Autofill is image aggregation & print automation software for your tabletop 
 
 If you're here to download the desktop client, check the [Releases]("https://github.com/chilli-axe/mpc-autofill/releases") tab.
 
+# Sponsors
+
+| ![signpath](https://signpath.org/assets/favicon-50x50.png) | Free code signing on Windows provided by [SignPath.io](https://about.signpath.io/), certficate by [SignPath Foundation](https://signpath.org/) |
+| ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+
+# Code Signing Policy
+
+- Committers and reviewers: [Members team](https://github.com/chilli-axe/mpc-autofill/graphs/contributors)
+- Approvers: [Owners](https://github.com/orgs/mpcautofill/people)
+- [Privacy Policy](https://mpcautofill.github.io/about)
+- This program will not transfer any information to other networked systems unless specifically requested by the user or the person installing or operating it.
+
 # Documentation
 
 Our docs are available in the repo's [Wiki](https://github.com/chilli-axe/mpc-autofill/wiki).

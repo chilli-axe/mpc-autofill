@@ -107,7 +107,8 @@ export function ContributionsPerSource() {
     <AutofillTable
       headers={["Name", "Type", "Contribution"]}
       data={contributionsQuery.data.sources.map((contribution) => [
-        contribution.externalLink != null ? (
+        contribution.externalLink != null &&
+        contribution.externalLink.length > 0 ? (
           <Link href={contribution.externalLink} target="_blank">
             {contribution.name}
           </Link>
