@@ -14,19 +14,18 @@ import {
   evaluateSteps,
   ValidationState,
 } from "@/features/backend/BackendConfigSteps";
-import { useLocalFilesContext } from "@/features/localFiles/localFilesContext";
+import { useClientSearchContext } from "@/features/clientSearch/clientSearchContext";
+import {
+  useLocalFilesDirectoryHandle,
+  useLocalFilesDirectoryIndexSize,
+} from "@/features/clientSearch/clientSearchHooks";
 import { useGetTagsQuery } from "@/store/api";
 import { setNotification } from "@/store/slices/toastsSlice";
 
-import {
-  useLocalFilesServiceDirectoryHandle,
-  useLocalFilesServiceDirectoryIndexSize,
-} from "../localFiles/localFilesHooks";
-
 export const LocalFolderBackendConfig = () => {
-  const { localFilesService, forceUpdate } = useLocalFilesContext();
-  const directoryHandle = useLocalFilesServiceDirectoryHandle();
-  const directoryIndexSize = useLocalFilesServiceDirectoryIndexSize();
+  const { clientSearchService, forceUpdate } = useClientSearchContext();
+  const directoryHandle = useLocalFilesDirectoryHandle();
+  const directoryIndexSize = useLocalFilesDirectoryIndexSize();
   const getTagsQuery = useGetTagsQuery();
 
   const [validationStatus, setValidationStatus] = useState<
@@ -62,7 +61,7 @@ export const LocalFolderBackendConfig = () => {
     {
       label: "Indexing files",
       callable: async (handle: FileSystemDirectoryHandle) =>
-        localFilesService
+        clientSearchService
           .setDirectoryHandle(
             handle,
             store.getState(),
@@ -80,7 +79,7 @@ export const LocalFolderBackendConfig = () => {
   const chooseDirectory = async () => evaluateSteps(steps, setValidationStatus);
 
   const clearDirectoryChoice = async () => {
-    await localFilesService.clearDirectoryHandle(store.getState(), dispatch);
+    await clientSearchService.clearDirectoryHandle(store.getState(), dispatch);
     forceUpdate();
     if (directoryHandle !== undefined) {
       dispatch(
@@ -109,7 +108,7 @@ export const LocalFolderBackendConfig = () => {
                 <Button
                   variant="primary"
                   onClick={async () =>
-                    localFilesService.indexDirectory(
+                    clientSearchService.indexDirectory(
                       dispatch,
                       forceUpdate,
                       getTagsQuery.data

@@ -10,14 +10,13 @@ import { useAppDispatch, useAppSelector } from "@/common/types";
 import { Coffee } from "@/components/Coffee";
 import { RightPaddedIcon } from "@/components/icon";
 import { MakePlayingCardsLink } from "@/components/MakePlayingCardsLink";
+import { useClientSearchContext } from "@/features/clientSearch/clientSearchContext";
+import { useLocalFilesDirectoryHandle } from "@/features/clientSearch/clientSearchHooks";
+import { useDownloadDesktopTool } from "@/features/download/downloadDesktopTool";
 import { useDownloadXML } from "@/features/download/downloadXML";
 import { useProjectName } from "@/store/slices/backendSlice";
 import { showModal } from "@/store/slices/modalsSlice";
 import { selectIsProjectEmpty } from "@/store/slices/projectSlice";
-
-import { useDownloadDesktopTool } from "../download/downloadDesktopTool";
-import { useLocalFilesContext } from "../localFiles/localFilesContext";
-import { useLocalFilesServiceDirectoryHandle } from "../localFiles/localFilesHooks";
 
 interface ExitModal {
   show: boolean;
@@ -83,8 +82,8 @@ const DownloadButtonLink = styled.a`
 `;
 
 const LocalFilesInstructions = () => {
-  const { localFilesService } = useLocalFilesContext();
-  const directoryHandle = useLocalFilesServiceDirectoryHandle();
+  const { clientSearchService } = useClientSearchContext();
+  const directoryHandle = useLocalFilesDirectoryHandle();
   return (
     directoryHandle !== undefined && (
       <Alert variant="primary" className="text-center">
@@ -97,8 +96,8 @@ const LocalFilesInstructions = () => {
 };
 
 const RunDesktopToolInstructions = () => {
-  const { localFilesService } = useLocalFilesContext();
-  const directoryHandle = useLocalFilesServiceDirectoryHandle();
+  const { clientSearchService } = useClientSearchContext();
+  const directoryHandle = useLocalFilesDirectoryHandle();
   return (
     <>
       {directoryHandle !== undefined ? (
@@ -157,13 +156,6 @@ function ProjectDownload() {
 }
 
 type Platform = "windows" | "macos-intel" | "macos-arm" | "linux";
-const FileNameByPlatform: { [platform in Platform]: string } = {
-  // TODO: can we remove this from our frontend code?
-  windows: "autofill-windows.exe",
-  "macos-intel": "autofill-macos-intel.command",
-  "macos-arm": "autofill-macos-arm.command",
-  linux: "autofill-linux.bin",
-};
 
 function PlatformDownload({
   platform,
@@ -181,7 +173,7 @@ function PlatformDownload({
       <DownloadButton>
         <DownloadButtonLink
           onClick={() =>
-            downloadDesktopTool(new URL(assetURL), FileNameByPlatform[platform])
+            downloadDesktopTool(new URL(assetURL), `autofill-${platform}.zip`)
           }
         >
           <h1 className={`bi bi-${icon}`}></h1>

@@ -15,9 +15,9 @@ import {
   SlotProjectMembers,
 } from "@/common/types";
 import { bracket } from "@/common/utils";
+import { useClientSearchContext } from "@/features/clientSearch/clientSearchContext";
+import { ClientSearchService } from "@/features/clientSearch/clientSearchService";
 import { downloadFile, useDoFileDownload } from "@/features/download/download";
-import { useLocalFilesContext } from "@/features/localFiles/localFilesContext";
-import { LocalFilesService } from "@/features/localFiles/localFilesService";
 import { selectFinishSettings } from "@/store/slices/finishSettingsSlice";
 import {
   selectProjectMembers,
@@ -202,14 +202,14 @@ export function generateXML(
 
 async function downloadXML(
   state: RootState,
-  localFilesService: LocalFilesService
+  clientSearchService: ClientSearchService
 ) {
   const generatedXML = selectGeneratedXML(state);
   await downloadFile(
     new Blob([generatedXML], { type: "text/xml;charset=utf-8" }),
     undefined,
     "cards.xml",
-    localFilesService
+    clientSearchService
   );
   return true;
 }
@@ -217,13 +217,14 @@ async function downloadXML(
 export function useDownloadXML() {
   const store = useAppStore();
   const doFileDownload = useDoFileDownload();
-  const { localFilesService } = useLocalFilesContext();
+  const { clientSearchService } = useClientSearchContext();
   return () =>
     Promise.resolve(
       doFileDownload(
         "xml",
         "cards.xml",
-        (): Promise<boolean> => downloadXML(store.getState(), localFilesService)
+        (): Promise<boolean> =>
+          downloadXML(store.getState(), clientSearchService)
       )
     );
 }

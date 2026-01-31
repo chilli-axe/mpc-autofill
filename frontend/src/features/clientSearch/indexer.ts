@@ -20,7 +20,7 @@ import {
   RemoteFileHandleParams,
 } from "@/common/types";
 import { OramaSchema } from "@/common/types";
-import { extractNameAndTags } from "@/features/localFiles/tags";
+import { extractNameAndTags } from "@/features/clientSearch/tags";
 
 export class Folder {
   constructor(

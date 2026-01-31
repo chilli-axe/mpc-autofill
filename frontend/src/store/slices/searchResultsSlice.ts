@@ -14,7 +14,7 @@ import {
   SearchResults,
   SearchResultsState,
 } from "@/common/types";
-import { LocalFilesService } from "@/features/localFiles/localFilesService";
+import { ClientSearchService } from "@/features/clientSearch/clientSearchService";
 import { APIEditorSearch } from "@/store/api";
 import { selectRemoteBackendURL } from "@/store/slices/backendSlice";
 import { selectCardbacks } from "@/store/slices/cardbackSlice";
@@ -59,8 +59,8 @@ export const fetchSearchResults = createAppAsyncThunk(
    */
   async (arg, { getState, extra }) => {
     const state = getState();
-    const { localFilesService } = extra as {
-      localFilesService: LocalFilesService;
+    const { clientSearchService } = extra as {
+      clientSearchService: ClientSearchService;
     };
 
     const queriesToSearch = selectQueriesWithoutSearchResults(state); // TODO: is there an edge case here when a local directory is added?
@@ -68,10 +68,10 @@ export const fetchSearchResults = createAppAsyncThunk(
     const searchSettings = selectSearchSettings(state);
 
     const hasLocalFilesDirectoryHandle =
-      await localFilesService.hasLocalFilesDirectoryHandle();
+      await clientSearchService.hasLocalFilesDirectoryHandle();
     const localResultsPromise: Promise<SearchResults> =
       hasLocalFilesDirectoryHandle
-        ? localFilesService.editorSearch(searchSettings, queriesToSearch)
+        ? clientSearchService.editorSearch(searchSettings, queriesToSearch)
         : new Promise(async (resolve) => resolve({}));
     const remoteResultsPromise: Promise<SearchResults> =
       queriesToSearch.length > 0 && backendURL != null

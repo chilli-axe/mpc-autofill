@@ -1,8 +1,6 @@
 # credit: https://data-dive.com/multi-os-deployment-in-cloud-using-pyinstaller-and-github-actions
 name: Desktop tool build
 on:
-  push:
-    branches: [master]
   workflow_dispatch:
 jobs:
   build:
@@ -136,7 +134,7 @@ jobs:
           api-token: "${{ secrets.SIGNPATH_API_TOKEN }}"
           organization-id: "061f342a-ba1a-404b-b7f8-e08c8f6d9792"
           project-slug: "mpc-autofill"
-          signing-policy-slug: "test-signing"
+          signing-policy-slug: "release-signing"
           github-artifact-id: "${{ steps.upload-unsigned-artifact.outputs.artifact-id }}"
           wait-for-completion: true
           output-artifact-directory: desktop-tool/build/

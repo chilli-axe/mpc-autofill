@@ -11,9 +11,9 @@ import {
   SlotProjectMembers,
   useAppStore,
 } from "@/common/types";
+import { useClientSearchContext } from "@/features/clientSearch/clientSearchContext";
+import { ClientSearchService } from "@/features/clientSearch/clientSearchService";
 import { downloadFile, useDoFileDownload } from "@/features/download/download";
-import { useLocalFilesContext } from "@/features/localFiles/localFilesContext";
-import { LocalFilesService } from "@/features/localFiles/localFilesService";
 import { selectProjectMembers } from "@/store/slices/projectSlice";
 import { RootState } from "@/store/store";
 
@@ -109,14 +109,14 @@ const selectGeneratedDecklist = (state: RootState): string => {
 
 async function downloadDecklist(
   state: RootState,
-  localFilesService: LocalFilesService
+  clientSearchService: ClientSearchService
 ) {
   const decklist = selectGeneratedDecklist(state);
   await downloadFile(
     new Blob([decklist], { type: "text/plain;charset=utf-8" }),
     undefined,
     "decklist.txt", // TODO: use project name here when we eventually track that
-    localFilesService
+    clientSearchService
   );
   return true;
 }
@@ -124,14 +124,14 @@ async function downloadDecklist(
 export function useDownloadDecklist() {
   const store = useAppStore();
   const doFileDownload = useDoFileDownload();
-  const { localFilesService } = useLocalFilesContext();
+  const { clientSearchService } = useClientSearchContext();
   return () =>
     Promise.resolve(
       doFileDownload(
         "text",
         "decklist.txt",
         (): Promise<boolean> =>
-          downloadDecklist(store.getState(), localFilesService)
+          downloadDecklist(store.getState(), clientSearchService)
       )
     );
 }
