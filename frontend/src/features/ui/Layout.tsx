@@ -21,10 +21,13 @@ import {
   DownloadContextProvider,
 } from "@/features/download/download";
 import { Modals } from "@/features/modals/Modals";
+import { pdfRenderService } from "@/features/pdf/pdfRenderService";
 import { Toasts } from "@/features/toasts/Toasts";
 import ProjectNavbar from "@/features/ui/Navbar";
 import { setAllFavoriteRenders } from "@/store/slices/favoritesSlice";
 import store from "@/store/store";
+
+import { PDFRenderContextProvider } from "../pdf/pdfRenderContext";
 
 const OverscrollProvider = styled(Provider)`
   overscroll-behavior: none;
@@ -80,6 +83,7 @@ export function LayoutWithoutReduxProvider({ children }: PropsWithChildren) {
       dispatch(setAllFavoriteRenders(favorites));
     }
     clientSearchService.initialiseWorker();
+    pdfRenderService.initialiseWorker();
   }, []);
 
   return (
@@ -87,13 +91,15 @@ export function LayoutWithoutReduxProvider({ children }: PropsWithChildren) {
       <ClientSearchContextProvider
         value={{ clientSearchService, forceUpdate, forceUpdateValue }}
       >
-        {consent === true && (
-          <GoogleAnalytics trackPageViews gaMeasurementId="G-JV8WV3FQML" />
-        )}
-        <Toasts />
-        <Modals />
-        <ProjectNavbar />
-        {children}
+        <PDFRenderContextProvider value={{ pdfRenderService }}>
+          {consent === true && (
+            <GoogleAnalytics trackPageViews gaMeasurementId="G-JV8WV3FQML" />
+          )}
+          <Toasts />
+          <Modals />
+          <ProjectNavbar />
+          {children}
+        </PDFRenderContextProvider>
       </ClientSearchContextProvider>
     </DownloadContextProvider>
   );
