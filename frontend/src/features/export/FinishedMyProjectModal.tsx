@@ -156,13 +156,6 @@ function ProjectDownload() {
 }
 
 type Platform = "windows" | "macos-intel" | "macos-arm" | "linux";
-const FileNameByPlatform: { [platform in Platform]: string } = {
-  // TODO: can we remove this from our frontend code?
-  windows: "autofill-windows.exe",
-  "macos-intel": "autofill-macos-intel.command",
-  "macos-arm": "autofill-macos-arm.command",
-  linux: "autofill-linux.bin",
-};
 
 function PlatformDownload({
   platform,
@@ -180,7 +173,7 @@ function PlatformDownload({
       <DownloadButton>
         <DownloadButtonLink
           onClick={() =>
-            downloadDesktopTool(new URL(assetURL), FileNameByPlatform[platform])
+            downloadDesktopTool(new URL(assetURL), `autofill-${platform}.zip`)
           }
         >
           <h1 className={`bi bi-${icon}`}></h1>
