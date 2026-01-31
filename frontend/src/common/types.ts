@@ -291,6 +291,3 @@ export interface LocalFilesIndex {
   fileHandle: FileSystemDirectoryHandle;
   index: OramaIndex | undefined;
 }
-
-export type PageSizes = "A4" | "letter"; // TODO: rethink, obviously.
-

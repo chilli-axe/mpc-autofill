@@ -108,7 +108,7 @@ const useLocalFileImageSrc = (
   return blobURL;
 };
 
-const useImageSrc = (
+export const useImageSrc = (
   cardDocument: CardDocument,
   small: boolean
 ): {

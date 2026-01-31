@@ -14,7 +14,7 @@ interface PDFGeneratorProps {
 
 export function PDFGeneratorModal({ show, handleClose }: PDFGeneratorProps) {
   return (
-    <Modal scrollable show={show} onHide={handleClose} size="xl">
+    <Modal fullscreen scrollable show={show} onHide={handleClose} size="xl">
       <Modal.Header closeButton>
         <Modal.Title>Generate PDF</Modal.Title>
       </Modal.Header>
