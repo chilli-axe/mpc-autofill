@@ -24,8 +24,9 @@ const renderPDFInWorker = async (props: PDFProps) => {
 
 const onProgress = (cb: typeof console.info) => (log = cb);
 
-expose({ renderPDFInWorker: renderPDFInWorker, onProgress });
+expose({ renderPDF, renderPDFInWorker: renderPDFInWorker, onProgress });
 export type PDFWorker = {
+  renderPDF: typeof renderPDF;
   renderPDFInWorker: typeof renderPDFInWorker;
   onProgress: typeof onProgress;
 };

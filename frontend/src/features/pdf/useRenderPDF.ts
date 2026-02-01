@@ -12,6 +12,8 @@ export const useRenderPDF = ({
   marginMM,
   cardDocumentsByIdentifier,
   projectMembers,
+  imageQuality,
+  dpi,
 }: PDFProps) => {
   const { pdfRenderService } = usePDFRenderContext();
   const {
@@ -19,7 +21,7 @@ export const useRenderPDF = ({
     loading,
     error,
   } = useAsync(async () => {
-    return pdfRenderService.renderPDF({
+    return pdfRenderService.renderPDFInWorker({
       pageSize,
       bleedEdgeMode,
       includeCutLines,
@@ -27,6 +29,8 @@ export const useRenderPDF = ({
       marginMM,
       cardDocumentsByIdentifier,
       projectMembers,
+      imageQuality,
+      dpi,
     });
   }, [
     pageSize,
@@ -36,6 +40,8 @@ export const useRenderPDF = ({
     marginMM,
     cardDocumentsByIdentifier,
     projectMembers,
+    imageQuality,
+    dpi,
   ]);
 
   useEffect(() => (url ? () => URL.revokeObjectURL(url) : undefined), [url]);

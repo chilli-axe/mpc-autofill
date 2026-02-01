@@ -38,3 +38,16 @@ export const getWorkerThumbnailURL = (
       }.jpg`
     : undefined;
 };
+
+export const getWorkerFullResURL = (
+  cardDocument: CardDocument,
+  dpi: number,
+  quality: "low" | "medium-low" | "medium-high" | "high"
+) => {
+  const imageWorkerURL = getImageWorkerURL();
+  const imageWorkerURLValid =
+    imageWorkerURL != null && !!(cardDocument?.sourceType === "Google Drive");
+  return imageWorkerURLValid
+    ? `${imageWorkerURL}/images/google_drive/full/${cardDocument?.identifier}.jpg?dpi=${dpi}&quality=${quality}`
+    : undefined;
+};

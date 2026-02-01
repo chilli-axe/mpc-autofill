@@ -1,6 +1,7 @@
 import { PDFViewer } from "@react-pdf/renderer";
 import { useMemo, useState } from "react";
 import React from "react";
+import Button from "react-bootstrap/Button";
 import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
 import Form from "react-bootstrap/Form";
@@ -12,11 +13,13 @@ import { useDebounce } from "use-debounce";
 import { ToggleButtonHeight } from "@/common/constants";
 import { StyledDropdownTreeSelect } from "@/common/StyledDropdownTreeSelect";
 import { useAppSelector } from "@/common/types";
+import { downloadFile, useDoFileDownload } from "@/features/download/download";
 import { BleedEdgeMode,PageSize, PDF, PDFProps } from "@/features/pdf/PDF";
 import { useCardDocumentsByIdentifier } from "@/store/slices/cardDocumentsSlice";
 import { selectProjectMembers } from "@/store/slices/projectSlice";
 
 import { useClientSearchContext } from "../clientSearch/clientSearchContext";
+import { usePDFRenderContext } from "./pdfRenderContext";
 import { useRenderPDF } from "./useRenderPDF";
 
 const PDFPreview = (props: Omit<PDFProps, "clientSearchService" | "projectMembers">) => {
@@ -30,6 +33,8 @@ const PDFPreview = (props: Omit<PDFProps, "clientSearchService" | "projectMember
     marginMM: props.marginMM,
     cardDocumentsByIdentifier: props.cardDocumentsByIdentifier,
     projectMembers,
+    imageQuality: props.imageQuality,
+    dpi: props.dpi,
     // clientSearchService,
     // innerRef,
   });
@@ -60,6 +65,11 @@ export const PDFGenerator = () => {
   const [includeCutLines, setIncludeCutLines] = useState<boolean>(false);
   const [cardSpacingMM, setCardSpacingMM] = useState<number>(5);
   const [marginMM, setMarginMM] = useState<number>(5);
+  const [dpi, setDPI] = useState<number>(600);
+
+  const {pdfRenderService} = usePDFRenderContext();
+  const {clientSearchService} = useClientSearchContext();
+  const projectMembers = useAppSelector(selectProjectMembers); // TODO: not in redux context?
 
   const [pageSize, setPageSize] = useState<string>(PageSize.A4);
   const pageSizeOptions = useMemo(
@@ -99,9 +109,21 @@ export const PDFGenerator = () => {
       cardSpacingMM: cardSpacingMM,
       marginMM: marginMM,
       cardDocumentsByIdentifier: cardDocumentsByIdentifier,
+      imageQuality: "small-thumbnail",
+      dpi: dpi,
     } satisfies PDFProps,
     500, { equalityFn }
   )
+
+  const generatePDF = async () => {
+    pdfRenderService.renderPDF(
+      {
+        ...debouncedPDFProps,
+        projectMembers,
+        imageQuality: "full-resolution"
+      }
+    ).then((blob) => downloadFile(blob, undefined, "cards.pdf", clientSearchService));
+  }
 
   return (
     <Container style={{ height: 100 + "%" }}>
@@ -175,6 +197,40 @@ export const PDFGenerator = () => {
               />
             </Col>
           </Row>
+          <Row>
+            <Col lg={6} md={12} sm={12} xs={12}>
+              <Form.Label>
+                Card image DPI: <b>{dpi} DPI</b>
+              </Form.Label>
+              <Form.Range
+                defaultValue={600}
+                min={100}
+                max={1500}
+                step={100}
+                onChange={(event) => {
+                  setDPI(parseInt(event.target.value));
+                }}
+              />
+            </Col>
+            {/* <Col lg={6} md={12} sm={12} xs={12}>
+              <Form.Label>
+                Card image quality: <b>{cardImageQuality} mm</b>
+              </Form.Label>
+              <StyledDropdownTreeSelect
+                data={bleedEdgeModeOptions}
+                onChange={(currentNode, selectedNodes) =>
+                  setBleedEdgeMode(currentNode.value)
+                }
+                mode="radioSelect"
+                inlineSearchInput
+              />
+            </Col> */}
+          </Row>
+          <div className="d-grid gap-0">
+            <Button onClick={generatePDF} >
+              Generate PDF
+            </Button>
+          </div>
         </Col>
         <Col xs={9}>
           <PDFPreview

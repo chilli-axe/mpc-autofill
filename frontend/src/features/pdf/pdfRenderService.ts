@@ -17,7 +17,15 @@ export class PDFRenderService {
     this.worker = wrap<PDFWorker>(worker);
   }
 
-  public renderPDF(props: PDFProps): Promise<string> {
+  public renderPDF(props: PDFProps): Promise<Blob> {
+    if (this.worker === undefined) {
+      throw new Error("PDFRenderService was not initialised!");
+    }
+    return this.worker.renderPDF(props);
+  }
+
+  // TODO: awful naming. fix.
+  public renderPDFInWorker(props: PDFProps): Promise<string> {
     if (this.worker === undefined) {
       throw new Error("PDFRenderService was not initialised!");
     }

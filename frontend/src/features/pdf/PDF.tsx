@@ -1,7 +1,9 @@
 import { Document, Image, Page, StyleSheet, View } from "@react-pdf/renderer";
 import React from "react";
 
-import { getBucketThumbnailURL } from "@/common/image";
+import { GoogleDriveImageAPIURL } from "@/common/constants";
+import { getBucketThumbnailURL, getWorkerFullResURL } from "@/common/image";
+import { base64StringToBlob } from "@/common/processing";
 import { SourceType } from "@/common/schema_types";
 import { CardDocument, SlotProjectMembers } from "@/common/types";
 
@@ -77,19 +79,39 @@ export interface PDFProps {
   marginMM: number;
   cardDocumentsByIdentifier: { [identifier: string]: CardDocument };
   projectMembers: Array<SlotProjectMembers>;
+  imageQuality: "small-thumbnail" | "large-thumbnail" | "full-resolution";
+  dpi: number;
   //   clientSearchService: ClientSearchService;
 }
 
 const getThumbnailURL = async (
-  cardDocument: CardDocument
+  cardDocument: CardDocument,
   // clientSearchService: ClientSearchService
-): Promise<string | undefined> => {
+  imageQuality: "small-thumbnail" | "large-thumbnail" | "full-resolution",
+  dpi: number
+): Promise<string | Blob | undefined> => {
   switch (cardDocument.sourceType) {
     case SourceType.GoogleDrive:
-      return getBucketThumbnailURL(cardDocument, true);
+      switch (imageQuality) {
+        case "small-thumbnail":
+          return getBucketThumbnailURL(cardDocument, true);
+        case "large-thumbnail":
+          return getBucketThumbnailURL(cardDocument, false);
+        case "full-resolution":
+          return getWorkerFullResURL(cardDocument, dpi, "high");
+        // return fetch(GoogleDriveImageAPIURL + "?" + new URLSearchParams({ id: cardDocument.identifier }).toString()).then(response => response.text().then(base64StringToBlob));
+        default:
+          throw new Error(`invalid imageQuality ${imageQuality}`);
+      }
+
     case SourceType.LocalFile:
+      console.log("about to throw", cardDocument);
       throw new Error(
-        `local files not supported for the moment. need to set up call to other worker here?`
+        `local files not supported for the moment. need to set up call to other worker here? ${cardDocument.sourceType}`
+      );
+    default:
+      throw new Error(
+        `cannot get PDF thumbnail URL for card ${cardDocument.identifier}`
       );
     //   const oramaCardDocument = await clientSearchService.getByID(
     //     cardDocument?.identifier
@@ -98,22 +120,22 @@ const getThumbnailURL = async (
     //     const file = await oramaCardDocument.params.fileHandle.getFile();
     //     return URL.createObjectURL(file);
     //   }
-    default:
-      throw new Error(
-        `cannot get PDF thumbnail URL for card ${cardDocument.identifier}`
-      );
   }
 };
 
 interface PDFCardThumbnailProps {
   cardDocument: CardDocument;
   bleedEdgeMode: BleedEdgeMode;
+  imageQuality: "small-thumbnail" | "large-thumbnail" | "full-resolution";
+  dpi: number;
   //   clientSearchService: ClientSearchService
 }
 
 const PDFCardThumbnail = ({
   cardDocument,
   bleedEdgeMode,
+  imageQuality,
+  dpi,
 }: //   clientSearchService
 PDFCardThumbnailProps) => {
   const bleedEdgeModeStyle = BleedEdgeModeToStyle[bleedEdgeMode];
@@ -121,8 +143,10 @@ PDFCardThumbnailProps) => {
     <Image
       src={async () =>
         getThumbnailURL(
-          cardDocument
+          cardDocument,
           // clientSearchService
+          imageQuality,
+          dpi
         )
       }
       style={bleedEdgeModeStyle}
@@ -138,23 +162,28 @@ export const PDF = ({
   marginMM,
   projectMembers,
   cardDocumentsByIdentifier,
+  imageQuality,
+  dpi,
 }: //   clientSearchService,
 PDFProps) => {
   return (
     <Document>
       <Page size={pageSize} style={{ ...styles.page, margin: marginMM + "mm" }}>
         <View style={{ ...styles.section, gap: cardSpacingMM + "mm" }}>
-          {projectMembers.map((member) => (
+          {projectMembers.map((member, i) => (
             <>
               {member.front?.selectedImage !== undefined &&
                 cardDocumentsByIdentifier[member.front.selectedImage] !==
                   undefined && (
                   <PDFCardThumbnail
+                    key={`${i}-front`}
                     cardDocument={
                       cardDocumentsByIdentifier[member.front.selectedImage]
                     }
                     bleedEdgeMode={bleedEdgeMode}
                     // clientSearchService={clientSearchService}
+                    imageQuality={imageQuality}
+                    dpi={dpi}
                   />
                 )}
             </>
