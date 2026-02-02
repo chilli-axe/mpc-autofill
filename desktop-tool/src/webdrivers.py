@@ -1,13 +1,54 @@
+import re
+import subprocess
 import sys
 from typing import Optional
 
 import undetected_chromedriver as uc
 from selenium.webdriver import Edge, Firefox
-from selenium.webdriver.chrome.options import Options as ChromeOptions
 from selenium.webdriver.chromium.options import ChromiumOptions
 from selenium.webdriver.chromium.webdriver import ChromiumDriver
 from selenium.webdriver.edge.options import Options as EdgeOptions
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
+
+
+def _detect_chrome_version() -> Optional[int]:
+    """
+    Detect the installed Chrome version by querying the browser.
+    Returns the major version number (e.g., 144) or None if detection fails.
+    """
+    try:
+        if sys.platform == "darwin":
+            # macOS: Use the Chrome binary to get version
+            result = subprocess.run(
+                ["/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", "--version"],
+                capture_output=True,
+                text=True,
+                timeout=5,
+            )
+        elif sys.platform == "win32":
+            # Windows: Query registry or use wmic
+            result = subprocess.run(
+                ["reg", "query", r"HKEY_CURRENT_USER\Software\Google\Chrome\BLBeacon", "/v", "version"],
+                capture_output=True,
+                text=True,
+                timeout=5,
+            )
+        else:
+            # Linux: Use google-chrome binary
+            result = subprocess.run(
+                ["google-chrome", "--version"],
+                capture_output=True,
+                text=True,
+                timeout=5,
+            )
+
+        # Extract version number from output (e.g., "Google Chrome 144.0.7559.110")
+        match = re.search(r"(\d+)\.\d+\.\d+\.\d+", result.stdout)
+        if match:
+            return int(match.group(1))
+    except Exception:
+        pass
+    return None
 
 
 def get_chrome_driver(
@@ -31,8 +72,9 @@ def get_chrome_driver(
         options.binary_location = binary_location
 
     # undetected-chromedriver handles stealth automatically
-    # Detect Chrome version from browser or use explicit version if needed
-    driver = uc.Chrome(options=options, version_main=144)
+    # Detect Chrome version since auto-detection can fail
+    version_main = _detect_chrome_version()
+    driver = uc.Chrome(options=options, version_main=version_main)
     return driver
 
 
