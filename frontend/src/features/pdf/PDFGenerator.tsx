@@ -23,7 +23,7 @@ import { usePDFRenderContext } from "./pdfRenderContext";
 import { useRenderPDF } from "./useRenderPDF";
 
 const PDFPreview = (props: Omit<PDFProps, "clientSearchService" | "projectMembers">) => {
-  const projectMembers = useAppSelector(selectProjectMembers); // TODO: not in redux context?
+  const projectMembers = useAppSelector(selectProjectMembers);
   // const { clientSearchService } = useClientSearchContext();
   const { url, loading, error } = useRenderPDF({
     pageSize: props.pageSize,
@@ -116,11 +116,13 @@ export const PDFGenerator = () => {
   )
 
   const generatePDF = async () => {
-    pdfRenderService.renderPDF(
+    const fileHandles = await clientSearchService.getFileHandlesByIdentifier(cardDocumentsByIdentifier);
+    return pdfRenderService.renderPDF(
       {
         ...debouncedPDFProps,
         projectMembers,
-        imageQuality: "full-resolution"
+        imageQuality: "full-resolution",
+        fileHandles,
       }
     ).then((blob) => downloadFile(blob, undefined, "cards.pdf", clientSearchService));
   }
@@ -129,6 +131,16 @@ export const PDFGenerator = () => {
     <Container style={{ height: 100 + "%" }}>
       <Row style={{ height: 100 + "%" }}>
         <Col xs={3} className="mb-3 mb-lg-0">
+          {/* <h3>Download PDF</h3> */}
+          <p>
+            Generate a PDF file from your project suitable for printing at home or professionally.
+          </p>
+          <ol>
+            <li>Configure how your PDF should be laid out with the settings below.</li>
+            <li>A <b>live preview</b> of your PDF is shown on the right-hand side.</li>
+            <li>When youre done, click the <b>Generate PDF</b> button below!</li>
+          </ol>
+          <hr />
           <Toggle
             onClick={() => setIncludeCutLines((value) => !value)}
             on="Include Cut Lines"

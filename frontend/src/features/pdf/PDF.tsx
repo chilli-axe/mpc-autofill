@@ -81,6 +81,7 @@ export interface PDFProps {
   projectMembers: Array<SlotProjectMembers>;
   imageQuality: "small-thumbnail" | "large-thumbnail" | "full-resolution";
   dpi: number;
+  fileHandles: { [identifier: string]: FileSystemFileHandle };
   //   clientSearchService: ClientSearchService;
 }
 
@@ -88,6 +89,7 @@ const getThumbnailURL = async (
   cardDocument: CardDocument,
   // clientSearchService: ClientSearchService
   imageQuality: "small-thumbnail" | "large-thumbnail" | "full-resolution",
+  fileHandles: { [identifier: string]: FileSystemFileHandle },
   dpi: number
 ): Promise<string | Blob | undefined> => {
   switch (cardDocument.sourceType) {
@@ -105,21 +107,18 @@ const getThumbnailURL = async (
       }
 
     case SourceType.LocalFile:
-      console.log("about to throw", cardDocument);
-      throw new Error(
-        `local files not supported for the moment. need to set up call to other worker here? ${cardDocument.sourceType}`
-      );
+      const handle = fileHandles[cardDocument.identifier];
+      if (handle !== undefined) {
+        return URL.createObjectURL(await handle.getFile());
+      } else {
+        throw new Error(
+          `could not get handle for file ${cardDocument.identifier}`
+        );
+      }
     default:
       throw new Error(
         `cannot get PDF thumbnail URL for card ${cardDocument.identifier}`
       );
-    //   const oramaCardDocument = await clientSearchService.getByID(
-    //     cardDocument?.identifier
-    //   );
-    //   if (oramaCardDocument?.params?.sourceType == SourceType.LocalFile) {
-    //     const file = await oramaCardDocument.params.fileHandle.getFile();
-    //     return URL.createObjectURL(file);
-    //   }
   }
 };
 
@@ -128,6 +127,7 @@ interface PDFCardThumbnailProps {
   bleedEdgeMode: BleedEdgeMode;
   imageQuality: "small-thumbnail" | "large-thumbnail" | "full-resolution";
   dpi: number;
+  fileHandles: { [identifier: string]: FileSystemFileHandle };
   //   clientSearchService: ClientSearchService
 }
 
@@ -135,6 +135,7 @@ const PDFCardThumbnail = ({
   cardDocument,
   bleedEdgeMode,
   imageQuality,
+  fileHandles,
   dpi,
 }: //   clientSearchService
 PDFCardThumbnailProps) => {
@@ -146,6 +147,7 @@ PDFCardThumbnailProps) => {
           cardDocument,
           // clientSearchService
           imageQuality,
+          fileHandles,
           dpi
         )
       }
@@ -164,6 +166,7 @@ export const PDF = ({
   cardDocumentsByIdentifier,
   imageQuality,
   dpi,
+  fileHandles,
 }: //   clientSearchService,
 PDFProps) => {
   return (
@@ -184,6 +187,7 @@ PDFProps) => {
                     // clientSearchService={clientSearchService}
                     imageQuality={imageQuality}
                     dpi={dpi}
+                    fileHandles={fileHandles}
                   />
                 )}
             </>
