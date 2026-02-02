@@ -334,42 +334,135 @@ class AutofillDriver:
 
     # region DriveThruCards
 
+    def _try_click_turnstile_checkbox(self) -> bool:
+        """
+        Attempt to find and click the Cloudflare Turnstile checkbox.
+        Returns True if checkbox was found and clicked, False otherwise.
+        """
+        try:
+            # Turnstile is rendered in an iframe - find it by common attributes
+            iframe_selectors = [
+                "iframe[src*='challenges.cloudflare.com']",
+                "iframe[title*='cloudflare']",
+                "iframe[title*='Cloudflare']",
+                "iframe[id*='cf-']",
+            ]
+
+            iframe = None
+            for selector in iframe_selectors:
+                iframes = self.driver.find_elements(By.CSS_SELECTOR, selector)
+                if iframes:
+                    iframe = iframes[0]
+                    break
+
+            if not iframe:
+                return False
+
+            # Switch to iframe context
+            self.driver.switch_to.frame(iframe)
+
+            try:
+                # Look for the checkbox input or clickable verification element
+                checkbox_selectors = [
+                    "input[type='checkbox']",
+                    ".ctp-checkbox-label",
+                    "#challenge-stage",
+                    "[data-testid='challenge-input']",
+                ]
+
+                for selector in checkbox_selectors:
+                    elements = self.driver.find_elements(By.CSS_SELECTOR, selector)
+                    for element in elements:
+                        if element.is_displayed():
+                            element.click()
+                            logger.debug("Clicked Turnstile checkbox")
+                            return True
+            finally:
+                # Always switch back to main content
+                self.driver.switch_to.default_content()
+
+            return False
+        except Exception as e:
+            logger.debug(f"Error clicking Turnstile checkbox: {e}")
+            # Ensure we're back in main content even on error
+            try:
+                self.driver.switch_to.default_content()
+            except Exception:
+                pass
+            return False
+
+    def _is_cloudflare_challenge_active(self) -> bool:
+        """Check if a Cloudflare challenge page is currently displayed."""
+        try:
+            title = self.driver.title.lower()
+            if "just a moment" in title:
+                return True
+            # Also check for challenge body text
+            body_text = self.driver.find_element(By.TAG_NAME, "body").text.lower()
+            if "verifying you are human" in body_text or "checking your browser" in body_text:
+                return True
+            return False
+        except Exception:
+            return False
+
+    def _is_site_loaded(self) -> bool:
+        """Check if the actual site content has loaded (past Cloudflare)."""
+        selectors = self.target_site.value.selectors
+        try:
+            title = self.driver.title.lower()
+            if "just a moment" in title:
+                return False
+            # Check for login button or logged-in indicator
+            login_btns = self.driver.find_elements(By.CSS_SELECTOR, selectors.login_button_selector)
+            logged_in = self.driver.find_elements(By.CSS_SELECTOR, selectors.logged_in_indicator_selector)
+            return bool(login_btns or logged_in)
+        except Exception:
+            return False
+
     def wait_for_cloudflare_challenge(self, timeout_seconds: int = 300) -> None:
         """
         Wait for the Cloudflare challenge to be completed by waiting for site content to appear.
+        Uses aggressive polling and attempts to auto-click the Turnstile checkbox.
         Waits for either the login button or Publisher Tools link (if already logged in).
         """
         self.set_state(States.defining_order, "Waiting for site to load")
-        logger.info(
-            "Waiting for DriveThruCards to load...\n"
-            "If you see a Cloudflare captcha, please complete it."
-        )
+        logger.info("Waiting for DriveThruCards to load...")
 
-        selectors = self.target_site.value.selectors
-        
-        def check_site_loaded(driver: WebDriver) -> bool:
-            try:
-                title = driver.title.lower()
-                # During Cloudflare, page title is "Just a moment..."
-                if "just a moment" in title:
-                    return False
-                # Check for login button or logged-in indicator
-                login_btns = driver.find_elements(By.CSS_SELECTOR, selectors.login_button_selector)
-                logged_in = driver.find_elements(By.CSS_SELECTOR, selectors.logged_in_indicator_selector)
-                if login_btns or logged_in:
-                    return True
-                # Page loaded but elements not found yet - log for debugging
-                logger.debug(f"Page title: '{title}', login buttons: {len(login_btns)}, logged_in indicators: {len(logged_in)}")
-                return False
-            except Exception as e:
-                logger.debug(f"Error checking site loaded: {e}")
-                return False
-        
-        try:
-            WebDriverWait(self.driver, timeout_seconds).until(check_site_loaded)
-            logger.info("Site loaded successfully!")
-        except sl_exc.TimeoutException:
-            logger.warning(f"Timeout after {timeout_seconds}s waiting for site to load. Attempting to continue anyway.")
+        poll_interval = 0.5  # Check every 500ms for responsive detection
+        turnstile_click_interval = 3.0  # Try clicking Turnstile every 3 seconds
+        last_turnstile_attempt = 0.0
+        challenge_detected = False
+        start_time = time.time()
+
+        while time.time() - start_time < timeout_seconds:
+            # Check if site has loaded successfully
+            if self._is_site_loaded():
+                logger.info("Site loaded successfully!")
+                return
+
+            # Check if we're on a Cloudflare challenge
+            if self._is_cloudflare_challenge_active():
+                if not challenge_detected:
+                    challenge_detected = True
+                    logger.info(
+                        "Cloudflare challenge detected. Attempting auto-solve...\n"
+                        "If this doesn't work, please complete the captcha manually."
+                    )
+
+                # Periodically try to click the Turnstile checkbox
+                current_time = time.time()
+                if current_time - last_turnstile_attempt >= turnstile_click_interval:
+                    last_turnstile_attempt = current_time
+                    if self._try_click_turnstile_checkbox():
+                        logger.debug("Turnstile click attempted, waiting for verification...")
+
+            time.sleep(poll_interval)
+
+        # Timeout reached
+        logger.warning(
+            f"Timeout after {timeout_seconds}s waiting for site to load. "
+            "Attempting to continue anyway."
+        )
 
     def is_dtc_user_authenticated(self) -> bool:
         """Check if the user is logged in to DriveThruCards."""
@@ -413,11 +506,120 @@ class AutofillDriver:
 
         return False
 
+    def click_element_polling(self, by: By, selector: str, timeout: int = 30) -> bool:
+        """
+        Aggressively poll for an element and click it as soon as it's available.
+        No fixed waits - keeps trying until success or timeout.
+        """
+        start = time.time()
+        while time.time() - start < timeout:
+            try:
+                elements = self.driver.find_elements(by, selector)
+                for el in elements:
+                    if el.is_displayed() and self.click_element_with_retry(el):
+                        return True
+            except Exception:
+                pass
+        return False
+
+    def _click_dtc_login_button(self) -> bool:
+        """Click the DriveThruCards login button to open the login modal."""
+        selectors = self.target_site.value.selectors
+        return self.click_element_polling(By.CSS_SELECTOR, selectors.login_button_selector, timeout=15)
+
+    def _simulate_human_behavior(self) -> None:
+        """
+        Simulate human-like behavior to help bypass bot detection.
+        Adds natural mouse movements and small delays.
+        """
+        try:
+            # Move mouse to a neutral position and perform small movements
+            body = self.driver.find_element(By.TAG_NAME, "body")
+            actions = ActionChains(self.driver)
+            # Small random-ish movements to simulate human behavior
+            actions.move_to_element(body)
+            actions.move_by_offset(50, 30)
+            actions.pause(0.1)
+            actions.move_by_offset(-20, 15)
+            actions.pause(0.1)
+            actions.perform()
+            logger.debug("Simulated human mouse movements")
+        except Exception as e:
+            logger.debug(f"Could not simulate mouse movements: {e}")
+
+    def _trigger_visibility_change_via_minimize(self) -> bool:
+        """
+        Trigger visibility change by minimizing and restoring the window.
+        This causes real browser visibility events without the jarring tab switch.
+        """
+        try:
+            # Store current window size/position to restore later
+            original_rect = self.driver.get_window_rect()
+
+            # Minimize triggers visibilitychange (document.hidden = true)
+            self.driver.minimize_window()
+            time.sleep(0.15)
+
+            # Restore triggers visibilitychange (document.hidden = false) and focus
+            self.driver.set_window_rect(
+                x=original_rect['x'],
+                y=original_rect['y'],
+                width=original_rect['width'],
+                height=original_rect['height']
+            )
+            time.sleep(0.1)
+
+            logger.debug("Triggered visibility change via window minimize/restore")
+            return True
+        except Exception as e:
+            logger.debug(f"Window minimize/restore failed: {e}")
+            return False
+
+    def _perform_tab_switch_workaround(self) -> bool:
+        """
+        Fallback workaround: open a new tab, close it, return to original.
+        This triggers real browser visibility/focus events that reset bot detection state.
+        """
+        try:
+            original_window = self.driver.current_window_handle
+            self.driver.switch_to.new_window('tab')
+            self.driver.close()
+            self.driver.switch_to.window(original_window)
+            logger.debug("Tab switch workaround completed")
+            return True
+        except Exception as e:
+            logger.debug(f"Tab switch workaround failed: {e}")
+            return False
+
+    def _perform_login_focus_workaround(self) -> bool:
+        """
+        Workaround for DriveThruCards bot detection.
+        The site shows "Unable to log in" error on automated first attempts.
+
+        The bot detection appears to track whether the page has received natural
+        visibility/focus events. By triggering these events, we reset the detection state.
+
+        Tries minimize/restore first (cleanest), falls back to tab switch if needed.
+        """
+        logger.debug("Performing focus workaround to bypass bot detection...")
+
+        # First, add some human-like behavior
+        self._simulate_human_behavior()
+
+        # Try minimize/restore approach first (cleaner than tab switch)
+        if self._trigger_visibility_change_via_minimize():
+            return True
+
+        # Fallback to tab switch (more reliable but visible to user)
+        logger.debug("Minimize/restore failed, falling back to tab switch workaround")
+        return self._perform_tab_switch_workaround()
+
     def authenticate_dtc(self) -> None:
         """
         Handle DriveThruCards login flow.
-        Two-step process: click login button, then click "Go to Log in" link.
-        Waits for user to complete authentication.
+
+        Note: DriveThruCards has bot detection that shows "Unable to log in" error.
+        Workaround: Click "log in with D20" then hit back before actual login.
         """
         selectors = self.target_site.value.selectors
 
@@ -426,76 +628,32 @@ class AutofillDriver:
             return
 
         self.set_state(States.defining_order, "Awaiting DriveThruCards login")
+
+        # Perform workaround to bypass bot detection (focus change resets state)
+        self._perform_login_focus_workaround()
+
         logger.info("Please log in to your DriveThruCards account.")
 
-        # Step 1: Try to find and click the login button
-        login_clicked = False
-        try:
-            # Wait for element to be clickable, not just present
-            logger.debug(f"Looking for login button with selector: {selectors.login_button_selector}")
-            login_button = WebDriverWait(self.driver, 15).until(
-                element_to_be_clickable((By.CSS_SELECTOR, selectors.login_button_selector))
-            )
-            # Log info about the found element for debugging
-            logger.debug(
-                f"Found element - tag: {login_button.tag_name}, "
-                f"text: '{login_button.text}', "
-                f"displayed: {login_button.is_displayed()}, "
-                f"enabled: {login_button.is_enabled()}"
-            )
-            logger.info("Found login button, attempting to click...")
-            login_clicked = self.click_element_with_retry(login_button)
-            if login_clicked:
-                logger.info("Successfully clicked the login button.")
-            else:
-                logger.debug("All click strategies failed for login button.")
-        except sl_exc.TimeoutException:
-            logger.debug("Timeout waiting for login button to be clickable.")
-            # Try to find any buttons to help debug
-            try:
-                buttons = self.driver.find_elements(By.TAG_NAME, "button")
-                logger.debug(f"Found {len(buttons)} button(s) on page")
-                for btn in buttons[:5]:  # Log first 5 buttons
-                    logger.debug(f"  Button: text='{btn.text}', aria-label='{btn.get_attribute('aria-label')}'")
-            except Exception:
-                pass
-        except Exception as e:
-            logger.debug(f"Could not find/click login button: {e}")
-
-        if not login_clicked:
+        # Now attempt actual login flow
+        if not self._click_dtc_login_button():
             logger.info(
                 "Could not find or click login button automatically.\n"
                 "Please click the login button manually."
             )
 
-        # Step 2: Try to find and click the "Go to Log in" link
-        # Use XPath to find by text content since href="/en/" is too generic
-        go_to_login_clicked = False
-        try:
-            # Try XPath first (more specific - matches by text content)
-            go_to_login_link = WebDriverWait(self.driver, 10).until(
-                element_to_be_clickable((By.XPATH, "//a[contains(normalize-space(), 'Go to Log in')]"))
-            )
-            logger.info("Found 'Go to Log in' link, attempting to click...")
-            go_to_login_clicked = self.click_element_with_retry(go_to_login_link)
-            if go_to_login_clicked:
-                logger.info("Successfully clicked 'Go to Log in' link.")
-            else:
-                logger.debug("All click strategies failed for 'Go to Log in' link.")
-        except sl_exc.TimeoutException:
-            logger.debug("Timeout waiting for 'Go to Log in' link to be clickable.")
-            # Fallback to CSS selector
-            try:
-                go_to_login_link = WebDriverWait(self.driver, 5).until(
-                    element_to_be_clickable((By.CSS_SELECTOR, selectors.go_to_login_selector))
-                )
-                go_to_login_clicked = self.click_element_with_retry(go_to_login_link)
-            except Exception:
-                pass
-        except Exception as e:
-            logger.debug(f"Could not find/click 'Go to Log in' link: {e}")
-
+        # Click "Go to Log in" link - poll aggressively
+        go_to_login_clicked = self.click_element_polling(
+            By.XPATH, "//a[contains(normalize-space(), 'Go to Log in')]", timeout=15
+        )
         if not go_to_login_clicked:
+            # Fallback to CSS selector
+            go_to_login_clicked = self.click_element_polling(
+                By.CSS_SELECTOR, selectors.go_to_login_selector, timeout=5
+            )
+
+        if go_to_login_clicked:
+            logger.info("Navigated to login page.")
+        else:
             logger.info(
                 "Could not find 'Go to Log in' link automatically.\n"
                 "Please navigate to the login page manually if needed."
@@ -510,7 +668,7 @@ class AutofillDriver:
         timeout_seconds = 300
         start_time = time.time()
         while time.time() - start_time < timeout_seconds:
-            time.sleep(1)  # Polling interval
+            time.sleep(1)
             if self.is_dtc_user_authenticated():
                 logger.info("Successfully logged in to DriveThruCards!")
                 return

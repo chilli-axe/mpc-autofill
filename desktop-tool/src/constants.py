@@ -162,7 +162,8 @@ class DriveThruCardsSelectors:
     continue_selector: str = attr.ib(default="")
     # Login selectors - two step process: click login button, then click "Go to Log in" link
     login_button_selector: str = attr.ib(default="button[data-cy='login']")
-    go_to_login_selector: str = attr.ib(default="a[href='/en/']")
+    # Target the login link in the modal, not the logout link (both can have href='/en/')
+    go_to_login_selector: str = attr.ib(default=".modal a[href='/en/'], .modal-content a[href='/en/']")
     # Publisher Tools link only appears when logged in as a publisher
     logged_in_indicator_selector: str = attr.ib(default="a[href*='pub_tools.php']")
 
