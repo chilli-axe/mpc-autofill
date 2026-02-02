@@ -617,9 +617,6 @@ class AutofillDriver:
     def authenticate_dtc(self) -> None:
         """
         Handle DriveThruCards login flow.
-
-        Note: DriveThruCards has bot detection that shows "Unable to log in" error.
-        Workaround: Click "log in with D20" then hit back before actual login.
         """
         selectors = self.target_site.value.selectors
 
@@ -628,9 +625,6 @@ class AutofillDriver:
             return
 
         self.set_state(States.defining_order, "Awaiting DriveThruCards login")
-
-        # Perform workaround to bypass bot detection (focus change resets state)
-        self._perform_login_focus_workaround()
 
         logger.info("Please log in to your DriveThruCards account.")
 

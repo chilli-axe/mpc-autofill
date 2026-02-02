@@ -51,6 +51,55 @@ def _detect_chrome_version() -> Optional[int]:
     return None
 
 
+def _apply_stealth_scripts(driver: uc.Chrome) -> None:
+    """
+    Apply additional stealth JavaScript to hide automation traces.
+    These patches help bypass bot detection on sites like DriveThruCards.
+    """
+    stealth_js = """
+        // Hide webdriver property
+        Object.defineProperty(navigator, 'webdriver', {
+            get: () => undefined
+        });
+
+        // Fix chrome object
+        window.chrome = {
+            runtime: {},
+            loadTimes: function() {},
+            csi: function() {},
+            app: {}
+        };
+
+        // Fix permissions query
+        const originalQuery = window.navigator.permissions.query;
+        window.navigator.permissions.query = (parameters) => (
+            parameters.name === 'notifications' ?
+                Promise.resolve({ state: Notification.permission }) :
+                originalQuery(parameters)
+        );
+
+        // Fix plugins to look more realistic
+        Object.defineProperty(navigator, 'plugins', {
+            get: () => [
+                { name: 'Chrome PDF Plugin', filename: 'internal-pdf-viewer' },
+                { name: 'Chrome PDF Viewer', filename: 'mhjfbmdgcfjbbpaeojofohoefgiehjai' },
+                { name: 'Native Client', filename: 'internal-nacl-plugin' }
+            ]
+        });
+
+        // Fix languages
+        Object.defineProperty(navigator, 'languages', {
+            get: () => ['en-US', 'en']
+        });
+
+        // Remove automation-related properties from window
+        delete window.cdc_adoQpoasnfa76pfcZLmcfl_Array;
+        delete window.cdc_adoQpoasnfa76pfcZLmcfl_Promise;
+        delete window.cdc_adoQpoasnfa76pfcZLmcfl_Symbol;
+    """
+    driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {"source": stealth_js})
+
+
 def get_chrome_driver(
     headless: bool = False,
     binary_location: Optional[str] = None,
@@ -64,6 +113,7 @@ def get_chrome_driver(
     options.add_argument("--no-sandbox")
     options.add_argument("--log-level=3")
     options.add_argument("--disable-dev-shm-usage")
+    options.add_argument("--disable-blink-features=AutomationControlled")
     if headless:
         options.add_argument("--headless=new")
     if remote_debugging_port is not None:
@@ -75,6 +125,10 @@ def get_chrome_driver(
     # Detect Chrome version since auto-detection can fail
     version_main = _detect_chrome_version()
     driver = uc.Chrome(options=options, version_main=version_main)
+
+    # Apply additional stealth scripts
+    _apply_stealth_scripts(driver)
+
     return driver
 
 
