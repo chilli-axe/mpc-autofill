@@ -340,48 +340,53 @@ class AutofillDriver:
         Returns True if checkbox was found and clicked, False otherwise.
         """
         try:
-            # Turnstile is rendered in an iframe - find it by common attributes
-            iframe_selectors = [
-                "iframe[src*='challenges.cloudflare.com']",
-                "iframe[title*='cloudflare']",
-                "iframe[title*='Cloudflare']",
-                "iframe[id*='cf-']",
-            ]
-
-            iframe = None
-            for selector in iframe_selectors:
-                iframes = self.driver.find_elements(By.CSS_SELECTOR, selector)
-                if iframes:
-                    iframe = iframes[0]
-                    break
-
-            if not iframe:
-                return False
-
-            # Switch to iframe context
-            self.driver.switch_to.frame(iframe)
-
+            # Disable implicit wait for fast polling
+            self.driver.implicitly_wait(0)
             try:
-                # Look for the checkbox input or clickable verification element
-                checkbox_selectors = [
-                    "input[type='checkbox']",
-                    ".ctp-checkbox-label",
-                    "#challenge-stage",
-                    "[data-testid='challenge-input']",
+                # Turnstile is rendered in an iframe - find it by common attributes
+                iframe_selectors = [
+                    "iframe[src*='challenges.cloudflare.com']",
+                    "iframe[title*='cloudflare']",
+                    "iframe[title*='Cloudflare']",
+                    "iframe[id*='cf-']",
                 ]
 
-                for selector in checkbox_selectors:
-                    elements = self.driver.find_elements(By.CSS_SELECTOR, selector)
-                    for element in elements:
-                        if element.is_displayed():
-                            element.click()
-                            logger.debug("Clicked Turnstile checkbox")
-                            return True
-            finally:
-                # Always switch back to main content
-                self.driver.switch_to.default_content()
+                iframe = None
+                for selector in iframe_selectors:
+                    iframes = self.driver.find_elements(By.CSS_SELECTOR, selector)
+                    if iframes:
+                        iframe = iframes[0]
+                        break
 
-            return False
+                if not iframe:
+                    return False
+
+                # Switch to iframe context
+                self.driver.switch_to.frame(iframe)
+
+                try:
+                    # Look for the checkbox input or clickable verification element
+                    checkbox_selectors = [
+                        "input[type='checkbox']",
+                        ".ctp-checkbox-label",
+                        "#challenge-stage",
+                        "[data-testid='challenge-input']",
+                    ]
+
+                    for selector in checkbox_selectors:
+                        elements = self.driver.find_elements(By.CSS_SELECTOR, selector)
+                        for element in elements:
+                            if element.is_displayed():
+                                element.click()
+                                logger.debug("Clicked Turnstile checkbox")
+                                return True
+                finally:
+                    # Always switch back to main content
+                    self.driver.switch_to.default_content()
+
+                return False
+            finally:
+                self.driver.implicitly_wait(5)
         except Exception as e:
             logger.debug(f"Error clicking Turnstile checkbox: {e}")
             # Ensure we're back in main content even on error
@@ -397,11 +402,16 @@ class AutofillDriver:
             title = self.driver.title.lower()
             if "just a moment" in title:
                 return True
-            # Also check for challenge body text
-            body_text = self.driver.find_element(By.TAG_NAME, "body").text.lower()
-            if "verifying you are human" in body_text or "checking your browser" in body_text:
-                return True
-            return False
+            # Temporarily disable implicit wait for fast polling
+            self.driver.implicitly_wait(0)
+            try:
+                # Also check for challenge body text
+                body_text = self.driver.find_element(By.TAG_NAME, "body").text.lower()
+                if "verifying you are human" in body_text or "checking your browser" in body_text:
+                    return True
+                return False
+            finally:
+                self.driver.implicitly_wait(5)
         except Exception:
             return False
 
@@ -412,10 +422,16 @@ class AutofillDriver:
             title = self.driver.title.lower()
             if "just a moment" in title:
                 return False
-            # Check for login button or logged-in indicator
-            login_btns = self.driver.find_elements(By.CSS_SELECTOR, selectors.login_button_selector)
-            logged_in = self.driver.find_elements(By.CSS_SELECTOR, selectors.logged_in_indicator_selector)
-            return bool(login_btns or logged_in)
+            # Temporarily disable implicit wait for fast polling
+            self.driver.implicitly_wait(0)
+            try:
+                # Check for login button or logged-in indicator
+                login_btns = self.driver.find_elements(By.CSS_SELECTOR, selectors.login_button_selector)
+                logged_in = self.driver.find_elements(By.CSS_SELECTOR, selectors.logged_in_indicator_selector)
+                return bool(login_btns or logged_in)
+            finally:
+                # Restore implicit wait
+                self.driver.implicitly_wait(5)
         except Exception:
             return False
 
@@ -468,18 +484,23 @@ class AutofillDriver:
         """Check if the user is logged in to DriveThruCards."""
         selectors = self.target_site.value.selectors
         try:
-            # Look for logout button as indicator of being logged in
-            # This needs to be specific - only match elements that appear when logged in
-            logged_in_elements = self.driver.find_elements(
-                By.CSS_SELECTOR, selectors.logged_in_indicator_selector
-            )
-            # Filter to only visible elements
-            visible_elements = [el for el in logged_in_elements if el.is_displayed()]
-            if visible_elements:
-                logger.debug(f"Found {len(visible_elements)} visible logged-in indicator(s)")
-                for el in visible_elements[:3]:
-                    logger.debug(f"  Element: tag={el.tag_name}, text='{el.text}', aria-label='{el.get_attribute('aria-label')}'")
-            return len(visible_elements) > 0
+            # Temporarily disable implicit wait for fast check
+            self.driver.implicitly_wait(0)
+            try:
+                # Look for logout button as indicator of being logged in
+                # This needs to be specific - only match elements that appear when logged in
+                logged_in_elements = self.driver.find_elements(
+                    By.CSS_SELECTOR, selectors.logged_in_indicator_selector
+                )
+                # Filter to only visible elements
+                visible_elements = [el for el in logged_in_elements if el.is_displayed()]
+                if visible_elements:
+                    logger.debug(f"Found {len(visible_elements)} visible logged-in indicator(s)")
+                    for el in visible_elements[:3]:
+                        logger.debug(f"  Element: tag={el.tag_name}, text='{el.text}', aria-label='{el.get_attribute('aria-label')}'")
+                return len(visible_elements) > 0
+            finally:
+                self.driver.implicitly_wait(5)
         except Exception as e:
             logger.debug(f"Error checking auth status: {e}")
             return False
@@ -512,15 +533,21 @@ class AutofillDriver:
         No fixed waits - keeps trying until success or timeout.
         """
         start = time.time()
-        while time.time() - start < timeout:
-            try:
-                elements = self.driver.find_elements(by, selector)
-                for el in elements:
-                    if el.is_displayed() and self.click_element_with_retry(el):
-                        return True
-            except Exception:
-                pass
-        return False
+        # Disable implicit wait for true aggressive polling
+        self.driver.implicitly_wait(0)
+        try:
+            while time.time() - start < timeout:
+                try:
+                    elements = self.driver.find_elements(by, selector)
+                    for el in elements:
+                        if el.is_displayed() and self.click_element_with_retry(el):
+                            return True
+                except Exception:
+                    pass
+                time.sleep(0.1)  # Small delay to avoid CPU spinning
+            return False
+        finally:
+            self.driver.implicitly_wait(5)
 
     def _click_dtc_login_button(self) -> bool:
         """Click the DriveThruCards login button to open the login modal."""
