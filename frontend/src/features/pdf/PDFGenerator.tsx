@@ -32,7 +32,7 @@ const PDFPreview = (props: PDFProps & { url: string | undefined }) => {
 };
 
 const downloadPDF = async (
-  props: PDFProps,
+  props: Omit<PDFProps, "fileHandles">,
   clientSearchService: ClientSearchService,
   dispatch: AppDispatch
 ): Promise<boolean> => {
@@ -58,7 +58,7 @@ const downloadPDF = async (
 };
 
 const useDownloadPDF = (
-  props: PDFProps,
+  props: Omit<PDFProps, "fileHandles">,
   clientSearchService: ClientSearchService,
   dispatch: AppDispatch
 ) => {
@@ -114,7 +114,7 @@ export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
   function equalityFn<T>(left: T, right: T): boolean {
     return JSON.stringify(left) === JSON.stringify(right);
   }
-  const pdfProps: PDFProps = {
+  const pdfProps: Omit<PDFProps, "fileHandles"> = {
     pageSize: pageSize,
     includeCutLines: includeCutLines,
     bleedEdgeMode: bleedEdgeMode,
@@ -125,7 +125,6 @@ export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
     // the following settings don't matter for previewing and should remain stable to prevent unnecessary re-renders.
     imageQuality: "small-thumbnail",
     dpi: 300,
-    fileHandles: {},
   };
   const [debouncedPDFProps, debouncedState] = useDebounce(pdfProps, 500, {
     equalityFn,

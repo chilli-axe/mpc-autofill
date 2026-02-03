@@ -21,37 +21,36 @@ export const PageSize = {
   TABLOID: "TABLOID",
 } as const;
 
+const CardWidthInches = 2.5;
+const CardHeightInches = 3.5;
+const BleedEdgeInches = 0.25;
+const CornerRadiusMM = 2.5;
+
 const ImageShowBleedStyle = {
-  // width: 63.5 + "mm",
-  // height: 88.9 + "mm",
-  width: 2.5 + 0.25 + "in",
-  height: 3.5 + 0.25 + "in",
-  minWidth: 2.5 + 0.25 + "in",
-  minHeight: 3.5 + 0.25 + "in",
-  // maxWidth: (2.5 + 0.25) + "in",
-  // maxHeight: (3.5 + 0.25) + "in",
-};
+  width: CardWidthInches + BleedEdgeInches + "in",
+  height: CardHeightInches + BleedEdgeInches + "in",
+  minWidth: CardWidthInches + BleedEdgeInches + "in",
+  minHeight: CardHeightInches + BleedEdgeInches + "in",
+} as const;
 const ImageHideBleedSquareCornersStyle = {
   ...ImageShowBleedStyle,
-  width: 2.5 + "in",
-  height: 3.5 + "in",
-  minWidth: 2.5 + "in",
-  minHeight: 3.5 + "in",
+  width: CardWidthInches + "in",
+  height: CardHeightInches + "in",
+  minWidth: CardWidthInches + "in",
+  minHeight: CardHeightInches + "in",
   transform: "scale(1.088, 1.065)",
   overflow: "hidden",
-};
+} as const;
 const ImageHideBleedRoundCornersStyle = {
   ...ImageHideBleedSquareCornersStyle,
-  borderRadius: 2.5 + "mm",
-};
+  borderRadius: CornerRadiusMM + "mm",
+} as const;
 
 // Create styles
 const styles = StyleSheet.create({
   page: {
     flexDirection: "row",
     flexWrap: "wrap",
-
-    // backgroundColor: "#EEEEEE",
   },
   section: {
     flexDirection: "row",
@@ -81,12 +80,10 @@ export interface PDFProps {
   imageQuality: "small-thumbnail" | "large-thumbnail" | "full-resolution";
   dpi: number;
   fileHandles: { [identifier: string]: FileSystemFileHandle };
-  //   clientSearchService: ClientSearchService;
 }
 
 const getThumbnailURL = async (
   cardDocument: CardDocument,
-  // clientSearchService: ClientSearchService
   imageQuality: "small-thumbnail" | "large-thumbnail" | "full-resolution",
   fileHandles: { [identifier: string]: FileSystemFileHandle },
   dpi: number
@@ -127,7 +124,6 @@ interface PDFCardThumbnailProps {
   imageQuality: "small-thumbnail" | "large-thumbnail" | "full-resolution";
   dpi: number;
   fileHandles: { [identifier: string]: FileSystemFileHandle };
-  //   clientSearchService: ClientSearchService
 }
 
 const PDFCardThumbnail = ({
@@ -136,19 +132,12 @@ const PDFCardThumbnail = ({
   imageQuality,
   fileHandles,
   dpi,
-}: //   clientSearchService
-PDFCardThumbnailProps) => {
+}: PDFCardThumbnailProps) => {
   const bleedEdgeModeStyle = BleedEdgeModeToStyle[bleedEdgeMode];
   return (
     <Image
       src={async () =>
-        getThumbnailURL(
-          cardDocument,
-          // clientSearchService
-          imageQuality,
-          fileHandles,
-          dpi
-        )
+        getThumbnailURL(cardDocument, imageQuality, fileHandles, dpi)
       }
       style={bleedEdgeModeStyle}
     />
@@ -166,8 +155,7 @@ export const PDF = ({
   imageQuality,
   dpi,
   fileHandles,
-}: //   clientSearchService,
-PDFProps) => {
+}: PDFProps) => {
   return (
     <Document>
       <Page size={pageSize} style={{ ...styles.page, margin: marginMM + "mm" }}>
@@ -183,7 +171,6 @@ PDFProps) => {
                       cardDocumentsByIdentifier[member.front.selectedImage]
                     }
                     bleedEdgeMode={bleedEdgeMode}
-                    // clientSearchService={clientSearchService}
                     imageQuality={imageQuality}
                     dpi={dpi}
                     fileHandles={fileHandles}
