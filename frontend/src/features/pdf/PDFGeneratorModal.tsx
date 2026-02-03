@@ -18,7 +18,7 @@ export function PDFGeneratorModal({ show, handleClose }: PDFGeneratorProps) {
       <Modal.Header closeButton>
         <Modal.Title>Download PDF</Modal.Title>
       </Modal.Header>
-      <Modal.Body>
+      <Modal.Body className="p-0 mx-0" style={{ overflow: "hidden" }}>
         <PDFGenerator />
       </Modal.Body>
       <Modal.Footer>

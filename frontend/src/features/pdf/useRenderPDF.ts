@@ -2,10 +2,10 @@ import { useEffect } from "react";
 import { useAsync } from "react-use";
 
 import { SourceType } from "@/common/schema_types";
+import { pdfRenderService } from "@/features/pdf/pdfRenderService";
 
 import { useClientSearchContext } from "../clientSearch/clientSearchContext";
 import { PDFProps } from "./PDF";
-import { usePDFRenderContext } from "./pdfRenderContext";
 
 export const useRenderPDF = ({
   pageSize,
@@ -18,7 +18,6 @@ export const useRenderPDF = ({
   imageQuality,
   dpi,
 }: Omit<PDFProps, "fileHandles">) => {
-  const { pdfRenderService } = usePDFRenderContext();
   const { clientSearchService } = useClientSearchContext();
   const {
     value: url,

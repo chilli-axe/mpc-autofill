@@ -27,8 +27,6 @@ import ProjectNavbar from "@/features/ui/Navbar";
 import { setAllFavoriteRenders } from "@/store/slices/favoritesSlice";
 import store from "@/store/store";
 
-import { PDFRenderContextProvider } from "../pdf/pdfRenderContext";
-
 const OverscrollProvider = styled(Provider)`
   overscroll-behavior: none;
   overflow-x: hidden;
@@ -91,15 +89,13 @@ export function LayoutWithoutReduxProvider({ children }: PropsWithChildren) {
       <ClientSearchContextProvider
         value={{ clientSearchService, forceUpdate, forceUpdateValue }}
       >
-        <PDFRenderContextProvider value={{ pdfRenderService }}>
-          {consent === true && (
-            <GoogleAnalytics trackPageViews gaMeasurementId="G-JV8WV3FQML" />
-          )}
-          <Toasts />
-          <Modals />
-          <ProjectNavbar />
-          {children}
-        </PDFRenderContextProvider>
+        {consent === true && (
+          <GoogleAnalytics trackPageViews gaMeasurementId="G-JV8WV3FQML" />
+        )}
+        <Toasts />
+        <Modals />
+        <ProjectNavbar />
+        {children}
       </ClientSearchContextProvider>
     </DownloadContextProvider>
   );

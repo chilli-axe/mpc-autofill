@@ -1,4 +1,3 @@
-import { PDFViewer } from "@react-pdf/renderer";
 import { useMemo, useState } from "react";
 import React from "react";
 import Button from "react-bootstrap/Button";
@@ -13,8 +12,12 @@ import { useDebounce } from "use-debounce";
 import { ToggleButtonHeight } from "@/common/constants";
 import { StyledDropdownTreeSelect } from "@/common/StyledDropdownTreeSelect";
 import { useAppSelector } from "@/common/types";
+import { Blurrable } from "@/components/Blurrable";
+import { OverflowCol } from "@/components/OverflowCol";
+import { Spinner } from "@/components/Spinner";
 import { downloadFile, useDoFileDownload } from "@/features/download/download";
 import { BleedEdgeMode,PageSize, PDF, PDFProps } from "@/features/pdf/PDF";
+import { pdfRenderService } from "@/features/pdf/pdfRenderService";
 import { useCardDocumentsByIdentifier } from "@/store/slices/cardDocumentsSlice";
 import { selectProjectMembers } from "@/store/slices/projectSlice";
 
@@ -22,41 +25,16 @@ import { useClientSearchContext } from "../clientSearch/clientSearchContext";
 import { usePDFRenderContext } from "./pdfRenderContext";
 import { useRenderPDF } from "./useRenderPDF";
 
-const PDFPreview = (props: Omit<PDFProps, "clientSearchService" | "projectMembers">) => {
-  const projectMembers = useAppSelector(selectProjectMembers);
-  // const { clientSearchService } = useClientSearchContext();
-  const { url, loading, error } = useRenderPDF({
-    pageSize: props.pageSize,
-    includeCutLines: props.includeCutLines,
-    bleedEdgeMode: props.bleedEdgeMode,
-    cardSpacingMM: props.cardSpacingMM,
-    marginMM: props.marginMM,
-    cardDocumentsByIdentifier: props.cardDocumentsByIdentifier,
-    projectMembers,
-    imageQuality: props.imageQuality,
-    dpi: props.dpi,
-    // clientSearchService,
-    // innerRef,
-  });
-
+const PDFPreview = (props: PDFProps & {url: string | undefined}) => {
   return (
     <>
-
       <iframe
-        // @ts-ignore
-        src={url}
         width="100%"
         height="100%"
-        // ref={innerRef}
-        // @ts-ignore
-        // style={style}
-        // className={className}
+        src={props.url}
         {...props}
       />
-    </>
-    // <PDFViewer width="100%" height="100%" showToolbar={false}>
-    //   <PDF {...props} projectMembers={projectMembers} clientSearchService={clientSearchService} />
-    // </PDFViewer>
+      </>
   );
 }
 
@@ -67,9 +45,8 @@ export const PDFGenerator = () => {
   const [marginMM, setMarginMM] = useState<number>(5);
   const [dpi, setDPI] = useState<number>(600);
 
-  const {pdfRenderService} = usePDFRenderContext();
   const {clientSearchService} = useClientSearchContext();
-  const projectMembers = useAppSelector(selectProjectMembers); // TODO: not in redux context?
+  const projectMembers = useAppSelector(selectProjectMembers);
 
   const [pageSize, setPageSize] = useState<string>(PageSize.A4);
   const pageSizeOptions = useMemo(
@@ -101,7 +78,7 @@ export const PDFGenerator = () => {
   function equalityFn<T>(left: T, right: T): boolean {
     return JSON.stringify(left) === JSON.stringify(right);
   }
-  const [debouncedPDFProps] = useDebounce(
+  const [debouncedPDFProps, debouncedState] = useDebounce(
     {
       pageSize: pageSize satisfies PageSize,
       includeCutLines: includeCutLines,
@@ -110,10 +87,16 @@ export const PDFGenerator = () => {
       marginMM: marginMM,
       cardDocumentsByIdentifier: cardDocumentsByIdentifier,
       imageQuality: "small-thumbnail",
-      dpi: dpi,
+      dpi: 300, // don't re-render preview when this changes. choose some arbitrary stable value.
+      projectMembers: projectMembers,
     } satisfies PDFProps,
     500, { equalityFn }
   )
+
+  // const { clientSearchService } = useClientSearchContext();
+  const { url, loading, error } = useRenderPDF(debouncedPDFProps);
+
+  const showSpinner = debouncedState.isPending() || loading;
 
   const generatePDF = async () => {
     const fileHandles = await clientSearchService.getFileHandlesByIdentifier(cardDocumentsByIdentifier);
@@ -128,9 +111,9 @@ export const PDFGenerator = () => {
   }
 
   return (
-    <Container style={{ height: 100 + "%" }}>
-      <Row style={{ height: 100 + "%" }}>
-        <Col xs={3} className="mb-3 mb-lg-0">
+    <Container fluid>
+      <Row>
+        <OverflowCol lg={3} md={4} sm={5} xs={6} className="py-2" heightDelta={67.9+71}>
           {/* <h3>Download PDF</h3> */}
           <p>
             Generate a PDF file from your project suitable for printing at home or professionally.
@@ -138,9 +121,10 @@ export const PDFGenerator = () => {
           <ol>
             <li>Configure how your PDF should be laid out with the settings below.</li>
             <li>A <b>live preview</b> of your PDF is shown on the right-hand side.</li>
-            <li>When youre done, click the <b>Generate PDF</b> button below!</li>
+            <li>When you&apos;re done, click the <b>Generate PDF</b> button below!</li>
           </ol>
           <hr />
+          <div className="px-0">
           <Toggle
             onClick={() => setIncludeCutLines((value) => !value)}
             on="Include Cut Lines"
@@ -154,25 +138,26 @@ export const PDFGenerator = () => {
             height={ToggleButtonHeight + "px"}
             active={includeCutLines}
           />
+          </div>
           <br />
           <Row>
-            <Col lg={6} md={12} sm={12} xs={12}>
-              <Form.Label>Select page size</Form.Label>
-              <StyledDropdownTreeSelect
-                data={pageSizeOptions}
-                onChange={(currentNode, selectedNodes) =>
-                  setPageSize(currentNode.value)
-                }
-                mode="radioSelect"
-                inlineSearchInput
-              />
-            </Col>
-            <Col lg={6} md={12} sm={12} xs={12}>
+          <Col xl={6} lg={12} md={12} sm={12} xs={12}>
               <Form.Label>Configure bleed edge</Form.Label>
               <StyledDropdownTreeSelect
                 data={bleedEdgeModeOptions}
                 onChange={(currentNode, selectedNodes) =>
                   setBleedEdgeMode(currentNode.value)
+                }
+                mode="radioSelect"
+                inlineSearchInput
+              />
+            </Col>
+            <Col xl={6} lg={12} md={12} sm={12} xs={12}>
+              <Form.Label>Select page size</Form.Label>
+              <StyledDropdownTreeSelect
+                data={pageSizeOptions}
+                onChange={(currentNode, selectedNodes) =>
+                  setPageSize(currentNode.value)
                 }
                 mode="radioSelect"
                 inlineSearchInput
@@ -238,16 +223,20 @@ export const PDFGenerator = () => {
               />
             </Col> */}
           </Row>
+          <hr />
           <div className="d-grid gap-0">
             <Button onClick={generatePDF} >
               Generate PDF
             </Button>
           </div>
-        </Col>
-        <Col xs={9}>
+        </OverflowCol>
+        <Col lg={9} md={8} sm={7} xs={6} style={{ position: "relative" }}>
+          {showSpinner && <Spinner size={6} zIndex={3} positionAbsolute={true} />}
+          <Blurrable disabled={showSpinner} style={{height: 100 + "%"}} >
           <PDFPreview
-            {...debouncedPDFProps}
+             url={url} {...debouncedPDFProps}
           />
+          </Blurrable>
         </Col>
       </Row>
     </Container>
