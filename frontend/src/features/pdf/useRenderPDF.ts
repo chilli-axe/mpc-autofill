@@ -1,13 +1,13 @@
 import { useEffect } from "react";
 import { useAsync } from "react-use";
 
-import { SourceType } from "@/common/schema_types";
 import { pdfRenderService } from "@/features/pdf/pdfRenderService";
 
 import { useClientSearchContext } from "../clientSearch/clientSearchContext";
 import { PDFProps } from "./PDF";
 
 export const useRenderPDF = ({
+  cardSelectionMode,
   pageSize,
   bleedEdgeMode,
   includeCutLines,
@@ -15,6 +15,7 @@ export const useRenderPDF = ({
   marginMM,
   cardDocumentsByIdentifier,
   projectMembers,
+  projectCardback,
   imageQuality,
   dpi,
 }: Omit<PDFProps, "fileHandles">) => {
@@ -28,6 +29,7 @@ export const useRenderPDF = ({
       cardDocumentsByIdentifier
     );
     return pdfRenderService.renderPDFInWorker({
+      cardSelectionMode,
       pageSize,
       bleedEdgeMode,
       includeCutLines,
@@ -35,11 +37,13 @@ export const useRenderPDF = ({
       marginMM,
       cardDocumentsByIdentifier,
       projectMembers,
+      projectCardback,
       imageQuality,
       dpi,
       fileHandles,
     });
   }, [
+    cardSelectionMode,
     pageSize,
     bleedEdgeMode,
     includeCutLines,
@@ -47,6 +51,7 @@ export const useRenderPDF = ({
     marginMM,
     cardDocumentsByIdentifier,
     projectMembers,
+    projectCardback,
     imageQuality,
     dpi,
   ]);

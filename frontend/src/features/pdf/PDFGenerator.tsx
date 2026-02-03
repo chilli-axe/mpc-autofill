@@ -17,10 +17,19 @@ import { OverflowCol } from "@/components/OverflowCol";
 import { Spinner } from "@/components/Spinner";
 import { ClientSearchService } from "@/features/clientSearch/clientSearchService";
 import { downloadFile, useDoFileDownload } from "@/features/download/download";
-import { BleedEdgeMode, PageSize, PDF, PDFProps } from "@/features/pdf/PDF";
+import {
+  BleedEdgeMode,
+  CardSelectionMode,
+  PageSize,
+  PDF,
+  PDFProps,
+} from "@/features/pdf/PDF";
 import { pdfRenderService } from "@/features/pdf/pdfRenderService";
 import { useCardDocumentsByIdentifier } from "@/store/slices/cardDocumentsSlice";
-import { selectProjectMembers } from "@/store/slices/projectSlice";
+import {
+  selectProjectCardback,
+  selectProjectMembers,
+} from "@/store/slices/projectSlice";
 import { setNotification } from "@/store/slices/toastsSlice";
 import { AppDispatch } from "@/store/store";
 
@@ -84,6 +93,7 @@ export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
 
   const { clientSearchService } = useClientSearchContext();
   const projectMembers = useAppSelector(selectProjectMembers);
+  const projectCardback = useAppSelector(selectProjectCardback);
 
   const [pageSize, setPageSize] = useState<keyof typeof PageSize>(PageSize.A4);
   const pageSizeOptions = useMemo(
@@ -107,6 +117,18 @@ export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
       })),
     [bleedEdgeMode]
   );
+  const [cardSelectionMode, setCardSelectionMode] = useState<
+    keyof typeof CardSelectionMode
+  >("frontsAndDistinctBacks");
+  const cardSelectionModeOptions = useMemo(
+    () =>
+      Object.entries(CardSelectionMode).map(([value, label]) => ({
+        value,
+        label,
+        checked: value === cardSelectionMode,
+      })),
+    [cardSelectionMode]
+  );
 
   const cardDocumentsByIdentifier = useCardDocumentsByIdentifier();
 
@@ -115,6 +137,7 @@ export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
     return JSON.stringify(left) === JSON.stringify(right);
   }
   const pdfProps: Omit<PDFProps, "fileHandles"> = {
+    cardSelectionMode: cardSelectionMode,
     pageSize: pageSize,
     includeCutLines: includeCutLines,
     bleedEdgeMode: bleedEdgeMode,
@@ -122,6 +145,7 @@ export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
     marginMM: marginMM,
     cardDocumentsByIdentifier: cardDocumentsByIdentifier,
     projectMembers: projectMembers,
+    projectCardback: projectCardback,
     // the following settings don't matter for previewing and should remain stable to prevent unnecessary re-renders.
     imageQuality: "small-thumbnail",
     dpi: 300,
@@ -188,6 +212,17 @@ export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
               active={includeCutLines}
             />
           </div>
+          <Form.Label>Select which cards to include</Form.Label>
+          <StyledDropdownTreeSelect
+            data={cardSelectionModeOptions}
+            onChange={(currentNode, selectedNodes) =>
+              setCardSelectionMode(
+                currentNode.value as keyof typeof CardSelectionMode
+              )
+            }
+            mode="radioSelect"
+            inlineSearchInput
+          />
           <br />
           <Row>
             <Col xl={6} lg={12} md={12} sm={12} xs={12}>
@@ -284,7 +319,7 @@ export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
             <Spinner size={6} zIndex={3} positionAbsolute={true} />
           )}
           <Blurrable disabled={showSpinner} style={{ height: 100 + "%" }}>
-            <PDFPreview url={url} {...debouncedPDFProps} />
+            <PDFPreview url={url} {...debouncedPDFProps} fileHandles={{}} />
           </Blurrable>
         </Col>
       </Row>
