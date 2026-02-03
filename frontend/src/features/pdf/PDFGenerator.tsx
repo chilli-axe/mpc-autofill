@@ -11,15 +11,18 @@ import { useDebounce } from "use-debounce";
 
 import { ToggleButtonHeight } from "@/common/constants";
 import { StyledDropdownTreeSelect } from "@/common/StyledDropdownTreeSelect";
-import { useAppSelector } from "@/common/types";
+import { useAppDispatch, useAppSelector } from "@/common/types";
 import { Blurrable } from "@/components/Blurrable";
 import { OverflowCol } from "@/components/OverflowCol";
 import { Spinner } from "@/components/Spinner";
+import { ClientSearchService } from "@/features/clientSearch/clientSearchService";
 import { downloadFile, useDoFileDownload } from "@/features/download/download";
 import { BleedEdgeMode, PageSize, PDF, PDFProps } from "@/features/pdf/PDF";
 import { pdfRenderService } from "@/features/pdf/pdfRenderService";
 import { useCardDocumentsByIdentifier } from "@/store/slices/cardDocumentsSlice";
 import { selectProjectMembers } from "@/store/slices/projectSlice";
+import { setNotification } from "@/store/slices/toastsSlice";
+import { AppDispatch } from "@/store/store";
 
 import { useClientSearchContext } from "../clientSearch/clientSearchContext";
 import { useRenderPDF } from "./useRenderPDF";
@@ -28,8 +31,52 @@ const PDFPreview = (props: PDFProps & { url: string | undefined }) => {
   return <iframe width="100%" height="100%" src={props.url} {...props} />;
 };
 
+const downloadPDF = async (
+  props: PDFProps,
+  clientSearchService: ClientSearchService,
+  dispatch: AppDispatch
+): Promise<boolean> => {
+  const fileHandles = await clientSearchService.getFileHandlesByIdentifier(
+    props.cardDocumentsByIdentifier
+  );
+  dispatch(
+    setNotification([
+      Math.random().toString(),
+      {
+        name: "Download Started",
+        message: "Generating your PDF...",
+        level: "info",
+      },
+    ])
+  );
+  return pdfRenderService
+    .renderPDF({ ...props, fileHandles })
+    .then((blob) =>
+      downloadFile(blob, undefined, "cards.pdf", clientSearchService)
+    )
+    .then(() => true);
+};
+
+const useDownloadPDF = (
+  props: PDFProps,
+  clientSearchService: ClientSearchService,
+  dispatch: AppDispatch
+) => {
+  const doFileDownload = useDoFileDownload();
+  return () =>
+    Promise.resolve(
+      doFileDownload(
+        "pdf",
+        "cards.pdf",
+        (): Promise<boolean> =>
+          downloadPDF(props, clientSearchService, dispatch)
+      )
+    );
+};
+
 export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
   // TODO: include fronts / include fronts and unique backs / include fronts and backs
+  const dispatch = useAppDispatch();
   const [includeCutLines, setIncludeCutLines] = useState<boolean>(false);
   const [cardSpacingMM, setCardSpacingMM] = useState<number>(5);
   const [marginMM, setMarginMM] = useState<number>(5);
@@ -74,10 +121,10 @@ export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
     cardSpacingMM: cardSpacingMM,
     marginMM: marginMM,
     cardDocumentsByIdentifier: cardDocumentsByIdentifier,
+    projectMembers: projectMembers,
     // the following settings don't matter for previewing and should remain stable to prevent unnecessary re-renders.
     imageQuality: "small-thumbnail",
     dpi: 300,
-    projectMembers: projectMembers,
     fileHandles: {},
   };
   const [debouncedPDFProps, debouncedState] = useDebounce(pdfProps, 500, {
@@ -89,22 +136,15 @@ export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
 
   const showSpinner = debouncedState.isPending() || loading;
 
-  const generatePDF = async () => {
-    const fileHandles = await clientSearchService.getFileHandlesByIdentifier(
-      cardDocumentsByIdentifier
-    );
-    return pdfRenderService
-      .renderPDF({
-        ...debouncedPDFProps,
-        dpi: dpi,
-        projectMembers,
-        imageQuality: "full-resolution",
-        fileHandles,
-      })
-      .then((blob) =>
-        downloadFile(blob, undefined, "cards.pdf", clientSearchService)
-      );
-  };
+  const downloadPDF = useDownloadPDF(
+    {
+      ...debouncedPDFProps,
+      imageQuality: "full-resolution",
+      dpi,
+    },
+    clientSearchService,
+    dispatch
+  );
 
   return (
     <Container fluid>
@@ -237,7 +277,7 @@ export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
           </Row>
           <hr />
           <div className="d-grid gap-0">
-            <Button onClick={generatePDF}>Generate PDF</Button>
+            <Button onClick={downloadPDF}>Generate PDF</Button>
           </div>
         </OverflowCol>
         <Col lg={9} md={8} sm={7} xs={6} style={{ position: "relative" }}>

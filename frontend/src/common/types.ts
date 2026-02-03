@@ -161,7 +161,12 @@ export interface FinishSettingsState {
 }
 
 export type FileDownloadStatus = "success" | "failed" | "terminated";
-export type FileDownloadType = "image" | "xml" | "text" | "desktop-tool";
+export type FileDownloadType =
+  | "image"
+  | "xml"
+  | "text"
+  | "pdf"
+  | "desktop-tool";
 
 export interface FileDownload {
   name: string;

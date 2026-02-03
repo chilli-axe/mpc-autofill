@@ -14,9 +14,10 @@ async function downloadDesktopTool(
   clientSearchService: ClientSearchService,
   directoryHandleName?: string
 ) {
+  const notificationId = Math.random().toString();
   dispatch(
     setNotification([
-      Math.random().toString(),
+      notificationId,
       {
         name: "Download Started",
         message: `Started downloading the Desktop Tool to ${
@@ -29,7 +30,7 @@ async function downloadDesktopTool(
   await downloadFile(undefined, url, fileName, clientSearchService);
   dispatch(
     setNotification([
-      Math.random().toString(),
+      notificationId,
       {
         name: "Download Complete",
         message: `Successfully downloaded the Desktop Tool to ${
