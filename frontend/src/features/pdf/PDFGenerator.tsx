@@ -86,7 +86,6 @@ const useDownloadPDF = (
 export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
   // TODO: include fronts / include fronts and unique backs / include fronts and backs
   const dispatch = useAppDispatch();
-  const [includeCutLines, setIncludeCutLines] = useState<boolean>(false);
   const [cardSpacingMM, setCardSpacingMM] = useState<number>(5);
   const [marginMM, setMarginMM] = useState<number>(5);
   const [dpi, setDPI] = useState<number>(600);
@@ -139,7 +138,6 @@ export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
   const pdfProps: Omit<PDFProps, "fileHandles"> = {
     cardSelectionMode: cardSelectionMode,
     pageSize: pageSize,
-    includeCutLines: includeCutLines,
     bleedEdgeMode: bleedEdgeMode,
     cardSpacingMM: cardSpacingMM,
     marginMM: marginMM,
@@ -197,21 +195,6 @@ export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
             </li>
           </ol>
           <hr />
-          <div className="px-0">
-            <Toggle
-              onClick={() => setIncludeCutLines((value) => !value)}
-              on="Include Cut Lines"
-              onClassName="flex-centre"
-              off="No Cut Lines"
-              offClassName="flex-centre"
-              onstyle="primary"
-              offstyle="info"
-              width={100 + "%"}
-              size="md"
-              height={ToggleButtonHeight + "px"}
-              active={includeCutLines}
-            />
-          </div>
           <Form.Label>Select which cards to include</Form.Label>
           <StyledDropdownTreeSelect
             data={cardSelectionModeOptions}

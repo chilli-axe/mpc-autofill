@@ -80,7 +80,6 @@ export interface PDFProps {
   cardSelectionMode: keyof typeof CardSelectionMode;
   pageSize: keyof typeof PageSize;
   bleedEdgeMode: keyof typeof BleedEdgeMode;
-  includeCutLines: boolean;
   cardSpacingMM: number;
   marginMM: number;
   cardDocumentsByIdentifier: { [identifier: string]: CardDocument };
@@ -144,12 +143,14 @@ const PDFCardThumbnail = ({
 }: PDFCardThumbnailProps) => {
   const bleedEdgeModeStyle = BleedEdgeModeToStyle[bleedEdgeMode];
   return (
-    <Image
-      src={async () =>
-        getThumbnailURL(cardDocument, imageQuality, fileHandles, dpi)
-      }
-      style={bleedEdgeModeStyle}
-    />
+    <>
+      <Image
+        src={async () =>
+          getThumbnailURL(cardDocument, imageQuality, fileHandles, dpi)
+        }
+        style={bleedEdgeModeStyle}
+      />
+    </>
   );
 };
 
@@ -169,7 +170,6 @@ const includeBack = (
 export const PDF = ({
   cardSelectionMode,
   pageSize,
-  includeCutLines,
   bleedEdgeMode,
   cardSpacingMM,
   marginMM,
