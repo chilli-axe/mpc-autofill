@@ -7,21 +7,19 @@ import { base64StringToBlob } from "@/common/processing";
 import { SourceType } from "@/common/schema_types";
 import { CardDocument, SlotProjectMembers } from "@/common/types";
 
-import { ClientSearchService } from "../clientSearch/clientSearchService";
+export const BleedEdgeMode = {
+  showBleedEdge: "Include Bleed Edge",
+  hideBleedEdge: "Hide Bleed Edge, Square Corners",
+  hideBleedEdgeWithRoundCorners: "Hide Bleed Edge, Round Corners",
+} as const;
 
-export enum BleedEdgeMode {
-  showBleedEdge = "Include Bleed Edge",
-  hideBleedEdge = "Hide Bleed Edge, Square Corners",
-  hideBleedEdgeWithRoundCorners = "Hide Bleed Edge, Round Corners",
-}
-
-export enum PageSize {
-  A4 = "A4",
-  A3 = "A3",
-  LETTER = "LETTER",
-  LEGAL = "LEGAL",
-  TABLOID = "TABLOID",
-}
+export const PageSize = {
+  A4: "A4",
+  A3: "A3",
+  LETTER: "LETTER",
+  LEGAL: "LEGAL",
+  TABLOID: "TABLOID",
+} as const;
 
 const ImageShowBleedStyle = {
   // width: 63.5 + "mm",
@@ -64,16 +62,17 @@ const styles = StyleSheet.create({
   imageHideBleedRoundCorners: ImageHideBleedRoundCornersStyle,
 });
 
-const BleedEdgeModeToStyle: { [bleedEdgeMode in BleedEdgeMode]: any } = {
-  [BleedEdgeMode.showBleedEdge]: styles.imageShowBleed,
-  [BleedEdgeMode.hideBleedEdge]: styles.imageHideBleedSquareCorners,
-  [BleedEdgeMode.hideBleedEdgeWithRoundCorners]:
-    styles.imageHideBleedRoundCorners,
+const BleedEdgeModeToStyle: {
+  [bleedEdgeMode in keyof typeof BleedEdgeMode]: any;
+} = {
+  showBleedEdge: styles.imageShowBleed,
+  hideBleedEdge: styles.imageHideBleedSquareCorners,
+  hideBleedEdgeWithRoundCorners: styles.imageHideBleedRoundCorners,
 };
 
 export interface PDFProps {
-  pageSize: PageSize;
-  bleedEdgeMode: BleedEdgeMode;
+  pageSize: keyof typeof PageSize;
+  bleedEdgeMode: keyof typeof BleedEdgeMode;
   includeCutLines: boolean;
   cardSpacingMM: number;
   marginMM: number;
@@ -124,7 +123,7 @@ const getThumbnailURL = async (
 
 interface PDFCardThumbnailProps {
   cardDocument: CardDocument;
-  bleedEdgeMode: BleedEdgeMode;
+  bleedEdgeMode: keyof typeof BleedEdgeMode;
   imageQuality: "small-thumbnail" | "large-thumbnail" | "full-resolution";
   dpi: number;
   fileHandles: { [identifier: string]: FileSystemFileHandle };
