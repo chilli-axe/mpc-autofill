@@ -38,7 +38,7 @@ const PDFPreview = (props: PDFProps & {url: string | undefined}) => {
   );
 }
 
-export const PDFGenerator = () => {
+export const PDFGenerator = ({heightDelta = 0}: {heightDelta?: number}) => {
   // TODO: include fronts / include fronts and unique backs / include fronts and backs
   const [includeCutLines, setIncludeCutLines] = useState<boolean>(false);
   const [cardSpacingMM, setCardSpacingMM] = useState<number>(5);
@@ -113,7 +113,7 @@ export const PDFGenerator = () => {
   return (
     <Container fluid>
       <Row>
-        <OverflowCol lg={3} md={4} sm={5} xs={6} className="py-2" heightDelta={67.9+71}>
+        <OverflowCol lg={3} md={4} sm={5} xs={6} className="py-2" heightDelta={67.9+71+heightDelta}>
           {/* <h3>Download PDF</h3> */}
           <p>
             Generate a PDF file from your project suitable for printing at home or professionally.
