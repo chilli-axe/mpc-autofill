@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import React from "react";
+import React, { useState } from "react";
 import Alert from "react-bootstrap/Alert";
 import Button from "react-bootstrap/Button";
 import Col from "react-bootstrap/Col";
@@ -285,18 +285,26 @@ const MakePlayingCardsInstructions = () => {
 };
 
 export function FinishedMyProjectModal({ show, handleClose }: ExitModal) {
+  const [key, setKey] = useState<"mpc" | "pdf">("mpc");
   return (
     <Modal fullscreen scrollable show={show} onHide={handleClose}>
       <Modal.Header closeButton>
         <Modal.Title>I&apos;ve Finished My Project</Modal.Title>
       </Modal.Header>
       <Modal.Body className="p-0">
-        <Tabs variant="pills" defaultActiveKey="mpc" justify className="my-0">
+        <Tabs
+          activeKey={key}
+          onSelect={(k: "mpc" | "pdf") => setKey(k)}
+          variant="pills"
+          defaultActiveKey="mpc"
+          justify
+          className="my-0"
+        >
           <Tab eventKey="mpc" title="Print with MakePlayingCards">
-            <MakePlayingCardsInstructions />
+            {key === "mpc" && <MakePlayingCardsInstructions />}
           </Tab>
           <Tab eventKey="pdf" title="Download PDF">
-            <PDFGenerator heightDelta={46} />
+            {key === "pdf" && <PDFGenerator heightDelta={46} />}
           </Tab>
         </Tabs>
       </Modal.Body>
