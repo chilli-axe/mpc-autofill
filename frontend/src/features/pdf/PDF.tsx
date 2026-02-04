@@ -104,7 +104,7 @@ const getThumbnailURL = async (
         case "large-thumbnail":
           return getBucketThumbnailURL(cardDocument, false);
         case "full-resolution":
-          return getWorkerFullResURL(cardDocument, dpi, "high");
+          return getWorkerFullResURL(cardDocument, dpi, 85);
         // return fetch(GoogleDriveImageAPIURL + "?" + new URLSearchParams({ id: cardDocument.identifier }).toString()).then(response => response.text().then(base64StringToBlob));
         default:
           throw new Error(`invalid imageQuality ${imageQuality}`);

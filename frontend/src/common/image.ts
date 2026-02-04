@@ -42,7 +42,7 @@ export const getWorkerThumbnailURL = (
 export const getWorkerFullResURL = (
   cardDocument: CardDocument,
   dpi: number,
-  quality: "low" | "medium-low" | "medium-high" | "high"
+  quality: number
 ) => {
   const imageWorkerURL = getImageWorkerURL();
   const imageWorkerURLValid =
