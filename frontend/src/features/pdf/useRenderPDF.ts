@@ -16,7 +16,6 @@ export const useRenderPDF = ({
   projectMembers,
   projectCardback,
   imageQuality,
-  dpi,
 }: Omit<PDFProps, "fileHandles">) => {
   const { clientSearchService } = useClientSearchContext();
   const {
@@ -37,7 +36,6 @@ export const useRenderPDF = ({
       projectMembers,
       projectCardback,
       imageQuality,
-      dpi,
       fileHandles,
     });
   }, [
@@ -50,7 +48,6 @@ export const useRenderPDF = ({
     projectMembers,
     projectCardback,
     imageQuality,
-    dpi,
   ]);
 
   useEffect(() => (url ? () => URL.revokeObjectURL(url) : undefined), [url]);

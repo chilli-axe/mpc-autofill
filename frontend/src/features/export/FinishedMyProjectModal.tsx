@@ -294,7 +294,9 @@ export function FinishedMyProjectModal({ show, handleClose }: ExitModal) {
       <Modal.Body className="p-0">
         <Tabs
           activeKey={key}
-          onSelect={(k: "mpc" | "pdf") => setKey(k)}
+          onSelect={(k) => {
+            if (k === "mpc" || k === "pdf") setKey(k);
+          }}
           variant="pills"
           defaultActiveKey="mpc"
           justify
