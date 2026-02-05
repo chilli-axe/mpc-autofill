@@ -1,15 +1,14 @@
 import { useMemo, useState } from "react";
 import React from "react";
+import Alert from "react-bootstrap/Alert";
 import Button from "react-bootstrap/Button";
 import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
 import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
-// @ts-ignore: https://github.com/arnthor3/react-bootstrap-toggle/issues/21
-import Toggle from "react-bootstrap-toggle";
 import { useDebounce } from "use-debounce";
 
-import { ToggleButtonHeight } from "@/common/constants";
+import { ProjectName } from "@/common/constants";
 import { StyledDropdownTreeSelect } from "@/common/StyledDropdownTreeSelect";
 import { useAppDispatch, useAppSelector } from "@/common/types";
 import { Blurrable } from "@/components/Blurrable";
@@ -21,7 +20,6 @@ import {
   BleedEdgeMode,
   CardSelectionMode,
   PageSize,
-  PDF,
   PDFProps,
 } from "@/features/pdf/PDF";
 import { pdfRenderService } from "@/features/pdf/pdfRenderService";
@@ -150,7 +148,6 @@ export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
     equalityFn,
   });
 
-  // const { clientSearchService } = useClientSearchContext();
   const { url, loading, error } = useRenderPDF(debouncedPDFProps);
 
   const showSpinner = debouncedState.isPending() || loading;
@@ -175,7 +172,21 @@ export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
           className="py-2"
           heightDelta={67.9 + 71 + heightDelta}
         >
-          {/* <h3>Download PDF</h3> */}
+          <Alert variant="info">
+            We are actively working to improve this experience.
+            <br />
+            In particular, please note that generated PDFs can be large.
+            <br />
+            Please send any feature requests, bug reports, and other discussion
+            to the{" "}
+            <a
+              href="https://github.com/chilli-axe/mpc-autofill"
+              target="_blank"
+            >
+              GitHub repo
+            </a>
+            . Thanks for your patience!
+          </Alert>
           <p>
             Generate a PDF file from your project suitable for printing at home
             or professionally.
