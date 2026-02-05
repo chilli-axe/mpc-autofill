@@ -20,6 +20,11 @@ import React, {
 import BSCard from "react-bootstrap/Card";
 import Col from "react-bootstrap/Col";
 
+import {
+  getBucketThumbnailURL,
+  getImageKey,
+  getWorkerThumbnailURL,
+} from "@/common/image";
 import { SourceType } from "@/common/schema_types";
 import { SearchQuery, useAppDispatch, useAppSelector } from "@/common/types";
 import { CardDocument } from "@/common/types";
@@ -77,15 +82,6 @@ type ImageState =
   | "loaded-from-local-file"
   | "errored";
 
-export function getImageKey(
-  cardDocument: CardDocument,
-  small: boolean
-): string {
-  return `${cardDocument.identifier}-${
-    small ? "small" : "large"
-  }-${cardDocument.sourceType?.toLowerCase().replace(" ", "_")}`;
-}
-
 const useLocalFileImageSrc = (
   cardDocument: CardDocument,
   setImageState: (imageState: ImageState) => void
@@ -94,21 +90,23 @@ const useLocalFileImageSrc = (
   const [blobURL, setBlobURL] = useState<string | undefined>(undefined);
   useEffect(() => {
     (async () => {
-      const oramaCardDocument = await clientSearchService.getByID(
-        cardDocument?.identifier
-      );
-      if (oramaCardDocument?.params.sourceType === SourceType.LocalFile) {
-        setImageState("loading-from-local-file");
-        const file = await oramaCardDocument.params.fileHandle.getFile();
-        const url = URL.createObjectURL(file);
-        setBlobURL(url);
+      if (cardDocument.sourceType === SourceType.LocalFile) {
+        const oramaCardDocument = await clientSearchService.getByID(
+          cardDocument?.identifier
+        );
+        if (oramaCardDocument?.params?.sourceType == SourceType.LocalFile) {
+          setImageState("loading-from-local-file");
+          const file = await oramaCardDocument.params.fileHandle.getFile();
+          const url = URL.createObjectURL(file);
+          setBlobURL(url);
+        }
       }
     })();
   }, [cardDocument?.identifier, clientSearchService, setImageState]);
   return blobURL;
 };
 
-const useImageSrc = (
+export const useImageSrc = (
   cardDocument: CardDocument,
   small: boolean
 ): {
@@ -174,32 +172,28 @@ const useImageSrc = (
   }
 
   // attempt to load directly from bucket first
-  const imageBucketURL = process.env.NEXT_PUBLIC_IMAGE_BUCKET_URL;
-  // TODO: support other source types through CDN here
-  const imageBucketURLValid =
-    imageBucketURL != null && !!(cardDocument.sourceType === "Google Drive");
-
+  const thumbnailBucketURL = getBucketThumbnailURL(cardDocument, small);
+  const imageBucketURLValid = thumbnailBucketURL !== undefined;
   const loadFromBucket =
     imageBucketURLValid &&
     (imageState === "loading-from-bucket" ||
       imageState === "loaded-from-bucket");
-  const imageKey = getImageKey(cardDocument, small);
-  const thumbnailBucketURL = `${imageBucketURL}/${imageKey}`;
 
   // if image is unavailable in bucket, fall back on loading from worker if possible
-  const imageWorkerURL = process.env.NEXT_PUBLIC_IMAGE_WORKER_URL;
-  const imageWorkerURLValid =
-    imageWorkerURL != null && !!(cardDocument?.sourceType === "Google Drive");
-
+  const imageWorkerURL = getWorkerThumbnailURL(cardDocument, small);
+  const imageWorkerURLValid = imageWorkerURL !== undefined;
   const smallThumbnailURL = imageWorkerURLValid
-    ? `${imageWorkerURL}/images/google_drive/small/${cardDocument?.identifier}.jpg`
+    ? imageWorkerURL
     : cardDocument?.smallThumbnailUrl;
   const mediumThumbnailURL = imageWorkerURLValid
-    ? `${imageWorkerURL}/images/google_drive/large/${cardDocument?.identifier}.jpg`
+    ? imageWorkerURL
     : cardDocument?.mediumThumbnailUrl;
 
   const thumbnailFallbackURL = small ? smallThumbnailURL : mediumThumbnailURL;
-  const imageSrc = loadFromBucket ? thumbnailBucketURL : thumbnailFallbackURL;
+  const imageSrc =
+    loadFromBucket && !!thumbnailBucketURL
+      ? thumbnailBucketURL
+      : thumbnailFallbackURL;
 
   return {
     imageSrc,

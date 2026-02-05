@@ -10,6 +10,7 @@ import {
   CardTypePrefixes,
   ExploreDebounceMS,
   ExplorePageSize,
+  NavbarHeight,
   RibbonHeight,
   SortByOptions,
 } from "@/common/constants";
@@ -23,7 +24,7 @@ import {
   SourceSettings,
   useAppSelector,
 } from "@/common/types";
-import { BlurrableRow } from "@/components/BlurrableRow";
+import { Blurrable } from "@/components/Blurrable";
 import { NoBackendDefault } from "@/components/NoBackendDefault";
 import { OverflowCol } from "@/components/OverflowCol";
 import { Ribbon } from "@/components/Ribbon";
@@ -160,6 +161,7 @@ export function Explore() {
           xs={6}
           style={{ zIndex: 1 }}
           className="px-2"
+          heightDelta={NavbarHeight}
         >
           <h5>Sort By</h5>
           <StyledDropdownTreeSelect
@@ -228,30 +230,24 @@ export function Explore() {
           <OverflowCol
             disabled={displaySpinner}
             scrollable={!displaySpinner}
-            heightDelta={RibbonHeight}
+            heightDelta={RibbonHeight + NavbarHeight}
           >
-            <BlurrableRow
-              xxl={4}
-              lg={3}
-              md={2}
-              sm={1}
-              xs={1}
-              className="g-0"
-              disabled={displaySpinner}
-            >
-              {postExploreSearchQuery.data?.cards?.map((card) => (
-                <DatedCard
-                  cardDocument={card}
-                  headerDate={
-                    sortBy === SortBy.DateModifiedAscending ||
-                    sortBy === SortBy.DateModifiedDescending
-                      ? "modified"
-                      : "created"
-                  }
-                  key={`explore-card-${card.identifier}`}
-                />
-              ))}
-            </BlurrableRow>
+            <Blurrable disabled={displaySpinner}>
+              <Row xxl={4} lg={3} md={2} sm={1} xs={1} className="g-0">
+                {postExploreSearchQuery.data?.cards?.map((card) => (
+                  <DatedCard
+                    cardDocument={card}
+                    headerDate={
+                      sortBy === SortBy.DateModifiedAscending ||
+                      sortBy === SortBy.DateModifiedDescending
+                        ? "modified"
+                        : "created"
+                    }
+                    key={`explore-card-${card.identifier}`}
+                  />
+                ))}
+              </Row>
+            </Blurrable>
           </OverflowCol>
           <Ribbon className="mx-0" position="bottom">
             <div className="text-center align-content-center position-relative">

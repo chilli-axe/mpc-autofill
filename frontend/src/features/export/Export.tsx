@@ -4,6 +4,7 @@ import Dropdown from "react-bootstrap/Dropdown";
 import { RightPaddedIcon } from "@/components/icon";
 import { ExportDecklist } from "@/features/export/ExportDecklist";
 import { ExportImages } from "@/features/export/ExportImages";
+import { ExportPDF } from "@/features/export/ExportPDF";
 import { ExportXML } from "@/features/export/ExportXML";
 
 export function Export() {
@@ -17,6 +18,7 @@ export function Export() {
       <Dropdown.Menu>
         <ExportXML />
         <ExportImages />
+        <ExportPDF />
         <ExportDecklist />
       </Dropdown.Menu>
     </Dropdown>

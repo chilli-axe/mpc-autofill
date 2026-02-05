@@ -2,11 +2,17 @@ import { Remote, wrap } from "comlink";
 import { DispatchWithoutAction } from "react";
 
 import { QueryTags } from "@/common/constants";
-import { SearchQuery, SearchSettings, Tag } from "@/common/schema_types";
+import {
+  SearchQuery,
+  SearchSettings,
+  SourceType,
+  Tag,
+} from "@/common/schema_types";
 import {
   CardDocument,
   CardDocuments,
   CardType,
+  LocalFileHandleParams,
   OramaCardDocument,
   SearchResults,
 } from "@/common/types";
@@ -208,6 +214,31 @@ export class ClientSearchService {
       throw new Error("clientSearchService was not initialised!");
     }
     return this.worker.getSampleCards();
+  }
+
+  public async getFileHandlesByIdentifier(cardDocumentsByIdentifier: {
+    [identifier: string]: CardDocument;
+  }): Promise<{ [identifier: string]: FileSystemFileHandle }> {
+    if (this.worker === undefined) {
+      throw new Error("clientSearchService was not initialised!");
+    }
+    return Object.fromEntries(
+      await Promise.all(
+        Object.keys(cardDocumentsByIdentifier).map(async (identifier) =>
+          clientSearchService.getByID(identifier)
+        )
+      ).then((items) =>
+        items
+          .filter(
+            (
+              item
+            ): item is OramaCardDocument & { params: LocalFileHandleParams } =>
+              item !== undefined &&
+              item.params.sourceType === SourceType.LocalFile
+          )
+          .map((item) => [item.id, item.params.fileHandle])
+      )
+    );
   }
 }
 
