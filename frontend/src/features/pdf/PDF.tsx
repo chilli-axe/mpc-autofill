@@ -86,15 +86,13 @@ export interface PDFProps {
   projectMembers: Array<SlotProjectMembers>;
   projectCardback: string | undefined;
   imageQuality: "small-thumbnail" | "large-thumbnail" | "full-resolution";
-  dpi: number;
   fileHandles: { [identifier: string]: FileSystemFileHandle };
 }
 
 const getThumbnailURL = async (
   cardDocument: CardDocument,
   imageQuality: "small-thumbnail" | "large-thumbnail" | "full-resolution",
-  fileHandles: { [identifier: string]: FileSystemFileHandle },
-  dpi: number
+  fileHandles: { [identifier: string]: FileSystemFileHandle }
 ): Promise<string | Blob | undefined> => {
   switch (cardDocument.sourceType) {
     case SourceType.GoogleDrive:
@@ -104,8 +102,7 @@ const getThumbnailURL = async (
         case "large-thumbnail":
           return getBucketThumbnailURL(cardDocument, false);
         case "full-resolution":
-          return getWorkerFullResURL(cardDocument, dpi, 85);
-        // return fetch(GoogleDriveImageAPIURL + "?" + new URLSearchParams({ id: cardDocument.identifier }).toString()).then(response => response.text().then(base64StringToBlob));
+          return getWorkerFullResURL(cardDocument);
         default:
           throw new Error(`invalid imageQuality ${imageQuality}`);
       }
@@ -130,7 +127,6 @@ interface PDFCardThumbnailProps {
   cardDocument: CardDocument;
   bleedEdgeMode: keyof typeof BleedEdgeMode;
   imageQuality: "small-thumbnail" | "large-thumbnail" | "full-resolution";
-  dpi: number;
   fileHandles: { [identifier: string]: FileSystemFileHandle };
 }
 
@@ -139,14 +135,13 @@ const PDFCardThumbnail = ({
   bleedEdgeMode,
   imageQuality,
   fileHandles,
-  dpi,
 }: PDFCardThumbnailProps) => {
   const bleedEdgeModeStyle = BleedEdgeModeToStyle[bleedEdgeMode];
   return (
     <>
       <Image
         src={async () =>
-          getThumbnailURL(cardDocument, imageQuality, fileHandles, dpi)
+          getThumbnailURL(cardDocument, imageQuality, fileHandles)
         }
         style={bleedEdgeModeStyle}
       />
@@ -177,7 +172,6 @@ export const PDF = ({
   projectCardback,
   cardDocumentsByIdentifier,
   imageQuality,
-  dpi,
   fileHandles,
 }: PDFProps) => {
   return (
@@ -197,7 +191,6 @@ export const PDF = ({
                     }
                     bleedEdgeMode={bleedEdgeMode}
                     imageQuality={imageQuality}
-                    dpi={dpi}
                     fileHandles={fileHandles}
                   />
                 )}
@@ -216,7 +209,6 @@ export const PDF = ({
                     }
                     bleedEdgeMode={bleedEdgeMode}
                     imageQuality={imageQuality}
-                    dpi={dpi}
                     fileHandles={fileHandles}
                   />
                 )}

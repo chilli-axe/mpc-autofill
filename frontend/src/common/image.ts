@@ -39,15 +39,11 @@ export const getWorkerThumbnailURL = (
     : undefined;
 };
 
-export const getWorkerFullResURL = (
-  cardDocument: CardDocument,
-  dpi: number,
-  quality: number
-) => {
+export const getWorkerFullResURL = (cardDocument: CardDocument) => {
   const imageWorkerURL = getImageWorkerURL();
   const imageWorkerURLValid =
     imageWorkerURL != null && !!(cardDocument?.sourceType === "Google Drive");
   return imageWorkerURLValid
-    ? `${imageWorkerURL}/images/google_drive/full/${cardDocument?.identifier}.jpg?dpi=${dpi}&quality=${quality}`
+    ? `${imageWorkerURL}/images/google_drive/full/${cardDocument?.identifier}.jpg`
     : undefined;
 };

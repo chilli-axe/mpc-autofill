@@ -88,7 +88,6 @@ export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
   const dispatch = useAppDispatch();
   const [cardSpacingMM, setCardSpacingMM] = useState<number>(5);
   const [marginMM, setMarginMM] = useState<number>(5);
-  const [dpi, setDPI] = useState<number>(600);
 
   const { clientSearchService } = useClientSearchContext();
   const projectMembers = useAppSelector(selectProjectMembers);
@@ -146,7 +145,6 @@ export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
     projectCardback: projectCardback,
     // the following settings don't matter for previewing and should remain stable to prevent unnecessary re-renders.
     imageQuality: "small-thumbnail",
-    dpi: 300,
   };
   const [debouncedPDFProps, debouncedState] = useDebounce(pdfProps, 500, {
     equalityFn,
@@ -161,7 +159,6 @@ export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
     {
       ...debouncedPDFProps,
       imageQuality: "full-resolution",
-      dpi,
     },
     clientSearchService,
     dispatch
@@ -262,35 +259,6 @@ export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
                 }}
               />
             </Col>
-          </Row>
-          <Row>
-            <Col lg={6} md={12} sm={12} xs={12}>
-              <Form.Label>
-                Card image DPI: <b>{dpi} DPI</b>
-              </Form.Label>
-              <Form.Range
-                defaultValue={600}
-                min={100}
-                max={1500}
-                step={100}
-                onChange={(event) => {
-                  setDPI(parseInt(event.target.value));
-                }}
-              />
-            </Col>
-            {/* <Col lg={6} md={12} sm={12} xs={12}>
-              <Form.Label>
-                Card image quality: <b>{cardImageQuality} mm</b>
-              </Form.Label>
-              <StyledDropdownTreeSelect
-                data={bleedEdgeModeOptions}
-                onChange={(currentNode, selectedNodes) =>
-                  setBleedEdgeMode(currentNode.value)
-                }
-                mode="radioSelect"
-                inlineSearchInput
-              />
-            </Col> */}
           </Row>
           <hr />
           <div className="d-grid gap-0">
