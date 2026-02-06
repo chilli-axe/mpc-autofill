@@ -137,7 +137,7 @@
 }
 
 .ratio-7x5 > img {
-  transform: scale(1.088, 1.065);
+  transform: scale(calc((63 + 2 * 3.048) / 63), calc((88 + 2 * 3.048) / 88));
 }
 
 .toggle-handle {

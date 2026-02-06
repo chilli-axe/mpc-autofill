@@ -28,23 +28,23 @@ export const CardSelectionMode = {
   backsOnly: "Backs Only",
 } as const;
 
-const CardWidthInches = 2.5;
-const CardHeightInches = 3.5;
-const BleedEdgeInches = 0.25;
+const CardWidthMM = 63;
+const CardHeightMM = 88;
+const BleedEdgeMM = 0.12 * 2.54; // 72 pixels at 300 dpi -> 0.12 inches, convert to MM
 const CornerRadiusMM = 2.5;
 
 const ImageShowBleedStyle = {
-  width: CardWidthInches + BleedEdgeInches + "in",
-  height: CardHeightInches + BleedEdgeInches + "in",
-  minWidth: CardWidthInches + BleedEdgeInches + "in",
-  minHeight: CardHeightInches + BleedEdgeInches + "in",
+  width: CardWidthMM + BleedEdgeMM + "mm",
+  height: CardHeightMM + BleedEdgeMM + "mm",
+  minWidth: CardWidthMM + BleedEdgeMM + "mm",
+  minHeight: CardHeightMM + BleedEdgeMM + "mm",
 } as const;
 const ImageHideBleedSquareCornersStyle = {
   ...ImageShowBleedStyle,
-  width: CardWidthInches + "in",
-  height: CardHeightInches + "in",
-  minWidth: CardWidthInches + "in",
-  minHeight: CardHeightInches + "in",
+  width: CardWidthMM + "mm",
+  height: CardHeightMM + "mm",
+  minWidth: CardWidthMM + "mm",
+  minHeight: CardHeightMM + "mm",
   transform: "scale(1.088, 1.065)",
   overflow: "hidden",
 } as const;
