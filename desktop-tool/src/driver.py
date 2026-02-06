@@ -1,4 +1,5 @@
 import datetime as dt
+import re
 import textwrap
 import time
 from concurrent.futures import ThreadPoolExecutor
@@ -740,36 +741,28 @@ class AutofillDriver:
 
     def open_dtc_upload_page(self) -> None:
         """
-        Click 'Upload print-ready file' button which opens a new tab,
-        then switch to that tab.
-        Waits for button to be available (page loaded from previous step).
+        Navigate to the upload page by extracting the URL from the 'Upload print-ready file'
+        button's onclick attribute, rather than letting it open a new tab via window.open().
         """
         self.set_state(States.defining_order, "Opening upload page")
-        
-        # Store current window handles
-        original_windows = set(self.driver.window_handles)
-        
+
         try:
-            # Wait for and click the upload button
             upload_button = WebDriverWait(self.driver, 15).until(
                 element_to_be_clickable((By.XPATH, "//button[contains(@onclick, 'pub_upload_podcard_files.php')]"))
             )
-            logger.info("Clicking 'Upload print-ready file' button...")
-            self.click_element_with_retry(upload_button)
-            
-            # Wait for new window/tab to open (poll until a new window appears)
-            WebDriverWait(self.driver, 15).until(
-                lambda d: len(d.window_handles) > len(original_windows)
-            )
-            
-            # Find the new window and switch to it
-            new_windows = set(self.driver.window_handles) - original_windows
-            if new_windows:
-                new_window = new_windows.pop()
-                self.driver.switch_to.window(new_window)
-                logger.info(f"Switched to upload tab: {self.driver.current_url}")
+            onclick = upload_button.get_attribute("onclick") or ""
+            # Extract URL from onclick like: window.open('https://...pub_upload_podcard_files.php?products_id=123');
+            url_match = re.search(r"window\.open\(['\"]([^'\"]+)['\"]\)", onclick)
+            if url_match:
+                upload_url = url_match.group(1)
+                self.driver.execute_script("window.location.href = arguments[0];", upload_url)
+                # Wait for the upload page to load
+                WebDriverWait(self.driver, 15).until(
+                    presence_of_element_located((By.ID, "card_type_select"))
+                )
+                logger.info(f"Navigated to upload page: {self.driver.current_url}")
             else:
-                logger.warning("No new tab detected after clicking upload button.")
+                logger.warning(f"Could not extract URL from upload button onclick: {onclick}")
         except Exception as e:
             logger.warning(f"Could not open upload page: {e}")
 
