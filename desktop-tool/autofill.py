@@ -60,6 +60,14 @@ def get_default_dtc_icc_profile() -> Optional[str]:
     return str(candidate) if candidate.is_file() else None
 
 
+def wait_for_user_to_complete_order() -> None:
+    input(
+        f"If this software has brought you joy and you'd like to throw a few bucks my way,\n"
+        f"you can find my tip jar here: {bold('https://www.buymeacoffee.com/chilli.axe')} Thank you!\n\n"
+        f"Press {bold('Enter')} to close this window - your browser window will remain open.\n"
+    )
+
+
 def ensure_ghostscript_available() -> str:
     while True:
         gs_path = get_ghostscript_path()
@@ -354,6 +362,7 @@ def main(
                     ).execute_drive_thru_cards_order(order=order, pdf_path=dtc_pdf_path)
                     if i < len(orders):
                         input(f"Press {bold('Enter')} to continue with the next DriveThruCards order.\n")
+                wait_for_user_to_complete_order()
             elif exportpdf:
                 PdfExporter(order=CardOrder.from_xmls_in_folder(working_directory=working_directory)[0]).execute(
                     post_processing_config=post_processing_config
@@ -375,11 +384,7 @@ def main(
                     auto_save_threshold=auto_save_threshold if auto_save else None,
                     post_processing_config=post_processing_config,
                 )
-                input(
-                    f"If this software has brought you joy and you'd like to throw a few bucks my way,\n"
-                    f"you can find my tip jar here: {bold('https://www.buymeacoffee.com/chilli.axe')} Thank you!\n\n"
-                    f"Press {bold('Enter')} to close this window - your browser window will remain open.\n"
-                )
+                wait_for_user_to_complete_order()
     except ValidationException as e:
         input(f"There was a problem with your order file:\n\n{bold(e)}\n\nPress Enter to exit.")
         sys.exit(0)
