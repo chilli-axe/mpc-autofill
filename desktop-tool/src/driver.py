@@ -982,13 +982,19 @@ class AutofillDriver:
             except sl_exc.TimeoutException:
                 logger.warning("Could not find 'Complete Setup' button. Please click it manually.")
             
-            # Click the "buy now" link on the next page
+            # Click the "buy now" link to start placing the order.
+            # This link has target="_blank", so navigate directly to avoid new-tab issues.
             try:
                 buy_now_link = WebDriverWait(self.driver, 30).until(
                     element_to_be_clickable((By.CSS_SELECTOR, "a[href*='action=buy_now']"))
                 )
-                self.driver.execute_script("arguments[0].click();", buy_now_link)
-                logger.info("Clicked 'buy now' link.")
+                buy_now_href = buy_now_link.get_attribute("href")
+                if buy_now_href:
+                    self.driver.get(buy_now_href)
+                    logger.info("Navigated to 'buy now' page to start placing the order.")
+                else:
+                    self.driver.execute_script("arguments[0].click();", buy_now_link)
+                    logger.info("Clicked 'buy now' link.")
             except sl_exc.TimeoutException:
                 logger.warning("Could not find 'buy now' link. Please click it manually.")
         except Exception as e:
