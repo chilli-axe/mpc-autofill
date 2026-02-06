@@ -953,15 +953,24 @@ class AutofillDriver:
             except sl_exc.TimeoutException:
                 logger.warning("Could not confirm upload completion. Please verify manually.")
             
-            # Click the continue button
+            # Wait for the continue button to become active.
+            # The button starts with an onclick handler that shows an error and returns false.
+            # After upload validation, the page JS replaces this handler to enable navigation.
+            # We detect activation by checking that the onclick no longer contains "return false".
             try:
-                continue_button = WebDriverWait(self.driver, 10).until(
-                    element_to_be_clickable((By.ID, "continue_button"))
-                )
+                def continue_button_is_active(d: Any) -> Any:
+                    btn = d.find_element(By.ID, "continue_button")
+                    onclick = btn.get_attribute("onclick") or ""
+                    if "return false" in onclick:
+                        return False
+                    return btn
+
+                continue_button = WebDriverWait(self.driver, 60).until(continue_button_is_active)
+                logger.debug(f"Continue button activated. onclick: {continue_button.get_attribute('onclick')}")
                 self.driver.execute_script("arguments[0].click();", continue_button)
                 logger.info("Clicked 'Click here after uploading your files' button.")
             except sl_exc.TimeoutException:
-                logger.warning("Could not find continue button. Please click it manually.")
+                logger.warning("Continue button did not activate. Please click it manually.")
             
             # Click the "Complete Setup" button on the next page
             try:
