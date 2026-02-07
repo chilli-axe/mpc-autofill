@@ -19,6 +19,7 @@ export const PageSize = {
   LETTER: "LETTER",
   LEGAL: "LEGAL",
   TABLOID: "TABLOID",
+  CUSTOM: "Custom", // special case
 } as const;
 
 export const CardSelectionMode = {
@@ -43,6 +44,8 @@ const styles = StyleSheet.create({
 export interface PDFProps {
   cardSelectionMode: keyof typeof CardSelectionMode;
   pageSize: keyof typeof PageSize;
+  pageWidth: number | undefined;
+  pageHeight: number | undefined;
   bleedEdgeMM: number;
   roundCorners: boolean;
   cardSpacingMM: number;
@@ -144,6 +147,8 @@ const includeBack = (
 export const PDF = ({
   cardSelectionMode,
   pageSize,
+  pageWidth,
+  pageHeight,
   bleedEdgeMM,
   roundCorners,
   cardSpacingMM,
@@ -154,9 +159,13 @@ export const PDF = ({
   imageQuality,
   fileHandles,
 }: PDFProps) => {
+  const size =
+    pageSize === "CUSTOM" && pageWidth !== undefined && pageHeight !== undefined
+      ? { width: pageWidth + "mm", height: pageHeight + "mm" }
+      : pageSize;
   return (
     <Document>
-      <Page size={pageSize} style={{ ...styles.page, margin: marginMM + "mm" }}>
+      <Page size={size} style={{ ...styles.page, margin: marginMM + "mm" }}>
         <View style={{ ...styles.section, gap: cardSpacingMM + "mm" }}>
           {projectMembers.map((member, i) => (
             <>

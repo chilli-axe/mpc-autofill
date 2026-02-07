@@ -91,6 +91,11 @@ export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
   const projectCardback = useAppSelector(selectProjectCardback);
 
   const [pageSize, setPageSize] = useState<keyof typeof PageSize>(PageSize.A4);
+  const [pageWidth, setPageWidth] = useState<number | undefined>(undefined);
+  const [pageHeight, setPageHeight] = useState<number | undefined>(undefined);
+
+  const isCustomPageSize = pageSize === "CUSTOM";
+
   const pageSizeOptions = useMemo(
     () =>
       Object.entries(PageSize).map(([value, label]) => ({
@@ -122,6 +127,8 @@ export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
   const pdfProps: Omit<PDFProps, "fileHandles"> = {
     cardSelectionMode: cardSelectionMode,
     pageSize: pageSize,
+    pageWidth: pageWidth,
+    pageHeight: pageHeight,
     bleedEdgeMM: bleedEdgeMM ?? 0,
     roundCorners: roundCorners,
     cardSpacingMM: cardSpacingMM,
@@ -202,10 +209,9 @@ export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
             mode="radioSelect"
             inlineSearchInput
           />
-          <br />
           <Row>
-            <Col xl={6} lg={12} md={12} sm={12} xs={12}>
-              <Form.Label>Select page size</Form.Label>
+            <Col xs={12}>
+              <Form.Label>Page size</Form.Label>
               <StyledDropdownTreeSelect
                 data={pageSizeOptions}
                 onChange={(currentNode, selectedNodes) =>
@@ -215,13 +221,49 @@ export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
                 inlineSearchInput
               />
             </Col>
-            <Col xl={6} lg={12} md={12} sm={12} xs={12}></Col>
           </Row>
+          {isCustomPageSize && (
+            <Row>
+              <Col xl={6} lg={12} md={12} sm={12} xs={12}>
+                <Form.Label>Custom page width (mm)</Form.Label>
+                <Form.Control
+                  type="number"
+                  min={0}
+                  step={1}
+                  value={pageWidth}
+                  onChange={(event) => {
+                    const value = parseFloat(event.target.value);
+                    if (Number.isNaN(value)) {
+                      setPageWidth(undefined);
+                    } else if (value >= 0) {
+                      setPageWidth(value);
+                    }
+                  }}
+                />
+              </Col>
+              <Col xl={6} lg={12} md={12} sm={12} xs={12}>
+                <Form.Label>Custom page height (mm)</Form.Label>
+                <Form.Control
+                  type="number"
+                  min={0}
+                  step={1}
+                  value={pageHeight}
+                  onChange={(event) => {
+                    const value = parseFloat(event.target.value);
+                    if (Number.isNaN(value)) {
+                      setPageHeight(undefined);
+                    } else if (value >= 0) {
+                      setPageHeight(value);
+                    }
+                  }}
+                />
+              </Col>
+            </Row>
+          )}
           <Row>
             <Col sm={12}>
               <Form.Label>
-                Bleed edge: <b>{bleedEdgeMM ?? 0} mm</b> (max:{" "}
-                <b>{BleedEdgeMM} mm</b>)
+                Bleed edge (max: <b>{BleedEdgeMM} mm</b>)
               </Form.Label>
               <Form.Control
                 required={true}
@@ -239,9 +281,7 @@ export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
                   }
                 }}
               />
-              <Form.Label>
-                Corners: <b>{roundCorners ? "Round" : "Square"}</b>
-              </Form.Label>
+              <Form.Label>Corners</Form.Label>
               <Toggle
                 onClick={() => setRoundCorners(!roundCorners)}
                 on="Round"
