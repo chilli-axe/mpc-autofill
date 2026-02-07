@@ -78,11 +78,51 @@ const useDownloadPDF = (
     );
 };
 
+interface NumericFieldProps {
+  label: string;
+  value: number | undefined;
+  setValue: (value: number | undefined) => void;
+  min?: number;
+  step?: number;
+  max?: number;
+}
+
+const NumericField = (props: NumericFieldProps) => {
+  const valueIsValid = (value: number) =>
+    (props.min === undefined || props.min <= value) &&
+    (props.max === undefined || props.max >= value);
+  return (
+    <>
+      <Form.Label>{props.label}</Form.Label>
+      <Form.Control
+        type="number"
+        min={props.min}
+        step={props.step}
+        value={props.value}
+        isValid={props.value !== undefined && valueIsValid(props.value)}
+        onChange={(event) => {
+          const value = parseFloat(event.target.value);
+          if (Number.isNaN(value)) {
+            props.setValue(undefined);
+          } else if (valueIsValid(value)) {
+            props.setValue(value);
+          }
+        }}
+      />
+    </>
+  );
+};
+
 export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
   // TODO: include fronts / include fronts and unique backs / include fronts and backs
   const dispatch = useAppDispatch();
-  const [cardSpacingMM, setCardSpacingMM] = useState<number>(5);
-  const [marginMM, setMarginMM] = useState<number>(5);
+  const [cardSpacingRowMM, setCardSpacingRowMM] = useState<number | undefined>(
+    5
+  );
+  const [cardSpacingColMM, setCardSpacingColMM] = useState<number | undefined>(
+    5
+  );
+  const [marginMM, setMarginMM] = useState<number | undefined>(5);
   const [bleedEdgeMM, setBleedEdgeMM] = useState<number | undefined>(0);
   const [roundCorners, setRoundCorners] = useState<boolean>(true);
 
@@ -131,8 +171,9 @@ export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
     pageHeight: pageHeight,
     bleedEdgeMM: bleedEdgeMM ?? 0,
     roundCorners: roundCorners,
-    cardSpacingMM: cardSpacingMM,
-    marginMM: marginMM,
+    cardSpacingRowMM: cardSpacingRowMM ?? 0,
+    cardSpacingColMM: cardSpacingColMM ?? 0,
+    marginMM: marginMM ?? 0,
     cardDocumentsByIdentifier: cardDocumentsByIdentifier,
     projectMembers: projectMembers,
     projectCardback: projectCardback,
@@ -170,7 +211,8 @@ export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
           <Alert variant="info">
             We are actively working to improve this experience.
             <br />
-            In particular, please note that generated PDFs can be large.
+            In particular, please note that generated PDFs can be large and can
+            take a while to download.
             <br />
             Please send any feature requests, bug reports, and other discussion
             to the{" "}
@@ -225,61 +267,34 @@ export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
           {isCustomPageSize && (
             <Row>
               <Col xl={6} lg={12} md={12} sm={12} xs={12}>
-                <Form.Label>Custom page width (mm)</Form.Label>
-                <Form.Control
-                  type="number"
-                  min={0}
-                  step={1}
+                <NumericField
+                  label="Custom page width (mm)"
                   value={pageWidth}
-                  onChange={(event) => {
-                    const value = parseFloat(event.target.value);
-                    if (Number.isNaN(value)) {
-                      setPageWidth(undefined);
-                    } else if (value >= 0) {
-                      setPageWidth(value);
-                    }
-                  }}
+                  setValue={setPageWidth}
+                  min={0}
+                  step={0.1}
                 />
               </Col>
               <Col xl={6} lg={12} md={12} sm={12} xs={12}>
-                <Form.Label>Custom page height (mm)</Form.Label>
-                <Form.Control
-                  type="number"
-                  min={0}
-                  step={1}
+                <NumericField
+                  label="Custom page height (mm)"
                   value={pageHeight}
-                  onChange={(event) => {
-                    const value = parseFloat(event.target.value);
-                    if (Number.isNaN(value)) {
-                      setPageHeight(undefined);
-                    } else if (value >= 0) {
-                      setPageHeight(value);
-                    }
-                  }}
+                  setValue={setPageHeight}
+                  min={0}
+                  step={0.1}
                 />
               </Col>
             </Row>
           )}
           <Row>
             <Col sm={12}>
-              <Form.Label>
-                Bleed edge (max: <b>{BleedEdgeMM} mm</b>)
-              </Form.Label>
-              <Form.Control
-                required={true}
-                type="number"
+              <NumericField
+                label={`Bleed edge (max: ${BleedEdgeMM} mm)`}
+                value={bleedEdgeMM}
+                setValue={setBleedEdgeMM}
                 min={0}
                 max={BleedEdgeMM}
                 step={0.001}
-                value={bleedEdgeMM}
-                onChange={(event) => {
-                  const value = parseFloat(event.target.value);
-                  if (Number.isNaN(value)) {
-                    setBleedEdgeMM(undefined);
-                  } else if (value >= 0 && value <= BleedEdgeMM) {
-                    setBleedEdgeMM(value);
-                  }
-                }}
               />
               <Form.Label>Corners</Form.Label>
               <Toggle
@@ -299,31 +314,32 @@ export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
           </Row>
           <Row>
             <Col lg={6} md={12} sm={12} xs={12}>
-              <Form.Label>
-                Card spacing: <b>{cardSpacingMM} mm</b>
-              </Form.Label>
-              <Form.Range
-                defaultValue={5}
+              <NumericField
+                label="Row spacing (mm)"
+                value={cardSpacingRowMM}
+                setValue={setCardSpacingRowMM}
                 min={0}
-                max={10}
                 step={0.1}
-                onChange={(event) => {
-                  setCardSpacingMM(parseFloat(event.target.value));
-                }}
               />
             </Col>
             <Col lg={6} md={12} sm={12} xs={12}>
-              <Form.Label>
-                Page margin: <b>{marginMM} mm</b>
-              </Form.Label>
-              <Form.Range
-                defaultValue={5}
+              <NumericField
+                label="Column spacing (mm)"
+                value={cardSpacingColMM}
+                setValue={setCardSpacingColMM}
                 min={0}
-                max={10}
                 step={0.1}
-                onChange={(event) => {
-                  setMarginMM(parseFloat(event.target.value));
-                }}
+              />
+            </Col>
+          </Row>
+          <Row>
+            <Col xs={12}>
+              <NumericField
+                label="Page margin (mm)"
+                value={marginMM}
+                setValue={setMarginMM}
+                min={0}
+                step={0.1}
               />
             </Col>
           </Row>

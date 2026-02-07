@@ -45,7 +45,8 @@ export interface PDFProps {
   pageHeight: number | undefined;
   bleedEdgeMM: number;
   roundCorners: boolean;
-  cardSpacingMM: number;
+  cardSpacingRowMM: number;
+  cardSpacingColMM: number;
   marginMM: number;
   cardDocumentsByIdentifier: { [identifier: string]: CardDocument };
   projectMembers: Array<SlotProjectMembers>;
@@ -137,7 +138,7 @@ type CardPageProps = Pick<
   | "roundCorners"
   | "imageQuality"
   | "fileHandles"
-> & { cardSpacingMM: number; pageBreak?: boolean };
+> & { cardSpacingRowMM: number; cardSpacingColMM: number; pageBreak?: boolean };
 
 const FrontsAndDistinctBacksPage = ({
   projectMembers,
@@ -147,13 +148,18 @@ const FrontsAndDistinctBacksPage = ({
   roundCorners,
   imageQuality,
   fileHandles,
-  cardSpacingMM,
+  cardSpacingRowMM,
+  cardSpacingColMM,
   pageBreak,
 }: CardPageProps) => {
   return (
     <View
       break={pageBreak}
-      style={{ ...styles.section, gap: cardSpacingMM + "mm" }}
+      style={{
+        ...styles.section,
+        rowGap: cardSpacingRowMM + "mm",
+        columnGap: cardSpacingColMM + "mm",
+      }}
     >
       {projectMembers.map((member, i) => (
         <>
@@ -199,13 +205,18 @@ const FrontsOnlyPage = ({
   roundCorners,
   imageQuality,
   fileHandles,
-  cardSpacingMM,
+  cardSpacingRowMM,
+  cardSpacingColMM,
   pageBreak,
 }: CardPageProps) => {
   return (
     <View
       break={pageBreak}
-      style={{ ...styles.section, gap: cardSpacingMM + "mm" }}
+      style={{
+        ...styles.section,
+        rowGap: cardSpacingRowMM + "mm",
+        columnGap: cardSpacingColMM + "mm",
+      }}
     >
       {projectMembers.map((member, i) => (
         <>
@@ -236,13 +247,18 @@ const BacksOnlyPage = ({
   roundCorners,
   imageQuality,
   fileHandles,
-  cardSpacingMM,
+  cardSpacingRowMM,
+  cardSpacingColMM,
   pageBreak,
 }: CardPageProps) => {
   return (
     <View
       break={pageBreak}
-      style={{ ...styles.section, gap: cardSpacingMM + "mm" }}
+      style={{
+        ...styles.section,
+        rowGap: cardSpacingRowMM + "mm",
+        columnGap: cardSpacingColMM + "mm",
+      }}
     >
       {projectMembers.map((member, i) => (
         <>
@@ -274,7 +290,8 @@ const FrontsAndBacksPage = ({
   roundCorners,
   imageQuality,
   fileHandles,
-  cardSpacingMM,
+  cardSpacingRowMM,
+  cardSpacingColMM,
 }: CardPageProps) => {
   return (
     <>
@@ -286,7 +303,8 @@ const FrontsAndBacksPage = ({
         roundCorners={roundCorners}
         imageQuality={imageQuality}
         fileHandles={fileHandles}
-        cardSpacingMM={cardSpacingMM}
+        cardSpacingRowMM={cardSpacingRowMM}
+        cardSpacingColMM={cardSpacingColMM}
         pageBreak={false}
       />
       <BacksOnlyPage
@@ -297,7 +315,8 @@ const FrontsAndBacksPage = ({
         roundCorners={roundCorners}
         imageQuality={imageQuality}
         fileHandles={fileHandles}
-        cardSpacingMM={cardSpacingMM}
+        cardSpacingRowMM={cardSpacingRowMM}
+        cardSpacingColMM={cardSpacingColMM}
         pageBreak={true}
       />
     </>
@@ -320,7 +339,8 @@ export const PDF = ({
   pageHeight,
   bleedEdgeMM,
   roundCorners,
-  cardSpacingMM,
+  cardSpacingRowMM,
+  cardSpacingColMM,
   marginMM,
   projectMembers,
   projectCardback,
@@ -344,7 +364,8 @@ export const PDF = ({
           roundCorners={roundCorners}
           imageQuality={imageQuality}
           fileHandles={fileHandles}
-          cardSpacingMM={cardSpacingMM}
+          cardSpacingRowMM={cardSpacingRowMM}
+          cardSpacingColMM={cardSpacingColMM}
         />
       </Page>
     </Document>
