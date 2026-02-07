@@ -31,13 +31,10 @@ export const CardSelectionMode = {
 
 // Create styles
 const styles = StyleSheet.create({
-  page: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-  },
   section: {
     flexDirection: "row",
     flexWrap: "wrap",
+    justifyContent: "center",
   },
 });
 
@@ -338,7 +335,7 @@ export const PDF = ({
   const PageComponent = CardSelectionModeToPage[cardSelectionMode];
   return (
     <Document pageMode="useThumbs">
-      <Page size={size} style={{ ...styles.page, margin: marginMM + "mm" }}>
+      <Page size={size} style={{ padding: marginMM + "mm" }}>
         <PageComponent
           projectMembers={projectMembers}
           cardDocumentsByIdentifier={cardDocumentsByIdentifier}
