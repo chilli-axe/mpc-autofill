@@ -131,18 +131,190 @@ const PDFCardThumbnail = ({
   );
 };
 
-const includeFront = (
-  cardSelectionMode: keyof typeof CardSelectionMode
-): boolean => cardSelectionMode !== "backsOnly";
-const includeBack = (
-  identifier: string,
-  projectCardback: string | undefined,
-  cardSelectionMode: keyof typeof CardSelectionMode
-): boolean =>
-  cardSelectionMode === "frontsAndBacks" ||
-  cardSelectionMode === "backsOnly" ||
-  (cardSelectionMode === "frontsAndDistinctBacks" &&
-    identifier !== projectCardback);
+type CardPageProps = Pick<
+  PDFProps,
+  | "projectMembers"
+  | "cardDocumentsByIdentifier"
+  | "projectCardback"
+  | "bleedEdgeMM"
+  | "roundCorners"
+  | "imageQuality"
+  | "fileHandles"
+> & { cardSpacingMM: number; pageBreak?: boolean };
+
+const FrontsAndDistinctBacksPage = ({
+  projectMembers,
+  cardDocumentsByIdentifier,
+  projectCardback,
+  bleedEdgeMM,
+  roundCorners,
+  imageQuality,
+  fileHandles,
+  cardSpacingMM,
+  pageBreak,
+}: CardPageProps) => {
+  return (
+    <View
+      break={pageBreak}
+      style={{ ...styles.section, gap: cardSpacingMM + "mm" }}
+    >
+      {projectMembers.map((member, i) => (
+        <>
+          {member.front?.selectedImage !== undefined &&
+            cardDocumentsByIdentifier[member.front.selectedImage] !==
+              undefined && (
+              <PDFCardThumbnail
+                key={`${i}-front`}
+                cardDocument={
+                  cardDocumentsByIdentifier[member.front.selectedImage]
+                }
+                bleedEdgeMM={bleedEdgeMM}
+                roundCorners={roundCorners}
+                imageQuality={imageQuality}
+                fileHandles={fileHandles}
+              />
+            )}
+          {member.back?.selectedImage !== undefined &&
+            cardDocumentsByIdentifier[member.back.selectedImage] !==
+              undefined &&
+            member.back.selectedImage !== projectCardback && (
+              <PDFCardThumbnail
+                key={`${i}-back`}
+                cardDocument={
+                  cardDocumentsByIdentifier[member.back.selectedImage]
+                }
+                bleedEdgeMM={bleedEdgeMM}
+                roundCorners={roundCorners}
+                imageQuality={imageQuality}
+                fileHandles={fileHandles}
+              />
+            )}
+        </>
+      ))}
+    </View>
+  );
+};
+
+const FrontsOnlyPage = ({
+  projectMembers,
+  cardDocumentsByIdentifier,
+  bleedEdgeMM,
+  roundCorners,
+  imageQuality,
+  fileHandles,
+  cardSpacingMM,
+  pageBreak,
+}: CardPageProps) => {
+  return (
+    <View
+      break={pageBreak}
+      style={{ ...styles.section, gap: cardSpacingMM + "mm" }}
+    >
+      {projectMembers.map((member, i) => (
+        <>
+          {member.front?.selectedImage !== undefined &&
+            cardDocumentsByIdentifier[member.front.selectedImage] !==
+              undefined && (
+              <PDFCardThumbnail
+                key={`${i}-front`}
+                cardDocument={
+                  cardDocumentsByIdentifier[member.front.selectedImage]
+                }
+                bleedEdgeMM={bleedEdgeMM}
+                roundCorners={roundCorners}
+                imageQuality={imageQuality}
+                fileHandles={fileHandles}
+              />
+            )}
+        </>
+      ))}
+    </View>
+  );
+};
+
+const BacksOnlyPage = ({
+  projectMembers,
+  cardDocumentsByIdentifier,
+  bleedEdgeMM,
+  roundCorners,
+  imageQuality,
+  fileHandles,
+  cardSpacingMM,
+  pageBreak,
+}: CardPageProps) => {
+  return (
+    <View
+      break={pageBreak}
+      style={{ ...styles.section, gap: cardSpacingMM + "mm" }}
+    >
+      {projectMembers.map((member, i) => (
+        <>
+          {member.back?.selectedImage !== undefined &&
+            cardDocumentsByIdentifier[member.back.selectedImage] !==
+              undefined && (
+              <PDFCardThumbnail
+                key={`${i}-front`}
+                cardDocument={
+                  cardDocumentsByIdentifier[member.back.selectedImage]
+                }
+                bleedEdgeMM={bleedEdgeMM}
+                roundCorners={roundCorners}
+                imageQuality={imageQuality}
+                fileHandles={fileHandles}
+              />
+            )}
+        </>
+      ))}
+    </View>
+  );
+};
+
+const FrontsAndBacksPage = ({
+  projectMembers,
+  cardDocumentsByIdentifier,
+  projectCardback,
+  bleedEdgeMM,
+  roundCorners,
+  imageQuality,
+  fileHandles,
+  cardSpacingMM,
+}: CardPageProps) => {
+  return (
+    <>
+      <FrontsOnlyPage
+        projectMembers={projectMembers}
+        cardDocumentsByIdentifier={cardDocumentsByIdentifier}
+        projectCardback={projectCardback}
+        bleedEdgeMM={bleedEdgeMM}
+        roundCorners={roundCorners}
+        imageQuality={imageQuality}
+        fileHandles={fileHandles}
+        cardSpacingMM={cardSpacingMM}
+        pageBreak={false}
+      />
+      <BacksOnlyPage
+        projectMembers={projectMembers}
+        cardDocumentsByIdentifier={cardDocumentsByIdentifier}
+        projectCardback={projectCardback}
+        bleedEdgeMM={bleedEdgeMM}
+        roundCorners={roundCorners}
+        imageQuality={imageQuality}
+        fileHandles={fileHandles}
+        cardSpacingMM={cardSpacingMM}
+        pageBreak={true}
+      />
+    </>
+  );
+};
+
+const CardSelectionModeToPage: {
+  [cardSelectionMode in keyof typeof CardSelectionMode]: React.FC<CardPageProps>;
+} = {
+  frontsAndDistinctBacks: FrontsAndDistinctBacksPage,
+  frontsOnly: FrontsOnlyPage,
+  backsOnly: BacksOnlyPage,
+  frontsAndBacks: FrontsAndBacksPage,
+};
 
 export const PDF = ({
   cardSelectionMode,
@@ -163,49 +335,20 @@ export const PDF = ({
     pageSize === "CUSTOM" && pageWidth !== undefined && pageHeight !== undefined
       ? { width: pageWidth + "mm", height: pageHeight + "mm" }
       : (pageSize as keyof Omit<typeof PageSize, "CUSTOM">);
+  const PageComponent = CardSelectionModeToPage[cardSelectionMode];
   return (
-    <Document>
+    <Document pageMode="useThumbs">
       <Page size={size} style={{ ...styles.page, margin: marginMM + "mm" }}>
-        <View style={{ ...styles.section, gap: cardSpacingMM + "mm" }}>
-          {projectMembers.map((member, i) => (
-            <>
-              {member.front?.selectedImage !== undefined &&
-                cardDocumentsByIdentifier[member.front.selectedImage] !==
-                  undefined &&
-                includeFront(cardSelectionMode) && (
-                  <PDFCardThumbnail
-                    key={`${i}-front`}
-                    cardDocument={
-                      cardDocumentsByIdentifier[member.front.selectedImage]
-                    }
-                    bleedEdgeMM={bleedEdgeMM}
-                    roundCorners={roundCorners}
-                    imageQuality={imageQuality}
-                    fileHandles={fileHandles}
-                  />
-                )}
-              {member.back?.selectedImage !== undefined &&
-                cardDocumentsByIdentifier[member.back.selectedImage] !==
-                  undefined &&
-                includeBack(
-                  member.back.selectedImage,
-                  projectCardback,
-                  cardSelectionMode
-                ) && (
-                  <PDFCardThumbnail
-                    key={`${i}-back`}
-                    cardDocument={
-                      cardDocumentsByIdentifier[member.back.selectedImage]
-                    }
-                    bleedEdgeMM={bleedEdgeMM}
-                    roundCorners={roundCorners}
-                    imageQuality={imageQuality}
-                    fileHandles={fileHandles}
-                  />
-                )}
-            </>
-          ))}
-        </View>
+        <PageComponent
+          projectMembers={projectMembers}
+          cardDocumentsByIdentifier={cardDocumentsByIdentifier}
+          projectCardback={projectCardback}
+          bleedEdgeMM={bleedEdgeMM}
+          roundCorners={roundCorners}
+          imageQuality={imageQuality}
+          fileHandles={fileHandles}
+          cardSpacingMM={cardSpacingMM}
+        />
       </Page>
     </Document>
   );
