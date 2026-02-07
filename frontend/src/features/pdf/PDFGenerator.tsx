@@ -6,9 +6,11 @@ import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
 import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
+// @ts-ignore: https://github.com/arnthor3/react-bootstrap-toggle/issues/21
+import Toggle from "react-bootstrap-toggle";
 import { useDebounce } from "use-debounce";
 
-import { ProjectName } from "@/common/constants";
+import { BleedEdgeMM, ToggleButtonHeight } from "@/common/constants";
 import { StyledDropdownTreeSelect } from "@/common/StyledDropdownTreeSelect";
 import { useAppDispatch, useAppSelector } from "@/common/types";
 import { Blurrable } from "@/components/Blurrable";
@@ -16,12 +18,7 @@ import { OverflowCol } from "@/components/OverflowCol";
 import { Spinner } from "@/components/Spinner";
 import { ClientSearchService } from "@/features/clientSearch/clientSearchService";
 import { downloadFile, useDoFileDownload } from "@/features/download/download";
-import {
-  BleedEdgeMode,
-  CardSelectionMode,
-  PageSize,
-  PDFProps,
-} from "@/features/pdf/PDF";
+import { CardSelectionMode, PageSize, PDFProps } from "@/features/pdf/PDF";
 import { pdfRenderService } from "@/features/pdf/pdfRenderService";
 import { useCardDocumentsByIdentifier } from "@/store/slices/cardDocumentsSlice";
 import {
@@ -86,6 +83,8 @@ export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
   const dispatch = useAppDispatch();
   const [cardSpacingMM, setCardSpacingMM] = useState<number>(5);
   const [marginMM, setMarginMM] = useState<number>(5);
+  const [bleedEdgeMM, setBleedEdgeMM] = useState<number | undefined>(0);
+  const [roundCorners, setRoundCorners] = useState<boolean>(true);
 
   const { clientSearchService } = useClientSearchContext();
   const projectMembers = useAppSelector(selectProjectMembers);
@@ -100,18 +99,6 @@ export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
         checked: value === pageSize,
       })),
     [pageSize]
-  );
-  const [bleedEdgeMode, setBleedEdgeMode] = useState<
-    keyof typeof BleedEdgeMode
-  >("hideBleedEdgeWithRoundCorners");
-  const bleedEdgeModeOptions = useMemo(
-    () =>
-      Object.entries(BleedEdgeMode).map(([value, label]) => ({
-        value,
-        label,
-        checked: value === bleedEdgeMode,
-      })),
-    [bleedEdgeMode]
   );
   const [cardSelectionMode, setCardSelectionMode] = useState<
     keyof typeof CardSelectionMode
@@ -135,7 +122,8 @@ export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
   const pdfProps: Omit<PDFProps, "fileHandles"> = {
     cardSelectionMode: cardSelectionMode,
     pageSize: pageSize,
-    bleedEdgeMode: bleedEdgeMode,
+    bleedEdgeMM: bleedEdgeMM ?? 0,
+    roundCorners: roundCorners,
     cardSpacingMM: cardSpacingMM,
     marginMM: marginMM,
     cardDocumentsByIdentifier: cardDocumentsByIdentifier,
@@ -217,19 +205,6 @@ export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
           <br />
           <Row>
             <Col xl={6} lg={12} md={12} sm={12} xs={12}>
-              <Form.Label>Configure bleed edge</Form.Label>
-              <StyledDropdownTreeSelect
-                data={bleedEdgeModeOptions}
-                onChange={(currentNode, selectedNodes) =>
-                  setBleedEdgeMode(
-                    currentNode.value as keyof typeof BleedEdgeMode
-                  )
-                }
-                mode="radioSelect"
-                inlineSearchInput
-              />
-            </Col>
-            <Col xl={6} lg={12} md={12} sm={12} xs={12}>
               <Form.Label>Select page size</Form.Label>
               <StyledDropdownTreeSelect
                 data={pageSizeOptions}
@@ -238,6 +213,47 @@ export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
                 }
                 mode="radioSelect"
                 inlineSearchInput
+              />
+            </Col>
+            <Col xl={6} lg={12} md={12} sm={12} xs={12}></Col>
+          </Row>
+          <Row>
+            <Col sm={12}>
+              <Form.Label>
+                Bleed edge: <b>{bleedEdgeMM ?? 0} mm</b> (max:{" "}
+                <b>{BleedEdgeMM} mm</b>)
+              </Form.Label>
+              <Form.Control
+                required={true}
+                type="number"
+                min={0}
+                max={BleedEdgeMM}
+                step={0.001}
+                value={bleedEdgeMM}
+                onChange={(event) => {
+                  const value = parseFloat(event.target.value);
+                  if (Number.isNaN(value)) {
+                    setBleedEdgeMM(undefined);
+                  } else if (value >= 0 && value <= BleedEdgeMM) {
+                    setBleedEdgeMM(value);
+                  }
+                }}
+              />
+              <Form.Label>
+                Corners: <b>{roundCorners ? "Round" : "Square"}</b>
+              </Form.Label>
+              <Toggle
+                onClick={() => setRoundCorners(!roundCorners)}
+                on="Round"
+                onClassName="flex-centre"
+                off="Square"
+                offClassName="flex-centre"
+                onstyle="success"
+                offstyle="info"
+                width={100 + "%"}
+                size="md"
+                height={ToggleButtonHeight + "px"}
+                active={roundCorners}
               />
             </Col>
           </Row>

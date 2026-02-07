@@ -9,7 +9,8 @@ import { PDFProps } from "./PDF";
 export const useRenderPDF = ({
   cardSelectionMode,
   pageSize,
-  bleedEdgeMode,
+  bleedEdgeMM,
+  roundCorners,
   cardSpacingMM,
   marginMM,
   cardDocumentsByIdentifier,
@@ -29,7 +30,8 @@ export const useRenderPDF = ({
     return pdfRenderService.renderPDFInWorker({
       cardSelectionMode,
       pageSize,
-      bleedEdgeMode,
+      bleedEdgeMM,
+      roundCorners,
       cardSpacingMM,
       marginMM,
       cardDocumentsByIdentifier,
@@ -41,7 +43,8 @@ export const useRenderPDF = ({
   }, [
     cardSelectionMode,
     pageSize,
-    bleedEdgeMode,
+    bleedEdgeMM,
+    roundCorners,
     cardSpacingMM,
     marginMM,
     cardDocumentsByIdentifier,

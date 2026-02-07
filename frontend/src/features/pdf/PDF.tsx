@@ -2,16 +2,16 @@ import { Document, Image, Page, StyleSheet, View } from "@react-pdf/renderer";
 import React from "react";
 
 import { GoogleDriveImageAPIURL } from "@/common/constants";
+import {
+  BleedEdgeMM,
+  CardHeightMM,
+  CardWidthMM,
+  CornerRadiusMM,
+} from "@/common/constants";
 import { getBucketThumbnailURL, getWorkerFullResURL } from "@/common/image";
 import { base64StringToBlob } from "@/common/processing";
 import { SourceType } from "@/common/schema_types";
 import { CardDocument, SlotProjectMembers } from "@/common/types";
-
-export const BleedEdgeMode = {
-  hideBleedEdgeWithRoundCorners: "Hide Bleed Edge, Round Corners",
-  hideBleedEdge: "Hide Bleed Edge, Square Corners",
-  showBleedEdge: "Include Bleed Edge",
-} as const;
 
 export const PageSize = {
   A4: "A4",
@@ -28,31 +28,6 @@ export const CardSelectionMode = {
   backsOnly: "Backs Only",
 } as const;
 
-const CardWidthMM = 63;
-const CardHeightMM = 88;
-const BleedEdgeMM = 0.12 * 2.54; // 72 pixels at 300 dpi -> 0.12 inches, convert to MM
-const CornerRadiusMM = 2.5;
-
-const ImageShowBleedStyle = {
-  width: CardWidthMM + BleedEdgeMM + "mm",
-  height: CardHeightMM + BleedEdgeMM + "mm",
-  minWidth: CardWidthMM + BleedEdgeMM + "mm",
-  minHeight: CardHeightMM + BleedEdgeMM + "mm",
-} as const;
-const ImageHideBleedSquareCornersStyle = {
-  ...ImageShowBleedStyle,
-  width: CardWidthMM + "mm",
-  height: CardHeightMM + "mm",
-  minWidth: CardWidthMM + "mm",
-  minHeight: CardHeightMM + "mm",
-  transform: "scale(1.088, 1.065)",
-  overflow: "hidden",
-} as const;
-const ImageHideBleedRoundCornersStyle = {
-  ...ImageHideBleedSquareCornersStyle,
-  borderRadius: CornerRadiusMM + "mm",
-} as const;
-
 // Create styles
 const styles = StyleSheet.create({
   page: {
@@ -63,23 +38,13 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
   },
-  imageShowBleed: ImageShowBleedStyle,
-  imageHideBleedSquareCorners: ImageHideBleedSquareCornersStyle,
-  imageHideBleedRoundCorners: ImageHideBleedRoundCornersStyle,
 });
-
-const BleedEdgeModeToStyle: {
-  [bleedEdgeMode in keyof typeof BleedEdgeMode]: any;
-} = {
-  showBleedEdge: styles.imageShowBleed,
-  hideBleedEdge: styles.imageHideBleedSquareCorners,
-  hideBleedEdgeWithRoundCorners: styles.imageHideBleedRoundCorners,
-};
 
 export interface PDFProps {
   cardSelectionMode: keyof typeof CardSelectionMode;
   pageSize: keyof typeof PageSize;
-  bleedEdgeMode: keyof typeof BleedEdgeMode;
+  bleedEdgeMM: number;
+  roundCorners: boolean;
   cardSpacingMM: number;
   marginMM: number;
   cardDocumentsByIdentifier: { [identifier: string]: CardDocument };
@@ -125,25 +90,39 @@ const getThumbnailURL = async (
 
 interface PDFCardThumbnailProps {
   cardDocument: CardDocument;
-  bleedEdgeMode: keyof typeof BleedEdgeMode;
+  bleedEdgeMM: number;
+  roundCorners: boolean;
   imageQuality: "small-thumbnail" | "large-thumbnail" | "full-resolution";
   fileHandles: { [identifier: string]: FileSystemFileHandle };
 }
 
 const PDFCardThumbnail = ({
   cardDocument,
-  bleedEdgeMode,
+  bleedEdgeMM,
+  roundCorners,
   imageQuality,
   fileHandles,
 }: PDFCardThumbnailProps) => {
-  const bleedEdgeModeStyle = BleedEdgeModeToStyle[bleedEdgeMode];
+  const height = CardHeightMM + 2 * bleedEdgeMM;
+  const heightProportion = (CardHeightMM + 2 * BleedEdgeMM) / height;
+  const width = CardWidthMM + 2 * bleedEdgeMM;
+  const widthProportion = (CardWidthMM + 2 * BleedEdgeMM) / width;
+  const style = {
+    width: width + "mm",
+    minWidth: width + "mm",
+    height: height + "mm",
+    minHeight: height + "mm",
+    transform: `scale(${widthProportion}, ${heightProportion})`,
+    overflow: "hidden",
+    borderRadius: (roundCorners ? CornerRadiusMM : 0) + "mm",
+  } as const;
   return (
     <>
       <Image
         src={async () =>
           getThumbnailURL(cardDocument, imageQuality, fileHandles)
         }
-        style={bleedEdgeModeStyle}
+        style={style}
       />
     </>
   );
@@ -165,7 +144,8 @@ const includeBack = (
 export const PDF = ({
   cardSelectionMode,
   pageSize,
-  bleedEdgeMode,
+  bleedEdgeMM,
+  roundCorners,
   cardSpacingMM,
   marginMM,
   projectMembers,
@@ -189,7 +169,8 @@ export const PDF = ({
                     cardDocument={
                       cardDocumentsByIdentifier[member.front.selectedImage]
                     }
-                    bleedEdgeMode={bleedEdgeMode}
+                    bleedEdgeMM={bleedEdgeMM}
+                    roundCorners={roundCorners}
                     imageQuality={imageQuality}
                     fileHandles={fileHandles}
                   />
@@ -207,7 +188,8 @@ export const PDF = ({
                     cardDocument={
                       cardDocumentsByIdentifier[member.back.selectedImage]
                     }
-                    bleedEdgeMode={bleedEdgeMode}
+                    bleedEdgeMM={bleedEdgeMM}
+                    roundCorners={roundCorners}
                     imageQuality={imageQuality}
                     fileHandles={fileHandles}
                   />
