@@ -162,7 +162,7 @@ export const PDF = ({
   const size =
     pageSize === "CUSTOM" && pageWidth !== undefined && pageHeight !== undefined
       ? { width: pageWidth + "mm", height: pageHeight + "mm" }
-      : pageSize;
+      : (pageSize as keyof Omit<typeof PageSize, "CUSTOM">);
   return (
     <Document>
       <Page size={size} style={{ ...styles.page, margin: marginMM + "mm" }}>
