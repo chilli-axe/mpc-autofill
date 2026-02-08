@@ -36,11 +36,11 @@ export const StyledDropdownTreeSelect = styled(DropdownTreeSelect)`
   }
 
   .toggle.collapsed::after {
-    content: "\F4FA";
+    content: "\uF4FA";
   }
 
   .toggle.expanded::after {
-    content: "\F2E6";
+    content: "\uF2E6";
   }
 
   color: black;

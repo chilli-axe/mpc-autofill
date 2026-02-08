@@ -1,10 +1,13 @@
 import styled from "@emotion/styled";
-import React from "react";
+import React, { useState } from "react";
 import Alert from "react-bootstrap/Alert";
 import Button from "react-bootstrap/Button";
 import Col from "react-bootstrap/Col";
+import Container from "react-bootstrap/Container";
 import Modal from "react-bootstrap/Modal";
 import Row from "react-bootstrap/Row";
+import Tab from "react-bootstrap/Tab";
+import Tabs from "react-bootstrap/Tabs";
 
 import { useAppDispatch, useAppSelector } from "@/common/types";
 import { Coffee } from "@/components/Coffee";
@@ -18,6 +21,7 @@ import { useProjectName } from "@/store/slices/backendSlice";
 import { showModal } from "@/store/slices/modalsSlice";
 import { selectIsProjectEmpty } from "@/store/slices/projectSlice";
 
+import { PDFGenerator } from "../pdf/PDFGenerator";
 interface ExitModal {
   show: boolean;
   handleClose: {
@@ -244,43 +248,67 @@ function DesktopToolDownload() {
   );
 }
 
-export function FinishedMyProjectModal({ show, handleClose }: ExitModal) {
+const MakePlayingCardsInstructions = () => {
   return (
-    <Modal size="xl" scrollable show={show} onHide={handleClose}>
+    <Container className="py-3">
+      <h5 className="text-center">
+        Nice work! There are three simple steps for turning your project into an
+        order with <MakePlayingCardsLink />.
+      </h5>
+      <LocalFilesInstructions />
+      <BigOL>
+        <BigLI className="py-3">
+          <h3>Download Your Project</h3>
+          <ProjectDownload />
+        </BigLI>
+        <BigLI className="py-3">
+          <h3>Download the Desktop Tool</h3>
+          <DesktopToolDownload />
+        </BigLI>
+        <BigLI className="py-3">
+          <h3>Run the Desktop Tool</h3>
+          <RunDesktopToolInstructions />
+        </BigLI>
+      </BigOL>
+      <hr />
+      <h5 className="text-center">
+        And that&apos;s all there is to it!{" "}
+        <i className="bi bi-rocket-takeoff" />
+      </h5>
+      <p className="text-center">
+        If this software has brought you joy and you&apos;d like to throw a few
+        bucks my way, you can find my tip jar here <i className="bi bi-heart" />
+      </p>
+      <Coffee />
+    </Container>
+  );
+};
+
+export function FinishedMyProjectModal({ show, handleClose }: ExitModal) {
+  const [key, setKey] = useState<"mpc" | "pdf">("mpc");
+  return (
+    <Modal fullscreen scrollable show={show} onHide={handleClose}>
       <Modal.Header closeButton>
         <Modal.Title>I&apos;ve Finished My Project</Modal.Title>
       </Modal.Header>
-      <Modal.Body>
-        <h5 className="text-center">
-          Nice work! There are three simple steps for turning your project into
-          an order with <MakePlayingCardsLink />.
-        </h5>
-        <LocalFilesInstructions />
-        <BigOL>
-          <BigLI className="py-3">
-            <h3>Download Your Project</h3>
-            <ProjectDownload />
-          </BigLI>
-          <BigLI className="py-3">
-            <h3>Download the Desktop Tool</h3>
-            <DesktopToolDownload />
-          </BigLI>
-          <BigLI className="py-3">
-            <h3>Run the Desktop Tool</h3>
-            <RunDesktopToolInstructions />
-          </BigLI>
-        </BigOL>
-        <hr />
-        <h5 className="text-center">
-          And that&apos;s all there is to it!{" "}
-          <i className="bi bi-rocket-takeoff" />
-        </h5>
-        <p className="text-center">
-          If this software has brought you joy and you&apos;d like to throw a
-          few bucks my way, you can find my tip jar here{" "}
-          <i className="bi bi-heart" />
-        </p>
-        <Coffee />
+      <Modal.Body className="p-0">
+        <Tabs
+          activeKey={key}
+          onSelect={(k) => {
+            if (k === "mpc" || k === "pdf") setKey(k);
+          }}
+          variant="pills"
+          defaultActiveKey="mpc"
+          justify
+          className="my-0"
+        >
+          <Tab eventKey="mpc" title="Print with MakePlayingCards">
+            {key === "mpc" && <MakePlayingCardsInstructions />}
+          </Tab>
+          <Tab eventKey="pdf" title="Download PDF">
+            {key === "pdf" && <PDFGenerator heightDelta={46} />}
+          </Tab>
+        </Tabs>
       </Modal.Body>
       <Modal.Footer>
         <Button variant="secondary" onClick={handleClose}>
