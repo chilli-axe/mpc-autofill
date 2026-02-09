@@ -27,7 +27,12 @@ from src.io import (
     get_image_directory,
 )
 from src.logging import logger
-from src.processing import ImagePostProcessingConfig
+from src.processing import (
+    ImagePostProcessingConfig,
+    get_post_processed_path,
+    post_process_image,
+    save_processed_image,
+)
 from src.utils import unpack_element
 
 
@@ -179,16 +184,77 @@ class CardImage:
         post_processing_config: Optional[ImagePostProcessingConfig],
     ) -> None:
         try:
+            def is_image_valid(file_path: str) -> bool:
+                try:
+                    from PIL import Image
+
+                    with Image.open(file_path) as img:
+                        img.verify()
+                    return True
+                except Exception:
+                    return False
+
+            def remove_if_exists(file_path: str) -> None:
+                try:
+                    if os.path.isfile(file_path):
+                        os.remove(file_path)
+                except Exception:
+                    pass
+
+            source_path = self.file_path
+            if post_processing_config and self.file_path:
+                self.file_path = get_post_processed_path(self.file_path, post_processing_config)
+                os.makedirs(os.path.dirname(self.file_path), exist_ok=True)
             if self.source_type == SourceType.LOCAL_FILE:
                 if self.file_exists() and not self.errored:
-                    self.downloaded = True
+                    if is_image_valid(cast(str, self.file_path)):
+                        self.downloaded = True
+                    else:
+                        logger.info(
+                            f"Local file '{bold(self.name)}' appears to be corrupted at path:\n"
+                            f"{bold(self.file_path)}\n"
+                        )
+                        self.errored = True
+                elif post_processing_config and source_path and file_exists(source_path) and not self.errored:
+                    with open(source_path, "rb") as f:
+                        raw_image = f.read()
+                    processed_image, icc_profile_bytes = post_process_image(
+                        raw_image=raw_image, config=post_processing_config
+                    )
+                    save_processed_image(
+                        processed_image,
+                        file_path=cast(str, self.file_path),
+                        config=post_processing_config,
+                        icc_profile_bytes=icc_profile_bytes,
+                    )
+                    if is_image_valid(cast(str, self.file_path)):
+                        self.downloaded = True
+                    else:
+                        logger.info(
+                            f"Processed local file '{bold(self.name)}' appears to be corrupted at path:\n"
+                            f"{bold(self.file_path)}\n"
+                        )
+                        self.errored = True
                 else:
                     logger.info(f"Local file '{bold(self.name)}' does not exist at path:\n{bold(self.drive_id)}\n")
             elif self.source_type == SourceType.GOOGLE_DRIVE:
-                if not self.file_exists() and not self.errored and self.file_path is not None:
-                    self.errored = not download_google_drive_file(
-                        drive_id=self.drive_id, file_path=self.file_path, post_processing_config=post_processing_config
-                    )
+                if self.file_path is not None and not self.errored:
+                    for attempt in range(2):
+                        if not self.file_exists():
+                            self.errored = not download_google_drive_file(
+                                drive_id=self.drive_id,
+                                file_path=self.file_path,
+                                post_processing_config=post_processing_config,
+                            )
+                        if self.file_exists() and not self.errored and is_image_valid(cast(str, self.file_path)):
+                            break
+                        if self.file_exists():
+                            remove_if_exists(cast(str, self.file_path))
+                            logger.info(
+                                f"Downloaded image '{bold(self.name)}' appears corrupted. Retrying download..."
+                            )
+                        if attempt == 1:
+                            self.errored = True
 
                 if self.file_exists() and not self.errored:
                     self.downloaded = True
