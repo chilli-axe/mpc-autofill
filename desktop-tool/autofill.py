@@ -72,7 +72,15 @@ def wait_for_user_to_complete_order() -> None:
     )
 
 
-def ensure_ghostscript_available() -> str:
+def confirm_ghostscript_install_for_dtc() -> bool:
+    return click.confirm(
+        "DriveThruCards requires Ghostscript for PDF/X-1a export. "
+        "Is it okay if MPC Autofill tries to install Ghostscript now?",
+        default=True,
+    )
+
+
+def ensure_ghostscript_available(ask_for_install_confirmation: bool = True) -> str:
     while True:
         gs_path = get_ghostscript_path()
         if gs_path:
@@ -87,7 +95,9 @@ def ensure_ghostscript_available() -> str:
             "DriveThruCards export requires Ghostscript for PDF/X-1a compliance."
         )
 
-        should_install = click.confirm("Install Ghostscript now?", default=True)
+        should_install = True
+        if ask_for_install_confirmation:
+            should_install = click.confirm("Install Ghostscript now?", default=True)
         if should_install:
             if sys.platform.startswith("darwin"):
                 if shutil.which("brew") is None:
@@ -451,7 +461,13 @@ def main(
                 download_images_for_orders(orders=orders, post_processing_config=post_processing_config)
                 return
             if target_site == TargetSites.DriveThruCards:
-                ensure_ghostscript_available()
+                gs_missing = get_ghostscript_path() is None
+                if gs_missing and not confirm_ghostscript_install_for_dtc():
+                    raise Exception(
+                        "Ghostscript is required for DriveThruCards exports. "
+                        "Please install it and re-run when ready."
+                    )
+                ensure_ghostscript_available(ask_for_install_confirmation=not gs_missing)
                 using_default_icc = dtc_icc_profile is None
                 resolved_icc_profile = dtc_icc_profile or get_default_dtc_icc_profile()
                 if resolved_icc_profile is None:

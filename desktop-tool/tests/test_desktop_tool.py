@@ -173,6 +173,35 @@ def test_ensure_ghostscript_available_installs_with_apt_on_linux(
     assert install_calls == [["sudo", "apt", "install", "-y", "ghostscript"]]
 
 
+def test_confirm_ghostscript_install_for_dtc_uses_requirement_prompt(monkeypatch: pytest.MonkeyPatch) -> None:
+    asked = {"message": None, "default": None}
+
+    def fake_confirm(message: str, default: bool = True) -> bool:
+        asked["message"] = message
+        asked["default"] = default
+        return True
+
+    monkeypatch.setattr(autofill_cli.click, "confirm", fake_confirm)
+
+    assert autofill_cli.confirm_ghostscript_install_for_dtc() is True
+    assert "DriveThruCards requires Ghostscript" in asked["message"]
+    assert asked["default"] is True
+
+
+def test_ensure_ghostscript_available_skips_install_confirmation_when_preapproved(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(autofill_cli, "get_ghostscript_path", lambda: "/usr/local/bin/gs")
+    monkeypatch.setattr(autofill_cli, "get_ghostscript_version", lambda _path: "10.0.0")
+    monkeypatch.setattr(
+        autofill_cli.click,
+        "confirm",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(AssertionError("should not prompt")),
+    )
+
+    assert autofill_cli.ensure_ghostscript_available(ask_for_install_confirmation=False) == "/usr/local/bin/gs"
+
+
 def test_maybe_reuse_existing_pdfs_returns_none_when_skip_disabled(tmp_path) -> None:
     order_name = "example.xml"
     export_dir = tmp_path / "export" / "example"
