@@ -630,33 +630,25 @@ class AutofillDriver:
         """
         self.set_state(States.defining_order, "Navigating to Publisher Tools")
         selectors = self.target_site.value.selectors
-        
-        # Step 1: Click "Publisher Tools" link (use same selector as login detection)
-        try:
-            publisher_tools_link = WebDriverWait(self.driver, 5).until(
-                element_to_be_clickable((By.CSS_SELECTOR, selectors.logged_in_indicator_selector))
-            )
-            logger.info("Found 'Publisher Tools' link, clicking...")
-            if self.click_element_with_retry(publisher_tools_link):
-                logger.info("Successfully clicked 'Publisher Tools'.")
-            else:
-                logger.warning("Could not click 'Publisher Tools' automatically. Please click it manually.")
-        except sl_exc.TimeoutException:
+
+        # Step 1: Try quick click first to avoid post-login pause; otherwise navigate directly.
+        publisher_clicked = self.click_element_polling(
+            By.CSS_SELECTOR, selectors.logged_in_indicator_selector, timeout=1
+        )
+        if publisher_clicked:
+            logger.debug("Clicked 'Publisher Tools' link.")
+        else:
             logger.warning("Could not find 'Publisher Tools' link. Trying direct navigation...")
             self.driver.get("https://site.drivethrucards.com/pub_tools.php")
-        
-        # Step 2: Wait for and click "Set up a new title" link
+
+        # Step 2: Try quick click for setup link; otherwise navigate directly.
         self.set_state(States.defining_order, "Navigating to product setup")
-        try:
-            setup_link = WebDriverWait(self.driver, 10).until(
-                element_to_be_clickable((By.XPATH, "//a[contains(@href, 'pub_enter_product.php')]"))
-            )
-            logger.info("Found 'Set up a new title' link, clicking...")
-            if self.click_element_with_retry(setup_link):
-                logger.info("Successfully clicked 'Set up a new title'.")
-            else:
-                logger.warning("Could not click 'Set up a new title' automatically. Please click it manually.")
-        except sl_exc.TimeoutException:
+        setup_clicked = self.click_element_polling(
+            By.XPATH, "//a[contains(@href, 'pub_enter_product.php')]", timeout=2
+        )
+        if setup_clicked:
+            logger.debug("Clicked 'Set up a new title' link.")
+        else:
             logger.warning("Could not find 'Set up a new title' link. Trying direct navigation...")
             self.driver.get("https://tools.drivethrucards.com/pub_enter_product.php")
 
@@ -683,7 +675,7 @@ class AutofillDriver:
             )
             title_input.clear()
             title_input.send_keys(title)
-            logger.info(f"Set product title to: {title}")
+            logger.debug(f"Set product title to: {title}")
         except Exception as e:
             logger.warning(f"Could not fill title field: {e}")
         
@@ -692,7 +684,7 @@ class AutofillDriver:
             price_input = self.driver.find_element(By.ID, "options_values_total_price")
             price_input.clear()
             price_input.send_keys("0")
-            logger.info("Set special price to: 0")
+            logger.debug("Set special price to: 0")
         except Exception as e:
             logger.warning(f"Could not fill price field: {e}")
         
@@ -700,7 +692,7 @@ class AutofillDriver:
         try:
             image_input = self.driver.find_element(By.NAME, "products_image")
             image_input.send_keys(placeholder_cover_path)
-            logger.info(f"Uploaded placeholder cover image: {placeholder_cover_path}")
+            logger.debug(f"Uploaded placeholder cover image: {placeholder_cover_path}")
         except Exception as e:
             logger.warning(f"Could not upload cover image: {e}")
         
@@ -727,9 +719,9 @@ class AutofillDriver:
             submit_button = WebDriverWait(self.driver, 10).until(
                 element_to_be_clickable((By.ID, "submit_id"))
             )
-            logger.info("Clicking submit button...")
+            logger.debug("Clicking submit button...")
             self.click_element_with_retry(submit_button)
-            logger.info("Product form submitted successfully.")
+            logger.debug("Product form submitted successfully.")
         except Exception as e:
             logger.warning(f"Could not click submit button: {e}")
 
@@ -743,9 +735,9 @@ class AutofillDriver:
             save_continue_button = WebDriverWait(self.driver, 15).until(
                 element_to_be_clickable((By.ID, "clicked_element"))
             )
-            logger.info("Clicking 'Save and Continue' button...")
+            logger.debug("Clicking 'Save and Continue' button...")
             self.click_element_with_retry(save_continue_button)
-            logger.info("Description page submitted.")
+            logger.debug("Description page submitted.")
         except Exception as e:
             logger.warning(f"Could not click 'Save and Continue': {e}")
 
@@ -770,7 +762,7 @@ class AutofillDriver:
                 WebDriverWait(self.driver, 15).until(
                     presence_of_element_located((By.ID, "card_type_select"))
                 )
-                logger.info(f"Navigated to upload page: {self.driver.current_url}")
+                logger.debug(f"Navigated to upload page: {self.driver.current_url}")
             else:
                 logger.warning(f"Could not extract URL from upload button onclick: {onclick}")
         except Exception as e:
@@ -804,7 +796,7 @@ class AutofillDriver:
             
             if euro_poker_option_text:
                 select.select_by_visible_text(euro_poker_option_text)
-                logger.info(f"Selected '{euro_poker_option_text}' from dropdown.")
+                logger.debug(f"Selected '{euro_poker_option_text}' from dropdown.")
             else:
                 logger.warning("Could not find Euro Poker option in dropdown.")
         except Exception as e:
@@ -819,7 +811,7 @@ class AutofillDriver:
             logger.error(f"PDF file not found: {pdf_path}")
             return
         
-        logger.info(f"PDF file found: {pdf_path} ({os.path.getsize(pdf_path)} bytes)")
+        logger.debug(f"PDF file found: {pdf_path} ({os.path.getsize(pdf_path)} bytes)")
         
         # Wait for the dropzone to appear after card type selection
         self.set_state(States.inserting_fronts, "Uploading PDF")
@@ -842,7 +834,7 @@ class AutofillDriver:
             
             # Find the file input and send the file - do this in a single operation
             # to avoid stale element references
-            logger.info(f"Uploading PDF: {pdf_path}")
+            logger.debug(f"Uploading PDF: {pdf_path}")
             
             def find_and_use_file_input() -> bool:
                 """Find a usable file input and send the file path to it."""
@@ -928,7 +920,7 @@ class AutofillDriver:
                 return false;
             """)
             if upload_clicked:
-                logger.info("Clicked 'Begin Card File Upload' button via JavaScript.")
+                logger.debug("Clicked 'Begin Card File Upload' button via JavaScript.")
             else:
                 logger.warning("Could not find upload button.")
             
@@ -952,7 +944,7 @@ class AutofillDriver:
                         if d.find_elements(By.ID, "status_messages") else ""
                     )
                 )
-                logger.info("PDF upload completed to DriveThruCards.")
+                logger.debug("PDF upload completed to DriveThruCards.")
             except sl_exc.TimeoutException:
                 logger.warning("Could not confirm upload completion. Please verify manually.")
             
@@ -971,7 +963,7 @@ class AutofillDriver:
                 continue_button = WebDriverWait(self.driver, 60).until(continue_button_is_active)
                 logger.debug(f"Continue button activated. onclick: {continue_button.get_attribute('onclick')}")
                 self.driver.execute_script("arguments[0].click();", continue_button)
-                logger.info("Clicked 'Click here after uploading your files' button.")
+                logger.debug("Clicked 'Click here after uploading your files' button.")
             except sl_exc.TimeoutException:
                 logger.warning("Continue button did not activate. Please click it manually.")
             
@@ -981,7 +973,7 @@ class AutofillDriver:
                     element_to_be_clickable((By.ID, "submit_id"))
                 )
                 self.driver.execute_script("arguments[0].click();", complete_button)
-                logger.info("Clicked 'Complete Setup' button.")
+                logger.debug("Clicked 'Complete Setup' button.")
             except sl_exc.TimeoutException:
                 logger.warning("Could not find 'Complete Setup' button. Please click it manually.")
             
@@ -994,10 +986,10 @@ class AutofillDriver:
                 buy_now_href = buy_now_link.get_attribute("href")
                 if buy_now_href:
                     self.driver.get(buy_now_href)
-                    logger.info("Navigated to 'buy now' page to start placing the order.")
+                    logger.debug("Navigated to 'buy now' page to start placing the order.")
                 else:
                     self.driver.execute_script("arguments[0].click();", buy_now_link)
-                    logger.info("Clicked 'buy now' link.")
+                    logger.debug("Clicked 'buy now' link.")
             except sl_exc.TimeoutException:
                 logger.warning("Could not find 'buy now' link. Please click it manually.")
         except Exception as e:

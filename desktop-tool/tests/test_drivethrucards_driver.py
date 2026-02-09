@@ -109,6 +109,46 @@ def test_execute_drive_thru_cards_order_wraps_step_failures_with_context(dtc_dri
         dtc_driver.execute_drive_thru_cards_order(order=SimpleNamespace(name="x"), pdf_path="/tmp/x.pdf")
 
 
+def test_navigate_to_dtc_product_setup_uses_fast_polling_and_no_direct_fallback(
+    monkeypatch: pytest.MonkeyPatch, dtc_driver: AutofillDriver
+) -> None:
+    poll_calls = []
+    debug_logs = []
+    get_calls = []
+
+    dtc_driver.driver = SimpleNamespace(get=lambda url: get_calls.append(url))
+
+    def fake_poll(by, selector, timeout=30):
+        poll_calls.append((by, selector, timeout))
+        return True
+
+    dtc_driver.click_element_polling = fake_poll
+    monkeypatch.setattr("src.driver.logger.debug", lambda msg: debug_logs.append(msg))
+
+    dtc_driver.navigate_to_dtc_product_setup()
+
+    assert poll_calls == [
+        (By.CSS_SELECTOR, TargetSites.DriveThruCards.value.selectors.logged_in_indicator_selector, 1),
+        (By.XPATH, "//a[contains(@href, 'pub_enter_product.php')]", 2),
+    ]
+    assert "Clicked 'Publisher Tools' link." in debug_logs
+    assert "Clicked 'Set up a new title' link." in debug_logs
+    assert get_calls == []
+
+
+def test_navigate_to_dtc_product_setup_direct_navigates_on_missing_links(dtc_driver: AutofillDriver) -> None:
+    get_calls = []
+    dtc_driver.driver = SimpleNamespace(get=lambda url: get_calls.append(url))
+    dtc_driver.click_element_polling = lambda *_args, **_kwargs: False
+
+    dtc_driver.navigate_to_dtc_product_setup()
+
+    assert get_calls == [
+        "https://site.drivethrucards.com/pub_tools.php",
+        "https://tools.drivethrucards.com/pub_enter_product.php",
+    ]
+
+
 def test_wait_for_cloudflare_challenge_returns_when_site_loaded(dtc_driver: AutofillDriver) -> None:
     dtc_driver._is_site_loaded = lambda: True
     dtc_driver._is_cloudflare_challenge_active = lambda: (_ for _ in ()).throw(

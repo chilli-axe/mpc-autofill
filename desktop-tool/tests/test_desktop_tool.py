@@ -426,6 +426,12 @@ def test_cli_help_includes_download_images_only_option() -> None:
     assert "--download-images-only" in result.output
 
 
+def test_cli_help_includes_global_log_level_option() -> None:
+    result = CliRunner().invoke(autofill_cli.main, ["--help"])
+    assert result.exit_code == 0
+    assert "--log-level" in result.output
+
+
 def test_download_images_for_orders_downloads_fronts_and_backs() -> None:
     calls = {"fronts": 0, "backs": 0}
 
