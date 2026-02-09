@@ -439,7 +439,7 @@ def test_cli_help_documents_new_flags_and_stealth_guidance() -> None:
     assert "--download-images-only" in result.output
     assert "--browser-profile-path" in result.output
     assert "--browser-profile-name" in result.output
-    assert "--dtc-custom-stealth / --no-dtc-custom-stealth" in result.output
+    assert "--dtc-custom-stealth" in result.output
     assert "last resort" in result.output
     assert "detailed Selenium step-by-step logs" in result.output
 
@@ -478,18 +478,25 @@ def test_readme_points_users_to_wiki_for_usage_docs() -> None:
     assert "--download-images-only" not in readme
 
 
-def test_wiki_draft_includes_cli_usage_updates() -> None:
-    wiki_draft_path = os.path.join(os.path.dirname(autofill_cli.__file__), "docs", "Desktop-Tool.wiki.md")
-    with open(wiki_draft_path, "r", encoding="utf-8") as f:
+def test_wiki_addendum_includes_cli_usage_updates() -> None:
+    wiki_addendum_path = os.path.join(
+        os.path.dirname(autofill_cli.__file__),
+        "docs",
+        "Desktop-Tool.wiki.addendum.md",
+    )
+    with open(wiki_addendum_path, "r", encoding="utf-8") as f:
         wiki = f.read()
+    assert "contains only the incremental wiki updates" in wiki
+    assert "Insert Under Existing \"Useful CLI Flags\" Section" in wiki
     assert "--skip-pdf-if-exists" in wiki
     assert "--download-images-only" in wiki
     assert "--browser-profile-path" in wiki
     assert "--dtc-custom-stealth" in wiki
     assert "last resort" in wiki
+    assert "Cloudflare/login checks" in wiki
     assert "--log-level" in wiki
     assert "Use `DEBUG` to show detailed Selenium step-by-step logs" in wiki
-    assert "Ghostscript Requirement" in wiki
+    assert "confirmation before attempting Ghostscript installation" in wiki
 
 
 # endregion

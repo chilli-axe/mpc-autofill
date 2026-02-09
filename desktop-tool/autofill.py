@@ -272,12 +272,12 @@ def download_images_for_orders(
     help="Profile directory name inside --browser-profile-path (e.g. Default or 'Profile 1').",
 )
 @click.option(
-    "--dtc-custom-stealth/--no-dtc-custom-stealth",
+    "--dtc-custom-stealth",
     default=False,
     help=(
-        "Apply extra custom stealth JavaScript in Chromium for DriveThruCards. "
-        "Use this as a last resort when the default undetected-chromedriver flow is not sufficient; "
-        "disabled by default because these patches can trigger bot detection on some runs."
+        "Optional extra stealth JavaScript for DriveThruCards. "
+        "Use only as a last resort if default automation gets stuck around Cloudflare/login checks; "
+        "disabled by default because it can increase bot-detection risk on some runs."
     ),
     is_flag=True,
 )
@@ -317,7 +317,7 @@ def download_images_for_orders(
     is_flag=True,
 )
 @click.option(
-    "--skip-pdf-if-exists/--no-skip-pdf-if-exists",
+    "--skip-pdf-if-exists",
     default=False,
     help="Reuse existing export PDFs when present; prompts to recreate if cards/ has newer files.",
     is_flag=True,
