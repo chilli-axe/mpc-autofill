@@ -323,6 +323,12 @@ def test_download_images_for_orders_downloads_fronts_and_backs() -> None:
     assert calls["backs"] == 1
 
 
+def test_nuitka_directives_include_assets_directory() -> None:
+    with open(autofill_cli.__file__, "r", encoding="utf-8") as f:
+        source = f.read()
+    assert "--include-data-dir=assets=assets" in source
+
+
 # endregion
 
 # region PDF/X conversion

@@ -1,6 +1,7 @@
 # nuitka-project: --mode=onefile
 # nuitka-project: --include-data-files=client_secrets.json=client_secrets.json
 # nuitka-project: --include-data-files=post-launch.html=post-launch.html
+# nuitka-project: --include-data-dir=assets=assets
 # nuitka-project: --include-data-files=assets/icc/USWebCoatedSWOP.icc=assets/icc/USWebCoatedSWOP.icc
 # nuitka-project: --include-data-files=assets/icc/Adobe-Color-Profile-EULA.pdf=assets/icc/Adobe-Color-Profile-EULA.pdf
 # nuitka-project: --noinclude-pytest-mode=nofollow
