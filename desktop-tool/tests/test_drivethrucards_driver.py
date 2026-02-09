@@ -99,6 +99,16 @@ def test_execute_drive_thru_cards_order_raises_when_login_not_completed(dtc_driv
         dtc_driver.execute_drive_thru_cards_order(order=SimpleNamespace(name="x"), pdf_path="/tmp/x.pdf")
 
 
+def test_execute_drive_thru_cards_order_wraps_step_failures_with_context(dtc_driver: AutofillDriver) -> None:
+    dtc_driver.driver = SimpleNamespace(get=lambda _url: None)
+    dtc_driver.wait_for_cloudflare_challenge = lambda: None
+    dtc_driver.authenticate_dtc = lambda: True
+    dtc_driver.navigate_to_dtc_product_setup = lambda: (_ for _ in ()).throw(RuntimeError("new UI mismatch"))
+
+    with pytest.raises(Exception, match="step 'navigate_to_dtc_product_setup' failed"):
+        dtc_driver.execute_drive_thru_cards_order(order=SimpleNamespace(name="x"), pdf_path="/tmp/x.pdf")
+
+
 def test_wait_for_cloudflare_challenge_returns_when_site_loaded(dtc_driver: AutofillDriver) -> None:
     dtc_driver._is_site_loaded = lambda: True
     dtc_driver._is_cloudflare_challenge_active = lambda: (_ for _ in ()).throw(

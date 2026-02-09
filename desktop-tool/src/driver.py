@@ -1005,34 +1005,27 @@ class AutofillDriver:
 
     def execute_drive_thru_cards_order(self, order: CardOrder, pdf_path: str) -> None:
         t = time.time()
-        selectors = self.target_site.value.selectors
         self.set_state(States.defining_order, "Opening DriveThruCards")
         self.driver.get(self.target_site.value.starting_url)
 
-        # Handle Cloudflare challenge if present
-        self.wait_for_cloudflare_challenge()
+        def run_step(step_name: str, func: Any, *args: Any, **kwargs: Any) -> Any:
+            try:
+                return func(*args, **kwargs)
+            except Exception as exc:
+                raise Exception(f"DriveThruCards step '{step_name}' failed: {exc}") from exc
 
-        # Handle login
-        if not self.authenticate_dtc():
+        run_step("wait_for_cloudflare_challenge", self.wait_for_cloudflare_challenge)
+        login_completed = run_step("authenticate_dtc", self.authenticate_dtc)
+        if not login_completed:
             raise Exception(
                 "DriveThruCards login was not completed before timeout. "
                 "Please log in and re-run the command."
             )
-
-        # Navigate to product setup page
-        self.navigate_to_dtc_product_setup()
-
-        # Fill out the product form (first page - title, price, cover image, checkboxes)
-        self.fill_dtc_product_form(order=order)
-
-        # Submit the description preview page
-        self.submit_dtc_description_page()
-
-        # Open the upload page (new tab)
-        self.open_dtc_upload_page()
-
-        # Select card type and upload the PDF
-        self.select_card_type_and_upload_pdf(pdf_path=pdf_path)
+        run_step("navigate_to_dtc_product_setup", self.navigate_to_dtc_product_setup)
+        run_step("fill_dtc_product_form", self.fill_dtc_product_form, order)
+        run_step("submit_dtc_description_page", self.submit_dtc_description_page)
+        run_step("open_dtc_upload_page", self.open_dtc_upload_page)
+        run_step("select_card_type_and_upload_pdf", self.select_card_type_and_upload_pdf, pdf_path)
 
         # DriveThruCards automation complete - user should finish checkout manually
         log_hours_minutes_seconds_elapsed(t)
@@ -1040,43 +1033,6 @@ class AutofillDriver:
             "DriveThruCards order setup complete!\n"
             "You are now at the checkout page. Please review your order and complete the purchase manually."
         )
-        return
-
-        if selectors.quantity_selector:
-            try:
-                self.wait_for_selector(selectors.quantity_selector)
-                quantity_input = self.driver.find_element(By.CSS_SELECTOR, selectors.quantity_selector)
-                quantity_input.clear()
-                quantity_input.send_keys(str(order.details.quantity))
-            except sl_exc.WebDriverException as exc:
-                logger.warning(f"Failed to set DriveThruCards quantity automatically: {exc}")
-
-        self.set_state(States.inserting_fronts, "Uploading PDF")
-        self.wait_for_selector(selectors.pdf_upload_input_selector)
-        upload_inputs = self.driver.find_elements(By.CSS_SELECTOR, selectors.pdf_upload_input_selector)
-        if len(upload_inputs) <= selectors.pdf_upload_input_index:
-            raise Exception(
-                f"DriveThruCards PDF upload input not found at index {selectors.pdf_upload_input_index} "
-                f"using selector {selectors.pdf_upload_input_selector}."
-            )
-        upload_inputs[selectors.pdf_upload_input_index].send_keys(pdf_path)
-        logger.info("DriveThruCards PDF uploaded. Please confirm the preview and continue checkout.")
-
-        if selectors.continue_selector:
-            try:
-                self.wait_for_selector(selectors.continue_selector)
-                self.driver.find_element(By.CSS_SELECTOR, selectors.continue_selector).click()
-            except sl_exc.WebDriverException:
-                logger.warning("DriveThruCards continue button could not be clicked automatically.")
-
-        if selectors.add_to_cart_selector:
-            try:
-                self.wait_for_selector(selectors.add_to_cart_selector)
-                self.driver.find_element(By.CSS_SELECTOR, selectors.add_to_cart_selector).click()
-            except sl_exc.WebDriverException:
-                logger.warning("DriveThruCards add-to-cart button could not be clicked automatically.")
-
-        log_hours_minutes_seconds_elapsed(t)
 
     # endregion
 
