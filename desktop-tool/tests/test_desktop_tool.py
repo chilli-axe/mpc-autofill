@@ -329,6 +329,25 @@ def test_nuitka_directives_include_assets_directory() -> None:
     assert "--include-data-dir=assets=assets" in source
 
 
+def test_readme_points_users_to_wiki_for_usage_docs() -> None:
+    readme_path = os.path.join(os.path.dirname(autofill_cli.__file__), "readme.md")
+    with open(readme_path, "r", encoding="utf-8") as f:
+        readme = f.read()
+    assert "https://github.com/chilli-axe/mpc-autofill/wiki/Desktop-Tool" in readme
+    assert "--skip-pdf-if-exists" not in readme
+    assert "--download-images-only" not in readme
+
+
+def test_wiki_draft_includes_cli_usage_updates() -> None:
+    wiki_draft_path = os.path.join(os.path.dirname(autofill_cli.__file__), "docs", "Desktop-Tool.wiki.md")
+    with open(wiki_draft_path, "r", encoding="utf-8") as f:
+        wiki = f.read()
+    assert "--skip-pdf-if-exists" in wiki
+    assert "--download-images-only" in wiki
+    assert "--browser-profile-path" in wiki
+    assert "Ghostscript Requirement" in wiki
+
+
 # endregion
 
 # region PDF/X conversion
