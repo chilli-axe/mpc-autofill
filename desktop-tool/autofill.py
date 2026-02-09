@@ -22,15 +22,17 @@ import os
 import shutil
 import subprocess
 import sys
+from concurrent.futures import ThreadPoolExecutor
 from contextlib import nullcontext
 from glob import glob
 from pathlib import Path
 from typing import Optional, Union
 
 import click
+import enlighten
 from wakepy import keepawake
 
-from src.constants import Browsers, ImageResizeMethods, TargetSites
+from src.constants import THREADS, Browsers, ImageResizeMethods, TargetSites
 from src.driver import AutofillDriver
 from src.exc import ValidationException
 from src.formatting import bold
@@ -208,6 +210,24 @@ def maybe_reuse_existing_pdfs(
     return existing_pdf_paths
 
 
+def download_images_for_orders(
+    orders: list[CardOrder],
+    post_processing_config: Optional[ImagePostProcessingConfig],
+) -> None:
+    total_images = sum(
+        len(order.fronts.cards_by_id) + len(order.backs.cards_by_id)
+        for order in orders
+    )
+    manager = enlighten.get_manager()
+    download_bar = manager.counter(total=total_images, desc="Images Downloaded", position=1, autorefresh=True)
+    with ThreadPoolExecutor(max_workers=THREADS) as pool:
+        for order in orders:
+            logger.info(f"Downloading images for {bold(order.name or 'Unnamed Project')}...")
+            order.fronts.download_images(pool, download_bar, post_processing_config)
+            order.backs.download_images(pool, download_bar, post_processing_config)
+    logger.info("Finished downloading card images.")
+
+
 @click.command(context_settings={"show_default": True})
 @click.option("-d", "--directory", default=None, help="The directory to search for order XML files.")
 @click.option(
@@ -267,6 +287,12 @@ def maybe_reuse_existing_pdfs(
     "--exportpdf",
     default=False,
     help="Create a PDF export of the card images instead of creating a project with a printing site.",
+    is_flag=True,
+)
+@click.option(
+    "--download-images-only",
+    default=False,
+    help="Only download card images to the cards directory and exit.",
     is_flag=True,
 )
 @click.option(
@@ -358,6 +384,7 @@ def main(
     browser_profile_name: str,
     site: str,
     exportpdf: bool,
+    download_images_only: bool,
     skip_pdf_if_exists: bool,
     allowsleep: bool,
     image_post_processing: bool,
@@ -408,6 +435,10 @@ def main(
                 if image_post_processing
                 else None
             )
+            if download_images_only:
+                orders = CardOrder.from_xmls_in_folder(working_directory=working_directory)
+                download_images_for_orders(orders=orders, post_processing_config=post_processing_config)
+                return
             if target_site == TargetSites.DriveThruCards:
                 ensure_ghostscript_available()
                 using_default_icc = dtc_icc_profile is None

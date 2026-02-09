@@ -4,10 +4,12 @@ import time
 from concurrent.futures import ThreadPoolExecutor
 from itertools import groupby
 from queue import Queue
+from types import SimpleNamespace
 from typing import Callable, Generator
 from xml.etree import ElementTree
 
 import pytest
+from click.testing import CliRunner
 from enlighten import Counter
 from PIL import Image
 from selenium.webdriver.common.by import By
@@ -294,6 +296,31 @@ def test_get_brave_driver_applies_user_profile_options(monkeypatch: pytest.Monke
 
     assert "--user-data-dir=/tmp/brave-data" in captured["options"].arguments
     assert "--profile-directory=Default" in captured["options"].arguments
+
+
+def test_cli_help_includes_download_images_only_option() -> None:
+    result = CliRunner().invoke(autofill_cli.main, ["--help"])
+    assert result.exit_code == 0
+    assert "--download-images-only" in result.output
+
+
+def test_download_images_for_orders_downloads_fronts_and_backs() -> None:
+    calls = {"fronts": 0, "backs": 0}
+
+    class Face:
+        def __init__(self, key: str) -> None:
+            self._key = key
+            self.cards_by_id = {"a": object()}
+
+        def download_images(self, _pool, _download_bar, _post_processing_config):
+            calls[self._key] += 1
+
+    order = SimpleNamespace(name="order1", fronts=Face("fronts"), backs=Face("backs"))
+
+    autofill_cli.download_images_for_orders(orders=[order], post_processing_config=DEFAULT_POST_PROCESSING)
+
+    assert calls["fronts"] == 1
+    assert calls["backs"] == 1
 
 
 # endregion
