@@ -432,6 +432,18 @@ def test_cli_help_includes_global_log_level_option() -> None:
     assert "--log-level" in result.output
 
 
+def test_cli_help_documents_new_flags_and_stealth_guidance() -> None:
+    result = CliRunner().invoke(autofill_cli.main, ["--help"])
+    assert result.exit_code == 0
+    assert "--skip-pdf-if-exists" in result.output
+    assert "--download-images-only" in result.output
+    assert "--browser-profile-path" in result.output
+    assert "--browser-profile-name" in result.output
+    assert "--dtc-custom-stealth / --no-dtc-custom-stealth" in result.output
+    assert "last resort" in result.output
+    assert "detailed Selenium step-by-step logs" in result.output
+
+
 def test_download_images_for_orders_downloads_fronts_and_backs() -> None:
     calls = {"fronts": 0, "backs": 0}
 

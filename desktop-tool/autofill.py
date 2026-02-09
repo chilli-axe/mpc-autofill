@@ -262,21 +262,22 @@ def download_images_for_orders(
     "--browser-profile-path",
     default=None,
     help=(
-        "Optional Chromium user data directory to use (for existing profiles, cookies, and password managers). "
+        "Optional Chromium user-data directory for reusing existing profiles, cookies, and password managers. "
         "Example on macOS: ~/Library/Application Support/Google/Chrome"
     ),
 )
 @click.option(
     "--browser-profile-name",
     default="Default",
-    help="Profile directory name inside --browser-profile-path, e.g. Default or 'Profile 1'.",
+    help="Profile directory name inside --browser-profile-path (e.g. Default or 'Profile 1').",
 )
 @click.option(
     "--dtc-custom-stealth/--no-dtc-custom-stealth",
     default=False,
     help=(
-        "Apply additional custom stealth JavaScript in Chromium for DriveThruCards. "
-        "Disabled by default because these patches can trigger bot detection on some runs."
+        "Apply extra custom stealth JavaScript in Chromium for DriveThruCards. "
+        "Use this as a last resort when the default undetected-chromedriver flow is not sufficient; "
+        "disabled by default because these patches can trigger bot detection on some runs."
     ),
     is_flag=True,
 )
@@ -312,13 +313,13 @@ def download_images_for_orders(
 @click.option(
     "--download-images-only",
     default=False,
-    help="Only download card images to the cards directory and exit.",
+    help="Download card images to cards/ and exit (skip PDF creation and browser automation).",
     is_flag=True,
 )
 @click.option(
     "--skip-pdf-if-exists/--no-skip-pdf-if-exists",
     default=False,
-    help="Skip creating a new PDF export when one already exists for the order.",
+    help="Reuse existing export PDFs when present; prompts to recreate if cards/ has newer files.",
     is_flag=True,
 )
 @click.option(
@@ -356,7 +357,7 @@ def download_images_for_orders(
 @click.option(
     "--dtc-icc-profile",
     default=None,
-    help="Optional ICC profile path to embed in DriveThruCards exports.",
+    help="Optional ICC profile path for DriveThruCards PDF/X conversion (defaults to bundled profile).",
 )
 @click.option(
     "--combine-orders/--no-combine-orders",
@@ -379,7 +380,7 @@ def download_images_for_orders(
             logging.getLevelName(logging.NOTSET),
         ]
     ),
-    help="Controls the level of logs written to standard output.",
+    help="Global CLI output verbosity. Use DEBUG to show detailed Selenium step-by-step logs.",
 )
 @click.option(
     "--write-debug-logs",
