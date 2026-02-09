@@ -485,6 +485,10 @@ def test_wiki_draft_includes_cli_usage_updates() -> None:
     assert "--skip-pdf-if-exists" in wiki
     assert "--download-images-only" in wiki
     assert "--browser-profile-path" in wiki
+    assert "--dtc-custom-stealth" in wiki
+    assert "last resort" in wiki
+    assert "--log-level" in wiki
+    assert "Use `DEBUG` to show detailed Selenium step-by-step logs" in wiki
     assert "Ghostscript Requirement" in wiki
 
 
