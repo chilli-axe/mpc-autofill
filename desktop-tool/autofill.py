@@ -23,6 +23,7 @@ import shutil
 import subprocess
 import sys
 from contextlib import nullcontext
+from glob import glob
 from pathlib import Path
 from typing import Optional, Union
 
@@ -33,7 +34,7 @@ from src.constants import Browsers, ImageResizeMethods, TargetSites
 from src.driver import AutofillDriver
 from src.exc import ValidationException
 from src.formatting import bold
-from src.io import DEFAULT_WORKING_DIRECTORY, create_image_directory_if_not_exists
+from src.io import DEFAULT_WORKING_DIRECTORY, create_image_directory_if_not_exists, get_image_directory
 from src.logging import configure_loggers, logger
 from src.order import CardOrder, aggregate_and_split_orders
 from src.pdf_maker import PdfExporter, PdfXConversionConfig, get_ghostscript_path, get_ghostscript_version
@@ -140,6 +141,73 @@ def ensure_ghostscript_available() -> str:
         input("Press Enter to re-check for Ghostscript, or Ctrl+C to exit.")
 
 
+def get_export_directory_for_order(order_name: Optional[str]) -> str:
+    basename = os.path.basename(str(order_name))
+    if not basename:
+        basename = "cards.xml"
+    file_name = os.path.splitext(basename)[0]
+    return os.path.join("export", file_name)
+
+
+def get_existing_pdf_paths(order_name: Optional[str]) -> list[str]:
+    export_directory = get_export_directory_for_order(order_name=order_name)
+    return sorted([path for path in glob(os.path.join(export_directory, "**", "*.pdf"), recursive=True)])
+
+
+def get_newest_mtime_in_directory(directory: str) -> Optional[float]:
+    if not os.path.isdir(directory):
+        return None
+    newest_mtime = None
+    for root, _, files in os.walk(directory):
+        for file_name in files:
+            file_path = os.path.join(root, file_name)
+            mtime = os.path.getmtime(file_path)
+            if newest_mtime is None or mtime > newest_mtime:
+                newest_mtime = mtime
+    return newest_mtime
+
+
+def existing_pdfs_are_stale(existing_pdf_paths: list[str], cards_directory: str) -> bool:
+    if not existing_pdf_paths:
+        return False
+    newest_cards_mtime = get_newest_mtime_in_directory(cards_directory)
+    if newest_cards_mtime is None:
+        return False
+    newest_pdf_mtime = max(os.path.getmtime(path) for path in existing_pdf_paths)
+    return newest_cards_mtime > newest_pdf_mtime
+
+
+def maybe_reuse_existing_pdfs(
+    order_name: Optional[str],
+    skip_pdf_if_exists: bool,
+    cards_directory: str,
+    require_pdfx: bool = False,
+) -> Optional[list[str]]:
+    if not skip_pdf_if_exists:
+        return None
+
+    existing_pdf_paths = get_existing_pdf_paths(order_name=order_name)
+    if not existing_pdf_paths:
+        return None
+
+    if require_pdfx and not any(path.endswith("_pdfx.pdf") for path in existing_pdf_paths):
+        logger.info(
+            "Existing PDF files were found, but no PDF/X-1a output was found. Recreating PDF export."
+        )
+        return None
+
+    if existing_pdfs_are_stale(existing_pdf_paths=existing_pdf_paths, cards_directory=cards_directory):
+        recreate_pdf = click.confirm(
+            "Existing PDF export found, but images in cards/ are newer. Recreate PDF now?",
+            default=True,
+        )
+        if recreate_pdf:
+            return None
+
+    logger.info("Skipping PDF generation because existing exported PDF files were found.")
+    return existing_pdf_paths
+
+
 @click.command(context_settings={"show_default": True})
 @click.option("-d", "--directory", default=None, help="The directory to search for order XML files.")
 @click.option(
@@ -186,6 +254,12 @@ def ensure_ghostscript_available() -> str:
     "--exportpdf",
     default=False,
     help="Create a PDF export of the card images instead of creating a project with a printing site.",
+    is_flag=True,
+)
+@click.option(
+    "--skip-pdf-if-exists/--no-skip-pdf-if-exists",
+    default=False,
+    help="Skip creating a new PDF export when one already exists for the order.",
     is_flag=True,
 )
 @click.option(
@@ -269,6 +343,7 @@ def main(
     binary_location: Optional[str],
     site: str,
     exportpdf: bool,
+    skip_pdf_if_exists: bool,
     allowsleep: bool,
     image_post_processing: bool,
     max_dpi: int,
@@ -340,12 +415,19 @@ def main(
                 )
                 orders = CardOrder.from_xmls_in_folder(working_directory=working_directory)
                 for i, order in enumerate(orders, start=1):
-                    exporter = PdfExporter(
-                        order=order,
-                        export_mode="drive_thru_cards",
-                        pdfx_config=PdfXConversionConfig(icc_profile_path=resolved_icc_profile),
+                    pdf_paths = maybe_reuse_existing_pdfs(
+                        order_name=order.name,
+                        skip_pdf_if_exists=skip_pdf_if_exists,
+                        cards_directory=get_image_directory(working_directory),
+                        require_pdfx=True,
                     )
-                    pdf_paths = exporter.execute(post_processing_config=dtc_post_processing_config)
+                    if pdf_paths is None:
+                        exporter = PdfExporter(
+                            order=order,
+                            export_mode="drive_thru_cards",
+                            pdfx_config=PdfXConversionConfig(icc_profile_path=resolved_icc_profile),
+                        )
+                        pdf_paths = exporter.execute(post_processing_config=dtc_post_processing_config)
                     # Only use the Ghostscript PDF/X-1a output - no fallback
                     dtc_pdf_path = next((path for path in reversed(pdf_paths) if path.endswith("_pdfx.pdf")), None)
                     if dtc_pdf_path is None:
@@ -364,9 +446,18 @@ def main(
                         input(f"Press {bold('Enter')} to continue with the next DriveThruCards order.\n")
                 wait_for_user_to_complete_order()
             elif exportpdf:
-                PdfExporter(order=CardOrder.from_xmls_in_folder(working_directory=working_directory)[0]).execute(
-                    post_processing_config=post_processing_config
-                )
+                order = CardOrder.from_xmls_in_folder(working_directory=working_directory)[0]
+                if (
+                    maybe_reuse_existing_pdfs(
+                        order_name=order.name,
+                        skip_pdf_if_exists=skip_pdf_if_exists,
+                        cards_directory=get_image_directory(working_directory),
+                    )
+                    is None
+                ):
+                    PdfExporter(order=order).execute(
+                        post_processing_config=post_processing_config
+                    )
             else:
                 card_orders = aggregate_and_split_orders(
                     orders=CardOrder.from_xmls_in_folder(working_directory=working_directory),

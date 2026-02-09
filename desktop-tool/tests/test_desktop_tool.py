@@ -109,6 +109,145 @@ def test_ensure_ghostscript_available_prompts_until_found(
     assert called["version"] == 1
 
 
+def test_maybe_reuse_existing_pdfs_returns_none_when_skip_disabled(tmp_path) -> None:
+    order_name = "example.xml"
+    export_dir = tmp_path / "export" / "example"
+    export_dir.mkdir(parents=True)
+    pdf_path = export_dir / "1.pdf"
+    pdf_path.write_bytes(b"pdf")
+
+    cwd_before = os.getcwd()
+    os.chdir(tmp_path)
+    try:
+        assert (
+            autofill_cli.maybe_reuse_existing_pdfs(
+                order_name=order_name,
+                skip_pdf_if_exists=False,
+                cards_directory=str(tmp_path / "cards"),
+            )
+            is None
+        )
+    finally:
+        os.chdir(cwd_before)
+
+
+def test_maybe_reuse_existing_pdfs_reuses_existing_pdf_when_fresh(tmp_path) -> None:
+    order_name = "example.xml"
+    export_dir = tmp_path / "export" / "example"
+    cards_dir = tmp_path / "cards"
+    export_dir.mkdir(parents=True)
+    cards_dir.mkdir()
+
+    pdf_path = export_dir / "1.pdf"
+    pdf_path.write_bytes(b"pdf")
+    card_path = cards_dir / "card.png"
+    card_path.write_bytes(b"card")
+
+    now = time.time()
+    os.utime(card_path, (now - 20, now - 20))
+    os.utime(pdf_path, (now - 10, now - 10))
+
+    cwd_before = os.getcwd()
+    os.chdir(tmp_path)
+    try:
+        reused = autofill_cli.maybe_reuse_existing_pdfs(
+            order_name=order_name,
+            skip_pdf_if_exists=True,
+            cards_directory=str(cards_dir),
+        )
+        assert reused == [str(pdf_path.relative_to(tmp_path))]
+    finally:
+        os.chdir(cwd_before)
+
+
+def test_maybe_reuse_existing_pdfs_recreates_when_cards_newer_and_user_confirms(
+    monkeypatch: pytest.MonkeyPatch, tmp_path
+) -> None:
+    order_name = "example.xml"
+    export_dir = tmp_path / "export" / "example"
+    cards_dir = tmp_path / "cards"
+    export_dir.mkdir(parents=True)
+    cards_dir.mkdir()
+
+    pdf_path = export_dir / "1.pdf"
+    pdf_path.write_bytes(b"pdf")
+    card_path = cards_dir / "card.png"
+    card_path.write_bytes(b"card")
+
+    now = time.time()
+    os.utime(pdf_path, (now - 20, now - 20))
+    os.utime(card_path, (now - 10, now - 10))
+    monkeypatch.setattr("autofill.click.confirm", lambda *_args, **_kwargs: True)
+
+    cwd_before = os.getcwd()
+    os.chdir(tmp_path)
+    try:
+        assert (
+            autofill_cli.maybe_reuse_existing_pdfs(
+                order_name=order_name,
+                skip_pdf_if_exists=True,
+                cards_directory=str(cards_dir),
+            )
+            is None
+        )
+    finally:
+        os.chdir(cwd_before)
+
+
+def test_maybe_reuse_existing_pdfs_keeps_existing_when_cards_newer_and_user_declines(
+    monkeypatch: pytest.MonkeyPatch, tmp_path
+) -> None:
+    order_name = "example.xml"
+    export_dir = tmp_path / "export" / "example"
+    cards_dir = tmp_path / "cards"
+    export_dir.mkdir(parents=True)
+    cards_dir.mkdir()
+
+    pdf_path = export_dir / "1.pdf"
+    pdf_path.write_bytes(b"pdf")
+    card_path = cards_dir / "card.png"
+    card_path.write_bytes(b"card")
+
+    now = time.time()
+    os.utime(pdf_path, (now - 20, now - 20))
+    os.utime(card_path, (now - 10, now - 10))
+    monkeypatch.setattr("autofill.click.confirm", lambda *_args, **_kwargs: False)
+
+    cwd_before = os.getcwd()
+    os.chdir(tmp_path)
+    try:
+        reused = autofill_cli.maybe_reuse_existing_pdfs(
+            order_name=order_name,
+            skip_pdf_if_exists=True,
+            cards_directory=str(cards_dir),
+        )
+        assert reused == [str(pdf_path.relative_to(tmp_path))]
+    finally:
+        os.chdir(cwd_before)
+
+
+def test_maybe_reuse_existing_pdfs_requires_pdfx_if_requested(tmp_path) -> None:
+    order_name = "example.xml"
+    export_dir = tmp_path / "export" / "example"
+    export_dir.mkdir(parents=True)
+    (export_dir / "1.pdf").write_bytes(b"pdf")
+
+    cwd_before = os.getcwd()
+    os.chdir(tmp_path)
+    try:
+        assert (
+            autofill_cli.maybe_reuse_existing_pdfs(
+                order_name=order_name,
+                skip_pdf_if_exists=True,
+                cards_directory=str(tmp_path / "cards"),
+                require_pdfx=True,
+            )
+            is None
+        )
+    finally:
+        os.chdir(cwd_before)
+
+
 # endregion
 
 # region PDF/X conversion
