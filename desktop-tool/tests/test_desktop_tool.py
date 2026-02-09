@@ -382,6 +382,40 @@ def test_pdf_exporter_skips_pdfx_on_failure(monkeypatch: pytest.MonkeyPatch, car
     remove_directories(["export/test_order", "export"])
 
 
+def test_pdf_exporter_logs_pdfx_conversion_progress(monkeypatch: pytest.MonkeyPatch, card_order_valid) -> None:
+    logged_messages = []
+
+    def do_nothing(_):
+        return None
+
+    def fake_info(message: str):
+        logged_messages.append(message)
+
+    def fake_convert_pdf_to_pdfx(source_path: str, output_path: str, _config) -> bool:
+        with open(output_path, "wb") as f:
+            f.write(b"pdfx")
+        return True
+
+    monkeypatch.setattr("src.pdf_maker.PdfExporter.ask_questions", do_nothing)
+    monkeypatch.setattr("src.pdf_maker.convert_pdf_to_pdfx", fake_convert_pdf_to_pdfx)
+    monkeypatch.setattr("src.pdf_maker.logger.info", fake_info)
+
+    card_order_valid.name = "test_order.xml"
+    pdf_exporter = PdfExporter(
+        order=card_order_valid,
+        number_of_cards_per_file=1,
+        pdfx_config=autofill_cli.PdfXConversionConfig(icc_profile_path="dummy.icc"),
+    )
+    generated_files = pdf_exporter.execute(post_processing_config=DEFAULT_POST_PROCESSING)
+
+    progress_logs = [message for message in logged_messages if message.startswith("Converting PDF to PDF/X-1a")]
+    assert len(progress_logs) == 3
+    assert "Converting PDF to PDF/X-1a (1/3): export/test_order/1.pdf" in progress_logs
+
+    remove_files([path for path in generated_files if path.endswith(".pdf")])
+    remove_directories(["export/test_order", "export"])
+
+
 def test_pdf_exporter_add_image_uses_image_bytes(monkeypatch: pytest.MonkeyPatch, card_order_valid, tmp_path) -> None:
     monkeypatch.setattr("src.pdf_maker.PdfExporter.ask_questions", lambda _self: None)
     pdf_exporter = PdfExporter(order=card_order_valid, number_of_cards_per_file=1)

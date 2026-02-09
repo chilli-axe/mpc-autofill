@@ -282,7 +282,10 @@ class PdfExporter:
             self.export()
 
         if self.pdfx_config:
-            for file_path in list(self.saved_files):
+            source_pdf_paths = list(self.saved_files)
+            total_files = len(source_pdf_paths)
+            for index, file_path in enumerate(source_pdf_paths, start=1):
+                logger.info(f"Converting PDF to PDF/X-1a ({index}/{total_files}): {file_path}")
                 pdfx_path = f"{os.path.splitext(file_path)[0]}_pdfx.pdf"
                 if convert_pdf_to_pdfx(file_path, pdfx_path, self.pdfx_config):
                     self.saved_files.append(pdfx_path)
