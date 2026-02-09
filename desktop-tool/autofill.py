@@ -239,6 +239,14 @@ def download_images_for_orders(
     logger.info("Finished downloading card images.")
 
 
+def get_site_picker_choices() -> list[str]:
+    site_names = [site.name for site in TargetSites]
+    # Keep DriveThruCards available but place it last in the picker list.
+    return [name for name in site_names if name != TargetSites.DriveThruCards.name] + [
+        TargetSites.DriveThruCards.name
+    ]
+
+
 @click.command(context_settings={"show_default": True})
 @click.option("-d", "--directory", default=None, help="The directory to search for order XML files.")
 @click.option(
@@ -285,7 +293,7 @@ def download_images_for_orders(
     "--site",
     prompt=prompt_if_no_arguments("Which site should the tool auto-fill your project into?"),
     default=TargetSites.MakePlayingCards.name,
-    type=click.Choice(sorted([site.name for site in TargetSites]), case_sensitive=False),
+    type=click.Choice(get_site_picker_choices(), case_sensitive=False),
     help="The card printing site into which your order should be auto-filled.",
 )
 @click.option(

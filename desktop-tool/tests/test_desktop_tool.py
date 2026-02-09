@@ -444,6 +444,13 @@ def test_cli_help_documents_new_flags_and_stealth_guidance() -> None:
     assert "detailed Selenium step-by-step logs" in result.output
 
 
+def test_cli_site_choices_list_drivethrucards_last() -> None:
+    result = CliRunner().invoke(autofill_cli.main, ["--help"])
+    assert result.exit_code == 0
+    site_line = next(line for line in result.output.splitlines() if line.strip().startswith("--site ["))
+    assert site_line.endswith("DriveThruCards]")
+
+
 def test_download_images_for_orders_downloads_fronts_and_backs() -> None:
     calls = {"fronts": 0, "backs": 0}
 
