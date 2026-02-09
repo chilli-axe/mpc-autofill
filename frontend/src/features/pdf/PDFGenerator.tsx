@@ -117,14 +117,23 @@ export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
   // TODO: include fronts / include fronts and unique backs / include fronts and backs
   const dispatch = useAppDispatch();
   const [cardSpacingRowMM, setCardSpacingRowMM] = useState<number | undefined>(
-    5
+    0
   );
   const [cardSpacingColMM, setCardSpacingColMM] = useState<number | undefined>(
+    0
+  );
+  const [pageMarginTopMM, setPageMarginTopMM] = useState<number | undefined>(5);
+  const [pageMarginBottomMM, setPageMarginBottomMM] = useState<
+    number | undefined
+  >(5);
+  const [pageMarginLeftMM, setPageMarginLeftMM] = useState<number | undefined>(
     5
   );
-  const [marginMM, setMarginMM] = useState<number | undefined>(5);
+  const [pageMarginRightMM, setPageMarginRightMM] = useState<
+    number | undefined
+  >(5);
   const [bleedEdgeMM, setBleedEdgeMM] = useState<number | undefined>(0);
-  const [roundCorners, setRoundCorners] = useState<boolean>(true);
+  const [roundCorners, setRoundCorners] = useState<boolean>(false);
 
   const { clientSearchService } = useClientSearchContext();
   const projectMembers = useAppSelector(selectProjectMembers);
@@ -173,7 +182,10 @@ export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
     roundCorners: roundCorners,
     cardSpacingRowMM: cardSpacingRowMM ?? 0,
     cardSpacingColMM: cardSpacingColMM ?? 0,
-    marginMM: marginMM ?? 0,
+    pageMarginTopMM: pageMarginTopMM ?? 0,
+    pageMarginBottomMM: pageMarginBottomMM ?? 0,
+    pageMarginLeftMM: pageMarginLeftMM ?? 0,
+    pageMarginRightMM: pageMarginRightMM ?? 0,
     cardDocumentsByIdentifier: cardDocumentsByIdentifier,
     projectMembers: projectMembers,
     projectCardback: projectCardback,
@@ -333,11 +345,40 @@ export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
             </Col>
           </Row>
           <Row>
-            <Col xs={12}>
+            <Col xs={6}>
               <NumericField
-                label="Page margin (mm)"
-                value={marginMM}
-                setValue={setMarginMM}
+                label="Page margin top (mm)"
+                value={pageMarginTopMM}
+                setValue={setPageMarginTopMM}
+                min={0}
+                step={0.1}
+              />
+            </Col>
+            <Col xs={6}>
+              <NumericField
+                label="Page margin bottom (mm)"
+                value={pageMarginBottomMM}
+                setValue={setPageMarginBottomMM}
+                min={0}
+                step={0.1}
+              />
+            </Col>
+          </Row>
+          <Row>
+            <Col xs={6}>
+              <NumericField
+                label="Page margin left (mm)"
+                value={pageMarginLeftMM}
+                setValue={setPageMarginLeftMM}
+                min={0}
+                step={0.1}
+              />
+            </Col>
+            <Col xs={6}>
+              <NumericField
+                label="Page margin right (mm)"
+                value={pageMarginRightMM}
+                setValue={setPageMarginRightMM}
                 min={0}
                 step={0.1}
               />
