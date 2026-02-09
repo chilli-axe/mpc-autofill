@@ -47,7 +47,10 @@ export interface PDFProps {
   roundCorners: boolean;
   cardSpacingRowMM: number;
   cardSpacingColMM: number;
-  marginMM: number;
+  pageMarginTopMM: number;
+  pageMarginBottomMM: number;
+  pageMarginLeftMM: number;
+  pageMarginRightMM: number;
   cardDocumentsByIdentifier: { [identifier: string]: CardDocument };
   projectMembers: Array<SlotProjectMembers>;
   projectCardback: string | undefined;
@@ -341,7 +344,10 @@ export const PDF = ({
   roundCorners,
   cardSpacingRowMM,
   cardSpacingColMM,
-  marginMM,
+  pageMarginTopMM,
+  pageMarginBottomMM,
+  pageMarginLeftMM,
+  pageMarginRightMM,
   projectMembers,
   projectCardback,
   cardDocumentsByIdentifier,
@@ -355,7 +361,15 @@ export const PDF = ({
   const PageComponent = CardSelectionModeToPage[cardSelectionMode];
   return (
     <Document pageMode="useThumbs">
-      <Page size={size} style={{ padding: marginMM + "mm" }}>
+      <Page
+        size={size}
+        style={{
+          paddingTop: pageMarginTopMM + "mm",
+          paddingBottom: pageMarginBottomMM + "mm",
+          paddingLeft: pageMarginLeftMM + "mm",
+          paddingRight: pageMarginRightMM + "mm",
+        }}
+      >
         <PageComponent
           projectMembers={projectMembers}
           cardDocumentsByIdentifier={cardDocumentsByIdentifier}
