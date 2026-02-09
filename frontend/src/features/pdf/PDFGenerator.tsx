@@ -117,10 +117,10 @@ export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
   // TODO: include fronts / include fronts and unique backs / include fronts and backs
   const dispatch = useAppDispatch();
   const [cardSpacingRowMM, setCardSpacingRowMM] = useState<number | undefined>(
-    5
+    0
   );
   const [cardSpacingColMM, setCardSpacingColMM] = useState<number | undefined>(
-    5
+    0
   );
   const [pageMarginTopMM, setPageMarginTopMM] = useState<number | undefined>(5);
   const [pageMarginBottomMM, setPageMarginBottomMM] = useState<
@@ -133,7 +133,7 @@ export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
     number | undefined
   >(5);
   const [bleedEdgeMM, setBleedEdgeMM] = useState<number | undefined>(0);
-  const [roundCorners, setRoundCorners] = useState<boolean>(true);
+  const [roundCorners, setRoundCorners] = useState<boolean>(false);
 
   const { clientSearchService } = useClientSearchContext();
   const projectMembers = useAppSelector(selectProjectMembers);
