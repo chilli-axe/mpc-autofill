@@ -9,6 +9,7 @@ from xml.etree import ElementTree
 
 import pytest
 from enlighten import Counter
+from PIL import Image
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
@@ -165,6 +166,26 @@ def test_pdf_exporter_skips_pdfx_on_failure(monkeypatch: pytest.MonkeyPatch, car
 
     remove_files([path for path in generated_files if path.endswith(".pdf")])
     remove_directories(["export/test_order", "export"])
+
+
+def test_pdf_exporter_add_image_uses_image_bytes(monkeypatch: pytest.MonkeyPatch, card_order_valid, tmp_path) -> None:
+    monkeypatch.setattr("src.pdf_maker.PdfExporter.ask_questions", lambda _self: None)
+    pdf_exporter = PdfExporter(order=card_order_valid, number_of_cards_per_file=1)
+    pdf_exporter.generate_pdf()
+
+    image_path = tmp_path / "sample.png"
+    Image.new("RGB", (4, 4), "red").save(image_path)
+
+    captured_name = {"value": None}
+
+    def fake_image(name, **_kwargs):
+        captured_name["value"] = name
+
+    monkeypatch.setattr(pdf_exporter.pdf, "image", fake_image)
+
+    pdf_exporter.add_image(str(image_path))
+
+    assert isinstance(captured_name["value"], bytes)
 
 
 # endregion

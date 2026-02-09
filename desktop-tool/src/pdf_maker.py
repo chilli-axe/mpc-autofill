@@ -229,7 +229,11 @@ class PdfExporter:
                 if os.path.exists(tmp_path):
                     os.unlink(tmp_path)
         else:
-            self.pdf.image(image_path, x=0, y=0, w=self.card_width_in_inches, h=self.card_height_in_inches)
+            with open(image_path, "rb") as f:
+                image_bytes = f.read()
+            # Pass raw bytes so fpdf keys the cache by content hash rather than file path.
+            # This ensures refreshed image files are re-read when re-exporting PDFs.
+            self.pdf.image(image_bytes, x=0, y=0, w=self.card_width_in_inches, h=self.card_height_in_inches)
 
     def save_file(self) -> str:
         extra = ""
