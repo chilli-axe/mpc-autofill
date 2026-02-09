@@ -228,6 +228,19 @@ def maybe_reuse_existing_pdfs(
     ),
 )
 @click.option(
+    "--browser-profile-path",
+    default=None,
+    help=(
+        "Optional Chromium user data directory to use (for existing profiles, cookies, and password managers). "
+        "Example on macOS: ~/Library/Application Support/Google/Chrome"
+    ),
+)
+@click.option(
+    "--browser-profile-name",
+    default="Default",
+    help="Profile directory name inside --browser-profile-path, e.g. Default or 'Profile 1'.",
+)
+@click.option(
     "--site",
     prompt=prompt_if_no_arguments("Which site should the tool auto-fill your project into?"),
     default=TargetSites.MakePlayingCards.name,
@@ -341,6 +354,8 @@ def main(
     browser: str,
     directory: Optional[str],
     binary_location: Optional[str],
+    browser_profile_path: Optional[str],
+    browser_profile_name: str,
     site: str,
     exportpdf: bool,
     skip_pdf_if_exists: bool,
@@ -368,6 +383,11 @@ def main(
     if binary_location and not os.path.isdir(binary_location):
         raise Exception(
             f"Binary location was specified but is not a directory (or it doesn't exist): {bold(binary_location)}"
+        )
+    if browser_profile_path and not os.path.isdir(browser_profile_path):
+        raise Exception(
+            "Browser profile path was specified but is not a directory (or it doesn't exist): "
+            f"{bold(browser_profile_path)}"
         )
 
     configure_loggers(
@@ -440,6 +460,8 @@ def main(
                         browser=Browsers[browser],
                         target_site=target_site,
                         binary_location=binary_location,
+                        browser_profile_path=browser_profile_path,
+                        browser_profile_name=browser_profile_name if browser_profile_path else None,
                         starting_url=target_site.value.starting_url,
                     ).execute_drive_thru_cards_order(order=order, pdf_path=dtc_pdf_path)
                     if i < len(orders):
@@ -469,6 +491,8 @@ def main(
                     browser=Browsers[browser],
                     target_site=target_site,
                     binary_location=binary_location,
+                    browser_profile_path=browser_profile_path,
+                    browser_profile_name=browser_profile_name if browser_profile_path else None,
                     starting_url=web_server.server_url(),
                 ).execute_orders(
                     orders=card_orders,

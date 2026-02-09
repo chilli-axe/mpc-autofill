@@ -16,6 +16,7 @@ from selenium.webdriver.support.wait import WebDriverWait
 
 import src
 import src.constants as constants
+import src.webdrivers as webdrivers
 from src.constants import OrderFulfilmentMethod, SourceType
 from src.driver import AutofillDriver
 from src.exc import ValidationException
@@ -246,6 +247,53 @@ def test_maybe_reuse_existing_pdfs_requires_pdfx_if_requested(tmp_path) -> None:
         )
     finally:
         os.chdir(cwd_before)
+
+
+def test_get_chrome_driver_applies_user_profile_options(monkeypatch: pytest.MonkeyPatch) -> None:
+    captured = {"options": None, "version_main": None}
+
+    class DummyDriver:
+        def execute_cdp_cmd(self, _command, _payload):
+            return None
+
+    def fake_chrome(*, options, version_main):
+        captured["options"] = options
+        captured["version_main"] = version_main
+        return DummyDriver()
+
+    monkeypatch.setattr(webdrivers, "_detect_chrome_version", lambda: 120)
+    monkeypatch.setattr(webdrivers.uc, "Chrome", fake_chrome)
+
+    webdrivers.get_chrome_driver(
+        user_data_dir="/tmp/chrome-data",
+        profile_directory="Profile 7",
+    )
+
+    assert "--user-data-dir=/tmp/chrome-data" in captured["options"].arguments
+    assert "--profile-directory=Profile 7" in captured["options"].arguments
+    assert captured["version_main"] == 120
+
+
+def test_get_brave_driver_applies_user_profile_options(monkeypatch: pytest.MonkeyPatch) -> None:
+    captured = {"options": None}
+
+    class DummyDriver:
+        pass
+
+    def fake_chrome(*, options):
+        captured["options"] = options
+        return DummyDriver()
+
+    monkeypatch.setattr(webdrivers.uc, "Chrome", fake_chrome)
+
+    webdrivers.get_brave_driver(
+        binary_location="/Applications/Brave Browser.app/Contents/MacOS/Brave Browser",
+        user_data_dir="/tmp/brave-data",
+        profile_directory="Default",
+    )
+
+    assert "--user-data-dir=/tmp/brave-data" in captured["options"].arguments
+    assert "--profile-directory=Default" in captured["options"].arguments
 
 
 # endregion

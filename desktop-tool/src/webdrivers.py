@@ -104,6 +104,8 @@ def get_chrome_driver(
     headless: bool = False,
     binary_location: Optional[str] = None,
     remote_debugging_port: Optional[int] = None,
+    user_data_dir: Optional[str] = None,
+    profile_directory: Optional[str] = None,
 ) -> uc.Chrome:
     """
     Create a Chrome driver using undetected-chromedriver to bypass bot detection.
@@ -120,6 +122,10 @@ def get_chrome_driver(
         options.add_argument(f"--remote-debugging-port={remote_debugging_port}")
     if binary_location is not None:
         options.binary_location = binary_location
+    if user_data_dir is not None:
+        options.add_argument(f"--user-data-dir={user_data_dir}")
+    if profile_directory is not None:
+        options.add_argument(f"--profile-directory={profile_directory}")
 
     # undetected-chromedriver handles stealth automatically
     # Detect Chrome version since auto-detection can fail
@@ -132,7 +138,12 @@ def get_chrome_driver(
     return driver
 
 
-def get_brave_driver(headless: bool = False, binary_location: Optional[str] = None) -> uc.Chrome:
+def get_brave_driver(
+    headless: bool = False,
+    binary_location: Optional[str] = None,
+    user_data_dir: Optional[str] = None,
+    profile_directory: Optional[str] = None,
+) -> uc.Chrome:
     """
     Create a Brave driver using undetected-chromedriver.
     """
@@ -142,6 +153,10 @@ def get_brave_driver(headless: bool = False, binary_location: Optional[str] = No
     options.add_argument("--disable-dev-shm-usage")
     if headless:
         options.add_argument("--headless=new")
+    if user_data_dir is not None:
+        options.add_argument(f"--user-data-dir={user_data_dir}")
+    if profile_directory is not None:
+        options.add_argument(f"--profile-directory={profile_directory}")
 
     # the binary location for brave must be manually specified (otherwise chrome will open instead)
     if binary_location is not None:
@@ -162,7 +177,12 @@ def get_brave_driver(headless: bool = False, binary_location: Optional[str] = No
     return driver
 
 
-def get_edge_driver(headless: bool = False, binary_location: Optional[str] = None) -> ChromiumDriver:
+def get_edge_driver(
+    headless: bool = False,
+    binary_location: Optional[str] = None,
+    user_data_dir: Optional[str] = None,
+    profile_directory: Optional[str] = None,
+) -> ChromiumDriver:
     """
     Create an Edge driver with stealth options.
     Note: Edge doesn't have an undetected variant, so we use standard stealth measures.
@@ -179,6 +199,10 @@ def get_edge_driver(headless: bool = False, binary_location: Optional[str] = Non
     options.add_experimental_option("detach", True)
     if binary_location is not None:
         options.binary_location = binary_location
+    if user_data_dir is not None:
+        options.add_argument(f"--user-data-dir={user_data_dir}")
+    if profile_directory is not None:
+        options.add_argument(f"--profile-directory={profile_directory}")
     driver: ChromiumDriver = Edge(options=options)  # type: ignore
     # Apply CDP stealth for Edge
     driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
