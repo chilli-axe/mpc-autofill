@@ -55,6 +55,7 @@ class AutofillDriver:
     binary_location: Optional[str] = attr.ib(default=None)  # path to browser executable
     browser_profile_path: Optional[str] = attr.ib(default=None)  # user data dir for Chromium browsers
     browser_profile_name: Optional[str] = attr.ib(default=None)  # profile directory name, e.g. "Profile 1"
+    apply_custom_stealth: bool = attr.ib(default=False)
     target_site: TargetSites = attr.ib(default=TargetSites.MakePlayingCards)
     headless: bool = attr.ib(default=False)
     starting_url: str = attr.ib(default="data:")
@@ -77,6 +78,7 @@ class AutofillDriver:
                 binary_location=self.binary_location,
                 user_data_dir=self.browser_profile_path,
                 profile_directory=self.browser_profile_name,
+                apply_custom_stealth=self.apply_custom_stealth,
             )  # type: ignore  # TODO
             driver.set_window_size(1200, 900)
             driver.implicitly_wait(5)

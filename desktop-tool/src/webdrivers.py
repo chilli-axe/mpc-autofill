@@ -106,6 +106,7 @@ def get_chrome_driver(
     remote_debugging_port: Optional[int] = None,
     user_data_dir: Optional[str] = None,
     profile_directory: Optional[str] = None,
+    apply_custom_stealth: bool = False,
 ) -> uc.Chrome:
     """
     Create a Chrome driver using undetected-chromedriver to bypass bot detection.
@@ -132,8 +133,9 @@ def get_chrome_driver(
     version_main = _detect_chrome_version()
     driver = uc.Chrome(options=options, version_main=version_main)
 
-    # Apply additional stealth scripts
-    _apply_stealth_scripts(driver)
+    # Keep custom stealth JS opt-in: these patches can become a detection vector on some sites.
+    if apply_custom_stealth:
+        _apply_stealth_scripts(driver)
 
     return driver
 
@@ -143,6 +145,7 @@ def get_brave_driver(
     binary_location: Optional[str] = None,
     user_data_dir: Optional[str] = None,
     profile_directory: Optional[str] = None,
+    apply_custom_stealth: bool = False,
 ) -> uc.Chrome:
     """
     Create a Brave driver using undetected-chromedriver.
@@ -174,6 +177,8 @@ def get_brave_driver(
         options.binary_location = default_binary_locations[sys.platform]
 
     driver = uc.Chrome(options=options)
+    if apply_custom_stealth:
+        _apply_stealth_scripts(driver)
     return driver
 
 

@@ -262,6 +262,15 @@ def download_images_for_orders(
     help="Profile directory name inside --browser-profile-path, e.g. Default or 'Profile 1'.",
 )
 @click.option(
+    "--dtc-custom-stealth/--no-dtc-custom-stealth",
+    default=False,
+    help=(
+        "Apply additional custom stealth JavaScript in Chromium for DriveThruCards. "
+        "Disabled by default because these patches can trigger bot detection on some runs."
+    ),
+    is_flag=True,
+)
+@click.option(
     "--site",
     prompt=prompt_if_no_arguments("Which site should the tool auto-fill your project into?"),
     default=TargetSites.MakePlayingCards.name,
@@ -383,6 +392,7 @@ def main(
     binary_location: Optional[str],
     browser_profile_path: Optional[str],
     browser_profile_name: str,
+    dtc_custom_stealth: bool,
     site: str,
     exportpdf: bool,
     download_images_only: bool,
@@ -494,6 +504,7 @@ def main(
                         binary_location=binary_location,
                         browser_profile_path=browser_profile_path,
                         browser_profile_name=browser_profile_name if browser_profile_path else None,
+                        apply_custom_stealth=dtc_custom_stealth,
                         starting_url=target_site.value.starting_url,
                     ).execute_drive_thru_cards_order(order=order, pdf_path=dtc_pdf_path)
                     if i < len(orders):

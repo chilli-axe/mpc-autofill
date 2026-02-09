@@ -276,6 +276,38 @@ def test_get_chrome_driver_applies_user_profile_options(monkeypatch: pytest.Monk
     assert captured["version_main"] == 120
 
 
+def test_get_chrome_driver_does_not_apply_custom_stealth_by_default(monkeypatch: pytest.MonkeyPatch) -> None:
+    stealth_called = {"value": False}
+
+    class DummyDriver:
+        def execute_cdp_cmd(self, _command, _payload):
+            return None
+
+    monkeypatch.setattr(webdrivers, "_detect_chrome_version", lambda: 120)
+    monkeypatch.setattr(webdrivers.uc, "Chrome", lambda **_kwargs: DummyDriver())
+    monkeypatch.setattr(webdrivers, "_apply_stealth_scripts", lambda _driver: stealth_called.update(value=True))
+
+    webdrivers.get_chrome_driver()
+
+    assert stealth_called["value"] is False
+
+
+def test_get_chrome_driver_applies_custom_stealth_when_enabled(monkeypatch: pytest.MonkeyPatch) -> None:
+    stealth_called = {"value": False}
+
+    class DummyDriver:
+        def execute_cdp_cmd(self, _command, _payload):
+            return None
+
+    monkeypatch.setattr(webdrivers, "_detect_chrome_version", lambda: 120)
+    monkeypatch.setattr(webdrivers.uc, "Chrome", lambda **_kwargs: DummyDriver())
+    monkeypatch.setattr(webdrivers, "_apply_stealth_scripts", lambda _driver: stealth_called.update(value=True))
+
+    webdrivers.get_chrome_driver(apply_custom_stealth=True)
+
+    assert stealth_called["value"] is True
+
+
 def test_get_brave_driver_applies_user_profile_options(monkeypatch: pytest.MonkeyPatch) -> None:
     captured = {"options": None}
 
