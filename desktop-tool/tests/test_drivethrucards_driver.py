@@ -21,7 +21,7 @@ def test_execute_drive_thru_cards_order_runs_expected_sequence(dtc_driver: Autof
     dtc_driver.driver = SimpleNamespace(get=lambda url: calls.append(("get", url)))
 
     dtc_driver.wait_for_cloudflare_challenge = lambda: calls.append(("wait_for_cloudflare_challenge",))
-    dtc_driver.authenticate_dtc = lambda: calls.append(("authenticate_dtc",))
+    dtc_driver.authenticate_dtc = lambda: calls.append(("authenticate_dtc",)) or True
     dtc_driver.navigate_to_dtc_product_setup = lambda: calls.append(("navigate_to_dtc_product_setup",))
     dtc_driver.fill_dtc_product_form = lambda order: calls.append(("fill_dtc_product_form", order.name))
     dtc_driver.submit_dtc_description_page = lambda: calls.append(("submit_dtc_description_page",))
@@ -50,7 +50,7 @@ def test_authenticate_dtc_returns_immediately_when_already_logged_in(dtc_driver:
         AssertionError("should not poll")
     )
 
-    dtc_driver.authenticate_dtc()
+    assert dtc_driver.authenticate_dtc() is True
 
 
 def test_authenticate_dtc_uses_xpath_then_css_fallback(monkeypatch: pytest.MonkeyPatch, dtc_driver: AutofillDriver) -> None:
@@ -69,12 +69,34 @@ def test_authenticate_dtc_uses_xpath_then_css_fallback(monkeypatch: pytest.Monke
     dtc_driver.click_element_polling = fake_click_element_polling
     monkeypatch.setattr(time, "sleep", lambda _seconds: None)
 
-    dtc_driver.authenticate_dtc()
+    assert dtc_driver.authenticate_dtc() is True
 
     assert polling_calls[0][0] == By.XPATH
     assert "Go to Log in" in polling_calls[0][1]
     assert polling_calls[1][0] == By.CSS_SELECTOR
     assert polling_calls[1][1] == TargetSites.DriveThruCards.value.selectors.go_to_login_selector
+
+
+def test_authenticate_dtc_returns_false_on_timeout(monkeypatch: pytest.MonkeyPatch, dtc_driver: AutofillDriver) -> None:
+    dtc_driver.is_dtc_user_authenticated = lambda: False
+    dtc_driver._click_dtc_login_button = lambda: False
+    dtc_driver.click_element_polling = lambda *_args, **_kwargs: False
+
+    time_values = iter([0.0, 301.0])
+    monkeypatch.setattr(time, "time", lambda: next(time_values))
+    monkeypatch.setattr(time, "sleep", lambda _seconds: None)
+
+    assert dtc_driver.authenticate_dtc() is False
+
+
+def test_execute_drive_thru_cards_order_raises_when_login_not_completed(dtc_driver: AutofillDriver) -> None:
+    dtc_driver.driver = SimpleNamespace(get=lambda _url: None)
+    dtc_driver.wait_for_cloudflare_challenge = lambda: None
+    dtc_driver.authenticate_dtc = lambda: False
+    dtc_driver.navigate_to_dtc_product_setup = lambda: (_ for _ in ()).throw(AssertionError("should not continue"))
+
+    with pytest.raises(Exception, match="login was not completed"):
+        dtc_driver.execute_drive_thru_cards_order(order=SimpleNamespace(name="x"), pdf_path="/tmp/x.pdf")
 
 
 def test_wait_for_cloudflare_challenge_returns_when_site_loaded(dtc_driver: AutofillDriver) -> None:

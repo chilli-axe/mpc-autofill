@@ -107,9 +107,70 @@ def test_ensure_ghostscript_available_prompts_until_found(
 
     monkeypatch.setattr(autofill_cli, "get_ghostscript_path", fake_get_path)
     monkeypatch.setattr(autofill_cli, "get_ghostscript_version", fake_get_version)
+    monkeypatch.setattr(autofill_cli.click, "confirm", lambda *_args, **_kwargs: False)
 
     assert autofill_cli.ensure_ghostscript_available() == "/usr/local/bin/gs"
     assert called["version"] == 1
+
+
+def test_ensure_ghostscript_available_installs_with_winget_on_windows(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    paths = [None, "C:\\Program Files\\gs\\gswin64c.exe"]
+    install_calls = []
+
+    monkeypatch.setattr(autofill_cli.sys, "platform", "win32", raising=False)
+    monkeypatch.setattr(autofill_cli, "get_ghostscript_path", lambda: paths.pop(0))
+    monkeypatch.setattr(autofill_cli, "get_ghostscript_version", lambda _path: "10.0.0")
+    monkeypatch.setattr(autofill_cli.click, "confirm", lambda *_args, **_kwargs: True)
+    monkeypatch.setattr("builtins.input", lambda *_args, **_kwargs: "\n")
+    monkeypatch.setattr(
+        autofill_cli.shutil,
+        "which",
+        lambda name: "winget" if name == "winget" else None,
+    )
+
+    def fake_run(cmd, check=False):
+        install_calls.append(cmd)
+        return SimpleNamespace(returncode=0)
+
+    monkeypatch.setattr(autofill_cli.subprocess, "run", fake_run)
+
+    resolved = autofill_cli.ensure_ghostscript_available()
+
+    assert resolved == "C:\\Program Files\\gs\\gswin64c.exe"
+    assert install_calls == [
+        ["winget", "install", "--id", "ArtifexSoftware.Ghostscript", "--accept-source-agreements"]
+    ]
+
+
+def test_ensure_ghostscript_available_installs_with_apt_on_linux(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    paths = [None, "/usr/bin/gs"]
+    install_calls = []
+
+    monkeypatch.setattr(autofill_cli.sys, "platform", "linux", raising=False)
+    monkeypatch.setattr(autofill_cli, "get_ghostscript_path", lambda: paths.pop(0))
+    monkeypatch.setattr(autofill_cli, "get_ghostscript_version", lambda _path: "10.0.0")
+    monkeypatch.setattr(autofill_cli.click, "confirm", lambda *_args, **_kwargs: True)
+    monkeypatch.setattr("builtins.input", lambda *_args, **_kwargs: "\n")
+    monkeypatch.setattr(
+        autofill_cli.shutil,
+        "which",
+        lambda name: "/usr/bin/" + name if name in {"sudo", "apt"} else None,
+    )
+
+    def fake_run(cmd, check=False):
+        install_calls.append(cmd)
+        return SimpleNamespace(returncode=0)
+
+    monkeypatch.setattr(autofill_cli.subprocess, "run", fake_run)
+
+    resolved = autofill_cli.ensure_ghostscript_available()
+
+    assert resolved == "/usr/bin/gs"
+    assert install_calls == [["sudo", "apt", "install", "-y", "ghostscript"]]
 
 
 def test_maybe_reuse_existing_pdfs_returns_none_when_skip_disabled(tmp_path) -> None:

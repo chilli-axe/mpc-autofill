@@ -564,7 +564,7 @@ class AutofillDriver:
         selectors = self.target_site.value.selectors
         return self.click_element_polling(By.CSS_SELECTOR, selectors.login_button_selector, timeout=15)
 
-    def authenticate_dtc(self) -> None:
+    def authenticate_dtc(self) -> bool:
         """
         Handle DriveThruCards login flow.
         """
@@ -572,7 +572,7 @@ class AutofillDriver:
 
         if self.is_dtc_user_authenticated():
             logger.info("Already logged in to DriveThruCards.")
-            return
+            return True
 
         self.set_state(States.defining_order, "Awaiting DriveThruCards login")
 
@@ -615,12 +615,13 @@ class AutofillDriver:
             time.sleep(1)
             if self.is_dtc_user_authenticated():
                 logger.info("Successfully logged in to DriveThruCards!")
-                return
+                return True
 
         logger.warning(
             f"Login timeout after {timeout_seconds}s. "
             "Please ensure you're logged in before continuing."
         )
+        return False
 
     def navigate_to_dtc_product_setup(self) -> None:
         """
@@ -1012,7 +1013,11 @@ class AutofillDriver:
         self.wait_for_cloudflare_challenge()
 
         # Handle login
-        self.authenticate_dtc()
+        if not self.authenticate_dtc():
+            raise Exception(
+                "DriveThruCards login was not completed before timeout. "
+                "Please log in and re-run the command."
+            )
 
         # Navigate to product setup page
         self.navigate_to_dtc_product_setup()
