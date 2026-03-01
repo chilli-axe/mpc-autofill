@@ -19,4 +19,6 @@ ratelimit~=2.2.1
 requests~=2.32.5
 sanitize-filename~=1.2.0
 selenium~=4.35
+setuptools  # Required for undetected-chromedriver on Python 3.13+ (distutils removed)
+undetected-chromedriver~=3.5.5
 wakepy==0.6.0

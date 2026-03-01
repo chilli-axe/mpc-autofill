@@ -27,7 +27,8 @@ from src.order import (
     Details,
     aggregate_and_split_orders,
 )
-from src.pdf_maker import PdfExporter
+import autofill as autofill_cli
+from src.pdf_maker import PdfExporter, get_ghostscript_version
 from src.processing import ImagePostProcessingConfig
 
 DEFAULT_POST_PROCESSING = ImagePostProcessingConfig(max_dpi=800, downscale_alg=constants.ImageResizeMethods.LANCZOS)
@@ -68,6 +69,102 @@ def assert_orders_identical(a: CardOrder, b: CardOrder) -> None:
 
 def assert_file_size(file_path: str, size: int) -> None:
     assert os.stat(file_path).st_size == size, f"File size {os.stat(file_path).st_size} does not match {size}"
+
+
+# endregion
+
+# region Ghostscript
+
+
+def test_get_ghostscript_version_reads_stdout(monkeypatch: pytest.MonkeyPatch) -> None:
+    class Result:
+        def __init__(self) -> None:
+            self.stdout = "10.02.1\n"
+
+    def fake_run(*_args, **_kwargs):
+        return Result()
+
+    monkeypatch.setattr("src.pdf_maker.subprocess.run", fake_run)
+    assert get_ghostscript_version("gs") == "10.02.1"
+
+
+def test_ensure_ghostscript_available_prompts_until_found(
+    monkeypatch: pytest.MonkeyPatch, input_enter
+) -> None:
+    paths = [None, "/usr/local/bin/gs"]
+    called = {"version": 0}
+
+    def fake_get_path():
+        return paths.pop(0)
+
+    def fake_get_version(_path: str) -> str:
+        called["version"] += 1
+        return "10.0.0"
+
+    monkeypatch.setattr(autofill_cli, "get_ghostscript_path", fake_get_path)
+    monkeypatch.setattr(autofill_cli, "get_ghostscript_version", fake_get_version)
+
+    assert autofill_cli.ensure_ghostscript_available() == "/usr/local/bin/gs"
+    assert called["version"] == 1
+
+
+# endregion
+
+# region PDF/X conversion
+
+
+def test_pdf_exporter_appends_pdfx_on_success(monkeypatch: pytest.MonkeyPatch, card_order_valid) -> None:
+    def do_nothing(_):
+        return None
+
+    def fake_convert_pdf_to_pdfx(source_path: str, output_path: str, _config) -> bool:
+        with open(output_path, "wb") as f:
+            f.write(b"pdfx")
+        return True
+
+    monkeypatch.setattr("src.pdf_maker.PdfExporter.ask_questions", do_nothing)
+    monkeypatch.setattr("src.pdf_maker.convert_pdf_to_pdfx", fake_convert_pdf_to_pdfx)
+
+    card_order_valid.name = "test_order.xml"
+    pdf_exporter = PdfExporter(
+        order=card_order_valid,
+        number_of_cards_per_file=1,
+        pdfx_config=autofill_cli.PdfXConversionConfig(icc_profile_path="dummy.icc"),
+    )
+    generated_files = pdf_exporter.execute(post_processing_config=DEFAULT_POST_PROCESSING)
+
+    expected_pdfx_files = [
+        "export/test_order/1_pdfx.pdf",
+        "export/test_order/2_pdfx.pdf",
+        "export/test_order/3_pdfx.pdf",
+    ]
+    for file_path in expected_pdfx_files:
+        assert file_path in generated_files
+        assert os.path.exists(file_path)
+
+    remove_files([path for path in generated_files if path.endswith(".pdf")])
+    remove_directories(["export/test_order", "export"])
+
+
+def test_pdf_exporter_skips_pdfx_on_failure(monkeypatch: pytest.MonkeyPatch, card_order_valid) -> None:
+    def do_nothing(_):
+        return None
+
+    monkeypatch.setattr("src.pdf_maker.PdfExporter.ask_questions", do_nothing)
+    monkeypatch.setattr("src.pdf_maker.convert_pdf_to_pdfx", lambda *_args, **_kwargs: False)
+
+    card_order_valid.name = "test_order.xml"
+    pdf_exporter = PdfExporter(
+        order=card_order_valid,
+        number_of_cards_per_file=1,
+        pdfx_config=autofill_cli.PdfXConversionConfig(icc_profile_path="dummy.icc"),
+    )
+    generated_files = pdf_exporter.execute(post_processing_config=DEFAULT_POST_PROCESSING)
+
+    assert not any(path.endswith("_pdfx.pdf") for path in generated_files)
+
+    remove_files([path for path in generated_files if path.endswith(".pdf")])
+    remove_directories(["export/test_order", "export"])
 
 
 # endregion
