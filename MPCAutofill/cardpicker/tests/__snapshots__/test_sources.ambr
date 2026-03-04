@@ -1,3 +1,4 @@
+# serializer version: 1
 # name: TestUpdateDatabase.test_comprehensive_snapshot[cards]
   list([
     <Card: [Example Drive 1] <EN> Mountain [Type: CARD, Identifier: 1-dcs0FEE05MTGiYbKqs9HnRdhXkgtIJG, Uploaded: 22/09/2022, Priority: 7]>,
