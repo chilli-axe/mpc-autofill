@@ -2,6 +2,7 @@ import time
 from types import SimpleNamespace
 
 import pytest
+from selenium.common import exceptions as sl_exc
 from selenium.webdriver.common.by import By
 
 from src.constants import States, TargetSites
@@ -107,6 +108,61 @@ def test_execute_drive_thru_cards_order_wraps_step_failures_with_context(dtc_dri
 
     with pytest.raises(Exception, match="step 'navigate_to_dtc_product_setup' failed"):
         dtc_driver.execute_drive_thru_cards_order(order=SimpleNamespace(name="x"), pdf_path="/tmp/x.pdf")
+
+
+def test_initialise_driver_retries_when_initial_window_is_already_closed(
+    monkeypatch: pytest.MonkeyPatch, dtc_driver: AutofillDriver
+) -> None:
+    created = []
+
+    class FailingDriver:
+        def __init__(self) -> None:
+            self.quit_called = False
+
+        def set_window_size(self, *_args, **_kwargs) -> None:
+            raise sl_exc.NoSuchWindowException("target window already closed")
+
+        def quit(self) -> None:
+            self.quit_called = True
+
+    class WorkingDriver:
+        def __init__(self) -> None:
+            self.calls = []
+
+        def set_window_size(self, width: int, height: int) -> None:
+            self.calls.append(("set_window_size", width, height))
+
+        def implicitly_wait(self, seconds: int) -> None:
+            self.calls.append(("implicitly_wait", seconds))
+
+        def get(self, url: str) -> None:
+            self.calls.append(("get", url))
+
+        def quit(self) -> None:
+            self.calls.append(("quit",))
+
+    failing_driver = FailingDriver()
+    working_driver = WorkingDriver()
+    drivers = [failing_driver, working_driver]
+
+    def fake_browser_factory(**_kwargs):
+        driver = drivers.pop(0)
+        created.append(driver)
+        return driver
+
+    monkeypatch.setattr(dtc_driver, "browser", SimpleNamespace(value=fake_browser_factory, name="chrome"))
+    dtc_driver.starting_url = TargetSites.DriveThruCards.value.starting_url
+    monkeypatch.setattr("src.driver.WebDriverWait", lambda *_args, **_kwargs: SimpleNamespace(until=lambda _cond: True))
+    monkeypatch.setattr("src.driver.time.sleep", lambda _seconds: None)
+
+    dtc_driver.initialise_driver()
+
+    assert created == [failing_driver, working_driver]
+    assert failing_driver.quit_called is True
+    assert dtc_driver.driver is working_driver
+    assert ("set_window_size", 1200, 900) in working_driver.calls
+    assert ("implicitly_wait", 5) in working_driver.calls
+    assert ("get", TargetSites.DriveThruCards.value.starting_url) in working_driver.calls
 
 
 def test_navigate_to_dtc_product_setup_uses_fast_polling_and_no_direct_fallback(

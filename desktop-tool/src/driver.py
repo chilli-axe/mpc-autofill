@@ -71,30 +71,58 @@ class AutofillDriver:
 
     # region initialisation
 
-    def initialise_driver(self) -> None:
+    @staticmethod
+    def _quit_driver_quietly(driver: Optional[WebDriver]) -> None:
+        if driver is None:
+            return
         try:
-            driver = self.browser.value(
-                headless=self.headless,
-                binary_location=self.binary_location,
-                user_data_dir=self.browser_profile_path,
-                profile_directory=self.browser_profile_name,
-                apply_custom_stealth=self.apply_custom_stealth,
-            )  # type: ignore  # TODO
-            driver.set_window_size(1200, 900)
-            driver.implicitly_wait(5)
-            driver.get(self.starting_url)
-            WebDriverWait(driver, 10).until(visibility_of_element_located((By.TAG_NAME, "body")))
-            logger.info(
-                f"Successfully initialised {bold(self.browser.name)} driver "
-                f"targeting {bold(self.target_site.name)}.\n"
-            )
-        except (AttributeError, ValueError, sl_exc.WebDriverException) as e:
+            driver.quit()
+        except Exception:
+            pass
+
+    def initialise_driver(self) -> None:
+        last_exception: Optional[Exception] = None
+        max_attempts = 3
+        for attempt in range(1, max_attempts + 1):
+            driver = None
+            try:
+                driver = self.browser.value(
+                    headless=self.headless,
+                    binary_location=self.binary_location,
+                    user_data_dir=self.browser_profile_path,
+                    profile_directory=self.browser_profile_name,
+                    apply_custom_stealth=self.apply_custom_stealth,
+                )  # type: ignore  # TODO
+                driver.set_window_size(1200, 900)
+                driver.implicitly_wait(5)
+                driver.get(self.starting_url)
+                WebDriverWait(driver, 10).until(visibility_of_element_located((By.TAG_NAME, "body")))
+                logger.info(
+                    f"Successfully initialised {bold(self.browser.name)} driver "
+                    f"targeting {bold(self.target_site.name)}.\n"
+                )
+                self.driver = driver
+                return
+            except (AttributeError, ValueError, sl_exc.WebDriverException) as e:
+                last_exception = e
+                self._quit_driver_quietly(driver)
+                if attempt < max_attempts:
+                    logger.warning(
+                        f"Webdriver initialisation attempt {attempt}/{max_attempts} failed; retrying.\n"
+                        f"{bold(e)}"
+                    )
+                    time.sleep(1)
+                    continue
+                raise Exception(
+                    f"An error occurred while attempting to configure the webdriver for your specified browser. "
+                    f"Please make sure you have installed the browser & that it is up to date:\n\n{bold(e)}"
+                )
+
+        if last_exception is not None:
             raise Exception(
                 f"An error occurred while attempting to configure the webdriver for your specified browser. "
-                f"Please make sure you have installed the browser & that it is up to date:\n\n{bold(e)}"
+                f"Please make sure you have installed the browser & that it is up to date:\n\n{bold(last_exception)}"
             )
-
-        self.driver = driver
 
     def initialise_bars(self) -> None:
         # set the total for upload/download bars to 0 here, then change the total according to each order
