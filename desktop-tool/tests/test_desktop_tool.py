@@ -1,3 +1,4 @@
+import gc
 import os
 import re
 import textwrap
@@ -509,6 +510,68 @@ def test_main_drive_thru_cards_exportpdf_generates_pdfs_without_browser_automati
     assert calls["pdf"] == ["test_local"]
     assert calls["wait"] == 0
     assert calls["driver"] == 0
+
+
+def test_main_drive_thru_cards_keeps_driver_alive_until_user_handoff(
+    monkeypatch: pytest.MonkeyPatch, tmp_path
+) -> None:
+    icc_path = tmp_path / "test.icc"
+    icc_path.write_bytes(b"icc")
+
+    state = {"finalized": 0, "executed": 0, "wait_seen": None}
+
+    monkeypatch.setattr(autofill_cli, "configure_loggers", lambda **_kwargs: None)
+    monkeypatch.setattr(autofill_cli, "keepawake", lambda **_kwargs: nullcontext())
+    monkeypatch.setattr(autofill_cli, "get_ghostscript_path", lambda: "/opt/homebrew/bin/gs")
+    monkeypatch.setattr(autofill_cli, "ensure_ghostscript_available", lambda **_kwargs: "/opt/homebrew/bin/gs")
+    monkeypatch.setattr(autofill_cli, "get_default_dtc_icc_profile", lambda: str(icc_path))
+    monkeypatch.setattr(
+        autofill_cli.CardOrder,
+        "from_xmls_in_folder",
+        lambda working_directory: [SimpleNamespace(name="test_local")],
+    )
+    monkeypatch.setattr(
+        autofill_cli,
+        "get_dtc_pdf_paths_for_order",
+        lambda **_kwargs: ["export/test_local/1.pdf", "export/test_local/1_pdfx.pdf"],
+    )
+
+    class FakeDriver:
+        def __init__(self, *args, **kwargs) -> None:
+            pass
+
+        def execute_drive_thru_cards_order(self, order, pdf_path) -> None:
+            state["executed"] += 1
+
+        def __del__(self) -> None:
+            state["finalized"] += 1
+
+    monkeypatch.setattr(autofill_cli, "AutofillDriver", FakeDriver)
+
+    def fake_wait_for_user_to_complete_order() -> None:
+        gc.collect()
+        state["wait_seen"] = state["finalized"]
+
+    monkeypatch.setattr(autofill_cli, "wait_for_user_to_complete_order", fake_wait_for_user_to_complete_order)
+
+    result = CliRunner().invoke(
+        autofill_cli.main,
+        [
+            "--directory",
+            str(tmp_path),
+            "--site",
+            constants.TargetSites.DriveThruCards.name,
+            "--browser",
+            constants.Browsers.chrome.name,
+        ],
+    )
+
+    gc.collect()
+
+    assert result.exit_code == 0
+    assert state["executed"] == 1
+    assert state["wait_seen"] == 0
+    assert state["finalized"] == 1
 
 
 def test_download_images_for_orders_downloads_fronts_and_backs() -> None:

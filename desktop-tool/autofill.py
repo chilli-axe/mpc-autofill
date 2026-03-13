@@ -521,6 +521,7 @@ def main(
                 icc_source = "bundled default" if using_default_icc else "user-provided"
                 logger.info(f"DriveThruCards ICC profile ({icc_source}): {bold(resolved_icc_profile)}")
                 orders = CardOrder.from_xmls_in_folder(working_directory=working_directory)
+                dtc_driver: Optional[AutofillDriver] = None
                 for i, order in enumerate(orders, start=1):
                     pdf_paths = get_dtc_pdf_paths_for_order(
                         order=order,
@@ -539,7 +540,7 @@ def main(
                             "Please fix the Ghostscript conversion issue and try again."
                         )
                         continue
-                    AutofillDriver(
+                    dtc_driver = AutofillDriver(
                         browser=Browsers[browser],
                         target_site=target_site,
                         binary_location=binary_location,
@@ -547,7 +548,8 @@ def main(
                         browser_profile_name=browser_profile_name if browser_profile_path else None,
                         apply_custom_stealth=dtc_custom_stealth,
                         starting_url=target_site.value.starting_url,
-                    ).execute_drive_thru_cards_order(order=order, pdf_path=dtc_pdf_path)
+                    )
+                    dtc_driver.execute_drive_thru_cards_order(order=order, pdf_path=dtc_pdf_path)
                     if i < len(orders):
                         input(f"Press {bold('Enter')} to continue with the next DriveThruCards order.\n")
                 if not exportpdf:
@@ -572,14 +574,15 @@ def main(
                     combine_orders=combine_orders,
                 )
                 web_server = WebServer()
-                AutofillDriver(
+                autofill_driver = AutofillDriver(
                     browser=Browsers[browser],
                     target_site=target_site,
                     binary_location=binary_location,
                     browser_profile_path=browser_profile_path,
                     browser_profile_name=browser_profile_name if browser_profile_path else None,
                     starting_url=web_server.server_url(),
-                ).execute_orders(
+                )
+                autofill_driver.execute_orders(
                     orders=card_orders,
                     auto_save_threshold=auto_save_threshold if auto_save else None,
                     post_processing_config=post_processing_config,
