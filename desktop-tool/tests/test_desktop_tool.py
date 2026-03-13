@@ -1,7 +1,9 @@
 import os
+import re
 import textwrap
 import time
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import nullcontext
 from itertools import groupby
 from queue import Queue
 from types import SimpleNamespace
@@ -73,6 +75,11 @@ def assert_orders_identical(a: CardOrder, b: CardOrder) -> None:
 
 def assert_file_size(file_path: str, size: int) -> None:
     assert os.stat(file_path).st_size == size, f"File size {os.stat(file_path).st_size} does not match {size}"
+
+
+def count_pdf_pages(file_path: str) -> int:
+    with open(file_path, "rb") as pdf_file:
+        return len(re.findall(rb"/Type\s*/Page\b", pdf_file.read()))
 
 
 # endregion
@@ -449,6 +456,58 @@ def test_cli_site_choices_list_drivethrucards_last() -> None:
     assert result.exit_code == 0
     site_line = next(line for line in result.output.splitlines() if line.strip().startswith("--site ["))
     assert site_line.endswith("DriveThruCards]")
+
+
+def test_main_drive_thru_cards_exportpdf_generates_pdfs_without_browser_automation(
+    monkeypatch: pytest.MonkeyPatch, tmp_path
+) -> None:
+    icc_path = tmp_path / "test.icc"
+    icc_path.write_bytes(b"icc")
+
+    calls = {"pdf": [], "wait": 0, "driver": 0}
+
+    monkeypatch.setattr(autofill_cli, "configure_loggers", lambda **_kwargs: None)
+    monkeypatch.setattr(autofill_cli, "keepawake", lambda **_kwargs: nullcontext())
+    monkeypatch.setattr(autofill_cli, "get_ghostscript_path", lambda: "/opt/homebrew/bin/gs")
+    monkeypatch.setattr(autofill_cli, "ensure_ghostscript_available", lambda **_kwargs: "/opt/homebrew/bin/gs")
+    monkeypatch.setattr(autofill_cli, "get_default_dtc_icc_profile", lambda: str(icc_path))
+    monkeypatch.setattr(
+        autofill_cli.CardOrder,
+        "from_xmls_in_folder",
+        lambda working_directory: [SimpleNamespace(name="test_local")],
+    )
+
+    def fake_get_dtc_pdf_paths_for_order(**kwargs):
+        calls["pdf"].append(kwargs["order"].name)
+        return ["export/test_local/1.pdf", "export/test_local/1_pdfx.pdf"]
+
+    monkeypatch.setattr(autofill_cli, "get_dtc_pdf_paths_for_order", fake_get_dtc_pdf_paths_for_order)
+    monkeypatch.setattr(autofill_cli, "wait_for_user_to_complete_order", lambda: calls.__setitem__("wait", 1))
+
+    class ShouldNotInstantiateDriver:
+        def __init__(self, *args, **kwargs) -> None:
+            calls["driver"] += 1
+            raise AssertionError("DriveThruCards browser automation should not run during --exportpdf")
+
+    monkeypatch.setattr(autofill_cli, "AutofillDriver", ShouldNotInstantiateDriver)
+
+    result = CliRunner().invoke(
+        autofill_cli.main,
+        [
+            "--directory",
+            str(tmp_path),
+            "--site",
+            constants.TargetSites.DriveThruCards.name,
+            "--exportpdf",
+            "--browser",
+            constants.Browsers.chrome.name,
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert calls["pdf"] == ["test_local"]
+    assert calls["wait"] == 0
+    assert calls["driver"] == 0
 
 
 def test_download_images_for_orders_downloads_fronts_and_backs() -> None:
@@ -1986,6 +2045,61 @@ def test_pdf_export_complete_separate_faces(monkeypatch, card_order_valid):
         assert os.path.exists(file_path)
     remove_files(expected_generated_files)
     remove_directories(["export/test_order/backs", "export/test_order/fronts", "export/test_order", "export"])
+
+
+def test_pdf_export_drive_thru_cards_combines_actual_front_slots_into_one_file(monkeypatch, tmp_path):
+    monkeypatch.chdir(tmp_path)
+
+    for image_name, color in [("front_a.png", "red"), ("front_b.png", "blue"), ("back.png", "black")]:
+        Image.new("RGB", (300, 420), color).save(tmp_path / image_name)
+
+    order = CardOrder.from_element(
+        working_directory=str(tmp_path),
+        element=ElementTree.fromstring(
+            textwrap.dedent(
+                f"""
+                <order>
+                    <details>
+                        <quantity>1</quantity>
+                        <stock>(S30) Standard Smooth</stock>
+                        <foil>false</foil>
+                    </details>
+                    <fronts>
+                        <card>
+                            <id>{tmp_path / "front_a.png"}</id>
+                            <sourceType>{SourceType.LOCAL_FILE}</sourceType>
+                            <slots>0</slots>
+                            <name>front_a.png</name>
+                        </card>
+                        <card>
+                            <id>{tmp_path / "front_b.png"}</id>
+                            <sourceType>{SourceType.LOCAL_FILE}</sourceType>
+                            <slots>1</slots>
+                            <name>front_b.png</name>
+                        </card>
+                    </fronts>
+                    <backs></backs>
+                    <cardback>{tmp_path / "back.png"}</cardback>
+                </order>
+                """
+            )
+        ),
+        allowed_to_exceed_project_max_size=True,
+    )
+    order.name = "test_local.xml"
+
+    generated_files = PdfExporter(order=order, export_mode="drive_thru_cards").execute(
+        post_processing_config=ImagePostProcessingConfig(
+            max_dpi=300,
+            downscale_alg=constants.ImageResizeMethods.LANCZOS,
+            output_format="JPEG",
+            convert_to_cmyk=False,
+        )
+    )
+
+    assert generated_files == ["export/test_local/1.pdf"]
+    assert os.path.exists("export/test_local/1.pdf")
+    assert count_pdf_pages("export/test_local/1.pdf") == 4
 
 
 # endregion

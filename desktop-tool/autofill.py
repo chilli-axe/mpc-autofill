@@ -239,6 +239,36 @@ def download_images_for_orders(
     logger.info("Finished downloading card images.")
 
 
+def get_dtc_pdf_paths_for_order(
+    order: CardOrder,
+    skip_pdf_if_exists: bool,
+    working_directory: str,
+    resolved_icc_profile: str,
+    downscale_alg: str,
+) -> list[str]:
+    pdf_paths = maybe_reuse_existing_pdfs(
+        order_name=order.name,
+        skip_pdf_if_exists=skip_pdf_if_exists,
+        cards_directory=get_image_directory(working_directory),
+        require_pdfx=True,
+    )
+    if pdf_paths is not None:
+        return pdf_paths
+
+    dtc_post_processing_config = ImagePostProcessingConfig(
+        max_dpi=300,
+        downscale_alg=ImageResizeMethods[downscale_alg],
+        output_format="JPEG",
+        convert_to_cmyk=False,
+    )
+    exporter = PdfExporter(
+        order=order,
+        export_mode="drive_thru_cards",
+        pdfx_config=PdfXConversionConfig(icc_profile_path=resolved_icc_profile),
+    )
+    return exporter.execute(post_processing_config=dtc_post_processing_config)
+
+
 def get_site_picker_choices() -> list[str]:
     site_names = [site.name for site in TargetSites]
     # Keep DriveThruCards available but place it last in the picker list.
@@ -490,31 +520,17 @@ def main(
                     )
                 icc_source = "bundled default" if using_default_icc else "user-provided"
                 logger.info(f"DriveThruCards ICC profile ({icc_source}): {bold(resolved_icc_profile)}")
-                # Keep images as RGB JPEG during PDF generation - fpdf can embed these directly
-                # with DCT compression. Ghostscript will handle CMYK conversion with the ICC 
-                # profile during PDF/X-1a conversion, which produces better results than 
-                # pre-converting to CMYK (which fpdf re-encodes with FlateDecode, bloating file size).
-                dtc_post_processing_config = ImagePostProcessingConfig(
-                    max_dpi=300,
-                    downscale_alg=ImageResizeMethods[downscale_alg],
-                    output_format="JPEG",
-                    convert_to_cmyk=False,  # Let Ghostscript handle CMYK conversion
-                )
                 orders = CardOrder.from_xmls_in_folder(working_directory=working_directory)
                 for i, order in enumerate(orders, start=1):
-                    pdf_paths = maybe_reuse_existing_pdfs(
-                        order_name=order.name,
+                    pdf_paths = get_dtc_pdf_paths_for_order(
+                        order=order,
                         skip_pdf_if_exists=skip_pdf_if_exists,
-                        cards_directory=get_image_directory(working_directory),
-                        require_pdfx=True,
+                        working_directory=working_directory,
+                        resolved_icc_profile=resolved_icc_profile,
+                        downscale_alg=downscale_alg,
                     )
-                    if pdf_paths is None:
-                        exporter = PdfExporter(
-                            order=order,
-                            export_mode="drive_thru_cards",
-                            pdfx_config=PdfXConversionConfig(icc_profile_path=resolved_icc_profile),
-                        )
-                        pdf_paths = exporter.execute(post_processing_config=dtc_post_processing_config)
+                    if exportpdf:
+                        continue
                     # Only use the Ghostscript PDF/X-1a output - no fallback
                     dtc_pdf_path = next((path for path in reversed(pdf_paths) if path.endswith("_pdfx.pdf")), None)
                     if dtc_pdf_path is None:
@@ -534,7 +550,8 @@ def main(
                     ).execute_drive_thru_cards_order(order=order, pdf_path=dtc_pdf_path)
                     if i < len(orders):
                         input(f"Press {bold('Enter')} to continue with the next DriveThruCards order.\n")
-                wait_for_user_to_complete_order()
+                if not exportpdf:
+                    wait_for_user_to_complete_order()
             elif exportpdf:
                 order = CardOrder.from_xmls_in_folder(working_directory=working_directory)[0]
                 if (

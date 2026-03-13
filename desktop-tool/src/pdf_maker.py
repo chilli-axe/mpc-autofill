@@ -143,7 +143,10 @@ class PdfExporter:
             self.card_width_in_inches = DTC_CARD_WIDTH_INCHES
             self.card_height_in_inches = DTC_CARD_HEIGHT_INCHES
             self.separate_faces = False
-            self.number_of_cards_per_file = max(1, self.order.details.quantity)
+            # Build one combined PDF per order using the actual exported slots.
+            # This is more robust than trusting `details.quantity`, which can
+            # under-report cards in some XMLs that still enumerate valid slots.
+            self.number_of_cards_per_file = max(1, len(self.order.fronts.slots()))
         else:
             self.ask_questions()
         self.configure_bars()
