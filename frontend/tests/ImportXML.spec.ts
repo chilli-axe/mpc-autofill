@@ -672,12 +672,71 @@ test.describe("ImportXML", () => {
       [
         {
           slot: 1,
-          name: cardDocument3.name,
+          name: cardDocument3.name, // the cardback specified in XML
           selectedImage: 2,
           totalImages: 2,
         },
       ]
     );
-    await expectCardbackSlotState(page, cardDocument3.name, 2, 2);
+    await expectCardbackSlotState(page, cardDocument2.name, 1, 2); // the project cardback should not have changed
+  });
+
+  test("import an XML and use the project cardback", async ({
+    page,
+    network,
+  }) => {
+    network.use(
+      cardDocumentsThreeResults,
+      cardbacksTwoOtherResults,
+      sourceDocumentsOneResult,
+      searchResultsOneResult,
+      ...defaultHandlers
+    );
+    await loadPageWithDefaultBackend(page);
+
+    await expectCardbackSlotState(page, cardDocument2.name, 1, 2);
+
+    await importXML(
+      page,
+      `<order>
+        <details>
+          <quantity>1</quantity>
+          <bracket>18</bracket>
+          <stock>${S30}</stock>
+          <foil>false</foil>
+        </details>
+        <fronts>
+          <card>
+            <id>${cardDocument1.identifier}</id>
+            <slots>0</slots>
+            <name>${cardDocument1.name}</name>
+            <query>my search query</query>
+          </card>
+        </fronts>
+        <cardback>${cardDocument3.identifier}</cardback>
+      </order>`,
+      false
+    );
+
+    await expectCardGridSlotStates(
+      page,
+      [
+        {
+          slot: 1,
+          name: cardDocument1.name,
+          selectedImage: 1,
+          totalImages: 1,
+        },
+      ],
+      [
+        {
+          slot: 1,
+          name: cardDocument2.name, // the cardback configured for the project
+          selectedImage: 1,
+          totalImages: 2,
+        },
+      ]
+    );
+    await expectCardbackSlotState(page, cardDocument2.name, 1, 2); // cardback should not have changed
   });
 });

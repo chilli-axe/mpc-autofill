@@ -7,7 +7,7 @@ import React, { useEffect } from "react";
 import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
 
-import { RibbonHeight } from "@/common/constants";
+import { NavbarHeight, RibbonHeight } from "@/common/constants";
 import { useAppDispatch, useAppSelector } from "@/common/types";
 import { OverflowCol } from "@/components/OverflowCol";
 import { Ribbon } from "@/components/Ribbon";
@@ -65,7 +65,7 @@ function ProjectEditor() {
         sm={6}
         xs={6}
         data-testid="left-panel"
-        heightDelta={RibbonHeight}
+        heightDelta={RibbonHeight + NavbarHeight}
       >
         <CardGrid />
       </OverflowCol>
@@ -77,7 +77,7 @@ function ProjectEditor() {
         xs={6}
         style={{ zIndex: 1 }}
         className="px-2"
-        heightDelta={RibbonHeight}
+        heightDelta={RibbonHeight + NavbarHeight}
       >
         <Status />
         <Row className="g-0 pt-2">

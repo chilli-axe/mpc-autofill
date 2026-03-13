@@ -1,11 +1,10 @@
 import styled from "@emotion/styled";
-import Row from "react-bootstrap/Row";
 
-interface BlurrableRowProps {
+interface BlurrableProps {
   disabled?: boolean;
 }
 
-export const BlurrableRow = styled(Row)<BlurrableRowProps>`
+export const Blurrable = styled.div<BlurrableProps>`
   filter: ${(props) => (props.disabled === true ? "blur(8px)" : undefined)};
   transition: filter 0.2s;
   pointer-events: ${(props) => (props.disabled === true ? "none" : undefined)};

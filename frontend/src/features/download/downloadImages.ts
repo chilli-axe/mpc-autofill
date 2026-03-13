@@ -1,7 +1,7 @@
 import { base64StringToBlob } from "@/common/processing";
 import { CardDocument, useAppSelector } from "@/common/types";
+import { useClientSearchContext } from "@/features/clientSearch/clientSearchContext";
 import { downloadFile, useDoFileDownload } from "@/features/download/download";
-import { useLocalFilesContext } from "@/features/localFiles/localFilesContext";
 import { api } from "@/store/api";
 
 export function useDoImageDownload(): (
@@ -11,7 +11,7 @@ export function useDoImageDownload(): (
   // TODO: this function will need to be updated when we update the frontend to support multiple image repo backends
   const [triggerFn, getGoogleDriveImageQuery] =
     api.endpoints.getGoogleDriveImage.useLazyQuery();
-  const { localFilesService } = useLocalFilesContext();
+  const { clientSearchService } = useClientSearchContext();
 
   async function doImageDownload(cardDocument: CardDocument): Promise<boolean> {
     try {
@@ -22,7 +22,7 @@ export function useDoImageDownload(): (
           base64StringToBlob(data),
           undefined,
           `${cardDocument.name} (${cardDocument.identifier}).${cardDocument.extension}`,
-          localFilesService
+          clientSearchService
         );
       } else {
         return Promise.reject(

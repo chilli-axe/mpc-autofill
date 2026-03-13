@@ -1,5 +1,12 @@
 import { CardType as CardTypeSchema } from "@/common/schema_types";
 import { Cardstock, CardType, Faces, SortBy } from "@/common/types";
+
+export const CardWidthMM = 63;
+export const CardHeightMM = 88;
+// 36 pixels (each side) at 300 dpi -> 0.12 inches, convert to MM. ref: https://www.makeplayingcards.com/pops/faq-photo.html
+export const BleedEdgeMM = Math.round(0.12 * 25.4 * 1000) / 1000;
+export const CornerRadiusMM = 2.5;
+
 export const ProjectName = "MPC Autofill";
 export const MakePlayingCards = "MakePlayingCards.com";
 export const MakePlayingCardsURL = "https://www.makeplayingcards.com";

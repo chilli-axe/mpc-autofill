@@ -6,7 +6,7 @@ import {
   Tuple,
 } from "@reduxjs/toolkit";
 
-import { localFilesService } from "@/features/localFiles/localFilesService";
+import { clientSearchService } from "@/features/clientSearch/clientSearchService";
 import { api } from "@/store/api";
 import { listenerMiddleware } from "@/store/listenerMiddleware";
 import backendReducer, {
@@ -93,7 +93,7 @@ export const setupStore = (preloadedState?: Partial<RootState>) => {
     middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware({
         thunk: {
-          extraArgument: { localFilesService },
+          extraArgument: { clientSearchService },
         },
       })
         .prepend(listenerMiddleware.middleware)

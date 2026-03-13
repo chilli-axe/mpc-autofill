@@ -137,7 +137,12 @@
 }
 
 .ratio-7x5 > img {
-  transform: scale(1.088, 1.065);
+  /* Printed card height: 63mm by 88mm */
+  /* Bleed edge: 36px (each side) @ 300dpi -> 0.12 inches, converted to mm */
+  transform: scale(
+    calc((63 + 2 * 0.12 * 25.4) / 63),
+    calc((88 + 2 * 0.12 * 25.4) / 88)
+  );
 }
 
 .toggle-handle {

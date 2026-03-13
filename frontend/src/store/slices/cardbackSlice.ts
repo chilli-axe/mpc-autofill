@@ -9,7 +9,7 @@ import {
   createAppAsyncThunk,
   createAppSlice,
 } from "@/common/types";
-import { LocalFilesService } from "@/features/localFiles/localFilesService";
+import { ClientSearchService } from "@/features/clientSearch/clientSearchService";
 import { APIGetCardbacks } from "@/store/api";
 import { selectRemoteBackendURL } from "@/store/slices/backendSlice";
 import { selectSearchSettings } from "@/store/slices/searchSettingsSlice";
@@ -24,16 +24,16 @@ export const fetchCardbacks = createAppAsyncThunk(
   typePrefix,
   async (arg, { getState, extra }) => {
     const state = getState();
-    const { localFilesService } = extra as {
+    const { clientSearchService } = extra as {
       // TODO: move this extra type into types.ts
-      localFilesService: LocalFilesService;
+      clientSearchService: ClientSearchService;
     };
     const backendURL = selectRemoteBackendURL(state);
     const searchSettings = selectSearchSettings(state);
 
     const localResults: Array<string> =
-      ((await localFilesService.hasLocalFilesDirectoryHandle())
-        ? await localFilesService.searchCardbacks(searchSettings)
+      ((await clientSearchService.hasLocalFilesDirectoryHandle())
+        ? await clientSearchService.searchCardbacks(searchSettings)
         : undefined) ?? [];
     const remoteResults: Array<string> =
       backendURL != null

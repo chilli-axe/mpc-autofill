@@ -72,6 +72,7 @@ export function FileDownloadEntry({
           image: "image",
           xml: "file-code",
           text: "card-text",
+          pdf: "file-pdf",
           "desktop-tool": "pc-display-horizontal",
         }[type]
       }

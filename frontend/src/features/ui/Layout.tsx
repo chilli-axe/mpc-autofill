@@ -14,13 +14,14 @@ import {
 } from "@/common/cookies";
 import { useAppDispatch } from "@/common/types";
 import { useBackendSetter } from "@/features/backend/useBackendSetter";
+import { ClientSearchContextProvider } from "@/features/clientSearch/clientSearchContext";
+import { clientSearchService } from "@/features/clientSearch/clientSearchService";
 import {
   DownloadContext,
   DownloadContextProvider,
 } from "@/features/download/download";
-import { LocalFilesContextProvider } from "@/features/localFiles/localFilesContext";
-import { localFilesService } from "@/features/localFiles/localFilesService";
 import { Modals } from "@/features/modals/Modals";
+import { pdfRenderService } from "@/features/pdf/pdfRenderService";
 import { Toasts } from "@/features/toasts/Toasts";
 import ProjectNavbar from "@/features/ui/Navbar";
 import { setAllFavoriteRenders } from "@/store/slices/favoritesSlice";
@@ -79,13 +80,14 @@ export function LayoutWithoutReduxProvider({ children }: PropsWithChildren) {
     if (Object.keys(favorites).length > 0) {
       dispatch(setAllFavoriteRenders(favorites));
     }
-    localFilesService.initialiseWorker();
+    clientSearchService.initialiseWorker();
+    pdfRenderService.initialiseWorker();
   }, []);
 
   return (
     <DownloadContextProvider value={downloadContext}>
-      <LocalFilesContextProvider
-        value={{ localFilesService, forceUpdate, forceUpdateValue }}
+      <ClientSearchContextProvider
+        value={{ clientSearchService, forceUpdate, forceUpdateValue }}
       >
         {consent === true && (
           <GoogleAnalytics trackPageViews gaMeasurementId="G-JV8WV3FQML" />
@@ -94,7 +96,7 @@ export function LayoutWithoutReduxProvider({ children }: PropsWithChildren) {
         <Modals />
         <ProjectNavbar />
         {children}
-      </LocalFilesContextProvider>
+      </ClientSearchContextProvider>
     </DownloadContextProvider>
   );
 }

@@ -198,12 +198,12 @@ export const openImportXMLModal = async (page: Page) => {
 export const importXML = async (
   page: Page,
   fileContents: string,
-  useXMLCardback: boolean = false
+  useXMLCardback: boolean = true
 ) => {
   await openImportXMLModal(page);
 
-  if (useXMLCardback) {
-    await page.getByText("Retain Selected Cardback").click();
+  if (!useXMLCardback) {
+    await page.getByText("Use XML Cardback").click();
   }
 
   const fileInput = page.locator('input[type="file"]').first();

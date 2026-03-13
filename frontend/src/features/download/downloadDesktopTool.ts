@@ -1,22 +1,23 @@
 import { useAppDispatch } from "@/common/types";
+import { useClientSearchContext } from "@/features/clientSearch/clientSearchContext";
+import { ClientSearchService } from "@/features/clientSearch/clientSearchService";
 import { downloadFile, useDoFileDownload } from "@/features/download/download";
-import { useLocalFilesContext } from "@/features/localFiles/localFilesContext";
-import { LocalFilesService } from "@/features/localFiles/localFilesService";
 import { setNotification } from "@/store/slices/toastsSlice";
 import { AppDispatch } from "@/store/store";
 
-import { useLocalFilesServiceDirectoryHandle } from "../localFiles/localFilesHooks";
+import { useLocalFilesDirectoryHandle } from "../clientSearch/clientSearchHooks";
 
 async function downloadDesktopTool(
   dispatch: AppDispatch,
   url: URL,
   fileName: string,
-  localFilesService: LocalFilesService,
+  clientSearchService: ClientSearchService,
   directoryHandleName?: string
 ) {
+  const notificationId = Math.random().toString();
   dispatch(
     setNotification([
-      Math.random().toString(),
+      notificationId,
       {
         name: "Download Started",
         message: `Started downloading the Desktop Tool to ${
@@ -26,10 +27,10 @@ async function downloadDesktopTool(
       },
     ])
   );
-  await downloadFile(undefined, url, fileName, localFilesService);
+  await downloadFile(undefined, url, fileName, clientSearchService);
   dispatch(
     setNotification([
-      Math.random().toString(),
+      notificationId,
       {
         name: "Download Complete",
         message: `Successfully downloaded the Desktop Tool to ${
@@ -45,8 +46,8 @@ async function downloadDesktopTool(
 export function useDownloadDesktopTool() {
   const dispatch = useAppDispatch();
   const doFileDownload = useDoFileDownload();
-  const { localFilesService } = useLocalFilesContext();
-  const directoryHandle = useLocalFilesServiceDirectoryHandle();
+  const { clientSearchService } = useClientSearchContext();
+  const directoryHandle = useLocalFilesDirectoryHandle();
   return (url: URL, fileName: string) =>
     doFileDownload(
       "desktop-tool",
@@ -56,7 +57,7 @@ export function useDownloadDesktopTool() {
           dispatch,
           url,
           fileName,
-          localFilesService,
+          clientSearchService,
           directoryHandle?.name
         )
     );

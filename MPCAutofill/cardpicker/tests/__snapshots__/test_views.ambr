@@ -1,3 +1,4 @@
+# serializer version: 1
 # name: TestGetContributions.test_get_multiple_rows
   dict({
     'json': dict({

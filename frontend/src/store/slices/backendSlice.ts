@@ -4,8 +4,8 @@
 
 import { ProjectName } from "@/common/constants";
 import { BackendState, createAppSlice, useAppSelector } from "@/common/types";
-import { useLocalFilesContext } from "@/features/localFiles/localFilesContext";
-import { useLocalFilesServiceDirectoryHandle } from "@/features/localFiles/localFilesHooks";
+import { useClientSearchContext } from "@/features/clientSearch/clientSearchContext";
+import { useLocalFilesDirectoryHandle } from "@/features/clientSearch/clientSearchHooks";
 import { useGetBackendInfoQuery } from "@/store/api";
 import { RootState } from "@/store/store";
 
@@ -48,7 +48,7 @@ export const useRemoteBackendConfigured = (): boolean => {
 };
 
 export const useLocalBackendConfigured = (): boolean => {
-  const directoryHandle = useLocalFilesServiceDirectoryHandle();
+  const directoryHandle = useLocalFilesDirectoryHandle();
   return directoryHandle !== undefined;
 };
 

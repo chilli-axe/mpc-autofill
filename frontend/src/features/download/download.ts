@@ -3,8 +3,8 @@ import { saveAs } from "file-saver";
 import { createContext, useContext } from "react";
 
 import { FileDownloadType, useAppDispatch } from "@/common/types";
-import { useLocalFilesContext } from "@/features/localFiles/localFilesContext";
-import { LocalFilesService } from "@/features/localFiles/localFilesService";
+import { useClientSearchContext } from "@/features/clientSearch/clientSearchContext";
+import { ClientSearchService } from "@/features/clientSearch/clientSearchService";
 import {
   enqueueDownload,
   startDownload,
@@ -29,7 +29,7 @@ export const downloadFile = async (
   fileContents: any | undefined,
   fileURL: URL | undefined,
   fileName: string,
-  localFilesService: LocalFilesService
+  clientSearchService: ClientSearchService
 ) => {
   if (fileContents !== undefined && fileURL !== undefined) {
     throw new Error("cannot specify fileContents and fileURL");
@@ -41,8 +41,8 @@ export const downloadFile = async (
       ? await fetch(fileURL.href).then((response) => response.blob())
       : fileContents;
 
-  if (await localFilesService.hasLocalFilesDirectoryHandle()) {
-    const fileHandle = await localFilesService
+  if (await clientSearchService.hasLocalFilesDirectoryHandle()) {
+    const fileHandle = await clientSearchService
       .getLocalFilesDirectoryHandle()
       .then((handle) =>
         handle!.getFileHandle(fileName, {
@@ -72,7 +72,7 @@ export function useDoFileDownload(): (
   callable: () => Promise<boolean>
 ) => Promise<void> {
   const queue = useDownloadContext();
-  const { localFilesService } = useLocalFilesContext();
+  const { clientSearchService } = useClientSearchContext();
   const dispatch = useAppDispatch();
   return (type, name, callable) => {
     const downloadId = Math.random().toString();

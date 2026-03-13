@@ -14,7 +14,7 @@ import {
   useAppSelector,
 } from "@/common/types";
 import { CardDocuments } from "@/common/types";
-import { LocalFilesService } from "@/features/localFiles/localFilesService";
+import { ClientSearchService } from "@/features/clientSearch/clientSearchService";
 import { APIGetCards } from "@/store/api";
 import { fetchCardbacksAndReportError } from "@/store/slices/cardbackSlice";
 import {
@@ -69,8 +69,8 @@ const fetchCardDocuments = createAppAsyncThunk(
     arg: { refreshCardbacks?: boolean } | undefined,
     { dispatch, getState, extra }
   ) => {
-    const { localFilesService } = extra as {
-      localFilesService: LocalFilesService;
+    const { clientSearchService } = extra as {
+      clientSearchService: ClientSearchService;
     };
     await fetchSearchResultsAndReportError(dispatch);
     if (arg?.refreshCardbacks || getState().cardbacks.cardbacks.length === 0) {
@@ -93,8 +93,8 @@ const fetchCardDocuments = createAppAsyncThunk(
 
     const backendURL = state.backend.url;
     const localResultsPromise: Promise<CardDocuments> =
-      (await localFilesService.hasLocalFilesDirectoryHandle())
-        ? localFilesService.getCardDocuments(identifiersToSearch)
+      (await clientSearchService.hasLocalFilesDirectoryHandle())
+        ? clientSearchService.getCardDocuments(identifiersToSearch)
         : new Promise(async (resolve) => resolve({}));
     const remoteResultsPromise: Promise<CardDocuments> =
       backendURL != null

@@ -21,7 +21,7 @@ import { getDefaultSearchSettings } from "@/store/slices/searchSettingsSlice";
 
 import { Folder, LocalFilesIndexer } from "./indexer";
 
-export class LocalFilesService {
+export class ClientSearchService {
   private localFilesIndex: LocalFilesIndex | undefined;
 
   constructor() {
@@ -293,6 +293,6 @@ export class LocalFilesService {
   }
 }
 
-export type LocalFilesServiceWorker = LocalFilesService;
-const localFilesServiceWorker = new LocalFilesService();
-expose(localFilesServiceWorker);
+export type ClientSearchServiceWorker = ClientSearchService;
+const clientSearchServiceWorker = new ClientSearchService();
+expose(clientSearchServiceWorker);
