@@ -64,6 +64,15 @@ def convert_pdf_to_pdfx(
         logger.warning("Ghostscript was not found. Skipping PDF/X-1a conversion.")
         return False
 
+    output_directory = os.path.dirname(output_path) or "."
+    os.makedirs(output_directory, exist_ok=True)
+    fd, temporary_output_path = tempfile.mkstemp(
+        dir=output_directory,
+        prefix=f".{os.path.splitext(os.path.basename(output_path))[0]}-",
+        suffix=".pdf",
+    )
+    os.close(fd)
+
     cmd = [
         gs_path,
         "-dBATCH",
@@ -78,22 +87,27 @@ def convert_pdf_to_pdfx(
         "-dDownsampleMonoImages=false",
         "-sProcessColorModel=DeviceCMYK",
         "-sColorConversionStrategy=CMYK",
-        f"-sOutputFile={output_path}",
+        f"-sOutputFile={temporary_output_path}",
     ]
     if config.icc_profile_path:
         cmd.append(f"-sOutputICCProfile={config.icc_profile_path}")
     cmd.append(source_path)
 
     logger.debug(f"Ghostscript command: {' '.join(cmd)}")
-    result = subprocess.run(cmd, capture_output=True, text=True)
-    if result.returncode != 0:
-        logger.warning(
-            "Ghostscript failed to convert PDF/X-1a.\n"
-            f"stdout: {result.stdout}\n"
-            f"stderr: {result.stderr}"
-        )
-        return False
-    return True
+    try:
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        if result.returncode != 0:
+            logger.warning(
+                "Ghostscript failed to convert PDF/X-1a.\n"
+                f"stdout: {result.stdout}\n"
+                f"stderr: {result.stderr}"
+            )
+            return False
+        os.replace(temporary_output_path, output_path)
+        return True
+    finally:
+        if os.path.exists(temporary_output_path):
+            os.unlink(temporary_output_path)
 
 
 @attr.s

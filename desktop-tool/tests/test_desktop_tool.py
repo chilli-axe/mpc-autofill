@@ -5,6 +5,7 @@ import time
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import nullcontext
 from itertools import groupby
+from pathlib import Path
 from queue import Queue
 from types import SimpleNamespace
 from typing import Callable, Generator
@@ -34,7 +35,7 @@ from src.order import (
     aggregate_and_split_orders,
 )
 import autofill as autofill_cli
-from src.pdf_maker import PdfExporter, get_ghostscript_version
+from src.pdf_maker import PdfExporter, convert_pdf_to_pdfx, get_ghostscript_version
 from src.processing import ImagePostProcessingConfig
 
 DEFAULT_POST_PROCESSING = ImagePostProcessingConfig(max_dpi=800, downscale_alg=constants.ImageResizeMethods.LANCZOS)
@@ -568,6 +569,53 @@ def test_wiki_addendum_includes_cli_usage_updates() -> None:
 # endregion
 
 # region PDF/X conversion
+
+
+def test_convert_pdf_to_pdfx_writes_output_atomically(monkeypatch: pytest.MonkeyPatch, tmp_path) -> None:
+    source_path = tmp_path / "source.pdf"
+    output_path = tmp_path / "output.pdf"
+    source_path.write_bytes(b"source")
+
+    def fake_run(cmd, capture_output=True, text=True):
+        output_arg = next(arg for arg in cmd if arg.startswith("-sOutputFile="))
+        Path(output_arg.split("=", 1)[1]).write_bytes(b"pdfx")
+        return SimpleNamespace(returncode=0, stdout="", stderr="")
+
+    monkeypatch.setattr("src.pdf_maker._resolve_ghostscript_path", lambda _path: "/opt/homebrew/bin/gs")
+    monkeypatch.setattr("src.pdf_maker.subprocess.run", fake_run)
+
+    assert convert_pdf_to_pdfx(
+        str(source_path),
+        str(output_path),
+        autofill_cli.PdfXConversionConfig(icc_profile_path="dummy.icc"),
+    )
+    assert output_path.read_bytes() == b"pdfx"
+    assert sorted(path.name for path in tmp_path.iterdir()) == ["output.pdf", "source.pdf"]
+
+
+def test_convert_pdf_to_pdfx_does_not_leave_partial_output_on_failure(
+    monkeypatch: pytest.MonkeyPatch, tmp_path
+) -> None:
+    source_path = tmp_path / "source.pdf"
+    output_path = tmp_path / "output.pdf"
+    source_path.write_bytes(b"source")
+    output_path.write_bytes(b"previous")
+
+    def fake_run(cmd, capture_output=True, text=True):
+        output_arg = next(arg for arg in cmd if arg.startswith("-sOutputFile="))
+        Path(output_arg.split("=", 1)[1]).write_bytes(b"partial")
+        return SimpleNamespace(returncode=1, stdout="bad", stderr="worse")
+
+    monkeypatch.setattr("src.pdf_maker._resolve_ghostscript_path", lambda _path: "/opt/homebrew/bin/gs")
+    monkeypatch.setattr("src.pdf_maker.subprocess.run", fake_run)
+
+    assert not convert_pdf_to_pdfx(
+        str(source_path),
+        str(output_path),
+        autofill_cli.PdfXConversionConfig(icc_profile_path="dummy.icc"),
+    )
+    assert output_path.read_bytes() == b"previous"
+    assert sorted(path.name for path in tmp_path.iterdir()) == ["output.pdf", "source.pdf"]
 
 
 def test_pdf_exporter_appends_pdfx_on_success(monkeypatch: pytest.MonkeyPatch, card_order_valid) -> None:
