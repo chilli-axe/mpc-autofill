@@ -1,7 +1,6 @@
 import { Document, Image, Page, StyleSheet, View } from "@react-pdf/renderer";
 import React from "react";
 
-import { GoogleDriveImageAPIURL } from "@/common/constants";
 import {
   BleedEdgeMM,
   CardHeightMM,
@@ -9,9 +8,110 @@ import {
   CornerRadiusMM,
 } from "@/common/constants";
 import { getBucketThumbnailURL, getWorkerFullResURL } from "@/common/image";
-import { base64StringToBlob } from "@/common/processing";
 import { SourceType } from "@/common/schema_types";
 import { CardDocument, SlotProjectMembers } from "@/common/types";
+
+// copy-pasted from react-pdf because they don't export this data
+// measured in PDF points
+const SIZES: { [key: string]: { width: number; height: number } } = {
+  "4A0": { width: 4767.87, height: 6740.79 },
+  "2A0": { width: 3370.39, height: 4767.87 },
+  A0: { width: 2383.94, height: 3370.39 },
+  A1: { width: 1683.78, height: 2383.94 },
+  A2: { width: 1190.55, height: 1683.78 },
+  A3: { width: 841.89, height: 1190.55 },
+  A4: { width: 595.28, height: 841.89 },
+  A5: { width: 419.53, height: 595.28 },
+  A6: { width: 297.64, height: 419.53 },
+  A7: { width: 209.76, height: 297.64 },
+  A8: { width: 147.4, height: 209.76 },
+  A9: { width: 104.88, height: 147.4 },
+  A10: { width: 73.7, height: 104.88 },
+  B0: { width: 2834.65, height: 4008.19 },
+  B1: { width: 2004.09, height: 2834.65 },
+  B2: { width: 1417.32, height: 2004.09 },
+  B3: { width: 1000.63, height: 1417.32 },
+  B4: { width: 708.66, height: 1000.63 },
+  B5: { width: 498.9, height: 708.66 },
+  B6: { width: 354.33, height: 498.9 },
+  B7: { width: 249.45, height: 354.33 },
+  B8: { width: 175.75, height: 249.45 },
+  B9: { width: 124.72, height: 175.75 },
+  B10: { width: 87.87, height: 124.72 },
+  C0: { width: 2599.37, height: 3676.54 },
+  C1: { width: 1836.85, height: 2599.37 },
+  C2: { width: 1298.27, height: 1836.85 },
+  C3: { width: 918.43, height: 1298.27 },
+  C4: { width: 649.13, height: 918.43 },
+  C5: { width: 459.21, height: 649.13 },
+  C6: { width: 323.15, height: 459.21 },
+  C7: { width: 229.61, height: 323.15 },
+  C8: { width: 161.57, height: 229.61 },
+  C9: { width: 113.39, height: 161.57 },
+  C10: { width: 79.37, height: 113.39 },
+  RA0: { width: 2437.8, height: 3458.27 },
+  RA1: { width: 1729.13, height: 2437.8 },
+  RA2: { width: 1218.9, height: 1729.13 },
+  RA3: { width: 864.57, height: 1218.9 },
+  RA4: { width: 609.45, height: 864.57 },
+  SRA0: { width: 2551.18, height: 3628.35 },
+  SRA1: { width: 1814.17, height: 2551.18 },
+  SRA2: { width: 1275.59, height: 1814.17 },
+  SRA3: { width: 907.09, height: 1275.59 },
+  SRA4: { width: 637.8, height: 907.09 },
+  EXECUTIVE: { width: 521.86, height: 756.0 },
+  FOLIO: { width: 612.0, height: 936.0 },
+  LEGAL: { width: 612.0, height: 1008.0 },
+  LETTER: { width: 612.0, height: 792.0 },
+  TABLOID: { width: 792.0, height: 1224.0 },
+} as const;
+
+const pdfPointsToMM = (pdfPoints: number) => (pdfPoints / 72) * 25.4;
+
+const getPageSizeMM = (
+  pageSize: keyof typeof PageSize,
+  pageWidth: number | undefined,
+  pageHeight: number | undefined
+) => {
+  if (
+    pageSize === "CUSTOM" &&
+    pageWidth !== undefined &&
+    pageHeight !== undefined
+  ) {
+    return { width: pageWidth, height: pageHeight };
+  } else {
+    const pdfPointsSize =
+      SIZES[pageSize as keyof Omit<typeof PageSize, "CUSTOM">];
+    return {
+      width: pdfPointsToMM(pdfPointsSize.width),
+      height: pdfPointsToMM(pdfPointsSize.height),
+    };
+  }
+};
+
+const calculateCardContainerWidth = (
+  pageWidthMM: number,
+  bleedEdgeMM: number,
+  cardSpacingColMM: number,
+  pageMarginLeftMM: number,
+  pageMarginRightMM: number
+) => {
+  const maxWidth = pageWidthMM - (pageMarginLeftMM + pageMarginRightMM);
+  const calculateContainerWidth = (cardsFitted: number) =>
+    // adding a small buffer of 0.1 mm as I observed some weird wrapping behaviour from react-pdf without this
+    cardsFitted * (CardWidthMM + 2 * bleedEdgeMM) +
+    (cardsFitted - 1) * cardSpacingColMM +
+    0.1;
+  let cardsFitted = 1;
+  while (true) {
+    const containerWidth = calculateContainerWidth(cardsFitted);
+    if (containerWidth < maxWidth) {
+      cardsFitted++;
+    } else {
+      return calculateContainerWidth(Math.max(1, cardsFitted - 1));
+    }
+  }
+};
 
 export const PageSize = {
   A4: "A4",
@@ -34,7 +134,7 @@ const styles = StyleSheet.create({
   section: {
     flexDirection: "row",
     flexWrap: "wrap",
-    justifyContent: "center",
+    justifyContent: "flex-start",
   },
 });
 
@@ -132,6 +232,27 @@ const PDFCardThumbnail = ({
   );
 };
 
+const getPageStyle = (
+  pageWidthMM: number,
+  bleedEdgeMM: number,
+  cardSpacingRowMM: number,
+  cardSpacingColMM: number,
+  pageMarginLeftMM: number,
+  pageMarginRightMM: number
+) => ({
+  ...styles.section,
+  width:
+    calculateCardContainerWidth(
+      pageWidthMM,
+      bleedEdgeMM,
+      cardSpacingColMM,
+      pageMarginLeftMM,
+      pageMarginRightMM
+    ) + "mm",
+  rowGap: cardSpacingRowMM + "mm",
+  columnGap: cardSpacingColMM + "mm",
+});
+
 type CardPageProps = Pick<
   PDFProps,
   | "projectMembers"
@@ -141,7 +262,15 @@ type CardPageProps = Pick<
   | "roundCorners"
   | "imageQuality"
   | "fileHandles"
-> & { cardSpacingRowMM: number; cardSpacingColMM: number; pageBreak?: boolean };
+  | "pageMarginLeftMM"
+  | "pageMarginRightMM"
+> & {
+  pageWidthMM: number;
+  pageHeightMM: number;
+  cardSpacingRowMM: number;
+  cardSpacingColMM: number;
+  pageBreak?: boolean;
+};
 
 const FrontsAndDistinctBacksPage = ({
   projectMembers,
@@ -153,16 +282,22 @@ const FrontsAndDistinctBacksPage = ({
   fileHandles,
   cardSpacingRowMM,
   cardSpacingColMM,
+  pageWidthMM,
+  pageMarginLeftMM,
+  pageMarginRightMM,
   pageBreak,
 }: CardPageProps) => {
   return (
     <View
       break={pageBreak}
-      style={{
-        ...styles.section,
-        rowGap: cardSpacingRowMM + "mm",
-        columnGap: cardSpacingColMM + "mm",
-      }}
+      style={getPageStyle(
+        pageWidthMM,
+        bleedEdgeMM,
+        cardSpacingRowMM,
+        cardSpacingColMM,
+        pageMarginLeftMM,
+        pageMarginRightMM
+      )}
     >
       {projectMembers.map((member, i) => (
         <>
@@ -210,16 +345,22 @@ const FrontsOnlyPage = ({
   fileHandles,
   cardSpacingRowMM,
   cardSpacingColMM,
+  pageWidthMM,
+  pageMarginLeftMM,
+  pageMarginRightMM,
   pageBreak,
 }: CardPageProps) => {
   return (
     <View
       break={pageBreak}
-      style={{
-        ...styles.section,
-        rowGap: cardSpacingRowMM + "mm",
-        columnGap: cardSpacingColMM + "mm",
-      }}
+      style={getPageStyle(
+        pageWidthMM,
+        bleedEdgeMM,
+        cardSpacingRowMM,
+        cardSpacingColMM,
+        pageMarginLeftMM,
+        pageMarginRightMM
+      )}
     >
       {projectMembers.map((member, i) => (
         <>
@@ -252,16 +393,22 @@ const BacksOnlyPage = ({
   fileHandles,
   cardSpacingRowMM,
   cardSpacingColMM,
+  pageWidthMM,
+  pageMarginLeftMM,
+  pageMarginRightMM,
   pageBreak,
 }: CardPageProps) => {
   return (
     <View
       break={pageBreak}
-      style={{
-        ...styles.section,
-        rowGap: cardSpacingRowMM + "mm",
-        columnGap: cardSpacingColMM + "mm",
-      }}
+      style={getPageStyle(
+        pageWidthMM,
+        bleedEdgeMM,
+        cardSpacingRowMM,
+        cardSpacingColMM,
+        pageMarginLeftMM,
+        pageMarginRightMM
+      )}
     >
       {projectMembers.map((member, i) => (
         <>
@@ -295,6 +442,10 @@ const FrontsAndBacksPage = ({
   fileHandles,
   cardSpacingRowMM,
   cardSpacingColMM,
+  pageWidthMM,
+  pageHeightMM,
+  pageMarginLeftMM,
+  pageMarginRightMM,
 }: CardPageProps) => {
   return (
     <>
@@ -308,6 +459,10 @@ const FrontsAndBacksPage = ({
         fileHandles={fileHandles}
         cardSpacingRowMM={cardSpacingRowMM}
         cardSpacingColMM={cardSpacingColMM}
+        pageWidthMM={pageWidthMM}
+        pageHeightMM={pageHeightMM}
+        pageMarginLeftMM={pageMarginLeftMM}
+        pageMarginRightMM={pageMarginRightMM}
         pageBreak={false}
       />
       <BacksOnlyPage
@@ -320,6 +475,10 @@ const FrontsAndBacksPage = ({
         fileHandles={fileHandles}
         cardSpacingRowMM={cardSpacingRowMM}
         cardSpacingColMM={cardSpacingColMM}
+        pageWidthMM={pageWidthMM}
+        pageHeightMM={pageHeightMM}
+        pageMarginLeftMM={pageMarginLeftMM}
+        pageMarginRightMM={pageMarginRightMM}
         pageBreak={true}
       />
     </>
@@ -354,21 +513,22 @@ export const PDF = ({
   imageQuality,
   fileHandles,
 }: PDFProps) => {
-  const size =
-    pageSize === "CUSTOM" && pageWidth !== undefined && pageHeight !== undefined
-      ? { width: pageWidth + "mm", height: pageHeight + "mm" }
-      : (pageSize as keyof Omit<typeof PageSize, "CUSTOM">);
+  const size = getPageSizeMM(pageSize, pageWidth, pageHeight);
   const PageComponent = CardSelectionModeToPage[cardSelectionMode];
   return (
     <Document pageMode="useThumbs">
       <Page
-        size={size}
+        size={{ width: size.width + "mm", height: size.height + "mm" }}
         style={{
           paddingTop: pageMarginTopMM + "mm",
           paddingBottom: pageMarginBottomMM + "mm",
           paddingLeft: pageMarginLeftMM + "mm",
           paddingRight: pageMarginRightMM + "mm",
+          flexDirection: "row",
+          justifyContent: "center",
+          // alignContent: "center",
         }}
+        // debug={true}
       >
         <PageComponent
           projectMembers={projectMembers}
@@ -380,6 +540,10 @@ export const PDF = ({
           fileHandles={fileHandles}
           cardSpacingRowMM={cardSpacingRowMM}
           cardSpacingColMM={cardSpacingColMM}
+          pageMarginLeftMM={pageMarginLeftMM}
+          pageMarginRightMM={pageMarginRightMM}
+          pageWidthMM={size.width}
+          pageHeightMM={size.height}
         />
       </Page>
     </Document>

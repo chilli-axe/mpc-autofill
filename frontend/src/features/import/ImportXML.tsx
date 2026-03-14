@@ -33,7 +33,6 @@ import {
   addMembers,
   selectProjectCardback,
   selectProjectSize,
-  setSelectedCardback,
 } from "@/store/slices/projectSlice";
 
 export function ImportXML() {
@@ -48,7 +47,7 @@ export function ImportXML() {
   //# region state
 
   const [showXMLModal, setShowXMLModal] = useState<boolean>(false);
-  const [useXMLCardback, setUseXMLCardback] = useState<boolean>(false);
+  const [useXMLCardback, setUseXMLCardback] = useState<boolean>(true);
   const [useXMLFinishSettings, setUseXMLFinishSettings] =
     useState<boolean>(false);
 
@@ -83,7 +82,7 @@ export function ImportXML() {
         ? backsElement.getElementsByTagName("card")
         : undefined;
 
-    const cardback =
+    const xmlCardback =
       rootElement.getElementsByTagName("cardback")[0]?.textContent ??
       projectCardback;
 
@@ -150,10 +149,12 @@ export function ImportXML() {
           };
 
           // apply the uploaded XML's cardback if the card doesn't have a matching back
+          // and if the user wants to retain the XML's cardback
+          // otherwise, default to the project's cardback
           if (newMembers[slot].back == null) {
             newMembers[slot].back = {
               query: { query: null, cardType: Cardback },
-              selectedImage: cardback,
+              selectedImage: useXMLCardback ? xmlCardback : undefined,
               selected: false,
             };
           }
@@ -163,10 +164,6 @@ export function ImportXML() {
     }
     dispatch(addMembers({ members: newMembers.slice(0, lastNonNullSlot + 1) }));
 
-    // update project cardback and finish settings according to user's specification
-    if (useXMLCardback && cardback != null) {
-      dispatch(setSelectedCardback({ selectedImage: cardback }));
-    }
     if (
       useXMLFinishSettings &&
       stock != null &&
@@ -208,7 +205,7 @@ export function ImportXML() {
               onClick={() => setUseXMLCardback(!useXMLCardback)}
               on="Use XML Cardback"
               onClassName="flex-centre"
-              off="Retain Selected Cardback"
+              off="Use Project Cardback"
               offClassName="flex-centre"
               onstyle="success"
               offstyle="info"
