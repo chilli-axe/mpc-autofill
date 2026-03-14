@@ -114,7 +114,6 @@ const NumericField = (props: NumericFieldProps) => {
 };
 
 export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
-  // TODO: include fronts / include fronts and unique backs / include fronts and backs
   const dispatch = useAppDispatch();
   const [cardSpacingRowMM, setCardSpacingRowMM] = useState<number | undefined>(
     0
@@ -220,22 +219,6 @@ export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
           className="py-2"
           heightDelta={67.9 + 71 + heightDelta}
         >
-          <Alert variant="info">
-            We are actively working to improve this experience.
-            <br />
-            In particular, please note that generated PDFs can be large and can
-            take a while to download.
-            <br />
-            Please send any feature requests, bug reports, and other discussion
-            to the{" "}
-            <a
-              href="https://github.com/chilli-axe/mpc-autofill"
-              target="_blank"
-            >
-              GitHub repo
-            </a>
-            . Thanks for your patience!
-          </Alert>
           <p>
             Generate a PDF file from your project suitable for printing at home
             or professionally.
