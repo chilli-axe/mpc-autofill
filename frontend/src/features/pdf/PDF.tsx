@@ -239,19 +239,21 @@ const getPageStyle = (
   cardSpacingColMM: number,
   pageMarginLeftMM: number,
   pageMarginRightMM: number
-) => ({
-  ...styles.section,
-  width:
-    calculateCardContainerWidth(
-      pageWidthMM,
-      bleedEdgeMM,
-      cardSpacingColMM,
-      pageMarginLeftMM,
-      pageMarginRightMM
-    ) + "mm",
-  rowGap: cardSpacingRowMM + "mm",
-  columnGap: cardSpacingColMM + "mm",
-});
+) =>
+  ({
+    ...styles.section,
+    width:
+      calculateCardContainerWidth(
+        pageWidthMM,
+        bleedEdgeMM,
+        cardSpacingColMM,
+        pageMarginLeftMM,
+        pageMarginRightMM
+      ) + "mm",
+    rowGap: cardSpacingRowMM + "mm",
+    columnGap: cardSpacingColMM + "mm",
+    alignSelf: "center",
+  } as const);
 
 type CardPageProps = Pick<
   PDFProps,
@@ -524,11 +526,7 @@ export const PDF = ({
           paddingBottom: pageMarginBottomMM + "mm",
           paddingLeft: pageMarginLeftMM + "mm",
           paddingRight: pageMarginRightMM + "mm",
-          flexDirection: "row",
-          justifyContent: "center",
-          // alignContent: "center",
         }}
-        // debug={true}
       >
         <PageComponent
           projectMembers={projectMembers}
