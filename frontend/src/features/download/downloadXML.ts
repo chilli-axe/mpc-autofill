@@ -8,7 +8,7 @@ import formatXML from "xml-formatter";
 
 import { Back, Front, ReversedCardTypePrefixes } from "@/common/constants";
 import { SourceType } from "@/common/schema_types";
-import { useAppStore } from "@/common/types";
+import { useAppDispatch, useAppStore } from "@/common/types";
 import {
   CardDocuments,
   FinishSettingsState,
@@ -23,7 +23,10 @@ import {
   selectProjectMembers,
   selectProjectSize,
 } from "@/store/slices/projectSlice";
-import { RootState } from "@/store/store";
+import { setNotification } from "@/store/slices/toastsSlice";
+import { AppDispatch, RootState } from "@/store/store";
+
+import { useLocalFilesDirectoryHandle } from "../clientSearch/clientSearchHooks";
 
 interface SlotsByIdentifier {
   [identifier: string]: Set<number>;
@@ -201,8 +204,10 @@ export function generateXML(
 }
 
 async function downloadXML(
+  dispatch: AppDispatch,
   state: RootState,
-  clientSearchService: ClientSearchService
+  clientSearchService: ClientSearchService,
+  directoryHandleName?: string
 ) {
   const generatedXML = selectGeneratedXML(state);
   await downloadFile(
@@ -211,20 +216,39 @@ async function downloadXML(
     "cards.xml",
     clientSearchService
   );
+  dispatch(
+    setNotification([
+      Math.random().toString(),
+      {
+        name: "Download Complete",
+        message: `Successfully downloaded XML to ${
+          directoryHandleName ?? "Downloads folder"
+        }!`,
+        level: "info",
+      },
+    ])
+  );
   return true;
 }
 
 export function useDownloadXML() {
+  const dispatch = useAppDispatch();
   const store = useAppStore();
   const doFileDownload = useDoFileDownload();
   const { clientSearchService } = useClientSearchContext();
+  const directoryHandle = useLocalFilesDirectoryHandle();
   return () =>
     Promise.resolve(
       doFileDownload(
         "xml",
         "cards.xml",
         (): Promise<boolean> =>
-          downloadXML(store.getState(), clientSearchService)
+          downloadXML(
+            dispatch,
+            store.getState(),
+            clientSearchService,
+            directoryHandle?.name
+          )
       )
     );
 }

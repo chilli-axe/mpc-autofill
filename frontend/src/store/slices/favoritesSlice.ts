@@ -122,12 +122,10 @@ export const selectFavoriteRenders = (
 ): FavoritesState["favoriteRenders"] => state.favorites.favoriteRenders;
 
 export const selectIsFavoriteRender = createSelector(
-  (state: RootState, searchq: string, identifier: string) => ({
-    searchq,
-    identifier,
-  }),
+  (state: RootState, searchq: string, identifier: string) => searchq,
+  (state: RootState, searchq: string, identifier: string) => identifier,
   (state: RootState) => state.favorites.favoriteRenders,
-  ({ searchq, identifier }, favoriteRenders) =>
+  (searchq, identifier, favoriteRenders) =>
     (favoriteRenders[searchq] ?? []).includes(identifier)
 );
 
