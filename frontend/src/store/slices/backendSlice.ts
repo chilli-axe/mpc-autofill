@@ -52,10 +52,19 @@ export const useLocalBackendConfigured = (): boolean => {
   return directoryHandle !== undefined;
 };
 
+export const useGoogleDriveBackendConfigured = (): boolean => {
+  return true; // TODO
+};
+
 export const useAnyBackendConfigured = (): boolean => {
   const remoteBackendConfigured = useRemoteBackendConfigured();
   const localBackendConfigured = useLocalBackendConfigured();
-  return remoteBackendConfigured || localBackendConfigured;
+  const googleDriveBackendConfigured = useGoogleDriveBackendConfigured();
+  return (
+    remoteBackendConfigured ||
+    localBackendConfigured ||
+    googleDriveBackendConfigured
+  );
 };
 
 export function useProjectName() {

@@ -12,6 +12,7 @@ import {
   CardDocument,
   CardDocuments,
   CardType,
+  GoogleDriveDoc,
   LocalFileHandleParams,
   OramaCardDocument,
   SearchResults,
@@ -122,6 +123,59 @@ export class ClientSearchService {
       fetchCardDocumentsAndReportError(dispatch, { refreshCardbacks: true });
       forceUpdate();
     }
+  }
+
+  public async indexGoogleDrive(
+    dispatch: AppDispatch,
+    forceUpdate: DispatchWithoutAction,
+    tags: Array<Tag> | undefined,
+    bearerToken: string,
+    folders: Array<GoogleDriveDoc>
+    // images: Array<GoogleDriveDoc>,
+  ) {
+    // TODO: not DRY
+    if (this.worker === undefined) {
+      throw new Error("clientSearchService was not initialised!");
+    }
+    const notificationId = Math.random().toString();
+    // if (await this.worker.hasLocalFilesDirectoryHandle()) {
+    // dispatch(
+    //   setNotification([
+    //     notificationId,
+    //     {
+    //       name: `Synchronising ${
+    //         (await this.worker.getLocalFilesDirectoryHandle())!.name
+    //       }`,
+    //       message: "This may take a while...",
+    //       level: "info",
+    //     },
+    //   ])
+    // );
+    // }
+    const indexGoogleDriveResult = await this.worker.indexGoogleDrive(
+      tags,
+      bearerToken,
+      folders
+    );
+    // if (indexGoogleDriveResult !== undefined) {
+    // const { size, a } = indexGoogleDriveResult;
+    dispatch(
+      setNotification([
+        notificationId, // overwrite the name/message for the existing toast rather than making a new one
+        {
+          name: "placeholder",
+          // name: `Synchronised ${handle.name}`,
+          message: "placeholder 2",
+          // message: `Indexed ${size} cards.`,
+          level: "info",
+        },
+      ])
+    );
+    dispatch(api.util.invalidateTags([QueryTags.BackendSpecific]));
+    dispatch(clearSearchResults());
+    fetchCardDocumentsAndReportError(dispatch, { refreshCardbacks: true });
+    forceUpdate();
+    // }
   }
 
   public async getDirectoryIndexSize(): Promise<number | undefined> {

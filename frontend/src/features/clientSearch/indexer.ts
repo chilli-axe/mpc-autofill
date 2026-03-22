@@ -22,6 +22,24 @@ import {
 import { OramaSchema } from "@/common/types";
 import { extractNameAndTags } from "@/features/clientSearch/tags";
 
+const exampleGoogleDriveRESTFetch = async (bearerToken: string) => {
+  const identifier = "16LA_UmqbWCUkfwJdkKs672tdxmMT6jqL";
+  const params = new URLSearchParams({
+    driveId: identifier,
+    fields: "name, modifiedTime",
+  });
+  const response = await fetch(
+    `https://www.googleapis.com/drive/v3/files/${identifier}?${params}`,
+    {
+      headers: {
+        Authorization: `Bearer ${bearerToken}`,
+      },
+      method: "GET",
+    }
+  ).then((response) => response.json());
+  console.log("fetchGoogleDrive: response json ", response);
+};
+
 export class Folder {
   constructor(
     public readonly params: LocalDirectoryHandleParams | RemoteFileHandleParams,
@@ -94,14 +112,14 @@ export class Image {
   }
 
   getCardType(): CardType {
-    return this.folder.name.toLowerCase().startsWith("cardback")
+    return this.folder.name.toLowerCase().includes("cardback")
       ? CardTypeSchema.Cardback
-      : this.folder.name.toLowerCase().startsWith("token")
+      : this.folder.name.toLowerCase().includes("token")
       ? CardTypeSchema.Token
       : CardTypeSchema.Card;
   }
 
-  async getFullPath(tags: Map<string, Tag>): Promise<Array<string> | null> {
+  getFullPath(tags: Map<string, Tag>): Array<string> | null {
     return [
       ...this.folder.getFullPath(tags),
       this.params.sourceType === SourceType.LocalFile
@@ -110,23 +128,24 @@ export class Image {
     ];
   }
 
-  async getImageId(tags: Map<string, Tag>): Promise<string> {
+  getImageId(tags: Map<string, Tag>): string {
     if (this.params.sourceType === SourceType.LocalFile) {
-      const resolvedPath = await this.getFullPath(tags);
+      const resolvedPath = this.getFullPath(tags);
       // fall back on setting filepath to random string if unable to resolve. realistically this should never happen.
       const filePath = resolvedPath
         ? `./${resolvedPath.slice(1).join("/")}`
         : Math.random().toString();
       return filePath;
     }
+    if (this.params.sourceType === SourceType.GoogleDrive) {
+      return this.params.identifier;
+    }
     throw new Error("getImageId not implemented yet for other source types");
   }
 
-  async getOramaCardDocument(
-    tags: Map<string, Tag>
-  ): Promise<OramaCardDocument> {
+  getOramaCardDocument(tags: Map<string, Tag>): OramaCardDocument {
     const { language, name, tags: extractedTags } = this.unpackName(tags);
-    const imageId = await this.getImageId(tags);
+    const imageId = this.getImageId(tags);
     return {
       id: imageId,
       cardType: this.getCardType(),
@@ -172,7 +191,8 @@ abstract class Indexer {
   }
 
   public async indexFolder(
-    folder: Folder,
+    folders: Array<Folder>,
+    // images: Array<Image>,
     tags: Array<Tag> | undefined
   ): Promise<OramaIndex> {
     const db = create({ schema: OramaSchema });
@@ -180,10 +200,13 @@ abstract class Indexer {
       (tags ?? []).map((tag) => [tag.name.toLowerCase(), tag])
     );
     const oramaCardDocuments = await Promise.all(
-      (
-        await this.exploreFolder(folder)
-      ).map((image) => image.getOramaCardDocument(tagsMap))
+      folders.map(async (folder) => this.exploreFolder(folder))
+    ).then((images2d) =>
+      images2d.flatMap((images) =>
+        images.map((image) => image.getOramaCardDocument(tagsMap))
+      )
     );
+    console.log("indexFolder: oramaCardDocuments ", oramaCardDocuments);
     insertMultiple(db, oramaCardDocuments);
     return {
       oramaDb: db,
@@ -244,6 +267,113 @@ export class LocalFilesIndexer extends Indexer {
             );
           }
         }
+      }
+    }
+    return images;
+  }
+}
+
+export class GoogleDriveIndexer extends Indexer {
+  bearerToken: string;
+
+  constructor(bearerToken: string) {
+    super();
+    this.bearerToken = bearerToken;
+  }
+
+  getSourceType(): SourceType.GoogleDrive {
+    return SourceType.GoogleDrive;
+  }
+
+  async getAllFoldersInsideFolder(folder: Folder): Promise<Array<Folder>> {
+    if (folder.params.sourceType !== this.getSourceType()) {
+      return [];
+    }
+    const folderId = folder.params.identifier;
+    const params = new URLSearchParams({
+      q: `mimeType='application/vnd.google-apps.folder' and '${folderId}' in parents`,
+      fields: "files(id, name)",
+      pageSize: "500",
+    });
+    const response = await fetch(
+      `https://www.googleapis.com/drive/v3/files?${params}`,
+      {
+        headers: { Authorization: `Bearer ${this.bearerToken}` },
+        method: "GET",
+      }
+    ).then((r) => r.json());
+    return (response.files ?? []).map(
+      (f: { id: string; name: string }) =>
+        new Folder(
+          {
+            sourceType: this.getSourceType(),
+            identifier: f.id,
+            fileHandle: undefined,
+          },
+          f.name,
+          folder
+        )
+    );
+  }
+
+  async getAllImagesInsideFolder(folder: Folder): Promise<Array<Image>> {
+    if (folder.params.sourceType !== this.getSourceType()) {
+      return [];
+    }
+    const folderId = folder.params.identifier;
+    const images: Array<Image> = [];
+    let pageToken: string | undefined = undefined;
+    while (true) {
+      const queryParams: Record<string, string> = {
+        q: `(mimeType contains 'image/png' or mimeType contains 'image/jpg' or mimeType contains 'image/jpeg') and '${folderId}' in parents`,
+        fields:
+          "nextPageToken, files(id, name, trashed, size, modifiedTime, imageMediaMetadata)",
+        pageSize: "500",
+      };
+      if (pageToken !== undefined) {
+        queryParams["pageToken"] = pageToken;
+      }
+      const params = new URLSearchParams(queryParams);
+      const response = await fetch(
+        `https://www.googleapis.com/drive/v3/files?${params}`,
+        {
+          headers: { Authorization: `Bearer ${this.bearerToken}` },
+          method: "GET",
+        }
+      ).then((r) => r.json());
+      const files: Array<{
+        id: string;
+        name: string;
+        trashed: boolean;
+        size: string;
+        modifiedTime: string;
+        imageMediaMetadata: { height: number };
+      }> = response.files ?? [];
+      for (const item of files) {
+        if (!item.trashed) {
+          const nameParts = item.name.split(".");
+          const extension =
+            nameParts.length > 1 ? nameParts[nameParts.length - 1] : "";
+          images.push(
+            new Image(
+              {
+                sourceType: this.getSourceType(),
+                identifier: item.id,
+                fileHandle: undefined,
+              },
+              removeFileExtension(item.name),
+              extension,
+              parseInt(item.size),
+              new Date(item.modifiedTime),
+              item.imageMediaMetadata?.height ?? 0,
+              folder
+            )
+          );
+        }
+      }
+      pageToken = response.nextPageToken;
+      if (pageToken == null || files.length === 0) {
+        break;
       }
     }
     return images;

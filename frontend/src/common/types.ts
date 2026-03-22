@@ -296,3 +296,28 @@ export interface LocalFilesIndex {
   fileHandle: FileSystemDirectoryHandle;
   index: OramaIndex | undefined;
 }
+
+export interface GoogleDriveIndex {
+  index: OramaIndex | undefined;
+}
+
+/**
+ * google drive-picker-element returns an array of these after picking files & folders
+ */
+export interface GoogleDriveDoc {
+  id: string;
+  serviceId: string;
+  mimeType: string;
+  name: string;
+  description: string;
+  type: string;
+  lastEditedUtc: number;
+  iconUrl: string;
+  url: string;
+  embedUrl: string;
+  driveSuccess: boolean;
+  driveError: string;
+  sizeBytes: number;
+  parentId: string;
+  isShared: boolean;
+}
