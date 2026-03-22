@@ -106,16 +106,6 @@ export class ClientSearchService {
     folders: Array<GoogleDriveDoc>,
     images: Array<GoogleDriveDoc>
   ) {
-    // TODO: can we do better than this?
-    const mockTopLevelFolder = new Folder(
-      {
-        sourceType: SourceType.GoogleDrive,
-        identifier: "",
-        fileHandle: undefined,
-      },
-      "Google Drive",
-      undefined
-    );
     const indexer = new GoogleDriveIndexer(bearerToken);
     const oramaIndex = await indexer.indexFiles(
       folders.map(
@@ -133,7 +123,7 @@ export class ClientSearchService {
       (
         await Promise.all(
           images.map(async ({ id }) =>
-            indexer.getImageFromIdentifier(id, mockTopLevelFolder)
+            indexer.getImageFromIdentifier(id, undefined)
           )
         )
       ).filter((image) => image !== undefined),

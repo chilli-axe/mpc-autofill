@@ -409,22 +409,56 @@ export class GoogleDriveIndexer extends Indexer {
 
   async getImageFromIdentifier(
     identifier: string,
-    folder: Folder
+    folder: Folder | undefined
   ): Promise<Image | undefined> {
-    const params = new URLSearchParams({
-      fields: "id, name, trashed, size, modifiedTime, imageMediaMetadata",
-      pageSize: "500",
+    const fileParams = new URLSearchParams({
+      fields:
+        "id, name, trashed, size, modifiedTime, imageMediaMetadata, parents",
     });
     const file = (await fetch(
-      `https://www.googleapis.com/drive/v3/files/${identifier}?${params}`,
+      `https://www.googleapis.com/drive/v3/files/${identifier}?${fileParams}`,
       {
         headers: { Authorization: `Bearer ${this.bearerToken}` },
         method: "GET",
       }
     ).then((r) => r.json())) as Pick<
       GoogleDriveFile,
-      "id" | "name" | "trashed" | "size" | "modifiedTime" | "imageMediaMetadata"
+      | "id"
+      | "name"
+      | "trashed"
+      | "size"
+      | "modifiedTime"
+      | "imageMediaMetadata"
+      | "parents"
     >;
-    return file.trashed ? undefined : this.getImage(folder, file);
+    if (file.trashed) return undefined;
+    if (folder !== undefined) {
+      return this.getImage(folder, file);
+    } else {
+      // construct folder by looking up parent name
+      const parentIdentifier = file.parents[0]!;
+      const parentFileParams = new URLSearchParams({
+        fields: "id, name",
+      });
+      const parentFile = (await fetch(
+        `https://www.googleapis.com/drive/v3/files/${parentIdentifier}?${parentFileParams}`,
+        {
+          headers: { Authorization: `Bearer ${this.bearerToken}` },
+          method: "GET",
+        }
+      ).then((r) => r.json())) as Pick<GoogleDriveFile, "id" | "name">;
+      return this.getImage(
+        new Folder(
+          {
+            sourceType: SourceType.GoogleDrive,
+            identifier: parentFile.id,
+            fileHandle: undefined,
+          },
+          parentFile.name,
+          undefined
+        ),
+        file
+      );
+    }
   }
 }
