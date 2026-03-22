@@ -156,25 +156,20 @@ abstract class Indexer {
   abstract getAllImagesInsideFolder(folder: Folder): Promise<Array<Image>>;
 
   private async exploreFolder(folder: Folder): Promise<Array<Image>> {
-    const folders: Array<Folder> = [folder];
-    const images: Array<Image> = [];
-    while (folders.length > 0) {
-      const folder = folders.pop();
-      if (folder !== undefined) {
-        const imagesInFolder: Array<Image> =
-          await this.getAllImagesInsideFolder(folder);
-        const subfolders: Array<Folder> = await this.getAllFoldersInsideFolder(
-          folder
-        );
-        images.push(...imagesInFolder);
-        folders.push(
-          ...subfolders.filter((folder) => !folder.name.startsWith("!"))
-        );
-      } else {
-        break;
-      }
-    }
-    return images;
+    const [imagesInFolder, subfolders] = await Promise.all([
+      this.getAllImagesInsideFolder(folder),
+      this.getAllFoldersInsideFolder(folder),
+    ]);
+
+    const validSubfolders = subfolders.filter(
+      (subfolder) => !subfolder.name.startsWith("!")
+    );
+
+    const imagesFromSubfolders = await Promise.all(
+      validSubfolders.map((subfolder) => this.exploreFolder(subfolder))
+    );
+
+    return [...imagesInFolder, ...imagesFromSubfolders.flat()];
   }
 
   public async indexFiles(
