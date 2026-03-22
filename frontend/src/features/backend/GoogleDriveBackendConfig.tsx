@@ -77,13 +77,13 @@ export const GoogleDriveBackendConfig = ({
         </Alert>
       )}
       <p>
-        Choose a Google Drive folder you&apos;d like to connect {ProjectName}{" "}
-        to.
+        Choose Google Drive files and folder you&apos;d like to connect{" "}
+        {ProjectName} to.
       </p>
       <Row className="g-0">
         <Button variant="outline-primary" onClick={chooseDirectory}>
           <RightPaddedIcon bootstrapIconName="plus-circle" />
-          Choose Folder
+          Choose Resources
         </Button>
       </Row>
     </>

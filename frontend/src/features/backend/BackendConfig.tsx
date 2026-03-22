@@ -33,9 +33,9 @@ export function BackendConfig({ show, handleClose }: BackendConfigProps) {
             <hr />
           </>
         )}
-        <LocalFolderBackendConfig />
-        <hr />
         <GoogleDriveBackendConfig handleClose={handleClose} />
+        <hr />
+        <LocalFolderBackendConfig />
       </Offcanvas.Body>
     </Offcanvas>
   );
