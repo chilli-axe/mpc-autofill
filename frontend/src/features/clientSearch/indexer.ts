@@ -24,23 +24,7 @@ import {
 import { OramaSchema } from "@/common/types";
 import { extractNameAndTags } from "@/features/clientSearch/tags";
 
-const exampleGoogleDriveRESTFetch = async (bearerToken: string) => {
-  const identifier = "16LA_UmqbWCUkfwJdkKs672tdxmMT6jqL";
-  const params = new URLSearchParams({
-    driveId: identifier,
-    fields: "name, modifiedTime",
-  });
-  const response = await fetch(
-    `https://www.googleapis.com/drive/v3/files/${identifier}?${params}`,
-    {
-      headers: {
-        Authorization: `Bearer ${bearerToken}`,
-      },
-      method: "GET",
-    }
-  ).then((response) => response.json());
-  console.log("fetchGoogleDrive: response json ", response);
-};
+import { GoogleDriveService } from "../googleDrive/GoogleDriveService";
 
 export class Folder {
   constructor(
@@ -278,111 +262,18 @@ export class LocalFilesIndexer extends Indexer {
 }
 
 export class GoogleDriveIndexer extends Indexer {
-  bearerToken: string;
+  googleDriveService: GoogleDriveService;
 
   constructor(bearerToken: string) {
     super();
-    this.bearerToken = bearerToken;
+    this.googleDriveService = new GoogleDriveService(bearerToken);
   }
 
   getSourceType(): SourceType.GoogleDrive {
     return SourceType.GoogleDrive;
   }
 
-  async getAllFoldersInsideFolder(folder: Folder): Promise<Array<Folder>> {
-    if (folder.params.sourceType !== this.getSourceType()) {
-      return [];
-    }
-    const folderId = folder.params.identifier;
-    const params = new URLSearchParams({
-      q: `mimeType='application/vnd.google-apps.folder' and '${folderId}' in parents`,
-      fields: "files(id, name)",
-      pageSize: "500",
-    });
-    const response = (await fetch(
-      `https://www.googleapis.com/drive/v3/files?${params}`,
-      {
-        headers: { Authorization: `Bearer ${this.bearerToken}` },
-        method: "GET",
-      }
-    ).then((r) => r.json())) as {
-      files?: Array<Pick<GoogleDriveFile, "id" | "name">>;
-    };
-    return (
-      response.files?.map(
-        (file: { id: string; name: string }) =>
-          new Folder(
-            {
-              sourceType: this.getSourceType(),
-              identifier: file.id,
-              fileHandle: undefined,
-            },
-            file.name,
-            folder
-          )
-      ) ?? []
-    );
-  }
-
-  async getAllImagesInsideFolder(folder: Folder): Promise<Array<Image>> {
-    if (folder.params.sourceType !== this.getSourceType()) {
-      return [];
-    }
-    const folderId = folder.params.identifier;
-    const images: Array<Image> = [];
-    let pageToken: string | undefined = undefined;
-    const mimeTypeFilter = GoogleDriveImageMimeTypes.map(
-      (mimeType) => `mimeType contains '${mimeType}'`
-    ).join(" or ");
-    while (true) {
-      const queryParams: Record<string, string> = {
-        q: `(${mimeTypeFilter}) and '${folderId}' in parents`,
-        fields:
-          "nextPageToken, files(id, name, trashed, size, modifiedTime, imageMediaMetadata)",
-        pageSize: "500",
-      };
-      if (pageToken !== undefined) {
-        queryParams["pageToken"] = pageToken;
-      }
-      const params = new URLSearchParams(queryParams);
-      const response = (await fetch(
-        `https://www.googleapis.com/drive/v3/files?${params}`,
-        {
-          headers: { Authorization: `Bearer ${this.bearerToken}` },
-          method: "GET",
-        }
-      ).then((r) => r.json())) as {
-        files?: Array<
-          Pick<
-            GoogleDriveFile,
-            | "id"
-            | "name"
-            | "trashed"
-            | "size"
-            | "modifiedTime"
-            | "imageMediaMetadata"
-          >
-        >;
-        nextPageToken?: string;
-      };
-      const newImages =
-        response.files
-          ?.filter((file) => !file.trashed)
-          ?.map((file) => this.getImage(folder, file)) ?? [];
-      images.push(...newImages);
-      pageToken = response.nextPageToken;
-      if (
-        pageToken == null ||
-        response.files === undefined ||
-        response.files.length === 0
-      ) {
-        break;
-      }
-    }
-    return images;
-  }
-
-  getImage(
+  createImage(
     folder: Folder,
     file: Pick<
       GoogleDriveFile,
@@ -407,47 +298,74 @@ export class GoogleDriveIndexer extends Indexer {
     );
   }
 
+  async getAllFoldersInsideFolder(folder: Folder): Promise<Array<Folder>> {
+    if (folder.params.sourceType !== this.getSourceType()) {
+      return [];
+    }
+    const response = await this.googleDriveService.getFoldersInsideFolder({
+      folderId: folder.params.identifier,
+    });
+    return response.files.map(
+      (file: { id: string; name: string }) =>
+        new Folder(
+          {
+            sourceType: this.getSourceType(),
+            identifier: file.id,
+            fileHandle: undefined,
+          },
+          file.name,
+          folder
+        )
+    );
+  }
+
+  async getAllImagesInsideFolder(folder: Folder): Promise<Array<Image>> {
+    if (folder.params.sourceType !== this.getSourceType()) {
+      return [];
+    }
+    const folderId = folder.params.identifier;
+    const images: Array<Image> = [];
+    let pageToken: string | undefined = undefined;
+    const mimeTypeFilter = GoogleDriveImageMimeTypes.map(
+      (mimeType) => `mimeType contains '${mimeType}'`
+    ).join(" or ");
+    while (true) {
+      const response = await this.googleDriveService.getImagesInsideFolder({
+        folderId,
+        pageToken,
+      });
+      const newImages = response.files
+        .filter((file) => !file.trashed)
+        .map((file) => this.createImage(folder, file));
+      images.push(...newImages);
+      pageToken = response.nextPageToken;
+      if (
+        pageToken == null ||
+        response.files === undefined ||
+        response.files.length === 0
+      ) {
+        break;
+      }
+    }
+    return images;
+  }
+
   async getImageFromIdentifier(
     identifier: string,
     folder: Folder | undefined
   ): Promise<Image | undefined> {
-    const fileParams = new URLSearchParams({
-      fields:
-        "id, name, trashed, size, modifiedTime, imageMediaMetadata, parents",
+    const file = await this.googleDriveService.getFileById({
+      fileId: identifier,
     });
-    const file = (await fetch(
-      `https://www.googleapis.com/drive/v3/files/${identifier}?${fileParams}`,
-      {
-        headers: { Authorization: `Bearer ${this.bearerToken}` },
-        method: "GET",
-      }
-    ).then((r) => r.json())) as Pick<
-      GoogleDriveFile,
-      | "id"
-      | "name"
-      | "trashed"
-      | "size"
-      | "modifiedTime"
-      | "imageMediaMetadata"
-      | "parents"
-    >;
     if (file.trashed) return undefined;
     if (folder !== undefined) {
-      return this.getImage(folder, file);
+      return this.createImage(folder, file);
     } else {
       // construct folder by looking up parent name
-      const parentIdentifier = file.parents[0]!;
-      const parentFileParams = new URLSearchParams({
-        fields: "id, name",
+      const parentFile = await this.googleDriveService.getFileById({
+        fileId: file.parents[0]!,
       });
-      const parentFile = (await fetch(
-        `https://www.googleapis.com/drive/v3/files/${parentIdentifier}?${parentFileParams}`,
-        {
-          headers: { Authorization: `Bearer ${this.bearerToken}` },
-          method: "GET",
-        }
-      ).then((r) => r.json())) as Pick<GoogleDriveFile, "id" | "name">;
-      return this.getImage(
+      return this.createImage(
         new Folder(
           {
             sourceType: SourceType.GoogleDrive,
