@@ -133,6 +133,13 @@ export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
   >(5);
   const [bleedEdgeMM, setBleedEdgeMM] = useState<number | undefined>(0);
   const [roundCorners, setRoundCorners] = useState<boolean>(false);
+  const [drawCutLines, setDrawCutLines] = useState<boolean>(true);
+  const [cutLineLengthMM, setCutLineLengthMM] = useState<number | undefined>(2);
+  const [cutLineOffsetMM, setCutLineOffsetMM] = useState<number | undefined>(0);
+  const [cutLineThicknessMM, setCutLineThicknessMM] = useState<
+    number | undefined
+  >(0.2);
+  const [cutLineColor, setCutLineColor] = useState<string>("#FF0000");
 
   const { clientSearchService } = useClientSearchContext();
   const projectMembers = useAppSelector(selectProjectMembers);
@@ -179,6 +186,11 @@ export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
     pageHeight: pageHeight,
     bleedEdgeMM: bleedEdgeMM ?? 0,
     roundCorners: roundCorners,
+    drawCutLines: drawCutLines,
+    cutLineLengthMM: cutLineLengthMM ?? 2,
+    cutLineOffsetMM: cutLineOffsetMM ?? 0,
+    cutLineThicknessMM: cutLineThicknessMM ?? 0.2,
+    cutLineColor: cutLineColor,
     cardSpacingRowMM: cardSpacingRowMM ?? 0,
     cardSpacingColMM: cardSpacingColMM ?? 0,
     pageMarginTopMM: pageMarginTopMM ?? 0,
@@ -305,6 +317,59 @@ export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
                 height={ToggleButtonHeight + "px"}
                 active={roundCorners}
               />
+              <Form.Label>Cut Guide Lines</Form.Label>
+              <Toggle
+                onClick={() => setDrawCutLines(!drawCutLines)}
+                on="On"
+                onClassName="flex-centre"
+                off="Off"
+                offClassName="flex-centre"
+                onstyle="success"
+                offstyle="info"
+                width={100 + "%"}
+                size="md"
+                height={ToggleButtonHeight + "px"}
+                active={drawCutLines}
+              />
+              {drawCutLines && (
+                <Row className="mt-1">
+                  <Col xs={6}>
+                    <NumericField
+                      label="Cut Lines Length (mm)"
+                      value={cutLineLengthMM}
+                      setValue={setCutLineLengthMM}
+                      min={0.1}
+                      step={0.1}
+                    />
+                  </Col>
+                  <Col xs={6}>
+                    <NumericField
+                      label="Cut Lines Offset (mm)"
+                      value={cutLineOffsetMM}
+                      setValue={setCutLineOffsetMM}
+                      min={0}
+                      step={0.1}
+                    />
+                  </Col>
+                  <Col xs={6} className="mt-1">
+                    <NumericField
+                      label="Cut Lines Thickness (mm)"
+                      value={cutLineThicknessMM}
+                      setValue={setCutLineThicknessMM}
+                      min={0.01}
+                      step={0.01}
+                    />
+                  </Col>
+                  <Col xs={6} className="mt-1">
+                    <Form.Label>Cut Lines Colour</Form.Label>
+                    <Form.Control
+                      type="color"
+                      value={cutLineColor}
+                      onChange={(e) => setCutLineColor(e.target.value)}
+                    />
+                  </Col>
+                </Row>
+              )}
             </Col>
           </Row>
           <Row>
