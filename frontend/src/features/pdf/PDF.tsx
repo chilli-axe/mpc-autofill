@@ -145,6 +145,11 @@ export interface PDFProps {
   pageHeight: number | undefined;
   bleedEdgeMM: number;
   roundCorners: boolean;
+  drawCutLines: boolean;
+  cutLineLengthMM: number;
+  cutLineOffsetMM: number;
+  cutLineThicknessMM: number;
+  cutLineColor: string;
   cardSpacingRowMM: number;
   cardSpacingColMM: number;
   pageMarginTopMM: number;
@@ -196,6 +201,11 @@ interface PDFCardThumbnailProps {
   cardDocument: CardDocument;
   bleedEdgeMM: number;
   roundCorners: boolean;
+  drawCutLines: boolean;
+  cutLineLengthMM: number;
+  cutLineOffsetMM: number;
+  cutLineThicknessMM: number;
+  cutLineColor: string;
   imageQuality: "small-thumbnail" | "large-thumbnail" | "full-resolution";
   fileHandles: { [identifier: string]: FileSystemFileHandle };
 }
@@ -204,6 +214,11 @@ const PDFCardThumbnail = ({
   cardDocument,
   bleedEdgeMM,
   roundCorners,
+  drawCutLines,
+  cutLineLengthMM,
+  cutLineOffsetMM,
+  cutLineThicknessMM,
+  cutLineColor,
   imageQuality,
   fileHandles,
 }: PDFCardThumbnailProps) => {
@@ -211,24 +226,110 @@ const PDFCardThumbnail = ({
   const heightProportion = (CardHeightMM + 2 * BleedEdgeMM) / height;
   const width = CardWidthMM + 2 * bleedEdgeMM;
   const widthProportion = (CardWidthMM + 2 * BleedEdgeMM) / width;
-  const style = {
+  const radius = roundCorners ? CornerRadiusMM : 0;
+  const imageStyle = {
     width: width + "mm",
     minWidth: width + "mm",
     height: height + "mm",
     minHeight: height + "mm",
     transform: `scale(${widthProportion}, ${heightProportion})`,
     overflow: "hidden",
-    borderRadius: (roundCorners ? CornerRadiusMM : 0) + "mm",
+    borderTopLeftRadius: radius + "mm",
+    borderTopRightRadius: radius + "mm",
+    borderBottomRightRadius: radius + "mm",
+    borderBottomLeftRadius: radius + "mm",
   } as const;
+
+  // Corner marks are positioned so their inner corner aligns with the card boundary
+  // (i.e. inset by bleedEdgeMM from each container edge). The mark extends outward
+  // into the bleed area by cutLineLengthMM.
+  const markOffset = bleedEdgeMM - cutLineOffsetMM + "mm";
+  const markSize = cutLineLengthMM + "mm";
+  const markThickness = cutLineThicknessMM + "mm";
+
+  const baseMarkStyle = {
+    position: "absolute" as const,
+    width: markSize,
+    height: markSize,
+  };
+  const topBorder = {
+    borderTopWidth: markThickness,
+    borderTopStyle: "solid" as const,
+    borderTopColor: cutLineColor,
+  };
+  const bottomBorder = {
+    borderBottomWidth: markThickness,
+    borderBottomStyle: "solid" as const,
+    borderBottomColor: cutLineColor,
+  };
+  const leftBorder = {
+    borderLeftWidth: markThickness,
+    borderLeftStyle: "solid" as const,
+    borderLeftColor: cutLineColor,
+  };
+  const rightBorder = {
+    borderRightWidth: markThickness,
+    borderRightStyle: "solid" as const,
+    borderRightColor: cutLineColor,
+  };
+
   return (
-    <>
+    <View
+      style={{
+        width: width + "mm",
+        minWidth: width + "mm",
+        height: height + "mm",
+        minHeight: height + "mm",
+        position: "relative",
+      }}
+    >
       <Image
         src={async () =>
           getThumbnailURL(cardDocument, imageQuality, fileHandles)
         }
-        style={style}
+        style={imageStyle}
       />
-    </>
+      {drawCutLines && (
+        <>
+          <View
+            style={{
+              ...baseMarkStyle,
+              top: markOffset,
+              left: markOffset,
+              ...topBorder,
+              ...leftBorder,
+            }}
+          />
+          <View
+            style={{
+              ...baseMarkStyle,
+              top: markOffset,
+              right: markOffset,
+              ...topBorder,
+              ...rightBorder,
+            }}
+          />
+          <View
+            style={{
+              ...baseMarkStyle,
+              bottom: markOffset,
+              left: markOffset,
+              ...bottomBorder,
+              ...leftBorder,
+            }}
+          />
+          <View
+            style={{
+              ...baseMarkStyle,
+              bottom: markOffset,
+              right: markOffset,
+              ...bottomBorder,
+              ...rightBorder,
+            }}
+          />
+        </>
+      )}
+    </View>
   );
 };
 
@@ -262,6 +363,11 @@ type CardPageProps = Pick<
   | "projectCardback"
   | "bleedEdgeMM"
   | "roundCorners"
+  | "drawCutLines"
+  | "cutLineLengthMM"
+  | "cutLineOffsetMM"
+  | "cutLineThicknessMM"
+  | "cutLineColor"
   | "imageQuality"
   | "fileHandles"
   | "pageMarginLeftMM"
@@ -280,6 +386,11 @@ const FrontsAndDistinctBacksPage = ({
   projectCardback,
   bleedEdgeMM,
   roundCorners,
+  drawCutLines,
+  cutLineLengthMM,
+  cutLineOffsetMM,
+  cutLineThicknessMM,
+  cutLineColor,
   imageQuality,
   fileHandles,
   cardSpacingRowMM,
@@ -313,6 +424,11 @@ const FrontsAndDistinctBacksPage = ({
                 }
                 bleedEdgeMM={bleedEdgeMM}
                 roundCorners={roundCorners}
+                drawCutLines={drawCutLines}
+                cutLineLengthMM={cutLineLengthMM}
+                cutLineOffsetMM={cutLineOffsetMM}
+                cutLineThicknessMM={cutLineThicknessMM}
+                cutLineColor={cutLineColor}
                 imageQuality={imageQuality}
                 fileHandles={fileHandles}
               />
@@ -328,6 +444,11 @@ const FrontsAndDistinctBacksPage = ({
                 }
                 bleedEdgeMM={bleedEdgeMM}
                 roundCorners={roundCorners}
+                drawCutLines={drawCutLines}
+                cutLineLengthMM={cutLineLengthMM}
+                cutLineOffsetMM={cutLineOffsetMM}
+                cutLineThicknessMM={cutLineThicknessMM}
+                cutLineColor={cutLineColor}
                 imageQuality={imageQuality}
                 fileHandles={fileHandles}
               />
@@ -343,6 +464,11 @@ const FrontsOnlyPage = ({
   cardDocumentsByIdentifier,
   bleedEdgeMM,
   roundCorners,
+  drawCutLines,
+  cutLineLengthMM,
+  cutLineOffsetMM,
+  cutLineThicknessMM,
+  cutLineColor,
   imageQuality,
   fileHandles,
   cardSpacingRowMM,
@@ -376,6 +502,11 @@ const FrontsOnlyPage = ({
                 }
                 bleedEdgeMM={bleedEdgeMM}
                 roundCorners={roundCorners}
+                drawCutLines={drawCutLines}
+                cutLineLengthMM={cutLineLengthMM}
+                cutLineOffsetMM={cutLineOffsetMM}
+                cutLineThicknessMM={cutLineThicknessMM}
+                cutLineColor={cutLineColor}
                 imageQuality={imageQuality}
                 fileHandles={fileHandles}
               />
@@ -391,6 +522,11 @@ const BacksOnlyPage = ({
   cardDocumentsByIdentifier,
   bleedEdgeMM,
   roundCorners,
+  drawCutLines,
+  cutLineLengthMM,
+  cutLineOffsetMM,
+  cutLineThicknessMM,
+  cutLineColor,
   imageQuality,
   fileHandles,
   cardSpacingRowMM,
@@ -424,6 +560,11 @@ const BacksOnlyPage = ({
                 }
                 bleedEdgeMM={bleedEdgeMM}
                 roundCorners={roundCorners}
+                drawCutLines={drawCutLines}
+                cutLineLengthMM={cutLineLengthMM}
+                cutLineOffsetMM={cutLineOffsetMM}
+                cutLineThicknessMM={cutLineThicknessMM}
+                cutLineColor={cutLineColor}
                 imageQuality={imageQuality}
                 fileHandles={fileHandles}
               />
@@ -440,6 +581,11 @@ const FrontsAndBacksPage = ({
   projectCardback,
   bleedEdgeMM,
   roundCorners,
+  drawCutLines,
+  cutLineLengthMM,
+  cutLineOffsetMM,
+  cutLineThicknessMM,
+  cutLineColor,
   imageQuality,
   fileHandles,
   cardSpacingRowMM,
@@ -457,6 +603,11 @@ const FrontsAndBacksPage = ({
         projectCardback={projectCardback}
         bleedEdgeMM={bleedEdgeMM}
         roundCorners={roundCorners}
+        drawCutLines={drawCutLines}
+        cutLineLengthMM={cutLineLengthMM}
+        cutLineOffsetMM={cutLineOffsetMM}
+        cutLineThicknessMM={cutLineThicknessMM}
+        cutLineColor={cutLineColor}
         imageQuality={imageQuality}
         fileHandles={fileHandles}
         cardSpacingRowMM={cardSpacingRowMM}
@@ -473,6 +624,11 @@ const FrontsAndBacksPage = ({
         projectCardback={projectCardback}
         bleedEdgeMM={bleedEdgeMM}
         roundCorners={roundCorners}
+        drawCutLines={drawCutLines}
+        cutLineLengthMM={cutLineLengthMM}
+        cutLineOffsetMM={cutLineOffsetMM}
+        cutLineThicknessMM={cutLineThicknessMM}
+        cutLineColor={cutLineColor}
         imageQuality={imageQuality}
         fileHandles={fileHandles}
         cardSpacingRowMM={cardSpacingRowMM}
@@ -503,6 +659,11 @@ export const PDF = ({
   pageHeight,
   bleedEdgeMM,
   roundCorners,
+  drawCutLines,
+  cutLineLengthMM,
+  cutLineOffsetMM,
+  cutLineThicknessMM,
+  cutLineColor,
   cardSpacingRowMM,
   cardSpacingColMM,
   pageMarginTopMM,
@@ -534,6 +695,11 @@ export const PDF = ({
           projectCardback={projectCardback}
           bleedEdgeMM={bleedEdgeMM}
           roundCorners={roundCorners}
+          drawCutLines={drawCutLines}
+          cutLineLengthMM={cutLineLengthMM}
+          cutLineOffsetMM={cutLineOffsetMM}
+          cutLineThicknessMM={cutLineThicknessMM}
+          cutLineColor={cutLineColor}
           imageQuality={imageQuality}
           fileHandles={fileHandles}
           cardSpacingRowMM={cardSpacingRowMM}
