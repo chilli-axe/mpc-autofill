@@ -279,6 +279,7 @@ export type OramaCardDocument = Pick<
   | "name"
   | "searchq"
   | "source"
+  | "sourceVerbose"
   | "cardType"
   | "extension"
   | "language"

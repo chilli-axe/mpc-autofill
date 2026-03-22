@@ -154,6 +154,7 @@ export class Image {
       name: name,
       searchq: toSearchable(this.name),
       source: this.folder.name, // TODO: verbose naming?
+      sourceVerbose: this.folder.getFullPath(tags).join(" / "),
       dpi: 10 * Math.round((this.height * 300) / 1110 / 10), // TODO: NaN?
       extension: this.extension,
       size: this.size,

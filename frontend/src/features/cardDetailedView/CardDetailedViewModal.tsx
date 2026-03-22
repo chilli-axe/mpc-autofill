@@ -92,10 +92,10 @@ export function CardDetailedViewModal({
                     cardDocument.sourceExternalLink != null &&
                     cardDocument.sourceExternalLink.length > 0 ? (
                       <a href={cardDocument.sourceExternalLink} target="_blank">
-                        {cardDocument.sourceName}
+                        {cardDocument.sourceVerbose}
                       </a>
                     ) : (
-                      cardDocument.sourceName
+                      cardDocument.sourceVerbose
                     ),
                   ],
                   ["Source Type", cardDocument.sourceType],
