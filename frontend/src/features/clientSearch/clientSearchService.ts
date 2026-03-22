@@ -130,8 +130,8 @@ export class ClientSearchService {
     forceUpdate: DispatchWithoutAction,
     tags: Array<Tag> | undefined,
     bearerToken: string,
-    folders: Array<GoogleDriveDoc>
-    // images: Array<GoogleDriveDoc>,
+    folders: Array<GoogleDriveDoc>,
+    images: Array<GoogleDriveDoc>
   ) {
     // TODO: not DRY
     if (this.worker === undefined) {
@@ -155,7 +155,8 @@ export class ClientSearchService {
     const indexGoogleDriveResult = await this.worker.indexGoogleDrive(
       tags,
       bearerToken,
-      folders
+      folders,
+      images
     );
     // if (indexGoogleDriveResult !== undefined) {
     // const { size, a } = indexGoogleDriveResult;

@@ -76,7 +76,7 @@ export class ClientSearchService {
     tags: Array<Tag> | undefined
   ): Promise<{ handle: FileSystemDirectoryHandle; size: number } | undefined> {
     if (this.localFilesIndex?.fileHandle !== undefined) {
-      const oramaIndex = await new LocalFilesIndexer().indexFolder(
+      const oramaIndex = await new LocalFilesIndexer().indexFiles(
         [
           new Folder(
             {
@@ -88,6 +88,7 @@ export class ClientSearchService {
             undefined
           ),
         ],
+        [],
         tags
       );
       this.localFilesIndex.index = oramaIndex;
@@ -102,11 +103,21 @@ export class ClientSearchService {
   public async indexGoogleDrive(
     tags: Array<Tag> | undefined,
     bearerToken: string,
-    folders: Array<GoogleDriveDoc>
-    // images: Array<GoogleDriveDoc>,
+    folders: Array<GoogleDriveDoc>,
+    images: Array<GoogleDriveDoc>
   ) {
-    // TODO: support indexing multiple folders/individual images (will need to de-dupe)
-    const oramaIndex = await new GoogleDriveIndexer(bearerToken).indexFolder(
+    // TODO: can we do better than this?
+    const mockTopLevelFolder = new Folder(
+      {
+        sourceType: SourceType.GoogleDrive,
+        identifier: "",
+        fileHandle: undefined,
+      },
+      "Google Drive",
+      undefined
+    );
+    const indexer = new GoogleDriveIndexer(bearerToken);
+    const oramaIndex = await indexer.indexFiles(
       folders.map(
         ({ id, name }) =>
           new Folder(
@@ -119,29 +130,13 @@ export class ClientSearchService {
             undefined
           )
       ),
-      // images.map(({id, name}) => new Image(
-      //   {
-      //     sourceType: SourceType.GoogleDrive,
-      //     identifier: id,
-      //     fileHandle: undefined
-      //   },
-      //   name,
-      //   extension,
-      //   size,
-      //   modifiedTime,
-      //   height,
-      //   folder
-      // )),
-
-      // new Folder(
-      //   {
-      //     sourceType: SourceType.GoogleDrive,
-      //     identifier: rootFolderIdentifier,
-      //     fileHandle: undefined
-      //   },
-      //   "some name?",
-      //   undefined
-      // ),
+      (
+        await Promise.all(
+          images.map(async ({ id }) =>
+            indexer.getImageFromIdentifier(id, mockTopLevelFolder)
+          )
+        )
+      ).filter((image) => image !== undefined),
       tags
     );
     this.googleDriveIndex = { index: oramaIndex };

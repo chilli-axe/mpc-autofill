@@ -31,13 +31,14 @@ export const GoogleDrivePicker = ({}: GoogleDrivePickerProps) => {
       const docs: Array<GoogleDriveDoc> = e.detail.docs;
       console.log("GoogleDrivePicker: onPicked ", e);
       const folders = docs.filter((doc) => doc.type === "folder");
-      // const images = docs.filter((doc) => doc.type === "photo");
+      const images = docs.filter((doc) => doc.type === "photo");
       clientSearchService.indexGoogleDrive(
         dispatch,
         forceUpdate,
         getTagsQuery.data,
         bearerToken,
-        folders
+        folders,
+        images
       );
     }
     setShow(false);
