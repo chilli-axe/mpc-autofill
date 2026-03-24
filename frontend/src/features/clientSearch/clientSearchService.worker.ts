@@ -42,6 +42,10 @@ export class ClientSearchService {
     return this.localFilesIndex?.fileHandle !== undefined;
   }
 
+  public hasGoogleDriveIndex() {
+    return this.googleDriveIndex !== undefined;
+  }
+
   public getLocalFilesDirectoryHandle(): FileSystemDirectoryHandle | undefined {
     return this.localFilesIndex?.fileHandle;
   }
@@ -130,7 +134,9 @@ export class ClientSearchService {
       tags
     );
     this.googleDriveIndex = { index: oramaIndex };
-    // TODO: return context about size
+    return {
+      size: this.googleDriveIndex.index?.size,
+    };
   }
 
   public searchOramaIndex(

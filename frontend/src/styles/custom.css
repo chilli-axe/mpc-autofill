@@ -166,3 +166,9 @@
 .rotate-neg90 {
   transform: rotate(0deg);
 }
+
+/* Ensure the Google Drive Picker dialog renders above Bootstrap's offcanvas (z-index: 1045) */
+.picker-dialog-bg,
+.picker-dialog {
+  z-index: 2000 !important;
+}

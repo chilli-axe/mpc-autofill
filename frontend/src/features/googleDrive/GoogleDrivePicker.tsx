@@ -7,66 +7,63 @@ import {
 import {
   DrivePicker,
   DrivePickerDocsView,
-  DrivePickerProps,
 } from "@googleworkspace/drive-picker-react";
 import { useState } from "react";
 
-import { GoogleDriveDoc, useAppDispatch } from "@/common/types";
-import { useGetTagsQuery } from "@/store/api";
+import { GoogleDriveDoc } from "@/common/types";
 
-import { useClientSearchContext } from "../clientSearch/clientSearchContext";
-import { useGoogleDrivePickerContext } from "./googleDrivePickerContext";
+export type PickerDoneResult =
+  | {
+      success: true;
+      bearerToken: string;
+      folders: Array<GoogleDriveDoc>;
+      images: Array<GoogleDriveDoc>;
+    }
+  | { success: false };
 
-interface GoogleDrivePickerProps {}
+interface GoogleDrivePickerProps {
+  show: boolean;
+  onDone: (result: PickerDoneResult) => void;
+}
 
-export const GoogleDrivePicker = ({}: GoogleDrivePickerProps) => {
-  const { show, setShow } = useGoogleDrivePickerContext();
-  const dispatch = useAppDispatch();
-  const { clientSearchService, forceUpdate } = useClientSearchContext();
+export const GoogleDrivePicker = ({ show, onDone }: GoogleDrivePickerProps) => {
   const [bearerToken, setBearerToken] = useState<string | undefined>(undefined);
-  const getTagsQuery = useGetTagsQuery();
   const onPicked = async (e: PickerPickedEvent) => {
     if (bearerToken) {
-      alert("picked!");
       const docs: Array<GoogleDriveDoc> = e.detail.docs;
-      console.log("GoogleDrivePicker: onPicked ", e);
       const folders = docs.filter((doc) => doc.type === "folder");
       const images = docs.filter((doc) => doc.type === "photo");
-      clientSearchService.indexGoogleDrive(
-        dispatch,
-        forceUpdate,
-        getTagsQuery.data,
-        bearerToken,
-        folders,
-        images
-      );
+      onDone({ success: true, bearerToken, folders, images });
+    } else {
+      onDone({ success: false });
     }
-    setShow(false);
   };
   const onOauthResponse = async (e: OAuthResponseEvent) => {
-    // TODO: check if success
     setBearerToken(e.detail.access_token);
   };
   const onCanceled = async (e: PickerCanceledEvent) => {
-    alert("cancelled!");
-    console.log("GoogleDrivePicker: onCanceled ", e);
-    setShow(false);
+    onDone({ success: false });
   };
-  if (!show) return null;
+  const onOauthError = async (e: OAuthErrorEvent) => {
+    onDone({ success: false });
+  };
   return (
-    <DrivePicker
-      client-id={process.env.NEXT_PUBLIC_GOOGLE_DRIVE_CLIENT_ID}
-      app-id={process.env.NEXT_PUBLIC_GOOGLE_DRIVE_APP_ID}
-      onPicked={onPicked}
-      onOauthResponse={onOauthResponse}
-      onCanceled={onCanceled}
-      scope="https://www.googleapis.com/auth/drive.readonly"
-      multiselect={true}
-    >
-      <DrivePickerDocsView
-        select-folder-enabled="true"
-        include-folders="true"
-      />
-    </DrivePicker>
+    show && (
+      <DrivePicker
+        client-id={process.env.NEXT_PUBLIC_GOOGLE_DRIVE_CLIENT_ID}
+        app-id={process.env.NEXT_PUBLIC_GOOGLE_DRIVE_APP_ID}
+        onPicked={onPicked}
+        onOauthResponse={onOauthResponse}
+        onCanceled={onCanceled}
+        onOauthError={onOauthError}
+        scope="https://www.googleapis.com/auth/drive.readonly"
+        multiselect={true}
+      >
+        <DrivePickerDocsView
+          select-folder-enabled="true"
+          include-folders="true"
+        />
+      </DrivePicker>
+    )
   );
 };

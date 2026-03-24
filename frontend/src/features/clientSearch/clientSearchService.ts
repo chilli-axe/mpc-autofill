@@ -50,6 +50,10 @@ export class ClientSearchService {
     return this.worker?.hasLocalFilesDirectoryHandle() ?? false;
   }
 
+  public async hasGoogleDriveIndex(): Promise<boolean> {
+    return this.worker?.hasGoogleDriveIndex() ?? false;
+  }
+
   public async getLocalFilesDirectoryHandle(): Promise<
     FileSystemDirectoryHandle | undefined
   > {
@@ -73,12 +77,21 @@ export class ClientSearchService {
 
   // directory handle stuff below
 
-  public async clearDirectoryHandle(state: RootState, dispatch: AppDispatch) {
+  public async clearLocalFilesIndex(state: RootState, dispatch: AppDispatch) {
     if (this.worker === undefined) {
       throw new Error("clientSearchService was not initialised!");
     }
     return this.worker
       .clearLocalFilesIndex()
+      .then(() => recalculateSearchResults(state, dispatch, true));
+  }
+
+  public async clearGoogleDriveIndex(state: RootState, dispatch: AppDispatch) {
+    if (this.worker === undefined) {
+      throw new Error("clientSearchService was not initialised!");
+    }
+    return this.worker
+      .clearGoogleDriveIndex()
       .then(() => recalculateSearchResults(state, dispatch, true));
   }
 
@@ -139,20 +152,18 @@ export class ClientSearchService {
     }
     const notificationId = Math.random().toString();
     // if (await this.worker.hasLocalFilesDirectoryHandle()) {
-    // dispatch(
-    //   setNotification([
-    //     notificationId,
-    //     {
-    //       name: `Synchronising ${
-    //         (await this.worker.getLocalFilesDirectoryHandle())!.name
-    //       }`,
-    //       message: "This may take a while...",
-    //       level: "info",
-    //     },
-    //   ])
-    // );
+    dispatch(
+      setNotification([
+        notificationId,
+        {
+          name: `Synchronising Google Drive resources`,
+          message: "This may take a while...",
+          level: "info",
+        },
+      ])
+    );
     // }
-    const indexGoogleDriveResult = await this.worker.indexGoogleDrive(
+    const { size } = await this.worker.indexGoogleDrive(
       tags,
       bearerToken,
       folders,
@@ -164,10 +175,8 @@ export class ClientSearchService {
       setNotification([
         notificationId, // overwrite the name/message for the existing toast rather than making a new one
         {
-          name: "placeholder",
-          // name: `Synchronised ${handle.name}`,
-          message: "placeholder 2",
-          // message: `Indexed ${size} cards.`,
+          name: `Synchronised Google Drive resources`,
+          message: `Indexed ${size} cards.`,
           level: "info",
         },
       ])
@@ -176,11 +185,14 @@ export class ClientSearchService {
     dispatch(clearSearchResults());
     fetchCardDocumentsAndReportError(dispatch, { refreshCardbacks: true });
     forceUpdate();
-    // }
   }
 
   public async getDirectoryIndexSize(): Promise<number | undefined> {
     return this.worker?.getLocalFilesIndexSize();
+  }
+
+  public async getGoogleDriveIndexSize(): Promise<number | undefined> {
+    return this.worker?.getGoogleDriveIndexSize();
   }
 
   // search stuff below

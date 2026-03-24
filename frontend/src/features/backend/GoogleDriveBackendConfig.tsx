@@ -1,87 +1,141 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import Alert from "react-bootstrap/Alert";
 import Button from "react-bootstrap/Button";
-import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
 
 import { ProjectName } from "@/common/constants";
-import { useAppDispatch, useAppStore } from "@/common/types";
+import { GoogleDriveDoc, useAppDispatch, useAppStore } from "@/common/types";
 import { RightPaddedIcon } from "@/components/icon";
+import {
+  BackendConfigStep,
+  BackendConfigSteps,
+  evaluateSteps,
+  ValidationState,
+} from "@/features/backend/BackendConfigSteps";
 import { useClientSearchContext } from "@/features/clientSearch/clientSearchContext";
 import {
-  useLocalFilesDirectoryHandle,
-  useLocalFilesDirectoryIndexSize,
+  useGoogleDriveIndexSize,
+  useHasGoogleDriveIndex,
 } from "@/features/clientSearch/clientSearchHooks";
-import { useGoogleDrivePickerContext } from "@/features/googleDrive/googleDrivePickerContext";
+import {
+  GoogleDrivePicker,
+  PickerDoneResult,
+} from "@/features/googleDrive/GoogleDrivePicker";
 import { useGetTagsQuery } from "@/store/api";
 import { setNotification } from "@/store/slices/toastsSlice";
 
-interface GoogleDriveBackendConfigProps {
-  handleClose: {
-    (): void;
-    (event: React.MouseEvent<HTMLButtonElement, MouseEvent>): void;
-  };
-}
-
-export const GoogleDriveBackendConfig = ({
-  handleClose,
-}: GoogleDriveBackendConfigProps) => {
+export const GoogleDriveBackendConfig = () => {
   const { clientSearchService, forceUpdate } = useClientSearchContext();
-  const directoryHandle = useLocalFilesDirectoryHandle();
-  const directoryIndexSize = useLocalFilesDirectoryIndexSize();
+  const hasGoogleDriveIndex = useHasGoogleDriveIndex();
+  const googleDriveIndexSize = useGoogleDriveIndexSize();
   const getTagsQuery = useGetTagsQuery();
-  const { setShow } = useGoogleDrivePickerContext();
-
   const dispatch = useAppDispatch();
   const store = useAppStore();
 
-  const chooseDirectory = async () => {
-    setShow(true);
-    handleClose();
+  const [validationStatus, setValidationStatus] = useState<
+    Array<ValidationState>
+  >([]);
+  const [showPicker, setShowPicker] = useState(false);
+  const pickerOnDoneRef = useRef<((result: PickerDoneResult) => void) | null>(
+    null
+  );
+
+  const steps: Array<BackendConfigStep> = [
+    {
+      label: "Choosing Google Drive resources",
+      callable: async () =>
+        new Promise((resolve) => {
+          pickerOnDoneRef.current = (result: PickerDoneResult) => {
+            pickerOnDoneRef.current = null;
+            setShowPicker(false);
+            resolve(
+              result.success
+                ? {
+                    success: true,
+                    nextArg: {
+                      bearerToken: result.bearerToken,
+                      folders: result.folders,
+                      images: result.images,
+                    },
+                  }
+                : { success: false }
+            );
+          };
+          setShowPicker(true);
+        }),
+    },
+    {
+      label: "Indexing files",
+      callable: async ({
+        bearerToken,
+        folders,
+        images,
+      }: {
+        bearerToken: string;
+        folders: Array<GoogleDriveDoc>;
+        images: Array<GoogleDriveDoc>;
+      }) => {
+        await clientSearchService.indexGoogleDrive(
+          dispatch,
+          forceUpdate,
+          getTagsQuery.data,
+          bearerToken,
+          folders,
+          images
+        );
+        return { success: true };
+      },
+    },
+  ];
+
+  const chooseGoogleDriveResources = () =>
+    evaluateSteps(steps, setValidationStatus);
+  const clearGoogleDriveResources = async () => {
+    await clientSearchService.clearGoogleDriveIndex(store.getState(), dispatch);
+    forceUpdate();
+    if (hasGoogleDriveIndex) {
+      dispatch(
+        setNotification([
+          Math.random().toString(),
+          {
+            name: `Removed Google Drive resources`,
+            message: null,
+            level: "info",
+          },
+        ])
+      );
+    }
+    setValidationStatus([]);
   };
 
   return (
     <>
       <h4>Google Drive</h4>
-      {directoryHandle !== undefined && (
+      <GoogleDrivePicker
+        show={showPicker}
+        onDone={(result) => pickerOnDoneRef.current?.(result)}
+      />
+      {hasGoogleDriveIndex && (
         <Alert variant="success">
-          You&apos;re connected to <b>{directoryHandle.name}</b>, with{" "}
-          <b>{directoryIndexSize ?? 0}</b> images indexed.
-          <Row className="gx-1 pt-2">
-            <Col xs={6}>
-              <div className="d-grid gap-0">
-                <Button
-                  variant="primary"
-                  onClick={async () =>
-                    clientSearchService.indexDirectory(
-                      dispatch,
-                      forceUpdate,
-                      getTagsQuery.data
-                    )
-                  }
-                >
-                  <RightPaddedIcon bootstrapIconName="arrow-repeat" />
-                  Synchronise
-                </Button>
-              </div>
-            </Col>
-            {/* <Col xs={6}>
-              <div className="d-grid gap-0">
-                <Button variant="danger" onClick={clearDirectoryChoice}>
-                  <RightPaddedIcon bootstrapIconName="eject" />
-                  Disconnect
-                </Button>
-              </div>
-            </Col> */}
-          </Row>
+          You have <b>{googleDriveIndexSize ?? 0}</b> Google Drive images
+          indexed.
+          <br />
+          <br />
+          <div className="d-grid gap-0">
+            <Button variant="danger" onClick={clearGoogleDriveResources}>
+              <RightPaddedIcon bootstrapIconName="eject" />
+              Disconnect
+            </Button>
+          </div>
         </Alert>
       )}
       <p>
         Choose Google Drive files and folder you&apos;d like to connect{" "}
         {ProjectName} to.
       </p>
+      <BackendConfigSteps validationStatus={validationStatus} steps={steps} />
       <Row className="g-0">
-        <Button variant="outline-primary" onClick={chooseDirectory}>
+        <Button variant="outline-primary" onClick={chooseGoogleDriveResources}>
           <RightPaddedIcon bootstrapIconName="plus-circle" />
           Choose Resources
         </Button>

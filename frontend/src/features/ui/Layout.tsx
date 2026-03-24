@@ -1,7 +1,7 @@
 import styled from "@emotion/styled";
 import { Queue } from "async-await-queue";
 import { GoogleAnalytics } from "nextjs-google-analytics";
-import React, { useEffect, useReducer, useState } from "react";
+import React, { useEffect, useReducer } from "react";
 import { PropsWithChildren } from "react";
 import Container from "react-bootstrap/Container";
 import SSRProvider from "react-bootstrap/SSRProvider";
@@ -20,8 +20,6 @@ import {
   DownloadContext,
   DownloadContextProvider,
 } from "@/features/download/download";
-import { GoogleDrivePicker } from "@/features/googleDrive/GoogleDrivePicker";
-import { GoogleDrivePickerContextProvider } from "@/features/googleDrive/googleDrivePickerContext";
 import { Modals } from "@/features/modals/Modals";
 import { pdfRenderService } from "@/features/pdf/pdfRenderService";
 import { Toasts } from "@/features/toasts/Toasts";
@@ -71,7 +69,6 @@ export function LayoutWithoutReduxProvider({ children }: PropsWithChildren) {
   const consent = getGoogleAnalyticsConsent();
   const downloadContext: DownloadContext = new Queue(10, 50);
   const [forceUpdateValue, forceUpdate] = useReducer((x: number) => x + 1, 0);
-  const [showDrivePicker, setShowDrivePicker] = useState(false);
   useBackendSetter();
   const dispatch = useAppDispatch();
 
@@ -92,18 +89,13 @@ export function LayoutWithoutReduxProvider({ children }: PropsWithChildren) {
       <ClientSearchContextProvider
         value={{ clientSearchService, forceUpdate, forceUpdateValue }}
       >
-        <GoogleDrivePickerContextProvider
-          value={{ show: showDrivePicker, setShow: setShowDrivePicker }}
-        >
-          {consent === true && (
-            <GoogleAnalytics trackPageViews gaMeasurementId="G-JV8WV3FQML" />
-          )}
-          <Toasts />
-          <Modals />
-          <ProjectNavbar />
-          <GoogleDrivePicker />
-          {children}
-        </GoogleDrivePickerContextProvider>
+        {consent === true && (
+          <GoogleAnalytics trackPageViews gaMeasurementId="G-JV8WV3FQML" />
+        )}
+        <Toasts />
+        <Modals />
+        <ProjectNavbar />
+        {children}
       </ClientSearchContextProvider>
     </DownloadContextProvider>
   );
