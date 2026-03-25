@@ -13,6 +13,8 @@ import {
 } from "@/common/schema_types";
 import {
   CardType,
+  GoogleDriveFile,
+  GoogleDriveImageMimeTypes,
   LocalDirectoryHandleParams,
   LocalFileHandleParams,
   OramaCardDocument,
@@ -21,6 +23,8 @@ import {
 } from "@/common/types";
 import { OramaSchema } from "@/common/types";
 import { extractNameAndTags } from "@/features/clientSearch/tags";
+
+import { GoogleDriveService } from "../googleDrive/GoogleDriveService";
 
 export class Folder {
   constructor(
@@ -94,14 +98,14 @@ export class Image {
   }
 
   getCardType(): CardType {
-    return this.folder.name.toLowerCase().startsWith("cardback")
+    return this.folder.name.toLowerCase().includes("cardback")
       ? CardTypeSchema.Cardback
-      : this.folder.name.toLowerCase().startsWith("token")
+      : this.folder.name.toLowerCase().includes("token")
       ? CardTypeSchema.Token
       : CardTypeSchema.Card;
   }
 
-  async getFullPath(tags: Map<string, Tag>): Promise<Array<string> | null> {
+  getFullPath(tags: Map<string, Tag>): Array<string> | null {
     return [
       ...this.folder.getFullPath(tags),
       this.params.sourceType === SourceType.LocalFile
@@ -110,29 +114,31 @@ export class Image {
     ];
   }
 
-  async getImageId(tags: Map<string, Tag>): Promise<string> {
+  getImageId(tags: Map<string, Tag>): string {
     if (this.params.sourceType === SourceType.LocalFile) {
-      const resolvedPath = await this.getFullPath(tags);
+      const resolvedPath = this.getFullPath(tags);
       // fall back on setting filepath to random string if unable to resolve. realistically this should never happen.
       const filePath = resolvedPath
         ? `./${resolvedPath.slice(1).join("/")}`
         : Math.random().toString();
       return filePath;
     }
+    if (this.params.sourceType === SourceType.GoogleDrive) {
+      return this.params.identifier;
+    }
     throw new Error("getImageId not implemented yet for other source types");
   }
 
-  async getOramaCardDocument(
-    tags: Map<string, Tag>
-  ): Promise<OramaCardDocument> {
+  getOramaCardDocument(tags: Map<string, Tag>): OramaCardDocument {
     const { language, name, tags: extractedTags } = this.unpackName(tags);
-    const imageId = await this.getImageId(tags);
+    const imageId = this.getImageId(tags);
     return {
       id: imageId,
       cardType: this.getCardType(),
       name: name,
       searchq: toSearchable(this.name),
       source: this.folder.name, // TODO: verbose naming?
+      sourceVerbose: this.folder.getFullPath(tags).join(" / "),
       dpi: 10 * Math.round((this.height * 300) / 1110 / 10), // TODO: NaN?
       extension: this.extension,
       size: this.size,
@@ -150,44 +156,52 @@ abstract class Indexer {
   abstract getAllImagesInsideFolder(folder: Folder): Promise<Array<Image>>;
 
   private async exploreFolder(folder: Folder): Promise<Array<Image>> {
-    const folders: Array<Folder> = [folder];
-    const images: Array<Image> = [];
-    while (folders.length > 0) {
-      const folder = folders.pop();
-      if (folder !== undefined) {
-        const imagesInFolder: Array<Image> =
-          await this.getAllImagesInsideFolder(folder);
-        const subfolders: Array<Folder> = await this.getAllFoldersInsideFolder(
-          folder
-        );
-        images.push(...imagesInFolder);
-        folders.push(
-          ...subfolders.filter((folder) => !folder.name.startsWith("!"))
-        );
-      } else {
-        break;
-      }
-    }
-    return images;
+    const [imagesInFolder, subfolders] = await Promise.all([
+      this.getAllImagesInsideFolder(folder),
+      this.getAllFoldersInsideFolder(folder),
+    ]);
+
+    const validSubfolders = subfolders.filter(
+      (subfolder) => !subfolder.name.startsWith("!")
+    );
+
+    const imagesFromSubfolders = await Promise.all(
+      validSubfolders.map((subfolder) => this.exploreFolder(subfolder))
+    );
+
+    return [...imagesInFolder, ...imagesFromSubfolders.flat()];
   }
 
-  public async indexFolder(
-    folder: Folder,
+  public async indexFiles(
+    folders: Array<Folder>,
+    images: Array<Image>,
     tags: Array<Tag> | undefined
   ): Promise<OramaIndex> {
     const db = create({ schema: OramaSchema });
     const tagsMap = new Map(
       (tags ?? []).map((tag) => [tag.name.toLowerCase(), tag])
     );
-    const oramaCardDocuments = await Promise.all(
-      (
-        await this.exploreFolder(folder)
-      ).map((image) => image.getOramaCardDocument(tagsMap))
+    const allImages = (
+      await Promise.all(folders.map((folder) => this.exploreFolder(folder)))
+    )
+      .concat([images])
+      .flat();
+
+    const seenIds = new Set<string>();
+    const uniqueImages = allImages.filter((image) => {
+      const id = image.getImageId(tagsMap);
+      if (seenIds.has(id)) return false;
+      seenIds.add(id);
+      return true;
+    });
+
+    const deduplicatedOramaCardDocuments = uniqueImages.map((image) =>
+      image.getOramaCardDocument(tagsMap)
     );
-    insertMultiple(db, oramaCardDocuments);
+    insertMultiple(db, deduplicatedOramaCardDocuments);
     return {
       oramaDb: db,
-      size: oramaCardDocuments.length,
+      size: deduplicatedOramaCardDocuments.length,
     };
   }
 }
@@ -247,5 +261,125 @@ export class LocalFilesIndexer extends Indexer {
       }
     }
     return images;
+  }
+}
+
+export class GoogleDriveIndexer extends Indexer {
+  googleDriveService: GoogleDriveService;
+
+  constructor(bearerToken: string) {
+    super();
+    this.googleDriveService = new GoogleDriveService(bearerToken);
+  }
+
+  getSourceType(): SourceType.GoogleDrive {
+    return SourceType.GoogleDrive;
+  }
+
+  createImage(
+    folder: Folder,
+    file: Pick<
+      GoogleDriveFile,
+      "id" | "name" | "size" | "modifiedTime" | "imageMediaMetadata"
+    >
+  ): Image {
+    const nameParts = file.name.split(".");
+    const extension =
+      nameParts.length > 1 ? nameParts[nameParts.length - 1] : "";
+    return new Image(
+      {
+        sourceType: this.getSourceType(),
+        identifier: file.id,
+        fileHandle: undefined,
+      },
+      removeFileExtension(file.name),
+      extension,
+      parseInt(file.size),
+      new Date(file.modifiedTime),
+      file.imageMediaMetadata?.height ?? 0,
+      folder
+    );
+  }
+
+  async getAllFoldersInsideFolder(folder: Folder): Promise<Array<Folder>> {
+    if (folder.params.sourceType !== this.getSourceType()) {
+      return [];
+    }
+    const response = await this.googleDriveService.getFoldersInsideFolder({
+      folderId: folder.params.identifier,
+    });
+    return response.files.map(
+      (file: { id: string; name: string }) =>
+        new Folder(
+          {
+            sourceType: this.getSourceType(),
+            identifier: file.id,
+            fileHandle: undefined,
+          },
+          file.name,
+          folder
+        )
+    );
+  }
+
+  async getAllImagesInsideFolder(folder: Folder): Promise<Array<Image>> {
+    if (folder.params.sourceType !== this.getSourceType()) {
+      return [];
+    }
+    const folderId = folder.params.identifier;
+    const images: Array<Image> = [];
+    let pageToken: string | undefined = undefined;
+    const mimeTypeFilter = GoogleDriveImageMimeTypes.map(
+      (mimeType) => `mimeType contains '${mimeType}'`
+    ).join(" or ");
+    while (true) {
+      const response = await this.googleDriveService.getImagesInsideFolder({
+        folderId,
+        pageToken,
+      });
+      const newImages = response.files
+        .filter((file) => !file.trashed)
+        .map((file) => this.createImage(folder, file));
+      images.push(...newImages);
+      pageToken = response.nextPageToken;
+      if (
+        pageToken == null ||
+        response.files === undefined ||
+        response.files.length === 0
+      ) {
+        break;
+      }
+    }
+    return images;
+  }
+
+  async getImageFromIdentifier(
+    identifier: string,
+    folder: Folder | undefined
+  ): Promise<Image | undefined> {
+    const file = await this.googleDriveService.getFileById({
+      fileId: identifier,
+    });
+    if (file.trashed) return undefined;
+    if (folder !== undefined) {
+      return this.createImage(folder, file);
+    } else {
+      // construct folder by looking up parent name
+      const parentFile = await this.googleDriveService.getFileById({
+        fileId: file.parents[0]!,
+      });
+      return this.createImage(
+        new Folder(
+          {
+            sourceType: SourceType.GoogleDrive,
+            identifier: parentFile.id,
+            fileHandle: undefined,
+          },
+          parentFile.name,
+          undefined
+        ),
+        file
+      );
+    }
   }
 }

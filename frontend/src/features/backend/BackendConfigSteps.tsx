@@ -15,7 +15,8 @@ export interface BackendConfigStep {
 
 export const evaluateSteps = async (
   steps: Array<BackendConfigStep>,
-  setValidationStatus: (newSteps: Array<ValidationState>) => void
+  setValidationStatus: (newSteps: Array<ValidationState>) => void,
+  onError?: (error: Error) => void
 ): Promise<boolean> => {
   let updatedValidationStatus: Array<ValidationState> = [];
   setValidationStatus(updatedValidationStatus);
@@ -24,7 +25,18 @@ export const evaluateSteps = async (
   for (const { callable } of steps) {
     updatedValidationStatus.push(ValidationState.IN_PROGRESS);
     setValidationStatus(updatedValidationStatus);
-    const outcome = await callable(...(arg !== undefined ? [arg] : []));
+    let outcome: { success: boolean; nextArg?: any };
+    try {
+      outcome = await callable(...(arg !== undefined ? [arg] : []));
+    } catch (error) {
+      updatedValidationStatus = [
+        ...updatedValidationStatus.slice(0, -1),
+        ValidationState.FAILED,
+      ];
+      setValidationStatus(updatedValidationStatus);
+      onError?.(error instanceof Error ? error : new Error(String(error)));
+      return false;
+    }
     updatedValidationStatus = [
       ...updatedValidationStatus.slice(0, -1),
       outcome.success ? ValidationState.SUCCEEDED : ValidationState.FAILED,

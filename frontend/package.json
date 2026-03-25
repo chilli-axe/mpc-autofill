@@ -18,6 +18,7 @@
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
+    "@googleworkspace/drive-picker-react": "^0.2.0",
     "@hello-pangea/dnd": "^17.0.0",
     "@orama/orama": "^3.1.18",
     "@popperjs/core": "^2.11.6",

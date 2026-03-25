@@ -27,7 +27,7 @@ import { AppDispatch, RootState } from "@/store/store";
 
 const typePrefix = "searchResults/fetchCards";
 
-const mergeSearchResults = (
+export const mergeSearchResults = (
   a: SearchResults,
   b: SearchResults
 ): SearchResults => {
@@ -40,9 +40,10 @@ const mergeSearchResults = (
         // initialize the array if it doesn't exist
         mergedResults[query][cardType] ??= [];
         // merge the arrays
+        const existingIds = new Set(mergedResults[query][cardType]);
         mergedResults[query][cardType] = [
           ...mergedResults[query][cardType],
-          ...searchResults,
+          ...searchResults.filter((id) => !existingIds.has(id)),
         ];
       }
     } else {
@@ -67,12 +68,8 @@ export const fetchSearchResults = createAppAsyncThunk(
     const backendURL = selectRemoteBackendURL(state);
     const searchSettings = selectSearchSettings(state);
 
-    const hasLocalFilesDirectoryHandle =
-      await clientSearchService.hasLocalFilesDirectoryHandle();
     const localResultsPromise: Promise<SearchResults> =
-      hasLocalFilesDirectoryHandle
-        ? clientSearchService.editorSearch(searchSettings, queriesToSearch)
-        : new Promise(async (resolve) => resolve({}));
+      clientSearchService.editorSearch(searchSettings, queriesToSearch);
     const remoteResultsPromise: Promise<SearchResults> =
       queriesToSearch.length > 0 && backendURL != null
         ? Array.from(
