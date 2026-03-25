@@ -5,7 +5,10 @@
 import { ProjectName } from "@/common/constants";
 import { BackendState, createAppSlice, useAppSelector } from "@/common/types";
 import { useClientSearchContext } from "@/features/clientSearch/clientSearchContext";
-import { useLocalFilesDirectoryHandle } from "@/features/clientSearch/clientSearchHooks";
+import {
+  useHasGoogleDriveIndex,
+  useLocalFilesDirectoryHandle,
+} from "@/features/clientSearch/clientSearchHooks";
 import { useGetBackendInfoQuery } from "@/store/api";
 import { RootState } from "@/store/store";
 
@@ -53,7 +56,7 @@ export const useLocalBackendConfigured = (): boolean => {
 };
 
 export const useGoogleDriveBackendConfigured = (): boolean => {
-  return true; // TODO
+  return useHasGoogleDriveIndex();
 };
 
 export const useAnyBackendConfigured = (): boolean => {

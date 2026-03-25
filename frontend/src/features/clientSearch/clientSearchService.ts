@@ -146,12 +146,10 @@ export class ClientSearchService {
     folders: Array<GoogleDriveDoc>,
     images: Array<GoogleDriveDoc>
   ) {
-    // TODO: not DRY
     if (this.worker === undefined) {
       throw new Error("clientSearchService was not initialised!");
     }
     const notificationId = Math.random().toString();
-    // if (await this.worker.hasLocalFilesDirectoryHandle()) {
     dispatch(
       setNotification([
         notificationId,
@@ -162,15 +160,12 @@ export class ClientSearchService {
         },
       ])
     );
-    // }
     const { size } = await this.worker.indexGoogleDrive(
       tags,
       bearerToken,
       folders,
       images
     );
-    // if (indexGoogleDriveResult !== undefined) {
-    // const { size, a } = indexGoogleDriveResult;
     dispatch(
       setNotification([
         notificationId, // overwrite the name/message for the existing toast rather than making a new one
