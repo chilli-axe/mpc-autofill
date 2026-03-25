@@ -181,19 +181,27 @@ abstract class Indexer {
     const tagsMap = new Map(
       (tags ?? []).map((tag) => [tag.name.toLowerCase(), tag])
     );
-    const oramaCardDocuments = await Promise.all(
-      folders.map(async (folder) => this.exploreFolder(folder))
+    const allImages = (
+      await Promise.all(folders.map((folder) => this.exploreFolder(folder)))
     )
-      .then((images2d) => images2d.concat([images]))
-      .then((images2d) =>
-        images2d.flatMap((images) =>
-          images.map((image) => image.getOramaCardDocument(tagsMap))
-        )
-      );
-    insertMultiple(db, oramaCardDocuments);
+      .concat([images])
+      .flat();
+
+    const seenIds = new Set<string>();
+    const uniqueImages = allImages.filter((image) => {
+      const id = image.getImageId(tagsMap);
+      if (seenIds.has(id)) return false;
+      seenIds.add(id);
+      return true;
+    });
+
+    const deduplicatedOramaCardDocuments = uniqueImages.map((image) =>
+      image.getOramaCardDocument(tagsMap)
+    );
+    insertMultiple(db, deduplicatedOramaCardDocuments);
     return {
       oramaDb: db,
-      size: oramaCardDocuments.length,
+      size: deduplicatedOramaCardDocuments.length,
     };
   }
 }
