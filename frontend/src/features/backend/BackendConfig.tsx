@@ -9,6 +9,8 @@ import { LocalFolderBackendConfig } from "@/features/backend/LocalFolderBackendC
 import { RemoteBackendConfig } from "@/features/backend/RemoteBackendConfig";
 import { getEnvURL } from "@/features/backend/useBackendSetter";
 
+import { GoogleDriveBackendConfig } from "./GoogleDriveBackendConfig";
+
 interface BackendConfigProps {
   show: boolean;
   handleClose: {
@@ -31,6 +33,8 @@ export function BackendConfig({ show, handleClose }: BackendConfigProps) {
             <hr />
           </>
         )}
+        <GoogleDriveBackendConfig />
+        <hr />
         <LocalFolderBackendConfig />
       </Offcanvas.Body>
     </Offcanvas>

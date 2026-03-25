@@ -452,7 +452,7 @@ export function Card({
           <div className="mpccard-spacing">
             <BSCard.Text className="mpccard-source">
               {maybeCardDocument != null &&
-                `${maybeCardDocument.sourceVerbose} [${maybeCardDocument.dpi} DPI]`}
+                `${maybeCardDocument.sourceName} [${maybeCardDocument.dpi} DPI]`}
               {maybeCardDocument == null &&
                 searchQuery != undefined &&
                 "Your search query"}

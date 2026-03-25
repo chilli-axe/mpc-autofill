@@ -95,6 +95,7 @@ export default function ProjectNavbar() {
                   as={Link}
                   href="/editor"
                   active={router.route === "/editor"}
+                  eventKey="/editor"
                 >
                   Editor
                 </Nav.Link>
@@ -105,6 +106,7 @@ export default function ProjectNavbar() {
                     as={Link}
                     href="/new"
                     active={router.route === "/new"}
+                    eventKey="/new"
                   >
                     What&apos;s New?
                   </Nav.Link>
@@ -112,6 +114,7 @@ export default function ProjectNavbar() {
                     as={Link}
                     href="/explore"
                     active={router.route === "/explore"}
+                    eventKey="/explore"
                   >
                     Explore
                   </Nav.Link>
@@ -119,6 +122,7 @@ export default function ProjectNavbar() {
                     as={Link}
                     href="/contributions"
                     active={router.route === "/contributions"}
+                    eventKey="/contributions"
                   >
                     Contributions
                   </Nav.Link>
@@ -138,12 +142,18 @@ export default function ProjectNavbar() {
                 Download
               </Nav.Link>
               <NavDropdown title="Donate">
-                <NavDropdown.Item onClick={handleShowSupportDeveloperModal}>
+                <NavDropdown.Item
+                  onClick={handleShowSupportDeveloperModal}
+                  eventKey="support-developer"
+                >
                   <i className="bi bi-code" /> Support the Developer
                 </NavDropdown.Item>
                 {backendInfoQuery.data?.name != null &&
                   (patreonQuery.data?.url ?? "").trim().length > 0 && (
-                    <NavDropdown.Item onClick={handleShowSupportBackendModal}>
+                    <NavDropdown.Item
+                      onClick={handleShowSupportBackendModal}
+                      eventKey="support-backend"
+                    >
                       <i className="bi bi-server" /> Support{" "}
                       {backendInfoQuery.data.name}
                     </NavDropdown.Item>
@@ -151,12 +161,12 @@ export default function ProjectNavbar() {
               </NavDropdown>
             </Nav>
             <Nav className="ms-auto d-flex">
-              <Nav.Link className="m-0 py-0">
+              <Nav.Link className="m-0 py-0" eventKey="download-manager">
                 <OpenDownloadManagerButton
                   handleClick={handleShowDownloadManager}
                 />
               </Nav.Link>
-              <Nav.Link className="m-0 py-0">
+              <Nav.Link className="m-0 py-0" eventKey="configure-backend">
                 <Button
                   className="my-0"
                   variant="success"

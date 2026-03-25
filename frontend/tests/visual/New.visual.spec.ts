@@ -45,7 +45,7 @@ test.describe("New cards page visual tests", () => {
       - paragraph: /1st January, \\d+/
       - img "Card 5"
       - text: Card 5
-      - paragraph: /Source 2 Cardbacks \\[\\d+ DPI\\]/
+      - paragraph: /Source 2 \\[\\d+ DPI\\]/
     `);
   });
 
