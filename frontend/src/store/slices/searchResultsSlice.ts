@@ -27,7 +27,7 @@ import { AppDispatch, RootState } from "@/store/store";
 
 const typePrefix = "searchResults/fetchCards";
 
-const mergeSearchResults = (
+export const mergeSearchResults = (
   a: SearchResults,
   b: SearchResults
 ): SearchResults => {
@@ -40,9 +40,10 @@ const mergeSearchResults = (
         // initialize the array if it doesn't exist
         mergedResults[query][cardType] ??= [];
         // merge the arrays
+        const existingIds = new Set(mergedResults[query][cardType]);
         mergedResults[query][cardType] = [
           ...mergedResults[query][cardType],
-          ...searchResults,
+          ...searchResults.filter((id) => !existingIds.has(id)),
         ];
       }
     } else {
