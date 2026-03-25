@@ -35,17 +35,78 @@ type GoogleDriveGetFileByIdResponse = Pick<
   | "parents"
 >;
 
+type DelayFn = (ms: number) => Promise<void>;
+const defaultDelay: DelayFn = (ms) =>
+  new Promise((resolve) => setTimeout(resolve, ms));
+
+class Semaphore {
+  private active = 0;
+  private readonly queue: Array<() => void> = [];
+
+  constructor(private readonly concurrency: number) {}
+
+  async acquire(): Promise<void> {
+    if (this.active < this.concurrency) {
+      this.active++;
+      return;
+    }
+    await new Promise<void>((resolve) => this.queue.push(resolve));
+    this.active++;
+  }
+
+  release(): void {
+    this.active--;
+    this.queue.shift()?.();
+  }
+}
+
 export class GoogleDriveService {
   bearerToken: string;
-  constructor(bearerToken: string) {
+  private readonly delayFn: DelayFn;
+  private readonly semaphore: Semaphore;
+
+  constructor(
+    bearerToken: string,
+    delayFn: DelayFn = defaultDelay,
+    concurrency = 6
+  ) {
     this.bearerToken = bearerToken;
+    this.delayFn = delayFn;
+    this.semaphore = new Semaphore(concurrency);
   }
 
   async executeCall(resource: string, params: URLSearchParams) {
-    return fetch(`https://www.googleapis.com/drive/v3/${resource}?${params}`, {
-      headers: { Authorization: `Bearer ${this.bearerToken}` },
-      method: "GET",
-    }).then((r) => r.json());
+    const url = `https://www.googleapis.com/drive/v3/${resource}?${params}`;
+    const headers = { Authorization: `Bearer ${this.bearerToken}` };
+    const MAX_RETRIES = 4;
+    let delay = 1000;
+
+    await this.semaphore.acquire();
+    try {
+      for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+        const response = await fetch(url, { headers, method: "GET" });
+
+        if (response.status === 429 && attempt < MAX_RETRIES) {
+          const retryAfter = response.headers.get("Retry-After");
+          await this.delayFn(
+            retryAfter != null ? parseInt(retryAfter) * 1000 : delay
+          );
+          delay *= 2;
+          continue;
+        }
+
+        if (!response.ok) {
+          throw new Error(
+            `Google Drive API error: ${response.status} ${response.statusText}`
+          );
+        }
+        return response.json();
+      }
+
+      throw new Error("Google Drive API error: 429 Too Many Requests");
+    } finally {
+      this.semaphore.release();
+    }
   }
 
   async getFoldersInsideFolder(

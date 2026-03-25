@@ -89,7 +89,18 @@ export const GoogleDriveBackendConfig = () => {
   ];
 
   const chooseGoogleDriveResources = () =>
-    evaluateSteps(steps, setValidationStatus);
+    evaluateSteps(steps, setValidationStatus, (error) =>
+      dispatch(
+        setNotification([
+          Math.random().toString(),
+          {
+            name: "Google Drive error",
+            message: error.message,
+            level: "error",
+          },
+        ])
+      )
+    );
   const clearGoogleDriveResources = async () => {
     await clientSearchService.clearGoogleDriveIndex(store.getState(), dispatch);
     forceUpdate();
