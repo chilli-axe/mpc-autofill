@@ -56,7 +56,7 @@ export const GoogleDrivePicker = ({ show, onDone }: GoogleDrivePickerProps) => {
         onOauthResponse={onOauthResponse}
         onCanceled={onCanceled}
         onOauthError={onOauthError}
-        scope="https://www.googleapis.com/auth/drive.readonly"
+        scope="https://www.googleapis.com/auth/drive.metadata.readonly"
         multiselect={true}
       >
         <DrivePickerDocsView
