@@ -1,0 +1,21 @@
+name: Publish frontend to Cloudflare
+description: Publish frontend to Cloudflare
+inputs:
+  cloudflare-api-token:
+    description: Cloudflare API token
+    requried: true
+runs:
+  using: composite
+  steps:
+    - name: Restore cached frontend build artifacts
+      id: cache-primes-restore
+      uses: actions/cache/restore@v5
+      with:
+        path: frontend/out
+        key: frontend-build-${{ github.run_id }}
+    - name: Deploy frontend to Cloudflare
+      uses: cloudflare/wrangler-action@v3
+      with:
+        wranglerVersion: "4.80.0"
+        accountId: ${{ inputs.cloudflare-account-id }}
+        apiToken: ${{ inputs.cloudflare-api-token }}

@@ -55,12 +55,21 @@ jobs:
           image-worker-url: ${{ secrets.IMAGE_CDN_WORKER_DOMAIN }}
           google-drive-client-id: ${{ secrets.NEXT_PUBLIC_GOOGLE_DRIVE_CLIENT_ID }}
           google-drive-app-id: ${{ secrets.NEXT_PUBLIC_GOOGLE_DRIVE_APP_ID }}
-  publish-frontend:
-    name: Publish frontend
+  publish-frontend-to-github:
+    name: Publish frontend to GitHub
     needs: [build-frontend]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: ./.github/actions/publish-frontend
+      - uses: ./.github/actions/publish-frontend-to-github
         with:
           github-api-token: ${{ secrets.API_TOKEN_GITHUB }}
+  publish-frontend-to-cloudflare:
+    name: Publish frontend to Cloudflare
+    needs: [build-frontend]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/publish-frontend-to-cloudflare
+        with:
+          cloudflare-api-token: ${{ secrets.CLOUDFLARE_API_TOKEN }}

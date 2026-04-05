@@ -1,5 +1,5 @@
-name: Publish frontend
-description: Publish frontend
+name: Publish frontend to GitHub
+description: Publish frontend to GitHub Pages
 inputs:
   github-api-token:
     description: GitHub API token
