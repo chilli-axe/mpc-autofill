@@ -23,11 +23,6 @@ export const loadPageWithDefaultBackend = async (
   pageName: string = "editor"
 ) => {
   await page.goto(`/${pageName}?server=http://127.0.0.1:8000`);
-
-  // Wait for cookie consent toast to appear and dismiss it
-  const optOutButton = page.getByRole("button", { name: "Opt out" });
-  await optOutButton.waitFor({ state: "visible" });
-  await optOutButton.click();
 };
 
 export const navigateToEditor = async (page: Page) =>

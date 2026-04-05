@@ -13,6 +13,7 @@ import { defineConfig, devices } from "@playwright/test";
  */
 export default defineConfig({
   testDir: "./tests",
+  globalSetup: "./tests/global-setup",
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
@@ -27,6 +28,9 @@ export default defineConfig({
   use: {
     /* Base URL to use in actions like `await page.goto('')`. */
     baseURL: "http://localhost:3000",
+
+    /* Reuse the opted-out cookie consent state so tests don't have to dismiss the toast. */
+    storageState: "playwright/.auth/cookies.json",
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: "on-first-retry",

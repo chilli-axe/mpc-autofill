@@ -178,3 +178,11 @@ MPCAutofill/drives.csv
 frontend/public/mockServiceWorker.js
 /image-cdn/node_modules/*
 /image-cdn/.wrangler/*
+
+# Playwright
+node_modules/
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/
