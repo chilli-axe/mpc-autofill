@@ -19,6 +19,7 @@ jobs:
           moxfield-secret: ${{ secrets.MOXFIELD_SECRET }}
   build:
     name: Build
+    needs: [test]
     runs-on: ${{ matrix.os }}
     defaults:
       run:
