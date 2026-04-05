@@ -1,5 +1,14 @@
 name: Frontend tests
 description: Test the MPC Autofill static frontend
+inputs:
+  shard_index:
+    description: Shard index (1-based)
+    required: false
+    default: "1"
+  shard_total:
+    description: Total number of shards
+    required: false
+    default: "1"
 runs:
   using: composite
   steps:
@@ -20,19 +29,20 @@ runs:
       working-directory: frontend
       shell: bash
     - name: Run Jest tests
+      if: ${{ inputs.shard_index == '1' }}
       working-directory: frontend
       run: |
         npm run test
       shell: bash
     - name: Run Playwright tests
       run: |
-        npm run test-e2e
+        npx playwright test --shard=${{ inputs.shard_index }}/${{ inputs.shard_total }}
       working-directory: frontend
       shell: bash
-    - name: Upload Playwright report
+    - name: Upload blob report
       uses: actions/upload-artifact@v4
       if: ${{ !cancelled() }}
       with:
-        name: playwright-report
-        path: playwright-report/
-        retention-days: 30
+        name: blob-report-${{ inputs.shard_index }}
+        path: frontend/blob-report/
+        retention-days: 1
