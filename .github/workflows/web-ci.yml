@@ -5,6 +5,7 @@ on:
     paths:
       - "frontend/**"
       - "MPCAutofill/**"
+      - "cloudflare-static-site/**"
   workflow_dispatch:
 jobs:
   test-backend:
