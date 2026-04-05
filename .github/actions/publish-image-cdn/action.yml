@@ -30,8 +30,6 @@ runs:
         accountId: ${{ inputs.cloudflare-account-id }}
         workingDirectory: image-cdn
         secrets: |
-          WORKER_DOMAIN
-          GOOGLE_CLIENT_ID
           GOOGLE_CLIENT_SECRET
           GOOGLE_REFRESH_TOKEN
       env:
