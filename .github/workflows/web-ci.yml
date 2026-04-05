@@ -2,6 +2,9 @@ name: Web CI
 on:
   push:
     branches: ["master"]
+    paths:
+      - "frontend/**"
+      - "MPCAutofill/**"
   workflow_dispatch:
 jobs:
   test-backend:
