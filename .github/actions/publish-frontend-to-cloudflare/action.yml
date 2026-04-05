@@ -22,5 +22,5 @@ runs:
         wranglerVersion: "4.80.0"
         accountId: ${{ inputs.cloudflare-account-id }}
         apiToken: ${{ inputs.cloudflare-api-token }}
-        command: deploy --assets frontend/out
+        command: deploy --assets ../frontend/out
         workingDirectory: cloudflare-static-site
