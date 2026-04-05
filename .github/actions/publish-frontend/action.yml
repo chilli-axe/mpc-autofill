@@ -1,5 +1,9 @@
 name: Publish frontend
 description: Publish frontend
+inputs:
+  github-api-token:
+    description: GitHub API token
+    requried: true
 runs:
   using: composite
   steps:
@@ -12,7 +16,7 @@ runs:
     - name: Publish frontend to GitHub Pages repo
       uses: dmnemec/copy_file_to_another_repo_action@main
       env:
-        API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
+        API_TOKEN_GITHUB: ${{ inputs.github-api-token }}
       with:
         source_file: "frontend/out/."
         destination_repo: "mpcautofill/mpcautofill.github.io"
