@@ -41,8 +41,8 @@ jobs:
           npx next build
         env:
           NEXT_PUBLIC_GA_MEASUREMENT_ID: ${{ secrets.NEXT_PUBLIC_GA_MEASUREMENT_ID }}
-          NEXT_PUBLIC_IMAGE_BUCKET_URL: ${{ secrets.NEXT_PUBLIC_IMAGE_BUCKET_URL }}
-          NEXT_PUBLIC_IMAGE_WORKER_URL: ${{ secrets.NEXT_PUBLIC_IMAGE_WORKER_URL }}
+          NEXT_PUBLIC_IMAGE_BUCKET_URL: ${{ secrets.IMAGE_CDN_BUCKET_DOMAIN }}
+          NEXT_PUBLIC_IMAGE_WORKER_URL: ${{ secrets.IMAGE_CDN_WORKER_DOMAIN }}
           NEXT_PUBLIC_GOOGLE_DRIVE_CLIENT_ID: ${{ secrets.NEXT_PUBLIC_GOOGLE_DRIVE_CLIENT_ID }}
           NEXT_PUBLIC_GOOGLE_DRIVE_APP_ID: ${{ secrets.NEXT_PUBLIC_GOOGLE_DRIVE_APP_ID }}
       - name: Publish frontend to GitHub Pages repo
