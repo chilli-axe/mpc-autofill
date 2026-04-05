@@ -28,3 +28,4 @@ jobs:
       - uses: ./.github/actions/publish-github-release-reverse-proxy
         with:
           cloudflare-api-token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          cloudflare-account-id: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

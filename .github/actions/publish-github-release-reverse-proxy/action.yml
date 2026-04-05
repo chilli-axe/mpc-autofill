@@ -4,6 +4,9 @@ inputs:
   cloudflare-api-token:
     description: Cloudflare API token
     required: true
+  cloudflare-account-id:
+    description: Cloudflare account ID
+    required: true
 runs:
   using: composite
   steps:
@@ -12,4 +15,5 @@ runs:
       with:
         wranglerVersion: "4.80.0"
         apiToken: ${{ inputs.cloudflare-api-token }}
+        accountId: ${{ inputs.cloudflare-account-id }}
         workingDirectory: github-release-reverse-proxy

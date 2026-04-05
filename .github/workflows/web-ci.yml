@@ -59,3 +59,5 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/publish-frontend
+        with:
+          github-api-token: ${{ secrets.API_TOKEN_GITHUB }}
