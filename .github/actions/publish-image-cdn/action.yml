@@ -1,0 +1,40 @@
+name: Publish image CDN
+description: Publish image CDN Cloudflare Worker
+inputs:
+  cloudflare-api-token:
+    description: Cloudflare API token
+    required: true
+  cloudflare-account-id:
+    description: Cloudflare account ID
+    required: true
+  worker-domain:
+    description: Worker domain (e.g. image-cdn.example.workers.dev)
+    required: true
+  google-client-id:
+    description: Google OAuth client ID
+    required: true
+  google-client-secret:
+    description: Google OAuth client secret
+    required: true
+  google-refresh-token:
+    description: Google OAuth refresh token
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Deploy image CDN Worker
+      uses: cloudflare/wrangler-action@v3
+      with:
+        apiToken: ${{ inputs.cloudflare-api-token }}
+        accountId: ${{ inputs.cloudflare-account-id }}
+        workingDirectory: image-cdn
+        secrets: |
+          WORKER_DOMAIN
+          GOOGLE_CLIENT_ID
+          GOOGLE_CLIENT_SECRET
+          GOOGLE_REFRESH_TOKEN
+      env:
+        WORKER_DOMAIN: ${{ inputs.worker-domain }}
+        GOOGLE_CLIENT_ID: ${{ inputs.google-client-id }}
+        GOOGLE_CLIENT_SECRET: ${{ inputs.google-client-secret }}
+        GOOGLE_REFRESH_TOKEN: ${{ inputs.google-refresh-token }}

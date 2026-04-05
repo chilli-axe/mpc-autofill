@@ -1,5 +1,9 @@
 name: Desktop tool tests
 description: Test the MPC Autofill CLI / desktop tool
+inputs:
+  google-drive-api-key:
+    description: Your Google Drive API key, required for running the database crawler
+    required: true
 runs:
   using: composite
   steps:

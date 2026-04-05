@@ -20,8 +20,11 @@ export const getBucketThumbnailURL = (
   // TODO: support other source types through CDN here
   const imageBucketURLValid =
     imageBucketURL != null && !!(cardDocument.sourceType === "Google Drive");
+  const base = imageBucketURL?.startsWith("https://")
+    ? imageBucketURL
+    : `https://${imageBucketURL}`;
   return imageBucketURLValid
-    ? `${imageBucketURL}/${getImageKey(cardDocument, small)}`
+    ? new URL(getImageKey(cardDocument, small), base).toString()
     : undefined;
 };
 
@@ -32,10 +35,16 @@ export const getWorkerThumbnailURL = (
   const imageWorkerURL = getImageWorkerURL();
   const imageWorkerURLValid =
     imageWorkerURL != null && !!(cardDocument?.sourceType === "Google Drive");
+  const base = imageWorkerURL?.startsWith("https://")
+    ? imageWorkerURL
+    : `https://${imageWorkerURL}`;
   return imageWorkerURLValid
-    ? `${imageWorkerURL}/images/google_drive/${small ? "small" : "large"}/${
-        cardDocument?.identifier
-      }.jpg`
+    ? new URL(
+        `/images/google_drive/${small ? "small" : "large"}/${
+          cardDocument?.identifier
+        }.jpg`,
+        base
+      ).toString()
     : undefined;
 };
 

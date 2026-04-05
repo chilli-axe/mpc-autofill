@@ -1,4 +1,4 @@
-name: Tests
+name: Web CI
 on:
   push:
     branches: ["master"]
@@ -27,21 +27,6 @@ jobs:
         with:
           google-drive-api-key: ${{ secrets.GOOGLE_DRIVE_API_KEY }}
           moxfield-secret: ${{ secrets.MOXFIELD_SECRET }}
-  test-desktop-tool:
-    name: Desktop tool tests
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        include:
-          - os: macos-latest
-          - os: windows-latest
-    #          - os: ubuntu-latest # https://github.com/browser-actions/setup-edge/issues/516
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/test-desktop-tool
-        with:
-          google-drive-api-key: ${{ secrets.GOOGLE_DRIVE_API_KEY }}
-          moxfield-secret: ${{ secrets.MOXFIELD_SECRET }}
   test-frontend:
     name: Frontend tests
     runs-on: ubuntu-latest
@@ -54,3 +39,23 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/test-pre-commit
+  build-frontend:
+    name: Build frontend
+    needs: [test-backend, test-frontend, test-pre-commit]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/build-frontend
+        with:
+          ga-measurement-id: ${{ secrets.NEXT_PUBLIC_GA_MEASUREMENT_ID }}
+          image-bucket-url: ${{ secrets.IMAGE_CDN_BUCKET_DOMAIN }}
+          image-worker-url: ${{ secrets.IMAGE_CDN_WORKER_DOMAIN }}
+          google-drive-client-id: ${{ secrets.NEXT_PUBLIC_GOOGLE_DRIVE_CLIENT_ID }}
+          google-drive-app-id: ${{ secrets.NEXT_PUBLIC_GOOGLE_DRIVE_APP_ID }}
+  publish-frontend:
+    name: Publish frontend
+    needs: [build-frontend]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/publish-frontend

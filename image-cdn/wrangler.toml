@@ -1,0 +1,27 @@
+name = "image-cdn"
+main = "src/index.ts"
+compatibility_date = "2024-03-14"
+workers_dev = true
+
+[[r2_buckets]]
+binding = "thumbnails"
+bucket_name = "thumbnails"
+
+[triggers]
+crons = ["0 0 * * *"]
+
+[[queues.producers]]
+queue = "thumbnail-refresh"
+binding = "thumbnailRefreshQueue"
+
+[[queues.consumers]]
+queue = "thumbnail-refresh"
+max_batch_size = 1
+
+[observability]
+enabled = true
+
+[[ratelimits]]
+name = "GOOGLE_DRIVE_RATE_LIMITER"
+namespace_id = "1001"
+simple = { limit = 12000, period = 10 }

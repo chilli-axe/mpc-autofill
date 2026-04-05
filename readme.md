@@ -8,8 +8,8 @@ MPC Autofill is image aggregation & print automation software for your tabletop 
 
 ---
 
-![build-desktop-tool](https://github.com/chilli-axe/mpc-autofill/actions/workflows/build-desktop-tool.yml/badge.svg)
-![build-frontend](https://github.com/chilli-axe/mpc-autofill/actions/workflows/build-frontend.yml/badge.svg)
+![desktop-tool-ci](https://github.com/chilli-axe/mpc-autofill/actions/workflows/desktop-tool-ci.yml/badge.svg)
+![web-ci](https://github.com/chilli-axe/mpc-autofill/actions/workflows/web-ci.yml/badge.svg)
 ![tests](https://github.com/chilli-axe/mpc-autofill/actions/workflows/tests.yml/badge.svg)
 [![Github all releases](https://img.shields.io/github/downloads/chilli-axe/mpc-autofill/total.svg)](https://GitHub.com/chilli-axe/mpc-autofill/releases/)
 

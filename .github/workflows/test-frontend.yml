@@ -5,7 +5,7 @@ on:
       - "frontend/**"
   workflow_dispatch:
 jobs:
-  test-backend:
+  test:
     name: Frontend tests
     runs-on: ubuntu-latest
     env:

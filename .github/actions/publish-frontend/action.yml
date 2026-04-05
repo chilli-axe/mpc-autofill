@@ -1,0 +1,20 @@
+name: Publish frontend
+description: Publish frontend
+runs:
+  using: composite
+  steps:
+    - name: Restore cached frontend build artifacts
+      id: cache-primes-restore
+      uses: actions/cache/restore@v5
+      with:
+        path: frontend/out
+        key: frontend-build
+    - name: Publish frontend to GitHub Pages repo
+      uses: dmnemec/copy_file_to_another_repo_action@main
+      env:
+        API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
+      with:
+        source_file: "frontend/out/."
+        destination_repo: "mpcautofill/mpcautofill.github.io"
+        user_email: "chilli.axe@gmail.com"
+        user_name: "chilli-axe"

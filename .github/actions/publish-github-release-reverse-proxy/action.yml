@@ -1,0 +1,14 @@
+name: Publish GitHub release reverse proxy
+description: Publish GitHub release reverse proxy Cloudflare Worker
+inputs:
+  cloudflare-api-token:
+    description: Cloudflare API token
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Deploy GitHub release reverse proxy Worker
+      uses: cloudflare/wrangler-action@v3
+      with:
+        apiToken: ${{ inputs.cloudflare-api-token }}
+        workingDirectory: github-release-reverse-proxy

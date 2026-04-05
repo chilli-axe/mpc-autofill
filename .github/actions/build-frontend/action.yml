@@ -1,0 +1,45 @@
+name: Build frontend
+description: Build frontend
+inputs:
+  ga-measurement-id:
+    description: Google Analytics measurement ID
+    required: true
+  image-bucket-url:
+    description: Image bucket URL
+    required: true
+  image-worker-url:
+    description: Image worker URL
+    required: true
+  google-drive-client-id:
+    description: Google Drive client ID
+    required: true
+  google-drive-app-id:
+    description: Google Drive app ID
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Install npm
+      uses: actions/setup-node@v4
+      with:
+        node-version: 22.15
+    - name: Install packages
+      working-directory: frontend
+      run: npm ci
+      shell: bash
+    - name: Build frontend
+      working-directory: frontend
+      run: npx next build
+      shell: bash
+      env:
+        NEXT_TELEMETRY_DISABLED: 1
+        NEXT_PUBLIC_GA_MEASUREMENT_ID: ${{ inputs.ga-measurement-id }}
+        NEXT_PUBLIC_IMAGE_BUCKET_URL: ${{ inputs.image-bucket-url }}
+        NEXT_PUBLIC_IMAGE_WORKER_URL: ${{ inputs.image-worker-url }}
+        NEXT_PUBLIC_GOOGLE_DRIVE_CLIENT_ID: ${{ inputs.google-drive-client-id }}
+        NEXT_PUBLIC_GOOGLE_DRIVE_APP_ID: ${{ inputs.google-drive-app-id }}
+    - name: Cache build artifacts
+      uses: actions/cache@v5
+      with:
+        path: frontend/out
+        key: frontend-build
