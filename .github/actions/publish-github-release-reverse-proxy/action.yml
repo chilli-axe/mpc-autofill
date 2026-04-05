@@ -8,7 +8,8 @@ runs:
   using: composite
   steps:
     - name: Deploy GitHub release reverse proxy Worker
-      uses: cloudflare/wrangler-action@v3
+      uses: cloudflare/wrangler-action@v4
       with:
+        wranglerVersion: "4.80.0"
         apiToken: ${{ inputs.cloudflare-api-token }}
         workingDirectory: github-release-reverse-proxy
