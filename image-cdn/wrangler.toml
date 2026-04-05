@@ -3,6 +3,9 @@ main = "src/index.ts"
 compatibility_date = "2024-03-14"
 workers_dev = true
 
+[secrets]
+required = [ "WORKER_DOMAIN", "GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET", "GOOGLE_REFRESH_TOKEN" ]
+
 [[r2_buckets]]
 binding = "thumbnails"
 bucket_name = "thumbnails"
