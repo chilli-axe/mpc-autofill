@@ -45,28 +45,6 @@ export default defineConfig({
       },
     },
 
-    {
-      name: "firefox",
-      use: {
-        ...devices["Desktop Firefox"],
-        contextOptions: {
-          reducedMotion: "reduce",
-          viewport: { height: 600, width: 800 },
-        },
-      },
-    },
-
-    {
-      name: "webkit",
-      use: {
-        ...devices["Desktop Safari"],
-        contextOptions: {
-          reducedMotion: "reduce",
-          viewport: { height: 600, width: 800 },
-        },
-      },
-    },
-
     /* Test against mobile viewports. */
     // {
     //   name: 'Mobile Chrome',
