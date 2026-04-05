@@ -4,6 +4,9 @@ inputs:
   cloudflare-api-token:
     description: Cloudflare API token
     requried: true
+  cloudflare-account-id:
+    description: Cloudflare account ID
+    required: true
 runs:
   using: composite
   steps:
