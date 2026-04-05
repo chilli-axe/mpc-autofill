@@ -17,7 +17,7 @@
   "compatibility_flags": ["nodejs_compat"],
   "routes": [
     {
-      "pattern": "app.mpcautofill.com",
+      "pattern": "mpcautofill.com",
       "custom_domain": true
     }
   ]
