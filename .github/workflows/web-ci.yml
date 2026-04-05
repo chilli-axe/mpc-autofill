@@ -111,4 +111,4 @@ jobs:
       - uses: ./.github/actions/publish-frontend-to-cloudflare
         with:
           cloudflare-api-token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ inputs.cloudflare-account-id }}
+          cloudflare-account-id: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
