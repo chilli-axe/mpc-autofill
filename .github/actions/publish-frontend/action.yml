@@ -12,7 +12,7 @@ runs:
       uses: actions/cache/restore@v5
       with:
         path: frontend/out
-        key: frontend-build
+        key: frontend-build-${{ github.run_id }}
     - name: Publish frontend to GitHub Pages repo
       uses: dmnemec/copy_file_to_another_repo_action@main
       env:
