@@ -23,7 +23,7 @@ runs:
   using: composite
   steps:
     - name: Deploy image CDN Worker
-      uses: cloudflare/wrangler-action@v4
+      uses: cloudflare/wrangler-action@v3
       with:
         wranglerVersion: "4.80.0"
         apiToken: ${{ inputs.cloudflare-api-token }}
