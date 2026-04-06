@@ -47,6 +47,9 @@ async function getGoogleDriveAccessToken(env: Env): Promise<string | undefined> 
   });
 
   const tokenData: { access_token?: string } = await tokenResponse.json();
+  if (tokenData?.access_token == null) {
+    console.warn("Failed to retrieve Google Drive access token", await tokenResponse.json());
+  }
   return tokenData?.access_token;
 }
 

@@ -32,6 +32,9 @@ runs:
         secrets: |
           GOOGLE_CLIENT_SECRET
           GOOGLE_REFRESH_TOKEN
+        vars: |
+          WORKER_DOMAIN
+          GOOGLE_CLIENT_ID
       env:
         WORKER_DOMAIN: ${{ inputs.worker-domain }}
         GOOGLE_CLIENT_ID: ${{ inputs.google-client-id }}
