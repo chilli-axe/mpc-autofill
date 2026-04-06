@@ -1,5 +1,5 @@
 type ImageType = "google_drive";
-type ImageSize = "small" | "large";
+type ImageSize = "small" | "large" | "full";
 enum ImageSizes {
   "small" = 400,
   "large" = 800,
@@ -14,7 +14,15 @@ const getImageKey = (imageType: ImageType, imageSize: ImageSize, imageIdentifier
 const getImageURL = (imageType: ImageType, imageSize: ImageSize, imageIdentifier: string): string => {
   switch (imageType) {
     case "google_drive":
-      return `https://drive.google.com/thumbnail?sz=w${ImageSizes[imageSize]}-h${ImageSizes[imageSize]}&id=${imageIdentifier}`;
+      switch (imageSize) {
+        case "small":
+        case "large":
+          return `https://drive.google.com/thumbnail?sz=w${ImageSizes[imageSize]}-h${ImageSizes[imageSize]}&id=${imageIdentifier}`;
+        case "full":
+          return `https://drive.usercontent.google.com/download?id=${imageIdentifier}&export=view&authuser=0`;
+        default:
+          return assertUnreachable(imageSize);
+      }
     default:
       return assertUnreachable(imageType);
   }
@@ -42,7 +50,7 @@ async function getGoogleDriveAccessToken(env: Env): Promise<string | undefined> 
   return tokenData?.access_token;
 }
 
-const getImage = async (env: Env, ctx: ExecutionContext, imageURL: string, imageKey: string): Promise<Response> => {
+const getThumbnail = async (env: Env, ctx: ExecutionContext, imageURL: string, imageKey: string): Promise<Response> => {
   console.log(`Getting image ${imageKey}`);
   const object = await env.thumbnails.get(imageKey);
   if (object === null) {
@@ -92,8 +100,25 @@ const putImage = async (env: Env, imageURL: string, imageKey: string, isResync: 
   console.log("All done!");
 };
 
+const getFullResolutionImage = async (request: Request, env: Env, ctx: ExecutionContext, imageIdentifier: string): Promise<Response> => {
+  const googleDriveAccessToken = await getGoogleDriveAccessToken(env);
+  if (!googleDriveAccessToken) {
+    console.log("Couldn't get access token");
+    return new Response("Could not access Google Drive API.", { status: 500 });
+  }
+  let response = await fetch(`https://www.googleapis.com/drive/v3/files/${imageIdentifier}?alt=media`, {
+    headers: { Authorization: `Bearer ${googleDriveAccessToken}` },
+    method: "GET",
+  });
+  response = new Response(response.body, response);
+  response.headers.set("Access-Control-Allow-Origin", "*");
+  response.headers.append("Vary", "Origin");
+  response.headers.set("Content-Type", "image/jpeg");
+  return response;
+};
+
 const handleImageRequest = async (url: URL, request: Request, env: Env, ctx: ExecutionContext): Promise<Response> => {
-  const pathRegex = new RegExp(/^\/images\/(google_drive)\/(small|large)\/(.+)\.jpg$/);
+  const pathRegex = new RegExp(/^\/images\/(google_drive)\/(small|large|full)\/(.+)\.jpg$/);
   const unpackedPath = pathRegex.exec(url.pathname);
   if (unpackedPath === null) {
     return new Response(`Malformed URL.`, { status: 400 });
@@ -107,7 +132,11 @@ const handleImageRequest = async (url: URL, request: Request, env: Env, ctx: Exe
 
   switch (request.method) {
     case "GET":
-      return getImage(env, ctx, imageURL, imageKey);
+      if (imageSize === "small" || imageSize === "large") {
+        return getThumbnail(env, ctx, imageURL, imageKey);
+      } else if (imageSize === "full") {
+        return getFullResolutionImage(request, env, ctx, imageIdentifier);
+      }
     default:
       return new Response(`Invalid method ${request.method}. GET or PUT expected.`, { status: 400 });
   }
@@ -200,11 +229,46 @@ const processAndEnqueue = async (env: Env, ctx: ExecutionContext, cursor: string
   }
 };
 
+// yoink https://developers.cloudflare.com/workers/examples/cors-header-proxy/
+async function handleOptions(request: Request) {
+  const corsHeaders = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET,HEAD,POST,OPTIONS",
+    "Access-Control-Max-Age": "86400",
+  };
+  if (
+    request.headers.get("Origin") !== null &&
+    request.headers.get("Access-Control-Request-Method") !== null &&
+    request.headers.get("Access-Control-Request-Headers") !== null
+  ) {
+    // Handle CORS preflight requests.
+    return new Response(null, {
+      headers: {
+        ...corsHeaders,
+        "Access-Control-Allow-Headers": request.headers.get("Access-Control-Request-Headers") ?? "",
+      },
+    });
+  } else {
+    // Handle standard OPTIONS request.
+    return new Response(null, {
+      headers: {
+        Allow: "GET, HEAD, POST, OPTIONS",
+      },
+    });
+  }
+}
+
 const defaultExport = {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
     if (url.pathname.startsWith("/images/")) {
-      return await handleImageRequest(url, request, env, ctx);
+      if (request.method === "OPTIONS") {
+        // Handle CORS preflight requests
+        return handleOptions(request);
+      } else if (request.method === "GET") {
+        return await handleImageRequest(url, request, env, ctx);
+      }
+      return new Response(`Unsupported HTTP method.`, { status: 400 });
     } else {
       return new Response(`Unknown endpoint.`, { status: 404 });
     }
