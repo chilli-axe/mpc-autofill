@@ -50,9 +50,15 @@ export const getWorkerThumbnailURL = (
 
 export const getWorkerFullResURL = (cardDocument: CardDocument) => {
   const imageWorkerURL = getImageWorkerURL();
+  const base = imageWorkerURL?.startsWith("https://")
+    ? imageWorkerURL
+    : `https://${imageWorkerURL}`;
   const imageWorkerURLValid =
     imageWorkerURL != null && !!(cardDocument?.sourceType === "Google Drive");
   return imageWorkerURLValid
-    ? `${imageWorkerURL}/images/google_drive/full/${cardDocument?.identifier}.jpg`
+    ? new URL(
+        `images/google_drive/full/${cardDocument?.identifier}.jpg`,
+        base
+      ).toString()
     : undefined;
 };
