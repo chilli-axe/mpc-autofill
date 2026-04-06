@@ -7,7 +7,7 @@ import {
   CardWidthMM,
   CornerRadiusMM,
 } from "@/common/constants";
-import { getBucketThumbnailURL, getWorkerFullResURL } from "@/common/image";
+import { getBucketThumbnailURL, getWorkerThumbnailURL } from "@/common/image";
 import { SourceType } from "@/common/schema_types";
 import { CardDocument, SlotProjectMembers } from "@/common/types";
 
@@ -172,11 +172,11 @@ const getThumbnailURL = async (
     case SourceType.GoogleDrive:
       switch (imageQuality) {
         case "small-thumbnail":
-          return getBucketThumbnailURL(cardDocument, true);
+          return getBucketThumbnailURL(cardDocument, "small");
         case "large-thumbnail":
-          return getBucketThumbnailURL(cardDocument, false);
+          return getBucketThumbnailURL(cardDocument, "large");
         case "full-resolution":
-          return getWorkerFullResURL(cardDocument);
+          return getWorkerThumbnailURL(cardDocument, "full");
         default:
           throw new Error(`invalid imageQuality ${imageQuality}`);
       }

@@ -172,7 +172,10 @@ export const useImageSrc = (
   }
 
   // attempt to load directly from bucket first
-  const thumbnailBucketURL = getBucketThumbnailURL(cardDocument, small);
+  const thumbnailBucketURL = getBucketThumbnailURL(
+    cardDocument,
+    small ? "small" : "large"
+  );
   const imageBucketURLValid = thumbnailBucketURL !== undefined;
   const loadFromBucket =
     imageBucketURLValid &&
@@ -180,7 +183,10 @@ export const useImageSrc = (
       imageState === "loaded-from-bucket");
 
   // if image is unavailable in bucket, fall back on loading from worker if possible
-  const imageWorkerURL = getWorkerThumbnailURL(cardDocument, small);
+  const imageWorkerURL = getWorkerThumbnailURL(
+    cardDocument,
+    small ? "small" : "large"
+  );
   const imageWorkerURLValid = imageWorkerURL !== undefined;
   const smallThumbnailURL = imageWorkerURLValid
     ? imageWorkerURL

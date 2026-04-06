@@ -2,11 +2,11 @@ import { CardDocument } from "./types";
 
 export const getImageKey = (
   cardDocument: CardDocument,
-  small: boolean
+  size: "small" | "large"
 ): string => {
-  return `${cardDocument.identifier}-${
-    small ? "small" : "large"
-  }-${cardDocument.sourceType?.toLowerCase().replace(" ", "_")}`;
+  return `${cardDocument.identifier}-${size}-${cardDocument.sourceType
+    ?.toLowerCase()
+    .replace(" ", "_")}`;
 };
 
 export const getImageBucketURL = () => process.env.NEXT_PUBLIC_IMAGE_BUCKET_URL;
@@ -14,8 +14,13 @@ export const getImageWorkerURL = () => process.env.NEXT_PUBLIC_IMAGE_WORKER_URL;
 
 export const getBucketThumbnailURL = (
   cardDocument: CardDocument,
-  small: boolean
+  size: "small" | "large" | "full"
 ) => {
+  if (size === "full") {
+    throw new Error(
+      "Cannot get full-res image through bucket, fetch through worker instead"
+    );
+  }
   const imageBucketURL = getImageBucketURL();
   // TODO: support other source types through CDN here
   const imageBucketURLValid =
@@ -24,13 +29,13 @@ export const getBucketThumbnailURL = (
     ? imageBucketURL
     : `https://${imageBucketURL}`;
   return imageBucketURLValid
-    ? new URL(getImageKey(cardDocument, small), base).toString()
+    ? new URL(getImageKey(cardDocument, size), base).toString()
     : undefined;
 };
 
 export const getWorkerThumbnailURL = (
   cardDocument: CardDocument,
-  small: boolean
+  size: "small" | "large" | "full"
 ) => {
   const imageWorkerURL = getImageWorkerURL();
   const imageWorkerURLValid =
@@ -40,24 +45,7 @@ export const getWorkerThumbnailURL = (
     : `https://${imageWorkerURL}`;
   return imageWorkerURLValid
     ? new URL(
-        `/images/google_drive/${small ? "small" : "large"}/${
-          cardDocument?.identifier
-        }.jpg`,
-        base
-      ).toString()
-    : undefined;
-};
-
-export const getWorkerFullResURL = (cardDocument: CardDocument) => {
-  const imageWorkerURL = getImageWorkerURL();
-  const base = imageWorkerURL?.startsWith("https://")
-    ? imageWorkerURL
-    : `https://${imageWorkerURL}`;
-  const imageWorkerURLValid =
-    imageWorkerURL != null && !!(cardDocument?.sourceType === "Google Drive");
-  return imageWorkerURLValid
-    ? new URL(
-        `images/google_drive/full/${cardDocument?.identifier}.jpg`,
+        `/images/google_drive/${size}/${cardDocument?.identifier}.jpg`,
         base
       ).toString()
     : undefined;
