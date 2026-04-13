@@ -194,19 +194,6 @@ export class ClientSearchService {
 
   // search stuff below
 
-  public async search(
-    searchSettings: SearchSettings,
-    query: string | undefined,
-    cardTypes: Array<CardType>,
-    limit?: number,
-    offset?: number
-  ): Promise<OramaSearchResults | undefined> {
-    if (this.worker === undefined) {
-      throw new Error("clientSearchService was not initialised!");
-    }
-    return this.worker.search(searchSettings, query, cardTypes, limit, offset);
-  }
-
   public async retrieveCardIdentifiers(
     searchSettings: SearchSettings,
     query: string | undefined,
@@ -227,7 +214,6 @@ export class ClientSearchService {
   }
 
   public async editorSearch(
-    // TODO: rename lmao
     searchSettings: SearchSettings,
     searchQueries: Array<SearchQuery>
   ): Promise<SearchResults> {

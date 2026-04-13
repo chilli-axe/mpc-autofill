@@ -137,7 +137,7 @@ export class ClientSearchService {
     };
   }
 
-  public searchOramaIndex(
+  private searchOramaIndex(
     oramaIndex: OramaIndex | undefined,
     searchSettings: SearchSettings,
     query: string | undefined,
@@ -228,7 +228,7 @@ export class ClientSearchService {
     return { hits: searchResults.hits ?? [], count: searchResults.count ?? 0 };
   }
 
-  public search(
+  private search(
     searchSettings: SearchSettings,
     query: string | undefined,
     cardTypes: Array<CardType>,
