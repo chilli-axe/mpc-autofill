@@ -64,18 +64,21 @@ const downloadPDF = async (
 const useDownloadPDF = (
   props: Omit<PDFProps, "fileHandles">,
   clientSearchService: ClientSearchService,
-  dispatch: AppDispatch
+  dispatch: AppDispatch,
+  setIsDownloading: (newState: boolean) => void
 ) => {
   const doFileDownload = useDoFileDownload();
   return () =>
-    Promise.resolve(
-      doFileDownload(
-        "pdf",
-        "cards.pdf",
-        (): Promise<boolean> =>
-          downloadPDF(props, clientSearchService, dispatch)
+    Promise.resolve(setIsDownloading(true))
+      .then(() =>
+        doFileDownload(
+          "pdf",
+          "cards.pdf",
+          (): Promise<boolean> =>
+            downloadPDF(props, clientSearchService, dispatch)
+        )
       )
-    );
+      .finally(() => setIsDownloading(false));
 };
 
 interface NumericFieldProps {
@@ -211,13 +214,16 @@ export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
 
   const showSpinner = debouncedState.isPending() || loading;
 
+  const [isDownloading, setIsDownloading] = useState<boolean>(false);
+
   const downloadPDF = useDownloadPDF(
     {
       ...debouncedPDFProps,
       imageQuality: "full-resolution",
     },
     clientSearchService,
-    dispatch
+    dispatch,
+    setIsDownloading
   );
 
   return (
@@ -434,7 +440,9 @@ export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
           </Row>
           <hr />
           <div className="d-grid gap-0">
-            <Button onClick={downloadPDF}>Generate PDF</Button>
+            <Button onClick={downloadPDF} disabled={isDownloading}>
+              {isDownloading ? <Spinner size={1.5} /> : "Generate PDF"}
+            </Button>
           </div>
         </OverflowCol>
         <Col lg={9} md={8} sm={7} xs={6} style={{ position: "relative" }}>
