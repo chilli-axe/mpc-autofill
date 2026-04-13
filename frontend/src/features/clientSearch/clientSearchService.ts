@@ -196,19 +196,21 @@ export class ClientSearchService {
     searchSettings: SearchSettings,
     query: string | undefined,
     cardTypes: Array<CardType>,
-    limit?: number
+    limit?: number,
+    offset?: number
   ): Promise<Array<{ id: string; document: OramaCardDocument }> | undefined> {
     if (this.worker === undefined) {
       throw new Error("clientSearchService was not initialised!");
     }
-    return this.worker.search(searchSettings, query, cardTypes, limit);
+    return this.worker.search(searchSettings, query, cardTypes, limit, offset);
   }
 
   public async retrieveCardIdentifiers(
     searchSettings: SearchSettings,
     query: string | undefined,
     cardTypes: Array<CardType>,
-    limit?: number
+    limit?: number,
+    offset?: number
   ): Promise<Array<string> | undefined> {
     if (this.worker === undefined) {
       throw new Error("clientSearchService was not initialised!");
@@ -217,7 +219,8 @@ export class ClientSearchService {
       searchSettings,
       query,
       cardTypes,
-      limit
+      limit,
+      offset
     );
   }
   public async editorSearch(

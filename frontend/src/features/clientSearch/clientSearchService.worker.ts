@@ -144,7 +144,8 @@ export class ClientSearchService {
     searchSettings: SearchSettings,
     query: string | undefined,
     cardTypes: Array<CardType>,
-    limit?: number
+    limit?: number,
+    offset?: number
   ): Array<{ id: string; document: OramaCardDocument }> | undefined {
     if (oramaIndex?.oramaDb === undefined) {
       return undefined;
@@ -155,6 +156,7 @@ export class ClientSearchService {
       term: query ? toSearchable(query) : undefined,
       properties: ["searchq"],
       limit: limit ?? 1_000_000, // some arbitrary upper limit. if undefined, orama limits to 10 results.
+      offset: offset ?? 0,
       exact:
         query !== undefined && !searchSettings.searchTypeSettings.fuzzySearch,
       where: {
@@ -204,7 +206,8 @@ export class ClientSearchService {
     searchSettings: SearchSettings,
     query: string | undefined,
     cardTypes: Array<CardType>,
-    limit?: number
+    limit?: number,
+    offset?: number
   ): Array<{ id: string; document: OramaCardDocument }> | undefined {
     return [this.localFilesIndex?.index, this.googleDriveIndex?.index].reduce(
       (
@@ -218,7 +221,8 @@ export class ClientSearchService {
                 searchSettings,
                 query,
                 cardTypes,
-                limit
+                limit,
+                offset
               ) ?? []
             )
           : accumulated,
@@ -230,9 +234,16 @@ export class ClientSearchService {
     searchSettings: SearchSettings,
     query: string | undefined,
     cardTypes: Array<CardType>,
-    limit?: number
+    limit?: number,
+    offset?: number
   ): Array<string> | undefined {
-    const results = this.search(searchSettings, query, cardTypes, limit);
+    const results = this.search(
+      searchSettings,
+      query,
+      cardTypes,
+      limit,
+      offset
+    );
     return results !== undefined
       ? results.map((cardDocument) => cardDocument.id)
       : undefined;
