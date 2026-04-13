@@ -10,7 +10,6 @@ import {
   createAppAsyncThunk,
   createAppSlice,
   Faces,
-  OramaSchema,
   SearchResults,
   SearchResultsState,
 } from "@/common/types";

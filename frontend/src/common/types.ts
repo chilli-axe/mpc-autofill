@@ -564,3 +564,9 @@ export const GoogleDriveImageMimeTypes = [
   "image/jpg",
   "image/jpeg",
 ];
+
+export type OramaSearchResult = { id: string; document: OramaCardDocument };
+export type OramaSearchResults = {
+  hits: Array<OramaSearchResult>;
+  count: number;
+};

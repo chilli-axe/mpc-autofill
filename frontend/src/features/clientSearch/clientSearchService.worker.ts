@@ -18,16 +18,13 @@ import {
   LocalFilesIndex,
   OramaCardDocument,
   OramaIndex,
+  OramaSearchResult,
+  OramaSearchResults,
   SearchResults,
 } from "@/common/types";
 import { getDefaultSearchSettings } from "@/store/slices/searchSettingsSlice";
 
-import {
-  Folder,
-  GoogleDriveIndexer,
-  Image,
-  LocalFilesIndexer,
-} from "./indexer";
+import { Folder, GoogleDriveIndexer, LocalFilesIndexer } from "./indexer";
 
 export class ClientSearchService {
   private localFilesIndex: LocalFilesIndex | undefined;
@@ -146,13 +143,13 @@ export class ClientSearchService {
     cardTypes: Array<CardType>,
     limit?: number,
     offset?: number
-  ): Array<{ id: string; document: OramaCardDocument }> | undefined {
+  ): OramaSearchResults | undefined {
     if (oramaIndex?.oramaDb === undefined) {
       return undefined;
     }
     const includesTags = searchSettings.filterSettings.includesTags.length > 0;
     const excludesTags = searchSettings.filterSettings.excludesTags.length > 0;
-    const hits = search(oramaIndex.oramaDb, {
+    const searchResults = search(oramaIndex.oramaDb, {
       term: query ? toSearchable(query) : undefined,
       properties: ["searchq"],
       limit: limit ?? 1_000_000, // some arbitrary upper limit. if undefined, orama limits to 10 results.
@@ -198,8 +195,11 @@ export class ClientSearchService {
         ],
       },
       // @ts-ignore // TODO
-    }).hits as Array<{ id: string; document: OramaCardDocument }>;
-    return hits;
+    }) as {
+      hits: Array<OramaSearchResult> | undefined;
+      count: number | undefined;
+    };
+    return { hits: searchResults.hits ?? [], count: searchResults.count ?? 0 };
   }
 
   public search(
@@ -208,25 +208,29 @@ export class ClientSearchService {
     cardTypes: Array<CardType>,
     limit?: number,
     offset?: number
-  ): Array<{ id: string; document: OramaCardDocument }> | undefined {
+  ): OramaSearchResults | undefined {
     return [this.localFilesIndex?.index, this.googleDriveIndex?.index].reduce(
       (
-        accumulated: Array<{ id: string; document: OramaCardDocument }>,
+        accumulated: OramaSearchResults,
         index: OramaIndex | undefined
-      ): Array<{ id: string; document: OramaCardDocument }> =>
-        index !== undefined
-          ? accumulated.concat(
-              this.searchOramaIndex(
-                index,
-                searchSettings,
-                query,
-                cardTypes,
-                limit,
-                offset
-              ) ?? []
-            )
-          : accumulated,
-      []
+      ): OramaSearchResults => {
+        if (index === undefined) {
+          return accumulated;
+        }
+        const searchResults = this.searchOramaIndex(
+          index,
+          searchSettings,
+          query,
+          cardTypes,
+          limit,
+          offset
+        );
+        return {
+          hits: accumulated.hits.concat(searchResults?.hits ?? []),
+          count: accumulated.count + (searchResults?.count ?? 0),
+        };
+      },
+      { hits: [], count: 0 }
     );
   }
 
@@ -245,7 +249,7 @@ export class ClientSearchService {
       offset
     );
     return results !== undefined
-      ? results.map((cardDocument) => cardDocument.id)
+      ? results.hits.map((cardDocument) => cardDocument.id)
       : undefined;
   }
 
@@ -383,7 +387,7 @@ export class ClientSearchService {
                   undefined,
                   [cardType],
                   cardType === CardTypeSchema.Card ? 4 : 1
-                )?.map((result) =>
+                )?.hits?.map((result) =>
                   this.translateOramaCardDocumentToCardDocument(result.document)
                 )
               : [],

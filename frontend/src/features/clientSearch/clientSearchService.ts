@@ -15,6 +15,7 @@ import {
   GoogleDriveDoc,
   LocalFileHandleParams,
   OramaCardDocument,
+  OramaSearchResults,
   SearchResults,
 } from "@/common/types";
 import { api } from "@/store/api";
@@ -198,7 +199,7 @@ export class ClientSearchService {
     cardTypes: Array<CardType>,
     limit?: number,
     offset?: number
-  ): Promise<Array<{ id: string; document: OramaCardDocument }> | undefined> {
+  ): Promise<OramaSearchResults | undefined> {
     if (this.worker === undefined) {
       throw new Error("clientSearchService was not initialised!");
     }
