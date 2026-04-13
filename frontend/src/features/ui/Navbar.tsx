@@ -101,32 +101,34 @@ export default function ProjectNavbar() {
                 </Nav.Link>
               )}
               {remoteBackendConfigured && (
-                <>
-                  <Nav.Link
-                    as={Link}
-                    href="/new"
-                    active={router.route === "/new"}
-                    eventKey="/new"
-                  >
-                    What&apos;s New?
-                  </Nav.Link>
-                  <Nav.Link
-                    as={Link}
-                    href="/explore"
-                    active={router.route === "/explore"}
-                    eventKey="/explore"
-                  >
-                    Explore
-                  </Nav.Link>
-                  <Nav.Link
-                    as={Link}
-                    href="/contributions"
-                    active={router.route === "/contributions"}
-                    eventKey="/contributions"
-                  >
-                    Contributions
-                  </Nav.Link>
-                </>
+                <Nav.Link
+                  as={Link}
+                  href="/new"
+                  active={router.route === "/new"}
+                  eventKey="/new"
+                >
+                  What&apos;s New?
+                </Nav.Link>
+              )}
+              {anyBackendConfigured && (
+                <Nav.Link
+                  as={Link}
+                  href="/explore"
+                  active={router.route === "/explore"}
+                  eventKey="/explore"
+                >
+                  Explore
+                </Nav.Link>
+              )}
+              {remoteBackendConfigured && (
+                <Nav.Link
+                  as={Link}
+                  href="/contributions"
+                  active={router.route === "/contributions"}
+                  eventKey="/contributions"
+                >
+                  Contributions
+                </Nav.Link>
               )}
               <Nav.Link
                 as={Link}

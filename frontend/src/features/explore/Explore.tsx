@@ -3,6 +3,8 @@ import Button from "react-bootstrap/Button";
 import Col from "react-bootstrap/Col";
 import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
+// @ts-ignore: https://github.com/arnthor3/react-bootstrap-toggle/issues/21
+import Toggle from "react-bootstrap-toggle";
 import { useDebounce } from "use-debounce";
 
 import {
@@ -13,10 +15,14 @@ import {
   NavbarHeight,
   RibbonHeight,
   SortByOptions,
+  ToggleButtonHeight,
 } from "@/common/constants";
 import { ExploreSearchRequest, SortBy } from "@/common/schema_types";
 import { StyledDropdownTreeSelect } from "@/common/StyledDropdownTreeSelect";
 import {
+  assertNever,
+  BackendType,
+  CardDocument,
   CardType,
   FilterSettings,
   SearchSettings,
@@ -25,7 +31,6 @@ import {
   useAppSelector,
 } from "@/common/types";
 import { Blurrable } from "@/components/Blurrable";
-import { NoBackendDefault } from "@/components/NoBackendDefault";
 import { OverflowCol } from "@/components/OverflowCol";
 import { Ribbon } from "@/components/Ribbon";
 import { Spinner } from "@/components/Spinner";
@@ -35,16 +40,70 @@ import { SearchTypeSettings as SearchTypeSettingsElement } from "@/features/sear
 import { SourceSettings as SourceSettingsElement } from "@/features/searchSettings/SourceSettings";
 import { GenericErrorPage } from "@/features/ui/GenericErrorPage";
 import { useGetSampleCardsQuery, usePostExploreSearchQuery } from "@/store/api";
-import { useRemoteBackendConfigured } from "@/store/slices/backendSlice";
+import {
+  useGoogleDriveBackendConfigured,
+  useLocalBackendConfigured,
+  useRemoteBackendConfigured,
+} from "@/store/slices/backendSlice";
 import {
   getDefaultSearchSettings,
   getDefaultSourceSettings,
 } from "@/store/slices/searchSettingsSlice";
 import { selectSourceDocuments } from "@/store/slices/sourceDocumentsSlice";
 
+import { useClientSearchContext } from "../clientSearch/clientSearchContext";
+
+const useExploreSearchResults = (
+  exploreSearchRequest: ExploreSearchRequest,
+  backendType: BackendType
+): { cards: Array<CardDocument>; count: number; isFetching: boolean } => {
+  const postExploreSearchQuery =
+    usePostExploreSearchQuery(exploreSearchRequest);
+  const { clientSearchService } = useClientSearchContext();
+  const [localResults, setLocalResults] = useState<{
+    cards: Array<CardDocument>;
+    count: number;
+  }>({ cards: [], count: 0 });
+  useEffect(() => {
+    if (backendType === "local") {
+      clientSearchService
+        .exploreSearch(
+          exploreSearchRequest.sortBy,
+          exploreSearchRequest.query ?? undefined,
+          exploreSearchRequest.cardTypes,
+          exploreSearchRequest.searchSettings,
+          exploreSearchRequest.pageStart,
+          exploreSearchRequest.pageSize
+        )
+        .then(setLocalResults);
+    } else {
+      setLocalResults({ cards: [], count: 0 });
+    }
+  }, [exploreSearchRequest, backendType]);
+
+  if (backendType === "remote") {
+    return {
+      cards: postExploreSearchQuery.data?.cards ?? [],
+      count: postExploreSearchQuery.data?.count ?? 0,
+      isFetching: postExploreSearchQuery.isFetching,
+    };
+  }
+  if (backendType === "local") {
+    return {
+      ...localResults,
+      isFetching: false,
+    };
+  }
+  return assertNever(backendType);
+};
+
 export function Explore() {
-  const maybeSourceDocuments = useAppSelector(selectSourceDocuments);
   const remoteBackendConfigured = useRemoteBackendConfigured();
+  const localFilesBackendConfigured = useLocalBackendConfigured();
+  const googleDriveBackendConfigured = useGoogleDriveBackendConfigured();
+  const localBackendConfigured =
+    localFilesBackendConfigured || googleDriveBackendConfigured;
+  const maybeSourceDocuments = useAppSelector(selectSourceDocuments);
 
   const defaultSettings: SearchSettings = getDefaultSearchSettings(
     maybeSourceDocuments ?? [],
@@ -55,6 +114,7 @@ export function Explore() {
   const [pageStart, setPageStart] = useState<number>(0);
 
   // input state
+  const [backendType, setBackendType] = useState<BackendType>("remote");
   const [sortBy, setSortBy] = useState<SortBy>(SortBy.DateCreatedDescending);
   const [query, setQuery] = useState<string>("");
   const [cardTypes, setCardTypes] = useState<Array<CardType>>([]);
@@ -95,6 +155,12 @@ export function Explore() {
       setSourceSettings(getDefaultSourceSettings(maybeSourceDocuments));
     }
   }, [maybeSourceDocuments]);
+  useEffect(() => {
+    if (localBackendConfigured && !remoteBackendConfigured)
+      setBackendType("local");
+    else if (!localBackendConfigured && remoteBackendConfigured)
+      setBackendType("remote");
+  }, [localBackendConfigured, remoteBackendConfigured]);
 
   const getSampleCardsQuery = useGetSampleCardsQuery();
   const placeholderCardName =
@@ -122,23 +188,22 @@ export function Explore() {
   const [debouncedExploreSearchRequest, debouncedExploreSearchRequestState] =
     useDebounce(exploreSearchRequest, ExploreDebounceMS, { equalityFn });
 
-  const postExploreSearchQuery = usePostExploreSearchQuery(
-    debouncedExploreSearchRequest
-  );
+  const {
+    cards,
+    count: resultCount,
+    isFetching,
+  } = useExploreSearchResults(debouncedExploreSearchRequest, backendType);
 
   // pagination stuff
-  const resultCount = postExploreSearchQuery.data?.count ?? 0;
-  const currentPageSize = postExploreSearchQuery.data?.cards?.length ?? 0;
+  const currentPageSize = cards.length ?? 0;
   const multiplePagesExist = resultCount !== currentPageSize;
   const previousPageExists = multiplePagesExist && pageStart > 0;
   const nextPageExists =
     multiplePagesExist && pageStart + ExplorePageSize < resultCount;
 
   const displaySpinner =
-    debouncedExploreSearchRequestState.isPending() ||
-    postExploreSearchQuery.isFetching;
-  const noResults =
-    postExploreSearchQuery.data?.cards?.length === 0 && !displaySpinner;
+    debouncedExploreSearchRequestState.isPending() || isFetching;
+  const noResults = cards?.length === 0 && !displaySpinner;
 
   // form stuff
   const sortByOptions = useMemo(
@@ -151,7 +216,7 @@ export function Explore() {
     [sortBy]
   );
 
-  return remoteBackendConfigured ? (
+  return (
     <>
       <Row className="g-0">
         <OverflowCol
@@ -163,6 +228,24 @@ export function Explore() {
           className="px-2"
           heightDelta={NavbarHeight}
         >
+          <h5>Source Backend</h5>
+          <Toggle
+            onClick={() =>
+              setBackendType(backendType === "remote" ? "local" : "remote")
+            }
+            on="Remote"
+            onClassName="flex-centre"
+            off="Local"
+            offClassName="flex-centre"
+            onstyle="success"
+            offstyle="info"
+            width={100 + "%"}
+            size="md"
+            height={ToggleButtonHeight + "px"}
+            active={backendType === "remote"}
+            disabled={!(remoteBackendConfigured && localBackendConfigured)}
+          />
+          <hr />
           <h5>Sort By</h5>
           <StyledDropdownTreeSelect
             data={sortByOptions}
@@ -209,12 +292,16 @@ export function Explore() {
             filterSettings={filterSettings}
             setFilterSettings={setFilterSettingsAndResetPageStart}
           />
-          <hr />
-          <SourceSettingsElement
-            sourceSettings={sourceSettings}
-            setSourceSettings={setSourceSettingsAndResetPageStart}
-            enableReorderingSources={false}
-          />
+          {backendType === "remote" && (
+            <>
+              <hr />
+              <SourceSettingsElement
+                sourceSettings={sourceSettings}
+                setSourceSettings={setSourceSettingsAndResetPageStart}
+                enableReorderingSources={false}
+              />
+            </>
+          )}
         </OverflowCol>
 
         <Col style={{ position: "relative" }} lg={8} md={8} sm={6} xs={6}>
@@ -234,7 +321,7 @@ export function Explore() {
           >
             <Blurrable disabled={displaySpinner}>
               <Row xxl={4} lg={3} md={2} sm={1} xs={1} className="g-0">
-                {postExploreSearchQuery.data?.cards?.map((card) => (
+                {cards?.map((card) => (
                   <DatedCard
                     cardDocument={card}
                     headerDate={
@@ -290,7 +377,5 @@ export function Explore() {
         </Col>
       </Row>
     </>
-  ) : (
-    <NoBackendDefault requirement="remote" />
   );
 }

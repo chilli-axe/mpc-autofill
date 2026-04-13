@@ -246,6 +246,7 @@ export const OramaSchema = {
   id: "string" as SearchableType,
   name: "string" as SearchableType,
   searchq: "string" as SearchableType,
+  lastModifiedNumber: "number" as SearchableType,
   cardType: "enum",
   extension: "enum",
   language: "enum",
@@ -286,7 +287,9 @@ export type OramaCardDocument = Pick<
   | "tags"
   | "dpi"
   | "size"
-> & { id: string; lastModified: Date } & { params: FileHandleParams };
+> & { id: string; lastModified: Date; lastModifiedNumber: number } & {
+  params: FileHandleParams;
+};
 
 export interface OramaIndex {
   oramaDb: Orama<typeof OramaSchema>;
@@ -570,3 +573,5 @@ export type OramaSearchResults = {
   hits: Array<OramaSearchResult>;
   count: number;
 };
+
+export type BackendType = "local" | "remote";

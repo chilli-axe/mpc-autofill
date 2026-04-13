@@ -172,7 +172,7 @@ function CardsFacetedBySource({
     if (favoriteItems.length > 0) {
       result.push({
         key: FAVORITES_SOURCE_KEY,
-        title: "Favorites",
+        title: "Favourites",
         items: favoriteItems,
       });
     }

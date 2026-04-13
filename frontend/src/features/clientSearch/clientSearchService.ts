@@ -5,6 +5,7 @@ import { QueryTags } from "@/common/constants";
 import {
   SearchQuery,
   SearchSettings,
+  SortBy,
   SourceType,
   Tag,
 } from "@/common/schema_types";
@@ -224,6 +225,7 @@ export class ClientSearchService {
       offset
     );
   }
+
   public async editorSearch(
     // TODO: rename lmao
     searchSettings: SearchSettings,
@@ -233,6 +235,27 @@ export class ClientSearchService {
       throw new Error("clientSearchService was not initialised!");
     }
     return this.worker.editorSearch(searchSettings, searchQueries);
+  }
+
+  public async exploreSearch(
+    sortBy: SortBy,
+    query: string | undefined,
+    cardTypes: Array<CardType>,
+    searchSettings: SearchSettings,
+    pageStart: number,
+    pageSize: number
+  ): Promise<{ cards: Array<CardDocument>; count: number }> {
+    if (this.worker === undefined) {
+      throw new Error("clientSearchService was not initialised!");
+    }
+    return this.worker.exploreSearch(
+      sortBy,
+      query,
+      cardTypes,
+      searchSettings,
+      pageStart,
+      pageSize
+    );
   }
 
   public async searchCardbacks(

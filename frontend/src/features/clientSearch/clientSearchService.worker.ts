@@ -6,6 +6,7 @@ import {
   CardType as CardTypeSchema,
   SearchQuery,
   SearchSettings,
+  SortBy,
   SourceType,
   Tag,
 } from "@/common/schema_types";
@@ -141,14 +142,39 @@ export class ClientSearchService {
     searchSettings: SearchSettings,
     query: string | undefined,
     cardTypes: Array<CardType>,
+    sortBy?: SortBy,
     limit?: number,
     offset?: number
   ): OramaSearchResults | undefined {
     if (oramaIndex?.oramaDb === undefined) {
       return undefined;
     }
+
     const includesTags = searchSettings.filterSettings.includesTags.length > 0;
     const excludesTags = searchSettings.filterSettings.excludesTags.length > 0;
+
+    const sortByConfigs = {
+      [SortBy.DateCreatedAscending]: {
+        property: "lastModifiedNumber",
+        order: "ASC",
+      },
+      [SortBy.DateCreatedDescending]: {
+        property: "lastModifiedNumber",
+        order: "DESC",
+      },
+      [SortBy.DateModifiedAscending]: {
+        property: "lastModifiedNumber",
+        order: "ASC",
+      },
+      [SortBy.DateModifiedDescending]: {
+        property: "lastModifiedNumber",
+        order: "DESC",
+      },
+      [SortBy.NameAscending]: { property: "searchq", order: "ASC" },
+      [SortBy.NameDescending]: { property: "searchq", order: "DESC" },
+    } as const;
+    const sortByConfig = sortBy && sortByConfigs[sortBy];
+
     const searchResults = search(oramaIndex.oramaDb, {
       term: query ? toSearchable(query) : undefined,
       properties: ["searchq"],
@@ -158,7 +184,7 @@ export class ClientSearchService {
         query !== undefined && !searchSettings.searchTypeSettings.fuzzySearch,
       where: {
         and: [
-          { cardType: { in: cardTypes } },
+          ...(cardTypes.length > 0 ? [{ cardType: { in: cardTypes } }] : []),
           ...(includesTags
             ? [
                 {
@@ -194,7 +220,7 @@ export class ClientSearchService {
           },
         ],
       },
-      // @ts-ignore // TODO
+      sortBy: sortByConfig,
     }) as {
       hits: Array<OramaSearchResult> | undefined;
       count: number | undefined;
@@ -206,6 +232,7 @@ export class ClientSearchService {
     searchSettings: SearchSettings,
     query: string | undefined,
     cardTypes: Array<CardType>,
+    sortBy?: SortBy,
     limit?: number,
     offset?: number
   ): OramaSearchResults | undefined {
@@ -222,6 +249,7 @@ export class ClientSearchService {
           searchSettings,
           query,
           cardTypes,
+          sortBy,
           limit,
           offset
         );
@@ -245,6 +273,7 @@ export class ClientSearchService {
       searchSettings,
       query,
       cardTypes,
+      undefined,
       limit,
       offset
     );
@@ -284,6 +313,30 @@ export class ClientSearchService {
     return localResults;
   }
 
+  public exploreSearch(
+    sortBy: SortBy,
+    query: string | undefined,
+    cardTypes: Array<CardType>,
+    searchSettings: SearchSettings,
+    pageStart: number,
+    pageSize: number
+  ): { cards: Array<CardDocument>; count: number } {
+    const searchResults = this.search(
+      searchSettings,
+      query,
+      cardTypes,
+      sortBy,
+      pageSize,
+      pageStart
+    );
+    const cardIds = searchResults?.hits?.map(({ id }) => id) ?? [];
+    const cards = this.getCardDocumentsArray(cardIds);
+    return {
+      cards: cards,
+      count: searchResults?.count ?? 0,
+    };
+  }
+
   public retrieveCardbackIdentifiers(
     searchSettings: SearchSettings
   ): Array<string> | undefined {
@@ -296,18 +349,35 @@ export class ClientSearchService {
     );
   }
 
+  private getCardDocument(identifier: string): CardDocument | undefined {
+    const oramaCardDocument = this.getByID(identifier);
+    return oramaCardDocument
+      ? this.translateOramaCardDocumentToCardDocument(oramaCardDocument)
+      : undefined;
+  }
+
+  private getCardDocumentsArray(
+    identifiersToSearch: Array<string>
+  ): Array<CardDocument> {
+    return identifiersToSearch.reduce(
+      (accumulated: Array<CardDocument>, identifier: string) => {
+        const cardDocument = this.getCardDocument(identifier);
+        if (cardDocument !== undefined) {
+          accumulated.push(cardDocument);
+        }
+        return accumulated;
+      },
+      [] as Array<CardDocument>
+    );
+  }
+
   public getCardDocuments(identifiersToSearch: Array<string>): CardDocuments {
     return Object.fromEntries(
       identifiersToSearch.reduce(
         (accumulated: Array<[string, CardDocument]>, identifier: string) => {
-          const oramaCardDocument = this.getByID(identifier) as
-            | OramaCardDocument
-            | undefined;
-          if (oramaCardDocument !== undefined) {
-            accumulated.push([
-              oramaCardDocument.id,
-              this.translateOramaCardDocumentToCardDocument(oramaCardDocument),
-            ]);
+          const cardDocument = this.getCardDocument(identifier);
+          if (cardDocument !== undefined) {
+            accumulated.push([cardDocument.identifier, cardDocument]);
           }
           return accumulated;
         },
@@ -386,6 +456,7 @@ export class ClientSearchService {
                   getDefaultSearchSettings([], false),
                   undefined,
                   [cardType],
+                  undefined,
                   cardType === CardTypeSchema.Card ? 4 : 1
                 )?.hits?.map((result) =>
                   this.translateOramaCardDocumentToCardDocument(result.document)

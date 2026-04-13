@@ -4,14 +4,14 @@ import React from "react";
 import { NoBackendDefault } from "@/components/NoBackendDefault";
 import { Explore as ExploreComponent } from "@/features/explore/Explore";
 import { ProjectContainer } from "@/features/ui/Layout";
-import { useRemoteBackendConfigured } from "@/store/slices/backendSlice";
+import { useAnyBackendConfigured } from "@/store/slices/backendSlice";
 
 function ExploreOrDefault() {
-  const remoteBackendConfigured = useRemoteBackendConfigured();
-  return remoteBackendConfigured ? (
+  const anyBackendConfigured = useAnyBackendConfigured();
+  return anyBackendConfigured ? (
     <ExploreComponent />
   ) : (
-    <NoBackendDefault requirement="remote" />
+    <NoBackendDefault requirement="any" />
   );
 }
 

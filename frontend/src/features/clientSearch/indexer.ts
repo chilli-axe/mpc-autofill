@@ -146,6 +146,7 @@ export class Image {
       language: language ?? "English", // TODO: data type
       tags: Array.from(extractedTags),
       lastModified: this.modifiedTime,
+      lastModifiedNumber: this.modifiedTime.valueOf(),
     };
   }
 }
@@ -177,7 +178,27 @@ abstract class Indexer {
     images: Array<Image>,
     tags: Array<Tag> | undefined
   ): Promise<OramaIndex> {
-    const db = create({ schema: OramaSchema });
+    const db = create({
+      schema: OramaSchema,
+      sort: {
+        enabled: true,
+        unsortableProperties: [
+          // every field on OramaCardDocument except `searchq` and `lastModifiedNumber` :)
+          "name",
+          "source",
+          "sourceVerbose",
+          "cardType",
+          "extension",
+          "language",
+          "tags",
+          "dpi",
+          "size",
+          "id",
+          "lastModified",
+          "params",
+        ],
+      },
+    });
     const tagsMap = new Map(
       (tags ?? []).map((tag) => [tag.name.toLowerCase(), tag])
     );
@@ -296,6 +317,7 @@ export class GoogleDriveIndexer extends Indexer {
       extension,
       parseInt(file.size),
       new Date(file.modifiedTime),
+      // TODO: createdTime!
       file.imageMediaMetadata?.height ?? 0,
       folder
     );
