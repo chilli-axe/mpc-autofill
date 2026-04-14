@@ -380,3 +380,9 @@ export const openSearchSettingsModal = async (page: Page) => {
   ).toBeVisible();
   return page.getByTestId("search-settings");
 };
+
+export const enableFuzzySearch = async (page: Page) => {
+  const settingsModal = await openSearchSettingsModal(page);
+  await settingsModal.getByText("Precise Search").click();
+  await settingsModal.getByRole("button", { name: "Save Changes" }).click();
+};

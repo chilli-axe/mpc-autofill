@@ -152,6 +152,25 @@ function unpackLine(
   ];
 }
 
+export const getDfcBack = (
+  query: string,
+  dfcPairs: DFCPairs,
+  fuzzySearch: boolean
+): string | null => {
+  let dfcPairMatchFront: string | null = null;
+  if (fuzzySearch) {
+    const matches = Object.keys(dfcPairs).filter((dfcPairFront) =>
+      dfcPairFront.startsWith(query)
+    );
+    if (matches.length === 1) {
+      dfcPairMatchFront = matches[0];
+    }
+  } else if (query in dfcPairs) {
+    dfcPairMatchFront = query;
+  }
+  return dfcPairMatchFront ? dfcPairs[dfcPairMatchFront] : null;
+};
+
 /**
  * Process `line` to identify the search query and the number of instances requested for each face.
  * If no back query is specified, attempt to match the front query to a DFC pair.
@@ -184,23 +203,11 @@ export function processLine(
     backQuery = processPrefix(backRawQuery[0]);
     backSelectedImage = backRawQuery[1] ?? undefined;
   } else if (frontQuery != null && frontQuery?.query != null) {
-    // typescript isn't smart enough to know that frontQuery.query is not null, so we have to do this
-    const frontQueryQuery = frontQuery.query;
-    let dfcPairMatchFront: string | null = null;
-    if (fuzzySearch) {
-      const matches = Object.keys(dfcPairs).filter((dfcPairFront) =>
-        dfcPairFront.startsWith(frontQueryQuery)
-      );
-      if (matches.length === 1) {
-        dfcPairMatchFront = matches[0];
-      }
-    } else if (frontQueryQuery in dfcPairs) {
-      dfcPairMatchFront = frontQueryQuery;
-    }
-    if (dfcPairMatchFront != null) {
+    const dfcBackQuery = getDfcBack(frontQuery.query, dfcPairs, fuzzySearch);
+    if (dfcBackQuery != null) {
       // match to the card's DFC pair. assume the back is the same card type as the front.
       backQuery = {
-        query: dfcPairs[dfcPairMatchFront],
+        query: dfcBackQuery,
         cardType: frontQuery.cardType,
       };
     }

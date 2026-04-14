@@ -6,7 +6,7 @@ import { createSelector, PayloadAction } from "@reduxjs/toolkit";
 
 import { Card, Cardback } from "@/common/constants";
 import { Back, Front, ProjectMaxSize } from "@/common/constants";
-import { processPrefix } from "@/common/processing";
+import { processPrefix, toSearchable } from "@/common/processing";
 import { SourceType } from "@/common/schema_types";
 import {
   CardDocuments,
@@ -457,6 +457,30 @@ export const selectAllSelectedProjectMembersHaveTheSameQuery = createSelector(
     )
       ? firstQuery
       : undefined;
+  }
+);
+
+export const selectAnySelectedProjectMembersMatchQuery = createSelector(
+  (state: RootState, slots: Slots, face: Faces, query: string | null) =>
+    state.project.members,
+  (state: RootState, slots: Slots, face: Faces, query: string | null) =>
+    [...new Set(slots.map(([face, slotNumber]) => slotNumber))].sort(
+      (a, b) => a - b
+    ),
+  (state: RootState, slots: Slots, face: Faces, query: string | null) => face,
+  (state: RootState, slots: Slots, face: Faces, query: string | null) => query,
+  (members, distinctSlotNumbers, face, query) => {
+    if (query === null) {
+      return false;
+    }
+    const projectMembers = distinctSlotNumbers.map((slot) =>
+      getProjectMember(members, face, slot)
+    );
+    return projectMembers.some(
+      (projectMember) =>
+        projectMember?.query?.query &&
+        toSearchable(projectMember.query.query) === toSearchable(query)
+    );
   }
 );
 
