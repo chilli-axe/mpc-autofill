@@ -1,5 +1,5 @@
 import { Document, Image, Page, StyleSheet, View } from "@react-pdf/renderer";
-import React from "react";
+import React, { createContext, useContext } from "react";
 
 import {
   BleedEdgeMM,
@@ -10,6 +10,16 @@ import {
 import { getBucketImageURL, getWorkerImageURL } from "@/common/image";
 import { SourceType } from "@/common/schema_types";
 import { CardDocument, SlotProjectMembers } from "@/common/types";
+
+const PDFContext = createContext<PDFProps | undefined>(undefined);
+
+const usePDFContext = (): PDFProps => {
+  const context = useContext(PDFContext);
+  if (!context) {
+    throw new Error("Attempted to use pdfContext outside of provider");
+  }
+  return context;
+};
 
 // copy-pasted from react-pdf because they don't export this data
 // measured in PDF points
@@ -201,31 +211,21 @@ const getPDFImageURL = async (
 
 interface PDFCardThumbnailProps {
   cardDocument: CardDocument;
-  bleedEdgeMM: number;
-  roundCorners: boolean;
-  drawCutLines: boolean;
-  cutLineLengthMM: number;
-  cutLineOffsetMM: number;
-  cutLineThicknessMM: number;
-  cutLineColor: string;
-  imageDPI: number | undefined;
-  imageQuality: "small-thumbnail" | "large-thumbnail" | "full-resolution";
-  fileHandles: { [identifier: string]: FileSystemFileHandle };
 }
 
-const PDFCardThumbnail = ({
-  cardDocument,
-  bleedEdgeMM,
-  roundCorners,
-  drawCutLines,
-  cutLineLengthMM,
-  cutLineOffsetMM,
-  cutLineThicknessMM,
-  cutLineColor,
-  imageQuality,
-  imageDPI,
-  fileHandles,
-}: PDFCardThumbnailProps) => {
+const PDFCardThumbnail = ({ cardDocument }: PDFCardThumbnailProps) => {
+  const {
+    bleedEdgeMM,
+    roundCorners,
+    drawCutLines,
+    cutLineLengthMM,
+    cutLineOffsetMM,
+    cutLineThicknessMM,
+    cutLineColor,
+    imageQuality,
+    imageDPI,
+    fileHandles,
+  } = usePDFContext();
   const height = CardHeightMM + 2 * bleedEdgeMM;
   const heightProportion = (CardHeightMM + 2 * BleedEdgeMM) / height;
   const width = CardWidthMM + 2 * bleedEdgeMM;
@@ -360,52 +360,26 @@ const getPageStyle = (
     alignSelf: "center",
   } as const);
 
-type CardPageProps = Pick<
-  PDFProps,
-  | "projectMembers"
-  | "cardDocumentsByIdentifier"
-  | "projectCardback"
-  | "bleedEdgeMM"
-  | "roundCorners"
-  | "drawCutLines"
-  | "cutLineLengthMM"
-  | "cutLineOffsetMM"
-  | "cutLineThicknessMM"
-  | "cutLineColor"
-  | "imageQuality"
-  | "imageDPI"
-  | "fileHandles"
-  | "pageMarginLeftMM"
-  | "pageMarginRightMM"
-> & {
+type CardPageProps = {
   pageWidthMM: number;
   pageHeightMM: number;
-  cardSpacingRowMM: number;
-  cardSpacingColMM: number;
   pageBreak?: boolean;
 };
 
 const FrontsAndDistinctBacksPage = ({
-  projectMembers,
-  cardDocumentsByIdentifier,
-  projectCardback,
-  bleedEdgeMM,
-  roundCorners,
-  drawCutLines,
-  cutLineLengthMM,
-  cutLineOffsetMM,
-  cutLineThicknessMM,
-  cutLineColor,
-  imageQuality,
-  imageDPI,
-  fileHandles,
-  cardSpacingRowMM,
-  cardSpacingColMM,
   pageWidthMM,
-  pageMarginLeftMM,
-  pageMarginRightMM,
   pageBreak,
 }: CardPageProps) => {
+  const {
+    bleedEdgeMM,
+    cardSpacingRowMM,
+    cardSpacingColMM,
+    pageMarginLeftMM,
+    pageMarginRightMM,
+    projectMembers,
+    cardDocumentsByIdentifier,
+    projectCardback,
+  } = usePDFContext();
   return (
     <View
       break={pageBreak}
@@ -428,16 +402,6 @@ const FrontsAndDistinctBacksPage = ({
                 cardDocument={
                   cardDocumentsByIdentifier[member.front.selectedImage]
                 }
-                bleedEdgeMM={bleedEdgeMM}
-                roundCorners={roundCorners}
-                drawCutLines={drawCutLines}
-                cutLineLengthMM={cutLineLengthMM}
-                cutLineOffsetMM={cutLineOffsetMM}
-                cutLineThicknessMM={cutLineThicknessMM}
-                cutLineColor={cutLineColor}
-                imageQuality={imageQuality}
-                imageDPI={imageDPI}
-                fileHandles={fileHandles}
               />
             )}
           {member.back?.selectedImage !== undefined &&
@@ -449,16 +413,6 @@ const FrontsAndDistinctBacksPage = ({
                 cardDocument={
                   cardDocumentsByIdentifier[member.back.selectedImage]
                 }
-                bleedEdgeMM={bleedEdgeMM}
-                roundCorners={roundCorners}
-                drawCutLines={drawCutLines}
-                cutLineLengthMM={cutLineLengthMM}
-                cutLineOffsetMM={cutLineOffsetMM}
-                cutLineThicknessMM={cutLineThicknessMM}
-                cutLineColor={cutLineColor}
-                imageQuality={imageQuality}
-                imageDPI={imageDPI}
-                fileHandles={fileHandles}
               />
             )}
         </>
@@ -467,26 +421,16 @@ const FrontsAndDistinctBacksPage = ({
   );
 };
 
-const FrontsOnlyPage = ({
-  projectMembers,
-  cardDocumentsByIdentifier,
-  bleedEdgeMM,
-  roundCorners,
-  drawCutLines,
-  cutLineLengthMM,
-  cutLineOffsetMM,
-  cutLineThicknessMM,
-  cutLineColor,
-  imageQuality,
-  imageDPI,
-  fileHandles,
-  cardSpacingRowMM,
-  cardSpacingColMM,
-  pageWidthMM,
-  pageMarginLeftMM,
-  pageMarginRightMM,
-  pageBreak,
-}: CardPageProps) => {
+const FrontsOnlyPage = ({ pageWidthMM, pageBreak }: CardPageProps) => {
+  const {
+    bleedEdgeMM,
+    cardSpacingRowMM,
+    cardSpacingColMM,
+    pageMarginLeftMM,
+    pageMarginRightMM,
+    projectMembers,
+    cardDocumentsByIdentifier,
+  } = usePDFContext();
   return (
     <View
       break={pageBreak}
@@ -509,16 +453,6 @@ const FrontsOnlyPage = ({
                 cardDocument={
                   cardDocumentsByIdentifier[member.front.selectedImage]
                 }
-                bleedEdgeMM={bleedEdgeMM}
-                roundCorners={roundCorners}
-                drawCutLines={drawCutLines}
-                cutLineLengthMM={cutLineLengthMM}
-                cutLineOffsetMM={cutLineOffsetMM}
-                cutLineThicknessMM={cutLineThicknessMM}
-                cutLineColor={cutLineColor}
-                imageQuality={imageQuality}
-                imageDPI={imageDPI}
-                fileHandles={fileHandles}
               />
             )}
         </>
@@ -527,26 +461,16 @@ const FrontsOnlyPage = ({
   );
 };
 
-const BacksOnlyPage = ({
-  projectMembers,
-  cardDocumentsByIdentifier,
-  bleedEdgeMM,
-  roundCorners,
-  drawCutLines,
-  cutLineLengthMM,
-  cutLineOffsetMM,
-  cutLineThicknessMM,
-  cutLineColor,
-  imageQuality,
-  imageDPI,
-  fileHandles,
-  cardSpacingRowMM,
-  cardSpacingColMM,
-  pageWidthMM,
-  pageMarginLeftMM,
-  pageMarginRightMM,
-  pageBreak,
-}: CardPageProps) => {
+const BacksOnlyPage = ({ pageWidthMM, pageBreak }: CardPageProps) => {
+  const {
+    bleedEdgeMM,
+    cardSpacingRowMM,
+    cardSpacingColMM,
+    pageMarginLeftMM,
+    pageMarginRightMM,
+    projectMembers,
+    cardDocumentsByIdentifier,
+  } = usePDFContext();
   return (
     <View
       break={pageBreak}
@@ -569,16 +493,6 @@ const BacksOnlyPage = ({
                 cardDocument={
                   cardDocumentsByIdentifier[member.back.selectedImage]
                 }
-                bleedEdgeMM={bleedEdgeMM}
-                roundCorners={roundCorners}
-                drawCutLines={drawCutLines}
-                cutLineLengthMM={cutLineLengthMM}
-                cutLineOffsetMM={cutLineOffsetMM}
-                cutLineThicknessMM={cutLineThicknessMM}
-                cutLineColor={cutLineColor}
-                imageQuality={imageQuality}
-                imageDPI={imageDPI}
-                fileHandles={fileHandles}
               />
             )}
         </>
@@ -587,71 +501,17 @@ const BacksOnlyPage = ({
   );
 };
 
-const FrontsAndBacksPage = ({
-  projectMembers,
-  cardDocumentsByIdentifier,
-  projectCardback,
-  bleedEdgeMM,
-  roundCorners,
-  drawCutLines,
-  cutLineLengthMM,
-  cutLineOffsetMM,
-  cutLineThicknessMM,
-  cutLineColor,
-  imageQuality,
-  imageDPI,
-  fileHandles,
-  cardSpacingRowMM,
-  cardSpacingColMM,
-  pageWidthMM,
-  pageHeightMM,
-  pageMarginLeftMM,
-  pageMarginRightMM,
-}: CardPageProps) => {
+const FrontsAndBacksPage = ({ pageWidthMM, pageHeightMM }: CardPageProps) => {
   return (
     <>
       <FrontsOnlyPage
-        projectMembers={projectMembers}
-        cardDocumentsByIdentifier={cardDocumentsByIdentifier}
-        projectCardback={projectCardback}
-        bleedEdgeMM={bleedEdgeMM}
-        roundCorners={roundCorners}
-        drawCutLines={drawCutLines}
-        cutLineLengthMM={cutLineLengthMM}
-        cutLineOffsetMM={cutLineOffsetMM}
-        cutLineThicknessMM={cutLineThicknessMM}
-        cutLineColor={cutLineColor}
-        imageQuality={imageQuality}
-        imageDPI={imageDPI}
-        fileHandles={fileHandles}
-        cardSpacingRowMM={cardSpacingRowMM}
-        cardSpacingColMM={cardSpacingColMM}
         pageWidthMM={pageWidthMM}
         pageHeightMM={pageHeightMM}
-        pageMarginLeftMM={pageMarginLeftMM}
-        pageMarginRightMM={pageMarginRightMM}
         pageBreak={false}
       />
       <BacksOnlyPage
-        projectMembers={projectMembers}
-        cardDocumentsByIdentifier={cardDocumentsByIdentifier}
-        projectCardback={projectCardback}
-        bleedEdgeMM={bleedEdgeMM}
-        roundCorners={roundCorners}
-        drawCutLines={drawCutLines}
-        cutLineLengthMM={cutLineLengthMM}
-        cutLineOffsetMM={cutLineOffsetMM}
-        cutLineThicknessMM={cutLineThicknessMM}
-        cutLineColor={cutLineColor}
-        imageQuality={imageQuality}
-        imageDPI={imageDPI}
-        fileHandles={fileHandles}
-        cardSpacingRowMM={cardSpacingRowMM}
-        cardSpacingColMM={cardSpacingColMM}
         pageWidthMM={pageWidthMM}
         pageHeightMM={pageHeightMM}
-        pageMarginLeftMM={pageMarginLeftMM}
-        pageMarginRightMM={pageMarginRightMM}
         pageBreak={true}
       />
     </>
@@ -667,66 +527,24 @@ const CardSelectionModeToPage: {
   frontsAndBacks: FrontsAndBacksPage,
 };
 
-export const PDF = ({
-  cardSelectionMode,
-  pageSize,
-  pageWidth,
-  pageHeight,
-  bleedEdgeMM,
-  roundCorners,
-  drawCutLines,
-  cutLineLengthMM,
-  cutLineOffsetMM,
-  cutLineThicknessMM,
-  cutLineColor,
-  cardSpacingRowMM,
-  cardSpacingColMM,
-  pageMarginTopMM,
-  pageMarginBottomMM,
-  pageMarginLeftMM,
-  pageMarginRightMM,
-  projectMembers,
-  projectCardback,
-  cardDocumentsByIdentifier,
-  imageQuality,
-  imageDPI,
-  fileHandles,
-}: PDFProps) => {
-  const size = getPageSizeMM(pageSize, pageWidth, pageHeight);
-  const PageComponent = CardSelectionModeToPage[cardSelectionMode];
+export const PDF = (props: PDFProps) => {
+  const size = getPageSizeMM(props.pageSize, props.pageWidth, props.pageHeight);
+  const PageComponent = CardSelectionModeToPage[props.cardSelectionMode];
   return (
-    <Document pageMode="useThumbs">
-      <Page
-        size={{ width: size.width + "mm", height: size.height + "mm" }}
-        style={{
-          paddingTop: pageMarginTopMM + "mm",
-          paddingBottom: pageMarginBottomMM + "mm",
-          paddingLeft: pageMarginLeftMM + "mm",
-          paddingRight: pageMarginRightMM + "mm",
-        }}
-      >
-        <PageComponent
-          projectMembers={projectMembers}
-          cardDocumentsByIdentifier={cardDocumentsByIdentifier}
-          projectCardback={projectCardback}
-          bleedEdgeMM={bleedEdgeMM}
-          roundCorners={roundCorners}
-          drawCutLines={drawCutLines}
-          cutLineLengthMM={cutLineLengthMM}
-          cutLineOffsetMM={cutLineOffsetMM}
-          cutLineThicknessMM={cutLineThicknessMM}
-          cutLineColor={cutLineColor}
-          imageQuality={imageQuality}
-          imageDPI={imageDPI}
-          fileHandles={fileHandles}
-          cardSpacingRowMM={cardSpacingRowMM}
-          cardSpacingColMM={cardSpacingColMM}
-          pageMarginLeftMM={pageMarginLeftMM}
-          pageMarginRightMM={pageMarginRightMM}
-          pageWidthMM={size.width}
-          pageHeightMM={size.height}
-        />
-      </Page>
-    </Document>
+    <PDFContext.Provider value={props}>
+      <Document pageMode="useThumbs">
+        <Page
+          size={{ width: size.width + "mm", height: size.height + "mm" }}
+          style={{
+            paddingTop: props.pageMarginTopMM + "mm",
+            paddingBottom: props.pageMarginBottomMM + "mm",
+            paddingLeft: props.pageMarginLeftMM + "mm",
+            paddingRight: props.pageMarginRightMM + "mm",
+          }}
+        >
+          <PageComponent pageWidthMM={size.width} pageHeightMM={size.height} />
+        </Page>
+      </Document>
+    </PDFContext.Provider>
   );
 };

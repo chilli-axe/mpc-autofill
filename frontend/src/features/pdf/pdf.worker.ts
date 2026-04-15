@@ -14,7 +14,6 @@ export const renderPDF = async (props: PDFProps) => {
 
 const renderPDFInWorker = async (props: PDFProps) => {
   try {
-    // const { renderPDF } = await import('../renderPDF');
     return URL.createObjectURL(await renderPDF(props));
   } catch (error) {
     log(error);
