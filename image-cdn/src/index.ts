@@ -11,15 +11,16 @@ function assertUnreachable(x: never): never {
 
 const getImageKey = (imageType: ImageType, imageSize: ImageSize, imageIdentifier: string): string =>
   `${imageIdentifier}-${imageSize}-${imageType}`;
-const getImageURL = (imageType: ImageType, imageSize: ImageSize, imageIdentifier: string): string => {
+const getImageURL = (imageType: ImageType, imageSize: ImageSize, dpi: number | undefined, imageIdentifier: string): string => {
   switch (imageType) {
     case "google_drive":
       switch (imageSize) {
         case "small":
         case "large":
-          return `https://drive.google.com/thumbnail?sz=w${ImageSizes[imageSize]}-h${ImageSizes[imageSize]}&id=${imageIdentifier}`;
+          return `https://lh4.googleusercontent.com/d/${imageIdentifier}=h${ImageSizes[imageSize]}`;
         case "full":
-          return `https://drive.usercontent.google.com/download?id=${imageIdentifier}&export=view&authuser=0`;
+          const height = dpi ? (dpi * 1110) / 300 : undefined;
+          return `https://lh4.googleusercontent.com/d/${imageIdentifier}${height ? `=h${height}` : ""}`;
         default:
           return assertUnreachable(imageSize);
       }
@@ -103,26 +104,14 @@ const putImage = async (env: Env, imageURL: string, imageKey: string, isResync: 
   console.log("All done!");
 };
 
-const getFullResolutionImage = async (request: Request, env: Env, ctx: ExecutionContext, imageIdentifier: string): Promise<Response> => {
-  const googleDriveAccessToken = await getGoogleDriveAccessToken(env);
-  if (!googleDriveAccessToken) {
-    console.log("Couldn't get access token");
-    return new Response("Could not access Google Drive API.", { status: 500 });
-  }
-  let response = await fetch(`https://www.googleapis.com/drive/v3/files/${imageIdentifier}?alt=media`, {
-    headers: { Authorization: `Bearer ${googleDriveAccessToken}` },
-    method: "GET",
-  });
-  response = new Response(response.body, response);
-  response.headers.set("Access-Control-Allow-Origin", "*");
-  response.headers.append("Vary", "Origin");
-  response.headers.set("Content-Type", "image/jpeg");
-  return response;
-};
-
 const handleImageRequest = async (url: URL, request: Request, env: Env, ctx: ExecutionContext): Promise<Response> => {
   const pathRegex = new RegExp(/^\/images\/(google_drive)\/(small|large|full)\/(.+)\.jpg$/);
   const unpackedPath = pathRegex.exec(url.pathname);
+  const rawDpi = url.searchParams.get("dpi");
+  const dpi: number | undefined = rawDpi ? parseInt(rawDpi) : undefined;
+  if (dpi !== undefined && !(dpi > 0 && dpi <= 1500)) {
+    throw new Error(`invalid DPI ${rawDpi}`);
+  }
   if (unpackedPath === null) {
     return new Response(`Malformed URL.`, { status: 400 });
   }
@@ -131,14 +120,17 @@ const handleImageRequest = async (url: URL, request: Request, env: Env, ctx: Exe
   const imageIdentifier = unpackedPath[3];
 
   const imageKey = getImageKey(imageType, imageSize, imageIdentifier);
-  const imageURL = getImageURL(imageType, imageSize, imageIdentifier);
 
   switch (request.method) {
     case "GET":
-      if (imageSize === "small" || imageSize === "large") {
-        return getThumbnail(env, ctx, imageURL, imageKey);
-      } else if (imageSize === "full") {
-        return getFullResolutionImage(request, env, ctx, imageIdentifier);
+      switch (imageSize) {
+        case "small":
+        case "large":
+          return getThumbnail(env, ctx, getImageURL(imageType, imageSize, undefined, imageIdentifier), imageKey);
+        case "full":
+          return fetch(getImageURL(imageType, imageSize, dpi, imageIdentifier));
+        default:
+          throw new Error(`Invalid image size ${imageSize}`);
       }
     default:
       return new Response(`Invalid method ${request.method}. GET or PUT expected.`, { status: 400 });
@@ -200,7 +192,7 @@ const checkAndPossiblyUpdateTheThumbnailsForAnObject = async (
     console.log(`${identifier} is stale - refreshing thumbnails`);
     for (const size of ["small", "large"] as Array<ImageSize>) {
       const imageKey = getImageKey("google_drive", size, identifier);
-      const imageURL = getImageURL("google_drive", size, identifier);
+      const imageURL = getImageURL("google_drive", size, undefined, identifier);
       ctx.waitUntil(putImage(env, imageURL, imageKey, true));
     }
     return true;

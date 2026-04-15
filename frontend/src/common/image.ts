@@ -12,7 +12,12 @@ export const getImageKey = (
 export const getImageBucketURL = () => process.env.NEXT_PUBLIC_IMAGE_BUCKET_URL;
 export const getImageWorkerURL = () => process.env.NEXT_PUBLIC_IMAGE_WORKER_URL;
 
-export const getBucketThumbnailURL = (
+const attachHttpsPrefix = (url: string): string =>
+  url.startsWith("http://") || url.startsWith("https://")
+    ? url
+    : `https://${url}`;
+
+export const getBucketImageURL = (
   cardDocument: CardDocument,
   size: "small" | "large" | "full"
 ) => {
@@ -25,28 +30,29 @@ export const getBucketThumbnailURL = (
   // TODO: support other source types through CDN here
   const imageBucketURLValid =
     imageBucketURL != null && !!(cardDocument.sourceType === "Google Drive");
-  const base = imageBucketURL?.startsWith("https://")
-    ? imageBucketURL
-    : `https://${imageBucketURL}`;
   return imageBucketURLValid
-    ? new URL(getImageKey(cardDocument, size), base).toString()
+    ? new URL(
+        getImageKey(cardDocument, size),
+        attachHttpsPrefix(imageBucketURL)
+      ).toString()
     : undefined;
 };
 
-export const getWorkerThumbnailURL = (
+export const getWorkerImageURL = (
   cardDocument: CardDocument,
-  size: "small" | "large" | "full"
+  size: "small" | "large" | "full",
+  dpi: number | undefined = undefined
 ) => {
   const imageWorkerURL = getImageWorkerURL();
   const imageWorkerURLValid =
     imageWorkerURL != null && !!(cardDocument?.sourceType === "Google Drive");
-  const base = imageWorkerURL?.startsWith("https://")
-    ? imageWorkerURL
-    : `https://${imageWorkerURL}`;
+  const params = new URLSearchParams({
+    ...(dpi !== undefined && size === "full" ? { dpi: dpi.toString() } : {}),
+  });
   return imageWorkerURLValid
     ? new URL(
-        `/images/google_drive/${size}/${cardDocument?.identifier}.jpg`,
-        base
+        `/images/google_drive/${size}/${cardDocument?.identifier}.jpg?${params}`,
+        attachHttpsPrefix(imageWorkerURL)
       ).toString()
     : undefined;
 };

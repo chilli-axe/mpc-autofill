@@ -7,7 +7,7 @@ import {
   CardWidthMM,
   CornerRadiusMM,
 } from "@/common/constants";
-import { getBucketThumbnailURL, getWorkerThumbnailURL } from "@/common/image";
+import { getBucketImageURL, getWorkerImageURL } from "@/common/image";
 import { SourceType } from "@/common/schema_types";
 import { CardDocument, SlotProjectMembers } from "@/common/types";
 
@@ -160,23 +160,25 @@ export interface PDFProps {
   projectMembers: Array<SlotProjectMembers>;
   projectCardback: string | undefined;
   imageQuality: "small-thumbnail" | "large-thumbnail" | "full-resolution";
+  imageDPI: number | undefined;
   fileHandles: { [identifier: string]: FileSystemFileHandle };
 }
 
-const getThumbnailURL = async (
+const getPDFImageURL = async (
   cardDocument: CardDocument,
   imageQuality: "small-thumbnail" | "large-thumbnail" | "full-resolution",
+  dpi: number | undefined,
   fileHandles: { [identifier: string]: FileSystemFileHandle }
 ): Promise<string | Blob | undefined> => {
   switch (cardDocument.sourceType) {
     case SourceType.GoogleDrive:
       switch (imageQuality) {
         case "small-thumbnail":
-          return getBucketThumbnailURL(cardDocument, "small");
+          return getBucketImageURL(cardDocument, "small");
         case "large-thumbnail":
-          return getBucketThumbnailURL(cardDocument, "large");
+          return getBucketImageURL(cardDocument, "large");
         case "full-resolution":
-          return getWorkerThumbnailURL(cardDocument, "full");
+          return getWorkerImageURL(cardDocument, "full", dpi);
         default:
           throw new Error(`invalid imageQuality ${imageQuality}`);
       }
@@ -206,6 +208,7 @@ interface PDFCardThumbnailProps {
   cutLineOffsetMM: number;
   cutLineThicknessMM: number;
   cutLineColor: string;
+  imageDPI: number | undefined;
   imageQuality: "small-thumbnail" | "large-thumbnail" | "full-resolution";
   fileHandles: { [identifier: string]: FileSystemFileHandle };
 }
@@ -220,6 +223,7 @@ const PDFCardThumbnail = ({
   cutLineThicknessMM,
   cutLineColor,
   imageQuality,
+  imageDPI,
   fileHandles,
 }: PDFCardThumbnailProps) => {
   const height = CardHeightMM + 2 * bleedEdgeMM;
@@ -285,7 +289,7 @@ const PDFCardThumbnail = ({
     >
       <Image
         src={async () =>
-          getThumbnailURL(cardDocument, imageQuality, fileHandles)
+          getPDFImageURL(cardDocument, imageQuality, imageDPI, fileHandles)
         }
         style={imageStyle}
       />
@@ -369,6 +373,7 @@ type CardPageProps = Pick<
   | "cutLineThicknessMM"
   | "cutLineColor"
   | "imageQuality"
+  | "imageDPI"
   | "fileHandles"
   | "pageMarginLeftMM"
   | "pageMarginRightMM"
@@ -392,6 +397,7 @@ const FrontsAndDistinctBacksPage = ({
   cutLineThicknessMM,
   cutLineColor,
   imageQuality,
+  imageDPI,
   fileHandles,
   cardSpacingRowMM,
   cardSpacingColMM,
@@ -430,6 +436,7 @@ const FrontsAndDistinctBacksPage = ({
                 cutLineThicknessMM={cutLineThicknessMM}
                 cutLineColor={cutLineColor}
                 imageQuality={imageQuality}
+                imageDPI={imageDPI}
                 fileHandles={fileHandles}
               />
             )}
@@ -450,6 +457,7 @@ const FrontsAndDistinctBacksPage = ({
                 cutLineThicknessMM={cutLineThicknessMM}
                 cutLineColor={cutLineColor}
                 imageQuality={imageQuality}
+                imageDPI={imageDPI}
                 fileHandles={fileHandles}
               />
             )}
@@ -470,6 +478,7 @@ const FrontsOnlyPage = ({
   cutLineThicknessMM,
   cutLineColor,
   imageQuality,
+  imageDPI,
   fileHandles,
   cardSpacingRowMM,
   cardSpacingColMM,
@@ -508,6 +517,7 @@ const FrontsOnlyPage = ({
                 cutLineThicknessMM={cutLineThicknessMM}
                 cutLineColor={cutLineColor}
                 imageQuality={imageQuality}
+                imageDPI={imageDPI}
                 fileHandles={fileHandles}
               />
             )}
@@ -528,6 +538,7 @@ const BacksOnlyPage = ({
   cutLineThicknessMM,
   cutLineColor,
   imageQuality,
+  imageDPI,
   fileHandles,
   cardSpacingRowMM,
   cardSpacingColMM,
@@ -566,6 +577,7 @@ const BacksOnlyPage = ({
                 cutLineThicknessMM={cutLineThicknessMM}
                 cutLineColor={cutLineColor}
                 imageQuality={imageQuality}
+                imageDPI={imageDPI}
                 fileHandles={fileHandles}
               />
             )}
@@ -587,6 +599,7 @@ const FrontsAndBacksPage = ({
   cutLineThicknessMM,
   cutLineColor,
   imageQuality,
+  imageDPI,
   fileHandles,
   cardSpacingRowMM,
   cardSpacingColMM,
@@ -609,6 +622,7 @@ const FrontsAndBacksPage = ({
         cutLineThicknessMM={cutLineThicknessMM}
         cutLineColor={cutLineColor}
         imageQuality={imageQuality}
+        imageDPI={imageDPI}
         fileHandles={fileHandles}
         cardSpacingRowMM={cardSpacingRowMM}
         cardSpacingColMM={cardSpacingColMM}
@@ -630,6 +644,7 @@ const FrontsAndBacksPage = ({
         cutLineThicknessMM={cutLineThicknessMM}
         cutLineColor={cutLineColor}
         imageQuality={imageQuality}
+        imageDPI={imageDPI}
         fileHandles={fileHandles}
         cardSpacingRowMM={cardSpacingRowMM}
         cardSpacingColMM={cardSpacingColMM}
@@ -674,6 +689,7 @@ export const PDF = ({
   projectCardback,
   cardDocumentsByIdentifier,
   imageQuality,
+  imageDPI,
   fileHandles,
 }: PDFProps) => {
   const size = getPageSizeMM(pageSize, pageWidth, pageHeight);
@@ -701,6 +717,7 @@ export const PDF = ({
           cutLineThicknessMM={cutLineThicknessMM}
           cutLineColor={cutLineColor}
           imageQuality={imageQuality}
+          imageDPI={imageDPI}
           fileHandles={fileHandles}
           cardSpacingRowMM={cardSpacingRowMM}
           cardSpacingColMM={cardSpacingColMM}

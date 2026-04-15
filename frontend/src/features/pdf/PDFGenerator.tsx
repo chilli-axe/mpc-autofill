@@ -151,6 +151,7 @@ export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
   const [pageSize, setPageSize] = useState<keyof typeof PageSize>(PageSize.A4);
   const [pageWidth, setPageWidth] = useState<number | undefined>(undefined);
   const [pageHeight, setPageHeight] = useState<number | undefined>(undefined);
+  const [imageDPI, setImageDPI] = useState<number>(600);
 
   const isCustomPageSize = pageSize === "CUSTOM";
 
@@ -205,6 +206,7 @@ export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
     projectCardback: projectCardback,
     // the following settings don't matter for previewing and should remain stable to prevent unnecessary re-renders.
     imageQuality: "small-thumbnail",
+    imageDPI: undefined,
   };
   const [debouncedPDFProps, debouncedState] = useDebounce(pdfProps, 500, {
     equalityFn,
@@ -220,6 +222,7 @@ export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
     {
       ...debouncedPDFProps,
       imageQuality: "full-resolution",
+      imageDPI: imageDPI,
     },
     clientSearchService,
     dispatch,
@@ -299,6 +302,22 @@ export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
               </Col>
             </Row>
           )}
+          <Row>
+            <Col lg={12} md={12} sm={12} xs={12}>
+              <Form.Label>
+                Card image DPI: <b>{imageDPI} DPI</b>
+              </Form.Label>
+              <Form.Range
+                defaultValue={600}
+                min={100}
+                max={1500}
+                step={100}
+                onChange={(event) => {
+                  setImageDPI(parseInt(event.target.value));
+                }}
+              />
+            </Col>
+          </Row>
           <Row>
             <Col sm={12}>
               <NumericField

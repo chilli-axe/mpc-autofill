@@ -21,9 +21,9 @@ import BSCard from "react-bootstrap/Card";
 import Col from "react-bootstrap/Col";
 
 import {
-  getBucketThumbnailURL,
+  getBucketImageURL,
   getImageKey,
-  getWorkerThumbnailURL,
+  getWorkerImageURL,
 } from "@/common/image";
 import { SourceType } from "@/common/schema_types";
 import { SearchQuery, useAppDispatch, useAppSelector } from "@/common/types";
@@ -172,7 +172,7 @@ export const useImageSrc = (
   }
 
   // attempt to load directly from bucket first
-  const thumbnailBucketURL = getBucketThumbnailURL(
+  const thumbnailBucketURL = getBucketImageURL(
     cardDocument,
     small ? "small" : "large"
   );
@@ -183,7 +183,7 @@ export const useImageSrc = (
       imageState === "loaded-from-bucket");
 
   // if image is unavailable in bucket, fall back on loading from worker if possible
-  const imageWorkerURL = getWorkerThumbnailURL(
+  const imageWorkerURL = getWorkerImageURL(
     cardDocument,
     small ? "small" : "large"
   );
