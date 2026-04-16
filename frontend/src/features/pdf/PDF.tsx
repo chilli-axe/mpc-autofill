@@ -171,6 +171,7 @@ export interface PDFProps {
   projectCardback: string | undefined;
   imageQuality: "small-thumbnail" | "large-thumbnail" | "full-resolution";
   imageDPI: number | undefined;
+  jpgQuality: number;
   fileHandles: { [identifier: string]: FileSystemFileHandle };
 }
 
@@ -178,6 +179,7 @@ const getPDFImageURL = async (
   cardDocument: CardDocument,
   imageQuality: "small-thumbnail" | "large-thumbnail" | "full-resolution",
   dpi: number | undefined,
+  jpgQuality: number,
   fileHandles: { [identifier: string]: FileSystemFileHandle }
 ): Promise<string | Blob | undefined> => {
   switch (cardDocument.sourceType) {
@@ -188,7 +190,7 @@ const getPDFImageURL = async (
         case "large-thumbnail":
           return getBucketImageURL(cardDocument, "large");
         case "full-resolution":
-          return getWorkerImageURL(cardDocument, "full", dpi);
+          return getWorkerImageURL(cardDocument, "full", dpi, jpgQuality);
         default:
           throw new Error(`invalid imageQuality ${imageQuality}`);
       }
@@ -224,6 +226,7 @@ const PDFCardThumbnail = ({ cardDocument }: PDFCardThumbnailProps) => {
     cutLineColor,
     imageQuality,
     imageDPI,
+    jpgQuality,
     fileHandles,
   } = usePDFContext();
   const height = CardHeightMM + 2 * bleedEdgeMM;
@@ -289,7 +292,13 @@ const PDFCardThumbnail = ({ cardDocument }: PDFCardThumbnailProps) => {
     >
       <Image
         src={async () =>
-          getPDFImageURL(cardDocument, imageQuality, imageDPI, fileHandles)
+          getPDFImageURL(
+            cardDocument,
+            imageQuality,
+            imageDPI,
+            jpgQuality,
+            fileHandles
+          )
         }
         style={imageStyle}
       />

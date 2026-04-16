@@ -41,13 +41,15 @@ export const getBucketImageURL = (
 export const getWorkerImageURL = (
   cardDocument: CardDocument,
   size: "small" | "large" | "full",
-  dpi: number | undefined = undefined
+  dpi: number | undefined = undefined,
+  jpgQuality: number = 100
 ) => {
   const imageWorkerURL = getImageWorkerURL();
   const imageWorkerURLValid =
     imageWorkerURL != null && !!(cardDocument?.sourceType === "Google Drive");
   const params = new URLSearchParams({
     ...(dpi !== undefined && size === "full" ? { dpi: dpi.toString() } : {}),
+    jpgQuality: jpgQuality.toString(),
   });
   return imageWorkerURLValid
     ? new URL(

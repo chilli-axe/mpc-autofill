@@ -9,18 +9,33 @@ function assertUnreachable(x: never): never {
   throw new Error(`Didn't expect to get here with ${x}`);
 }
 
+const getLH4Params = (height: number | undefined, jpgQuality: number): string => {
+  // https://gist.github.com/Sauerstoffdioxid/2a0206da9f44dde1fdfce290f38d2703
+  const params = [...(height !== undefined ? [`h${height}`] : []), ...(jpgQuality < 100 ? ["rj", `l${jpgQuality}`] : [])];
+  return params.length > 0 ? `=${params.join("-")}` : "";
+};
+
+const getLH4URL = (imageIdentifier: string, height: number | undefined, jpgQuality: number): string =>
+  `https://lh4.googleusercontent.com/d/${imageIdentifier}${getLH4Params(height, jpgQuality)}`;
+
 const getImageKey = (imageType: ImageType, imageSize: ImageSize, imageIdentifier: string): string =>
   `${imageIdentifier}-${imageSize}-${imageType}`;
-const getImageURL = (imageType: ImageType, imageSize: ImageSize, dpi: number | undefined, imageIdentifier: string): string => {
+const getImageURL = (
+  imageType: ImageType,
+  imageSize: ImageSize,
+  dpi: number | undefined,
+  jpgQuality: number,
+  imageIdentifier: string
+): string => {
   switch (imageType) {
     case "google_drive":
       switch (imageSize) {
         case "small":
         case "large":
-          return `https://lh4.googleusercontent.com/d/${imageIdentifier}=h${ImageSizes[imageSize]}`;
+          return getLH4URL(imageIdentifier, ImageSizes[imageSize], jpgQuality);
         case "full":
           const height = dpi ? (dpi * 1110) / 300 : undefined;
-          return `https://lh4.googleusercontent.com/d/${imageIdentifier}${height ? `=h${height}` : ""}`;
+          return getLH4URL(imageIdentifier, height, jpgQuality);
         default:
           return assertUnreachable(imageSize);
       }
@@ -108,9 +123,14 @@ const handleImageRequest = async (url: URL, request: Request, env: Env, ctx: Exe
   const pathRegex = new RegExp(/^\/images\/(google_drive)\/(small|large|full)\/(.+)\.jpg$/);
   const unpackedPath = pathRegex.exec(url.pathname);
   const rawDpi = url.searchParams.get("dpi");
+  const rawJPGQuality = url.searchParams.get("jpgQuality");
   const dpi: number | undefined = rawDpi ? parseInt(rawDpi) : undefined;
   if (dpi !== undefined && !(dpi > 0 && dpi <= 1500)) {
     throw new Error(`invalid DPI ${rawDpi}`);
+  }
+  const jpgQuality: number | undefined = rawJPGQuality ? parseInt(rawJPGQuality) : 100;
+  if (jpgQuality !== undefined && !(jpgQuality > 0 && jpgQuality <= 100)) {
+    throw new Error(`invalid JPG quality ${rawJPGQuality}`);
   }
   if (unpackedPath === null) {
     return new Response(`Malformed URL.`, { status: 400 });
@@ -126,9 +146,11 @@ const handleImageRequest = async (url: URL, request: Request, env: Env, ctx: Exe
       switch (imageSize) {
         case "small":
         case "large":
-          return getThumbnail(env, ctx, getImageURL(imageType, imageSize, undefined, imageIdentifier), imageKey);
+          return getThumbnail(env, ctx, getImageURL(imageType, imageSize, undefined, jpgQuality, imageIdentifier), imageKey);
         case "full":
-          return fetch(getImageURL(imageType, imageSize, dpi, imageIdentifier));
+          const url = getImageURL(imageType, imageSize, dpi, jpgQuality, imageIdentifier);
+          console.log(url);
+          return fetch(url);
         default:
           throw new Error(`Invalid image size ${imageSize}`);
       }
@@ -192,7 +214,7 @@ const checkAndPossiblyUpdateTheThumbnailsForAnObject = async (
     console.log(`${identifier} is stale - refreshing thumbnails`);
     for (const size of ["small", "large"] as Array<ImageSize>) {
       const imageKey = getImageKey("google_drive", size, identifier);
-      const imageURL = getImageURL("google_drive", size, undefined, identifier);
+      const imageURL = getImageURL("google_drive", size, undefined, true, identifier);
       ctx.waitUntil(putImage(env, imageURL, imageKey, true));
     }
     return true;
