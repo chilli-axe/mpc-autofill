@@ -10,8 +10,10 @@ import {
   createAppAsyncThunk,
   createAppSlice,
   Faces,
+  SearchQuery,
   SearchResults,
   SearchResultsState,
+  SearchSettings,
 } from "@/common/types";
 import { ClientSearchService } from "@/features/clientSearch/clientSearchService";
 import { APIEditorSearch } from "@/store/api";
@@ -52,6 +54,43 @@ export const mergeSearchResults = (
   return mergedResults;
 };
 
+export const doSearch = async (
+  state: RootState,
+  queriesToSearch: Array<SearchQuery>,
+  searchSettings: SearchSettings,
+  clientSearchService: ClientSearchService
+) => {
+  const backendURL = selectRemoteBackendURL(state);
+  const localResultsPromise: Promise<SearchResults> =
+    clientSearchService.editorSearch(searchSettings, queriesToSearch);
+  const remoteResultsPromise: Promise<SearchResults> =
+    queriesToSearch.length > 0 && backendURL != null
+      ? Array.from(
+          Array(
+            Math.ceil(queriesToSearch.length / SearchResultsEndpointPageSize)
+          ).keys()
+        ).reduce(function (promiseChain: Promise<SearchResults>, page: number) {
+          return promiseChain.then(async function (
+            previousValue: SearchResults
+          ) {
+            const searchResults = await APIEditorSearch(
+              backendURL,
+              searchSettings,
+              queriesToSearch.slice(
+                page * SearchResultsEndpointPageSize,
+                (page + 1) * SearchResultsEndpointPageSize
+              )
+            );
+            return { ...previousValue, ...searchResults };
+          });
+        }, Promise.resolve({}))
+      : new Promise(async (resolve) => resolve({}));
+  return await Promise.all([localResultsPromise, remoteResultsPromise]).then(
+    ([localResults, remoteResults]) =>
+      mergeSearchResults(localResults, remoteResults)
+  );
+};
+
 export const fetchSearchResults = createAppAsyncThunk(
   typePrefix,
   /**
@@ -63,41 +102,13 @@ export const fetchSearchResults = createAppAsyncThunk(
       clientSearchService: ClientSearchService;
     };
 
-    const queriesToSearch = selectQueriesWithoutSearchResults(state); // TODO: is there an edge case here when a local directory is added?
-    const backendURL = selectRemoteBackendURL(state);
     const searchSettings = selectSearchSettings(state);
-
-    const localResultsPromise: Promise<SearchResults> =
-      clientSearchService.editorSearch(searchSettings, queriesToSearch);
-    const remoteResultsPromise: Promise<SearchResults> =
-      queriesToSearch.length > 0 && backendURL != null
-        ? Array.from(
-            Array(
-              Math.ceil(queriesToSearch.length / SearchResultsEndpointPageSize)
-            ).keys()
-          ).reduce(function (
-            promiseChain: Promise<SearchResults>,
-            page: number
-          ) {
-            return promiseChain.then(async function (
-              previousValue: SearchResults
-            ) {
-              const searchResults = await APIEditorSearch(
-                backendURL,
-                searchSettings,
-                queriesToSearch.slice(
-                  page * SearchResultsEndpointPageSize,
-                  (page + 1) * SearchResultsEndpointPageSize
-                )
-              );
-              return { ...previousValue, ...searchResults };
-            });
-          },
-          Promise.resolve({}))
-        : new Promise(async (resolve) => resolve({}));
-    return await Promise.all([localResultsPromise, remoteResultsPromise]).then(
-      ([localResults, remoteResults]) =>
-        mergeSearchResults(localResults, remoteResults)
+    const queriesToSearch = selectQueriesWithoutSearchResults(state); // TODO: is there an edge case here when a local directory is added?
+    return doSearch(
+      state,
+      queriesToSearch,
+      searchSettings,
+      clientSearchService
     );
   }
 );
