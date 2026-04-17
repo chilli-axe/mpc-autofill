@@ -44,6 +44,7 @@ import {
   FAVORITES_SOURCE_KEY,
 } from "@/features/card/CardResultSet";
 import { useClientSearchContext } from "@/features/clientSearch/clientSearchContext";
+import { GridSelectorSortBy } from "@/features/clientSearch/clientSearchService";
 import { FilterSettings as FilterSettingsElement } from "@/features/searchSettings/FilterSettings";
 import { SourceSettings as SourceSettingsElement } from "@/features/searchSettings/SourceSettings";
 import { selectCardDocumentsByIdentifiers } from "@/store/slices/cardDocumentsSlice";
@@ -62,6 +63,11 @@ import {
 
 // Approximate modal chrome height (header + footer + dialog margins)
 const ModalChromeHeight = 200;
+
+const GridSelectorSortByOptions: Record<GridSelectorSortBy, string> = {
+  source: "Source",
+  ...SortByOptions,
+};
 
 interface GridSelectorProps {
   title?: string;
@@ -121,7 +127,7 @@ export function GridSelectorModal({
   const [sourceSettings, setSourceSettings] = useState<SourceSettings>(
     globalSearchSettings.sourceSettings
   );
-  const [sortBy, setSortBy] = useState<SortBy>(SortBy.DateCreatedDescending);
+  const [sortBy, setSortBy] = useState<GridSelectorSortBy>("source");
   const [filteredIdentifiers, setFilteredIdentifiers] =
     useState<Array<string>>(imageIdentifiers);
   const [isFiltering, setIsFiltering] = useState<boolean>(false);
@@ -157,7 +163,7 @@ export function GridSelectorModal({
           ([, enabled]) => enabled
         ),
       });
-      setSortBy(SortBy.DateCreatedDescending);
+      setSortBy("source");
     }
   }, [show]); // intentionally only re-initialise on show toggle, not on every global settings change
 
@@ -234,7 +240,7 @@ export function GridSelectorModal({
 
   const sortByOptions = useMemo(
     () =>
-      Object.entries(SortByOptions).map(([value, label]) => ({
+      Object.entries(GridSelectorSortByOptions).map(([value, label]) => ({
         value,
         label,
         checked: value === sortBy,
@@ -414,7 +420,7 @@ export function GridSelectorModal({
               <StyledDropdownTreeSelect
                 data={sortByOptions}
                 onChange={(currentNode) =>
-                  setSortBy(currentNode.value as SortBy)
+                  setSortBy(currentNode.value as GridSelectorSortBy)
                 }
                 mode="radioSelect"
                 inlineSearchInput
@@ -432,7 +438,7 @@ export function GridSelectorModal({
               <SourceSettingsElement
                 sourceSettings={sourceSettings}
                 setSourceSettings={setSourceSettings}
-                enableReorderingSources={false}
+                enableReorderingSources={sortBy === "source"}
               />
             </Col>
           )}

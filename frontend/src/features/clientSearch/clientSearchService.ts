@@ -26,7 +26,11 @@ import { clearSearchResults } from "@/store/slices/searchResultsSlice";
 import { setNotification } from "@/store/slices/toastsSlice";
 import { AppDispatch, RootState } from "@/store/store";
 
-import { ClientSearchServiceWorker } from "./clientSearchService.worker";
+import {
+  ClientSearchServiceWorker,
+  GridSelectorSortBy,
+} from "./clientSearchService.worker";
+export type { GridSelectorSortBy };
 
 /**
  * work around next.js limitation where workers cannot be initialised at the module level
@@ -197,7 +201,7 @@ export class ClientSearchService {
   public async filterGridSelectorIdentifiers(
     cards: Array<CardDocument>,
     searchSettings: SearchSettings,
-    sortBy: SortBy
+    sortBy: GridSelectorSortBy
   ): Promise<Array<string>> {
     if (this.worker === undefined) {
       throw new Error("clientSearchService was not initialised!");

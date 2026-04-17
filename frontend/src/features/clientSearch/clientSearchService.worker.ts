@@ -28,6 +28,8 @@ import { getDefaultSearchSettings } from "@/store/slices/searchSettingsSlice";
 
 import { Folder, GoogleDriveIndexer, LocalFilesIndexer } from "./indexer";
 
+export type GridSelectorSortBy = SortBy | "source";
+
 export class ClientSearchService {
   private localFilesIndex: LocalFilesIndex | undefined;
   private googleDriveIndex: GoogleDriveIndex | undefined;
@@ -266,7 +268,7 @@ export class ClientSearchService {
   public async filterGridSelectorIdentifiers(
     cards: Array<CardDocument>,
     searchSettings: SearchSettings,
-    sortBy: SortBy
+    sortBy: GridSelectorSortBy
   ): Promise<Array<string>> {
     const sourceRows = searchSettings.sourceSettings.sources;
     const filteredCards =
@@ -313,6 +315,30 @@ export class ClientSearchService {
       })) as unknown as OramaCardDocument[]
     );
     const oramaIndex: OramaIndex = { oramaDb, size: filteredCards.length };
+
+    if (sortBy === "source") {
+      // Use Orama for filtering only, then sort client-side by source settings order
+      const results = this.searchOramaIndex(
+        oramaIndex,
+        searchSettings,
+        undefined,
+        []
+      );
+      const hitIds = results?.hits.map((hit) => hit.id) ?? [];
+      const sourceOrder = new Map(
+        sourceRows.map(([pk], index) => [pk as number, index])
+      );
+      const idToSourceId = new Map(
+        filteredCards.map((card) => [card.identifier, card.sourceId])
+      );
+      hitIds.sort((a, b) => {
+        const aOrder = sourceOrder.get(idToSourceId.get(a) ?? -1) ?? Infinity;
+        const bOrder = sourceOrder.get(idToSourceId.get(b) ?? -1) ?? Infinity;
+        return aOrder - bOrder;
+      });
+      return hitIds;
+    }
+
     const results = this.searchOramaIndex(
       oramaIndex,
       searchSettings,
