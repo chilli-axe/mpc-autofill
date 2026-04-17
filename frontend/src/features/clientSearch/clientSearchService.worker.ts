@@ -1,4 +1,4 @@
-import { getByID, search } from "@orama/orama";
+import { create, getByID, insertMultiple, search } from "@orama/orama";
 import { expose } from "comlink";
 
 import { toSearchable } from "@/common/processing";
@@ -19,6 +19,7 @@ import {
   LocalFilesIndex,
   OramaCardDocument,
   OramaIndex,
+  OramaSchema,
   OramaSearchResult,
   OramaSearchResults,
   SearchResults,
@@ -260,6 +261,66 @@ export class ClientSearchService {
       },
       { hits: [], count: 0 }
     );
+  }
+
+  public async filterGridSelectorIdentifiers(
+    cards: Array<CardDocument>,
+    searchSettings: SearchSettings,
+    sortBy: SortBy
+  ): Promise<Array<string>> {
+    const sourceRows = searchSettings.sourceSettings.sources;
+    const filteredCards =
+      sourceRows.length > 0
+        ? (() => {
+            const enabledSourcePks = new Set(
+              sourceRows
+                .filter(([, enabled]) => enabled)
+                .map(([pk]) => pk as number)
+            );
+            return cards.filter((card) => enabledSourcePks.has(card.sourceId));
+          })()
+        : cards;
+
+    const oramaDb = await create({
+      schema: OramaSchema,
+      sort: {
+        enabled: true,
+        unsortableProperties: [
+          "id",
+          "name",
+          "cardType",
+          "extension",
+          "language",
+          "tags",
+          "dpi",
+          "size",
+        ],
+      },
+    });
+    await insertMultiple(
+      oramaDb,
+      filteredCards.map((card) => ({
+        id: card.identifier,
+        name: card.name,
+        searchq: card.searchq,
+        lastModifiedNumber: new Date(card.dateModified).getTime(),
+        cardType: card.cardType,
+        extension: card.extension,
+        language: card.language,
+        tags: card.tags,
+        dpi: card.dpi,
+        size: card.size,
+      })) as unknown as OramaCardDocument[]
+    );
+    const oramaIndex: OramaIndex = { oramaDb, size: filteredCards.length };
+    const results = this.searchOramaIndex(
+      oramaIndex,
+      searchSettings,
+      undefined,
+      [],
+      sortBy
+    );
+    return results?.hits.map((hit) => hit.id) ?? [];
   }
 
   public retrieveCardIdentifiers(

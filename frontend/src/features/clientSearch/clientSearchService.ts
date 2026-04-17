@@ -194,6 +194,21 @@ export class ClientSearchService {
 
   // search stuff below
 
+  public async filterGridSelectorIdentifiers(
+    cards: Array<CardDocument>,
+    searchSettings: SearchSettings,
+    sortBy: SortBy
+  ): Promise<Array<string>> {
+    if (this.worker === undefined) {
+      throw new Error("clientSearchService was not initialised!");
+    }
+    return this.worker.filterGridSelectorIdentifiers(
+      cards,
+      searchSettings,
+      sortBy
+    );
+  }
+
   public async retrieveCardIdentifiers(
     searchSettings: SearchSettings,
     query: string | undefined,

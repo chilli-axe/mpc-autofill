@@ -1,26 +1,15 @@
 import React, { PropsWithChildren, useMemo } from "react";
-import Button from "react-bootstrap/Button";
-import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
-import Stack from "react-bootstrap/Stack";
-// @ts-ignore: https://github.com/arnthor3/react-bootstrap-toggle/issues/21
-import Toggle from "react-bootstrap-toggle";
 
-import { ToggleButtonHeight } from "@/common/constants";
 import { CardDocument, useAppDispatch, useAppSelector } from "@/common/types";
 import { AutofillCollapse } from "@/components/AutofillCollapse";
-import { RightPaddedIcon } from "@/components/icon";
 import { RenderIfVisible } from "@/components/RenderIfVisible";
 import { MemoizedEditorCard } from "@/features/card/Card";
 import { selectCardDocumentsByIdentifiers } from "@/store/slices/cardDocumentsSlice";
 import { selectSourceNamesByKey } from "@/store/slices/sourceDocumentsSlice";
 import {
-  makeAllSourcesInvisible,
-  makeAllSourcesVisible,
-  selectAnySourcesCollapsed,
   selectFacetBySource,
   selectSourcesVisible,
-  toggleFacetBySource,
   toggleSourceVisible,
 } from "@/store/slices/viewSettingsSlice";
 
@@ -105,7 +94,7 @@ function CardsGroupedTogether({
   );
 }
 
-const FAVORITES_SOURCE_KEY = "__favorites__";
+export const FAVORITES_SOURCE_KEY = "__favorites__";
 
 interface Section {
   key: string;
@@ -240,74 +229,23 @@ function CardsFacetedBySource({
 }
 
 export function CardResultSet({
-  headerText,
   imageIdentifiers,
   selectedImage,
   handleClick,
   favoriteIdentifiers = [],
   originalIndexMap,
 }: {
-  headerText: string;
   imageIdentifiers: Array<string>;
   selectedImage?: string;
   handleClick?: { (identifier: string): void };
   favoriteIdentifiers?: Array<string>;
   originalIndexMap?: Map<string, number>;
 }) {
-  const dispatch = useAppDispatch();
-
   const facetBySource = useAppSelector(selectFacetBySource);
   const sourceNamesByKey = useAppSelector(selectSourceNamesByKey);
-  const anySourcesCollapsed = useAppSelector(selectAnySourcesCollapsed);
-  const sourceKeys = [FAVORITES_SOURCE_KEY, ...Object.keys(sourceNamesByKey)];
 
   return (
     <>
-      <div className="px-3 pb-3">
-        <Row>
-          <h4>{headerText}</h4>
-          <Col md={8} sm={6}>
-            <Stack direction="horizontal" gap={2}>
-              <span className="me-auto">Show&nbsp;All&nbsp;Cards...</span>
-              <Toggle
-                onClick={() => dispatch(toggleFacetBySource())}
-                on="Grouped By Source"
-                onClassName="flex-centre"
-                off="Grouped Together"
-                offClassName="flex-centre"
-                onstyle="success"
-                offstyle="info"
-                width={100 + "%"}
-                size="md"
-                height={ToggleButtonHeight + "px"}
-                active={facetBySource}
-              />
-            </Stack>
-          </Col>
-          {facetBySource && (
-            <Col md={4} sm={6}>
-              <div className="d-grid g-0">
-                <Button
-                  onClick={() =>
-                    dispatch(
-                      anySourcesCollapsed
-                        ? makeAllSourcesVisible()
-                        : makeAllSourcesInvisible(sourceKeys)
-                    )
-                  }
-                >
-                  <RightPaddedIcon
-                    bootstrapIconName={`arrows-${
-                      anySourcesCollapsed ? "expand" : "collapse"
-                    }`}
-                  />{" "}
-                  {anySourcesCollapsed ? "Expand" : "Collapse"} All
-                </Button>
-              </div>
-            </Col>
-          )}
-        </Row>
-      </div>
       {facetBySource ? (
         <CardsFacetedBySource
           imageIdentifiers={imageIdentifiers}
