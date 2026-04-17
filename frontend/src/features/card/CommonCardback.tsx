@@ -18,6 +18,7 @@ import {
   selectProjectCardback,
   setSelectedCardback,
 } from "@/store/slices/projectSlice";
+import { selectSearchSettings } from "@/store/slices/searchSettingsSlice";
 
 //# region grid selector
 
@@ -39,6 +40,9 @@ export function CommonCardbackGridSelector({
 
   const dispatch = useAppDispatch();
   const projectCardback = useAppSelector(selectProjectCardback);
+  const filterCardbacks = useAppSelector(
+    (state) => selectSearchSettings(state).searchTypeSettings.filterCardbacks
+  );
 
   //# endregion
 
@@ -68,6 +72,7 @@ export function CommonCardbackGridSelector({
       show={show}
       handleClose={handleClose}
       onClick={setSelectedImageFromIdentifier}
+      applySearchSettings={filterCardbacks}
     />
   );
 }

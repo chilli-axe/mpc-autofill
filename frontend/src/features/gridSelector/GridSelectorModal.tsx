@@ -49,8 +49,14 @@ import { FilterSettings as FilterSettingsElement } from "@/features/searchSettin
 import { SourceSettings as SourceSettingsElement } from "@/features/searchSettings/SourceSettings";
 import { selectCardDocumentsByIdentifiers } from "@/store/slices/cardDocumentsSlice";
 import { selectFavoriteIdentifiersSet } from "@/store/slices/favoritesSlice";
-import { selectSearchSettings } from "@/store/slices/searchSettingsSlice";
-import { selectSourceNamesByKey } from "@/store/slices/sourceDocumentsSlice";
+import {
+  getDefaultSearchSettings,
+  selectSearchSettings,
+} from "@/store/slices/searchSettingsSlice";
+import {
+  selectSourceDocuments,
+  selectSourceNamesByKey,
+} from "@/store/slices/sourceDocumentsSlice";
 import {
   makeAllSourcesInvisible,
   makeAllSourcesVisible,
@@ -83,6 +89,8 @@ interface GridSelectorProps {
     (identifier: string): void;
   };
   searchq?: string;
+  /** When false, ignore project-level search settings and use unconstrained defaults instead. */
+  applySearchSettings?: boolean;
 }
 
 export function GridSelectorModal({
@@ -94,6 +102,7 @@ export function GridSelectorModal({
   handleClose,
   onClick,
   searchq,
+  applySearchSettings = true,
 }: GridSelectorProps) {
   //# region queries and hooks
 
@@ -109,6 +118,7 @@ export function GridSelectorModal({
   const facetBySource = useAppSelector(selectFacetBySource);
   const sourceNamesByKey = useAppSelector(selectSourceNamesByKey);
   const anySourcesCollapsed = useAppSelector(selectAnySourcesCollapsed);
+  const sourceDocuments = useAppSelector(selectSourceDocuments);
 
   //# endregion
 
@@ -154,19 +164,29 @@ export function GridSelectorModal({
   // Re-initialise local settings from global search settings each time the modal opens
   const globalSearchSettingsRef = useRef(globalSearchSettings);
   globalSearchSettingsRef.current = globalSearchSettings;
+  const sourceDocumentsRef = useRef(sourceDocuments);
+  sourceDocumentsRef.current = sourceDocuments;
   useEffect(() => {
     if (show) {
-      const settings = globalSearchSettingsRef.current;
-      setFilterSettings(settings.filterSettings);
-      // Only expose sources that are enabled at the project level
-      setSourceSettings({
-        sources: settings.sourceSettings.sources.filter(
-          ([, enabled]) => enabled
-        ),
-      });
+      if (applySearchSettings) {
+        const settings = globalSearchSettingsRef.current;
+        setFilterSettings(settings.filterSettings);
+        // Only expose sources that are enabled at the project level
+        setSourceSettings({
+          sources: settings.sourceSettings.sources.filter(
+            ([, enabled]) => enabled
+          ),
+        });
+      } else {
+        const defaults = getDefaultSearchSettings(
+          sourceDocumentsRef.current ?? {}
+        );
+        setFilterSettings(defaults.filterSettings);
+        setSourceSettings(defaults.sourceSettings);
+      }
       setSortBy("source");
     }
-  }, [show]); // intentionally only re-initialise on show toggle, not on every global settings change
+  }, [show, applySearchSettings]); // intentionally only re-initialise on show toggle, not on every global settings change
 
   // Filter and sort identifiers via the worker whenever debounced settings or identifiers change
   useEffect(() => {
@@ -255,10 +275,14 @@ export function GridSelectorModal({
 
   const displaySpinner = debouncedFilterState.isPending() || isFiltering;
 
-  // Constraints derived from the project-level search settings
-  const projectFilter = globalSearchSettings.filterSettings;
+  // Constraints derived from the project-level search settings (only applied when applySearchSettings is true)
+  const projectFilter = applySearchSettings
+    ? globalSearchSettings.filterSettings
+    : undefined;
   const allowedLanguages =
-    projectFilter.languages.length > 0 ? projectFilter.languages : undefined;
+    projectFilter && projectFilter.languages.length > 0
+      ? projectFilter.languages
+      : undefined;
 
   const modalTitle = `${title} — ${filteredIdentifiers.length.toLocaleString()} result${
     filteredIdentifiers.length !== 1 ? "s" : ""
@@ -445,9 +469,9 @@ export function GridSelectorModal({
               <FilterSettingsElement
                 filterSettings={filterSettings}
                 setFilterSettings={setFilterSettings}
-                minDPI={projectFilter.minimumDPI}
-                maxDPI={projectFilter.maximumDPI}
-                maxSize={projectFilter.maximumSize}
+                minDPI={projectFilter?.minimumDPI}
+                maxDPI={projectFilter?.maximumDPI}
+                maxSize={projectFilter?.maximumSize}
                 allowedLanguages={allowedLanguages}
               />
               <hr />
