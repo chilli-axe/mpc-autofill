@@ -36,6 +36,7 @@ import {
   useAppSelector,
 } from "@/common/types";
 import { AutofillCollapse } from "@/components/AutofillCollapse";
+import { Blurrable } from "@/components/Blurrable";
 import { RightPaddedIcon } from "@/components/icon";
 import { Spinner } from "@/components/Spinner";
 import {
@@ -447,13 +448,15 @@ export function GridSelectorModal({
             {displaySpinner && (
               <Spinner size={6} zIndex={3} positionAbsolute={true} />
             )}
-            <CardResultSet
-              imageIdentifiers={sortedFilteredIdentifiers}
-              handleClick={selectImage}
-              selectedImage={selectedImage}
-              favoriteIdentifiers={favoriteIdentifiersInFilteredResults}
-              originalIndexMap={originalIndexMap}
-            />
+            <Blurrable disabled={displaySpinner}>
+              <CardResultSet
+                imageIdentifiers={sortedFilteredIdentifiers}
+                handleClick={selectImage}
+                selectedImage={selectedImage}
+                favoriteIdentifiers={favoriteIdentifiersInFilteredResults}
+                originalIndexMap={originalIndexMap}
+              />
+            </Blurrable>
           </Col>
         </Row>
       </Modal.Body>
