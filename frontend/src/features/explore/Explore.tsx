@@ -128,7 +128,7 @@ export function Explore() {
   const [sourceSettings, setSourceSettings] = useState<SourceSettings>(
     defaultSettings.sourceSettings
   );
-  const [compressed, setCompressed] = useState<boolean>(true);
+  const [compressed, setCompressed] = useState<boolean>(false);
 
   // ensure pagination is reset when any filters change
   function updateInputAndResetPageStart<T>(setter: { (value: T): void }) {

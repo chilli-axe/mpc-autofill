@@ -201,7 +201,9 @@ export class ClientSearchService {
   public async filterGridSelectorIdentifiers(
     cards: Array<CardDocument>,
     searchSettings: SearchSettings,
-    sortBy: GridSelectorSortBy
+    sortBy: GridSelectorSortBy,
+    artists: Array<string>,
+    printings: Array<string>
   ): Promise<Array<string>> {
     if (this.worker === undefined) {
       throw new Error("clientSearchService was not initialised!");
@@ -209,7 +211,9 @@ export class ClientSearchService {
     return this.worker.filterGridSelectorIdentifiers(
       cards,
       searchSettings,
-      sortBy
+      sortBy,
+      artists,
+      printings
     );
   }
 

@@ -268,10 +268,13 @@ export class ClientSearchService {
   public async filterGridSelectorIdentifiers(
     cards: Array<CardDocument>,
     searchSettings: SearchSettings,
-    sortBy: GridSelectorSortBy
+    sortBy: GridSelectorSortBy,
+    artists: Array<string>,
+    printings: Array<string>
   ): Promise<Array<string>> {
+    const UNKNOWN = "Unknown";
     const sourceRows = searchSettings.sourceSettings.sources;
-    const filteredCards =
+    let filteredCards =
       sourceRows.length > 0
         ? (() => {
             const enabledSourcePks = new Set(
@@ -282,6 +285,26 @@ export class ClientSearchService {
             return cards.filter((card) => enabledSourcePks.has(card.sourceId));
           })()
         : cards;
+
+    if (artists.length > 0) {
+      const artistSet = new Set(artists);
+      filteredCards = filteredCards.filter((card) =>
+        card.canonicalCard == null
+          ? artistSet.has(UNKNOWN)
+          : artistSet.has(card.canonicalCard.artist)
+      );
+    }
+
+    if (printings.length > 0) {
+      const printingSet = new Set(printings);
+      filteredCards = filteredCards.filter((card) =>
+        card.canonicalCard == null
+          ? printingSet.has(UNKNOWN)
+          : printingSet.has(
+              `${card.canonicalCard.expansionCode} ${card.canonicalCard.collectorNumber}`
+            )
+      );
+    }
 
     const oramaDb = await create({
       schema: OramaSchema,

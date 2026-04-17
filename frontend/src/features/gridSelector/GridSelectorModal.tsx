@@ -19,6 +19,7 @@ import Modal from "react-bootstrap/Modal";
 import Row from "react-bootstrap/Row";
 // @ts-ignore: https://github.com/arnthor3/react-bootstrap-toggle/issues/21
 import Toggle from "react-bootstrap-toggle";
+import { TreeNode } from "react-dropdown-tree-select";
 import { useDebounce } from "use-debounce";
 
 import {
@@ -141,7 +142,12 @@ export function GridSelectorModal({
   const [filteredIdentifiers, setFilteredIdentifiers] =
     useState<Array<string>>(imageIdentifiers);
   const [isFiltering, setIsFiltering] = useState<boolean>(false);
-  const [compressed, setCompressed] = useState<boolean>(false);
+  const [compressed, setCompressed] = useState<boolean>(true);
+  const [artists, setArtists] = useState<Array<string>>([]);
+  const [printings, setPrintings] = useState<Array<string>>([]);
+  const [expandedPrintingNodes, setExpandedPrintingNodes] = useState<
+    Array<string>
+  >([]);
 
   //# endregion
 
@@ -152,7 +158,7 @@ export function GridSelectorModal({
   }
 
   const [debouncedFilter, debouncedFilterState] = useDebounce(
-    { filterSettings, sourceSettings, sortBy },
+    { filterSettings, sourceSettings, sortBy, artists, printings },
     ExploreDebounceMS,
     { equalityFn }
   );
@@ -185,6 +191,9 @@ export function GridSelectorModal({
         setSourceSettings(defaults.sourceSettings);
       }
       setSortBy("source");
+      setArtists([]);
+      setPrintings([]);
+      setExpandedPrintingNodes([]);
     }
   }, [show, applySearchSettings]); // intentionally only re-initialise on show toggle, not on every global settings change
 
@@ -204,7 +213,9 @@ export function GridSelectorModal({
           filterSettings: debouncedFilter.filterSettings,
           sourceSettings: debouncedFilter.sourceSettings,
         },
-        debouncedFilter.sortBy
+        debouncedFilter.sortBy,
+        debouncedFilter.artists,
+        debouncedFilter.printings
       )
       .then((ids) => {
         setFilteredIdentifiers(ids);
@@ -274,6 +285,99 @@ export function GridSelectorModal({
   const columnMaxHeight = `calc(100vh - ${ModalChromeHeight}px)`;
 
   const displaySpinner = debouncedFilterState.isPending() || isFiltering;
+
+  const UNKNOWN_FILTER_VALUE = "Unknown";
+
+  const availableArtists = useMemo(() => {
+    const artistSet = new Set<string>();
+    let hasUnknown = false;
+    Object.values(cardDocumentsByIdentifier).forEach((card) => {
+      if (card == null) return;
+      if (card.canonicalCard == null) {
+        hasUnknown = true;
+      } else {
+        artistSet.add(card.canonicalCard.artist);
+      }
+    });
+    const sorted = Array.from(artistSet).sort();
+    if (hasUnknown) sorted.push(UNKNOWN_FILTER_VALUE);
+    return sorted;
+  }, [cardDocumentsByIdentifier]);
+
+  // Stable structure: expansion -> { name, collector numbers }; only recomputes when card documents change
+  const availablePrintingExpansions = useMemo(() => {
+    const expansionMap = new Map<
+      string,
+      { name: string; numbers: Set<string> }
+    >();
+    let hasUnknown = false;
+    Object.values(cardDocumentsByIdentifier).forEach((card) => {
+      if (card == null) return;
+      if (card.canonicalCard == null) {
+        hasUnknown = true;
+      } else {
+        const { expansionCode, expansionName, collectorNumber } =
+          card.canonicalCard;
+        if (!expansionMap.has(expansionCode)) {
+          expansionMap.set(expansionCode, {
+            name: expansionName,
+            numbers: new Set(),
+          });
+        }
+        expansionMap.get(expansionCode)!.numbers.add(collectorNumber);
+      }
+    });
+    return { expansionMap, hasUnknown };
+  }, [cardDocumentsByIdentifier]);
+
+  // Tree node data for the dropdown, recomputed when checked/expanded state changes
+  const availablePrintingOptions = useMemo(() => {
+    const { expansionMap, hasUnknown } = availablePrintingExpansions;
+    const nodes = Array.from(expansionMap.entries())
+      .sort(([, a], [, b]) => a.name.localeCompare(b.name))
+      .map(([expansionCode, { name, numbers }]) => ({
+        label: `${name} [${expansionCode.toUpperCase()}]`,
+        value: expansionCode,
+        checked: printings.includes(expansionCode),
+        expanded: expandedPrintingNodes.includes(expansionCode),
+        children: Array.from(numbers)
+          .sort()
+          .map((collectorNumber) => ({
+            label: collectorNumber,
+            value: `${expansionCode} ${collectorNumber}`,
+            checked: printings.includes(`${expansionCode} ${collectorNumber}`),
+          })),
+      }));
+    if (hasUnknown) {
+      nodes.push({
+        label: UNKNOWN_FILTER_VALUE,
+        value: UNKNOWN_FILTER_VALUE,
+        checked: printings.includes(UNKNOWN_FILTER_VALUE),
+        expanded: false,
+        children: [],
+      });
+    }
+    return nodes;
+  }, [availablePrintingExpansions, printings, expandedPrintingNodes]);
+
+  const onPrintingNodeToggle = useCallback(
+    (currentNode: TreeNode): void => {
+      if (
+        currentNode.expanded &&
+        !expandedPrintingNodes.includes(currentNode.value)
+      ) {
+        setExpandedPrintingNodes([...expandedPrintingNodes, currentNode.value]);
+      } else if (
+        !currentNode.expanded &&
+        expandedPrintingNodes.includes(currentNode.value)
+      ) {
+        setExpandedPrintingNodes(
+          expandedPrintingNodes.filter((v) => v !== currentNode.value)
+        );
+      }
+    },
+    [expandedPrintingNodes]
+  );
 
   // Constraints derived from the project-level search settings (only applied when applySearchSettings is true)
   const projectFilter = applySearchSettings
@@ -474,6 +578,55 @@ export function GridSelectorModal({
                 maxSize={projectFilter?.maximumSize}
                 allowedLanguages={allowedLanguages}
               />
+              {(availableArtists.length > 0 ||
+                availablePrintingOptions.length > 0) && (
+                <>
+                  <hr />
+                  <h5>Canonical Card</h5>
+                  {availableArtists.length > 0 && (
+                    <>
+                      <Form.Label>Artist</Form.Label>
+                      <StyledDropdownTreeSelect
+                        data={availableArtists.map((artist) => ({
+                          label: artist,
+                          value: artist,
+                          checked: artists.includes(artist),
+                        }))}
+                        onChange={(_currentNode, selectedNodes) =>
+                          setArtists(selectedNodes.map((node) => node.value))
+                        }
+                        inlineSearchInput
+                      />
+                    </>
+                  )}
+                  {availablePrintingOptions.length > 0 && (
+                    <>
+                      <Form.Label>Card Printing</Form.Label>
+                      <StyledDropdownTreeSelect
+                        data={availablePrintingOptions}
+                        onChange={(_currentNode, selectedNodes) => {
+                          const rawValues = selectedNodes.map(
+                            (node) => node.value
+                          );
+                          const normalized = new Set(rawValues);
+                          const { expansionMap } = availablePrintingExpansions;
+                          for (const value of rawValues) {
+                            const expansion = expansionMap.get(value);
+                            if (expansion) {
+                              for (const collectorNumber of expansion.numbers) {
+                                normalized.add(`${value} ${collectorNumber}`);
+                              }
+                            }
+                          }
+                          setPrintings(Array.from(normalized));
+                        }}
+                        onNodeToggle={onPrintingNodeToggle}
+                        inlineSearchInput
+                      />
+                    </>
+                  )}
+                </>
+              )}
               <hr />
               <SourceSettingsElement
                 sourceSettings={sourceSettings}
