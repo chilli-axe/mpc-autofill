@@ -150,7 +150,12 @@ export function GridSelectorModal({
     if (show) {
       const settings = globalSearchSettingsRef.current;
       setFilterSettings(settings.filterSettings);
-      setSourceSettings(settings.sourceSettings);
+      // Only expose sources that are enabled at the project level
+      setSourceSettings({
+        sources: settings.sourceSettings.sources.filter(
+          ([, enabled]) => enabled
+        ),
+      });
       setSortBy(SortBy.DateCreatedDescending);
     }
   }, [show]); // intentionally only re-initialise on show toggle, not on every global settings change
@@ -241,6 +246,11 @@ export function GridSelectorModal({
   const columnMaxHeight = `calc(100vh - ${ModalChromeHeight}px)`;
 
   const displaySpinner = debouncedFilterState.isPending() || isFiltering;
+
+  // Constraints derived from the project-level search settings
+  const projectFilter = globalSearchSettings.filterSettings;
+  const allowedLanguages =
+    projectFilter.languages.length > 0 ? projectFilter.languages : undefined;
 
   const modalTitle = `${title} — ${filteredIdentifiers.length.toLocaleString()} result${
     filteredIdentifiers.length !== 1 ? "s" : ""
@@ -412,6 +422,10 @@ export function GridSelectorModal({
               <FilterSettingsElement
                 filterSettings={filterSettings}
                 setFilterSettings={setFilterSettings}
+                minDPI={projectFilter.minimumDPI}
+                maxDPI={projectFilter.maximumDPI}
+                maxSize={projectFilter.maximumSize}
+                allowedLanguages={allowedLanguages}
               />
               <hr />
               <SourceSettingsElement

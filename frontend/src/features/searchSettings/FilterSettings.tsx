@@ -30,24 +30,39 @@ interface FilterSettingsProps {
   setFilterSettings: {
     (newFilterSettings: FilterSettingsType): void;
   };
+  minDPI?: number;
+  maxDPI?: number;
+  maxSize?: number;
+  allowedLanguages?: Array<string>;
 }
 
 export function FilterSettings({
   filterSettings,
   setFilterSettings,
+  minDPI,
+  maxDPI,
+  maxSize,
+  allowedLanguages,
 }: FilterSettingsProps) {
   const getLanguagesQuery = useGetLanguagesQuery();
   const getTagsQuery = useGetTagsQuery();
 
-  const languageOptions = useMemo(
-    () =>
-      (getLanguagesQuery.data ?? []).map((row) => ({
-        label: row.name,
-        value: row.code,
-        checked: filterSettings.languages.includes(row.code),
-      })),
-    [getLanguagesQuery.data, filterSettings.languages]
-  );
+  const effectiveMinDPI = minDPI ?? MinimumDPI;
+  const effectiveMaxDPI = maxDPI ?? MaximumDPI;
+  const effectiveMaxSize = maxSize ?? MaximumSize;
+
+  const languageOptions = useMemo(() => {
+    const allOptions = (getLanguagesQuery.data ?? []).map((row) => ({
+      label: row.name,
+      value: row.code,
+      checked: filterSettings.languages.includes(row.code),
+    }));
+    if (allowedLanguages != null && allowedLanguages.length > 0) {
+      const allowedSet = new Set(allowedLanguages);
+      return allOptions.filter((opt) => allowedSet.has(opt.value));
+    }
+    return allOptions;
+  }, [getLanguagesQuery.data, filterSettings.languages, allowedLanguages]);
 
   const [expandedNodes, setExpandedNodes] = useState<Array<string>>([]);
 
@@ -123,8 +138,8 @@ export function FilterSettings({
           </Form.Label>
           <Form.Range
             defaultValue={filterSettings.minimumDPI}
-            min={MinimumDPI}
-            max={MaximumDPI}
+            min={effectiveMinDPI}
+            max={effectiveMaxDPI}
             step={DPIStep}
             onChange={(event) => {
               setFilterSettings({
@@ -140,8 +155,8 @@ export function FilterSettings({
           </Form.Label>
           <Form.Range
             defaultValue={filterSettings.maximumDPI}
-            min={MinimumDPI}
-            max={MaximumDPI}
+            min={effectiveMinDPI}
+            max={effectiveMaxDPI}
             step={DPIStep}
             onChange={(event) => {
               setFilterSettings({
@@ -158,7 +173,7 @@ export function FilterSettings({
       <Form.Range
         defaultValue={filterSettings.maximumSize}
         min={0}
-        max={MaximumSize}
+        max={effectiveMaxSize}
         step={SizeStep}
         onChange={(event) => {
           setFilterSettings({
