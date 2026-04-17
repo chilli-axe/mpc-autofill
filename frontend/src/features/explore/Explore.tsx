@@ -128,6 +128,7 @@ export function Explore() {
   const [sourceSettings, setSourceSettings] = useState<SourceSettings>(
     defaultSettings.sourceSettings
   );
+  const [compressed, setCompressed] = useState<boolean>(true);
 
   // ensure pagination is reset when any filters change
   function updateInputAndResetPageStart<T>(setter: { (value: T): void }) {
@@ -246,6 +247,21 @@ export function Explore() {
             disabled={!(remoteBackendConfigured && localBackendConfigured)}
           />
           <hr />
+          <h5>View Settings</h5>
+          <Toggle
+            onClick={() => setCompressed((v) => !v)}
+            on="Compressed"
+            onClassName="flex-centre"
+            off="Relaxed"
+            offClassName="flex-centre"
+            onstyle="info"
+            offstyle="success"
+            width={100 + "%"}
+            size="md"
+            height={ToggleButtonHeight + "px"}
+            active={compressed}
+          />
+          <hr />
           <h5>Sort By</h5>
           <StyledDropdownTreeSelect
             data={sortByOptions}
@@ -331,6 +347,7 @@ export function Explore() {
                         : "created"
                     }
                     key={`explore-card-${card.identifier}`}
+                    compressed={compressed}
                   />
                 ))}
               </Row>

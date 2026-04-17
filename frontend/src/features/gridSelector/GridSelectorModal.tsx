@@ -131,6 +131,7 @@ export function GridSelectorModal({
   const [filteredIdentifiers, setFilteredIdentifiers] =
     useState<Array<string>>(imageIdentifiers);
   const [isFiltering, setIsFiltering] = useState<boolean>(false);
+  const [compressed, setCompressed] = useState<boolean>(false);
 
   //# endregion
 
@@ -381,7 +382,8 @@ export function GridSelectorModal({
                   <hr />
                 </>
               </AutofillCollapse>
-              <h5>Show All Cards...</h5>
+              <h5>View Settings</h5>
+              <h6>Show All Cards...</h6>
               <Toggle
                 onClick={() => dispatch(toggleFacetBySource())}
                 on="Grouped By Source"
@@ -394,6 +396,20 @@ export function GridSelectorModal({
                 size="md"
                 height={ToggleButtonHeight + "px"}
                 active={facetBySource}
+              />
+              <h6 className="mt-2">Card Display</h6>
+              <Toggle
+                onClick={() => setCompressed((v) => !v)}
+                on="Compressed"
+                onClassName="flex-centre"
+                off="Relaxed"
+                offClassName="flex-centre"
+                onstyle="info"
+                offstyle="success"
+                width={100 + "%"}
+                size="md"
+                height={ToggleButtonHeight + "px"}
+                active={compressed}
               />
               {facetBySource && (
                 <div className="d-grid mt-2">
@@ -461,6 +477,7 @@ export function GridSelectorModal({
                 selectedImage={selectedImage}
                 favoriteIdentifiers={favoriteIdentifiersInFilteredResults}
                 originalIndexMap={originalIndexMap}
+                compressed={compressed}
               />
             </Blurrable>
           </Col>

@@ -20,6 +20,7 @@ interface CardGridCardProps {
     (identifier: string): void;
   };
   selectedImage?: string;
+  compressed?: boolean;
 }
 
 function CardGridCard({
@@ -27,6 +28,7 @@ function CardGridCard({
   index,
   selectImage,
   selectedImage,
+  compressed,
 }: CardGridCardProps) {
   return (
     <MemoizedEditorCard
@@ -36,6 +38,7 @@ function CardGridCard({
       key={`gridSelector-${identifier}`}
       noResultsFound={false}
       highlight={identifier === selectedImage}
+      compressed={compressed}
     />
   );
 }
@@ -57,6 +60,7 @@ interface CardGridDisplayProps {
   sourceNamesByKey: { [sourceKey: string]: string };
   favoriteIdentifiers?: Array<string>;
   originalIndexMap?: Map<string, number>;
+  compressed?: boolean;
 }
 
 /**
@@ -69,6 +73,7 @@ function CardsGroupedTogether({
   selectImage,
   selectedImage,
   originalIndexMap,
+  compressed,
 }: CardGridDisplayProps) {
   return (
     <CardRow>
@@ -76,7 +81,9 @@ function CardsGroupedTogether({
         const originalIndex = originalIndexMap?.get(identifier) ?? visualIndex;
         return (
           <RenderIfVisible
-            key={`gridSelector-${identifier}-wrapper`}
+            key={`gridSelector-${identifier}-wrapper-${
+              compressed ? "compressed" : "relaxed"
+            }`}
             initialVisible={visualIndex < 20}
             visibleOffset={500}
             stayRendered
@@ -86,6 +93,7 @@ function CardsGroupedTogether({
               index={originalIndex}
               selectImage={selectImage}
               selectedImage={selectedImage}
+              compressed={compressed}
             />
           </RenderIfVisible>
         );
@@ -114,6 +122,7 @@ function CardsFacetedBySource({
   sourceNamesByKey,
   favoriteIdentifiers = [],
   originalIndexMap,
+  compressed,
 }: CardGridDisplayProps) {
   //# region queries and hooks
 
@@ -207,7 +216,9 @@ function CardsFacetedBySource({
             <CardRow>
               {section.items.map(([identifier, optionNumber]) => (
                 <RenderIfVisible
-                  key={`gridSelector-${identifier}-wrapper`}
+                  key={`gridSelector-${identifier}-wrapper-${
+                    compressed ? "compressed" : "relaxed"
+                  }`}
                   initialVisible={optionNumber < 20}
                   stayRendered
                 >
@@ -216,6 +227,7 @@ function CardsFacetedBySource({
                     index={optionNumber}
                     selectImage={selectImage}
                     selectedImage={selectedImage}
+                    compressed={compressed}
                   />
                 </RenderIfVisible>
               ))}
@@ -234,12 +246,14 @@ export function CardResultSet({
   handleClick,
   favoriteIdentifiers = [],
   originalIndexMap,
+  compressed,
 }: {
   imageIdentifiers: Array<string>;
   selectedImage?: string;
   handleClick?: { (identifier: string): void };
   favoriteIdentifiers?: Array<string>;
   originalIndexMap?: Map<string, number>;
+  compressed?: boolean;
 }) {
   const facetBySource = useAppSelector(selectFacetBySource);
   const sourceNamesByKey = useAppSelector(selectSourceNamesByKey);
@@ -254,6 +268,7 @@ export function CardResultSet({
           sourceNamesByKey={sourceNamesByKey}
           favoriteIdentifiers={favoriteIdentifiers}
           originalIndexMap={originalIndexMap}
+          compressed={compressed}
         />
       ) : (
         <CardsGroupedTogether
@@ -262,6 +277,7 @@ export function CardResultSet({
           selectedImage={selectedImage}
           sourceNamesByKey={sourceNamesByKey}
           originalIndexMap={originalIndexMap}
+          compressed={compressed}
         />
       )}
     </>
