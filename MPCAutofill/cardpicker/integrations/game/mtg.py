@@ -1,15 +1,23 @@
 import re
+import uuid
 from typing import Any, Type
 from urllib.parse import parse_qs, urlparse
 
 import ratelimit
+import requests
+from pydantic import BaseModel, ValidationError
 
 from django.conf import settings
 
 from cardpicker.integrations.game.base import GameIntegration, ImportSite
-from cardpicker.models import DFCPair
+from cardpicker.models import (
+    CanonicalArtist,
+    CanonicalCard,
+    CanonicalExpansion,
+    DFCPair,
+)
 from cardpicker.schema_types import Game
-from cardpicker.utils import get_json_endpoint_rate_limited
+from cardpicker.utils import get_json_endpoint_rate_limited, section_timer
 
 # region import sites
 
@@ -227,6 +235,47 @@ class TappedOut(ImportSite):
 # endregion
 
 
+class BulkDataRow(BaseModel):
+    object: str
+    id: uuid.UUID
+    type: str
+    uri: str
+    name: str
+    description: str
+    size: int
+    download_uri: str
+    content_type: str
+    content_encoding: str
+
+
+class BulkDataResponse(BaseModel):
+    data: list[BulkDataRow]
+
+
+class CardRow(BaseModel):
+    id: uuid.UUID
+    oracle_id: uuid.UUID | None = None
+    name: str
+    set: str
+    collector_number: str
+    artist: str
+
+
+class ExpansionRow(BaseModel):
+    id: uuid.UUID
+    code: str
+    name: str
+
+
+class ExpansionResponse(BaseModel):
+    data: list[ExpansionRow]
+
+
+class BulkDataURLs(BaseModel):
+    default_cards: str
+    oracle_cards: str
+
+
 class MTGIntegration(GameIntegration):
     """
     Our Magic: The Gathering integration reads canonical card data from Scryfall and enables reading decklists from some
@@ -315,6 +364,95 @@ class MTGIntegration(GameIntegration):
             Scryfall,
             TappedOut,
         ]
+
+    @classmethod
+    def get_canonical_cards_and_artists(cls) -> tuple[list[CanonicalCard], list[CanonicalArtist]]:
+        artists_by_name: dict[str, CanonicalArtist] = {artist.name: artist for artist in CanonicalArtist.objects.all()}
+        expansions_by_code: dict[str, CanonicalExpansion] = {
+            expansion.code: expansion for expansion in CanonicalExpansion.objects.all()
+        }
+        cards_by_identifier: dict[uuid.UUID, CanonicalCard] = {}
+
+        def row_to_canonical_card(row: CardRow) -> CanonicalCard:
+            artist_name = row.artist
+            if artist_name not in artists_by_name.keys():
+                artists_by_name[artist_name] = CanonicalArtist(name=artist_name)
+
+            return CanonicalCard(
+                identifier=row.id,
+                canonical_id=row.oracle_id,
+                name=row.name,
+                expansion=expansions_by_code[row.set],
+                artist=artists_by_name[artist_name],
+                collector_number=row.collector_number,
+                is_default=False,
+            )
+
+        @section_timer(name="get bulk data URLs")
+        def get_bulk_data_urls() -> BulkDataURLs:
+            response = requests.get("https://api.scryfall.com/bulk-data")
+            assert response.status_code == 200
+            validated_response = BulkDataResponse.model_validate_json(response.text)
+            default_cards = [entry for entry in validated_response.data if entry.type == "default_cards"].pop()
+            oracle_cards = [entry for entry in validated_response.data if entry.type == "oracle_cards"].pop()
+            assert default_cards is not None
+            assert oracle_cards is not None
+            return BulkDataURLs(
+                default_cards=default_cards.download_uri,
+                oracle_cards=oracle_cards.download_uri,
+            )
+
+        @section_timer(name="download default cards")
+        def download_default_cards(url: str) -> None:
+            print(f"Downloading Default Cards from {bulk_data_urls.default_cards}")
+            with requests.get(url, stream=True) as r:
+                lines = r.iter_lines()
+                for line in lines:
+                    if line in [b"[", b"]"]:
+                        continue
+                    try:
+                        row = CardRow.model_validate_json(line.decode("utf-8").rstrip(","))
+                        cards_by_identifier[row.id] = row_to_canonical_card(row)
+                    except ValidationError as e:
+                        print(f"failed to validate line: {line}")
+                        raise e
+
+        @section_timer("download oracle cards")
+        def download_oracle_cards(url: str) -> None:
+            # mark the default Scryfall version of each card with is_default=True
+            print(f"Downloading Oracle Cards from {bulk_data_urls.default_cards}")
+            with requests.get(url, stream=True) as r:
+                lines = r.iter_lines()
+                for line in lines:
+                    if line in [b"[", b"]"]:
+                        continue
+                    try:
+                        row = CardRow.model_validate_json(line.decode("utf-8").rstrip(","))
+                        cards_by_identifier[row.id].is_default = True
+                    except ValidationError as e:
+                        print(f"failed to validate line: {line}")
+                        raise e
+
+        bulk_data_urls = get_bulk_data_urls()
+        download_default_cards(bulk_data_urls.default_cards)
+        download_oracle_cards(bulk_data_urls.oracle_cards)
+        return list(cards_by_identifier.values()), list(artists_by_name.values())
+
+    @classmethod
+    def get_canonical_expansions(cls) -> list[CanonicalExpansion]:
+        response = requests.get("https://api.scryfall.com/sets")
+        assert response.status_code == 200
+        parsed_response = ExpansionResponse.model_validate_json(response.text)
+        expansions: list[CanonicalExpansion] = [
+            CanonicalExpansion(
+                identifier=row.id,
+                code=row.code,
+                name=row.name,
+                game=cls.get_game(),
+            )
+            for row in parsed_response.data
+        ]
+        return expansions
 
     # endregion
 
