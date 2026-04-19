@@ -70,6 +70,7 @@ class CanonicalCard(models.Model):
     expansion = models.ForeignKey(to=CanonicalExpansion, on_delete=models.CASCADE)
     collector_number = models.CharField(max_length=16)
     is_default = models.BooleanField(default=False)
+    image_hash = models.BigIntegerField()
 
     def __str__(self) -> str:
         return f"{self.name} [{self.expansion.code.upper()} {self.collector_number}]"
