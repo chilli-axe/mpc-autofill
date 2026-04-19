@@ -1,11 +1,19 @@
+import time
 from abc import ABC, abstractmethod
 from typing import Any, Callable, Optional, Type
 from urllib.parse import urljoin, urlparse
 
 import requests
 import sentry_sdk
+from bulk_sync import bulk_sync
 
-from cardpicker.models import DFCPair
+from cardpicker.models import (
+    CanonicalArtist,
+    CanonicalCard,
+    CanonicalExpansion,
+    DFCPair,
+)
+from cardpicker.schema_types import Game
 
 
 def default_is_response_valid(response: requests.Response) -> bool:
@@ -71,12 +79,27 @@ class GameIntegration(ABC):
 
     @classmethod
     @abstractmethod
+    def get_game(cls) -> Game:
+        ...
+
+    @classmethod
+    @abstractmethod
     def get_dfc_pairs(cls) -> list[DFCPair]:
         ...
 
     @classmethod
     @abstractmethod
     def get_import_sites(cls) -> list[Type[ImportSite]]:
+        ...
+
+    @classmethod
+    @abstractmethod
+    def get_canonical_cards_and_artists(cls) -> tuple[list[CanonicalCard], list[CanonicalArtist]]:
+        ...
+
+    @classmethod
+    @abstractmethod
+    def get_canonical_expansions(cls) -> list[CanonicalExpansion]:
         ...
 
     # endregion
@@ -95,6 +118,43 @@ class GameIntegration(ABC):
                 if len(cleaned_text) > 0:
                     return cleaned_text
         return None
+
+    @classmethod
+    def import_canonical_cards_and_artists(cls) -> None:
+        print("Retrieving all cards and artists...")
+        t0 = time.time()
+        cards, artists = cls.get_canonical_cards_and_artists()
+        t1 = time.time()
+        print(f"Retrieved {len(cards)} cards and {len(artists)} artists in {round(t1 - t0, 2)} seconds.")
+
+        print("Beginning artist bulk sync...")
+        bulk_sync(new_models=artists, key_fields=["name"], db_class=CanonicalArtist, filters=None)
+        t2 = time.time()
+        print(f"Bulk synced {len(artists)} artists in {round(t2 - t1, 2)} seconds.")
+
+        print("Beginning card bulk sync...")
+        bulk_sync(
+            new_models=cards,
+            key_fields=["identifier"],
+            db_class=CanonicalCard,
+            filters=None,
+            skip_updates=True,  # optimisation - not tracking any canonical data which could change over time
+        )
+        t3 = time.time()
+        print(f"Bulk synced {len(cards)} cards in {round(t3 - t2, 2)} seconds.")
+
+    @classmethod
+    def import_canonical_expansions(cls) -> None:
+        print("Retrieving all expansions...")
+        t0 = time.time()
+        expansions = cls.get_canonical_expansions()
+        t1 = time.time()
+        print(f"Retrieved {len(expansions)} expansions in {round(t1 - t0, 2)} seconds.")
+
+        print("Beginning expansion bulk sync...")
+        bulk_sync(new_models=expansions, key_fields=["identifier"], db_class=CanonicalExpansion, filters=None)
+        t2 = time.time()
+        print(f"Bulk synced expansions in {round(t2 - t1, 2)} seconds.")
 
 
 __all__ = ["ImportSite", "GameIntegration"]

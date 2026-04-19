@@ -9,12 +9,13 @@ import requests_mock
 
 from django.conf import settings as conf_settings
 
-from cardpicker.integrations.game.mtg import MTG, Moxfield
+from cardpicker.integrations.game.mtg import Moxfield, MTGIntegration
 from cardpicker.integrations.integrations import get_configured_game_integration
+from cardpicker.schema_types import Game
 
 
 class TestGetIntegration:
-    @pytest.mark.parametrize("environment_variable, integration_class", [("MTG", MTG)])
+    @pytest.mark.parametrize("environment_variable, integration_class", [(Game.MTG.value, MTGIntegration)])
     def test_get_integration(self, db, environment_variable, integration_class, settings):
         settings.GAME = environment_variable
         assert get_configured_game_integration() == integration_class
@@ -65,14 +66,14 @@ class TestMTGIntegration:
     # region tests
 
     def test_get_double_faced_card_pairs(self):
-        assert len(MTG.get_double_faced_card_pairs()) > 0
+        assert len(MTGIntegration.get_double_faced_card_pairs()) > 0
 
     def test_get_meld_pairs(self):
-        assert len(MTG.get_meld_pairs()) > 0
+        assert len(MTGIntegration.get_meld_pairs()) > 0
 
     @pytest.mark.parametrize("url", [item.value for item in Decks], ids=[item.name.lower() for item in Decks])
     def test_valid_url(self, client, django_settings, snapshot, url: str):
-        decklist = MTG.query_import_site(url)
+        decklist = MTGIntegration.query_import_site(url)
         assert decklist
         assert Counter(decklist.splitlines()) == snapshot
 
@@ -86,7 +87,7 @@ class TestMTGIntegration:
     )
     def test_moxfield_enabled(self, moxfield_secret_setter, moxfield_secret, is_moxfield_enabled):
         moxfield_secret_setter(moxfield_secret)
-        import_sites = MTG.get_import_sites()
+        import_sites = MTGIntegration.get_import_sites()
         if is_moxfield_enabled:
             assert Moxfield in import_sites
         else:

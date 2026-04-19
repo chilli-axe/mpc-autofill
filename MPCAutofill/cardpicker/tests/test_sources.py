@@ -7,11 +7,12 @@ from django.core import management
 from django.utils.timezone import make_aware, make_naive
 
 from cardpicker.documents import CardSearch
-from cardpicker.models import Card
+from cardpicker.models import CanonicalCard, Card
 from cardpicker.sources.api import Folder, Image
 from cardpicker.sources.update_database import bulk_sync_objects, update_database
 from cardpicker.tags import Tags
 from cardpicker.tests import factories
+from cardpicker.tests.factories import CanonicalCardFactory, CanonicalExpansionFactory
 
 DEFAULT_DATE = dt.datetime(2023, 1, 1)
 
@@ -281,10 +282,10 @@ class TestAPI:
     def test_image_language(self, django_settings, image, expected_language):
         tags = Tags()
         if expected_language is None:
-            language, _, _, _ = image.unpack_name(tags=tags)
+            language, _, _, _, _ = image.unpack_name(tags=tags)
             assert language is None
         else:
-            language, _, _, _ = image.unpack_name(tags=tags)
+            language, _, _, _, _ = image.unpack_name(tags=tags)
             assert language.alpha_2.lower() == expected_language.lower()
 
     @pytest.mark.parametrize(
@@ -303,7 +304,7 @@ class TestAPI:
     )
     def test_image_tags(self, django_settings, grandchild_tag, extended_tag, full_art_tag, image, expected_tags):
         tags = Tags()
-        _, _, extracted_tags, _ = image.unpack_name(tags=tags)
+        _, _, extracted_tags, _, _ = image.unpack_name(tags=tags)
         assert extracted_tags == expected_tags
 
     @pytest.mark.parametrize(
@@ -336,7 +337,7 @@ class TestAPI:
         expected_extension,
     ):
         tags = Tags()
-        language, name, extracted_tags, extension = image.unpack_name(tags=tags)
+        language, name, extracted_tags, extension, _ = image.unpack_name(tags=tags)
         if expected_language is None:
             assert language is None
         else:
@@ -458,5 +459,84 @@ class TestUpdateDatabase:
             (result.identifier, result.searchq_keyword, make_naive(result.date_modified), tuple(sorted(result.tags)))
             for result in CardSearch().search().scan()
         } == set(incoming_cards)
+
+    @pytest.mark.parametrize(
+        "canonical_cards, new_card, expected_expansion, expected_collector_number",
+        [
+            pytest.param(
+                [
+                    ("Lightning Bolt", "LEA", "161"),
+                ],
+                "Lightning Bolt (LEA 161).jpg",
+                "LEA",
+                "161",
+                id="card name specifies valid expansion+collector number, match",
+            ),
+            pytest.param(
+                [
+                    ("Lightning Bolt", "LEA", "161"),
+                    ("Lightning Bolt", "M10", "146"),
+                ],
+                "Lightning Bolt (LEA 161).jpg",
+                "LEA",
+                "161",
+                id="card name specifies valid expansion+collector number, match between two options",
+            ),
+            pytest.param(
+                [
+                    ("Lightning Bolt", "LEA", "161"),
+                    ("Lightning Bolt", "M10", "146"),
+                ],
+                "Lightning Bolt.jpg",
+                None,
+                None,
+                id="card name does not specify expansion+collector number, no match",
+            ),
+            pytest.param(
+                [
+                    ("Lightning Bolt", "LEA", "161"),
+                    ("Lightning Bolt", "M10", "146"),
+                ],
+                "Lightning Bolt (LEA 123).jpg",
+                None,
+                None,
+                id="card name specifies invalid option, no match",
+            ),
+            pytest.param(
+                [
+                    ("Lightning Bolt", "LEA", "161"),
+                    ("Lightning Bolt", "M10", "146"),
+                ],
+                "Lightning Bolt (LEA 161, M10 146).jpg",
+                None,
+                None,
+                id="card name specifies multiple valid expansion+collector numbers, ambiguous, no match",
+            ),
+        ],
+    )
+    def test_associate_with_canonical_card(
+        self, django_settings, canonical_cards, new_card, expected_expansion, expected_collector_number
+    ):
+        for (name, expansion, collector_number) in canonical_cards:
+            CanonicalCardFactory.create(
+                name=name,
+                expansion=CanonicalExpansionFactory(code=expansion),
+                collector_number=collector_number,
+            )
+        _, _, _, _, match = Image(
+            id="",
+            name=new_card,
+            size=0,
+            created_time=dt.datetime(2026, 1, 1),
+            modified_time=dt.datetime(2026, 1, 1),
+            height=0,
+            folder=Folder(id="", name="", parent=None),
+        ).unpack_name(tags=Tags())
+        canonical_cards_by_pk = {card.pk: card for card in CanonicalCard.objects.all()}
+        if expected_expansion is not None and expected_collector_number is not None:
+            assert canonical_cards_by_pk[match].expansion.code == expected_expansion
+            assert canonical_cards_by_pk[match].collector_number == expected_collector_number
+        else:
+            assert match is None
 
     # endregion

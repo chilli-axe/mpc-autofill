@@ -67,6 +67,9 @@
       "items": {
         "type": "string"
       }
+    },
+    "canonicalCard": {
+      "$ref": "./CanonicalCard.json"
     }
   },
   "required": [

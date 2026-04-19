@@ -1,7 +1,8 @@
+import datetime as dt
 import json
 import time
 from math import floor
-from typing import Any
+from typing import Any, Callable, TypeVar, cast
 
 import ratelimit
 import requests
@@ -29,3 +30,22 @@ def log_hours_minutes_seconds_elapsed(t0: float) -> None:
 @ratelimit.limits(calls=1, period=0.1)  # type: ignore  # `ratelimit` does not implement decorator typing correctly
 def get_json_endpoint_rate_limited(url: str) -> dict[str, Any]:
     return json.loads(requests.get(url).content)
+
+
+# https://mypy.readthedocs.io/en/stable/generics.html#declaring-decorators
+F = TypeVar("F", bound=Callable[..., Any])
+
+
+def section_timer(name: str) -> Callable[[F], F]:
+    def section_timer_decorator(func: F) -> F:
+        def wrapper(*args: Any, **kwargs: dict[str, Any]) -> F:
+            t0 = time.time()
+            print(f"[{name}]: start {dt.datetime.fromtimestamp(t0).isoformat()}")
+            ret = func(*args, **kwargs)
+            t1 = time.time()
+            print(f"[{name}]: end {dt.datetime.fromtimestamp(t1).isoformat()}, elapsed {round(t1 - t0, 2)} seconds.")
+            return ret
+
+        return cast(F, wrapper)
+
+    return section_timer_decorator

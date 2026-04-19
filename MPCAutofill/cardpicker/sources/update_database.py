@@ -51,6 +51,56 @@ def explore_folder(source: Source, source_type: Type[SourceType], root_folder: F
     return image_list
 
 
+def transform_image_into_object(source: Source, image: Image, tags: Tags) -> Card:
+    # reasons why an image might be invalid
+    assert image.size <= (
+        MAX_SIZE_MB * 1_000_000
+    ), f"Image size is greater than {MAX_SIZE_MB} MB at **{int(image.size / 1_000_000)}** MB"
+    # this can also raise AssertionError
+    language, name, extracted_tags, extension, canonical_card_pk = image.unpack_name(tags=tags)
+
+    searchable_name = to_searchable(name)
+    dpi = 10 * round(int(image.height) * DPI_HEIGHT_RATIO / 10)
+    source_verbose = source.name
+    priority = 1 if ("(" in name and ")" in name) or len(extracted_tags) > 0 else 2
+
+    folder_location = image.folder.get_full_path(tags=tags)
+    if folder_location == settings.DEFAULT_CARDBACK_FOLDER_PATH:
+        if name == settings.DEFAULT_CARDBACK_IMAGE_NAME:
+            priority += 10
+        priority += 5
+    if "basic" in image.folder.name.lower():
+        priority += 5
+        source_verbose += " Basics"
+
+    card_type = CardTypes.CARD
+    if "token" in image.folder.name.lower():
+        card_type = CardTypes.TOKEN
+        source_verbose = f"{source_verbose} Tokens"
+    elif "cardbacks" in image.folder.name.lower() or "card backs" in image.folder.name.lower():
+        card_type = CardTypes.CARDBACK
+        source_verbose = f"{source_verbose} Cardbacks"
+
+    return Card(
+        identifier=image.id,
+        card_type=card_type,
+        name=name,
+        priority=priority,
+        source=source,
+        source_verbose=source_verbose,
+        folder_location=folder_location,
+        dpi=dpi,
+        searchq=searchable_name,
+        extension=extension,
+        date_created=image.created_time,
+        date_modified=image.modified_time,
+        size=image.size,
+        tags=list(extracted_tags),
+        language=(language or DEFAULT_LANGUAGE).alpha_2.upper(),
+        canonical_card_id=canonical_card_pk,
+    )
+
+
 def transform_images_into_objects(source: Source, images: list[Image], tags: Tags) -> list[Card]:
     """
     Transform `images`, which are all associated with `source`, into a set of Django ORM objects ready to be
@@ -68,58 +118,14 @@ def transform_images_into_objects(source: Source, images: list[Image], tags: Tag
 
     for image in images:
         try:
-            # reasons why an image might be invalid
-            assert image.size <= (
-                MAX_SIZE_MB * 1_000_000
-            ), f"Image size is greater than {MAX_SIZE_MB} MB at **{int(image.size / 1_000_000)}** MB"
-            # this can also raise AssertionError
-            language, name, extracted_tags, extension = image.unpack_name(tags=tags)
-
-            searchable_name = to_searchable(name)
-            dpi = 10 * round(int(image.height) * DPI_HEIGHT_RATIO / 10)
-            source_verbose = source.name
-            priority = 1 if ("(" in name and ")" in name) or len(extracted_tags) > 0 else 2
-
-            folder_location = image.folder.get_full_path(tags=tags)
-            if folder_location == settings.DEFAULT_CARDBACK_FOLDER_PATH:
-                if name == settings.DEFAULT_CARDBACK_IMAGE_NAME:
-                    priority += 10
-                priority += 5
-            if "basic" in image.folder.name.lower():
-                priority += 5
-                source_verbose += " Basics"
-
-            card_type = CardTypes.CARD
-            if "token" in image.folder.name.lower():
-                card_type = CardTypes.TOKEN
-                source_verbose = f"{source_verbose} Tokens"
-                token_count += 1
-            elif "cardbacks" in image.folder.name.lower() or "card backs" in image.folder.name.lower():
-                card_type = CardTypes.CARDBACK
-                source_verbose = f"{source_verbose} Cardbacks"
-                cardback_count += 1
-            else:
+            card = transform_image_into_object(source, image, tags)
+            cards.append(card)
+            if card.card_type == CardTypes.CARD:
                 card_count += 1
-
-            cards.append(
-                Card(
-                    identifier=image.id,
-                    card_type=card_type,
-                    name=name,
-                    priority=priority,
-                    source=source,
-                    source_verbose=source_verbose,
-                    folder_location=folder_location,
-                    dpi=dpi,
-                    searchq=searchable_name,  # search-friendly card name
-                    extension=extension,
-                    date_created=image.created_time,
-                    date_modified=image.modified_time,
-                    size=image.size,
-                    tags=list(extracted_tags),
-                    language=(language or DEFAULT_LANGUAGE).alpha_2.upper(),
-                )
-            )
+            elif card.card_type == CardTypes.CARDBACK:
+                cardback_count += 1
+            elif card.card_type == CardTypes.TOKEN:
+                token_count += 1
         except AssertionError as e:
             errors.append(
                 f"Assertion error while processing **{image.name}** (identifier **{image.id}**) will not be indexed "
@@ -157,8 +163,12 @@ def bulk_sync_objects(source: Source, cards: list[Card]) -> None:
         if (
             # if an update has been recorded on the source's end...
             (incoming[identifier].date_modified > existing[identifier].date_modified)
-            # or if the card's tag has changed
+            # or if the card's tags have changed...
             | (set(incoming[identifier].tags) != set(existing[identifier].tags))
+            # or if the card's name has changed...
+            | (incoming[identifier].name != existing[identifier].name)
+            # or if the canonical card this card is associated with has changed...
+            | (incoming[identifier].canonical_card_id != existing[identifier].canonical_card_id)
         ):
             # record an update for this card
             incoming[identifier].pk = existing[identifier].pk  # this must be explicitly set for bulk_update.
@@ -189,6 +199,7 @@ def bulk_sync_objects(source: Source, cards: list[Card]) -> None:
                     "size",
                     "tags",
                     "language",
+                    "canonical_card",
                 ],
                 batch_size=1000,
             )
