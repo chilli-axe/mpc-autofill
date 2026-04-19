@@ -1,8 +1,10 @@
 import datetime as dt
+import uuid
 
 import factory
 
 from cardpicker import models
+from cardpicker.models import Games
 from cardpicker.search.sanitisation import to_searchable
 
 
@@ -55,3 +57,33 @@ class TagFactory(factory.django.DjangoModelFactory):
     name = factory.Sequence(lambda n: f"Tag {n}")
     parent = factory.LazyFunction(lambda: None)
     aliases = factory.LazyAttribute(lambda o: [o.name.replace(" ", "")])
+
+
+class CanonicalArtistFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.CanonicalArtist
+
+    name = factory.Sequence(lambda n: f"Artist {n}")
+
+
+class CanonicalExpansionFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.CanonicalExpansion
+
+    identifier = factory.LazyFunction(uuid.uuid4)
+    code = factory.Sequence(lambda n: f"Code {n}")
+    name = factory.Sequence(lambda n: f"Canonical Expansion {n}")
+    game = Games.MTG
+
+
+class CanonicalCardFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.CanonicalCard
+
+    identifier = factory.LazyFunction(uuid.uuid4)
+    canonical_id = factory.LazyFunction(uuid.uuid4)
+    name = factory.Sequence(lambda n: f"Canonical Card {n}")
+    artist = factory.SubFactory(CanonicalArtistFactory)
+    expansion = factory.SubFactory(CanonicalExpansionFactory)
+    collector_number = factory.Sequence(lambda n: f"{n:03}")
+    is_default = False

@@ -6,6 +6,7 @@ import requests
 import sentry_sdk
 
 from cardpicker.models import DFCPair
+from cardpicker.schema_types import Game
 
 
 def default_is_response_valid(response: requests.Response) -> bool:
@@ -68,6 +69,11 @@ class GameIntegration(ABC):
     """
 
     # region abstract methods
+
+    @classmethod
+    @abstractmethod
+    def get_game(cls) -> Game:
+        ...
 
     @classmethod
     @abstractmethod

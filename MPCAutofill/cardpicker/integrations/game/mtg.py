@@ -8,6 +8,7 @@ from django.conf import settings
 
 from cardpicker.integrations.game.base import GameIntegration, ImportSite
 from cardpicker.models import DFCPair
+from cardpicker.schema_types import Game
 from cardpicker.utils import get_json_endpoint_rate_limited
 
 # region import sites
@@ -226,9 +227,9 @@ class TappedOut(ImportSite):
 # endregion
 
 
-class MTG(GameIntegration):
+class MTGIntegration(GameIntegration):
     """
-    Our Magic: The Gathering integration reads DFC pairs from Scryfall and enables reading decklists from some
+    Our Magic: The Gathering integration reads canonical card data from Scryfall and enables reading decklists from some
     popular deckbuilding sites.
     """
 
@@ -236,6 +237,10 @@ class MTG(GameIntegration):
     MELD_SCRYFALL_QUERY = "is:meld"
     DFC_SCRYFALL_URL = f"https://api.scryfall.com/cards/search?q={DFC_SCRYFALL_QUERY}"
     MELD_SCRYFALL_URL = f"https://api.scryfall.com/cards/search?q={MELD_SCRYFALL_QUERY}"
+
+    @classmethod
+    def get_game(cls) -> Game:
+        return Game.MTG
 
     @classmethod
     def query_scryfall_paginated(cls, url: str) -> list[dict[str, Any]]:
@@ -314,4 +319,4 @@ class MTG(GameIntegration):
     # endregion
 
 
-__all__ = ["MTG"]
+__all__ = ["MTGIntegration"]

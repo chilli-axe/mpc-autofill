@@ -2,12 +2,14 @@
 
 // To parse this data:
 //
-//   import { Convert, Campaign, Card, CardType, FilterSettings, ImportSite, Language, NewCardsFirstPage, SearchQuery, SearchSettings, SearchTypeSettings, SortBy, Source, SourceContribution, SourceSettings, SourceType, Supporter, SupporterTier, Tag, CardbacksRequest, CardbacksResponse, CardsRequest, CardsResponse, ContributionsResponse, DFCPairsResponse, EditorSearchRequest, EditorSearchResponse, ErrorResponse, ExploreSearchRequest, ExploreSearchResponse, ImportSiteDecklistRequest, ImportSiteDecklistResponse, ImportSitesResponse, InfoResponse, LanguagesResponse, NewCardsFirstPagesResponse, NewCardsPageResponse, PatreonResponse, SampleCardsResponse, SearchEngineHealthResponse, SourcesResponse, TagsResponse } from "./file";
+//   import { Convert, Campaign, CanonicalCard, Card, CardType, FilterSettings, Game, ImportSite, Language, NewCardsFirstPage, SearchQuery, SearchSettings, SearchTypeSettings, SortBy, Source, SourceContribution, SourceSettings, SourceType, Supporter, SupporterTier, Tag, CardbacksRequest, CardbacksResponse, CardsRequest, CardsResponse, ContributionsResponse, DFCPairsResponse, EditorSearchRequest, EditorSearchResponse, ErrorResponse, ExploreSearchRequest, ExploreSearchResponse, ImportSiteDecklistRequest, ImportSiteDecklistResponse, ImportSitesResponse, InfoResponse, LanguagesResponse, NewCardsFirstPagesResponse, NewCardsPageResponse, PatreonResponse, SampleCardsResponse, SearchEngineHealthResponse, SourcesResponse, TagsResponse } from "./file";
 //
 //   const campaign = Convert.toCampaign(json);
+//   const canonicalCard = Convert.toCanonicalCard(json);
 //   const card = Convert.toCard(json);
 //   const cardType = Convert.toCardType(json);
 //   const filterSettings = Convert.toFilterSettings(json);
+//   const game = Convert.toGame(json);
 //   const importSite = Convert.toImportSite(json);
 //   const language = Convert.toLanguage(json);
 //   const newCardsFirstPage = Convert.toNewCardsFirstPage(json);
@@ -49,6 +51,10 @@
 //
 // These functions will throw an error if the JSON doesn't
 // match the expected interface, even if the JSON is valid.
+
+export enum Game {
+  Mtg = "MTG",
+}
 
 export interface CardbacksRequest {
   searchSettings: SearchSettings;
@@ -118,6 +124,7 @@ export interface CardsResponse {
 }
 
 export interface Card {
+  canonicalCard?: CanonicalCard | null;
   cardType: CardType;
   /**
    * Created date - formatted by backend
@@ -144,6 +151,15 @@ export interface Card {
   sourceType?: SourceType;
   sourceVerbose: string;
   tags: string[];
+}
+
+export interface CanonicalCard {
+  artist: string;
+  canonicalId?: string;
+  collectorNumber: string;
+  expansionCode: string;
+  expansionName: string;
+  identifier: string;
 }
 
 export enum CardType {
@@ -368,6 +384,14 @@ export class Convert {
     return JSON.stringify(uncast(value, u(r("Campaign"), null)), null, 2);
   }
 
+  public static toCanonicalCard(json: string): CanonicalCard | null {
+    return cast(JSON.parse(json), u(r("CanonicalCard"), null));
+  }
+
+  public static canonicalCardToJson(value: CanonicalCard | null): string {
+    return JSON.stringify(uncast(value, u(r("CanonicalCard"), null)), null, 2);
+  }
+
   public static toCard(json: string): Card {
     return cast(JSON.parse(json), r("Card"));
   }
@@ -390,6 +414,14 @@ export class Convert {
 
   public static filterSettingsToJson(value: FilterSettings): string {
     return JSON.stringify(uncast(value, r("FilterSettings")), null, 2);
+  }
+
+  public static toGame(json: string): Game {
+    return cast(JSON.parse(json), r("Game"));
+  }
+
+  public static gameToJson(value: Game): string {
+    return JSON.stringify(uncast(value, r("Game")), null, 2);
   }
 
   public static toImportSite(json: string): ImportSite {
@@ -988,6 +1020,11 @@ const typeMap: any = {
   ),
   Card: o(
     [
+      {
+        json: "canonicalCard",
+        js: "canonicalCard",
+        typ: u(undefined, u(r("CanonicalCard"), null)),
+      },
       { json: "cardType", js: "cardType", typ: r("CardType") },
       { json: "dateCreated", js: "dateCreated", typ: "" },
       { json: "dateModified", js: "dateModified", typ: "" },
@@ -1016,6 +1053,17 @@ const typeMap: any = {
       },
       { json: "sourceVerbose", js: "sourceVerbose", typ: "" },
       { json: "tags", js: "tags", typ: a("") },
+    ],
+    false
+  ),
+  CanonicalCard: o(
+    [
+      { json: "artist", js: "artist", typ: "" },
+      { json: "canonicalId", js: "canonicalId", typ: u(undefined, "") },
+      { json: "collectorNumber", js: "collectorNumber", typ: "" },
+      { json: "expansionCode", js: "expansionCode", typ: "" },
+      { json: "expansionName", js: "expansionName", typ: "" },
+      { json: "identifier", js: "identifier", typ: "" },
     ],
     false
   ),
@@ -1249,6 +1297,7 @@ const typeMap: any = {
     ],
     false
   ),
+  Game: ["MTG"],
   CardType: ["CARD", "CARDBACK", "TOKEN"],
   SourceType: ["AWS S3", "Google Drive", "Local File"],
   SortBy: [

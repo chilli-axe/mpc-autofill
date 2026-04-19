@@ -192,6 +192,7 @@
   dict({
     'CARD': dict({
       'Brainstorm': dict({
+        'canonicalCard': None,
         'cardType': 'CARD',
         'dateCreated': '1st January, 2023',
         'dateModified': '1st January, 2023',
@@ -215,6 +216,7 @@
         ]),
       }),
       'Island': dict({
+        'canonicalCard': None,
         'cardType': 'CARD',
         'dateCreated': '1st January, 2023',
         'dateModified': '1st January, 2023',
@@ -238,6 +240,7 @@
         ]),
       }),
       'Island (William Bradford)': dict({
+        'canonicalCard': None,
         'cardType': 'CARD',
         'dateCreated': '1st January, 2023',
         'dateModified': '1st January, 2023',
@@ -261,6 +264,7 @@
         ]),
       }),
       'Pást in Flames': dict({
+        'canonicalCard': None,
         'cardType': 'CARD',
         'dateCreated': '1st January, 2023',
         'dateModified': '1st January, 2023',
@@ -289,6 +293,7 @@
     }),
     'TOKEN': dict({
       'Goblin': dict({
+        'canonicalCard': None,
         'cardType': 'TOKEN',
         'dateCreated': '1st January, 2023',
         'dateModified': '1st January, 2023',
@@ -394,6 +399,7 @@
         'example_drive_1': dict({
           'cards': list([
             dict({
+              'canonicalCard': None,
               'cardType': 'CARD',
               'dateCreated': '1st January, 2023',
               'dateModified': '1st January, 2023',
@@ -417,6 +423,7 @@
               ]),
             }),
             dict({
+              'canonicalCard': None,
               'cardType': 'CARD',
               'dateCreated': '1st January, 2023',
               'dateModified': '1st January, 2023',
@@ -440,6 +447,7 @@
               ]),
             }),
             dict({
+              'canonicalCard': None,
               'cardType': 'TOKEN',
               'dateCreated': '1st January, 2023',
               'dateModified': '1st January, 2023',
@@ -463,6 +471,7 @@
               ]),
             }),
             dict({
+              'canonicalCard': None,
               'cardType': 'CARD',
               'dateCreated': '1st January, 2023',
               'dateModified': '1st January, 2023',
@@ -486,6 +495,7 @@
               ]),
             }),
             dict({
+              'canonicalCard': None,
               'cardType': 'CARD',
               'dateCreated': '1st January, 2023',
               'dateModified': '1st January, 2023',
@@ -509,6 +519,7 @@
               ]),
             }),
             dict({
+              'canonicalCard': None,
               'cardType': 'CARD',
               'dateCreated': '1st January, 2023',
               'dateModified': '1st January, 2023',
@@ -546,6 +557,7 @@
         'example_drive_2': dict({
           'cards': list([
             dict({
+              'canonicalCard': None,
               'cardType': 'CARD',
               'dateCreated': '1st January, 2023',
               'dateModified': '1st January, 2023',
@@ -571,6 +583,7 @@
               ]),
             }),
             dict({
+              'canonicalCard': None,
               'cardType': 'CARDBACK',
               'dateCreated': '1st January, 2023',
               'dateModified': '1st January, 2023',
@@ -653,6 +666,7 @@
     'json': dict({
       'cards': list([
         dict({
+          'canonicalCard': None,
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -676,6 +690,7 @@
           ]),
         }),
         dict({
+          'canonicalCard': None,
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -699,6 +714,7 @@
           ]),
         }),
         dict({
+          'canonicalCard': None,
           'cardType': 'TOKEN',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -722,6 +738,7 @@
           ]),
         }),
         dict({
+          'canonicalCard': None,
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -745,6 +762,7 @@
           ]),
         }),
         dict({
+          'canonicalCard': None,
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -768,6 +786,7 @@
           ]),
         }),
         dict({
+          'canonicalCard': None,
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -800,6 +819,7 @@
     'json': dict({
       'cards': list([
         dict({
+          'canonicalCard': None,
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -823,6 +843,7 @@
           ]),
         }),
         dict({
+          'canonicalCard': None,
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -846,6 +867,7 @@
           ]),
         }),
         dict({
+          'canonicalCard': None,
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -870,6 +892,7 @@
           ]),
         }),
         dict({
+          'canonicalCard': None,
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -893,6 +916,7 @@
           ]),
         }),
         dict({
+          'canonicalCard': None,
           'cardType': 'CARDBACK',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -927,6 +951,7 @@
     'json': dict({
       'cards': list([
         dict({
+          'canonicalCard': None,
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -952,6 +977,7 @@
           ]),
         }),
         dict({
+          'canonicalCard': None,
           'cardType': 'CARDBACK',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -1326,6 +1352,7 @@
     'json': dict({
       'results': dict({
         '17fopRCNRge72U8Hac8pApHZtEalx5kHy': dict({
+          'canonicalCard': None,
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -1349,6 +1376,7 @@
           ]),
         }),
         '1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA': dict({
+          'canonicalCard': None,
           'cardType': 'TOKEN',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -1391,6 +1419,7 @@
     'json': dict({
       'results': dict({
         '1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA': dict({
+          'canonicalCard': None,
           'cardType': 'TOKEN',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -1423,6 +1452,7 @@
     'json': dict({
       'results': dict({
         '17fopRCNRge72U8Hac8pApHZtEalx5kHy': dict({
+          'canonicalCard': None,
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -1446,6 +1476,7 @@
           ]),
         }),
         '1991MWCur9NdAFi-tQQD5YbQj2oqV_WRy': dict({
+          'canonicalCard': None,
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -1469,6 +1500,7 @@
           ]),
         }),
         '1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA': dict({
+          'canonicalCard': None,
           'cardType': 'TOKEN',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -1511,6 +1543,7 @@
     'json': dict({
       'results': dict({
         '1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA': dict({
+          'canonicalCard': None,
           'cardType': 'TOKEN',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -2175,6 +2208,7 @@
     'json': dict({
       'cards': list([
         dict({
+          'canonicalCard': None,
           'cardType': 'TOKEN',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -2198,6 +2232,7 @@
           ]),
         }),
         dict({
+          'canonicalCard': None,
           'cardType': 'CARDBACK',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -2223,6 +2258,7 @@
           ]),
         }),
         dict({
+          'canonicalCard': None,
           'cardType': 'CARDBACK',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -2257,6 +2293,7 @@
     'json': dict({
       'cards': list([
         dict({
+          'canonicalCard': None,
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -2280,6 +2317,7 @@
           ]),
         }),
         dict({
+          'canonicalCard': None,
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -2303,6 +2341,7 @@
           ]),
         }),
         dict({
+          'canonicalCard': None,
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -2326,6 +2365,7 @@
           ]),
         }),
         dict({
+          'canonicalCard': None,
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -2349,6 +2389,7 @@
           ]),
         }),
         dict({
+          'canonicalCard': None,
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -2372,6 +2413,7 @@
           ]),
         }),
         dict({
+          'canonicalCard': None,
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -2395,6 +2437,7 @@
           ]),
         }),
         dict({
+          'canonicalCard': None,
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -2418,6 +2461,7 @@
           ]),
         }),
         dict({
+          'canonicalCard': None,
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -2443,6 +2487,7 @@
           ]),
         }),
         dict({
+          'canonicalCard': None,
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -2467,6 +2512,7 @@
           ]),
         }),
         dict({
+          'canonicalCard': None,
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -2500,6 +2546,7 @@
     'json': dict({
       'cards': list([
         dict({
+          'canonicalCard': None,
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -2523,6 +2570,7 @@
           ]),
         }),
         dict({
+          'canonicalCard': None,
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -2546,6 +2594,7 @@
           ]),
         }),
         dict({
+          'canonicalCard': None,
           'cardType': 'TOKEN',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -2569,6 +2618,7 @@
           ]),
         }),
         dict({
+          'canonicalCard': None,
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -2592,6 +2642,7 @@
           ]),
         }),
         dict({
+          'canonicalCard': None,
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -2615,6 +2666,7 @@
           ]),
         }),
         dict({
+          'canonicalCard': None,
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -2638,6 +2690,7 @@
           ]),
         }),
         dict({
+          'canonicalCard': None,
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -2661,6 +2714,7 @@
           ]),
         }),
         dict({
+          'canonicalCard': None,
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -2684,6 +2738,7 @@
           ]),
         }),
         dict({
+          'canonicalCard': None,
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -2709,6 +2764,7 @@
           ]),
         }),
         dict({
+          'canonicalCard': None,
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -2733,6 +2789,7 @@
           ]),
         }),
         dict({
+          'canonicalCard': None,
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -2756,6 +2813,7 @@
           ]),
         }),
         dict({
+          'canonicalCard': None,
           'cardType': 'CARDBACK',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -2781,6 +2839,7 @@
           ]),
         }),
         dict({
+          'canonicalCard': None,
           'cardType': 'CARDBACK',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -2815,6 +2874,7 @@
     'json': dict({
       'cards': list([
         dict({
+          'canonicalCard': None,
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -2848,6 +2908,7 @@
     'json': dict({
       'cards': list([
         dict({
+          'canonicalCard': None,
           'cardType': 'CARDBACK',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -2882,6 +2943,7 @@
     'json': dict({
       'cards': list([
         dict({
+          'canonicalCard': None,
           'cardType': 'TOKEN',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -2915,6 +2977,7 @@
     'json': dict({
       'cards': list([
         dict({
+          'canonicalCard': None,
           'cardType': 'CARDBACK',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -2940,6 +3003,7 @@
           ]),
         }),
         dict({
+          'canonicalCard': None,
           'cardType': 'CARDBACK',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -2974,6 +3038,7 @@
     'json': dict({
       'cards': list([
         dict({
+          'canonicalCard': None,
           'cardType': 'CARDBACK',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -2998,6 +3063,7 @@
           ]),
         }),
         dict({
+          'canonicalCard': None,
           'cardType': 'CARDBACK',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',

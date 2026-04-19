@@ -72,6 +72,10 @@ def to_float(x: Any) -> float:
     return x
 
 
+class Game(str, Enum):
+    MTG = "MTG"
+
+
 class FilterSettings(BaseModel):
     excludesTags: List[str]
     """The tags which the cards must *not* have to be included in search results"""
@@ -218,6 +222,37 @@ class CardsRequest(BaseModel):
         return result
 
 
+class CanonicalCardClass(BaseModel):
+    artist: str
+    collectorNumber: str
+    expansionCode: str
+    expansionName: str
+    identifier: str
+    canonicalId: Optional[str] = None
+
+    @staticmethod
+    def from_dict(obj: Any) -> "CanonicalCardClass":
+        assert isinstance(obj, dict)
+        artist = from_str(obj.get("artist"))
+        collectorNumber = from_str(obj.get("collectorNumber"))
+        expansionCode = from_str(obj.get("expansionCode"))
+        expansionName = from_str(obj.get("expansionName"))
+        identifier = from_str(obj.get("identifier"))
+        canonicalId = from_union([from_str, from_none], obj.get("canonicalId"))
+        return CanonicalCardClass(artist, collectorNumber, expansionCode, expansionName, identifier, canonicalId)
+
+    def to_dict(self) -> dict:
+        result: dict = {}
+        result["artist"] = from_str(self.artist)
+        result["collectorNumber"] = from_str(self.collectorNumber)
+        result["expansionCode"] = from_str(self.expansionCode)
+        result["expansionName"] = from_str(self.expansionName)
+        result["identifier"] = from_str(self.identifier)
+        if self.canonicalId is not None:
+            result["canonicalId"] = from_union([from_str, from_none], self.canonicalId)
+        return result
+
+
 class CardType(str, Enum):
     CARD = "CARD"
     CARDBACK = "CARDBACK"
@@ -253,6 +288,7 @@ class Card(BaseModel):
     sourceName: str
     sourceVerbose: str
     tags: List[str]
+    canonicalCard: Optional[CanonicalCardClass] = None
     sourceExternalLink: Optional[str] = None
     sourceType: Optional[SourceType] = None
 
@@ -277,6 +313,7 @@ class Card(BaseModel):
         sourceName = from_str(obj.get("sourceName"))
         sourceVerbose = from_str(obj.get("sourceVerbose"))
         tags = from_list(from_str, obj.get("tags"))
+        canonicalCard = from_union([from_none, CanonicalCardClass.from_dict], obj.get("canonicalCard"))
         sourceExternalLink = from_union([from_str, from_none], obj.get("sourceExternalLink"))
         sourceType = from_union([SourceType, from_none], obj.get("sourceType"))
         return Card(
@@ -298,6 +335,7 @@ class Card(BaseModel):
             sourceName,
             sourceVerbose,
             tags,
+            canonicalCard,
             sourceExternalLink,
             sourceType,
         )
@@ -322,6 +360,10 @@ class Card(BaseModel):
         result["sourceName"] = from_str(self.sourceName)
         result["sourceVerbose"] = from_str(self.sourceVerbose)
         result["tags"] = from_list(from_str, self.tags)
+        if self.canonicalCard is not None:
+            result["canonicalCard"] = from_union(
+                [from_none, lambda x: to_class(CanonicalCardClass, x)], self.canonicalCard
+            )
         if self.sourceExternalLink is not None:
             result["sourceExternalLink"] = from_union([from_str, from_none], self.sourceExternalLink)
         if self.sourceType is not None:
@@ -1031,6 +1073,14 @@ def Campaigntodict(x: Optional[CampaignClass]) -> Any:
     return from_union([from_none, lambda x: to_class(CampaignClass, x)], x)
 
 
+def CanonicalCardfromdict(s: Any) -> Optional[CanonicalCardClass]:
+    return from_union([from_none, CanonicalCardClass.from_dict], s)
+
+
+def CanonicalCardtodict(x: Optional[CanonicalCardClass]) -> Any:
+    return from_union([from_none, lambda x: to_class(CanonicalCardClass, x)], x)
+
+
 def Cardfromdict(s: Any) -> Card:
     return Card.from_dict(s)
 
@@ -1053,6 +1103,14 @@ def FilterSettingsfromdict(s: Any) -> FilterSettings:
 
 def FilterSettingstodict(x: FilterSettings) -> Any:
     return to_class(FilterSettings, x)
+
+
+def Gamefromdict(s: Any) -> Game:
+    return Game(s)
+
+
+def Gametodict(x: Game) -> Any:
+    return to_enum(Game, x)
 
 
 def ImportSitefromdict(s: Any) -> ImportSite:
