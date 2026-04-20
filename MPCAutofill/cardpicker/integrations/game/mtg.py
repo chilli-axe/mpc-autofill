@@ -1,10 +1,16 @@
+import concurrent.futures
 import re
+import time
 import uuid
+from pathlib import Path
 from typing import Any, Type
 from urllib.parse import parse_qs, urlparse
 
+import enlighten
+import imagehash
 import ratelimit
 import requests
+from PIL import Image
 from pydantic import BaseModel, ValidationError
 
 from django.conf import settings
@@ -17,7 +23,11 @@ from cardpicker.models import (
     DFCPair,
 )
 from cardpicker.schema_types import Game
-from cardpicker.utils import get_json_endpoint_rate_limited, section_timer
+from cardpicker.utils import (
+    get_json_endpoint_rate_limited,
+    section_timer,
+    twos_complement,
+)
 
 # region import sites
 
@@ -252,6 +262,15 @@ class BulkDataResponse(BaseModel):
     data: list[BulkDataRow]
 
 
+class ImageURIs(BaseModel):
+    small: str
+    normal: str
+    large: str
+    png: str
+    art_crop: str
+    border_crop: str
+
+
 class CardRow(BaseModel):
     id: uuid.UUID
     oracle_id: uuid.UUID | None = None
@@ -259,6 +278,8 @@ class CardRow(BaseModel):
     set: str
     collector_number: str
     artist: str
+    image_uris: ImageURIs | None = None
+    layout: str
 
 
 class ExpansionRow(BaseModel):
@@ -373,20 +394,51 @@ class MTGIntegration(GameIntegration):
         }
         cards_by_identifier: dict[uuid.UUID, CanonicalCard] = {}
 
-        def row_to_canonical_card(row: CardRow) -> CanonicalCard:
-            artist_name = row.artist
-            if artist_name not in artists_by_name.keys():
-                artists_by_name[artist_name] = CanonicalArtist(name=artist_name)
+        manager = enlighten.get_manager()
+        default_cards_counter = manager.counter(desc="Default Cards", unit="ticks")
+        oracle_cards_counter = manager.counter(desc="Oracle Cards", unit="ticks")
 
-            return CanonicalCard(
-                identifier=row.id,
-                canonical_id=row.oracle_id,
-                name=row.name,
-                expansion=expansions_by_code[row.set],
-                artist=artists_by_name[artist_name],
-                collector_number=row.collector_number,
-                is_default=False,
-            )
+        existing_canonical_card_identifiers = set(CanonicalCard.objects.values_list("identifier", flat=True))
+
+        cache_dir = Path(settings.BASE_DIR) / "scryfall_cache"
+        default_cards_path = cache_dir / "default_cards.json"
+        oracle_cards_path = cache_dir / "oracle_cards.json"
+
+        def is_stale(path: Path) -> bool:
+            return not path.exists() or time.time() - path.stat().st_mtime > 7 * 24 * 3600
+
+        def row_to_canonical_card(row: CardRow) -> CanonicalCard | None:
+            try:
+                if row.layout == "art_series":
+                    return None
+
+                artist_name = row.artist
+                if artist_name not in artists_by_name.keys():
+                    artists_by_name[artist_name] = CanonicalArtist(name=artist_name)
+
+                image_hash_int: int | None = None
+                if row.image_uris is not None:
+                    try:
+                        im = Image.open(requests.get(row.image_uris.small, stream=True).raw)
+                        image_hash = str(imagehash.phash(im))
+                        image_hash_int = twos_complement(image_hash, 64)
+                    except Exception as e:
+                        print(f"encountered exception while computing image hash: {e}")
+
+                return CanonicalCard(
+                    identifier=row.id,
+                    canonical_id=row.oracle_id,
+                    name=row.name,
+                    expansion=expansions_by_code[row.set],
+                    artist=artists_by_name[artist_name],
+                    collector_number=row.collector_number,
+                    is_default=False,
+                    image_hash=image_hash_int if image_hash_int is not None else 0,
+                )
+            except Exception as e:
+                # overly safe exception handling to prevent threads from silently dying
+                print(f"encountered exception in CanonicalCard transformation thread: {e}")
+                return None
 
         @section_timer(name="get bulk data URLs")
         def get_bulk_data_urls() -> BulkDataURLs:
@@ -402,40 +454,79 @@ class MTGIntegration(GameIntegration):
                 oracle_cards=oracle_cards.download_uri,
             )
 
-        @section_timer(name="download default cards")
-        def download_default_cards(url: str) -> None:
-            print(f"Downloading Default Cards from {bulk_data_urls.default_cards}")
+        @section_timer(name="cache default cards")
+        def cache_default_cards(url: str) -> None:
+            if not is_stale(default_cards_path):
+                print(f"Using cached default cards at {default_cards_path}")
+                return
+            cache_dir.mkdir(parents=True, exist_ok=True)
+            print(f"Downloading default cards from {url}")
             with requests.get(url, stream=True) as r:
-                lines = r.iter_lines()
-                for line in lines:
-                    if line in [b"[", b"]"]:
-                        continue
-                    try:
-                        row = CardRow.model_validate_json(line.decode("utf-8").rstrip(","))
-                        cards_by_identifier[row.id] = row_to_canonical_card(row)
-                    except ValidationError as e:
-                        print(f"failed to validate line: {line}")
-                        raise e
+                with open(default_cards_path, "wb") as f:
+                    for chunk in r.iter_content(chunk_size=8192):
+                        f.write(chunk)
 
-        @section_timer("download oracle cards")
-        def download_oracle_cards(url: str) -> None:
-            # mark the default Scryfall version of each card with is_default=True
-            print(f"Downloading Oracle Cards from {bulk_data_urls.default_cards}")
+        @section_timer(name="cache oracle cards")
+        def cache_oracle_cards(url: str) -> None:
+            if not is_stale(oracle_cards_path):
+                print(f"Using cached oracle cards at {oracle_cards_path}")
+                return
+            cache_dir.mkdir(parents=True, exist_ok=True)
+            print(f"Downloading oracle cards from {url}")
             with requests.get(url, stream=True) as r:
-                lines = r.iter_lines()
-                for line in lines:
+                with open(oracle_cards_path, "wb") as f:
+                    for chunk in r.iter_content(chunk_size=8192):
+                        f.write(chunk)
+
+        @section_timer(name="process default cards")
+        def process_default_cards() -> None:
+            with concurrent.futures.ThreadPoolExecutor(max_workers=10) as pool:
+                with open(default_cards_path, "rb") as f:
+                    for line in f:
+                        line = line.rstrip(b"\n")
+                        if line in [b"[", b"]"]:
+                            continue
+                        decoded_line = line.decode("utf-8").rstrip(",")
+                        try:
+                            row = CardRow.model_validate_json(decoded_line)
+                            if row.id not in existing_canonical_card_identifiers:
+                                future = pool.submit(row_to_canonical_card, row)
+                                card = future.result()
+                                if card is not None:
+                                    cards_by_identifier[row.id] = card
+                                default_cards_counter.update()
+                        except ValidationError as e:
+                            print(f"failed to validate line: {decoded_line}")
+                            raise e
+
+        @section_timer("process oracle cards")
+        def process_oracle_cards() -> None:
+            # mark the default Scryfall version of each card with is_default=True
+            with open(oracle_cards_path, "rb") as f:
+                for line in f:
+                    line = line.rstrip(b"\n")
                     if line in [b"[", b"]"]:
                         continue
+                    decoded_line = line.decode("utf-8").rstrip(",")
                     try:
-                        row = CardRow.model_validate_json(line.decode("utf-8").rstrip(","))
-                        cards_by_identifier[row.id].is_default = True
+                        row = CardRow.model_validate_json(decoded_line)
+                        if row.id in cards_by_identifier.keys():
+                            cards_by_identifier[row.id].is_default = True
+                        else:
+                            card = row_to_canonical_card(row)
+                            if card:
+                                cards_by_identifier[row.id] = card
+                        oracle_cards_counter.update()
                     except ValidationError as e:
-                        print(f"failed to validate line: {line}")
+                        print(f"failed to validate line: {decoded_line}")
                         raise e
 
         bulk_data_urls = get_bulk_data_urls()
-        download_default_cards(bulk_data_urls.default_cards)
-        download_oracle_cards(bulk_data_urls.oracle_cards)
+        cache_default_cards(bulk_data_urls.default_cards)
+        cache_oracle_cards(bulk_data_urls.oracle_cards)
+        process_default_cards()
+        process_oracle_cards()
+
         return list(cards_by_identifier.values()), list(artists_by_name.values())
 
     @classmethod

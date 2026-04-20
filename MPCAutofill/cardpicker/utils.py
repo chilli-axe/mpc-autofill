@@ -49,3 +49,16 @@ def section_timer(name: str) -> Callable[[F], F]:
         return cast(F, wrapper)
 
     return section_timer_decorator
+
+
+def twos_complement(hexstr: str, bits: int) -> int:
+    """
+    retrieved from https://github.com/KDJDEV/imagehash-reverse-image-search-tutorial
+    """
+
+    value = int(hexstr, 16)  # convert hexadecimal to integer
+
+    # convert from unsigned number to signed number with "bits" bits
+    if value & (1 << (bits - 1)):
+        value -= 1 << bits
+    return value

@@ -98,6 +98,7 @@ def transform_image_into_object(source: Source, image: Image, tags: Tags) -> Car
         tags=list(extracted_tags),
         language=(language or DEFAULT_LANGUAGE).alpha_2.upper(),
         canonical_card_id=canonical_card_pk,
+        image_hash=0,
     )
 
 

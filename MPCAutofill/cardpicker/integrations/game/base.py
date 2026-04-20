@@ -139,6 +139,7 @@ class GameIntegration(ABC):
             db_class=CanonicalCard,
             filters=None,
             skip_updates=True,  # optimisation - not tracking any canonical data which could change over time
+            skip_deletes=True,
         )
         t3 = time.time()
         print(f"Bulk synced {len(cards)} cards in {round(t3 - t2, 2)} seconds.")
