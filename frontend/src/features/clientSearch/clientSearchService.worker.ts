@@ -1,6 +1,7 @@
 import { create, getByID, insertMultiple, search } from "@orama/orama";
 import { expose } from "comlink";
 
+import { Printing, Unknown } from "@/common/constants";
 import { toSearchable } from "@/common/processing";
 import {
   CardType as CardTypeSchema,
@@ -24,11 +25,10 @@ import {
   OramaSearchResults,
   SearchResults,
 } from "@/common/types";
+import { parseDjangoDate } from "@/common/utils";
 import { getDefaultSearchSettings } from "@/store/slices/searchSettingsSlice";
 
 import { Folder, GoogleDriveIndexer, LocalFilesIndexer } from "./indexer";
-
-export type GridSelectorSortBy = SortBy | "source";
 
 export class ClientSearchService {
   private localFilesIndex: LocalFilesIndex | undefined;
@@ -147,7 +147,9 @@ export class ClientSearchService {
     cardTypes: Array<CardType>,
     sortBy?: SortBy,
     limit?: number,
-    offset?: number
+    offset?: number,
+    printings?: Array<Printing>,
+    artists?: Array<string>
   ): OramaSearchResults | undefined {
     if (oramaIndex?.oramaDb === undefined) {
       return undefined;
@@ -158,11 +160,11 @@ export class ClientSearchService {
 
     const sortByConfigs = {
       [SortBy.DateCreatedAscending]: {
-        property: "lastModifiedNumber",
+        property: "createdNumber",
         order: "ASC",
       },
       [SortBy.DateCreatedDescending]: {
-        property: "lastModifiedNumber",
+        property: "createdNumber",
         order: "DESC",
       },
       [SortBy.DateModifiedAscending]: {
@@ -188,6 +190,14 @@ export class ClientSearchService {
       where: {
         and: [
           ...(cardTypes.length > 0 ? [{ cardType: { in: cardTypes } }] : []),
+          {
+            or: [
+              ...searchSettings.sourceSettings.sources
+                .filter((sourceRow) => sourceRow[1] === true)
+                .map((sourceRow) => ({ sourceId: { eq: sourceRow[0] } })),
+              { sourceId: { eq: -1 } },
+            ],
+          },
           ...(includesTags
             ? [
                 {
@@ -221,6 +231,17 @@ export class ClientSearchService {
               lte: searchSettings.filterSettings.maximumSize * 1_000_000,
             },
           },
+          ...((printings?.length ?? 0) > 0
+            ? [
+                {
+                  or: printings!.map(({ expansionCode, collectorNumber }) => ({
+                    expansionCode: expansionCode,
+                    collectorNumber: collectorNumber,
+                  })),
+                },
+              ]
+            : []),
+          ...((artists?.length ?? 0) > 0 ? [{ artist: artists }] : []),
         ],
       },
       sortBy: sortByConfig,
@@ -268,44 +289,10 @@ export class ClientSearchService {
   public async filterGridSelectorIdentifiers(
     cards: Array<CardDocument>,
     searchSettings: SearchSettings,
-    sortBy: GridSelectorSortBy,
+    sortBy: SortBy | undefined,
     artists: Array<string>,
-    printings: Array<string>
+    printings: Array<Printing>
   ): Promise<Array<string>> {
-    const UNKNOWN = "Unknown";
-    const sourceRows = searchSettings.sourceSettings.sources;
-    let filteredCards =
-      sourceRows.length > 0
-        ? (() => {
-            const enabledSourcePks = new Set(
-              sourceRows
-                .filter(([, enabled]) => enabled)
-                .map(([pk]) => pk as number)
-            );
-            return cards.filter((card) => enabledSourcePks.has(card.sourceId));
-          })()
-        : cards;
-
-    if (artists.length > 0) {
-      const artistSet = new Set(artists);
-      filteredCards = filteredCards.filter((card) =>
-        card.canonicalCard == null
-          ? artistSet.has(UNKNOWN)
-          : artistSet.has(card.canonicalCard.artist)
-      );
-    }
-
-    if (printings.length > 0) {
-      const printingSet = new Set(printings);
-      filteredCards = filteredCards.filter((card) =>
-        card.canonicalCard == null
-          ? printingSet.has(UNKNOWN)
-          : printingSet.has(
-              `${card.canonicalCard.expansionCode} ${card.canonicalCard.collectorNumber}`
-            )
-      );
-    }
-
     const oramaDb = await create({
       schema: OramaSchema,
       sort: {
@@ -324,52 +311,57 @@ export class ClientSearchService {
     });
     await insertMultiple(
       oramaDb,
-      filteredCards.map((card) => ({
-        id: card.identifier,
-        name: card.name,
-        searchq: card.searchq,
-        lastModifiedNumber: new Date(card.dateModified).getTime(),
-        cardType: card.cardType,
-        extension: card.extension,
-        language: card.language,
-        tags: card.tags,
-        dpi: card.dpi,
-        size: card.size,
-      })) as unknown as OramaCardDocument[]
+      cards.map(
+        (card): OramaCardDocument => ({
+          id: card.identifier,
+          cardType: card.cardType,
+          name: card.name,
+          searchq: card.searchq,
+          source: card.source,
+          sourceId: card.sourceId,
+          sourceVerbose: card.sourceVerbose,
+          dpi: card.dpi,
+          extension: card.extension,
+          size: card.size,
+          language: card.language,
+          tags: card.tags,
+          lastModified: parseDjangoDate(card.dateModified),
+          lastModifiedNumber: parseDjangoDate(card.dateModified).valueOf(),
+          created: parseDjangoDate(card.dateCreated),
+          createdNumber: parseDjangoDate(card.dateCreated).valueOf(),
+          params: {
+            identifier: card.identifier,
+            sourceType: SourceType.GoogleDrive,
+            fileHandle: undefined,
+          },
+          expansionCode: card.canonicalCard?.expansionCode ?? Unknown,
+          collectorNumber: card.canonicalCard?.collectorNumber ?? Unknown,
+          artist: card.canonicalCard?.artist ?? Unknown,
+        })
+      )
     );
-    const oramaIndex: OramaIndex = { oramaDb, size: filteredCards.length };
-
-    if (sortBy === "source") {
-      // Use Orama for filtering only, then sort client-side by source settings order
-      const results = this.searchOramaIndex(
-        oramaIndex,
-        searchSettings,
-        undefined,
-        []
-      );
-      const hitIds = results?.hits.map((hit) => hit.id) ?? [];
-      const sourceOrder = new Map(
-        sourceRows.map(([pk], index) => [pk as number, index])
-      );
-      const idToSourceId = new Map(
-        filteredCards.map((card) => [card.identifier, card.sourceId])
-      );
-      hitIds.sort((a, b) => {
-        const aOrder = sourceOrder.get(idToSourceId.get(a) ?? -1) ?? Infinity;
-        const bOrder = sourceOrder.get(idToSourceId.get(b) ?? -1) ?? Infinity;
-        return aOrder - bOrder;
-      });
-      return hitIds;
-    }
+    const oramaIndex: OramaIndex = { oramaDb, size: cards.length };
 
     const results = this.searchOramaIndex(
       oramaIndex,
       searchSettings,
       undefined,
       [],
-      sortBy
+      sortBy,
+      undefined,
+      undefined,
+      printings,
+      artists
     );
-    return results?.hits.map((hit) => hit.id) ?? [];
+    if (sortBy !== undefined) {
+      return results?.hits.map((hit) => hit.id) ?? [];
+    } else {
+      // honour the ordering of `cards`
+      const resultsSet = new Set(results?.hits.map((hit) => hit.id));
+      return cards
+        .map((card) => card.identifier)
+        .filter((identifier) => resultsSet.has(identifier));
+    }
   }
 
   public retrieveCardIdentifiers(
@@ -424,7 +416,7 @@ export class ClientSearchService {
   }
 
   public exploreSearch(
-    sortBy: SortBy,
+    sortBy: SortBy | undefined,
     query: string | undefined,
     cardTypes: Array<CardType>,
     searchSettings: SearchSettings,

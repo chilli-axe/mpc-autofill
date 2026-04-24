@@ -327,9 +327,12 @@ export const openCardSlotGridSelector = async (
     .getByTestId(testId)
     .getByText(`${selectedImage} / ${totalImages}`)
     .click();
-  await expect(page.getByText("Option 1")).toBeVisible();
 
-  return page.getByTestId(`${face}-slot${slot - 1}-grid-selector`);
+  const gridSelector = page.getByTestId(
+    `${face}-slot${slot - 1}-grid-selector`
+  );
+  await expect(gridSelector).toBeVisible();
+  return gridSelector;
 };
 
 export const clickMoreSelectOptionsDropdown = async (page: Page) => {

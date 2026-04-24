@@ -1,7 +1,7 @@
 import { Remote, wrap } from "comlink";
 import { DispatchWithoutAction } from "react";
 
-import { QueryTags } from "@/common/constants";
+import { Printing, QueryTags } from "@/common/constants";
 import {
   SearchQuery,
   SearchSettings,
@@ -26,11 +26,7 @@ import { clearSearchResults } from "@/store/slices/searchResultsSlice";
 import { setNotification } from "@/store/slices/toastsSlice";
 import { AppDispatch, RootState } from "@/store/store";
 
-import {
-  ClientSearchServiceWorker,
-  GridSelectorSortBy,
-} from "./clientSearchService.worker";
-export type { GridSelectorSortBy };
+import { ClientSearchServiceWorker } from "./clientSearchService.worker";
 
 /**
  * work around next.js limitation where workers cannot be initialised at the module level
@@ -201,9 +197,9 @@ export class ClientSearchService {
   public async filterGridSelectorIdentifiers(
     cards: Array<CardDocument>,
     searchSettings: SearchSettings,
-    sortBy: GridSelectorSortBy,
+    sortBy: SortBy | undefined,
     artists: Array<string>,
-    printings: Array<string>
+    printings: Array<Printing>
   ): Promise<Array<string>> {
     if (this.worker === undefined) {
       throw new Error("clientSearchService was not initialised!");

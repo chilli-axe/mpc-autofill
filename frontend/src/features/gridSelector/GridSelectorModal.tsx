@@ -1,7 +1,6 @@
 /**
  * This module contains a component which allows the user to select between
  * different card versions while seeing them all at once.
- * Card versions are faceted by source, and all cards for a source can be temporarily hidden.
  */
 
 import React, {
@@ -13,68 +12,34 @@ import React, {
   useState,
 } from "react";
 import Button from "react-bootstrap/Button";
-import Col from "react-bootstrap/Col";
-import Form from "react-bootstrap/Form";
 import Modal from "react-bootstrap/Modal";
 import Row from "react-bootstrap/Row";
-// @ts-ignore: https://github.com/arnthor3/react-bootstrap-toggle/issues/21
-import Toggle from "react-bootstrap-toggle";
-import { TreeNode } from "react-dropdown-tree-select";
 import { useDebounce } from "use-debounce";
 
-import {
-  ExploreDebounceMS,
-  SortByOptions,
-  ToggleButtonHeight,
-} from "@/common/constants";
+import { ExploreDebounceMS, Printing } from "@/common/constants";
 import { SortBy } from "@/common/schema_types";
-import { StyledDropdownTreeSelect } from "@/common/StyledDropdownTreeSelect";
 import {
   CardDocument,
   FilterSettings,
   SourceSettings,
-  useAppDispatch,
   useAppSelector,
 } from "@/common/types";
-import { AutofillCollapse } from "@/components/AutofillCollapse";
 import { Blurrable } from "@/components/Blurrable";
-import { RightPaddedIcon } from "@/components/icon";
+import { OverflowCol } from "@/components/OverflowCol";
 import { Spinner } from "@/components/Spinner";
-import {
-  CardResultSet,
-  FAVORITES_SOURCE_KEY,
-} from "@/features/card/CardResultSet";
+import { CardResultSet } from "@/features/card/CardResultSet";
 import { useClientSearchContext } from "@/features/clientSearch/clientSearchContext";
-import { GridSelectorSortBy } from "@/features/clientSearch/clientSearchService";
-import { FilterSettings as FilterSettingsElement } from "@/features/searchSettings/FilterSettings";
-import { SourceSettings as SourceSettingsElement } from "@/features/searchSettings/SourceSettings";
+import { GridSelectorFilters } from "@/features/gridSelector/GridSelectorFilters";
+import { GenericErrorPage } from "@/features/ui/GenericErrorPage";
 import { selectCardDocumentsByIdentifiers } from "@/store/slices/cardDocumentsSlice";
 import { selectFavoriteIdentifiersSet } from "@/store/slices/favoritesSlice";
 import {
   getDefaultSearchSettings,
   selectSearchSettings,
 } from "@/store/slices/searchSettingsSlice";
-import {
-  selectSourceDocuments,
-  selectSourceNamesByKey,
-} from "@/store/slices/sourceDocumentsSlice";
-import {
-  makeAllSourcesInvisible,
-  makeAllSourcesVisible,
-  selectAnySourcesCollapsed,
-  selectFacetBySource,
-  selectJumpToVersionVisible,
-  toggleFacetBySource,
-  toggleJumpToVersionVisible,
-} from "@/store/slices/viewSettingsSlice";
+import { selectSourceDocuments } from "@/store/slices/sourceDocumentsSlice";
 
-// Approximate modal chrome height (header + footer + dialog margins)
-const ModalChromeHeight = 200;
-
-const GridSelectorSortByOptions: Record<GridSelectorSortBy, string> = {
-  source: "Source",
-  ...SortByOptions,
-};
+const HeightDelta = 200;
 
 interface GridSelectorProps {
   title?: string;
@@ -107,18 +72,13 @@ export function GridSelectorModal({
 }: GridSelectorProps) {
   //# region queries and hooks
 
-  const dispatch = useAppDispatch();
   const { clientSearchService } = useClientSearchContext();
 
-  const jumpToVersionVisible = useAppSelector(selectJumpToVersionVisible);
   const favoriteIdentifiersSet = useAppSelector(selectFavoriteIdentifiersSet);
   const globalSearchSettings = useAppSelector(selectSearchSettings);
   const cardDocumentsByIdentifier = useAppSelector((state) =>
     selectCardDocumentsByIdentifiers(state, imageIdentifiers)
   );
-  const facetBySource = useAppSelector(selectFacetBySource);
-  const sourceNamesByKey = useAppSelector(selectSourceNamesByKey);
-  const anySourcesCollapsed = useAppSelector(selectAnySourcesCollapsed);
   const sourceDocuments = useAppSelector(selectSourceDocuments);
 
   //# endregion
@@ -126,10 +86,6 @@ export function GridSelectorModal({
   //# region state
 
   const [settingsVisible, setSettingsVisible] = useState<boolean>(true);
-  const [optionNumber, setOptionNumber] = useState<number | undefined>(
-    undefined
-  );
-  const [imageIdentifier, setImageIdentifier] = useState<string>("");
   const focusRef = useRef<HTMLInputElement>(null);
 
   const [filterSettings, setFilterSettings] = useState<FilterSettings>(
@@ -138,16 +94,20 @@ export function GridSelectorModal({
   const [sourceSettings, setSourceSettings] = useState<SourceSettings>(
     globalSearchSettings.sourceSettings
   );
-  const [sortBy, setSortBy] = useState<GridSelectorSortBy>("source");
+  const [sortBy, setSortBy] = useState<SortBy | undefined>(undefined);
   const [filteredIdentifiers, setFilteredIdentifiers] =
     useState<Array<string>>(imageIdentifiers);
   const [isFiltering, setIsFiltering] = useState<boolean>(false);
-  const [compressed, setCompressed] = useState<boolean>(true);
   const [artists, setArtists] = useState<Array<string>>([]);
-  const [printings, setPrintings] = useState<Array<string>>([]);
-  const [expandedPrintingNodes, setExpandedPrintingNodes] = useState<
-    Array<string>
-  >([]);
+  const [printings, setPrintings] = useState<Array<Printing>>([]);
+
+  const selectImage = useCallback(
+    (identifier: string) => {
+      onClick(identifier);
+      handleClose();
+    },
+    [onClick, handleClose]
+  );
 
   //# endregion
 
@@ -190,10 +150,9 @@ export function GridSelectorModal({
         setFilterSettings(defaults.filterSettings);
         setSourceSettings(defaults.sourceSettings);
       }
-      setSortBy("source");
+      setSortBy(undefined);
       setArtists([]);
       setPrintings([]);
-      setExpandedPrintingNodes([]);
     }
   }, [show, applySearchSettings]); // intentionally only re-initialise on show toggle, not on every global settings change
 
@@ -264,120 +223,7 @@ export function GridSelectorModal({
     return map;
   }, [imageIdentifiers]);
 
-  // Validation uses original array length and indices
-  const versionToJumpToIsValid =
-    ((optionNumber ?? 0) > 0 &&
-      (optionNumber ?? 0) < imageIdentifiers.length + 1) ||
-    (imageIdentifier !== "" && imageIdentifiers.includes(imageIdentifier));
-
-  const sortByOptions = useMemo(
-    () =>
-      Object.entries(GridSelectorSortByOptions).map(([value, label]) => ({
-        value,
-        label,
-        checked: value === sortBy,
-      })),
-    [sortBy]
-  );
-
-  const sourceKeys = [FAVORITES_SOURCE_KEY, ...Object.keys(sourceNamesByKey)];
-
-  const columnMaxHeight = `calc(100vh - ${ModalChromeHeight}px)`;
-
   const displaySpinner = debouncedFilterState.isPending() || isFiltering;
-
-  const UNKNOWN_FILTER_VALUE = "Unknown";
-
-  const availableArtists = useMemo(() => {
-    const artistSet = new Set<string>();
-    let hasUnknown = false;
-    Object.values(cardDocumentsByIdentifier).forEach((card) => {
-      if (card == null) return;
-      if (card.canonicalCard == null) {
-        hasUnknown = true;
-      } else {
-        artistSet.add(card.canonicalCard.artist);
-      }
-    });
-    const sorted = Array.from(artistSet).sort();
-    if (hasUnknown) sorted.push(UNKNOWN_FILTER_VALUE);
-    return sorted;
-  }, [cardDocumentsByIdentifier]);
-
-  // Stable structure: expansion -> { name, collector numbers }; only recomputes when card documents change
-  const availablePrintingExpansions = useMemo(() => {
-    const expansionMap = new Map<
-      string,
-      { name: string; numbers: Set<string> }
-    >();
-    let hasUnknown = false;
-    Object.values(cardDocumentsByIdentifier).forEach((card) => {
-      if (card == null) return;
-      if (card.canonicalCard == null) {
-        hasUnknown = true;
-      } else {
-        const { expansionCode, expansionName, collectorNumber } =
-          card.canonicalCard;
-        if (!expansionMap.has(expansionCode)) {
-          expansionMap.set(expansionCode, {
-            name: expansionName,
-            numbers: new Set(),
-          });
-        }
-        expansionMap.get(expansionCode)!.numbers.add(collectorNumber);
-      }
-    });
-    return { expansionMap, hasUnknown };
-  }, [cardDocumentsByIdentifier]);
-
-  // Tree node data for the dropdown, recomputed when checked/expanded state changes
-  const availablePrintingOptions = useMemo(() => {
-    const { expansionMap, hasUnknown } = availablePrintingExpansions;
-    const nodes = Array.from(expansionMap.entries())
-      .sort(([, a], [, b]) => a.name.localeCompare(b.name))
-      .map(([expansionCode, { name, numbers }]) => ({
-        label: `${name} [${expansionCode.toUpperCase()}]`,
-        value: expansionCode,
-        checked: printings.includes(expansionCode),
-        expanded: expandedPrintingNodes.includes(expansionCode),
-        children: Array.from(numbers)
-          .sort()
-          .map((collectorNumber) => ({
-            label: collectorNumber,
-            value: `${expansionCode} ${collectorNumber}`,
-            checked: printings.includes(`${expansionCode} ${collectorNumber}`),
-          })),
-      }));
-    if (hasUnknown) {
-      nodes.push({
-        label: UNKNOWN_FILTER_VALUE,
-        value: UNKNOWN_FILTER_VALUE,
-        checked: printings.includes(UNKNOWN_FILTER_VALUE),
-        expanded: false,
-        children: [],
-      });
-    }
-    return nodes;
-  }, [availablePrintingExpansions, printings, expandedPrintingNodes]);
-
-  const onPrintingNodeToggle = useCallback(
-    (currentNode: TreeNode): void => {
-      if (
-        currentNode.expanded &&
-        !expandedPrintingNodes.includes(currentNode.value)
-      ) {
-        setExpandedPrintingNodes([...expandedPrintingNodes, currentNode.value]);
-      } else if (
-        !currentNode.expanded &&
-        expandedPrintingNodes.includes(currentNode.value)
-      ) {
-        setExpandedPrintingNodes(
-          expandedPrintingNodes.filter((v) => v !== currentNode.value)
-        );
-      }
-    },
-    [expandedPrintingNodes]
-  );
 
   // Constraints derived from the project-level search settings (only applied when applySearchSettings is true)
   const projectFilter = applySearchSettings
@@ -392,24 +238,8 @@ export function GridSelectorModal({
     filteredIdentifiers.length !== 1 ? "s" : ""
   }`;
 
-  //# endregion
-
-  //# region callbacks
-
-  const selectImage = useCallback(
-    (identifier: string) => {
-      onClick(identifier);
-      handleClose();
-    },
-    [onClick, handleClose]
-  );
-  // "Jump to Version" uses original array indices
-  const handleSubmitJumpToVersionForm = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    selectImage(
-      optionNumber ? imageIdentifiers[optionNumber - 1] : imageIdentifier
-    );
-  };
+  const noSearchResults =
+    sortedFilteredIdentifiers.length === 0 && !displaySpinner;
 
   //# endregion
 
@@ -444,205 +274,37 @@ export function GridSelectorModal({
       <Modal.Body className="p-0" style={{ overflowY: "hidden" }}>
         <Row className="g-0">
           {settingsVisible && (
-            <Col
+            <OverflowCol
               lg={3}
-              className="border-end px-2 py-2"
-              style={{ maxHeight: columnMaxHeight, overflowY: "auto" }}
+              sm={4}
+              xs={6}
+              className="border-end p-0"
+              heightDelta={HeightDelta}
             >
-              <AutofillCollapse
-                expanded={jumpToVersionVisible}
-                onClick={() => dispatch(toggleJumpToVersionVisible())}
-                zIndex={0}
-                title={<h4>Jump to Version</h4>}
-              >
-                <>
-                  <Form
-                    className="px-3"
-                    id="jumpToVersionForm"
-                    onSubmit={handleSubmitJumpToVersionForm}
-                  >
-                    <Row className="g-0">
-                      <Col xs={12}>
-                        <Form.Label>
-                          Specify Option Number, <b>or...</b>
-                        </Form.Label>
-                        <Form.Control
-                          ref={focusRef}
-                          type="number"
-                          pattern="[0-9]*"
-                          placeholder="1"
-                          value={optionNumber}
-                          onChange={(event) =>
-                            setOptionNumber(
-                              event.target.value
-                                ? parseInt(event.target.value)
-                                : undefined
-                            )
-                          }
-                          disabled={Boolean(imageIdentifier)}
-                        />
-                      </Col>
-                      <Col xs={12} className="mt-2">
-                        <Form.Label>Specify ID</Form.Label>
-                        <Form.Control
-                          type="text"
-                          placeholder={imageIdentifiers[0]}
-                          value={imageIdentifier}
-                          onChange={(event) =>
-                            setImageIdentifier(event.target.value)
-                          }
-                          disabled={Boolean(optionNumber)}
-                        />
-                      </Col>
-                    </Row>
-                    <div className="d-grid gap-0 pt-3">
-                      <Button
-                        variant="primary"
-                        form="jumpToVersionForm"
-                        type="submit"
-                        aria-label="jump-to-version-submit"
-                        disabled={!versionToJumpToIsValid}
-                      >
-                        Select This Version
-                      </Button>
-                    </div>
-                  </Form>
-                  <hr />
-                </>
-              </AutofillCollapse>
-              <h5>View Settings</h5>
-              <h6>Show All Cards...</h6>
-              <Toggle
-                onClick={() => dispatch(toggleFacetBySource())}
-                on="Grouped By Source"
-                onClassName="flex-centre"
-                off="Grouped Together"
-                offClassName="flex-centre"
-                onstyle="success"
-                offstyle="info"
-                width={100 + "%"}
-                size="md"
-                height={ToggleButtonHeight + "px"}
-                active={facetBySource}
-              />
-              <h6 className="mt-2">Card Display</h6>
-              <Toggle
-                onClick={() => setCompressed((v) => !v)}
-                on="Compressed"
-                onClassName="flex-centre"
-                off="Relaxed"
-                offClassName="flex-centre"
-                onstyle="info"
-                offstyle="success"
-                width={100 + "%"}
-                size="md"
-                height={ToggleButtonHeight + "px"}
-                active={compressed}
-              />
-              {facetBySource && (
-                <div className="d-grid mt-2">
-                  <Button
-                    onClick={() =>
-                      dispatch(
-                        anySourcesCollapsed
-                          ? makeAllSourcesVisible()
-                          : makeAllSourcesInvisible(sourceKeys)
-                      )
-                    }
-                  >
-                    <RightPaddedIcon
-                      bootstrapIconName={`arrows-${
-                        anySourcesCollapsed ? "expand" : "collapse"
-                      }`}
-                    />{" "}
-                    {anySourcesCollapsed ? "Expand" : "Collapse"} All
-                  </Button>
-                </div>
-              )}
-              <hr />
-              <h5>Sort By</h5>
-              <StyledDropdownTreeSelect
-                data={sortByOptions}
-                onChange={(currentNode) =>
-                  setSortBy(currentNode.value as GridSelectorSortBy)
-                }
-                mode="radioSelect"
-                inlineSearchInput
-              />
-              <hr />
-              <FilterSettingsElement
+              <GridSelectorFilters
+                imageIdentifiers={imageIdentifiers}
+                focusRef={focusRef}
+                selectImage={selectImage}
+                sortBy={sortBy}
+                setSortBy={setSortBy}
+                printings={printings}
+                setPrintings={setPrintings}
+                artists={artists}
+                setArtists={setArtists}
                 filterSettings={filterSettings}
                 setFilterSettings={setFilterSettings}
-                minDPI={projectFilter?.minimumDPI}
-                maxDPI={projectFilter?.maximumDPI}
-                maxSize={projectFilter?.maximumSize}
-                allowedLanguages={allowedLanguages}
-              />
-              {(availableArtists.length > 0 ||
-                availablePrintingOptions.length > 0) && (
-                <>
-                  <hr />
-                  <h5>Canonical Card</h5>
-                  {availableArtists.length > 0 && (
-                    <>
-                      <Form.Label>Artist</Form.Label>
-                      <StyledDropdownTreeSelect
-                        data={availableArtists.map((artist) => ({
-                          label: artist,
-                          value: artist,
-                          checked: artists.includes(artist),
-                        }))}
-                        onChange={(_currentNode, selectedNodes) =>
-                          setArtists(selectedNodes.map((node) => node.value))
-                        }
-                        inlineSearchInput
-                      />
-                    </>
-                  )}
-                  {availablePrintingOptions.length > 0 && (
-                    <>
-                      <Form.Label>Card Printing</Form.Label>
-                      <StyledDropdownTreeSelect
-                        data={availablePrintingOptions}
-                        onChange={(_currentNode, selectedNodes) => {
-                          const rawValues = selectedNodes.map(
-                            (node) => node.value
-                          );
-                          const normalized = new Set(rawValues);
-                          const { expansionMap } = availablePrintingExpansions;
-                          for (const value of rawValues) {
-                            const expansion = expansionMap.get(value);
-                            if (expansion) {
-                              for (const collectorNumber of expansion.numbers) {
-                                normalized.add(`${value} ${collectorNumber}`);
-                              }
-                            }
-                          }
-                          setPrintings(Array.from(normalized));
-                        }}
-                        onNodeToggle={onPrintingNodeToggle}
-                        inlineSearchInput
-                      />
-                    </>
-                  )}
-                </>
-              )}
-              <hr />
-              <SourceSettingsElement
                 sourceSettings={sourceSettings}
                 setSourceSettings={setSourceSettings}
-                enableReorderingSources={sortBy === "source"}
+                projectFilter={projectFilter}
               />
-            </Col>
+            </OverflowCol>
           )}
-          <Col
+          <OverflowCol
             lg={settingsVisible ? 9 : 12}
+            sm={settingsVisible ? 8 : 12}
+            xs={settingsVisible ? 6 : 12}
             className="p-0"
-            style={{
-              maxHeight: columnMaxHeight,
-              overflowY: "auto",
-              position: "relative",
-            }}
+            heightDelta={HeightDelta}
           >
             {displaySpinner && (
               <Spinner size={6} zIndex={3} positionAbsolute={true} />
@@ -654,10 +316,15 @@ export function GridSelectorModal({
                 selectedImage={selectedImage}
                 favoriteIdentifiers={favoriteIdentifiersInFilteredResults}
                 originalIndexMap={originalIndexMap}
-                compressed={compressed}
               />
             </Blurrable>
-          </Col>
+            {noSearchResults && (
+              <GenericErrorPage
+                title="No results :("
+                text={["Your filters didn't match any results."]}
+              />
+            )}
+          </OverflowCol>
         </Row>
       </Modal.Body>
       <Modal.Footer>

@@ -10,6 +10,9 @@ export const StyledDropdownTreeSelect = styled(DropdownTreeSelect)`
     color: #666666;
   }
 
+  .dropdown-content {
+    z-index: 2;
+  }
   .dropdown-trigger {
     border-radius: 0.25rem;
     background-color: white;

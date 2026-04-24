@@ -1,6 +1,16 @@
-import React, { PropsWithChildren, useMemo } from "react";
+import React, {
+  PropsWithChildren,
+  useCallback,
+  useEffect,
+  useMemo,
+} from "react";
 import Row from "react-bootstrap/Row";
 
+import {
+  FavouritesSourceKey,
+  Unknown,
+  UnknownSourceKey,
+} from "@/common/constants";
 import { CardDocument, useAppDispatch, useAppSelector } from "@/common/types";
 import { AutofillCollapse } from "@/components/AutofillCollapse";
 import { RenderIfVisible } from "@/components/RenderIfVisible";
@@ -8,9 +18,12 @@ import { MemoizedEditorCard } from "@/features/card/Card";
 import { selectCardDocumentsByIdentifiers } from "@/store/slices/cardDocumentsSlice";
 import { selectSourceNamesByKey } from "@/store/slices/sourceDocumentsSlice";
 import {
-  selectFacetBySource,
-  selectSourcesVisible,
-  toggleSourceVisible,
+  selectCompressed,
+  selectFacetBy,
+  selectFacetsVisible,
+  setFacetInvisible,
+  setFacetKeys,
+  setFacetVisible,
 } from "@/store/slices/viewSettingsSlice";
 
 interface CardGridCardProps {
@@ -45,7 +58,7 @@ function CardGridCard({
 
 function CardRow({ children }: PropsWithChildren) {
   return (
-    <Row className="g-0 px-3" xxl={6} xl={6} lg={4} md={3} sm={2} xs={2}>
+    <Row className="g-0 p-1" xxl={6} xl={6} lg={4} md={3} sm={2} xs={2}>
       {children}
     </Row>
   );
@@ -57,7 +70,7 @@ interface CardGridDisplayProps {
     (identifier: string): void;
   };
   selectedImage?: string;
-  sourceNamesByKey: { [sourceKey: string]: string };
+  facetNamesByKey: { [sourceKey: string]: string };
   favoriteIdentifiers?: Array<string>;
   originalIndexMap?: Map<string, number>;
   compressed?: boolean;
@@ -84,6 +97,7 @@ function CardsGroupedTogether({
             key={`gridSelector-${identifier}-wrapper-${
               compressed ? "compressed" : "relaxed"
             }`}
+            defaultHeight={compressed ? 197 : 300}
             initialVisible={visualIndex < 20}
             visibleOffset={500}
             stayRendered
@@ -102,8 +116,6 @@ function CardsGroupedTogether({
   );
 }
 
-export const FAVORITES_SOURCE_KEY = "__favorites__";
-
 interface Section {
   key: string;
   title: React.ReactNode;
@@ -115,19 +127,22 @@ interface Section {
  * Favorites are shown in a separate collapsible section before the source sections.
  * Option numbers reflect original indices (for consistency with external references).
  */
-function CardsFacetedBySource({
+function FacetedCards({
   imageIdentifiers,
   selectImage,
   selectedImage,
-  sourceNamesByKey,
+  facetNamesByKey,
   favoriteIdentifiers = [],
   originalIndexMap,
   compressed,
-}: CardGridDisplayProps) {
+  facetByCallable,
+}: CardGridDisplayProps & {
+  facetByCallable: (card: CardDocument) => string | undefined;
+}) {
   //# region queries and hooks
 
   const dispatch = useAppDispatch();
-  const sourcesVisible = useAppSelector(selectSourcesVisible);
+  const facetsVisible = useAppSelector(selectFacetsVisible);
 
   //# endregion
 
@@ -141,10 +156,11 @@ function CardsFacetedBySource({
     selectCardDocumentsByIdentifiers(state, imageIdentifiers)
   );
 
-  // Build unified sections array: favorites first, then sources
+  // Build unified sections array: favorites first, then facets
   const sections: Section[] = useMemo(() => {
     const favoriteItems: Array<[string, number]> = [];
-    const bySource: { [sourceKey: string]: Array<[string, number]> } = {};
+    const byFacet: { [sourceKey: string]: Array<[string, number]> } = {};
+    const unknownItems: Array<[string, number]> = [];
 
     imageIdentifiers.forEach((identifier, visualIndex) => {
       // Use original index if available, otherwise fall back to visual index
@@ -156,12 +172,15 @@ function CardsFacetedBySource({
 
       const cardDocument: CardDocument | null = cardDocuments[identifier];
       if (cardDocument != null) {
-        if (
-          !Object.prototype.hasOwnProperty.call(bySource, cardDocument.source)
-        ) {
-          bySource[cardDocument.source] = [];
+        const facet = facetByCallable(cardDocument);
+        if (facet === undefined) {
+          unknownItems.push([identifier, originalIndex]);
+        } else {
+          if (!Object.prototype.hasOwnProperty.call(byFacet, facet)) {
+            byFacet[facet] = [];
+          }
+          byFacet[facet].push([identifier, originalIndex]);
         }
-        bySource[cardDocument.source].push([identifier, originalIndex]);
       }
     });
 
@@ -169,17 +188,25 @@ function CardsFacetedBySource({
 
     if (favoriteItems.length > 0) {
       result.push({
-        key: FAVORITES_SOURCE_KEY,
+        key: FavouritesSourceKey,
         title: "Favourites",
         items: favoriteItems,
       });
     }
 
-    for (const [sourceKey, items] of Object.entries(bySource)) {
+    for (const [sourceKey, items] of Object.entries(byFacet)) {
       result.push({
         key: sourceKey,
-        title: sourceNamesByKey[sourceKey] ?? sourceKey,
+        title: facetNamesByKey[sourceKey] ?? sourceKey,
         items,
+      });
+    }
+
+    if (unknownItems.length > 0) {
+      result.push({
+        key: UnknownSourceKey,
+        title: Unknown,
+        items: unknownItems,
       });
     }
 
@@ -188,18 +215,29 @@ function CardsFacetedBySource({
     cardDocuments,
     imageIdentifiers,
     favoriteSet,
-    sourceNamesByKey,
+    facetNamesByKey,
     originalIndexMap,
+    facetByCallable,
   ]);
+
+  useEffect(() => {
+    dispatch(setFacetKeys(sections.map((s) => s.key)));
+  }, [sections]);
 
   return (
     <>
       {sections.map((section, sectionIndex) => (
         <React.Fragment key={section.key}>
           <AutofillCollapse
-            expanded={sourcesVisible[section.key] ?? true}
-            onClick={() => dispatch(toggleSourceVisible(section.key))}
-            zIndex={sectionIndex}
+            expanded={facetsVisible[section.key] ?? true}
+            onClick={() =>
+              dispatch(
+                facetsVisible[section.key] ?? true
+                  ? setFacetInvisible(section.key)
+                  : setFacetVisible(section.key)
+              )
+            }
+            zIndex={sections.length - sectionIndex}
             title={
               <h3
                 className="orpheus prevent-select"
@@ -233,7 +271,6 @@ function CardsFacetedBySource({
               ))}
             </CardRow>
           </AutofillCollapse>
-          <div className="py-2" />
         </React.Fragment>
       ))}
     </>
@@ -246,40 +283,49 @@ export function CardResultSet({
   handleClick,
   favoriteIdentifiers = [],
   originalIndexMap,
-  compressed,
 }: {
   imageIdentifiers: Array<string>;
   selectedImage?: string;
   handleClick?: { (identifier: string): void };
   favoriteIdentifiers?: Array<string>;
   originalIndexMap?: Map<string, number>;
-  compressed?: boolean;
 }) {
-  const facetBySource = useAppSelector(selectFacetBySource);
-  const sourceNamesByKey = useAppSelector(selectSourceNamesByKey);
+  const facetBy = useAppSelector(selectFacetBy);
+  const compressed = useAppSelector(selectCompressed);
+  const facetNamesByKey = useAppSelector(selectSourceNamesByKey); // TODO
+
+  const facetByCallable = useCallback(
+    (card: CardDocument): string | undefined => {
+      if (facetBy === "Source") return card.source;
+      if (facetBy === "Printing") return card.canonicalCard?.expansionName;
+      return "";
+    },
+    [facetBy]
+  );
+
+  if (facetBy === "Source" || facetBy === "Printing") {
+    return (
+      <FacetedCards
+        imageIdentifiers={imageIdentifiers}
+        selectImage={handleClick}
+        selectedImage={selectedImage}
+        facetNamesByKey={facetNamesByKey}
+        favoriteIdentifiers={favoriteIdentifiers}
+        originalIndexMap={originalIndexMap}
+        compressed={compressed}
+        facetByCallable={facetByCallable}
+      />
+    );
+  }
 
   return (
-    <>
-      {facetBySource ? (
-        <CardsFacetedBySource
-          imageIdentifiers={imageIdentifiers}
-          selectImage={handleClick}
-          selectedImage={selectedImage}
-          sourceNamesByKey={sourceNamesByKey}
-          favoriteIdentifiers={favoriteIdentifiers}
-          originalIndexMap={originalIndexMap}
-          compressed={compressed}
-        />
-      ) : (
-        <CardsGroupedTogether
-          imageIdentifiers={imageIdentifiers}
-          selectImage={handleClick}
-          selectedImage={selectedImage}
-          sourceNamesByKey={sourceNamesByKey}
-          originalIndexMap={originalIndexMap}
-          compressed={compressed}
-        />
-      )}
-    </>
+    <CardsGroupedTogether
+      imageIdentifiers={imageIdentifiers}
+      selectImage={handleClick}
+      selectedImage={selectedImage}
+      facetNamesByKey={facetNamesByKey}
+      originalIndexMap={originalIndexMap}
+      compressed={compressed}
+    />
   );
 }

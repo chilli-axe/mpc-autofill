@@ -40,12 +40,14 @@ interface SourceSettingsProps {
     (newSourceSettings: SourceSettingsType): void;
   };
   enableReorderingSources?: boolean;
+  showBoilerplate?: boolean;
 }
 
 export function SourceSettings({
   sourceSettings,
   setSourceSettings,
   enableReorderingSources = true,
+  showBoilerplate = true,
 }: SourceSettingsProps) {
   const sourceRows = useMemo(
     () => getSourceRowsFromSourceSettings(sourceSettings),
@@ -240,18 +242,22 @@ export function SourceSettings({
 
   return (
     <Container className="px-1">
-      <h5>Contributors</h5>
-      Configure the contributors to include in the search results.
-      {enableReorderingSources && (
-        <ul>
-          <li>
-            <b>Drag & drop</b> them to change the order they&apos;re searched
-            in.
-          </li>
-          <li>
-            Use the <b>arrows</b> to send a source to the top or bottom.
-          </li>
-        </ul>
+      {showBoilerplate && (
+        <>
+          <h5>Contributors</h5>
+          Configure the contributors to include in the search results.
+          {enableReorderingSources && (
+            <ul>
+              <li>
+                <b>Drag & drop</b> them to change the order they&apos;re
+                searched in.
+              </li>
+              <li>
+                Use the <b>arrows</b> to send a source to the top or bottom.
+              </li>
+            </ul>
+          )}
+        </>
       )}
       <div className="d-grid gap-0 mt-3">
         <Button variant="primary" onClick={toggleAllSourceActiveness}>
