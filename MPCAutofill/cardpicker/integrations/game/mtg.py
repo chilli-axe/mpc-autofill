@@ -3,7 +3,7 @@ import re
 import time
 import uuid
 from pathlib import Path
-from typing import Any, Type
+from typing import Any, Callable, Type
 from urllib.parse import parse_qs, urlparse
 
 import enlighten
@@ -396,7 +396,7 @@ class MTGIntegration(GameIntegration):
 
         manager = enlighten.get_manager()
         default_cards_counter = manager.counter(desc="Default Cards", unit="ticks")
-        oracle_cards_counter = manager.counter(desc="Oracle Cards", unit="ticks")
+        manager.counter(desc="Oracle Cards", unit="ticks")
 
         existing_canonical_card_identifiers = set(CanonicalCard.objects.values_list("identifier", flat=True))
 
@@ -434,6 +434,8 @@ class MTGIntegration(GameIntegration):
                     collector_number=row.collector_number,
                     is_default=False,
                     image_hash=image_hash_int if image_hash_int is not None else 0,
+                    small_thumbnail_url=row.image_uris.small if row.image_uris else "",
+                    medium_thumbnail_url=row.image_uris.normal if row.image_uris else "",
                 )
             except Exception as e:
                 # overly safe exception handling to prevent threads from silently dying
@@ -478,8 +480,9 @@ class MTGIntegration(GameIntegration):
                     for chunk in r.iter_content(chunk_size=8192):
                         f.write(chunk)
 
-        @section_timer(name="process default cards")
-        def process_default_cards() -> None:
+        def process_file(
+            path: Path, row_callable: Callable[[CardRow, concurrent.futures.ThreadPoolExecutor], None]
+        ) -> None:
             with concurrent.futures.ThreadPoolExecutor(max_workers=10) as pool:
                 with open(default_cards_path, "rb") as f:
                     for line in f:
@@ -489,37 +492,35 @@ class MTGIntegration(GameIntegration):
                         decoded_line = line.decode("utf-8").rstrip(",")
                         try:
                             row = CardRow.model_validate_json(decoded_line)
-                            if row.id not in existing_canonical_card_identifiers:
-                                future = pool.submit(row_to_canonical_card, row)
-                                card = future.result()
-                                if card is not None:
-                                    cards_by_identifier[row.id] = card
-                                default_cards_counter.update()
-                        except ValidationError as e:
+                            row_callable(row, pool)
+                            default_cards_counter.update()
+                        except ValidationError:
                             print(f"failed to validate line: {decoded_line}")
-                            raise e
+
+        @section_timer(name="process default cards")
+        def process_default_cards() -> None:
+            def row_callable(row: CardRow, pool: concurrent.futures.ThreadPoolExecutor) -> None:
+                if row.id not in existing_canonical_card_identifiers:
+                    future = pool.submit(row_to_canonical_card, row)
+                    card = future.result()
+                    if card is not None:
+                        cards_by_identifier[row.id] = card
+
+            process_file(default_cards_path, row_callable)
 
         @section_timer("process oracle cards")
         def process_oracle_cards() -> None:
-            # mark the default Scryfall version of each card with is_default=True
-            with open(oracle_cards_path, "rb") as f:
-                for line in f:
-                    line = line.rstrip(b"\n")
-                    if line in [b"[", b"]"]:
-                        continue
-                    decoded_line = line.decode("utf-8").rstrip(",")
-                    try:
-                        row = CardRow.model_validate_json(decoded_line)
-                        if row.id in cards_by_identifier.keys():
-                            cards_by_identifier[row.id].is_default = True
-                        else:
-                            card = row_to_canonical_card(row)
-                            if card:
-                                cards_by_identifier[row.id] = card
-                        oracle_cards_counter.update()
-                    except ValidationError as e:
-                        print(f"failed to validate line: {decoded_line}")
-                        raise e
+            def row_callable(row: CardRow, pool: concurrent.futures.ThreadPoolExecutor) -> None:
+                # mark the default Scryfall version of each card with is_default=True
+                if row.id in cards_by_identifier.keys():
+                    cards_by_identifier[row.id].is_default = True
+                else:
+                    future = pool.submit(row_to_canonical_card, row)
+                    card = future.result()
+                    if card:
+                        cards_by_identifier[row.id] = card
+
+            process_file(oracle_cards_path, row_callable)
 
         bulk_data_urls = get_bulk_data_urls()
         cache_default_cards(bulk_data_urls.default_cards)

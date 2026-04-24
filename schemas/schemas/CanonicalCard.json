@@ -8,14 +8,18 @@
     "expansionName": { "type": "string" },
     "expansionCode": { "type": "string" },
     "collectorNumber": { "type": "string" },
-    "artist": { "type": "string" }
+    "artist": { "type": "string" },
+    "smallThumbnailUrl": { "type": "string" },
+    "mediumThumbnailUrl": { "type": "string" }
   },
   "required": [
     "identifier",
     "expansionName",
     "expansionCode",
     "collectorNumber",
-    "artist"
+    "artist",
+    "smallThumbnailUrl",
+    "mediumThumbnailUrl"
   ],
   "additionalProperties": false
 }

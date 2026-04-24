@@ -71,6 +71,8 @@ class CanonicalCard(models.Model):
     collector_number = models.CharField(max_length=16)
     is_default = models.BooleanField(default=False)
     image_hash = models.BigIntegerField()
+    small_thumbnail_url = models.CharField()
+    medium_thumbnail_url = models.CharField()
 
     def __str__(self) -> str:
         return f"{self.name} [{self.expansion.code.upper()} {self.collector_number}]"
