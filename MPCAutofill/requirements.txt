@@ -10,6 +10,7 @@ django-environ~=0.10.0
 django-q2~=1.8.0
 django-stubs-ext~=4.2.2
 elasticsearch-dsl>=7.0.0,<8.0.0
+enlighten~=1.11.2
 factory-boy~=3.2
 freezegun~=1.2
 google-api-python-client~=2.95.0
