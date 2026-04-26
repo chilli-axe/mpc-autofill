@@ -381,7 +381,7 @@ class MTGIntegration(GameIntegration):
             MagicVille,
             ManaStack,
             *([Moxfield] if settings.MOXFIELD_SECRET else []),
-            MTGGoldfish,
+            # MTGGoldfish,  # broken by Cloudflare bot protection
             Scryfall,
             TappedOut,
         ]
