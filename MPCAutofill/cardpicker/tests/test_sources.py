@@ -445,6 +445,7 @@ class TestUpdateDatabase:
                     tags=list(tags),
                     # not strictly relevant for this test, but values for these non-nullable fields are required.
                     size=0,
+                    image_hash=0,
                 )
                 for (identifier, searchq, date_modified, tags) in incoming_cards
             ],
