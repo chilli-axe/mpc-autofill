@@ -24,7 +24,7 @@
     "@popperjs/core": "^2.11.6",
     "@react-pdf/renderer": "^4.3.2",
     "@reduxjs/toolkit": "^2.3.0",
-    "@sentry/nextjs": "^9.20.0",
+    "@sentry/nextjs": "^10.50.0",
     "@types/ua-parser-js": "^0.7.36",
     "async-await-queue": "^2.1.4",
     "base64-js": "^1.5.1",
