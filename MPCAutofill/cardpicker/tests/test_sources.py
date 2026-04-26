@@ -445,6 +445,7 @@ class TestUpdateDatabase:
                     tags=list(tags),
                     # not strictly relevant for this test, but values for these non-nullable fields are required.
                     size=0,
+                    image_hash=0,
                 )
                 for (identifier, searchq, date_modified, tags) in incoming_cards
             ],
@@ -522,6 +523,9 @@ class TestUpdateDatabase:
                 name=name,
                 expansion=CanonicalExpansionFactory(code=expansion),
                 collector_number=collector_number,
+                image_hash=0,
+                small_thumbnail_url="",
+                medium_thumbnail_url="",
             )
         _, _, _, _, match = Image(
             id="",

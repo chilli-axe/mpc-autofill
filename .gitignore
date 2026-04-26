@@ -169,6 +169,7 @@ elasticsearch
 .env_prod
 MPCAutofill/exported_drives.csv
 MPCAutofill/drives.csv
+MPCAutofill/scryfall_cache/*
 /MPCAutofill/node_modules/
 /schemas/node_modules/
 /MPCAutofill/cardpicker/static/css/

@@ -70,6 +70,9 @@ class CanonicalCard(models.Model):
     expansion = models.ForeignKey(to=CanonicalExpansion, on_delete=models.CASCADE)
     collector_number = models.CharField(max_length=16)
     is_default = models.BooleanField(default=False)
+    image_hash = models.BigIntegerField()
+    small_thumbnail_url = models.CharField()
+    medium_thumbnail_url = models.CharField()
 
     def __str__(self) -> str:
         return f"{self.name} [{self.expansion.code.upper()} {self.collector_number}]"
@@ -86,6 +89,16 @@ class CanonicalCard(models.Model):
                 name="canonicalcard_unique_default_per_canonical_id",
             ),
         ]
+
+    def serialise(self) -> SerialisedCanonicalCard:
+        return SerialisedCanonicalCard(
+            canonicalId=str(self.canonical_id),
+            collectorNumber=self.collector_number,
+            expansionCode=self.expansion.code,
+            expansionName=self.expansion.name,
+            identifier=str(self.identifier),
+            artist=self.artist.name,
+        )
 
 
 class Source(models.Model):
@@ -246,7 +259,13 @@ class Card(models.Model):
     size = models.IntegerField()
     tags = ArrayField(models.CharField(max_length=20), default=list, blank=True)  # null=True is just for admin panel
     language = models.CharField(max_length=5)
-    canonical_card = models.ForeignKey(CanonicalCard, on_delete=models.SET_NULL, blank=True, null=True)
+    canonical_card = models.ForeignKey(
+        CanonicalCard, on_delete=models.SET_NULL, blank=True, null=True, related_name="canonical_card"
+    )
+    inferred_canonical_card = models.ForeignKey(
+        CanonicalCard, on_delete=models.SET_NULL, blank=True, null=True, related_name="inferred_canonical_card"
+    )
+    image_hash = models.BigIntegerField()
 
     def __str__(self) -> str:
         return (
@@ -282,16 +301,11 @@ class Card(models.Model):
             mediumThumbnailUrl=self.get_medium_thumbnail_url() or "",
             tags=sorted(self.tags),
             language=self.language,
-            canonicalCard=SerialisedCanonicalCard(
-                canonicalId=str(self.canonical_card.canonical_id),
-                collectorNumber=self.canonical_card.collector_number,
-                expansionCode=self.canonical_card.expansion.code,
-                expansionName=self.canonical_card.expansion.name,
-                identifier=str(self.canonical_card.identifier),
-                artist=self.canonical_card.artist.name,
-            )
-            if self.canonical_card
-            else None,
+            canonicalCard=(
+                self.canonical_card.serialise()
+                if self.canonical_card
+                else (self.inferred_canonical_card.serialise() if self.inferred_canonical_card else None)
+            ),
         )
 
     def to_dict(self) -> dict[str, Any]:

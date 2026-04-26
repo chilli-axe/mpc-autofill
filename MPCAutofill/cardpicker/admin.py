@@ -24,7 +24,7 @@ class AdminTag(admin.ModelAdmin[Tag]):
 class AdminCard(admin.ModelAdmin[Card]):
     list_display = ("identifier", "name", "source", "dpi", "date_created", "tags")
     search_fields = ("identifier", "name")
-    raw_id_fields = ["canonical_card"]
+    raw_id_fields = ["canonical_card", "inferred_canonical_card"]
 
 
 @admin.register(DFCPair)
