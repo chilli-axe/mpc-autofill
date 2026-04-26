@@ -523,6 +523,9 @@ class TestUpdateDatabase:
                 name=name,
                 expansion=CanonicalExpansionFactory(code=expansion),
                 collector_number=collector_number,
+                image_hash=0,
+                small_thumbnail_url="",
+                medium_thumbnail_url="",
             )
         _, _, _, _, match = Image(
             id="",
