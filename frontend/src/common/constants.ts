@@ -108,3 +108,11 @@ export const SortByOptions: { [option in SortBy]: string } = {
   nameAscending: "Name (A-Z)",
   nameDescending: "Name (Z-A)",
 };
+
+export const FavouritesSourceKey = "__favorites__";
+export const UnknownSourceKey = "__unknown__";
+export const Unknown = "Unknown";
+export interface Printing {
+  expansionCode: string;
+  collectorNumber: string;
+}

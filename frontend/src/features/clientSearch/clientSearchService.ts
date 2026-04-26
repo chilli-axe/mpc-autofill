@@ -1,7 +1,7 @@
 import { Remote, wrap } from "comlink";
 import { DispatchWithoutAction } from "react";
 
-import { QueryTags } from "@/common/constants";
+import { Printing, QueryTags } from "@/common/constants";
 import {
   SearchQuery,
   SearchSettings,
@@ -193,6 +193,25 @@ export class ClientSearchService {
   }
 
   // search stuff below
+
+  public async filterGridSelectorIdentifiers(
+    cards: Array<CardDocument>,
+    searchSettings: SearchSettings,
+    sortBy: SortBy | undefined,
+    artists: Array<string>,
+    printings: Array<Printing>
+  ): Promise<Array<string>> {
+    if (this.worker === undefined) {
+      throw new Error("clientSearchService was not initialised!");
+    }
+    return this.worker.filterGridSelectorIdentifiers(
+      cards,
+      searchSettings,
+      sortBy,
+      artists,
+      printings
+    );
+  }
 
   public async retrieveCardIdentifiers(
     searchSettings: SearchSettings,

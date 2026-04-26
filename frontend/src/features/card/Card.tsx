@@ -362,6 +362,8 @@ interface CardProps {
   noResultsFound: boolean;
   /** Whether to highlight this card by showing a glowing border around it. */
   highlight?: boolean;
+  /** When true, suppresses the card header and footer, showing only the image. */
+  compressed?: boolean;
 }
 
 /**
@@ -380,6 +382,7 @@ export function Card({
   searchQuery,
   noResultsFound,
   highlight,
+  compressed = false,
 }: CardProps) {
   //# region computed constants
 
@@ -440,33 +443,37 @@ export function Card({
       onClick={cardOnClick}
       style={{ contentVisibility: "auto" }}
     >
-      <BSCard.Header className="pb-0 text-center">
-        <p className="mpccard-slot">{cardHeaderTitle}</p>
-        {cardHeaderButtons}
-      </BSCard.Header>
+      {!compressed && (
+        <BSCard.Header className="pb-0 text-center">
+          <p className="mpccard-slot">{cardHeaderTitle}</p>
+          {cardHeaderButtons}
+        </BSCard.Header>
+      )}
       <div>
         <MemoizedCardProportionWrapper small={true}>
           {cardImageElements}
         </MemoizedCardProportionWrapper>
-        <BSCard.Body className="mb-0 text-center">
-          <BSCardSubtitle className="mpccard-name" onClick={nameOnClick}>
-            {maybeCardDocument != null && maybeCardDocument.name}
-            {maybeCardDocument == null &&
-              searchQuery != undefined &&
-              searchQuery.query}
-          </BSCardSubtitle>
-          <div className="mpccard-spacing">
-            <BSCard.Text className="mpccard-source">
-              {maybeCardDocument != null &&
-                `${maybeCardDocument.sourceName} [${maybeCardDocument.dpi} DPI]`}
+        {!compressed && (
+          <BSCard.Body className="mb-0 text-center">
+            <BSCardSubtitle className="mpccard-name" onClick={nameOnClick}>
+              {maybeCardDocument != null && maybeCardDocument.name}
               {maybeCardDocument == null &&
                 searchQuery != undefined &&
-                "Your search query"}
-            </BSCard.Text>
-          </div>
-        </BSCard.Body>
+                searchQuery.query}
+            </BSCardSubtitle>
+            <div className="mpccard-spacing">
+              <BSCard.Text className="mpccard-source">
+                {maybeCardDocument != null &&
+                  `${maybeCardDocument.sourceName} [${maybeCardDocument.dpi} DPI]`}
+                {maybeCardDocument == null &&
+                  searchQuery != undefined &&
+                  "Your search query"}
+              </BSCard.Text>
+            </div>
+          </BSCard.Body>
+        )}
       </div>
-      {cardFooter != null && (
+      {!compressed && cardFooter != null && (
         <BSCard.Footer
           className="padding-top"
           style={{ paddingTop: 50 + "px" }}
@@ -503,6 +510,8 @@ interface EditorCardProps {
   noResultsFound: boolean;
   /** Whether to highlight this card by showing a glowing border around it. */
   highlight?: boolean;
+  /** When true, suppresses the card header and footer, showing only the image. */
+  compressed?: boolean;
 }
 
 /**
@@ -523,6 +532,7 @@ export function EditorCard({
   searchQuery,
   noResultsFound,
   highlight,
+  compressed,
 }: EditorCardProps) {
   //# region queries and hooks
 
@@ -551,6 +561,7 @@ export function EditorCard({
       searchQuery={searchQuery}
       noResultsFound={noResultsFound}
       highlight={highlight}
+      compressed={compressed}
     />
   );
 }
@@ -560,6 +571,7 @@ export const MemoizedEditorCard = memo(EditorCard);
 interface DatedCardProps {
   cardDocument: CardDocument;
   headerDate: "created" | "modified";
+  compressed?: boolean;
 }
 /**
  * This component is a thin layer on top of `Card` for use in the What's New page.
@@ -567,6 +579,7 @@ interface DatedCardProps {
 export function DatedCard({
   cardDocument,
   headerDate = "created",
+  compressed,
 }: DatedCardProps) {
   return (
     <Col>
@@ -579,6 +592,7 @@ export function DatedCard({
             : cardDocument.dateModified
         }
         noResultsFound={false}
+        compressed={compressed}
       />
     </Col>
   );

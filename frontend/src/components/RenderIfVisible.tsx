@@ -53,15 +53,11 @@ export const RenderIfVisible = ({
       const resizeObserver = new ResizeObserver((entries) => {
         const resizeEntry = entries[0];
 
-        /* Sets the height of the container if the previous value is the default one or if the current value is greater than its previous value */
+        /* Sets the height of the container to the measured height, guarding against
+           zero-height placeholder elements collapsing the reserved space */
         setRootHeight((prev) => {
-          if (
-            (prev === defaultHeight && resizeEntry?.contentRect.height !== 0) ||
-            resizeEntry?.contentRect.height > prev
-          ) {
-            return resizeEntry?.contentRect.height;
-          }
-          return prev;
+          const h = resizeEntry?.contentRect.height ?? 0;
+          return h > 0 ? h : prev;
         });
       });
 

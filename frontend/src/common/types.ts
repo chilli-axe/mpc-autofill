@@ -141,11 +141,17 @@ export interface DFCPairs {
   [front: string]: string;
 }
 
+export type FacetBy = "Source" | "Printing" | "None";
+
 export interface ViewSettingsState {
   frontsVisible: boolean;
-  sourcesVisible: { [source: string]: boolean };
-  facetBySource: boolean;
+  facetBy: FacetBy;
+  facetsVisible: { [facetKey: string]: boolean };
+  compressed: boolean;
   jumpToVersionVisible: boolean;
+  viewVisible: boolean;
+  sortVisible: boolean;
+  filterVisible: boolean;
 }
 
 export type Cardstock =
@@ -246,13 +252,18 @@ export const OramaSchema = {
   id: "string" as SearchableType,
   name: "string" as SearchableType,
   searchq: "string" as SearchableType,
+  sourceId: "number" as SearchableType,
   lastModifiedNumber: "number" as SearchableType,
+  createdNumber: "number" as SearchableType,
   cardType: "enum",
   extension: "enum",
   language: "enum",
   tags: "enum[]", // enum allows using "not contained in" filters
   dpi: "number",
   size: "number",
+  expansionCode: "string",
+  collectorNumber: "string",
+  artist: "enum",
 } as const;
 
 export type LocalFileHandleParams = {
@@ -280,6 +291,7 @@ export type OramaCardDocument = Pick<
   | "name"
   | "searchq"
   | "source"
+  | "sourceId"
   | "sourceVerbose"
   | "cardType"
   | "extension"
@@ -287,7 +299,16 @@ export type OramaCardDocument = Pick<
   | "tags"
   | "dpi"
   | "size"
-> & { id: string; lastModified: Date; lastModifiedNumber: number } & {
+> & {
+  id: string;
+  lastModified: Date;
+  lastModifiedNumber: number;
+  created: Date;
+  createdNumber: number;
+  expansionCode: string;
+  collectorNumber: string;
+  artist: string;
+} & {
   params: FileHandleParams;
 };
 

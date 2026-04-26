@@ -1,6 +1,7 @@
 import { create, insertMultiple } from "@orama/orama";
 import { imageDimensionsFromStream, ImageType } from "image-dimensions";
 
+import { Unknown } from "@/common/constants";
 import {
   extractLanguage,
   removeFileExtension,
@@ -138,6 +139,7 @@ export class Image {
       name: name,
       searchq: toSearchable(this.name),
       source: this.folder.name, // TODO: verbose naming?
+      sourceId: -1,
       sourceVerbose: this.folder.getFullPath(tags).join(" / "),
       dpi: 10 * Math.round((this.height * 300) / 1110 / 10), // TODO: NaN?
       extension: this.extension,
@@ -147,6 +149,11 @@ export class Image {
       tags: Array.from(extractedTags),
       lastModified: this.modifiedTime,
       lastModifiedNumber: this.modifiedTime.valueOf(),
+      created: this.modifiedTime, // TODO: wire up properly
+      createdNumber: this.modifiedTime.valueOf(), // TODO: wire up properly
+      expansionCode: Unknown,
+      collectorNumber: Unknown,
+      artist: Unknown,
     };
   }
 }
@@ -186,6 +193,7 @@ abstract class Indexer {
           // every field on OramaCardDocument except `searchq` and `lastModifiedNumber` :)
           "name",
           "source",
+          "sourceId",
           "sourceVerbose",
           "cardType",
           "extension",

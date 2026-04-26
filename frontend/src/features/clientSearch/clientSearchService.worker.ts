@@ -1,6 +1,7 @@
-import { getByID, search } from "@orama/orama";
+import { create, getByID, insertMultiple, search } from "@orama/orama";
 import { expose } from "comlink";
 
+import { Printing, Unknown } from "@/common/constants";
 import { toSearchable } from "@/common/processing";
 import {
   CardType as CardTypeSchema,
@@ -19,10 +20,12 @@ import {
   LocalFilesIndex,
   OramaCardDocument,
   OramaIndex,
+  OramaSchema,
   OramaSearchResult,
   OramaSearchResults,
   SearchResults,
 } from "@/common/types";
+import { parseDjangoDate } from "@/common/utils";
 import { getDefaultSearchSettings } from "@/store/slices/searchSettingsSlice";
 
 import { Folder, GoogleDriveIndexer, LocalFilesIndexer } from "./indexer";
@@ -144,7 +147,9 @@ export class ClientSearchService {
     cardTypes: Array<CardType>,
     sortBy?: SortBy,
     limit?: number,
-    offset?: number
+    offset?: number,
+    printings?: Array<Printing>,
+    artists?: Array<string>
   ): OramaSearchResults | undefined {
     if (oramaIndex?.oramaDb === undefined) {
       return undefined;
@@ -155,11 +160,11 @@ export class ClientSearchService {
 
     const sortByConfigs = {
       [SortBy.DateCreatedAscending]: {
-        property: "lastModifiedNumber",
+        property: "createdNumber",
         order: "ASC",
       },
       [SortBy.DateCreatedDescending]: {
-        property: "lastModifiedNumber",
+        property: "createdNumber",
         order: "DESC",
       },
       [SortBy.DateModifiedAscending]: {
@@ -185,6 +190,14 @@ export class ClientSearchService {
       where: {
         and: [
           ...(cardTypes.length > 0 ? [{ cardType: { in: cardTypes } }] : []),
+          {
+            or: [
+              ...searchSettings.sourceSettings.sources
+                .filter((sourceRow) => sourceRow[1] === true)
+                .map((sourceRow) => ({ sourceId: { eq: sourceRow[0] } })),
+              { sourceId: { eq: -1 } },
+            ],
+          },
           ...(includesTags
             ? [
                 {
@@ -218,6 +231,17 @@ export class ClientSearchService {
               lte: searchSettings.filterSettings.maximumSize * 1_000_000,
             },
           },
+          ...((printings?.length ?? 0) > 0
+            ? [
+                {
+                  or: printings!.map(({ expansionCode, collectorNumber }) => ({
+                    expansionCode: expansionCode,
+                    collectorNumber: collectorNumber,
+                  })),
+                },
+              ]
+            : []),
+          ...((artists?.length ?? 0) > 0 ? [{ artist: { in: artists } }] : []),
         ],
       },
       sortBy: sortByConfig,
@@ -260,6 +284,84 @@ export class ClientSearchService {
       },
       { hits: [], count: 0 }
     );
+  }
+
+  public async filterGridSelectorIdentifiers(
+    cards: Array<CardDocument>,
+    searchSettings: SearchSettings,
+    sortBy: SortBy | undefined,
+    artists: Array<string>,
+    printings: Array<Printing>
+  ): Promise<Array<string>> {
+    const oramaDb = await create({
+      schema: OramaSchema,
+      sort: {
+        enabled: true,
+        unsortableProperties: [
+          "id",
+          "name",
+          "cardType",
+          "extension",
+          "language",
+          "tags",
+          "dpi",
+          "size",
+        ],
+      },
+    });
+    await insertMultiple(
+      oramaDb,
+      cards.map(
+        (card): OramaCardDocument => ({
+          id: card.identifier,
+          cardType: card.cardType,
+          name: card.name,
+          searchq: card.searchq,
+          source: card.source,
+          sourceId: card.sourceId,
+          sourceVerbose: card.sourceVerbose,
+          dpi: card.dpi,
+          extension: card.extension,
+          size: card.size,
+          language: card.language,
+          tags: card.tags,
+          lastModified: parseDjangoDate(card.dateModified),
+          lastModifiedNumber: parseDjangoDate(card.dateModified).valueOf(),
+          created: parseDjangoDate(card.dateCreated),
+          createdNumber: parseDjangoDate(card.dateCreated).valueOf(),
+          params: {
+            identifier: card.identifier,
+            sourceType: SourceType.GoogleDrive,
+            fileHandle: undefined,
+          },
+          expansionCode: card.canonicalCard?.expansionCode ?? Unknown,
+          collectorNumber: card.canonicalCard?.collectorNumber ?? Unknown,
+          artist: card.canonicalCard?.artist ?? Unknown,
+        })
+      )
+    );
+    const oramaIndex: OramaIndex = { oramaDb, size: cards.length };
+
+    const results = this.searchOramaIndex(
+      oramaIndex,
+      searchSettings,
+      undefined,
+      [],
+      sortBy,
+      undefined,
+      undefined,
+      printings,
+      artists
+    );
+    if (sortBy !== undefined) {
+      return results?.hits.map((hit) => hit.id) ?? [];
+    } else {
+      // honour the ordering of `cards`
+      const resultsSet = new Set(results?.hits.map((hit) => hit.id));
+      return cards
+        .map((card) => card.identifier)
+        .filter((identifier) => resultsSet.has(identifier));
+    }
   }
 
   public retrieveCardIdentifiers(
@@ -314,7 +416,7 @@ export class ClientSearchService {
   }
 
   public exploreSearch(
-    sortBy: SortBy,
+    sortBy: SortBy | undefined,
     query: string | undefined,
     cardTypes: Array<CardType>,
     searchSettings: SearchSettings,

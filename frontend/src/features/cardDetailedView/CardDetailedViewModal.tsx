@@ -126,6 +126,14 @@ export function CardDetailedViewModal({
                   ["Date Created", cardDocument.dateCreated],
                   ["Date Modified", cardDocument.dateModified],
                   ["File Size", imageSizeToMBString(cardDocument.size, 2)],
+                  [
+                    "Canonical Card",
+                    cardDocument.canonicalCard
+                      ? `${cardDocument.canonicalCard.expansionCode.toUpperCase()} ${
+                          cardDocument.canonicalCard.collectorNumber
+                        }`
+                      : "Unknown",
+                  ],
                 ]}
                 hover={true}
                 alignment={"left"}

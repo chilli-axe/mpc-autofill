@@ -29,7 +29,7 @@
 }
 
 .mpccard-highlight {
-  z-index: 11;
+  z-index: 1;
   box-shadow: 0px 0px 3px 3px rgba(255, 255, 255, 0.6);
 }
 
@@ -38,7 +38,7 @@
 }
 
 .mpccard-hover:hover {
-  z-index: 10;
+  z-index: 1;
   box-shadow: 0 0 10px 5px rgba(255, 255, 255, 0.3);
 }
 
