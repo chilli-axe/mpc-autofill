@@ -127,7 +127,7 @@ test.describe("CardSlot", () => {
 
     await page.getByText("2 / 3").click();
     await expect(page.getByText("Select Version")).toBeVisible();
-
+    await page.getByText("Compressed").click();
     await expect(page.getByText("Option 2")).toBeVisible();
     await expect(page.getByText("Option 3")).toBeVisible();
     await page.getByText("Option 1").click();

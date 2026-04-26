@@ -241,7 +241,7 @@ export class ClientSearchService {
                 },
               ]
             : []),
-          ...((artists?.length ?? 0) > 0 ? [{ artist: artists }] : []),
+          ...((artists?.length ?? 0) > 0 ? [{ artist: { in: artists } }] : []),
         ],
       },
       sortBy: sortByConfig,

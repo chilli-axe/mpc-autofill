@@ -1,4 +1,4 @@
-import { expect, Page } from "@playwright/test";
+import { expect, Locator, Page } from "@playwright/test";
 import { readFile } from "fs/promises";
 
 export const configureBackend = async (page: Page, url: string) => {
@@ -360,6 +360,7 @@ export const changeImageForSelectedImages = async (
   cardName: string
 ) => {
   await page.getByText("Change Version").click();
+  await page.getByText("Compressed").click();
   await expect(page.getByText("Option 1")).toBeVisible();
   await page.getByTestId("bulk-grid-selector").getByAltText(cardName).click();
 };
@@ -388,4 +389,17 @@ export const enableFuzzySearch = async (page: Page) => {
   const settingsModal = await openSearchSettingsModal(page);
   await settingsModal.getByText("Precise Search").click();
   await settingsModal.getByRole("button", { name: "Save Changes" }).click();
+};
+
+/**
+ * Open a StyledDropdownTreeSelect and click an option by its exact label text.
+ * The container should be the `.react-dropdown-tree-select` element (or a
+ * parent that scopes the search).
+ */
+export const selectDropdownOption = async (
+  container: Locator,
+  label: string
+): Promise<void> => {
+  await container.locator(".dropdown-trigger").click();
+  await container.getByText(label, { exact: true }).click();
 };

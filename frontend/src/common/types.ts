@@ -263,7 +263,7 @@ export const OramaSchema = {
   size: "number",
   expansionCode: "string",
   collectorNumber: "string",
-  artist: "string",
+  artist: "enum",
 } as const;
 
 export type LocalFileHandleParams = {

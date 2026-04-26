@@ -1,4 +1,4 @@
-import { expect, Locator } from "@playwright/test";
+import { expect } from "@playwright/test";
 
 import { sourceDocument1, sourceDocument2 } from "@/common/test-constants";
 import { cardDocument1, cardDocument2 } from "@/common/test-constants";
@@ -20,28 +20,8 @@ import {
   importText,
   loadPageWithDefaultBackend,
   openCardSlotGridSelector,
+  selectDropdownOption,
 } from "./test-utils";
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-/**
- * Open a StyledDropdownTreeSelect and click an option by its exact label text.
- * The container should be the `.react-dropdown-tree-select` element (or a
- * parent that scopes the search).
- */
-async function selectDropdownOption(
-  container: Locator,
-  label: string
-): Promise<void> {
-  await container.locator(".dropdown-trigger").click();
-  await container.getByText(label, { exact: true }).click();
-}
-
-// ---------------------------------------------------------------------------
-// Shared setup
-// ---------------------------------------------------------------------------
 
 const threeCardSetup = {
   handlers: () => [
@@ -494,21 +474,17 @@ test.describe("GridSelectorModal – CanonicalCardFilter", () => {
     page,
     network,
   }) => {
-    // card1-3 have no canonicalCard field — they show up as Unknown in the
-    // Canonical Card section. When ALL cards are Unknown the component still
-    // renders but only shows the Unknown option.
-    // This test verifies the section is present (since Unknown is treated as a
-    // valid filter) but contains no named artist or expansion.
+    // card1-3 have no canonicalCard field — neither the printing filter nor
+    // artist filter renders when all cards lack canonical card data.
     network.use(...threeCardSetup.handlers());
     await loadPageWithDefaultBackend(page);
     const gridSelector = await threeCardSetup.openGridSelector(page);
 
-    // "Canonical Card" heading appears because Unknown cards are counted
-    await expect(
-      gridSelector.getByRole("heading", { name: "Canonical Card" })
-    ).toBeVisible();
+    // Neither filter renders when there are no named canonical card entries
+    await expect(gridSelector.getByTestId("printing-filter")).not.toBeVisible();
+    await expect(gridSelector.getByTestId("artist-filter")).not.toBeVisible();
 
-    // No named artist or expansion — only the Unknown option
+    // No named artist or expansion
     await expect(gridSelector.getByText("Alpha Artist")).not.toBeVisible();
     await expect(gridSelector.getByText("XYZ Set")).not.toBeVisible();
   });
@@ -527,10 +503,7 @@ test.describe("GridSelectorModal – CanonicalCardFilter", () => {
     await importText(page, "my search query");
     const gridSelector = await openCardSlotGridSelector(page, 1, "front", 1, 4);
 
-    await expect(
-      gridSelector.getByRole("heading", { name: "Canonical Card" })
-    ).toBeVisible();
-    // Artist and printing dropdowns are present (opened to verify options)
+    // Artist and printing dropdowns are present (no "Canonical Card" heading in new UI)
     await expect(gridSelector.getByTestId("artist-filter")).toBeVisible();
     await expect(gridSelector.getByTestId("printing-filter")).toBeVisible();
     // Open artist dropdown and verify named options are present
