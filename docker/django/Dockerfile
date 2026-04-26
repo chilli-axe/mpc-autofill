@@ -1,5 +1,5 @@
 # Docker to serve Django via Unicorn
-FROM ubuntu:22.04 AS builder
+FROM python:3.13-slim AS builder
 
 # Keeps Python from generating .pyc files in the container
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -10,8 +10,7 @@ ENV PYTHONUNBUFFERED=1
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         dos2unix \
-        python3-pip python3-dev \
-        gcc netcat curl libpq-dev \
+        gcc netcat-traditional curl libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements.txt
