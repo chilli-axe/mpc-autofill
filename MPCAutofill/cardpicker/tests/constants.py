@@ -4,6 +4,7 @@ from typing import Type
 
 from cardpicker.integrations.game.base import GameIntegration, ImportSite
 from cardpicker.models import DFCPair
+from cardpicker.schema_types import Game
 from cardpicker.sources.source_types import SourceTypeChoices
 from cardpicker.tests.factories import DFCPairFactory
 
@@ -166,6 +167,10 @@ class DummyImportSite(ImportSite):
 
 
 class DummyIntegration(GameIntegration):
+    @classmethod
+    def get_game() -> Game:
+        return Game.MTG
+
     @classmethod
     def get_dfc_pairs(cls) -> list[DFCPair]:
         return [DFCPairFactory(front="Ratman", back="Batman"), DFCPairFactory(front="Ratwoman", back="Batwoman")]
