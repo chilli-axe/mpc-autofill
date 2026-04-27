@@ -168,7 +168,7 @@ class DummyImportSite(ImportSite):
 
 class DummyIntegration(GameIntegration):
     @classmethod
-    def get_game() -> Game:
+    def get_game(cls) -> Game:
         return Game.MTG
 
     @classmethod
