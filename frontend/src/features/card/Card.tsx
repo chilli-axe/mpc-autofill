@@ -54,10 +54,13 @@ const VisibleImage = styled(Image)<{
 `;
 
 const OutlinedBSCardSubtitle = styled(BSCard.Subtitle)`
-  outline: solid 1px #ffffff00;
-  transition: outline 0.2s ease-in-out;
+  outline-style: dashed;
+  outline-width: 1px;
+  outline-color: #999999;
+  transition: outline-style 0.2s ease-in-out, outline-color 0.2s ease-in-out;
   &:hover {
-    outline-color: #ffffffff;
+    outline-style: solid;
+    outline-color: #ffffff;
     cursor: pointer;
   }
 `;

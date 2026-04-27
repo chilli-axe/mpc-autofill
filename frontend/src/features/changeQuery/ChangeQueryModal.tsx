@@ -52,8 +52,11 @@ export function ChangeQueryModal({
     setChangeSelectedImageQueriesModalValue,
   ] = useState<string>(query ?? "");
   const [updateBacks, setUpdateBacks] = useState<boolean>(false);
+  const [revertToDefaultBack, setRevertToDefaultBack] =
+    useState<boolean>(false);
   useEffect(() => {
     setUpdateBacks(false);
+    setRevertToDefaultBack(false);
   }, [show]);
 
   const dfcBack = getDfcBack(
@@ -63,11 +66,13 @@ export function ChangeQueryModal({
   );
 
   const areAllSlotsFront = slots.every(([face, slotNumber]) => face === Front);
+  const areAllSlotsBack = slots.every(([face, slotNumber]) => face === Back);
   const doAllSlotsHaveDifferentBack = !useAppSelector((state) =>
     selectAnySelectedProjectMembersMatchQuery(state, slots, Back, dfcBack)
   );
   const shouldShowDfcBackChangeSuggestion =
     dfcBack !== null && areAllSlotsFront && doAllSlotsHaveDifferentBack;
+  const showRevertToDefaultBack = areAllSlotsBack && (query ?? "") !== "";
 
   //# endregion
 
@@ -82,10 +87,11 @@ export function ChangeQueryModal({
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault(); // to avoid reloading the page
-    if (changeSelectedImageQueriesModalValue.length > 0) {
-      dispatch(
-        setQueries({ query: changeSelectedImageQueriesModalValue, slots })
-      );
+    const query = revertToDefaultBack
+      ? ""
+      : changeSelectedImageQueriesModalValue;
+    if (query.length > 0) {
+      dispatch(setQueries({ query: query, slots }));
       if (updateBacks && dfcBack) {
         dispatch(
           setQueries({
@@ -129,10 +135,6 @@ export function ChangeQueryModal({
           {slots.length > 1 ? "selected images" : "image"} with and hit{" "}
           <b>Submit</b>.
         </p>
-        <p>
-          Clear the textbox and hit <b>Submit</b> to clear{" "}
-          {slots.length > 1 ? "their" : "its"} query.
-        </p>
         <hr />
         <Form onSubmit={handleSubmit} id="changeSelectedImageQueriesForm">
           <Form.Group className="mb-3">
@@ -146,6 +148,7 @@ export function ChangeQueryModal({
               value={changeSelectedImageQueriesModalValue}
               aria-label="change-selected-image-queries-text"
               autoFocus={true}
+              disabled={revertToDefaultBack}
             />
           </Form.Group>
           {shouldShowDfcBackChangeSuggestion && (
@@ -164,6 +167,23 @@ export function ChangeQueryModal({
                   label={`Update back${slots.length !== 1 ? "s" : ""}`}
                   checked={updateBacks}
                   onChange={(event) => setUpdateBacks(event.target.checked)}
+                />
+              </BSCard.Body>
+            </BSCard>
+          )}
+          {showRevertToDefaultBack && (
+            <BSCard border="warning" bg="secondary">
+              <BSCard.Body>
+                <Form.Check // prettier-ignore
+                  type="switch"
+                  id="custom-switch"
+                  label={`Change ${
+                    slots.length === 1 ? "this slot" : "the selected slots"
+                  } to the default cardback?`}
+                  checked={revertToDefaultBack}
+                  onChange={(event) =>
+                    setRevertToDefaultBack(event.target.checked)
+                  }
                 />
               </BSCard.Body>
             </BSCard>
