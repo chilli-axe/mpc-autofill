@@ -14,6 +14,7 @@ from cardpicker.models import (
     DFCPair,
 )
 from cardpicker.schema_types import Game
+from cardpicker.utils import section_timer
 
 
 def default_is_response_valid(response: requests.Response) -> bool:
@@ -121,28 +122,23 @@ class GameIntegration(ABC):
 
     @classmethod
     def import_canonical_cards_and_artists(cls) -> None:
-        print("Retrieving all cards and artists...")
-        t0 = time.time()
-        cards, artists = cls.get_canonical_cards_and_artists()
-        t1 = time.time()
-        print(f"Retrieved {len(cards)} cards and {len(artists)} artists in {round(t1 - t0, 2)} seconds.")
+        @section_timer("retrieve_all_cards_and_identifiers")
+        def retrieve_all_cards_and_identifiers() -> tuple[list[CanonicalCard], list[CanonicalArtist]]:
+            return cls.get_canonical_cards_and_artists()
 
-        print("Beginning artist bulk sync...")
-        bulk_sync(new_models=artists, key_fields=["name"], db_class=CanonicalArtist, filters=None)
-        t2 = time.time()
-        print(f"Bulk synced {len(artists)} artists in {round(t2 - t1, 2)} seconds.")
+        @section_timer("bulk_sync_canonical_artists")
+        def bulk_sync_artists(artists_: list[CanonicalArtist]) -> None:
+            print(f"Bulk syncing {len(artists_)} canonical artists...")
+            bulk_sync(new_models=artists_, key_fields=["name"], db_class=CanonicalArtist, filters=None)
 
-        print("Beginning card bulk sync...")
-        bulk_sync(
-            new_models=cards,
-            key_fields=["identifier"],
-            db_class=CanonicalCard,
-            filters=None,
-            skip_updates=True,  # optimisation - not tracking any canonical data which could change over time
-            skip_deletes=True,
-        )
-        t3 = time.time()
-        print(f"Bulk synced {len(cards)} cards in {round(t3 - t2, 2)} seconds.")
+        @section_timer("add_canonical_cards")
+        def add_cards(cards_: list[CanonicalCard]) -> None:
+            print(f"Adding {len(cards_)} canonical cards...")
+            CanonicalCard.objects.bulk_create(objs=cards_)
+
+        cards, artists = retrieve_all_cards_and_identifiers()
+        bulk_sync_artists(artists_=artists)
+        add_cards(cards_=cards)
 
     @classmethod
     def import_canonical_expansions(cls) -> None:

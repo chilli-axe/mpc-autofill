@@ -3,7 +3,7 @@ import re
 import time
 import uuid
 from pathlib import Path
-from typing import Any, Callable, Type
+from typing import Any, Type
 from urllib.parse import parse_qs, urlparse
 
 import enlighten
@@ -392,13 +392,12 @@ class MTGIntegration(GameIntegration):
         expansions_by_code: dict[str, CanonicalExpansion] = {
             expansion.code: expansion for expansion in CanonicalExpansion.objects.all()
         }
-        cards_by_identifier: dict[uuid.UUID, CanonicalCard] = {}
+        new_cards_by_identifier: dict[uuid.UUID, CanonicalCard] = {}
+        existing_card_identifiers = set(CanonicalCard.objects.values_list("identifier", flat=True))
 
         manager = enlighten.get_manager()
         default_cards_counter = manager.counter(desc="Default Cards", unit="ticks")
-        manager.counter(desc="Oracle Cards", unit="ticks")
-
-        existing_canonical_card_identifiers = set(CanonicalCard.objects.values_list("identifier", flat=True))
+        oracle_cards_counter = manager.counter(desc="Oracle Cards", unit="ticks")
 
         cache_dir = Path(settings.BASE_DIR) / "scryfall_cache"
         default_cards_path = cache_dir / "default_cards.json"
@@ -406,41 +405,6 @@ class MTGIntegration(GameIntegration):
 
         def is_stale(path: Path) -> bool:
             return not path.exists() or time.time() - path.stat().st_mtime > 7 * 24 * 3600
-
-        def row_to_canonical_card(row: CardRow) -> CanonicalCard | None:
-            try:
-                if row.layout == "art_series":
-                    return None
-
-                artist_name = row.artist
-                if artist_name not in artists_by_name.keys():
-                    artists_by_name[artist_name] = CanonicalArtist(name=artist_name)
-
-                image_hash_int: int | None = None
-                if row.image_uris is not None:
-                    try:
-                        im = Image.open(requests.get(row.image_uris.small, stream=True).raw)
-                        image_hash = str(imagehash.phash(im))
-                        image_hash_int = twos_complement(image_hash, 64)
-                    except Exception as e:
-                        print(f"encountered exception while computing image hash: {e}")
-
-                return CanonicalCard(
-                    identifier=row.id,
-                    canonical_id=row.oracle_id,
-                    name=row.name,
-                    expansion=expansions_by_code[row.set],
-                    artist=artists_by_name[artist_name],
-                    collector_number=row.collector_number,
-                    is_default=False,
-                    image_hash=image_hash_int if image_hash_int is not None else 0,
-                    small_thumbnail_url=row.image_uris.small if row.image_uris else "",
-                    medium_thumbnail_url=row.image_uris.normal if row.image_uris else "",
-                )
-            except Exception as e:
-                # overly safe exception handling to prevent threads from silently dying
-                print(f"encountered exception in CanonicalCard transformation thread: {e}")
-                return None
 
         @section_timer(name="get bulk data URLs")
         def get_bulk_data_urls() -> BulkDataURLs:
@@ -480,11 +444,55 @@ class MTGIntegration(GameIntegration):
                     for chunk in r.iter_content(chunk_size=8192):
                         f.write(chunk)
 
-        def process_file(
-            path: Path, row_callable: Callable[[CardRow, concurrent.futures.ThreadPoolExecutor], None]
+        def row_to_canonical_card(row: CardRow) -> CanonicalCard | None:
+            try:
+                if row.layout == "art_series":
+                    return None
+
+                artist_name = row.artist
+                if artist_name not in artists_by_name.keys():
+                    artists_by_name[artist_name] = CanonicalArtist(name=artist_name)
+
+                image_hash_int: int | None = None
+                if row.image_uris is not None:
+                    try:
+                        im = Image.open(requests.get(row.image_uris.small, stream=True).raw)
+                        image_hash = str(imagehash.phash(im))
+                        image_hash_int = twos_complement(image_hash, 64)
+                    except Exception as e:
+                        print(f"encountered exception while computing image hash: {e}")
+
+                return CanonicalCard(
+                    identifier=row.id,
+                    canonical_id=row.oracle_id,
+                    name=row.name,
+                    expansion=expansions_by_code[row.set],
+                    artist=artists_by_name[artist_name],
+                    collector_number=row.collector_number,
+                    is_default=False,
+                    image_hash=image_hash_int if image_hash_int is not None else 0,
+                    small_thumbnail_url=row.image_uris.small if row.image_uris else "",
+                    medium_thumbnail_url=row.image_uris.normal if row.image_uris else "",
+                )
+            except Exception as e:
+                # overly safe exception handling to prevent threads from silently dying
+                print(f"encountered exception in CanonicalCard transformation thread: {e}")
+                return None
+
+        def process_row(
+            row: CardRow, pool: concurrent.futures.ThreadPoolExecutor, mark_existing_as_default: bool
         ) -> None:
+            if mark_existing_as_default and row.id in new_cards_by_identifier.keys():
+                new_cards_by_identifier[row.id].is_default = True
+            elif row.id not in existing_card_identifiers:
+                future = pool.submit(row_to_canonical_card, row)
+                card = future.result()
+                if card:
+                    new_cards_by_identifier[row.id] = card
+
+        def process_file(path: Path, counter: enlighten.Counter, mark_existing_as_default: bool) -> None:
             with concurrent.futures.ThreadPoolExecutor(max_workers=10) as pool:
-                with open(default_cards_path, "rb") as f:
+                with open(path, "rb") as f:
                     for line in f:
                         line = line.rstrip(b"\n")
                         if line in [b"[", b"]"]:
@@ -492,35 +500,18 @@ class MTGIntegration(GameIntegration):
                         decoded_line = line.decode("utf-8").rstrip(",")
                         try:
                             row = CardRow.model_validate_json(decoded_line)
-                            row_callable(row, pool)
-                            default_cards_counter.update()
+                            process_row(row, pool, mark_existing_as_default=mark_existing_as_default)
+                            counter.update()
                         except ValidationError:
                             print(f"failed to validate line: {decoded_line}")
 
         @section_timer(name="process default cards")
         def process_default_cards() -> None:
-            def row_callable(row: CardRow, pool: concurrent.futures.ThreadPoolExecutor) -> None:
-                if row.id not in existing_canonical_card_identifiers:
-                    future = pool.submit(row_to_canonical_card, row)
-                    card = future.result()
-                    if card is not None:
-                        cards_by_identifier[row.id] = card
-
-            process_file(default_cards_path, row_callable)
+            process_file(default_cards_path, default_cards_counter, mark_existing_as_default=False)
 
         @section_timer("process oracle cards")
         def process_oracle_cards() -> None:
-            def row_callable(row: CardRow, pool: concurrent.futures.ThreadPoolExecutor) -> None:
-                # mark the default Scryfall version of each card with is_default=True
-                if row.id in cards_by_identifier.keys():
-                    cards_by_identifier[row.id].is_default = True
-                else:
-                    future = pool.submit(row_to_canonical_card, row)
-                    card = future.result()
-                    if card:
-                        cards_by_identifier[row.id] = card
-
-            process_file(oracle_cards_path, row_callable)
+            process_file(default_cards_path, oracle_cards_counter, mark_existing_as_default=True)
 
         bulk_data_urls = get_bulk_data_urls()
         cache_default_cards(bulk_data_urls.default_cards)
@@ -528,7 +519,7 @@ class MTGIntegration(GameIntegration):
         process_default_cards()
         process_oracle_cards()
 
-        return list(cards_by_identifier.values()), list(artists_by_name.values())
+        return list(new_cards_by_identifier.values()), list(artists_by_name.values())
 
     @classmethod
     def get_canonical_expansions(cls) -> list[CanonicalExpansion]:

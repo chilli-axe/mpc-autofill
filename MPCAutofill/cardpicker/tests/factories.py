@@ -88,3 +88,4 @@ class CanonicalCardFactory(factory.django.DjangoModelFactory):
     expansion = factory.SubFactory(CanonicalExpansionFactory)
     collector_number = factory.Sequence(lambda n: f"{n:03}")
     is_default = False
+    image_hash = 0
