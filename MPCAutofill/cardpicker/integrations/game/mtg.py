@@ -511,7 +511,7 @@ class MTGIntegration(GameIntegration):
 
         @section_timer("process oracle cards")
         def process_oracle_cards() -> None:
-            process_file(default_cards_path, oracle_cards_counter, mark_existing_as_default=True)
+            process_file(oracle_cards_path, oracle_cards_counter, mark_existing_as_default=True)
 
         bulk_data_urls = get_bulk_data_urls()
         cache_default_cards(bulk_data_urls.default_cards)
