@@ -1,5 +1,6 @@
 import time
 from abc import ABC, abstractmethod
+from pathlib import Path
 from typing import Any, Callable, Optional, Type
 from urllib.parse import urljoin, urlparse
 
@@ -95,7 +96,11 @@ class GameIntegration(ABC):
 
     @classmethod
     @abstractmethod
-    def get_canonical_cards_and_artists(cls) -> tuple[list[CanonicalCard], list[CanonicalArtist]]:
+    def get_canonical_cards_and_artists(
+        cls,
+        default_cards_path: Path | None = None,
+        oracle_cards_path: Path | None = None,
+    ) -> tuple[list[CanonicalCard], list[CanonicalArtist]]:
         ...
 
     @classmethod
@@ -121,10 +126,17 @@ class GameIntegration(ABC):
         return None
 
     @classmethod
-    def import_canonical_cards_and_artists(cls) -> None:
+    def import_canonical_cards_and_artists(
+        cls,
+        default_cards_path: Path | None = None,
+        oracle_cards_path: Path | None = None,
+    ) -> None:
         @section_timer("retrieve_all_cards_and_identifiers")
         def retrieve_all_cards_and_identifiers() -> tuple[list[CanonicalCard], list[CanonicalArtist]]:
-            return cls.get_canonical_cards_and_artists()
+            return cls.get_canonical_cards_and_artists(
+                default_cards_path=default_cards_path,
+                oracle_cards_path=oracle_cards_path,
+            )
 
         @section_timer("bulk_sync_canonical_artists")
         def bulk_sync_artists(artists_: list[CanonicalArtist]) -> None:

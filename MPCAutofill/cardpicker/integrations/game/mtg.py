@@ -1,4 +1,5 @@
 import concurrent.futures
+import logging
 import re
 import time
 import uuid
@@ -28,6 +29,8 @@ from cardpicker.utils import (
     section_timer,
     twos_complement,
 )
+
+logger = logging.getLogger(__name__)
 
 # region import sites
 
@@ -387,7 +390,11 @@ class MTGIntegration(GameIntegration):
         ]
 
     @classmethod
-    def get_canonical_cards_and_artists(cls) -> tuple[list[CanonicalCard], list[CanonicalArtist]]:
+    def get_canonical_cards_and_artists(
+        cls,
+        default_cards_path: Path | None = None,
+        oracle_cards_path: Path | None = None,
+    ) -> tuple[list[CanonicalCard], list[CanonicalArtist]]:
         artists_by_name: dict[str, CanonicalArtist] = {artist.name: artist for artist in CanonicalArtist.objects.all()}
         expansions_by_code: dict[str, CanonicalExpansion] = {
             expansion.code: expansion for expansion in CanonicalExpansion.objects.all()
@@ -400,8 +407,9 @@ class MTGIntegration(GameIntegration):
         oracle_cards_counter = manager.counter(desc="Oracle Cards", unit="ticks")
 
         cache_dir = Path(settings.BASE_DIR) / "scryfall_cache"
-        default_cards_path = cache_dir / "default_cards.json"
-        oracle_cards_path = cache_dir / "oracle_cards.json"
+        skip_fetch = default_cards_path is not None and oracle_cards_path is not None
+        default_cards_path = default_cards_path or (cache_dir / "default_cards.json")
+        oracle_cards_path = oracle_cards_path or (cache_dir / "oracle_cards.json")
 
         def is_stale(path: Path) -> bool:
             return not path.exists() or time.time() - path.stat().st_mtime > 7 * 24 * 3600
@@ -447,6 +455,10 @@ class MTGIntegration(GameIntegration):
         def row_to_canonical_card(row: CardRow) -> CanonicalCard | None:
             try:
                 if row.layout == "art_series":
+                    return None
+
+                if row.set not in expansions_by_code:
+                    logger.warning("Skipping card %r: no expansion found with set code %r", row.name, row.set)
                     return None
 
                 artist_name = row.artist
@@ -513,9 +525,10 @@ class MTGIntegration(GameIntegration):
         def process_oracle_cards() -> None:
             process_file(oracle_cards_path, oracle_cards_counter, mark_existing_as_default=True)
 
-        bulk_data_urls = get_bulk_data_urls()
-        cache_default_cards(bulk_data_urls.default_cards)
-        cache_oracle_cards(bulk_data_urls.oracle_cards)
+        if not skip_fetch:
+            bulk_data_urls = get_bulk_data_urls()
+            cache_default_cards(bulk_data_urls.default_cards)
+            cache_oracle_cards(bulk_data_urls.oracle_cards)
         process_default_cards()
         process_oracle_cards()
 
