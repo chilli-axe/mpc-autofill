@@ -79,10 +79,10 @@ export const CanonicalCardFilter = ({
     let hasUnknown = false;
     Object.values(cardDocumentsByIdentifier).forEach((card) => {
       if (card == null) return;
-      if (card.canonicalCard == null) {
+      if (card.canonicalArtist == null) {
         hasUnknown = true;
       } else {
-        artistSet.add(card.canonicalCard.artist);
+        artistSet.add(card.canonicalArtist.name);
       }
     });
     const sorted = Array.from(artistSet).sort();

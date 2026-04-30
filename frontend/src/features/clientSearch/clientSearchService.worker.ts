@@ -336,7 +336,7 @@ export class ClientSearchService {
           },
           expansionCode: card.canonicalCard?.expansionCode ?? Unknown,
           collectorNumber: card.canonicalCard?.collectorNumber ?? Unknown,
-          artist: card.canonicalCard?.artist ?? Unknown,
+          artist: card.canonicalArtist?.name ?? Unknown,
         })
       )
     );

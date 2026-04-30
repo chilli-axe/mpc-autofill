@@ -255,11 +255,15 @@ export const cardDocument8: CardDocument = {
   language: "EN",
   tags: [],
   canonicalCard: {
-    artist: "Alpha Artist",
     expansionCode: "xyz",
     expansionName: "XYZ Set",
     collectorNumber: "001",
     identifier: "xyz-001",
+    smallThumbnailUrl: "",
+    mediumThumbnailUrl: "",
+  },
+  canonicalArtist: {
+    name: "Alpha Artist",
   },
 };
 
@@ -285,11 +289,15 @@ export const cardDocument9: CardDocument = {
   language: "EN",
   tags: [],
   canonicalCard: {
-    artist: "Beta Artist",
     expansionCode: "xyz",
     expansionName: "XYZ Set",
     collectorNumber: "002",
     identifier: "xyz-002",
+    smallThumbnailUrl: "",
+    mediumThumbnailUrl: "",
+  },
+  canonicalArtist: {
+    name: "Beta Artist",
   },
 };
 
@@ -315,11 +323,15 @@ export const cardDocument10: CardDocument = {
   language: "EN",
   tags: [],
   canonicalCard: {
-    artist: "Alpha Artist",
     expansionCode: "abc",
     expansionName: "ABC Set",
     collectorNumber: "001",
     identifier: "abc-001",
+    smallThumbnailUrl: "",
+    mediumThumbnailUrl: "",
+  },
+  canonicalArtist: {
+    name: "Alpha Artist",
   },
 };
 

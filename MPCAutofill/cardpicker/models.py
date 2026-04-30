@@ -11,6 +11,7 @@ from django.utils import dateformat, timezone
 from django.utils.translation import gettext_lazy
 
 from cardpicker.constants import DATE_FORMAT
+from cardpicker.schema_types import CanonicalArtistClass as SerialisedCanonicalArtist
 from cardpicker.schema_types import CanonicalCardClass as SerialisedCanonicalCard
 from cardpicker.schema_types import Card as SerialisedCard
 from cardpicker.schema_types import CardType, ChildElement, Game
@@ -97,7 +98,8 @@ class CanonicalCard(models.Model):
             expansionCode=self.expansion.code,
             expansionName=self.expansion.name,
             identifier=str(self.identifier),
-            artist=self.artist.name,
+            smallThumbnailUrl=self.small_thumbnail_url,
+            mediumThumbnailUrl=self.medium_thumbnail_url,
         )
 
 
@@ -305,6 +307,9 @@ class Card(models.Model):
                 self.canonical_card.serialise()
                 if self.canonical_card
                 else (self.inferred_canonical_card.serialise() if self.inferred_canonical_card else None)
+            ),
+            canonicalArtist=(
+                SerialisedCanonicalArtist(name=self.canonical_card.artist.name) if self.canonical_card else None
             ),
         )
 

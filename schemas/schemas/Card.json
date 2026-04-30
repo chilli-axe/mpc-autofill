@@ -70,6 +70,9 @@
     },
     "canonicalCard": {
       "$ref": "./CanonicalCard.json"
+    },
+    "canonicalArtist": {
+      "$ref": "./CanonicalArtist.json"
     }
   },
   "required": [

@@ -2,9 +2,10 @@
 
 // To parse this data:
 //
-//   import { Convert, Campaign, CanonicalCard, Card, CardType, FilterSettings, Game, ImportSite, Language, NewCardsFirstPage, SearchQuery, SearchSettings, SearchTypeSettings, SortBy, Source, SourceContribution, SourceSettings, SourceType, Supporter, SupporterTier, Tag, CardbacksRequest, CardbacksResponse, CardsRequest, CardsResponse, ContributionsResponse, DFCPairsResponse, EditorSearchRequest, EditorSearchResponse, ErrorResponse, ExploreSearchRequest, ExploreSearchResponse, ImportSiteDecklistRequest, ImportSiteDecklistResponse, ImportSitesResponse, InfoResponse, LanguagesResponse, NewCardsFirstPagesResponse, NewCardsPageResponse, PatreonResponse, SampleCardsResponse, SearchEngineHealthResponse, SourcesResponse, TagsResponse } from "./file";
+//   import { Convert, Campaign, CanonicalArtist, CanonicalCard, Card, CardType, FilterSettings, Game, ImportSite, Language, NewCardsFirstPage, SearchQuery, SearchSettings, SearchTypeSettings, SortBy, Source, SourceContribution, SourceSettings, SourceType, Supporter, SupporterTier, Tag, CardbacksRequest, CardbacksResponse, CardsRequest, CardsResponse, ContributionsResponse, DFCPairsResponse, EditorSearchRequest, EditorSearchResponse, ErrorResponse, ExploreSearchRequest, ExploreSearchResponse, ImportSiteDecklistRequest, ImportSiteDecklistResponse, ImportSitesResponse, InfoResponse, LanguagesResponse, NewCardsFirstPagesResponse, NewCardsPageResponse, PatreonResponse, SampleCardsResponse, SearchEngineHealthResponse, SourcesResponse, TagsResponse } from "./file";
 //
 //   const campaign = Convert.toCampaign(json);
+//   const canonicalArtist = Convert.toCanonicalArtist(json);
 //   const canonicalCard = Convert.toCanonicalCard(json);
 //   const card = Convert.toCard(json);
 //   const cardType = Convert.toCardType(json);
@@ -124,6 +125,7 @@ export interface CardsResponse {
 }
 
 export interface Card {
+  canonicalArtist?: CanonicalArtist | null;
   canonicalCard?: CanonicalCard | null;
   cardType: CardType;
   /**
@@ -153,13 +155,19 @@ export interface Card {
   tags: string[];
 }
 
+export interface CanonicalArtist {
+  name: string;
+}
+
 export interface CanonicalCard {
-  artist: string;
+  artist?: string;
   canonicalId?: string;
   collectorNumber: string;
   expansionCode: string;
   expansionName: string;
   identifier: string;
+  mediumThumbnailUrl: string;
+  smallThumbnailUrl: string;
 }
 
 export enum CardType {
@@ -382,6 +390,18 @@ export class Convert {
 
   public static campaignToJson(value: Campaign | null): string {
     return JSON.stringify(uncast(value, u(r("Campaign"), null)), null, 2);
+  }
+
+  public static toCanonicalArtist(json: string): CanonicalArtist | null {
+    return cast(JSON.parse(json), u(r("CanonicalArtist"), null));
+  }
+
+  public static canonicalArtistToJson(value: CanonicalArtist | null): string {
+    return JSON.stringify(
+      uncast(value, u(r("CanonicalArtist"), null)),
+      null,
+      2
+    );
   }
 
   public static toCanonicalCard(json: string): CanonicalCard | null {
@@ -1021,6 +1041,11 @@ const typeMap: any = {
   Card: o(
     [
       {
+        json: "canonicalArtist",
+        js: "canonicalArtist",
+        typ: u(undefined, u(r("CanonicalArtist"), null)),
+      },
+      {
         json: "canonicalCard",
         js: "canonicalCard",
         typ: u(undefined, u(r("CanonicalCard"), null)),
@@ -1056,14 +1081,17 @@ const typeMap: any = {
     ],
     false
   ),
+  CanonicalArtist: o([{ json: "name", js: "name", typ: "" }], false),
   CanonicalCard: o(
     [
-      { json: "artist", js: "artist", typ: "" },
+      { json: "artist", js: "artist", typ: u(undefined, "") },
       { json: "canonicalId", js: "canonicalId", typ: u(undefined, "") },
       { json: "collectorNumber", js: "collectorNumber", typ: "" },
       { json: "expansionCode", js: "expansionCode", typ: "" },
       { json: "expansionName", js: "expansionName", typ: "" },
       { json: "identifier", js: "identifier", typ: "" },
+      { json: "mediumThumbnailUrl", js: "mediumThumbnailUrl", typ: "" },
+      { json: "smallThumbnailUrl", js: "smallThumbnailUrl", typ: "" },
     ],
     false
   ),
