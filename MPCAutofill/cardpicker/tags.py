@@ -39,8 +39,18 @@ class Tags:
         tag_parts = re.findall(r"\(([^\(\)]+)\)|\[([^\[\]]+)\]", name)  # Get content of () and []
         return set(map(lambda x: x[0] if len(x[0]) != 0 else x[1], tag_parts))
 
-    def match_canonical_card(self, raw_tags: set[str]) -> tuple[str, int] | None:
-        matched_tags = {raw_tag for raw_tag in raw_tags if raw_tag in self.canonical_cards.keys()}
+    @classmethod
+    def extract_collector_number(cls, name: str) -> tuple[str, str | None]:
+        return re.search(r"^(.+?)(?:\s?\{(.+)\})?$", name).groups()  # type: ignore
+
+    def match_canonical_card(self, raw_tags: set[str], collector_number: str | None) -> tuple[str, int] | None:
+        tags = (
+            raw_tags
+            if collector_number is None
+            # e.g. collector number is 100, tags are ["LEA", "M10"], we would match on ["LEA 100", "M10 100"]
+            else {f"{raw_tag} {collector_number}" for raw_tag in raw_tags}
+        )
+        matched_tags = {tag for tag in tags if tag in self.canonical_cards.keys()}
         if len(matched_tags) == 1:
             tag = matched_tags.pop()
             return tag, self.canonical_cards[tag]
@@ -90,13 +100,14 @@ class Tags:
             return "", set(), None, None
 
         tag_set: set[str] = set()
-        name_with_no_tags = name  # tags will be removed from this name below
+        # tags will be removed from this name below
+        name_with_no_tags, collector_number = self.extract_collector_number(name=name)
         raw_tags = {y for tag_part in self.extract_tag_parts(name) for y in [x.strip() for x in tag_part.split(",")]}
 
         canonical_card_pk: int | None = None
         canonical_artist_pk: int | None = None
 
-        canonical_card_match = self.match_canonical_card(raw_tags=raw_tags)
+        canonical_card_match = self.match_canonical_card(raw_tags=raw_tags, collector_number=collector_number)
         if canonical_card_match:
             canonical_card_tag, canonical_card_pk = canonical_card_match
             name_with_no_tags = self.remove_tag_from_name(name_with_no_tags, canonical_card_tag)

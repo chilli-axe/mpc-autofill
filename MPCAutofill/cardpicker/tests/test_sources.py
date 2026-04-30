@@ -517,6 +517,24 @@ class TestUpdateDatabase:
                 None,
                 id="card name specifies multiple valid expansion+collector numbers, ambiguous, no match",
             ),
+            pytest.param(
+                [
+                    ("Lightning Bolt", "LEA", "161"),
+                ],
+                "Lightning Bolt (LEA) {161}.jpg",
+                "LEA",
+                "161",
+                id="card name specifies valid expansion+collector number with special syntax, match",
+            ),
+            pytest.param(
+                [
+                    ("Lightning Bolt", "LEA", "161"),
+                ],
+                "Lightning Bolt (LEA 161) {161}.jpg",
+                None,
+                None,
+                id="card name co-mingles expansion+collector number with special collector number syntax, no match",
+            ),
         ],
     )
     def test_associate_with_canonical_card(
