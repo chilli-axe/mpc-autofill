@@ -530,6 +530,15 @@ class TestUpdateDatabase:
                 [
                     ("Lightning Bolt", "LEA", "161"),
                 ],
+                "Lightning Bolt (LEA) {161} (some other tag).jpg",
+                "LEA",
+                "161",
+                id="{collector number} specified not at end of name, match",
+            ),
+            pytest.param(
+                [
+                    ("Lightning Bolt", "LEA", "161"),
+                ],
                 "Lightning Bolt (LEA 161) {161}.jpg",
                 None,
                 None,
