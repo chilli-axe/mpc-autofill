@@ -134,6 +134,10 @@ export function CardDetailedViewModal({
                         }`
                       : "Unknown",
                   ],
+                  [
+                    "Canonical Aritst",
+                    cardDocument.canonicalArtist?.name ?? "Unknown",
+                  ],
                 ]}
                 hover={true}
                 alignment={"left"}
