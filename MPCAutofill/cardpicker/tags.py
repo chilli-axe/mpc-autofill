@@ -13,6 +13,7 @@ class Tags:
     def __init__(self) -> None:
         self.tags = self.get_tags()
         self.canonical_cards = self.get_canonical_cards()
+        self.canonical_artists = self.get_canonical_artists()
 
     @classmethod
     def get_tags(cls) -> dict[str, "models.Tag"]:
@@ -30,16 +31,31 @@ class Tags:
         }
 
     @classmethod
+    def get_canonical_artists(cls) -> dict[str, int]:
+        return {name: pk for (name, pk) in models.CanonicalArtist.objects.values_list("name", "pk")}
+
+    @classmethod
     def extract_tag_parts(cls, name: str) -> set[str]:
         tag_parts = re.findall(r"\(([^\(\)]+)\)|\[([^\[\]]+)\]", name)  # Get content of () and []
         return set(map(lambda x: x[0] if len(x[0]) != 0 else x[1], tag_parts))
 
     def match_canonical_card(self, raw_tags: set[str]) -> tuple[str, int] | None:
-        men = {man for man in raw_tags if man in self.canonical_cards.keys()}
-        if len(men) == 1:
-            tag = men.pop()
+        matched_tags = {raw_tag for raw_tag in raw_tags if raw_tag in self.canonical_cards.keys()}
+        if len(matched_tags) == 1:
+            tag = matched_tags.pop()
             return tag, self.canonical_cards[tag]
-        elif len(men) > 1:
+        elif len(matched_tags) > 1:
+            # multiple matches, ambiguous -> no match
+            return None
+        else:
+            return None
+
+    def match_canonical_artist(self, raw_tags: set[str]) -> tuple[str, int] | None:
+        matched_tags = {raw_tag for raw_tag in raw_tags if raw_tag in self.canonical_artists.keys()}
+        if len(matched_tags) == 1:
+            tag = matched_tags.pop()
+            return tag, self.canonical_artists[tag]
+        elif len(matched_tags) > 1:
             # multiple matches, ambiguous -> no match
             return None
         else:
@@ -62,25 +78,33 @@ class Tags:
                         name_with_no_tags = name_with_no_tags[0:start] + name_with_no_tags[end:]
         return name_with_no_tags
 
-    def extract(self, name: Optional[str]) -> tuple[str, set[str], int | None]:
+    def extract(self, name: Optional[str]) -> tuple[str, set[str], int | None, int | None]:
         """
         This function unpacks a folder or image name which contains a name component and some number of tags
-        into its constituents.
+        into its constituents. Also returns the PKs of matched CanonicalCard and CanonicalArtist records (nullable).
         Tags are wrapped in either [square brackets] or (parentheses), and any combination of [] and () can be used
         within a single name.
         """
 
         if not name:
-            return "", set(), None
+            return "", set(), None, None
 
         tag_set: set[str] = set()
         name_with_no_tags = name  # tags will be removed from this name below
         raw_tags = {y for tag_part in self.extract_tag_parts(name) for y in [x.strip() for x in tag_part.split(",")]}
-        match = self.match_canonical_card(raw_tags=raw_tags)
+
         canonical_card_pk: int | None = None
-        if match:
-            canonical_card_tag, canonical_card_pk = match
+        canonical_artist_pk: int | None = None
+
+        canonical_card_match = self.match_canonical_card(raw_tags=raw_tags)
+        if canonical_card_match:
+            canonical_card_tag, canonical_card_pk = canonical_card_match
             name_with_no_tags = self.remove_tag_from_name(name_with_no_tags, canonical_card_tag)
+        else:
+            canonical_artist_match = self.match_canonical_artist(raw_tags=raw_tags)
+            if canonical_artist_match:
+                canonical_artist_tag, canonical_artist_pk = canonical_artist_match
+                name_with_no_tags = self.remove_tag_from_name(name_with_no_tags, canonical_artist_tag)
 
         for raw_tag in raw_tags:
             lowercase_tag = raw_tag.lower()
@@ -119,7 +143,7 @@ class Tags:
         ]
         for artifact, replacement in artifacts:
             name_with_no_tags = name_with_no_tags.replace(artifact, replacement)
-        return name_with_no_tags, tag_set, canonical_card_pk
+        return name_with_no_tags, tag_set, canonical_card_pk, canonical_artist_pk
 
 
 __all__ = ["Tags"]

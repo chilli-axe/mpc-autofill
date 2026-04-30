@@ -62,6 +62,9 @@ class CanonicalArtist(models.Model):
     def __str__(self) -> str:
         return self.name
 
+    def serialise(self) -> SerialisedCanonicalArtist:
+        return SerialisedCanonicalArtist(name=self.name)
+
 
 class CanonicalCard(models.Model):
     identifier = models.UUIDField(unique=True)
@@ -264,6 +267,7 @@ class Card(models.Model):
     canonical_card = models.ForeignKey(
         CanonicalCard, on_delete=models.SET_NULL, blank=True, null=True, related_name="canonical_card"
     )
+    canonical_artist = models.ForeignKey(to=CanonicalArtist, on_delete=models.CASCADE, blank=True, null=True)
     inferred_canonical_card = models.ForeignKey(
         CanonicalCard, on_delete=models.SET_NULL, blank=True, null=True, related_name="inferred_canonical_card"
     )
@@ -309,7 +313,9 @@ class Card(models.Model):
                 else (self.inferred_canonical_card.serialise() if self.inferred_canonical_card else None)
             ),
             canonicalArtist=(
-                SerialisedCanonicalArtist(name=self.canonical_card.artist.name) if self.canonical_card else None
+                self.canonical_artist.serialise()
+                if self.canonical_artist
+                else (self.canonical_card.artist.serialise() if self.canonical_card else None)
             ),
         )
 

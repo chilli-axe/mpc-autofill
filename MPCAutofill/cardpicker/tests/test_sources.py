@@ -7,12 +7,16 @@ from django.core import management
 from django.utils.timezone import make_aware, make_naive
 
 from cardpicker.documents import CardSearch
-from cardpicker.models import CanonicalCard, Card
+from cardpicker.models import CanonicalArtist, CanonicalCard, Card
 from cardpicker.sources.api import Folder, Image
 from cardpicker.sources.update_database import bulk_sync_objects, update_database
 from cardpicker.tags import Tags
 from cardpicker.tests import factories
-from cardpicker.tests.factories import CanonicalCardFactory, CanonicalExpansionFactory
+from cardpicker.tests.factories import (
+    CanonicalArtistFactory,
+    CanonicalCardFactory,
+    CanonicalExpansionFactory,
+)
 
 DEFAULT_DATE = dt.datetime(2023, 1, 1)
 
@@ -282,10 +286,10 @@ class TestAPI:
     def test_image_language(self, django_settings, image, expected_language):
         tags = Tags()
         if expected_language is None:
-            language, _, _, _, _ = image.unpack_name(tags=tags)
+            language, _, _, _, _, _ = image.unpack_name(tags=tags)
             assert language is None
         else:
-            language, _, _, _, _ = image.unpack_name(tags=tags)
+            language, _, _, _, _, _ = image.unpack_name(tags=tags)
             assert language.alpha_2.lower() == expected_language.lower()
 
     @pytest.mark.parametrize(
@@ -304,7 +308,7 @@ class TestAPI:
     )
     def test_image_tags(self, django_settings, grandchild_tag, extended_tag, full_art_tag, image, expected_tags):
         tags = Tags()
-        _, _, extracted_tags, _, _ = image.unpack_name(tags=tags)
+        _, _, extracted_tags, _, _, _ = image.unpack_name(tags=tags)
         assert extracted_tags == expected_tags
 
     @pytest.mark.parametrize(
@@ -337,7 +341,7 @@ class TestAPI:
         expected_extension,
     ):
         tags = Tags()
-        language, name, extracted_tags, extension, _ = image.unpack_name(tags=tags)
+        language, name, extracted_tags, extension, _, _ = image.unpack_name(tags=tags)
         if expected_language is None:
             assert language is None
         else:
@@ -527,7 +531,7 @@ class TestUpdateDatabase:
                 small_thumbnail_url="",
                 medium_thumbnail_url="",
             )
-        _, _, _, _, match = Image(
+        _, _, _, _, match, _ = Image(
             id="",
             name=new_card,
             size=0,
@@ -542,5 +546,108 @@ class TestUpdateDatabase:
             assert canonical_cards_by_pk[match].collector_number == expected_collector_number
         else:
             assert match is None
+
+    @pytest.mark.parametrize(
+        "canonical_cards, canonical_artists, new_card, expected_artist",
+        [
+            pytest.param(
+                [
+                    ("Lightning Bolt", "LEA", "161"),
+                ],
+                [
+                    "Wayne Reynolds",
+                ],
+                "Lightning Bolt.jpg",
+                None,
+                id="card name does not specify valid artist name, no match",
+            ),
+            pytest.param(
+                [
+                    ("Lightning Bolt", "LEA", "161"),
+                ],
+                [
+                    "Wayne Reynolds",
+                ],
+                "Lightning Bolt (Wayne Reynolds).jpg",
+                "Wayne Reynolds",
+                id="card name specifies valid artist name, match",
+            ),
+            pytest.param(
+                [
+                    ("Lightning Bolt", "LEA", "161"),
+                ],
+                [
+                    "Wayne Reynolds",
+                    "Karl Kopinski",
+                ],
+                "Lightning Bolt (Wayne Reynolds).jpg",
+                "Wayne Reynolds",
+                id="card name specifies valid artist name out of two options, match",
+            ),
+            pytest.param(
+                [
+                    ("Lightning Bolt", "LEA", "161"),
+                ],
+                [
+                    "Wayne Reynolds",
+                    "Karl Kopinski",
+                ],
+                "Lightning Bolt (Wayne Reynolds, Karl Kopinski).jpg",
+                None,
+                id="card name specifies multiple valid artist names, ambiguous, no match",
+            ),
+            pytest.param(
+                [
+                    ("Lightning Bolt", "LEA", "161"),
+                ],
+                [
+                    "Wayne Reynolds",
+                ],
+                "Lightning Bolt (LEA 161).jpg",
+                None,
+                id="card name specifies valid expansion+collector number, no artist match",
+            ),
+            pytest.param(
+                [
+                    ("Lightning Bolt", "LEA", "161"),
+                ],
+                [
+                    "Wayne Reynolds",
+                ],
+                "Lightning Bolt (LEA 161, Wayne Reynolds).jpg",
+                None,
+                id="card name specifies valid expansion+collector number, no artist match even though artist specified",
+            ),
+        ],
+    )
+    def test_associate_with_canonical_artist(
+        self, django_settings, canonical_cards, canonical_artists, new_card, expected_artist
+    ):
+        for (name, expansion, collector_number) in canonical_cards:
+            CanonicalCardFactory.create(
+                name=name,
+                expansion=CanonicalExpansionFactory(code=expansion),
+                collector_number=collector_number,
+                image_hash=0,
+                small_thumbnail_url="",
+                medium_thumbnail_url="",
+            )
+        for artist_name in canonical_artists:
+            CanonicalArtistFactory.create(name=artist_name)
+        _, _, _, _, canonical_card_id, canonical_artist_id = Image(
+            id="",
+            name=new_card,
+            size=0,
+            created_time=dt.datetime(2026, 1, 1),
+            modified_time=dt.datetime(2026, 1, 1),
+            height=0,
+            folder=Folder(id="", name="", parent=None),
+        ).unpack_name(tags=Tags())
+        canonical_artists_by_pk = {artist.pk: artist for artist in CanonicalArtist.objects.all()}
+        if expected_artist is not None:
+            assert canonical_artists_by_pk[canonical_artist_id].name == expected_artist
+            assert canonical_card_id is None
+        else:
+            assert canonical_artist_id is None
 
     # endregion

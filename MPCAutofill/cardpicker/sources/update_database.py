@@ -57,7 +57,7 @@ def transform_image_into_object(source: Source, image: Image, tags: Tags) -> Car
         MAX_SIZE_MB * 1_000_000
     ), f"Image size is greater than {MAX_SIZE_MB} MB at **{int(image.size / 1_000_000)}** MB"
     # this can also raise AssertionError
-    language, name, extracted_tags, extension, canonical_card_pk = image.unpack_name(tags=tags)
+    language, name, extracted_tags, extension, canonical_card_pk, canonical_artist_pk = image.unpack_name(tags=tags)
 
     searchable_name = to_searchable(name)
     dpi = 10 * round(int(image.height) * DPI_HEIGHT_RATIO / 10)
@@ -98,6 +98,7 @@ def transform_image_into_object(source: Source, image: Image, tags: Tags) -> Car
         tags=list(extracted_tags),
         language=(language or DEFAULT_LANGUAGE).alpha_2.upper(),
         canonical_card_id=canonical_card_pk,
+        canonical_artist_id=canonical_artist_pk,
         image_hash=0,
     )
 
@@ -170,6 +171,8 @@ def bulk_sync_objects(source: Source, cards: list[Card]) -> None:
             | (incoming[identifier].name != existing[identifier].name)
             # or if the canonical card this card is associated with has changed...
             | (incoming[identifier].canonical_card_id != existing[identifier].canonical_card_id)
+            # or if the canonical artist this card is associated with has changed.
+            | (incoming[identifier].canonical_artist_id != existing[identifier].canonical_artist_id)
         ):
             # record an update for this card
             incoming[identifier].pk = existing[identifier].pk  # this must be explicitly set for bulk_update.
@@ -201,6 +204,7 @@ def bulk_sync_objects(source: Source, cards: list[Card]) -> None:
                     "tags",
                     "language",
                     "canonical_card",
+                    "canonical_artist",
                 ],
                 batch_size=1000,
             )
