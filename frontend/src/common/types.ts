@@ -141,7 +141,7 @@ export interface DFCPairs {
   [front: string]: string;
 }
 
-export type FacetBy = "Source" | "Printing" | "None";
+export type FacetBy = "Source" | "Printing" | "None" | "Artist";
 
 export interface ViewSettingsState {
   frontsVisible: boolean;

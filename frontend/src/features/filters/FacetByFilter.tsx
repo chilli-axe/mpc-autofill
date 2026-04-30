@@ -21,7 +21,12 @@ export const FacetByFilter = ({
   makeAllFacetsInvisible,
   anyFacetsCollapsed,
 }: FacetByFilterProps) => {
-  const FacetByOptions: Array<FacetBy> = ["None", "Printing", "Source"];
+  const FacetByOptions: Array<FacetBy> = [
+    "None",
+    "Printing",
+    "Artist",
+    "Source",
+  ];
   const facetByOptions = useMemo(
     () =>
       FacetByOptions.map((option) => ({

@@ -298,12 +298,13 @@ export function CardResultSet({
     (card: CardDocument): string | undefined => {
       if (facetBy === "Source") return card.source;
       if (facetBy === "Printing") return card.canonicalCard?.expansionName;
+      if (facetBy === "Artist") return card.canonicalArtist?.name;
       return "";
     },
     [facetBy]
   );
 
-  if (facetBy === "Source" || facetBy === "Printing") {
+  if (facetBy === "Source" || facetBy === "Printing" || facetBy === "Artist") {
     return (
       <FacetedCards
         imageIdentifiers={imageIdentifiers}
