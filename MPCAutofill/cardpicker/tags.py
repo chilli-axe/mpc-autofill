@@ -41,7 +41,12 @@ class Tags:
 
     @classmethod
     def extract_collector_number(cls, name: str) -> tuple[str, str | None]:
-        return re.search(r"^(.+?)(?:\s?\{(.+)\})?$", name).groups()  # type: ignore
+        match = re.search(r"^(.+?)(?:\s?\{(.+)\})?$", name)
+        assert match is not None
+        groups = match.groups()
+        assert isinstance(groups[0], str)
+        assert isinstance(groups[1], str) or groups[1] is None
+        return groups  # type: ignore
 
     def match_canonical_card(self, raw_tags: set[str], collector_number: str | None) -> tuple[str, int] | None:
         tags = (
