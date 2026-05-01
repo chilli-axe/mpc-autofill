@@ -23,10 +23,16 @@ export const loadPageWithDefaultBackend = async (
   pageName: string = "editor"
 ) => {
   await page.goto(`/${pageName}?server=http://127.0.0.1:8000`);
+  if (pageName === "editor") {
+    await page.getByText("Choose Art").click();
+    await page.getByText("Your project is empty at the moment.");
+  }
 };
 
-export const navigateToEditor = async (page: Page) =>
+export const navigateToEditor = async (page: Page) => {
   await page.getByRole("link", { name: "Editor" }).click();
+  await page.getByText("Choose Art").click();
+};
 
 export const navigateToNew = async (page: Page) =>
   await page.getByRole("link", { name: "What's New?" }).click();
@@ -170,7 +176,10 @@ export const openImportCSVModal = async (page: Page) => {
 
 export const importCSV = async (page: Page, fileContents: string) => {
   await openImportCSVModal(page);
-  const fileInput = page.locator('input[type="file"]').first();
+  const fileInput = page
+    .getByLabel("import-csv")
+    .locator('input[type="file"]')
+    .first();
 
   // Create a temporary file with the CSV content
   const buffer = Buffer.from(fileContents);
@@ -198,10 +207,15 @@ export const importXML = async (
   await openImportXMLModal(page);
 
   if (!useXMLCardback) {
-    await page.getByText("Use XML Cardback").click();
+    const toggleButton = page.getByRole("button", { name: /Use XML Cardback/ });
+    await toggleButton.click();
+    await expect(toggleButton).toHaveClass(/off/);
   }
 
-  const fileInput = page.locator('input[type="file"]').first();
+  const fileInput = page
+    .getByLabel("import-xml")
+    .locator('input[type="file"]')
+    .first();
 
   // Create a temporary file with the XML content
   const buffer = Buffer.from(fileContents);

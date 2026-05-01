@@ -7,12 +7,18 @@ import Container from "react-bootstrap/Container";
 import Modal from "react-bootstrap/Modal";
 import Row from "react-bootstrap/Row";
 import Tab from "react-bootstrap/Tab";
-import Tabs from "react-bootstrap/Tabs";
 
+import {
+  NavbarHeight,
+  NavPillButtonHeight,
+  NavUnderlineButtonHeight,
+} from "@/common/constants";
 import { useAppDispatch, useAppSelector } from "@/common/types";
 import { Coffee } from "@/components/Coffee";
 import { RightPaddedIcon } from "@/components/icon";
 import { MakePlayingCardsLink } from "@/components/MakePlayingCardsLink";
+import { NavBanner, NavBannerItem } from "@/components/NavBanner";
+import { OverflowCol } from "@/components/OverflowCol";
 import { useClientSearchContext } from "@/features/clientSearch/clientSearchContext";
 import { useLocalFilesDirectoryHandle } from "@/features/clientSearch/clientSearchHooks";
 import { useDownloadDesktopTool } from "@/features/download/downloadDesktopTool";
@@ -284,31 +290,52 @@ const MakePlayingCardsInstructions = () => {
   );
 };
 
+type FinishedMyProjectExportType = "mpc" | "pdf";
+
+export function FinishedMyProject() {
+  const [key, setKey] = useState<FinishedMyProjectExportType>("mpc");
+  const navBannerItems: Array<NavBannerItem<FinishedMyProjectExportType>> = [
+    { key: "mpc", label: "MakePlayingCards", bootstrapIconName: "bag-check" },
+    { key: "pdf", label: "PDF", bootstrapIconName: "file-pdf" },
+  ];
+  return (
+    <Tab.Container
+      activeKey={key}
+      onSelect={(k) => {
+        if (k) setKey(k as FinishedMyProjectExportType);
+      }}
+    >
+      <NavBanner items={navBannerItems} variant="underline" />
+      <OverflowCol
+        heightDelta={
+          NavPillButtonHeight + NavUnderlineButtonHeight + NavbarHeight
+        }
+      >
+        <Tab.Content>
+          <Tab.Pane eventKey="mpc">
+            <MakePlayingCardsInstructions />
+          </Tab.Pane>
+          <Tab.Pane eventKey="pdf">
+            <PDFGenerator
+              heightDelta={
+                NavPillButtonHeight + NavUnderlineButtonHeight + NavbarHeight
+              }
+            />
+          </Tab.Pane>
+        </Tab.Content>
+      </OverflowCol>
+    </Tab.Container>
+  );
+}
+
 export function FinishedMyProjectModal({ show, handleClose }: ExitModal) {
-  const [key, setKey] = useState<"mpc" | "pdf">("mpc");
   return (
     <Modal fullscreen scrollable show={show} onHide={handleClose}>
       <Modal.Header closeButton>
         <Modal.Title>I&apos;ve Finished My Project</Modal.Title>
       </Modal.Header>
       <Modal.Body className="p-0">
-        <Tabs
-          activeKey={key}
-          onSelect={(k) => {
-            if (k === "mpc" || k === "pdf") setKey(k);
-          }}
-          variant="pills"
-          defaultActiveKey="mpc"
-          justify
-          className="my-0"
-        >
-          <Tab eventKey="mpc" title="Print with MakePlayingCards">
-            {key === "mpc" && <MakePlayingCardsInstructions />}
-          </Tab>
-          <Tab eventKey="pdf" title="Download PDF">
-            {key === "pdf" && <PDFGenerator heightDelta={46} />}
-          </Tab>
-        </Tabs>
+        <FinishedMyProject />
       </Modal.Body>
       <Modal.Footer>
         <Button variant="secondary" onClick={handleClose}>
@@ -319,7 +346,7 @@ export function FinishedMyProjectModal({ show, handleClose }: ExitModal) {
   );
 }
 
-export function FinishedMyProject() {
+export function FinishedMyProjectButton() {
   const isProjectEmpty = useAppSelector(selectIsProjectEmpty);
   const dispatch = useAppDispatch();
   return !isProjectEmpty ? (

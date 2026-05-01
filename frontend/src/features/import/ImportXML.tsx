@@ -35,28 +35,19 @@ import {
   selectProjectSize,
 } from "@/store/slices/projectSlice";
 
-export function ImportXML() {
-  //# region queries and hooks
+interface ImportXMLProps {
+  onImportComplete?: () => void;
+}
 
+export function ImportXML({ onImportComplete }: ImportXMLProps) {
   const dispatch = useAppDispatch();
   const projectCardback = useAppSelector(selectProjectCardback);
   const projectSize = useAppSelector(selectProjectSize);
 
-  //# endregion
-
-  //# region state
-
-  const [showXMLModal, setShowXMLModal] = useState<boolean>(false);
   const [useXMLCardback, setUseXMLCardback] = useState<boolean>(true);
   const [useXMLFinishSettings, setUseXMLFinishSettings] =
     useState<boolean>(false);
 
-  //# endregion
-
-  //# region callbacks
-
-  const handleCloseXMLModal = () => setShowXMLModal(false);
-  const handleShowXMLModal = () => setShowXMLModal(true);
   const parseXMLFile = (fileContents: string | ArrayBuffer | null) => {
     if (typeof fileContents !== "string") {
       alert("invalid CSV file uploaded");
@@ -174,72 +165,80 @@ export function ImportXML() {
       dispatch(setFoil(foil));
     }
 
-    handleCloseXMLModal();
+    onImportComplete?.();
   };
-
-  //# endregion
 
   return (
     <>
-      <Dropdown.Item onClick={handleShowXMLModal}>
+      <p>Upload an XML file of cards to add to the project.</p>
+      <p>
+        The {ProjectName} website can generate an XML file representing your
+        project, and the {ProjectName} desktop tool which auto-fills your order
+        into <MakePlayingCardsLink /> expects a file in this format.
+      </p>
+      <div className="px-0">
+        <Toggle
+          onClick={() => setUseXMLCardback(!useXMLCardback)}
+          on="Use XML Cardback"
+          onClassName="flex-centre"
+          off="Use Project Cardback"
+          offClassName="flex-centre"
+          onstyle="success"
+          offstyle="info"
+          width={100 + "%"}
+          size="md"
+          height={ToggleButtonHeight + "px"}
+          active={useXMLCardback}
+        />
+      </div>
+      <div className="pt-3">
+        <Toggle
+          onClick={() => setUseXMLFinishSettings(!useXMLFinishSettings)}
+          on="Use XML Finish Settings"
+          onClassName="flex-centre"
+          off="Retain Selected Finish Settings"
+          offClassName="flex-centre"
+          onstyle="success"
+          offstyle="info"
+          width={100 + "%"}
+          size="md"
+          height={ToggleButtonHeight + "px"}
+          active={useXMLFinishSettings}
+        />
+      </div>
+      <hr />
+      <TextFileDropzone
+        mimeTypes={{ "text/xml": [".xml"] }}
+        fileUploadCallback={parseXMLFile}
+        label="import-xml"
+        disabled={false} // this importer has no DFC integration so there's no need to wait for anything
+      />
+    </>
+  );
+}
+
+export function ImportXMLButton() {
+  const [show, setShow] = useState<boolean>(false);
+
+  return (
+    <>
+      <Dropdown.Item onClick={() => setShow(true)}>
         <RightPaddedIcon bootstrapIconName="file-code" /> XML
       </Dropdown.Item>
       <Modal
         scrollable
-        show={showXMLModal}
-        onHide={handleCloseXMLModal}
+        show={show}
+        onHide={() => setShow(false)}
         data-testid="import-xml"
       >
         <Modal.Header closeButton>
           <Modal.Title>Add Cards — XML</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <p>Upload an XML file of cards to add to the project.</p>
-          <p>
-            The {ProjectName} website can generate an XML file representing your
-            project, and the {ProjectName} desktop tool which auto-fills your
-            order into <MakePlayingCardsLink /> expects a file in this format.
-          </p>
-          <div className="px-0">
-            <Toggle
-              onClick={() => setUseXMLCardback(!useXMLCardback)}
-              on="Use XML Cardback"
-              onClassName="flex-centre"
-              off="Use Project Cardback"
-              offClassName="flex-centre"
-              onstyle="success"
-              offstyle="info"
-              width={100 + "%"}
-              size="md"
-              height={ToggleButtonHeight + "px"}
-              active={useXMLCardback}
-            />
-          </div>
-          <div className="pt-3">
-            <Toggle
-              onClick={() => setUseXMLFinishSettings(!useXMLFinishSettings)}
-              on="Use XML Finish Settings"
-              onClassName="flex-centre"
-              off="Retain Selected Finish Settings"
-              offClassName="flex-centre"
-              onstyle="success"
-              offstyle="info"
-              width={100 + "%"}
-              size="md"
-              height={ToggleButtonHeight + "px"}
-              active={useXMLFinishSettings}
-            />
-          </div>
-          <hr />
-          <TextFileDropzone
-            mimeTypes={{ "text/xml": [".xml"] }}
-            fileUploadCallback={parseXMLFile}
-            label="import-xml"
-            disabled={false} // this importer has no DFC integration so there's no need to wait for anything
-          />
+          <ImportXML onImportComplete={() => setShow(false)} />
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={handleCloseXMLModal}>
+          <Button variant="secondary" onClick={() => setShow(false)}>
             Close
           </Button>
         </Modal.Footer>

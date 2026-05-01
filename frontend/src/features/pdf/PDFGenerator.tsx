@@ -241,7 +241,7 @@ export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
           sm={5}
           xs={6}
           className="py-2"
-          heightDelta={67.9 + 71 + heightDelta}
+          heightDelta={heightDelta}
         >
           <p>
             Generate a PDF file from your project suitable for printing at home
@@ -485,7 +485,10 @@ export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
           {showSpinner && (
             <Spinner size={6} zIndex={3} positionAbsolute={true} />
           )}
-          <Blurrable disabled={showSpinner} style={{ height: 100 + "%" }}>
+          <Blurrable
+            disabled={showSpinner}
+            style={{ height: 100 + "%", overflowY: "hidden" }}
+          >
             <PDFPreview url={url} {...debouncedPDFProps} fileHandles={{}} />
           </Blurrable>
         </Col>

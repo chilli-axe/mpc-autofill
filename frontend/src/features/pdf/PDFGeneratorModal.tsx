@@ -2,6 +2,7 @@ import React from "react";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 
+import { ModalFooterHeight, ModalHeaderHeight } from "@/common/constants";
 import { PDFGenerator } from "@/features/pdf/PDFGenerator";
 
 interface PDFGeneratorProps {
@@ -19,7 +20,7 @@ export function PDFGeneratorModal({ show, handleClose }: PDFGeneratorProps) {
         <Modal.Title>Download PDF</Modal.Title>
       </Modal.Header>
       <Modal.Body className="p-0 mx-0" style={{ overflow: "hidden" }}>
-        <PDFGenerator />
+        <PDFGenerator heightDelta={ModalHeaderHeight + ModalFooterHeight} />
       </Modal.Body>
       <Modal.Footer>
         <Button variant="secondary" onClick={handleClose}>

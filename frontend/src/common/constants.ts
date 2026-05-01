@@ -36,11 +36,15 @@ export const ReversedCardTypePrefixes = Object.fromEntries(
 export const Front: Faces = "front";
 export const Back: Faces = "back";
 
+export const NavPillButtonHeight = 40; // pixels
+export const NavUnderlineButtonHeight = 42; // pixels
 export const ToggleButtonHeight = 38; // pixels
 export const NavbarHeight = 50; // pixels - aligns with the natural height of the navbar
 export const RibbonHeight = 54; // pixels
 export const NavbarLogoHeight = 40; // pixels
 export const ContentMaxWidth = 1200; // pixels - aligns with bootstrap's large breakpoint
+export const ModalHeaderHeight = 68.7;
+export const ModalFooterHeight = 71;
 
 export const MinimumDPI = 0;
 export const MaximumDPI = 1500;
