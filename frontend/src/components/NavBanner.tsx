@@ -1,3 +1,4 @@
+import React from "react";
 import Nav from "react-bootstrap/Nav";
 
 import {} from "@/common/constants";
@@ -10,7 +11,7 @@ import { RightPaddedIcon } from "./icon";
 
 export interface NavBannerItem<T extends string> {
   key: T;
-  label: string;
+  label: string | React.ReactElement;
   disabled?: boolean;
   bootstrapIconName?: string;
 }

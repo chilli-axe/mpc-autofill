@@ -52,10 +52,6 @@ export function Modals() {
           )}
         </>
       )}
-      <FinishedMyProjectModal
-        show={shownModal === "finishedMyProject"}
-        handleClose={handleClose}
-      />
       <SupportDeveloperModal
         show={shownModal === "supportDeveloper"}
         handleClose={handleClose}

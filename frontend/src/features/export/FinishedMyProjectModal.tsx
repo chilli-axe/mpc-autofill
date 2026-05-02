@@ -27,6 +27,7 @@ import { useProjectName } from "@/store/slices/backendSlice";
 import { showModal } from "@/store/slices/modalsSlice";
 import { selectIsProjectEmpty } from "@/store/slices/projectSlice";
 
+import { MobileStatus } from "../mobile/MobileStatus";
 import { PDFGenerator } from "../pdf/PDFGenerator";
 interface ExitModal {
   show: boolean;
@@ -198,6 +199,7 @@ function PlatformDownload({
 function DesktopToolDownload() {
   return (
     <>
+      <MobileStatus />
       <p>
         Download the desktop tool for your platform. If you&apos;d rather
         download the source code instead, you can find it{" "}
@@ -326,39 +328,4 @@ export function FinishedMyProject() {
       </OverflowCol>
     </Tab.Container>
   );
-}
-
-export function FinishedMyProjectModal({ show, handleClose }: ExitModal) {
-  return (
-    <Modal fullscreen scrollable show={show} onHide={handleClose}>
-      <Modal.Header closeButton>
-        <Modal.Title>I&apos;ve Finished My Project</Modal.Title>
-      </Modal.Header>
-      <Modal.Body className="p-0">
-        <FinishedMyProject />
-      </Modal.Body>
-      <Modal.Footer>
-        <Button variant="secondary" onClick={handleClose}>
-          Close
-        </Button>
-      </Modal.Footer>
-    </Modal>
-  );
-}
-
-export function FinishedMyProjectButton() {
-  const isProjectEmpty = useAppSelector(selectIsProjectEmpty);
-  const dispatch = useAppDispatch();
-  return !isProjectEmpty ? (
-    <div className="d-grid gap-0">
-      <Button
-        variant="success"
-        id="dropdown-basic"
-        onClick={() => dispatch(showModal("finishedMyProject"))}
-      >
-        <RightPaddedIcon bootstrapIconName="bag-check" /> I&apos;ve Finished My
-        Project
-      </Button>
-    </div>
-  ) : null;
 }

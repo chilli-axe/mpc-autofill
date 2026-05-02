@@ -38,6 +38,7 @@ import {
 
 import { RightPaddedIcon } from "./icon";
 import { NavBanner, NavBannerItem } from "./NavBanner";
+import { Spinner } from "./Spinner";
 
 type EditorPanel = "import" | "editor" | "finished";
 
@@ -92,7 +93,6 @@ const ChooseArtPanel = ({
   setEditorPanel: (value: EditorPanel) => void;
 }) => {
   const cardback = useAppSelector(selectProjectCardback);
-  const isProjectEmpty = useAppSelector(selectIsProjectEmpty);
   return (
     <>
       <Ribbon position="top" className="g-0">
@@ -133,16 +133,6 @@ const ChooseArtPanel = ({
             <Col lg={5} md={12} sm={12} xs={12}>
               <Export />
             </Col>
-            {!isProjectEmpty && (
-              <Button
-                variant="success"
-                id="dropdown-basic"
-                onClick={() => setEditorPanel("finished")}
-              >
-                <RightPaddedIcon bootstrapIconName="bag-check" /> I&apos;ve
-                Finished My Project
-              </Button>
-            )}
           </Row>
           <Col className="g-0 pt-2" lg={{ span: 8, offset: 2 }} md={12}>
             <CommonCardback selectedImage={cardback} />
@@ -164,6 +154,9 @@ function ProjectEditor() {
 
   const isProjectEmpty = useAppSelector(selectIsProjectEmpty);
   const [editorPanel, setEditorPanel] = useState<EditorPanel>("import");
+  const fetchingCardData = useAppSelector(
+    (state) => state.cardDocuments.status === "loading"
+  );
 
   /**
    * Ask the user for confirmation before they close the page if their project has any cards in it.
@@ -183,7 +176,11 @@ function ProjectEditor() {
 
   const navBannerItems: Array<NavBannerItem<EditorPanel>> = [
     { key: "import", label: "Add Cards", disabled: false },
-    { key: "editor", label: "Choose Art", disabled: false },
+    {
+      key: "editor",
+      label: fetchingCardData ? <Spinner size={1.5} /> : "Choose Art",
+      disabled: false,
+    },
     { key: "finished", label: "Print!", disabled: isProjectEmpty },
   ];
 
