@@ -22,7 +22,7 @@ import { SelectedImagesRibbon } from "@/features/bulkManagement/SelectedImagesRi
 import { CardGrid } from "@/features/card/CardGrid";
 import { CommonCardback } from "@/features/card/CommonCardback";
 import { Export } from "@/features/export/Export";
-import { FinishedMyProject } from "@/features/export/FinishedMyProjectModal";
+import { FinishedMyProject } from "@/features/export/FinishedMyProject";
 import { FinishSettings } from "@/features/finishSettings/FinishSettings";
 import { Import } from "@/features/import/Import";
 import { ImportCSV } from "@/features/import/ImportCSV";

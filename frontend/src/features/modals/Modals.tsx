@@ -3,7 +3,6 @@ import React from "react";
 import { useAppDispatch, useAppSelector } from "@/common/types";
 import { MemoizedCardDetailedView } from "@/features/cardDetailedView/CardDetailedViewModal";
 import { ChangeQueryModal } from "@/features/changeQuery/ChangeQueryModal";
-import { FinishedMyProjectModal } from "@/features/export/FinishedMyProjectModal";
 import { InvalidIdentifiersModal } from "@/features/invalidIdentifiers/InvalidIdentifiersModal";
 import { PDFGeneratorModal } from "@/features/pdf/PDFGeneratorModal";
 import { SupportBackendModal } from "@/features/support/SupportBackendModal";
