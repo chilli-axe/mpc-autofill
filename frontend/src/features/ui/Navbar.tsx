@@ -156,8 +156,7 @@ export default function ProjectNavbar() {
                       onClick={handleShowSupportBackendModal}
                       eventKey="support-backend"
                     >
-                      <i className="bi bi-server" /> Support{" "}
-                      {backendInfoQuery.data.name}
+                      <i className="bi bi-server" /> Support the Server
                     </NavDropdown.Item>
                   )}
               </NavDropdown>
