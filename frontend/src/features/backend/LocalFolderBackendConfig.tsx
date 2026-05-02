@@ -131,10 +131,7 @@ export const LocalFolderBackendConfig = () => {
           </Row>
         </Alert>
       )}
-      <p>
-        Choose a folder on your computer you&apos;d like to connect{" "}
-        {ProjectName} to.
-      </p>
+      <p>Choose a folder on your computer to connect with {ProjectName}.</p>
       <ul>
         <li>
           Image files in this folder are searchable in the {ProjectName} editor.

@@ -29,16 +29,25 @@ import {
 import { useAppDispatch, useAppSelector } from "@/common/types";
 import { toTitleCase } from "@/common/utils";
 import { RightPaddedIcon } from "@/components/icon";
+import { Jumbotron } from "@/components/Jumbotron";
 import { useGetDFCPairsQuery, useGetSampleCardsQuery } from "@/store/api";
 import { addMembers, selectProjectSize } from "@/store/slices/projectSlice";
 import { selectFuzzySearch } from "@/store/slices/searchSettingsSlice";
+
+import { LocalFolderBackendConfig } from "../backend/LocalFolderBackendConfig";
 
 interface ImportLocalFilesProps {
   onImportComplete?: () => void;
 }
 
 export function ImportLocalFiles({ onImportComplete }: ImportLocalFilesProps) {
-  return <>hello world!</>;
+  return (
+    <>
+      <Jumbotron variant="dark">
+        <LocalFolderBackendConfig />
+      </Jumbotron>
+    </>
+  );
 }
 
 export function ImportLocalFilesButton() {
