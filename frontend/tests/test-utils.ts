@@ -197,6 +197,7 @@ export const importCSV = async (page: Page, fileContents: string) => {
 export const openImportXMLModal = async (page: Page) => {
   await openAddCardsDropdown(page);
   await page.getByRole("button", { name: "XML", exact: false }).click();
+  return page.getByTestId("import-xml");
 };
 
 export const importXML = async (
@@ -204,18 +205,13 @@ export const importXML = async (
   fileContents: string,
   useXMLCardback: boolean = true
 ) => {
-  await openImportXMLModal(page);
+  const modal = await openImportXMLModal(page);
 
   if (!useXMLCardback) {
-    const toggleButton = page.getByRole("button", { name: /Use XML Cardback/ });
-    await toggleButton.click();
-    await expect(toggleButton).toHaveClass(/off/);
+    await modal.getByText("Use XML Cardback").click();
   }
 
-  const fileInput = page
-    .getByLabel("import-xml")
-    .locator('input[type="file"]')
-    .first();
+  const fileInput = modal.locator('input[type="file"]').first();
 
   // Create a temporary file with the XML content
   const buffer = Buffer.from(fileContents);

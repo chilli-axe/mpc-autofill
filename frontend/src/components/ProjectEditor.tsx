@@ -47,12 +47,12 @@ const AddCardsPanel = ({
   onImportComplete: () => void;
 }) => (
   <OverflowCol heightDelta={NavPillButtonHeight + NavbarHeight}>
-    <Row className="p-3 m-0 g-0">
-      <Col lg={6} md={6} sm={12} xs={12} className="pe-lg-3">
+    <Row className="p-2 g-0">
+      <Col lg={6} md={6} sm={12} xs={12} className="px-2">
         <h5>Enter a Card List</h5>
         <ImportText onImportComplete={onImportComplete} />
       </Col>
-      <Col lg={6} md={6} sm={12} xs={12} className="ps-lg-3 pt-3 pt-lg-0">
+      <Col lg={6} md={6} sm={12} xs={12} className="px-2">
         <h5>Import a File or URL</h5>
         <Accordion defaultActiveKey="url">
           <Accordion.Item eventKey="url">
@@ -98,7 +98,7 @@ const ChooseArtPanel = ({
       <Ribbon position="top" className="g-0">
         <SelectedImagesRibbon />
       </Ribbon>
-      <Row className="p-0 m-0 g-0">
+      <Row className="g-0">
         <OverflowCol
           lg={8}
           md={8}
