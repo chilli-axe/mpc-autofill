@@ -26,6 +26,7 @@ import { FinishedMyProject } from "@/features/export/FinishedMyProject";
 import { FinishSettings } from "@/features/finishSettings/FinishSettings";
 import { Import } from "@/features/import/Import";
 import { ImportCSV } from "@/features/import/ImportCSV";
+import { ImportLocalFiles } from "@/features/import/ImportLocalFiles";
 import { ImportText } from "@/features/import/ImportText";
 import { ImportURL } from "@/features/import/ImportURL";
 import { ImportXML } from "@/features/import/ImportXML";
@@ -62,6 +63,14 @@ const AddCardsPanel = ({
             </Accordion.Header>
             <Accordion.Body>
               <ImportURL onImportComplete={onImportComplete} />
+            </Accordion.Body>
+          </Accordion.Item>
+          <Accordion.Item eventKey="local-files">
+            <Accordion.Header>
+              <RightPaddedIcon bootstrapIconName="upload" /> Local Files
+            </Accordion.Header>
+            <Accordion.Body>
+              <ImportLocalFiles onImportComplete={onImportComplete} />
             </Accordion.Body>
           </Accordion.Item>
           <Accordion.Item eventKey="xml">
