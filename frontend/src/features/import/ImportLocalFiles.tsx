@@ -1,38 +1,14 @@
-import React, {
-  FormEvent,
-  KeyboardEvent,
-  KeyboardEventHandler,
-  useRef,
-  useState,
-} from "react";
-import { Accordion } from "react-bootstrap";
+import React, { useEffect, useState } from "react";
 import Button from "react-bootstrap/Button";
 import Dropdown from "react-bootstrap/Dropdown";
-import Form from "react-bootstrap/Form";
 import Modal from "react-bootstrap/Modal";
-import Stack from "react-bootstrap/Stack";
+import { TreeData } from "react-dropdown-tree-select";
 
-import {
-  Card,
-  Cardback,
-  FaceSeparator,
-  ProjectName,
-  ReversedCardTypePrefixes,
-  SelectedImageSeparator,
-  Token,
-} from "@/common/constants";
-import {
-  convertLinesIntoSlotProjectMembers,
-  formatPlaceholderText,
-  processStringAsMultipleLines,
-} from "@/common/processing";
-import { useAppDispatch, useAppSelector } from "@/common/types";
-import { toTitleCase } from "@/common/utils";
+import { StyledDropdownTreeSelect } from "@/common/StyledDropdownTreeSelect";
 import { RightPaddedIcon } from "@/components/icon";
 import { Jumbotron } from "@/components/Jumbotron";
-import { useGetDFCPairsQuery, useGetSampleCardsQuery } from "@/store/api";
-import { addMembers, selectProjectSize } from "@/store/slices/projectSlice";
-import { selectFuzzySearch } from "@/store/slices/searchSettingsSlice";
+import { useClientSearchContext } from "@/features/clientSearch/clientSearchContext";
+import { useLocalBackendConfigured } from "@/store/slices/backendSlice";
 
 import { LocalFolderBackendConfig } from "../backend/LocalFolderBackendConfig";
 
@@ -41,10 +17,47 @@ interface ImportLocalFilesProps {
 }
 
 export function ImportLocalFiles({ onImportComplete }: ImportLocalFilesProps) {
+  const localFilesBackendConfigured = useLocalBackendConfigured();
+  const { clientSearchService } = useClientSearchContext();
+  const [localFilesData, setLocalFilesData] = useState<TreeData>({});
+
+  useEffect(() => {
+    clientSearchService.getLocalFilesImages().then((images) => {
+      if (images !== undefined && images.length > 0) {
+        setLocalFilesData(
+          images.map((image) => ({
+            label: image.name,
+            value: image.name, // TODO: probs need image ID here. stuff-around with tags, etc.
+            actions: [
+              // TODO: figure out what to do here re: controlling quantity
+              // {
+              //   className: "bi bi-check-circle-fill",
+              //   title: "plus one"
+              // }
+            ],
+          }))
+        );
+      } else {
+        setLocalFilesData([]);
+      }
+    });
+  }, [localFilesBackendConfigured]);
   return (
     <>
       <Jumbotron variant="dark">
         <LocalFolderBackendConfig />
+        {localFilesBackendConfigured && (
+          <>
+            <br />
+            <StyledDropdownTreeSelect
+              data={localFilesData}
+              onAction={(currentNode, currentAction) => {
+                console.log("currentNode: ", currentNode);
+                console.log("currentAction: ", currentAction);
+              }}
+            />
+          </>
+        )}
       </Jumbotron>
     </>
   );

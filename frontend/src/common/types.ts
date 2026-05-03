@@ -37,7 +37,9 @@ export type {
   SupporterTier,
   Tag,
 } from "@/common/schema_types";
-import { Orama, Schema, SearchableType } from "@orama/orama";
+import { Orama, SearchableType } from "@orama/orama";
+
+import { Image } from "@/features/clientSearch/Image";
 
 export const assertNever = (value: never) => {
   throw new Error("Unexpected value: " + value);
@@ -319,6 +321,7 @@ export interface OramaIndex {
 export interface LocalFilesIndex {
   fileHandle: FileSystemDirectoryHandle;
   index: OramaIndex | undefined;
+  images: Array<Image> | undefined;
 }
 
 export interface GoogleDriveIndex {

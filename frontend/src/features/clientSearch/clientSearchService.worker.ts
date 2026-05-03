@@ -26,9 +26,11 @@ import {
   SearchResults,
 } from "@/common/types";
 import { parseDjangoDate } from "@/common/utils";
+import { Folder } from "@/features/clientSearch/Folder";
+import { Image } from "@/features/clientSearch/Image";
 import { getDefaultSearchSettings } from "@/store/slices/searchSettingsSlice";
 
-import { Folder, GoogleDriveIndexer, LocalFilesIndexer } from "./indexer";
+import { GoogleDriveIndexer, LocalFilesIndexer } from "./indexer";
 
 export class ClientSearchService {
   private localFilesIndex: LocalFilesIndex | undefined;
@@ -58,7 +60,12 @@ export class ClientSearchService {
     this.localFilesIndex = {
       fileHandle: directoryHandle,
       index: undefined,
+      images: undefined,
     };
+  }
+
+  public getLocalFilesImages(): Array<Image> | undefined {
+    return this.localFilesIndex?.images;
   }
 
   public async clearLocalFilesIndex() {
@@ -81,7 +88,7 @@ export class ClientSearchService {
     tags: Array<Tag> | undefined
   ): Promise<{ handle: FileSystemDirectoryHandle; size: number } | undefined> {
     if (this.localFilesIndex?.fileHandle !== undefined) {
-      const oramaIndex = await new LocalFilesIndexer().indexFiles(
+      const { oramaIndex, images } = await new LocalFilesIndexer().indexFiles(
         [
           new Folder(
             {
@@ -97,6 +104,7 @@ export class ClientSearchService {
         tags
       );
       this.localFilesIndex.index = oramaIndex;
+      this.localFilesIndex.images = images;
       return {
         handle: this.localFilesIndex.fileHandle,
         size: this.localFilesIndex.index.size,
@@ -112,7 +120,7 @@ export class ClientSearchService {
     images: Array<GoogleDriveDoc>
   ) {
     const indexer = new GoogleDriveIndexer(bearerToken);
-    const oramaIndex = await indexer.indexFiles(
+    const { oramaIndex } = await indexer.indexFiles(
       folders.map(
         ({ id, name }) =>
           new Folder(

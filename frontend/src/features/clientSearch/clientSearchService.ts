@@ -19,6 +19,7 @@ import {
   OramaSearchResults,
   SearchResults,
 } from "@/common/types";
+import { Image } from "@/features/clientSearch/Image";
 import { api } from "@/store/api";
 import { recalculateSearchResults } from "@/store/listenerMiddleware";
 import { fetchCardDocumentsAndReportError } from "@/store/slices/cardDocumentsSlice";
@@ -75,6 +76,13 @@ export class ClientSearchService {
     await this.worker.setLocalFilesDirectoryHandle(directoryHandle, tags);
     await this.indexDirectory(dispatch, forceUpdate, tags);
     await recalculateSearchResults(state, dispatch, true);
+  }
+
+  public async getLocalFilesImages(): Promise<Array<Image> | undefined> {
+    if (this.worker === undefined) {
+      throw new Error("clientSearchService was not initialised!");
+    }
+    return this.worker.getLocalFilesImages();
   }
 
   // directory handle stuff below
