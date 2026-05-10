@@ -167,8 +167,16 @@
   transform: rotate(0deg);
 }
 
+.nav-pills .nav-link:not(.active):not(.disabled):hover {
+  background-color: rgba(var(--bs-primary-rgb), 0.2);
+}
+
 /* Ensure the Google Drive Picker dialog renders above Bootstrap's offcanvas (z-index: 1045) */
 .picker-dialog-bg,
 .picker-dialog {
   z-index: 2000 !important;
+}
+
+.nav-pills {
+  background-color: #4e5d6c;
 }
