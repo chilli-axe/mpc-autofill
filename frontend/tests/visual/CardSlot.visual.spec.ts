@@ -41,9 +41,10 @@ test.describe("CardSlot visual tests", () => {
     await expectCardGridSlotState(page, 1, "front", cardDocument1.name, 1, 1);
 
     await expect(page.getByTestId("front-slot0")).toMatchAriaSnapshot(`
-      - paragraph: Slot 1
-      - button "select-front0"
-      - button "remove-front0"
+      - button "Slot 1 select-front0 remove-front0":
+        - paragraph: Slot 1
+        - button "select-front0"
+        - button "remove-front0"
       - img "Card 1"
       - text: Card 1
       - paragraph: /Source 1 \\[\\d+ DPI\\]/
@@ -69,9 +70,10 @@ test.describe("CardSlot visual tests", () => {
     await selectSlot(page, 1, "front");
 
     await expect(page.getByTestId("front-slot0")).toMatchAriaSnapshot(`
-      - paragraph: Slot 1
-      - button "select-front0"
-      - button "remove-front0"
+      - button "Slot 1 select-front0 remove-front0":
+        - paragraph: Slot 1
+        - button "select-front0"
+        - button "remove-front0"
       - img "Card 1"
       - text: Card 1
       - paragraph: /Source 1 \\[\\d+ DPI\\]/
@@ -98,9 +100,10 @@ test.describe("CardSlot visual tests", () => {
     await expectCardGridSlotState(page, 1, "front", cardDocument1.name, 1, 1);
 
     await expect(page.getByTestId("front-slot0")).toMatchAriaSnapshot(`
-      - paragraph: Slot 1
-      - button "select-front0"
-      - button "remove-front0"
+      - button "Slot 1 select-front0 remove-front0":
+        - paragraph: Slot 1
+        - button "select-front0"
+        - button "remove-front0"
       - img "Card 1"
       - text: Card 1
       - paragraph: /Source 1 \\[\\d+ DPI\\]/
@@ -127,9 +130,10 @@ test.describe("CardSlot visual tests", () => {
     await expectCardGridSlotState(page, 1, "front", cardDocument1.name, 1, 3);
 
     await expect(page.getByTestId("front-slot0")).toMatchAriaSnapshot(`
-      - paragraph: Slot 1
-      - button "select-front0"
-      - button "remove-front0"
+      - button "Slot 1 select-front0 remove-front0":
+        - paragraph: Slot 1
+        - button "select-front0"
+        - button "remove-front0"
       - img "Card 1"
       - img "Card 2"
       - img "Card 3"
