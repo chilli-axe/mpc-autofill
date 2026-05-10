@@ -1,3 +1,5 @@
+import Container from "react-bootstrap/Container";
+
 import {
   BackendType,
   CardType,
@@ -53,7 +55,7 @@ export const ExploreFilters = ({
   setSourceSettings,
 }: ExploreFiltersProps) => {
   return (
-    <>
+    <Container className="px-1">
       <SourceBackendFilter
         backendType={backendType}
         setBackendType={setBackendType}
@@ -92,6 +94,6 @@ export const ExploreFilters = ({
           />
         </>
       )}
-    </>
+    </Container>
   );
 };
