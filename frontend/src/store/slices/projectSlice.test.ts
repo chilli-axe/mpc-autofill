@@ -5,7 +5,12 @@ import { setupStore } from "@/store/store";
 describe("selectQueriesWithoutSearchResults tests", () => {
   test("empty", () => {
     const state = {
-      project: { members: [], cardback: null, mostRecentlySelectedSlot: null },
+      project: {
+        members: [],
+        nextMemberId: 0,
+        cardback: null,
+        mostRecentlySelectedSlot: null,
+      },
     };
     expect(
       selectQueriesWithoutSearchResults(setupStore(state).getState())
@@ -17,6 +22,7 @@ describe("selectQueriesWithoutSearchResults tests", () => {
       project: {
         members: [
           {
+            id: "t-0",
             front: {
               query: {
                 query: "query 1",
@@ -28,6 +34,7 @@ describe("selectQueriesWithoutSearchResults tests", () => {
             back: null,
           },
         ],
+        nextMemberId: 1,
         cardback: null,
         mostRecentlySelectedSlot: null,
       },
@@ -47,6 +54,7 @@ describe("selectQueriesWithoutSearchResults tests", () => {
       project: {
         members: [
           {
+            id: "t-0",
             front: {
               query: {
                 query: "query 1",
@@ -58,6 +66,7 @@ describe("selectQueriesWithoutSearchResults tests", () => {
             back: null,
           },
           {
+            id: "t-1",
             front: {
               query: {
                 query: "query 2",
@@ -69,6 +78,7 @@ describe("selectQueriesWithoutSearchResults tests", () => {
             back: null,
           },
         ],
+        nextMemberId: 2,
         cardback: null,
         mostRecentlySelectedSlot: null,
       },
@@ -91,6 +101,7 @@ describe("selectQueriesWithoutSearchResults tests", () => {
       project: {
         members: [
           {
+            id: "t-0",
             front: {
               query: {
                 query: "query 1",
@@ -102,6 +113,7 @@ describe("selectQueriesWithoutSearchResults tests", () => {
             back: null,
           },
           {
+            id: "t-1",
             front: {
               query: {
                 query: "query 2",
@@ -120,6 +132,7 @@ describe("selectQueriesWithoutSearchResults tests", () => {
             },
           },
         ],
+        nextMemberId: 2,
         cardback: null,
         mostRecentlySelectedSlot: null,
       },
@@ -143,6 +156,7 @@ describe("selectQueriesWithoutSearchResults tests", () => {
       project: {
         members: [
           {
+            id: "t-0",
             front: {
               query: {
                 query: "query 1",
@@ -154,6 +168,7 @@ describe("selectQueriesWithoutSearchResults tests", () => {
             back: null,
           },
           {
+            id: "t-1",
             front: {
               query: {
                 query: "query 2",
@@ -165,6 +180,7 @@ describe("selectQueriesWithoutSearchResults tests", () => {
             back: null,
           },
         ],
+        nextMemberId: 2,
         cardback: null,
         mostRecentlySelectedSlot: null,
       },
@@ -186,6 +202,7 @@ describe("selectQueriesWithoutSearchResults tests", () => {
       project: {
         members: [
           {
+            id: "t-0",
             front: {
               query: {
                 query: "query 1",
@@ -197,6 +214,7 @@ describe("selectQueriesWithoutSearchResults tests", () => {
             back: null,
           },
           {
+            id: "t-1",
             front: {
               query: {
                 query: "query 1",
@@ -208,6 +226,7 @@ describe("selectQueriesWithoutSearchResults tests", () => {
             back: null,
           },
         ],
+        nextMemberId: 2,
         cardback: null,
         mostRecentlySelectedSlot: null,
       },
@@ -227,6 +246,7 @@ describe("selectQueriesWithoutSearchResults tests", () => {
       project: {
         members: [
           {
+            id: "t-0",
             front: {
               query: {
                 query: "query 1",
@@ -238,6 +258,7 @@ describe("selectQueriesWithoutSearchResults tests", () => {
             back: null,
           },
           {
+            id: "t-1",
             front: {
               query: {
                 query: "query 1",
@@ -249,6 +270,7 @@ describe("selectQueriesWithoutSearchResults tests", () => {
             back: null,
           },
         ],
+        nextMemberId: 2,
         cardback: null,
         mostRecentlySelectedSlot: null,
       },

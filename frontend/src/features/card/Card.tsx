@@ -367,6 +367,8 @@ interface CardProps {
   highlight?: boolean;
   /** When true, suppresses the card header and footer, showing only the image. */
   compressed?: boolean;
+  /** Ref to attach to the card header for use as a drag handle. */
+  handleRef?: (element: Element | null) => void;
 }
 
 /**
@@ -386,6 +388,7 @@ export function Card({
   noResultsFound,
   highlight,
   compressed = false,
+  handleRef,
 }: CardProps) {
   //# region computed constants
 
@@ -447,7 +450,11 @@ export function Card({
       style={{ contentVisibility: "auto" }}
     >
       {!compressed && (
-        <BSCard.Header className="pb-0 text-center">
+        <BSCard.Header
+          ref={handleRef as React.Ref<HTMLDivElement>}
+          className="pb-0 text-center"
+          style={{ cursor: handleRef ? "grab" : undefined }}
+        >
           <p className="mpccard-slot">{cardHeaderTitle}</p>
           {cardHeaderButtons}
         </BSCard.Header>
@@ -515,6 +522,8 @@ interface EditorCardProps {
   highlight?: boolean;
   /** When true, suppresses the card header and footer, showing only the image. */
   compressed?: boolean;
+  /** Ref to attach to the card header for use as a drag handle. */
+  handleRef?: (element: Element | null) => void;
 }
 
 /**
@@ -536,6 +545,7 @@ export function EditorCard({
   noResultsFound,
   highlight,
   compressed,
+  handleRef,
 }: EditorCardProps) {
   //# region queries and hooks
 
@@ -565,6 +575,7 @@ export function EditorCard({
       noResultsFound={noResultsFound}
       highlight={highlight}
       compressed={compressed}
+      handleRef={handleRef}
     />
   );
 }

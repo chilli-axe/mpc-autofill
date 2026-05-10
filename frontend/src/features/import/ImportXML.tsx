@@ -80,7 +80,7 @@ export function ImportXML({ onImportComplete }: ImportXMLProps) {
     // `newMembers` is initialised with the maximum length it might need to contain all cards
     // the project can hold, then is truncated later according to `lastNonNullSlot`
     let lastNonNullSlot = 0;
-    const newMembers: Array<SlotProjectMembers> = Array.from(
+    const newMembers: Array<Omit<SlotProjectMembers, "id">> = Array.from(
       { length: ProjectMaxSize - projectSize },
       () => {
         return { front: null, back: null };

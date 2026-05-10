@@ -270,8 +270,8 @@ export function processStringAsMultipleLines(
 export function convertLinesIntoSlotProjectMembers(
   lines: Array<ProcessedLine>,
   memberCount: number
-): Array<SlotProjectMembers> {
-  let newMembers: Array<SlotProjectMembers> = [];
+): Array<Omit<SlotProjectMembers, "id">> {
+  let newMembers: Array<Omit<SlotProjectMembers, "id">> = [];
   for (const [quantity, frontMember, backMember] of lines) {
     const cappedQuantity = Math.min(
       quantity,

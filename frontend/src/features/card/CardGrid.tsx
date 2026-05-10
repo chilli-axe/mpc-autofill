@@ -2,16 +2,19 @@
  * This component displays all `CardSlot`s in the project.
  */
 
+import { DragDropProvider, PointerSensor } from "@dnd-kit/react";
+import { isSortable } from "@dnd-kit/react/sortable";
 import styled from "@emotion/styled";
-import React from "react";
+import React, { useCallback } from "react";
 import Modal from "react-bootstrap/Modal";
 import Row from "react-bootstrap/Row";
 
 import { Back, Front } from "@/common/constants";
-import { useAppSelector } from "@/common/types";
+import { useAppDispatch, useAppSelector } from "@/common/types";
 import { Spinner } from "@/components/Spinner";
 import { MemoizedCardSlot } from "@/features/card/CardSlot";
 import {
+  moveSlot,
   selectIsProjectEmpty,
   selectProjectMembers,
 } from "@/store/slices/projectSlice";
@@ -53,6 +56,7 @@ function CardGridDefault() {
 export function CardGrid() {
   //# region queries and hooks
 
+  const dispatch = useAppDispatch();
   const fetchingCardData = useAppSelector(
     (state) => state.searchResults.status === "loading"
   );
@@ -62,13 +66,30 @@ export function CardGrid() {
 
   //# endregion
 
+  const handleDragEnd = useCallback(
+    (event: any) => {
+      const { source } = event.operation;
+      if (
+        source &&
+        isSortable(source) &&
+        source.initialIndex !== source.index
+      ) {
+        dispatch(
+          moveSlot({ fromIndex: source.initialIndex, toIndex: source.index })
+        );
+      }
+    },
+    [dispatch]
+  );
+
   const cardSlotsFronts = [];
   const cardSlotsBacks = [];
 
   for (const [slot, slotProjectMember] of projectMembers.entries()) {
     cardSlotsFronts.push(
       <MemoizedCardSlot
-        key={`${Front}-slot${slot}`}
+        key={`${Front}-${slotProjectMember.id}`}
+        id={slotProjectMember.id}
         searchQuery={slotProjectMember.front?.query}
         face={Front}
         slot={slot}
@@ -76,7 +97,8 @@ export function CardGrid() {
     );
     cardSlotsBacks.push(
       <MemoizedCardSlot
-        key={`${Back}-slot${slot}`}
+        key={`${Back}-${slotProjectMember.id}`}
+        id={slotProjectMember.id}
         searchQuery={slotProjectMember.back?.query}
         face={Back}
         slot={slot}
@@ -84,32 +106,43 @@ export function CardGrid() {
     );
   }
 
+  const sensors = [
+    PointerSensor.configure({
+      preventActivation: (event: PointerEvent) =>
+        (event.target as Element).closest("button") != null,
+    }),
+  ];
+
   // TODO: should we aim to lift state up here and conditionally render rather than hide?
   return (
     <>
       {projectMembers.length == 0 && <CardGridDefault />}
-      <Row
-        xxl={4}
-        lg={3}
-        md={2}
-        sm={1}
-        xs={1}
-        className="g-0"
-        style={{ display: frontsVisible ? "" : "none" }}
-      >
-        {cardSlotsFronts}
-      </Row>
-      <Row
-        xxl={4}
-        lg={3}
-        md={2}
-        sm={1}
-        xs={1}
-        className="g-0"
-        style={{ display: frontsVisible ? "none" : "" }}
-      >
-        {cardSlotsBacks}
-      </Row>
+      <DragDropProvider sensors={sensors} onDragEnd={handleDragEnd}>
+        <Row
+          xxl={4}
+          lg={3}
+          md={2}
+          sm={1}
+          xs={1}
+          className="g-0"
+          style={{ display: frontsVisible ? "" : "none" }}
+        >
+          {cardSlotsFronts}
+        </Row>
+      </DragDropProvider>
+      <DragDropProvider sensors={sensors} onDragEnd={handleDragEnd}>
+        <Row
+          xxl={4}
+          lg={3}
+          md={2}
+          sm={1}
+          xs={1}
+          className="g-0"
+          style={{ display: frontsVisible ? "none" : "" }}
+        >
+          {cardSlotsBacks}
+        </Row>
+      </DragDropProvider>
       <Modal scrollable show={fetchingCardData && !isProjectEmpty} centered>
         <Modal.Header>
           <Modal.Title

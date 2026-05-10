@@ -6,6 +6,7 @@
  * card slot for the same slot number in the other face.
  */
 
+import { useSortable } from "@dnd-kit/react/sortable";
 import React, { memo, useState } from "react";
 
 import {
@@ -32,6 +33,7 @@ import {
 import { selectSearchResultsForQueryOrDefault } from "@/store/slices/searchResultsSlice";
 
 interface CardSlotProps {
+  id: string;
   searchQuery: SearchQuery | undefined;
   face: Faces;
   slot: number;
@@ -84,10 +86,11 @@ export const MemoizedCardSlotGridSelector = memo(CardSlotGridSelector);
 
 //# region card slot
 
-export function CardSlot({ searchQuery, face, slot }: CardSlotProps) {
+export function CardSlot({ id, searchQuery, face, slot }: CardSlotProps) {
   //# region queries and hooks
 
   const dispatch = useAppDispatch();
+  const { ref, handleRef, isDragging } = useSortable({ id, index: slot });
   const searchResultsForQueryOrDefault = useAppSelector((state) =>
     selectSearchResultsForQueryOrDefault(
       state,
@@ -222,7 +225,11 @@ export function CardSlot({ searchQuery, face, slot }: CardSlotProps) {
   //# endregion
 
   return (
-    <div data-testid={`${face}-slot${slot}`}>
+    <div
+      ref={ref}
+      data-testid={`${face}-slot${slot}`}
+      style={{ opacity: isDragging ? 0.7 : undefined }}
+    >
       <MemoizedEditorCard
         imageIdentifier={selectedImage}
         previousImageIdentifier={previousImage}
@@ -230,6 +237,7 @@ export function CardSlot({ searchQuery, face, slot }: CardSlotProps) {
         cardHeaderTitle={cardHeaderTitle}
         cardFooter={cardFooter}
         cardHeaderButtons={cardHeaderButtons}
+        handleRef={handleRef}
         searchQuery={searchQuery}
         nameOnClick={handleShowChangeSelectedImageQueriesModal}
         noResultsFound={

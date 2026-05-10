@@ -367,6 +367,7 @@ export const cardDocument11: CardDocument = {
 export const projectSelectedImage1: Project = {
   members: [
     {
+      id: "t-0",
       front: {
         query: { query: "my search query", cardType: Card },
         selectedImage: cardDocument1.identifier,
@@ -375,6 +376,7 @@ export const projectSelectedImage1: Project = {
       back: null,
     },
   ],
+  nextMemberId: 1,
   cardback: null,
   mostRecentlySelectedSlot: null,
 };
@@ -382,6 +384,7 @@ export const projectSelectedImage1: Project = {
 export const projectThreeMembersSelectedImage1: Project = {
   members: [
     {
+      id: "t-0",
       front: {
         query: { query: "my search query", cardType: Card },
         selectedImage: cardDocument1.identifier,
@@ -390,6 +393,7 @@ export const projectThreeMembersSelectedImage1: Project = {
       back: null,
     },
     {
+      id: "t-1",
       front: {
         query: { query: "my search query", cardType: Card },
         selectedImage: cardDocument1.identifier,
@@ -398,6 +402,7 @@ export const projectThreeMembersSelectedImage1: Project = {
       back: null,
     },
     {
+      id: "t-2",
       front: {
         query: { query: "my search query", cardType: Card },
         selectedImage: cardDocument1.identifier,
@@ -406,6 +411,7 @@ export const projectThreeMembersSelectedImage1: Project = {
       back: null,
     },
   ],
+  nextMemberId: 3,
   cardback: null,
   mostRecentlySelectedSlot: null,
 };
@@ -413,6 +419,7 @@ export const projectThreeMembersSelectedImage1: Project = {
 export const projectSelectedImage2: Project = {
   members: [
     {
+      id: "t-0",
       front: {
         query: { query: "my search query", cardType: Card },
         selectedImage: cardDocument2.identifier,
@@ -421,6 +428,7 @@ export const projectSelectedImage2: Project = {
       back: null,
     },
   ],
+  nextMemberId: 1,
   cardback: null,
   mostRecentlySelectedSlot: null,
 };

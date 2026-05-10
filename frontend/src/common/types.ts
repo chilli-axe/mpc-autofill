@@ -128,11 +128,21 @@ export interface ProjectMember {
 }
 
 export type SlotProjectMembers = {
-  [face in Faces]: ProjectMember | null;
-};
+  /**
+   * Stable identity for this slot, used as a React key during drag-and-drop
+   * sorting. dnd-kit's OptimisticSortingPlugin physically moves DOM elements
+   * to show the in-progress reorder; React reconciles by key rather than
+   * position, so index-based keys cause React to patch elements in-place at
+   * their dnd-kit-moved positions (wrong visual order). A stable, non-positional
+   * key ensures React moves the correct DOM nodes instead.
+   */
+  id: string;
+} & { [face in Faces]: ProjectMember | null };
 
 export type Project = {
   members: Array<SlotProjectMembers>;
+  /** Monotonically incrementing counter for generating stable member IDs. */
+  nextMemberId: number;
   cardback: string | null;
   mostRecentlySelectedSlot: Slot | null;
 };

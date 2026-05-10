@@ -17,10 +17,7 @@ import {
   SlotProjectMembers,
   Slots,
 } from "@/common/types";
-import {
-  getCardSizesByIdentifier,
-  selectCardSizesByIdentifier,
-} from "@/store/slices/cardDocumentsSlice";
+import { getCardSizesByIdentifier } from "@/store/slices/cardDocumentsSlice";
 import { selectActiveFace } from "@/store/slices/viewSettingsSlice";
 import { RootState } from "@/store/store";
 
@@ -28,6 +25,7 @@ import { RootState } from "@/store/store";
 
 const initialState: Project = {
   members: [],
+  nextMemberId: 0,
   cardback: null,
   mostRecentlySelectedSlot: null,
 };
@@ -145,15 +143,15 @@ export const projectSlice = createAppSlice({
      */
     addMembers: (
       state,
-      action: PayloadAction<{ members: Array<SlotProjectMembers> }>
+      action: PayloadAction<{ members: Array<Omit<SlotProjectMembers, "id">> }>
     ) => {
-      state.members = [
-        ...state.members,
-        ...action.payload.members.slice(
-          0,
-          ProjectMaxSize - state.members.length
-        ),
-      ];
+      const newMembers = action.payload.members.slice(
+        0,
+        ProjectMaxSize - state.members.length
+      );
+      for (const member of newMembers) {
+        state.members.push({ ...member, id: `member-${state.nextMemberId++}` });
+      }
     },
     toggleMemberSelection: (
       state,
@@ -271,6 +269,25 @@ export const projectSlice = createAppSlice({
           state.members.splice(index, 1);
         });
     },
+    moveSlot: (
+      state,
+      action: PayloadAction<{
+        fromIndex: number;
+        toIndex: number;
+      }>
+    ) => {
+      const { fromIndex, toIndex } = action.payload;
+      if (fromIndex < 0 || fromIndex >= state.members.length) {
+        throw new RangeError(`fromIndex ${fromIndex} is out of bounds`);
+      }
+      if (toIndex < 0 || toIndex >= state.members.length) {
+        throw new RangeError(`toIndex ${toIndex} is out of bounds`);
+      }
+      const newMembers = [...state.members];
+      const [item] = newMembers.splice(fromIndex, 1);
+      newMembers.splice(toIndex, 0, item);
+      state.members = newMembers;
+    },
   },
 });
 
@@ -286,6 +303,7 @@ export const {
   bulkSetMemberSelection,
   bulkAlignMemberSelection,
   deleteSlots,
+  moveSlot,
 } = projectSlice.actions;
 
 export default projectSlice.reducer;
