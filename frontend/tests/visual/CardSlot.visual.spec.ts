@@ -225,19 +225,19 @@ test.describe("CardSlot visual tests", () => {
               - columnheader
               - columnheader
           - rowgroup:
-            - row "On Off Source 1":
+            - button "On Off Source 1":
               - cell "On Off":
                 - button "On Off"
               - cell "Source 1"
               - cell
               - cell
-            - row "On Off Source 2":
+            - button "On Off Source 2":
               - cell "On Off":
                 - button "On Off"
               - cell "Source 2"
               - cell
               - cell
-            - row "On Off Source 3":
+            - button "On Off Source 3":
               - cell "On Off":
                 - button "On Off"
               - cell "Source 3"
@@ -338,19 +338,19 @@ test.describe("CardSlot visual tests", () => {
               - columnheader
               - columnheader
           - rowgroup:
-            - row "On Off Source 1":
+            - button "On Off Source 1":
               - cell "On Off":
                 - button "On Off"
               - cell "Source 1"
               - cell
               - cell
-            - row "On Off Source 2":
+            - button "On Off Source 2":
               - cell "On Off":
                 - button "On Off"
               - cell "Source 2"
               - cell
               - cell
-            - row "On Off Source 3":
+            - button "On Off Source 3":
               - cell "On Off":
                 - button "On Off"
               - cell "Source 3"
