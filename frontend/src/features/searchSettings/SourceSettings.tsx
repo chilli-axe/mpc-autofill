@@ -4,13 +4,9 @@
  * This component forms part of the Search Settings modal.
  */
 
+import { DragDropProvider } from "@dnd-kit/react";
+import { isSortable, useSortable } from "@dnd-kit/react/sortable";
 import styled from "@emotion/styled";
-import {
-  DragDropContext,
-  Draggable,
-  Droppable,
-  DropResult,
-} from "@hello-pangea/dnd"; // TODO: look into using `react-dnd` instead as it's a significantly smaller package
 import Link from "next/link";
 import React, { ReactNode, useCallback, useMemo } from "react";
 import Button from "react-bootstrap/Button";
@@ -21,7 +17,8 @@ import Toggle from "react-bootstrap-toggle";
 
 import { ToggleButtonHeight } from "@/common/constants";
 import {
-  SourceRow,
+  SourceDocument,
+  SourceRow as SourceRowType,
   SourceSettings as SourceSettingsType,
   useAppSelector,
 } from "@/common/types";
@@ -33,6 +30,94 @@ const Chevron = styled.i`
   font-size: 1em;
   cursor: pointer;
 `;
+
+interface SourceRowProps {
+  sourceDocument: SourceDocument;
+  enabled: boolean;
+  index: number;
+  enableReorderingSources: boolean;
+  toggleSpecificSourceActiveStatus: (sourceIndex: number) => void;
+  moveSourceToStart: (sourceIndex: number) => void;
+  moveSourceToEnd: (sourceIndex: number) => void;
+}
+
+const SourceRow = ({
+  sourceDocument,
+  enabled,
+  index,
+  enableReorderingSources,
+  toggleSpecificSourceActiveStatus,
+  moveSourceToStart,
+  moveSourceToEnd,
+}: SourceRowProps) => {
+  const { ref, isDragging } = useSortable({
+    id: `source-${sourceDocument.pk}`,
+    index: index,
+  });
+  return (
+    <tr ref={ref}>
+      <td style={{ verticalAlign: "middle", width: 30 + "%" }}>
+        <Toggle
+          on="On"
+          onClassName="flex-centre prevent-select"
+          off="Off"
+          offClassName="flex-centre prevent-select"
+          onstyle="primary"
+          offstyle="secondary"
+          size="md"
+          width={80 + "%"}
+          height={ToggleButtonHeight + "px"}
+          active={enabled}
+          onClick={() => toggleSpecificSourceActiveStatus(index)}
+        />
+      </td>
+      <td style={{ verticalAlign: "middle", width: 50 + "%" }}>
+        {(sourceDocument.externalLink ?? "").length > 0 ? (
+          <Link href={sourceDocument.externalLink ?? ""} target="_blank">
+            {sourceDocument.name}
+          </Link>
+        ) : (
+          sourceDocument.name
+        )}
+      </td>
+      <td
+        style={{
+          verticalAlign: "middle",
+          width: 5 + "%",
+          textAlign: "center",
+        }}
+      >
+        {enableReorderingSources && (
+          <>
+            <div>
+              <Chevron
+                className="bi bi-chevron-double-up"
+                onClick={() => moveSourceToStart(index)}
+              />
+            </div>
+            <div>
+              <Chevron
+                className="bi bi-chevron-double-down"
+                onClick={() => moveSourceToEnd(index)}
+              />
+            </div>
+          </>
+        )}
+      </td>
+      <td
+        style={{
+          verticalAlign: "middle",
+          width: 15 + "%",
+          textAlign: "center",
+        }}
+      >
+        {enableReorderingSources && (
+          <i className="bi bi-grip-horizontal" style={{ fontSize: 2 + "em" }} />
+        )}
+      </td>
+    </tr>
+  );
+};
 
 interface SourceSettingsProps {
   sourceSettings: SourceSettingsType;
@@ -67,12 +152,27 @@ export function SourceSettings({
     [sourceSettings.sources, setSourceSettings]
   );
 
+  const moveSourceToStart = useCallback(
+    (sourceIndex: number) => {
+      moveSourceToIndex(sourceIndex, 0);
+    },
+    [moveSourceToIndex]
+  );
+
+  const moveSourceToEnd = useCallback(
+    (sourceIndex: number) => {
+      moveSourceToIndex(sourceIndex, (sourceSettings.sources ?? []).length - 1);
+    },
+    [moveSourceToIndex, sourceSettings]
+  );
+
   /**
    * Update `localSourceOrder` according to the drag and drop result.
    */
-  const onDragEnd = (result: DropResult) => {
-    if (result.destination != null) {
-      moveSourceToIndex(result.source.index, result.destination.index);
+  const onDragEnd = (event: any) => {
+    const { source } = event.operation;
+    if (isSortable(source) && source.initialIndex !== source.index) {
+      moveSourceToIndex(source.initialIndex, source.index);
     }
   };
 
@@ -96,7 +196,7 @@ export function SourceSettings({
    */
   const toggleAllSourceActiveness = useCallback(() => {
     if (sourceRows.length > 0) {
-      const updatedSources: Array<SourceRow> = sourceRows.map((x) => [
+      const updatedSources: Array<SourceRowType> = sourceRows.map((x) => [
         x[0],
         !anySourcesActive,
       ]);
@@ -106,137 +206,39 @@ export function SourceSettings({
 
   let sourceTable = <Spinner />;
   if (maybeSourceDocuments != null) {
-    const draggableSourceRows: Array<ReactNode> = sourceRows.map(
-      (sourceRow, index) => (
-        <Draggable
-          key={sourceRow[0]}
-          draggableId={sourceRow[0].toString()}
-          index={index}
-          isDragDisabled={!enableReorderingSources}
-        >
-          {(provided, snapshot) => (
-            <tr
-              key={`${sourceRow[0]}-row`}
-              ref={provided.innerRef}
-              {...provided.draggableProps}
-              {...provided.dragHandleProps}
-            >
-              <td
-                key={`${sourceRow[0]}-toggle-column`}
-                style={{ verticalAlign: "middle", width: 30 + "%" }}
-              >
-                <Toggle
-                  key={`${sourceRow[0]}-toggle`}
-                  on="On"
-                  onClassName="flex-centre prevent-select"
-                  off="Off"
-                  offClassName="flex-centre prevent-select"
-                  onstyle="primary"
-                  offstyle="secondary"
-                  size="md"
-                  width={80 + "%"}
-                  height={ToggleButtonHeight + "px"}
-                  active={sourceRow[1]}
-                  onClick={() => toggleSpecificSourceActiveStatus(index)}
-                />
-              </td>
-              <td
-                key={`${sourceRow[0]}-name-column`}
-                style={{ verticalAlign: "middle", width: 50 + "%" }}
-              >
-                {(maybeSourceDocuments[sourceRow[0]].externalLink ?? "")
-                  .length > 0 ? (
-                  <Link
-                    href={maybeSourceDocuments[sourceRow[0]].externalLink ?? ""}
-                    target="_blank"
-                  >
-                    {maybeSourceDocuments[sourceRow[0]].name}
-                  </Link>
-                ) : (
-                  maybeSourceDocuments[sourceRow[0]].name
-                )}
-              </td>
-              <td
-                key={`${sourceRow[0]}-updown-button-column`}
-                style={{
-                  verticalAlign: "middle",
-                  width: 5 + "%",
-                  textAlign: "center",
-                }}
-              >
-                {enableReorderingSources && (
-                  <>
-                    <div>
-                      <Chevron
-                        key={`${sourceRow[0]}-up-button`}
-                        className="bi bi-chevron-double-up"
-                        onClick={() => {
-                          moveSourceToIndex(index, 0);
-                        }}
-                      />
-                    </div>
-                    <div>
-                      <Chevron
-                        key={`${sourceRow[0]}-down-button`}
-                        className="bi bi-chevron-double-down"
-                        onClick={() => {
-                          moveSourceToIndex(
-                            index,
-                            (sourceSettings.sources ?? []).length - 1
-                          );
-                        }}
-                      />
-                    </div>
-                  </>
-                )}
-              </td>
-              <td
-                key={`${sourceRow[0]}-drag-button-column`}
-                style={{
-                  verticalAlign: "middle",
-                  width: 15 + "%",
-                  textAlign: "center",
-                }}
-              >
-                {enableReorderingSources && (
-                  <i
-                    key={`${sourceRow[0]}-drag-button`}
-                    className="bi bi-grip-horizontal"
-                    style={{ fontSize: 2 + "em" }}
-                  />
-                )}
-              </td>
-            </tr>
-          )}
-        </Draggable>
-      )
-    );
     sourceTable = (
-      <DragDropContext onDragEnd={onDragEnd}>
-        <Droppable droppableId="source-order">
-          {(provided, snapshot) => (
-            <Table
-              variant="secondary"
-              ref={provided.innerRef}
-              style={{ tableLayout: "auto" }}
-            >
-              {/* TODO: migrate this to AutofillTable at some point? too big a job for right now. */}
-              <thead>
-                <tr style={{ height: ToggleButtonHeight + "px" }}>
-                  <th className="prevent-select">Active</th>
-                  <th className="prevent-select">Name</th>
-                  <th />
-                  <th />
-                </tr>
-              </thead>
-              <tbody>
-                {draggableSourceRows}
-                {provided.placeholder}
-              </tbody>
-            </Table>
-          )}
-        </Droppable>
-      </DragDropContext>
+      <DragDropProvider onDragEnd={onDragEnd}>
+        <Table variant="secondary" style={{ tableLayout: "auto" }}>
+          {/* TODO: migrate this to AutofillTable at some point? too big a job for right now. */}
+          <thead>
+            <tr style={{ height: ToggleButtonHeight + "px" }}>
+              <th className="prevent-select">Active</th>
+              <th className="prevent-select">Name</th>
+              <th />
+              <th />
+            </tr>
+          </thead>
+          <tbody>
+            {sourceRows.map(
+              ([pk, enabled], index) =>
+                maybeSourceDocuments[pk] !== undefined && (
+                  <SourceRow
+                    key={`source-${pk}`}
+                    sourceDocument={maybeSourceDocuments[pk]}
+                    enabled={enabled}
+                    index={index}
+                    enableReorderingSources={enableReorderingSources}
+                    toggleSpecificSourceActiveStatus={
+                      toggleSpecificSourceActiveStatus
+                    }
+                    moveSourceToStart={moveSourceToStart}
+                    moveSourceToEnd={moveSourceToEnd}
+                  />
+                )
+            )}
+          </tbody>
+        </Table>
+      </DragDropProvider>
     );
   }
 
