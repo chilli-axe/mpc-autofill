@@ -8,6 +8,7 @@
 
 import { useSortable } from "@dnd-kit/react/sortable";
 import React, { memo, useState } from "react";
+import Dropdown from "react-bootstrap/Dropdown";
 
 import {
   Faces,
@@ -16,6 +17,7 @@ import {
   useAppSelector,
 } from "@/common/types";
 import { wrapIndex } from "@/common/utils";
+import { RightPaddedIcon } from "@/components/icon";
 import { MemoizedEditorCard } from "@/features/card/Card";
 import { CardFooter } from "@/features/card/CardFooter";
 import { GridSelectorModal } from "@/features/gridSelector/GridSelectorModal";
@@ -23,6 +25,7 @@ import { showChangeQueryModal } from "@/store/slices/modalsSlice";
 import {
   bulkAlignMemberSelection,
   deleteSlots,
+  duplicateSlot,
   expandSelection,
   selectAllSelectedProjectMembersHaveTheSameQuery,
   selectProjectMember,
@@ -84,6 +87,36 @@ export const MemoizedCardSlotGridSelector = memo(CardSlotGridSelector);
 
 //# endregion
 
+const CardGridContextMenu = ({
+  id,
+  searchQuery,
+  face,
+  slot,
+}: CardSlotProps) => {
+  const dispatch = useAppDispatch();
+  const deleteThisSlot = () => {
+    dispatch(deleteSlots({ slots: [slot] }));
+  };
+  const duplicateThisSlot = () => {
+    dispatch(duplicateSlot({ slot: slot, quantity: 1 }));
+  };
+  return (
+    <Dropdown className="card-context-menu" align="end">
+      <Dropdown.Toggle variant="" data-testid="more-select-options">
+        <i className="bi bi-three-dots" />
+      </Dropdown.Toggle>
+      <Dropdown.Menu>
+        <Dropdown.Item onClick={deleteThisSlot}>
+          <RightPaddedIcon bootstrapIconName="x-circle" /> Delete
+        </Dropdown.Item>
+        <Dropdown.Item onClick={duplicateThisSlot}>
+          <RightPaddedIcon bootstrapIconName="copy" /> Duplicate
+        </Dropdown.Item>
+      </Dropdown.Menu>
+    </Dropdown>
+  );
+};
+
 //# region card slot
 
 export function CardSlot({ id, searchQuery, face, slot }: CardSlotProps) {
@@ -137,9 +170,6 @@ export function CardSlot({ id, searchQuery, face, slot }: CardSlotProps) {
         query: searchQuery?.query ?? null,
       })
     );
-  };
-  const deleteThisSlot = () => {
-    dispatch(deleteSlots({ slots: [slot] }));
   };
   const toggleSelectionForThisMember = (
     event: React.MouseEvent<HTMLButtonElement>
@@ -203,13 +233,12 @@ export function CardSlot({ id, searchQuery, face, slot }: CardSlotProps) {
           }checked`}
         ></i>
       </button>
-      <button className="remove">
-        <i
-          className="bi bi-x-circle"
-          onClick={deleteThisSlot}
-          aria-label={`remove-${face}${slot}`}
-        ></i>
-      </button>
+      <CardGridContextMenu
+        id={id}
+        searchQuery={searchQuery}
+        face={face}
+        slot={slot}
+      />
     </>
   );
   const cardFooter = (

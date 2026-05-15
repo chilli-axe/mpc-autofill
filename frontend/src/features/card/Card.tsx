@@ -371,6 +371,18 @@ interface CardProps {
   handleRef?: (element: Element | null) => void;
 }
 
+const deduplicateCards = (
+  cardDocuments: Array<CardDocument | undefined>
+): Array<CardDocument> => {
+  const ids = new Set();
+  return cardDocuments.filter(
+    (cardDocument) =>
+      cardDocument !== undefined &&
+      !ids.has(cardDocument.identifier) &&
+      ids.add(cardDocument.identifier)
+  ) as Array<CardDocument>;
+};
+
 /**
  * This component enables displaying cards with auxiliary information in a flexible, consistent way.
  */
@@ -395,18 +407,11 @@ export function Card({
   const cardImageElements =
     maybeCardDocument != null ? (
       <>
-        {[
+        {deduplicateCards([
           maybeCardDocument,
-          ...(maybePreviousCardDocument &&
-          maybePreviousCardDocument?.identifier !==
-            maybeCardDocument?.identifier
-            ? [maybePreviousCardDocument]
-            : []),
-          ...(maybeNextCardDocument &&
-          maybeNextCardDocument?.identifier !== maybeCardDocument?.identifier
-            ? [maybeNextCardDocument]
-            : []),
-        ].map(
+          maybePreviousCardDocument,
+          maybeNextCardDocument,
+        ]).map(
           (cardDocument) =>
             cardDocument !== undefined && (
               <MemoizedCardImage

@@ -150,7 +150,11 @@ test.describe("CardSlot", () => {
     );
     await expect(page.getByText(cardDocument1.name)).toBeVisible();
 
-    await page.getByLabel("remove-front0").click();
+    await page
+      .getByTestId("front-slot0")
+      .getByTestId("more-select-options")
+      .click();
+    await page.getByText("Delete").click();
 
     await expectCardSlotToNotExist(page, 1);
   });
@@ -172,12 +176,77 @@ test.describe("CardSlot", () => {
     await expectCardSlotToExist(page, 2);
     await expectCardSlotToExist(page, 3);
 
-    await page.getByLabel("remove-front0").click();
-    await page.getByLabel("remove-front1").click();
+    await page
+      .getByTestId("front-slot0")
+      .getByTestId("more-select-options")
+      .click();
+    await page.getByText("Delete").click();
+    await page
+      .getByTestId("front-slot1")
+      .getByTestId("more-select-options")
+      .click();
+    await page.getByText("Delete").click();
 
     await expectCardSlotToExist(page, 1);
     await expectCardSlotToNotExist(page, 2);
     await expectCardSlotToNotExist(page, 3);
+  });
+
+  test("duplicating a CardSlot", async ({ page, network }) => {
+    network.use(
+      cardDocumentsThreeResults,
+      sourceDocumentsOneResult,
+      searchResultsThreeResults,
+      ...defaultHandlers
+    );
+    await loadPageWithDefaultBackend(page);
+
+    await importText(
+      page,
+      `my search query${SelectedImageSeparator}${cardDocument1.identifier}`
+    );
+    await expectCardGridSlotState(page, 1, "front", cardDocument1.name, 1, 3);
+    await expectCardSlotToNotExist(page, 2);
+
+    await page
+      .getByTestId("front-slot0")
+      .getByTestId("more-select-options")
+      .click();
+    await page.getByText("Duplicate").click();
+
+    await expectCardSlotToExist(page, 1);
+    await expectCardSlotToExist(page, 2);
+    await expectCardGridSlotState(page, 2, "front", cardDocument1.name, 1, 3);
+  });
+
+  test("duplicating a CardSlot inserts the copy immediately after the original", async ({
+    page,
+    network,
+  }) => {
+    network.use(
+      cardDocumentsThreeResults,
+      sourceDocumentsOneResult,
+      searchResultsSixResults,
+      ...defaultHandlers
+    );
+    await loadPageWithDefaultBackend(page);
+
+    await importText(
+      page,
+      `query 1${SelectedImageSeparator}${cardDocument1.identifier}\nquery 2${SelectedImageSeparator}${cardDocument2.identifier}`
+    );
+    await expectCardGridSlotState(page, 1, "front", cardDocument1.name, 1, 1);
+    await expectCardGridSlotState(page, 2, "front", cardDocument2.name, 1, 1);
+
+    await page
+      .getByTestId("front-slot0")
+      .getByTestId("more-select-options")
+      .click();
+    await page.getByText("Duplicate").click();
+
+    await expectCardGridSlotState(page, 1, "front", cardDocument1.name, 1, 1);
+    await expectCardGridSlotState(page, 2, "front", cardDocument1.name, 1, 1);
+    await expectCardGridSlotState(page, 3, "front", cardDocument2.name, 1, 1);
   });
 
   test("CardSlot uses cardbacks as search results for backs with no search query", async ({

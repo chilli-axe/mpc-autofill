@@ -288,6 +288,24 @@ export const projectSlice = createAppSlice({
       newMembers.splice(toIndex, 0, item);
       state.members = newMembers;
     },
+    duplicateSlot: (
+      state,
+      action: PayloadAction<{
+        slot: number;
+        quantity: number;
+      }>
+    ) => {
+      const { slot, quantity } = action.payload;
+      if (slot < 0 || slot >= state.members.length) {
+        throw new RangeError(`slot ${slot} is out of bounds`);
+      }
+      const duplicates = Array(quantity).fill(state.members[slot]);
+      state.members = [
+        ...state.members.slice(0, slot + 1),
+        ...duplicates,
+        ...state.members.slice(slot + 1),
+      ];
+    },
   },
 });
 
@@ -304,6 +322,7 @@ export const {
   bulkAlignMemberSelection,
   deleteSlots,
   moveSlot,
+  duplicateSlot,
 } = projectSlice.actions;
 
 export default projectSlice.reducer;

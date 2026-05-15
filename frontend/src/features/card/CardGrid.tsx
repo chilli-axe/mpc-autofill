@@ -109,7 +109,8 @@ export function CardGrid() {
   const sensors = [
     PointerSensor.configure({
       preventActivation: (event: PointerEvent) =>
-        (event.target as Element).closest("button") != null,
+        (event.target as Element).closest("button") != null ||
+        (event.target as Element).closest("a.dropdown-item") != null,
     }),
   ];
 
