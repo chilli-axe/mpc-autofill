@@ -338,6 +338,10 @@ class Card(BaseModel):
     canonicalCard: Optional[CanonicalCardClass] = None
     sourceExternalLink: Optional[str] = None
     sourceType: Optional[SourceType] = None
+    downloadsToday: int = 0
+    downloadsThisWeek: int = 0
+    downloadsThisMonth: int = 0
+    totalDownloads: int = 0
 
     @staticmethod
     def from_dict(obj: Any) -> "Card":
@@ -364,6 +368,10 @@ class Card(BaseModel):
         canonicalCard = from_union([from_none, CanonicalCardClass.from_dict], obj.get("canonicalCard"))
         sourceExternalLink = from_union([from_str, from_none], obj.get("sourceExternalLink"))
         sourceType = from_union([SourceType, from_none], obj.get("sourceType"))
+        downloadsToday = from_union([from_int, from_none], obj.get("downloadsToday")) or 0
+        downloadsThisWeek = from_union([from_int, from_none], obj.get("downloadsThisWeek")) or 0
+        downloadsThisMonth = from_union([from_int, from_none], obj.get("downloadsThisMonth")) or 0
+        totalDownloads = from_union([from_int, from_none], obj.get("totalDownloads")) or 0
         return Card(
             cardType,
             dateCreated,
@@ -387,6 +395,10 @@ class Card(BaseModel):
             canonicalCard,
             sourceExternalLink,
             sourceType,
+            downloadsToday,
+            downloadsThisWeek,
+            downloadsThisMonth,
+            totalDownloads,
         )
 
     def to_dict(self) -> dict:
@@ -409,6 +421,10 @@ class Card(BaseModel):
         result["sourceName"] = from_str(self.sourceName)
         result["sourceVerbose"] = from_str(self.sourceVerbose)
         result["tags"] = from_list(from_str, self.tags)
+        result["downloadsToday"] = from_int(self.downloadsToday)
+        result["downloadsThisWeek"] = from_int(self.downloadsThisWeek)
+        result["downloadsThisMonth"] = from_int(self.downloadsThisMonth)
+        result["totalDownloads"] = from_int(self.totalDownloads)
         if self.canonicalArtist is not None:
             result["canonicalArtist"] = from_union(
                 [from_none, lambda x: to_class(CanonicalArtistClass, x)], self.canonicalArtist
@@ -600,6 +616,10 @@ class SortBy(str, Enum):
     dateModifiedDescending = "dateModifiedDescending"
     nameAscending = "nameAscending"
     nameDescending = "nameDescending"
+    popularityTodayDescending = "popularityTodayDescending"
+    popularityWeekDescending = "popularityWeekDescending"
+    popularityMonthDescending = "popularityMonthDescending"
+    popularityAllTimeDescending = "popularityAllTimeDescending"
 
 
 class ExploreSearchRequest(BaseModel):

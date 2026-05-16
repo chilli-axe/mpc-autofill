@@ -264,6 +264,10 @@ export const OramaSchema = {
   sourceId: "number" as SearchableType,
   lastModifiedNumber: "number" as SearchableType,
   createdNumber: "number" as SearchableType,
+  downloadsToday: "number" as SearchableType,
+  downloadsThisWeek: "number" as SearchableType,
+  downloadsThisMonth: "number" as SearchableType,
+  totalDownloads: "number" as SearchableType,
   cardType: "enum",
   extension: "enum",
   language: "enum",
@@ -314,6 +318,10 @@ export type OramaCardDocument = Pick<
   lastModifiedNumber: number;
   created: Date;
   createdNumber: number;
+  downloadsToday: number;
+  downloadsThisWeek: number;
+  downloadsThisMonth: number;
+  totalDownloads: number;
   expansionCode: string;
   collectorNumber: string;
   artist: string;

@@ -1,7 +1,7 @@
 import itertools
 import json
 from collections import defaultdict
-from datetime import date
+from datetime import date, timedelta
 from random import sample
 from typing import Any, Callable, TypeVar, Union, cast
 
@@ -11,7 +11,8 @@ from pydantic import ValidationError
 
 from django.conf import settings
 from django.db import connection
-from django.db.models import Q
+from django.db.models import Q, Sum
+from django.db.models.functions import Coalesce
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
@@ -171,6 +172,16 @@ def post_explore_search(request: HttpRequest) -> HttpResponse:
         SortBy.dateCreatedDescending: {"date_created": {"order": "desc"}, "searchq_keyword": {"order": "asc"}},
         SortBy.dateModifiedAscending: {"date_modified": {"order": "asc"}, "searchq_keyword": {"order": "asc"}},
         SortBy.dateModifiedDescending: {"date_modified": {"order": "desc"}, "searchq_keyword": {"order": "asc"}},
+        SortBy.popularityTodayDescending: {"downloads_today": {"order": "desc"}, "searchq_keyword": {"order": "asc"}},
+        SortBy.popularityWeekDescending: {
+            "downloads_this_week": {"order": "desc"},
+            "searchq_keyword": {"order": "asc"},
+        },
+        SortBy.popularityMonthDescending: {
+            "downloads_this_month": {"order": "desc"},
+            "searchq_keyword": {"order": "asc"},
+        },
+        SortBy.popularityAllTimeDescending: {"total_downloads": {"order": "desc"}, "searchq_keyword": {"order": "asc"}},
     }[explore_search_request.sortBy]
 
     s = get_search(
@@ -185,7 +196,18 @@ def post_explore_search(request: HttpRequest) -> HttpResponse:
     # TODO: the below code feels inefficient but is set up this way to ensure sorting from elasticsearch is respected.
     card_id_object_dict = {
         card.identifier: card.serialise()
-        for card in (Card.objects.select_related("source", "canonical_card").filter(identifier__in=card_ids))
+        for card in Card.objects.select_related("source", "canonical_card")
+        .filter(identifier__in=card_ids)
+        .annotate(
+            total_downloads=Coalesce(Sum("download_counts__count"), 0),
+            downloads_today=Coalesce(Sum("download_counts__count", filter=Q(download_counts__date=date.today())), 0),
+            downloads_this_week=Coalesce(
+                Sum("download_counts__count", filter=Q(download_counts__date__gte=date.today() - timedelta(days=7))), 0
+            ),
+            downloads_this_month=Coalesce(
+                Sum("download_counts__count", filter=Q(download_counts__date__gte=date.today().replace(day=1))), 0
+            ),
+        )
     }
     cards = [card_id_object_dict[card_id] for card_id in card_ids]
     return JsonResponse(ExploreSearchResponse(cards=cards, count=count).model_dump())
@@ -206,8 +228,17 @@ def post_cards(request: HttpRequest) -> HttpResponse:
 
     results = {
         card.identifier: card.serialise()
-        for card in Card.objects.select_related("source", "canonical_card").filter(
-            identifier__in=cards_request.cardIdentifiers
+        for card in Card.objects.select_related("source", "canonical_card")
+        .filter(identifier__in=cards_request.cardIdentifiers)
+        .annotate(
+            total_downloads=Coalesce(Sum("download_counts__count"), 0),
+            downloads_today=Coalesce(Sum("download_counts__count", filter=Q(download_counts__date=date.today())), 0),
+            downloads_this_week=Coalesce(
+                Sum("download_counts__count", filter=Q(download_counts__date__gte=date.today() - timedelta(days=7))), 0
+            ),
+            downloads_this_month=Coalesce(
+                Sum("download_counts__count", filter=Q(download_counts__date__gte=date.today().replace(day=1))), 0
+            ),
         )
     }
     return JsonResponse(CardsResponse(results=results).model_dump())

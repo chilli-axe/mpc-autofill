@@ -23,6 +23,11 @@ class CardSearch(Document):
     language = fields.TextField(analyzer=precise_analyser)  # case insensitivity is one less thing which can go wrong
     tags = fields.KeywordField()  # all elasticsearch fields support arrays by default
 
+    total_downloads = fields.IntegerField()
+    downloads_today = fields.IntegerField()
+    downloads_this_week = fields.IntegerField()
+    downloads_this_month = fields.IntegerField()
+
     class Index:
         # name of the elasticsearch index
         name = "cards"
@@ -32,3 +37,37 @@ class CardSearch(Document):
     class Django:
         model = Card
         fields = ["identifier", "priority", "dpi", "size"]
+
+    def prepare_total_downloads(self, instance: Card) -> int:
+        from django.db.models import Sum
+
+        return instance.download_counts.aggregate(Sum("count"))["count__sum"] or 0
+
+    def prepare_downloads_today(self, instance: Card) -> int:
+        from datetime import date
+
+        from django.db.models import Sum
+
+        return instance.download_counts.filter(date=date.today()).aggregate(Sum("count"))["count__sum"] or 0
+
+    def prepare_downloads_this_week(self, instance: Card) -> int:
+        from datetime import date, timedelta
+
+        from django.db.models import Sum
+
+        return (
+            instance.download_counts.filter(date__gte=date.today() - timedelta(days=7)).aggregate(Sum("count"))[
+                "count__sum"
+            ]
+            or 0
+        )
+
+    def prepare_downloads_this_month(self, instance: Card) -> int:
+        from datetime import date
+
+        from django.db.models import Sum
+
+        return (
+            instance.download_counts.filter(date__gte=date.today().replace(day=1)).aggregate(Sum("count"))["count__sum"]
+            or 0
+        )

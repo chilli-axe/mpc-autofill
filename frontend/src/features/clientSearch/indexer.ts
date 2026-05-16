@@ -151,6 +151,10 @@ export class Image {
       lastModifiedNumber: this.modifiedTime.valueOf(),
       created: this.modifiedTime, // TODO: wire up properly
       createdNumber: this.modifiedTime.valueOf(), // TODO: wire up properly
+      downloadsToday: 0,
+      downloadsThisWeek: 0,
+      downloadsThisMonth: 0,
+      totalDownloads: 0,
       expansionCode: Unknown,
       collectorNumber: Unknown,
       artist: Unknown,

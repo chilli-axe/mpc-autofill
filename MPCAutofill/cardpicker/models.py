@@ -307,6 +307,10 @@ class Card(models.Model):
             mediumThumbnailUrl=self.get_medium_thumbnail_url() or "",
             tags=sorted(self.tags),
             language=self.language,
+            downloadsToday=self.get_downloads_today(),
+            downloadsThisWeek=self.get_downloads_this_week(),
+            downloadsThisMonth=self.get_downloads_this_month(),
+            totalDownloads=self.get_total_downloads(),
             canonicalCard=(
                 self.canonical_card.serialise()
                 if self.canonical_card
@@ -324,6 +328,20 @@ class Card(models.Model):
 
     def get_source_pk(self) -> int:
         return self.source.pk
+
+    # These read from ORM-annotated values (Coalesce Sum over download_counts). Using getattr avoids
+    # an extra query per card when the queryset wasn't annotated — unannotated callers get 0 instead.
+    def get_total_downloads(self) -> int:
+        return getattr(self, "total_downloads", None) or 0
+
+    def get_downloads_today(self) -> int:
+        return getattr(self, "downloads_today", None) or 0
+
+    def get_downloads_this_week(self) -> int:
+        return getattr(self, "downloads_this_week", None) or 0
+
+    def get_downloads_this_month(self) -> int:
+        return getattr(self, "downloads_this_month", None) or 0
 
     def get_source_name(self) -> str:
         return self.source.name
