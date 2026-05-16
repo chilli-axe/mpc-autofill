@@ -23,7 +23,7 @@ import {
   MemoizedCardProportionWrapper,
 } from "@/features/card/Card";
 import { useDoImageDownload } from "@/features/download/downloadImages";
-import { useGetLanguagesQuery } from "@/store/api";
+import { useGetLanguagesQuery, useRecordDownloadCounts } from "@/store/api";
 import { setNotification } from "@/store/slices/toastsSlice";
 
 interface CardDetailedViewProps {
@@ -44,6 +44,7 @@ export function CardDetailedViewModal({
 
   const dispatch = useAppDispatch();
   const queueImageDownload = useDoImageDownload();
+  const recordDownloadCounts = useRecordDownloadCounts();
   const getLanguagesQuery = useGetLanguagesQuery();
 
   //# endregion
@@ -150,6 +151,7 @@ export function CardDetailedViewModal({
                     variant="primary"
                     onClick={async () => {
                       queueImageDownload(cardDocument);
+                      recordDownloadCounts([cardDocument.identifier]);
                       dispatch(
                         setNotification([
                           Math.random().toString(),

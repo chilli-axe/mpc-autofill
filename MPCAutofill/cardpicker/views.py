@@ -1,6 +1,7 @@
 import itertools
 import json
 from collections import defaultdict
+from datetime import date
 from random import sample
 from typing import Any, Callable, TypeVar, Union, cast
 
@@ -9,6 +10,7 @@ from elasticsearch_dsl.index import Index
 from pydantic import ValidationError
 
 from django.conf import settings
+from django.db import connection
 from django.db.models import Q
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -31,6 +33,7 @@ from cardpicker.schema_types import (
     CardsResponse,
     ContributionsResponse,
     DFCPairsResponse,
+    DownloadCountsRequest,
     EditorSearchRequest,
     EditorSearchResponse,
     ErrorResponse,
@@ -508,3 +511,26 @@ def get_search_engine_health(request: HttpRequest) -> HttpResponse:
         raise BadRequestException("Expected GET request.")
 
     return JsonResponse(SearchEngineHealthResponse(online=ping_elasticsearch()).model_dump())
+
+
+@csrf_exempt
+@ErrorWrappers.to_json
+def post_download_counts(request: HttpRequest) -> HttpResponse:
+    if request.method != "POST":
+        raise BadRequestException("Expected POST request.")
+
+    body = DownloadCountsRequest.model_validate(json.loads(request.body))
+    today = date.today()
+    card_ids = list(Card.objects.filter(identifier__in=body.cardIdentifiers).values_list("id", flat=True))
+    with connection.cursor() as cursor:
+        for card_id in card_ids:
+            cursor.execute(
+                """
+                INSERT INTO cardpicker_downloadcount (date, card_id, count)
+                VALUES (%s, %s, 1)
+                ON CONFLICT (date, card_id)
+                DO UPDATE SET count = cardpicker_downloadcount.count + 1
+                """,
+                [today, card_id],
+            )
+    return JsonResponse({"status": "ok"})

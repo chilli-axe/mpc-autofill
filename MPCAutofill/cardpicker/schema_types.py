@@ -222,6 +222,21 @@ class CardsRequest(BaseModel):
         return result
 
 
+class DownloadCountsRequest(BaseModel):
+    cardIdentifiers: List[str]
+
+    @staticmethod
+    def from_dict(obj: Any) -> "DownloadCountsRequest":
+        assert isinstance(obj, dict)
+        cardIdentifiers = from_list(from_str, obj.get("cardIdentifiers"))
+        return DownloadCountsRequest(cardIdentifiers)
+
+    def to_dict(self) -> dict:
+        result: dict = {}
+        result["cardIdentifiers"] = from_list(from_str, self.cardIdentifiers)
+        return result
+
+
 class CanonicalArtistClass(BaseModel):
     name: str
 

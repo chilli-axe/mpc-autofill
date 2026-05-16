@@ -498,6 +498,15 @@ class ProjectMember(models.Model):
         }
 
 
+class DownloadCount(models.Model):
+    date = models.DateField()
+    card = models.ForeignKey("Card", on_delete=models.CASCADE, related_name="download_counts")
+    count = models.IntegerField(default=0)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["date", "card"], name="unique_downloadcount_date_card")]
+
+
 __all__ = [
     "Faces",
     "CardTypes",
@@ -514,4 +523,5 @@ __all__ = [
     "get_default_cardback",
     "Project",
     "ProjectMember",
+    "DownloadCount",
 ]
