@@ -1667,6 +1667,83 @@
     'status_code': 400,
   })
 # ---
+# name: TestPostDownloadCounts.test_get_request
+  dict({
+    'json': dict({
+      'errors': None,
+      'message': 'Expected POST request.',
+      'name': 'Bad request',
+    }),
+    'status_code': 400,
+  })
+# ---
+# name: TestPostDownloadCounts.test_response_to_malformed_json_body[empty json body]
+  dict({
+    'json': dict({
+      'errors': list([
+        dict({
+          'input': dict({
+          }),
+          'loc': list([
+            'cardIdentifiers',
+          ]),
+          'msg': 'Field required',
+          'type': 'missing',
+          'url': 'https://errors.pydantic.dev/2.10/v/missing',
+        }),
+      ]),
+      'message': 'See `errors` field for detailed breakdown.',
+      'name': 'Schema error/s',
+    }),
+    'status_code': 400,
+  })
+# ---
+# name: TestPostDownloadCounts.test_response_to_malformed_json_body[gave it an array]
+  dict({
+    'json': dict({
+      'errors': list([
+        dict({
+          'ctx': dict({
+            'class_name': 'DownloadCountsRequest',
+          }),
+          'input': list([
+            'test',
+          ]),
+          'loc': list([
+          ]),
+          'msg': 'Input should be a valid dictionary or instance of DownloadCountsRequest',
+          'type': 'model_type',
+          'url': 'https://errors.pydantic.dev/2.10/v/model_type',
+        }),
+      ]),
+      'message': 'See `errors` field for detailed breakdown.',
+      'name': 'Schema error/s',
+    }),
+    'status_code': 400,
+  })
+# ---
+# name: TestPostDownloadCounts.test_response_to_malformed_json_body[invalid field]
+  dict({
+    'json': dict({
+      'errors': list([
+        dict({
+          'input': dict({
+            'invalid': 'data',
+          }),
+          'loc': list([
+            'cardIdentifiers',
+          ]),
+          'msg': 'Field required',
+          'type': 'missing',
+          'url': 'https://errors.pydantic.dev/2.10/v/missing',
+        }),
+      ]),
+      'message': 'See `errors` field for detailed breakdown.',
+      'name': 'Schema error/s',
+    }),
+    'status_code': 400,
+  })
+# ---
 # name: TestPostEditorSearchResults.test_complex_search
   dict({
     'json': dict({
@@ -2246,6 +2323,9 @@
           'cardType': 'TOKEN',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
+          'downloadsThisMonth': 0,
+          'downloadsThisWeek': 0,
+          'downloadsToday': 0,
           'dpi': 600,
           'extension': 'png',
           'identifier': '1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA',
@@ -2264,6 +2344,7 @@
           'sourceVerbose': 'Example Drive 1 but verbose',
           'tags': list([
           ]),
+          'totalDownloads': 0,
         }),
         dict({
           'canonicalArtist': None,
@@ -2271,6 +2352,9 @@
           'cardType': 'CARDBACK',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
+          'downloadsThisMonth': 0,
+          'downloadsThisWeek': 0,
+          'downloadsToday': 0,
           'dpi': 300,
           'extension': 'png',
           'identifier': '1JtXL6Ca9nQkvhwZZRR9ZuKA9_DzsFf1V',
@@ -2291,6 +2375,7 @@
             'Another Tag in Data',
             'Tag in Data',
           ]),
+          'totalDownloads': 0,
         }),
         dict({
           'canonicalArtist': None,
@@ -2298,6 +2383,9 @@
           'cardType': 'CARDBACK',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
+          'downloadsThisMonth': 0,
+          'downloadsThisWeek': 0,
+          'downloadsToday': 0,
           'dpi': 300,
           'extension': 'png',
           'identifier': '1oigI6wz0zA--pNMuExKTs40kBNH6VRP_',
@@ -2317,6 +2405,7 @@
           'tags': list([
             'Tag in Data',
           ]),
+          'totalDownloads': 0,
         }),
       ]),
       'count': 3,
@@ -2334,6 +2423,9 @@
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
+          'downloadsThisMonth': 0,
+          'downloadsThisWeek': 0,
+          'downloadsToday': 0,
           'dpi': 600,
           'extension': 'png',
           'identifier': '1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5',
@@ -2352,6 +2444,7 @@
           'sourceVerbose': 'Example Drive 1 but verbose',
           'tags': list([
           ]),
+          'totalDownloads': 0,
         }),
         dict({
           'canonicalArtist': None,
@@ -2359,6 +2452,9 @@
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
+          'downloadsThisMonth': 0,
+          'downloadsThisWeek': 0,
+          'downloadsToday': 0,
           'dpi': 600,
           'extension': 'png',
           'identifier': '17fopRCNRge72U8Hac8pApHZtEalx5kHy',
@@ -2377,6 +2473,7 @@
           'sourceVerbose': 'Example Drive 1 but verbose',
           'tags': list([
           ]),
+          'totalDownloads': 0,
         }),
         dict({
           'canonicalArtist': None,
@@ -2384,6 +2481,9 @@
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
+          'downloadsThisMonth': 0,
+          'downloadsThisWeek': 0,
+          'downloadsToday': 0,
           'dpi': 600,
           'extension': 'png',
           'identifier': '1991MWCur9NdAFi-tQQD5YbQj2oqV_WRy',
@@ -2402,6 +2502,7 @@
           'sourceVerbose': 'Example Drive 1 but verbose',
           'tags': list([
           ]),
+          'totalDownloads': 0,
         }),
         dict({
           'canonicalArtist': None,
@@ -2409,6 +2510,9 @@
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
+          'downloadsThisMonth': 0,
+          'downloadsThisWeek': 0,
+          'downloadsToday': 0,
           'dpi': 600,
           'extension': 'png',
           'identifier': '1mO73GTYlieP0kiZEkF58pJSrZTmC9lNh',
@@ -2427,6 +2531,7 @@
           'sourceVerbose': 'Example Drive 1 but verbose',
           'tags': list([
           ]),
+          'totalDownloads': 0,
         }),
         dict({
           'canonicalArtist': None,
@@ -2434,6 +2539,9 @@
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
+          'downloadsThisMonth': 0,
+          'downloadsThisWeek': 0,
+          'downloadsToday': 0,
           'dpi': 600,
           'extension': 'png',
           'identifier': '1HsvTYs1jFGe1c8U1PnNZ9aB8jkAW7KU0',
@@ -2452,6 +2560,7 @@
           'sourceVerbose': 'Example Drive 1 but verbose',
           'tags': list([
           ]),
+          'totalDownloads': 0,
         }),
         dict({
           'canonicalArtist': None,
@@ -2459,6 +2568,9 @@
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
+          'downloadsThisMonth': 0,
+          'downloadsThisWeek': 0,
+          'downloadsToday': 0,
           'dpi': 600,
           'extension': 'png',
           'identifier': '1IDtqSjJ4Yo45AnNA4SplOiN7ewibifMa',
@@ -2477,6 +2589,7 @@
           'sourceVerbose': 'Example Drive 1 but verbose',
           'tags': list([
           ]),
+          'totalDownloads': 0,
         }),
         dict({
           'canonicalArtist': None,
@@ -2484,6 +2597,9 @@
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
+          'downloadsThisMonth': 0,
+          'downloadsThisWeek': 0,
+          'downloadsToday': 0,
           'dpi': 600,
           'extension': 'png',
           'identifier': '1-dcs0FEE05MTGiYbKqs9HnRdhXkgtIJG',
@@ -2502,6 +2618,7 @@
           'sourceVerbose': 'Example Drive 1 but verbose',
           'tags': list([
           ]),
+          'totalDownloads': 0,
         }),
         dict({
           'canonicalArtist': None,
@@ -2509,6 +2626,9 @@
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
+          'downloadsThisMonth': 0,
+          'downloadsThisWeek': 0,
+          'downloadsToday': 0,
           'dpi': 400,
           'extension': 'png',
           'identifier': '1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
@@ -2529,6 +2649,7 @@
             'Another Tag in Data',
             'Tag in Data',
           ]),
+          'totalDownloads': 0,
         }),
         dict({
           'canonicalArtist': None,
@@ -2536,6 +2657,9 @@
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
+          'downloadsThisMonth': 0,
+          'downloadsThisWeek': 0,
+          'downloadsToday': 0,
           'dpi': 600,
           'extension': 'png',
           'identifier': '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
@@ -2555,6 +2679,7 @@
           'tags': list([
             'Tag in Data',
           ]),
+          'totalDownloads': 0,
         }),
         dict({
           'canonicalArtist': None,
@@ -2562,6 +2687,9 @@
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
+          'downloadsThisMonth': 0,
+          'downloadsThisWeek': 0,
+          'downloadsToday': 0,
           'dpi': 600,
           'extension': 'png',
           'identifier': '1lv8WC1Xf1qxA7VHSc8jOtT5up6FwaBPH',
@@ -2580,6 +2708,7 @@
           'sourceVerbose': 'Example Drive 1 but verbose',
           'tags': list([
           ]),
+          'totalDownloads': 0,
         }),
       ]),
       'count': 10,
@@ -2597,6 +2726,9 @@
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
+          'downloadsThisMonth': 0,
+          'downloadsThisWeek': 0,
+          'downloadsToday': 0,
           'dpi': 600,
           'extension': 'png',
           'identifier': '1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5',
@@ -2615,6 +2747,7 @@
           'sourceVerbose': 'Example Drive 1 but verbose',
           'tags': list([
           ]),
+          'totalDownloads': 0,
         }),
         dict({
           'canonicalArtist': None,
@@ -2622,6 +2755,9 @@
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
+          'downloadsThisMonth': 0,
+          'downloadsThisWeek': 0,
+          'downloadsToday': 0,
           'dpi': 600,
           'extension': 'png',
           'identifier': '17fopRCNRge72U8Hac8pApHZtEalx5kHy',
@@ -2640,6 +2776,7 @@
           'sourceVerbose': 'Example Drive 1 but verbose',
           'tags': list([
           ]),
+          'totalDownloads': 0,
         }),
         dict({
           'canonicalArtist': None,
@@ -2647,6 +2784,9 @@
           'cardType': 'TOKEN',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
+          'downloadsThisMonth': 0,
+          'downloadsThisWeek': 0,
+          'downloadsToday': 0,
           'dpi': 600,
           'extension': 'png',
           'identifier': '1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA',
@@ -2665,6 +2805,7 @@
           'sourceVerbose': 'Example Drive 1 but verbose',
           'tags': list([
           ]),
+          'totalDownloads': 0,
         }),
         dict({
           'canonicalArtist': None,
@@ -2672,6 +2813,9 @@
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
+          'downloadsThisMonth': 0,
+          'downloadsThisWeek': 0,
+          'downloadsToday': 0,
           'dpi': 600,
           'extension': 'png',
           'identifier': '1991MWCur9NdAFi-tQQD5YbQj2oqV_WRy',
@@ -2690,6 +2834,7 @@
           'sourceVerbose': 'Example Drive 1 but verbose',
           'tags': list([
           ]),
+          'totalDownloads': 0,
         }),
         dict({
           'canonicalArtist': None,
@@ -2697,6 +2842,9 @@
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
+          'downloadsThisMonth': 0,
+          'downloadsThisWeek': 0,
+          'downloadsToday': 0,
           'dpi': 600,
           'extension': 'png',
           'identifier': '1mO73GTYlieP0kiZEkF58pJSrZTmC9lNh',
@@ -2715,6 +2863,7 @@
           'sourceVerbose': 'Example Drive 1 but verbose',
           'tags': list([
           ]),
+          'totalDownloads': 0,
         }),
         dict({
           'canonicalArtist': None,
@@ -2722,6 +2871,9 @@
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
+          'downloadsThisMonth': 0,
+          'downloadsThisWeek': 0,
+          'downloadsToday': 0,
           'dpi': 600,
           'extension': 'png',
           'identifier': '1HsvTYs1jFGe1c8U1PnNZ9aB8jkAW7KU0',
@@ -2740,6 +2892,7 @@
           'sourceVerbose': 'Example Drive 1 but verbose',
           'tags': list([
           ]),
+          'totalDownloads': 0,
         }),
         dict({
           'canonicalArtist': None,
@@ -2747,6 +2900,9 @@
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
+          'downloadsThisMonth': 0,
+          'downloadsThisWeek': 0,
+          'downloadsToday': 0,
           'dpi': 600,
           'extension': 'png',
           'identifier': '1IDtqSjJ4Yo45AnNA4SplOiN7ewibifMa',
@@ -2765,6 +2921,7 @@
           'sourceVerbose': 'Example Drive 1 but verbose',
           'tags': list([
           ]),
+          'totalDownloads': 0,
         }),
         dict({
           'canonicalArtist': None,
@@ -2772,6 +2929,9 @@
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
+          'downloadsThisMonth': 0,
+          'downloadsThisWeek': 0,
+          'downloadsToday': 0,
           'dpi': 600,
           'extension': 'png',
           'identifier': '1-dcs0FEE05MTGiYbKqs9HnRdhXkgtIJG',
@@ -2790,6 +2950,7 @@
           'sourceVerbose': 'Example Drive 1 but verbose',
           'tags': list([
           ]),
+          'totalDownloads': 0,
         }),
         dict({
           'canonicalArtist': None,
@@ -2797,6 +2958,9 @@
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
+          'downloadsThisMonth': 0,
+          'downloadsThisWeek': 0,
+          'downloadsToday': 0,
           'dpi': 400,
           'extension': 'png',
           'identifier': '1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
@@ -2817,6 +2981,7 @@
             'Another Tag in Data',
             'Tag in Data',
           ]),
+          'totalDownloads': 0,
         }),
         dict({
           'canonicalArtist': None,
@@ -2824,6 +2989,9 @@
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
+          'downloadsThisMonth': 0,
+          'downloadsThisWeek': 0,
+          'downloadsToday': 0,
           'dpi': 600,
           'extension': 'png',
           'identifier': '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
@@ -2843,6 +3011,7 @@
           'tags': list([
             'Tag in Data',
           ]),
+          'totalDownloads': 0,
         }),
         dict({
           'canonicalArtist': None,
@@ -2850,6 +3019,9 @@
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
+          'downloadsThisMonth': 0,
+          'downloadsThisWeek': 0,
+          'downloadsToday': 0,
           'dpi': 600,
           'extension': 'png',
           'identifier': '1lv8WC1Xf1qxA7VHSc8jOtT5up6FwaBPH',
@@ -2868,6 +3040,7 @@
           'sourceVerbose': 'Example Drive 1 but verbose',
           'tags': list([
           ]),
+          'totalDownloads': 0,
         }),
         dict({
           'canonicalArtist': None,
@@ -2875,6 +3048,9 @@
           'cardType': 'CARDBACK',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
+          'downloadsThisMonth': 0,
+          'downloadsThisWeek': 0,
+          'downloadsToday': 0,
           'dpi': 300,
           'extension': 'png',
           'identifier': '1JtXL6Ca9nQkvhwZZRR9ZuKA9_DzsFf1V',
@@ -2895,6 +3071,7 @@
             'Another Tag in Data',
             'Tag in Data',
           ]),
+          'totalDownloads': 0,
         }),
         dict({
           'canonicalArtist': None,
@@ -2902,6 +3079,9 @@
           'cardType': 'CARDBACK',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
+          'downloadsThisMonth': 0,
+          'downloadsThisWeek': 0,
+          'downloadsToday': 0,
           'dpi': 300,
           'extension': 'png',
           'identifier': '1oigI6wz0zA--pNMuExKTs40kBNH6VRP_',
@@ -2921,6 +3101,7 @@
           'tags': list([
             'Tag in Data',
           ]),
+          'totalDownloads': 0,
         }),
       ]),
       'count': 13,
@@ -2938,6 +3119,9 @@
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
+          'downloadsThisMonth': 0,
+          'downloadsThisWeek': 0,
+          'downloadsToday': 0,
           'dpi': 600,
           'extension': 'png',
           'identifier': '1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5',
@@ -2956,6 +3140,7 @@
           'sourceVerbose': 'Example Drive 1 but verbose',
           'tags': list([
           ]),
+          'totalDownloads': 0,
         }),
       ]),
       'count': 1,
@@ -2973,6 +3158,9 @@
           'cardType': 'CARDBACK',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
+          'downloadsThisMonth': 0,
+          'downloadsThisWeek': 0,
+          'downloadsToday': 0,
           'dpi': 300,
           'extension': 'png',
           'identifier': '1oigI6wz0zA--pNMuExKTs40kBNH6VRP_',
@@ -2992,6 +3180,7 @@
           'tags': list([
             'Tag in Data',
           ]),
+          'totalDownloads': 0,
         }),
       ]),
       'count': 1,
@@ -3009,6 +3198,9 @@
           'cardType': 'TOKEN',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
+          'downloadsThisMonth': 0,
+          'downloadsThisWeek': 0,
+          'downloadsToday': 0,
           'dpi': 600,
           'extension': 'png',
           'identifier': '1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA',
@@ -3027,6 +3219,7 @@
           'sourceVerbose': 'Example Drive 1 but verbose',
           'tags': list([
           ]),
+          'totalDownloads': 0,
         }),
       ]),
       'count': 1,
@@ -3044,6 +3237,9 @@
           'cardType': 'CARDBACK',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
+          'downloadsThisMonth': 0,
+          'downloadsThisWeek': 0,
+          'downloadsToday': 0,
           'dpi': 300,
           'extension': 'png',
           'identifier': '1JtXL6Ca9nQkvhwZZRR9ZuKA9_DzsFf1V',
@@ -3064,6 +3260,7 @@
             'Another Tag in Data',
             'Tag in Data',
           ]),
+          'totalDownloads': 0,
         }),
         dict({
           'canonicalArtist': None,
@@ -3071,6 +3268,9 @@
           'cardType': 'CARDBACK',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
+          'downloadsThisMonth': 0,
+          'downloadsThisWeek': 0,
+          'downloadsToday': 0,
           'dpi': 300,
           'extension': 'png',
           'identifier': '1oigI6wz0zA--pNMuExKTs40kBNH6VRP_',
@@ -3090,6 +3290,7 @@
           'tags': list([
             'Tag in Data',
           ]),
+          'totalDownloads': 0,
         }),
       ]),
       'count': 2,
@@ -3107,6 +3308,9 @@
           'cardType': 'CARDBACK',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
+          'downloadsThisMonth': 0,
+          'downloadsThisWeek': 0,
+          'downloadsToday': 0,
           'dpi': 300,
           'extension': 'png',
           'identifier': '1oigI6wz0zA--pNMuExKTs40kBNH6VRP_',
@@ -3126,6 +3330,7 @@
           'tags': list([
             'Tag in Data',
           ]),
+          'totalDownloads': 0,
         }),
         dict({
           'canonicalArtist': None,
@@ -3133,6 +3338,9 @@
           'cardType': 'CARDBACK',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
+          'downloadsThisMonth': 0,
+          'downloadsThisWeek': 0,
+          'downloadsToday': 0,
           'dpi': 300,
           'extension': 'png',
           'identifier': '1JtXL6Ca9nQkvhwZZRR9ZuKA9_DzsFf1V',
@@ -3153,9 +3361,166 @@
             'Another Tag in Data',
             'Tag in Data',
           ]),
+          'totalDownloads': 0,
         }),
       ]),
       'count': 2,
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostExploreSearchResults.test_explore_search[sort by popularity all time]
+  dict({
+    'json': dict({
+      'cards': list([
+        dict({
+          'canonicalArtist': None,
+          'canonicalCard': None,
+          'cardType': 'CARD',
+          'dateCreated': '1st January, 2023',
+          'dateModified': '1st January, 2023',
+          'downloadsThisMonth': 0,
+          'downloadsThisWeek': 0,
+          'downloadsToday': 0,
+          'dpi': 600,
+          'extension': 'png',
+          'identifier': '1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5',
+          'language': 'en',
+          'mediumThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5',
+          'name': 'Brainstorm',
+          'priority': 2,
+          'searchq': 'brainstorm',
+          'size': 5000000,
+          'smallThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5',
+          'source': 'example_drive_1',
+          'sourceExternalLink': 'https://drive.google.com/open?id=1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
+          'sourceId': 0,
+          'sourceName': 'Example Drive 1',
+          'sourceType': 'Google Drive',
+          'sourceVerbose': 'Example Drive 1 but verbose',
+          'tags': list([
+          ]),
+          'totalDownloads': 0,
+        }),
+      ]),
+      'count': 1,
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostExploreSearchResults.test_explore_search[sort by popularity this month]
+  dict({
+    'json': dict({
+      'cards': list([
+        dict({
+          'canonicalArtist': None,
+          'canonicalCard': None,
+          'cardType': 'CARD',
+          'dateCreated': '1st January, 2023',
+          'dateModified': '1st January, 2023',
+          'downloadsThisMonth': 0,
+          'downloadsThisWeek': 0,
+          'downloadsToday': 0,
+          'dpi': 600,
+          'extension': 'png',
+          'identifier': '1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5',
+          'language': 'en',
+          'mediumThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5',
+          'name': 'Brainstorm',
+          'priority': 2,
+          'searchq': 'brainstorm',
+          'size': 5000000,
+          'smallThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5',
+          'source': 'example_drive_1',
+          'sourceExternalLink': 'https://drive.google.com/open?id=1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
+          'sourceId': 0,
+          'sourceName': 'Example Drive 1',
+          'sourceType': 'Google Drive',
+          'sourceVerbose': 'Example Drive 1 but verbose',
+          'tags': list([
+          ]),
+          'totalDownloads': 0,
+        }),
+      ]),
+      'count': 1,
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostExploreSearchResults.test_explore_search[sort by popularity this week]
+  dict({
+    'json': dict({
+      'cards': list([
+        dict({
+          'canonicalArtist': None,
+          'canonicalCard': None,
+          'cardType': 'CARD',
+          'dateCreated': '1st January, 2023',
+          'dateModified': '1st January, 2023',
+          'downloadsThisMonth': 0,
+          'downloadsThisWeek': 0,
+          'downloadsToday': 0,
+          'dpi': 600,
+          'extension': 'png',
+          'identifier': '1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5',
+          'language': 'en',
+          'mediumThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5',
+          'name': 'Brainstorm',
+          'priority': 2,
+          'searchq': 'brainstorm',
+          'size': 5000000,
+          'smallThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5',
+          'source': 'example_drive_1',
+          'sourceExternalLink': 'https://drive.google.com/open?id=1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
+          'sourceId': 0,
+          'sourceName': 'Example Drive 1',
+          'sourceType': 'Google Drive',
+          'sourceVerbose': 'Example Drive 1 but verbose',
+          'tags': list([
+          ]),
+          'totalDownloads': 0,
+        }),
+      ]),
+      'count': 1,
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostExploreSearchResults.test_explore_search[sort by popularity today]
+  dict({
+    'json': dict({
+      'cards': list([
+        dict({
+          'canonicalArtist': None,
+          'canonicalCard': None,
+          'cardType': 'CARD',
+          'dateCreated': '1st January, 2023',
+          'dateModified': '1st January, 2023',
+          'downloadsThisMonth': 0,
+          'downloadsThisWeek': 0,
+          'downloadsToday': 0,
+          'dpi': 600,
+          'extension': 'png',
+          'identifier': '1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5',
+          'language': 'en',
+          'mediumThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5',
+          'name': 'Brainstorm',
+          'priority': 2,
+          'searchq': 'brainstorm',
+          'size': 5000000,
+          'smallThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5',
+          'source': 'example_drive_1',
+          'sourceExternalLink': 'https://drive.google.com/open?id=1Fu2nEymZhCpOOZkfF0XoZsVqdIWmPdNq',
+          'sourceId': 0,
+          'sourceName': 'Example Drive 1',
+          'sourceType': 'Google Drive',
+          'sourceVerbose': 'Example Drive 1 but verbose',
+          'tags': list([
+          ]),
+          'totalDownloads': 0,
+        }),
+      ]),
+      'count': 1,
     }),
     'status_code': 200,
   })
