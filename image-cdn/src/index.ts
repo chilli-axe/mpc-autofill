@@ -214,7 +214,7 @@ const checkAndPossiblyUpdateTheThumbnailsForAnObject = async (
     console.log(`${identifier} is stale - refreshing thumbnails`);
     for (const size of ["small", "large"] as Array<ImageSize>) {
       const imageKey = getImageKey("google_drive", size, identifier);
-      const imageURL = getImageURL("google_drive", size, undefined, true, identifier);
+      const imageURL = getImageURL("google_drive", size, undefined, 100, identifier);
       ctx.waitUntil(putImage(env, imageURL, imageKey, true));
     }
     return true;
