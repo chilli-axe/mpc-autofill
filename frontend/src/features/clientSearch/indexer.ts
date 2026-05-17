@@ -1,5 +1,5 @@
-import { create, insertMultiple } from "@orama/orama";
-import { imageDimensionsFromStream, ImageType } from "image-dimensions";
+import { create, insertMultiple, Orama } from "@orama/orama";
+import { imageDimensionsFromStream } from "image-dimensions";
 
 import { Unknown } from "@/common/constants";
 import {
@@ -18,6 +18,7 @@ import {
   GoogleDriveImageMimeTypes,
   LocalDirectoryHandleParams,
   LocalFileHandleParams,
+  LocalFileParams,
   OramaCardDocument,
   OramaIndex,
   RemoteFileHandleParams,
@@ -75,13 +76,16 @@ export class Folder {
 
 export class Image {
   constructor(
-    public readonly params: LocalFileHandleParams | RemoteFileHandleParams,
+    public readonly params:
+      | LocalFileParams
+      | LocalFileHandleParams
+      | RemoteFileHandleParams,
     public readonly name: string,
     public readonly extension: string,
     public readonly size: number,
     public readonly modifiedTime: Date,
     public readonly height: number,
-    public readonly folder: Folder
+    public readonly folder: Folder | undefined
   ) {}
 
   unpackName(tags: Map<string, Tag>): {
@@ -92,30 +96,33 @@ export class Image {
     const [language, name] = extractLanguage(this.name);
     const [nameWithNoTags, extractedTags] = extractNameAndTags(name, tags);
     return {
-      language: language ?? this.folder.getLanguage(tags),
+      language: language ?? this.folder?.getLanguage(tags),
       name: nameWithNoTags,
-      tags: extractedTags.union(this.folder.getTags(tags)),
+      tags: extractedTags.union(this.folder?.getTags(tags) ?? new Set()),
     };
   }
 
   getCardType(): CardType {
-    return this.folder.name.toLowerCase().includes("cardback")
+    return this.folder?.name.toLowerCase().includes("cardback")
       ? CardTypeSchema.Cardback
-      : this.folder.name.toLowerCase().includes("token")
+      : this.folder?.name.toLowerCase().includes("token")
       ? CardTypeSchema.Token
       : CardTypeSchema.Card;
   }
 
   getFullPath(tags: Map<string, Tag>): Array<string> | null {
     return [
-      ...this.folder.getFullPath(tags),
+      ...(this.folder?.getFullPath(tags) ?? []),
       this.params.sourceType === SourceType.LocalFile
-        ? this.params.fileHandle.name
+        ? this.params.fileHandle
+          ? this.params.fileHandle.name
+          : this.params.file.name
         : this.params.identifier,
     ];
   }
 
   getImageId(tags: Map<string, Tag>): string {
+    if (this.params.identifier) return this.params.identifier;
     if (this.params.sourceType === SourceType.LocalFile) {
       const resolvedPath = this.getFullPath(tags);
       // fall back on setting filepath to random string if unable to resolve. realistically this should never happen.
@@ -138,9 +145,9 @@ export class Image {
       cardType: this.getCardType(),
       name: name,
       searchq: toSearchable(this.name),
-      source: this.folder.name, // TODO: verbose naming?
+      source: this.folder?.name ?? "", // TODO: verbose naming?
       sourceId: -1,
-      sourceVerbose: this.folder.getFullPath(tags).join(" / "),
+      sourceVerbose: this.folder?.getFullPath(tags).join(" / ") ?? "",
       dpi: 10 * Math.round((this.height * 300) / 1110 / 10), // TODO: NaN?
       extension: this.extension,
       size: this.size,
@@ -183,30 +190,9 @@ abstract class Indexer {
   public async indexFiles(
     folders: Array<Folder>,
     images: Array<Image>,
-    tags: Array<Tag> | undefined
+    tags: Array<Tag> | undefined,
+    db?: Orama<typeof OramaSchema>
   ): Promise<OramaIndex> {
-    const db = create({
-      schema: OramaSchema,
-      sort: {
-        enabled: true,
-        unsortableProperties: [
-          // every field on OramaCardDocument except `searchq` and `lastModifiedNumber` :)
-          "name",
-          "source",
-          "sourceId",
-          "sourceVerbose",
-          "cardType",
-          "extension",
-          "language",
-          "tags",
-          "dpi",
-          "size",
-          "id",
-          "lastModified",
-          "params",
-        ],
-      },
-    });
     const tagsMap = new Map(
       (tags ?? []).map((tag) => [tag.name.toLowerCase(), tag])
     );
@@ -227,11 +213,41 @@ abstract class Indexer {
     const deduplicatedOramaCardDocuments = uniqueImages.map((image) =>
       image.getOramaCardDocument(tagsMap)
     );
-    insertMultiple(db, deduplicatedOramaCardDocuments);
-    return {
-      oramaDb: db,
-      size: deduplicatedOramaCardDocuments.length,
-    };
+    if (db) {
+      insertMultiple(db, deduplicatedOramaCardDocuments);
+      return {
+        oramaDb: db,
+        size: deduplicatedOramaCardDocuments.length,
+      };
+    } else {
+      const createdDb = create({
+        schema: OramaSchema,
+        sort: {
+          enabled: true,
+          unsortableProperties: [
+            // every field on OramaCardDocument except `searchq` and `lastModifiedNumber` :)
+            "name",
+            "source",
+            "sourceId",
+            "sourceVerbose",
+            "cardType",
+            "extension",
+            "language",
+            "tags",
+            "dpi",
+            "size",
+            "id",
+            "lastModified",
+            "params",
+          ],
+        },
+      });
+      insertMultiple(createdDb, deduplicatedOramaCardDocuments);
+      return {
+        oramaDb: createdDb,
+        size: deduplicatedOramaCardDocuments.length,
+      };
+    }
   }
 }
 
@@ -274,6 +290,7 @@ export class LocalFilesIndexer extends Indexer {
               new Image(
                 {
                   fileHandle: handle,
+                  file: undefined,
                   identifier: undefined,
                   sourceType: folder.params.sourceType,
                 },
@@ -320,6 +337,7 @@ export class GoogleDriveIndexer extends Indexer {
         sourceType: this.getSourceType(),
         identifier: file.id,
         fileHandle: undefined,
+        file: undefined,
       },
       removeFileExtension(file.name),
       extension,
@@ -345,6 +363,7 @@ export class GoogleDriveIndexer extends Indexer {
             sourceType: this.getSourceType(),
             identifier: file.id,
             fileHandle: undefined,
+            file: undefined,
           },
           file.name,
           folder
@@ -404,6 +423,7 @@ export class GoogleDriveIndexer extends Indexer {
             sourceType: SourceType.GoogleDrive,
             identifier: parentFile.id,
             fileHandle: undefined,
+            file: undefined,
           },
           parentFile.name,
           undefined

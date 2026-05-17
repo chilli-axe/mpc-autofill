@@ -275,9 +275,17 @@ export const OramaSchema = {
   artist: "enum",
 } as const;
 
+export type LocalFileParams = {
+  sourceType: SourceType.LocalFile;
+  identifier: string;
+  file: File;
+  fileHandle: undefined;
+};
+
 export type LocalFileHandleParams = {
   sourceType: SourceType.LocalFile;
   identifier: undefined;
+  file: undefined;
   fileHandle: FileSystemFileHandle;
 };
 
@@ -290,10 +298,14 @@ export type LocalDirectoryHandleParams = {
 export type RemoteFileHandleParams = {
   sourceType: SourceType.GoogleDrive | SourceType.AwsS3;
   identifier: string;
+  file: undefined;
   fileHandle: undefined;
 };
 
-export type FileHandleParams = LocalFileHandleParams | RemoteFileHandleParams;
+export type FileHandleParams =
+  | LocalFileParams
+  | LocalFileHandleParams
+  | RemoteFileHandleParams;
 
 export type OramaCardDocument = Pick<
   Card,
@@ -327,6 +339,10 @@ export interface OramaIndex {
 }
 
 export interface LocalFilesIndex {
+  index: OramaIndex | undefined;
+}
+
+export interface LocalFolderBackendIndex {
   fileHandle: FileSystemDirectoryHandle;
   index: OramaIndex | undefined;
 }

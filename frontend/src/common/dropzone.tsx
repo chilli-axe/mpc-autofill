@@ -22,7 +22,7 @@ const getColor = (props: DropzoneRootProps) => {
   return "#eeeeee";
 };
 
-const Container = styled.div`
+export const DropzoneContainer = styled.div`
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -104,13 +104,13 @@ export function TextFileDropzone({
 
   return (
     <div className="container">
-      <Container
+      <DropzoneContainer
         {...getRootProps({ isFocused, isDragAccept, isDragReject })}
         aria-label={label ?? "dropzone"}
       >
         <input {...getInputProps()} />
         Drag and drop a file here, or click to select a file.
-      </Container>
+      </DropzoneContainer>
     </div>
   );
 }

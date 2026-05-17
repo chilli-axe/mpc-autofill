@@ -3,6 +3,7 @@ import Dropdown from "react-bootstrap/Dropdown";
 
 import { RightPaddedIcon } from "@/components/icon";
 import { ImportCSVButton } from "@/features/import/ImportCSV";
+import { ImportLocalFileButton } from "@/features/import/ImportLocalFile";
 import { ImportTextButton } from "@/features/import/ImportText";
 import { ImportURLButton } from "@/features/import/ImportURL";
 import { ImportXMLButton } from "@/features/import/ImportXML";
@@ -18,6 +19,7 @@ export function Import() {
         </div>
         <Dropdown.Menu>
           <ImportTextButton />
+          <ImportLocalFileButton />
           <ImportXMLButton />
           <ImportCSVButton />
           <ImportURLButton />

@@ -79,12 +79,15 @@ export class ClientSearchService {
 
   // directory handle stuff below
 
-  public async clearLocalFilesIndex(state: RootState, dispatch: AppDispatch) {
+  public async clearLocalFolderBackendIndex(
+    state: RootState,
+    dispatch: AppDispatch
+  ) {
     if (this.worker === undefined) {
       throw new Error("clientSearchService was not initialised!");
     }
     return this.worker
-      .clearLocalFilesIndex()
+      .clearLocalFolderBackendIndex()
       .then(() => recalculateSearchResults(state, dispatch, true));
   }
 
@@ -140,6 +143,34 @@ export class ClientSearchService {
     }
   }
 
+  public async indexLocalFiles(
+    dispatch: AppDispatch,
+    forceUpdate: DispatchWithoutAction,
+    files: Array<{ identifier: string; file: File }>,
+    tags: Array<Tag> | undefined
+  ) {
+    if (this.worker === undefined) {
+      throw new Error("clientSearchService was not initialised!");
+    }
+    const notificationId = Math.random().toString();
+    const countIndexed = await this.worker.indexLocalFiles(files, tags);
+    dispatch(
+      setNotification([
+        notificationId, // overwrite the name/message for the existing toast rather than making a new one
+        {
+          name: `Local Files Upload`,
+          message: `Indexed ${countIndexed} cards.`,
+          level: "info",
+        },
+      ])
+    );
+
+    dispatch(api.util.invalidateTags([QueryTags.BackendSpecific]));
+    dispatch(clearSearchResults());
+    fetchCardDocumentsAndReportError(dispatch, { refreshCardbacks: true });
+    forceUpdate();
+  }
+
   public async indexGoogleDrive(
     dispatch: AppDispatch,
     forceUpdate: DispatchWithoutAction,
@@ -185,7 +216,7 @@ export class ClientSearchService {
   }
 
   public async getDirectoryIndexSize(): Promise<number | undefined> {
-    return this.worker?.getLocalFilesIndexSize();
+    return this.worker?.getLocalFolderBackendIndexSize();
   }
 
   public async getGoogleDriveIndexSize(): Promise<number | undefined> {
@@ -310,9 +341,9 @@ export class ClientSearchService {
     return this.worker.getSampleCards();
   }
 
-  public async getFileHandlesByIdentifier(cardDocumentsByIdentifier: {
+  public async getFilesByIdentifier(cardDocumentsByIdentifier: {
     [identifier: string]: CardDocument;
-  }): Promise<{ [identifier: string]: FileSystemFileHandle }> {
+  }): Promise<{ [identifier: string]: File }> {
     if (this.worker === undefined) {
       throw new Error("clientSearchService was not initialised!");
     }
@@ -330,7 +361,10 @@ export class ClientSearchService {
               item !== undefined &&
               item.params.sourceType === SourceType.LocalFile
           )
-          .map((item) => [item.id, item.params.fileHandle])
+          .map((item) => [
+            item.id,
+            item.params.file ?? item.params.fileHandle.getFile(),
+          ])
       )
     );
   }

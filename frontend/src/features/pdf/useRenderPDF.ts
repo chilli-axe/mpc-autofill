@@ -30,14 +30,14 @@ export const useRenderPDF = ({
   imageQuality,
   imageDPI,
   jpgQuality,
-}: Omit<PDFProps, "fileHandles">) => {
+}: Omit<PDFProps, "filesByIdentifier">) => {
   const { clientSearchService } = useClientSearchContext();
   const {
     value: url,
     loading,
     error,
   } = useAsync(async () => {
-    const fileHandles = await clientSearchService.getFileHandlesByIdentifier(
+    const filesByIdentifier = await clientSearchService.getFilesByIdentifier(
       cardDocumentsByIdentifier
     );
     return pdfRenderService.renderPDFInWorker({
@@ -64,7 +64,7 @@ export const useRenderPDF = ({
       imageQuality,
       imageDPI,
       jpgQuality,
-      fileHandles,
+      filesByIdentifier,
     });
   }, [
     cardSelectionMode,

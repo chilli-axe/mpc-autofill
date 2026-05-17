@@ -99,7 +99,9 @@ const useLocalFileImageSrc = (
         );
         if (oramaCardDocument?.params?.sourceType == SourceType.LocalFile) {
           setImageState("loading-from-local-file");
-          const file = await oramaCardDocument.params.fileHandle.getFile();
+          const file = oramaCardDocument.params.file
+            ? oramaCardDocument.params.file
+            : await oramaCardDocument.params.fileHandle.getFile();
           const url = URL.createObjectURL(file);
           setBlobURL(url);
         }

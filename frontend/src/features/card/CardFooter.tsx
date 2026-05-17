@@ -10,12 +10,16 @@ export function CardFooter({
   setSelectedImageFromIdentifier,
   handleShowGridSelector,
 }: {
-  searchResults: Array<string>;
+  searchResults: Array<string> | undefined;
   selectedImageIndex: number | undefined;
   selected: boolean;
   setSelectedImageFromIdentifier: { (image: string): void };
   handleShowGridSelector: { (): void };
 }) {
+  if (searchResults === undefined) {
+    return null;
+  }
+
   const setSelectedImageFromDelta = (delta: number): void => {
     // TODO: docstring
     if (selectedImageIndex !== undefined) {

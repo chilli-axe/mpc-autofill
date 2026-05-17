@@ -1,6 +1,5 @@
 import { useMemo, useState } from "react";
 import React from "react";
-import Alert from "react-bootstrap/Alert";
 import Button from "react-bootstrap/Button";
 import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
@@ -36,11 +35,11 @@ const PDFPreview = (props: PDFProps & { url: string | undefined }) => {
 };
 
 const downloadPDF = async (
-  props: Omit<PDFProps, "fileHandles">,
+  props: Omit<PDFProps, "filesByIdentifier">,
   clientSearchService: ClientSearchService,
   dispatch: AppDispatch
 ): Promise<boolean> => {
-  const fileHandles = await clientSearchService.getFileHandlesByIdentifier(
+  const filesByIdentifier = await clientSearchService.getFilesByIdentifier(
     props.cardDocumentsByIdentifier
   );
   dispatch(
@@ -54,7 +53,7 @@ const downloadPDF = async (
     ])
   );
   return pdfRenderService
-    .renderPDF({ ...props, fileHandles })
+    .renderPDF({ ...props, filesByIdentifier })
     .then((blob) =>
       downloadFile(blob, undefined, "cards.pdf", clientSearchService)
     )
@@ -62,7 +61,7 @@ const downloadPDF = async (
 };
 
 const useDownloadPDF = (
-  props: Omit<PDFProps, "fileHandles">,
+  props: Omit<PDFProps, "filesByIdentifier">,
   clientSearchService: ClientSearchService,
   dispatch: AppDispatch,
   setIsDownloading: (newState: boolean) => void
@@ -184,7 +183,7 @@ export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
   function equalityFn<T>(left: T, right: T): boolean {
     return JSON.stringify(left) === JSON.stringify(right);
   }
-  const pdfProps: Omit<PDFProps, "fileHandles"> = {
+  const pdfProps: Omit<PDFProps, "filesByIdentifier"> = {
     cardSelectionMode: cardSelectionMode,
     pageSize: pageSize,
     pageWidth: pageWidth,
@@ -489,7 +488,11 @@ export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
             disabled={showSpinner}
             style={{ height: 100 + "%", overflowY: "hidden" }}
           >
-            <PDFPreview url={url} {...debouncedPDFProps} fileHandles={{}} />
+            <PDFPreview
+              url={url}
+              {...debouncedPDFProps}
+              filesByIdentifier={{}}
+            />
           </Blurrable>
         </Col>
       </Row>

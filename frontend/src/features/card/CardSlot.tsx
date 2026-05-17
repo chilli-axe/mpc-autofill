@@ -124,7 +124,7 @@ export function CardSlot({ id, searchQuery, face, slot }: CardSlotProps) {
 
   const dispatch = useAppDispatch();
   const { ref, handleRef, isDragging } = useSortable({ id, index: slot });
-  const searchResultsForQueryOrDefault = useAppSelector((state) =>
+  const searchResultsForQuery = useAppSelector((state) =>
     selectSearchResultsForQueryOrDefault(
       state,
       searchQuery?.query,
@@ -199,20 +199,19 @@ export function CardSlot({ id, searchQuery, face, slot }: CardSlotProps) {
 
   //# region computed constants
 
-  const searchResultsForQuery = searchResultsForQueryOrDefault ?? [];
   const selectedImageIndex: number | undefined =
     selectedImage != null
-      ? searchResultsForQuery.indexOf(selectedImage)
+      ? searchResultsForQuery?.indexOf(selectedImage)
       : undefined;
   const previousImage: string | undefined =
     selectedImageIndex != null
-      ? searchResultsForQuery[
+      ? searchResultsForQuery?.[
           wrapIndex(selectedImageIndex + 1, searchResultsForQuery.length)
         ]
       : undefined;
   const nextImage: string | undefined =
     selectedImageIndex != null
-      ? searchResultsForQuery[
+      ? searchResultsForQuery?.[
           wrapIndex(selectedImageIndex - 1, searchResultsForQuery.length)
         ]
       : undefined;
@@ -270,23 +269,24 @@ export function CardSlot({ id, searchQuery, face, slot }: CardSlotProps) {
         searchQuery={searchQuery}
         nameOnClick={handleShowChangeSelectedImageQueriesModal}
         noResultsFound={
-          searchResultsForQueryOrDefault != null &&
-          searchResultsForQueryOrDefault.length === 0
+          searchResultsForQuery != null && searchResultsForQuery.length === 0
         }
       />
 
-      {searchResultsForQuery.length > 1 && showGridSelector && (
-        <MemoizedCardSlotGridSelector
-          face={face}
-          slot={slot}
-          searchResultsForQuery={searchResultsForQuery}
-          selectedImage={selectedImage}
-          show={showGridSelector}
-          handleClose={handleCloseGridSelector}
-          setSelectedImageFromIdentifier={setSelectedImageFromIdentifier}
-          searchq={searchQuery?.query ?? undefined}
-        />
-      )}
+      {searchResultsForQuery !== undefined &&
+        searchResultsForQuery.length > 1 &&
+        showGridSelector && (
+          <MemoizedCardSlotGridSelector
+            face={face}
+            slot={slot}
+            searchResultsForQuery={searchResultsForQuery}
+            selectedImage={selectedImage}
+            show={showGridSelector}
+            handleClose={handleCloseGridSelector}
+            setSelectedImageFromIdentifier={setSelectedImageFromIdentifier}
+            searchq={searchQuery?.query ?? undefined}
+          />
+        )}
     </div>
   );
 }

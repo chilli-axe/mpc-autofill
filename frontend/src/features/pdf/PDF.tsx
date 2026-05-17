@@ -172,7 +172,7 @@ export interface PDFProps {
   imageQuality: "small-thumbnail" | "large-thumbnail" | "full-resolution";
   imageDPI: number | undefined;
   jpgQuality: number;
-  fileHandles: { [identifier: string]: FileSystemFileHandle };
+  filesByIdentifier: { [identifier: string]: File };
 }
 
 const getPDFImageURL = async (
@@ -180,7 +180,7 @@ const getPDFImageURL = async (
   imageQuality: "small-thumbnail" | "large-thumbnail" | "full-resolution",
   dpi: number | undefined,
   jpgQuality: number,
-  fileHandles: { [identifier: string]: FileSystemFileHandle }
+  filesByIdentifier: { [identifier: string]: File }
 ): Promise<string | Blob | undefined> => {
   switch (cardDocument.sourceType) {
     case SourceType.GoogleDrive:
@@ -196,13 +196,11 @@ const getPDFImageURL = async (
       }
 
     case SourceType.LocalFile:
-      const handle = fileHandles[cardDocument.identifier];
-      if (handle !== undefined) {
-        return URL.createObjectURL(await handle.getFile());
+      const file = filesByIdentifier[cardDocument.identifier];
+      if (file !== undefined) {
+        return URL.createObjectURL(await file);
       } else {
-        throw new Error(
-          `could not get handle for file ${cardDocument.identifier}`
-        );
+        throw new Error(`could not get file for ${cardDocument.identifier}`);
       }
     default:
       throw new Error(
@@ -227,7 +225,7 @@ const PDFCardThumbnail = ({ cardDocument }: PDFCardThumbnailProps) => {
     imageQuality,
     imageDPI,
     jpgQuality,
-    fileHandles,
+    filesByIdentifier,
   } = usePDFContext();
   const height = CardHeightMM + 2 * bleedEdgeMM;
   const heightProportion = (CardHeightMM + 2 * BleedEdgeMM) / height;
@@ -297,7 +295,7 @@ const PDFCardThumbnail = ({ cardDocument }: PDFCardThumbnailProps) => {
             imageQuality,
             imageDPI,
             jpgQuality,
-            fileHandles
+            filesByIdentifier
           )
         }
         style={imageStyle}

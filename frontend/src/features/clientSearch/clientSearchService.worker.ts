@@ -18,6 +18,7 @@ import {
   GoogleDriveDoc,
   GoogleDriveIndex,
   LocalFilesIndex,
+  LocalFolderBackendIndex,
   OramaCardDocument,
   OramaIndex,
   OramaSchema,
@@ -28,19 +29,26 @@ import {
 import { parseDjangoDate } from "@/common/utils";
 import { getDefaultSearchSettings } from "@/store/slices/searchSettingsSlice";
 
-import { Folder, GoogleDriveIndexer, LocalFilesIndexer } from "./indexer";
+import {
+  Folder,
+  GoogleDriveIndexer,
+  Image,
+  LocalFilesIndexer,
+} from "./indexer";
 
 export class ClientSearchService {
   private localFilesIndex: LocalFilesIndex | undefined;
+  private localFolderBackendIndex: LocalFolderBackendIndex | undefined;
   private googleDriveIndex: GoogleDriveIndex | undefined;
 
   constructor() {
     this.localFilesIndex = undefined;
+    this.localFolderBackendIndex = undefined;
     this.googleDriveIndex = undefined;
   }
 
   public hasLocalFilesDirectoryHandle(): boolean {
-    return this.localFilesIndex?.fileHandle !== undefined;
+    return this.localFolderBackendIndex?.fileHandle !== undefined;
   }
 
   public hasGoogleDriveIndex() {
@@ -48,58 +56,92 @@ export class ClientSearchService {
   }
 
   public getLocalFilesDirectoryHandle(): FileSystemDirectoryHandle | undefined {
-    return this.localFilesIndex?.fileHandle;
+    return this.localFolderBackendIndex?.fileHandle;
   }
 
   public async setLocalFilesDirectoryHandle(
     directoryHandle: FileSystemDirectoryHandle,
     tags: Array<Tag> | undefined
   ) {
-    this.localFilesIndex = {
+    this.localFolderBackendIndex = {
       fileHandle: directoryHandle,
       index: undefined,
     };
   }
 
-  public async clearLocalFilesIndex() {
-    this.localFilesIndex = undefined;
+  public async clearLocalFolderBackendIndex() {
+    this.localFolderBackendIndex = undefined;
   }
 
   public async clearGoogleDriveIndex() {
     this.googleDriveIndex = undefined;
   }
 
-  public getLocalFilesIndexSize(): number | undefined {
-    return this.localFilesIndex?.index?.size;
+  public getLocalFolderBackendIndexSize(): number | undefined {
+    return this.localFolderBackendIndex?.index?.size;
   }
 
   public getGoogleDriveIndexSize(): number | undefined {
     return this.googleDriveIndex?.index?.size;
   }
 
+  public async indexLocalFiles(
+    files: Array<{ identifier: string; file: File }>,
+    tags: Array<Tag> | undefined
+  ): Promise<number> {
+    const images = files.map(
+      ({ identifier, file }) =>
+        new Image(
+          {
+            sourceType: SourceType.LocalFile,
+            identifier: identifier,
+            file: file,
+            fileHandle: undefined,
+          },
+          file.name,
+          ".jpg", // TODO: obviously
+          file.size,
+          new Date(file.lastModified),
+          1000, // TODO: obviously
+          undefined
+        )
+    );
+    // TODO: clunky
+    if (this.localFilesIndex === undefined) {
+      this.localFilesIndex = { index: undefined };
+    }
+    this.localFilesIndex.index = await new LocalFilesIndexer().indexFiles(
+      [],
+      images,
+      tags,
+      this.localFilesIndex?.index?.oramaDb
+    );
+    return images.length;
+  }
+
   public async indexDirectory(
     tags: Array<Tag> | undefined
   ): Promise<{ handle: FileSystemDirectoryHandle; size: number } | undefined> {
-    if (this.localFilesIndex?.fileHandle !== undefined) {
+    if (this.localFolderBackendIndex?.fileHandle !== undefined) {
       const oramaIndex = await new LocalFilesIndexer().indexFiles(
         [
           new Folder(
             {
-              fileHandle: this.localFilesIndex.fileHandle,
+              fileHandle: this.localFolderBackendIndex.fileHandle,
               identifier: undefined,
               sourceType: SourceType.LocalFile,
             },
-            this.localFilesIndex.fileHandle.name,
+            this.localFolderBackendIndex.fileHandle.name,
             undefined
           ),
         ],
         [],
         tags
       );
-      this.localFilesIndex.index = oramaIndex;
+      this.localFolderBackendIndex.index = oramaIndex;
       return {
-        handle: this.localFilesIndex.fileHandle,
-        size: this.localFilesIndex.index.size,
+        handle: this.localFolderBackendIndex.fileHandle,
+        size: this.localFolderBackendIndex.index.size,
       };
     }
     return undefined;
@@ -120,6 +162,7 @@ export class ClientSearchService {
               sourceType: SourceType.GoogleDrive,
               identifier: id,
               fileHandle: undefined,
+              file: undefined,
             },
             name,
             undefined
@@ -260,7 +303,10 @@ export class ClientSearchService {
     limit?: number,
     offset?: number
   ): OramaSearchResults | undefined {
-    return [this.localFilesIndex?.index, this.googleDriveIndex?.index].reduce(
+    let { hits, count } = [
+      this.localFilesIndex?.index,
+      this.googleDriveIndex?.index,
+    ].reduce(
       (
         accumulated: OramaSearchResults,
         index: OramaIndex | undefined
@@ -284,6 +330,23 @@ export class ClientSearchService {
       },
       { hits: [], count: 0 }
     );
+
+    if (query !== undefined && this.localFilesIndex?.index !== undefined) {
+      console.log("here", this.localFilesIndex.index.oramaDb);
+      const document: OramaCardDocument | undefined = getByID(
+        this.localFilesIndex.index.oramaDb,
+        query
+      );
+      if (document) {
+        console.log("here: hit");
+        hits.push({ id: query, document: document });
+        count += 1;
+      } else {
+        console.log("here: no hit");
+      }
+    }
+
+    return { hits, count };
   }
 
   public async filterGridSelectorIdentifiers(
@@ -333,6 +396,7 @@ export class ClientSearchService {
             identifier: card.identifier,
             sourceType: SourceType.GoogleDrive,
             fileHandle: undefined,
+            file: undefined,
           },
           expansionCode: card.canonicalCard?.expansionCode ?? Unknown,
           collectorNumber: card.canonicalCard?.collectorNumber ?? Unknown,
@@ -491,6 +555,7 @@ export class ClientSearchService {
   public getByID(identifier: string): OramaCardDocument | undefined {
     for (const oramaDb of [
       this.localFilesIndex?.index?.oramaDb,
+      this.localFolderBackendIndex?.index?.oramaDb,
       this.googleDriveIndex?.index?.oramaDb,
     ]) {
       if (oramaDb) {
