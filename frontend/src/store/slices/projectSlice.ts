@@ -300,9 +300,15 @@ export const projectSlice = createAppSlice({
         throw new RangeError(`slot ${slot} is out of bounds`);
       }
       const duplicates = Array(quantity).fill(state.members[slot]);
+
+      const newMembers = duplicates.map((duplicate) => ({
+        // need to generate new IDs for the duplicates
+        ...duplicate,
+        id: `member-${state.nextMemberId++}`,
+      }));
       state.members = [
         ...state.members.slice(0, slot + 1),
-        ...duplicates,
+        ...newMembers,
         ...state.members.slice(slot + 1),
       ];
     },
