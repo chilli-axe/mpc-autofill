@@ -20,6 +20,7 @@ import { RightPaddedIcon } from "@/components/icon";
 import { OverflowList } from "@/components/OverflowList";
 import { useDoImageDownload } from "@/features/download/downloadImages";
 import { GridSelectorModal } from "@/features/gridSelector/GridSelectorModal";
+import { useRecordDownloadCounts } from "@/store/api";
 import { useCardDocumentsByIdentifier } from "@/store/slices/cardDocumentsSlice";
 import { showChangeQueryModal } from "@/store/slices/modalsSlice";
 import {
@@ -233,11 +234,13 @@ function DownloadSelectedImages({
   const dispatch = useAppDispatch();
   const cardDocumentsByIdentifier = useCardDocumentsByIdentifier();
   const queueImageDownload = useDoImageDownload();
+  const recordDownloadCounts = useRecordDownloadCounts();
   const identifiers = useAppSelector((state) =>
     selectUniqueCardIdentifiersInSlots(state, slots)
   );
 
   const onClick = () => {
+    const identifiersToDownload: string[] = [];
     let n = 0;
     identifiers.forEach((identifier) => {
       if (
@@ -246,9 +249,11 @@ function DownloadSelectedImages({
           SourceType.GoogleDrive
       ) {
         queueImageDownload(cardDocumentsByIdentifier[identifier]);
+        identifiersToDownload.push(identifier);
         n++;
       }
     });
+    recordDownloadCounts(identifiersToDownload);
     dispatch(bulkSetMemberSelection({ selectedStatus: false, slots }));
     dispatch(
       setNotification([

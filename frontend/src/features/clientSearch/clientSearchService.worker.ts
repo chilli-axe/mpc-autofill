@@ -177,6 +177,22 @@ export class ClientSearchService {
       },
       [SortBy.NameAscending]: { property: "searchq", order: "ASC" },
       [SortBy.NameDescending]: { property: "searchq", order: "DESC" },
+      [SortBy.PopularityTodayDescending]: {
+        property: "downloadsToday",
+        order: "DESC",
+      },
+      [SortBy.PopularityWeekDescending]: {
+        property: "downloadsThisWeek",
+        order: "DESC",
+      },
+      [SortBy.PopularityMonthDescending]: {
+        property: "downloadsThisMonth",
+        order: "DESC",
+      },
+      [SortBy.PopularityAllTimeDescending]: {
+        property: "totalDownloads",
+        order: "DESC",
+      },
     } as const;
     const sortByConfig = sortBy && sortByConfigs[sortBy];
 
@@ -329,6 +345,10 @@ export class ClientSearchService {
           lastModifiedNumber: parseDjangoDate(card.dateModified).valueOf(),
           created: parseDjangoDate(card.dateCreated),
           createdNumber: parseDjangoDate(card.dateCreated).valueOf(),
+          downloadsToday: card.downloadsToday ?? 0,
+          downloadsThisWeek: card.downloadsThisWeek ?? 0,
+          downloadsThisMonth: card.downloadsThisMonth ?? 0,
+          totalDownloads: card.totalDownloads ?? 0,
           params: {
             identifier: card.identifier,
             sourceType: SourceType.GoogleDrive,
@@ -533,6 +553,10 @@ export class ClientSearchService {
       mediumThumbnailUrl: undefined,
       language: "EN", // TODO
       tags: oramaCardDocument.tags,
+      downloadsToday: oramaCardDocument.downloadsToday,
+      downloadsThisWeek: oramaCardDocument.downloadsThisWeek,
+      downloadsThisMonth: oramaCardDocument.downloadsThisMonth,
+      totalDownloads: oramaCardDocument.totalDownloads,
     };
   }
 

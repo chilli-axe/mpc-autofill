@@ -155,6 +155,10 @@ export interface Card {
   sourceType?: SourceType;
   sourceVerbose: string;
   tags: string[];
+  downloadsToday: number;
+  downloadsThisWeek: number;
+  downloadsThisMonth: number;
+  totalDownloads: number;
 }
 
 export interface CanonicalArtist {
@@ -242,6 +246,10 @@ export enum SortBy {
   DateModifiedDescending = "dateModifiedDescending",
   NameAscending = "nameAscending",
   NameDescending = "nameDescending",
+  PopularityTodayDescending = "popularityTodayDescending",
+  PopularityWeekDescending = "popularityWeekDescending",
+  PopularityMonthDescending = "popularityMonthDescending",
+  PopularityAllTimeDescending = "popularityAllTimeDescending",
 }
 
 export interface ExploreSearchResponse {
@@ -1383,5 +1391,9 @@ const typeMap: any = {
     "dateModifiedDescending",
     "nameAscending",
     "nameDescending",
+    "popularityTodayDescending",
+    "popularityWeekDescending",
+    "popularityMonthDescending",
+    "popularityAllTimeDescending",
   ],
 };

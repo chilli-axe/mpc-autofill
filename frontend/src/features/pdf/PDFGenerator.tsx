@@ -20,6 +20,7 @@ import { ClientSearchService } from "@/features/clientSearch/clientSearchService
 import { downloadFile, useDoFileDownload } from "@/features/download/download";
 import { CardSelectionMode, PageSize, PDFProps } from "@/features/pdf/PDF";
 import { pdfRenderService } from "@/features/pdf/pdfRenderService";
+import { useRecordDownloadCounts } from "@/store/api";
 import { useCardDocumentsByIdentifier } from "@/store/slices/cardDocumentsSlice";
 import {
   selectProjectCardback,
@@ -68,8 +69,20 @@ const useDownloadPDF = (
   setIsDownloading: (newState: boolean) => void
 ) => {
   const doFileDownload = useDoFileDownload();
-  return () =>
-    Promise.resolve(setIsDownloading(true))
+  const recordDownloadCounts = useRecordDownloadCounts();
+  const projectMembers = useAppSelector(selectProjectMembers);
+  return () => {
+    const identifiers = [
+      ...new Set(
+        projectMembers.flatMap((slot) =>
+          [slot.front?.selectedImage, slot.back?.selectedImage].filter(
+            (id): id is string => id != null
+          )
+        )
+      ),
+    ];
+    recordDownloadCounts(identifiers);
+    return Promise.resolve(setIsDownloading(true))
       .then(() =>
         doFileDownload(
           "pdf",
@@ -79,6 +92,7 @@ const useDownloadPDF = (
         )
       )
       .finally(() => setIsDownloading(false));
+  };
 };
 
 interface NumericFieldProps {

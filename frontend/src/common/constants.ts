@@ -111,6 +111,10 @@ export const SortByOptions: { [option in SortBy]: string } = {
   dateModifiedAscending: "Date Modified (Oldest-Newest)",
   nameAscending: "Name (A-Z)",
   nameDescending: "Name (Z-A)",
+  popularityTodayDescending: "Popular Today",
+  popularityWeekDescending: "Popular This Week",
+  popularityMonthDescending: "Popular This Month",
+  popularityAllTimeDescending: "Popular All Time",
 };
 
 export const FavouritesSourceKey = "__favorites__";
