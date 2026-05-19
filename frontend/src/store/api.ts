@@ -16,8 +16,6 @@ import {
   CardsResponse,
   ContributionsResponse,
   DFCPairsResponse,
-  EditorSearchRequest,
-  EditorSearchResponse,
   ExploreSearchRequest,
   ExploreSearchResponse,
   ImportSite,
@@ -31,6 +29,8 @@ import {
   NewCardsFirstPage,
   NewCardsFirstPagesResponse,
   NewCardsPageResponse,
+  OldEditorSearchRequest,
+  OldEditorSearchResponse,
   Patreon,
   PatreonResponse,
   SampleCardsResponse,
@@ -340,13 +340,13 @@ export async function APIEditorSearch(
     body: JSON.stringify({
       searchSettings,
       queries: queriesToSearch,
-    } as EditorSearchRequest),
+    } as OldEditorSearchRequest),
     credentials: "same-origin",
     headers: getCSRFHeader(),
   });
   return rawResponse.json().then((content) => {
     if (rawResponse.status === 200 && content.results != null) {
-      return content.results as EditorSearchResponse["results"];
+      return content.results as OldEditorSearchResponse["results"];
     }
     throw { name: content.name, message: content.message };
   });

@@ -1964,14 +1964,14 @@
       'errors': list([
         dict({
           'ctx': dict({
-            'class_name': 'EditorSearchRequest',
+            'class_name': 'OldEditorSearchRequest',
           }),
           'input': list([
             'test',
           ]),
           'loc': list([
           ]),
-          'msg': 'Input should be a valid dictionary or instance of EditorSearchRequest',
+          'msg': 'Input should be a valid dictionary or instance of OldEditorSearchRequest',
           'type': 'model_type',
           'url': 'https://errors.pydantic.dev/2.10/v/model_type',
         }),

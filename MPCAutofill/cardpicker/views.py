@@ -31,8 +31,6 @@ from cardpicker.schema_types import (
     CardsResponse,
     ContributionsResponse,
     DFCPairsResponse,
-    EditorSearchRequest,
-    EditorSearchResponse,
     ErrorResponse,
     ExploreSearchRequest,
     ExploreSearchResponse,
@@ -47,6 +45,8 @@ from cardpicker.schema_types import (
     NewCardsFirstPage,
     NewCardsFirstPagesResponse,
     NewCardsPageResponse,
+    OldEditorSearchRequest,
+    OldEditorSearchResponse,
     Patreon,
     PatreonResponse,
     SampleCardsResponse,
@@ -121,7 +121,7 @@ def post_editor_search(request: HttpRequest) -> HttpResponse:
     if request.method != "POST":
         raise BadRequestException("Expected POST request.")
 
-    editor_search_request = EditorSearchRequest.model_validate(json.loads(request.body))
+    editor_search_request = OldEditorSearchRequest.model_validate(json.loads(request.body))
     if not ping_elasticsearch():
         raise SearchExceptions.ElasticsearchOfflineException()
     if not Index(CardSearch.Index.name).exists():
@@ -140,7 +140,7 @@ def post_editor_search(request: HttpRequest) -> HttpResponse:
                 query=query, card_type=card_type, search_settings=editor_search_request.searchSettings
             )
             results[query][card_type.value] = hits
-    return JsonResponse(EditorSearchResponse(results=results).model_dump())
+    return JsonResponse(OldEditorSearchResponse(results=results).model_dump())
 
 
 @csrf_exempt

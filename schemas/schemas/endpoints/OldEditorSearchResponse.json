@@ -1,5 +1,5 @@
 {
-  "title": "Editor Search Response",
+  "title": "Old Editor Search Response",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "properties": {

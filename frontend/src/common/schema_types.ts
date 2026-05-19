@@ -2,7 +2,7 @@
 
 // To parse this data:
 //
-//   import { Convert, Campaign, CanonicalArtist, CanonicalCard, Card, CardType, FilterSettings, Game, ImportSite, Language, NewCardsFirstPage, SearchQuery, SearchSettings, SearchTypeSettings, SortBy, Source, SourceContribution, SourceSettings, SourceType, Supporter, SupporterTier, Tag, CardbacksRequest, CardbacksResponse, CardsRequest, CardsResponse, ContributionsResponse, DFCPairsResponse, EditorSearchRequest, EditorSearchResponse, ErrorResponse, ExploreSearchRequest, ExploreSearchResponse, ImportSiteDecklistRequest, ImportSiteDecklistResponse, ImportSitesResponse, InfoResponse, LanguagesResponse, NewCardsFirstPagesResponse, NewCardsPageResponse, PatreonResponse, SampleCardsResponse, SearchEngineHealthResponse, SourcesResponse, TagsResponse } from "./file";
+//   import { Convert, Campaign, CanonicalArtist, CanonicalCard, Card, CardType, FilterSettings, Game, ImportSite, Language, NewCardsFirstPage, SearchQuery, SearchSettings, SearchTypeSettings, SortBy, Source, SourceContribution, SourceSettings, SourceType, Supporter, SupporterTier, Tag, CardbacksRequest, CardbacksResponse, CardsRequest, CardsResponse, ContributionsResponse, DFCPairsResponse, ErrorResponse, ExploreSearchRequest, ExploreSearchResponse, ImportSiteDecklistRequest, ImportSiteDecklistResponse, ImportSitesResponse, InfoResponse, LanguagesResponse, NewCardsFirstPagesResponse, NewCardsPageResponse, OldEditorSearchRequest, OldEditorSearchResponse, PatreonResponse, SampleCardsResponse, SearchEngineHealthResponse, SourcesResponse, TagsResponse } from "./file";
 //
 //   const campaign = Convert.toCampaign(json);
 //   const canonicalArtist = Convert.toCanonicalArtist(json);
@@ -32,8 +32,6 @@
 //   const cardsResponse = Convert.toCardsResponse(json);
 //   const contributionsResponse = Convert.toContributionsResponse(json);
 //   const dFCPairsResponse = Convert.toDFCPairsResponse(json);
-//   const editorSearchRequest = Convert.toEditorSearchRequest(json);
-//   const editorSearchResponse = Convert.toEditorSearchResponse(json);
 //   const errorResponse = Convert.toErrorResponse(json);
 //   const exploreSearchRequest = Convert.toExploreSearchRequest(json);
 //   const exploreSearchResponse = Convert.toExploreSearchResponse(json);
@@ -44,6 +42,8 @@
 //   const languagesResponse = Convert.toLanguagesResponse(json);
 //   const newCardsFirstPagesResponse = Convert.toNewCardsFirstPagesResponse(json);
 //   const newCardsPageResponse = Convert.toNewCardsPageResponse(json);
+//   const oldEditorSearchRequest = Convert.toOldEditorSearchRequest(json);
+//   const oldEditorSearchResponse = Convert.toOldEditorSearchResponse(json);
 //   const patreonResponse = Convert.toPatreonResponse(json);
 //   const sampleCardsResponse = Convert.toSampleCardsResponse(json);
 //   const searchEngineHealthResponse = Convert.toSearchEngineHealthResponse(json);
@@ -204,20 +204,6 @@ export interface DFCPairsResponse {
   dfcPairs: { [key: string]: string };
 }
 
-export interface EditorSearchRequest {
-  queries: SearchQuery[];
-  searchSettings: SearchSettings;
-}
-
-export interface SearchQuery {
-  cardType: CardType;
-  query: null | string;
-}
-
-export interface EditorSearchResponse {
-  results: { [key: string]: { [key: string]: string[] } };
-}
-
 export interface ErrorResponse {
   errors?: { [key: string]: any }[];
   message?: string;
@@ -310,6 +296,20 @@ export interface Source {
 
 export interface NewCardsPageResponse {
   cards: Card[];
+}
+
+export interface OldEditorSearchRequest {
+  queries: SearchQuery[];
+  searchSettings: SearchSettings;
+}
+
+export interface SearchQuery {
+  cardType: CardType;
+  query: null | string;
+}
+
+export interface OldEditorSearchResponse {
+  results: { [key: string]: { [key: string]: string[] } };
 }
 
 export interface PatreonResponse {
@@ -614,24 +614,6 @@ export class Convert {
     return JSON.stringify(uncast(value, r("DFCPairsResponse")), null, 2);
   }
 
-  public static toEditorSearchRequest(json: string): EditorSearchRequest {
-    return cast(JSON.parse(json), r("EditorSearchRequest"));
-  }
-
-  public static editorSearchRequestToJson(value: EditorSearchRequest): string {
-    return JSON.stringify(uncast(value, r("EditorSearchRequest")), null, 2);
-  }
-
-  public static toEditorSearchResponse(json: string): EditorSearchResponse {
-    return cast(JSON.parse(json), r("EditorSearchResponse"));
-  }
-
-  public static editorSearchResponseToJson(
-    value: EditorSearchResponse
-  ): string {
-    return JSON.stringify(uncast(value, r("EditorSearchResponse")), null, 2);
-  }
-
   public static toErrorResponse(json: string): ErrorResponse {
     return cast(JSON.parse(json), r("ErrorResponse"));
   }
@@ -740,6 +722,28 @@ export class Convert {
     value: NewCardsPageResponse
   ): string {
     return JSON.stringify(uncast(value, r("NewCardsPageResponse")), null, 2);
+  }
+
+  public static toOldEditorSearchRequest(json: string): OldEditorSearchRequest {
+    return cast(JSON.parse(json), r("OldEditorSearchRequest"));
+  }
+
+  public static oldEditorSearchRequestToJson(
+    value: OldEditorSearchRequest
+  ): string {
+    return JSON.stringify(uncast(value, r("OldEditorSearchRequest")), null, 2);
+  }
+
+  public static toOldEditorSearchResponse(
+    json: string
+  ): OldEditorSearchResponse {
+    return cast(JSON.parse(json), r("OldEditorSearchResponse"));
+  }
+
+  public static oldEditorSearchResponseToJson(
+    value: OldEditorSearchResponse
+  ): string {
+    return JSON.stringify(uncast(value, r("OldEditorSearchResponse")), null, 2);
   }
 
   public static toPatreonResponse(json: string): PatreonResponse {
@@ -1121,28 +1125,6 @@ const typeMap: any = {
     [{ json: "dfcPairs", js: "dfcPairs", typ: m("") }],
     false
   ),
-  EditorSearchRequest: o(
-    [
-      { json: "queries", js: "queries", typ: a(r("SearchQuery")) },
-      {
-        json: "searchSettings",
-        js: "searchSettings",
-        typ: r("SearchSettings"),
-      },
-    ],
-    false
-  ),
-  SearchQuery: o(
-    [
-      { json: "cardType", js: "cardType", typ: r("CardType") },
-      { json: "query", js: "query", typ: u(null, "") },
-    ],
-    false
-  ),
-  EditorSearchResponse: o(
-    [{ json: "results", js: "results", typ: m(m(a(""))) }],
-    false
-  ),
   ErrorResponse: o(
     [
       { json: "errors", js: "errors", typ: u(undefined, a(m("any"))) },
@@ -1237,6 +1219,28 @@ const typeMap: any = {
   ),
   NewCardsPageResponse: o(
     [{ json: "cards", js: "cards", typ: a(r("Card")) }],
+    false
+  ),
+  OldEditorSearchRequest: o(
+    [
+      { json: "queries", js: "queries", typ: a(r("SearchQuery")) },
+      {
+        json: "searchSettings",
+        js: "searchSettings",
+        typ: r("SearchSettings"),
+      },
+    ],
+    false
+  ),
+  SearchQuery: o(
+    [
+      { json: "cardType", js: "cardType", typ: r("CardType") },
+      { json: "query", js: "query", typ: u(null, "") },
+    ],
+    false
+  ),
+  OldEditorSearchResponse: o(
+    [{ json: "results", js: "results", typ: m(m(a(""))) }],
     false
   ),
   PatreonResponse: o(
