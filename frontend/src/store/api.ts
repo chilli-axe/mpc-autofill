@@ -8,7 +8,11 @@ import {
 
 import { GoogleDriveImageAPIURL, QueryTags } from "@/common/constants";
 import { getCSRFHeader } from "@/common/cookies";
-import { formatURL, processQuery } from "@/common/processing";
+import {
+  computeSearchQueryHashKey,
+  formatURL,
+  processQuery,
+} from "@/common/processing";
 import {
   Card,
   CardbacksResponse,
@@ -16,6 +20,8 @@ import {
   CardsResponse,
   ContributionsResponse,
   DFCPairsResponse,
+  EditorSearchRequest,
+  EditorSearchResponse,
   ExploreSearchRequest,
   ExploreSearchResponse,
   ImportSite,
@@ -29,8 +35,6 @@ import {
   NewCardsFirstPage,
   NewCardsFirstPagesResponse,
   NewCardsPageResponse,
-  OldEditorSearchRequest,
-  OldEditorSearchResponse,
   Patreon,
   PatreonResponse,
   SampleCardsResponse,
@@ -43,7 +47,6 @@ import {
   DFCPairs,
   SearchQuery,
   SearchResults,
-  SearchResultsForQuery,
   SearchSettings,
   SourceDocuments,
 } from "@/common/types";
@@ -335,18 +338,23 @@ export async function APIEditorSearch(
   searchSettings: SearchSettings,
   queriesToSearch: Array<SearchQuery>
 ): Promise<SearchResults> {
-  const rawResponse = await fetch(formatURL(backendURL, "/2/editorSearch/"), {
+  const rawResponse = await fetch(formatURL(backendURL, "/3/editorSearch/"), {
     method: "POST",
     body: JSON.stringify({
       searchSettings,
-      queries: queriesToSearch,
-    } as OldEditorSearchRequest),
+      queries: Object.fromEntries(
+        queriesToSearch.map((searchQuery) => [
+          computeSearchQueryHashKey(searchQuery),
+          searchQuery,
+        ])
+      ),
+    } as EditorSearchRequest),
     credentials: "same-origin",
     headers: getCSRFHeader(),
   });
   return rawResponse.json().then((content) => {
     if (rawResponse.status === 200 && content.results != null) {
-      return content.results as OldEditorSearchResponse["results"];
+      return content.results as EditorSearchResponse["results"];
     }
     throw { name: content.name, message: content.message };
   });

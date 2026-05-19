@@ -9,6 +9,7 @@ import {
   getLocalStorageSearchSettings,
   setLocalStorageFavorites,
 } from "@/common/cookies";
+import { computeSearchQueryHashKey } from "@/common/processing";
 import { Faces } from "@/common/types";
 import { api } from "@/store/api";
 import {
@@ -218,11 +219,12 @@ startAppListening({
         return slots
           .map(([face, slot]) => {
             const searchQuery = currentState.project.members[slot][face]?.query;
-            return searchQuery?.query != null
-              ? currentState.searchResults.searchResults[searchQuery.query][
-                  searchQuery.cardType
-                ] != null
-              : true;
+            if (searchQuery?.query != null) {
+              const hashKey = computeSearchQueryHashKey(searchQuery);
+              return currentState.searchResults.searchResults[hashKey] != null;
+            } else {
+              return true;
+            }
           })
           .every((value) => value);
       } else {

@@ -6,7 +6,11 @@ import { createSelector, PayloadAction } from "@reduxjs/toolkit";
 
 import { Card, Cardback } from "@/common/constants";
 import { Back, Front, ProjectMaxSize } from "@/common/constants";
-import { processPrefix, toSearchable } from "@/common/processing";
+import {
+  computeSearchQueryHashKey,
+  processPrefix,
+  toSearchable,
+} from "@/common/processing";
 import { SourceType } from "@/common/schema_types";
 import {
   CardDocuments,
@@ -407,12 +411,11 @@ export const selectUniqueCardIdentifiers = createSelector(
         .flatMap((slotProjectMembers) =>
           [Front, Back].flatMap((face) => {
             const searchQuery = slotProjectMembers[face]?.query;
-
-            if (!searchQuery?.query || !searchResults[searchQuery.query]) {
+            if (!searchQuery?.query) {
               return [];
             }
-
-            return searchResults[searchQuery.query][searchQuery.cardType] ?? [];
+            const hashKey = computeSearchQueryHashKey(searchQuery);
+            return searchResults[hashKey] ?? [];
           })
         )
         .concat(cardbacks)
@@ -465,18 +468,14 @@ export const selectQueriesWithoutSearchResults = createSelector(
     return projectMembers.flatMap((slotProjectMembers) =>
       [Front, Back].flatMap((face) => {
         const searchQuery = slotProjectMembers[face]?.query;
-        const stringifiedSearchQuery = JSON.stringify(searchQuery ?? "");
-        if (
-          searchQuery?.query != null &&
-          (searchResults[searchQuery.query] ?? {})[searchQuery.cardType] ==
-            null &&
-          !set.has(stringifiedSearchQuery)
-        ) {
-          set.add(stringifiedSearchQuery);
-          return [searchQuery];
-        } else {
-          return [];
+        if (searchQuery?.query != null) {
+          const hashKey = computeSearchQueryHashKey(searchQuery);
+          if (searchResults[hashKey] == null && !set.has(hashKey)) {
+            set.add(hashKey);
+            return [searchQuery];
+          }
         }
+        return [];
       })
     );
   }

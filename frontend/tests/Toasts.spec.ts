@@ -113,11 +113,11 @@ test.describe("error reporting toasts", () => {
     await expect(page.getByText("An Error Occurred")).not.toBeVisible();
   }
 
-  test("/2/editorSearch", async ({ page, network }) => {
+  test("/3/editorSearch", async ({ page, network }) => {
     await assertErrorToast(
       page,
       network,
-      "2/editorSearch",
+      "3/editorSearch",
       [
         cardDocumentsThreeResults,
         cardbacksTwoResults,
