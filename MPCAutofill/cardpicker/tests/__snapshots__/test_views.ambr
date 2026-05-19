@@ -1671,32 +1671,22 @@
   dict({
     'json': dict({
       'results': dict({
-        'Brainstorm': dict({
-          'CARD': list([
-            '1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5',
-          ]),
-        }),
-        'Goblin': dict({
-          'TOKEN': list([
-            '1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA',
-          ]),
-        }),
-        'Island': dict({
-          'CARD': list([
-            '1IDtqSjJ4Yo45AnNA4SplOiN7ewibifMa',
-            '1HsvTYs1jFGe1c8U1PnNZ9aB8jkAW7KU0',
-          ]),
-        }),
-        'Simple Cube': dict({
-          'CARDBACK': list([
-            '1JtXL6Ca9nQkvhwZZRR9ZuKA9_DzsFf1V',
-          ]),
-        }),
-        'Simple Lotus': dict({
-          'CARDBACK': list([
-            '1oigI6wz0zA--pNMuExKTs40kBNH6VRP_',
-          ]),
-        }),
+        'key1': list([
+          '1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5',
+        ]),
+        'key2': list([
+          '1IDtqSjJ4Yo45AnNA4SplOiN7ewibifMa',
+          '1HsvTYs1jFGe1c8U1PnNZ9aB8jkAW7KU0',
+        ]),
+        'key3': list([
+          '1JtXL6Ca9nQkvhwZZRR9ZuKA9_DzsFf1V',
+        ]),
+        'key4': list([
+          '1oigI6wz0zA--pNMuExKTs40kBNH6VRP_',
+        ]),
+        'key5': list([
+          '1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA',
+        ]),
       }),
     }),
     'status_code': 200,
@@ -1706,12 +1696,10 @@
   dict({
     'json': dict({
       'results': dict({
-        'past in': dict({
-          'CARD': list([
-            '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
-            '1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
-          ]),
-        }),
+        'key1': list([
+          '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
+          '1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
+        ]),
       }),
     }),
     'status_code': 200,
@@ -1721,12 +1709,10 @@
   dict({
     'json': dict({
       'results': dict({
-        'Pást in Flames': dict({
-          'CARD': list([
-            '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
-            '1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
-          ]),
-        }),
+        'key1': list([
+          '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
+          '1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
+        ]),
       }),
     }),
     'status_code': 200,
@@ -1736,11 +1722,9 @@
   dict({
     'json': dict({
       'results': dict({
-        'Pást in Flames': dict({
-          'CARD': list([
-            '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
-          ]),
-        }),
+        'key1': list([
+          '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
+        ]),
       }),
     }),
     'status_code': 200,
@@ -1750,12 +1734,10 @@
   dict({
     'json': dict({
       'results': dict({
-        'Pást in Flames': dict({
-          'CARD': list([
-            '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
-            '1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
-          ]),
-        }),
+        'key1': list([
+          '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
+          '1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
+        ]),
       }),
     }),
     'status_code': 200,
@@ -1765,12 +1747,10 @@
   dict({
     'json': dict({
       'results': dict({
-        'Pást in Flames': dict({
-          'CARD': list([
-            '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
-            '1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
-          ]),
-        }),
+        'key1': list([
+          '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
+          '1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
+        ]),
       }),
     }),
     'status_code': 200,
@@ -1780,11 +1760,9 @@
   dict({
     'json': dict({
       'results': dict({
-        'Past in Flames': dict({
-          'CARD': list([
-            '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
-          ]),
-        }),
+        'key1': list([
+          '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
+        ]),
       }),
     }),
     'status_code': 200,
@@ -1794,11 +1772,9 @@
   dict({
     'json': dict({
       'results': dict({
-        'Pást in Flames': dict({
-          'CARD': list([
-            '1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
-          ]),
-        }),
+        'key1': list([
+          '1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
+        ]),
       }),
     }),
     'status_code': 200,
@@ -1808,11 +1784,9 @@
   dict({
     'json': dict({
       'results': dict({
-        'Pást in Flames': dict({
-          'CARD': list([
-            '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
-          ]),
-        }),
+        'key1': list([
+          '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
+        ]),
       }),
     }),
     'status_code': 200,
@@ -1832,10 +1806,8 @@
   dict({
     'json': dict({
       'results': dict({
-        'Simple Cube': dict({
-          'CARDBACK': list([
-          ]),
-        }),
+        'key1': list([
+        ]),
       }),
     }),
     'status_code': 200,
@@ -1845,11 +1817,9 @@
   dict({
     'json': dict({
       'results': dict({
-        'Pást in Flames': dict({
-          'CARD': list([
-            '1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
-          ]),
-        }),
+        'key1': list([
+          '1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
+        ]),
       }),
     }),
     'status_code': 200,
@@ -1859,11 +1829,9 @@
   dict({
     'json': dict({
       'results': dict({
-        'Pást in Flames': dict({
-          'CARD': list([
-            '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
-          ]),
-        }),
+        'key1': list([
+          '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
+        ]),
       }),
     }),
     'status_code': 200,
@@ -1873,10 +1841,8 @@
   dict({
     'json': dict({
       'results': dict({
-        'Simple Cube': dict({
-          'CARDBACK': list([
-          ]),
-        }),
+        'key1': list([
+        ]),
       }),
     }),
     'status_code': 200,
@@ -1886,17 +1852,13 @@
   dict({
     'json': dict({
       'results': dict({
-        'Brainstorm': dict({
-          'CARD': list([
-            '1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5',
-          ]),
-        }),
-        'Island': dict({
-          'CARD': list([
-            '1IDtqSjJ4Yo45AnNA4SplOiN7ewibifMa',
-            '1HsvTYs1jFGe1c8U1PnNZ9aB8jkAW7KU0',
-          ]),
-        }),
+        'key1': list([
+          '1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5',
+        ]),
+        'key2': list([
+          '1IDtqSjJ4Yo45AnNA4SplOiN7ewibifMa',
+          '1HsvTYs1jFGe1c8U1PnNZ9aB8jkAW7KU0',
+        ]),
       }),
     }),
     'status_code': 200,
@@ -1916,12 +1878,10 @@
   dict({
     'json': dict({
       'results': dict({
-        'Island': dict({
-          'CARD': list([
-            '1IDtqSjJ4Yo45AnNA4SplOiN7ewibifMa',
-            '1HsvTYs1jFGe1c8U1PnNZ9aB8jkAW7KU0',
-          ]),
-        }),
+        'key1': list([
+          '1IDtqSjJ4Yo45AnNA4SplOiN7ewibifMa',
+          '1HsvTYs1jFGe1c8U1PnNZ9aB8jkAW7KU0',
+        ]),
       }),
     }),
     'status_code': 200,
@@ -1964,14 +1924,14 @@
       'errors': list([
         dict({
           'ctx': dict({
-            'class_name': 'OldEditorSearchRequest',
+            'class_name': 'EditorSearchRequest',
           }),
           'input': list([
             'test',
           ]),
           'loc': list([
           ]),
-          'msg': 'Input should be a valid dictionary or instance of OldEditorSearchRequest',
+          'msg': 'Input should be a valid dictionary or instance of EditorSearchRequest',
           'type': 'model_type',
           'url': 'https://errors.pydantic.dev/2.10/v/model_type',
         }),
@@ -1993,10 +1953,12 @@
           }),
           'loc': list([
             'queries',
+            'key1',
+            'cardType',
           ]),
-          'msg': 'Input should be a valid list',
-          'type': 'list_type',
-          'url': 'https://errors.pydantic.dev/2.10/v/list_type',
+          'msg': 'Field required',
+          'type': 'missing',
+          'url': 'https://errors.pydantic.dev/2.10/v/missing',
         }),
       ]),
       'message': 'See `errors` field for detailed breakdown.',
@@ -2010,16 +1972,18 @@
     'json': dict({
       'errors': list([
         dict({
-          'input': dict({
-            'cardType': 'garbage',
-            'query': 'Brainstorm',
+          'ctx': dict({
+            'expected': "'CARD', 'CARDBACK' or 'TOKEN'",
           }),
+          'input': 'garbage',
           'loc': list([
             'queries',
+            'key1',
+            'cardType',
           ]),
-          'msg': 'Input should be a valid list',
-          'type': 'list_type',
-          'url': 'https://errors.pydantic.dev/2.10/v/list_type',
+          'msg': "Input should be 'CARD', 'CARDBACK' or 'TOKEN'",
+          'type': 'enum',
+          'url': 'https://errors.pydantic.dev/2.10/v/enum',
         }),
       ]),
       'message': 'See `errors` field for detailed breakdown.',
@@ -2033,16 +1997,30 @@
     'json': dict({
       'errors': list([
         dict({
-          'input': dict({
-            'cardType': 'CARD',
-            'query_garbage': 'Brainstorm',
+          'ctx': dict({
+            'class_name': 'SearchQuery',
           }),
+          'input': 'Brainstorm',
           'loc': list([
             'queries',
+            'query_garbage',
           ]),
-          'msg': 'Input should be a valid list',
-          'type': 'list_type',
-          'url': 'https://errors.pydantic.dev/2.10/v/list_type',
+          'msg': 'Input should be a valid dictionary or instance of SearchQuery',
+          'type': 'model_type',
+          'url': 'https://errors.pydantic.dev/2.10/v/model_type',
+        }),
+        dict({
+          'ctx': dict({
+            'class_name': 'SearchQuery',
+          }),
+          'input': 'CARD',
+          'loc': list([
+            'queries',
+            'cardType',
+          ]),
+          'msg': 'Input should be a valid dictionary or instance of SearchQuery',
+          'type': 'model_type',
+          'url': 'https://errors.pydantic.dev/2.10/v/model_type',
         }),
       ]),
       'message': 'See `errors` field for detailed breakdown.',
@@ -2107,16 +2085,30 @@
     'json': dict({
       'errors': list([
         dict({
-          'input': dict({
-            'cardType': 'CARD',
-            'query_garbage': 'Brainstorm',
+          'ctx': dict({
+            'class_name': 'SearchQuery',
           }),
+          'input': 'Brainstorm',
           'loc': list([
             'queries',
+            'query_garbage',
           ]),
-          'msg': 'Input should be a valid list',
-          'type': 'list_type',
-          'url': 'https://errors.pydantic.dev/2.10/v/list_type',
+          'msg': 'Input should be a valid dictionary or instance of SearchQuery',
+          'type': 'model_type',
+          'url': 'https://errors.pydantic.dev/2.10/v/model_type',
+        }),
+        dict({
+          'ctx': dict({
+            'class_name': 'SearchQuery',
+          }),
+          'input': 'CARD',
+          'loc': list([
+            'queries',
+            'cardType',
+          ]),
+          'msg': 'Input should be a valid dictionary or instance of SearchQuery',
+          'type': 'model_type',
+          'url': 'https://errors.pydantic.dev/2.10/v/model_type',
         }),
         dict({
           'ctx': dict({
@@ -2141,12 +2133,10 @@
   dict({
     'json': dict({
       'results': dict({
-        'Pást in Flames': dict({
-          'CARD': list([
-            '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
-            '1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
-          ]),
-        }),
+        'key1': list([
+          '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
+          '1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
+        ]),
       }),
     }),
     'status_code': 200,
@@ -2156,12 +2146,10 @@
   dict({
     'json': dict({
       'results': dict({
-        'Pást in Flames': dict({
-          'CARD': list([
-            '1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
-            '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
-          ]),
-        }),
+        'key1': list([
+          '1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
+          '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
+        ]),
       }),
     }),
     'status_code': 200,
@@ -2171,10 +2159,8 @@
   dict({
     'json': dict({
       'results': dict({
-        'Pást in Flames': dict({
-          'CARD': list([
-          ]),
-        }),
+        'key1': list([
+        ]),
       }),
     }),
     'status_code': 200,
@@ -2184,11 +2170,9 @@
   dict({
     'json': dict({
       'results': dict({
-        'Pást in Flames': dict({
-          'CARD': list([
-            '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
-          ]),
-        }),
+        'key1': list([
+          '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
+        ]),
       }),
     }),
     'status_code': 200,
@@ -2198,11 +2182,9 @@
   dict({
     'json': dict({
       'results': dict({
-        'Brainstorm': dict({
-          'CARD': list([
-            '1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5',
-          ]),
-        }),
+        'key1': list([
+          '1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5',
+        ]),
       }),
     }),
     'status_code': 200,
@@ -2212,11 +2194,9 @@
   dict({
     'json': dict({
       'results': dict({
-        'Simple Lotus': dict({
-          'CARDBACK': list([
-            '1oigI6wz0zA--pNMuExKTs40kBNH6VRP_',
-          ]),
-        }),
+        'key1': list([
+          '1oigI6wz0zA--pNMuExKTs40kBNH6VRP_',
+        ]),
       }),
     }),
     'status_code': 200,
@@ -2226,11 +2206,9 @@
   dict({
     'json': dict({
       'results': dict({
-        'Goblin': dict({
-          'TOKEN': list([
-            '1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA',
-          ]),
-        }),
+        'key1': list([
+          '1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA',
+        ]),
       }),
     }),
     'status_code': 200,
