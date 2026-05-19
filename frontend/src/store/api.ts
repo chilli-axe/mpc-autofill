@@ -8,7 +8,11 @@ import {
 
 import { GoogleDriveImageAPIURL, QueryTags } from "@/common/constants";
 import { getCSRFHeader } from "@/common/cookies";
-import { formatURL, processQuery } from "@/common/processing";
+import {
+  computeSearchQueryHashKey,
+  formatURL,
+  processQuery,
+} from "@/common/processing";
 import {
   Card,
   CardbacksResponse,
@@ -43,7 +47,6 @@ import {
   DFCPairs,
   SearchQuery,
   SearchResults,
-  SearchResultsForQuery,
   SearchSettings,
   SourceDocuments,
 } from "@/common/types";
@@ -335,11 +338,16 @@ export async function APIEditorSearch(
   searchSettings: SearchSettings,
   queriesToSearch: Array<SearchQuery>
 ): Promise<SearchResults> {
-  const rawResponse = await fetch(formatURL(backendURL, "/2/editorSearch/"), {
+  const rawResponse = await fetch(formatURL(backendURL, "/3/editorSearch/"), {
     method: "POST",
     body: JSON.stringify({
       searchSettings,
-      queries: queriesToSearch,
+      queries: Object.fromEntries(
+        queriesToSearch.map((searchQuery) => [
+          computeSearchQueryHashKey(searchQuery),
+          searchQuery,
+        ])
+      ),
     } as EditorSearchRequest),
     credentials: "same-origin",
     headers: getCSRFHeader(),

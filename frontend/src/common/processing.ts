@@ -397,3 +397,16 @@ export const extractLanguage = (name: string): [string | undefined, string] => {
   const remainderOfName = results[2];
   return [languageCode, remainderOfName];
 };
+
+export const fnv1aHash = (input: string): number => {
+  let hash = 2166136261; // FNV-1a 32-bit offset basis
+  for (let i = 0; i < input.length; i++) {
+    hash ^= input.charCodeAt(i);
+    hash = Math.imul(hash, 16777619); // 32-bit multiply
+    hash >>>= 0; // keep unsigned 32-bit
+  }
+  return hash;
+};
+
+export const computeSearchQueryHashKey = (searchQuery: SearchQuery): string =>
+  fnv1aHash(JSON.stringify(searchQuery)).toString();

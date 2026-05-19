@@ -47,6 +47,8 @@ from cardpicker.schema_types import (
     NewCardsFirstPage,
     NewCardsFirstPagesResponse,
     NewCardsPageResponse,
+    OldEditorSearchRequest,
+    OldEditorSearchResponse,
     Patreon,
     PatreonResponse,
     SampleCardsResponse,
@@ -109,6 +111,39 @@ class ErrorWrappers:
 @csrf_exempt
 @ErrorWrappers.to_json
 def post_editor_search(request: HttpRequest) -> HttpResponse:
+    if request.method != "POST":
+        raise BadRequestException("Expected POST request.")
+
+    editor_search_request = EditorSearchRequest.model_validate(json.loads(request.body))
+    if not ping_elasticsearch():
+        raise SearchExceptions.ElasticsearchOfflineException()
+    if not Index(CardSearch.Index.name).exists():
+        raise SearchExceptions.IndexNotFoundException(CardSearch.__name__)
+
+    if len(editor_search_request.queries) > EDITOR_SEARCH_MAX_QUERIES:
+        raise BadRequestException(
+            f"Invalid query count {len(editor_search_request.queries)}. "
+            f"Must be less than or equal to {EDITOR_SEARCH_MAX_QUERIES}."
+        )
+
+    results: dict[str, list[str]] = {}
+    for hash_key, search_query in editor_search_request.queries.items():
+        if search_query.query is not None and hash_key not in results.keys():
+            hits = retrieve_card_identifiers(
+                query=search_query.query,
+                card_type=search_query.cardType,
+                search_settings=editor_search_request.searchSettings,
+            )
+            results[hash_key] = hits
+    return JsonResponse(EditorSearchResponse(results=results).model_dump())
+
+
+@csrf_exempt
+@ErrorWrappers.to_json
+def old_post_editor_search(request: HttpRequest) -> HttpResponse:
+    # TODO: This endpoint is only kept for backwards compatibility
+    # in case unofficial third-party clients depend on it.
+    # It is not covered by automated tests and is subject to removal in the future.
     """
     Return the first page of search results for a given list of queries.
     Each query should be of the form {card name, card type}.
@@ -121,7 +156,7 @@ def post_editor_search(request: HttpRequest) -> HttpResponse:
     if request.method != "POST":
         raise BadRequestException("Expected POST request.")
 
-    editor_search_request = EditorSearchRequest.model_validate(json.loads(request.body))
+    editor_search_request = OldEditorSearchRequest.model_validate(json.loads(request.body))
     if not ping_elasticsearch():
         raise SearchExceptions.ElasticsearchOfflineException()
     if not Index(CardSearch.Index.name).exists():
@@ -140,7 +175,7 @@ def post_editor_search(request: HttpRequest) -> HttpResponse:
                 query=query, card_type=card_type, search_settings=editor_search_request.searchSettings
             )
             results[query][card_type.value] = hits
-    return JsonResponse(EditorSearchResponse(results=results).model_dump())
+    return JsonResponse(OldEditorSearchResponse(results=results).model_dump())
 
 
 @csrf_exempt

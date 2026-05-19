@@ -521,35 +521,35 @@ class SearchQuery(BaseModel):
 
 
 class EditorSearchRequest(BaseModel):
-    queries: List[SearchQuery]
+    queries: Dict[str, SearchQuery]
     searchSettings: SearchSettings
 
     @staticmethod
     def from_dict(obj: Any) -> "EditorSearchRequest":
         assert isinstance(obj, dict)
-        queries = from_list(SearchQuery.from_dict, obj.get("queries"))
+        queries = from_dict(SearchQuery.from_dict, obj.get("queries"))
         searchSettings = SearchSettings.from_dict(obj.get("searchSettings"))
         return EditorSearchRequest(queries, searchSettings)
 
     def to_dict(self) -> dict:
         result: dict = {}
-        result["queries"] = from_list(lambda x: to_class(SearchQuery, x), self.queries)
+        result["queries"] = from_dict(lambda x: to_class(SearchQuery, x), self.queries)
         result["searchSettings"] = to_class(SearchSettings, self.searchSettings)
         return result
 
 
 class EditorSearchResponse(BaseModel):
-    results: Dict[str, Dict[str, List[str]]]
+    results: Dict[str, List[str]]
 
     @staticmethod
     def from_dict(obj: Any) -> "EditorSearchResponse":
         assert isinstance(obj, dict)
-        results = from_dict(lambda x: from_dict(lambda x: from_list(from_str, x), x), obj.get("results"))
+        results = from_dict(lambda x: from_list(from_str, x), obj.get("results"))
         return EditorSearchResponse(results)
 
     def to_dict(self) -> dict:
         result: dict = {}
-        result["results"] = from_dict(lambda x: from_dict(lambda x: from_list(from_str, x), x), self.results)
+        result["results"] = from_dict(lambda x: from_list(from_str, x), self.results)
         return result
 
 
@@ -857,6 +857,39 @@ class NewCardsPageResponse(BaseModel):
     def to_dict(self) -> dict:
         result: dict = {}
         result["cards"] = from_list(lambda x: to_class(Card, x), self.cards)
+        return result
+
+
+class OldEditorSearchRequest(BaseModel):
+    queries: List[SearchQuery]
+    searchSettings: SearchSettings
+
+    @staticmethod
+    def from_dict(obj: Any) -> "OldEditorSearchRequest":
+        assert isinstance(obj, dict)
+        queries = from_list(SearchQuery.from_dict, obj.get("queries"))
+        searchSettings = SearchSettings.from_dict(obj.get("searchSettings"))
+        return OldEditorSearchRequest(queries, searchSettings)
+
+    def to_dict(self) -> dict:
+        result: dict = {}
+        result["queries"] = from_list(lambda x: to_class(SearchQuery, x), self.queries)
+        result["searchSettings"] = to_class(SearchSettings, self.searchSettings)
+        return result
+
+
+class OldEditorSearchResponse(BaseModel):
+    results: Dict[str, Dict[str, List[str]]]
+
+    @staticmethod
+    def from_dict(obj: Any) -> "OldEditorSearchResponse":
+        assert isinstance(obj, dict)
+        results = from_dict(lambda x: from_dict(lambda x: from_list(from_str, x), x), obj.get("results"))
+        return OldEditorSearchResponse(results)
+
+    def to_dict(self) -> dict:
+        result: dict = {}
+        result["results"] = from_dict(lambda x: from_dict(lambda x: from_list(from_str, x), x), self.results)
         return result
 
 
@@ -1421,6 +1454,22 @@ def NewCardsPageResponsefromdict(s: Any) -> NewCardsPageResponse:
 
 def NewCardsPageResponsetodict(x: NewCardsPageResponse) -> Any:
     return to_class(NewCardsPageResponse, x)
+
+
+def OldEditorSearchRequestfromdict(s: Any) -> OldEditorSearchRequest:
+    return OldEditorSearchRequest.from_dict(s)
+
+
+def OldEditorSearchRequesttodict(x: OldEditorSearchRequest) -> Any:
+    return to_class(OldEditorSearchRequest, x)
+
+
+def OldEditorSearchResponsefromdict(s: Any) -> OldEditorSearchResponse:
+    return OldEditorSearchResponse.from_dict(s)
+
+
+def OldEditorSearchResponsetodict(x: OldEditorSearchResponse) -> Any:
+    return to_class(OldEditorSearchResponse, x)
 
 
 def PatreonResponsefromdict(s: Any) -> PatreonResponse:

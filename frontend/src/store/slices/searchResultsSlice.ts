@@ -5,6 +5,7 @@
 import { createSelector } from "@reduxjs/toolkit";
 
 import { Back, SearchResultsEndpointPageSize } from "@/common/constants";
+import { computeSearchQueryHashKey } from "@/common/processing";
 import {
   CardType,
   createAppAsyncThunk,
@@ -33,22 +34,18 @@ export const mergeSearchResults = (
   b: SearchResults
 ): SearchResults => {
   const mergedResults: SearchResults = structuredClone(a);
-  for (const [query, searchResultsForQuery] of Object.entries(b)) {
-    if (Object.prototype.hasOwnProperty.call(mergedResults, query)) {
-      for (const [cardType, searchResults] of Object.entries(
-        searchResultsForQuery
-      ) as Array<[CardType, Array<string>]>) {
-        // initialize the array if it doesn't exist
-        mergedResults[query][cardType] ??= [];
-        // merge the arrays
-        const existingIds = new Set(mergedResults[query][cardType]);
-        mergedResults[query][cardType] = [
-          ...mergedResults[query][cardType],
-          ...searchResults.filter((id) => !existingIds.has(id)),
-        ];
-      }
+  for (const [hashKey, searchResults] of Object.entries(b)) {
+    if (Object.prototype.hasOwnProperty.call(mergedResults, hashKey)) {
+      // initialize the array if it doesn't exist
+      mergedResults[hashKey] ??= [];
+      // merge the arrays
+      const existingIds = new Set(mergedResults[hashKey]);
+      mergedResults[hashKey] = [
+        ...mergedResults[hashKey],
+        ...searchResults.filter((id) => !existingIds.has(id)),
+      ];
     } else {
-      mergedResults[query] = structuredClone(searchResultsForQuery);
+      mergedResults[hashKey] = structuredClone(searchResults);
     }
   }
   return mergedResults;
@@ -117,6 +114,7 @@ export async function fetchSearchResultsAndReportError(dispatch: AppDispatch) {
   try {
     await dispatch(fetchSearchResults()).unwrap();
   } catch (error: any) {
+    console.log(error);
     dispatch(
       setNotification([
         typePrefix,
@@ -215,7 +213,9 @@ export const selectSearchResultsForQueryOrDefault = createSelector(
   ) => selectCardbacks(state),
   (searchResults, query, cardType, face, cardbacks) =>
     query != null && query.length > 0 && cardType !== undefined
-      ? (searchResults[query] ?? {})[cardType]
+      ? searchResults[
+          computeSearchQueryHashKey({ query: query, cardType: cardType })
+        ]
       : face === Back
       ? cardbacks
       : defaultEmptySearchResults
