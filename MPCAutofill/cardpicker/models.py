@@ -347,6 +347,12 @@ class Card(models.Model):
             self.identifier
         )
 
+    def get_expansion_code(self) -> str | None:
+        return self.canonical_card.expansion.code.upper() if self.canonical_card else None
+
+    def get_collector_number(self) -> str | None:
+        return self.canonical_card.collector_number if self.canonical_card else None
+
     class Meta:
         ordering = ["-priority"]
 
