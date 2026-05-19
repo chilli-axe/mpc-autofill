@@ -502,6 +502,57 @@ class DFCPairsResponse(BaseModel):
         return result
 
 
+class SearchQuery(BaseModel):
+    cardType: CardType
+    query: Optional[str] = None
+
+    @staticmethod
+    def from_dict(obj: Any) -> "SearchQuery":
+        assert isinstance(obj, dict)
+        cardType = CardType(obj.get("cardType"))
+        query = from_union([from_none, from_str], obj.get("query"))
+        return SearchQuery(cardType, query)
+
+    def to_dict(self) -> dict:
+        result: dict = {}
+        result["cardType"] = to_enum(CardType, self.cardType)
+        result["query"] = from_union([from_none, from_str], self.query)
+        return result
+
+
+class EditorSearchRequest(BaseModel):
+    queries: Dict[str, SearchQuery]
+    searchSettings: SearchSettings
+
+    @staticmethod
+    def from_dict(obj: Any) -> "EditorSearchRequest":
+        assert isinstance(obj, dict)
+        queries = from_dict(SearchQuery.from_dict, obj.get("queries"))
+        searchSettings = SearchSettings.from_dict(obj.get("searchSettings"))
+        return EditorSearchRequest(queries, searchSettings)
+
+    def to_dict(self) -> dict:
+        result: dict = {}
+        result["queries"] = from_dict(lambda x: to_class(SearchQuery, x), self.queries)
+        result["searchSettings"] = to_class(SearchSettings, self.searchSettings)
+        return result
+
+
+class EditorSearchResponse(BaseModel):
+    results: Dict[str, List[str]]
+
+    @staticmethod
+    def from_dict(obj: Any) -> "EditorSearchResponse":
+        assert isinstance(obj, dict)
+        results = from_dict(lambda x: from_list(from_str, x), obj.get("results"))
+        return EditorSearchResponse(results)
+
+    def to_dict(self) -> dict:
+        result: dict = {}
+        result["results"] = from_dict(lambda x: from_list(from_str, x), self.results)
+        return result
+
+
 class ErrorResponse(BaseModel):
     name: str
     errors: Optional[List[Dict[str, Any]]] = None
@@ -806,24 +857,6 @@ class NewCardsPageResponse(BaseModel):
     def to_dict(self) -> dict:
         result: dict = {}
         result["cards"] = from_list(lambda x: to_class(Card, x), self.cards)
-        return result
-
-
-class SearchQuery(BaseModel):
-    cardType: CardType
-    query: Optional[str] = None
-
-    @staticmethod
-    def from_dict(obj: Any) -> "SearchQuery":
-        assert isinstance(obj, dict)
-        cardType = CardType(obj.get("cardType"))
-        query = from_union([from_none, from_str], obj.get("query"))
-        return SearchQuery(cardType, query)
-
-    def to_dict(self) -> dict:
-        result: dict = {}
-        result["cardType"] = to_enum(CardType, self.cardType)
-        result["query"] = from_union([from_none, from_str], self.query)
         return result
 
 
@@ -1325,6 +1358,22 @@ def DFCPairsResponsefromdict(s: Any) -> DFCPairsResponse:
 
 def DFCPairsResponsetodict(x: DFCPairsResponse) -> Any:
     return to_class(DFCPairsResponse, x)
+
+
+def EditorSearchRequestfromdict(s: Any) -> EditorSearchRequest:
+    return EditorSearchRequest.from_dict(s)
+
+
+def EditorSearchRequesttodict(x: EditorSearchRequest) -> Any:
+    return to_class(EditorSearchRequest, x)
+
+
+def EditorSearchResponsefromdict(s: Any) -> EditorSearchResponse:
+    return EditorSearchResponse.from_dict(s)
+
+
+def EditorSearchResponsetodict(x: EditorSearchResponse) -> Any:
+    return to_class(EditorSearchResponse, x)
 
 
 def ErrorResponsefromdict(s: Any) -> ErrorResponse:

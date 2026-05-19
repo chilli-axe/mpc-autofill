@@ -2,7 +2,7 @@
 
 // To parse this data:
 //
-//   import { Convert, Campaign, CanonicalArtist, CanonicalCard, Card, CardType, FilterSettings, Game, ImportSite, Language, NewCardsFirstPage, SearchQuery, SearchSettings, SearchTypeSettings, SortBy, Source, SourceContribution, SourceSettings, SourceType, Supporter, SupporterTier, Tag, CardbacksRequest, CardbacksResponse, CardsRequest, CardsResponse, ContributionsResponse, DFCPairsResponse, ErrorResponse, ExploreSearchRequest, ExploreSearchResponse, ImportSiteDecklistRequest, ImportSiteDecklistResponse, ImportSitesResponse, InfoResponse, LanguagesResponse, NewCardsFirstPagesResponse, NewCardsPageResponse, OldEditorSearchRequest, OldEditorSearchResponse, PatreonResponse, SampleCardsResponse, SearchEngineHealthResponse, SourcesResponse, TagsResponse } from "./file";
+//   import { Convert, Campaign, CanonicalArtist, CanonicalCard, Card, CardType, FilterSettings, Game, ImportSite, Language, NewCardsFirstPage, SearchQuery, SearchSettings, SearchTypeSettings, SortBy, Source, SourceContribution, SourceSettings, SourceType, Supporter, SupporterTier, Tag, CardbacksRequest, CardbacksResponse, CardsRequest, CardsResponse, ContributionsResponse, DFCPairsResponse, EditorSearchRequest, EditorSearchResponse, ErrorResponse, ExploreSearchRequest, ExploreSearchResponse, ImportSiteDecklistRequest, ImportSiteDecklistResponse, ImportSitesResponse, InfoResponse, LanguagesResponse, NewCardsFirstPagesResponse, NewCardsPageResponse, OldEditorSearchRequest, OldEditorSearchResponse, PatreonResponse, SampleCardsResponse, SearchEngineHealthResponse, SourcesResponse, TagsResponse } from "./file";
 //
 //   const campaign = Convert.toCampaign(json);
 //   const canonicalArtist = Convert.toCanonicalArtist(json);
@@ -32,6 +32,8 @@
 //   const cardsResponse = Convert.toCardsResponse(json);
 //   const contributionsResponse = Convert.toContributionsResponse(json);
 //   const dFCPairsResponse = Convert.toDFCPairsResponse(json);
+//   const editorSearchRequest = Convert.toEditorSearchRequest(json);
+//   const editorSearchResponse = Convert.toEditorSearchResponse(json);
 //   const errorResponse = Convert.toErrorResponse(json);
 //   const exploreSearchRequest = Convert.toExploreSearchRequest(json);
 //   const exploreSearchResponse = Convert.toExploreSearchResponse(json);
@@ -204,6 +206,20 @@ export interface DFCPairsResponse {
   dfcPairs: { [key: string]: string };
 }
 
+export interface EditorSearchRequest {
+  queries: { [key: string]: SearchQuery };
+  searchSettings: SearchSettings;
+}
+
+export interface SearchQuery {
+  cardType: CardType;
+  query: null | string;
+}
+
+export interface EditorSearchResponse {
+  results: { [key: string]: string[] };
+}
+
 export interface ErrorResponse {
   errors?: { [key: string]: any }[];
   message?: string;
@@ -301,11 +317,6 @@ export interface NewCardsPageResponse {
 export interface OldEditorSearchRequest {
   queries: SearchQuery[];
   searchSettings: SearchSettings;
-}
-
-export interface SearchQuery {
-  cardType: CardType;
-  query: null | string;
 }
 
 export interface OldEditorSearchResponse {
@@ -612,6 +623,24 @@ export class Convert {
 
   public static dFCPairsResponseToJson(value: DFCPairsResponse): string {
     return JSON.stringify(uncast(value, r("DFCPairsResponse")), null, 2);
+  }
+
+  public static toEditorSearchRequest(json: string): EditorSearchRequest {
+    return cast(JSON.parse(json), r("EditorSearchRequest"));
+  }
+
+  public static editorSearchRequestToJson(value: EditorSearchRequest): string {
+    return JSON.stringify(uncast(value, r("EditorSearchRequest")), null, 2);
+  }
+
+  public static toEditorSearchResponse(json: string): EditorSearchResponse {
+    return cast(JSON.parse(json), r("EditorSearchResponse"));
+  }
+
+  public static editorSearchResponseToJson(
+    value: EditorSearchResponse
+  ): string {
+    return JSON.stringify(uncast(value, r("EditorSearchResponse")), null, 2);
   }
 
   public static toErrorResponse(json: string): ErrorResponse {
@@ -1125,6 +1154,28 @@ const typeMap: any = {
     [{ json: "dfcPairs", js: "dfcPairs", typ: m("") }],
     false
   ),
+  EditorSearchRequest: o(
+    [
+      { json: "queries", js: "queries", typ: m(r("SearchQuery")) },
+      {
+        json: "searchSettings",
+        js: "searchSettings",
+        typ: r("SearchSettings"),
+      },
+    ],
+    false
+  ),
+  SearchQuery: o(
+    [
+      { json: "cardType", js: "cardType", typ: r("CardType") },
+      { json: "query", js: "query", typ: u(null, "") },
+    ],
+    false
+  ),
+  EditorSearchResponse: o(
+    [{ json: "results", js: "results", typ: m(a("")) }],
+    false
+  ),
   ErrorResponse: o(
     [
       { json: "errors", js: "errors", typ: u(undefined, a(m("any"))) },
@@ -1229,13 +1280,6 @@ const typeMap: any = {
         js: "searchSettings",
         typ: r("SearchSettings"),
       },
-    ],
-    false
-  ),
-  SearchQuery: o(
-    [
-      { json: "cardType", js: "cardType", typ: r("CardType") },
-      { json: "query", js: "query", typ: u(null, "") },
     ],
     false
   ),
