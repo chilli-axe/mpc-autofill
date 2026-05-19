@@ -1,4 +1,5 @@
 import datetime as dt
+import uuid
 from typing import Type
 
 import pytest
@@ -13,6 +14,8 @@ from cardpicker.integrations.game.base import GameIntegration
 from cardpicker.models import Card, CardTypes, DFCPair, Source, Tag
 from cardpicker.tests.constants import Cards, DummyIntegration, Sources
 from cardpicker.tests.factories import (
+    CanonicalCardFactory,
+    CanonicalExpansionFactory,
     CardFactory,
     DFCPairFactory,
     SourceFactory,
@@ -122,7 +125,24 @@ def all_sources(example_drive_1, example_drive_2):
 
 
 @pytest.fixture()
-def brainstorm(example_drive_1) -> Card:
+def ice_expansion(db):
+    return CanonicalExpansionFactory(
+        identifier=uuid.UUID("a4a0db50-8826-4e73-833c-3fd934375f96"), code="ice", name="Ice Age"
+    )
+
+
+@pytest.fixture()
+def brainstorm_canonical_card(ice_expansion):
+    return CanonicalCardFactory(
+        identifier=uuid.UUID("8d42d7aa-7f53-4cfc-842a-086aab2448d1"),
+        canonical_id=uuid.UUID("36cd2364-d113-47d1-b2c4-b088d9eb88dd"),
+        expansion=ice_expansion,
+        collector_number="61",
+    )
+
+
+@pytest.fixture()
+def brainstorm(example_drive_1, brainstorm_canonical_card) -> Card:
     return CardFactory(
         pk=0,
         card_type=CardTypes.CARD,
@@ -133,6 +153,7 @@ def brainstorm(example_drive_1) -> Card:
         priority=2,
         size=Cards.BRAINSTORM.value.size,
         date_created=dt.datetime(2023, 1, 1),
+        canonical_card=brainstorm_canonical_card,
     )
 
 

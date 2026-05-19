@@ -192,8 +192,19 @@
   dict({
     'CARD': dict({
       'Brainstorm': dict({
-        'canonicalArtist': None,
-        'canonicalCard': None,
+        'canonicalArtist': dict({
+          'name': 'Artist 102',
+        }),
+        'canonicalCard': dict({
+          'artist': None,
+          'canonicalId': '36cd2364-d113-47d1-b2c4-b088d9eb88dd',
+          'collectorNumber': '61',
+          'expansionCode': 'ice',
+          'expansionName': 'Ice Age',
+          'identifier': '8d42d7aa-7f53-4cfc-842a-086aab2448d1',
+          'mediumThumbnailUrl': '',
+          'smallThumbnailUrl': '',
+        }),
         'cardType': 'CARD',
         'dateCreated': '1st January, 2023',
         'dateModified': '1st January, 2023',
@@ -404,8 +415,19 @@
         'example_drive_1': dict({
           'cards': list([
             dict({
-              'canonicalArtist': None,
-              'canonicalCard': None,
+              'canonicalArtist': dict({
+                'name': 'Artist 107',
+              }),
+              'canonicalCard': dict({
+                'artist': None,
+                'canonicalId': '36cd2364-d113-47d1-b2c4-b088d9eb88dd',
+                'collectorNumber': '61',
+                'expansionCode': 'ice',
+                'expansionName': 'Ice Age',
+                'identifier': '8d42d7aa-7f53-4cfc-842a-086aab2448d1',
+                'mediumThumbnailUrl': '',
+                'smallThumbnailUrl': '',
+              }),
               'cardType': 'CARD',
               'dateCreated': '1st January, 2023',
               'dateModified': '1st January, 2023',
@@ -679,8 +701,19 @@
     'json': dict({
       'cards': list([
         dict({
-          'canonicalArtist': None,
-          'canonicalCard': None,
+          'canonicalArtist': dict({
+            'name': 'Artist 109',
+          }),
+          'canonicalCard': dict({
+            'artist': None,
+            'canonicalId': '36cd2364-d113-47d1-b2c4-b088d9eb88dd',
+            'collectorNumber': '61',
+            'expansionCode': 'ice',
+            'expansionName': 'Ice Age',
+            'identifier': '8d42d7aa-7f53-4cfc-842a-086aab2448d1',
+            'mediumThumbnailUrl': '',
+            'smallThumbnailUrl': '',
+          }),
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -1692,6 +1725,64 @@
     'status_code': 200,
   })
 # ---
+# name: TestPostEditorSearchResults.test_filter_by_collector_number
+  dict({
+    'json': dict({
+      'results': dict({
+        'key1': list([
+          '1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5',
+        ]),
+      }),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostEditorSearchResults.test_filter_by_collector_number_no_results
+  dict({
+    'json': dict({
+      'results': dict({
+        'key1': list([
+        ]),
+      }),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostEditorSearchResults.test_filter_by_expansion_code
+  dict({
+    'json': dict({
+      'results': dict({
+        'key1': list([
+          '1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5',
+        ]),
+      }),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostEditorSearchResults.test_filter_by_expansion_code_and_collector_number
+  dict({
+    'json': dict({
+      'results': dict({
+        'key1': list([
+          '1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5',
+        ]),
+      }),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostEditorSearchResults.test_filter_by_expansion_code_no_results
+  dict({
+    'json': dict({
+      'results': dict({
+        'key1': list([
+        ]),
+      }),
+    }),
+    'status_code': 200,
+  })
+# ---
 # name: TestPostEditorSearchResults.test_fuzzy_search
   dict({
     'json': dict({
@@ -2307,8 +2398,19 @@
     'json': dict({
       'cards': list([
         dict({
-          'canonicalArtist': None,
-          'canonicalCard': None,
+          'canonicalArtist': dict({
+            'name': 'Artist 67',
+          }),
+          'canonicalCard': dict({
+            'artist': None,
+            'canonicalId': '36cd2364-d113-47d1-b2c4-b088d9eb88dd',
+            'collectorNumber': '61',
+            'expansionCode': 'ice',
+            'expansionName': 'Ice Age',
+            'identifier': '8d42d7aa-7f53-4cfc-842a-086aab2448d1',
+            'mediumThumbnailUrl': '',
+            'smallThumbnailUrl': '',
+          }),
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -2570,8 +2672,19 @@
     'json': dict({
       'cards': list([
         dict({
-          'canonicalArtist': None,
-          'canonicalCard': None,
+          'canonicalArtist': dict({
+            'name': 'Artist 66',
+          }),
+          'canonicalCard': dict({
+            'artist': None,
+            'canonicalId': '36cd2364-d113-47d1-b2c4-b088d9eb88dd',
+            'collectorNumber': '61',
+            'expansionCode': 'ice',
+            'expansionName': 'Ice Age',
+            'identifier': '8d42d7aa-7f53-4cfc-842a-086aab2448d1',
+            'mediumThumbnailUrl': '',
+            'smallThumbnailUrl': '',
+          }),
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -2911,8 +3024,19 @@
     'json': dict({
       'cards': list([
         dict({
-          'canonicalArtist': None,
-          'canonicalCard': None,
+          'canonicalArtist': dict({
+            'name': 'Artist 68',
+          }),
+          'canonicalCard': dict({
+            'artist': None,
+            'canonicalId': '36cd2364-d113-47d1-b2c4-b088d9eb88dd',
+            'collectorNumber': '61',
+            'expansionCode': 'ice',
+            'expansionName': 'Ice Age',
+            'identifier': '8d42d7aa-7f53-4cfc-842a-086aab2448d1',
+            'mediumThumbnailUrl': '',
+            'smallThumbnailUrl': '',
+          }),
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
