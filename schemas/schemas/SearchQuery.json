@@ -8,6 +8,12 @@
     },
     "cardType": {
       "$ref": "./CardType.json"
+    },
+    "expansionCode": {
+      "type": "string"
+    },
+    "collectorNumber": {
+      "type": "string"
     }
   },
   "required": ["query", "cardType"],
