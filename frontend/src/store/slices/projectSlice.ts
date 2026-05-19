@@ -7,8 +7,10 @@ import { createSelector, PayloadAction } from "@reduxjs/toolkit";
 import { Card, Cardback } from "@/common/constants";
 import { Back, Front, ProjectMaxSize } from "@/common/constants";
 import {
+  areSearchQueriesEqual,
   computeSearchQueryHashKey,
-  processPrefix,
+  doesSearchQueryFilterOnPrinting,
+  processSearchQuery,
   toSearchable,
 } from "@/common/processing";
 import { SourceType } from "@/common/schema_types";
@@ -105,7 +107,7 @@ export const projectSlice = createAppSlice({
       state,
       action: PayloadAction<{ query: string; slots: Array<[Faces, number]> }>
     ) => {
-      const newQuery = processPrefix(action.payload.query);
+      const newQuery = processSearchQuery(action.payload.query);
       for (const [face, slot] of action.payload.slots) {
         if (state.members[slot][face] == null) {
           state.members[slot][face] = {
@@ -236,7 +238,27 @@ export const projectSlice = createAppSlice({
           state.members[slot][face]!.selected = action.payload.selectedStatus;
         }
       }
-      state.mostRecentlySelectedSlot = null;
+      state.mostRecentlySelectedSlot = null; // deselect
+    },
+    bulkRemovePrintingFilter: (
+      state,
+      action: PayloadAction<{
+        slots: Array<[Faces, number]>;
+      }>
+    ) => {
+      for (const [face, slot] of action.payload.slots) {
+        if (state.members[slot][face] != null) {
+          state.members[slot][face].query = {
+            // query: state.members[slot][face].query.query,
+            // cardType: state.members[slot][face].query.cardType,
+            ...state.members[slot][face].query,
+            expansionCode: undefined,
+            collectorNumber: undefined,
+          };
+          state.members[slot][face].selected = false;
+        }
+      }
+      state.mostRecentlySelectedSlot = null; // deselect
     },
     bulkAlignMemberSelection: (
       state,
@@ -251,11 +273,10 @@ export const projectSlice = createAppSlice({
       if (selectedMember != null) {
         for (const [slot, projectMember] of state.members.entries()) {
           if (
-            projectMember[action.payload.face] != null &&
-            projectMember[action.payload.face]?.query?.query ===
-              selectedMember.query?.query &&
-            projectMember[action.payload.face]?.query?.cardType ===
-              selectedMember.query?.cardType
+            areSearchQueriesEqual(
+              projectMember[action.payload.face]?.query,
+              selectedMember.query
+            )
           ) {
             projectMember[action.payload.face]!.selected =
               selectedMember.selected;
@@ -329,6 +350,7 @@ export const {
   toggleMemberSelection,
   expandSelection,
   bulkSetMemberSelection,
+  bulkRemovePrintingFilter,
   bulkAlignMemberSelection,
   deleteSlots,
   moveSlot,
@@ -490,12 +512,8 @@ export const selectAllSelectedProjectMembersHaveTheSameQuery = createSelector(
     const projectMembers = slots.map((slot) =>
       getProjectMember(members, ...slot)
     );
-    return projectMembers.every(
-      (projectMember) =>
-        (firstQuery?.query == null && projectMember?.query?.query == null) ||
-        (firstQuery != null &&
-          projectMember?.query?.query == firstQuery.query &&
-          projectMember?.query?.cardType == firstQuery.cardType)
+    return projectMembers.every((projectMember) =>
+      areSearchQueriesEqual(firstQuery, projectMember?.query)
     )
       ? firstQuery
       : undefined;
@@ -559,6 +577,20 @@ export const selectAnySelectedImagesDownloadable = createSelector(
       getProjectMember(members, ...slot)
     );
     return anyImagesDownloadable(projectMembers, cardDocuments);
+  }
+);
+
+export const selectAnySelectedImagesFilteredOnPrinting = createSelector(
+  (state: RootState, slots: Slots) => state.project.members,
+  (state: RootState, slots: Slots) => state.cardDocuments.cardDocuments,
+  (state: RootState, slots: Slots) => slots,
+  (members, cardDocuments, slots) => {
+    const projectMembers = slots.map((slot) =>
+      getProjectMember(members, ...slot)
+    );
+    return projectMembers.some(
+      (member) => member?.query && doesSearchQueryFilterOnPrinting(member.query)
+    );
   }
 );
 

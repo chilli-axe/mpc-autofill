@@ -34,6 +34,7 @@ import {
 import { recordInvalidIdentifier } from "@/store/slices/invalidIdentifiersSlice";
 import {
   addMembers,
+  bulkRemovePrintingFilter,
   selectProjectCardback,
   setQueries,
   setSelectedCardback,
@@ -164,7 +165,7 @@ startAppListening({
 });
 
 startAppListening({
-  matcher: isAnyOf(addMembers, setQueries),
+  matcher: isAnyOf(addMembers, setQueries, bulkRemovePrintingFilter),
   /**
    * Fetch card documents whenever new members are added to the project or search results are cleared.
    */
@@ -243,6 +244,8 @@ startAppListening({
           state,
           searchQuery?.query,
           searchQuery?.cardType,
+          searchQuery?.expansionCode,
+          searchQuery?.collectorNumber,
           face
         ) ?? [];
       const newSelectedImage =
@@ -284,6 +287,8 @@ startAppListening({
               state,
               searchQuery?.query,
               searchQuery?.cardType,
+              searchQuery?.expansionCode,
+              searchQuery?.collectorNumber,
               face
             );
           if (searchResultsForQueryOrDefault != null) {
