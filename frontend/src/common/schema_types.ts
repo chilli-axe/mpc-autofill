@@ -213,6 +213,8 @@ export interface EditorSearchRequest {
 
 export interface SearchQuery {
   cardType: CardType;
+  collectorNumber?: string;
+  expansionCode?: string;
   query: null | string;
 }
 
@@ -1168,6 +1170,8 @@ const typeMap: any = {
   SearchQuery: o(
     [
       { json: "cardType", js: "cardType", typ: r("CardType") },
+      { json: "collectorNumber", js: "collectorNumber", typ: u(undefined, "") },
+      { json: "expansionCode", js: "expansionCode", typ: u(undefined, "") },
       { json: "query", js: "query", typ: u(null, "") },
     ],
     false

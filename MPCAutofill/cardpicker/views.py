@@ -130,9 +130,11 @@ def post_editor_search(request: HttpRequest) -> HttpResponse:
     for hash_key, search_query in editor_search_request.queries.items():
         if search_query.query is not None and hash_key not in results.keys():
             hits = retrieve_card_identifiers(
+                search_settings=editor_search_request.searchSettings,
                 query=search_query.query,
                 card_type=search_query.cardType,
-                search_settings=editor_search_request.searchSettings,
+                expansion_code=search_query.expansionCode,
+                collector_number=search_query.collectorNumber,
             )
             results[hash_key] = hits
     return JsonResponse(EditorSearchResponse(results=results).model_dump())

@@ -504,18 +504,26 @@ class DFCPairsResponse(BaseModel):
 
 class SearchQuery(BaseModel):
     cardType: CardType
+    collectorNumber: Optional[str] = None
+    expansionCode: Optional[str] = None
     query: Optional[str] = None
 
     @staticmethod
     def from_dict(obj: Any) -> "SearchQuery":
         assert isinstance(obj, dict)
         cardType = CardType(obj.get("cardType"))
+        collectorNumber = from_union([from_str, from_none], obj.get("collectorNumber"))
+        expansionCode = from_union([from_str, from_none], obj.get("expansionCode"))
         query = from_union([from_none, from_str], obj.get("query"))
-        return SearchQuery(cardType, query)
+        return SearchQuery(cardType, collectorNumber, expansionCode, query)
 
     def to_dict(self) -> dict:
         result: dict = {}
         result["cardType"] = to_enum(CardType, self.cardType)
+        if self.collectorNumber is not None:
+            result["collectorNumber"] = from_union([from_str, from_none], self.collectorNumber)
+        if self.expansionCode is not None:
+            result["expansionCode"] = from_union([from_str, from_none], self.expansionCode)
         result["query"] = from_union([from_none, from_str], self.query)
         return result
 

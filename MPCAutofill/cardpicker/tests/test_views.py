@@ -381,6 +381,82 @@ class TestPostEditorSearchResults:
         assert response.status_code == 200
         assert len(response.json()["results"]["key1"]) == 2
 
+    def test_filter_by_expansion_code(self, client, snapshot):
+        response = client.post(
+            reverse(views.post_editor_search),
+            {
+                "searchSettings": BASE_SEARCH_SETTINGS,
+                "queries": {"key1": {"query": Cards.BRAINSTORM.value.name, "cardType": "CARD", "expansionCode": "ICE"}},
+            },
+            content_type="application/json",
+        )
+        snapshot_response(response, snapshot)
+        assert response.status_code == 200
+        assert response.json()["results"]["key1"] == [Cards.BRAINSTORM.value.identifier]
+
+    def test_filter_by_expansion_code_no_results(self, client, snapshot):
+        response = client.post(
+            reverse(views.post_editor_search),
+            {
+                "searchSettings": BASE_SEARCH_SETTINGS,
+                "queries": {"key1": {"query": Cards.BRAINSTORM.value.name, "cardType": "CARD", "expansionCode": "ZZZ"}},
+            },
+            content_type="application/json",
+        )
+        snapshot_response(response, snapshot)
+        assert response.status_code == 200
+        assert response.json()["results"]["key1"] == []
+
+    def test_filter_by_collector_number(self, client, snapshot):
+        response = client.post(
+            reverse(views.post_editor_search),
+            {
+                "searchSettings": BASE_SEARCH_SETTINGS,
+                "queries": {
+                    "key1": {"query": Cards.BRAINSTORM.value.name, "cardType": "CARD", "collectorNumber": "61"}
+                },
+            },
+            content_type="application/json",
+        )
+        snapshot_response(response, snapshot)
+        assert response.status_code == 200
+        assert response.json()["results"]["key1"] == [Cards.BRAINSTORM.value.identifier]
+
+    def test_filter_by_collector_number_no_results(self, client, snapshot):
+        response = client.post(
+            reverse(views.post_editor_search),
+            {
+                "searchSettings": BASE_SEARCH_SETTINGS,
+                "queries": {
+                    "key1": {"query": Cards.BRAINSTORM.value.name, "cardType": "CARD", "collectorNumber": "999"}
+                },
+            },
+            content_type="application/json",
+        )
+        snapshot_response(response, snapshot)
+        assert response.status_code == 200
+        assert response.json()["results"]["key1"] == []
+
+    def test_filter_by_expansion_code_and_collector_number(self, client, snapshot):
+        response = client.post(
+            reverse(views.post_editor_search),
+            {
+                "searchSettings": BASE_SEARCH_SETTINGS,
+                "queries": {
+                    "key1": {
+                        "query": Cards.BRAINSTORM.value.name,
+                        "cardType": "CARD",
+                        "expansionCode": "ICE",
+                        "collectorNumber": "61",
+                    }
+                },
+            },
+            content_type="application/json",
+        )
+        snapshot_response(response, snapshot)
+        assert response.status_code == 200
+        assert response.json()["results"]["key1"] == [Cards.BRAINSTORM.value.identifier]
+
     def test_page_equal_to_max_size(self, client, monkeypatch, snapshot):
         monkeypatch.setattr("cardpicker.views.EDITOR_SEARCH_MAX_QUERIES", 2)
         response = client.post(
