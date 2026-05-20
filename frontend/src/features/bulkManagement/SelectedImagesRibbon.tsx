@@ -24,12 +24,14 @@ import { useCardDocumentsByIdentifier } from "@/store/slices/cardDocumentsSlice"
 import { showChangeQueryModal } from "@/store/slices/modalsSlice";
 import {
   bulkAlignMemberSelection,
+  bulkRemovePrintingFilter,
   bulkSetMemberSelection,
   clearQueries,
   deleteSlots,
   selectAllSelectedProjectMembersHaveTheSameQuery,
   selectAllSlotsForActiveFace,
   selectAnySelectedImagesDownloadable,
+  selectAnySelectedImagesFilteredOnPrinting,
   selectIsProjectEmpty,
   selectSelectedSlots,
   selectUniqueCardIdentifiersInSlots,
@@ -152,6 +154,8 @@ function ChangeSelectedImageSelectedImages({
           state,
           query?.query,
           query?.cardType,
+          query?.expansionCode,
+          query?.collectorNumber,
           slots[0][0]
         )
       : undefined
@@ -176,6 +180,32 @@ function ChangeSelectedImageSelectedImages({
       )}
     </>
   ) : null;
+}
+
+function UnfilterSelectedImageQueriesOnPrintings({
+  slots,
+  inDropdown,
+}: {
+  slots: Slots;
+  inDropdown: boolean;
+}) {
+  const dispatch = useAppDispatch();
+
+  const handleUnfilterQueries = (): void => {
+    dispatch(bulkRemovePrintingFilter({ slots }));
+  };
+  const anySelectedImagesFilteredOnPrinting = useAppSelector((state) =>
+    selectAnySelectedImagesFilteredOnPrinting(state, slots)
+  );
+
+  return (
+    slots.length > 0 &&
+    anySelectedImagesFilteredOnPrinting && (
+      <RibbonButton onClick={handleUnfilterQueries} inDropdown={inDropdown}>
+        <RightPaddedIcon bootstrapIconName="filter" /> Unfilter Printing
+      </RibbonButton>
+    )
+  );
 }
 
 /**
@@ -302,6 +332,7 @@ type OptionKey =
   | "selectSimilar"
   | "selectAll"
   | "changeSelectedImageSelectedImages"
+  | "unfilterSelectedImageQueriesOnPrintings"
   | "changeSelectedImageQueries"
   | "clearSelectedImageQueries"
   | "downloadSelectedImages"
@@ -312,6 +343,9 @@ export function SelectedImagesRibbon() {
   const isProjectEmpty = useAppSelector(selectIsProjectEmpty);
   const anySelectedImagesDownloadable = useAppSelector((state) =>
     selectAnySelectedImagesDownloadable(state, slots)
+  );
+  const anySelectedImagesFilteredOnPrinting = useAppSelector((state) =>
+    selectAnySelectedImagesFilteredOnPrinting(state, slots)
   );
 
   const dispatch = useAppDispatch();
@@ -329,6 +363,14 @@ export function SelectedImagesRibbon() {
       case "changeSelectedImageSelectedImages":
         return (
           <ChangeSelectedImageSelectedImages
+            key={key}
+            slots={slots}
+            inDropdown={inDropdown}
+          />
+        );
+      case "unfilterSelectedImageQueriesOnPrintings":
+        return (
+          <UnfilterSelectedImageQueriesOnPrintings
             key={key}
             slots={slots}
             inDropdown={inDropdown}
@@ -371,6 +413,9 @@ export function SelectedImagesRibbon() {
   const validOptions: Array<OptionKey> = [
     ...((slots.length > 0
       ? ["changeSelectedImageSelectedImages", "changeSelectedImageQueries"]
+      : []) as Array<OptionKey>),
+    ...((slots.length > 0 && anySelectedImagesFilteredOnPrinting
+      ? ["unfilterSelectedImageQueriesOnPrintings"]
       : []) as Array<OptionKey>),
     ...((slots.length > 0 && anySelectedImagesDownloadable
       ? ["downloadSelectedImages"]

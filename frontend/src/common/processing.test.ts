@@ -8,8 +8,8 @@ import {
 import {
   parseCSVFileAsLines,
   processLine,
-  processPrefix,
   processQuery,
+  processSearchQuery,
   processStringAsMultipleLines,
   sanitiseWhitespace,
   standardiseURL,
@@ -60,22 +60,67 @@ test("query with numbers is processed correctly", () => {
   );
 });
 
-test("prefix is processed correctly", () => {
-  expect(processPrefix("t:goblin")).toStrictEqual({
-    cardType: Token,
-    query: "goblin",
-  });
-});
-
-test("empty prefix is processed correctly", () => {
-  expect(processPrefix("soldier")).toStrictEqual({
-    cardType: Card,
-    query: "soldier",
-  });
+test.each([
+  {
+    input: "goblin",
+    expectedOutput: {
+      query: "goblin",
+      cardType: CardType.Card,
+      expansionCode: undefined,
+      collectorNumber: undefined,
+    },
+  },
+  {
+    input: "t:goblin",
+    expectedOutput: {
+      query: "goblin",
+      cardType: CardType.Token,
+      expansionCode: undefined,
+      collectorNumber: undefined,
+    },
+  },
+  {
+    input: "b:goblin",
+    expectedOutput: {
+      query: "goblin",
+      cardType: CardType.Cardback,
+      expansionCode: undefined,
+      collectorNumber: undefined,
+    },
+  },
+  {
+    input: "goblin (AKH)",
+    expectedOutput: {
+      query: "goblin",
+      cardType: CardType.Card,
+      expansionCode: "AKH",
+      collectorNumber: undefined,
+    },
+  },
+  {
+    input: "goblin (AKH) 123",
+    expectedOutput: {
+      query: "goblin",
+      cardType: CardType.Card,
+      expansionCode: "AKH",
+      collectorNumber: "123",
+    },
+  },
+  {
+    input: "t:goblin (AKH) abcdef",
+    expectedOutput: {
+      query: "goblin",
+      cardType: CardType.Token,
+      expansionCode: "AKH",
+      collectorNumber: "abcdef",
+    },
+  },
+])("processSearchQuery", ({ input, expectedOutput }) => {
+  expect(processSearchQuery(input)).toEqual(expectedOutput);
 });
 
 test("line that doesn't specify quantity is processed correctly", () => {
-  expect(processLine("opt", dfcPairs, false)).toStrictEqual([
+  expect(processLine("opt", dfcPairs, false)).toEqual([
     1,
     {
       query: { cardType: Card, query: "opt" },
@@ -87,7 +132,7 @@ test("line that doesn't specify quantity is processed correctly", () => {
 });
 
 test("line that doesn't specify quantity but name begins with X is processed correctly", () => {
-  expect(processLine("xenagos the reveler", dfcPairs, false)).toStrictEqual([
+  expect(processLine("xenagos the reveler", dfcPairs, false)).toEqual([
     1,
     {
       query: { cardType: Card, query: "xenagos the reveler" },
@@ -99,10 +144,15 @@ test("line that doesn't specify quantity but name begins with X is processed cor
 });
 
 test("non-dfc line is processed correctly", () => {
-  expect(processLine("3x Lightning Bolt", dfcPairs, false)).toStrictEqual([
+  expect(processLine("3x Lightning Bolt", dfcPairs, false)).toEqual([
     3,
     {
-      query: { cardType: Card, query: "lightning bolt" },
+      query: {
+        cardType: Card,
+        query: "lightning bolt",
+        expansionCode: undefined,
+        collectorNumber: undefined,
+      },
       selectedImage: undefined,
       selected: false,
     },
@@ -111,10 +161,15 @@ test("non-dfc line is processed correctly", () => {
 });
 
 test("non-dfc cardback line is processed correctly", () => {
-  expect(processLine("3x b:Black Lotus", dfcPairs, false)).toStrictEqual([
+  expect(processLine("3x b:Black Lotus", dfcPairs, false)).toEqual([
     3,
     {
-      query: { cardType: Cardback, query: "black lotus" },
+      query: {
+        cardType: Cardback,
+        query: "black lotus",
+        expansionCode: undefined,
+        collectorNumber: undefined,
+      },
       selectedImage: undefined,
       selected: false,
     },
@@ -123,9 +178,7 @@ test("non-dfc cardback line is processed correctly", () => {
 });
 
 test("manually specified front and back line is processed correctly", () => {
-  expect(
-    processLine(`5 Opt${FaceSeparator}Char`, dfcPairs, false)
-  ).toStrictEqual([
+  expect(processLine(`5 Opt${FaceSeparator}Char`, dfcPairs, false)).toEqual([
     5,
     {
       query: { cardType: Card, query: "opt" },
@@ -141,9 +194,7 @@ test("manually specified front and back line is processed correctly", () => {
 });
 
 test("line that matches to dfc pair is processed correctly", () => {
-  expect(
-    processLine("2 Huntmaster of the Fells", dfcPairs, false)
-  ).toStrictEqual([
+  expect(processLine("2 Huntmaster of the Fells", dfcPairs, false)).toEqual([
     2,
     {
       query: { cardType: Card, query: "huntmaster of the fells" },
@@ -159,7 +210,7 @@ test("line that matches to dfc pair is processed correctly", () => {
 });
 
 test("line that fuzzy matches to dfc pair is processed correctly", () => {
-  expect(processLine("2 bat", { batman: "ratman" }, true)).toStrictEqual([
+  expect(processLine("2 bat", { batman: "ratman" }, true)).toEqual([
     2,
     {
       query: { cardType: Card, query: "bat" },
@@ -175,7 +226,7 @@ test("line that fuzzy matches to dfc pair is processed correctly", () => {
 });
 
 test("line that doesn't fuzzy match to dfc pair is processed correctly", () => {
-  expect(processLine("2 cat", { batman: "ratman" }, true)).toStrictEqual([
+  expect(processLine("2 cat", { batman: "ratman" }, true)).toEqual([
     2,
     {
       query: { cardType: Card, query: "cat" },
@@ -189,7 +240,7 @@ test("line that doesn't fuzzy match to dfc pair is processed correctly", () => {
 test("line that fuzzy matches ambiguously to dfc pair is processed correctly", () => {
   expect(
     processLine("2 bat", { batman: "ratman", batwoman: "ratwoman" }, true)
-  ).toStrictEqual([
+  ).toEqual([
     2,
     {
       query: { cardType: Card, query: "bat" },
@@ -207,7 +258,7 @@ test("line that matches to dfc pair but a back is also manually specified is pro
       dfcPairs,
       false
     )
-  ).toStrictEqual([
+  ).toEqual([
     2,
     {
       query: { cardType: Card, query: "huntmaster of the fells" },
@@ -231,16 +282,26 @@ test("a card name that's a subset of a DFC pair's front is not matched", () => {
       },
       false
     )
-  ).toStrictEqual([
+  ).toEqual([
     [
       1,
       {
-        query: { cardType: Card, query: "elesh norn" },
+        query: {
+          cardType: Card,
+          query: "elesh norn",
+          expansionCode: undefined,
+          collectorNumber: undefined,
+        },
         selectedImage: undefined,
         selected: false,
       },
       {
-        query: { cardType: Card, query: "the argent etchings" },
+        query: {
+          cardType: Card,
+          query: "the argent etchings",
+          expansionCode: undefined,
+          collectorNumber: undefined,
+        },
         selectedImage: undefined,
         selected: false,
       },
@@ -248,7 +309,12 @@ test("a card name that's a subset of a DFC pair's front is not matched", () => {
     [
       1,
       {
-        query: { cardType: Card, query: "elesh norn grand cenobite" },
+        query: {
+          cardType: Card,
+          query: "elesh norn grand cenobite",
+          expansionCode: undefined,
+          collectorNumber: undefined,
+        },
         selectedImage: undefined,
         selected: false,
       },
@@ -258,7 +324,7 @@ test("a card name that's a subset of a DFC pair's front is not matched", () => {
 });
 
 test("line that requests 0 of a card is processed correctly", () => {
-  expect(processLine("0 opt", dfcPairs, false)).toStrictEqual([
+  expect(processLine("0 opt", dfcPairs, false)).toEqual([
     0,
     {
       query: { cardType: Card, query: "opt" },
@@ -270,7 +336,7 @@ test("line that requests 0 of a card is processed correctly", () => {
 });
 
 test("line that requests -1 of a card is processed correctly", () => {
-  expect(processLine("-1 opt", dfcPairs, false)).toStrictEqual([
+  expect(processLine("-1 opt", dfcPairs, false)).toEqual([
     1,
     {
       query: { cardType: Card, query: "-1 opt" },
@@ -288,7 +354,7 @@ test("multiple lines processed correctly", () => {
       dfcPairs,
       false
     )
-  ).toStrictEqual([
+  ).toEqual([
     [
       1,
       {
@@ -317,7 +383,7 @@ test("multiple lines processed correctly", () => {
 test("a line specifying the selected image ID for the front is processed correctly", () => {
   expect(
     processLine(`opt${SelectedImageSeparator}xyz`, dfcPairs, false)
-  ).toStrictEqual([
+  ).toEqual([
     1,
     {
       query: { cardType: Card, query: "opt" },
@@ -335,7 +401,7 @@ test("a line specifying the selected image ID for both faces is processed correc
       dfcPairs,
       false
     )
-  ).toStrictEqual([
+  ).toEqual([
     2,
     {
       query: { cardType: Card, query: "opt" },
@@ -427,7 +493,7 @@ describe("file path-like identifier handling", () => {
       ],
     },
   ])("%s", ({ line, expectedResult }) => {
-    expect(processLine(line, {}, false)).toStrictEqual(expectedResult);
+    expect(processLine(line, {}, false)).toEqual(expectedResult);
   });
 });
 
@@ -446,7 +512,7 @@ describe("toSearchable", () => {
     { input: "Kodama’s Reach", expectedOutput: "kodamas reach" },
     { input: "消灭邪物", expectedOutput: "消灭邪物" },
   ])("%s", ({ input, expectedOutput }) => {
-    expect(toSearchable(input)).toStrictEqual(expectedOutput);
+    expect(toSearchable(input)).toEqual(expectedOutput);
   });
 });
 
@@ -472,7 +538,7 @@ test.each([
 ])("CSV is parsed correctly", () => {
   const csv =
     "Quantity, Front, Front ID, Back, Back ID\n2, opt, xyz, char, abcd";
-  expect(parseCSVFileAsLines(csv)).toStrictEqual([
+  expect(parseCSVFileAsLines(csv)).toEqual([
     `2 opt${SelectedImageSeparator}xyz${FaceSeparator}char${SelectedImageSeparator}abcd`,
   ]);
 });

@@ -11,6 +11,10 @@ import React, { memo, useState } from "react";
 import Dropdown from "react-bootstrap/Dropdown";
 
 import {
+  areSearchQueriesEqual,
+  doesSearchQueryFilterOnPrinting,
+} from "@/common/processing";
+import {
   Faces,
   SearchQuery,
   useAppDispatch,
@@ -24,6 +28,7 @@ import { GridSelectorModal } from "@/features/gridSelector/GridSelectorModal";
 import { showChangeQueryModal } from "@/store/slices/modalsSlice";
 import {
   bulkAlignMemberSelection,
+  bulkRemovePrintingFilter,
   deleteSlots,
   duplicateSlot,
   expandSelection,
@@ -94,8 +99,19 @@ const CardGridContextMenu = ({
   slot,
 }: CardSlotProps) => {
   const dispatch = useAppDispatch();
+  const handleShowChangeSelectedImageQueriesModal = () => {
+    dispatch(
+      showChangeQueryModal({
+        slots: [[face, slot]],
+        query: searchQuery?.query ?? null,
+      })
+    );
+  };
   const deleteThisSlot = () => {
     dispatch(deleteSlots({ slots: [slot] }));
+  };
+  const removePrintingFilter = () => {
+    dispatch(bulkRemovePrintingFilter({ slots: [[face, slot]] }));
   };
   const duplicateThisSlot = () => {
     dispatch(duplicateSlot({ slot: slot, quantity: 1 }));
@@ -106,11 +122,19 @@ const CardGridContextMenu = ({
         <i className="bi bi-three-dots" />
       </Dropdown.Toggle>
       <Dropdown.Menu>
-        <Dropdown.Item onClick={deleteThisSlot}>
-          <RightPaddedIcon bootstrapIconName="x-circle" /> Delete
+        <Dropdown.Item onClick={handleShowChangeSelectedImageQueriesModal}>
+          <RightPaddedIcon bootstrapIconName="arrow-repeat" /> Change Query
         </Dropdown.Item>
         <Dropdown.Item onClick={duplicateThisSlot}>
           <RightPaddedIcon bootstrapIconName="copy" /> Duplicate
+        </Dropdown.Item>
+        {doesSearchQueryFilterOnPrinting(searchQuery) && (
+          <Dropdown.Item onClick={removePrintingFilter}>
+            <RightPaddedIcon bootstrapIconName="filter" /> Unfilter Printing
+          </Dropdown.Item>
+        )}
+        <Dropdown.Item onClick={deleteThisSlot}>
+          <RightPaddedIcon bootstrapIconName="x-circle" /> Delete
         </Dropdown.Item>
       </Dropdown.Menu>
     </Dropdown>
@@ -129,6 +153,8 @@ export function CardSlot({ id, searchQuery, face, slot }: CardSlotProps) {
       state,
       searchQuery?.query,
       searchQuery?.cardType,
+      searchQuery?.expansionCode,
+      searchQuery?.collectorNumber,
       face
     )
   );
@@ -143,10 +169,7 @@ export function CardSlot({ id, searchQuery, face, slot }: CardSlotProps) {
   const modifySelectedSlots =
     selectedSlots.length > 1 &&
     projectMember?.selected &&
-    selectedQuery != null &&
-    // can't use object equality check here
-    selectedQuery.query === searchQuery?.query &&
-    selectedQuery.cardType === searchQuery?.cardType;
+    areSearchQueriesEqual(selectedQuery, searchQuery);
   const slotsToModify: Array<[Faces, number]> = modifySelectedSlots
     ? selectedSlots
     : [[face, slot]];

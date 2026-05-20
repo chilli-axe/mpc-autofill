@@ -181,40 +181,80 @@ const defaultEmptySearchResults: Array<string> = [];
  * Handle the fallback logic where cardbacks with no query use the common cardback's list of cards.
  */
 export const selectSearchResultsForQueryOrDefault = createSelector(
+  // TODO: this pattern is awful
   (
     state: RootState,
     query: string | null | undefined,
     cardType: CardType | undefined,
+    expansionCode: string | undefined,
+    collectorNumber: string | undefined,
     face: Faces
   ) => state.searchResults.searchResults,
   (
     state: RootState,
     query: string | null | undefined,
     cardType: CardType | undefined,
+    expansionCode: string | undefined,
+    collectorNumber: string | undefined,
     face: Faces
   ) => query,
   (
     state: RootState,
     query: string | null | undefined,
     cardType: CardType | undefined,
+    expansionCode: string | undefined,
+    collectorNumber: string | undefined,
     face: Faces
   ) => cardType,
   (
     state: RootState,
     query: string | null | undefined,
     cardType: CardType | undefined,
+    expansionCode: string | undefined,
+    collectorNumber: string | undefined,
+    face: Faces
+  ) => expansionCode,
+  (
+    state: RootState,
+    query: string | null | undefined,
+    cardType: CardType | undefined,
+    expansionCode: string | undefined,
+    collectorNumber: string | undefined,
+    face: Faces
+  ) => collectorNumber,
+  (
+    state: RootState,
+    query: string | null | undefined,
+    cardType: CardType | undefined,
+    expansionCode: string | undefined,
+    collectorNumber: string | undefined,
     face: Faces
   ) => face,
   (
     state: RootState,
     query: string | null | undefined,
     cardType: CardType | undefined,
+    expansionCode: string | undefined,
+    collectorNumber: string | undefined,
     face: Faces
   ) => selectCardbacks(state),
-  (searchResults, query, cardType, face, cardbacks) =>
+  (
+    searchResults,
+    query,
+    cardType,
+    expansionCode,
+    collectorNumber,
+    face,
+    cardbacks
+  ) =>
     query != null && query.length > 0 && cardType !== undefined
       ? searchResults[
-          computeSearchQueryHashKey({ query: query, cardType: cardType })
+          computeSearchQueryHashKey({
+            query,
+            cardType,
+            expansionCode,
+            collectorNumber,
+          })
         ]
       : face === Back
       ? cardbacks

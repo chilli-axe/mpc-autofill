@@ -29,6 +29,8 @@ import {
   SlotProjectMembers,
 } from "@/common/types";
 
+import { CardType } from "./schema_types";
+
 /**
  * Clean any instances of doubled-up whitespace from `text`.
  */
@@ -63,26 +65,39 @@ export function processQuery(query: string): string {
 }
 
 /**
- * Identify the prefix of a query. For example, `query`="t:goblin" would yield
- *   {query: "goblin", cardType: TOKEN}.
+ * Unpack `query` into its constituents.
+ *
+ * Inputs to this function are unpacked according to the below schema. For example, consider `t:opt (XYZ) 123`:
+ *       4x        :    opt     (        123          )         123
+ * └─ card type ──┘ └─ query ──┘ └─ expansion code ──┘ └─ collector number ──┘
+ *
+ * If a card type prefix is not specified, we assume `CARD`.
  */
-export function processPrefix(query: string): SearchQuery {
-  for (const [prefix, cardType] of Object.entries(CardTypePrefixes)) {
-    if (
-      prefix !== "" &&
-      query
-        .trimStart()
-        .toLowerCase()
-        .startsWith(`${prefix}${CardTypeSeparator}`)
-    ) {
-      return {
-        query: processQuery(query.trimStart().slice(prefix.length + 1)),
-        cardType: cardType,
-      };
-    }
+export const processSearchQuery = (query: string): SearchQuery => {
+  const prefixPattern = Object.keys(CardTypePrefixes)
+    .filter((prefix) => prefix !== "")
+    .join("|");
+  const regex = new RegExp(
+    `^(?:(${prefixPattern})\\:)?(.*?)(?:\\((.+)\\)(.*))?$`
+  );
+
+  const match = query.match(regex);
+
+  if (match === null) {
+    // should realistically never hit this case
+    return {
+      query: query,
+      cardType: CardType.Card,
+    };
   }
-  return { query: processQuery(query), cardType: CardTypePrefixes[""] };
-}
+
+  return {
+    cardType: CardTypePrefixes[match[1] ?? ""],
+    query: processQuery(match[2]),
+    expansionCode: match[3]?.toUpperCase()?.trim() || undefined,
+    collectorNumber: match[4]?.trim() || undefined,
+  };
+};
 
 const getPhrasesNotAllowedInIdentifiers = (): Array<string> => [
   SelectedImageSeparator,
@@ -193,14 +208,14 @@ export function processLine(
   let frontQuery: SearchQuery | null = null;
   let frontSelectedImage: string | undefined = undefined;
   if (frontRawQuery != null && (frontRawQuery[0] ?? "").length > 0) {
-    frontQuery = processPrefix(frontRawQuery[0]);
+    frontQuery = processSearchQuery(frontRawQuery[0]);
     frontSelectedImage = frontRawQuery[1] ?? undefined;
   }
 
   let backQuery: SearchQuery | null = null;
   let backSelectedImage: string | undefined = undefined;
   if (backRawQuery != null && (backRawQuery[0] ?? "").length > 0) {
-    backQuery = processPrefix(backRawQuery[0]);
+    backQuery = processSearchQuery(backRawQuery[0]);
     backSelectedImage = backRawQuery[1] ?? undefined;
   } else if (frontQuery != null && frontQuery?.query != null) {
     const dfcBackQuery = getDfcBack(frontQuery.query, dfcPairs, fuzzySearch);
@@ -408,5 +423,34 @@ export const fnv1aHash = (input: string): number => {
   return hash;
 };
 
+const stringifySearchQuery = (searchQuery: SearchQuery): string =>
+  `cardType=${searchQuery.cardType}
+  &query=${searchQuery.query ?? "null"}
+  &expansionCode=${searchQuery.expansionCode ?? "null"}
+  &collectorNumber=${searchQuery.collectorNumber ?? "null"}`;
+
 export const computeSearchQueryHashKey = (searchQuery: SearchQuery): string =>
-  fnv1aHash(JSON.stringify(searchQuery)).toString();
+  fnv1aHash(stringifySearchQuery(searchQuery)).toString();
+
+export const areSearchQueriesEqual = (
+  a: SearchQuery | null | undefined,
+  b: SearchQuery | null | undefined
+): boolean => {
+  if (!a && !b) {
+    return true;
+  }
+  if (!a || !b) {
+    return false;
+  }
+  return (
+    a.query === b.query &&
+    a.cardType === b.cardType &&
+    a.expansionCode === b.expansionCode &&
+    a.collectorNumber === b.collectorNumber
+  );
+  // return JSON.stringify(a) === JSON.stringify(b);
+};
+
+export const doesSearchQueryFilterOnPrinting = (
+  searchQuery: SearchQuery | undefined | null
+) => searchQuery?.expansionCode || searchQuery?.collectorNumber;
