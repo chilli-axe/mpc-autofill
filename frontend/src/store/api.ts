@@ -393,7 +393,7 @@ export async function APIEditorSearch(
     credentials: "same-origin",
     headers: getCSRFHeader(),
   });
-  if (rawResponse.status === 404) {
+  if (!rawResponse.ok) {
     // degrade to 2/editorSearch in case backend is running an older build
     return APIEditorSearchLegacy(backendURL, searchSettings, queriesToSearch);
   }
