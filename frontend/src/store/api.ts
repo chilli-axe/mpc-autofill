@@ -379,30 +379,35 @@ export async function APIEditorSearch(
   searchSettings: SearchSettings,
   queriesToSearch: Array<SearchQuery>
 ): Promise<SearchResults> {
-  const rawResponse = await fetch(formatURL(backendURL, "/3/editorSearch/"), {
-    method: "POST",
-    body: JSON.stringify({
-      searchSettings,
-      queries: Object.fromEntries(
-        queriesToSearch.map((searchQuery) => [
-          computeSearchQueryHashKey(searchQuery),
-          searchQuery,
-        ])
-      ),
-    } as EditorSearchRequest),
-    credentials: "same-origin",
-    headers: getCSRFHeader(),
-  });
-  if (!rawResponse.ok) {
+  try {
+    const rawResponse = await fetch(formatURL(backendURL, "/3/editorSearch/"), {
+      method: "POST",
+      body: JSON.stringify({
+        searchSettings,
+        queries: Object.fromEntries(
+          queriesToSearch.map((searchQuery) => [
+            computeSearchQueryHashKey(searchQuery),
+            searchQuery,
+          ])
+        ),
+      } as EditorSearchRequest),
+      credentials: "same-origin",
+      headers: getCSRFHeader(),
+    });
+    if (rawResponse.status === 404) {
+      // degrade to 2/editorSearch in case backend is running an older build
+      return APIEditorSearchLegacy(backendURL, searchSettings, queriesToSearch);
+    }
+    return rawResponse.json().then((content) => {
+      if (rawResponse.status === 200 && content.results != null) {
+        return content.results as EditorSearchResponse["results"];
+      }
+      throw { name: content.name, message: content.message };
+    });
+  } catch (error) {
     // degrade to 2/editorSearch in case backend is running an older build
     return APIEditorSearchLegacy(backendURL, searchSettings, queriesToSearch);
   }
-  return rawResponse.json().then((content) => {
-    if (rawResponse.status === 200 && content.results != null) {
-      return content.results as EditorSearchResponse["results"];
-    }
-    throw { name: content.name, message: content.message };
-  });
 }
 
 export async function APIGetSources(
