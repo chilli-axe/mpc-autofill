@@ -35,6 +35,8 @@ import {
   NewCardsFirstPage,
   NewCardsFirstPagesResponse,
   NewCardsPageResponse,
+  OldEditorSearchRequest,
+  OldEditorSearchResponse,
   Patreon,
   PatreonResponse,
   SampleCardsResponse,
@@ -44,6 +46,7 @@ import {
 } from "@/common/schema_types";
 import {
   CardDocuments,
+  CardType,
   DFCPairs,
   SearchQuery,
   SearchResults,
@@ -333,6 +336,44 @@ export async function APIGetCardbacks(
   });
 }
 
+async function APIEditorSearchLegacy(
+  backendURL: string,
+  searchSettings: SearchSettings,
+  queriesToSearch: Array<SearchQuery>
+): Promise<SearchResults> {
+  const rawResponse = await fetch(formatURL(backendURL, "/2/editorSearch/"), {
+    method: "POST",
+    body: JSON.stringify({
+      searchSettings,
+      queries: queriesToSearch,
+    } as OldEditorSearchRequest),
+    credentials: "same-origin",
+    headers: getCSRFHeader(),
+  });
+  return rawResponse.json().then((content) => {
+    if (rawResponse.status === 200 && content.results != null) {
+      const results = content.results as OldEditorSearchResponse["results"];
+      // transform results into new format
+      const transformedResults: EditorSearchResponse["results"] =
+        Object.fromEntries(
+          Object.entries(results).flatMap(([query, resultsPerCardType]) =>
+            Object.entries(resultsPerCardType).map(
+              ([cardType, searchResults]) => [
+                computeSearchQueryHashKey({
+                  query,
+                  cardType: cardType as CardType,
+                }),
+                searchResults,
+              ]
+            )
+          )
+        );
+      return transformedResults;
+    }
+    throw { name: content.name, message: content.message };
+  });
+}
+
 export async function APIEditorSearch(
   backendURL: string,
   searchSettings: SearchSettings,
@@ -352,6 +393,10 @@ export async function APIEditorSearch(
     credentials: "same-origin",
     headers: getCSRFHeader(),
   });
+  if (rawResponse.status === 404) {
+    // degrade to 2/editorSearch in case backend is running an older build
+    return APIEditorSearchLegacy(backendURL, searchSettings, queriesToSearch);
+  }
   return rawResponse.json().then((content) => {
     if (rawResponse.status === 200 && content.results != null) {
       return content.results as EditorSearchResponse["results"];
