@@ -187,10 +187,20 @@ export function CardSlot({ id, searchQuery, face, slot }: CardSlotProps) {
   const handleCloseGridSelector = () => setShowGridSelector(false);
   const handleShowGridSelector = () => setShowGridSelector(true);
   const handleShowChangeSelectedImageQueriesModal = () => {
+    let stringifiedSearchQuery: string | null = null;
+    if (searchQuery?.query) {
+      stringifiedSearchQuery = searchQuery.query;
+      if (searchQuery.expansionCode) {
+        stringifiedSearchQuery += ` (${searchQuery.expansionCode})`;
+        if (searchQuery.collectorNumber) {
+          stringifiedSearchQuery += ` ${searchQuery.collectorNumber}`;
+        }
+      }
+    }
     dispatch(
       showChangeQueryModal({
         slots: [[face, slot]],
-        query: searchQuery?.query ?? null,
+        query: stringifiedSearchQuery,
       })
     );
   };
