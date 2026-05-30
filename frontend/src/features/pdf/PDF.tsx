@@ -229,6 +229,171 @@ interface PDFCardThumbnailProps {
   cardDocument: CardDocument;
 }
 
+type CutLineCornerPosition =
+  | "top-left"
+  | "top-right"
+  | "bottom-left"
+  | "bottom-right";
+
+interface CutLineCornerProps {
+  position: CutLineCornerPosition;
+}
+
+const CutLineCorner = ({ position }: CutLineCornerProps) => {
+  const {
+    bleedEdgeMM,
+    cutLineLengthMM,
+    cutLineOffsetMM,
+    cutLineThicknessMM,
+    cutLineColor,
+    cutLinePlacement,
+    cutLineShape,
+  } = usePDFContext();
+
+  const cutLinePlacementToThicknessOffset: {
+    [key in keyof typeof CutLinePlacement]: number;
+  } = {
+    [CutLinePlacement.Inside]: 0,
+    [CutLinePlacement.Centre]: 0.5 * cutLineThicknessMM,
+    [CutLinePlacement.Outside]: cutLineThicknessMM,
+  };
+
+  const totalOffset =
+    bleedEdgeMM -
+    cutLineOffsetMM -
+    cutLinePlacementToThicknessOffset[cutLinePlacement];
+
+  const positionLookup: {
+    [location in CutLineCornerPosition]: {
+      horizontal: "left" | "right";
+      vertical: "up" | "down";
+      verticalCssProperty: "top" | "bottom";
+      horizontalCssProperty: "left" | "right";
+    };
+  } = {
+    "top-left": {
+      horizontal: "right",
+      vertical: "down",
+      verticalCssProperty: "top",
+      horizontalCssProperty: "left",
+    },
+    "top-right": {
+      horizontal: "left",
+      vertical: "down",
+      verticalCssProperty: "top",
+      horizontalCssProperty: "right",
+    },
+    "bottom-left": {
+      horizontal: "right",
+      vertical: "up",
+      verticalCssProperty: "bottom",
+      horizontalCssProperty: "left",
+    },
+    "bottom-right": {
+      horizontal: "left",
+      vertical: "up",
+      verticalCssProperty: "bottom",
+      horizontalCssProperty: "right",
+    },
+  };
+
+  const inside = positionLookup[position];
+  const outside = {
+    horizontal: inside.horizontal === "left" ? "right" : "left",
+    vertical: inside.vertical === "up" ? "down" : "up",
+  } as const;
+
+  const showHorizontal = (dir: "left" | "right") => {
+    if (cutLineShape === "Cross") return true;
+    if (cutLineShape === "InsideOnly") return inside.horizontal === dir;
+    if (cutLineShape === "OutsideOnly") return outside.horizontal === dir;
+    return false;
+  };
+
+  const showVertical = (dir: "up" | "down") => {
+    if (cutLineShape === "Cross") return true;
+    if (cutLineShape === "InsideOnly") return inside.vertical === dir;
+    if (cutLineShape === "OutsideOnly") return outside.vertical === dir;
+    return false;
+  };
+
+  return (
+    <>
+      <View
+        style={{
+          position: "absolute" as const,
+          zIndex: -2, // negative z-index renders higher: https://github.com/diegomura/react-pdf/issues/1721
+          ...(inside.verticalCssProperty === "top" && {
+            top: totalOffset + "mm",
+          }),
+          ...(inside.verticalCssProperty === "bottom" && {
+            bottom: totalOffset + cutLineThicknessMM + "mm",
+          }),
+          ...(inside.horizontalCssProperty === "left" && {
+            left: totalOffset + "mm",
+          }),
+          ...(inside.horizontalCssProperty === "right" && {
+            right: totalOffset + cutLineThicknessMM + "mm",
+          }),
+        }}
+      >
+        {showVertical("down") && (
+          <View
+            style={{
+              // lower vertical bar
+              position: "absolute" as const,
+              width: cutLineThicknessMM + "mm",
+              height: cutLineLengthMM + "mm",
+              backgroundColor: cutLineColor,
+              top: 0,
+              left: 0,
+            }}
+          />
+        )}
+        {showVertical("up") && (
+          <View
+            style={{
+              // upper vertical bar
+              position: "absolute" as const,
+              width: cutLineThicknessMM + "mm",
+              height: cutLineLengthMM + "mm",
+              backgroundColor: cutLineColor,
+              top: -cutLineLengthMM + cutLineThicknessMM + "mm",
+              left: 0,
+            }}
+          />
+        )}
+        {showHorizontal("right") && (
+          <View
+            style={{
+              // right horizontal bar
+              position: "absolute" as const,
+              width: cutLineLengthMM + "mm",
+              height: cutLineThicknessMM + "mm",
+              backgroundColor: cutLineColor,
+              top: 0,
+              left: 0,
+            }}
+          />
+        )}
+        {showHorizontal("left") && (
+          <View
+            style={{
+              // left horizontal bar
+              position: "absolute" as const,
+              width: cutLineLengthMM + "mm",
+              height: cutLineThicknessMM + "mm",
+              backgroundColor: cutLineColor,
+              top: 0,
+              left: -cutLineLengthMM + cutLineThicknessMM + "mm",
+            }}
+          />
+        )}
+      </View>
+    </>
+  );
+};
+
 const PDFCardThumbnail = ({ cardDocument }: PDFCardThumbnailProps) => {
   const {
     bleedEdgeMM,
@@ -259,40 +424,10 @@ const PDFCardThumbnail = ({ cardDocument }: PDFCardThumbnailProps) => {
     borderTopRightRadius: radius + "mm",
     borderBottomRightRadius: radius + "mm",
     borderBottomLeftRadius: radius + "mm",
+    // cut lines are rendered with z-index 1, they should always sit on top of images
+    // negative z-index renders higher: https://github.com/diegomura/react-pdf/issues/1721
+    zIndex: -1,
   } as const;
-
-  // Corner marks are positioned so their inner corner aligns with the card boundary
-  // (i.e. inset by bleedEdgeMM from each container edge). The mark extends outward
-  // into the bleed area by cutLineLengthMM.
-  const markOffset = bleedEdgeMM - cutLineOffsetMM + "mm";
-  const markSize = cutLineLengthMM + "mm";
-  const markThickness = cutLineThicknessMM + "mm";
-
-  const baseMarkStyle = {
-    position: "absolute" as const,
-    width: markSize,
-    height: markSize,
-  };
-  const topBorder = {
-    borderTopWidth: markThickness,
-    borderTopStyle: "solid" as const,
-    borderTopColor: cutLineColor,
-  };
-  const bottomBorder = {
-    borderBottomWidth: markThickness,
-    borderBottomStyle: "solid" as const,
-    borderBottomColor: cutLineColor,
-  };
-  const leftBorder = {
-    borderLeftWidth: markThickness,
-    borderLeftStyle: "solid" as const,
-    borderLeftColor: cutLineColor,
-  };
-  const rightBorder = {
-    borderRightWidth: markThickness,
-    borderRightStyle: "solid" as const,
-    borderRightColor: cutLineColor,
-  };
 
   return (
     <View
@@ -318,42 +453,10 @@ const PDFCardThumbnail = ({ cardDocument }: PDFCardThumbnailProps) => {
       />
       {drawCutLines && (
         <>
-          <View
-            style={{
-              ...baseMarkStyle,
-              top: markOffset,
-              left: markOffset,
-              ...topBorder,
-              ...leftBorder,
-            }}
-          />
-          <View
-            style={{
-              ...baseMarkStyle,
-              top: markOffset,
-              right: markOffset,
-              ...topBorder,
-              ...rightBorder,
-            }}
-          />
-          <View
-            style={{
-              ...baseMarkStyle,
-              bottom: markOffset,
-              left: markOffset,
-              ...bottomBorder,
-              ...leftBorder,
-            }}
-          />
-          <View
-            style={{
-              ...baseMarkStyle,
-              bottom: markOffset,
-              right: markOffset,
-              ...bottomBorder,
-              ...rightBorder,
-            }}
-          />
+          <CutLineCorner position="top-left" />
+          <CutLineCorner position="top-right" />
+          <CutLineCorner position="bottom-left" />
+          <CutLineCorner position="bottom-right" />
         </>
       )}
     </View>
