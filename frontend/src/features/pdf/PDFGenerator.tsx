@@ -18,7 +18,13 @@ import { OverflowCol } from "@/components/OverflowCol";
 import { Spinner } from "@/components/Spinner";
 import { ClientSearchService } from "@/features/clientSearch/clientSearchService";
 import { downloadFile, useDoFileDownload } from "@/features/download/download";
-import { CardSelectionMode, PageSize, PDFProps } from "@/features/pdf/PDF";
+import {
+  CardSelectionMode,
+  CutLinePlacement,
+  CutLineShape,
+  PageSize,
+  PDFProps,
+} from "@/features/pdf/PDF";
 import { pdfRenderService } from "@/features/pdf/pdfRenderService";
 import { useCardDocumentsByIdentifier } from "@/store/slices/cardDocumentsSlice";
 import {
@@ -178,6 +184,30 @@ export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
     [cardSelectionMode]
   );
 
+  const [cutLineShape, setCutLineShape] =
+    useState<keyof typeof CutLineShape>("Cross");
+  const cutLineShapeOptions = useMemo(
+    () =>
+      Object.entries(CutLineShape).map(([value, label]) => ({
+        value,
+        label,
+        checked: value === cutLineShape,
+      })),
+    [cutLineShape]
+  );
+
+  const [cutLinePlacement, setCutLinePlacement] =
+    useState<keyof typeof CutLinePlacement>("Centre");
+  const cutLinePlacementOptions = useMemo(
+    () =>
+      Object.entries(CutLinePlacement).map(([value, label]) => ({
+        value,
+        label,
+        checked: value === cutLinePlacement,
+      })),
+    [cutLinePlacement]
+  );
+
   const cardDocumentsByIdentifier = useCardDocumentsByIdentifier();
 
   // TODO: look at when i'm more awake
@@ -196,6 +226,8 @@ export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
     cutLineOffsetMM: cutLineOffsetMM ?? 0,
     cutLineThicknessMM: cutLineThicknessMM ?? 0.2,
     cutLineColor: cutLineColor,
+    cutLinePlacement: cutLinePlacement,
+    cutLineShape: cutLineShape,
     cardSpacingRowMM: cardSpacingRowMM ?? 0,
     cardSpacingColMM: cardSpacingColMM ?? 0,
     pageMarginTopMM: pageMarginTopMM ?? 0,
@@ -375,6 +407,32 @@ export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
               />
               {drawCutLines && (
                 <Row className="mt-1">
+                  <Col xs={12}>
+                    <Form.Label>Cut Lines Shape</Form.Label>
+                    <StyledDropdownTreeSelect
+                      data={cutLineShapeOptions}
+                      onChange={(currentNode, selectedNodes) =>
+                        setCutLineShape(
+                          currentNode.value as keyof typeof CutLineShape
+                        )
+                      }
+                      mode="radioSelect"
+                      inlineSearchInput
+                    />
+                  </Col>
+                  <Col xs={12}>
+                    <Form.Label>Cut Lines Placement</Form.Label>
+                    <StyledDropdownTreeSelect
+                      data={cutLinePlacementOptions}
+                      onChange={(currentNode, selectedNodes) =>
+                        setCutLinePlacement(
+                          currentNode.value as keyof typeof CutLinePlacement
+                        )
+                      }
+                      mode="radioSelect"
+                      inlineSearchInput
+                    />
+                  </Col>
                   <Col xs={6}>
                     <NumericField
                       label="Cut Lines Length (mm)"

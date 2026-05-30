@@ -132,6 +132,18 @@ export const PageSize = {
   CUSTOM: "Custom", // special case
 } as const;
 
+export const CutLinePlacement = {
+  Inside: "Inside",
+  Centre: "Centre",
+  Outside: "Outside",
+} as const;
+
+export const CutLineShape = {
+  Cross: "Cross Shaped",
+  InsideOnly: "Inside Card Border",
+  OutsideOnly: "Outside Card Border",
+};
+
 export const CardSelectionMode = {
   frontsAndDistinctBacks: "Fronts + Distinct Backs",
   frontsOnly: "Fronts Only",
@@ -150,6 +162,8 @@ const styles = StyleSheet.create({
 
 export interface PDFProps {
   cardSelectionMode: keyof typeof CardSelectionMode;
+  cutLinePlacement: keyof typeof CutLinePlacement;
+  cutLineShape: keyof typeof CutLineShape;
   pageSize: keyof typeof PageSize;
   pageWidth: number | undefined;
   pageHeight: number | undefined;
