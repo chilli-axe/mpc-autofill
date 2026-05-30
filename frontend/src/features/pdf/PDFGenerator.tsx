@@ -447,7 +447,6 @@ export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
                       label="Cut Lines Offset (mm)"
                       value={cutLineOffsetMM}
                       setValue={setCutLineOffsetMM}
-                      min={0}
                       step={0.1}
                     />
                   </Col>
