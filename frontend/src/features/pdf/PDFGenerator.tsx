@@ -1,6 +1,5 @@
 import { useMemo, useState } from "react";
 import React from "react";
-import Alert from "react-bootstrap/Alert";
 import Button from "react-bootstrap/Button";
 import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
@@ -142,7 +141,8 @@ export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
   >(5);
   const [bleedEdgeMM, setBleedEdgeMM] = useState<number | undefined>(0);
   const [roundCorners, setRoundCorners] = useState<boolean>(false);
-  const [drawCutLines, setDrawCutLines] = useState<boolean>(true);
+  const [drawCardCutLines, setDrawCardCutLines] = useState<boolean>(true);
+  const [drawPageCutLines, setDrawPageCutLines] = useState<boolean>(true);
   const [cutLineLengthMM, setCutLineLengthMM] = useState<number | undefined>(2);
   const [cutLineOffsetMM, setCutLineOffsetMM] = useState<number | undefined>(0);
   const [cutLineThicknessMM, setCutLineThicknessMM] = useState<
@@ -185,7 +185,7 @@ export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
   );
 
   const [cutLineShape, setCutLineShape] =
-    useState<keyof typeof CutLineShape>("Cross");
+    useState<keyof typeof CutLineShape>("InsideOnly");
   const cutLineShapeOptions = useMemo(
     () =>
       Object.entries(CutLineShape).map(([value, label]) => ({
@@ -197,7 +197,7 @@ export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
   );
 
   const [cutLinePlacement, setCutLinePlacement] =
-    useState<keyof typeof CutLinePlacement>("Centre");
+    useState<keyof typeof CutLinePlacement>("Inside");
   const cutLinePlacementOptions = useMemo(
     () =>
       Object.entries(CutLinePlacement).map(([value, label]) => ({
@@ -221,7 +221,8 @@ export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
     pageHeight: pageHeight,
     bleedEdgeMM: bleedEdgeMM ?? 0,
     roundCorners: roundCorners,
-    drawCutLines: drawCutLines,
+    drawCardCutLines: drawCardCutLines,
+    drawPageCutLines: drawPageCutLines,
     cutLineLengthMM: cutLineLengthMM ?? 2,
     cutLineOffsetMM: cutLineOffsetMM ?? 0,
     cutLineThicknessMM: cutLineThicknessMM ?? 0.2,
@@ -391,9 +392,9 @@ export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
                 height={ToggleButtonHeight + "px"}
                 active={roundCorners}
               />
-              <Form.Label>Cut Guide Lines</Form.Label>
+              <Form.Label>Card Cut Guide Lines</Form.Label>
               <Toggle
-                onClick={() => setDrawCutLines(!drawCutLines)}
+                onClick={() => setDrawCardCutLines(!drawCardCutLines)}
                 on="On"
                 onClassName="flex-centre"
                 off="Off"
@@ -403,36 +404,54 @@ export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
                 width={100 + "%"}
                 size="md"
                 height={ToggleButtonHeight + "px"}
-                active={drawCutLines}
+                active={drawCardCutLines}
               />
-              {drawCutLines && (
+              <Form.Label>Page Cut Guide Lines</Form.Label>
+              <Toggle
+                onClick={() => setDrawPageCutLines(!drawPageCutLines)}
+                on="On"
+                onClassName="flex-centre"
+                off="Off"
+                offClassName="flex-centre"
+                onstyle="success"
+                offstyle="info"
+                width={100 + "%"}
+                size="md"
+                height={ToggleButtonHeight + "px"}
+                active={drawPageCutLines}
+              />
+              {(drawCardCutLines || drawPageCutLines) && (
                 <Row className="mt-1">
-                  <Col xs={12}>
-                    <Form.Label>Cut Lines Shape</Form.Label>
-                    <StyledDropdownTreeSelect
-                      data={cutLineShapeOptions}
-                      onChange={(currentNode, selectedNodes) =>
-                        setCutLineShape(
-                          currentNode.value as keyof typeof CutLineShape
-                        )
-                      }
-                      mode="radioSelect"
-                      inlineSearchInput
-                    />
-                  </Col>
-                  <Col xs={12}>
-                    <Form.Label>Cut Lines Placement</Form.Label>
-                    <StyledDropdownTreeSelect
-                      data={cutLinePlacementOptions}
-                      onChange={(currentNode, selectedNodes) =>
-                        setCutLinePlacement(
-                          currentNode.value as keyof typeof CutLinePlacement
-                        )
-                      }
-                      mode="radioSelect"
-                      inlineSearchInput
-                    />
-                  </Col>
+                  {drawCardCutLines && (
+                    <>
+                      <Col xs={12}>
+                        <Form.Label>Card Cut Lines Shape</Form.Label>
+                        <StyledDropdownTreeSelect
+                          data={cutLineShapeOptions}
+                          onChange={(currentNode, selectedNodes) =>
+                            setCutLineShape(
+                              currentNode.value as keyof typeof CutLineShape
+                            )
+                          }
+                          mode="radioSelect"
+                          inlineSearchInput
+                        />
+                      </Col>
+                      <Col xs={12}>
+                        <Form.Label>Card Cut Lines Placement</Form.Label>
+                        <StyledDropdownTreeSelect
+                          data={cutLinePlacementOptions}
+                          onChange={(currentNode, selectedNodes) =>
+                            setCutLinePlacement(
+                              currentNode.value as keyof typeof CutLinePlacement
+                            )
+                          }
+                          mode="radioSelect"
+                          inlineSearchInput
+                        />
+                      </Col>
+                    </>
+                  )}
                   <Col xs={6}>
                     <NumericField
                       label="Cut Lines Length (mm)"

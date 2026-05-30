@@ -99,18 +99,19 @@ const getPageSizeMM = (
   }
 };
 
-const calculateCardContainerWidth = (
-  pageWidthMM: number,
+const calculateCardContainerDimension = (
+  pageSizeMM: number,
+  cardSizeMM: number,
   bleedEdgeMM: number,
-  cardSpacingColMM: number,
-  pageMarginLeftMM: number,
-  pageMarginRightMM: number
+  cardSpacingMM: number,
+  pageMarginStartMM: number,
+  pageMarginEndMM: number
 ) => {
-  const maxWidth = pageWidthMM - (pageMarginLeftMM + pageMarginRightMM);
+  const maxWidth = pageSizeMM - (pageMarginStartMM + pageMarginEndMM);
   const calculateContainerWidth = (cardsFitted: number) =>
     // adding a small buffer of 0.1 mm as I observed some weird wrapping behaviour from react-pdf without this
-    cardsFitted * (CardWidthMM + 2 * bleedEdgeMM) +
-    (cardsFitted - 1) * cardSpacingColMM +
+    cardsFitted * (cardSizeMM + 2 * bleedEdgeMM) +
+    (cardsFitted - 1) * cardSpacingMM +
     0.1;
   let cardsFitted = 1;
   while (true) {
@@ -121,6 +122,62 @@ const calculateCardContainerWidth = (
       return calculateContainerWidth(Math.max(1, cardsFitted - 1));
     }
   }
+};
+
+const calculateCardContainerWidth = (
+  pageWidthMM: number,
+  bleedEdgeMM: number,
+  cardSpacingColMM: number,
+  pageMarginLeftMM: number,
+  pageMarginRightMM: number
+) =>
+  calculateCardContainerDimension(
+    pageWidthMM,
+    CardWidthMM,
+    bleedEdgeMM,
+    cardSpacingColMM,
+    pageMarginLeftMM,
+    pageMarginRightMM
+  );
+
+const calculateCardContainerHeight = (
+  pageHeightMM: number,
+  bleedEdgeMM: number,
+  cardSpacingRowMM: number,
+  pageMarginTopMM: number,
+  pageMarginBottomMM: number
+) =>
+  calculateCardContainerDimension(
+    pageHeightMM,
+    CardHeightMM,
+    bleedEdgeMM,
+    cardSpacingRowMM,
+    pageMarginTopMM,
+    pageMarginBottomMM
+  );
+
+const getCardsPerRow = (
+  containerWidthMM: number,
+  bleedEdgeMM: number,
+  cardSpacingColMM: number
+) => {
+  const cardSlotWidth = CardWidthMM + 2 * bleedEdgeMM;
+  return Math.round(
+    (containerWidthMM - 0.1 + cardSpacingColMM) /
+      (cardSlotWidth + cardSpacingColMM)
+  );
+};
+
+const getCardsPerCol = (
+  containerHeightMM: number,
+  bleedEdgeMM: number,
+  cardSpacingRowMM: number
+) => {
+  const cardSlotHeight = CardHeightMM + 2 * bleedEdgeMM;
+  return Math.round(
+    (containerHeightMM - 0.1 + cardSpacingRowMM) /
+      (cardSlotHeight + cardSpacingRowMM)
+  );
 };
 
 export const PageSize = {
@@ -169,7 +226,8 @@ export interface PDFProps {
   pageHeight: number | undefined;
   bleedEdgeMM: number;
   roundCorners: boolean;
-  drawCutLines: boolean;
+  drawCardCutLines: boolean;
+  drawPageCutLines: boolean;
   cutLineLengthMM: number;
   cutLineOffsetMM: number;
   cutLineThicknessMM: number;
@@ -237,18 +295,27 @@ type CutLineCornerPosition =
 
 interface CutLineCornerProps {
   position: CutLineCornerPosition;
+  lengthMM: number;
+  placement: keyof typeof CutLinePlacement;
+  shape: keyof typeof CutLineShape;
+  horizontalLeftLengthOverrideMM?: number;
+  horizontalRightLengthOverrideMM?: number;
+  verticalUpLengthOverrideMM?: number;
+  verticalDownLengthOverrideMM?: number;
 }
 
-const CutLineCorner = ({ position }: CutLineCornerProps) => {
-  const {
-    bleedEdgeMM,
-    cutLineLengthMM,
-    cutLineOffsetMM,
-    cutLineThicknessMM,
-    cutLineColor,
-    cutLinePlacement,
-    cutLineShape,
-  } = usePDFContext();
+const CutLineCorner = ({
+  position,
+  lengthMM,
+  placement,
+  shape,
+  horizontalLeftLengthOverrideMM,
+  horizontalRightLengthOverrideMM,
+  verticalUpLengthOverrideMM,
+  verticalDownLengthOverrideMM,
+}: CutLineCornerProps) => {
+  const { cutLineThicknessMM, cutLineColor, bleedEdgeMM, cutLineOffsetMM } =
+    usePDFContext();
 
   const cutLinePlacementToThicknessOffset: {
     [key in keyof typeof CutLinePlacement]: number;
@@ -261,7 +328,7 @@ const CutLineCorner = ({ position }: CutLineCornerProps) => {
   const totalOffset =
     bleedEdgeMM -
     cutLineOffsetMM -
-    cutLinePlacementToThicknessOffset[cutLinePlacement];
+    cutLinePlacementToThicknessOffset[placement];
 
   const positionLookup: {
     [location in CutLineCornerPosition]: {
@@ -304,16 +371,16 @@ const CutLineCorner = ({ position }: CutLineCornerProps) => {
   } as const;
 
   const showHorizontal = (dir: "left" | "right") => {
-    if (cutLineShape === "Cross") return true;
-    if (cutLineShape === "InsideOnly") return inside.horizontal === dir;
-    if (cutLineShape === "OutsideOnly") return outside.horizontal === dir;
+    if (shape === "Cross") return true;
+    if (shape === "InsideOnly") return inside.horizontal === dir;
+    if (shape === "OutsideOnly") return outside.horizontal === dir;
     return false;
   };
 
   const showVertical = (dir: "up" | "down") => {
-    if (cutLineShape === "Cross") return true;
-    if (cutLineShape === "InsideOnly") return inside.vertical === dir;
-    if (cutLineShape === "OutsideOnly") return outside.vertical === dir;
+    if (shape === "Cross") return true;
+    if (shape === "InsideOnly") return inside.vertical === dir;
+    if (shape === "OutsideOnly") return outside.vertical === dir;
     return false;
   };
 
@@ -322,7 +389,6 @@ const CutLineCorner = ({ position }: CutLineCornerProps) => {
       <View
         style={{
           position: "absolute" as const,
-          zIndex: -2, // negative z-index renders higher: https://github.com/diegomura/react-pdf/issues/1721
           ...(inside.verticalCssProperty === "top" && {
             top: totalOffset + "mm",
           }),
@@ -343,7 +409,7 @@ const CutLineCorner = ({ position }: CutLineCornerProps) => {
               // lower vertical bar
               position: "absolute" as const,
               width: cutLineThicknessMM + "mm",
-              height: cutLineLengthMM + "mm",
+              height: (verticalDownLengthOverrideMM ?? lengthMM) + "mm",
               backgroundColor: cutLineColor,
               top: 0,
               left: 0,
@@ -356,9 +422,12 @@ const CutLineCorner = ({ position }: CutLineCornerProps) => {
               // upper vertical bar
               position: "absolute" as const,
               width: cutLineThicknessMM + "mm",
-              height: cutLineLengthMM + "mm",
+              height: (verticalUpLengthOverrideMM ?? lengthMM) + "mm",
               backgroundColor: cutLineColor,
-              top: -cutLineLengthMM + cutLineThicknessMM + "mm",
+              top:
+                -(verticalUpLengthOverrideMM ?? lengthMM) +
+                cutLineThicknessMM +
+                "mm",
               left: 0,
             }}
           />
@@ -368,7 +437,7 @@ const CutLineCorner = ({ position }: CutLineCornerProps) => {
             style={{
               // right horizontal bar
               position: "absolute" as const,
-              width: cutLineLengthMM + "mm",
+              width: (horizontalRightLengthOverrideMM ?? lengthMM) + "mm",
               height: cutLineThicknessMM + "mm",
               backgroundColor: cutLineColor,
               top: 0,
@@ -381,11 +450,14 @@ const CutLineCorner = ({ position }: CutLineCornerProps) => {
             style={{
               // left horizontal bar
               position: "absolute" as const,
-              width: cutLineLengthMM + "mm",
+              width: (horizontalLeftLengthOverrideMM ?? lengthMM) + "mm",
               height: cutLineThicknessMM + "mm",
               backgroundColor: cutLineColor,
               top: 0,
-              left: -cutLineLengthMM + cutLineThicknessMM + "mm",
+              left:
+                -(horizontalLeftLengthOverrideMM ?? lengthMM) +
+                cutLineThicknessMM +
+                "mm",
             }}
           />
         )}
@@ -394,15 +466,11 @@ const CutLineCorner = ({ position }: CutLineCornerProps) => {
   );
 };
 
-const PDFCardThumbnail = ({ cardDocument }: PDFCardThumbnailProps) => {
+// Renders only the card image, with no cut lines.
+const PDFCardImage = ({ cardDocument }: PDFCardThumbnailProps) => {
   const {
     bleedEdgeMM,
     roundCorners,
-    drawCutLines,
-    cutLineLengthMM,
-    cutLineOffsetMM,
-    cutLineThicknessMM,
-    cutLineColor,
     imageQuality,
     imageDPI,
     jpgQuality,
@@ -413,21 +481,6 @@ const PDFCardThumbnail = ({ cardDocument }: PDFCardThumbnailProps) => {
   const width = CardWidthMM + 2 * bleedEdgeMM;
   const widthProportion = (CardWidthMM + 2 * BleedEdgeMM) / width;
   const radius = roundCorners ? CornerRadiusMM : 0;
-  const imageStyle = {
-    width: width + "mm",
-    minWidth: width + "mm",
-    height: height + "mm",
-    minHeight: height + "mm",
-    transform: `scale(${widthProportion}, ${heightProportion})`,
-    overflow: "hidden",
-    borderTopLeftRadius: radius + "mm",
-    borderTopRightRadius: radius + "mm",
-    borderBottomRightRadius: radius + "mm",
-    borderBottomLeftRadius: radius + "mm",
-    // cut lines are rendered with z-index 1, they should always sit on top of images
-    // negative z-index renders higher: https://github.com/diegomura/react-pdf/issues/1721
-    zIndex: -1,
-  } as const;
 
   return (
     <View
@@ -436,7 +489,6 @@ const PDFCardThumbnail = ({ cardDocument }: PDFCardThumbnailProps) => {
         minWidth: width + "mm",
         height: height + "mm",
         minHeight: height + "mm",
-        position: "relative",
       }}
     >
       <Image
@@ -449,42 +501,336 @@ const PDFCardThumbnail = ({ cardDocument }: PDFCardThumbnailProps) => {
             fileHandles
           )
         }
-        style={imageStyle}
+        style={
+          {
+            width: width + "mm",
+            minWidth: width + "mm",
+            height: height + "mm",
+            minHeight: height + "mm",
+            transform: `scale(${widthProportion}, ${heightProportion})`,
+            overflow: "hidden",
+            borderTopLeftRadius: radius + "mm",
+            borderTopRightRadius: radius + "mm",
+            borderBottomRightRadius: radius + "mm",
+            borderBottomLeftRadius: radius + "mm",
+          } as const
+        }
       />
-      {drawCutLines && (
-        <>
-          <CutLineCorner position="top-left" />
-          <CutLineCorner position="top-right" />
-          <CutLineCorner position="bottom-left" />
-          <CutLineCorner position="bottom-right" />
-        </>
-      )}
     </View>
   );
 };
 
-const getPageStyle = (
-  pageWidthMM: number,
-  bleedEdgeMM: number,
-  cardSpacingRowMM: number,
-  cardSpacingColMM: number,
-  pageMarginLeftMM: number,
-  pageMarginRightMM: number
-) =>
-  ({
-    ...styles.section,
-    width:
-      calculateCardContainerWidth(
-        pageWidthMM,
-        bleedEdgeMM,
-        cardSpacingColMM,
-        pageMarginLeftMM,
-        pageMarginRightMM
-      ) + "mm",
-    rowGap: cardSpacingRowMM + "mm",
-    columnGap: cardSpacingColMM + "mm",
-    alignSelf: "center",
-  } as const);
+// Renders cut lines for a single card slot, absolutely positioned within the
+// overlay layer to match the card at (colIndex, rowIndex) in the grid.
+const PDFCardCutLines = ({
+  colIndex,
+  rowIndex,
+}: {
+  colIndex: number;
+  rowIndex: number;
+}) => {
+  const {
+    bleedEdgeMM,
+    cardSpacingRowMM,
+    cardSpacingColMM,
+    cutLineLengthMM,
+    cutLinePlacement,
+    cutLineShape,
+  } = usePDFContext();
+  const cardSlotWidth = CardWidthMM + 2 * bleedEdgeMM;
+  const cardSlotHeight = CardHeightMM + 2 * bleedEdgeMM;
+
+  const left = colIndex * (cardSlotWidth + cardSpacingColMM);
+  const top = rowIndex * (cardSlotHeight + cardSpacingRowMM);
+
+  return (
+    <View
+      style={{
+        position: "absolute" as const,
+        left: left + "mm",
+        top: top + "mm",
+        width: cardSlotWidth + "mm",
+        height: cardSlotHeight + "mm",
+      }}
+    >
+      <CutLineCorner
+        position="top-left"
+        lengthMM={cutLineLengthMM}
+        placement={cutLinePlacement}
+        shape={cutLineShape}
+      />
+      <CutLineCorner
+        position="top-right"
+        lengthMM={cutLineLengthMM}
+        placement={cutLinePlacement}
+        shape={cutLineShape}
+      />
+      <CutLineCorner
+        position="bottom-left"
+        lengthMM={cutLineLengthMM}
+        placement={cutLinePlacement}
+        shape={cutLineShape}
+      />
+      <CutLineCorner
+        position="bottom-right"
+        lengthMM={cutLineLengthMM}
+        placement={cutLinePlacement}
+        shape={cutLineShape}
+      />
+    </View>
+  );
+};
+
+const PageCutLines = ({
+  colIndex,
+  rowIndex,
+}: {
+  colIndex: number;
+  rowIndex: number;
+}) => {
+  const {
+    bleedEdgeMM,
+    cardSpacingRowMM,
+    cardSpacingColMM,
+    pageSize,
+    pageWidth,
+    pageHeight,
+    pageMarginLeftMM,
+    pageMarginRightMM,
+    pageMarginTopMM,
+    pageMarginBottomMM,
+    cutLineLengthMM,
+  } = usePDFContext();
+  const cardSlotWidth = CardWidthMM + 2 * bleedEdgeMM;
+  const cardSlotHeight = CardHeightMM + 2 * bleedEdgeMM;
+
+  const left = colIndex * (cardSlotWidth + cardSpacingColMM);
+  const top = rowIndex * (cardSlotHeight + cardSpacingRowMM);
+
+  const size = getPageSizeMM(pageSize, pageWidth, pageHeight);
+  const lengthMM = Math.max(size.width, size.height);
+
+  const containerWidth = calculateCardContainerWidth(
+    size.width,
+    bleedEdgeMM,
+    cardSpacingColMM,
+    pageMarginLeftMM,
+    pageMarginRightMM
+  );
+  const cardsPerRow = getCardsPerRow(
+    containerWidth,
+    bleedEdgeMM,
+    cardSpacingColMM
+  );
+
+  const containerHeight = calculateCardContainerHeight(
+    size.height,
+    bleedEdgeMM,
+    cardSpacingRowMM,
+    pageMarginTopMM,
+    pageMarginBottomMM
+  );
+  const cardsPerCol = getCardsPerCol(
+    containerHeight,
+    bleedEdgeMM,
+    cardSpacingRowMM
+  );
+
+  return (
+    <View
+      style={{
+        position: "absolute" as const,
+        left: left + "mm",
+        top: top + "mm",
+        width: cardSlotWidth + "mm",
+        height: cardSlotHeight + "mm",
+      }}
+    >
+      <CutLineCorner
+        position="top-left"
+        lengthMM={cutLineLengthMM}
+        placement="Inside"
+        shape="Cross"
+        {...(colIndex === 0 && { horizontalLeftLengthOverrideMM: lengthMM })}
+        {...(rowIndex === 0 && { verticalUpLengthOverrideMM: lengthMM })}
+      />
+      <CutLineCorner
+        position="top-right"
+        lengthMM={cutLineLengthMM}
+        placement="Inside"
+        shape="Cross"
+        {...(colIndex === cardsPerRow - 1 && {
+          horizontalRightLengthOverrideMM: lengthMM,
+        })}
+        {...(rowIndex === 0 && { verticalUpLengthOverrideMM: lengthMM })}
+      />
+      <CutLineCorner
+        position="bottom-left"
+        lengthMM={cutLineLengthMM}
+        placement="Inside"
+        shape="Cross"
+        {...(colIndex === 0 && { horizontalLeftLengthOverrideMM: lengthMM })}
+        {...(rowIndex === cardsPerCol - 1 && {
+          verticalDownLengthOverrideMM: lengthMM,
+        })}
+      />
+      <CutLineCorner
+        position="bottom-right"
+        lengthMM={cutLineLengthMM}
+        placement="Inside"
+        shape="Cross"
+        {...(colIndex === cardsPerRow - 1 && {
+          horizontalRightLengthOverrideMM: lengthMM,
+        })}
+        {...(rowIndex === cardsPerCol - 1 && {
+          verticalDownLengthOverrideMM: lengthMM,
+        })}
+      />
+    </View>
+  );
+};
+
+const CardGrid = ({
+  pageWidthMM,
+  pageHeightMM,
+  cardDocuments,
+}: {
+  pageWidthMM: number;
+  pageHeightMM: number;
+  cardDocuments: (CardDocument | undefined)[];
+}) => {
+  const {
+    bleedEdgeMM,
+    drawCardCutLines,
+    drawPageCutLines,
+    cardSpacingRowMM,
+    cardSpacingColMM,
+    pageMarginLeftMM,
+    pageMarginRightMM,
+    pageMarginTopMM,
+    pageMarginBottomMM,
+  } = usePDFContext();
+
+  const containerWidth = calculateCardContainerWidth(
+    pageWidthMM,
+    bleedEdgeMM,
+    cardSpacingColMM,
+    pageMarginLeftMM,
+    pageMarginRightMM
+  );
+
+  const cardsPerRow = getCardsPerRow(
+    containerWidth,
+    bleedEdgeMM,
+    cardSpacingColMM
+  );
+
+  const containerHeight = calculateCardContainerHeight(
+    pageHeightMM,
+    bleedEdgeMM,
+    cardSpacingRowMM,
+    pageMarginTopMM,
+    pageMarginBottomMM
+  );
+  const cardsPerCol = getCardsPerCol(
+    containerHeight,
+    bleedEdgeMM,
+    cardSpacingRowMM
+  );
+
+  return (
+    <View
+      style={{
+        width: containerWidth + "mm",
+        height: containerHeight + "mm",
+        alignSelf: "center",
+        position: "relative" as const,
+      }}
+    >
+      {/* Pass 0: page cut-line underlay — painted before all images so it is always on bottom */}
+      {drawPageCutLines && (
+        <View
+          style={{
+            position: "absolute" as const,
+            top: 0,
+            left: 0,
+            width: containerWidth + "mm",
+            height: containerHeight + "mm",
+          }}
+        >
+          {Array(cardsPerCol)
+            .keys()
+            .toArray()
+            .flatMap((rowIndex) =>
+              Array(cardsPerRow)
+                .keys()
+                .toArray()
+                .map((colIndex) => (
+                  <PageCutLines
+                    key={`cutlines-${rowIndex}-${colIndex}`}
+                    colIndex={colIndex}
+                    rowIndex={rowIndex}
+                  />
+                ))
+            )}
+        </View>
+      )}
+
+      {/* Pass 1: all card images laid out in a flex-wrap row */}
+      <View
+        style={{
+          ...styles.section,
+          width: containerWidth + "mm",
+          rowGap: cardSpacingRowMM + "mm",
+          columnGap: cardSpacingColMM + "mm",
+        }}
+      >
+        {cardDocuments.map((doc, i) =>
+          doc ? (
+            <PDFCardImage key={`img-${i}`} cardDocument={doc} />
+          ) : (
+            // Empty placeholder keeps flex positions consistent for slots
+            // where a card document is missing.
+            <View
+              key={`placeholder-${i}`}
+              style={{
+                width: CardWidthMM + 2 * bleedEdgeMM + "mm",
+                minWidth: CardWidthMM + 2 * bleedEdgeMM + "mm",
+                height: CardHeightMM + 2 * bleedEdgeMM + "mm",
+                minHeight: CardHeightMM + 2 * bleedEdgeMM + "mm",
+              }}
+            />
+          )
+        )}
+      </View>
+
+      {/* Pass 2: card cut-line overlay — painted after all images so it is always on top */}
+      {drawCardCutLines && (
+        <View
+          style={{
+            position: "absolute" as const,
+            top: 0,
+            left: 0,
+            width: containerWidth + "mm",
+            height: containerHeight + "mm",
+          }}
+        >
+          {cardDocuments.map((_, i) => {
+            const colIndex = i % cardsPerRow;
+            const rowIndex = Math.floor(i / cardsPerRow);
+            return (
+              <PDFCardCutLines
+                key={`cutlines-${i}`}
+                colIndex={colIndex}
+                rowIndex={rowIndex}
+              />
+            );
+          })}
+        </View>
+      )}
+    </View>
+  );
+};
 
 type CardPageProps = {
   pageWidthMM: number;
@@ -494,135 +840,78 @@ type CardPageProps = {
 
 const FrontsAndDistinctBacksPage = ({
   pageWidthMM,
+  pageHeightMM,
   pageBreak,
 }: CardPageProps) => {
-  const {
-    bleedEdgeMM,
-    cardSpacingRowMM,
-    cardSpacingColMM,
-    pageMarginLeftMM,
-    pageMarginRightMM,
-    projectMembers,
-    cardDocumentsByIdentifier,
-    projectCardback,
-  } = usePDFContext();
+  const { cardDocumentsByIdentifier, projectMembers, projectCardback } =
+    usePDFContext();
+
+  const cardDocuments: (CardDocument | undefined)[] = projectMembers.flatMap(
+    (member) => {
+      const front =
+        member.front?.selectedImage !== undefined
+          ? cardDocumentsByIdentifier[member.front.selectedImage]
+          : undefined;
+      const back =
+        member.back?.selectedImage !== undefined &&
+        member.back.selectedImage !== projectCardback
+          ? cardDocumentsByIdentifier[member.back.selectedImage]
+          : undefined;
+      return [front, back].filter((d): d is CardDocument => d !== undefined);
+    }
+  );
+
   return (
-    <View
-      break={pageBreak}
-      style={getPageStyle(
-        pageWidthMM,
-        bleedEdgeMM,
-        cardSpacingRowMM,
-        cardSpacingColMM,
-        pageMarginLeftMM,
-        pageMarginRightMM
-      )}
-    >
-      {projectMembers.map((member, i) => (
-        <>
-          {member.front?.selectedImage !== undefined &&
-            cardDocumentsByIdentifier[member.front.selectedImage] !==
-              undefined && (
-              <PDFCardThumbnail
-                key={`${i}-front`}
-                cardDocument={
-                  cardDocumentsByIdentifier[member.front.selectedImage]
-                }
-              />
-            )}
-          {member.back?.selectedImage !== undefined &&
-            cardDocumentsByIdentifier[member.back.selectedImage] !==
-              undefined &&
-            member.back.selectedImage !== projectCardback && (
-              <PDFCardThumbnail
-                key={`${i}-back`}
-                cardDocument={
-                  cardDocumentsByIdentifier[member.back.selectedImage]
-                }
-              />
-            )}
-        </>
-      ))}
+    <View break={pageBreak}>
+      <CardGrid
+        pageWidthMM={pageWidthMM}
+        pageHeightMM={pageHeightMM}
+        cardDocuments={cardDocuments}
+      />
     </View>
   );
 };
 
-const FrontsOnlyPage = ({ pageWidthMM, pageBreak }: CardPageProps) => {
-  const {
-    bleedEdgeMM,
-    cardSpacingRowMM,
-    cardSpacingColMM,
-    pageMarginLeftMM,
-    pageMarginRightMM,
-    projectMembers,
-    cardDocumentsByIdentifier,
-  } = usePDFContext();
+const FrontsOnlyPage = ({
+  pageWidthMM,
+  pageHeightMM,
+  pageBreak,
+}: CardPageProps) => {
+  const { cardDocumentsByIdentifier, projectMembers } = usePDFContext();
+
+  const cardDocuments: (CardDocument | undefined)[] = projectMembers
+    .map((member) =>
+      member.front?.selectedImage !== undefined
+        ? cardDocumentsByIdentifier[member.front.selectedImage]
+        : undefined
+    )
+    .filter((d): d is CardDocument => d !== undefined);
+
   return (
-    <View
-      break={pageBreak}
-      style={getPageStyle(
-        pageWidthMM,
-        bleedEdgeMM,
-        cardSpacingRowMM,
-        cardSpacingColMM,
-        pageMarginLeftMM,
-        pageMarginRightMM
-      )}
-    >
-      {projectMembers.map((member, i) => (
-        <>
-          {member.front?.selectedImage !== undefined &&
-            cardDocumentsByIdentifier[member.front.selectedImage] !==
-              undefined && (
-              <PDFCardThumbnail
-                key={`${i}-front`}
-                cardDocument={
-                  cardDocumentsByIdentifier[member.front.selectedImage]
-                }
-              />
-            )}
-        </>
-      ))}
+    <View break={pageBreak}>
+      <CardGrid pageWidthMM={pageWidthMM} cardDocuments={cardDocuments} />
     </View>
   );
 };
 
-const BacksOnlyPage = ({ pageWidthMM, pageBreak }: CardPageProps) => {
-  const {
-    bleedEdgeMM,
-    cardSpacingRowMM,
-    cardSpacingColMM,
-    pageMarginLeftMM,
-    pageMarginRightMM,
-    projectMembers,
-    cardDocumentsByIdentifier,
-  } = usePDFContext();
+const BacksOnlyPage = ({
+  pageWidthMM,
+  pageHeightMM,
+  pageBreak,
+}: CardPageProps) => {
+  const { cardDocumentsByIdentifier, projectMembers } = usePDFContext();
+
+  const cardDocuments: (CardDocument | undefined)[] = projectMembers
+    .map((member) =>
+      member.back?.selectedImage !== undefined
+        ? cardDocumentsByIdentifier[member.back.selectedImage]
+        : undefined
+    )
+    .filter((d): d is CardDocument => d !== undefined);
+
   return (
-    <View
-      break={pageBreak}
-      style={getPageStyle(
-        pageWidthMM,
-        bleedEdgeMM,
-        cardSpacingRowMM,
-        cardSpacingColMM,
-        pageMarginLeftMM,
-        pageMarginRightMM
-      )}
-    >
-      {projectMembers.map((member, i) => (
-        <>
-          {member.back?.selectedImage !== undefined &&
-            cardDocumentsByIdentifier[member.back.selectedImage] !==
-              undefined && (
-              <PDFCardThumbnail
-                key={`${i}-front`}
-                cardDocument={
-                  cardDocumentsByIdentifier[member.back.selectedImage]
-                }
-              />
-            )}
-        </>
-      ))}
+    <View break={pageBreak}>
+      <CardGrid pageWidthMM={pageWidthMM} cardDocuments={cardDocuments} />
     </View>
   );
 };
