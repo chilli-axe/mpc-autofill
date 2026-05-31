@@ -889,7 +889,11 @@ const FrontsOnlyPage = ({
 
   return (
     <View break={pageBreak}>
-      <CardGrid pageWidthMM={pageWidthMM} cardDocuments={cardDocuments} />
+      <CardGrid
+        pageWidthMM={pageWidthMM}
+        pageHeightMM={pageHeightMM}
+        cardDocuments={cardDocuments}
+      />
     </View>
   );
 };
@@ -911,7 +915,11 @@ const BacksOnlyPage = ({
 
   return (
     <View break={pageBreak}>
-      <CardGrid pageWidthMM={pageWidthMM} cardDocuments={cardDocuments} />
+      <CardGrid
+        pageWidthMM={pageWidthMM}
+        pageHeightMM={pageHeightMM}
+        cardDocuments={cardDocuments}
+      />
     </View>
   );
 };
