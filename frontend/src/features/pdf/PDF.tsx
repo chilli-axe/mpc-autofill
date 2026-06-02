@@ -963,6 +963,8 @@ export const PDF = (props: PDFProps) => {
             paddingBottom: props.pageMarginBottomMM + "mm",
             paddingLeft: props.pageMarginLeftMM + "mm",
             paddingRight: props.pageMarginRightMM + "mm",
+            display: "flex",
+            justifyContent: "center",
           }}
         >
           <PageComponent pageWidthMM={size.width} pageHeightMM={size.height} />
