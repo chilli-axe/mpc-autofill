@@ -574,7 +574,7 @@ const SpacingAndMarginsSettings = ({
           </Col>
         </Row>
         <Row>
-          <Col xs={6}>
+          <Col lg={6} md={6} sm={12} xs={12}>
             <NumericField
               label="Page margin top (mm)"
               value={pageMarginTopMM}
@@ -583,7 +583,7 @@ const SpacingAndMarginsSettings = ({
               step={0.1}
             />
           </Col>
-          <Col xs={6}>
+          <Col lg={6} md={6} sm={12} xs={12}>
             <NumericField
               label="Page margin bottom (mm)"
               value={pageMarginBottomMM}
@@ -594,7 +594,7 @@ const SpacingAndMarginsSettings = ({
           </Col>
         </Row>
         <Row>
-          <Col xs={6}>
+          <Col lg={6} md={6} sm={12} xs={12}>
             <NumericField
               label="Page margin left (mm)"
               value={pageMarginLeftMM}
@@ -603,7 +603,7 @@ const SpacingAndMarginsSettings = ({
               step={0.1}
             />
           </Col>
-          <Col xs={6}>
+          <Col lg={6} md={6} sm={12} xs={12}>
             <NumericField
               label="Page margin right (mm)"
               value={pageMarginRightMM}
