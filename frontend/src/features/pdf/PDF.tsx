@@ -843,8 +843,9 @@ const chunk = <T,>(arr: Array<T>, size: number): Array<Array<T>> => {
 const paginateFrontsAndDistinctBacks = (
   projectMembers: Array<SlotProjectMembers>,
   cardDocumentsByIdentifier: { [identifier: string]: CardDocument },
-  projectCardback: string | undefined
-): Array<CardDocument> =>
+  projectCardback: string | undefined,
+  cardsPerPage: number
+): Array<Array<CardDocument>> => [
   projectMembers.flatMap((member) => {
     const front =
       member.front?.selectedImage !== undefined
@@ -856,79 +857,79 @@ const paginateFrontsAndDistinctBacks = (
         ? cardDocumentsByIdentifier[member.back.selectedImage]
         : undefined;
     return [front, back].filter((d): d is CardDocument => d !== undefined);
-  });
+  }),
+];
 
 const paginateFrontsOnly = (
   projectMembers: Array<SlotProjectMembers>,
   cardDocumentsByIdentifier: { [identifier: string]: CardDocument },
-  projectCardback: string | undefined
-): Array<CardDocument> =>
+  projectCardback: string | undefined,
+  cardsPerPage: number
+): Array<Array<CardDocument>> => [
   projectMembers
     .map((member) =>
       member.front?.selectedImage !== undefined
         ? cardDocumentsByIdentifier[member.front.selectedImage]
         : undefined
     )
-    .filter((d): d is CardDocument => d !== undefined);
+    .filter((d): d is CardDocument => d !== undefined),
+];
 
 const paginateBacksOnly = (
   projectMembers: Array<SlotProjectMembers>,
   cardDocumentsByIdentifier: { [identifier: string]: CardDocument },
-  projectCardback: string | undefined
-): Array<CardDocument> =>
+  projectCardback: string | undefined,
+  cardsPerPage: number
+): Array<Array<CardDocument>> => [
   projectMembers
     .map((member) =>
       member.back?.selectedImage !== undefined
         ? cardDocumentsByIdentifier[member.back.selectedImage]
         : undefined
     )
-    .filter((d): d is CardDocument => d !== undefined);
+    .filter((d): d is CardDocument => d !== undefined),
+];
 
-const paginateCardDocuments = (
-  cardSelectionMode: keyof typeof CardSelectionMode,
+const paginateFrontsAndBacks = (
   projectMembers: Array<SlotProjectMembers>,
   cardDocumentsByIdentifier: { [identifier: string]: CardDocument },
-  projectCardback: string | undefined
+  projectCardback: string | undefined,
+  cardsPerPage: number
 ): Array<Array<CardDocument>> => {
-  switch (cardSelectionMode) {
-    case "frontsAndDistinctBacks":
-      return [
-        paginateFrontsAndDistinctBacks(
-          projectMembers,
-          cardDocumentsByIdentifier,
-          projectCardback
-        ),
-      ];
-    case "frontsOnly":
-      return [
-        paginateFrontsOnly(
-          projectMembers,
-          cardDocumentsByIdentifier,
-          projectCardback
-        ),
-      ];
-    case "backsOnly":
-      return [
-        paginateBacksOnly(
-          projectMembers,
-          cardDocumentsByIdentifier,
-          projectCardback
-        ),
-      ];
-    case "frontsAndBacks":
-      return [
-        paginateFrontsOnly(
-          projectMembers,
-          cardDocumentsByIdentifier,
-          projectCardback
-        ),
-        paginateBacksOnly(
-          projectMembers,
-          cardDocumentsByIdentifier,
-          projectCardback
-        ),
-      ];
-  }
+  const fronts = paginateFrontsOnly(
+    projectMembers,
+    cardDocumentsByIdentifier,
+    projectCardback,
+    cardsPerPage
+  )[0];
+  const backs = paginateBacksOnly(
+    projectMembers,
+    cardDocumentsByIdentifier,
+    projectCardback,
+    cardsPerPage
+  )[0];
+  const frontPages = chunk(fronts, cardsPerPage);
+  const backPages = chunk(backs, cardsPerPage);
+  const maxPages = Math.max(frontPages.length, backPages.length);
+  return Array.from({ length: maxPages }, (_, i) =>
+    [frontPages[i], backPages[i]].filter(
+      (page): page is Array<CardDocument> => page !== undefined
+    )
+  ).flat();
+};
+
+const CardSelectionModeToPaginator: {
+  [cardSelectionMode in keyof typeof CardSelectionMode]: (
+    projectMembers: Array<SlotProjectMembers>,
+    cardDocumentsByIdentifier: { [identifier: string]: CardDocument },
+    projectCardback: string | undefined,
+    cardsPerPage: number
+  ) => Array<Array<CardDocument>>;
+} = {
+  frontsAndDistinctBacks: paginateFrontsAndDistinctBacks,
+  frontsOnly: paginateFrontsOnly,
+  backsOnly: paginateBacksOnly,
+  frontsAndBacks: paginateFrontsAndBacks,
 };
 
 export const PDF = (props: PDFProps) => {
@@ -952,11 +953,13 @@ export const PDF = (props: PDFProps) => {
     getCardsPerRow(containerWidth, props.bleedEdgeMM, props.cardSpacingColMM) *
     getCardsPerCol(containerHeight, props.bleedEdgeMM, props.cardSpacingRowMM);
 
-  const cardDocumentSets = paginateCardDocuments(
-    props.cardSelectionMode,
+  const cardDocumentSets = CardSelectionModeToPaginator[
+    props.cardSelectionMode
+  ](
     props.projectMembers,
     props.cardDocumentsByIdentifier,
-    props.projectCardback
+    props.projectCardback,
+    cardsPerPage
   );
   const pages = cardDocumentSets.flatMap((set) => chunk(set, cardsPerPage));
 
