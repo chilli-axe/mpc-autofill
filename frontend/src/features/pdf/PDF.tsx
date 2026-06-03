@@ -832,54 +832,38 @@ const CardGrid = ({
   );
 };
 
-type CardPageProps = {
-  pageWidthMM: number;
-  pageHeightMM: number;
-  pageBreak?: boolean;
+const chunk = <T,>(arr: Array<T>, size: number): Array<Array<T>> => {
+  const result: Array<Array<T>> = [];
+  for (let i = 0; i < arr.length; i += size) {
+    result.push(arr.slice(i, i + size));
+  }
+  return result;
 };
 
-const FrontsAndDistinctBacksPage = ({
-  pageWidthMM,
-  pageHeightMM,
-  pageBreak,
-}: CardPageProps) => {
-  const { cardDocumentsByIdentifier, projectMembers, projectCardback } =
-    usePDFContext();
+const paginateFrontsAndDistinctBacks = (
+  projectMembers: Array<SlotProjectMembers>,
+  cardDocumentsByIdentifier: { [identifier: string]: CardDocument },
+  projectCardback: string | undefined
+): Array<CardDocument> =>
+  projectMembers.flatMap((member) => {
+    const front =
+      member.front?.selectedImage !== undefined
+        ? cardDocumentsByIdentifier[member.front.selectedImage]
+        : undefined;
+    const back =
+      member.back?.selectedImage !== undefined &&
+      member.back.selectedImage !== projectCardback
+        ? cardDocumentsByIdentifier[member.back.selectedImage]
+        : undefined;
+    return [front, back].filter((d): d is CardDocument => d !== undefined);
+  });
 
-  const cardDocuments: (CardDocument | undefined)[] = projectMembers.flatMap(
-    (member) => {
-      const front =
-        member.front?.selectedImage !== undefined
-          ? cardDocumentsByIdentifier[member.front.selectedImage]
-          : undefined;
-      const back =
-        member.back?.selectedImage !== undefined &&
-        member.back.selectedImage !== projectCardback
-          ? cardDocumentsByIdentifier[member.back.selectedImage]
-          : undefined;
-      return [front, back].filter((d): d is CardDocument => d !== undefined);
-    }
-  );
-
-  return (
-    <View break={pageBreak}>
-      <CardGrid
-        pageWidthMM={pageWidthMM}
-        pageHeightMM={pageHeightMM}
-        cardDocuments={cardDocuments}
-      />
-    </View>
-  );
-};
-
-const FrontsOnlyPage = ({
-  pageWidthMM,
-  pageHeightMM,
-  pageBreak,
-}: CardPageProps) => {
-  const { cardDocumentsByIdentifier, projectMembers } = usePDFContext();
-
-  const cardDocuments: (CardDocument | undefined)[] = projectMembers
+const paginateFrontsOnly = (
+  projectMembers: Array<SlotProjectMembers>,
+  cardDocumentsByIdentifier: { [identifier: string]: CardDocument },
+  projectCardback: string | undefined
+): Array<CardDocument> =>
+  projectMembers
     .map((member) =>
       member.front?.selectedImage !== undefined
         ? cardDocumentsByIdentifier[member.front.selectedImage]
@@ -887,25 +871,12 @@ const FrontsOnlyPage = ({
     )
     .filter((d): d is CardDocument => d !== undefined);
 
-  return (
-    <View break={pageBreak}>
-      <CardGrid
-        pageWidthMM={pageWidthMM}
-        pageHeightMM={pageHeightMM}
-        cardDocuments={cardDocuments}
-      />
-    </View>
-  );
-};
-
-const BacksOnlyPage = ({
-  pageWidthMM,
-  pageHeightMM,
-  pageBreak,
-}: CardPageProps) => {
-  const { cardDocumentsByIdentifier, projectMembers } = usePDFContext();
-
-  const cardDocuments: (CardDocument | undefined)[] = projectMembers
+const paginateBacksOnly = (
+  projectMembers: Array<SlotProjectMembers>,
+  cardDocumentsByIdentifier: { [identifier: string]: CardDocument },
+  projectCardback: string | undefined
+): Array<CardDocument> =>
+  projectMembers
     .map((member) =>
       member.back?.selectedImage !== undefined
         ? cardDocumentsByIdentifier[member.back.selectedImage]
@@ -913,60 +884,105 @@ const BacksOnlyPage = ({
     )
     .filter((d): d is CardDocument => d !== undefined);
 
-  return (
-    <View break={pageBreak}>
-      <CardGrid
-        pageWidthMM={pageWidthMM}
-        pageHeightMM={pageHeightMM}
-        cardDocuments={cardDocuments}
-      />
-    </View>
-  );
-};
-
-const FrontsAndBacksPage = ({ pageWidthMM, pageHeightMM }: CardPageProps) => {
-  return (
-    <>
-      <FrontsOnlyPage
-        pageWidthMM={pageWidthMM}
-        pageHeightMM={pageHeightMM}
-        pageBreak={false}
-      />
-      <BacksOnlyPage
-        pageWidthMM={pageWidthMM}
-        pageHeightMM={pageHeightMM}
-        pageBreak={true}
-      />
-    </>
-  );
-};
-
-const CardSelectionModeToPage: {
-  [cardSelectionMode in keyof typeof CardSelectionMode]: React.FC<CardPageProps>;
-} = {
-  frontsAndDistinctBacks: FrontsAndDistinctBacksPage,
-  frontsOnly: FrontsOnlyPage,
-  backsOnly: BacksOnlyPage,
-  frontsAndBacks: FrontsAndBacksPage,
+const paginateCardDocuments = (
+  cardSelectionMode: keyof typeof CardSelectionMode,
+  projectMembers: Array<SlotProjectMembers>,
+  cardDocumentsByIdentifier: { [identifier: string]: CardDocument },
+  projectCardback: string | undefined
+): Array<Array<CardDocument>> => {
+  switch (cardSelectionMode) {
+    case "frontsAndDistinctBacks":
+      return [
+        paginateFrontsAndDistinctBacks(
+          projectMembers,
+          cardDocumentsByIdentifier,
+          projectCardback
+        ),
+      ];
+    case "frontsOnly":
+      return [
+        paginateFrontsOnly(
+          projectMembers,
+          cardDocumentsByIdentifier,
+          projectCardback
+        ),
+      ];
+    case "backsOnly":
+      return [
+        paginateBacksOnly(
+          projectMembers,
+          cardDocumentsByIdentifier,
+          projectCardback
+        ),
+      ];
+    case "frontsAndBacks":
+      return [
+        paginateFrontsOnly(
+          projectMembers,
+          cardDocumentsByIdentifier,
+          projectCardback
+        ),
+        paginateBacksOnly(
+          projectMembers,
+          cardDocumentsByIdentifier,
+          projectCardback
+        ),
+      ];
+  }
 };
 
 export const PDF = (props: PDFProps) => {
   const size = getPageSizeMM(props.pageSize, props.pageWidth, props.pageHeight);
-  const PageComponent = CardSelectionModeToPage[props.cardSelectionMode];
+
+  const containerWidth = calculateCardContainerWidth(
+    size.width,
+    props.bleedEdgeMM,
+    props.cardSpacingColMM,
+    props.pageMarginLeftMM,
+    props.pageMarginRightMM
+  );
+  const containerHeight = calculateCardContainerHeight(
+    size.height,
+    props.bleedEdgeMM,
+    props.cardSpacingRowMM,
+    props.pageMarginTopMM,
+    props.pageMarginBottomMM
+  );
+  const cardsPerPage =
+    getCardsPerRow(containerWidth, props.bleedEdgeMM, props.cardSpacingColMM) *
+    getCardsPerCol(containerHeight, props.bleedEdgeMM, props.cardSpacingRowMM);
+
+  const cardDocumentSets = paginateCardDocuments(
+    props.cardSelectionMode,
+    props.projectMembers,
+    props.cardDocumentsByIdentifier,
+    props.projectCardback
+  );
+  const pages = cardDocumentSets.flatMap((set) => chunk(set, cardsPerPage));
+
   return (
     <PDFContext.Provider value={props}>
       <Document pageMode="useThumbs">
-        <Page
-          size={{ width: size.width + "mm", height: size.height + "mm" }}
-          style={{
-            paddingTop: props.pageMarginTopMM + "mm",
-            paddingBottom: props.pageMarginBottomMM + "mm",
-            paddingLeft: props.pageMarginLeftMM + "mm",
-            paddingRight: props.pageMarginRightMM + "mm",
-          }}
-        >
-          <PageComponent pageWidthMM={size.width} pageHeightMM={size.height} />
-        </Page>
+        {(pages.length > 0 ? pages : [[]]).map((pageCards, i) => (
+          <Page
+            key={i}
+            size={{ width: size.width + "mm", height: size.height + "mm" }}
+            style={{
+              paddingTop: props.pageMarginTopMM + "mm",
+              paddingBottom: props.pageMarginBottomMM + "mm",
+              paddingLeft: props.pageMarginLeftMM + "mm",
+              paddingRight: props.pageMarginRightMM + "mm",
+              display: "flex",
+              justifyContent: "center",
+            }}
+          >
+            <CardGrid
+              pageWidthMM={size.width}
+              pageHeightMM={size.height}
+              cardDocuments={pageCards}
+            />
+          </Page>
+        ))}
       </Document>
     </PDFContext.Provider>
   );
