@@ -211,9 +211,9 @@ const processAndEnqueue = async (env: Env, ctx: ExecutionContext, cursor: string
   }
 
   // enqueue a message to process the next batch :)
-  if (truncated && newCursor !== undefined) {
-    await env.thumbnailRefreshQueue.send(newCursor);
-  }
+  // if (truncated && newCursor !== undefined) {
+  //   await env.thumbnailRefreshQueue.send(newCursor);
+  // }
 };
 
 // yoink https://developers.cloudflare.com/workers/examples/cors-header-proxy/
@@ -263,14 +263,14 @@ const defaultExport = {
   // async scheduled(event: Event, env: Env, ctx: ExecutionContext) {
   //   await processAndEnqueue(env, ctx, undefined);
   // },
-  // async queue(batch: MessageBatch<string>, env: Env, ctx: ExecutionContext): Promise<void> {
-  //   const messages = batch.messages;
-  //   if (messages.length !== 1) {
-  //     return;
-  //   }
-  //   const cursor = messages[0].body;
-  //   await processAndEnqueue(env, ctx, cursor);
-  // },
+  async queue(batch: MessageBatch<string>, env: Env, ctx: ExecutionContext): Promise<void> {
+    const messages = batch.messages;
+    if (messages.length !== 1) {
+      return;
+    }
+    const cursor = messages[0].body;
+    await processAndEnqueue(env, ctx, cursor);
+  },
 };
 
 export default defaultExport;
