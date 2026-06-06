@@ -260,9 +260,9 @@ const defaultExport = {
       return new Response(`Unknown endpoint.`, { status: 404 });
     }
   },
-  async scheduled(event: Event, env: Env, ctx: ExecutionContext) {
-    await processAndEnqueue(env, ctx, undefined);
-  },
+  // async scheduled(event: Event, env: Env, ctx: ExecutionContext) {
+  //   await processAndEnqueue(env, ctx, undefined);
+  // },
   async queue(batch: MessageBatch<string>, env: Env, ctx: ExecutionContext): Promise<void> {
     const messages = batch.messages;
     if (messages.length !== 1) {
