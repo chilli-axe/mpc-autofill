@@ -53,7 +53,8 @@ interface CardPair {
 
 const chunk = <T,>(arr: Array<T>, size: number): Array<Array<T>> => {
   const result: Array<Array<T>> = [];
-  for (let i = 0; i < arr.length; i += size) result.push(arr.slice(i, i + size));
+  for (let i = 0; i < arr.length; i += size)
+    result.push(arr.slice(i, i + size));
   return result;
 };
 
@@ -169,7 +170,8 @@ const PageContent = ({
     fileHandles: { [identifier: string]: FileSystemFileHandle };
   };
 }) => {
-  const { cols, rows, slotsMM, cardWidthMM, cardHeightMM, orientation } = layout;
+  const { cols, rows, slotsMM, cardWidthMM, cardHeightMM, orientation } =
+    layout;
   const marks = getRegistrationMarks(layout, registration);
 
   const backSlotIndex = (i: number): number => {
@@ -267,7 +269,11 @@ export const SCMPDF = (props: SCMPDFProps) => {
       }) translateY(${props.scmOffsetYPx * PX300_TO_PT})`
     : undefined;
 
-  const renderPage = (cardsForPage: CardPair[], isBack: boolean, key: string) => {
+  const renderPage = (
+    cardsForPage: CardPair[],
+    isBack: boolean,
+    key: string
+  ) => {
     const content = (
       <PageContent
         layout={layout}

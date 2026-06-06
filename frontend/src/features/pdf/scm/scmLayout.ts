@@ -174,7 +174,11 @@ const normalizePageSize = (
 ): [number, number] => (orientation === "portrait" ? [h, w] : [w, h]);
 
 /** page_manager.compute_grid_fit */
-const computeGridFit = (usable: number, card: number, bleed: number): number => {
+const computeGridFit = (
+  usable: number,
+  card: number,
+  bleed: number
+): number => {
   if (usable <= 0) return 0;
   return Math.max(0, Math.floor((usable + bleed) / (card + bleed)));
 };
@@ -281,8 +285,14 @@ const computeCardPositions = (
   const startX = pyRound(marginX + (usableW - gridWidth) / 2 + bleed);
   const startY = pyRound(marginY + (usableH - gridHeight) / 2 + bleed);
 
-  const xPos = Array.from({ length: cols }, (_, i) => startX + i * (cardW + bleed));
-  const yPos = Array.from({ length: rows }, (_, j) => startY + j * (cardH + bleed));
+  const xPos = Array.from(
+    { length: cols },
+    (_, i) => startX + i * (cardW + bleed)
+  );
+  const yPos = Array.from(
+    { length: rows },
+    (_, j) => startY + j * (cardH + bleed)
+  );
 
   return { xPos, yPos };
 };

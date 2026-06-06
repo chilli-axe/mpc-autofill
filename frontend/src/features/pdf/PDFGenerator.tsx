@@ -696,9 +696,7 @@ const SCMSettings = ({
         </Row>
         <Form.Label>Template</Form.Label>
         <Toggle
-          onClick={() =>
-            setScmVariant(isBorderless ? "default" : "borderless")
-          }
+          onClick={() => setScmVariant(isBorderless ? "default" : "borderless")}
           on="Borderless"
           onClassName="flex-centre"
           off="Normal"
@@ -739,9 +737,7 @@ const SCMSettings = ({
           active={scmDuplex}
         />
         <hr />
-        <p className="mb-1">
-          Load this cutting template in Silhouette Studio:
-        </p>
+        <p className="mb-1">Load this cutting template in Silhouette Studio:</p>
         <p className="mb-1">
           <a
             href="https://github.com/Alan-Cha/silhouette-card-maker/tree/main/cutting_templates"
