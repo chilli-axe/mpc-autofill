@@ -263,14 +263,14 @@ const defaultExport = {
   // async scheduled(event: Event, env: Env, ctx: ExecutionContext) {
   //   await processAndEnqueue(env, ctx, undefined);
   // },
-  async queue(batch: MessageBatch<string>, env: Env, ctx: ExecutionContext): Promise<void> {
-    const messages = batch.messages;
-    if (messages.length !== 1) {
-      return;
-    }
-    const cursor = messages[0].body;
-    await processAndEnqueue(env, ctx, cursor);
-  },
+  // async queue(batch: MessageBatch<string>, env: Env, ctx: ExecutionContext): Promise<void> {
+  //   const messages = batch.messages;
+  //   if (messages.length !== 1) {
+  //     return;
+  //   }
+  //   const cursor = messages[0].body;
+  //   await processAndEnqueue(env, ctx, cursor);
+  // },
 };
 
 export default defaultExport;
