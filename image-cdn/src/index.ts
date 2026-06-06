@@ -70,15 +70,12 @@ async function getGoogleDriveAccessToken(env: Env): Promise<string | undefined> 
 }
 
 const getThumbnail = async (env: Env, ctx: ExecutionContext, imageURL: string, imageKey: string): Promise<Response> => {
-  console.log(`Getting image ${imageKey}`);
   const object = await env.thumbnails.get(imageKey);
   if (object === null) {
     // image hasn't been cached yet - serve it from gdrive while caching it in the background
-    console.log(`Proxying request to ${imageKey} & caching in background`);
     ctx.waitUntil(putImage(env, imageURL, imageKey));
     return fetch(imageURL);
   } else {
-    console.log(`Serving cached image ${imageKey}`);
     // serve the cached image
     const headers = new Headers();
     const data = await object.arrayBuffer();
@@ -90,33 +87,19 @@ const getThumbnail = async (env: Env, ctx: ExecutionContext, imageURL: string, i
 };
 
 const putImage = async (env: Env, imageURL: string, imageKey: string, isResync: boolean = false): Promise<void> => {
-  console.log(`Putting image ${imageKey}`);
   const imageExists = (await env.thumbnails.head(imageKey)) != null;
-  if (!imageExists) {
-    console.log("Image is not stored");
-  } else if (isResync) {
-    console.log("Resync forced");
-  }
   if (isResync || !imageExists) {
     await fetch(imageURL)
       .then(async (response) => {
         if (response.ok && response.body && response.headers.get("content-length") != null) {
-          console.log(`Successfully fetched ${imageKey}`);
           if (isResync && imageExists) {
-            console.log("Resyncing - deleting the existing object before re-saving");
             await env.thumbnails.delete(imageKey);
           }
-          console.log("About to save to R2");
           await env.thumbnails.put(imageKey, response.body, { httpMetadata: { ...response.headers, contentType: "image/jpg" } });
-        } else {
-          console.log(`The fetch for ${imageURL} was not successful :(`);
         }
       })
       .catch(console.error);
-  } else {
-    console.log("Image is stored");
   }
-  console.log("All done!");
 };
 
 const handleImageRequest = async (url: URL, request: Request, env: Env, ctx: ExecutionContext): Promise<Response> => {
@@ -149,7 +132,6 @@ const handleImageRequest = async (url: URL, request: Request, env: Env, ctx: Exe
           return getThumbnail(env, ctx, getImageURL(imageType, imageSize, undefined, jpgQuality, imageIdentifier), imageKey);
         case "full":
           const url = getImageURL(imageType, imageSize, dpi, jpgQuality, imageIdentifier);
-          console.log(url);
           return fetch(url);
         default:
           throw new Error(`Invalid image size ${imageSize}`);
@@ -179,7 +161,6 @@ const checkAndPossiblyUpdateTheThumbnailsForAnObject = async (
   const re = /^(.*)-(?:small|large)-(google_drive)$/g;
   const results = re.exec(object.key);
   if (!results) {
-    console.log(`Couldn't extract identifier from ${object.key}`);
     return false;
   }
   const identifier = results[1];
@@ -196,14 +177,11 @@ const checkAndPossiblyUpdateTheThumbnailsForAnObject = async (
   if (response.status !== 200) {
     const responseStatusWas404 = response.status === 404;
     response.body?.cancel();
-    console.log(`Received response code ${response.status} when querying modifiedTime for ${identifier}`, response.body);
     if (responseStatusWas404) {
-      console.log(`Removing ${identifier} from system following 404...`);
       for (const size of ["small", "large"] as Array<ImageSize>) {
         const imageKey = getImageKey("google_drive", size, identifier);
         await env.thumbnails.delete(imageKey);
       }
-      console.log(`Removed ${identifier} from system.`);
     }
     return false;
   }
@@ -211,7 +189,6 @@ const checkAndPossiblyUpdateTheThumbnailsForAnObject = async (
   const googleDriveTime = new Date(responseJson.modifiedTime);
   const stale = googleDriveTime > object.uploaded;
   if (stale) {
-    console.log(`${identifier} is stale - refreshing thumbnails`);
     for (const size of ["small", "large"] as Array<ImageSize>) {
       const imageKey = getImageKey("google_drive", size, identifier);
       const imageURL = getImageURL("google_drive", size, undefined, 100, identifier);
@@ -226,23 +203,16 @@ const checkAndPossiblyUpdateTheThumbnailsForAnObject = async (
 const processAndEnqueue = async (env: Env, ctx: ExecutionContext, cursor: string | undefined): Promise<void> => {
   const googleDriveAccessToken = await getGoogleDriveAccessToken(env);
   if (!googleDriveAccessToken) {
-    console.log("Couldn't get access token");
     return;
   }
-  console.log(`Checking image staleness with cursor ${cursor}`);
   const [newCursor, truncated, objects] = await getABunchOfObjects(env, cursor);
-  console.log(`Working on ${objects.length} images...`);
   for (const obj of objects) {
     await checkAndPossiblyUpdateTheThumbnailsForAnObject(env, ctx, googleDriveAccessToken, obj);
   }
-  console.log("and done!");
 
   // enqueue a message to process the next batch :)
   if (truncated && newCursor !== undefined) {
-    console.log(`More work to do - enqueueing another worker with cursor ${newCursor}`);
     await env.thumbnailRefreshQueue.send(newCursor);
-  } else {
-    console.log("No more work to do :)");
   }
 };
 
@@ -296,7 +266,6 @@ const defaultExport = {
   async queue(batch: MessageBatch<string>, env: Env, ctx: ExecutionContext): Promise<void> {
     const messages = batch.messages;
     if (messages.length !== 1) {
-      console.log(`Expected to only receive one cursor, but received ${messages.length}`);
       return;
     }
     const cursor = messages[0].body;
