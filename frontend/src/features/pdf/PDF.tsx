@@ -7,9 +7,14 @@ import {
   CardWidthMM,
   CornerRadiusMM,
 } from "@/common/constants";
-import { getBucketImageURL, getWorkerImageURL } from "@/common/image";
-import { SourceType } from "@/common/schema_types";
 import { CardDocument, SlotProjectMembers } from "@/common/types";
+import { getPDFImageURL, PDFImageQuality } from "@/features/pdf/pdfImage";
+import {
+  ScmPaperSize,
+  ScmRegistration,
+  ScmVariant,
+} from "@/features/pdf/scm/scmLayout";
+import { SCMPDF } from "@/features/pdf/scm/SCMPDF";
 
 const PDFContext = createContext<PDFProps | undefined>(undefined);
 
@@ -241,47 +246,22 @@ export interface PDFProps {
   cardDocumentsByIdentifier: { [identifier: string]: CardDocument };
   projectMembers: Array<SlotProjectMembers>;
   projectCardback: string | undefined;
-  imageQuality: "small-thumbnail" | "large-thumbnail" | "full-resolution";
+  imageQuality: PDFImageQuality;
   imageDPI: number | undefined;
   jpgQuality: number;
   fileHandles: { [identifier: string]: FileSystemFileHandle };
+  // SCM (Silhouette Card Maker) mode. When scmMode is true, the standard
+  // parametric layout above is ignored in favour of an SCM-template-compatible
+  // layout with registration marks (see scm/SCMPDF.tsx).
+  scmMode: boolean;
+  scmPaperSize: ScmPaperSize;
+  scmVariant: ScmVariant;
+  scmRegistration: ScmRegistration;
+  scmDuplex: boolean;
+  scmOffsetXPx: number;
+  scmOffsetYPx: number;
+  scmOffsetAngleDeg: number;
 }
-
-const getPDFImageURL = async (
-  cardDocument: CardDocument,
-  imageQuality: "small-thumbnail" | "large-thumbnail" | "full-resolution",
-  dpi: number | undefined,
-  jpgQuality: number,
-  fileHandles: { [identifier: string]: FileSystemFileHandle }
-): Promise<string | Blob | undefined> => {
-  switch (cardDocument.sourceType) {
-    case SourceType.GoogleDrive:
-      switch (imageQuality) {
-        case "small-thumbnail":
-          return getBucketImageURL(cardDocument, "small");
-        case "large-thumbnail":
-          return getBucketImageURL(cardDocument, "large");
-        case "full-resolution":
-          return getWorkerImageURL(cardDocument, "full", dpi, jpgQuality);
-        default:
-          throw new Error(`invalid imageQuality ${imageQuality}`);
-      }
-
-    case SourceType.LocalFile:
-      const handle = fileHandles[cardDocument.identifier];
-      if (handle !== undefined) {
-        return URL.createObjectURL(await handle.getFile());
-      } else {
-        throw new Error(
-          `could not get handle for file ${cardDocument.identifier}`
-        );
-      }
-    default:
-      throw new Error(
-        `cannot get PDF thumbnail URL for card ${cardDocument.identifier}`
-      );
-  }
-};
 
 interface PDFCardThumbnailProps {
   cardDocument: CardDocument;
@@ -933,6 +913,27 @@ const CardSelectionModeToPaginator: {
 };
 
 export const PDF = (props: PDFProps) => {
+  if (props.scmMode) {
+    return (
+      <SCMPDF
+        scmPaperSize={props.scmPaperSize}
+        scmVariant={props.scmVariant}
+        scmRegistration={props.scmRegistration}
+        scmDuplex={props.scmDuplex}
+        scmOffsetXPx={props.scmOffsetXPx}
+        scmOffsetYPx={props.scmOffsetYPx}
+        scmOffsetAngleDeg={props.scmOffsetAngleDeg}
+        cardDocumentsByIdentifier={props.cardDocumentsByIdentifier}
+        projectMembers={props.projectMembers}
+        projectCardback={props.projectCardback}
+        imageQuality={props.imageQuality}
+        imageDPI={props.imageDPI}
+        jpgQuality={props.jpgQuality}
+        fileHandles={props.fileHandles}
+      />
+    );
+  }
+
   const size = getPageSizeMM(props.pageSize, props.pageWidth, props.pageHeight);
 
   const containerWidth = calculateCardContainerWidth(

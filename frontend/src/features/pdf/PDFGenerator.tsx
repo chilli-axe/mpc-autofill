@@ -26,6 +26,14 @@ import {
   PDFProps,
 } from "@/features/pdf/PDF";
 import { pdfRenderService } from "@/features/pdf/pdfRenderService";
+import {
+  BORDERLESS_STUDIO_EXPANSION_MM,
+  ScmPaperLabels,
+  ScmPaperSize,
+  ScmRegistration,
+  scmTemplateName,
+  ScmVariant,
+} from "@/features/pdf/scm/scmLayout";
 import { useCardDocumentsByIdentifier } from "@/store/slices/cardDocumentsSlice";
 import {
   selectProjectCardback,
@@ -618,6 +626,180 @@ const SpacingAndMarginsSettings = ({
   );
 };
 
+interface SCMSettingsProps {
+  scmPaperSize: ScmPaperSize;
+  setScmPaperSize: (value: ScmPaperSize) => void;
+  scmVariant: ScmVariant;
+  setScmVariant: (value: ScmVariant) => void;
+  scmRegistration: ScmRegistration;
+  setScmRegistration: (value: ScmRegistration) => void;
+  scmDuplex: boolean;
+  setScmDuplex: (value: boolean) => void;
+  scmOffsetXPx: number | undefined;
+  setScmOffsetXPx: (value: number | undefined) => void;
+  scmOffsetYPx: number | undefined;
+  setScmOffsetYPx: (value: number | undefined) => void;
+  scmOffsetAngleDeg: number | undefined;
+  setScmOffsetAngleDeg: (value: number | undefined) => void;
+}
+
+const SCMSettings = ({
+  scmPaperSize,
+  setScmPaperSize,
+  scmVariant,
+  setScmVariant,
+  scmRegistration,
+  setScmRegistration,
+  scmDuplex,
+  setScmDuplex,
+  scmOffsetXPx,
+  setScmOffsetXPx,
+  scmOffsetYPx,
+  setScmOffsetYPx,
+  scmOffsetAngleDeg,
+  setScmOffsetAngleDeg,
+}: SCMSettingsProps) => {
+  const [expanded, setExpanded] = useState<boolean>(true);
+
+  const paperSizeOptions = useMemo(
+    () =>
+      Object.keys(ScmPaperLabels).map((value) => ({
+        value,
+        label: ScmPaperLabels[value as ScmPaperSize],
+        checked: value === scmPaperSize,
+      })),
+    [scmPaperSize]
+  );
+
+  const isBorderless = scmVariant === "borderless";
+
+  return (
+    <AutofillCollapse
+      expanded={expanded}
+      onClick={() => setExpanded(!expanded)}
+      zIndex={15}
+      title="Silhouette Template"
+    >
+      <Container className="p-2">
+        <Row>
+          <Col xs={12}>
+            <Form.Label>Paper size</Form.Label>
+            <StyledDropdownTreeSelect
+              data={paperSizeOptions}
+              onChange={(currentNode) =>
+                setScmPaperSize(currentNode.value as ScmPaperSize)
+              }
+              mode="radioSelect"
+              inlineSearchInput
+            />
+          </Col>
+        </Row>
+        <Form.Label>Template</Form.Label>
+        <Toggle
+          onClick={() =>
+            setScmVariant(isBorderless ? "default" : "borderless")
+          }
+          on="Borderless"
+          onClassName="flex-centre"
+          off="Normal"
+          offClassName="flex-centre"
+          onstyle="success"
+          offstyle="info"
+          width={100 + "%"}
+          size="md"
+          height={ToggleButtonHeight + "px"}
+          active={isBorderless}
+        />
+        <Form.Label>Registration marks</Form.Label>
+        <Toggle
+          onClick={() => setScmRegistration(scmRegistration === 3 ? 4 : 3)}
+          on="4 Corner (Cameo 5)"
+          onClassName="flex-centre"
+          off="3 Corner"
+          offClassName="flex-centre"
+          onstyle="success"
+          offstyle="info"
+          width={100 + "%"}
+          size="md"
+          height={ToggleButtonHeight + "px"}
+          active={scmRegistration === 4}
+        />
+        <Form.Label>Sides</Form.Label>
+        <Toggle
+          onClick={() => setScmDuplex(!scmDuplex)}
+          on="Duplex (front + back)"
+          onClassName="flex-centre"
+          off="Fronts only"
+          offClassName="flex-centre"
+          onstyle="success"
+          offstyle="info"
+          width={100 + "%"}
+          size="md"
+          height={ToggleButtonHeight + "px"}
+          active={scmDuplex}
+        />
+        <hr />
+        <p className="mb-1">
+          Load this cutting template in Silhouette Studio:
+        </p>
+        <p className="mb-1">
+          <a
+            href="https://github.com/Alan-Cha/silhouette-card-maker/tree/main/cutting_templates"
+            target="_blank"
+            rel="noreferrer"
+          >
+            <code>{scmTemplateName(scmPaperSize, scmVariant)}</code>
+          </a>
+        </p>
+        {isBorderless && (
+          <p className="text-muted" style={{ fontSize: "0.85em" }}>
+            Borderless: in Silhouette Studio, set a custom page size{" "}
+            <b>{BORDERLESS_STUDIO_EXPANSION_MM}mm larger</b> in each dimension
+            than the real paper so the registration marks land at the correct
+            inset.
+          </p>
+        )}
+        {scmDuplex && (
+          <Row className="mt-1">
+            <Col xs={12}>
+              <Form.Label>Back alignment offset</Form.Label>
+              <p className="text-muted mb-1" style={{ fontSize: "0.8em" }}>
+                Pixels at 300 DPI (1px ≈ 0.085mm), matching SCM&apos;s{" "}
+                <code>offset_pdf</code> values. X+ = right, Y+ = up, angle+ =
+                clockwise, relative to the back page.
+              </p>
+            </Col>
+            <Col xs={6}>
+              <NumericField
+                label="Offset X (px)"
+                value={scmOffsetXPx}
+                setValue={setScmOffsetXPx}
+                step={1}
+              />
+            </Col>
+            <Col xs={6}>
+              <NumericField
+                label="Offset Y (px)"
+                value={scmOffsetYPx}
+                setValue={setScmOffsetYPx}
+                step={1}
+              />
+            </Col>
+            <Col xs={6} className="mt-1">
+              <NumericField
+                label="Angle (°)"
+                value={scmOffsetAngleDeg}
+                setValue={setScmOffsetAngleDeg}
+                step={0.1}
+              />
+            </Col>
+          </Row>
+        )}
+      </Container>
+    </AutofillCollapse>
+  );
+};
+
 export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
   const dispatch = useAppDispatch();
   const [cardSpacingRowMM, setCardSpacingRowMM] = useState<number | undefined>(
@@ -646,6 +828,18 @@ export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
     number | undefined
   >(0.2);
   const [cutLineColor, setCutLineColor] = useState<string>("#FF0000");
+
+  // SCM (Silhouette Card Maker) mode state.
+  const [scmMode, setScmMode] = useState<boolean>(false);
+  const [scmPaperSize, setScmPaperSize] = useState<ScmPaperSize>("letter");
+  const [scmVariant, setScmVariant] = useState<ScmVariant>("default");
+  const [scmRegistration, setScmRegistration] = useState<ScmRegistration>(3);
+  const [scmDuplex, setScmDuplex] = useState<boolean>(true);
+  const [scmOffsetXPx, setScmOffsetXPx] = useState<number | undefined>(0);
+  const [scmOffsetYPx, setScmOffsetYPx] = useState<number | undefined>(0);
+  const [scmOffsetAngleDeg, setScmOffsetAngleDeg] = useState<
+    number | undefined
+  >(0);
 
   const { clientSearchService } = useClientSearchContext();
   const projectMembers = useAppSelector(selectProjectMembers);
@@ -695,6 +889,14 @@ export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
     cardDocumentsByIdentifier: cardDocumentsByIdentifier,
     projectMembers: projectMembers,
     projectCardback: projectCardback,
+    scmMode: scmMode,
+    scmPaperSize: scmPaperSize,
+    scmVariant: scmVariant,
+    scmRegistration: scmRegistration,
+    scmDuplex: scmDuplex,
+    scmOffsetXPx: scmOffsetXPx ?? 0,
+    scmOffsetYPx: scmOffsetYPx ?? 0,
+    scmOffsetAngleDeg: scmOffsetAngleDeg ?? 0,
     // the following settings don't matter for previewing and should remain stable to prevent unnecessary re-renders.
     imageQuality: "small-thumbnail",
     imageDPI: undefined,
@@ -749,62 +951,117 @@ export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
             </li>
           </ol>
           <hr />
-          <PageSizeSettings
-            pageWidth={pageWidth}
-            setPageWidth={setPageWidth}
-            pageHeight={pageHeight}
-            setPageHeight={setPageHeight}
-            pageSize={pageSize}
-            setPageSize={setPageSize}
+          <Form.Label>Silhouette (SCM) cutting mode</Form.Label>
+          <Toggle
+            onClick={() => setScmMode(!scmMode)}
+            on="On"
+            onClassName="flex-centre"
+            off="Off"
+            offClassName="flex-centre"
+            onstyle="success"
+            offstyle="info"
+            width={100 + "%"}
+            size="md"
+            height={ToggleButtonHeight + "px"}
+            active={scmMode}
           />
-          <CardSelectionSettings
-            cardSelectionMode={cardSelectionMode}
-            setCardSelectionMode={setCardSelectionMode}
-          />
-          <CardQualitySettings
-            imageDPI={imageDPI}
-            setImageDPI={setImageDPI}
-            jpgQuality={jpgQuality}
-            setJPGQuality={setJPGQuality}
-          />
-          <EdgeSettings
-            bleedEdgeMM={bleedEdgeMM}
-            setBleedEdgeMM={setBleedEdgeMM}
-            roundCorners={roundCorners}
-            setRoundCorners={setRoundCorners}
-          />
-          <CutLinesSettings
-            drawCardCutLines={drawCardCutLines}
-            setDrawCardCutLines={setDrawCardCutLines}
-            drawPageCutLines={drawPageCutLines}
-            setDrawPageCutLines={setDrawPageCutLines}
-            cutLineShape={cutLineShape}
-            setCutLineShape={setCutLineShape}
-            cutLinePlacement={cutLinePlacement}
-            setCutLinePlacement={setCutLinePlacement}
-            cutLineLengthMM={cutLineLengthMM}
-            setCutLineLengthMM={setCutLineLengthMM}
-            cutLineOffsetMM={cutLineOffsetMM}
-            setCutLineOffsetMM={setCutLineOffsetMM}
-            cutLineThicknessMM={cutLineThicknessMM}
-            setCutLineThicknessMM={setCutLineThicknessMM}
-            cutLineColor={cutLineColor}
-            setCutLineColor={setCutLineColor}
-          />
-          <SpacingAndMarginsSettings
-            cardSpacingRowMM={cardSpacingRowMM}
-            setCardSpacingRowMM={setCardSpacingRowMM}
-            cardSpacingColMM={cardSpacingColMM}
-            setCardSpacingColMM={setCardSpacingColMM}
-            pageMarginTopMM={pageMarginTopMM}
-            setPageMarginTopMM={setPageMarginTopMM}
-            pageMarginBottomMM={pageMarginBottomMM}
-            setPageMarginBottomMM={setPageMarginBottomMM}
-            pageMarginLeftMM={pageMarginLeftMM}
-            setPageMarginLeftMM={setPageMarginLeftMM}
-            pageMarginRightMM={pageMarginRightMM}
-            setPageMarginRightMM={setPageMarginRightMM}
-          />
+          <p className="text-muted mt-1" style={{ fontSize: "0.85em" }}>
+            Generate a PDF with registration marks compatible with{" "}
+            <a
+              href="https://github.com/Alan-Cha/silhouette-card-maker"
+              target="_blank"
+              rel="noreferrer"
+            >
+              silhouette-card-maker
+            </a>{" "}
+            cutting templates (standard 63×88mm cards).
+          </p>
+          <hr />
+          {scmMode ? (
+            <>
+              <SCMSettings
+                scmPaperSize={scmPaperSize}
+                setScmPaperSize={setScmPaperSize}
+                scmVariant={scmVariant}
+                setScmVariant={setScmVariant}
+                scmRegistration={scmRegistration}
+                setScmRegistration={setScmRegistration}
+                scmDuplex={scmDuplex}
+                setScmDuplex={setScmDuplex}
+                scmOffsetXPx={scmOffsetXPx}
+                setScmOffsetXPx={setScmOffsetXPx}
+                scmOffsetYPx={scmOffsetYPx}
+                setScmOffsetYPx={setScmOffsetYPx}
+                scmOffsetAngleDeg={scmOffsetAngleDeg}
+                setScmOffsetAngleDeg={setScmOffsetAngleDeg}
+              />
+              <CardQualitySettings
+                imageDPI={imageDPI}
+                setImageDPI={setImageDPI}
+                jpgQuality={jpgQuality}
+                setJPGQuality={setJPGQuality}
+              />
+            </>
+          ) : (
+            <>
+              <PageSizeSettings
+                pageWidth={pageWidth}
+                setPageWidth={setPageWidth}
+                pageHeight={pageHeight}
+                setPageHeight={setPageHeight}
+                pageSize={pageSize}
+                setPageSize={setPageSize}
+              />
+              <CardSelectionSettings
+                cardSelectionMode={cardSelectionMode}
+                setCardSelectionMode={setCardSelectionMode}
+              />
+              <CardQualitySettings
+                imageDPI={imageDPI}
+                setImageDPI={setImageDPI}
+                jpgQuality={jpgQuality}
+                setJPGQuality={setJPGQuality}
+              />
+              <EdgeSettings
+                bleedEdgeMM={bleedEdgeMM}
+                setBleedEdgeMM={setBleedEdgeMM}
+                roundCorners={roundCorners}
+                setRoundCorners={setRoundCorners}
+              />
+              <CutLinesSettings
+                drawCardCutLines={drawCardCutLines}
+                setDrawCardCutLines={setDrawCardCutLines}
+                drawPageCutLines={drawPageCutLines}
+                setDrawPageCutLines={setDrawPageCutLines}
+                cutLineShape={cutLineShape}
+                setCutLineShape={setCutLineShape}
+                cutLinePlacement={cutLinePlacement}
+                setCutLinePlacement={setCutLinePlacement}
+                cutLineLengthMM={cutLineLengthMM}
+                setCutLineLengthMM={setCutLineLengthMM}
+                cutLineOffsetMM={cutLineOffsetMM}
+                setCutLineOffsetMM={setCutLineOffsetMM}
+                cutLineThicknessMM={cutLineThicknessMM}
+                setCutLineThicknessMM={setCutLineThicknessMM}
+                cutLineColor={cutLineColor}
+                setCutLineColor={setCutLineColor}
+              />
+              <SpacingAndMarginsSettings
+                cardSpacingRowMM={cardSpacingRowMM}
+                setCardSpacingRowMM={setCardSpacingRowMM}
+                cardSpacingColMM={cardSpacingColMM}
+                setCardSpacingColMM={setCardSpacingColMM}
+                pageMarginTopMM={pageMarginTopMM}
+                setPageMarginTopMM={setPageMarginTopMM}
+                pageMarginBottomMM={pageMarginBottomMM}
+                setPageMarginBottomMM={setPageMarginBottomMM}
+                pageMarginLeftMM={pageMarginLeftMM}
+                setPageMarginLeftMM={setPageMarginLeftMM}
+                pageMarginRightMM={pageMarginRightMM}
+                setPageMarginRightMM={setPageMarginRightMM}
+              />
+            </>
+          )}
           <hr />
           <div className="d-grid gap-0">
             <Button onClick={downloadPDF} disabled={isDownloading}>

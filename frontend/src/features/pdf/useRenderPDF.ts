@@ -33,6 +33,14 @@ export const useRenderPDF = ({
   imageQuality,
   imageDPI,
   jpgQuality,
+  scmMode,
+  scmPaperSize,
+  scmVariant,
+  scmRegistration,
+  scmDuplex,
+  scmOffsetXPx,
+  scmOffsetYPx,
+  scmOffsetAngleDeg,
 }: Omit<PDFProps, "fileHandles">) => {
   const { clientSearchService } = useClientSearchContext();
   const {
@@ -70,6 +78,14 @@ export const useRenderPDF = ({
       imageQuality,
       imageDPI,
       jpgQuality,
+      scmMode,
+      scmPaperSize,
+      scmVariant,
+      scmRegistration,
+      scmDuplex,
+      scmOffsetXPx,
+      scmOffsetYPx,
+      scmOffsetAngleDeg,
       fileHandles,
     });
   }, [
@@ -98,6 +114,14 @@ export const useRenderPDF = ({
     imageQuality,
     imageDPI,
     jpgQuality,
+    scmMode,
+    scmPaperSize,
+    scmVariant,
+    scmRegistration,
+    scmDuplex,
+    scmOffsetXPx,
+    scmOffsetYPx,
+    scmOffsetAngleDeg,
   ]);
 
   useEffect(() => (url ? () => URL.revokeObjectURL(url) : undefined), [url]);
