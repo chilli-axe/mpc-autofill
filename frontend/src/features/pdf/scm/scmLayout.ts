@@ -394,8 +394,16 @@ export const generateScmLayout = (
 //
 // Returned in top-left-origin mm, relative to the (un-rotated) oriented page.
 // matplotlib uses a bottom-left origin upstream; here everything is converted to
-// react-pdf's top-left origin. L-arms are centred on their nominal axis (drawn as
-// Line2D upstream); the square is a filled rectangle anchored at the inset corner.
+// react-pdf's top-left origin.
+//
+// Geometry verified by running SCM's real generate_reg_mark at 300 PPI:
+//   - L-arm bars are CENTRED on the inset line (centreline at `inset`), so their
+//     outer edge sits at `inset - t/2`, not at `inset`.
+//   - matplotlib Line2D uses *projecting* caps (extend t/2 past each endpoint),
+//     so the two arms form a fully-filled square corner and each arm's total
+//     length is `L + t/2` (centreline `L - t/2` + a t/2 cap at each end).
+//   - The 3-corner filled square is drawn 5mm with a 1mm centred border, giving
+//     an effective `(5 + t) = 6mm` square whose top-left is at `inset - t/2`.
 // ─────────────────────────────────────────────────────────────────────────────
 
 export interface ScmRect {
@@ -419,25 +427,27 @@ export const getRegistrationMarks = (
 ): ScmRegistrationMarks => {
   const { pageWidthMM: W, pageHeightMM: H, insetMM: inset } = layout;
   const t = REG_THICKNESS_MM;
+  const half = t / 2;
   const L = layout.registrationLengthMM;
-  const arm = L - t / 2; // upstream draws arm length = length - thickness/2
 
   const squares: ScmRect[] = [];
   const lines: ScmRect[] = [];
 
-  // Horizontal arm from an inner corner (cx, cy) going inward by `dir` (+1/-1).
-  const hArm = (cx: number, cy: number, dir: 1 | -1): ScmRect => ({
-    x: dir === 1 ? cx : cx - arm,
-    y: cy - t / 2,
-    w: arm,
+  // Horizontal arm from an inner corner (cx, cy) extending inward by sx (+1/-1).
+  // Centred on y = cy; spans the inset line outward by t/2 (projecting cap) and
+  // inward to cy + sx*L, for a total length of L + t/2.
+  const hArm = (cx: number, cy: number, sx: 1 | -1): ScmRect => ({
+    x: sx === 1 ? cx - half : cx - L,
+    y: cy - half,
+    w: L + half,
     h: t,
   });
-  // Vertical arm from an inner corner (cx, cy) going inward by `dir` (+1/-1).
-  const vArm = (cx: number, cy: number, dir: 1 | -1): ScmRect => ({
-    x: cx - t / 2,
-    y: dir === 1 ? cy : cy - arm,
+  // Vertical arm from an inner corner (cx, cy) extending inward by sy (+1/-1).
+  const vArm = (cx: number, cy: number, sy: 1 | -1): ScmRect => ({
+    x: cx - half,
+    y: sy === 1 ? cy - half : cy - L,
     w: t,
-    h: arm,
+    h: L + half,
   });
 
   const corners = {
@@ -458,8 +468,14 @@ export const getRegistrationMarks = (
   };
 
   if (registration === 3) {
-    // Top-left filled square anchored at the inset corner.
-    squares.push({ x: inset, y: inset, w: REG_SQUARE_MM, h: REG_SQUARE_MM });
+    // Top-left filled square: 5mm fill + 1mm centred border = (5 + t)mm square
+    // whose top-left sits at (inset - t/2), centred on the inset corner point.
+    squares.push({
+      x: inset - half,
+      y: inset - half,
+      w: REG_SQUARE_MM + t,
+      h: REG_SQUARE_MM + t,
+    });
     addL(corners.bottomLeft);
     addL(corners.topRight);
   } else {

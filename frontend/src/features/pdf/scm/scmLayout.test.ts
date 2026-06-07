@@ -60,22 +60,72 @@ describe("generateScmLayout", () => {
 });
 
 describe("getRegistrationMarks", () => {
+  // Geometry confirmed against SCM's real generate_reg_mark output at 300 PPI:
+  // bars centred on the inset line (outer edge at inset - t/2), projecting caps
+  // (arm length L + t/2, fully-filled corner), and a (5 + t)mm filled square.
+  const t = 1; // REG_THICKNESS_MM
+  const square = 5; // REG_SQUARE_MM
+
   it("3-corner has one square + two L-marks (4 strokes)", () => {
     const layout = generateScmLayout("letter", "default");
     const marks = getRegistrationMarks(layout, 3);
+    const inset = layout.insetMM;
+    const L = layout.registrationLengthMM;
+
     expect(marks.squares).toHaveLength(1);
     expect(marks.lines).toHaveLength(4);
-    expect(marks.squares[0]).toMatchObject({
-      x: layout.insetMM,
-      y: layout.insetMM,
+
+    // Square: (5 + t)mm, top-left at inset - t/2.
+    expect(marks.squares[0]).toEqual({
+      x: inset - t / 2,
+      y: inset - t / 2,
+      w: square + t,
+      h: square + t,
+    });
+
+    // Top-right L is one of the two L-marks. Its arms must share a filled corner
+    // (both reach the outer tip) and be L + t/2 long, t thick.
+    const W = layout.pageWidthMM;
+    const cx = W - inset;
+    // horizontal arm extends inward (left); outer cap projects to cx + t/2.
+    expect(marks.lines).toContainEqual({
+      x: cx - L,
+      y: inset - t / 2,
+      w: L + t / 2,
+      h: t,
+    });
+    // vertical arm centred on cx, extends down; outer cap projects up to inset - t/2.
+    expect(marks.lines).toContainEqual({
+      x: cx - t / 2,
+      y: inset - t / 2,
+      w: t,
+      h: L + t / 2,
     });
   });
 
   it("4-corner has no square + four L-marks (8 strokes)", () => {
     const layout = generateScmLayout("letter", "default");
     const marks = getRegistrationMarks(layout, 4);
+    const inset = layout.insetMM;
+    const L = layout.registrationLengthMM;
+
     expect(marks.squares).toHaveLength(0);
     expect(marks.lines).toHaveLength(8);
+
+    // Top-left L: both arms start at the outer tip (inset - t/2, inset - t/2),
+    // so the corner is fully filled (no notch).
+    expect(marks.lines).toContainEqual({
+      x: inset - t / 2,
+      y: inset - t / 2,
+      w: L + t / 2,
+      h: t,
+    });
+    expect(marks.lines).toContainEqual({
+      x: inset - t / 2,
+      y: inset - t / 2,
+      w: t,
+      h: L + t / 2,
+    });
   });
 });
 
