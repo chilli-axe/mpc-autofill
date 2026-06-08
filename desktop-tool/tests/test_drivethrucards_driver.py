@@ -73,9 +73,12 @@ def test_authenticate_dtc_uses_xpath_then_css_fallback(monkeypatch: pytest.Monke
     assert dtc_driver.authenticate_dtc() is True
 
     assert polling_calls[0][0] == By.XPATH
+    assert "authModalBody" in polling_calls[0][1]
+    assert "self::button" in polling_calls[0][1]
     assert "Go to Log in" in polling_calls[0][1]
     assert polling_calls[1][0] == By.CSS_SELECTOR
     assert polling_calls[1][1] == TargetSites.DriveThruCards.value.selectors.go_to_login_selector
+    assert "[data-cy='authModalBody'] button.btn-clean.anchor" in polling_calls[1][1]
 
 
 def test_authenticate_dtc_returns_false_on_timeout(monkeypatch: pytest.MonkeyPatch, dtc_driver: AutofillDriver) -> None:

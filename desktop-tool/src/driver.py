@@ -613,9 +613,11 @@ class AutofillDriver:
                 "Please click the login button manually."
             )
 
-        # Click "Go to Log in" link - poll aggressively
+        # Click "Go to Log in" in the auth modal - DriveThruCards has used both link and button markup.
         go_to_login_clicked = self.click_element_polling(
-            By.XPATH, "//a[contains(normalize-space(), 'Go to Log in')]", timeout=15
+            By.XPATH,
+            "//*[@data-cy='authModalBody']//*[self::a or self::button][contains(normalize-space(), 'Go to Log in')]",
+            timeout=15,
         )
         if not go_to_login_clicked:
             # Fallback to CSS selector
