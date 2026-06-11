@@ -38,8 +38,8 @@ export const useRenderPDF = ({
   scmVariant,
   scmRegistration,
   scmDuplex,
-  scmOffsetXPx,
-  scmOffsetYPx,
+  scmOffsetXMM,
+  scmOffsetYMM,
   scmOffsetAngleDeg,
 }: Omit<PDFProps, "fileHandles">) => {
   const { clientSearchService } = useClientSearchContext();
@@ -83,8 +83,8 @@ export const useRenderPDF = ({
       scmVariant,
       scmRegistration,
       scmDuplex,
-      scmOffsetXPx,
-      scmOffsetYPx,
+      scmOffsetXMM,
+      scmOffsetYMM,
       scmOffsetAngleDeg,
       fileHandles,
     });
@@ -119,8 +119,8 @@ export const useRenderPDF = ({
     scmVariant,
     scmRegistration,
     scmDuplex,
-    scmOffsetXPx,
-    scmOffsetYPx,
+    scmOffsetXMM,
+    scmOffsetYMM,
     scmOffsetAngleDeg,
   ]);
 

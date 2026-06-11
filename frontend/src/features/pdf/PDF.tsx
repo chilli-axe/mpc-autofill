@@ -258,8 +258,8 @@ export interface PDFProps {
   scmVariant: ScmVariant;
   scmRegistration: ScmRegistration;
   scmDuplex: boolean;
-  scmOffsetXPx: number;
-  scmOffsetYPx: number;
+  scmOffsetXMM: number;
+  scmOffsetYMM: number;
   scmOffsetAngleDeg: number;
 }
 
@@ -920,8 +920,8 @@ export const PDF = (props: PDFProps) => {
         scmVariant={props.scmVariant}
         scmRegistration={props.scmRegistration}
         scmDuplex={props.scmDuplex}
-        scmOffsetXPx={props.scmOffsetXPx}
-        scmOffsetYPx={props.scmOffsetYPx}
+        scmOffsetXMM={props.scmOffsetXMM}
+        scmOffsetYMM={props.scmOffsetYMM}
         scmOffsetAngleDeg={props.scmOffsetAngleDeg}
         cardDocumentsByIdentifier={props.cardDocumentsByIdentifier}
         projectMembers={props.projectMembers}

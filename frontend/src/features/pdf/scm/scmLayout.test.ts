@@ -1,6 +1,8 @@
 import {
   generateScmLayout,
   getRegistrationMarks,
+  scmOffsetMMToPx,
+  scmOffsetPxToMM,
   ScmPaperSize,
   scmTemplateName,
   ScmVariant,
@@ -126,6 +128,18 @@ describe("getRegistrationMarks", () => {
       w: t,
       h: L + t / 2,
     });
+  });
+});
+
+describe("SCM offset conversion helpers", () => {
+  it("converts SCM offset pixels (300 PPI) to mm", () => {
+    expect(scmOffsetPxToMM(300)).toBeCloseTo(25.4, 6);
+    expect(scmOffsetPxToMM(12)).toBeCloseTo(1.016, 3);
+  });
+  it("converts mm to the equivalent SCM offset pixels (integer)", () => {
+    expect(scmOffsetMMToPx(25.4)).toBe(300);
+    expect(scmOffsetMMToPx(1)).toBe(12); // round(11.81)
+    expect(scmOffsetMMToPx(0)).toBe(0);
   });
 });
 

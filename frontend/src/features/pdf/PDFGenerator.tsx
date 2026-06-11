@@ -28,6 +28,7 @@ import {
 import { pdfRenderService } from "@/features/pdf/pdfRenderService";
 import {
   BORDERLESS_STUDIO_EXPANSION_MM,
+  scmOffsetMMToPx,
   ScmPaperLabels,
   ScmPaperSize,
   ScmRegistration,
@@ -635,10 +636,10 @@ interface SCMSettingsProps {
   setScmRegistration: (value: ScmRegistration) => void;
   scmDuplex: boolean;
   setScmDuplex: (value: boolean) => void;
-  scmOffsetXPx: number | undefined;
-  setScmOffsetXPx: (value: number | undefined) => void;
-  scmOffsetYPx: number | undefined;
-  setScmOffsetYPx: (value: number | undefined) => void;
+  scmOffsetXMM: number | undefined;
+  setScmOffsetXMM: (value: number | undefined) => void;
+  scmOffsetYMM: number | undefined;
+  setScmOffsetYMM: (value: number | undefined) => void;
   scmOffsetAngleDeg: number | undefined;
   setScmOffsetAngleDeg: (value: number | undefined) => void;
 }
@@ -652,10 +653,10 @@ const SCMSettings = ({
   setScmRegistration,
   scmDuplex,
   setScmDuplex,
-  scmOffsetXPx,
-  setScmOffsetXPx,
-  scmOffsetYPx,
-  setScmOffsetYPx,
+  scmOffsetXMM,
+  setScmOffsetXMM,
+  scmOffsetYMM,
+  setScmOffsetYMM,
   scmOffsetAngleDeg,
   setScmOffsetAngleDeg,
 }: SCMSettingsProps) => {
@@ -760,25 +761,27 @@ const SCMSettings = ({
             <Col xs={12}>
               <Form.Label>Back alignment offset</Form.Label>
               <p className="text-muted mb-1" style={{ fontSize: "0.8em" }}>
-                Pixels at 300 DPI (1px ≈ 0.085mm), matching SCM&apos;s{" "}
-                <code>offset_pdf</code> values. X+ = right, Y+ = up, angle+ =
-                clockwise, relative to the back page.
+                Millimetres. X+ = right, Y+ = up, angle+ = clockwise, relative
+                to the back page. SCM&apos;s <code>offset_pdf</code> uses pixels
+                at 300 DPI — your offsets ≈{" "}
+                <b>{scmOffsetMMToPx(scmOffsetXMM ?? 0)}</b>,{" "}
+                <b>{scmOffsetMMToPx(scmOffsetYMM ?? 0)}</b> px.
               </p>
             </Col>
             <Col xs={6}>
               <NumericField
-                label="Offset X (px)"
-                value={scmOffsetXPx}
-                setValue={setScmOffsetXPx}
-                step={1}
+                label="Offset X (mm)"
+                value={scmOffsetXMM}
+                setValue={setScmOffsetXMM}
+                step={0.1}
               />
             </Col>
             <Col xs={6}>
               <NumericField
-                label="Offset Y (px)"
-                value={scmOffsetYPx}
-                setValue={setScmOffsetYPx}
-                step={1}
+                label="Offset Y (mm)"
+                value={scmOffsetYMM}
+                setValue={setScmOffsetYMM}
+                step={0.1}
               />
             </Col>
             <Col xs={6} className="mt-1">
@@ -831,8 +834,8 @@ export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
   const [scmVariant, setScmVariant] = useState<ScmVariant>("default");
   const [scmRegistration, setScmRegistration] = useState<ScmRegistration>(3);
   const [scmDuplex, setScmDuplex] = useState<boolean>(true);
-  const [scmOffsetXPx, setScmOffsetXPx] = useState<number | undefined>(0);
-  const [scmOffsetYPx, setScmOffsetYPx] = useState<number | undefined>(0);
+  const [scmOffsetXMM, setScmOffsetXMM] = useState<number | undefined>(0);
+  const [scmOffsetYMM, setScmOffsetYMM] = useState<number | undefined>(0);
   const [scmOffsetAngleDeg, setScmOffsetAngleDeg] = useState<
     number | undefined
   >(0);
@@ -890,8 +893,8 @@ export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
     scmVariant: scmVariant,
     scmRegistration: scmRegistration,
     scmDuplex: scmDuplex,
-    scmOffsetXPx: scmOffsetXPx ?? 0,
-    scmOffsetYPx: scmOffsetYPx ?? 0,
+    scmOffsetXMM: scmOffsetXMM ?? 0,
+    scmOffsetYMM: scmOffsetYMM ?? 0,
     scmOffsetAngleDeg: scmOffsetAngleDeg ?? 0,
     // the following settings don't matter for previewing and should remain stable to prevent unnecessary re-renders.
     imageQuality: "small-thumbnail",
@@ -984,10 +987,10 @@ export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
                 setScmRegistration={setScmRegistration}
                 scmDuplex={scmDuplex}
                 setScmDuplex={setScmDuplex}
-                scmOffsetXPx={scmOffsetXPx}
-                setScmOffsetXPx={setScmOffsetXPx}
-                scmOffsetYPx={scmOffsetYPx}
-                setScmOffsetYPx={setScmOffsetYPx}
+                scmOffsetXMM={scmOffsetXMM}
+                setScmOffsetXMM={setScmOffsetXMM}
+                scmOffsetYMM={scmOffsetYMM}
+                setScmOffsetYMM={setScmOffsetYMM}
                 scmOffsetAngleDeg={scmOffsetAngleDeg}
                 setScmOffsetAngleDeg={setScmOffsetAngleDeg}
               />

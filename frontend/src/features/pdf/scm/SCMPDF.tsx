@@ -15,11 +15,10 @@ import {
   ScmVariant,
 } from "@/features/pdf/scm/scmLayout";
 
-// SCM expresses calibration offsets in pixels at the 300-PPI baseline (see
-// utilities.offset_images / offset_pdf.py, where the value is an int applied as
-// `x * ppi / 300` pixels). react-pdf transforms are in points, so convert
-// px@300 -> pt: 1px @ 300dpi = 72/300 pt.
-const PX300_TO_PT = 72 / 300;
+// Offsets are entered in millimetres; react-pdf transforms are in points.
+// (SCM's offset_pdf uses px @ 300 PPI — see scmOffsetPxToMM in scmLayout.ts to
+// convert SCM calibration values to mm.)
+const MM_TO_PT = 72 / 25.4;
 
 /** SCM places cards with ~0.625mm bleed between neighbours (half of the 1.25mm
  * card distance). We show at most that much of the MPC source bleed. */
@@ -30,9 +29,9 @@ export interface SCMPDFProps {
   scmVariant: ScmVariant;
   scmRegistration: ScmRegistration;
   scmDuplex: boolean;
-  /** Back-page calibration offsets in pixels at 300 PPI (matches SCM). */
-  scmOffsetXPx: number;
-  scmOffsetYPx: number;
+  /** Back-page calibration offsets in millimetres. */
+  scmOffsetXMM: number;
+  scmOffsetYMM: number;
   scmOffsetAngleDeg: number;
   cardDocumentsByIdentifier: { [identifier: string]: CardDocument };
   projectMembers: Array<{
@@ -254,19 +253,19 @@ export const SCMPDF = (props: SCMPDFProps) => {
   };
 
   const offsetActive =
-    props.scmOffsetXPx !== 0 ||
-    props.scmOffsetYPx !== 0 ||
+    props.scmOffsetXMM !== 0 ||
+    props.scmOffsetYMM !== 0 ||
     props.scmOffsetAngleDeg !== 0;
 
   // Offset (back pages only): mirror SCM offset_images — shift the back-page
-  // raster by (-x, +y) px@300 then rotate by the angle about the page centre.
-  // In react-pdf transform space, translate is applied before rotate (CSS
+  // raster by (-x, +y) then rotate by the angle about the page centre. In
+  // react-pdf transform space, translate is applied before rotate (CSS
   // right-to-left), matching SCM's "offset then rotate". Signs match SCM's
   // ImageChops.offset(-x, +y): translateX(-x) = left, translateY(+y) = down.
   const backTransform = offsetActive
     ? `rotate(${props.scmOffsetAngleDeg}deg) translateX(${
-        -props.scmOffsetXPx * PX300_TO_PT
-      }) translateY(${props.scmOffsetYPx * PX300_TO_PT})`
+        -props.scmOffsetXMM * MM_TO_PT
+      }) translateY(${props.scmOffsetYMM * MM_TO_PT})`
     : undefined;
 
   const renderPage = (

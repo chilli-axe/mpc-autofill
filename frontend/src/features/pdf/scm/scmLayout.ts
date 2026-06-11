@@ -163,6 +163,20 @@ export const pxToMM = (px: number, ppi: number = SCM_PPI): number =>
   (px * IN_MM) / ppi;
 
 // ─────────────────────────────────────────────────────────────────────────────
+// SCM calibration-offset conversion helpers.
+//
+// SCM's offset_pdf / offset_images express the back-page X/Y calibration offset
+// in PIXELS at the 300-PPI baseline (integer values). Our UI takes the offset in
+// millimetres, so these convert between the two for users porting SCM values.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Convert an SCM offset value (px @ 300 PPI) to millimetres. */
+export const scmOffsetPxToMM = (px: number): number => pxToMM(px);
+
+/** Convert a millimetre offset to the equivalent SCM offset value (px @ 300 PPI). */
+export const scmOffsetMMToPx = (mm: number): number => mmToPixel(mm);
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Layout computation (mirrors page_manager.py)
 // ─────────────────────────────────────────────────────────────────────────────
 
