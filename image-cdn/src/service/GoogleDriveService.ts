@@ -110,10 +110,12 @@ export class GoogleDriveService {
             if (data.modifiedTime) {
               result.set(id, new Date(data.modifiedTime));
             }
-          } catch {
-            console.warn(`Failed to parse modifiedTime JSON for ${id}`);
+          } catch (err) {
+            console.warn(`Failed to parse modifiedTime JSON for ${id}`, err);
           }
         }
+      } else {
+        console.warn(`Request for modifiedTime resulted in unknown response status ${status}`);
       }
     }
     return result;

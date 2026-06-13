@@ -32,7 +32,6 @@ export const handleImageRequest = async (url: URL, request: Request, env: Env, c
           return R2Service.getThumbnail(env, ctx, getImageURL(imageType, imageSize, undefined, jpgQuality, imageIdentifier), imageKey);
         case "full":
           const url = getImageURL(imageType, imageSize, dpi, jpgQuality, imageIdentifier);
-          console.log(url);
           return fetch(url);
         default:
           throw new Error(`Invalid image size ${imageSize}`);

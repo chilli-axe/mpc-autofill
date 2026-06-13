@@ -70,7 +70,6 @@ export class ThumbnailRefreshWorkflow extends WorkflowEntrypoint<Env> {
           this.env.thumbnails.delete(R2Service.getImageKey("google_drive", size, identifier))
         )
       );
-      console.log(`Removed ${identifier} from system.`);
       return false;
     }
 
