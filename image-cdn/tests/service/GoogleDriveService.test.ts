@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { GoogleDriveService } from "./GoogleDriveService";
+import { GoogleDriveService } from "../../src/service/GoogleDriveService";
 
 const BOUNDARY = "batch_QLw9FXX2XXKO0wwoBWtbfpZxugBfnGo-";
 
