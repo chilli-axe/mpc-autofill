@@ -1,4 +1,6 @@
-import { ImageNotFoundError } from "../error";
+import { NonRetryableError } from "cloudflare:workflows";
+
+const IMAGES_PER_GOOGLE_DRIVE_BATCH_CALL = 100;
 
 export class GoogleDriveService {
   accessToken: string | undefined;
@@ -9,13 +11,13 @@ export class GoogleDriveService {
     }
 
     if ((env.GOOGLE_CLIENT_ID ?? "") === "") {
-      throw new Error("GOOGLE_CLIENT_ID not defined!");
+      throw new NonRetryableError("GOOGLE_CLIENT_ID not defined!");
     }
     if ((env.GOOGLE_CLIENT_SECRET ?? "") === "") {
-      throw new Error("GOOGLE_CLIENT_SECRET not defined!");
+      throw new NonRetryableError("GOOGLE_CLIENT_SECRET not defined!");
     }
     if ((env.GOOGLE_REFRESH_TOKEN ?? "") === "") {
-      throw new Error("GOOGLE_REFRESH_TOKEN not defined!");
+      throw new NonRetryableError("GOOGLE_REFRESH_TOKEN not defined!");
     }
 
     const tokenResponse = await fetch("https://www.googleapis.com/oauth2/v4/token", {
@@ -39,48 +41,82 @@ export class GoogleDriveService {
     this.accessToken = tokenData?.access_token;
   }
 
-  async getModifiedTime(identifier: string): Promise<Date | undefined> {
+  // Returns Date for found files, null for 404, absent entry for unexpected errors.
+  async getModifiedTimes(identifiers: string[]): Promise<Map<string, Date | null>> {
     if (this.accessToken === undefined) {
       throw new Error("GoogleDrive accessToken undefined");
     }
-    const params = new URLSearchParams({
-      driveId: identifier,
-      fields: "name, modifiedTime",
-    });
-
-    const response = await fetch(`https://www.googleapis.com/drive/v3/files/${identifier}?${params}`, {
-      headers: {
-        Authorization: `Bearer ${this.accessToken}`,
-      },
-      method: "GET",
-    });
-
-    if (response.status !== 200) {
-      const responseStatusWas404 = response.status === 404;
-      response.body?.cancel();
-      if (responseStatusWas404) {
-        throw new ImageNotFoundError(`Image ${identifier} not found`);
-      }
+    if (identifiers.length === 0) {
+      return new Map();
     }
 
-    const responseJson = await response.json<{ modifiedTime: string }>();
-    const googleDriveTime = new Date(responseJson.modifiedTime);
-    return googleDriveTime;
+    const boundary = `batch_${crypto.randomUUID().replace(/-/g, "")}`;
+    const bodyParts = identifiers.map(
+      (id) =>
+        `--${boundary}\r\nContent-Type: application/http\r\nContent-ID: <${id}>\r\n\r\nGET /drive/v3/files/${encodeURIComponent(
+          id
+        )}?fields=modifiedTime\r\n`
+    );
+    const body = bodyParts.join("\r\n") + `\r\n--${boundary}--`;
 
-    // if (response.status !== 200) {
-    //   const responseStatusWas404 = response.status === 404;
-    //   response.body?.cancel();
-    //   console.log(`Received response code ${response.status} when querying modifiedTime for ${identifier}`, response.body);
-    //   if (responseStatusWas404) {
-    //     console.log(`Removing ${identifier} from system following 404...`);
-    //     for (const size of ["small", "large"] as Array<ImageSize>) {
-    //       const imageKey = getImageKey("google_drive", size, identifier);
-    //       await env.thumbnails.delete(imageKey);
-    //     }
-    //     console.log(`Removed ${identifier} from system.`);
-    //   }
-    //   return false;
-    // }
+    const response = await fetch("https://www.googleapis.com/batch/drive/v3", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${this.accessToken}`,
+        "Content-Type": `multipart/mixed; boundary=${boundary}`,
+      },
+      body,
+    });
+
+    const responseText = await response.text();
+    const contentType = response.headers.get("Content-Type") ?? "";
+    const boundaryMatch = contentType.match(/boundary=["']?([^"';,\s]+)["']?/);
+    if (!boundaryMatch) {
+      throw new Error(`Could not parse batch response boundary from: ${contentType}`);
+    }
+    const responseBoundary = boundaryMatch[1];
+
+    return GoogleDriveService.parseBatchModifiedTimesResponse(responseText, responseBoundary);
+  }
+
+  async getBatchModifiedTimes(identifiers: string[]): Promise<Map<string, Date | null>> {
+    const chunks: string[][] = [];
+    for (let i = 0; i < identifiers.length; i += IMAGES_PER_GOOGLE_DRIVE_BATCH_CALL) {
+      chunks.push(identifiers.slice(i, i + IMAGES_PER_GOOGLE_DRIVE_BATCH_CALL));
+    }
+    const results = await Promise.all(chunks.map((chunk) => this.getModifiedTimes(chunk)));
+    return new Map(results.flatMap((m) => [...m]));
+  }
+
+  static parseBatchModifiedTimesResponse(responseText: string, boundary: string): Map<string, Date | null> {
+    const result = new Map<string, Date | null>();
+    for (const part of responseText.split(`--${boundary}`)) {
+      const contentIdMatch = part.match(/Content-ID:\s*<response-([^>]+)>/i);
+      if (!contentIdMatch) continue;
+      const id = contentIdMatch[1];
+
+      const statusMatch = part.match(/HTTP\/[\d.]+ (\d+)/);
+      if (!statusMatch) continue;
+      const status = parseInt(statusMatch[1], 10);
+
+      if (status === 404) {
+        result.set(id, null);
+      } else if (status === 200) {
+        const jsonStart = part.indexOf("{");
+        const jsonEnd = part.lastIndexOf("}");
+        if (jsonStart !== -1 && jsonEnd !== -1) {
+          try {
+            const data = JSON.parse(part.slice(jsonStart, jsonEnd + 1)) as { modifiedTime?: string };
+            if (data.modifiedTime) {
+              result.set(id, new Date(data.modifiedTime));
+            }
+          } catch {
+            console.warn(`Failed to parse modifiedTime JSON for ${id}`);
+          }
+        }
+      }
+    }
+    return result;
   }
 
   static getLH4Params(height: number | undefined, jpgQuality: number): string {

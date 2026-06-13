@@ -5,12 +5,14 @@
   "scripts": {
     "deploy": "wrangler deploy",
     "dev": "wrangler dev",
-    "start": "wrangler dev"
+    "start": "wrangler dev",
+    "test": "vitest run"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20240314.0",
     "itty-router": "^5.0.24",
     "typescript": "^5.0.4",
+    "vitest": "^4.1.8",
     "wrangler": "^4.100.0"
   }
 }
