@@ -8,6 +8,16 @@ export class GoogleDriveService {
       return;
     }
 
+    if ((env.GOOGLE_CLIENT_ID ?? "") === "") {
+      throw new Error("GOOGLE_CLIENT_ID not defined!");
+    }
+    if ((env.GOOGLE_CLIENT_SECRET ?? "") === "") {
+      throw new Error("GOOGLE_CLIENT_SECRET not defined!");
+    }
+    if ((env.GOOGLE_REFRESH_TOKEN ?? "") === "") {
+      throw new Error("GOOGLE_REFRESH_TOKEN not defined!");
+    }
+
     const tokenResponse = await fetch("https://www.googleapis.com/oauth2/v4/token", {
       method: "POST",
       headers: {

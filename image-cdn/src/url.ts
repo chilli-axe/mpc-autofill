@@ -2,9 +2,6 @@ import { GoogleDriveService } from "./service/GoogleDriveService";
 import { ImageSize, ImageSizes, ImageType } from "./types";
 import { assertUnreachable } from "./utils";
 
-export const getImageKey = (imageType: ImageType, imageSize: ImageSize, imageIdentifier: string): string =>
-  `${imageIdentifier}-${imageSize}-${imageType}`;
-
 export const getImageURL = (
   imageType: ImageType,
   imageSize: ImageSize,

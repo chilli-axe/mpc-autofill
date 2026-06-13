@@ -7,30 +7,11 @@ import { R2Service } from "../service/R2Service";
 import { ImageSize } from "../types";
 import { getImageURL } from "../url";
 
-// stub for now, rewrite below functions into workflow
-export class ThumbnailRefreshWorkflow extends WorkflowEntrypoint<Env, Params> {
-  async run(event: WorkflowEvent<Params>, step: WorkflowStep) {
-    // Steps here
-  }
-}
-
-const getABunchOfObjects = async (env: Env, cursor: string | undefined): Promise<[string | undefined, boolean, Array<R2Object>]> => {
-  const listed = await env.thumbnails.list({
-    limit: 100, // set the limit to the max number of images to check per worker instance
-    cursor: cursor,
-  });
-  // @ts-ignore // TODO: having to ts-ignore this is weird.
-  const responseCursor: string | undefined = listed.cursor;
-  return [responseCursor, listed.truncated, listed.objects];
-};
-
 const checkAndPossiblyUpdateTheThumbnailsForAnObject = async (
   env: Env,
-  ctx: ExecutionContext,
   googleDriveService: GoogleDriveService,
   object: R2Object
 ): Promise<boolean> => {
-  // TODO: we could consider comparing image checksums rather than comparing datetimes? not sure it matters tbh?
   const re = /^(.*)-(?:small|large)-(google_drive)$/g;
   const results = re.exec(object.key);
   if (!results) {
@@ -48,11 +29,13 @@ const checkAndPossiblyUpdateTheThumbnailsForAnObject = async (
     const stale = googleDriveTime > object.uploaded;
     if (stale) {
       console.log(`${identifier} is stale - refreshing thumbnails`);
-      for (const size of ["small", "large"] as Array<ImageSize>) {
-        const imageKey = R2Service.getImageKey("google_drive", size, identifier);
-        const imageURL = getImageURL("google_drive", size, undefined, 100, identifier);
-        ctx.waitUntil(R2Service.putImage(env, imageURL, imageKey, true));
-      }
+      await Promise.all(
+        (["small", "large"] as Array<ImageSize>).map((size) => {
+          const imageKey = R2Service.getImageKey("google_drive", size, identifier);
+          const imageURL = getImageURL("google_drive", size, undefined, 100, identifier);
+          return R2Service.putImage(env, imageURL, imageKey, true);
+        })
+      );
       return true;
     } else {
       return false;
@@ -60,10 +43,11 @@ const checkAndPossiblyUpdateTheThumbnailsForAnObject = async (
   } catch (err) {
     if (err instanceof ImageNotFoundError) {
       console.log(`Removing ${identifier} from system following 404...`);
-      for (const size of ["small", "large"] as Array<ImageSize>) {
-        const imageKey = R2Service.getImageKey("google_drive", size, identifier);
-        await env.thumbnails.delete(imageKey);
-      }
+      await Promise.all(
+        (["small", "large"] as Array<ImageSize>).map((size) =>
+          env.thumbnails.delete(R2Service.getImageKey("google_drive", size, identifier))
+        )
+      );
       console.log(`Removed ${identifier} from system.`);
       return false;
     } else {
@@ -72,27 +56,32 @@ const checkAndPossiblyUpdateTheThumbnailsForAnObject = async (
   }
 };
 
-export const processAndEnqueue = async (env: Env, ctx: ExecutionContext, cursor: string | undefined): Promise<void> => {
-  const googleDriveService = new GoogleDriveService();
-  await googleDriveService.refreshAccessToken(env);
-  if (!googleDriveService.accessToken) {
-    console.log("Couldn't get access token");
-    return;
-  }
+export class ThumbnailRefreshWorkflow extends WorkflowEntrypoint<Env> {
+  async run(event: WorkflowEvent<unknown>, step: WorkflowStep) {
+    let cursor: string | undefined = undefined;
+    let batchIndex = 0;
 
-  console.log(`Checking image staleness with cursor ${cursor}`);
-  const [newCursor, truncated, objects] = await getABunchOfObjects(env, cursor);
-  console.log(`Working on ${objects.length} images...`);
-  for (const obj of objects) {
-    await checkAndPossiblyUpdateTheThumbnailsForAnObject(env, ctx, googleDriveService, obj);
-  }
-  console.log("and done!");
+    while (true) {
+      const { nextCursor, truncated } = await step.do(`process-batch-${batchIndex}`, async () => {
+        const googleDriveService = new GoogleDriveService();
+        await googleDriveService.refreshAccessToken(this.env);
+        if (!googleDriveService.accessToken) {
+          throw new Error("Couldn't get access token");
+        }
 
-  // enqueue a message to process the next batch :)
-  if (truncated && newCursor !== undefined) {
-    console.log(`More work to do - enqueueing another worker with cursor ${newCursor}`);
-    await env.thumbnailRefreshQueue.send(newCursor);
-  } else {
-    console.log("No more work to do :)");
+        const listed = await this.env.thumbnails.list({ limit: 100, cursor });
+
+        console.log(`Processing batch ${batchIndex} (cursor: ${cursor ?? "start"}), ${listed.objects.length} objects`);
+        for (const obj of listed.objects) {
+          await checkAndPossiblyUpdateTheThumbnailsForAnObject(this.env, googleDriveService, obj);
+        }
+
+        return { nextCursor: listed.truncated ? listed.cursor : undefined, truncated: listed.truncated };
+      });
+
+      if (!truncated || nextCursor === undefined) break;
+      cursor = nextCursor;
+      batchIndex++;
+    }
   }
-};
+}

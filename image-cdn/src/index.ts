@@ -1,7 +1,8 @@
 import { R2Service } from "./service/R2Service";
 import { ImageSize, ImageType } from "./types";
 import { getImageURL } from "./url";
-import { processAndEnqueue } from "./workflow/ThumbnailRefreshWorkflow";
+
+export { ThumbnailRefreshWorkflow } from "./workflow/ThumbnailRefreshWorkflow";
 
 const handleImageRequest = async (url: URL, request: Request, env: Env, ctx: ExecutionContext): Promise<Response> => {
   const pathRegex = new RegExp(/^\/images\/(google_drive)\/(small|large|full)\/(.+)\.jpg$/);
@@ -86,18 +87,6 @@ const defaultExport = {
     } else {
       return new Response(`Unknown endpoint.`, { status: 404 });
     }
-  },
-  async scheduled(event: Event, env: Env, ctx: ExecutionContext) {
-    await processAndEnqueue(env, ctx, undefined);
-  },
-  async queue(batch: MessageBatch<string>, env: Env, ctx: ExecutionContext): Promise<void> {
-    const messages = batch.messages;
-    if (messages.length !== 1) {
-      console.log(`Expected to only receive one cursor, but received ${messages.length}`);
-      return;
-    }
-    const cursor = messages[0].body;
-    await processAndEnqueue(env, ctx, cursor);
   },
 };
 
