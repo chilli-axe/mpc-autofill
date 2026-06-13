@@ -3,11 +3,8 @@ main = "src/index.ts"
 compatibility_date = "2026-06-13"
 workers_dev = true
 
-[vars]
-GOOGLE_CLIENT_ID = ""
-
 [secrets]
-required = [ "GOOGLE_CLIENT_SECRET", "GOOGLE_REFRESH_TOKEN" ]
+required = [ "GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET", "GOOGLE_REFRESH_TOKEN" ]
 
 [[r2_buckets]]
 binding = "thumbnails"
