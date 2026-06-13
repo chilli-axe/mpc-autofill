@@ -14,7 +14,6 @@ bucket_name = "thumbnails"
 name = "thumbnail-refresh"
 binding = "THUMBNAIL_REFRESH_WORKFLOW"
 class_name = "ThumbnailRefreshWorkflow"
-schedules = ["0 0 * * *"]
 
 [observability]
 enabled = true
