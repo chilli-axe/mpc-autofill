@@ -24,7 +24,7 @@ export class ThumbnailRefreshWorkflow extends WorkflowEntrypoint<Env> {
   }
 
   async processBatch(batchIndex: number, cursor: string | undefined): Promise<{ nextCursor: string | undefined; truncated: boolean }> {
-    const googleDriveService = new GoogleDriveService();
+    const googleDriveService = new GoogleDriveService(this.env);
     await googleDriveService.refreshAccessToken(this.env);
     if (!googleDriveService.accessToken) {
       throw new Error("Couldn't get access token");

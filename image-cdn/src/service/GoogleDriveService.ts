@@ -3,7 +3,57 @@ import { NonRetryableError } from "cloudflare:workflows";
 const IMAGES_PER_GOOGLE_DRIVE_BATCH_CALL = 100;
 
 export class GoogleDriveService {
+  env: Env;
   accessToken: string | undefined;
+
+  constructor(env: Env) {
+    this.env = env;
+    this.accessToken = undefined;
+  }
+
+  async delay(ms: number) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  async executeCall(url: string, body: URLSearchParams | string, auth: boolean, multipartBoundary?: string) {
+    const MAX_RETRIES = 5;
+
+    if (auth && this.accessToken === undefined) {
+      throw new Error("Attempted to execute authenticated Google Drive API call but accessToken is undefined");
+    }
+
+    const headers = {
+      ...(auth ? { Authorization: `Bearer ${this.accessToken}` } : {}),
+      ...(multipartBoundary ? { "Content-Type": `multipart/mixed; boundary=${multipartBoundary}` } : {}),
+    };
+
+    for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+      const { success } = await this.env.GOOGLE_DRIVE_RATE_LIMITER.limit({ key: "global-google-drive-rate-limit" });
+
+      // https://developers.google.com/workspace/drive/api/guides/limits#example-algorithm
+      const delay = 2 ** attempt + 1000 * Math.random();
+
+      if (success) {
+        const response = await fetch(url, { headers, method: "POST", body: body });
+
+        // fallback in case we get rate limited by gdrive. but ideally this case is caught by cloudflare rate limiting for us.
+        if (response.status === 429 && attempt < MAX_RETRIES) {
+          await this.delay(delay);
+          continue;
+        }
+
+        if (!response.ok) {
+          throw new Error(`Google Drive API error: ${response.status} ${response.statusText}`);
+        }
+        return response;
+      } else {
+        // cloudflare detected we've broken our rate limit for gdrive, back off and try again
+        await this.delay(delay);
+      }
+    }
+
+    throw new Error("Google Drive API error: 429 Too Many Requests");
+  }
 
   async refreshAccessToken(env: Env): Promise<void> {
     if (this.accessToken !== undefined) {
@@ -20,18 +70,16 @@ export class GoogleDriveService {
       throw new NonRetryableError("GOOGLE_REFRESH_TOKEN not defined!");
     }
 
-    const tokenResponse = await fetch("https://www.googleapis.com/oauth2/v4/token", {
-      method: "POST",
-      headers: {
-        "content-type": "application/x-www-form-urlencoded",
-      },
-      body: new URLSearchParams({
+    const tokenResponse = await this.executeCall(
+      "https://www.googleapis.com/oauth2/v4/token",
+      new URLSearchParams({
         client_id: env.GOOGLE_CLIENT_ID,
         client_secret: env.GOOGLE_CLIENT_SECRET,
         refresh_token: env.GOOGLE_REFRESH_TOKEN,
         grant_type: "refresh_token",
       }),
-    });
+      false
+    );
 
     const tokenData: { access_token?: string } = await tokenResponse.json();
     if (tokenData?.access_token == null) {
@@ -59,14 +107,7 @@ export class GoogleDriveService {
     );
     const body = bodyParts.join("\r\n") + `\r\n--${boundary}--`;
 
-    const response = await fetch("https://www.googleapis.com/batch/drive/v3", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${this.accessToken}`,
-        "Content-Type": `multipart/mixed; boundary=${boundary}`,
-      },
-      body,
-    });
+    const response = await this.executeCall("https://www.googleapis.com/batch/drive/v3", body, true, boundary);
 
     const responseText = await response.text();
     const contentType = response.headers.get("Content-Type") ?? "";
@@ -84,8 +125,14 @@ export class GoogleDriveService {
     for (let i = 0; i < identifiers.length; i += IMAGES_PER_GOOGLE_DRIVE_BATCH_CALL) {
       chunks.push(identifiers.slice(i, i + IMAGES_PER_GOOGLE_DRIVE_BATCH_CALL));
     }
-    const results = await Promise.all(chunks.map((chunk) => this.getModifiedTimes(chunk)));
-    return new Map(results.flatMap((m) => [...m]));
+    const result = new Map<string, Date | null>();
+    for (const chunk of chunks) {
+      const chunkResult = await this.getModifiedTimes(chunk);
+      for (const [k, v] of chunkResult) {
+        result.set(k, v);
+      }
+    }
+    return result;
   }
 
   static parseBatchModifiedTimesResponse(responseText: string, boundary: string): Map<string, Date | null> {
@@ -114,8 +161,12 @@ export class GoogleDriveService {
             console.warn(`Failed to parse modifiedTime JSON for ${id}`, err);
           }
         }
+      } else if (status === 403) {
+        // gdrive rate limit exceeded, terminate the workflow
+        console.warn(`Request for modifiedTime resulted in response status ${status}, likely exceeded rate limit`, part);
+        throw new NonRetryableError("Exceeded Google Drive rate limit", part);
       } else {
-        console.warn(`Request for modifiedTime resulted in unknown response status ${status}`);
+        console.warn(`Request for modifiedTime resulted in unknown response status ${status}`, part);
       }
     }
     return result;
