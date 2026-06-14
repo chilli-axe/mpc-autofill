@@ -1,0 +1,13 @@
+name: Image CDN tests
+on:
+  pull_request:
+    paths:
+      - "image-cdn/**"
+  workflow_dispatch:
+jobs:
+  test:
+    name: Image CDN tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/test-image-cdn

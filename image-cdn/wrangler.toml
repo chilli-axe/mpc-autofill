@@ -1,25 +1,20 @@
 name = "image-cdn"
 main = "src/index.ts"
-compatibility_date = "2024-03-14"
+compatibility_date = "2026-06-13"
 workers_dev = true
 
 [secrets]
-required = [ "GOOGLE_CLIENT_SECRET", "GOOGLE_REFRESH_TOKEN" ]
+required = [ "GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET", "GOOGLE_REFRESH_TOKEN" ]
 
 [[r2_buckets]]
 binding = "thumbnails"
 bucket_name = "thumbnails"
 
-[triggers]
-crons = ["0 0 * * *"]
-
-[[queues.producers]]
-queue = "thumbnail-refresh"
-binding = "thumbnailRefreshQueue"
-
-[[queues.consumers]]
-queue = "thumbnail-refresh"
-max_batch_size = 1
+[[workflows]]
+name = "thumbnail-refresh"
+binding = "THUMBNAIL_REFRESH_WORKFLOW"
+class_name = "ThumbnailRefreshWorkflow"
+schedules = ["0 0 * * *"]
 
 [observability]
 enabled = true

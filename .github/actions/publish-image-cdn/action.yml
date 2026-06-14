@@ -7,9 +7,6 @@ inputs:
   cloudflare-account-id:
     description: Cloudflare account ID
     required: true
-  worker-domain:
-    description: Worker domain (e.g. image-cdn.example.workers.dev)
-    required: true
   google-client-id:
     description: Google OAuth client ID
     required: true
@@ -33,10 +30,8 @@ runs:
           GOOGLE_CLIENT_SECRET
           GOOGLE_REFRESH_TOKEN
         vars: |
-          WORKER_DOMAIN
           GOOGLE_CLIENT_ID
       env:
-        WORKER_DOMAIN: ${{ inputs.worker-domain }}
         GOOGLE_CLIENT_ID: ${{ inputs.google-client-id }}
         GOOGLE_CLIENT_SECRET: ${{ inputs.google-client-secret }}
         GOOGLE_REFRESH_TOKEN: ${{ inputs.google-refresh-token }}

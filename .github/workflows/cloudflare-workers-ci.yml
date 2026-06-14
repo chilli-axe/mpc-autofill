@@ -7,8 +7,21 @@ on:
       - "github-release-reverse-proxy/**"
   workflow_dispatch:
 jobs:
+  test-pre-commit:
+    name: Formatting and static type checking
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/test-pre-commit
+  test-image-cdn:
+    name: Test image CDN
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/test-image-cdn
   publish-image-cdn:
     name: Publish image CDN
+    needs: [test-image-cdn, test-pre-commit]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -16,12 +29,12 @@ jobs:
         with:
           cloudflare-api-token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           cloudflare-account-id: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          worker-domain: ${{ secrets.IMAGE_CDN_WORKER_DOMAIN }}
           google-client-id: ${{ secrets.IMAGE_CDN_GOOGLE_CLIENT_ID }}
           google-client-secret: ${{ secrets.IMAGE_CDN_GOOGLE_CLIENT_SECRET }}
           google-refresh-token: ${{ secrets.IMAGE_CDN_GOOGLE_REFRESH_TOKEN }}
   publish-github-release-reverse-proxy:
     name: Publish GitHub release reverse proxy
+    needs: [test-pre-commit]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
