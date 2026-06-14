@@ -10,7 +10,6 @@ runs:
       working-directory: image-cdn
       run: |
         npm ci
-        npm run build
       shell: bash
     - name: Run Vitest tests
       working-directory: image-cdn
