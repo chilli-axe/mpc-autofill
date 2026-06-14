@@ -7,6 +7,7 @@ import { ImageSize } from "../types";
 import { getImageURL } from "../url";
 
 const IMAGES_PER_R2_LIST_CALL = 1000;
+const R2_LIST_CALLS_PER_WORKFLOW_STEP = 10;
 
 export class ThumbnailRefreshWorkflow extends WorkflowEntrypoint<Env> {
   async run(event: WorkflowEvent<unknown>, step: WorkflowStep) {
@@ -30,27 +31,42 @@ export class ThumbnailRefreshWorkflow extends WorkflowEntrypoint<Env> {
       throw new Error("Couldn't get access token");
     }
 
-    const listed = await this.env.thumbnails.list({ limit: IMAGES_PER_R2_LIST_CALL, cursor });
-    if (listed.objects.length === 0) {
-      console.log("No objects to process - exiting");
-      return { nextCursor: undefined, truncated: false };
+    let nextCursor = cursor;
+    let truncated = false;
+
+    for (let pageIndex = 0; pageIndex < R2_LIST_CALLS_PER_WORKFLOW_STEP; pageIndex++) {
+      const listed = await this.env.thumbnails.list({ limit: IMAGES_PER_R2_LIST_CALL, cursor: nextCursor });
+      if (listed.objects.length === 0) {
+        console.log("No objects to process - exiting");
+        return { nextCursor: undefined, truncated: false };
+      }
+
+      console.log(
+        `Processing batch ${batchIndex}, R2 page ${pageIndex + 1}/${R2_LIST_CALLS_PER_WORKFLOW_STEP} (cursor: ${nextCursor ?? "start"}), ${
+          listed.objects.length
+        } objects`
+      );
+
+      const identifiers = [
+        ...new Set(
+          listed.objects.flatMap((obj) => {
+            const match = /^(.*)-(?:small|large)-google_drive$/.exec(obj.key);
+            return match ? [match[1]] : [];
+          })
+        ),
+      ];
+      const modifiedTimes = await googleDriveService.getBatchModifiedTimes(identifiers);
+
+      await Promise.all(listed.objects.map((obj) => this.checkAndPossiblyUpdateTheThumbnailsForAnObject(modifiedTimes, obj)));
+
+      truncated = listed.truncated;
+      nextCursor = listed.truncated ? listed.cursor : undefined;
+      if (!listed.truncated || nextCursor === undefined) {
+        return { nextCursor, truncated };
+      }
     }
 
-    console.log(`Processing batch ${batchIndex} (cursor: ${cursor ?? "start"}), ${listed.objects.length} objects`);
-
-    const identifiers = [
-      ...new Set(
-        listed.objects.flatMap((obj) => {
-          const match = /^(.*)-(?:small|large)-google_drive$/.exec(obj.key);
-          return match ? [match[1]] : [];
-        })
-      ),
-    ];
-    const modifiedTimes = await googleDriveService.getBatchModifiedTimes(identifiers);
-
-    await Promise.all(listed.objects.map((obj) => this.checkAndPossiblyUpdateTheThumbnailsForAnObject(modifiedTimes, obj)));
-
-    return { nextCursor: listed.truncated ? listed.cursor : undefined, truncated: listed.truncated };
+    return { nextCursor, truncated };
   }
 
   async checkAndPossiblyUpdateTheThumbnailsForAnObject(modifiedTimes: Map<string, Date | null>, object: R2Object): Promise<boolean> {
