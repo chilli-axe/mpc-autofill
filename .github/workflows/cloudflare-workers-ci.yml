@@ -11,20 +11,20 @@ jobs:
     name: Formatting and static type checking
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/test-pre-commit
   test-image-cdn:
     name: Test image CDN
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/test-image-cdn
   publish-image-cdn:
     name: Publish image CDN
     needs: [test-image-cdn, test-pre-commit]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/publish-image-cdn
         with:
           cloudflare-api-token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -37,7 +37,7 @@ jobs:
     needs: [test-pre-commit]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/publish-github-release-reverse-proxy
         with:
           cloudflare-api-token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
