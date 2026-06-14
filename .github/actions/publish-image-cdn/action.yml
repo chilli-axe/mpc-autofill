@@ -27,10 +27,9 @@ runs:
         accountId: ${{ inputs.cloudflare-account-id }}
         workingDirectory: image-cdn
         secrets: |
+          GOOGLE_CLIENT_ID
           GOOGLE_CLIENT_SECRET
           GOOGLE_REFRESH_TOKEN
-        vars: |
-          GOOGLE_CLIENT_ID
       env:
         GOOGLE_CLIENT_ID: ${{ inputs.google-client-id }}
         GOOGLE_CLIENT_SECRET: ${{ inputs.google-client-secret }}
