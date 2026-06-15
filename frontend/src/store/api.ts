@@ -8,7 +8,6 @@ import {
 
 import { QueryTags } from "@/common/constants";
 import { getCSRFHeader } from "@/common/cookies";
-import { getWorkerImageURL } from "@/common/image";
 import {
   computeSearchQueryHashKey,
   formatURL,
@@ -46,7 +45,6 @@ import {
   TagsResponse,
 } from "@/common/schema_types";
 import {
-  CardDocument,
   CardDocuments,
   CardType,
   DFCPairs,
