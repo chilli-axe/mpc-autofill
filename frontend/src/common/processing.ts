@@ -330,11 +330,6 @@ export function formatURL(backendURL: string, routeURL: string): string {
   return new URL(routeURL, backendURL).toString();
 }
 
-export function base64StringToBlob(base64: string): Blob {
-  // @ts-ignore // TODO: broke in TS 4 to 5 migration
-  return new Blob([toByteArray(base64)]);
-}
-
 export const formatPlaceholderText = (placeholders: {
   [cardType: string]: Array<CardDocument>;
 }): string => {

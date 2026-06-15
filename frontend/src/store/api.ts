@@ -6,8 +6,9 @@ import {
   FetchBaseQueryError,
 } from "@reduxjs/toolkit/query/react";
 
-import { GoogleDriveImageAPIURL, QueryTags } from "@/common/constants";
+import { QueryTags } from "@/common/constants";
 import { getCSRFHeader } from "@/common/cookies";
+import { getWorkerImageURL } from "@/common/image";
 import {
   computeSearchQueryHashKey,
   formatURL,
@@ -45,6 +46,7 @@ import {
   TagsResponse,
 } from "@/common/schema_types";
 import {
+  CardDocument,
   CardDocuments,
   CardType,
   DFCPairs,
@@ -136,14 +138,6 @@ export const api = createApi({
       providesTags: [QueryTags.BackendSpecific],
       transformResponse: (response: PatreonResponse, meta, arg) =>
         response.patreon,
-    }),
-    getGoogleDriveImage: builder.query<string, string>({
-      query: (identifier: string) => ({
-        url: GoogleDriveImageAPIURL,
-        method: "GET",
-        params: { id: identifier },
-        responseHandler: "text",
-      }),
     }),
     getNewCardsFirstPage: builder.query<
       { [sourceKey: string]: NewCardsFirstPage },
