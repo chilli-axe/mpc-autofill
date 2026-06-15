@@ -2,7 +2,6 @@
  * This module contains functions which sanitise and transform user inputs for cards to query into useful formats.
  */
 
-import { toByteArray } from "base64-js";
 // @ts-ignore
 import { parse } from "lil-csv";
 

@@ -27,7 +27,6 @@
     "@sentry/nextjs": "^10.50.0",
     "@types/ua-parser-js": "^0.7.36",
     "async-await-queue": "^2.1.4",
-    "base64-js": "^1.5.1",
     "bootstrap": "^5.2.3",
     "bootstrap-icons": "^1.10.3",
     "bootswatch": "^5.3.8",
