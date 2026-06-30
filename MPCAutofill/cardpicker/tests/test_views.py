@@ -46,54 +46,52 @@ class TestPostEditorSearchResults:
             reverse(views.post_editor_search),
             {
                 "searchSettings": BASE_SEARCH_SETTINGS,
-                "queries": [{"query": Cards.BRAINSTORM.value.name, "cardType": "CARD"}],
+                "queries": {"key1": {"query": Cards.BRAINSTORM.value.name, "cardType": "CARD"}},
             },
             content_type="application/json",
         )
         snapshot_response(response, snapshot)
         assert response.status_code == 200
-        assert response.json()["results"][Cards.BRAINSTORM.value.name]["CARD"] == [Cards.BRAINSTORM.value.identifier]
+        assert response.json()["results"]["key1"] == [Cards.BRAINSTORM.value.identifier]
 
     def test_search_for_single_cardback(self, client, snapshot):
         response = client.post(
             reverse(views.post_editor_search),
             {
                 "searchSettings": BASE_SEARCH_SETTINGS,
-                "queries": [{"query": Cards.SIMPLE_LOTUS.value.name, "cardType": "CARDBACK"}],
+                "queries": {"key1": {"query": Cards.SIMPLE_LOTUS.value.name, "cardType": "CARDBACK"}},
             },
             content_type="application/json",
         )
         snapshot_response(response, snapshot)
         assert response.status_code == 200
-        assert response.json()["results"][Cards.SIMPLE_LOTUS.value.name]["CARDBACK"] == [
-            Cards.SIMPLE_LOTUS.value.identifier
-        ]
+        assert response.json()["results"]["key1"] == [Cards.SIMPLE_LOTUS.value.identifier]
 
     def test_search_for_single_token(self, client, snapshot):
         response = client.post(
             reverse(views.post_editor_search),
             {
                 "searchSettings": BASE_SEARCH_SETTINGS,
-                "queries": [{"query": Cards.GOBLIN.value.name, "cardType": "TOKEN"}],
+                "queries": {"key1": {"query": Cards.GOBLIN.value.name, "cardType": "TOKEN"}},
             },
             content_type="application/json",
         )
         snapshot_response(response, snapshot)
         assert response.status_code == 200
-        assert response.json()["results"][Cards.GOBLIN.value.name]["TOKEN"] == [Cards.GOBLIN.value.identifier]
+        assert response.json()["results"]["key1"] == [Cards.GOBLIN.value.identifier]
 
     def test_complex_search(self, client, snapshot):
         response = client.post(
             reverse(views.post_editor_search),
             {
                 "searchSettings": BASE_SEARCH_SETTINGS,
-                "queries": [
-                    {"query": Cards.BRAINSTORM.value.name, "cardType": "CARD"},
-                    {"query": Cards.ISLAND.value.name, "cardType": "CARD"},
-                    {"query": Cards.SIMPLE_CUBE.value.name, "cardType": "CARDBACK"},
-                    {"query": Cards.SIMPLE_LOTUS.value.name, "cardType": "CARDBACK"},
-                    {"query": Cards.GOBLIN.value.name, "cardType": "TOKEN"},
-                ],
+                "queries": {
+                    "key1": {"query": Cards.BRAINSTORM.value.name, "cardType": "CARD"},
+                    "key2": {"query": Cards.ISLAND.value.name, "cardType": "CARD"},
+                    "key3": {"query": Cards.SIMPLE_CUBE.value.name, "cardType": "CARDBACK"},
+                    "key4": {"query": Cards.SIMPLE_LOTUS.value.name, "cardType": "CARDBACK"},
+                    "key5": {"query": Cards.GOBLIN.value.name, "cardType": "TOKEN"},
+                },
             },
             content_type="application/json",
         )
@@ -105,14 +103,14 @@ class TestPostEditorSearchResults:
             reverse(views.post_editor_search),
             {
                 "searchSettings": BASE_SEARCH_SETTINGS,
-                "queries": [{"query": Cards.ISLAND.value.name, "cardType": "CARD"}],
+                "queries": {"key1": {"query": Cards.ISLAND.value.name, "cardType": "CARD"}},
             },
             content_type="application/json",
         )
         snapshot_response(response, snapshot)
         assert response.status_code == 200
         # `Island` should be before `Island (Classical)` due to priority being given to names with no parentheses
-        assert response.json()["results"][Cards.ISLAND.value.name]["CARD"] == [
+        assert response.json()["results"]["key1"] == [
             Cards.ISLAND.value.identifier,
             Cards.ISLAND_CLASSICAL.value.identifier,
         ]
@@ -122,13 +120,13 @@ class TestPostEditorSearchResults:
             reverse(views.post_editor_search),
             {
                 "searchSettings": BASE_SEARCH_SETTINGS,
-                "queries": [{"query": Cards.PAST_IN_FLAMES_1.value.name, "cardType": "CARD"}],
+                "queries": {"key1": {"query": Cards.PAST_IN_FLAMES_1.value.name, "cardType": "CARD"}},
             },
             content_type="application/json",
         )
         snapshot_response(response, snapshot)
         assert response.status_code == 200
-        assert response.json()["results"][Cards.PAST_IN_FLAMES_1.value.name]["CARD"] == [
+        assert response.json()["results"]["key1"] == [
             Cards.PAST_IN_FLAMES_1.value.identifier,
             Cards.PAST_IN_FLAMES_2.value.identifier,
         ]
@@ -143,13 +141,13 @@ class TestPostEditorSearchResults:
             reverse(views.post_editor_search),
             {
                 "searchSettings": search_settings,
-                "queries": [{"query": Cards.PAST_IN_FLAMES_1.value.name, "cardType": "CARD"}],
+                "queries": {"key1": {"query": Cards.PAST_IN_FLAMES_1.value.name, "cardType": "CARD"}},
             },
             content_type="application/json",
         )
         snapshot_response(response, snapshot)
         assert response.status_code == 200
-        assert response.json()["results"][Cards.PAST_IN_FLAMES_1.value.name]["CARD"] == [
+        assert response.json()["results"]["key1"] == [
             Cards.PAST_IN_FLAMES_2.value.identifier,
             Cards.PAST_IN_FLAMES_1.value.identifier,
         ]
@@ -164,15 +162,13 @@ class TestPostEditorSearchResults:
             reverse(views.post_editor_search),
             {
                 "searchSettings": search_settings,
-                "queries": [{"query": Cards.PAST_IN_FLAMES_1.value.name, "cardType": "CARD"}],
+                "queries": {"key1": {"query": Cards.PAST_IN_FLAMES_1.value.name, "cardType": "CARD"}},
             },
             content_type="application/json",
         )
         snapshot_response(response, snapshot)
         assert response.status_code == 200
-        assert response.json()["results"][Cards.PAST_IN_FLAMES_1.value.name]["CARD"] == [
-            Cards.PAST_IN_FLAMES_1.value.identifier
-        ]
+        assert response.json()["results"]["key1"] == [Cards.PAST_IN_FLAMES_1.value.identifier]
 
     def test_search_for_card_with_versions_from_two_sources_with_all_sources_disabled(self, client, snapshot):
         search_settings = deepcopy(BASE_SEARCH_SETTINGS)
@@ -184,25 +180,28 @@ class TestPostEditorSearchResults:
             reverse(views.post_editor_search),
             {
                 "searchSettings": search_settings,
-                "queries": [{"query": Cards.PAST_IN_FLAMES_1.value.name, "cardType": "CARD"}],
+                "queries": {"key1": {"query": Cards.PAST_IN_FLAMES_1.value.name, "cardType": "CARD"}},
             },
             content_type="application/json",
         )
         snapshot_response(response, snapshot)
         assert response.status_code == 200
-        assert response.json()["results"][Cards.PAST_IN_FLAMES_1.value.name]["CARD"] == []
+        assert response.json()["results"]["key1"] == []
 
     def test_fuzzy_search(self, client, snapshot):
         search_settings = deepcopy(BASE_SEARCH_SETTINGS)
         search_settings["searchTypeSettings"]["fuzzySearch"] = True
         response = client.post(
             reverse(views.post_editor_search),
-            {"searchSettings": search_settings, "queries": [{"query": "past in", "cardType": "CARD"}]},
+            {
+                "searchSettings": search_settings,
+                "queries": {"key1": {"query": "past in", "cardType": "CARD"}},
+            },
             content_type="application/json",
         )
         snapshot_response(response, snapshot)
         assert response.status_code == 200
-        assert response.json()["results"]["past in"]["CARD"] == [
+        assert response.json()["results"]["key1"] == [
             Cards.PAST_IN_FLAMES_1.value.identifier,
             Cards.PAST_IN_FLAMES_2.value.identifier,
         ]
@@ -214,13 +213,13 @@ class TestPostEditorSearchResults:
             reverse(views.post_editor_search),
             {
                 "searchSettings": search_settings,
-                "queries": [{"query": Cards.SIMPLE_CUBE.value.name, "cardType": "CARDBACK"}],
+                "queries": {"key1": {"query": Cards.SIMPLE_CUBE.value.name, "cardType": "CARDBACK"}},
             },
             content_type="application/json",
         )
         snapshot_response(response, snapshot)
         assert response.status_code == 200
-        assert response.json()["results"][Cards.SIMPLE_CUBE.value.name]["CARDBACK"] == []
+        assert response.json()["results"]["key1"] == []
 
     def test_maximum_dpi_yielding_no_search_results(self, client, snapshot):
         search_settings = deepcopy(BASE_SEARCH_SETTINGS)
@@ -229,13 +228,13 @@ class TestPostEditorSearchResults:
             reverse(views.post_editor_search),
             {
                 "searchSettings": search_settings,
-                "queries": [{"query": Cards.SIMPLE_CUBE.value.name, "cardType": "CARDBACK"}],
+                "queries": {"key1": {"query": Cards.SIMPLE_CUBE.value.name, "cardType": "CARDBACK"}},
             },
             content_type="application/json",
         )
         snapshot_response(response, snapshot)
         assert response.status_code == 200
-        assert response.json()["results"][Cards.SIMPLE_CUBE.value.name]["CARDBACK"] == []
+        assert response.json()["results"]["key1"] == []
 
     def test_minimum_dpi_yielding_fewer_search_results(self, client, snapshot):
         search_settings = deepcopy(BASE_SEARCH_SETTINGS)
@@ -244,15 +243,13 @@ class TestPostEditorSearchResults:
             reverse(views.post_editor_search),
             {
                 "searchSettings": search_settings,
-                "queries": [{"query": Cards.PAST_IN_FLAMES_1.value.name, "cardType": "CARD"}],
+                "queries": {"key1": {"query": Cards.PAST_IN_FLAMES_1.value.name, "cardType": "CARD"}},
             },
             content_type="application/json",
         )
         snapshot_response(response, snapshot)
         assert response.status_code == 200
-        assert response.json()["results"][Cards.PAST_IN_FLAMES_1.value.name]["CARD"] == [
-            Cards.PAST_IN_FLAMES_1.value.identifier
-        ]
+        assert response.json()["results"]["key1"] == [Cards.PAST_IN_FLAMES_1.value.identifier]
 
     def test_maximum_size_yielding_fewer_search_results(self, client, snapshot):
         search_settings = deepcopy(BASE_SEARCH_SETTINGS)
@@ -261,15 +258,13 @@ class TestPostEditorSearchResults:
             reverse(views.post_editor_search),
             {
                 "searchSettings": search_settings,
-                "queries": [{"query": Cards.PAST_IN_FLAMES_1.value.name, "cardType": "CARD"}],
+                "queries": {"key1": {"query": Cards.PAST_IN_FLAMES_1.value.name, "cardType": "CARD"}},
             },
             content_type="application/json",
         )
         snapshot_response(response, snapshot)
         assert response.status_code == 200
-        assert response.json()["results"][Cards.PAST_IN_FLAMES_1.value.name]["CARD"] == [
-            Cards.PAST_IN_FLAMES_2.value.identifier
-        ]
+        assert response.json()["results"]["key1"] == [Cards.PAST_IN_FLAMES_2.value.identifier]
 
     def test_get_one_row_filtered_one_language(self, client, snapshot, past_in_flames_1, past_in_flames_2):
         search_settings = deepcopy(BASE_SEARCH_SETTINGS)
@@ -278,13 +273,13 @@ class TestPostEditorSearchResults:
             reverse(views.post_editor_search),
             {
                 "searchSettings": search_settings,
-                "queries": [{"query": Cards.PAST_IN_FLAMES_1.value.name, "cardType": "CARD"}],
+                "queries": {"key1": {"query": Cards.PAST_IN_FLAMES_1.value.name, "cardType": "CARD"}},
             },
             content_type="application/json",
         )
         snapshot_response(response, snapshot)
         assert response.status_code == 200
-        assert len(response.json()["results"][Cards.PAST_IN_FLAMES_1.value.name]["CARD"]) == 1
+        assert len(response.json()["results"]["key1"]) == 1
 
     def test_get_multiple_rows_filtered_two_languages(self, client, snapshot, past_in_flames_1, past_in_flames_2):
         search_settings = deepcopy(BASE_SEARCH_SETTINGS)
@@ -293,13 +288,13 @@ class TestPostEditorSearchResults:
             reverse(views.post_editor_search),
             {
                 "searchSettings": search_settings,
-                "queries": [{"query": Cards.PAST_IN_FLAMES_1.value.name, "cardType": "CARD"}],
+                "queries": {"key1": {"query": Cards.PAST_IN_FLAMES_1.value.name, "cardType": "CARD"}},
             },
             content_type="application/json",
         )
         snapshot_response(response, snapshot)
         assert response.status_code == 200
-        assert len(response.json()["results"][Cards.PAST_IN_FLAMES_1.value.name]["CARD"]) == 2
+        assert len(response.json()["results"]["key1"]) == 2
 
     def test_get_one_row_filtered_includes_one_tag(
         self, client, snapshot, past_in_flames_1, past_in_flames_2, another_tag_in_data
@@ -310,13 +305,13 @@ class TestPostEditorSearchResults:
             reverse(views.post_editor_search),
             {
                 "searchSettings": search_settings,
-                "queries": [{"query": Cards.PAST_IN_FLAMES_1.value.name, "cardType": "CARD"}],
+                "queries": {"key1": {"query": Cards.PAST_IN_FLAMES_1.value.name, "cardType": "CARD"}},
             },
             content_type="application/json",
         )
         snapshot_response(response, snapshot)
         assert response.status_code == 200
-        assert len(response.json()["results"][Cards.PAST_IN_FLAMES_1.value.name]["CARD"]) == 1
+        assert len(response.json()["results"]["key1"]) == 1
 
     def test_get_one_row_filtered_excludes_one_tag(
         self, client, snapshot, past_in_flames_1, past_in_flames_2, another_tag_in_data
@@ -327,13 +322,13 @@ class TestPostEditorSearchResults:
             reverse(views.post_editor_search),
             {
                 "searchSettings": search_settings,
-                "queries": [{"query": Cards.PAST_IN_FLAMES_2.value.name, "cardType": "CARD"}],
+                "queries": {"key1": {"query": Cards.PAST_IN_FLAMES_2.value.name, "cardType": "CARD"}},
             },
             content_type="application/json",
         )
         snapshot_response(response, snapshot)
         assert response.status_code == 200
-        assert len(response.json()["results"][Cards.PAST_IN_FLAMES_2.value.name]["CARD"]) == 1
+        assert len(response.json()["results"]["key1"]) == 1
 
     def test_get_multiple_rows_filtered_includes_one_tag(
         self, client, snapshot, past_in_flames_1, past_in_flames_2, tag_in_data
@@ -344,13 +339,13 @@ class TestPostEditorSearchResults:
             reverse(views.post_editor_search),
             {
                 "searchSettings": search_settings,
-                "queries": [{"query": Cards.PAST_IN_FLAMES_1.value.name, "cardType": "CARD"}],
+                "queries": {"key1": {"query": Cards.PAST_IN_FLAMES_1.value.name, "cardType": "CARD"}},
             },
             content_type="application/json",
         )
         snapshot_response(response, snapshot)
         assert response.status_code == 200
-        assert len(response.json()["results"][Cards.PAST_IN_FLAMES_1.value.name]["CARD"]) == 2
+        assert len(response.json()["results"]["key1"]) == 2
 
     def test_get_multiple_rows_filtered_includes_one_tag_and_excludes_another(
         self, client, snapshot, past_in_flames_1, past_in_flames_2, tag_in_data, another_tag_in_data
@@ -362,13 +357,13 @@ class TestPostEditorSearchResults:
             reverse(views.post_editor_search),
             {
                 "searchSettings": search_settings,
-                "queries": [{"query": Cards.PAST_IN_FLAMES_1.value.name, "cardType": "CARD"}],
+                "queries": {"key1": {"query": Cards.PAST_IN_FLAMES_1.value.name, "cardType": "CARD"}},
             },
             content_type="application/json",
         )
         snapshot_response(response, snapshot)
         assert response.status_code == 200
-        assert len(response.json()["results"][Cards.PAST_IN_FLAMES_1.value.name]["CARD"]) == 1
+        assert len(response.json()["results"]["key1"]) == 1
 
     def test_get_multiple_rows_filtered_includes_two_tags(
         self, client, snapshot, past_in_flames_1, past_in_flames_2, tag_in_data, another_tag_in_data
@@ -379,13 +374,89 @@ class TestPostEditorSearchResults:
             reverse(views.post_editor_search),
             {
                 "searchSettings": search_settings,
-                "queries": [{"query": Cards.PAST_IN_FLAMES_1.value.name, "cardType": "CARD"}],
+                "queries": {"key1": {"query": Cards.PAST_IN_FLAMES_1.value.name, "cardType": "CARD"}},
             },
             content_type="application/json",
         )
         snapshot_response(response, snapshot)
         assert response.status_code == 200
-        assert len(response.json()["results"][Cards.PAST_IN_FLAMES_1.value.name]["CARD"]) == 2
+        assert len(response.json()["results"]["key1"]) == 2
+
+    def test_filter_by_expansion_code(self, client, snapshot):
+        response = client.post(
+            reverse(views.post_editor_search),
+            {
+                "searchSettings": BASE_SEARCH_SETTINGS,
+                "queries": {"key1": {"query": Cards.BRAINSTORM.value.name, "cardType": "CARD", "expansionCode": "ICE"}},
+            },
+            content_type="application/json",
+        )
+        snapshot_response(response, snapshot)
+        assert response.status_code == 200
+        assert response.json()["results"]["key1"] == [Cards.BRAINSTORM.value.identifier]
+
+    def test_filter_by_expansion_code_no_results(self, client, snapshot):
+        response = client.post(
+            reverse(views.post_editor_search),
+            {
+                "searchSettings": BASE_SEARCH_SETTINGS,
+                "queries": {"key1": {"query": Cards.BRAINSTORM.value.name, "cardType": "CARD", "expansionCode": "ZZZ"}},
+            },
+            content_type="application/json",
+        )
+        snapshot_response(response, snapshot)
+        assert response.status_code == 200
+        assert response.json()["results"]["key1"] == []
+
+    def test_filter_by_collector_number(self, client, snapshot):
+        response = client.post(
+            reverse(views.post_editor_search),
+            {
+                "searchSettings": BASE_SEARCH_SETTINGS,
+                "queries": {
+                    "key1": {"query": Cards.BRAINSTORM.value.name, "cardType": "CARD", "collectorNumber": "61"}
+                },
+            },
+            content_type="application/json",
+        )
+        snapshot_response(response, snapshot)
+        assert response.status_code == 200
+        assert response.json()["results"]["key1"] == [Cards.BRAINSTORM.value.identifier]
+
+    def test_filter_by_collector_number_no_results(self, client, snapshot):
+        response = client.post(
+            reverse(views.post_editor_search),
+            {
+                "searchSettings": BASE_SEARCH_SETTINGS,
+                "queries": {
+                    "key1": {"query": Cards.BRAINSTORM.value.name, "cardType": "CARD", "collectorNumber": "999"}
+                },
+            },
+            content_type="application/json",
+        )
+        snapshot_response(response, snapshot)
+        assert response.status_code == 200
+        assert response.json()["results"]["key1"] == []
+
+    def test_filter_by_expansion_code_and_collector_number(self, client, snapshot):
+        response = client.post(
+            reverse(views.post_editor_search),
+            {
+                "searchSettings": BASE_SEARCH_SETTINGS,
+                "queries": {
+                    "key1": {
+                        "query": Cards.BRAINSTORM.value.name,
+                        "cardType": "CARD",
+                        "expansionCode": "ICE",
+                        "collectorNumber": "61",
+                    }
+                },
+            },
+            content_type="application/json",
+        )
+        snapshot_response(response, snapshot)
+        assert response.status_code == 200
+        assert response.json()["results"]["key1"] == [Cards.BRAINSTORM.value.identifier]
 
     def test_page_equal_to_max_size(self, client, monkeypatch, snapshot):
         monkeypatch.setattr("cardpicker.views.EDITOR_SEARCH_MAX_QUERIES", 2)
@@ -393,10 +464,10 @@ class TestPostEditorSearchResults:
             reverse(views.post_editor_search),
             {
                 "searchSettings": BASE_SEARCH_SETTINGS,
-                "queries": [
-                    {"query": Cards.BRAINSTORM.value.name, "cardType": "CARD"},
-                    {"query": Cards.ISLAND.value.name, "cardType": "CARD"},
-                ],
+                "queries": {
+                    "key1": {"query": Cards.BRAINSTORM.value.name, "cardType": "CARD"},
+                    "key2": {"query": Cards.ISLAND.value.name, "cardType": "CARD"},
+                },
             },
             content_type="application/json",
         )
@@ -409,11 +480,11 @@ class TestPostEditorSearchResults:
             reverse(views.post_editor_search),
             {
                 "searchSettings": BASE_SEARCH_SETTINGS,
-                "queries": [
-                    {"query": Cards.BRAINSTORM.value.name, "cardType": "CARD"},
-                    {"query": Cards.ISLAND.value.name, "cardType": "CARD"},
-                    {"query": Cards.SIMPLE_CUBE.value.name, "cardType": "CARDBACK"},
-                ],
+                "queries": {
+                    "key1": {"query": Cards.BRAINSTORM.value.name, "cardType": "CARD"},
+                    "key2": {"query": Cards.ISLAND.value.name, "cardType": "CARD"},
+                    "key3": {"query": Cards.SIMPLE_CUBE.value.name, "cardType": "CARDBACK"},
+                },
             },
             content_type="application/json",
         )
@@ -433,11 +504,11 @@ class TestPostEditorSearchResults:
             },
             {
                 "searchSettings": BASE_SEARCH_SETTINGS,
-                "queries": {"query": Cards.BRAINSTORM.value.name, "cardType": "garbage"},
+                "queries": {"key1": {"query": Cards.BRAINSTORM.value.name, "cardType": "garbage"}},
             },
             {
                 "searchSettings": BASE_SEARCH_SETTINGS,
-                "queries": {"query": Cards.BRAINSTORM.value.name, "card_type_garbage": "CARD"},
+                "queries": {"key1": {"query": Cards.BRAINSTORM.value.name, "card_type_garbage": "CARD"}},
             },
         ],
         ids=[
@@ -695,7 +766,7 @@ class TestPostExploreSearchResults:
         assert response.status_code == 400
 
     def test_get_request(self, client, django_settings, snapshot):
-        response = client.get(reverse(views.post_editor_search))
+        response = client.get(reverse(views.post_explore_search))
         snapshot_response(response, snapshot)
         assert response.status_code == 400
 

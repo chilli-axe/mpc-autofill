@@ -1,3 +1,4 @@
+import { computeSearchQueryHashKey } from "@/common/processing";
 import { CardType, ThunkStatus } from "@/common/types";
 import { selectQueriesWithoutSearchResults } from "@/store/slices/projectSlice";
 import { setupStore } from "@/store/store";
@@ -186,7 +187,10 @@ describe("selectQueriesWithoutSearchResults tests", () => {
       },
       searchResults: {
         searchResults: {
-          "query 1": { CARD: [], CARDBACK: [], TOKEN: [] },
+          [computeSearchQueryHashKey({
+            query: "query 1",
+            cardType: "CARD" as CardType,
+          })]: [],
         },
         status: "idle" as ThunkStatus,
         error: null,

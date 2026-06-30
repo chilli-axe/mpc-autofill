@@ -7,9 +7,6 @@ inputs:
   cloudflare-account-id:
     description: Cloudflare account ID
     required: true
-  worker-domain:
-    description: Worker domain (e.g. image-cdn.example.workers.dev)
-    required: true
   google-client-id:
     description: Google OAuth client ID
     required: true
@@ -25,18 +22,16 @@ runs:
     - name: Deploy image CDN Worker
       uses: cloudflare/wrangler-action@v3
       with:
-        wranglerVersion: "4.80.0"
+        wranglerVersion: "4.100.0"
         apiToken: ${{ inputs.cloudflare-api-token }}
         accountId: ${{ inputs.cloudflare-account-id }}
         workingDirectory: image-cdn
         secrets: |
+          GOOGLE_CLIENT_ID
           GOOGLE_CLIENT_SECRET
           GOOGLE_REFRESH_TOKEN
-        vars: |
-          WORKER_DOMAIN
-          GOOGLE_CLIENT_ID
       env:
-        WORKER_DOMAIN: ${{ inputs.worker-domain }}
         GOOGLE_CLIENT_ID: ${{ inputs.google-client-id }}
         GOOGLE_CLIENT_SECRET: ${{ inputs.google-client-secret }}
         GOOGLE_REFRESH_TOKEN: ${{ inputs.google-refresh-token }}
+        WRANGLER_SEND_METRICS: false

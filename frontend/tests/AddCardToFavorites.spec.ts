@@ -3,6 +3,7 @@ import { expect } from "@playwright/test";
 import { SelectedImageSeparator } from "@/common/constants";
 import { cardDocument1 } from "@/common/test-constants";
 import {
+  cardbacksTwoOtherResults,
   cardDocumentsOneResult,
   defaultHandlers,
   searchResultsOneResult,
@@ -33,6 +34,7 @@ test.describe("AddCardToFavorites tests", () => {
   }) => {
     network.use(
       cardDocumentsOneResult,
+      cardbacksTwoOtherResults,
       sourceDocumentsOneResult,
       searchResultsOneResult,
       ...defaultHandlers
@@ -55,6 +57,7 @@ test.describe("AddCardToFavorites tests", () => {
   test("adding card to favorites", async ({ page, network }) => {
     network.use(
       cardDocumentsOneResult,
+      cardbacksTwoOtherResults,
       sourceDocumentsOneResult,
       searchResultsOneResult,
       ...defaultHandlers
@@ -96,6 +99,7 @@ test.describe("AddCardToFavorites tests", () => {
   test("removing card from favorites", async ({ page, network }) => {
     network.use(
       cardDocumentsOneResult,
+      cardbacksTwoOtherResults,
       sourceDocumentsOneResult,
       searchResultsOneResult,
       ...defaultHandlers
@@ -143,6 +147,7 @@ test.describe("AddCardToFavorites tests", () => {
   test("toggling favorite status multiple times", async ({ page, network }) => {
     network.use(
       cardDocumentsOneResult,
+      cardbacksTwoOtherResults,
       sourceDocumentsOneResult,
       searchResultsOneResult,
       ...defaultHandlers
@@ -182,6 +187,7 @@ test.describe("AddCardToFavorites tests", () => {
   }) => {
     network.use(
       cardDocumentsOneResult,
+      cardbacksTwoOtherResults,
       sourceDocumentsOneResult,
       searchResultsOneResult,
       ...defaultHandlers

@@ -6,7 +6,13 @@ import { createSelector, PayloadAction } from "@reduxjs/toolkit";
 
 import { Card, Cardback } from "@/common/constants";
 import { Back, Front, ProjectMaxSize } from "@/common/constants";
-import { processPrefix, toSearchable } from "@/common/processing";
+import {
+  areSearchQueriesEqual,
+  computeSearchQueryHashKey,
+  doesSearchQueryFilterOnPrinting,
+  processSearchQuery,
+  toSearchable,
+} from "@/common/processing";
 import { SourceType } from "@/common/schema_types";
 import {
   CardDocuments,
@@ -101,7 +107,7 @@ export const projectSlice = createAppSlice({
       state,
       action: PayloadAction<{ query: string; slots: Array<[Faces, number]> }>
     ) => {
-      const newQuery = processPrefix(action.payload.query);
+      const newQuery = processSearchQuery(action.payload.query);
       for (const [face, slot] of action.payload.slots) {
         if (state.members[slot][face] == null) {
           state.members[slot][face] = {
@@ -232,7 +238,27 @@ export const projectSlice = createAppSlice({
           state.members[slot][face]!.selected = action.payload.selectedStatus;
         }
       }
-      state.mostRecentlySelectedSlot = null;
+      state.mostRecentlySelectedSlot = null; // deselect
+    },
+    bulkRemovePrintingFilter: (
+      state,
+      action: PayloadAction<{
+        slots: Array<[Faces, number]>;
+      }>
+    ) => {
+      for (const [face, slot] of action.payload.slots) {
+        if (state.members[slot][face] != null) {
+          state.members[slot][face].query = {
+            // query: state.members[slot][face].query.query,
+            // cardType: state.members[slot][face].query.cardType,
+            ...state.members[slot][face].query,
+            expansionCode: undefined,
+            collectorNumber: undefined,
+          };
+          state.members[slot][face].selected = false;
+        }
+      }
+      state.mostRecentlySelectedSlot = null; // deselect
     },
     bulkAlignMemberSelection: (
       state,
@@ -247,11 +273,10 @@ export const projectSlice = createAppSlice({
       if (selectedMember != null) {
         for (const [slot, projectMember] of state.members.entries()) {
           if (
-            projectMember[action.payload.face] != null &&
-            projectMember[action.payload.face]?.query?.query ===
-              selectedMember.query?.query &&
-            projectMember[action.payload.face]?.query?.cardType ===
-              selectedMember.query?.cardType
+            areSearchQueriesEqual(
+              projectMember[action.payload.face]?.query,
+              selectedMember.query
+            )
           ) {
             projectMember[action.payload.face]!.selected =
               selectedMember.selected;
@@ -288,6 +313,30 @@ export const projectSlice = createAppSlice({
       newMembers.splice(toIndex, 0, item);
       state.members = newMembers;
     },
+    duplicateSlot: (
+      state,
+      action: PayloadAction<{
+        slot: number;
+        quantity: number;
+      }>
+    ) => {
+      const { slot, quantity } = action.payload;
+      if (slot < 0 || slot >= state.members.length) {
+        throw new RangeError(`slot ${slot} is out of bounds`);
+      }
+      const duplicates = Array(quantity).fill(state.members[slot]);
+
+      const newMembers = duplicates.map((duplicate) => ({
+        // need to generate new IDs for the duplicates
+        ...duplicate,
+        id: `member-${state.nextMemberId++}`,
+      }));
+      state.members = [
+        ...state.members.slice(0, slot + 1),
+        ...newMembers,
+        ...state.members.slice(slot + 1),
+      ];
+    },
   },
 });
 
@@ -301,9 +350,11 @@ export const {
   toggleMemberSelection,
   expandSelection,
   bulkSetMemberSelection,
+  bulkRemovePrintingFilter,
   bulkAlignMemberSelection,
   deleteSlots,
   moveSlot,
+  duplicateSlot,
 } = projectSlice.actions;
 
 export default projectSlice.reducer;
@@ -382,12 +433,11 @@ export const selectUniqueCardIdentifiers = createSelector(
         .flatMap((slotProjectMembers) =>
           [Front, Back].flatMap((face) => {
             const searchQuery = slotProjectMembers[face]?.query;
-
-            if (!searchQuery?.query || !searchResults[searchQuery.query]) {
+            if (!searchQuery?.query) {
               return [];
             }
-
-            return searchResults[searchQuery.query][searchQuery.cardType] ?? [];
+            const hashKey = computeSearchQueryHashKey(searchQuery);
+            return searchResults[hashKey] ?? [];
           })
         )
         .concat(cardbacks)
@@ -440,18 +490,14 @@ export const selectQueriesWithoutSearchResults = createSelector(
     return projectMembers.flatMap((slotProjectMembers) =>
       [Front, Back].flatMap((face) => {
         const searchQuery = slotProjectMembers[face]?.query;
-        const stringifiedSearchQuery = JSON.stringify(searchQuery ?? "");
-        if (
-          searchQuery?.query != null &&
-          (searchResults[searchQuery.query] ?? {})[searchQuery.cardType] ==
-            null &&
-          !set.has(stringifiedSearchQuery)
-        ) {
-          set.add(stringifiedSearchQuery);
-          return [searchQuery];
-        } else {
-          return [];
+        if (searchQuery?.query != null) {
+          const hashKey = computeSearchQueryHashKey(searchQuery);
+          if (searchResults[hashKey] == null && !set.has(hashKey)) {
+            set.add(hashKey);
+            return [searchQuery];
+          }
         }
+        return [];
       })
     );
   }
@@ -466,12 +512,8 @@ export const selectAllSelectedProjectMembersHaveTheSameQuery = createSelector(
     const projectMembers = slots.map((slot) =>
       getProjectMember(members, ...slot)
     );
-    return projectMembers.every(
-      (projectMember) =>
-        (firstQuery?.query == null && projectMember?.query?.query == null) ||
-        (firstQuery != null &&
-          projectMember?.query?.query == firstQuery.query &&
-          projectMember?.query?.cardType == firstQuery.cardType)
+    return projectMembers.every((projectMember) =>
+      areSearchQueriesEqual(firstQuery, projectMember?.query)
     )
       ? firstQuery
       : undefined;
@@ -535,6 +577,20 @@ export const selectAnySelectedImagesDownloadable = createSelector(
       getProjectMember(members, ...slot)
     );
     return anyImagesDownloadable(projectMembers, cardDocuments);
+  }
+);
+
+export const selectAnySelectedImagesFilteredOnPrinting = createSelector(
+  (state: RootState, slots: Slots) => state.project.members,
+  (state: RootState, slots: Slots) => state.cardDocuments.cardDocuments,
+  (state: RootState, slots: Slots) => slots,
+  (members, cardDocuments, slots) => {
+    const projectMembers = slots.map((slot) =>
+      getProjectMember(members, ...slot)
+    );
+    return projectMembers.some(
+      (member) => member?.query && doesSearchQueryFilterOnPrinting(member.query)
+    );
   }
 );
 

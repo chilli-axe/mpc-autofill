@@ -6,9 +6,14 @@ import {
   FetchBaseQueryError,
 } from "@reduxjs/toolkit/query/react";
 
-import { GoogleDriveImageAPIURL, QueryTags } from "@/common/constants";
+import { QueryTags } from "@/common/constants";
 import { getCSRFHeader } from "@/common/cookies";
-import { formatURL, processQuery } from "@/common/processing";
+import { getWorkerImageURL } from "@/common/image";
+import {
+  computeSearchQueryHashKey,
+  formatURL,
+  processQuery,
+} from "@/common/processing";
 import {
   Card,
   CardbacksResponse,
@@ -31,6 +36,8 @@ import {
   NewCardsFirstPage,
   NewCardsFirstPagesResponse,
   NewCardsPageResponse,
+  OldEditorSearchRequest,
+  OldEditorSearchResponse,
   Patreon,
   PatreonResponse,
   SampleCardsResponse,
@@ -39,11 +46,12 @@ import {
   TagsResponse,
 } from "@/common/schema_types";
 import {
+  CardDocument,
   CardDocuments,
+  CardType,
   DFCPairs,
   SearchQuery,
   SearchResults,
-  SearchResultsForQuery,
   SearchSettings,
   SourceDocuments,
 } from "@/common/types";
@@ -130,14 +138,6 @@ export const api = createApi({
       providesTags: [QueryTags.BackendSpecific],
       transformResponse: (response: PatreonResponse, meta, arg) =>
         response.patreon,
-    }),
-    getGoogleDriveImage: builder.query<string, string>({
-      query: (identifier: string) => ({
-        url: GoogleDriveImageAPIURL,
-        method: "GET",
-        params: { id: identifier },
-        responseHandler: "text",
-      }),
     }),
     getNewCardsFirstPage: builder.query<
       { [sourceKey: string]: NewCardsFirstPage },
@@ -348,7 +348,7 @@ export async function APIGetCardbacks(
   });
 }
 
-export async function APIEditorSearch(
+async function APIEditorSearchLegacy(
   backendURL: string,
   searchSettings: SearchSettings,
   queriesToSearch: Array<SearchQuery>
@@ -358,16 +358,68 @@ export async function APIEditorSearch(
     body: JSON.stringify({
       searchSettings,
       queries: queriesToSearch,
-    } as EditorSearchRequest),
+    } as OldEditorSearchRequest),
     credentials: "same-origin",
     headers: getCSRFHeader(),
   });
   return rawResponse.json().then((content) => {
     if (rawResponse.status === 200 && content.results != null) {
-      return content.results as EditorSearchResponse["results"];
+      const results = content.results as OldEditorSearchResponse["results"];
+      // transform results into new format
+      const transformedResults: EditorSearchResponse["results"] =
+        Object.fromEntries(
+          Object.entries(results).flatMap(([query, resultsPerCardType]) =>
+            Object.entries(resultsPerCardType).map(
+              ([cardType, searchResults]) => [
+                computeSearchQueryHashKey({
+                  query,
+                  cardType: cardType as CardType,
+                }),
+                searchResults,
+              ]
+            )
+          )
+        );
+      return transformedResults;
     }
     throw { name: content.name, message: content.message };
   });
+}
+
+export async function APIEditorSearch(
+  backendURL: string,
+  searchSettings: SearchSettings,
+  queriesToSearch: Array<SearchQuery>
+): Promise<SearchResults> {
+  try {
+    const rawResponse = await fetch(formatURL(backendURL, "/3/editorSearch/"), {
+      method: "POST",
+      body: JSON.stringify({
+        searchSettings,
+        queries: Object.fromEntries(
+          queriesToSearch.map((searchQuery) => [
+            computeSearchQueryHashKey(searchQuery),
+            searchQuery,
+          ])
+        ),
+      } as EditorSearchRequest),
+      credentials: "same-origin",
+      headers: getCSRFHeader(),
+    });
+    if (rawResponse.status === 404) {
+      // degrade to 2/editorSearch in case backend is running an older build
+      return APIEditorSearchLegacy(backendURL, searchSettings, queriesToSearch);
+    }
+    return rawResponse.json().then((content) => {
+      if (rawResponse.status === 200 && content.results != null) {
+        return content.results as EditorSearchResponse["results"];
+      }
+      throw { name: content.name, message: content.message };
+    });
+  } catch (error) {
+    // degrade to 2/editorSearch in case backend is running an older build
+    return APIEditorSearchLegacy(backendURL, searchSettings, queriesToSearch);
+  }
 }
 
 export async function APIGetSources(

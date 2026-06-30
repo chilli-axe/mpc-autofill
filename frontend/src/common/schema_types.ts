@@ -2,7 +2,7 @@
 
 // To parse this data:
 //
-//   import { Convert, Campaign, CanonicalArtist, CanonicalCard, Card, CardType, DownloadCounts, FilterSettings, Game, ImportSite, Language, NewCardsFirstPage, SearchQuery, SearchSettings, SearchTypeSettings, SortBy, Source, SourceContribution, SourceSettings, SourceType, Supporter, SupporterTier, Tag, CardbacksRequest, CardbacksResponse, CardsRequest, CardsResponse, ContributionsResponse, DFCPairsResponse, DownloadCountsRequest, EditorSearchRequest, EditorSearchResponse, ErrorResponse, ExploreSearchRequest, ExploreSearchResponse, ImportSiteDecklistRequest, ImportSiteDecklistResponse, ImportSitesResponse, InfoResponse, LanguagesResponse, NewCardsFirstPagesResponse, NewCardsPageResponse, PatreonResponse, SampleCardsResponse, SearchEngineHealthResponse, SourcesResponse, TagsResponse } from "./file";
+//   import { Convert, Campaign, CanonicalArtist, CanonicalCard, Card, CardType, DownloadCounts, FilterSettings, Game, ImportSite, Language, NewCardsFirstPage, SearchQuery, SearchSettings, SearchTypeSettings, SortBy, Source, SourceContribution, SourceSettings, SourceType, Supporter, SupporterTier, Tag, CardbacksRequest, CardbacksResponse, CardsRequest, CardsResponse, ContributionsResponse, DFCPairsResponse, DownloadCountsRequest, EditorSearchRequest, EditorSearchResponse, ErrorResponse, ExploreSearchRequest, ExploreSearchResponse, ImportSiteDecklistRequest, ImportSiteDecklistResponse, ImportSitesResponse, InfoResponse, LanguagesResponse, NewCardsFirstPagesResponse, NewCardsPageResponse, OldEditorSearchRequest, OldEditorSearchResponse, PatreonResponse, SampleCardsResponse, SearchEngineHealthResponse, SourcesResponse, TagsResponse } from "./file";
 //
 //   const campaign = Convert.toCampaign(json);
 //   const canonicalArtist = Convert.toCanonicalArtist(json);
@@ -46,6 +46,8 @@
 //   const languagesResponse = Convert.toLanguagesResponse(json);
 //   const newCardsFirstPagesResponse = Convert.toNewCardsFirstPagesResponse(json);
 //   const newCardsPageResponse = Convert.toNewCardsPageResponse(json);
+//   const oldEditorSearchRequest = Convert.toOldEditorSearchRequest(json);
+//   const oldEditorSearchResponse = Convert.toOldEditorSearchResponse(json);
 //   const patreonResponse = Convert.toPatreonResponse(json);
 //   const sampleCardsResponse = Convert.toSampleCardsResponse(json);
 //   const searchEngineHealthResponse = Convert.toSearchEngineHealthResponse(json);
@@ -219,17 +221,19 @@ export interface DownloadCountsRequest {
 }
 
 export interface EditorSearchRequest {
-  queries: SearchQuery[];
+  queries: { [key: string]: SearchQuery };
   searchSettings: SearchSettings;
 }
 
 export interface SearchQuery {
   cardType: CardType;
+  collectorNumber?: string;
+  expansionCode?: string;
   query: null | string;
 }
 
 export interface EditorSearchResponse {
-  results: { [key: string]: { [key: string]: string[] } };
+  results: { [key: string]: string[] };
 }
 
 export interface ErrorResponse {
@@ -328,6 +332,15 @@ export interface Source {
 
 export interface NewCardsPageResponse {
   cards: Card[];
+}
+
+export interface OldEditorSearchRequest {
+  queries: SearchQuery[];
+  searchSettings: SearchSettings;
+}
+
+export interface OldEditorSearchResponse {
+  results: { [key: string]: { [key: string]: string[] } };
 }
 
 export interface PatreonResponse {
@@ -778,6 +791,28 @@ export class Convert {
     return JSON.stringify(uncast(value, r("NewCardsPageResponse")), null, 2);
   }
 
+  public static toOldEditorSearchRequest(json: string): OldEditorSearchRequest {
+    return cast(JSON.parse(json), r("OldEditorSearchRequest"));
+  }
+
+  public static oldEditorSearchRequestToJson(
+    value: OldEditorSearchRequest
+  ): string {
+    return JSON.stringify(uncast(value, r("OldEditorSearchRequest")), null, 2);
+  }
+
+  public static toOldEditorSearchResponse(
+    json: string
+  ): OldEditorSearchResponse {
+    return cast(JSON.parse(json), r("OldEditorSearchResponse"));
+  }
+
+  public static oldEditorSearchResponseToJson(
+    value: OldEditorSearchResponse
+  ): string {
+    return JSON.stringify(uncast(value, r("OldEditorSearchResponse")), null, 2);
+  }
+
   public static toPatreonResponse(json: string): PatreonResponse {
     return cast(JSON.parse(json), r("PatreonResponse"));
   }
@@ -1177,7 +1212,7 @@ const typeMap: any = {
   ),
   EditorSearchRequest: o(
     [
-      { json: "queries", js: "queries", typ: a(r("SearchQuery")) },
+      { json: "queries", js: "queries", typ: m(r("SearchQuery")) },
       {
         json: "searchSettings",
         js: "searchSettings",
@@ -1189,12 +1224,14 @@ const typeMap: any = {
   SearchQuery: o(
     [
       { json: "cardType", js: "cardType", typ: r("CardType") },
+      { json: "collectorNumber", js: "collectorNumber", typ: u(undefined, "") },
+      { json: "expansionCode", js: "expansionCode", typ: u(undefined, "") },
       { json: "query", js: "query", typ: u(null, "") },
     ],
     false
   ),
   EditorSearchResponse: o(
-    [{ json: "results", js: "results", typ: m(m(a(""))) }],
+    [{ json: "results", js: "results", typ: m(a("")) }],
     false
   ),
   ErrorResponse: o(
@@ -1291,6 +1328,21 @@ const typeMap: any = {
   ),
   NewCardsPageResponse: o(
     [{ json: "cards", js: "cards", typ: a(r("Card")) }],
+    false
+  ),
+  OldEditorSearchRequest: o(
+    [
+      { json: "queries", js: "queries", typ: a(r("SearchQuery")) },
+      {
+        json: "searchSettings",
+        js: "searchSettings",
+        typ: r("SearchSettings"),
+      },
+    ],
+    false
+  ),
+  OldEditorSearchResponse: o(
+    [{ json: "results", js: "results", typ: m(m(a(""))) }],
     false
   ),
   PatreonResponse: o(

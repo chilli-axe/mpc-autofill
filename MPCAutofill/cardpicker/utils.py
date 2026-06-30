@@ -28,8 +28,8 @@ def log_hours_minutes_seconds_elapsed(t0: float) -> None:
 
 @ratelimit.sleep_and_retry  # type: ignore  # `ratelimit` does not implement decorator typing correctly
 @ratelimit.limits(calls=1, period=0.1)  # type: ignore  # `ratelimit` does not implement decorator typing correctly
-def get_json_endpoint_rate_limited(url: str) -> dict[str, Any]:
-    return json.loads(requests.get(url).content)
+def get_json_endpoint_rate_limited(url: str, headers: dict[str, Any] | None = None) -> dict[str, Any]:
+    return json.loads(requests.get(url, headers=headers).content)
 
 
 # https://mypy.readthedocs.io/en/stable/generics.html#declaring-decorators

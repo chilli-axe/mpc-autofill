@@ -19,8 +19,10 @@ runs:
     - name: Deploy frontend to Cloudflare
       uses: cloudflare/wrangler-action@v3
       with:
-        wranglerVersion: "4.80.0"
+        wranglerVersion: "4.100.0"
         accountId: ${{ inputs.cloudflare-account-id }}
         apiToken: ${{ inputs.cloudflare-api-token }}
         command: deploy --assets ../frontend/out
         workingDirectory: cloudflare-static-site
+      env:
+        WRANGLER_SEND_METRICS: false

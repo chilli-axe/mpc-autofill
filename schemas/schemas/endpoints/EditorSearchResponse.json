@@ -5,19 +5,9 @@
   "properties": {
     "results": {
       "type": "object",
-      "patternProperties": {
-        ".*": {
-          "type": "object",
-          "propertyNames": {
-            "enum": ["CARD", "CARDBACK", "TOKEN"]
-          },
-          "patternProperties": {
-            ".*": {
-              "type": "array",
-              "items": { "type": "string" }
-            }
-          }
-        }
+      "additionalProperties": {
+        "type": "array",
+        "items": { "type": "string" }
       }
     }
   },

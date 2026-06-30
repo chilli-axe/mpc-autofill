@@ -23,7 +23,7 @@ import {
   ToggleButtonHeight,
 } from "@/common/constants";
 import { TextFileDropzone } from "@/common/dropzone";
-import { processPrefix } from "@/common/processing";
+import { processSearchQuery } from "@/common/processing";
 import { useAppDispatch, useAppSelector } from "@/common/types";
 import { Cardstock, SlotProjectMembers } from "@/common/types";
 import { RightPaddedIcon } from "@/components/icon";
@@ -97,7 +97,7 @@ export function ImportXML({ onImportComplete }: ImportXMLProps) {
         if (slotsText == null) {
           continue;
         }
-        const searchQuery = processPrefix(
+        const searchQuery = processSearchQuery(
           backCardElement.getElementsByTagName("query")[0].textContent ?? ""
         );
         slotsText
@@ -123,7 +123,7 @@ export function ImportXML({ onImportComplete }: ImportXMLProps) {
       if (slotsText == null) {
         continue;
       }
-      const searchQuery = processPrefix(
+      const searchQuery = processSearchQuery(
         frontCardElement.getElementsByTagName("query")[0].textContent ?? ""
       );
 

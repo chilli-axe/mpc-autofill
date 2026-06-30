@@ -13,7 +13,7 @@ runs:
   using: composite
   steps:
     - name: Install npm
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@v6
       with:
         node-version: 22.15
     - name: Compile frontend
@@ -40,7 +40,7 @@ runs:
       working-directory: frontend
       shell: bash
     - name: Upload blob report
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       if: ${{ !cancelled() }}
       with:
         name: blob-report-${{ inputs.shard_index }}

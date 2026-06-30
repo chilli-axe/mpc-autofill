@@ -4,11 +4,10 @@
   "type": "object",
   "properties": {
     "queries": {
-      "type": "array",
-      "items": {
+      "type": "object",
+      "additionalProperties": {
         "$ref": "../SearchQuery.json"
-      },
-      "uniqueItems": true
+      }
     },
     "searchSettings": {
       "$ref": "../SearchSettings.json"

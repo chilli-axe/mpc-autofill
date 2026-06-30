@@ -214,6 +214,10 @@ class MTGGoldfish(ImportSite):
 
 class Scryfall(ImportSite):
     @staticmethod
+    def get_headers() -> dict[str, Any]:
+        return {"User-Agent": "mpc-autofill/1.0", "Accept": "application/json"}
+
+    @staticmethod
     def get_host_names() -> list[str]:
         return ["scryfall.com", "www.scryfall.com"]
 
@@ -223,7 +227,9 @@ class Scryfall(ImportSite):
         deck_id = path.rsplit("#", 1)[0].split("/")[-1]
         if not deck_id:
             raise cls.InvalidURLException(url)
-        response = cls.request(path=f"decks/{deck_id}/export/text", netloc="api.scryfall.com")
+        response = cls.request(
+            path=f"decks/{deck_id}/export/text", netloc="api.scryfall.com", headers=cls.get_headers()
+        )
         card_list = response.text
         for line_to_remove in ["// Sideboard"]:
             card_list = card_list.replace(line_to_remove, "")
@@ -317,10 +323,10 @@ class MTGIntegration(GameIntegration):
 
     @classmethod
     def query_scryfall_paginated(cls, url: str) -> list[dict[str, Any]]:
-        response = get_json_endpoint_rate_limited(url)
+        response = get_json_endpoint_rate_limited(url, headers=Scryfall.get_headers())
         data = response["data"]
         while response["has_more"]:
-            response = get_json_endpoint_rate_limited(response["next_page"])
+            response = get_json_endpoint_rate_limited(response["next_page"], headers=Scryfall.get_headers())
             data += response["data"]
         return data
 
@@ -416,7 +422,7 @@ class MTGIntegration(GameIntegration):
 
         @section_timer(name="get bulk data URLs")
         def get_bulk_data_urls() -> BulkDataURLs:
-            response = requests.get("https://api.scryfall.com/bulk-data")
+            response = requests.get("https://api.scryfall.com/bulk-data", headers=Scryfall.get_headers())
             assert response.status_code == 200
             validated_response = BulkDataResponse.model_validate_json(response.text)
             default_cards = [entry for entry in validated_response.data if entry.type == "default_cards"].pop()
@@ -435,7 +441,7 @@ class MTGIntegration(GameIntegration):
                 return
             cache_dir.mkdir(parents=True, exist_ok=True)
             print(f"Downloading default cards from {url}")
-            with requests.get(url, stream=True) as r:
+            with requests.get(url, stream=True, headers=Scryfall.get_headers()) as r:
                 with open(default_cards_path, "wb") as f:
                     for chunk in r.iter_content(chunk_size=8192):
                         f.write(chunk)
@@ -447,7 +453,7 @@ class MTGIntegration(GameIntegration):
                 return
             cache_dir.mkdir(parents=True, exist_ok=True)
             print(f"Downloading oracle cards from {url}")
-            with requests.get(url, stream=True) as r:
+            with requests.get(url, stream=True, headers=Scryfall.get_headers()) as r:
                 with open(oracle_cards_path, "wb") as f:
                     for chunk in r.iter_content(chunk_size=8192):
                         f.write(chunk)
@@ -468,7 +474,9 @@ class MTGIntegration(GameIntegration):
                 image_hash_int: int | None = None
                 if row.image_uris is not None:
                     try:
-                        im = Image.open(requests.get(row.image_uris.small, stream=True).raw)
+                        im = Image.open(
+                            requests.get(row.image_uris.small, stream=True, headers=Scryfall.get_headers()).raw
+                        )
                         image_hash = str(imagehash.phash(im))
                         image_hash_int = twos_complement(image_hash, 64)
                     except Exception as e:
@@ -536,7 +544,7 @@ class MTGIntegration(GameIntegration):
 
     @classmethod
     def get_canonical_expansions(cls) -> list[CanonicalExpansion]:
-        response = requests.get("https://api.scryfall.com/sets")
+        response = requests.get("https://api.scryfall.com/sets", headers=Scryfall.get_headers())
         assert response.status_code == 200
         parsed_response = ExpansionResponse.model_validate_json(response.text)
         expansions: list[CanonicalExpansion] = [

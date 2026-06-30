@@ -8,7 +8,12 @@
 
 import { useSortable } from "@dnd-kit/react/sortable";
 import React, { memo, useState } from "react";
+import Dropdown from "react-bootstrap/Dropdown";
 
+import {
+  areSearchQueriesEqual,
+  doesSearchQueryFilterOnPrinting,
+} from "@/common/processing";
 import {
   Faces,
   SearchQuery,
@@ -16,13 +21,16 @@ import {
   useAppSelector,
 } from "@/common/types";
 import { wrapIndex } from "@/common/utils";
+import { RightPaddedIcon } from "@/components/icon";
 import { MemoizedEditorCard } from "@/features/card/Card";
 import { CardFooter } from "@/features/card/CardFooter";
 import { GridSelectorModal } from "@/features/gridSelector/GridSelectorModal";
 import { showChangeQueryModal } from "@/store/slices/modalsSlice";
 import {
   bulkAlignMemberSelection,
+  bulkRemovePrintingFilter,
   deleteSlots,
+  duplicateSlot,
   expandSelection,
   selectAllSelectedProjectMembersHaveTheSameQuery,
   selectProjectMember,
@@ -84,6 +92,55 @@ export const MemoizedCardSlotGridSelector = memo(CardSlotGridSelector);
 
 //# endregion
 
+const CardGridContextMenu = ({
+  id,
+  searchQuery,
+  face,
+  slot,
+}: CardSlotProps) => {
+  const dispatch = useAppDispatch();
+  const handleShowChangeSelectedImageQueriesModal = () => {
+    dispatch(
+      showChangeQueryModal({
+        slots: [[face, slot]],
+        query: searchQuery?.query ?? null,
+      })
+    );
+  };
+  const deleteThisSlot = () => {
+    dispatch(deleteSlots({ slots: [slot] }));
+  };
+  const removePrintingFilter = () => {
+    dispatch(bulkRemovePrintingFilter({ slots: [[face, slot]] }));
+  };
+  const duplicateThisSlot = () => {
+    dispatch(duplicateSlot({ slot: slot, quantity: 1 }));
+  };
+  return (
+    <Dropdown className="card-context-menu" align="end">
+      <Dropdown.Toggle variant="" data-testid="more-select-options">
+        <i className="bi bi-three-dots" />
+      </Dropdown.Toggle>
+      <Dropdown.Menu>
+        <Dropdown.Item onClick={handleShowChangeSelectedImageQueriesModal}>
+          <RightPaddedIcon bootstrapIconName="arrow-repeat" /> Change Query
+        </Dropdown.Item>
+        <Dropdown.Item onClick={duplicateThisSlot}>
+          <RightPaddedIcon bootstrapIconName="copy" /> Duplicate
+        </Dropdown.Item>
+        {doesSearchQueryFilterOnPrinting(searchQuery) && (
+          <Dropdown.Item onClick={removePrintingFilter}>
+            <RightPaddedIcon bootstrapIconName="filter" /> Unfilter Printing
+          </Dropdown.Item>
+        )}
+        <Dropdown.Item onClick={deleteThisSlot}>
+          <RightPaddedIcon bootstrapIconName="x-circle" /> Delete
+        </Dropdown.Item>
+      </Dropdown.Menu>
+    </Dropdown>
+  );
+};
+
 //# region card slot
 
 export function CardSlot({ id, searchQuery, face, slot }: CardSlotProps) {
@@ -96,6 +153,8 @@ export function CardSlot({ id, searchQuery, face, slot }: CardSlotProps) {
       state,
       searchQuery?.query,
       searchQuery?.cardType,
+      searchQuery?.expansionCode,
+      searchQuery?.collectorNumber,
       face
     )
   );
@@ -110,10 +169,7 @@ export function CardSlot({ id, searchQuery, face, slot }: CardSlotProps) {
   const modifySelectedSlots =
     selectedSlots.length > 1 &&
     projectMember?.selected &&
-    selectedQuery != null &&
-    // can't use object equality check here
-    selectedQuery.query === searchQuery?.query &&
-    selectedQuery.cardType === searchQuery?.cardType;
+    areSearchQueriesEqual(selectedQuery, searchQuery);
   const slotsToModify: Array<[Faces, number]> = modifySelectedSlots
     ? selectedSlots
     : [[face, slot]];
@@ -131,15 +187,22 @@ export function CardSlot({ id, searchQuery, face, slot }: CardSlotProps) {
   const handleCloseGridSelector = () => setShowGridSelector(false);
   const handleShowGridSelector = () => setShowGridSelector(true);
   const handleShowChangeSelectedImageQueriesModal = () => {
+    let stringifiedSearchQuery: string | null = null;
+    if (searchQuery?.query) {
+      stringifiedSearchQuery = searchQuery.query;
+      if (searchQuery.expansionCode) {
+        stringifiedSearchQuery += ` (${searchQuery.expansionCode})`;
+        if (searchQuery.collectorNumber) {
+          stringifiedSearchQuery += ` ${searchQuery.collectorNumber}`;
+        }
+      }
+    }
     dispatch(
       showChangeQueryModal({
         slots: [[face, slot]],
-        query: searchQuery?.query ?? null,
+        query: stringifiedSearchQuery,
       })
     );
-  };
-  const deleteThisSlot = () => {
-    dispatch(deleteSlots({ slots: [slot] }));
   };
   const toggleSelectionForThisMember = (
     event: React.MouseEvent<HTMLButtonElement>
@@ -203,13 +266,12 @@ export function CardSlot({ id, searchQuery, face, slot }: CardSlotProps) {
           }checked`}
         ></i>
       </button>
-      <button className="remove">
-        <i
-          className="bi bi-x-circle"
-          onClick={deleteThisSlot}
-          aria-label={`remove-${face}${slot}`}
-        ></i>
-      </button>
+      <CardGridContextMenu
+        id={id}
+        searchQuery={searchQuery}
+        face={face}
+        slot={slot}
+      />
     </>
   );
   const cardFooter = (

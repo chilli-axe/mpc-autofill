@@ -37,7 +37,7 @@ export type {
   SupporterTier,
   Tag,
 } from "@/common/schema_types";
-import { Orama, Schema, SearchableType } from "@orama/orama";
+import { Orama, SearchableType } from "@orama/orama";
 
 export const assertNever = (value: never) => {
   throw new Error("Unexpected value: " + value);
@@ -104,12 +104,8 @@ export interface SourceDocumentsState extends ThunkStateBase {
   sourceDocuments?: SourceDocuments; // null indicates the data has not yet loaded from the backend
 }
 
-export type SearchResultsForQuery = {
-  [cardType in CardType]?: Array<string>;
-};
-
 export interface SearchResults {
-  [query: string]: SearchResultsForQuery;
+  [hashKey: string]: Array<string>;
 }
 
 export interface SearchResultsState extends ThunkStateBase {

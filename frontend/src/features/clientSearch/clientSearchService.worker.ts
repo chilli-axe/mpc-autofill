@@ -2,7 +2,7 @@ import { create, getByID, insertMultiple, search } from "@orama/orama";
 import { expose } from "comlink";
 
 import { Printing, Unknown } from "@/common/constants";
-import { toSearchable } from "@/common/processing";
+import { computeSearchQueryHashKey, toSearchable } from "@/common/processing";
 import {
   CardType as CardTypeSchema,
   SearchQuery,
@@ -411,14 +411,9 @@ export class ClientSearchService {
     const localResults: SearchResults = {};
     for (const searchQuery of searchQueries) {
       if (searchQuery.query) {
-        if (
-          !Object.prototype.hasOwnProperty.call(localResults, searchQuery.query)
-        ) {
-          localResults[searchQuery.query] = {
-            CARD: [],
-            CARDBACK: [],
-            TOKEN: [],
-          };
+        const hashkey = computeSearchQueryHashKey(searchQuery);
+        if (!Object.prototype.hasOwnProperty.call(localResults, hashkey)) {
+          localResults[searchQuery.query] = [];
         }
 
         const localResultsForQuery = this.retrieveCardIdentifiers(
@@ -427,8 +422,7 @@ export class ClientSearchService {
           [searchQuery.cardType]
         );
         if (localResultsForQuery !== undefined) {
-          localResults[searchQuery.query][searchQuery.cardType] =
-            localResultsForQuery;
+          localResults[hashkey] = localResultsForQuery;
         }
       }
     }
