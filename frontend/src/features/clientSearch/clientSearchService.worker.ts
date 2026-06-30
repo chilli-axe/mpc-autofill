@@ -345,10 +345,10 @@ export class ClientSearchService {
           lastModifiedNumber: parseDjangoDate(card.dateModified).valueOf(),
           created: parseDjangoDate(card.dateCreated),
           createdNumber: parseDjangoDate(card.dateCreated).valueOf(),
-          downloadsToday: card.downloadsToday ?? 0,
-          downloadsThisWeek: card.downloadsThisWeek ?? 0,
-          downloadsThisMonth: card.downloadsThisMonth ?? 0,
-          totalDownloads: card.totalDownloads ?? 0,
+          downloadsToday: card.downloads?.today ?? 0,
+          downloadsThisWeek: card.downloads?.thisWeek ?? 0,
+          downloadsThisMonth: card.downloads?.thisMonth ?? 0,
+          totalDownloads: card.downloads?.total ?? 0,
           params: {
             identifier: card.identifier,
             sourceType: SourceType.GoogleDrive,
@@ -559,10 +559,12 @@ export class ClientSearchService {
       mediumThumbnailUrl: undefined,
       language: "EN", // TODO
       tags: oramaCardDocument.tags,
-      downloadsToday: oramaCardDocument.downloadsToday,
-      downloadsThisWeek: oramaCardDocument.downloadsThisWeek,
-      downloadsThisMonth: oramaCardDocument.downloadsThisMonth,
-      totalDownloads: oramaCardDocument.totalDownloads,
+      downloads: {
+        today: oramaCardDocument.downloadsToday,
+        thisWeek: oramaCardDocument.downloadsThisWeek,
+        thisMonth: oramaCardDocument.downloadsThisMonth,
+        total: oramaCardDocument.totalDownloads,
+      },
     };
   }
 

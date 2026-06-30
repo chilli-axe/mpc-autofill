@@ -14,7 +14,7 @@ from cardpicker.constants import DATE_FORMAT
 from cardpicker.schema_types import CanonicalArtistClass as SerialisedCanonicalArtist
 from cardpicker.schema_types import CanonicalCardClass as SerialisedCanonicalCard
 from cardpicker.schema_types import Card as SerialisedCard
-from cardpicker.schema_types import CardType, ChildElement, Game
+from cardpicker.schema_types import CardType, ChildElement, DownloadCounts, Game
 from cardpicker.schema_types import Source as SerialisedSource
 from cardpicker.schema_types import SourceContribution, SourceType
 from cardpicker.schema_types import Tag as SerialisedTag
@@ -307,10 +307,12 @@ class Card(models.Model):
             mediumThumbnailUrl=self.get_medium_thumbnail_url() or "",
             tags=sorted(self.tags),
             language=self.language,
-            downloadsToday=self.get_downloads_today(),
-            downloadsThisWeek=self.get_downloads_this_week(),
-            downloadsThisMonth=self.get_downloads_this_month(),
-            totalDownloads=self.get_total_downloads(),
+            downloads=DownloadCounts(
+                today=self.get_downloads_today(),
+                thisWeek=self.get_downloads_this_week(),
+                thisMonth=self.get_downloads_this_month(),
+                total=self.get_total_downloads(),
+            ),
             canonicalCard=(
                 self.canonical_card.serialise()
                 if self.canonical_card

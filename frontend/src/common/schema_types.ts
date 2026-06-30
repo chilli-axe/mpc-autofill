@@ -2,13 +2,14 @@
 
 // To parse this data:
 //
-//   import { Convert, Campaign, CanonicalArtist, CanonicalCard, Card, CardType, FilterSettings, Game, ImportSite, Language, NewCardsFirstPage, SearchQuery, SearchSettings, SearchTypeSettings, SortBy, Source, SourceContribution, SourceSettings, SourceType, Supporter, SupporterTier, Tag, CardbacksRequest, CardbacksResponse, CardsRequest, CardsResponse, ContributionsResponse, DFCPairsResponse, EditorSearchRequest, EditorSearchResponse, ErrorResponse, ExploreSearchRequest, ExploreSearchResponse, ImportSiteDecklistRequest, ImportSiteDecklistResponse, ImportSitesResponse, InfoResponse, LanguagesResponse, NewCardsFirstPagesResponse, NewCardsPageResponse, PatreonResponse, SampleCardsResponse, SearchEngineHealthResponse, SourcesResponse, TagsResponse } from "./file";
+//   import { Convert, Campaign, CanonicalArtist, CanonicalCard, Card, CardType, DownloadCounts, FilterSettings, Game, ImportSite, Language, NewCardsFirstPage, SearchQuery, SearchSettings, SearchTypeSettings, SortBy, Source, SourceContribution, SourceSettings, SourceType, Supporter, SupporterTier, Tag, CardbacksRequest, CardbacksResponse, CardsRequest, CardsResponse, ContributionsResponse, DFCPairsResponse, DownloadCountsRequest, EditorSearchRequest, EditorSearchResponse, ErrorResponse, ExploreSearchRequest, ExploreSearchResponse, ImportSiteDecklistRequest, ImportSiteDecklistResponse, ImportSitesResponse, InfoResponse, LanguagesResponse, NewCardsFirstPagesResponse, NewCardsPageResponse, PatreonResponse, SampleCardsResponse, SearchEngineHealthResponse, SourcesResponse, TagsResponse } from "./file";
 //
 //   const campaign = Convert.toCampaign(json);
 //   const canonicalArtist = Convert.toCanonicalArtist(json);
 //   const canonicalCard = Convert.toCanonicalCard(json);
 //   const card = Convert.toCard(json);
 //   const cardType = Convert.toCardType(json);
+//   const downloadCounts = Convert.toDownloadCounts(json);
 //   const filterSettings = Convert.toFilterSettings(json);
 //   const game = Convert.toGame(json);
 //   const importSite = Convert.toImportSite(json);
@@ -32,6 +33,7 @@
 //   const cardsResponse = Convert.toCardsResponse(json);
 //   const contributionsResponse = Convert.toContributionsResponse(json);
 //   const dFCPairsResponse = Convert.toDFCPairsResponse(json);
+//   const downloadCountsRequest = Convert.toDownloadCountsRequest(json);
 //   const editorSearchRequest = Convert.toEditorSearchRequest(json);
 //   const editorSearchResponse = Convert.toEditorSearchResponse(json);
 //   const errorResponse = Convert.toErrorResponse(json);
@@ -136,6 +138,7 @@ export interface Card {
    * Modified date - formatted by backend
    */
   dateModified: string;
+  downloads?: DownloadCounts;
   dpi: number;
   extension: string;
   identifier: string;
@@ -153,10 +156,6 @@ export interface Card {
   sourceType?: SourceType;
   sourceVerbose: string;
   tags: string[];
-  downloadsToday: number;
-  downloadsThisWeek: number;
-  downloadsThisMonth: number;
-  totalDownloads: number;
 }
 
 export interface CanonicalArtist {
@@ -178,6 +177,13 @@ export enum CardType {
   Card = "CARD",
   Cardback = "CARDBACK",
   Token = "TOKEN",
+}
+
+export interface DownloadCounts {
+  thisMonth: number;
+  thisWeek: number;
+  today: number;
+  total: number;
 }
 
 export enum SourceType {
@@ -206,6 +212,10 @@ export interface SourceContribution {
 
 export interface DFCPairsResponse {
   dfcPairs: { [key: string]: string };
+}
+
+export interface DownloadCountsRequest {
+  cardIdentifiers: string[];
 }
 
 export interface EditorSearchRequest {
@@ -244,10 +254,10 @@ export enum SortBy {
   DateModifiedDescending = "dateModifiedDescending",
   NameAscending = "nameAscending",
   NameDescending = "nameDescending",
+  PopularityAllTimeDescending = "popularityAllTimeDescending",
+  PopularityMonthDescending = "popularityMonthDescending",
   PopularityTodayDescending = "popularityTodayDescending",
   PopularityWeekDescending = "popularityWeekDescending",
-  PopularityMonthDescending = "popularityMonthDescending",
-  PopularityAllTimeDescending = "popularityAllTimeDescending",
 }
 
 export interface ExploreSearchResponse {
@@ -436,6 +446,14 @@ export class Convert {
     return JSON.stringify(uncast(value, r("CardType")), null, 2);
   }
 
+  public static toDownloadCounts(json: string): DownloadCounts {
+    return cast(JSON.parse(json), r("DownloadCounts"));
+  }
+
+  public static downloadCountsToJson(value: DownloadCounts): string {
+    return JSON.stringify(uncast(value, r("DownloadCounts")), null, 2);
+  }
+
   public static toFilterSettings(json: string): FilterSettings {
     return cast(JSON.parse(json), r("FilterSettings"));
   }
@@ -620,6 +638,16 @@ export class Convert {
 
   public static dFCPairsResponseToJson(value: DFCPairsResponse): string {
     return JSON.stringify(uncast(value, r("DFCPairsResponse")), null, 2);
+  }
+
+  public static toDownloadCountsRequest(json: string): DownloadCountsRequest {
+    return cast(JSON.parse(json), r("DownloadCountsRequest"));
+  }
+
+  public static downloadCountsRequestToJson(
+    value: DownloadCountsRequest
+  ): string {
+    return JSON.stringify(uncast(value, r("DownloadCountsRequest")), null, 2);
   }
 
   public static toEditorSearchRequest(json: string): EditorSearchRequest {
@@ -1061,6 +1089,11 @@ const typeMap: any = {
       { json: "cardType", js: "cardType", typ: r("CardType") },
       { json: "dateCreated", js: "dateCreated", typ: "" },
       { json: "dateModified", js: "dateModified", typ: "" },
+      {
+        json: "downloads",
+        js: "downloads",
+        typ: u(undefined, r("DownloadCounts")),
+      },
       { json: "dpi", js: "dpi", typ: 0 },
       { json: "extension", js: "extension", typ: "" },
       { json: "identifier", js: "identifier", typ: "" },
@@ -1103,6 +1136,15 @@ const typeMap: any = {
     ],
     false
   ),
+  DownloadCounts: o(
+    [
+      { json: "thisMonth", js: "thisMonth", typ: 0 },
+      { json: "thisWeek", js: "thisWeek", typ: 0 },
+      { json: "today", js: "today", typ: 0 },
+      { json: "total", js: "total", typ: 0 },
+    ],
+    false
+  ),
   ContributionsResponse: o(
     [
       { json: "cardCountByType", js: "cardCountByType", typ: m(0) },
@@ -1127,6 +1169,10 @@ const typeMap: any = {
   ),
   DFCPairsResponse: o(
     [{ json: "dfcPairs", js: "dfcPairs", typ: m("") }],
+    false
+  ),
+  DownloadCountsRequest: o(
+    [{ json: "cardIdentifiers", js: "cardIdentifiers", typ: a("") }],
     false
   ),
   EditorSearchRequest: o(
@@ -1343,9 +1389,9 @@ const typeMap: any = {
     "dateModifiedDescending",
     "nameAscending",
     "nameDescending",
+    "popularityAllTimeDescending",
+    "popularityMonthDescending",
     "popularityTodayDescending",
     "popularityWeekDescending",
-    "popularityMonthDescending",
-    "popularityAllTimeDescending",
   ],
 };

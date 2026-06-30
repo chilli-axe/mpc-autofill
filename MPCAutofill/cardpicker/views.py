@@ -552,16 +552,14 @@ def post_download_counts(request: HttpRequest) -> HttpResponse:
 
     body = DownloadCountsRequest.model_validate(json.loads(request.body))
     today = date.today()
-    card_ids = list(Card.objects.filter(identifier__in=body.cardIdentifiers).values_list("id", flat=True))
     with connection.cursor() as cursor:
-        for card_id in card_ids:
-            cursor.execute(
-                """
-                INSERT INTO cardpicker_downloadcount (date, card_id, count)
-                VALUES (%s, %s, 1)
-                ON CONFLICT (date, card_id)
-                DO UPDATE SET count = cardpicker_downloadcount.count + 1
-                """,
-                [today, card_id],
-            )
+        cursor.execute(
+            """
+            INSERT INTO cardpicker_downloadcount (date, card_id, count)
+            SELECT %s, id, 1 FROM cardpicker_card WHERE identifier = ANY(%s)
+            ON CONFLICT (date, card_id)
+            DO UPDATE SET count = cardpicker_downloadcount.count + 1
+            """,
+            [today, list(body.cardIdentifiers)],
+        )
     return JsonResponse({"status": "ok"})

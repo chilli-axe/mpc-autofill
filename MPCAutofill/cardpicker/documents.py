@@ -1,6 +1,10 @@
+from datetime import date, timedelta
+
 from django_elasticsearch_dsl import Document, fields
 from django_elasticsearch_dsl.registries import registry
 from elasticsearch_dsl import analyzer
+
+from django.db.models import Sum
 
 from cardpicker.models import Card
 
@@ -39,22 +43,12 @@ class CardSearch(Document):
         fields = ["identifier", "priority", "dpi", "size"]
 
     def prepare_total_downloads(self, instance: Card) -> int:
-        from django.db.models import Sum
-
         return instance.download_counts.aggregate(Sum("count"))["count__sum"] or 0
 
     def prepare_downloads_today(self, instance: Card) -> int:
-        from datetime import date
-
-        from django.db.models import Sum
-
         return instance.download_counts.filter(date=date.today()).aggregate(Sum("count"))["count__sum"] or 0
 
     def prepare_downloads_this_week(self, instance: Card) -> int:
-        from datetime import date, timedelta
-
-        from django.db.models import Sum
-
         return (
             instance.download_counts.filter(date__gte=date.today() - timedelta(days=7)).aggregate(Sum("count"))[
                 "count__sum"
@@ -63,10 +57,6 @@ class CardSearch(Document):
         )
 
     def prepare_downloads_this_month(self, instance: Card) -> int:
-        from datetime import date
-
-        from django.db.models import Sum
-
         return (
             instance.download_counts.filter(date__gte=date.today().replace(day=1)).aggregate(Sum("count"))["count__sum"]
             or 0

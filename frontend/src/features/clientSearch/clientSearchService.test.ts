@@ -26,24 +26,15 @@ import { ClientSearchService } from "./clientSearchService.worker";
 const cards: CardDocument[] = [
   {
     ...cardDocument1,
-    downloadsToday: 5,
-    downloadsThisWeek: 10,
-    downloadsThisMonth: 20,
-    totalDownloads: 100,
+    downloads: { today: 5, thisWeek: 10, thisMonth: 20, total: 100 },
   },
   {
     ...cardDocument2,
-    downloadsToday: 10,
-    downloadsThisWeek: 5,
-    downloadsThisMonth: 30,
-    totalDownloads: 50,
+    downloads: { today: 10, thisWeek: 5, thisMonth: 30, total: 50 },
   },
   {
     ...cardDocument3,
-    downloadsToday: 1,
-    downloadsThisWeek: 20,
-    downloadsThisMonth: 10,
-    totalDownloads: 200,
+    downloads: { today: 1, thisWeek: 20, thisMonth: 10, total: 200 },
   },
 ];
 

@@ -222,21 +222,6 @@ class CardsRequest(BaseModel):
         return result
 
 
-class DownloadCountsRequest(BaseModel):
-    cardIdentifiers: List[str]
-
-    @staticmethod
-    def from_dict(obj: Any) -> "DownloadCountsRequest":
-        assert isinstance(obj, dict)
-        cardIdentifiers = from_list(from_str, obj.get("cardIdentifiers"))
-        return DownloadCountsRequest(cardIdentifiers)
-
-    def to_dict(self) -> dict:
-        result: dict = {}
-        result["cardIdentifiers"] = from_list(from_str, self.cardIdentifiers)
-        return result
-
-
 class CanonicalArtistClass(BaseModel):
     name: str
 
@@ -305,6 +290,30 @@ class CardType(str, Enum):
     TOKEN = "TOKEN"
 
 
+class DownloadCounts(BaseModel):
+    thisMonth: int
+    thisWeek: int
+    today: int
+    total: int
+
+    @staticmethod
+    def from_dict(obj: Any) -> "DownloadCounts":
+        assert isinstance(obj, dict)
+        thisMonth = from_int(obj.get("thisMonth"))
+        thisWeek = from_int(obj.get("thisWeek"))
+        today = from_int(obj.get("today"))
+        total = from_int(obj.get("total"))
+        return DownloadCounts(thisMonth, thisWeek, today, total)
+
+    def to_dict(self) -> dict:
+        result: dict = {}
+        result["thisMonth"] = from_int(self.thisMonth)
+        result["thisWeek"] = from_int(self.thisWeek)
+        result["today"] = from_int(self.today)
+        result["total"] = from_int(self.total)
+        return result
+
+
 class SourceType(str, Enum):
     AWSS3 = "AWS S3"
     GoogleDrive = "Google Drive"
@@ -336,12 +345,9 @@ class Card(BaseModel):
     tags: List[str]
     canonicalArtist: Optional[CanonicalArtistClass] = None
     canonicalCard: Optional[CanonicalCardClass] = None
+    downloads: Optional[DownloadCounts] = None
     sourceExternalLink: Optional[str] = None
     sourceType: Optional[SourceType] = None
-    downloadsToday: int = 0
-    downloadsThisWeek: int = 0
-    downloadsThisMonth: int = 0
-    totalDownloads: int = 0
 
     @staticmethod
     def from_dict(obj: Any) -> "Card":
@@ -366,12 +372,9 @@ class Card(BaseModel):
         tags = from_list(from_str, obj.get("tags"))
         canonicalArtist = from_union([from_none, CanonicalArtistClass.from_dict], obj.get("canonicalArtist"))
         canonicalCard = from_union([from_none, CanonicalCardClass.from_dict], obj.get("canonicalCard"))
+        downloads = from_union([DownloadCounts.from_dict, from_none], obj.get("downloads"))
         sourceExternalLink = from_union([from_str, from_none], obj.get("sourceExternalLink"))
         sourceType = from_union([SourceType, from_none], obj.get("sourceType"))
-        downloadsToday = from_union([from_int, from_none], obj.get("downloadsToday")) or 0
-        downloadsThisWeek = from_union([from_int, from_none], obj.get("downloadsThisWeek")) or 0
-        downloadsThisMonth = from_union([from_int, from_none], obj.get("downloadsThisMonth")) or 0
-        totalDownloads = from_union([from_int, from_none], obj.get("totalDownloads")) or 0
         return Card(
             cardType,
             dateCreated,
@@ -393,12 +396,9 @@ class Card(BaseModel):
             tags,
             canonicalArtist,
             canonicalCard,
+            downloads,
             sourceExternalLink,
             sourceType,
-            downloadsToday,
-            downloadsThisWeek,
-            downloadsThisMonth,
-            totalDownloads,
         )
 
     def to_dict(self) -> dict:
@@ -421,10 +421,6 @@ class Card(BaseModel):
         result["sourceName"] = from_str(self.sourceName)
         result["sourceVerbose"] = from_str(self.sourceVerbose)
         result["tags"] = from_list(from_str, self.tags)
-        result["downloadsToday"] = from_int(self.downloadsToday)
-        result["downloadsThisWeek"] = from_int(self.downloadsThisWeek)
-        result["downloadsThisMonth"] = from_int(self.downloadsThisMonth)
-        result["totalDownloads"] = from_int(self.totalDownloads)
         if self.canonicalArtist is not None:
             result["canonicalArtist"] = from_union(
                 [from_none, lambda x: to_class(CanonicalArtistClass, x)], self.canonicalArtist
@@ -433,6 +429,8 @@ class Card(BaseModel):
             result["canonicalCard"] = from_union(
                 [from_none, lambda x: to_class(CanonicalCardClass, x)], self.canonicalCard
             )
+        if self.downloads is not None:
+            result["downloads"] = from_union([lambda x: to_class(DownloadCounts, x), from_none], self.downloads)
         if self.sourceExternalLink is not None:
             result["sourceExternalLink"] = from_union([from_str, from_none], self.sourceExternalLink)
         if self.sourceType is not None:
@@ -533,6 +531,21 @@ class DFCPairsResponse(BaseModel):
         return result
 
 
+class DownloadCountsRequest(BaseModel):
+    cardIdentifiers: List[str]
+
+    @staticmethod
+    def from_dict(obj: Any) -> "DownloadCountsRequest":
+        assert isinstance(obj, dict)
+        cardIdentifiers = from_list(from_str, obj.get("cardIdentifiers"))
+        return DownloadCountsRequest(cardIdentifiers)
+
+    def to_dict(self) -> dict:
+        result: dict = {}
+        result["cardIdentifiers"] = from_list(from_str, self.cardIdentifiers)
+        return result
+
+
 class SearchQuery(BaseModel):
     cardType: CardType
     query: Optional[str] = None
@@ -616,10 +629,10 @@ class SortBy(str, Enum):
     dateModifiedDescending = "dateModifiedDescending"
     nameAscending = "nameAscending"
     nameDescending = "nameDescending"
+    popularityAllTimeDescending = "popularityAllTimeDescending"
+    popularityMonthDescending = "popularityMonthDescending"
     popularityTodayDescending = "popularityTodayDescending"
     popularityWeekDescending = "popularityWeekDescending"
-    popularityMonthDescending = "popularityMonthDescending"
-    popularityAllTimeDescending = "popularityAllTimeDescending"
 
 
 class ExploreSearchRequest(BaseModel):
@@ -1178,6 +1191,14 @@ def CardTypetodict(x: CardType) -> Any:
     return to_enum(CardType, x)
 
 
+def DownloadCountsfromdict(s: Any) -> DownloadCounts:
+    return DownloadCounts.from_dict(s)
+
+
+def DownloadCountstodict(x: DownloadCounts) -> Any:
+    return to_class(DownloadCounts, x)
+
+
 def FilterSettingsfromdict(s: Any) -> FilterSettings:
     return FilterSettings.from_dict(s)
 
@@ -1360,6 +1381,14 @@ def DFCPairsResponsefromdict(s: Any) -> DFCPairsResponse:
 
 def DFCPairsResponsetodict(x: DFCPairsResponse) -> Any:
     return to_class(DFCPairsResponse, x)
+
+
+def DownloadCountsRequestfromdict(s: Any) -> DownloadCountsRequest:
+    return DownloadCountsRequest.from_dict(s)
+
+
+def DownloadCountsRequesttodict(x: DownloadCountsRequest) -> Any:
+    return to_class(DownloadCountsRequest, x)
 
 
 def EditorSearchRequestfromdict(s: Any) -> EditorSearchRequest:

@@ -91,10 +91,7 @@ export const cardDocument1: CardDocument = {
   mediumThumbnailUrl: "",
   language: "EN",
   tags: [],
-  downloadsToday: 0,
-  downloadsThisWeek: 0,
-  downloadsThisMonth: 0,
-  totalDownloads: 0,
+  downloads: { today: 0, thisWeek: 0, thisMonth: 0, total: 0 },
 };
 
 export const cardDocument2: CardDocument = {
@@ -118,10 +115,7 @@ export const cardDocument2: CardDocument = {
   mediumThumbnailUrl: "",
   language: "EN",
   tags: [],
-  downloadsToday: 0,
-  downloadsThisWeek: 0,
-  downloadsThisMonth: 0,
-  totalDownloads: 0,
+  downloads: { today: 0, thisWeek: 0, thisMonth: 0, total: 0 },
 };
 
 export const cardDocument3: CardDocument = {
@@ -145,10 +139,7 @@ export const cardDocument3: CardDocument = {
   mediumThumbnailUrl: "",
   language: "EN",
   tags: [],
-  downloadsToday: 0,
-  downloadsThisWeek: 0,
-  downloadsThisMonth: 0,
-  totalDownloads: 0,
+  downloads: { today: 0, thisWeek: 0, thisMonth: 0, total: 0 },
 };
 
 export const cardDocument4: CardDocument = {
@@ -172,10 +163,7 @@ export const cardDocument4: CardDocument = {
   mediumThumbnailUrl: "",
   language: "EN",
   tags: [],
-  downloadsToday: 0,
-  downloadsThisWeek: 0,
-  downloadsThisMonth: 0,
-  totalDownloads: 0,
+  downloads: { today: 0, thisWeek: 0, thisMonth: 0, total: 0 },
 };
 
 export const cardDocument5: CardDocument = {
@@ -199,10 +187,7 @@ export const cardDocument5: CardDocument = {
   mediumThumbnailUrl: "",
   language: "EN",
   tags: [],
-  downloadsToday: 0,
-  downloadsThisWeek: 0,
-  downloadsThisMonth: 0,
-  totalDownloads: 0,
+  downloads: { today: 0, thisWeek: 0, thisMonth: 0, total: 0 },
 };
 
 export const cardDocument6: CardDocument = {
@@ -226,10 +211,7 @@ export const cardDocument6: CardDocument = {
   mediumThumbnailUrl: "",
   language: "EN",
   tags: [],
-  downloadsToday: 0,
-  downloadsThisWeek: 0,
-  downloadsThisMonth: 0,
-  totalDownloads: 0,
+  downloads: { today: 0, thisWeek: 0, thisMonth: 0, total: 0 },
 };
 
 // Card from source2 (for multi-source grid selector tests)
@@ -254,10 +236,7 @@ export const cardDocument7: CardDocument = {
   mediumThumbnailUrl: "",
   language: "EN",
   tags: [],
-  downloadsToday: 0,
-  downloadsThisWeek: 0,
-  downloadsThisMonth: 0,
-  totalDownloads: 0,
+  downloads: { today: 0, thisWeek: 0, thisMonth: 0, total: 0 },
 };
 
 // Cards with canonicalCard data (for CanonicalCardFilter tests)
@@ -293,10 +272,7 @@ export const cardDocument8: CardDocument = {
   canonicalArtist: {
     name: "Alpha Artist",
   },
-  downloadsToday: 0,
-  downloadsThisWeek: 0,
-  downloadsThisMonth: 0,
-  totalDownloads: 0,
+  downloads: { today: 0, thisWeek: 0, thisMonth: 0, total: 0 },
 };
 
 export const cardDocument9: CardDocument = {
@@ -331,10 +307,7 @@ export const cardDocument9: CardDocument = {
   canonicalArtist: {
     name: "Beta Artist",
   },
-  downloadsToday: 0,
-  downloadsThisWeek: 0,
-  downloadsThisMonth: 0,
-  totalDownloads: 0,
+  downloads: { today: 0, thisWeek: 0, thisMonth: 0, total: 0 },
 };
 
 export const cardDocument10: CardDocument = {
@@ -369,10 +342,7 @@ export const cardDocument10: CardDocument = {
   canonicalArtist: {
     name: "Alpha Artist",
   },
-  downloadsToday: 0,
-  downloadsThisWeek: 0,
-  downloadsThisMonth: 0,
-  totalDownloads: 0,
+  downloads: { today: 0, thisWeek: 0, thisMonth: 0, total: 0 },
 };
 
 // Card with no canonicalCard data (for Unknown handling in CanonicalCardFilter)
@@ -398,10 +368,7 @@ export const cardDocument11: CardDocument = {
   language: "EN",
   tags: [],
   canonicalCard: null,
-  downloadsToday: 0,
-  downloadsThisWeek: 0,
-  downloadsThisMonth: 0,
-  totalDownloads: 0,
+  downloads: { today: 0, thisWeek: 0, thisMonth: 0, total: 0 },
 };
 
 //# endregion
