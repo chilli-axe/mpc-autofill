@@ -186,6 +186,13 @@ export const api = createApi({
       providesTags: [QueryTags.BackendSpecific],
       keepUnusedDataFor: 0.0, // never cache results
     }),
+    postDownloadCounts: builder.mutation<void, { cardIdentifiers: string[] }>({
+      query: (body) => ({
+        url: `2/downloadCounts/`,
+        method: "POST",
+        body: JSON.stringify(body),
+      }),
+    }),
   }),
 });
 
@@ -207,6 +214,7 @@ const {
   useGetNewCardsFirstPageQuery: useRawGetNewCardsFirstPageQuery,
   useGetNewCardsPageQuery: useRawGetNewCardsPageQuery,
   usePostExploreSearchQuery: useRawPostExploreSearchQuery,
+  usePostDownloadCountsMutation: useRawPostDownloadCountsMutation,
 } = api;
 
 export function useGetImportSitesQuery() {
@@ -286,6 +294,16 @@ export function usePostExploreSearchQuery(
   return useRawPostExploreSearchQuery(exploreSearchRequest, {
     skip: !remoteBackendConfigured,
   });
+}
+
+export function useRecordDownloadCounts(): (cardIdentifiers: string[]) => void {
+  const remoteBackendConfigured = useRemoteBackendConfigured();
+  const [postDownloadCounts] = useRawPostDownloadCountsMutation();
+  return (cardIdentifiers: string[]) => {
+    if (remoteBackendConfigured && cardIdentifiers.length > 0) {
+      void postDownloadCounts({ cardIdentifiers });
+    }
+  };
 }
 
 //# endregion
