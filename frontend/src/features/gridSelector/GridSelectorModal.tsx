@@ -1,30 +1,45 @@
 /**
  * This module contains a component which allows the user to select between
  * different card versions while seeing them all at once.
- * Card versions are faceted by source, and all cards for a source can be temporarily hidden.
  */
 
 import React, {
   FormEvent,
   useCallback,
+  useEffect,
   useMemo,
   useRef,
   useState,
 } from "react";
 import Button from "react-bootstrap/Button";
-import Col from "react-bootstrap/Col";
-import Form from "react-bootstrap/Form";
 import Modal from "react-bootstrap/Modal";
 import Row from "react-bootstrap/Row";
+import { useDebounce } from "use-debounce";
 
-import { useAppDispatch, useAppSelector } from "@/common/types";
-import { AutofillCollapse } from "@/components/AutofillCollapse";
+import { ExploreDebounceMS, Printing } from "@/common/constants";
+import { SortBy } from "@/common/schema_types";
+import {
+  CardDocument,
+  FilterSettings,
+  SourceSettings,
+  useAppSelector,
+} from "@/common/types";
+import { Blurrable } from "@/components/Blurrable";
+import { OverflowCol } from "@/components/OverflowCol";
+import { Spinner } from "@/components/Spinner";
 import { CardResultSet } from "@/features/card/CardResultSet";
+import { useClientSearchContext } from "@/features/clientSearch/clientSearchContext";
+import { GridSelectorFilters } from "@/features/gridSelector/GridSelectorFilters";
+import { GenericErrorPage } from "@/features/ui/GenericErrorPage";
+import { selectCardDocumentsByIdentifiers } from "@/store/slices/cardDocumentsSlice";
 import { selectFavoriteIdentifiersSet } from "@/store/slices/favoritesSlice";
 import {
-  selectJumpToVersionVisible,
-  toggleJumpToVersionVisible,
-} from "@/store/slices/viewSettingsSlice";
+  getDefaultSearchSettings,
+  selectSearchSettings,
+} from "@/store/slices/searchSettingsSlice";
+import { selectSourceDocuments } from "@/store/slices/sourceDocumentsSlice";
+
+const HeightDelta = 200;
 
 interface GridSelectorProps {
   title?: string;
@@ -40,6 +55,8 @@ interface GridSelectorProps {
     (identifier: string): void;
   };
   searchq?: string;
+  /** When false, ignore project-level search settings and use unconstrained defaults instead. */
+  applySearchSettings?: boolean;
 }
 
 export function GridSelectorModal({
@@ -51,66 +68,38 @@ export function GridSelectorModal({
   handleClose,
   onClick,
   searchq,
+  applySearchSettings = true,
 }: GridSelectorProps) {
   //# region queries and hooks
 
-  const dispatch = useAppDispatch();
+  const { clientSearchService } = useClientSearchContext();
 
-  const jumpToVersionVisible = useAppSelector(selectJumpToVersionVisible);
-
-  // Get favorites for sorting (must match CardResultSet's sorting logic)
   const favoriteIdentifiersSet = useAppSelector(selectFavoriteIdentifiersSet);
+  const globalSearchSettings = useAppSelector(selectSearchSettings);
+  const cardDocumentsByIdentifier = useAppSelector((state) =>
+    selectCardDocumentsByIdentifiers(state, imageIdentifiers)
+  );
+  const sourceDocuments = useAppSelector(selectSourceDocuments);
 
   //# endregion
 
   //# region state
 
-  const [optionNumber, setOptionNumber] = useState<number | undefined>(
-    undefined
-  );
-  const [imageIdentifier, setImageIdentifier] = useState<string>("");
+  const [settingsVisible, setSettingsVisible] = useState<boolean>(true);
   const focusRef = useRef<HTMLInputElement>(null);
 
-  //# endregion
-
-  //# region computed constants
-
-  // Filter favorites to only those in current results
-  const favoriteIdentifiersInResults = useMemo(() => {
-    const imageIdentifiersSet = new Set(imageIdentifiers);
-    return Array.from(favoriteIdentifiersSet).filter((id) =>
-      imageIdentifiersSet.has(id)
-    );
-  }, [favoriteIdentifiersSet, imageIdentifiers]);
-
-  // Sort identifiers with favorites first (for display order)
-  const sortedIdentifiers = useMemo(() => {
-    const favoriteSet = new Set(favoriteIdentifiersInResults);
-    return [...imageIdentifiers].sort((a, b) => {
-      const aIsFavorite = favoriteSet.has(a);
-      const bIsFavorite = favoriteSet.has(b);
-      if (aIsFavorite && !bIsFavorite) return -1;
-      if (!aIsFavorite && bIsFavorite) return 1;
-      return 0;
-    });
-  }, [imageIdentifiers, favoriteIdentifiersInResults]);
-
-  // Map from identifier to original index (for consistent option numbering)
-  const originalIndexMap = useMemo(() => {
-    const map = new Map<string, number>();
-    imageIdentifiers.forEach((id, index) => map.set(id, index));
-    return map;
-  }, [imageIdentifiers]);
-
-  // Validation uses original array length and indices
-  const versionToJumpToIsValid =
-    ((optionNumber ?? 0) > 0 &&
-      (optionNumber ?? 0) < imageIdentifiers.length + 1) ||
-    (imageIdentifier !== "" && imageIdentifiers.includes(imageIdentifier));
-
-  //# endregion
-
-  //# region callbacks
+  const [filterSettings, setFilterSettings] = useState<FilterSettings>(
+    globalSearchSettings.filterSettings
+  );
+  const [sourceSettings, setSourceSettings] = useState<SourceSettings>(
+    globalSearchSettings.sourceSettings
+  );
+  const [sortBy, setSortBy] = useState<SortBy | undefined>(undefined);
+  const [filteredIdentifiers, setFilteredIdentifiers] =
+    useState<Array<string>>(imageIdentifiers);
+  const [isFiltering, setIsFiltering] = useState<boolean>(false);
+  const [artists, setArtists] = useState<Array<string>>([]);
+  const [printings, setPrintings] = useState<Array<Printing>>([]);
 
   const selectImage = useCallback(
     (identifier: string) => {
@@ -119,13 +108,138 @@ export function GridSelectorModal({
     },
     [onClick, handleClose]
   );
-  // "Jump to Version" uses original array indices
-  const handleSubmitJumpToVersionForm = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    selectImage(
-      optionNumber ? imageIdentifiers[optionNumber - 1] : imageIdentifier
+
+  //# endregion
+
+  //# region debouncing
+
+  function equalityFn<T>(left: T, right: T): boolean {
+    return JSON.stringify(left) === JSON.stringify(right);
+  }
+
+  const [debouncedFilter, debouncedFilterState] = useDebounce(
+    { filterSettings, sourceSettings, sortBy, artists, printings },
+    ExploreDebounceMS,
+    { equalityFn }
+  );
+
+  //# endregion
+
+  //# region effects
+
+  // Re-initialise local settings from global search settings each time the modal opens
+  const globalSearchSettingsRef = useRef(globalSearchSettings);
+  globalSearchSettingsRef.current = globalSearchSettings;
+  const sourceDocumentsRef = useRef(sourceDocuments);
+  sourceDocumentsRef.current = sourceDocuments;
+  useEffect(() => {
+    if (show) {
+      if (applySearchSettings) {
+        const settings = globalSearchSettingsRef.current;
+        setFilterSettings(settings.filterSettings);
+        // Only expose sources that are enabled at the project level
+        setSourceSettings({
+          sources: settings.sourceSettings.sources.filter(
+            ([, enabled]) => enabled
+          ),
+        });
+      } else {
+        const defaults = getDefaultSearchSettings(
+          sourceDocumentsRef.current ?? {}
+        );
+        setFilterSettings(defaults.filterSettings);
+        setSourceSettings(defaults.sourceSettings);
+      }
+      setSortBy(undefined);
+      setArtists([]);
+      setPrintings([]);
+    }
+  }, [show, applySearchSettings]); // intentionally only re-initialise on show toggle, not on every global settings change
+
+  // Filter and sort identifiers via the worker whenever debounced settings or identifiers change
+  useEffect(() => {
+    if (!show) return;
+    setIsFiltering(true);
+    const cards = Object.values(cardDocumentsByIdentifier).filter(
+      (card): card is CardDocument => card !== undefined
     );
-  };
+    clientSearchService
+      .filterGridSelectorIdentifiers(
+        cards,
+        {
+          searchTypeSettings:
+            globalSearchSettingsRef.current.searchTypeSettings,
+          filterSettings: debouncedFilter.filterSettings,
+          sourceSettings: debouncedFilter.sourceSettings,
+        },
+        debouncedFilter.sortBy,
+        debouncedFilter.artists,
+        debouncedFilter.printings
+      )
+      .then((ids) => {
+        setFilteredIdentifiers(ids);
+        setIsFiltering(false);
+      })
+      .catch(() => {
+        setFilteredIdentifiers(imageIdentifiers);
+        setIsFiltering(false);
+      });
+  }, [show, cardDocumentsByIdentifier, debouncedFilter]);
+
+  //# endregion
+
+  //# region computed constants
+
+  const filteredIdentifiersSet = useMemo(
+    () => new Set(filteredIdentifiers),
+    [filteredIdentifiers]
+  );
+
+  // Filter favorites to only those present in the current filtered results
+  const favoriteIdentifiersInFilteredResults = useMemo(
+    () =>
+      Array.from(favoriteIdentifiersSet).filter((id) =>
+        filteredIdentifiersSet.has(id)
+      ),
+    [favoriteIdentifiersSet, filteredIdentifiersSet]
+  );
+
+  // Sort: favorites first, then Orama's sort order within each group
+  const sortedFilteredIdentifiers = useMemo(() => {
+    const favoriteSet = new Set(favoriteIdentifiersInFilteredResults);
+    return [...filteredIdentifiers].sort((a, b) => {
+      const aIsFavorite = favoriteSet.has(a);
+      const bIsFavorite = favoriteSet.has(b);
+      if (aIsFavorite && !bIsFavorite) return -1;
+      if (!aIsFavorite && bIsFavorite) return 1;
+      return 0;
+    });
+  }, [filteredIdentifiers, favoriteIdentifiersInFilteredResults]);
+
+  // Map from identifier to original index (for consistent option numbering)
+  const originalIndexMap = useMemo(() => {
+    const map = new Map<string, number>();
+    imageIdentifiers.forEach((id, index) => map.set(id, index));
+    return map;
+  }, [imageIdentifiers]);
+
+  const displaySpinner = debouncedFilterState.isPending() || isFiltering;
+
+  // Constraints derived from the project-level search settings (only applied when applySearchSettings is true)
+  const projectFilter = applySearchSettings
+    ? globalSearchSettings.filterSettings
+    : undefined;
+  const allowedLanguages =
+    projectFilter && projectFilter.languages.length > 0
+      ? projectFilter.languages
+      : undefined;
+
+  const modalTitle = `${title} — ${filteredIdentifiers.length.toLocaleString()} result${
+    filteredIdentifiers.length !== 1 ? "s" : ""
+  }`;
+
+  const noSearchResults =
+    sortedFilteredIdentifiers.length === 0 && !displaySpinner;
 
   //# endregion
 
@@ -143,76 +257,75 @@ export function GridSelectorModal({
       data-testid={testId}
     >
       <Modal.Header closeButton>
-        <Modal.Title>{title}</Modal.Title>
+        <div className="d-flex align-items-center gap-2">
+          <Modal.Title>{modalTitle}</Modal.Title>
+          <Button
+            variant="outline-primary"
+            size="sm"
+            onClick={() => setSettingsVisible((v) => !v)}
+          >
+            <i
+              className={`bi bi-chevron-${settingsVisible ? "left" : "right"}`}
+            />{" "}
+            Filters
+          </Button>
+        </div>
       </Modal.Header>
-      <Modal.Body className="d-grid p-0">
-        <AutofillCollapse
-          expanded={jumpToVersionVisible}
-          onClick={() => dispatch(toggleJumpToVersionVisible())}
-          zIndex={0}
-          title={<h4>Jump to Version</h4>}
-        >
-          <>
-            <Form
-              className="px-3"
-              id="jumpToVersionForm"
-              onSubmit={handleSubmitJumpToVersionForm}
+      <Modal.Body className="p-0" style={{ overflowY: "hidden" }}>
+        <Row className="g-0">
+          {settingsVisible && (
+            <OverflowCol
+              lg={3}
+              sm={4}
+              xs={6}
+              className="border-end p-0"
+              heightDelta={HeightDelta}
             >
-              <Row className="g-0">
-                <Col lg={3} md={5}>
-                  <Form.Label>
-                    Specify Option Number, <b>or...</b>
-                  </Form.Label>
-                  <Form.Control
-                    ref={focusRef}
-                    type="number"
-                    pattern="[0-9]*"
-                    placeholder="1"
-                    value={optionNumber}
-                    onChange={(event) =>
-                      setOptionNumber(
-                        event.target.value
-                          ? parseInt(event.target.value)
-                          : undefined
-                      )
-                    }
-                    disabled={Boolean(imageIdentifier)}
-                  />
-                </Col>
-                <Col lg={9} md={7}>
-                  <Form.Label>Specify ID</Form.Label>
-                  <Form.Control
-                    type="text"
-                    placeholder={imageIdentifiers[0]}
-                    value={imageIdentifier}
-                    onChange={(event) => setImageIdentifier(event.target.value)}
-                    disabled={Boolean(optionNumber)}
-                  />
-                </Col>
-              </Row>
-              <div className="d-grid gap-0 pt-3">
-                <Button
-                  variant="primary"
-                  form="jumpToVersionForm"
-                  type="submit"
-                  aria-label="jump-to-version-submit"
-                  disabled={!versionToJumpToIsValid}
-                >
-                  Select This Version
-                </Button>
-              </div>
-            </Form>
-            <hr />
-          </>
-        </AutofillCollapse>
-        <CardResultSet
-          headerText="Browse Versions"
-          imageIdentifiers={sortedIdentifiers}
-          handleClick={selectImage}
-          selectedImage={selectedImage}
-          favoriteIdentifiers={favoriteIdentifiersInResults}
-          originalIndexMap={originalIndexMap}
-        />
+              <GridSelectorFilters
+                imageIdentifiers={imageIdentifiers}
+                focusRef={focusRef}
+                selectImage={selectImage}
+                sortBy={sortBy}
+                setSortBy={setSortBy}
+                printings={printings}
+                setPrintings={setPrintings}
+                artists={artists}
+                setArtists={setArtists}
+                filterSettings={filterSettings}
+                setFilterSettings={setFilterSettings}
+                sourceSettings={sourceSettings}
+                setSourceSettings={setSourceSettings}
+                projectFilter={projectFilter}
+              />
+            </OverflowCol>
+          )}
+          <OverflowCol
+            lg={settingsVisible ? 9 : 12}
+            sm={settingsVisible ? 8 : 12}
+            xs={settingsVisible ? 6 : 12}
+            className="p-0"
+            heightDelta={HeightDelta}
+          >
+            {displaySpinner && (
+              <Spinner size={6} zIndex={3} positionAbsolute={true} />
+            )}
+            <Blurrable disabled={displaySpinner}>
+              <CardResultSet
+                imageIdentifiers={sortedFilteredIdentifiers}
+                handleClick={selectImage}
+                selectedImage={selectedImage}
+                favoriteIdentifiers={favoriteIdentifiersInFilteredResults}
+                originalIndexMap={originalIndexMap}
+              />
+            </Blurrable>
+            {noSearchResults && (
+              <GenericErrorPage
+                title="No results :("
+                text={["Your filters didn't match any results."]}
+              />
+            )}
+          </OverflowCol>
+        </Row>
       </Modal.Body>
       <Modal.Footer>
         <Button variant="secondary" onClick={handleClose}>

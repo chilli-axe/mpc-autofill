@@ -8,9 +8,9 @@ MPC Autofill is image aggregation & print automation software for your tabletop 
 
 ---
 
-![build-desktop-tool](https://github.com/chilli-axe/mpc-autofill/actions/workflows/build-desktop-tool.yml/badge.svg)
-![build-frontend](https://github.com/chilli-axe/mpc-autofill/actions/workflows/build-frontend.yml/badge.svg)
-![tests](https://github.com/chilli-axe/mpc-autofill/actions/workflows/tests.yml/badge.svg)
+![desktop-tool-ci](https://github.com/chilli-axe/mpc-autofill/actions/workflows/desktop-tool-ci.yml/badge.svg)
+![web-ci](https://github.com/chilli-axe/mpc-autofill/actions/workflows/web-ci.yml/badge.svg)
+![cloudflare-workers-ci](https://github.com/chilli-axe/mpc-autofill/actions/workflows/cloudflare-workers-ci.yml/badge.svg)
 [![Github all releases](https://img.shields.io/github/downloads/chilli-axe/mpc-autofill/total.svg)](https://GitHub.com/chilli-axe/mpc-autofill/releases/)
 
 <a href="https://www.buymeacoffee.com/chilli.axe" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>

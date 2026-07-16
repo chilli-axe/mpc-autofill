@@ -74,7 +74,7 @@ export function OverflowList<T>(props: OverflowListProps<T>) {
     }));
   }, [items]);
 
-  const WrapperComponent = tagName;
+  const WrapperComponent = tagName as React.ElementType;
 
   const maybeOverflow =
     state.overflow.length === 0 && !alwaysRenderOverflow

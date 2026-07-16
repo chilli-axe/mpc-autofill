@@ -1,30 +1,30 @@
-import { base64StringToBlob } from "@/common/processing";
-import { CardDocument, useAppSelector } from "@/common/types";
+import { getWorkerImageURL } from "@/common/image";
+import { CardDocument } from "@/common/types";
 import { useClientSearchContext } from "@/features/clientSearch/clientSearchContext";
 import { downloadFile, useDoFileDownload } from "@/features/download/download";
-import { api } from "@/store/api";
 
 export function useDoImageDownload(): (
   cardDocument: CardDocument
 ) => Promise<void> {
   const doFileDownload = useDoFileDownload();
-  // TODO: this function will need to be updated when we update the frontend to support multiple image repo backends
-  const [triggerFn, getGoogleDriveImageQuery] =
-    api.endpoints.getGoogleDriveImage.useLazyQuery();
   const { clientSearchService } = useClientSearchContext();
 
   async function doImageDownload(cardDocument: CardDocument): Promise<boolean> {
     try {
-      const response = await triggerFn(cardDocument.identifier);
-      const data = response.data;
-      if (data != null) {
+      const imageURL = getWorkerImageURL(cardDocument, "full", 1500);
+      if (!imageURL) {
+        return Promise.reject(
+          `Failed to formulate download URL for ${cardDocument.name} (${cardDocument.identifier})`
+        );
+      }
+      try {
         await downloadFile(
-          base64StringToBlob(data),
           undefined,
+          new URL(imageURL),
           `${cardDocument.name} (${cardDocument.identifier}).${cardDocument.extension}`,
           clientSearchService
         );
-      } else {
+      } catch (err) {
         return Promise.reject(
           `Failed to download ${cardDocument.name} (${cardDocument.identifier})`
         );

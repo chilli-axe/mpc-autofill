@@ -1,6 +1,5 @@
 import { useMemo, useState } from "react";
 import React from "react";
-import Alert from "react-bootstrap/Alert";
 import Button from "react-bootstrap/Button";
 import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
@@ -13,13 +12,29 @@ import { useDebounce } from "use-debounce";
 import { BleedEdgeMM, ToggleButtonHeight } from "@/common/constants";
 import { StyledDropdownTreeSelect } from "@/common/StyledDropdownTreeSelect";
 import { useAppDispatch, useAppSelector } from "@/common/types";
+import { AutofillCollapse } from "@/components/AutofillCollapse";
 import { Blurrable } from "@/components/Blurrable";
 import { OverflowCol } from "@/components/OverflowCol";
 import { Spinner } from "@/components/Spinner";
 import { ClientSearchService } from "@/features/clientSearch/clientSearchService";
 import { downloadFile, useDoFileDownload } from "@/features/download/download";
-import { CardSelectionMode, PageSize, PDFProps } from "@/features/pdf/PDF";
+import {
+  CardSelectionMode,
+  CutLinePlacement,
+  CutLineShape,
+  PageSize,
+  PDFProps,
+} from "@/features/pdf/PDF";
 import { pdfRenderService } from "@/features/pdf/pdfRenderService";
+import {
+  BORDERLESS_STUDIO_EXPANSION_MM,
+  scmOffsetMMToPx,
+  ScmPaperLabels,
+  ScmPaperSize,
+  ScmRegistration,
+  scmTemplateName,
+  ScmVariant,
+} from "@/features/pdf/scm/scmLayout";
 import { useCardDocumentsByIdentifier } from "@/store/slices/cardDocumentsSlice";
 import {
   selectProjectCardback,
@@ -64,18 +79,21 @@ const downloadPDF = async (
 const useDownloadPDF = (
   props: Omit<PDFProps, "fileHandles">,
   clientSearchService: ClientSearchService,
-  dispatch: AppDispatch
+  dispatch: AppDispatch,
+  setIsDownloading: (newState: boolean) => void
 ) => {
   const doFileDownload = useDoFileDownload();
   return () =>
-    Promise.resolve(
-      doFileDownload(
-        "pdf",
-        "cards.pdf",
-        (): Promise<boolean> =>
-          downloadPDF(props, clientSearchService, dispatch)
+    Promise.resolve(setIsDownloading(true))
+      .then(() =>
+        doFileDownload(
+          "pdf",
+          "cards.pdf",
+          (): Promise<boolean> =>
+            downloadPDF(props, clientSearchService, dispatch)
+        )
       )
-    );
+      .finally(() => setIsDownloading(false));
 };
 
 interface NumericFieldProps {
@@ -113,8 +131,675 @@ const NumericField = (props: NumericFieldProps) => {
   );
 };
 
+interface PageSizeSettingsProps {
+  pageWidth: number | undefined;
+  setPageWidth: (value: number | undefined) => void;
+  pageHeight: number | undefined;
+  setPageHeight: (value: number | undefined) => void;
+  pageSize: keyof typeof PageSize;
+  setPageSize: (value: keyof typeof PageSize) => void;
+}
+
+const PageSizeSettings = ({
+  pageWidth,
+  setPageWidth,
+  pageHeight,
+  setPageHeight,
+  pageSize,
+  setPageSize,
+}: PageSizeSettingsProps) => {
+  const [expanded, setExpanded] = useState<boolean>(false);
+  const isCustomPageSize = pageSize === "CUSTOM";
+
+  const pageSizeOptions = useMemo(
+    () =>
+      Object.entries(PageSize).map(([value, label]) => ({
+        value,
+        label,
+        checked: value === pageSize,
+      })),
+    [pageSize]
+  );
+
+  return (
+    <AutofillCollapse
+      expanded={expanded}
+      onClick={() => setExpanded(!expanded)}
+      zIndex={15}
+      title="Page Size"
+    >
+      <Container className="p-2">
+        <Row>
+          <Col xs={12}>
+            <Form.Label>Page size</Form.Label>
+            <StyledDropdownTreeSelect
+              data={pageSizeOptions}
+              onChange={(currentNode, selectedNodes) =>
+                setPageSize(currentNode.value as keyof typeof PageSize)
+              }
+              mode="radioSelect"
+              inlineSearchInput
+            />
+          </Col>
+        </Row>
+        {isCustomPageSize && (
+          <Row>
+            <Col xl={6} lg={12} md={12} sm={12} xs={12}>
+              <NumericField
+                label="Custom page width (mm)"
+                value={pageWidth}
+                setValue={setPageWidth}
+                min={0}
+                step={0.1}
+              />
+            </Col>
+            <Col xl={6} lg={12} md={12} sm={12} xs={12}>
+              <NumericField
+                label="Custom page height (mm)"
+                value={pageHeight}
+                setValue={setPageHeight}
+                min={0}
+                step={0.1}
+              />
+            </Col>
+          </Row>
+        )}
+      </Container>
+    </AutofillCollapse>
+  );
+};
+
+interface CardSelectionSettingsProps {
+  cardSelectionMode: keyof typeof CardSelectionMode;
+  setCardSelectionMode: (value: keyof typeof CardSelectionMode) => void;
+}
+
+const CardSelectionSettings = ({
+  cardSelectionMode,
+  setCardSelectionMode,
+}: CardSelectionSettingsProps) => {
+  const [expanded, setExpanded] = useState<boolean>(false);
+  const cardSelectionModeOptions = useMemo(
+    () =>
+      Object.entries(CardSelectionMode).map(([value, label]) => ({
+        value,
+        label,
+        checked: value === cardSelectionMode,
+      })),
+    [cardSelectionMode]
+  );
+
+  return (
+    <AutofillCollapse
+      expanded={expanded}
+      onClick={() => setExpanded(!expanded)}
+      zIndex={14}
+      title="Card Selection"
+    >
+      <Container className="p-2">
+        <Form.Label>Select which cards to include</Form.Label>
+        <StyledDropdownTreeSelect
+          data={cardSelectionModeOptions}
+          onChange={(currentNode, selectedNodes) =>
+            setCardSelectionMode(
+              currentNode.value as keyof typeof CardSelectionMode
+            )
+          }
+          mode="radioSelect"
+          inlineSearchInput
+        />
+      </Container>
+    </AutofillCollapse>
+  );
+};
+
+interface CardQualitySettingsProps {
+  imageDPI: number;
+  setImageDPI: (value: number) => void;
+  jpgQuality: number;
+  setJPGQuality: (value: number) => void;
+}
+
+const CardQualitySettings = ({
+  imageDPI,
+  setImageDPI,
+  jpgQuality,
+  setJPGQuality,
+}: CardQualitySettingsProps) => {
+  const [expanded, setExpanded] = useState<boolean>(false);
+
+  return (
+    <AutofillCollapse
+      expanded={expanded}
+      onClick={() => setExpanded(!expanded)}
+      zIndex={13}
+      title="Card Quality"
+    >
+      <Container className="p-2">
+        <Form.Label>
+          Card image DPI: <b>{imageDPI} DPI</b>
+        </Form.Label>
+        <Form.Range
+          defaultValue={600}
+          min={100}
+          max={1500}
+          step={100}
+          onChange={(event) => {
+            setImageDPI(parseInt(event.target.value));
+          }}
+        />
+        <Form.Label>
+          JPG quality: <b>{jpgQuality}%</b>
+        </Form.Label>
+        <Form.Range
+          defaultValue={600}
+          min={5}
+          max={100}
+          step={5}
+          onChange={(event) => {
+            setJPGQuality(parseInt(event.target.value));
+          }}
+        />
+      </Container>
+    </AutofillCollapse>
+  );
+};
+
+interface EdgeSettingsProps {
+  bleedEdgeMM: number | undefined;
+  setBleedEdgeMM: (value: number | undefined) => void;
+  roundCorners: boolean;
+  setRoundCorners: (value: boolean) => void;
+}
+
+const EdgeSettings = ({
+  bleedEdgeMM,
+  setBleedEdgeMM,
+  roundCorners,
+  setRoundCorners,
+}: EdgeSettingsProps) => {
+  const [expanded, setExpanded] = useState<boolean>(false);
+
+  return (
+    <AutofillCollapse
+      expanded={expanded}
+      onClick={() => setExpanded(!expanded)}
+      zIndex={12}
+      title="Card Edges"
+    >
+      <Container className="p-2">
+        <NumericField
+          label={`Bleed edge (max: ${BleedEdgeMM} mm)`}
+          value={bleedEdgeMM}
+          setValue={setBleedEdgeMM}
+          min={0}
+          max={BleedEdgeMM}
+          step={0.001}
+        />
+        <Form.Label>Corners</Form.Label>
+        <Toggle
+          onClick={() => setRoundCorners(!roundCorners)}
+          on="Round"
+          onClassName="flex-centre"
+          off="Square"
+          offClassName="flex-centre"
+          onstyle="success"
+          offstyle="info"
+          width={100 + "%"}
+          size="md"
+          height={ToggleButtonHeight + "px"}
+          active={roundCorners}
+        />
+      </Container>
+    </AutofillCollapse>
+  );
+};
+
+interface CutLinesSettingsProps {
+  drawCardCutLines: boolean;
+  setDrawCardCutLines: (value: boolean) => void;
+  drawPageCutLines: boolean;
+  setDrawPageCutLines: (value: boolean) => void;
+  cutLineShape: keyof typeof CutLineShape;
+  setCutLineShape: (value: keyof typeof CutLineShape) => void;
+  cutLinePlacement: keyof typeof CutLinePlacement;
+  setCutLinePlacement: (value: keyof typeof CutLinePlacement) => void;
+  cutLineLengthMM: number | undefined;
+  setCutLineLengthMM: (value: number | undefined) => void;
+  cutLineOffsetMM: number | undefined;
+  setCutLineOffsetMM: (value: number | undefined | undefined) => void;
+  cutLineThicknessMM: number | undefined;
+  setCutLineThicknessMM: (value: number | undefined) => void;
+  cutLineColor: string;
+  setCutLineColor: (value: string) => void;
+}
+
+const CutLinesSettings = ({
+  drawCardCutLines,
+  setDrawCardCutLines,
+  drawPageCutLines,
+  setDrawPageCutLines,
+  cutLineShape,
+  setCutLineShape,
+  cutLinePlacement,
+  setCutLinePlacement,
+  cutLineLengthMM,
+  setCutLineLengthMM,
+  cutLineOffsetMM,
+  setCutLineOffsetMM,
+  cutLineThicknessMM,
+  setCutLineThicknessMM,
+  cutLineColor,
+  setCutLineColor,
+}: CutLinesSettingsProps) => {
+  const [expanded, setExpanded] = useState<boolean>(false);
+
+  const cutLineShapeOptions = useMemo(
+    () =>
+      Object.entries(CutLineShape).map(([value, label]) => ({
+        value,
+        label,
+        checked: value === cutLineShape,
+      })),
+    [cutLineShape]
+  );
+
+  const cutLinePlacementOptions = useMemo(
+    () =>
+      Object.entries(CutLinePlacement).map(([value, label]) => ({
+        value,
+        label,
+        checked: value === cutLinePlacement,
+      })),
+    [cutLinePlacement]
+  );
+
+  return (
+    <AutofillCollapse
+      expanded={expanded}
+      onClick={() => setExpanded(!expanded)}
+      zIndex={11}
+      title="Cut Lines"
+    >
+      <Container className="p-2">
+        <Form.Label>Card Cut Guide Lines</Form.Label>
+        <Toggle
+          onClick={() => setDrawCardCutLines(!drawCardCutLines)}
+          on="On"
+          onClassName="flex-centre"
+          off="Off"
+          offClassName="flex-centre"
+          onstyle="success"
+          offstyle="info"
+          width={100 + "%"}
+          size="md"
+          height={ToggleButtonHeight + "px"}
+          active={drawCardCutLines}
+        />
+        <Form.Label>Page Cut Guide Lines</Form.Label>
+        <Toggle
+          onClick={() => setDrawPageCutLines(!drawPageCutLines)}
+          on="On"
+          onClassName="flex-centre"
+          off="Off"
+          offClassName="flex-centre"
+          onstyle="success"
+          offstyle="info"
+          width={100 + "%"}
+          size="md"
+          height={ToggleButtonHeight + "px"}
+          active={drawPageCutLines}
+        />
+        {(drawCardCutLines || drawPageCutLines) && (
+          <Row className="mt-1">
+            {drawCardCutLines && (
+              <>
+                <Col xs={12}>
+                  <Form.Label>Card Cut Lines Shape</Form.Label>
+                  <StyledDropdownTreeSelect
+                    data={cutLineShapeOptions}
+                    onChange={(currentNode, selectedNodes) =>
+                      setCutLineShape(
+                        currentNode.value as keyof typeof CutLineShape
+                      )
+                    }
+                    mode="radioSelect"
+                    inlineSearchInput
+                  />
+                </Col>
+                <Col xs={12}>
+                  <Form.Label>Card Cut Lines Placement</Form.Label>
+                  <StyledDropdownTreeSelect
+                    data={cutLinePlacementOptions}
+                    onChange={(currentNode, selectedNodes) =>
+                      setCutLinePlacement(
+                        currentNode.value as keyof typeof CutLinePlacement
+                      )
+                    }
+                    mode="radioSelect"
+                    inlineSearchInput
+                  />
+                </Col>
+              </>
+            )}
+            <Col xs={6}>
+              <NumericField
+                label="Cut Lines Length (mm)"
+                value={cutLineLengthMM}
+                setValue={setCutLineLengthMM}
+                min={0.1}
+                step={0.1}
+              />
+            </Col>
+            <Col xs={6} className="mt-1">
+              <NumericField
+                label="Cut Lines Thickness (mm)"
+                value={cutLineThicknessMM}
+                setValue={setCutLineThicknessMM}
+                min={0.01}
+                step={0.01}
+              />
+            </Col>
+            <Col xs={6}>
+              <NumericField
+                label="Cut Lines Offset (mm)"
+                value={cutLineOffsetMM}
+                setValue={setCutLineOffsetMM}
+                step={0.1}
+              />
+            </Col>
+            <Col xs={6} className="mt-1">
+              <Form.Label>Cut Lines Colour</Form.Label>
+              <Form.Control
+                type="color"
+                value={cutLineColor}
+                onChange={(e) => setCutLineColor(e.target.value)}
+              />
+            </Col>
+          </Row>
+        )}
+      </Container>
+    </AutofillCollapse>
+  );
+};
+
+interface SpacingAndMarginsSettingsProps {
+  cardSpacingRowMM: number | undefined;
+  setCardSpacingRowMM: (value: number | undefined) => void;
+  cardSpacingColMM: number | undefined;
+  setCardSpacingColMM: (value: number | undefined) => void;
+  pageMarginTopMM: number | undefined;
+  setPageMarginTopMM: (value: number | undefined) => void;
+  pageMarginBottomMM: number | undefined;
+  setPageMarginBottomMM: (value: number | undefined) => void;
+  pageMarginLeftMM: number | undefined;
+  setPageMarginLeftMM: (value: number | undefined) => void;
+  pageMarginRightMM: number | undefined;
+  setPageMarginRightMM: (value: number | undefined) => void;
+}
+
+const SpacingAndMarginsSettings = ({
+  cardSpacingRowMM,
+  setCardSpacingRowMM,
+  cardSpacingColMM,
+  setCardSpacingColMM,
+  pageMarginTopMM,
+  setPageMarginTopMM,
+  pageMarginBottomMM,
+  setPageMarginBottomMM,
+  pageMarginLeftMM,
+  setPageMarginLeftMM,
+  pageMarginRightMM,
+  setPageMarginRightMM,
+}: SpacingAndMarginsSettingsProps) => {
+  const [expanded, setExpanded] = useState<boolean>(false);
+
+  return (
+    <AutofillCollapse
+      expanded={expanded}
+      onClick={() => setExpanded(!expanded)}
+      zIndex={10}
+      title="Spacing & Margins"
+    >
+      <Container className="p-2">
+        <Row>
+          <Col lg={6} md={12} sm={12} xs={12}>
+            <NumericField
+              label="Row spacing (mm)"
+              value={cardSpacingRowMM}
+              setValue={setCardSpacingRowMM}
+              min={0}
+              step={0.1}
+            />
+          </Col>
+          <Col lg={6} md={12} sm={12} xs={12}>
+            <NumericField
+              label="Column spacing (mm)"
+              value={cardSpacingColMM}
+              setValue={setCardSpacingColMM}
+              min={0}
+              step={0.1}
+            />
+          </Col>
+        </Row>
+        <Row>
+          <Col lg={6} md={6} sm={12} xs={12}>
+            <NumericField
+              label="Page margin top (mm)"
+              value={pageMarginTopMM}
+              setValue={setPageMarginTopMM}
+              min={0}
+              step={0.1}
+            />
+          </Col>
+          <Col lg={6} md={6} sm={12} xs={12}>
+            <NumericField
+              label="Page margin bottom (mm)"
+              value={pageMarginBottomMM}
+              setValue={setPageMarginBottomMM}
+              min={0}
+              step={0.1}
+            />
+          </Col>
+        </Row>
+        <Row>
+          <Col lg={6} md={6} sm={12} xs={12}>
+            <NumericField
+              label="Page margin left (mm)"
+              value={pageMarginLeftMM}
+              setValue={setPageMarginLeftMM}
+              min={0}
+              step={0.1}
+            />
+          </Col>
+          <Col lg={6} md={6} sm={12} xs={12}>
+            <NumericField
+              label="Page margin right (mm)"
+              value={pageMarginRightMM}
+              setValue={setPageMarginRightMM}
+              min={0}
+              step={0.1}
+            />
+          </Col>
+        </Row>
+      </Container>
+    </AutofillCollapse>
+  );
+};
+
+interface SCMSettingsProps {
+  scmPaperSize: ScmPaperSize;
+  setScmPaperSize: (value: ScmPaperSize) => void;
+  scmVariant: ScmVariant;
+  setScmVariant: (value: ScmVariant) => void;
+  scmRegistration: ScmRegistration;
+  setScmRegistration: (value: ScmRegistration) => void;
+  scmDuplex: boolean;
+  setScmDuplex: (value: boolean) => void;
+  scmOffsetXMM: number | undefined;
+  setScmOffsetXMM: (value: number | undefined) => void;
+  scmOffsetYMM: number | undefined;
+  setScmOffsetYMM: (value: number | undefined) => void;
+  scmOffsetAngleDeg: number | undefined;
+  setScmOffsetAngleDeg: (value: number | undefined) => void;
+}
+
+const SCMSettings = ({
+  scmPaperSize,
+  setScmPaperSize,
+  scmVariant,
+  setScmVariant,
+  scmRegistration,
+  setScmRegistration,
+  scmDuplex,
+  setScmDuplex,
+  scmOffsetXMM,
+  setScmOffsetXMM,
+  scmOffsetYMM,
+  setScmOffsetYMM,
+  scmOffsetAngleDeg,
+  setScmOffsetAngleDeg,
+}: SCMSettingsProps) => {
+  const [expanded, setExpanded] = useState<boolean>(true);
+
+  const paperSizeOptions = useMemo(
+    () =>
+      Object.keys(ScmPaperLabels).map((value) => ({
+        value,
+        label: ScmPaperLabels[value as ScmPaperSize],
+        checked: value === scmPaperSize,
+      })),
+    [scmPaperSize]
+  );
+
+  const isBorderless = scmVariant === "borderless";
+
+  return (
+    <AutofillCollapse
+      expanded={expanded}
+      onClick={() => setExpanded(!expanded)}
+      zIndex={15}
+      title="Silhouette Template"
+    >
+      <Container className="p-2">
+        <Row>
+          <Col xs={12}>
+            <Form.Label>Paper size</Form.Label>
+            <StyledDropdownTreeSelect
+              data={paperSizeOptions}
+              onChange={(currentNode) =>
+                setScmPaperSize(currentNode.value as ScmPaperSize)
+              }
+              mode="radioSelect"
+              inlineSearchInput
+            />
+          </Col>
+        </Row>
+        <Form.Label>Template</Form.Label>
+        <Toggle
+          onClick={() => setScmVariant(isBorderless ? "default" : "borderless")}
+          on="Borderless"
+          onClassName="flex-centre"
+          off="Normal"
+          offClassName="flex-centre"
+          onstyle="success"
+          offstyle="info"
+          width={100 + "%"}
+          size="md"
+          height={ToggleButtonHeight + "px"}
+          active={isBorderless}
+        />
+        <Form.Label>Registration marks</Form.Label>
+        <Toggle
+          onClick={() => setScmRegistration(scmRegistration === 3 ? 4 : 3)}
+          on="4 Corner (Cameo 5)"
+          onClassName="flex-centre"
+          off="3 Corner"
+          offClassName="flex-centre"
+          onstyle="success"
+          offstyle="info"
+          width={100 + "%"}
+          size="md"
+          height={ToggleButtonHeight + "px"}
+          active={scmRegistration === 4}
+        />
+        <Form.Label>Sides</Form.Label>
+        <Toggle
+          onClick={() => setScmDuplex(!scmDuplex)}
+          on="Duplex (front + back)"
+          onClassName="flex-centre"
+          off="Fronts only"
+          offClassName="flex-centre"
+          onstyle="success"
+          offstyle="info"
+          width={100 + "%"}
+          size="md"
+          height={ToggleButtonHeight + "px"}
+          active={scmDuplex}
+        />
+        <hr />
+        <p className="mb-1">Load this cutting template in Silhouette Studio:</p>
+        <p className="mb-1">
+          <a
+            href="https://github.com/Alan-Cha/silhouette-card-maker/tree/main/cutting_templates"
+            target="_blank"
+            rel="noreferrer"
+          >
+            <code>{scmTemplateName(scmPaperSize, scmVariant)}</code>
+          </a>
+        </p>
+        {isBorderless && (
+          <p className="text-muted" style={{ fontSize: "0.85em" }}>
+            Borderless: in Silhouette Studio, set a custom page size{" "}
+            <b>{BORDERLESS_STUDIO_EXPANSION_MM}mm larger</b> in each dimension
+            than the real paper so the registration marks land at the correct
+            inset.
+          </p>
+        )}
+        {scmDuplex && (
+          <Row className="mt-1">
+            <Col xs={12}>
+              <Form.Label>Back alignment offset</Form.Label>
+              <p className="text-muted mb-1" style={{ fontSize: "0.8em" }}>
+                Millimetres. X+ = right, Y+ = up, angle+ = clockwise, relative
+                to the back page. SCM&apos;s <code>offset_pdf</code> uses pixels
+                at 300 DPI — your offsets ≈{" "}
+                <b>{scmOffsetMMToPx(scmOffsetXMM ?? 0)}</b>,{" "}
+                <b>{scmOffsetMMToPx(scmOffsetYMM ?? 0)}</b> px.
+              </p>
+            </Col>
+            <Col xs={6}>
+              <NumericField
+                label="Offset X (mm)"
+                value={scmOffsetXMM}
+                setValue={setScmOffsetXMM}
+                step={0.1}
+              />
+            </Col>
+            <Col xs={6}>
+              <NumericField
+                label="Offset Y (mm)"
+                value={scmOffsetYMM}
+                setValue={setScmOffsetYMM}
+                step={0.1}
+              />
+            </Col>
+            <Col xs={6} className="mt-1">
+              <NumericField
+                label="Angle (°)"
+                value={scmOffsetAngleDeg}
+                setValue={setScmOffsetAngleDeg}
+                step={0.1}
+              />
+            </Col>
+          </Row>
+        )}
+      </Container>
+    </AutofillCollapse>
+  );
+};
+
 export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
-  // TODO: include fronts / include fronts and unique backs / include fronts and backs
   const dispatch = useAppDispatch();
   const [cardSpacingRowMM, setCardSpacingRowMM] = useState<number | undefined>(
     0
@@ -134,6 +819,26 @@ export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
   >(5);
   const [bleedEdgeMM, setBleedEdgeMM] = useState<number | undefined>(0);
   const [roundCorners, setRoundCorners] = useState<boolean>(false);
+  const [drawCardCutLines, setDrawCardCutLines] = useState<boolean>(true);
+  const [drawPageCutLines, setDrawPageCutLines] = useState<boolean>(true);
+  const [cutLineLengthMM, setCutLineLengthMM] = useState<number | undefined>(2);
+  const [cutLineOffsetMM, setCutLineOffsetMM] = useState<number | undefined>(0);
+  const [cutLineThicknessMM, setCutLineThicknessMM] = useState<
+    number | undefined
+  >(0.2);
+  const [cutLineColor, setCutLineColor] = useState<string>("#FF0000");
+
+  // SCM (Silhouette Card Maker) mode state.
+  const [scmMode, setScmMode] = useState<boolean>(false);
+  const [scmPaperSize, setScmPaperSize] = useState<ScmPaperSize>("letter");
+  const [scmVariant, setScmVariant] = useState<ScmVariant>("default");
+  const [scmRegistration, setScmRegistration] = useState<ScmRegistration>(3);
+  const [scmDuplex, setScmDuplex] = useState<boolean>(true);
+  const [scmOffsetXMM, setScmOffsetXMM] = useState<number | undefined>(0);
+  const [scmOffsetYMM, setScmOffsetYMM] = useState<number | undefined>(0);
+  const [scmOffsetAngleDeg, setScmOffsetAngleDeg] = useState<
+    number | undefined
+  >(0);
 
   const { clientSearchService } = useClientSearchContext();
   const projectMembers = useAppSelector(selectProjectMembers);
@@ -142,30 +847,16 @@ export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
   const [pageSize, setPageSize] = useState<keyof typeof PageSize>(PageSize.A4);
   const [pageWidth, setPageWidth] = useState<number | undefined>(undefined);
   const [pageHeight, setPageHeight] = useState<number | undefined>(undefined);
+  const [imageDPI, setImageDPI] = useState<number>(600);
+  const [jpgQuality, setJPGQuality] = useState<number>(100);
 
-  const isCustomPageSize = pageSize === "CUSTOM";
-
-  const pageSizeOptions = useMemo(
-    () =>
-      Object.entries(PageSize).map(([value, label]) => ({
-        value,
-        label,
-        checked: value === pageSize,
-      })),
-    [pageSize]
-  );
   const [cardSelectionMode, setCardSelectionMode] = useState<
     keyof typeof CardSelectionMode
   >("frontsAndDistinctBacks");
-  const cardSelectionModeOptions = useMemo(
-    () =>
-      Object.entries(CardSelectionMode).map(([value, label]) => ({
-        value,
-        label,
-        checked: value === cardSelectionMode,
-      })),
-    [cardSelectionMode]
-  );
+  const [cutLineShape, setCutLineShape] =
+    useState<keyof typeof CutLineShape>("InsideOnly");
+  const [cutLinePlacement, setCutLinePlacement] =
+    useState<keyof typeof CutLinePlacement>("Inside");
 
   const cardDocumentsByIdentifier = useCardDocumentsByIdentifier();
 
@@ -180,6 +871,14 @@ export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
     pageHeight: pageHeight,
     bleedEdgeMM: bleedEdgeMM ?? 0,
     roundCorners: roundCorners,
+    drawCardCutLines: drawCardCutLines,
+    drawPageCutLines: drawPageCutLines,
+    cutLineLengthMM: cutLineLengthMM ?? 2,
+    cutLineOffsetMM: cutLineOffsetMM ?? 0,
+    cutLineThicknessMM: cutLineThicknessMM ?? 0.2,
+    cutLineColor: cutLineColor,
+    cutLinePlacement: cutLinePlacement,
+    cutLineShape: cutLineShape,
     cardSpacingRowMM: cardSpacingRowMM ?? 0,
     cardSpacingColMM: cardSpacingColMM ?? 0,
     pageMarginTopMM: pageMarginTopMM ?? 0,
@@ -189,8 +888,18 @@ export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
     cardDocumentsByIdentifier: cardDocumentsByIdentifier,
     projectMembers: projectMembers,
     projectCardback: projectCardback,
+    scmMode: scmMode,
+    scmPaperSize: scmPaperSize,
+    scmVariant: scmVariant,
+    scmRegistration: scmRegistration,
+    scmDuplex: scmDuplex,
+    scmOffsetXMM: scmOffsetXMM ?? 0,
+    scmOffsetYMM: scmOffsetYMM ?? 0,
+    scmOffsetAngleDeg: scmOffsetAngleDeg ?? 0,
     // the following settings don't matter for previewing and should remain stable to prevent unnecessary re-renders.
     imageQuality: "small-thumbnail",
+    imageDPI: undefined,
+    jpgQuality: 100,
   };
   const [debouncedPDFProps, debouncedState] = useDebounce(pdfProps, 500, {
     equalityFn,
@@ -200,13 +909,18 @@ export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
 
   const showSpinner = debouncedState.isPending() || loading;
 
+  const [isDownloading, setIsDownloading] = useState<boolean>(false);
+
   const downloadPDF = useDownloadPDF(
     {
       ...debouncedPDFProps,
       imageQuality: "full-resolution",
+      imageDPI: imageDPI,
+      jpgQuality: jpgQuality,
     },
     clientSearchService,
-    dispatch
+    dispatch,
+    setIsDownloading
   );
 
   return (
@@ -218,24 +932,8 @@ export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
           sm={5}
           xs={6}
           className="py-2"
-          heightDelta={67.9 + 71 + heightDelta}
+          heightDelta={heightDelta}
         >
-          <Alert variant="info">
-            We are actively working to improve this experience.
-            <br />
-            In particular, please note that generated PDFs can be large and can
-            take a while to download.
-            <br />
-            Please send any feature requests, bug reports, and other discussion
-            to the{" "}
-            <a
-              href="https://github.com/chilli-axe/mpc-autofill"
-              target="_blank"
-            >
-              GitHub repo
-            </a>
-            . Thanks for your patience!
-          </Alert>
           <p>
             Generate a PDF file from your project suitable for printing at home
             or professionally.
@@ -252,148 +950,132 @@ export const PDFGenerator = ({ heightDelta = 0 }: { heightDelta?: number }) => {
             </li>
           </ol>
           <hr />
-          <Form.Label>Select which cards to include</Form.Label>
-          <StyledDropdownTreeSelect
-            data={cardSelectionModeOptions}
-            onChange={(currentNode, selectedNodes) =>
-              setCardSelectionMode(
-                currentNode.value as keyof typeof CardSelectionMode
-              )
-            }
-            mode="radioSelect"
-            inlineSearchInput
+          <Form.Label>Silhouette (SCM) cutting mode</Form.Label>
+          <Toggle
+            onClick={() => setScmMode(!scmMode)}
+            on="On"
+            onClassName="flex-centre"
+            off="Off"
+            offClassName="flex-centre"
+            onstyle="success"
+            offstyle="info"
+            width={100 + "%"}
+            size="md"
+            height={ToggleButtonHeight + "px"}
+            active={scmMode}
           />
-          <Row>
-            <Col xs={12}>
-              <Form.Label>Page size</Form.Label>
-              <StyledDropdownTreeSelect
-                data={pageSizeOptions}
-                onChange={(currentNode, selectedNodes) =>
-                  setPageSize(currentNode.value as keyof typeof PageSize)
-                }
-                mode="radioSelect"
-                inlineSearchInput
+          <p className="text-muted mt-1" style={{ fontSize: "0.85em" }}>
+            Generate a PDF with registration marks compatible with{" "}
+            <a
+              href="https://github.com/Alan-Cha/silhouette-card-maker"
+              target="_blank"
+              rel="noreferrer"
+            >
+              silhouette-card-maker
+            </a>{" "}
+            cutting templates (standard 63×88mm cards).
+          </p>
+          <hr />
+          {scmMode ? (
+            <>
+              <SCMSettings
+                scmPaperSize={scmPaperSize}
+                setScmPaperSize={setScmPaperSize}
+                scmVariant={scmVariant}
+                setScmVariant={setScmVariant}
+                scmRegistration={scmRegistration}
+                setScmRegistration={setScmRegistration}
+                scmDuplex={scmDuplex}
+                setScmDuplex={setScmDuplex}
+                scmOffsetXMM={scmOffsetXMM}
+                setScmOffsetXMM={setScmOffsetXMM}
+                scmOffsetYMM={scmOffsetYMM}
+                setScmOffsetYMM={setScmOffsetYMM}
+                scmOffsetAngleDeg={scmOffsetAngleDeg}
+                setScmOffsetAngleDeg={setScmOffsetAngleDeg}
               />
-            </Col>
-          </Row>
-          {isCustomPageSize && (
-            <Row>
-              <Col xl={6} lg={12} md={12} sm={12} xs={12}>
-                <NumericField
-                  label="Custom page width (mm)"
-                  value={pageWidth}
-                  setValue={setPageWidth}
-                  min={0}
-                  step={0.1}
-                />
-              </Col>
-              <Col xl={6} lg={12} md={12} sm={12} xs={12}>
-                <NumericField
-                  label="Custom page height (mm)"
-                  value={pageHeight}
-                  setValue={setPageHeight}
-                  min={0}
-                  step={0.1}
-                />
-              </Col>
-            </Row>
+              <CardQualitySettings
+                imageDPI={imageDPI}
+                setImageDPI={setImageDPI}
+                jpgQuality={jpgQuality}
+                setJPGQuality={setJPGQuality}
+              />
+            </>
+          ) : (
+            <>
+              <PageSizeSettings
+                pageWidth={pageWidth}
+                setPageWidth={setPageWidth}
+                pageHeight={pageHeight}
+                setPageHeight={setPageHeight}
+                pageSize={pageSize}
+                setPageSize={setPageSize}
+              />
+              <CardSelectionSettings
+                cardSelectionMode={cardSelectionMode}
+                setCardSelectionMode={setCardSelectionMode}
+              />
+              <CardQualitySettings
+                imageDPI={imageDPI}
+                setImageDPI={setImageDPI}
+                jpgQuality={jpgQuality}
+                setJPGQuality={setJPGQuality}
+              />
+              <EdgeSettings
+                bleedEdgeMM={bleedEdgeMM}
+                setBleedEdgeMM={setBleedEdgeMM}
+                roundCorners={roundCorners}
+                setRoundCorners={setRoundCorners}
+              />
+              <CutLinesSettings
+                drawCardCutLines={drawCardCutLines}
+                setDrawCardCutLines={setDrawCardCutLines}
+                drawPageCutLines={drawPageCutLines}
+                setDrawPageCutLines={setDrawPageCutLines}
+                cutLineShape={cutLineShape}
+                setCutLineShape={setCutLineShape}
+                cutLinePlacement={cutLinePlacement}
+                setCutLinePlacement={setCutLinePlacement}
+                cutLineLengthMM={cutLineLengthMM}
+                setCutLineLengthMM={setCutLineLengthMM}
+                cutLineOffsetMM={cutLineOffsetMM}
+                setCutLineOffsetMM={setCutLineOffsetMM}
+                cutLineThicknessMM={cutLineThicknessMM}
+                setCutLineThicknessMM={setCutLineThicknessMM}
+                cutLineColor={cutLineColor}
+                setCutLineColor={setCutLineColor}
+              />
+              <SpacingAndMarginsSettings
+                cardSpacingRowMM={cardSpacingRowMM}
+                setCardSpacingRowMM={setCardSpacingRowMM}
+                cardSpacingColMM={cardSpacingColMM}
+                setCardSpacingColMM={setCardSpacingColMM}
+                pageMarginTopMM={pageMarginTopMM}
+                setPageMarginTopMM={setPageMarginTopMM}
+                pageMarginBottomMM={pageMarginBottomMM}
+                setPageMarginBottomMM={setPageMarginBottomMM}
+                pageMarginLeftMM={pageMarginLeftMM}
+                setPageMarginLeftMM={setPageMarginLeftMM}
+                pageMarginRightMM={pageMarginRightMM}
+                setPageMarginRightMM={setPageMarginRightMM}
+              />
+            </>
           )}
-          <Row>
-            <Col sm={12}>
-              <NumericField
-                label={`Bleed edge (max: ${BleedEdgeMM} mm)`}
-                value={bleedEdgeMM}
-                setValue={setBleedEdgeMM}
-                min={0}
-                max={BleedEdgeMM}
-                step={0.001}
-              />
-              <Form.Label>Corners</Form.Label>
-              <Toggle
-                onClick={() => setRoundCorners(!roundCorners)}
-                on="Round"
-                onClassName="flex-centre"
-                off="Square"
-                offClassName="flex-centre"
-                onstyle="success"
-                offstyle="info"
-                width={100 + "%"}
-                size="md"
-                height={ToggleButtonHeight + "px"}
-                active={roundCorners}
-              />
-            </Col>
-          </Row>
-          <Row>
-            <Col lg={6} md={12} sm={12} xs={12}>
-              <NumericField
-                label="Row spacing (mm)"
-                value={cardSpacingRowMM}
-                setValue={setCardSpacingRowMM}
-                min={0}
-                step={0.1}
-              />
-            </Col>
-            <Col lg={6} md={12} sm={12} xs={12}>
-              <NumericField
-                label="Column spacing (mm)"
-                value={cardSpacingColMM}
-                setValue={setCardSpacingColMM}
-                min={0}
-                step={0.1}
-              />
-            </Col>
-          </Row>
-          <Row>
-            <Col xs={6}>
-              <NumericField
-                label="Page margin top (mm)"
-                value={pageMarginTopMM}
-                setValue={setPageMarginTopMM}
-                min={0}
-                step={0.1}
-              />
-            </Col>
-            <Col xs={6}>
-              <NumericField
-                label="Page margin bottom (mm)"
-                value={pageMarginBottomMM}
-                setValue={setPageMarginBottomMM}
-                min={0}
-                step={0.1}
-              />
-            </Col>
-          </Row>
-          <Row>
-            <Col xs={6}>
-              <NumericField
-                label="Page margin left (mm)"
-                value={pageMarginLeftMM}
-                setValue={setPageMarginLeftMM}
-                min={0}
-                step={0.1}
-              />
-            </Col>
-            <Col xs={6}>
-              <NumericField
-                label="Page margin right (mm)"
-                value={pageMarginRightMM}
-                setValue={setPageMarginRightMM}
-                min={0}
-                step={0.1}
-              />
-            </Col>
-          </Row>
           <hr />
           <div className="d-grid gap-0">
-            <Button onClick={downloadPDF}>Generate PDF</Button>
+            <Button onClick={downloadPDF} disabled={isDownloading}>
+              {isDownloading ? <Spinner size={1.5} /> : "Generate PDF"}
+            </Button>
           </div>
         </OverflowCol>
         <Col lg={9} md={8} sm={7} xs={6} style={{ position: "relative" }}>
           {showSpinner && (
             <Spinner size={6} zIndex={3} positionAbsolute={true} />
           )}
-          <Blurrable disabled={showSpinner} style={{ height: 100 + "%" }}>
+          <Blurrable
+            disabled={showSpinner}
+            style={{ height: 100 + "%", overflowY: "hidden" }}
+          >
             <PDFPreview url={url} {...debouncedPDFProps} fileHandles={{}} />
           </Blurrable>
         </Col>

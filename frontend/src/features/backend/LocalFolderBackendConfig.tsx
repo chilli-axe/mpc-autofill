@@ -79,7 +79,7 @@ export const LocalFolderBackendConfig = () => {
   const chooseDirectory = async () => evaluateSteps(steps, setValidationStatus);
 
   const clearDirectoryChoice = async () => {
-    await clientSearchService.clearDirectoryHandle(store.getState(), dispatch);
+    await clientSearchService.clearLocalFilesIndex(store.getState(), dispatch);
     forceUpdate();
     if (directoryHandle !== undefined) {
       dispatch(

@@ -183,6 +183,7 @@ elasticsearch
 .env_prod
 MPCAutofill/exported_drives.csv
 MPCAutofill/drives.csv
+MPCAutofill/scryfall_cache/*
 /MPCAutofill/node_modules/
 /schemas/node_modules/
 /MPCAutofill/cardpicker/static/css/
@@ -205,3 +206,11 @@ frontend/public/mockServiceWorker.js
 **/.github/copilot-instructions.md
 **/.github/instructions/*.instructions.md
 **/.cursor/rules/*.mdc
+
+# Playwright
+node_modules/
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/

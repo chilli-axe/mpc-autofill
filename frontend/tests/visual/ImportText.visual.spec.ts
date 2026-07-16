@@ -30,10 +30,10 @@ test.describe("ImportText visual tests", () => {
       - heading "Syntax Guide" [level=2]:
         - button "Syntax Guide"
       - textbox "import-text":
-        - /placeholder: "2x Card 1\\n2x Card 2\\n3x Card 3\\n1x Card 4\\n\\n3x t:Card 6\\n\\n1x b:Card 5"
+        - /placeholder: "2x Card 1\\n1x Card 2\\n2x Card 3\\n2x Card 4\\n\\n2x t:Card 6\\n\\n1x b:Card 5"
       - paragraph: "Hint: Submit with Control+Enter."
-      - button "import-text-close"
       - button "import-text-submit"
+      - button "import-text-close"
     `);
   });
 });

@@ -1,8 +1,6 @@
 import styled from "@emotion/styled";
 import Col from "react-bootstrap/Col";
 
-import { NavbarHeight, RibbonHeight } from "@/common/constants";
-
 interface OverflowColProps {
   heightDelta?: number;
   scrollable?: boolean;

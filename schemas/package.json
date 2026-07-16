@@ -2,7 +2,7 @@
   "dependencies": {
     "node": "^21.6.1",
     "quicktype-core": "^23.0.171",
-    "tsx": "^4.19.3",
+    "tsx": "^4.22.4",
     "typescript": "^5.3.3"
   },
   "scripts": {

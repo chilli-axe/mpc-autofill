@@ -21,9 +21,9 @@ import BSCard from "react-bootstrap/Card";
 import Col from "react-bootstrap/Col";
 
 import {
-  getBucketThumbnailURL,
+  getBucketImageURL,
   getImageKey,
-  getWorkerThumbnailURL,
+  getWorkerImageURL,
 } from "@/common/image";
 import { SourceType } from "@/common/schema_types";
 import { SearchQuery, useAppDispatch, useAppSelector } from "@/common/types";
@@ -54,10 +54,13 @@ const VisibleImage = styled(Image)<{
 `;
 
 const OutlinedBSCardSubtitle = styled(BSCard.Subtitle)`
-  outline: solid 1px #ffffff00;
-  transition: outline 0.2s ease-in-out;
+  outline-style: dashed;
+  outline-width: 1px;
+  outline-color: #999999;
+  transition: outline-style 0.2s ease-in-out, outline-color 0.2s ease-in-out;
   &:hover {
-    outline-color: #ffffffff;
+    outline-style: solid;
+    outline-color: #ffffff;
     cursor: pointer;
   }
 `;
@@ -172,7 +175,10 @@ export const useImageSrc = (
   }
 
   // attempt to load directly from bucket first
-  const thumbnailBucketURL = getBucketThumbnailURL(cardDocument, small);
+  const thumbnailBucketURL = getBucketImageURL(
+    cardDocument,
+    small ? "small" : "large"
+  );
   const imageBucketURLValid = thumbnailBucketURL !== undefined;
   const loadFromBucket =
     imageBucketURLValid &&
@@ -180,7 +186,10 @@ export const useImageSrc = (
       imageState === "loaded-from-bucket");
 
   // if image is unavailable in bucket, fall back on loading from worker if possible
-  const imageWorkerURL = getWorkerThumbnailURL(cardDocument, small);
+  const imageWorkerURL = getWorkerImageURL(
+    cardDocument,
+    small ? "small" : "large"
+  );
   const imageWorkerURLValid = imageWorkerURL !== undefined;
   const smallThumbnailURL = imageWorkerURLValid
     ? imageWorkerURL
@@ -356,7 +365,23 @@ interface CardProps {
   noResultsFound: boolean;
   /** Whether to highlight this card by showing a glowing border around it. */
   highlight?: boolean;
+  /** When true, suppresses the card header and footer, showing only the image. */
+  compressed?: boolean;
+  /** Ref to attach to the card header for use as a drag handle. */
+  handleRef?: (element: Element | null) => void;
 }
+
+const deduplicateCards = (
+  cardDocuments: Array<CardDocument | undefined>
+): Array<CardDocument> => {
+  const ids = new Set();
+  return cardDocuments.filter(
+    (cardDocument) =>
+      cardDocument !== undefined &&
+      !ids.has(cardDocument.identifier) &&
+      ids.add(cardDocument.identifier)
+  ) as Array<CardDocument>;
+};
 
 /**
  * This component enables displaying cards with auxiliary information in a flexible, consistent way.
@@ -374,24 +399,19 @@ export function Card({
   searchQuery,
   noResultsFound,
   highlight,
+  compressed = false,
+  handleRef,
 }: CardProps) {
   //# region computed constants
 
   const cardImageElements =
     maybeCardDocument != null ? (
       <>
-        {[
+        {deduplicateCards([
           maybeCardDocument,
-          ...(maybePreviousCardDocument &&
-          maybePreviousCardDocument?.identifier !==
-            maybeCardDocument?.identifier
-            ? [maybePreviousCardDocument]
-            : []),
-          ...(maybeNextCardDocument &&
-          maybeNextCardDocument?.identifier !== maybeCardDocument?.identifier
-            ? [maybeNextCardDocument]
-            : []),
-        ].map(
+          maybePreviousCardDocument,
+          maybeNextCardDocument,
+        ]).map(
           (cardDocument) =>
             cardDocument !== undefined && (
               <MemoizedCardImage
@@ -434,33 +454,41 @@ export function Card({
       onClick={cardOnClick}
       style={{ contentVisibility: "auto" }}
     >
-      <BSCard.Header className="pb-0 text-center">
-        <p className="mpccard-slot">{cardHeaderTitle}</p>
-        {cardHeaderButtons}
-      </BSCard.Header>
+      {!compressed && (
+        <BSCard.Header
+          ref={handleRef as React.Ref<HTMLDivElement>}
+          className="pb-0 text-center"
+          style={{ cursor: handleRef ? "grab" : undefined }}
+        >
+          <p className="mpccard-slot">{cardHeaderTitle}</p>
+          {cardHeaderButtons}
+        </BSCard.Header>
+      )}
       <div>
         <MemoizedCardProportionWrapper small={true}>
           {cardImageElements}
         </MemoizedCardProportionWrapper>
-        <BSCard.Body className="mb-0 text-center">
-          <BSCardSubtitle className="mpccard-name" onClick={nameOnClick}>
-            {maybeCardDocument != null && maybeCardDocument.name}
-            {maybeCardDocument == null &&
-              searchQuery != undefined &&
-              searchQuery.query}
-          </BSCardSubtitle>
-          <div className="mpccard-spacing">
-            <BSCard.Text className="mpccard-source">
-              {maybeCardDocument != null &&
-                `${maybeCardDocument.sourceVerbose} [${maybeCardDocument.dpi} DPI]`}
+        {!compressed && (
+          <BSCard.Body className="mb-0 text-center">
+            <BSCardSubtitle className="mpccard-name" onClick={nameOnClick}>
+              {maybeCardDocument != null && maybeCardDocument.name}
               {maybeCardDocument == null &&
                 searchQuery != undefined &&
-                "Your search query"}
-            </BSCard.Text>
-          </div>
-        </BSCard.Body>
+                searchQuery.query}
+            </BSCardSubtitle>
+            <div className="mpccard-spacing">
+              <BSCard.Text className="mpccard-source">
+                {maybeCardDocument != null &&
+                  `${maybeCardDocument.sourceName} [${maybeCardDocument.dpi} DPI]`}
+                {maybeCardDocument == null &&
+                  searchQuery != undefined &&
+                  "Your search query"}
+              </BSCard.Text>
+            </div>
+          </BSCard.Body>
+        )}
       </div>
-      {cardFooter != null && (
+      {!compressed && cardFooter != null && (
         <BSCard.Footer
           className="padding-top"
           style={{ paddingTop: 50 + "px" }}
@@ -497,6 +525,10 @@ interface EditorCardProps {
   noResultsFound: boolean;
   /** Whether to highlight this card by showing a glowing border around it. */
   highlight?: boolean;
+  /** When true, suppresses the card header and footer, showing only the image. */
+  compressed?: boolean;
+  /** Ref to attach to the card header for use as a drag handle. */
+  handleRef?: (element: Element | null) => void;
 }
 
 /**
@@ -517,6 +549,8 @@ export function EditorCard({
   searchQuery,
   noResultsFound,
   highlight,
+  compressed,
+  handleRef,
 }: EditorCardProps) {
   //# region queries and hooks
 
@@ -545,6 +579,8 @@ export function EditorCard({
       searchQuery={searchQuery}
       noResultsFound={noResultsFound}
       highlight={highlight}
+      compressed={compressed}
+      handleRef={handleRef}
     />
   );
 }
@@ -554,6 +590,7 @@ export const MemoizedEditorCard = memo(EditorCard);
 interface DatedCardProps {
   cardDocument: CardDocument;
   headerDate: "created" | "modified";
+  compressed?: boolean;
 }
 /**
  * This component is a thin layer on top of `Card` for use in the What's New page.
@@ -561,6 +598,7 @@ interface DatedCardProps {
 export function DatedCard({
   cardDocument,
   headerDate = "created",
+  compressed,
 }: DatedCardProps) {
   return (
     <Col>
@@ -573,6 +611,7 @@ export function DatedCard({
             : cardDocument.dateModified
         }
         noResultsFound={false}
+        compressed={compressed}
       />
     </Col>
   );

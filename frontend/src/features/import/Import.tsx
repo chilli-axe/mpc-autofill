@@ -2,10 +2,10 @@ import React from "react";
 import Dropdown from "react-bootstrap/Dropdown";
 
 import { RightPaddedIcon } from "@/components/icon";
-import { ImportCSV } from "@/features/import/ImportCSV";
-import { ImportText } from "@/features/import/ImportText";
-import { ImportURL } from "@/features/import/ImportURL";
-import { ImportXML } from "@/features/import/ImportXML";
+import { ImportCSVButton } from "@/features/import/ImportCSV";
+import { ImportTextButton } from "@/features/import/ImportText";
+import { ImportURLButton } from "@/features/import/ImportURL";
+import { ImportXMLButton } from "@/features/import/ImportXML";
 
 export function Import() {
   return (
@@ -17,10 +17,10 @@ export function Import() {
           </Dropdown.Toggle>
         </div>
         <Dropdown.Menu>
-          <ImportText />
-          <ImportXML />
-          <ImportCSV />
-          <ImportURL />
+          <ImportTextButton />
+          <ImportXMLButton />
+          <ImportCSVButton />
+          <ImportURLButton />
         </Dropdown.Menu>
       </Dropdown>
     </>

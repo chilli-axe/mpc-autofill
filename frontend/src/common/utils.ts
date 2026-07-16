@@ -52,3 +52,10 @@ export function getSourceRowsFromSourceSettings(
 export const assertUnreachable = (x: never): never => {
   throw new Error(`Didn't expect to get here with ${x}`);
 };
+
+export const parseDjangoDate = (input: string): Date => {
+  const match = input.match(/^(\d{1,2})(?:st|nd|rd|th) (\w+), (\d{4})$/);
+  if (!match) throw new Error(`Invalid date string: "${input}"`);
+  const [, day, month, year] = match;
+  return new Date(`${month} ${day}, ${year}`);
+};

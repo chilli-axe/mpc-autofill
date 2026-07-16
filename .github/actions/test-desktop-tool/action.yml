@@ -1,5 +1,9 @@
 name: Desktop tool tests
 description: Test the MPC Autofill CLI / desktop tool
+inputs:
+  google-drive-api-key:
+    description: Your Google Drive API key, required for running the database crawler
+    required: true
 runs:
   using: composite
   steps:
@@ -16,7 +20,7 @@ runs:
         rm /usr/local/bin/chromedriver
       shell: bash
     - name: Set up Python 3.13
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v6
       with:
         python-version: 3.13
     - name: Install Python dependencies

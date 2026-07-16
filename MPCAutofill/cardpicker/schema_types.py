@@ -72,6 +72,10 @@ def to_float(x: Any) -> float:
     return x
 
 
+class Game(str, Enum):
+    MTG = "MTG"
+
+
 class FilterSettings(BaseModel):
     excludesTags: List[str]
     """The tags which the cards must *not* have to be included in search results"""
@@ -218,6 +222,68 @@ class CardsRequest(BaseModel):
         return result
 
 
+class CanonicalArtistClass(BaseModel):
+    name: str
+
+    @staticmethod
+    def from_dict(obj: Any) -> "CanonicalArtistClass":
+        assert isinstance(obj, dict)
+        name = from_str(obj.get("name"))
+        return CanonicalArtistClass(name)
+
+    def to_dict(self) -> dict:
+        result: dict = {}
+        result["name"] = from_str(self.name)
+        return result
+
+
+class CanonicalCardClass(BaseModel):
+    collectorNumber: str
+    expansionCode: str
+    expansionName: str
+    identifier: str
+    mediumThumbnailUrl: str
+    smallThumbnailUrl: str
+    artist: Optional[str] = None
+    canonicalId: Optional[str] = None
+
+    @staticmethod
+    def from_dict(obj: Any) -> "CanonicalCardClass":
+        assert isinstance(obj, dict)
+        collectorNumber = from_str(obj.get("collectorNumber"))
+        expansionCode = from_str(obj.get("expansionCode"))
+        expansionName = from_str(obj.get("expansionName"))
+        identifier = from_str(obj.get("identifier"))
+        mediumThumbnailUrl = from_str(obj.get("mediumThumbnailUrl"))
+        smallThumbnailUrl = from_str(obj.get("smallThumbnailUrl"))
+        artist = from_union([from_str, from_none], obj.get("artist"))
+        canonicalId = from_union([from_str, from_none], obj.get("canonicalId"))
+        return CanonicalCardClass(
+            collectorNumber,
+            expansionCode,
+            expansionName,
+            identifier,
+            mediumThumbnailUrl,
+            smallThumbnailUrl,
+            artist,
+            canonicalId,
+        )
+
+    def to_dict(self) -> dict:
+        result: dict = {}
+        result["collectorNumber"] = from_str(self.collectorNumber)
+        result["expansionCode"] = from_str(self.expansionCode)
+        result["expansionName"] = from_str(self.expansionName)
+        result["identifier"] = from_str(self.identifier)
+        result["mediumThumbnailUrl"] = from_str(self.mediumThumbnailUrl)
+        result["smallThumbnailUrl"] = from_str(self.smallThumbnailUrl)
+        if self.artist is not None:
+            result["artist"] = from_union([from_str, from_none], self.artist)
+        if self.canonicalId is not None:
+            result["canonicalId"] = from_union([from_str, from_none], self.canonicalId)
+        return result
+
+
 class CardType(str, Enum):
     CARD = "CARD"
     CARDBACK = "CARDBACK"
@@ -253,6 +319,8 @@ class Card(BaseModel):
     sourceName: str
     sourceVerbose: str
     tags: List[str]
+    canonicalArtist: Optional[CanonicalArtistClass] = None
+    canonicalCard: Optional[CanonicalCardClass] = None
     sourceExternalLink: Optional[str] = None
     sourceType: Optional[SourceType] = None
 
@@ -277,6 +345,8 @@ class Card(BaseModel):
         sourceName = from_str(obj.get("sourceName"))
         sourceVerbose = from_str(obj.get("sourceVerbose"))
         tags = from_list(from_str, obj.get("tags"))
+        canonicalArtist = from_union([from_none, CanonicalArtistClass.from_dict], obj.get("canonicalArtist"))
+        canonicalCard = from_union([from_none, CanonicalCardClass.from_dict], obj.get("canonicalCard"))
         sourceExternalLink = from_union([from_str, from_none], obj.get("sourceExternalLink"))
         sourceType = from_union([SourceType, from_none], obj.get("sourceType"))
         return Card(
@@ -298,6 +368,8 @@ class Card(BaseModel):
             sourceName,
             sourceVerbose,
             tags,
+            canonicalArtist,
+            canonicalCard,
             sourceExternalLink,
             sourceType,
         )
@@ -322,6 +394,14 @@ class Card(BaseModel):
         result["sourceName"] = from_str(self.sourceName)
         result["sourceVerbose"] = from_str(self.sourceVerbose)
         result["tags"] = from_list(from_str, self.tags)
+        if self.canonicalArtist is not None:
+            result["canonicalArtist"] = from_union(
+                [from_none, lambda x: to_class(CanonicalArtistClass, x)], self.canonicalArtist
+            )
+        if self.canonicalCard is not None:
+            result["canonicalCard"] = from_union(
+                [from_none, lambda x: to_class(CanonicalCardClass, x)], self.canonicalCard
+            )
         if self.sourceExternalLink is not None:
             result["sourceExternalLink"] = from_union([from_str, from_none], self.sourceExternalLink)
         if self.sourceType is not None:
@@ -424,52 +504,60 @@ class DFCPairsResponse(BaseModel):
 
 class SearchQuery(BaseModel):
     cardType: CardType
+    collectorNumber: Optional[str] = None
+    expansionCode: Optional[str] = None
     query: Optional[str] = None
 
     @staticmethod
     def from_dict(obj: Any) -> "SearchQuery":
         assert isinstance(obj, dict)
         cardType = CardType(obj.get("cardType"))
+        collectorNumber = from_union([from_str, from_none], obj.get("collectorNumber"))
+        expansionCode = from_union([from_str, from_none], obj.get("expansionCode"))
         query = from_union([from_none, from_str], obj.get("query"))
-        return SearchQuery(cardType, query)
+        return SearchQuery(cardType, collectorNumber, expansionCode, query)
 
     def to_dict(self) -> dict:
         result: dict = {}
         result["cardType"] = to_enum(CardType, self.cardType)
+        if self.collectorNumber is not None:
+            result["collectorNumber"] = from_union([from_str, from_none], self.collectorNumber)
+        if self.expansionCode is not None:
+            result["expansionCode"] = from_union([from_str, from_none], self.expansionCode)
         result["query"] = from_union([from_none, from_str], self.query)
         return result
 
 
 class EditorSearchRequest(BaseModel):
-    queries: List[SearchQuery]
+    queries: Dict[str, SearchQuery]
     searchSettings: SearchSettings
 
     @staticmethod
     def from_dict(obj: Any) -> "EditorSearchRequest":
         assert isinstance(obj, dict)
-        queries = from_list(SearchQuery.from_dict, obj.get("queries"))
+        queries = from_dict(SearchQuery.from_dict, obj.get("queries"))
         searchSettings = SearchSettings.from_dict(obj.get("searchSettings"))
         return EditorSearchRequest(queries, searchSettings)
 
     def to_dict(self) -> dict:
         result: dict = {}
-        result["queries"] = from_list(lambda x: to_class(SearchQuery, x), self.queries)
+        result["queries"] = from_dict(lambda x: to_class(SearchQuery, x), self.queries)
         result["searchSettings"] = to_class(SearchSettings, self.searchSettings)
         return result
 
 
 class EditorSearchResponse(BaseModel):
-    results: Dict[str, Dict[str, List[str]]]
+    results: Dict[str, List[str]]
 
     @staticmethod
     def from_dict(obj: Any) -> "EditorSearchResponse":
         assert isinstance(obj, dict)
-        results = from_dict(lambda x: from_dict(lambda x: from_list(from_str, x), x), obj.get("results"))
+        results = from_dict(lambda x: from_list(from_str, x), obj.get("results"))
         return EditorSearchResponse(results)
 
     def to_dict(self) -> dict:
         result: dict = {}
-        result["results"] = from_dict(lambda x: from_dict(lambda x: from_list(from_str, x), x), self.results)
+        result["results"] = from_dict(lambda x: from_list(from_str, x), self.results)
         return result
 
 
@@ -780,6 +868,39 @@ class NewCardsPageResponse(BaseModel):
         return result
 
 
+class OldEditorSearchRequest(BaseModel):
+    queries: List[SearchQuery]
+    searchSettings: SearchSettings
+
+    @staticmethod
+    def from_dict(obj: Any) -> "OldEditorSearchRequest":
+        assert isinstance(obj, dict)
+        queries = from_list(SearchQuery.from_dict, obj.get("queries"))
+        searchSettings = SearchSettings.from_dict(obj.get("searchSettings"))
+        return OldEditorSearchRequest(queries, searchSettings)
+
+    def to_dict(self) -> dict:
+        result: dict = {}
+        result["queries"] = from_list(lambda x: to_class(SearchQuery, x), self.queries)
+        result["searchSettings"] = to_class(SearchSettings, self.searchSettings)
+        return result
+
+
+class OldEditorSearchResponse(BaseModel):
+    results: Dict[str, Dict[str, List[str]]]
+
+    @staticmethod
+    def from_dict(obj: Any) -> "OldEditorSearchResponse":
+        assert isinstance(obj, dict)
+        results = from_dict(lambda x: from_dict(lambda x: from_list(from_str, x), x), obj.get("results"))
+        return OldEditorSearchResponse(results)
+
+    def to_dict(self) -> dict:
+        result: dict = {}
+        result["results"] = from_dict(lambda x: from_dict(lambda x: from_list(from_str, x), x), self.results)
+        return result
+
+
 class CampaignClass(BaseModel):
     about: str
     id: str
@@ -1031,6 +1152,22 @@ def Campaigntodict(x: Optional[CampaignClass]) -> Any:
     return from_union([from_none, lambda x: to_class(CampaignClass, x)], x)
 
 
+def CanonicalArtistfromdict(s: Any) -> Optional[CanonicalArtistClass]:
+    return from_union([from_none, CanonicalArtistClass.from_dict], s)
+
+
+def CanonicalArtisttodict(x: Optional[CanonicalArtistClass]) -> Any:
+    return from_union([from_none, lambda x: to_class(CanonicalArtistClass, x)], x)
+
+
+def CanonicalCardfromdict(s: Any) -> Optional[CanonicalCardClass]:
+    return from_union([from_none, CanonicalCardClass.from_dict], s)
+
+
+def CanonicalCardtodict(x: Optional[CanonicalCardClass]) -> Any:
+    return from_union([from_none, lambda x: to_class(CanonicalCardClass, x)], x)
+
+
 def Cardfromdict(s: Any) -> Card:
     return Card.from_dict(s)
 
@@ -1053,6 +1190,14 @@ def FilterSettingsfromdict(s: Any) -> FilterSettings:
 
 def FilterSettingstodict(x: FilterSettings) -> Any:
     return to_class(FilterSettings, x)
+
+
+def Gamefromdict(s: Any) -> Game:
+    return Game(s)
+
+
+def Gametodict(x: Game) -> Any:
+    return to_enum(Game, x)
 
 
 def ImportSitefromdict(s: Any) -> ImportSite:
@@ -1317,6 +1462,22 @@ def NewCardsPageResponsefromdict(s: Any) -> NewCardsPageResponse:
 
 def NewCardsPageResponsetodict(x: NewCardsPageResponse) -> Any:
     return to_class(NewCardsPageResponse, x)
+
+
+def OldEditorSearchRequestfromdict(s: Any) -> OldEditorSearchRequest:
+    return OldEditorSearchRequest.from_dict(s)
+
+
+def OldEditorSearchRequesttodict(x: OldEditorSearchRequest) -> Any:
+    return to_class(OldEditorSearchRequest, x)
+
+
+def OldEditorSearchResponsefromdict(s: Any) -> OldEditorSearchResponse:
+    return OldEditorSearchResponse.from_dict(s)
+
+
+def OldEditorSearchResponsetodict(x: OldEditorSearchResponse) -> Any:
+    return to_class(OldEditorSearchResponse, x)
 
 
 def PatreonResponsefromdict(s: Any) -> PatreonResponse:

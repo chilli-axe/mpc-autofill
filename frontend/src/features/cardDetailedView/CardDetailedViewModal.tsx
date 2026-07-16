@@ -92,10 +92,10 @@ export function CardDetailedViewModal({
                     cardDocument.sourceExternalLink != null &&
                     cardDocument.sourceExternalLink.length > 0 ? (
                       <a href={cardDocument.sourceExternalLink} target="_blank">
-                        {cardDocument.sourceName}
+                        {cardDocument.sourceVerbose}
                       </a>
                     ) : (
-                      cardDocument.sourceName
+                      cardDocument.sourceVerbose
                     ),
                   ],
                   ["Source Type", cardDocument.sourceType],
@@ -126,6 +126,18 @@ export function CardDetailedViewModal({
                   ["Date Created", cardDocument.dateCreated],
                   ["Date Modified", cardDocument.dateModified],
                   ["File Size", imageSizeToMBString(cardDocument.size, 2)],
+                  [
+                    "Canonical Card",
+                    cardDocument.canonicalCard
+                      ? `${cardDocument.canonicalCard.expansionCode.toUpperCase()} ${
+                          cardDocument.canonicalCard.collectorNumber
+                        }`
+                      : "Unknown",
+                  ],
+                  [
+                    "Canonical Aritst",
+                    cardDocument.canonicalArtist?.name ?? "Unknown",
+                  ],
                 ]}
                 hover={true}
                 alignment={"left"}

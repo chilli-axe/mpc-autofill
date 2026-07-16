@@ -36,11 +36,15 @@ export const ReversedCardTypePrefixes = Object.fromEntries(
 export const Front: Faces = "front";
 export const Back: Faces = "back";
 
+export const NavPillButtonHeight = 40; // pixels
+export const NavUnderlineButtonHeight = 42; // pixels
 export const ToggleButtonHeight = 38; // pixels
 export const NavbarHeight = 50; // pixels - aligns with the natural height of the navbar
 export const RibbonHeight = 54; // pixels
 export const NavbarLogoHeight = 40; // pixels
 export const ContentMaxWidth = 1200; // pixels - aligns with bootstrap's large breakpoint
+export const ModalHeaderHeight = 68.7;
+export const ModalFooterHeight = 71;
 
 export const MinimumDPI = 0;
 export const MaximumDPI = 1500;
@@ -83,9 +87,6 @@ export const CardstockFoilCompatibility: { [cardstock in Cardstock]: boolean } =
     [P10]: false,
   };
 
-export const GoogleDriveImageAPIURL =
-  "https://script.google.com/macros/s/AKfycbw8laScKBfxda2Wb0g63gkYDBdy8NWNxINoC4xDOwnCQ3JMFdruam1MdmNmN4wI5k4/exec";
-
 export const SearchResultsEndpointPageSize = 300;
 export const CardEndpointPageSize = 1000;
 
@@ -108,3 +109,11 @@ export const SortByOptions: { [option in SortBy]: string } = {
   nameAscending: "Name (A-Z)",
   nameDescending: "Name (Z-A)",
 };
+
+export const FavouritesSourceKey = "__favorites__";
+export const UnknownSourceKey = "__unknown__";
+export const Unknown = "Unknown";
+export interface Printing {
+  expansionCode: string;
+  collectorNumber: string;
+}

@@ -91,26 +91,16 @@ function SampleCSV() {
   );
 }
 
-export function ImportCSV() {
-  //# region queries and hooks
+interface ImportCSVProps {
+  onImportComplete?: () => void;
+}
 
+export function ImportCSV({ onImportComplete }: ImportCSVProps) {
   const dispatch = useAppDispatch();
   const dfcPairsQuery = useGetDFCPairsQuery();
   const fuzzySearch = useAppSelector(selectFuzzySearch);
   const projectSize = useAppSelector(selectProjectSize);
 
-  //# endregion
-
-  //# region state
-
-  const [showCSVModal, setShowCSVModal] = useState<boolean>(false);
-
-  //# endregion
-
-  //# region callbacks
-
-  const handleCloseCSVModal = () => setShowCSVModal(false);
-  const handleShowCSVModal = () => setShowCSVModal(true);
   const parseCSVFile = (fileContents: string | ArrayBuffer | null) => {
     if (typeof fileContents !== "string") {
       dispatch(
@@ -141,49 +131,53 @@ export function ImportCSV() {
         ),
       })
     );
-    handleCloseCSVModal();
+    onImportComplete?.();
   };
-
-  //# endregion
-
-  //# region computed constants
 
   const disabled = dfcPairsQuery.isFetching;
 
-  //# endregion
+  return (
+    <>
+      <p>
+        Upload a CSV file of cards to add to the project. The file must{" "}
+        <b>exactly</b> match the following format:
+      </p>
+      <CSVFormat />
+      For example:
+      <SampleCSV />
+      <hr />
+      <TextFileDropzone
+        mimeTypes={{ "text/csv": [".csv"] }}
+        fileUploadCallback={parseCSVFile}
+        label="import-csv"
+        disabled={disabled}
+      />
+    </>
+  );
+}
+
+export function ImportCSVButton() {
+  const [show, setShow] = useState<boolean>(false);
 
   return (
     <>
-      <Dropdown.Item onClick={handleShowCSVModal}>
+      <Dropdown.Item onClick={() => setShow(true)}>
         <RightPaddedIcon bootstrapIconName="file-earmark-spreadsheet" /> CSV
       </Dropdown.Item>
       <Modal
         scrollable
-        show={showCSVModal}
-        onHide={handleCloseCSVModal}
+        show={show}
+        onHide={() => setShow(false)}
         data-testid="import-csv"
       >
         <Modal.Header closeButton>
           <Modal.Title>Add Cards — CSV</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <p>
-            Upload a CSV file of cards to add to the project. The file must{" "}
-            <b>exactly</b> match the following format:
-          </p>
-          <CSVFormat />
-          For example:
-          <SampleCSV />
-          <hr />
-          <TextFileDropzone
-            mimeTypes={{ "text/csv": [".csv"] }}
-            fileUploadCallback={parseCSVFile}
-            label="import-csv"
-            disabled={disabled}
-          />
+          <ImportCSV onImportComplete={() => setShow(false)} />
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={handleCloseCSVModal}>
+          <Button variant="secondary" onClick={() => setShow(false)}>
             Close
           </Button>
         </Modal.Footer>

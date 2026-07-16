@@ -208,6 +208,158 @@ export const cardDocument6: CardDocument = {
   tags: [],
 };
 
+// Card from source2 (for multi-source grid selector tests)
+export const cardDocument7: CardDocument = {
+  identifier: "1aA2bB3cC4dD5eE6fF7gG8hH9iI0jJ",
+  cardType: CardTypeSchema.Card,
+  name: "Card 7",
+  priority: 0,
+  source: sourceDocument2.key,
+  sourceName: sourceDocument2.name,
+  sourceId: sourceDocument2.pk,
+  sourceVerbose: sourceDocument2.name,
+  sourceType: SourceType.GoogleDrive,
+  sourceExternalLink: undefined,
+  dpi: 1200,
+  searchq: "card 7",
+  extension: "png",
+  dateCreated: "1st January, 2000",
+  dateModified: "1st January, 2000",
+  size: 10_000_000,
+  smallThumbnailUrl: "",
+  mediumThumbnailUrl: "",
+  language: "EN",
+  tags: [],
+};
+
+// Cards with canonicalCard data (for CanonicalCardFilter tests)
+export const cardDocument8: CardDocument = {
+  identifier: "1bB2cC3dD4eE5fF6gG7hH8iI9jJ0kK",
+  cardType: CardTypeSchema.Card,
+  name: "Card 8",
+  priority: 0,
+  source: sourceDocument1.key,
+  sourceName: sourceDocument1.name,
+  sourceId: sourceDocument1.pk,
+  sourceVerbose: sourceDocument1.name,
+  sourceType: SourceType.GoogleDrive,
+  sourceExternalLink: undefined,
+  dpi: 1200,
+  searchq: "card 8",
+  extension: "png",
+  dateCreated: "1st January, 2000",
+  dateModified: "1st January, 2000",
+  size: 10_000_000,
+  smallThumbnailUrl: "",
+  mediumThumbnailUrl: "",
+  language: "EN",
+  tags: [],
+  canonicalCard: {
+    expansionCode: "xyz",
+    expansionName: "XYZ Set",
+    collectorNumber: "001",
+    identifier: "xyz-001",
+    smallThumbnailUrl: "",
+    mediumThumbnailUrl: "",
+  },
+  canonicalArtist: {
+    name: "Alpha Artist",
+  },
+};
+
+export const cardDocument9: CardDocument = {
+  identifier: "1cC2dD3eE4fF5gG6hH7iI8jJ9kK0lL",
+  cardType: CardTypeSchema.Card,
+  name: "Card 9",
+  priority: 0,
+  source: sourceDocument1.key,
+  sourceName: sourceDocument1.name,
+  sourceId: sourceDocument1.pk,
+  sourceVerbose: sourceDocument1.name,
+  sourceType: SourceType.GoogleDrive,
+  sourceExternalLink: undefined,
+  dpi: 1200,
+  searchq: "card 9",
+  extension: "png",
+  dateCreated: "1st January, 2000",
+  dateModified: "1st January, 2000",
+  size: 10_000_000,
+  smallThumbnailUrl: "",
+  mediumThumbnailUrl: "",
+  language: "EN",
+  tags: [],
+  canonicalCard: {
+    expansionCode: "xyz",
+    expansionName: "XYZ Set",
+    collectorNumber: "002",
+    identifier: "xyz-002",
+    smallThumbnailUrl: "",
+    mediumThumbnailUrl: "",
+  },
+  canonicalArtist: {
+    name: "Beta Artist",
+  },
+};
+
+export const cardDocument10: CardDocument = {
+  identifier: "1dD2eE3fF4gG5hH6iI7jJ8kK9lL0mM",
+  cardType: CardTypeSchema.Card,
+  name: "Card 10",
+  priority: 0,
+  source: sourceDocument1.key,
+  sourceName: sourceDocument1.name,
+  sourceId: sourceDocument1.pk,
+  sourceVerbose: sourceDocument1.name,
+  sourceType: SourceType.GoogleDrive,
+  sourceExternalLink: undefined,
+  dpi: 1200,
+  searchq: "card 10",
+  extension: "png",
+  dateCreated: "1st January, 2000",
+  dateModified: "1st January, 2000",
+  size: 10_000_000,
+  smallThumbnailUrl: "",
+  mediumThumbnailUrl: "",
+  language: "EN",
+  tags: [],
+  canonicalCard: {
+    expansionCode: "abc",
+    expansionName: "ABC Set",
+    collectorNumber: "001",
+    identifier: "abc-001",
+    smallThumbnailUrl: "",
+    mediumThumbnailUrl: "",
+  },
+  canonicalArtist: {
+    name: "Alpha Artist",
+  },
+};
+
+// Card with no canonicalCard data (for Unknown handling in CanonicalCardFilter)
+export const cardDocument11: CardDocument = {
+  identifier: "1eE2fF3gG4hH5iI6jJ7kK8lL9mM0nN",
+  cardType: CardTypeSchema.Card,
+  name: "Card 11",
+  priority: 0,
+  source: sourceDocument1.key,
+  sourceName: sourceDocument1.name,
+  sourceId: sourceDocument1.pk,
+  sourceVerbose: sourceDocument1.name,
+  sourceType: SourceType.GoogleDrive,
+  sourceExternalLink: undefined,
+  dpi: 1200,
+  searchq: "card 11",
+  extension: "png",
+  dateCreated: "1st January, 2000",
+  dateModified: "1st January, 2000",
+  size: 10_000_000,
+  smallThumbnailUrl: "",
+  mediumThumbnailUrl: "",
+  language: "EN",
+  tags: [],
+  canonicalCard: null,
+};
+
 //# endregion
 
 //# region project
@@ -215,6 +367,7 @@ export const cardDocument6: CardDocument = {
 export const projectSelectedImage1: Project = {
   members: [
     {
+      id: "t-0",
       front: {
         query: { query: "my search query", cardType: Card },
         selectedImage: cardDocument1.identifier,
@@ -223,6 +376,7 @@ export const projectSelectedImage1: Project = {
       back: null,
     },
   ],
+  nextMemberId: 1,
   cardback: null,
   mostRecentlySelectedSlot: null,
 };
@@ -230,6 +384,7 @@ export const projectSelectedImage1: Project = {
 export const projectThreeMembersSelectedImage1: Project = {
   members: [
     {
+      id: "t-0",
       front: {
         query: { query: "my search query", cardType: Card },
         selectedImage: cardDocument1.identifier,
@@ -238,6 +393,7 @@ export const projectThreeMembersSelectedImage1: Project = {
       back: null,
     },
     {
+      id: "t-1",
       front: {
         query: { query: "my search query", cardType: Card },
         selectedImage: cardDocument1.identifier,
@@ -246,6 +402,7 @@ export const projectThreeMembersSelectedImage1: Project = {
       back: null,
     },
     {
+      id: "t-2",
       front: {
         query: { query: "my search query", cardType: Card },
         selectedImage: cardDocument1.identifier,
@@ -254,6 +411,7 @@ export const projectThreeMembersSelectedImage1: Project = {
       back: null,
     },
   ],
+  nextMemberId: 3,
   cardback: null,
   mostRecentlySelectedSlot: null,
 };
@@ -261,6 +419,7 @@ export const projectThreeMembersSelectedImage1: Project = {
 export const projectSelectedImage2: Project = {
   members: [
     {
+      id: "t-0",
       front: {
         query: { query: "my search query", cardType: Card },
         selectedImage: cardDocument2.identifier,
@@ -269,6 +428,7 @@ export const projectSelectedImage2: Project = {
       back: null,
     },
   ],
+  nextMemberId: 1,
   cardback: null,
   mostRecentlySelectedSlot: null,
 };

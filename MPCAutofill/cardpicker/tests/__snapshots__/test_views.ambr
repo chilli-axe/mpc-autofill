@@ -192,6 +192,19 @@
   dict({
     'CARD': dict({
       'Brainstorm': dict({
+        'canonicalArtist': dict({
+          'name': 'Artist 102',
+        }),
+        'canonicalCard': dict({
+          'artist': None,
+          'canonicalId': '36cd2364-d113-47d1-b2c4-b088d9eb88dd',
+          'collectorNumber': '61',
+          'expansionCode': 'ice',
+          'expansionName': 'Ice Age',
+          'identifier': '8d42d7aa-7f53-4cfc-842a-086aab2448d1',
+          'mediumThumbnailUrl': '',
+          'smallThumbnailUrl': '',
+        }),
         'cardType': 'CARD',
         'dateCreated': '1st January, 2023',
         'dateModified': '1st January, 2023',
@@ -215,6 +228,8 @@
         ]),
       }),
       'Island': dict({
+        'canonicalArtist': None,
+        'canonicalCard': None,
         'cardType': 'CARD',
         'dateCreated': '1st January, 2023',
         'dateModified': '1st January, 2023',
@@ -238,6 +253,8 @@
         ]),
       }),
       'Island (William Bradford)': dict({
+        'canonicalArtist': None,
+        'canonicalCard': None,
         'cardType': 'CARD',
         'dateCreated': '1st January, 2023',
         'dateModified': '1st January, 2023',
@@ -261,6 +278,8 @@
         ]),
       }),
       'Pást in Flames': dict({
+        'canonicalArtist': None,
+        'canonicalCard': None,
         'cardType': 'CARD',
         'dateCreated': '1st January, 2023',
         'dateModified': '1st January, 2023',
@@ -289,6 +308,8 @@
     }),
     'TOKEN': dict({
       'Goblin': dict({
+        'canonicalArtist': None,
+        'canonicalCard': None,
         'cardType': 'TOKEN',
         'dateCreated': '1st January, 2023',
         'dateModified': '1st January, 2023',
@@ -394,6 +415,19 @@
         'example_drive_1': dict({
           'cards': list([
             dict({
+              'canonicalArtist': dict({
+                'name': 'Artist 107',
+              }),
+              'canonicalCard': dict({
+                'artist': None,
+                'canonicalId': '36cd2364-d113-47d1-b2c4-b088d9eb88dd',
+                'collectorNumber': '61',
+                'expansionCode': 'ice',
+                'expansionName': 'Ice Age',
+                'identifier': '8d42d7aa-7f53-4cfc-842a-086aab2448d1',
+                'mediumThumbnailUrl': '',
+                'smallThumbnailUrl': '',
+              }),
               'cardType': 'CARD',
               'dateCreated': '1st January, 2023',
               'dateModified': '1st January, 2023',
@@ -417,6 +451,8 @@
               ]),
             }),
             dict({
+              'canonicalArtist': None,
+              'canonicalCard': None,
               'cardType': 'CARD',
               'dateCreated': '1st January, 2023',
               'dateModified': '1st January, 2023',
@@ -440,6 +476,8 @@
               ]),
             }),
             dict({
+              'canonicalArtist': None,
+              'canonicalCard': None,
               'cardType': 'TOKEN',
               'dateCreated': '1st January, 2023',
               'dateModified': '1st January, 2023',
@@ -463,6 +501,8 @@
               ]),
             }),
             dict({
+              'canonicalArtist': None,
+              'canonicalCard': None,
               'cardType': 'CARD',
               'dateCreated': '1st January, 2023',
               'dateModified': '1st January, 2023',
@@ -473,7 +513,7 @@
               'mediumThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1991MWCur9NdAFi-tQQD5YbQj2oqV_WRy',
               'name': 'Huntmaster of the Fells',
               'priority': 2,
-              'searchq': 'huntmaster of fells',
+              'searchq': 'huntmaster of the fells',
               'size': 5000000,
               'smallThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1991MWCur9NdAFi-tQQD5YbQj2oqV_WRy',
               'source': 'example_drive_1',
@@ -486,6 +526,8 @@
               ]),
             }),
             dict({
+              'canonicalArtist': None,
+              'canonicalCard': None,
               'cardType': 'CARD',
               'dateCreated': '1st January, 2023',
               'dateModified': '1st January, 2023',
@@ -509,6 +551,8 @@
               ]),
             }),
             dict({
+              'canonicalArtist': None,
+              'canonicalCard': None,
               'cardType': 'CARD',
               'dateCreated': '1st January, 2023',
               'dateModified': '1st January, 2023',
@@ -546,6 +590,8 @@
         'example_drive_2': dict({
           'cards': list([
             dict({
+              'canonicalArtist': None,
+              'canonicalCard': None,
               'cardType': 'CARD',
               'dateCreated': '1st January, 2023',
               'dateModified': '1st January, 2023',
@@ -571,6 +617,8 @@
               ]),
             }),
             dict({
+              'canonicalArtist': None,
+              'canonicalCard': None,
               'cardType': 'CARDBACK',
               'dateCreated': '1st January, 2023',
               'dateModified': '1st January, 2023',
@@ -653,6 +701,19 @@
     'json': dict({
       'cards': list([
         dict({
+          'canonicalArtist': dict({
+            'name': 'Artist 109',
+          }),
+          'canonicalCard': dict({
+            'artist': None,
+            'canonicalId': '36cd2364-d113-47d1-b2c4-b088d9eb88dd',
+            'collectorNumber': '61',
+            'expansionCode': 'ice',
+            'expansionName': 'Ice Age',
+            'identifier': '8d42d7aa-7f53-4cfc-842a-086aab2448d1',
+            'mediumThumbnailUrl': '',
+            'smallThumbnailUrl': '',
+          }),
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -676,6 +737,8 @@
           ]),
         }),
         dict({
+          'canonicalArtist': None,
+          'canonicalCard': None,
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -699,6 +762,8 @@
           ]),
         }),
         dict({
+          'canonicalArtist': None,
+          'canonicalCard': None,
           'cardType': 'TOKEN',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -722,6 +787,8 @@
           ]),
         }),
         dict({
+          'canonicalArtist': None,
+          'canonicalCard': None,
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -732,7 +799,7 @@
           'mediumThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1991MWCur9NdAFi-tQQD5YbQj2oqV_WRy',
           'name': 'Huntmaster of the Fells',
           'priority': 2,
-          'searchq': 'huntmaster of fells',
+          'searchq': 'huntmaster of the fells',
           'size': 5000000,
           'smallThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1991MWCur9NdAFi-tQQD5YbQj2oqV_WRy',
           'source': 'example_drive_1',
@@ -745,6 +812,8 @@
           ]),
         }),
         dict({
+          'canonicalArtist': None,
+          'canonicalCard': None,
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -768,6 +837,8 @@
           ]),
         }),
         dict({
+          'canonicalArtist': None,
+          'canonicalCard': None,
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -800,6 +871,8 @@
     'json': dict({
       'cards': list([
         dict({
+          'canonicalArtist': None,
+          'canonicalCard': None,
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -823,6 +896,8 @@
           ]),
         }),
         dict({
+          'canonicalArtist': None,
+          'canonicalCard': None,
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -846,6 +921,8 @@
           ]),
         }),
         dict({
+          'canonicalArtist': None,
+          'canonicalCard': None,
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -870,6 +947,8 @@
           ]),
         }),
         dict({
+          'canonicalArtist': None,
+          'canonicalCard': None,
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -880,7 +959,7 @@
           'mediumThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1lv8WC1Xf1qxA7VHSc8jOtT5up6FwaBPH',
           'name': 'Ravager of the Fells',
           'priority': 2,
-          'searchq': 'ravager of fells',
+          'searchq': 'ravager of the fells',
           'size': 5000000,
           'smallThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1lv8WC1Xf1qxA7VHSc8jOtT5up6FwaBPH',
           'source': 'example_drive_1',
@@ -893,6 +972,8 @@
           ]),
         }),
         dict({
+          'canonicalArtist': None,
+          'canonicalCard': None,
           'cardType': 'CARDBACK',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -927,6 +1008,8 @@
     'json': dict({
       'cards': list([
         dict({
+          'canonicalArtist': None,
+          'canonicalCard': None,
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -952,6 +1035,8 @@
           ]),
         }),
         dict({
+          'canonicalArtist': None,
+          'canonicalCard': None,
           'cardType': 'CARDBACK',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -1326,6 +1411,8 @@
     'json': dict({
       'results': dict({
         '17fopRCNRge72U8Hac8pApHZtEalx5kHy': dict({
+          'canonicalArtist': None,
+          'canonicalCard': None,
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -1349,6 +1436,8 @@
           ]),
         }),
         '1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA': dict({
+          'canonicalArtist': None,
+          'canonicalCard': None,
           'cardType': 'TOKEN',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -1391,6 +1480,8 @@
     'json': dict({
       'results': dict({
         '1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA': dict({
+          'canonicalArtist': None,
+          'canonicalCard': None,
           'cardType': 'TOKEN',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -1423,6 +1514,8 @@
     'json': dict({
       'results': dict({
         '17fopRCNRge72U8Hac8pApHZtEalx5kHy': dict({
+          'canonicalArtist': None,
+          'canonicalCard': None,
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -1446,6 +1539,8 @@
           ]),
         }),
         '1991MWCur9NdAFi-tQQD5YbQj2oqV_WRy': dict({
+          'canonicalArtist': None,
+          'canonicalCard': None,
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -1456,7 +1551,7 @@
           'mediumThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1991MWCur9NdAFi-tQQD5YbQj2oqV_WRy',
           'name': 'Huntmaster of the Fells',
           'priority': 2,
-          'searchq': 'huntmaster of fells',
+          'searchq': 'huntmaster of the fells',
           'size': 5000000,
           'smallThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1991MWCur9NdAFi-tQQD5YbQj2oqV_WRy',
           'source': 'example_drive_1',
@@ -1469,6 +1564,8 @@
           ]),
         }),
         '1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA': dict({
+          'canonicalArtist': None,
+          'canonicalCard': None,
           'cardType': 'TOKEN',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -1511,6 +1608,8 @@
     'json': dict({
       'results': dict({
         '1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA': dict({
+          'canonicalArtist': None,
+          'canonicalCard': None,
           'cardType': 'TOKEN',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -1605,32 +1704,80 @@
   dict({
     'json': dict({
       'results': dict({
-        'Brainstorm': dict({
-          'CARD': list([
-            '1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5',
-          ]),
-        }),
-        'Goblin': dict({
-          'TOKEN': list([
-            '1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA',
-          ]),
-        }),
-        'Island': dict({
-          'CARD': list([
-            '1IDtqSjJ4Yo45AnNA4SplOiN7ewibifMa',
-            '1HsvTYs1jFGe1c8U1PnNZ9aB8jkAW7KU0',
-          ]),
-        }),
-        'Simple Cube': dict({
-          'CARDBACK': list([
-            '1JtXL6Ca9nQkvhwZZRR9ZuKA9_DzsFf1V',
-          ]),
-        }),
-        'Simple Lotus': dict({
-          'CARDBACK': list([
-            '1oigI6wz0zA--pNMuExKTs40kBNH6VRP_',
-          ]),
-        }),
+        'key1': list([
+          '1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5',
+        ]),
+        'key2': list([
+          '1IDtqSjJ4Yo45AnNA4SplOiN7ewibifMa',
+          '1HsvTYs1jFGe1c8U1PnNZ9aB8jkAW7KU0',
+        ]),
+        'key3': list([
+          '1JtXL6Ca9nQkvhwZZRR9ZuKA9_DzsFf1V',
+        ]),
+        'key4': list([
+          '1oigI6wz0zA--pNMuExKTs40kBNH6VRP_',
+        ]),
+        'key5': list([
+          '1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA',
+        ]),
+      }),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostEditorSearchResults.test_filter_by_collector_number
+  dict({
+    'json': dict({
+      'results': dict({
+        'key1': list([
+          '1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5',
+        ]),
+      }),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostEditorSearchResults.test_filter_by_collector_number_no_results
+  dict({
+    'json': dict({
+      'results': dict({
+        'key1': list([
+        ]),
+      }),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostEditorSearchResults.test_filter_by_expansion_code
+  dict({
+    'json': dict({
+      'results': dict({
+        'key1': list([
+          '1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5',
+        ]),
+      }),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostEditorSearchResults.test_filter_by_expansion_code_and_collector_number
+  dict({
+    'json': dict({
+      'results': dict({
+        'key1': list([
+          '1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5',
+        ]),
+      }),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostEditorSearchResults.test_filter_by_expansion_code_no_results
+  dict({
+    'json': dict({
+      'results': dict({
+        'key1': list([
+        ]),
       }),
     }),
     'status_code': 200,
@@ -1640,12 +1787,10 @@
   dict({
     'json': dict({
       'results': dict({
-        'past in': dict({
-          'CARD': list([
-            '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
-            '1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
-          ]),
-        }),
+        'key1': list([
+          '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
+          '1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
+        ]),
       }),
     }),
     'status_code': 200,
@@ -1655,12 +1800,10 @@
   dict({
     'json': dict({
       'results': dict({
-        'Pást in Flames': dict({
-          'CARD': list([
-            '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
-            '1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
-          ]),
-        }),
+        'key1': list([
+          '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
+          '1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
+        ]),
       }),
     }),
     'status_code': 200,
@@ -1670,11 +1813,9 @@
   dict({
     'json': dict({
       'results': dict({
-        'Pást in Flames': dict({
-          'CARD': list([
-            '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
-          ]),
-        }),
+        'key1': list([
+          '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
+        ]),
       }),
     }),
     'status_code': 200,
@@ -1684,12 +1825,10 @@
   dict({
     'json': dict({
       'results': dict({
-        'Pást in Flames': dict({
-          'CARD': list([
-            '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
-            '1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
-          ]),
-        }),
+        'key1': list([
+          '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
+          '1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
+        ]),
       }),
     }),
     'status_code': 200,
@@ -1699,12 +1838,10 @@
   dict({
     'json': dict({
       'results': dict({
-        'Pást in Flames': dict({
-          'CARD': list([
-            '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
-            '1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
-          ]),
-        }),
+        'key1': list([
+          '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
+          '1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
+        ]),
       }),
     }),
     'status_code': 200,
@@ -1714,11 +1851,9 @@
   dict({
     'json': dict({
       'results': dict({
-        'Past in Flames': dict({
-          'CARD': list([
-            '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
-          ]),
-        }),
+        'key1': list([
+          '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
+        ]),
       }),
     }),
     'status_code': 200,
@@ -1728,11 +1863,9 @@
   dict({
     'json': dict({
       'results': dict({
-        'Pást in Flames': dict({
-          'CARD': list([
-            '1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
-          ]),
-        }),
+        'key1': list([
+          '1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
+        ]),
       }),
     }),
     'status_code': 200,
@@ -1742,11 +1875,9 @@
   dict({
     'json': dict({
       'results': dict({
-        'Pást in Flames': dict({
-          'CARD': list([
-            '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
-          ]),
-        }),
+        'key1': list([
+          '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
+        ]),
       }),
     }),
     'status_code': 200,
@@ -1766,10 +1897,8 @@
   dict({
     'json': dict({
       'results': dict({
-        'Simple Cube': dict({
-          'CARDBACK': list([
-          ]),
-        }),
+        'key1': list([
+        ]),
       }),
     }),
     'status_code': 200,
@@ -1779,11 +1908,9 @@
   dict({
     'json': dict({
       'results': dict({
-        'Pást in Flames': dict({
-          'CARD': list([
-            '1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
-          ]),
-        }),
+        'key1': list([
+          '1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
+        ]),
       }),
     }),
     'status_code': 200,
@@ -1793,11 +1920,9 @@
   dict({
     'json': dict({
       'results': dict({
-        'Pást in Flames': dict({
-          'CARD': list([
-            '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
-          ]),
-        }),
+        'key1': list([
+          '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
+        ]),
       }),
     }),
     'status_code': 200,
@@ -1807,10 +1932,8 @@
   dict({
     'json': dict({
       'results': dict({
-        'Simple Cube': dict({
-          'CARDBACK': list([
-          ]),
-        }),
+        'key1': list([
+        ]),
       }),
     }),
     'status_code': 200,
@@ -1820,17 +1943,13 @@
   dict({
     'json': dict({
       'results': dict({
-        'Brainstorm': dict({
-          'CARD': list([
-            '1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5',
-          ]),
-        }),
-        'Island': dict({
-          'CARD': list([
-            '1IDtqSjJ4Yo45AnNA4SplOiN7ewibifMa',
-            '1HsvTYs1jFGe1c8U1PnNZ9aB8jkAW7KU0',
-          ]),
-        }),
+        'key1': list([
+          '1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5',
+        ]),
+        'key2': list([
+          '1IDtqSjJ4Yo45AnNA4SplOiN7ewibifMa',
+          '1HsvTYs1jFGe1c8U1PnNZ9aB8jkAW7KU0',
+        ]),
       }),
     }),
     'status_code': 200,
@@ -1850,12 +1969,10 @@
   dict({
     'json': dict({
       'results': dict({
-        'Island': dict({
-          'CARD': list([
-            '1IDtqSjJ4Yo45AnNA4SplOiN7ewibifMa',
-            '1HsvTYs1jFGe1c8U1PnNZ9aB8jkAW7KU0',
-          ]),
-        }),
+        'key1': list([
+          '1IDtqSjJ4Yo45AnNA4SplOiN7ewibifMa',
+          '1HsvTYs1jFGe1c8U1PnNZ9aB8jkAW7KU0',
+        ]),
       }),
     }),
     'status_code': 200,
@@ -1927,10 +2044,12 @@
           }),
           'loc': list([
             'queries',
+            'key1',
+            'cardType',
           ]),
-          'msg': 'Input should be a valid list',
-          'type': 'list_type',
-          'url': 'https://errors.pydantic.dev/2.10/v/list_type',
+          'msg': 'Field required',
+          'type': 'missing',
+          'url': 'https://errors.pydantic.dev/2.10/v/missing',
         }),
       ]),
       'message': 'See `errors` field for detailed breakdown.',
@@ -1944,16 +2063,18 @@
     'json': dict({
       'errors': list([
         dict({
-          'input': dict({
-            'cardType': 'garbage',
-            'query': 'Brainstorm',
+          'ctx': dict({
+            'expected': "'CARD', 'CARDBACK' or 'TOKEN'",
           }),
+          'input': 'garbage',
           'loc': list([
             'queries',
+            'key1',
+            'cardType',
           ]),
-          'msg': 'Input should be a valid list',
-          'type': 'list_type',
-          'url': 'https://errors.pydantic.dev/2.10/v/list_type',
+          'msg': "Input should be 'CARD', 'CARDBACK' or 'TOKEN'",
+          'type': 'enum',
+          'url': 'https://errors.pydantic.dev/2.10/v/enum',
         }),
       ]),
       'message': 'See `errors` field for detailed breakdown.',
@@ -1967,16 +2088,30 @@
     'json': dict({
       'errors': list([
         dict({
-          'input': dict({
-            'cardType': 'CARD',
-            'query_garbage': 'Brainstorm',
+          'ctx': dict({
+            'class_name': 'SearchQuery',
           }),
+          'input': 'Brainstorm',
           'loc': list([
             'queries',
+            'query_garbage',
           ]),
-          'msg': 'Input should be a valid list',
-          'type': 'list_type',
-          'url': 'https://errors.pydantic.dev/2.10/v/list_type',
+          'msg': 'Input should be a valid dictionary or instance of SearchQuery',
+          'type': 'model_type',
+          'url': 'https://errors.pydantic.dev/2.10/v/model_type',
+        }),
+        dict({
+          'ctx': dict({
+            'class_name': 'SearchQuery',
+          }),
+          'input': 'CARD',
+          'loc': list([
+            'queries',
+            'cardType',
+          ]),
+          'msg': 'Input should be a valid dictionary or instance of SearchQuery',
+          'type': 'model_type',
+          'url': 'https://errors.pydantic.dev/2.10/v/model_type',
         }),
       ]),
       'message': 'See `errors` field for detailed breakdown.',
@@ -2041,16 +2176,30 @@
     'json': dict({
       'errors': list([
         dict({
-          'input': dict({
-            'cardType': 'CARD',
-            'query_garbage': 'Brainstorm',
+          'ctx': dict({
+            'class_name': 'SearchQuery',
           }),
+          'input': 'Brainstorm',
           'loc': list([
             'queries',
+            'query_garbage',
           ]),
-          'msg': 'Input should be a valid list',
-          'type': 'list_type',
-          'url': 'https://errors.pydantic.dev/2.10/v/list_type',
+          'msg': 'Input should be a valid dictionary or instance of SearchQuery',
+          'type': 'model_type',
+          'url': 'https://errors.pydantic.dev/2.10/v/model_type',
+        }),
+        dict({
+          'ctx': dict({
+            'class_name': 'SearchQuery',
+          }),
+          'input': 'CARD',
+          'loc': list([
+            'queries',
+            'cardType',
+          ]),
+          'msg': 'Input should be a valid dictionary or instance of SearchQuery',
+          'type': 'model_type',
+          'url': 'https://errors.pydantic.dev/2.10/v/model_type',
         }),
         dict({
           'ctx': dict({
@@ -2075,12 +2224,10 @@
   dict({
     'json': dict({
       'results': dict({
-        'Pást in Flames': dict({
-          'CARD': list([
-            '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
-            '1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
-          ]),
-        }),
+        'key1': list([
+          '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
+          '1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
+        ]),
       }),
     }),
     'status_code': 200,
@@ -2090,12 +2237,10 @@
   dict({
     'json': dict({
       'results': dict({
-        'Pást in Flames': dict({
-          'CARD': list([
-            '1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
-            '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
-          ]),
-        }),
+        'key1': list([
+          '1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
+          '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
+        ]),
       }),
     }),
     'status_code': 200,
@@ -2105,10 +2250,8 @@
   dict({
     'json': dict({
       'results': dict({
-        'Pást in Flames': dict({
-          'CARD': list([
-          ]),
-        }),
+        'key1': list([
+        ]),
       }),
     }),
     'status_code': 200,
@@ -2118,11 +2261,9 @@
   dict({
     'json': dict({
       'results': dict({
-        'Pást in Flames': dict({
-          'CARD': list([
-            '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
-          ]),
-        }),
+        'key1': list([
+          '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
+        ]),
       }),
     }),
     'status_code': 200,
@@ -2132,11 +2273,9 @@
   dict({
     'json': dict({
       'results': dict({
-        'Brainstorm': dict({
-          'CARD': list([
-            '1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5',
-          ]),
-        }),
+        'key1': list([
+          '1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5',
+        ]),
       }),
     }),
     'status_code': 200,
@@ -2146,11 +2285,9 @@
   dict({
     'json': dict({
       'results': dict({
-        'Simple Lotus': dict({
-          'CARDBACK': list([
-            '1oigI6wz0zA--pNMuExKTs40kBNH6VRP_',
-          ]),
-        }),
+        'key1': list([
+          '1oigI6wz0zA--pNMuExKTs40kBNH6VRP_',
+        ]),
       }),
     }),
     'status_code': 200,
@@ -2160,11 +2297,9 @@
   dict({
     'json': dict({
       'results': dict({
-        'Goblin': dict({
-          'TOKEN': list([
-            '1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA',
-          ]),
-        }),
+        'key1': list([
+          '1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA',
+        ]),
       }),
     }),
     'status_code': 200,
@@ -2175,6 +2310,8 @@
     'json': dict({
       'cards': list([
         dict({
+          'canonicalArtist': None,
+          'canonicalCard': None,
           'cardType': 'TOKEN',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -2198,6 +2335,8 @@
           ]),
         }),
         dict({
+          'canonicalArtist': None,
+          'canonicalCard': None,
           'cardType': 'CARDBACK',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -2223,6 +2362,8 @@
           ]),
         }),
         dict({
+          'canonicalArtist': None,
+          'canonicalCard': None,
           'cardType': 'CARDBACK',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -2257,6 +2398,19 @@
     'json': dict({
       'cards': list([
         dict({
+          'canonicalArtist': dict({
+            'name': 'Artist 67',
+          }),
+          'canonicalCard': dict({
+            'artist': None,
+            'canonicalId': '36cd2364-d113-47d1-b2c4-b088d9eb88dd',
+            'collectorNumber': '61',
+            'expansionCode': 'ice',
+            'expansionName': 'Ice Age',
+            'identifier': '8d42d7aa-7f53-4cfc-842a-086aab2448d1',
+            'mediumThumbnailUrl': '',
+            'smallThumbnailUrl': '',
+          }),
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -2280,6 +2434,8 @@
           ]),
         }),
         dict({
+          'canonicalArtist': None,
+          'canonicalCard': None,
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -2303,6 +2459,8 @@
           ]),
         }),
         dict({
+          'canonicalArtist': None,
+          'canonicalCard': None,
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -2313,7 +2471,7 @@
           'mediumThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1991MWCur9NdAFi-tQQD5YbQj2oqV_WRy',
           'name': 'Huntmaster of the Fells',
           'priority': 2,
-          'searchq': 'huntmaster of fells',
+          'searchq': 'huntmaster of the fells',
           'size': 5000000,
           'smallThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1991MWCur9NdAFi-tQQD5YbQj2oqV_WRy',
           'source': 'example_drive_1',
@@ -2326,6 +2484,8 @@
           ]),
         }),
         dict({
+          'canonicalArtist': None,
+          'canonicalCard': None,
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -2349,6 +2509,8 @@
           ]),
         }),
         dict({
+          'canonicalArtist': None,
+          'canonicalCard': None,
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -2372,6 +2534,8 @@
           ]),
         }),
         dict({
+          'canonicalArtist': None,
+          'canonicalCard': None,
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -2395,6 +2559,8 @@
           ]),
         }),
         dict({
+          'canonicalArtist': None,
+          'canonicalCard': None,
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -2418,6 +2584,8 @@
           ]),
         }),
         dict({
+          'canonicalArtist': None,
+          'canonicalCard': None,
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -2443,6 +2611,8 @@
           ]),
         }),
         dict({
+          'canonicalArtist': None,
+          'canonicalCard': None,
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -2467,6 +2637,8 @@
           ]),
         }),
         dict({
+          'canonicalArtist': None,
+          'canonicalCard': None,
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -2477,7 +2649,7 @@
           'mediumThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1lv8WC1Xf1qxA7VHSc8jOtT5up6FwaBPH',
           'name': 'Ravager of the Fells',
           'priority': 2,
-          'searchq': 'ravager of fells',
+          'searchq': 'ravager of the fells',
           'size': 5000000,
           'smallThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1lv8WC1Xf1qxA7VHSc8jOtT5up6FwaBPH',
           'source': 'example_drive_1',
@@ -2500,6 +2672,19 @@
     'json': dict({
       'cards': list([
         dict({
+          'canonicalArtist': dict({
+            'name': 'Artist 66',
+          }),
+          'canonicalCard': dict({
+            'artist': None,
+            'canonicalId': '36cd2364-d113-47d1-b2c4-b088d9eb88dd',
+            'collectorNumber': '61',
+            'expansionCode': 'ice',
+            'expansionName': 'Ice Age',
+            'identifier': '8d42d7aa-7f53-4cfc-842a-086aab2448d1',
+            'mediumThumbnailUrl': '',
+            'smallThumbnailUrl': '',
+          }),
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -2523,6 +2708,8 @@
           ]),
         }),
         dict({
+          'canonicalArtist': None,
+          'canonicalCard': None,
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -2546,6 +2733,8 @@
           ]),
         }),
         dict({
+          'canonicalArtist': None,
+          'canonicalCard': None,
           'cardType': 'TOKEN',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -2569,6 +2758,8 @@
           ]),
         }),
         dict({
+          'canonicalArtist': None,
+          'canonicalCard': None,
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -2579,7 +2770,7 @@
           'mediumThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1991MWCur9NdAFi-tQQD5YbQj2oqV_WRy',
           'name': 'Huntmaster of the Fells',
           'priority': 2,
-          'searchq': 'huntmaster of fells',
+          'searchq': 'huntmaster of the fells',
           'size': 5000000,
           'smallThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1991MWCur9NdAFi-tQQD5YbQj2oqV_WRy',
           'source': 'example_drive_1',
@@ -2592,6 +2783,8 @@
           ]),
         }),
         dict({
+          'canonicalArtist': None,
+          'canonicalCard': None,
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -2615,6 +2808,8 @@
           ]),
         }),
         dict({
+          'canonicalArtist': None,
+          'canonicalCard': None,
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -2638,6 +2833,8 @@
           ]),
         }),
         dict({
+          'canonicalArtist': None,
+          'canonicalCard': None,
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -2661,6 +2858,8 @@
           ]),
         }),
         dict({
+          'canonicalArtist': None,
+          'canonicalCard': None,
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -2684,6 +2883,8 @@
           ]),
         }),
         dict({
+          'canonicalArtist': None,
+          'canonicalCard': None,
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -2709,6 +2910,8 @@
           ]),
         }),
         dict({
+          'canonicalArtist': None,
+          'canonicalCard': None,
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -2733,6 +2936,8 @@
           ]),
         }),
         dict({
+          'canonicalArtist': None,
+          'canonicalCard': None,
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -2743,7 +2948,7 @@
           'mediumThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w800-h800&id=1lv8WC1Xf1qxA7VHSc8jOtT5up6FwaBPH',
           'name': 'Ravager of the Fells',
           'priority': 2,
-          'searchq': 'ravager of fells',
+          'searchq': 'ravager of the fells',
           'size': 5000000,
           'smallThumbnailUrl': 'https://drive.google.com/thumbnail?sz=w400-h400&id=1lv8WC1Xf1qxA7VHSc8jOtT5up6FwaBPH',
           'source': 'example_drive_1',
@@ -2756,6 +2961,8 @@
           ]),
         }),
         dict({
+          'canonicalArtist': None,
+          'canonicalCard': None,
           'cardType': 'CARDBACK',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -2781,6 +2988,8 @@
           ]),
         }),
         dict({
+          'canonicalArtist': None,
+          'canonicalCard': None,
           'cardType': 'CARDBACK',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -2815,6 +3024,19 @@
     'json': dict({
       'cards': list([
         dict({
+          'canonicalArtist': dict({
+            'name': 'Artist 68',
+          }),
+          'canonicalCard': dict({
+            'artist': None,
+            'canonicalId': '36cd2364-d113-47d1-b2c4-b088d9eb88dd',
+            'collectorNumber': '61',
+            'expansionCode': 'ice',
+            'expansionName': 'Ice Age',
+            'identifier': '8d42d7aa-7f53-4cfc-842a-086aab2448d1',
+            'mediumThumbnailUrl': '',
+            'smallThumbnailUrl': '',
+          }),
           'cardType': 'CARD',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -2848,6 +3070,8 @@
     'json': dict({
       'cards': list([
         dict({
+          'canonicalArtist': None,
+          'canonicalCard': None,
           'cardType': 'CARDBACK',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -2882,6 +3106,8 @@
     'json': dict({
       'cards': list([
         dict({
+          'canonicalArtist': None,
+          'canonicalCard': None,
           'cardType': 'TOKEN',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -2915,6 +3141,8 @@
     'json': dict({
       'cards': list([
         dict({
+          'canonicalArtist': None,
+          'canonicalCard': None,
           'cardType': 'CARDBACK',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -2940,6 +3168,8 @@
           ]),
         }),
         dict({
+          'canonicalArtist': None,
+          'canonicalCard': None,
           'cardType': 'CARDBACK',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -2974,6 +3204,8 @@
     'json': dict({
       'cards': list([
         dict({
+          'canonicalArtist': None,
+          'canonicalCard': None,
           'cardType': 'CARDBACK',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',
@@ -2998,6 +3230,8 @@
           ]),
         }),
         dict({
+          'canonicalArtist': None,
+          'canonicalCard': None,
           'cardType': 'CARDBACK',
           'dateCreated': '1st January, 2023',
           'dateModified': '1st January, 2023',

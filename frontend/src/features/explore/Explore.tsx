@@ -1,22 +1,20 @@
 import React, { useEffect, useMemo, useState } from "react";
 import Button from "react-bootstrap/Button";
 import Col from "react-bootstrap/Col";
-import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
 import { useDebounce } from "use-debounce";
 
 import {
-  Card,
-  CardTypePrefixes,
   ExploreDebounceMS,
   ExplorePageSize,
   NavbarHeight,
   RibbonHeight,
-  SortByOptions,
 } from "@/common/constants";
 import { ExploreSearchRequest, SortBy } from "@/common/schema_types";
-import { StyledDropdownTreeSelect } from "@/common/StyledDropdownTreeSelect";
 import {
+  assertNever,
+  BackendType,
+  CardDocument,
   CardType,
   FilterSettings,
   SearchSettings,
@@ -25,26 +23,67 @@ import {
   useAppSelector,
 } from "@/common/types";
 import { Blurrable } from "@/components/Blurrable";
-import { NoBackendDefault } from "@/components/NoBackendDefault";
 import { OverflowCol } from "@/components/OverflowCol";
 import { Ribbon } from "@/components/Ribbon";
 import { Spinner } from "@/components/Spinner";
 import { DatedCard } from "@/features/card/Card";
-import { FilterSettings as FilterSettingsElement } from "@/features/searchSettings/FilterSettings";
-import { SearchTypeSettings as SearchTypeSettingsElement } from "@/features/searchSettings/SearchTypeSettings";
-import { SourceSettings as SourceSettingsElement } from "@/features/searchSettings/SourceSettings";
 import { GenericErrorPage } from "@/features/ui/GenericErrorPage";
-import { useGetSampleCardsQuery, usePostExploreSearchQuery } from "@/store/api";
-import { useRemoteBackendConfigured } from "@/store/slices/backendSlice";
+import { usePostExploreSearchQuery } from "@/store/api";
 import {
   getDefaultSearchSettings,
   getDefaultSourceSettings,
 } from "@/store/slices/searchSettingsSlice";
 import { selectSourceDocuments } from "@/store/slices/sourceDocumentsSlice";
 
+import { useClientSearchContext } from "../clientSearch/clientSearchContext";
+import { ExploreFilters } from "./ExploreFilters";
+
+const useExploreSearchResults = (
+  exploreSearchRequest: ExploreSearchRequest,
+  backendType: BackendType
+): { cards: Array<CardDocument>; count: number; isFetching: boolean } => {
+  const postExploreSearchQuery =
+    usePostExploreSearchQuery(exploreSearchRequest);
+  const { clientSearchService } = useClientSearchContext();
+  const [localResults, setLocalResults] = useState<{
+    cards: Array<CardDocument>;
+    count: number;
+  }>({ cards: [], count: 0 });
+  useEffect(() => {
+    if (backendType === "local") {
+      clientSearchService
+        .exploreSearch(
+          exploreSearchRequest.sortBy,
+          exploreSearchRequest.query ?? undefined,
+          exploreSearchRequest.cardTypes,
+          exploreSearchRequest.searchSettings,
+          exploreSearchRequest.pageStart,
+          exploreSearchRequest.pageSize
+        )
+        .then(setLocalResults);
+    } else {
+      setLocalResults({ cards: [], count: 0 });
+    }
+  }, [exploreSearchRequest, backendType]);
+
+  if (backendType === "remote") {
+    return {
+      cards: postExploreSearchQuery.data?.cards ?? [],
+      count: postExploreSearchQuery.data?.count ?? 0,
+      isFetching: postExploreSearchQuery.isFetching,
+    };
+  }
+  if (backendType === "local") {
+    return {
+      ...localResults,
+      isFetching: false,
+    };
+  }
+  return assertNever(backendType);
+};
+
 export function Explore() {
   const maybeSourceDocuments = useAppSelector(selectSourceDocuments);
-  const remoteBackendConfigured = useRemoteBackendConfigured();
 
   const defaultSettings: SearchSettings = getDefaultSearchSettings(
     maybeSourceDocuments ?? [],
@@ -55,6 +94,7 @@ export function Explore() {
   const [pageStart, setPageStart] = useState<number>(0);
 
   // input state
+  const [backendType, setBackendType] = useState<BackendType>("remote");
   const [sortBy, setSortBy] = useState<SortBy>(SortBy.DateCreatedDescending);
   const [query, setQuery] = useState<string>("");
   const [cardTypes, setCardTypes] = useState<Array<CardType>>([]);
@@ -68,6 +108,7 @@ export function Explore() {
   const [sourceSettings, setSourceSettings] = useState<SourceSettings>(
     defaultSettings.sourceSettings
   );
+  const [compressed, setCompressed] = useState<boolean>(false);
 
   // ensure pagination is reset when any filters change
   function updateInputAndResetPageStart<T>(setter: { (value: T): void }) {
@@ -96,13 +137,6 @@ export function Explore() {
     }
   }, [maybeSourceDocuments]);
 
-  const getSampleCardsQuery = useGetSampleCardsQuery();
-  const placeholderCardName =
-    getSampleCardsQuery.data != null &&
-    (getSampleCardsQuery.data ?? {})[Card][0] != null
-      ? getSampleCardsQuery.data[Card][0].name
-      : "";
-
   const exploreSearchRequest: ExploreSearchRequest = {
     sortBy,
     searchSettings: {
@@ -122,175 +156,126 @@ export function Explore() {
   const [debouncedExploreSearchRequest, debouncedExploreSearchRequestState] =
     useDebounce(exploreSearchRequest, ExploreDebounceMS, { equalityFn });
 
-  const postExploreSearchQuery = usePostExploreSearchQuery(
-    debouncedExploreSearchRequest
-  );
+  const {
+    cards,
+    count: resultCount,
+    isFetching,
+  } = useExploreSearchResults(debouncedExploreSearchRequest, backendType);
 
   // pagination stuff
-  const resultCount = postExploreSearchQuery.data?.count ?? 0;
-  const currentPageSize = postExploreSearchQuery.data?.cards?.length ?? 0;
+  const currentPageSize = cards.length ?? 0;
   const multiplePagesExist = resultCount !== currentPageSize;
   const previousPageExists = multiplePagesExist && pageStart > 0;
   const nextPageExists =
     multiplePagesExist && pageStart + ExplorePageSize < resultCount;
 
   const displaySpinner =
-    debouncedExploreSearchRequestState.isPending() ||
-    postExploreSearchQuery.isFetching;
-  const noResults =
-    postExploreSearchQuery.data?.cards?.length === 0 && !displaySpinner;
+    debouncedExploreSearchRequestState.isPending() || isFetching;
+  const noResults = cards?.length === 0 && !displaySpinner;
 
-  // form stuff
-  const sortByOptions = useMemo(
-    () =>
-      Object.entries(SortByOptions).map(([value, label]) => ({
-        value,
-        label,
-        checked: value === sortBy,
-      })),
-    [sortBy]
-  );
+  return (
+    <Row className="g-0">
+      <OverflowCol
+        lg={4}
+        md={4}
+        sm={6}
+        xs={6}
+        style={{ zIndex: 1 }}
+        className="px-2"
+        heightDelta={NavbarHeight}
+      >
+        <ExploreFilters
+          compressed={compressed}
+          setCompressed={setCompressed}
+          backendType={backendType}
+          setBackendType={setBackendType}
+          sortBy={sortBy}
+          setSortBy={setSortByAndResetPageStart}
+          searchQuery={query}
+          setSearchQuery={setQueryAndResetPageStart}
+          cardTypes={cardTypes}
+          setCardTypes={setCardTypesAndResetPageStart}
+          searchTypeSettings={searchTypeSettings}
+          setSearchTypeSettings={setSearchTypeSettingsAndResetPageStart}
+          filterSettings={filterSettings}
+          setFilterSettings={setFilterSettingsAndResetPageStart}
+          sourceSettings={sourceSettings}
+          setSourceSettings={setSourceSettingsAndResetPageStart}
+        />
+      </OverflowCol>
 
-  return remoteBackendConfigured ? (
-    <>
-      <Row className="g-0">
+      <Col style={{ position: "relative" }} lg={8} md={8} sm={6} xs={6}>
+        {displaySpinner && (
+          <Spinner size={6} zIndex={3} positionAbsolute={true} />
+        )}
+        {noResults && (
+          <GenericErrorPage
+            title="No results :("
+            text={["Your search didn't match any results."]}
+          />
+        )}
         <OverflowCol
-          lg={4}
-          md={4}
-          sm={6}
-          xs={6}
-          style={{ zIndex: 1 }}
-          className="px-2"
-          heightDelta={NavbarHeight}
+          disabled={displaySpinner}
+          scrollable={!displaySpinner}
+          heightDelta={RibbonHeight + NavbarHeight}
         >
-          <h5>Sort By</h5>
-          <StyledDropdownTreeSelect
-            data={sortByOptions}
-            onChange={(currentNode, selectedNodes) =>
-              setSortByAndResetPageStart(currentNode.value as SortBy)
-            }
-            mode="radioSelect"
-            inlineSearchInput
-          />
-          <hr />
-          <h5>Search Query</h5>
-          <Form.Control
-            onChange={(event) =>
-              setQueryAndResetPageStart(event.target.value.trim())
-            }
-            aria-describedby="searchQueryText"
-            placeholder={placeholderCardName}
-          />
-          <Form.Label htmlFor="selectTypes">
-            Select which card types to include
-          </Form.Label>
-          <StyledDropdownTreeSelect
-            data={Object.values(CardTypePrefixes).map((cardType) => ({
-              label:
-                cardType[0].toUpperCase() + cardType.slice(1).toLowerCase(),
-              value: cardType,
-              checked: cardTypes.includes(cardType),
-            }))}
-            onChange={(currentNode, selectedNodes) =>
-              setCardTypesAndResetPageStart(
-                selectedNodes.map((item) => item.value as CardType)
-              )
-            }
-            inlineSearchInput
-          />
-          <hr />
-          <SearchTypeSettingsElement
-            searchTypeSettings={searchTypeSettings}
-            setSearchTypeSettings={setSearchTypeSettingsAndResetPageStart}
-            enableFiltersApplyToCardbacks={false}
-          />
-          <hr />
-          <FilterSettingsElement
-            filterSettings={filterSettings}
-            setFilterSettings={setFilterSettingsAndResetPageStart}
-          />
-          <hr />
-          <SourceSettingsElement
-            sourceSettings={sourceSettings}
-            setSourceSettings={setSourceSettingsAndResetPageStart}
-            enableReorderingSources={false}
-          />
+          <Blurrable disabled={displaySpinner}>
+            <Row xxl={4} lg={3} md={2} sm={1} xs={1} className="g-0">
+              {cards?.map((card) => (
+                <DatedCard
+                  cardDocument={card}
+                  headerDate={
+                    sortBy === SortBy.DateModifiedAscending ||
+                    sortBy === SortBy.DateModifiedDescending
+                      ? "modified"
+                      : "created"
+                  }
+                  key={`explore-card-${card.identifier}`}
+                  compressed={compressed}
+                />
+              ))}
+            </Row>
+          </Blurrable>
         </OverflowCol>
-
-        <Col style={{ position: "relative" }} lg={8} md={8} sm={6} xs={6}>
-          {displaySpinner && (
-            <Spinner size={6} zIndex={3} positionAbsolute={true} />
-          )}
-          {noResults && (
-            <GenericErrorPage
-              title="No results :("
-              text={["Your search didn't match any results."]}
-            />
-          )}
-          <OverflowCol
-            disabled={displaySpinner}
-            scrollable={!displaySpinner}
-            heightDelta={RibbonHeight + NavbarHeight}
-          >
-            <Blurrable disabled={displaySpinner}>
-              <Row xxl={4} lg={3} md={2} sm={1} xs={1} className="g-0">
-                {postExploreSearchQuery.data?.cards?.map((card) => (
-                  <DatedCard
-                    cardDocument={card}
-                    headerDate={
-                      sortBy === SortBy.DateModifiedAscending ||
-                      sortBy === SortBy.DateModifiedDescending
-                        ? "modified"
-                        : "created"
-                    }
-                    key={`explore-card-${card.identifier}`}
-                  />
-                ))}
-              </Row>
-            </Blurrable>
-          </OverflowCol>
-          <Ribbon className="mx-0" position="bottom">
-            <div className="text-center align-content-center position-relative">
-              <Button
-                variant="outline-info"
-                className="position-absolute top-50 start-0 translate-middle-y ms-1"
-                disabled={!previousPageExists}
-                onClick={() =>
-                  setPageStart((value) => Math.max(value - ExplorePageSize, 0))
-                }
-              >
-                &#10094;
-              </Button>
-              {!displaySpinner && (
-                <span>
-                  {multiplePagesExist && (
-                    <>
-                      <b>{(pageStart + 1).toLocaleString()}</b> —
-                      <b>{(pageStart + currentPageSize).toLocaleString()}</b> of{" "}
-                    </>
-                  )}
-                  <b>{resultCount.toLocaleString()}</b> result
-                  {resultCount !== 1 ? "s" : ""}
-                </span>
-              )}
-              <Button
-                variant="outline-info"
-                className="position-absolute top-50 end-0 translate-middle-y"
-                disabled={!nextPageExists}
-                onClick={() =>
-                  setPageStart((value) =>
-                    Math.min(value + ExplorePageSize, resultCount)
-                  )
-                }
-              >
-                &#10095;
-              </Button>
-            </div>
-          </Ribbon>
-        </Col>
-      </Row>
-    </>
-  ) : (
-    <NoBackendDefault requirement="remote" />
+        <Ribbon className="mx-0" position="bottom">
+          <div className="text-center align-content-center position-relative">
+            <Button
+              variant="outline-info"
+              className="position-absolute top-50 start-0 translate-middle-y ms-1"
+              disabled={!previousPageExists}
+              onClick={() =>
+                setPageStart((value) => Math.max(value - ExplorePageSize, 0))
+              }
+            >
+              &#10094;
+            </Button>
+            {!displaySpinner && (
+              <span>
+                {multiplePagesExist && (
+                  <>
+                    <b>{(pageStart + 1).toLocaleString()}</b> —
+                    <b>{(pageStart + currentPageSize).toLocaleString()}</b> of{" "}
+                  </>
+                )}
+                <b>{resultCount.toLocaleString()}</b> result
+                {resultCount !== 1 ? "s" : ""}
+              </span>
+            )}
+            <Button
+              variant="outline-info"
+              className="position-absolute top-50 end-0 translate-middle-y"
+              disabled={!nextPageExists}
+              onClick={() =>
+                setPageStart((value) =>
+                  Math.min(value + ExplorePageSize, resultCount)
+                )
+              }
+            >
+              &#10095;
+            </Button>
+          </div>
+        </Ribbon>
+      </Col>
+    </Row>
   );
 }

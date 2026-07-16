@@ -1,5 +1,5 @@
 # Docker to serve the static Next.js frontend via nginx
-FROM node:22.15-alpine AS builder
+FROM node:22.15-slim AS builder
 
 # Copy frontend files
 COPY frontend /frontend

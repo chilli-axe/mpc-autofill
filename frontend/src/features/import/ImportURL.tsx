@@ -10,6 +10,7 @@ import Button from "react-bootstrap/Button";
 import Dropdown from "react-bootstrap/Dropdown";
 import Form from "react-bootstrap/Form";
 import Modal from "react-bootstrap/Modal";
+import Stack from "react-bootstrap/Stack";
 
 import {
   convertLinesIntoSlotProjectMembers,
@@ -25,41 +26,33 @@ import { addMembers, selectProjectSize } from "@/store/slices/projectSlice";
 import { selectFuzzySearch } from "@/store/slices/searchSettingsSlice";
 import { setNotification } from "@/store/slices/toastsSlice";
 
-export function ImportURL() {
-  //# region queries and hooks
+interface ImportURLProps {
+  onImportComplete?: () => void;
+  inputRef?: React.RefObject<HTMLInputElement>;
+}
 
+export function ImportURL({ onImportComplete, inputRef }: ImportURLProps) {
   const dispatch = useAppDispatch();
   const dfcPairsQuery = useGetDFCPairsQuery();
   const importSitesQuery = useGetImportSitesQuery();
-  const [triggerFn, queryImportSiteQuery] =
-    api.endpoints.queryImportSite.useLazyQuery();
+  const [triggerFn] = api.endpoints.queryImportSite.useLazyQuery();
   const projectName = useProjectName();
   const fuzzySearch = useAppSelector(selectFuzzySearch);
   const projectSize = useAppSelector(selectProjectSize);
 
-  //# endregion
-
-  //# region state
-
-  const [URLModalValue, setURLModalValue] = useState<string>("");
-  const [showURLModal, setShowURLModal] = useState<boolean>(false);
+  const [urlValue, setUrlValue] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
-  const focusRef = useRef<HTMLInputElement>(null);
+  const internalRef = useRef<HTMLInputElement>(null);
+  const ref = inputRef ?? internalRef;
 
-  //# endregion
-
-  //# region callbacks
-
-  const handleCloseURLModal = () => setShowURLModal(false);
-  const handleShowURLModal = () => setShowURLModal(true);
-  const handleSubmitURLModal = useCallback(
+  const handleSubmit = useCallback(
     async (event: FormEvent<HTMLFormElement>) => {
-      event.preventDefault(); // to avoid reloading the page
-      const trimmedURL = URLModalValue.trim();
+      event.preventDefault();
+      const trimmedURL = urlValue.trim();
       if (trimmedURL.length > 0) {
         setLoading(true);
         try {
-          const query = await triggerFn(URLModalValue);
+          const query = await triggerFn(urlValue);
           const processedLines = processStringAsMultipleLines(
             query.data ?? "",
             dfcPairsQuery.data ?? {},
@@ -73,7 +66,8 @@ export function ImportURL() {
               ),
             })
           );
-          handleCloseURLModal();
+          setUrlValue("");
+          onImportComplete?.();
         } catch (error: any) {
           dispatch(
             setNotification([
@@ -92,22 +86,17 @@ export function ImportURL() {
     },
     [
       dispatch,
-      URLModalValue,
+      urlValue,
       dfcPairsQuery.data,
       projectSize,
       triggerFn,
       fuzzySearch,
+      onImportComplete,
     ]
   );
 
-  //# endregion
-
-  //# region computed constants
-
   const disabled =
     loading || importSitesQuery.isFetching || dfcPairsQuery.isFetching;
-
-  //# endregion
 
   if (
     !importSitesQuery.isFetching &&
@@ -115,10 +104,75 @@ export function ImportURL() {
   ) {
     return null;
   }
+
+  return (
+    <>
+      Paste a link to a card list hosted on one of the below sites (not
+      affiliated) to import the list into {projectName}:
+      <br />
+      {importSitesQuery.data != null ? (
+        <ul>
+          {importSitesQuery.data.map((importSite) => (
+            <li key={`${importSite.name}-row`}>
+              <a key={importSite.name} href={importSite.url} target="_blank">
+                {importSite.name}
+              </a>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <>
+          <br />
+          <Spinner />
+          <br />
+        </>
+      )}
+      <Form onSubmit={handleSubmit}>
+        <Form.Group className="mb-3">
+          <Form.Control
+            ref={ref}
+            type="url"
+            required={true}
+            placeholder="https://"
+            onChange={(event) => setUrlValue(event.target.value.trim())}
+            value={urlValue}
+            disabled={loading || importSitesQuery.data == null}
+            aria-label="import-url"
+          />
+        </Form.Group>
+        <Stack direction="horizontal" gap={1}>
+          <div className="ms-auto">
+            <Button
+              type="submit"
+              variant="primary"
+              disabled={disabled}
+              style={{ width: 4.75 + "em" }}
+            >
+              {loading ? <Spinner size={1.5} /> : "Submit"}
+            </Button>
+          </div>
+        </Stack>
+      </Form>
+    </>
+  );
+}
+
+export function ImportURLButton() {
+  const importSitesQuery = useGetImportSitesQuery();
+  const [show, setShow] = useState<boolean>(false);
+  const focusRef = useRef<HTMLInputElement>(null);
+
+  if (
+    !importSitesQuery.isFetching &&
+    (importSitesQuery.data ?? []).length === 0
+  ) {
+    return null;
+  }
+
   return (
     <>
       <Dropdown.Item
-        onClick={handleShowURLModal}
+        onClick={() => setShow(true)}
         disabled={importSitesQuery.isFetching}
       >
         {importSitesQuery.isFetching ? (
@@ -131,72 +185,22 @@ export function ImportURL() {
       </Dropdown.Item>
       <Modal
         scrollable
-        show={loading || showURLModal}
-        onEntered={() => {
-          if (focusRef.current) {
-            focusRef.current.focus();
-          }
-        }}
-        onHide={handleCloseURLModal}
-        onExited={() => setURLModalValue("")}
+        show={show}
+        onEntered={() => focusRef.current?.focus()}
+        onHide={() => setShow(false)}
       >
         <Modal.Header closeButton>
           <Modal.Title>Add Cards — URL</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          Paste a link to a card list hosted on one of the below sites (not
-          affiliated) to import the list into {projectName}:
-          <br />
-          {importSitesQuery.data != null ? (
-            <ul>
-              {importSitesQuery.data.map((importSite) => (
-                <li key={`${importSite.name}-row`}>
-                  <a
-                    key={importSite.name}
-                    href={importSite.url}
-                    target="_blank"
-                  >
-                    {importSite.name}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <>
-              <br />
-              <Spinner />
-              <br />
-            </>
-          )}
-          <Form id="importURLForm" onSubmit={handleSubmitURLModal}>
-            <Form.Group className="mb-3">
-              <Form.Control
-                ref={focusRef}
-                type="url"
-                required={true}
-                placeholder="https://"
-                onChange={(event) =>
-                  setURLModalValue(event.target.value.trim())
-                }
-                value={URLModalValue}
-                disabled={loading || importSitesQuery.data == null}
-                aria-label="import-url"
-              />
-            </Form.Group>
-          </Form>
+          <ImportURL
+            onImportComplete={() => setShow(false)}
+            inputRef={focusRef}
+          />
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={handleCloseURLModal}>
+          <Button variant="secondary" onClick={() => setShow(false)}>
             Close
-          </Button>
-          <Button
-            type="submit"
-            form="importURLForm"
-            variant="primary"
-            disabled={disabled}
-            style={{ width: 4.75 + "em" }}
-          >
-            {loading ? <Spinner size={1.5} /> : "Submit"}
           </Button>
         </Modal.Footer>
       </Modal>

@@ -2,7 +2,6 @@
  * This module contains functions which sanitise and transform user inputs for cards to query into useful formats.
  */
 
-import { toByteArray } from "base64-js";
 // @ts-ignore
 import { parse } from "lil-csv";
 
@@ -28,6 +27,8 @@ import {
   SearchQuery,
   SlotProjectMembers,
 } from "@/common/types";
+
+import { CardType } from "./schema_types";
 
 /**
  * Clean any instances of doubled-up whitespace from `text`.
@@ -63,26 +64,39 @@ export function processQuery(query: string): string {
 }
 
 /**
- * Identify the prefix of a query. For example, `query`="t:goblin" would yield
- *   {query: "goblin", cardType: TOKEN}.
+ * Unpack `query` into its constituents.
+ *
+ * Inputs to this function are unpacked according to the below schema. For example, consider `t:opt (XYZ) 123`:
+ *       4x        :    opt     (        123          )         123
+ * └─ card type ──┘ └─ query ──┘ └─ expansion code ──┘ └─ collector number ──┘
+ *
+ * If a card type prefix is not specified, we assume `CARD`.
  */
-export function processPrefix(query: string): SearchQuery {
-  for (const [prefix, cardType] of Object.entries(CardTypePrefixes)) {
-    if (
-      prefix !== "" &&
-      query
-        .trimStart()
-        .toLowerCase()
-        .startsWith(`${prefix}${CardTypeSeparator}`)
-    ) {
-      return {
-        query: processQuery(query.trimStart().slice(prefix.length + 1)),
-        cardType: cardType,
-      };
-    }
+export const processSearchQuery = (query: string): SearchQuery => {
+  const prefixPattern = Object.keys(CardTypePrefixes)
+    .filter((prefix) => prefix !== "")
+    .join("|");
+  const regex = new RegExp(
+    `^(?:(${prefixPattern})\\:)?(.*?)(?:\\((.+)\\)(.*))?$`
+  );
+
+  const match = query.match(regex);
+
+  if (match === null) {
+    // should realistically never hit this case
+    return {
+      query: query,
+      cardType: CardType.Card,
+    };
   }
-  return { query: processQuery(query), cardType: CardTypePrefixes[""] };
-}
+
+  return {
+    cardType: CardTypePrefixes[match[1] ?? ""],
+    query: processQuery(match[2]),
+    expansionCode: match[3]?.toUpperCase()?.trim() || undefined,
+    collectorNumber: match[4]?.trim() || undefined,
+  };
+};
 
 const getPhrasesNotAllowedInIdentifiers = (): Array<string> => [
   SelectedImageSeparator,
@@ -152,6 +166,25 @@ function unpackLine(
   ];
 }
 
+export const getDfcBack = (
+  query: string,
+  dfcPairs: DFCPairs,
+  fuzzySearch: boolean
+): string | null => {
+  let dfcPairMatchFront: string | null = null;
+  if (fuzzySearch) {
+    const matches = Object.keys(dfcPairs).filter((dfcPairFront) =>
+      dfcPairFront.startsWith(query)
+    );
+    if (matches.length === 1) {
+      dfcPairMatchFront = matches[0];
+    }
+  } else if (query in dfcPairs) {
+    dfcPairMatchFront = query;
+  }
+  return dfcPairMatchFront ? dfcPairs[dfcPairMatchFront] : null;
+};
+
 /**
  * Process `line` to identify the search query and the number of instances requested for each face.
  * If no back query is specified, attempt to match the front query to a DFC pair.
@@ -174,33 +207,21 @@ export function processLine(
   let frontQuery: SearchQuery | null = null;
   let frontSelectedImage: string | undefined = undefined;
   if (frontRawQuery != null && (frontRawQuery[0] ?? "").length > 0) {
-    frontQuery = processPrefix(frontRawQuery[0]);
+    frontQuery = processSearchQuery(frontRawQuery[0]);
     frontSelectedImage = frontRawQuery[1] ?? undefined;
   }
 
   let backQuery: SearchQuery | null = null;
   let backSelectedImage: string | undefined = undefined;
   if (backRawQuery != null && (backRawQuery[0] ?? "").length > 0) {
-    backQuery = processPrefix(backRawQuery[0]);
+    backQuery = processSearchQuery(backRawQuery[0]);
     backSelectedImage = backRawQuery[1] ?? undefined;
   } else if (frontQuery != null && frontQuery?.query != null) {
-    // typescript isn't smart enough to know that frontQuery.query is not null, so we have to do this
-    const frontQueryQuery = frontQuery.query;
-    let dfcPairMatchFront: string | null = null;
-    if (fuzzySearch) {
-      const matches = Object.keys(dfcPairs).filter((dfcPairFront) =>
-        dfcPairFront.startsWith(frontQueryQuery)
-      );
-      if (matches.length === 1) {
-        dfcPairMatchFront = matches[0];
-      }
-    } else if (frontQueryQuery in dfcPairs) {
-      dfcPairMatchFront = frontQueryQuery;
-    }
-    if (dfcPairMatchFront != null) {
+    const dfcBackQuery = getDfcBack(frontQuery.query, dfcPairs, fuzzySearch);
+    if (dfcBackQuery != null) {
       // match to the card's DFC pair. assume the back is the same card type as the front.
       backQuery = {
-        query: dfcPairs[dfcPairMatchFront],
+        query: dfcBackQuery,
         cardType: frontQuery.cardType,
       };
     }
@@ -263,8 +284,8 @@ export function processStringAsMultipleLines(
 export function convertLinesIntoSlotProjectMembers(
   lines: Array<ProcessedLine>,
   memberCount: number
-): Array<SlotProjectMembers> {
-  let newMembers: Array<SlotProjectMembers> = [];
+): Array<Omit<SlotProjectMembers, "id">> {
+  let newMembers: Array<Omit<SlotProjectMembers, "id">> = [];
   for (const [quantity, frontMember, backMember] of lines) {
     const cappedQuantity = Math.min(
       quantity,
@@ -306,11 +327,6 @@ export function standardiseURL(url: string): string {
 
 export function formatURL(backendURL: string, routeURL: string): string {
   return new URL(routeURL, backendURL).toString();
-}
-
-export function base64StringToBlob(base64: string): Blob {
-  // @ts-ignore // TODO: broke in TS 4 to 5 migration
-  return new Blob([toByteArray(base64)]);
 }
 
 export const formatPlaceholderText = (placeholders: {
@@ -390,3 +406,45 @@ export const extractLanguage = (name: string): [string | undefined, string] => {
   const remainderOfName = results[2];
   return [languageCode, remainderOfName];
 };
+
+export const fnv1aHash = (input: string): number => {
+  let hash = 2166136261; // FNV-1a 32-bit offset basis
+  for (let i = 0; i < input.length; i++) {
+    hash ^= input.charCodeAt(i);
+    hash = Math.imul(hash, 16777619); // 32-bit multiply
+    hash >>>= 0; // keep unsigned 32-bit
+  }
+  return hash;
+};
+
+const stringifySearchQuery = (searchQuery: SearchQuery): string =>
+  `cardType=${searchQuery.cardType}
+  &query=${searchQuery.query ?? "null"}
+  &expansionCode=${searchQuery.expansionCode ?? "null"}
+  &collectorNumber=${searchQuery.collectorNumber ?? "null"}`;
+
+export const computeSearchQueryHashKey = (searchQuery: SearchQuery): string =>
+  fnv1aHash(stringifySearchQuery(searchQuery)).toString();
+
+export const areSearchQueriesEqual = (
+  a: SearchQuery | null | undefined,
+  b: SearchQuery | null | undefined
+): boolean => {
+  if (!a && !b) {
+    return true;
+  }
+  if (!a || !b) {
+    return false;
+  }
+  return (
+    a.query === b.query &&
+    a.cardType === b.cardType &&
+    a.expansionCode === b.expansionCode &&
+    a.collectorNumber === b.collectorNumber
+  );
+  // return JSON.stringify(a) === JSON.stringify(b);
+};
+
+export const doesSearchQueryFilterOnPrinting = (
+  searchQuery: SearchQuery | undefined | null
+) => searchQuery?.expansionCode || searchQuery?.collectorNumber;

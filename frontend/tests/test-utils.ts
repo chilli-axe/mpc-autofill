@@ -1,4 +1,4 @@
-import { expect, Page } from "@playwright/test";
+import { expect, Locator, Page } from "@playwright/test";
 import { readFile } from "fs/promises";
 
 export const configureBackend = async (page: Page, url: string) => {
@@ -23,15 +23,16 @@ export const loadPageWithDefaultBackend = async (
   pageName: string = "editor"
 ) => {
   await page.goto(`/${pageName}?server=http://127.0.0.1:8000`);
-
-  // Wait for cookie consent toast to appear and dismiss it
-  const optOutButton = page.getByRole("button", { name: "Opt out" });
-  await optOutButton.waitFor({ state: "visible" });
-  await optOutButton.click();
+  if (pageName === "editor") {
+    await page.getByText("Choose Art").click();
+    await page.getByText("Your project is empty at the moment.");
+  }
 };
 
-export const navigateToEditor = async (page: Page) =>
+export const navigateToEditor = async (page: Page) => {
   await page.getByRole("link", { name: "Editor" }).click();
+  await page.getByText("Choose Art").click();
+};
 
 export const navigateToNew = async (page: Page) =>
   await page.getByRole("link", { name: "What's New?" }).click();
@@ -175,7 +176,10 @@ export const openImportCSVModal = async (page: Page) => {
 
 export const importCSV = async (page: Page, fileContents: string) => {
   await openImportCSVModal(page);
-  const fileInput = page.locator('input[type="file"]').first();
+  const fileInput = page
+    .getByLabel("import-csv")
+    .locator('input[type="file"]')
+    .first();
 
   // Create a temporary file with the CSV content
   const buffer = Buffer.from(fileContents);
@@ -193,6 +197,7 @@ export const importCSV = async (page: Page, fileContents: string) => {
 export const openImportXMLModal = async (page: Page) => {
   await openAddCardsDropdown(page);
   await page.getByRole("button", { name: "XML", exact: false }).click();
+  return page.getByTestId("import-xml");
 };
 
 export const importXML = async (
@@ -200,13 +205,13 @@ export const importXML = async (
   fileContents: string,
   useXMLCardback: boolean = true
 ) => {
-  await openImportXMLModal(page);
+  const modal = await openImportXMLModal(page);
 
   if (!useXMLCardback) {
-    await page.getByText("Use XML Cardback").click();
+    await modal.getByText("Use XML Cardback").click();
   }
 
-  const fileInput = page.locator('input[type="file"]').first();
+  const fileInput = modal.locator('input[type="file"]').first();
 
   // Create a temporary file with the XML content
   const buffer = Buffer.from(fileContents);
@@ -332,9 +337,12 @@ export const openCardSlotGridSelector = async (
     .getByTestId(testId)
     .getByText(`${selectedImage} / ${totalImages}`)
     .click();
-  await expect(page.getByText("Option 1")).toBeVisible();
 
-  return page.getByTestId(`${face}-slot${slot - 1}-grid-selector`);
+  const gridSelector = page.getByTestId(
+    `${face}-slot${slot - 1}-grid-selector`
+  );
+  await expect(gridSelector).toBeVisible();
+  return gridSelector;
 };
 
 export const clickMoreSelectOptionsDropdown = async (page: Page) => {
@@ -362,6 +370,7 @@ export const changeImageForSelectedImages = async (
   cardName: string
 ) => {
   await page.getByText("Change Version").click();
+  await page.getByText("Compressed").click();
   await expect(page.getByText("Option 1")).toBeVisible();
   await page.getByTestId("bulk-grid-selector").getByAltText(cardName).click();
 };
@@ -384,4 +393,23 @@ export const openSearchSettingsModal = async (page: Page) => {
     page.getByTestId("search-settings").getByText("Search Settings")
   ).toBeVisible();
   return page.getByTestId("search-settings");
+};
+
+export const enableFuzzySearch = async (page: Page) => {
+  const settingsModal = await openSearchSettingsModal(page);
+  await settingsModal.getByText("Precise Search").click();
+  await settingsModal.getByRole("button", { name: "Save Changes" }).click();
+};
+
+/**
+ * Open a StyledDropdownTreeSelect and click an option by its exact label text.
+ * The container should be the `.react-dropdown-tree-select` element (or a
+ * parent that scopes the search).
+ */
+export const selectDropdownOption = async (
+  container: Locator,
+  label: string
+): Promise<void> => {
+  await container.locator(".dropdown-trigger").click();
+  await container.getByText(label, { exact: true }).click();
 };

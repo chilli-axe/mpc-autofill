@@ -9,6 +9,8 @@ import { LocalFolderBackendConfig } from "@/features/backend/LocalFolderBackendC
 import { RemoteBackendConfig } from "@/features/backend/RemoteBackendConfig";
 import { getEnvURL } from "@/features/backend/useBackendSetter";
 
+import { GoogleDriveBackendConfig } from "./GoogleDriveBackendConfig";
+
 interface BackendConfigProps {
   show: boolean;
   handleClose: {
@@ -19,6 +21,9 @@ interface BackendConfigProps {
 
 export function BackendConfig({ show, handleClose }: BackendConfigProps) {
   const envURL = getEnvURL();
+  const isGoogleDriveAppConfigured =
+    (process.env.NEXT_PUBLIC_GOOGLE_DRIVE_CLIENT_ID ?? "") !== "" &&
+    (process.env.NEXT_PUBLIC_GOOGLE_DRIVE_APP_ID ?? "") !== "";
   return (
     <Offcanvas show={show} onHide={handleClose} data-testid="backend-offcanvas">
       <Offcanvas.Header closeButton>
@@ -28,6 +33,12 @@ export function BackendConfig({ show, handleClose }: BackendConfigProps) {
         {envURL === undefined && (
           <>
             <RemoteBackendConfig />
+            <hr />
+          </>
+        )}
+        {isGoogleDriveAppConfigured && (
+          <>
+            <GoogleDriveBackendConfig />
             <hr />
           </>
         )}

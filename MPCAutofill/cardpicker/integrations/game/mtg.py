@@ -1,14 +1,36 @@
+import concurrent.futures
+import logging
 import re
+import time
+import uuid
+from pathlib import Path
 from typing import Any, Type
 from urllib.parse import parse_qs, urlparse
 
+import enlighten
+import imagehash
 import ratelimit
+import requests
+from PIL import Image
+from pydantic import BaseModel, ValidationError
 
 from django.conf import settings
 
 from cardpicker.integrations.game.base import GameIntegration, ImportSite
-from cardpicker.models import DFCPair
-from cardpicker.utils import get_json_endpoint_rate_limited
+from cardpicker.models import (
+    CanonicalArtist,
+    CanonicalCard,
+    CanonicalExpansion,
+    DFCPair,
+)
+from cardpicker.schema_types import Game
+from cardpicker.utils import (
+    get_json_endpoint_rate_limited,
+    section_timer,
+    twos_complement,
+)
+
+logger = logging.getLogger(__name__)
 
 # region import sites
 
@@ -192,6 +214,10 @@ class MTGGoldfish(ImportSite):
 
 class Scryfall(ImportSite):
     @staticmethod
+    def get_headers() -> dict[str, Any]:
+        return {"User-Agent": "mpc-autofill/1.0", "Accept": "application/json"}
+
+    @staticmethod
     def get_host_names() -> list[str]:
         return ["scryfall.com", "www.scryfall.com"]
 
@@ -201,7 +227,9 @@ class Scryfall(ImportSite):
         deck_id = path.rsplit("#", 1)[0].split("/")[-1]
         if not deck_id:
             raise cls.InvalidURLException(url)
-        response = cls.request(path=f"decks/{deck_id}/export/text", netloc="api.scryfall.com")
+        response = cls.request(
+            path=f"decks/{deck_id}/export/text", netloc="api.scryfall.com", headers=cls.get_headers()
+        )
         card_list = response.text
         for line_to_remove in ["// Sideboard"]:
             card_list = card_list.replace(line_to_remove, "")
@@ -226,9 +254,61 @@ class TappedOut(ImportSite):
 # endregion
 
 
-class MTG(GameIntegration):
+class BulkDataRow(BaseModel):
+    object: str
+    id: uuid.UUID
+    type: str
+    uri: str
+    name: str
+    description: str
+    size: int
+    download_uri: str
+    content_type: str
+    content_encoding: str
+
+
+class BulkDataResponse(BaseModel):
+    data: list[BulkDataRow]
+
+
+class ImageURIs(BaseModel):
+    small: str
+    normal: str
+    large: str
+    png: str
+    art_crop: str
+    border_crop: str
+
+
+class CardRow(BaseModel):
+    id: uuid.UUID
+    oracle_id: uuid.UUID | None = None
+    name: str
+    set: str
+    collector_number: str
+    artist: str
+    image_uris: ImageURIs | None = None
+    layout: str
+
+
+class ExpansionRow(BaseModel):
+    id: uuid.UUID
+    code: str
+    name: str
+
+
+class ExpansionResponse(BaseModel):
+    data: list[ExpansionRow]
+
+
+class BulkDataURLs(BaseModel):
+    default_cards: str
+    oracle_cards: str
+
+
+class MTGIntegration(GameIntegration):
     """
-    Our Magic: The Gathering integration reads DFC pairs from Scryfall and enables reading decklists from some
+    Our Magic: The Gathering integration reads canonical card data from Scryfall and enables reading decklists from some
     popular deckbuilding sites.
     """
 
@@ -238,11 +318,15 @@ class MTG(GameIntegration):
     MELD_SCRYFALL_URL = f"https://api.scryfall.com/cards/search?q={MELD_SCRYFALL_QUERY}"
 
     @classmethod
+    def get_game(cls) -> Game:
+        return Game.MTG
+
+    @classmethod
     def query_scryfall_paginated(cls, url: str) -> list[dict[str, Any]]:
-        response = get_json_endpoint_rate_limited(url)
+        response = get_json_endpoint_rate_limited(url, headers=Scryfall.get_headers())
         data = response["data"]
         while response["has_more"]:
-            response = get_json_endpoint_rate_limited(response["next_page"])
+            response = get_json_endpoint_rate_limited(response["next_page"], headers=Scryfall.get_headers())
             data += response["data"]
         return data
 
@@ -306,12 +390,175 @@ class MTG(GameIntegration):
             MagicVille,
             ManaStack,
             *([Moxfield] if settings.MOXFIELD_SECRET else []),
-            MTGGoldfish,
+            # MTGGoldfish,  # broken by Cloudflare bot protection
             Scryfall,
             TappedOut,
         ]
 
+    @classmethod
+    def get_canonical_cards_and_artists(
+        cls,
+        default_cards_path: Path | None = None,
+        oracle_cards_path: Path | None = None,
+    ) -> tuple[list[CanonicalCard], list[CanonicalArtist]]:
+        artists_by_name: dict[str, CanonicalArtist] = {artist.name: artist for artist in CanonicalArtist.objects.all()}
+        expansions_by_code: dict[str, CanonicalExpansion] = {
+            expansion.code: expansion for expansion in CanonicalExpansion.objects.all()
+        }
+        new_cards_by_identifier: dict[uuid.UUID, CanonicalCard] = {}
+        existing_card_identifiers = set(CanonicalCard.objects.values_list("identifier", flat=True))
+
+        manager = enlighten.get_manager()
+        default_cards_counter = manager.counter(desc="Default Cards", unit="ticks")
+        oracle_cards_counter = manager.counter(desc="Oracle Cards", unit="ticks")
+
+        cache_dir = Path(settings.BASE_DIR) / "scryfall_cache"
+        skip_fetch = default_cards_path is not None and oracle_cards_path is not None
+        default_cards_path = default_cards_path or (cache_dir / "default_cards.json")
+        oracle_cards_path = oracle_cards_path or (cache_dir / "oracle_cards.json")
+
+        def is_stale(path: Path) -> bool:
+            return not path.exists() or time.time() - path.stat().st_mtime > 7 * 24 * 3600
+
+        @section_timer(name="get bulk data URLs")
+        def get_bulk_data_urls() -> BulkDataURLs:
+            response = requests.get("https://api.scryfall.com/bulk-data", headers=Scryfall.get_headers())
+            assert response.status_code == 200
+            validated_response = BulkDataResponse.model_validate_json(response.text)
+            default_cards = [entry for entry in validated_response.data if entry.type == "default_cards"].pop()
+            oracle_cards = [entry for entry in validated_response.data if entry.type == "oracle_cards"].pop()
+            assert default_cards is not None
+            assert oracle_cards is not None
+            return BulkDataURLs(
+                default_cards=default_cards.download_uri,
+                oracle_cards=oracle_cards.download_uri,
+            )
+
+        @section_timer(name="cache default cards")
+        def cache_default_cards(url: str) -> None:
+            if not is_stale(default_cards_path):
+                print(f"Using cached default cards at {default_cards_path}")
+                return
+            cache_dir.mkdir(parents=True, exist_ok=True)
+            print(f"Downloading default cards from {url}")
+            with requests.get(url, stream=True, headers=Scryfall.get_headers()) as r:
+                with open(default_cards_path, "wb") as f:
+                    for chunk in r.iter_content(chunk_size=8192):
+                        f.write(chunk)
+
+        @section_timer(name="cache oracle cards")
+        def cache_oracle_cards(url: str) -> None:
+            if not is_stale(oracle_cards_path):
+                print(f"Using cached oracle cards at {oracle_cards_path}")
+                return
+            cache_dir.mkdir(parents=True, exist_ok=True)
+            print(f"Downloading oracle cards from {url}")
+            with requests.get(url, stream=True, headers=Scryfall.get_headers()) as r:
+                with open(oracle_cards_path, "wb") as f:
+                    for chunk in r.iter_content(chunk_size=8192):
+                        f.write(chunk)
+
+        def row_to_canonical_card(row: CardRow) -> CanonicalCard | None:
+            try:
+                if row.layout == "art_series":
+                    return None
+
+                if row.set not in expansions_by_code:
+                    logger.warning("Skipping card %r: no expansion found with set code %r", row.name, row.set)
+                    return None
+
+                artist_name = row.artist
+                if artist_name not in artists_by_name.keys():
+                    artists_by_name[artist_name] = CanonicalArtist(name=artist_name)
+
+                image_hash_int: int | None = None
+                if row.image_uris is not None:
+                    try:
+                        im = Image.open(
+                            requests.get(row.image_uris.small, stream=True, headers=Scryfall.get_headers()).raw
+                        )
+                        image_hash = str(imagehash.phash(im))
+                        image_hash_int = twos_complement(image_hash, 64)
+                    except Exception as e:
+                        print(f"encountered exception while computing image hash: {e}")
+
+                return CanonicalCard(
+                    identifier=row.id,
+                    canonical_id=row.oracle_id,
+                    name=row.name,
+                    expansion=expansions_by_code[row.set],
+                    artist=artists_by_name[artist_name],
+                    collector_number=row.collector_number,
+                    is_default=False,
+                    image_hash=image_hash_int if image_hash_int is not None else 0,
+                    small_thumbnail_url=row.image_uris.small if row.image_uris else "",
+                    medium_thumbnail_url=row.image_uris.normal if row.image_uris else "",
+                )
+            except Exception as e:
+                # overly safe exception handling to prevent threads from silently dying
+                print(f"encountered exception in CanonicalCard transformation thread: {e}")
+                return None
+
+        def process_row(
+            row: CardRow, pool: concurrent.futures.ThreadPoolExecutor, mark_existing_as_default: bool
+        ) -> None:
+            if mark_existing_as_default and row.id in new_cards_by_identifier.keys():
+                new_cards_by_identifier[row.id].is_default = True
+            elif row.id not in existing_card_identifiers:
+                future = pool.submit(row_to_canonical_card, row)
+                card = future.result()
+                if card:
+                    new_cards_by_identifier[row.id] = card
+
+        def process_file(path: Path, counter: enlighten.Counter, mark_existing_as_default: bool) -> None:
+            with concurrent.futures.ThreadPoolExecutor(max_workers=10) as pool:
+                with open(path, "rb") as f:
+                    for line in f:
+                        line = line.rstrip(b"\n")
+                        if line in [b"[", b"]"]:
+                            continue
+                        decoded_line = line.decode("utf-8").rstrip(",")
+                        try:
+                            row = CardRow.model_validate_json(decoded_line)
+                            process_row(row, pool, mark_existing_as_default=mark_existing_as_default)
+                            counter.update()
+                        except ValidationError:
+                            print(f"failed to validate line: {decoded_line}")
+
+        @section_timer(name="process default cards")
+        def process_default_cards() -> None:
+            process_file(default_cards_path, default_cards_counter, mark_existing_as_default=False)
+
+        @section_timer("process oracle cards")
+        def process_oracle_cards() -> None:
+            process_file(oracle_cards_path, oracle_cards_counter, mark_existing_as_default=True)
+
+        if not skip_fetch:
+            bulk_data_urls = get_bulk_data_urls()
+            cache_default_cards(bulk_data_urls.default_cards)
+            cache_oracle_cards(bulk_data_urls.oracle_cards)
+        process_default_cards()
+        process_oracle_cards()
+
+        return list(new_cards_by_identifier.values()), list(artists_by_name.values())
+
+    @classmethod
+    def get_canonical_expansions(cls) -> list[CanonicalExpansion]:
+        response = requests.get("https://api.scryfall.com/sets", headers=Scryfall.get_headers())
+        assert response.status_code == 200
+        parsed_response = ExpansionResponse.model_validate_json(response.text)
+        expansions: list[CanonicalExpansion] = [
+            CanonicalExpansion(
+                identifier=row.id,
+                code=row.code,
+                name=row.name,
+                game=cls.get_game(),
+            )
+            for row in parsed_response.data
+        ]
+        return expansions
+
     # endregion
 
 
-__all__ = ["MTG"]
+__all__ = ["MTGIntegration"]

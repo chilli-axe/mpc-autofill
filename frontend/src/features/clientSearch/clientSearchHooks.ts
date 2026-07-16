@@ -26,3 +26,24 @@ export const useLocalFilesDirectoryIndexSize = (): number | undefined => {
   }, [clientSearchService, forceUpdateValue]);
   return directoryIndexSize;
 };
+
+export const useHasGoogleDriveIndex = () => {
+  const [hasGoogleDriveIndex, setHasGoogleDriveIndex] =
+    useState<boolean>(false);
+  const { clientSearchService, forceUpdateValue } = useClientSearchContext();
+  useEffect(() => {
+    clientSearchService.hasGoogleDriveIndex().then(setHasGoogleDriveIndex);
+  }, [clientSearchService, forceUpdateValue]);
+  return hasGoogleDriveIndex;
+};
+
+export const useGoogleDriveIndexSize = (): number | undefined => {
+  const [googleDriveIndexSize, setGoogleDriveIndexSize] = useState<
+    number | undefined
+  >(undefined);
+  const { clientSearchService, forceUpdateValue } = useClientSearchContext();
+  useEffect(() => {
+    clientSearchService.getGoogleDriveIndexSize().then(setGoogleDriveIndexSize);
+  }, [clientSearchService, forceUpdateValue]);
+  return googleDriveIndexSize;
+};

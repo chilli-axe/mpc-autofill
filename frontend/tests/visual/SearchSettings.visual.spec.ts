@@ -47,23 +47,23 @@ test.describe("SearchSettings visual tests", () => {
       - button "Filters Apply to Cardbacks Include All Cardbacks"
       - separator
       - heading "Filters" [level=5]
-      - text: "/Configure the DPI \\\\(dots per inch\\\\) and file size ranges the search results must be within\\\\. At a fixed physical size, a higher DPI yields a higher resolution print\\\\. MakePlayingCards prints cards up to \\\\d+ DPI, meaning an \\\\d+ DPI print and a \\\\d+ DPI print will look the same\\\\. Minimum: 0 DPI/"
+      - text: "/Configure the DPI \\\\(dots per inch\\\\) and file size ranges the search results must be within\\\\. At a fixed physical size, a higher DPI yields a higher resolution print\\\\. MakePlayingCards prints cards up to \\\\d+ DPI, meaning an \\\\d+ DPI print and a \\\\d+ DPI print will look the same\\\\. Min resolution: 0 DPI/"
       - slider: "0"
-      - text: "/Maximum: \\\\d+ DPI/"
+      - text: "/Max resolution: \\\\d+ DPI/"
       - slider: /\\d+/
       - text: "/File size: Up to \\\\d+ MB/"
       - slider: /\\d+/
-      - text: Configure the languages and tags to filter the search results on. Select languages
+      - text: Languages
       - button "Choose... ▼":
         - list:
           - listitem: Choose...
         - text: ""
-      - text: Select tags which cards must have at least one of
+      - text: Tags which cards must have at least one of
       - button "Choose... ▼":
         - list:
           - listitem: Choose...
         - text: ""
-      - text: Select tags which cards must not have
+      - text: Tags which cards must not have
       - button "Choose... ▼":
         - list:
           - listitem: Choose...

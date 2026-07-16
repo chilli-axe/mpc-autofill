@@ -11,7 +11,8 @@ class TestUtils:
         [
             ("Lightning Bolt", "lightning bolt"),
             (" Lightning   BOLT ", "lightning bolt"),
-            ("Adanto, the First Fort", "adanto first fort"),
+            ("Lightning\t\xa0BOLT", "lightning bolt"),
+            ("Adanto, the First Fort", "adanto the first fort"),
             # brackets removal
             ("Black Lotus (Masterpiece)", "black lotus"),
             ("Black Lotus (Masterpiece, But With Punctuation! )", "black lotus"),
@@ -23,6 +24,7 @@ class TestUtils:
         ids=[
             "basic case 1",
             "basic case 2",
+            "extreme whitespaces",
             "punctuation",
             "brackets removal 1",
             "brackets removal 2",

@@ -13,6 +13,7 @@ import { defineConfig, devices } from "@playwright/test";
  */
 export default defineConfig({
   testDir: "./tests",
+  globalSetup: "./tests/global-setup",
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
@@ -22,11 +23,14 @@ export default defineConfig({
   /* Always run tests in parallel. Default is to not parallelise in CI, this seems nuts to me. */
   workers: undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: "html",
+  reporter: process.env.CI ? "blob" : "html",
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('')`. */
     baseURL: "http://localhost:3000",
+
+    /* Reuse the opted-out cookie consent state so tests don't have to dismiss the toast. */
+    storageState: "playwright/.auth/cookies.json",
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: "on-first-retry",
@@ -38,28 +42,6 @@ export default defineConfig({
       name: "chromium",
       use: {
         ...devices["Desktop Chrome"],
-        contextOptions: {
-          reducedMotion: "reduce",
-          viewport: { height: 600, width: 800 },
-        },
-      },
-    },
-
-    {
-      name: "firefox",
-      use: {
-        ...devices["Desktop Firefox"],
-        contextOptions: {
-          reducedMotion: "reduce",
-          viewport: { height: 600, width: 800 },
-        },
-      },
-    },
-
-    {
-      name: "webkit",
-      use: {
-        ...devices["Desktop Safari"],
         contextOptions: {
           reducedMotion: "reduce",
           viewport: { height: 600, width: 800 },

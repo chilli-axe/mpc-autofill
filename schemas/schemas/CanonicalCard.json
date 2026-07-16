@@ -1,0 +1,24 @@
+{
+  "title": "Canonical Card",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": ["object", "null"],
+  "properties": {
+    "identifier": { "type": "string" },
+    "canonicalId": { "type": "string" },
+    "expansionName": { "type": "string" },
+    "expansionCode": { "type": "string" },
+    "collectorNumber": { "type": "string" },
+    "artist": { "type": "string" },
+    "smallThumbnailUrl": { "type": "string" },
+    "mediumThumbnailUrl": { "type": "string" }
+  },
+  "required": [
+    "identifier",
+    "expansionName",
+    "expansionCode",
+    "collectorNumber",
+    "smallThumbnailUrl",
+    "mediumThumbnailUrl"
+  ],
+  "additionalProperties": false
+}

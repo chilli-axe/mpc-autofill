@@ -11,12 +11,18 @@ from django.utils import dateformat, timezone
 from django.utils.translation import gettext_lazy
 
 from cardpicker.constants import DATE_FORMAT
+from cardpicker.schema_types import CanonicalArtistClass as SerialisedCanonicalArtist
+from cardpicker.schema_types import CanonicalCardClass as SerialisedCanonicalCard
 from cardpicker.schema_types import Card as SerialisedCard
-from cardpicker.schema_types import CardType, ChildElement
+from cardpicker.schema_types import CardType, ChildElement, Game
 from cardpicker.schema_types import Source as SerialisedSource
 from cardpicker.schema_types import SourceContribution, SourceType
 from cardpicker.schema_types import Tag as SerialisedTag
 from cardpicker.sources.source_types import SourceTypeChoices
+
+
+class Games(models.TextChoices):
+    MTG = (Game.MTG.value, gettext_lazy(Game.MTG.value))
 
 
 class Faces(models.TextChoices):
@@ -38,6 +44,66 @@ class Cardstocks(models.TextChoices):
     M31_NONFOIL = ("M31_FOIL", gettext_lazy("M31 (Linen)"))
     M31_FOIl = ("M31_NONFOIL", gettext_lazy("M31 (Linen) — Foil"))
     P10_NONFOIL = ("P10_NONFOIL", gettext_lazy("P10 (Plastic)"))
+
+
+class CanonicalExpansion(models.Model):
+    identifier = models.UUIDField(unique=True)
+    code = models.CharField(unique=True)
+    name = models.CharField(unique=True)
+    game = models.CharField(max_length=20, choices=Games.choices)
+
+    def __str__(self) -> str:
+        return f"[{self.code.upper()}] {self.name}"
+
+
+class CanonicalArtist(models.Model):
+    name = models.CharField(unique=True)
+
+    def __str__(self) -> str:
+        return self.name
+
+    def serialise(self) -> SerialisedCanonicalArtist:
+        return SerialisedCanonicalArtist(name=self.name)
+
+
+class CanonicalCard(models.Model):
+    identifier = models.UUIDField(unique=True)
+    canonical_id = models.UUIDField(null=True, blank=True)
+    name = models.TextField(db_index=True)
+    artist = models.ForeignKey(to=CanonicalArtist, on_delete=models.CASCADE)
+    expansion = models.ForeignKey(to=CanonicalExpansion, on_delete=models.CASCADE)
+    collector_number = models.CharField(max_length=16)
+    is_default = models.BooleanField(default=False)
+    image_hash = models.BigIntegerField()
+    small_thumbnail_url = models.CharField()
+    medium_thumbnail_url = models.CharField()
+
+    def __str__(self) -> str:
+        return f"{self.name} [{self.expansion.code.upper()} {self.collector_number}]"
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["expansion", "collector_number"],
+                name="canonicalcard_unique_expansion_collector_number",
+            ),
+            models.UniqueConstraint(
+                fields=["canonical_id"],
+                condition=models.Q(is_default=True),
+                name="canonicalcard_unique_default_per_canonical_id",
+            ),
+        ]
+
+    def serialise(self) -> SerialisedCanonicalCard:
+        return SerialisedCanonicalCard(
+            canonicalId=str(self.canonical_id),
+            collectorNumber=self.collector_number,
+            expansionCode=self.expansion.code,
+            expansionName=self.expansion.name,
+            identifier=str(self.identifier),
+            smallThumbnailUrl=self.small_thumbnail_url,
+            mediumThumbnailUrl=self.medium_thumbnail_url,
+        )
 
 
 class Source(models.Model):
@@ -198,6 +264,14 @@ class Card(models.Model):
     size = models.IntegerField()
     tags = ArrayField(models.CharField(max_length=20), default=list, blank=True)  # null=True is just for admin panel
     language = models.CharField(max_length=5)
+    canonical_card = models.ForeignKey(
+        CanonicalCard, on_delete=models.SET_NULL, blank=True, null=True, related_name="canonical_card"
+    )
+    canonical_artist = models.ForeignKey(to=CanonicalArtist, on_delete=models.CASCADE, blank=True, null=True)
+    inferred_canonical_card = models.ForeignKey(
+        CanonicalCard, on_delete=models.SET_NULL, blank=True, null=True, related_name="inferred_canonical_card"
+    )
+    image_hash = models.BigIntegerField()
 
     def __str__(self) -> str:
         return (
@@ -233,6 +307,16 @@ class Card(models.Model):
             mediumThumbnailUrl=self.get_medium_thumbnail_url() or "",
             tags=sorted(self.tags),
             language=self.language,
+            canonicalCard=(
+                self.canonical_card.serialise()
+                if self.canonical_card
+                else (self.inferred_canonical_card.serialise() if self.inferred_canonical_card else None)
+            ),
+            canonicalArtist=(
+                self.canonical_artist.serialise()
+                if self.canonical_artist
+                else (self.canonical_card.artist.serialise() if self.canonical_card else None)
+            ),
         )
 
     def to_dict(self) -> dict[str, Any]:
@@ -262,6 +346,12 @@ class Card(models.Model):
         return SourceTypeChoices.get_source_type(self.get_source_type_choices()).get_medium_thumbnail_url(
             self.identifier
         )
+
+    def get_expansion_code(self) -> str | None:
+        return self.canonical_card.expansion.code.upper() if self.canonical_card else None
+
+    def get_collector_number(self) -> str | None:
+        return self.canonical_card.collector_number if self.canonical_card else None
 
     class Meta:
         ordering = ["-priority"]
@@ -418,6 +508,10 @@ __all__ = [
     "Faces",
     "CardTypes",
     "Cardstocks",
+    "Games",
+    "CanonicalArtist",
+    "CanonicalExpansion",
+    "CanonicalCard",
     "Source",
     "summarise_contributions",
     "Card",

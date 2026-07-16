@@ -9,6 +9,7 @@ import {
   getLocalStorageSearchSettings,
   setLocalStorageFavorites,
 } from "@/common/cookies";
+import { computeSearchQueryHashKey } from "@/common/processing";
 import { Faces } from "@/common/types";
 import { api } from "@/store/api";
 import {
@@ -33,6 +34,7 @@ import {
 import { recordInvalidIdentifier } from "@/store/slices/invalidIdentifiersSlice";
 import {
   addMembers,
+  bulkRemovePrintingFilter,
   selectProjectCardback,
   setQueries,
   setSelectedCardback,
@@ -163,7 +165,7 @@ startAppListening({
 });
 
 startAppListening({
-  matcher: isAnyOf(addMembers, setQueries),
+  matcher: isAnyOf(addMembers, setQueries, bulkRemovePrintingFilter),
   /**
    * Fetch card documents whenever new members are added to the project or search results are cleared.
    */
@@ -218,11 +220,12 @@ startAppListening({
         return slots
           .map(([face, slot]) => {
             const searchQuery = currentState.project.members[slot][face]?.query;
-            return searchQuery?.query != null
-              ? currentState.searchResults.searchResults[searchQuery.query][
-                  searchQuery.cardType
-                ] != null
-              : true;
+            if (searchQuery?.query != null) {
+              const hashKey = computeSearchQueryHashKey(searchQuery);
+              return currentState.searchResults.searchResults[hashKey] != null;
+            } else {
+              return true;
+            }
           })
           .every((value) => value);
       } else {
@@ -241,6 +244,8 @@ startAppListening({
           state,
           searchQuery?.query,
           searchQuery?.cardType,
+          searchQuery?.expansionCode,
+          searchQuery?.collectorNumber,
           face
         ) ?? [];
       const newSelectedImage =
@@ -282,6 +287,8 @@ startAppListening({
               state,
               searchQuery?.query,
               searchQuery?.cardType,
+              searchQuery?.expansionCode,
+              searchQuery?.collectorNumber,
               face
             );
           if (searchResultsForQueryOrDefault != null) {

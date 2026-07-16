@@ -10,7 +10,7 @@ import {
   compareSearchTypeSettings,
   compareSourceSettings,
   sourceSettingsToSet,
-} from "./SearchSettings";
+} from "./comparison";
 
 describe("areSetsEqual", () => {
   test.each([

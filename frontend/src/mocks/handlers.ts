@@ -1,7 +1,13 @@
 import { http, HttpResponse } from "msw";
 
 import { Card, Cardback, Token } from "@/common/constants";
-import { Campaign, Supporter, SupporterTier } from "@/common/schema_types";
+import { computeSearchQueryHashKey } from "@/common/processing";
+import {
+  Campaign,
+  CardType,
+  Supporter,
+  SupporterTier,
+} from "@/common/schema_types";
 import {
   cardDocument1,
   cardDocument2,
@@ -9,6 +15,11 @@ import {
   cardDocument4,
   cardDocument5,
   cardDocument6,
+  cardDocument7,
+  cardDocument8,
+  cardDocument9,
+  cardDocument10,
+  cardDocument11,
   localBackend,
   sourceDocument1,
   sourceDocument2,
@@ -47,6 +58,20 @@ export const favicon = http.get(buildRoute("favicon.ico"), async () => {
 
 export const sourceDocumentsNoResults = http.get(buildRoute("2/sources/"), () =>
   HttpResponse.json({ results: {} }, { status: 200 })
+);
+
+export const sourceDocumentsTwoResults = http.get(
+  buildRoute("2/sources/"),
+  () =>
+    HttpResponse.json(
+      {
+        results: {
+          [sourceDocument1.pk]: sourceDocument1,
+          [sourceDocument2.pk]: sourceDocument2,
+        },
+      },
+      { status: 200 }
+    )
 );
 
 export const sourceDocumentsOneResult = http.get(buildRoute("2/sources/"), () =>
@@ -142,6 +167,37 @@ export const cardDocumentsSixResults = http.post(buildRoute("2/cards/"), () =>
   )
 );
 
+// Two sources: card1+card2 from source1, card7 from source2
+export const cardDocumentsTwoSources = http.post(buildRoute("2/cards/"), () =>
+  HttpResponse.json(
+    {
+      results: {
+        [cardDocument1.identifier]: cardDocument1,
+        [cardDocument2.identifier]: cardDocument2,
+        [cardDocument7.identifier]: cardDocument7,
+      },
+    },
+    { status: 200 }
+  )
+);
+
+// Cards with canonicalCard data for CanonicalCardFilter tests
+export const cardDocumentsWithCanonicalCards = http.post(
+  buildRoute("2/cards/"),
+  () =>
+    HttpResponse.json(
+      {
+        results: {
+          [cardDocument8.identifier]: cardDocument8,
+          [cardDocument9.identifier]: cardDocument9,
+          [cardDocument10.identifier]: cardDocument10,
+          [cardDocument11.identifier]: cardDocument11,
+        },
+      },
+      { status: 200 }
+    )
+);
+
 export const cardDocumentsServerError = http.post(buildRoute("2/cards/"), () =>
   HttpResponse.json(createError("2/cards"), { status: 500 })
 );
@@ -203,21 +259,20 @@ export const cardbacksServerError = http.post(buildRoute("2/cardbacks/"), () =>
 //# region search results
 
 export const searchResultsNoResults = http.post(
-  buildRoute("2/editorSearch/"),
+  buildRoute("3/editorSearch/"),
   () => HttpResponse.json({ results: {} }, { status: 200 })
 );
 
 export const searchResultsOneResult = http.post(
-  buildRoute("2/editorSearch/"),
+  buildRoute("3/editorSearch/"),
   () =>
     HttpResponse.json(
       {
         results: {
-          "my search query": {
-            CARD: [cardDocument1.identifier],
-            CARDBACK: [],
-            TOKEN: [],
-          },
+          [computeSearchQueryHashKey({
+            query: "my search query",
+            cardType: CardType.Card,
+          })]: [cardDocument1.identifier],
         },
       },
       { status: 200 }
@@ -225,16 +280,15 @@ export const searchResultsOneResult = http.post(
 );
 
 export const searchResultsOneResultCorrectSearchq = http.post(
-  buildRoute("2/editorSearch/"),
+  buildRoute("3/editorSearch/"),
   () =>
     HttpResponse.json(
       {
         results: {
-          [cardDocument1.searchq]: {
-            CARD: [cardDocument1.identifier],
-            CARDBACK: [],
-            TOKEN: [],
-          },
+          [computeSearchQueryHashKey({
+            query: cardDocument1.searchq,
+            cardType: CardType.Card,
+          })]: [cardDocument1.identifier],
         },
       },
       { status: 200 }
@@ -242,20 +296,62 @@ export const searchResultsOneResultCorrectSearchq = http.post(
 );
 
 export const searchResultsThreeResults = http.post(
-  buildRoute("2/editorSearch/"),
+  buildRoute("3/editorSearch/"),
   () =>
     HttpResponse.json(
       {
         results: {
-          "my search query": {
-            CARD: [
-              cardDocument1.identifier,
-              cardDocument2.identifier,
-              cardDocument3.identifier,
-            ],
-            CARDBACK: [],
-            TOKEN: [],
-          },
+          [computeSearchQueryHashKey({
+            query: "my search query",
+            cardType: CardType.Card,
+          })]: [
+            cardDocument1.identifier,
+            cardDocument2.identifier,
+            cardDocument3.identifier,
+          ],
+        },
+      },
+      { status: 200 }
+    )
+);
+
+// Two sources: card1+card2 from source1, card7 from source2
+export const searchResultsTwoSources = http.post(
+  buildRoute("3/editorSearch/"),
+  () =>
+    HttpResponse.json(
+      {
+        results: {
+          [computeSearchQueryHashKey({
+            query: "my search query",
+            cardType: CardType.Card,
+          })]: [
+            cardDocument1.identifier,
+            cardDocument2.identifier,
+            cardDocument7.identifier,
+          ],
+        },
+      },
+      { status: 200 }
+    )
+);
+
+// Cards with canonicalCard data for CanonicalCardFilter tests
+export const searchResultsWithCanonicalCards = http.post(
+  buildRoute("3/editorSearch/"),
+  () =>
+    HttpResponse.json(
+      {
+        results: {
+          [computeSearchQueryHashKey({
+            query: "my search query",
+            cardType: CardType.Card,
+          })]: [
+            cardDocument8.identifier,
+            cardDocument9.identifier,
+            cardDocument10.identifier,
+            cardDocument11.identifier,
+          ],
         },
       },
       { status: 200 }
@@ -263,21 +359,28 @@ export const searchResultsThreeResults = http.post(
 );
 
 export const searchResultsFourResults = http.post(
-  buildRoute("2/editorSearch/"),
+  buildRoute("3/editorSearch/"),
   () =>
     HttpResponse.json(
       {
         results: {
-          "my search query": {
-            CARD: [
-              cardDocument1.identifier,
-              cardDocument2.identifier,
-              cardDocument3.identifier,
-              cardDocument4.identifier,
-            ],
-            CARDBACK: [cardDocument5.identifier],
-            TOKEN: [cardDocument6.identifier],
-          },
+          [computeSearchQueryHashKey({
+            query: "my search query",
+            cardType: CardType.Card,
+          })]: [
+            cardDocument1.identifier,
+            cardDocument2.identifier,
+            cardDocument3.identifier,
+            cardDocument4.identifier,
+          ],
+          [computeSearchQueryHashKey({
+            query: "my search query",
+            cardType: CardType.Cardback,
+          })]: [cardDocument5.identifier],
+          [computeSearchQueryHashKey({
+            query: "my search query",
+            cardType: CardType.Token,
+          })]: [cardDocument6.identifier],
         },
       },
       { status: 200 }
@@ -285,41 +388,35 @@ export const searchResultsFourResults = http.post(
 );
 
 export const searchResultsSixResults = http.post(
-  buildRoute("2/editorSearch/"),
+  buildRoute("3/editorSearch/"),
   () =>
     HttpResponse.json(
       {
         results: {
-          "query 1": {
-            CARD: [cardDocument1.identifier],
-            CARDBACK: [],
-            TOKEN: [],
-          },
-          "query 2": {
-            CARD: [cardDocument2.identifier],
-            CARDBACK: [],
-            TOKEN: [],
-          },
-          "query 3": {
-            CARD: [cardDocument3.identifier],
-            CARDBACK: [],
-            TOKEN: [],
-          },
-          "query 4": {
-            CARD: [cardDocument4.identifier],
-            CARDBACK: [],
-            TOKEN: [],
-          },
-          "query 5": {
-            CARD: [],
-            CARDBACK: [cardDocument5.identifier],
-            TOKEN: [],
-          },
-          "query 6": {
-            CARD: [],
-            CARDBACK: [],
-            TOKEN: [cardDocument6.identifier],
-          },
+          [computeSearchQueryHashKey({
+            query: "query 1",
+            cardType: CardType.Card,
+          })]: [cardDocument1.identifier],
+          [computeSearchQueryHashKey({
+            query: "query 2",
+            cardType: CardType.Card,
+          })]: [cardDocument2.identifier],
+          [computeSearchQueryHashKey({
+            query: "query 3",
+            cardType: CardType.Card,
+          })]: [cardDocument3.identifier],
+          [computeSearchQueryHashKey({
+            query: "query 4",
+            cardType: CardType.Card,
+          })]: [cardDocument4.identifier],
+          [computeSearchQueryHashKey({
+            query: "query 5",
+            cardType: CardType.Cardback,
+          })]: [cardDocument5.identifier],
+          [computeSearchQueryHashKey({
+            query: "query 6",
+            cardType: CardType.Token,
+          })]: [cardDocument6.identifier],
         },
       },
       { status: 200 }
@@ -327,26 +424,23 @@ export const searchResultsSixResults = http.post(
 );
 
 export const searchResultsForDFCMatchedCards1And4 = http.post(
-  buildRoute("2/editorSearch/"),
+  buildRoute("3/editorSearch/"),
   () =>
     HttpResponse.json(
       {
         results: {
-          "my search query": {
-            CARD: [cardDocument1.identifier],
-            CARDBACK: [],
-            TOKEN: [],
-          },
-          "card 3": {
-            CARD: [cardDocument3.identifier],
-            CARDBACK: [],
-            TOKEN: [],
-          },
-          "card 4": {
-            CARD: [cardDocument4.identifier],
-            CARDBACK: [],
-            TOKEN: [],
-          },
+          [computeSearchQueryHashKey({
+            query: "my search query",
+            cardType: CardType.Card,
+          })]: [cardDocument1.identifier],
+          [computeSearchQueryHashKey({
+            query: "card 3",
+            cardType: CardType.Card,
+          })]: [cardDocument3.identifier],
+          [computeSearchQueryHashKey({
+            query: "card 4",
+            cardType: CardType.Card,
+          })]: [cardDocument4.identifier],
         },
       },
       { status: 200 }
@@ -354,8 +448,8 @@ export const searchResultsForDFCMatchedCards1And4 = http.post(
 );
 
 export const searchResultsServerError = http.post(
-  buildRoute("2/editorSearch/"),
-  () => HttpResponse.json(createError("2/editorSearch"), { status: 200 })
+  buildRoute("3/editorSearch/"),
+  () => HttpResponse.json(createError("3/editorSearch"), { status: 200 })
 );
 
 //# endregion

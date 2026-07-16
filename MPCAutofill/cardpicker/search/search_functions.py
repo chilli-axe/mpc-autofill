@@ -1,6 +1,6 @@
 import datetime as dt
 import threading
-from typing import Any, Callable, Optional, TypeVar, cast
+from typing import Any, Callable, TypeVar, cast
 
 import pycountry
 from elasticsearch import Elasticsearch
@@ -88,7 +88,13 @@ def get_scaled_maximum_size(search_settings: SearchSettings) -> int:
     return search_settings.filterSettings.maximumSize * 1_000_000
 
 
-def get_search(search_settings: SearchSettings, query: Optional[str], card_types: list[CardType]) -> CardSearch:
+def get_search(
+    search_settings: SearchSettings,
+    query: str | None,
+    card_types: list[CardType],
+    expansion_code: str | None = None,
+    collector_number: str | None = None,
+) -> CardSearch:
     """
     This is the core search function for MPC Autofill - queries Elasticsearch for `self` given `search_settings`
     and returns the list of corresponding `Card` identifiers.
@@ -130,6 +136,10 @@ def get_search(search_settings: SearchSettings, query: Optional[str], card_types
                 minimum_should_match=1,
             )
         )
+    if expansion_code:
+        s = s.filter("term", expansion_code=expansion_code.upper())
+    if collector_number:
+        s = s.filter("term", collector_number=collector_number)
     if search_settings.filterSettings.languages:
         s = s.filter(
             Bool(
@@ -145,9 +155,21 @@ def get_search(search_settings: SearchSettings, query: Optional[str], card_types
 
 
 @elastic_connection
-def retrieve_card_identifiers(query: Optional[str], card_type: CardType, search_settings: SearchSettings) -> list[str]:
+def retrieve_card_identifiers(
+    search_settings: SearchSettings,
+    query: str,
+    card_type: CardType,
+    expansion_code: str | None = None,
+    collector_number: str | None = None,
+) -> list[str]:
     hits_iterable = (
-        get_search(search_settings=search_settings, query=query, card_types=[card_type])
+        get_search(
+            search_settings=search_settings,
+            query=query,
+            card_types=[card_type],
+            expansion_code=expansion_code,
+            collector_number=collector_number,
+        )
         .sort({"priority": {"order": "desc"}})
         .params(preserve_order=True)
         .scan()

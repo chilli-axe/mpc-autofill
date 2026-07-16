@@ -5,14 +5,16 @@
 import { createSelector } from "@reduxjs/toolkit";
 
 import { Back, SearchResultsEndpointPageSize } from "@/common/constants";
+import { computeSearchQueryHashKey } from "@/common/processing";
 import {
   CardType,
   createAppAsyncThunk,
   createAppSlice,
   Faces,
-  OramaSchema,
+  SearchQuery,
   SearchResults,
   SearchResultsState,
+  SearchSettings,
 } from "@/common/types";
 import { ClientSearchService } from "@/features/clientSearch/clientSearchService";
 import { APIEditorSearch } from "@/store/api";
@@ -27,29 +29,63 @@ import { AppDispatch, RootState } from "@/store/store";
 
 const typePrefix = "searchResults/fetchCards";
 
-const mergeSearchResults = (
+export const mergeSearchResults = (
   a: SearchResults,
   b: SearchResults
 ): SearchResults => {
   const mergedResults: SearchResults = structuredClone(a);
-  for (const [query, searchResultsForQuery] of Object.entries(b)) {
-    if (Object.prototype.hasOwnProperty.call(mergedResults, query)) {
-      for (const [cardType, searchResults] of Object.entries(
-        searchResultsForQuery
-      ) as Array<[CardType, Array<string>]>) {
-        // initialize the array if it doesn't exist
-        mergedResults[query][cardType] ??= [];
-        // merge the arrays
-        mergedResults[query][cardType] = [
-          ...mergedResults[query][cardType],
-          ...searchResults,
-        ];
-      }
+  for (const [hashKey, searchResults] of Object.entries(b)) {
+    if (Object.prototype.hasOwnProperty.call(mergedResults, hashKey)) {
+      // initialize the array if it doesn't exist
+      mergedResults[hashKey] ??= [];
+      // merge the arrays
+      const existingIds = new Set(mergedResults[hashKey]);
+      mergedResults[hashKey] = [
+        ...mergedResults[hashKey],
+        ...searchResults.filter((id) => !existingIds.has(id)),
+      ];
     } else {
-      mergedResults[query] = structuredClone(searchResultsForQuery);
+      mergedResults[hashKey] = structuredClone(searchResults);
     }
   }
   return mergedResults;
+};
+
+export const doSearch = async (
+  state: RootState,
+  queriesToSearch: Array<SearchQuery>,
+  searchSettings: SearchSettings,
+  clientSearchService: ClientSearchService
+) => {
+  const backendURL = selectRemoteBackendURL(state);
+  const localResultsPromise: Promise<SearchResults> =
+    clientSearchService.editorSearch(searchSettings, queriesToSearch);
+  const remoteResultsPromise: Promise<SearchResults> =
+    queriesToSearch.length > 0 && backendURL != null
+      ? Array.from(
+          Array(
+            Math.ceil(queriesToSearch.length / SearchResultsEndpointPageSize)
+          ).keys()
+        ).reduce(function (promiseChain: Promise<SearchResults>, page: number) {
+          return promiseChain.then(async function (
+            previousValue: SearchResults
+          ) {
+            const searchResults = await APIEditorSearch(
+              backendURL,
+              searchSettings,
+              queriesToSearch.slice(
+                page * SearchResultsEndpointPageSize,
+                (page + 1) * SearchResultsEndpointPageSize
+              )
+            );
+            return { ...previousValue, ...searchResults };
+          });
+        }, Promise.resolve({}))
+      : new Promise(async (resolve) => resolve({}));
+  return await Promise.all([localResultsPromise, remoteResultsPromise]).then(
+    ([localResults, remoteResults]) =>
+      mergeSearchResults(localResults, remoteResults)
+  );
 };
 
 export const fetchSearchResults = createAppAsyncThunk(
@@ -63,45 +99,13 @@ export const fetchSearchResults = createAppAsyncThunk(
       clientSearchService: ClientSearchService;
     };
 
-    const queriesToSearch = selectQueriesWithoutSearchResults(state); // TODO: is there an edge case here when a local directory is added?
-    const backendURL = selectRemoteBackendURL(state);
     const searchSettings = selectSearchSettings(state);
-
-    const hasLocalFilesDirectoryHandle =
-      await clientSearchService.hasLocalFilesDirectoryHandle();
-    const localResultsPromise: Promise<SearchResults> =
-      hasLocalFilesDirectoryHandle
-        ? clientSearchService.editorSearch(searchSettings, queriesToSearch)
-        : new Promise(async (resolve) => resolve({}));
-    const remoteResultsPromise: Promise<SearchResults> =
-      queriesToSearch.length > 0 && backendURL != null
-        ? Array.from(
-            Array(
-              Math.ceil(queriesToSearch.length / SearchResultsEndpointPageSize)
-            ).keys()
-          ).reduce(function (
-            promiseChain: Promise<SearchResults>,
-            page: number
-          ) {
-            return promiseChain.then(async function (
-              previousValue: SearchResults
-            ) {
-              const searchResults = await APIEditorSearch(
-                backendURL,
-                searchSettings,
-                queriesToSearch.slice(
-                  page * SearchResultsEndpointPageSize,
-                  (page + 1) * SearchResultsEndpointPageSize
-                )
-              );
-              return { ...previousValue, ...searchResults };
-            });
-          },
-          Promise.resolve({}))
-        : new Promise(async (resolve) => resolve({}));
-    return await Promise.all([localResultsPromise, remoteResultsPromise]).then(
-      ([localResults, remoteResults]) =>
-        mergeSearchResults(localResults, remoteResults)
+    const queriesToSearch = selectQueriesWithoutSearchResults(state); // TODO: is there an edge case here when a local directory is added?
+    return doSearch(
+      state,
+      queriesToSearch,
+      searchSettings,
+      clientSearchService
     );
   }
 );
@@ -110,6 +114,7 @@ export async function fetchSearchResultsAndReportError(dispatch: AppDispatch) {
   try {
     await dispatch(fetchSearchResults()).unwrap();
   } catch (error: any) {
+    console.log(error);
     dispatch(
       setNotification([
         typePrefix,
@@ -176,39 +181,81 @@ const defaultEmptySearchResults: Array<string> = [];
  * Handle the fallback logic where cardbacks with no query use the common cardback's list of cards.
  */
 export const selectSearchResultsForQueryOrDefault = createSelector(
+  // TODO: this pattern is awful
   (
     state: RootState,
     query: string | null | undefined,
     cardType: CardType | undefined,
+    expansionCode: string | undefined,
+    collectorNumber: string | undefined,
     face: Faces
   ) => state.searchResults.searchResults,
   (
     state: RootState,
     query: string | null | undefined,
     cardType: CardType | undefined,
+    expansionCode: string | undefined,
+    collectorNumber: string | undefined,
     face: Faces
   ) => query,
   (
     state: RootState,
     query: string | null | undefined,
     cardType: CardType | undefined,
+    expansionCode: string | undefined,
+    collectorNumber: string | undefined,
     face: Faces
   ) => cardType,
   (
     state: RootState,
     query: string | null | undefined,
     cardType: CardType | undefined,
+    expansionCode: string | undefined,
+    collectorNumber: string | undefined,
+    face: Faces
+  ) => expansionCode,
+  (
+    state: RootState,
+    query: string | null | undefined,
+    cardType: CardType | undefined,
+    expansionCode: string | undefined,
+    collectorNumber: string | undefined,
+    face: Faces
+  ) => collectorNumber,
+  (
+    state: RootState,
+    query: string | null | undefined,
+    cardType: CardType | undefined,
+    expansionCode: string | undefined,
+    collectorNumber: string | undefined,
     face: Faces
   ) => face,
   (
     state: RootState,
     query: string | null | undefined,
     cardType: CardType | undefined,
+    expansionCode: string | undefined,
+    collectorNumber: string | undefined,
     face: Faces
   ) => selectCardbacks(state),
-  (searchResults, query, cardType, face, cardbacks) =>
+  (
+    searchResults,
+    query,
+    cardType,
+    expansionCode,
+    collectorNumber,
+    face,
+    cardbacks
+  ) =>
     query != null && query.length > 0 && cardType !== undefined
-      ? (searchResults[query] ?? {})[cardType]
+      ? searchResults[
+          computeSearchQueryHashKey({
+            query,
+            cardType,
+            expansionCode,
+            collectorNumber,
+          })
+        ]
       : face === Back
       ? cardbacks
       : defaultEmptySearchResults

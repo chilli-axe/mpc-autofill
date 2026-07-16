@@ -1,16 +1,25 @@
 import { createSelector, PayloadAction } from "@reduxjs/toolkit";
 
 import { Back, Front } from "@/common/constants";
-import { createAppSlice, Faces, ViewSettingsState } from "@/common/types";
+import {
+  createAppSlice,
+  Faces,
+  FacetBy,
+  ViewSettingsState,
+} from "@/common/types";
 import { RootState } from "@/store/store";
 
 //# region slice configuration
 
 const initialState: ViewSettingsState = {
   frontsVisible: true,
-  sourcesVisible: {},
-  facetBySource: false, // opt out of the new grid selector UX by default
+  facetsVisible: {},
+  facetBy: "None",
+  compressed: true,
   jumpToVersionVisible: false,
+  viewVisible: true,
+  sortVisible: true,
+  filterVisible: true,
 };
 
 export const viewSettingsSlice = createAppSlice({
@@ -26,25 +35,59 @@ export const viewSettingsSlice = createAppSlice({
     toggleFaces: (state) => {
       state.frontsVisible = !state.frontsVisible;
     },
-    toggleSourceVisible: (state, action: PayloadAction<string>) => {
-      state.sourcesVisible = {
-        ...state.sourcesVisible,
-        [action.payload]: !(state.sourcesVisible[action.payload] ?? true),
-      };
-    },
-    makeAllSourcesVisible: (state) => {
-      state.sourcesVisible = {};
-    },
-    makeAllSourcesInvisible: (state, action: PayloadAction<Array<string>>) => {
-      state.sourcesVisible = Object.fromEntries(
-        action.payload.map((x) => [x, false])
+    setFacetKeys: (state, action: PayloadAction<Array<string>>) => {
+      state.facetsVisible = Object.fromEntries(
+        action.payload.map((facetKey) => [
+          facetKey,
+          state.facetsVisible[facetKey] ?? true,
+        ])
       );
     },
-    toggleFacetBySource: (state) => {
-      state.facetBySource = !state.facetBySource;
+    setFacetVisible: (state, action: PayloadAction<string>) => {
+      state.facetsVisible = {
+        ...state.facetsVisible,
+        [action.payload]: true,
+      };
+    },
+    setFacetInvisible: (state, action: PayloadAction<string>) => {
+      state.facetsVisible = {
+        ...state.facetsVisible,
+        [action.payload]: false,
+      };
+    },
+    makeAllFacetsVisible: (state) => {
+      state.facetsVisible = Object.fromEntries(
+        Object.entries(state.facetsVisible).map(([facetKey, visible]) => [
+          facetKey,
+          true,
+        ])
+      );
+    },
+    makeAllFacetsInvisible: (state) => {
+      state.facetsVisible = Object.fromEntries(
+        Object.entries(state.facetsVisible).map(([facetKey, visible]) => [
+          facetKey,
+          false,
+        ])
+      );
+    },
+    setFacetBy: (state, action: PayloadAction<FacetBy>) => {
+      state.facetBy = action.payload;
+    },
+    setCompressed: (state, action: PayloadAction<boolean>) => {
+      state.compressed = action.payload;
     },
     toggleJumpToVersionVisible: (state) => {
       state.jumpToVersionVisible = !state.jumpToVersionVisible;
+    },
+    toggleViewVisible: (state) => {
+      state.viewVisible = !state.viewVisible;
+    },
+    toggleSortVisible: (state) => {
+      state.sortVisible = !state.sortVisible;
+    },
+    toggleFilterVisible: (state) => {
+      state.filterVisible = !state.filterVisible;
     },
   },
 });
@@ -53,11 +96,17 @@ export const {
   switchToFront,
   switchToBack,
   toggleFaces,
-  toggleSourceVisible,
-  makeAllSourcesVisible,
-  makeAllSourcesInvisible,
-  toggleFacetBySource,
+  setFacetKeys,
+  setFacetVisible,
+  setFacetInvisible,
+  makeAllFacetsVisible,
+  makeAllFacetsInvisible,
+  setFacetBy,
+  setCompressed,
   toggleJumpToVersionVisible,
+  toggleViewVisible,
+  toggleSortVisible,
+  toggleFilterVisible,
 } = viewSettingsSlice.actions;
 
 export default viewSettingsSlice.reducer;
@@ -70,15 +119,22 @@ export const selectFrontsVisible = (state: RootState) =>
   state.viewSettings.frontsVisible;
 export const selectActiveFace = (state: RootState): Faces =>
   state.viewSettings.frontsVisible ? Front : Back;
-export const selectSourcesVisible = (state: RootState) =>
-  state.viewSettings.sourcesVisible;
-export const selectFacetBySource = (state: RootState) =>
-  state.viewSettings.facetBySource;
-export const selectAnySourcesCollapsed = createSelector(
-  (state: RootState) => state.viewSettings.sourcesVisible,
-  (sourcesVisible) => Object.values(sourcesVisible ?? {}).includes(false)
+export const selectFacetsVisible = (state: RootState) =>
+  state.viewSettings.facetsVisible;
+export const selectFacetBy = (state: RootState) => state.viewSettings.facetBy;
+export const selectCompressed = (state: RootState) =>
+  state.viewSettings.compressed;
+export const selectAnyFacetsCollapsed = createSelector(
+  (state: RootState) => state.viewSettings.facetsVisible,
+  (facetsVisible) => Object.values(facetsVisible ?? {}).includes(false)
 );
 export const selectJumpToVersionVisible = (state: RootState) =>
   state.viewSettings.jumpToVersionVisible;
+export const selectViewVisible = (state: RootState) =>
+  state.viewSettings.viewVisible;
+export const selectSortVisible = (state: RootState) =>
+  state.viewSettings.sortVisible;
+export const selectFilterVisible = (state: RootState) =>
+  state.viewSettings.filterVisible;
 
 //# endregion
