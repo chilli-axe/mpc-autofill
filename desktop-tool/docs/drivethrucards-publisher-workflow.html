@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DriveThruCards Publisher Workflow</title>
+  <style>
+    :root {
+      --paper: #f6f1e7;
+      --ink: #24211d;
+      --muted: #665f55;
+      --line: #81796e;
+      --panel: #fffdf7;
+      --tool: #256b8a;
+      --tool-bg: #e8f3f7;
+      --site: #a95724;
+      --site-bg: #fff0e4;
+      --success: #287548;
+      --success-bg: #e9f6ee;
+      --danger: #a53b32;
+      --danger-bg: #faecea;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 32px;
+      color: var(--ink);
+      background: var(--paper);
+      font: 16px/1.5 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    main { max-width: 1180px; margin: auto; }
+    header { margin-bottom: 28px; }
+    h1, h2, p { margin-top: 0; }
+    h1 { margin-bottom: 8px; font-size: clamp(1.8rem, 4vw, 2.7rem); line-height: 1.1; }
+    h2 { margin-bottom: 14px; font-size: 1.35rem; }
+    .lede, .caption, footer { color: var(--muted); }
+    .lede { max-width: 76ch; }
+
+    section {
+      margin: 26px 0;
+      padding: 22px;
+      border: 1px solid #d8d0c3;
+      border-radius: 12px;
+      background: var(--panel);
+      break-inside: avoid;
+    }
+
+    .diagram-wrap { overflow-x: auto; }
+    svg { display: block; min-width: 900px; width: 100%; height: auto; }
+    .node rect, .node polygon { fill: var(--panel); stroke: var(--line); stroke-width: 2; }
+    .node.tool rect { fill: var(--tool-bg); stroke: var(--tool); }
+    .node.site rect { fill: var(--site-bg); stroke: var(--site); }
+    .node.success rect, .node.success polygon { fill: var(--success-bg); stroke: var(--success); stroke-width: 3; }
+    .node.error rect { fill: var(--danger-bg); stroke: var(--danger); }
+    .label {
+      display: flex;
+      width: 100%;
+      height: 100%;
+      padding: 10px 14px;
+      align-items: center;
+      justify-content: center;
+      color: var(--ink);
+      text-align: center;
+      overflow-wrap: anywhere;
+    }
+    .label strong { display: block; margin-bottom: 3px; }
+    .label code, code {
+      padding: 2px 5px;
+      border-radius: 4px;
+      background: rgba(0, 0, 0, .07);
+      font: .9em ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+    .arrow { fill: none; stroke: var(--line); stroke-width: 2.3; marker-end: url(#arrow); }
+    .wizard-arrow { fill: none; stroke: var(--line); stroke-width: 2.3; marker-end: url(#wizard-arrow); }
+    .edge-label rect { fill: var(--panel); }
+    .edge-label text { fill: var(--muted); font-size: 15px; font-weight: 700; text-anchor: middle; }
+    .caption { margin: 12px 0 0; }
+
+    .browser-copy {
+      max-width: 620px;
+      margin: 18px auto 0;
+      padding: 24px;
+      border-left: 5px solid var(--tool);
+      background: var(--tool-bg);
+    }
+    .browser-copy h3 { margin: 0 0 10px; }
+    .browser-copy p { margin-bottom: 8px; }
+    .browser-copy .button {
+      display: inline-block;
+      margin-top: 8px;
+      padding: 9px 14px;
+      border-radius: 6px;
+      color: white;
+      background: var(--tool);
+      font-weight: 700;
+    }
+
+    .success-gate { border: 3px solid var(--success); background: var(--success-bg); }
+    .legacy-nav {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      margin: 16px 0;
+      border: 2px solid var(--line);
+      background: var(--panel);
+    }
+    .legacy-nav span { padding: 14px 8px; border-right: 2px solid var(--line); text-align: center; font-weight: 700; }
+    .legacy-nav span:last-child { border-right: 0; }
+    .legacy-nav .publish { color: white; background: var(--success); }
+
+    .legend { display: flex; flex-wrap: wrap; gap: 14px 22px; color: var(--muted); }
+    .legend span { display: inline-flex; align-items: center; gap: 7px; }
+    .swatch { width: 17px; height: 17px; border: 2px solid currentColor; }
+    .swatch.tool { color: var(--tool); background: var(--tool-bg); }
+    .swatch.site { color: var(--site); background: var(--site-bg); }
+    .swatch.success { color: var(--success); background: var(--success-bg); }
+    footer { padding-top: 16px; border-top: 1px solid #d8d0c3; font-size: .9rem; }
+
+    @media (max-width: 700px) {
+      body { padding: 18px 10px; }
+      section { padding: 15px; }
+      .legacy-nav { grid-template-columns: 1fr; }
+      .legacy-nav span { border-right: 0; border-bottom: 2px solid var(--line); }
+      .legacy-nav span:last-child { border-bottom: 0; }
+    }
+
+    @media print {
+      body { padding: 0; background: white; }
+      section { break-inside: avoid; }
+      .diagram-wrap { overflow: visible; }
+      svg { min-width: 0; }
+    }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>DriveThruCards publisher-account automation</h1>
+    <p class="lede">Implemented browser-first experience for signing in, creating a basic account when necessary, enabling publisher permissions, and handing off to the existing card-order automation.</p>
+    <div class="legend" aria-label="Diagram legend">
+      <span><i class="swatch tool" aria-hidden="true"></i>Desktop tool action</span>
+      <span><i class="swatch site" aria-hidden="true"></i>DriveThruCards page or user action</span>
+      <span><i class="swatch success" aria-hidden="true"></i>Required success state</span>
+    </div>
+  </header>
+
+  <section aria-labelledby="entry-heading">
+    <h2 id="entry-heading">1. Explain sign-in before sending the user to DriveThruCards</h2>
+    <div class="diagram-wrap">
+      <svg viewBox="0 0 1120 810" role="img" aria-labelledby="entry-title entry-desc">
+        <title id="entry-title">Browser-first sign-in and publisher readiness flow</title>
+        <desc id="entry-desc">The console announces that browser instructions are opening. A local instruction page explains Google, Facebook, and new-account choices before opening DriveThruCards. After base sign-in is detected separately, the Publish tab determines whether publisher setup is required.</desc>
+        <defs>
+          <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto"><path d="M0 0 L0 8 L9 4 Z" fill="var(--line)"></path></marker>
+        </defs>
+
+        <g class="node tool">
+          <rect x="385" y="15" width="350" height="72" rx="10"></rect>
+          <foreignObject x="385" y="15" width="350" height="72"><div xmlns="http://www.w3.org/1999/xhtml" class="label"><div><strong>Console message</strong>“DriveThruCards setup will open in your browser. Follow the instructions there.”</div></div></foreignObject>
+        </g>
+        <path class="arrow" d="M560 87 V120"></path>
+
+        <g class="node tool">
+          <rect x="360" y="120" width="400" height="112" rx="10"></rect>
+          <foreignObject x="360" y="120" width="400" height="112"><div xmlns="http://www.w3.org/1999/xhtml" class="label"><div><strong>Open local instruction page</strong>Reuse the existing MakePlayingCards landing-page pattern. The user does not need to look back at the console.</div></div></foreignObject>
+        </g>
+        <path class="arrow" d="M560 232 V265"></path>
+
+        <g class="node site">
+          <rect x="335" y="265" width="450" height="130" rx="10"></rect>
+          <foreignObject x="335" y="265" width="450" height="130"><div xmlns="http://www.w3.org/1999/xhtml" class="label"><div><strong>Continue to DriveThruCards</strong>Existing users sign in. New users sign in with Google or Facebook or click <em>Get Started Here!</em></div></div></foreignObject>
+        </g>
+        <path class="arrow" d="M560 395 V428"></path>
+
+        <g class="node tool">
+          <rect x="380" y="428" width="360" height="78" rx="10"></rect>
+          <foreignObject x="380" y="428" width="360" height="78"><div xmlns="http://www.w3.org/1999/xhtml" class="label"><div><strong>Handle CAPTCHA automatically</strong>Use the existing stealth and Turnstile techniques; never wait for the user.</div></div></foreignObject>
+        </g>
+        <path class="arrow" d="M560 506 V538"></path>
+
+        <g class="node site">
+          <rect x="380" y="538" width="360" height="78" rx="10"></rect>
+          <foreignObject x="380" y="538" width="360" height="78"><div xmlns="http://www.w3.org/1999/xhtml" class="label"><div><strong>Base account signed in</strong>Detect ordinary sign-in separately from publisher permissions.</div></div></foreignObject>
+        </g>
+        <path class="arrow" d="M560 616 V648"></path>
+
+        <g class="node success">
+          <polygon points="560,648 710,712 560,776 410,712"></polygon>
+          <foreignObject x="450" y="681" width="220" height="62"><div xmlns="http://www.w3.org/1999/xhtml" class="label"><strong>Publish tab visible?</strong></div></foreignObject>
+        </g>
+
+        <path class="arrow" d="M710 712 H875"></path>
+        <g class="edge-label"><rect x="735" y="694" width="52" height="28" rx="4"></rect><text x="761" y="714">Yes</text></g>
+        <g class="node success">
+          <rect x="875" y="674" width="220" height="76" rx="10"></rect>
+          <foreignObject x="875" y="674" width="220" height="76"><div xmlns="http://www.w3.org/1999/xhtml" class="label"><strong>Continue card order</strong></div></foreignObject>
+        </g>
+
+        <path class="arrow" d="M410 712 H245"></path>
+        <g class="edge-label"><rect x="332" y="694" width="46" height="28" rx="4"></rect><text x="355" y="714">No</text></g>
+        <g class="node tool">
+          <rect x="25" y="674" width="220" height="76" rx="10"></rect>
+          <foreignObject x="25" y="674" width="220" height="76"><div xmlns="http://www.w3.org/1999/xhtml" class="label"><strong>Run publisher setup</strong></div></foreignObject>
+        </g>
+      </svg>
+    </div>
+    <p class="caption">The browser page appears before DriveThruCards, so every user sees the sign-in choices without switching attention back to the console.</p>
+
+    <aside class="browser-copy" aria-label="Proposed local browser instruction page copy">
+      <h3>Sign in to DriveThruCards</h3>
+      <p>Already have an account? Sign in.<br>Need an account? Sign in with Google or Facebook or click <strong>Get Started Here!</strong></p>
+      <p>MPC Autofill will continue automatically when you’re ready.</p>
+      <span class="button">Continue to DriveThruCards</span>
+    </aside>
+  </section>
+
+  <section aria-labelledby="wizard-heading">
+    <h2 id="wizard-heading">2. Complete publisher setup automatically</h2>
+    <div class="diagram-wrap">
+      <svg viewBox="0 0 1120 390" role="img" aria-labelledby="wizard-title wizard-desc">
+        <title id="wizard-title">Legacy DriveThruCards publisher wizard</title>
+        <desc id="wizard-desc">The tool opens the legacy setup, chooses a non-exclusive account, fills the agreement and checks I Agree automatically, keeps payment defaults, saves, and verifies the Publish tab.</desc>
+        <defs>
+          <marker id="wizard-arrow" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto"><path d="M0 0 L0 8 L9 4 Z" fill="var(--line)"></path></marker>
+        </defs>
+
+        <g class="node tool">
+          <rect x="20" y="35" width="210" height="92" rx="10"></rect>
+          <foreignObject x="20" y="35" width="210" height="92"><div xmlns="http://www.w3.org/1999/xhtml" class="label"><div><strong>Open legacy setup</strong><code>/joinchoice.php</code></div></div></foreignObject>
+        </g>
+        <path class="wizard-arrow" d="M230 81 H260"></path>
+
+        <g class="node site">
+          <rect x="260" y="35" width="225" height="92" rx="10"></rect>
+          <foreignObject x="260" y="35" width="225" height="92"><div xmlns="http://www.w3.org/1999/xhtml" class="label"><div><strong>Account Type</strong>Create a non-exclusive publisher account.</div></div></foreignObject>
+        </g>
+        <path class="wizard-arrow" d="M485 81 H515"></path>
+
+        <g class="node tool">
+          <rect x="515" y="20" width="285" height="122" rx="10"></rect>
+          <foreignObject x="515" y="20" width="285" height="122"><div xmlns="http://www.w3.org/1999/xhtml" class="label"><div><strong>Agreement</strong>Set publisher name, check “I Agree” automatically, and submit. No console confirmation.</div></div></foreignObject>
+        </g>
+        <path class="wizard-arrow" d="M800 81 H830"></path>
+
+        <g class="node tool">
+          <rect x="830" y="35" width="270" height="92" rx="10"></rect>
+          <foreignObject x="830" y="35" width="270" height="92"><div xmlns="http://www.w3.org/1999/xhtml" class="label"><div><strong>Payment Info</strong>Keep the prefilled defaults and save.</div></div></foreignObject>
+        </g>
+        <path class="wizard-arrow" d="M965 127 V185 H665"></path>
+
+        <g class="node success">
+          <polygon points="665,185 815,249 665,313 515,249"></polygon>
+          <foreignObject x="555" y="218" width="220" height="62"><div xmlns="http://www.w3.org/1999/xhtml" class="label"><strong>Publish tab visible?</strong></div></foreignObject>
+        </g>
+
+        <path class="wizard-arrow" d="M815 249 H885"></path>
+        <g class="edge-label"><rect x="823" y="231" width="52" height="28" rx="4"></rect><text x="849" y="251">Yes</text></g>
+        <g class="node success">
+          <rect x="885" y="211" width="205" height="76" rx="10"></rect>
+          <foreignObject x="885" y="211" width="205" height="76"><div xmlns="http://www.w3.org/1999/xhtml" class="label"><strong>Continue card order</strong></div></foreignObject>
+        </g>
+
+        <path class="wizard-arrow" d="M515 249 H305"></path>
+        <g class="edge-label"><rect x="431" y="231" width="46" height="28" rx="4"></rect><text x="454" y="251">No</text></g>
+        <g class="node error">
+          <rect x="40" y="205" width="265" height="88" rx="10"></rect>
+          <foreignObject x="40" y="205" width="265" height="88"><div xmlns="http://www.w3.org/1999/xhtml" class="label"><div><strong>Setup failed</strong>Report the last step and leave the browser open for inspection.</div></div></foreignObject>
+        </g>
+      </svg>
+    </div>
+    <p class="caption">Confirmation copy, URLs, and the Publisher Hub link are informational only. The visible <strong>Publish</strong> tab is authoritative.</p>
+  </section>
+
+  <section class="success-gate" aria-labelledby="success-heading">
+    <h2 id="success-heading">Authoritative publisher-permission check</h2>
+    <div class="legacy-nav" aria-label="DriveThruCards top navigation after publisher setup">
+      <span>Log Off</span>
+      <span>Account</span>
+      <span class="publish">Publish</span>
+      <span>My Library</span>
+      <span>Wishlists</span>
+    </div>
+    <p><strong>Success means:</strong> a visible top-navigation element matches <code>a[href*='pub_tools.php']</code>.</p>
+  </section>
+
+  <footer>Last updated: July 16, 2026 — Source: captured DriveThruCards walkthrough, browser snapshots, and verified desktop-tool selectors.</footer>
+</main>
+</body>
+</html>
