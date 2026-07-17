@@ -5,7 +5,7 @@ import pytest
 from selenium.common import exceptions as sl_exc
 from selenium.webdriver.common.by import By
 
-from src.constants import States, TargetSites
+from src.constants import TargetSites
 from src.driver import AutofillDriver
 
 
@@ -19,10 +19,12 @@ def dtc_driver(monkeypatch: pytest.MonkeyPatch) -> AutofillDriver:
 
 def test_execute_drive_thru_cards_order_runs_expected_sequence(dtc_driver: AutofillDriver) -> None:
     calls = []
-    dtc_driver.driver = SimpleNamespace(get=lambda url: calls.append(("get", url)))
+    dtc_driver.driver = SimpleNamespace()
 
+    dtc_driver.open_dtc_starting_page = lambda: calls.append(("open_dtc_starting_page",))
     dtc_driver.wait_for_cloudflare_challenge = lambda: calls.append(("wait_for_cloudflare_challenge",))
     dtc_driver.authenticate_dtc = lambda: calls.append(("authenticate_dtc",)) or True
+    dtc_driver.ensure_dtc_publisher_account = lambda: calls.append(("ensure_dtc_publisher_account",))
     dtc_driver.navigate_to_dtc_product_setup = lambda: calls.append(("navigate_to_dtc_product_setup",))
     dtc_driver.fill_dtc_product_form = lambda order: calls.append(("fill_dtc_product_form", order.name))
     dtc_driver.submit_dtc_description_page = lambda: calls.append(("submit_dtc_description_page",))
@@ -33,9 +35,10 @@ def test_execute_drive_thru_cards_order_runs_expected_sequence(dtc_driver: Autof
     dtc_driver.execute_drive_thru_cards_order(order=order, pdf_path="/tmp/order.pdf")
 
     assert calls == [
-        ("get", TargetSites.DriveThruCards.value.starting_url),
+        ("open_dtc_starting_page",),
         ("wait_for_cloudflare_challenge",),
         ("authenticate_dtc",),
+        ("ensure_dtc_publisher_account",),
         ("navigate_to_dtc_product_setup",),
         ("fill_dtc_product_form", "My Order"),
         ("submit_dtc_description_page",),
@@ -54,31 +57,29 @@ def test_authenticate_dtc_returns_immediately_when_already_logged_in(dtc_driver:
     assert dtc_driver.authenticate_dtc() is True
 
 
-def test_authenticate_dtc_uses_xpath_then_css_fallback(monkeypatch: pytest.MonkeyPatch, dtc_driver: AutofillDriver) -> None:
+def test_authenticated_selector_matches_current_account_menu() -> None:
+    selector = TargetSites.DriveThruCards.value.selectors.authenticated_indicator_selector
+
+    assert "[data-cy='accountMenu']" in selector
+    assert "[aria-label='Log Out']" in selector
+
+
+def test_authenticate_dtc_opens_login_pane_then_waits(
+    monkeypatch: pytest.MonkeyPatch, dtc_driver: AutofillDriver
+) -> None:
     auth_checks = iter([False, False, True])
     dtc_driver.is_dtc_user_authenticated = lambda: next(auth_checks)
     dtc_driver._click_dtc_login_button = lambda: True
-
     polling_calls = []
-
-    def fake_click_element_polling(by: By, selector: str, timeout: int = 30) -> bool:
-        polling_calls.append((by, selector, timeout))
-        if by == By.XPATH:
-            return False
-        return True
-
-    dtc_driver.click_element_polling = fake_click_element_polling
+    dtc_driver.click_element_polling = (
+        lambda by, selector, timeout=30: polling_calls.append((by, selector, timeout)) or True
+    )
     monkeypatch.setattr(time, "sleep", lambda _seconds: None)
 
     assert dtc_driver.authenticate_dtc() is True
-
     assert polling_calls[0][0] == By.XPATH
-    assert "authModalBody" in polling_calls[0][1]
-    assert "self::button" in polling_calls[0][1]
-    assert "Go to Log in" in polling_calls[0][1]
-    assert polling_calls[1][0] == By.CSS_SELECTOR
-    assert polling_calls[1][1] == TargetSites.DriveThruCards.value.selectors.go_to_login_selector
-    assert "[data-cy='authModalBody'] button.btn-clean.anchor" in polling_calls[1][1]
+    assert "Go to Log In" in polling_calls[0][1]
+    assert polling_calls[0][2] == 15
 
 
 def test_authenticate_dtc_returns_false_on_timeout(monkeypatch: pytest.MonkeyPatch, dtc_driver: AutofillDriver) -> None:
@@ -94,7 +95,8 @@ def test_authenticate_dtc_returns_false_on_timeout(monkeypatch: pytest.MonkeyPat
 
 
 def test_execute_drive_thru_cards_order_raises_when_login_not_completed(dtc_driver: AutofillDriver) -> None:
-    dtc_driver.driver = SimpleNamespace(get=lambda _url: None)
+    dtc_driver.driver = SimpleNamespace()
+    dtc_driver.open_dtc_starting_page = lambda: None
     dtc_driver.wait_for_cloudflare_challenge = lambda: None
     dtc_driver.authenticate_dtc = lambda: False
     dtc_driver.navigate_to_dtc_product_setup = lambda: (_ for _ in ()).throw(AssertionError("should not continue"))
@@ -104,9 +106,11 @@ def test_execute_drive_thru_cards_order_raises_when_login_not_completed(dtc_driv
 
 
 def test_execute_drive_thru_cards_order_wraps_step_failures_with_context(dtc_driver: AutofillDriver) -> None:
-    dtc_driver.driver = SimpleNamespace(get=lambda _url: None)
+    dtc_driver.driver = SimpleNamespace()
+    dtc_driver.open_dtc_starting_page = lambda: None
     dtc_driver.wait_for_cloudflare_challenge = lambda: None
     dtc_driver.authenticate_dtc = lambda: True
+    dtc_driver.ensure_dtc_publisher_account = lambda: None
     dtc_driver.navigate_to_dtc_product_setup = lambda: (_ for _ in ()).throw(RuntimeError("new UI mismatch"))
 
     with pytest.raises(Exception, match="step 'navigate_to_dtc_product_setup' failed"):
@@ -187,7 +191,7 @@ def test_navigate_to_dtc_product_setup_uses_fast_polling_and_no_direct_fallback(
     dtc_driver.navigate_to_dtc_product_setup()
 
     assert poll_calls == [
-        (By.CSS_SELECTOR, TargetSites.DriveThruCards.value.selectors.logged_in_indicator_selector, 1),
+        (By.CSS_SELECTOR, TargetSites.DriveThruCards.value.selectors.publisher_ready_selector, 1),
         (By.XPATH, "//a[contains(@href, 'pub_enter_product.php')]", 2),
     ]
     assert "Clicked 'Publisher Tools' link." in debug_logs
@@ -217,7 +221,83 @@ def test_wait_for_cloudflare_challenge_returns_when_site_loaded(dtc_driver: Auto
     dtc_driver.wait_for_cloudflare_challenge(timeout_seconds=1)
 
 
-def test_open_dtc_upload_page_extracts_window_open_url(monkeypatch: pytest.MonkeyPatch, dtc_driver: AutofillDriver) -> None:
+def test_wait_for_cloudflare_challenge_raises_on_timeout(
+    monkeypatch: pytest.MonkeyPatch, dtc_driver: AutofillDriver
+) -> None:
+    dtc_driver._is_site_loaded = lambda: False
+    dtc_driver._is_cloudflare_challenge_active = lambda: False
+    time_values = iter([0.0, 2.0])
+    monkeypatch.setattr(time, "time", lambda: next(time_values))
+
+    with pytest.raises(TimeoutError, match="did not finish loading"):
+        dtc_driver.wait_for_cloudflare_challenge(timeout_seconds=1)
+
+
+def test_ensure_dtc_publisher_account_automates_wizard(
+    monkeypatch: pytest.MonkeyPatch, dtc_driver: AutofillDriver
+) -> None:
+    calls = []
+
+    class PublisherNameInput:
+        value = ""
+
+        def clear(self) -> None:
+            self.value = ""
+
+        def send_keys(self, value: str) -> None:
+            self.value = value
+
+    class AgreementCheckbox:
+        clicked = False
+
+        def is_selected(self) -> bool:
+            return False
+
+    publisher_name = PublisherNameInput()
+    agreement = AgreementCheckbox()
+    ready_checks = iter([False, True])
+    dtc_driver.is_dtc_publisher_ready = lambda: next(ready_checks)
+    dtc_driver.driver = SimpleNamespace(get=lambda url: calls.append(("get", url)))
+
+    def fake_click(by: By, selector: str, timeout: int = 30) -> bool:
+        calls.append(("click", by, selector, timeout))
+        return True
+
+    dtc_driver.click_element_polling = fake_click
+
+    def fake_click_with_retry(element) -> bool:
+        element.clicked = True
+        return True
+
+    dtc_driver.click_element_with_retry = fake_click_with_retry
+
+    class FakeWait:
+        count = 0
+
+        def __init__(self, *_args, **_kwargs) -> None:
+            pass
+
+        def until(self, condition):
+            FakeWait.count += 1
+            if FakeWait.count == 1:
+                return publisher_name
+            if FakeWait.count == 2:
+                return agreement
+            return condition(dtc_driver.driver)
+
+    monkeypatch.setattr("src.driver.WebDriverWait", FakeWait)
+
+    dtc_driver.ensure_dtc_publisher_account()
+
+    assert calls[0] == ("get", "https://www.drivethrucards.com/joinchoice.php")
+    assert len([call for call in calls if call[0] == "click"]) == 3
+    assert publisher_name.value == "MPC Autofill Publisher"
+    assert agreement.clicked is True
+
+
+def test_open_dtc_upload_page_extracts_window_open_url(
+    monkeypatch: pytest.MonkeyPatch, dtc_driver: AutofillDriver
+) -> None:
     script_calls = []
 
     class UploadButton:
@@ -247,7 +327,10 @@ def test_open_dtc_upload_page_extracts_window_open_url(monkeypatch: pytest.Monke
     dtc_driver.open_dtc_upload_page()
 
     assert script_calls == [
-        ("window.location.href = arguments[0];", "https://tools.drivethrucards.com/pub_upload_podcard_files.php?products_id=123")
+        (
+            "window.location.href = arguments[0];",
+            "https://tools.drivethrucards.com/pub_upload_podcard_files.php?products_id=123",
+        )
     ]
 
 
@@ -265,7 +348,9 @@ def test_is_site_loaded_uses_login_or_logged_in_selectors(dtc_driver: AutofillDr
         def find_elements(self, by: By, selector: str):
             if by == By.CSS_SELECTOR and selector == selectors.login_button_selector:
                 return [object()]
-            if by == By.CSS_SELECTOR and selector == selectors.logged_in_indicator_selector:
+            if by == By.CSS_SELECTOR and selector == selectors.authenticated_indicator_selector:
+                return []
+            if by == By.CSS_SELECTOR and selector == selectors.publisher_ready_selector:
                 return []
             return []
 

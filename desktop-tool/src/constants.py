@@ -160,14 +160,13 @@ class DriveThruCardsSelectors:
     quantity_selector: str = attr.ib(default="")
     add_to_cart_selector: str = attr.ib(default="")
     continue_selector: str = attr.ib(default="")
-    # Login selectors - two step process: click login button, then click "Go to Log in" link
+    # Opening the login modal lets the user choose sign-in or account creation.
     login_button_selector: str = attr.ib(default="button[data-cy='login']")
-    # Target the auth modal login button/link, not the logout link elsewhere on the page.
-    go_to_login_selector: str = attr.ib(
-        default="[data-cy='authModalBody'] button.btn-clean.anchor, .modal a[href='/en/'], .modal-content a[href='/en/']"
+    authenticated_indicator_selector: str = attr.ib(
+        default="[data-cy='accountMenu'], [aria-label='Log Out'], " "a[href*='logoff'], a[href*='logout']"
     )
-    # Publisher Tools link only appears when logged in as a publisher
-    logged_in_indicator_selector: str = attr.ib(default="a[href*='pub_tools.php']")
+    # This Publish link only appears after publisher access is enabled.
+    publisher_ready_selector: str = attr.ib(default="a[href*='pub_tools.php']")
 
 
 @attr.s
@@ -259,3 +258,4 @@ PROJECT_MAX_SIZE = 612  # shared between target sites
 THREADS = 5  # shared between CardImageCollections
 
 POST_LAUNCH_HTML_FILENAME = "post-launch.html"
+DTC_POST_LAUNCH_HTML_FILENAME = "dtc-post-launch.html"
