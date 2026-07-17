@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>MPC Autofill — DriveThruCards</title>
+        <style>
+            * { box-sizing: border-box; }
+            body {
+                min-height: 100vh;
+                margin: 0;
+                padding: 20px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: #333;
+                background: #f7f9fc;
+                font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            }
+            main {
+                width: 100%;
+                max-width: 520px;
+                padding: 32px;
+            }
+            h1 { margin: 0 0 28px; color: #1a73e8; font-size: 2.25rem; line-height: 1.15; }
+            p { margin: 0 0 16px; color: #5f6368; }
+            .warning { margin-bottom: 28px; padding: 12px 14px; border-left: 4px solid #d9a323; background: #fff7df; color: #55451b; }
+            .choices { margin-bottom: 28px; color: #202124; font-size: 1.1rem; line-height: 1.65; }
+            .status { margin-bottom: 20px; }
+            .skip-note { margin-top: 28px; color: #9aa0a6; font-style: italic; }
+            a {
+                display: inline-block;
+                margin-top: 8px;
+                padding: 10px 16px;
+                border-radius: 2px;
+                color: white;
+                background: #1a73e8;
+                font-weight: 600;
+                text-decoration: none;
+            }
+            a:focus-visible { outline: 3px solid #174ea6; outline-offset: 3px; }
+        </style>
+    </head>
+    <body>
+        <main>
+            <h1>Sign in to DriveThruCards</h1>
+            <p class="warning"><strong>Before continuing:</strong> Turn off any ad blockers; they may disrupt the login process.</p>
+            <p class="choices">
+                Next, sign in to DriveThruCards.<br>
+                No account? Click <strong>Get Started Here!</strong> on the next page to create one or sign in with Google or Facebook.
+            </p>
+            <p class="status">MPC Autofill will continue automatically when you've logged in.</p>
+            <a href="https://www.drivethrucards.com">Continue to DriveThruCards</a>
+            <p class="skip-note"><small>To skip this page next time, use <code>--skip-dtc-instructions</code>.</small></p>
+        </main>
+    </body>
+</html>

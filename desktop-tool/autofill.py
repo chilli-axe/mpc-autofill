@@ -1,6 +1,7 @@
 # nuitka-project: --mode=onefile
 # nuitka-project: --include-data-files=client_secrets.json=client_secrets.json
 # nuitka-project: --include-data-files=post-launch.html=post-launch.html
+# nuitka-project: --include-data-files=dtc-post-launch.html=dtc-post-launch.html
 # nuitka-project: --include-data-dir=assets=assets
 # nuitka-project: --include-data-files=assets/icc/USWebCoatedSWOP.icc=assets/icc/USWebCoatedSWOP.icc
 # nuitka-project: --include-data-files=assets/icc/Adobe-Color-Profile-EULA.pdf=assets/icc/Adobe-Color-Profile-EULA.pdf
@@ -33,14 +34,29 @@ import click
 import enlighten
 from wakepy import keepawake
 
-from src.constants import THREADS, Browsers, ImageResizeMethods, TargetSites
+from src.constants import (
+    DTC_POST_LAUNCH_HTML_FILENAME,
+    THREADS,
+    Browsers,
+    ImageResizeMethods,
+    TargetSites,
+)
 from src.driver import AutofillDriver
 from src.exc import ValidationException
 from src.formatting import bold
-from src.io import DEFAULT_WORKING_DIRECTORY, create_image_directory_if_not_exists, get_image_directory
+from src.io import (
+    DEFAULT_WORKING_DIRECTORY,
+    create_image_directory_if_not_exists,
+    get_image_directory,
+)
 from src.logging import configure_loggers, logger
 from src.order import CardOrder, aggregate_and_split_orders
-from src.pdf_maker import PdfExporter, PdfXConversionConfig, get_ghostscript_path, get_ghostscript_version
+from src.pdf_maker import (
+    PdfExporter,
+    PdfXConversionConfig,
+    get_ghostscript_path,
+    get_ghostscript_version,
+)
 from src.processing import ImagePostProcessingConfig
 from src.web_server import WebServer
 
@@ -91,9 +107,7 @@ def ensure_ghostscript_available(ask_for_install_confirmation: bool = True) -> s
                 logger.info(f"Ghostscript detected at {bold(gs_path)}")
             return gs_path
 
-        logger.info(
-            "DriveThruCards export requires Ghostscript for PDF/X-1a compliance."
-        )
+        logger.info("DriveThruCards export requires Ghostscript for PDF/X-1a compliance.")
 
         should_install = True
         if ask_for_install_confirmation:
@@ -123,9 +137,7 @@ def ensure_ghostscript_available(ask_for_install_confirmation: bool = True) -> s
                         logger.warning("Ghostscript installation via winget failed.")
             else:
                 if shutil.which("sudo") is None:
-                    logger.info(
-                        "sudo not found. Please install Ghostscript with your package manager manually."
-                    )
+                    logger.info("sudo not found. Please install Ghostscript with your package manager manually.")
                 elif shutil.which("apt") is not None:
                     logger.info("Installing Ghostscript via apt...")
                     result = subprocess.run(["sudo", "apt", "install", "-y", "ghostscript"], check=False)
@@ -204,9 +216,7 @@ def maybe_reuse_existing_pdfs(
         return None
 
     if require_pdfx and not any(path.endswith("_pdfx.pdf") for path in existing_pdf_paths):
-        logger.info(
-            "Existing PDF files were found, but no PDF/X-1a output was found. Recreating PDF export."
-        )
+        logger.info("Existing PDF files were found, but no PDF/X-1a output was found. Recreating PDF export.")
         return None
 
     if existing_pdfs_are_stale(existing_pdf_paths=existing_pdf_paths, cards_directory=cards_directory):
@@ -225,10 +235,7 @@ def download_images_for_orders(
     orders: list[CardOrder],
     post_processing_config: Optional[ImagePostProcessingConfig],
 ) -> None:
-    total_images = sum(
-        len(order.fronts.cards_by_id) + len(order.backs.cards_by_id)
-        for order in orders
-    )
+    total_images = sum(len(order.fronts.cards_by_id) + len(order.backs.cards_by_id) for order in orders)
     manager = enlighten.get_manager()
     download_bar = manager.counter(total=total_images, desc="Images Downloaded", position=1, autorefresh=True)
     with ThreadPoolExecutor(max_workers=THREADS) as pool:
@@ -272,9 +279,7 @@ def get_dtc_pdf_paths_for_order(
 def get_site_picker_choices() -> list[str]:
     site_names = [site.name for site in TargetSites]
     # Keep DriveThruCards available but place it last in the picker list.
-    return [name for name in site_names if name != TargetSites.DriveThruCards.name] + [
-        TargetSites.DriveThruCards.name
-    ]
+    return [name for name in site_names if name != TargetSites.DriveThruCards.name] + [TargetSites.DriveThruCards.name]
 
 
 @click.command(context_settings={"show_default": True})
@@ -317,6 +322,12 @@ def get_site_picker_choices() -> list[str]:
         "Use only as a last resort if default automation gets stuck around Cloudflare/login checks; "
         "disabled by default because it can increase bot-detection risk on some runs."
     ),
+    is_flag=True,
+)
+@click.option(
+    "--skip-dtc-instructions",
+    default=False,
+    help="Open DriveThruCards immediately without showing the browser instruction page.",
     is_flag=True,
 )
 @click.option(
@@ -442,6 +453,7 @@ def main(
     browser_profile_path: Optional[str],
     browser_profile_name: str,
     dtc_custom_stealth: bool,
+    skip_dtc_instructions: bool,
     site: str,
     exportpdf: bool,
     download_images_only: bool,
@@ -522,6 +534,7 @@ def main(
                 logger.info(f"DriveThruCards ICC profile ({icc_source}): {bold(resolved_icc_profile)}")
                 orders = CardOrder.from_xmls_in_folder(working_directory=working_directory)
                 dtc_driver: Optional[AutofillDriver] = None
+                dtc_web_server: Optional[WebServer] = None
                 for i, order in enumerate(orders, start=1):
                     pdf_paths = get_dtc_pdf_paths_for_order(
                         order=order,
@@ -540,15 +553,23 @@ def main(
                             "Please fix the Ghostscript conversion issue and try again."
                         )
                         continue
-                    dtc_driver = AutofillDriver(
-                        browser=Browsers[browser],
-                        target_site=target_site,
-                        binary_location=binary_location,
-                        browser_profile_path=browser_profile_path,
-                        browser_profile_name=browser_profile_name if browser_profile_path else None,
-                        apply_custom_stealth=dtc_custom_stealth,
-                        starting_url=target_site.value.starting_url,
-                    )
+                    if dtc_driver is None:
+                        starting_url = target_site.value.starting_url
+                        if not skip_dtc_instructions:
+                            logger.info(
+                                "DriveThruCards setup will open in your browser. " "Follow the instructions there."
+                            )
+                            dtc_web_server = WebServer(DTC_POST_LAUNCH_HTML_FILENAME)
+                            starting_url = dtc_web_server.server_url()
+                        dtc_driver = AutofillDriver(
+                            browser=Browsers[browser],
+                            target_site=target_site,
+                            binary_location=binary_location,
+                            browser_profile_path=browser_profile_path,
+                            browser_profile_name=browser_profile_name if browser_profile_path else None,
+                            apply_custom_stealth=dtc_custom_stealth,
+                            starting_url=starting_url,
+                        )
                     dtc_driver.execute_drive_thru_cards_order(order=order, pdf_path=dtc_pdf_path)
                     if i < len(orders):
                         input(f"Press {bold('Enter')} to continue with the next DriveThruCards order.\n")
@@ -564,9 +585,7 @@ def main(
                     )
                     is None
                 ):
-                    PdfExporter(order=order).execute(
-                        post_processing_config=post_processing_config
-                    )
+                    PdfExporter(order=order).execute(post_processing_config=post_processing_config)
             else:
                 card_orders = aggregate_and_split_orders(
                     orders=CardOrder.from_xmls_in_folder(working_directory=working_directory),

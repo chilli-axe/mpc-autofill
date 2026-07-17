@@ -12,6 +12,7 @@ from types import SimpleNamespace
 from typing import Callable, Generator
 from xml.etree import ElementTree
 
+import autofill as autofill_cli
 import pytest
 from click.testing import CliRunner
 from enlighten import Counter
@@ -35,7 +36,6 @@ from src.order import (
     Details,
     aggregate_and_split_orders,
 )
-import autofill as autofill_cli
 from src.pdf_maker import PdfExporter, convert_pdf_to_pdfx, get_ghostscript_version
 from src.processing import ImagePostProcessingConfig
 
@@ -101,9 +101,7 @@ def test_get_ghostscript_version_reads_stdout(monkeypatch: pytest.MonkeyPatch) -
     assert get_ghostscript_version("gs") == "10.02.1"
 
 
-def test_ensure_ghostscript_available_prompts_until_found(
-    monkeypatch: pytest.MonkeyPatch, input_enter
-) -> None:
+def test_ensure_ghostscript_available_prompts_until_found(monkeypatch: pytest.MonkeyPatch, input_enter) -> None:
     paths = [None, "/usr/local/bin/gs"]
     called = {"version": 0}
 
@@ -148,9 +146,7 @@ def test_ensure_ghostscript_available_installs_with_winget_on_windows(
     resolved = autofill_cli.ensure_ghostscript_available()
 
     assert resolved == "C:\\Program Files\\gs\\gswin64c.exe"
-    assert install_calls == [
-        ["winget", "install", "--id", "ArtifexSoftware.Ghostscript", "--accept-source-agreements"]
-    ]
+    assert install_calls == [["winget", "install", "--id", "ArtifexSoftware.Ghostscript", "--accept-source-agreements"]]
 
 
 def test_ensure_ghostscript_available_installs_with_apt_on_linux(
@@ -449,6 +445,7 @@ def test_cli_help_documents_new_flags_and_stealth_guidance() -> None:
     assert "--browser-profile-path" in result.output
     assert "--browser-profile-name" in result.output
     assert "--dtc-custom-stealth" in result.output
+    assert "--skip-dtc-instructions" in result.output
     assert "last resort" in result.output
     assert "detailed Selenium step-by-step logs" in result.output
 
@@ -512,13 +509,24 @@ def test_main_drive_thru_cards_exportpdf_generates_pdfs_without_browser_automati
     assert calls["driver"] == 0
 
 
+@pytest.mark.parametrize(
+    ("skip_instructions", "expected_starting_url", "expected_server_count"),
+    [
+        (False, "http://localhost:1234/", 1),
+        (True, constants.TargetSites.DriveThruCards.value.starting_url, 0),
+    ],
+)
 def test_main_drive_thru_cards_keeps_driver_alive_until_user_handoff(
-    monkeypatch: pytest.MonkeyPatch, tmp_path
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path,
+    skip_instructions: bool,
+    expected_starting_url: str,
+    expected_server_count: int,
 ) -> None:
     icc_path = tmp_path / "test.icc"
     icc_path.write_bytes(b"icc")
 
-    state = {"finalized": 0, "executed": 0, "wait_seen": None}
+    state = {"finalized": 0, "executed": 0, "wait_seen": None, "servers": 0, "starting_url": None}
 
     monkeypatch.setattr(autofill_cli, "configure_loggers", lambda **_kwargs: None)
     monkeypatch.setattr(autofill_cli, "keepawake", lambda **_kwargs: nullcontext())
@@ -536,9 +544,19 @@ def test_main_drive_thru_cards_keeps_driver_alive_until_user_handoff(
         lambda **_kwargs: ["export/test_local/1.pdf", "export/test_local/1_pdfx.pdf"],
     )
 
+    class FakeWebServer:
+        def __init__(self, html_filename: str) -> None:
+            assert html_filename == constants.DTC_POST_LAUNCH_HTML_FILENAME
+            state["servers"] += 1
+
+        def server_url(self) -> str:
+            return "http://localhost:1234/"
+
+    monkeypatch.setattr(autofill_cli, "WebServer", FakeWebServer)
+
     class FakeDriver:
         def __init__(self, *args, **kwargs) -> None:
-            pass
+            state["starting_url"] = kwargs["starting_url"]
 
         def execute_drive_thru_cards_order(self, order, pdf_path) -> None:
             state["executed"] += 1
@@ -554,17 +572,18 @@ def test_main_drive_thru_cards_keeps_driver_alive_until_user_handoff(
 
     monkeypatch.setattr(autofill_cli, "wait_for_user_to_complete_order", fake_wait_for_user_to_complete_order)
 
-    result = CliRunner().invoke(
-        autofill_cli.main,
-        [
-            "--directory",
-            str(tmp_path),
-            "--site",
-            constants.TargetSites.DriveThruCards.name,
-            "--browser",
-            constants.Browsers.chrome.name,
-        ],
-    )
+    args = [
+        "--directory",
+        str(tmp_path),
+        "--site",
+        constants.TargetSites.DriveThruCards.name,
+        "--browser",
+        constants.Browsers.chrome.name,
+    ]
+    if skip_instructions:
+        args.append("--skip-dtc-instructions")
+
+    result = CliRunner().invoke(autofill_cli.main, args)
 
     gc.collect()
 
@@ -572,6 +591,8 @@ def test_main_drive_thru_cards_keeps_driver_alive_until_user_handoff(
     assert state["executed"] == 1
     assert state["wait_seen"] == 0
     assert state["finalized"] == 1
+    assert state["servers"] == expected_server_count
+    assert state["starting_url"] == expected_starting_url
 
 
 def test_download_images_for_orders_downloads_fronts_and_backs() -> None:
@@ -617,7 +638,7 @@ def test_wiki_addendum_includes_cli_usage_updates() -> None:
     with open(wiki_addendum_path, "r", encoding="utf-8") as f:
         wiki = f.read()
     assert "contains only the incremental wiki updates" in wiki
-    assert "Insert Under Existing \"Useful CLI Flags\" Section" in wiki
+    assert 'Insert Under Existing "Useful CLI Flags" Section' in wiki
     assert "--skip-pdf-if-exists" in wiki
     assert "--download-images-only" in wiki
     assert "--browser-profile-path" in wiki
