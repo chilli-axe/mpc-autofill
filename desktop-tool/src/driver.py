@@ -249,10 +249,17 @@ class AutofillDriver:
             logger.debug(e)
         return False
 
-    def wait_for_selector(self, selector: str, timeout_seconds: int = 30) -> None:
-        WebDriverWait(self.driver, timeout_seconds, poll_frequency=0.2).until(
-            presence_of_element_located((By.CSS_SELECTOR, selector))
-        )
+    @contextmanager
+    def no_implicit_wait(self) -> Generator[None, None, None]:
+        """
+        Temporarily disable the driver's implicit wait so absent-element checks poll fast.
+        """
+
+        self.driver.implicitly_wait(0)
+        try:
+            yield
+        finally:
+            self.driver.implicitly_wait(5)
 
     def set_state(self, state: str, action: Optional[str] = None) -> None:
         self.state = state
@@ -383,9 +390,7 @@ class AutofillDriver:
         Returns True if checkbox was found and clicked, False otherwise.
         """
         try:
-            # Disable implicit wait for fast polling
-            self.driver.implicitly_wait(0)
-            try:
+            with self.no_implicit_wait():
                 # Turnstile is rendered in an iframe - find it by common attributes
                 iframe_selectors = [
                     "iframe[src*='challenges.cloudflare.com']",
@@ -428,8 +433,6 @@ class AutofillDriver:
                     self.driver.switch_to.default_content()
 
                 return False
-            finally:
-                self.driver.implicitly_wait(5)
         except Exception as e:
             logger.debug(f"Error clicking Turnstile checkbox: {e}")
             # Ensure we're back in main content even on error
@@ -442,19 +445,12 @@ class AutofillDriver:
     def _is_cloudflare_challenge_active(self) -> bool:
         """Check if a Cloudflare challenge page is currently displayed."""
         try:
-            title = self.driver.title.lower()
-            if "just a moment" in title:
+            if "just a moment" in self.driver.title.lower():
                 return True
-            # Temporarily disable implicit wait for fast polling
-            self.driver.implicitly_wait(0)
-            try:
-                # Also check for challenge body text
+            # Also check for challenge body text
+            with self.no_implicit_wait():
                 body_text = self.driver.find_element(By.TAG_NAME, "body").text.lower()
-                if "verifying you are human" in body_text or "checking your browser" in body_text:
-                    return True
-                return False
-            finally:
-                self.driver.implicitly_wait(5)
+            return "verifying you are human" in body_text or "checking your browser" in body_text
         except Exception:
             return False
 
@@ -462,20 +458,14 @@ class AutofillDriver:
         """Check if the actual site content has loaded (past Cloudflare)."""
         selectors = self.target_site.value.selectors
         try:
-            title = self.driver.title.lower()
-            if "just a moment" in title:
+            if "just a moment" in self.driver.title.lower():
                 return False
-            # Temporarily disable implicit wait for fast polling
-            self.driver.implicitly_wait(0)
-            try:
-                # Check for logged-out, basic-account, or publisher navigation.
+            # Check for logged-out, basic-account, or publisher navigation.
+            with self.no_implicit_wait():
                 login_btns = self.driver.find_elements(By.CSS_SELECTOR, selectors.login_button_selector)
                 authenticated = self.driver.find_elements(By.CSS_SELECTOR, selectors.authenticated_indicator_selector)
                 publisher_ready = self.driver.find_elements(By.CSS_SELECTOR, selectors.publisher_ready_selector)
                 return bool(login_btns or authenticated or publisher_ready)
-            finally:
-                # Restore implicit wait
-                self.driver.implicitly_wait(5)
         except Exception:
             return False
 
@@ -522,14 +512,11 @@ class AutofillDriver:
         """Return whether the publisher-only Publish navigation link is visible."""
         selectors = self.target_site.value.selectors
         try:
-            self.driver.implicitly_wait(0)
-            try:
+            with self.no_implicit_wait():
                 return any(
                     element.is_displayed()
                     for element in self.driver.find_elements(By.CSS_SELECTOR, selectors.publisher_ready_selector)
                 )
-            finally:
-                self.driver.implicitly_wait(5)
         except Exception as exc:
             logger.debug(f"Error checking publisher status: {exc}")
             return False
@@ -538,8 +525,7 @@ class AutofillDriver:
         """Check for a basic signed-in account independently of publisher access."""
         selectors = self.target_site.value.selectors
         try:
-            self.driver.implicitly_wait(0)
-            try:
+            with self.no_implicit_wait():
                 authenticated_elements = self.driver.find_elements(
                     By.CSS_SELECTOR, selectors.authenticated_indicator_selector
                 )
@@ -559,8 +545,6 @@ class AutofillDriver:
                     element.is_displayed()
                     for element in self.driver.find_elements(By.CSS_SELECTOR, selectors.publisher_ready_selector)
                 )
-            finally:
-                self.driver.implicitly_wait(5)
         except Exception as exc:
             logger.debug(f"Error checking auth status: {exc}")
             return False
@@ -593,9 +577,7 @@ class AutofillDriver:
         No fixed waits - keeps trying until success or timeout.
         """
         start = time.time()
-        # Disable implicit wait for true aggressive polling
-        self.driver.implicitly_wait(0)
-        try:
+        with self.no_implicit_wait():
             while time.time() - start < timeout:
                 try:
                     elements = self.driver.find_elements(by, selector)
@@ -606,8 +588,6 @@ class AutofillDriver:
                     pass
                 time.sleep(0.1)  # Small delay to avoid CPU spinning
             return False
-        finally:
-            self.driver.implicitly_wait(5)
 
     def _click_dtc_login_button(self) -> bool:
         """Click the DriveThruCards login button to open the login modal."""

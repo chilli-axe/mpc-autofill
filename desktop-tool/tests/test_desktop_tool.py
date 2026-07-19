@@ -212,6 +212,49 @@ def test_ensure_ghostscript_available_does_not_prompt_when_already_installed(
     assert autofill_cli.ensure_ghostscript_available() == "/usr/local/bin/gs"
 
 
+def test_maybe_reuse_existing_pdfs_detects_stale_pdfx_even_when_another_pdf_is_newer(
+    monkeypatch: pytest.MonkeyPatch, tmp_path
+) -> None:
+    order_name = "example.xml"
+    export_dir = tmp_path / "export" / "example"
+    export_dir.mkdir(parents=True)
+    cards_dir = tmp_path / "cards"
+    cards_dir.mkdir()
+
+    # The PDF/X output is older than the card images, but a plain PDF is newer than both.
+    (export_dir / "1_pdfx.pdf").write_bytes(b"pdfx")
+    os.utime(export_dir / "1_pdfx.pdf", (1_000, 1_000))
+    (cards_dir / "card.jpg").write_bytes(b"jpg")
+    os.utime(cards_dir / "card.jpg", (2_000, 2_000))
+    (export_dir / "1.pdf").write_bytes(b"pdf")
+    os.utime(export_dir / "1.pdf", (3_000, 3_000))
+
+    prompts = {"count": 0}
+
+    def fake_confirm(*_args, **_kwargs) -> bool:
+        prompts["count"] += 1
+        return True  # recreate the PDF export
+
+    monkeypatch.setattr(autofill_cli.click, "confirm", fake_confirm)
+
+    cwd_before = os.getcwd()
+    os.chdir(tmp_path)
+    try:
+        assert (
+            autofill_cli.maybe_reuse_existing_pdfs(
+                order_name=order_name,
+                skip_pdf_if_exists=True,
+                cards_directory=str(cards_dir),
+                require_pdfx=True,
+            )
+            is None
+        )
+    finally:
+        os.chdir(cwd_before)
+
+    assert prompts["count"] == 1
+
+
 def test_maybe_reuse_existing_pdfs_returns_none_when_skip_disabled(tmp_path) -> None:
     order_name = "example.xml"
     export_dir = tmp_path / "export" / "example"

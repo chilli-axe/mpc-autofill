@@ -32,6 +32,11 @@ class PdfXConversionConfig:
     ghostscript_path: Optional[str] = None
 
 
+def get_export_directory(order_name: Optional[str]) -> str:
+    basename = os.path.basename(str(order_name)) or "cards.xml"
+    return os.path.join("export", os.path.splitext(basename)[0])
+
+
 def get_ghostscript_path(explicit_path: Optional[str] = None) -> Optional[str]:
     if explicit_path:
         return explicit_path
@@ -261,11 +266,7 @@ class PdfExporter:
             )
 
     def generate_file_path(self) -> None:
-        basename = os.path.basename(str(self.order.name))
-        if not basename:
-            basename = "cards.xml"
-        file_name = os.path.splitext(basename)[0]
-        self.save_path = f"export/{file_name}/"
+        self.save_path = get_export_directory(self.order.name) + "/"
         os.makedirs(self.save_path, exist_ok=True)
         if self.separate_faces:
             for face in ["backs", "fronts"]:

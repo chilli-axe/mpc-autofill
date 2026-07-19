@@ -52,6 +52,7 @@ from src.order import CardOrder, aggregate_and_split_orders
 from src.pdf_maker import (
     PdfExporter,
     PdfXConversionConfig,
+    get_export_directory,
     get_ghostscript_path,
     get_ghostscript_version,
 )
@@ -150,16 +151,8 @@ def ensure_ghostscript_available() -> str:
         input("Press Enter to re-check for Ghostscript, or Ctrl+C to exit.")
 
 
-def get_export_directory_for_order(order_name: Optional[str]) -> str:
-    basename = os.path.basename(str(order_name))
-    if not basename:
-        basename = "cards.xml"
-    file_name = os.path.splitext(basename)[0]
-    return os.path.join("export", file_name)
-
-
 def get_existing_pdf_paths(order_name: Optional[str]) -> list[str]:
-    export_directory = get_export_directory_for_order(order_name=order_name)
+    export_directory = get_export_directory(order_name=order_name)
     return sorted([path for path in glob(os.path.join(export_directory, "**", "*.pdf"), recursive=True)])
 
 
@@ -199,11 +192,16 @@ def maybe_reuse_existing_pdfs(
     if not existing_pdf_paths:
         return None
 
-    if require_pdfx and not any(path.endswith("_pdfx.pdf") for path in existing_pdf_paths):
-        logger.info("Existing PDF files were found, but no PDF/X-1a output was found. Recreating PDF export.")
-        return None
+    # When a PDF/X-1a file is required, it's also the file whose freshness matters -
+    # a stale _pdfx.pdf must not be reused just because some other PDF is newer.
+    relevant_pdf_paths = existing_pdf_paths
+    if require_pdfx:
+        relevant_pdf_paths = [path for path in existing_pdf_paths if path.endswith("_pdfx.pdf")]
+        if not relevant_pdf_paths:
+            logger.info("Existing PDF files were found, but no PDF/X-1a output was found. Recreating PDF export.")
+            return None
 
-    if existing_pdfs_are_stale(existing_pdf_paths=existing_pdf_paths, cards_directory=cards_directory):
+    if existing_pdfs_are_stale(existing_pdf_paths=relevant_pdf_paths, cards_directory=cards_directory):
         recreate_pdf = click.confirm(
             "Existing PDF export found, but images in cards/ are newer. Recreate PDF now?",
             default=True,
@@ -260,12 +258,6 @@ def get_dtc_pdf_paths_for_order(
     return exporter.execute(post_processing_config=dtc_post_processing_config)
 
 
-def get_site_picker_choices() -> list[str]:
-    site_names = [site.name for site in TargetSites]
-    # Keep DriveThruCards available but place it last in the picker list.
-    return [name for name in site_names if name != TargetSites.DriveThruCards.name] + [TargetSites.DriveThruCards.name]
-
-
 @click.command(context_settings={"show_default": True})
 @click.option("-d", "--directory", default=None, help="The directory to search for order XML files.")
 @click.option(
@@ -308,7 +300,8 @@ def get_site_picker_choices() -> list[str]:
     "--site",
     prompt=prompt_if_no_arguments("Which site should the tool auto-fill your project into?"),
     default=TargetSites.MakePlayingCards.name,
-    type=click.Choice(get_site_picker_choices(), case_sensitive=False),
+    # enum order intentionally lists DriveThruCards last in the picker
+    type=click.Choice([site.name for site in TargetSites], case_sensitive=False),
     help="The card printing site into which your order should be auto-filled.",
 )
 @click.option(
@@ -517,11 +510,10 @@ def main(
                     # Only use the Ghostscript PDF/X-1a output - no fallback
                     dtc_pdf_path = next((path for path in reversed(pdf_paths) if path.endswith("_pdfx.pdf")), None)
                     if dtc_pdf_path is None:
-                        logger.error(
+                        raise Exception(
                             "Ghostscript PDF/X-1a conversion failed. Cannot proceed with DriveThruCards upload.\n"
                             "Please fix the Ghostscript conversion issue and try again."
                         )
-                        continue
                     if dtc_driver is None:
                         starting_url = target_site.value.starting_url
                         if not skip_dtc_instructions:
@@ -541,7 +533,7 @@ def main(
                     dtc_driver.execute_drive_thru_cards_order(order=order, pdf_path=dtc_pdf_path)
                     if i < len(orders):
                         input(f"Press {bold('Enter')} to continue with the next DriveThruCards order.\n")
-                if not exportpdf:
+                if dtc_driver is not None:
                     wait_for_user_to_complete_order()
             elif exportpdf:
                 order = CardOrder.from_xmls_in_folder(working_directory=working_directory)[0]
