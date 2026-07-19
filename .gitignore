@@ -25,6 +25,10 @@ __pycache__/
 **/autofill.bin
 autofill.command
 autofill.exe
+autofill-macos-arm.command
+autofill-macos-intel.command
+autofill-windows.exe
+autofill-linux.bin
 nuitka-crash-report.xml
 autofill_crash_log.txt
 
