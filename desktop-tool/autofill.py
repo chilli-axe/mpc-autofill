@@ -78,15 +78,54 @@ def wait_for_user_to_complete_order() -> None:
     )
 
 
-def confirm_ghostscript_install_for_dtc() -> bool:
-    return click.confirm(
-        "DriveThruCards requires Ghostscript for PDF/X-1a export. "
-        "Is it okay if MPC Autofill tries to install Ghostscript now?",
-        default=True,
-    )
+def _install_ghostscript() -> None:
+    """
+    Attempt to install Ghostscript with the platform's package manager, logging (not raising) failures -
+    the caller re-checks whether Ghostscript is available afterwards.
+    """
+
+    if sys.platform.startswith("darwin"):
+        if shutil.which("brew") is None:
+            logger.info("Homebrew not found. Please install Homebrew, then re-run.")
+        else:
+            logger.info("Installing Ghostscript via Homebrew...")
+            result = subprocess.run(["brew", "install", "ghostscript"], check=False)
+            if result.returncode != 0:
+                logger.warning("Ghostscript installation via Homebrew failed.")
+    elif sys.platform.startswith("win"):
+        if shutil.which("winget") is None:
+            logger.info(
+                "winget not found. Please install Ghostscript from "
+                "https://ghostscript.com/releases/gsdnld.html and ensure it's on PATH."
+            )
+        else:
+            logger.info("Installing Ghostscript via winget...")
+            result = subprocess.run(
+                ["winget", "install", "--id", "ArtifexSoftware.Ghostscript", "--accept-source-agreements"],
+                check=False,
+            )
+            if result.returncode != 0:
+                logger.warning("Ghostscript installation via winget failed.")
+    else:
+        package_manager = next(
+            (candidate for candidate in ["apt", "dnf", "yum"] if shutil.which(candidate) is not None), None
+        )
+        if shutil.which("sudo") is None:
+            logger.info("sudo not found. Please install Ghostscript with your package manager manually.")
+        elif package_manager is None:
+            logger.info("No supported package manager found. Please install Ghostscript manually.")
+        else:
+            logger.info(f"Installing Ghostscript via {package_manager}...")
+            result = subprocess.run(["sudo", package_manager, "install", "-y", "ghostscript"], check=False)
+            if result.returncode != 0:
+                logger.warning(f"Ghostscript installation via {package_manager} failed.")
 
 
-def ensure_ghostscript_available(ask_for_install_confirmation: bool = True) -> str:
+def ensure_ghostscript_available() -> str:
+    """
+    Detect Ghostscript, offering to install it (with the user's explicit consent) until it's available.
+    """
+
     while True:
         gs_path = get_ghostscript_path()
         if gs_path:
@@ -98,61 +137,16 @@ def ensure_ghostscript_available(ask_for_install_confirmation: bool = True) -> s
             return gs_path
 
         logger.info("DriveThruCards export requires Ghostscript for PDF/X-1a compliance.")
+        if click.confirm("Is it okay if MPC Autofill tries to install Ghostscript now?", default=True):
+            _install_ghostscript()
+            continue
 
-        should_install = True
-        if ask_for_install_confirmation:
-            should_install = click.confirm("Install Ghostscript now?", default=True)
-        if should_install:
-            if sys.platform.startswith("darwin"):
-                if shutil.which("brew") is None:
-                    logger.info("Homebrew not found. Please install Homebrew, then re-run.")
-                else:
-                    logger.info("Installing Ghostscript via Homebrew...")
-                    result = subprocess.run(["brew", "install", "ghostscript"], check=False)
-                    if result.returncode != 0:
-                        logger.warning("Ghostscript installation via Homebrew failed.")
-            elif sys.platform.startswith("win"):
-                if shutil.which("winget") is None:
-                    logger.info(
-                        "winget not found. Please install Ghostscript from "
-                        "https://ghostscript.com/releases/gsdnld.html and ensure it's on PATH."
-                    )
-                else:
-                    logger.info("Installing Ghostscript via winget...")
-                    result = subprocess.run(
-                        ["winget", "install", "--id", "ArtifexSoftware.Ghostscript", "--accept-source-agreements"],
-                        check=False,
-                    )
-                    if result.returncode != 0:
-                        logger.warning("Ghostscript installation via winget failed.")
-            else:
-                if shutil.which("sudo") is None:
-                    logger.info("sudo not found. Please install Ghostscript with your package manager manually.")
-                elif shutil.which("apt") is not None:
-                    logger.info("Installing Ghostscript via apt...")
-                    result = subprocess.run(["sudo", "apt", "install", "-y", "ghostscript"], check=False)
-                    if result.returncode != 0:
-                        logger.warning("Ghostscript installation via apt failed.")
-                elif shutil.which("dnf") is not None:
-                    logger.info("Installing Ghostscript via dnf...")
-                    result = subprocess.run(["sudo", "dnf", "install", "-y", "ghostscript"], check=False)
-                    if result.returncode != 0:
-                        logger.warning("Ghostscript installation via dnf failed.")
-                elif shutil.which("yum") is not None:
-                    logger.info("Installing Ghostscript via yum...")
-                    result = subprocess.run(["sudo", "yum", "install", "-y", "ghostscript"], check=False)
-                    if result.returncode != 0:
-                        logger.warning("Ghostscript installation via yum failed.")
-                else:
-                    logger.info("No supported package manager found. Please install Ghostscript manually.")
-        else:
-            logger.info(
-                "Please install Ghostscript, then return here to continue.\n"
-                "macOS: brew install ghostscript\n"
-                "Windows: https://ghostscript.com/releases/gsdnld.html\n"
-                "Linux: use your package manager (e.g., apt install ghostscript)."
-            )
-
+        logger.info(
+            "Please install Ghostscript, then return here to continue.\n"
+            "macOS: brew install ghostscript\n"
+            "Windows: https://ghostscript.com/releases/gsdnld.html\n"
+            "Linux: use your package manager (e.g., apt install ghostscript)."
+        )
         input("Press Enter to re-check for Ghostscript, or Ctrl+C to exit.")
 
 
@@ -494,13 +488,7 @@ def main(
                 download_images_for_orders(orders=orders, post_processing_config=post_processing_config)
                 return
             if target_site == TargetSites.DriveThruCards:
-                gs_missing = get_ghostscript_path() is None
-                if gs_missing and not confirm_ghostscript_install_for_dtc():
-                    raise Exception(
-                        "Ghostscript is required for DriveThruCards exports. "
-                        "Please install it and re-run when ready."
-                    )
-                ensure_ghostscript_available(ask_for_install_confirmation=not gs_missing)
+                ensure_ghostscript_available()
                 if dtc_icc_profile and not os.path.isfile(dtc_icc_profile):
                     raise Exception(
                         f"DriveThruCards ICC profile path does not exist or is not a file: {bold(dtc_icc_profile)}"
