@@ -3,8 +3,6 @@
 # nuitka-project: --include-data-files=post-launch.html=post-launch.html
 # nuitka-project: --include-data-files=dtc-post-launch.html=dtc-post-launch.html
 # nuitka-project: --include-data-dir=assets=assets
-# nuitka-project: --include-data-files=assets/icc/USWebCoatedSWOP.icc=assets/icc/USWebCoatedSWOP.icc
-# nuitka-project: --include-data-files=assets/icc/Adobe-Color-Profile-EULA.pdf=assets/icc/Adobe-Color-Profile-EULA.pdf
 # nuitka-project: --noinclude-pytest-mode=nofollow
 # nuitka-project: --windows-icon-from-ico=favicon.ico
 # nuitka-project-if: {OS} == "Windows":
@@ -27,7 +25,6 @@ import sys
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import nullcontext
 from glob import glob
-from pathlib import Path
 from typing import Optional, Union
 
 import click
@@ -44,6 +41,7 @@ from src.constants import (
 from src.driver import AutofillDriver
 from src.exc import ValidationException
 from src.formatting import bold
+from src.icc import find_or_download_dtc_icc_profile
 from src.io import (
     DEFAULT_WORKING_DIRECTORY,
     create_image_directory_if_not_exists,
@@ -70,14 +68,6 @@ def prompt_if_no_arguments(prompt: str) -> Union[str, bool]:
     """
 
     return f"{prompt} (Press Enter if you're not sure.)" if len(sys.argv) == 1 else False
-
-
-def get_default_dtc_icc_profile() -> Optional[str]:
-    if "__compiled__" in globals():
-        candidate = Path(sys.argv[0]).resolve().parent / "assets/icc/USWebCoatedSWOP.icc"
-    else:
-        candidate = Path(__file__).resolve().parent / "assets/icc/USWebCoatedSWOP.icc"
-    return str(candidate) if candidate.is_file() else None
 
 
 def wait_for_user_to_complete_order() -> None:
@@ -250,7 +240,7 @@ def get_dtc_pdf_paths_for_order(
     order: CardOrder,
     skip_pdf_if_exists: bool,
     working_directory: str,
-    resolved_icc_profile: str,
+    resolved_icc_profile: Optional[str],
     downscale_alg: str,
 ) -> list[str]:
     pdf_paths = maybe_reuse_existing_pdfs(
@@ -396,7 +386,10 @@ def get_site_picker_choices() -> list[str]:
 @click.option(
     "--dtc-icc-profile",
     default=None,
-    help="Optional ICC profile path for DriveThruCards PDF/X conversion (defaults to bundled profile).",
+    help=(
+        "Optional ICC profile path for DriveThruCards PDF/X conversion "
+        "(by default, an installed US Web Coated (SWOP) profile is located or downloaded from Adobe)."
+    ),
 )
 @click.option(
     "--combine-orders/--no-combine-orders",
@@ -508,19 +501,18 @@ def main(
                         "Please install it and re-run when ready."
                     )
                 ensure_ghostscript_available(ask_for_install_confirmation=not gs_missing)
-                using_default_icc = dtc_icc_profile is None
-                resolved_icc_profile = dtc_icc_profile or get_default_dtc_icc_profile()
+                if dtc_icc_profile and not os.path.isfile(dtc_icc_profile):
+                    raise Exception(
+                        f"DriveThruCards ICC profile path does not exist or is not a file: {bold(dtc_icc_profile)}"
+                    )
+                resolved_icc_profile = dtc_icc_profile or find_or_download_dtc_icc_profile()
                 if resolved_icc_profile is None:
-                    raise Exception(
-                        "Default DriveThruCards ICC profile was not found. "
-                        "Ensure assets/icc/USWebCoatedSWOP.icc is available or pass --dtc-icc-profile."
+                    logger.warning(
+                        "No ICC profile is available - Ghostscript's default CMYK conversion will be used "
+                        "instead. Print colours may differ from previous orders."
                     )
-                if resolved_icc_profile and not os.path.isfile(resolved_icc_profile):
-                    raise Exception(
-                        f"DriveThruCards ICC profile path does not exist or is not a file: {bold(resolved_icc_profile)}"
-                    )
-                icc_source = "bundled default" if using_default_icc else "user-provided"
-                logger.info(f"DriveThruCards ICC profile ({icc_source}): {bold(resolved_icc_profile)}")
+                else:
+                    logger.info(f"DriveThruCards ICC profile: {bold(resolved_icc_profile)}")
                 orders = CardOrder.from_xmls_in_folder(working_directory=working_directory)
                 dtc_driver: Optional[AutofillDriver] = None
                 dtc_web_server: Optional[WebServer] = None

@@ -418,7 +418,7 @@ def test_main_drive_thru_cards_exportpdf_generates_pdfs_without_browser_automati
     monkeypatch.setattr(autofill_cli, "keepawake", lambda **_kwargs: nullcontext())
     monkeypatch.setattr(autofill_cli, "get_ghostscript_path", lambda: "/opt/homebrew/bin/gs")
     monkeypatch.setattr(autofill_cli, "ensure_ghostscript_available", lambda **_kwargs: "/opt/homebrew/bin/gs")
-    monkeypatch.setattr(autofill_cli, "get_default_dtc_icc_profile", lambda: str(icc_path))
+    monkeypatch.setattr(autofill_cli, "find_or_download_dtc_icc_profile", lambda: str(icc_path))
     monkeypatch.setattr(
         autofill_cli.CardOrder,
         "from_xmls_in_folder",
@@ -481,7 +481,7 @@ def test_main_drive_thru_cards_keeps_driver_alive_until_user_handoff(
     monkeypatch.setattr(autofill_cli, "keepawake", lambda **_kwargs: nullcontext())
     monkeypatch.setattr(autofill_cli, "get_ghostscript_path", lambda: "/opt/homebrew/bin/gs")
     monkeypatch.setattr(autofill_cli, "ensure_ghostscript_available", lambda **_kwargs: "/opt/homebrew/bin/gs")
-    monkeypatch.setattr(autofill_cli, "get_default_dtc_icc_profile", lambda: str(icc_path))
+    monkeypatch.setattr(autofill_cli, "find_or_download_dtc_icc_profile", lambda: str(icc_path))
     monkeypatch.setattr(
         autofill_cli.CardOrder,
         "from_xmls_in_folder",
@@ -594,6 +594,69 @@ def test_wiki_addendum_includes_cli_usage_updates() -> None:
     assert "--log-level" in wiki
     assert "Use `DEBUG` to show detailed Selenium step-by-step logs" in wiki
     assert "confirmation before attempting Ghostscript installation" in wiki
+
+
+# endregion
+
+# region ICC profile resolution
+
+
+def test_find_or_download_dtc_icc_profile_prefers_installed_copy(monkeypatch: pytest.MonkeyPatch, tmp_path) -> None:
+    installed_profile = tmp_path / "USWebCoatedSWOP.icc"
+    installed_profile.write_bytes(b"icc")
+    monkeypatch.setattr(src.icc, "_candidate_profile_paths", lambda: [tmp_path / "missing.icc", installed_profile])
+    monkeypatch.setattr(
+        src.icc.requests, "get", lambda *_args, **_kwargs: (_ for _ in ()).throw(AssertionError("no download"))
+    )
+
+    assert src.icc.find_or_download_dtc_icc_profile() == str(installed_profile)
+
+
+def test_find_or_download_dtc_icc_profile_returns_none_when_download_declined(
+    monkeypatch: pytest.MonkeyPatch, tmp_path
+) -> None:
+    monkeypatch.setattr(src.icc, "_candidate_profile_paths", lambda: [tmp_path / "missing.icc"])
+    monkeypatch.setattr(src.icc.click, "confirm", lambda *_args, **_kwargs: False)
+
+    assert src.icc.find_or_download_dtc_icc_profile() is None
+
+
+def _fake_adobe_bundle_response(profile_bytes: bytes) -> SimpleNamespace:
+    import io as io_module
+    import zipfile
+
+    buffer = io_module.BytesIO()
+    with zipfile.ZipFile(buffer, "w") as bundle:
+        bundle.writestr(src.icc.ADOBE_ICC_BUNDLE_MEMBER, profile_bytes)
+    return SimpleNamespace(content=buffer.getvalue(), raise_for_status=lambda: None)
+
+
+def test_find_or_download_dtc_icc_profile_downloads_and_caches(monkeypatch: pytest.MonkeyPatch, tmp_path) -> None:
+    import hashlib
+
+    profile_bytes = b"fake icc profile"
+    monkeypatch.setattr(src.icc, "_candidate_profile_paths", lambda: [tmp_path / "missing.icc"])
+    monkeypatch.setattr(src.icc, "get_profile_cache_path", lambda: tmp_path / "cache" / "USWebCoatedSWOP.icc")
+    monkeypatch.setattr(src.icc.click, "confirm", lambda *_args, **_kwargs: True)
+    monkeypatch.setattr(src.icc, "ICC_PROFILE_SHA256", hashlib.sha256(profile_bytes).hexdigest())
+    monkeypatch.setattr(src.icc.requests, "get", lambda *_args, **_kwargs: _fake_adobe_bundle_response(profile_bytes))
+
+    resolved = src.icc.find_or_download_dtc_icc_profile()
+
+    assert resolved == str(tmp_path / "cache" / "USWebCoatedSWOP.icc")
+    assert (tmp_path / "cache" / "USWebCoatedSWOP.icc").read_bytes() == profile_bytes
+
+
+def test_find_or_download_dtc_icc_profile_rejects_checksum_mismatch(
+    monkeypatch: pytest.MonkeyPatch, tmp_path
+) -> None:
+    monkeypatch.setattr(src.icc, "_candidate_profile_paths", lambda: [tmp_path / "missing.icc"])
+    monkeypatch.setattr(src.icc, "get_profile_cache_path", lambda: tmp_path / "cache" / "USWebCoatedSWOP.icc")
+    monkeypatch.setattr(src.icc.click, "confirm", lambda *_args, **_kwargs: True)
+    monkeypatch.setattr(src.icc.requests, "get", lambda *_args, **_kwargs: _fake_adobe_bundle_response(b"tampered"))
+
+    assert src.icc.find_or_download_dtc_icc_profile() is None
+    assert not (tmp_path / "cache" / "USWebCoatedSWOP.icc").exists()
 
 
 # endregion
