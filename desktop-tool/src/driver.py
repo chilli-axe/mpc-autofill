@@ -45,6 +45,7 @@ from src.utils import (
     ignore_javascript_errors,
     log_hours_minutes_seconds_elapsed,
 )
+from src.webdrivers import get_default_brave_binary_location, get_undetected_chrome_driver
 
 
 @attr.s
@@ -55,7 +56,6 @@ class AutofillDriver:
     binary_location: Optional[str] = attr.ib(default=None)  # path to browser executable
     browser_profile_path: Optional[str] = attr.ib(default=None)  # user data dir for Chromium browsers
     browser_profile_name: Optional[str] = attr.ib(default=None)  # profile directory name, e.g. "Profile 1"
-    apply_custom_stealth: bool = attr.ib(default=False)
     target_site: TargetSites = attr.ib(default=TargetSites.MakePlayingCards)
     headless: bool = attr.ib(default=False)
     starting_url: str = attr.ib(default="data:")
@@ -80,19 +80,32 @@ class AutofillDriver:
         except Exception:
             pass
 
+    def create_driver(self) -> WebDriver:
+        if self.target_site == TargetSites.DriveThruCards:
+            # DriveThruCards' bot detection (Cloudflare) blocks standard Selenium, so it needs
+            # undetected-chromedriver. Other sites keep their standard drivers untouched.
+            binary_location = self.binary_location
+            if self.browser == Browsers.brave and binary_location is None:
+                binary_location = get_default_brave_binary_location()
+            elif self.browser not in (Browsers.chrome, Browsers.brave):
+                logger.info(
+                    f"DriveThruCards automation requires a Chromium browser - "
+                    f"using {bold('Chrome')} instead of {bold(self.browser.name)}."
+                )
+            return get_undetected_chrome_driver(
+                headless=self.headless,
+                binary_location=binary_location,
+                user_data_dir=self.browser_profile_path,
+                profile_directory=self.browser_profile_name,
+            )
+        return self.browser.value(headless=self.headless, binary_location=self.binary_location)
+
     def initialise_driver(self) -> None:
-        last_exception: Optional[Exception] = None
         max_attempts = 3
         for attempt in range(1, max_attempts + 1):
             driver = None
             try:
-                driver = self.browser.value(
-                    headless=self.headless,
-                    binary_location=self.binary_location,
-                    user_data_dir=self.browser_profile_path,
-                    profile_directory=self.browser_profile_name,
-                    apply_custom_stealth=self.apply_custom_stealth,
-                )  # type: ignore  # TODO
+                driver = self.create_driver()
                 driver.set_window_size(1200, 900)
                 driver.implicitly_wait(5)
                 driver.get(self.starting_url)
@@ -104,7 +117,6 @@ class AutofillDriver:
                 self.driver = driver
                 return
             except (AttributeError, ValueError, sl_exc.WebDriverException) as e:
-                last_exception = e
                 self._quit_driver_quietly(driver)
                 if attempt < max_attempts:
                     logger.warning(
@@ -116,12 +128,6 @@ class AutofillDriver:
                     f"An error occurred while attempting to configure the webdriver for your specified browser. "
                     f"Please make sure you have installed the browser & that it is up to date:\n\n{bold(e)}"
                 )
-
-        if last_exception is not None:
-            raise Exception(
-                f"An error occurred while attempting to configure the webdriver for your specified browser. "
-                f"Please make sure you have installed the browser & that it is up to date:\n\n{bold(last_exception)}"
-            )
 
     def initialise_bars(self) -> None:
         # set the total for upload/download bars to 0 here, then change the total according to each order

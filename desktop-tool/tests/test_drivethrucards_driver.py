@@ -157,7 +157,7 @@ def test_initialise_driver_retries_when_initial_window_is_already_closed(
         created.append(driver)
         return driver
 
-    monkeypatch.setattr(dtc_driver, "browser", SimpleNamespace(value=fake_browser_factory, name="chrome"))
+    monkeypatch.setattr("src.driver.get_undetected_chrome_driver", fake_browser_factory)
     dtc_driver.starting_url = TargetSites.DriveThruCards.value.starting_url
     monkeypatch.setattr("src.driver.WebDriverWait", lambda *_args, **_kwargs: SimpleNamespace(until=lambda _cond: True))
     monkeypatch.setattr("src.driver.time.sleep", lambda _seconds: None)
@@ -359,3 +359,46 @@ def test_is_site_loaded_uses_login_or_logged_in_selectors(dtc_driver: AutofillDr
 
     assert dtc_driver._is_site_loaded() is True
     assert fake_driver.wait_values == [0, 5]
+
+
+def test_create_driver_uses_undetected_chrome_for_dtc(
+    monkeypatch: pytest.MonkeyPatch, dtc_driver: AutofillDriver
+) -> None:
+    captured = {}
+
+    def fake_undetected_chrome(**kwargs):
+        captured.update(kwargs)
+        return "uc-driver"
+
+    monkeypatch.setattr("src.driver.get_undetected_chrome_driver", fake_undetected_chrome)
+    dtc_driver.browser_profile_path = "/tmp/profile"
+    dtc_driver.browser_profile_name = "Profile 7"
+
+    assert dtc_driver.create_driver() == "uc-driver"
+    assert captured == {
+        "headless": False,
+        "binary_location": None,
+        "user_data_dir": "/tmp/profile",
+        "profile_directory": "Profile 7",
+    }
+
+
+def test_create_driver_uses_standard_factory_for_other_sites(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(AutofillDriver, "__attrs_post_init__", lambda self: None)
+    monkeypatch.setattr(
+        "src.driver.get_undetected_chrome_driver",
+        lambda **_kwargs: (_ for _ in ()).throw(AssertionError("undetected-chromedriver must not be used here")),
+    )
+    captured = {}
+
+    def fake_factory(headless=False, binary_location=None):
+        captured.update(headless=headless, binary_location=binary_location)
+        return "standard-driver"
+
+    autofill_driver = AutofillDriver(
+        target_site=TargetSites.MakePlayingCards,
+        browser=SimpleNamespace(value=fake_factory, name="chrome"),
+    )
+
+    assert autofill_driver.create_driver() == "standard-driver"
+    assert captured == {"headless": False, "binary_location": None}

@@ -305,24 +305,14 @@ def get_site_picker_choices() -> list[str]:
     "--browser-profile-path",
     default=None,
     help=(
-        "Optional Chromium user-data directory for reusing existing profiles, cookies, and password managers. "
-        "Example on macOS: ~/Library/Application Support/Google/Chrome"
+        "Optional Chromium user-data directory for reusing existing profiles, cookies, and password managers "
+        "when targeting DriveThruCards. Example on macOS: ~/Library/Application Support/Google/Chrome"
     ),
 )
 @click.option(
     "--browser-profile-name",
     default="Default",
     help="Profile directory name inside --browser-profile-path (e.g. Default or 'Profile 1').",
-)
-@click.option(
-    "--dtc-custom-stealth",
-    default=False,
-    help=(
-        "Optional extra stealth JavaScript for DriveThruCards. "
-        "Use only as a last resort if default automation gets stuck around Cloudflare/login checks; "
-        "disabled by default because it can increase bot-detection risk on some runs."
-    ),
-    is_flag=True,
 )
 @click.option(
     "--skip-dtc-instructions",
@@ -452,7 +442,6 @@ def main(
     binary_location: Optional[str],
     browser_profile_path: Optional[str],
     browser_profile_name: str,
-    dtc_custom_stealth: bool,
     skip_dtc_instructions: bool,
     site: str,
     exportpdf: bool,
@@ -567,7 +556,6 @@ def main(
                             binary_location=binary_location,
                             browser_profile_path=browser_profile_path,
                             browser_profile_name=browser_profile_name if browser_profile_path else None,
-                            apply_custom_stealth=dtc_custom_stealth,
                             starting_url=starting_url,
                         )
                     dtc_driver.execute_drive_thru_cards_order(order=order, pdf_path=dtc_pdf_path)

@@ -1,4 +1,5 @@
 import gc
+import inspect
 import os
 import re
 import textwrap
@@ -346,22 +347,18 @@ def test_maybe_reuse_existing_pdfs_requires_pdfx_if_requested(tmp_path) -> None:
         os.chdir(cwd_before)
 
 
-def test_get_chrome_driver_applies_user_profile_options(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_get_undetected_chrome_driver_applies_user_profile_options(monkeypatch: pytest.MonkeyPatch) -> None:
     captured = {"options": None, "version_main": None}
-
-    class DummyDriver:
-        def execute_cdp_cmd(self, _command, _payload):
-            return None
 
     def fake_chrome(*, options, version_main):
         captured["options"] = options
         captured["version_main"] = version_main
-        return DummyDriver()
+        return object()
 
     monkeypatch.setattr(webdrivers, "_detect_chrome_version", lambda: 120)
     monkeypatch.setattr(webdrivers.uc, "Chrome", fake_chrome)
 
-    webdrivers.get_chrome_driver(
+    webdrivers.get_undetected_chrome_driver(
         user_data_dir="/tmp/chrome-data",
         profile_directory="Profile 7",
     )
@@ -371,58 +368,12 @@ def test_get_chrome_driver_applies_user_profile_options(monkeypatch: pytest.Monk
     assert captured["version_main"] == 120
 
 
-def test_get_chrome_driver_does_not_apply_custom_stealth_by_default(monkeypatch: pytest.MonkeyPatch) -> None:
-    stealth_called = {"value": False}
-
-    class DummyDriver:
-        def execute_cdp_cmd(self, _command, _payload):
-            return None
-
-    monkeypatch.setattr(webdrivers, "_detect_chrome_version", lambda: 120)
-    monkeypatch.setattr(webdrivers.uc, "Chrome", lambda **_kwargs: DummyDriver())
-    monkeypatch.setattr(webdrivers, "_apply_stealth_scripts", lambda _driver: stealth_called.update(value=True))
-
-    webdrivers.get_chrome_driver()
-
-    assert stealth_called["value"] is False
-
-
-def test_get_chrome_driver_applies_custom_stealth_when_enabled(monkeypatch: pytest.MonkeyPatch) -> None:
-    stealth_called = {"value": False}
-
-    class DummyDriver:
-        def execute_cdp_cmd(self, _command, _payload):
-            return None
-
-    monkeypatch.setattr(webdrivers, "_detect_chrome_version", lambda: 120)
-    monkeypatch.setattr(webdrivers.uc, "Chrome", lambda **_kwargs: DummyDriver())
-    monkeypatch.setattr(webdrivers, "_apply_stealth_scripts", lambda _driver: stealth_called.update(value=True))
-
-    webdrivers.get_chrome_driver(apply_custom_stealth=True)
-
-    assert stealth_called["value"] is True
-
-
-def test_get_brave_driver_applies_user_profile_options(monkeypatch: pytest.MonkeyPatch) -> None:
-    captured = {"options": None}
-
-    class DummyDriver:
-        pass
-
-    def fake_chrome(*, options):
-        captured["options"] = options
-        return DummyDriver()
-
-    monkeypatch.setattr(webdrivers.uc, "Chrome", fake_chrome)
-
-    webdrivers.get_brave_driver(
-        binary_location="/Applications/Brave Browser.app/Contents/MacOS/Brave Browser",
-        user_data_dir="/tmp/brave-data",
-        profile_directory="Default",
-    )
-
-    assert "--user-data-dir=/tmp/brave-data" in captured["options"].arguments
-    assert "--profile-directory=Default" in captured["options"].arguments
+@pytest.mark.parametrize("browser", constants.Browsers)
+def test_standard_driver_factories_accept_only_upstream_kwargs(browser: constants.Browsers) -> None:
+    # Regression test: passing DTC-only kwargs (user_data_dir etc.) to the standard factories
+    # used for MakePlayingCards-family sites must fail loudly, proving they were never added there.
+    factory_parameters = inspect.signature(browser.value).parameters
+    assert set(factory_parameters.keys()) == {"headless", "binary_location"}
 
 
 def test_cli_help_includes_download_images_only_option() -> None:
@@ -437,16 +388,14 @@ def test_cli_help_includes_global_log_level_option() -> None:
     assert "--log-level" in result.output
 
 
-def test_cli_help_documents_new_flags_and_stealth_guidance() -> None:
+def test_cli_help_documents_new_flags() -> None:
     result = CliRunner().invoke(autofill_cli.main, ["--help"])
     assert result.exit_code == 0
     assert "--skip-pdf-if-exists" in result.output
     assert "--download-images-only" in result.output
     assert "--browser-profile-path" in result.output
     assert "--browser-profile-name" in result.output
-    assert "--dtc-custom-stealth" in result.output
     assert "--skip-dtc-instructions" in result.output
-    assert "last resort" in result.output
     assert "detailed Selenium step-by-step logs" in result.output
 
 
@@ -642,9 +591,6 @@ def test_wiki_addendum_includes_cli_usage_updates() -> None:
     assert "--skip-pdf-if-exists" in wiki
     assert "--download-images-only" in wiki
     assert "--browser-profile-path" in wiki
-    assert "--dtc-custom-stealth" in wiki
-    assert "last resort" in wiki
-    assert "Cloudflare/login checks" in wiki
     assert "--log-level" in wiki
     assert "Use `DEBUG` to show detailed Selenium step-by-step logs" in wiki
     assert "confirmation before attempting Ghostscript installation" in wiki

@@ -28,11 +28,6 @@ Target page: <https://github.com/chilli-axe/mpc-autofill/wiki/Desktop-Tool>
 - `--browser-profile-name`
   - Select the profile directory inside the user data folder (default: `Default`).
 
-- `--dtc-custom-stealth`
-  - Optional extra stealth JavaScript for DriveThruCards.
-  - Use only as a last resort if default automation gets stuck around Cloudflare/login checks.
-  - Disabled by default because it can increase bot-detection risk on some runs.
-
 ### Logging Flag (add subsection if missing)
 
 - `--log-level`
