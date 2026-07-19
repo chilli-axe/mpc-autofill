@@ -2327,6 +2327,76 @@ def test_pdf_export_drive_thru_cards_combines_actual_front_slots_into_one_file(m
     assert count_pdf_pages("export/test_local/1.pdf") == 4
 
 
+def test_pdf_export_drive_thru_cards_processes_and_embeds_repeated_images_once(monkeypatch, tmp_path):
+    monkeypatch.chdir(tmp_path)
+
+    for image_name, color in [("front_a.png", "red"), ("front_b.png", "blue"), ("back.png", "black")]:
+        Image.new("RGB", (300, 420), color).save(tmp_path / image_name)
+
+    process_calls: list[None] = []
+    real_post_process_image = src.pdf_maker.post_process_image
+
+    def counting_post_process_image(raw_image, config):
+        process_calls.append(None)
+        return real_post_process_image(raw_image=raw_image, config=config)
+
+    monkeypatch.setattr("src.pdf_maker.post_process_image", counting_post_process_image)
+
+    order = CardOrder.from_element(
+        working_directory=str(tmp_path),
+        element=ElementTree.fromstring(
+            textwrap.dedent(
+                f"""
+                <order>
+                    <details>
+                        <quantity>1</quantity>
+                        <stock>(S30) Standard Smooth</stock>
+                        <foil>false</foil>
+                    </details>
+                    <fronts>
+                        <card>
+                            <id>{tmp_path / "front_a.png"}</id>
+                            <sourceType>{SourceType.LOCAL_FILE}</sourceType>
+                            <slots>0</slots>
+                            <name>front_a.png</name>
+                        </card>
+                        <card>
+                            <id>{tmp_path / "front_b.png"}</id>
+                            <sourceType>{SourceType.LOCAL_FILE}</sourceType>
+                            <slots>1</slots>
+                            <name>front_b.png</name>
+                        </card>
+                    </fronts>
+                    <backs></backs>
+                    <cardback>{tmp_path / "back.png"}</cardback>
+                </order>
+                """
+            )
+        ),
+        allowed_to_exceed_project_max_size=True,
+    )
+    order.name = "test_dedup.xml"
+
+    exporter = PdfExporter(order=order, export_mode="drive_thru_cards")
+    exporter.execute(
+        post_processing_config=ImagePostProcessingConfig(
+            max_dpi=300,
+            downscale_alg=constants.ImageResizeMethods.LANCZOS,
+            output_format="JPEG",
+            convert_to_cmyk=False,
+        )
+    )
+
+    # 4 pages (back, front_a, back, front_b) but only 3 unique images: the shared
+    # cardback must be post-processed once and its JPEG data embedded once.
+    assert count_pdf_pages("export/test_dedup/1.pdf") == 4
+    assert len(process_calls) == 3
+    with open("export/test_dedup/1.pdf", "rb") as f:
+        assert f.read().count(b"DCTDecode") == 3
+    # temp files are cleaned up after execute()
+    assert exporter.processed_image_paths == {}
+
+
 # endregion
 
 # region test driver.py

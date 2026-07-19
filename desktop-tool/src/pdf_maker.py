@@ -197,6 +197,7 @@ class PdfExporter:
     download_bar: enlighten.Counter = attr.ib(init=False, default=None)
     processed_bar: enlighten.Counter = attr.ib(init=False, default=None)
     saved_files: list[str] = attr.ib(init=False, factory=list)
+    processed_image_paths: dict[str, str] = attr.ib(init=False, factory=dict)
 
     def configure_bars(self) -> None:
         num_images = len(self.order.fronts.cards_by_id) + len(self.order.backs.cards_by_id)
@@ -277,36 +278,37 @@ class PdfExporter:
     def add_image(self, image_path: str) -> None:
         self.pdf.add_page()
         if self.export_mode == "drive_thru_cards" and self.image_post_processing_config:
-            with open(image_path, "rb") as f:
-                raw_image = f.read()
-            # post_process_image handles resizing to target_pixel_size (set in execute())
-            # which ensures the correct DPI for the DTC card dimensions
-            processed_image, icc_profile_bytes = post_process_image(
-                raw_image=raw_image, config=self.image_post_processing_config
-            )
-            # Save to a temporary file so fpdf embeds the JPEG data directly
-            # (passing BytesIO causes fpdf to re-encode with FlateDecode, bloating file size)
-            ext = ".jpg" if self.image_post_processing_config.output_format == "JPEG" else ".png"
-            with tempfile.NamedTemporaryFile(suffix=ext, delete=False) as tmp:
-                tmp_path = tmp.name
-            try:
+            tmp_path = self.processed_image_paths.get(image_path)
+            if tmp_path is None:
+                with open(image_path, "rb") as f:
+                    raw_image = f.read()
+                # post_process_image handles resizing to target_pixel_size (set in execute())
+                # which ensures the correct DPI for the DTC card dimensions
+                processed_image, icc_profile_bytes = post_process_image(
+                    raw_image=raw_image, config=self.image_post_processing_config
+                )
+                # Save to a temporary file so fpdf embeds the JPEG data directly
+                # (passing BytesIO causes fpdf to re-encode with FlateDecode, bloating file size).
+                # Cached per source path so a repeated card (e.g. the shared cardback) is processed
+                # once and fpdf's per-path image cache embeds its data once per PDF. Temp files are
+                # cleaned up at the end of execute().
+                ext = ".jpg" if self.image_post_processing_config.output_format == "JPEG" else ".png"
+                with tempfile.NamedTemporaryFile(suffix=ext, delete=False) as tmp:
+                    tmp_path = tmp.name
+                self.processed_image_paths[image_path] = tmp_path
                 save_processed_image(
                     processed_image,
                     file_path=tmp_path,
                     config=self.image_post_processing_config,
                     icc_profile_bytes=icc_profile_bytes,
                 )
-                self.pdf.image(
-                    tmp_path,
-                    x=0,
-                    y=0,
-                    w=self.card_width_in_inches,
-                    h=self.card_height_in_inches,
-                )
-            finally:
-                # Clean up temp file
-                if os.path.exists(tmp_path):
-                    os.unlink(tmp_path)
+            self.pdf.image(
+                tmp_path,
+                x=0,
+                y=0,
+                w=self.card_width_in_inches,
+                h=self.card_height_in_inches,
+            )
         else:
             with open(image_path, "rb") as f:
                 image_bytes = f.read()
@@ -352,11 +354,17 @@ class PdfExporter:
             post_processing_config.embed_dpi_metadata = True
         self.image_post_processing_config = post_processing_config
         self.download_and_collect_images(post_processing_config=post_processing_config)
-        if self.separate_faces:
-            self.number_of_cards_per_file = 1
-            self.export_separate_faces()
-        else:
-            self.export()
+        try:
+            if self.separate_faces:
+                self.number_of_cards_per_file = 1
+                self.export_separate_faces()
+            else:
+                self.export()
+        finally:
+            for tmp_path in self.processed_image_paths.values():
+                if os.path.exists(tmp_path):
+                    os.unlink(tmp_path)
+            self.processed_image_paths.clear()
 
         if self.pdfx_config:
             source_pdf_paths = list(self.saved_files)
