@@ -389,11 +389,9 @@ export const toSearchable = (inputString: string): string =>
       .toLowerCase()
       .replaceAll(/[\(\[].*?[\)\]]/g, "")
       .replace("-", " ")
-      .replace(" the ", " ")
       .replace("’", "'")
       .replaceAll(/[!"#\$%&'\(\)\*\+,-\.\/:;<=>\?@\[\]\^_`{\|}~\/]/g, "") // remove punctuation
       .replaceAll(/[0123456789]/g, "") // remove digits
-      .replaceAll(/^the (.*$)/g, "$1") // remove "the " at start of string
       // remove accents - match elasticsearch `asciifolding` filter. https://stackoverflow.com/a/37511463/13021511
       .normalize("NFD")
       .replace(/\p{Diacritic}/gu, "")

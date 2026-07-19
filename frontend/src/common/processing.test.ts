@@ -501,7 +501,10 @@ describe("toSearchable", () => {
   test.each([
     { input: "Lightning Bolt", expectedOutput: "lightning bolt" },
     { input: " Lightning   BOLT ", expectedOutput: "lightning bolt" },
-    { input: "Adanto, the First Fort", expectedOutput: "adanto first fort" },
+    {
+      input: "Adanto, the First Fort",
+      expectedOutput: "adanto the first fort",
+    },
     { input: "Black Lotus (Masterpiece)", expectedOutput: "black lotus" }, // brackets removal
     {
       input: "Black Lotus (Masterpiece, But With Punctuation! )",
