@@ -18,11 +18,12 @@ jobs:
     #          - os: ubuntu-latest  # https://github.com/browser-actions/setup-edge/issues/516
     steps:
       - uses: actions/checkout@v6
+      # Tests requiring the Google Drive API key skip themselves when it's absent (fork pull
+      # requests), so the rest of the suite still runs.
       - name: Run desktop tool tests
-        if: env.GOOGLE_DRIVE_API_KEY != ''
         uses: ./.github/actions/test-desktop-tool
         with:
           google-drive-api-key: ${{ env.GOOGLE_DRIVE_API_KEY }}
-      - name: Skip secret-backed tests for fork pull requests
+      - name: Note skipped secret-backed tests for fork pull requests
         if: env.GOOGLE_DRIVE_API_KEY == ''
-        run: echo "::notice::Desktop tool tests require GOOGLE_DRIVE_API_KEY, which is unavailable to fork pull requests."
+        run: echo "::notice::Tests requiring GOOGLE_DRIVE_API_KEY were skipped because the secret is unavailable to fork pull requests."

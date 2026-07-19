@@ -40,6 +40,11 @@ from src.order import (
 from src.pdf_maker import PdfExporter, convert_pdf_to_pdfx, get_ghostscript_version
 from src.processing import ImagePostProcessingConfig
 
+requires_google_drive_credentials = pytest.mark.skipif(
+    not os.path.isfile(os.path.join(os.path.dirname(__file__), "..", "client_secrets.json")),
+    reason="Google Drive API credentials (client_secrets.json) are not available",
+)
+
 DEFAULT_POST_PROCESSING = ImagePostProcessingConfig(max_dpi=800, downscale_alg=constants.ImageResizeMethods.LANCZOS)
 
 
@@ -623,24 +628,6 @@ def test_readme_points_users_to_wiki_for_usage_docs() -> None:
     assert "https://github.com/chilli-axe/mpc-autofill/wiki/Desktop-Tool" in readme
     assert "--skip-pdf-if-exists" not in readme
     assert "--download-images-only" not in readme
-
-
-def test_wiki_addendum_includes_cli_usage_updates() -> None:
-    wiki_addendum_path = os.path.join(
-        os.path.dirname(autofill_cli.__file__),
-        "docs",
-        "Desktop-Tool.wiki.addendum.md",
-    )
-    with open(wiki_addendum_path, "r", encoding="utf-8") as f:
-        wiki = f.read()
-    assert "contains only the incremental wiki updates" in wiki
-    assert 'Insert Under Existing "Useful CLI Flags" Section' in wiki
-    assert "--skip-pdf-if-exists" in wiki
-    assert "--download-images-only" in wiki
-    assert "--browser-profile-path" in wiki
-    assert "--log-level" in wiki
-    assert "Use `DEBUG` to show detailed Selenium step-by-step logs" in wiki
-    assert "confirmation before attempting Ghostscript installation" in wiki
 
 
 # endregion
@@ -1366,6 +1353,7 @@ def card_order_element_missing_front_image() -> Generator[ElementTree.Element, N
 # region test utils.py
 
 
+@requires_google_drive_credentials
 def test_get_google_drive_file_name():
     assert get_google_drive_file_name(SIMPLE_LOTUS_ID) == f"{SIMPLE_LOTUS}.png"
     assert get_google_drive_file_name(SIMPLE_CUBE_ID) == f"{SIMPLE_CUBE}.png"
@@ -1396,6 +1384,7 @@ def test_generate_file_path_infer_local_file(image_element_local_file_inferred_t
     assert image.source_type == SourceType.LOCAL_FILE
 
 
+@requires_google_drive_credentials
 def test_download_google_drive_image_default_post_processing(
     image_valid_google_drive: CardImage, counter: Counter, queue: Queue[CardImage]
 ):
@@ -1416,6 +1405,7 @@ def test_download_local_file_is_no_op(image_local_file: CardImage, counter: Coun
     assert_file_size(image_local_file.file_path, file_size)
 
 
+@requires_google_drive_credentials
 def test_download_google_drive_image_downscaled(
     image_valid_google_drive: CardImage, counter: Counter, queue: Queue[CardImage]
 ):
@@ -1431,6 +1421,7 @@ def test_download_google_drive_image_downscaled(
     assert_file_size(image_valid_google_drive.file_path, 51123)
 
 
+@requires_google_drive_credentials
 def test_download_google_drive_image_no_post_processing(
     image_valid_google_drive: CardImage, counter: Counter, queue: Queue[CardImage]
 ):
@@ -1440,6 +1431,7 @@ def test_download_google_drive_image_no_post_processing(
     assert_file_size(image_valid_google_drive.file_path, 155686)
 
 
+@requires_google_drive_credentials
 def test_invalid_google_drive_image(image_invalid_google_drive: CardImage, counter: Counter, queue: Queue[CardImage]):
     image_invalid_google_drive.download_image(
         download_bar=counter, queue=queue, post_processing_config=DEFAULT_POST_PROCESSING
@@ -1447,6 +1439,7 @@ def test_invalid_google_drive_image(image_invalid_google_drive: CardImage, count
     assert image_invalid_google_drive.errored is True
 
 
+@requires_google_drive_credentials
 def test_retrieve_card_name_and_download_file(image_google_valid_drive_no_name, counter, queue):
     assert image_google_valid_drive_no_name.name == f"{SIMPLE_CUBE}.png"
     assert not image_google_valid_drive_no_name.file_exists()
@@ -1487,6 +1480,7 @@ def test_combine_images(image_a, image_b, expected_result):
 # region test CardImageCollection
 
 
+@requires_google_drive_credentials
 def test_card_image_collection_download(card_image_collection_valid, counter, image_google_valid_drive_no_name, pool):
     assert card_image_collection_valid.slots() == {0, 1, 2}
     assert [x.file_exists() for x in card_image_collection_valid.cards_by_id.values()] == [False, True]

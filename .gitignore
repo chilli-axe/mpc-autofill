@@ -1,7 +1,6 @@
 # Ignore XML files we might use for debugging
 cards.xml
 **/cards/*
-test_order.xml
 
 # Ignore pyinstaller stuff
 __pycache__/*
@@ -69,7 +68,6 @@ coverage.xml
 desktop-tool/export/
 desktop-tool/tests/export/
 desktop-tool/tests/cards/
-desktop-tool/TODO.md
 
 cover/
 
@@ -128,7 +126,7 @@ celerybeat.pid
 
 # Environments
 .env
-.venv*/
+.venv
 env/
 venv/
 ENV/
@@ -160,7 +158,6 @@ dmypy.json
 cython_debug/
 
 .idea
-.cursor/
 .DS_Store
 MPCAutofill/card_db.db
 MPCAutofill/build
@@ -193,19 +190,6 @@ MPCAutofill/scryfall_cache/*
 frontend/public/mockServiceWorker.js
 /image-cdn/node_modules/*
 /image-cdn/.wrangler/*
-
-# Plan files
-*.plan.md
-
-# AI instruction files
-**/[Cc][Ll][Aa][Uu][Dd][Ee].md
-**/[Gg][Pp][Tt].md
-**/[Gg][Ee][Mm][Ii][Nn][Ii].md
-**/[Aa][Gg][Ee][Nn][Tt][Ss].md
-**/.cursorrules
-**/.github/copilot-instructions.md
-**/.github/instructions/*.instructions.md
-**/.cursor/rules/*.mdc
 
 # Playwright
 node_modules/
