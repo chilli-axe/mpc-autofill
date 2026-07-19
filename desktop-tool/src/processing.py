@@ -46,9 +46,7 @@ def get_post_processed_path(file_path: str, config: ImagePostProcessingConfig) -
     return os.path.join(directory, f"{base_name}{extension}")
 
 
-def _apply_color_processing(
-    img: "Image", config: ImagePostProcessingConfig
-) -> tuple["Image", Optional[bytes]]:
+def _apply_color_processing(img: "Image", config: ImagePostProcessingConfig) -> tuple["Image", Optional[bytes]]:
     icc_profile_bytes = None
     if config.convert_to_cmyk:
         if img.mode in ("RGBA", "LA"):

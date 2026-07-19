@@ -46,7 +46,10 @@ from src.utils import (
     ignore_javascript_errors,
     log_hours_minutes_seconds_elapsed,
 )
-from src.webdrivers import get_default_brave_binary_location, get_undetected_chrome_driver
+from src.webdrivers import (
+    get_default_brave_binary_location,
+    get_undetected_chrome_driver,
+)
 
 
 @attr.s
@@ -99,7 +102,7 @@ class AutofillDriver:
                 user_data_dir=self.browser_profile_path,
                 profile_directory=self.browser_profile_name,
             )
-        return self.browser.value(headless=self.headless, binary_location=self.binary_location)
+        return self.browser.value(headless=self.headless, binary_location=self.binary_location)  # type: ignore[operator]
 
     def initialise_driver(self) -> None:
         max_attempts = 3

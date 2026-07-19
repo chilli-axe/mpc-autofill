@@ -252,9 +252,7 @@ class CardImage:
                             break
                         if self.file_exists():
                             remove_if_exists(cast(str, self.file_path))
-                            logger.info(
-                                f"Downloaded image '{bold(self.name)}' appears corrupted. Retrying download..."
-                            )
+                            logger.info(f"Downloaded image '{bold(self.name)}' appears corrupted. Retrying download...")
                         if attempt == 1:
                             self.errored = True
 

@@ -681,9 +681,7 @@ def test_find_or_download_dtc_icc_profile_downloads_and_caches(monkeypatch: pyte
     assert (tmp_path / "cache" / "USWebCoatedSWOP.icc").read_bytes() == profile_bytes
 
 
-def test_find_or_download_dtc_icc_profile_rejects_checksum_mismatch(
-    monkeypatch: pytest.MonkeyPatch, tmp_path
-) -> None:
+def test_find_or_download_dtc_icc_profile_rejects_checksum_mismatch(monkeypatch: pytest.MonkeyPatch, tmp_path) -> None:
     monkeypatch.setattr(src.icc, "_candidate_profile_paths", lambda: [tmp_path / "missing.icc"])
     monkeypatch.setattr(src.icc, "get_profile_cache_path", lambda: tmp_path / "cache" / "USWebCoatedSWOP.icc")
     monkeypatch.setattr(src.icc.click, "confirm", lambda *_args, **_kwargs: True)
@@ -745,9 +743,7 @@ def test_convert_pdf_to_pdfx_does_not_leave_partial_output_on_failure(
     assert sorted(path.name for path in tmp_path.iterdir()) == ["output.pdf", "source.pdf"]
 
 
-def test_convert_pdf_to_pdfx_rejects_output_missing_pdfx_markers(
-    monkeypatch: pytest.MonkeyPatch, tmp_path
-) -> None:
+def test_convert_pdf_to_pdfx_rejects_output_missing_pdfx_markers(monkeypatch: pytest.MonkeyPatch, tmp_path) -> None:
     source_path = tmp_path / "source.pdf"
     output_path = tmp_path / "output.pdf"
     source_path.write_bytes(b"source")
