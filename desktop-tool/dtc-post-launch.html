@@ -9,49 +9,126 @@
             body {
                 min-height: 100vh;
                 margin: 0;
-                padding: 20px;
+                padding: 40px 24px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                color: #333;
-                background: #f7f9fc;
-                font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+                background: #f6efdc;
+                background-image: radial-gradient(#e7dcc0 1px, transparent 1px);
+                background-size: 22px 22px;
+                color: #3a3129;
+                font: 16px/1.6 "Avenir Next", Avenir, "Segoe UI", sans-serif;
             }
-            main {
-                width: 100%;
-                max-width: 520px;
-                padding: 32px;
-            }
-            h1 { margin: 0 0 28px; color: #1a73e8; font-size: 2.25rem; line-height: 1.15; }
-            p { margin: 0 0 16px; color: #5f6368; }
-            .warning { margin-bottom: 28px; padding: 12px 14px; border-left: 4px solid #d9a323; background: #fff7df; color: #55451b; }
-            .choices { margin-bottom: 28px; color: #202124; font-size: 1.1rem; line-height: 1.65; }
-            .status { margin-bottom: 20px; }
-            .skip-note { margin-top: 28px; color: #9aa0a6; font-style: italic; }
-            a {
+            main { width: 100%; max-width: 560px; }
+            .kicker {
                 display: inline-block;
-                margin-top: 8px;
-                padding: 10px 16px;
-                border-radius: 2px;
-                color: white;
-                background: #1a73e8;
-                font-weight: 600;
-                text-decoration: none;
+                font-size: 0.72rem;
+                letter-spacing: 0.18em;
+                text-transform: uppercase;
+                color: #8c2d1e;
+                font-weight: 700;
+                background: #f1e7c4;
+                padding: 4px 12px;
+                border-radius: 3px;
+                margin-bottom: 14px;
             }
-            a:focus-visible { outline: 3px solid #174ea6; outline-offset: 3px; }
+            h1 {
+                margin: 0 0 30px;
+                font-size: 2.1rem;
+                line-height: 1.12;
+                font-weight: 700;
+                color: #2c241c;
+            }
+            ol.journey { list-style: none; margin: 0 0 34px; padding: 0; position: relative; }
+            ol.journey::before {
+                content: "";
+                position: absolute;
+                left: 15px;
+                top: 14px;
+                bottom: 14px;
+                width: 2px;
+                background: #d9c9a3;
+            }
+            ol.journey li { position: relative; padding: 0 0 26px 52px; }
+            ol.journey li:last-child { padding-bottom: 0; }
+            .dot {
+                position: absolute;
+                left: 4px;
+                top: 2px;
+                width: 24px;
+                height: 24px;
+                border-radius: 50%;
+                border: 2px solid #bf5b3a;
+                background: #f6efdc;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 0.72rem;
+                font-weight: 700;
+                color: #bf5b3a;
+            }
+            li.here .dot { background: #2c241c; border-color: #2c241c; color: #f6efdc; }
+            .tag {
+                display: inline-block;
+                font-size: 0.66rem;
+                font-weight: 700;
+                letter-spacing: 0.14em;
+                text-transform: uppercase;
+                padding: 2px 8px;
+                border-radius: 3px;
+                margin-bottom: 6px;
+            }
+            li.here .tag { background: #2c241c; color: #f6efdc; }
+            li.next .tag { background: #bf5b3a; color: #fff; }
+            li.auto .tag { background: #dde5cf; color: #4a6234; }
+            .step-title { font-weight: 600; color: #2c241c; margin: 0 0 4px; }
+            .step-body { margin: 0; color: #6f6353; font-size: 0.95rem; }
+            .step-body strong { color: #8c2d1e; }
+            a.cta {
+                display: block;
+                text-align: center;
+                padding: 15px 20px;
+                background: #bf5b3a;
+                color: #fff;
+                text-decoration: none;
+                font-weight: 700;
+                font-size: 1.05rem;
+                border-radius: 6px;
+                box-shadow: 0 3px 0 #8c3a1e;
+                transition: transform 0.12s ease, box-shadow 0.12s ease;
+            }
+            a.cta:hover { transform: translateY(-2px); box-shadow: 0 5px 0 #8c3a1e; }
+            a.cta:focus-visible { outline: 3px solid #2c241c; outline-offset: 3px; }
+            .skip { margin-top: 22px; text-align: center; color: #a3937a; font-size: 0.8rem; }
+            .skip code { background: #ede3c6; padding: 1px 6px; border-radius: 3px; }
         </style>
     </head>
     <body>
         <main>
-            <h1>Sign in to DriveThruCards</h1>
-            <p class="warning"><strong>Before continuing:</strong> Turn off any ad blockers; they may disrupt the login process.</p>
-            <p class="choices">
-                Next, sign in to DriveThruCards.<br>
-                No account? Click <strong>Get Started Here!</strong> on the next page to create one or sign in with Google or Facebook.
-            </p>
-            <p class="status">MPC Autofill will continue automatically when you've logged in.</p>
-            <a href="https://www.drivethrucards.com">Continue to DriveThruCards</a>
-            <p class="skip-note"><small>To skip this page next time, use <code>--skip-dtc-instructions</code>.</small></p>
+            <p class="kicker">MPC Autofill · DriveThruCards</p>
+            <h1>Sign in on the next page</h1>
+            <ol class="journey">
+                <li class="here">
+                    <span class="dot">1</span>
+                    <span class="tag">This page — you are here</span>
+                    <p class="step-title">Turn off ad blockers</p>
+                    <p class="step-body">They can break the DriveThruCards login. Do this before continuing.</p>
+                </li>
+                <li class="next">
+                    <span class="dot">2</span>
+                    <span class="tag">Next page — drivethrucards.com</span>
+                    <p class="step-title">Sign in to your account</p>
+                    <p class="step-body">No account? On that page, click <strong>Get Started Here!</strong> to create one, or sign in with Google or Facebook.</p>
+                </li>
+                <li class="auto">
+                    <span class="dot">3</span>
+                    <span class="tag">Automatic</span>
+                    <p class="step-title">MPC Autofill resumes</p>
+                    <p class="step-body">Once you're logged in, the tool detects it and continues on its own.</p>
+                </li>
+            </ol>
+            <a class="cta" href="https://www.drivethrucards.com">Continue to DriveThruCards →</a>
+            <p class="skip">Skip this page next time with <code>--skip-dtc-instructions</code></p>
         </main>
     </body>
 </html>
