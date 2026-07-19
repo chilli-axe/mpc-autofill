@@ -402,3 +402,103 @@ def test_create_driver_uses_standard_factory_for_other_sites(monkeypatch: pytest
 
     assert autofill_driver.create_driver() == "standard-driver"
     assert captured == {"headless": False, "binary_location": None}
+
+
+class _FakeElement:
+    def __init__(self, selected: bool = False) -> None:
+        self.sent: list = []
+        self._selected = selected
+
+    def clear(self) -> None:
+        pass
+
+    def send_keys(self, value: str) -> None:
+        self.sent.append(value)
+
+    def is_selected(self) -> bool:
+        return self._selected
+
+    def get_attribute(self, _name: str) -> str:
+        return ""
+
+
+def _timing_out_wait(*_args, **_kwargs) -> SimpleNamespace:
+    return SimpleNamespace(until=lambda _cond: (_ for _ in ()).throw(sl_exc.TimeoutException("no element")))
+
+
+def test_fill_dtc_product_form_raises_when_title_field_is_missing(
+    monkeypatch: pytest.MonkeyPatch, dtc_driver: AutofillDriver
+) -> None:
+    dtc_driver.driver = SimpleNamespace()
+    monkeypatch.setattr("src.driver.WebDriverWait", _timing_out_wait)
+
+    with pytest.raises(sl_exc.TimeoutException):
+        dtc_driver.fill_dtc_product_form(order=SimpleNamespace(name="x"))
+
+
+def test_fill_dtc_product_form_raises_when_filter_checkbox_cannot_be_checked(
+    monkeypatch: pytest.MonkeyPatch, dtc_driver: AutofillDriver
+) -> None:
+    dtc_driver.driver = SimpleNamespace(find_element=lambda _by, _value: _FakeElement(selected=False))
+    monkeypatch.setattr(
+        "src.driver.WebDriverWait", lambda *_args, **_kwargs: SimpleNamespace(until=lambda _cond: _FakeElement())
+    )
+    dtc_driver.click_element_with_retry = lambda _element: False
+
+    with pytest.raises(Exception, match="filter checkbox"):
+        dtc_driver.fill_dtc_product_form(order=SimpleNamespace(name="x"))
+
+
+def test_submit_dtc_description_page_raises_when_button_is_missing(
+    monkeypatch: pytest.MonkeyPatch, dtc_driver: AutofillDriver
+) -> None:
+    dtc_driver.driver = SimpleNamespace()
+    monkeypatch.setattr("src.driver.WebDriverWait", _timing_out_wait)
+
+    with pytest.raises(sl_exc.TimeoutException):
+        dtc_driver.submit_dtc_description_page()
+
+
+def test_open_dtc_upload_page_raises_when_upload_url_cannot_be_extracted(
+    monkeypatch: pytest.MonkeyPatch, dtc_driver: AutofillDriver
+) -> None:
+    button_without_url = SimpleNamespace(get_attribute=lambda _name: "showError(); return false;")
+    dtc_driver.driver = SimpleNamespace()
+    monkeypatch.setattr(
+        "src.driver.WebDriverWait", lambda *_args, **_kwargs: SimpleNamespace(until=lambda _cond: button_without_url)
+    )
+
+    with pytest.raises(Exception, match="upload page URL"):
+        dtc_driver.open_dtc_upload_page()
+
+
+def test_select_card_type_and_upload_pdf_raises_when_euro_poker_option_is_missing(
+    monkeypatch: pytest.MonkeyPatch, dtc_driver: AutofillDriver
+) -> None:
+    dtc_driver.driver = SimpleNamespace(find_element=lambda _by, _value: _FakeElement())
+    monkeypatch.setattr(
+        "src.driver.WebDriverWait", lambda *_args, **_kwargs: SimpleNamespace(until=lambda _cond: _FakeElement())
+    )
+    monkeypatch.setattr(
+        "src.driver.Select", lambda _element: SimpleNamespace(options=[SimpleNamespace(text="Jumbo Card(s)")])
+    )
+
+    with pytest.raises(Exception, match="Euro Poker"):
+        dtc_driver.select_card_type_and_upload_pdf(pdf_path="/tmp/order.pdf")
+
+
+def test_select_card_type_and_upload_pdf_raises_when_pdf_is_missing(
+    monkeypatch: pytest.MonkeyPatch, dtc_driver: AutofillDriver, tmp_path
+) -> None:
+    euro_poker_select = SimpleNamespace(
+        options=[SimpleNamespace(text="Premium Euro Poker Card(s)")],
+        select_by_visible_text=lambda _text: None,
+    )
+    dtc_driver.driver = SimpleNamespace(find_element=lambda _by, _value: _FakeElement())
+    monkeypatch.setattr(
+        "src.driver.WebDriverWait", lambda *_args, **_kwargs: SimpleNamespace(until=lambda _cond: _FakeElement())
+    )
+    monkeypatch.setattr("src.driver.Select", lambda _element: euro_poker_select)
+
+    with pytest.raises(Exception, match="PDF file not found"):
+        dtc_driver.select_card_type_and_upload_pdf(pdf_path=str(tmp_path / "does-not-exist.pdf"))
