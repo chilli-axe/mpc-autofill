@@ -13,7 +13,6 @@ if TYPE_CHECKING:
 # DriveThruCards requires 2.73" x 3.71" which includes bleed area
 DTC_CARD_WIDTH_INCHES = 2.73
 DTC_CARD_HEIGHT_INCHES = 3.71
-MM_PER_INCH = 25.4
 
 
 def calculate_dtc_target_pixel_size(target_dpi: int) -> Tuple[int, int]:
@@ -109,21 +108,6 @@ def save_processed_image(
         img.info.pop("xmp")
 
     img.save(file_path, **_build_save_kwargs(config=config, icc_profile_bytes=icc_profile_bytes))
-
-
-def save_processed_image_to_bytes(
-    img: "Image",
-    config: ImagePostProcessingConfig,
-    icc_profile_bytes: Optional[bytes] = None,
-) -> bytes:
-    # Remove XMP data if it's present in the image info to avoid "XMP data is too long" error.
-    if "xmp" in img.info:
-        img.info.pop("xmp")
-
-    output = io.BytesIO()
-    img.save(output, **_build_save_kwargs(config=config, icc_profile_bytes=icc_profile_bytes))
-    output.seek(0)
-    return output.read()
 
 
 def _build_save_kwargs(

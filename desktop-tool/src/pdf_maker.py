@@ -1,4 +1,3 @@
-import io
 import os
 import shutil
 import subprocess
@@ -33,17 +32,13 @@ class PdfXConversionConfig:
     ghostscript_path: Optional[str] = None
 
 
-def _resolve_ghostscript_path(explicit_path: Optional[str]) -> Optional[str]:
+def get_ghostscript_path(explicit_path: Optional[str] = None) -> Optional[str]:
     if explicit_path:
         return explicit_path
     for candidate in ["gs", "gswin64c", "gswin32c"]:
         if resolved := shutil.which(candidate):
             return resolved
     return None
-
-
-def get_ghostscript_path(explicit_path: Optional[str] = None) -> Optional[str]:
-    return _resolve_ghostscript_path(explicit_path)
 
 
 def get_ghostscript_version(gs_path: str) -> Optional[str]:
@@ -113,7 +108,7 @@ def convert_pdf_to_pdfx(
     output_path: str,
     config: PdfXConversionConfig,
 ) -> bool:
-    gs_path = _resolve_ghostscript_path(config.ghostscript_path)
+    gs_path = get_ghostscript_path(config.ghostscript_path)
     if not gs_path:
         logger.warning("Ghostscript was not found. Skipping PDF/X-1a conversion.")
         return False

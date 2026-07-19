@@ -678,7 +678,7 @@ def test_convert_pdf_to_pdfx_writes_output_atomically(monkeypatch: pytest.Monkey
         Path(output_arg.split("=", 1)[1]).write_bytes(b"%PDF-1.3 (PDF/X-1a:2001) /OutputIntents")
         return SimpleNamespace(returncode=0, stdout="", stderr="")
 
-    monkeypatch.setattr("src.pdf_maker._resolve_ghostscript_path", lambda _path: "/opt/homebrew/bin/gs")
+    monkeypatch.setattr("src.pdf_maker.get_ghostscript_path", lambda _path=None: "/opt/homebrew/bin/gs")
     monkeypatch.setattr("src.pdf_maker.subprocess.run", fake_run)
 
     assert convert_pdf_to_pdfx(
@@ -703,7 +703,7 @@ def test_convert_pdf_to_pdfx_does_not_leave_partial_output_on_failure(
         Path(output_arg.split("=", 1)[1]).write_bytes(b"partial")
         return SimpleNamespace(returncode=1, stdout="bad", stderr="worse")
 
-    monkeypatch.setattr("src.pdf_maker._resolve_ghostscript_path", lambda _path: "/opt/homebrew/bin/gs")
+    monkeypatch.setattr("src.pdf_maker.get_ghostscript_path", lambda _path=None: "/opt/homebrew/bin/gs")
     monkeypatch.setattr("src.pdf_maker.subprocess.run", fake_run)
 
     assert not convert_pdf_to_pdfx(
@@ -729,7 +729,7 @@ def test_convert_pdf_to_pdfx_rejects_output_missing_pdfx_markers(
         Path(output_arg.split("=", 1)[1]).write_bytes(b"%PDF-1.3 plain")
         return SimpleNamespace(returncode=0, stdout="", stderr="")
 
-    monkeypatch.setattr("src.pdf_maker._resolve_ghostscript_path", lambda _path: "/opt/homebrew/bin/gs")
+    monkeypatch.setattr("src.pdf_maker.get_ghostscript_path", lambda _path=None: "/opt/homebrew/bin/gs")
     monkeypatch.setattr("src.pdf_maker.subprocess.run", fake_run)
 
     assert not convert_pdf_to_pdfx(
