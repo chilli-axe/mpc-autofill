@@ -17,7 +17,7 @@ class _Handler(server.BaseHTTPRequestHandler):
         self.send_response(200)
         self.send_header("Content-Type", "text/html")
         self.end_headers()
-        self.wfile.write(getattr(self.server, "html_path").read_bytes())
+        self.wfile.write(self.server.html_path.read_bytes())  # type: ignore[attr-defined]
 
     def log_request(self, code: Union[int, str] = "-", size: Union[int, str] = "-") -> None:
         # Silence the request log.

@@ -1,4 +1,5 @@
 import datetime as dt
+import os
 import re
 import textwrap
 import time
@@ -735,8 +736,6 @@ class AutofillDriver:
         """
         Fill out the DriveThruCards product setup form (first page).
         """
-        import os
-
         self.set_state(States.defining_order, "Filling product form")
 
         # Get the placeholder cover image path (bundled with assets)
@@ -811,8 +810,6 @@ class AutofillDriver:
         Select 'Premium Euro Poker Card(s)' from dropdown and upload the PDF.
         Waits for elements to be available instead of using fixed sleeps.
         """
-        import os
-
         self.set_state(States.inserting_fronts, "Selecting card type")
 
         # Wait for and select the Euro Poker card option from the dropdown.

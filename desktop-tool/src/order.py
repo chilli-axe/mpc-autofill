@@ -36,6 +36,25 @@ from src.processing import (
 from src.utils import unpack_element
 
 
+def is_image_valid(file_path: str) -> bool:
+    try:
+        from PIL import Image
+
+        with Image.open(file_path) as img:
+            img.verify()
+        return True
+    except Exception:
+        return False
+
+
+def remove_if_exists(file_path: str) -> None:
+    try:
+        if os.path.isfile(file_path):
+            os.remove(file_path)
+    except Exception:
+        pass
+
+
 @attr.s
 class CardImage:
     drive_id: str = attr.ib(default="")
@@ -184,23 +203,6 @@ class CardImage:
         post_processing_config: Optional[ImagePostProcessingConfig],
     ) -> None:
         try:
-            def is_image_valid(file_path: str) -> bool:
-                try:
-                    from PIL import Image
-
-                    with Image.open(file_path) as img:
-                        img.verify()
-                    return True
-                except Exception:
-                    return False
-
-            def remove_if_exists(file_path: str) -> None:
-                try:
-                    if os.path.isfile(file_path):
-                        os.remove(file_path)
-                except Exception:
-                    pass
-
             source_path = self.file_path
             if post_processing_config and self.file_path:
                 self.file_path = get_post_processed_path(self.file_path, post_processing_config)

@@ -1,7 +1,7 @@
 import io
 import os
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Optional, Tuple, Dict, Any
+from typing import TYPE_CHECKING, Any, Optional
 
 from src.constants import DPI_HEIGHT_RATIO, ImageResizeMethods
 from src.logging import logger
@@ -15,7 +15,7 @@ DTC_CARD_WIDTH_INCHES = 2.73
 DTC_CARD_HEIGHT_INCHES = 3.71
 
 
-def calculate_dtc_target_pixel_size(target_dpi: int) -> Tuple[int, int]:
+def calculate_dtc_target_pixel_size(target_dpi: int) -> tuple[int, int]:
     """
     Calculate the target pixel dimensions for DriveThruCards at the specified DPI.
     Card size is 2.73" x 3.71" (Premium Euro Poker with bleed).
@@ -35,7 +35,7 @@ class ImagePostProcessingConfig:
     icc_profile_path: Optional[str] = None
     output_directory: Optional[str] = None
     jpeg_quality: int = 95
-    target_pixel_size: Optional[Tuple[int, int]] = None
+    target_pixel_size: Optional[tuple[int, int]] = None
     embed_dpi_metadata: bool = False
 
 
@@ -48,7 +48,7 @@ def get_post_processed_path(file_path: str, config: ImagePostProcessingConfig) -
 
 def _apply_color_processing(
     img: "Image", config: ImagePostProcessingConfig
-) -> Tuple["Image", Optional[bytes]]:
+) -> tuple["Image", Optional[bytes]]:
     icc_profile_bytes = None
     if config.convert_to_cmyk:
         if img.mode in ("RGBA", "LA"):
@@ -74,7 +74,7 @@ def _apply_color_processing(
     return img, icc_profile_bytes
 
 
-def post_process_image(raw_image: bytes, config: ImagePostProcessingConfig) -> Tuple["Image", Optional[bytes]]:
+def post_process_image(raw_image: bytes, config: ImagePostProcessingConfig) -> tuple["Image", Optional[bytes]]:
     from PIL import Image
 
     img = Image.open(io.BytesIO(raw_image))
@@ -113,8 +113,8 @@ def save_processed_image(
 def _build_save_kwargs(
     config: ImagePostProcessingConfig,
     icc_profile_bytes: Optional[bytes],
-) -> Dict[str, Any]:
-    save_kwargs: Dict[str, Any] = {}
+) -> dict[str, Any]:
+    save_kwargs: dict[str, Any] = {}
     if config.output_format:
         save_kwargs["format"] = config.output_format
     if config.output_format and config.output_format.upper() == "JPEG":
