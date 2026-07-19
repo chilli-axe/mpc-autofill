@@ -608,7 +608,7 @@ def test_convert_pdf_to_pdfx_writes_output_atomically(monkeypatch: pytest.Monkey
 
     def fake_run(cmd, capture_output=True, text=True):
         output_arg = next(arg for arg in cmd if arg.startswith("-sOutputFile="))
-        Path(output_arg.split("=", 1)[1]).write_bytes(b"pdfx")
+        Path(output_arg.split("=", 1)[1]).write_bytes(b"%PDF-1.3 (PDF/X-1a:2001) /OutputIntents")
         return SimpleNamespace(returncode=0, stdout="", stderr="")
 
     monkeypatch.setattr("src.pdf_maker._resolve_ghostscript_path", lambda _path: "/opt/homebrew/bin/gs")
@@ -619,7 +619,7 @@ def test_convert_pdf_to_pdfx_writes_output_atomically(monkeypatch: pytest.Monkey
         str(output_path),
         autofill_cli.PdfXConversionConfig(icc_profile_path="dummy.icc"),
     )
-    assert output_path.read_bytes() == b"pdfx"
+    assert output_path.read_bytes() == b"%PDF-1.3 (PDF/X-1a:2001) /OutputIntents"
     assert sorted(path.name for path in tmp_path.iterdir()) == ["output.pdf", "source.pdf"]
 
 
@@ -646,6 +646,53 @@ def test_convert_pdf_to_pdfx_does_not_leave_partial_output_on_failure(
     )
     assert output_path.read_bytes() == b"previous"
     assert sorted(path.name for path in tmp_path.iterdir()) == ["output.pdf", "source.pdf"]
+
+
+def test_convert_pdf_to_pdfx_rejects_output_missing_pdfx_markers(
+    monkeypatch: pytest.MonkeyPatch, tmp_path
+) -> None:
+    source_path = tmp_path / "source.pdf"
+    output_path = tmp_path / "output.pdf"
+    source_path.write_bytes(b"source")
+    output_path.write_bytes(b"previous")
+
+    def fake_run(cmd, capture_output=True, text=True):
+        # Zero exit code, but the output is a plain PDF rather than PDF/X-1a.
+        output_arg = next(arg for arg in cmd if arg.startswith("-sOutputFile="))
+        Path(output_arg.split("=", 1)[1]).write_bytes(b"%PDF-1.3 plain")
+        return SimpleNamespace(returncode=0, stdout="", stderr="")
+
+    monkeypatch.setattr("src.pdf_maker._resolve_ghostscript_path", lambda _path: "/opt/homebrew/bin/gs")
+    monkeypatch.setattr("src.pdf_maker.subprocess.run", fake_run)
+
+    assert not convert_pdf_to_pdfx(
+        str(source_path),
+        str(output_path),
+        autofill_cli.PdfXConversionConfig(icc_profile_path="dummy.icc"),
+    )
+    assert output_path.read_bytes() == b"previous"
+
+
+@pytest.mark.skipif(src.pdf_maker.get_ghostscript_path() is None, reason="Ghostscript is not installed")
+def test_convert_pdf_to_pdfx_produces_verified_pdfx_with_real_ghostscript(tmp_path) -> None:
+    from fpdf import FPDF
+
+    image_path = tmp_path / "card.jpg"
+    Image.new("RGB", (819, 1113), (200, 30, 40)).save(image_path, "JPEG")
+    pdf = FPDF("P", "in", (2.73, 3.71))
+    pdf.add_page()
+    pdf.image(str(image_path), x=0, y=0, w=2.73, h=3.71)
+    source_path = tmp_path / "source.pdf"
+    pdf.output(str(source_path))
+    output_path = tmp_path / "output_pdfx.pdf"
+
+    assert convert_pdf_to_pdfx(str(source_path), str(output_path), autofill_cli.PdfXConversionConfig())
+
+    contents = output_path.read_bytes()
+    assert b"(PDF/X-1:2001)" in contents  # GTS_PDFXVersion
+    assert b"(PDF/X-1a:2001)" in contents  # GTS_PDFXConformance
+    assert b"/OutputIntents" in contents
+    assert b"CGATS TR 001" in contents
 
 
 def test_pdf_exporter_appends_pdfx_on_success(monkeypatch: pytest.MonkeyPatch, card_order_valid) -> None:
