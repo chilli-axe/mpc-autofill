@@ -463,6 +463,8 @@ def test_main_drive_thru_cards_exportpdf_generates_pdfs_without_browser_automati
 ) -> None:
     icc_path = tmp_path / "test.icc"
     icc_path.write_bytes(b"icc")
+    browser_path = tmp_path / "chrome.exe"
+    browser_path.touch()
 
     calls = {"pdf": [], "wait": 0, "driver": 0}
 
@@ -501,6 +503,8 @@ def test_main_drive_thru_cards_exportpdf_generates_pdfs_without_browser_automati
             "--exportpdf",
             "--browser",
             constants.Browsers.chrome.name,
+            "--binary-location",
+            str(browser_path),
         ],
     )
 
@@ -809,12 +813,12 @@ def test_pdf_exporter_appends_pdfx_on_success(monkeypatch: pytest.MonkeyPatch, c
     generated_files = pdf_exporter.execute(post_processing_config=DEFAULT_POST_PROCESSING)
 
     expected_pdfx_files = [
-        "export/test_order/1_pdfx.pdf",
-        "export/test_order/2_pdfx.pdf",
-        "export/test_order/3_pdfx.pdf",
+        Path("export/test_order/1_pdfx.pdf"),
+        Path("export/test_order/2_pdfx.pdf"),
+        Path("export/test_order/3_pdfx.pdf"),
     ]
     for file_path in expected_pdfx_files:
-        assert file_path in generated_files
+        assert file_path in map(Path, generated_files)
         assert os.path.exists(file_path)
 
     remove_files([path for path in generated_files if path.endswith(".pdf")])
@@ -870,7 +874,7 @@ def test_pdf_exporter_logs_pdfx_conversion_progress(monkeypatch: pytest.MonkeyPa
 
     progress_logs = [message for message in logged_messages if message.startswith("Converting PDF to PDF/X-1a")]
     assert len(progress_logs) == 3
-    assert "Converting PDF to PDF/X-1a (1/3): export/test_order/1.pdf" in progress_logs
+    assert Path(progress_logs[0].rsplit(": ", 1)[1]) == Path("export/test_order/1.pdf")
 
     remove_files([path for path in generated_files if path.endswith(".pdf")])
     remove_directories(["export/test_order", "export"])
@@ -2322,7 +2326,7 @@ def test_pdf_export_drive_thru_cards_combines_actual_front_slots_into_one_file(m
         )
     )
 
-    assert generated_files == ["export/test_local/1.pdf"]
+    assert list(map(Path, generated_files)) == [Path("export/test_local/1.pdf")]
     assert os.path.exists("export/test_local/1.pdf")
     assert count_pdf_pages("export/test_local/1.pdf") == 4
 

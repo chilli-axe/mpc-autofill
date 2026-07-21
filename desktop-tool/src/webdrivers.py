@@ -4,12 +4,14 @@ import sys
 from typing import Optional
 
 import undetected_chromedriver as uc
-from selenium.webdriver import Chrome, Edge, Firefox
 from selenium.webdriver.chrome.options import Options as ChromeOptions
+from selenium.webdriver.chrome.webdriver import WebDriver as Chrome
 from selenium.webdriver.chromium.options import ChromiumOptions
 from selenium.webdriver.chromium.webdriver import ChromiumDriver
 from selenium.webdriver.edge.options import Options as EdgeOptions
+from selenium.webdriver.edge.webdriver import WebDriver as Edge
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
+from selenium.webdriver.firefox.webdriver import WebDriver as Firefox
 
 
 def get_chrome_driver(headless: bool = False, binary_location: Optional[str] = None) -> Chrome:

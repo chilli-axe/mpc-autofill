@@ -448,9 +448,9 @@ def main(
     os.chdir(working_directory)
     create_image_directory_if_not_exists(working_directory=working_directory)
 
-    if binary_location and not os.path.isdir(binary_location):
+    if binary_location and not os.path.isfile(binary_location):
         raise Exception(
-            f"Binary location was specified but is not a directory (or it doesn't exist): {bold(binary_location)}"
+            f"Binary location was specified but is not a file (or it doesn't exist): {bold(binary_location)}"
         )
     if browser_profile_path and not os.path.isdir(browser_profile_path):
         raise Exception(
@@ -577,10 +577,4 @@ def main(
 
 
 if __name__ == "__main__":
-    click.echo(
-        "▙▗▌▛▀▖▞▀▖ ▞▀▖   ▐     ▗▀▖▗▜▜ \n"
-        "▌▘▌▙▄▘▌   ▙▄▌▌ ▌▜▀ ▞▀▖▐  ▄▐▐ \n"
-        "▌ ▌▌  ▌ ▖ ▌ ▌▌ ▌▐ ▖▌ ▌▜▀ ▐▐▐ \n"
-        "▘ ▘▘  ▝▀  ▘ ▘▝▀▘ ▀ ▝▀ ▐  ▀▘▘▘\n"
-    )
     main()
