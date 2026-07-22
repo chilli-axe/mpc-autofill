@@ -26,7 +26,7 @@ class ImageDownloadError(Exception):
             "Some card images could not be downloaded, so the tool has stopped before creating your order.\n"
             f"{failed_list}\n\n"
             "This usually means the saved XML refers to an image that was removed or replaced after the order "
-            "was created. Import this XML into a new MPC Fill project to identify the unmatched cards and choose "
-            "replacements, then download a new XML and try again. Technical details were saved to "
-            f"{CRASH_LOG_FILENAME}."
+            f"was created. Import this XML into a new project at {bold('https://mpcfill.com/editor')} to identify "
+            "the unmatched cards and choose replacements, then download a new XML and try again. "
+            f"Technical details were saved to {CRASH_LOG_FILENAME}."
         )

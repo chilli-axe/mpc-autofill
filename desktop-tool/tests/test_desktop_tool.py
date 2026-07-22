@@ -2437,7 +2437,7 @@ def test_pdf_export_stops_before_creating_pdf_when_an_image_download_fails(monke
     manager_stop_calls = []
     monkeypatch.setattr(exporter.manager, "stop", lambda: manager_stop_calls.append(True))
 
-    with pytest.raises(ImageDownloadError, match="Import this XML into a new MPC Fill project"):
+    with pytest.raises(ImageDownloadError, match="Import this XML into a new project at"):
         exporter.execute(post_processing_config=DEFAULT_POST_PROCESSING)
 
     assert exporter.saved_files == []

@@ -210,8 +210,10 @@ class PdfExporter:
             position=1,
             leave=False,  # transient - cleared when the export finishes, unlike the counters below
         )
-        self.download_bar = self.manager.counter(total=num_images, desc="Images Downloaded", position=2)
-        self.processed_bar = self.manager.counter(total=num_cards, desc="Cards Added to PDF", position=3)
+        # all bars are transient (leave=False): they're live UI while the export runs and are
+        # cleared when it ends - the log output is the permanent record
+        self.download_bar = self.manager.counter(total=num_images, desc="Images Downloaded", position=2, leave=False)
+        self.processed_bar = self.manager.counter(total=num_cards, desc="Cards Added to PDF", position=3, leave=False)
 
         self.download_bar.refresh()
         self.processed_bar.refresh()
@@ -389,10 +391,12 @@ class PdfExporter:
             logger.info(f"Finished exporting files! They should be accessible at {self.save_path}.")
             return self.saved_files
         finally:
-            # Freeze the counters into scrollback as a static record of the export and release the
-            # terminal rows, so any progress bars created later render below instead of colliding.
-            # The transient status row must be closed explicitly for its leave=False to clear it.
-            self.status_bar.close()
+            # The bars are transient UI - clear them and release the terminal rows so subsequent
+            # output (log lines, error summaries, later progress bars) flows naturally below the
+            # scrolled log output instead of around bars pinned to the bottom of the window.
+            self.status_bar.close(clear=True)
+            self.download_bar.close(clear=True)
+            self.processed_bar.close(clear=True)
             self.manager.stop()
 
     def export(self) -> None:

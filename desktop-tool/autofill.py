@@ -310,7 +310,9 @@ def download_images_for_orders(
 
     total_images = sum(len(order.fronts.cards_by_id) + len(order.backs.cards_by_id) for order in orders)
     manager = enlighten.get_manager()
-    download_bar = manager.counter(total=total_images, desc="Images Downloaded", position=1, autorefresh=True)
+    download_bar = manager.counter(
+        total=total_images, desc="Images Downloaded", position=1, autorefresh=True, leave=False
+    )
     try:
         with ThreadPoolExecutor(max_workers=THREADS) as pool:
             for order in orders:
@@ -318,6 +320,7 @@ def download_images_for_orders(
                 order.fronts.download_images(pool, download_bar, post_processing_config)
                 order.backs.download_images(pool, download_bar, post_processing_config)
     finally:
+        download_bar.close(clear=True)
         manager.stop()
     failed_images = sorted({failed for order in orders for failed in order.get_failed_downloads()})
     if failed_images:
