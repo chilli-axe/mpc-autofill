@@ -502,3 +502,21 @@ def test_select_card_type_and_upload_pdf_raises_when_pdf_is_missing(
 
     with pytest.raises(Exception, match="PDF file not found"):
         dtc_driver.select_card_type_and_upload_pdf(pdf_path=str(tmp_path / "does-not-exist.pdf"))
+
+
+def test_initialise_bars_creates_only_status_bar_for_dtc(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(AutofillDriver, "__attrs_post_init__", lambda self: None)
+
+    dtc = AutofillDriver(target_site=TargetSites.DriveThruCards)
+    dtc.initialise_bars()
+    assert dtc.status_bar
+    assert dtc.order_progress_bar is None
+    assert dtc.download_bar is None
+    assert dtc.upload_bar is None
+
+    mpc = AutofillDriver(target_site=TargetSites.MakePlayingCards)
+    mpc.initialise_bars()
+    assert mpc.status_bar
+    assert mpc.order_progress_bar is not None
+    assert mpc.download_bar is not None
+    assert mpc.upload_bar is not None

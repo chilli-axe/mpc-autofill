@@ -533,9 +533,7 @@ def test_interactive_onboarding_uses_picker_and_skips_dtc_only_questions(
     assert prompts[1]["choices"][-1] == "DriveThruCards"
 
 
-def test_dtc_overridden_explicit_flags_are_explained_in_logs(
-    tmp_path, caplog, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_dtc_overridden_explicit_flags_are_explained_in_logs(tmp_path, caplog, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.chdir(tmp_path)
     monkeypatch.setattr("src.logging.configure_loggers", lambda **_kwargs: None)
     monkeypatch.setattr("wakepy.keepawake", lambda **_kwargs: nullcontext())
@@ -2436,11 +2434,15 @@ def test_pdf_export_stops_before_creating_pdf_when_an_image_download_fails(monke
     monkeypatch.setattr(card_order_valid.backs, "download_images", download_backs)
     exporter = PdfExporter(order=card_order_valid)
     monkeypatch.setattr(exporter, "export", lambda: pytest.fail("PDF export should not start"))
+    manager_stop_calls = []
+    monkeypatch.setattr(exporter.manager, "stop", lambda: manager_stop_calls.append(True))
 
     with pytest.raises(ImageDownloadError, match="Import this XML into a new MPC Fill project"):
         exporter.execute(post_processing_config=DEFAULT_POST_PROCESSING)
 
     assert exporter.saved_files == []
+    # the terminal rows must be released even when the export aborts
+    assert manager_stop_calls == [True]
 
 
 def test_pdf_export_drive_thru_cards_combines_actual_front_slots_into_one_file(monkeypatch, tmp_path):
@@ -2484,7 +2486,10 @@ def test_pdf_export_drive_thru_cards_combines_actual_front_slots_into_one_file(m
     )
     order.name = "test_local.xml"
 
-    generated_files = PdfExporter(order=order, export_mode="drive_thru_cards").execute(
+    exporter = PdfExporter(order=order, export_mode="drive_thru_cards")
+    manager_stop_calls = []
+    monkeypatch.setattr(exporter.manager, "stop", lambda: manager_stop_calls.append(True))
+    generated_files = exporter.execute(
         post_processing_config=ImagePostProcessingConfig(
             max_dpi=300,
             downscale_alg=constants.ImageResizeMethods.LANCZOS,
@@ -2496,6 +2501,8 @@ def test_pdf_export_drive_thru_cards_combines_actual_front_slots_into_one_file(m
     assert list(map(Path, generated_files)) == [Path("export/test_local/1.pdf")]
     assert os.path.exists("export/test_local/1.pdf")
     assert count_pdf_pages("export/test_local/1.pdf") == 4
+    # progress bars are frozen into scrollback once the export completes
+    assert manager_stop_calls == [True]
 
 
 def test_pdf_export_drive_thru_cards_processes_and_embeds_repeated_images_once(monkeypatch, tmp_path):

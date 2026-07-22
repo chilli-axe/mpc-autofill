@@ -140,12 +140,16 @@ class AutofillDriver:
         self.status_bar = self.manager.status_bar(
             status_format=status_format, state=bold(self.state), action=bold("N/A"), position=1, autorefresh=True
         )
+        self.status_bar.refresh()
+        if self.target_site == TargetSites.DriveThruCards:
+            # DriveThruCards uploads a single PDF rather than individual images, so the per-image
+            # upload/download and project counters would only ever show 0/0 - don't create them.
+            return
         self.order_progress_bar = self.manager.counter(
             total=0, desc="Projects Auto-Filled", position=2, autorefresh=True
         )
         self.download_bar = self.manager.counter(total=0, desc="Images Downloaded   ", position=3, autorefresh=True)
         self.upload_bar = self.manager.counter(total=0, desc="Images Uploaded     ", position=4, autorefresh=True)
-        self.status_bar.refresh()
         self.order_progress_bar.refresh()
         self.download_bar.refresh()
         self.upload_bar.refresh()
@@ -1036,6 +1040,7 @@ class AutofillDriver:
         run_step("select_card_type_and_upload_pdf", self.select_card_type_and_upload_pdf, pdf_path)
 
         # DriveThruCards automation complete - user should finish checkout manually
+        self.set_state(States.finished, "Complete your purchase in the browser")
         log_hours_minutes_seconds_elapsed(t)
         logger.info(
             "DriveThruCards order setup complete!\n"

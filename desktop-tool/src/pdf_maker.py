@@ -208,6 +208,7 @@ class PdfExporter:
             status_format=status_format,
             state=f"{bold(self.state)}",
             position=1,
+            leave=False,  # transient - cleared when the export finishes, unlike the counters below
         )
         self.download_bar = self.manager.counter(total=num_images, desc="Images Downloaded", position=2)
         self.processed_bar = self.manager.counter(total=num_cards, desc="Cards Added to PDF", position=3)
@@ -364,33 +365,38 @@ class PdfExporter:
             # Embed DPI metadata so PDF tools correctly interpret the image resolution
             post_processing_config.embed_dpi_metadata = True
         self.image_post_processing_config = post_processing_config
-        self.download_and_collect_images(post_processing_config=post_processing_config)
         try:
-            if self.separate_faces:
-                self.number_of_cards_per_file = 1
-                self.export_separate_faces()
-            else:
-                self.export()
-        finally:
-            for tmp_path in self.processed_image_paths.values():
-                if os.path.exists(tmp_path):
-                    os.unlink(tmp_path)
-            self.processed_image_paths.clear()
-
-        if self.pdfx_config:
-            source_pdf_paths = list(self.saved_files)
-            total_files = len(source_pdf_paths)
-            for index, file_path in enumerate(source_pdf_paths, start=1):
-                logger.info(f"Converting PDF to PDF/X-1a ({index}/{total_files}): {file_path}")
-                pdfx_path = f"{os.path.splitext(file_path)[0]}_pdfx.pdf"
-                if convert_pdf_to_pdfx(file_path, pdfx_path, self.pdfx_config):
-                    self.saved_files.append(pdfx_path)
-                    logger.info(f"PDF/X-1a conversion succeeded: {pdfx_path}")
+            self.download_and_collect_images(post_processing_config=post_processing_config)
+            try:
+                if self.separate_faces:
+                    self.number_of_cards_per_file = 1
+                    self.export_separate_faces()
                 else:
-                    logger.info(f"PDF/X-1a conversion failed for {file_path}. Using original PDF.")
+                    self.export()
+            finally:
+                for tmp_path in self.processed_image_paths.values():
+                    if os.path.exists(tmp_path):
+                        os.unlink(tmp_path)
+                self.processed_image_paths.clear()
 
-        logger.info(f"Finished exporting files! They should be accessible at {self.save_path}.")
-        return self.saved_files
+            if self.pdfx_config:
+                source_pdf_paths = list(self.saved_files)
+                total_files = len(source_pdf_paths)
+                for index, file_path in enumerate(source_pdf_paths, start=1):
+                    logger.info(f"Converting PDF to PDF/X-1a ({index}/{total_files}): {file_path}")
+                    pdfx_path = f"{os.path.splitext(file_path)[0]}_pdfx.pdf"
+                    if convert_pdf_to_pdfx(file_path, pdfx_path, self.pdfx_config):
+                        self.saved_files.append(pdfx_path)
+                        logger.info(f"PDF/X-1a conversion succeeded: {pdfx_path}")
+                    else:
+                        logger.info(f"PDF/X-1a conversion failed for {file_path}. Using original PDF.")
+
+            logger.info(f"Finished exporting files! They should be accessible at {self.save_path}.")
+            return self.saved_files
+        finally:
+            # Freeze the counters into scrollback as a static record of the export and release the
+            # terminal rows, so any progress bars created later render below instead of colliding.
+            self.manager.stop()
 
     def export(self) -> None:
         for slot in sorted(self.paths_by_slot.keys()):
