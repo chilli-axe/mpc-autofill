@@ -1,12 +1,17 @@
-name: Desktop tool Windows CI
+name: Desktop tool macOS and Linux CI
 
 on:
   workflow_dispatch:
 
 jobs:
   test:
-    name: Test on Windows
-    runs-on: windows-latest
+    name: Test on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os:
+          - macos-latest
+          - ubuntu-latest
     steps:
       - uses: actions/checkout@v6
       - uses: ./.github/actions/test-desktop-tool
@@ -14,12 +19,27 @@ jobs:
           google-drive-api-key: ${{ secrets.GOOGLE_DRIVE_API_KEY }}
 
   build:
-    name: Build on Windows
+    name: Build ${{ matrix.target }}
     needs: test
-    runs-on: windows-latest
+    runs-on: ${{ matrix.os }}
     defaults:
       run:
         working-directory: desktop-tool
+    strategy:
+      matrix:
+        include:
+          - os: macos-latest
+            target: macos-arm
+            filename: autofill-macos-arm.command
+            macos-arch: arm64
+          - os: macos-15-intel
+            target: macos-intel
+            filename: autofill-macos-intel.command
+            macos-arch: x86_64
+          - os: ubuntu-latest
+            target: linux
+            filename: autofill-linux.bin
+            macos-arch: ""
     steps:
       - uses: actions/checkout@v6
       - name: Set up Python 3.13
@@ -32,13 +52,9 @@ jobs:
           pip install -r requirements.txt
           python -m pip install imageio
       - name: Require Google Drive API credentials
-        shell: pwsh
         env:
           GOOGLE_DRIVE_API_KEY: ${{ secrets.GOOGLE_DRIVE_API_KEY }}
-        run: |
-          if (-not $env:GOOGLE_DRIVE_API_KEY) {
-            throw "Add desktop-tool/client_secrets.json as the GOOGLE_DRIVE_API_KEY repository secret."
-          }
+        run: test -n "$GOOGLE_DRIVE_API_KEY" || (echo "Add desktop-tool/client_secrets.json as the GOOGLE_DRIVE_API_KEY repository secret." && exit 1)
       - name: Write Google Drive API credentials to file
         uses: jsdaniell/create-json@v1.2.3
         with:
@@ -52,11 +68,16 @@ jobs:
           working-directory: desktop-tool
           script-name: autofill.py
           mode: onefile
-          output-file: autofill-windows.exe
+          output-file: ${{ matrix.filename }}
+          macos-target-arch: ${{ matrix.macos-arch }}
       - name: Smoke test bundled executable
-        run: .\build\autofill-windows.exe --help
+        run: |
+          help_output=$(./build/${{ matrix.filename }} --help)
+          grep -q MakePlayingCards <<< "$help_output"
+          grep -q DriveThruCards <<< "$help_output"
+          stat -f "%N: %z bytes" build/${{ matrix.filename }} 2>/dev/null || stat -c "%n: %s bytes" build/${{ matrix.filename }}
       - name: Upload unsigned artifact
         uses: actions/upload-artifact@v7
         with:
-          name: windows Unsigned Build
-          path: desktop-tool/build/autofill-windows.exe
+          name: ${{ matrix.target }} Unsigned Build
+          path: desktop-tool/build/${{ matrix.filename }}
