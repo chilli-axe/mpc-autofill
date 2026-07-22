@@ -732,7 +732,7 @@ def test_nuitka_directives_include_runtime_data_and_cached_extraction() -> None:
         source = f.read()
     assert "--include-data-dir=assets=assets" in source
     assert "--include-package-data=certifi" in source
-    assert "--onefile-tempdir-spec={CACHE_DIR}/mpc-autofill" in source
+    assert "--onefile-tempdir-spec={CACHE_DIR}/mpc-autofill/{VERSION}" in source
 
 
 def test_readme_points_users_to_wiki_for_usage_docs() -> None:
@@ -2691,3 +2691,27 @@ def test_execute_order_stops_before_upload_when_downloads_fail(monkeypatch, card
             auto_save_threshold=None,
             post_processing_config=None,
         )
+
+
+def test_prune_stale_onefile_caches_removes_only_sibling_version_dirs(tmp_path):
+    cache_root = tmp_path / "mpc-autofill"
+    current = cache_root / "1.0.2"
+    stale = cache_root / "1.0.1"
+    for directory in (current, stale):
+        directory.mkdir(parents=True)
+        (directory / "autofill.bin").touch()
+    (cache_root / "unrelated-file.txt").touch()
+
+    autofill_cli.prune_stale_onefile_caches(str(current))
+
+    assert current.exists()
+    assert not stale.exists()
+    assert (cache_root / "unrelated-file.txt").exists()
+
+    # refuses to delete anything when not inside an mpc-autofill cache directory
+    other = tmp_path / "somewhere-else" / "1.0.2"
+    other_sibling = tmp_path / "somewhere-else" / "1.0.1"
+    other.mkdir(parents=True)
+    other_sibling.mkdir(parents=True)
+    autofill_cli.prune_stale_onefile_caches(str(other))
+    assert other_sibling.exists()

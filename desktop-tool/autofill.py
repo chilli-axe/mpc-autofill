@@ -1,5 +1,8 @@
 # nuitka-project: --mode=onefile
-# nuitka-project: --onefile-tempdir-spec={CACHE_DIR}/mpc-autofill
+# Each build version extracts to its own cache directory: rewriting a previously-run executable
+# in place invalidates macOS's cached code-signature and the OS kills the process with SIGKILL.
+# {VERSION} makes builds fail loudly unless --file-version (or --product-version) is passed.
+# nuitka-project: --onefile-tempdir-spec={CACHE_DIR}/mpc-autofill/{VERSION}
 # nuitka-project: --include-data-files=client_secrets.json=client_secrets.json
 # nuitka-project: --include-data-files=post-launch.html=post-launch.html
 # nuitka-project: --include-data-files=dtc-post-launch.html=dtc-post-launch.html
@@ -54,7 +57,24 @@ def configure_tls() -> str:
     return os.environ.setdefault("SSL_CERT_FILE", certifi.where())
 
 
+def prune_stale_onefile_caches(extraction_directory: str) -> None:
+    """
+    Each build version extracts to its own directory under the mpc-autofill cache directory
+    (see the --onefile-tempdir-spec build directive) - delete extractions left by old versions.
+    """
+
+    parent_directory = os.path.dirname(extraction_directory)
+    if os.path.basename(parent_directory) != "mpc-autofill":
+        return
+    for entry in os.listdir(parent_directory):
+        sibling = os.path.join(parent_directory, entry)
+        if sibling != extraction_directory and os.path.isdir(sibling):
+            shutil.rmtree(sibling, ignore_errors=True)
+
+
 configure_tls()
+if "__compiled__" in globals():
+    prune_stale_onefile_caches(os.path.dirname(os.path.abspath(__file__)))
 
 # https://stackoverflow.com/questions/12492810/python-how-can-i-make-the-ansi-escape-codes-to-work-also-in-windows
 if sys.platform == "win32":

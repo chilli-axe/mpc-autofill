@@ -69,6 +69,8 @@ jobs:
           script-name: autofill.py
           mode: onefile
           output-file: ${{ matrix.filename }}
+          # required by the versioned onefile cache directory ({VERSION} in --onefile-tempdir-spec)
+          file-version: 1.0.${{ github.run_number }}
           macos-target-arch: ${{ matrix.macos-arch }}
       - name: Smoke test bundled executable
         run: |
