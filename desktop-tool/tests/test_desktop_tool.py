@@ -2593,6 +2593,7 @@ def test_pdf_export_drive_thru_cards_processes_and_embeds_repeated_images_once(m
         constants.TargetSites.PrinterStudioFR,
     ],
 )
+@requires_google_drive_credentials
 def test_card_order_complete_run_single_cardback(browser, site, input_enter, card_order_valid):
     autofill_driver = AutofillDriver(browser=browser, target_site=site, headless=True)
     autofill_driver.execute_order(
