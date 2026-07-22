@@ -710,6 +710,20 @@ class CardOrder:
         assert len(orders) > 0, "Attempted to produce a CardOrder from multiple CardOrders but none were given!"
         return reduce(lambda a, b: a.combine(b), orders)
 
+    def get_failed_downloads(self) -> list[tuple[str, str]]:
+        """
+        Return (name, drive_id) for each image in this order which has not been downloaded successfully.
+        """
+
+        return sorted(
+            {
+                (card.name or "Unknown image", card.drive_id)
+                for collection in (self.fronts, self.backs)
+                for card in collection.cards_by_id.values()
+                if not card.downloaded
+            }
+        )
+
     def get_overview(self) -> str:
         return (
             f"Total of {bold(self.details.quantity)} cards. "

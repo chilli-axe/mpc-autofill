@@ -334,14 +334,9 @@ class PdfExporter:
             self.order.fronts.download_images(pool, self.download_bar, download_config)
             self.order.backs.download_images(pool, self.download_bar, download_config)
 
-        failed_images = {
-            (card.name or "Unknown image", card.drive_id)
-            for collection in (self.order.fronts, self.order.backs)
-            for card in collection.cards_by_id.values()
-            if not card.downloaded
-        }
+        failed_images = self.order.get_failed_downloads()
         if failed_images:
-            raise ImageDownloadError(sorted(failed_images))
+            raise ImageDownloadError(failed_images)
 
         backs_by_slots = {}
         for card in self.order.backs.cards_by_id.values():

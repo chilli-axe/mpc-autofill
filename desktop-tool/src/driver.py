@@ -35,7 +35,7 @@ from src.constants import (
     States,
     TargetSites,
 )
-from src.exc import InvalidStateException
+from src.exc import ImageDownloadError, InvalidStateException
 from src.formatting import bold
 from src.logging import logger
 from src.order import CardImage, CardImageCollection, CardOrder
@@ -1530,6 +1530,8 @@ class AutofillDriver:
     ) -> None:
         t = time.time()
         self.configure_bars_for_order(order=order)
+        # complete all downloads before any browser automation so a failed image stops the
+        # order before anything is uploaded, rather than leaving a partially-filled project
         with ThreadPoolExecutor(max_workers=THREADS) as pool:
             order.fronts.download_images(
                 pool=pool, download_bar=self.download_bar, post_processing_config=post_processing_config
@@ -1537,35 +1539,38 @@ class AutofillDriver:
             order.backs.download_images(
                 pool=pool, download_bar=self.download_bar, post_processing_config=post_processing_config
             )
-            if any(
-                [
-                    fulfilment_method == OrderFulfilmentMethod.append_to_project,
-                    fulfilment_method == OrderFulfilmentMethod.continue_project,
-                    auto_save_threshold is not None,
-                ]
-            ):
-                self.authenticate()
+        failed_images = order.get_failed_downloads()
+        if failed_images:
+            raise ImageDownloadError(failed_images)
 
-            self.initialise_order(order=order)
-            if fulfilment_method == OrderFulfilmentMethod.new_project:
-                logger.info("Configuring a new project.")
-                self.define_project(order=order)
-                self.page_to_fronts(order=order)
-            else:
-                order = self.redefine_project(order=order, fulfilment_method=fulfilment_method)
+        if any(
+            [
+                fulfilment_method == OrderFulfilmentMethod.append_to_project,
+                fulfilment_method == OrderFulfilmentMethod.continue_project,
+                auto_save_threshold is not None,
+            ]
+        ):
+            self.authenticate()
 
-            self.insert_fronts(order=order, auto_save_threshold=auto_save_threshold)
-            self.page_to_backs(order=order)
-            self.insert_backs(order=order, auto_save_threshold=auto_save_threshold)
-            self.page_to_review()
+        self.initialise_order(order=order)
+        if fulfilment_method == OrderFulfilmentMethod.new_project:
+            logger.info("Configuring a new project.")
+            self.define_project(order=order)
+            self.page_to_fronts(order=order)
+        else:
+            order = self.redefine_project(order=order, fulfilment_method=fulfilment_method)
+
+        self.insert_fronts(order=order, auto_save_threshold=auto_save_threshold)
+        self.page_to_backs(order=order)
+        self.insert_backs(order=order, auto_save_threshold=auto_save_threshold)
+        self.page_to_review()
         log_hours_minutes_seconds_elapsed(t)
         logger.info(
             textwrap.dedent(
                 f"""
                 Please review your project and ensure everything has been uploaded correctly before finalising with
-                {self.target_site.name}. If any images failed to download, links to download them will have been printed
-                above. If you need to make any changes to your order, you can do so by adding it to your Saved Projects
-                and editing in your normal browser.
+                {self.target_site.name}. If you need to make any changes to your order, you can do so by adding it
+                to your Saved Projects and editing in your normal browser.
                 """
             )
         )

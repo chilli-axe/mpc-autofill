@@ -2644,3 +2644,50 @@ def test_card_order_complete_run_multiple_cardbacks(browser, site, input_enter, 
 
 
 # endregion
+
+
+def test_console_formatter_hides_tracebacks_but_default_formatter_keeps_them():
+    from src.logging import ConsoleFormatter
+
+    try:
+        raise ValueError("boom")
+    except ValueError:
+        record = logging.LogRecord(
+            name="src.logging",
+            level=logging.ERROR,
+            pathname=__file__,
+            lineno=1,
+            msg="download failed",
+            args=(),
+            exc_info=sys.exc_info(),
+        )
+
+    assert ConsoleFormatter().format(record) == "download failed"
+    # the record itself is untouched, so the crash log formatter still sees the traceback
+    assert "Traceback" in logging.Formatter().format(record)
+
+
+def test_execute_order_stops_before_upload_when_downloads_fail(monkeypatch, card_order_valid):
+    monkeypatch.setattr(AutofillDriver, "__attrs_post_init__", lambda self: None)
+    driver = AutofillDriver(target_site=constants.TargetSites.MakePlayingCards)
+    driver.initialise_bars()
+
+    def fail_fronts(**_kwargs):
+        for index, card in enumerate(card_order_valid.fronts.cards_by_id.values()):
+            card.downloaded = index != 0
+
+    def download_backs(**_kwargs):
+        for card in card_order_valid.backs.cards_by_id.values():
+            card.downloaded = True
+
+    monkeypatch.setattr(card_order_valid.fronts, "download_images", fail_fronts)
+    monkeypatch.setattr(card_order_valid.backs, "download_images", download_backs)
+    monkeypatch.setattr(driver, "initialise_order", lambda **_kwargs: pytest.fail("upload must not start"))
+
+    with pytest.raises(ImageDownloadError, match="stopped before creating your order"):
+        driver.execute_order(
+            order=card_order_valid,
+            fulfilment_method=OrderFulfilmentMethod.new_project,
+            auto_save_threshold=None,
+            post_processing_config=None,
+        )

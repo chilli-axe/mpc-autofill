@@ -17,6 +17,18 @@ class FileLogFormatter(logging.Formatter):
         return super().format(new_record)
 
 
+class ConsoleFormatter(logging.Formatter):
+    # Hides exception tracebacks from the console - they're still written in full to the crash log.
+    # Formats a copy so the original record's traceback isn't stripped for other handlers.
+    def format(self, record: logging.LogRecord) -> str:
+        if record.exc_info or record.exc_text or record.stack_info:
+            record = copy(record)
+            record.exc_info = None
+            record.exc_text = None
+            record.stack_info = None
+        return super().format(record)
+
+
 def configure_loggers(working_directory: str, log_debug_to_file: bool, stdout_log_level: int) -> None:
     logging.getLogger("googleapiclient").setLevel(logging.ERROR)
     logging.getLogger("oauth2client").setLevel(logging.ERROR)
@@ -30,8 +42,11 @@ def configure_loggers(working_directory: str, log_debug_to_file: bool, stdout_lo
     stdout_handler.setLevel(stdout_log_level)
     if stdout_log_level <= logging.DEBUG:
         # If the user has opted into debug logging, format stdout logs with their log level
+        # and keep exception tracebacks visible on the console
         console_debug_format_string = "[%(levelname)s] %(message)s"
         stdout_handler.setFormatter(logging.Formatter(console_debug_format_string))
+    else:
+        stdout_handler.setFormatter(ConsoleFormatter())
     logger.addHandler(stdout_handler)
 
     file_crash_logger = logging.FileHandler(os.path.join(working_directory, CRASH_LOG_FILENAME))

@@ -23,7 +23,7 @@ class ImageDownloadError(Exception):
             for name, drive_id in failed_images
         )
         super().__init__(
-            "Some card images could not be downloaded, so PDF creation has stopped.\n"
+            "Some card images could not be downloaded, so the tool has stopped before creating your order.\n"
             f"{failed_list}\n\n"
             "This usually means the saved XML refers to an image that was removed or replaced after the order "
             "was created. Import this XML into a new MPC Fill project to identify the unmatched cards and choose "
