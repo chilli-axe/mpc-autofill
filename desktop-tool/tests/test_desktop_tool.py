@@ -719,7 +719,7 @@ def test_download_images_for_orders_downloads_fronts_and_backs() -> None:
         def download_images(self, _pool, _download_bar, _post_processing_config):
             calls[self._key] += 1
 
-    order = SimpleNamespace(name="order1", fronts=Face("fronts"), backs=Face("backs"))
+    order = SimpleNamespace(name="order1", fronts=Face("fronts"), backs=Face("backs"), get_failed_downloads=lambda: [])
 
     autofill_cli.download_images_for_orders(orders=[order], post_processing_config=DEFAULT_POST_PROCESSING)
 
@@ -2715,3 +2715,35 @@ def test_prune_stale_onefile_caches_removes_only_sibling_version_dirs(tmp_path):
     other_sibling.mkdir(parents=True)
     autofill_cli.prune_stale_onefile_caches(str(other))
     assert other_sibling.exists()
+
+
+def test_console_filter_hides_file_only_records():
+    from src.logging import FILE_ONLY, _console_visible
+
+    visible = logging.LogRecord(
+        name="src.logging", level=logging.ERROR, pathname=__file__, lineno=1, msg="shown", args=(), exc_info=None
+    )
+    hidden = logging.LogRecord(
+        name="src.logging", level=logging.ERROR, pathname=__file__, lineno=1, msg="hidden", args=(), exc_info=None
+    )
+    for key, value in FILE_ONLY.items():
+        setattr(hidden, key, value)
+
+    assert _console_visible(visible) is True
+    assert _console_visible(hidden) is False
+
+
+def test_download_images_only_raises_summary_when_downloads_fail(monkeypatch, card_order_valid):
+    def fail_fronts(*_args, **_kwargs):
+        for card in card_order_valid.fronts.cards_by_id.values():
+            card.downloaded = False
+
+    def download_backs(*_args, **_kwargs):
+        for card in card_order_valid.backs.cards_by_id.values():
+            card.downloaded = True
+
+    monkeypatch.setattr(card_order_valid.fronts, "download_images", fail_fronts)
+    monkeypatch.setattr(card_order_valid.backs, "download_images", download_backs)
+
+    with pytest.raises(ImageDownloadError, match="stopped before creating your order"):
+        autofill_cli.download_images_for_orders(orders=[card_order_valid], post_processing_config=None)

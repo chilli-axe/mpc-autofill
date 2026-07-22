@@ -13,7 +13,7 @@ from googleapiclient.http import MediaIoBaseDownload
 from oauth2client.service_account import ServiceAccountCredentials
 
 import src.constants as constants
-from src.logging import logger
+from src.logging import FILE_ONLY, logger
 from src.processing import (
     ImagePostProcessingConfig,
     get_post_processed_path,
@@ -194,7 +194,7 @@ def download_google_drive_file(
             _, done = downloader.next_chunk()
         file_bytes = file.getvalue()
     except HttpError:
-        logger.exception(f"Encountered a HTTP error while downloading Google Drive image {drive_id}")
+        logger.exception(f"Encountered a HTTP error while downloading Google Drive image {drive_id}", extra=FILE_ONLY)
         return False
 
     if post_processing_config is not None:

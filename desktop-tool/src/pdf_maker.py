@@ -391,6 +391,8 @@ class PdfExporter:
         finally:
             # Freeze the counters into scrollback as a static record of the export and release the
             # terminal rows, so any progress bars created later render below instead of colliding.
+            # The transient status row must be closed explicitly for its leave=False to clear it.
+            self.status_bar.close()
             self.manager.stop()
 
     def export(self) -> None:

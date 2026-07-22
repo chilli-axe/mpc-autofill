@@ -26,7 +26,7 @@ from src.io import (
     get_google_drive_file_name,
     get_image_directory,
 )
-from src.logging import logger
+from src.logging import FILE_ONLY, logger
 from src.processing import ImagePostProcessingConfig
 from src.utils import unpack_element
 
@@ -203,13 +203,17 @@ class CardImage:
                     if is_image_valid(cast(str, self.file_path)):
                         self.downloaded = True
                     else:
-                        logger.info(
+                        logger.error(
                             f"Local file '{bold(self.name)}' appears to be corrupted at path:\n"
-                            f"{bold(self.file_path)}\n"
+                            f"{bold(self.file_path)}\n",
+                            extra=FILE_ONLY,
                         )
                         self.errored = True
                 else:
-                    logger.info(f"Local file '{bold(self.name)}' does not exist at path:\n{bold(self.drive_id)}\n")
+                    logger.error(
+                        f"Local file '{bold(self.name)}' does not exist at path:\n{bold(self.drive_id)}\n",
+                        extra=FILE_ONLY,
+                    )
             elif self.source_type == SourceType.GOOGLE_DRIVE:
                 if self.file_path is not None and not self.errored:
                     for attempt in range(2):
@@ -232,7 +236,8 @@ class CardImage:
                 else:
                     logger.error(
                         f"Failed to download '{bold(self.name)}' - allocated to slot/s {bold(sorted(self.slots))}.\n"
-                        f"Download link - {bold(f'https://drive.google.com/uc?id={self.drive_id}&export=download')}\n"
+                        f"Download link - {bold(f'https://drive.google.com/uc?id={self.drive_id}&export=download')}\n",
+                        extra=FILE_ONLY,
                     )
         except Exception as e:
             # note: python threads die silently if they encounter an exception. if an exception does occur,
@@ -240,7 +245,8 @@ class CardImage:
             logger.exception(
                 f"An uncaught exception occurred when attempting to download '{bold(self.name)}':\n{bold(e)}\n"
                 f"Allocated to slot/s {bold(sorted(self.slots))}.\n"
-                f"Download link - {bold(f'https://drive.google.com/uc?id={self.drive_id}&export=download')}\n"
+                f"Download link - {bold(f'https://drive.google.com/uc?id={self.drive_id}&export=download')}\n",
+                extra=FILE_ONLY,
             )
         finally:
             queue.put((self.drive_id, self.downloaded))

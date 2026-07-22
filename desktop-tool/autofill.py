@@ -306,15 +306,22 @@ def download_images_for_orders(
     import enlighten
 
     from src.constants import THREADS
+    from src.exc import ImageDownloadError
 
     total_images = sum(len(order.fronts.cards_by_id) + len(order.backs.cards_by_id) for order in orders)
     manager = enlighten.get_manager()
     download_bar = manager.counter(total=total_images, desc="Images Downloaded", position=1, autorefresh=True)
-    with ThreadPoolExecutor(max_workers=THREADS) as pool:
-        for order in orders:
-            logger.info(f"Downloading images for {bold(order.name or 'Unnamed Project')}...")
-            order.fronts.download_images(pool, download_bar, post_processing_config)
-            order.backs.download_images(pool, download_bar, post_processing_config)
+    try:
+        with ThreadPoolExecutor(max_workers=THREADS) as pool:
+            for order in orders:
+                logger.info(f"Downloading images for {bold(order.name or 'Unnamed Project')}...")
+                order.fronts.download_images(pool, download_bar, post_processing_config)
+                order.backs.download_images(pool, download_bar, post_processing_config)
+    finally:
+        manager.stop()
+    failed_images = sorted({failed for order in orders for failed in order.get_failed_downloads()})
+    if failed_images:
+        raise ImageDownloadError(failed_images)
     logger.info("Finished downloading card images.")
 
 

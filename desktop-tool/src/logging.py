@@ -8,6 +8,14 @@ logger = logging.getLogger(__name__)
 
 CRASH_LOG_FILENAME = "autofill_crash_log.txt"
 
+# pass as `extra` to log calls whose details belong in the crash log but not on the console,
+# e.g. per-image download failures that are also reported in a user-facing summary
+FILE_ONLY = {"console": False}
+
+
+def _console_visible(record: logging.LogRecord) -> bool:
+    return getattr(record, "console", True)
+
 
 class FileLogFormatter(logging.Formatter):
     # A custom formatter which removes bold start/end characters from records before writing to disk
@@ -47,6 +55,7 @@ def configure_loggers(working_directory: str, log_debug_to_file: bool, stdout_lo
         stdout_handler.setFormatter(logging.Formatter(console_debug_format_string))
     else:
         stdout_handler.setFormatter(ConsoleFormatter())
+        stdout_handler.addFilter(_console_visible)
     logger.addHandler(stdout_handler)
 
     file_crash_logger = logging.FileHandler(os.path.join(working_directory, CRASH_LOG_FILENAME))
