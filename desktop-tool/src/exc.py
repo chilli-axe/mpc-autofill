@@ -1,4 +1,5 @@
 from src.formatting import bold
+from src.logging import CRASH_LOG_FILENAME
 
 
 class InvalidStateException(Exception):
@@ -27,5 +28,5 @@ class ImageDownloadError(Exception):
             "This usually means the saved XML refers to an image that was removed or replaced after the order "
             "was created. Import this XML into a new MPC Fill project to identify the unmatched cards and choose "
             "replacements, then download a new XML and try again. Technical details were saved to "
-            "autofill_crash_log.txt."
+            f"{CRASH_LOG_FILENAME}."
         )

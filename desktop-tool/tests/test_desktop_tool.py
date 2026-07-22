@@ -533,6 +533,34 @@ def test_interactive_onboarding_uses_picker_and_skips_dtc_only_questions(
     assert prompts[1]["choices"][-1] == "DriveThruCards"
 
 
+def test_dtc_overridden_explicit_flags_are_explained_in_logs(
+    tmp_path, caplog, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr("src.logging.configure_loggers", lambda **_kwargs: None)
+    monkeypatch.setattr("wakepy.keepawake", lambda **_kwargs: nullcontext())
+
+    with caplog.at_level(logging.INFO, logger="src.logging"):
+        # no XML files in tmp_path, so the run exits at the "No XML files found" input() prompt
+        result = CliRunner().invoke(
+            autofill_cli.main,
+            [
+                "-d",
+                str(tmp_path),
+                "--site",
+                "DriveThruCards",
+                "--image-post-processing",
+                "--no-auto-save",
+                "--download-images-only",
+            ],
+            input="\n",
+        )
+
+    assert result.exit_code == 0
+    assert "Ignoring --image-post-processing" in caplog.text
+    assert "Ignoring --no-auto-save" in caplog.text
+
+
 def test_cli_site_choices_list_drivethrucards_last() -> None:
     result = CliRunner().invoke(autofill_cli.main, ["--help"])
     assert result.exit_code == 0

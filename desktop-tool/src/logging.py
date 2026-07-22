@@ -6,6 +6,8 @@ from src.formatting import TEXT_BOLD, TEXT_END
 
 logger = logging.getLogger(__name__)
 
+CRASH_LOG_FILENAME = "autofill_crash_log.txt"
+
 
 class FileLogFormatter(logging.Formatter):
     # A custom formatter which removes bold start/end characters from records before writing to disk
@@ -32,7 +34,7 @@ def configure_loggers(working_directory: str, log_debug_to_file: bool, stdout_lo
         stdout_handler.setFormatter(logging.Formatter(console_debug_format_string))
     logger.addHandler(stdout_handler)
 
-    file_crash_logger = logging.FileHandler(os.path.join(working_directory, "autofill_crash_log.txt"))
+    file_crash_logger = logging.FileHandler(os.path.join(working_directory, CRASH_LOG_FILENAME))
     file_crash_logger.setLevel(logging.ERROR)
     file_crash_logger.setFormatter(FileLogFormatter(file_debug_format_string))
     logger.addHandler(file_crash_logger)

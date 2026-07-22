@@ -31,6 +31,7 @@ from typing import TYPE_CHECKING, Optional
 
 import certifi
 import click
+from click.core import ParameterSource
 from InquirerPy import inquirer
 
 from src.constants import (
@@ -512,10 +513,6 @@ def main(
     if should_run_interactive_onboarding():
         browser, site, auto_save, image_post_processing = run_interactive_onboarding()
 
-    if TargetSites[site] == TargetSites.DriveThruCards:
-        auto_save = True
-        image_post_processing = False
-
     from wakepy import keepawake
 
     from src.exc import ImageDownloadError, ValidationException
@@ -554,6 +551,17 @@ def main(
         log_debug_to_file=write_debug_logs,
         stdout_log_level=logging.getLevelName(log_level),
     )
+    if TargetSites[site] == TargetSites.DriveThruCards:
+        explicit = click.get_current_context().get_parameter_source
+        if not auto_save and explicit("auto_save") == ParameterSource.COMMANDLINE:
+            logger.info("Ignoring --no-auto-save: DriveThruCards orders are always saved to your account.")
+        if image_post_processing and explicit("image_post_processing") == ParameterSource.COMMANDLINE:
+            logger.info(
+                "Ignoring --image-post-processing: DriveThruCards images are already downscaled once "
+                "during PDF creation."
+            )
+        auto_save = True
+        image_post_processing = False
     try:
         with keepawake(keep_screen_awake=True) if not allowsleep else nullcontext():
             logger.info("MPC Autofill desktop tool has successfully initialised!")
@@ -669,7 +677,7 @@ def main(
                 wait_for_user_to_complete_order()
     except ImageDownloadError as e:
         logger.error(str(e))
-        input(f"{e}\n\nPress Enter to exit.")
+        input("Press Enter to exit.")
     except ValidationException as e:
         input(f"There was a problem with your order file:\n\n{bold(e)}\n\nPress Enter to exit.")
         sys.exit(0)
