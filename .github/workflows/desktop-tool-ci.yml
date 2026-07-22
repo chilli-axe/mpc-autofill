@@ -120,6 +120,9 @@ jobs:
           macos-sign-keyring-password: ${{ secrets.KEYCHAIN_PASSWORD }}
           macos-signed-app-name: com.ndepaola.mpc-autofill-${{ matrix.TARGET }}
           macos-target-arch: ${{ matrix.MACOS_ARCH }}
+      - name: Smoke test bundled TLS
+        shell: bash
+        run: env -u SSL_CERT_FILE -u SSL_CERT_DIR ./build/${{ matrix.FILENAME }} --check-tls
       - name: Upload unsigned artifact
         id: upload-unsigned-artifact
         uses: actions/upload-artifact@v7

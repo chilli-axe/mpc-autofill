@@ -1,8 +1,10 @@
 # nuitka-project: --mode=onefile
+# nuitka-project: --onefile-tempdir-spec={CACHE_DIR}/mpc-autofill
 # nuitka-project: --include-data-files=client_secrets.json=client_secrets.json
 # nuitka-project: --include-data-files=post-launch.html=post-launch.html
 # nuitka-project: --include-data-files=dtc-post-launch.html=dtc-post-launch.html
 # nuitka-project: --include-data-dir=assets=assets
+# nuitka-project: --include-package-data=certifi
 # nuitka-project: --noinclude-pytest-mode=nofollow
 # nuitka-project: --windows-icon-from-ico=favicon.ico
 # nuitka-project-if: {OS} == "Windows":
@@ -16,59 +18,118 @@
 #    nuitka-project: --noinclude-data-files=selenium/webdriver/common/windows/selenium-manager.exe
 #    nuitka-project: --noinclude-data-files=selenium/webdriver/common/macos/selenium-manager
 
+from __future__ import annotations
 
 import logging
 import os
 import shutil
 import subprocess
 import sys
-from concurrent.futures import ThreadPoolExecutor
 from contextlib import nullcontext
 from glob import glob
-from typing import Optional, Union
+from typing import TYPE_CHECKING, Optional
 
+import certifi
 import click
-import enlighten
-from wakepy import keepawake
+from InquirerPy import inquirer
 
 from src.constants import (
     DTC_POST_LAUNCH_HTML_FILENAME,
-    THREADS,
     Browsers,
     ImageResizeMethods,
     TargetSites,
 )
-from src.driver import AutofillDriver
-from src.exc import ValidationException
 from src.formatting import bold
-from src.icc import find_or_download_dtc_icc_profile
-from src.io import (
-    DEFAULT_WORKING_DIRECTORY,
-    create_image_directory_if_not_exists,
-    get_image_directory,
-)
-from src.logging import configure_loggers, logger
-from src.order import CardOrder, aggregate_and_split_orders
-from src.pdf_maker import (
-    PdfExporter,
-    PdfXConversionConfig,
-    get_export_directory,
-    get_ghostscript_path,
-    get_ghostscript_version,
-)
-from src.processing import ImagePostProcessingConfig
-from src.web_server import WebServer
+from src.logging import logger
+
+if TYPE_CHECKING:
+    from src.order import CardOrder
+    from src.processing import ImagePostProcessingConfig
+
+
+def configure_tls() -> str:
+    """Use the bundled CA bundle unless the user supplied one explicitly."""
+
+    return os.environ.setdefault("SSL_CERT_FILE", certifi.where())
+
+
+configure_tls()
 
 # https://stackoverflow.com/questions/12492810/python-how-can-i-make-the-ansi-escape-codes-to-work-also-in-windows
-os.system("")  # enables ansi escape characters in terminal
+if sys.platform == "win32":
+    os.system("")  # enables ansi escape characters in the Windows terminal
+
+DEFAULT_BROWSER = Browsers.chrome.name
+DEFAULT_SITE = TargetSites.MakePlayingCards.name
+DEFAULT_AUTO_SAVE = True
+DEFAULT_IMAGE_POST_PROCESSING = True
+TLS_CHECK_URL = "https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions.json"
 
 
-def prompt_if_no_arguments(prompt: str) -> Union[str, bool]:
-    """
-    We only prompt users to specify some flags if the tool was executed with no command-line arguments.
-    """
+def get_browser_picker_choices() -> list[str]:
+    return sorted(browser.name for browser in Browsers)
 
-    return f"{prompt} (Press Enter if you're not sure.)" if len(sys.argv) == 1 else False
+
+def get_site_picker_choices() -> list[str]:
+    return [site.name for site in TargetSites]
+
+
+def should_run_interactive_onboarding() -> bool:
+    return len(sys.argv) == 1 and sys.stdin.isatty() and sys.stdout.isatty()
+
+
+def run_interactive_onboarding() -> tuple[str, str, bool, bool]:
+    browser = inquirer.rawlist(
+        message="Which web browser should the tool run on? (Press Enter if you're not sure.)",
+        choices=get_browser_picker_choices(),
+        default=DEFAULT_BROWSER,
+    ).execute()
+    site = inquirer.rawlist(
+        message="Which site should the tool auto-fill your project into? (Press Enter if you're not sure.)",
+        choices=get_site_picker_choices(),
+        default=DEFAULT_SITE,
+    ).execute()
+
+    if site == TargetSites.DriveThruCards.name:
+        return browser, site, True, False
+
+    auto_save = inquirer.rawlist(
+        message=(
+            "Automatically save this project to your account while the tool is running? "
+            "(Press Enter if you're not sure.)"
+        ),
+        choices=[{"name": "Yes", "value": True}, {"name": "No", "value": False}],
+        default=DEFAULT_AUTO_SAVE,
+    ).execute()
+    image_post_processing = inquirer.rawlist(
+        message=(
+            "Should the tool post-process your images to reduce upload times? By default, images will be "
+            "downscaled to 800 DPI. (Press Enter if you're not sure.)"
+        ),
+        choices=[{"name": "Yes", "value": True}, {"name": "No", "value": False}],
+        default=DEFAULT_IMAGE_POST_PROCESSING,
+    ).execute()
+    return browser, site, auto_save, image_post_processing
+
+
+def check_tls_connection() -> None:
+    from urllib.request import urlopen
+
+    with urlopen(TLS_CHECK_URL, timeout=30) as response:
+        if response.status != 200:
+            raise click.ClickException(f"TLS check returned HTTP {response.status}.")
+
+
+def get_ghostscript_path(path: Optional[str] = None) -> Optional[str]:
+    from src.pdf_maker import get_ghostscript_path as resolve_path
+
+    return resolve_path(path)
+
+
+def get_ghostscript_version(path: str) -> Optional[str]:
+    from src.pdf_maker import get_ghostscript_version as resolve_version
+
+    return resolve_version(path)
 
 
 def wait_for_user_to_complete_order() -> None:
@@ -152,6 +213,8 @@ def ensure_ghostscript_available() -> str:
 
 
 def get_existing_pdf_paths(order_name: Optional[str]) -> list[str]:
+    from src.pdf_maker import get_export_directory
+
     export_directory = get_export_directory(order_name=order_name)
     return sorted([path for path in glob(os.path.join(export_directory, "**", "*.pdf"), recursive=True)])
 
@@ -217,6 +280,12 @@ def download_images_for_orders(
     orders: list[CardOrder],
     post_processing_config: Optional[ImagePostProcessingConfig],
 ) -> None:
+    from concurrent.futures import ThreadPoolExecutor
+
+    import enlighten
+
+    from src.constants import THREADS
+
     total_images = sum(len(order.fronts.cards_by_id) + len(order.backs.cards_by_id) for order in orders)
     manager = enlighten.get_manager()
     download_bar = manager.counter(total=total_images, desc="Images Downloaded", position=1, autorefresh=True)
@@ -235,6 +304,10 @@ def get_dtc_pdf_paths_for_order(
     resolved_icc_profile: Optional[str],
     downscale_alg: str,
 ) -> list[str]:
+    from src.io import get_image_directory
+    from src.pdf_maker import PdfExporter, PdfXConversionConfig
+    from src.processing import ImagePostProcessingConfig
+
     pdf_paths = maybe_reuse_existing_pdfs(
         order_name=order.name,
         skip_pdf_if_exists=skip_pdf_if_exists,
@@ -263,9 +336,8 @@ def get_dtc_pdf_paths_for_order(
 @click.option(
     "-b",
     "--browser",
-    prompt=prompt_if_no_arguments("Which web browser should the tool run on?"),
-    default=Browsers.chrome.name,
-    type=click.Choice(sorted([browser.name for browser in Browsers]), case_sensitive=False),
+    default=DEFAULT_BROWSER,
+    type=click.Choice(get_browser_picker_choices(), case_sensitive=False),
     help="The web browser to run the tool on.",
 )
 @click.option(
@@ -298,16 +370,13 @@ def get_dtc_pdf_paths_for_order(
 )
 @click.option(
     "--site",
-    prompt=prompt_if_no_arguments("Which site should the tool auto-fill your project into?"),
-    default=TargetSites.MakePlayingCards.name,
-    # enum order intentionally lists DriveThruCards last in the picker
-    type=click.Choice([site.name for site in TargetSites], case_sensitive=False),
+    default=DEFAULT_SITE,
+    type=click.Choice(get_site_picker_choices(), case_sensitive=False),
     help="The card printing site into which your order should be auto-filled.",
 )
 @click.option(
     "--auto-save/--no-auto-save",
-    prompt=prompt_if_no_arguments("Automatically save this project to your account while the tool is running?"),
-    default=True,
+    default=DEFAULT_AUTO_SAVE,
     help=(
         "If this flag is passed, the tool will automatically save your project to your account after "
         "processing each batch of cards."
@@ -346,11 +415,7 @@ def get_dtc_pdf_paths_for_order(
 )
 @click.option(
     "--image-post-processing/--no-image-post-processing",
-    default=True,
-    prompt=prompt_if_no_arguments(
-        "Should the tool post-process your images to reduce upload times? "
-        "By default, images will be downscaled to 800 DPI."
-    ),
+    default=DEFAULT_IMAGE_POST_PROCESSING,
     help="Post-process images to reduce file upload time.",
     is_flag=True,
 )
@@ -407,6 +472,7 @@ def get_dtc_pdf_paths_for_order(
     help="If True, debug logs about the tool's actions will be logged to autofill_log.txt in the tool's directory.",
     is_flag=True,
 )
+@click.option("--check-tls", is_flag=True, hidden=True)
 # @click.option(  # TODO: finish implementing jpeg conversion
 #     "--convert-to-jpeg",
 #     default=True,
@@ -435,8 +501,33 @@ def main(
     combine_orders: bool,
     log_level: str,
     write_debug_logs: bool,
+    check_tls: bool,
     # convert_to_jpeg: bool,
 ) -> None:
+    if check_tls:
+        check_tls_connection()
+        click.echo("TLS check succeeded.")
+        return
+
+    if should_run_interactive_onboarding():
+        browser, site, auto_save, image_post_processing = run_interactive_onboarding()
+
+    if TargetSites[site] == TargetSites.DriveThruCards:
+        auto_save = True
+        image_post_processing = False
+
+    from wakepy import keepawake
+
+    from src.exc import ImageDownloadError, ValidationException
+    from src.io import (
+        DEFAULT_WORKING_DIRECTORY,
+        create_image_directory_if_not_exists,
+        get_image_directory,
+    )
+    from src.logging import configure_loggers
+    from src.order import CardOrder, aggregate_and_split_orders
+    from src.processing import ImagePostProcessingConfig
+
     working_directory: str = DEFAULT_WORKING_DIRECTORY
     if directory:
         if not os.path.isdir(directory):
@@ -481,6 +572,10 @@ def main(
                 download_images_for_orders(orders=orders, post_processing_config=post_processing_config)
                 return
             if target_site == TargetSites.DriveThruCards:
+                from src.driver import AutofillDriver
+                from src.icc import find_or_download_dtc_icc_profile
+                from src.web_server import WebServer
+
                 ensure_ghostscript_available()
                 if dtc_icc_profile and not os.path.isfile(dtc_icc_profile):
                     raise Exception(
@@ -536,6 +631,8 @@ def main(
                 if dtc_driver is not None:
                     wait_for_user_to_complete_order()
             elif exportpdf:
+                from src.pdf_maker import PdfExporter
+
                 order = CardOrder.from_xmls_in_folder(working_directory=working_directory)[0]
                 if (
                     maybe_reuse_existing_pdfs(
@@ -547,6 +644,9 @@ def main(
                 ):
                     PdfExporter(order=order).execute(post_processing_config=post_processing_config)
             else:
+                from src.driver import AutofillDriver
+                from src.web_server import WebServer
+
                 card_orders = aggregate_and_split_orders(
                     orders=CardOrder.from_xmls_in_folder(working_directory=working_directory),
                     target_site=target_site,
@@ -567,6 +667,9 @@ def main(
                     post_processing_config=post_processing_config,
                 )
                 wait_for_user_to_complete_order()
+    except ImageDownloadError as e:
+        logger.error(str(e))
+        input(f"{e}\n\nPress Enter to exit.")
     except ValidationException as e:
         input(f"There was a problem with your order file:\n\n{bold(e)}\n\nPress Enter to exit.")
         sys.exit(0)

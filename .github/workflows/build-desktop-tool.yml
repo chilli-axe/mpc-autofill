@@ -72,6 +72,7 @@ jobs:
           macos-target-arch: ${{ matrix.macos-arch }}
       - name: Smoke test bundled executable
         run: |
+          env -u SSL_CERT_FILE -u SSL_CERT_DIR ./build/${{ matrix.filename }} --check-tls
           if [[ "$RUNNER_OS" == Linux ]]; then
             help_output=$(dbus-run-session -- ./build/${{ matrix.filename }} --help)
           else

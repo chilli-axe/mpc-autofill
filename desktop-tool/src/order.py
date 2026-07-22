@@ -230,15 +230,16 @@ class CardImage:
                 if self.file_exists() and not self.errored:
                     self.downloaded = True
                 else:
-                    logger.info(
+                    logger.error(
                         f"Failed to download '{bold(self.name)}' - allocated to slot/s {bold(sorted(self.slots))}.\n"
                         f"Download link - {bold(f'https://drive.google.com/uc?id={self.drive_id}&export=download')}\n"
                     )
         except Exception as e:
             # note: python threads die silently if they encounter an exception. if an exception does occur,
             # log it, but still put the card onto the queue so the main thread doesn't spin its wheels forever waiting.
-            logger.info(
+            logger.exception(
                 f"An uncaught exception occurred when attempting to download '{bold(self.name)}':\n{bold(e)}\n"
+                f"Allocated to slot/s {bold(sorted(self.slots))}.\n"
                 f"Download link - {bold(f'https://drive.google.com/uc?id={self.drive_id}&export=download')}\n"
             )
         finally:

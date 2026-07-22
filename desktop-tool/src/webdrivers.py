@@ -1,20 +1,20 @@
 import re
 import subprocess
 import sys
-from typing import Optional
+from typing import TYPE_CHECKING, Any, Optional
 
-import undetected_chromedriver as uc
-from selenium.webdriver.chrome.options import Options as ChromeOptions
-from selenium.webdriver.chrome.webdriver import WebDriver as Chrome
-from selenium.webdriver.chromium.options import ChromiumOptions
-from selenium.webdriver.chromium.webdriver import ChromiumDriver
-from selenium.webdriver.edge.options import Options as EdgeOptions
-from selenium.webdriver.edge.webdriver import WebDriver as Edge
-from selenium.webdriver.firefox.options import Options as FirefoxOptions
-from selenium.webdriver.firefox.webdriver import WebDriver as Firefox
+if TYPE_CHECKING:
+    from selenium.webdriver.chrome.webdriver import WebDriver as Chrome
+    from selenium.webdriver.chromium.webdriver import ChromiumDriver
+    from selenium.webdriver.firefox.webdriver import WebDriver as Firefox
+else:
+    Chrome = ChromiumDriver = Firefox = Any
 
 
 def get_chrome_driver(headless: bool = False, binary_location: Optional[str] = None) -> Chrome:
+    from selenium.webdriver.chrome.options import Options as ChromeOptions
+    from selenium.webdriver.chrome.webdriver import WebDriver as ChromeDriver
+
     options = ChromeOptions()
     options.add_argument("--no-sandbox")
     options.add_argument("--log-level=3")
@@ -25,12 +25,15 @@ def get_chrome_driver(headless: bool = False, binary_location: Optional[str] = N
     options.add_experimental_option("detach", True)
     if binary_location is not None:
         options.binary_location = binary_location
-    driver = Chrome(options=options)
+    driver = ChromeDriver(options=options)
     driver.set_network_conditions(offline=False, latency=5, throughput=5 * 125000)
     return driver
 
 
 def get_brave_driver(headless: bool = False, binary_location: Optional[str] = None) -> Chrome:
+    from selenium.webdriver.chrome.options import Options as ChromeOptions
+    from selenium.webdriver.chrome.webdriver import WebDriver as ChromeDriver
+
     options = ChromeOptions()
     options.add_argument("--no-sandbox")
     options.add_argument("--log-level=3")
@@ -43,12 +46,16 @@ def get_brave_driver(headless: bool = False, binary_location: Optional[str] = No
     # the binary location for brave must be manually specified (otherwise chrome will open instead)
     options.binary_location = binary_location or get_default_brave_binary_location()
 
-    driver = Chrome(options=options)
+    driver = ChromeDriver(options=options)
     driver.set_network_conditions(offline=False, latency=5, throughput=5 * 125000)
     return driver
 
 
 def get_edge_driver(headless: bool = False, binary_location: Optional[str] = None) -> ChromiumDriver:
+    from selenium.webdriver.chromium.options import ChromiumOptions
+    from selenium.webdriver.edge.options import Options as EdgeOptions
+    from selenium.webdriver.edge.webdriver import WebDriver as Edge
+
     options: ChromiumOptions = EdgeOptions()
     options.add_argument("--no-sandbox")
     options.add_argument("--log-level=3")
@@ -66,13 +73,16 @@ def get_edge_driver(headless: bool = False, binary_location: Optional[str] = Non
 
 # note: firefox is not currently supported
 def get_firefox_driver(headless: bool = False, binary_location: Optional[str] = None) -> Firefox:
+    from selenium.webdriver.firefox.options import Options as FirefoxOptions
+    from selenium.webdriver.firefox.webdriver import WebDriver as FirefoxDriver
+
     options = FirefoxOptions()
     options.add_argument("--log-level=3")
     if headless:
         options.add_argument("--headless")
     if binary_location is not None:
         options.binary_location = binary_location
-    driver = Firefox(options=options)
+    driver = FirefoxDriver(options=options)
     return driver
 
 
@@ -129,11 +139,13 @@ def get_undetected_chrome_driver(
     binary_location: Optional[str] = None,
     user_data_dir: Optional[str] = None,
     profile_directory: Optional[str] = None,
-) -> uc.Chrome:
+) -> Chrome:
     """
     Create a Chrome driver using undetected-chromedriver, for sites (DriveThruCards) whose bot detection
     blocks standard Selenium. Only used when targeting DriveThruCards.
     """
+    import undetected_chromedriver as uc
+
     options = uc.ChromeOptions()
     options.add_argument("--no-sandbox")
     options.add_argument("--log-level=3")
