@@ -904,6 +904,7 @@ def test_convert_pdf_to_pdfx_produces_verified_pdfx_with_real_ghostscript(tmp_pa
     assert b"CGATS TR 001" in contents
 
 
+@requires_google_drive_credentials
 def test_pdf_exporter_appends_pdfx_on_success(monkeypatch: pytest.MonkeyPatch, card_order_valid) -> None:
     def do_nothing(_):
         return None
@@ -937,6 +938,7 @@ def test_pdf_exporter_appends_pdfx_on_success(monkeypatch: pytest.MonkeyPatch, c
     remove_directories(["export/test_order", "export"])
 
 
+@requires_google_drive_credentials
 def test_pdf_exporter_skips_pdfx_on_failure(monkeypatch: pytest.MonkeyPatch, card_order_valid) -> None:
     def do_nothing(_):
         return None
@@ -958,6 +960,7 @@ def test_pdf_exporter_skips_pdfx_on_failure(monkeypatch: pytest.MonkeyPatch, car
     remove_directories(["export/test_order", "export"])
 
 
+@requires_google_drive_credentials
 def test_pdf_exporter_logs_pdfx_conversion_progress(monkeypatch: pytest.MonkeyPatch, card_order_valid) -> None:
     logged_messages = []
 
@@ -1707,6 +1710,7 @@ def test_card_order_valid(card_order_valid):
     )
 
 
+@requires_google_drive_credentials
 def test_card_order_multiple_cardbacks(card_order_multiple_cardbacks):
     assert_orders_identical(
         card_order_multiple_cardbacks,
@@ -1760,6 +1764,7 @@ def test_card_order_multiple_cardbacks(card_order_multiple_cardbacks):
     )
 
 
+@requires_google_drive_credentials
 def test_card_order_valid_from_file():
     card_order = CardOrder.from_file_path(working_directory=FILE_PATH, file_path="test_order.xml")
     for card in (card_order.fronts.cards_by_id | card_order.backs.cards_by_id).values():
@@ -2347,6 +2352,7 @@ def test_aggregate_and_split_orders(
 # region test PdfExporter
 
 
+@requires_google_drive_credentials
 def test_pdf_export_complete_3_cards_single_file(monkeypatch, card_order_valid):
     def do_nothing(_):
         return None
@@ -2369,6 +2375,7 @@ def test_pdf_export_complete_3_cards_single_file(monkeypatch, card_order_valid):
     remove_directories(["export/test_order", "export"])
 
 
+@requires_google_drive_credentials
 def test_pdf_export_complete_3_cards_separate_files(monkeypatch, card_order_valid):
     def do_nothing(_):
         return None
@@ -2386,6 +2393,7 @@ def test_pdf_export_complete_3_cards_separate_files(monkeypatch, card_order_vali
     remove_directories(["export/test_order", "export"])
 
 
+@requires_google_drive_credentials
 def test_pdf_export_complete_separate_faces(monkeypatch, card_order_valid):
     def do_nothing(_):
         return None
@@ -2609,6 +2617,7 @@ def test_card_order_complete_run_single_cardback(browser, site, input_enter, car
         constants.TargetSites.PrinterStudioFR,
     ],
 )
+@requires_google_drive_credentials
 def test_card_order_complete_run_multiple_cardbacks(browser, site, input_enter, card_order_multiple_cardbacks):
     autofill_driver = AutofillDriver(browser=browser, target_site=site, headless=True)
     autofill_driver.execute_order(
