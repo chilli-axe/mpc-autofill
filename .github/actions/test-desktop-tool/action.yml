@@ -39,5 +39,10 @@ runs:
         dir: "desktop-tool/"
     - name: Run tests
       working-directory: desktop-tool
-      run: pytest .
+      run: |
+        if [[ "$RUNNER_OS" == Linux ]]; then
+          dbus-run-session -- pytest .
+        else
+          pytest .
+        fi
       shell: bash

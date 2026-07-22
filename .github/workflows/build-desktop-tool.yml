@@ -72,7 +72,11 @@ jobs:
           macos-target-arch: ${{ matrix.macos-arch }}
       - name: Smoke test bundled executable
         run: |
-          help_output=$(./build/${{ matrix.filename }} --help)
+          if [[ "$RUNNER_OS" == Linux ]]; then
+            help_output=$(dbus-run-session -- ./build/${{ matrix.filename }} --help)
+          else
+            help_output=$(./build/${{ matrix.filename }} --help)
+          fi
           grep -q MakePlayingCards <<< "$help_output"
           grep -q DriveThruCards <<< "$help_output"
           stat -f "%N: %z bytes" build/${{ matrix.filename }} 2>/dev/null || stat -c "%n: %s bytes" build/${{ matrix.filename }}
