@@ -58,6 +58,7 @@ jobs:
       - name: Require Google Drive API credentials
         env:
           GOOGLE_DRIVE_API_KEY: ${{ secrets.GOOGLE_DRIVE_API_KEY }}
+        shell: bash
         run: test -n "$GOOGLE_DRIVE_API_KEY" || (echo "Add desktop-tool/client_secrets.json as the GOOGLE_DRIVE_API_KEY repository secret." && exit 1)
       - name: Write Google Drive API credentials to file
         uses: jsdaniell/create-json@v1.2.3
