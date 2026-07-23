@@ -97,29 +97,34 @@ def get_default_brave_binary_location() -> str:
     return default_binary_locations[sys.platform]
 
 
-def _detect_chrome_version() -> Optional[int]:
+def _detect_chrome_version(binary_location: Optional[str] = None) -> Optional[int]:
     """
-    Detect the installed Chrome version by querying the browser.
+    Detect the selected Chromium browser version.
     Returns the major version number (e.g., 144) or None if detection fails.
     """
     try:
         if sys.platform == "darwin":
             result = subprocess.run(
-                ["/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", "--version"],
+                [binary_location or "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", "--version"],
                 capture_output=True,
                 text=True,
                 timeout=5,
             )
         elif sys.platform == "win32":
+            registry_key = (
+                r"HKEY_CURRENT_USER\Software\BraveSoftware\Brave-Browser\BLBeacon"
+                if binary_location and "brave" in binary_location.lower()
+                else r"HKEY_CURRENT_USER\Software\Google\Chrome\BLBeacon"
+            )
             result = subprocess.run(
-                ["reg", "query", r"HKEY_CURRENT_USER\Software\Google\Chrome\BLBeacon", "/v", "version"],
+                ["reg", "query", registry_key, "/v", "version"],
                 capture_output=True,
                 text=True,
                 timeout=5,
             )
         else:
             result = subprocess.run(
-                ["google-chrome", "--version"],
+                [binary_location or "google-chrome", "--version"],
                 capture_output=True,
                 text=True,
                 timeout=5,
@@ -146,6 +151,14 @@ def get_undetected_chrome_driver(
     """
     import undetected_chromedriver as uc
 
+    if binary_location is None:
+        binary_location = uc.find_chrome_executable()
+        if binary_location is None:
+            raise FileNotFoundError(
+                "Google Chrome was not found. Install Chrome, choose Brave with --browser brave, "
+                "or specify a Chromium executable with --binary-location."
+            )
+
     options = uc.ChromeOptions()
     options.add_argument("--no-sandbox")
     options.add_argument("--log-level=3")
@@ -153,8 +166,7 @@ def get_undetected_chrome_driver(
     options.add_argument("--disable-blink-features=AutomationControlled")
     if headless:
         options.add_argument("--headless=new")
-    if binary_location is not None:
-        options.binary_location = binary_location
+    options.binary_location = binary_location
     if user_data_dir is not None:
         options.add_argument(f"--user-data-dir={user_data_dir}")
     if profile_directory is not None:
@@ -162,4 +174,4 @@ def get_undetected_chrome_driver(
 
     # undetected-chromedriver handles stealth automatically.
     # Detect the Chrome version ourselves since auto-detection can fail.
-    return uc.Chrome(options=options, version_main=_detect_chrome_version())
+    return uc.Chrome(options=options, version_main=_detect_chrome_version(binary_location))

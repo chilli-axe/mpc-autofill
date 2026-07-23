@@ -415,17 +415,40 @@ def test_get_undetected_chrome_driver_applies_user_profile_options(monkeypatch: 
         captured["version_main"] = version_main
         return object()
 
-    monkeypatch.setattr(webdrivers, "_detect_chrome_version", lambda: 120)
+    monkeypatch.setattr(webdrivers, "_detect_chrome_version", lambda _: 120)
     monkeypatch.setattr("undetected_chromedriver.Chrome", fake_chrome)
 
     webdrivers.get_undetected_chrome_driver(
+        binary_location="/tmp/chrome",
         user_data_dir="/tmp/chrome-data",
         profile_directory="Profile 7",
     )
 
+    assert captured["options"].binary_location == "/tmp/chrome"
     assert "--user-data-dir=/tmp/chrome-data" in captured["options"].arguments
     assert "--profile-directory=Profile 7" in captured["options"].arguments
     assert captured["version_main"] == 120
+
+
+def test_detect_chrome_version_uses_selected_brave_browser(monkeypatch: pytest.MonkeyPatch) -> None:
+    captured = {}
+
+    def fake_run(args, **kwargs):
+        captured["args"] = args
+        return SimpleNamespace(stdout="version REG_SZ 150.1.92.143")
+
+    monkeypatch.setattr(webdrivers.sys, "platform", "win32")
+    monkeypatch.setattr(webdrivers.subprocess, "run", fake_run)
+
+    assert webdrivers._detect_chrome_version(r"C:\Program Files\BraveSoftware\brave.exe") == 150
+    assert r"BraveSoftware\Brave-Browser\BLBeacon" in captured["args"][2]
+
+
+def test_get_undetected_chrome_driver_reports_missing_chrome(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr("undetected_chromedriver.find_chrome_executable", lambda: None)
+
+    with pytest.raises(FileNotFoundError, match="Google Chrome was not found.*--browser brave"):
+        webdrivers.get_undetected_chrome_driver()
 
 
 @pytest.mark.parametrize("browser", constants.Browsers)
