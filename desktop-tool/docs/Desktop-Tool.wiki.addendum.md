@@ -4,6 +4,23 @@ Target page: <https://github.com/chilli-axe/mpc-autofill/wiki/Desktop-Tool>
 
 These updates describe the DriveThruCards workflow in the `drivethrucards` branch. They can be copied into the wiki when PR [#367](https://github.com/chilli-axe/mpc-autofill/pull/367) is merged.
 
+## Wiki Home
+
+On the wiki Home page:
+
+- Describe the desktop tool as preparing orders for supported card printers, including MakePlayingCards and DriveThruCards.
+- Replace the Google Drive CI warning with:
+
+> - GitHub Actions runs the backend and desktop tool test suites. Tests that need Google Drive credentials use the `GOOGLE_DRIVE_API_KEY` repository secret.
+> - Pull requests from forks cannot access secrets stored in this repository. The desktop tool workflow still runs without the secret and skips only the credential-backed tests.
+> - To run the complete desktop tool suite in your fork, add `GOOGLE_DRIVE_API_KEY` to the fork and run the workflow there. The secret's value is the full Google service-account JSON document, not a plain API key.
+
+## GitHub Repo Configuration
+
+Replace the `GOOGLE_DRIVE_API_KEY` description with:
+
+> The full Google service-account JSON document, despite the historical name. Used by GitHub Actions for credential-backed backend and desktop tool tests, and built into the desktop tool binary. Pull requests from forks cannot read the upstream secret. The desktop workflow skips credential-backed tests when it is unavailable. Fork owners can add their own copy to run the complete suite in their fork.
+
 ## Overview
 
 Replace the opening with:
