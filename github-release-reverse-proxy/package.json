@@ -12,11 +12,11 @@
 	"devDependencies": {
 		"@cloudflare/vitest-pool-workers": "^0.16.18",
 		"@eslint/js": "^9.39.2",
-		"eslint": "^9.39.2",
+		"eslint": "^10.8.0",
 		"globals": "^16.5.0",
 		"jiti": "^2.6.1",
 		"typescript": "^5.5.2",
-		"typescript-eslint": "^8.50.1",
+		"typescript-eslint": "^8.65.0",
 		"vitest": "^4.1.0",
 		"wrangler": "^4.103.0"
 	}
