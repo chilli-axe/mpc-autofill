@@ -39,6 +39,8 @@ runs:
         dir: "desktop-tool/"
     - name: Run tests
       working-directory: desktop-tool
+      env:
+        MPC_AUTOFILL_RELEASE_CHECKS: "1"
       run: |
         if [[ "$RUNNER_OS" == Linux ]]; then
           dbus-run-session -- pytest .

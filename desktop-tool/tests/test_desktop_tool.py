@@ -1,4 +1,5 @@
 import gc
+import hashlib
 import inspect
 import logging
 import os
@@ -9,6 +10,7 @@ import textwrap
 import time
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import nullcontext
+from io import BytesIO
 from itertools import groupby
 from pathlib import Path
 from queue import Queue
@@ -44,6 +46,7 @@ from src.pdf_maker import (
     PdfExporter,
     PdfXConversionConfig,
     convert_pdf_to_pdfx,
+    get_ghostscript_path,
     get_ghostscript_version,
 )
 from src.processing import ImagePostProcessingConfig
@@ -134,24 +137,35 @@ def test_ensure_ghostscript_available_prompts_until_found(monkeypatch: pytest.Mo
     assert called["version"] == 1
 
 
-def test_ensure_ghostscript_available_installs_with_winget_on_windows(
+def test_ensure_ghostscript_available_installs_official_release_on_windows(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     paths = [None, "C:\\Program Files\\gs\\gswin64c.exe"]
     install_calls = []
+    installer = b"official Ghostscript installer"
+    asset_name = "gs10071w64.exe"
+    download_url = f"https://example.test/{asset_name}"
 
     monkeypatch.setattr(autofill_cli.sys, "platform", "win32", raising=False)
+    monkeypatch.setattr(autofill_cli.sys, "maxsize", 2**63 - 1)
+    monkeypatch.setitem(
+        autofill_cli.GHOSTSCRIPT_WINDOWS_INSTALLERS,
+        "w64.exe",
+        (download_url, hashlib.sha256(installer).hexdigest()),
+    )
     monkeypatch.setattr(autofill_cli, "get_ghostscript_path", lambda: paths.pop(0))
     monkeypatch.setattr(autofill_cli, "get_ghostscript_version", lambda _path: "10.0.0")
     monkeypatch.setattr(autofill_cli.click, "confirm", lambda *_args, **_kwargs: True)
     monkeypatch.setattr("builtins.input", lambda *_args, **_kwargs: "\n")
-    monkeypatch.setattr(
-        autofill_cli.shutil,
-        "which",
-        lambda name: "winget" if name == "winget" else None,
-    )
 
-    def fake_run(cmd, check=False):
+    def fake_urlopen(request, timeout):
+        assert request.full_url == download_url
+        return BytesIO(installer)
+
+    monkeypatch.setattr("urllib.request.urlopen", fake_urlopen)
+
+    def fake_run(cmd, check=False, env=None):
+        assert Path(env["MPC_AUTOFILL_GS_INSTALLER"]).read_bytes() == installer
         install_calls.append(cmd)
         return SimpleNamespace(returncode=0)
 
@@ -160,7 +174,54 @@ def test_ensure_ghostscript_available_installs_with_winget_on_windows(
     resolved = autofill_cli.ensure_ghostscript_available()
 
     assert resolved == "C:\\Program Files\\gs\\gswin64c.exe"
-    assert install_calls == [["winget", "install", "--id", "ArtifexSoftware.Ghostscript", "--accept-source-agreements"]]
+    assert len(install_calls) == 1
+    assert install_calls[0][0] == "powershell.exe"
+    assert "Start-Process" in install_calls[0][-1]
+
+
+def test_install_ghostscript_windows_rejects_wrong_checksum(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(autofill_cli.sys, "maxsize", 2**63 - 1)
+    monkeypatch.setitem(
+        autofill_cli.GHOSTSCRIPT_WINDOWS_INSTALLERS,
+        "w64.exe",
+        ("https://example.test/gs.exe", "0" * 64),
+    )
+    monkeypatch.setattr("urllib.request.urlopen", lambda *_args, **_kwargs: BytesIO(b"modified"))
+    monkeypatch.setattr(
+        autofill_cli.subprocess,
+        "run",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(AssertionError("unverified installer must not run")),
+    )
+
+    with pytest.raises(RuntimeError, match="checksum"):
+        autofill_cli._install_ghostscript_windows()
+
+
+@pytest.mark.skipif(
+    os.environ.get("MPC_AUTOFILL_RELEASE_CHECKS") != "1",
+    reason="live release dependency check",
+)
+@pytest.mark.parametrize(
+    "download_url",
+    [installer[0] for installer in autofill_cli.GHOSTSCRIPT_WINDOWS_INSTALLERS.values()],
+)
+def test_pinned_ghostscript_installers_are_available(download_url: str) -> None:
+    from urllib.request import Request, urlopen
+
+    request = Request(download_url, method="HEAD", headers={"User-Agent": "mpc-autofill"})
+    with urlopen(request, timeout=30) as response:
+        assert response.status == 200
+
+
+def test_get_ghostscript_path_finds_standard_windows_install(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    executable = tmp_path / "gs" / "gs10.07.1" / "bin" / "gswin64c.exe"
+    executable.parent.mkdir(parents=True)
+    executable.touch()
+    monkeypatch.setattr("src.pdf_maker.shutil.which", lambda _name: None)
+    monkeypatch.setattr("src.pdf_maker.sys.platform", "win32")
+    monkeypatch.setenv("ProgramFiles", str(tmp_path))
+
+    assert get_ghostscript_path() == str(executable)
 
 
 def test_ensure_ghostscript_available_installs_with_apt_on_linux(
@@ -204,7 +265,7 @@ def test_ensure_ghostscript_available_asks_permission_before_installing(monkeypa
     monkeypatch.setattr(autofill_cli, "get_ghostscript_path", lambda: paths.pop(0))
     monkeypatch.setattr(autofill_cli, "get_ghostscript_version", lambda _path: "10.0.0")
     monkeypatch.setattr(autofill_cli.click, "confirm", fake_confirm)
-    monkeypatch.setattr(autofill_cli, "_install_ghostscript", lambda: None)
+    monkeypatch.setattr(autofill_cli, "_install_ghostscript", lambda: True)
 
     assert autofill_cli.ensure_ghostscript_available() == "/usr/local/bin/gs"
     assert "install Ghostscript now" in asked["message"]

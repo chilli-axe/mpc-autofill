@@ -85,6 +85,18 @@ DEFAULT_SITE = TargetSites.MakePlayingCards.name
 DEFAULT_AUTO_SAVE = True
 DEFAULT_IMAGE_POST_PROCESSING = True
 TLS_CHECK_URL = "https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions.json"
+GHOSTSCRIPT_DOWNLOAD_PAGE = "https://ghostscript.com/releases/gsdnld.html"
+GHOSTSCRIPT_VERSION = "10.07.1"
+GHOSTSCRIPT_WINDOWS_INSTALLERS = {
+    "w32.exe": (
+        "https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs10071/gs10071w32.exe",
+        "2dc44e339e2a50d96827e199a234713604ac04a5cec2e07bd452cc92e8d6f81b",
+    ),
+    "w64.exe": (
+        "https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs10071/gs10071w64.exe",
+        "3a4c28d0aac47aa7cccd35a5932c55110376e9dbd966898dde388b7faba444a4",
+    ),
+}
 
 
 def get_browser_picker_choices() -> list[str]:
@@ -161,47 +173,80 @@ def wait_for_user_to_complete_order() -> None:
     )
 
 
-def _install_ghostscript() -> None:
+def _install_ghostscript_windows() -> bool:
+    import hashlib
+    import tempfile
+    from urllib.request import Request, urlopen
+
+    suffix = "w64.exe" if sys.maxsize > 2**32 else "w32.exe"
+    download_url, expected_digest = GHOSTSCRIPT_WINDOWS_INSTALLERS[suffix]
+
+    logger.info(f"Downloading Ghostscript {GHOSTSCRIPT_VERSION} from Artifex...")
+    with tempfile.TemporaryDirectory() as directory:
+        installer_path = os.path.join(directory, os.path.basename(download_url))
+        download = Request(download_url, headers={"User-Agent": "mpc-autofill"})
+        with urlopen(download, timeout=60) as response, open(installer_path, "wb") as installer:
+            shutil.copyfileobj(response, installer)
+        with open(installer_path, "rb") as installer:
+            actual_digest = hashlib.file_digest(installer, "sha256").hexdigest()
+        if actual_digest != expected_digest:
+            raise RuntimeError("The downloaded Ghostscript installer failed checksum verification.")
+
+        command = (
+            "$process = Start-Process -FilePath $env:MPC_AUTOFILL_GS_INSTALLER "
+            "-Verb RunAs -Wait -PassThru; exit $process.ExitCode"
+        )
+        environment = os.environ.copy()
+        environment["MPC_AUTOFILL_GS_INSTALLER"] = installer_path
+        return (
+            subprocess.run(
+                ["powershell.exe", "-NoProfile", "-NonInteractive", "-Command", command],
+                check=False,
+                env=environment,
+            ).returncode
+            == 0
+        )
+
+
+def _install_ghostscript() -> bool:
     """
-    Attempt to install Ghostscript with the platform's package manager, logging (not raising) failures -
-    the caller re-checks whether Ghostscript is available afterwards.
+    Attempt to install Ghostscript, logging failures and returning whether the installer succeeded.
     """
 
     if sys.platform.startswith("darwin"):
         if shutil.which("brew") is None:
             logger.info("Homebrew not found. Please install Homebrew, then re-run.")
+            return False
         else:
             logger.info("Installing Ghostscript via Homebrew...")
             result = subprocess.run(["brew", "install", "ghostscript"], check=False)
             if result.returncode != 0:
                 logger.warning("Ghostscript installation via Homebrew failed.")
+            return result.returncode == 0
     elif sys.platform.startswith("win"):
-        if shutil.which("winget") is None:
-            logger.info(
-                "winget not found. Please install Ghostscript from "
-                "https://ghostscript.com/releases/gsdnld.html and ensure it's on PATH."
-            )
-        else:
-            logger.info("Installing Ghostscript via winget...")
-            result = subprocess.run(
-                ["winget", "install", "--id", "ArtifexSoftware.Ghostscript", "--accept-source-agreements"],
-                check=False,
-            )
-            if result.returncode != 0:
-                logger.warning("Ghostscript installation via winget failed.")
+        try:
+            if _install_ghostscript_windows():
+                return True
+        except Exception as error:
+            logger.warning(f"Ghostscript installation failed: {error}")
+        logger.info(f"Please install Ghostscript from {GHOSTSCRIPT_DOWNLOAD_PAGE}.")
+        return False
     else:
         package_manager = next(
             (candidate for candidate in ["apt", "dnf", "yum"] if shutil.which(candidate) is not None), None
         )
         if shutil.which("sudo") is None:
             logger.info("sudo not found. Please install Ghostscript with your package manager manually.")
+            return False
         elif package_manager is None:
             logger.info("No supported package manager found. Please install Ghostscript manually.")
+            return False
         else:
             logger.info(f"Installing Ghostscript via {package_manager}...")
             result = subprocess.run(["sudo", package_manager, "install", "-y", "ghostscript"], check=False)
             if result.returncode != 0:
                 logger.warning(f"Ghostscript installation via {package_manager} failed.")
+            return result.returncode == 0
 
 
 def ensure_ghostscript_available() -> str:
@@ -221,8 +266,8 @@ def ensure_ghostscript_available() -> str:
 
         logger.info("DriveThruCards export requires Ghostscript for PDF/X-1a compliance.")
         if click.confirm("Is it okay if MPC Autofill tries to install Ghostscript now?", default=True):
-            _install_ghostscript()
-            continue
+            if _install_ghostscript():
+                continue
 
         logger.info(
             "Please install Ghostscript, then return here to continue.\n"

@@ -1,6 +1,7 @@
 import os
 import shutil
 import subprocess
+import sys
 import tempfile
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
@@ -44,6 +45,10 @@ def get_ghostscript_path(explicit_path: Optional[str] = None) -> Optional[str]:
     for candidate in ["gs", "gswin64c", "gswin32c"]:
         if resolved := shutil.which(candidate):
             return resolved
+    if sys.platform == "win32":
+        installs = list(Path(os.environ.get("ProgramFiles", r"C:\Program Files")).glob("gs/gs*/bin/gswin*c.exe"))
+        if installs:
+            return str(max(installs, key=os.path.getmtime))
     return None
 
 
