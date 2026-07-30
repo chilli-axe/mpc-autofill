@@ -2,6 +2,11 @@ name: Desktop tool build
 
 on:
   workflow_dispatch:
+    inputs:
+      version:
+        description: Release version embedded in the executable (for example, 1.1.0)
+        required: true
+        type: string
 
 jobs:
   test:
@@ -75,7 +80,7 @@ jobs:
           mode: onefile
           output-file: ${{ matrix.filename }}
           # required by the versioned onefile cache directory ({VERSION} in --onefile-tempdir-spec)
-          file-version: 1.0.${{ github.run_number }}
+          file-version: ${{ inputs.version }}
           macos-target-arch: ${{ matrix.macos-arch }}
       - name: Smoke test bundled executable
         shell: bash
