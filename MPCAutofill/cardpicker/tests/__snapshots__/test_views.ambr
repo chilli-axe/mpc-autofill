@@ -1783,7 +1783,31 @@
     'status_code': 200,
   })
 # ---
+# name: TestPostEditorSearchResults.test_fuzzy_fallback_respects_filters
+  dict({
+    'json': dict({
+      'results': dict({
+        'key1': list([
+        ]),
+      }),
+    }),
+    'status_code': 200,
+  })
+# ---
 # name: TestPostEditorSearchResults.test_fuzzy_search
+  dict({
+    'json': dict({
+      'results': dict({
+        'key1': list([
+          '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
+          '1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
+        ]),
+      }),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostEditorSearchResults.test_fuzzy_search_with_typo_falls_back
   dict({
     'json': dict({
       'results': dict({
@@ -1963,6 +1987,31 @@
       'name': 'Bad request',
     }),
     'status_code': 400,
+  })
+# ---
+# name: TestPostEditorSearchResults.test_precise_search_with_partial_name_falls_back
+  dict({
+    'json': dict({
+      'results': dict({
+        'key1': list([
+          '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
+          '1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
+        ]),
+      }),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostEditorSearchResults.test_precise_search_with_typo_falls_back_to_fuzzy
+  dict({
+    'json': dict({
+      'results': dict({
+        'key1': list([
+          '1c4M-sK9gd0Xju0NXCPtqeTW_DQTldVU5',
+        ]),
+      }),
+    }),
+    'status_code': 200,
   })
 # ---
 # name: TestPostEditorSearchResults.test_priority_ordering_in_search_results
@@ -2299,6 +2348,19 @@
       'results': dict({
         'key1': list([
           '1V5E0avDmNyEUuFfYwx3nA05aj-1HY0rA',
+        ]),
+      }),
+    }),
+    'status_code': 200,
+  })
+# ---
+# name: TestPostEditorSearchResults.test_search_with_extra_words_falls_back
+  dict({
+    'json': dict({
+      'results': dict({
+        'key1': list([
+          '1UPdh7J7hScg4ZnxSPJ-EeBYHLp2s3Oz1',
+          '1dxSLHtw-VwwE09pZCA8OA6LbuWRZPEoU',
         ]),
       }),
     }),
