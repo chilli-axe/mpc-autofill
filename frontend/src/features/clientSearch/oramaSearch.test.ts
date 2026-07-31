@@ -10,7 +10,7 @@ import {
 } from "@/common/types";
 import { getDefaultSearchSettings } from "@/store/slices/searchSettingsSlice";
 
-import { searchOramaIndex } from "./oramaSearch";
+import { searchOramaIndices } from "./oramaSearch";
 
 const buildCardDocument = (
   name: string,
@@ -70,13 +70,16 @@ const preciseSettings = (): SearchSettings =>
   getDefaultSearchSettings({}, false);
 
 const searchNames = (
-  index: OramaIndex,
+  indices: OramaIndex | Array<OramaIndex | undefined>,
   settings: SearchSettings,
   query: string
 ): Array<string> =>
-  (
-    searchOramaIndex(index, settings, query, [CardTypeSchema.Card])?.hits ?? []
-  ).map((hit) => hit.document.name);
+  searchOramaIndices(
+    Array.isArray(indices) ? indices : [indices],
+    settings,
+    query,
+    [CardTypeSchema.Card]
+  ).hits.map((hit) => hit.document.name);
 
 describe("searchOramaIndex fuzzy fallback", () => {
   let index: OramaIndex;
@@ -137,11 +140,37 @@ describe("searchOramaIndex fuzzy fallback", () => {
     expect(searchNames(lowDpiIndex, settings, "lightnig bol")).toEqual([]);
   });
 
-  test("returns undefined when the index is undefined", () => {
+  test("returns empty results when no indices are defined", () => {
     expect(
-      searchOramaIndex(undefined, preciseSettings(), "bolt", [
+      searchOramaIndices([undefined], preciseSettings(), "bolt", [
         CardTypeSchema.Card,
       ])
-    ).toBeUndefined();
+    ).toEqual({ hits: [], count: 0 });
+  });
+
+  describe("multiple indices", () => {
+    let indexA: OramaIndex;
+    let indexB: OramaIndex;
+
+    beforeEach(async () => {
+      indexA = await buildIndex([buildCardDocument("Lightning Bolt")]);
+      indexB = await buildIndex([buildCardDocument("Lightning Belt")]);
+    });
+
+    test("an exact hit in one index suppresses fuzzy matches from the others", async () => {
+      expect(
+        searchNames([indexA, indexB], preciseSettings(), "lightning bolt")
+      ).toEqual(["Lightning Bolt"]);
+    });
+
+    test("fallback fires across all indices when none has an exact hit", async () => {
+      const names = searchNames(
+        [indexA, indexB],
+        preciseSettings(),
+        "lightnig bol"
+      );
+      expect(names).toContain("Lightning Bolt");
+      expect(names).toContain("Lightning Belt");
+    });
   });
 });

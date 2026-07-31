@@ -15,7 +15,8 @@ import {
 // unrelated cards through.
 const FALLBACK_TOLERANCE = 2;
 
-export function searchOramaIndex(
+function searchSingleIndex(
+  searchOptions: { exact: boolean; tolerance?: number },
   oramaIndex: OramaIndex | undefined,
   searchSettings: SearchSettings,
   query: string | undefined,
@@ -24,7 +25,7 @@ export function searchOramaIndex(
   limit?: number,
   offset?: number,
   printings?: Array<Printing>,
-  artists?: Array<string>,
+  artists?: Array<string>
 ): OramaSearchResults | undefined {
   if (oramaIndex?.oramaDb === undefined) {
     return undefined;
@@ -134,17 +135,60 @@ export function searchOramaIndex(
     };
   };
 
-  const primaryResults = runSearch({
+  return runSearch(searchOptions);
+}
+
+export function searchOramaIndices(
+  oramaIndices: Array<OramaIndex | undefined>,
+  searchSettings: SearchSettings,
+  query: string | undefined,
+  cardTypes: Array<CardType>,
+  sortBy?: SortBy,
+  limit?: number,
+  offset?: number,
+  printings?: Array<Printing>,
+  artists?: Array<string>
+): OramaSearchResults {
+  const runSearches = (searchOptions: {
+    exact: boolean;
+    tolerance?: number;
+  }): OramaSearchResults =>
+    oramaIndices.reduce(
+      (
+        accumulated: OramaSearchResults,
+        oramaIndex: OramaIndex | undefined
+      ): OramaSearchResults => {
+        const searchResults = searchSingleIndex(
+          searchOptions,
+          oramaIndex,
+          searchSettings,
+          query,
+          cardTypes,
+          sortBy,
+          limit,
+          offset,
+          printings,
+          artists
+        );
+        return {
+          hits: accumulated.hits.concat(searchResults?.hits ?? []),
+          count: accumulated.count + (searchResults?.count ?? 0),
+        };
+      },
+      { hits: [], count: 0 }
+    );
+
+  const primaryResults = runSearches({
     exact:
       query !== undefined && !searchSettings.searchTypeSettings.fuzzySearch,
   });
   if (primaryResults.count > 0 || !query) {
     return primaryResults;
   }
-  // fuzzy fallback: the query found nothing, so retry once with typo
-  // tolerance. all `where` filters still apply.
+  // fuzzy fallback: the query found nothing in any index, so retry once with
+  // typo tolerance. all `where` filters still apply.
   try {
-    return runSearch({ exact: false, tolerance: FALLBACK_TOLERANCE });
+    return runSearches({ exact: false, tolerance: FALLBACK_TOLERANCE });
   } catch {
     return primaryResults;
   }

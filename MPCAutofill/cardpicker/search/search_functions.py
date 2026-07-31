@@ -5,6 +5,7 @@ from typing import Any, Callable, TypeVar, cast
 import pycountry
 from elasticsearch import Elasticsearch
 from elasticsearch.exceptions import ConnectionError as ElasticConnectionError
+from elasticsearch.exceptions import TransportError as ElasticTransportError
 from elasticsearch_dsl.query import Bool, Match, Range, Terms
 
 from django.conf import settings
@@ -98,8 +99,9 @@ def get_match(search_settings: SearchSettings, query_parsed: str, fallback_level
         # forgive typos (up to elasticsearch's automatic edit distance), but still require every word to match
         return Match(searchq_fuzzy={"query": query_parsed, "operator": "AND", "fuzziness": "AUTO"})
     if fallback_level == 2:
-        # forgive typos and extra words
-        return Match(searchq_fuzzy={"query": query_parsed, "fuzziness": "AUTO", "minimum_should_match": "75%"})
+        # forgive typos and extra words. "2<75%" means queries of up to two words still require every word to
+        # match (75% of 2 rounds down to 1, which would match far too loosely); longer queries require 75%.
+        return Match(searchq_fuzzy={"query": query_parsed, "fuzziness": "AUTO", "minimum_should_match": "2<75%"})
     if search_settings.searchTypeSettings.fuzzySearch:
         return Match(searchq_fuzzy={"query": query_parsed, "operator": "AND"})
     return Match(searchq_precise={"query": query_parsed, "operator": "AND"})
@@ -118,6 +120,8 @@ def get_search(
     and returns the list of corresponding `Card` identifiers.
     Expects that the search index exists. Since this function is called many times, it makes sense to check this
     once at the call site rather than in the body of this function.
+    `fallback_level` selects the match clause via `get_match` - level 0 is the standard search, and levels 1 and 2
+    (see `FUZZY_FALLBACK_LEVELS`) are progressively more forgiving retries for when stricter levels match nothing.
     """
 
     # set up search - match the query and use the AND operator
@@ -205,7 +209,7 @@ def retrieve_card_identifiers(
                 break
             try:
                 identifiers = execute(fallback_level=fallback_level)
-            except ElasticConnectionError:
+            except ElasticTransportError:
                 # the fallback is best-effort: surface the primary search's (empty) results rather than an error
                 break
     return identifiers

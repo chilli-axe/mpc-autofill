@@ -28,7 +28,7 @@ import { parseDjangoDate } from "@/common/utils";
 import { getDefaultSearchSettings } from "@/store/slices/searchSettingsSlice";
 
 import { Folder, GoogleDriveIndexer, LocalFilesIndexer } from "./indexer";
-import { searchOramaIndex } from "./oramaSearch";
+import { searchOramaIndices } from "./oramaSearch";
 
 export class ClientSearchService {
   private localFilesIndex: LocalFilesIndex | undefined;
@@ -53,7 +53,7 @@ export class ClientSearchService {
 
   public async setLocalFilesDirectoryHandle(
     directoryHandle: FileSystemDirectoryHandle,
-    tags: Array<Tag> | undefined,
+    tags: Array<Tag> | undefined
   ) {
     this.localFilesIndex = {
       fileHandle: directoryHandle,
@@ -78,7 +78,7 @@ export class ClientSearchService {
   }
 
   public async indexDirectory(
-    tags: Array<Tag> | undefined,
+    tags: Array<Tag> | undefined
   ): Promise<{ handle: FileSystemDirectoryHandle; size: number } | undefined> {
     if (this.localFilesIndex?.fileHandle !== undefined) {
       const oramaIndex = await new LocalFilesIndexer().indexFiles(
@@ -90,11 +90,11 @@ export class ClientSearchService {
               sourceType: SourceType.LocalFile,
             },
             this.localFilesIndex.fileHandle.name,
-            undefined,
+            undefined
           ),
         ],
         [],
-        tags,
+        tags
       );
       this.localFilesIndex.index = oramaIndex;
       return {
@@ -109,7 +109,7 @@ export class ClientSearchService {
     tags: Array<Tag> | undefined,
     bearerToken: string,
     folders: Array<GoogleDriveDoc>,
-    images: Array<GoogleDriveDoc>,
+    images: Array<GoogleDriveDoc>
   ) {
     const indexer = new GoogleDriveIndexer(bearerToken);
     const oramaIndex = await indexer.indexFiles(
@@ -122,17 +122,17 @@ export class ClientSearchService {
               fileHandle: undefined,
             },
             name,
-            undefined,
-          ),
+            undefined
+          )
       ),
       (
         await Promise.all(
           images.map(async ({ id }) =>
-            indexer.getImageFromIdentifier(id, undefined),
-          ),
+            indexer.getImageFromIdentifier(id, undefined)
+          )
         )
       ).filter((image) => image !== undefined),
-      tags,
+      tags
     );
     this.googleDriveIndex = { index: oramaIndex };
     return {
@@ -146,31 +146,16 @@ export class ClientSearchService {
     cardTypes: Array<CardType>,
     sortBy?: SortBy,
     limit?: number,
-    offset?: number,
+    offset?: number
   ): OramaSearchResults | undefined {
-    return [this.localFilesIndex?.index, this.googleDriveIndex?.index].reduce(
-      (
-        accumulated: OramaSearchResults,
-        index: OramaIndex | undefined,
-      ): OramaSearchResults => {
-        if (index === undefined) {
-          return accumulated;
-        }
-        const searchResults = searchOramaIndex(
-          index,
-          searchSettings,
-          query,
-          cardTypes,
-          sortBy,
-          limit,
-          offset,
-        );
-        return {
-          hits: accumulated.hits.concat(searchResults?.hits ?? []),
-          count: accumulated.count + (searchResults?.count ?? 0),
-        };
-      },
-      { hits: [], count: 0 },
+    return searchOramaIndices(
+      [this.localFilesIndex?.index, this.googleDriveIndex?.index],
+      searchSettings,
+      query,
+      cardTypes,
+      sortBy,
+      limit,
+      offset
     );
   }
 
@@ -179,7 +164,7 @@ export class ClientSearchService {
     searchSettings: SearchSettings,
     sortBy: SortBy | undefined,
     artists: Array<string>,
-    printings: Array<Printing>,
+    printings: Array<Printing>
   ): Promise<Array<string>> {
     const oramaDb = await create({
       schema: OramaSchema,
@@ -225,13 +210,13 @@ export class ClientSearchService {
           expansionCode: card.canonicalCard?.expansionCode ?? Unknown,
           collectorNumber: card.canonicalCard?.collectorNumber ?? Unknown,
           artist: card.canonicalArtist?.name ?? Unknown,
-        }),
-      ),
+        })
+      )
     );
     const oramaIndex: OramaIndex = { oramaDb, size: cards.length };
 
-    const results = searchOramaIndex(
-      oramaIndex,
+    const results = searchOramaIndices(
+      [oramaIndex],
       searchSettings,
       undefined,
       [],
@@ -239,13 +224,13 @@ export class ClientSearchService {
       undefined,
       undefined,
       printings,
-      artists,
+      artists
     );
     if (sortBy !== undefined) {
-      return results?.hits.map((hit) => hit.id) ?? [];
+      return results.hits.map((hit) => hit.id);
     } else {
       // honour the ordering of `cards`
-      const resultsSet = new Set(results?.hits.map((hit) => hit.id));
+      const resultsSet = new Set(results.hits.map((hit) => hit.id));
       return cards
         .map((card) => card.identifier)
         .filter((identifier) => resultsSet.has(identifier));
@@ -257,7 +242,7 @@ export class ClientSearchService {
     query: string | undefined,
     cardTypes: Array<CardType>,
     limit?: number,
-    offset?: number,
+    offset?: number
   ): Array<string> | undefined {
     const results = this.search(
       searchSettings,
@@ -265,7 +250,7 @@ export class ClientSearchService {
       cardTypes,
       undefined,
       limit,
-      offset,
+      offset
     );
     return results !== undefined
       ? results.hits.map((cardDocument) => cardDocument.id)
@@ -274,7 +259,7 @@ export class ClientSearchService {
 
   public editorSearch(
     searchSettings: SearchSettings,
-    searchQueries: Array<SearchQuery>,
+    searchQueries: Array<SearchQuery>
   ): SearchResults {
     const localResults: SearchResults = {};
     for (const searchQuery of searchQueries) {
@@ -287,7 +272,7 @@ export class ClientSearchService {
         const localResultsForQuery = this.retrieveCardIdentifiers(
           searchSettings,
           searchQuery.query,
-          [searchQuery.cardType],
+          [searchQuery.cardType]
         );
         if (localResultsForQuery !== undefined) {
           localResults[hashkey] = localResultsForQuery;
@@ -303,7 +288,7 @@ export class ClientSearchService {
     cardTypes: Array<CardType>,
     searchSettings: SearchSettings,
     pageStart: number,
-    pageSize: number,
+    pageSize: number
   ): { cards: Array<CardDocument>; count: number } {
     const searchResults = this.search(
       searchSettings,
@@ -311,7 +296,7 @@ export class ClientSearchService {
       cardTypes,
       sortBy,
       pageSize,
-      pageStart,
+      pageStart
     );
     const cardIds = searchResults?.hits?.map(({ id }) => id) ?? [];
     const cards = this.getCardDocumentsArray(cardIds);
@@ -322,14 +307,14 @@ export class ClientSearchService {
   }
 
   public retrieveCardbackIdentifiers(
-    searchSettings: SearchSettings,
+    searchSettings: SearchSettings
   ): Array<string> | undefined {
     return this.retrieveCardIdentifiers(
       searchSettings.searchTypeSettings.filterCardbacks
         ? searchSettings
         : getDefaultSearchSettings([], false),
       undefined,
-      [CardTypeSchema.Cardback],
+      [CardTypeSchema.Cardback]
     );
   }
 
@@ -341,7 +326,7 @@ export class ClientSearchService {
   }
 
   private getCardDocumentsArray(
-    identifiersToSearch: Array<string>,
+    identifiersToSearch: Array<string>
   ): Array<CardDocument> {
     return identifiersToSearch.reduce(
       (accumulated: Array<CardDocument>, identifier: string) => {
@@ -351,7 +336,7 @@ export class ClientSearchService {
         }
         return accumulated;
       },
-      [] as Array<CardDocument>,
+      [] as Array<CardDocument>
     );
   }
 
@@ -365,8 +350,8 @@ export class ClientSearchService {
           }
           return accumulated;
         },
-        [] as Array<[string, CardDocument]>,
-      ),
+        [] as Array<[string, CardDocument]>
+      )
     );
   }
 
@@ -378,7 +363,7 @@ export class ClientSearchService {
       if (oramaDb) {
         const result: OramaCardDocument | undefined = getByID(
           oramaDb,
-          identifier,
+          identifier
         );
         if (result) {
           return result;
@@ -389,7 +374,7 @@ export class ClientSearchService {
   }
 
   public translateOramaCardDocumentToCardDocument(
-    oramaCardDocument: OramaCardDocument,
+    oramaCardDocument: OramaCardDocument
   ): CardDocument {
     const lastModified = oramaCardDocument.lastModified.toLocaleDateString(
       undefined,
@@ -398,7 +383,7 @@ export class ClientSearchService {
         year: "numeric",
         month: "long",
         day: "numeric",
-      },
+      }
     );
     return {
       identifier: oramaCardDocument.id,
@@ -441,14 +426,12 @@ export class ClientSearchService {
                   undefined,
                   [cardType],
                   undefined,
-                  cardType === CardTypeSchema.Card ? 4 : 1,
+                  cardType === CardTypeSchema.Card ? 4 : 1
                 )?.hits?.map((result) =>
-                  this.translateOramaCardDocumentToCardDocument(
-                    result.document,
-                  ),
+                  this.translateOramaCardDocumentToCardDocument(result.document)
                 )
               : [],
-          ]),
+          ])
         ) as { [cardType in CardType]: Array<CardDocument> })
       : undefined;
   }
