@@ -94,6 +94,7 @@ def get_search(
     card_types: list[CardType],
     expansion_code: str | None = None,
     collector_number: str | None = None,
+    artists: list[str] | None = None,
 ) -> CardSearch:
     """
     This is the core search function for MPC Autofill - queries Elasticsearch for `self` given `search_settings`
@@ -140,6 +141,8 @@ def get_search(
         s = s.filter("term", expansion_code=expansion_code.upper())
     if collector_number:
         s = s.filter("term", collector_number=collector_number)
+    if artists:
+        s = s.filter(Bool(should=Terms(artist=artists), minimum_should_match=1))
     if search_settings.filterSettings.languages:
         s = s.filter(
             Bool(

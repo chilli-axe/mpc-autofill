@@ -9,6 +9,7 @@ urlpatterns = [
     path("2/cards/", views.post_cards),
     path("2/sources/", views.get_sources),
     path("2/DFCPairs/", views.get_dfc_pairs),
+    path("2/artists/", views.get_artists),
     path("2/languages/", views.get_languages),
     path("2/tags/", views.get_tags),
     path("2/cardbacks/", views.post_cardbacks),
