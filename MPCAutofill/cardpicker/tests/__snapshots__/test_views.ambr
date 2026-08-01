@@ -193,7 +193,7 @@
     'CARD': dict({
       'Brainstorm': dict({
         'canonicalArtist': dict({
-          'name': 'Artist 102',
+          'name': 'Artist 0',
         }),
         'canonicalCard': dict({
           'artist': None,
@@ -416,7 +416,7 @@
           'cards': list([
             dict({
               'canonicalArtist': dict({
-                'name': 'Artist 107',
+                'name': 'Artist 0',
               }),
               'canonicalCard': dict({
                 'artist': None,
@@ -702,7 +702,7 @@
       'cards': list([
         dict({
           'canonicalArtist': dict({
-            'name': 'Artist 109',
+            'name': 'Artist 0',
           }),
           'canonicalCard': dict({
             'artist': None,
@@ -2461,7 +2461,7 @@
       'cards': list([
         dict({
           'canonicalArtist': dict({
-            'name': 'Artist 67',
+            'name': 'Artist 0',
           }),
           'canonicalCard': dict({
             'artist': None,
@@ -2735,7 +2735,7 @@
       'cards': list([
         dict({
           'canonicalArtist': dict({
-            'name': 'Artist 66',
+            'name': 'Artist 0',
           }),
           'canonicalCard': dict({
             'artist': None,
@@ -3087,7 +3087,7 @@
       'cards': list([
         dict({
           'canonicalArtist': dict({
-            'name': 'Artist 68',
+            'name': 'Artist 0',
           }),
           'canonicalCard': dict({
             'artist': None,
