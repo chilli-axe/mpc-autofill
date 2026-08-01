@@ -66,8 +66,8 @@ describe("client search index persistence", () => {
 
   test("load failures degrade to undefined rather than throwing", async () => {
     // break indexedDB entirely
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (globalThis as any).indexedDB = undefined;
+    // @ts-expect-error - deliberately clobbering the global to simulate storage failure
+    globalThis.indexedDB = undefined;
     await expect(loadPersistedIndex("googleDrive")).resolves.toBeUndefined();
     await expect(
       savePersistedIndex("googleDrive", { documents: [], indexedAt: 1 })
