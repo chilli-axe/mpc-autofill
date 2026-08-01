@@ -15,6 +15,7 @@ import {
   processQuery,
 } from "@/common/processing";
 import {
+  ArtistsResponse,
   Card,
   CardbacksResponse,
   CardsRequest,
@@ -107,6 +108,12 @@ export const api = createApi({
         );
       },
     }),
+    getArtists: builder.query<Array<string>, void>({
+      query: () => ({ url: `2/artists/`, method: "GET" }),
+      providesTags: [QueryTags.BackendSpecific],
+      transformResponse: (response: ArtistsResponse, meta, arg) =>
+        response.artists,
+    }),
     getLanguages: builder.query<Array<Language>, void>({
       query: () => ({ url: `2/languages/`, method: "GET" }),
       providesTags: [QueryTags.BackendSpecific],
@@ -198,6 +205,7 @@ const {
   useGetImportSitesQuery: useRawGetImportSitesQuery,
   useQueryImportSiteQuery: useRawQueryImportSiteQuery,
   useGetDFCPairsQuery: useRawGetDFCPairsQuery,
+  useGetArtistsQuery: useRawGetArtistsQuery,
   useGetLanguagesQuery: useRawGetLanguagesQuery,
   useGetTagsQuery: useRawGetTagsQuery,
   useGetSampleCardsQuery: useRawGetSampleCardsQuery,
@@ -219,6 +227,13 @@ export function useGetImportSitesQuery() {
 export function useGetDFCPairsQuery() {
   const remoteBackendConfigured = useRemoteBackendConfigured();
   return useRawGetDFCPairsQuery(undefined, {
+    skip: !remoteBackendConfigured,
+  });
+}
+
+export function useGetArtistsQuery() {
+  const remoteBackendConfigured = useRemoteBackendConfigured();
+  return useRawGetArtistsQuery(undefined, {
     skip: !remoteBackendConfigured,
   });
 }
