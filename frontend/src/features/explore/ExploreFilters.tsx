@@ -8,6 +8,7 @@ import {
   SortBy,
   SourceSettings,
 } from "@/common/types";
+import { ArtistFilter } from "@/features/filters/ArtistFilter";
 import { CardTypeFilter } from "@/features/filters/CardTypeFilter";
 import { CompressedFilter } from "@/features/filters/CompressedFilter";
 import { SearchQueryFilter } from "@/features/filters/SearchQueryFilter";
@@ -26,6 +27,8 @@ interface ExploreFiltersProps {
   setSortBy: (value: SortBy) => void;
   searchQuery: string;
   setSearchQuery: (value: string) => void;
+  artist: string;
+  setArtist: (value: string) => void;
   cardTypes: Array<CardType>;
   setCardTypes: (value: Array<CardType>) => void;
   searchTypeSettings: SearchTypeSettings;
@@ -45,6 +48,8 @@ export const ExploreFilters = ({
   setSortBy,
   searchQuery,
   setSearchQuery,
+  artist,
+  setArtist,
   cardTypes,
   setCardTypes,
   searchTypeSettings,
@@ -72,6 +77,7 @@ export const ExploreFilters = ({
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
       />
+      <ArtistFilter artist={artist} setArtist={setArtist} />
       <CardTypeFilter cardTypes={cardTypes} setCardTypes={setCardTypes} />
       <hr />
       <SearchTypeSettingsElement

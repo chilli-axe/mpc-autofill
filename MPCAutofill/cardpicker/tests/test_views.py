@@ -10,6 +10,7 @@ from syrupy import SnapshotAssertion
 from django.urls import reverse
 
 from cardpicker import views
+from cardpicker.models import Card
 from cardpicker.tests.constants import Cards, DummyImportSite, Sources
 from cardpicker.tests.factories import SourceFactory
 
@@ -643,6 +644,51 @@ class TestPostExploreSearchResults:
             expected_card.identifier for expected_card in expected_cards
         ]
 
+    def test_explore_search_filtered_by_artist(self, client):
+        brainstorm = Card.objects.get(identifier=Cards.BRAINSTORM.value.identifier)
+        artist_name = brainstorm.serialise().canonicalArtist.name
+        expected_identifiers = {
+            card.identifier
+            for card in Card.objects.all()
+            if (canonical_artist := card.serialise().canonicalArtist) is not None
+            and canonical_artist.name == artist_name
+        }
+        assert Cards.BRAINSTORM.value.identifier in expected_identifiers
+        response = client.post(
+            reverse(views.post_explore_search),
+            {
+                "searchSettings": BASE_SEARCH_SETTINGS,
+                "query": None,
+                "artists": [artist_name],
+                "cardTypes": [],
+                "sortBy": "dateCreatedDescending",
+                "pageSize": 20,
+                "pageStart": 0,
+            },
+            content_type="application/json",
+        )
+        assert response.status_code == 200
+        response_json = response.json()
+        assert response_json["count"] == len(expected_identifiers)
+        assert {item["identifier"] for item in response_json["cards"]} == expected_identifiers
+
+    def test_explore_search_with_unknown_artist_yields_no_results(self, client):
+        response = client.post(
+            reverse(views.post_explore_search),
+            {
+                "searchSettings": BASE_SEARCH_SETTINGS,
+                "query": None,
+                "artists": ["No Such Artist"],
+                "cardTypes": [],
+                "sortBy": "dateCreatedDescending",
+                "pageSize": 20,
+                "pageStart": 0,
+            },
+            content_type="application/json",
+        )
+        assert response.status_code == 200
+        assert response.json()["count"] == 0
+
     @pytest.mark.parametrize(
         "page_start, page_size, expected_cards",
         [
@@ -866,6 +912,30 @@ class TestGetLanguages:
     def test_post_request(self, client, django_settings, snapshot):
         response = client.post(reverse(views.get_languages))
         snapshot_response(response, snapshot)
+        assert response.status_code == 400
+
+
+class TestGetArtists:
+    def test_get_zero_artists(self, client, django_settings):
+        response = client.get(reverse(views.get_artists))
+        assert response.status_code == 200
+        assert response.json()["artists"] == []
+
+    def test_get_artists(self, client, populated_database):
+        expected = sorted(
+            {
+                canonical_artist.name
+                for card in Card.objects.all()
+                if (canonical_artist := card.serialise().canonicalArtist) is not None
+            }
+        )
+        assert len(expected) > 0
+        response = client.get(reverse(views.get_artists))
+        assert response.status_code == 200
+        assert response.json()["artists"] == expected
+
+    def test_post_request(self, client, django_settings):
+        response = client.post(reverse(views.get_artists))
         assert response.status_code == 400
 
 

@@ -495,6 +495,42 @@ export const languagesTwoResults = http.get(buildRoute("2/languages/"), () =>
 
 //# endregion
 
+//# region artists
+
+export const artistsNoResults = http.get(buildRoute("2/artists/"), () =>
+  HttpResponse.json({ artists: [] }, { status: 200 })
+);
+
+export const artistsTwoResults = http.get(buildRoute("2/artists/"), () =>
+  HttpResponse.json(
+    { artists: ["Artist Alpha", "Artist Beta"] },
+    { status: 200 }
+  )
+);
+
+//# endregion
+
+//# region explore search
+
+export const exploreSearchThreeResultsFilterableByArtistAlpha = http.post(
+  buildRoute("2/exploreSearch/"),
+  async ({ request }) => {
+    const body = (await request.json()) as { artists?: Array<string> | null };
+    if ((body.artists ?? []).includes("Artist Alpha")) {
+      return HttpResponse.json(
+        { cards: [cardDocument1], count: 1 },
+        { status: 200 }
+      );
+    }
+    return HttpResponse.json(
+      { cards: [cardDocument1, cardDocument2, cardDocument3], count: 3 },
+      { status: 200 }
+    );
+  }
+);
+
+//# endregion
+
 //# region tags
 
 export const tagsNoResults = http.get(buildRoute("2/tags/"), () =>
@@ -664,6 +700,7 @@ export const defaultHandlers = [
   searchResultsNoResults,
   dfcPairsNoResults,
   languagesTwoResults,
+  artistsNoResults,
   tagsNoResults,
   importSitesOneResult,
   sampleCards,
