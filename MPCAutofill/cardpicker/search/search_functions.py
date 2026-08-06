@@ -5,6 +5,7 @@ from typing import Any, Callable, TypeVar, cast
 import pycountry
 from elasticsearch import Elasticsearch
 from elasticsearch.exceptions import ConnectionError as ElasticConnectionError
+from elasticsearch.exceptions import TransportError as ElasticTransportError
 from elasticsearch_dsl.query import Bool, Match, Range, Terms
 
 from django.conf import settings
@@ -88,18 +89,39 @@ def get_scaled_maximum_size(search_settings: SearchSettings) -> int:
     return search_settings.filterSettings.maximumSize * 1_000_000
 
 
+# fallback levels for the fuzzy retry-on-miss behaviour. level 0 is the standard match; levels 1 and 2 are
+# progressively more forgiving and are only queried when every stricter level matched nothing.
+FUZZY_FALLBACK_LEVELS = [1, 2]
+
+
+def get_match(search_settings: SearchSettings, query_parsed: str, fallback_level: int = 0) -> Match:
+    if fallback_level == 1:
+        # forgive typos (up to elasticsearch's automatic edit distance), but still require every word to match
+        return Match(searchq_fuzzy={"query": query_parsed, "operator": "AND", "fuzziness": "AUTO"})
+    if fallback_level == 2:
+        # forgive typos and extra words. "2<75%" means queries of up to two words still require every word to
+        # match (75% of 2 rounds down to 1, which would match far too loosely); longer queries require 75%.
+        return Match(searchq_fuzzy={"query": query_parsed, "fuzziness": "AUTO", "minimum_should_match": "2<75%"})
+    if search_settings.searchTypeSettings.fuzzySearch:
+        return Match(searchq_fuzzy={"query": query_parsed, "operator": "AND"})
+    return Match(searchq_precise={"query": query_parsed, "operator": "AND"})
+
+
 def get_search(
     search_settings: SearchSettings,
     query: str | None,
     card_types: list[CardType],
     expansion_code: str | None = None,
     collector_number: str | None = None,
+    fallback_level: int = 0,
 ) -> CardSearch:
     """
     This is the core search function for MPC Autofill - queries Elasticsearch for `self` given `search_settings`
     and returns the list of corresponding `Card` identifiers.
     Expects that the search index exists. Since this function is called many times, it makes sense to check this
     once at the call site rather than in the body of this function.
+    `fallback_level` selects the match clause via `get_match` - level 0 is the standard search, and levels 1 and 2
+    (see `FUZZY_FALLBACK_LEVELS`) are progressively more forgiving retries for when stricter levels match nothing.
     """
 
     # set up search - match the query and use the AND operator
@@ -124,11 +146,9 @@ def get_search(
     )
     if query:
         query_parsed = to_searchable(query)
-        if search_settings.searchTypeSettings.fuzzySearch:
-            match = Match(searchq_fuzzy={"query": query_parsed, "operator": "AND"})
-        else:
-            match = Match(searchq_precise={"query": query_parsed, "operator": "AND"})
-        s = s.query(match)
+        s = s.query(
+            get_match(search_settings=search_settings, query_parsed=query_parsed, fallback_level=fallback_level)
+        )
     if card_types:
         s = s.filter(
             Bool(
@@ -162,20 +182,37 @@ def retrieve_card_identifiers(
     expansion_code: str | None = None,
     collector_number: str | None = None,
 ) -> list[str]:
-    hits_iterable = (
-        get_search(
-            search_settings=search_settings,
-            query=query,
-            card_types=[card_type],
-            expansion_code=expansion_code,
-            collector_number=collector_number,
-        )
-        .sort({"priority": {"order": "desc"}})
-        .params(preserve_order=True)
-        .scan()
-    )
     source_order = get_source_order(search_settings=search_settings)
-    return [result.identifier for result in sorted(hits_iterable, key=lambda result: source_order[result.source_pk])]
+
+    def execute(fallback_level: int) -> list[str]:
+        hits_iterable = (
+            get_search(
+                search_settings=search_settings,
+                query=query,
+                card_types=[card_type],
+                expansion_code=expansion_code,
+                collector_number=collector_number,
+                fallback_level=fallback_level,
+            )
+            .sort({"priority": {"order": "desc"}})
+            .params(preserve_order=True)
+            .scan()
+        )
+        return [
+            result.identifier for result in sorted(hits_iterable, key=lambda result: source_order[result.source_pk])
+        ]
+
+    identifiers = execute(fallback_level=0)
+    if query:
+        for fallback_level in FUZZY_FALLBACK_LEVELS:
+            if identifiers:
+                break
+            try:
+                identifiers = execute(fallback_level=fallback_level)
+            except ElasticTransportError:
+                # the fallback is best-effort: surface the primary search's (empty) results rather than an error
+                break
+    return identifiers
 
 
 def retrieve_cardback_identifiers(search_settings: SearchSettings) -> list[str]:
@@ -236,6 +273,8 @@ __all__ = [
     "get_elasticsearch_connection",
     "ping_elasticsearch",
     "elastic_connection",
+    "FUZZY_FALLBACK_LEVELS",
+    "get_match",
     "get_search",
     "retrieve_card_identifiers",
     "retrieve_cardback_identifiers",

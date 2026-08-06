@@ -1,8 +1,8 @@
-import { create, getByID, insertMultiple, search } from "@orama/orama";
+import { create, getByID, insertMultiple } from "@orama/orama";
 import { expose } from "comlink";
 
 import { Printing, Unknown } from "@/common/constants";
-import { computeSearchQueryHashKey, toSearchable } from "@/common/processing";
+import { computeSearchQueryHashKey } from "@/common/processing";
 import {
   CardType as CardTypeSchema,
   SearchQuery,
@@ -21,7 +21,6 @@ import {
   OramaCardDocument,
   OramaIndex,
   OramaSchema,
-  OramaSearchResult,
   OramaSearchResults,
   SearchResults,
 } from "@/common/types";
@@ -29,6 +28,7 @@ import { parseDjangoDate } from "@/common/utils";
 import { getDefaultSearchSettings } from "@/store/slices/searchSettingsSlice";
 
 import { Folder, GoogleDriveIndexer, LocalFilesIndexer } from "./indexer";
+import { searchOramaIndices } from "./oramaSearch";
 
 export class ClientSearchService {
   private localFilesIndex: LocalFilesIndex | undefined;
@@ -140,118 +140,6 @@ export class ClientSearchService {
     };
   }
 
-  private searchOramaIndex(
-    oramaIndex: OramaIndex | undefined,
-    searchSettings: SearchSettings,
-    query: string | undefined,
-    cardTypes: Array<CardType>,
-    sortBy?: SortBy,
-    limit?: number,
-    offset?: number,
-    printings?: Array<Printing>,
-    artists?: Array<string>
-  ): OramaSearchResults | undefined {
-    if (oramaIndex?.oramaDb === undefined) {
-      return undefined;
-    }
-
-    const includesTags = searchSettings.filterSettings.includesTags.length > 0;
-    const excludesTags = searchSettings.filterSettings.excludesTags.length > 0;
-
-    const sortByConfigs = {
-      [SortBy.DateCreatedAscending]: {
-        property: "createdNumber",
-        order: "ASC",
-      },
-      [SortBy.DateCreatedDescending]: {
-        property: "createdNumber",
-        order: "DESC",
-      },
-      [SortBy.DateModifiedAscending]: {
-        property: "lastModifiedNumber",
-        order: "ASC",
-      },
-      [SortBy.DateModifiedDescending]: {
-        property: "lastModifiedNumber",
-        order: "DESC",
-      },
-      [SortBy.NameAscending]: { property: "searchq", order: "ASC" },
-      [SortBy.NameDescending]: { property: "searchq", order: "DESC" },
-    } as const;
-    const sortByConfig = sortBy && sortByConfigs[sortBy];
-
-    const searchResults = search(oramaIndex.oramaDb, {
-      term: query ? toSearchable(query) : undefined,
-      properties: ["searchq"],
-      limit: limit ?? 1_000_000, // some arbitrary upper limit. if undefined, orama limits to 10 results.
-      offset: offset ?? 0,
-      exact:
-        query !== undefined && !searchSettings.searchTypeSettings.fuzzySearch,
-      where: {
-        and: [
-          ...(cardTypes.length > 0 ? [{ cardType: { in: cardTypes } }] : []),
-          {
-            or: [
-              ...searchSettings.sourceSettings.sources
-                .filter((sourceRow) => sourceRow[1] === true)
-                .map((sourceRow) => ({ sourceId: { eq: sourceRow[0] } })),
-              { sourceId: { eq: -1 } },
-            ],
-          },
-          ...(includesTags
-            ? [
-                {
-                  tags: {
-                    containsAny: searchSettings.filterSettings.includesTags,
-                  },
-                },
-              ]
-            : []),
-          ...(excludesTags
-            ? [
-                {
-                  not: {
-                    tags: {
-                      containsAny: searchSettings.filterSettings.excludesTags,
-                    },
-                  },
-                },
-              ]
-            : []),
-          {
-            dpi: {
-              between: [
-                searchSettings.filterSettings.minimumDPI,
-                searchSettings.filterSettings.maximumDPI,
-              ],
-            },
-          },
-          {
-            size: {
-              lte: searchSettings.filterSettings.maximumSize * 1_000_000,
-            },
-          },
-          ...((printings?.length ?? 0) > 0
-            ? [
-                {
-                  or: printings!.map(({ expansionCode, collectorNumber }) => ({
-                    expansionCode: expansionCode,
-                    collectorNumber: collectorNumber,
-                  })),
-                },
-              ]
-            : []),
-          ...((artists?.length ?? 0) > 0 ? [{ artist: { in: artists } }] : []),
-        ],
-      },
-      sortBy: sortByConfig,
-    }) as {
-      hits: Array<OramaSearchResult> | undefined;
-      count: number | undefined;
-    };
-    return { hits: searchResults.hits ?? [], count: searchResults.count ?? 0 };
-  }
-
   private search(
     searchSettings: SearchSettings,
     query: string | undefined,
@@ -260,29 +148,14 @@ export class ClientSearchService {
     limit?: number,
     offset?: number
   ): OramaSearchResults | undefined {
-    return [this.localFilesIndex?.index, this.googleDriveIndex?.index].reduce(
-      (
-        accumulated: OramaSearchResults,
-        index: OramaIndex | undefined
-      ): OramaSearchResults => {
-        if (index === undefined) {
-          return accumulated;
-        }
-        const searchResults = this.searchOramaIndex(
-          index,
-          searchSettings,
-          query,
-          cardTypes,
-          sortBy,
-          limit,
-          offset
-        );
-        return {
-          hits: accumulated.hits.concat(searchResults?.hits ?? []),
-          count: accumulated.count + (searchResults?.count ?? 0),
-        };
-      },
-      { hits: [], count: 0 }
+    return searchOramaIndices(
+      [this.localFilesIndex?.index, this.googleDriveIndex?.index],
+      searchSettings,
+      query,
+      cardTypes,
+      sortBy,
+      limit,
+      offset
     );
   }
 
@@ -342,8 +215,8 @@ export class ClientSearchService {
     );
     const oramaIndex: OramaIndex = { oramaDb, size: cards.length };
 
-    const results = this.searchOramaIndex(
-      oramaIndex,
+    const results = searchOramaIndices(
+      [oramaIndex],
       searchSettings,
       undefined,
       [],
@@ -354,10 +227,10 @@ export class ClientSearchService {
       artists
     );
     if (sortBy !== undefined) {
-      return results?.hits.map((hit) => hit.id) ?? [];
+      return results.hits.map((hit) => hit.id);
     } else {
       // honour the ordering of `cards`
-      const resultsSet = new Set(results?.hits.map((hit) => hit.id));
+      const resultsSet = new Set(results.hits.map((hit) => hit.id));
       return cards
         .map((card) => card.identifier)
         .filter((identifier) => resultsSet.has(identifier));

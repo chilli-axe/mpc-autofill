@@ -1,7 +1,9 @@
 import datetime as dt
+import inspect
 import uuid
 from typing import Type
 
+import factory as factory_boy
 import pytest
 from pytest_elasticsearch import factories
 from testcontainers.elasticsearch import ElasticSearchContainer
@@ -12,6 +14,7 @@ from django.core.management import call_command
 
 from cardpicker.integrations.game.base import GameIntegration
 from cardpicker.models import Card, CardTypes, DFCPair, Source, Tag
+from cardpicker.tests import factories as factories_module
 from cardpicker.tests.constants import Cards, DummyIntegration, Sources
 from cardpicker.tests.factories import (
     CanonicalCardFactory,
@@ -24,6 +27,18 @@ from cardpicker.tests.factories import (
 
 POSTGRES_PORT = 47000
 ELASTICSEARCH_PORT = 9300  # this is the default expected by `elasticsearch_nooproc`
+
+
+@pytest.fixture(autouse=True)
+def reset_factory_sequences() -> None:
+    """
+    Snapshots embed sequence-generated values (e.g. "Artist 0"), so sequences must restart for every test -
+    otherwise adding or running a subset of tests shifts the numbering and breaks unrelated snapshots.
+    """
+
+    for _, factory_class in inspect.getmembers(factories_module, inspect.isclass):
+        if issubclass(factory_class, factory_boy.django.DjangoModelFactory):
+            factory_class.reset_sequence(0)
 
 
 @pytest.fixture(scope="session")
