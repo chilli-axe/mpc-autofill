@@ -24,19 +24,34 @@ export const handleImageRequest = async (url: URL, request: Request, env: Env, c
 
   const imageKey = R2Service.getImageKey(imageType, imageSize, imageIdentifier);
 
-  switch (request.method) {
-    case "GET":
-      switch (imageSize) {
-        case "small":
-        case "large":
-          return R2Service.getThumbnail(env, ctx, getImageURL(imageType, imageSize, undefined, jpgQuality, imageIdentifier), imageKey);
-        case "full":
-          const url = getImageURL(imageType, imageSize, dpi, jpgQuality, imageIdentifier);
-          return fetch(url);
-        default:
-          throw new Error(`Invalid image size ${imageSize}`);
-      }
-    default:
-      return new Response(`Invalid method ${request.method}. GET or PUT expected.`, { status: 400 });
-  }
+  const response = await (async () => {
+    switch (request.method) {
+      case "GET":
+        switch (imageSize) {
+          case "small":
+          case "large":
+            return R2Service.getThumbnail(env, ctx, getImageURL(imageType, imageSize, undefined, jpgQuality, imageIdentifier), imageKey);
+          case "full":
+            const url = getImageURL(imageType, imageSize, dpi, jpgQuality, imageIdentifier);
+            return fetch(url);
+          default:
+            throw new Error(`Invalid image size ${imageSize}`);
+        }
+      default:
+        return new Response(`Invalid method ${request.method}. GET or PUT expected.`, { status: 400 });
+    }
+  })();
+
+  // Callers (the browser's main thread, and the PDF renderer's Worker context)
+  // fetch() these images cross-origin, which requires an explicit CORS header
+  // on the actual response - the OPTIONS preflight handler alone isn't enough.
+  // The "full" tier previously worked by accident because Google's own response
+  // happens to carry a permissive CORS header; don't rely on that.
+  const headers = new Headers(response.headers);
+  headers.set("Access-Control-Allow-Origin", "*");
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
 };
