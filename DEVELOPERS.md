@@ -28,7 +28,7 @@ Pre-commit hooks:
     - Update snapshots for each of the above: `test-update-snapshot`, `test-e2e-update-snapshot`
   - Build frontend assets: `npm run build`
 
-`/backend`:
+`/MPCAutofill`:
 
 - The backend is a standard Django application:
   - Requires Python 3.13 as of August 2026 - authority is backend Dockerfile
