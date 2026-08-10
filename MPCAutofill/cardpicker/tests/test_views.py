@@ -10,6 +10,7 @@ from syrupy import SnapshotAssertion
 from django.urls import reverse
 
 from cardpicker import views
+from cardpicker.models import DownloadCount
 from cardpicker.tests.constants import Cards, DummyImportSite, Sources
 from cardpicker.tests.factories import SourceFactory
 
@@ -619,6 +620,34 @@ class TestPostExploreSearchResults:
                 "nameDescending",
                 [Cards.SIMPLE_LOTUS.value, Cards.SIMPLE_CUBE.value],
                 id="sort by name descending",
+            ),
+            pytest.param(
+                Cards.BRAINSTORM.value.name,
+                ["CARD"],
+                "popularityTodayDescending",
+                [Cards.BRAINSTORM.value],
+                id="sort by popularity today",
+            ),
+            pytest.param(
+                Cards.BRAINSTORM.value.name,
+                ["CARD"],
+                "popularityWeekDescending",
+                [Cards.BRAINSTORM.value],
+                id="sort by popularity this week",
+            ),
+            pytest.param(
+                Cards.BRAINSTORM.value.name,
+                ["CARD"],
+                "popularityMonthDescending",
+                [Cards.BRAINSTORM.value],
+                id="sort by popularity this month",
+            ),
+            pytest.param(
+                Cards.BRAINSTORM.value.name,
+                ["CARD"],
+                "popularityAllTimeDescending",
+                [Cards.BRAINSTORM.value],
+                id="sort by popularity all time",
             ),
         ],
     )
@@ -1423,3 +1452,63 @@ class TestNewCardsPage:
         response = client.get(reverse(views.get_new_cards_page), params)
         snapshot_response(response, snapshot)
         assert response.status_code == 400
+
+
+class TestPostDownloadCounts:
+    @pytest.fixture(autouse=True)
+    def autouse_populated_database(self, django_settings, all_sources, all_cards):
+        pass
+
+    def test_get_request(self, client, snapshot):
+        response = client.get(reverse(views.post_download_counts))
+        snapshot_response(response, snapshot)
+        assert response.status_code == 400
+
+    @pytest.mark.parametrize(
+        "json_body",
+        [{}, ["test"], {"invalid": "data"}],
+        ids=["empty json body", "gave it an array", "invalid field"],
+    )
+    def test_response_to_malformed_json_body(self, client, snapshot, json_body):
+        response = client.post(reverse(views.post_download_counts), json_body, content_type="application/json")
+        snapshot_response(response, snapshot)
+        assert response.status_code == 400
+
+    def test_records_downloads_for_known_identifiers(self, client):
+        response = client.post(
+            reverse(views.post_download_counts),
+            {"cardIdentifiers": [Cards.BRAINSTORM.value.identifier]},
+            content_type="application/json",
+        )
+        assert response.status_code == 200
+        assert response.json() == {"status": "ok"}
+        assert DownloadCount.objects.get(card__identifier=Cards.BRAINSTORM.value.identifier).count == 1
+
+    def test_upsert_increments_count(self, client):
+        for _ in range(2):
+            client.post(
+                reverse(views.post_download_counts),
+                {"cardIdentifiers": [Cards.BRAINSTORM.value.identifier]},
+                content_type="application/json",
+            )
+        assert DownloadCount.objects.get(card__identifier=Cards.BRAINSTORM.value.identifier).count == 2
+
+    def test_unknown_identifiers_ignored(self, client):
+        response = client.post(
+            reverse(views.post_download_counts),
+            {"cardIdentifiers": ["this-identifier-does-not-exist"]},
+            content_type="application/json",
+        )
+        assert response.status_code == 200
+        assert response.json() == {"status": "ok"}
+        assert DownloadCount.objects.count() == 0
+
+    def test_empty_identifier_list(self, client):
+        response = client.post(
+            reverse(views.post_download_counts),
+            {"cardIdentifiers": []},
+            content_type="application/json",
+        )
+        assert response.status_code == 200
+        assert response.json() == {"status": "ok"}
+        assert DownloadCount.objects.count() == 0

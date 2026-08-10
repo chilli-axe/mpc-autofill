@@ -14,7 +14,7 @@ from cardpicker.constants import DATE_FORMAT
 from cardpicker.schema_types import CanonicalArtistClass as SerialisedCanonicalArtist
 from cardpicker.schema_types import CanonicalCardClass as SerialisedCanonicalCard
 from cardpicker.schema_types import Card as SerialisedCard
-from cardpicker.schema_types import CardType, ChildElement, Game
+from cardpicker.schema_types import CardType, ChildElement, DownloadCounts, Game
 from cardpicker.schema_types import Source as SerialisedSource
 from cardpicker.schema_types import SourceContribution, SourceType
 from cardpicker.schema_types import Tag as SerialisedTag
@@ -307,6 +307,12 @@ class Card(models.Model):
             mediumThumbnailUrl=self.get_medium_thumbnail_url() or "",
             tags=sorted(self.tags),
             language=self.language,
+            downloads=DownloadCounts(
+                today=self.get_downloads_today(),
+                thisWeek=self.get_downloads_this_week(),
+                thisMonth=self.get_downloads_this_month(),
+                total=self.get_total_downloads(),
+            ),
             canonicalCard=(
                 self.canonical_card.serialise()
                 if self.canonical_card
@@ -324,6 +330,20 @@ class Card(models.Model):
 
     def get_source_pk(self) -> int:
         return self.source.pk
+
+    # These read from ORM-annotated values (Coalesce Sum over download_counts). Using getattr avoids
+    # an extra query per card when the queryset wasn't annotated — unannotated callers get 0 instead.
+    def get_total_downloads(self) -> int:
+        return getattr(self, "total_downloads", None) or 0
+
+    def get_downloads_today(self) -> int:
+        return getattr(self, "downloads_today", None) or 0
+
+    def get_downloads_this_week(self) -> int:
+        return getattr(self, "downloads_this_week", None) or 0
+
+    def get_downloads_this_month(self) -> int:
+        return getattr(self, "downloads_this_month", None) or 0
 
     def get_source_name(self) -> str:
         return self.source.name
@@ -504,6 +524,15 @@ class ProjectMember(models.Model):
         }
 
 
+class DownloadCount(models.Model):
+    date = models.DateField()
+    card = models.ForeignKey("Card", on_delete=models.CASCADE, related_name="download_counts")
+    count = models.IntegerField(default=0)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["date", "card"], name="unique_downloadcount_date_card")]
+
+
 __all__ = [
     "Faces",
     "CardTypes",
@@ -520,4 +549,5 @@ __all__ = [
     "get_default_cardback",
     "Project",
     "ProjectMember",
+    "DownloadCount",
 ]

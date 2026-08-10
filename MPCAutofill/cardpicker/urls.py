@@ -21,4 +21,5 @@ urlpatterns = [
     path("2/info/", views.get_info),
     path("2/patreon/", views.get_patreon),
     path("2/searchEngineHealth/", views.get_search_engine_health),
+    path("2/downloadCounts/", views.post_download_counts),
 ]
