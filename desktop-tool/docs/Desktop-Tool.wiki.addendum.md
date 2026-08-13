@@ -54,7 +54,7 @@ Add this section after "MakePlayingCards Automation":
 > - You sign in yourself. The tool then creates the product, uploads the PDF, and opens the checkout page for your review. It never submits payment.
 > - Multiple XML files use the same browser session, with a prompt between orders.
 >
-> DriveThruCards requires Ghostscript. When it is missing, the tool asks before trying to install it with Homebrew, winget, apt, dnf, or yum. If you decline, install Ghostscript yourself and return to the prompt.
+> DriveThruCards requires Ghostscript. When it is missing, the tool asks before downloading a pinned, checksum-verified installer on macOS or Windows, or using apt, dnf, or yum on Linux. If you decline, install Ghostscript yourself and return to the prompt.
 >
 > For more consistent print colours, the tool looks for Adobe's US Web Coated (SWOP) ICC profile in the usual system folders and in `~/.mpc-autofill/`. If it cannot find the profile, it can download Adobe's end-user profile bundle, verify its SHA-256 checksum, and cache the profile. You can decline and continue with Ghostscript's default colour conversion.
 
