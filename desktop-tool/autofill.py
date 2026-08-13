@@ -97,6 +97,10 @@ GHOSTSCRIPT_WINDOWS_INSTALLERS = {
         "3a4c28d0aac47aa7cccd35a5932c55110376e9dbd966898dde388b7faba444a4",
     ),
 }
+GHOSTSCRIPT_MACOS_INSTALLER = (
+    "https://pages.uoregon.edu/koch/Ghostscript-10.07.1.pkg",
+    "7ea1d591c186b9f6f3e1d9cfd4ab2ef8570c5bcfd19b54086e8e183ed5892061",
+)
 
 
 def get_browser_picker_choices() -> list[str]:
@@ -173,24 +177,46 @@ def wait_for_user_to_complete_order() -> None:
     )
 
 
-def _install_ghostscript_windows() -> bool:
+def _download_ghostscript_installer(download_url: str, expected_digest: str, directory: str) -> str:
     import hashlib
-    import tempfile
     from urllib.request import Request, urlopen
+
+    installer_path = os.path.join(directory, os.path.basename(download_url))
+    download = Request(download_url, headers={"User-Agent": "mpc-autofill"})
+    with urlopen(download, timeout=60) as response, open(installer_path, "wb") as installer:
+        shutil.copyfileobj(response, installer)
+    with open(installer_path, "rb") as installer:
+        actual_digest = hashlib.file_digest(installer, "sha256").hexdigest()
+    if actual_digest != expected_digest:
+        raise RuntimeError("The downloaded Ghostscript installer failed checksum verification.")
+    return installer_path
+
+
+def _install_ghostscript_macos() -> bool:
+    import tempfile
+
+    download_url, expected_digest = GHOSTSCRIPT_MACOS_INSTALLER
+    logger.info(f"Downloading the signed MacTeX Ghostscript {GHOSTSCRIPT_VERSION} installer...")
+    with tempfile.TemporaryDirectory() as directory:
+        installer_path = _download_ghostscript_installer(download_url, expected_digest, directory)
+        script = (
+            "on run argv\n"
+            'do shell script "/usr/sbin/installer -pkg " & quoted form of item 1 of argv & '
+            '" -target /" with administrator privileges\n'
+            "end run"
+        )
+        return subprocess.run(["/usr/bin/osascript", "-e", script, "--", installer_path], check=False).returncode == 0
+
+
+def _install_ghostscript_windows() -> bool:
+    import tempfile
 
     suffix = "w64.exe" if sys.maxsize > 2**32 else "w32.exe"
     download_url, expected_digest = GHOSTSCRIPT_WINDOWS_INSTALLERS[suffix]
 
     logger.info(f"Downloading Ghostscript {GHOSTSCRIPT_VERSION} from Artifex...")
     with tempfile.TemporaryDirectory() as directory:
-        installer_path = os.path.join(directory, os.path.basename(download_url))
-        download = Request(download_url, headers={"User-Agent": "mpc-autofill"})
-        with urlopen(download, timeout=60) as response, open(installer_path, "wb") as installer:
-            shutil.copyfileobj(response, installer)
-        with open(installer_path, "rb") as installer:
-            actual_digest = hashlib.file_digest(installer, "sha256").hexdigest()
-        if actual_digest != expected_digest:
-            raise RuntimeError("The downloaded Ghostscript installer failed checksum verification.")
+        installer_path = _download_ghostscript_installer(download_url, expected_digest, directory)
 
         command = (
             "$process = Start-Process -FilePath $env:MPC_AUTOFILL_GS_INSTALLER "
@@ -214,15 +240,13 @@ def _install_ghostscript() -> bool:
     """
 
     if sys.platform.startswith("darwin"):
-        if shutil.which("brew") is None:
-            logger.info("Homebrew not found. Please install Homebrew, then re-run.")
-            return False
-        else:
-            logger.info("Installing Ghostscript via Homebrew...")
-            result = subprocess.run(["brew", "install", "ghostscript"], check=False)
-            if result.returncode != 0:
-                logger.warning("Ghostscript installation via Homebrew failed.")
-            return result.returncode == 0
+        try:
+            if _install_ghostscript_macos():
+                return True
+        except Exception as error:
+            logger.warning(f"Ghostscript installation failed: {error}")
+        logger.info("Please install Ghostscript from https://pages.uoregon.edu/koch/.")
+        return False
     elif sys.platform.startswith("win"):
         try:
             if _install_ghostscript_windows():
@@ -271,7 +295,7 @@ def ensure_ghostscript_available() -> str:
 
         logger.info(
             "Please install Ghostscript, then return here to continue.\n"
-            "macOS: brew install ghostscript\n"
+            "macOS: https://pages.uoregon.edu/koch/\n"
             "Windows: https://ghostscript.com/releases/gsdnld.html\n"
             "Linux: use your package manager (e.g., apt install ghostscript)."
         )

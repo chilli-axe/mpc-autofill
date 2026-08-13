@@ -49,6 +49,8 @@ def get_ghostscript_path(explicit_path: Optional[str] = None) -> Optional[str]:
         installs = list(Path(os.environ.get("ProgramFiles", r"C:\Program Files")).glob("gs/gs*/bin/gswin*c.exe"))
         if installs:
             return str(max(installs, key=os.path.getmtime))
+    elif sys.platform == "darwin" and os.path.isfile("/usr/local/bin/gs"):
+        return "/usr/local/bin/gs"
     return None
 
 
