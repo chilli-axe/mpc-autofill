@@ -179,6 +179,35 @@ def test_ensure_ghostscript_available_installs_official_release_on_windows(
     assert "Start-Process" in install_calls[0][-1]
 
 
+def test_ensure_ghostscript_available_installs_signed_package_on_macos(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    paths = [None, "/usr/local/bin/gs"]
+    installer = b"signed Ghostscript installer"
+    download_url = "https://example.test/Ghostscript.pkg"
+
+    monkeypatch.setattr(autofill_cli.sys, "platform", "darwin", raising=False)
+    monkeypatch.setattr(
+        autofill_cli,
+        "GHOSTSCRIPT_MACOS_INSTALLER",
+        (download_url, hashlib.sha256(installer).hexdigest()),
+    )
+    monkeypatch.setattr(autofill_cli, "get_ghostscript_path", lambda: paths.pop(0))
+    monkeypatch.setattr(autofill_cli, "get_ghostscript_version", lambda _path: "10.0.0")
+    monkeypatch.setattr(autofill_cli.click, "confirm", lambda *_args, **_kwargs: True)
+    monkeypatch.setattr("urllib.request.urlopen", lambda *_args, **_kwargs: BytesIO(installer))
+
+    def fake_run(cmd, check=False):
+        assert cmd[:2] == ["/usr/bin/osascript", "-e"]
+        assert "administrator privileges" in cmd[2]
+        assert Path(cmd[-1]).read_bytes() == installer
+        return SimpleNamespace(returncode=0)
+
+    monkeypatch.setattr(autofill_cli.subprocess, "run", fake_run)
+
+    assert autofill_cli.ensure_ghostscript_available() == "/usr/local/bin/gs"
+
+
 def test_install_ghostscript_windows_rejects_wrong_checksum(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(autofill_cli.sys, "maxsize", 2**63 - 1)
     monkeypatch.setitem(
@@ -203,7 +232,8 @@ def test_install_ghostscript_windows_rejects_wrong_checksum(monkeypatch: pytest.
 )
 @pytest.mark.parametrize(
     "download_url",
-    [installer[0] for installer in autofill_cli.GHOSTSCRIPT_WINDOWS_INSTALLERS.values()],
+    [installer[0] for installer in autofill_cli.GHOSTSCRIPT_WINDOWS_INSTALLERS.values()]
+    + [autofill_cli.GHOSTSCRIPT_MACOS_INSTALLER[0]],
 )
 def test_pinned_ghostscript_installers_are_available(download_url: str) -> None:
     from urllib.request import Request, urlopen
@@ -222,6 +252,14 @@ def test_get_ghostscript_path_finds_standard_windows_install(monkeypatch: pytest
     monkeypatch.setenv("ProgramFiles", str(tmp_path))
 
     assert get_ghostscript_path() == str(executable)
+
+
+def test_get_ghostscript_path_finds_standard_macos_install(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr("src.pdf_maker.shutil.which", lambda _name: None)
+    monkeypatch.setattr("src.pdf_maker.sys.platform", "darwin")
+    monkeypatch.setattr("src.pdf_maker.os.path.isfile", lambda path: path == "/usr/local/bin/gs")
+
+    assert get_ghostscript_path() == "/usr/local/bin/gs"
 
 
 def test_ensure_ghostscript_available_installs_with_apt_on_linux(
