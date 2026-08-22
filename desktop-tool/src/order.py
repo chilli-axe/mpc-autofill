@@ -223,10 +223,10 @@ class CardImage:
                                 file_path=self.file_path,
                                 post_processing_config=post_processing_config,
                             )
-                        if self.file_exists() and not self.errored and is_image_valid(cast(str, self.file_path)):
+                        if self.file_exists() and not self.errored and is_image_valid(self.file_path):
                             break
                         if self.file_exists():
-                            remove_if_exists(cast(str, self.file_path))
+                            remove_if_exists(self.file_path)
                             logger.info(f"Downloaded image '{bold(self.name)}' appears corrupted. Retrying download...")
                         if attempt == 1:
                             self.errored = True

@@ -312,7 +312,7 @@ def get_existing_pdf_paths(order_name: Optional[str]) -> list[str]:
 def get_newest_mtime_in_directory(directory: str) -> Optional[float]:
     if not os.path.isdir(directory):
         return None
-    newest_mtime = None
+    newest_mtime: Optional[float] = None
     for root, _, files in os.walk(directory):
         for file_name in files:
             file_path = os.path.join(root, file_name)
