@@ -432,7 +432,7 @@ class AutofillDriver:
                     for selector in checkbox_selectors:
                         elements = self.driver.find_elements(By.CSS_SELECTOR, selector)
                         for element in elements:
-                            if element.is_displayed():
+                            if element.is_displayed():  # type: ignore[no-untyped-call]
                                 element.click()
                                 logger.debug("Clicked Turnstile checkbox")
                                 return True
@@ -522,7 +522,7 @@ class AutofillDriver:
         try:
             with self.no_implicit_wait():
                 return any(
-                    element.is_displayed()
+                    element.is_displayed()  # type: ignore[no-untyped-call]
                     for element in self.driver.find_elements(By.CSS_SELECTOR, selectors.publisher_ready_selector)
                 )
         except Exception as exc:
@@ -537,20 +537,20 @@ class AutofillDriver:
                 authenticated_elements = self.driver.find_elements(
                     By.CSS_SELECTOR, selectors.authenticated_indicator_selector
                 )
-                if any(element.is_displayed() for element in authenticated_elements):
+                if any(element.is_displayed() for element in authenticated_elements):  # type: ignore[no-untyped-call]
                     return True
 
                 logout_elements = self.driver.find_elements(
                     By.XPATH,
                     "//*[self::a or self::button][normalize-space()='Log Off' or normalize-space()='Log Out']",
                 )
-                if any(element.is_displayed() for element in logout_elements):
+                if any(element.is_displayed() for element in logout_elements):  # type: ignore[no-untyped-call]
                     return True
 
                 # The Publish link also proves the user is signed in, even if the
                 # newer account-navigation selectors change.
                 return any(
-                    element.is_displayed()
+                    element.is_displayed()  # type: ignore[no-untyped-call]
                     for element in self.driver.find_elements(By.CSS_SELECTOR, selectors.publisher_ready_selector)
                 )
         except Exception as exc:
@@ -564,7 +564,9 @@ class AutofillDriver:
         """
         # Strategy 1: Scroll into view and use native click
         try:
-            self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", element)
+            self.driver.execute_script(  # type: ignore[no-untyped-call]
+                "arguments[0].scrollIntoView({block: 'center'});", element
+            )
             element.click()
             return True
         except Exception as e:
@@ -572,14 +574,14 @@ class AutofillDriver:
 
         # Strategy 2: JavaScript click (bypasses overlays and visibility issues)
         try:
-            self.driver.execute_script("arguments[0].click();", element)
+            self.driver.execute_script("arguments[0].click();", element)  # type: ignore[no-untyped-call]
             return True
         except Exception as e:
             logger.debug(f"JavaScript click failed: {e}")
 
         return False
 
-    def click_element_polling(self, by: By, selector: str, timeout: int = 30) -> bool:
+    def click_element_polling(self, by: str, selector: str, timeout: int = 30) -> bool:
         """
         Aggressively poll for an element and click it as soon as it's available.
         No fixed waits - keeps trying until success or timeout.
@@ -590,7 +592,7 @@ class AutofillDriver:
                 try:
                     elements = self.driver.find_elements(by, selector)
                     for el in elements:
-                        if el.is_displayed() and self.click_element_with_retry(el):
+                        if el.is_displayed() and self.click_element_with_retry(el):  # type: ignore[no-untyped-call]
                             return True
                 except Exception:
                     pass
@@ -770,7 +772,7 @@ class AutofillDriver:
 
         for checkbox_id in ("filter_44550", "filter_1000138"):
             checkbox = self.driver.find_element(By.ID, checkbox_id)
-            if not checkbox.is_selected() and not self.click_element_with_retry(checkbox):
+            if not checkbox.is_selected() and not self.click_element_with_retry(checkbox):  # type: ignore[no-untyped-call]
                 raise Exception(f"Could not check the {checkbox_id} product filter checkbox.")
             logger.debug(f"Checked {checkbox_id}")
 
@@ -807,7 +809,9 @@ class AutofillDriver:
         url_match = re.search(r"window\.open\(['\"]([^'\"]+)['\"]\)", onclick)
         if not url_match:
             raise Exception(f"Could not extract the upload page URL from the upload button (onclick: {onclick}).")
-        self.driver.execute_script("window.location.href = arguments[0];", url_match.group(1))
+        self.driver.execute_script(  # type: ignore[no-untyped-call]
+            "window.location.href = arguments[0];", url_match.group(1)
+        )
         # Wait for the upload page to load
         WebDriverWait(self.driver, 15).until(presence_of_element_located((By.ID, "card_type_select")))
         logger.debug(f"Navigated to upload page: {self.driver.current_url}")
@@ -851,11 +855,11 @@ class AutofillDriver:
         # Click the dropzone to initialize Dropzone's hidden input
         # This should create the .dz-hidden-input element
         logger.debug("Clicking dropzone to initialize hidden input...")
-        self.driver.execute_script("arguments[0].click();", dropzone_div)
+        self.driver.execute_script("arguments[0].click();", dropzone_div)  # type: ignore[no-untyped-call]
 
         # Brief wait for the file dialog to appear, then send Escape to close it
         time.sleep(0.5)
-        ActionChains(self.driver).send_keys(Keys.ESCAPE).perform()
+        ActionChains(self.driver).send_keys(Keys.ESCAPE).perform()  # type: ignore[no-untyped-call]
         time.sleep(0.5)
 
         # Find the file input and send the file - do this in a single operation
@@ -879,7 +883,7 @@ class AutofillDriver:
                 logger.debug(f"Found {len(file_inputs)} file input(s) on page.")
                 for fi in file_inputs:
                     try:
-                        name = fi.get_attribute("name")
+                        name = fi.get_attribute("name")  # type: ignore[no-untyped-call]
                         if name == "groups_csv":
                             continue
                         logger.debug(f"Trying file input: name={name}")
@@ -893,7 +897,9 @@ class AutofillDriver:
             # Strategy 3: Use the fallback input
             try:
                 logger.debug("Using fallback file input...")
-                self.driver.execute_script("document.getElementById('dropzoneFallback').style.display = 'block';")
+                self.driver.execute_script(  # type: ignore[no-untyped-call]
+                    "document.getElementById('dropzoneFallback').style.display = 'block';"
+                )
                 fi = self.driver.find_element(By.CSS_SELECTOR, "#dropzoneFallback input[type='file']")
                 fi.send_keys(pdf_path)
                 return True
@@ -915,7 +921,7 @@ class AutofillDriver:
             raise Exception("Could not send the PDF to any file input element on the upload page.")
 
         # Trigger change event on all file inputs (one of them has our file)
-        self.driver.execute_script(
+        self.driver.execute_script(  # type: ignore[no-untyped-call]
             """
             document.querySelectorAll('input[type="file"]').forEach(function(input) {
                 input.dispatchEvent(new Event('change', { bubbles: true }));
@@ -934,7 +940,7 @@ class AutofillDriver:
             logger.debug("Button didn't become enabled automatically, forcing it.")
 
         # Click the upload button using JavaScript
-        upload_clicked = self.driver.execute_script(
+        upload_clicked = self.driver.execute_script(  # type: ignore[no-untyped-call]
             """
             var btn = document.getElementById('dropzoneButton');
             if (btn) {
@@ -952,7 +958,7 @@ class AutofillDriver:
 
         # Also try to trigger Dropzone's processQueue as a backup
         try:
-            self.driver.execute_script(
+            self.driver.execute_script(  # type: ignore[no-untyped-call]
                 """
                 var dz = Dropzone.forElement('#uploadfiles');
                 if (dz && dz.files && dz.files.length > 0) {
@@ -994,12 +1000,12 @@ class AutofillDriver:
         except sl_exc.TimeoutException as exc:
             raise Exception("The continue button did not activate after the PDF upload.") from exc
         logger.debug(f"Continue button activated. onclick: {continue_button.get_attribute('onclick')}")
-        self.driver.execute_script("arguments[0].click();", continue_button)
+        self.driver.execute_script("arguments[0].click();", continue_button)  # type: ignore[no-untyped-call]
         logger.debug("Clicked 'Click here after uploading your files' button.")
 
         # Click the "Complete Setup" button on the next page
         complete_button = WebDriverWait(self.driver, 30).until(element_to_be_clickable((By.ID, "submit_id")))
-        self.driver.execute_script("arguments[0].click();", complete_button)
+        self.driver.execute_script("arguments[0].click();", complete_button)  # type: ignore[no-untyped-call]
         logger.debug("Clicked 'Complete Setup' button.")
 
         # Click the "buy now" link to start placing the order.
@@ -1012,7 +1018,7 @@ class AutofillDriver:
             self.driver.get(buy_now_href)
             logger.debug("Navigated to 'buy now' page to start placing the order.")
         else:
-            self.driver.execute_script("arguments[0].click();", buy_now_link)
+            self.driver.execute_script("arguments[0].click();", buy_now_link)  # type: ignore[no-untyped-call]
             logger.debug("Clicked 'buy now' link.")
 
     @staticmethod
