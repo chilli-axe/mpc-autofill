@@ -52,7 +52,10 @@ Add this section after "MakePlayingCards Automation":
 > - It converts the PDF to PDF/X-1a:2001 with [Ghostscript](https://ghostscript.com/) before opening the DriveThruCards publisher tools.
 > - If your DriveThruCards account does not have publisher access, the tool completes the non-exclusive publisher setup.
 > - You sign in yourself. The tool then creates the product, uploads the PDF, and opens the checkout page for your review. It never submits payment.
-> - Multiple XML files use the same browser session, with a prompt between orders.
+> - Each selected XML becomes one separate DriveThruCards product. DriveThruCards does not use the XML's
+>   cardstock or foil settings, and the MPC order-combination option does not apply.
+> - Multiple XML files use the same browser session and cart. The tool processes every selected XML automatically,
+>   then pauses once for the final checkout handoff. Complete the purchase before closing the desktop tool.
 >
 > DriveThruCards requires Ghostscript. When it is missing, the tool asks before downloading a pinned, checksum-verified installer on macOS or Windows, or using apt, dnf, or yum on Linux. If you decline, install Ghostscript yourself and return to the prompt.
 >
