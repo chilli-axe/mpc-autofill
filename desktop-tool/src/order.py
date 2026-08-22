@@ -426,14 +426,14 @@ class Details:
 
     # region initialisation
 
-    def validate(self) -> None:
+    def validate(self, validate_print_options: bool = True) -> None:
         if (not self.allowed_to_exceed_project_max_size) and self.quantity > constants.PROJECT_MAX_SIZE:
             raise ValidationException(
                 f"Order quantity {self.quantity} larger than maximum size of {bold(constants.PROJECT_MAX_SIZE)}!"
             )
-        if self.stock not in [x.value for x in constants.Cardstocks]:
+        if validate_print_options and self.stock not in [x.value for x in constants.Cardstocks]:
             raise ValidationException(f"Order cardstock {self.stock} not supported!")
-        if self.stock == constants.Cardstocks.P10 and self.foil is True:
+        if validate_print_options and self.stock == constants.Cardstocks.P10 and self.foil is True:
             raise ValidationException(f"Order cardstock {self.stock} is not supported in foil!")
 
     # endregion
@@ -441,7 +441,9 @@ class Details:
     # region public
 
     @classmethod
-    def from_element(cls, element: Element, allowed_to_exceed_project_max_size: bool) -> "Details":
+    def from_element(
+        cls, element: Element, allowed_to_exceed_project_max_size: bool, validate_print_options: bool = True
+    ) -> "Details":
         details_dict = unpack_element(element, [x.value for x in constants.DetailsTags])
         quantity = 0
         if (quantity_text := details_dict[constants.DetailsTags.quantity].text) is not None:
@@ -455,7 +457,7 @@ class Details:
             foil=foil,
             allowed_to_exceed_project_max_size=allowed_to_exceed_project_max_size,
         )
-        details.validate()
+        details.validate(validate_print_options=validate_print_options)
         return details
 
     # endregion
@@ -621,11 +623,13 @@ class CardOrder:
         working_directory: str,
         allowed_to_exceed_project_max_size: bool,
         name: Optional[str] = None,
+        validate_print_options: bool = True,
     ) -> "CardOrder":
         root_dict = unpack_element(element, [x.value for x in constants.BaseTags])
         details = Details.from_element(
             element=root_dict[constants.BaseTags.details],
             allowed_to_exceed_project_max_size=allowed_to_exceed_project_max_size,
+            validate_print_options=validate_print_options,
         )
         fronts = CardImageCollection.from_element(
             element=root_dict[constants.BaseTags.fronts],
@@ -654,7 +658,7 @@ class CardOrder:
         return order
 
     @classmethod
-    def from_file_path(cls, working_directory: str, file_path: str) -> "CardOrder":
+    def from_file_path(cls, working_directory: str, file_path: str, validate_print_options: bool = True) -> "CardOrder":
         try:
             xml = defused_parse(file_path)
         except ParseError:
@@ -668,6 +672,7 @@ class CardOrder:
             working_directory=working_directory,
             name=file_name,
             allowed_to_exceed_project_max_size=True,
+            validate_print_options=validate_print_options,
         )
         return order
 
@@ -676,7 +681,7 @@ class CardOrder:
     # region public
 
     @classmethod
-    def from_xmls_in_folder(cls, working_directory: str) -> list["CardOrder"]:
+    def from_xmls_in_folder(cls, working_directory: str, validate_print_options: bool = True) -> list["CardOrder"]:
         """
         Reads some number of XMLs from the current directory, offering a choice if multiple are detected,
         and populates them with the contents of the selected files.
@@ -704,7 +709,12 @@ class CardOrder:
             answers = prompt(questions)
             file_paths = answers["xml_choice"]
         return [
-            cls.from_file_path(working_directory=working_directory, file_path=file_path) for file_path in file_paths
+            cls.from_file_path(
+                working_directory=working_directory,
+                file_path=file_path,
+                validate_print_options=validate_print_options,
+            )
+            for file_path in file_paths
         ]
 
     @classmethod

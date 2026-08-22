@@ -15,7 +15,7 @@ from itertools import groupby
 from pathlib import Path
 from queue import Queue
 from types import SimpleNamespace
-from typing import Callable, Generator
+from typing import Any, Callable, Generator
 from xml.etree import ElementTree
 
 import autofill as autofill_cli
@@ -655,13 +655,22 @@ def test_interactive_onboarding_uses_picker_and_skips_dtc_only_questions(
     assert prompts[1]["choices"][-1] == "DriveThruCards"
 
 
-def test_dtc_overridden_explicit_flags_are_explained_in_logs(tmp_path, caplog, monkeypatch: pytest.MonkeyPatch) -> None:
+@pytest.mark.parametrize("combine_flag", ["--combine-orders", "--no-combine-orders"])
+def test_dtc_overridden_explicit_flags_are_explained_in_logs(
+    tmp_path, caplog, monkeypatch: pytest.MonkeyPatch, combine_flag: str
+) -> None:
     monkeypatch.chdir(tmp_path)
     monkeypatch.setattr("src.logging.configure_loggers", lambda **_kwargs: None)
     monkeypatch.setattr("wakepy.keepawake", lambda **_kwargs: nullcontext())
+    parse_options: list[bool] = []
+    monkeypatch.setattr(
+        CardOrder,
+        "from_xmls_in_folder",
+        lambda **kwargs: parse_options.append(kwargs["validate_print_options"]) or [],
+    )
+    monkeypatch.setattr(autofill_cli, "download_images_for_orders", lambda **_kwargs: None)
 
     with caplog.at_level(logging.INFO, logger="src.logging"):
-        # no XML files in tmp_path, so the run exits at the "No XML files found" input() prompt
         result = CliRunner().invoke(
             autofill_cli.main,
             [
@@ -671,14 +680,16 @@ def test_dtc_overridden_explicit_flags_are_explained_in_logs(tmp_path, caplog, m
                 "DriveThruCards",
                 "--image-post-processing",
                 "--no-auto-save",
+                combine_flag,
                 "--download-images-only",
             ],
-            input="\n",
         )
 
     assert result.exit_code == 0
+    assert parse_options == [False]
     assert "Ignoring --image-post-processing" in caplog.text
     assert "Ignoring --no-auto-save" in caplog.text
+    assert "each DriveThruCards XML is always created as a separate product" in caplog.text
 
 
 def test_cli_site_choices_list_drivethrucards_last() -> None:
@@ -696,18 +707,19 @@ def test_main_drive_thru_cards_exportpdf_generates_pdfs_without_browser_automati
     browser_path = tmp_path / "chrome.exe"
     browser_path.touch()
 
-    calls = {"pdf": [], "wait": 0, "driver": 0}
+    calls: dict[str, Any] = {"pdf": [], "wait": 0, "driver": 0, "validate_print_options": None}
 
     monkeypatch.setattr("src.logging.configure_loggers", lambda **_kwargs: None)
     monkeypatch.setattr("wakepy.keepawake", lambda **_kwargs: nullcontext())
     monkeypatch.setattr(autofill_cli, "get_ghostscript_path", lambda: "/opt/homebrew/bin/gs")
     monkeypatch.setattr(autofill_cli, "ensure_ghostscript_available", lambda **_kwargs: "/opt/homebrew/bin/gs")
     monkeypatch.setattr("src.icc.find_or_download_dtc_icc_profile", lambda: str(icc_path))
-    monkeypatch.setattr(
-        CardOrder,
-        "from_xmls_in_folder",
-        lambda working_directory: [SimpleNamespace(name="test_local")],
-    )
+
+    def fake_from_xmls_in_folder(**kwargs):
+        calls["validate_print_options"] = kwargs["validate_print_options"]
+        return [SimpleNamespace(name="test_local")]
+
+    monkeypatch.setattr(CardOrder, "from_xmls_in_folder", fake_from_xmls_in_folder)
 
     def fake_get_dtc_pdf_paths_for_order(**kwargs):
         calls["pdf"].append(kwargs["order"].name)
@@ -742,6 +754,7 @@ def test_main_drive_thru_cards_exportpdf_generates_pdfs_without_browser_automati
     assert calls["pdf"] == ["test_local"]
     assert calls["wait"] == 0
     assert calls["driver"] == 0
+    assert calls["validate_print_options"] is False
 
 
 @pytest.mark.parametrize(
@@ -751,7 +764,7 @@ def test_main_drive_thru_cards_exportpdf_generates_pdfs_without_browser_automati
         (True, constants.TargetSites.DriveThruCards.value.starting_url, 0),
     ],
 )
-def test_main_drive_thru_cards_keeps_driver_alive_until_user_handoff(
+def test_main_drive_thru_cards_processes_multiple_orders_in_one_session(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path,
     skip_instructions: bool,
@@ -761,23 +774,43 @@ def test_main_drive_thru_cards_keeps_driver_alive_until_user_handoff(
     icc_path = tmp_path / "test.icc"
     icc_path.write_bytes(b"icc")
 
-    state = {"finalized": 0, "executed": 0, "wait_seen": None, "servers": 0, "starting_url": None}
+    state: dict[str, Any] = {
+        "drivers": 0,
+        "finalized": 0,
+        "prepared": 0,
+        "executed": [],
+        "prompts": [],
+        "servers": 0,
+        "starting_url": None,
+        "events": [],
+        "validate_print_options": None,
+    }
 
     monkeypatch.setattr("src.logging.configure_loggers", lambda **_kwargs: None)
     monkeypatch.setattr("wakepy.keepawake", lambda **_kwargs: nullcontext())
     monkeypatch.setattr(autofill_cli, "get_ghostscript_path", lambda: "/opt/homebrew/bin/gs")
     monkeypatch.setattr(autofill_cli, "ensure_ghostscript_available", lambda **_kwargs: "/opt/homebrew/bin/gs")
     monkeypatch.setattr("src.icc.find_or_download_dtc_icc_profile", lambda: str(icc_path))
-    monkeypatch.setattr(
-        CardOrder,
-        "from_xmls_in_folder",
-        lambda working_directory: [SimpleNamespace(name="test_local")],
-    )
+
+    def fake_from_xmls_in_folder(**kwargs):
+        state["validate_print_options"] = kwargs["validate_print_options"]
+        return [SimpleNamespace(name="first"), SimpleNamespace(name="second")]
+
+    monkeypatch.setattr(CardOrder, "from_xmls_in_folder", fake_from_xmls_in_folder)
     monkeypatch.setattr(
         autofill_cli,
         "get_dtc_pdf_paths_for_order",
-        lambda **_kwargs: ["export/test_local/1.pdf", "export/test_local/1_pdfx.pdf"],
+        lambda **kwargs: [f"export/{kwargs['order'].name}/1.pdf", f"export/{kwargs['order'].name}/1_pdfx.pdf"],
     )
+
+    def fake_input(message: str) -> str:
+        state["prompts"].append(message)
+        if len(state["executed"]) != 2:
+            raise AssertionError("DriveThruCards prompted before every selected order was processed")
+        state["events"].append("final")
+        return ""
+
+    monkeypatch.setattr("builtins.input", fake_input)
 
     class FakeWebServer:
         def __init__(self, html_filename: str) -> None:
@@ -791,21 +824,28 @@ def test_main_drive_thru_cards_keeps_driver_alive_until_user_handoff(
 
     class FakeDriver:
         def __init__(self, *args, **kwargs) -> None:
+            state["drivers"] += 1
             state["starting_url"] = kwargs["starting_url"]
 
+        def prepare_drive_thru_cards_session(self) -> None:
+            state["prepared"] += 1
+            state["events"].append("prepare")
+
         def execute_drive_thru_cards_order(self, order, pdf_path) -> None:
-            state["executed"] += 1
+            state["executed"].append((order.name, pdf_path))
+            state["events"].append(order.name)
 
         def __del__(self) -> None:
             state["finalized"] += 1
+            state["events"].append("finalized")
 
     monkeypatch.setattr("src.driver.AutofillDriver", FakeDriver)
 
-    def fake_wait_for_user_to_complete_order() -> None:
-        gc.collect()
-        state["wait_seen"] = state["finalized"]
-
-    monkeypatch.setattr(autofill_cli, "wait_for_user_to_complete_order", fake_wait_for_user_to_complete_order)
+    monkeypatch.setattr(
+        autofill_cli,
+        "wait_for_user_to_complete_order",
+        lambda: pytest.fail("DTC must use its checkout-before-exit prompt"),
+    )
 
     args = [
         "--directory",
@@ -823,11 +863,19 @@ def test_main_drive_thru_cards_keeps_driver_alive_until_user_handoff(
     gc.collect()
 
     assert result.exit_code == 0
-    assert state["executed"] == 1
-    assert state["wait_seen"] == 0
+    assert state["drivers"] == 1
+    assert state["prepared"] == 1
+    assert state["executed"] == [
+        ("first", "export/first/1_pdfx.pdf"),
+        ("second", "export/second/1_pdfx.pdf"),
+    ]
+    assert len(state["prompts"]) == 1
+    assert state["events"] == ["prepare", "first", "second", "final", "finalized"]
+    assert "Complete your purchase" in state["prompts"][-1]
     assert state["finalized"] == 1
     assert state["servers"] == expected_server_count
     assert state["starting_url"] == expected_starting_url
+    assert state["validate_print_options"] is False
 
 
 def test_download_images_for_orders_downloads_fronts_and_backs() -> None:
@@ -1943,6 +1991,35 @@ def test_card_order_mangled_xml(input_enter):
         CardOrder.from_file_path(
             working_directory=FILE_PATH, file_path="mangled.xml"
         )  # file is missing closing ">" at end
+
+
+@pytest.mark.parametrize(
+    ("stock", "foil"),
+    [
+        ("DTC ignores this cardstock", False),
+        (constants.Cardstocks.P10.value, True),
+    ],
+)
+def test_dtc_card_order_parsing_ignores_cardstock_and_foil(tmp_path, stock: str, foil: bool) -> None:
+    source = Path(__file__).with_name("test_order.xml").read_text(encoding="utf-8")
+    xml_path = tmp_path / "dtc.xml"
+    xml_path.write_text(
+        source.replace("<stock>(S30) Standard Smooth</stock>", f"<stock>{stock}</stock>").replace(
+            "<foil>true</foil>", f"<foil>{str(foil).lower()}</foil>"
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValidationException):
+        CardOrder.from_xmls_in_folder(working_directory=str(tmp_path))
+
+    order = CardOrder.from_xmls_in_folder(
+        working_directory=str(tmp_path),
+        validate_print_options=False,
+    )[0]
+
+    assert order.details.stock == stock
+    assert order.details.foil is foil
 
 
 def test_card_order_missing_slots(input_enter, card_order_element_invalid_quantity):

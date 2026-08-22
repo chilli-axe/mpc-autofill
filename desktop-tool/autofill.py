@@ -659,6 +659,11 @@ def main(
                 "Ignoring --image-post-processing: DriveThruCards images are already downscaled once "
                 "during PDF creation."
             )
+        if explicit("combine_orders") == ParameterSource.COMMANDLINE:
+            logger.info(
+                "Ignoring --combine-orders/--no-combine-orders: "
+                "each DriveThruCards XML is always created as a separate product."
+            )
         auto_save = True
         image_post_processing = False
     try:
@@ -675,7 +680,10 @@ def main(
                 else None
             )
             if download_images_only:
-                orders = CardOrder.from_xmls_in_folder(working_directory=working_directory)
+                orders = CardOrder.from_xmls_in_folder(
+                    working_directory=working_directory,
+                    validate_print_options=target_site != TargetSites.DriveThruCards,
+                )
                 download_images_for_orders(orders=orders, post_processing_config=post_processing_config)
                 return
             if target_site == TargetSites.DriveThruCards:
@@ -696,10 +704,13 @@ def main(
                     )
                 else:
                     logger.info(f"DriveThruCards ICC profile: {bold(resolved_icc_profile)}")
-                orders = CardOrder.from_xmls_in_folder(working_directory=working_directory)
+                orders = CardOrder.from_xmls_in_folder(
+                    working_directory=working_directory,
+                    validate_print_options=False,
+                )
                 dtc_driver: Optional[AutofillDriver] = None
                 dtc_web_server: Optional[WebServer] = None
-                for i, order in enumerate(orders, start=1):
+                for order in orders:
                     pdf_paths = get_dtc_pdf_paths_for_order(
                         order=order,
                         skip_pdf_if_exists=skip_pdf_if_exists,
@@ -732,11 +743,14 @@ def main(
                             browser_profile_name=browser_profile_name if browser_profile_path else None,
                             starting_url=starting_url,
                         )
+                        dtc_driver.prepare_drive_thru_cards_session()
                     dtc_driver.execute_drive_thru_cards_order(order=order, pdf_path=dtc_pdf_path)
-                    if i < len(orders):
-                        input(f"Press {bold('Enter')} to continue with the next DriveThruCards order.\n")
                 if dtc_driver is not None:
-                    wait_for_user_to_complete_order()
+                    logger.info(
+                        "All DriveThruCards products are in your cart. "
+                        "Please review them and complete the purchase manually."
+                    )
+                    input(f"Complete your purchase in the browser, then press {bold('Enter')} to close this window.\n")
             elif exportpdf:
                 from src.pdf_maker import PdfExporter
 

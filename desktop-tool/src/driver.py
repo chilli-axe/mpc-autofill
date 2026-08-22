@@ -1015,37 +1015,36 @@ class AutofillDriver:
             self.driver.execute_script("arguments[0].click();", buy_now_link)
             logger.debug("Clicked 'buy now' link.")
 
-    def execute_drive_thru_cards_order(self, order: CardOrder, pdf_path: str) -> None:
-        t = time.time()
+    @staticmethod
+    def _run_dtc_step(step_name: str, func: Any, *args: Any, **kwargs: Any) -> Any:
+        try:
+            return func(*args, **kwargs)
+        except Exception as exc:
+            raise Exception(f"DriveThruCards step '{step_name}' failed: {exc}") from exc
+
+    def prepare_drive_thru_cards_session(self) -> None:
         self.set_state(States.defining_order, "Opening DriveThruCards")
-
-        def run_step(step_name: str, func: Any, *args: Any, **kwargs: Any) -> Any:
-            try:
-                return func(*args, **kwargs)
-            except Exception as exc:
-                raise Exception(f"DriveThruCards step '{step_name}' failed: {exc}") from exc
-
-        run_step("open_dtc_starting_page", self.open_dtc_starting_page)
-        run_step("wait_for_cloudflare_challenge", self.wait_for_cloudflare_challenge)
-        login_completed = run_step("authenticate_dtc", self.authenticate_dtc)
+        self._run_dtc_step("open_dtc_starting_page", self.open_dtc_starting_page)
+        self._run_dtc_step("wait_for_cloudflare_challenge", self.wait_for_cloudflare_challenge)
+        login_completed = self._run_dtc_step("authenticate_dtc", self.authenticate_dtc)
         if not login_completed:
             raise Exception(
                 "DriveThruCards login was not completed before timeout. " "Please log in and re-run the command."
             )
-        run_step("ensure_dtc_publisher_account", self.ensure_dtc_publisher_account)
-        run_step("navigate_to_dtc_product_setup", self.navigate_to_dtc_product_setup)
-        run_step("fill_dtc_product_form", self.fill_dtc_product_form, order)
-        run_step("submit_dtc_description_page", self.submit_dtc_description_page)
-        run_step("open_dtc_upload_page", self.open_dtc_upload_page)
-        run_step("select_card_type_and_upload_pdf", self.select_card_type_and_upload_pdf, pdf_path)
+        self._run_dtc_step("ensure_dtc_publisher_account", self.ensure_dtc_publisher_account)
 
-        # DriveThruCards automation complete - user should finish checkout manually
-        self.set_state(States.finished, "Complete your purchase in the browser")
+    def execute_drive_thru_cards_order(self, order: CardOrder, pdf_path: str) -> None:
+        t = time.time()
+        self.set_state(States.defining_order, "Creating DriveThruCards product")
+        self._run_dtc_step("navigate_to_dtc_product_setup", self.navigate_to_dtc_product_setup)
+        self._run_dtc_step("fill_dtc_product_form", self.fill_dtc_product_form, order)
+        self._run_dtc_step("submit_dtc_description_page", self.submit_dtc_description_page)
+        self._run_dtc_step("open_dtc_upload_page", self.open_dtc_upload_page)
+        self._run_dtc_step("select_card_type_and_upload_pdf", self.select_card_type_and_upload_pdf, pdf_path)
+
+        self.set_state(States.finished, "Product added to cart")
         log_hours_minutes_seconds_elapsed(t)
-        logger.info(
-            "DriveThruCards order setup complete!\n"
-            "You are now at the checkout page. Please review your order and complete the purchase manually."
-        )
+        logger.info("DriveThruCards product setup complete and added to your cart.")
 
     # endregion
 

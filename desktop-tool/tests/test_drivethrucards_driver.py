@@ -17,7 +17,7 @@ def dtc_driver(monkeypatch: pytest.MonkeyPatch) -> AutofillDriver:
     return driver
 
 
-def test_execute_drive_thru_cards_order_runs_expected_sequence(dtc_driver: AutofillDriver) -> None:
+def test_prepare_drive_thru_cards_session_runs_expected_sequence(dtc_driver: AutofillDriver) -> None:
     calls = []
     dtc_driver.driver = SimpleNamespace()
 
@@ -25,6 +25,21 @@ def test_execute_drive_thru_cards_order_runs_expected_sequence(dtc_driver: Autof
     dtc_driver.wait_for_cloudflare_challenge = lambda: calls.append(("wait_for_cloudflare_challenge",))
     dtc_driver.authenticate_dtc = lambda: calls.append(("authenticate_dtc",)) or True
     dtc_driver.ensure_dtc_publisher_account = lambda: calls.append(("ensure_dtc_publisher_account",))
+
+    dtc_driver.prepare_drive_thru_cards_session()
+
+    assert calls == [
+        ("open_dtc_starting_page",),
+        ("wait_for_cloudflare_challenge",),
+        ("authenticate_dtc",),
+        ("ensure_dtc_publisher_account",),
+    ]
+
+
+def test_execute_drive_thru_cards_order_runs_expected_sequence(dtc_driver: AutofillDriver) -> None:
+    calls = []
+    dtc_driver.driver = SimpleNamespace()
+
     dtc_driver.navigate_to_dtc_product_setup = lambda: calls.append(("navigate_to_dtc_product_setup",))
     dtc_driver.fill_dtc_product_form = lambda order: calls.append(("fill_dtc_product_form", order.name))
     dtc_driver.submit_dtc_description_page = lambda: calls.append(("submit_dtc_description_page",))
@@ -35,10 +50,6 @@ def test_execute_drive_thru_cards_order_runs_expected_sequence(dtc_driver: Autof
     dtc_driver.execute_drive_thru_cards_order(order=order, pdf_path="/tmp/order.pdf")
 
     assert calls == [
-        ("open_dtc_starting_page",),
-        ("wait_for_cloudflare_challenge",),
-        ("authenticate_dtc",),
-        ("ensure_dtc_publisher_account",),
         ("navigate_to_dtc_product_setup",),
         ("fill_dtc_product_form", "My Order"),
         ("submit_dtc_description_page",),
@@ -94,23 +105,19 @@ def test_authenticate_dtc_returns_false_on_timeout(monkeypatch: pytest.MonkeyPat
     assert dtc_driver.authenticate_dtc() is False
 
 
-def test_execute_drive_thru_cards_order_raises_when_login_not_completed(dtc_driver: AutofillDriver) -> None:
+def test_prepare_drive_thru_cards_session_raises_when_login_not_completed(dtc_driver: AutofillDriver) -> None:
     dtc_driver.driver = SimpleNamespace()
     dtc_driver.open_dtc_starting_page = lambda: None
     dtc_driver.wait_for_cloudflare_challenge = lambda: None
     dtc_driver.authenticate_dtc = lambda: False
-    dtc_driver.navigate_to_dtc_product_setup = lambda: (_ for _ in ()).throw(AssertionError("should not continue"))
+    dtc_driver.ensure_dtc_publisher_account = lambda: (_ for _ in ()).throw(AssertionError("should not continue"))
 
     with pytest.raises(Exception, match="login was not completed"):
-        dtc_driver.execute_drive_thru_cards_order(order=SimpleNamespace(name="x"), pdf_path="/tmp/x.pdf")
+        dtc_driver.prepare_drive_thru_cards_session()
 
 
 def test_execute_drive_thru_cards_order_wraps_step_failures_with_context(dtc_driver: AutofillDriver) -> None:
     dtc_driver.driver = SimpleNamespace()
-    dtc_driver.open_dtc_starting_page = lambda: None
-    dtc_driver.wait_for_cloudflare_challenge = lambda: None
-    dtc_driver.authenticate_dtc = lambda: True
-    dtc_driver.ensure_dtc_publisher_account = lambda: None
     dtc_driver.navigate_to_dtc_product_setup = lambda: (_ for _ in ()).throw(RuntimeError("new UI mismatch"))
 
     with pytest.raises(Exception, match="step 'navigate_to_dtc_product_setup' failed"):
