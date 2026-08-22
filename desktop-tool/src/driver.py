@@ -1,4 +1,6 @@
 import datetime as dt
+import os
+import re
 import textwrap
 import time
 from concurrent.futures import ThreadPoolExecutor
@@ -11,10 +13,14 @@ import enlighten
 from InquirerPy import inquirer
 from selenium.common import exceptions as sl_exc
 from selenium.common.exceptions import NoAlertPresentException, NoSuchElementException
+from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.support.expected_conditions import (
+    element_to_be_clickable,
     invisibility_of_element,
+    presence_of_element_located,
     text_to_be_present_in_element,
     visibility_of_element_located,
 )
@@ -29,7 +35,7 @@ from src.constants import (
     States,
     TargetSites,
 )
-from src.exc import InvalidStateException
+from src.exc import ImageDownloadError, InvalidStateException
 from src.formatting import bold
 from src.logging import logger
 from src.order import CardImage, CardImageCollection, CardOrder
@@ -40,6 +46,10 @@ from src.utils import (
     ignore_javascript_errors,
     log_hours_minutes_seconds_elapsed,
 )
+from src.webdrivers import (
+    get_default_brave_binary_location,
+    get_undetected_chrome_driver,
+)
 
 
 @attr.s
@@ -48,6 +58,8 @@ class AutofillDriver:
     driver: WebDriver = attr.ib(default=None)  # delay initialisation until XML is selected and parsed
     browser: Browsers = attr.ib(default=Browsers.chrome)
     binary_location: Optional[str] = attr.ib(default=None)  # path to browser executable
+    browser_profile_path: Optional[str] = attr.ib(default=None)  # user data dir for Chromium browsers
+    browser_profile_name: Optional[str] = attr.ib(default=None)  # profile directory name, e.g. "Profile 1"
     target_site: TargetSites = attr.ib(default=TargetSites.MakePlayingCards)
     headless: bool = attr.ib(default=False)
     starting_url: str = attr.ib(default="data:")
@@ -63,24 +75,63 @@ class AutofillDriver:
 
     # region initialisation
 
-    def initialise_driver(self) -> None:
+    @staticmethod
+    def _quit_driver_quietly(driver: Optional[WebDriver]) -> None:
+        if driver is None:
+            return
         try:
-            driver = self.browser.value(headless=self.headless, binary_location=self.binary_location)  # type: ignore  # TODO
-            driver.set_window_size(1200, 900)
-            driver.implicitly_wait(5)
-            driver.get(self.starting_url)
-            WebDriverWait(driver, 10).until(visibility_of_element_located((By.TAG_NAME, "body")))
-            logger.info(
-                f"Successfully initialised {bold(self.browser.name)} driver "
-                f"targeting {bold(self.target_site.name)}.\n"
-            )
-        except (AttributeError, ValueError, sl_exc.WebDriverException) as e:
-            raise Exception(
-                f"An error occurred while attempting to configure the webdriver for your specified browser. "
-                f"Please make sure you have installed the browser & that it is up to date:\n\n{bold(e)}"
-            )
+            driver.quit()
+        except Exception:
+            pass
 
-        self.driver = driver
+    def create_driver(self) -> WebDriver:
+        if self.target_site == TargetSites.DriveThruCards:
+            # DriveThruCards' bot detection (Cloudflare) blocks standard Selenium, so it needs
+            # undetected-chromedriver. Other sites keep their standard drivers untouched.
+            binary_location = self.binary_location
+            if self.browser == Browsers.brave and binary_location is None:
+                binary_location = get_default_brave_binary_location()
+            elif self.browser not in (Browsers.chrome, Browsers.brave):
+                logger.info(
+                    f"DriveThruCards automation requires a Chromium browser - "
+                    f"using {bold('Chrome')} instead of {bold(self.browser.name)}."
+                )
+            return get_undetected_chrome_driver(
+                headless=self.headless,
+                binary_location=binary_location,
+                user_data_dir=self.browser_profile_path,
+                profile_directory=self.browser_profile_name,
+            )
+        return self.browser.value(headless=self.headless, binary_location=self.binary_location)  # type: ignore[operator]
+
+    def initialise_driver(self) -> None:
+        max_attempts = 3
+        for attempt in range(1, max_attempts + 1):
+            driver = None
+            try:
+                driver = self.create_driver()
+                driver.set_window_size(1200, 900)
+                driver.implicitly_wait(5)
+                driver.get(self.starting_url)
+                WebDriverWait(driver, 10).until(visibility_of_element_located((By.TAG_NAME, "body")))
+                logger.info(
+                    f"Successfully initialised {bold(self.browser.name)} driver "
+                    f"targeting {bold(self.target_site.name)}.\n"
+                )
+                self.driver = driver
+                return
+            except (AttributeError, ValueError, sl_exc.WebDriverException) as e:
+                self._quit_driver_quietly(driver)
+                if attempt < max_attempts:
+                    logger.warning(
+                        f"Webdriver initialisation attempt {attempt}/{max_attempts} failed; retrying.\n" f"{bold(e)}"
+                    )
+                    time.sleep(1)
+                    continue
+                raise Exception(
+                    f"An error occurred while attempting to configure the webdriver for your specified browser. "
+                    f"Please make sure you have installed the browser & that it is up to date:\n\n{bold(e)}"
+                )
 
     def initialise_bars(self) -> None:
         # set the total for upload/download bars to 0 here, then change the total according to each order
@@ -89,12 +140,16 @@ class AutofillDriver:
         self.status_bar = self.manager.status_bar(
             status_format=status_format, state=bold(self.state), action=bold("N/A"), position=1, autorefresh=True
         )
+        self.status_bar.refresh()
+        if self.target_site == TargetSites.DriveThruCards:
+            # DriveThruCards uploads a single PDF rather than individual images, so the per-image
+            # upload/download and project counters would only ever show 0/0 - don't create them.
+            return
         self.order_progress_bar = self.manager.counter(
             total=0, desc="Projects Auto-Filled", position=2, autorefresh=True
         )
         self.download_bar = self.manager.counter(total=0, desc="Images Downloaded   ", position=3, autorefresh=True)
         self.upload_bar = self.manager.counter(total=0, desc="Images Uploaded     ", position=4, autorefresh=True)
-        self.status_bar.refresh()
         self.order_progress_bar.refresh()
         self.download_bar.refresh()
         self.upload_bar.refresh()
@@ -201,6 +256,18 @@ class AutofillDriver:
             logger.debug("Attempted to locate the loading circle but encountered an exception:")
             logger.debug(e)
         return False
+
+    @contextmanager
+    def no_implicit_wait(self) -> Generator[None, None, None]:
+        """
+        Temporarily disable the driver's implicit wait so absent-element checks poll fast.
+        """
+
+        self.driver.implicitly_wait(0)
+        try:
+            yield
+        finally:
+            self.driver.implicitly_wait(5)
 
     def set_state(self, state: str, action: Optional[str] = None) -> None:
         self.state = state
@@ -320,6 +387,670 @@ class AutofillDriver:
             alert.accept()
         except NoAlertPresentException:
             pass
+
+    # endregion
+
+    # region DriveThruCards
+
+    def _try_click_turnstile_checkbox(self) -> bool:
+        """
+        Attempt to find and click the Cloudflare Turnstile checkbox.
+        Returns True if checkbox was found and clicked, False otherwise.
+        """
+        try:
+            with self.no_implicit_wait():
+                # Turnstile is rendered in an iframe - find it by common attributes
+                iframe_selectors = [
+                    "iframe[src*='challenges.cloudflare.com']",
+                    "iframe[title*='cloudflare']",
+                    "iframe[title*='Cloudflare']",
+                    "iframe[id*='cf-']",
+                ]
+
+                iframe = None
+                for selector in iframe_selectors:
+                    iframes = self.driver.find_elements(By.CSS_SELECTOR, selector)
+                    if iframes:
+                        iframe = iframes[0]
+                        break
+
+                if not iframe:
+                    return False
+
+                # Switch to iframe context
+                self.driver.switch_to.frame(iframe)
+
+                try:
+                    # Look for the checkbox input or clickable verification element
+                    checkbox_selectors = [
+                        "input[type='checkbox']",
+                        ".ctp-checkbox-label",
+                        "#challenge-stage",
+                        "[data-testid='challenge-input']",
+                    ]
+
+                    for selector in checkbox_selectors:
+                        elements = self.driver.find_elements(By.CSS_SELECTOR, selector)
+                        for element in elements:
+                            if element.is_displayed():  # type: ignore[no-untyped-call]
+                                element.click()
+                                logger.debug("Clicked Turnstile checkbox")
+                                return True
+                finally:
+                    # Always switch back to main content
+                    self.driver.switch_to.default_content()
+
+                return False
+        except Exception as e:
+            logger.debug(f"Error clicking Turnstile checkbox: {e}")
+            # Ensure we're back in main content even on error
+            try:
+                self.driver.switch_to.default_content()
+            except Exception:
+                pass
+            return False
+
+    def _is_cloudflare_challenge_active(self) -> bool:
+        """Check if a Cloudflare challenge page is currently displayed."""
+        try:
+            if "just a moment" in self.driver.title.lower():
+                return True
+            # Also check for challenge body text
+            with self.no_implicit_wait():
+                body_text = self.driver.find_element(By.TAG_NAME, "body").text.lower()
+            return "verifying you are human" in body_text or "checking your browser" in body_text
+        except Exception:
+            return False
+
+    def _is_site_loaded(self) -> bool:
+        """Check if the actual site content has loaded (past Cloudflare)."""
+        selectors = self.target_site.value.selectors
+        try:
+            if "just a moment" in self.driver.title.lower():
+                return False
+            # Check for logged-out, basic-account, or publisher navigation.
+            with self.no_implicit_wait():
+                login_btns = self.driver.find_elements(By.CSS_SELECTOR, selectors.login_button_selector)
+                authenticated = self.driver.find_elements(By.CSS_SELECTOR, selectors.authenticated_indicator_selector)
+                publisher_ready = self.driver.find_elements(By.CSS_SELECTOR, selectors.publisher_ready_selector)
+                return bool(login_btns or authenticated or publisher_ready)
+        except Exception:
+            return False
+
+    def wait_for_cloudflare_challenge(self, timeout_seconds: int = 300) -> None:
+        """
+        Wait for the Cloudflare challenge to be completed by waiting for site content to appear.
+        Uses aggressive polling and attempts to auto-click the Turnstile checkbox.
+        Waits for either the login button or Publisher Tools link (if already logged in).
+        """
+        self.set_state(States.defining_order, "Waiting for site to load")
+        logger.info("Waiting for DriveThruCards to load...")
+
+        poll_interval = 0.5  # Check every 500ms for responsive detection
+        turnstile_click_interval = 3.0  # Try clicking Turnstile every 3 seconds
+        last_turnstile_attempt = 0.0
+        challenge_detected = False
+        start_time = time.time()
+
+        while time.time() - start_time < timeout_seconds:
+            # Check if site has loaded successfully
+            if self._is_site_loaded():
+                logger.info("Site loaded successfully!")
+                return
+
+            # Check if we're on a Cloudflare challenge
+            if self._is_cloudflare_challenge_active():
+                if not challenge_detected:
+                    challenge_detected = True
+                    logger.info("Cloudflare challenge detected. Attempting automatic handling...")
+
+                # Periodically try to click the Turnstile checkbox
+                current_time = time.time()
+                if current_time - last_turnstile_attempt >= turnstile_click_interval:
+                    last_turnstile_attempt = current_time
+                    if self._try_click_turnstile_checkbox():
+                        logger.debug("Turnstile click attempted, waiting for verification...")
+
+            time.sleep(poll_interval)
+
+        # Timeout reached
+        raise TimeoutError(f"DriveThruCards did not finish loading after {timeout_seconds} seconds.")
+
+    def is_dtc_publisher_ready(self) -> bool:
+        """Return whether the publisher-only Publish navigation link is visible."""
+        selectors = self.target_site.value.selectors
+        try:
+            with self.no_implicit_wait():
+                return any(
+                    element.is_displayed()  # type: ignore[no-untyped-call]
+                    for element in self.driver.find_elements(By.CSS_SELECTOR, selectors.publisher_ready_selector)
+                )
+        except Exception as exc:
+            logger.debug(f"Error checking publisher status: {exc}")
+            return False
+
+    def is_dtc_user_authenticated(self) -> bool:
+        """Check for a basic signed-in account independently of publisher access."""
+        selectors = self.target_site.value.selectors
+        try:
+            with self.no_implicit_wait():
+                authenticated_elements = self.driver.find_elements(
+                    By.CSS_SELECTOR, selectors.authenticated_indicator_selector
+                )
+                if any(element.is_displayed() for element in authenticated_elements):  # type: ignore[no-untyped-call]
+                    return True
+
+                logout_elements = self.driver.find_elements(
+                    By.XPATH,
+                    "//*[self::a or self::button][normalize-space()='Log Off' or normalize-space()='Log Out']",
+                )
+                if any(element.is_displayed() for element in logout_elements):  # type: ignore[no-untyped-call]
+                    return True
+
+                # The Publish link also proves the user is signed in, even if the
+                # newer account-navigation selectors change.
+                return any(
+                    element.is_displayed()  # type: ignore[no-untyped-call]
+                    for element in self.driver.find_elements(By.CSS_SELECTOR, selectors.publisher_ready_selector)
+                )
+        except Exception as exc:
+            logger.debug(f"Error checking auth status: {exc}")
+            return False
+
+    def click_element_with_retry(self, element: Any) -> bool:
+        """
+        Attempt to click an element using multiple strategies.
+        Returns True if click succeeded, False otherwise.
+        """
+        # Strategy 1: Scroll into view and use native click
+        try:
+            self.driver.execute_script(  # type: ignore[no-untyped-call]
+                "arguments[0].scrollIntoView({block: 'center'});", element
+            )
+            element.click()
+            return True
+        except Exception as e:
+            logger.debug(f"Native click failed: {e}")
+
+        # Strategy 2: JavaScript click (bypasses overlays and visibility issues)
+        try:
+            self.driver.execute_script("arguments[0].click();", element)  # type: ignore[no-untyped-call]
+            return True
+        except Exception as e:
+            logger.debug(f"JavaScript click failed: {e}")
+
+        return False
+
+    def click_element_polling(self, by: str, selector: str, timeout: int = 30) -> bool:
+        """
+        Aggressively poll for an element and click it as soon as it's available.
+        No fixed waits - keeps trying until success or timeout.
+        """
+        start = time.time()
+        with self.no_implicit_wait():
+            while time.time() - start < timeout:
+                try:
+                    elements = self.driver.find_elements(by, selector)
+                    for el in elements:
+                        if el.is_displayed() and self.click_element_with_retry(el):  # type: ignore[no-untyped-call]
+                            return True
+                except Exception:
+                    pass
+                time.sleep(0.1)  # Small delay to avoid CPU spinning
+            return False
+
+    def _click_dtc_login_button(self) -> bool:
+        """Click the DriveThruCards login button to open the login modal."""
+        selectors = self.target_site.value.selectors
+        return self.click_element_polling(By.CSS_SELECTOR, selectors.login_button_selector, timeout=15)
+
+    def authenticate_dtc(self) -> bool:
+        """
+        Handle DriveThruCards login flow.
+        """
+        if self.is_dtc_user_authenticated():
+            logger.info("Already logged in to DriveThruCards.")
+            return True
+
+        self.set_state(States.defining_order, "Awaiting DriveThruCards login")
+
+        logger.info("Please log in to your DriveThruCards account.")
+
+        if not self._click_dtc_login_button():
+            logger.info(
+                "Could not find or click login button automatically.\n" "Please click the login button manually."
+            )
+
+        go_to_login_xpath = (
+            "//*[@data-cy='authModalBody']"
+            "//*[self::a or self::button][contains(normalize-space(), 'Go to Log In') "
+            "or contains(normalize-space(), 'Go to Log in')]"
+        )
+        if not self.click_element_polling(By.XPATH, go_to_login_xpath, timeout=15):
+            logger.info("Please click 'Go to Log In' in the browser.")
+
+        logger.info("Complete sign-in or account creation in the browser. " "The tool will continue automatically.")
+
+        # Wait for user to complete login (timeout after 5 minutes)
+        timeout_seconds = 300
+        start_time = time.time()
+        while time.time() - start_time < timeout_seconds:
+            time.sleep(1)
+            if self.is_dtc_user_authenticated():
+                logger.info("Successfully logged in to DriveThruCards!")
+                return True
+
+        logger.warning(f"Login timeout after {timeout_seconds}s. " "Please ensure you're logged in before continuing.")
+        return False
+
+    def open_dtc_starting_page(self) -> None:
+        """Wait for the local instruction-page button, or open DriveThruCards directly."""
+        if self.starting_url.startswith("http://localhost:"):
+            self.set_state(States.defining_order, "Awaiting browser instructions")
+            try:
+                WebDriverWait(self.driver, 300, poll_frequency=0.2).until(
+                    lambda driver: "drivethrucards.com" in driver.current_url
+                )
+            except sl_exc.TimeoutException as exc:
+                raise TimeoutError("The DriveThruCards instruction page was not continued within 5 minutes.") from exc
+            return
+
+        if "drivethrucards.com" not in self.driver.current_url:
+            self.driver.get(self.target_site.value.starting_url)
+
+    def ensure_dtc_publisher_account(self) -> None:
+        """Create publisher permissions when the authoritative Publish link is absent."""
+        if self.is_dtc_publisher_ready():
+            logger.info("DriveThruCards publisher account is ready.")
+            return
+
+        self.set_state(States.defining_order, "Setting up publisher account")
+        self.driver.get("https://www.drivethrucards.com/joinchoice.php")
+
+        non_exclusive_xpath = (
+            "//*[self::a or self::button or self::input]"
+            "[contains(normalize-space(.), 'Create My Non-Exclusive Publisher Account') "
+            "or contains(@value, 'Create My Non-Exclusive Publisher Account')]"
+        )
+        if not self.click_element_polling(By.XPATH, non_exclusive_xpath, timeout=30):
+            raise Exception("Could not choose the non-exclusive publisher account option.")
+
+        publisher_name_xpath = (
+            "//input[(not(@type) or @type='text') and "
+            "(contains(translate(@name, 'PUBLISHER', 'publisher'), 'publisher') or "
+            "contains(translate(@id, 'PUBLISHER', 'publisher'), 'publisher'))] | "
+            "//label[contains(normalize-space(.), 'Publisher Account Name')]/following::input[1]"
+        )
+        publisher_name_input = WebDriverWait(self.driver, 30).until(
+            presence_of_element_located((By.XPATH, publisher_name_xpath))
+        )
+        publisher_name_input.clear()
+        publisher_name_input.send_keys("MPC Autofill Publisher")
+
+        agreement_xpath = (
+            "//input[@type='checkbox' and "
+            "(contains(translate(@name, 'AGREE', 'agree'), 'agree') or "
+            "contains(translate(@id, 'AGREE', 'agree'), 'agree'))] | "
+            "//label[contains(normalize-space(.), 'I Agree')]//input[@type='checkbox']"
+        )
+        agreement_checkbox = WebDriverWait(self.driver, 30).until(element_to_be_clickable((By.XPATH, agreement_xpath)))
+        if not agreement_checkbox.is_selected() and not self.click_element_with_retry(agreement_checkbox):
+            raise Exception("Could not accept the publisher agreement.")
+
+        setup_xpath = (
+            "//*[self::a or self::button or self::input]"
+            "[contains(normalize-space(.), 'Set up My Publisher Account') "
+            "or contains(@value, 'Set up My Publisher Account')]"
+        )
+        if not self.click_element_polling(By.XPATH, setup_xpath, timeout=30):
+            raise Exception("Could not submit the publisher agreement.")
+
+        save_xpath = "//*[self::button or self::input]" "[normalize-space(.)='Save' or @value='Save']"
+        if not self.click_element_polling(By.XPATH, save_xpath, timeout=30):
+            raise Exception("Could not save the publisher payment information.")
+
+        try:
+            WebDriverWait(self.driver, 30, poll_frequency=0.5).until(lambda _driver: self.is_dtc_publisher_ready())
+        except sl_exc.TimeoutException as exc:
+            raise Exception("Publisher setup finished, but the Publish tab did not appear.") from exc
+
+        logger.info("DriveThruCards publisher account setup is complete.")
+
+    def navigate_to_dtc_product_setup(self) -> None:
+        """
+        Navigate through DriveThruCards to the product setup page.
+        Steps: Publisher Tools -> Set up a new title
+        """
+        self.set_state(States.defining_order, "Navigating to Publisher Tools")
+        selectors = self.target_site.value.selectors
+
+        # Step 1: Try quick click first to avoid post-login pause; otherwise navigate directly.
+        publisher_clicked = self.click_element_polling(By.CSS_SELECTOR, selectors.publisher_ready_selector, timeout=1)
+        if publisher_clicked:
+            logger.debug("Clicked 'Publisher Tools' link.")
+        else:
+            logger.warning("Could not find 'Publisher Tools' link. Trying direct navigation...")
+            self.driver.get("https://site.drivethrucards.com/pub_tools.php")
+
+        # Step 2: Try quick click for setup link; otherwise navigate directly.
+        self.set_state(States.defining_order, "Navigating to product setup")
+        setup_clicked = self.click_element_polling(By.XPATH, "//a[contains(@href, 'pub_enter_product.php')]", timeout=2)
+        if setup_clicked:
+            logger.debug("Clicked 'Set up a new title' link.")
+        else:
+            logger.warning("Could not find 'Set up a new title' link. Trying direct navigation...")
+            self.driver.get("https://tools.drivethrucards.com/pub_enter_product.php")
+
+    def fill_dtc_product_form(self, order: CardOrder) -> None:
+        """
+        Fill out the DriveThruCards product setup form (first page).
+        """
+        self.set_state(States.defining_order, "Filling product form")
+
+        # Get the placeholder cover image path (bundled with assets)
+        assets_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "assets")
+        placeholder_cover_path = os.path.join(assets_dir, "placeholder_cover.png")
+
+        # Generate title: order name + today's date
+        today = dt.date.today().strftime("%Y-%m-%d")
+        title = f"{order.name or 'Order'} {today}"
+
+        # All of these fields are required for the product to be set up correctly,
+        # so any missing element must abort the order rather than limp on.
+        title_input = WebDriverWait(self.driver, 10).until(presence_of_element_located((By.ID, "products_name")))
+        title_input.clear()
+        title_input.send_keys(title)
+        logger.debug(f"Set product title to: {title}")
+
+        price_input = self.driver.find_element(By.ID, "options_values_total_price")
+        price_input.clear()
+        price_input.send_keys("0")
+        logger.debug("Set special price to: 0")
+
+        self.driver.find_element(By.NAME, "products_image").send_keys(placeholder_cover_path)
+        logger.debug(f"Uploaded placeholder cover image: {placeholder_cover_path}")
+
+        for checkbox_id in ("filter_44550", "filter_1000138"):
+            checkbox = self.driver.find_element(By.ID, checkbox_id)
+            if not checkbox.is_selected() and not self.click_element_with_retry(checkbox):  # type: ignore[no-untyped-call]
+                raise Exception(f"Could not check the {checkbox_id} product filter checkbox.")
+            logger.debug(f"Checked {checkbox_id}")
+
+        # Click the first submit button (Save Title Data and Continue to Preview Description)
+        self.set_state(States.defining_order, "Submitting product form")
+        submit_button = WebDriverWait(self.driver, 10).until(element_to_be_clickable((By.ID, "submit_id")))
+        if not self.click_element_with_retry(submit_button):
+            raise Exception("Could not click the product form submit button.")
+        logger.debug("Product form submitted successfully.")
+
+    def submit_dtc_description_page(self) -> None:
+        """
+        Click 'Save and Continue' on the description preview page.
+        Waits for the button to be available (page loaded from previous step).
+        """
+        self.set_state(States.defining_order, "Saving description")
+        save_continue_button = WebDriverWait(self.driver, 15).until(element_to_be_clickable((By.ID, "clicked_element")))
+        if not self.click_element_with_retry(save_continue_button):
+            raise Exception("Could not click the 'Save and Continue' button on the description page.")
+        logger.debug("Description page submitted.")
+
+    def open_dtc_upload_page(self) -> None:
+        """
+        Navigate to the upload page by extracting the URL from the 'Upload print-ready file'
+        button's onclick attribute, rather than letting it open a new tab via window.open().
+        """
+        self.set_state(States.defining_order, "Opening upload page")
+
+        upload_button = WebDriverWait(self.driver, 15).until(
+            element_to_be_clickable((By.XPATH, "//button[contains(@onclick, 'pub_upload_podcard_files.php')]"))
+        )
+        onclick = upload_button.get_attribute("onclick") or ""
+        # Extract URL from onclick like: window.open('https://...pub_upload_podcard_files.php?products_id=123');
+        url_match = re.search(r"window\.open\(['\"]([^'\"]+)['\"]\)", onclick)
+        if not url_match:
+            raise Exception(f"Could not extract the upload page URL from the upload button (onclick: {onclick}).")
+        self.driver.execute_script(  # type: ignore[no-untyped-call]
+            "window.location.href = arguments[0];", url_match.group(1)
+        )
+        # Wait for the upload page to load
+        WebDriverWait(self.driver, 15).until(presence_of_element_located((By.ID, "card_type_select")))
+        logger.debug(f"Navigated to upload page: {self.driver.current_url}")
+
+    def select_card_type_and_upload_pdf(self, pdf_path: str) -> None:
+        """
+        Select 'Premium Euro Poker Card(s)' from dropdown and upload the PDF.
+        Waits for elements to be available instead of using fixed sleeps.
+        """
+        self.set_state(States.inserting_fronts, "Selecting card type")
+
+        # Wait for and select the Euro Poker card option from the dropdown.
+        # Any missing required element below aborts the order - a partial upload must not report success.
+        WebDriverWait(self.driver, 15).until(presence_of_element_located((By.ID, "card_type_select")))
+        # Re-fetch the element to avoid stale reference after page/tab switch
+        select = Select(self.driver.find_element(By.ID, "card_type_select"))
+
+        # Find option containing "Euro Poker" (case-insensitive search)
+        euro_poker_option_text = next(
+            (option.text for option in select.options if "euro poker" in option.text.lower()), None
+        )
+        if euro_poker_option_text is None:
+            raise Exception("Could not find the Euro Poker option in the card type dropdown.")
+        select.select_by_visible_text(euro_poker_option_text)
+        logger.debug(f"Selected '{euro_poker_option_text}' from dropdown.")
+
+        # Convert PDF path to absolute if needed
+        if not os.path.isabs(pdf_path):
+            pdf_path = os.path.abspath(pdf_path)
+
+        if not os.path.exists(pdf_path):
+            raise Exception(f"PDF file not found: {pdf_path}")
+
+        logger.debug(f"PDF file found: {pdf_path} ({os.path.getsize(pdf_path)} bytes)")
+
+        # Wait for the dropzone to appear after card type selection
+        self.set_state(States.inserting_fronts, "Uploading PDF")
+        dropzone_div = WebDriverWait(self.driver, 15).until(presence_of_element_located((By.ID, "uploadfiles")))
+        logger.debug("Dropzone div found.")
+
+        # Click the dropzone to initialize Dropzone's hidden input
+        # This should create the .dz-hidden-input element
+        logger.debug("Clicking dropzone to initialize hidden input...")
+        self.driver.execute_script("arguments[0].click();", dropzone_div)  # type: ignore[no-untyped-call]
+
+        # Brief wait for the file dialog to appear, then send Escape to close it
+        time.sleep(0.5)
+        ActionChains(self.driver).send_keys(Keys.ESCAPE).perform()  # type: ignore[no-untyped-call]
+        time.sleep(0.5)
+
+        # Find the file input and send the file - do this in a single operation
+        # to avoid stale element references
+        logger.debug(f"Uploading PDF: {pdf_path}")
+
+        def find_and_use_file_input() -> bool:
+            """Find a usable file input and send the file path to it."""
+            # Strategy 1: Dropzone hidden input
+            try:
+                fi = self.driver.find_element(By.CSS_SELECTOR, ".dz-hidden-input")
+                logger.debug("Found Dropzone hidden input, sending file...")
+                fi.send_keys(pdf_path)
+                return True
+            except (sl_exc.NoSuchElementException, sl_exc.StaleElementReferenceException):
+                pass
+
+            # Strategy 2: Any file input that's not the fallback
+            try:
+                file_inputs = self.driver.find_elements(By.CSS_SELECTOR, "input[type='file']")
+                logger.debug(f"Found {len(file_inputs)} file input(s) on page.")
+                for fi in file_inputs:
+                    try:
+                        name = fi.get_attribute("name")  # type: ignore[no-untyped-call]
+                        if name == "groups_csv":
+                            continue
+                        logger.debug(f"Trying file input: name={name}")
+                        fi.send_keys(pdf_path)
+                        return True
+                    except sl_exc.StaleElementReferenceException:
+                        continue
+            except Exception as e:
+                logger.debug(f"Error with file inputs: {e}")
+
+            # Strategy 3: Use the fallback input
+            try:
+                logger.debug("Using fallback file input...")
+                self.driver.execute_script(  # type: ignore[no-untyped-call]
+                    "document.getElementById('dropzoneFallback').style.display = 'block';"
+                )
+                fi = self.driver.find_element(By.CSS_SELECTOR, "#dropzoneFallback input[type='file']")
+                fi.send_keys(pdf_path)
+                return True
+            except Exception as e:
+                logger.debug(f"Fallback input failed: {e}")
+
+            return False
+
+        # Try up to 3 times to handle any remaining stale element issues
+        file_sent = False
+        for attempt in range(3):
+            if find_and_use_file_input():
+                file_sent = True
+                break
+            logger.debug(f"Attempt {attempt + 1} failed, retrying...")
+            time.sleep(0.5)
+
+        if not file_sent:
+            raise Exception("Could not send the PDF to any file input element on the upload page.")
+
+        # Trigger change event on all file inputs (one of them has our file)
+        self.driver.execute_script(  # type: ignore[no-untyped-call]
+            """
+            document.querySelectorAll('input[type="file"]').forEach(function(input) {
+                input.dispatchEvent(new Event('change', { bubbles: true }));
+            });
+        """
+        )
+        logger.debug("Dispatched change event on file inputs.")
+
+        # Wait for the upload button to become enabled (Dropzone enables it when files are queued)
+        try:
+            WebDriverWait(self.driver, 10).until(
+                lambda d: not d.find_element(By.ID, "dropzoneButton").get_attribute("disabled")
+            )
+            logger.debug("Upload button is now enabled.")
+        except sl_exc.TimeoutException:
+            logger.debug("Button didn't become enabled automatically, forcing it.")
+
+        # Click the upload button using JavaScript
+        upload_clicked = self.driver.execute_script(  # type: ignore[no-untyped-call]
+            """
+            var btn = document.getElementById('dropzoneButton');
+            if (btn) {
+                btn.disabled = false;
+                btn.style.display = 'block';
+                btn.click();
+                return true;
+            }
+            return false;
+        """
+        )
+        if not upload_clicked:
+            raise Exception("Could not find the 'Begin Card File Upload' button.")
+        logger.debug("Clicked 'Begin Card File Upload' button via JavaScript.")
+
+        # Also try to trigger Dropzone's processQueue as a backup
+        try:
+            self.driver.execute_script(  # type: ignore[no-untyped-call]
+                """
+                var dz = Dropzone.forElement('#uploadfiles');
+                if (dz && dz.files && dz.files.length > 0) {
+                    dz.processQueue();
+                }
+            """
+            )
+            logger.debug("Triggered Dropzone processQueue.")
+        except Exception as e:
+            logger.debug(f"Could not trigger processQueue: {e}")
+
+        # Wait for upload to complete - look for success message
+        try:
+            WebDriverWait(self.driver, 120).until(
+                lambda d: "successfully uploaded"
+                in (
+                    d.find_element(By.ID, "status_messages").text.lower()
+                    if d.find_elements(By.ID, "status_messages")
+                    else ""
+                )
+            )
+        except sl_exc.TimeoutException as exc:
+            raise Exception("The PDF upload was not confirmed by DriveThruCards within 120 seconds.") from exc
+        logger.debug("PDF upload completed to DriveThruCards.")
+
+        # Wait for the continue button to become active.
+        # The button starts with an onclick handler that shows an error and returns false.
+        # After upload validation, the page JS replaces this handler to enable navigation.
+        # We detect activation by checking that the onclick no longer contains "return false".
+        def continue_button_is_active(d: Any) -> Any:
+            btn = d.find_element(By.ID, "continue_button")
+            onclick = btn.get_attribute("onclick") or ""
+            if "return false" in onclick:
+                return False
+            return btn
+
+        try:
+            continue_button = WebDriverWait(self.driver, 60).until(continue_button_is_active)
+        except sl_exc.TimeoutException as exc:
+            raise Exception("The continue button did not activate after the PDF upload.") from exc
+        logger.debug(f"Continue button activated. onclick: {continue_button.get_attribute('onclick')}")
+        self.driver.execute_script("arguments[0].click();", continue_button)  # type: ignore[no-untyped-call]
+        logger.debug("Clicked 'Click here after uploading your files' button.")
+
+        # Click the "Complete Setup" button on the next page
+        complete_button = WebDriverWait(self.driver, 30).until(element_to_be_clickable((By.ID, "submit_id")))
+        self.driver.execute_script("arguments[0].click();", complete_button)  # type: ignore[no-untyped-call]
+        logger.debug("Clicked 'Complete Setup' button.")
+
+        # Click the "buy now" link to start placing the order.
+        # This link has target="_blank", so navigate directly to avoid new-tab issues.
+        buy_now_link = WebDriverWait(self.driver, 30).until(
+            element_to_be_clickable((By.CSS_SELECTOR, "a[href*='action=buy_now']"))
+        )
+        buy_now_href = buy_now_link.get_attribute("href")
+        if buy_now_href:
+            self.driver.get(buy_now_href)
+            logger.debug("Navigated to 'buy now' page to start placing the order.")
+        else:
+            self.driver.execute_script("arguments[0].click();", buy_now_link)  # type: ignore[no-untyped-call]
+            logger.debug("Clicked 'buy now' link.")
+
+    @staticmethod
+    def _run_dtc_step(step_name: str, func: Any, *args: Any, **kwargs: Any) -> Any:
+        try:
+            return func(*args, **kwargs)
+        except Exception as exc:
+            raise Exception(f"DriveThruCards step '{step_name}' failed: {exc}") from exc
+
+    def prepare_drive_thru_cards_session(self) -> None:
+        self.set_state(States.defining_order, "Opening DriveThruCards")
+        self._run_dtc_step("open_dtc_starting_page", self.open_dtc_starting_page)
+        self._run_dtc_step("wait_for_cloudflare_challenge", self.wait_for_cloudflare_challenge)
+        login_completed = self._run_dtc_step("authenticate_dtc", self.authenticate_dtc)
+        if not login_completed:
+            raise Exception(
+                "DriveThruCards login was not completed before timeout. " "Please log in and re-run the command."
+            )
+        self._run_dtc_step("ensure_dtc_publisher_account", self.ensure_dtc_publisher_account)
+
+    def execute_drive_thru_cards_order(self, order: CardOrder, pdf_path: str) -> None:
+        t = time.time()
+        self.set_state(States.defining_order, "Creating DriveThruCards product")
+        self._run_dtc_step("navigate_to_dtc_product_setup", self.navigate_to_dtc_product_setup)
+        self._run_dtc_step("fill_dtc_product_form", self.fill_dtc_product_form, order)
+        self._run_dtc_step("submit_dtc_description_page", self.submit_dtc_description_page)
+        self._run_dtc_step("open_dtc_upload_page", self.open_dtc_upload_page)
+        self._run_dtc_step("select_card_type_and_upload_pdf", self.select_card_type_and_upload_pdf, pdf_path)
+
+        self.set_state(States.finished, "Product added to cart")
+        log_hours_minutes_seconds_elapsed(t)
+        logger.info("DriveThruCards product setup complete and added to your cart.")
 
     # endregion
 
@@ -804,6 +1535,8 @@ class AutofillDriver:
     ) -> None:
         t = time.time()
         self.configure_bars_for_order(order=order)
+        # complete all downloads before any browser automation so a failed image stops the
+        # order before anything is uploaded, rather than leaving a partially-filled project
         with ThreadPoolExecutor(max_workers=THREADS) as pool:
             order.fronts.download_images(
                 pool=pool, download_bar=self.download_bar, post_processing_config=post_processing_config
@@ -811,35 +1544,38 @@ class AutofillDriver:
             order.backs.download_images(
                 pool=pool, download_bar=self.download_bar, post_processing_config=post_processing_config
             )
-            if any(
-                [
-                    fulfilment_method == OrderFulfilmentMethod.append_to_project,
-                    fulfilment_method == OrderFulfilmentMethod.continue_project,
-                    auto_save_threshold is not None,
-                ]
-            ):
-                self.authenticate()
+        failed_images = order.get_failed_downloads()
+        if failed_images:
+            raise ImageDownloadError(failed_images)
 
-            self.initialise_order(order=order)
-            if fulfilment_method == OrderFulfilmentMethod.new_project:
-                logger.info("Configuring a new project.")
-                self.define_project(order=order)
-                self.page_to_fronts(order=order)
-            else:
-                order = self.redefine_project(order=order, fulfilment_method=fulfilment_method)
+        if any(
+            [
+                fulfilment_method == OrderFulfilmentMethod.append_to_project,
+                fulfilment_method == OrderFulfilmentMethod.continue_project,
+                auto_save_threshold is not None,
+            ]
+        ):
+            self.authenticate()
 
-            self.insert_fronts(order=order, auto_save_threshold=auto_save_threshold)
-            self.page_to_backs(order=order)
-            self.insert_backs(order=order, auto_save_threshold=auto_save_threshold)
-            self.page_to_review()
+        self.initialise_order(order=order)
+        if fulfilment_method == OrderFulfilmentMethod.new_project:
+            logger.info("Configuring a new project.")
+            self.define_project(order=order)
+            self.page_to_fronts(order=order)
+        else:
+            order = self.redefine_project(order=order, fulfilment_method=fulfilment_method)
+
+        self.insert_fronts(order=order, auto_save_threshold=auto_save_threshold)
+        self.page_to_backs(order=order)
+        self.insert_backs(order=order, auto_save_threshold=auto_save_threshold)
+        self.page_to_review()
         log_hours_minutes_seconds_elapsed(t)
         logger.info(
             textwrap.dedent(
                 f"""
                 Please review your project and ensure everything has been uploaded correctly before finalising with
-                {self.target_site.name}. If any images failed to download, links to download them will have been printed
-                above. If you need to make any changes to your order, you can do so by adding it to your Saved Projects
-                and editing in your normal browser.
+                {self.target_site.name}. If you need to make any changes to your order, you can do so by adding it
+                to your Saved Projects and editing in your normal browser.
                 """
             )
         )

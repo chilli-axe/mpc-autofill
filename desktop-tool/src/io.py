@@ -13,8 +13,13 @@ from googleapiclient.http import MediaIoBaseDownload
 from oauth2client.service_account import ServiceAccountCredentials
 
 import src.constants as constants
-from src.logging import logger
-from src.processing import ImagePostProcessingConfig, post_process_image
+from src.logging import FILE_ONLY, logger
+from src.processing import (
+    ImagePostProcessingConfig,
+    get_post_processed_path,
+    post_process_image,
+    save_processed_image,
+)
 
 thread_local = threading.local()  # Should only be called once per thread
 
@@ -189,13 +194,17 @@ def download_google_drive_file(
             _, done = downloader.next_chunk()
         file_bytes = file.getvalue()
     except HttpError:
-        logger.exception(f"Encountered a HTTP error while downloading Google Drive image {drive_id}")
+        logger.exception(f"Encountered a HTTP error while downloading Google Drive image {drive_id}", extra=FILE_ONLY)
         return False
 
     if post_processing_config is not None:
         logger.debug(f"Post-processing {drive_id}...")
-        processed_image = post_process_image(raw_image=file_bytes, config=post_processing_config)
-        processed_image.save(file_path)
+        output_path = get_post_processed_path(file_path=file_path, config=post_processing_config)
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+        processed_image, icc_profile_bytes = post_process_image(raw_image=file_bytes, config=post_processing_config)
+        save_processed_image(
+            processed_image, file_path=output_path, config=post_processing_config, icc_profile_bytes=icc_profile_bytes
+        )
     else:
         # Save the bytes directly to disk - avoid reading in pillow in case any quality degradation occurs
         with open(file_path, "wb") as f:

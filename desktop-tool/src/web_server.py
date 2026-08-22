@@ -17,7 +17,7 @@ class _Handler(server.BaseHTTPRequestHandler):
         self.send_response(200)
         self.send_header("Content-Type", "text/html")
         self.end_headers()
-        self.wfile.write(Path(__file__).joinpath("../..").joinpath(POST_LAUNCH_HTML_FILENAME).resolve().read_bytes())
+        self.wfile.write(self.server.html_path.read_bytes())  # type: ignore[attr-defined]
 
     def log_request(self, code: Union[int, str] = "-", size: Union[int, str] = "-") -> None:
         # Silence the request log.
@@ -25,8 +25,9 @@ class _Handler(server.BaseHTTPRequestHandler):
 
 
 class WebServer:
-    def __init__(self) -> None:
+    def __init__(self, html_filename: str = POST_LAUNCH_HTML_FILENAME) -> None:
         self._server = server.ThreadingHTTPServer(("", 0), _Handler)
+        self._server.html_path = Path(__file__).joinpath("../..").joinpath(html_filename).resolve()  # type: ignore[attr-defined]
         self._thread = threading.Thread(target=self._server.serve_forever)
         self._thread.start()
         logger.info(f"Web server started on {self.server_url()}")

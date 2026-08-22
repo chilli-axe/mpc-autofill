@@ -152,6 +152,29 @@ class TargetSite:
         return self.format_url(self.accept_settings_url_route)
 
 
+@attr.s
+class DriveThruCardsSelectors:
+    product_url: str = attr.ib()
+    # Opening the login modal lets the user choose sign-in or account creation.
+    login_button_selector: str = attr.ib(default="button[data-cy='login']")
+    authenticated_indicator_selector: str = attr.ib(
+        default="[data-cy='accountMenu'], [aria-label='Log Out'], " "a[href*='logoff'], a[href*='logout']"
+    )
+    # This Publish link only appears after publisher access is enabled.
+    publisher_ready_selector: str = attr.ib(default="a[href*='pub_tools.php']")
+
+
+@attr.s
+class DriveThruCardsSite:
+    selectors: DriveThruCardsSelectors = attr.ib(
+        default=attr.Factory(lambda: DriveThruCardsSelectors(product_url="https://www.drivethrucards.com"))
+    )
+
+    @property
+    def starting_url(self) -> str:
+        return self.selectors.product_url
+
+
 class TargetSites(Enum):
     MakePlayingCards = TargetSite(
         base_url="https://www.makeplayingcards.com", starting_url_route="design/custom-blank-card.html"
@@ -214,6 +237,7 @@ class TargetSites(Enum):
             Cardstocks.P10: "Plastique (100%)",
         },
     )
+    DriveThruCards = DriveThruCardsSite()
 
 
 DPI_HEIGHT_RATIO = 300 / 1110  # TODO: share this between desktop tool and backend
@@ -223,3 +247,4 @@ PROJECT_MAX_SIZE = 612  # shared between target sites
 THREADS = 5  # shared between CardImageCollections
 
 POST_LAUNCH_HTML_FILENAME = "post-launch.html"
+DTC_POST_LAUNCH_HTML_FILENAME = "dtc-post-launch.html"

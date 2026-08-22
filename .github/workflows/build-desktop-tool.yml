@@ -1,0 +1,101 @@
+name: Desktop tool build
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Release version embedded in the executable (for example, 1.1.0)
+        required: true
+        type: string
+
+jobs:
+  test:
+    name: Test on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os:
+          - macos-latest
+          - ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: ./.github/actions/test-desktop-tool
+        with:
+          google-drive-api-key: ${{ secrets.GOOGLE_DRIVE_API_KEY }}
+
+  build:
+    name: Build ${{ matrix.target }}
+    needs: test
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: desktop-tool
+    strategy:
+      matrix:
+        include:
+          - os: macos-latest
+            target: macos-arm
+            filename: autofill-macos-arm.command
+            macos-arch: arm64
+          - os: macos-15-intel
+            target: macos-intel
+            filename: autofill-macos-intel.command
+            macos-arch: x86_64
+          - os: ubuntu-latest
+            target: linux
+            filename: autofill-linux.bin
+            macos-arch: ""
+          - os: windows-latest
+            target: windows
+            filename: autofill-windows.exe
+            macos-arch: ""
+    steps:
+      - uses: actions/checkout@v6
+      - name: Set up Python 3.13
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          python -m pip install imageio
+      - name: Require Google Drive API credentials
+        env:
+          GOOGLE_DRIVE_API_KEY: ${{ secrets.GOOGLE_DRIVE_API_KEY }}
+        shell: bash
+        run: test -n "$GOOGLE_DRIVE_API_KEY" || (echo "Add desktop-tool/client_secrets.json as the GOOGLE_DRIVE_API_KEY repository secret." && exit 1)
+      - name: Write Google Drive API credentials to file
+        uses: jsdaniell/create-json@v1.2.3
+        with:
+          name: client_secrets.json
+          json: ${{ secrets.GOOGLE_DRIVE_API_KEY }}
+          dir: desktop-tool/
+      - name: Build with Nuitka
+        uses: Nuitka/Nuitka-Action@main
+        with:
+          nuitka-version: main
+          working-directory: desktop-tool
+          script-name: autofill.py
+          mode: onefile
+          output-file: ${{ matrix.filename }}
+          # required by the versioned onefile cache directory ({VERSION} in --onefile-tempdir-spec)
+          file-version: ${{ inputs.version }}
+          macos-target-arch: ${{ matrix.macos-arch }}
+      - name: Smoke test bundled executable
+        shell: bash
+        run: |
+          env -u SSL_CERT_FILE -u SSL_CERT_DIR ./build/${{ matrix.filename }} --check-tls
+          if [[ "$RUNNER_OS" == Linux ]]; then
+            help_output=$(dbus-run-session -- ./build/${{ matrix.filename }} --help)
+          else
+            help_output=$(./build/${{ matrix.filename }} --help)
+          fi
+          grep -q MakePlayingCards <<< "$help_output"
+          grep -q DriveThruCards <<< "$help_output"
+          stat -f "%N: %z bytes" build/${{ matrix.filename }} 2>/dev/null || stat -c "%n: %s bytes" build/${{ matrix.filename }}
+      - name: Upload unsigned artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ matrix.target }} Unsigned Build
+          path: desktop-tool/build/${{ matrix.filename }}

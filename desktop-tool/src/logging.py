@@ -6,6 +6,16 @@ from src.formatting import TEXT_BOLD, TEXT_END
 
 logger = logging.getLogger(__name__)
 
+CRASH_LOG_FILENAME = "autofill_crash_log.txt"
+
+# pass as `extra` to log calls whose details belong in the crash log but not on the console,
+# e.g. per-image download failures that are also reported in a user-facing summary
+FILE_ONLY = {"console": False}
+
+
+def _console_visible(record: logging.LogRecord) -> bool:
+    return getattr(record, "console", True)
+
 
 class FileLogFormatter(logging.Formatter):
     # A custom formatter which removes bold start/end characters from records before writing to disk
@@ -13,6 +23,18 @@ class FileLogFormatter(logging.Formatter):
         new_record = copy(record)
         new_record.msg = new_record.msg.strip().replace(TEXT_BOLD, "").replace(TEXT_END, "")
         return super().format(new_record)
+
+
+class ConsoleFormatter(logging.Formatter):
+    # Hides exception tracebacks from the console - they're still written in full to the crash log.
+    # Formats a copy so the original record's traceback isn't stripped for other handlers.
+    def format(self, record: logging.LogRecord) -> str:
+        if record.exc_info or record.exc_text or record.stack_info:
+            record = copy(record)
+            record.exc_info = None
+            record.exc_text = None
+            record.stack_info = None
+        return super().format(record)
 
 
 def configure_loggers(working_directory: str, log_debug_to_file: bool, stdout_log_level: int) -> None:
@@ -28,11 +50,15 @@ def configure_loggers(working_directory: str, log_debug_to_file: bool, stdout_lo
     stdout_handler.setLevel(stdout_log_level)
     if stdout_log_level <= logging.DEBUG:
         # If the user has opted into debug logging, format stdout logs with their log level
+        # and keep exception tracebacks visible on the console
         console_debug_format_string = "[%(levelname)s] %(message)s"
         stdout_handler.setFormatter(logging.Formatter(console_debug_format_string))
+    else:
+        stdout_handler.setFormatter(ConsoleFormatter())
+        stdout_handler.addFilter(_console_visible)
     logger.addHandler(stdout_handler)
 
-    file_crash_logger = logging.FileHandler(os.path.join(working_directory, "autofill_crash_log.txt"))
+    file_crash_logger = logging.FileHandler(os.path.join(working_directory, CRASH_LOG_FILENAME))
     file_crash_logger.setLevel(logging.ERROR)
     file_crash_logger.setFormatter(FileLogFormatter(file_debug_format_string))
     logger.addHandler(file_crash_logger)
