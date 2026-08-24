@@ -1,4 +1,5 @@
 from src.formatting import bold
+from src.logging import CRASH_LOG_FILENAME
 
 
 class InvalidStateException(Exception):
@@ -13,3 +14,19 @@ class InvalidStateException(Exception):
 
 class ValidationException(Exception):
     pass
+
+
+class ImageDownloadError(Exception):
+    def __init__(self, failed_images: list[tuple[str, str]]) -> None:
+        failed_list = "\n".join(
+            f"- {name or 'Unknown image'}" + (f" (Drive ID: {drive_id})" if drive_id else "")
+            for name, drive_id in failed_images
+        )
+        super().__init__(
+            "Some card images could not be downloaded, so the tool has stopped before creating your order.\n"
+            f"{failed_list}\n\n"
+            "This usually means the saved XML refers to an image that was removed or replaced after the order "
+            f"was created. Import this XML into a new project at {bold('https://mpcfill.com/editor')} to identify "
+            "the unmatched cards and choose replacements, then download a new XML and try again. "
+            f"Technical details were saved to {CRASH_LOG_FILENAME}."
+        )

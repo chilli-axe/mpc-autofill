@@ -26,9 +26,28 @@ from src.io import (
     get_google_drive_file_name,
     get_image_directory,
 )
-from src.logging import logger
+from src.logging import FILE_ONLY, logger
 from src.processing import ImagePostProcessingConfig
 from src.utils import unpack_element
+
+
+def is_image_valid(file_path: str) -> bool:
+    try:
+        from PIL import Image
+
+        with Image.open(file_path) as img:
+            img.verify()
+        return True
+    except Exception:
+        return False
+
+
+def remove_if_exists(file_path: str) -> None:
+    try:
+        if os.path.isfile(file_path):
+            os.remove(file_path)
+    except Exception:
+        pass
 
 
 @attr.s
@@ -181,28 +200,53 @@ class CardImage:
         try:
             if self.source_type == SourceType.LOCAL_FILE:
                 if self.file_exists() and not self.errored:
-                    self.downloaded = True
+                    if is_image_valid(cast(str, self.file_path)):
+                        self.downloaded = True
+                    else:
+                        logger.error(
+                            f"Local file '{bold(self.name)}' appears to be corrupted at path:\n"
+                            f"{bold(self.file_path)}\n",
+                            extra=FILE_ONLY,
+                        )
+                        self.errored = True
                 else:
-                    logger.info(f"Local file '{bold(self.name)}' does not exist at path:\n{bold(self.drive_id)}\n")
-            elif self.source_type == SourceType.GOOGLE_DRIVE:
-                if not self.file_exists() and not self.errored and self.file_path is not None:
-                    self.errored = not download_google_drive_file(
-                        drive_id=self.drive_id, file_path=self.file_path, post_processing_config=post_processing_config
+                    logger.error(
+                        f"Local file '{bold(self.name)}' does not exist at path:\n{bold(self.drive_id)}\n",
+                        extra=FILE_ONLY,
                     )
+            elif self.source_type == SourceType.GOOGLE_DRIVE:
+                if self.file_path is not None and not self.errored:
+                    for attempt in range(2):
+                        if not self.file_exists():
+                            self.errored = not download_google_drive_file(
+                                drive_id=self.drive_id,
+                                file_path=self.file_path,
+                                post_processing_config=post_processing_config,
+                            )
+                        if self.file_exists() and not self.errored and is_image_valid(self.file_path):
+                            break
+                        if self.file_exists():
+                            remove_if_exists(self.file_path)
+                            logger.info(f"Downloaded image '{bold(self.name)}' appears corrupted. Retrying download...")
+                        if attempt == 1:
+                            self.errored = True
 
                 if self.file_exists() and not self.errored:
                     self.downloaded = True
                 else:
-                    logger.info(
+                    logger.error(
                         f"Failed to download '{bold(self.name)}' - allocated to slot/s {bold(sorted(self.slots))}.\n"
-                        f"Download link - {bold(f'https://drive.google.com/uc?id={self.drive_id}&export=download')}\n"
+                        f"Download link - {bold(f'https://drive.google.com/uc?id={self.drive_id}&export=download')}\n",
+                        extra=FILE_ONLY,
                     )
         except Exception as e:
             # note: python threads die silently if they encounter an exception. if an exception does occur,
             # log it, but still put the card onto the queue so the main thread doesn't spin its wheels forever waiting.
-            logger.info(
+            logger.exception(
                 f"An uncaught exception occurred when attempting to download '{bold(self.name)}':\n{bold(e)}\n"
-                f"Download link - {bold(f'https://drive.google.com/uc?id={self.drive_id}&export=download')}\n"
+                f"Allocated to slot/s {bold(sorted(self.slots))}.\n"
+                f"Download link - {bold(f'https://drive.google.com/uc?id={self.drive_id}&export=download')}\n",
+                extra=FILE_ONLY,
             )
         finally:
             queue.put((self.drive_id, self.downloaded))
@@ -382,14 +426,14 @@ class Details:
 
     # region initialisation
 
-    def validate(self) -> None:
+    def validate(self, validate_print_options: bool = True) -> None:
         if (not self.allowed_to_exceed_project_max_size) and self.quantity > constants.PROJECT_MAX_SIZE:
             raise ValidationException(
                 f"Order quantity {self.quantity} larger than maximum size of {bold(constants.PROJECT_MAX_SIZE)}!"
             )
-        if self.stock not in [x.value for x in constants.Cardstocks]:
+        if validate_print_options and self.stock not in [x.value for x in constants.Cardstocks]:
             raise ValidationException(f"Order cardstock {self.stock} not supported!")
-        if self.stock == constants.Cardstocks.P10 and self.foil is True:
+        if validate_print_options and self.stock == constants.Cardstocks.P10 and self.foil is True:
             raise ValidationException(f"Order cardstock {self.stock} is not supported in foil!")
 
     # endregion
@@ -397,7 +441,9 @@ class Details:
     # region public
 
     @classmethod
-    def from_element(cls, element: Element, allowed_to_exceed_project_max_size: bool) -> "Details":
+    def from_element(
+        cls, element: Element, allowed_to_exceed_project_max_size: bool, validate_print_options: bool = True
+    ) -> "Details":
         details_dict = unpack_element(element, [x.value for x in constants.DetailsTags])
         quantity = 0
         if (quantity_text := details_dict[constants.DetailsTags.quantity].text) is not None:
@@ -411,7 +457,7 @@ class Details:
             foil=foil,
             allowed_to_exceed_project_max_size=allowed_to_exceed_project_max_size,
         )
-        details.validate()
+        details.validate(validate_print_options=validate_print_options)
         return details
 
     # endregion
@@ -577,11 +623,13 @@ class CardOrder:
         working_directory: str,
         allowed_to_exceed_project_max_size: bool,
         name: Optional[str] = None,
+        validate_print_options: bool = True,
     ) -> "CardOrder":
         root_dict = unpack_element(element, [x.value for x in constants.BaseTags])
         details = Details.from_element(
             element=root_dict[constants.BaseTags.details],
             allowed_to_exceed_project_max_size=allowed_to_exceed_project_max_size,
+            validate_print_options=validate_print_options,
         )
         fronts = CardImageCollection.from_element(
             element=root_dict[constants.BaseTags.fronts],
@@ -610,7 +658,7 @@ class CardOrder:
         return order
 
     @classmethod
-    def from_file_path(cls, working_directory: str, file_path: str) -> "CardOrder":
+    def from_file_path(cls, working_directory: str, file_path: str, validate_print_options: bool = True) -> "CardOrder":
         try:
             xml = defused_parse(file_path)
         except ParseError:
@@ -624,6 +672,7 @@ class CardOrder:
             working_directory=working_directory,
             name=file_name,
             allowed_to_exceed_project_max_size=True,
+            validate_print_options=validate_print_options,
         )
         return order
 
@@ -632,7 +681,7 @@ class CardOrder:
     # region public
 
     @classmethod
-    def from_xmls_in_folder(cls, working_directory: str) -> list["CardOrder"]:
+    def from_xmls_in_folder(cls, working_directory: str, validate_print_options: bool = True) -> list["CardOrder"]:
         """
         Reads some number of XMLs from the current directory, offering a choice if multiple are detected,
         and populates them with the contents of the selected files.
@@ -660,7 +709,12 @@ class CardOrder:
             answers = prompt(questions)
             file_paths = answers["xml_choice"]
         return [
-            cls.from_file_path(working_directory=working_directory, file_path=file_path) for file_path in file_paths
+            cls.from_file_path(
+                working_directory=working_directory,
+                file_path=file_path,
+                validate_print_options=validate_print_options,
+            )
+            for file_path in file_paths
         ]
 
     @classmethod
@@ -671,6 +725,20 @@ class CardOrder:
 
         assert len(orders) > 0, "Attempted to produce a CardOrder from multiple CardOrders but none were given!"
         return reduce(lambda a, b: a.combine(b), orders)
+
+    def get_failed_downloads(self) -> list[tuple[str, str]]:
+        """
+        Return (name, drive_id) for each image in this order which has not been downloaded successfully.
+        """
+
+        return sorted(
+            {
+                (card.name or "Unknown image", card.drive_id)
+                for collection in (self.fronts, self.backs)
+                for card in collection.cards_by_id.values()
+                if not card.downloaded
+            }
+        )
 
     def get_overview(self) -> str:
         return (

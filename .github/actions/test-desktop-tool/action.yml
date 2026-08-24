@@ -2,8 +2,9 @@ name: Desktop tool tests
 description: Test the MPC Autofill CLI / desktop tool
 inputs:
   google-drive-api-key:
-    description: Your Google Drive API key, required for running the database crawler
-    required: true
+    description: Your Google Drive API key. When empty, tests requiring it skip themselves.
+    required: false
+    default: ""
 runs:
   using: composite
   steps:
@@ -30,6 +31,7 @@ runs:
         pip install -r requirements.txt
       shell: bash
     - name: Write Google Drive API credentials to file
+      if: inputs.google-drive-api-key != ''
       uses: jsdaniell/create-json@v1.2.3
       with:
         name: "client_secrets.json"
@@ -37,5 +39,12 @@ runs:
         dir: "desktop-tool/"
     - name: Run tests
       working-directory: desktop-tool
-      run: pytest .
+      env:
+        MPC_AUTOFILL_RELEASE_CHECKS: "1"
+      run: |
+        if [[ "$RUNNER_OS" == Linux ]]; then
+          dbus-run-session -- pytest .
+        else
+          pytest .
+        fi
       shell: bash
