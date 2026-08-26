@@ -103,6 +103,20 @@ describe("worker image routing", () => {
     expect(fetchMock).toHaveBeenCalledWith("https://lh4.googleusercontent.com/d/image-id=h2220-rj-l95");
   });
 
+  it.each(["small", "large", "full"] as const)(
+    "sets Access-Control-Allow-Origin on %s image responses regardless of the upstream source's own headers",
+    async (imageSize) => {
+      // the upstream response deliberately carries no CORS header of its own, so this
+      // only passes if the worker adds one itself rather than relying on a passthrough.
+      const fetchMock = vi.fn(async () => new Response("image-bytes", { headers: { "content-length": "11" } }));
+      vi.stubGlobal("fetch", fetchMock);
+
+      const response = await fetchWorker(`http://example.com/images/google_drive/${imageSize}/image-id.jpg`);
+
+      expect(response.headers.get("Access-Control-Allow-Origin")).toBe("*");
+    }
+  );
+
   it("throws for invalid dpi or JPG quality query parameters", async () => {
     await expect(fetchWorker("http://example.com/images/google_drive/full/image-id.jpg?dpi=0")).rejects.toThrow("invalid DPI 0");
     await expect(fetchWorker("http://example.com/images/google_drive/full/image-id.jpg?jpgQuality=101")).rejects.toThrow(
