@@ -258,7 +258,8 @@ export class ClientSearchService {
     cardTypes: Array<CardType>,
     sortBy?: SortBy,
     limit?: number,
-    offset?: number
+    offset?: number,
+    artists?: Array<string>
   ): OramaSearchResults | undefined {
     return [this.localFilesIndex?.index, this.googleDriveIndex?.index].reduce(
       (
@@ -275,7 +276,9 @@ export class ClientSearchService {
           cardTypes,
           sortBy,
           limit,
-          offset
+          offset,
+          undefined,
+          artists
         );
         return {
           hits: accumulated.hits.concat(searchResults?.hits ?? []),
@@ -415,7 +418,8 @@ export class ClientSearchService {
     cardTypes: Array<CardType>,
     searchSettings: SearchSettings,
     pageStart: number,
-    pageSize: number
+    pageSize: number,
+    artists?: Array<string>
   ): { cards: Array<CardDocument>; count: number } {
     const searchResults = this.search(
       searchSettings,
@@ -423,7 +427,8 @@ export class ClientSearchService {
       cardTypes,
       sortBy,
       pageSize,
-      pageStart
+      pageStart,
+      artists
     );
     const cardIds = searchResults?.hits?.map(({ id }) => id) ?? [];
     const cards = this.getCardDocumentsArray(cardIds);

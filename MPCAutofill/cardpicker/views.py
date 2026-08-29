@@ -24,7 +24,7 @@ from cardpicker.documents import CardSearch
 from cardpicker.integrations.integrations import get_configured_game_integration
 from cardpicker.integrations.patreon import get_patreon_campaign_details, get_patrons
 from cardpicker.models import Card, CardTypes, DFCPair, Source, summarise_contributions
-from cardpicker.schema_types import CardbacksRequest, CardbacksResponse
+from cardpicker.schema_types import ArtistsResponse, CardbacksRequest, CardbacksResponse
 from cardpicker.schema_types import Cards as SampleCards
 from cardpicker.schema_types import (
     CardsRequest,
@@ -211,6 +211,7 @@ def post_explore_search(request: HttpRequest) -> HttpResponse:
         search_settings=explore_search_request.searchSettings,
         query=explore_search_request.query,
         card_types=explore_search_request.cardTypes,
+        artists=explore_search_request.artists,
     ).sort(sort)
     count = s.extra(track_total_hits=True).count()
 
@@ -297,6 +298,30 @@ def get_languages(request: HttpRequest) -> HttpResponse:
             )
         ).model_dump()
     )
+
+
+@csrf_exempt
+@ErrorWrappers.to_json
+def get_artists(request: HttpRequest) -> HttpResponse:
+    """
+    Return the list of all unique canonical artist names among cards in the database.
+    """
+
+    if request.method != "GET":
+        raise BadRequestException("Expected GET request.")
+    artist_names = set(
+        Card.objects.exclude(canonical_artist=None)
+        .order_by()
+        .values_list("canonical_artist__name", flat=True)
+        .distinct()
+    ) | set(
+        Card.objects.filter(canonical_artist=None)
+        .exclude(canonical_card=None)
+        .order_by()
+        .values_list("canonical_card__artist__name", flat=True)
+        .distinct()
+    )
+    return JsonResponse(ArtistsResponse(artists=sorted(artist_names)).model_dump())
 
 
 @csrf_exempt

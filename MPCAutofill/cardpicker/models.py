@@ -353,6 +353,12 @@ class Card(models.Model):
     def get_collector_number(self) -> str | None:
         return self.canonical_card.collector_number if self.canonical_card else None
 
+    def get_canonical_artist_name(self) -> str | None:
+        # mirrors the canonicalArtist resolution in `serialise`
+        if self.canonical_artist:
+            return self.canonical_artist.name
+        return self.canonical_card.artist.name if self.canonical_card else None
+
     class Meta:
         ordering = ["-priority"]
 

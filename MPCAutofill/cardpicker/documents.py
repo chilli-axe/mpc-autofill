@@ -26,6 +26,7 @@ class CardSearch(Document):
     tags = fields.KeywordField()  # all elasticsearch fields support arrays by default
     expansion_code = fields.KeywordField(attr="get_expansion_code")
     collector_number = fields.KeywordField(attr="get_collector_number")
+    artist = fields.KeywordField(attr="get_canonical_artist_name")
 
     class Index:
         # name of the elasticsearch index
@@ -39,4 +40,8 @@ class CardSearch(Document):
 
     def get_queryset(self) -> QuerySet[Card]:
         # https://django-elasticsearch-dsl.readthedocs.io/en/latest/fields.html#handle-relationship-with-nestedfield-objectfield
-        return super().get_queryset().select_related("canonical_card", "canonical_card__expansion")
+        return (
+            super()
+            .get_queryset()
+            .select_related("canonical_card", "canonical_card__expansion", "canonical_card__artist", "canonical_artist")
+        )
