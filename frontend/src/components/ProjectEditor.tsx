@@ -202,7 +202,7 @@ function ProjectEditor() {
           <Tab.Pane eventKey="editor">
             <ChooseArtPanel setEditorPanel={setEditorPanel} />
           </Tab.Pane>
-          <Tab.Pane eventKey="finished">
+          <Tab.Pane eventKey="finished" mountOnEnter>
             <PrintPanel />
           </Tab.Pane>
         </Tab.Content>
