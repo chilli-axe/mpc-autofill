@@ -43,7 +43,7 @@ jobs:
             target: macos-intel
             filename: autofill-macos-intel.command
             macos-arch: x86_64
-          - os: ubuntu-latest
+          - os: ubuntu-22.04 # Build against glibc 2.35 so the bundle runs on Debian 12.
             target: linux
             filename: autofill-linux.bin
             macos-arch: ""
