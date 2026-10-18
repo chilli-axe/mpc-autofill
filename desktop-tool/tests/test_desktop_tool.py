@@ -980,7 +980,8 @@ def test_convert_pdf_to_pdfx_writes_output_atomically(monkeypatch: pytest.Monkey
     source_path.write_bytes(b"source")
 
     def fake_run(cmd, capture_output=True, text=True):
-        assert "-dPDFX" in cmd  # Ghostscript 10.02.1 rejects the numeric -dPDFX=1 option.
+        assert "-dPDFX=1" in cmd
+        assert "-dPDFACompatibilityPolicy=2" in cmd
         output_arg = next(arg for arg in cmd if arg.startswith("-sOutputFile="))
         Path(output_arg.split("=", 1)[1]).write_bytes(b"%PDF-1.3 (PDF/X-1a:2001) /OutputIntents")
         return SimpleNamespace(returncode=0, stdout="", stderr="")
@@ -1046,7 +1047,7 @@ def test_convert_pdf_to_pdfx_rejects_output_missing_pdfx_markers(monkeypatch: py
 
 
 @pytest.mark.skipif(src.pdf_maker.get_ghostscript_path() is None, reason="Ghostscript is not installed")
-def test_convert_pdf_to_pdfx_produces_verified_pdfx_with_real_ghostscript(tmp_path) -> None:
+def test_convert_pdf_to_pdfx_uses_only_supported_ghostscript_pdfx_mode(tmp_path) -> None:
     from fpdf import FPDF
 
     image_path = tmp_path / "card.jpg"
@@ -1058,7 +1059,14 @@ def test_convert_pdf_to_pdfx_produces_verified_pdfx_with_real_ghostscript(tmp_pa
     pdf.output(str(source_path))
     output_path = tmp_path / "output_pdfx.pdf"
 
-    assert convert_pdf_to_pdfx(str(source_path), str(output_path), PdfXConversionConfig())
+    converted = convert_pdf_to_pdfx(str(source_path), str(output_path), PdfXConversionConfig())
+    version = src.pdf_maker.get_ghostscript_version(src.pdf_maker.get_ghostscript_path()) or ""
+    match = re.search(r"(\d+)\.(\d+)", version)
+    if match and tuple(map(int, match.groups())) < (10, 5):
+        assert not converted  # Older Ghostscript only supports PDF/X-3 and must not label it as PDF/X-1a.
+        assert not output_path.exists()
+        return
+    assert converted
 
     contents = output_path.read_bytes()
     assert b"(PDF/X-1:2001)" in contents  # GTS_PDFXVersion
