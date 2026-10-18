@@ -1,6 +1,6 @@
 """Local DOM checks for upload events and page transitions, without a DriveThruCards account.
 
-The fixture models the existing selectors; it is not a capture of DriveThruCards' current UI.
+The upload input models the site's Dropzone instance; later pages are simplified fixtures.
 CHROME_BINARY and CHROMEDRIVER can select an existing local browser/driver pair.
 """
 
@@ -42,17 +42,21 @@ def upload_page(tmp_path):
         """<!doctype html><title>Upload fixture</title>
         <select id="card_type_select"><option>Choose</option><option>Premium Euro Poker Card(s)</option></select>
         <div id="uploadfiles"></div>
-        <input type="file" class="dz-hidden-input" style="visibility:hidden;position:absolute;width:0;height:0">
+        <input type="file" onchange="sessionStorage.setItem('unrelatedChanges', '1')">
+        <input type="file" data-card-file style="visibility:hidden;position:absolute;width:0;height:0">
         <button id="dropzoneButton" disabled>Begin Card File Upload</button>
         <div id="status_messages"></div>
         <button id="continue_button" onclick="return false">Continue</button>
         <script>
         sessionStorage.setItem('changes', '0');
+        sessionStorage.setItem('unrelatedChanges', '0');
         sessionStorage.setItem('uploads', '0');
         const mode = new URLSearchParams(location.search).get('mode');
         const button = document.getElementById('dropzoneButton');
         const status = document.getElementById('status_messages');
-        document.querySelector('.dz-hidden-input').addEventListener('change', event => {
+        const fileInput = document.querySelector('[data-card-file]');
+        document.getElementById('uploadfiles').dropzone = {hiddenFileInput: fileInput};
+        fileInput.addEventListener('change', event => {
             sessionStorage.setItem('changes', Number(sessionStorage.getItem('changes')) + 1);
             button.disabled = mode === 'rejected' || !event.target.files.length;
             if (button.disabled) status.textContent = 'Invalid PDF';
@@ -60,10 +64,11 @@ def upload_page(tmp_path):
         button.onclick = () => {
             sessionStorage.setItem('uploads', Number(sessionStorage.getItem('uploads')) + 1);
             if (mode === 'server_rejected') {
-                status.textContent = 'PDF validation failed';
+                status.textContent = 'Card file order.pdf upload failed. ' +
+                    'Previous successfully uploaded card file (if present) was not replaced.';
                 return;
             }
-            status.textContent = 'Successfully uploaded';
+            status.textContent = 'Card file ' + fileInput.files[0].name + ' successfully uploaded!';
             document.getElementById('continue_button').setAttribute('onclick',
                 "location.href='setup.html?mode=" + mode + "'");
         };
@@ -140,6 +145,7 @@ def test_pdf_upload_respects_native_file_events_and_validation(browser, upload_p
         driver.select_card_type_and_upload_pdf(str(pdf))
         assert browser.title == "Cart fixture"
     assert browser.execute_script("return sessionStorage.getItem('changes')") == "1"
+    assert browser.execute_script("return sessionStorage.getItem('unrelatedChanges')") == "0"
     assert browser.execute_script("return sessionStorage.getItem('uploads')") == ("0" if mode == "rejected" else "1")
 
 
