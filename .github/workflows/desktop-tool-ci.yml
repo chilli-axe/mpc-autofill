@@ -40,7 +40,7 @@ jobs:
             FILENAME: autofill-windows.exe
             TARGET: windows
             MACOS_ARCH: ""
-          - os: ubuntu-latest
+          - os: ubuntu-22.04 # Build against glibc 2.35 so the bundle runs on Debian 12.
             FILENAME: autofill-linux.bin
             TARGET: linux
             MACOS_ARCH: ""
