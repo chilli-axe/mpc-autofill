@@ -12,7 +12,8 @@ runs:
     - uses: browser-actions/setup-chrome@latest
       id: chrome
       with:
-        chrome-version: stable
+        # Explicit versions preserve the macOS .app bundle: browser-actions/setup-chrome#658.
+        chrome-version: "152.0.7977.82"
     # - uses: browser-actions/setup-edge@latest
     #   with:
     #     edge-version: beta

@@ -151,7 +151,7 @@ def convert_pdf_to_pdfx(
         "-dNOSAFER",  # Allow file system access for ICC profile and output
         "-sDEVICE=pdfwrite",
         "-dCompatibilityLevel=1.3",
-        "-dPDFX=1",  # PDF/X-1; conformance level PDF/X-1a:2001 is declared in the definition file
+        "-dPDFX",  # Older Ghostscript requires a boolean; the definition file declares PDF/X-1a:2001.
         "-dDownsampleColorImages=false",
         "-dDownsampleGrayImages=false",
         "-dDownsampleMonoImages=false",

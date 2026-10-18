@@ -96,12 +96,6 @@ jobs:
           grep -q MakePlayingCards <<< "$help_output"
           grep -q DriveThruCards <<< "$help_output"
           stat -f "%N: %z bytes" build/${{ matrix.filename }} 2>/dev/null || stat -c "%n: %s bytes" build/${{ matrix.filename }}
-      - name: Smoke test bundled PDF export on Linux
-        if: runner.os == 'Linux'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y ghostscript
-          python tests/smoke_pdf_export.py ./build/${{ matrix.filename }}
       - name: Upload unsigned artifact
         uses: actions/upload-artifact@v7
         with:

@@ -530,6 +530,20 @@ def test_get_undetected_chrome_driver_applies_user_profile_options(monkeypatch: 
     assert captured["version_main"] == 120
 
 
+def test_detect_chrome_version_uses_selected_brave_browser(monkeypatch: pytest.MonkeyPatch) -> None:
+    captured = {}
+
+    def fake_run(args, **kwargs):
+        captured["args"] = args
+        return SimpleNamespace(stdout="version REG_SZ 150.1.92.143")
+
+    monkeypatch.setattr(webdrivers.sys, "platform", "win32")
+    monkeypatch.setattr(webdrivers.subprocess, "run", fake_run)
+
+    assert webdrivers._detect_chrome_version(r"C:\Program Files\BraveSoftware\brave.exe") == 150
+    assert r"BraveSoftware\Brave-Browser\BLBeacon" in captured["args"][2]
+
+
 def test_get_undetected_chrome_driver_reports_missing_chrome(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr("undetected_chromedriver.find_chrome_executable", lambda: None)
 
@@ -686,8 +700,9 @@ def test_cli_site_choices_list_drivethrucards_last() -> None:
     assert site_line.endswith("DriveThruCards]")
 
 
-def test_main_drive_thru_cards_exportpdf_generates_pdfs_without_browser_automation(
-    monkeypatch: pytest.MonkeyPatch, tmp_path
+@pytest.mark.parametrize("pdfx_count", [1, 0, 2])
+def test_main_drive_thru_cards_exportpdf_requires_one_pdfx_without_browser_automation(
+    monkeypatch: pytest.MonkeyPatch, tmp_path, caplog, pdfx_count, input_enter
 ) -> None:
     icc_path = tmp_path / "test.icc"
     icc_path.write_bytes(b"icc")
@@ -710,7 +725,7 @@ def test_main_drive_thru_cards_exportpdf_generates_pdfs_without_browser_automati
 
     def fake_get_dtc_pdf_paths_for_order(**kwargs):
         calls["pdf"].append(kwargs["order"].name)
-        return ["export/test_local/1.pdf", "export/test_local/1_pdfx.pdf"]
+        return ["export/test_local/1.pdf"] + [f"export/test_local/{i + 1}_pdfx.pdf" for i in range(pdfx_count)]
 
     monkeypatch.setattr(autofill_cli, "get_dtc_pdf_paths_for_order", fake_get_dtc_pdf_paths_for_order)
     monkeypatch.setattr(autofill_cli, "wait_for_user_to_complete_order", lambda: calls.__setitem__("wait", 1))
@@ -742,6 +757,7 @@ def test_main_drive_thru_cards_exportpdf_generates_pdfs_without_browser_automati
     assert calls["wait"] == 0
     assert calls["driver"] == 0
     assert calls["validate_print_options"] is False
+    assert ("requires exactly one PDF/X-1a file" in caplog.text) is (pdfx_count != 1)
 
 
 @pytest.mark.parametrize(
@@ -964,6 +980,7 @@ def test_convert_pdf_to_pdfx_writes_output_atomically(monkeypatch: pytest.Monkey
     source_path.write_bytes(b"source")
 
     def fake_run(cmd, capture_output=True, text=True):
+        assert "-dPDFX" in cmd  # Ghostscript 10.02.1 rejects the numeric -dPDFX=1 option.
         output_arg = next(arg for arg in cmd if arg.startswith("-sOutputFile="))
         Path(output_arg.split("=", 1)[1]).write_bytes(b"%PDF-1.3 (PDF/X-1a:2001) /OutputIntents")
         return SimpleNamespace(returncode=0, stdout="", stderr="")
@@ -2747,13 +2764,22 @@ def test_pdf_export_drive_thru_cards_processes_and_embeds_repeated_images_once(m
     assert len(process_calls) == 3
     with open("export/test_dedup/1.pdf", "rb") as f:
         assert f.read().count(b"DCTDecode") == 3
-    # temp files are cleaned up after execute()
+    # The processed-image cache is cleared after execute().
     assert exporter.processed_images == {}
 
 
 # endregion
 
 # region test driver.py
+
+
+@pytest.fixture
+def autofill_driver(browser, site):
+    driver = AutofillDriver(browser=browser, target_site=site, headless=True)
+    try:
+        yield driver
+    finally:
+        driver.driver.quit()
 
 
 @pytest.mark.flaky(retries=3, delay=1)
@@ -2770,8 +2796,7 @@ def test_pdf_export_drive_thru_cards_processes_and_embeds_repeated_images_once(m
     ],
 )
 @requires_google_drive_credentials
-def test_card_order_complete_run_single_cardback(browser, site, input_enter, card_order_valid):
-    autofill_driver = AutofillDriver(browser=browser, target_site=site, headless=True)
+def test_card_order_complete_run_single_cardback(autofill_driver, input_enter, card_order_valid):
     autofill_driver.execute_order(
         order=card_order_valid,
         fulfilment_method=OrderFulfilmentMethod.new_project,
@@ -2802,8 +2827,7 @@ def test_card_order_complete_run_single_cardback(browser, site, input_enter, car
     ],
 )
 @requires_google_drive_credentials
-def test_card_order_complete_run_multiple_cardbacks(browser, site, input_enter, card_order_multiple_cardbacks):
-    autofill_driver = AutofillDriver(browser=browser, target_site=site, headless=True)
+def test_card_order_complete_run_multiple_cardbacks(autofill_driver, input_enter, card_order_multiple_cardbacks):
     autofill_driver.execute_order(
         order=card_order_multiple_cardbacks,
         fulfilment_method=OrderFulfilmentMethod.new_project,
