@@ -589,26 +589,22 @@ class AutofillDriver:
         return False
 
     def click_element_polling(self, by: str, selector: str, timeout: int = 30) -> bool:
-        """Wait for a visible, enabled element and click it."""
-
-        def click_visible_element(driver: WebDriver) -> bool:
-            return any(
-                element_to_be_clickable(element)(driver) and self.click_element_with_retry(element)
-                for element in driver.find_elements(by, selector)
-            )
-
+        """
+        Aggressively poll for an element and click it as soon as it's available.
+        No fixed waits - keeps trying until success or timeout.
+        """
+        start = time.time()
         with self.no_implicit_wait():
-            try:
-                return bool(
-                    WebDriverWait(
-                        self.driver,
-                        timeout,
-                        poll_frequency=0.1,
-                        ignored_exceptions=(sl_exc.StaleElementReferenceException,),
-                    ).until(click_visible_element)
-                )
-            except sl_exc.TimeoutException:
-                return False
+            while time.time() - start < timeout:
+                try:
+                    elements = self.driver.find_elements(by, selector)
+                    for el in elements:
+                        if el.is_displayed() and el.is_enabled() and self.click_element_with_retry(el):  # type: ignore[no-untyped-call]
+                            return True
+                except Exception:
+                    pass
+                time.sleep(0.1)  # Small delay to avoid CPU spinning
+            return False
 
     def _click_dtc_login_button(self) -> bool:
         """Click the DriveThruCards login button to open the login modal."""

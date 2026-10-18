@@ -666,8 +666,6 @@ def main(
                         resolved_icc_profile=resolved_icc_profile,
                         downscale_alg=downscale_alg,
                     )
-                    if exportpdf:
-                        continue
                     # Only use the Ghostscript PDF/X-1a output - no fallback
                     dtc_pdf_paths = [path for path in pdf_paths if path.endswith("_pdfx.pdf")]
                     if len(dtc_pdf_paths) != 1:
@@ -675,6 +673,8 @@ def main(
                             "DriveThruCards requires exactly one PDF/X-1a file per order. "
                             "Recreate the PDF export before uploading."
                         )
+                    if exportpdf:
+                        continue
                     dtc_pdf_path = dtc_pdf_paths[0]
                     if dtc_driver is None:
                         starting_url = target_site.value.starting_url

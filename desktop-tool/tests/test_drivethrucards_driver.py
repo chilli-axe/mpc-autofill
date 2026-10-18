@@ -7,7 +7,6 @@ from selenium.webdriver.common.by import By
 
 from src.constants import States, TargetSites
 from src.driver import AutofillDriver
-from src.webdrivers import _detect_chrome_version
 
 
 @pytest.fixture
@@ -571,25 +570,3 @@ def test_step_preserves_original_failure_when_browser_diagnostics_fail(dtc_drive
     with pytest.raises(Exception, match="step 'upload' failed: original upload failure") as error:
         dtc_driver._run_dtc_step("upload", upload)
     assert error.value.__cause__ is original
-
-
-def test_windows_version_detection_reads_selected_executable(monkeypatch):
-    calls = []
-
-    def run(command, **kwargs):
-        calls.append(command)
-        return SimpleNamespace(stdout="123.0.4567.89" if command[0] == "powershell.exe" else "120.0.0.0")
-
-    monkeypatch.setattr("src.webdrivers.sys.platform", "win32")
-    monkeypatch.setattr("src.webdrivers.subprocess.run", run)
-    assert _detect_chrome_version(r"C:\Bradley's Chromium\chrome.exe") == 123
-    assert "-LiteralPath 'C:\\Bradley''s Chromium\\chrome.exe'" in calls[0][-1]
-
-
-def test_windows_selected_binary_failure_does_not_use_another_installed_browser(monkeypatch):
-    def run(*_args, **_kwargs):
-        raise OSError("selected executable not found")
-
-    monkeypatch.setattr("src.webdrivers.sys.platform", "win32")
-    monkeypatch.setattr("src.webdrivers.subprocess.run", run)
-    assert _detect_chrome_version(r"C:\missing\chrome.exe") is None

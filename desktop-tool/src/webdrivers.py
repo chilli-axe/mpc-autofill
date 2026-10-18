@@ -111,25 +111,16 @@ def _detect_chrome_version(binary_location: Optional[str] = None) -> Optional[in
                 timeout=5,
             )
         elif sys.platform == "win32":
-            # Registry versions describe the installed stable browser, which may differ
-            # from a selected portable, beta, or Brave executable.
-            command = (
-                [
-                    "powershell.exe",
-                    "-NoProfile",
-                    "-NonInteractive",
-                    "-Command",
-                    "(Get-Item -LiteralPath '" + binary_location.replace("'", "''") + "').VersionInfo.ProductVersion",
-                ]
-                if binary_location
-                else ["reg", "query", r"HKEY_CURRENT_USER\Software\Google\Chrome\BLBeacon", "/v", "version"]
+            registry_key = (
+                r"HKEY_CURRENT_USER\Software\BraveSoftware\Brave-Browser\BLBeacon"
+                if binary_location and "brave" in binary_location.lower()
+                else r"HKEY_CURRENT_USER\Software\Google\Chrome\BLBeacon"
             )
             result = subprocess.run(
-                command,
+                ["reg", "query", registry_key, "/v", "version"],
                 capture_output=True,
                 text=True,
                 timeout=5,
-                creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
             )
         else:
             result = subprocess.run(
