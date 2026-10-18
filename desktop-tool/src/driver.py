@@ -870,10 +870,12 @@ class AutofillDriver:
         logger.debug(f"PDF file found: {pdf_path} ({os.path.getsize(pdf_path)} bytes)")
 
         self.set_state(States.inserting_fronts, "Uploading PDF")
-        # Dropzone creates its hidden file input at initialization. Selenium's send_keys
-        # supplies the file and fires change; opening a native file dialog is unnecessary.
+        # The site's Dropzone input has no class; use the card uploader's own input.
+        # Selenium's send_keys supplies the file and fires its native change event.
         file_input = WebDriverWait(self.driver, 15).until(
-            presence_of_element_located((By.CSS_SELECTOR, ".dz-hidden-input"))
+            lambda d: d.execute_script(
+                "return document.getElementById('uploadfiles')?.dropzone?.hiddenFileInput || null;"
+            )
         )
         file_input.send_keys(pdf_path)
         try:
@@ -887,11 +889,10 @@ class AutofillDriver:
         # Wait for upload to complete - look for success message
         try:
             WebDriverWait(self.driver, 120).until(
-                lambda d: "successfully uploaded"
-                in (
-                    d.find_element(By.ID, "status_messages").text.lower()
-                    if d.find_elements(By.ID, "status_messages")
-                    else ""
+                lambda d: re.search(
+                    r"\bcard file .+ successfully uploaded!",
+                    d.find_element(By.ID, "status_messages").text if d.find_elements(By.ID, "status_messages") else "",
+                    re.IGNORECASE,
                 )
             )
         except sl_exc.TimeoutException as exc:
