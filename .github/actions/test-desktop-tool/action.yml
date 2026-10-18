@@ -14,14 +14,10 @@ runs:
       with:
         # Explicit versions preserve the macOS .app bundle: browser-actions/setup-chrome#658.
         chrome-version: "152.0.7977.82"
+        install-chromedriver: true
     # - uses: browser-actions/setup-edge@latest
     #   with:
     #     edge-version: beta
-    - name: Fix macOS Chromedriver
-      if: runner.os == 'macOS'
-      run: |
-        rm /usr/local/bin/chromedriver
-      shell: bash
     - name: Set up Python 3.13
       uses: actions/setup-python@v6
       with:
@@ -49,6 +45,7 @@ runs:
       working-directory: desktop-tool
       env:
         CHROME_BINARY: ${{ steps.chrome.outputs.chrome-path }}
+        CHROMEDRIVER: ${{ steps.chrome.outputs.chromedriver-path }}
       run: |
         if [[ "$RUNNER_OS" == Linux ]]; then
           python -c "from src.pdf_maker import get_ghostscript_path; assert get_ghostscript_path() is not None, 'Ghostscript is required for Linux CI'"

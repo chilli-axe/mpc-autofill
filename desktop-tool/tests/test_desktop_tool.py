@@ -2775,7 +2775,9 @@ def test_pdf_export_drive_thru_cards_processes_and_embeds_repeated_images_once(m
 
 @pytest.fixture
 def autofill_driver(browser, site):
-    driver = AutofillDriver(browser=browser, target_site=site, headless=True)
+    driver = AutofillDriver(
+        browser=browser, target_site=site, headless=True, binary_location=os.environ.get("CHROME_BINARY")
+    )
     try:
         yield driver
     finally:
