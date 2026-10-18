@@ -50,7 +50,7 @@ Add this section after "MakePlayingCards Automation":
 >
 > - The tool downloads the images in your order and creates a PDF for DriveThruCards' Premium Euro Poker size.
 > - It converts the PDF to PDF/X-1a:2001 with [Ghostscript](https://ghostscript.com/) before opening the DriveThruCards publisher tools.
-> - If your DriveThruCards account does not have publisher access, the tool opens publisher setup. Review and accept the publisher agreement yourself in the browser and complete any requested account details. The tool resumes when publisher access is ready.
+> - If your DriveThruCards account does not have publisher access, the tool completes the non-exclusive publisher setup.
 > - You sign in yourself. The tool then creates the product, uploads the PDF, and opens its buy-now link. Review your cart and confirm that every intended product was added before paying. The tool does not verify cart contents or submit payment.
 > - Each selected XML becomes one separate DriveThruCards product. DriveThruCards does not use the XML's
 >   cardstock or foil settings, and the MPC order-combination option does not apply.
