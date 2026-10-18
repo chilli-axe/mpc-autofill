@@ -725,37 +725,16 @@ class AutofillDriver:
         publisher_name_input.clear()
         publisher_name_input.send_keys(publisher_name)
 
-        agreement_xpath = (
-            "//input[@type='checkbox' and "
-            "(contains(translate(@name, 'AGREE', 'agree'), 'agree') or "
-            "contains(translate(@id, 'AGREE', 'agree'), 'agree'))] | "
-            "//label[contains(normalize-space(.), 'I Agree')]//input[@type='checkbox']"
+        self.set_state(States.defining_order, "Awaiting publisher agreement review")
+        logger.info(
+            "Review the proposed publisher name and agreement in the browser. "
+            "If you agree, accept it and finish the publisher setup, including any payment-information page. "
+            "The tool will continue when the Publish navigation appears."
         )
-        agreement_checkbox = WebDriverWait(self.driver, 30).until(element_to_be_clickable((By.XPATH, agreement_xpath)))
-        if not agreement_checkbox.is_selected() and not self.click_element_with_retry(agreement_checkbox):
-            raise Exception("Could not accept the publisher agreement.")
-
-        setup_xpath = (
-            "//*[self::a or self::button or self::input]"
-            "[contains(normalize-space(.), 'Set up My Publisher Account') "
-            "or contains(@value, 'Set up My Publisher Account')]"
-        )
-        if not self.click_element_polling(By.XPATH, setup_xpath, timeout=30):
-            raise Exception("Could not submit the publisher agreement.")
-
-        # Some accounts finish setup here and never show the payment-info page.
-        if self.is_dtc_publisher_ready():
-            logger.info("DriveThruCards publisher account setup is complete.")
-            return
-
-        save_xpath = "//*[self::button or self::input]" "[normalize-space(.)='Save' or @value='Save']"
-        if not self.click_element_polling(By.XPATH, save_xpath, timeout=30) and not self.is_dtc_publisher_ready():
-            raise Exception("Could not save the publisher payment information.")
-
         try:
-            WebDriverWait(self.driver, 30, poll_frequency=0.5).until(lambda _driver: self.is_dtc_publisher_ready())
+            WebDriverWait(self.driver, 600, poll_frequency=0.5).until(lambda _driver: self.is_dtc_publisher_ready())
         except sl_exc.TimeoutException as exc:
-            raise Exception("Publisher setup finished, but the Publish tab did not appear.") from exc
+            raise TimeoutError("Publisher setup was not completed within 10 minutes.") from exc
 
         logger.info("DriveThruCards publisher account setup is complete.")
 

@@ -297,74 +297,33 @@ def test_wait_for_cloudflare_challenge_raises_on_timeout(
         dtc_driver.wait_for_cloudflare_challenge(timeout_seconds=1)
 
 
-@pytest.mark.parametrize(
-    ("ready_checks", "expected_click_count"),
-    [([False, True], 2), ([False, False, True], 3)],
-)
-def test_ensure_dtc_publisher_account_automates_both_wizard_paths(
-    monkeypatch: pytest.MonkeyPatch,
-    dtc_driver: AutofillDriver,
-    ready_checks: list[bool],
-    expected_click_count: int,
+def test_ensure_dtc_publisher_account_waits_for_manual_agreement(
+    monkeypatch: pytest.MonkeyPatch, dtc_driver: AutofillDriver
 ) -> None:
     calls = []
-
-    class PublisherNameInput:
-        value = ""
-
-        def clear(self) -> None:
-            self.value = ""
-
-        def send_keys(self, value: str) -> None:
-            self.value = value
-
-    class AgreementCheckbox:
-        clicked = False
-
-        def is_selected(self) -> bool:
-            return False
-
-    publisher_name = PublisherNameInput()
-    agreement = AgreementCheckbox()
-    readiness = iter(ready_checks)
+    publisher_name = _FakeElement()
+    readiness = iter([False, True])
     dtc_driver.dtc_publisher_name = "bradley.smith-42"
     dtc_driver.is_dtc_publisher_ready = lambda: next(readiness)
     dtc_driver.driver = SimpleNamespace(get=lambda url: calls.append(("get", url)))
-
-    def fake_click(by: By, selector: str, timeout: int = 30) -> bool:
-        calls.append(("click", by, selector, timeout))
-        return True
-
-    dtc_driver.click_element_polling = fake_click
-
-    def fake_click_with_retry(element) -> bool:
-        element.clicked = True
-        return True
-
-    dtc_driver.click_element_with_retry = fake_click_with_retry
+    dtc_driver.click_element_polling = lambda by, selector, timeout=30: calls.append(("click", selector)) or True
+    dtc_driver.click_element_with_retry = lambda element: pytest.fail("Agreement must be accepted by the user")
 
     class FakeWait:
-        count = 0
-
-        def __init__(self, *_args, **_kwargs) -> None:
-            pass
+        def __init__(self, _driver, timeout, **_kwargs):
+            self.timeout = timeout
 
         def until(self, condition):
-            FakeWait.count += 1
-            if FakeWait.count == 1:
-                return publisher_name
-            if FakeWait.count == 2:
-                return agreement
-            return condition(dtc_driver.driver)
+            calls.append(("wait", self.timeout))
+            return publisher_name if self.timeout == 30 else condition(dtc_driver.driver)
 
     monkeypatch.setattr("src.driver.WebDriverWait", FakeWait)
-
     dtc_driver.ensure_dtc_publisher_account()
 
-    assert calls[0] == ("get", "https://www.drivethrucards.com/joinchoice.php")
-    assert len([call for call in calls if call[0] == "click"]) == expected_click_count
-    assert publisher_name.value == "bradley.smith-42"
-    assert agreement.clicked is True
+    assert publisher_name.sent == ["bradley.smith-42"]
+    assert len([call for call in calls if call[0] == "click"]) == 1
+    assert "Non-Exclusive" in next(call[1] for call in calls if call[0] == "click")
+    assert ("wait", 600) in calls
 
 
 def test_open_dtc_upload_page_extracts_window_open_url(
