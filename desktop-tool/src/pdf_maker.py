@@ -151,7 +151,8 @@ def convert_pdf_to_pdfx(
         "-dNOSAFER",  # Allow file system access for ICC profile and output
         "-sDEVICE=pdfwrite",
         "-dCompatibilityLevel=1.3",
-        "-dPDFX",  # Older Ghostscript requires a boolean; the definition file declares PDF/X-1a:2001.
+        "-dPDFX=1",  # PDF/X-1a requires Ghostscript 10.05+; a boolean selects PDF/X-3.
+        "-dPDFACompatibilityPolicy=2",  # Abort if Ghostscript cannot preserve PDF/X conformance.
         "-dDownsampleColorImages=false",
         "-dDownsampleGrayImages=false",
         "-dDownsampleMonoImages=false",
@@ -168,7 +169,9 @@ def convert_pdf_to_pdfx(
         result = subprocess.run(cmd, capture_output=True, text=True)
         if result.returncode != 0:
             logger.warning(
-                "Ghostscript failed to convert PDF/X-1a.\n" f"stdout: {result.stdout}\n" f"stderr: {result.stderr}"
+                "Ghostscript failed to convert PDF/X-1a (version 10.05 or newer is required).\n"
+                f"stdout: {result.stdout}\n"
+                f"stderr: {result.stderr}"
             )
             return False
         if not verify_pdfx_output(temporary_output_path):

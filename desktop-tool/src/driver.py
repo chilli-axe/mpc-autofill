@@ -897,7 +897,7 @@ class AutofillDriver:
             )
         except sl_exc.TimeoutException as exc:
             raise Exception("The PDF upload was not confirmed by DriveThruCards within 120 seconds.") from exc
-        logger.debug("PDF upload completed to DriveThruCards.")
+        logger.info("DriveThruCards upload status: %s", self.driver.find_element(By.ID, "status_messages").text)
 
         # Wait for the continue button to become active.
         # The button starts with an onclick handler that shows an error and returns false.
