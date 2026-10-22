@@ -28,7 +28,7 @@ def fingerprint_pdf_inputs(order: CardOrder, extra_paths: list[str]) -> str:
         if card.file_path
     }
     data = {
-        "version": 2,  # Bump when PDF export behavior changes without a settings change.
+        "version": 3,  # Bump when PDF export behavior changes without a settings change.
         "order": attr.asdict(
             order,
             filter=lambda field, _value: field.name not in {"downloaded", "uploaded", "errored", "pid", "queue"},
