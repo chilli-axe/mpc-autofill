@@ -8,6 +8,7 @@ import subprocess
 import sys
 import textwrap
 import time
+import zlib
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import nullcontext
 from io import BytesIO
@@ -891,6 +892,14 @@ def test_convert_pdf_to_pdfx_uses_only_supported_ghostscript_pdfx_mode(tmp_path)
     assert b"(PDF/X-1a:2001)" in contents  # GTS_PDFXConformance
     assert b"/OutputIntents" in contents
     assert b"CGATS TR 001" in contents
+    metadata = re.search(rb"(<<[^>]*?/Type\s*/Metadata[^>]*?>>)\s*stream\r?\n(.*?)\r?\nendstream", contents, re.S)
+    assert metadata is not None
+    packet = zlib.decompress(metadata[2]) if b"/FlateDecode" in metadata[1] else metadata[2]
+    xmp = ElementTree.fromstring(packet)
+    namespace = {"pdfx": "http://ns.adobe.com/pdfx/1.3/"}
+    assert xmp.findtext(".//pdfx:GTS_PDFXVersion", namespaces=namespace) == "PDF/X-1:2001"
+    assert xmp.findtext(".//pdfx:GTS_PDFXConformance", namespaces=namespace) == "PDF/X-1a:2001"
+    assert xmp.findtext(".//{http://ns.adobe.com/pdf/1.3/}Trapped") == "False"
 
 
 @requires_google_drive_credentials
