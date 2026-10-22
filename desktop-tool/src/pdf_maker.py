@@ -102,7 +102,24 @@ def _generate_pdfx_definition(title: str, icc_profile_path: Optional[str]) -> st
             "[{icc_PDFX} ICCProfile (r) file /PUT pdfmark",
             "[{OutputIntent_PDFX} << /DestOutputProfile {icc_PDFX} >> /PUT pdfmark",
         ]
-    lines += ["[{Catalog} << /OutputIntents [ {OutputIntent_PDFX} ] >> /PUT pdfmark", ""]
+    # DriveThruCards checks XMP identification even when the PDF/X-1a Info entries are present.
+    metadata = """<?xpacket begin="\ufeff" id="W5M0MpCehiHzreSzNTczkc9d"?>
+<x:xmpmeta xmlns:x="adobe:ns:meta/">
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+<rdf:Description rdf:about="" xmlns:pdfx="http://ns.adobe.com/pdfx/1.3/" xmlns:pdf="http://ns.adobe.com/pdf/1.3/">
+<pdfx:GTS_PDFXVersion>PDF/X-1:2001</pdfx:GTS_PDFXVersion>
+<pdfx:GTS_PDFXConformance>PDF/X-1a:2001</pdfx:GTS_PDFXConformance>
+<pdf:Trapped>False</pdf:Trapped>
+</rdf:Description></rdf:RDF></x:xmpmeta>
+<?xpacket end="w"?>"""
+    lines += [
+        "[{Catalog} << /OutputIntents [ {OutputIntent_PDFX} ] >> /PUT pdfmark",
+        "[/_objdef {Metadata_PDFX} /type /stream /OBJ pdfmark",
+        "[{Metadata_PDFX} << /Type /Metadata /Subtype /XML >> /PUT pdfmark",
+        f"[{{Metadata_PDFX}} <{metadata.encode('utf-8').hex()}> /PUT pdfmark",
+        "[{Catalog} << /Metadata {Metadata_PDFX} >> /PUT pdfmark",
+        "",
+    ]
     return "\n".join(lines)
 
 
