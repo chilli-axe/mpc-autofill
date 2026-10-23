@@ -85,7 +85,11 @@ Replace "Exporting to PDF" with the following sections:
 >
 > ### Reusing PDF Exports (`--skip-pdf-if-exists`)
 >
-> Use `--skip-pdf-if-exists` to reuse existing PDF exports. If an image in `cards/` is newer than the PDF, the tool asks whether to rebuild it. DriveThruCards orders only reuse an existing `_pdfx.pdf` file.
+> Use `--skip-pdf-if-exists` to reuse an export automatically when its saved manifest matches the order, image contents, and export settings. Changed card slots, quantities, local image bytes, ICC profile contents, or PDF settings trigger a rebuild. This includes images referenced outside `cards/`. Missing or changed PDF files also trigger a rebuild; older exports without a manifest rebuild the first time.
+>
+> For standard PDF exports, this flag reuses the layout selected during the previous export. Leave the flag off to choose a different layout. DriveThruCards only reuses the matching PDF/X output.
+>
+> Reuse checks the local image files, not remote Google Drive revisions. To pick up an image edited on Google Drive, delete its cached local copy so the tool downloads it again, or replace the local image with the updated file.
 
 ## DriveThruCards Arguments
 
