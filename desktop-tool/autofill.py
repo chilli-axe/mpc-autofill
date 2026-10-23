@@ -29,7 +29,7 @@ import shutil
 import subprocess
 import sys
 from contextlib import nullcontext
-from glob import glob
+from copy import copy
 from typing import TYPE_CHECKING, Optional
 
 import certifi
@@ -48,6 +48,7 @@ from src.logging import logger
 
 if TYPE_CHECKING:
     from src.order import CardOrder
+    from src.pdf_maker import PdfXConversionConfig
     from src.processing import ImagePostProcessingConfig
 
 
@@ -302,68 +303,35 @@ def ensure_ghostscript_available() -> str:
         input("Press Enter to re-check for Ghostscript, or Ctrl+C to exit.")
 
 
-def get_existing_pdf_paths(order_name: Optional[str]) -> list[str]:
-    from src.pdf_maker import get_export_directory
-
-    export_directory = get_export_directory(order_name=order_name)
-    return sorted([path for path in glob(os.path.join(export_directory, "**", "*.pdf"), recursive=True)])
-
-
-def get_newest_mtime_in_directory(directory: str) -> Optional[float]:
-    if not os.path.isdir(directory):
-        return None
-    newest_mtime: Optional[float] = None
-    for root, _, files in os.walk(directory):
-        for file_name in files:
-            file_path = os.path.join(root, file_name)
-            mtime = os.path.getmtime(file_path)
-            if newest_mtime is None or mtime > newest_mtime:
-                newest_mtime = mtime
-    return newest_mtime
-
-
-def existing_pdfs_are_stale(existing_pdf_paths: list[str], cards_directory: str) -> bool:
-    if not existing_pdf_paths:
-        return False
-    newest_cards_mtime = get_newest_mtime_in_directory(cards_directory)
-    if newest_cards_mtime is None:
-        return False
-    newest_pdf_mtime = max(os.path.getmtime(path) for path in existing_pdf_paths)
-    return newest_cards_mtime > newest_pdf_mtime
-
-
-def maybe_reuse_existing_pdfs(
-    order_name: Optional[str],
+def export_pdf_order(
+    order: CardOrder,
     skip_pdf_if_exists: bool,
-    cards_directory: str,
-    require_pdfx: bool = False,
-) -> Optional[list[str]]:
-    if not skip_pdf_if_exists:
-        return None
+    post_processing_config: Optional[ImagePostProcessingConfig],
+    pdfx_config: Optional[PdfXConversionConfig] = None,
+) -> list[str]:
+    from src.pdf_cache import reuse_pdf_export, save_pdf_export
+    from src.pdf_maker import PdfExporter
 
-    existing_pdf_paths = get_existing_pdf_paths(order_name=order_name)
-    if not existing_pdf_paths:
-        return None
+    post_processing_config = copy(post_processing_config)
+    export_mode = "drive_thru_cards" if pdfx_config else "standard"
+    gs_path = get_ghostscript_path(pdfx_config.ghostscript_path) if pdfx_config else None
+    settings = repr(
+        (export_mode, post_processing_config, pdfx_config, get_ghostscript_version(gs_path) if gs_path else None)
+    )
+    extra_paths = [pdfx_config.icc_profile_path] if pdfx_config and pdfx_config.icc_profile_path else []
+    if skip_pdf_if_exists:
+        paths = reuse_pdf_export(order, settings, extra_paths)
+        if paths and (not pdfx_config or sum(path.endswith("_pdfx.pdf") for path in paths) == 1):
+            return paths
+        logger.info("No matching PDF export found. Rebuilding from the current order and images.")
 
-    # When a PDF/X-1a file is required, it's also the file whose freshness matters -
-    # a stale _pdfx.pdf must not be reused just because some other PDF is newer.
-    relevant_pdf_paths = existing_pdf_paths
-    if require_pdfx:
-        relevant_pdf_paths = [path for path in existing_pdf_paths if path.endswith("_pdfx.pdf")]
-        if not relevant_pdf_paths:
-            logger.info("Existing PDF files were found, but no PDF/X-1a output was found. Recreating PDF export.")
-            return None
-
-    if existing_pdfs_are_stale(existing_pdf_paths=relevant_pdf_paths, cards_directory=cards_directory):
-        recreate_pdf = click.confirm(
-            "Existing PDF export found, but images in cards/ are newer. Recreate PDF now?",
-            default=True,
-        )
-        if recreate_pdf:
-            return None
-
-    logger.info("Skipping PDF generation because existing exported PDF files were found.")
-    return existing_pdf_paths
+    exporter = PdfExporter(order=order, export_mode=export_mode, pdfx_config=pdfx_config)
+    paths = exporter.execute(post_processing_config=post_processing_config)
+    if pdfx_config and sum(path.endswith("_pdfx.pdf") for path in paths) != 1:
+        raise ValueError("DriveThruCards export did not produce exactly one PDF/X-1a file. Cannot upload this order.")
+    if exporter.input_fingerprint is not None:
+        save_pdf_export(order, settings, extra_paths, paths, expected_fingerprint=exporter.input_fingerprint)
+    return paths
 
 
 def download_images_for_orders(
@@ -400,34 +368,20 @@ def download_images_for_orders(
 def get_dtc_pdf_paths_for_order(
     order: CardOrder,
     skip_pdf_if_exists: bool,
-    working_directory: str,
     resolved_icc_profile: Optional[str],
     downscale_alg: str,
 ) -> list[str]:
-    from src.io import get_image_directory
-    from src.pdf_maker import PdfExporter, PdfXConversionConfig
+    from src.pdf_maker import PdfXConversionConfig
     from src.processing import ImagePostProcessingConfig
 
-    pdf_paths = maybe_reuse_existing_pdfs(
-        order_name=order.name,
-        skip_pdf_if_exists=skip_pdf_if_exists,
-        cards_directory=get_image_directory(working_directory),
-        require_pdfx=True,
-    )
-    if pdf_paths is not None:
-        return pdf_paths
-
-    dtc_post_processing_config = ImagePostProcessingConfig(
-        max_dpi=300,
-        downscale_alg=ImageResizeMethods[downscale_alg],
-        output_format="JPEG",
-    )
-    exporter = PdfExporter(
+    return export_pdf_order(
         order=order,
-        export_mode="drive_thru_cards",
+        skip_pdf_if_exists=skip_pdf_if_exists,
+        post_processing_config=ImagePostProcessingConfig(
+            max_dpi=300, downscale_alg=ImageResizeMethods[downscale_alg], output_format="JPEG"
+        ),
         pdfx_config=PdfXConversionConfig(icc_profile_path=resolved_icc_profile),
     )
-    return exporter.execute(post_processing_config=dtc_post_processing_config)
 
 
 @click.command(context_settings={"show_default": True})
@@ -503,7 +457,7 @@ def get_dtc_pdf_paths_for_order(
 @click.option(
     "--skip-pdf-if-exists",
     default=False,
-    help="Reuse existing export PDFs when present; prompts to recreate if cards/ has newer files.",
+    help="Reuse exported PDFs only when the order, image contents and export settings match.",
     is_flag=True,
 )
 @click.option(
@@ -614,11 +568,7 @@ def main(
     from wakepy import keepawake
 
     from src.exc import ImageDownloadError, ValidationException
-    from src.io import (
-        DEFAULT_WORKING_DIRECTORY,
-        create_image_directory_if_not_exists,
-        get_image_directory,
-    )
+    from src.io import DEFAULT_WORKING_DIRECTORY, create_image_directory_if_not_exists
     from src.logging import configure_loggers
     from src.order import CardOrder, aggregate_and_split_orders
     from src.processing import ImagePostProcessingConfig
@@ -713,7 +663,6 @@ def main(
                     pdf_paths = get_dtc_pdf_paths_for_order(
                         order=order,
                         skip_pdf_if_exists=skip_pdf_if_exists,
-                        working_directory=working_directory,
                         resolved_icc_profile=resolved_icc_profile,
                         downscale_alg=downscale_alg,
                     )
@@ -752,18 +701,8 @@ def main(
                     )
                     input(f"Complete your purchase in the browser, then press {bold('Enter')} to close this window.\n")
             elif exportpdf:
-                from src.pdf_maker import PdfExporter
-
                 order = CardOrder.from_xmls_in_folder(working_directory=working_directory)[0]
-                if (
-                    maybe_reuse_existing_pdfs(
-                        order_name=order.name,
-                        skip_pdf_if_exists=skip_pdf_if_exists,
-                        cards_directory=get_image_directory(working_directory),
-                    )
-                    is None
-                ):
-                    PdfExporter(order=order).execute(post_processing_config=post_processing_config)
+                export_pdf_order(order, skip_pdf_if_exists, post_processing_config)
             else:
                 from src.driver import AutofillDriver
                 from src.web_server import WebServer

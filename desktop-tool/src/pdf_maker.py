@@ -227,6 +227,7 @@ class PdfExporter:
     processed_bar: enlighten.Counter = attr.ib(init=False, default=None)
     saved_files: list[str] = attr.ib(init=False, factory=list)
     processed_images: dict[str, bytes] = attr.ib(init=False, factory=dict)
+    input_fingerprint: Optional[str] = attr.ib(init=False, default=None)
 
     def configure_bars(self) -> None:
         num_images = len(self.order.fronts.cards_by_id) + len(self.order.backs.cards_by_id)
@@ -372,6 +373,13 @@ class PdfExporter:
         self.image_post_processing_config = post_processing_config
         try:
             self.download_and_collect_images(post_processing_config=post_processing_config)
+            from src.pdf_cache import fingerprint_pdf_inputs
+
+            profile = self.pdfx_config.icc_profile_path if self.pdfx_config else None
+            try:
+                self.input_fingerprint = fingerprint_pdf_inputs(self.order, [profile] if profile else [])
+            except OSError:
+                self.input_fingerprint = None
             if self.separate_faces:
                 self.number_of_cards_per_file = 1
                 self.export_separate_faces()
