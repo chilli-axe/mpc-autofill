@@ -5,6 +5,7 @@ import sys
 import tempfile
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
+from io import BytesIO
 from pathlib import Path
 from typing import Optional
 
@@ -101,7 +102,24 @@ def _generate_pdfx_definition(title: str, icc_profile_path: Optional[str]) -> st
             "[{icc_PDFX} ICCProfile (r) file /PUT pdfmark",
             "[{OutputIntent_PDFX} << /DestOutputProfile {icc_PDFX} >> /PUT pdfmark",
         ]
-    lines += ["[{Catalog} << /OutputIntents [ {OutputIntent_PDFX} ] >> /PUT pdfmark", ""]
+    # DriveThruCards checks XMP identification even when the PDF/X-1a Info entries are present.
+    metadata = """<?xpacket begin="\ufeff" id="W5M0MpCehiHzreSzNTczkc9d"?>
+<x:xmpmeta xmlns:x="adobe:ns:meta/">
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+<rdf:Description rdf:about="" xmlns:pdfx="http://ns.adobe.com/pdfx/1.3/" xmlns:pdf="http://ns.adobe.com/pdf/1.3/">
+<pdfx:GTS_PDFXVersion>PDF/X-1:2001</pdfx:GTS_PDFXVersion>
+<pdfx:GTS_PDFXConformance>PDF/X-1a:2001</pdfx:GTS_PDFXConformance>
+<pdf:Trapped>False</pdf:Trapped>
+</rdf:Description></rdf:RDF></x:xmpmeta>
+<?xpacket end="w"?>"""
+    lines += [
+        "[{Catalog} << /OutputIntents [ {OutputIntent_PDFX} ] >> /PUT pdfmark",
+        "[/_objdef {Metadata_PDFX} /type /stream /OBJ pdfmark",
+        "[{Metadata_PDFX} << /Type /Metadata /Subtype /XML >> /PUT pdfmark",
+        f"[{{Metadata_PDFX}} <{metadata.encode('utf-8').hex()}> /PUT pdfmark",
+        "[{Catalog} << /Metadata {Metadata_PDFX} >> /PUT pdfmark",
+        "",
+    ]
     return "\n".join(lines)
 
 
@@ -150,7 +168,8 @@ def convert_pdf_to_pdfx(
         "-dNOSAFER",  # Allow file system access for ICC profile and output
         "-sDEVICE=pdfwrite",
         "-dCompatibilityLevel=1.3",
-        "-dPDFX=1",  # PDF/X-1; conformance level PDF/X-1a:2001 is declared in the definition file
+        "-dPDFX=1",  # PDF/X-1a requires Ghostscript 10.05+; a boolean selects PDF/X-3.
+        "-dPDFACompatibilityPolicy=2",  # Abort if Ghostscript cannot preserve PDF/X conformance.
         "-dDownsampleColorImages=false",
         "-dDownsampleGrayImages=false",
         "-dDownsampleMonoImages=false",
@@ -167,7 +186,9 @@ def convert_pdf_to_pdfx(
         result = subprocess.run(cmd, capture_output=True, text=True)
         if result.returncode != 0:
             logger.warning(
-                "Ghostscript failed to convert PDF/X-1a.\n" f"stdout: {result.stdout}\n" f"stderr: {result.stderr}"
+                "Ghostscript failed to convert PDF/X-1a (version 10.05 or newer is required).\n"
+                f"stdout: {result.stdout}\n"
+                f"stderr: {result.stderr}"
             )
             return False
         if not verify_pdfx_output(temporary_output_path):
@@ -205,7 +226,7 @@ class PdfExporter:
     download_bar: enlighten.Counter = attr.ib(init=False, default=None)
     processed_bar: enlighten.Counter = attr.ib(init=False, default=None)
     saved_files: list[str] = attr.ib(init=False, factory=list)
-    processed_image_paths: dict[str, str] = attr.ib(init=False, factory=dict)
+    processed_images: dict[str, bytes] = attr.ib(init=False, factory=dict)
 
     def configure_bars(self) -> None:
         num_images = len(self.order.fronts.cards_by_id) + len(self.order.backs.cards_by_id)
@@ -290,43 +311,22 @@ class PdfExporter:
     def add_image(self, image_path: str) -> None:
         self.pdf.add_page()
         if self.export_mode == "drive_thru_cards" and self.image_post_processing_config:
-            tmp_path = self.processed_image_paths.get(image_path)
-            if tmp_path is None:
+            image_bytes = self.processed_images.get(image_path)
+            if image_bytes is None:
                 with open(image_path, "rb") as f:
                     raw_image = f.read()
-                # post_process_image handles resizing to target_pixel_size (set in execute())
-                # which ensures the correct DPI for the DTC card dimensions
-                processed_image, icc_profile_bytes = post_process_image(
-                    raw_image=raw_image, config=self.image_post_processing_config
-                )
-                # Save to a temporary file so fpdf embeds the JPEG data directly
-                # (passing BytesIO causes fpdf to re-encode with FlateDecode, bloating file size).
-                # Cached per source path so a repeated card (e.g. the shared cardback) is processed
-                # once and fpdf's per-path image cache embeds its data once per PDF. Temp files are
-                # cleaned up at the end of execute().
-                ext = ".jpg" if self.image_post_processing_config.output_format == "JPEG" else ".png"
-                with tempfile.NamedTemporaryFile(suffix=ext, delete=False) as tmp:
-                    tmp_path = tmp.name
-                self.processed_image_paths[image_path] = tmp_path
-                save_processed_image(
-                    processed_image,
-                    file_path=tmp_path,
-                    config=self.image_post_processing_config,
-                    icc_profile_bytes=icc_profile_bytes,
-                )
-            self.pdf.image(
-                tmp_path,
-                x=0,
-                y=0,
-                w=self.card_width_in_inches,
-                h=self.card_height_in_inches,
-            )
+                processed_image = post_process_image(raw_image=raw_image, config=self.image_post_processing_config)
+                with BytesIO() as buffer:
+                    save_processed_image(processed_image, file_path=buffer, config=self.image_post_processing_config)
+                    image_bytes = buffer.getvalue()
+                # Process repeated cards once; fpdf deduplicates the encoded JPEG bytes.
+                self.processed_images[image_path] = image_bytes
         else:
             with open(image_path, "rb") as f:
                 image_bytes = f.read()
             # Pass raw bytes so fpdf keys the cache by content hash rather than file path.
             # This ensures refreshed image files are re-read when re-exporting PDFs.
-            self.pdf.image(image_bytes, x=0, y=0, w=self.card_width_in_inches, h=self.card_height_in_inches)
+        self.pdf.image(image_bytes, x=0, y=0, w=self.card_width_in_inches, h=self.card_height_in_inches)
 
     def save_file(self) -> str:
         extra = ""
@@ -359,7 +359,8 @@ class PdfExporter:
 
         paths_by_slot = {}
         for slot in fronts_by_slots.keys():
-            paths_by_slot[slot] = (str(backs_by_slots.get(slot, backs_by_slots[0])), str(fronts_by_slots[slot]))
+            back_path = backs_by_slots[slot] if slot in backs_by_slots else backs_by_slots[0]
+            paths_by_slot[slot] = (str(back_path), str(fronts_by_slots[slot]))
         self.paths_by_slot = paths_by_slot
 
     def execute(self, post_processing_config: Optional[ImagePostProcessingConfig]) -> list[str]:
@@ -371,17 +372,12 @@ class PdfExporter:
         self.image_post_processing_config = post_processing_config
         try:
             self.download_and_collect_images(post_processing_config=post_processing_config)
-            try:
-                if self.separate_faces:
-                    self.number_of_cards_per_file = 1
-                    self.export_separate_faces()
-                else:
-                    self.export()
-            finally:
-                for tmp_path in self.processed_image_paths.values():
-                    if os.path.exists(tmp_path):
-                        os.unlink(tmp_path)
-                self.processed_image_paths.clear()
+            if self.separate_faces:
+                self.number_of_cards_per_file = 1
+                self.export_separate_faces()
+            else:
+                self.export()
+            self.processed_images.clear()
 
             if self.pdfx_config:
                 source_pdf_paths = list(self.saved_files)
@@ -398,6 +394,7 @@ class PdfExporter:
             logger.info(f"Finished exporting files! They should be accessible at {self.save_path}.")
             return self.saved_files
         finally:
+            self.processed_images.clear()
             # The bars are transient UI - clear them and release the terminal rows so subsequent
             # output (log lines, error summaries, later progress bars) flows naturally below the
             # scrolled log output instead of around bars pinned to the bottom of the window.
@@ -407,13 +404,13 @@ class PdfExporter:
             self.manager.stop()
 
     def export(self) -> None:
-        for slot in sorted(self.paths_by_slot.keys()):
+        for index, slot in enumerate(sorted(self.paths_by_slot.keys())):
             (back_path, front_path) = self.paths_by_slot[slot]
             self.set_state(f"Working on slot {slot}")
-            if slot == 0:
+            if index == 0:
                 self.generate_pdf()
-            elif slot % self.number_of_cards_per_file == 0:
-                self.set_state(f"Saving PDF #{slot}")
+            elif index % self.number_of_cards_per_file == 0:
+                self.set_state(f"Saving PDF #{self.file_num}")
                 self.save_file()
                 self.file_num = self.file_num + 1
                 self.generate_pdf()

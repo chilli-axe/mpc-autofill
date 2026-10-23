@@ -16,7 +16,6 @@ import src.constants as constants
 from src.logging import FILE_ONLY, logger
 from src.processing import (
     ImagePostProcessingConfig,
-    get_post_processed_path,
     post_process_image,
     save_processed_image,
 )
@@ -199,12 +198,12 @@ def download_google_drive_file(
 
     if post_processing_config is not None:
         logger.debug(f"Post-processing {drive_id}...")
-        output_path = get_post_processed_path(file_path=file_path, config=post_processing_config)
-        os.makedirs(os.path.dirname(output_path), exist_ok=True)
-        processed_image, icc_profile_bytes = post_process_image(raw_image=file_bytes, config=post_processing_config)
-        save_processed_image(
-            processed_image, file_path=output_path, config=post_processing_config, icc_profile_bytes=icc_profile_bytes
-        )
+        try:
+            processed_image = post_process_image(raw_image=file_bytes, config=post_processing_config)
+            save_processed_image(processed_image, file_path=file_path, config=post_processing_config)
+        except OSError:
+            logger.exception(f"Could not process downloaded Google Drive image {drive_id}", extra=FILE_ONLY)
+            return False
     else:
         # Save the bytes directly to disk - avoid reading in pillow in case any quality degradation occurs
         with open(file_path, "wb") as f:

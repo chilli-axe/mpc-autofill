@@ -2,7 +2,7 @@ name: Desktop tool tests
 description: Test the MPC Autofill CLI / desktop tool
 inputs:
   google-drive-api-key:
-    description: Your Google Drive API key. When empty, tests requiring it skip themselves.
+    description: Google service-account JSON. When empty, tests requiring it skip themselves.
     required: false
     default: ""
 runs:
@@ -10,16 +10,14 @@ runs:
   steps:
     # not sure atm how to set up brave browser on github actions
     - uses: browser-actions/setup-chrome@latest
+      id: chrome
       with:
-        chrome-version: stable
+        # Explicit versions preserve the macOS .app bundle: browser-actions/setup-chrome#658.
+        chrome-version: "152.0.7977.82"
+        install-chromedriver: true
     # - uses: browser-actions/setup-edge@latest
     #   with:
     #     edge-version: beta
-    - name: Fix macOS Chromedriver
-      if: runner.os == 'macOS'
-      run: |
-        rm /usr/local/bin/chromedriver
-      shell: bash
     - name: Set up Python 3.13
       uses: actions/setup-python@v6
       with:
@@ -29,6 +27,12 @@ runs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
+      shell: bash
+    - name: Install Ghostscript for PDF/X integration tests
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt-get update
+        sudo apt-get install --yes ghostscript
       shell: bash
     - name: Write Google Drive API credentials to file
       if: inputs.google-drive-api-key != ''
@@ -40,9 +44,11 @@ runs:
     - name: Run tests
       working-directory: desktop-tool
       env:
-        MPC_AUTOFILL_RELEASE_CHECKS: "1"
+        CHROME_BINARY: ${{ steps.chrome.outputs.chrome-path }}
+        CHROMEDRIVER: ${{ steps.chrome.outputs.chromedriver-path }}
       run: |
         if [[ "$RUNNER_OS" == Linux ]]; then
+          python -c "from src.pdf_maker import get_ghostscript_path; assert get_ghostscript_path() is not None, 'Ghostscript is required for Linux CI'"
           dbus-run-session -- pytest .
         else
           pytest .

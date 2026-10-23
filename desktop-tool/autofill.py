@@ -421,7 +421,6 @@ def get_dtc_pdf_paths_for_order(
         max_dpi=300,
         downscale_alg=ImageResizeMethods[downscale_alg],
         output_format="JPEG",
-        convert_to_cmyk=False,
     )
     exporter = PdfExporter(
         order=order,
@@ -718,15 +717,16 @@ def main(
                         resolved_icc_profile=resolved_icc_profile,
                         downscale_alg=downscale_alg,
                     )
+                    # Only use the Ghostscript PDF/X-1a output - no fallback
+                    dtc_pdf_paths = [path for path in pdf_paths if path.endswith("_pdfx.pdf")]
+                    if len(dtc_pdf_paths) != 1:
+                        raise Exception(
+                            "DriveThruCards requires exactly one PDF/X-1a file per order. "
+                            "Recreate the PDF export before uploading."
+                        )
                     if exportpdf:
                         continue
-                    # Only use the Ghostscript PDF/X-1a output - no fallback
-                    dtc_pdf_path = next((path for path in reversed(pdf_paths) if path.endswith("_pdfx.pdf")), None)
-                    if dtc_pdf_path is None:
-                        raise Exception(
-                            "Ghostscript PDF/X-1a conversion failed. Cannot proceed with DriveThruCards upload.\n"
-                            "Please fix the Ghostscript conversion issue and try again."
-                        )
+                    dtc_pdf_path = dtc_pdf_paths[0]
                     if dtc_driver is None:
                         starting_url = target_site.value.starting_url
                         if not skip_dtc_instructions:
@@ -747,8 +747,8 @@ def main(
                     dtc_driver.execute_drive_thru_cards_order(order=order, pdf_path=dtc_pdf_path)
                 if dtc_driver is not None:
                     logger.info(
-                        "All DriveThruCards products are in your cart. "
-                        "Please review them and complete the purchase manually."
+                        "All DriveThruCards product setups are complete. "
+                        "Please check that your cart contains every intended product before completing the purchase manually."
                     )
                     input(f"Complete your purchase in the browser, then press {bold('Enter')} to close this window.\n")
             elif exportpdf:

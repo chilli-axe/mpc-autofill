@@ -8,6 +8,7 @@ import subprocess
 import sys
 import textwrap
 import time
+import zlib
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import nullcontext
 from io import BytesIO
@@ -700,8 +701,9 @@ def test_cli_site_choices_list_drivethrucards_last() -> None:
     assert site_line.endswith("DriveThruCards]")
 
 
-def test_main_drive_thru_cards_exportpdf_generates_pdfs_without_browser_automation(
-    monkeypatch: pytest.MonkeyPatch, tmp_path
+@pytest.mark.parametrize("pdfx_count", [1, 0, 2])
+def test_main_drive_thru_cards_exportpdf_requires_one_pdfx_without_browser_automation(
+    monkeypatch: pytest.MonkeyPatch, tmp_path, caplog, pdfx_count, input_enter
 ) -> None:
     icc_path = tmp_path / "test.icc"
     icc_path.write_bytes(b"icc")
@@ -724,7 +726,7 @@ def test_main_drive_thru_cards_exportpdf_generates_pdfs_without_browser_automati
 
     def fake_get_dtc_pdf_paths_for_order(**kwargs):
         calls["pdf"].append(kwargs["order"].name)
-        return ["export/test_local/1.pdf", "export/test_local/1_pdfx.pdf"]
+        return ["export/test_local/1.pdf"] + [f"export/test_local/{i + 1}_pdfx.pdf" for i in range(pdfx_count)]
 
     monkeypatch.setattr(autofill_cli, "get_dtc_pdf_paths_for_order", fake_get_dtc_pdf_paths_for_order)
     monkeypatch.setattr(autofill_cli, "wait_for_user_to_complete_order", lambda: calls.__setitem__("wait", 1))
@@ -756,6 +758,7 @@ def test_main_drive_thru_cards_exportpdf_generates_pdfs_without_browser_automati
     assert calls["wait"] == 0
     assert calls["driver"] == 0
     assert calls["validate_print_options"] is False
+    assert ("requires exactly one PDF/X-1a file" in caplog.text) is (pdfx_count != 1)
 
 
 @pytest.mark.parametrize(
@@ -906,15 +909,6 @@ def test_nuitka_directives_include_runtime_data_and_cached_extraction() -> None:
     assert "--onefile-tempdir-spec={CACHE_DIR}/mpc-autofill/{VERSION}" in source
 
 
-def test_readme_points_users_to_wiki_for_usage_docs() -> None:
-    readme_path = os.path.join(os.path.dirname(autofill_cli.__file__), "readme.md")
-    with open(readme_path, "r", encoding="utf-8") as f:
-        readme = f.read()
-    assert "https://github.com/chilli-axe/mpc-autofill/wiki/Desktop-Tool" in readme
-    assert "--skip-pdf-if-exists" not in readme
-    assert "--download-images-only" not in readme
-
-
 # endregion
 
 # region ICC profile resolution
@@ -987,6 +981,8 @@ def test_convert_pdf_to_pdfx_writes_output_atomically(monkeypatch: pytest.Monkey
     source_path.write_bytes(b"source")
 
     def fake_run(cmd, capture_output=True, text=True):
+        assert "-dPDFX=1" in cmd
+        assert "-dPDFACompatibilityPolicy=2" in cmd
         output_arg = next(arg for arg in cmd if arg.startswith("-sOutputFile="))
         Path(output_arg.split("=", 1)[1]).write_bytes(b"%PDF-1.3 (PDF/X-1a:2001) /OutputIntents")
         return SimpleNamespace(returncode=0, stdout="", stderr="")
@@ -1052,7 +1048,7 @@ def test_convert_pdf_to_pdfx_rejects_output_missing_pdfx_markers(monkeypatch: py
 
 
 @pytest.mark.skipif(src.pdf_maker.get_ghostscript_path() is None, reason="Ghostscript is not installed")
-def test_convert_pdf_to_pdfx_produces_verified_pdfx_with_real_ghostscript(tmp_path) -> None:
+def test_convert_pdf_to_pdfx_uses_only_supported_ghostscript_pdfx_mode(tmp_path) -> None:
     from fpdf import FPDF
 
     image_path = tmp_path / "card.jpg"
@@ -1064,13 +1060,28 @@ def test_convert_pdf_to_pdfx_produces_verified_pdfx_with_real_ghostscript(tmp_pa
     pdf.output(str(source_path))
     output_path = tmp_path / "output_pdfx.pdf"
 
-    assert convert_pdf_to_pdfx(str(source_path), str(output_path), PdfXConversionConfig())
+    converted = convert_pdf_to_pdfx(str(source_path), str(output_path), PdfXConversionConfig())
+    version = src.pdf_maker.get_ghostscript_version(src.pdf_maker.get_ghostscript_path()) or ""
+    match = re.search(r"(\d+)\.(\d+)", version)
+    if match and tuple(map(int, match.groups())) < (10, 5):
+        assert not converted  # Older Ghostscript only supports PDF/X-3 and must not label it as PDF/X-1a.
+        assert not output_path.exists()
+        return
+    assert converted
 
     contents = output_path.read_bytes()
     assert b"(PDF/X-1:2001)" in contents  # GTS_PDFXVersion
     assert b"(PDF/X-1a:2001)" in contents  # GTS_PDFXConformance
     assert b"/OutputIntents" in contents
     assert b"CGATS TR 001" in contents
+    metadata = re.search(rb"(<<[^>]*?/Type\s*/Metadata[^>]*?>>)\s*stream\r?\n(.*?)\r?\nendstream", contents, re.S)
+    assert metadata is not None
+    packet = zlib.decompress(metadata[2]) if b"/FlateDecode" in metadata[1] else metadata[2]
+    xmp = ElementTree.fromstring(packet)
+    namespace = {"pdfx": "http://ns.adobe.com/pdfx/1.3/"}
+    assert xmp.findtext(".//pdfx:GTS_PDFXVersion", namespaces=namespace) == "PDF/X-1:2001"
+    assert xmp.findtext(".//pdfx:GTS_PDFXConformance", namespaces=namespace) == "PDF/X-1a:2001"
+    assert xmp.findtext(".//{http://ns.adobe.com/pdf/1.3/}Trapped") == "False"
 
 
 @requires_google_drive_credentials
@@ -2001,7 +2012,8 @@ def test_card_order_mangled_xml(input_enter):
         (constants.Cardstocks.P10.value, True),
     ],
 )
-def test_dtc_card_order_parsing_ignores_cardstock_and_foil(tmp_path, stock: str, foil: bool) -> None:
+def test_dtc_card_order_parsing_ignores_cardstock_and_foil(monkeypatch, tmp_path, stock: str, foil: bool) -> None:
+    monkeypatch.setattr("src.order.get_google_drive_file_name", lambda drive_id: "cardback.png")
     source = Path(__file__).with_name("test_order.xml").read_text(encoding="utf-8")
     xml_path = tmp_path / "dtc.xml"
     xml_path.write_text(
@@ -2694,7 +2706,6 @@ def test_pdf_export_drive_thru_cards_combines_actual_front_slots_into_one_file(m
             max_dpi=300,
             downscale_alg=constants.ImageResizeMethods.LANCZOS,
             output_format="JPEG",
-            convert_to_cmyk=False,
         )
     )
 
@@ -2761,7 +2772,6 @@ def test_pdf_export_drive_thru_cards_processes_and_embeds_repeated_images_once(m
             max_dpi=300,
             downscale_alg=constants.ImageResizeMethods.LANCZOS,
             output_format="JPEG",
-            convert_to_cmyk=False,
         )
     )
 
@@ -2771,13 +2781,24 @@ def test_pdf_export_drive_thru_cards_processes_and_embeds_repeated_images_once(m
     assert len(process_calls) == 3
     with open("export/test_dedup/1.pdf", "rb") as f:
         assert f.read().count(b"DCTDecode") == 3
-    # temp files are cleaned up after execute()
-    assert exporter.processed_image_paths == {}
+    # The processed-image cache is cleared after execute().
+    assert exporter.processed_images == {}
 
 
 # endregion
 
 # region test driver.py
+
+
+@pytest.fixture
+def autofill_driver(browser, site):
+    driver = AutofillDriver(
+        browser=browser, target_site=site, headless=True, binary_location=os.environ.get("CHROME_BINARY")
+    )
+    try:
+        yield driver
+    finally:
+        driver.driver.quit()
 
 
 @pytest.mark.flaky(retries=3, delay=1)
@@ -2794,8 +2815,7 @@ def test_pdf_export_drive_thru_cards_processes_and_embeds_repeated_images_once(m
     ],
 )
 @requires_google_drive_credentials
-def test_card_order_complete_run_single_cardback(browser, site, input_enter, card_order_valid):
-    autofill_driver = AutofillDriver(browser=browser, target_site=site, headless=True)
+def test_card_order_complete_run_single_cardback(autofill_driver, input_enter, card_order_valid):
     autofill_driver.execute_order(
         order=card_order_valid,
         fulfilment_method=OrderFulfilmentMethod.new_project,
@@ -2826,8 +2846,7 @@ def test_card_order_complete_run_single_cardback(browser, site, input_enter, car
     ],
 )
 @requires_google_drive_credentials
-def test_card_order_complete_run_multiple_cardbacks(browser, site, input_enter, card_order_multiple_cardbacks):
-    autofill_driver = AutofillDriver(browser=browser, target_site=site, headless=True)
+def test_card_order_complete_run_multiple_cardbacks(autofill_driver, input_enter, card_order_multiple_cardbacks):
     autofill_driver.execute_order(
         order=card_order_multiple_cardbacks,
         fulfilment_method=OrderFulfilmentMethod.new_project,

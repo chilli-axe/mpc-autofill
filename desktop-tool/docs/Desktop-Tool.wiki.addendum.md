@@ -34,7 +34,7 @@ Replace the opening with:
 >
 > Once the autofilling process completes, you can review and pay for your order. MakePlayingCards and PrinterStudio projects can also be saved to your account for later.
 >
-> **Note**: Automated Chromium browsers do not support signing in with Google accounts for security reasons. Create an account with the printing site directly and sign in with it.
+> Sign in with an account created directly with the printing site. Use your DriveThruCards email and password rather than Google or Facebook sign-in in the automated browser.
 
 ## Running the Tool
 
@@ -51,13 +51,13 @@ Add this section after "MakePlayingCards Automation":
 > - The tool downloads the images in your order and creates a PDF for DriveThruCards' Premium Euro Poker size.
 > - It converts the PDF to PDF/X-1a:2001 with [Ghostscript](https://ghostscript.com/) before opening the DriveThruCards publisher tools.
 > - If your DriveThruCards account does not have publisher access, the tool completes the non-exclusive publisher setup.
-> - You sign in yourself. The tool then creates the product, uploads the PDF, and opens the checkout page for your review. It never submits payment.
+> - You sign in yourself. The tool then creates the product, uploads the PDF, and opens its buy-now link. Review your cart and confirm that every intended product was added before paying. The tool does not verify cart contents or submit payment.
 > - Each selected XML becomes one separate DriveThruCards product. DriveThruCards does not use the XML's
 >   cardstock or foil settings, and the MPC order-combination option does not apply.
 > - Multiple XML files use the same browser session and cart. The tool processes every selected XML automatically,
 >   then pauses once for the final checkout handoff. Complete the purchase before closing the desktop tool.
 >
-> DriveThruCards requires Ghostscript. When it is missing, the tool asks before downloading a pinned, checksum-verified installer on macOS or Windows, or using apt, dnf, or yum on Linux. If you decline, install Ghostscript yourself and return to the prompt.
+> DriveThruCards requires Ghostscript 10.05 or newer for PDF/X-1a support. When it is missing, the tool asks before downloading a pinned, checksum-verified installer on macOS or Windows, or using apt, dnf, or yum on Linux. Some Linux distributions provide older versions; upgrade Ghostscript if PDF/X-1a conversion fails. If you decline, install Ghostscript yourself and return to the prompt.
 >
 > For more consistent print colours, the tool looks for Adobe's US Web Coated (SWOP) ICC profile in the usual system folders and in `~/.mpc-autofill/`. If it cannot find the profile, it can download Adobe's end-user profile bundle, verify its SHA-256 checksum, and cache the profile. You can decline and continue with Ghostscript's default colour conversion.
 
@@ -122,9 +122,21 @@ Replace the existing commands with:
 > ```
 >
 > Tests that need Google Drive credentials skip themselves when `client_secrets.json` is not available.
+>
+> Install Ghostscript to run the real PDF/X conversion test; otherwise that test is skipped locally. Linux CI installs Ghostscript and requires it before running the suite. The Linux pull-request job deliberately runs without Google Drive credentials to check the fork workflow. Live installer download checks run only in the release workflows; to include them locally, set `MPC_AUTOFILL_RELEASE_CHECKS=1`.
 
 ## Building the Project
 
-Replace the Nuitka build command's hyphen with a colon, then add:
+Replace the local build command with:
+
+> From the `desktop-tool` directory, with dependencies installed and `client_secrets.json` available, run:
+>
+> ```shell
+> python -m nuitka --file-version=1.2.3 autofill.py
+> ```
+>
+> Replace `1.2.3` with the version you are building. A file version is required because the onefile extraction cache uses it in its directory name.
+
+Then add:
 
 > The dispatchable desktop build workflow produces one-file builds for Windows, Linux, Apple silicon Macs, and Intel Macs. Each build runs `--check-tls` and checks that `--help` lists both MakePlayingCards and DriveThruCards before GitHub stores the artifact.

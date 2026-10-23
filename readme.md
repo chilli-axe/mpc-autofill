@@ -32,3 +32,5 @@ If you're here to download the desktop client, check the [Releases]("https://git
 # Documentation
 
 Our docs are available in the repo's [Wiki](https://github.com/chilli-axe/mpc-autofill/wiki).
+
+For this fork's DriveThruCards setup and command-line options, see the [desktop tool guide](desktop-tool/docs/Desktop-Tool.wiki.addendum.md).

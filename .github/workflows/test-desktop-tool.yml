@@ -3,19 +3,22 @@ on:
   pull_request:
     paths:
       - "desktop-tool/**"
+      - ".github/actions/test-desktop-tool/**"
+      - ".github/workflows/test-desktop-tool.yml"
   workflow_dispatch:
 jobs:
   test:
     name: Desktop tool tests
     runs-on: ${{ matrix.os }}
     env:
-      GOOGLE_DRIVE_API_KEY: ${{ secrets.GOOGLE_DRIVE_API_KEY }}
+      # Exercise the fork-without-secrets path on every Linux run.
+      GOOGLE_DRIVE_API_KEY: ${{ matrix.os != 'ubuntu-latest' && secrets.GOOGLE_DRIVE_API_KEY || '' }}
     strategy:
       matrix:
         include:
           - os: macos-latest
           - os: windows-latest
-    #          - os: ubuntu-latest  # https://github.com/browser-actions/setup-edge/issues/516
+          - os: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
       # Tests requiring the Google Drive API key skip themselves when it's absent (fork pull
@@ -24,6 +27,6 @@ jobs:
         uses: ./.github/actions/test-desktop-tool
         with:
           google-drive-api-key: ${{ env.GOOGLE_DRIVE_API_KEY }}
-      - name: Note skipped secret-backed tests for fork pull requests
+      - name: Note skipped credential-backed tests
         if: env.GOOGLE_DRIVE_API_KEY == ''
-        run: echo "::notice::Tests requiring GOOGLE_DRIVE_API_KEY were skipped because the secret is unavailable to fork pull requests."
+        run: echo "::notice::Tests requiring GOOGLE_DRIVE_API_KEY were skipped because this job runs without credentials."

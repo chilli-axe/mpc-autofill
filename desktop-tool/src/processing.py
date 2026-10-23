@@ -1,13 +1,11 @@
 import io
-import os
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any, BinaryIO, Optional
 
 from src.constants import DPI_HEIGHT_RATIO, ImageResizeMethods
-from src.logging import logger
 
 if TYPE_CHECKING:
-    from PIL import Image
+    from PIL.Image import Image
 
 # DriveThruCards physical card dimensions (Premium Euro Poker with bleed)
 # DriveThruCards requires 2.73" x 3.71" which includes bleed area
@@ -30,52 +28,22 @@ class ImagePostProcessingConfig:
     max_dpi: int
     downscale_alg: ImageResizeMethods
     output_format: Optional[str] = None
-    output_extension: Optional[str] = None
-    convert_to_cmyk: bool = False
-    icc_profile_path: Optional[str] = None
-    output_directory: Optional[str] = None
     jpeg_quality: int = 95
     target_pixel_size: Optional[tuple[int, int]] = None
     embed_dpi_metadata: bool = False
 
 
-def get_post_processed_path(file_path: str, config: ImagePostProcessingConfig) -> str:
-    directory = config.output_directory or os.path.dirname(file_path)
-    base_name = os.path.splitext(os.path.basename(file_path))[0]
-    extension = config.output_extension or os.path.splitext(file_path)[1]
-    return os.path.join(directory, f"{base_name}{extension}")
-
-
-def _apply_color_processing(img: "Image", config: ImagePostProcessingConfig) -> tuple["Image", Optional[bytes]]:
-    icc_profile_bytes = None
-    if config.convert_to_cmyk:
-        if img.mode in ("RGBA", "LA"):
-            img = img.convert("RGB")
-        elif img.mode not in ("RGB", "CMYK"):
-            img = img.convert("RGB")
-        if config.icc_profile_path:
-            try:
-                from PIL import ImageCms
-
-                srgb = ImageCms.createProfile("sRGB")
-                cmyk_profile = ImageCms.getOpenProfile(config.icc_profile_path)
-                img = ImageCms.profileToProfile(img, srgb, cmyk_profile, outputMode="CMYK")
-                icc_profile_bytes = cmyk_profile.tobytes()
-            except Exception as exc:
-                logger.warning(f"Failed to apply ICC profile ({config.icc_profile_path}): {exc}")
-                img = img.convert("CMYK")
-        else:
-            img = img.convert("CMYK")
-    elif config.output_format and config.output_format.upper() == "JPEG":
-        if img.mode in ("RGBA", "LA"):
-            img = img.convert("RGB")
-    return img, icc_profile_bytes
-
-
-def post_process_image(raw_image: bytes, config: ImagePostProcessingConfig) -> tuple["Image", Optional[bytes]]:
+def post_process_image(raw_image: bytes, config: ImagePostProcessingConfig) -> "Image":
     from PIL import Image
 
     img = Image.open(io.BytesIO(raw_image))
+    if config.output_format and config.output_format.upper() == "JPEG":
+        if "A" in img.getbands() or "transparency" in img.info:
+            rgba = img.convert("RGBA")
+            img = Image.new("RGB", rgba.size, "white")
+            img.paste(rgba, mask=rgba.getchannel("A"))
+        elif img.mode not in ("RGB", "L", "CMYK"):
+            img = img.convert("RGB")
 
     # downscale the image to `max_dpi`
     if config.target_pixel_size:
@@ -90,28 +58,23 @@ def post_process_image(raw_image: bytes, config: ImagePostProcessingConfig) -> t
             new_width = round((config.max_dpi / img_dpi) * img.width)
             img = img.resize((new_width, new_height), config.downscale_alg.value)
 
-    img, icc_profile_bytes = _apply_color_processing(img, config)
-    return img, icc_profile_bytes
+    return img
 
 
 def save_processed_image(
     img: "Image",
-    file_path: str,
+    file_path: str | BinaryIO,
     config: ImagePostProcessingConfig,
-    icc_profile_bytes: Optional[bytes] = None,
 ) -> None:
     # Remove XMP data if it's present in the image info to avoid "XMP data is too long" error.
     # JPEG format has a 64KB limit for XMP metadata in a single APP1 segment.
     if "xmp" in img.info:
         img.info.pop("xmp")
 
-    img.save(file_path, **_build_save_kwargs(config=config, icc_profile_bytes=icc_profile_bytes))
+    img.save(file_path, **_build_save_kwargs(config=config))
 
 
-def _build_save_kwargs(
-    config: ImagePostProcessingConfig,
-    icc_profile_bytes: Optional[bytes],
-) -> dict[str, Any]:
+def _build_save_kwargs(config: ImagePostProcessingConfig) -> dict[str, Any]:
     save_kwargs: dict[str, Any] = {}
     if config.output_format:
         save_kwargs["format"] = config.output_format
@@ -119,8 +82,6 @@ def _build_save_kwargs(
         save_kwargs["quality"] = config.jpeg_quality
         save_kwargs["subsampling"] = 0
         save_kwargs["optimize"] = True
-    if icc_profile_bytes:
-        save_kwargs["icc_profile"] = icc_profile_bytes
     # Embed DPI metadata to ensure PDF tools correctly interpret the image resolution.
     # This is critical for DriveThruCards where the target DPI must be 300.
     if config.embed_dpi_metadata and config.target_pixel_size:

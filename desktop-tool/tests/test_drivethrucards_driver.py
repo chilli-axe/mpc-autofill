@@ -5,7 +5,7 @@ import pytest
 from selenium.common import exceptions as sl_exc
 from selenium.webdriver.common.by import By
 
-from src.constants import TargetSites
+from src.constants import States, TargetSites
 from src.driver import AutofillDriver
 
 
@@ -38,7 +38,9 @@ def test_prepare_drive_thru_cards_session_runs_expected_sequence(dtc_driver: Aut
 
 def test_execute_drive_thru_cards_order_runs_expected_sequence(dtc_driver: AutofillDriver) -> None:
     calls = []
+    states = []
     dtc_driver.driver = SimpleNamespace()
+    dtc_driver.set_state = lambda state, action=None: states.append((state, action))
 
     dtc_driver.navigate_to_dtc_product_setup = lambda: calls.append(("navigate_to_dtc_product_setup",))
     dtc_driver.fill_dtc_product_form = lambda order: calls.append(("fill_dtc_product_form", order.name))
@@ -56,6 +58,7 @@ def test_execute_drive_thru_cards_order_runs_expected_sequence(dtc_driver: Autof
         ("open_dtc_upload_page",),
         ("upload_pdf", "/tmp/order.pdf"),
     ]
+    assert states[-1] == (States.finished, "Product setup complete")
 
 
 def test_authenticate_dtc_returns_immediately_when_already_logged_in(dtc_driver: AutofillDriver) -> None:
@@ -589,3 +592,22 @@ def test_initialise_bars_creates_only_status_bar_for_dtc(monkeypatch: pytest.Mon
     assert mpc.order_progress_bar is not None
     assert mpc.download_bar is not None
     assert mpc.upload_bar is not None
+
+
+@pytest.mark.parametrize("unavailable_property", ["current_url", "title"])
+def test_step_preserves_original_failure_when_browser_diagnostics_fail(dtc_driver, unavailable_property):
+    class ClosedBrowser:
+        def __getattr__(self, name):
+            if name == unavailable_property:
+                raise sl_exc.NoSuchWindowException("window closed")
+            raise AttributeError(name)
+
+    dtc_driver.driver = ClosedBrowser()
+    original = RuntimeError("original upload failure")
+
+    def upload():
+        raise original
+
+    with pytest.raises(Exception, match="step 'upload' failed: original upload failure") as error:
+        dtc_driver._run_dtc_step("upload", upload)
+    assert error.value.__cause__ is original

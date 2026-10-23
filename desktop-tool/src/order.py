@@ -37,6 +37,9 @@ def is_image_valid(file_path: str) -> bool:
 
         with Image.open(file_path) as img:
             img.verify()
+        # JPEG verify() checks headers only; decode pixels to detect truncated downloads.
+        with Image.open(file_path) as img:
+            img.load()
         return True
     except Exception:
         return False
@@ -197,6 +200,7 @@ class CardImage:
         download_bar: enlighten.Counter,
         post_processing_config: Optional[ImagePostProcessingConfig],
     ) -> None:
+        self.downloaded = False
         try:
             if self.source_type == SourceType.LOCAL_FILE:
                 if self.file_exists() and not self.errored:
