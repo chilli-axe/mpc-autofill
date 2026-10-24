@@ -1450,7 +1450,12 @@ def test_download_google_drive_image_default_post_processing(
     )
     assert image_valid_google_drive.file_exists() is True
     assert image_valid_google_drive.errored is False
-    assert_file_size(image_valid_google_drive.file_path, 152990)
+    # PNG compression varies by encoder; these decoded references match Pillow 11 and 13.
+    with Image.open(image_valid_google_drive.file_path) as image:
+        assert (image.format, image.mode, image.size) == ("PNG", "RGB", (827, 1122))
+        assert hashlib.sha256(image.tobytes()).hexdigest() == (
+            "88d6023cf0c682b2b1b567962cd7760153e969c0c371aaa668a622b7ed78c6fc"
+        )
 
 
 def test_download_local_file_is_no_op(image_local_file: CardImage, counter: Counter, queue: Queue[CardImage]):
@@ -1475,7 +1480,11 @@ def test_download_google_drive_image_downscaled(
     )
     assert image_valid_google_drive.file_exists() is True
     assert image_valid_google_drive.errored is False
-    assert_file_size(image_valid_google_drive.file_path, 51123)
+    with Image.open(image_valid_google_drive.file_path) as image:
+        assert (image.format, image.mode, image.size) == ("PNG", "RGB", (276, 374))
+        assert hashlib.sha256(image.tobytes()).hexdigest() == (
+            "e9a1e804410e0ab0f2a48a49a2f81e1e34cb90eac3c984b322fd5a6f370e150d"
+        )
 
 
 @requires_google_drive_credentials
