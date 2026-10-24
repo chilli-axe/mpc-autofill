@@ -64,7 +64,7 @@ The frozen benchmark encoder is Pillow 11.0.0 / libjpeg-turbo 3.0.4; the moderni
 
 The color-regression bridge generated only new-stack outputs for six fixed cases: Urza's Saga, Enlightened Tutor, Disciple of Freyalise, alpha-composite, wide-gamut-chart, and dark-ramp. All 12 faces matched the stored actual-desktop controls exactly in source JPEG bytes, final image streams, decoded CMYK, geometry, face order, profiles, and stream/order-PDF sizes. Independent Poppler decoding of the 24 old/new pages agreed exactly. Input, software, binary, profile and output hashes and commands are recorded in `/tmp/dtc-modernization-color-bridge-20261024-vACPGiIF`. Frozen controls and scores were not regenerated or changed. The different private Ghostscript binary produced identical selected outputs; existing ink overshoots were unchanged.
 
-The strict integer boundary (sum 612 passes, 613 fails) was verified. The separate limiter study's zero-overinking and maximum 10% growth goals are candidate-screening criteria, not results achieved by this modernization. The six-case match establishes equivalence only for those inputs; full-corpus testing and saved CMYK-input controls were unavailable. Physical proofing and formal PDF/X validation remain separate checks.
+The strict integer boundary (sum 612 passes, 613 fails) was verified. The separate limiter study's zero-overinking and maximum 10% growth goals are candidate-screening criteria, not results achieved by this modernization. The six-case match establishes equivalence only for those inputs; full-corpus testing was skipped, and saved CMYK-input controls were unavailable. Physical proofing and formal PDF/X validation remain separate checks.
 
 ## Combined release qualification
 
