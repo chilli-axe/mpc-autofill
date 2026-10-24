@@ -9,38 +9,34 @@ runs:
   using: composite
   steps:
     # not sure atm how to set up brave browser on github actions
-    - uses: browser-actions/setup-chrome@latest
+    - uses: browser-actions/setup-chrome@48ad923757ca74d66703209fe939badbdf80f2f4 # v2.2.0
       id: chrome
       with:
         # Explicit versions preserve the macOS .app bundle: browser-actions/setup-chrome#658.
-        chrome-version: "152.0.7977.82"
+        chrome-version: "156.0.8078.47"
         install-chromedriver: true
     # - uses: browser-actions/setup-edge@latest
     #   with:
     #     edge-version: beta
-    - name: Set up Python 3.13
-      uses: actions/setup-python@v6
+    - uses: ./.github/actions/setup-desktop-tool
       with:
-        python-version: 3.13
-    - name: Install Python dependencies
-      working-directory: desktop-tool
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-      shell: bash
-    - name: Install Ghostscript for PDF/X integration tests
+        group: dev
+        google-drive-api-key: ${{ inputs.google-drive-api-key }}
+    - uses: ./.github/actions/setup-ghostscript
       if: runner.os == 'Linux'
-      run: |
-        sudo apt-get update
-        sudo apt-get install --yes ghostscript
+    - name: Check compatibility export
+      working-directory: desktop-tool
       shell: bash
-    - name: Write Google Drive API credentials to file
-      if: inputs.google-drive-api-key != ''
-      uses: jsdaniell/create-json@v1.2.3
-      with:
-        name: "client_secrets.json"
-        json: ${{ inputs.google-drive-api-key }}
-        dir: "desktop-tool/"
+      run: |
+        uv export --locked --all-groups --no-emit-project --no-header --format requirements-txt > "$RUNNER_TEMP/desktop-requirements.txt"
+        diff -u requirements.txt "$RUNNER_TEMP/desktop-requirements.txt"
+    - name: Check desktop source
+      shell: bash
+      run: |
+        uv run --project desktop-tool --locked --group dev ruff check --config desktop-tool/pyproject.toml desktop-tool
+        uv run --project desktop-tool --locked --group dev black --check desktop-tool
+        uv run --project desktop-tool --locked --group dev isort --check-only desktop-tool
+        uv run --project desktop-tool --locked --group dev mypy --config-file desktop-tool/pyproject.toml desktop-tool/autofill.py desktop-tool/src
     - name: Run tests
       working-directory: desktop-tool
       env:
@@ -48,9 +44,16 @@ runs:
         CHROMEDRIVER: ${{ steps.chrome.outputs.chromedriver-path }}
       run: |
         if [[ "$RUNNER_OS" == Linux ]]; then
-          python -c "from src.pdf_maker import get_ghostscript_path; assert get_ghostscript_path() is not None, 'Ghostscript is required for Linux CI'"
-          dbus-run-session -- pytest .
+          uv run --locked --group dev python -c "from src.pdf_maker import get_ghostscript_path, get_ghostscript_version, is_ghostscript_version_supported; path=get_ghostscript_path(); assert path and is_ghostscript_version_supported(get_ghostscript_version(path)), 'Supported Ghostscript required in CI'"
+          dbus-run-session -- uv run --locked --group dev python -m pytest .
         else
-          pytest .
+          uv run --locked --group dev python -m pytest .
         fi
       shell: bash
+    - name: Smoke test source PDF export
+      if: runner.os == 'Linux'
+      working-directory: desktop-tool
+      shell: bash
+      run: |
+        uv run --locked --group dev python -c "from src.icc import _download_profile; assert _download_profile() is not None"
+        dbus-run-session -- uv run --locked --group dev python tests/smoke_pdf_export.py

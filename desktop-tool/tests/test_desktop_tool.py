@@ -19,7 +19,6 @@ from types import SimpleNamespace
 from typing import Any, Callable, Generator
 from xml.etree import ElementTree
 
-import autofill as autofill_cli
 import pytest
 from click.testing import CliRunner
 from enlighten import Counter
@@ -51,6 +50,8 @@ from src.pdf_maker import (
     get_ghostscript_version,
 )
 from src.processing import ImagePostProcessingConfig
+
+import autofill as autofill_cli
 
 requires_google_drive_credentials = pytest.mark.skipif(
     not os.path.isfile(os.path.join(os.path.dirname(__file__), "..", "client_secrets.json")),
@@ -128,7 +129,7 @@ def test_ensure_ghostscript_available_prompts_until_found(monkeypatch: pytest.Mo
 
     def fake_get_version(_path: str) -> str:
         called["version"] += 1
-        return "10.0.0"
+        return "10.08.0"
 
     monkeypatch.setattr(autofill_cli, "get_ghostscript_path", fake_get_path)
     monkeypatch.setattr(autofill_cli, "get_ghostscript_version", fake_get_version)
@@ -155,7 +156,7 @@ def test_ensure_ghostscript_available_installs_official_release_on_windows(
         (download_url, hashlib.sha256(installer).hexdigest()),
     )
     monkeypatch.setattr(autofill_cli, "get_ghostscript_path", lambda: paths.pop(0))
-    monkeypatch.setattr(autofill_cli, "get_ghostscript_version", lambda _path: "10.0.0")
+    monkeypatch.setattr(autofill_cli, "get_ghostscript_version", lambda _path: "10.08.0")
     monkeypatch.setattr(autofill_cli.click, "confirm", lambda *_args, **_kwargs: True)
     monkeypatch.setattr("builtins.input", lambda *_args, **_kwargs: "\n")
 
@@ -194,7 +195,7 @@ def test_ensure_ghostscript_available_installs_signed_package_on_macos(
         (download_url, hashlib.sha256(installer).hexdigest()),
     )
     monkeypatch.setattr(autofill_cli, "get_ghostscript_path", lambda: paths.pop(0))
-    monkeypatch.setattr(autofill_cli, "get_ghostscript_version", lambda _path: "10.0.0")
+    monkeypatch.setattr(autofill_cli, "get_ghostscript_version", lambda _path: "10.08.0")
     monkeypatch.setattr(autofill_cli.click, "confirm", lambda *_args, **_kwargs: True)
     monkeypatch.setattr("urllib.request.urlopen", lambda *_args, **_kwargs: BytesIO(installer))
 
@@ -248,7 +249,7 @@ def test_get_ghostscript_path_finds_standard_windows_install(monkeypatch: pytest
     executable = tmp_path / "gs" / "gs10.07.1" / "bin" / "gswin64c.exe"
     executable.parent.mkdir(parents=True)
     executable.touch()
-    monkeypatch.setattr("src.pdf_maker.shutil.which", lambda _name: None)
+    monkeypatch.setattr("src.pdf_maker.shutil.which", lambda _name, **_kwargs: None)
     monkeypatch.setattr("src.pdf_maker.sys.platform", "win32")
     monkeypatch.setenv("ProgramFiles", str(tmp_path))
 
@@ -256,7 +257,7 @@ def test_get_ghostscript_path_finds_standard_windows_install(monkeypatch: pytest
 
 
 def test_get_ghostscript_path_finds_standard_macos_install(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr("src.pdf_maker.shutil.which", lambda _name: None)
+    monkeypatch.setattr("src.pdf_maker.shutil.which", lambda _name, **_kwargs: None)
     monkeypatch.setattr("src.pdf_maker.sys.platform", "darwin")
     monkeypatch.setattr("src.pdf_maker.os.path.isfile", lambda path: path == "/usr/local/bin/gs")
 
@@ -271,7 +272,7 @@ def test_ensure_ghostscript_available_installs_with_apt_on_linux(
 
     monkeypatch.setattr(autofill_cli.sys, "platform", "linux", raising=False)
     monkeypatch.setattr(autofill_cli, "get_ghostscript_path", lambda: paths.pop(0))
-    monkeypatch.setattr(autofill_cli, "get_ghostscript_version", lambda _path: "10.0.0")
+    monkeypatch.setattr(autofill_cli, "get_ghostscript_version", lambda _path: "10.08.0")
     monkeypatch.setattr(autofill_cli.click, "confirm", lambda *_args, **_kwargs: True)
     monkeypatch.setattr("builtins.input", lambda *_args, **_kwargs: "\n")
     monkeypatch.setattr(
@@ -302,7 +303,7 @@ def test_ensure_ghostscript_available_asks_permission_before_installing(monkeypa
         return True
 
     monkeypatch.setattr(autofill_cli, "get_ghostscript_path", lambda: paths.pop(0))
-    monkeypatch.setattr(autofill_cli, "get_ghostscript_version", lambda _path: "10.0.0")
+    monkeypatch.setattr(autofill_cli, "get_ghostscript_version", lambda _path: "10.08.0")
     monkeypatch.setattr(autofill_cli.click, "confirm", fake_confirm)
     monkeypatch.setattr(autofill_cli, "_install_ghostscript", lambda: True)
 
@@ -315,7 +316,7 @@ def test_ensure_ghostscript_available_does_not_prompt_when_already_installed(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.setattr(autofill_cli, "get_ghostscript_path", lambda: "/usr/local/bin/gs")
-    monkeypatch.setattr(autofill_cli, "get_ghostscript_version", lambda _path: "10.0.0")
+    monkeypatch.setattr(autofill_cli, "get_ghostscript_version", lambda _path: "10.08.0")
     monkeypatch.setattr(
         autofill_cli.click,
         "confirm",
@@ -481,7 +482,7 @@ def test_dtc_overridden_explicit_flags_are_explained_in_logs(
 ) -> None:
     monkeypatch.chdir(tmp_path)
     monkeypatch.setattr("src.logging.configure_loggers", lambda **_kwargs: None)
-    monkeypatch.setattr("wakepy.keepawake", lambda **_kwargs: nullcontext())
+    monkeypatch.setattr("wakepy.keep.presenting", lambda **_kwargs: nullcontext(SimpleNamespace(active=True)))
     parse_options: list[bool] = []
     monkeypatch.setattr(
         CardOrder,
@@ -516,7 +517,7 @@ def test_cli_site_choices_list_drivethrucards_last() -> None:
     result = CliRunner().invoke(autofill_cli.main, ["--help"])
     assert result.exit_code == 0
     site_line = next(line for line in result.output.splitlines() if line.strip().startswith("--site ["))
-    assert site_line.endswith("DriveThruCards]")
+    assert site_line.lower().endswith("drivethrucards]")
 
 
 @pytest.mark.parametrize("pdfx_count", [1, 0, 2])
@@ -531,7 +532,7 @@ def test_main_drive_thru_cards_exportpdf_requires_one_pdfx_without_browser_autom
     calls: dict[str, Any] = {"pdf": [], "wait": 0, "driver": 0, "validate_print_options": None}
 
     monkeypatch.setattr("src.logging.configure_loggers", lambda **_kwargs: None)
-    monkeypatch.setattr("wakepy.keepawake", lambda **_kwargs: nullcontext())
+    monkeypatch.setattr("wakepy.keep.presenting", lambda **_kwargs: nullcontext(SimpleNamespace(active=True)))
     monkeypatch.setattr(autofill_cli, "get_ghostscript_path", lambda: "/opt/homebrew/bin/gs")
     monkeypatch.setattr(autofill_cli, "ensure_ghostscript_available", lambda **_kwargs: "/opt/homebrew/bin/gs")
     monkeypatch.setattr("src.icc.find_or_download_dtc_icc_profile", lambda: str(icc_path))
@@ -609,7 +610,7 @@ def test_main_drive_thru_cards_processes_multiple_orders_in_one_session(
     }
 
     monkeypatch.setattr("src.logging.configure_loggers", lambda **_kwargs: None)
-    monkeypatch.setattr("wakepy.keepawake", lambda **_kwargs: nullcontext())
+    monkeypatch.setattr("wakepy.keep.presenting", lambda **_kwargs: nullcontext(SimpleNamespace(active=True)))
     monkeypatch.setattr(autofill_cli, "get_ghostscript_path", lambda: "/opt/homebrew/bin/gs")
     monkeypatch.setattr(autofill_cli, "ensure_ghostscript_available", lambda **_kwargs: "/opt/homebrew/bin/gs")
     monkeypatch.setattr("src.icc.find_or_download_dtc_icc_profile", lambda: str(icc_path))
@@ -806,6 +807,7 @@ def test_convert_pdf_to_pdfx_writes_output_atomically(monkeypatch: pytest.Monkey
         return SimpleNamespace(returncode=0, stdout="", stderr="")
 
     monkeypatch.setattr("src.pdf_maker.get_ghostscript_path", lambda _path=None: "/opt/homebrew/bin/gs")
+    monkeypatch.setattr("src.pdf_maker.get_ghostscript_version", lambda _path: "10.08.0")
     monkeypatch.setattr("src.pdf_maker.subprocess.run", fake_run)
 
     assert convert_pdf_to_pdfx(
@@ -831,6 +833,7 @@ def test_convert_pdf_to_pdfx_does_not_leave_partial_output_on_failure(
         return SimpleNamespace(returncode=1, stdout="bad", stderr="worse")
 
     monkeypatch.setattr("src.pdf_maker.get_ghostscript_path", lambda _path=None: "/opt/homebrew/bin/gs")
+    monkeypatch.setattr("src.pdf_maker.get_ghostscript_version", lambda _path: "10.08.0")
     monkeypatch.setattr("src.pdf_maker.subprocess.run", fake_run)
 
     assert not convert_pdf_to_pdfx(
@@ -855,6 +858,7 @@ def test_convert_pdf_to_pdfx_rejects_output_missing_pdfx_markers(monkeypatch: py
         return SimpleNamespace(returncode=0, stdout="", stderr="")
 
     monkeypatch.setattr("src.pdf_maker.get_ghostscript_path", lambda _path=None: "/opt/homebrew/bin/gs")
+    monkeypatch.setattr("src.pdf_maker.get_ghostscript_version", lambda _path: "10.08.0")
     monkeypatch.setattr("src.pdf_maker.subprocess.run", fake_run)
 
     assert not convert_pdf_to_pdfx(
@@ -1060,9 +1064,7 @@ def input_enter(monkeypatch: pytest.MonkeyPatch) -> None:
 # region CardImage
 @pytest.fixture()
 def image_element_local_file() -> Generator[ElementTree.Element, None, None]:
-    yield ElementTree.fromstring(
-        textwrap.dedent(  # file exists in /src/cards
-            f"""
+    yield ElementTree.fromstring(textwrap.dedent(f"""
             <card>
                 <id>{os.path.join(CARDS_FILE_PATH, TEST_IMAGE)}.png</id>
                 <sourceType>{SourceType.LOCAL_FILE}</sourceType>
@@ -1070,25 +1072,19 @@ def image_element_local_file() -> Generator[ElementTree.Element, None, None]:
                 <name>{TEST_IMAGE}.png</name>
                 <query>test image</query>
             </card>
-            """
-        )
-    )
+            """))  # file exists in /src/cards
 
 
 @pytest.fixture()
 def image_element_local_file_inferred_type() -> Generator[ElementTree.Element, None, None]:
-    yield ElementTree.fromstring(
-        textwrap.dedent(  # file exists in /src/cards
-            f"""
+    yield ElementTree.fromstring(textwrap.dedent(f"""
             <card>
                 <id>{os.path.join(CARDS_FILE_PATH, TEST_IMAGE)}.png</id>
                 <slots>0</slots>
                 <name>{TEST_IMAGE}.png</name>
                 <query>test image</query>
             </card>
-            """
-        )
-    )
+            """))  # file exists in /src/cards
 
 
 @pytest.fixture()
@@ -1099,18 +1095,14 @@ def image_local_file(image_element_local_file: ElementTree.Element) -> Generator
 
 @pytest.fixture()
 def image_element_invalid_google_drive() -> Generator[ElementTree.Element, None, None]:
-    yield ElementTree.fromstring(
-        textwrap.dedent(
-            """
+    yield ElementTree.fromstring(textwrap.dedent("""
             <card>
                 <id>invalid_google_drive_id</id>
                 <slots>0</slots>
                 <name>invalid_google_drive_image.png</name>
                 <query>invalid google drive image</query>
             </card>
-            """
-        )
-    )
+            """))
 
 
 @pytest.fixture()
@@ -1123,18 +1115,14 @@ def image_invalid_google_drive(
 
 @pytest.fixture()
 def image_element_valid_google_drive() -> Generator[ElementTree.Element, None, None]:
-    yield ElementTree.fromstring(
-        textwrap.dedent(
-            f"""
+    yield ElementTree.fromstring(textwrap.dedent(f"""
             <card>
                 <id>{SIMPLE_CUBE_ID}</id>
                 <slots>0</slots>
                 <name>{SIMPLE_CUBE}.png</name>
                 <query>simple cube</query>
             </card>
-            """
-        )
-    )
+            """))
 
 
 @pytest.fixture()
@@ -1149,18 +1137,14 @@ def image_valid_google_drive(image_element_valid_google_drive: ElementTree.Eleme
 
 @pytest.fixture()
 def image_element_valid_google_drive_on_disk() -> Generator[ElementTree.Element, None, None]:
-    yield ElementTree.fromstring(
-        textwrap.dedent(  # file exists in /src/cards
-            f"""
+    yield ElementTree.fromstring(textwrap.dedent(f"""
             <card>
                 <id>{SIMPLE_LOTUS_ID}</id>
                 <slots>0</slots>
                 <name>{SIMPLE_LOTUS}.png</name>
                 <query>simple lotus</query>
             </card>
-            """
-        )
-    )
+            """))  # file exists in /src/cards
 
 
 @pytest.fixture()
@@ -1173,18 +1157,14 @@ def image_valid_google_drive_on_disk(
 
 @pytest.fixture()
 def image_element_google_valid_drive_no_name() -> Generator[ElementTree.Element, None, None]:
-    yield ElementTree.fromstring(
-        textwrap.dedent(
-            f"""
+    yield ElementTree.fromstring(textwrap.dedent(f"""
                 <card>
                     <id>{SIMPLE_CUBE_ID}</id>
                     <slots>0</slots>
                     <name></name>
                     <query>simple cube</query>
                 </card>
-                """
-        )
-    )
+                """))
 
 
 @pytest.fixture()
@@ -1205,9 +1185,7 @@ def image_google_valid_drive_no_name(
 
 @pytest.fixture()
 def card_image_collection_element_valid():
-    yield ElementTree.fromstring(
-        textwrap.dedent(
-            f"""
+    yield ElementTree.fromstring(textwrap.dedent(f"""
             <fronts>
                 <card>
                     <id>{SIMPLE_CUBE_ID}</id>
@@ -1222,9 +1200,7 @@ def card_image_collection_element_valid():
                     <query>simple lotus</query>
                 </card>
             </fronts>
-            """
-        )
-    )
+            """))
 
 
 @pytest.fixture()
@@ -1242,14 +1218,10 @@ def card_image_collection_valid(
 
 @pytest.fixture()
 def card_image_collection_element_no_cards():
-    yield ElementTree.fromstring(
-        textwrap.dedent(
-            """
+    yield ElementTree.fromstring(textwrap.dedent("""
             <fronts>
             </fronts>
-            """
-        )
-    )
+            """))
 
 
 # endregion
@@ -1258,47 +1230,35 @@ def card_image_collection_element_no_cards():
 
 @pytest.fixture()
 def details_element_valid():
-    yield ElementTree.fromstring(
-        textwrap.dedent(
-            """
+    yield ElementTree.fromstring(textwrap.dedent("""
             <details>
                 <quantity>1</quantity>
                 <stock>(S30) Standard Smooth</stock>
                 <foil>false</foil>
             </details>
-            """
-        )
-    )
+            """))
 
 
 @pytest.fixture()
 def details_element_quantity_greater_than_max_size() -> Generator[ElementTree.Element, None, None]:
-    yield ElementTree.fromstring(
-        textwrap.dedent(
-            """
+    yield ElementTree.fromstring(textwrap.dedent("""
             <details>
                 <quantity>1900</quantity>
                 <stock>(S30) Standard Smooth</stock>
                 <foil>false</foil>
             </details>
-            """
-        )
-    )
+            """))
 
 
 @pytest.fixture()
 def details_element_invalid_cardstock() -> Generator[ElementTree.Element, None, None]:
-    yield ElementTree.fromstring(
-        textwrap.dedent(
-            """
+    yield ElementTree.fromstring(textwrap.dedent("""
             <details>
                 <quantity>18</quantity>
                 <stock>Invalid Cardstock</stock>
                 <foil>false</foil>
             </details>
-            """
-        )
-    )
+            """))
 
 
 # endregion
@@ -1307,9 +1267,7 @@ def details_element_invalid_cardstock() -> Generator[ElementTree.Element, None, 
 
 @pytest.fixture()
 def card_order_element_valid() -> Generator[ElementTree.Element, None, None]:
-    yield ElementTree.fromstring(
-        textwrap.dedent(
-            f"""
+    yield ElementTree.fromstring(textwrap.dedent(f"""
             <order>
                 <details>
                     <quantity>3</quantity>
@@ -1332,9 +1290,7 @@ def card_order_element_valid() -> Generator[ElementTree.Element, None, None]:
                 </fronts>
                 <cardback>{os.path.join(CARDS_FILE_PATH, TEST_IMAGE)}.png</cardback>
             </order>
-            """
-        )
-    )
+            """))
 
 
 @pytest.fixture()
@@ -1346,9 +1302,7 @@ def card_order_valid(card_order_element_valid: ElementTree.Element) -> Generator
 
 @pytest.fixture()
 def card_order_element_multiple_cardbacks() -> Generator[ElementTree.Element, None, None]:
-    yield ElementTree.fromstring(
-        textwrap.dedent(
-            f"""
+    yield ElementTree.fromstring(textwrap.dedent(f"""
             <order>
                 <details>
                     <quantity>4</quantity>
@@ -1379,9 +1333,7 @@ def card_order_element_multiple_cardbacks() -> Generator[ElementTree.Element, No
                 </backs>
                 <cardback>{SIMPLE_CUBE_ID}</cardback>
             </order>
-            """
-        )
-    )
+            """))
 
 
 @pytest.fixture()
@@ -1397,9 +1349,7 @@ def card_order_multiple_cardbacks(
 
 @pytest.fixture()
 def card_order_element_invalid_quantity() -> Generator[ElementTree.Element, None, None]:
-    yield ElementTree.fromstring(
-        textwrap.dedent(
-            f"""
+    yield ElementTree.fromstring(textwrap.dedent(f"""
             <order>
                 <details>
                     <quantity>5</quantity>
@@ -1422,16 +1372,12 @@ def card_order_element_invalid_quantity() -> Generator[ElementTree.Element, None
                 </fronts>
                 <cardback>{os.path.join(CARDS_FILE_PATH, TEST_IMAGE)}.png</cardback>
             </order>
-            """
-        )
-    )
+            """))
 
 
 @pytest.fixture()
 def card_order_element_missing_front_image() -> Generator[ElementTree.Element, None, None]:
-    yield ElementTree.fromstring(
-        textwrap.dedent(
-            f"""
+    yield ElementTree.fromstring(textwrap.dedent(f"""
             <order>
                 <details>
                     <quantity>4</quantity>
@@ -1454,9 +1400,7 @@ def card_order_element_missing_front_image() -> Generator[ElementTree.Element, N
                 </fronts>
                 <cardback>{os.path.join(CARDS_FILE_PATH, TEST_IMAGE)}.png</cardback>
             </order>
-            """
-        )
-    )
+            """))
 
 
 # endregion
@@ -2483,9 +2427,7 @@ def test_pdf_export_drive_thru_cards_combines_actual_front_slots_into_one_file(m
 
     order = CardOrder.from_element(
         working_directory=str(tmp_path),
-        element=ElementTree.fromstring(
-            textwrap.dedent(
-                f"""
+        element=ElementTree.fromstring(textwrap.dedent(f"""
                 <order>
                     <details>
                         <quantity>1</quantity>
@@ -2509,9 +2451,7 @@ def test_pdf_export_drive_thru_cards_combines_actual_front_slots_into_one_file(m
                     <backs></backs>
                     <cardback>{tmp_path / "back.png"}</cardback>
                 </order>
-                """
-            )
-        ),
+                """)),
         allowed_to_exceed_project_max_size=True,
     )
     order.name = "test_local.xml"
@@ -2551,9 +2491,7 @@ def test_pdf_export_drive_thru_cards_processes_and_embeds_repeated_images_once(m
 
     order = CardOrder.from_element(
         working_directory=str(tmp_path),
-        element=ElementTree.fromstring(
-            textwrap.dedent(
-                f"""
+        element=ElementTree.fromstring(textwrap.dedent(f"""
                 <order>
                     <details>
                         <quantity>1</quantity>
@@ -2577,9 +2515,7 @@ def test_pdf_export_drive_thru_cards_processes_and_embeds_repeated_images_once(m
                     <backs></backs>
                     <cardback>{tmp_path / "back.png"}</cardback>
                 </order>
-                """
-            )
-        ),
+                """)),
         allowed_to_exceed_project_max_size=True,
     )
     order.name = "test_dedup.xml"

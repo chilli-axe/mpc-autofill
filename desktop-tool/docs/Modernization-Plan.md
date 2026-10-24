@@ -1,0 +1,45 @@
+# Desktop modernization plan
+
+Base: DTC release `dtc-v1.2.4`, commit `4b0054939b06c2b6ae9d9fbb0498940d0a67a1f2`. Implementation branch: `feature/dtc-python314-modernization` in its own worktree. No release or merge is part of this work.
+
+## Implementation
+
+1. Pin desktop Python 3.14.9 and uv 0.13.5, with a desktop-local lock and runtime/dev/build groups. Export all groups for the existing pip developer workflow, constrain isolated build backends, and test a clean-cache installation.
+2. Update the audited runtime packages. Replace oauth2client with Google service-account credentials, remove unused OAuth and direct Colorama dependencies, and retain setuptools for undetected-chromedriver. Prove real key loading/signing and transport construction offline, including per-thread client reuse.
+3. Use wakepy's `keep.presenting(on_fail="warn")` and actual `Mode.active` property for truthful logging. Bypass inhibition with `--allowsleep`, test cleanup on exceptions, and include the current Linux Jeepney adapter in bundles.
+4. Enforce Ghostscript 10.05+ at preflight and conversion. Select a supported executable despite an older PATH installation; carry that exact path through conversion and cache fingerprinting. Permit at most one consented automatic installation attempt. Verify installer/source checksums and keep the supported macOS installer at its actual independently published version.
+5. Isolate current desktop Ruff, Black, isort, and mypy from the backend Python/Django environment. Preserve strict typing and formatting conventions; remediate obsolete ignores, accurate annotations, necessary narrowing, and documented third-party typing exceptions. Provision both interpreters and pinned uv in shared pre-commit CI.
+6. Compile with locked `python -m nuitka`, preserving onefile data, TLS, version, all four architectures, signing, and notarization. Share repeated setup/compiler steps while retaining separate signed/unsigned orchestration. Keep the Ubuntu 22.04 Linux build baseline.
+7. Validate actual PDF rendering/profile/layout and reuse/rebuild, real UC startup on local fixtures, dependency advisories, workflow structure, Linux onefile compilation, and execution in clean Debian 12. Independently review the implementation and resolve substantive findings before committing.
+
+## Independent plan reviews
+
+Three reviewers independently inspected the draft and code, focusing on runtime compatibility, release/packaging safety, and scope/testing. All requested amendments. A fourth readiness review checked the revised contract and found one final API correction. Accepted amendments:
+
+- Standard Selenium checks were insufficient: add real account-free `get_undetected_chrome_driver` startup coverage. Live challenges and authentication remain separate manual checks.
+- Wakepy can warn and continue: report success only after actual activation. The final reviewer caught that version 1.0.0 exposes `active` and `result.success`, not `Mode.success`; the corrected API was verified against a real Mode.
+- Runtime setuptools does not constrain isolated builds. Add build constraints and clean-cache verification; use explicit group selections for sync, run, and export.
+- Handle a supported Ghostscript installation shadowed by an older executable. Pass the validated path through existing configuration and guard direct conversion callers too.
+- PDF labels cannot reveal blank, cropped, or reversed pages. Render the result and check physical dimensions, face order, nonblank artwork, and embedded profile bytes, without claiming formal conformance validation.
+- Shared pre-commit callers need uv and desktop Python. Explicit hook filters/configuration prevent desktop-only changes from invoking backend mypy; preserve backend Python 3.13.
+- Verify final signed artifacts and accepted notarization. Test actual Linux execution in Debian 12 rather than inferring compatibility from the builder.
+
+The reviewers differed on whole-workflow consolidation. The smaller selected change shares composite setup/compiler actions and keeps signing orchestration in its existing workflows. A broad formatter/framework rewrite, changing the SWOP print target, and free-threaded Python were deferred.
+
+## Acceptance and limits
+
+Run locked synchronization/export freshness, clean-cache runtime installation, dependency advisory scan, desktop style/type checks, existing tests plus offline regressions, local Chrome/UC tests, source/bundled TLS/help/PDF smoke, architecture checks, and clean Debian 12 execution. Run repository-wide pre-commit and distinguish unrelated baseline failures from desktop regressions.
+
+Windows/macOS compilation and signing require native CI runners and secrets. Headless tests demonstrate wakepy fallback/import completeness, not physical sleep behavior. Local fixture tests do not prove DTC bot-protection compatibility. Test bundles with synthetic credentials cannot perform live Drive downloads; release builds must use the existing service-account secret. Do not publish test artifacts as releases.
+
+## Implementation review and source verification
+
+Two independent implementation reviewers found the same remaining discovery gap: a supported Ghostscript executable later on PATH was still hidden. The resolver now enumerates PATH matches before selecting a supported candidate, with a real old-first/new-second executable regression. A final review accepted the fix with no substantive findings.
+
+Verified on Python 3.14.9: 181 tests pass and 30 existing credential/release-gated cases skip, including seven real browser tests with Chrome 156.0.8078.47. Credential-free tests used a source copy without the ignored synthetic build credential file. Full repository pre-commit passes, including backend/frontend and isolated desktop checks; mypy checks all 16 production modules. The runtime advisory scan reports no known vulnerabilities. Clean-cache runtime and compiler installs, lock/export freshness, and desktop workflow actionlint checks pass.
+
+The source PDF smoke passes using privately built Ghostscript 10.08.0 and the verified production SWOP profile. It checks rendered size, back/front sequence, orientation and uncropped edge markers, embedded profile bytes, PDF/X identification, and reuse/rebuild after image content changes. The system Ghostscript installation was not replaced.
+
+The final Linux x86_64 onefile test bundle compiled successfully with Nuitka 4.3.1 and Python 3.14.9 on Debian 12. TLS with certificate overrides cleared, both-site help, and the full PDF/cache smoke pass on the host and in a clean Debian 12 container. The smoke exercises the default bundled wakepy path without `--allowsleep`. The ignored synthetic source credential file was removed after compilation. The local test bundle is not a live-Drive release artifact; CI retains its Ubuntu 22.04 build baseline and real secret injection.
+
+Native Windows/macOS compilation/signing, live Google/DTC access, packaged browser startup, and physical sleep inhibition were not executed locally. Their CI/manual gates remain necessary.

@@ -7,10 +7,10 @@ from typing import Any, Optional
 
 import ratelimit
 import requests
+from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import Resource, build
 from googleapiclient.errors import HttpError
 from googleapiclient.http import MediaIoBaseDownload
-from oauth2client.service_account import ServiceAccountCredentials
 
 import src.constants as constants
 from src.logging import FILE_ONLY, logger
@@ -29,7 +29,7 @@ thread_local = threading.local()  # Should only be called once per thread
 def find_or_create_google_drive_service() -> Resource:
     if (service := getattr(thread_local, "google_drive_service", None)) is None:
         logger.debug("Getting Google Drive API credentials...")
-        creds = ServiceAccountCredentials.from_json_keyfile_name(
+        creds = Credentials.from_service_account_file(  # type: ignore[no-untyped-call]  # google-auth's factory is untyped.
             str(Path(os.path.abspath(__file__)).parent.parent / constants.SERVICE_ACC_FILENAME), scopes=constants.SCOPES
         )
         service = build("drive", "v3", credentials=creds, static_discovery=False, cache_discovery=False)
@@ -80,7 +80,7 @@ def safe_get_api_call(
             # validate contents of response
             if r_info.status_code == 200 and len(r_text) > 0:
                 return r_text
-        except (requests.exceptions.RequestException, TimeoutError):
+        except requests.exceptions.RequestException, TimeoutError:
             pass
 
         tries += 1
@@ -103,7 +103,7 @@ def safe_post_api_call(
                 and not any([bool(r_json[x]) is False for x in expected_keys])
             ):
                 return r_json
-        except (requests.exceptions.RequestException, TimeoutError):
+        except requests.exceptions.RequestException, TimeoutError:
             pass
 
         tries += 1

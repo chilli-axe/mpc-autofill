@@ -39,7 +39,7 @@ class ConsoleFormatter(logging.Formatter):
 
 def configure_loggers(working_directory: str, log_debug_to_file: bool, stdout_log_level: int) -> None:
     logging.getLogger("googleapiclient").setLevel(logging.ERROR)
-    logging.getLogger("oauth2client").setLevel(logging.ERROR)
+    logging.getLogger("google.auth").setLevel(logging.ERROR)
 
     # All logs to files will be prefixed with log level and timestamp
     file_debug_format_string = "[%(levelname)s %(asctime)s] %(message)s"

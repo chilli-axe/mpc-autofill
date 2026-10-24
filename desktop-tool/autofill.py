@@ -17,7 +17,7 @@
 #    nuitka-project: --noinclude-data-files=selenium/webdriver/common/windows/selenium-manager.exe
 #    nuitka-project: --noinclude-data-files=selenium/webdriver/common/linux/selenium-manager
 # nuitka-project-if: {OS} == "Linux":
-#    nuitka-project: --include-module=wakepy._linux._jeepney_dbus
+#    nuitka-project: --include-module=wakepy.dbus_adapters.jeepney
 #    nuitka-project: --noinclude-data-files=selenium/webdriver/common/windows/selenium-manager.exe
 #    nuitka-project: --noinclude-data-files=selenium/webdriver/common/macos/selenium-manager
 
@@ -87,15 +87,16 @@ DEFAULT_AUTO_SAVE = True
 DEFAULT_IMAGE_POST_PROCESSING = True
 TLS_CHECK_URL = "https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions.json"
 GHOSTSCRIPT_DOWNLOAD_PAGE = "https://ghostscript.com/releases/gsdnld.html"
-GHOSTSCRIPT_VERSION = "10.07.1"
+GHOSTSCRIPT_VERSION = "10.08.0"
+GHOSTSCRIPT_MACOS_VERSION = "10.07.1"
 GHOSTSCRIPT_WINDOWS_INSTALLERS = {
     "w32.exe": (
-        "https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs10071/gs10071w32.exe",
-        "2dc44e339e2a50d96827e199a234713604ac04a5cec2e07bd452cc92e8d6f81b",
+        "https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs10080/gs10080w32.exe",
+        "42f9e97ea2580bc24e2604cc03a2213bdba6094869dbe9f8ede50f8dd86b7463",
     ),
     "w64.exe": (
-        "https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs10071/gs10071w64.exe",
-        "3a4c28d0aac47aa7cccd35a5932c55110376e9dbd966898dde388b7faba444a4",
+        "https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs10080/gs10080w64.exe",
+        "52a91b8bf09298788d7a57b9206127026c23eacd75405f0a131e26dc381dce50",
     ),
 }
 GHOSTSCRIPT_MACOS_INSTALLER = (
@@ -197,7 +198,7 @@ def _install_ghostscript_macos() -> bool:
     import tempfile
 
     download_url, expected_digest = GHOSTSCRIPT_MACOS_INSTALLER
-    logger.info(f"Downloading the signed MacTeX Ghostscript {GHOSTSCRIPT_VERSION} installer...")
+    logger.info(f"Downloading the signed MacTeX Ghostscript {GHOSTSCRIPT_MACOS_VERSION} installer...")
     with tempfile.TemporaryDirectory() as directory:
         installer_path = _download_ghostscript_installer(download_url, expected_digest, directory)
         script = (
@@ -275,24 +276,29 @@ def _install_ghostscript() -> bool:
 
 
 def ensure_ghostscript_available() -> str:
-    """
-    Detect Ghostscript, offering to install it (with the user's explicit consent) until it's available.
-    """
+    """Select a supported executable, with at most one consented installation attempt."""
+    from src.pdf_maker import is_ghostscript_version_supported
 
+    installation_attempted = False
     while True:
         gs_path = get_ghostscript_path()
-        if gs_path:
-            version = get_ghostscript_version(gs_path)
-            if version:
-                logger.info(f"Ghostscript detected: {bold(version)} at {bold(gs_path)}")
-            else:
-                logger.info(f"Ghostscript detected at {bold(gs_path)}")
+        version = get_ghostscript_version(gs_path) if gs_path else None
+        if gs_path and is_ghostscript_version_supported(version):
+            logger.info(f"Ghostscript detected: {bold(version)} at {bold(gs_path)}")
             return gs_path
 
-        logger.info("DriveThruCards export requires Ghostscript for PDF/X-1a compliance.")
+        message = (
+            f"DriveThruCards requires Ghostscript 10.05 or newer; found {version or 'no readable version'} "
+            f"at {gs_path or 'no executable'}. Upgrade Ghostscript and check your PATH. "
+            f"Downloads: {GHOSTSCRIPT_DOWNLOAD_PAGE}"
+        )
+        if installation_attempted:
+            raise click.ClickException(message)
+        logger.warning(message)
         if click.confirm("Is it okay if MPC Autofill tries to install Ghostscript now?", default=True):
-            if _install_ghostscript():
-                continue
+            installation_attempted = True
+            _install_ghostscript()
+            continue
 
         logger.info(
             "Please install Ghostscript, then return here to continue.\n"
@@ -370,6 +376,7 @@ def get_dtc_pdf_paths_for_order(
     skip_pdf_if_exists: bool,
     resolved_icc_profile: Optional[str],
     downscale_alg: str,
+    ghostscript_path: Optional[str] = None,
 ) -> list[str]:
     from src.pdf_maker import PdfXConversionConfig
     from src.processing import ImagePostProcessingConfig
@@ -380,7 +387,7 @@ def get_dtc_pdf_paths_for_order(
         post_processing_config=ImagePostProcessingConfig(
             max_dpi=300, downscale_alg=ImageResizeMethods[downscale_alg], output_format="JPEG"
         ),
-        pdfx_config=PdfXConversionConfig(icc_profile_path=resolved_icc_profile),
+        pdfx_config=PdfXConversionConfig(icc_profile_path=resolved_icc_profile, ghostscript_path=ghostscript_path),
     )
 
 
@@ -565,7 +572,7 @@ def main(
     if should_run_interactive_onboarding():
         browser, site, auto_save, image_post_processing = run_interactive_onboarding()
 
-    from wakepy import keepawake
+    from wakepy import keep
 
     from src.exc import ImageDownloadError, ValidationException
     from src.io import DEFAULT_WORKING_DIRECTORY, create_image_directory_if_not_exists
@@ -616,10 +623,12 @@ def main(
         auto_save = True
         image_post_processing = False
     try:
-        with keepawake(keep_screen_awake=True) if not allowsleep else nullcontext():
+        with keep.presenting(on_fail="warn") if not allowsleep else nullcontext() as sleep_mode:
             logger.info("MPC Autofill desktop tool has successfully initialised!")
-            if not allowsleep:
+            if sleep_mode is not None and sleep_mode.active:
                 logger.info("System sleep is being prevented during this execution.")
+            elif not allowsleep:
+                logger.warning("Sleep prevention is unavailable. Your system may sleep during this execution.")
             if image_post_processing:
                 logger.info("Images are being post-processed during this execution.")
             target_site = TargetSites[site]
@@ -640,7 +649,7 @@ def main(
                 from src.icc import find_or_download_dtc_icc_profile
                 from src.web_server import WebServer
 
-                ensure_ghostscript_available()
+                ghostscript_path = ensure_ghostscript_available()
                 if dtc_icc_profile and not os.path.isfile(dtc_icc_profile):
                     raise Exception(
                         f"DriveThruCards ICC profile path does not exist or is not a file: {bold(dtc_icc_profile)}"
@@ -665,6 +674,7 @@ def main(
                         skip_pdf_if_exists=skip_pdf_if_exists,
                         resolved_icc_profile=resolved_icc_profile,
                         downscale_alg=downscale_alg,
+                        ghostscript_path=ghostscript_path,
                     )
                     # Only use the Ghostscript PDF/X-1a output - no fallback
                     dtc_pdf_paths = [path for path in pdf_paths if path.endswith("_pdfx.pdf")]

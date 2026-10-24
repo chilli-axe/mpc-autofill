@@ -36,7 +36,7 @@ class ImagePostProcessingConfig:
 def post_process_image(raw_image: bytes, config: ImagePostProcessingConfig) -> "Image":
     from PIL import Image
 
-    img = Image.open(io.BytesIO(raw_image))
+    img: Image.Image = Image.open(io.BytesIO(raw_image))
     if config.output_format and config.output_format.upper() == "JPEG":
         if "A" in img.getbands() or "transparency" in img.info:
             rgba = img.convert("RGBA")
