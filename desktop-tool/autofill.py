@@ -1,8 +1,8 @@
 # nuitka-project: --mode=onefile
-# Each build version extracts to its own cache directory: rewriting a previously-run executable
+# Each build extracts to its own cache directory: rewriting a previously-run executable
 # in place invalidates macOS's cached code-signature and the OS kills the process with SIGKILL.
-# {VERSION} makes builds fail loudly unless --file-version (or --product-version) is passed.
-# nuitka-project: --onefile-tempdir-spec={CACHE_DIR}/mpc-autofill/{VERSION}
+# Pass a unique --product-name per build and --file-version for the release version.
+# nuitka-project: --onefile-tempdir-spec={CACHE_DIR}/mpc-autofill/{PRODUCT}-{VERSION}
 # nuitka-project: --include-data-files=client_secrets.json=client_secrets.json
 # nuitka-project: --include-data-files=post-launch.html=post-launch.html
 # nuitka-project: --include-data-files=dtc-post-launch.html=dtc-post-launch.html
@@ -37,6 +37,7 @@ import click
 from click.core import ParameterSource
 from InquirerPy import inquirer
 
+from src.build_info import RELEASE_REPOSITORY, VERSION
 from src.constants import (
     DTC_POST_LAUNCH_HTML_FILENAME,
     Browsers,
@@ -45,6 +46,7 @@ from src.constants import (
 )
 from src.formatting import bold
 from src.logging import logger
+from src.update_check import check_for_updates
 
 if TYPE_CHECKING:
     from src.order import CardOrder
@@ -60,8 +62,8 @@ def configure_tls() -> str:
 
 def prune_stale_onefile_caches(extraction_directory: str) -> None:
     """
-    Each build version extracts to its own directory under the mpc-autofill cache directory
-    (see the --onefile-tempdir-spec build directive) - delete extractions left by old versions.
+    Each build extracts to its own directory under the mpc-autofill cache directory
+    (see the --onefile-tempdir-spec build directive) - delete extractions left by old builds.
     """
 
     parent_directory = os.path.dirname(extraction_directory)
@@ -113,7 +115,11 @@ def get_site_picker_choices() -> list[str]:
 
 
 def should_run_interactive_onboarding() -> bool:
-    return len(sys.argv) == 1 and sys.stdin.isatty() and sys.stdout.isatty()
+    return (
+        all(argument in {"--check-updates", "--no-check-updates"} for argument in sys.argv[1:])
+        and sys.stdin.isatty()
+        and sys.stdout.isatty()
+    )
 
 
 def run_interactive_onboarding() -> tuple[str, str, bool, bool]:
@@ -385,6 +391,11 @@ def get_dtc_pdf_paths_for_order(
 
 
 @click.command(context_settings={"show_default": True})
+@click.version_option(
+    VERSION or "development",
+    prog_name="MPC Autofill",
+    message=f"%(prog)s %(version)s ({RELEASE_REPOSITORY or 'unconfigured'})",
+)
 @click.option("-d", "--directory", default=None, help="The directory to search for order XML files.")
 @click.option(
     "-b",
@@ -526,6 +537,11 @@ def get_dtc_pdf_paths_for_order(
     is_flag=True,
 )
 @click.option("--check-tls", is_flag=True, hidden=True)
+@click.option(
+    "--check-updates/--no-check-updates",
+    default=None,
+    help="Remember whether to check this build's GitHub repository for newer releases on startup.",
+)
 # @click.option(  # TODO: finish implementing jpeg conversion
 #     "--convert-to-jpeg",
 #     default=True,
@@ -555,11 +571,15 @@ def main(
     log_level: str,
     write_debug_logs: bool,
     check_tls: bool,
+    check_updates: Optional[bool],
     # convert_to_jpeg: bool,
 ) -> None:
     if check_tls:
         check_tls_connection()
         click.echo("TLS check succeeded.")
+        return
+
+    if check_for_updates(check_updates):
         return
 
     if should_run_interactive_onboarding():

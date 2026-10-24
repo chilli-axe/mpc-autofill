@@ -724,7 +724,7 @@ def test_nuitka_directives_include_runtime_data_and_cached_extraction() -> None:
         source = f.read()
     assert "--include-data-dir=assets=assets" in source
     assert "--include-package-data=certifi" in source
-    assert "--onefile-tempdir-spec={CACHE_DIR}/mpc-autofill/{VERSION}" in source
+    assert "--onefile-tempdir-spec={CACHE_DIR}/mpc-autofill/{PRODUCT}-{VERSION}" in source
 
 
 # endregion
@@ -2731,10 +2731,10 @@ def test_execute_order_stops_before_upload_when_downloads_fail(monkeypatch, card
         )
 
 
-def test_prune_stale_onefile_caches_removes_only_sibling_version_dirs(tmp_path):
+def test_prune_stale_onefile_caches_removes_only_sibling_build_dirs(tmp_path):
     cache_root = tmp_path / "mpc-autofill"
-    current = cache_root / "1.0.2"
-    stale = cache_root / "1.0.1"
+    current = cache_root / "bwsinger-mpc-autofill-build2-1.2.5"
+    stale = cache_root / "bwsinger-mpc-autofill-build1-1.2.5"
     for directory in (current, stale):
         directory.mkdir(parents=True)
         (directory / "autofill.bin").touch()

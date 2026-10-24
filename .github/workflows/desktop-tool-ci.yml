@@ -1,6 +1,11 @@
 name: Desktop tool CI
 on:
   workflow_dispatch:
+    inputs:
+      version:
+        description: Release version matching the published tag (for example, 4.7.0)
+        required: true
+        type: string
 jobs:
   test:
     name: Test
@@ -107,6 +112,12 @@ jobs:
           name: "client_secrets.json"
           json: ${{ secrets.GOOGLE_DRIVE_API_KEY }}
           dir: "desktop-tool/"
+      - name: Embed release identity
+        shell: bash
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+          RELEASE_REPOSITORY: ${{ github.repository }}
+        run: python write_build_info.py --version "$RELEASE_VERSION" --repository "$RELEASE_REPOSITORY"
       - name: Build with Nuitka for ${{ matrix.TARGET }}
         uses: Nuitka/Nuitka-Action@main
         with:
@@ -115,17 +126,23 @@ jobs:
           script-name: autofill.py
           mode: onefile
           output-file: ${{ matrix.FILENAME }}
-          # required by the versioned onefile cache directory ({VERSION} in --onefile-tempdir-spec)
-          file-version: 1.0.${{ github.run_number }}
+          # Keep extraction paths unique across repositories, rebuilds and platforms.
+          product-name: ${{ github.repository_owner }}-${{ github.event.repository.name }}-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.TARGET }}
+          file-version: ${{ inputs.version }}
           macos-sign-notarization: ${{ (matrix.TARGET == 'macos-arm') || (matrix.TARGET == 'macos-intel') }}
           macos-sign-identity: ${{ secrets.MACOS_SIGN_IDENTITY }}
           macos-sign-keyring-filename: "${{ runner.temp }}/app-signing.keychain-db"
           macos-sign-keyring-password: ${{ secrets.KEYCHAIN_PASSWORD }}
           macos-signed-app-name: com.ndepaola.mpc-autofill-${{ matrix.TARGET }}
           macos-target-arch: ${{ matrix.MACOS_ARCH }}
-      - name: Smoke test bundled TLS
+      - name: Smoke test bundled identity and TLS
         shell: bash
-        run: env -u SSL_CERT_FILE -u SSL_CERT_DIR ./build/${{ matrix.FILENAME }} --check-tls
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+          RELEASE_REPOSITORY: ${{ github.repository }}
+        run: |
+          test "$(./build/${{ matrix.FILENAME }} --version)" = "MPC Autofill $RELEASE_VERSION ($RELEASE_REPOSITORY)"
+          env -u SSL_CERT_FILE -u SSL_CERT_DIR ./build/${{ matrix.FILENAME }} --check-tls
       - name: Upload unsigned artifact
         id: upload-unsigned-artifact
         uses: actions/upload-artifact@v7
