@@ -73,6 +73,12 @@ jobs:
           name: client_secrets.json
           json: ${{ secrets.GOOGLE_DRIVE_API_KEY }}
           dir: desktop-tool/
+      - name: Embed release identity
+        shell: bash
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+          RELEASE_REPOSITORY: ${{ github.repository }}
+        run: python write_build_info.py --version "$RELEASE_VERSION" --repository "$RELEASE_REPOSITORY"
       - name: Build with Nuitka
         uses: Nuitka/Nuitka-Action@main
         with:
@@ -81,12 +87,17 @@ jobs:
           script-name: autofill.py
           mode: onefile
           output-file: ${{ matrix.filename }}
-          # required by the versioned onefile cache directory ({VERSION} in --onefile-tempdir-spec)
+          # Keep extraction paths unique across repositories, rebuilds and platforms.
+          product-name: ${{ github.repository_owner }}-${{ github.event.repository.name }}-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.target }}
           file-version: ${{ inputs.version }}
           macos-target-arch: ${{ matrix.macos-arch }}
       - name: Smoke test bundled executable
         shell: bash
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+          RELEASE_REPOSITORY: ${{ github.repository }}
         run: |
+          test "$(./build/${{ matrix.filename }} --version)" = "MPC Autofill $RELEASE_VERSION ($RELEASE_REPOSITORY)"
           env -u SSL_CERT_FILE -u SSL_CERT_DIR ./build/${{ matrix.filename }} --check-tls
           if [[ "$RUNNER_OS" == Linux ]]; then
             help_output=$(dbus-run-session -- ./build/${{ matrix.filename }} --help)
