@@ -45,6 +45,7 @@ jobs:
       run:
         working-directory: desktop-tool
     strategy:
+      fail-fast: false
       matrix:
         include:
           - os: macos-latest

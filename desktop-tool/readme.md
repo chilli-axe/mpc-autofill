@@ -31,6 +31,8 @@ uv run --locked --no-default-groups --group build python -m nuitka --output-dir=
 
 Keep the same group arguments on `uv run`; otherwise uv can synchronize a different environment. Nuitka uses Python 3.14's `compression.zstd`. Setuptools remains a runtime dependency because undetected-chromedriver still imports its distutils shim. Isolated source-build backend constraints are separate from runtime pins.
 
+CI checks Nuitka's compressor before compilation. Python distributions with single-threaded Zstandard need Nuitka's `--low-memory` option; CI selects it automatically while preserving parallel C compilation. For a local build, run `uv run --locked --no-default-groups --group build python tests/check_onefile_compression.py` and add any flags it prints to the Nuitka command. This mode uses lighter executable-payload compression; it does not change card-image or PDF compression.
+
 Local builds use Nuitka's default platform filename (for example, `build/autofill.bin` on Linux). CI explicitly names its artifacts `autofill-linux.bin`, `autofill-windows.exe`, and the two macOS `.command` files; adjust the smoke command's executable path accordingly.
 
 `requirements.txt` is a generated **all-groups** pip compatibility export, including test and compilation tools. Regenerate it after intentional dependency changes:
