@@ -1,6 +1,11 @@
 name: Desktop tool CI
 on:
   workflow_dispatch:
+    inputs:
+      version:
+        description: Release version matching the published tag (for example, 4.7.0)
+        required: true
+        type: string
 jobs:
   test:
     name: Test
@@ -90,16 +95,22 @@ jobs:
       - uses: ./.github/actions/build-desktop-tool
         with:
           filename: ${{ matrix.FILENAME }}
-          version: 1.0.${{ github.run_number }}
+          version: ${{ inputs.version }}
           macos-arch: ${{ matrix.MACOS_ARCH }}
+          product-name: ${{ github.repository_owner }}-${{ github.event.repository.name }}-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.TARGET }}
           sign: "true"
           sign-identity: ${{ secrets.MACOS_SIGN_IDENTITY }}
           keyring-file: ${{ runner.temp }}/app-signing.keychain-db
           keyring-password: ${{ secrets.KEYCHAIN_PASSWORD }}
           app-name: com.ndepaola.mpc-autofill-${{ matrix.TARGET }}
-      - name: Smoke test bundled TLS
+      - name: Smoke test bundled identity and TLS
         shell: bash
-        run: env -u SSL_CERT_FILE -u SSL_CERT_DIR ./build/${{ matrix.FILENAME }} --check-tls
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+          RELEASE_REPOSITORY: ${{ github.repository }}
+        run: |
+          test "$(./build/${{ matrix.FILENAME }} --version)" = "MPC Autofill $RELEASE_VERSION ($RELEASE_REPOSITORY)"
+          env -u SSL_CERT_FILE -u SSL_CERT_DIR ./build/${{ matrix.FILENAME }} --check-tls
       - name: Upload unsigned artifact
         id: upload-unsigned-artifact
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

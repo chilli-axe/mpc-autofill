@@ -23,9 +23,10 @@ Dependencies live in `pyproject.toml` and `uv.lock`. Runtime, development, and c
 uv sync --locked --no-default-groups
 uv run --locked --no-default-groups python autofill.py
 
-# Compiler plus runtime; requires client_secrets.json
+# Compiler plus runtime; requires client_secrets.json and a unique product name per build
 uv sync --locked --no-default-groups --group build
-uv run --locked --no-default-groups --group build python -m nuitka --output-dir=build --file-version=1.2.5 autofill.py
+uv run --locked --no-default-groups --group build python write_build_info.py --version 1.2.6 --repository bwsinger/mpc-autofill
+uv run --locked --no-default-groups --group build python -m nuitka --output-dir=build --file-version=1.2.6 --product-name=mpc-autofill-local-build-UNIQUE autofill.py
 ```
 
 Keep the same group arguments on `uv run`; otherwise uv can synchronize a different environment. Nuitka uses Python 3.14's `compression.zstd`. Setuptools remains a runtime dependency because undetected-chromedriver still imports its distutils shim. Isolated source-build backend constraints are separate from runtime pins.
@@ -62,3 +63,5 @@ The smoke renders exported pages and checks size, back/front order, embedded pro
 Signed and unsigned workflow entry points retain separate behavior and share locked setup/compiler steps. Linux compilation stays on Ubuntu 22.04; clean Debian 12 checks the resulting executable. macOS notarization and Windows Authenticode checks remain gates in the signed workflow. Dependency locks do not promise byte-identical binaries or pin the OS toolchain.
 
 See the [reviewed modernization plan](docs/Modernization-Plan.md) for the release base, review decisions, and acceptance checks.
+Release executables offer optional update checks at first interactive startup. The choice is remembered across upgrades.
+See [update checks](docs/update-checks.md) for settings, build instructions, and the reviewed implementation plan.

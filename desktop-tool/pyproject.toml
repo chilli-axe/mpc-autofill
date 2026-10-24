@@ -30,6 +30,8 @@ dev = [
     "mypy==2.4.0",
     "pre-commit==4.7.0",
     "pytest==9.1.1",
+    "pexpect==4.9.0; sys_platform != 'win32'",
+    "pywinpty==3.0.3; sys_platform == 'win32'",
     "pytest-retry==1.7.0",
     "ruff==0.17.2",
     "types-requests",

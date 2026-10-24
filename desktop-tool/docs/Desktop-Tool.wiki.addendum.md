@@ -138,11 +138,12 @@ Replace the local build command with:
 > From the `desktop-tool` directory, with dependencies installed and `client_secrets.json` available, run:
 >
 > ```shell
-> python -m nuitka --file-version=1.2.3 autofill.py
+> python write_build_info.py --version 1.2.3 --repository bwsinger/mpc-autofill
+> python -m nuitka --file-version=1.2.3 --product-name=bwsinger-mpc-autofill-local-build-001 autofill.py
 > ```
 >
-> Replace `1.2.3` with the version you are building. A file version is required because the onefile extraction cache uses it in its directory name.
+> Replace `1.2.3` with the published release's numeric version and the repository with your release source. Use a new product name for every different build to keep its extraction cache unique. Restore `src/build_info.py` to its unconfigured defaults before committing a local build. See [update checks](update-checks.md) for consent settings and supported release tags.
 
 Then add:
 
-> The dispatchable desktop build workflow produces one-file builds for Windows, Linux, Apple silicon Macs, and Intel Macs. Each build runs `--check-tls` and checks that `--help` lists both MakePlayingCards and DriveThruCards before GitHub stores the artifact.
+> The dispatchable desktop build workflow produces one-file builds for Windows, Linux, Apple silicon Macs, and Intel Macs. Each build verifies `--version`, runs `--check-tls`, and checks that `--help` lists both MakePlayingCards and DriveThruCards before GitHub stores the artifact.

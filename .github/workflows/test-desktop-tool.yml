@@ -9,6 +9,7 @@ on:
       - ".github/actions/build-desktop-tool/**"
       - ".github/workflows/build-desktop-tool.yml"
       - ".github/workflows/desktop-tool-ci.yml"
+      - ".github/workflows/validate-desktop-packages.yml"
       - ".pre-commit-config.yaml"
       - ".github/actions/test-pre-commit/**"
       - ".github/workflows/test-desktop-tool.yml"

@@ -7,6 +7,9 @@ inputs:
   version:
     description: Numeric release file version.
     required: true
+  product-name:
+    description: Unique identity for this repository, run, attempt, and target.
+    required: true
   macos-arch:
     description: macOS target architecture.
     default: ""
@@ -36,6 +39,8 @@ runs:
       env:
         DESKTOP_FILENAME: ${{ inputs.filename }}
         DESKTOP_VERSION: ${{ inputs.version }}
+        DESKTOP_PRODUCT: ${{ inputs.product-name }}
+        DESKTOP_REPOSITORY: ${{ github.repository }}
         DESKTOP_MACOS_ARCH: ${{ inputs.macos-arch }}
         DESKTOP_SIGN: ${{ inputs.sign }}
         DESKTOP_SIGN_IDENTITY: ${{ inputs.sign-identity }}
@@ -47,7 +52,8 @@ runs:
         set -euo pipefail
         uv run --locked --no-default-groups --group build python -VV
         uv run --locked --no-default-groups --group build python -m nuitka --version
-        options=(--output-dir=build --output-filename="$DESKTOP_FILENAME" --file-version="$DESKTOP_VERSION" --assume-yes-for-downloads)
+        uv run --locked --no-default-groups --group build python write_build_info.py --version "$DESKTOP_VERSION" --repository "$DESKTOP_REPOSITORY"
+        options=(--output-dir=build --output-filename="$DESKTOP_FILENAME" --file-version="$DESKTOP_VERSION" --product-name="$DESKTOP_PRODUCT" --assume-yes-for-downloads)
         if [[ "$RUNNER_OS" == macOS ]]; then
           options+=(--macos-target-arch="$DESKTOP_MACOS_ARCH")
           if [[ "$DESKTOP_SIGN" == true ]]; then
