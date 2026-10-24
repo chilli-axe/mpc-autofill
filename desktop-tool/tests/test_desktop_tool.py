@@ -395,6 +395,7 @@ def test_cli_help_documents_new_flags() -> None:
     result = CliRunner().invoke(autofill_cli.main, ["--help"])
     assert result.exit_code == 0
     assert "--skip-pdf-if-exists" in result.output
+    assert "--no-skip-pdf-if-exists" in result.output
     assert "--download-images-only" in result.output
     assert "--browser-profile-path" in result.output
     assert "--browser-profile-name" in result.output

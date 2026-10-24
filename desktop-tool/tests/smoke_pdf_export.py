@@ -54,11 +54,10 @@ def main():
             "--exportpdf",
             "--dtc-icc-profile",
             str(args.icc_profile.resolve()),
-            "--skip-pdf-if-exists",
         ]
 
-        def run():
-            result = subprocess.run(command, input="", capture_output=True, text=True, timeout=120)
+        def run(*flags):
+            result = subprocess.run(command + list(flags), input="", capture_output=True, text=True, timeout=120)
             output = result.stdout + result.stderr
             assert result.returncode == 0, output
             return output
@@ -109,6 +108,9 @@ def main():
                     assert min(image.getpixel(position)) > 220, "White edge must not be cropped"
         assert "Reusing PDF export" in run()
         assert snapshot() == original, "Identical inputs should preserve PDF bytes and modification times"
+        assert "Reusing PDF export" not in run("--no-skip-pdf-if-exists")
+        forced = snapshot()
+        assert all(forced[name][0] != original[name][0] for name in original), "Explicit rebuild must rewrite PDFs"
         previous = front.stat()
         Image.new("RGB", (82, 111), "yellow").save(front)
         os.utime(front, ns=(previous.st_atime_ns, previous.st_mtime_ns))
