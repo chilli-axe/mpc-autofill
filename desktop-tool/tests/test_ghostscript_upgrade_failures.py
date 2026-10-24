@@ -4,13 +4,16 @@ from types import SimpleNamespace
 
 import pytest
 
+from src import pdf_maker
+
 import autofill
 
 
 @pytest.mark.parametrize("platform", ["win32", "darwin"])
 @pytest.mark.parametrize("outcome", [1, 1223, OSError("elevation denied")])
 def test_cancelled_or_denied_installer_stops_once_with_recovery(monkeypatch, platform, outcome):
-    monkeypatch.setattr(autofill.sys, "platform", platform)
+    # Load platform-sensitive dependencies before changing the shared sys module.
+    monkeypatch.setattr(pdf_maker.sys, "platform", platform)
     monkeypatch.setattr(autofill, "get_ghostscript_path", lambda: "/old/gs")
     monkeypatch.setattr(autofill, "get_ghostscript_version", lambda _: "10.04.0")
     monkeypatch.setattr(autofill, "_download_ghostscript_installer", lambda *_: "/verified/installer")
