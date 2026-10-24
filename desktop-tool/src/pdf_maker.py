@@ -1,4 +1,5 @@
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -28,6 +29,8 @@ from src.processing import (
     save_processed_image,
 )
 
+MIN_GHOSTSCRIPT_VERSION = (10, 5)
+
 
 @dataclass
 class PdfXConversionConfig:
@@ -43,25 +46,35 @@ def get_export_directory(order_name: Optional[str]) -> str:
 def get_ghostscript_path(explicit_path: Optional[str] = None) -> Optional[str]:
     if explicit_path:
         return explicit_path
+    candidates: list[str] = []
     for candidate in ["gs", "gswin64c", "gswin32c"]:
-        if resolved := shutil.which(candidate):
-            return resolved
+        for directory in os.get_exec_path():
+            if resolved := shutil.which(candidate, path=directory):
+                candidates.append(resolved)
     if sys.platform == "win32":
         installs = list(Path(os.environ.get("ProgramFiles", r"C:\Program Files")).glob("gs/gs*/bin/gswin*c.exe"))
-        if installs:
-            return str(max(installs, key=os.path.getmtime))
+        candidates.extend(str(path) for path in sorted(installs, key=os.path.getmtime, reverse=True))
     elif sys.platform == "darwin" and os.path.isfile("/usr/local/bin/gs"):
-        return "/usr/local/bin/gs"
-    return None
+        candidates.append("/usr/local/bin/gs")
+    for candidate in dict.fromkeys(candidates):
+        if is_ghostscript_version_supported(get_ghostscript_version(candidate)):
+            return candidate
+    # Return an unsupported candidate so preflight can explain which installation needs upgrading.
+    return candidates[0] if candidates else None
 
 
 def get_ghostscript_version(gs_path: str) -> Optional[str]:
     try:
-        result = subprocess.run([gs_path, "-version"], capture_output=True, text=True, check=False)
+        result = subprocess.run([gs_path, "-version"], capture_output=True, text=True, check=False, timeout=10)
     except Exception:
         return None
     version = result.stdout.strip().splitlines()
     return version[0] if version else None
+
+
+def is_ghostscript_version_supported(version: Optional[str]) -> bool:
+    match = re.search(r"\b(\d+)\.(\d+)(?:\.\d+)?\b", version or "")
+    return match is not None and tuple(map(int, match.groups())) >= MIN_GHOSTSCRIPT_VERSION
 
 
 def _postscript_string(value: str) -> str:
@@ -140,8 +153,8 @@ def convert_pdf_to_pdfx(
     config: PdfXConversionConfig,
 ) -> bool:
     gs_path = get_ghostscript_path(config.ghostscript_path)
-    if not gs_path:
-        logger.warning("Ghostscript was not found. Skipping PDF/X-1a conversion.")
+    if not gs_path or not is_ghostscript_version_supported(get_ghostscript_version(gs_path)):
+        logger.warning("Ghostscript 10.05 or newer is required. Skipping PDF/X-1a conversion.")
         return False
 
     output_directory = os.path.dirname(output_path) or "."
@@ -294,9 +307,9 @@ class PdfExporter:
             self.separate_faces = True
             self.number_of_cards_per_file = 1
         else:
-            self.number_of_cards_per_file = (
-                1 if (int_cards_per_file := int(answers["cards_per_file"])) < 1 else int_cards_per_file
-            )
+            cards_per_file = answers["cards_per_file"]
+            assert isinstance(cards_per_file, (str, int))
+            self.number_of_cards_per_file = 1 if (int_cards_per_file := int(cards_per_file)) < 1 else int_cards_per_file
 
     def generate_file_path(self) -> None:
         self.save_path = get_export_directory(self.order.name) + "/"
@@ -413,7 +426,7 @@ class PdfExporter:
 
     def export(self) -> None:
         for index, slot in enumerate(sorted(self.paths_by_slot.keys())):
-            (back_path, front_path) = self.paths_by_slot[slot]
+            back_path, front_path = self.paths_by_slot[slot]
             self.set_state(f"Working on slot {slot}")
             if index == 0:
                 self.generate_pdf()

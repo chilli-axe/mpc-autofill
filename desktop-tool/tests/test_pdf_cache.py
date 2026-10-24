@@ -3,7 +3,6 @@ import os
 from pathlib import Path
 
 import attr
-import autofill
 import pytest
 from PIL import Image
 
@@ -13,6 +12,8 @@ from src.order import CardImage, CardImageCollection, CardOrder, Details
 from src.pdf_cache import reuse_pdf_export, save_pdf_export
 from src.pdf_maker import PdfXConversionConfig
 from src.processing import ImagePostProcessingConfig
+
+import autofill
 
 
 def make_order(image_path: Path) -> CardOrder:

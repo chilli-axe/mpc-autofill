@@ -32,7 +32,7 @@ def get_preference_path(repository: str) -> Path:
 def read_preference(path: Path) -> Optional[bool]:
     try:
         preference = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, ValueError, RecursionError):
+    except OSError, ValueError, RecursionError:
         return None
     if isinstance(preference, dict):
         enabled = preference.get("enabled")
@@ -98,7 +98,7 @@ def check_for_updates(enabled: Optional[bool] = None) -> bool:
             return False
         tag = release.get("tag_name")
         latest_version = parse_release_version(tag) if isinstance(tag, str) else None
-    except (URLError, OSError, ValueError, HTTPException, RecursionError):
+    except URLError, OSError, ValueError, HTTPException, RecursionError:
         click.echo("Update check unavailable; continuing with this version.", err=True)
         return False
     if latest_version is None or latest_version <= current_version:
@@ -110,7 +110,7 @@ def check_for_updates(enabled: Optional[bool] = None) -> bool:
         try:
             if webbrowser.open(release_url):
                 return True
-        except (webbrowser.Error, OSError):
+        except webbrowser.Error, OSError:
             pass
         click.echo("Could not open a browser. Use the download link above; continuing with this version.", err=True)
     return False

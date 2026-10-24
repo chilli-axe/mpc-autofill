@@ -1,0 +1,26 @@
+name: Set up supported Ghostscript
+description: Build the verified upstream release under the runner's private directory.
+runs:
+  using: composite
+  steps:
+    - name: Install source build prerequisites
+      shell: bash
+      run: |
+        sudo apt-get update
+        sudo apt-get install --yes build-essential pkg-config curl xz-utils patchelf
+    - name: Build Ghostscript 10.08.0
+      shell: bash
+      run: |
+        set -euo pipefail
+        source_directory="$RUNNER_TEMP/desktop-ghostscript-source"
+        install_directory="$RUNNER_TEMP/desktop-ghostscript"
+        mkdir -p "$source_directory"
+        curl --fail --location --retry 3 https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs10080/ghostscript-10.08.0.tar.xz -o "$source_directory/source.tar.xz"
+        echo "c20492bc8ebb96c87fa2e52a0926e1cda8cde95d66145e018ac713fed5da38cf  $source_directory/source.tar.xz" | sha256sum --check
+        tar -xf "$source_directory/source.tar.xz" -C "$source_directory"
+        cd "$source_directory/ghostscript-10.08.0"
+        ./configure --prefix="$install_directory" --without-x --disable-gtk --disable-cups
+        make -j4
+        make install
+        test "$("$install_directory/bin/gs" --version)" = 10.08.0
+        echo "$install_directory/bin" >> "$GITHUB_PATH"

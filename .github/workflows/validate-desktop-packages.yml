@@ -1,0 +1,94 @@
+name: Validate desktop packages
+
+on:
+  workflow_call:
+    inputs:
+      build-run-id:
+        required: true
+        type: string
+      replacement-run-id:
+        required: true
+        type: string
+  workflow_dispatch:
+    inputs:
+      build-run-id:
+        description: Successful Desktop tool build run of this commit (test version 1.2.3)
+        required: true
+        type: string
+      replacement-run-id:
+        description: Separate successful build run of the same commit and test version
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  validate:
+    name: Packaged behavior (${{ matrix.target }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            target: windows
+            filename: autofill-windows.exe
+          - os: macos-latest
+            target: macos-arm
+            filename: autofill-macos-arm.command
+          - os: macos-15-intel
+            target: macos-intel
+            filename: autofill-macos-intel.command
+          - os: ubuntu-22.04
+            target: linux
+            filename: autofill-linux.bin
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: ./.github/actions/setup-desktop-tool
+        with:
+          group: dev
+      - name: Verify build provenance and download packages
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BUILD_RUN: ${{ inputs.build-run-id }}
+          REPLACEMENT_RUN: ${{ inputs.replacement-run-id }}
+          ARTIFACT: ${{ matrix.target }} Unsigned Build
+        run: |
+          set -euo pipefail
+          test "$BUILD_RUN" != "$REPLACEMENT_RUN"
+          for build_run in "$BUILD_RUN" "$REPLACEMENT_RUN"; do
+            gh api "repos/$GITHUB_REPOSITORY/actions/runs/$build_run" > "$RUNNER_TEMP/build-run.json"
+            python - <<'PY'
+          import json, os
+          from pathlib import Path
+          run = json.loads((Path(os.environ["RUNNER_TEMP"]) / "build-run.json").read_text())
+          assert run["head_sha"] == os.environ["GITHUB_SHA"], "Build must match the validation commit"
+          assert run["conclusion"] == "success", "Build must have passed all gates"
+          assert run["path"] == ".github/workflows/build-desktop-tool.yml"
+          PY
+          done
+          gh run download "$BUILD_RUN" --repo "$GITHUB_REPOSITORY" --name "$ARTIFACT" --dir binary
+          gh run download "$REPLACEMENT_RUN" --repo "$GITHUB_REPOSITORY" --name "$ARTIFACT" --dir replacement
+      - name: Exercise native packaged update behavior
+        shell: bash
+        env:
+          DESKTOP_FILENAME: ${{ matrix.filename }}
+        run: |
+          if [[ "$RUNNER_OS" == Linux ]]; then
+            dbus-run-session -- uv run --project desktop-tool --locked --group dev python desktop-tool/tests/check_packaged_updates.py "binary/$DESKTOP_FILENAME" --replacement "replacement/$DESKTOP_FILENAME"
+          else
+            uv run --project desktop-tool --locked --group dev python desktop-tool/tests/check_packaged_updates.py "binary/$DESKTOP_FILENAME" --replacement "replacement/$DESKTOP_FILENAME"
+          fi
+      - name: Save transcripts and package identities
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: platform-validation-${{ matrix.target }}
+          path: |
+            platform-results/*.log
+            platform-results/results.json
+            platform-results/browser-url.txt

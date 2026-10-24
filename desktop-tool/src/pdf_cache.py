@@ -58,7 +58,7 @@ def reuse_pdf_export(order: CardOrder, settings: str, extra_paths: list[str]) ->
             paths.append(str(path))
         logger.info("Reusing PDF export: order, images, settings and PDF contents match.")
         return paths
-    except (OSError, ValueError, TypeError, KeyError):
+    except OSError, ValueError, TypeError, KeyError:
         return None
 
 
@@ -87,7 +87,7 @@ def save_pdf_export(
             temporary_path = file.name
             json.dump(manifest, file)
         os.replace(temporary_path, directory / "manifest.json")
-    except (OSError, ValueError):
+    except OSError, ValueError:
         logger.warning("PDF export succeeded, but its reuse metadata could not be saved.")
     finally:
         if temporary_path and os.path.exists(temporary_path):

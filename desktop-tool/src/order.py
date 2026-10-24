@@ -383,7 +383,7 @@ class CardImageCollection:
         fill_image_id: Optional[str] = None,
     ) -> "CardImageCollection":
         card_images: dict[str, CardImage] = {}
-        if element:
+        if element is not None:
             for x in element:
                 card_image = CardImage.from_element(element=x, working_directory=working_directory)
                 if card_image.drive_id in card_images.keys():
@@ -564,7 +564,7 @@ class CardOrder:
                         assert 0 < raw_split <= constants.PROJECT_MAX_SIZE
                     assert sum(project_sizes) == self.details.quantity
                     break
-                except (ValueError, AssertionError):
+                except ValueError, AssertionError:
                     logger.info(
                         f"There was a problem with your proposed splits (perhaps they didn't sum to "
                         f"{bold(self.details.quantity)}); please try again."
@@ -711,7 +711,7 @@ class CardOrder:
                 "multiselect": True,
             }
             answers = prompt(questions)
-            file_paths = answers["xml_choice"]
+            file_paths = cast(list[str], answers["xml_choice"])
         return [
             cls.from_file_path(
                 working_directory=working_directory,

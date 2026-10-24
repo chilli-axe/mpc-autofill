@@ -111,6 +111,8 @@ Add these sections under "Command-Line Arguments":
 
 ## Running the Test Suite
 
+Use the [current locked environment commands](../readme.md) with Python 3.14.9 and uv 0.13.5. The commands below also work inside an activated environment installed from the generated all-groups requirements export.
+
 Replace the existing commands with:
 
 > From the `desktop-tool` directory, run:

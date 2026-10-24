@@ -5,6 +5,7 @@ CHROME_BINARY and CHROMEDRIVER can select an existing local browser/driver pair.
 """
 
 import os
+import sys
 import threading
 from functools import partial
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
@@ -16,6 +17,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 from src.constants import TargetSites
 from src.driver import AutofillDriver
+from src.webdrivers import get_undetected_chrome_driver
 
 
 @pytest.fixture(scope="module")
@@ -158,3 +160,20 @@ def test_click_polling_ignores_hidden_and_disabled_matches(browser, monkeypatch)
     )
     assert driver.click_element_polling("css selector", "button", timeout=2) is True
     assert browser.title == "Clicked"
+
+
+@pytest.mark.skipif(sys.platform != "linux", reason="Linux DTC browser stack smoke")
+def test_actual_dtc_browser_factory_with_temporary_profile(upload_page, tmp_path):
+    url, _pdf = upload_page
+    driver = get_undetected_chrome_driver(
+        headless=True,
+        binary_location=os.environ.get("CHROME_BINARY"),
+        user_data_dir=str(tmp_path / "browser-profile"),
+    )
+    try:
+        driver.get(url)
+        assert driver.title == "Upload fixture"
+        driver.find_element("id", "card_type_select").click()
+        assert driver.execute_script("return document.readyState") == "complete"
+    finally:
+        driver.quit()

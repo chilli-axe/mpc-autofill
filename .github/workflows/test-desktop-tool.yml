@@ -4,6 +4,14 @@ on:
     paths:
       - "desktop-tool/**"
       - ".github/actions/test-desktop-tool/**"
+      - ".github/actions/setup-desktop-tool/**"
+      - ".github/actions/setup-ghostscript/**"
+      - ".github/actions/build-desktop-tool/**"
+      - ".github/workflows/build-desktop-tool.yml"
+      - ".github/workflows/desktop-tool-ci.yml"
+      - ".github/workflows/validate-desktop-packages.yml"
+      - ".pre-commit-config.yaml"
+      - ".github/actions/test-pre-commit/**"
       - ".github/workflows/test-desktop-tool.yml"
   workflow_dispatch:
 jobs:
@@ -20,7 +28,7 @@ jobs:
           - os: windows-latest
           - os: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       # Tests requiring the Google Drive API key skip themselves when it's absent (fork pull
       # requests), so the rest of the suite still runs.
       - name: Run desktop tool tests

@@ -9,13 +9,14 @@ from urllib.error import HTTPError, URLError
 from urllib.request import HTTPSHandler, urlopen
 from urllib.response import addinfourl
 
-import autofill as autofill_cli
 import click
 import pytest
 from click.testing import CliRunner
-from write_build_info import write_build_info
 
 from src import build_info, update_check
+
+import autofill as autofill_cli
+from write_build_info import write_build_info
 
 
 @pytest.fixture(autouse=True)

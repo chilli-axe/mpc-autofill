@@ -6,7 +6,7 @@ import time
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
 from functools import cache
-from typing import Any, Generator, Optional
+from typing import Any, Generator, Optional, cast
 from urllib.parse import urlsplit, urlunsplit
 
 import attr
@@ -14,6 +14,7 @@ import enlighten
 from InquirerPy import inquirer
 from selenium.common import exceptions as sl_exc
 from selenium.common.exceptions import NoAlertPresentException, NoSuchElementException
+from selenium.webdriver.chromium.webdriver import ChromiumDriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.support.expected_conditions import (
@@ -102,7 +103,7 @@ class AutofillDriver:
                 user_data_dir=self.browser_profile_path,
                 profile_directory=self.browser_profile_name,
             )
-        return self.browser.value(headless=self.headless, binary_location=self.binary_location)  # type: ignore[operator]
+        return self.browser.value(headless=self.headless, binary_location=self.binary_location)
 
     def initialise_driver(self) -> None:
         max_attempts = 3
@@ -286,7 +287,7 @@ class AutofillDriver:
         "selenium.common.exceptions.JavaScriptException: Message: javascript error: setMode is not defined"
         """
 
-        return self.driver.execute_script(f"javascript:{'return ' if return_ else ''}{js}")  # type: ignore
+        return self.driver.execute_script(f"javascript:{'return ' if return_ else ''}{js}")
 
     @alert_handler
     @exception_retry_skip_handler
@@ -311,7 +312,7 @@ class AutofillDriver:
             try:
                 assert self.execute_javascript(f"typeof {function} == 'undefined'", return_=True) is False
                 return
-            except (AssertionError, sl_exc.JavascriptException):
+            except AssertionError, sl_exc.JavascriptException:
                 logger.debug(f"Waiting for {function} to be defined...")
                 time.sleep(0.5)
 
@@ -432,7 +433,7 @@ class AutofillDriver:
                     for selector in checkbox_selectors:
                         elements = self.driver.find_elements(By.CSS_SELECTOR, selector)
                         for element in elements:
-                            if element.is_displayed():  # type: ignore[no-untyped-call]
+                            if element.is_displayed():
                                 element.click()
                                 logger.debug("Clicked Turnstile checkbox")
                                 return True
@@ -527,7 +528,7 @@ class AutofillDriver:
                     "[normalize-space()='Publish' or normalize-space()='Publisher Tools']",
                 )
                 return any(
-                    element.is_displayed()  # type: ignore[no-untyped-call]
+                    element.is_displayed()
                     for element in (
                         self.driver.find_elements(By.CSS_SELECTOR, selectors.publisher_ready_selector) + publisher_links
                     )
@@ -544,20 +545,20 @@ class AutofillDriver:
                 authenticated_elements = self.driver.find_elements(
                     By.CSS_SELECTOR, selectors.authenticated_indicator_selector
                 )
-                if any(element.is_displayed() for element in authenticated_elements):  # type: ignore[no-untyped-call]
+                if any(element.is_displayed() for element in authenticated_elements):
                     return True
 
                 logout_elements = self.driver.find_elements(
                     By.XPATH,
                     "//*[self::a or self::button][normalize-space()='Log Off' or normalize-space()='Log Out']",
                 )
-                if any(element.is_displayed() for element in logout_elements):  # type: ignore[no-untyped-call]
+                if any(element.is_displayed() for element in logout_elements):
                     return True
 
                 # The Publish link also proves the user is signed in, even if the
                 # newer account-navigation selectors change.
                 return any(
-                    element.is_displayed()  # type: ignore[no-untyped-call]
+                    element.is_displayed()
                     for element in self.driver.find_elements(By.CSS_SELECTOR, selectors.publisher_ready_selector)
                 )
         except Exception as exc:
@@ -571,9 +572,7 @@ class AutofillDriver:
         """
         # Strategy 1: Scroll into view and use native click
         try:
-            self.driver.execute_script(  # type: ignore[no-untyped-call]
-                "arguments[0].scrollIntoView({block: 'center'});", element
-            )
+            self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", element)
             element.click()
             return True
         except Exception as e:
@@ -581,7 +580,7 @@ class AutofillDriver:
 
         # Strategy 2: JavaScript click (bypasses overlays and visibility issues)
         try:
-            self.driver.execute_script("arguments[0].click();", element)  # type: ignore[no-untyped-call]
+            self.driver.execute_script("arguments[0].click();", element)
             return True
         except Exception as e:
             logger.debug(f"JavaScript click failed: {e}")
@@ -599,7 +598,7 @@ class AutofillDriver:
                 try:
                     elements = self.driver.find_elements(by, selector)
                     for el in elements:
-                        if el.is_displayed() and el.is_enabled() and self.click_element_with_retry(el):  # type: ignore[no-untyped-call]
+                        if el.is_displayed() and el.is_enabled() and self.click_element_with_retry(el):
                             return True
                 except Exception:
                     pass
@@ -621,7 +620,7 @@ class AutofillDriver:
                 "input[type='email'], input[name='email'], input[name='email_address']",
             )
             for email_input in email_inputs:
-                local_part, separator, _domain = (email_input.get_attribute("value") or "").strip().partition("@")  # type: ignore[no-untyped-call]
+                local_part, separator, _domain = (email_input.get_attribute("value") or "").strip().partition("@")
                 publisher_name = local_part
                 if separator and publisher_name:
                     self.dtc_publisher_name = publisher_name
@@ -794,7 +793,7 @@ class AutofillDriver:
 
         for checkbox_id in ("filter_44550", "filter_1000138"):
             checkbox = self.driver.find_element(By.ID, checkbox_id)
-            if not checkbox.is_selected() and not self.click_element_with_retry(checkbox):  # type: ignore[no-untyped-call]
+            if not checkbox.is_selected() and not self.click_element_with_retry(checkbox):
                 raise Exception(f"Could not check the {checkbox_id} product filter checkbox.")
             logger.debug(f"Checked {checkbox_id}")
 
@@ -831,9 +830,7 @@ class AutofillDriver:
         url_match = re.search(r"window\.open\(['\"]([^'\"]+)['\"]\)", onclick)
         if not url_match:
             raise Exception(f"Could not extract the upload page URL from the upload button (onclick: {onclick}).")
-        self.driver.execute_script(  # type: ignore[no-untyped-call]
-            "window.location.href = arguments[0];", url_match.group(1)
-        )
+        self.driver.execute_script("window.location.href = arguments[0];", url_match.group(1))
         # Wait for the upload page to load
         WebDriverWait(self.driver, 15).until(presence_of_element_located((By.ID, "card_type_select")))
         logger.debug(f"Navigated to upload page: {self.driver.current_url}")
@@ -915,12 +912,12 @@ class AutofillDriver:
         except sl_exc.TimeoutException as exc:
             raise Exception("The continue button did not activate after the PDF upload.") from exc
         logger.debug(f"Continue button activated. onclick: {continue_button.get_attribute('onclick')}")
-        self.driver.execute_script("arguments[0].click();", continue_button)  # type: ignore[no-untyped-call]
+        self.driver.execute_script("arguments[0].click();", continue_button)
         logger.debug("Clicked 'Click here after uploading your files' button.")
 
         # Click the "Complete Setup" button on the next page
         complete_button = WebDriverWait(self.driver, 30).until(element_to_be_clickable((By.ID, "submit_id")))
-        self.driver.execute_script("arguments[0].click();", complete_button)  # type: ignore[no-untyped-call]
+        self.driver.execute_script("arguments[0].click();", complete_button)
         logger.debug("Clicked 'Complete Setup' button.")
 
         # Click the "buy now" link to start placing the order.
@@ -933,14 +930,14 @@ class AutofillDriver:
             self.driver.get(buy_now_href)
             logger.debug("Navigated to 'buy now' page to start placing the order.")
         else:
-            self.driver.execute_script("arguments[0].click();", buy_now_link)  # type: ignore[no-untyped-call]
+            self.driver.execute_script("arguments[0].click();", buy_now_link)
             logger.debug("Clicked 'buy now' link.")
 
         with self.no_implicit_wait():
             login_buttons = self.driver.find_elements(
                 By.CSS_SELECTOR, self.target_site.value.selectors.login_button_selector
             )
-            login_visible = any(button.is_displayed() for button in login_buttons)  # type: ignore[no-untyped-call]
+            login_visible = any(button.is_displayed() for button in login_buttons)
         if login_visible and not self.is_dtc_user_authenticated():
             raise Exception(
                 "DriveThruCards requires sign-in before the cart handoff. "
@@ -956,13 +953,13 @@ class AutofillDriver:
         except Exception:
             safe_url = title = "unavailable"
         try:
-            ready_state = self.driver.execute_script("return document.readyState")  # type: ignore[no-untyped-call]
+            ready_state = self.driver.execute_script("return document.readyState")
         except Exception:
             ready_state = "unavailable"
         try:
             browser_errors = [
                 entry
-                for entry in self.driver.get_log("browser")  # type: ignore[no-untyped-call]
+                for entry in cast(ChromiumDriver, self.driver).get_log("browser")  # type: ignore[no-untyped-call]
                 if entry.get("level") == "SEVERE" or "ERR_BLOCKED_BY_CLIENT" in entry.get("message", "")
             ]
         except Exception:
@@ -1040,6 +1037,7 @@ class AutofillDriver:
 
         # send the image contents to mpc
         logger.debug("Sending image contents to the targeted site...")
+        assert image.file_path is not None, "Image must be downloaded before upload"
         self.driver.find_element(by=By.ID, value="uploadId").send_keys(image.file_path)
         time.sleep(1)
 
@@ -1185,14 +1183,10 @@ class AutofillDriver:
         action = self.action
         self.driver.get(f"{self.target_site.value.login_url}")
         self.set_state(States.defining_order, "Awaiting user sign-in")
-        logger.info(
-            textwrap.dedent(
-                f"""
+        logger.info(textwrap.dedent(f"""
                 The specified inputs require you to sign into your {bold(self.target_site.name)} account.
                 The tool will automatically resume once you've signed in.
-                """
-            )
-        )
+                """))
         while not self.is_user_authenticated():
             time.sleep(1)
         logger.info("Successfully signed in!")
@@ -1218,7 +1212,8 @@ class AutofillDriver:
             [
                 option_value
                 for option in qty_dropdown.options
-                if (option_value := int(option.get_attribute("value"))) >= quantity
+                if (value := option.get_attribute("value")) is not None
+                if (option_value := int(value)) >= quantity
             ]
         )
         assert bracket_options, (
@@ -1263,15 +1258,11 @@ class AutofillDriver:
                 )
                 foil_dropdown.select_by_value(self.target_site.value.foil_dropdown_element_value)
             else:
-                logger.warning(
-                    textwrap.dedent(
-                        f"""
+                logger.warning(textwrap.dedent(f"""
                         {bold('WARNING')}: Your project is configured to be printed in foil,
                         but {bold(self.target_site.name)} does not support foil printing.
                         {bold('Your project will be auto-filled as non-foil.')}
-                        """
-                    )
-                )
+                        """))
 
         logger.debug("Finished defining the project!")
         self.set_state(States.paging_to_fronts)
@@ -1289,16 +1280,12 @@ class AutofillDriver:
         logger.debug("Redefining the project...")
         self.set_state(States.defining_order, "Awaiting user input")
         self.driver.get(f"{self.target_site.value.saved_projects_url}")
-        input(
-            textwrap.dedent(
-                f"""
+        input(textwrap.dedent(f"""
                 Please find your project in the {bold('My saved projects')} table
                 and click the {bold('Continue to edit')} button next to it.
                 Wait for the page to load {bold('fully')}, then return to the
                 console window and press {bold('Enter')}.
-                """
-            )
-        )
+                """))
         while (ssid := self.get_ssid()) is None:
             input(
                 textwrap.dedent(
@@ -1422,7 +1409,7 @@ class AutofillDriver:
         self.wait()
         try:
             close_btn = self.driver.find_element(by=By.ID, value="closeBtn")
-            if close_btn.is_displayed():  # type: ignore  # TODO: because of missing types in selenium i guess?
+            if close_btn.is_displayed():
                 # this may not be clickable after processing one card order
                 close_btn.click()
         except NoSuchElementException:
@@ -1526,15 +1513,11 @@ class AutofillDriver:
         self.insert_backs(order=order, auto_save_threshold=auto_save_threshold)
         self.page_to_review()
         log_hours_minutes_seconds_elapsed(t)
-        logger.info(
-            textwrap.dedent(
-                f"""
+        logger.info(textwrap.dedent(f"""
                 Please review your project and ensure everything has been uploaded correctly before finalising with
                 {self.target_site.name}. If you need to make any changes to your order, you can do so by adding it
                 to your Saved Projects and editing in your normal browser.
-                """
-            )
-        )
+                """))
 
     def execute_orders(
         self,
