@@ -29,7 +29,12 @@ runs:
       shell: bash
       run: |
         uv export --locked --all-groups --no-emit-project --no-header --format requirements-txt > "$RUNNER_TEMP/desktop-requirements.txt"
-        diff -u requirements.txt "$RUNNER_TEMP/desktop-requirements.txt"
+        python - <<'PY'
+        import os
+        from pathlib import Path
+        # Text reads normalize Windows checkout line endings without ignoring dependency changes.
+        assert Path("requirements.txt").read_text(encoding="utf-8") == (Path(os.environ["RUNNER_TEMP"]) / "desktop-requirements.txt").read_text(encoding="utf-8"), "Requirements export is out of date"
+        PY
     - name: Check desktop source
       shell: bash
       run: |

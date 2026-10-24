@@ -7,14 +7,24 @@ on:
         description: Release version embedded in the executable (for example, 1.1.0)
         required: true
         type: string
+      validation-build-run-id:
+        description: Validate existing packages instead of compiling (use test version 1.2.3)
+        required: false
+        type: string
+      validation-replacement-run-id:
+        description: Separate successful build of the same commit for replacement checks
+        required: false
+        type: string
 
 jobs:
   test:
+    if: inputs.validation-build-run-id == ''
     name: Test on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     env:
       MPC_AUTOFILL_RELEASE_CHECKS: "1"
     strategy:
+      fail-fast: false
       matrix:
         os:
           - macos-latest
@@ -91,3 +101,13 @@ jobs:
         with:
           name: ${{ matrix.target }} Unsigned Build
           path: desktop-tool/build/${{ matrix.filename }}
+
+  validate:
+    if: inputs.validation-build-run-id != ''
+    permissions:
+      contents: read
+      actions: read
+    uses: ./.github/workflows/validate-desktop-packages.yml
+    with:
+      build-run-id: ${{ inputs.validation-build-run-id }}
+      replacement-run-id: ${{ inputs.validation-replacement-run-id }}

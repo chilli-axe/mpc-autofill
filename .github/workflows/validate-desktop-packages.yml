@@ -1,6 +1,14 @@
 name: Validate desktop packages
 
 on:
+  workflow_call:
+    inputs:
+      build-run-id:
+        required: true
+        type: string
+      replacement-run-id:
+        required: true
+        type: string
   workflow_dispatch:
     inputs:
       build-run-id:
