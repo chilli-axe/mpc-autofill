@@ -23,7 +23,6 @@ runs:
         group: dev
         google-drive-api-key: ${{ inputs.google-drive-api-key }}
     - uses: ./.github/actions/setup-ghostscript
-      if: runner.os == 'Linux'
     - name: Check compatibility export
       working-directory: desktop-tool
       shell: bash
@@ -55,6 +54,9 @@ runs:
           uv run --locked --group dev python -m pytest .
         fi
       shell: bash
+    - uses: ./.github/actions/check-desktop-performance
+      with:
+        report-name: source-performance-${{ runner.os }}-${{ runner.arch }}
     - name: Smoke test source PDF export
       if: runner.os == 'Linux'
       working-directory: desktop-tool

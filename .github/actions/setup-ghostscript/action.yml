@@ -1,14 +1,16 @@
 name: Set up supported Ghostscript
-description: Build the verified upstream release under the runner's private directory.
+description: Set up a checksum-verified supported Ghostscript on every desktop platform.
 runs:
   using: composite
   steps:
     - name: Install source build prerequisites
+      if: runner.os == 'Linux'
       shell: bash
       run: |
         sudo apt-get update
         sudo apt-get install --yes build-essential pkg-config curl xz-utils patchelf
     - name: Build Ghostscript 10.08.0
+      if: runner.os == 'Linux'
       shell: bash
       run: |
         set -euo pipefail
@@ -24,3 +26,39 @@ runs:
         make install
         test "$("$install_directory/bin/gs" --version)" = 10.08.0
         echo "$install_directory/bin" >> "$GITHUB_PATH"
+    - name: Extract verified Windows Ghostscript
+      if: runner.os == 'Windows'
+      shell: bash
+      working-directory: desktop-tool
+      run: |
+        uv run --locked --no-default-groups python - <<'PY'
+        import os, subprocess
+        from pathlib import Path
+        from autofill import GHOSTSCRIPT_WINDOWS_INSTALLERS, _download_ghostscript_installer
+        directory = Path(os.environ["RUNNER_TEMP"]) / "desktop-ghostscript"
+        directory.mkdir(exist_ok=True)
+        installer = _download_ghostscript_installer(*GHOSTSCRIPT_WINDOWS_INSTALLERS["w64.exe"], str(directory))
+        subprocess.run([r"C:\Program Files\7-Zip\7z.exe", "x", installer, f"-o{directory / 'portable'}", "-y"], check=True)
+        executable = next((directory / "portable").rglob("gswin64c.exe"))
+        with open(os.environ["GITHUB_PATH"], "a", encoding="utf-8") as file:
+            file.write(str(executable.parent) + "\n")
+        PY
+    - name: Install verified macOS Ghostscript
+      if: runner.os == 'macOS'
+      shell: bash
+      working-directory: desktop-tool
+      run: |
+        uv run --locked --no-default-groups python - <<'PY'
+        import os, subprocess
+        from pathlib import Path
+        from autofill import GHOSTSCRIPT_MACOS_INSTALLER, _download_ghostscript_installer
+        installer = _download_ghostscript_installer(*GHOSTSCRIPT_MACOS_INSTALLER, os.environ["RUNNER_TEMP"])
+        subprocess.run(["sudo", "/usr/sbin/installer", "-pkg", installer, "-target", "/"], check=True)
+        with open(os.environ["GITHUB_PATH"], "a", encoding="utf-8") as file:
+            file.write("/usr/local/bin\n")
+        PY
+    - name: Require a supported Ghostscript
+      shell: bash
+      working-directory: desktop-tool
+      run: |
+        uv run --locked --no-default-groups python -c "from src.pdf_maker import get_ghostscript_path, get_ghostscript_version, is_ghostscript_version_supported; path=get_ghostscript_path(); assert path and is_ghostscript_version_supported(get_ghostscript_version(path)), 'Supported Ghostscript required for performance checks'"

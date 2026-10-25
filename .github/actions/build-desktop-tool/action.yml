@@ -32,7 +32,6 @@ runs:
   using: composite
   steps:
     - uses: ./.github/actions/setup-ghostscript
-      if: runner.os == 'Linux'
     - name: Compile with Nuitka
       shell: bash
       working-directory: desktop-tool
@@ -119,3 +118,7 @@ runs:
             /desktop/build/"$DESKTOP_FILENAME" --help
             dbus-run-session -- python3 /desktop/tests/smoke_pdf_export.py /desktop/build/"$DESKTOP_FILENAME"
           '
+    - uses: ./.github/actions/check-desktop-performance
+      with:
+        executable: build/${{ inputs.filename }}
+        report-name: packaged-performance-${{ runner.os }}-${{ runner.arch }}
