@@ -50,6 +50,7 @@ jobs:
       - uses: ./.github/actions/setup-desktop-tool
         with:
           group: dev
+      - uses: ./.github/actions/setup-ghostscript
       - name: Verify build provenance and download packages
         shell: bash
         env:
@@ -73,6 +74,10 @@ jobs:
           done
           gh run download "$BUILD_RUN" --repo "$GITHUB_REPOSITORY" --name "$ARTIFACT" --dir binary
           gh run download "$REPLACEMENT_RUN" --repo "$GITHUB_REPOSITORY" --name "$ARTIFACT" --dir replacement
+      - uses: ./.github/actions/check-desktop-performance
+        with:
+          executable: ../binary/${{ matrix.filename }}
+          report-name: validation-performance-${{ matrix.target }}
       - name: Exercise native packaged update behavior
         shell: bash
         env:

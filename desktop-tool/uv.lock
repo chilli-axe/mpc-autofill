@@ -114,15 +114,15 @@ wheels = [
 
 [[package]]
 name = "blessed"
-version = "1.52.0"
+version = "1.21.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "jinxed" },
+    { name = "jinxed", marker = "sys_platform == 'win32'" },
     { name = "wcwidth" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/8f/e3/53462b28d7a06f2fcf820863f951255f4e022e4988981b0a5ca339f7773b/blessed-1.52.0.tar.gz", hash = "sha256:a6f42b2875c7afee78420ac9919699d5c3dce35bfa9ad45bc158b1713fc33d0d", size = 14069744, upload-time = "2026-10-20T14:14:31.747Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/0c/5e/3cada2f7514ee2a76bb8168c71f9b65d056840ebb711962e1ec08eeaa7b0/blessed-1.21.0.tar.gz", hash = "sha256:ece8bbc4758ab9176452f4e3a719d70088eb5739798cd5582c9e05f2a28337ec", size = 6660011, upload-time = "2025-04-26T21:56:58.199Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/29/1f/88e64e3b4a8299fcc47dd0db35276ca21c18fadad4e8eb25afad546404c6/blessed-1.52.0-py3-none-any.whl", hash = "sha256:1936f421f3feb130035a4629e6477d1432e33b2674ab2b9841292c74d479eac2", size = 142946, upload-time = "2026-10-20T14:14:29.241Z" },
+    { url = "https://files.pythonhosted.org/packages/ea/8e/0a37e44878fd76fac9eff5355a1bf760701f53cb5c38cdcd59a8fd9ab2a2/blessed-1.21.0-py2.py3-none-any.whl", hash = "sha256:f831e847396f5a2eac6c106f4dfadedf46c4f804733574b15fe86d2ed45a9588", size = 84727, upload-time = "2025-04-26T16:58:29.919Z" },
 ]
 
 [[package]]
@@ -384,15 +384,15 @@ wheels = [
 
 [[package]]
 name = "enlighten"
-version = "1.14.1"
+version = "1.11.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "blessed" },
     { name = "prefixed" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/8d/87/50b1152a85e3dca202e9e28ba2594c03edce8b9e74187b3aef5b98e4b631/enlighten-1.14.1.tar.gz", hash = "sha256:85c35412a9a4f3886b3337d41f813441fab9a30d9f5b5f0c015bd078a4411473", size = 68562, upload-time = "2025-03-10T18:03:35.042Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/7c/fb/74a661666a02065b0a4236966c223b733e72e9f3244ba4eb9687d3f5beb9/enlighten-1.11.2.tar.gz", hash = "sha256:9284861dee5a272e0e1a3758cd3f3b7180b1bd1754875da76876f2a7f46ccb61", size = 61262, upload-time = "2023-01-28T18:23:01.809Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/73/1e/244bb2fc5713ad21ae9f9012067f6432c682593816c6a45372c24f5a7d61/enlighten-1.14.1-py2.py3-none-any.whl", hash = "sha256:5fbd0c959ca1644034c41bb0ace5db19c9852cf9d721b6103f5f130663c57be8", size = 42281, upload-time = "2025-03-10T18:03:33.478Z" },
+    { url = "https://files.pythonhosted.org/packages/59/a6/ec1f9f45fc9ec10c086c1164ba74c68545ed65e988bba467857d07298427/enlighten-1.11.2-py2.py3-none-any.whl", hash = "sha256:98c9eb20e022b6a57f1c8d4f17e16760780b6881e6d658c40f52d21255ea45f3", size = 53731, upload-time = "2023-01-28T18:22:59.598Z" },
 ]
 
 [[package]]
@@ -623,7 +623,7 @@ name = "jinxed"
 version = "2.1.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "ansicon", marker = "sys_platform == 'win32'" },
+    { name = "ansicon" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/39/d7/6e6d474ec5eaeca6a61acc17766bb19563b3a372b4b9d92910078f5fe49f/jinxed-2.1.0.tar.gz", hash = "sha256:7e755b831faa2443d44fb4ce7c0202eb9c3ed39bd5bf1193365888f4f6092b54", size = 61287, upload-time = "2026-07-03T15:46:48.153Z" }
 wheels = [
@@ -675,6 +675,7 @@ version = "1.2.4"
 source = { virtual = "." }
 dependencies = [
     { name = "attrs" },
+    { name = "blessed" },
     { name = "certifi" },
     { name = "click" },
     { name = "defusedxml" },
@@ -715,10 +716,11 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "attrs", specifier = "==26.1.0" },
+    { name = "blessed", specifier = "==1.21.0" },
     { name = "certifi", specifier = "==2026.10.23" },
     { name = "click", specifier = "==8.5.0" },
     { name = "defusedxml", specifier = "==0.7.1" },
-    { name = "enlighten", specifier = "==1.14.1" },
+    { name = "enlighten", specifier = "==1.11.2" },
     { name = "fpdf2", specifier = "==2.8.9" },
     { name = "google-api-python-client", specifier = "==2.201.0" },
     { name = "google-auth", specifier = "==2.62.0" },

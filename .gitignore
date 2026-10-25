@@ -179,6 +179,7 @@ bootstrap.min.css
 jquery.ui.touch-punch.js
 MPCAutofill/client_secrets.json
 desktop-tool/client_secrets.json
+desktop-tool/performance-results/
 **/static/js
 staticroot
 elasticsearch

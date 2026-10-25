@@ -75,10 +75,12 @@ black==26.10.1 \
     --hash=sha256:5f9f83beae62437e060dafd53d7f1fc327e3d3494f74d72ee5c2b73eb90fc4e7 \
     --hash=sha256:8375962579d537364cc0efa19b1474481915d3a793f9fc0774901814c5e5b5f4 \
     --hash=sha256:d8b3a9074a680b3c5749633714e9ae3992a1e5a23343a97ad61cd9b119b444d2
-blessed==1.52.0 \
-    --hash=sha256:1936f421f3feb130035a4629e6477d1432e33b2674ab2b9841292c74d479eac2 \
-    --hash=sha256:a6f42b2875c7afee78420ac9919699d5c3dce35bfa9ad45bc158b1713fc33d0d
-    # via enlighten
+blessed==1.21.0 \
+    --hash=sha256:ece8bbc4758ab9176452f4e3a719d70088eb5739798cd5582c9e05f2a28337ec \
+    --hash=sha256:f831e847396f5a2eac6c106f4dfadedf46c4f804733574b15fe86d2ed45a9588
+    # via
+    #   enlighten
+    #   mpc-autofill-desktop
 certifi==2026.10.23 \
     --hash=sha256:a9895e6e2758b371e0545e321a3a8fd1fcfd9829ada8824a936dfb16aaaf36cd \
     --hash=sha256:e9b54de76e530bb6cf0ccd036787103acb58fd42ba930ea8bf948ddbaa2f61d1
@@ -288,9 +290,9 @@ distlib==0.4.4 \
     --hash=sha256:ca4175b4ac7f71223cc30ed7248c45d2b38c2439d8ee6e498ab67ed63cf3508d \
     --hash=sha256:cf09d55b1e85a89576b036aeb71550bfd68320f3f21761ca329eadadad918638
     # via virtualenv
-enlighten==1.14.1 \
-    --hash=sha256:5fbd0c959ca1644034c41bb0ace5db19c9852cf9d721b6103f5f130663c57be8 \
-    --hash=sha256:85c35412a9a4f3886b3337d41f813441fab9a30d9f5b5f0c015bd078a4411473
+enlighten==1.11.2 \
+    --hash=sha256:9284861dee5a272e0e1a3758cd3f3b7180b1bd1754875da76876f2a7f46ccb61 \
+    --hash=sha256:98c9eb20e022b6a57f1c8d4f17e16760780b6881e6d658c40f52d21255ea45f3
     # via mpc-autofill-desktop
 filelock==4.2.4 \
     --hash=sha256:301241438c57936ef93f4243a94f2559022268bfcf9b375a9a72eb0f8db8358e \
@@ -393,7 +395,7 @@ jeepney==0.9.0 ; platform_system == 'DragonFly' or platform_system == 'FreeBSD' 
     --hash=sha256:97e5714520c16fc0a45695e5365a2e11b81ea79bba796e26f9f1d178cb182683 \
     --hash=sha256:cf0e9e845622b81e4a28df94c40345400256ec608d0e55bb8a3feaa9163f5732
     # via wakepy
-jinxed==2.1.0 \
+jinxed==2.1.0 ; sys_platform == 'win32' \
     --hash=sha256:43b802d18b70e405d410fb66eb2837d1101e7e5ea922e666507bb43f34d11d09 \
     --hash=sha256:7e755b831faa2443d44fb4ce7c0202eb9c3ed39bd5bf1193365888f4f6092b54
     # via blessed

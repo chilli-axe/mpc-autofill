@@ -1,0 +1,46 @@
+name: Enforce desktop performance budgets
+description: Check cached images, PDF/X export and reuse with captured output and a real terminal.
+inputs:
+  executable:
+    description: Source CLI or packaged executable, relative to desktop-tool.
+    default: autofill.py
+  report-name:
+    description: Unique artifact name within this workflow run.
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Prepare the verified SWOP profile
+      shell: bash
+      working-directory: desktop-tool
+      run: uv run --locked --group dev python -c "from src.icc import _download_profile; assert _download_profile() is not None"
+    - name: Enforce cached-image, PDF export and reuse budgets
+      shell: bash
+      working-directory: desktop-tool
+      env:
+        DESKTOP_EXECUTABLE: ${{ inputs.executable }}
+      run: uv run --locked --group dev python tests/check_performance.py "$DESKTOP_EXECUTABLE"
+    - name: Summarize measured performance
+      if: always()
+      shell: bash
+      working-directory: desktop-tool
+      run: |
+        python - <<'PY'
+        import json, os
+        from pathlib import Path
+        report = Path("performance-results/results.json")
+        if report.exists():
+            results = json.loads(report.read_text())
+            with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as summary:
+                summary.write("### Desktop performance\n\n| Case | Seconds | Budget | Terminal allowance | Completed |\n|---|---:|---:|---:|---|\n")
+                for case in results["cases"]:
+                    summary.write(f'| {case["name"]} | {case["seconds"]} | {case["budget_seconds"]} | {case.get("terminal_allowance_seconds", "")} | {case["passed"]} |\n')
+                if "failure" in results:
+                    summary.write("\nPerformance gate failed: " + results["failure"] + "\n")
+        PY
+    - name: Save timings and terminal transcripts
+      if: always()
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      with:
+        name: ${{ inputs.report-name }}
+        path: desktop-tool/performance-results/

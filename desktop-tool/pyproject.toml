@@ -4,10 +4,11 @@ version = "1.2.4"
 requires-python = ">=3.14,<3.15"
 dependencies = [
     "attrs==26.1.0",
+    "blessed==1.21.0", # Newer terminal probes stall startup when capability replies are unavailable.
     "certifi==2026.10.23",
     "click==8.5.0",
     "defusedxml==0.7.1",
-    "enlighten==1.14.1",
+    "enlighten==1.11.2", # 1.14.1 blocks Windows progress updates on cursor-position queries.
     "fpdf2==2.8.9",
     "google-api-python-client==2.201.0",
     "google-auth==2.62.0",

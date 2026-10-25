@@ -67,3 +67,18 @@ Signed and unsigned workflow entry points retain separate behavior and share loc
 See the [reviewed modernization plan](docs/Modernization-Plan.md) for the release base, review decisions, and acceptance checks.
 Release executables offer optional update checks at first interactive startup. The choice is remembered across upgrades.
 See [update checks](docs/update-checks.md) for settings, build instructions, and the reviewed implementation plan.
+
+### Performance gates
+
+Every desktop pull request runs source performance checks on Windows, Linux and macOS. Both desktop build workflows and package validation also run them against each native executable, including Intel and Apple Silicon Macs. A failed budget prevents the build from reaching artifact upload. Timings and terminal transcripts are saved as workflow artifacts and summarized in the job output.
+
+From `desktop-tool`, with supported Ghostscript and the SWOP profile installed:
+
+```sh
+uv run --locked --group dev python tests/check_performance.py
+uv run --locked --group dev python tests/check_performance.py build/autofill-windows.exe
+```
+
+The offline workload has 120 cards and 41 unique cached images at 600 DPI. It checks cache contents and modification times, 240-page PDF/X output, and PDF reuse preserving output bytes and modification times. Each phase runs with captured output and in a real terminal: cached-image handling has a 20-second budget, PDF/X export 90 seconds, and reuse 15 seconds. Interactive runs must also finish within twice the captured duration or ten extra seconds, whichever is larger. First-run executable extraction is warmed before measurement. The limits allow hosted-runner variation while rejecting long per-image or per-card stalls; they are performance smoke checks, not a guarantee of every deck's processing time.
+
+The separate fast terminal test in pytest exercises startup and 30 status updates within 15 seconds on every OS. This catches terminal libraries that wait for capability or cursor-position replies. Capturing all test output alone cannot exercise that path.

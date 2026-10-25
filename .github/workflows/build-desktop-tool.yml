@@ -17,8 +17,23 @@ on:
         type: string
 
 jobs:
+  release-status:
+    if: inputs.validation-build-run-id == ''
+    runs-on: ubuntu-latest
+    permissions:
+      statuses: write
+    steps:
+      - name: Mark native release validation pending on the commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api "repos/$GITHUB_REPOSITORY/statuses/$GITHUB_SHA" \
+            -f state=pending -f context="Native desktop release" \
+            -f target_url="https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
+            -f description="Testing source and packages on all four desktop targets" > /dev/null
   test:
     if: inputs.validation-build-run-id == ''
+    needs: release-status
     name: Test on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     env:
@@ -102,6 +117,23 @@ jobs:
         with:
           name: ${{ matrix.target }} Unsigned Build
           path: desktop-tool/build/${{ matrix.filename }}
+
+  release-result:
+    if: always() && inputs.validation-build-run-id == ''
+    needs: [test, build]
+    runs-on: ubuntu-latest
+    permissions:
+      statuses: write
+    steps:
+      - name: Report all native release gates on the commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NATIVE_STATE: ${{ needs.test.result == 'success' && needs.build.result == 'success' && 'success' || 'failure' }}
+        run: |
+          gh api "repos/$GITHUB_REPOSITORY/statuses/$GITHUB_SHA" \
+            -f state="$NATIVE_STATE" -f context="Native desktop release" \
+            -f target_url="https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
+            -f description="Source and packaged gates for Windows, Linux and both Macs" > /dev/null
 
   validate:
     if: inputs.validation-build-run-id != ''

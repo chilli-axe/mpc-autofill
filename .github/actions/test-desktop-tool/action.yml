@@ -23,7 +23,6 @@ runs:
         group: dev
         google-drive-api-key: ${{ inputs.google-drive-api-key }}
     - uses: ./.github/actions/setup-ghostscript
-      if: runner.os == 'Linux'
     - name: Check compatibility export
       working-directory: desktop-tool
       shell: bash
@@ -47,6 +46,7 @@ runs:
       env:
         CHROME_BINARY: ${{ steps.chrome.outputs.chrome-path }}
         CHROMEDRIVER: ${{ steps.chrome.outputs.chromedriver-path }}
+        SE_CHROMEDRIVER: ${{ steps.chrome.outputs.chromedriver-path }}
       run: |
         if [[ "$RUNNER_OS" == Linux ]]; then
           uv run --locked --group dev python -c "from src.pdf_maker import get_ghostscript_path, get_ghostscript_version, is_ghostscript_version_supported; path=get_ghostscript_path(); assert path and is_ghostscript_version_supported(get_ghostscript_version(path)), 'Supported Ghostscript required in CI'"
@@ -55,6 +55,9 @@ runs:
           uv run --locked --group dev python -m pytest .
         fi
       shell: bash
+    - uses: ./.github/actions/check-desktop-performance
+      with:
+        report-name: source-performance-${{ runner.os }}-${{ runner.arch }}
     - name: Smoke test source PDF export
       if: runner.os == 'Linux'
       working-directory: desktop-tool
