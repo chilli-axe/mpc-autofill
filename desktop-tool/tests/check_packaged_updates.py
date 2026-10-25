@@ -37,14 +37,17 @@ class Terminal:
     def read(self):
         try:
             if os.name == "nt":
-                self.output += self.child.read(65536)
+                chunk = self.child.read(65536)
             else:
-                self.output += self.child.read_nonblocking(65536, timeout=0.2)
+                chunk = self.child.read_nonblocking(65536, timeout=0.2)
+            self.output += chunk
+            return bool(chunk)
         except EOFError, socket.timeout:
-            pass
+            return False
         except Exception as error:
             if type(error).__name__ not in ("EOF", "TIMEOUT"):
                 raise
+            return False
 
     def until(self, text, timeout=90):
         deadline = time.monotonic() + timeout
@@ -66,8 +69,9 @@ class Terminal:
         while self.child.isalive() and time.monotonic() < deadline:
             self.read()
         assert not self.child.isalive(), f"Process did not exit:\n{self.output}"
-        for _ in range(3):
-            self.read()
+        # Fast progress updates can leave many chunks queued after the process exits.
+        while time.monotonic() < deadline and self.read():
+            pass
         return self.child.wait()
 
     def close(self):
