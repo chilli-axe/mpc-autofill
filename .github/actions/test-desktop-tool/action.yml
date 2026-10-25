@@ -46,6 +46,7 @@ runs:
       env:
         CHROME_BINARY: ${{ steps.chrome.outputs.chrome-path }}
         CHROMEDRIVER: ${{ steps.chrome.outputs.chromedriver-path }}
+        SE_CHROMEDRIVER: ${{ steps.chrome.outputs.chromedriver-path }}
       run: |
         if [[ "$RUNNER_OS" == Linux ]]; then
           uv run --locked --group dev python -c "from src.pdf_maker import get_ghostscript_path, get_ghostscript_version, is_ghostscript_version_supported; path=get_ghostscript_path(); assert path and is_ghostscript_version_supported(get_ghostscript_version(path)), 'Supported Ghostscript required in CI'"
