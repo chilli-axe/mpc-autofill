@@ -123,7 +123,7 @@ def main():
             original = None
             for name, flags, budget in [
                 ("cached-images", ["--download-images-only"], 20),
-                ("pdf-export", ["--exportpdf", "--dtc-icc-profile", str(profile)], 90),
+                ("pdf-export", ["--exportpdf", "--no-skip-pdf-if-exists", "--dtc-icc-profile", str(profile)], 90),
                 ("pdf-reuse", ["--exportpdf", "--dtc-icc-profile", str(profile), "--skip-pdf-if-exists"], 15),
             ]:
                 for interactive in (False, True):
