@@ -1,9 +1,11 @@
 import json
 import os
 from pathlib import Path
+from xml.sax.saxutils import escape
 
 import attr
 import pytest
+from click.testing import CliRunner
 from PIL import Image
 
 from src import pdf_maker
@@ -121,6 +123,61 @@ def test_manifest_cannot_reuse_existing_pdf_outside_export_directory(cached_expo
     manifest["outputs"] = {"../outside.pdf": next(iter(manifest["outputs"].values()))}
     manifest_path.write_text(json.dumps(manifest))
     assert reuse_pdf_export(make_order(image_path), "DTC 300 DPI", [str(icc_path)]) is None
+
+
+@pytest.mark.parametrize("site", ["DriveThruCards", "MakePlayingCards"])
+def test_cli_reuses_unchanged_xml_by_default_and_can_force_rebuild(cached_export, monkeypatch, site):
+    image_path, icc_path, _ = cached_export
+    card = f"<card><id>{escape(str(image_path))}</id><slots>0,1</slots><name>{image_path.name}</name></card>"
+    Path("deck.xml").write_text(
+        "<order><details><quantity>2</quantity><stock>(S30) Standard Smooth</stock><foil>false</foil></details>"
+        f"<fronts>{card}</fronts><backs>{card}</backs><cardback></cardback></order>",
+        encoding="utf-8",
+    )
+    conversions, layouts = [], []
+
+    def convert(source, destination, config):
+        conversions.append(destination)
+        Path(destination).write_bytes(Path(source).read_bytes())
+        return True
+
+    def select_layout(_):
+        layouts.append(True)
+        return {"split_faces": False, "cards_per_file": 60}
+
+    monkeypatch.setattr(pdf_maker, "convert_pdf_to_pdfx", convert)
+    monkeypatch.setattr(pdf_maker.InquirerPy, "prompt", select_layout)
+    monkeypatch.setattr(autofill, "ensure_ghostscript_available", lambda: "test-gs")
+    monkeypatch.setattr(autofill, "get_ghostscript_path", lambda *_: "test-gs")
+    monkeypatch.setattr(autofill, "get_ghostscript_version", lambda _: "test version")
+    monkeypatch.setattr("src.logging.configure_loggers", lambda **_: None)
+    command = [
+        "--directory",
+        str(image_path.parent),
+        "--site",
+        site,
+        "--exportpdf",
+        "--allowsleep",
+        "--dtc-icc-profile",
+        str(icc_path),
+    ]
+
+    def run(*flags):
+        result = CliRunner().invoke(autofill.main, command + list(flags))
+        assert result.exit_code == 0, result.output
+
+    run()
+    outputs = [Path("export/deck/1.pdf")]
+    if site == "DriveThruCards":
+        outputs.append(Path("export/deck/1_pdfx.pdf"))
+    original = [(path.read_bytes(), path.stat().st_mtime_ns) for path in outputs]
+    with monkeypatch.context() as context:
+        context.setattr(pdf_maker, "PdfExporter", lambda **_: pytest.fail("unchanged XML rebuilt its PDF"))
+        run()
+        run("--skip-pdf-if-exists")
+    assert [(path.read_bytes(), path.stat().st_mtime_ns) for path in outputs] == original
+    run("--no-skip-pdf-if-exists")
+    assert len(conversions if site == "DriveThruCards" else layouts) == 2
 
 
 def test_dtc_export_reuses_fresh_order_and_rebuilds_same_mtime_image(cached_export, monkeypatch):

@@ -473,9 +473,12 @@ def get_dtc_pdf_paths_for_order(
     is_flag=True,
 )
 @click.option(
-    "--skip-pdf-if-exists",
-    default=False,
-    help="Reuse exported PDFs only when the order, image contents and export settings match.",
+    "--skip-pdf-if-exists/--no-skip-pdf-if-exists",
+    default=True,
+    help=(
+        "Reuse exported PDFs when the order, image contents and export settings match. "
+        "Use --no-skip-pdf-if-exists to rebuild or choose a different standard PDF layout."
+    ),
     is_flag=True,
 )
 @click.option(
