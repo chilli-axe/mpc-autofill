@@ -121,9 +121,15 @@ def main():
 
             exported = work / "export/order"
             original = None
+            # Intel Mac runners already need about 85s for this deck before normal runner variation.
+            export_budget = 120 if platform.system() == "Darwin" and platform.machine() == "x86_64" else 90
             for name, flags, budget in [
                 ("cached-images", ["--download-images-only"], 20),
-                ("pdf-export", ["--exportpdf", "--no-skip-pdf-if-exists", "--dtc-icc-profile", str(profile)], 90),
+                (
+                    "pdf-export",
+                    ["--exportpdf", "--no-skip-pdf-if-exists", "--dtc-icc-profile", str(profile)],
+                    export_budget,
+                ),
                 ("pdf-reuse", ["--exportpdf", "--dtc-icc-profile", str(profile), "--skip-pdf-if-exists"], 15),
             ]:
                 for interactive in (False, True):
