@@ -103,6 +103,19 @@ def count_pdf_pages(file_path: str) -> int:
         return len(re.findall(rb"/Type\s*/Page\b", pdf_file.read()))
 
 
+def stub_failed_downloads(monkeypatch, order, all_fronts=False):
+    def download_fronts(*_args, **_kwargs):
+        for index, card in enumerate(order.fronts.cards_by_id.values()):
+            card.downloaded = not all_fronts and index != 0
+
+    def download_backs(*_args, **_kwargs):
+        for card in order.backs.cards_by_id.values():
+            card.downloaded = True
+
+    monkeypatch.setattr(order.fronts, "download_images", download_fronts)
+    monkeypatch.setattr(order.backs, "download_images", download_backs)
+
+
 # endregion
 
 # region Ghostscript
@@ -391,18 +404,6 @@ def test_standard_driver_factories_accept_only_upstream_kwargs(browser: constant
     assert set(factory_parameters.keys()) == {"headless", "binary_location"}
 
 
-def test_cli_help_includes_download_images_only_option() -> None:
-    result = CliRunner().invoke(autofill_cli.main, ["--help"])
-    assert result.exit_code == 0
-    assert "--download-images-only" in result.output
-
-
-def test_cli_help_includes_global_log_level_option() -> None:
-    result = CliRunner().invoke(autofill_cli.main, ["--help"])
-    assert result.exit_code == 0
-    assert "--log-level" in result.output
-
-
 def test_cli_help_documents_new_flags() -> None:
     result = CliRunner().invoke(autofill_cli.main, ["--help"])
     assert result.exit_code == 0
@@ -413,6 +414,9 @@ def test_cli_help_documents_new_flags() -> None:
     assert "--browser-profile-name" in result.output
     assert "--skip-dtc-instructions" in result.output
     assert "detailed Selenium step-by-step logs" in result.output
+    assert "--log-level" in result.output
+    site_line = next(line for line in result.output.splitlines() if line.strip().startswith("--site ["))
+    assert site_line.lower().endswith("drivethrucards]")
 
 
 def test_configure_tls_uses_bundled_certificates_without_overwriting_user_value(
@@ -524,13 +528,6 @@ def test_dtc_overridden_explicit_flags_are_explained_in_logs(
     assert "Ignoring --image-post-processing" in caplog.text
     assert "Ignoring --no-auto-save" in caplog.text
     assert "each DriveThruCards XML is always created as a separate product" in caplog.text
-
-
-def test_cli_site_choices_list_drivethrucards_last() -> None:
-    result = CliRunner().invoke(autofill_cli.main, ["--help"])
-    assert result.exit_code == 0
-    site_line = next(line for line in result.output.splitlines() if line.strip().startswith("--site ["))
-    assert site_line.lower().endswith("drivethrucards]")
 
 
 def test_main_drive_thru_cards_exportpdf_requires_one_pdfx_without_browser_automation(
@@ -2405,16 +2402,7 @@ def test_pdf_export_complete_separate_faces(monkeypatch, card_order_valid):
 def test_pdf_export_stops_before_creating_pdf_when_an_image_download_fails(monkeypatch, card_order_valid):
     monkeypatch.setattr("src.pdf_maker.PdfExporter.ask_questions", lambda _self: None)
 
-    def download_fronts(*_args):
-        for index, card in enumerate(card_order_valid.fronts.cards_by_id.values()):
-            card.downloaded = index != 0
-
-    def download_backs(*_args):
-        for card in card_order_valid.backs.cards_by_id.values():
-            card.downloaded = True
-
-    monkeypatch.setattr(card_order_valid.fronts, "download_images", download_fronts)
-    monkeypatch.setattr(card_order_valid.backs, "download_images", download_backs)
+    stub_failed_downloads(monkeypatch, card_order_valid)
     exporter = PdfExporter(order=card_order_valid)
     monkeypatch.setattr(exporter, "export", lambda: pytest.fail("PDF export should not start"))
     manager_stop_calls = []
@@ -2606,16 +2594,7 @@ def test_execute_order_stops_before_upload_when_downloads_fail(monkeypatch, card
     driver = AutofillDriver(target_site=constants.TargetSites.MakePlayingCards)
     driver.initialise_bars()
 
-    def fail_fronts(**_kwargs):
-        for index, card in enumerate(card_order_valid.fronts.cards_by_id.values()):
-            card.downloaded = index != 0
-
-    def download_backs(**_kwargs):
-        for card in card_order_valid.backs.cards_by_id.values():
-            card.downloaded = True
-
-    monkeypatch.setattr(card_order_valid.fronts, "download_images", fail_fronts)
-    monkeypatch.setattr(card_order_valid.backs, "download_images", download_backs)
+    stub_failed_downloads(monkeypatch, card_order_valid)
     monkeypatch.setattr(driver, "initialise_order", lambda **_kwargs: pytest.fail("upload must not start"))
 
     with pytest.raises(ImageDownloadError, match="stopped before creating your order"):
@@ -2668,16 +2647,7 @@ def test_console_filter_hides_file_only_records():
 
 
 def test_download_images_only_raises_summary_when_downloads_fail(monkeypatch, card_order_valid):
-    def fail_fronts(*_args, **_kwargs):
-        for card in card_order_valid.fronts.cards_by_id.values():
-            card.downloaded = False
-
-    def download_backs(*_args, **_kwargs):
-        for card in card_order_valid.backs.cards_by_id.values():
-            card.downloaded = True
-
-    monkeypatch.setattr(card_order_valid.fronts, "download_images", fail_fronts)
-    monkeypatch.setattr(card_order_valid.backs, "download_images", download_backs)
+    stub_failed_downloads(monkeypatch, card_order_valid, all_fronts=True)
 
     with pytest.raises(ImageDownloadError, match="stopped before creating your order"):
         autofill_cli.download_images_for_orders(orders=[card_order_valid], post_processing_config=None)
