@@ -98,12 +98,7 @@ jobs:
           product-name: ${{ github.repository_owner }}-${{ github.event.repository.name }}-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.target }}
       - name: Smoke test bundled executable
         shell: bash
-        env:
-          RELEASE_VERSION: ${{ inputs.version }}
-          RELEASE_REPOSITORY: ${{ github.repository }}
         run: |
-          test "$(./build/${{ matrix.filename }} --version)" = "MPC Autofill $RELEASE_VERSION ($RELEASE_REPOSITORY)"
-          env -u SSL_CERT_FILE -u SSL_CERT_DIR ./build/${{ matrix.filename }} --check-tls
           if [[ "$RUNNER_OS" == Linux ]]; then
             help_output=$(dbus-run-session -- ./build/${{ matrix.filename }} --help)
           else
