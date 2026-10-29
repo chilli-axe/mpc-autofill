@@ -146,9 +146,47 @@ def test_sparse_slots_preserve_all_cards_and_dtc_jpeg_deduplication(monkeypatch,
     )
     exporter = PdfExporter(order=order, export_mode=mode, number_of_cards_per_file=1)
     config = ImagePostProcessingConfig(300, ImageResizeMethods.LANCZOS, output_format="JPEG")
+    if mode == "drive_thru_cards":
+        export = exporter.export
+
+        def check_precomputed_images():
+            paths = [images[name].file_path for name in ("back", "first", "second")]
+            assert list(exporter.processed_images) == paths
+            for path in paths:
+                processed = post_process_image(Path(path).read_bytes(), config)
+                with BytesIO() as buffer:
+                    save_processed_image(processed, buffer, config)
+                    assert exporter.processed_images[path] == buffer.getvalue()
+            export()
+
+        monkeypatch.setattr(exporter, "export", check_precomputed_images)
     outputs = [Path(path).read_bytes() for path in exporter.execute(config)]
     page_counts = [len(re.findall(rb"/Type /Page\b", output)) for output in outputs]
     assert page_counts == ([4] if mode == "drive_thru_cards" else [2, 2])
     if mode == "drive_thru_cards":
         assert outputs[0].count(b"DCTDecode") == 3
     assert exporter.processed_images == {}
+
+
+def test_dtc_preprocessing_failure_clears_cache_and_stops_manager(monkeypatch, tmp_path):
+    order = CardOrder(
+        name="missing",
+        details=Details(quantity=1),
+        fronts=CardImageCollection(num_slots=1, face=Faces.front),
+        backs=CardImageCollection(num_slots=1, face=Faces.back),
+    )
+    valid_path = tmp_path / "back.png"
+    Image.new("RGB", (32, 32), "black").save(valid_path)
+    missing_path = tmp_path / "missing.png"
+    exporter = PdfExporter(order=order, export_mode="drive_thru_cards")
+    exporter.paths_by_slot = {0: (str(valid_path), str(missing_path))}
+    monkeypatch.setattr(exporter, "download_and_collect_images", lambda **_kwargs: None)
+    stop_calls = []
+    monkeypatch.setattr(exporter.manager, "stop", lambda: stop_calls.append(True))
+
+    with pytest.raises(FileNotFoundError) as error:
+        exporter.execute(ImagePostProcessingConfig(300, ImageResizeMethods.LANCZOS, output_format="JPEG"))
+
+    assert error.value.filename == str(missing_path)
+    assert exporter.processed_images == {}
+    assert stop_calls == [True]

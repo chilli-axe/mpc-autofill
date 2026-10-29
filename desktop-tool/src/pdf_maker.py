@@ -325,16 +325,7 @@ class PdfExporter:
     def add_image(self, image_path: str) -> None:
         self.pdf.add_page()
         if self.export_mode == "drive_thru_cards" and self.image_post_processing_config:
-            image_bytes = self.processed_images.get(image_path)
-            if image_bytes is None:
-                with open(image_path, "rb") as f:
-                    raw_image = f.read()
-                processed_image = post_process_image(raw_image=raw_image, config=self.image_post_processing_config)
-                with BytesIO() as buffer:
-                    save_processed_image(processed_image, file_path=buffer, config=self.image_post_processing_config)
-                    image_bytes = buffer.getvalue()
-                # Process repeated cards once; fpdf deduplicates the encoded JPEG bytes.
-                self.processed_images[image_path] = image_bytes
+            image_bytes = self.processed_images[image_path]
         else:
             with open(image_path, "rb") as f:
                 image_bytes = f.read()
@@ -393,6 +384,21 @@ class PdfExporter:
                 self.input_fingerprint = fingerprint_pdf_inputs(self.order, [profile] if profile else [])
             except OSError:
                 self.input_fingerprint = None
+            if self.export_mode == "drive_thru_cards" and post_processing_config:
+
+                def process_image(image_path: str) -> bytes:
+                    with open(image_path, "rb") as f:
+                        raw_image = f.read()
+                    processed_image = post_process_image(raw_image=raw_image, config=post_processing_config)
+                    with BytesIO() as buffer:
+                        save_processed_image(processed_image, file_path=buffer, config=post_processing_config)
+                        return buffer.getvalue()
+
+                image_paths = list(
+                    dict.fromkeys(path for slot in sorted(self.paths_by_slot) for path in self.paths_by_slot[slot])
+                )
+                with ThreadPoolExecutor(max_workers=THREADS) as pool:
+                    self.processed_images.update(zip(image_paths, pool.map(process_image, image_paths)))
             if self.separate_faces:
                 self.number_of_cards_per_file = 1
                 self.export_separate_faces()
