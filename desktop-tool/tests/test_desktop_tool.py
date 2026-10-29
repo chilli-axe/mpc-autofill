@@ -329,11 +329,13 @@ def test_ensure_ghostscript_available_does_not_prompt_when_already_installed(
 def test_get_undetected_chrome_driver_applies_user_profile_options(monkeypatch: pytest.MonkeyPatch) -> None:
     captured = {"options": None, "version_main": None}
 
-    def fake_chrome(*, options, version_main):
+    def fake_chrome(*, options, version_main, user_data_dir):
         captured["options"] = options
         captured["version_main"] = version_main
+        captured["user_data_dir"] = user_data_dir
         return object()
 
+    monkeypatch.setattr(webdrivers.platform, "machine", lambda: "x86_64")
     monkeypatch.setattr(webdrivers, "_detect_chrome_version", lambda _: 120)
     monkeypatch.setattr("undetected_chromedriver.Chrome", fake_chrome)
 
@@ -344,7 +346,8 @@ def test_get_undetected_chrome_driver_applies_user_profile_options(monkeypatch: 
     )
 
     assert captured["options"].binary_location == "/tmp/chrome"
-    assert "--user-data-dir=/tmp/chrome-data" in captured["options"].arguments
+    assert not any(arg.startswith("--user-data-dir") for arg in captured["options"].arguments)
+    assert captured["user_data_dir"] == "/tmp/chrome-data"
     assert "--profile-directory=Profile 7" in captured["options"].arguments
     assert captured["options"].capabilities["goog:loggingPrefs"] == {"browser": "ALL"}
     assert captured["version_main"] == 120

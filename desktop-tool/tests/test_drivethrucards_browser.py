@@ -5,10 +5,12 @@ CHROME_BINARY and CHROMEDRIVER can select an existing local browser/driver pair.
 """
 
 import os
+import platform
 import sys
 import threading
 from functools import partial
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
 
 import pytest
 from selenium.webdriver import Chrome, ChromeOptions
@@ -175,5 +177,27 @@ def test_actual_dtc_browser_factory_with_temporary_profile(upload_page, tmp_path
         assert driver.title == "Upload fixture"
         driver.find_element("id", "card_type_select").click()
         assert driver.execute_script("return document.readyState") == "complete"
+    finally:
+        driver.quit()
+
+
+@pytest.mark.skipif(
+    sys.platform != "darwin" or platform.machine() != "arm64", reason="Apple Silicon DTC browser stack smoke"
+)
+def test_native_mac_dtc_browser_preserves_stealth_and_profile(tmp_path):
+    driver = get_undetected_chrome_driver(
+        headless=True,
+        binary_location=os.environ.get("CHROME_BINARY"),
+        user_data_dir=str(tmp_path),
+        profile_directory="Profile 7",
+    )
+    try:
+        driver.get("data:text/html,<title>DTC driver smoke</title><body>Local fixture</body>")
+        driver.find_element("tag name", "body")
+        assert driver.execute_script("return Object.keys(window).filter(k => k.startsWith('cdc_'))") == []
+        assert not driver.execute_script("return navigator.webdriver")
+        driver.get("chrome://version")
+        profile_path = driver.find_element("id", "profile_path").text
+        assert Path(profile_path).resolve() == (tmp_path / "Profile 7").resolve()
     finally:
         driver.quit()
