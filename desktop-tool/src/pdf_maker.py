@@ -20,6 +20,8 @@ from src.exc import ImageDownloadError
 from src.formatting import bold
 from src.logging import logger
 from src.order import CardOrder
+from src.pdf_cache import fingerprint_pdf_inputs
+from src.pdf_cache import get_export_directory as get_export_directory
 from src.processing import (
     DTC_CARD_HEIGHT_INCHES,
     DTC_CARD_WIDTH_INCHES,
@@ -36,11 +38,6 @@ MIN_GHOSTSCRIPT_VERSION = (10, 5)
 class PdfXConversionConfig:
     icc_profile_path: Optional[str] = None
     ghostscript_path: Optional[str] = None
-
-
-def get_export_directory(order_name: Optional[str]) -> str:
-    basename = os.path.basename(str(order_name)) or "cards.xml"
-    return os.path.join("export", os.path.splitext(basename)[0])
 
 
 def get_ghostscript_path(explicit_path: Optional[str] = None) -> Optional[str]:
@@ -373,8 +370,6 @@ class PdfExporter:
         self.image_post_processing_config = post_processing_config
         try:
             self.download_and_collect_images(post_processing_config=post_processing_config)
-            from src.pdf_cache import fingerprint_pdf_inputs
-
             profile = self.pdfx_config.icc_profile_path if self.pdfx_config else None
             try:
                 self.input_fingerprint = fingerprint_pdf_inputs(self.order, [profile] if profile else [])
