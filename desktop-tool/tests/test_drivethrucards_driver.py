@@ -78,19 +78,28 @@ def test_authenticate_dtc_returns_immediately_when_already_logged_in(dtc_driver:
 
 def test_capture_dtc_publisher_name_preserves_email_local_part(dtc_driver: AutofillDriver) -> None:
     email_input = SimpleNamespace(get_attribute=lambda name: "bradley.smith-42@example.com")
-    dtc_driver.driver = SimpleNamespace(
-        find_elements=lambda by, selector: [email_input], implicitly_wait=lambda _: None
-    )
+    waits = []
+    dtc_driver.driver = SimpleNamespace(find_elements=lambda by, selector: [email_input], implicitly_wait=waits.append)
 
     dtc_driver._capture_dtc_publisher_name()
 
     assert dtc_driver.dtc_publisher_name == "bradley.smith-42"
+    assert waits == [0, 5]
+
+
+def test_authenticated_selector_matches_current_account_menu() -> None:
+    selector = TargetSites.DriveThruCards.value.selectors.authenticated_indicator_selector
+
+    assert "[data-cy='accountMenu']" in selector
+    assert "[aria-label='Log Out']" in selector
 
 
 def test_publisher_ready_accepts_visible_publish_navigation(dtc_driver: AutofillDriver) -> None:
+    waits = []
+
     class FakeWebDriver:
         def implicitly_wait(self, value: int) -> None:
-            pass
+            waits.append(value)
 
         def find_elements(self, by: By, selector: str):
             if by == By.XPATH and "normalize-space()='Publish'" in selector:
@@ -100,6 +109,7 @@ def test_publisher_ready_accepts_visible_publish_navigation(dtc_driver: Autofill
     dtc_driver.driver = FakeWebDriver()
 
     assert dtc_driver.is_dtc_publisher_ready() is True
+    assert waits == [0, 5]
 
 
 def test_authenticate_dtc_opens_login_pane_then_waits(
@@ -253,11 +263,12 @@ def test_initialise_driver_retries_when_initial_window_is_already_closed(
     assert created == [failing_driver, working_driver]
     assert failing_driver.quit_called is True
     assert dtc_driver.driver is working_driver
+    assert ("set_window_size", 1200, 900) in working_driver.calls
     assert ("implicitly_wait", 5) in working_driver.calls
     assert ("get", TargetSites.DriveThruCards.value.starting_url) in working_driver.calls
 
 
-def test_navigate_to_dtc_product_setup_clicks_links_without_direct_fallback(
+def test_navigate_to_dtc_product_setup_uses_fast_polling_and_no_direct_fallback(
     monkeypatch: pytest.MonkeyPatch, dtc_driver: AutofillDriver
 ) -> None:
     poll_calls = []
@@ -266,8 +277,8 @@ def test_navigate_to_dtc_product_setup_clicks_links_without_direct_fallback(
 
     dtc_driver.driver = SimpleNamespace(get=lambda url: get_calls.append(url))
 
-    def fake_poll(by, selector, **_kwargs):
-        poll_calls.append((by, selector))
+    def fake_poll(by, selector, timeout=30):
+        poll_calls.append((by, selector, timeout))
         return True
 
     dtc_driver.click_element_polling = fake_poll
@@ -276,8 +287,8 @@ def test_navigate_to_dtc_product_setup_clicks_links_without_direct_fallback(
     dtc_driver.navigate_to_dtc_product_setup()
 
     assert poll_calls == [
-        (By.CSS_SELECTOR, TargetSites.DriveThruCards.value.selectors.publisher_ready_selector),
-        (By.XPATH, "//a[contains(@href, 'pub_enter_product.php')]"),
+        (By.CSS_SELECTOR, TargetSites.DriveThruCards.value.selectors.publisher_ready_selector, 1),
+        (By.XPATH, "//a[contains(@href, 'pub_enter_product.php')]", 2),
     ]
     assert "Clicked 'Publisher Tools' link." in debug_logs
     assert "Clicked 'Set up a new title' link." in debug_logs

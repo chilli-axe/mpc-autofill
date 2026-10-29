@@ -735,6 +735,14 @@ def test_download_images_for_orders_downloads_fronts_and_backs() -> None:
     assert calls["backs"] == 1
 
 
+def test_nuitka_directives_include_runtime_data_and_cached_extraction() -> None:
+    with open(autofill_cli.__file__, "r", encoding="utf-8") as f:
+        source = f.read()
+    assert "--include-data-dir=assets=assets" in source
+    assert "--include-package-data=certifi" in source
+    assert "--onefile-tempdir-spec={CACHE_DIR}/mpc-autofill/{PRODUCT}-{VERSION}" in source
+
+
 # endregion
 
 # region ICC profile resolution
