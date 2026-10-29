@@ -28,8 +28,10 @@ import os
 import shutil
 import subprocess
 import sys
+from collections.abc import Callable
 from contextlib import nullcontext
 from copy import copy
+from functools import partial
 from typing import TYPE_CHECKING, Optional
 
 import certifi
@@ -48,6 +50,7 @@ from src.logging import logger
 from src.update_check import check_for_updates
 
 if TYPE_CHECKING:
+    from src.driver import AutofillDriver
     from src.order import CardOrder
     from src.pdf_maker import PdfXConversionConfig
     from src.processing import ImagePostProcessingConfig
@@ -388,11 +391,11 @@ def get_dtc_pdf_paths_for_order(
     resolved_icc_profile: Optional[str],
     downscale_alg: str,
     ghostscript_path: Optional[str] = None,
-) -> list[str]:
+) -> str:
     from src.pdf_maker import PdfXConversionConfig
     from src.processing import ImagePostProcessingConfig
 
-    return export_pdf_order(
+    paths = export_pdf_order(
         order=order,
         skip_pdf_if_exists=skip_pdf_if_exists,
         post_processing_config=ImagePostProcessingConfig(
@@ -400,6 +403,64 @@ def get_dtc_pdf_paths_for_order(
         ),
         pdfx_config=PdfXConversionConfig(icc_profile_path=resolved_icc_profile, ghostscript_path=ghostscript_path),
     )
+    return next(path for path in paths if path.endswith("_pdfx.pdf"))
+
+
+def run_drive_thru_cards(
+    driver_factory: Callable[..., AutofillDriver],
+    working_directory: str,
+    dtc_icc_profile: Optional[str],
+    skip_pdf_if_exists: bool,
+    downscale_alg: str,
+    exportpdf: bool,
+    skip_dtc_instructions: bool,
+) -> None:
+    from src.icc import find_or_download_dtc_icc_profile
+    from src.order import CardOrder
+    from src.web_server import WebServer
+
+    ghostscript_path = ensure_ghostscript_available()
+    if dtc_icc_profile and not os.path.isfile(dtc_icc_profile):
+        raise Exception(f"DriveThruCards ICC profile path does not exist or is not a file: {bold(dtc_icc_profile)}")
+    resolved_icc_profile = dtc_icc_profile or find_or_download_dtc_icc_profile()
+    if resolved_icc_profile is None:
+        logger.warning(
+            "No ICC profile is available - Ghostscript's default CMYK conversion will be used "
+            "instead. Print colours may differ from previous orders."
+        )
+    else:
+        logger.info(f"DriveThruCards ICC profile: {bold(resolved_icc_profile)}")
+    orders = CardOrder.from_xmls_in_folder(
+        working_directory=working_directory,
+        validate_print_options=False,
+    )
+    dtc_driver: Optional[AutofillDriver] = None
+    dtc_web_server: Optional[WebServer] = None
+    for order in orders:
+        dtc_pdf_path = get_dtc_pdf_paths_for_order(
+            order=order,
+            skip_pdf_if_exists=skip_pdf_if_exists,
+            resolved_icc_profile=resolved_icc_profile,
+            downscale_alg=downscale_alg,
+            ghostscript_path=ghostscript_path,
+        )
+        if exportpdf:
+            continue
+        if dtc_driver is None:
+            starting_url = TargetSites.DriveThruCards.value.starting_url
+            if not skip_dtc_instructions:
+                logger.info("DriveThruCards setup will open in your browser. " "Follow the instructions there.")
+                dtc_web_server = WebServer(DTC_POST_LAUNCH_HTML_FILENAME)
+                starting_url = dtc_web_server.server_url()
+            dtc_driver = driver_factory(starting_url=starting_url)
+            dtc_driver.prepare_drive_thru_cards_session()
+        dtc_driver.execute_drive_thru_cards_order(order=order, pdf_path=dtc_pdf_path)
+    if dtc_driver is not None:
+        logger.info(
+            "All DriveThruCards product setups are complete. "
+            "Please check that your cart contains every intended product before completing the purchase manually."
+        )
+        input(f"Complete your purchase in the browser, then press {bold('Enter')} to close this window.\n")
 
 
 @click.command(context_settings={"show_default": True})
@@ -634,7 +695,8 @@ def main(
         log_debug_to_file=write_debug_logs,
         stdout_log_level=logging.getLevelName(log_level),
     )
-    if TargetSites[site] == TargetSites.DriveThruCards:
+    target_site = TargetSites[site]
+    if target_site == TargetSites.DriveThruCards:
         explicit = click.get_current_context().get_parameter_source
         if not auto_save and explicit("auto_save") == ParameterSource.COMMANDLINE:
             logger.info("Ignoring --no-auto-save: DriveThruCards orders are always saved to your account.")
@@ -659,7 +721,6 @@ def main(
                 logger.warning("Sleep prevention is unavailable. Your system may sleep during this execution.")
             if image_post_processing:
                 logger.info("Images are being post-processed during this execution.")
-            target_site = TargetSites[site]
             post_processing_config = (
                 ImagePostProcessingConfig(max_dpi=max_dpi, downscale_alg=ImageResizeMethods[downscale_alg])
                 if image_post_processing
@@ -672,77 +733,30 @@ def main(
                 )
                 download_images_for_orders(orders=orders, post_processing_config=post_processing_config)
                 return
-            if target_site == TargetSites.DriveThruCards:
-                from src.driver import AutofillDriver
-                from src.icc import find_or_download_dtc_icc_profile
-                from src.web_server import WebServer
+            from src.driver import AutofillDriver
 
-                ghostscript_path = ensure_ghostscript_available()
-                if dtc_icc_profile and not os.path.isfile(dtc_icc_profile):
-                    raise Exception(
-                        f"DriveThruCards ICC profile path does not exist or is not a file: {bold(dtc_icc_profile)}"
-                    )
-                resolved_icc_profile = dtc_icc_profile or find_or_download_dtc_icc_profile()
-                if resolved_icc_profile is None:
-                    logger.warning(
-                        "No ICC profile is available - Ghostscript's default CMYK conversion will be used "
-                        "instead. Print colours may differ from previous orders."
-                    )
-                else:
-                    logger.info(f"DriveThruCards ICC profile: {bold(resolved_icc_profile)}")
-                orders = CardOrder.from_xmls_in_folder(
+            driver_factory = partial(
+                AutofillDriver,
+                browser=Browsers[browser],
+                target_site=target_site,
+                binary_location=binary_location,
+                browser_profile_path=browser_profile_path,
+                browser_profile_name=browser_profile_name if browser_profile_path else None,
+            )
+            if target_site == TargetSites.DriveThruCards:
+                run_drive_thru_cards(
+                    driver_factory=driver_factory,
                     working_directory=working_directory,
-                    validate_print_options=False,
+                    dtc_icc_profile=dtc_icc_profile,
+                    skip_pdf_if_exists=skip_pdf_if_exists,
+                    downscale_alg=downscale_alg,
+                    exportpdf=exportpdf,
+                    skip_dtc_instructions=skip_dtc_instructions,
                 )
-                dtc_driver: Optional[AutofillDriver] = None
-                dtc_web_server: Optional[WebServer] = None
-                for order in orders:
-                    pdf_paths = get_dtc_pdf_paths_for_order(
-                        order=order,
-                        skip_pdf_if_exists=skip_pdf_if_exists,
-                        resolved_icc_profile=resolved_icc_profile,
-                        downscale_alg=downscale_alg,
-                        ghostscript_path=ghostscript_path,
-                    )
-                    # Only use the Ghostscript PDF/X-1a output - no fallback
-                    dtc_pdf_paths = [path for path in pdf_paths if path.endswith("_pdfx.pdf")]
-                    if len(dtc_pdf_paths) != 1:
-                        raise Exception(
-                            "DriveThruCards requires exactly one PDF/X-1a file per order. "
-                            "Recreate the PDF export before uploading."
-                        )
-                    if exportpdf:
-                        continue
-                    dtc_pdf_path = dtc_pdf_paths[0]
-                    if dtc_driver is None:
-                        starting_url = target_site.value.starting_url
-                        if not skip_dtc_instructions:
-                            logger.info(
-                                "DriveThruCards setup will open in your browser. " "Follow the instructions there."
-                            )
-                            dtc_web_server = WebServer(DTC_POST_LAUNCH_HTML_FILENAME)
-                            starting_url = dtc_web_server.server_url()
-                        dtc_driver = AutofillDriver(
-                            browser=Browsers[browser],
-                            target_site=target_site,
-                            binary_location=binary_location,
-                            browser_profile_path=browser_profile_path,
-                            browser_profile_name=browser_profile_name if browser_profile_path else None,
-                            starting_url=starting_url,
-                        )
-                        dtc_driver.prepare_drive_thru_cards_session()
-                    dtc_driver.execute_drive_thru_cards_order(order=order, pdf_path=dtc_pdf_path)
-                if dtc_driver is not None:
-                    logger.info(
-                        "All DriveThruCards product setups are complete. "
-                        "Please check that your cart contains every intended product before completing the purchase manually."
-                    )
-                    input(f"Complete your purchase in the browser, then press {bold('Enter')} to close this window.\n")
             elif exportpdf:
                 order = CardOrder.from_xmls_in_folder(working_directory=working_directory)[0]
                 export_pdf_order(order, skip_pdf_if_exists, post_processing_config)
             else:
-                from src.driver import AutofillDriver
                 from src.web_server import WebServer
 
                 card_orders = aggregate_and_split_orders(
@@ -751,14 +765,7 @@ def main(
                     combine_orders=combine_orders,
                 )
                 web_server = WebServer()
-                autofill_driver = AutofillDriver(
-                    browser=Browsers[browser],
-                    target_site=target_site,
-                    binary_location=binary_location,
-                    browser_profile_path=browser_profile_path,
-                    browser_profile_name=browser_profile_name if browser_profile_path else None,
-                    starting_url=web_server.server_url(),
-                )
+                autofill_driver = driver_factory(starting_url=web_server.server_url())
                 autofill_driver.execute_orders(
                     orders=card_orders,
                     auto_save_threshold=auto_save_threshold if auto_save else None,

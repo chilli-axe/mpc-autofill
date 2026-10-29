@@ -196,12 +196,12 @@ def test_dtc_export_reuses_fresh_order_and_rebuilds_same_mtime_image(cached_expo
     def export():
         return autofill.get_dtc_pdf_paths_for_order(make_order(image_path), True, str(icc_path), "LANCZOS")
 
-    original = [Path(path) for path in export()]
+    original = Path(export())
     assert len(conversions) == 1
-    assert all(path.read_bytes().startswith(b"%PDF") for path in original)
+    assert original.read_bytes().startswith(b"%PDF")
     with monkeypatch.context() as context:
         context.setattr(pdf_maker, "PdfExporter", lambda **_: pytest.fail("unchanged export instantiated PdfExporter"))
-        assert [Path(path) for path in export()] == original
+        assert Path(export()) == original
 
     before = image_path.stat()
     Image.new("RGB", (20, 30), "blue").save(image_path)

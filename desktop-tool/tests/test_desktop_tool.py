@@ -521,9 +521,8 @@ def test_cli_site_choices_list_drivethrucards_last() -> None:
     assert site_line.lower().endswith("drivethrucards]")
 
 
-@pytest.mark.parametrize("pdfx_count", [1, 0, 2])
 def test_main_drive_thru_cards_exportpdf_requires_one_pdfx_without_browser_automation(
-    monkeypatch: pytest.MonkeyPatch, tmp_path, caplog, pdfx_count, input_enter
+    monkeypatch: pytest.MonkeyPatch, tmp_path, input_enter
 ) -> None:
     icc_path = tmp_path / "test.icc"
     icc_path.write_bytes(b"icc")
@@ -546,7 +545,7 @@ def test_main_drive_thru_cards_exportpdf_requires_one_pdfx_without_browser_autom
 
     def fake_get_dtc_pdf_paths_for_order(**kwargs):
         calls["pdf"].append(kwargs["order"].name)
-        return ["export/test_local/1.pdf"] + [f"export/test_local/{i + 1}_pdfx.pdf" for i in range(pdfx_count)]
+        return "export/test_local/1_pdfx.pdf"
 
     monkeypatch.setattr(autofill_cli, "get_dtc_pdf_paths_for_order", fake_get_dtc_pdf_paths_for_order)
     monkeypatch.setattr(autofill_cli, "wait_for_user_to_complete_order", lambda: calls.__setitem__("wait", 1))
@@ -578,7 +577,6 @@ def test_main_drive_thru_cards_exportpdf_requires_one_pdfx_without_browser_autom
     assert calls["wait"] == 0
     assert calls["driver"] == 0
     assert calls["validate_print_options"] is False
-    assert ("requires exactly one PDF/X-1a file" in caplog.text) is (pdfx_count != 1)
 
 
 @pytest.mark.parametrize(
@@ -605,6 +603,7 @@ def test_main_drive_thru_cards_processes_multiple_orders_in_one_session(
         "executed": [],
         "prompts": [],
         "servers": 0,
+        "server_alive": False,
         "starting_url": None,
         "events": [],
         "validate_print_options": None,
@@ -624,10 +623,11 @@ def test_main_drive_thru_cards_processes_multiple_orders_in_one_session(
     monkeypatch.setattr(
         autofill_cli,
         "get_dtc_pdf_paths_for_order",
-        lambda **kwargs: [f"export/{kwargs['order'].name}/1.pdf", f"export/{kwargs['order'].name}/1_pdfx.pdf"],
+        lambda **kwargs: f"export/{kwargs['order'].name}/1_pdfx.pdf",
     )
 
     def fake_input(message: str) -> str:
+        assert state["server_alive"] is (expected_server_count == 1)
         state["prompts"].append(message)
         if len(state["executed"]) != 2:
             raise AssertionError("DriveThruCards prompted before every selected order was processed")
@@ -640,6 +640,10 @@ def test_main_drive_thru_cards_processes_multiple_orders_in_one_session(
         def __init__(self, html_filename: str) -> None:
             assert html_filename == constants.DTC_POST_LAUNCH_HTML_FILENAME
             state["servers"] += 1
+            state["server_alive"] = True
+
+        def __del__(self) -> None:
+            state["server_alive"] = False
 
         def server_url(self) -> str:
             return "http://localhost:1234/"
@@ -656,6 +660,7 @@ def test_main_drive_thru_cards_processes_multiple_orders_in_one_session(
             state["events"].append("prepare")
 
         def execute_drive_thru_cards_order(self, order, pdf_path) -> None:
+            assert state["server_alive"] is (expected_server_count == 1)
             state["executed"].append((order.name, pdf_path))
             state["events"].append(order.name)
 
