@@ -370,8 +370,6 @@ class PdfExporter:
         if self.export_mode == "drive_thru_cards" and post_processing_config is not None:
             # Calculate exact pixel dimensions for the target DPI at DTC card size (2.73" x 3.71")
             post_processing_config.target_pixel_size = calculate_dtc_target_pixel_size(post_processing_config.max_dpi)
-            # Embed DPI metadata so PDF tools correctly interpret the image resolution
-            post_processing_config.embed_dpi_metadata = True
         self.image_post_processing_config = post_processing_config
         try:
             self.download_and_collect_images(post_processing_config=post_processing_config)

@@ -11,7 +11,10 @@ from src.constants import Faces, ImageResizeMethods, SourceType
 from src.order import CardImage, CardImageCollection, CardOrder, Details, is_image_valid
 from src.pdf_maker import PdfExporter
 from src.processing import (
+    DTC_CARD_HEIGHT_INCHES,
+    DTC_CARD_WIDTH_INCHES,
     ImagePostProcessingConfig,
+    calculate_dtc_target_pixel_size,
     post_process_image,
     save_processed_image,
 )
@@ -207,3 +210,21 @@ def test_dtc_exporter_enforces_geometry_with_explicit_overrides(monkeypatch):
         assert exporter.separate_faces is False
     finally:
         exporter.manager.stop()
+
+
+def test_dtc_dpi_round_trip_matches_cli_range():
+    for dpi in range(100, 1201):
+        for dimension in (DTC_CARD_WIDTH_INCHES, DTC_CARD_HEIGHT_INCHES):
+            assert round(round(dimension * dpi) / dimension) == dpi
+
+
+def test_target_sized_jpeg_preserves_dpi_metadata():
+    size = calculate_dtc_target_pixel_size(300)
+    config = ImagePostProcessingConfig(300, ImageResizeMethods.LANCZOS, output_format="JPEG", target_pixel_size=size)
+    processed = post_process_image(image_bytes(Image.new("RGB", size, "red")), config)
+    with BytesIO() as output:
+        save_processed_image(processed, output, config)
+        output.seek(0)
+        with Image.open(output) as decoded:
+            assert decoded.size == size
+            assert decoded.info["dpi"] == (300, 300)
