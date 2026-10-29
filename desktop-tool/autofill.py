@@ -88,20 +88,24 @@ DEFAULT_AUTO_SAVE = True
 DEFAULT_IMAGE_POST_PROCESSING = True
 TLS_CHECK_URL = "https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions.json"
 GHOSTSCRIPT_DOWNLOAD_PAGE = "https://ghostscript.com/releases/gsdnld.html"
+GHOSTSCRIPT_MACOS_DOWNLOAD_PAGE = "https://pages.uoregon.edu/koch/"
 GHOSTSCRIPT_VERSION = "10.08.0"
 GHOSTSCRIPT_MACOS_VERSION = "10.07.1"
+GHOSTSCRIPT_RELEASE_TAG = f"gs{GHOSTSCRIPT_VERSION.replace('.', '')}"
 GHOSTSCRIPT_WINDOWS_INSTALLERS = {
     "w32.exe": (
-        "https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs10080/gs10080w32.exe",
+        f"https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/{GHOSTSCRIPT_RELEASE_TAG}/"
+        f"{GHOSTSCRIPT_RELEASE_TAG}w32.exe",
         "42f9e97ea2580bc24e2604cc03a2213bdba6094869dbe9f8ede50f8dd86b7463",
     ),
     "w64.exe": (
-        "https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs10080/gs10080w64.exe",
+        f"https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/{GHOSTSCRIPT_RELEASE_TAG}/"
+        f"{GHOSTSCRIPT_RELEASE_TAG}w64.exe",
         "52a91b8bf09298788d7a57b9206127026c23eacd75405f0a131e26dc381dce50",
     ),
 }
 GHOSTSCRIPT_MACOS_INSTALLER = (
-    "https://pages.uoregon.edu/koch/Ghostscript-10.07.1.pkg",
+    f"{GHOSTSCRIPT_MACOS_DOWNLOAD_PAGE}Ghostscript-{GHOSTSCRIPT_MACOS_VERSION}.pkg",
     "7ea1d591c186b9f6f3e1d9cfd4ab2ef8570c5bcfd19b54086e8e183ed5892061",
 )
 
@@ -249,21 +253,11 @@ def _install_ghostscript() -> bool:
     """
 
     if sys.platform.startswith("darwin"):
-        try:
-            if _install_ghostscript_macos():
-                return True
-        except Exception as error:
-            logger.warning(f"Ghostscript installation failed: {error}")
-        logger.info("Please install Ghostscript from https://pages.uoregon.edu/koch/.")
-        return False
+        installer = _install_ghostscript_macos
+        download_page = GHOSTSCRIPT_MACOS_DOWNLOAD_PAGE
     elif sys.platform.startswith("win"):
-        try:
-            if _install_ghostscript_windows():
-                return True
-        except Exception as error:
-            logger.warning(f"Ghostscript installation failed: {error}")
-        logger.info(f"Please install Ghostscript from {GHOSTSCRIPT_DOWNLOAD_PAGE}.")
-        return False
+        installer = _install_ghostscript_windows
+        download_page = GHOSTSCRIPT_DOWNLOAD_PAGE
     else:
         package_manager = next(
             (candidate for candidate in ["apt", "dnf", "yum"] if shutil.which(candidate) is not None), None
@@ -280,6 +274,14 @@ def _install_ghostscript() -> bool:
             if result.returncode != 0:
                 logger.warning(f"Ghostscript installation via {package_manager} failed.")
             return result.returncode == 0
+
+    try:
+        if installer():
+            return True
+    except Exception as error:
+        logger.warning(f"Ghostscript installation failed: {error}")
+    logger.info(f"Please install Ghostscript from {download_page}.")
+    return False
 
 
 def ensure_ghostscript_available() -> str:
@@ -309,8 +311,8 @@ def ensure_ghostscript_available() -> str:
 
         logger.info(
             "Please install Ghostscript, then return here to continue.\n"
-            "macOS: https://pages.uoregon.edu/koch/\n"
-            "Windows: https://ghostscript.com/releases/gsdnld.html\n"
+            f"macOS: {GHOSTSCRIPT_MACOS_DOWNLOAD_PAGE}\n"
+            f"Windows: {GHOSTSCRIPT_DOWNLOAD_PAGE}\n"
             "Linux: use your package manager (e.g., apt install ghostscript)."
         )
         input("Press Enter to re-check for Ghostscript, or Ctrl+C to exit.")
