@@ -328,14 +328,13 @@ class PdfExporter:
             # This ensures refreshed image files are re-read when re-exporting PDFs.
         self.pdf.image(image_bytes, x=0, y=0, w=self.card_width_in_inches, h=self.card_height_in_inches)
 
-    def save_file(self) -> str:
+    def save_file(self) -> None:
         extra = ""
         if self.separate_faces:
             extra = f"{self.current_face}/"
         file_path = f"{self.save_path}{extra}{self.file_num}.pdf"
         self.pdf.output(file_path)
         self.saved_files.append(file_path)
-        return file_path
 
     def download_and_collect_images(self, post_processing_config: Optional[ImagePostProcessingConfig]) -> None:
         download_config = None if self.export_mode == "drive_thru_cards" else post_processing_config

@@ -67,8 +67,7 @@ def save_processed_image(
 ) -> None:
     # Remove XMP data if it's present in the image info to avoid "XMP data is too long" error.
     # JPEG format has a 64KB limit for XMP metadata in a single APP1 segment.
-    if "xmp" in img.info:
-        img.info.pop("xmp")
+    img.info.pop("xmp", None)
 
     img.save(file_path, **_build_save_kwargs(config=config))
 
