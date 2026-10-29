@@ -3,14 +3,30 @@ description: Set up a checksum-verified supported Ghostscript on every desktop p
 runs:
   using: composite
   steps:
-    - name: Install source build prerequisites
+    - name: Identify Linux runner image
+      id: image
+      if: runner.os == 'Linux'
+      shell: bash
+      run: echo "os=$ImageOS" >> "$GITHUB_OUTPUT"
+    - name: Cache Linux Ghostscript
+      id: ghostscript-cache
+      if: runner.os == 'Linux'
+      uses: actions/cache@v5
+      with:
+        path: ${{ runner.temp }}/desktop-ghostscript
+        key: desktop-ghostscript-${{ steps.image.outputs.os }}-${{ runner.arch }}-10.08.0-${{ hashFiles('.github/actions/setup-ghostscript/action.yml') }}
+    - name: Install patchelf
       if: runner.os == 'Linux'
       shell: bash
       run: |
         sudo apt-get update
-        sudo apt-get install --yes build-essential pkg-config curl xz-utils patchelf
+        sudo apt-get install --yes patchelf
+    - name: Install source build prerequisites
+      if: runner.os == 'Linux' && steps.ghostscript-cache.outputs.cache-hit != 'true'
+      shell: bash
+      run: sudo apt-get install --yes build-essential pkg-config curl xz-utils
     - name: Build Ghostscript 10.08.0
-      if: runner.os == 'Linux'
+      if: runner.os == 'Linux' && steps.ghostscript-cache.outputs.cache-hit != 'true'
       shell: bash
       run: |
         set -euo pipefail
@@ -24,6 +40,11 @@ runs:
         ./configure --prefix="$install_directory" --without-x --disable-gtk --disable-cups
         make -j4
         make install
+    - name: Use Linux Ghostscript
+      if: runner.os == 'Linux'
+      shell: bash
+      run: |
+        install_directory="$RUNNER_TEMP/desktop-ghostscript"
         test "$("$install_directory/bin/gs" --version)" = 10.08.0
         echo "$install_directory/bin" >> "$GITHUB_PATH"
     - name: Extract verified Windows Ghostscript
