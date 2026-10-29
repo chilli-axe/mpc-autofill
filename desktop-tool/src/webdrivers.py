@@ -104,31 +104,17 @@ def _detect_chrome_version(binary_location: Optional[str] = None) -> Optional[in
     """
     try:
         if sys.platform == "darwin":
-            result = subprocess.run(
-                [binary_location or "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", "--version"],
-                capture_output=True,
-                text=True,
-                timeout=5,
-            )
+            cmd = [binary_location or "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", "--version"]
         elif sys.platform == "win32":
             registry_key = (
                 r"HKEY_CURRENT_USER\Software\BraveSoftware\Brave-Browser\BLBeacon"
                 if binary_location and "brave" in binary_location.lower()
                 else r"HKEY_CURRENT_USER\Software\Google\Chrome\BLBeacon"
             )
-            result = subprocess.run(
-                ["reg", "query", registry_key, "/v", "version"],
-                capture_output=True,
-                text=True,
-                timeout=5,
-            )
+            cmd = ["reg", "query", registry_key, "/v", "version"]
         else:
-            result = subprocess.run(
-                [binary_location or "google-chrome", "--version"],
-                capture_output=True,
-                text=True,
-                timeout=5,
-            )
+            cmd = [binary_location or "google-chrome", "--version"]
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=5)
 
         # Extract version number from output (e.g., "Google Chrome 144.0.7559.110")
         match = re.search(r"(\d+)\.\d+\.\d+\.\d+", result.stdout)

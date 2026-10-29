@@ -364,6 +364,34 @@ def test_detect_chrome_version_uses_selected_brave_browser(monkeypatch: pytest.M
     assert r"BraveSoftware\Brave-Browser\BLBeacon" in captured["args"][2]
 
 
+@pytest.mark.parametrize(
+    ("platform", "binary", "command"),
+    [
+        ("darwin", None, ["/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", "--version"]),
+        ("darwin", "/Applications/Brave Browser", ["/Applications/Brave Browser", "--version"]),
+        ("linux", None, ["google-chrome", "--version"]),
+        ("linux", "/usr/bin/brave-browser", ["/usr/bin/brave-browser", "--version"]),
+        ("win32", None, ["reg", "query", r"HKEY_CURRENT_USER\Software\Google\Chrome\BLBeacon", "/v", "version"]),
+        (
+            "win32",
+            r"C:\BraveSoftware\brave.exe",
+            ["reg", "query", r"HKEY_CURRENT_USER\Software\BraveSoftware\Brave-Browser\BLBeacon", "/v", "version"],
+        ),
+    ],
+)
+def test_detect_chrome_version_builds_platform_command(monkeypatch, platform, binary, command):
+    calls = []
+
+    def run(args, **kwargs):
+        calls.append((args, kwargs))
+        return SimpleNamespace(stdout="Chrome 156.0.8078.73")
+
+    monkeypatch.setattr(webdrivers.sys, "platform", platform)
+    monkeypatch.setattr(webdrivers.subprocess, "run", run)
+    assert webdrivers._detect_chrome_version(binary) == 156
+    assert calls == [(command, {"capture_output": True, "text": True, "timeout": 5})]
+
+
 def test_get_undetected_chrome_driver_reports_missing_chrome(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr("undetected_chromedriver.find_chrome_executable", lambda: None)
 
