@@ -146,8 +146,6 @@ def get_undetected_chrome_driver(
             )
 
     options = uc.ChromeOptions()
-    options.add_argument("--no-sandbox")
-    options.add_argument("--log-level=3")
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--disable-blink-features=AutomationControlled")
     options.set_capability("goog:loggingPrefs", {"browser": "ALL"})
