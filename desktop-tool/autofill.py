@@ -252,13 +252,8 @@ def _install_ghostscript() -> bool:
     Attempt to install Ghostscript, logging failures and returning whether the installer succeeded.
     """
 
-    if sys.platform.startswith("darwin"):
-        installer = _install_ghostscript_macos
-        download_page = GHOSTSCRIPT_MACOS_DOWNLOAD_PAGE
-    elif sys.platform.startswith("win"):
-        installer = _install_ghostscript_windows
-        download_page = GHOSTSCRIPT_DOWNLOAD_PAGE
-    else:
+    platform = sys.platform
+    if not (platform.startswith("darwin") or platform.startswith("win")):
         package_manager = next(
             (candidate for candidate in ["apt", "dnf", "yum"] if shutil.which(candidate) is not None), None
         )
@@ -274,6 +269,13 @@ def _install_ghostscript() -> bool:
             if result.returncode != 0:
                 logger.warning(f"Ghostscript installation via {package_manager} failed.")
             return result.returncode == 0
+
+    if platform.startswith("darwin"):
+        installer = _install_ghostscript_macos
+        download_page = GHOSTSCRIPT_MACOS_DOWNLOAD_PAGE
+    else:
+        installer = _install_ghostscript_windows
+        download_page = GHOSTSCRIPT_DOWNLOAD_PAGE
 
     try:
         if installer():
