@@ -166,14 +166,6 @@ def convert_pdf_to_pdfx(
     )
     os.close(fd)
 
-    with tempfile.NamedTemporaryFile("w", suffix=".ps", delete=False) as pdfx_definition_file:
-        pdfx_definition_file.write(
-            _generate_pdfx_definition(
-                title=os.path.splitext(os.path.basename(output_path))[0], icc_profile_path=config.icc_profile_path
-            )
-        )
-        pdfx_definition_path = pdfx_definition_file.name
-
     cmd = [
         gs_path,
         "-dBATCH",
@@ -192,7 +184,14 @@ def convert_pdf_to_pdfx(
     ]
     if config.icc_profile_path:
         cmd.append(f"-sOutputICCProfile={config.icc_profile_path}")
-    cmd += [pdfx_definition_path, source_path]
+    cmd += [
+        "-c",
+        _generate_pdfx_definition(
+            title=os.path.splitext(os.path.basename(output_path))[0], icc_profile_path=config.icc_profile_path
+        ),
+        "-f",
+        source_path,
+    ]
 
     logger.debug(f"Ghostscript command: {' '.join(cmd)}")
     try:
@@ -213,7 +212,6 @@ def convert_pdf_to_pdfx(
         os.replace(temporary_output_path, output_path)
         return True
     finally:
-        os.unlink(pdfx_definition_path)
         if os.path.exists(temporary_output_path):
             os.unlink(temporary_output_path)
 

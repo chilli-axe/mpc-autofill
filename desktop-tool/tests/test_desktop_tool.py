@@ -120,6 +120,19 @@ def test_get_ghostscript_version_reads_stdout(monkeypatch: pytest.MonkeyPatch) -
     assert get_ghostscript_version("gs") == "10.02.1"
 
 
+@pytest.mark.parametrize("platform", ["darwin", "linux"])
+def test_pdfx_conversion_without_ghostscript_preserves_source(monkeypatch, tmp_path, platform):
+    monkeypatch.setattr(src.pdf_maker.sys, "platform", platform)
+    monkeypatch.setattr(src.pdf_maker.shutil, "which", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(src.pdf_maker.os.path, "isfile", lambda _path: False)
+    source = tmp_path / "source.pdf"
+    source.write_bytes(b"source")
+    assert get_ghostscript_path() is None
+    assert not convert_pdf_to_pdfx(str(source), str(tmp_path / "output.pdf"), PdfXConversionConfig())
+    assert source.read_bytes() == b"source"
+    assert list(tmp_path.iterdir()) == [source]
+
+
 def test_ensure_ghostscript_available_prompts_until_found(monkeypatch: pytest.MonkeyPatch, input_enter) -> None:
     paths = [None, "/usr/local/bin/gs"]
     called = {"version": 0}
@@ -836,6 +849,9 @@ def test_convert_pdf_to_pdfx_writes_output_atomically(monkeypatch: pytest.Monkey
     def fake_run(cmd, capture_output=True, text=True):
         assert "-dPDFX=1" in cmd
         assert "-dPDFACompatibilityPolicy=2" in cmd
+        assert cmd[-4] == "-c"
+        assert "/OutputIntents" in cmd[-3]
+        assert cmd[-2:] == ["-f", str(source_path)]
         output_arg = next(arg for arg in cmd if arg.startswith("-sOutputFile="))
         Path(output_arg.split("=", 1)[1]).write_bytes(b"%PDF-1.3 (PDF/X-1a:2001) /OutputIntents")
         return SimpleNamespace(returncode=0, stdout="", stderr="")
