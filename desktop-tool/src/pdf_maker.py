@@ -20,8 +20,7 @@ from src.exc import ImageDownloadError
 from src.formatting import bold
 from src.logging import logger
 from src.order import CardOrder
-from src.pdf_cache import fingerprint_pdf_inputs
-from src.pdf_cache import get_export_directory as get_export_directory
+from src.pdf_cache import fingerprint_pdf_inputs, get_export_directory
 from src.processing import (
     DTC_CARD_HEIGHT_INCHES,
     DTC_CARD_WIDTH_INCHES,

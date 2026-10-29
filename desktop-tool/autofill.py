@@ -31,7 +31,6 @@ import sys
 from collections.abc import Callable
 from contextlib import nullcontext
 from copy import copy
-from functools import partial
 from typing import TYPE_CHECKING, Optional
 
 import certifi
@@ -405,7 +404,7 @@ def get_dtc_pdf_paths_for_order(
 
 
 def run_drive_thru_cards(
-    driver_factory: Callable[..., AutofillDriver],
+    driver_factory: Callable[[str], AutofillDriver],
     working_directory: str,
     dtc_icc_profile: Optional[str],
     skip_pdf_if_exists: bool,
@@ -450,7 +449,7 @@ def run_drive_thru_cards(
                 logger.info("DriveThruCards setup will open in your browser. " "Follow the instructions there.")
                 dtc_web_server = WebServer(DTC_POST_LAUNCH_HTML_FILENAME)
                 starting_url = dtc_web_server.server_url()
-            dtc_driver = driver_factory(starting_url=starting_url)
+            dtc_driver = driver_factory(starting_url)
             dtc_driver.prepare_drive_thru_cards_session()
         dtc_driver.execute_drive_thru_cards_order(order=order, pdf_path=dtc_pdf_path)
     if dtc_driver is not None:
@@ -731,16 +730,19 @@ def main(
                 )
                 download_images_for_orders(orders=orders, post_processing_config=post_processing_config)
                 return
-            from src.driver import AutofillDriver
 
-            driver_factory = partial(
-                AutofillDriver,
-                browser=Browsers[browser],
-                target_site=target_site,
-                binary_location=binary_location,
-                browser_profile_path=browser_profile_path,
-                browser_profile_name=browser_profile_name if browser_profile_path else None,
-            )
+            def driver_factory(starting_url: str) -> AutofillDriver:
+                from src.driver import AutofillDriver
+
+                return AutofillDriver(
+                    browser=Browsers[browser],
+                    target_site=target_site,
+                    binary_location=binary_location,
+                    browser_profile_path=browser_profile_path,
+                    browser_profile_name=browser_profile_name if browser_profile_path else None,
+                    starting_url=starting_url,
+                )
+
             if target_site == TargetSites.DriveThruCards:
                 run_drive_thru_cards(
                     driver_factory=driver_factory,
@@ -763,7 +765,7 @@ def main(
                     combine_orders=combine_orders,
                 )
                 web_server = WebServer()
-                autofill_driver = driver_factory(starting_url=web_server.server_url())
+                autofill_driver = driver_factory(web_server.server_url())
                 autofill_driver.execute_orders(
                     orders=card_orders,
                     auto_save_threshold=auto_save_threshold if auto_save else None,
