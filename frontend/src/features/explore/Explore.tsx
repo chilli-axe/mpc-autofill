@@ -58,7 +58,8 @@ const useExploreSearchResults = (
           exploreSearchRequest.cardTypes,
           exploreSearchRequest.searchSettings,
           exploreSearchRequest.pageStart,
-          exploreSearchRequest.pageSize
+          exploreSearchRequest.pageSize,
+          exploreSearchRequest.artists ?? undefined
         )
         .then(setLocalResults);
     } else {
@@ -97,6 +98,7 @@ export function Explore() {
   const [backendType, setBackendType] = useState<BackendType>("remote");
   const [sortBy, setSortBy] = useState<SortBy>(SortBy.DateCreatedDescending);
   const [query, setQuery] = useState<string>("");
+  const [artist, setArtist] = useState<string>("");
   const [cardTypes, setCardTypes] = useState<Array<CardType>>([]);
   const [searchTypeSettings, setSearchTypeSettings] =
     useState<SearchTypeSettings>(defaultSettings.searchTypeSettings);
@@ -119,6 +121,7 @@ export function Explore() {
   }
   const setSortByAndResetPageStart = updateInputAndResetPageStart(setSortBy);
   const setQueryAndResetPageStart = updateInputAndResetPageStart(setQuery);
+  const setArtistAndResetPageStart = updateInputAndResetPageStart(setArtist);
   const setCardTypesAndResetPageStart =
     updateInputAndResetPageStart(setCardTypes);
   const setSearchTypeSettingsAndResetPageStart = updateInputAndResetPageStart(
@@ -145,6 +148,7 @@ export function Explore() {
       sourceSettings: sourceSettings,
     },
     query,
+    artists: artist.trim().length > 0 ? [artist.trim()] : null,
     cardTypes,
     pageStart,
     pageSize: ExplorePageSize,
@@ -193,6 +197,8 @@ export function Explore() {
           setSortBy={setSortByAndResetPageStart}
           searchQuery={query}
           setSearchQuery={setQueryAndResetPageStart}
+          artist={artist}
+          setArtist={setArtistAndResetPageStart}
           cardTypes={cardTypes}
           setCardTypes={setCardTypesAndResetPageStart}
           searchTypeSettings={searchTypeSettings}
