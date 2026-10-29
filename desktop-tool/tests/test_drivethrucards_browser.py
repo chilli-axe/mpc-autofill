@@ -184,7 +184,9 @@ def test_actual_dtc_browser_factory_with_temporary_profile(upload_page, tmp_path
 @pytest.mark.skipif(
     sys.platform != "darwin" or platform.machine() != "arm64", reason="Apple Silicon DTC browser stack smoke"
 )
-def test_native_mac_dtc_browser_preserves_stealth_and_profile(tmp_path):
+def test_native_mac_dtc_browser_preserves_stealth_and_profile(tmp_path, monkeypatch):
+    # Selenium prefers SE_CHROMEDRIVER over the driver path it is given, which would bypass the patched driver.
+    monkeypatch.delenv("SE_CHROMEDRIVER", raising=False)
     driver = get_undetected_chrome_driver(
         headless=True,
         binary_location=os.environ.get("CHROME_BINARY"),
