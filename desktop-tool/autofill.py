@@ -35,7 +35,6 @@ from typing import TYPE_CHECKING, Optional
 import certifi
 import click
 from click.core import ParameterSource
-from InquirerPy import inquirer
 
 from src.build_info import RELEASE_REPOSITORY, VERSION
 from src.constants import (
@@ -124,6 +123,8 @@ def should_run_interactive_onboarding() -> bool:
 
 
 def run_interactive_onboarding() -> tuple[str, str, bool, bool]:
+    from InquirerPy import inquirer
+
     browser = inquirer.rawlist(
         message="Which web browser should the tool run on? (Press Enter if you're not sure.)",
         choices=get_browser_picker_choices(),

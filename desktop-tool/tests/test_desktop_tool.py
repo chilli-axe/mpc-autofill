@@ -423,7 +423,7 @@ def test_startup_defers_heavy_runtime_imports() -> None:
             "-c",
             (
                 "import sys, autofill; "
-                "heavy=('undetected_chromedriver','fpdf','selenium','googleapiclient','wakepy'); "
+                "heavy=('undetected_chromedriver','fpdf','selenium','googleapiclient','wakepy','InquirerPy'); "
                 "assert not [name for name in heavy if any(m == name or m.startswith(name + '.') for m in sys.modules)]"
             ),
         ],
@@ -470,7 +470,7 @@ def test_interactive_onboarding_uses_picker_and_skips_dtc_only_questions(
         prompts.append(kwargs)
         return Prompt()
 
-    monkeypatch.setattr(autofill_cli.inquirer, "rawlist", fake_rawlist)
+    monkeypatch.setattr("InquirerPy.inquirer.rawlist", fake_rawlist)
 
     assert autofill_cli.run_interactive_onboarding() == expected
     assert len(prompts) == prompt_count
