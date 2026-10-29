@@ -133,7 +133,7 @@ class AutofillDriver:
                 raise Exception(
                     f"An error occurred while attempting to configure the webdriver for your specified browser. "
                     f"Please make sure you have installed the browser & that it is up to date:\n\n{bold(e)}"
-                )
+                ) from e
 
     def initialise_bars(self) -> None:
         # set the total for upload/download bars to 0 here, then change the total according to each order

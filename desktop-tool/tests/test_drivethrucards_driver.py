@@ -621,3 +621,17 @@ def test_account_visibility_errors_restore_wait_and_return_false(dtc_driver, met
     dtc_driver.driver = SimpleNamespace(find_elements=fail, implicitly_wait=waits.append)
     assert getattr(dtc_driver, method)() is False
     assert waits[-1] == 5
+
+
+def test_initialise_driver_chains_last_failure(monkeypatch, dtc_driver):
+    errors = [sl_exc.WebDriverException(f"attempt {attempt}") for attempt in range(1, 4)]
+    failures = iter(errors)
+
+    def create_driver():
+        raise next(failures)
+
+    dtc_driver.create_driver = create_driver
+    monkeypatch.setattr("src.driver.time.sleep", lambda _seconds: None)
+    with pytest.raises(Exception, match="attempt 3") as error:
+        dtc_driver.initialise_driver()
+    assert error.value.__cause__ is errors[-1]
