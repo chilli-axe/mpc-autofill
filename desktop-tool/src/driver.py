@@ -850,9 +850,7 @@ class AutofillDriver:
 
         # Wait for and select the Euro Poker card option from the dropdown.
         # Any missing required element below aborts the order - a partial upload must not report success.
-        WebDriverWait(self.driver, 15).until(presence_of_element_located((By.ID, "card_type_select")))
-        # Re-fetch the element to avoid stale reference after page/tab switch
-        select = Select(self.driver.find_element(By.ID, "card_type_select"))
+        select = Select(WebDriverWait(self.driver, 15).until(presence_of_element_located((By.ID, "card_type_select"))))
 
         # Find option containing "Euro Poker" (case-insensitive search)
         euro_poker_option_text = next(
@@ -863,9 +861,7 @@ class AutofillDriver:
         select.select_by_visible_text(euro_poker_option_text)
         logger.debug(f"Selected '{euro_poker_option_text}' from dropdown.")
 
-        # Convert PDF path to absolute if needed
-        if not os.path.isabs(pdf_path):
-            pdf_path = os.path.abspath(pdf_path)
+        pdf_path = os.path.abspath(pdf_path)
 
         if not os.path.exists(pdf_path):
             raise Exception(f"PDF file not found: {pdf_path}")
@@ -891,16 +887,18 @@ class AutofillDriver:
 
         # Wait for upload to complete - look for success message
         try:
-            WebDriverWait(self.driver, 120).until(
+            upload_status = WebDriverWait(self.driver, 120).until(
                 lambda d: re.search(
                     r"\bcard file .+ successfully uploaded!",
-                    d.find_element(By.ID, "status_messages").text if d.find_elements(By.ID, "status_messages") else "",
+                    d.find_element(By.ID, "status_messages").text,
                     re.IGNORECASE,
                 )
             )
         except sl_exc.TimeoutException as exc:
             raise Exception("The PDF upload was not confirmed by DriveThruCards within 120 seconds.") from exc
-        logger.info("DriveThruCards upload status: %s", self.driver.find_element(By.ID, "status_messages").text)
+        logger.info("DriveThruCards upload status: %s", cast(re.Match[str], upload_status).string)
+
+    def complete_dtc_product_setup(self) -> None:
 
         # Wait for the continue button to become active.
         # The button starts with an onclick handler that shows an error and returns false.
@@ -931,13 +929,8 @@ class AutofillDriver:
         buy_now_link = WebDriverWait(self.driver, 30).until(
             element_to_be_clickable((By.CSS_SELECTOR, "a[href*='action=buy_now']"))
         )
-        buy_now_href = buy_now_link.get_attribute("href")
-        if buy_now_href:
-            self.driver.get(buy_now_href)
-            logger.debug("Navigated to 'buy now' page to start placing the order.")
-        else:
-            self.driver.execute_script("arguments[0].click();", buy_now_link)
-            logger.debug("Clicked 'buy now' link.")
+        self.driver.get(cast(str, buy_now_link.get_attribute("href")))
+        logger.debug("Navigated to 'buy now' page to start placing the order.")
 
         with self.no_implicit_wait():
             login_buttons = self.driver.find_elements(
@@ -1006,6 +999,7 @@ class AutofillDriver:
         self._run_dtc_step("submit_dtc_description_page", self.submit_dtc_description_page)
         self._run_dtc_step("open_dtc_upload_page", self.open_dtc_upload_page)
         self._run_dtc_step("select_card_type_and_upload_pdf", self.select_card_type_and_upload_pdf, pdf_path)
+        self._run_dtc_step("complete_dtc_product_setup", self.complete_dtc_product_setup)
 
         self.set_state(States.finished, "Product setup complete")
         log_hours_minutes_seconds_elapsed(t)

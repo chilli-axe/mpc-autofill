@@ -49,6 +49,8 @@ def test_execute_drive_thru_cards_order_runs_expected_sequence(dtc_driver: Autof
     dtc_driver.open_dtc_upload_page = lambda: calls.append(("open_dtc_upload_page",))
     dtc_driver.select_card_type_and_upload_pdf = lambda pdf_path: calls.append(("upload_pdf", pdf_path))
 
+    dtc_driver.complete_dtc_product_setup = lambda: calls.append(("complete_dtc_product_setup",))
+
     order = SimpleNamespace(name="My Order")
     dtc_driver.execute_drive_thru_cards_order(order=order, pdf_path="/tmp/order.pdf")
 
@@ -58,6 +60,7 @@ def test_execute_drive_thru_cards_order_runs_expected_sequence(dtc_driver: Autof
         ("submit_dtc_description_page",),
         ("open_dtc_upload_page",),
         ("upload_pdf", "/tmp/order.pdf"),
+        ("complete_dtc_product_setup",),
     ]
     assert states[-1] == (States.finished, "Product setup complete")
 
