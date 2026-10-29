@@ -54,7 +54,7 @@ jobs:
 
   build:
     name: Build ${{ matrix.target }}
-    needs: test
+    needs: release-status
     runs-on: ${{ matrix.os }}
     defaults:
       run:
