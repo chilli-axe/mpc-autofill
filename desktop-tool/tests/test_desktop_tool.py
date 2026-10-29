@@ -927,22 +927,43 @@ def test_convert_pdf_to_pdfx_uses_only_supported_ghostscript_pdfx_mode(tmp_path)
     assert xmp.findtext(".//{http://ns.adobe.com/pdf/1.3/}Trapped") == "False"
 
 
-@requires_google_drive_credentials
-def test_pdf_exporter_appends_pdfx_on_success(monkeypatch: pytest.MonkeyPatch, card_order_valid) -> None:
-    def do_nothing(_):
-        return None
+@pytest.fixture
+def local_pdf_order(monkeypatch, tmp_path):
+    monkeypatch.chdir(tmp_path)
+    path = tmp_path / "card.png"
+    Image.new("RGB", (20, 30), "red").save(path)
+
+    def face(side):
+        card = CardImage(
+            drive_id=str(path),
+            file_path=str(path),
+            name=path.name,
+            source_type=SourceType.LOCAL_FILE,
+            slots={0, 1, 2},
+        )
+        return CardImageCollection(cards_by_id={card.drive_id: card}, num_slots=3, face=side)
+
+    return CardOrder(
+        name="test_order.xml",
+        details=Details(quantity=3),
+        fronts=face(constants.Faces.front),
+        backs=face(constants.Faces.back),
+    )
+
+
+def test_pdf_exporter_appends_pdfx_on_success(monkeypatch: pytest.MonkeyPatch, local_pdf_order) -> None:
+    logged_messages = []
 
     def fake_convert_pdf_to_pdfx(source_path: str, output_path: str, _config) -> bool:
-        with open(output_path, "wb") as f:
-            f.write(b"pdfx")
+        Path(output_path).write_bytes(b"pdfx")
         return True
 
-    monkeypatch.setattr("src.pdf_maker.PdfExporter.ask_questions", do_nothing)
+    monkeypatch.setattr("src.pdf_maker.PdfExporter.ask_questions", lambda _: None)
     monkeypatch.setattr("src.pdf_maker.convert_pdf_to_pdfx", fake_convert_pdf_to_pdfx)
+    monkeypatch.setattr("src.pdf_maker.logger.info", logged_messages.append)
 
-    card_order_valid.name = "test_order.xml"
     pdf_exporter = PdfExporter(
-        order=card_order_valid,
+        order=local_pdf_order,
         number_of_cards_per_file=1,
         pdfx_config=PdfXConversionConfig(icc_profile_path="dummy.icc"),
     )
@@ -957,65 +978,23 @@ def test_pdf_exporter_appends_pdfx_on_success(monkeypatch: pytest.MonkeyPatch, c
         assert file_path in map(Path, generated_files)
         assert os.path.exists(file_path)
 
-    remove_files([path for path in generated_files if path.endswith(".pdf")])
-    remove_directories(["export/test_order", "export"])
+    progress_logs = [message for message in logged_messages if message.startswith("Converting PDF to PDF/X-1a")]
+    assert len(progress_logs) == 3
+    assert Path(progress_logs[0].rsplit(": ", 1)[1]) == Path("export/test_order/1.pdf")
 
 
-@requires_google_drive_credentials
-def test_pdf_exporter_skips_pdfx_on_failure(monkeypatch: pytest.MonkeyPatch, card_order_valid) -> None:
-    def do_nothing(_):
-        return None
-
-    monkeypatch.setattr("src.pdf_maker.PdfExporter.ask_questions", do_nothing)
+def test_pdf_exporter_skips_pdfx_on_failure(monkeypatch: pytest.MonkeyPatch, local_pdf_order) -> None:
+    monkeypatch.setattr("src.pdf_maker.PdfExporter.ask_questions", lambda _: None)
     monkeypatch.setattr("src.pdf_maker.convert_pdf_to_pdfx", lambda *_args, **_kwargs: False)
 
-    card_order_valid.name = "test_order.xml"
     pdf_exporter = PdfExporter(
-        order=card_order_valid,
+        order=local_pdf_order,
         number_of_cards_per_file=1,
         pdfx_config=PdfXConversionConfig(icc_profile_path="dummy.icc"),
     )
     generated_files = pdf_exporter.execute(post_processing_config=DEFAULT_POST_PROCESSING)
 
     assert not any(path.endswith("_pdfx.pdf") for path in generated_files)
-
-    remove_files([path for path in generated_files if path.endswith(".pdf")])
-    remove_directories(["export/test_order", "export"])
-
-
-@requires_google_drive_credentials
-def test_pdf_exporter_logs_pdfx_conversion_progress(monkeypatch: pytest.MonkeyPatch, card_order_valid) -> None:
-    logged_messages = []
-
-    def do_nothing(_):
-        return None
-
-    def fake_info(message: str):
-        logged_messages.append(message)
-
-    def fake_convert_pdf_to_pdfx(source_path: str, output_path: str, _config) -> bool:
-        with open(output_path, "wb") as f:
-            f.write(b"pdfx")
-        return True
-
-    monkeypatch.setattr("src.pdf_maker.PdfExporter.ask_questions", do_nothing)
-    monkeypatch.setattr("src.pdf_maker.convert_pdf_to_pdfx", fake_convert_pdf_to_pdfx)
-    monkeypatch.setattr("src.pdf_maker.logger.info", fake_info)
-
-    card_order_valid.name = "test_order.xml"
-    pdf_exporter = PdfExporter(
-        order=card_order_valid,
-        number_of_cards_per_file=1,
-        pdfx_config=PdfXConversionConfig(icc_profile_path="dummy.icc"),
-    )
-    generated_files = pdf_exporter.execute(post_processing_config=DEFAULT_POST_PROCESSING)
-
-    progress_logs = [message for message in logged_messages if message.startswith("Converting PDF to PDF/X-1a")]
-    assert len(progress_logs) == 3
-    assert Path(progress_logs[0].rsplit(": ", 1)[1]) == Path("export/test_order/1.pdf")
-
-    remove_files([path for path in generated_files if path.endswith(".pdf")])
-    remove_directories(["export/test_order", "export"])
 
 
 def test_pdf_exporter_add_image_uses_image_bytes(monkeypatch: pytest.MonkeyPatch, card_order_valid, tmp_path) -> None:
