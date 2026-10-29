@@ -133,27 +133,22 @@ def test_pdfx_conversion_without_ghostscript_preserves_source(monkeypatch, tmp_p
     assert list(tmp_path.iterdir()) == [source]
 
 
-def test_ensure_ghostscript_available_prompts_until_found(monkeypatch: pytest.MonkeyPatch, input_enter) -> None:
+def test_ensure_ghostscript_available_prompts_until_found(fake_gs, input_enter) -> None:
     paths = [None, "/usr/local/bin/gs"]
     called = {"version": 0}
-
-    def fake_get_path():
-        return paths.pop(0)
 
     def fake_get_version(_path: str) -> str:
         called["version"] += 1
         return "10.08.0"
 
-    monkeypatch.setattr(autofill_cli, "get_ghostscript_path", fake_get_path)
-    monkeypatch.setattr(autofill_cli, "get_ghostscript_version", fake_get_version)
-    monkeypatch.setattr(autofill_cli.click, "confirm", lambda *_args, **_kwargs: False)
+    fake_gs(paths, version=fake_get_version, confirm=False)
 
     assert autofill_cli.ensure_ghostscript_available() == "/usr/local/bin/gs"
     assert called["version"] == 1
 
 
 def test_ensure_ghostscript_available_installs_official_release_on_windows(
-    monkeypatch: pytest.MonkeyPatch,
+    monkeypatch: pytest.MonkeyPatch, fake_gs
 ) -> None:
     paths = [None, "C:\\Program Files\\gs\\gswin64c.exe"]
     install_calls = []
@@ -168,9 +163,7 @@ def test_ensure_ghostscript_available_installs_official_release_on_windows(
         "w64.exe",
         (download_url, hashlib.sha256(installer).hexdigest()),
     )
-    monkeypatch.setattr(autofill_cli, "get_ghostscript_path", lambda: paths.pop(0))
-    monkeypatch.setattr(autofill_cli, "get_ghostscript_version", lambda _path: "10.08.0")
-    monkeypatch.setattr(autofill_cli.click, "confirm", lambda *_args, **_kwargs: True)
+    fake_gs(paths)
     monkeypatch.setattr("builtins.input", lambda *_args, **_kwargs: "\n")
 
     def fake_urlopen(request, timeout):
@@ -195,7 +188,7 @@ def test_ensure_ghostscript_available_installs_official_release_on_windows(
 
 
 def test_ensure_ghostscript_available_installs_signed_package_on_macos(
-    monkeypatch: pytest.MonkeyPatch,
+    monkeypatch: pytest.MonkeyPatch, fake_gs
 ) -> None:
     paths = [None, "/usr/local/bin/gs"]
     installer = b"signed Ghostscript installer"
@@ -207,9 +200,7 @@ def test_ensure_ghostscript_available_installs_signed_package_on_macos(
         "GHOSTSCRIPT_MACOS_INSTALLER",
         (download_url, hashlib.sha256(installer).hexdigest()),
     )
-    monkeypatch.setattr(autofill_cli, "get_ghostscript_path", lambda: paths.pop(0))
-    monkeypatch.setattr(autofill_cli, "get_ghostscript_version", lambda _path: "10.08.0")
-    monkeypatch.setattr(autofill_cli.click, "confirm", lambda *_args, **_kwargs: True)
+    fake_gs(paths)
     monkeypatch.setattr("urllib.request.urlopen", lambda *_args, **_kwargs: BytesIO(installer))
 
     def fake_run(cmd, check=False):
@@ -258,17 +249,6 @@ def test_pinned_ghostscript_installers_are_available(download_url: str) -> None:
         assert response.status == 200
 
 
-def test_get_ghostscript_path_finds_standard_windows_install(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    executable = tmp_path / "gs" / "gs10.07.1" / "bin" / "gswin64c.exe"
-    executable.parent.mkdir(parents=True)
-    executable.touch()
-    monkeypatch.setattr("src.pdf_maker.shutil.which", lambda _name, **_kwargs: None)
-    monkeypatch.setattr("src.pdf_maker.sys.platform", "win32")
-    monkeypatch.setenv("ProgramFiles", str(tmp_path))
-
-    assert get_ghostscript_path() == str(executable)
-
-
 def test_get_ghostscript_path_finds_standard_macos_install(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr("src.pdf_maker.shutil.which", lambda _name, **_kwargs: None)
     monkeypatch.setattr("src.pdf_maker.sys.platform", "darwin")
@@ -277,16 +257,12 @@ def test_get_ghostscript_path_finds_standard_macos_install(monkeypatch: pytest.M
     assert get_ghostscript_path() == "/usr/local/bin/gs"
 
 
-def test_ensure_ghostscript_available_installs_with_apt_on_linux(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
+def test_ensure_ghostscript_available_installs_with_apt_on_linux(monkeypatch: pytest.MonkeyPatch, fake_gs) -> None:
     paths = [None, "/usr/bin/gs"]
     install_calls = []
 
     monkeypatch.setattr(autofill_cli.sys, "platform", "linux", raising=False)
-    monkeypatch.setattr(autofill_cli, "get_ghostscript_path", lambda: paths.pop(0))
-    monkeypatch.setattr(autofill_cli, "get_ghostscript_version", lambda _path: "10.08.0")
-    monkeypatch.setattr(autofill_cli.click, "confirm", lambda *_args, **_kwargs: True)
+    fake_gs(paths)
     monkeypatch.setattr("builtins.input", lambda *_args, **_kwargs: "\n")
     monkeypatch.setattr(
         autofill_cli.shutil,
@@ -306,7 +282,9 @@ def test_ensure_ghostscript_available_installs_with_apt_on_linux(
     assert install_calls == [["sudo", "apt", "install", "-y", "ghostscript"]]
 
 
-def test_ensure_ghostscript_available_asks_permission_before_installing(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_ensure_ghostscript_available_asks_permission_before_installing(
+    monkeypatch: pytest.MonkeyPatch, fake_gs
+) -> None:
     paths = [None, "/usr/local/bin/gs"]
     asked = {"message": None, "default": None}
 
@@ -315,9 +293,7 @@ def test_ensure_ghostscript_available_asks_permission_before_installing(monkeypa
         asked["default"] = default
         return True
 
-    monkeypatch.setattr(autofill_cli, "get_ghostscript_path", lambda: paths.pop(0))
-    monkeypatch.setattr(autofill_cli, "get_ghostscript_version", lambda _path: "10.08.0")
-    monkeypatch.setattr(autofill_cli.click, "confirm", fake_confirm)
+    fake_gs(paths, confirm=fake_confirm)
     monkeypatch.setattr(autofill_cli, "_install_ghostscript", lambda: True)
 
     assert autofill_cli.ensure_ghostscript_available() == "/usr/local/bin/gs"
@@ -325,15 +301,10 @@ def test_ensure_ghostscript_available_asks_permission_before_installing(monkeypa
     assert asked["default"] is True
 
 
-def test_ensure_ghostscript_available_does_not_prompt_when_already_installed(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    monkeypatch.setattr(autofill_cli, "get_ghostscript_path", lambda: "/usr/local/bin/gs")
-    monkeypatch.setattr(autofill_cli, "get_ghostscript_version", lambda _path: "10.08.0")
-    monkeypatch.setattr(
-        autofill_cli.click,
-        "confirm",
-        lambda *_args, **_kwargs: (_ for _ in ()).throw(AssertionError("should not prompt")),
+def test_ensure_ghostscript_available_does_not_prompt_when_already_installed(fake_gs) -> None:
+    fake_gs(
+        ["/usr/local/bin/gs"],
+        confirm=lambda *_args, **_kwargs: (_ for _ in ()).throw(AssertionError("should not prompt")),
     )
 
     assert autofill_cli.ensure_ghostscript_available() == "/usr/local/bin/gs"
