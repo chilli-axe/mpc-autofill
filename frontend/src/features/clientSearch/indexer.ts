@@ -1,4 +1,3 @@
-import { create, insertMultiple } from "@orama/orama";
 import { imageDimensionsFromStream, ImageType } from "image-dimensions";
 
 import { Unknown } from "@/common/constants";
@@ -26,6 +25,7 @@ import { OramaSchema } from "@/common/types";
 import { extractNameAndTags } from "@/features/clientSearch/tags";
 
 import { GoogleDriveService } from "../googleDrive/GoogleDriveService";
+import { buildOramaIndex } from "./buildOramaIndex";
 
 export class Folder {
   constructor(
@@ -184,29 +184,7 @@ abstract class Indexer {
     folders: Array<Folder>,
     images: Array<Image>,
     tags: Array<Tag> | undefined
-  ): Promise<OramaIndex> {
-    const db = create({
-      schema: OramaSchema,
-      sort: {
-        enabled: true,
-        unsortableProperties: [
-          // every field on OramaCardDocument except `searchq` and `lastModifiedNumber` :)
-          "name",
-          "source",
-          "sourceId",
-          "sourceVerbose",
-          "cardType",
-          "extension",
-          "language",
-          "tags",
-          "dpi",
-          "size",
-          "id",
-          "lastModified",
-          "params",
-        ],
-      },
-    });
+  ): Promise<{ index: OramaIndex; documents: Array<OramaCardDocument> }> {
     const tagsMap = new Map(
       (tags ?? []).map((tag) => [tag.name.toLowerCase(), tag])
     );
@@ -227,10 +205,9 @@ abstract class Indexer {
     const deduplicatedOramaCardDocuments = uniqueImages.map((image) =>
       image.getOramaCardDocument(tagsMap)
     );
-    insertMultiple(db, deduplicatedOramaCardDocuments);
     return {
-      oramaDb: db,
-      size: deduplicatedOramaCardDocuments.length,
+      index: buildOramaIndex(deduplicatedOramaCardDocuments),
+      documents: deduplicatedOramaCardDocuments,
     };
   }
 }

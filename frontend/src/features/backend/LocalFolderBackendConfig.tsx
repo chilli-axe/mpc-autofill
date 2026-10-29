@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Alert from "react-bootstrap/Alert";
 import Button from "react-bootstrap/Button";
 import Col from "react-bootstrap/Col";
@@ -26,6 +26,21 @@ export const LocalFolderBackendConfig = () => {
   const { clientSearchService, forceUpdate } = useClientSearchContext();
   const directoryHandle = useLocalFilesDirectoryHandle();
   const directoryIndexSize = useLocalFilesDirectoryIndexSize();
+  // a restored directory handle (issue #418) may need its read permission re-granted by a user gesture
+  const [needsPermission, setNeedsPermission] = useState<boolean>(false);
+  useEffect(() => {
+    // @ts-ignore - queryPermission is not in the standard lib typings yet
+    directoryHandle?.queryPermission({ mode: "readwrite" }).then(
+      (permission: PermissionState) =>
+        setNeedsPermission(permission !== "granted"),
+      () => setNeedsPermission(false)
+    );
+  }, [directoryHandle]);
+  const reGrantPermission = async () => {
+    const permission: PermissionState = await (directoryHandle as any) // requestPermission is not in the standard lib typings yet
+      ?.requestPermission({ mode: "readwrite" });
+    setNeedsPermission(permission !== "granted");
+  };
   const getTagsQuery = useGetTagsQuery();
 
   const [validationStatus, setValidationStatus] = useState<
@@ -102,6 +117,18 @@ export const LocalFolderBackendConfig = () => {
         <Alert variant="success">
           You&apos;re connected to <b>{directoryHandle.name}</b>, with{" "}
           <b>{directoryIndexSize ?? 0}</b> images indexed.
+          {needsPermission && (
+            <Row className="gx-1 pt-2">
+              <Col>
+                <div className="d-grid gap-0">
+                  <Button variant="warning" onClick={reGrantPermission}>
+                    <RightPaddedIcon bootstrapIconName="unlock" />
+                    Re-grant folder access to display images
+                  </Button>
+                </div>
+              </Col>
+            </Row>
+          )}
           <Row className="gx-1 pt-2">
             <Col xs={6}>
               <div className="d-grid gap-0">
