@@ -80,7 +80,7 @@ def check_for_updates(enabled: Optional[bool] = None) -> bool:
         if enabled is None:
             enabled = click.confirm(
                 f"Check GitHub ({repository}) for new versions on startup? "
-                "This contacts GitHub; your choice is remembered across upgrades",
+                "This contacts GitHub. Your choice is remembered across upgrades",
                 default=False,
             )
             save_preference(preference_path, enabled)
