@@ -5,7 +5,6 @@ import shutil
 import subprocess
 import sys
 import tempfile
-from copy import deepcopy
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Optional
 
@@ -165,11 +164,14 @@ def _prepare_native_mac_driver(major: int) -> str:
         patcher.patch_exe()
         if not patcher.is_binary_patched():
             raise RuntimeError("The native ChromeDriver binary was not patched")
-        subprocess.run(["/usr/bin/codesign", "--force", "--sign", "-", tmp], check=True)
+        subprocess.run(["/usr/bin/codesign", "--force", "--sign", "-", tmp], check=True, capture_output=True)
         # macOS caches signatures per vnode, so publish a new inode after patching and signing.
         os.replace(tmp, target)
     finally:
         Path(tmp).unlink(missing_ok=True)
+    for stale in target.parent.glob("chromedriver-mac-arm64-*"):
+        if stale != target:
+            stale.unlink(missing_ok=True)
     return str(target)
 
 
@@ -208,22 +210,19 @@ def get_undetected_chrome_driver(
     # undetected-chromedriver handles stealth automatically.
     # Detect the Chrome version ourselves since auto-detection can fail.
     major = _detect_chrome_version(binary_location)
+    driver_path = None
     if sys.platform == "darwin" and platform.machine() == "arm64":
+        # undetected-chromedriver only downloads Intel drivers for macOS, which need Rosetta.
         try:
             if major is None:
                 raise RuntimeError("The Chrome major version could not be detected")
             driver_path = _prepare_native_mac_driver(major)
-            # uc mutates options, so keep the original available if native launch fails.
-            return uc.Chrome(
-                options=deepcopy(options),
-                version_main=major,
-                user_data_dir=user_data_dir,
-                driver_executable_path=driver_path,
-            )
         except Exception as exc:
             logger.warning(
                 f"Could not prepare the native ChromeDriver: {exc}. "
                 "Falling back to undetected-chromedriver's default driver. "
                 "If that also fails, install Rosetta as a workaround."
             )
-    return uc.Chrome(options=options, version_main=major, user_data_dir=user_data_dir)
+    return uc.Chrome(
+        options=options, version_main=major, user_data_dir=user_data_dir, driver_executable_path=driver_path
+    )

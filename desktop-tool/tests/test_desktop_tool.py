@@ -329,7 +329,8 @@ def test_ensure_ghostscript_available_does_not_prompt_when_already_installed(
 def test_get_undetected_chrome_driver_applies_user_profile_options(monkeypatch: pytest.MonkeyPatch) -> None:
     captured = {"options": None, "version_main": None}
 
-    def fake_chrome(*, options, version_main, user_data_dir):
+    def fake_chrome(*, options, version_main, user_data_dir, driver_executable_path):
+        assert driver_executable_path is None
         captured["options"] = options
         captured["version_main"] = version_main
         captured["user_data_dir"] = user_data_dir

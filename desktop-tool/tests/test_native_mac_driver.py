@@ -59,7 +59,7 @@ def test_native_driver_is_only_used_on_apple_silicon(monkeypatch, native_driver,
         assert kwargs["driver_executable_path"] == str(target)
     else:
         prepare.assert_not_called()
-        assert set(kwargs) == {"options", "version_main", "user_data_dir"}
+        assert kwargs["driver_executable_path"] is None
 
 
 def test_existing_patched_native_driver_is_reused(monkeypatch, native_driver):
@@ -86,8 +86,10 @@ def test_existing_patched_native_driver_is_reused(monkeypatch, native_driver):
 @pytest.mark.parametrize("existing_unpatched", [False, True])
 def test_fresh_native_driver_is_patched_signed_then_replaced(monkeypatch, native_driver, existing_unpatched):
     target, patcher, manager, chrome, _detect = native_driver
+    target.parent.mkdir()
+    stale = target.parent / "chromedriver-mac-arm64-155"
+    stale.write_bytes(b"older major")
     if existing_unpatched:
-        target.parent.mkdir()
         target.write_bytes(b"unpatched cached driver")
         original_inode = target.stat().st_ino
         patcher.is_binary_patched.side_effect = [False, True]
@@ -107,7 +109,7 @@ def test_fresh_native_driver_is_patched_signed_then_replaced(monkeypatch, native
     assert Path(tmp).parent == target.parent
     assert events.mock_calls == [
         call.patch(),
-        call.sign(["/usr/bin/codesign", "--force", "--sign", "-", tmp], check=True),
+        call.sign(["/usr/bin/codesign", "--force", "--sign", "-", tmp], check=True, capture_output=True),
         call.replace(tmp, target),
     ]
     assert target.read_bytes() == b"original driver"
@@ -140,7 +142,7 @@ def test_native_preparation_failure_warns_and_falls_back(monkeypatch, native_dri
     assert webdrivers.get_undetected_chrome_driver(binary_location="/selected/chrome") is chrome.return_value
 
     chrome.assert_called_once()
-    assert set(chrome.call_args.kwargs) == {"options", "version_main", "user_data_dir"}
+    assert chrome.call_args.kwargs["driver_executable_path"] is None
     assert chrome.call_args.kwargs["version_main"] == detect.return_value
     assert len(caplog.records) == 1
     assert caplog.records[0].levelname == "WARNING"
@@ -153,19 +155,11 @@ def test_native_preparation_failure_warns_and_falls_back(monkeypatch, native_dri
         sign.assert_not_called()
 
 
-def test_native_launch_failure_retries_with_unmodified_options(monkeypatch, native_driver, caplog):
+def test_native_launch_failure_is_not_retried_with_another_driver(monkeypatch, native_driver):
     target, _patcher, _manager, chrome, _detect = native_driver
     monkeypatch.setattr(webdrivers, "_prepare_native_mac_driver", lambda _major: str(target))
+    chrome.side_effect = RuntimeError("native launch failed")
 
-    def launch(**kwargs):
-        if "driver_executable_path" in kwargs:
-            kwargs["options"].add_argument("--mutated-by-uc")
-            raise RuntimeError("native launch failed")
-        assert "--mutated-by-uc" not in kwargs["options"].arguments
-        return "fallback driver"
-
-    chrome.side_effect = launch
-    assert webdrivers.get_undetected_chrome_driver(binary_location="/selected/chrome") == "fallback driver"
-    assert chrome.call_count == 2
-    assert "driver_executable_path" not in chrome.call_args.kwargs
-    assert len(caplog.records) == 1
+    with pytest.raises(RuntimeError, match="native launch failed"):
+        webdrivers.get_undetected_chrome_driver(binary_location="/selected/chrome")
+    chrome.assert_called_once()
