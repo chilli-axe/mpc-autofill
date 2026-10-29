@@ -24,6 +24,7 @@ runs:
         google-drive-api-key: ${{ inputs.google-drive-api-key }}
     - uses: ./.github/actions/setup-ghostscript
     - name: Check compatibility export
+      if: runner.os == 'Linux'
       working-directory: desktop-tool
       shell: bash
       run: |
@@ -34,13 +35,16 @@ runs:
         # Text reads normalize Windows checkout line endings without ignoring dependency changes.
         assert Path("requirements.txt").read_text(encoding="utf-8") == (Path(os.environ["RUNNER_TEMP"]) / "desktop-requirements.txt").read_text(encoding="utf-8"), "Requirements export is out of date"
         PY
-    - name: Check desktop source
+    - name: Check desktop formatting
+      if: runner.os == 'Linux'
       shell: bash
       run: |
         uv run --project desktop-tool --locked --group dev ruff check --config desktop-tool/pyproject.toml desktop-tool
         uv run --project desktop-tool --locked --group dev black --check desktop-tool
         uv run --project desktop-tool --locked --group dev isort --check-only desktop-tool
-        uv run --project desktop-tool --locked --group dev mypy --config-file desktop-tool/pyproject.toml desktop-tool/autofill.py desktop-tool/src
+    - name: Check desktop types
+      shell: bash
+      run: uv run --project desktop-tool --locked --group dev mypy --config-file desktop-tool/pyproject.toml desktop-tool/autofill.py desktop-tool/src
     - name: Run tests
       working-directory: desktop-tool
       env:
